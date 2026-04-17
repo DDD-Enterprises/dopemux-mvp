@@ -100,7 +100,9 @@ def _make_router_from_dir(tmp_path: Path):
     return runner, router
 
 
-def test_build_partitions_uses_router_priority_and_skip_hints(tmp_path: Path) -> None:
+def test_build_partitions_keeps_prescan_skip_candidates_without_explicit_opt_in(
+    tmp_path: Path,
+) -> None:
     runner, router = _make_router_from_dir(tmp_path)
     inventory = [
         {"path": "src/low.py", "char_count_estimate": 10},
@@ -123,6 +125,33 @@ def test_build_partitions_uses_router_priority_and_skip_hints(tmp_path: Path) ->
         "src/high.py",
         "src/medium.py",
     ]
+    assert partitions[0]["paths"] == ["src/high.py", "src/medium.py"]
+    assert partitions[1]["paths"] == ["src/low.py", "src/skipped.py"]
+    assert "src/skipped.py" in {
+        path for partition in partitions for path in partition["paths"]
+    }
+
+
+def test_build_partitions_allows_prescan_skip_candidates_only_with_opt_in(
+    tmp_path: Path,
+) -> None:
+    runner, router = _make_router_from_dir(tmp_path)
+    inventory = [
+        {"path": "src/low.py", "char_count_estimate": 10},
+        {"path": "src/skipped.py", "char_count_estimate": 10},
+        {"path": "src/high.py", "char_count_estimate": 10},
+        {"path": "src/medium.py", "char_count_estimate": 10},
+    ]
+
+    partitions = runner.build_partitions(
+        "A",
+        inventory,
+        max_files=2,
+        max_chars=1000,
+        router=router,
+        allow_prescan_scope_reduction=True,
+    )
+
     assert partitions[0]["paths"] == ["src/high.py", "src/medium.py"]
     assert partitions[1]["paths"] == ["src/low.py"]
     assert "src/skipped.py" not in {

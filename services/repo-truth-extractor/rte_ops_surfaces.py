@@ -9,6 +9,29 @@ def argv_has_flag(argv: Sequence[str], *flags: str) -> bool:
     return any(flag in argv for flag in flags)
 
 
+def shared_doctor_advisory_fields(
+    artifact_name: str,
+    *,
+    run_id: Optional[str] = None,
+) -> Dict[str, Any]:
+    authority_note = (
+        "Shared doctor artifacts are diagnostic only. Launch and certification "
+        "authority use run-scoped artifacts under runs/<run_id>/."
+    )
+    if run_id and artifact_name == "PROVIDER_PREFLIGHT.json":
+        authority_note += f" Launch authority for this run is runs/{run_id}/PROVIDER_PREFLIGHT.json."
+    return {
+        "artifact_name": artifact_name,
+        "artifact_origin": "shared_doctor",
+        "authority_class": "diagnostic_only",
+        "advisory_only": True,
+        "launch_authority": False,
+        "certification_authority": False,
+        "execution_readiness_authority": False,
+        "authority_note": authority_note,
+    }
+
+
 def first_live_phase_sequence(
     stage: str,
     *,
@@ -806,5 +829,12 @@ def run_provider_preflight(
     }
     doctor_dir = current_doctor_root(root)
     doctor_dir.mkdir(parents=True, exist_ok=True)
-    write_json(doctor_dir / "PROVIDER_PREFLIGHT.json", payload)
+    doctor_payload = dict(payload)
+    doctor_payload.update(
+        shared_doctor_advisory_fields(
+            "PROVIDER_PREFLIGHT.json",
+            run_id=run_id,
+        )
+    )
+    write_json(doctor_dir / "PROVIDER_PREFLIGHT.json", doctor_payload)
     return (not failures), payload

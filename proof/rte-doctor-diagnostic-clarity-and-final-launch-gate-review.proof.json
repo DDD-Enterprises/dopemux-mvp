@@ -1,0 +1,176 @@
+{
+  "packet": "RTE-doctor-diagnostic-clarity-and-final-launch-gate-review",
+  "summary": "Audited shared doctor artifact readers and writers across the current repo-truth extractor slice, confirmed that current v5 launch and certification paths do not promote shared doctor files into authority, and tightened shared-doctor labeling plus operator-facing scope notes so the diagnostic surfaces cannot be reasonably mistaken for launch authority.",
+  "evidence_ledger": [
+    "services/repo-truth-extractor/reporting.py reads run-scoped runs/<run_id>/PROVIDER_PREFLIGHT.json for live_provider_readiness and does not load doctor/PROVIDER_PREFLIGHT.json.",
+    "services/repo-truth-extractor/reporting.py only links doctor/AUTH_DOCTOR.json and doctor/DOCTOR_FULL.json into proof-pack linked_artifacts; it does not treat them as launch or certification authority.",
+    "services/repo-truth-extractor/run_extraction_v5.py uses run-scoped PROVIDER_PREFLIGHT.json for launch preflight reuse checks and writes shared doctor copies only for diagnostic visibility.",
+    "services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py already proves stale shared doctor PASS files do not satisfy certification gates.",
+    "Legacy v3 docs reference shared doctor files in a v3-specific runbook context; scope notes were added so those references are not misread as v5 launch authority."
+  ],
+  "assumptions": [
+    "First full extraction planning is for the canonical v5 runtime, not legacy v3 historical workflows.",
+    "Shared doctor artifacts may remain on disk between invocations and therefore must be treated as advisory diagnostics rather than invocation authority."
+  ],
+  "confidence": "VERIFIED",
+  "next_action": "Use the current branch as the combined PR for both launch-boundary hardening packets, then re-audit main after merge if an independent confirmation pass is still desired.",
+  "consumer_audit": [
+    {
+      "path": "services/repo-truth-extractor/rte_ops_surfaces.py",
+      "artifact": "doctor/PROVIDER_PREFLIGHT.json",
+      "behavior": "write_shared_doctor_copy_only",
+      "classification": "diagnostic_only",
+      "influences_launch_readiness": false,
+      "influences_certification": false,
+      "influences_execution": false,
+      "respects_scope_metadata": true,
+      "notes": "Writes shared doctor copy from provider preflight payload; current packet adds explicit diagnostic-only labels."
+    },
+    {
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "artifact": "runs/<run_id>/PROVIDER_PREFLIGHT.json",
+      "behavior": "read_run_local_only_for_launch_reuse",
+      "classification": "authoritative",
+      "influences_launch_readiness": true,
+      "influences_certification": false,
+      "influences_execution": true,
+      "respects_scope_metadata": true,
+      "notes": "Current launch preflight reuse checks use only run-local provider preflight plus run-manifest freshness/scope validation."
+    },
+    {
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "artifact": "doctor/PROVIDER_PREFLIGHT__<PHASE>.json",
+      "behavior": "write_shared_phase_diagnostic_copy_only",
+      "classification": "diagnostic_only",
+      "influences_launch_readiness": false,
+      "influences_certification": false,
+      "influences_execution": false,
+      "respects_scope_metadata": true,
+      "notes": "Phase-scoped doctor copies are partial and now explicitly labeled diagnostic-only."
+    },
+    {
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "artifact": "doctor/DOCTOR_FULL.json",
+      "behavior": "write_shared_topology_diagnostic_only",
+      "classification": "diagnostic_only",
+      "influences_launch_readiness": false,
+      "influences_certification": false,
+      "influences_execution": false,
+      "respects_scope_metadata": true,
+      "notes": "Shared topology doctor remains advisory; packet adds explicit diagnostic-only labels."
+    },
+    {
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "artifact": "doctor/AUTH_DOCTOR.json",
+      "behavior": "write_shared_auth_diagnostic_only",
+      "classification": "diagnostic_only",
+      "influences_launch_readiness": false,
+      "influences_certification": false,
+      "influences_execution": false,
+      "respects_scope_metadata": true,
+      "notes": "Shared auth doctor remains advisory; packet adds explicit diagnostic-only labels and text output note."
+    },
+    {
+      "path": "services/repo-truth-extractor/reporting.py",
+      "artifact": "doctor/AUTH_DOCTOR.json and doctor/DOCTOR_FULL.json",
+      "behavior": "link_paths_only_in_proof_pack",
+      "classification": "advisory",
+      "influences_launch_readiness": false,
+      "influences_certification": false,
+      "influences_execution": false,
+      "respects_scope_metadata": true,
+      "notes": "Proof-pack linked_artifacts references shared doctor paths for operator visibility only."
+    },
+    {
+      "path": "services/repo-truth-extractor/reporting.py",
+      "artifact": "doctor/PROVIDER_PREFLIGHT.json",
+      "behavior": "no_reader_found",
+      "classification": "diagnostic_only",
+      "influences_launch_readiness": false,
+      "influences_certification": false,
+      "influences_execution": false,
+      "respects_scope_metadata": true,
+      "notes": "Certification reads only runs/<run_id>/PROVIDER_PREFLIGHT.json."
+    },
+    {
+      "path": "UPGRADES/RUN_ORDER.md and UPGRADES/PIPELINE_PROOF.md",
+      "artifact": "shared doctor references in legacy v3 docs",
+      "behavior": "operator_documentation_reference",
+      "classification": "advisory",
+      "influences_launch_readiness": false,
+      "influences_certification": false,
+      "influences_execution": false,
+      "respects_scope_metadata": false,
+      "notes": "Scope notes added to make the v3-only context explicit and prevent v5 authority confusion."
+    }
+  ],
+  "changes": [
+    {
+      "file": "services/repo-truth-extractor/rte_ops_surfaces.py",
+      "why": "Add explicit diagnostic-only labels to the shared doctor provider preflight copy without changing the run-local authoritative payload."
+    },
+    {
+      "file": "services/repo-truth-extractor/run_extraction_v5.py",
+      "why": "Label shared doctor auth/topology/phase-preflight artifacts as diagnostic-only and tighten CLI/help/error wording around shared doctor versus run-scoped authority."
+    },
+    {
+      "file": "services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+      "why": "Lock the non-authority contract for shared doctor preflight and the run-local precedence rule."
+    },
+    {
+      "file": "services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py",
+      "why": "Assert that shared doctor topology output is labeled diagnostic-only while certification remains UNKNOWN without explicit run-scoped authority."
+    },
+    {
+      "file": "UPGRADES/RUN_ORDER.md",
+      "why": "Add a narrow scope note so legacy v3 references are not mistaken for v5 launch authority."
+    },
+    {
+      "file": "UPGRADES/PIPELINE_PROOF.md",
+      "why": "Add a narrow scope note so legacy v3 proof instructions are not mistaken for v5 launch authority."
+    }
+  ],
+  "validation": {
+    "commands": [
+      {
+        "cmd": "pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+        "status": "pass"
+      },
+      {
+        "cmd": "pytest -q services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py",
+        "status": "pass"
+      },
+      {
+        "cmd": "pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_rollup_reports.py",
+        "status": "pass"
+      },
+      {
+        "cmd": "pytest -q services/repo-truth-extractor/tests/test_router_runtime_integration.py",
+        "status": "pass"
+      },
+      {
+        "cmd": "python -m py_compile services/repo-truth-extractor/rte_ops_surfaces.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/rte_output_layout.py services/repo-truth-extractor/reporting.py",
+        "status": "pass"
+      },
+      {
+        "cmd": "git diff --check",
+        "status": "pass"
+      },
+      {
+        "cmd": "pre-commit run --files services/repo-truth-extractor/rte_ops_surfaces.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/rte_output_layout.py services/repo-truth-extractor/reporting.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py services/repo-truth-extractor/tests/test_router_runtime_integration.py UPGRADES/RUN_ORDER.md UPGRADES/PIPELINE_PROOF.md",
+        "status": "pass"
+      }
+    ],
+    "blockers": []
+  },
+  "finalization": {
+    "final_confidence": "VERIFIED",
+    "launch_readiness_judgment": "READY_FOR_FIRST_FULL_EXTRACTION_PLANNING",
+    "residual_caveats": [
+      "Broad topology questions remain outside this packet.",
+      "Prescan and IR_FL remain separate advisory surfaces outside this packet.",
+      "Legacy v3 historical docs still exist, but this packet now labels them as v3-only rather than v5 authority."
+    ],
+    "another_packet_required": false
+  }
+}

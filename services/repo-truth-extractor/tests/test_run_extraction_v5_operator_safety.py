@@ -141,6 +141,8 @@ def test_help_output_omits_contract_scope_warning() -> None:
     )
     assert result.returncode == 0
     assert "model_map.yaml steps outside repo_truth_map JSON scope" not in result.stderr
+    assert "shared doctor diagnostic artifacts" in result.stdout
+    assert "run-scoped PROVIDER_PREFLIGHT.json" in result.stdout
 
 
 def test_dry_run_output_omits_unknown_failure_spotlight(tmp_path: Path) -> None:
@@ -184,6 +186,75 @@ def test_output_root_layout_redirects_run_and_doctor_paths(tmp_path: Path) -> No
         assert runner.latest_run_id_path(tmp_path) == artifact_root / "latest_run_id.txt"
     finally:
         runner.configure_output_layout(tmp_path, None)
+
+
+def test_non_resume_launch_generates_fresh_run_id_even_when_latest_exists(tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    old_run = runner.current_runs_root(tmp_path) / "existing_run"
+    old_run.mkdir(parents=True, exist_ok=True)
+    runner.persist_latest_run_id(tmp_path, "existing_run")
+
+    args = argparse.Namespace(
+        run_id=None,
+        resume=False,
+        no_write_latest=True,
+        dry_run=False,
+        write_latest_even_on_dry_run=False,
+    )
+
+    run_context = runner.resolve_run_context(
+        tmp_path,
+        args,
+        allow_create_if_missing=False,
+    )
+
+    assert run_context.run_id != "existing_run"
+    assert run_context.source == "generated"
+    assert (runner.current_runs_root(tmp_path) / run_context.run_id).is_dir()
+
+
+def test_resume_without_explicit_run_id_reuses_latest_run_context(tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    old_run = runner.current_runs_root(tmp_path) / "resume_me"
+    old_run.mkdir(parents=True, exist_ok=True)
+    runner.persist_latest_run_id(tmp_path, "resume_me")
+
+    args = argparse.Namespace(
+        run_id=None,
+        resume=True,
+        no_write_latest=True,
+        dry_run=False,
+        write_latest_even_on_dry_run=False,
+    )
+
+    run_context = runner.resolve_run_context(
+        tmp_path,
+        args,
+        allow_create_if_missing=False,
+    )
+
+    assert run_context.run_id == "resume_me"
+    assert run_context.source == "latest_run_id"
+
+
+def test_resume_requires_latest_run_directory_to_exist(tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    runner.persist_latest_run_id(tmp_path, "missing_run")
+
+    args = argparse.Namespace(
+        run_id=None,
+        resume=True,
+        no_write_latest=True,
+        dry_run=False,
+        write_latest_even_on_dry_run=False,
+    )
+
+    with pytest.raises(FileNotFoundError, match="missing run directory"):
+        runner.resolve_run_context(
+            tmp_path,
+            args,
+            allow_create_if_missing=False,
+        )
 
 
 def test_build_phase_cost_preview_marks_override_risk() -> None:
@@ -438,6 +509,15 @@ def test_run_provider_preflight_records_openrouter_specific_remediation(
     assert run_local["step_scope"] == {}
     assert run_local["scope_kind"] == "launch"
     assert run_local["scope_complete_for_launch"] is True
+    doctor_copy = json.loads(
+        (
+            runner.current_doctor_root(tmp_path) / "PROVIDER_PREFLIGHT.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert doctor_copy["advisory_only"] is True
+    assert doctor_copy["authority_class"] == "diagnostic_only"
+    assert doctor_copy["launch_authority"] is False
+    assert "runs/run_openrouter_blocked/PROVIDER_PREFLIGHT.json" in doctor_copy["authority_note"]
 
 
 def test_prepare_phase_provider_preflight_writes_partial_scope_file_without_canonical_run_root(
@@ -491,6 +571,13 @@ def test_prepare_phase_provider_preflight_writes_partial_scope_file_without_cano
     assert partial["phase_scope"] == ["D"]
     assert partial["scope_kind"] == "phase"
     assert partial["scope_complete_for_launch"] is False
+    doctor_partial = json.loads(
+        (
+            runner.current_doctor_root(tmp_path) / "PROVIDER_PREFLIGHT__D.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert doctor_partial["advisory_only"] is True
+    assert doctor_partial["authority_class"] == "diagnostic_only"
 
 
 def test_prepare_phase_provider_preflight_skips_redundant_probe_when_launch_scope_exists(
@@ -502,15 +589,27 @@ def test_prepare_phase_provider_preflight_skips_redundant_probe_when_launch_scop
 
     run_root = runner.current_runs_root(tmp_path) / "run_d_skip_preflight"
     run_root.mkdir(parents=True, exist_ok=True)
+    (run_root / "RUN_MANIFEST.json").write_text(
+        json.dumps(
+            {
+                "generated_at": "2026-04-17T08:00:00+00:00",
+                "routing_step_tiers": {"A": {}, "H": {}, "D": {}, "C": {}},
+            }
+        ),
+        encoding="utf-8",
+    )
     canonical = run_root / "PROVIDER_PREFLIGHT.json"
     canonical.write_text(
         json.dumps(
             {
+                "generated_at": "2026-04-17T08:01:00+00:00",
+                "run_id": "run_d_skip_preflight",
                 "status": "PASS",
                 "phase_scope": ["A", "H", "D", "C"],
                 "step_scope": {},
                 "scope_kind": "launch",
                 "scope_complete_for_launch": True,
+                "routing_policy": "cost",
             }
         ),
         encoding="utf-8",
@@ -543,6 +642,242 @@ def test_prepare_phase_provider_preflight_skips_redundant_probe_when_launch_scop
     assert tuple(updated_cfg.provider_denylist) == ()
     assert canonical.exists() is True
     assert (run_root / "PROVIDER_PREFLIGHT__D.json").exists() is False
+
+
+def test_prepare_phase_provider_preflight_reprobes_stale_launch_scope_file(
+    monkeypatch, tmp_path: Path
+) -> None:
+    runner = _load_runner_module()
+    cfg = _make_cfg(runner)
+    object.__setattr__(cfg, "dry_run", False)
+
+    run_root = runner.current_runs_root(tmp_path) / "run_d_stale_preflight"
+    run_root.mkdir(parents=True, exist_ok=True)
+    (run_root / "RUN_MANIFEST.json").write_text(
+        json.dumps(
+            {
+                "generated_at": "2026-04-17T09:00:00+00:00",
+                "routing_step_tiers": {"A": {}, "H": {}, "D": {}, "C": {}},
+            }
+        ),
+        encoding="utf-8",
+    )
+    (run_root / "PROVIDER_PREFLIGHT.json").write_text(
+        json.dumps(
+            {
+                "generated_at": "2026-04-17T08:00:00+00:00",
+                "run_id": "run_d_stale_preflight",
+                "status": "PASS",
+                "phase_scope": ["A", "H", "D", "C"],
+                "step_scope": {},
+                "scope_kind": "launch",
+                "scope_complete_for_launch": True,
+                "routing_policy": "cost",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(
+        runner,
+        "collect_provider_routes",
+        lambda phases, routing_policy, selected_step_ids_by_phase=None: {
+            "openrouter:openai/gpt-5.3-codex:OPENROUTER_API_KEY": {
+                "provider": "openrouter",
+                "model_id": "openai/gpt-5.3-codex",
+                "api_key_env": "OPENROUTER_API_KEY",
+            }
+        },
+    )
+
+    called = {"probe": False}
+
+    def fresh_probe(**kwargs):  # type: ignore[no-untyped-def]
+        called["probe"] = True
+        return {
+            "provider": "openrouter",
+            "model_id": "openai/gpt-5.3-codex",
+            "api_key_env_name": "OPENROUTER_API_KEY",
+            "api_key_env_resolved": "OPENROUTER_API_KEY",
+            "failure_type": None,
+            "status_code": 200,
+            "provider_signature": "provider=openrouter;model=openai/gpt-5.3-codex",
+            "ready": True,
+            "readiness_blocker": {"ready": True},
+        }
+
+    monkeypatch.setattr(runner, "run_provider_doctor_probe", fresh_probe)
+
+    runner.prepare_phase_provider_preflight(
+        tmp_path,
+        "run_d_stale_preflight",
+        "D",
+        cfg,
+    )
+
+    assert called["probe"] is True
+    partial = json.loads((run_root / "PROVIDER_PREFLIGHT__D.json").read_text(encoding="utf-8"))
+    assert partial["scope_kind"] == "phase"
+
+
+def test_phase_requires_provider_preflight_tracks_required_active_routes() -> None:
+    runner = _load_runner_module()
+    cfg = _make_cfg(runner)
+    object.__setattr__(cfg, "dry_run", False)
+
+    assert runner.phase_requires_provider_preflight("A", cfg) is True
+    assert runner.phase_requires_provider_preflight("H", cfg) is True
+    assert runner.phase_requires_provider_preflight("C", cfg) is True
+    assert runner.phase_requires_provider_preflight("D", cfg) is True
+
+
+def test_ensure_launch_provider_preflight_blocks_when_required_route_probe_fails(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    runner = _load_runner_module()
+    cfg = _make_cfg(runner)
+    object.__setattr__(cfg, "dry_run", False)
+
+    run_root = runner.current_runs_root(tmp_path) / "launch_probe_block"
+    run_root.mkdir(parents=True, exist_ok=True)
+    (run_root / "RUN_MANIFEST.json").write_text(
+        json.dumps(
+            {
+                "generated_at": "2026-04-17T09:00:00+00:00",
+                "routing_step_tiers": {"A": {}, "H": {}, "D": {}, "C": {}},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(
+        runner,
+        "run_provider_preflight",
+        lambda root, run_id, cfg_arg, phases: (
+            False,
+            {"failed_providers": ["openrouter"], "phase_scope": list(phases)},
+        ),
+    )
+
+    with pytest.raises(RuntimeError, match="Provider preflight blocked launch scope"):
+        runner.ensure_launch_provider_preflight(
+            tmp_path,
+            "launch_probe_block",
+            ["A", "H", "D", "C"],
+            cfg,
+        )
+
+
+def test_ensure_launch_provider_preflight_ignores_shared_doctor_copy(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    runner = _load_runner_module()
+    cfg = _make_cfg(runner)
+    object.__setattr__(cfg, "dry_run", False)
+
+    run_root = runner.current_runs_root(tmp_path) / "launch_probe_ignores_doctor"
+    run_root.mkdir(parents=True, exist_ok=True)
+    (run_root / "RUN_MANIFEST.json").write_text(
+        json.dumps(
+            {
+                "generated_at": "2026-04-17T09:00:00+00:00",
+                "routing_step_tiers": {"A": {}, "H": {}, "D": {}, "C": {}},
+            }
+        ),
+        encoding="utf-8",
+    )
+    doctor_root = runner.current_doctor_root(tmp_path)
+    doctor_root.mkdir(parents=True, exist_ok=True)
+    (doctor_root / "PROVIDER_PREFLIGHT.json").write_text(
+        json.dumps(
+            {
+                "status": "PASS",
+                "run_id": "other_run",
+                "advisory_only": True,
+                "authority_class": "diagnostic_only",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(
+        runner,
+        "run_provider_preflight",
+        lambda root, run_id, cfg_arg, phases: (
+            False,
+            {"failed_providers": ["openrouter"], "phase_scope": list(phases)},
+        ),
+    )
+
+    with pytest.raises(RuntimeError, match="Provider preflight blocked launch scope"):
+        runner.ensure_launch_provider_preflight(
+            tmp_path,
+            "launch_probe_ignores_doctor",
+            ["A", "H", "D", "C"],
+            cfg,
+        )
+
+
+def test_ensure_launch_provider_preflight_prefers_run_local_over_shared_doctor(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    runner = _load_runner_module()
+    cfg = _make_cfg(runner)
+    object.__setattr__(cfg, "dry_run", False)
+
+    run_root = runner.current_runs_root(tmp_path) / "launch_probe_prefers_run_local"
+    run_root.mkdir(parents=True, exist_ok=True)
+    (run_root / "RUN_MANIFEST.json").write_text(
+        json.dumps(
+            {
+                "generated_at": "2026-04-17T09:00:00+00:00",
+                "routing_step_tiers": {"A": {}, "H": {}, "D": {}, "C": {}},
+            }
+        ),
+        encoding="utf-8",
+    )
+    (run_root / "PROVIDER_PREFLIGHT.json").write_text(
+        json.dumps(
+            {
+                "generated_at": "2026-04-17T09:01:00+00:00",
+                "run_id": "launch_probe_prefers_run_local",
+                "status": "PASS",
+                "phase_scope": ["A", "H", "D", "C"],
+                "step_scope": {},
+                "scope_kind": "launch",
+                "scope_complete_for_launch": True,
+                "routing_policy": "cost",
+            }
+        ),
+        encoding="utf-8",
+    )
+    doctor_root = runner.current_doctor_root(tmp_path)
+    doctor_root.mkdir(parents=True, exist_ok=True)
+    (doctor_root / "PROVIDER_PREFLIGHT.json").write_text(
+        json.dumps(
+            {
+                "status": "FAIL",
+                "run_id": "stale_shared_doctor",
+                "advisory_only": True,
+                "authority_class": "diagnostic_only",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    def fail_probe(*args, **kwargs):  # type: ignore[no-untyped-def]
+        raise AssertionError("run-local launch preflight should win over shared doctor copy")
+
+    monkeypatch.setattr(runner, "run_provider_preflight", fail_probe)
+
+    updated_cfg = runner.ensure_launch_provider_preflight(
+        tmp_path,
+        "launch_probe_prefers_run_local",
+        ["A", "H", "D", "C"],
+        cfg,
+    )
+
+    assert updated_cfg == cfg
 
 
 def test_route_readiness_summary_distinguishes_required_fallback_and_configured(monkeypatch) -> None:

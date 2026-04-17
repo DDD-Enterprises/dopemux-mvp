@@ -1354,6 +1354,7 @@ class RunnerConfig:
     ledger: Optional[Any] = None
     fl_int_provider_timeout_seconds: int = 180
     fl_int_f0_batch_timeout_seconds: int = 210
+    prescan_allow_scope_reduction: bool = False
 
 
 @dataclass(frozen=True)
@@ -6364,10 +6365,181 @@ def run_provider_preflight(
 
 
 def phase_requires_provider_preflight(phase: str, cfg: RunnerConfig) -> bool:
-    if str(phase or "").upper() != "D" or cfg.dry_run:
+    normalized_phase = str(phase or "").upper()
+    if not normalized_phase or cfg.dry_run:
         return False
-    routes = collect_provider_routes(phases=["D"], routing_policy=cfg.routing_policy)
-    return any(str(row.get("provider")) == "openrouter" for row in routes.values())
+    routes = collect_provider_routes(
+        phases=[normalized_phase],
+        routing_policy=cfg.routing_policy,
+        selected_step_ids_by_phase={
+            normalized_phase: selected_ids
+            for phase_name in [normalized_phase]
+            if (
+                selected_ids := _selected_execution_step_ids_for_phase(
+                    cfg, phase_name
+                )
+            )
+            is not None
+        }
+        or None,
+    )
+    return bool(routes)
+
+
+def _provider_preflight_target_step_scope(
+    cfg: RunnerConfig,
+    phases: Sequence[str],
+) -> Dict[str, List[str]]:
+    scope: Dict[str, List[str]] = {}
+    for phase in phases:
+        normalized_phase = str(phase or "").strip().upper()
+        if not normalized_phase:
+            continue
+        selected_ids = _selected_execution_step_ids_for_phase(cfg, normalized_phase)
+        if selected_ids is None:
+            continue
+        scope[normalized_phase] = [
+            str(step_id).strip().upper() for step_id in selected_ids if str(step_id).strip()
+        ]
+    return scope
+
+
+def _provider_preflight_generated_at(value: Any) -> Optional[datetime]:
+    token = str(value or "").strip()
+    if not token:
+        return None
+    try:
+        return datetime.fromisoformat(token.replace("Z", "+00:00"))
+    except Exception:
+        return None
+
+
+def _load_json_file(path: Path) -> Optional[Dict[str, Any]]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def _shared_doctor_advisory_fields(
+    artifact_name: str,
+    *,
+    run_id: Optional[str] = None,
+) -> Dict[str, Any]:
+    authority_note = (
+        "Shared doctor artifacts are diagnostic only. Launch and certification "
+        "authority use run-scoped artifacts under runs/<run_id>/."
+    )
+    if run_id and artifact_name == "PROVIDER_PREFLIGHT.json":
+        authority_note += f" Launch authority for this run is runs/{run_id}/PROVIDER_PREFLIGHT.json."
+    return {
+        "artifact_name": artifact_name,
+        "artifact_origin": "shared_doctor",
+        "authority_class": "diagnostic_only",
+        "advisory_only": True,
+        "launch_authority": False,
+        "certification_authority": False,
+        "execution_readiness_authority": False,
+        "authority_note": authority_note,
+    }
+
+
+def _current_launch_preflight_reuse_status(
+    run_root: Path,
+    cfg: RunnerConfig,
+    *,
+    required_phase: Optional[str] = None,
+) -> Dict[str, Any]:
+    payload = _load_json_file(run_root / "PROVIDER_PREFLIGHT.json")
+    if not isinstance(payload, dict):
+        return {"valid": False, "reason": "missing_or_invalid_provider_preflight"}
+    manifest = _load_json_file(run_root / "RUN_MANIFEST.json")
+    if not isinstance(manifest, dict):
+        return {"valid": False, "reason": "missing_or_invalid_run_manifest", "payload": payload}
+    manifest_phase_scope = [
+        str(phase).strip().upper()
+        for phase in (manifest.get("routing_step_tiers") or {}).keys()
+        if str(phase).strip()
+    ]
+    payload_phase_scope = [
+        str(phase).strip().upper()
+        for phase in payload.get("phase_scope", [])
+        if str(phase).strip()
+    ]
+    payload_step_scope = {
+        str(phase).strip().upper(): [
+            str(step_id).strip().upper()
+            for step_id in step_ids
+            if str(step_id).strip()
+        ]
+        for phase, step_ids in (payload.get("step_scope") or {}).items()
+        if isinstance(step_ids, list) and str(phase).strip()
+    }
+    expected_step_scope = _provider_preflight_target_step_scope(cfg, manifest_phase_scope)
+    manifest_generated_at = _provider_preflight_generated_at(manifest.get("generated_at"))
+    payload_generated_at = _provider_preflight_generated_at(payload.get("generated_at"))
+    required_phase_token = str(required_phase or "").strip().upper()
+
+    if str(payload.get("run_id") or "").strip() != run_root.name:
+        reason = "run_id_mismatch"
+    elif str(payload.get("scope_kind") or "").strip() != "launch":
+        reason = "scope_kind_not_launch"
+    elif not bool(payload.get("scope_complete_for_launch")):
+        reason = "scope_not_marked_launch_complete"
+    elif payload_phase_scope != manifest_phase_scope:
+        reason = "phase_scope_mismatch"
+    elif payload_step_scope != expected_step_scope:
+        reason = "step_scope_mismatch"
+    elif str(payload.get("routing_policy") or "").strip() != str(cfg.routing_policy).strip():
+        reason = "routing_policy_mismatch"
+    elif manifest_generated_at is not None and (
+        payload_generated_at is None or payload_generated_at < manifest_generated_at
+    ):
+        reason = "provider_preflight_older_than_run_manifest"
+    elif required_phase_token and required_phase_token not in payload_phase_scope:
+        reason = "required_phase_not_covered"
+    else:
+        return {
+            "valid": True,
+            "reason": "launch_preflight_current",
+            "payload": payload,
+            "manifest": manifest,
+        }
+    return {"valid": False, "reason": reason, "payload": payload, "manifest": manifest}
+
+
+def ensure_launch_provider_preflight(
+    root: Path,
+    run_id: str,
+    phases: Sequence[str],
+    cfg: RunnerConfig,
+) -> RunnerConfig:
+    normalized_phases = [
+        str(phase).strip().upper() for phase in phases if str(phase).strip()
+    ]
+    if cfg.dry_run or not normalized_phases:
+        return cfg
+    if not any(phase_requires_provider_preflight(phase, cfg) for phase in normalized_phases):
+        return cfg
+    run_root = current_runs_root(root) / run_id
+    reuse_status = _current_launch_preflight_reuse_status(run_root, cfg)
+    if bool(reuse_status.get("valid")):
+        return cfg
+    ok, payload = run_provider_preflight(root, run_id, cfg, normalized_phases)
+    denylisted = sorted(
+        {str(provider) for provider in payload.get("failed_providers", []) if provider}
+    )
+    if not ok:
+        denied = ",".join(denylisted) if denylisted else "unknown"
+        raise RuntimeError(
+            "Provider preflight blocked launch scope "
+            f"{','.join(normalized_phases)}: denylisted_providers={denied}. "
+            f"reason={reuse_status.get('reason') or 'launch_probe_failed'}. "
+            "See shared diagnostic copy "
+            f"{(current_doctor_root(root) / 'PROVIDER_PREFLIGHT.json').as_posix()}."
+        )
+    return replace(cfg, provider_denylist=tuple(denylisted))
 
 
 def prepare_phase_provider_preflight(
@@ -6381,29 +6553,11 @@ def prepare_phase_provider_preflight(
         return cfg
 
     run_root = current_runs_root(root) / run_id
-    canonical_path = run_root / "PROVIDER_PREFLIGHT.json"
-    if canonical_path.exists():
-        try:
-            canonical_payload = json.loads(canonical_path.read_text(encoding="utf-8"))
-        except Exception:
-            canonical_payload = None
-        canonical_phase_scope = (
-            [
-                str(entry).strip().upper()
-                for entry in canonical_payload.get("phase_scope", [])
-                if str(entry).strip()
-            ]
-            if isinstance(canonical_payload, dict)
-            and isinstance(canonical_payload.get("phase_scope"), list)
-            else []
-        )
-        if (
-            isinstance(canonical_payload, dict)
-            and bool(canonical_payload.get("scope_complete_for_launch"))
-            and str(canonical_payload.get("scope_kind") or "").strip() == "launch"
-            and normalized_phase in canonical_phase_scope
-        ):
-            return cfg
+    reuse_status = _current_launch_preflight_reuse_status(
+        run_root, cfg, required_phase=normalized_phase
+    )
+    if bool(reuse_status.get("valid")):
+        return cfg
 
     ok, payload = run_provider_preflight(
         root,
@@ -6422,12 +6576,20 @@ def prepare_phase_provider_preflight(
     write_json(run_root / f"PROVIDER_PREFLIGHT__{normalized_phase}.json", payload)
     doctor_dir = current_doctor_root(root)
     doctor_dir.mkdir(parents=True, exist_ok=True)
-    write_json(doctor_dir / f"PROVIDER_PREFLIGHT__{normalized_phase}.json", payload)
+    doctor_payload = dict(payload)
+    doctor_payload.update(
+        _shared_doctor_advisory_fields(
+            f"PROVIDER_PREFLIGHT__{normalized_phase}.json",
+            run_id=run_id,
+        )
+    )
+    write_json(doctor_dir / f"PROVIDER_PREFLIGHT__{normalized_phase}.json", doctor_payload)
     if not ok:
         denied = ",".join(denylisted) if denylisted else "unknown"
         raise RuntimeError(
             f"Provider preflight blocked phase {normalized_phase}: denylisted_providers={denied}. "
-            f"See {(doctor_dir / f'PROVIDER_PREFLIGHT__{normalized_phase}.json').as_posix()}"
+            "See shared diagnostic copy "
+            f"{(doctor_dir / f'PROVIDER_PREFLIGHT__{normalized_phase}.json').as_posix()}."
         )
     return replace(cfg, provider_denylist=tuple(denylisted))
 
@@ -6668,6 +6830,7 @@ def run_doctor_full(
             "probes": provider_probes,
         },
     }
+    payload.update(_shared_doctor_advisory_fields("DOCTOR_FULL.json", run_id=run_id))
 
     doctor_dir = current_doctor_root(root)
     doctor_dir.mkdir(parents=True, exist_ok=True)
@@ -6764,11 +6927,13 @@ def build_partitions(
     max_files: int,
     max_chars: int,
     router: Optional[IntelligenceRouter] = None,  # DEPRECATED: use DC2 post-processing via _ACTIVE_INTELLIGENCE_ROUTER
+    allow_prescan_scope_reduction: bool = False,
 ) -> List[Dict[str, Any]]:
     partitions: List[Dict[str, Any]] = []
     current_paths: List[str] = []
     current_chars = 0
     skipped_count = 0
+    blocked_scope_reduction_count = 0
 
     def flush_partition() -> None:
         nonlocal current_paths, current_chars
@@ -6799,8 +6964,10 @@ def build_partitions(
         
         # Intelligence-based skipping
         if router and router.should_skip(path):
-            skipped_count += 1
-            continue
+            if allow_prescan_scope_reduction:
+                skipped_count += 1
+                continue
+            blocked_scope_reduction_count += 1
 
         base_chars = int(item.get("char_count_estimate", 0))
         # Account for per-file headers in context payload construction.
@@ -6818,6 +6985,12 @@ def build_partitions(
     
     if skipped_count > 0:
         logger.info(f"Phase {phase}: skipped {skipped_count} files based on prescan intelligence.")
+    if blocked_scope_reduction_count > 0:
+        logger.warning(
+            "Phase %s: ignored %s prescan skip candidates because scope reduction is disabled.",
+            phase,
+            blocked_scope_reduction_count,
+        )
 
     if not partitions:
         partitions.append(
@@ -9056,6 +9229,7 @@ def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> 
         "failed_modes": failed_modes,
         "summary": summary,
     }
+    payload.update(_shared_doctor_advisory_fields("AUTH_DOCTOR.json"))
     write_json(doctor_json, payload)
     lines = [summary]
     lines.extend(
@@ -9073,6 +9247,8 @@ def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> 
             f"modes_tested={','.join(payload['modes_tested'])}",
             f"succeeded_modes={','.join(payload['succeeded_modes'])}",
             f"failed_modes={','.join(payload['failed_modes'])}",
+            f"advisory_only={str(payload['advisory_only']).lower()}",
+            f"authority_note={payload['authority_note']}",
         ]
     )
     doctor_txt.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -13833,7 +14009,14 @@ def _run_phase_inner(
     inventory = build_inventory(context_items, cfg.file_truncate_chars)
     max_files = max_files_for_phase(phase, cfg)
     partitions = build_partitions(
-        phase, inventory, max_files=max_files, max_chars=cfg.max_chars, router=cfg.router
+        phase,
+        inventory,
+        max_files=max_files,
+        max_chars=cfg.max_chars,
+        router=cfg.router,
+        allow_prescan_scope_reduction=bool(
+            getattr(cfg, "prescan_allow_scope_reduction", False)
+        ),
     )
 
     partitions = _apply_router_partition_hints(phase, partitions)
@@ -16675,7 +16858,14 @@ def run_phase_R_async_submit(
     inventory = build_inventory(context_items, cfg.file_truncate_chars)
     max_files = max_files_for_phase("R", cfg)
     partitions = build_partitions(
-        "R", inventory, max_files=max_files, max_chars=cfg.max_chars, router=cfg.router
+        "R",
+        inventory,
+        max_files=max_files,
+        max_chars=cfg.max_chars,
+        router=cfg.router,
+        allow_prescan_scope_reduction=bool(
+            getattr(cfg, "prescan_allow_scope_reduction", False)
+        ),
     )
 
     # DC2 Phase 2: Router post-processing for Phase R (async path)
@@ -17578,6 +17768,14 @@ def main() -> None:
     )
     parser.add_argument("--prescan", type=str, help="Path to prescan intelligence directory.")
     parser.add_argument(
+        "--prescan-allow-scope-reduction",
+        action="store_true",
+        help=(
+            "Allow prescan skip hints to remove files from execution scope. Disabled by default "
+            "so prescan remains non-authoritative for first baseline runs."
+        ),
+    )
+    parser.add_argument(
         "--preset",
         choices=[FIRST_LIVE_PRESET_NAME, STAGED_SAFE_PRESET_NAME],
         default=None,
@@ -17796,9 +17994,30 @@ def main() -> None:
         default=0.15,
         help="Fraction of phase outputs to audit with judge model (0 to disable).",
     )
-    parser.add_argument("--doctor", action="store_true")
-    parser.add_argument("--doctor-auth", action="store_true")
-    parser.add_argument("--preflight-providers", action="store_true")
+    parser.add_argument(
+        "--doctor",
+        action="store_true",
+        help=(
+            "Write shared doctor diagnostic artifacts. These are advisory only and do not "
+            "satisfy launch or certification authority."
+        ),
+    )
+    parser.add_argument(
+        "--doctor-auth",
+        action="store_true",
+        help=(
+            "Write shared authentication doctor diagnostics. These are advisory only and do not "
+            "satisfy launch or certification authority."
+        ),
+    )
+    parser.add_argument(
+        "--preflight-providers",
+        action="store_true",
+        help=(
+            "Run provider preflight for the current invocation and write a shared diagnostic copy. "
+            "Launch authority uses the run-scoped PROVIDER_PREFLIGHT.json under runs/<run_id>/."
+        ),
+    )
     parser.add_argument("--coverage-report", action="store_true")
     parser.add_argument("--ui", choices=["auto", "rich", "plain"], default="auto")
     parser.add_argument("--status", action="store_true")
@@ -18449,6 +18668,9 @@ def main() -> None:
         ),
         prescan_dir=getattr(args, "prescan_dir", None),
         router=router,
+        prescan_allow_scope_reduction=bool(
+            getattr(args, "prescan_allow_scope_reduction", False)
+        ),
     )
 
     if SpendLedger is not None:
@@ -18782,16 +19004,6 @@ def main() -> None:
     if not phase_sequence:
         parser.error("--phase is required when running extraction phases.")
     phases = phase_sequence
-    if args.phase == "ALL":
-        ok, payload = run_provider_preflight(root, run_id, cfg, phases)
-        if not ok:
-            logger.error(
-                "Provider preflight failed before phase ALL. failed_providers=%s. See "
-                f"{(current_doctor_root(root) / 'PROVIDER_PREFLIGHT.json').as_posix()}",
-                ",".join(payload.get("failed_providers", [])),
-            )
-            sys.exit(1)
-
     # Load intelligence router from prescan output (if available)
     global _ACTIVE_INTELLIGENCE_ROUTER
     if cfg.prescan_dir and IntelligenceRouter is not None:
@@ -18834,6 +19046,16 @@ def main() -> None:
             )
             logger.error("Cost cap setup failed: %s", exc)
             sys.exit(1)
+    try:
+        cfg = ensure_launch_provider_preflight(root, run_id, phases, cfg)
+    except Exception as exc:
+        update_run_manifest_startup_failure(
+            dirs["root"],
+            failure_reason="launch_provider_preflight_failed",
+            failure_message=str(exc),
+        )
+        logger.error("Launch provider preflight failed: %s", exc)
+        sys.exit(1)
 
     runners = {
         "A": run_phase_A,
