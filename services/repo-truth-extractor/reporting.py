@@ -226,22 +226,6 @@ def write_certification_result(
                 "layers": provider_payloads,
             }
 
-    if provider_preflight_payload is None and isinstance(topology_payload, dict):
-        reachability = topology_payload.get("provider_reachability")
-        probes = reachability.get("probes") if isinstance(reachability, dict) else None
-        if isinstance(probes, list) and probes:
-            probe_rows = [row for row in probes if isinstance(row, dict)]
-            provider_preflight_payload = {
-                "status": "PASS"
-                if probe_rows and all(
-                    int(row.get("status_code", 0) or 0) == 200
-                    and bool(row.get("ready", False))
-                    for row in probe_rows
-                )
-                else "FAIL",
-                "probes": probe_rows,
-            }
-
     if topology_payload is None and doctor_root.exists():
         topology_path = doctor_root / "DOCTOR_FULL.json"
         if topology_path.exists():
@@ -266,23 +250,25 @@ def write_certification_result(
     if all(artifact_contract_evidence.values()):
         artifact_contract_status = "PASS"
 
+    topology_probe_rows: List[Dict[str, Any]] = []
+    if isinstance(topology_payload, dict):
+        reachability = topology_payload.get("provider_reachability")
+        probes = reachability.get("probes") if isinstance(reachability, dict) else None
+        if isinstance(probes, list):
+            topology_probe_rows = [row for row in probes if isinstance(row, dict)]
+
     topology_status = "UNKNOWN"
     if isinstance(topology_payload, dict):
-        required_groups = topology_payload.get("required_artifact_groups")
-        if isinstance(required_groups, dict):
-            present_pct = float(required_groups.get("required_groups_present_pct", 0) or 0)
-            if present_pct >= 100.0:
-                topology_status = "PASS"
-        if topology_status == "UNKNOWN":
-            topology_status = _normalize_gate_status(
-                str(topology_payload.get("status") or topology_payload.get("overall_status") or "")
-            )
+        topology_status = _normalize_gate_status(
+            str(topology_payload.get("status") or topology_payload.get("overall_status") or "")
+        )
     elif isinstance(dashboard, dict) and dashboard:
         topology_status = _normalize_gate_status(str(dashboard.get("status") or dashboard.get("overall_status") or ""))
 
     live_provider_status = "UNKNOWN"
     live_provider_evidence: Dict[str, Any] = {
         "provider_preflight": provider_preflight_payload if isinstance(provider_preflight_payload, dict) else None,
+        "topology_probes_observed": topology_probe_rows or None,
     }
     if isinstance(provider_preflight_payload, dict):
         live_provider_status = _normalize_gate_status(str(provider_preflight_payload.get("status") or ""))
@@ -309,7 +295,7 @@ def write_certification_result(
             live_provider_status,
             source="provider preflight payload",
             evidence=live_provider_evidence,
-            notes="Explicit UNKNOWN when provider preflight was not executed.",
+            notes="PASS requires explicit provider preflight evidence. Topology probe observations alone do not satisfy this gate.",
         ),
         "artifact_contract_stability": _gate_payload(
             artifact_contract_status,
@@ -323,8 +309,13 @@ def write_certification_result(
             evidence={
                 "doctor_full": topology_payload if isinstance(topology_payload, dict) else None,
                 "run_dashboard": dashboard if dashboard else None,
+                "required_artifact_groups": (
+                    topology_payload.get("required_artifact_groups")
+                    if isinstance(topology_payload, dict)
+                    else None
+                ),
             },
-            notes="Explicit UNKNOWN when no topology/doctor payload is present.",
+            notes="PASS requires explicit topology status evidence. Artifact completeness alone does not satisfy this gate.",
         ),
     }
 

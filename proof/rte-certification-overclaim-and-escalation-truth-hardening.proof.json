@@ -1,0 +1,168 @@
+{
+  "packet": {
+    "title": "RTE-certification-overclaim-and-escalation-truth-hardening",
+    "branch": "tp/rte-certification-overclaim-and-escalation-truth-hardening",
+    "workspace": "/Users/hue/code/dopemux-mvp-rte-main-integration-audit-staging",
+    "workspace_head_before_packet": "6efb93d7d3115949cde08e6247b4ccb5d55a42d5",
+    "resulting_branch_head": "6efb93d7d3115949cde08e6247b4ccb5d55a42d5",
+    "commits_created_in_packet": []
+  },
+  "commit_plan": {
+    "planned_slices": [
+      {
+        "slice": 0,
+        "objective": "Characterize current certification promotion and no-artifact escalation behavior."
+      },
+      {
+        "slice": 1,
+        "objective": "Tighten certification gate promotion to require explicit evidence for named gates."
+      },
+      {
+        "slice": 2,
+        "objective": "Preserve upstream provider failure semantics before parse-fallback escalation."
+      },
+      {
+        "slice": 3,
+        "objective": "Align tests with the stricter truth model."
+      },
+      {
+        "slice": 4,
+        "objective": "Validate the bounded diff and record proof."
+      }
+    ],
+    "completed_slices": [0, 1, 2, 3, 4],
+    "replan_events": [
+      {
+        "slice": 2,
+        "summary": "Escalation trigger ordering change alone was insufficient because classify_escalation_class still favored schema markers over provider_failure.",
+        "response": "Reordered escalation-class precedence so explicit provider_failure and upstream provider/auth/quota failures classify as provider_transport before parse/schema markers."
+      },
+      {
+        "slice": 3,
+        "summary": "Doctor-mode certification test initially expected exit_code=0, but the mocked doctor payload intentionally preserved missing promptpack state.",
+        "response": "Kept the doctor-mode test focused on emitted certification truth while asserting the expected non-zero doctor exit."
+      }
+    ],
+    "per_slice_verification": [
+      {
+        "slice": 0,
+        "evidence": [
+          "services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py",
+          "services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py"
+        ],
+        "result": "Characterization locked current overclaim path and route-attempt parse-first semantics before edits."
+      },
+      {
+        "slice": 1,
+        "evidence": [
+          "services/repo-truth-extractor/reporting.py",
+          "python -m pytest services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py -q"
+        ],
+        "result": "Provider probes and artifact-group completeness no longer auto-promote PASS for live-provider or topology gates."
+      },
+      {
+        "slice": 2,
+        "evidence": [
+          "services/repo-truth-extractor/run_extraction_v5.py",
+          "python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py -q"
+        ],
+        "result": "Provider quota failure with no artifacts now records provider_failure on the route attempt and classifies as provider_transport."
+      },
+      {
+        "slice": 3,
+        "evidence": [
+          "services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py",
+          "services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py"
+        ],
+        "result": "Tests now enforce UNKNOWN on weak certification evidence and preserve upstream provider semantics in the negative path."
+      },
+      {
+        "slice": 4,
+        "evidence": [
+          "python -m pytest services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py -q",
+          "python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_rollup_reports.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py -q",
+          "python -m py_compile services/repo-truth-extractor/reporting.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py",
+          "git diff --check",
+          "pre-commit run --files services/repo-truth-extractor/reporting.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py"
+        ],
+        "result": "Bounded validation passed."
+      }
+    ]
+  },
+  "truth_contract_changes": {
+    "previous_gate_semantics": {
+      "live_provider_readiness": "Could become PASS from topology_payload.provider_reachability.probes without explicit provider preflight evidence.",
+      "operator_topology_resilience": "Could become PASS from required_artifact_groups.required_groups_present_pct >= 100 without explicit topology status evidence.",
+      "overall_status": "Could become VERIFIED when those derived gates, artifact completeness, and validator status all passed."
+    },
+    "new_gate_semantics": {
+      "live_provider_readiness": "PASS requires explicit provider preflight payload status. Topology probes are recorded as observed evidence only.",
+      "operator_topology_resilience": "PASS requires explicit topology status from DOCTOR_FULL.json or RUN_DASHBOARD.json. Artifact-group completeness is retained as evidence only.",
+      "overall_status": "VERIFIED requires every named gate to reach PASS under the stricter evidence rules."
+    },
+    "previous_escalation_semantics": {
+      "route_attempt_trigger": "No-artifact failures were labeled parse_failure/parse_failure_no_retry before upstream provider failure truth was considered.",
+      "route_attempt_class": "Even after provider_failure trigger propagation, escalation_class could still collapse to schema_repair because schema markers were checked first."
+    },
+    "new_escalation_semantics": {
+      "route_attempt_trigger": "Provider/auth/quota/transport failures are checked first and produce provider_failure before parse-fallback escalation is considered.",
+      "route_attempt_class": "provider_failure and upstream provider/auth/quota failures now classify as provider_transport before parse/schema markers."
+    },
+    "tests_updated": [
+      {
+        "path": "services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py",
+        "coverage": [
+          "negative certification case with provider probes but no explicit provider preflight",
+          "negative topology case with artifact completeness but no explicit topology status",
+          "positive certification case requiring explicit provider and topology PASS",
+          "doctor-mode certification emission remains UNKNOWN without explicit gate statuses"
+        ]
+      },
+      {
+        "path": "services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py",
+        "coverage": [
+          "provider quota/billing no-artifact failure preserves provider_failure trigger on the route attempt",
+          "provider quota/billing no-artifact failure classifies as provider_transport"
+        ]
+      }
+    ]
+  },
+  "finalization": {
+    "codereview_status": "Complete for the bounded diff; no unresolved medium/high semantic findings remain inside this packet scope.",
+    "precommit_status": {
+      "mode": "changed-files",
+      "result": "PASS"
+    },
+    "evidence_ledger_completeness": "Complete for the packet scope. No generated evidence directories or report snapshots were added.",
+    "validation": [
+      {
+        "command": "python -m pytest services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py -q",
+        "result": "PASS"
+      },
+      {
+        "command": "python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_rollup_reports.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py -q",
+        "result": "PASS"
+      },
+      {
+        "command": "python -m py_compile services/repo-truth-extractor/reporting.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py",
+        "result": "PASS"
+      },
+      {
+        "command": "git diff --check",
+        "result": "PASS"
+      },
+      {
+        "command": "pre-commit run --files services/repo-truth-extractor/reporting.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py",
+        "result": "PASS"
+      }
+    ],
+    "final_confidence": "VERIFIED",
+    "residual_risks": [
+      "Broad topology truth remains outside this packet; explicit topology status can still be wrong if the upstream writer is wrong.",
+      "Generated snapshots remain intentionally non-authoritative and were not reintroduced.",
+      "Full live failed-payload inspection is still useful later for route/failure semantics beyond the tested quota path.",
+      "Repo-wide all-files pre-commit may still fail on unrelated debt outside this diff."
+    ],
+    "audit_baseline_judgment": "The branch remains a clean audit baseline with weaker but truer certification semantics and earlier preservation of upstream provider failure truth."
+  }
+}
