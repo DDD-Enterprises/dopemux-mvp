@@ -126,6 +126,7 @@ from rte_config import (
     D0_MAX_FILES_ENV_VAR,
     D1_MAX_FILES_ENV_VAR,
     DPMX_BENCHMARK_ROUTE_OWNERSHIP_ENV,
+    DPMX_EXPLICIT_STEP_ROUTES_ENV,
     DPMX_LIVE_OK_ENV,
     DPMX_MODEL_EXTRACT_ENV,
     DPMX_MODEL_INVENTORY_ENV,
@@ -1254,6 +1255,8 @@ STEP_TYPE_MODEL_ENV_VARS: Dict[str, str] = {
     "synthesis": DPMX_MODEL_SYNTHESIS_ENV,
     "qa": DPMX_MODEL_QA_ENV,
 }
+
+H3_MAX_COMPLETION_TOKENS = 8192
 PROVIDER_API_KEY_ENV: Dict[str, str] = {
     "openai": "OPENAI_API_KEY",
     "gemini": "GEMINI_API_KEY",
@@ -4470,9 +4473,159 @@ def benchmark_route_ownership_payload(validate: bool = False) -> Dict[str, Any]:
     return normalized
 
 
+def explicit_step_routes_payload(validate: bool = False) -> Dict[str, Any]:
+    raw = os.getenv(DPMX_EXPLICIT_STEP_ROUTES_ENV, "").strip()
+    if not raw:
+        return {"enabled": False, "steps": {}, "phases": {}}
+    try:
+        payload = json.loads(raw)
+    except Exception as exc:
+        if validate:
+            raise RuntimeError(
+                f"{DPMX_EXPLICIT_STEP_ROUTES_ENV} must be valid JSON: {exc}"
+            ) from exc
+        return {
+            "enabled": True,
+            "malformed": True,
+            "raw": raw[:2000],
+            "steps": {},
+            "phases": {},
+        }
+    if not isinstance(payload, dict):
+        if validate:
+            raise RuntimeError(
+                f"{DPMX_EXPLICIT_STEP_ROUTES_ENV} must decode to an object."
+            )
+        return {"enabled": True, "malformed": True, "steps": {}, "phases": {}}
+
+    def _normalize_routes(
+        section_name: str,
+        raw_value: Any,
+    ) -> Dict[str, Tuple[str, str, str]]:
+        if raw_value in (None, ""):
+            return {}
+        if not isinstance(raw_value, dict):
+            raise RuntimeError(
+                f"{DPMX_EXPLICIT_STEP_ROUTES_ENV}.{section_name} must be an object."
+            )
+        normalized_routes: Dict[str, Tuple[str, str, str]] = {}
+        for key, route_value in raw_value.items():
+            if not isinstance(key, str) or not key.strip():
+                raise RuntimeError(
+                    f"{DPMX_EXPLICIT_STEP_ROUTES_ENV}.{section_name} keys must be non-empty strings."
+                )
+            if not isinstance(route_value, str):
+                raise RuntimeError(
+                    f"{DPMX_EXPLICIT_STEP_ROUTES_ENV}.{section_name}.{key} must be provider/model."
+                )
+            normalized_routes[key.strip()] = _parse_provider_model_env(
+                route_value,
+                f"{DPMX_EXPLICIT_STEP_ROUTES_ENV}.{section_name}.{key}",
+            )
+        return normalized_routes
+
+    try:
+        steps = _normalize_routes("steps", payload.get("steps"))
+        phases = _normalize_routes("phases", payload.get("phases"))
+    except RuntimeError:
+        if validate:
+            raise
+        return {"enabled": True, "malformed": True, "steps": {}, "phases": {}}
+
+    return {
+        "enabled": bool(payload.get("enabled", True)),
+        "steps": steps,
+        "phases": phases,
+    }
+
+
 def _benchmark_route_ownership_enabled() -> bool:
     payload = benchmark_route_ownership_payload(validate=False)
     return bool(payload.get("enabled"))
+
+
+def _resolve_explicit_route_override(
+    *,
+    phase: str,
+    step_id: str,
+    cfg: RunnerConfig,
+    step_contract: Optional[Dict[str, Any]],
+    step_tier: str,
+    step_type: str,
+    strict_required: bool,
+) -> Optional[Dict[str, Any]]:
+    payload = explicit_step_routes_payload(validate=True)
+    if not bool(payload.get("enabled")):
+        return None
+    steps = payload.get("steps") if isinstance(payload.get("steps"), dict) else {}
+    phases = payload.get("phases") if isinstance(payload.get("phases"), dict) else {}
+    selection_key = f"{phase}:{step_id}"
+    source = None
+    selected = None
+    if selection_key in steps:
+        source = "step"
+        selected = steps[selection_key]
+    elif phase in phases:
+        source = "phase"
+        selected = phases[phase]
+    if selected is None:
+        return None
+    provider, model_id, api_key_env = selected
+    route = {
+        "provider": str(provider),
+        "model_id": str(model_id),
+        "api_key_env": str(api_key_env),
+        "strict_json_schema": strict_required,
+        "strict_passthrough_verified": strict_required,
+    }
+    transport = transport_for_provider(str(provider), cfg)
+    strict_reason = strict_capability_reason(route, transport) if strict_required else None
+    if strict_required and strict_reason is not None:
+        raise RuntimeError(
+            "explicit route override selected a non-strict-capable route for a strict step: "
+            f"{phase}:{step_id} provider={provider} model={model_id} reason={strict_reason}"
+        )
+    strict_attempts = []
+    if strict_required:
+        strict_attempts.append(
+            {
+                "provider": str(provider),
+                "model_id": str(model_id),
+                "transport": transport,
+                "strict_json_schema": True,
+                "strict_passthrough_verified": True,
+                "strict_capable": True,
+                "reason": None,
+                "ownership_mode": "explicit_step_routes_v1",
+                "ownership_source": "explicit_step_routes_env",
+                "selector": source,
+                "phase": phase,
+                "step_id": step_id,
+            }
+        )
+    return {
+        "step_tier": step_tier,
+        "step_type": step_type,
+        "ladder": [(str(provider), str(model_id), str(api_key_env))],
+        "provider": str(provider),
+        "model_id": str(model_id),
+        "api_key_env": str(api_key_env),
+        "reason": (
+            "explicit_step_route_override"
+            if source == "step"
+            else "explicit_phase_route_override"
+        ),
+        "contract_lane": resolve_contract_lane(step_contract)
+        if isinstance(step_contract, dict)
+        else None,
+        "strict_required": strict_required,
+        "strict_route_attempts": strict_attempts,
+        "route_control": {
+            "source": "explicit_step_routes_env",
+            "selector": source,
+            "selection_key": selection_key if source == "step" else phase,
+        },
+    }
 
 
 def _resolve_benchmark_owned_stage_route(
@@ -4585,8 +4738,19 @@ def resolve_effective_step_route(
         if isinstance(step_contract, dict)
         else _step_contract_for(phase, step_id)
     )
+    strict_required = is_strict_contract_step(contract) if is_json_managed_step(contract) else False
+    explicit_override = _resolve_explicit_route_override(
+        phase=phase,
+        step_id=step_id,
+        cfg=cfg,
+        step_contract=contract,
+        step_tier=step_tier,
+        step_type=step_type,
+        strict_required=strict_required,
+    )
+    if explicit_override is not None:
+        return explicit_override
     if is_json_managed_step(contract):
-        strict_required = is_strict_contract_step(contract)
         benchmark_owned_route, benchmark_attempts, benchmark_meta = (
             _resolve_benchmark_owned_stage_route(
                 phase=phase,
@@ -6795,6 +6959,26 @@ def classify_request_failure(request_meta: Dict[str, Any]) -> Dict[str, Optional
     provider_reason = str(request_meta.get("provider_error_reason") or "").strip()
     execution_mode = str(request_meta.get("execution_mode") or "").strip().lower()
     batch_execution = execution_mode in {"batch", "batch_watch", "batch_submit_only"}
+    response_received = bool(request_meta.get("response_received"))
+
+    def _preserve_upstream_failure() -> bool:
+        if response_received:
+            return False
+        if failure_type in {
+            "payload",
+            "payload_unshrinkable",
+            "provider",
+            "network",
+            "timeout",
+            "rate_limit",
+            "quota_or_billing",
+        }:
+            return True
+        if failure_type.startswith("auth_"):
+            return True
+        if provider_reason.startswith("missing_api_key:"):
+            return True
+        return False
 
     def _remediation_hint(
         failure_class: str,
@@ -6838,7 +7022,7 @@ def classify_request_failure(request_meta: Dict[str, Any]) -> Dict[str, Optional
             return "Fix the preflight blocker before retrying."
         return None
 
-    if not schema_gate_passed:
+    if not schema_gate_passed and not _preserve_upstream_failure():
         failure_class = schema_reason or "schema_gate_failure"
         if schema_reason.startswith("missing_expected_artifacts:"):
             failure_class = "missing_expected_artifacts"
@@ -6895,6 +7079,8 @@ def classify_request_failure(request_meta: Dict[str, Any]) -> Dict[str, Optional
         failure_stage = "model_execution"
     elif batch_execution and provider_reason:
         failure_class = "batch_provider_execution_failed"
+        failure_stage = "model_execution"
+    elif failure_type == "payload":
         failure_stage = "model_execution"
     elif failure_type in {
         "provider",
@@ -7220,6 +7406,7 @@ def build_chat_payload(
     user_content: str,
     force_json_output: bool = False,
     response_format_override: Optional[Dict[str, Any]] = None,
+    max_completion_tokens: Optional[int] = None,
 ) -> Dict[str, Any]:
     temperature = resolve_temperature(provider, model_id, 0.1)
     payload: Dict[str, Any] = {
@@ -7231,6 +7418,8 @@ def build_chat_payload(
     }
     if temperature is not None:
         payload["temperature"] = temperature
+    if max_completion_tokens is not None:
+        payload["max_tokens"] = max(1, int(max_completion_tokens))
     if isinstance(response_format_override, dict):
         payload["response_format"] = copy.deepcopy(response_format_override)
     elif force_json_output:
@@ -8231,7 +8420,15 @@ def classify_failure_type(
         return "auth_missing"
     if "permission_denied" in joined:
         return "permission_denied"
-    if "resource_exhausted" in joined or "billing" in joined or "quota" in joined:
+    if (
+        status_code == 402
+        or "resource_exhausted" in joined
+        or "billing" in joined
+        or "quota" in joined
+        or "requires more credits" in joined
+        or "insufficient credits" in joined
+        or "can only afford" in joined
+    ):
         return "quota_or_billing"
     if (
         "api key not valid" in joined
@@ -8395,6 +8592,7 @@ def call_llm(
     force_json_output: bool = False,
     response_format_override: Optional[Dict[str, Any]] = None,
     structured_output_override: Optional[Dict[str, Any]] = None,
+    max_completion_tokens_override: Optional[int] = None,
     retry_callback: Optional[Callable] = None,
     timeout_seconds: Optional[int] = None,
     trace_context: Optional[Dict[str, Any]] = None,
@@ -8411,6 +8609,7 @@ def call_llm(
         force_json_output=force_json_output,
         response_format_override=response_format_override,
         structured_output_override=structured_output_override,
+        max_completion_tokens_override=max_completion_tokens_override,
         retry_callback=retry_callback,
         timeout_seconds=timeout_seconds,
         trace_context=trace_context,
@@ -8504,7 +8703,7 @@ def call_llm_with_ladder(
     partition_id: str,
     routing_policy: str,
     routing_tier: str,
-    ladder: Sequence[Tuple[str, str, str]],
+    ladder: Sequence[Sequence[str]],
     cfg: RunnerConfig,
     execute_attempt: Callable[[Tuple[str, str, str], int], Dict[str, Any]],
     ui: Optional[UI] = None,
@@ -9274,6 +9473,12 @@ def _step_file_cap(step_id: str, cfg: RunnerConfig) -> Optional[int]:
     return None
 
 
+def _step_max_completion_tokens(phase: str, step_id: str) -> Optional[int]:
+    if phase == "H" and step_id == "H3":
+        return H3_MAX_COMPLETION_TOKENS
+    return None
+
+
 def _apply_file_cap(
     step_id: str,
     partition_id: str,
@@ -9713,6 +9918,7 @@ def classify_failure_from_request_meta(
     provider_reason = str(request_meta.get("provider_error_reason") or "").strip()
     schema_gate_passed = bool(request_meta.get("schema_gate_passed", True))
     schema_reason = str(request_meta.get("schema_gate_reason") or "").strip()
+    response_received = bool(request_meta.get("response_received"))
     schema_context = (
         request_meta.get("schema_gate_context")
         if isinstance(request_meta.get("schema_gate_context"), dict)
@@ -9723,7 +9929,24 @@ def classify_failure_from_request_meta(
     if failure_type == "cost_aborted":
         return "cost_aborted", provider_reason or failure_type, None, None, None, None
 
-    if not schema_gate_passed:
+    preserve_upstream_failure = (
+        not response_received
+        and (
+            failure_type in {
+                "payload",
+                "payload_unshrinkable",
+                "provider",
+                "network",
+                "timeout",
+                "rate_limit",
+                "quota_or_billing",
+            }
+            or failure_type.startswith("auth_")
+            or provider_reason.startswith("missing_api_key:")
+        )
+    )
+
+    if not schema_gate_passed and not preserve_upstream_failure:
         failure_class = schema_reason or "schema_gate_failure"
         if schema_reason.startswith("missing_expected_artifacts:"):
             failure_class = "missing_expected_artifacts"
@@ -9741,6 +9964,53 @@ def classify_failure_from_request_meta(
     resolved_failure_type = failure_type or "unknown_failure"
     reason = provider_reason or resolved_failure_type
     return resolved_failure_type, reason, None, None, None, None
+
+
+def build_first_failure_context(
+    *,
+    partition_id: str,
+    failure_class: str,
+    failure_stage: Optional[str],
+    reason: str,
+    artifact_name: Optional[str],
+    item_key: Optional[str],
+    item_id: Optional[str],
+    item_path: Optional[str],
+    remediation_hint: Optional[str],
+    request_meta: Dict[str, Any],
+    requested_provider: str,
+    requested_model_id: str,
+    final_provider: str,
+    final_model_id: str,
+) -> Dict[str, Any]:
+    route_attempts = (
+        request_meta.get("route_attempts")
+        if isinstance(request_meta.get("route_attempts"), list)
+        else []
+    )
+    attempt_routes = [
+        f"{str(row.get('provider') or '').strip()}/{str(row.get('model_id') or '').strip()}"
+        for row in route_attempts
+        if isinstance(row, dict)
+        and str(row.get("provider") or "").strip()
+        and str(row.get("model_id") or "").strip()
+    ]
+    return {
+        "partition_id": partition_id,
+        "failure_class": failure_class,
+        "failure_stage": failure_stage or None,
+        "reason": reason,
+        "artifact_name": artifact_name,
+        "item_key": item_key,
+        "item_id": item_id,
+        "item_path": item_path,
+        "route": f"{final_provider}/{final_model_id}",
+        "requested_route": f"{requested_provider}/{requested_model_id}",
+        "route_attempts": attempt_routes,
+        "underlying_failure_type": str(request_meta.get("failure_type") or "").strip() or None,
+        "underlying_status_code": request_meta.get("status_code"),
+        "remediation_hint": remediation_hint or None,
+    }
 
 
 def is_break_glass_opus_route(route: Tuple[str, str, str]) -> bool:
@@ -10948,6 +11218,7 @@ def execute_step_for_partitions(
                 user_prompt,
                 force_json_output=force_json_output,
                 response_format_override=draft_response_format,
+                max_completion_tokens=_step_max_completion_tokens(phase, step_id),
             )
             payload_body = serialize_payload_body(payload)
             payload_bytes = measure_payload_bytes_from_body(payload_body)
@@ -12334,6 +12605,9 @@ def execute_step_for_partitions(
                         if strict_contract_required
                         else None
                     ),
+                    max_completion_tokens_override=_step_max_completion_tokens(
+                        phase, step_id
+                    ),
                     retry_callback=(
                         (lambda att, sc, ft, ds: ui.retry_event(
                             phase=phase,
@@ -13118,18 +13392,22 @@ def execute_step_for_partitions(
             if failure_stage:
                 step_failure_stage_hist[failure_stage] += 1
             if step_first_failure_context is None:
-                step_first_failure_context = {
-                    "partition_id": partition_id,
-                    "failure_class": failure_class,
-                    "failure_stage": failure_stage or None,
-                    "reason": failure_reason,
-                    "artifact_name": artifact_name,
-                    "item_key": item_key,
-                    "item_id": item_id,
-                    "item_path": item_path,
-                    "route": f"{final_provider}/{final_model}",
-                    "remediation_hint": remediation_hint or None,
-                }
+                step_first_failure_context = build_first_failure_context(
+                    partition_id=partition_id,
+                    failure_class=failure_class,
+                    failure_stage=failure_stage,
+                    reason=failure_reason,
+                    artifact_name=artifact_name,
+                    item_key=item_key,
+                    item_id=item_id,
+                    item_path=item_path,
+                    remediation_hint=remediation_hint,
+                    request_meta=result.request_meta,
+                    requested_provider=initial_provider,
+                    requested_model_id=initial_model_id,
+                    final_provider=final_provider,
+                    final_model_id=final_model,
+                )
 
         if result.auth_failure:
             step_auth_failures += 1
@@ -13167,6 +13445,31 @@ def execute_step_for_partitions(
 
         if valid_write_ops:
             _apply_write_ops(valid_write_ops)
+        attempt_routes = [
+            f"{str(row.get('provider') or '').strip()}/{str(row.get('model_id') or '').strip()}"
+            for row in (
+                result.request_meta.get("route_attempts")
+                if isinstance(result.request_meta.get("route_attempts"), list)
+                else []
+            )
+            if isinstance(row, dict)
+            and str(row.get("provider") or "").strip()
+            and str(row.get("model_id") or "").strip()
+        ]
+        final_route_label = f"{final_provider}/{final_model}"
+        requested_route_label = f"{initial_provider}/{initial_model_id}"
+        if attempt_routes and (
+            len(attempt_routes) > 1 or final_route_label != requested_route_label
+        ):
+            logger.info(
+                "ROUTE_RESULT phase=%s step=%s partition=%s requested=%s final=%s attempts=%s",
+                phase,
+                step_id,
+                partition_id,
+                requested_route_label,
+                final_route_label,
+                attempt_routes,
+            )
         for level, message in result.logs:
             if level == "error":
                 logger.error("%s", message)

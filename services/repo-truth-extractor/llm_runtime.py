@@ -122,18 +122,25 @@ def is_auth_classified_failure(failure_type: Optional[str]) -> bool:
     }
 
 
-def _normalize_ladder_route(
+def _normalize_route_tuple(
     route: RouteLike,
     provider_api_key_env: Dict[str, str],
 ) -> RouteTuple:
-    provider = str(route[0]) if len(route) > 0 else ""
-    model_id = str(route[1]) if len(route) > 1 else ""
-    api_key_env = (
-        str(route[2])
-        if len(route) > 2
-        else str(provider_api_key_env.get(provider, ""))
+    values = tuple(route)
+    if len(values) == 3:
+        provider, model_id, api_key_env = values
+        return str(provider), str(model_id), str(api_key_env)
+    if len(values) == 2:
+        provider, model_id = values
+        provider_key = str(provider)
+        return (
+            provider_key,
+            str(model_id),
+            str(provider_api_key_env.get(provider_key, "")),
+        )
+    raise RuntimeError(
+        f"Route tuples must contain 2 or 3 values; got {len(values)}: {values!r}"
     )
-    return provider, model_id, api_key_env
 
 
 def call_llm(
@@ -147,6 +154,7 @@ def call_llm(
     force_json_output: bool = False,
     response_format_override: Optional[Dict[str, Any]] = None,
     structured_output_override: Optional[Dict[str, Any]] = None,
+    max_completion_tokens_override: Optional[int] = None,
     retry_callback: Optional[Callable] = None,
     timeout_seconds: Optional[int] = None,
     trace_context: Optional[Dict[str, Any]] = None,
@@ -172,6 +180,7 @@ def call_llm(
         user_content,
         force_json_output=force_json_output,
         response_format_override=response_format_override,
+        max_completion_tokens=max_completion_tokens_override,
     )
     body = deps.serialize_payload_body(payload)
     request_payload_bytes = deps.measure_payload_bytes_from_body(body)
@@ -517,6 +526,7 @@ def call_llm(
                     "failure_type": None,
                     "request_payload_bytes": request_payload_bytes,
                     "request_payload_bytes_mode": request_payload_bytes_mode,
+                    "max_completion_tokens_requested": max_completion_tokens_override,
                     "sent_header_keys": sent_header_keys,
                     "auth_present_flags": auth_flags,
                     "gemini_auth_mode_requested": gemini_mode_requested,
@@ -578,6 +588,7 @@ def call_llm(
                 "failure_type": failure_type,
                 "request_payload_bytes": request_payload_bytes,
                 "request_payload_bytes_mode": request_payload_bytes_mode,
+                "max_completion_tokens_requested": max_completion_tokens_override,
                 "sent_header_keys": sent_header_keys,
                 "auth_present_flags": auth_flags,
                 "gemini_auth_mode_requested": gemini_mode_requested,
@@ -700,17 +711,14 @@ def call_llm_with_ladder(
     ui: Optional[Any] = None,
 ) -> Dict[str, Any]:
     denylist = {str(provider).strip().lower() for provider in cfg.provider_denylist}
-    normalized_ladder = [
-        _normalize_ladder_route(route, deps.provider_api_key_env) for route in ladder
+    ladder = [
+        _normalize_route_tuple(route, deps.provider_api_key_env)
+        for route in ladder
     ]
     if denylist:
         ladder = [
-            route
-            for route in normalized_ladder
-            if str(route[0]).strip().lower() not in denylist
+            route for route in ladder if str(route[0]).strip().lower() not in denylist
         ]
-    else:
-        ladder = normalized_ladder
     if not ladder:
         return {
             "response_text": "",
@@ -737,7 +745,7 @@ def call_llm_with_ladder(
     opus_eligible: Optional[bool] = None
     opus_block_reason: Optional[str] = None
     for hop_index in range(max_hops):
-        route = _normalize_ladder_route(ladder[hop_index], deps.provider_api_key_env)
+        route = _normalize_route_tuple(ladder[hop_index], deps.provider_api_key_env)
         provider, model_id, api_key_env = route
         payload = execute_attempt(route, hop_index)
         request_meta = (
@@ -771,7 +779,7 @@ def call_llm_with_ladder(
         final_payload = dict(payload)
         if not escalation_trigger or hop_index + 1 >= max_hops:
             break
-        next_route = _normalize_ladder_route(
+        next_route = _normalize_route_tuple(
             ladder[hop_index + 1], deps.provider_api_key_env
         )
         if (
@@ -789,8 +797,19 @@ def call_llm_with_ladder(
             opus_block_reason = None
             request_meta["opus_eligible"] = True
             request_meta["opus_block_reason"] = None
+        current_failure_type = str(request_meta.get("failure_type") or "").strip()
+        next_provider, next_model, next_api_key_env = next_route
+        if (
+            current_failure_type == "quota_or_billing"
+            and str(next_api_key_env).strip() == str(api_key_env).strip()
+        ):
+            request_meta["route_guard_blocked"] = True
+            request_meta["route_guard_reason"] = "quota_or_billing_same_api_key_env"
+            request_meta["blocked_next_route"] = f"{next_provider}/{next_model}"
+            final_payload["request_meta"] = request_meta
+            final_payload["escalation_trigger"] = None
+            break
         if ui is not None:
-            next_provider, next_model, _ = next_route
             ui.escalation_event(
                 phase=phase,
                 step_id=step_id,
@@ -806,7 +825,7 @@ def call_llm_with_ladder(
             "response_text": "",
             "request_meta": {"failure_type": "routing_unresolved"},
             "artifacts": [],
-            "route": _normalize_ladder_route(ladder[0], deps.provider_api_key_env),
+            "route": _normalize_route_tuple(ladder[0], deps.provider_api_key_env),
             "escalation_trigger": "routing_unresolved",
         }
     final_request_meta = (
@@ -829,7 +848,7 @@ def call_llm_with_ladder(
         final_request_meta["opus_block_reason"] = opus_block_reason
     else:
         final_request_meta.setdefault("opus_block_reason", None)
-    final_route = _normalize_ladder_route(
+    final_route = _normalize_route_tuple(
         final_payload.get("route") or ("", "", ""),
         deps.provider_api_key_env,
     )
