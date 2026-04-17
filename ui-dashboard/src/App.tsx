@@ -273,7 +273,7 @@ function App() {
           fontWeight: 'bold',
           textDecoration: 'none',
           transition: 'top 0.2s',
-          '&:focus': {
+          '&:focus-visible': {
             top: 0,
             outline: `2px solid ${brandTokens.text.primary}`,
           },
@@ -480,6 +480,42 @@ function App() {
               </Tooltip>
             )}
             {isLoading && <CircularProgress size={16} sx={{ ml: 'auto' }} />}
+            {notifications.length > 0 && (
+              <Tooltip title="Clear all notifications to reduce visual noise" arrow>
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  icon={<Trash2 size={14} />}
+                  label="Clear"
+                  onClick={() => setNotifications([])}
+                  sx={{
+                    ml: 'auto',
+                    cursor: 'pointer',
+                    bgcolor: alpha(brandTokens.colors.gremlinPink, 0.1),
+                    color: brandTokens.colors.gremlinPink,
+                    borderColor: brandTokens.colors.gremlinPink,
+                    '&:hover': {
+                      bgcolor: alpha(brandTokens.colors.gremlinPink, 0.2),
+                    },
+                  }}
+                />
+                  size="small"
+                  icon={<Trash2 size={14} />}
+                  label="Clear"
+                  onClick={() => setNotifications([])}
+                  sx={{
+                    ml: 1,
+                    cursor: 'pointer',
+                    bgcolor: alpha(brandTokens.colors.gremlinPink, 0.1),
+                    color: brandTokens.colors.gremlinPink,
+                    borderColor: brandTokens.colors.gremlinPink,
+                    '&:hover': {
+                      bgcolor: alpha(brandTokens.colors.gremlinPink, 0.2),
+                    },
+                  }}
+                />
+              </Tooltip>
+            )}
           </Box>
           {notifications.length > 0 ? (
             <Box
