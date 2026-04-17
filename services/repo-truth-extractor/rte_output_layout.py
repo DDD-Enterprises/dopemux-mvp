@@ -202,6 +202,7 @@ def resolve_run_context(
         active_output_layout=active_output_layout,
     )
     run_id_source = "generated"
+    resume_requested = bool(getattr(args, "resume", False))
 
     if args.run_id:
         run_id = args.run_id
@@ -213,7 +214,7 @@ def resolve_run_context(
             active_output_layout=active_output_layout,
         )
         run_id_source = "explicit"
-    else:
+    elif resume_requested:
         latest = load_run_id(
             repo_root,
             extraction_root_rel=extraction_root_rel,
@@ -229,21 +230,20 @@ def resolve_run_context(
                 run_id = latest
                 run_id_source = "latest_run_id"
             else:
-                logger.warning(
-                    "latest_run_id.txt points to missing run directory %s; generating new run_id.",
-                    latest_dir,
-                )
-                run_id = generate_run_id(
-                    repo_root,
-                    extraction_root_rel=extraction_root_rel,
-                    active_output_layout=active_output_layout,
+                raise FileNotFoundError(
+                    "Resume requested but latest_run_id.txt points to missing run "
+                    f"directory {latest_dir}."
                 )
         else:
-            run_id = generate_run_id(
-                repo_root,
-                extraction_root_rel=extraction_root_rel,
-                active_output_layout=active_output_layout,
+            raise FileNotFoundError(
+                f"Resume requested but no latest run id exists at {latest_file}."
             )
+    else:
+        run_id = generate_run_id(
+            repo_root,
+            extraction_root_rel=extraction_root_rel,
+            active_output_layout=active_output_layout,
+        )
 
     write_latest = not args.no_write_latest and (
         not args.dry_run or args.write_latest_even_on_dry_run
