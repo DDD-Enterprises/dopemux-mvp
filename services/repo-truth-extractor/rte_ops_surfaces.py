@@ -682,6 +682,8 @@ def run_provider_preflight(
     now_iso: Callable[[], str],
     write_json: Callable[[Path, Any], None],
     routing_policy_version: str,
+    scope_kind: str = "launch",
+    scope_complete_for_launch: bool = True,
 ) -> Tuple[bool, Dict[str, Any]]:
     selected_step_ids_by_phase = {
         phase: selected_ids
@@ -785,6 +787,13 @@ def run_provider_preflight(
         "generated_at": now_iso(),
         "run_id": run_id,
         "status": "PASS" if not failures else "FAIL",
+        "phase_scope": [str(phase).upper() for phase in phases],
+        "step_scope": {
+            str(phase).upper(): [str(step_id).strip().upper() for step_id in selected_ids]
+            for phase, selected_ids in selected_step_ids_by_phase.items()
+        },
+        "scope_kind": str(scope_kind or "launch"),
+        "scope_complete_for_launch": bool(scope_complete_for_launch),
         "routes": provider_routes,
         "probes": provider_probes,
         "failed_providers": [probe.get("provider") for probe in failures],

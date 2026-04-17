@@ -6330,7 +6330,14 @@ def run_provider_doctor_probe(
 
 
 def run_provider_preflight(
-    root: Path, run_id: str, cfg: RunnerConfig, phases: List[str]
+    root: Path,
+    run_id: str,
+    cfg: RunnerConfig,
+    phases: List[str],
+    *,
+    scope_kind: str = "launch",
+    scope_complete_for_launch: bool = True,
+    persist_run_root: bool = True,
 ) -> Tuple[bool, Dict[str, Any]]:
     ok, payload = _run_provider_preflight_impl(
         root,
@@ -6345,10 +6352,16 @@ def run_provider_preflight(
         now_iso=now_iso,
         write_json=write_json,
         routing_policy_version=ROUTING_POLICY_VERSION,
+        scope_kind=scope_kind,
+        scope_complete_for_launch=scope_complete_for_launch,
     )
     run_root = current_runs_root(root) / run_id
     run_root.mkdir(parents=True, exist_ok=True)
-    write_json(run_root / "PROVIDER_PREFLIGHT.json", payload)
+    canonical_path = run_root / "PROVIDER_PREFLIGHT.json"
+    if persist_run_root:
+        write_json(canonical_path, payload)
+    elif canonical_path.exists():
+        canonical_path.unlink()
     return ok, payload
 
 
@@ -6369,11 +6382,22 @@ def prepare_phase_provider_preflight(
     if not phase_requires_provider_preflight(normalized_phase, cfg):
         return cfg
 
-    ok, payload = run_provider_preflight(root, run_id, cfg, [normalized_phase])
+    ok, payload = run_provider_preflight(
+        root,
+        run_id,
+        cfg,
+        [normalized_phase],
+        scope_kind="phase",
+        scope_complete_for_launch=False,
+        persist_run_root=False,
+    )
     denylisted = sorted(
         {str(provider) for provider in payload.get("failed_providers", []) if provider}
     )
     payload["denylisted_providers"] = list(denylisted)
+    run_root = current_runs_root(root) / run_id
+    run_root.mkdir(parents=True, exist_ok=True)
+    write_json(run_root / f"PROVIDER_PREFLIGHT__{normalized_phase}.json", payload)
     doctor_dir = current_doctor_root(root)
     doctor_dir.mkdir(parents=True, exist_ok=True)
     write_json(doctor_dir / f"PROVIDER_PREFLIGHT__{normalized_phase}.json", payload)
