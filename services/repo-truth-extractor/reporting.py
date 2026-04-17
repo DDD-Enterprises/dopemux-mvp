@@ -327,7 +327,6 @@ def write_certification_result(
     run_manifest = deps.load_json(run_manifest_path) if run_manifest_path.exists() else {}
     dashboard = deps.load_json(dashboard_path) if dashboard_path.exists() else {}
     step_metrics = deps.load_json(step_metrics_path) if step_metrics_path.exists() else {}
-    failure_index = deps.load_json(failure_index_path) if failure_index_path.exists() else {}
 
     artifact_contract_evidence: Dict[str, Any] = {
         "proof_pack": str(proof_path.resolve()) if proof_path.exists() else None,
