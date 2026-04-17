@@ -6332,7 +6332,7 @@ def run_provider_doctor_probe(
 def run_provider_preflight(
     root: Path, run_id: str, cfg: RunnerConfig, phases: List[str]
 ) -> Tuple[bool, Dict[str, Any]]:
-    return _run_provider_preflight_impl(
+    ok, payload = _run_provider_preflight_impl(
         root,
         run_id,
         cfg,
@@ -6346,6 +6346,10 @@ def run_provider_preflight(
         write_json=write_json,
         routing_policy_version=ROUTING_POLICY_VERSION,
     )
+    run_root = current_runs_root(root) / run_id
+    run_root.mkdir(parents=True, exist_ok=True)
+    write_json(run_root / "PROVIDER_PREFLIGHT.json", payload)
+    return ok, payload
 
 
 def phase_requires_provider_preflight(phase: str, cfg: RunnerConfig) -> bool:
@@ -14696,6 +14700,17 @@ def print_phase_catalog(phases: Optional[List[str]] = None) -> int:
 
 
 def print_phase_routing(phases: List[str], cfg: RunnerConfig) -> int:
+    def _serialize_ladder_row(row: Any) -> Dict[str, Any]:
+        values = tuple(row) if isinstance(row, (list, tuple)) else ()
+        provider = str(values[0]) if len(values) >= 1 else ""
+        model_id = str(values[1]) if len(values) >= 2 else ""
+        api_key_env = str(values[2]) if len(values) >= 3 else ""
+        return {
+            "provider": provider,
+            "model_id": model_id,
+            "api_key_env": api_key_env,
+        }
+
     payload: Dict[str, Any] = {
         "generated_at": now_iso(),
         "runner_script_path": str(RUNNER_SCRIPT.resolve()),
@@ -14730,12 +14745,7 @@ def print_phase_routing(phases: List[str], cfg: RunnerConfig) -> int:
                     "model": f"{route.get('provider')}/{route.get('model_id')}",
                     "reason": route.get("reason"),
                     "ladder": [
-                        {
-                            "provider": row[0],
-                            "model_id": row[1],
-                            "api_key_env": row[2],
-                        }
-                        for row in route.get("ladder", [])
+                        _serialize_ladder_row(row) for row in route.get("ladder", [])
                     ],
                 }
             )
