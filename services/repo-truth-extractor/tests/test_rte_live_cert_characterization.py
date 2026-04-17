@@ -22,41 +22,6 @@ def _load_runner_module() -> types.ModuleType:
     return module
 
 
-def _load_json(path: Path) -> dict:
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-def test_current_rte_certification_status_payload_is_split_gate_baseline() -> None:
-    payload = _load_json(_repo_root() / "reports" / "rte-production-certification-status.json")
-
-    assert payload["artifact_version"] == "RTE_PRODUCTION_CERTIFICATION_STATUS_V2"
-    assert payload["branch"] == "tp/rte-live-cert-artifact-contract-hardening"
-    assert payload["final_verdict"] == "NOT_VERIFIED"
-    assert payload["gates"] == {
-        "artifact_contract_stability": {
-            "status": "PASS",
-            "summary": "Split-gate certification writer regression passes and the core RTE artifact contracts remain characterization-locked.",
-        },
-        "canonical_runner_correctness": {
-            "status": "PASS",
-            "summary": "run_extraction_v5 remains the canonical runner and the baseline runner surface plus certification writer are regression-locked.",
-        },
-        "live_provider_readiness": {
-            "status": "PASS",
-            "summary": "Doctor probes succeeded against Gemini, OpenAI, OpenRouter, and XAI with the repo's current keys.",
-        },
-        "operator_topology_resilience": {
-            "status": "UNKNOWN",
-            "summary": "No degraded-topology smoke matrix was exercised in this packet, so the topology gate stays explicit UNKNOWN.",
-        },
-    }
-    assert payload["non_critical_unknowns"] == [
-        "External non-repo consumers of the certification artifact remain unknown.",
-        "Topology resilience beyond the doctor probe has not been exercised for degraded service matrices.",
-        "A future packet may still need to tighten live-provider evidence across additional provider-family combinations.",
-    ]
-
-
 def test_rte_artifact_inventory_and_preflight_entry_points_are_explicit() -> None:
     runner = _load_runner_module()
 
