@@ -238,6 +238,55 @@ def test_classify_request_failure_distinguishes_batch_terminal_and_parse_failure
     )
 
 
+def test_classify_failure_type_maps_openrouter_402_credit_failure_to_quota() -> None:
+    runner = _load_runner_module()
+
+    failure_type = runner.classify_failure_type(
+        402,
+        '{"error":{"message":"This request requires more credits, or fewer max_tokens."}}',
+        "Provider can only afford 56151 completion tokens on this account.",
+    )
+
+    assert failure_type == "quota_or_billing"
+
+
+def test_build_chat_payload_applies_h3_max_completion_tokens_budget() -> None:
+    runner = _load_runner_module()
+
+    assert runner._step_max_completion_tokens("H", "H3") == 8192
+    payload = runner.build_chat_payload(
+        "openrouter",
+        "openai/gpt-5.4",
+        "system",
+        "user",
+        max_completion_tokens=runner._step_max_completion_tokens("H", "H3"),
+    )
+
+    assert payload["max_tokens"] == 8192
+
+
+def test_classify_request_failure_preserves_upstream_payload_failure_when_schema_gate_masks_it() -> None:
+    runner = _load_runner_module()
+
+    failure = runner.classify_request_failure(
+        {
+            "failure_type": "payload",
+            "provider_error_reason": "",
+            "status_code": 402,
+            "response_received": False,
+            "schema_gate_passed": False,
+            "schema_gate_reason": "missing_expected_artifacts:HOME_ROUTER_SURFACE.json,HOME_PROVIDER_LADDER_HINTS.json",
+            "schema_gate_context": {"artifact_name": "HOME_ROUTER_SURFACE.json"},
+            "execution_mode": "sync",
+        }
+    )
+
+    assert failure["failure_class"] == "payload"
+    assert failure["reason"] == "payload"
+    assert failure["failure_stage"] == "model_execution"
+    assert failure["artifact_name"] is None
+
+
 def test_normalize_step_keeps_parse_failures_at_threshold(tmp_path: Path) -> None:
     runner = _load_runner_module()
     phase_dir = tmp_path / "A_repo_control_plane"
