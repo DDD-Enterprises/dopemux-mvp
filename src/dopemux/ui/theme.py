@@ -111,6 +111,7 @@ def build_theme(name: str) -> Theme:
             "debug": "#9B78FF",
             "hazard": "#F5F26D",
             "gilt.edge": "#F5F26D",
+            "gold": "#F5F26D",
             "chip.live": "bold #7DFBF6",
             "chip.override": "bold #F5F26D",
             "chip.blocker": "bold #FF8BD1",
