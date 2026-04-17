@@ -121,6 +121,7 @@ def test_import_surface_stability_for_packet_symbols() -> None:
         "promptset_fingerprint",
         "run_provider_preflight",
         "write_coverage_rollup",
+        "write_certification_result",
         "write_resume_proof",
     }
 

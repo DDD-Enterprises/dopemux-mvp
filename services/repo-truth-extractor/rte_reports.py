@@ -8,6 +8,7 @@ from typing import Any, Dict, Iterable, Optional, Sequence, Set
 from reporting import (
     ReportingDeps,
     TelemetryWriterDeps,
+    write_certification_result as _write_certification_result_impl,
     update_proof_pack as _update_proof_pack_impl,
     update_run_manifest_promptset_block as _update_run_manifest_promptset_block_impl,
     write_blocked_promptset_proof_pack as _write_blocked_promptset_proof_pack_impl,
@@ -57,6 +58,23 @@ def write_run_dashboard_snapshot(
     source: str,
 ) -> Dict[str, Any]:
     return _write_run_dashboard_snapshot_impl(deps, run_root, payload, source)
+
+
+def write_certification_result(
+    deps: ReportingDeps,
+    run_root: Path,
+    *,
+    validator_payload: Optional[Dict[str, Any]] = None,
+    provider_preflight_payload: Optional[Dict[str, Any]] = None,
+    topology_payload: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    return _write_certification_result_impl(
+        deps,
+        run_root,
+        validator_payload=validator_payload,
+        provider_preflight_payload=provider_preflight_payload,
+        topology_payload=topology_payload,
+    )
 
 
 def write_run_manifest(
