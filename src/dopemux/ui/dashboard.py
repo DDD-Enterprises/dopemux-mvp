@@ -427,7 +427,11 @@ class DopemuxDashboard(App):
         self._endpoints_cache: dict[str, ResolvedEndpoint] | None = None
 
     def dashboard_endpoints(self) -> dict[str, ResolvedEndpoint]:
-        """Lazily resolve endpoints once and return cached values thereafter."""
+        """Lazily resolve endpoints once and return cached values thereafter.
+
+        Textual drives app callbacks on a single event-loop thread, so this
+        cache is intentionally initialized without a lock.
+        """
         if self._endpoints_cache is None:
             self._endpoints_cache = resolve_dashboard_endpoints()
         return self._endpoints_cache
