@@ -11,6 +11,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence
 
 from rte_config import (
     COVERAGE_ROLLUP_FILENAME,
+    CERTIFICATION_RESULT_FILENAME,
     FAILURE_INDEX_FILENAME,
     PROOF_PACK_FILENAME,
     RESUME_PROOF_FILENAME,
@@ -160,6 +161,202 @@ def write_run_dashboard_snapshot(
     }
     deps.write_json(target, snapshot)
     return snapshot
+
+
+def _normalize_gate_status(value: Optional[str]) -> str:
+    token = str(value or "").strip().upper()
+    if token in {"PASS", "PASSED", "READY", "OK"}:
+        return "PASS"
+    if token in {"FAIL", "FAILED", "BLOCKED", "NO_GO"}:
+        return "FAIL"
+    return "UNKNOWN"
+
+
+def _gate_payload(status: str, *, source: str, evidence: Dict[str, Any], notes: Optional[str] = None) -> Dict[str, Any]:
+    payload = {
+        "status": status,
+        "source": source,
+        "evidence": evidence,
+    }
+    if notes:
+        payload["notes"] = notes
+    return payload
+
+
+def write_certification_result(
+    deps: ReportingDeps,
+    run_root: Path,
+    *,
+    validator_payload: Optional[Dict[str, Any]] = None,
+    provider_preflight_payload: Optional[Dict[str, Any]] = None,
+    topology_payload: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    telemetry_root = run_root / "telemetry"
+    output_root = run_root.parent.parent if run_root.parent.name == "runs" else run_root.parent
+    doctor_root = output_root / "doctor"
+    proof_path = run_root / PROOF_PACK_FILENAME
+    coverage_path = run_root / COVERAGE_ROLLUP_FILENAME
+    resume_path = run_root / RESUME_PROOF_FILENAME
+    dashboard_path = telemetry_root / RUN_DASHBOARD_FILENAME
+    step_metrics_path = telemetry_root / STEP_METRICS_FILENAME
+    failure_index_path = telemetry_root / FAILURE_INDEX_FILENAME
+
+    if validator_payload is None:
+        validator_path = run_root / "PRELIVE_VALIDATOR_RESULT.json"
+        if validator_path.exists():
+            validator_payload = deps.load_json(validator_path)
+
+    if provider_preflight_payload is None and doctor_root.exists():
+        provider_payloads: List[Dict[str, Any]] = []
+        for candidate in sorted(doctor_root.glob("PROVIDER_PREFLIGHT*.json")):
+            try:
+                payload = deps.load_json(candidate)
+            except Exception:
+                continue
+            if isinstance(payload, dict):
+                provider_payloads.append(payload)
+        if provider_payloads:
+            provider_preflight_payload = {
+                "status": "PASS"
+                if all(
+                    _normalize_gate_status(str(payload.get("status") or "")) == "PASS"
+                    for payload in provider_payloads
+                )
+                else "FAIL",
+                "layers": provider_payloads,
+            }
+
+    if provider_preflight_payload is None and isinstance(topology_payload, dict):
+        reachability = topology_payload.get("provider_reachability")
+        probes = reachability.get("probes") if isinstance(reachability, dict) else None
+        if isinstance(probes, list) and probes:
+            probe_rows = [row for row in probes if isinstance(row, dict)]
+            provider_preflight_payload = {
+                "status": "PASS"
+                if probe_rows and all(
+                    int(row.get("status_code", 0) or 0) == 200
+                    and bool(row.get("ready", False))
+                    for row in probe_rows
+                )
+                else "FAIL",
+                "probes": probe_rows,
+            }
+
+    if topology_payload is None and doctor_root.exists():
+        topology_path = doctor_root / "DOCTOR_FULL.json"
+        if topology_path.exists():
+            topology_payload = deps.load_json(topology_path)
+
+    proof = deps.load_json(proof_path) if proof_path.exists() else {}
+    coverage = deps.load_json(coverage_path) if coverage_path.exists() else {}
+    resume = deps.load_json(resume_path) if resume_path.exists() else {}
+    dashboard = deps.load_json(dashboard_path) if dashboard_path.exists() else {}
+    step_metrics = deps.load_json(step_metrics_path) if step_metrics_path.exists() else {}
+    failure_index = deps.load_json(failure_index_path) if failure_index_path.exists() else {}
+
+    artifact_contract_evidence: Dict[str, Any] = {
+        "proof_pack": str(proof_path.resolve()) if proof_path.exists() else None,
+        "coverage_rollup": str(coverage_path.resolve()) if coverage_path.exists() else None,
+        "resume_proof": str(resume_path.resolve()) if resume_path.exists() else None,
+        "run_dashboard": str(dashboard_path.resolve()) if dashboard_path.exists() else None,
+        "step_metrics": str(step_metrics_path.resolve()) if step_metrics_path.exists() else None,
+        "failure_index": str(failure_index_path.resolve()) if failure_index_path.exists() else None,
+    }
+    artifact_contract_status = "UNKNOWN"
+    if all(artifact_contract_evidence.values()):
+        artifact_contract_status = "PASS"
+
+    topology_status = "UNKNOWN"
+    if isinstance(topology_payload, dict):
+        required_groups = topology_payload.get("required_artifact_groups")
+        if isinstance(required_groups, dict):
+            present_pct = float(required_groups.get("required_groups_present_pct", 0) or 0)
+            if present_pct >= 100.0:
+                topology_status = "PASS"
+        if topology_status == "UNKNOWN":
+            topology_status = _normalize_gate_status(
+                str(topology_payload.get("status") or topology_payload.get("overall_status") or "")
+            )
+    elif isinstance(dashboard, dict) and dashboard:
+        topology_status = _normalize_gate_status(str(dashboard.get("status") or dashboard.get("overall_status") or ""))
+
+    live_provider_status = "UNKNOWN"
+    live_provider_evidence: Dict[str, Any] = {
+        "provider_preflight": provider_preflight_payload if isinstance(provider_preflight_payload, dict) else None,
+    }
+    if isinstance(provider_preflight_payload, dict):
+        live_provider_status = _normalize_gate_status(str(provider_preflight_payload.get("status") or ""))
+
+    static_status = "UNKNOWN"
+    static_evidence: Dict[str, Any] = {
+        "prelive_validator": validator_payload if isinstance(validator_payload, dict) else None,
+        "coverage_rollup": coverage if coverage else None,
+        "resume_proof": resume if resume else None,
+    }
+    if isinstance(validator_payload, dict):
+        static_status = _normalize_gate_status(str(validator_payload.get("status") or validator_payload.get("final_verdict") or ""))
+    elif isinstance(proof, dict) and proof.get("run_status"):
+        static_status = _normalize_gate_status(str(proof.get("run_status") or ""))
+
+    gates = {
+        "canonical_runner_correctness": _gate_payload(
+            static_status,
+            source="PRELIVE_VALIDATOR_RESULT.json" if isinstance(validator_payload, dict) else "PROOF_PACK.json",
+            evidence=static_evidence,
+            notes="Static/internal gate. Unknown when no validator evidence is present.",
+        ),
+        "live_provider_readiness": _gate_payload(
+            live_provider_status,
+            source="provider preflight payload",
+            evidence=live_provider_evidence,
+            notes="Explicit UNKNOWN when provider preflight was not executed.",
+        ),
+        "artifact_contract_stability": _gate_payload(
+            artifact_contract_status,
+            source="runtime artifact set",
+            evidence=artifact_contract_evidence,
+            notes="Pass requires the core evidence artifacts to exist in the run root and telemetry root.",
+        ),
+        "operator_topology_resilience": _gate_payload(
+            topology_status,
+            source="DOCTOR_FULL.json or RUN_DASHBOARD.json",
+            evidence={
+                "doctor_full": topology_payload if isinstance(topology_payload, dict) else None,
+                "run_dashboard": dashboard if dashboard else None,
+            },
+            notes="Explicit UNKNOWN when no topology/doctor payload is present.",
+        ),
+    }
+
+    gate_statuses = [gate["status"] for gate in gates.values()]
+    if all(status == "PASS" for status in gate_statuses):
+        overall_status = "VERIFIED"
+    elif any(status == "FAIL" for status in gate_statuses):
+        overall_status = "BLOCKED"
+    else:
+        overall_status = "UNKNOWN"
+
+    payload = {
+        "artifact_version": "RTE_CERTIFICATION_V1",
+        "generated_at": deps.now_iso(),
+        "run_id": run_root.name,
+        "overall_status": overall_status,
+        "gate_classification": {
+            "canonical_runner_correctness": "static",
+            "live_provider_readiness": "live_provider",
+            "artifact_contract_stability": "contract",
+            "operator_topology_resilience": "topology",
+        },
+        "gates": gates,
+    }
+    if isinstance(proof, dict) and proof:
+        payload["proof_pack"] = {
+            "path": str(proof_path.resolve()),
+            "run_status": proof.get("run_status"),
+            "blocked_reason": proof.get("blocked_reason"),
+        }
+    deps.write_json(run_root / CERTIFICATION_RESULT_FILENAME, payload)
+    return payload
 
 
 def write_run_manifest(

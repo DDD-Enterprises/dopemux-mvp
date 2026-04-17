@@ -528,6 +528,7 @@ def test_staged_safe_print_config_writes_confidence_ramp_artifacts(
     phase_slice = json.loads((run_root / "PHASE_SLICE.json").read_text(encoding="utf-8"))
     breaker_state = json.loads((run_root / "BREAKER_STATE.json").read_text(encoding="utf-8"))
     gate_decision = json.loads((run_root / "PHASE_GATE_DECISION.json").read_text(encoding="utf-8"))
+    certification_result = json.loads((run_root / "CERTIFICATION_RESULT.json").read_text(encoding="utf-8"))
 
     assert payload["cli"]["preset"] == "staged-safe"
     assert payload["cli"]["batch_mode"] is True
@@ -537,6 +538,14 @@ def test_staged_safe_print_config_writes_confidence_ramp_artifacts(
     assert breaker_state["preset"] == "staged-safe"
     assert gate_decision["preset"] == "staged-safe"
     assert gate_decision["decision"] == "PREVIEW_ONLY"
+    assert certification_result["artifact_version"] == "RTE_CERTIFICATION_V1"
+    assert certification_result["overall_status"] == "UNKNOWN"
+    assert set(certification_result["gate_classification"]) == {
+        "artifact_contract_stability",
+        "canonical_runner_correctness",
+        "live_provider_readiness",
+        "operator_topology_resilience",
+    }
 
 
 def test_run_phase_s_blocks_on_empty_r_outputs(
