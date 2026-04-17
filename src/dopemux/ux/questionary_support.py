@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import importlib
-
+from types import ModuleType
 
 QUESTIONARY_INSTALL_MESSAGE = (
     "Interactive Dopemux UX requires `questionary`. "
@@ -16,7 +16,7 @@ class MissingInteractiveDependencyError(RuntimeError):
     """Raised when required interactive UX dependencies are unavailable."""
 
 
-def require_questionary():
+def require_questionary() -> ModuleType:
     """Import questionary lazily with a deterministic install hint."""
     try:
         return importlib.import_module("questionary")

@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import datetime, timezone
 import os
 import socket
-from urllib.parse import urlparse
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from urllib.parse import ParseResult, urlparse
 
 from dopemux.instance_state import resolve_conport_port
 
@@ -29,19 +29,55 @@ class ResolvedEndpoint:
 
 def _safe_int(value: str | None) -> int | None:
     try:
-        return int(str(value).strip()) if value is not None and str(value).strip() else None
+        return (
+            int(str(value).strip())
+            if value is not None and str(value).strip()
+            else None
+        )
     except (TypeError, ValueError):
         return None
 
 
 def _base_from_url(url: str) -> str:
-    parsed = urlparse(url)
-    if parsed.scheme and parsed.netloc:
-        return f"{parsed.scheme}://{parsed.netloc}"
-    return url.rstrip("/")
+    """Return a normalized base URL or empty string for invalid values.
+
+    Scheme-less host values default to ``http://`` for deterministic local
+    dashboard endpoint behavior.
+    """
+
+    def _format_host(parsed_result: ParseResult) -> str:
+        hostname = parsed_result.hostname
+        if not hostname:
+            return ""
+        try:
+            parsed_port = parsed_result.port
+        except ValueError:
+            # Invalid ports such as "localhost:notaport" should be rejected.
+            return ""
+        port = f":{parsed_port}" if parsed_port is not None else ""
+        return f"{hostname}{port}"
+
+    candidate = url.strip()
+    parsed = urlparse(candidate)
+    if parsed.scheme and parsed.hostname:
+        host = _format_host(parsed)
+        if host:
+            return f"{parsed.scheme}://{host}"
+        return ""
+
+    if not parsed.scheme:
+        # Accept host[:port][/path] forms like "localhost:8000/health".
+        host_only = urlparse(f"//{candidate}")
+        host = _format_host(host_only)
+        if host:
+            return f"http://{host}"
+
+    return ""
 
 
-def _port_is_listening(port: int, host: str = "127.0.0.1", timeout: float = 0.2) -> bool:
+def _port_is_listening(
+    port: int, host: str = "127.0.0.1", timeout: float = 0.2
+) -> bool:
     try:
         with socket.create_connection((host, port), timeout=timeout):
             return True
@@ -61,11 +97,13 @@ def _select_port(candidates: list[tuple[int, str]]) -> tuple[int, str]:
 def resolve_adhd_engine_endpoint() -> ResolvedEndpoint:
     explicit_base = os.getenv("DOPEMUX_ADHD_ENGINE_BASE_URL", "").strip()
     if explicit_base:
-        return ResolvedEndpoint(
-            name="ADHD Engine",
-            base_url=_base_from_url(explicit_base),
-            source="DOPEMUX_ADHD_ENGINE_BASE_URL",
-        )
+        parsed_base = _base_from_url(explicit_base)
+        if parsed_base:
+            return ResolvedEndpoint(
+                name="ADHD Engine",
+                base_url=parsed_base,
+                source="DOPEMUX_ADHD_ENGINE_BASE_URL",
+            )
 
     candidates: list[tuple[int, str]] = []
     env_port = _safe_int(os.getenv("DOPEMUX_ADHD_ENGINE_PORT"))
@@ -81,7 +119,9 @@ def resolve_adhd_engine_endpoint() -> ResolvedEndpoint:
 def resolve_conport_endpoint() -> ResolvedEndpoint:
     explicit_url = os.getenv("CONPORT_URL", "").strip()
     if explicit_url:
-        return ResolvedEndpoint("ConPort", _base_from_url(explicit_url), "CONPORT_URL")
+        parsed_base = _base_from_url(explicit_url)
+        if parsed_base:
+            return ResolvedEndpoint("ConPort", parsed_base, "CONPORT_URL")
 
     port = resolve_conport_port()
     if os.getenv("DOPEMUX_CONPORT_PORT", "").strip():
@@ -113,7 +153,9 @@ def resolve_serena_endpoint() -> ResolvedEndpoint:
 def resolve_bridge_endpoint() -> ResolvedEndpoint:
     explicit_url = os.getenv("DOPECON_BRIDGE_URL", "").strip()
     if explicit_url:
-        return ResolvedEndpoint("Dopecon Bridge", _base_from_url(explicit_url), "DOPECON_BRIDGE_URL")
+        parsed_base = _base_from_url(explicit_url)
+        if parsed_base:
+            return ResolvedEndpoint("Dopecon Bridge", parsed_base, "DOPECON_BRIDGE_URL")
 
     candidates: list[tuple[int, str]] = []
     explicit_port = _safe_int(os.getenv("DOPECON_BRIDGE_PORT"))

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from datetime import datetime, timedelta, timezone
 from io import StringIO
 
@@ -9,11 +10,15 @@ from dopemux.ui.theme import create_console
 
 
 def test_resolve_dashboard_endpoints_uses_env_authority(monkeypatch) -> None:
-    monkeypatch.setenv("DOPEMUX_ADHD_ENGINE_BASE_URL", "http://adhd.example:9123/api/v1")
+    monkeypatch.setenv(
+        "DOPEMUX_ADHD_ENGINE_BASE_URL", "http://adhd.example:9123/api/v1"
+    )
     monkeypatch.setenv("CONPORT_URL", "http://conport.example:7777/health")
     monkeypatch.setenv("DOPEMUX_SERENA_PORT", "4406")
     monkeypatch.setenv("DOPECON_BRIDGE_URL", "http://bridge.example:3016/kg")
-    monkeypatch.setattr(service_endpoints, "_select_port", lambda candidates: candidates[0])
+    monkeypatch.setattr(
+        service_endpoints, "_select_port", lambda candidates: candidates[0]
+    )
 
     endpoints = service_endpoints.resolve_dashboard_endpoints()
 
@@ -42,11 +47,32 @@ def test_dashboard_panel_render_shows_endpoint_next_action_when_offline() -> Non
 
     renderable = panel.render()
     buffer = StringIO()
-    console = create_console(file=buffer, force_terminal=False, color_system=None, width=160)
+    console = create_console(
+        file=buffer, force_terminal=False, color_system=None, width=160
+    )
     console.print(renderable)
     rendered = buffer.getvalue()
 
     assert "ADHD Engine disconnected." in rendered
     assert "DOPEMUX_ADHD_ENGINE_BASE_URL" in rendered
-    assert "http://adhd.example:9123" in rendered
-    assert "Verify the resolved ADHD Engine endpoint or restart the service." in rendered
+    # Rich layout inserts variable spacing before endpoint values.
+    assert re.search(r"endpoint=\s*http://adhd\.example:9123", rendered)
+    assert (
+        "Verify the resolved ADHD Engine endpoint or restart the service." in rendered
+    )
+
+
+def test_resolve_dashboard_endpoints_ignores_invalid_explicit_url(monkeypatch) -> None:
+    monkeypatch.setenv(
+        "DOPEMUX_ADHD_ENGINE_BASE_URL",
+        "http://adhd.example:notaport/api/v1",
+    )
+    monkeypatch.delenv("DOPEMUX_ADHD_ENGINE_PORT", raising=False)
+    monkeypatch.setattr(
+        service_endpoints, "_select_port", lambda candidates: candidates[0]
+    )
+
+    endpoint = service_endpoints.resolve_adhd_engine_endpoint()
+
+    assert endpoint.base_url == "http://localhost:5448"
+    assert endpoint.source == "default:5448"

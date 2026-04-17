@@ -5,17 +5,20 @@ Opened via the ``d`` keybinding in the main dashboard (tmux display-popup).
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 import sys
+from datetime import datetime, timezone
 
 import httpx
 from textual.app import App, ComposeResult
 from textual.widgets import DataTable, Footer, Log, TabbedContent, TabPane
 
-from .service_endpoints import refresh_age_label, resolve_dashboard_endpoints
+from .service_endpoints import (
+    ResolvedEndpoint,
+    refresh_age_label,
+    resolve_dashboard_endpoints,
+)
 from .theme import Glyphs
 from .voice import VoiceEngine, VoiceMode
-
 
 VOICE = VoiceEngine(mode=VoiceMode.CLINICAL_FORENSICS, is_scattered=True)
 
@@ -35,6 +38,7 @@ class DetailApp(App):
         super().__init__()
         self._warned_feeds: set[str] = set()
         self._last_refresh_at: datetime | None = None
+        self._endpoints: dict[str, ResolvedEndpoint] | None = None
 
     def compose(self) -> ComposeResult:
         with TabbedContent(initial="tasks"):
@@ -51,13 +55,18 @@ class DetailApp(App):
         task_table.add_columns("ID", "Type", "Summary", "Status")
 
         health_table = self.query_one("#health_table", DataTable)
-        health_table.add_columns("Service", "Status", "Latency (ms)", "Version", "Source", "Updated")
+        health_table.add_columns(
+            "Service", "Status", "Latency (ms)", "Version", "Source", "Updated"
+        )
 
         activity_log = self.query_one("#activity_log", Log)
         activity_log.write_line(VOICE.banner("detail"))
-        activity_log.write_line("[LOGGED] Detail cockpit live. Receipt: data refresh every 2s.")
+        activity_log.write_line(
+            "[LOGGED] Detail cockpit live. Receipt: data refresh every 2s."
+        )
         activity_log.write_line(f"[AFTERCARE] {VOICE.get_aftercare()}")
-        endpoints = resolve_dashboard_endpoints()
+        self._endpoints = resolve_dashboard_endpoints()
+        endpoints = self._endpoints
         activity_log.write_line(
             "[LIVE] Endpoint sources locked: "
             f"ADHD={endpoints['adhd'].source}, "
@@ -70,13 +79,15 @@ class DetailApp(App):
         await self.refresh_data()
 
     async def refresh_data(self) -> None:
-        endpoints = resolve_dashboard_endpoints()
+        endpoints = self._endpoints or resolve_dashboard_endpoints()
         task_table = self.query_one("#task_table", DataTable)
         task_table.clear()
         async with httpx.AsyncClient() as client:
             # Tasks
             try:
-                resp = await client.get(endpoints["adhd"].url("/api/v1/tasks"), timeout=1.0)
+                resp = await client.get(
+                    endpoints["adhd"].url("/api/v1/tasks"), timeout=1.0
+                )
                 if resp.status_code == 200:
                     data = resp.json().get("recent_tasks", [])
                     for t in data[:20]:
