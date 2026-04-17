@@ -1,0 +1,27 @@
+{
+  "packet": {
+    "title": "RTE-provider-preflight-scope-truth-hardening",
+    "generated_at": "2026-04-17T08:40:00Z",
+    "confidence": "VERIFIED"
+  },
+  "summary": "Provider preflight payloads are now explicitly scope-stamped, phase-scoped prepare preflight no longer persists to the canonical run-root PROVIDER_PREFLIGHT.json path, and certification only promotes live_provider_readiness=PASS when provider preflight is explicitly launch-complete and fresh for the current run manifest.",
+  "evidence_ledger": [
+    "run_provider_preflight now stamps phase_scope, step_scope, scope_kind, and scope_complete_for_launch into provider preflight payloads.",
+    "prepare_phase_provider_preflight now writes PROVIDER_PREFLIGHT__<PHASE>.json and removes any canonical run-root PROVIDER_PREFLIGHT.json so phase-scoped probes cannot bless full-run readiness.",
+    "write_certification_result now evaluates provider preflight scope completeness and manifest freshness before promoting live_provider_readiness=PASS.",
+    "Targeted certification and operator-safety tests cover partial-scope rejection, missing metadata rejection, full-scope acceptance, stale manifest rejection, and D-only prepare-path behavior."
+  ],
+  "assumptions": [
+    "RUN_MANIFEST.json generated_at represents the current invocation start boundary for launch-readiness freshness checks.",
+    "Canonical run-root PROVIDER_PREFLIGHT.json is reserved for launch-complete preflight only."
+  ],
+  "validation": [
+    "pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+    "pytest -q services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py",
+    "pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_rollup_reports.py",
+    "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/reporting.py",
+    "git diff --check",
+    "pre-commit run --files services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/reporting.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py"
+  ],
+  "next_action": "Re-run the bounded external launch-readiness review. Full-run provider readiness should now remain UNKNOWN unless the run-root preflight is explicitly launch-complete and fresh for the current manifest."
+}
