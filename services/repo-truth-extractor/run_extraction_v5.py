@@ -214,6 +214,7 @@ from rte_reports import (
     write_runner_identity as rte_write_runner_identity,
     write_step_metrics_snapshot as rte_write_step_metrics_snapshot,
 )
+from reporting import build_run_id_resolution_precedence
 from llm_runtime import (
     LLMRuntimeDeps,
     backoff_seconds as llm_runtime_backoff_seconds,
@@ -15511,11 +15512,10 @@ def print_config(
             "print_config": args.print_config,
             "run_id_override": args.run_id,
             "run_id_source": run_context.source,
-            "run_id_resolution_precedence": [
-                "explicit(--run-id)",
-                f"implicit({layout.latest_run_file})",
-                "generated(new timestamp run id)",
-            ],
+            "run_id_resolution_precedence": build_run_id_resolution_precedence(
+                resume=bool(args.resume),
+                latest_run_file=layout.latest_run_file,
+            ),
             "dry_run": args.dry_run,
             "resume": args.resume,
             "no_write_latest": args.no_write_latest,

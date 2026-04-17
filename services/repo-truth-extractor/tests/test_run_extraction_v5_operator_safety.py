@@ -28,6 +28,47 @@ def _load_runner_module() -> types.ModuleType:
     return module
 
 
+def _run_print_config_and_load_manifest(
+    tmp_path: Path,
+    *,
+    resume: bool,
+    latest_run_id: str | None = None,
+):
+    output_root = tmp_path / "artifact-root"
+    if latest_run_id is not None:
+        (output_root / "runs" / latest_run_id).mkdir(parents=True, exist_ok=True)
+        (output_root / "latest_run_id.txt").write_text(
+            latest_run_id + "\n",
+            encoding="utf-8",
+        )
+
+    cmd = [
+        sys.executable,
+        str(_repo_root() / "services" / "repo-truth-extractor" / "run_extraction_v5.py"),
+        "--phase",
+        "A",
+        "--dry-run",
+        "--print-config",
+        "--no-write-latest",
+        "--output-root",
+        str(output_root),
+    ]
+    if resume:
+        cmd.append("--resume")
+
+    result = subprocess.run(
+        cmd,
+        cwd=str(_repo_root()),
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    config_payload = json.loads(result.stdout)
+    manifest_path = output_root / "runs" / config_payload["run_id"] / "RUN_MANIFEST.json"
+    manifest_payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    return config_payload, manifest_payload
+
+
 def _make_cfg(runner: types.ModuleType):
     cfg = runner.RunnerConfig.__new__(runner.RunnerConfig)
     defaults = {
