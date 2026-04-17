@@ -434,6 +434,76 @@ def test_run_provider_preflight_records_openrouter_specific_remediation(
         ).read_text(encoding="utf-8")
     )
     assert run_local["status"] == "FAIL"
+    assert run_local["phase_scope"] == ["A", "H", "D", "C"]
+    assert run_local["step_scope"] == {}
+    assert run_local["scope_kind"] == "launch"
+    assert run_local["scope_complete_for_launch"] is True
+
+
+def test_prepare_phase_provider_preflight_writes_partial_scope_file_without_canonical_run_root(
+    monkeypatch, tmp_path: Path
+) -> None:
+    runner = _load_runner_module()
+    cfg = _make_cfg(runner)
+    object.__setattr__(cfg, "dry_run", False)
+
+    monkeypatch.setattr(
+        runner,
+        "collect_provider_routes",
+        lambda phases, routing_policy, selected_step_ids_by_phase=None: {
+            "openrouter:openai/gpt-5.3-codex:OPENROUTER_API_KEY": {
+                "provider": "openrouter",
+                "model_id": "openai/gpt-5.3-codex",
+                "api_key_env": "OPENROUTER_API_KEY",
+            }
+        },
+    )
+    monkeypatch.setattr(
+        runner,
+        "run_provider_doctor_probe",
+        lambda **kwargs: {
+            "provider": "openrouter",
+            "model_id": "openai/gpt-5.3-codex",
+            "api_key_env_name": "OPENROUTER_API_KEY",
+            "api_key_env_resolved": "OPENROUTER_API_KEY",
+            "failure_type": None,
+            "status_code": 200,
+            "provider_signature": "provider=openrouter;model=openai/gpt-5.3-codex",
+            "ready": True,
+            "readiness_blocker": {"ready": True},
+        },
+    )
+
+    run_root = runner.current_runs_root(tmp_path) / "run_d_partial_scope"
+    run_root.mkdir(parents=True, exist_ok=True)
+    canonical = run_root / "PROVIDER_PREFLIGHT.json"
+    canonical.write_text(
+        json.dumps(
+            {
+                "status": "PASS",
+                "phase_scope": ["A", "H", "D", "C"],
+                "step_scope": {},
+                "scope_kind": "launch",
+                "scope_complete_for_launch": True,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    updated_cfg = runner.prepare_phase_provider_preflight(
+        tmp_path,
+        "run_d_partial_scope",
+        "D",
+        cfg,
+    )
+
+    assert tuple(updated_cfg.provider_denylist) == ()
+    assert canonical.exists() is False
+    partial = json.loads((run_root / "PROVIDER_PREFLIGHT__D.json").read_text(encoding="utf-8"))
+    assert partial["status"] == "PASS"
+    assert partial["phase_scope"] == ["D"]
+    assert partial["scope_kind"] == "phase"
+    assert partial["scope_complete_for_launch"] is False
 
 
 def test_route_readiness_summary_distinguishes_required_fallback_and_configured(monkeypatch) -> None:

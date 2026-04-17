@@ -6,6 +6,7 @@ import platform
 import sys
 from collections import Counter
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence
 
@@ -183,6 +184,116 @@ def _gate_payload(status: str, *, source: str, evidence: Dict[str, Any], notes: 
     return payload
 
 
+def _normalized_phase_scope(values: Any) -> List[str]:
+    if not isinstance(values, list):
+        return []
+    return [str(value).strip().upper() for value in values if str(value).strip()]
+
+
+def _normalized_step_scope(value: Any) -> Dict[str, List[str]]:
+    if not isinstance(value, dict):
+        return {}
+    normalized: Dict[str, List[str]] = {}
+    for phase, step_ids in value.items():
+        if not isinstance(step_ids, list):
+            continue
+        phase_key = str(phase).strip().upper()
+        normalized[phase_key] = [
+            str(step_id).strip().upper() for step_id in step_ids if str(step_id).strip()
+        ]
+    return normalized
+
+
+def _parse_iso_timestamp(value: Any) -> Optional[datetime]:
+    token = str(value or "").strip()
+    if not token:
+        return None
+    try:
+        return datetime.fromisoformat(token.replace("Z", "+00:00"))
+    except Exception:
+        return None
+
+
+def _provider_preflight_launch_scope(
+    provider_preflight_payload: Any,
+    run_manifest: Any,
+) -> Dict[str, Any]:
+    manifest_launch_phases: List[str] = []
+    manifest_generated_at = None
+    if isinstance(run_manifest, dict):
+        routing_step_tiers = run_manifest.get("routing_step_tiers")
+        if isinstance(routing_step_tiers, dict):
+            manifest_launch_phases = [
+                str(phase).strip().upper()
+                for phase in routing_step_tiers.keys()
+                if str(phase).strip()
+            ]
+        manifest_generated_at = _parse_iso_timestamp(run_manifest.get("generated_at"))
+
+    if not isinstance(provider_preflight_payload, dict):
+        return {
+            "launch_complete": False,
+            "reason": "missing_provider_preflight_payload",
+            "phase_scope": [],
+            "step_scope": {},
+            "scope_kind": "",
+            "scope_complete_for_launch": False,
+            "manifest_launch_phases": manifest_launch_phases,
+            "fresh_for_manifest": False if manifest_generated_at is not None else None,
+        }
+
+    phase_scope = _normalized_phase_scope(provider_preflight_payload.get("phase_scope"))
+    step_scope = _normalized_step_scope(provider_preflight_payload.get("step_scope"))
+    scope_kind = str(provider_preflight_payload.get("scope_kind") or "").strip()
+    scope_complete_for_launch = bool(
+        provider_preflight_payload.get("scope_complete_for_launch")
+    )
+    has_partial_step_scope = any(step_ids for step_ids in step_scope.values())
+    phase_scope_matches_manifest = (
+        phase_scope == manifest_launch_phases if manifest_launch_phases else True
+    )
+    payload_generated_at = _parse_iso_timestamp(provider_preflight_payload.get("generated_at"))
+    fresh_for_manifest: Optional[bool] = None
+    if manifest_generated_at is not None:
+        fresh_for_manifest = (
+            payload_generated_at is not None and payload_generated_at >= manifest_generated_at
+        )
+
+    launch_complete = (
+        scope_complete_for_launch
+        and scope_kind == "launch"
+        and not has_partial_step_scope
+        and bool(phase_scope)
+        and phase_scope_matches_manifest
+        and (fresh_for_manifest is not False)
+    )
+
+    reason = "launch_complete"
+    if not scope_complete_for_launch:
+        reason = "scope_not_marked_launch_complete"
+    elif scope_kind != "launch":
+        reason = "scope_kind_not_launch"
+    elif has_partial_step_scope:
+        reason = "step_scope_is_partial"
+    elif not phase_scope:
+        reason = "phase_scope_missing"
+    elif not phase_scope_matches_manifest:
+        reason = "phase_scope_mismatch"
+    elif fresh_for_manifest is False:
+        reason = "provider_preflight_older_than_run_manifest"
+
+    return {
+        "launch_complete": launch_complete,
+        "reason": reason,
+        "phase_scope": phase_scope,
+        "step_scope": step_scope,
+        "scope_kind": scope_kind,
+        "scope_complete_for_launch": scope_complete_for_launch,
+        "manifest_launch_phases": manifest_launch_phases,
+        "fresh_for_manifest": fresh_for_manifest,
+    }
+
+
 def write_certification_result(
     deps: ReportingDeps,
     run_root: Path,
@@ -192,11 +303,10 @@ def write_certification_result(
     topology_payload: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     telemetry_root = run_root / "telemetry"
-    output_root = run_root.parent.parent if run_root.parent.name == "runs" else run_root.parent
-    doctor_root = output_root / "doctor"
     proof_path = run_root / PROOF_PACK_FILENAME
     coverage_path = run_root / COVERAGE_ROLLUP_FILENAME
     resume_path = run_root / RESUME_PROOF_FILENAME
+    run_manifest_path = run_root / "RUN_MANIFEST.json"
     dashboard_path = telemetry_root / RUN_DASHBOARD_FILENAME
     step_metrics_path = telemetry_root / STEP_METRICS_FILENAME
     failure_index_path = telemetry_root / FAILURE_INDEX_FILENAME
@@ -206,34 +316,15 @@ def write_certification_result(
         if validator_path.exists():
             validator_payload = deps.load_json(validator_path)
 
-    if provider_preflight_payload is None and doctor_root.exists():
-        provider_payloads: List[Dict[str, Any]] = []
-        for candidate in sorted(doctor_root.glob("PROVIDER_PREFLIGHT*.json")):
-            try:
-                payload = deps.load_json(candidate)
-            except Exception:
-                continue
-            if isinstance(payload, dict):
-                provider_payloads.append(payload)
-        if provider_payloads:
-            provider_preflight_payload = {
-                "status": "PASS"
-                if all(
-                    _normalize_gate_status(str(payload.get("status") or "")) == "PASS"
-                    for payload in provider_payloads
-                )
-                else "FAIL",
-                "layers": provider_payloads,
-            }
-
-    if topology_payload is None and doctor_root.exists():
-        topology_path = doctor_root / "DOCTOR_FULL.json"
-        if topology_path.exists():
-            topology_payload = deps.load_json(topology_path)
+    if provider_preflight_payload is None:
+        provider_preflight_path = run_root / "PROVIDER_PREFLIGHT.json"
+        if provider_preflight_path.exists():
+            provider_preflight_payload = deps.load_json(provider_preflight_path)
 
     proof = deps.load_json(proof_path) if proof_path.exists() else {}
     coverage = deps.load_json(coverage_path) if coverage_path.exists() else {}
     resume = deps.load_json(resume_path) if resume_path.exists() else {}
+    run_manifest = deps.load_json(run_manifest_path) if run_manifest_path.exists() else {}
     dashboard = deps.load_json(dashboard_path) if dashboard_path.exists() else {}
     step_metrics = deps.load_json(step_metrics_path) if step_metrics_path.exists() else {}
     failure_index = deps.load_json(failure_index_path) if failure_index_path.exists() else {}
@@ -266,11 +357,16 @@ def write_certification_result(
         topology_status = _normalize_gate_status(str(dashboard.get("status") or dashboard.get("overall_status") or ""))
 
     live_provider_status = "UNKNOWN"
+    provider_scope = _provider_preflight_launch_scope(provider_preflight_payload, run_manifest)
     live_provider_evidence: Dict[str, Any] = {
         "provider_preflight": provider_preflight_payload if isinstance(provider_preflight_payload, dict) else None,
+        "provider_preflight_scope": provider_scope,
         "topology_probes_observed": topology_probe_rows or None,
     }
-    if isinstance(provider_preflight_payload, dict):
+    if (
+        isinstance(provider_preflight_payload, dict)
+        and provider_scope["launch_complete"]
+    ):
         live_provider_status = _normalize_gate_status(str(provider_preflight_payload.get("status") or ""))
 
     static_status = "UNKNOWN"
@@ -278,24 +374,33 @@ def write_certification_result(
         "prelive_validator": validator_payload if isinstance(validator_payload, dict) else None,
         "coverage_rollup": coverage if coverage else None,
         "resume_proof": resume if resume else None,
+        "proof_pack": {
+            "path": str(proof_path.resolve()),
+            "run_status": proof.get("run_status"),
+            "blocked_reason": proof.get("blocked_reason"),
+        }
+        if isinstance(proof, dict) and proof
+        else None,
     }
     if isinstance(validator_payload, dict):
         static_status = _normalize_gate_status(str(validator_payload.get("status") or validator_payload.get("final_verdict") or ""))
-    elif isinstance(proof, dict) and proof.get("run_status"):
-        static_status = _normalize_gate_status(str(proof.get("run_status") or ""))
 
     gates = {
         "canonical_runner_correctness": _gate_payload(
             static_status,
-            source="PRELIVE_VALIDATOR_RESULT.json" if isinstance(validator_payload, dict) else "PROOF_PACK.json",
+            source="PRELIVE_VALIDATOR_RESULT.json" if isinstance(validator_payload, dict) else "run-scoped validator missing",
             evidence=static_evidence,
             notes="Static/internal gate. Unknown when no validator evidence is present.",
         ),
         "live_provider_readiness": _gate_payload(
             live_provider_status,
-            source="provider preflight payload",
+            source=(
+                "run-scoped full-launch provider preflight"
+                if provider_scope["launch_complete"]
+                else "provider preflight payload incomplete for launch"
+            ),
             evidence=live_provider_evidence,
-            notes="PASS requires explicit provider preflight evidence. Topology probe observations alone do not satisfy this gate.",
+            notes="PASS requires explicit provider preflight evidence with full launch scope. Topology probe observations alone do not satisfy this gate.",
         ),
         "artifact_contract_stability": _gate_payload(
             artifact_contract_status,

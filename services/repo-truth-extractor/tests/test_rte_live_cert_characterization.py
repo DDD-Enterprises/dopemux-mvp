@@ -150,7 +150,13 @@ def test_write_certification_result_requires_explicit_provider_and_topology_stat
 
     result = runner.write_certification_result(
         run_root,
-        provider_preflight_payload={"status": "PASS", "layers": [{"phase": "A"}]},
+        provider_preflight_payload={
+            "status": "PASS",
+            "phase_scope": ["A", "H", "D", "C"],
+            "step_scope": {},
+            "scope_kind": "launch",
+            "scope_complete_for_launch": True,
+        },
         topology_payload={
             "status": "PASS",
             "required_artifact_groups": {"required_groups_present_pct": 100.0},
@@ -163,7 +169,259 @@ def test_write_certification_result_requires_explicit_provider_and_topology_stat
     assert result["overall_status"] == "VERIFIED"
     assert {gate["status"] for gate in result["gates"].values()} == {"PASS"}
     assert result["gates"]["live_provider_readiness"]["status"] == "PASS"
+    assert result["gates"]["live_provider_readiness"]["source"] == "run-scoped full-launch provider preflight"
     assert result["gates"]["operator_topology_resilience"]["status"] == "PASS"
+
+
+def test_write_certification_result_rejects_partial_scope_provider_preflight(tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    run_root = tmp_path / "runs" / "partial_scope_probe"
+    telemetry_root = run_root / "telemetry"
+    telemetry_root.mkdir(parents=True, exist_ok=True)
+
+    for relative in [
+        "PROOF_PACK.json",
+        "COVERAGE_ROLLUP.json",
+        "RESUME_PROOF.json",
+        "PRELIVE_VALIDATOR_RESULT.json",
+        "telemetry/RUN_DASHBOARD.json",
+        "telemetry/STEP_METRICS.json",
+        "telemetry/FAILURE_INDEX.json",
+    ]:
+        path = run_root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if relative == "PRELIVE_VALIDATOR_RESULT.json":
+            path.write_text(json.dumps({"status": "PASS"}), encoding="utf-8")
+        else:
+            path.write_text("{}", encoding="utf-8")
+
+    (run_root / "RUN_MANIFEST.json").write_text(
+        json.dumps(
+            {
+                "generated_at": "2026-04-17T08:00:00+00:00",
+                "routing_step_tiers": {"A": {}, "H": {}, "D": {}, "C": {}},
+            }
+        ),
+        encoding="utf-8",
+    )
+    (run_root / "PROVIDER_PREFLIGHT.json").write_text(
+        json.dumps(
+            {
+                "generated_at": "2026-04-17T08:01:00+00:00",
+                "status": "PASS",
+                "phase_scope": ["D"],
+                "step_scope": {},
+                "scope_kind": "phase",
+                "scope_complete_for_launch": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.write_certification_result(run_root)
+
+    assert result["gates"]["live_provider_readiness"]["status"] == "UNKNOWN"
+    assert result["gates"]["live_provider_readiness"]["source"] == "provider preflight payload incomplete for launch"
+    assert result["gates"]["live_provider_readiness"]["evidence"]["provider_preflight_scope"]["reason"] == "scope_not_marked_launch_complete"
+
+
+def test_write_certification_result_rejects_provider_preflight_missing_scope_metadata(tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    run_root = tmp_path / "runs" / "missing_scope_probe"
+    telemetry_root = run_root / "telemetry"
+    telemetry_root.mkdir(parents=True, exist_ok=True)
+
+    for relative in [
+        "PROOF_PACK.json",
+        "COVERAGE_ROLLUP.json",
+        "RESUME_PROOF.json",
+        "PRELIVE_VALIDATOR_RESULT.json",
+        "telemetry/RUN_DASHBOARD.json",
+        "telemetry/STEP_METRICS.json",
+        "telemetry/FAILURE_INDEX.json",
+    ]:
+        path = run_root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if relative == "PRELIVE_VALIDATOR_RESULT.json":
+            path.write_text(json.dumps({"status": "PASS"}), encoding="utf-8")
+        else:
+            path.write_text("{}", encoding="utf-8")
+
+    (run_root / "PROVIDER_PREFLIGHT.json").write_text(
+        json.dumps({"generated_at": "2026-04-17T08:01:00+00:00", "status": "PASS"}),
+        encoding="utf-8",
+    )
+
+    result = runner.write_certification_result(run_root)
+
+    assert result["gates"]["live_provider_readiness"]["status"] == "UNKNOWN"
+    assert result["gates"]["live_provider_readiness"]["evidence"]["provider_preflight_scope"]["reason"] == "scope_not_marked_launch_complete"
+
+
+def test_write_certification_result_accepts_full_scope_provider_preflight(tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    run_root = tmp_path / "runs" / "full_scope_probe"
+    telemetry_root = run_root / "telemetry"
+    telemetry_root.mkdir(parents=True, exist_ok=True)
+
+    for relative in [
+        "PROOF_PACK.json",
+        "COVERAGE_ROLLUP.json",
+        "RESUME_PROOF.json",
+        "PRELIVE_VALIDATOR_RESULT.json",
+        "telemetry/RUN_DASHBOARD.json",
+        "telemetry/STEP_METRICS.json",
+        "telemetry/FAILURE_INDEX.json",
+    ]:
+        path = run_root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if relative == "PRELIVE_VALIDATOR_RESULT.json":
+            path.write_text(json.dumps({"status": "PASS"}), encoding="utf-8")
+        else:
+            path.write_text("{}", encoding="utf-8")
+
+    (run_root / "RUN_MANIFEST.json").write_text(
+        json.dumps(
+            {
+                "generated_at": "2026-04-17T08:00:00+00:00",
+                "routing_step_tiers": {"A": {}, "H": {}, "D": {}, "C": {}},
+            }
+        ),
+        encoding="utf-8",
+    )
+    (run_root / "PROVIDER_PREFLIGHT.json").write_text(
+        json.dumps(
+            {
+                "generated_at": "2026-04-17T08:01:00+00:00",
+                "status": "PASS",
+                "phase_scope": ["A", "H", "D", "C"],
+                "step_scope": {},
+                "scope_kind": "launch",
+                "scope_complete_for_launch": True,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.write_certification_result(run_root)
+
+    assert result["gates"]["live_provider_readiness"]["status"] == "PASS"
+    assert result["gates"]["live_provider_readiness"]["evidence"]["provider_preflight_scope"]["reason"] == "launch_complete"
+
+
+def test_write_certification_result_rejects_stale_run_local_preflight_after_manifest_refresh(tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    run_root = tmp_path / "runs" / "stale_run_local_probe"
+    telemetry_root = run_root / "telemetry"
+    telemetry_root.mkdir(parents=True, exist_ok=True)
+
+    for relative in [
+        "PROOF_PACK.json",
+        "COVERAGE_ROLLUP.json",
+        "RESUME_PROOF.json",
+        "PRELIVE_VALIDATOR_RESULT.json",
+        "telemetry/RUN_DASHBOARD.json",
+        "telemetry/STEP_METRICS.json",
+        "telemetry/FAILURE_INDEX.json",
+    ]:
+        path = run_root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if relative == "PRELIVE_VALIDATOR_RESULT.json":
+            path.write_text(json.dumps({"status": "PASS"}), encoding="utf-8")
+        else:
+            path.write_text("{}", encoding="utf-8")
+
+    (run_root / "RUN_MANIFEST.json").write_text(
+        json.dumps(
+            {
+                "generated_at": "2026-04-17T09:00:00+00:00",
+                "routing_step_tiers": {"A": {}, "H": {}, "D": {}, "C": {}},
+            }
+        ),
+        encoding="utf-8",
+    )
+    (run_root / "PROVIDER_PREFLIGHT.json").write_text(
+        json.dumps(
+            {
+                "generated_at": "2026-04-17T08:00:00+00:00",
+                "status": "PASS",
+                "phase_scope": ["A", "H", "D", "C"],
+                "step_scope": {},
+                "scope_kind": "launch",
+                "scope_complete_for_launch": True,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.write_certification_result(run_root)
+
+    assert result["gates"]["live_provider_readiness"]["status"] == "UNKNOWN"
+    assert result["gates"]["live_provider_readiness"]["evidence"]["provider_preflight_scope"]["reason"] == "provider_preflight_older_than_run_manifest"
+
+
+def test_write_certification_result_ignores_stale_shared_doctor_pass_files(tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    run_root = tmp_path / "artifact-root" / "runs" / "stale_doctor_probe"
+    telemetry_root = run_root / "telemetry"
+    doctor_root = tmp_path / "artifact-root" / "doctor"
+    telemetry_root.mkdir(parents=True, exist_ok=True)
+    doctor_root.mkdir(parents=True, exist_ok=True)
+
+    for relative in [
+        "PROOF_PACK.json",
+        "COVERAGE_ROLLUP.json",
+        "RESUME_PROOF.json",
+        "PRELIVE_VALIDATOR_RESULT.json",
+        "telemetry/RUN_DASHBOARD.json",
+        "telemetry/STEP_METRICS.json",
+        "telemetry/FAILURE_INDEX.json",
+    ]:
+        path = run_root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if relative == "PRELIVE_VALIDATOR_RESULT.json":
+            path.write_text(json.dumps({"status": "PASS"}), encoding="utf-8")
+        else:
+            path.write_text("{}", encoding="utf-8")
+
+    (doctor_root / "PROVIDER_PREFLIGHT.json").write_text(
+        json.dumps({"status": "PASS", "run_id": "stale_run"}), encoding="utf-8"
+    )
+    (doctor_root / "DOCTOR_FULL.json").write_text(
+        json.dumps({"status": "PASS", "run_id": "stale_run"}), encoding="utf-8"
+    )
+
+    result = runner.write_certification_result(run_root)
+
+    assert result["overall_status"] == "UNKNOWN"
+    assert result["gates"]["live_provider_readiness"]["status"] == "UNKNOWN"
+    assert result["gates"]["operator_topology_resilience"]["status"] == "UNKNOWN"
+    assert result["gates"]["live_provider_readiness"]["evidence"]["provider_preflight"] is None
+
+
+def test_write_certification_result_does_not_promote_proof_pack_status_to_pass(tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    run_root = tmp_path / "runs" / "proof_only_probe"
+    telemetry_root = run_root / "telemetry"
+    telemetry_root.mkdir(parents=True, exist_ok=True)
+
+    for relative, payload in {
+        "PROOF_PACK.json": {"run_status": "OK", "blocked_reason": None},
+        "COVERAGE_ROLLUP.json": {},
+        "RESUME_PROOF.json": {},
+        "telemetry/RUN_DASHBOARD.json": {},
+        "telemetry/STEP_METRICS.json": {},
+        "telemetry/FAILURE_INDEX.json": {},
+    }.items():
+        path = run_root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = runner.write_certification_result(run_root)
+
+    assert result["gates"]["canonical_runner_correctness"]["status"] == "UNKNOWN"
+    assert result["gates"]["canonical_runner_correctness"]["source"] == "run-scoped validator missing"
+    assert result["gates"]["canonical_runner_correctness"]["evidence"]["proof_pack"]["run_status"] == "OK"
 
 
 def test_run_doctor_full_certification_stays_unknown_without_explicit_gate_statuses(
@@ -171,9 +429,18 @@ def test_run_doctor_full_certification_stays_unknown_without_explicit_gate_statu
 ) -> None:
     runner = _load_runner_module()
     run_root = tmp_path / "artifact-root" / "runs" / "doctor_probe"
+    doctor_root = tmp_path / "artifact-root" / "doctor"
     dirs = {"root": run_root}
     cfg = runner.RunnerConfig.__new__(runner.RunnerConfig)
     object.__setattr__(cfg, "routing_policy", "cost")
+
+    doctor_root.mkdir(parents=True, exist_ok=True)
+    (doctor_root / "PROVIDER_PREFLIGHT.json").write_text(
+        json.dumps({"status": "PASS", "run_id": "stale_run"}), encoding="utf-8"
+    )
+    (doctor_root / "DOCTOR_FULL.json").write_text(
+        json.dumps({"status": "PASS", "run_id": "stale_run"}), encoding="utf-8"
+    )
 
     monkeypatch.setattr(runner, "collect_prompt_index", lambda: ({}, []))
     monkeypatch.setattr(runner, "get_phase_prompts", lambda phase: [])

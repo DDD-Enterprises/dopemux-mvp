@@ -1,0 +1,130 @@
+{
+  "packet": {
+    "title": "RTE-all-valid-work-branch-scan-and-integration",
+    "workspace": "/Users/hue/code/dopemux-mvp-rte-main-integration-audit-staging",
+    "branch": "tp/rte-full-run-hygiene-and-launch-readiness",
+    "head_before_commit": "282b72dca200fad6ed9238d56f2c1caaea2c7e56"
+  },
+  "integration_selection": {
+    "authoritative_base_line": [
+      "tp/rte-main-integration-audit-staging",
+      "tp/rte-certification-overclaim-and-escalation-truth-hardening",
+      "tp/rte-full-run-hygiene-and-launch-readiness"
+    ],
+    "already_integrated_runtime_commits": [
+      "7c4f8de7f3715578d88a4021c8800a7cf87f8406",
+      "5d7dde40c81a43679e91e2663eed334f6ea336af",
+      "e6bd478e3e871592812b7d8ab64acfd90b548bd6",
+      "283866f020efb7d9d8b661a5655fb42953c22ad2",
+      "d37c4010e4319a1806145b31d2c4767291e15294",
+      "282b72dca200fad6ed9238d56f2c1caaea2c7e56"
+    ],
+    "newly_integrated_uncommitted_work": [
+      {
+        "files": [
+          "services/repo-truth-extractor/reporting.py",
+          "services/repo-truth-extractor/rte_ops_surfaces.py",
+          "services/repo-truth-extractor/run_extraction_v5.py",
+          "services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py"
+        ],
+        "summary": "Keep certification scoped to run-local provider preflight and validator evidence, ignore stale shared doctor pass files, keep proof-pack as advisory evidence only, and persist phase-scoped preflight artifacts without falsely promoting launch-wide readiness."
+      }
+    ]
+  },
+  "branch_inventory": [
+    {
+      "branch": "tp/rte-topology-smoke-matrix",
+      "classification": "already_integrated_or_intentionally_filtered",
+      "rationale": "Runtime-bearing commits were already carried; remaining unique commits are docs/proof/precommit cleanup."
+    },
+    {
+      "branch": "tp/rte-live-cert-artifact-contract-hardening",
+      "classification": "already_integrated_or_intentionally_filtered",
+      "rationale": "Certification split was already carried; remaining unique commits were proof/docs drift or superseded entrypoint work."
+    },
+    {
+      "branch": "tp/rte-certification-overclaim-and-escalation-truth-hardening",
+      "classification": "already_integrated_or_ancestor",
+      "rationale": "Current branch is descended from this line."
+    },
+    {
+      "branch": "tp/rte-full-run-hygiene-and-launch-readiness",
+      "classification": "selected_runtime_work",
+      "rationale": "Contains valid runtime hardening for run-scoped and phase-scoped provider preflight persistence and route printing."
+    },
+    {
+      "branch": "codex/rte-adapter-smoke",
+      "classification": "reference_only_subsumed",
+      "rationale": "RTEAdapter already exists in the current codebase with broader functionality; the branch's standalone smoke harness is not canonical runtime authority."
+    },
+    {
+      "branch": "codex/rte-seam-extraction-foundation-v2",
+      "classification": "already_integrated_or_superseded",
+      "rationale": "Seam extraction line is already represented in the integrated runtime."
+    },
+    {
+      "branch": "codex/rte-intelligence-routing-proof",
+      "classification": "already_integrated_or_superseded",
+      "rationale": "Routing proof fixes are already present in the integrated runtime line."
+    },
+    {
+      "branch": "extractor/prompt-governance-gtm",
+      "classification": "reference_only_other_plane",
+      "rationale": "Prompt-governance branch targets promptset/governance surfaces rather than the bounded runtime truth slice."
+    },
+    {
+      "branch": "packet/rte-06-operator-decisions",
+      "classification": "reference_only_other_plane",
+      "rationale": "No unique bounded runtime delta identified in this scan."
+    },
+    {
+      "branch": "packet/rte-07-post-v1-deferred",
+      "classification": "do_not_integrate_mixed_branch",
+      "rationale": "Multiple merge bases and a large mixed stack spanning benchmarking, promptsets, storage, ADHD, and unrelated proof artifacts. Not a bounded remaining delta."
+    },
+    {
+      "branch": "origin/codex/rte-clean-replay-001",
+      "classification": "do_not_integrate_divergent_runtime_stack",
+      "rationale": "Large divergent recovery line with 14 unique commits against the current branch and heavy run_extraction_v5/validator churn. No safe minimal carry-forward delta established in this scan."
+    },
+    {
+      "branch": "origin/rescue/pr301-extractor-validation",
+      "classification": "reference_only_other_plane",
+      "rationale": "Adds extractor validation CLI/toolchain work outside the bounded RTE runtime integration slice."
+    },
+    {
+      "branch": "origin/codex/extractor-cli-ux",
+      "classification": "reference_only_other_plane",
+      "rationale": "CLI introspection enhancement for v3, not current RTE runtime authority."
+    },
+    {
+      "branch": "origin/codex/extractor-validation-toolchain-snapshot",
+      "classification": "do_not_integrate_mixed_branch",
+      "rationale": "Wide multi-plane snapshot including workflow, PM, CLI, and extractor validation surfaces."
+    },
+    {
+      "branch": "origin/feat/v5-ready-cheap-models",
+      "classification": "reference_only_out_of_scope",
+      "rationale": "Prompt rewrites and cost/perf routing work on an older line, not a bounded follow-up to the integrated audit branch."
+    },
+    {
+      "branch": "origin/fix/v3-explicit-outputs",
+      "classification": "reference_only_legacy_v3",
+      "rationale": "Legacy v3 prompt output declarations; outside the v5 integration line."
+    }
+  ],
+  "validation": {
+    "commands": [
+      "python -m pytest services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py -q",
+      "python -m py_compile services/repo-truth-extractor/reporting.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+      "git diff --check",
+      "pre-commit run --files services/repo-truth-extractor/reporting.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py"
+    ],
+    "result": "pass"
+  },
+  "residual_risks": [
+    "The scan classified several divergent extractor/RTE branches as non-integrable in one pass; integrating them would require separate bounded packets.",
+    "The current commit records the valid remaining work found in this scan, not a claim that every historically named RTE branch belongs on the same runtime line.",
+    "Proof files remain locally authoritative artifacts in this packet flow but are gitignored by default in the repository."
+  ]
+}
