@@ -449,7 +449,7 @@ function App() {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
             <Bell size={18} aria-hidden="true" />
             <Typography variant="h6">Live Signal Feed</Typography>
-            {isLoading && <CircularProgress size={16} sx={{ ml: 2 }} />}
+            {isLoading && <CircularProgress size={16} sx={{ ml: 'auto' }} />}
             {notifications.length > 0 && (
               <Tooltip title="Clear all notifications to reduce visual noise" arrow>
                 <Chip
@@ -474,7 +474,7 @@ function App() {
                   label="Clear"
                   onClick={() => setNotifications([])}
                   sx={{
-                    ml: 'auto',
+                    ml: 1,
                     cursor: 'pointer',
                     bgcolor: alpha(brandTokens.colors.gremlinPink, 0.1),
                     color: brandTokens.colors.gremlinPink,
