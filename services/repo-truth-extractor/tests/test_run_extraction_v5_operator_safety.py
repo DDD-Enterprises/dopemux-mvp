@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import importlib.util
+import io
 import json
 import subprocess
 import sys
@@ -424,6 +426,14 @@ def test_run_provider_preflight_records_openrouter_specific_remediation(
     assert "A/H/D/C routes still require this OpenRouter model" in str(
         payload["failure_summary"][0]["remediation"]
     )
+    run_local = json.loads(
+        (
+            runner.current_runs_root(tmp_path)
+            / "run_openrouter_blocked"
+            / "PROVIDER_PREFLIGHT.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert run_local["status"] == "FAIL"
 
 
 def test_route_readiness_summary_distinguishes_required_fallback_and_configured(monkeypatch) -> None:
@@ -522,6 +532,59 @@ def test_print_config_reports_batch_mode_disabled_by_default() -> None:
     )
     payload = json.loads(result.stdout)
     assert payload["cli"]["batch_mode"] is False
+
+
+def test_print_phase_routing_handles_two_tuple_ladder_rows(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runner = _load_runner_module()
+    cfg = _make_cfg(runner)
+
+    monkeypatch.setattr(
+        runner,
+        "get_phase_prompts",
+        lambda phase: [
+            runner.PromptSpec(
+                step_id="A0",
+                prompt_path=Path("/tmp/PROMPT_A0_TEST.md"),
+                output_artifacts=("OUT.json",),
+            )
+        ],
+    )
+    monkeypatch.setattr(
+        runner,
+        "resolve_effective_step_route",
+        lambda *args, **kwargs: {
+            "step_type": "extract",
+            "step_tier": "extract",
+            "provider": "openrouter",
+            "model_id": "openai/gpt-5.3-codex",
+            "reason": "test_override",
+            "ladder": [
+                ("openrouter", "openai/gpt-5.3-codex"),
+                ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+            ],
+        },
+    )
+
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        exit_code = runner.print_phase_routing(["A"], cfg)
+
+    payload = json.loads(buffer.getvalue())
+    assert exit_code == 0
+    assert payload["phases"]["A"][0]["ladder"] == [
+        {
+            "provider": "openrouter",
+            "model_id": "openai/gpt-5.3-codex",
+            "api_key_env": "",
+        },
+        {
+            "provider": "openrouter",
+            "model_id": "openai/gpt-5.4",
+            "api_key_env": "OPENROUTER_API_KEY",
+        },
+    ]
 
 
 def test_staged_safe_print_config_writes_confidence_ramp_artifacts(
