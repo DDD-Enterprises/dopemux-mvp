@@ -9,8 +9,8 @@
     },
     "integration_branch": {
       "name": "tp/rte-main-integration-audit-staging",
-      "head": "ac1d95681976903f33838d8fb6fa4176d4d6c7b8",
-      "ahead_of_origin_main": 6
+      "head": "02f0b56bd0c13565206684f33737f292a1b2e448",
+      "ahead_of_origin_main": 7
     },
     "candidate_branches_considered": [
       {
@@ -197,7 +197,7 @@
         "detail": "pre-commit run --all-files failed on pre-existing docs/root hygiene paths outside this integration diff and modified unrelated files; unrelated edits were reverted and changed-file pre-commit passed."
       }
     ],
-    "resulting_branch_head": "ac1d95681976903f33838d8fb6fa4176d4d6c7b8",
+    "resulting_branch_head": "02f0b56bd0c13565206684f33737f292a1b2e448",
     "bounded_diff": {
       "files_changed": 13,
       "insertions": 1084,
