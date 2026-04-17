@@ -430,7 +430,8 @@ class DopemuxDashboard(App):
         """Lazily resolve endpoints once and return cached values thereafter.
 
         Textual drives app callbacks on a single event-loop thread, so this
-        cache is intentionally initialized without a lock.
+        cache is intentionally initialized without a lock and persists for the
+        app instance lifetime.
         """
         if self._endpoints_cache is None:
             self._endpoints_cache = resolve_dashboard_endpoints()

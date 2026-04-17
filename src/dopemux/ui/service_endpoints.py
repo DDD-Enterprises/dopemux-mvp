@@ -46,7 +46,7 @@ def _base_from_url(url: str) -> str:
     """
 
     def _format_host(parsed_result: ParseResult) -> str:
-        """Return host[:port] for a parsed URL, or empty when invalid.
+        """Return ``hostname:port`` for valid parsed input, else empty.
 
         ``ParseResult.port`` raises ``ValueError`` for malformed ports
         (for example ``localhost:notaport``), which we treat as invalid input.
