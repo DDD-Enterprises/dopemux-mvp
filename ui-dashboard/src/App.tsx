@@ -117,6 +117,7 @@ function mapRealtimeState(message: Record<string, unknown>): CognitiveState | nu
 
 function App() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const feedHeadingRef = useRef<HTMLHeadingElement>(null);
   const [cognitiveState, setCognitiveState] = useState<CognitiveState>({
     energy: 0.7,
     attention: 0.6,
@@ -128,14 +129,6 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'live' | 'degraded'>('connecting');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const liveSignalFeedHeadingRef = useRef<HTMLHeadingElement | null>(null);
-
-  const clearNotifications = () => {
-    setNotifications([]);
-    requestAnimationFrame(() => {
-      liveSignalFeedHeadingRef.current?.focus();
-    });
-  };
 
   useEffect(() => {
     let isMounted = true;
@@ -457,16 +450,25 @@ function App() {
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
             <Bell size={18} aria-hidden="true" />
-            <Typography ref={liveSignalFeedHeadingRef} variant="h6" tabIndex={-1}>
+            <Typography
+              variant="h6"
+              ref={feedHeadingRef}
+              tabIndex={-1}
+              sx={{ outline: 'none' }}
+            >
               Live Signal Feed
             </Typography>
             {notifications.length > 0 && (
               <Tooltip title="Clear all notifications" arrow>
                 <IconButton
                   size="small"
-                  onClick={clearNotifications}
+                  onClick={() => {
+                    setNotifications([]);
+                    feedHeadingRef.current?.focus();
+                  }}
                   aria-label="Clear all notifications"
                   sx={{
+                    ml: 1,
                     color: brandTokens.colors.gremlinPink,
                     '&:focus-visible': {
                       outline: `2px solid ${brandTokens.colors.gremlinPink}`,
