@@ -454,6 +454,22 @@ function App() {
               <Tooltip title="Clear all notifications to reduce visual noise" arrow>
                 <Chip
                   size="small"
+                  variant="outlined"
+                  icon={<Trash2 size={14} />}
+                  label="Clear"
+                  onClick={() => setNotifications([])}
+                  sx={{
+                    ml: 'auto',
+                    cursor: 'pointer',
+                    bgcolor: alpha(brandTokens.colors.gremlinPink, 0.1),
+                    color: brandTokens.colors.gremlinPink,
+                    borderColor: brandTokens.colors.gremlinPink,
+                    '&:hover': {
+                      bgcolor: alpha(brandTokens.colors.gremlinPink, 0.2),
+                    },
+                  }}
+                />
+                  size="small"
                   icon={<Trash2 size={14} />}
                   label="Clear"
                   onClick={() => setNotifications([])}
