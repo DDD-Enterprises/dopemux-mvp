@@ -6,9 +6,9 @@ Launch via ``dopemux dashboard`` or ``dopemux dashboard --demo``.
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, timezone
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 import httpx
@@ -16,8 +16,12 @@ from textual.app import App, ComposeResult
 from textual.reactive import reactive
 from textual.widgets import DataTable, Footer, Header, Static
 
-from .service_endpoints import refresh_age_label, resolve_dashboard_endpoints
-from .theme import Glyphs, StatusChip, styled_panel, styled_table, styled_gauge
+from .service_endpoints import (
+    ResolvedEndpoint,
+    refresh_age_label,
+    resolve_dashboard_endpoints,
+)
+from .theme import Glyphs, StatusChip, styled_gauge, styled_panel, styled_table
 from .voice import VoiceEngine, VoiceMode
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -39,7 +43,20 @@ DEMO_SERVICES = [
     ("MCP Bridge", "✗ BLOCKER", "timeout", "—", "demo", "just now"),
 ]
 
-DEMO_COGNITIVE_HISTORY = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.6, 0.5, 0.42, 0.38, 0.35, 0.40]
+DEMO_COGNITIVE_HISTORY = [
+    0.3,
+    0.4,
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.6,
+    0.5,
+    0.42,
+    0.38,
+    0.35,
+    0.40,
+]
 DEMO_VELOCITY_HISTORY = [3, 4, 5, 5, 6, 7, 6, 5, 4, 6, 7, 8]
 DEMO_SWITCHES_HISTORY = [2, 1, 2, 3, 5, 3, 2, 1, 2, 1, 1, 0]
 
@@ -108,7 +125,7 @@ class ADHDStatePanel(Static):
             self.endpoint_label = "demo://adhd-state"
             self.last_sampled_at = datetime.now(timezone.utc)
             return
-        endpoint = resolve_dashboard_endpoints()["adhd"]
+        endpoint = app.dashboard_endpoints()["adhd"]
         async with httpx.AsyncClient() as client:
             try:
                 resp = await client.get(
@@ -146,7 +163,9 @@ class ADHDStatePanel(Static):
                 border_style="error",
             )
 
-        energy_style, border_style, energy_icon = _energy_state(self.energy, self.cognitive_load)
+        energy_style, border_style, energy_icon = _energy_state(
+            self.energy, self.cognitive_load
+        )
         attention_style, attention_label = _attention_state(self.attention)
         load_style, load_label = _load_state(self.cognitive_load)
         load_bar = styled_gauge(self.cognitive_load, complete_style=load_style)
@@ -179,9 +198,13 @@ class ADHDStatePanel(Static):
         table.add_row("[label]Aftercare[/]", break_warning)
         table.add_row("[label]Endpoint[/]", f"[text.dim]{self.endpoint_label}[/]")
         table.add_row("[label]Source[/]", f"[text.dim]{self.source_label}[/]")
-        table.add_row("[label]Updated[/]", f"[text.dim]{refresh_age_label(self.last_sampled_at)}[/]")
+        table.add_row(
+            "[label]Updated[/]",
+            f"[text.dim]{refresh_age_label(self.last_sampled_at)}[/]",
+        )
 
         return styled_panel(table, title="🧠 ADHD STATE", border_style=border_style)
+
 
 class ProductivityPanel(Static):
     """Tasks and velocity metrics (Tier 2)."""
@@ -207,7 +230,7 @@ class ProductivityPanel(Static):
             self.source_label = "demo"
             self.last_sampled_at = datetime.now(timezone.utc)
             return
-        endpoints = resolve_dashboard_endpoints()
+        endpoints = app.dashboard_endpoints()
         adhd_endpoint = endpoints["adhd"]
         bridge_endpoint = endpoints["bridge"]
         async with httpx.AsyncClient() as client:
@@ -225,10 +248,14 @@ class ProductivityPanel(Static):
                 )
                 if resp.status_code == 200:
                     data = resp.json()
-                    self.decisions_today = int(data.get("count", len(data.get("items", []))))
+                    self.decisions_today = int(
+                        data.get("count", len(data.get("items", [])))
+                    )
             except Exception:
                 pass
-        self.source_label = f"tasks:{adhd_endpoint.source}; decisions:{bridge_endpoint.source}"
+        self.source_label = (
+            f"tasks:{adhd_endpoint.source}; decisions:{bridge_endpoint.source}"
+        )
         self.last_sampled_at = datetime.now(timezone.utc)
 
     def render(self) -> object:
@@ -257,7 +284,10 @@ class ProductivityPanel(Static):
             f"{StatusChip.LOGGED.render(f'{int(rate * 100)}% locked')} [text.dim](target: 85%)[/]",
         )
         table.add_row("[label]Source[/]", f"[text.dim]{self.source_label}[/]")
-        table.add_row("[label]Updated[/]", f"[text.dim]{refresh_age_label(self.last_sampled_at)}[/]")
+        table.add_row(
+            "[label]Updated[/]",
+            f"[text.dim]{refresh_age_label(self.last_sampled_at)}[/]",
+        )
 
         return styled_panel(table, title="🚀 MISSION VELOCITY", border_style="info")
 
@@ -272,7 +302,9 @@ class ServicesGrid(Static):
 
     async def on_mount(self) -> None:
         table = self.query_one(DataTable)
-        table.add_columns("Service", "Status", "Latency", "Version", "Source", "Updated")
+        table.add_columns(
+            "Service", "Status", "Latency", "Version", "Source", "Updated"
+        )
         self.set_interval(30.0, self.update_services)
         await self.update_services()
 
@@ -287,7 +319,7 @@ class ServicesGrid(Static):
             self.last_sampled_at = datetime.now(timezone.utc)
             return
 
-        endpoints = resolve_dashboard_endpoints()
+        endpoints = app.dashboard_endpoints()
         services = [
             (endpoints["conport"], "/health"),
             (endpoints["adhd"], "/health"),
@@ -351,9 +383,18 @@ class TrendsPanel(Static):
             return "".join(chars[min(int((v / mx) * 7), 7)] for v in data)
 
         table = _grid_table()
-        table.add_row("[label]Cognitive load[/]", f"[mint.soft]{sparkline(self.cognitive_history)}[/] [text.dim](last 2h)[/]")
-        table.add_row("[label]Task velocity[/]", f"[info]{sparkline(self.velocity_history)}[/] [text.dim](last 7d)[/]")
-        table.add_row("[label]Context switches[/]", f"[warning]{sparkline(self.switches_history)}[/] [text.dim](last 24h)[/]")
+        table.add_row(
+            "[label]Cognitive load[/]",
+            f"[mint.soft]{sparkline(self.cognitive_history)}[/] [text.dim](last 2h)[/]",
+        )
+        table.add_row(
+            "[label]Task velocity[/]",
+            f"[info]{sparkline(self.velocity_history)}[/] [text.dim](last 7d)[/]",
+        )
+        table.add_row(
+            "[label]Context switches[/]",
+            f"[warning]{sparkline(self.switches_history)}[/] [text.dim](last 24h)[/]",
+        )
 
         return styled_panel(table, title="📈 COGNITIVE TRENDS", border_style="warning")
 
@@ -380,6 +421,16 @@ class DopemuxDashboard(App):
     ]
 
     demo: bool = False
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._endpoints_cache: dict[str, ResolvedEndpoint] | None = None
+
+    def dashboard_endpoints(self) -> dict[str, ResolvedEndpoint]:
+        """Lazily resolve endpoints once and return cached values thereafter."""
+        if self._endpoints_cache is None:
+            self._endpoints_cache = resolve_dashboard_endpoints()
+        return self._endpoints_cache
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
@@ -417,7 +468,9 @@ class DopemuxDashboard(App):
                 check=False,
             )
         except FileNotFoundError:
-            self.notify("[OVERRIDE] tmux required for detail popup.", severity="warning")
+            self.notify(
+                "[OVERRIDE] tmux required for detail popup.", severity="warning"
+            )
         except Exception:
             pass
 
