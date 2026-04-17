@@ -3,12 +3,10 @@ name: CodeQL
 on:
   push:
     branches:
-      - "**"
+      - main
   pull_request:
     branches:
       - main
-  merge_group:
-    types: [checks_requested]
   schedule:
     - cron: "20 5 * * 1"
   workflow_dispatch:
@@ -21,6 +19,7 @@ permissions:
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
+    if: github.event_name != 'dynamic'
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
