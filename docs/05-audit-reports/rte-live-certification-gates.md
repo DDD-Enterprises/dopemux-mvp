@@ -27,4 +27,4 @@ Status meanings:
 - `FAIL`: evidence was exercised and the gate failed.
 - `UNKNOWN`: the gate was not exercised, or the evidence was insufficient to prove it.
 
-The operator summary report is `reports/rte-production-certification-status.json`. It should mirror the split-gate model and must not collapse unknown gates into a single overall GO claim.
+Operators should use `CERTIFICATION_RESULT.json` as the authoritative certification summary artifact. It must preserve the split-gate model and must not collapse unknown gates into a single overall GO claim.
