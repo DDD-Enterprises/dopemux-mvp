@@ -11,6 +11,8 @@ prelude: Pipeline Proof (explanation) for dopemux documentation and developer wo
 ---
 # Pipeline Proof Pack Runbook
 
+> Scope note: This runbook applies only to `UPGRADES/run_extraction_v3.py`. It does not define v5 launch authority. In v5, shared doctor artifacts under `extraction/doctor/` are diagnostic only, and launch/certification authority use run-scoped artifacts under `extraction/runs/<run_id>/`.
+
 ## 1. Required command sequence
 
 ```bash

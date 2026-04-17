@@ -479,6 +479,13 @@ def test_run_doctor_full_certification_stays_unknown_without_explicit_gate_statu
     certification = json.loads(
         (run_root / "CERTIFICATION_RESULT.json").read_text(encoding="utf-8")
     )
+    doctor_full = json.loads(
+        (runner.current_doctor_root(tmp_path) / "DOCTOR_FULL.json").read_text(
+            encoding="utf-8"
+        )
+    )
     assert certification["overall_status"] == "UNKNOWN"
     assert certification["gates"]["live_provider_readiness"]["status"] == "UNKNOWN"
     assert certification["gates"]["operator_topology_resilience"]["status"] == "UNKNOWN"
+    assert doctor_full["advisory_only"] is True
+    assert doctor_full["authority_class"] == "diagnostic_only"
