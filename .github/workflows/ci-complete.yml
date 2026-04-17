@@ -229,6 +229,7 @@ jobs:
         run: >
           uv run --frozen pytest
           services/repo-truth-extractor/tests/test_run_extraction_v4_core.py
+          services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py
           services/repo-truth-extractor/tests/test_rte_v5_characterization.py
           services/repo-truth-extractor/tests/test_truth_run_cli.py
           services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py
