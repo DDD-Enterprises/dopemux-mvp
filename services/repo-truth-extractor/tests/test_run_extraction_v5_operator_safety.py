@@ -426,8 +426,9 @@ def test_run_provider_preflight_records_openrouter_specific_remediation(
     )
 
 
-def test_route_readiness_summary_distinguishes_required_fallback_and_configured() -> None:
+def test_route_readiness_summary_distinguishes_required_fallback_and_configured(monkeypatch) -> None:
     runner = _load_runner_module()
+    monkeypatch.delenv("DPMX_EXPLICIT_STEP_ROUTES", raising=False)
     summary = runner.derive_route_readiness_summary(["A", "H", "D"], "cost")
 
     assert "OPENROUTER_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
@@ -444,6 +445,31 @@ def test_route_readiness_summary_distinguishes_required_fallback_and_configured(
     assert openrouter_required
     assert openrouter_required[0]["requirement_level"] == "required_active_route"
     assert openrouter_required[0]["configured_not_required"] is False
+
+
+def test_route_readiness_summary_honors_explicit_step_routes(monkeypatch) -> None:
+    runner = _load_runner_module()
+    monkeypatch.setenv(
+        "DPMX_EXPLICIT_STEP_ROUTES",
+        json.dumps(
+            {
+                "enabled": True,
+                "steps": {"H:H3": "openrouter/openai/gpt-5.4"},
+                "phases": {"H": "openrouter/openai/gpt-5.4"},
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        ),
+    )
+
+    summary = runner.derive_route_readiness_summary(["H"], "cost")
+    required_routes = {
+        f"{row['provider']}/{row['model_id']}"
+        for row in summary["routes"]
+        if row["requirement_level"] == "required_active_route"
+    }
+
+    assert required_routes == {"openrouter/openai/gpt-5.4"}
 
 
 def test_print_config_includes_route_readiness_summary() -> None:
