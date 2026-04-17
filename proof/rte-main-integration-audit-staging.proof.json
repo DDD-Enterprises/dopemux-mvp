@@ -1,0 +1,342 @@
+{
+  "artifact_version": "RTE_MAIN_INTEGRATION_AUDIT_STAGING_PROOF_V1",
+  "generated_at": "2026-04-17T00:00:06-07:00",
+  "summary": "Built a clean origin/main-based temporary integration branch and carried forward only bounded RTE runtime, test, and directly related doc changes for audit staging.",
+  "integration_selection": {
+    "base": {
+      "branch": "origin/main",
+      "sha": "b9f48de806b50568b8b89f646e2589cae6ebf487"
+    },
+    "integration_branch": {
+      "name": "tp/rte-main-integration-audit-staging",
+      "head": "ac1d95681976903f33838d8fb6fa4176d4d6c7b8",
+      "ahead_of_origin_main": 6
+    },
+    "candidate_branches_considered": [
+      {
+        "branch": "tp/rte-v5-seam-foundation-restart",
+        "sha": "6fe35370aa51714c8133d4d60bf1985fe151bfe8",
+        "origin_main_left_right_count": "9 5",
+        "classification": "reference_only",
+        "rationale": "Only unique patch-id entry observed was operator docs/root hygiene; runtime fixes were patch-equivalent or already represented elsewhere."
+      },
+      {
+        "branch": "tp/rte-live-cert-artifact-contract-hardening",
+        "sha": "e0f461495086192bc1127ab360d3851997be0f81",
+        "origin_main_left_right_count": "35 12",
+        "classification": "carry_forward_source",
+        "rationale": "Contains live-certification runtime/test split-gate work. Proof-only terminal commits were omitted."
+      },
+      {
+        "branch": "tp/rte-topology-smoke-matrix",
+        "sha": "550367e27f1b0c9bccde2dc046830186a326717e",
+        "origin_main_left_right_count": "35 22",
+        "classification": "primary_carry_forward_source",
+        "rationale": "Supersedes live-cert, topology triage, and precommit debt branches; contains route-control, preflight-route, and live-spend runtime fixes."
+      },
+      {
+        "branch": "codex/rte-seam-extraction-foundation-v2",
+        "sha": "182e4e3b28722f1fad6dbb9507761a504bc48101",
+        "origin_main_left_right_count": "60 20",
+        "classification": "already_represented",
+        "rationale": "Compared with --cherry; listed entries were patch-equivalent to origin/main and produced no unique carry-forward slice."
+      },
+      {
+        "branch": "tp/rte-topology-gate-and-precommit-debt-triage",
+        "sha": "bf2bec5f1aed7ecbcebc8ac62cc44fa5e2e124be",
+        "origin_main_left_right_count": "35 13",
+        "classification": "do_not_carry",
+        "rationale": "Ancestor of topology branch; unique visible payload was triage/proof-only."
+      },
+      {
+        "branch": "repo-precommit-debt-cleanup",
+        "sha": "0ca2fb13d723556855a4529f755e500ad1d08956",
+        "origin_main_left_right_count": "35 15",
+        "classification": "do_not_carry",
+        "rationale": "Ancestor of topology branch but represents root/docs cleanup and proof, not required runtime behavior."
+      },
+      {
+        "branch": "codex/rte-adapter-smoke",
+        "sha": "22de888a918542f907b15f3e5d09e57f6ad3864d",
+        "origin_main_left_right_count": "160 1",
+        "classification": "do_not_carry",
+        "rationale": "Unique commit adds an ADHD RTE adapter and root smoke script with local ConPort assumptions; outside the bounded repo-truth-extractor audit target."
+      },
+      {
+        "branch": "codex/rte-intelligence-routing-proof",
+        "sha": "d10d000d8775d9a02e69fadbcb8454053efb4753",
+        "origin_main_left_right_count": "35 9",
+        "classification": "already_represented",
+        "rationale": "Compared with --cherry; all listed commits were patch-equivalent to origin/main."
+      }
+    ],
+    "selected_source_commits": [
+      {
+        "source_commit": "7c4f8de7f",
+        "source_subject": "feat(rte): split certification gates and proof reporting",
+        "integration_commit": "4a5042a4c",
+        "carried": "Runtime, tests, and live-certification doc.",
+        "excluded": "proof/rte-live-cert-and-artifact-contract-hardening.proof.json and reports/rte-production-certification-status.json."
+      },
+      {
+        "source_commit": "5d7dde40c",
+        "source_subject": "fix(rte): harden route control and h3 budget",
+        "integration_commit": "3bfc9ab4c",
+        "carried": "Route normalization, route-control budget guard, and associated tests.",
+        "excluded": "None."
+      },
+      {
+        "source_commit": "e6bd478e3",
+        "source_subject": "fix(rte): align preflight routes with execution overrides",
+        "integration_commit": "8d78b1c81",
+        "carried": "Preflight route alignment runtime/test changes.",
+        "excluded": "None."
+      },
+      {
+        "source_commit": "283866f02",
+        "source_subject": "fix(rte): prevent duplicate live spend accounting",
+        "integration_commit": "4ed712020",
+        "carried": "Runtime spend-accounting guard in run_extraction_v5.py.",
+        "excluded": "proof/rte-thin-topology-proof.proof.json."
+      }
+    ],
+    "integration_only_commits": [
+      {
+        "integration_commit": "5f4feab19",
+        "subject": "test(rte): drop generated status fixture dependency",
+        "rationale": "The source test asserted a generated reports/rte-production-certification-status.json snapshot that this packet forbids carrying forward; writer behavior remains covered by tmp_path generation tests."
+      },
+      {
+        "integration_commit": "ac1d95681",
+        "subject": "docs(rte): normalize live certification gate frontmatter",
+        "rationale": "Applied docs-frontmatter-guard output for the carried live-certification doc."
+      }
+    ],
+    "omitted_commits": [
+      {
+        "commit": "bc90bf4de",
+        "subject": "fix(dopemux): align extractor entrypoints with canonical v5",
+        "rationale": "Cherry-pick inspection reduced to no diff against current origin/main after preserving the typed current questionary helper."
+      },
+      {
+        "commit": "e0f461495",
+        "subject": "docs(rte): finalize packet proof state",
+        "rationale": "Proof-only."
+      },
+      {
+        "commit": "a6a2c5c1b",
+        "subject": "docs(rte): normalize certification gate note",
+        "rationale": "Doc-only refinement from source branch; superseded locally by docs-frontmatter-guard normalization for the carried note."
+      },
+      {
+        "commit": "bf2bec5f1",
+        "subject": "docs(rte): triage topology and precommit blockers",
+        "rationale": "Triage/proof-only."
+      },
+      {
+        "commit": "4c48652f9",
+        "subject": "chore(docs): clean precommit debt",
+        "rationale": "Root/docs hygiene cleanup outside runtime-bearing RTE scope."
+      },
+      {
+        "commit": "0ca2fb13d",
+        "subject": "chore(docs): add precommit debt cleanup proof",
+        "rationale": "Proof-only."
+      },
+      {
+        "commit": "0d6c615b0",
+        "subject": "docs(proof): capture rte route control hardening evidence",
+        "rationale": "Proof-only."
+      },
+      {
+        "commit": "fb8a15ea3",
+        "subject": "docs(proof): record thin topology blocked preflight",
+        "rationale": "Proof-only."
+      },
+      {
+        "commit": "538dec319",
+        "subject": "docs(proof): record conport degraded topology blocker",
+        "rationale": "Proof-only."
+      },
+      {
+        "commit": "550367e27",
+        "subject": "docs(proof): audit rte topology observability scope",
+        "rationale": "Proof-only."
+      },
+      {
+        "commit": "22de888a9",
+        "subject": "feat(adhd): add RTE adapter and conport smoke test",
+        "rationale": "Optional secondary branch; local adapter/smoke surface outside bounded RTE integration audit target."
+      }
+    ]
+  },
+  "commit_plan": {
+    "slices": [
+      "Slice 0: establish clean origin/main worktree and pin branch heads.",
+      "Slice 1: classify lineage and runtime-bearing commit clusters.",
+      "Slice 2: carry forward selected runtime/test/doc changes only.",
+      "Slice 3: validate targeted RTE integration branch.",
+      "Slice 4: write proof artifact and audit handoff."
+    ],
+    "completed_slices": [0, 1, 2, 3, 4],
+    "replan_events": [
+      {
+        "event": "git_fetch_all_secondary_remote_failure",
+        "detail": "git fetch --all --prune updated origin but failed on gtm-ssh with Repository not found. A direct git fetch origin --prune succeeded, so origin/main base authority was current."
+      },
+      {
+        "event": "cherry_pick_strategy_change",
+        "detail": "Initial multi-commit --no-commit cherry-pick accumulated overlapping file changes and blocked continuation; reset and reapplied selected commits one at a time."
+      },
+      {
+        "event": "generated_report_fixture_removed",
+        "detail": "Targeted pytest initially failed because the carried source test asserted an omitted generated report snapshot. The static report assertion was removed while retaining writer behavior tests."
+      },
+      {
+        "event": "precommit_all_files_existing_debt",
+        "detail": "pre-commit run --all-files failed on pre-existing docs/root hygiene paths outside this integration diff and modified unrelated files; unrelated edits were reverted and changed-file pre-commit passed."
+      }
+    ],
+    "resulting_branch_head": "ac1d95681976903f33838d8fb6fa4176d4d6c7b8",
+    "bounded_diff": {
+      "files_changed": 13,
+      "insertions": 1084,
+      "deletions": 85,
+      "proof_or_generated_source_artifacts_carried": false
+    }
+  },
+  "validation": {
+    "commands_run": [
+      {
+        "command": "git fetch --all --prune",
+        "result": "failed",
+        "detail": "origin fetched and origin/main updated; secondary remote gtm-ssh failed with Repository not found."
+      },
+      {
+        "command": "git fetch origin --prune",
+        "result": "passed"
+      },
+      {
+        "command": "git worktree list --porcelain",
+        "result": "passed",
+        "detail": "Dedicated worktree /Users/hue/code/dopemux-mvp-rte-main-integration-audit-staging on tp/rte-main-integration-audit-staging."
+      },
+      {
+        "command": "python -m py_compile services/repo-truth-extractor/llm_runtime.py services/repo-truth-extractor/reporting.py services/repo-truth-extractor/rte_config.py services/repo-truth-extractor/rte_ops_surfaces.py services/repo-truth-extractor/rte_reports.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py services/repo-truth-extractor/tests/test_rte_v5_characterization.py services/repo-truth-extractor/tests/test_run_extraction_v5_benchmark_route_ownership.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py services/repo-truth-extractor/tests/test_run_extraction_v5_rollup_reports.py",
+        "result": "passed"
+      },
+      {
+        "command": "python -m pytest services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py services/repo-truth-extractor/tests/test_rte_v5_characterization.py services/repo-truth-extractor/tests/test_run_extraction_v5_benchmark_route_ownership.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py services/repo-truth-extractor/tests/test_run_extraction_v5_rollup_reports.py",
+        "result": "failed_then_passed",
+        "detail": "Initial run failed 1/64 on generated report snapshot dependency. After integration-only test adjustment, rerun passed 63/63 in 12.10s."
+      },
+      {
+        "command": "git diff --check origin/main..HEAD",
+        "result": "passed"
+      },
+      {
+        "command": "pre-commit run --all-files",
+        "result": "failed",
+        "detail": "Failed on all-files docs/root hygiene debt: docs/DOCS_AUDIT.md, docs/marketing/FEATURES_AND_BENEFITS.md, QUICKSTART.md, and markdown/trailing-space issues in existing docs. Hook edits to unrelated files were reverted."
+      },
+      {
+        "command": "pre-commit run --files <13 changed integration files>",
+        "result": "passed"
+      },
+      {
+        "command": "git status --short --branch",
+        "result": "passed",
+        "detail": "Clean integration worktree; branch ahead of origin/main."
+      }
+    ],
+    "blockers": [
+      {
+        "blocker": "gtm-ssh fetch failure",
+        "scope": "external",
+        "classification": "secondary remote access, not origin/main base blocker"
+      },
+      {
+        "blocker": "pre-commit all-files docs/root hygiene failures",
+        "scope": "external_to_selected_diff",
+        "classification": "existing repo-wide debt surfaced by all-files run; changed-file pre-commit passed"
+      }
+    ]
+  },
+  "stage_artifacts": {
+    "understanding": {
+      "summary": "Topology branch is the current primary stack for live-cert/topology runtime work; seam/intelligence branches are already represented; adapter smoke and precommit-debt branches are outside scope.",
+      "evidence_ledger": [
+        "Branch heads pinned by git rev-parse.",
+        "Ahead counts captured with git rev-list --left-right --count origin/main...branch.",
+        "Patch equivalence inspected with git log --left-right --cherry.",
+        "Runtime-bearing files identified through git show --stat --name-status."
+      ],
+      "assumptions": [
+        "origin/main is the required base authority after direct origin fetch.",
+        "Generated reports and source proof artifacts are not valid carry-forward content for this packet."
+      ],
+      "confidence": "HIGH",
+      "next_action": "Use this branch as the audit target for Codex/Claude/manual review."
+    },
+    "plan": {
+      "summary": "Cherry-pick or manually port only runtime/test/doc changes from selected source commits; omit proof, generated reports, root/docs cleanup, and unrelated adapter work.",
+      "evidence_ledger": [
+        "tp/rte-live-cert-artifact-contract-hardening is ancestor of tp/rte-topology-smoke-matrix.",
+        "tp/rte-topology-gate-and-precommit-debt-triage and repo-precommit-debt-cleanup are ancestors of topology branch but were classified proof/cleanup."
+      ],
+      "assumptions": [
+        "Source runtime commits can be represented as integration commits with explicit source SHA mapping."
+      ],
+      "confidence": "HIGH",
+      "next_action": "Run review on bounded branch diff from origin/main."
+    },
+    "review": {
+      "summary": "Self-review found no unresolved medium/high issues in the bounded diff after validation; one test was adjusted to avoid forbidden generated report dependency.",
+      "evidence_ledger": [
+        "No proof/ generated report paths appear in git diff --name-status origin/main..HEAD except this integration proof artifact after Slice 4.",
+        "Changed-file pre-commit passed."
+      ],
+      "assumptions": [
+        "No live provider execution was required for this staging audit branch."
+      ],
+      "confidence": "HIGH",
+      "next_action": "Manual/code review should focus on route normalization conflict resolution and live spend accounting semantics."
+    },
+    "final_verification": {
+      "summary": "The branch is audit-ready as a local integration target, not merge-ready by itself.",
+      "evidence_ledger": [
+        "py_compile passed.",
+        "Targeted RTE pytest passed 63/63.",
+        "git diff --check passed.",
+        "changed-file pre-commit passed.",
+        "all-files pre-commit blockers classified as external to selected diff."
+      ],
+      "assumptions": [
+        "A future merge-readiness pass may need to address repo-wide precommit debt and run broader suites."
+      ],
+      "confidence": "VERIFIED",
+      "next_action": "Review branch diff and decide whether to open a PR or run a second-pass audit."
+    }
+  },
+  "finalization": {
+    "codereview_status": "self_review_complete_no_unresolved_medium_or_high_findings",
+    "precommit_status": {
+      "all_files": "failed_external_repo_wide_debt",
+      "changed_files": "passed"
+    },
+    "audit_readiness": "audit_ready_not_merge_ready",
+    "residual_risks": [
+      "The resulting branch may still not be merge-ready because all-files pre-commit fails on existing repo-wide docs/root hygiene debt.",
+      "Proof-only branches may contain useful historical context that was intentionally not carried into runtime code.",
+      "Live provider/topology behavior was not exercised end to end in this packet.",
+      "The route normalization conflict resolution should receive focused reviewer attention.",
+      "The generated status report snapshot was omitted by scope, so any reviewer expecting that artifact must regenerate it from runtime behavior rather than treat the source branch snapshot as authority."
+    ],
+    "next_recommended_reviewer_workflow": [
+      "Review git diff origin/main..tp/rte-main-integration-audit-staging.",
+      "Focus first on services/repo-truth-extractor/llm_runtime.py and services/repo-truth-extractor/run_extraction_v5.py.",
+      "Confirm generated report omission is acceptable for the audit target.",
+      "Run broader RTE/integration validation only after deciding whether repo-wide precommit debt is in scope."
+    ]
+  }
+}
