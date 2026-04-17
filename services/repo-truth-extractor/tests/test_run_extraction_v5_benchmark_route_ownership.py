@@ -105,6 +105,18 @@ def _ownership_payload(provider_name: str, provider_model_id: str, api_key_env: 
     )
 
 
+def _explicit_routes_payload(*, steps: dict[str, str] | None = None, phases: dict[str, str] | None = None) -> str:
+    return json.dumps(
+        {
+            "enabled": True,
+            "steps": steps or {},
+            "phases": phases or {},
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+
+
 def test_resolve_effective_step_route_defaults_to_promptset_when_no_ownership(monkeypatch) -> None:
     runner = _load_runner_module()
     cfg = _make_cfg(runner)
@@ -145,6 +157,48 @@ def test_resolve_effective_step_route_honors_benchmark_owned_non_strict_route(mo
     assert route["reason"] == "benchmark_route_ownership_primary"
 
 
+def test_call_llm_with_ladder_promotes_strict_two_tuple_routes_to_canonical_triples() -> None:
+    runner = _load_runner_module()
+    cfg = _make_cfg(runner)
+    observed_routes = []
+
+    def execute_attempt(route, hop_index):  # type: ignore[no-untyped-def]
+        observed_routes.append((route, hop_index))
+        provider, model_id, api_key_env = route
+        return {
+            "response_text": "",
+            "request_meta": {"failure_type": None, "status_code": 200},
+            "artifacts": [],
+            "route": (provider, model_id, api_key_env),
+            "artifacts_ok": True,
+            "escalation_trigger": None,
+        }
+
+    payload = runner.call_llm_with_ladder(
+        phase="A",
+        step_id="A0",
+        partition_id="A_P0001",
+        routing_policy="cost",
+        routing_tier="extract",
+        ladder=[("openrouter", "openai/gpt-5.3-codex")],
+        cfg=cfg,
+        execute_attempt=execute_attempt,
+    )
+
+    assert observed_routes == [(
+        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+        0,
+    )]
+    assert payload["route"] == (
+        "openrouter",
+        "openai/gpt-5.3-codex",
+        "OPENROUTER_API_KEY",
+    )
+    assert payload["request_meta"]["provider"] == "openrouter"
+    assert payload["request_meta"]["model_id"] == "openai/gpt-5.3-codex"
+    assert payload["request_meta"]["route_attempts"][0]["api_key_env"] == "OPENROUTER_API_KEY"
+
+
 def test_benchmark_route_ownership_payload_reports_enabled(monkeypatch) -> None:
     runner = _load_runner_module()
     monkeypatch.setenv(
@@ -154,3 +208,88 @@ def test_benchmark_route_ownership_payload_reports_enabled(monkeypatch) -> None:
     payload = runner.benchmark_route_ownership_payload(validate=True)
     assert payload["enabled"] is True
     assert payload["provider_name"] == "openrouter"
+
+
+def test_resolve_effective_step_route_honors_explicit_step_override_for_later_phase(
+    monkeypatch,
+) -> None:
+    runner = _load_runner_module()
+    cfg = _make_cfg(runner)
+    monkeypatch.setenv(
+        "DPMX_EXPLICIT_STEP_ROUTES",
+        _explicit_routes_payload(steps={"H:H3": "openrouter/openai/gpt-5.4"}),
+    )
+
+    route = runner.resolve_effective_step_route("H", "H3", cfg)
+
+    assert route["provider"] == "openrouter"
+    assert route["model_id"] == "openai/gpt-5.4"
+    assert route["reason"] == "explicit_step_route_override"
+    assert route["route_control"]["selector"] == "step"
+
+
+def test_resolve_effective_step_route_prefers_step_override_over_phase_override(
+    monkeypatch,
+) -> None:
+    runner = _load_runner_module()
+    cfg = _make_cfg(runner)
+    monkeypatch.setenv(
+        "DPMX_EXPLICIT_STEP_ROUTES",
+        _explicit_routes_payload(
+            steps={"H:H3": "openrouter/openai/gpt-5.4"},
+            phases={"H": "openrouter/openai/gpt-5.3-codex"},
+        ),
+    )
+
+    route = runner.resolve_effective_step_route("H", "H3", cfg)
+
+    assert route["provider"] == "openrouter"
+    assert route["model_id"] == "openai/gpt-5.4"
+    assert route["reason"] == "explicit_step_route_override"
+
+
+def test_call_llm_with_ladder_blocks_same_account_quota_escalation() -> None:
+    runner = _load_runner_module()
+    cfg = _make_cfg(runner)
+    observed_routes = []
+
+    def execute_attempt(route, hop_index):  # type: ignore[no-untyped-def]
+        observed_routes.append((route, hop_index))
+        provider, model_id, api_key_env = route
+        return {
+            "response_text": "",
+            "request_meta": {
+                "failure_type": "quota_or_billing",
+                "status_code": 402,
+            },
+            "artifacts": [],
+            "route": (provider, model_id, api_key_env),
+            "artifacts_ok": False,
+            "escalation_trigger": "provider_failure",
+        }
+
+    payload = runner.call_llm_with_ladder(
+        phase="H",
+        step_id="H3",
+        partition_id="H_P0001",
+        routing_policy="cost",
+        routing_tier="extract",
+        ladder=[
+            ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+        ],
+        cfg=cfg,
+        execute_attempt=execute_attempt,
+    )
+
+    assert observed_routes == [(
+        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+        0,
+    )]
+    assert payload["request_meta"]["route_guard_blocked"] is True
+    assert (
+        payload["request_meta"]["route_guard_reason"]
+        == "quota_or_billing_same_api_key_env"
+    )
+    assert payload["request_meta"]["blocked_next_route"] == "openrouter/openai/gpt-5.4"
+    assert payload["request_meta"]["route_hop_total"] == 1

@@ -80,3 +80,46 @@ def test_telemetry_snapshot_writers_are_deterministic(tmp_path: Path) -> None:
         (tmp_path / "telemetry" / "RUN_DASHBOARD.json").read_text(encoding="utf-8")
     )
     assert dashboard_file["summary"]["PASS"] == 9
+
+
+def test_build_first_failure_context_preserves_requested_and_final_routes() -> None:
+    runner = _load_runner_module()
+
+    payload = runner.build_first_failure_context(
+        partition_id="H_P0001",
+        failure_class="payload",
+        failure_stage="model_execution",
+        reason="payload",
+        artifact_name=None,
+        item_key=None,
+        item_id=None,
+        item_path=None,
+        remediation_hint="Check provider auth/quota/status.",
+        request_meta={
+            "failure_type": "payload",
+            "status_code": 402,
+            "route_attempts": [
+                {
+                    "provider": "openrouter",
+                    "model_id": "openai/gpt-5.3-codex",
+                },
+                {
+                    "provider": "openrouter",
+                    "model_id": "openai/gpt-5.4",
+                },
+            ],
+        },
+        requested_provider="openrouter",
+        requested_model_id="openai/gpt-5.3-codex",
+        final_provider="openrouter",
+        final_model_id="openai/gpt-5.4",
+    )
+
+    assert payload["route"] == "openrouter/openai/gpt-5.4"
+    assert payload["requested_route"] == "openrouter/openai/gpt-5.3-codex"
+    assert payload["route_attempts"] == [
+        "openrouter/openai/gpt-5.3-codex",
+        "openrouter/openai/gpt-5.4",
+    ]
+    assert payload["underlying_failure_type"] == "payload"
+    assert payload["underlying_status_code"] == 402
