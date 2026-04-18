@@ -22,6 +22,7 @@ import asyncio
 import sys
 import json
 import logging
+import os
 import subprocess
 from pathlib import Path
 from typing import Any, Dict, Optional, List
@@ -412,6 +413,11 @@ class SerenaV2MCPServer:
             "adhd_features": False,
             "conport": False,  # F001/F002: ConPort connection tracking
         }
+        
+        # dopeCode Layers
+        self.ast_engine = None
+        self.write_layer = None
+        self.refactor_layer = None
 
         # Error tracking for diagnostics
         self.initialization_errors: Dict[str, str] = {}
@@ -450,6 +456,19 @@ class SerenaV2MCPServer:
 
         # Enhanced: Start background services (file watcher)
         await self._ensure_component("file_watcher")
+        
+        # Initialize dopeCode Layers
+        from dopecode.transform.write_layer import WriteLayer
+        from dopecode.navigation.ast_engine import ASTEngine
+        from dopecode.transform.refactor_layer import RefactorLayer
+        workspace_id = os.environ.get("DOPEMUX_WORKSPACE_ID", "default_workspace")
+        self.write_layer = WriteLayer(self.workspace, workspace_id)
+        # AST engine requires tree_sitter and lsp to be populated.
+        # We pass self.tree_sitter and self.lsp, but since they are lazy-loaded, we will re-inject them in the tool calls or pass the server instance.
+        # A simpler way is to pass `self` or initialize them on first tool call. Let's initialize them inline here just passing the lazy references.
+        # We'll update ast_engine to fetch them dynamically if needed.
+        self.ast_engine = ASTEngine(self.workspace, workspace_id, getattr(self, "tree_sitter", None), getattr(self, "lsp", None))
+        self.refactor_layer = RefactorLayer(self.write_layer, self.ast_engine)
 
         logger.info(f"✓ Server ready in {(datetime.now() - self.server_start_time).total_seconds():.2f}s")
 
@@ -717,6 +736,19 @@ class SerenaV2MCPServer:
             logger.info("File Watcher: Monitoring code changes, auto-refresh enabled")
         else:
             logger.warning("File Watcher: Failed to start, manual refresh required")
+
+    async def _ensure_dopecode_dependencies(self, require_lsp: bool = False, require_tree_sitter: bool = False) -> None:
+        """Hydrate lazy dependencies used by the dopeCode layers."""
+        if require_lsp:
+            await self._ensure_component("lsp")
+        if require_tree_sitter:
+            await self._ensure_component("tree_sitter")
+
+        if hasattr(self, "ast_engine"):
+            self.ast_engine.set_dependencies(
+                tree_sitter=getattr(self, "tree_sitter", None),
+                lsp=getattr(self, "lsp", None),
+            )
 
     def register_tools(self):
         """Register MCP tools with the server"""
@@ -1465,6 +1497,225 @@ class SerenaV2MCPServer:
                         "required": ["relative_path"]
                     }
                 ),
+                Tool(
+                    name="get_file_symbols",
+                    description="Return dopeCode symbol inventory for a file. Uses Tree-sitter when available and falls back to language-native parsing for bounded symbol discovery.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "relative_path": {
+                                "type": "string",
+                                "description": "Path relative to workspace root"
+                            }
+                        },
+                        "required": ["relative_path"]
+                    }
+                ),
+                Tool(
+                    name="get_ast_outline",
+                    description="Return a simplified AST outline for a file, derived from dopeCode symbol discovery.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "relative_path": {
+                                "type": "string",
+                                "description": "Path relative to workspace root"
+                            }
+                        },
+                        "required": ["relative_path"]
+                    }
+                ),
+                Tool(
+                    name="find_callers",
+                    description="Find calling locations for a symbol ID using dopeCode reference resolution and enclosing symbol ownership.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "symbol_id_str": {
+                                "type": "string",
+                                "description": "SymbolID string in <workspace>::<file>::<symbol>::<line> format"
+                            }
+                        },
+                        "required": ["symbol_id_str"]
+                    }
+                ),
+                Tool(
+                    name="find_callees",
+                    description="Find direct callees within a symbol body using dopeCode AST analysis.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "symbol_id_str": {
+                                "type": "string",
+                                "description": "SymbolID string in <workspace>::<file>::<symbol>::<line> format"
+                            }
+                        },
+                        "required": ["symbol_id_str"]
+                    }
+                ),
+                Tool(
+                    name="get_import_graph",
+                    description="Return a deterministic import graph for one file or the Python workspace subset.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "relative_path": {
+                                "type": "string",
+                                "description": "Optional path relative to workspace root. Omit to inspect the Python workspace subset."
+                            }
+                        },
+                        "required": []
+                    }
+                ),
+                Tool(
+                    name="search_pattern",
+                    description="Search workspace files for a literal or regex pattern with deterministic ordering.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "pattern": {
+                                "type": "string",
+                                "description": "Literal text or regex pattern to search for"
+                            },
+                            "relative_path": {
+                                "type": "string",
+                                "description": "Optional path relative to workspace root to scope the search"
+                            },
+                            "use_regex": {
+                                "type": "boolean",
+                                "description": "Interpret pattern as regex",
+                                "default": False
+                            },
+                            "max_results": {
+                                "type": "integer",
+                                "description": "Maximum matches to return",
+                                "default": 100,
+                                "minimum": 1
+                            }
+                        },
+                        "required": ["pattern"]
+                    }
+                ),
+                Tool(
+                    name="write_file",
+                    description="Overwrite an existing workspace file through the dopeCode write layer with audit logging.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "relative_path": {
+                                "type": "string",
+                                "description": "Path relative to workspace root"
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "New file content"
+                            }
+                        },
+                        "required": ["relative_path", "content"]
+                    }
+                ),
+                Tool(
+                    name="create_file",
+                    description="Create a new workspace file through the dopeCode write layer with audit logging.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "relative_path": {
+                                "type": "string",
+                                "description": "Path relative to workspace root"
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "New file content"
+                            }
+                        },
+                        "required": ["relative_path", "content"]
+                    }
+                ),
+                Tool(
+                    name="apply_patch",
+                    description="Preview-only dopeCode patch application entry point. Current implementation logs intent and raises for execution.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "relative_path": {
+                                "type": "string",
+                                "description": "Path relative to workspace root"
+                            },
+                            "diff_text": {
+                                "type": "string",
+                                "description": "Unified diff text"
+                            }
+                        },
+                        "required": ["relative_path", "diff_text"]
+                    }
+                ),
+                Tool(
+                    name="batch_apply_patch",
+                    description="Deterministic batch patch preview or execution entry point for dopeCode write operations.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "operations": {
+                                "type": "array",
+                                "items": {"type": "object"},
+                                "description": "Ordered patch operations"
+                            },
+                            "preview": {
+                                "type": "boolean",
+                                "description": "Preview only",
+                                "default": True
+                            }
+                        },
+                        "required": ["operations"]
+                    }
+                ),
+                Tool(
+                    name="rename_symbol",
+                    description="Preview or execute symbol rename through the dopeCode refactor layer. Execution remains deferred beyond preview mode.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "symbol_id_str": {
+                                "type": "string",
+                                "description": "SymbolID string in <workspace>::<file>::<symbol>::<line> format"
+                            },
+                            "new_name": {
+                                "type": "string",
+                                "description": "Replacement symbol name"
+                            },
+                            "preview": {
+                                "type": "boolean",
+                                "description": "Preview only",
+                                "default": True
+                            }
+                        },
+                        "required": ["symbol_id_str", "new_name"]
+                    }
+                ),
+                Tool(
+                    name="replace_symbol_body",
+                    description="Preview or execute symbol body replacement through the dopeCode refactor layer. Execution remains deferred beyond preview mode.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "symbol_id_str": {
+                                "type": "string",
+                                "description": "SymbolID string in <workspace>::<file>::<symbol>::<line> format"
+                            },
+                            "new_body": {
+                                "type": "string",
+                                "description": "Replacement symbol body text"
+                            },
+                            "preview": {
+                                "type": "boolean",
+                                "description": "Preview only",
+                                "default": True
+                            }
+                        },
+                        "required": ["symbol_id_str", "new_body"]
+                    }
+                ),
             ]
 
         @self.server.call_tool()
@@ -1537,11 +1788,42 @@ class SerenaV2MCPServer:
                     result = await self.find_test_file_tool(**arguments)
                 elif name == "get_unified_complexity":
                     result = await self.get_unified_complexity_tool(**arguments)
+                elif name == "get_file_symbols":
+                    await self._ensure_dopecode_dependencies(require_tree_sitter=True)
+                    result = await self.ast_engine.get_file_symbols(**arguments)
+                elif name == "get_ast_outline":
+                    await self._ensure_dopecode_dependencies(require_tree_sitter=True)
+                    result = await self.ast_engine.get_ast_outline(**arguments)
+                elif name == "find_callers":
+                    await self._ensure_dopecode_dependencies(require_lsp=True, require_tree_sitter=True)
+                    result = await self.ast_engine.find_callers(**arguments)
+                elif name == "find_callees":
+                    await self._ensure_dopecode_dependencies(require_tree_sitter=True)
+                    result = await self.ast_engine.find_callees(**arguments)
+                elif name == "get_import_graph":
+                    await self._ensure_dopecode_dependencies()
+                    result = await self.ast_engine.get_import_graph(**arguments)
+                elif name == "search_pattern":
+                    await self._ensure_dopecode_dependencies()
+                    result = await self.ast_engine.search_pattern(**arguments)
+                elif name == "write_file":
+                    result = self.write_layer.write_file(**arguments)
+                elif name == "create_file":
+                    result = self.write_layer.create_file(**arguments)
+                elif name == "apply_patch":
+                    result = self.write_layer.apply_patch(**arguments)
+                elif name == "batch_apply_patch":
+                    result = self.write_layer.batch_apply_patch(**arguments)
+                elif name == "rename_symbol":
+                    result = await self.refactor_layer.rename_symbol(**arguments)
+                elif name == "replace_symbol_body":
+                    result = await self.refactor_layer.replace_symbol_body(**arguments)
                 else:
                     raise ValueError(f"Unknown tool: {name}")
 
+                if not isinstance(result, str):
+                    result = json.dumps(result, indent=2, default=str)
                 return [TextContent(type="text", text=result)]
-
             except (ValueError, FileNotFoundError, RuntimeError) as e:
                 error_msg = f"❌ Error in {name}: {str(e)}"
                 logger.error(error_msg)
