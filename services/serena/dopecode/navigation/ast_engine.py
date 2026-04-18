@@ -7,9 +7,7 @@ Enhanced code structure parsing with ADHD-optimized complexity analysis.
 Complements LSP semantic understanding with detailed syntactic insights.
 """
 
-import asyncio
 import ast
-import json
 import logging
 import re
 import time
@@ -689,7 +687,7 @@ class TreeSitterAnalyzer:
             test_content = "def test_function():\n    return True"
             if "python" in self.parsers:
                 start_time = time.time()
-                tree = self.parsers["python"].parse(bytes(test_content, 'utf8'))
+                self.parsers["python"].parse(bytes(test_content, 'utf8'))
                 parse_time = (time.time() - start_time) * 1000
 
                 return {
@@ -1285,7 +1283,6 @@ class ASTEngine:
             line = symbol.line
             full_path = self._resolve_file(symbol.file_path)
             zero_line, zero_column = self._symbol_position(full_path, symbol.symbol_name, symbol.line)
-            column = zero_column + 1
             symbol_name = symbol.symbol_name
         else:
             if file_path is None or line is None or column is None:

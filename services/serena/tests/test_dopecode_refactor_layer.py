@@ -214,3 +214,10 @@ async def test_replace_symbol_body_preview_and_apply_support_typescript_block_fu
             "return 3",
             preview=True,
         )
+
+    with pytest.raises(ValueError):
+        await refactor.replace_symbol_body(
+            run_symbol_id,
+            "",
+            preview=True,
+        )

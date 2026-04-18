@@ -216,6 +216,8 @@ class RefactorLayer:
                 raise NotImplementedError(
                     "replace_symbol_body currently supports block-bodied JavaScript and TypeScript functions and classes only"
                 )
+            if not new_body.strip():
+                raise ValueError("replace_symbol_body requires a non-empty JavaScript or TypeScript body")
 
             lines = content.splitlines(keepends=True)
             body_start_line = body_node.start_point[0] + 2
