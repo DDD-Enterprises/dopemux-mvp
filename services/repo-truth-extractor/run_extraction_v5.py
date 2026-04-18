@@ -18249,20 +18249,7 @@ def main() -> None:
             args, raw_argv
         )
     if args.max_cost_usd is not None and args.max_cost_usd <= 0:
-        parser.error("--max-cost-usd must be > 0 when provided.")
-    
-    router = None
-    if args.prescan_import_dir:
-        if IntelligenceRouter:
-            router = IntelligenceRouter.from_dir(Path(args.prescan_import_dir))
-            if router:
-                logger.info(f"Initialized IntelligenceRouter from {args.prescan_import_dir}")
-            else:
-                logger.warning(
-                    f"Failed to initialize IntelligenceRouter from {args.prescan_import_dir}"
-                )
-        else:
-            logger.warning(
+router = None
                 "IntelligenceRouter class not available, skipping imported prescan logic."
             )
 
@@ -18796,7 +18783,7 @@ def main() -> None:
     if _active_profile:
         logger.info(
             "Loaded profile: %s (v%s)",
-            _active_profile.get("profile_id", args.profile),
+if not cfg.prescan_skip:
             _active_profile.get("version", "?"),
         )
         # Apply budget overrides conservatively when the caller kept default limits.
