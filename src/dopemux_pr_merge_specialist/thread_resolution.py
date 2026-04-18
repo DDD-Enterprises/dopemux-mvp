@@ -97,6 +97,22 @@ def is_implementable_comment(
     return False
 
 
+def is_actionable_comment(
+    comment: Optional[ThreadComment], policy: Dict[str, Any]
+) -> bool:
+    if comment is None:
+        return False
+    thread_rules = policy.get("thread_rules", {})
+    if not bool(thread_rules.get("enable_agentic_fix", False)):
+        return False
+    if comment.author in BOT_AUTHORS:
+        return False
+    body = comment.body.strip()
+    if len(body) < 10:
+        return False
+    return True
+
+
 def decide_thread_disposition(
     thread: ReviewThread, *, validation_green: bool, policy: Dict[str, Any]
 ) -> ThreadDisposition:
@@ -126,6 +142,13 @@ def decide_thread_disposition(
             thread_id=thread.id,
             disposition="implement",
             reason="Thread contains machine-applicable suggestion pattern.",
+            path=path,
+        )
+    if is_actionable_comment(comment, policy):
+        return ThreadDisposition(
+            thread_id=thread.id,
+            disposition="agentic_fix",
+            reason="Thread contains human feedback actionable by AI remediation agent.",
             path=path,
         )
     return ThreadDisposition(
@@ -320,6 +343,20 @@ def apply_thread_dispositions(
                 )
             )
             continue
+        if disposition.disposition == "agentic_fix":
+            # Agentic fixes are heavy and require isolation/verification cycles.
+            # We mark them as NOT applied here; they must be handled by the
+            # caller (e.g. pr_apply in queue_drain.py) using remediate_review_thread.
+            applied.append(
+                ThreadDisposition(
+                    thread_id=disposition.thread_id,
+                    disposition="agentic_fix",
+                    reason="Thread marked for agentic remediation; pending execution slice.",
+                    path=disposition.path,
+                    applied=False,  # Must be set to True by the orchestrator after successful agent run
+                )
+            )
+            continue
         applied.append(disposition)
     return applied
 
@@ -343,9 +380,31 @@ def resolve_verified_threads(
 
         if disposition.disposition in {
             "implement",
-            "decline_with_rationale",
+            "agentic_fix",
             "auto_resolve_outdated",
         }:
+            # Post evidence-backed reply first
+            reply_body = f"✅ Automated verification passed for this {disposition.disposition}."
+            if disposition.disposition == "agentic_fix":
+                reply_body = (
+                    "🤖 Agentic remediation complete. A minimal surgical fix was applied "
+                    "and local validation suites passed. Resolving thread."
+                )
+            elif disposition.disposition == "implement":
+                reply_body = "✅ Machine-applicable suggestion applied and verified locally. Resolving thread."
+
+            append_command_log(
+                commands_log,
+                _execute_thread_graphql(
+                    graph_reply_to_thread,
+                    disposition.thread_id,
+                    reply_body,
+                    repo_root=repo_root,
+                    timeout_seconds=timeout_seconds,
+                ),
+            )
+
+            # Then resolve
             append_command_log(
                 commands_log,
                 _execute_thread_graphql(
