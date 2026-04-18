@@ -463,10 +463,10 @@ class TestCLI:
         )
         assert inspect.unwrap(registered_restore.callback).__code__.co_firstlineno == expected_start_line
 
-    @patch("dopemux.cli.ConfigManager")
-    @patch("dopemux.cli.AttentionMonitor")
-    @patch("dopemux.cli.ContextManager")
-    @patch("dopemux.cli.TaskDecomposer")
+    @patch("dopemux.commands.session_commands.ConfigManager")
+    @patch("dopemux.commands.session_commands.AttentionMonitor")
+    @patch("dopemux.commands.session_commands.ContextManager")
+    @patch("dopemux.commands.session_commands.TaskDecomposer")
     def test_status_command_all_metrics(
         self, mock_decomposer, mock_context, mock_attention, mock_config
     ):
@@ -512,8 +512,8 @@ class TestCLI:
         mock_decomposer.return_value = mock_task_decomposer
 
         runner = CliRunner()
-        with patch("dopemux.cli.Path.cwd", return_value=Path("/test")):
-            with patch("dopemux.cli.Path.exists", return_value=True):
+        with patch("dopemux.commands.session_commands.Path.cwd", return_value=Path("/test")):
+            with patch("dopemux.commands.session_commands.Path.exists", return_value=True):
                 result = runner.invoke(cli, ["status"])
 
         assert result.exit_code == 0
@@ -599,7 +599,7 @@ class TestCLI:
 
     def test_attention_emoji_mapping(self):
         """Test _get_attention_emoji function."""
-        from dopemux.cli import _get_attention_emoji
+        from dopemux.commands.session_commands import _get_attention_emoji
 
         assert _get_attention_emoji("focused") == "🎯"
         assert _get_attention_emoji("scattered") == "🌪️"
