@@ -1,0 +1,63 @@
+{
+  "packet": {
+    "name": "DMX-TP-DOPECODE-PHASE2-REFRACTOR-001",
+    "project": "dopemux-mvp",
+    "objective": "Implement bounded patch and refactor engine on top of the completed AST/navigation foundation."
+  },
+  "authoritative_surfaces": [
+    "services/serena/mcp_server.py",
+    "services/serena/dopecode/navigation/ast_engine.py",
+    "services/serena/dopecode/navigation/symbol_manager.py",
+    "services/serena/dopecode/transform/write_layer.py",
+    "services/serena/dopecode/transform/refactor_layer.py"
+  ],
+  "files_changed": [
+    "services/serena/mcp_server.py",
+    "services/serena/dopecode/transform/write_layer.py",
+    "services/serena/dopecode/transform/refactor_layer.py",
+    "services/serena/tests/test_dopecode_write_layer.py",
+    "services/serena/tests/test_dopecode_refactor_layer.py",
+    "proof/dopecode_phase2_contract.md",
+    "proof/dopecode_phase2_implementation.md",
+    "proof/dopecode_phase2.proof.json"
+  ],
+  "implementation_notes": {
+    "apply_patch": "Pure-Python unified diff applier with canonical workspace-root boundary checks and explicit rejection of malformed or multi-file patch payloads.",
+    "batch_apply_patch": "Deterministic path ordering with preview receipts and explicit partial-failure reporting.",
+    "rename_symbol": "Preview/apply flow using word-boundary text replacement across deterministically ordered affected files.",
+    "replace_symbol_body": "Preview/apply flow for Python symbols that preserves the definition signature and replaces only the body block."
+  },
+  "validation": {
+    "passed": [
+      "pytest -q services/serena/tests/test_dopecode_write_layer.py services/serena/tests/test_dopecode_refactor_layer.py services/serena/tests/test_dopecode_ast_engine.py",
+      "pytest -q services/serena/tests",
+      "pre-commit run --files services/serena/dopecode/transform/write_layer.py services/serena/dopecode/transform/refactor_layer.py services/serena/mcp_server.py services/serena/tests/test_dopecode_write_layer.py services/serena/tests/test_dopecode_refactor_layer.py services/serena/tests/test_dopecode_ast_engine.py proof/dopecode_phase2_contract.md proof/dopecode_phase2_implementation.md proof/dopecode_phase2.proof.json"
+    ],
+    "codereview": {
+      "status": "manual_repo_review_clean",
+      "issues_found": 0,
+      "scope": [
+        "services/serena/dopecode/transform/write_layer.py",
+        "services/serena/dopecode/transform/refactor_layer.py",
+        "services/serena/mcp_server.py",
+        "services/serena/tests/test_dopecode_write_layer.py",
+        "services/serena/tests/test_dopecode_refactor_layer.py",
+        "services/serena/tests/test_dopecode_ast_engine.py"
+      ]
+    },
+    "observed_regression": []
+  },
+  "constraints_observed": [
+    "No shell-based editing was used for mutations.",
+    "Workspace escape attempts are rejected.",
+    "Preview paths do not mutate files.",
+    "Existing Dopemux/ADHD feature registration was preserved in mcp_server.py."
+  ],
+  "remaining_limits": [
+    "replace_symbol_body is Python-only.",
+    "Unsupported unified diff shapes fail closed.",
+    "Broader Serena runtime drift remains outside the dopeCode slice."
+  ],
+  "confidence": "VERIFIED",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/473"
+}

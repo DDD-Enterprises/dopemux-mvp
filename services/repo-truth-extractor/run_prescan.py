@@ -141,6 +141,11 @@ def main() -> int:
         help="Skip expensive operations (no grok passes, no git enrichment)",
     )
     parser.add_argument(
+        "--allow-online-llm",
+        action="store_true",
+        help="Explicitly authorize online LLM execution and API spend",
+    )
+    parser.add_argument(
         "-v",
         "--verbose",
         action="store_true",
@@ -182,6 +187,7 @@ def main() -> int:
         cost_estimate=args.cost_estimate and not args.no_cost_estimate,
         batch_mode=args.batch_mode and not args.no_batch_mode,
         max_tokens_per_batch=args.max_tokens_per_batch,
+        allow_online_llm=args.allow_online_llm,
         verbose=args.verbose,
     )
 
