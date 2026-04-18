@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from ..policy.mutation_policy import MutationPolicy
+
 logger = logging.getLogger(__name__)
 
 
@@ -22,9 +24,10 @@ class _UnifiedDiffHunk:
 class WriteLayer:
     """Controlled code transformation layer. Strictly enforces workspace bounds."""
 
-    def __init__(self, workspace_root: Path, workspace_id: str):
+    def __init__(self, workspace_root: Path, workspace_id: str, policy: Optional[MutationPolicy] = None):
         self.workspace_root = workspace_root.resolve()
         self.workspace_id = workspace_id
+        self.policy = policy or MutationPolicy(self.workspace_root, workspace_id)
 
     def _validate_boundary(self, relative_path: str) -> Path:
         """Resolve a workspace-relative path and reject any escape from the root."""
@@ -241,12 +244,13 @@ class WriteLayer:
         hunks = self._parse_unified_diff(diff_text, relative_path)
         source_lines = target.read_text(encoding="utf-8").splitlines(keepends=True)
         patched_lines = self._apply_hunks(source_lines, hunks)
+        policy = self.policy.single_file_patch(relative_path, preview=False)
 
         if patched_lines == source_lines:
             self._log_mutation(
                 "apply_patch",
                 [relative_path],
-                {"action": "noop", "hunk_count": len(hunks), "changed": False},
+                {"action": "noop", "hunk_count": len(hunks), "changed": False, "policy": policy.as_dict()},
             )
             return {
                 "status": "noop",
@@ -254,6 +258,7 @@ class WriteLayer:
                 "file": relative_path,
                 "changed": False,
                 "hunk_count": len(hunks),
+                "policy": policy.as_dict(),
                 "message": "Patch produced no content changes.",
             }
 
@@ -270,6 +275,7 @@ class WriteLayer:
                 "added_lines": added_lines,
                 "removed_lines": removed_lines,
                 "changed": True,
+                "policy": policy.as_dict(),
             },
         )
         return {
@@ -280,6 +286,7 @@ class WriteLayer:
             "hunk_count": len(hunks),
             "added_lines": added_lines,
             "removed_lines": removed_lines,
+            "policy": policy.as_dict(),
             "message": f"Successfully applied patch to {relative_path}",
         }
 
@@ -291,6 +298,7 @@ class WriteLayer:
         )
         ordered_files = [op.get("path") for _, op in ordered if op.get("path")]
         unique_files = sorted({path for path in ordered_files if path})
+        policy = self.policy.batch_patch(operations, preview=preview)
 
         if preview:
             receipts = []
@@ -319,6 +327,7 @@ class WriteLayer:
                 "total_operations": len(operations),
                 "ordered_files": unique_files,
                 "receipts": receipts,
+                "policy": policy.as_dict(),
                 "message": "Preview mode: no files were mutated.",
             }
 
@@ -383,13 +392,14 @@ class WriteLayer:
         self._log_mutation(
             "batch_apply_patch",
             unique_files,
-            {
-                "preview": False,
-                "operation_count": len(operations),
-                "applied_count": applied_count,
-                "failed_count": failed_count,
-                "status": batch_status,
-            },
+                {
+                    "preview": False,
+                    "operation_count": len(operations),
+                    "applied_count": applied_count,
+                    "failed_count": failed_count,
+                    "status": batch_status,
+                    "policy": policy.as_dict(),
+                },
         )
         return {
             "status": batch_status,
@@ -400,4 +410,5 @@ class WriteLayer:
             "failed_count": failed_count,
             "ordered_files": unique_files,
             "receipts": receipts,
+            "policy": policy.as_dict(),
         }
