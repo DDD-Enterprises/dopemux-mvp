@@ -412,6 +412,11 @@ class SerenaV2MCPServer:
             "adhd_features": False,
             "conport": False,  # F001/F002: ConPort connection tracking
         }
+        
+        # dopeCode Layers
+        self.ast_engine = None
+        self.write_layer = None
+        self.refactor_layer = None
 
         # Error tracking for diagnostics
         self.initialization_errors: Dict[str, str] = {}
@@ -450,6 +455,19 @@ class SerenaV2MCPServer:
 
         # Enhanced: Start background services (file watcher)
         await self._ensure_component("file_watcher")
+        
+        # Initialize dopeCode Layers
+        from dopecode.transform.write_layer import WriteLayer
+        from dopecode.navigation.ast_engine import ASTEngine
+        from dopecode.transform.refactor_layer import RefactorLayer
+        workspace_id = os.environ.get("DOPEMUX_WORKSPACE_ID", "default_workspace")
+        self.write_layer = WriteLayer(self.workspace, workspace_id)
+        # AST engine requires tree_sitter and lsp to be populated.
+        # We pass self.tree_sitter and self.lsp, but since they are lazy-loaded, we will re-inject them in the tool calls or pass the server instance.
+        # A simpler way is to pass `self` or initialize them on first tool call. Let's initialize them inline here just passing the lazy references.
+        # We'll update ast_engine to fetch them dynamically if needed.
+        self.ast_engine = ASTEngine(self.workspace, workspace_id, getattr(self, "tree_sitter", None), getattr(self, "lsp", None))
+        self.refactor_layer = RefactorLayer(self.write_layer, self.ast_engine)
 
         logger.info(f"✓ Server ready in {(datetime.now() - self.server_start_time).total_seconds():.2f}s")
 
