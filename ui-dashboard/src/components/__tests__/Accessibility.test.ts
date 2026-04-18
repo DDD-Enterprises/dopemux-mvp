@@ -122,6 +122,7 @@ test('TaskSequencer.tsx displays total remaining duration with accessibility', (
 
 test('App.tsx has accessible header chips and skip link', () => {
   const appContent = fs.readFileSync(path.resolve(__dirname, '../../App.tsx'), 'utf8');
+  const themeContent = fs.readFileSync(path.resolve(__dirname, '../../theme.ts'), 'utf8');
   expect(appContent).toContain('href="#main-dashboard"');
   expect(appContent).toContain('aria-label={`System is actively monitoring ritual state: ${connectionLabel} DØPEMÜX Ritual Daemon`}');
   expect(appContent).toContain('<Tooltip title="Current cognitive status and load percentage" arrow>');
@@ -131,7 +132,8 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('aria-label={`System is actively monitoring ritual state: ${connectionLabel} DØPEMÜX Ritual Daemon`}');
   expect(appContent).toContain('aria-label="Clear all notifications"');
   expect(appContent).toMatch(/<Tooltip title="Clear all notifications to reduce visual noise" arrow>/);
-  expect(appContent).toContain('&:focus-visible');
+  expect(themeContent).toContain('MuiChip');
+  expect(themeContent).toContain('&:focus-visible');
   expect(appContent).toContain('ref={feedHeadingRef}');
   expect(appContent).toContain('tabIndex={-1}');
 });
