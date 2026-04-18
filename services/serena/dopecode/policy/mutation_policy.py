@@ -42,6 +42,18 @@ class MutationPolicyDecision:
             "reason": self.reason,
         }
 
+    def approval_receipt(self) -> Dict[str, Any]:
+        return {
+            "operation": self.operation,
+            "operation_class": self.operation_class,
+            "execution_mode": self.execution_mode,
+            "requires_approval": self.requires_approval,
+            "preview_required": self.preview_required,
+            "approval_level": self.approval_level,
+            "blast_radius": self.blast_radius,
+            "affected_files": list(self.affected_files),
+        }
+
 
 class MutationPolicy:
     """Explicit, deterministic mutation policy for dopeCode operations."""

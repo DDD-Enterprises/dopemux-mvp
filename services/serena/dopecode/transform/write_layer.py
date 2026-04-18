@@ -259,6 +259,7 @@ class WriteLayer:
                 "changed": False,
                 "hunk_count": len(hunks),
                 "policy": policy.as_dict(),
+                "approval_receipt": policy.approval_receipt(),
                 "message": "Patch produced no content changes.",
             }
 
@@ -287,6 +288,7 @@ class WriteLayer:
             "added_lines": added_lines,
             "removed_lines": removed_lines,
             "policy": policy.as_dict(),
+            "approval_receipt": policy.approval_receipt(),
             "message": f"Successfully applied patch to {relative_path}",
         }
 
@@ -328,6 +330,7 @@ class WriteLayer:
                 "ordered_files": unique_files,
                 "receipts": receipts,
                 "policy": policy.as_dict(),
+                "approval_receipt": policy.approval_receipt(),
                 "message": "Preview mode: no files were mutated.",
             }
 
@@ -411,4 +414,5 @@ class WriteLayer:
             "ordered_files": unique_files,
             "receipts": receipts,
             "policy": policy.as_dict(),
+            "approval_receipt": policy.approval_receipt(),
         }

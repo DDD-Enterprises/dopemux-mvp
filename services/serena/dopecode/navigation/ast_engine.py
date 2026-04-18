@@ -734,7 +734,7 @@ class ASTEngine:
         self.tree_sitter = tree_sitter
         self.lsp = lsp
         self.symbol_manager = SymbolManager(self.workspace_root, workspace_id)
-        self._javascript_parser: Optional[Any] = None
+        self._script_parsers: Dict[str, Any] = {}
 
     def set_dependencies(self, tree_sitter: Optional[Any] = None, lsp: Optional[Any] = None) -> None:
         if tree_sitter is not None:
@@ -775,28 +775,54 @@ class ASTEngine:
     def _read_text(self, path: Path) -> str:
         return path.read_text(encoding="utf-8")
 
-    def _javascript_parser_instance(self) -> Optional[Parser]:
+    def _script_parser_instance(self, script_kind: str, source_path: Optional[Path] = None) -> Optional[Parser]:
         if not TREE_SITTER_AVAILABLE:
             return None
-        if self._javascript_parser is not None:
-            return self._javascript_parser
+
+        cache_key = script_kind
+        if script_kind == "typescript" and source_path is not None and source_path.suffix.lower() == ".tsx":
+            cache_key = "typescript_tsx"
+
+        if cache_key in self._script_parsers:
+            return self._script_parsers[cache_key]
 
         try:
-            language = Language(tsjavascript.language())
+            if script_kind == "javascript":
+                language = Language(tsjavascript.language())
+            elif script_kind == "typescript":
+                if source_path is not None and source_path.suffix.lower() == ".tsx":
+                    language = Language(tstypescript.language_tsx())
+                else:
+                    language = Language(tstypescript.language_typescript())
+            else:
+                return None
+
             parser = Parser()
             parser.language = language
-            self._javascript_parser = parser
+            self._script_parsers[cache_key] = parser
             return parser
         except Exception as exc:
-            logger.debug(f"Failed to initialize JavaScript parser: {exc}")
-            self._javascript_parser = None
+            logger.debug(f"Failed to initialize {script_kind} parser: {exc}")
+            self._script_parsers[cache_key] = None
             return None
 
-    def _javascript_tree(self, content: str):
-        parser = self._javascript_parser_instance()
+    def _javascript_parser_instance(self, source_path: Optional[Path] = None) -> Optional[Parser]:
+        return self._script_parser_instance("javascript", source_path)
+
+    def _typescript_parser_instance(self, source_path: Optional[Path] = None) -> Optional[Parser]:
+        return self._script_parser_instance("typescript", source_path)
+
+    def _script_tree(self, script_kind: str, content: str, source_path: Optional[Path] = None):
+        parser = self._script_parser_instance(script_kind, source_path)
         if not parser:
             return None
         return parser.parse(content.encode("utf-8"))
+
+    def _javascript_tree(self, content: str, source_path: Optional[Path] = None):
+        return self._script_tree("javascript", content, source_path)
+
+    def _typescript_tree(self, content: str, source_path: Optional[Path] = None):
+        return self._script_tree("typescript", content, source_path)
 
     def _node_text(self, content: str, node: Any) -> str:
         return content[node.start_byte:node.end_byte]
@@ -818,15 +844,19 @@ class ASTEngine:
         candidate_base = (source_path.parent / candidate_text).resolve()
         candidates = []
 
-        if candidate_base.suffix in {".js", ".jsx"}:
+        if candidate_base.suffix in {".js", ".jsx", ".ts", ".tsx"}:
             candidates.append(candidate_base)
         else:
             candidates.extend(
                 [
                     candidate_base.with_suffix(".js"),
                     candidate_base.with_suffix(".jsx"),
+                    candidate_base.with_suffix(".ts"),
+                    candidate_base.with_suffix(".tsx"),
                     candidate_base / "index.js",
                     candidate_base / "index.jsx",
+                    candidate_base / "index.ts",
+                    candidate_base / "index.tsx",
                 ]
             )
 
@@ -842,8 +872,8 @@ class ASTEngine:
                 return self._relative(resolved)
         return None
 
-    def _javascript_symbol_targets(self, content: str) -> List[Dict[str, Any]]:
-        tree = self._javascript_tree(content)
+    def _javascript_symbol_targets(self, content: str, source_path: Optional[Path] = None, script_kind: str = "javascript") -> List[Dict[str, Any]]:
+        tree = self._script_tree(script_kind, content, source_path)
         if tree is None:
             return []
 
@@ -913,9 +943,9 @@ class ASTEngine:
 
         return sorted(targets, key=lambda item: (item["line"], item["name"]))
 
-    def _javascript_import_aliases(self, content: str, source_path: Path) -> Dict[str, Dict[str, Any]]:
+    def _javascript_import_aliases(self, content: str, source_path: Path, script_kind: str = "javascript") -> Dict[str, Dict[str, Any]]:
         aliases: Dict[str, Dict[str, Any]] = {}
-        for entry in self._javascript_imports(content, source_path):
+        for entry in self._javascript_imports(content, source_path, script_kind=script_kind):
             module = entry.get("module")
             resolved_file = entry.get("resolved_path")
             kind = entry.get("kind")
@@ -937,8 +967,8 @@ class ASTEngine:
                 }
         return aliases
 
-    def _javascript_imports(self, content: str, source_path: Path) -> List[Dict[str, Any]]:
-        tree = self._javascript_tree(content)
+    def _javascript_imports(self, content: str, source_path: Path, script_kind: str = "javascript") -> List[Dict[str, Any]]:
+        tree = self._script_tree(script_kind, content, source_path)
         if tree is None:
             return []
 
@@ -946,6 +976,8 @@ class ASTEngine:
 
         for node in tree.root_node.named_children:
             if node.type != "import_statement":
+                continue
+            if script_kind == "typescript" and self._node_text(content, node).lstrip().startswith("import type"):
                 continue
 
             module_node = next((child for child in node.named_children if child.type == "string"), None)
@@ -998,8 +1030,8 @@ class ASTEngine:
                     return candidate
         return candidates[0]
 
-    def _javascript_callee_names(self, content: str, symbol_name: str, line: Optional[int], source_path: Path) -> List[Dict[str, Any]]:
-        targets = self._javascript_symbol_targets(content)
+    def _javascript_callee_names(self, content: str, symbol_name: str, line: Optional[int], source_path: Path, script_kind: str = "javascript") -> List[Dict[str, Any]]:
+        targets = self._javascript_symbol_targets(content, source_path, script_kind=script_kind)
         target = self._javascript_symbol_name_for_line(targets, symbol_name, line)
         if target is None or target["body_node"] is None:
             return []
@@ -1008,7 +1040,7 @@ class ASTEngine:
             item["name"]: item
             for item in targets
         }
-        import_aliases = self._javascript_import_aliases(content, source_path)
+        import_aliases = self._javascript_import_aliases(content, source_path, script_kind=script_kind)
         callees: Dict[Tuple[str, int, str], Dict[str, Any]] = {}
 
         def walk(node: Any) -> None:
@@ -1087,10 +1119,10 @@ class ASTEngine:
         full_path = self._resolve_file(relative_path)
         language = self._language_for_path(full_path)
 
-        if language == "javascript":
+        if language in {"javascript", "typescript"}:
             content = self._read_text(full_path)
             symbols = []
-            for target in self._javascript_symbol_targets(content):
+            for target in self._javascript_symbol_targets(content, full_path, script_kind=language):
                 symbols.append(
                     {
                         "symbol_id": self.symbol_manager.create_id(relative_path, target["name"], target["line"]),
@@ -1103,7 +1135,7 @@ class ASTEngine:
                         "complexity_level": CodeComplexity.SIMPLE.value,
                         "adhd_insights": [],
                         "metadata": {
-                            "language": "javascript",
+                            "language": language,
                             "node_type": target["node"].type,
                             "body_kind": target["body_kind"],
                             "exported": target["exported"],
@@ -1409,8 +1441,8 @@ class ASTEngine:
 
         if language == "python":
             callees = self._python_callee_names(content, symbol.symbol_name)
-        elif language == "javascript":
-            callees = self._javascript_callee_names(content, symbol.symbol_name, symbol.line, full_path)
+        elif language in {"javascript", "typescript"}:
+            callees = self._javascript_callee_names(content, symbol.symbol_name, symbol.line, full_path, script_kind=language)
         else:
             callees = []
 
@@ -1420,7 +1452,7 @@ class ASTEngine:
             "symbol": symbol.symbol_name,
             "callee_count": len(callees),
             "callees": callees,
-            "resolution_mode": "python_ast" if language == "python" else ("javascript_ast" if language == "javascript" else "fail_closed"),
+            "resolution_mode": "python_ast" if language == "python" else ("javascript_ast" if language == "javascript" else ("typescript_ast" if language in {"typescript", "tsx"} else "fail_closed")),
         }
 
     async def find_callers(self, symbol_id_str: str) -> Dict[str, Any]:
@@ -1487,8 +1519,8 @@ class ASTEngine:
                 })
         return sorted(imports, key=lambda item: (item["line"], item["module"]))
 
-    def _extract_javascript_imports(self, content: str, source_path: Path) -> List[Dict[str, Any]]:
-        return self._javascript_imports(content, source_path)
+    def _extract_javascript_imports(self, content: str, source_path: Path, script_kind: str = "javascript") -> List[Dict[str, Any]]:
+        return self._javascript_imports(content, source_path, script_kind=script_kind)
 
     def _module_to_relative(self, module: str) -> Optional[str]:
         if not module:
@@ -1509,7 +1541,7 @@ class ASTEngine:
         return None
 
     async def get_import_graph(self, relative_path: Optional[str] = None) -> Dict[str, Any]:
-        targets = [self._resolve_file(relative_path)] if relative_path else self._iter_workspace_files({".py", ".js", ".jsx"})
+        targets = [self._resolve_file(relative_path)] if relative_path else self._iter_workspace_files({".py", ".js", ".jsx", ".ts", ".tsx"})
         graph: Dict[str, List[Dict[str, Any]]] = {}
         for path in targets:
             rel = self._relative(path)
@@ -1517,8 +1549,8 @@ class ASTEngine:
                 language = self._language_for_path(path)
                 if language == "python":
                     graph[rel] = self._extract_python_imports(self._read_text(path))
-                elif language == "javascript":
-                    graph[rel] = self._extract_javascript_imports(self._read_text(path), path)
+                elif language in {"javascript", "typescript"}:
+                    graph[rel] = self._extract_javascript_imports(self._read_text(path), path, script_kind=language)
                 else:
                     graph[rel] = []
             except SyntaxError as exc:

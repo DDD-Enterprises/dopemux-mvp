@@ -21,6 +21,7 @@ def test_dopecode_runtime_bundles_policy_and_layers(tmp_path: Path):
     assert single_patch.execution_mode == "direct"
     assert single_patch.requires_approval is False
     assert single_patch.blast_radius == 1
+    assert single_patch.approval_receipt()["execution_mode"] == "direct"
 
     batch_patch = runtime.policy.batch_patch(
         [{"path": "b.py", "diff": "x"}, {"path": "a.py", "diff": "y"}],
@@ -31,6 +32,7 @@ def test_dopecode_runtime_bundles_policy_and_layers(tmp_path: Path):
     assert batch_patch.execution_mode == "preview_required"
     assert batch_patch.requires_approval is False
     assert batch_patch.affected_files == ["a.py", "b.py"]
+    assert batch_patch.approval_receipt()["execution_mode"] == "preview_required"
 
     batch_apply = runtime.policy.batch_patch(
         [{"path": "b.py", "diff": "x"}, {"path": "a.py", "diff": "y"}],
@@ -38,6 +40,7 @@ def test_dopecode_runtime_bundles_policy_and_layers(tmp_path: Path):
     )
     assert batch_apply.execution_mode == "approval_required"
     assert batch_apply.requires_approval is True
+    assert batch_apply.approval_receipt()["execution_mode"] == "approval_required"
 
     refactor = runtime.policy.refactor(
         "rename_symbol",
@@ -50,6 +53,7 @@ def test_dopecode_runtime_bundles_policy_and_layers(tmp_path: Path):
     assert refactor.execution_mode == "preview_required"
     assert refactor.requires_approval is False
     assert refactor.blast_radius == 2
+    assert refactor.approval_receipt()["execution_mode"] == "preview_required"
 
     refactor_apply = runtime.policy.refactor(
         "rename_symbol",
@@ -59,3 +63,4 @@ def test_dopecode_runtime_bundles_policy_and_layers(tmp_path: Path):
     )
     assert refactor_apply.execution_mode == "approval_required"
     assert refactor_apply.requires_approval is True
+    assert refactor_apply.approval_receipt()["execution_mode"] == "approval_required"
