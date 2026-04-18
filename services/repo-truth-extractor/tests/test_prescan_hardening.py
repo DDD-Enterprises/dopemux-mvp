@@ -29,8 +29,7 @@ def mock_limiter():
 def test_prescan_spend_gate_blocks_online_without_flag(mock_config, mock_limiter):
     runner = GrokPassRunner(mock_config, limiter=mock_limiter)
     candidate = {"provider": "xai", "model_id": "grok-4", "api_key_env": "XAI_API_KEY"}
-    evidence = ExecutionEvidence(pass_id="dedup", batch_id=None, planned_candidates=[candidate])
-    
+
     with patch.dict(os.environ, {"XAI_API_KEY": "fake-key"}):
         with pytest.raises(SecurityViolation):
             runner._call_grok("dedup", "payload", candidate, MagicMock())
@@ -88,7 +87,7 @@ def test_prescan_no_eligible_route_fails_closed(mock_config, mock_limiter):
     with patch.dict(os.environ, {}, clear=True): # No keys at all
          result = runner._call_grok_validated("dedup", "payload", routing_plan, evidence)
          assert result is None
-         assert evidence.final_status == "exhausted"
+         assert evidence.final_status == "no_live_lane"
 
 def test_prescan_missing_credential_skips_route(mock_config, mock_limiter):
     mock_config.allow_online_llm = True
