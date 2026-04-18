@@ -3,7 +3,6 @@ from __future__ import annotations
 """Module for symbol management and ID generation."""
 import logging
 from pathlib import Path
-from typing import Optional, Dict, Any, List
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)

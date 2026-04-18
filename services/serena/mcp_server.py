@@ -458,9 +458,9 @@ class SerenaV2MCPServer:
         await self._ensure_component("file_watcher")
         
         # Initialize dopeCode Layers
-        from dopecode.transform.write_layer import WriteLayer
-        from dopecode.navigation.ast_engine import ASTEngine
-        from dopecode.transform.refactor_layer import RefactorLayer
+        from .dopecode.transform.write_layer import WriteLayer
+        from .dopecode.navigation.ast_engine import ASTEngine
+        from .dopecode.transform.refactor_layer import RefactorLayer
         workspace_id = os.environ.get("DOPEMUX_WORKSPACE_ID", "default_workspace")
         self.write_layer = WriteLayer(self.workspace, workspace_id)
         # AST engine requires tree_sitter and lsp to be populated.
