@@ -1,0 +1,64 @@
+{
+  "packet": {
+    "name": "DMX-TP-DOPECODE-PHASE4-001",
+    "project": "dopemux-mvp",
+    "objective": "Expand dopeCode beyond Python-first graph/refactor capability by adding one bounded second-language path and approval-aware execution rules without weakening the verified Phase 3 policy, boundary, and mutation guarantees."
+  },
+  "authoritative_surfaces": [
+    "services/serena/dopecode/navigation/ast_engine.py",
+    "services/serena/dopecode/transform/refactor_layer.py",
+    "services/serena/dopecode/transform/write_layer.py",
+    "services/serena/dopecode/policy/mutation_policy.py",
+    "services/serena/dopecode/runtime.py",
+    "services/serena/mcp_server.py"
+  ],
+  "files_changed": [
+    "services/serena/dopecode/navigation/ast_engine.py",
+    "services/serena/dopecode/policy/mutation_policy.py",
+    "services/serena/dopecode/transform/refactor_layer.py",
+    "services/serena/tests/test_dopecode_ast_engine.py",
+    "services/serena/tests/test_dopecode_policy.py",
+    "services/serena/tests/test_dopecode_refactor_layer.py",
+    "proof/dopecode_phase4_contract.md",
+    "proof/dopecode_phase4_implementation.md",
+    "proof/dopecode_phase4.proof.json"
+  ],
+  "implementation_notes": {
+    "selected_second_language": "javascript",
+    "navigation_scope": "JavaScript symbol discovery, callee resolution, and import graph resolution are deterministic and fail closed for unsupported forms.",
+    "refactor_scope": "replace_symbol_body supports Python symbols and block-bodied JavaScript functions and classes.",
+    "policy_scope": "Mutation policy responses now expose execution_mode and requires_approval alongside existing preview metadata."
+  },
+  "validation": {
+    "passed": [
+      "pytest -q services/serena/tests/test_dopecode_ast_engine.py services/serena/tests/test_dopecode_write_layer.py services/serena/tests/test_dopecode_refactor_layer.py services/serena/tests/test_dopecode_policy.py",
+      "pre-commit run --files services/serena/dopecode/policy/mutation_policy.py services/serena/dopecode/navigation/ast_engine.py services/serena/dopecode/transform/refactor_layer.py services/serena/tests/test_dopecode_policy.py services/serena/tests/test_dopecode_ast_engine.py services/serena/tests/test_dopecode_refactor_layer.py"
+    ],
+    "codereview": {
+      "status": "manual_diff_review_clean",
+      "issues_found": 0,
+      "scope": [
+        "services/serena/dopecode/navigation/ast_engine.py",
+        "services/serena/dopecode/policy/mutation_policy.py",
+        "services/serena/dopecode/transform/refactor_layer.py",
+        "services/serena/tests/test_dopecode_ast_engine.py",
+        "services/serena/tests/test_dopecode_policy.py",
+        "services/serena/tests/test_dopecode_refactor_layer.py"
+      ]
+    },
+    "observed_regression": []
+  },
+  "constraints_observed": [
+    "No shell-based editing was used for mutations.",
+    "Workspace escape attempts remain rejected.",
+    "Preview paths do not mutate files.",
+    "JavaScript relative import resolution is workspace-local and source-directory-relative."
+  ],
+  "remaining_limits": [
+    "TypeScript remains fail-closed.",
+    "Inline JavaScript body forms remain fail-closed for replace_symbol_body.",
+    "Broader repository drift outside the dopeCode slice remains unverified."
+  ],
+  "confidence": "VERIFIED",
+  "pr_url": null
+}
