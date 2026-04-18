@@ -25,8 +25,10 @@ async def test_ast_engine_navigation_surfaces(tmp_path: Path):
     _write(
         tmp_path / "pkg" / "main.py",
         "from pkg.helpers import helper\n\n"
+        "def local_helper():\n"
+        "    return 2\n\n"
         "def run():\n"
-        "    return helper()\n\n"
+        "    return helper() + local_helper()\n\n"
         "def caller():\n"
         "    return run()\n",
     )
@@ -35,20 +37,25 @@ async def test_ast_engine_navigation_surfaces(tmp_path: Path):
 
     symbols = await engine.get_file_symbols("pkg/main.py")
     names = [item["name"] for item in symbols["symbols"]]
-    assert names == ["run", "caller"]
+    assert names == ["local_helper", "run", "caller"]
 
-    run_symbol_id = symbols["symbols"][0]["symbol_id"]
+    run_symbol_id = next(item["symbol_id"] for item in symbols["symbols"] if item["name"] == "run")
 
     callers = await engine.find_callers(run_symbol_id)
     assert callers["caller_count"] == 1
     assert callers["callers"][0]["caller"] == "caller"
 
     callees = await engine.find_callees(run_symbol_id)
-    assert callees["callee_count"] == 1
-    assert callees["callees"][0]["name"] == "helper"
+    assert callees["callee_count"] == 2
+    assert [item["name"] for item in callees["callees"]] == ["helper", "local_helper"]
+    assert callees["callees"][0]["kind"] == "from_import"
+    assert callees["callees"][0]["resolved_file"] == "pkg/helpers.py"
+    assert callees["callees"][1]["kind"] == "local_symbol"
+    assert callees["resolution_mode"] == "python_ast"
 
     imports = await engine.get_import_graph("pkg/main.py")
     assert imports["imports"]["pkg/main.py"][0]["module"] == "pkg.helpers"
+    assert imports["imports"]["pkg/main.py"][0]["resolved_path"] == "pkg/helpers.py"
 
     matches = await engine.search_pattern("helper", max_results=10)
     locations = [(item["file"], item["line"]) for item in matches["results"]]

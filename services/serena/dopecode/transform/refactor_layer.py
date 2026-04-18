@@ -4,6 +4,7 @@ import re
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
+from ..policy.mutation_policy import MutationPolicy
 from .write_layer import WriteLayer
 from ..navigation.ast_engine import ASTEngine
 from ..navigation.symbol_manager import SymbolID
@@ -18,9 +19,10 @@ def _sorted_unique(values: Iterable[str]) -> List[str]:
 class RefactorLayer:
     """Symbol refactoring and batch operations."""
 
-    def __init__(self, write_layer: WriteLayer, ast_engine: ASTEngine):
+    def __init__(self, write_layer: WriteLayer, ast_engine: ASTEngine, policy: Optional[MutationPolicy] = None):
         self.write_layer = write_layer
         self.ast_engine = ast_engine
+        self.policy = policy or getattr(write_layer, "policy", None) or MutationPolicy(write_layer.workspace_root, write_layer.workspace_id)
 
     def _symbol_pattern(self, symbol_name: str) -> re.Pattern[str]:
         return re.compile(rf"\b{re.escape(symbol_name)}\b")
@@ -83,6 +85,7 @@ class RefactorLayer:
         files = _sorted_unique([symbol.file_path, *(ref.get("file") for ref in refs)])
         receipts = self._rename_preview_receipts(symbol.symbol_name, files, new_name)
         total_replacements = sum(item["replacement_count"] for item in receipts)
+        policy = self.policy.refactor("rename_symbol", symbol_id_str, files, preview=preview)
 
         if preview:
             return {
@@ -95,6 +98,7 @@ class RefactorLayer:
                 "file_receipts": receipts,
                 "reference_count": len(refs),
                 "replacement_count": total_replacements,
+                "policy": policy.as_dict(),
                 "message": "Preview mode. Pass preview=False to apply the refactor.",
             }
 
@@ -107,6 +111,7 @@ class RefactorLayer:
                 "new_name": new_name,
                 "files_affected": files,
                 "replacement_count": 0,
+                "policy": policy.as_dict(),
                 "message": "No occurrences found to rename.",
             }
 
@@ -143,6 +148,7 @@ class RefactorLayer:
                 "new_name": new_name,
                 "modified_file_count": len(modified_files),
                 "replacement_count": total_replacements,
+                "policy": policy.as_dict(),
             },
         )
         return {
@@ -155,6 +161,7 @@ class RefactorLayer:
             "file_receipts": applied_receipts,
             "modified_files": modified_files,
             "replacement_count": total_replacements,
+            "policy": policy.as_dict(),
         }
 
     async def replace_symbol_body(self, symbol_id_str: str, new_body: str, preview: bool = True) -> Dict[str, Any]:
@@ -179,6 +186,7 @@ class RefactorLayer:
         body_end_index = max(body_end_line, body_start_line) - 1
         body_indent = re.match(r"^\s*", lines[body_start_index]).group(0) if body_start_index < len(lines) else ""
         rendered_body = self._indent_block(new_body, body_indent)
+        policy = self.policy.refactor("replace_symbol_body", symbol_id_str, [symbol.file_path], preview=preview)
 
         preview_payload = {
             "status": "preview",
@@ -192,6 +200,7 @@ class RefactorLayer:
                 "body_start_line": body_start_line,
                 "body_end_line": body_end_line,
             },
+            "policy": policy.as_dict(),
             "message": "Preview mode. Pass preview=False to apply the refactor.",
         }
 
@@ -207,6 +216,7 @@ class RefactorLayer:
                 "symbol_id": symbol_id_str,
                 "target_file": symbol.file_path,
                 "symbol": symbol.symbol_name,
+                "policy": policy.as_dict(),
                 "message": "Replacement produced no content changes.",
             }
 
@@ -221,6 +231,7 @@ class RefactorLayer:
                 "definition_end_line": body_end_line,
                 "body_start_line": body_start_line,
                 "body_end_line": body_end_line,
+                "policy": policy.as_dict(),
             },
         )
         return {
@@ -230,5 +241,6 @@ class RefactorLayer:
             "target_file": symbol.file_path,
             "symbol": symbol.symbol_name,
             "line_span": preview_payload["line_span"],
+            "policy": policy.as_dict(),
             "message": "Successfully replaced symbol body.",
         }
