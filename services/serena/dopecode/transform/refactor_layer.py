@@ -53,6 +53,36 @@ class RefactorLayer:
         pattern = self._symbol_pattern(symbol_name)
         return pattern.subn(new_name, content)
 
+    def _refactor_plan_receipt(
+        self,
+        *,
+        operation: str,
+        symbol_id: str,
+        target_symbol: str,
+        files_affected: List[str],
+        file_receipts: Optional[List[Dict[str, Any]]] = None,
+        confidence: str,
+        confidence_reason: str,
+        skipped_targets: Optional[List[Dict[str, Any]]] = None,
+        fail_closed_reasons: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        return {
+            "operation": operation,
+            "symbol_id": symbol_id,
+            "target_symbol": target_symbol,
+            "mutation_type": "symbol_refactor",
+            "confidence": confidence,
+            "confidence_reason": confidence_reason,
+            "supported_targets": list(files_affected),
+            "affected_file_summary": {
+                "count": len(files_affected),
+                "files": list(files_affected),
+            },
+            "file_receipts": file_receipts or [],
+            "skipped_targets": skipped_targets or [],
+            "fail_closed_reasons": fail_closed_reasons or [],
+        }
+
     def _python_symbol_node(self, content: str, symbol_name: str, line: int) -> Optional[ast.AST]:
         tree = ast.parse(content)
         fallback = None
@@ -108,6 +138,15 @@ class RefactorLayer:
                 "file_receipts": receipts,
                 "reference_count": len(refs),
                 "replacement_count": total_replacements,
+                "refactor_plan": self._refactor_plan_receipt(
+                    operation="rename_symbol",
+                    symbol_id=symbol_id_str,
+                    target_symbol=symbol.symbol_name,
+                    files_affected=files,
+                    file_receipts=receipts,
+                    confidence="medium",
+                    confidence_reason="Affected files are inventoried deterministically, but rename application remains bounded textual replacement within those files.",
+                ),
                 "policy": policy.as_dict(),
                 "approval_receipt": policy.approval_receipt(),
                 "message": "Preview mode. Pass preview=False to apply the refactor.",
@@ -253,6 +292,15 @@ class RefactorLayer:
                 "body_start_line": body_start_line,
                 "body_end_line": body_end_line,
             },
+            "refactor_plan": self._refactor_plan_receipt(
+                operation="replace_symbol_body",
+                symbol_id=symbol_id_str,
+                target_symbol=symbol.symbol_name,
+                files_affected=[symbol.file_path],
+                confidence="high",
+                confidence_reason="The replacement target is a single supported symbol body with explicit line boundaries.",
+                fail_closed_reasons=[],
+            ),
             "policy": policy.as_dict(),
             "approval_receipt": policy.approval_receipt(),
             "message": "Preview mode. Pass preview=False to apply the refactor.",

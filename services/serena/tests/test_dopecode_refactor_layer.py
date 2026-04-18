@@ -46,7 +46,10 @@ async def test_rename_symbol_preview_and_apply_are_workspace_bounded(tmp_path: P
     preview = await refactor.rename_symbol(run_symbol_id, "execute", preview=True)
     assert preview["status"] == "preview"
     assert preview["approval_receipt"]["execution_mode"] == "preview_required"
+    assert preview["approval_receipt"]["execution_status"] == "preview_only"
     assert preview["files_affected"] == ["pkg/mod.py", "pkg/other.py"]
+    assert preview["refactor_plan"]["confidence"] == "medium"
+    assert preview["refactor_plan"]["affected_file_summary"]["count"] == 2
     assert workspace.joinpath("pkg", "mod.py").read_text(encoding="utf-8").startswith("def run():")
 
     result = await refactor.rename_symbol(run_symbol_id, "execute", preview=False)
@@ -83,6 +86,8 @@ async def test_replace_symbol_body_preview_and_apply_preserve_signature(tmp_path
     )
     assert preview["status"] == "preview"
     assert preview["approval_receipt"]["execution_mode"] == "preview_required"
+    assert preview["refactor_plan"]["confidence"] == "high"
+    assert preview["refactor_plan"]["target_symbol"] == "run"
     assert preview["line_span"]["body_start_line"] == 2
 
     result = await refactor.replace_symbol_body(
@@ -131,6 +136,7 @@ async def test_replace_symbol_body_preview_and_apply_support_javascript(tmp_path
     )
     assert preview["status"] == "preview"
     assert preview["approval_receipt"]["execution_mode"] == "preview_required"
+    assert preview["approval_receipt"]["reason"] == "Symbol refactors must surface blast radius before apply."
     assert preview["line_span"]["body_start_line"] == 4
 
     result = await refactor.replace_symbol_body(
@@ -184,6 +190,7 @@ async def test_replace_symbol_body_preview_and_apply_support_typescript_block_fu
     )
     assert preview["status"] == "preview"
     assert preview["approval_receipt"]["execution_mode"] == "preview_required"
+    assert preview["refactor_plan"]["affected_file_summary"]["files"] == ["pkg/mod.ts"]
     assert preview["line_span"]["body_start_line"] == 4
 
     result = await refactor.replace_symbol_body(

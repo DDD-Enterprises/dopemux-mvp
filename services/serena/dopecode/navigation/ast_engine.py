@@ -1028,6 +1028,73 @@ class ASTEngine:
                     return candidate
         return candidates[0]
 
+    def _semantic_resolution_fields(
+        self,
+        *,
+        kind: str,
+        resolved_file: Optional[str],
+        confidence: float,
+        unresolved_reason: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        if kind == "local_symbol":
+            return {
+                "resolution_status": "resolved",
+                "certainty": "exact",
+                "reason_code": "local_symbol_match",
+                "confidence": round(confidence, 2),
+            }
+        if kind in {"import", "from_import", "qualified_import"} and resolved_file:
+            return {
+                "resolution_status": "resolved",
+                "certainty": "workspace_local",
+                "reason_code": "workspace_import_resolved",
+                "confidence": round(confidence, 2),
+            }
+        if kind in {"import", "from_import", "qualified_import"}:
+            return {
+                "resolution_status": "partial",
+                "certainty": "external_or_unresolved_import",
+                "reason_code": "workspace_import_not_resolved",
+                "confidence": round(confidence, 2),
+            }
+        if kind == "attribute_call":
+            return {
+                "resolution_status": "partial",
+                "certainty": "approximate",
+                "reason_code": "attribute_call_not_resolved",
+                "confidence": round(confidence, 2),
+            }
+        return {
+            "resolution_status": "unresolved",
+            "certainty": "unresolved",
+            "reason_code": unresolved_reason or "unresolved_call_target",
+            "confidence": round(confidence, 2),
+        }
+
+    def _semantic_summary(self, callees: List[Dict[str, Any]], dynamic_call_count: int = 0) -> Dict[str, int]:
+        summary = {
+            "resolved_count": 0,
+            "partial_count": 0,
+            "unresolved_count": 0,
+            "exact_count": 0,
+            "workspace_local_count": 0,
+            "approximate_count": 0,
+            "certainty_unresolved_count": 0,
+            "external_or_unresolved_import_count": 0,
+            "dynamic_call_count": dynamic_call_count,
+        }
+        for callee in callees:
+            status = callee.get("resolution_status")
+            certainty = callee.get("certainty")
+            if status:
+                summary[f"{status}_count"] += 1
+            if certainty:
+                certainty_key = f"{certainty}_count"
+                if certainty_key in {"unresolved_count", "resolved_count", "partial_count"}:
+                    certainty_key = f"certainty_{certainty}_count"
+                summary[certainty_key] += 1
+        return summary
+
     def _javascript_callee_names(self, content: str, symbol_name: str, line: Optional[int], source_path: Path, script_kind: str = "javascript") -> List[Dict[str, Any]]:
         targets = self._javascript_symbol_targets(content, source_path, script_kind=script_kind)
         target = self._javascript_symbol_name_for_line(targets, symbol_name, line)
@@ -1040,6 +1107,7 @@ class ASTEngine:
         }
         import_aliases = self._javascript_import_aliases(content, source_path, script_kind=script_kind)
         callees: Dict[Tuple[str, int, str], Dict[str, Any]] = {}
+        dynamic_call_count = 0
 
         def walk(node: Any) -> None:
             if node.type == "call_expression":
@@ -1049,6 +1117,7 @@ class ASTEngine:
                 resolved_name: Optional[str] = None
                 resolved_file: Optional[str] = None
                 confidence = 0.4
+                unresolved_reason = "name_not_resolved_in_workspace"
 
                 if func_node is not None and func_node.type == "identifier":
                     callee_name = self._node_text(content, func_node)
@@ -1056,17 +1125,20 @@ class ASTEngine:
                         callee_kind = "local_symbol"
                         resolved_name = callee_name
                         confidence = 1.0
+                        unresolved_reason = None
                     elif callee_name in import_aliases:
                         alias = import_aliases[callee_name]
                         callee_kind = alias["kind"]
                         resolved_name = alias["resolved_name"]
                         resolved_file = alias["resolved_file"]
                         confidence = 0.95 if resolved_file else 0.8
+                        unresolved_reason = None if resolved_file else "import_not_resolved_in_workspace"
                 elif func_node is not None and func_node.type == "member_expression":
                     object_node = func_node.child_by_field_name("object")
                     property_node = func_node.child_by_field_name("property")
                     if property_node is not None:
                         callee_name = self._node_text(content, property_node)
+                        unresolved_reason = "attribute_call_not_resolved"
                         if object_node is not None and object_node.type == "identifier":
                             object_name = self._node_text(content, object_node)
                             if object_name in import_aliases:
@@ -1075,13 +1147,23 @@ class ASTEngine:
                                 resolved_name = f"{alias['resolved_name']}.{callee_name}"
                                 resolved_file = alias["resolved_file"]
                                 confidence = 0.85 if resolved_file else 0.7
+                                unresolved_reason = None if resolved_file else "qualified_import_not_resolved_in_workspace"
                             elif object_name in local_symbols:
                                 callee_kind = "attribute_call"
                                 confidence = 0.5
+                                unresolved_reason = "attribute_call_not_resolved"
+                else:
+                    dynamic_call_count += 1
 
                 if callee_name:
                     line_no = node.start_point[0] + 1
                     key = (callee_name, line_no, resolved_name or callee_kind)
+                    semantic_fields = self._semantic_resolution_fields(
+                        kind=callee_kind,
+                        resolved_file=resolved_file,
+                        confidence=confidence,
+                        unresolved_reason=unresolved_reason,
+                    )
                     if key not in callees:
                         callees[key] = {
                             "name": callee_name,
@@ -1089,14 +1171,14 @@ class ASTEngine:
                             "kind": callee_kind,
                             "resolved_name": resolved_name,
                             "resolved_file": resolved_file,
-                            "confidence": round(confidence, 2),
+                            **semantic_fields,
                         }
 
             for child in node.named_children:
                 walk(child)
 
         walk(target["body_node"])
-        return sorted(callees.values(), key=lambda item: (item["line"], item["name"], item["kind"]))
+        return sorted(callees.values(), key=lambda item: (item["line"], item["name"], item["kind"])), dynamic_call_count
 
     def _symbol_to_dict(self, relative_path: str, element: StructuralElement) -> Dict[str, Any]:
         symbol_id = self.symbol_manager.create_id(relative_path, element.name, element.start_line)
@@ -1375,6 +1457,7 @@ class ASTEngine:
 
         local_symbols, import_aliases = self._python_symbol_indexes(tree)
         callees: Dict[Tuple[str, int, str], Dict[str, Any]] = {}
+        dynamic_call_count = 0
 
         for node in ast.walk(target):
             if not isinstance(node, ast.Call):
@@ -1385,6 +1468,7 @@ class ASTEngine:
             resolved_name: Optional[str] = None
             resolved_file: Optional[str] = None
             confidence = 0.4
+            unresolved_reason = "name_not_resolved_in_workspace"
 
             if isinstance(node.func, ast.Name):
                 callee_name = node.func.id
@@ -1392,23 +1476,30 @@ class ASTEngine:
                     callee_kind = "local_symbol"
                     resolved_name = callee_name
                     confidence = 1.0
+                    unresolved_reason = None
                 elif callee_name in import_aliases:
                     alias = import_aliases[callee_name]
                     callee_kind = alias["kind"]
                     resolved_name = alias["resolved_name"]
                     resolved_file = alias["resolved_file"]
                     confidence = 0.95 if resolved_file else 0.8
+                    unresolved_reason = None if resolved_file else "import_not_resolved_in_workspace"
             elif isinstance(node.func, ast.Attribute):
                 callee_name = node.func.attr
+                unresolved_reason = "attribute_call_not_resolved"
                 if isinstance(node.func.value, ast.Name) and node.func.value.id in import_aliases:
                     alias = import_aliases[node.func.value.id]
                     callee_kind = "qualified_import"
                     resolved_name = f"{alias['resolved_name']}.{node.func.attr}"
                     resolved_file = alias["resolved_file"]
                     confidence = 0.85 if resolved_file else 0.7
+                    unresolved_reason = None if resolved_file else "qualified_import_not_resolved_in_workspace"
                 elif isinstance(node.func.value, ast.Name) and node.func.value.id in local_symbols:
                     callee_kind = "attribute_call"
                     confidence = 0.5
+                    unresolved_reason = "attribute_call_not_resolved"
+            else:
+                dynamic_call_count += 1
 
             if not callee_name:
                 continue
@@ -1417,16 +1508,22 @@ class ASTEngine:
             key = (callee_name, line_no, resolved_name or callee_kind)
             if key in callees:
                 continue
+            semantic_fields = self._semantic_resolution_fields(
+                kind=callee_kind,
+                resolved_file=resolved_file,
+                confidence=confidence,
+                unresolved_reason=unresolved_reason,
+            )
             callees[key] = {
                 "name": callee_name,
                 "line": line_no,
                 "kind": callee_kind,
                 "resolved_name": resolved_name,
                 "resolved_file": resolved_file,
-                "confidence": round(confidence, 2),
+                **semantic_fields,
             }
 
-        return sorted(callees.values(), key=lambda item: (item["line"], item["name"], item["kind"]))
+        return sorted(callees.values(), key=lambda item: (item["line"], item["name"], item["kind"])), dynamic_call_count
 
     async def find_callees(self, symbol_id_str: str) -> Dict[str, Any]:
         from .symbol_manager import SymbolID
@@ -1437,11 +1534,12 @@ class ASTEngine:
         language = self._language_for_path(full_path)
 
         if language == "python":
-            callees = self._python_callee_names(content, symbol.symbol_name)
+            callees, dynamic_call_count = self._python_callee_names(content, symbol.symbol_name)
         elif language in {"javascript", "typescript"}:
-            callees = self._javascript_callee_names(content, symbol.symbol_name, symbol.line, full_path, script_kind=language)
+            callees, dynamic_call_count = self._javascript_callee_names(content, symbol.symbol_name, symbol.line, full_path, script_kind=language)
         else:
             callees = []
+            dynamic_call_count = 0
 
         return {
             "symbol_id": symbol_id_str,
@@ -1449,6 +1547,7 @@ class ASTEngine:
             "symbol": symbol.symbol_name,
             "callee_count": len(callees),
             "callees": callees,
+            "semantic_summary": self._semantic_summary(callees, dynamic_call_count=dynamic_call_count),
             "resolution_mode": "python_ast" if language == "python" else ("javascript_ast" if language == "javascript" else ("typescript_ast" if language in {"typescript", "tsx"} else "fail_closed")),
         }
 
