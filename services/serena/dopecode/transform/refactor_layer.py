@@ -1,52 +1,234 @@
+import ast
 import logging
-from typing import List, Dict, Any
+import re
+from pathlib import Path
+from typing import Any, Dict, Iterable, List, Optional, Tuple
+
 from .write_layer import WriteLayer
 from ..navigation.ast_engine import ASTEngine
+from ..navigation.symbol_manager import SymbolID
 
 logger = logging.getLogger(__name__)
 
+
+def _sorted_unique(values: Iterable[str]) -> List[str]:
+    return sorted({value for value in values if value})
+
+
 class RefactorLayer:
     """Symbol refactoring and batch operations."""
-    
+
     def __init__(self, write_layer: WriteLayer, ast_engine: ASTEngine):
         self.write_layer = write_layer
         self.ast_engine = ast_engine
 
+    def _symbol_pattern(self, symbol_name: str) -> re.Pattern[str]:
+        return re.compile(rf"\b{re.escape(symbol_name)}\b")
+
+    def _read_file_text(self, relative_path: str) -> str:
+        target = self.write_layer._validate_boundary(relative_path)
+        return target.read_text(encoding="utf-8")
+
+    def _rename_preview_receipts(self, symbol_name: str, files: List[str], new_name: str) -> List[Dict[str, Any]]:
+        pattern = self._symbol_pattern(symbol_name)
+        receipts = []
+        for relative_path in files:
+            content = self._read_file_text(relative_path)
+            match_count = len(pattern.findall(content))
+            receipts.append(
+                {
+                    "file": relative_path,
+                    "match_count": match_count,
+                    "replacement_count": match_count,
+                    "preview": True,
+                    "new_name": new_name,
+                }
+            )
+        receipts.sort(key=lambda item: item["file"])
+        return receipts
+
+    def _replace_occurrences(self, content: str, symbol_name: str, new_name: str) -> Tuple[str, int]:
+        pattern = self._symbol_pattern(symbol_name)
+        return pattern.subn(new_name, content)
+
+    def _python_symbol_node(self, content: str, symbol_name: str, line: int) -> Optional[ast.AST]:
+        tree = ast.parse(content)
+        fallback = None
+        for node in ast.walk(tree):
+            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                continue
+            if getattr(node, "name", None) != symbol_name:
+                continue
+            if getattr(node, "lineno", None) == line:
+                return node
+            if fallback is None and getattr(node, "lineno", 0) <= line <= getattr(node, "end_lineno", getattr(node, "lineno", 0)):
+                fallback = node
+        return fallback
+
+    def _indent_block(self, body_text: str, indent: str) -> str:
+        body_text = body_text.rstrip("\n")
+        if not body_text.strip():
+            body_text = "pass"
+        lines = body_text.splitlines()
+        indented_lines = [f"{indent}{line}" if line.strip() else indent.rstrip() for line in lines]
+        return "\n".join(indented_lines) + "\n"
+
     async def rename_symbol(self, symbol_id_str: str, new_name: str, preview: bool = True) -> Dict[str, Any]:
-        """Finds all references and renames the symbol. Requires preview."""
-        refs = await self.ast_engine.find_references(symbol_id_str)
-        if not refs:
-            return {"error": "No references found or LSP unavailable."}
-            
-        files_affected = list(set([r['file'] for r in refs if 'file' in r]))
-        
+        """Find all references and rename the symbol in a workspace-bounded way."""
+        symbol = SymbolID.parse(symbol_id_str)
+        if not new_name or not new_name.isidentifier():
+            raise ValueError(f"Invalid replacement symbol name: {new_name!r}")
+
+        refs = await self.ast_engine.find_references(symbol_id_str=symbol_id_str, include_declaration=True)
+        files = _sorted_unique([symbol.file_path, *(ref.get("file") for ref in refs)])
+        receipts = self._rename_preview_receipts(symbol.symbol_name, files, new_name)
+        total_replacements = sum(item["replacement_count"] for item in receipts)
+
         if preview:
             return {
                 "status": "preview",
                 "action": "rename_symbol",
                 "symbol_id": symbol_id_str,
+                "old_name": symbol.symbol_name,
                 "new_name": new_name,
-                "files_affected": files_affected,
+                "files_affected": files,
+                "file_receipts": receipts,
                 "reference_count": len(refs),
-                "message": "Preview mode. To execute, pass preview=False."
+                "replacement_count": total_replacements,
+                "message": "Preview mode. Pass preview=False to apply the refactor.",
             }
-            
-        # In a real implementation, we would generate a unified diff or syntax-aware edit here.
-        # For the foundational layer, we will log and fail safe.
-        raise NotImplementedError("rename_symbol execution deferred to Phase 2. Use preview=True to see affected files.")
+
+        if total_replacements == 0:
+            return {
+                "status": "noop",
+                "action": "rename_symbol",
+                "symbol_id": symbol_id_str,
+                "old_name": symbol.symbol_name,
+                "new_name": new_name,
+                "files_affected": files,
+                "replacement_count": 0,
+                "message": "No occurrences found to rename.",
+            }
+
+        applied_receipts: List[Dict[str, Any]] = []
+        modified_files: List[str] = []
+        for relative_path in files:
+            content = self._read_file_text(relative_path)
+            updated, replacements = self._replace_occurrences(content, symbol.symbol_name, new_name)
+            if replacements == 0:
+                applied_receipts.append(
+                    {
+                        "file": relative_path,
+                        "status": "noop",
+                        "replacement_count": 0,
+                    }
+                )
+                continue
+            self.write_layer.write_file(relative_path, updated)
+            modified_files.append(relative_path)
+            applied_receipts.append(
+                {
+                    "file": relative_path,
+                    "status": "applied",
+                    "replacement_count": replacements,
+                }
+            )
+
+        self.write_layer._log_mutation(
+            "rename_symbol",
+            modified_files,
+            {
+                "symbol_id": symbol_id_str,
+                "old_name": symbol.symbol_name,
+                "new_name": new_name,
+                "modified_file_count": len(modified_files),
+                "replacement_count": total_replacements,
+            },
+        )
+        return {
+            "status": "applied",
+            "action": "rename_symbol",
+            "symbol_id": symbol_id_str,
+            "old_name": symbol.symbol_name,
+            "new_name": new_name,
+            "files_affected": files,
+            "file_receipts": applied_receipts,
+            "modified_files": modified_files,
+            "replacement_count": total_replacements,
+        }
 
     async def replace_symbol_body(self, symbol_id_str: str, new_body: str, preview: bool = True) -> Dict[str, Any]:
-        """Replaces the body of a symbol."""
-        from ..navigation.symbol_manager import SymbolID
-        sym_id = SymbolID.parse(symbol_id_str)
-        
+        """Replace the body of a Python symbol with bounded workspace writes."""
+        symbol = SymbolID.parse(symbol_id_str)
+        target_path = self.write_layer._validate_boundary(symbol.file_path)
+        content = target_path.read_text(encoding="utf-8")
+
+        if target_path.suffix != ".py":
+            raise NotImplementedError("replace_symbol_body currently supports Python symbols only")
+
+        symbol_node = self._python_symbol_node(content, symbol.symbol_name, symbol.line)
+        if symbol_node is None:
+            raise ValueError(f"Symbol '{symbol.symbol_name}' not found in {symbol.file_path}")
+        if not hasattr(symbol_node, "body") or not symbol_node.body:
+            raise ValueError(f"Symbol '{symbol.symbol_name}' does not expose a replaceable body")
+
+        body_start_line = symbol_node.body[0].lineno
+        body_end_line = getattr(symbol_node, "end_lineno", body_start_line)
+        lines = content.splitlines(keepends=True)
+        body_start_index = max(body_start_line - 1, 0)
+        body_end_index = max(body_end_line, body_start_line) - 1
+        body_indent = re.match(r"^\s*", lines[body_start_index]).group(0) if body_start_index < len(lines) else ""
+        rendered_body = self._indent_block(new_body, body_indent)
+
+        preview_payload = {
+            "status": "preview",
+            "action": "replace_symbol_body",
+            "symbol_id": symbol_id_str,
+            "target_file": symbol.file_path,
+            "symbol": symbol.symbol_name,
+            "line_span": {
+                "definition_start_line": symbol_node.lineno,
+                "definition_end_line": body_end_line,
+                "body_start_line": body_start_line,
+                "body_end_line": body_end_line,
+            },
+            "message": "Preview mode. Pass preview=False to apply the refactor.",
+        }
+
         if preview:
+            return preview_payload
+
+        updated_lines = lines[:body_start_index] + rendered_body.splitlines(keepends=True) + lines[body_end_index + 1 :]
+        updated_content = "".join(updated_lines)
+        if updated_content == content:
             return {
-                "status": "preview",
+                "status": "noop",
                 "action": "replace_symbol_body",
-                "target_file": sym_id.file_path,
-                "symbol": sym_id.symbol_name,
-                "message": "Preview mode. To execute, pass preview=False."
+                "symbol_id": symbol_id_str,
+                "target_file": symbol.file_path,
+                "symbol": symbol.symbol_name,
+                "message": "Replacement produced no content changes.",
             }
-            
-        raise NotImplementedError("replace_symbol_body execution deferred to Phase 2. Use write_file for manual edits.")
+
+        self.write_layer.write_file(symbol.file_path, updated_content)
+        self.write_layer._log_mutation(
+            "replace_symbol_body",
+            [symbol.file_path],
+            {
+                "symbol_id": symbol_id_str,
+                "symbol": symbol.symbol_name,
+                "definition_start_line": symbol_node.lineno,
+                "definition_end_line": body_end_line,
+                "body_start_line": body_start_line,
+                "body_end_line": body_end_line,
+            },
+        )
+        return {
+            "status": "applied",
+            "action": "replace_symbol_body",
+            "symbol_id": symbol_id_str,
+            "target_file": symbol.file_path,
+            "symbol": symbol.symbol_name,
+            "line_span": preview_payload["line_span"],
+            "message": "Successfully replaced symbol body.",
+        }
