@@ -61,8 +61,8 @@ class TestCLI:
             with patch("dopemux.cli.Path.exists", return_value=True):
                 with patch("dopemux.cli.Path.resolve", return_value=Path("/test")):
                     with patch("dopemux.cli.Path.mkdir"):
-                        with patch("dopemux.cli.init_project", return_value=True):
-                            with patch("dopemux.cli.ClaudeConfigurator"):
+                        with patch("dopemux.commands.bootstrap_commands.init_project", return_value=True):
+                            with patch("dopemux.commands.bootstrap_commands.ClaudeConfigurator"):
                                 with patch("dopemux.cli.ContextManager"):
                                     result = runner.invoke(cli, ["-v", "init", "."])
 
@@ -71,7 +71,7 @@ class TestCLI:
 
     @patch("dopemux.cli.ConfigManager")
     @patch("dopemux.cli.Path.exists")
-    @patch("dopemux.cli.ClaudeConfigurator")
+    @patch("dopemux.commands.bootstrap_commands.ClaudeConfigurator")
     @patch("dopemux.cli.ContextManager")
     def test_init_command_success(
         self, mock_context, mock_configurator, mock_exists, mock_config
@@ -82,7 +82,7 @@ class TestCLI:
         runner = CliRunner()
         with patch("dopemux.cli.Path.resolve", return_value=Path("/test/project")):
             with patch("dopemux.cli.Path.mkdir"):
-                with patch("dopemux.cli.init_project", return_value=True):
+                with patch("dopemux.commands.bootstrap_commands.init_project", return_value=True):
                     result = runner.invoke(cli, ["init", "."])
 
         assert result.exit_code == 0
@@ -121,7 +121,7 @@ class TestCLI:
 
     @patch("dopemux.cli.ConfigManager")
     @patch("dopemux.cli.Path.exists")
-    @patch("dopemux.cli.ClaudeConfigurator")
+    @patch("dopemux.commands.bootstrap_commands.ClaudeConfigurator")
     @patch("dopemux.cli.ContextManager")
     def test_init_command_force_overwrite(
         self, mock_context, mock_configurator, mock_exists, mock_config
@@ -142,7 +142,7 @@ class TestCLI:
         runner = CliRunner()
         with patch("dopemux.cli.Path.resolve", return_value=Path("/test/project")):
             with patch("dopemux.cli.Path.mkdir"):
-                with patch("dopemux.cli.init_project", return_value=True):
+                with patch("dopemux.commands.bootstrap_commands.init_project", return_value=True):
                     result = runner.invoke(cli, ["init", "--force", "."])
 
         assert result.exit_code == 0
@@ -692,8 +692,8 @@ class TestCLI:
             with patch("dopemux.cli.Path.exists", return_value=True):
                 with patch("dopemux.cli.Path.resolve", return_value=Path("/test")):
                     with patch("dopemux.cli.Path.mkdir"):
-                        with patch("dopemux.cli.init_project", return_value=True):
-                            with patch("dopemux.cli.ClaudeConfigurator") as mock_configurator:
+                        with patch("dopemux.commands.bootstrap_commands.init_project", return_value=True):
+                            with patch("dopemux.commands.bootstrap_commands.ClaudeConfigurator") as mock_configurator:
                                 with patch("dopemux.cli.ContextManager"):
                                     result = runner.invoke(
                                         cli, ["init", "--template", "rust", "."]
