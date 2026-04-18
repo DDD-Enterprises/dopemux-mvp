@@ -521,8 +521,8 @@ class TestCLI:
         assert "Context Information" in result.output
         assert "Task Progress" in result.output
 
-    @patch("dopemux.cli.ConfigManager")
-    @patch("dopemux.cli.TaskDecomposer")
+    @patch("dopemux.commands.task_legacy_commands.ConfigManager")
+    @patch("dopemux.commands.task_legacy_commands.TaskDecomposer")
     def test_task_command_add_task(self, mock_decomposer, mock_config):
         """Test adding a task via task command."""
         mock_task_decomposer = Mock()
@@ -530,8 +530,8 @@ class TestCLI:
         mock_decomposer.return_value = mock_task_decomposer
 
         runner = CliRunner()
-        with patch("dopemux.cli.Path.cwd", return_value=Path("/test")):
-            with patch("dopemux.cli.Path.exists", return_value=True):
+        with patch("dopemux.commands.task_legacy_commands.Path.cwd", return_value=Path("/test")):
+            with patch("dopemux.commands.task_legacy_commands.Path.exists", return_value=True):
                 result = runner.invoke(
                     cli,
                     [
@@ -550,8 +550,8 @@ class TestCLI:
             description="Implement new feature", duration=30, priority="high"
         )
 
-    @patch("dopemux.cli.ConfigManager")
-    @patch("dopemux.cli.TaskDecomposer")
+    @patch("dopemux.commands.task_legacy_commands.ConfigManager")
+    @patch("dopemux.commands.task_legacy_commands.TaskDecomposer")
     def test_task_command_list_tasks(self, mock_decomposer, mock_config):
         """Test listing tasks via task command."""
         mock_task_decomposer = Mock()
@@ -572,8 +572,8 @@ class TestCLI:
         mock_decomposer.return_value = mock_task_decomposer
 
         runner = CliRunner()
-        with patch("dopemux.cli.Path.cwd", return_value=Path("/test")):
-            with patch("dopemux.cli.Path.exists", return_value=True):
+        with patch("dopemux.commands.task_legacy_commands.Path.cwd", return_value=Path("/test")):
+            with patch("dopemux.commands.task_legacy_commands.Path.exists", return_value=True):
                 result = runner.invoke(cli, ["task", "--list"])
 
         assert result.exit_code == 0
@@ -581,15 +581,15 @@ class TestCLI:
         assert "Task 1" in result.output
         assert "Task 2" in result.output
 
-    @patch("dopemux.cli.ConfigManager")
-    @patch("dopemux.cli.TaskDecomposer")
+    @patch("dopemux.commands.task_legacy_commands.ConfigManager")
+    @patch("dopemux.commands.task_legacy_commands.TaskDecomposer")
     def test_task_command_missing_description(self, mock_decomposer, mock_config):
         """Test task command with missing description."""
         mock_decomposer.return_value = Mock()
 
         runner = CliRunner()
-        with patch("dopemux.cli.Path.cwd", return_value=Path("/test")):
-            with patch("dopemux.cli.Path.exists", return_value=True):
+        with patch("dopemux.commands.task_legacy_commands.Path.cwd", return_value=Path("/test")):
+            with patch("dopemux.commands.task_legacy_commands.Path.exists", return_value=True):
                 result = runner.invoke(cli, ["task"])
 
         assert result.exit_code == 1
