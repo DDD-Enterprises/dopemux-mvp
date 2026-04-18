@@ -1,9 +1,6 @@
 from __future__ import annotations
-
-"""Module for symbol management and ID generation."""
 import logging
 from pathlib import Path
-from typing import Optional, Dict, Any, List
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
@@ -43,8 +40,6 @@ class SymbolManager:
 
     def resolve_path(self, relative_path: str) -> Path:
         full_path = (self.workspace_root / relative_path).resolve()
-        try:
-            full_path.relative_to(self.workspace_root)
-        except ValueError as exc:
+        if not str(full_path).startswith(str(self.workspace_root)):
             raise ValueError(f"Path traversal detected: {relative_path}")
         return full_path
