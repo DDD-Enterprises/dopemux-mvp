@@ -38,9 +38,9 @@ def mock_root_setup(mock_instance_dir):
     mock_root.__truediv__.return_value = mock_instance_dir
     return mock_root
 
-@patch("dopemux.cli.Path")
-@patch("dopemux.cli.console")
-@patch("dopemux.cli.shutil.copyfile")
+@patch("dopemux.commands._helpers.Path")
+@patch("dopemux.commands._helpers.console")
+@patch("dopemux.commands._helpers.shutil.copyfile")
 def test_env_export_allowlist(mock_copy, mock_console, mock_path_cls):
     """
     Verify that _persist_instance_env_exports filters variables
@@ -69,10 +69,10 @@ def test_env_export_allowlist(mock_copy, mock_console, mock_path_cls):
     assert "PATH" not in content
     assert "RANDOM_VAR" not in content
 
-@patch("dopemux.cli.Path")
+@patch("dopemux.commands._helpers.Path")
 @patch("os.environ.get")
-@patch("dopemux.cli.console")
-@patch("dopemux.cli.shutil.copyfile")
+@patch("dopemux.commands._helpers.console")
+@patch("dopemux.commands._helpers.shutil.copyfile")
 def test_env_export_secrets_opt_in(mock_copy, mock_console, mock_env_get, mock_path_cls):
     """
     Verify that secrets are exported when DOPEMUX_EXPORT_SECRETS=1.
@@ -94,10 +94,10 @@ def test_env_export_secrets_opt_in(mock_copy, mock_console, mock_env_get, mock_p
     assert "LITELLM_MASTER_KEY=sk-master-456" in content
     assert "DOPEMUX_INSTANCE_ID=A" in content
 
-@patch("dopemux.cli.Path")
+@patch("dopemux.commands._helpers.Path")
 @patch("os.environ.get")
-@patch("dopemux.cli.console")
-@patch("dopemux.cli.shutil.copyfile")
+@patch("dopemux.commands._helpers.console")
+@patch("dopemux.commands._helpers.shutil.copyfile")
 def test_env_export_secrets_masked_by_default(mock_copy, mock_console, mock_env_get, mock_path_cls):
     """
     Verify that secrets are NOT exported by default.
