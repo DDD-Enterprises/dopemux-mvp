@@ -18,6 +18,8 @@ class MutationPolicyDecision:
     workspace_scoped: bool
     deterministic: bool
     preview_required: bool
+    execution_mode: str
+    requires_approval: bool
     blast_radius: int
     affected_files: List[str] = field(default_factory=list)
     approval_level: str = "direct"
@@ -32,6 +34,8 @@ class MutationPolicyDecision:
             "workspace_scoped": self.workspace_scoped,
             "deterministic": self.deterministic,
             "preview_required": self.preview_required,
+            "execution_mode": self.execution_mode,
+            "requires_approval": self.requires_approval,
             "blast_radius": self.blast_radius,
             "affected_files": list(self.affected_files),
             "approval_level": self.approval_level,
@@ -55,6 +59,8 @@ class MutationPolicy:
         affected_files: Sequence[str],
         approval_level: str,
         preview_required: bool,
+        execution_mode: str,
+        requires_approval: bool,
         reason: str,
     ) -> MutationPolicyDecision:
         files = _sorted_unique(affected_files)
@@ -66,6 +72,8 @@ class MutationPolicy:
             workspace_scoped=True,
             deterministic=True,
             preview_required=preview_required,
+            execution_mode=execution_mode,
+            requires_approval=requires_approval,
             blast_radius=len(files),
             affected_files=files,
             approval_level=approval_level,
@@ -80,6 +88,8 @@ class MutationPolicy:
             affected_files=[relative_path],
             approval_level="direct",
             preview_required=False,
+            execution_mode="direct",
+            requires_approval=False,
             reason="Bounded patch on one workspace file remains directly executable.",
         )
 
@@ -92,6 +102,8 @@ class MutationPolicy:
             affected_files=files,
             approval_level="preview_required" if preview else "apply_after_preview",
             preview_required=True,
+            execution_mode="preview_required" if preview else "approval_required",
+            requires_approval=not preview,
             reason="Batch operations expose blast radius and require explicit preview semantics.",
         )
 
@@ -105,5 +117,7 @@ class MutationPolicy:
             affected_files=files,
             approval_level=approval_level,
             preview_required=True,
+            execution_mode="preview_required" if preview else "approval_required",
+            requires_approval=not preview,
             reason="Symbol refactors must surface blast radius before apply.",
         )

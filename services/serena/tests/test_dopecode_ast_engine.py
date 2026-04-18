@@ -61,3 +61,52 @@ async def test_ast_engine_navigation_surfaces(tmp_path: Path):
     locations = [(item["file"], item["line"]) for item in matches["results"]]
     assert ("pkg/helpers.py", 1) in locations
     assert ("pkg/main.py", 1) in locations
+
+
+@pytest.mark.asyncio
+async def test_ast_engine_javascript_navigation_surfaces(tmp_path: Path):
+    _write(
+        tmp_path / "pkg" / "helper.js",
+        "export function helper(value) {\n"
+        "  return value + 1;\n"
+        "}\n",
+    )
+    _write(
+        tmp_path / "pkg" / "main.js",
+        "import helper from \"./helper\";\n\n"
+        "export function run(value) {\n"
+        "  return helper(value) + localHelper();\n"
+        "}\n\n"
+        "const localHelper = () => {\n"
+        "  return 2;\n"
+        "};\n\n"
+        "class Demo {\n"
+        "  method() {\n"
+        "    return helper(value);\n"
+        "  }\n"
+        "}\n",
+    )
+
+    engine = ASTEngine(tmp_path, "ws-test")
+
+    symbols = await engine.get_file_symbols("pkg/main.js")
+    names = [item["name"] for item in symbols["symbols"]]
+    assert names == ["run", "localHelper", "Demo"]
+
+    run_symbol_id = next(item["symbol_id"] for item in symbols["symbols"] if item["name"] == "run")
+
+    callees = await engine.find_callees(run_symbol_id)
+    assert callees["callee_count"] == 2
+    assert [item["name"] for item in callees["callees"]] == ["helper", "localHelper"]
+    assert callees["callees"][0]["kind"] == "import"
+    assert callees["callees"][0]["resolved_file"] == "pkg/helper.js"
+    assert callees["callees"][1]["kind"] == "local_symbol"
+    assert callees["resolution_mode"] == "javascript_ast"
+
+    imports = await engine.get_import_graph("pkg/main.js")
+    assert imports["imports"]["pkg/main.js"][0]["module"] == "./helper"
+    assert imports["imports"]["pkg/main.js"][0]["resolved_path"] == "pkg/helper.js"
+
+    matches = await engine.search_pattern("helper", relative_path="pkg/main.js", max_results=10)
+    locations = [(item["file"], item["line"]) for item in matches["results"]]
+    assert ("pkg/main.js", 1) in locations

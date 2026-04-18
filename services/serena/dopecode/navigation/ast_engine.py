@@ -734,6 +734,7 @@ class ASTEngine:
         self.tree_sitter = tree_sitter
         self.lsp = lsp
         self.symbol_manager = SymbolManager(self.workspace_root, workspace_id)
+        self._javascript_parser: Optional[Any] = None
 
     def set_dependencies(self, tree_sitter: Optional[Any] = None, lsp: Optional[Any] = None) -> None:
         if tree_sitter is not None:
@@ -774,6 +775,299 @@ class ASTEngine:
     def _read_text(self, path: Path) -> str:
         return path.read_text(encoding="utf-8")
 
+    def _javascript_parser_instance(self) -> Optional[Parser]:
+        if not TREE_SITTER_AVAILABLE:
+            return None
+        if self._javascript_parser is not None:
+            return self._javascript_parser
+
+        try:
+            language = Language(tsjavascript.language())
+            parser = Parser()
+            parser.language = language
+            self._javascript_parser = parser
+            return parser
+        except Exception as exc:
+            logger.debug(f"Failed to initialize JavaScript parser: {exc}")
+            self._javascript_parser = None
+            return None
+
+    def _javascript_tree(self, content: str):
+        parser = self._javascript_parser_instance()
+        if not parser:
+            return None
+        return parser.parse(content.encode("utf-8"))
+
+    def _node_text(self, content: str, node: Any) -> str:
+        return content[node.start_byte:node.end_byte]
+
+    def _javascript_string_value(self, content: str, node: Any) -> Optional[str]:
+        text = self._node_text(content, node).strip()
+        if len(text) < 2:
+            return None
+        quote = text[0]
+        if quote not in {"'", '"', "`"} or text[-1] != quote:
+            return None
+        return text[1:-1]
+
+    def _javascript_module_to_relative(self, source_path: Path, module_spec: str) -> Optional[str]:
+        if not module_spec or not module_spec.startswith("."):
+            return None
+
+        candidate_text = module_spec.replace("\\", "/")
+        candidate_base = (source_path.parent / candidate_text).resolve()
+        candidates = []
+
+        if candidate_base.suffix in {".js", ".jsx"}:
+            candidates.append(candidate_base)
+        else:
+            candidates.extend(
+                [
+                    candidate_base.with_suffix(".js"),
+                    candidate_base.with_suffix(".jsx"),
+                    candidate_base / "index.js",
+                    candidate_base / "index.jsx",
+                ]
+            )
+
+        candidates.append(candidate_base)
+
+        for candidate in candidates:
+            try:
+                resolved = candidate.resolve()
+                resolved.relative_to(self.workspace_root)
+            except Exception:
+                continue
+            if resolved.exists():
+                return self._relative(resolved)
+        return None
+
+    def _javascript_symbol_targets(self, content: str) -> List[Dict[str, Any]]:
+        tree = self._javascript_tree(content)
+        if tree is None:
+            return []
+
+        targets: List[Dict[str, Any]] = []
+
+        def add_target(node: Any, name: str, kind: str, body_node: Optional[Any], exported: bool) -> None:
+            if not name:
+                return
+            replaceable = body_node is not None and body_node.type in {"statement_block", "class_body"}
+            targets.append(
+                {
+                    "node": node,
+                    "body_node": body_node,
+                    "name": name,
+                    "kind": kind,
+                    "line": node.start_point[0] + 1,
+                    "end_line": node.end_point[0] + 1,
+                    "body_kind": getattr(body_node, "type", None),
+                    "exported": exported,
+                    "replaceable": replaceable,
+                }
+            )
+
+        def visit(node: Any, exported: bool = False) -> None:
+            if node.type == "export_statement":
+                for child in node.named_children:
+                    visit(child, exported=True)
+                return
+
+            if node.type == "function_declaration":
+                name_node = node.child_by_field_name("name")
+                body_node = node.child_by_field_name("body")
+                if name_node is not None:
+                    add_target(node, self._node_text(content, name_node), "function", body_node, exported)
+                return
+
+            if node.type == "class_declaration":
+                name_node = node.child_by_field_name("name")
+                body_node = node.child_by_field_name("body")
+                if name_node is not None:
+                    add_target(node, self._node_text(content, name_node), "class", body_node, exported)
+                return
+
+            if node.type == "lexical_declaration":
+                for declarator in node.named_children:
+                    if declarator.type != "variable_declarator":
+                        continue
+                    name_node = declarator.child_by_field_name("name")
+                    value_node = declarator.child_by_field_name("value")
+                    if name_node is None or value_node is None:
+                        continue
+                    if value_node.type not in {"arrow_function", "function_expression"}:
+                        continue
+                    body_node = value_node.child_by_field_name("body")
+                    if body_node is None:
+                        body_node = value_node
+                    add_target(
+                        declarator,
+                        self._node_text(content, name_node),
+                        "function",
+                        body_node,
+                        exported,
+                    )
+
+        for child in tree.root_node.named_children:
+            visit(child)
+
+        return sorted(targets, key=lambda item: (item["line"], item["name"]))
+
+    def _javascript_import_aliases(self, content: str, source_path: Path) -> Dict[str, Dict[str, Any]]:
+        aliases: Dict[str, Dict[str, Any]] = {}
+        for entry in self._javascript_imports(content, source_path):
+            module = entry.get("module")
+            resolved_file = entry.get("resolved_path")
+            kind = entry.get("kind")
+            for alias in entry.get("aliases", []):
+                aliases[alias] = {
+                    "kind": kind,
+                    "module": module,
+                    "resolved_name": module,
+                    "resolved_file": resolved_file,
+                    "line": entry.get("line", 0),
+                }
+            for alias, resolved_name in entry.get("named_aliases", {}).items():
+                aliases[alias] = {
+                    "kind": "from_import",
+                    "module": module,
+                    "resolved_name": resolved_name,
+                    "resolved_file": resolved_file,
+                    "line": entry.get("line", 0),
+                }
+        return aliases
+
+    def _javascript_imports(self, content: str, source_path: Path) -> List[Dict[str, Any]]:
+        tree = self._javascript_tree(content)
+        if tree is None:
+            return []
+
+        imports: List[Dict[str, Any]] = []
+
+        for node in tree.root_node.named_children:
+            if node.type != "import_statement":
+                continue
+
+            module_node = next((child for child in node.named_children if child.type == "string"), None)
+            module_spec = self._javascript_string_value(content, module_node) if module_node else None
+            clause = next((child for child in node.named_children if child.type != "string"), None)
+            aliases: List[str] = []
+            named_aliases: Dict[str, str] = {}
+
+            if clause is not None:
+                clause_text = self._node_text(content, clause).strip()
+                if clause_text.startswith("{"):
+                    spec_list = clause_text[1:-1].split(",")
+                    for raw_spec in spec_list:
+                        spec = raw_spec.strip()
+                        if not spec:
+                            continue
+                        if " as " in spec:
+                            imported_name, local_name = [part.strip() for part in spec.split(" as ", 1)]
+                        else:
+                            imported_name = local_name = spec
+                        aliases.append(local_name)
+                        named_aliases[local_name] = f"{module_spec}.{imported_name}" if module_spec else imported_name
+                elif clause_text.startswith("*"):
+                    namespace_alias = clause_text.split(" as ", 1)[1].strip() if " as " in clause_text else ""
+                    if namespace_alias:
+                        aliases.append(namespace_alias)
+                else:
+                    aliases.append(clause_text.split(",")[0].strip())
+
+            imports.append(
+                {
+                    "module": module_spec or "",
+                    "line": node.start_point[0] + 1,
+                    "kind": "import",
+                    "aliases": sorted({alias for alias in aliases if alias}),
+                    "named_aliases": named_aliases,
+                    "resolved_path": self._javascript_module_to_relative(source_path, module_spec or ""),
+                }
+            )
+
+        return sorted(imports, key=lambda item: (item["line"], item["module"]))
+
+    def _javascript_symbol_name_for_line(self, symbol_targets: List[Dict[str, Any]], symbol_name: str, line: Optional[int]) -> Optional[Dict[str, Any]]:
+        candidates = [target for target in symbol_targets if target["name"] == symbol_name]
+        if not candidates:
+            return None
+        if line is not None:
+            for candidate in candidates:
+                if candidate["line"] == line:
+                    return candidate
+        return candidates[0]
+
+    def _javascript_callee_names(self, content: str, symbol_name: str, line: Optional[int], source_path: Path) -> List[Dict[str, Any]]:
+        targets = self._javascript_symbol_targets(content)
+        target = self._javascript_symbol_name_for_line(targets, symbol_name, line)
+        if target is None or target["body_node"] is None:
+            return []
+
+        local_symbols = {
+            item["name"]: item
+            for item in targets
+        }
+        import_aliases = self._javascript_import_aliases(content, source_path)
+        callees: Dict[Tuple[str, int, str], Dict[str, Any]] = {}
+
+        def walk(node: Any) -> None:
+            if node.type == "call_expression":
+                func_node = node.child_by_field_name("function")
+                callee_name: Optional[str] = None
+                callee_kind = "unresolved"
+                resolved_name: Optional[str] = None
+                resolved_file: Optional[str] = None
+                confidence = 0.4
+
+                if func_node is not None and func_node.type == "identifier":
+                    callee_name = self._node_text(content, func_node)
+                    if callee_name in local_symbols:
+                        callee_kind = "local_symbol"
+                        resolved_name = callee_name
+                        confidence = 1.0
+                    elif callee_name in import_aliases:
+                        alias = import_aliases[callee_name]
+                        callee_kind = alias["kind"]
+                        resolved_name = alias["resolved_name"]
+                        resolved_file = alias["resolved_file"]
+                        confidence = 0.95 if resolved_file else 0.8
+                elif func_node is not None and func_node.type == "member_expression":
+                    object_node = func_node.child_by_field_name("object")
+                    property_node = func_node.child_by_field_name("property")
+                    if property_node is not None:
+                        callee_name = self._node_text(content, property_node)
+                        if object_node is not None and object_node.type == "identifier":
+                            object_name = self._node_text(content, object_node)
+                            if object_name in import_aliases:
+                                alias = import_aliases[object_name]
+                                callee_kind = "qualified_import"
+                                resolved_name = f"{alias['resolved_name']}.{callee_name}"
+                                resolved_file = alias["resolved_file"]
+                                confidence = 0.85 if resolved_file else 0.7
+                            elif object_name in local_symbols:
+                                callee_kind = "attribute_call"
+                                confidence = 0.5
+
+                if callee_name:
+                    line_no = node.start_point[0] + 1
+                    key = (callee_name, line_no, resolved_name or callee_kind)
+                    if key not in callees:
+                        callees[key] = {
+                            "name": callee_name,
+                            "line": line_no,
+                            "kind": callee_kind,
+                            "resolved_name": resolved_name,
+                            "resolved_file": resolved_file,
+                            "confidence": round(confidence, 2),
+                        }
+
+            for child in node.named_children:
+                walk(child)
+
+        walk(target["body_node"])
+        return sorted(callees.values(), key=lambda item: (item["line"], item["name"], item["kind"]))
+
     def _symbol_to_dict(self, relative_path: str, element: StructuralElement) -> Dict[str, Any]:
         symbol_id = self.symbol_manager.create_id(relative_path, element.name, element.start_line)
         return {
@@ -790,17 +1084,44 @@ class ASTEngine:
         }
 
     async def _tree_sitter_symbols(self, relative_path: str) -> Optional[List[Dict[str, Any]]]:
-        if not self.tree_sitter or not getattr(self.tree_sitter, "initialized", False):
-            return None
-
         full_path = self._resolve_file(relative_path)
-        analysis = await self.tree_sitter.analyze_file(str(full_path))
-        if not analysis:
-            return None
+        language = self._language_for_path(full_path)
 
-        symbols = [self._symbol_to_dict(relative_path, element) for element in analysis.elements]
-        symbols.sort(key=lambda item: (item["line"], item["name"]))
-        return symbols
+        if language == "javascript":
+            content = self._read_text(full_path)
+            symbols = []
+            for target in self._javascript_symbol_targets(content):
+                symbols.append(
+                    {
+                        "symbol_id": self.symbol_manager.create_id(relative_path, target["name"], target["line"]),
+                        "name": target["name"],
+                        "kind": target["kind"],
+                        "file": relative_path,
+                        "line": target["line"],
+                        "end_line": target["end_line"],
+                        "complexity_score": 0.0,
+                        "complexity_level": CodeComplexity.SIMPLE.value,
+                        "adhd_insights": [],
+                        "metadata": {
+                            "language": "javascript",
+                            "node_type": target["node"].type,
+                            "body_kind": target["body_kind"],
+                            "exported": target["exported"],
+                            "replaceable": target["replaceable"],
+                        },
+                    }
+                )
+            symbols.sort(key=lambda item: (item["line"], item["name"]))
+            return symbols
+
+        if self.tree_sitter and getattr(self.tree_sitter, "initialized", False):
+            analysis = await self.tree_sitter.analyze_file(str(full_path))
+            if analysis:
+                symbols = [self._symbol_to_dict(relative_path, element) for element in analysis.elements]
+                symbols.sort(key=lambda item: (item["line"], item["name"]))
+                return symbols
+
+        return None
 
     def _python_symbols(self, relative_path: str, content: str) -> List[Dict[str, Any]]:
         tree = ast.parse(content)
@@ -1088,6 +1409,8 @@ class ASTEngine:
 
         if language == "python":
             callees = self._python_callee_names(content, symbol.symbol_name)
+        elif language == "javascript":
+            callees = self._javascript_callee_names(content, symbol.symbol_name, symbol.line, full_path)
         else:
             callees = []
 
@@ -1097,7 +1420,7 @@ class ASTEngine:
             "symbol": symbol.symbol_name,
             "callee_count": len(callees),
             "callees": callees,
-            "resolution_mode": "python_ast" if language == "python" else "fail_closed",
+            "resolution_mode": "python_ast" if language == "python" else ("javascript_ast" if language == "javascript" else "fail_closed"),
         }
 
     async def find_callers(self, symbol_id_str: str) -> Dict[str, Any]:
@@ -1164,6 +1487,9 @@ class ASTEngine:
                 })
         return sorted(imports, key=lambda item: (item["line"], item["module"]))
 
+    def _extract_javascript_imports(self, content: str, source_path: Path) -> List[Dict[str, Any]]:
+        return self._javascript_imports(content, source_path)
+
     def _module_to_relative(self, module: str) -> Optional[str]:
         if not module:
             return None
@@ -1183,7 +1509,7 @@ class ASTEngine:
         return None
 
     async def get_import_graph(self, relative_path: Optional[str] = None) -> Dict[str, Any]:
-        targets = [self._resolve_file(relative_path)] if relative_path else self._iter_workspace_files({".py"})
+        targets = [self._resolve_file(relative_path)] if relative_path else self._iter_workspace_files({".py", ".js", ".jsx"})
         graph: Dict[str, List[Dict[str, Any]]] = {}
         for path in targets:
             rel = self._relative(path)
@@ -1191,6 +1517,8 @@ class ASTEngine:
                 language = self._language_for_path(path)
                 if language == "python":
                     graph[rel] = self._extract_python_imports(self._read_text(path))
+                elif language == "javascript":
+                    graph[rel] = self._extract_javascript_imports(self._read_text(path), path)
                 else:
                     graph[rel] = []
             except SyntaxError as exc:
