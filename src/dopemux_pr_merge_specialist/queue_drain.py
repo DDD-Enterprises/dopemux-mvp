@@ -630,28 +630,42 @@ def remediate_review_thread(
     if not comment:
         return False
 
-    log(f"Engaging agentic remediation for thread {thread.id} in {comment.path}...")
+    resolved_path = comment.path or getattr(thread, "path", "") or "unknown"
+    resolved_line = comment.line
+    if resolved_line is None:
+        resolved_line = getattr(thread, "line", None)
+    if resolved_line is None:
+        resolved_line = getattr(thread, "original_line", None)
+    if resolved_line is None:
+        resolved_line = getattr(thread, "original_start_line", None)
+
+    log(f"Engaging agentic remediation for thread {thread.id} in {resolved_path}...")
 
     prompt = f"""
 You are an expert developer addressing review feedback in the dopemux-mvp workspace.
-The following feedback was provided on file: `{comment.path}` at line {comment.line or 'unknown'}.
+The following feedback was provided on file: `{resolved_path}` at line {resolved_line or 'unknown'}.
 
 Feedback:
 ```
 {comment.body}
 ```
 
-Please address this feedback. You are running in YOLO mode with full tool access. 
+Please address this feedback with a deterministic, minimal, and auditable remediation.
 
 CRITICAL:
-1. APPLY a minimal surgical fix to address the comment.
-2. VERIFY that your fix is correct.
-3. DO NOT introduce unrelated changes.
+1. APPLY the smallest surgical fix that addresses the review comment.
+2. LIMIT changes to `{resolved_path}` unless another file is strictly required to make the fix correct.
+3. DO NOT introduce unrelated changes or refactors.
+4. DO NOT use network access, install dependencies, or invoke external tools beyond what is strictly necessary to edit files and run a minimal local verification step.
+5. VERIFY the fix with the narrowest relevant local check available for the changed file(s), then stop.
 
 Modify the necessary files to satisfy the reviewer's request.
 """
 
-    log(f"Launching Gemini CLI agent in YOLO mode (worktree: {worktree_path.name})...")
+    log(
+        f"Launching Gemini CLI agent with constrained remediation instructions "
+        f"(worktree: {worktree_path.name})..."
+    )
 
     try:
         cmd = _gemini_ci_remediation_command(prompt)
@@ -668,8 +682,10 @@ Modify the necessary files to satisfy the reviewer's request.
                 universal_newlines=True,
             )
 
+            output = ""
             if process.stdout:
-                for line in iter(process.stdout.readline, ""):
+                output, _ = process.communicate(timeout=timeout_seconds)
+                for line in output.splitlines():
                     clean_line = line.strip()
                     if clean_line:
                         log(f"[gemini] {clean_line}")
@@ -678,11 +694,12 @@ Modify the necessary files to satisfy the reviewer's request.
                             for x in ["quota", "rate limit", "429", "exhausted"]
                         ):
                             log("CRITICAL: API QUOTA EXHAUSTED.", "ERROR")
-
-            process.wait(timeout=timeout_seconds)
+            else:
+                process.wait(timeout=timeout_seconds)
 
     except subprocess.TimeoutExpired:
         process.kill()
+        process.communicate()
         log("Gemini agent timed out.", "ERROR")
         return False
     except Exception as e:
@@ -838,7 +855,6 @@ def pr_apply(
         )
 
         # Phase 1.5: Handle Agentic Thread Remediation
-        agent_modified = False
         final_applied_threads: List[ThreadDisposition] = []
         for d in applied_threads:
             if d.disposition == ThreadDispositionType.AGENTIC_FIX and execute:
@@ -849,7 +865,6 @@ def pr_apply(
                     log=log,
                 )
                 if success:
-                    agent_modified = True
                     final_applied_threads.append(replace(d, applied=True))
                 else:
                     final_applied_threads.append(

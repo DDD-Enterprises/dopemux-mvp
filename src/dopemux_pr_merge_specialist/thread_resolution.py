@@ -102,16 +102,14 @@ def is_actionable_comment(
 ) -> bool:
     if comment is None:
         return False
+    thread_rules = policy.get("thread_rules", {})
+    if not bool(thread_rules.get("enable_agentic_fix", False)):
+        return False
     if comment.author in BOT_AUTHORS:
         return False
-    # If it's not a bot and not already handled by regex suggestion blocks,
-    # and it's long enough to be a request, we consider it actionable for the agent.
     body = comment.body.strip()
     if len(body) < 10:
         return False
-    # We could add more heuristics here, like looking for "please", "can you", etc.
-    # But for now, any non-bot human comment is a candidate for agentic remediation
-    # if it hasn't been auto-implemented.
     return True
 
 
@@ -347,7 +345,7 @@ def apply_thread_dispositions(
             continue
         if disposition.disposition == "agentic_fix":
             # Agentic fixes are heavy and require isolation/verification cycles.
-            # We mark them as NOT applied here; they must be handled by the 
+            # We mark them as NOT applied here; they must be handled by the
             # caller (e.g. pr_apply in queue_drain.py) using remediate_review_thread.
             applied.append(
                 ThreadDisposition(
@@ -355,7 +353,7 @@ def apply_thread_dispositions(
                     disposition="agentic_fix",
                     reason="Thread marked for agentic remediation; pending execution slice.",
                     path=disposition.path,
-                    applied=False, # Must be set to True by the orchestrator after successful agent run
+                    applied=False,  # Must be set to True by the orchestrator after successful agent run
                 )
             )
             continue
@@ -383,7 +381,6 @@ def resolve_verified_threads(
         if disposition.disposition in {
             "implement",
             "agentic_fix",
-            "decline_with_rationale",
             "auto_resolve_outdated",
         }:
             # Post evidence-backed reply first
@@ -395,7 +392,7 @@ def resolve_verified_threads(
                 )
             elif disposition.disposition == "implement":
                 reply_body = "✅ Machine-applicable suggestion applied and verified locally. Resolving thread."
-            
+
             append_command_log(
                 commands_log,
                 _execute_thread_graphql(

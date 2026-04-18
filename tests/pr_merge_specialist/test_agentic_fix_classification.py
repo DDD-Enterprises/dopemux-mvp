@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
 from dopemux_pr_merge_specialist.schema import (
     ReviewThread,
     ThreadComment,
@@ -11,6 +10,7 @@ from dopemux_pr_merge_specialist.thread_resolution import decide_thread_disposit
 def _policy() -> dict:
     return {
         "thread_rules": {
+            "enable_agentic_fix": True,
             "auto_resolve_outdated": True,
             "auto_resolve_resolution_signals": True,
             "resolution_markers": ["addressed", "acknowledged"],
@@ -66,4 +66,12 @@ def test_bot_comments_are_not_agentic_fix():
 def test_short_comments_are_not_agentic_fix():
     thread = _thread(body="Fixed?")
     disposition = decide_thread_disposition(thread, validation_green=True, policy=_policy())
+    assert disposition.disposition == "decline_with_rationale"
+
+
+def test_agentic_fix_requires_explicit_policy_opt_in():
+    thread = _thread(body="Please refactor this method to use a more efficient algorithm.")
+    policy = _policy()
+    policy["thread_rules"]["enable_agentic_fix"] = False
+    disposition = decide_thread_disposition(thread, validation_green=True, policy=policy)
     assert disposition.disposition == "decline_with_rationale"
