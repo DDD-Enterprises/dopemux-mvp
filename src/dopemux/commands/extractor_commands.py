@@ -102,91 +102,20 @@ def prescan(
     cost_estimate: bool,
     verbose: bool,
 ):
-    """📊 Flight-Deck: Execute a pre-extraction intelligence audit.
+    """📊 [DEPRECATED] Flight-Deck: Execute a pre-extraction intelligence audit.
 
-    Activate the cockpit sensors to perform deep-tissue codebase analysis. This command
-    calibrates the extraction sensors through multiple grok passes—identifying
-    redundancy, discovering hidden features, and assessing ritual feasibility.
-    It provides a comprehensive diagnostic report and a detailed cost-to-fidelity
-    estimate for the upcoming extraction sessions.
+    This command is deprecated and no longer supported.
+    Integrated Stage 0 prescan is now the default behavior for v5 extraction.
+    Use `dopemux extract truth-run` instead.
     """
-    repo_path = Path(repo).resolve()
-    extractor_root = _resolve_extractor_root(repo_path)
-
-    if extractor_root is None:
-        raise click.ClickException(
-            "Cannot find repo-truth-extractor. "
-            "Make sure you're in a dopemux workspace or pass --repo."
-        )
-
-    console.print(styled_panel(
-        f"[mint]Running prescan for[/mint] {repo_path.name}",
-        title="[bold]DØPEMÜX Extractor Prescan[/bold]",
-        border_style="info",
-    ))
-
-    # Import prescan engine
-    lib_path = extractor_root / "services" / "repo-truth-extractor"
-    sys.path.insert(0, str(lib_path))
-    from lib.prescan.engine import PrescanEngine
-    from lib.prescan.models import PrescanConfig
-
-    config = PrescanConfig(
-        repo_root=repo_path,
-        output_dir=Path(output) if output else repo_path / "extraction" / "prescan",
-        enable_code_prescan=code,
-        enable_git_enrichment=git,
-        incremental=incremental,
-        verbose=verbose,
+    raise click.ClickException(
+        "The legacy 'dopemux extractor prescan' command is deprecated and has been disabled.\n\n"
+        "Integrated Stage 0 prescan is now the default behavior for canonical v5 extraction.\n"
+        "To run a prescan or full extraction, use:\n"
+        "  dopemux extract truth-run --phase A --dry-run\n\n"
+        "To explicitly skip the integrated prescan, pass --skip-prescan.\n"
+        "To load precomputed prescan intelligence, pass --import-prescan <DIR>."
     )
-
-    engine = PrescanEngine(config)
-    
-    pass_list = [p.strip() for p in passes.split(",")] if passes else None
-
-    with branded_progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
-        task = progress.add_task("Running prescan engine...", total=None)
-        result = engine.run(passes=pass_list, incremental=incremental)
-        progress.update(task, completed=True)
-
-    if result.success:
-        # Load intelligence to show cost estimate if requested
-        import json
-        with open(result.intelligence_path) as f:
-            intelligence = json.load(f)
-        
-        if cost_estimate:
-            cost = intelligence.get("cost_estimate", {})
-            net = cost.get("net_estimates", {})
-            savings = cost.get("estimated_savings", {})
-            
-            console.print("\n[bold]Extraction Cost Estimate[/bold]")
-            console.print(f"  Gross Tokens: {cost.get('corpus_stats', {}).get('total_tokens_gross', 0):,}")
-            console.print(f"  Total Savings: {savings.get('total_savings_tokens', 0):,} tokens ({savings.get('savings_pct', 0)}%)")
-            console.print(f"  Net Tokens:    {net.get('input_tokens', 0):,} input / {net.get('output_tokens', 0):,} output")
-            console.print(f"  [success]Total Est Cost: ${net.get('total_cost_usd', 0)} USD[/success]")
-            return
-
-        console.print(f"\n[success]✓ Prescan completed successfully[/success]")
-        console.print(f"  Intelligence: {result.intelligence_path}")
-        console.print(f"  Manifest: {result.manifest_path}")
-        console.print(f"  Files scanned: {result.file_count}")
-        console.print(f"  Included: {result.included_count}")
-        
-        cost = intelligence.get("cost_estimate", {})
-        net = cost.get("net_estimates", {})
-        console.print(f"  Est. Cost: ${net.get('total_cost_usd', 0)} USD")
-        console.print(f"  Duration: {result.duration_seconds}s")
-    else:
-        console.print(f"\n[error]✗ Prescan failed[/error]")
-        for err in result.errors:
-            console.print(f"  [error]• {err}[/error]")
-        raise SystemExit(1)
-
 
 # ---- Init command ----
 
