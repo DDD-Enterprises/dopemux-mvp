@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-04-18T04:00:36.700280+00:00",
+  "initial_phases": [
+    "A",
+    "H",
+    "D",
+    "C"
+  ],
+  "phase_count": 4,
+  "post_review_phases": [
+    "R",
+    "X",
+    "T",
+    "Z",
+    "S",
+    "SP"
+  ],
+  "preset": "first-live",
+  "preset_stage": "initial",
+  "selected_phases": [
+    "A",
+    "H",
+    "D",
+    "C"
+  ]
+}

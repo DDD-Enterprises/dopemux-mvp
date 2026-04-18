@@ -1,0 +1,77 @@
+{
+  "blocker_classification": {
+    "artifact_or_state_blockers": [],
+    "code_blockers": [],
+    "deferred_non_blocking": [
+      {
+        "details": {
+          "layer": "repo_drift_tests",
+          "paths": [
+            "services/repo-truth-extractor/tests/test_promptset_v4_lint.py"
+          ],
+          "returncode": 1,
+          "status": "FAIL",
+          "stderr": "",
+          "stdout": "============================= test session starts ==============================\nplatform darwin -- Python 3.12.13, pytest-9.0.3, pluggy-1.6.0\nrootdir: /Users/hue/code/dopemux-mvp\nconfigfile: pytest.ini (WARNING: ignoring pytest config in pyproject.toml!)\nplugins: mock-3.15.1, cov-7.1.0, xdist-3.8.0, asyncio-1.3.0, langsmith-0.7.31, anyio-4.13.0\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function\ncollected 10 items\n\nservices/repo-truth-extractor/tests/test_promptset_v4_lint.py ........FF [100%]\n\n=================================== FAILURES ===================================\n__________________________ test_prescan_audit_passes ___________________________\nservices/repo-truth-extractor/tests/test_promptset_v4_lint.py:221: in test_prescan_audit_passes\n    assert result[\"status\"] == \"pass\", f\"Errors: {result.get('errors', [])}\"\nE   AssertionError: Errors: ['dedup: constant _DEDUP_SYSTEM_PROMPT not found', 'discover: constant _DISCOVER_SYSTEM_PROMPT not found', 'feasibility: constant _FEASIBILITY_SYSTEM_PROMPT not found', 'optimize: constant _OPTIMIZE_SYSTEM_PROMPT not found']\nE   assert 'fail' == 'pass'\nE     \nE     - pass\nE     + fail\n______________________ test_all_populations_audit_passes _______________________\nservices/repo-truth-extractor/tests/test_promptset_v4_lint.py:237: in test_all_populations_audit_passes\n    assert result[\"status\"] == \"pass\", f\"{pop} failed: {result.get('errors', [])}\"\nE   AssertionError: prescan failed: ['dedup: constant _DEDUP_SYSTEM_PROMPT not found', 'discover: constant _DISCOVER_SYSTEM_PROMPT not found', 'feasibility: constant _FEASIBILITY_SYSTEM_PROMPT not found', 'optimize: constant _OPTIMIZE_SYSTEM_PROMPT not found']\nE   assert 'fail' == 'pass'\nE     \nE     - pass\nE     + fail\n=========================== short test summary info ============================\nFAILED services/repo-truth-extractor/tests/test_promptset_v4_lint.py::test_prescan_audit_passes\nFAILED services/repo-truth-extractor/tests/test_promptset_v4_lint.py::test_all_populations_audit_passes\n========================= 2 failed, 8 passed in 0.61s ==========================\n"
+        },
+        "layer": "repo_drift_tests",
+        "message": "repo_drift_tests failed"
+      }
+    ],
+    "environment_blockers": [],
+    "external_provider_blockers": [],
+    "false_positives": []
+  },
+  "conditions": [
+    {
+      "details": {
+        "pal_validation_file": null,
+        "routes_count": 9
+      },
+      "layer": "pal_provider_validation",
+      "message": "PAL validation was not provided for the selected routes. Runtime eligibility remains environment-based.",
+      "reason_code": "PAL_REQUIRED_UNAVAILABLE"
+    }
+  ],
+  "environment_summary": {
+    "live_online_status": "environment_blocked_or_unverified",
+    "message": "Repo and tooling checks can pass while live online readiness remains blocked or unverified by current provider credentials, PAL evidence, or online preflight.",
+    "tooling_status": "CONDITIONAL_GO"
+  },
+  "generated_at": "2026-04-18T03:11:59.943132+00:00",
+  "layers": {
+    "contract_map_determinism": "PASS",
+    "critical_tests": "PASS",
+    "import_cli_smoke": "PASS",
+    "online_provider_preflight": "PASS",
+    "pal_provider_validation": "SKIPPED",
+    "repo_drift_tests": "FAIL",
+    "route_derived_readiness": "PASS",
+    "smoke_and_verify_evidence": "PASS",
+    "target_prompt_integrity": "PASS",
+    "truth_split_audit": "PASS"
+  },
+  "operator_verdict": "GO_NOW",
+  "output_dir": "/Users/hue/code/dopemux-mvp/reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031149Z",
+  "reason_codes": [],
+  "repo_wide_findings": [
+    {
+      "details": {
+        "layer": "repo_drift_tests",
+        "paths": [
+          "services/repo-truth-extractor/tests/test_promptset_v4_lint.py"
+        ],
+        "returncode": 1,
+        "status": "FAIL",
+        "stderr": "",
+        "stdout": "============================= test session starts ==============================\nplatform darwin -- Python 3.12.13, pytest-9.0.3, pluggy-1.6.0\nrootdir: /Users/hue/code/dopemux-mvp\nconfigfile: pytest.ini (WARNING: ignoring pytest config in pyproject.toml!)\nplugins: mock-3.15.1, cov-7.1.0, xdist-3.8.0, asyncio-1.3.0, langsmith-0.7.31, anyio-4.13.0\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function\ncollected 10 items\n\nservices/repo-truth-extractor/tests/test_promptset_v4_lint.py ........FF [100%]\n\n=================================== FAILURES ===================================\n__________________________ test_prescan_audit_passes ___________________________\nservices/repo-truth-extractor/tests/test_promptset_v4_lint.py:221: in test_prescan_audit_passes\n    assert result[\"status\"] == \"pass\", f\"Errors: {result.get('errors', [])}\"\nE   AssertionError: Errors: ['dedup: constant _DEDUP_SYSTEM_PROMPT not found', 'discover: constant _DISCOVER_SYSTEM_PROMPT not found', 'feasibility: constant _FEASIBILITY_SYSTEM_PROMPT not found', 'optimize: constant _OPTIMIZE_SYSTEM_PROMPT not found']\nE   assert 'fail' == 'pass'\nE     \nE     - pass\nE     + fail\n______________________ test_all_populations_audit_passes _______________________\nservices/repo-truth-extractor/tests/test_promptset_v4_lint.py:237: in test_all_populations_audit_passes\n    assert result[\"status\"] == \"pass\", f\"{pop} failed: {result.get('errors', [])}\"\nE   AssertionError: prescan failed: ['dedup: constant _DEDUP_SYSTEM_PROMPT not found', 'discover: constant _DISCOVER_SYSTEM_PROMPT not found', 'feasibility: constant _FEASIBILITY_SYSTEM_PROMPT not found', 'optimize: constant _OPTIMIZE_SYSTEM_PROMPT not found']\nE   assert 'fail' == 'pass'\nE     \nE     - pass\nE     + fail\n=========================== short test summary info ============================\nFAILED services/repo-truth-extractor/tests/test_promptset_v4_lint.py::test_prescan_audit_passes\nFAILED services/repo-truth-extractor/tests/test_promptset_v4_lint.py::test_all_populations_audit_passes\n========================= 2 failed, 8 passed in 0.61s ==========================\n"
+      },
+      "layer": "repo_drift_tests",
+      "message": "repo_drift_tests failed"
+    }
+  ],
+  "run_id": "pre_live_gate_v25_20260418T031149Z",
+  "run_scoped_blockers": [],
+  "verdict": "CONDITIONAL_GO",
+  "waivers": []
+}

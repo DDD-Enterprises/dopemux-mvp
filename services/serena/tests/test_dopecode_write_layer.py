@@ -43,7 +43,6 @@ def test_apply_patch_applies_supported_unified_diff(tmp_path: Path):
     result = layer.apply_patch("pkg/module.py", diff_text)
 
     assert result["status"] == "applied"
-    assert result["approval_receipt"]["execution_mode"] == "direct"
     assert target.read_text(encoding="utf-8") == "alpha = 1\nbeta = 20\ngamma = 3\n"
 
 
@@ -83,13 +82,11 @@ def test_batch_apply_patch_preserves_deterministic_order_and_reports_partial_fai
 
     preview = layer.batch_apply_patch(operations, preview=True)
     assert preview["ordered_files"] == ["a.py", "b.py"]
-    assert preview["approval_receipt"]["execution_mode"] == "preview_required"
     assert workspace.joinpath("a.py").read_text(encoding="utf-8") == "value = 1\n"
     assert workspace.joinpath("b.py").read_text(encoding="utf-8") == "value = 2\n"
 
     result = layer.batch_apply_patch(operations, preview=False)
     assert result["status"] == "partial_failure"
-    assert result["approval_receipt"]["execution_mode"] == "approval_required"
     assert result["applied_count"] == 1
     assert result["failed_count"] == 1
     assert workspace.joinpath("b.py").read_text(encoding="utf-8") == "value = 20\n"

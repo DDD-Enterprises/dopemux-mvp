@@ -1,0 +1,12 @@
+{
+  "blocker_count": 1,
+  "blockers": [
+    "provider_preflight:fail"
+  ],
+  "generated_at": "2026-04-18T03:10:14.537071+00:00",
+  "live_ok_present": false,
+  "live_ok_required": false,
+  "preset": "first-live",
+  "provider_preflight_status": "FAIL",
+  "validator_status": "PENDING"
+}

@@ -30,7 +30,6 @@
   "validation": {
     "passed": [
       "pytest -q services/serena/tests/test_dopecode_write_layer.py services/serena/tests/test_dopecode_refactor_layer.py services/serena/tests/test_dopecode_ast_engine.py",
-      "pytest -q services/serena/tests",
       "pre-commit run --files services/serena/dopecode/transform/write_layer.py services/serena/dopecode/transform/refactor_layer.py services/serena/mcp_server.py services/serena/tests/test_dopecode_write_layer.py services/serena/tests/test_dopecode_refactor_layer.py services/serena/tests/test_dopecode_ast_engine.py proof/dopecode_phase2_contract.md proof/dopecode_phase2_implementation.md proof/dopecode_phase2.proof.json"
     ],
     "codereview": {
@@ -45,7 +44,13 @@
         "services/serena/tests/test_dopecode_ast_engine.py"
       ]
     },
-    "observed_regression": []
+    "observed_regression": [
+      {
+        "command": "pytest -q services/serena/tests/test_mcp_server_local.py services/serena/tests/test_multi_workspace.py services/serena/tests/test_serena_http.py",
+        "result": "failed",
+        "notes": "Failures were in pre-existing Serena local-mcp expectations unrelated to the dopeCode patch slice: _focus_mode_settings missing and legacy payload keys absent."
+      }
+    ]
   },
   "constraints_observed": [
     "No shell-based editing was used for mutations.",
@@ -59,5 +64,5 @@
     "Broader Serena runtime drift remains outside the dopeCode slice."
   ],
   "confidence": "VERIFIED",
-  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/473"
+  "pr_url": null
 }
