@@ -684,21 +684,27 @@ Modify the necessary files to satisfy the reviewer's request.
 
             if process.stdout:
                 output, _ = process.communicate(timeout=timeout_seconds)
+                quota_detected = False
                 for line in output.splitlines():
                     clean_line = line.strip()
-                    lowered_line = line.lower()
+                    line_lower = line.lower()
                     if any(
-                        x in lowered_line for x in ["quota", "rate limit", "429", "exhausted"]
+                        x in line_lower for x in ["quota", "rate limit", "429", "exhausted"]
                     ):
-                        log("CRITICAL: API QUOTA EXHAUSTED.", "ERROR")
+                        quota_detected = True
                     if clean_line:
                         log(f"[gemini] {clean_line}")
+                if quota_detected:
+                    log("CRITICAL: API QUOTA EXHAUSTED.", "ERROR")
             else:
                 process.wait(timeout=timeout_seconds)
 
     except subprocess.TimeoutExpired:
         process.kill()
-        process.communicate()
+        try:
+            process.communicate(timeout=5)
+        except subprocess.TimeoutExpired:
+            pass
         log("Gemini agent timed out.", "ERROR")
         return False
     except Exception as e:
