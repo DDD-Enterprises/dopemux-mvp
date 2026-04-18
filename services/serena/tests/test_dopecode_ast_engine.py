@@ -50,7 +50,12 @@ async def test_ast_engine_navigation_surfaces(tmp_path: Path):
     assert [item["name"] for item in callees["callees"]] == ["helper", "local_helper"]
     assert callees["callees"][0]["kind"] == "from_import"
     assert callees["callees"][0]["resolved_file"] == "pkg/helpers.py"
+    assert callees["callees"][0]["resolution_status"] == "resolved"
+    assert callees["callees"][0]["certainty"] == "workspace_local"
     assert callees["callees"][1]["kind"] == "local_symbol"
+    assert callees["callees"][1]["certainty"] == "exact"
+    assert callees["semantic_summary"]["resolved_count"] == 2
+    assert callees["semantic_summary"]["dynamic_call_count"] == 0
     assert callees["resolution_mode"] == "python_ast"
 
     imports = await engine.get_import_graph("pkg/main.py")
@@ -100,7 +105,9 @@ async def test_ast_engine_javascript_navigation_surfaces(tmp_path: Path):
     assert [item["name"] for item in callees["callees"]] == ["helper", "localHelper"]
     assert callees["callees"][0]["kind"] == "import"
     assert callees["callees"][0]["resolved_file"] == "pkg/helper.js"
+    assert callees["callees"][0]["reason_code"] == "workspace_import_resolved"
     assert callees["callees"][1]["kind"] == "local_symbol"
+    assert callees["semantic_summary"]["workspace_local_count"] == 1
     assert callees["resolution_mode"] == "javascript_ast"
 
     imports = await engine.get_import_graph("pkg/main.js")
@@ -151,6 +158,7 @@ async def test_ast_engine_typescript_navigation_surfaces(tmp_path: Path):
     assert [item["name"] for item in callees["callees"]] == ["helper", "localHelper"]
     assert callees["callees"][0]["kind"] == "import"
     assert callees["callees"][0]["resolved_file"] == "pkg/helper.ts"
+    assert callees["callees"][0]["resolution_status"] == "resolved"
     assert callees["resolution_mode"] == "typescript_ast"
 
     imports = await engine.get_import_graph("pkg/main.tsx")
@@ -161,3 +169,28 @@ async def test_ast_engine_typescript_navigation_surfaces(tmp_path: Path):
     matches = await engine.search_pattern("helper", relative_path="pkg/main.tsx", max_results=10)
     locations = [(item["file"], item["line"]) for item in matches["results"]]
     assert ("pkg/main.tsx", 1) in locations
+
+
+@pytest.mark.asyncio
+async def test_ast_engine_reports_unresolved_callees_explicitly(tmp_path: Path):
+    _write(
+        tmp_path / "pkg" / "main.py",
+        "def run(factory):\n"
+        "    helper = factory()\n"
+        "    return helper.execute()\n",
+    )
+
+    engine = ASTEngine(tmp_path, "ws-test")
+
+    symbols = await engine.get_file_symbols("pkg/main.py")
+    run_symbol_id = next(item["symbol_id"] for item in symbols["symbols"] if item["name"] == "run")
+
+    callees = await engine.find_callees(run_symbol_id)
+
+    assert callees["callee_count"] == 2
+    assert [item["name"] for item in callees["callees"]] == ["factory", "execute"]
+    assert callees["callees"][0]["resolution_status"] == "unresolved"
+    assert callees["callees"][0]["reason_code"] == "name_not_resolved_in_workspace"
+    assert callees["callees"][1]["resolution_status"] == "unresolved"
+    assert callees["callees"][1]["reason_code"] == "attribute_call_not_resolved"
+    assert callees["semantic_summary"]["unresolved_count"] == 2
