@@ -23,6 +23,7 @@ class MutationPolicyDecision:
     blast_radius: int
     affected_files: List[str] = field(default_factory=list)
     approval_level: str = "direct"
+    risk_tier: str = "low"
     reason: str = ""
 
     def as_dict(self) -> Dict[str, Any]:
@@ -39,19 +40,34 @@ class MutationPolicyDecision:
             "blast_radius": self.blast_radius,
             "affected_files": list(self.affected_files),
             "approval_level": self.approval_level,
+            "risk_tier": self.risk_tier,
             "reason": self.reason,
         }
 
     def approval_receipt(self) -> Dict[str, Any]:
+        if self.execution_mode == "direct":
+            execution_status = "ready"
+        elif self.preview:
+            execution_status = "preview_only"
+        else:
+            execution_status = "approval_required"
+
         return {
             "operation": self.operation,
             "operation_class": self.operation_class,
             "execution_mode": self.execution_mode,
+            "execution_status": execution_status,
             "requires_approval": self.requires_approval,
             "preview_required": self.preview_required,
             "approval_level": self.approval_level,
+            "risk_tier": self.risk_tier,
             "blast_radius": self.blast_radius,
             "affected_files": list(self.affected_files),
+            "affected_file_summary": {
+                "count": len(self.affected_files),
+                "files": list(self.affected_files),
+            },
+            "reason": self.reason,
         }
 
 
@@ -73,6 +89,7 @@ class MutationPolicy:
         preview_required: bool,
         execution_mode: str,
         requires_approval: bool,
+        risk_tier: str,
         reason: str,
     ) -> MutationPolicyDecision:
         files = _sorted_unique(affected_files)
@@ -89,6 +106,7 @@ class MutationPolicy:
             blast_radius=len(files),
             affected_files=files,
             approval_level=approval_level,
+            risk_tier=risk_tier,
             reason=reason,
         )
 
@@ -102,6 +120,7 @@ class MutationPolicy:
             preview_required=False,
             execution_mode="direct",
             requires_approval=False,
+            risk_tier="low",
             reason="Bounded patch on one workspace file remains directly executable.",
         )
 
@@ -116,6 +135,7 @@ class MutationPolicy:
             preview_required=True,
             execution_mode="preview_required" if preview else "approval_required",
             requires_approval=not preview,
+            risk_tier="medium" if len(_sorted_unique(files)) <= 3 else "high",
             reason="Batch operations expose blast radius and require explicit preview semantics.",
         )
 
@@ -131,5 +151,6 @@ class MutationPolicy:
             preview_required=True,
             execution_mode="preview_required" if preview else "approval_required",
             requires_approval=not preview,
+            risk_tier="medium" if len(files) <= 1 else "high",
             reason="Symbol refactors must surface blast radius before apply.",
         )
