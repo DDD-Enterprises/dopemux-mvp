@@ -9,6 +9,7 @@
 - Extended `services/serena/dopecode/transform/refactor_layer.py` so `replace_symbol_body` supports block-bodied TypeScript functions, classes, and function-valued declarations.
 - Added `approval_receipt()` to `services/serena/dopecode/policy/mutation_policy.py`.
 - Surfaced `approval_receipt` in write and refactor mutation responses.
+- Removed stale analyzer locals/imports flagged in review and made empty JavaScript/TypeScript body replacement fail closed.
 
 ## 2. Mutation Model
 - Single-file patch application remains directly executable when workspace-bounded.
