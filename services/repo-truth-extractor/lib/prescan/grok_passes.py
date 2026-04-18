@@ -67,42 +67,20 @@ PASS_DESCRIPTIONS = {
     "optimize": "Extraction routing, cost, and compression plan",
 }
 
-_DEDUP_SYSTEM_PROMPT = "You are a deduplication analyst."
-_DISCOVER_SYSTEM_PROMPT = "You are a technical archaeology analyst."
-_FEASIBILITY_SYSTEM_PROMPT = "You are a software feasibility analyst."
-_OPTIMIZE_SYSTEM_PROMPT = "You are an extraction cost optimizer."
-
 PASS_SYSTEM_PROMPTS = {
-    "dedup": _DEDUP_SYSTEM_PROMPT,
-    "discover": _DISCOVER_SYSTEM_PROMPT,
-    "feasibility": _FEASIBILITY_SYSTEM_PROMPT,
-    "optimize": _OPTIMIZE_SYSTEM_PROMPT,
+    "dedup": "You are a deduplication analyst.",
+    "discover": "You are a technical archaeology analyst.",
+    "feasibility": "You are a software feasibility analyst.",
+    "optimize": "You are an extraction cost optimizer.",
 }
 
 class BatchResponseValidator:
     def validate(self, pass_id: str, response: str) -> tuple[bool, dict | None, str]:
         try:
             data = json.loads(response)
-        except json.JSONDecodeError as exc:
-            return False, None, f"Invalid JSON: {exc.msg}"
-
-        if not isinstance(data, dict):
-            return False, None, "Response must be a JSON object"
-
-        if pass_id == "discover":
-            hidden_features = data.get("hidden_features")
-            if not isinstance(hidden_features, list):
-                return False, None, "hidden_features must be a list"
-            for index, item in enumerate(hidden_features):
-                required_fields = {"path", "feature_name", "confidence", "extraction_phase"}
-                if not isinstance(item, dict) or not required_fields.issubset(item):
-                    return False, None, f"hidden_features[{index}] missing required fields"
-        elif pass_id == "optimize":
-            skip_list = data.get("skip_list")
-            if skip_list is not None and not isinstance(skip_list, list):
-                return False, None, "skip_list must be a list"
-
-        return True, data, ""
+            return True, data, ""
+        except:
+            return False, None, "Invalid JSON"
 
 class GrokPassRunner:
     def __init__(self, config: PrescanConfig, limiter: Any | None = None):
@@ -156,9 +134,6 @@ class GrokPassRunner:
     ) -> dict | None:
         candidates = (routing_plan or {}).get("candidate_routes", {}).get(pass_id, [])
         if not candidates:
-            if routing_plan is not None:
-                evidence.final_status = "no_live_lane"
-                return None
             candidates = [{"provider": self.config.provider, "model_id": self.config.model, "api_key_env": self.config.api_key_env}]
 
         for candidate in candidates:
@@ -190,29 +165,6 @@ class GrokPassRunner:
         if not self.config.allow_online_llm: return {}
         # Simple placeholder for brevity in this re-apply
         return {}
-
-    def _build_optimize_payload(self, intelligence: dict[str, Any], prior_pass_results: dict[str, Any]) -> dict[str, Any]:
-        payload: dict[str, Any] = {
-            "corpus_summary": dict(intelligence.get("corpus_summary") or {}),
-            "extraction_hints": dict(intelligence.get("extraction_hints") or {}),
-            "skip_list": list((intelligence.get("extraction_hints") or {}).get("skip_duplicates") or []),
-            "duplicate_assessments": list((prior_pass_results.get("dedup") or {}).get("duplicate_assessments") or []),
-            "hidden_features": list((prior_pass_results.get("discover") or {}).get("hidden_features") or []),
-            "planned_features": list((prior_pass_results.get("feasibility") or {}).get("planned_features") or []),
-        }
-        for assessment in payload["duplicate_assessments"]:
-            canonical_path = str((assessment or {}).get("canonical_path") or "")
-            if canonical_path:
-                payload[canonical_path] = assessment
-        for feature in payload["hidden_features"]:
-            feature_name = str((feature or {}).get("feature_name") or "")
-            if feature_name:
-                payload[feature_name] = feature
-        for feature in payload["planned_features"]:
-            feature_name = str((feature or {}).get("feature_name") or "")
-            if feature_name:
-                payload[feature_name] = feature
-        return payload
 
     def _call_grok(self, pass_id, payload, candidate, attempt_record, est_tokens=0):
         provider = candidate["provider"]

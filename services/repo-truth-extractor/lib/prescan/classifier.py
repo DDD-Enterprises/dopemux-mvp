@@ -146,3 +146,7 @@ class Classifier:
         """Classify all entries in-place."""
         for entry in entries:
             entry.authority_class = self.classify_file(entry)
+
+
+# Backward-compatible alias for existing prescan engine imports.
+FileClassifier = Classifier
