@@ -31,6 +31,7 @@ STRICT_OWNERSHIP_ROUTE_IDS = {
     "route_openrouter_openai_gpt_5_4_v1",
     "route_openai_gpt_5_4_v1",
     "route_openrouter_openai_gpt_5_3_codex_v1",
+    "route_openai_gpt_5_4_mini_v1",
 }
 
 

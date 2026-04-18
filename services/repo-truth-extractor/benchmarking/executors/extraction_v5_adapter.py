@@ -66,6 +66,119 @@ class ExtractionV5Adapter(ExecutorAdapter):
             return {}
         return json.loads(path.read_text(encoding="utf-8"))
 
+    def _subprocess_failure_result(
+        self,
+        *,
+        case: dict[str, Any],
+        config: dict[str, Any],
+        command: list[str],
+        result: subprocess.CompletedProcess[str],
+    ) -> ExecutionResult:
+        route_id = str(config["route_id"])
+        surface_class = str(config["surface_class"])
+        provider_name = str(config["provider_name"])
+        provider_model_id = str(config["provider_model_id"])
+        failure_reason = f"runtime_exit_{result.returncode}"
+        qa_payload = {
+            "missing_expected_artifacts": ["runtime_run_root_missing"],
+            "failure_reason": failure_reason,
+        }
+        dashboard = {
+            "payload": {
+                "phases": {
+                    "A": {
+                        "status": "FAIL",
+                        "failure_reason": failure_reason,
+                    }
+                }
+            }
+        }
+        return ExecutionResult(
+            adapter_name=self.adapter_name,
+            case_id=str(case["case_id"]),
+            succeeded=False,
+            contract_gate_pass=False,
+            contract_gate_strength="strong",
+            contract_fail_reason=failure_reason,
+            output_artifact_ref="outputs/REPOCTRL_INVENTORY.json",
+            outputs={
+                "REPOCTRL_INVENTORY.json": {},
+                "A0_QA.json": qa_payload,
+                "A99_QA.json": qa_payload,
+                "REPOCTRL_QA.json": {"failure_reason": failure_reason},
+                "A0__A_P0001.json": {},
+                "STEP_METRICS.json": {"steps": {}},
+                "RUN_DASHBOARD.json": dashboard,
+                "RUN_ROUTING_FINGERPRINT.json": {
+                    "effective_model_routing": {"A": route_id or provider_model_id},
+                },
+                "FAILURE_INDEX.json": {
+                    "failure_reason": failure_reason,
+                    "returncode": result.returncode,
+                },
+                "ROUTING_LOG.json": {
+                    "failure_reason": failure_reason,
+                    "provider_name": provider_name,
+                    "provider_model_id": provider_model_id,
+                },
+            },
+            route_trace={
+                "declared_route_id": route_id,
+                "surface_class": surface_class,
+                "execution_mode": "live_execute" if bool(config["live_execution"]) else "dry_run",
+                "phase": str(config["phase"]),
+                "logical_route_id": route_id,
+                "provider_name": provider_name,
+                "selected_route_identity": {
+                    "declared_route_id": route_id,
+                    "surface_id": str(config["surface_id"]),
+                    "surface_class": surface_class,
+                    "provider_name": provider_name,
+                    "model_key": str(config["model_key"]),
+                    "provider_model_id": provider_model_id,
+                    "route_pin": str(config["route_pin"]),
+                    "routing_override_model": str(config["routing_override_model"]),
+                    "benchmark_route_ownership_mode": str(config["benchmark_route_ownership_mode"]),
+                    "benchmark_route_ownership_scope": str(config["benchmark_route_ownership_scope"]),
+                    "phase": str(config["phase"]),
+                },
+                "route_hops": [route_id or provider_model_id],
+                "step_route_counts": {},
+                "route_ownership_mode": str(config["benchmark_route_ownership_mode"]),
+                "route_ownership_source": "benchmark_route_ownership_env" if str(config["benchmark_route_ownership_mode"]) else "",
+                "run_root": str(Path(config["output_root"]) / "runs" / str(config["run_id"])),
+                "runtime_failure": {
+                    "returncode": result.returncode,
+                    "stdout_present": bool(result.stdout),
+                    "stderr_present": bool(result.stderr),
+                },
+            },
+            task_eval={
+                "status": "runtime_failed_before_run_root",
+                "task_success_score": 0.0,
+                "latency_ms": 0.0,
+                "tokens_input": 0,
+                "tokens_output": 0,
+                "cost_estimate_usd": 0.0,
+                "phase_status": "FAIL",
+            },
+            executor_links={
+                "script": str(SCRIPT),
+                "command": command,
+                "stdout_excerpt": (result.stdout or "")[-2000:],
+                "stderr_excerpt": (result.stderr or "")[-2000:],
+            },
+            validator_inputs={
+                "failure_reason": failure_reason,
+                "returncode": result.returncode,
+            },
+            work_root=str(config["output_root"]),
+            metadata={
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+            },
+        )
+
     def execute(self, case: dict[str, Any], work_root: Path) -> ExecutionResult:
         self.validate_case(case)
         config = self._execution_config(case, work_root)
@@ -135,11 +248,11 @@ class ExtractionV5Adapter(ExecutorAdapter):
         )
         run_root = output_root / "runs" / run_id
         if not run_root.exists():
-            raise subprocess.CalledProcessError(
-                returncode=result.returncode,
-                cmd=command,
-                output=result.stdout,
-                stderr=result.stderr,
+            return self._subprocess_failure_result(
+                case=case,
+                config=config,
+                command=command,
+                result=result,
             )
         phase_root = run_root / "A_repo_control_plane"
         if phase != "A":

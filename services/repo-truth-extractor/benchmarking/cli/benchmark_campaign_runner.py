@@ -9,11 +9,12 @@ from typing import Any
 
 HERE = Path(__file__).resolve()
 SERVICE_ROOT = HERE.parents[2]
+REPO_ROOT = HERE.parents[4]
 if str(SERVICE_ROOT) not in sys.path:
     sys.path.insert(0, str(SERVICE_ROOT))
 
 from benchmarking.campaigns.manifest import build_campaign_manifest
-from benchmarking.campaigns.selection import build_r1_campaign_plan
+from benchmarking.campaigns.selection import build_r1_campaign_plan, decide_r1_live_cohort
 from benchmarking.orchestration.attempt_executor import AttemptExecutor
 from benchmarking.reporting.pipeline import BenchmarkReportingPipeline
 from benchmarking.rollups.pipeline import BenchmarkScoringPipeline
@@ -42,14 +43,32 @@ def _preflight_output() -> str:
         cwd=str(SERVICE_ROOT),
         capture_output=True,
         text=True,
-        check=True,
+        check=False,
     )
-    return (result.stdout or "") + ("\n" + result.stderr if result.stderr else "")
+    lines = [f"exit_code={result.returncode}"]
+    if result.stdout:
+        lines.append(result.stdout.rstrip())
+    if result.stderr:
+        lines.append(result.stderr.rstrip())
+    return "\n".join(lines).strip() + "\n"
 
 
-def _decision_rows(candidate_details: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def _campaign_metadata(plan_manifest: dict[str, Any]) -> dict[tuple[str, str, str], dict[str, Any]]:
+    rows = plan_manifest["control_candidates"] + plan_manifest["campaign_candidates"]
+    return {
+        (str(item["route_id"]), str(item["archetype_id"]), str(item["profile_id"])): item
+        for item in rows
+    }
+
+
+def _decision_rows(candidate_details: list[dict[str, Any]], plan_manifest: dict[str, Any]) -> list[dict[str, Any]]:
+    metadata_by_key = _campaign_metadata(plan_manifest)
     rows = []
     for detail in candidate_details:
+        metadata = metadata_by_key.get(
+            (str(detail["route_id"]), str(detail["archetype_id"]), str(detail["profile_id"])) ,
+            {},
+        )
         control_rows = detail.get("control_deltas", [])
         control_anchor_used = None
         if control_rows:
@@ -58,7 +77,7 @@ def _decision_rows(candidate_details: list[dict[str, Any]]) -> list[dict[str, An
             {
                 "route_id": detail["route_id"],
                 "surface_class": detail["surface_class"],
-                "cohort": detail.get("cohort"),
+                "cohort": metadata.get("cohort"),
                 "archetype_id": detail["archetype_id"],
                 "target_profile": detail["profile_id"],
                 "recommendation_state": detail["current_recommendation_state"],
@@ -66,6 +85,7 @@ def _decision_rows(candidate_details: list[dict[str, Any]]) -> list[dict[str, An
                 "key_blockers": detail["failed_gates"],
                 "control_anchor_used": control_anchor_used,
                 "evidence_bundle_refs": [detail["evidence_bundle_ref"]],
+                "admission_reason": metadata.get("admission_reason"),
                 "operator_note": (
                     "phase_s caveat remains in force."
                     if detail.get("phase_caveat")
@@ -123,7 +143,7 @@ def _post_run_decision_memo(
     baseline_run_id: str,
     campaign_run_id: str,
 ) -> str:
-    decision_rows = _decision_rows(candidate_details)
+    decision_rows = _decision_rows(candidate_details, plan_manifest)
     recommendations = _policy_recommendations(candidate_details)
     recommended = [row["route_id"] for row in decision_rows if row["recommendation_state"] == "recommended_for_review"]
     experimental = [row["route_id"] for row in decision_rows if row["recommendation_state"] == "experimental_only"]
@@ -155,7 +175,7 @@ def _post_run_decision_memo(
             "## Unresolved questions",
             "- R1 only contests the live runtime-v5 A-phase path on the repo-truth-extractor service root; broader archetype expansion still depends on provider-backed adapters beyond runtime_v5.",
             "- Strict contract steps remain pinned by promptsets/v4 model_map.yaml, so direct-provider candidates primarily contest non-strict A-lane steps in this bounded campaign.",
-            "- The admitted cohort was reduced below the packet maximum after observing real live-step latency; the held-out balanced and experimental routes remain unbenchmarked rather than implicitly rejected.",
+            "- The admitted cohort remains below the packet maximum because only the live route-identity lane is admissibility-gated today; prescan, phase_s, and FL_INT adapters remain local/synthetic evidence producers rather than real provider-route contests.",
             "- Recommendation history is still reconstructed across runs rather than stored as a first-class recommendation-history table.",
             "",
             "## Decision table",
@@ -166,6 +186,40 @@ def _post_run_decision_memo(
             "",
         ]
     )
+
+
+def _default_proof_dir(campaign_run_id: str) -> Path:
+    return REPO_ROOT / "proof" / "benchmarking" / "TP-RTE-BENCH-R1" / campaign_run_id
+
+
+def _route_signature_audit(
+    manifest: dict[str, Any],
+    route_identity_rows: list[dict[str, Any]],
+) -> dict[str, Any]:
+    planned = {
+        str(item["route_id"]): item
+        for item in manifest["control_candidates"] + manifest["campaign_candidates"]
+    }
+    rows = []
+    for identity in sorted(route_identity_rows, key=lambda item: (str(item["case_id"]), str(item["route_id"]))):
+        planned_row = planned.get(str(identity["route_id"]), {})
+        rows.append(
+            {
+                "route_id": identity["route_id"],
+                "case_id": identity["case_id"],
+                "cohort": identity["cohort"],
+                "planned_route_identity": identity.get("planned_route_identity", {}),
+                "selected_route_identity": identity.get("selected_route_identity", {}),
+                "effective_execution_signature": identity.get("effective_execution_signature", {}),
+                "effective_execution_signature_hash": identity.get("effective_execution_signature_hash", ""),
+                "admission_reason": planned_row.get("admission_reason"),
+            }
+        )
+    return {
+        "campaign_id": manifest["campaign_id"],
+        "route_count": len(rows),
+        "rows": rows,
+    }
 
 
 def run_campaign(
@@ -180,34 +234,82 @@ def run_campaign(
     if not admissibility_run_id:
         raise RuntimeError("campaign admission requires --admissibility-run-id")
     admissibility_gate = _load_admissibility_gate(root, admissibility_run_id)
+    from benchmarking.cli.benchmark_live_route_readiness_smoke import _provider_readiness
+
+    live_assignments = [assignment for assignment in plan.campaign_assignments if assignment.live_execution]
+    provider_readiness = _provider_readiness(repo, live_assignments)
+    live_cohort_decision = decide_r1_live_cohort(live_assignments, provider_readiness)
+    admitted_live_route_ids = {
+        str(item) for item in live_cohort_decision.get("admitted_live_route_ids", [])
+    }
+    executable_assignments = [
+        assignment
+        for assignment in plan.campaign_assignments
+        if (not assignment.live_execution) or assignment.candidate.route_id in admitted_live_route_ids
+    ]
+    executable_live_assignments = [assignment for assignment in executable_assignments if assignment.live_execution]
 
     executor = AttemptExecutor(root)
-    scoring = BenchmarkScoringPipeline(root)
-    governance = GovernanceSynthesisPipeline(root)
-    reporting = BenchmarkReportingPipeline(root)
+    campaign_report = None
+    scoring_payload: dict[str, Any] = {}
+    governance_payload: dict[str, Any] = {"governance_packets": [], "recommendations": [], "sample_recommendation": {}, "sample_governance_packet": {}}
+    reporting_payload: dict[str, Any] = {"candidate_details": [], "portfolio_summary": {}, "profile_summaries": []}
+    decision_rows: list[dict[str, Any]] = []
+    memo_lines = ["# POST_RUN_DECISION_MEMO", ""]
 
-    campaign_report = executor.execute_assignments(
-        assignments=plan.campaign_assignments,
-        case_set_id=plan.case_set_id,
-        run_type="benchmark_campaign_candidate",
-        trigger_ref=plan.campaign_id,
-        benchmark_run_prefix="r1_campaign",
-    )
-    scoring_payload = scoring.score_run(campaign_report.benchmark_run_id)
-    governance_payload = governance.synthesize_run(campaign_report.benchmark_run_id)
-    reporting_payload = reporting.build_reports(campaign_report.benchmark_run_id)
-    decision_rows = _decision_rows(reporting_payload["candidate_details"])
-    memo = _post_run_decision_memo(
-        plan_manifest=manifest,
-        candidate_details=reporting_payload["candidate_details"],
-        baseline_run_id="same_run_controls",
-        campaign_run_id=campaign_report.benchmark_run_id,
-    )
+    if executable_live_assignments:
+        scoring = BenchmarkScoringPipeline(root)
+        governance = GovernanceSynthesisPipeline(root)
+        reporting = BenchmarkReportingPipeline(root)
+
+        campaign_report = executor.execute_assignments(
+            assignments=executable_assignments,
+            case_set_id=plan.case_set_id,
+            run_type="benchmark_campaign_candidate",
+            trigger_ref=plan.campaign_id,
+            benchmark_run_prefix="r1_campaign",
+        )
+        if campaign_report.route_collapse is None:
+            scoring_payload = scoring.score_run(campaign_report.benchmark_run_id)
+            governance_payload = governance.synthesize_run(campaign_report.benchmark_run_id)
+            reporting_payload = reporting.build_reports(campaign_report.benchmark_run_id)
+            decision_rows = _decision_rows(reporting_payload["candidate_details"], manifest)
+            memo = _post_run_decision_memo(
+                plan_manifest=manifest,
+                candidate_details=reporting_payload["candidate_details"],
+                baseline_run_id="same_run_controls",
+                campaign_run_id=campaign_report.benchmark_run_id,
+            )
+            memo_lines = memo.splitlines()
+        else:
+            memo_lines.extend(
+                [
+                    f"- campaign_id: {plan.campaign_id}",
+                    f"- campaign_run_id: {campaign_report.benchmark_run_id}",
+                    "",
+                    "## Stop reason",
+                    f"- {campaign_report.route_collapse['message']}",
+                ]
+            )
+    else:
+        memo_lines.extend(
+            [
+                f"- campaign_id: {plan.campaign_id}",
+                "",
+                "## Stop reason",
+                "- No live routes remained admitted after provider-readiness filtering.",
+            ]
+        )
 
     payload = {
         "campaign_id": plan.campaign_id,
         "baseline_run_id": "same_run_controls",
-        "campaign_run_id": campaign_report.benchmark_run_id,
+        "campaign_run_id": campaign_report.benchmark_run_id if campaign_report is not None else "",
+        "campaign_state": (
+            "blocked_route_signature_collapse"
+            if campaign_report is not None and campaign_report.route_collapse is not None
+            else ("blocked_no_admitted_live_routes" if not executable_live_assignments else "completed")
+        ),
         "selected_candidate_set": [
             {
                 "route_id": item["route_id"],
@@ -222,6 +324,8 @@ def run_campaign(
             }
             for item in manifest["campaign_candidates"]
         ],
+        "live_cohort_decision": live_cohort_decision,
+        "provider_readiness": provider_readiness,
         "recommendation_states": [
             {
                 "route_id": item["route_id"],
@@ -233,7 +337,7 @@ def run_campaign(
             }
             for item in decision_rows
         ],
-        "db_row_counts": repo.count_rows(),
+        "db_row_counts": campaign_report.db_row_counts if campaign_report is not None else repo.count_rows(),
         "sample_recommendation": governance_payload["sample_recommendation"],
         "sample_governance_packet": governance_payload["sample_governance_packet"],
         "sample_candidate_detail": reporting_payload["candidate_details"][0] if reporting_payload["candidate_details"] else {},
@@ -241,43 +345,60 @@ def run_campaign(
         "policy_recommendations": _policy_recommendations(reporting_payload["candidate_details"]),
         "admissibility_run_id": admissibility_run_id,
         "admissibility_gate": admissibility_gate,
+        "campaign_route_identity": campaign_report.route_identity_rows if campaign_report is not None else [],
+        "route_collapse_evidence": campaign_report.route_collapse if campaign_report is not None else None,
     }
 
-    if proof_dir is not None:
-        proof_dir.mkdir(parents=True, exist_ok=True)
+    final_proof_dir = proof_dir or _default_proof_dir(
+        payload["campaign_run_id"] or "blocked_no_admitted_live_routes"
+    )
+    if final_proof_dir is not None:
+        final_proof_dir.mkdir(parents=True, exist_ok=True)
         benchmark_root = benchmark_paths(root).root
-        _write_json(proof_dir / "RUN_MANIFEST.json", payload)
-        _write_json(proof_dir / "CAMPAIGN_MANIFEST.json", manifest)
-        _write_json(proof_dir / "db_row_counts.json", payload["db_row_counts"])
-        _write_json(proof_dir / "sample_portfolio_summary.json", reporting_payload["portfolio_summary"])
+        _write_json(final_proof_dir / "RUN_MANIFEST.json", payload)
+        _write_json(final_proof_dir / "campaign_summary.json", payload)
+        _write_json(final_proof_dir / "CAMPAIGN_MANIFEST.json", manifest)
+        _write_json(final_proof_dir / "db_row_counts.json", payload["db_row_counts"])
+        _write_json(final_proof_dir / "live_cohort_decision.json", live_cohort_decision)
+        _write_json(final_proof_dir / "campaign_route_identity.json", payload["campaign_route_identity"])
+        _write_json(
+            final_proof_dir / "route_signature_audit.json",
+            _route_signature_audit(manifest, payload["campaign_route_identity"]),
+        )
+        _write_json(
+            final_proof_dir / "route_collapse_evidence.json",
+            payload["route_collapse_evidence"] or {"status": "not_detected"},
+        )
+        _write_json(final_proof_dir / "sample_portfolio_summary.json", reporting_payload["portfolio_summary"])
         if reporting_payload["profile_summaries"]:
-            _write_json(proof_dir / "sample_profile_summary.json", reporting_payload["profile_summaries"][0])
+            _write_json(final_proof_dir / "sample_profile_summary.json", reporting_payload["profile_summaries"][0])
         if reporting_payload["candidate_details"]:
             sample_detail = reporting_payload["candidate_details"][0]
             _write_json(
-                proof_dir / f"sample_candidate_detail__{sample_detail['recommendation_id']}.json",
+                final_proof_dir / f"sample_candidate_detail__{sample_detail['recommendation_id']}.json",
                 sample_detail,
             )
         if governance_payload["governance_packets"]:
             sample_packet = governance_payload["governance_packets"][0]
             _write_json(
-                proof_dir / f"sample_governance_packet__{sample_packet['recommendation_id']}.json",
+                final_proof_dir / f"sample_governance_packet__{sample_packet['recommendation_id']}.json",
                 sample_packet,
             )
         if governance_payload["recommendations"]:
             sample_rec = governance_payload["recommendations"][0]
             _write_json(
-                proof_dir / f"sample_recommendation__{sample_rec['recommendation_id']}.json",
+                final_proof_dir / f"sample_recommendation__{sample_rec['recommendation_id']}.json",
                 sample_rec,
             )
-        _write_json(proof_dir / "candidate_matrix.json", decision_rows)
-        (proof_dir / "POST_RUN_DECISION_MEMO.md").write_text(memo, encoding="utf-8")
-        (proof_dir / "campaign_preflight.txt").write_text(preflight, encoding="utf-8")
-        (proof_dir / "smoke_output.txt").write_text(
+        _write_json(final_proof_dir / "candidate_matrix.json", decision_rows)
+        _write_json(final_proof_dir / "archetype_decision_table.json", decision_rows)
+        (final_proof_dir / "POST_RUN_DECISION_MEMO.md").write_text("\n".join(memo_lines) + "\n", encoding="utf-8")
+        (final_proof_dir / "campaign_preflight.txt").write_text(preflight, encoding="utf-8")
+        (final_proof_dir / "smoke_output.txt").write_text(
             "\n".join(
                 [
                     "baseline_run_id=same_run_controls",
-                    f"campaign_run_id={campaign_report.benchmark_run_id}",
+                    f"campaign_run_id={payload['campaign_run_id']}",
                     f"selected_routes={','.join(item['route_id'] for item in payload['selected_candidate_set'])}",
                 ]
             )
@@ -285,7 +406,8 @@ def run_campaign(
             encoding="utf-8",
         )
         tree_lines = sorted(str(path.relative_to(benchmark_root)) for path in benchmark_root.rglob("*"))
-        (proof_dir / "benchmark_tree.txt").write_text("\n".join(tree_lines) + "\n", encoding="utf-8")
+        (final_proof_dir / "benchmark_tree.txt").write_text("\n".join(tree_lines) + "\n", encoding="utf-8")
+        payload["proof_dir"] = str(final_proof_dir)
     return payload
 
 
