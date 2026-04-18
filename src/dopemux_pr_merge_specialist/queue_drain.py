@@ -709,7 +709,7 @@ Modify the necessary files to satisfy the reviewer's request.
         try:
             process.communicate(timeout=5)
         except subprocess.TimeoutExpired:
-            pass
+            log("Process did not terminate cleanly after kill; continuing timeout handling.", "WARNING")
         log("Gemini agent timed out.", "ERROR")
         return False
     except Exception as e:
