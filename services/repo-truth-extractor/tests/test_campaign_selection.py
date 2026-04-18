@@ -10,6 +10,7 @@ if str(SERVICE_ROOT) not in sys.path:
 
 from benchmarking.campaigns.manifest import build_campaign_manifest
 from benchmarking.campaigns.selection import build_r1_campaign_plan
+from benchmarking.cli.benchmark_route_admissibility_smoke import _admissibility_intended_routes
 from benchmarking.orchestration.attempt_executor import _step_route_signature
 from benchmarking.registry.registry_loader import seed_registry
 from benchmarking.storage.sqlite_repo import BenchmarkCatalogRepo
@@ -33,7 +34,7 @@ def test_r1_campaign_selection_is_bounded_and_explicit(tmp_path: Path) -> None:
     assert "route_openai_gpt_5_4_v1" in route_ids
     assert "route_local_fixture_v1" in route_ids
     assert "route_openrouter_openai_gpt_5_3_codex_v1" in route_ids
-    assert "route_gemini_3_1_pro_preview_v1" in route_ids
+    assert "route_openai_gpt_5_4_mini_v1" in route_ids
     assert manifest["case_set_id"] == "r1_first_campaign_v1"
     assert manifest["contract_snapshot_id"]
 
@@ -65,3 +66,21 @@ def test_step_route_signature_is_stable() -> None:
     )
     assert left == right
     assert left != different
+
+
+def test_route_admissibility_only_gates_live_campaign_assignments(tmp_path: Path) -> None:
+    repo = BenchmarkCatalogRepo.from_root(tmp_path)
+    seed_registry(repo)
+    plan = build_r1_campaign_plan(repo)
+    manifest = build_campaign_manifest(plan)
+
+    intended_routes = _admissibility_intended_routes(manifest)
+
+    assert intended_routes
+    assert all(item["case_id"] == "strict_extract_conflicting_evidence_v1" for item in intended_routes)
+    assert {item["route_id"] for item in intended_routes} == {
+        "route_openrouter_openai_gpt_5_4_v1",
+        "route_openai_gpt_5_4_v1",
+        "route_openrouter_openai_gpt_5_3_codex_v1",
+        "route_openai_gpt_5_4_mini_v1",
+    }

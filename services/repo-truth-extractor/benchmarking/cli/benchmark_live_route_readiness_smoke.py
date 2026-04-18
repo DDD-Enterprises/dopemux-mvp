@@ -19,7 +19,7 @@ if str(SERVICE_ROOT) not in sys.path:
 from benchmarking.campaigns.admissibility import evaluate_admissibility
 from benchmarking.campaigns.route_identity import RouteTelemetryError, build_route_identity_record
 from benchmarking.campaigns.route_separation import build_route_identity_truth_table
-from benchmarking.campaigns.selection import CampaignAssignment, build_r1_campaign_plan
+from benchmarking.campaigns.selection import CampaignAssignment, build_r1_campaign_plan, decide_r1_live_cohort
 from benchmarking.orchestration.attempt_executor import AttemptExecutor
 from benchmarking.storage.hashing import stable_json_dumps
 from benchmarking.storage.paths import benchmark_paths
@@ -30,6 +30,7 @@ STRICT_LIVE_ROUTE_IDS = {
     "route_openrouter_openai_gpt_5_4_v1",
     "route_openai_gpt_5_4_v1",
     "route_openrouter_openai_gpt_5_3_codex_v1",
+    "route_openai_gpt_5_4_mini_v1",
 }
 
 
@@ -342,8 +343,11 @@ def run_smoke(root: Path | None = None, proof_dir: Path | None = None) -> dict[s
         raise RuntimeError("no owned strict-extraction assignments available for R1D")
 
     readiness = _provider_readiness(repo, assignments)
-    ready_route_ids = set(readiness["ready_route_ids"])
-    ready_assignments = [assignment for assignment in assignments if assignment.candidate.route_id in ready_route_ids]
+    cohort_decision = decide_r1_live_cohort(assignments, readiness)
+    ready_route_ids = set(str(item) for item in cohort_decision["admitted_live_route_ids"])
+    ready_assignments = [
+        assignment for assignment in assignments if assignment.candidate.route_id in ready_route_ids
+    ]
 
     benchmark_run_ids: list[str] = []
     if ready_assignments:
@@ -368,17 +372,30 @@ def run_smoke(root: Path | None = None, proof_dir: Path | None = None) -> dict[s
             "model_key": assignment.candidate.model_key,
             "provider_model_id": assignment.candidate.provider_model_id,
         }
-        for assignment in assignments
+        for assignment in ready_assignments
     ]
     intended_keys = {(str(item["case_id"]), str(item["route_id"])) for item in intended_routes}
     route_identities, route_errors = _load_route_identities(repo, benchmark_run_ids, intended_keys)
-    admissibility = evaluate_admissibility(
-        benchmark_run_ids=benchmark_run_ids,
-        route_identities=route_identities,
-        intended_routes=intended_routes,
-        route_errors=route_errors,
-        required_repeat_count=1,
-    )
+    if intended_routes:
+        admissibility = evaluate_admissibility(
+            benchmark_run_ids=benchmark_run_ids,
+            route_identities=route_identities,
+            intended_routes=intended_routes,
+            route_errors=route_errors,
+            required_repeat_count=1,
+        )
+    else:
+        admissibility = {
+            "analysis_version": "route_identity_admissibility_v1",
+            "benchmark_run_ids": benchmark_run_ids,
+            "required_repeat_count": 1,
+            "status": "blocked",
+            "campaign_state": "invalidated",
+            "admissibility_blocker_codes": ["NO_ADMITTED_LIVE_ROUTES"],
+            "routes": [],
+            "comparisons": [],
+            "notes": ["No live routes were admitted after provider-readiness filtering."],
+        }
     truth_table = build_route_identity_truth_table(
         intended_routes=intended_routes,
         route_identities=route_identities,
@@ -407,6 +424,7 @@ def run_smoke(root: Path | None = None, proof_dir: Path | None = None) -> dict[s
     }
     payload = {
         "provider_readiness_report": readiness,
+        "live_cohort_decision": cohort_decision,
         "live_route_identity_truth_table": truth_table,
         "live_distinctness_result": distinctness,
         "live_admissibility_result": live_admissibility,
@@ -433,6 +451,7 @@ def run_smoke(root: Path | None = None, proof_dir: Path | None = None) -> dict[s
         benchmark_root = benchmark_paths(root).root
         _write_json(proof_dir / "RUN_MANIFEST.json", payload)
         _write_json(proof_dir / "provider_readiness_report.json", readiness)
+        _write_json(proof_dir / "live_cohort_decision.json", cohort_decision)
         _write_json(proof_dir / "live_route_identity_truth_table.json", truth_table)
         _write_json(proof_dir / "live_distinctness_result.json", distinctness)
         _write_json(proof_dir / "live_admissibility_result.json", live_admissibility)
