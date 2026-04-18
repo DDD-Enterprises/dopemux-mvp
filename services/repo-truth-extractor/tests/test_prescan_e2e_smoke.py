@@ -151,3 +151,64 @@ def test_prescan_real_repo_corrupted_cache_falls_back_to_full_recompute(tmp_path
     report = _load_json(output_dir / "code_intelligence_report.json")
     assert {entry["rel_path"] for entry in manifest} == {"README.md", "src/a.py", "src/b.py"}
     assert report["summary"]["total_code_files"] == 2
+
+
+def test_prescan_live_lane_success_artifact_is_written_when_stage0_passes(tmp_path: Path, monkeypatch) -> None:
+    repo = _make_repo(tmp_path)
+    output_dir = tmp_path / "out"
+    config = _make_config(repo, output_dir)
+    config.allow_online_llm = True
+    engine = PrescanEngine(config)
+
+    selected_candidate = {
+        "provider": "openrouter",
+        "model_id": "openai/gpt-5-nano",
+        "api_key_env": "OPENROUTER_API_KEY",
+        "prescan_tier": "cheap_structured",
+        "dependency_class": "proxy",
+        "economic_surface": "openrouter",
+        "execution_transport": "openai_sdk",
+        "pricing": {"input_1m_usd": 1.0, "output_1m_usd": 4.0},
+    }
+    monkeypatch.setattr(
+        "lib.prescan.engine.build_provider_model_catalog",
+        lambda config: {"routes": [selected_candidate]},
+    )
+    monkeypatch.setattr(
+        "lib.prescan.engine.build_provider_readiness_matrix",
+        lambda config, catalog: {
+            "status": "PASS",
+            "routes": [
+                {
+                    "provider": "openrouter",
+                    "model_id": "openai/gpt-5-nano",
+                    "api_key_env": "OPENROUTER_API_KEY",
+                    "ready": True,
+                    "exclusion_reason": None,
+                }
+            ],
+        },
+    )
+    monkeypatch.setattr(
+        "lib.prescan.engine.build_prescan_routing_plan",
+        lambda config, catalog, readiness, passes: {
+            "requested_passes": ["dedup"],
+            "status": "PASS",
+            "halt_before_stage_1": False,
+            "failures": [],
+            "candidate_routes": {"dedup": [selected_candidate]},
+            "selected_routes": {"dedup": {"provider": "openrouter", "model_id": "openai/gpt-5-nano"}},
+            "fallback_decisions": {"dedup": []},
+            "provider_readiness_status": "PASS",
+        },
+    )
+    monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+    monkeypatch.setattr(
+        "lib.prescan.grok_passes.GrokPassRunner._call_grok",
+        lambda self, pass_id, payload, candidate, attempt: {"duplicate_assessments": []},
+    )
+
+    result = engine.run(passes=["dedup"])
+
+    assert result.success is True
+    assert (output_dir / "prescan_live_lane_success.json").exists()

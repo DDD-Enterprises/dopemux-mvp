@@ -190,6 +190,7 @@ def main() -> int:
         allow_online_llm=args.allow_online_llm,
         verbose=args.verbose,
     )
+    config.allow_online_llm = args.allow_online_llm
 
     # Parse passes — special-case 'none' and 'all' before CSV split
     _passes_raw = (args.passes or "").strip().lower()

@@ -543,6 +543,7 @@ def build_prescan_routing_plan(
 
 
 def write_provider_catalog(output_dir: Path, catalog: dict[str, Any]) -> Path:
+    output_dir.mkdir(parents=True, exist_ok=True)
     path = output_dir / "prescan_provider_model_catalog.json"
     payload = {"generated_at": datetime.now(timezone.utc).isoformat(), **catalog}
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -550,6 +551,7 @@ def write_provider_catalog(output_dir: Path, catalog: dict[str, Any]) -> Path:
 
 
 def write_provider_readiness(output_dir: Path, readiness: dict[str, Any]) -> Path:
+    output_dir.mkdir(parents=True, exist_ok=True)
     path = output_dir / "prescan_provider_readiness.json"
     payload = {"generated_at": datetime.now(timezone.utc).isoformat(), **readiness}
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -557,6 +559,7 @@ def write_provider_readiness(output_dir: Path, readiness: dict[str, Any]) -> Pat
 
 
 def write_routing_plan(output_dir: Path, plan: dict[str, Any]) -> Path:
+    output_dir.mkdir(parents=True, exist_ok=True)
     path = output_dir / "prescan_routing_plan.json"
     payload = {"generated_at": datetime.now(timezone.utc).isoformat(), **plan}
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -564,6 +567,7 @@ def write_routing_plan(output_dir: Path, plan: dict[str, Any]) -> Path:
 
 
 def write_no_live_lane_artifact(output_dir: Path, plan: dict[str, Any]) -> Path:
+    output_dir.mkdir(parents=True, exist_ok=True)
     path = output_dir / "prescan_no_live_lane.json"
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -571,6 +575,23 @@ def write_no_live_lane_artifact(output_dir: Path, plan: dict[str, Any]) -> Path:
         "halt_before_stage_1": True,
         "requested_passes": list(plan.get("requested_passes") or []),
         "failures": list(plan.get("failures") or []),
+    }
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def write_live_lane_success_artifact(output_dir: Path, plan: dict[str, Any]) -> Path:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    path = output_dir / "prescan_live_lane_success.json"
+    payload = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "status": "LIVE_LANE_READY",
+        "halt_before_stage_1": False,
+        "requested_passes": list(plan.get("requested_passes") or []),
+        "provider_readiness_status": str(plan.get("provider_readiness_status") or "UNKNOWN"),
+        "selected_routes": dict(plan.get("selected_routes") or {}),
+        "candidate_routes": dict(plan.get("candidate_routes") or {}),
+        "fallback_decisions": dict(plan.get("fallback_decisions") or {}),
     }
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
