@@ -20,6 +20,24 @@ class DuplicateDetector:
     def __init__(self, config: PrescanConfig):
         self.config = config
 
+    def detect(self, entries: list[FileEntry]) -> dict:
+        """Run all duplicate detection and return summary dictionaries."""
+        self.detect_duplicates(entries)
+        self.detect_version_chains(entries)
+        
+        groups = {}
+        chains = {}
+        for e in entries:
+            if e.duplicate_group_id:
+                groups.setdefault(e.duplicate_group_id, []).append(e.rel_path)
+            if e.version_chain_id:
+                chains.setdefault(e.version_chain_id, []).append({
+                    "path": e.rel_path,
+                    "ordinal": e.version_ordinal,
+                    "is_latest": e.is_latest_version
+                })
+        return {"groups": groups, "chains": chains}
+
     def detect_duplicates(self, entries: list[FileEntry]) -> int:
         """
         Group included files by SHA256 hash.

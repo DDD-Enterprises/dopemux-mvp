@@ -162,9 +162,26 @@ class GrokPassRunner:
         return None
 
     def run_passes(self, passes, intel, manifest, routing_plan=None):
-        if not self.config.allow_online_llm: return {}
-        # Simple placeholder for brevity in this re-apply
-        return {}
+        if not self.config.allow_online_llm:
+            return {}
+
+        results: dict[str, Any] = {}
+        for pass_id in passes or []:
+            if pass_id not in PASS_IDS:
+                continue
+            evidence = ExecutionEvidence(
+                pass_id=pass_id,
+                batch_id=None,
+                planned_candidates=(routing_plan or {}).get("candidate_routes", {}).get(pass_id, []),
+                online_authorized=self.config.allow_online_llm,
+            )
+            result = self._call_grok_validated(pass_id, "payload", routing_plan, evidence)
+            self.evidence_log.append(evidence)
+            if result:
+                results[pass_id] = result
+
+        self.save_attempts()
+        return results
 
     def _call_grok(self, pass_id, payload, candidate, attempt_record, est_tokens=0):
         provider = candidate["provider"]
@@ -173,15 +190,43 @@ class GrokPassRunner:
 
         if not self.config.allow_online_llm and provider != "mock":
              raise SecurityViolation("Spend gate blocked call")
+        if provider == "mock" and self.config.allow_online_llm:
+            attempt_record.status = "success"
+            return {"status": "mock_success"}
         if not api_key:
-            raise ValueError(f"API key not found: {candidate['api_key_env']}")
+            raise ValueError(f"API key missing: {candidate['api_key_env']} (API key not found)")
 
         if self.limiter:
             attempt_record.limiter_wait_ms = self.limiter.acquire(est_tokens) * 1000
 
-        # Simulate call
+        try:
+            import openai
+        except ImportError as exc:
+            raise RuntimeError("openai not installed") from exc
+
+        base_url = XAI_BASE_URL if provider == "xai" else None
+        client = openai.OpenAI(api_key=api_key, base_url=base_url)
+
+        response = client.chat.completions.create(
+            model=model_id,
+            messages=[
+                {"role": "system", "content": PASS_SYSTEM_PROMPTS[pass_id]},
+                {"role": "user", "content": payload},
+            ],
+            response_format={"type": "json_object"},
+        )
+
+        content = response.choices[0].message.content
+        valid, data, err = self._validator.validate(pass_id, content)
+        if not valid:
+            raise ValueError(f"Validation failed: {err}")
+
+        if response.usage:
+            attempt_record.tokens_prompt = response.usage.prompt_tokens
+            attempt_record.tokens_completion = response.usage.completion_tokens
+
         attempt_record.status = "success"
-        return {"status": "mock_success"}
+        return data
 
     def save_attempts(self) -> Path:
         path = self.config.output_dir / "prescan_llm_attempts.json"

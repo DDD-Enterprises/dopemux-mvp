@@ -9,11 +9,23 @@ class FileEntry:
     rel_path: str
     size_bytes: int
     extension: str
+    include: bool = True
+    exclude_reason: str = ""
+    directory_class: str = "root"
+    content_hash: str = ""
     authority_class: str = "unknown"
     lifecycle_stage: str = "active"
     is_ghost: bool = False
     git_metadata: dict = field(default_factory=dict)
     code_intel: dict = field(default_factory=dict)
+    
+    # ── Duplicates ──
+    duplicate_group_id: str | None = None
+    is_duplicate: bool = False
+    canonical_duplicate: str | None = None
+    version_chain_id: str | None = None
+    version_ordinal: int = 0
+    is_latest_version: bool = False
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -22,6 +34,11 @@ class FileEntry:
 class PrescanConfig:
     repo_root: Path
     output_dir: Path
+    
+    # ── Corpus ──
+    exclude_globs: list[str] = field(default_factory=list)
+    max_file_size: int = 200_000
+    large_json_threshold: int = 50_000
     
     # ── Orchestration ──
     deep_mode: bool = False
@@ -45,6 +62,7 @@ class PrescanConfig:
     # ── Batching ──
     batch_mode: bool = True
     max_tokens_per_batch: int = 1_500_000
+    chars_per_token: float = 4.0
     
     # ── Model & Provider ──
     provider: str = "xai"
@@ -61,8 +79,9 @@ class PrescanConfig:
 class PrescanResult:
     success: bool
     duration_seconds: float
-    file_count: int
-    code_files_analyzed: int
+    file_count: int = 0
+    code_files_analyzed: int = 0
+    included_count: int = 0
     intelligence_path: Path | None = None
     manifest_path: Path | None = None
     code_graph_path: Path | None = None

@@ -1350,6 +1350,7 @@ class RunnerConfig:
     compare_provider: Optional[str] = None
     compare_steps: Optional[Tuple[str, ...]] = None
     prescan_dir: Optional[str] = None  # Path to prescan output for intelligence routing
+    skip_prescan: bool = False
     router: Optional[Any] = None  # IntelligenceRouter instance
     max_cost_usd: Optional[float] = None
     ledger: Optional[Any] = None
@@ -17766,7 +17767,8 @@ def main() -> None:
             f"For live execution, rerun with --execute and {DPMX_LIVE_OK_ENV}=1."
         ),
     )
-    parser.add_argument("--prescan", type=str, help="Path to prescan intelligence directory.")
+    parser.add_argument("--import-prescan", type=str, help="Load precomputed prescan intelligence from this directory.")
+    parser.add_argument("--skip-prescan", action="store_true", help="Explicitly skip integrated Stage 0 prescan execution.")
     parser.add_argument(
         "--prescan-allow-scope-reduction",
         action="store_true",
@@ -18103,12 +18105,6 @@ def main() -> None:
             "directory (from `dopemux extractor init`) or any directory containing "
             "prompt files. Equivalent to setting REPO_TRUTH_EXTRACTOR_PROMPT_ROOT."
         ),
-    )
-    parser.add_argument(
-        "--prescan-dir",
-        type=str,
-        default=None,
-        help="Path to prescan output dir for intelligence-informed extraction.",
     )
     parser.add_argument(
         "--profile",
@@ -18666,7 +18662,8 @@ def main() -> None:
             if getattr(args, "compare_steps", None)
             else None
         ),
-        prescan_dir=getattr(args, "prescan_dir", None),
+        prescan_dir=getattr(args, "import_prescan", None),
+        skip_prescan=getattr(args, "skip_prescan", False),
         router=router,
         prescan_allow_scope_reduction=bool(
             getattr(args, "prescan_allow_scope_reduction", False)
@@ -19011,7 +19008,7 @@ def main() -> None:
         if _prescan_path.exists():
             _ACTIVE_INTELLIGENCE_ROUTER = IntelligenceRouter.from_dir(_prescan_path)
             if _ACTIVE_INTELLIGENCE_ROUTER:
-                logger.info("Loaded intelligence router from %s", _prescan_path)
+                logger.info("Loaded intelligence router from imported dir %s", _prescan_path)
                 
                 if cfg.max_cost_usd is not None:
                     cost_info = _ACTIVE_INTELLIGENCE_ROUTER.intel.get("cost_estimate", {})
@@ -19028,6 +19025,27 @@ def main() -> None:
                 logger.warning("Prescan dir exists but router failed to load: %s", _prescan_path)
         else:
             logger.warning("Prescan dir not found: %s", _prescan_path)
+    elif not cfg.skip_prescan and IntelligenceRouter is not None:
+        logger.info("Executing Integrated Stage 0 Prescan...")
+        try:
+            from lib.prescan import PrescanEngine, PrescanConfig
+            _prescan_path = dirs["root"] / "prescan"
+            p_config = PrescanConfig(
+                repo_root=Path(root),
+                output_dir=_prescan_path,
+                allow_online_llm=getattr(args, "allow_online_llm", cfg.live_ok),
+            )
+            engine = PrescanEngine(p_config)
+            result = engine.run(passes=["dedup", "discover", "feasibility", "optimize"])
+            if result.success:
+                _ACTIVE_INTELLIGENCE_ROUTER = IntelligenceRouter.from_dir(_prescan_path)
+                logger.info("Loaded integrated intelligence router from %s", _prescan_path)
+            else:
+                logger.warning("Integrated Stage 0 failed, continuing without prescan.")
+        except Exception as e:
+            logger.error("Integrated Stage 0 execution failed: %s", e)
+    elif cfg.skip_prescan:
+        logger.info("Stage 0 Prescan explicitly skipped via --skip-prescan.")
 
     reset_spend_tracker()
     if cfg.max_cost_usd is not None:

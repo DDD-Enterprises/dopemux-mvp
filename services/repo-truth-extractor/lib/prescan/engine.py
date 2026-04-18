@@ -35,12 +35,13 @@ class PrescanEngine:
         self.code_scanner = CodePrescan(config)
         self.dep_graph = DependencyGraph()
         self.cost_estimator = CostEstimator(config)
-        self.batch_planner = BatchPlanner(config)
         self.grok_runner = GrokPassRunner(config, limiter=limiter)
 
     def run(self, passes: list[str] | None = None, incremental: bool = False) -> PrescanResult:
         """Run the full prescan pipeline."""
         start_time = time.time()
+        self.config.output_dir.mkdir(parents=True, exist_ok=True)
+        
         warnings = []
         errors = []
         
@@ -54,7 +55,6 @@ class PrescanEngine:
             entries = self.classifier.classify(files)
             
             # 3. Git enrichment
-            changed_files = None
             if self.config.enable_git_enrichment:
                 logger.info("Enriching with git metadata...")
                 try:
@@ -93,12 +93,16 @@ class PrescanEngine:
                 # 7a. Batch planning
                 logger.info("Planning token-aware batches...")
                 manifest = [e.to_dict() for e in entries]
-                batch_plans = self.batch_planner.plan(passes, intelligence, manifest)
+                
+                # Instantiate planner with live data
+                planner = BatchPlanner(self.config, entries, manifest)
+                batch_plans = {p: planner.plan_batches(p, intelligence) for p in passes}
                 
                 # Save batch plan
                 batch_plan_path = self.config.output_dir / "batch_plan.json"
                 batch_plan_path.write_text(
-                    json.dumps({p: bp.to_dict() for p, bp in batch_plans.items()}, indent=2) + "\n"
+                    json.dumps({p: bp.to_dict() for p, bp in batch_plans.items()}, indent=2) + "\n",
+                    encoding="utf-8"
                 )
 
                 # 7b. Provider routing
@@ -129,8 +133,8 @@ class PrescanEngine:
             manifest_path = self.config.output_dir / "corpus_manifest.json"
             
             manifest = [e.to_dict() for e in entries]
-            intel_path.write_text(json.dumps(intelligence, indent=2, sort_keys=True) + "\n")
-            manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+            intel_path.write_text(json.dumps(intelligence, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
             
             duration = time.time() - start_time
             total_batches = sum(len(bp.batches) for bp in batch_plans.values()) if batch_plans else 0
@@ -152,12 +156,13 @@ class PrescanEngine:
             logger.error(f"Prescan failed: {e}", exc_info=True)
             return PrescanResult(
                 success=False,
-                errors=[str(e)],
+                errors=errors + [str(e)],
+                warnings=warnings,
                 duration_seconds=round(time.time() - start_time, 2)
             )
 
         finally:
-            # 9. Save LLM attempts evidence (always)
+            # 10. Save LLM attempts evidence (always)
             try:
                 self.config.output_dir.mkdir(parents=True, exist_ok=True)
                 self.grok_runner.save_attempts()
@@ -222,5 +227,5 @@ class PrescanEngine:
                 cwd=self.config.repo_root, 
                 stderr=subprocess.DEVNULL
             ).decode().strip()
-        except:
+        except Exception:
             return "unknown"
