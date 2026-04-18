@@ -415,6 +415,7 @@ class SerenaV2MCPServer:
         }
         
         # dopeCode Layers
+        self.dopecode_runtime = None
         self.ast_engine = None
         self.write_layer = None
         self.refactor_layer = None
@@ -491,17 +492,17 @@ class SerenaV2MCPServer:
         await self._ensure_component("file_watcher")
         
         # Initialize dopeCode Layers
-        from dopecode.transform.write_layer import WriteLayer
-        from dopecode.navigation.ast_engine import ASTEngine
-        from dopecode.transform.refactor_layer import RefactorLayer
+        from dopecode.runtime import DopeCodeRuntime
         workspace_id = os.environ.get("DOPEMUX_WORKSPACE_ID", "default_workspace")
-        self.write_layer = WriteLayer(self.workspace, workspace_id)
-        # AST engine requires tree_sitter and lsp to be populated.
-        # We pass self.tree_sitter and self.lsp, but since they are lazy-loaded, we will re-inject them in the tool calls or pass the server instance.
-        # A simpler way is to pass `self` or initialize them on first tool call. Let's initialize them inline here just passing the lazy references.
-        # We'll update ast_engine to fetch them dynamically if needed.
-        self.ast_engine = ASTEngine(self.workspace, workspace_id, getattr(self, "tree_sitter", None), getattr(self, "lsp", None))
-        self.refactor_layer = RefactorLayer(self.write_layer, self.ast_engine)
+        self.dopecode_runtime = DopeCodeRuntime(
+            self.workspace,
+            workspace_id,
+            getattr(self, "tree_sitter", None),
+            getattr(self, "lsp", None),
+        )
+        self.write_layer = self.dopecode_runtime.write_layer
+        self.ast_engine = self.dopecode_runtime.ast_engine
+        self.refactor_layer = self.dopecode_runtime.refactor_layer
 
         logger.info(f"✓ Server ready in {(datetime.now() - self.server_start_time).total_seconds():.2f}s")
 
@@ -777,8 +778,8 @@ class SerenaV2MCPServer:
         if require_tree_sitter:
             await self._ensure_component("tree_sitter")
 
-        if hasattr(self, "ast_engine"):
-            self.ast_engine.set_dependencies(
+        if getattr(self, "dopecode_runtime", None):
+            self.dopecode_runtime.set_dependencies(
                 tree_sitter=getattr(self, "tree_sitter", None),
                 lsp=getattr(self, "lsp", None),
             )
