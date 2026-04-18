@@ -691,21 +691,21 @@ Modify the necessary files to satisfy the reviewer's request.
                 )
                 quota_detected = False
                 for line in output.splitlines():
-                    clean_line = line.strip()
-                    line_lower = line.lower()
+            output, _ = process.communicate(timeout=timeout_seconds)
+
+            for line in output.splitlines():
+                clean_line = line.strip()
+                if clean_line:
+                    log(f"[gemini] {clean_line}")
                     if any(
-                        x in line_lower for x in ["quota", "rate limit", "429", "exhausted"]
+                        x in clean_line.lower()
+                        for x in ["quota", "rate limit", "429", "exhausted"]
                     ):
-                        quota_detected = True
-                    if clean_line:
-                        log(f"[gemini] {clean_line}")
-                if quota_detected:
-                    log("CRITICAL: API QUOTA EXHAUSTED.", "ERROR")
-            else:
-                process.wait(timeout=timeout_seconds)
+                        log("CRITICAL: API QUOTA EXHAUSTED.", "ERROR")
 
     except subprocess.TimeoutExpired:
         process.kill()
+        process.communicate()
         try:
             process.communicate(timeout=5)
         except subprocess.TimeoutExpired:
