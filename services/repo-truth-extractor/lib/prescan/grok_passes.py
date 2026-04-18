@@ -265,18 +265,27 @@ class GrokPassRunner:
         provider = candidate["provider"]
         model_id = candidate["model_id"]
         api_key = os.environ.get(candidate["api_key_env"])
+        transport = str(candidate.get("execution_transport") or "openai_sdk")
 
         if not self._online_authorized() and provider != "mock":
              raise SecurityViolation("Spend gate blocked call")
+        if transport != "openai_sdk":
+            raise ValueError(f"Unsupported prescan route transport: {transport}")
         if not api_key:
-            raise ValueError(f"API key not found: {candidate['api_key_env']}")
+            raise ValueError("API key not found for selected route")
 
         if self.limiter:
             attempt_record.limiter_wait_ms = self.limiter.acquire(est_tokens) * 1000
 
         import openai
 
-        client = openai.OpenAI(api_key=api_key, base_url=self.config.xai_base_url)
+        base_url = None
+        if provider == "openrouter":
+            base_url = "https://openrouter.ai/api/v1"
+        elif provider not in {"openai", "mock"}:
+            base_url = self.config.xai_base_url
+
+        client = openai.OpenAI(api_key=api_key, base_url=base_url)
         response = client.chat.completions.create(
             model=model_id,
             messages=[
