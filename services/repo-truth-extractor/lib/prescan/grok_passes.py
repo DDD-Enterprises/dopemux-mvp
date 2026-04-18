@@ -218,11 +218,11 @@ class GrokPassRunner:
             candidates = [{"provider": self.config.provider, "model_id": self.config.model, "api_key_env": self.config.api_key_env}]
 
         for candidate in candidates:
-            for attempt in range(max_candidate_retries + 1):
+            for attempt_index in range(max_candidate_retries + 1):
                 attempt_record = ExecutionAttempt(
-                    provider=candidate["provider"],
-                    model_id=candidate["model_id"],
-                    api_key_env=candidate["api_key_env"],
+                    provider=str(candidate["provider"]),
+                    model_id=str(candidate["model_id"]),
+                    api_key_env=str(candidate["api_key_env"]),
                     status="pending"
                 )
                 evidence.attempts.append(attempt_record)
@@ -241,7 +241,7 @@ class GrokPassRunner:
                 except Exception as e:
                     attempt_record.status = "failed"
                     attempt_record.error = str(e)
-                if attempt < max_candidate_retries:
+                if attempt_index < max_candidate_retries:
                     time.sleep(1)
         evidence.final_status = "exhausted"
         return None

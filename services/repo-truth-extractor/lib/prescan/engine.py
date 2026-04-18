@@ -48,6 +48,7 @@ class PrescanEngine:
         warnings = []
         errors = []
         incremental_cache = IncrementalCodeCache(self.config)
+        self.config.output_dir.mkdir(parents=True, exist_ok=True)
         changed_files: set[str] | None = None
         cache_payload: dict[str, Any] | None = None
         cache_fallback_reason: str | None = None
