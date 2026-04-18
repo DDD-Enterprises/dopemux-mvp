@@ -432,6 +432,39 @@ class SerenaV2MCPServer:
 
         logger.info("Serena v2 MCP Server initialized (Phase 2)")
 
+    def _focus_mode_settings(self, mode: str) -> Dict[str, Any]:
+        """Return the runtime focus-mode settings used by the local Serena compatibility tests."""
+        settings = {
+            "focused": {
+                "result_limit": 10,
+                "progressive_disclosure": "Start with simplest files to build understanding",
+                "focus_threshold": 0.75,
+            },
+            "transitioning": {
+                "result_limit": 5,
+                "progressive_disclosure": "Balance detail and breadth during context switches",
+                "focus_threshold": 0.5,
+            },
+            "scattered": {
+                "result_limit": 3,
+                "progressive_disclosure": "Reduce overload with a smaller result set",
+                "focus_threshold": 0.25,
+            },
+        }
+        return settings.get(mode, settings["focused"])
+
+    def _infer_focus_mode_from_profile_row(self, row: Dict[str, Any]) -> str:
+        """Infer a focus mode from a persisted profile row."""
+        result_limit = row.get("optimal_result_limit")
+        disclosure = row.get("progressive_disclosure_preference")
+        threshold = row.get("focus_mode_trigger_threshold")
+
+        if result_limit == 3 or disclosure == "Reduce overload with a smaller result set" or threshold == 0.25:
+            return "scattered"
+        if result_limit == 5 or disclosure == "Balance detail and breadth during context switches" or threshold == 0.5:
+            return "transitioning"
+        return "focused"
+
     async def initialize(self):
         """
         Initialize workspace with lazy loading for heavy components
@@ -3022,7 +3055,18 @@ class SerenaV2MCPServer:
         # Ensure database is available
         if not await self._ensure_component("database"):
             return json.dumps({
-                "error": "Intelligence database unavailable. Please ensure PostgreSQL is running."
+                "status": "history_unavailable",
+                "days_back": days_back,
+                "patterns": [],
+                "insights": {
+                    "high_effectiveness": [],
+                    "fatigue_risks": [],
+                },
+                "provenance": {
+                    "degraded": True,
+                    "source": "runtime_only",
+                },
+                "error": "Intelligence database unavailable. Please ensure PostgreSQL is running.",
             })
             
         from intelligence import NavigationMode
@@ -3123,7 +3167,18 @@ class SerenaV2MCPServer:
         # Ensure database is available
         if not await self._ensure_component("database"):
             return json.dumps({
-                "error": "Intelligence database unavailable. Please ensure PostgreSQL is running."
+                "status": "history_unavailable",
+                "days_back": days_back,
+                "patterns": [],
+                "insights": {
+                    "high_effectiveness": [],
+                    "fatigue_risks": [],
+                },
+                "provenance": {
+                    "degraded": True,
+                    "source": "runtime_only",
+                },
+                "error": "Intelligence database unavailable. Please ensure PostgreSQL is running.",
             })
             
         start_time = datetime.now()
@@ -3245,12 +3300,19 @@ class SerenaV2MCPServer:
             "mode": mode,
             "previous_mode": old_mode,
             "max_results": limit,
+            "source": "runtime_only" if not db_persisted else "database",
+            "adhd": {
+                "max_results": limit,
+                "focus_mode": mode,
+            },
             "filtering_behavior": {
                 "focused": "Show up to 10 items - full cognitive capacity",
                 "scattered": "Show top 3 items - reduce overwhelm",
                 "transitioning": "Show top 5 items - moderate filtering"
             }.get(mode, "Unknown mode"),
             "persistence": {
+                "persisted": db_persisted,
+                "degraded": not db_persisted,
                 "saved_to_database": db_persisted,
                 "restart_behavior": "Will load from database on restart" if db_persisted else "Resets to 'focused' on restart",
             },
