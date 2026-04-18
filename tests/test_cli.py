@@ -363,37 +363,34 @@ class TestCLI:
 
         assert result.exit_code == 1
 
-    @patch("dopemux.cli.ConfigManager")
-    @patch("dopemux.cli.ContextManager")
-    def test_save_command_success(self, mock_context, mock_config):
+    @patch("dopemux.commands.state_commands.ContextManager")
+    def test_save_command_success(self, mock_context):
         """Test successful save command."""
         mock_context_manager = Mock()
         mock_context_manager.save_context.return_value = "session-123"
         mock_context.return_value = mock_context_manager
 
         runner = CliRunner()
-        with patch("dopemux.cli.Path.cwd", return_value=Path("/test")):
-            with patch("dopemux.cli.Path.exists", return_value=True):
+        with patch("dopemux.commands.state_commands.Path.cwd", return_value=Path("/test")):
+            with patch("dopemux.commands.state_commands.Path.exists", return_value=True):
                 result = runner.invoke(cli, ["save", "--message", "Test save"])
 
         assert result.exit_code == 0
         assert "Context saved" in result.output
 
-    @patch("dopemux.cli.ConfigManager")
-    def test_save_command_not_initialized(self, mock_config):
+    def test_save_command_not_initialized(self):
         """Test save command when project is not initialized."""
         runner = CliRunner()
 
-        with patch("dopemux.cli.Path.cwd", return_value=Path("/test")):
-            with patch("dopemux.cli.Path.exists", return_value=False):
+        with patch("dopemux.commands.state_commands.Path.cwd", return_value=Path("/test")):
+            with patch("dopemux.commands.state_commands.Path.exists", return_value=False):
                 result = runner.invoke(cli, ["save"])
 
         assert result.exit_code == 1
         assert "No Dopemux project found" in result.output
 
-    @patch("dopemux.cli.ConfigManager")
-    @patch("dopemux.cli.ContextManager")
-    def test_restore_command_success(self, mock_context, mock_config):
+    @patch("dopemux.commands.state_commands.ContextManager")
+    def test_restore_command_success(self, mock_context):
         """Test successful restore command."""
         mock_context_manager = Mock()
         mock_context_manager.restore_session.return_value = {
@@ -404,16 +401,15 @@ class TestCLI:
         mock_context.return_value = mock_context_manager
 
         runner = CliRunner()
-        with patch("dopemux.cli.Path.cwd", return_value=Path("/test")):
-            with patch("dopemux.cli.Path.exists", return_value=True):
+        with patch("dopemux.commands.state_commands.Path.cwd", return_value=Path("/test")):
+            with patch("dopemux.commands.state_commands.Path.exists", return_value=True):
                 result = runner.invoke(cli, ["restore", "--session", "session-123"])
 
         assert result.exit_code == 0
         assert "Restored session" in result.output
 
-    @patch("dopemux.cli.ConfigManager")
-    @patch("dopemux.cli.ContextManager")
-    def test_restore_command_list_sessions(self, mock_context, mock_config):
+    @patch("dopemux.commands.state_commands.ContextManager")
+    def test_restore_command_list_sessions(self, mock_context):
         """Test restore command with list flag."""
         mock_context_manager = Mock()
         mock_context_manager.list_sessions.return_value = [
@@ -433,8 +429,8 @@ class TestCLI:
         mock_context.return_value = mock_context_manager
 
         runner = CliRunner()
-        with patch("dopemux.cli.Path.cwd", return_value=Path("/test")):
-            with patch("dopemux.cli.Path.exists", return_value=True):
+        with patch("dopemux.commands.state_commands.Path.cwd", return_value=Path("/test")):
+            with patch("dopemux.commands.state_commands.Path.exists", return_value=True):
                 result = runner.invoke(cli, ["restore", "--list"])
 
         assert result.exit_code == 0
@@ -444,10 +440,11 @@ class TestCLI:
 
     def test_restore_command_has_single_module_definition(self):
         """Regression: restore should have one top-level definition matching the registered Click callback."""
+        from dopemux.commands import state_commands as state_mod
         from dopemux import cli as dopemux_cli
 
-        cli_source = Path(dopemux_cli.__file__).read_text(encoding="utf-8")
-        module_ast = ast.parse(cli_source)
+        state_source = Path(state_mod.__file__).read_text(encoding="utf-8")
+        module_ast = ast.parse(state_source)
         restore_defs = [
             node
             for node in module_ast.body
@@ -672,17 +669,16 @@ class TestCLI:
         assert result.exit_code == 0
         mock_context_manager.restore_session.assert_called_with("session-123")
 
-    @patch("dopemux.cli.ConfigManager")
-    @patch("dopemux.cli.ContextManager")
-    def test_save_command_force_flag(self, mock_context, mock_config):
+    @patch("dopemux.commands.state_commands.ContextManager")
+    def test_save_command_force_flag(self, mock_context):
         """Test save command with force flag."""
         mock_context_manager = Mock()
         mock_context_manager.save_context.return_value = "session-456"
         mock_context.return_value = mock_context_manager
 
         runner = CliRunner()
-        with patch("dopemux.cli.Path.cwd", return_value=Path("/test")):
-            with patch("dopemux.cli.Path.exists", return_value=True):
+        with patch("dopemux.commands.state_commands.Path.cwd", return_value=Path("/test")):
+            with patch("dopemux.commands.state_commands.Path.exists", return_value=True):
                 result = runner.invoke(cli, ["save", "--force"])
 
         assert result.exit_code == 0
