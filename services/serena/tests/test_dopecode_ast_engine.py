@@ -110,3 +110,54 @@ async def test_ast_engine_javascript_navigation_surfaces(tmp_path: Path):
     matches = await engine.search_pattern("helper", relative_path="pkg/main.js", max_results=10)
     locations = [(item["file"], item["line"]) for item in matches["results"]]
     assert ("pkg/main.js", 1) in locations
+
+
+@pytest.mark.asyncio
+async def test_ast_engine_typescript_navigation_surfaces(tmp_path: Path):
+    _write(
+        tmp_path / "pkg" / "helper.ts",
+        "export function helper(value: string): number {\n"
+        "  return value.length;\n"
+        "}\n",
+    )
+    _write(
+        tmp_path / "pkg" / "types.ts",
+        "export interface Thing {\n"
+        "  x: number;\n"
+        "}\n",
+    )
+    _write(
+        tmp_path / "pkg" / "main.tsx",
+        "import helper from \"./helper\";\n\n"
+        "import type { Thing } from \"./types\";\n\n"
+        "export function run(value: string): number {\n"
+        "  return helper(value) + localHelper();\n"
+        "}\n\n"
+        "const localHelper = (): number => {\n"
+        "  return 2;\n"
+        "}\n",
+    )
+
+    engine = ASTEngine(tmp_path, "ws-test")
+
+    symbols = await engine.get_file_symbols("pkg/main.tsx")
+    names = [item["name"] for item in symbols["symbols"]]
+    assert names == ["run", "localHelper"]
+
+    run_symbol_id = next(item["symbol_id"] for item in symbols["symbols"] if item["name"] == "run")
+
+    callees = await engine.find_callees(run_symbol_id)
+    assert callees["callee_count"] == 2
+    assert [item["name"] for item in callees["callees"]] == ["helper", "localHelper"]
+    assert callees["callees"][0]["kind"] == "import"
+    assert callees["callees"][0]["resolved_file"] == "pkg/helper.ts"
+    assert callees["resolution_mode"] == "typescript_ast"
+
+    imports = await engine.get_import_graph("pkg/main.tsx")
+    assert len(imports["imports"]["pkg/main.tsx"]) == 1
+    assert imports["imports"]["pkg/main.tsx"][0]["module"] == "./helper"
+    assert imports["imports"]["pkg/main.tsx"][0]["resolved_path"] == "pkg/helper.ts"
+
+    matches = await engine.search_pattern("helper", relative_path="pkg/main.tsx", max_results=10)
+    locations = [(item["file"], item["line"]) for item in matches["results"]]
+    assert ("pkg/main.tsx", 1) in locations

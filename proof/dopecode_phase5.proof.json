@@ -66,6 +66,6 @@
     "TypeScript type-only declarations are not mutation targets.",
     "Broader repository drift outside the dopeCode slice remains unverified."
   ],
-  "confidence": "VERIFIED",
-  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/478"
+  "confidence": "VERIFIED_PENDING_PR_URL",
+  "pr_url": null
 }

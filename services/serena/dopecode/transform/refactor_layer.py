@@ -67,8 +67,8 @@ class RefactorLayer:
                 fallback = node
         return fallback
 
-    def _javascript_symbol_target(self, content: str, symbol_name: str, line: int) -> Optional[Dict[str, Any]]:
-        targets = self.ast_engine._javascript_symbol_targets(content)
+    def _javascript_symbol_target(self, content: str, symbol_name: str, line: int, source_path: Path, script_kind: str = "javascript") -> Optional[Dict[str, Any]]:
+        targets = self.ast_engine._javascript_symbol_targets(content, source_path, script_kind=script_kind)
         exact = [target for target in targets if target["name"] == symbol_name and target["line"] == line]
         if exact:
             return exact[0]
@@ -107,6 +107,7 @@ class RefactorLayer:
                 "reference_count": len(refs),
                 "replacement_count": total_replacements,
                 "policy": policy.as_dict(),
+                "approval_receipt": policy.approval_receipt(),
                 "message": "Preview mode. Pass preview=False to apply the refactor.",
             }
 
@@ -120,6 +121,7 @@ class RefactorLayer:
                 "files_affected": files,
                 "replacement_count": 0,
                 "policy": policy.as_dict(),
+                "approval_receipt": policy.approval_receipt(),
                 "message": "No occurrences found to rename.",
             }
 
@@ -170,10 +172,11 @@ class RefactorLayer:
             "modified_files": modified_files,
             "replacement_count": total_replacements,
             "policy": policy.as_dict(),
+            "approval_receipt": policy.approval_receipt(),
         }
 
     async def replace_symbol_body(self, symbol_id_str: str, new_body: str, preview: bool = True) -> Dict[str, Any]:
-        """Replace the body of a Python symbol with bounded workspace writes."""
+        """Replace the body of a supported symbol with bounded workspace writes."""
         symbol = SymbolID.parse(symbol_id_str)
         target_path = self.write_layer._validate_boundary(symbol.file_path)
         content = target_path.read_text(encoding="utf-8")
@@ -199,19 +202,19 @@ class RefactorLayer:
             body_end_index = max(body_end_line, body_start_line) - 1
             body_indent = re.match(r"^\s*", lines[body_start_index]).group(0) if body_start_index < len(lines) else ""
             rendered_body = self._indent_block(new_body, body_indent)
-        elif language == "javascript":
-            symbol_target = self._javascript_symbol_target(content, symbol.symbol_name, symbol.line)
+        elif language in {"javascript", "typescript"}:
+            symbol_target = self._javascript_symbol_target(content, symbol.symbol_name, symbol.line, target_path, script_kind=language)
             if symbol_target is None:
                 raise ValueError(f"Symbol '{symbol.symbol_name}' not found in {symbol.file_path}")
             if not symbol_target.get("replaceable"):
                 raise NotImplementedError(
-                    "replace_symbol_body currently supports block-bodied JavaScript functions and classes only"
+                    "replace_symbol_body currently supports block-bodied JavaScript and TypeScript functions and classes only"
                 )
 
             body_node = symbol_target["body_node"]
             if body_node.type not in {"statement_block", "class_body"}:
                 raise NotImplementedError(
-                    "replace_symbol_body currently supports block-bodied JavaScript functions and classes only"
+                    "replace_symbol_body currently supports block-bodied JavaScript and TypeScript functions and classes only"
                 )
 
             lines = content.splitlines(keepends=True)
@@ -221,16 +224,16 @@ class RefactorLayer:
             body_end_index = body_end_line - 1
             if body_start_index >= len(lines) or body_end_index < body_start_index:
                 raise NotImplementedError(
-                    "replace_symbol_body currently supports multi-line JavaScript block bodies only"
+                    "replace_symbol_body currently supports multi-line JavaScript and TypeScript block bodies only"
                 )
             if body_node.start_point[0] == body_node.end_point[0]:
                 raise NotImplementedError(
-                    "replace_symbol_body currently supports multi-line JavaScript block bodies only"
+                    "replace_symbol_body currently supports multi-line JavaScript and TypeScript block bodies only"
                 )
             body_indent = re.match(r"^\s*", lines[body_start_index]).group(0)
             rendered_body = self._indent_block(new_body, body_indent)
         else:
-            raise NotImplementedError("replace_symbol_body currently supports Python and JavaScript symbols only")
+            raise NotImplementedError("replace_symbol_body currently supports Python, JavaScript, and TypeScript symbols only")
 
         policy = self.policy.refactor("replace_symbol_body", symbol_id_str, [symbol.file_path], preview=preview)
 
@@ -247,13 +250,14 @@ class RefactorLayer:
                 "body_end_line": body_end_line,
             },
             "policy": policy.as_dict(),
+            "approval_receipt": policy.approval_receipt(),
             "message": "Preview mode. Pass preview=False to apply the refactor.",
         }
 
         if preview:
             return preview_payload
 
-        if language == "javascript":
+        if language in {"javascript", "typescript"}:
             updated_lines = lines[:body_start_index] + rendered_body.splitlines(keepends=True) + lines[body_end_index:]
         else:
             updated_lines = lines[:body_start_index] + rendered_body.splitlines(keepends=True) + lines[body_end_index + 1 :]
@@ -266,6 +270,7 @@ class RefactorLayer:
                 "target_file": symbol.file_path,
                 "symbol": symbol.symbol_name,
                 "policy": policy.as_dict(),
+                "approval_receipt": policy.approval_receipt(),
                 "message": "Replacement produced no content changes.",
             }
 
@@ -291,5 +296,6 @@ class RefactorLayer:
             "symbol": symbol.symbol_name,
             "line_span": preview_payload["line_span"],
             "policy": policy.as_dict(),
+            "approval_receipt": policy.approval_receipt(),
             "message": "Successfully replaced symbol body.",
         }
