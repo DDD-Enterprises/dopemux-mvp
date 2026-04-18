@@ -45,11 +45,13 @@ async def test_rename_symbol_preview_and_apply_are_workspace_bounded(tmp_path: P
 
     preview = await refactor.rename_symbol(run_symbol_id, "execute", preview=True)
     assert preview["status"] == "preview"
+    assert preview["approval_receipt"]["execution_mode"] == "preview_required"
     assert preview["files_affected"] == ["pkg/mod.py", "pkg/other.py"]
     assert workspace.joinpath("pkg", "mod.py").read_text(encoding="utf-8").startswith("def run():")
 
     result = await refactor.rename_symbol(run_symbol_id, "execute", preview=False)
     assert result["status"] == "applied"
+    assert result["approval_receipt"]["execution_mode"] == "approval_required"
     assert workspace.joinpath("pkg", "mod.py").read_text(encoding="utf-8").startswith("def execute():")
     assert "run" not in workspace.joinpath("pkg", "other.py").read_text(encoding="utf-8")
 
@@ -80,6 +82,7 @@ async def test_replace_symbol_body_preview_and_apply_preserve_signature(tmp_path
         preview=True,
     )
     assert preview["status"] == "preview"
+    assert preview["approval_receipt"]["execution_mode"] == "preview_required"
     assert preview["line_span"]["body_start_line"] == 2
 
     result = await refactor.replace_symbol_body(
@@ -88,6 +91,7 @@ async def test_replace_symbol_body_preview_and_apply_preserve_signature(tmp_path
         preview=False,
     )
     assert result["status"] == "applied"
+    assert result["approval_receipt"]["execution_mode"] == "approval_required"
     assert workspace.joinpath("pkg", "mod.py").read_text(encoding="utf-8") == (
         "def run():\n"
         "    result = helper()\n"
@@ -126,6 +130,7 @@ async def test_replace_symbol_body_preview_and_apply_support_javascript(tmp_path
         preview=True,
     )
     assert preview["status"] == "preview"
+    assert preview["approval_receipt"]["execution_mode"] == "preview_required"
     assert preview["line_span"]["body_start_line"] == 4
 
     result = await refactor.replace_symbol_body(
@@ -134,6 +139,7 @@ async def test_replace_symbol_body_preview_and_apply_support_javascript(tmp_path
         preview=False,
     )
     assert result["status"] == "applied"
+    assert result["approval_receipt"]["execution_mode"] == "approval_required"
     assert workspace.joinpath("pkg", "mod.js").read_text(encoding="utf-8") == (
         "import helper from \"./helper\";\n\n"
         "export function run(value) {\n"
@@ -144,3 +150,67 @@ async def test_replace_symbol_body_preview_and_apply_support_javascript(tmp_path
         "  return 2;\n"
         "};\n"
     )
+
+
+@pytest.mark.asyncio
+async def test_replace_symbol_body_preview_and_apply_support_typescript_block_functions(tmp_path: Path):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    _write(
+        workspace / "pkg" / "mod.ts",
+        "import helper from \"./helper\";\n\n"
+        "export function run(value: string): number {\n"
+        "  const result = helper(value);\n"
+        "  return result + localHelper();\n"
+        "}\n\n"
+        "const localHelper = (): number => {\n"
+        "  return 2;\n"
+        "};\n"
+        "\n"
+        "const inlineHelper = (): number => 3;\n"
+    )
+
+    engine = ASTEngine(workspace, "ws-test")
+    write_layer = WriteLayer(workspace, "ws-test")
+    refactor = RefactorLayer(write_layer, engine)
+
+    symbols = await engine.get_file_symbols("pkg/mod.ts")
+    run_symbol_id = next(item["symbol_id"] for item in symbols["symbols"] if item["name"] == "run")
+
+    preview = await refactor.replace_symbol_body(
+        run_symbol_id,
+        "const value = helper(value)\nreturn value",
+        preview=True,
+    )
+    assert preview["status"] == "preview"
+    assert preview["approval_receipt"]["execution_mode"] == "preview_required"
+    assert preview["line_span"]["body_start_line"] == 4
+
+    result = await refactor.replace_symbol_body(
+        run_symbol_id,
+        "const value = helper(value)\nreturn value",
+        preview=False,
+    )
+    assert result["status"] == "applied"
+    assert result["approval_receipt"]["execution_mode"] == "approval_required"
+    assert workspace.joinpath("pkg", "mod.ts").read_text(encoding="utf-8") == (
+        "import helper from \"./helper\";\n\n"
+        "export function run(value: string): number {\n"
+        "  const value = helper(value)\n"
+        "  return value\n"
+        "}\n\n"
+        "const localHelper = (): number => {\n"
+        "  return 2;\n"
+        "};\n"
+        "\n"
+        "const inlineHelper = (): number => 3;\n"
+    )
+
+    inline_helper_symbol_id = next(item["symbol_id"] for item in symbols["symbols"] if item["name"] == "inlineHelper")
+
+    with pytest.raises(NotImplementedError):
+        await refactor.replace_symbol_body(
+            inline_helper_symbol_id,
+            "return 3",
+            preview=True,
+        )
