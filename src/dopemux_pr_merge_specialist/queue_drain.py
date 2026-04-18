@@ -682,18 +682,17 @@ Modify the necessary files to satisfy the reviewer's request.
                 universal_newlines=True,
             )
 
-            output = ""
             if process.stdout:
                 output, _ = process.communicate(timeout=timeout_seconds)
                 for line in output.splitlines():
                     clean_line = line.strip()
+                    lowered_line = line.lower()
+                    if any(
+                        x in lowered_line for x in ["quota", "rate limit", "429", "exhausted"]
+                    ):
+                        log("CRITICAL: API QUOTA EXHAUSTED.", "ERROR")
                     if clean_line:
                         log(f"[gemini] {clean_line}")
-                        if any(
-                            x in clean_line.lower()
-                            for x in ["quota", "rate limit", "429", "exhausted"]
-                        ):
-                            log("CRITICAL: API QUOTA EXHAUSTED.", "ERROR")
             else:
                 process.wait(timeout=timeout_seconds)
 

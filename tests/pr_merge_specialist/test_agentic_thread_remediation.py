@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import io
 import subprocess
 from pathlib import Path
 
@@ -51,7 +52,7 @@ def test_remediate_review_thread_uses_thread_path_fallback(monkeypatch, tmp_path
 
     class FakeProcess:
         def __init__(self):
-            self.stdout = object()
+            self.stdout = io.StringIO("")
             self.returncode = 0
 
         def communicate(self, timeout=None):
@@ -80,7 +81,7 @@ def test_remediate_review_thread_returns_false_on_non_zero_exit(monkeypatch, tmp
 
     class FakeProcess:
         def __init__(self):
-            self.stdout = object()
+            self.stdout = io.StringIO("")
             self.returncode = 2
 
         def communicate(self, timeout=None):
@@ -108,7 +109,7 @@ def test_remediate_review_thread_logs_quota_signals(monkeypatch, tmp_path: Path)
 
     class FakeProcess:
         def __init__(self):
-            self.stdout = object()
+            self.stdout = io.StringIO("")
             self.returncode = 0
 
         def communicate(self, timeout=None):
@@ -134,7 +135,7 @@ def test_remediate_review_thread_logs_quota_signals(monkeypatch, tmp_path: Path)
 def test_remediate_review_thread_returns_false_on_timeout(monkeypatch, tmp_path: Path):
     class FakeProcess:
         def __init__(self):
-            self.stdout = object()
+            self.stdout = io.StringIO("")
             self.returncode = 0
             self.killed = False
             self.communicate_calls = 0
