@@ -273,6 +273,113 @@ def _candidate(
     )
 
 
+def decide_r1_live_cohort(
+    assignments: list[CampaignAssignment],
+    provider_readiness: dict[str, object],
+) -> dict[str, object]:
+    readiness_rows = {
+        str(item.get("route_id") or ""): item
+        for item in provider_readiness.get("routes", [])
+        if isinstance(item, dict)
+    }
+    live_assignments = sorted(
+        (assignment for assignment in assignments if assignment.live_execution),
+        key=lambda assignment: (
+            assignment.case_id,
+            assignment.candidate.cohort,
+            assignment.candidate.route_id,
+        ),
+    )
+
+    route_decisions: list[dict[str, object]] = []
+    admitted_route_ids: list[str] = []
+    blocked_route_ids: list[str] = []
+    quota_blocked_openai_routes: list[str] = []
+    admitted_openrouter_routes: list[str] = []
+
+    for assignment in live_assignments:
+        readiness_row = readiness_rows.get(assignment.candidate.route_id, {})
+        provider_probe = (
+            readiness_row.get("provider_probe", {})
+            if isinstance(readiness_row, dict)
+            else {}
+        )
+        readiness_blocker = (
+            provider_probe.get("readiness_blocker", {})
+            if isinstance(provider_probe, dict)
+            else {}
+        )
+        blocker_code = str(readiness_blocker.get("blocker_code") or "")
+        ready = bool(readiness_row.get("ready")) if isinstance(readiness_row, dict) else False
+        state = "admitted"
+        rationale = "provider_ready"
+        replacement_route_ids: list[str] = []
+
+        if ready:
+            admitted_route_ids.append(assignment.candidate.route_id)
+            if assignment.candidate.provider_name == "openrouter":
+                admitted_openrouter_routes.append(assignment.candidate.route_id)
+        else:
+            blocked_route_ids.append(assignment.candidate.route_id)
+            if assignment.candidate.provider_name == "openai" and blocker_code == "QUOTA_OR_BILLING_BLOCK":
+                state = "excluded_openai_quota_or_billing_block"
+                rationale = "openai_first_party_unexecutable"
+                quota_blocked_openai_routes.append(assignment.candidate.route_id)
+            elif blocker_code:
+                state = "excluded_provider_blocked"
+                rationale = blocker_code.lower()
+            else:
+                state = "excluded_without_probe_evidence"
+                rationale = "missing_provider_probe"
+
+        route_decisions.append(
+            {
+                "route_id": assignment.candidate.route_id,
+                "case_id": assignment.case_id,
+                "cohort": assignment.candidate.cohort,
+                "provider_name": assignment.candidate.provider_name,
+                "provider_model_id": assignment.candidate.provider_model_id,
+                "surface_class": assignment.candidate.surface_class,
+                "live_execution": assignment.live_execution,
+                "ready": ready,
+                "decision_state": state,
+                "decision_reason": rationale,
+                "replacement_route_ids": replacement_route_ids,
+                "provider_probe": provider_probe if isinstance(provider_probe, dict) else {},
+            }
+        )
+
+    admitted_openrouter_routes = sorted(set(admitted_openrouter_routes))
+    if quota_blocked_openai_routes and admitted_openrouter_routes:
+        for row in route_decisions:
+            if row["route_id"] in quota_blocked_openai_routes:
+                row["replacement_route_ids"] = admitted_openrouter_routes
+
+    notes: list[str] = []
+    if quota_blocked_openai_routes:
+        notes.append(
+            "OpenAI first-party quota or billing blockers exclude those routes from the executable live cohort."
+        )
+    if admitted_openrouter_routes and quota_blocked_openai_routes:
+        notes.append(
+            "OpenRouter remains admitted as the live evidence-producing replacement cohort where provider readiness is proven."
+        )
+    if not admitted_route_ids:
+        notes.append("No live routes remain admitted after provider-readiness filtering.")
+
+    return {
+        "campaign_id": "TP-RTE-BENCH-R1",
+        "planned_live_route_ids": [assignment.candidate.route_id for assignment in live_assignments],
+        "admitted_live_route_ids": sorted(admitted_route_ids),
+        "blocked_live_route_ids": sorted(blocked_route_ids),
+        "quota_blocked_openai_route_ids": sorted(quota_blocked_openai_routes),
+        "admitted_openrouter_route_ids": admitted_openrouter_routes,
+        "status": "admitted" if admitted_route_ids else "blocked",
+        "route_decisions": route_decisions,
+        "notes": notes,
+    }
+
+
 def build_r1_campaign_plan(repo: BenchmarkCatalogRepo) -> CampaignPlan:
     ensure_r1_campaign_records(repo)
     case = repo.fetch_benchmark_case("strict_extract_conflicting_evidence_v1")
@@ -335,8 +442,8 @@ def build_r1_campaign_plan(repo: BenchmarkCatalogRepo) -> CampaignPlan:
             provider_name="gemini",
             model_key="gemini/gemini-3.1-pro-preview",
             provider_model_id="gemini-3.1-pro-preview",
-            admission_reason="Balanced candidate for realistic default-production comparison on bounded direct lanes.",
-            policy_note="Direct-provider candidate; contest scope is limited to runtime-v5 phase A non-strict lanes.",
+            admission_reason="Balanced candidate remains out of the first admitted cohort because current dry-run ownership telemetry for this route is not yet strong enough to satisfy route-identity admissibility.",
+            policy_note="Do not admit until owned-lane telemetry becomes admissibility-grade.",
         ),
         _candidate(
             route_id="route_openai_gpt_5_4_mini_v1",
@@ -346,8 +453,8 @@ def build_r1_campaign_plan(repo: BenchmarkCatalogRepo) -> CampaignPlan:
             provider_name="openai",
             model_key="openai/gpt-5.4-mini",
             provider_model_id="gpt-5.4-mini",
-            admission_reason="Balanced lower-cost OpenAI candidate exists in registry but is intentionally held out of R1 to keep the first live cohort bounded after observing real runtime cost.",
-            policy_note="Held out of the first bounded campaign; not admitted.",
+            admission_reason="Balanced lower-cost OpenAI candidate shares the direct-provider control family and can be admitted without changing the owned-lane strict extraction contest shape.",
+            policy_note="Direct-provider candidate; bounded to runtime-v5 strict extraction on the existing owned-lane control family.",
         ),
         _candidate(
             route_id="route_local_fixture_v1",
@@ -384,7 +491,7 @@ def build_r1_campaign_plan(repo: BenchmarkCatalogRepo) -> CampaignPlan:
         baseline_assignments[0],
         baseline_assignments[1],
         live_assignment(candidates[0], "balanced_production", "anchor_openrouter_strict_v1"),
-        live_assignment(candidates[2], "balanced_production", "anchor_direct_strict_v1"),
+        live_assignment(candidates[3], "balanced_production", "anchor_direct_strict_v1"),
         CampaignAssignment(
             candidate=candidates[4],
             case_id="tool_aware_repo_reasoning_v1",
@@ -419,7 +526,7 @@ def build_r1_campaign_plan(repo: BenchmarkCatalogRepo) -> CampaignPlan:
         notes=[
             "R1 is a bounded real campaign against the repo-truth-extractor service root.",
             "Only the runtime-v5 extraction path is provider-backed today; other families remain deterministic lab adapters and are not treated as real provider contests here.",
-            "Observed live runtime cost and the operator's explicit $5 budget justified admitting a reduced five-route cohort rather than the aspirational packet maximum.",
+            "The admitted cohort stays below the packet maximum because only routes with admissibility-grade owned-lane evidence are included in the live strict contest.",
             "No universal leaderboard is produced; outputs remain route-by-archetype and profile-scoped.",
         ],
     )

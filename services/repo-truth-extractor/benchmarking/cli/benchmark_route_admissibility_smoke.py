@@ -33,6 +33,25 @@ def _latest_run_id(repo: BenchmarkCatalogRepo) -> str:
     return str(runs[-1]["benchmark_run_id"])
 
 
+def _admissibility_intended_routes(manifest: dict[str, Any]) -> list[dict[str, Any]]:
+    # Route-identity admissibility only applies to the bounded live lane that emits
+    # route telemetry. Synthetic/local adapters remain part of the campaign, but
+    # they are not admissibility-gating surfaces.
+    return [
+        {
+            "route_id": item["route_id"],
+            "cohort": item["cohort"],
+            "case_id": item["case_id"],
+            "surface_class": item["surface_class"],
+            "provider_name": item["provider_name"],
+            "model_key": item["model_key"],
+            "provider_model_id": item["provider_model_id"],
+        }
+        for item in manifest["control_candidates"] + manifest["campaign_candidates"]
+        if bool(item.get("live_execution"))
+    ]
+
+
 def run_smoke(
     root: Path | None = None,
     proof_dir: Path | None = None,
@@ -48,18 +67,9 @@ def run_smoke(
     for run_id in run_ids:
         attempts.extend(repo.list_attempts(run_id))
 
-    intended_routes = [
-        {
-            "route_id": item["route_id"],
-            "cohort": item["cohort"],
-            "case_id": item["case_id"],
-            "surface_class": item["surface_class"],
-            "provider_name": item["provider_name"],
-            "model_key": item["model_key"],
-            "provider_model_id": item["provider_model_id"],
-        }
-        for item in manifest["control_candidates"] + manifest["campaign_candidates"]
-    ]
+    intended_routes = _admissibility_intended_routes(manifest)
+    if not intended_routes:
+        raise RuntimeError("no live admissibility-gating routes were selected for the current campaign plan")
     intended_keys = {(str(item["case_id"]), str(item["route_id"])) for item in intended_routes}
 
     route_identities = []
