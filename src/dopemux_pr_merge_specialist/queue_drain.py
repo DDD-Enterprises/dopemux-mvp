@@ -683,7 +683,12 @@ Modify the necessary files to satisfy the reviewer's request.
             )
 
             if process.stdout:
-                output, _ = process.communicate(timeout=timeout_seconds)
+                output_raw, _ = process.communicate(timeout=timeout_seconds)
+                output = (
+                    output_raw.decode("utf-8", errors="replace")
+                    if isinstance(output_raw, bytes)
+                    else output_raw
+                )
                 quota_detected = False
                 for line in output.splitlines():
                     clean_line = line.strip()
