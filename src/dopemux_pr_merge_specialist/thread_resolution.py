@@ -109,7 +109,6 @@ def is_actionable_comment(
     body = comment.body.strip()
     if len(body) < 10:
         return False
-    
     # We could add more heuristics here, like looking for "please", "can you", etc.
     # But for now, any non-bot human comment is a candidate for agentic remediation
     # if it hasn't been auto-implemented.
