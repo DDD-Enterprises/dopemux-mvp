@@ -28,8 +28,7 @@
 ## 5. Validation Results
 - Passed:
   - `pytest -q services/serena/tests/test_dopecode_ast_engine.py services/serena/tests/test_dopecode_write_layer.py services/serena/tests/test_dopecode_refactor_layer.py services/serena/tests/test_dopecode_policy.py`
-- Pending at this point in the document update flow:
-  - scoped `pre-commit` on the Phase 6 files
+  - `pre-commit run --files services/serena/dopecode/navigation/ast_engine.py services/serena/dopecode/policy/mutation_policy.py services/serena/dopecode/transform/refactor_layer.py services/serena/tests/test_dopecode_ast_engine.py services/serena/tests/test_dopecode_policy.py services/serena/tests/test_dopecode_refactor_layer.py services/serena/tests/test_dopecode_write_layer.py proof/dopecode_phase6_contract.md proof/dopecode_phase6_implementation.md proof/dopecode_phase6.proof.json`
   - `python -m json.tool proof/dopecode_phase6.proof.json`
 
 ## 6. Remaining Limits

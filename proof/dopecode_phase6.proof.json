@@ -31,7 +31,9 @@
   },
   "validation": {
     "passed": [
-      "pytest -q services/serena/tests/test_dopecode_ast_engine.py services/serena/tests/test_dopecode_write_layer.py services/serena/tests/test_dopecode_refactor_layer.py services/serena/tests/test_dopecode_policy.py"
+      "pytest -q services/serena/tests/test_dopecode_ast_engine.py services/serena/tests/test_dopecode_write_layer.py services/serena/tests/test_dopecode_refactor_layer.py services/serena/tests/test_dopecode_policy.py",
+      "pre-commit run --files services/serena/dopecode/navigation/ast_engine.py services/serena/dopecode/policy/mutation_policy.py services/serena/dopecode/transform/refactor_layer.py services/serena/tests/test_dopecode_ast_engine.py services/serena/tests/test_dopecode_policy.py services/serena/tests/test_dopecode_refactor_layer.py services/serena/tests/test_dopecode_write_layer.py proof/dopecode_phase6_contract.md proof/dopecode_phase6_implementation.md proof/dopecode_phase6.proof.json",
+      "python -m json.tool proof/dopecode_phase6.proof.json"
     ],
     "codereview": {
       "status": "manual_diff_review_fixed",
@@ -64,6 +66,6 @@
     "Inline JavaScript and TypeScript arrow-expression bodies remain fail closed for replace_symbol_body.",
     "Broader repository drift outside the dopeCode slice remains unverified."
   ],
-  "confidence": "HIGH",
-  "pr_url": null
+  "confidence": "VERIFIED",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/479"
 }
