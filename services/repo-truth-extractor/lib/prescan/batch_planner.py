@@ -67,19 +67,35 @@ class BatchPlanner:
     def __init__(
         self,
         config: PrescanConfig,
-        entries: list[FileEntry],
-        manifest: list[dict],
+        entries: list[FileEntry] | None = None,
+        manifest: list[dict] | None = None,
     ):
         self.config = config
-        self.entries = entries
-        self.manifest = manifest
+        self.entries = entries or []
+        self.manifest = manifest or []
 
         # Pre-index entries by rel_path
-        self._entry_map: Dict[str, FileEntry] = {e.rel_path: e for e in entries}
+        self._entry_map: Dict[str, FileEntry] = {e.rel_path: e for e in self.entries}
 
         # Pre-index manifest by rel_path
         self._manifest_map: Dict[str, dict] = {
-            m["rel_path"]: m for m in manifest if "rel_path" in m
+            m["rel_path"]: m for m in self.manifest if "rel_path" in m
+        }
+
+    def plan(
+        self,
+        passes: list[str],
+        intelligence: dict,
+        manifest: list[dict] | None = None,
+    ) -> dict[str, BatchPlan]:
+        if manifest is not None:
+            self.manifest = manifest
+            self._manifest_map = {
+                m["rel_path"]: m for m in manifest if "rel_path" in m
+            }
+        return {
+            pass_id: self.plan_batches(pass_id, intelligence)
+            for pass_id in passes
         }
 
     def plan_batches(
@@ -182,14 +198,14 @@ class BatchPlanner:
 
     def _discover_files(self, intelligence: dict) -> list[str]:
         paths: list[str] = []
-        for m in self.manifest:
+        for e in self.entries:
             if (
-                m.get("include")
-                and not m.get("is_ghost")
-                and m.get("authority_class") in ("historical", "canonical")
-                and m.get("lifecycle_stage") in ("frozen", "stale")
+                getattr(e, "include", True)
+                and not getattr(e, "is_ghost", False)
+                and getattr(e, "authority_class", None) in ("historical", "canonical")
+                and getattr(e, "lifecycle_stage", None) in ("frozen", "stale")
             ):
-                paths.append(m["rel_path"])
+                paths.append(e.rel_path)
         return paths
 
     def _feasibility_files(self, intelligence: dict) -> list[str]:
