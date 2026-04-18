@@ -67,11 +67,16 @@ PASS_DESCRIPTIONS = {
     "optimize": "Extraction routing, cost, and compression plan",
 }
 
+_DEDUP_SYSTEM_PROMPT = "You are a deduplication analyst."
+_DISCOVER_SYSTEM_PROMPT = "You are a technical archaeology analyst."
+_FEASIBILITY_SYSTEM_PROMPT = "You are a software feasibility analyst."
+_OPTIMIZE_SYSTEM_PROMPT = "You are an extraction cost optimizer."
+
 PASS_SYSTEM_PROMPTS = {
-    "dedup": "You are a deduplication analyst.",
-    "discover": "You are a technical archaeology analyst.",
-    "feasibility": "You are a software feasibility analyst.",
-    "optimize": "You are an extraction cost optimizer.",
+    "dedup": _DEDUP_SYSTEM_PROMPT,
+    "discover": _DISCOVER_SYSTEM_PROMPT,
+    "feasibility": _FEASIBILITY_SYSTEM_PROMPT,
+    "optimize": _OPTIMIZE_SYSTEM_PROMPT,
 }
 
 class BatchResponseValidator:
