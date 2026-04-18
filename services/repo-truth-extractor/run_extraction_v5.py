@@ -19114,7 +19114,6 @@ def main() -> None:
         parser.error("--phase is required when running extraction phases.")
     phases = phase_sequence
     # Load intelligence router from prescan output (if available)
-    global _ACTIVE_INTELLIGENCE_ROUTER
     if cfg.prescan_dir and IntelligenceRouter is not None:
         _prescan_path = Path(cfg.prescan_dir)
         if _prescan_path.exists():

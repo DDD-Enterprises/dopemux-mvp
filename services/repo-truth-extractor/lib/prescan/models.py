@@ -40,6 +40,7 @@ class PrescanConfig:
     incremental: bool = False
     incremental_baseline: str | None = None
     allow_online_llm: bool = False
+    online_authorized: bool | None = None
     allow_scope_reduction: bool = False
     
     # ── Batching ──
@@ -56,6 +57,10 @@ class PrescanConfig:
     # ── Analysis ──
     cost_estimate: bool = True
     verbose: bool = False
+
+    def __post_init__(self) -> None:
+        if self.online_authorized is not None:
+            self.allow_online_llm = self.online_authorized
 
 @dataclass
 class PrescanResult:
