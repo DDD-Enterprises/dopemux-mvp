@@ -251,6 +251,7 @@ def run_campaign(
 
     executor = AttemptExecutor(root)
     campaign_report = None
+    scoring_payload: dict[str, Any] = {}
     governance_payload: dict[str, Any] = {"governance_packets": [], "recommendations": [], "sample_recommendation": {}, "sample_governance_packet": {}}
     reporting_payload: dict[str, Any] = {"candidate_details": [], "portfolio_summary": {}, "profile_summaries": []}
     decision_rows: list[dict[str, Any]] = []
@@ -269,7 +270,7 @@ def run_campaign(
             benchmark_run_prefix="r1_campaign",
         )
         if campaign_report.route_collapse is None:
-            scoring.score_run(campaign_report.benchmark_run_id)
+            scoring_payload = scoring.score_run(campaign_report.benchmark_run_id)
             governance_payload = governance.synthesize_run(campaign_report.benchmark_run_id)
             reporting_payload = reporting.build_reports(campaign_report.benchmark_run_id)
             decision_rows = _decision_rows(reporting_payload["candidate_details"], manifest)
