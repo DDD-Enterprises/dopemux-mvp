@@ -2519,26 +2519,8 @@ cli.add_command(instances, "instances")
 from .commands.native_hooks_commands import native_hooks
 cli.add_command(native_hooks, "native-hooks")
 
-
-@cli.command(name="pr-merge", context_settings=dict(ignore_unknown_options=True))
-@click.argument("args", nargs=-1, type=click.UNPROCESSED)
-def pr_merge_command(args):
-    """
-    🚀 Policy-Governed Enforcement: PR Merge Specialist
-
-    Engages the PR remediation and queue diagnosis engine. This specialist 
-    synchronizes across active pull requests, performing WSEMT-prioritized 
-    merging and automated conflict resolution.
-    """
-    import sys
-    from dopemux_pr_merge_specialist.cli import main as pr_merge_main
-    
-    # Bridge to the specialist's argparse CLI
-    sys.argv = ["dopemux pr-merge"] + list(args)
-    try:
-        pr_merge_main()
-    except SystemExit as e:
-        sys.exit(e.code)
+from .commands.pr_commands import pr_merge_group
+cli.add_command(pr_merge_group, "pr-merge")
 
 
 @cli.command()
@@ -5674,27 +5656,6 @@ def _register_routing_commands():
 
 
 _register_routing_commands()
-
-
-@click.command(
-    name="pr-merge",
-    context_settings={"ignore_unknown_options": True, "allow_extra_args": True},
-    add_help_option=False,
-)
-@click.pass_context
-def pr_merge_group(ctx):
-    """Delegate PR merge specialist commands to the argparse-based specialist CLI."""
-    from dopemux_pr_merge_specialist.cli import build_parser
-
-    parser = build_parser()
-    argv = list(ctx.args)
-    if not argv:
-        argv = ["--help"]
-    parsed = parser.parse_args(argv)
-    raise SystemExit(parsed.func(parsed))
-
-
-cli.add_command(pr_merge_group, "pr-merge")
 
 
 def main():
