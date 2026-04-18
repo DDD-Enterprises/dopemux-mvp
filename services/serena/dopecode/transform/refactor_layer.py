@@ -75,9 +75,11 @@ class RefactorLayer:
         matches = [target for target in targets if target["name"] == symbol_name]
         return matches[0] if matches else None
 
-    def _indent_block(self, body_text: str, indent: str) -> str:
+    def _indent_block(self, body_text: str, indent: str, language: str = "python") -> str:
         body_text = body_text.rstrip("\n")
         if not body_text.strip():
+            if language in {"javascript", "typescript"}:
+                raise ValueError("replace_symbol_body requires a non-empty JavaScript or TypeScript body")
             body_text = "pass"
         lines = body_text.splitlines()
         indented_lines = [f"{indent}{line}" if line.strip() else indent.rstrip() for line in lines]
@@ -201,7 +203,7 @@ class RefactorLayer:
             body_start_index = max(body_start_line - 1, 0)
             body_end_index = max(body_end_line, body_start_line) - 1
             body_indent = re.match(r"^\s*", lines[body_start_index]).group(0) if body_start_index < len(lines) else ""
-            rendered_body = self._indent_block(new_body, body_indent)
+            rendered_body = self._indent_block(new_body, body_indent, language="python")
         elif language in {"javascript", "typescript"}:
             symbol_target = self._javascript_symbol_target(content, symbol.symbol_name, symbol.line, target_path, script_kind=language)
             if symbol_target is None:
@@ -233,7 +235,7 @@ class RefactorLayer:
                     "replace_symbol_body currently supports multi-line JavaScript and TypeScript block bodies only"
                 )
             body_indent = re.match(r"^\s*", lines[body_start_index]).group(0)
-            rendered_body = self._indent_block(new_body, body_indent)
+            rendered_body = self._indent_block(new_body, body_indent, language=language)
         else:
             raise NotImplementedError("replace_symbol_body currently supports Python, JavaScript, and TypeScript symbols only")
 
