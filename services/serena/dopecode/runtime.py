@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Optional
 
+from .execution_receipts import DopeCodeExecutionReceiptStore
 from .navigation.ast_engine import ASTEngine
 from .policy.mutation_policy import MutationPolicy
 from .transform.refactor_layer import RefactorLayer
@@ -22,7 +23,13 @@ class DopeCodeRuntime:
         self.workspace_root = Path(workspace_root).resolve()
         self.workspace_id = workspace_id
         self.policy = MutationPolicy(self.workspace_root, workspace_id)
-        self.write_layer = WriteLayer(self.workspace_root, workspace_id, policy=self.policy)
+        self.execution_receipts = DopeCodeExecutionReceiptStore(self.workspace_root, workspace_id)
+        self.write_layer = WriteLayer(
+            self.workspace_root,
+            workspace_id,
+            policy=self.policy,
+            receipt_store=self.execution_receipts,
+        )
         self.ast_engine = ASTEngine(self.workspace_root, workspace_id, tree_sitter, lsp)
         self.refactor_layer = RefactorLayer(self.write_layer, self.ast_engine, policy=self.policy)
 

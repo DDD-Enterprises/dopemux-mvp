@@ -14,6 +14,7 @@ def test_dopecode_runtime_bundles_policy_and_layers(tmp_path: Path):
 
     assert runtime.write_layer.policy is runtime.policy
     assert runtime.refactor_layer.policy is runtime.policy
+    assert runtime.write_layer.receipt_store is runtime.execution_receipts
 
     single_patch = runtime.policy.single_file_patch("pkg/module.py", preview=False)
     assert single_patch.operation_class == "single_file_patch"

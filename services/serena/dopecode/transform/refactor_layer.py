@@ -4,6 +4,7 @@ import re
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
+from ..execution_receipts import sha256_hex
 from ..policy.mutation_policy import MutationPolicy
 from .write_layer import WriteLayer
 from ..navigation.ast_engine import ASTEngine
@@ -128,7 +129,8 @@ class RefactorLayer:
         policy = self.policy.refactor("rename_symbol", symbol_id_str, files, preview=preview)
 
         if preview:
-            return {
+            return self.write_layer._attach_execution_receipt(
+                {
                 "status": "preview",
                 "action": "rename_symbol",
                 "symbol_id": symbol_id_str,
@@ -150,10 +152,27 @@ class RefactorLayer:
                 "policy": policy.as_dict(),
                 "approval_receipt": policy.approval_receipt(),
                 "message": "Preview mode. Pass preview=False to apply the refactor.",
-            }
+                },
+                operation="rename_symbol",
+                operation_class=policy.operation_class,
+                mutation_context={
+                    "symbol_id": symbol_id_str,
+                    "new_name": new_name,
+                },
+                execution_receipt=policy.approval_receipt(),
+                lifecycle_stage="preview",
+                payload={
+                    "status": "preview",
+                    "summary": "Preview mode. Pass preview=False to apply the refactor.",
+                    "files": files,
+                    "reference_count": len(refs),
+                    "replacement_count": total_replacements,
+                },
+            )
 
         if total_replacements == 0:
-            return {
+            return self.write_layer._attach_execution_receipt(
+                {
                 "status": "noop",
                 "action": "rename_symbol",
                 "symbol_id": symbol_id_str,
@@ -164,7 +183,22 @@ class RefactorLayer:
                 "policy": policy.as_dict(),
                 "approval_receipt": policy.approval_receipt(),
                 "message": "No occurrences found to rename.",
-            }
+                },
+                operation="rename_symbol",
+                operation_class=policy.operation_class,
+                mutation_context={
+                    "symbol_id": symbol_id_str,
+                    "new_name": new_name,
+                },
+                execution_receipt=policy.approval_receipt(),
+                lifecycle_stage="apply",
+                payload={
+                    "status": "noop",
+                    "summary": "No occurrences found to rename.",
+                    "files": files,
+                    "replacement_count": 0,
+                },
+            )
 
         applied_receipts: List[Dict[str, Any]] = []
         modified_files: List[str] = []
@@ -180,7 +214,7 @@ class RefactorLayer:
                     }
                 )
                 continue
-            self.write_layer.write_file(relative_path, updated)
+            self.write_layer.write_file(relative_path, updated, emit_receipt=False)
             modified_files.append(relative_path)
             applied_receipts.append(
                 {
@@ -202,7 +236,8 @@ class RefactorLayer:
                 "policy": policy.as_dict(),
             },
         )
-        return {
+        return self.write_layer._attach_execution_receipt(
+            {
             "status": "applied",
             "action": "rename_symbol",
             "symbol_id": symbol_id_str,
@@ -214,7 +249,23 @@ class RefactorLayer:
             "replacement_count": total_replacements,
             "policy": policy.as_dict(),
             "approval_receipt": policy.approval_receipt(),
-        }
+            },
+            operation="rename_symbol",
+            operation_class=policy.operation_class,
+            mutation_context={
+                "symbol_id": symbol_id_str,
+                "new_name": new_name,
+            },
+            execution_receipt=policy.approval_receipt(),
+            lifecycle_stage="apply",
+            payload={
+                "status": "applied",
+                "summary": f"Renamed {symbol.symbol_name} to {new_name}.",
+                "files": files,
+                "modified_files": modified_files,
+                "replacement_count": total_replacements,
+            },
+        )
 
     async def replace_symbol_body(self, symbol_id_str: str, new_body: str, preview: bool = True) -> Dict[str, Any]:
         """Replace the body of a supported symbol with bounded workspace writes."""
@@ -307,7 +358,25 @@ class RefactorLayer:
         }
 
         if preview:
-            return preview_payload
+            return self.write_layer._attach_execution_receipt(
+                preview_payload,
+                operation="replace_symbol_body",
+                operation_class=policy.operation_class,
+                mutation_context={
+                    "symbol_id": symbol_id_str,
+                    "new_body_sha256": sha256_hex(new_body),
+                },
+                execution_receipt=policy.approval_receipt(),
+                lifecycle_stage="preview",
+                payload={
+                    "status": "preview",
+                    "summary": "Preview mode. Pass preview=False to apply the refactor.",
+                    "files": [symbol.file_path],
+                    "target_symbol": symbol.symbol_name,
+                    "body_start_line": body_start_line,
+                    "body_end_line": body_end_line,
+                },
+            )
 
         if language in {"javascript", "typescript"}:
             updated_lines = lines[:body_start_index] + rendered_body.splitlines(keepends=True) + lines[body_end_index:]
@@ -315,7 +384,8 @@ class RefactorLayer:
             updated_lines = lines[:body_start_index] + rendered_body.splitlines(keepends=True) + lines[body_end_index + 1 :]
         updated_content = "".join(updated_lines)
         if updated_content == content:
-            return {
+            return self.write_layer._attach_execution_receipt(
+                {
                 "status": "noop",
                 "action": "replace_symbol_body",
                 "symbol_id": symbol_id_str,
@@ -324,9 +394,24 @@ class RefactorLayer:
                 "policy": policy.as_dict(),
                 "approval_receipt": policy.approval_receipt(),
                 "message": "Replacement produced no content changes.",
-            }
+                },
+                operation="replace_symbol_body",
+                operation_class=policy.operation_class,
+                mutation_context={
+                    "symbol_id": symbol_id_str,
+                    "new_body_sha256": sha256_hex(new_body),
+                },
+                execution_receipt=policy.approval_receipt(),
+                lifecycle_stage="apply",
+                payload={
+                    "status": "noop",
+                    "summary": "Replacement produced no content changes.",
+                    "files": [symbol.file_path],
+                    "target_symbol": symbol.symbol_name,
+                },
+            )
 
-        self.write_layer.write_file(symbol.file_path, updated_content)
+        self.write_layer.write_file(symbol.file_path, updated_content, emit_receipt=False)
         self.write_layer._log_mutation(
             "replace_symbol_body",
             [symbol.file_path],
@@ -340,7 +425,8 @@ class RefactorLayer:
                 "policy": policy.as_dict(),
             },
         )
-        return {
+        return self.write_layer._attach_execution_receipt(
+            {
             "status": "applied",
             "action": "replace_symbol_body",
             "symbol_id": symbol_id_str,
@@ -350,4 +436,21 @@ class RefactorLayer:
             "policy": policy.as_dict(),
             "approval_receipt": policy.approval_receipt(),
             "message": "Successfully replaced symbol body.",
-        }
+            },
+            operation="replace_symbol_body",
+            operation_class=policy.operation_class,
+            mutation_context={
+                "symbol_id": symbol_id_str,
+                "new_body_sha256": sha256_hex(new_body),
+            },
+            execution_receipt=policy.approval_receipt(),
+            lifecycle_stage="apply",
+            payload={
+                "status": "applied",
+                "summary": "Successfully replaced symbol body.",
+                "files": [symbol.file_path],
+                "target_symbol": symbol.symbol_name,
+                "body_start_line": body_start_line,
+                "body_end_line": body_end_line,
+            },
+        )
