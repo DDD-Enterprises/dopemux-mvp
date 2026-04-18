@@ -95,3 +95,52 @@ async def test_replace_symbol_body_preview_and_apply_preserve_signature(tmp_path
         "def helper():\n"
         "    return 1\n"
     )
+
+
+@pytest.mark.asyncio
+async def test_replace_symbol_body_preview_and_apply_support_javascript(tmp_path: Path):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    _write(
+        workspace / "pkg" / "mod.js",
+        "import helper from \"./helper\";\n\n"
+        "export function run(value) {\n"
+        "  const result = helper(value);\n"
+        "  return result + localHelper();\n"
+        "}\n\n"
+        "const localHelper = () => {\n"
+        "  return 2;\n"
+        "};\n",
+    )
+
+    engine = ASTEngine(workspace, "ws-test")
+    write_layer = WriteLayer(workspace, "ws-test")
+    refactor = RefactorLayer(write_layer, engine)
+
+    symbols = await engine.get_file_symbols("pkg/mod.js")
+    run_symbol_id = next(item["symbol_id"] for item in symbols["symbols"] if item["name"] == "run")
+
+    preview = await refactor.replace_symbol_body(
+        run_symbol_id,
+        "const value = helper(value)\nreturn value",
+        preview=True,
+    )
+    assert preview["status"] == "preview"
+    assert preview["line_span"]["body_start_line"] == 4
+
+    result = await refactor.replace_symbol_body(
+        run_symbol_id,
+        "const value = helper(value)\nreturn value",
+        preview=False,
+    )
+    assert result["status"] == "applied"
+    assert workspace.joinpath("pkg", "mod.js").read_text(encoding="utf-8") == (
+        "import helper from \"./helper\";\n\n"
+        "export function run(value) {\n"
+        "  const value = helper(value)\n"
+        "  return value\n"
+        "}\n\n"
+        "const localHelper = () => {\n"
+        "  return 2;\n"
+        "};\n"
+    )

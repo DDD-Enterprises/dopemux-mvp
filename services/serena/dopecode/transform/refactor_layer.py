@@ -67,6 +67,14 @@ class RefactorLayer:
                 fallback = node
         return fallback
 
+    def _javascript_symbol_target(self, content: str, symbol_name: str, line: int) -> Optional[Dict[str, Any]]:
+        targets = self.ast_engine._javascript_symbol_targets(content)
+        exact = [target for target in targets if target["name"] == symbol_name and target["line"] == line]
+        if exact:
+            return exact[0]
+        matches = [target for target in targets if target["name"] == symbol_name]
+        return matches[0] if matches else None
+
     def _indent_block(self, body_text: str, indent: str) -> str:
         body_text = body_text.rstrip("\n")
         if not body_text.strip():
@@ -169,23 +177,61 @@ class RefactorLayer:
         symbol = SymbolID.parse(symbol_id_str)
         target_path = self.write_layer._validate_boundary(symbol.file_path)
         content = target_path.read_text(encoding="utf-8")
+        language = self.ast_engine._language_for_path(target_path)
 
-        if target_path.suffix != ".py":
-            raise NotImplementedError("replace_symbol_body currently supports Python symbols only")
+        body_start_index: int
+        body_end_index: int
+        body_start_line: int
+        body_end_line: int
+        body_indent = ""
 
-        symbol_node = self._python_symbol_node(content, symbol.symbol_name, symbol.line)
-        if symbol_node is None:
-            raise ValueError(f"Symbol '{symbol.symbol_name}' not found in {symbol.file_path}")
-        if not hasattr(symbol_node, "body") or not symbol_node.body:
-            raise ValueError(f"Symbol '{symbol.symbol_name}' does not expose a replaceable body")
+        if target_path.suffix == ".py" or language == "python":
+            symbol_node = self._python_symbol_node(content, symbol.symbol_name, symbol.line)
+            if symbol_node is None:
+                raise ValueError(f"Symbol '{symbol.symbol_name}' not found in {symbol.file_path}")
+            if not hasattr(symbol_node, "body") or not symbol_node.body:
+                raise ValueError(f"Symbol '{symbol.symbol_name}' does not expose a replaceable body")
 
-        body_start_line = symbol_node.body[0].lineno
-        body_end_line = getattr(symbol_node, "end_lineno", body_start_line)
-        lines = content.splitlines(keepends=True)
-        body_start_index = max(body_start_line - 1, 0)
-        body_end_index = max(body_end_line, body_start_line) - 1
-        body_indent = re.match(r"^\s*", lines[body_start_index]).group(0) if body_start_index < len(lines) else ""
-        rendered_body = self._indent_block(new_body, body_indent)
+            body_start_line = symbol_node.body[0].lineno
+            body_end_line = getattr(symbol_node, "end_lineno", body_start_line)
+            lines = content.splitlines(keepends=True)
+            body_start_index = max(body_start_line - 1, 0)
+            body_end_index = max(body_end_line, body_start_line) - 1
+            body_indent = re.match(r"^\s*", lines[body_start_index]).group(0) if body_start_index < len(lines) else ""
+            rendered_body = self._indent_block(new_body, body_indent)
+        elif language == "javascript":
+            symbol_target = self._javascript_symbol_target(content, symbol.symbol_name, symbol.line)
+            if symbol_target is None:
+                raise ValueError(f"Symbol '{symbol.symbol_name}' not found in {symbol.file_path}")
+            if not symbol_target.get("replaceable"):
+                raise NotImplementedError(
+                    "replace_symbol_body currently supports block-bodied JavaScript functions and classes only"
+                )
+
+            body_node = symbol_target["body_node"]
+            if body_node.type not in {"statement_block", "class_body"}:
+                raise NotImplementedError(
+                    "replace_symbol_body currently supports block-bodied JavaScript functions and classes only"
+                )
+
+            lines = content.splitlines(keepends=True)
+            body_start_line = body_node.start_point[0] + 2
+            body_end_line = body_node.end_point[0] + 1
+            body_start_index = body_start_line - 1
+            body_end_index = body_end_line - 1
+            if body_start_index >= len(lines) or body_end_index < body_start_index:
+                raise NotImplementedError(
+                    "replace_symbol_body currently supports multi-line JavaScript block bodies only"
+                )
+            if body_node.start_point[0] == body_node.end_point[0]:
+                raise NotImplementedError(
+                    "replace_symbol_body currently supports multi-line JavaScript block bodies only"
+                )
+            body_indent = re.match(r"^\s*", lines[body_start_index]).group(0)
+            rendered_body = self._indent_block(new_body, body_indent)
+        else:
+            raise NotImplementedError("replace_symbol_body currently supports Python and JavaScript symbols only")
+
         policy = self.policy.refactor("replace_symbol_body", symbol_id_str, [symbol.file_path], preview=preview)
 
         preview_payload = {
@@ -195,7 +241,7 @@ class RefactorLayer:
             "target_file": symbol.file_path,
             "symbol": symbol.symbol_name,
             "line_span": {
-                "definition_start_line": symbol_node.lineno,
+                "definition_start_line": symbol.line,
                 "definition_end_line": body_end_line,
                 "body_start_line": body_start_line,
                 "body_end_line": body_end_line,
@@ -207,7 +253,10 @@ class RefactorLayer:
         if preview:
             return preview_payload
 
-        updated_lines = lines[:body_start_index] + rendered_body.splitlines(keepends=True) + lines[body_end_index + 1 :]
+        if language == "javascript":
+            updated_lines = lines[:body_start_index] + rendered_body.splitlines(keepends=True) + lines[body_end_index:]
+        else:
+            updated_lines = lines[:body_start_index] + rendered_body.splitlines(keepends=True) + lines[body_end_index + 1 :]
         updated_content = "".join(updated_lines)
         if updated_content == content:
             return {
@@ -227,7 +276,7 @@ class RefactorLayer:
             {
                 "symbol_id": symbol_id_str,
                 "symbol": symbol.symbol_name,
-                "definition_start_line": symbol_node.lineno,
+                "definition_start_line": symbol.line,
                 "definition_end_line": body_end_line,
                 "body_start_line": body_start_line,
                 "body_end_line": body_end_line,
