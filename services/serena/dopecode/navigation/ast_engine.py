@@ -143,7 +143,35 @@ class ASTEngine:
             return [{"error": "LSP required for cross-file references"}]
             
         abs_path = self.symbol_manager.resolve_path(sym_id.file_path)
-        file_uri = f"file://{abs_path}"
+    async def search_pattern(self, pattern: str, relative_path: Optional[str] = None, use_regex: bool = False, max_results: int = 100) -> Dict[str, Any]:
+        import re
+        results = []
+        flags = 0
+        if not use_regex:
+            pattern = re.escape(pattern)
+        
+        regex = re.compile(pattern, flags)
+        search_root = self.workspace_root
+        if relative_path:
+            search_root = self.symbol_manager.resolve_path(relative_path)
+
+        for py_file in search_root.rglob("*.py") if search_root.is_dir() else [search_root]:
+            if not py_file.is_file(): continue
+            if ".venv" in str(py_file) or "__pycache__" in str(py_file):
+                continue
+            content = py_file.read_text(encoding='utf-8')
+            for line_num, line in enumerate(content.splitlines(), 1):
+                if regex.search(line):
+                    results.append({
+                        "file": str(py_file.relative_to(self.workspace_root)),
+                        "line": line_num,
+                        "text": line.strip()
+                    })
+                if len(results) >= max_results:
+                    break
+            if len(results) >= max_results:
+                break
+        return {"results": results, "total_matches": len(results)}
         refs = await self.lsp_client.find_references(file_uri, sym_id.line - 1, 0)
         
         results = []
