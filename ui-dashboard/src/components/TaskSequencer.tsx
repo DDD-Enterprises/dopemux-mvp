@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Paper,
   Box,
@@ -78,6 +78,7 @@ const INITIAL_TASKS: Task[] = [
 
 const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS);
+  const headerRef = useRef<HTMLHeadingElement>(null);
 
   const [currentTaskId, setCurrentTaskId] = useState<string | null>('1');
   const [taskTimer, setTaskTimer] = useState<number>(0);
@@ -123,6 +124,10 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     const remainingTasks = optimizedTasks.filter((task) => task.id !== taskId);
     setTasks((prev) => prev.map((task) => (task.id === taskId ? { ...task, status: 'completed' } : task)));
     setCurrentTaskId(remainingTasks.length > 0 ? remainingTasks[0].id : null);
+
+    if (remainingTasks.length === 0) {
+      headerRef.current?.focus();
+    }
   };
 
   const skipTask = (taskId: string) => {
@@ -138,6 +143,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     setCurrentTaskId(freshTasks[0].id);
     setTaskTimer(0);
     setIsTimerRunning(false);
+    headerRef.current?.focus();
   };
 
   const formatTime = (seconds: number): string => {
@@ -207,7 +213,12 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     >
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
         <Timer size={24} aria-hidden="true" />
-        <Typography variant="h6" sx={{ letterSpacing: '0.16em' }}>
+        <Typography
+          variant="h6"
+          ref={headerRef}
+          tabIndex={-1}
+          sx={{ letterSpacing: '0.16em', outline: 'none' }}
+        >
           Task Sequencer
         </Typography>
         <Tooltip
