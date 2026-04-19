@@ -16,7 +16,30 @@ class ASTEngine:
         self.lsp_client = lsp_client
         self.workspace_root = workspace_root
 
-    async def get_file_symbols(self, relative_path: str) -> List[Dict[str, Any]]:
+    async def get_file_symbols(self, relative_path: str) -> Dict[str, Any]:
+        """Returns all structural elements in a file."""
+        abs_path = self.symbol_manager.resolve_path(relative_path)
+        if not abs_path.exists():
+            raise FileNotFoundError(f"File not found: {relative_path}")
+        
+        analysis = await self.tree_sitter.analyze_file(str(abs_path))
+        if not analysis:
+            return {"symbols": []}
+            
+        results = []
+        for element in analysis.elements:
+            sym_id = self.symbol_manager.create_id(relative_path, element.name, element.start_line)
+            results.append({
+                "symbol_id": sym_id,
+                "name": element.name,
+                "type": element.type,
+                "start_line": element.start_line,
+                "end_line": element.end_line,
+                "complexity_level": element.complexity_level.value,
+                "complexity_score": element.complexity_score,
+                "adhd_insights": element.adhd_insights
+            })
+        return {"symbols": results}
         """Returns all structural elements in a file."""
         abs_path = self.symbol_manager.resolve_path(relative_path)
         if not abs_path.exists():
