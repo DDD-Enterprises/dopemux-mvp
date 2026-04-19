@@ -1,3 +1,7 @@
+---
+name: architect
+---
+
 # Architect Agent Configuration
 
 **Agent Type**: Strategic design specialist

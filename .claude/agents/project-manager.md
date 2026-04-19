@@ -1,3 +1,7 @@
+---
+name: project-manager
+---
+
 # Project Manager Agent Configuration
 
 **Agent Type**: Cross-plane coordination specialist
