@@ -24,7 +24,11 @@ from typing import Callable, Dict, Iterable, List, Optional, Sequence
 
 import click
 
-from .utils.dotenv_loader import check_dotenv_support, load_dotenv
+from . import cli_bootstrap
+
+# Bootstrap: Load environment and configure sys.path BEFORE importing commands
+cli_bootstrap.load_env()
+cli_bootstrap.configure_sys_path()
 
 # Import RoutingConfig for mode-based behavior
 try:
@@ -53,9 +57,6 @@ from .ui.theme import (
 from .ui.prompts import dopemux_prompt, dopemux_confirm
 from .ui.voice import VoiceEngine
 
-# Load environment variables from .env file
-load_dotenv()
-check_dotenv_support()
 import subprocess
 from subprocess import CalledProcessError
 from urllib.parse import urlparse
@@ -105,13 +106,8 @@ from .protection_interceptor import (
 )
 from .tmux import tmux as tmux_commands
 
-# Import genetic agent CLI
+# Import genetic agent CLI (services path configured in cli_bootstrap)
 try:
-    # Ensure services directory is in Python path for production environments
-    services_path = Path(__file__).resolve().parent.parent / "services"
-    if str(services_path) not in sys.path:
-        sys.path.insert(0, str(services_path))
-
     from services.genetic_agent.cli import cli as genetic_group
 except ImportError:
     # Fallback if genetic agent service is not available
