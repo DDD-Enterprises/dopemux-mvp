@@ -115,7 +115,11 @@ class WriteLayer:
                         index += 1
                         continue
                     if not current or current[0] not in {" ", "+", "-"}:
-                        raise ValueError(f"Unsupported unified diff line: {current_stripped}")
+                    if current_stripped.startswith("\\ No newline at end of file"):
+                        if hunk_lines:
+                            hunk_lines[-1] = hunk_lines[-1].rstrip("\n\r")
+                        index += 1
+                        continue
                     hunk_lines.append(current)
                     index += 1
                 hunks.append(
