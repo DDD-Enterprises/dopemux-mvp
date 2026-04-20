@@ -1,3 +1,15 @@
+---
+id: docs__DMPX IMPORT__claude
+title: Docs  Dmpx Import  Claude
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Dmpx Import  Claude (explanation) for dopemux documentation and developer
+  workflows.
+---
 # CLAUDE.md - Dopemux Development Platform
 
 ## Project: Dopemux Orchestration System

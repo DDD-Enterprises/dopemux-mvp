@@ -1,3 +1,16 @@
+---
+id: docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-006-mcp-server-selection
+title: Docs  Dmpx Import  Dopemux Docs  Architecture  09 Decisions  Adr 006 Mcp Server
+  Selection
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Dmpx Import  Dopemux Docs  Architecture  09 Decisions  Adr 006 Mcp
+  Server Selection (explanation) for dopemux documentation and developer workflows.
+---
 # ADR-006: MCP Server Selection and Priority
 
 ## Status

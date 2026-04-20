@@ -1,3 +1,15 @@
+---
+id: docs__DMPX IMPORT__finaldocs__ux__interfaces__adhd_optimized_interface_design
+title: Docs  Dmpx Import  Finaldocs  Ux  Interfaces  Adhd Optimized Interface Design
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Dmpx Import  Finaldocs  Ux  Interfaces  Adhd Optimized Interface Design
+  (explanation) for dopemux documentation and developer workflows.
+---
 # ADHD-Optimized Interface Design Specification
 
 **Version**: 1.0

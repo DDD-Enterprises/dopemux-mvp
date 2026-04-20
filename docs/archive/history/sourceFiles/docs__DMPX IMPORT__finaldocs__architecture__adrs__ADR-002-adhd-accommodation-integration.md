@@ -1,3 +1,16 @@
+---
+id: docs__DMPX IMPORT__finaldocs__architecture__adrs__ADR-002-adhd-accommodation-integration
+title: Docs  Dmpx Import  Finaldocs  Architecture  Adrs  Adr 002 Adhd Accommodation
+  Integration
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Dmpx Import  Finaldocs  Architecture  Adrs  Adr 002 Adhd Accommodation
+  Integration (explanation) for dopemux documentation and developer workflows.
+---
 # ADR-002: ADHD Accommodation Integration Strategy
 
 **Status**: Accepted

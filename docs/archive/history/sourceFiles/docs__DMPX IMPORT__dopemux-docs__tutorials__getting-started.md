@@ -1,3 +1,15 @@
+---
+id: docs__DMPX IMPORT__dopemux-docs__tutorials__getting-started
+title: Docs  Dmpx Import  Dopemux Docs  Tutorials  Getting Started
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Dmpx Import  Dopemux Docs  Tutorials  Getting Started (explanation)
+  for dopemux documentation and developer workflows.
+---
 # Getting Started with Dopemux
 
 Welcome to Dopemux - the world's first comprehensively ADHD-accommodated development platform! This tutorial will guide you through your first steps with Dopemux, from installation to your first AI-assisted coding session.
