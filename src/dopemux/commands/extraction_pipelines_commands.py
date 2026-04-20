@@ -236,8 +236,6 @@ def repscan_passthrough(
     extracting structured semantic knowledge from source code repositories.
     Coordinates with provider ladders for cost-efficient LLM utilization.
     """
-    from ..ux.extractor_runner import run_repscan_runner as _run_repscan_runner
-
     pipeline_version = _resolved_pipeline_version(
         pipeline_version="v5", engine_version_legacy=legacy_runner
     )
@@ -260,7 +258,12 @@ def repscan_passthrough(
 
     cli_args.extend(args)
 
-    _run_repscan_runner(pipeline_version=pipeline_version, args=cli_args)
+    cli_module = sys.modules.get("dopemux.cli")
+    runner = getattr(cli_module, "_run_repscan_runner", None) if cli_module else None
+    if runner is None:
+        from ..ux.extractor_runner import run_repscan_runner as runner
+
+    runner(args=cli_args)
 
 
 _PIPELINE_VERSION_CHOICES = ["v5", "v4", "v3"]
