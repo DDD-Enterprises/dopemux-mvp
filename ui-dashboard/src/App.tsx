@@ -6,6 +6,7 @@ import {
   CircularProgress,
   Collapse,
   Container,
+  Fade,
   CssBaseline,
   Divider,
   Grid,
@@ -114,6 +115,17 @@ function mapRealtimeState(message: Record<string, unknown>): CognitiveState | nu
     recommendation: String(data.recommendation || 'No active recommendation'),
   };
 }
+
+const getNotificationColor = (type: string) => {
+  switch (type) {
+    case 'info':
+      return brandTokens.colors.serumMint;
+    case 'warning':
+      return brandTokens.colors.saintGold;
+    default:
+      return brandTokens.colors.gremlinPink;
+  }
+};
 
 function App() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -323,6 +335,7 @@ function App() {
             <Tooltip title="User consent verified for cognitive monitoring" arrow>
               <Chip
                 label={`${brandTokens.chips.consent}`}
+                aria-label="User consent verified for cognitive monitoring"
                 className="dopemux-chip"
                 variant="outlined"
                 sx={{ borderColor: alpha(brandTokens.colors.saintGold, 0.9), color: brandTokens.colors.saintGold }}
@@ -333,6 +346,7 @@ function App() {
               <Chip
                 icon={<Droplet size={16} color={brandTokens.colors.aftercareViolet} />}
                 label="[AFTERCARE] Logged. Hydrate."
+                aria-label="Health and hydration status: [AFTERCARE] Logged. Hydrate."
                 className="dopemux-chip"
                 sx={{ borderColor: alpha(brandTokens.colors.aftercareViolet, 0.8), color: brandTokens.colors.aftercareViolet }}
                 tabIndex={0}
@@ -376,6 +390,7 @@ function App() {
         <Collapse in={Boolean(errorMessage)}>
           <Alert
             severity="warning"
+            onClose={() => setErrorMessage(null)}
             sx={{
               mb: 3,
               borderRadius: 3,
@@ -412,10 +427,6 @@ function App() {
                         alignItems: 'center',
                         outline: 'none',
                         cursor: 'help',
-                        '&:focus': {
-                          borderRadius: 1,
-                          boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}`,
-                        },
                         '&:focus-visible': {
                           borderRadius: 1,
                           boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}`,
@@ -491,18 +502,22 @@ function App() {
               role="log"
               aria-live="polite"
             >
-              {notifications.map((notification) => (
-                <Chip
-                  key={`${notification.timestamp}-${notification.message}`}
-                  label={`${notification.notificationType}: ${notification.message}`}
-                  sx={{
-                    maxWidth: '100%',
-                    borderColor: brandTokens.borders.cyan,
-                    color: brandTokens.colors.ritualCyan,
-                    backgroundColor: alpha(brandTokens.colors.ritualCyan, 0.08),
-                  }}
-                />
-              ))}
+              {notifications.map((notification) => {
+                const severityColor = getNotificationColor(notification.notificationType);
+                return (
+                  <Fade in={true} key={`${notification.timestamp}-${notification.message}`}>
+                    <Chip
+                      label={`${notification.notificationType}: ${notification.message}`}
+                      sx={{
+                        maxWidth: '100%',
+                        borderColor: alpha(severityColor, 0.6),
+                        color: severityColor,
+                        backgroundColor: alpha(severityColor, 0.08),
+                      }}
+                    />
+                  </Fade>
+                );
+              })}
             </Box>
           ) : (
             <Typography variant="body2" color="text.secondary">
