@@ -217,7 +217,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           variant="h6"
           ref={headerRef}
           tabIndex={-1}
-sx={{ letterSpacing: '0.16em' }}
+          sx={{ letterSpacing: '0.16em', outline: 'none' }}
         >
           Task Sequencer
         </Typography>
