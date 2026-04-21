@@ -111,6 +111,12 @@ class GrokPassRunner:
         self._validator = BatchResponseValidator()
         self.evidence_log: list[ExecutionEvidence] = []
 
+    def _online_authorized(self) -> bool:
+        override = getattr(self.config, "online_authorized", None)
+        if override is not None:
+            return bool(override)
+        return bool(self.config.allow_online_llm)
+
     def run_passes_batched(
         self,
         passes: list[str],
@@ -122,7 +128,7 @@ class GrokPassRunner:
         all_results: dict[str, Any] = {}
         output_dir = self.config.output_dir
 
-        if not self.config.allow_online_llm:
+        if not self._online_authorized():
             logger.warning("🚫 Online prescan passes (batched) NOT authorized.")
             return {}
 
@@ -136,7 +142,7 @@ class GrokPassRunner:
                     pass_id=pass_id,
                     batch_id=batch.batch_id,
                     planned_candidates=(routing_plan or {}).get("candidate_routes", {}).get(pass_id, []),
-                    online_authorized=self.config.allow_online_llm
+                    online_authorized=self._online_authorized()
                 )
                 result = self._call_grok_validated(pass_id, "payload", routing_plan, evidence, est_tokens=batch.estimated_tokens)
                 self.evidence_log.append(evidence)
@@ -144,6 +150,25 @@ class GrokPassRunner:
 
         self.save_attempts()
         return all_results
+
+    def _normalize_routing_plan(self, routing_plan: dict[str, Any] | None) -> dict[str, Any] | None:
+        if routing_plan is None:
+            return None
+        if "candidate_routes" in routing_plan:
+            return routing_plan
+        selected_routes = routing_plan.get("selected_routes")
+        if not isinstance(selected_routes, dict):
+            return routing_plan
+        candidate_routes: dict[str, list[dict[str, Any]]] = {}
+        for pass_id, route in selected_routes.items():
+            if isinstance(route, list):
+                candidate_routes[pass_id] = [item for item in route if isinstance(item, dict)]
+            elif isinstance(route, dict):
+                candidate_routes[pass_id] = [route]
+        return {
+            **routing_plan,
+            "candidate_routes": candidate_routes,
+        }
 
     def _call_grok_validated(
         self, 
@@ -187,9 +212,31 @@ class GrokPassRunner:
         return None
 
     def run_passes(self, passes, intel, manifest, routing_plan=None):
-        if not self.config.allow_online_llm: return {}
-        # Simple placeholder for brevity in this re-apply
-        return {}
+        if not self._online_authorized():
+            return {}
+
+        routing_plan = self._normalize_routing_plan(routing_plan)
+        results: dict[str, Any] = {}
+        for pass_id in passes:
+            if pass_id not in PASS_IDS:
+                continue
+            evidence = ExecutionEvidence(
+                pass_id=pass_id,
+                batch_id=None,
+                planned_candidates=(routing_plan or {}).get("candidate_routes", {}).get(pass_id, []),
+                online_authorized=self._online_authorized(),
+            )
+            result = self._call_grok_validated(
+                pass_id,
+                "payload",
+                routing_plan,
+                evidence,
+            )
+            self.evidence_log.append(evidence)
+            if result is not None:
+                results[pass_id] = result
+        self.save_attempts()
+        return results
 
     def _build_optimize_payload(self, intelligence: dict[str, Any], prior_pass_results: dict[str, Any]) -> dict[str, Any]:
         payload: dict[str, Any] = {
@@ -219,7 +266,7 @@ class GrokPassRunner:
         model_id = candidate["model_id"]
         api_key = os.environ.get(candidate["api_key_env"])
 
-        if not self.config.allow_online_llm and provider != "mock":
+        if not self._online_authorized() and provider != "mock":
              raise SecurityViolation("Spend gate blocked call")
         if not api_key:
             raise ValueError(f"API key not found: {candidate['api_key_env']}")
@@ -227,14 +274,61 @@ class GrokPassRunner:
         if self.limiter:
             attempt_record.limiter_wait_ms = self.limiter.acquire(est_tokens) * 1000
 
-        # Simulate call
+        import openai
+
+        client = openai.OpenAI(api_key=api_key, base_url=self.config.xai_base_url)
+        response = client.chat.completions.create(
+            model=model_id,
+            messages=[
+                {
+                    "role": "user",
+                    "content": payload,
+                }
+            ],
+            temperature=self.config.temperature,
+        )
+        content = getattr(response.choices[0].message, "content", "") or "{}"
+        data = json.loads(content)
+        if not isinstance(data, dict):
+            raise ValueError("LLM response must decode to a JSON object")
+
+        usage = getattr(response, "usage", None)
+        if usage is not None:
+            attempt_record.tokens_prompt = int(getattr(usage, "prompt_tokens", 0) or 0)
+            attempt_record.tokens_completion = int(getattr(usage, "completion_tokens", 0) or 0)
         attempt_record.status = "success"
-        return {"status": "mock_success"}
+        return data
 
     def save_attempts(self) -> Path:
         path = self.config.output_dir / "prescan_llm_attempts.json"
+        flattened_attempts: list[dict[str, Any]] = []
+        success_count = 0
+        for evidence in self.evidence_log:
+            for attempt in evidence.attempts:
+                success = attempt.status == "success"
+                if success:
+                    success_count += 1
+                flattened_attempts.append(
+                    {
+                        "pass_id": evidence.pass_id,
+                        "batch_id": evidence.batch_id,
+                        "provider": attempt.provider,
+                        "model_id": attempt.model,
+                        "api_key_env": attempt.api_key_env,
+                        "status": attempt.status,
+                        "success": success,
+                        "latency_ms": attempt.latency_ms,
+                        "error": attempt.error,
+                        "limiter_wait_ms": attempt.limiter_wait_ms,
+                        "tokens_prompt": attempt.tokens_prompt,
+                        "tokens_completion": attempt.tokens_completion,
+                    }
+                )
         payload = {
             "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+            "total_attempts": len(flattened_attempts),
+            "success_count": success_count,
+            "attempts": flattened_attempts,
             "evidence": [e.to_dict() for e in self.evidence_log],
         }
         path.write_text(json.dumps(payload, indent=2) + "\n")
