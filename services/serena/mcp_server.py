@@ -744,7 +744,7 @@ class SerenaV2MCPServer:
         if require_tree_sitter:
             await self._ensure_component("tree_sitter")
 
-        if hasattr(self, "ast_engine"):
+        if getattr(self, "ast_engine", None) is not None:
             self.ast_engine.set_dependencies(
                 tree_sitter=getattr(self, "tree_sitter", None),
                 lsp=getattr(self, "lsp", None),

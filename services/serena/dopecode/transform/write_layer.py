@@ -22,7 +22,9 @@ class WriteLayer:
         full_path = target_path.resolve()
 
         # Security: Ensure the resolved path is strictly within the workspace root
-        if not str(full_path).startswith(str(self.workspace_root)):
+        try:
+            full_path.relative_to(self.workspace_root)
+        except ValueError:
             raise ValueError(f"❌ Security: Path traversal attempt detected. Resolved path '{full_path}' is outside workspace root '{self.workspace_root}'. Original relative path: '{relative_path}'")
         
         return full_path

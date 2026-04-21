@@ -18,7 +18,7 @@ class RefactorLayer:
         if not refs:
             return {"error": "No references found or LSP unavailable."}
             
-        files_affected = list(set([r['file'] for r in refs if 'file' in r]))
+        files_affected = sorted({r["file"] for r in refs if "file" in r})
         
         if preview:
             return {
