@@ -2062,9 +2062,6 @@ def _trigger_dope_context_autoindex_startup(
 from .commands.instances_commands import instances
 cli.add_command(instances, "instances")
 
-from .commands.native_hooks_commands import native_hooks
-cli.add_command(native_hooks, "native-hooks")
-
 from .commands.pr_commands import pr_merge_group
 cli.add_command(pr_merge_group, "pr-merge")
 
