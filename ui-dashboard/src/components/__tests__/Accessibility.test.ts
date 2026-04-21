@@ -137,3 +137,11 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('ref={feedHeadingRef}');
   expect(appContent).toContain('tabIndex={-1}');
 });
+
+test('App.tsx maps backend notification types to severity colors', () => {
+  const appContent = fs.readFileSync(path.resolve(__dirname, '../../App.tsx'), 'utf8');
+  expect(appContent).toMatch(/case 'decision':[\s\S]*case 'progress':[\s\S]*case 'break':[\s\S]*case 'session':[\s\S]*return brandTokens\.colors\.serumMint;/);
+  expect(appContent).toMatch(/case 'hyperfocus':[\s\S]*return brandTokens\.colors\.saintGold;/);
+  expect(appContent).toContain("case 'error':");
+  expect(appContent).toContain('return brandTokens.colors.gremlinPink;');
+});

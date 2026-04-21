@@ -118,12 +118,19 @@ function mapRealtimeState(message: Record<string, unknown>): CognitiveState | nu
 
 const getNotificationColor = (type: string) => {
   switch (type) {
+    case 'decision':
+    case 'progress':
+    case 'break':
+    case 'session':
     case 'info':
       return brandTokens.colors.serumMint;
+    case 'hyperfocus':
     case 'warning':
       return brandTokens.colors.saintGold;
-    default:
+    case 'error':
       return brandTokens.colors.gremlinPink;
+    default:
+      return brandTokens.colors.ritualCyan;
   }
 };
 
