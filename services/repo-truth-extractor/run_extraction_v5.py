@@ -18255,6 +18255,7 @@ def main() -> None:
     if args.max_cost_usd is not None and args.max_cost_usd <= 0:
         parser.error("--max-cost-usd must be > 0 when provided.")
 
+    # Initialize optional imported prescan router before RunnerConfig assembly.
     router = None
     if args.prescan_import_dir:
         if IntelligenceRouter:
@@ -18800,6 +18801,7 @@ def main() -> None:
     if _active_profile:
         logger.info(
             "Loaded profile: %s (v%s)",
+            _active_profile.get("name", "default"),
             _active_profile.get("version", "?"),
         )
         # Apply budget overrides conservatively when the caller kept default limits.
