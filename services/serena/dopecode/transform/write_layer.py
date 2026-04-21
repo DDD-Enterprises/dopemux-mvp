@@ -2,7 +2,6 @@ import logging
 import time
 from pathlib import Path
 from typing import List, Dict, Any
-import difflib
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +15,9 @@ class WriteLayer:
     def _validate_boundary(self, relative_path: str) -> Path:
         """Enforce root-scoped path resolution."""
         full_path = (self.workspace_root / relative_path).resolve()
-        if not str(full_path).startswith(str(self.workspace_root)):
+        try:
+            full_path.relative_to(self.workspace_root)
+        except ValueError:
             raise ValueError(f"❌ Security: Path '{relative_path}' escapes workspace root {self.workspace_root}")
         return full_path
 

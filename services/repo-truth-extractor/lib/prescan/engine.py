@@ -1,182 +1,208 @@
 import datetime as dt
 import json
 import logging
-import time
 import subprocess
+import time
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
-from .models import PrescanConfig, PrescanResult, FileEntry
-from .corpus_walker import CorpusWalker
-from .classifier import FileClassifier
-from .git_enricher import GitEnricher
-from .duplicate_detector import DuplicateDetector
-from .grok_passes import GrokPassRunner
-from .code_prescan import CodePrescan
-from .dependency_graph import DependencyGraph
 from .batch_planner import BatchPlanner
+from .classifier import Classifier
+from .code_prescan import CodePrescan
 from .cost_estimator import CostEstimator
+from .corpus_walker import CorpusWalker
+from .dependency_graph import DependencyGraph
+from .duplicate_detector import DuplicateDetector
+from .git_enricher import GitEnricher
+from .grok_passes import GrokPassRunner
+from .models import FileEntry, PrescanConfig, PrescanResult
 from .provider_catalog import (
-    build_provider_model_catalog,
     build_prescan_routing_plan,
+    build_provider_model_catalog,
     write_provider_catalog,
     write_routing_plan,
 )
 
 logger = logging.getLogger(__name__)
 
+
 class PrescanEngine:
     def __init__(self, config: PrescanConfig, limiter: Any | None = None):
         self.config = config
         self.walker = CorpusWalker(config)
-        self.classifier = FileClassifier(config)
+        self.classifier = Classifier(config)
         self.enricher = GitEnricher(config)
         self.detector = DuplicateDetector(config)
         self.code_scanner = CodePrescan(config)
         self.dep_graph = DependencyGraph()
         self.cost_estimator = CostEstimator(config)
-        self.batch_planner = BatchPlanner(config)
         self.grok_runner = GrokPassRunner(config, limiter=limiter)
 
     def run(self, passes: list[str] | None = None, incremental: bool = False) -> PrescanResult:
-        """Run the full prescan pipeline."""
+        """Run full prescan pipeline."""
         start_time = time.time()
-        warnings = []
-        errors = []
-        
+        warnings: list[str] = []
+
         try:
-            # 1. Walk corpus
-            logger.info(f"Walking corpus in {self.config.repo_root}...")
-            files = self.walker.walk()
-            
-            # 2. Classify files
+            logger.info("Walking corpus in %s...", self.config.repo_root)
+            entries = self.walker.walk()
+
             logger.info("Classifying files...")
-            entries = self.classifier.classify(files)
-            
-            # 3. Git enrichment
-            changed_files = None
+            self.classifier.classify_all(entries)
+
             if self.config.enable_git_enrichment:
                 logger.info("Enriching with git metadata...")
                 try:
                     self.enricher.enrich(entries)
-                except Exception as e:
-                    logger.warning(f"Git enrichment failed: {e}")
-                    warnings.append(f"Git enrichment failed: {e}")
+                except Exception as exc:  # pragma: no cover - non-fatal guard
+                    logger.warning("Git enrichment failed: %s", exc)
+                    warnings.append(f"Git enrichment failed: {exc}")
 
-            # 4. Duplicate detection
             logger.info("Detecting duplicates and version chains...")
-            duplicates = self.detector.detect(entries)
-            
-            # 5. Code intelligence
-            code_intel = []
-            if self.config.enable_code_prescan:
-                logger.info("Running code intelligence (AST analysis)...")
-                try:
-                    code_entries = [e for e in entries if e.include and e.extension in self.config.code_languages]
-                    code_intel = self.code_scanner.scan([e.rel_path for e in code_entries])
-                    self.dep_graph.build(code_intel)
-                except Exception as e:
-                    logger.warning(f"Code intelligence failed: {e}")
-                    warnings.append(f"Code intelligence failed: {e}")
+            self.detector.detect_duplicates(entries)
+            self.detector.detect_version_chains(entries)
+            duplicates = self._collect_duplicate_summaries(entries)
 
-            # 6. Build intelligence base
+            logger.info("Running code intelligence...")
+            manifest = [e.to_dict() for e in entries]
+            code_intel: list[dict[str, Any]] = []
+            if self.config.enable_code_prescan:
+                try:
+                    for entry in entries:
+                        intel = self.code_scanner.analyze_file(entry, self.config.repo_root)
+                        if intel:
+                            code_intel.append(intel)
+                    self.dep_graph.build_from_code_intelligence(code_intel, manifest)
+                except Exception as exc:  # pragma: no cover - non-fatal guard
+                    logger.warning("Code intelligence failed: %s", exc)
+                    warnings.append(f"Code intelligence failed: {exc}")
+
             intelligence = self._build_intelligence_base(entries, code_intel)
             intelligence["duplicate_groups"] = duplicates["groups"]
             intelligence["version_chains"] = duplicates["chains"]
             intelligence["version_chain_count"] = len(duplicates["chains"])
-            
-            # 7. Optional passes
-            batch_plans = {}
-            batch_plan_path = None
-            
-            if passes:
-                # 7a. Batch planning
-                logger.info("Planning token-aware batches...")
-                manifest = [e.to_dict() for e in entries]
-                batch_plans = self.batch_planner.plan(passes, intelligence, manifest)
-                
-                # Save batch plan
-                batch_plan_path = self.config.output_dir / "batch_plan.json"
-                batch_plan_path.write_text(
-                    json.dumps({p: bp.to_dict() for p, bp in batch_plans.items()}, indent=2) + "\n"
-                )
 
-                # 7b. Provider routing
+            batch_plans: dict[str, Any] = {}
+            batch_plan_path: Path | None = None
+            routing_plan: dict[str, Any] | None = None
+
+            if passes:
+                if self.config.batch_mode:
+                    logger.info("Planning token-aware batches...")
+                    planner = BatchPlanner(self.config, entries, manifest)
+                    for pass_id in passes:
+                        batch_plans[pass_id] = planner.plan_batches(pass_id, intelligence)
+
+                    batch_plan_path = self.config.output_dir / "batch_plan.json"
+                    batch_plan_path.write_text(
+                        json.dumps(
+                            {pid: bp.to_dict() for pid, bp in batch_plans.items()},
+                            indent=2,
+                            sort_keys=True,
+                        )
+                        + "\n"
+                    )
+
                 logger.info("Building provider model catalog for routing...")
-                routing_plan = None
                 try:
                     catalog_data = build_provider_model_catalog(self.config)
-                    routing_plan = build_prescan_routing_plan(self.config, passes, batch_plans, catalog_data)
-                    
-                    # Save routing plan
+                    routing_plan = build_prescan_routing_plan(self.config, catalog_data, passes)
                     write_routing_plan(self.config.output_dir, routing_plan)
                     write_provider_catalog(self.config.output_dir, catalog_data)
-                except Exception as e:
-                    logger.warning(f"Provider routing failed (using defaults): {e}")
-                    warnings.append(f"Provider routing failed: {e}")
+                except Exception as exc:  # pragma: no cover - non-fatal guard
+                    logger.warning("Provider routing failed (using defaults): %s", exc)
+                    warnings.append(f"Provider routing failed: {exc}")
 
-                # 7c. Execute Grok passes
-                logger.info(f"Running Grok passes: {', '.join(passes)}...")
-                grok_results = self.grok_runner.run_passes_batched(
-                    passes, intelligence, manifest, batch_plans, routing_plan=routing_plan
-                )
+                logger.info("Running Grok passes: %s", ", ".join(passes))
+                if self.config.batch_mode and batch_plans:
+                    grok_results = self.grok_runner.run_passes_batched(
+                        passes,
+                        intelligence,
+                        manifest,
+                        batch_plans,
+                        routing_plan=routing_plan,
+                    )
+                else:
+                    grok_results = self.grok_runner.run_passes(
+                        passes,
+                        intelligence,
+                        manifest,
+                        routing_plan=routing_plan,
+                    )
                 intelligence["grok_passes"] = grok_results
 
-            # 8. Save artifacts
             self.config.output_dir.mkdir(parents=True, exist_ok=True)
-            
             intel_path = self.config.output_dir / "prescan_intelligence.json"
             manifest_path = self.config.output_dir / "corpus_manifest.json"
-            
-            manifest = [e.to_dict() for e in entries]
+
             intel_path.write_text(json.dumps(intelligence, indent=2, sort_keys=True) + "\n")
             manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
-            
-            duration = time.time() - start_time
+
+            duration = round(time.time() - start_time, 2)
             total_batches = sum(len(bp.batches) for bp in batch_plans.values()) if batch_plans else 0
 
             return PrescanResult(
                 success=True,
+                duration_seconds=duration,
+                file_count=len(entries),
+                code_files_analyzed=len(code_intel),
                 intelligence_path=intel_path,
                 manifest_path=manifest_path,
-                file_count=len(entries),
-                included_count=sum(1 for e in entries if e.include),
-                duration_seconds=round(duration, 2),
                 warnings=warnings,
-                errors=errors,
                 batch_plan_path=batch_plan_path,
                 batch_count=total_batches,
             )
 
-        except Exception as e:
-            logger.error(f"Prescan failed: {e}", exc_info=True)
+        except Exception as exc:
+            logger.error("Prescan failed: %s", exc, exc_info=True)
             return PrescanResult(
                 success=False,
-                errors=[str(e)],
-                duration_seconds=round(time.time() - start_time, 2)
+                duration_seconds=round(time.time() - start_time, 2),
+                file_count=0,
+                code_files_analyzed=0,
+                errors=[str(exc)],
             )
 
         finally:
-            # 9. Save LLM attempts evidence (always)
             try:
                 self.config.output_dir.mkdir(parents=True, exist_ok=True)
                 self.grok_runner.save_attempts()
-            except Exception as e:
-                logger.warning(f"Failed to save LLM attempts evidence (finally): {e}")
+            except Exception as exc:  # pragma: no cover - non-fatal guard
+                logger.warning("Failed to save LLM attempts evidence (finally): %s", exc)
 
-    def _build_intelligence_base(self, entries: list[FileEntry], code_intel: list[dict] | None = None) -> dict[str, Any]:
-        """Build the basic intelligence structure."""
+    def _collect_duplicate_summaries(self, entries: list[FileEntry]) -> dict[str, dict[str, Any]]:
+        groups: dict[str, list[str]] = {}
+        chains: dict[str, list[dict[str, Any]]] = {}
+
+        for entry in entries:
+            if entry.duplicate_group_id:
+                groups.setdefault(entry.duplicate_group_id, []).append(entry.rel_path)
+            if entry.version_chain_id:
+                chains.setdefault(entry.version_chain_id, []).append(
+                    {
+                        "path": entry.rel_path,
+                        "ordinal": entry.version_ordinal,
+                        "is_latest": entry.is_latest_version,
+                    }
+                )
+
+        return {"groups": groups, "chains": chains}
+
+    def _build_intelligence_base(
+        self,
+        entries: list[FileEntry],
+        code_intel: list[dict] | None = None,
+    ) -> dict[str, Any]:
         included = [e for e in entries if e.include and not e.is_ghost]
         ghosts = [e for e in entries if e.is_ghost]
 
-        # Summary stats
-        by_class = {}
-        for e in entries:
-            by_class[e.authority_class] = by_class.get(e.authority_class, 0) + 1
-            
-        by_ext = {}
-        for e in included:
-            by_ext[e.extension] = by_ext.get(e.extension, 0) + 1
+        by_class: dict[str, int] = {}
+        for entry in entries:
+            by_class[entry.authority_class] = by_class.get(entry.authority_class, 0) + 1
+
+        by_ext: dict[str, int] = {}
+        for entry in included:
+            by_ext[entry.extension] = by_ext.get(entry.extension, 0) + 1
 
         return {
             "version": "1.0",
@@ -198,29 +224,37 @@ class PrescanEngine:
             "extraction_hints": {
                 "skip_duplicates": [],
                 "compression_candidates": [],
-            }
+            },
         }
 
     def _get_lifecycle_dist(self, entries: list[FileEntry]) -> dict[str, int]:
-        dist = {}
-        for e in entries:
-            dist[e.lifecycle_stage] = dist.get(e.lifecycle_stage, 0) + 1
+        dist: dict[str, int] = {}
+        for entry in entries:
+            dist[entry.lifecycle_stage] = dist.get(entry.lifecycle_stage, 0) + 1
         return dist
 
     def _find_planned_features(self, entries: list[FileEntry]) -> dict[str, list[str]]:
         return {
-            "proposed_adrs": [e.rel_path for e in entries if "ADR" in e.rel_path and e.lifecycle_stage == "stub"],
+            "proposed_adrs": [
+                e.rel_path for e in entries if "ADR" in e.rel_path and e.lifecycle_stage == "stub"
+            ],
             "stub_files": [e.rel_path for e in entries if e.lifecycle_stage == "stub"],
             "todo_files": [e.rel_path for e in entries if e.lifecycle_stage == "stale"],
-            "draft_docs": [e.rel_path for e in entries if e.authority_class == "historical"],
+            "draft_docs": [
+                e.rel_path for e in entries if e.authority_class == "historical"
+            ],
         }
 
     def _get_git_sha(self) -> str:
         try:
-            return subprocess.check_output(
-                ["git", "rev-parse", "HEAD"], 
-                cwd=self.config.repo_root, 
-                stderr=subprocess.DEVNULL
-            ).decode().strip()
-        except:
+            return (
+                subprocess.check_output(
+                    ["git", "rev-parse", "HEAD"],
+                    cwd=self.config.repo_root,
+                    stderr=subprocess.DEVNULL,
+                )
+                .decode()
+                .strip()
+            )
+        except Exception:
             return "unknown"

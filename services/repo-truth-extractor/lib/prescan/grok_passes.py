@@ -2,9 +2,10 @@ import datetime as dt
 import json
 import logging
 import os
+import time
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from typing import Any, Optional, List, Dict
+from typing import Any
 from .models import PrescanConfig
 
 logger = logging.getLogger(__name__)
@@ -66,11 +67,16 @@ PASS_DESCRIPTIONS = {
     "optimize": "Extraction routing, cost, and compression plan",
 }
 
+_DEDUP_SYSTEM_PROMPT = "You are a deduplication analyst."
+_DISCOVER_SYSTEM_PROMPT = "You are a technical archaeology analyst."
+_FEASIBILITY_SYSTEM_PROMPT = "You are a software feasibility analyst."
+_OPTIMIZE_SYSTEM_PROMPT = "You are an extraction cost optimizer."
+
 PASS_SYSTEM_PROMPTS = {
-    "dedup": "You are a deduplication analyst.",
-    "discover": "You are a technical archaeology analyst.",
-    "feasibility": "You are a software feasibility analyst.",
-    "optimize": "You are an extraction cost optimizer.",
+    "dedup": _DEDUP_SYSTEM_PROMPT,
+    "discover": _DISCOVER_SYSTEM_PROMPT,
+    "feasibility": _FEASIBILITY_SYSTEM_PROMPT,
+    "optimize": _OPTIMIZE_SYSTEM_PROMPT,
 }
 
 class BatchResponseValidator:
@@ -78,8 +84,10 @@ class BatchResponseValidator:
         try:
             data = json.loads(response)
             return True, data, ""
-        except:
-            return False, None, "Invalid JSON"
+        except json.JSONDecodeError as exc:
+            return False, None, f"Invalid JSON: {exc}"
+        except TypeError as exc:
+            return False, None, f"Invalid JSON: {exc}"
 
 class GrokPassRunner:
     def __init__(self, config: PrescanConfig, limiter: Any | None = None):
@@ -161,9 +169,18 @@ class GrokPassRunner:
         return None
 
     def run_passes(self, passes, intel, manifest, routing_plan=None):
-        if not self.config.allow_online_llm: return {}
-        # Simple placeholder for brevity in this re-apply
-        return {}
+        if not self.config.allow_online_llm:
+            return {}
+
+        results = {}
+        for pass_id in passes or []:
+            if pass_id not in PASS_IDS:
+                continue
+            results[pass_id] = {
+                "status": "skipped_unimplemented_provider_call",
+                "reason": "non-batched live provider calls are not implemented",
+            }
+        return results
 
     def _call_grok(self, pass_id, payload, candidate, attempt_record, est_tokens=0):
         provider = candidate["provider"]
@@ -173,12 +190,17 @@ class GrokPassRunner:
         if not self.config.allow_online_llm and provider != "mock":
              raise SecurityViolation("Spend gate blocked call")
         if not api_key:
-            raise ValueError(f"API key missing: {candidate['api_key_env']}")
+            raise ValueError(f"API key not found: {candidate['api_key_env']}")
 
         if self.limiter:
             attempt_record.limiter_wait_ms = self.limiter.acquire(est_tokens) * 1000
 
-        # Simulate call
+        if provider != "mock":
+            raise NotImplementedError(
+                f"Provider call not implemented for provider '{provider}'."
+            )
+
+        # Simulate call for explicit mock provider only
         attempt_record.status = "success"
         return {"status": "mock_success"}
 
