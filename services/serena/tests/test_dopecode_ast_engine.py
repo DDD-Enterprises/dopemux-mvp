@@ -66,3 +66,20 @@ async def test_ast_engine_search_pattern_validation(tmp_path: Path):
 
     with pytest.raises(ValueError, match="Invalid regex pattern"):
         await engine.search_pattern("(", use_regex=True)
+
+
+@pytest.mark.asyncio
+async def test_ast_engine_search_pattern_respects_suffix_and_size_bounds(tmp_path: Path):
+    _write(tmp_path / "pkg" / "allowed.py", "needle = 1\n")
+    _write(tmp_path / "pkg" / "ignored.bin", "needle\n")
+
+    large_content = "x" * (ASTEngine.MAX_SEARCH_FILE_SIZE_BYTES + 1) + "needle"
+    _write(tmp_path / "pkg" / "too_large.py", large_content)
+
+    engine = ASTEngine(tmp_path, "ws-test")
+    matches = await engine.search_pattern("needle", max_results=10)
+    files = {item["file"] for item in matches["results"]}
+
+    assert "pkg/allowed.py" in files
+    assert "pkg/ignored.bin" not in files
+    assert "pkg/too_large.py" not in files
