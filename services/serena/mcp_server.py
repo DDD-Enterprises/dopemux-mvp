@@ -1858,7 +1858,7 @@ class SerenaV2MCPServer:
                 if not isinstance(result, str):
                     result = json.dumps(result, indent=2, default=str)
                 return [TextContent(type="text", text=result)]
-            except (ValueError, FileNotFoundError, RuntimeError) as e:
+            except (ValueError, FileNotFoundError, RuntimeError, NotImplementedError) as e:
                 error_msg = f"❌ Error in {name}: {str(e)}"
                 logger.error(error_msg)
                 return [TextContent(type="text", text=error_msg)]

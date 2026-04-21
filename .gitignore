@@ -361,6 +361,7 @@ proof/*
 !proof/rte-certification-overclaim-and-escalation-truth-hardening.proof.json
 !proof/rte-all-valid-work-branch-scan.proof.json
 !proof/rte-provider-preflight-scope-truth-hardening.proof.json
+!proof/dopecode_phase6.proof.json
 
 # Extraction and Research artifacts
 _audit_out/
