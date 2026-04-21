@@ -100,6 +100,20 @@ class CodePrescan:
             "api_surfaces": api_surfaces,
         }
 
+    def scan(self, rel_paths: list[str]) -> list[dict[str, Any]]:
+        """Compatibility wrapper for callers that provide relative paths."""
+        results: list[dict[str, Any]] = []
+        for rel_path in rel_paths:
+            entry = FileEntry(
+                rel_path=rel_path,
+                size_bytes=0,
+                extension=Path(rel_path).suffix.lower(),
+            )
+            result = self.analyze_file(entry, self.config.repo_root)
+            if result:
+                results.append(result)
+        return results
+
     def _extract_symbols(self, root_node: Node, code: str, lang: str) -> List[Dict[str, Any]]:
         symbols = []
         

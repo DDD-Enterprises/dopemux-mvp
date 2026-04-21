@@ -157,6 +157,14 @@ class BatchPlanner:
 
         return plan
 
+    def plan(self, passes: list[str], intelligence: dict, manifest: list[dict]) -> dict[str, BatchPlan]:
+        """Compatibility wrapper for callers expecting batch plans for many passes."""
+        _ = manifest
+        plans: dict[str, BatchPlan] = {}
+        for pass_id in passes:
+            plans[pass_id] = self.plan_batches(pass_id, intelligence)
+        return plans
+
     def _files_for_pass(self, pass_id: str, intelligence: dict) -> list[str]:
         """Return the list of file paths relevant to a given pass."""
         if pass_id == "dedup":
