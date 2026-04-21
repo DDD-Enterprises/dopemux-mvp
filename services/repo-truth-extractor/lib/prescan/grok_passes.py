@@ -216,7 +216,6 @@ class GrokPassRunner:
 
     def _call_grok(self, pass_id, payload, candidate, attempt_record, est_tokens=0):
         provider = candidate["provider"]
-        model_id = candidate["model_id"]
         api_key = os.environ.get(candidate["api_key_env"])
 
         if not self.config.allow_online_llm and provider != "mock":
