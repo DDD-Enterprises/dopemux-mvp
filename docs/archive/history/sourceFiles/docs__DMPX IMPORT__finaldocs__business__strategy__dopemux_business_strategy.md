@@ -1,3 +1,15 @@
+---
+id: docs__DMPX IMPORT__finaldocs__business__strategy__dopemux_business_strategy
+title: Docs  Dmpx Import  Finaldocs  Business  Strategy  Dopemux Business Strategy
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Dmpx Import  Finaldocs  Business  Strategy  Dopemux Business Strategy
+  (explanation) for dopemux documentation and developer workflows.
+---
 # Dopemux Business Strategy
 ## Blue Ocean Market Leadership in Neurodivergent Technology
 

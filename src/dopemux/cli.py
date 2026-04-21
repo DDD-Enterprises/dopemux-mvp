@@ -2654,7 +2654,7 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
             "🧠 Attention Metrics",
             ("Metric", {"style": "mint"}),
             ("Value", {"style": "mint.soft"}),
-            ("Status", {"style": "gold"}),
+            ("Status", {"style": "yellow"}),
         )
 
         table.add_row(
@@ -2712,7 +2712,7 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
                 "📋 Task Progress",
                 ("Task", {"style": "mint"}),
                 ("Status", {"style": "mint.soft"}),
-                ("Progress", {"style": "gold"}),
+                ("Progress", {"style": "yellow"}),
             )
 
             for task in progress_info.get("tasks", []):
@@ -2963,7 +2963,7 @@ def task(
         table = styled_table(
             f"{Glyphs.INFO} Current Tasks",
             ("Task", {"style": "mint"}),
-            ("Priority", {"style": "gold"}),
+                ("Priority", {"style": "yellow"}),
             ("Duration", {"style": "mint.soft"}),
             ("Status", {"style": "violet"}),
         )
@@ -3864,16 +3864,13 @@ def _check_dangerous_mode_expiry():
     return False
 
 
-@cli.command("backup")
-@click.option("--dest", help="Destination directory for tar backups (defaults to docker/mcp-servers/backups/volumes_<timestamp>)")
-@click.option("--pattern", help="Regex to filter volume names (default: ^(mcp_|dopemux_))")
-@click.option("--no-pull", is_flag=True, help="Do not pull alpine image if missing")
-@click.option("--schedule", type=click.Choice(["daily", "weekly"]), help="Print a cron entry to run backups on a schedule")
-@click.option("--apply", is_flag=True, help="Attempt to install the cron entry into your crontab")
+@cli.command("save")
+@click.option("--message", "-m", help="Add a note to the saved context snapshot.")
+@click.option("--force", "-f", is_flag=True, help="Save even if the workspace appears unchanged.")
 @click.pass_context
 def save(ctx, message: Optional[str], force: bool):
     """
-    💾 Archive Context: Save current development mental model
+    💾 Save Current Context
 
     Captures the active state of the flight-deck, including open artifacts, 
     cursor coordinates, and cognitive decisions. Stores this snapshot in 
@@ -3900,6 +3897,9 @@ def save(ctx, message: Optional[str], force: bool):
     )
     if message:
         console.logger.info(f"[text.dim]Note: {message}[/text.dim]")
+
+
+cli.add_command(save, "backup")
 
 
 @cli.command()
@@ -3935,7 +3935,7 @@ def restore(ctx, session: Optional[str], list_sessions: bool):
             "Available Sessions",
             ("ID", {"style": "mint"}),
             ("Timestamp", {"style": "mint.soft"}),
-            ("Goal", {"style": "gold"}),
+            ("Goal", {"style": "yellow"}),
             ("Files", {"justify": "right", "style": "violet"}),
         )
 

@@ -1,3 +1,15 @@
+---
+id: docs__DMPX IMPORT__dopemux-docs__architecture__06-runtime__runtime-view
+title: Docs  Dmpx Import  Dopemux Docs  Architecture  06 Runtime  Runtime View
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Dmpx Import  Dopemux Docs  Architecture  06 Runtime  Runtime View (explanation)
+  for dopemux documentation and developer workflows.
+---
 # Runtime View
 
 **Version**: 1.0

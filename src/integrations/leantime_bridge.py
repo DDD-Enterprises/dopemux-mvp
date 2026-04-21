@@ -15,8 +15,8 @@ from typing import Any, Dict, List, Optional
 from core.config import Config
 from core.exceptions import DopemuxIntegrationError
 from core.monitoring import MetricsCollector
-from utils.adhd_optimizations import ADHDTaskOptimizer
-from utils.security import SecureTokenManager
+from src.utils.adhd_optimizations import ADHDTaskOptimizer
+from src.utils.security import SecureTokenManager
 
 from .leantime_jsonrpc_client import LeantimeJSONRPCClient, create_leantime_client
 

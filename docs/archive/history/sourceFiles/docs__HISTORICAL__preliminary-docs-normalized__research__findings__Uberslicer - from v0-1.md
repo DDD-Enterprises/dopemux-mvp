@@ -1,3 +1,17 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__findings__Uberslicer
+  - from v0-1
+title: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Uberslicer   From
+  V0 1
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Uberslicer   From
+  V0 1 (explanation) for dopemux documentation and developer workflows.
+---
 Terminal dopamine surge incoming. Here’s a **full, no-prisoners breakdown** of everything you need to know (and everything o3 or any LLM dev would need to *own* the code, design, UX, and branding) for **ULTRASLICER** in the context of the 💊 DØPEMÜX system.
 
 ---

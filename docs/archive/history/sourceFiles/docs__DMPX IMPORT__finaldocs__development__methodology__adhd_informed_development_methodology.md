@@ -1,3 +1,16 @@
+---
+id: docs__DMPX IMPORT__finaldocs__development__methodology__adhd_informed_development_methodology
+title: Docs  Dmpx Import  Finaldocs  Development  Methodology  Adhd Informed Development
+  Methodology
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Dmpx Import  Finaldocs  Development  Methodology  Adhd Informed Development
+  Methodology (explanation) for dopemux documentation and developer workflows.
+---
 # ADHD-Informed Development Methodology
 ## The World's First Evidence-Based Development Framework for Neurodivergent Teams
 
