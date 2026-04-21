@@ -93,3 +93,24 @@ class DuplicateDetector:
                 e.is_latest_version = ordinal == last_idx
 
         return chains_found
+
+    def detect(self, entries: list[FileEntry]) -> dict[str, dict[str, list]]:
+        """Compatibility wrapper returning grouped duplicate and version chain data."""
+        self.detect_duplicates(entries)
+        self.detect_version_chains(entries)
+
+        groups: dict[str, list[str]] = {}
+        chains: dict[str, list[dict[str, object]]] = {}
+        for entry in entries:
+            if entry.duplicate_group_id:
+                groups.setdefault(entry.duplicate_group_id, []).append(entry.rel_path)
+            if entry.version_chain_id:
+                chains.setdefault(entry.version_chain_id, []).append(
+                    {
+                        "path": entry.rel_path,
+                        "ordinal": entry.version_ordinal,
+                        "is_latest": entry.is_latest_version,
+                    }
+                )
+
+        return {"groups": groups, "chains": chains}
