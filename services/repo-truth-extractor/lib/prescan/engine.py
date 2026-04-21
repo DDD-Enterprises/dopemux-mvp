@@ -31,11 +31,12 @@ class PrescanEngine:
         self.walker = CorpusWalker(config)
         self.classifier = FileClassifier(config)
         self.enricher = GitEnricher(config)
+        self.git_enricher = self.enricher
         self.detector = DuplicateDetector(config)
+        self.duplicate_detector = self.detector
         self.code_scanner = CodePrescan(config)
         self.dep_graph = DependencyGraph()
         self.cost_estimator = CostEstimator(config)
-        self.batch_planner = BatchPlanner(config, self.cost_estimator, self.dep_graph)
         self.grok_runner = GrokPassRunner(config, limiter=limiter)
 
     def run(self, passes: list[str] | None = None, incremental: bool = False) -> PrescanResult:
@@ -74,7 +75,10 @@ class PrescanEngine:
                 try:
                     code_entries = [e for e in entries if e.include and e.extension in self.config.code_languages]
                     code_intel = self.code_scanner.scan([e.rel_path for e in code_entries])
-                    self.dep_graph.build(code_intel)
+                    self.dep_graph.build_from_code_intelligence(
+                        code_intel,
+                        [e.to_dict() for e in entries],
+                    )
                 except Exception as e:
                     logger.warning(f"Code intelligence failed: {e}")
                     warnings.append(f"Code intelligence failed: {e}")
@@ -93,9 +97,14 @@ class PrescanEngine:
                 # 7a. Batch planning
                 logger.info("Planning token-aware batches...")
                 manifest = [e.to_dict() for e in entries]
-                batch_plans = self.batch_planner.plan(passes, intelligence, manifest)
+                planner = BatchPlanner(self.config, entries, manifest)
+                batch_plans = {
+                    pass_id: planner.plan_batches(pass_id, intelligence)
+                    for pass_id in passes
+                }
                 
                 # Save batch plan
+                self.config.output_dir.mkdir(parents=True, exist_ok=True)
                 batch_plan_path = self.config.output_dir / "batch_plan.json"
                 batch_plan_path.write_text(
                     json.dumps({p: bp.to_dict() for p, bp in batch_plans.items()}, indent=2) + "\n"
@@ -106,7 +115,7 @@ class PrescanEngine:
                 routing_plan = None
                 try:
                     catalog_data = build_provider_model_catalog(self.config)
-                    routing_plan = build_prescan_routing_plan(self.config, passes, batch_plans, catalog_data)
+                    routing_plan = build_prescan_routing_plan(self.config, catalog_data, passes)
                     
                     # Save routing plan
                     write_routing_plan(self.config.output_dir, routing_plan)
@@ -140,7 +149,7 @@ class PrescanEngine:
                 intelligence_path=intel_path,
                 manifest_path=manifest_path,
                 file_count=len(entries),
-                included_count=sum(1 for e in entries if e.include),
+                code_files_analyzed=len(code_intel),
                 duration_seconds=round(duration, 2),
                 warnings=warnings,
                 errors=errors,
@@ -153,7 +162,9 @@ class PrescanEngine:
             return PrescanResult(
                 success=False,
                 errors=[str(e)],
-                duration_seconds=round(time.time() - start_time, 2)
+                duration_seconds=round(time.time() - start_time, 2),
+                file_count=0,
+                code_files_analyzed=0,
             )
 
         finally:
@@ -178,6 +189,9 @@ class PrescanEngine:
         for e in included:
             by_ext[e.extension] = by_ext.get(e.extension, 0) + 1
 
+        version_chain_ids = {e.version_chain_id for e in entries if e.version_chain_id}
+        compression_candidates = sum(1 for e in entries if e.version_chain_id and not e.is_latest_version)
+
         return {
             "version": "1.0",
             "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
@@ -191,9 +205,19 @@ class PrescanEngine:
                 "total_size_bytes": sum(e.size_bytes for e in included),
                 "corpus_health_score": 100,
             },
-            "lifecycle_distribution": self._get_lifecycle_dist(included),
-            "planned_features": self._find_planned_features(included),
-            "ghost_files": [g.to_dict() for g in ghosts],
+            "lifecycle_distribution": self._get_lifecycle_dist(entries),
+            "planned_features": self._find_planned_features(entries),
+            "ghost_files": [
+                {
+                    "path": g.rel_path,
+                    "deleted_at_sha": g.deleted_at_sha,
+                    "deleted_date": g.deleted_date,
+                    "recovery_source": g.recovery_source,
+                }
+                for g in ghosts
+            ],
+            "version_chain_count": len(version_chain_ids),
+            "compression_potential_files": compression_candidates,
             "code_intelligence": code_intel or [],
             "extraction_hints": {
                 "skip_duplicates": [],
@@ -209,10 +233,10 @@ class PrescanEngine:
 
     def _find_planned_features(self, entries: list[FileEntry]) -> dict[str, list[str]]:
         return {
-            "proposed_adrs": [e.rel_path for e in entries if "ADR" in e.rel_path and e.lifecycle_stage == "stub"],
-            "stub_files": [e.rel_path for e in entries if e.lifecycle_stage == "stub"],
-            "todo_files": [e.rel_path for e in entries if e.lifecycle_stage == "stale"],
-            "draft_docs": [e.rel_path for e in entries if e.authority_class == "historical"],
+            "proposed_adrs": [e.rel_path for e in entries if e.is_proposed_adr],
+            "stub_files": [e.rel_path for e in entries if e.has_stub_methods],
+            "todo_files": [e.rel_path for e in entries if e.has_todo_markers],
+            "draft_docs": [e.rel_path for e in entries if e.is_draft_doc],
         }
 
     def _get_git_sha(self) -> str:

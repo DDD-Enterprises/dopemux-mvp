@@ -146,3 +146,11 @@ class Classifier:
         """Classify all entries in-place."""
         for entry in entries:
             entry.authority_class = self.classify_file(entry)
+
+    def classify(self, entries: list[FileEntry]) -> list[FileEntry]:
+        self.classify_all(entries)
+        return entries
+
+
+class FileClassifier(Classifier):
+    pass
