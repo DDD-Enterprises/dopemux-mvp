@@ -91,7 +91,7 @@ def _pricing(provider: str, model_id: str) -> dict[str, Any]:
 def _load_runner_authority() -> tuple[dict[str, dict[str, list[tuple[str, str, str]]]], dict[str, str]]:
     """Load active routing ladders from run_extraction_v5 without hard dependency."""
     try:
-        from run_extraction_v5 import ACTIVE_ROUTING_LADDERS  # type: ignore
+        from run_extraction_v5 import ACTIVE_ROUTING_LADDERS  # type: ignore[import]
     except Exception:
         return {}, {}
 

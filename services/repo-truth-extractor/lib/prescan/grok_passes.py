@@ -85,9 +85,9 @@ class BatchResponseValidator:
             data = json.loads(response)
             return True, data, ""
         except json.JSONDecodeError as exc:
-            return False, None, f"Invalid JSON: {exc}"
+            return False, None, f"JSON parse error: {exc}"
         except TypeError as exc:
-            return False, None, f"Invalid JSON: {exc}"
+            return False, None, f"Invalid JSON type: {exc}"
 
 class GrokPassRunner:
     def __init__(self, config: PrescanConfig, limiter: Any | None = None):
@@ -197,7 +197,8 @@ class GrokPassRunner:
 
         if provider != "mock":
             raise NotImplementedError(
-                f"Provider call not implemented for provider '{provider}'."
+                f"Provider call not implemented for provider '{provider}'. "
+                "Only 'mock' provider is currently supported."
             )
 
         # Simulate call for explicit mock provider only
