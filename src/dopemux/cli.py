@@ -2121,7 +2121,8 @@ try:
 
     cli.add_command(_use_profile, "switch")
 except ImportError:
-    pass
+    # Optional/legacy profile switch command may be unavailable in some builds.
+    logger.debug("Optional 'switch' command not registered (profile_commands import failed).", exc_info=True)
 
 
 from .commands.decisions_commands import decisions
