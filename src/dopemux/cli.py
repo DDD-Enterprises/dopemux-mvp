@@ -125,15 +125,12 @@ if "-litellm" in sys.argv:
 
 
 from .commands._helpers import (
-    ATTENTION_PROFILE_DEFAULTS,
-    ROLE_SERVER_SERVICE_MAP,
     _build_router_overrides,
     _ensure_role_profile,
     _get_routing_allowlist,
     _invoke_switch_role_script,
     _load_litellm_models,
     _persist_instance_env_exports,
-    _select_model_by_priority,
     _suggest_server_start,
     show_version,
 )
@@ -2556,6 +2553,8 @@ def _check_dangerous_mode_expiry():
 
 
 from .commands.state_commands import restore, save
+cli.add_command(save, "save")
+cli.add_command(save, "save")
 cli.add_command(save, "backup")
 cli.add_command(restore, "restore")
 
@@ -2563,16 +2562,7 @@ cli.add_command(restore, "restore")
 from .commands.instances_commands import instances
 from .commands.personas_commands import personas
 
-@cli.group("native-hooks")
-def native_hooks():
-    """
-    🔗 Protocol Synchronization: Manage Claude Code internal hooks
 
-    Orchestrates the registration and management of high-fidelity internal 
-    hooks. These rituals ensure that Claude Code activity is seamlessly 
-    synchronized with the DØPEMÜX cockpit telemetry.
-    """
-    pass
 
 @native_hooks.command("register")
 @click.option("--global", "is_global", is_flag=True, help="🌐 Global Calibration: Register ritual hooks in the global configuration ledger.")
@@ -2645,9 +2635,7 @@ def native_hooks_register(is_global: bool):
         console.print(f"[info]Dopemux native hooks already registered in {settings_path}[/info]")
 
 
-cli.add_command(instances, "instances")
 cli.add_command(personas, "personas")
-cli.add_command(native_hooks, "native-hooks")
 
 from .commands.hooks_integration_commands import hooks_cmd  # noqa: E402
 cli.add_command(hooks_cmd, "hooks")

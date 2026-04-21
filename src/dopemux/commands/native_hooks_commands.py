@@ -76,8 +76,8 @@ def native_hooks_register(is_global: bool):
     if settings_path.exists():
         try:
             existing = json.loads(settings_path.read_text())
-        except Exception:
-            pass
+        except (json.JSONDecodeError, OSError) as e:
+            logger.warning(f"Failed to load or read native hooks settings: {e}")
 
     if "hooks" not in existing:
         existing["hooks"] = {}
