@@ -17,14 +17,53 @@ AUTHORITY_CLASSES = (
 
 BINARY_EXTENSIONS = frozenset(
     {
-        ".pyc", ".pyo", ".so", ".dylib", ".dll", ".exe", ".png", ".jpg", ".jpeg",
-        ".gif", ".svg", ".ico", ".bmp", ".webp", ".woff", ".woff2", ".ttf",
-        ".eot", ".otf", ".pdf", ".zip", ".tar", ".gz", ".bz2", ".xz", ".7z",
-        ".rar", ".mp3", ".mp4", ".wav", ".avi", ".mov", ".mkv", ".sqlite",
-        ".db", ".sqlite3", ".pickle", ".pkl", ".npy", ".npz", ".wasm", ".o",
-        ".a", ".lib",
+        ".pyc",
+        ".pyo",
+        ".so",
+        ".dylib",
+        ".dll",
+        ".exe",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".gif",
+        ".svg",
+        ".ico",
+        ".bmp",
+        ".webp",
+        ".woff",
+        ".woff2",
+        ".ttf",
+        ".eot",
+        ".otf",
+        ".pdf",
+        ".zip",
+        ".tar",
+        ".gz",
+        ".bz2",
+        ".xz",
+        ".7z",
+        ".rar",
+        ".mp3",
+        ".mp4",
+        ".wav",
+        ".avi",
+        ".mov",
+        ".mkv",
+        ".sqlite",
+        ".db",
+        ".sqlite3",
+        ".pickle",
+        ".pkl",
+        ".npy",
+        ".npz",
+        ".wasm",
+        ".o",
+        ".a",
+        ".lib",
     }
 )
+
 
 class Classifier:
     def __init__(self, config: PrescanConfig):
@@ -146,3 +185,11 @@ class Classifier:
         """Classify all entries in-place."""
         for entry in entries:
             entry.authority_class = self.classify_file(entry)
+
+
+class FileClassifier(Classifier):
+    """Compatibility wrapper used by PrescanEngine."""
+
+    def classify(self, entries: list[FileEntry]) -> list[FileEntry]:
+        self.classify_all(entries)
+        return entries
