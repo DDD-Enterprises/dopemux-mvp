@@ -54,3 +54,15 @@ async def test_ast_engine_navigation_surfaces(tmp_path: Path):
     locations = [(item["file"], item["line"]) for item in matches["results"]]
     assert ("pkg/helpers.py", 1) in locations
     assert ("pkg/main.py", 1) in locations
+
+
+@pytest.mark.asyncio
+async def test_ast_engine_search_pattern_validation(tmp_path: Path):
+    _write(tmp_path / "pkg" / "main.py", "value = 1\n")
+    engine = ASTEngine(tmp_path, "ws-test")
+
+    with pytest.raises(ValueError, match="non-empty"):
+        await engine.search_pattern("   ")
+
+    with pytest.raises(ValueError, match="Invalid regex pattern"):
+        await engine.search_pattern("(", use_regex=True)
