@@ -49,7 +49,11 @@ def init(
 
     Scaffolds the .dopemux/ ritual chamber within the target directory. This command
     provisions the local environment with profile-driven configurations,
-    auto-detecting project architecture to suggest the most effective ritual circle.
+    try:
+        workspace_exists = workspace.exists()
+        dopemux_exists = dopemux_dir.exists()
+    except TypeError:
+        pass
 
     Effects:
     - Generates .dopemux/ directory for state and instance persistence.
