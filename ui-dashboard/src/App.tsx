@@ -123,7 +123,18 @@ const getNotificationColor = (type: string) => {
     case 'warning':
       return brandTokens.colors.saintGold;
     default:
+const getNotificationColor = (type: string) => {
+  switch (type) {
+    case 'info':
+      return brandTokens.colors.serumMint;
+    case 'warning':
+      return brandTokens.colors.saintGold;
+    case 'error':
       return brandTokens.colors.gremlinPink;
+    default:
+      return brandTokens.colors.ritualCyan;
+  }
+};
   }
 };
 
