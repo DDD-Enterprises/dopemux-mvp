@@ -35,13 +35,18 @@ def test_prescan_spend_gate_blocks_online_without_flag(mock_config, mock_limiter
         with pytest.raises(SecurityViolation):
             runner._call_grok("dedup", "payload", candidate, MagicMock())
 
-def test_prescan_spend_gate_allows_mock_without_flag(mock_config, mock_limiter):
-    runner = GrokPassRunner(mock_config, limiter=mock_limiter)
+def test_prescan_spend_gate_allows_mock_without_flag(mock_config):
+    limiter = MagicMock(spec=ProviderLimiter)
+    limiter.acquire.return_value = 0.0
+    runner = GrokPassRunner(mock_config, limiter=limiter)
     candidate = {"provider": "mock", "model_id": "mock-model", "api_key_env": "MOCK_KEY"}
     
-    response = runner._call_grok("dedup", "payload", candidate, MagicMock())
+    attempt = MagicMock()
+    response = runner._call_grok("dedup", "payload", candidate, attempt, est_tokens=25)
     assert isinstance(response, dict)
     assert response.get("status") == "ok"
+    assert response.get("pass_id") == "dedup"
+    limiter.acquire.assert_called_once_with(25)
 
 def test_prescan_route_divergence_recorded(mock_config, mock_limiter):
     mock_config.allow_online_llm = True

@@ -12,6 +12,7 @@ if str(SERVICE_ROOT) not in sys.path:
 
 from lib.prescan.classifier import Classifier
 from lib.prescan.corpus_walker import CorpusWalker
+from lib.prescan.engine import _entry_matches_code_language
 from lib.prescan.models import FileEntry, PrescanConfig
 
 
@@ -120,6 +121,16 @@ def test_classifier_detects_draft_and_adr(tmp_path: Path) -> None:
 
     archive_entry = next(e for e in entries if "archive" in e.rel_path)
     assert archive_entry.authority_class == "historical"
+
+
+def test_code_language_alias_matching() -> None:
+    py_entry = FileEntry(rel_path="src/main.py", size_bytes=20, extension=".py")
+    tsx_entry = FileEntry(rel_path="ui/app.tsx", size_bytes=20, extension=".tsx")
+    txt_entry = FileEntry(rel_path="docs/readme.txt", size_bytes=20, extension=".txt")
+
+    assert _entry_matches_code_language(py_entry, ["python"]) is True
+    assert _entry_matches_code_language(tsx_entry, ["typescript"]) is True
+    assert _entry_matches_code_language(txt_entry, ["python", "typescript"]) is False
 
 
 
