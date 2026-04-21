@@ -8,7 +8,6 @@ from lib.prescan.models import PrescanConfig
 from lib.prescan.grok_passes import (
     GrokPassRunner, 
     SecurityViolation, 
-    RoutingExhausted, 
     ExecutionEvidence,
     ExecutionAttempt
 )
