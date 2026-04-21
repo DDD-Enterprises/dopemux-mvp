@@ -25,6 +25,10 @@ logger = logging.getLogger(__name__)
 @click.option("--message", "-m", help="ðŸ’¾ Context Note: Add a descriptive label to the archive.")
 @click.option("--force", "-f", is_flag=True, help="âš¡ Force Extraction: Overwrite existing temporal coordinates.")
 @click.pass_context
+@click.command("save")
+@click.option("--message", "-m", help="💾 Context Note: Add a descriptive label to the archive.")
+@click.option("--force", "-f", is_flag=True, help="⚡ Force Extraction: Overwrite existing temporal coordinates.")
+@click.pass_context
 def save(ctx, message: Optional[str], force: bool):
     """
     💾 Archive Context: Save current development mental model
