@@ -166,6 +166,6 @@ def hooks_cmd(
 
     except Exception as e:
         console.logger.error(f"[error]❌ Hook command failed: {e}[/error]")
-        if ctx.obj.get("verbose"):
+        if (ctx.obj or {}).get("verbose"):
             raise
         sys.exit(1)
