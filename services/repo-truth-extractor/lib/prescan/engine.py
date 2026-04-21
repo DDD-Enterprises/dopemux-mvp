@@ -106,7 +106,7 @@ class PrescanEngine:
                 routing_plan = None
                 try:
                     catalog_data = build_provider_model_catalog(self.config)
-                    routing_plan = build_prescan_routing_plan(self.config, passes, batch_plans, catalog_data)
+                    routing_plan = build_prescan_routing_plan(self.config, passes, batch_plans)
                     
                     # Save routing plan
                     write_routing_plan(self.config.output_dir, routing_plan)
