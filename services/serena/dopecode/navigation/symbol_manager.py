@@ -15,7 +15,24 @@ class SymbolID:
     @classmethod
     def parse(cls, symbol_id_str: str) -> SymbolID:
         """Parse string format: <workspace>::<file_path>::<symbol_name>::<line>"""
+    @classmethod
+    def parse(cls, symbol_id_str: str) -> SymbolID:
+        """Parse string format: <workspace>::<file_path>::<symbol_name>::<line>"""
         parts = symbol_id_str.split("::")
+        if len(parts) < 4:
+            raise ValueError(f"Invalid SymbolID format: {symbol_id_str}")
+        # Handle cases where components might contain '::' if possible, 
+        # or at least ensure we take the last part as the line number.
+        line = int(parts[-1])
+        symbol_name = parts[-2]
+        workspace_id = parts[0]
+        file_path = "::".join(parts[1:-2])
+        return cls(
+            workspace_id=workspace_id,
+            file_path=file_path,
+            symbol_name=symbol_name,
+            line=line
+        )
         if len(parts) != 4:
             raise ValueError(f"Invalid SymbolID format: {symbol_id_str}")
         return cls(
