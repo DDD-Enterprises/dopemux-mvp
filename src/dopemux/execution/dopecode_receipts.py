@@ -58,10 +58,14 @@ def _validate_event(
         raise DopeCodeReceiptReadError(f"Unsupported execution receipt event type: {event['event_type']!r}")
     workspace_id = str(event["workspace_id"]).strip()
     if not workspace_id:
-        raise DopeCodeReceiptReadError("Execution receipt workspace_id must be non-empty")
+        raise DopeCodeReceiptReadError(
+            "Execution receipt workspace_id must be non-empty "
+            f"(got: {event['workspace_id']!r}, after strip: {workspace_id!r})"
+        )
     if expected_workspace_id is not None and workspace_id != expected_workspace_id:
         raise DopeCodeReceiptReadError(
-            f"Execution receipt workspace_id mismatch: {event['workspace_id']!r}"
+            "Execution receipt workspace_id mismatch: "
+            f"expected {expected_workspace_id!r}, got {workspace_id!r}"
         )
     if Path(event["workspace_root"]).resolve() != workspace_root.resolve():
         raise DopeCodeReceiptReadError(
