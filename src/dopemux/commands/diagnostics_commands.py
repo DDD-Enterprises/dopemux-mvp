@@ -264,8 +264,8 @@ def health(
                         try:
                             os.kill(int(pid), signal.SIGTERM)
                             killed += 1
-                        except (OSError, ValueError):
-                            pass
+                        except (OSError, ValueError) as e:
+                            logger.debug("Failed to terminate PID %s: %s", pid, e)
 
                     console.print(
                         f"[success]✅ Cleaned up {killed} orphaned processes[/success]"
