@@ -40,6 +40,8 @@ class SymbolManager:
 
     def resolve_path(self, relative_path: str) -> Path:
         full_path = (self.workspace_root / relative_path).resolve()
-        if not str(full_path).startswith(str(self.workspace_root)):
+        try:
+            full_path.relative_to(self.workspace_root)
+        except ValueError:
             raise ValueError(f"Path traversal detected: {relative_path}")
         return full_path
