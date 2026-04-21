@@ -238,6 +238,62 @@ def test_upgrades_run_forwards_promptset_root() -> None:
     assert "--promptset-root" in kwargs["args"]
     assert "." in kwargs["args"]
 
+
+def test_upgrades_run_rejects_prescan_flags_for_v4() -> None:
+    runner = CliRunner()
+
+    result = runner.invoke(
+        cli,
+        [
+            "upgrades",
+            "run",
+            "--pipeline-version",
+            "v4",
+            "--phase",
+            "A",
+            "--dry-run",
+            "--skip-prescan",
+        ],
+    )
+
+    assert result.exit_code != 0
+    assert "only supported with --version v5" in result.output
+
+
+def test_upgrades_run_forwards_prescan_flags_for_v5() -> None:
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        os.makedirs("prescan", exist_ok=True)
+        with patch("dopemux.cli._run_extractor_runner") as mocked:
+            result = runner.invoke(
+                cli,
+                [
+                    "upgrades",
+                    "run",
+                    "--pipeline-version",
+                    "v5",
+                    "--phase",
+                    "A",
+                    "--dry-run",
+                    "--skip-prescan",
+                    "--prescan-import-dir",
+                    "prescan",
+                    "--prescan-online",
+                    "--prescan-allow-scope-reduction",
+                    "--allow-online-llm",
+                ],
+            )
+
+    assert result.exit_code == 0, result.output
+    args = mocked.call_args.kwargs["args"]
+    assert "--skip-prescan" in args
+    assert "--prescan-import-dir" in args
+    assert "prescan" in args
+    assert "--prescan-online" in args
+    assert "--prescan-allow-scope-reduction" in args
+    assert "--allow-online-llm" in args
+
+
 def test_upgrades_run_rejects_openrouter_batch_provider_choice() -> None:
     runner = CliRunner()
     result = runner.invoke(

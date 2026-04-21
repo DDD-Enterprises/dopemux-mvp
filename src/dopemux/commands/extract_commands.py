@@ -895,6 +895,31 @@ def _hygiene_severity_color(level: str) -> str:
     is_flag=True,
     help="🚀 Force the extraction ritual to proceed even if hygiene diagnostics report critical errors.",
 )
+@click.option(
+    "--skip-prescan",
+    is_flag=True,
+    help="⏩ Skip the integrated Stage 0 prescan.",
+)
+@click.option(
+    "--prescan-import-dir",
+    type=str,
+    help="📥 Import precomputed prescan artifacts from an external directory.",
+)
+@click.option(
+    "--prescan-online",
+    is_flag=True,
+    help="📡 Authorize online LLM passes during the integrated prescan stage.",
+)
+@click.option(
+    "--prescan-allow-scope-reduction",
+    is_flag=True,
+    help="⚖️  Allow prescan intelligence to reduce the extraction scope based on duplicate/noise hints.",
+)
+@click.option(
+    "--allow-online-llm",
+    is_flag=True,
+    help="💸 Authorize online LLM spend for the entire ritual run (including prescan).",
+)
 @click.pass_context
 def truth_run(
     ctx,
@@ -908,6 +933,11 @@ def truth_run(
     skip_hygiene: bool,
     apply_cleanup: bool,
     force: bool,
+    skip_prescan: bool,
+    prescan_import_dir: Optional[str],
+    prescan_online: bool,
+    prescan_allow_scope_reduction: bool,
+    allow_online_llm: bool,
 ):
     """🔬 Ritual Daemon: Full extraction workflow — Hygiene scan → Optional cleanup → v5 Extraction execution.
 
@@ -1013,6 +1043,11 @@ def truth_run(
         routing_policy=routing_policy,
         doctor=doctor,
         resume=resume,
+        skip_prescan=skip_prescan,
+        prescan_import_dir=prescan_import_dir,
+        prescan_online=prescan_online,
+        prescan_allow_scope_reduction=prescan_allow_scope_reduction,
+        allow_online_llm=allow_online_llm,
     )
 
     resume_indicator = " [success]+resume[/success]" if resume else ""
@@ -1163,6 +1198,11 @@ def _build_truth_run_command(
     routing_policy: str,
     doctor: bool,
     resume: bool,
+    skip_prescan: bool = False,
+    prescan_import_dir: Optional[str] = None,
+    prescan_online: bool = False,
+    prescan_allow_scope_reduction: bool = False,
+    allow_online_llm: bool = False,
 ) -> tuple[Optional[str], str, list[str]]:
     """Build the v5 runner command while preserving latest-run resume semantics."""
     effective_run_id: Optional[str]
@@ -1190,6 +1230,19 @@ def _build_truth_run_command(
         cmd.append("--doctor")
     if resume:
         cmd.append("--resume")
+    
+    # ── Integrated Prescan Flags ──
+    if skip_prescan:
+        cmd.append("--skip-prescan")
+    if prescan_import_dir:
+        cmd.extend(["--prescan-import-dir", prescan_import_dir])
+    if prescan_online:
+        cmd.append("--prescan-online")
+    if prescan_allow_scope_reduction:
+        cmd.append("--prescan-allow-scope-reduction")
+    if allow_online_llm:
+        cmd.append("--allow-online-llm")
+        
     return effective_run_id, display_run_id, cmd
 
 

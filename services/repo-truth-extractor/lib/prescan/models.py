@@ -9,9 +9,13 @@ class FileEntry:
     rel_path: str
     size_bytes: int
     extension: str
+    include: bool = True
     authority_class: str = "unknown"
     lifecycle_stage: str = "active"
     is_ghost: bool = False
+    exclude_reason: str | None = None
+    content_hash: str | None = None
+    directory_class: str = "root"
     git_metadata: dict = field(default_factory=dict)
     code_intel: dict = field(default_factory=dict)
 
@@ -30,6 +34,18 @@ class PrescanConfig:
         "docs/archive/**",
         "docs/archive/completed-projects/**"
     ])
+    include_globs: list[str] = field(default_factory=lambda: [
+        "**",
+    ])
+    exclude_globs: list[str] = field(default_factory=lambda: [
+        "node_modules/**",
+        ".venv/**",
+        "venv/**",
+        "__pycache__/**",
+        ".git/**",
+        "dist/**",
+        "build/**",
+    ])
     
     # ── Enrichment ──
     enable_code_prescan: bool = True
@@ -40,11 +56,15 @@ class PrescanConfig:
     incremental: bool = False
     incremental_baseline: str | None = None
     allow_online_llm: bool = False
+    online_authorized: bool | None = None
     allow_scope_reduction: bool = False
     
     # ── Batching ──
     batch_mode: bool = True
     max_tokens_per_batch: int = 1_500_000
+    chars_per_token: float = 4.0
+    max_file_size: int = 5_000_000
+    large_json_threshold: int = 1_000_000
     
     # ── Model & Provider ──
     provider: str = "xai"
@@ -57,12 +77,16 @@ class PrescanConfig:
     cost_estimate: bool = True
     verbose: bool = False
 
+    def __post_init__(self) -> None:
+        if self.online_authorized is not None:
+            self.allow_online_llm = self.online_authorized
+
 @dataclass
 class PrescanResult:
     success: bool
     duration_seconds: float
-    file_count: int
-    code_files_analyzed: int
+    file_count: int = 0
+    code_files_analyzed: int = 0
     intelligence_path: Path | None = None
     manifest_path: Path | None = None
     code_graph_path: Path | None = None
