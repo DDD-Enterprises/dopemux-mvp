@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 import json
 
 from .symbol_manager import SymbolManager, SymbolID
