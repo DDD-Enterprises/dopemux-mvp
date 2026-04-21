@@ -35,7 +35,7 @@ class PrescanEngine:
         self.code_scanner = CodePrescan(config)
         self.dep_graph = DependencyGraph()
         self.cost_estimator = CostEstimator(config)
-        self.batch_planner = BatchPlanner(config)
+        self.batch_planner = BatchPlanner(config, self.cost_estimator, self.dep_graph)
         self.grok_runner = GrokPassRunner(config, limiter=limiter)
 
     def run(self, passes: list[str] | None = None, incremental: bool = False) -> PrescanResult:
