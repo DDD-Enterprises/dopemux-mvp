@@ -86,7 +86,8 @@ class BatchResponseValidator:
             return True, data, ""
         except json.JSONDecodeError as exc:
             preview = str(response)[:200].replace("\n", "\\n")
-            return False, None, f"JSON parse error at pos {exc.pos}: {exc}; preview={preview}"
+            pos = getattr(exc, "pos", "unknown")
+            return False, None, f"JSON parse error at pos {pos}: {exc}; preview={preview}"
         except TypeError as exc:
             preview = str(response)[:200].replace("\n", "\\n")
             return False, None, f"Invalid JSON type: {exc}; preview={preview}"
