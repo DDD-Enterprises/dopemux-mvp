@@ -217,17 +217,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           variant="h6"
           ref={headerRef}
           tabIndex={-1}
-          sx={{
-            letterSpacing: '0.16em',
-            outline: 'none',
-            borderRadius: 1,
-            '&:focus': {
-              boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}`,
-            },
-            '&:focus-visible': {
-              boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}`,
-            },
-          }}
+          sx={{ letterSpacing: '0.16em', outline: 'none' }}
         >
           Task Sequencer
         </Typography>
@@ -349,12 +339,18 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           </Box>
           <Tooltip title="Current task progress based on estimate" arrow>
             <Box
+              tabIndex={0}
               sx={{
                 mb: 2.5,
+                outline: 'none',
+                cursor: 'help',
+                '&:focus-visible': {
+                  borderRadius: 1,
+                  boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}`,
+                },
               }}
             >
               <LinearProgress
-                tabIndex={0}
                 variant="determinate"
                 value={Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100)}
                 sx={{
@@ -578,7 +574,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                   <Button
                     size="small"
                     variant="outlined"
-                    startIcon={<Play aria-hidden="true" focusable={false} />}
+                    startIcon={<Play />}
                     onClick={() => startTask(task.id)}
                     aria-label={`Start task: ${task.title}`}
                   >
