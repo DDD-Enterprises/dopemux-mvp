@@ -1,3 +1,15 @@
+---
+id: docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-000-index
+title: Docs  Dmpx Import  Dopemux Docs  Architecture  09 Decisions  Adr 000 Index
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Dmpx Import  Dopemux Docs  Architecture  09 Decisions  Adr 000 Index
+  (explanation) for dopemux documentation and developer workflows.
+---
 # Architecture Decision Records (ADR) Index
 
 ## Overview

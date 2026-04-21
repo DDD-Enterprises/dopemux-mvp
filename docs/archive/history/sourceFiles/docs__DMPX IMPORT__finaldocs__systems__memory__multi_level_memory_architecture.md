@@ -1,3 +1,15 @@
+---
+id: docs__DMPX IMPORT__finaldocs__systems__memory__multi_level_memory_architecture
+title: Docs  Dmpx Import  Finaldocs  Systems  Memory  Multi Level Memory Architecture
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Dmpx Import  Finaldocs  Systems  Memory  Multi Level Memory Architecture
+  (explanation) for dopemux documentation and developer workflows.
+---
 # Multi-Level Memory Architecture
 
 **Version**: 1.0

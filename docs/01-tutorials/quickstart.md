@@ -1,10 +1,22 @@
+---
+id: dopemux-quickstart
+title: Dopemux MVP Quick Start
+type: tutorial
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Shortest credible path to running the Dopemux multi-system stack locally.
+---
+
 # ━━━◆ Ø ◆━━━
 
 Status: [LIVE] Quick Start Ready
 
 # Dopemux MVP Quick Start
 
-This guide provides the shortest credible path to running the Dopemux multi-system stack locally. 
+This guide provides the shortest credible path to running the Dopemux multi-system stack locally.
 
 Because Dopemux is a composed workspace and not a single monolithic application, starting the stack involves spinning up a set of interacting services.
 

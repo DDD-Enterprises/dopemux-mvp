@@ -1,3 +1,17 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__findings__Dopemux UI
+  Spec (tmux + Ink)
+title: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Dopemux
+  Ui Spec (Tmux + Ink)
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Dopemux
+  Ui Spec (Tmux + Ink) (explanation) for dopemux documentation and developer workflows.
+---
 Dopemux UI Spec (tmux + Ink)
 
 0) TL;DR decisions
