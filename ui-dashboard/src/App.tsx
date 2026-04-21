@@ -23,6 +23,7 @@ import { Bell, Brain, Droplet, Eye, Trash2, TrendingUp, Zap } from 'lucide-react
 
 import { dashboardApiHeaders, dashboardApiUrl, dashboardWsUrl } from './config';
 import CognitiveLoadGauge from './components/CognitiveLoadGauge';
+import { getNotificationColor } from './notificationColors';
 import PredictionPanel from './components/PredictionPanel';
 import TaskSequencer from './components/TaskSequencer';
 import TeamDashboard from './components/TeamDashboard';
@@ -115,24 +116,6 @@ function mapRealtimeState(message: Record<string, unknown>): CognitiveState | nu
     recommendation: String(data.recommendation || 'No active recommendation'),
   };
 }
-
-const getNotificationColor = (type: string) => {
-  switch (type) {
-    case 'decision':
-    case 'progress':
-    case 'break':
-    case 'session':
-    case 'info':
-      return brandTokens.colors.serumMint;
-    case 'hyperfocus':
-    case 'warning':
-      return brandTokens.colors.saintGold;
-    case 'error':
-      return brandTokens.colors.gremlinPink;
-    default:
-      return brandTokens.colors.ritualCyan;
-  }
-};
 
 function App() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
