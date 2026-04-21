@@ -4824,6 +4824,18 @@ def extractor_run(
     effective_version = _resolved_pipeline_version(
         pipeline_version, engine_version_legacy
     )
+    if effective_version != "v5" and any(
+        [
+            skip_prescan,
+            bool(prescan_import_dir),
+            prescan_online,
+            prescan_allow_scope_reduction,
+            allow_online_llm,
+        ]
+    ):
+        raise click.UsageError(
+            "Prescan flags are only supported with --version v5."
+        )
     effective_routing_policy = routing_policy or (
         _V5_DEFAULT_ROUTING_POLICY
         if effective_version == "v5"
@@ -4878,17 +4890,18 @@ def extractor_run(
     if effective_version == "v4":
         args.extend(["--sync" if sync else "--no-sync"])
     
-    # ── Integrated Prescan Flags ──
-    if skip_prescan:
-        args.append("--skip-prescan")
-    if prescan_import_dir:
-        args.extend(["--prescan-import-dir", prescan_import_dir])
-    if prescan_online:
-        args.append("--prescan-online")
-    if prescan_allow_scope_reduction:
-        args.append("--prescan-allow-scope-reduction")
-    if allow_online_llm:
-        args.append("--allow-online-llm")
+    # ── Integrated Prescan Flags (v5 only) ──
+    if effective_version == "v5":
+        if skip_prescan:
+            args.append("--skip-prescan")
+        if prescan_import_dir:
+            args.extend(["--prescan-import-dir", prescan_import_dir])
+        if prescan_online:
+            args.append("--prescan-online")
+        if prescan_allow_scope_reduction:
+            args.append("--prescan-allow-scope-reduction")
+        if allow_online_llm:
+            args.append("--allow-online-llm")
 
     _run_extractor_runner(pipeline_version=effective_version, args=args)
 

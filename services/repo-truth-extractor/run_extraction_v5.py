@@ -1338,7 +1338,6 @@ class RunnerConfig:
     webhook_required: bool = False
     webhook_auto_continue: bool = False
     live_ok: bool = False
-    max_cost_usd: Optional[float] = None
     selected_s_steps: Optional[Tuple[str, ...]] = None
     selected_execution_step: Optional[str] = None
     d0_max_files: Optional[int] = None
@@ -6394,6 +6393,7 @@ def run_integrated_prescan_stage(
                 _write_prescan_receipt(prescan_output_dir, "imported", cfg)
                 return router
         logger.warning(f"Failed to import prescan from {cfg.prescan_import_dir}")
+        _write_prescan_receipt(prescan_output_dir, "failed", cfg)
         return None
 
     # 2. Run local prescan
@@ -6402,6 +6402,7 @@ def run_integrated_prescan_stage(
         from lib.prescan.models import PrescanConfig as LibPrescanConfig
     except ImportError as e:
         logger.warning(f"Prescan library not available: {e}")
+        _write_prescan_receipt(prescan_output_dir, "unavailable", cfg)
         return None
 
     logger.info("🔭 Stage 0: Integrated Prescan starting...")
@@ -6410,7 +6411,7 @@ def run_integrated_prescan_stage(
     lib_cfg = LibPrescanConfig(
         repo_root=root,
         output_dir=prescan_output_dir,
-        online_authorized=cfg.prescan_online or cfg.allow_online_llm or cfg.live_ok,
+        online_authorized=cfg.prescan_online or cfg.allow_online_llm,
         allow_scope_reduction=cfg.prescan_allow_scope_reduction,
         verbose=True,
     )
@@ -6434,16 +6435,19 @@ def run_integrated_prescan_stage(
 def _write_prescan_receipt(
     output_dir: Path, mode: str, cfg: RunnerConfig, result: Any = None
 ) -> None:
+    status = "success"
+    if mode == "failed":
+        status = "failed"
+    elif mode == "unavailable":
+        status = "unavailable"
     receipt = {
         "stage": "prescan",
-        "status": "success" if mode != "failed" else "failed",
+        "status": status,
         "mode": mode,
-        "online_authorized": bool(
-            cfg.prescan_online or cfg.allow_online_llm or cfg.live_ok
-        ),
+        "online_authorized": bool(cfg.prescan_online or cfg.allow_online_llm),
         "artifacts_dir": str(output_dir.resolve()),
         "scope_reduction_applied": bool(cfg.prescan_allow_scope_reduction),
-        "router_loaded": mode != "failed",
+        "router_loaded": mode in {"integrated", "imported"},
         "generated_at": now_iso(),
     }
     if result:
@@ -18249,7 +18253,20 @@ def main() -> None:
             args, raw_argv
         )
     if args.max_cost_usd is not None and args.max_cost_usd <= 0:
-router = None
+        parser.error("--max-cost-usd must be > 0 when provided.")
+
+    router = None
+    if args.prescan_import_dir:
+        if IntelligenceRouter:
+            router = IntelligenceRouter.from_dir(Path(args.prescan_import_dir))
+            if router:
+                logger.info(f"Initialized IntelligenceRouter from {args.prescan_import_dir}")
+            else:
+                logger.warning(
+                    f"Failed to initialize IntelligenceRouter from {args.prescan_import_dir}"
+                )
+        else:
+            logger.warning(
                 "IntelligenceRouter class not available, skipping imported prescan logic."
             )
 
@@ -18769,7 +18786,7 @@ router = None
         )
 
     # Stage 0: Integrated Prescan
-    if not cfg.prescan_skip and not cfg.prescan_import_dir:
+    if not cfg.prescan_skip:
         integrated_router = run_integrated_prescan_stage(root, dirs["root"], cfg)
         if integrated_router:
             cfg = replace(cfg, router=integrated_router)
@@ -18783,7 +18800,6 @@ router = None
     if _active_profile:
         logger.info(
             "Loaded profile: %s (v%s)",
-if not cfg.prescan_skip:
             _active_profile.get("version", "?"),
         )
         # Apply budget overrides conservatively when the caller kept default limits.

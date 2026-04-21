@@ -1,8 +1,14 @@
 import pytest
 import os
 import json
-from pathlib import Path
+import sys
 from unittest.mock import MagicMock, patch
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+SERVICE_ROOT = REPO_ROOT / "services" / "repo-truth-extractor"
+if str(SERVICE_ROOT) not in sys.path:
+    sys.path.insert(0, str(SERVICE_ROOT))
 
 from lib.prescan.models import PrescanConfig
 from lib.prescan.grok_passes import GrokPassRunner
