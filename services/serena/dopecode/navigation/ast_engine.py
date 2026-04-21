@@ -103,7 +103,9 @@ class ASTEngine:
             
         target = None
         for element in analysis.elements:
-            if element.name == sym_id.symbol_name and abs(element.start_line - sym_id.line) <= 2:
+        content = abs_path.read_text(encoding='utf-8').splitlines()
+        body = content[target.start_line-1:target.end_line]
+        return "\n".join(body)
                 target = element
                 break
                 
