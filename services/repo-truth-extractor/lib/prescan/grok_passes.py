@@ -2,6 +2,7 @@ import datetime as dt
 import json
 import logging
 import os
+import time
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Any, Optional, List, Dict
@@ -66,11 +67,16 @@ PASS_DESCRIPTIONS = {
     "optimize": "Extraction routing, cost, and compression plan",
 }
 
+_DEDUP_SYSTEM_PROMPT = "You are a deduplication analyst."
+_DISCOVER_SYSTEM_PROMPT = "You are a technical archaeology analyst."
+_FEASIBILITY_SYSTEM_PROMPT = "You are a software feasibility analyst."
+_OPTIMIZE_SYSTEM_PROMPT = "You are an extraction cost optimizer."
+
 PASS_SYSTEM_PROMPTS = {
-    "dedup": "You are a deduplication analyst.",
-    "discover": "You are a technical archaeology analyst.",
-    "feasibility": "You are a software feasibility analyst.",
-    "optimize": "You are an extraction cost optimizer.",
+    "dedup": _DEDUP_SYSTEM_PROMPT,
+    "discover": _DISCOVER_SYSTEM_PROMPT,
+    "feasibility": _FEASIBILITY_SYSTEM_PROMPT,
+    "optimize": _OPTIMIZE_SYSTEM_PROMPT,
 }
 
 class BatchResponseValidator:
@@ -173,7 +179,7 @@ class GrokPassRunner:
         if not self.config.allow_online_llm and provider != "mock":
              raise SecurityViolation("Spend gate blocked call")
         if not api_key:
-            raise ValueError(f"API key missing: {candidate['api_key_env']}")
+            raise ValueError(f"API key not found: {candidate['api_key_env']}")
 
         if self.limiter:
             attempt_record.limiter_wait_ms = self.limiter.acquire(est_tokens) * 1000
