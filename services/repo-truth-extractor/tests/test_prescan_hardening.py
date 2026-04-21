@@ -39,10 +39,9 @@ def test_prescan_spend_gate_allows_mock_without_flag(mock_config, mock_limiter):
     runner = GrokPassRunner(mock_config, limiter=mock_limiter)
     candidate = {"provider": "mock", "model_id": "mock-model", "api_key_env": "MOCK_KEY"}
     
-    # This should NOT raise SecurityViolation because provider is 'mock'
-    # It might raise ValueError because MOCK_KEY is missing, which is fine for this test
-    with pytest.raises(ValueError, match="API key not found"):
-        runner._call_grok("dedup", "payload", candidate, MagicMock())
+    response = runner._call_grok("dedup", "payload", candidate, MagicMock())
+    assert isinstance(response, dict)
+    assert response.get("status") == "ok"
 
 def test_prescan_route_divergence_recorded(mock_config, mock_limiter):
     mock_config.allow_online_llm = True

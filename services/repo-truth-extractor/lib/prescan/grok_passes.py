@@ -19,7 +19,11 @@ class SecurityViolation(RTEPrescanError):
     pass
 
 class RoutingExhausted(RTEPrescanError):
-    """Raised when all candidates in a route ladder fail."""
+    """Represents route-ladder exhaustion when no candidate succeeds.
+
+    Current grok routing may report exhaustion via execution evidence
+    (`final_status="exhausted"`) instead of raising this exception.
+    """
     pass
 
 @dataclass
@@ -67,20 +71,70 @@ PASS_DESCRIPTIONS = {
     "optimize": "Extraction routing, cost, and compression plan",
 }
 
+_DEDUP_SYSTEM_PROMPT = "You are a deduplication analyst."
+_DISCOVER_SYSTEM_PROMPT = "You are a technical archaeology analyst."
+_FEASIBILITY_SYSTEM_PROMPT = "You are a software feasibility analyst."
+_OPTIMIZE_SYSTEM_PROMPT = "You are an extraction cost optimizer."
+
 PASS_SYSTEM_PROMPTS = {
-    "dedup": "You are a deduplication analyst.",
-    "discover": "You are a technical archaeology analyst.",
-    "feasibility": "You are a software feasibility analyst.",
-    "optimize": "You are an extraction cost optimizer.",
+    "dedup": _DEDUP_SYSTEM_PROMPT,
+    "discover": _DISCOVER_SYSTEM_PROMPT,
+    "feasibility": _FEASIBILITY_SYSTEM_PROMPT,
+    "optimize": _OPTIMIZE_SYSTEM_PROMPT,
 }
 
 class BatchResponseValidator:
+    _EXPECTED_TYPES: Dict[str, Dict[str, type]] = {
+        "dedup": {
+            "duplicate_assessments": list,
+            "version_chain_summaries": list,
+            "divergent_pairs": list,
+        },
+        "discover": {
+            "hidden_features": list,
+            "drift_signals": list,
+            "ghost_assessments": list,
+            "rediscovery_candidates": list,
+        },
+        "feasibility": {
+            "planned_features": list,
+            "implementation_blockers": list,
+        },
+        "optimize": {
+            "skip_list": list,
+            "compress_chains": list,
+            "phase_routing_overrides": list,
+            "model_routing_hints": list,
+            "estimated_savings": dict,
+        },
+    }
+
     def validate(self, pass_id: str, response: str) -> tuple[bool, dict | None, str]:
         try:
             data = json.loads(response)
-            return True, data, ""
-        except:
+        except Exception:
             return False, None, "Invalid JSON"
+        if not isinstance(data, dict):
+            return False, None, "Response must be a JSON object"
+        if pass_id == "discover":
+            hidden_features = data.get("hidden_features")
+            if hidden_features is not None and not isinstance(hidden_features, list):
+                return False, None, "hidden_features must be a list"
+            for index, item in enumerate(hidden_features or []):
+                required_fields = {"path", "feature_name", "confidence", "extraction_phase"}
+                if not isinstance(item, dict) or not required_fields.issubset(item):
+                    return False, None, f"hidden_features[{index}] missing required fields"
+        elif pass_id == "optimize":
+            skip_list = data.get("skip_list")
+            if skip_list is not None and not isinstance(skip_list, list):
+                return False, None, "skip_list must be a list"
+        expected = self._EXPECTED_TYPES.get(pass_id, {})
+        for key, expected_type in expected.items():
+            if key not in data:
+                return False, None, f"Missing required key: {key}"
+            if not isinstance(data[key], expected_type):
+                return False, None, f"Invalid type for {key}: expected {expected_type.__name__}"
+        return True, data, ""
 
 class GrokPassRunner:
     def __init__(self, config: PrescanConfig, limiter: Any | None = None):
@@ -110,13 +164,14 @@ class GrokPassRunner:
             if not plan or not plan.batches: continue
 
             for i, batch in enumerate(plan.batches):
+                payload = self._build_batch_payload(pass_id, intelligence, manifest, batch.file_paths)
                 evidence = ExecutionEvidence(
                     pass_id=pass_id,
                     batch_id=batch.batch_id,
                     planned_candidates=(routing_plan or {}).get("candidate_routes", {}).get(pass_id, []),
                     online_authorized=self.config.allow_online_llm
                 )
-                result = self._call_grok_validated(pass_id, "payload", routing_plan, evidence, est_tokens=batch.estimated_tokens)
+                result = self._call_grok_validated(pass_id, payload, routing_plan, evidence, est_tokens=batch.estimated_tokens)
                 self.evidence_log.append(evidence)
                 if result: all_results[f"{pass_id}_{i}"] = result
 
@@ -132,8 +187,13 @@ class GrokPassRunner:
         est_tokens: int = 0,
         max_candidate_retries: int = 1
     ) -> dict | None:
-        candidates = (routing_plan or {}).get("candidate_routes", {}).get(pass_id, [])
-        if not candidates:
+        candidate_routes = (routing_plan or {}).get("candidate_routes")
+        if isinstance(candidate_routes, dict) and pass_id in candidate_routes:
+            candidates = candidate_routes.get(pass_id) or []
+            if not candidates:
+                evidence.final_status = "exhausted"
+                return None
+        else:
             candidates = [{"provider": self.config.provider, "model_id": self.config.model, "api_key_env": self.config.api_key_env}]
 
         for candidate in candidates:
@@ -169,13 +229,14 @@ class GrokPassRunner:
         for pass_id in passes or []:
             if pass_id not in PASS_IDS:
                 continue
+            payload = self._build_batch_payload(pass_id, intel or {}, manifest or [], [])
             evidence = ExecutionEvidence(
                 pass_id=pass_id,
                 batch_id=None,
                 planned_candidates=(routing_plan or {}).get("candidate_routes", {}).get(pass_id, []),
                 online_authorized=self.config.allow_online_llm,
             )
-            result = self._call_grok_validated(pass_id, "payload", routing_plan, evidence)
+            result = self._call_grok_validated(pass_id, payload, routing_plan, evidence)
             self.evidence_log.append(evidence)
             if result:
                 results[pass_id] = result
@@ -186,15 +247,17 @@ class GrokPassRunner:
     def _call_grok(self, pass_id, payload, candidate, attempt_record, est_tokens=0):
         provider = candidate["provider"]
         model_id = candidate["model_id"]
-        api_key = os.environ.get(candidate["api_key_env"])
+        if provider == "mock":
+            if self.limiter:
+                attempt_record.limiter_wait_ms = self.limiter.acquire(est_tokens) * 1000
+            attempt_record.status = "success"
+            return {"status": "ok", "pass_id": pass_id}
 
         if not self.config.allow_online_llm and provider != "mock":
              raise SecurityViolation("Spend gate blocked call")
-        if provider == "mock" and self.config.allow_online_llm:
-            attempt_record.status = "success"
-            return {"status": "mock_success"}
+        api_key = os.environ.get(candidate["api_key_env"])
         if not api_key:
-            raise ValueError(f"API key missing: {candidate['api_key_env']} (API key not found)")
+            raise ValueError(f"API key not found: {candidate['api_key_env']}")
 
         if self.limiter:
             attempt_record.limiter_wait_ms = self.limiter.acquire(est_tokens) * 1000
@@ -227,6 +290,34 @@ class GrokPassRunner:
 
         attempt_record.status = "success"
         return data
+
+    def _build_batch_payload(
+        self,
+        pass_id: str,
+        intelligence: dict[str, Any],
+        manifest: list[dict[str, Any]],
+        file_paths: list[str],
+    ) -> str:
+        selected_paths = set(file_paths)
+        selected_manifest = [
+            item for item in manifest
+            if isinstance(item, dict)
+            and item.get("rel_path")
+            and (not selected_paths or item.get("rel_path") in selected_paths)
+        ]
+        payload = {
+            "pass_id": pass_id,
+            "description": PASS_DESCRIPTIONS.get(pass_id, ""),
+            "batch_file_paths": file_paths,
+            "manifest_entries": selected_manifest,
+            "corpus_summary": intelligence.get("corpus_summary", {}),
+            "duplicate_groups": intelligence.get("duplicate_groups", {}),
+            "version_chains": intelligence.get("version_chains", {}),
+            "planned_features": intelligence.get("planned_features", {}),
+            "ghost_files": intelligence.get("ghost_files", []),
+            "extraction_hints": intelligence.get("extraction_hints", {}),
+        }
+        return json.dumps(payload, sort_keys=True)
 
     def save_attempts(self) -> Path:
         path = self.config.output_dir / "prescan_llm_attempts.json"

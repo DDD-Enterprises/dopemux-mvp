@@ -83,18 +83,31 @@ class CodePrescan:
         imports = self._extract_imports(tree.root_node, code, lang)
         api_surfaces = self._detect_api_surfaces(code, lang)
         
-        # Update entry in-place for manifest
-        entry.function_count = sum(1 for s in symbols if s["type"] in ("function", "method"))
-        entry.class_count = sum(1 for s in symbols if s["type"] == "class")
-        entry.import_count = len(imports)
-        
+        function_count = sum(1 for s in symbols if s["type"] in ("function", "method"))
+        class_count = sum(1 for s in symbols if s["type"] == "class")
+        import_count = len(imports)
+        complexity_score = 0.0
+        docstring_coverage = 0.0
         if symbols:
-            entry.complexity_score = round(sum(s["complexity"] for s in symbols) / len(symbols), 2)
-            entry.docstring_coverage = round(sum(1 for s in symbols if s.get("has_docstring")) / len(symbols), 2)
+            complexity_score = round(sum(s["complexity"] for s in symbols) / len(symbols), 2)
+            docstring_coverage = round(sum(1 for s in symbols if s.get("has_docstring")) / len(symbols), 2)
+        entry.code_intel = {
+            "language": lang,
+            "function_count": function_count,
+            "class_count": class_count,
+            "import_count": import_count,
+            "complexity_score": complexity_score,
+            "docstring_coverage": docstring_coverage,
+        }
 
         return {
             "rel_path": entry.rel_path,
             "language": lang,
+            "function_count": function_count,
+            "class_count": class_count,
+            "import_count": import_count,
+            "complexity_score": complexity_score,
+            "docstring_coverage": docstring_coverage,
             "symbols": symbols,
             "imports": list(imports),
             "api_surfaces": api_surfaces,

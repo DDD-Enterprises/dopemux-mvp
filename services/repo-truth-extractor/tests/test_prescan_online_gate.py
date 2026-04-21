@@ -54,7 +54,13 @@ def test_prescan_route_divergence_recorded(mock_config):
                 Exception("Primary Overloaded"),
                 Exception("Primary Still Overloaded"),
                 MagicMock(
-                    choices=[MagicMock(message=MagicMock(content='{"duplicate_assessments": []}'))],
+                    choices=[
+                        MagicMock(
+                            message=MagicMock(
+                                content='{"duplicate_assessments": [], "version_chain_summaries": [], "divergent_pairs": []}'
+                            )
+                        )
+                    ],
                     usage=MagicMock(prompt_tokens=10, completion_tokens=5, total_tokens=15)
                 )
             ]
@@ -132,7 +138,13 @@ def test_prescan_missing_credential_skips_route(mock_config):
             mock_client = MagicMock()
             mock_openai.return_value = mock_client
             mock_client.chat.completions.create.return_value = MagicMock(
-                choices=[MagicMock(message=MagicMock(content='{"duplicate_assessments": []}'))],
+                choices=[
+                    MagicMock(
+                        message=MagicMock(
+                            content='{"duplicate_assessments": [], "version_chain_summaries": [], "divergent_pairs": []}'
+                        )
+                    )
+                ],
                 usage=MagicMock(prompt_tokens=1, completion_tokens=1, total_tokens=2)
             )
             
@@ -143,7 +155,7 @@ def test_prescan_missing_credential_skips_route(mock_config):
             
             assert evidence["attempts"][0]["model"] == "no-key"
             assert evidence["attempts"][0]["status"] == "failed"
-            assert "API key missing" in evidence["attempts"][0]["error"]
+            assert "API key not found" in evidence["attempts"][0]["error"]
 
 def test_prescan_limiter_tpm_exceeded_blocks_call(mock_config):
     """VERIFY: If limiter acquire() is called, it respects the wait."""
@@ -160,7 +172,13 @@ def test_prescan_limiter_tpm_exceeded_blocks_call(mock_config):
             mock_client = MagicMock()
             mock_openai.return_value = mock_client
             mock_client.chat.completions.create.return_value = MagicMock(
-                choices=[MagicMock(message=MagicMock(content='{"duplicate_assessments": []}'))],
+                choices=[
+                    MagicMock(
+                        message=MagicMock(
+                            content='{"duplicate_assessments": [], "version_chain_summaries": [], "divergent_pairs": []}'
+                        )
+                    )
+                ],
                 usage=None
             )
             

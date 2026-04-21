@@ -25,6 +25,22 @@ from .provider_catalog import (
 
 logger = logging.getLogger(__name__)
 
+
+_LANGUAGE_EXTENSION_ALIASES = {
+    "python": {".py"},
+    "javascript": {".js", ".jsx"},
+    "typescript": {".ts", ".tsx"},
+}
+
+
+def _entry_matches_code_language(entry: FileEntry, code_languages: list[str]) -> bool:
+    normalized = {lang.strip().lower() for lang in code_languages}
+    aliases: set[str] = set(normalized)
+    for language in normalized:
+        aliases.update(_LANGUAGE_EXTENSION_ALIASES.get(language, set()))
+    return entry.extension in aliases
+
+
 class PrescanEngine:
     def __init__(self, config: PrescanConfig, limiter: Any | None = None):
         self.config = config
@@ -52,7 +68,8 @@ class PrescanEngine:
             
             # 2. Classify files
             logger.info("Classifying files...")
-            entries = self.classifier.classify(files)
+            entries = files
+            self.classifier.classify_all(entries)
             
             # 3. Git enrichment
             if self.config.enable_git_enrichment:
@@ -69,12 +86,25 @@ class PrescanEngine:
             
             # 5. Code intelligence
             code_intel = []
+            code_graph_path = None
             if self.config.enable_code_prescan:
                 logger.info("Running code intelligence (AST analysis)...")
                 try:
-                    code_entries = [e for e in entries if e.include and e.extension in self.config.code_languages]
-                    code_intel = self.code_scanner.scan([e.rel_path for e in code_entries])
-                    self.dep_graph.build(code_intel)
+                    code_entries = [
+                        e
+                        for e in entries
+                        if e.include and _entry_matches_code_language(e, self.config.code_languages)
+                    ]
+                    for entry in code_entries:
+                        intel = self.code_scanner.analyze_file(entry, self.config.repo_root)
+                        if intel:
+                            code_intel.append(intel)
+                    self.dep_graph.build_from_code_intelligence(
+                        code_intel,
+                        [e.to_dict() for e in entries],
+                    )
+                    code_graph_path = self.config.output_dir / "code_dependency_graph.json"
+                    code_graph_path.write_text(self.dep_graph.to_json() + "\n", encoding="utf-8")
                 except Exception as e:
                     logger.warning(f"Code intelligence failed: {e}")
                     warnings.append(f"Code intelligence failed: {e}")
@@ -145,11 +175,13 @@ class PrescanEngine:
                 manifest_path=manifest_path,
                 file_count=len(entries),
                 included_count=sum(1 for e in entries if e.include),
+                code_files_analyzed=len(code_intel),
                 duration_seconds=round(duration, 2),
                 warnings=warnings,
                 errors=errors,
                 batch_plan_path=batch_plan_path,
                 batch_count=total_batches,
+                code_graph_path=code_graph_path,
             )
 
         except Exception as e:

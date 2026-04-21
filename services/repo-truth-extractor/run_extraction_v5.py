@@ -18157,13 +18157,13 @@ def main() -> None:
         parser.error("--max-cost-usd must be > 0 when provided.")
     
     router = None
-    if args.prescan:
+    if args.import_prescan:
         if IntelligenceRouter:
-            router = IntelligenceRouter.from_dir(Path(args.prescan))
+            router = IntelligenceRouter.from_dir(Path(args.import_prescan))
             if router:
-                logger.info(f"Initialized IntelligenceRouter from {args.prescan}")
+                logger.info(f"Initialized IntelligenceRouter from {args.import_prescan}")
             else:
-                logger.warning(f"Failed to initialize IntelligenceRouter from {args.prescan}")
+                logger.warning(f"Failed to initialize IntelligenceRouter from {args.import_prescan}")
         else:
             logger.warning("IntelligenceRouter class not available, skipping prescan logic.")
 
@@ -19025,7 +19025,7 @@ def main() -> None:
                 logger.warning("Prescan dir exists but router failed to load: %s", _prescan_path)
         else:
             logger.warning("Prescan dir not found: %s", _prescan_path)
-    elif not cfg.skip_prescan and IntelligenceRouter is not None:
+    elif not cfg.skip_prescan and not args.dry_run and IntelligenceRouter is not None:
         logger.info("Executing Integrated Stage 0 Prescan...")
         try:
             from lib.prescan import PrescanEngine, PrescanConfig
@@ -19033,7 +19033,7 @@ def main() -> None:
             p_config = PrescanConfig(
                 repo_root=Path(root),
                 output_dir=_prescan_path,
-                allow_online_llm=getattr(args, "allow_online_llm", cfg.live_ok),
+                allow_online_llm=bool(getattr(args, "allow_online_llm", False)),
             )
             engine = PrescanEngine(p_config)
             result = engine.run(passes=["dedup", "discover", "feasibility", "optimize"])
@@ -19046,6 +19046,8 @@ def main() -> None:
             logger.error("Integrated Stage 0 execution failed: %s", e)
     elif cfg.skip_prescan:
         logger.info("Stage 0 Prescan explicitly skipped via --skip-prescan.")
+    elif args.dry_run:
+        logger.info("Skipping integrated Stage 0 Prescan during --dry-run.")
 
     reset_spend_tracker()
     if cfg.max_cost_usd is not None:
