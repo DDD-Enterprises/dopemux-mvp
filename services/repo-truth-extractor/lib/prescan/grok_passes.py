@@ -5,7 +5,7 @@ import os
 import time
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from typing import Any, Optional, List, Dict
+from typing import Any, List, Dict
 from .models import PrescanConfig
 
 logger = logging.getLogger(__name__)
