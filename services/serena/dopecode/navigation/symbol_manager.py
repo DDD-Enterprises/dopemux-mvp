@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class SymbolID:
     workspace_id: str
@@ -22,15 +23,16 @@ class SymbolID:
             workspace_id=parts[0],
             file_path=parts[1],
             symbol_name=parts[2],
-            line=int(parts[3])
+            line=int(parts[3]),
         )
 
     def __str__(self) -> str:
         return f"{self.workspace_id}::{self.file_path}::{self.symbol_name}::{self.line}"
 
+
 class SymbolManager:
     """Manages symbol identification and reconstruction for dopeCode."""
-    
+
     def __init__(self, workspace_root: Path, workspace_id: str):
         self.workspace_root = workspace_root.resolve()
         self.workspace_id = workspace_id
@@ -40,6 +42,8 @@ class SymbolManager:
 
     def resolve_path(self, relative_path: str) -> Path:
         full_path = (self.workspace_root / relative_path).resolve()
-        if not str(full_path).startswith(str(self.workspace_root)):
+        try:
+            full_path.relative_to(self.workspace_root)
+        except ValueError:
             raise ValueError(f"Path traversal detected: {relative_path}")
         return full_path

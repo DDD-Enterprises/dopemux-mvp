@@ -777,11 +777,20 @@ class SerenaV2MCPServer:
         if require_tree_sitter:
             await self._ensure_component("tree_sitter")
 
-        if hasattr(self, "ast_engine"):
-            self.ast_engine.set_dependencies(
-                tree_sitter=getattr(self, "tree_sitter", None),
-                lsp=getattr(self, "lsp", None),
-            )
+        ast_engine = getattr(self, "ast_engine", None)
+        if ast_engine is None:
+            return
+
+        tree_sitter = getattr(self, "tree_sitter", None)
+        lsp = getattr(self, "lsp", None)
+        set_dependencies = getattr(ast_engine, "set_dependencies", None)
+
+        if callable(set_dependencies):
+            set_dependencies(tree_sitter=tree_sitter, lsp=lsp)
+            return
+
+        ast_engine.tree_sitter = tree_sitter
+        ast_engine.lsp_client = lsp
 
     def register_tools(self):
         """Register MCP tools with the server"""

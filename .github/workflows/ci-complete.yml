@@ -234,6 +234,8 @@ jobs:
           services/repo-truth-extractor/tests/test_truth_run_cli.py
           services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py
           services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py
+          services/repo-truth-extractor/tests/test_prescan_hardening.py
+          services/serena/tests/test_dopecode_ast_engine.py
           tests/unit/test_cli_upgrades_commands.py
           -n auto --maxfail=1 --disable-warnings --no-cov
 
