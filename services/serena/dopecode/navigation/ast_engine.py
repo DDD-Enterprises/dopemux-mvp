@@ -158,7 +158,22 @@ class ASTEngine:
         for py_file in self.workspace_root.rglob("*.py"):
             if ".venv" in str(py_file) or "__pycache__" in str(py_file):
                 continue
-            content = py_file.read_text(encoding='utf-8')
+    async def search_pattern(self, query: str) -> List[Dict[str, Any]]:
+        import re
+        results = []
+        pattern = re.compile(query)
+        for py_file in self.workspace_root.rglob("*.py"):
+            if ".venv" in str(py_file) or "__pycache__" in str(py_file):
+                continue
+            with py_file.open(encoding='utf-8') as f:
+                for line_num, line in enumerate(f, 1):
+                    if pattern.search(line):
+                        results.append({
+                            "file": str(py_file.relative_to(self.workspace_root)),
+                            "line": line_num,
+                            "text": line.strip()
+                        })
+        return results
             for line_num, line in enumerate(content.splitlines(), 1):
                 if pattern.search(line):
                     results.append({
