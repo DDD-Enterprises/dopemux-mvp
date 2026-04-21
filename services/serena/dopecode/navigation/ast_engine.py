@@ -1,7 +1,6 @@
 import logging
 from pathlib import Path
 from typing import List, Dict, Any
-import json
 
 from .symbol_manager import SymbolManager, SymbolID
 
@@ -103,18 +102,16 @@ class ASTEngine:
             
         target = None
         for element in analysis.elements:
-        content = abs_path.read_text(encoding='utf-8').splitlines()
-        body = content[target.start_line-1:target.end_line]
-        return "\n".join(body)
+            if element.name == sym_id.symbol_name and element.start_line == sym_id.line:
                 target = element
                 break
-                
+
         if not target:
             raise ValueError(f"Symbol {sym_id.symbol_name} not found at line {sym_id.line}")
-            
+
         content = abs_path.read_text(encoding='utf-8').splitlines()
-        body = content[target.start_line-1:target.end_line]
-        return "\\n".join(body)
+        body = content[target.start_line - 1:target.end_line]
+        return "\n".join(body)
 
     async def find_references(self, symbol_id_str: str) -> List[Dict[str, Any]]:
         sym_id = SymbolID.parse(symbol_id_str)
@@ -158,13 +155,6 @@ class ASTEngine:
         for py_file in self.workspace_root.rglob("*.py"):
             if ".venv" in str(py_file) or "__pycache__" in str(py_file):
                 continue
-    async def search_pattern(self, query: str) -> List[Dict[str, Any]]:
-        import re
-        results = []
-        pattern = re.compile(query)
-        for py_file in self.workspace_root.rglob("*.py"):
-            if ".venv" in str(py_file) or "__pycache__" in str(py_file):
-                continue
             with py_file.open(encoding='utf-8') as f:
                 for line_num, line in enumerate(f, 1):
                     if pattern.search(line):
@@ -173,12 +163,4 @@ class ASTEngine:
                             "line": line_num,
                             "text": line.strip()
                         })
-        return results
-            for line_num, line in enumerate(content.splitlines(), 1):
-                if pattern.search(line):
-                    results.append({
-                        "file": str(py_file.relative_to(self.workspace_root)),
-                        "line": line_num,
-                        "text": line.strip()
-                    })
         return results

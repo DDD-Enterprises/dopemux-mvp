@@ -31,7 +31,7 @@ from datetime import datetime
 # MCP SDK
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
-from mcp.types import Tool, TextContent, EmptyResult
+from mcp.types import Tool, TextContent
 
 # Setup logging
 logging.basicConfig(
@@ -432,6 +432,11 @@ class SerenaV2MCPServer:
 
         logger.info("Serena v2 MCP Server initialized (Phase 2)")
 
+    @staticmethod
+    def _env_flag_enabled(name: str, default: str = "1") -> bool:
+        value = os.environ.get(name, default).strip().lower()
+        return value not in {"0", "false", "no", "off"}
+
     async def initialize(self):
         """
         Initialize workspace with lazy loading for heavy components
@@ -458,12 +463,7 @@ class SerenaV2MCPServer:
         await self._ensure_component("file_watcher")
         
         # Initialize dopeCode Layers (optional hardening surface)
-        enable_dopecode = os.environ.get("SERENA_ENABLE_DOPECODE", "1").lower() not in {
-            "0",
-            "false",
-            "no",
-            "off",
-        }
+        enable_dopecode = self._env_flag_enabled("SERENA_ENABLE_DOPECODE", "1")
         if enable_dopecode:
             try:
                 from dopecode.transform.write_layer import WriteLayer
@@ -721,7 +721,7 @@ class SerenaV2MCPServer:
 
     async def _init_adhd_features(self):
         """Initialize ADHD code navigator"""
-        from .adhd_features import ADHDCodeNavigator, CodeComplexityAnalyzer
+        from .adhd_features import ADHDCodeNavigator
 
         self.adhd_navigator = ADHDCodeNavigator()
         logger.info("ADHD features: Complexity analysis + filtering ready")
@@ -1769,7 +1769,6 @@ class SerenaV2MCPServer:
 
         # Simple fallback: search Python files for class/def patterns
         import re
-        from pathlib import Path
 
         matches = []
         pattern = re.compile(rf"(class|def)\s+{re.escape(query)}\w*\s*[\(\:]", re.IGNORECASE)

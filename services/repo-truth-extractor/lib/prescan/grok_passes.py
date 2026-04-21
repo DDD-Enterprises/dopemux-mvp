@@ -85,9 +85,11 @@ class BatchResponseValidator:
             data = json.loads(response)
             return True, data, ""
         except json.JSONDecodeError as exc:
-            return False, None, f"JSON parse error: {exc}"
+            preview = str(response)[:200].replace("\n", "\\n")
+            return False, None, f"JSON parse error at pos {exc.pos}: {exc}; preview={preview}"
         except TypeError as exc:
-            return False, None, f"Invalid JSON type: {exc}"
+            preview = str(response)[:200].replace("\n", "\\n")
+            return False, None, f"Invalid JSON type: {exc}; preview={preview}"
 
 class GrokPassRunner:
     def __init__(self, config: PrescanConfig, limiter: Any | None = None):
@@ -183,6 +185,12 @@ class GrokPassRunner:
         return results
 
     def _call_grok(self, pass_id, payload, candidate, attempt_record, est_tokens=0):
+        """Call provider route.
+
+        Live provider implementations are intentionally blocked here until
+        real OpenAI/OpenRouter/xAI call paths are restored. This avoids
+        producing false-positive "success" evidence for unsupported routes.
+        """
         provider = candidate["provider"]
         model_id = candidate["model_id"]
         api_key = os.environ.get(candidate["api_key_env"])

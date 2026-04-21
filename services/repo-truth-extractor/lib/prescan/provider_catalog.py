@@ -4,7 +4,7 @@ import datetime as dt
 import json
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
 from .models import PrescanConfig
 
@@ -174,9 +174,14 @@ def build_provider_model_catalog(config: PrescanConfig) -> dict[str, Any]:
     }
 
 
+class SelectedRoute(NamedTuple):
+    route: dict[str, Any] | None
+    adjustment: str | None
+
+
 def _select_route_for_tier(
     routes: list[dict[str, Any]], required_tier: str
-) -> tuple[dict[str, Any] | None, str | None]:
+) -> SelectedRoute:
     required_rank = PRESCAN_TIER_RANK[required_tier]
     eligible = [
         r
@@ -184,7 +189,7 @@ def _select_route_for_tier(
         if PRESCAN_TIER_RANK.get(str(r.get("prescan_tier")), 0) >= required_rank
     ]
     if not eligible:
-        return None, None
+        return SelectedRoute(None, None)
 
     exact = [r for r in eligible if str(r.get("prescan_tier")) == required_tier]
     pool = exact or eligible
@@ -195,7 +200,7 @@ def _select_route_for_tier(
             float((r.get("pricing") or {}).get("output_1m_usd", 999.0)),
         ),
     )
-    return chosen, "exact" if exact else "upgrade"
+    return SelectedRoute(chosen, "exact" if exact else "upgrade")
 
 
 def build_prescan_routing_plan(
@@ -235,8 +240,8 @@ def build_prescan_routing_plan(
             for r in candidates
         ]
 
-        selected, adjustment = _select_route_for_tier(candidates, required_tier)
-        if selected is None:
+        selected = _select_route_for_tier(candidates, required_tier)
+        if selected.route is None:
             failures.append(
                 {
                     "pass_id": pass_id,
@@ -247,17 +252,17 @@ def build_prescan_routing_plan(
             continue
 
         selected_routes[pass_id] = {
-            "provider": selected["provider"],
-            "model_id": selected["model_id"],
-            "api_key_env": selected["api_key_env"],
+            "provider": selected.route["provider"],
+            "model_id": selected.route["model_id"],
+            "api_key_env": selected.route["api_key_env"],
             "required_tier": required_tier,
-            "selected_tier": selected["prescan_tier"],
-            "tier_adjustment": adjustment,
-            "pricing": selected.get("pricing", {}),
+            "selected_tier": selected.route["prescan_tier"],
+            "tier_adjustment": selected.adjustment,
+            "pricing": selected.route.get("pricing", {}),
             "legacy_route_changed": (
-                str(selected["provider"]) != str(config.provider)
-                or str(selected["model_id"]) != str(config.model)
-                or str(selected["api_key_env"]) != str(config.api_key_env)
+                str(selected.route["provider"]) != str(config.provider)
+                or str(selected.route["model_id"]) != str(config.model)
+                or str(selected.route["api_key_env"]) != str(config.api_key_env)
             ),
         }
 
