@@ -2549,6 +2549,7 @@ from .commands.state_commands import restore, save
 cli.add_command(save, "save")
 cli.add_command(save, "save")
 cli.add_command(save, "backup")
+cli.add_command(save, "save")
 cli.add_command(restore, "restore")
 cli.add_command(restore, "restore")
 
