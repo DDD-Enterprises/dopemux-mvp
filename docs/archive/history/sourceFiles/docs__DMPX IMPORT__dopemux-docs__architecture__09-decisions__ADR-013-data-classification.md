@@ -1,3 +1,15 @@
+---
+id: docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-013-data-classification
+title: Docs  Dmpx Import  Dopemux Docs  Architecture  09 Decisions  Adr 013 Data Classification
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Dmpx Import  Dopemux Docs  Architecture  09 Decisions  Adr 013 Data
+  Classification (explanation) for dopemux documentation and developer workflows.
+---
 # ADR: Data Classification & Residency
 
 Status: Accepted

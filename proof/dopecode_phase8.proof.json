@@ -1,0 +1,65 @@
+{
+  "packet": {
+    "name": "DMX-TP-DOPECODE-PHASE8-CODEX-001",
+    "project": "dopemux-mvp",
+    "objective": "Add event-shaped durable execution receipts for dopeCode mutation lifecycle so dopemux can consume, replay, and display mutation history without widening dopeCode authority."
+  },
+  "authoritative_surfaces": [
+    "services/serena/dopecode/execution_receipts.py",
+    "services/serena/dopecode/runtime.py",
+    "services/serena/dopecode/transform/write_layer.py",
+    "services/serena/dopecode/transform/refactor_layer.py",
+    "src/dopemux/execution/dopecode_receipts.py",
+    "services/serena/mcp_server.py"
+  ],
+  "files_changed": [
+    "services/serena/dopecode/execution_receipts.py",
+    "services/serena/dopecode/runtime.py",
+    "services/serena/dopecode/transform/write_layer.py",
+    "services/serena/dopecode/transform/refactor_layer.py",
+    "src/dopemux/execution/dopecode_receipts.py",
+    "services/serena/tests/test_dopecode_policy.py",
+    "services/serena/tests/test_dopecode_write_layer.py",
+    "services/serena/tests/test_dopecode_refactor_layer.py",
+    "services/serena/tests/test_dopecode_execution_receipts.py",
+    "proof/dopecode_phase8_contract.md",
+    "proof/dopecode_phase8_implementation.md",
+    "proof/dopecode_phase8.proof.json"
+  ],
+  "implementation_notes": {
+    "receipt_scope": "dopeCode now emits deterministic event-shaped lifecycle receipts to a workspace-local JSONL ledger for bounded mutation operations.",
+    "replay_scope": "Exact duplicate event persistence replays safely; idempotency mismatches fail closed.",
+    "dopemux_scope": "dopemux now consumes and formats the receipt ledger as operator history without becoming mutation authority."
+  },
+  "validation": {
+    "passed": [
+      "pytest -q services/serena/tests/test_dopecode_ast_engine.py services/serena/tests/test_dopecode_write_layer.py services/serena/tests/test_dopecode_refactor_layer.py services/serena/tests/test_dopecode_policy.py services/serena/tests/test_dopecode_execution_receipts.py",
+      "python3 in-memory compile() pass for services/serena/dopecode/execution_receipts.py services/serena/dopecode/runtime.py services/serena/dopecode/transform/write_layer.py services/serena/dopecode/transform/refactor_layer.py src/dopemux/execution/dopecode_receipts.py services/serena/tests/test_dopecode_execution_receipts.py services/serena/tests/test_dopecode_write_layer.py services/serena/tests/test_dopecode_refactor_layer.py services/serena/tests/test_dopecode_policy.py",
+      "pre-commit run --files services/serena/dopecode/execution_receipts.py services/serena/dopecode/runtime.py services/serena/dopecode/transform/write_layer.py services/serena/dopecode/transform/refactor_layer.py src/dopemux/execution/dopecode_receipts.py services/serena/tests/test_dopecode_policy.py services/serena/tests/test_dopecode_write_layer.py services/serena/tests/test_dopecode_refactor_layer.py services/serena/tests/test_dopecode_execution_receipts.py proof/dopecode_phase8_contract.md proof/dopecode_phase8_implementation.md proof/dopecode_phase8.proof.json",
+      "python3 -m json.tool proof/dopecode_phase8.proof.json"
+    ],
+    "not_run": [
+      "python3 -B -m py_compile services/serena/dopecode/execution_receipts.py services/serena/dopecode/runtime.py services/serena/dopecode/transform/write_layer.py services/serena/dopecode/transform/refactor_layer.py src/dopemux/execution/dopecode_receipts.py services/serena/tests/test_dopecode_execution_receipts.py services/serena/tests/test_dopecode_write_layer.py services/serena/tests/test_dopecode_refactor_layer.py services/serena/tests/test_dopecode_policy.py"
+    ],
+    "codereview": {
+      "status": "manual_diff_review_no_material_findings",
+      "issues_found": 0,
+      "issues_fixed": 0
+    }
+  },
+  "constraints_observed": [
+    "Workspace boundary checks remain in WriteLayer.",
+    "Receipt persistence stays under the active workspace root.",
+    "dopemux remains a receipt consumer and presenter only.",
+    "Unsupported replay and schema drift cases fail closed."
+  ],
+  "drift_observed": [
+    "Phase 7 proof artifacts named by the task packet were absent in this checkout; Phase 8 was documented against current runtime truth and Phase 6 proof history."
+  ],
+  "remaining_limits": [
+    "History starts when the Phase 8 ledger exists; earlier dopeCode mutations are not backfilled.",
+    "Exceptions raised before receipt construction still surface through existing tool errors rather than synthetic failure receipts.",
+    "Broader repository drift outside the dopeCode slice remains unverified."
+  ],
+  "confidence": "VERIFIED"
+}

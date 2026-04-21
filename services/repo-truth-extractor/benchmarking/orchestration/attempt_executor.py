@@ -89,6 +89,8 @@ class AttemptExecutionReport:
     sample_validator_results: dict[str, Any]
     sample_route_trace: dict[str, Any]
     sample_executor_links: dict[str, Any]
+    route_identity_rows: list[dict[str, Any]]
+    route_collapse: dict[str, Any] | None = None
 
 
 def _step_route_signature(route_trace: dict[str, Any]) -> str:
@@ -101,6 +103,66 @@ def _step_route_signature(route_trace: dict[str, Any]) -> str:
         if isinstance(value, list)
     }
     return json.dumps(normalized, sort_keys=True, separators=(",", ":"))
+
+
+def _step_route_signature_payload(route_trace: dict[str, Any]) -> dict[str, list[str]]:
+    payload = route_trace.get("step_route_counts")
+    if not isinstance(payload, dict):
+        return {}
+    return {
+        str(step): [str(item) for item in value]
+        for step, value in sorted(payload.items())
+        if isinstance(value, list) and value
+    }
+
+
+def _execution_signature_payload(
+    *,
+    route_trace: dict[str, Any],
+    outputs: dict[str, Any],
+    selected_route_identity: dict[str, Any],
+    surface_transport_kind: str,
+) -> dict[str, Any]:
+    routing_fingerprint = outputs.get("RUN_ROUTING_FINGERPRINT.json", {})
+    effective_model_routing = {}
+    if isinstance(routing_fingerprint, dict):
+        payload = routing_fingerprint.get("effective_model_routing", {})
+        if isinstance(payload, dict):
+            effective_model_routing = payload
+    phase = str(route_trace.get("phase") or "A")
+    representative_route = effective_model_routing.get(phase) or effective_model_routing.get("A") or {}
+    if not isinstance(representative_route, dict):
+        representative_route = {}
+    provider_name = str(
+        representative_route.get("provider")
+        or selected_route_identity.get("provider_name")
+        or route_trace.get("provider_name")
+        or ""
+    )
+    provider_model_id = str(
+        representative_route.get("model_id")
+        or selected_route_identity.get("provider_model_id")
+        or ""
+    )
+    transport_kind = str(
+        representative_route.get("transport")
+        or selected_route_identity.get("transport_kind")
+        or surface_transport_kind
+    )
+    return {
+        "provider_name": provider_name,
+        "provider_model_id": provider_model_id,
+        "transport_kind": transport_kind,
+        "effective_routing_signature": _step_route_signature_payload(route_trace),
+        "representative_phase_route": {
+            "provider": provider_name,
+            "model_id": provider_model_id,
+            "transport": transport_kind,
+            "scope": str(representative_route.get("scope") or ""),
+            "reason": str(representative_route.get("reason") or ""),
+        },
+        "route_ownership_mode": str(route_trace.get("route_ownership_mode") or ""),
+    }
 
 
 class AttemptExecutor:
@@ -230,7 +292,9 @@ class AttemptExecutor:
         first_validator_payload: dict[str, Any] | None = None
         first_route_trace: dict[str, Any] | None = None
         first_executor_links: dict[str, Any] | None = None
-        live_route_signatures: dict[str, dict[str, str]] = {}
+        live_route_signatures: dict[str, dict[str, dict[str, Any]]] = {}
+        route_identity_rows: list[dict[str, Any]] = []
+        route_collapse: dict[str, Any] | None = None
 
         for index, assignment in enumerate(assignments, start=1):
             case = self.repo.fetch_benchmark_case(assignment.case_id)
@@ -244,6 +308,7 @@ class AttemptExecutor:
             route_record = self.repo.fetch_route(assignment.candidate.route_id)
             if route_record is None:
                 raise RuntimeError(f"missing route record {assignment.candidate.route_id}")
+            surface_record = self.repo.fetch_provider_surface(assignment.candidate.surface_id) or {}
             executor = _executor_for_case(case)
             validator = _validator_for_case(case)
             case_attempt_id = synthetic_id(
@@ -349,17 +414,64 @@ class AttemptExecutor:
             )
             self._insert_attempt_artifacts(attempt, execution, validation)
             if assignment.live_execution:
-                signature = _step_route_signature(execution.route_trace)
-                if signature:
-                    prior_routes = live_route_signatures.setdefault(assignment.case_id, {})
-                    for prior_route_id, prior_signature in prior_routes.items():
-                        if prior_route_id != assignment.candidate.route_id and prior_signature == signature:
-                            raise RuntimeError(
-                                "campaign route collapse detected: "
-                                f"{assignment.case_id} route {assignment.candidate.route_id} shares the same effective "
-                                f"step routing signature as {prior_route_id}; stop the campaign and revise route selection."
-                            )
-                    prior_routes[assignment.candidate.route_id] = signature
+                selected_route_identity = dict(execution.route_trace.get("selected_route_identity") or {})
+                selected_route_identity.setdefault("transport_kind", str(surface_record.get("transport_kind") or ""))
+                signature_payload = _execution_signature_payload(
+                    route_trace=execution.route_trace,
+                    outputs=execution.outputs,
+                    selected_route_identity=selected_route_identity,
+                    surface_transport_kind=str(surface_record.get("transport_kind") or ""),
+                )
+                signature_hash = hash_json(signature_payload)
+                route_identity_row = {
+                    "benchmark_run_id": benchmark_run_id,
+                    "case_id": assignment.case_id,
+                    "case_attempt_id": attempt.case_attempt_id,
+                    "route_id": assignment.candidate.route_id,
+                    "cohort": assignment.candidate.cohort,
+                    "surface_class": assignment.candidate.surface_class,
+                    "planned_route_identity": {
+                        "provider_name": assignment.candidate.provider_name,
+                        "model_key": assignment.candidate.model_key,
+                        "provider_model_id": assignment.candidate.provider_model_id,
+                        "surface_id": assignment.candidate.surface_id,
+                        "transport_kind": str(surface_record.get("transport_kind") or ""),
+                    },
+                    "selected_route_identity": selected_route_identity,
+                    "effective_execution_signature": signature_payload,
+                    "effective_execution_signature_hash": signature_hash,
+                    "route_signature_source_refs": [
+                        "ROUTE_TRACE.json",
+                        "outputs/STEP_METRICS.json",
+                        "outputs/RUN_ROUTING_FINGERPRINT.json",
+                        "outputs/ROUTING_LOG.json",
+                    ],
+                    "contract_fail_reason": execution.contract_fail_reason,
+                    "validator_pass": validation.passed,
+                }
+                route_identity_rows.append(route_identity_row)
+                prior_routes = live_route_signatures.setdefault(assignment.case_id, {})
+                for prior_route_id, prior_row in prior_routes.items():
+                    if (
+                        prior_route_id != assignment.candidate.route_id
+                        and str(prior_row.get("effective_execution_signature_hash") or "") == signature_hash
+                    ):
+                        route_collapse = {
+                            "status": "blocked",
+                            "benchmark_run_id": benchmark_run_id,
+                            "case_id": assignment.case_id,
+                            "blocked_route_id": assignment.candidate.route_id,
+                            "conflicting_route_id": prior_route_id,
+                            "effective_execution_signature_hash": signature_hash,
+                            "blocked_route_signature": route_identity_row,
+                            "conflicting_route_signature": prior_row,
+                            "message": (
+                                "campaign route collapse detected: live routes resolved to the same execution-time "
+                                "provider/model/transport/signature tuple"
+                            ),
+                        }
+                        break
+                prior_routes[assignment.candidate.route_id] = route_identity_row
             case_attempt_ids.append(attempt.case_attempt_id)
             bundle_ids.append(attempt.evidence_bundle_id)
             if first_attempt_payload is None:
@@ -367,6 +479,8 @@ class AttemptExecutor:
                 first_validator_payload = validation.details_payload
                 first_route_trace = execution.route_trace
                 first_executor_links = execution.executor_links
+            if route_collapse is not None:
+                break
 
         return AttemptExecutionReport(
             benchmark_run_id=benchmark_run_id,
@@ -377,6 +491,8 @@ class AttemptExecutor:
             sample_validator_results=first_validator_payload or {},
             sample_route_trace=first_route_trace or {},
             sample_executor_links=first_executor_links or {},
+            route_identity_rows=route_identity_rows,
+            route_collapse=route_collapse,
         )
 
     def execute_starter_set(self, case_ids: list[str]) -> AttemptExecutionReport:

@@ -1,3 +1,15 @@
+---
+id: docs__DMPX IMPORT__dopemux-docs__product__UPDATED_DOCS__terminal-app-frameworks
+title: Docs  Dmpx Import  Dopemux Docs  Product  Updated Docs  Terminal App Frameworks
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Dmpx Import  Dopemux Docs  Product  Updated Docs  Terminal App Frameworks
+  (explanation) for dopemux documentation and developer workflows.
+---
 # Building a modern IDE-like experience for Dopemux
 
 The terminal development ecosystem has evolved dramatically beyond traditional vim and emacs, offering powerful tools and frameworks that rival modern GUI IDEs while maintaining the efficiency and scriptability of command-line workflows. After comprehensive research across text editors, diff viewers, UI frameworks, file managers, and terminal libraries, a clear technology stack emerges that could transform Dopemux into a next-generation terminal IDE.

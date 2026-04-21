@@ -1,3 +1,14 @@
+---
+id: docs__README copy
+title: Docs  Readme Copy
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Readme Copy (explanation) for dopemux documentation and developer workflows.
+---
 # 🧠 Dopemux - ADHD-Optimized Development Platform
 
 > **Dopemux MVP**: Complete ADHD-optimized development platform with health monitoring, MCP server integration, and comprehensive Claude Code support.

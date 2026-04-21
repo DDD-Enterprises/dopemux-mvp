@@ -140,6 +140,7 @@ def build_route_identity_record(
     selected_route_identity.setdefault("model_key", str(route_record.get("model_key") or ""))
     selected_route_identity.setdefault("provider_model_id", str(route_record.get("provider_model_id") or ""))
     selected_route_identity.setdefault("route_pin", str(route_record.get("route_pin") or ""))
+    selected_route_identity.setdefault("transport_kind", str(surface_record.get("transport_kind") or ""))
     selected_route_identity.setdefault(
         "representative_phase_route",
         routing_fingerprint.get("effective_model_routing", {}).get("A"),

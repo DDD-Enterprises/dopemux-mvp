@@ -1,3 +1,15 @@
+---
+id: docs__03-reference__MCP_SYSTEM_INTEGRATION_STATUS (1)
+title: Docs  03 Reference  Mcp System Integration Status (1)
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  03 Reference  Mcp System Integration Status (1) (explanation) for dopemux
+  documentation and developer workflows.
+---
 # MCP System Integration Status
 **Category**: `information-oriented technical specs`
 **Target Audience**: `developers`

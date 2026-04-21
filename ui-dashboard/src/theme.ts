@@ -156,6 +156,10 @@ const theme = createTheme({
           fontFamily: '"JetBrains Mono","IBM Plex Mono",monospace',
           borderRadius: 999,
           letterSpacing: '0.08em',
+          '&:focus-visible': {
+            outline: `2px solid ${brandTokens.colors.ritualCyan}`,
+            outlineOffset: '2px',
+          },
         },
       },
     },

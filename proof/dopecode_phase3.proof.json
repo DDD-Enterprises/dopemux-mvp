@@ -1,0 +1,67 @@
+{
+  "packet": {
+    "name": "DMX-TP-DOPECODE-PHASE3-CODEX-001",
+    "project": "dopemux-mvp",
+    "objective": "Decompose dopeCode into cleaner runtime layers, add explicit mutation policy controls, and strengthen graph/callee intelligence without breaking the verified Phase 2 mutation contract."
+  },
+  "authoritative_surfaces": [
+    "services/serena/mcp_server.py",
+    "services/serena/dopecode/runtime.py",
+    "services/serena/dopecode/policy/mutation_policy.py",
+    "services/serena/dopecode/navigation/ast_engine.py",
+    "services/serena/dopecode/transform/write_layer.py",
+    "services/serena/dopecode/transform/refactor_layer.py"
+  ],
+  "files_changed": [
+    "services/serena/dopecode/policy/__init__.py",
+    "services/serena/dopecode/policy/mutation_policy.py",
+    "services/serena/dopecode/runtime.py",
+    "services/serena/dopecode/navigation/ast_engine.py",
+    "services/serena/dopecode/transform/write_layer.py",
+    "services/serena/dopecode/transform/refactor_layer.py",
+    "services/serena/mcp_server.py",
+    "services/serena/tests/test_dopecode_policy.py",
+    "services/serena/tests/test_dopecode_ast_engine.py",
+    "proof/dopecode_phase3_contract.md",
+    "proof/dopecode_phase3_implementation.md",
+    "proof/dopecode_phase3.proof.json"
+  ],
+  "implementation_notes": {
+    "runtime_decomposition": "Layer construction is centralized in DopeCodeRuntime while mcp_server keeps the public tool surface stable.",
+    "mutation_policy": "Policy decisions are returned with mutation responses and classify single-file, batch, and refactor operations.",
+    "callee_intelligence": "Python callee resolution now distinguishes local symbols, imported symbols, qualified imports, and unresolved calls with confidence metadata."
+  },
+  "validation": {
+    "passed": [
+      "pytest -q services/serena/tests/test_dopecode_ast_engine.py services/serena/tests/test_dopecode_write_layer.py services/serena/tests/test_dopecode_refactor_layer.py services/serena/tests/test_dopecode_policy.py",
+      "pytest -q services/serena/tests",
+      "pre-commit run --files services/serena/dopecode/policy/__init__.py services/serena/dopecode/policy/mutation_policy.py services/serena/dopecode/runtime.py services/serena/dopecode/navigation/ast_engine.py services/serena/dopecode/transform/write_layer.py services/serena/dopecode/transform/refactor_layer.py services/serena/mcp_server.py services/serena/tests/test_dopecode_policy.py services/serena/tests/test_dopecode_ast_engine.py services/serena/tests/test_dopecode_write_layer.py services/serena/tests/test_dopecode_refactor_layer.py"
+    ],
+    "codereview": {
+      "status": "manual_repo_review_clean",
+      "issues_found": 0,
+      "scope": [
+        "services/serena/dopecode/policy/mutation_policy.py",
+        "services/serena/dopecode/runtime.py",
+        "services/serena/dopecode/navigation/ast_engine.py",
+        "services/serena/dopecode/transform/write_layer.py",
+        "services/serena/dopecode/transform/refactor_layer.py",
+        "services/serena/mcp_server.py"
+      ]
+    },
+    "observed_regression": []
+  },
+  "constraints_observed": [
+    "No shell-based editing was used for mutations.",
+    "Workspace escape attempts remain rejected.",
+    "Preview paths do not mutate files.",
+    "Existing Dopemux/ADHD feature registration remains in mcp_server.py."
+  ],
+  "remaining_limits": [
+    "Callee resolution is Python-specific.",
+    "Workspace-local import resolution is best-effort.",
+    "Broader repository drift outside the dopeCode slice remains unverified."
+  ],
+  "confidence": "VERIFIED",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/477"
+}

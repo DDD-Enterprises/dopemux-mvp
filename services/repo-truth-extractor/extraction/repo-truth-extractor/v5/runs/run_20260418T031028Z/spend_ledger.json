@@ -1,0 +1,235 @@
+{
+  "fallback_usage_count": 1,
+  "global_max_cost_usd": 5.0,
+  "models": {
+    "gemini/gemini-3-flash-preview": {
+      "estimated_cost_usd": 2.4e-06,
+      "input_cost_per_1m_usd": 0.15,
+      "input_tokens": 12,
+      "model_id": "gemini-3-flash-preview",
+      "output_cost_per_1m_usd": 0.6,
+      "output_tokens": 1,
+      "pricing_key": "gemini/gemini-3-flash-preview",
+      "pricing_source": "route_registry_baseline",
+      "pricing_version": "baseline_v1",
+      "provider": "gemini",
+      "unknown_model": false,
+      "usage_count": 1
+    },
+    "openrouter/openai/gpt-5.3-codex": {
+      "estimated_cost_usd": 0.000441,
+      "input_cost_per_1m_usd": 1.75,
+      "input_tokens": 20,
+      "model_id": "openai/gpt-5.3-codex",
+      "output_cost_per_1m_usd": 14.0,
+      "output_tokens": 29,
+      "pricing_key": "openrouter/openai/gpt-5.3-codex",
+      "pricing_source": "https://openrouter.ai/openai/gpt-5.3-codex",
+      "pricing_version": "baseline_v1",
+      "provider": "openrouter",
+      "unknown_model": false,
+      "usage_count": 1
+    },
+    "openrouter/openai/gpt-5.4": {
+      "estimated_cost_usd": 0.000125,
+      "input_cost_per_1m_usd": 2.5,
+      "input_tokens": 20,
+      "model_id": "openai/gpt-5.4",
+      "output_cost_per_1m_usd": 15.0,
+      "output_tokens": 5,
+      "pricing_key": "openrouter/openai/gpt-5.4",
+      "pricing_source": "https://openrouter.ai/openai/gpt-5.4",
+      "pricing_version": "baseline_v1",
+      "provider": "openrouter",
+      "unknown_model": false,
+      "usage_count": 1
+    },
+    "xai/grok-4.20-beta-0309-non-reasoning": {
+      "estimated_cost_usd": 0.00041999999999999996,
+      "input_cost_per_1m_usd": 3.0,
+      "input_tokens": 135,
+      "model_id": "grok-4.20-beta-0309-non-reasoning",
+      "output_cost_per_1m_usd": 15.0,
+      "output_tokens": 1,
+      "pricing_key": "xai/grok-4.20-beta-0309-non-reasoning",
+      "pricing_source": "unknown_model:baseline_v1_fallback",
+      "pricing_version": "baseline_v1",
+      "provider": "xai",
+      "unknown_model": true,
+      "usage_count": 1
+    },
+    "xai/grok-4.20-beta-0309-reasoning": {
+      "estimated_cost_usd": 0.000426,
+      "input_cost_per_1m_usd": 3.0,
+      "input_tokens": 137,
+      "model_id": "grok-4.20-beta-0309-reasoning",
+      "output_cost_per_1m_usd": 15.0,
+      "output_tokens": 1,
+      "pricing_key": "xai/grok-4.20-beta-0309-reasoning",
+      "pricing_source": "docs/03-reference/extraction-wizard.md",
+      "pricing_version": "baseline_v1",
+      "provider": "xai",
+      "unknown_model": false,
+      "usage_count": 1
+    },
+    "xai/grok-code-fast-1": {
+      "estimated_cost_usd": 2.18e-05,
+      "input_cost_per_1m_usd": 0.1,
+      "input_tokens": 214,
+      "model_id": "grok-code-fast-1",
+      "output_cost_per_1m_usd": 0.4,
+      "output_tokens": 1,
+      "pricing_key": "xai/grok-code-fast-1",
+      "pricing_source": "docs/03-reference/extraction-wizard.md",
+      "pricing_version": "baseline_v1",
+      "provider": "xai",
+      "unknown_model": false,
+      "usage_count": 1
+    }
+  },
+  "phases": {
+    "DOCTOR": {
+      "estimated_cost_usd": 0.0014361999999999999,
+      "input_tokens": 538,
+      "models": {
+        "gemini/gemini-3-flash-preview": {
+          "estimated_cost_usd": 2.4e-06,
+          "input_cost_per_1m_usd": 0.15,
+          "input_tokens": 12,
+          "model_id": "gemini-3-flash-preview",
+          "output_cost_per_1m_usd": 0.6,
+          "output_tokens": 1,
+          "pricing_key": "gemini/gemini-3-flash-preview",
+          "pricing_source": "route_registry_baseline",
+          "pricing_version": "baseline_v1",
+          "provider": "gemini",
+          "unknown_model": false,
+          "usage_count": 1
+        },
+        "openrouter/openai/gpt-5.3-codex": {
+          "estimated_cost_usd": 0.000441,
+          "input_cost_per_1m_usd": 1.75,
+          "input_tokens": 20,
+          "model_id": "openai/gpt-5.3-codex",
+          "output_cost_per_1m_usd": 14.0,
+          "output_tokens": 29,
+          "pricing_key": "openrouter/openai/gpt-5.3-codex",
+          "pricing_source": "https://openrouter.ai/openai/gpt-5.3-codex",
+          "pricing_version": "baseline_v1",
+          "provider": "openrouter",
+          "unknown_model": false,
+          "usage_count": 1
+        },
+        "openrouter/openai/gpt-5.4": {
+          "estimated_cost_usd": 0.000125,
+          "input_cost_per_1m_usd": 2.5,
+          "input_tokens": 20,
+          "model_id": "openai/gpt-5.4",
+          "output_cost_per_1m_usd": 15.0,
+          "output_tokens": 5,
+          "pricing_key": "openrouter/openai/gpt-5.4",
+          "pricing_source": "https://openrouter.ai/openai/gpt-5.4",
+          "pricing_version": "baseline_v1",
+          "provider": "openrouter",
+          "unknown_model": false,
+          "usage_count": 1
+        },
+        "xai/grok-4.20-beta-0309-non-reasoning": {
+          "estimated_cost_usd": 0.00041999999999999996,
+          "input_cost_per_1m_usd": 3.0,
+          "input_tokens": 135,
+          "model_id": "grok-4.20-beta-0309-non-reasoning",
+          "output_cost_per_1m_usd": 15.0,
+          "output_tokens": 1,
+          "pricing_key": "xai/grok-4.20-beta-0309-non-reasoning",
+          "pricing_source": "unknown_model:baseline_v1_fallback",
+          "pricing_version": "baseline_v1",
+          "provider": "xai",
+          "unknown_model": true,
+          "usage_count": 1
+        },
+        "xai/grok-4.20-beta-0309-reasoning": {
+          "estimated_cost_usd": 0.000426,
+          "input_cost_per_1m_usd": 3.0,
+          "input_tokens": 137,
+          "model_id": "grok-4.20-beta-0309-reasoning",
+          "output_cost_per_1m_usd": 15.0,
+          "output_tokens": 1,
+          "pricing_key": "xai/grok-4.20-beta-0309-reasoning",
+          "pricing_source": "docs/03-reference/extraction-wizard.md",
+          "pricing_version": "baseline_v1",
+          "provider": "xai",
+          "unknown_model": false,
+          "usage_count": 1
+        },
+        "xai/grok-code-fast-1": {
+          "estimated_cost_usd": 2.18e-05,
+          "input_cost_per_1m_usd": 0.1,
+          "input_tokens": 214,
+          "model_id": "grok-code-fast-1",
+          "output_cost_per_1m_usd": 0.4,
+          "output_tokens": 1,
+          "pricing_key": "xai/grok-code-fast-1",
+          "pricing_source": "docs/03-reference/extraction-wizard.md",
+          "pricing_version": "baseline_v1",
+          "provider": "xai",
+          "unknown_model": false,
+          "usage_count": 1
+        }
+      },
+      "output_tokens": 38,
+      "phase": "DOCTOR",
+      "providers": {
+        "gemini": {
+          "estimated_cost_usd": 2.4e-06,
+          "input_tokens": 12,
+          "output_tokens": 1,
+          "provider": "gemini",
+          "usage_count": 1
+        },
+        "openrouter": {
+          "estimated_cost_usd": 0.000566,
+          "input_tokens": 40,
+          "output_tokens": 34,
+          "provider": "openrouter",
+          "usage_count": 2
+        },
+        "xai": {
+          "estimated_cost_usd": 0.0008678,
+          "input_tokens": 486,
+          "output_tokens": 3,
+          "provider": "xai",
+          "usage_count": 3
+        }
+      }
+    }
+  },
+  "pricing_version": "baseline_v1",
+  "providers": {
+    "gemini": {
+      "estimated_cost_usd": 2.4e-06,
+      "input_tokens": 12,
+      "output_tokens": 1,
+      "provider": "gemini",
+      "usage_count": 1
+    },
+    "openrouter": {
+      "estimated_cost_usd": 0.000566,
+      "input_tokens": 40,
+      "output_tokens": 34,
+      "provider": "openrouter",
+      "usage_count": 2
+    },
+    "xai": {
+      "estimated_cost_usd": 0.0008678,
+      "input_tokens": 486,
+      "output_tokens": 3,
+      "provider": "xai",
+      "usage_count": 3
+    }
+  },
+  "run_id": "run_20260418T031028Z",
+  "total_cost_usd": 0.0014361999999999999,
+  "unknown_model_events": 1,
+  "unknown_model_policy": "baseline_v1_fallback"
+}

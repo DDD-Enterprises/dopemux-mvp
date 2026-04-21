@@ -1,3 +1,17 @@
+---
+id: docs__HISTORICAL__preliminary-docs-normalized__research__findings__superclaude
+  and zen-mcp research
+title: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Superclaude
+  And Zen Mcp Research
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Historical  Preliminary Docs Normalized  Research  Findings  Superclaude
+  And Zen Mcp Research (explanation) for dopemux documentation and developer workflows.
+---
 # Exhaustive technical documentation of zen-mcp and Superclaude
 
 This comprehensive research documents **every individual feature, command, hook, workflow, and file** for zen-mcp and Superclaude with implementation-level detail sufficient for rebuilding each feature from scratch.

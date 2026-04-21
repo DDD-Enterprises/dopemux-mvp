@@ -1,3 +1,15 @@
+---
+id: docs__DMPX IMPORT__finaldocs__product__prd__dopemux_product_requirements
+title: Docs  Dmpx Import  Finaldocs  Product  Prd  Dopemux Product Requirements
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Dmpx Import  Finaldocs  Product  Prd  Dopemux Product Requirements
+  (explanation) for dopemux documentation and developer workflows.
+---
 # Dopemux Product Requirements Document
 ## The World's First Comprehensively ADHD-Accommodated Development Platform
 

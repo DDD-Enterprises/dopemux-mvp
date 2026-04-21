@@ -1,3 +1,15 @@
+---
+id: dopemux-docuXtractor__ARCHITECTURE_STATUS (1)
+title: Dopemux Docuxtractor  Architecture Status (1)
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Dopemux Docuxtractor  Architecture Status (1) (explanation) for dopemux documentation
+  and developer workflows.
+---
 # DocuXtractor Architecture Status
 
 **Date**: 2025-01-24

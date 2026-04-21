@@ -1,0 +1,71 @@
+{
+  "packet": {
+    "name": "DMX-TP-DOPECODE-PHASE6-CODEX-001",
+    "project": "dopemux-mvp",
+    "objective": "Strengthen dopeCode semantic certainty and operator-facing approval/execution receipts without widening mutation authority or weakening verified Phase 5 language and policy guarantees."
+  },
+  "authoritative_surfaces": [
+    "services/serena/dopecode/navigation/ast_engine.py",
+    "services/serena/dopecode/policy/mutation_policy.py",
+    "services/serena/dopecode/transform/write_layer.py",
+    "services/serena/dopecode/transform/refactor_layer.py",
+    "services/serena/dopecode/runtime.py",
+    "services/serena/mcp_server.py"
+  ],
+  "files_changed": [
+    "services/serena/dopecode/navigation/ast_engine.py",
+    "services/serena/dopecode/policy/mutation_policy.py",
+    "services/serena/dopecode/transform/refactor_layer.py",
+    "services/serena/tests/test_dopecode_ast_engine.py",
+    "services/serena/tests/test_dopecode_policy.py",
+    "services/serena/tests/test_dopecode_refactor_layer.py",
+    "services/serena/tests/test_dopecode_write_layer.py",
+    "proof/dopecode_phase6_contract.md",
+    "proof/dopecode_phase6_implementation.md",
+    "proof/dopecode_phase6.proof.json"
+  ],
+  "implementation_notes": {
+    "semantic_scope": "find_callees now returns structured semantic certainty and explicit unresolved reason codes for supported Python, JavaScript, and bounded TypeScript paths.",
+    "approval_scope": "approval_receipt now exposes operator-usable execution status, risk tier, reason, and affected file summary without moving approval authority into dopeCode.",
+    "planning_scope": "Preview refactor responses now include a deterministic refactor_plan receipt for supported rename and body replacement flows."
+  },
+  "validation": {
+    "passed": [
+      "pytest -q services/serena/tests/test_dopecode_ast_engine.py services/serena/tests/test_dopecode_write_layer.py services/serena/tests/test_dopecode_refactor_layer.py services/serena/tests/test_dopecode_policy.py",
+      "pre-commit run --files services/serena/dopecode/navigation/ast_engine.py services/serena/dopecode/policy/mutation_policy.py services/serena/dopecode/transform/refactor_layer.py services/serena/tests/test_dopecode_ast_engine.py services/serena/tests/test_dopecode_policy.py services/serena/tests/test_dopecode_refactor_layer.py services/serena/tests/test_dopecode_write_layer.py proof/dopecode_phase6_contract.md proof/dopecode_phase6_implementation.md proof/dopecode_phase6.proof.json",
+      "python -m json.tool proof/dopecode_phase6.proof.json"
+    ],
+    "codereview": {
+      "status": "manual_diff_review_fixed",
+      "issues_found": 1,
+      "issues_fixed": 1,
+      "scope": [
+        "services/serena/dopecode/navigation/ast_engine.py",
+        "services/serena/dopecode/policy/mutation_policy.py",
+        "services/serena/dopecode/transform/refactor_layer.py",
+        "services/serena/tests/test_dopecode_ast_engine.py",
+        "services/serena/tests/test_dopecode_policy.py",
+        "services/serena/tests/test_dopecode_refactor_layer.py",
+        "services/serena/tests/test_dopecode_write_layer.py"
+      ],
+      "finding_summary": [
+        "Initial semantic_summary counters double-counted unresolved results; summary keys were separated into non-overlapping status and certainty count fields."
+      ]
+    },
+    "observed_regression": []
+  },
+  "constraints_observed": [
+    "Workspace boundary checks remain in WriteLayer.",
+    "Preview paths remain non-mutating in write and refactor flows.",
+    "Approval authority remains outside dopeCode.",
+    "Unsupported semantic cases remain fail closed."
+  ],
+  "remaining_limits": [
+    "Semantic certainty remains bounded to parser-visible and workspace-local evidence.",
+    "Import resolution remains workspace-local and source-directory-relative.",
+    "Inline JavaScript and TypeScript arrow-expression bodies remain fail closed for replace_symbol_body.",
+    "Broader repository drift outside the dopeCode slice remains unverified."
+  ],
+  "confidence": "VERIFIED",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/479"
+}
