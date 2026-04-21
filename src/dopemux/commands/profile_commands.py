@@ -98,7 +98,7 @@ def profile_list_cmd(ctx, profile_dir: Optional[str]):
         sys.exit(1)
     except Exception as e:
         console.logger.error(f"[error]Unexpected error: {e}[/error]")
-        if ctx.obj.get("verbose"):
+        if (ctx.obj or {}).get("verbose"):
             raise
         sys.exit(1)
 
@@ -134,7 +134,7 @@ def profile_init_cmd(ctx, profile_name: Optional[str], output_dir: Optional[str]
         sys.exit(1)
     except Exception as e:
         console.logger.error(f"[error]Unexpected error: {e}[/error]")
-        if ctx.obj.get("verbose"):
+        if (ctx.obj or {}).get("verbose"):
             raise
         sys.exit(1)
 
@@ -178,7 +178,7 @@ def profile_auto_enable_cmd(ctx, check_interval: Optional[int], threshold: Optio
 
     except Exception as e:
         console.logger.error(f"[error]Error: {e}[/error]")
-        if ctx.obj.get("verbose"):
+        if (ctx.obj or {}).get("verbose"):
             raise
         sys.exit(1)
 
@@ -295,7 +295,7 @@ def profile_stats_cmd(ctx, days: int):
 
     except Exception as e:
         console.logger.error(f"[error]Error: {e}[/error]")
-        if ctx.obj.get("verbose"):
+        if (ctx.obj or {}).get("verbose"):
             raise
         sys.exit(1)
 
@@ -331,7 +331,7 @@ def profile_analyze_usage_cmd(ctx, days_back: int, max_commits: int, repo_path: 
         analyzer.display_analysis(analysis)
     except Exception as e:
         console.logger.error(f"[error]Error: {e}[/error]")
-        if ctx.obj.get("verbose"):
+        if (ctx.obj or {}).get("verbose"):
             raise
         sys.exit(1)
 
@@ -428,7 +428,7 @@ def profile_show_cmd(ctx, profile_name: str, profile_dir: Optional[str], raw: bo
         sys.exit(1)
     except Exception as e:
         console.logger.error(f"[error]Unexpected error: {e}[/error]")
-        if ctx.obj.get("verbose"):
+        if (ctx.obj or {}).get("verbose"):
             raise
         sys.exit(1)
 
@@ -524,7 +524,7 @@ def profile_validate_cmd(ctx, profile_name: Optional[str], profile_dir: Optional
         sys.exit(1)
     except Exception as e:
         console.logger.error(f"[error]Unexpected error: {e}[/error]")
-        if ctx.obj.get("verbose"):
+        if (ctx.obj or {}).get("verbose"):
             raise
         sys.exit(1)
 

@@ -217,7 +217,7 @@ def _run_extract_docs(
         except Exception as e:
             progress.update(task, description="Error occurred", completed=True)
             console.logger.error(f"[error]❌ Extraction failed: {e}[/error]")
-            if ctx.obj.get("verbose"):
+            if (ctx.obj or {}).get("verbose"):
                 import traceback
                 traceback.print_exc()
             sys.exit(1)
@@ -536,7 +536,7 @@ def _run_extract_pipeline(
         except Exception as e:
             progress.update(task, description="Error occurred", completed=True)
             console.logger.error(f"[error]❌ Pipeline execution failed: {e}[/error]")
-            if ctx.obj.get("verbose"):
+            if (ctx.obj or {}).get("verbose"):
                 import traceback
                 traceback.print_exc()
             sys.exit(1)
@@ -807,7 +807,7 @@ def _run_extract_cleanup(
         except Exception as e:
             progress.update(task, description="Error occurred", completed=True)
             console.logger.error(f"[error]❌ Cleanup execution failed: {e}[/error]")
-            if ctx.obj.get("verbose"):
+            if (ctx.obj or {}).get("verbose"):
                 import traceback
                 traceback.print_exc()
             sys.exit(1)

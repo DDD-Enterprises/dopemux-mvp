@@ -71,10 +71,11 @@ def init(
     workspace_exists = False
     dopemux_exists = False
     try:
-        workspace_exists = Path.exists(workspace)
+        workspace_exists = workspace.exists()
         dopemux_exists = Path.exists(dopemux_dir)
     except TypeError:
-        pass
+        console.logger.error("[error]Invalid workspace or dopemux path type[/error]")
+        sys.exit(1)
 
     if directory and not workspace_exists and not dopemux_exists:
         console.logger.info(f"[error]Directory does not exist: {workspace}[/error]")

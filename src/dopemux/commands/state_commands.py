@@ -21,12 +21,9 @@ from ..ui.theme import Glyphs, styled_table
 logger = logging.getLogger(__name__)
 
 
-@click.command("backup")
-@click.option("--dest", help="Destination directory for tar backups (defaults to docker/mcp-servers/backups/volumes_<timestamp>)")
-@click.option("--pattern", help="Regex to filter volume names (default: ^(mcp_|dopemux_))")
-@click.option("--no-pull", is_flag=True, help="Do not pull alpine image if missing")
-@click.option("--schedule", type=click.Choice(["daily", "weekly"]), help="Print a cron entry to run backups on a schedule")
-@click.option("--apply", is_flag=True, help="Attempt to install the cron entry into your crontab")
+@click.command("save")
+@click.option("--message", "-m", help="ðŸ’¾ Context Note: Add a descriptive label to the archive.")
+@click.option("--force", "-f", is_flag=True, help="âš¡ Force Extraction: Overwrite existing temporal coordinates.")
 @click.pass_context
 def save(ctx, message: Optional[str], force: bool):
     """
@@ -132,4 +129,4 @@ def restore(ctx, session: Optional[str], list_sessions: bool):
             f"[text.dim]📁 Files: {len(context.get('open_files', []))} files restored[/text.dim]"
         )
     else:
-        console.logger.info("[error]{Glyphs.ERROR} No context found to restore[/error]")
+        console.logger.info(f"[error]{Glyphs.ERROR} No context found to restore[/error]")
