@@ -1,0 +1,16 @@
+{
+  "decision": "BLOCKED",
+  "generated_at": "2026-04-18T03:10:14.537192+00:00",
+  "phase_sequence": [
+    "A",
+    "H",
+    "D",
+    "C"
+  ],
+  "preset": "first-live",
+  "provider_preflight_status": "FAIL",
+  "reasons": [
+    "provider_preflight:fail"
+  ],
+  "validator_status": "PENDING"
+}

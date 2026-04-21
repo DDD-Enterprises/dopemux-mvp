@@ -1,3 +1,15 @@
+---
+id: docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__index
+title: Docs  Dmpx Import  Dopemux Docs  Architecture  09 Decisions  Index
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Dmpx Import  Dopemux Docs  Architecture  09 Decisions  Index (explanation)
+  for dopemux documentation and developer workflows.
+---
 # Architecture Decision Records (ADRs)
 
 This directory contains all architectural decisions made for the Dopemux platform, organized chronologically with proper numbering.

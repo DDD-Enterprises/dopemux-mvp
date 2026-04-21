@@ -1,3 +1,15 @@
+---
+id: docs__DMPX IMPORT__finaldocs__ux__patterns__interaction_patterns
+title: Docs  Dmpx Import  Finaldocs  Ux  Patterns  Interaction Patterns
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Dmpx Import  Finaldocs  Ux  Patterns  Interaction Patterns (explanation)
+  for dopemux documentation and developer workflows.
+---
 # ADHD-Optimized Interaction Patterns
 
 **Version**: 1.0

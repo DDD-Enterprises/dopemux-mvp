@@ -1,3 +1,14 @@
+---
+id: DOCS_AUDIT
+title: Docs Audit
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs Audit (explanation) for dopemux documentation and developer workflows.
+---
 # Docs Audit Report
 
 **Date:** 2026-04-15
@@ -15,16 +26,16 @@ To align user-facing documentation with the strict repository truth established 
    - **Action:** Completely rewritten from scratch.
    - **Rationale:** The old README contained massive amounts of visionary fluff ("AI magic", "supercharged"), blurred the lines of authority, claimed a unified single platform, and presented inaccurate routing details. The new README reflects the composed multi-system workspace, correctly names the planes (Leantime, ConPort, task-orchestrator, dope-memory, dopecon-bridge, adhd_engine, repo-truth-extractor), and enforces the brand system's literal, calm tone.
 
-2. **`QUICKSTART.md`**
+2. **`docs/01-tutorials/quickstart.md`**
    - **Action:** Created/Rewritten to replace `QUICK_START.md`.
-   - **Rationale:** The old `QUICK_START.md` was highly specific to a narrow ADHD-stack testing loop that relied on manually injecting Redis events. The new `QUICKSTART.md` provides a broader, credible path to starting the `compose.yml` stack, running health audits against the bridge and orchestrator, and testing core boundaries.
+   - **Rationale:** The old `QUICK_START.md` was highly specific to a narrow ADHD-stack testing loop that relied on manually injecting Redis events. The new quickstart provides a broader, credible path to starting the `compose.yml` stack, running health audits against the bridge and orchestrator, and testing core boundaries.
 
 3. **`docs/marketing/FEATURES_AND_BENEFITS.md`**
    - **Action:** Created new marketing material.
    - **Rationale:** The user requested marketing collateral that adheres strictly to repo truth without hype. This document outlines the value of a split-plane architecture, chronicle memory, and bridge-mediated integration, targeting system operators.
 
 ### Files Intentionally Left Alone / Removed
-- **`QUICK_START.md` (Legacy):** Marked for deletion/deprecation in favor of the unified `QUICKSTART.md`.
+- **`QUICK_START.md` (Legacy):** Marked for deletion/deprecation in favor of the unified quickstart.
 - **`docs/03-reference/systems/*`**: Left alone as they are the source of truth used to inform this audit.
 - **`TRUTH_*.md` files**: Left alone as they are the foundational extraction artifacts.
 

@@ -34,7 +34,7 @@ The stack is composed of cooperating systems with explicit boundaries:
 
 ## 3. Getting Started
 
-See [QUICKSTART.md](QUICKSTART.md) for the shortest credible path to running the stack.
+See [Quick Start](docs/01-tutorials/quickstart.md) for the shortest credible path to running the stack.
 
 **Basic Setup:**
 ```bash

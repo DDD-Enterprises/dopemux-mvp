@@ -1,3 +1,17 @@
+---
+id: docs__mcpOrchestratorTemp__Architecture and Orchestration Research Claude Flow
+  vs Vlaude code
+title: Docs  Mcporchestratortemp  Architecture And Orchestration Research Claude Flow
+  Vs Vlaude Code
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Mcporchestratortemp  Architecture And Orchestration Research Claude
+  Flow Vs Vlaude Code (explanation) for dopemux documentation and developer workflows.
+---
 Architecture and Orchestration
 Claude-flow: Hive-Mind Swarm Coordination
 Claude-flow implements a hive-mind architecture where a central Queen agent orchestrates numerous specialized worker agents in parallel. In its default hive-mind mode, up to 64 agents can be spawned to tackle different aspects of a task simultaneously (e.g. coders, testers, planners) under the Queen’s coordination. The Queen breaks down objectives and delegates work to worker agents, then integrates their outputs—providing a form of collective intelligence and even basic consensus decision-making across agents
