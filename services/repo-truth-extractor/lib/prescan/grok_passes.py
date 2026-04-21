@@ -2,6 +2,7 @@ import datetime as dt
 import json
 import logging
 import os
+import time
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Any, Optional, List, Dict
@@ -66,17 +67,29 @@ PASS_DESCRIPTIONS = {
     "optimize": "Extraction routing, cost, and compression plan",
 }
 
+_DEDUP_SYSTEM_PROMPT = "You are a deduplication analyst."
+_DISCOVER_SYSTEM_PROMPT = "You are a technical archaeology analyst."
+_FEASIBILITY_SYSTEM_PROMPT = "You are a software feasibility analyst."
+_OPTIMIZE_SYSTEM_PROMPT = "You are an extraction cost optimizer."
+
 PASS_SYSTEM_PROMPTS = {
-    "dedup": "You are a deduplication analyst.",
-    "discover": "You are a technical archaeology analyst.",
-    "feasibility": "You are a software feasibility analyst.",
-    "optimize": "You are an extraction cost optimizer.",
+    "dedup": _DEDUP_SYSTEM_PROMPT,
+    "discover": _DISCOVER_SYSTEM_PROMPT,
+    "feasibility": _FEASIBILITY_SYSTEM_PROMPT,
+    "optimize": _OPTIMIZE_SYSTEM_PROMPT,
 }
 
 class BatchResponseValidator:
     def validate(self, pass_id: str, response: str) -> tuple[bool, dict | None, str]:
         try:
             data = json.loads(response)
+            if pass_id == "discover":
+                for idx, item in enumerate(data.get("hidden_features", [])):
+                    required = {"path", "feature_name", "confidence", "evidence"}
+                    if not required.issubset(set(item.keys())):
+                        return False, None, f"hidden_features[{idx}] missing required fields"
+            if pass_id == "optimize" and "skip_list" in data and not isinstance(data["skip_list"], list):
+                return False, None, "skip_list must be a list"
             return True, data, ""
         except:
             return False, None, "Invalid JSON"
@@ -109,13 +122,14 @@ class GrokPassRunner:
             if not plan or not plan.batches: continue
 
             for i, batch in enumerate(plan.batches):
+                payload = self._build_pass_payload(pass_id, batch, intelligence, manifest, all_results)
                 evidence = ExecutionEvidence(
                     pass_id=pass_id,
                     batch_id=batch.batch_id,
                     planned_candidates=(routing_plan or {}).get("candidate_routes", {}).get(pass_id, []),
                     online_authorized=self.config.allow_online_llm
                 )
-                result = self._call_grok_validated(pass_id, "payload", routing_plan, evidence, est_tokens=batch.estimated_tokens)
+                result = self._call_grok_validated(pass_id, payload, routing_plan, evidence, est_tokens=batch.estimated_tokens)
                 self.evidence_log.append(evidence)
                 if result: all_results[f"{pass_id}_{i}"] = result
 
@@ -173,7 +187,7 @@ class GrokPassRunner:
         if not self.config.allow_online_llm and provider != "mock":
              raise SecurityViolation("Spend gate blocked call")
         if not api_key:
-            raise ValueError(f"API key missing: {candidate['api_key_env']}")
+            raise ValueError(f"API key not found: {candidate['api_key_env']}")
 
         if self.limiter:
             attempt_record.limiter_wait_ms = self.limiter.acquire(est_tokens) * 1000
@@ -183,6 +197,7 @@ class GrokPassRunner:
         return {"status": "mock_success"}
 
     def save_attempts(self) -> Path:
+        self.config.output_dir.mkdir(parents=True, exist_ok=True)
         path = self.config.output_dir / "prescan_llm_attempts.json"
         payload = {
             "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
@@ -190,3 +205,69 @@ class GrokPassRunner:
         }
         path.write_text(json.dumps(payload, indent=2) + "\n")
         return path
+
+    def _build_pass_payload(
+        self,
+        pass_id: str,
+        batch: Any,
+        intelligence: dict[str, Any],
+        manifest: list[dict[str, Any]],
+        prior_results: dict[str, Any],
+    ) -> str:
+        if pass_id == "optimize":
+            grouped: dict[str, list[Any]] = {"dedup": [], "discover": [], "feasibility": []}
+            for key, value in prior_results.items():
+                for prefix in grouped:
+                    if key.startswith(f"{prefix}_"):
+                        grouped[prefix].append(value)
+            return self._build_optimize_payload(intelligence, grouped)
+
+        manifest_index = {m.get("rel_path"): m for m in manifest}
+        files = []
+        for rel_path in getattr(batch, "file_paths", []):
+            item = manifest_index.get(rel_path, {"rel_path": rel_path})
+            files.append(
+                {
+                    "rel_path": rel_path,
+                    "authority_class": item.get("authority_class"),
+                    "lifecycle_stage": item.get("lifecycle_stage"),
+                    "size_bytes": item.get("size_bytes"),
+                }
+            )
+        return json.dumps(
+            {
+                "pass_id": pass_id,
+                "batch_id": getattr(batch, "batch_id", None),
+                "description": PASS_DESCRIPTIONS.get(pass_id, ""),
+                "files": files,
+                "intelligence_hints": intelligence.get("extraction_hints", {}),
+            },
+            sort_keys=True,
+        )
+
+    def _build_optimize_payload(
+        self,
+        intelligence: dict[str, Any],
+        prior_pass_results: dict[str, Any],
+    ) -> str:
+        def _as_list(value: Any) -> list[dict[str, Any]]:
+            if isinstance(value, dict):
+                return [value]
+            if isinstance(value, list):
+                return [v for v in value if isinstance(v, dict)]
+            return []
+
+        payload = {
+            "corpus_summary": intelligence.get("corpus_summary", {}),
+            "extraction_hints": intelligence.get("extraction_hints", {}),
+            "duplicate_assessments": [],
+            "hidden_features": [],
+            "planned_features": [],
+        }
+        for dedup in _as_list(prior_pass_results.get("dedup")):
+            payload["duplicate_assessments"].extend(dedup.get("duplicate_assessments", []))
+        for discover in _as_list(prior_pass_results.get("discover")):
+            payload["hidden_features"].extend(discover.get("hidden_features", []))
+        for feasibility in _as_list(prior_pass_results.get("feasibility")):
+            payload["planned_features"].extend(feasibility.get("planned_features", []))
+        return json.dumps(payload, sort_keys=True)
