@@ -2059,10 +2059,6 @@ def _trigger_dope_context_autoindex_startup(
         return {
             "status": "request_failed",
             "error": str(exc),
-            "endpoint": endpoint,
-        }
-
-
 from .commands.instances_commands import instances
 cli.add_command(instances, "instances")
 
