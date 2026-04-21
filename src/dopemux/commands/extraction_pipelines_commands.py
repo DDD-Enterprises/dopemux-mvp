@@ -7,7 +7,6 @@ Orchestrates LLM-driven extraction rituals across multiple phases and configurat
 
 import logging
 import sys
-from pathlib import Path
 from typing import Callable, List, Optional
 
 import click
@@ -236,7 +235,7 @@ def repscan_passthrough(
     extracting structured semantic knowledge from source code repositories.
     Coordinates with provider ladders for cost-efficient LLM utilization.
     """
-    pipeline_version = _resolved_pipeline_version(
+    _resolved_pipeline_version(
         pipeline_version="v5", engine_version_legacy=legacy_runner
     )
 

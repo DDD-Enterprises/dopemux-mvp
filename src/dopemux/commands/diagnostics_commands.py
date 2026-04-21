@@ -169,7 +169,7 @@ def analyze(
 
     except Exception as e:
         console.logger.error(f"[error]❌ Analysis error: {e}[/error]")
-        if ctx.obj.get("verbose"):
+        if (ctx.obj or {}).get("verbose"):
             import traceback
 
             traceback.print_exc()
