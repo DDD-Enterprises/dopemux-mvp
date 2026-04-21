@@ -54,7 +54,6 @@ class PrescanEngine:
             entries = self.classifier.classify(files)
             
             # 3. Git enrichment
-            changed_files = None
             if self.config.enable_git_enrichment:
                 logger.info("Enriching with git metadata...")
                 try:
