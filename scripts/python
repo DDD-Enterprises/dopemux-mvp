@@ -1,0 +1,14 @@
+#!/bin/bash
+# Permanent Python wrapper for dopemux-mvp
+# Redirects to the project's virtual environment
+
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VENV_PYTHON="${PROJECT_ROOT}/.venv/bin/python"
+
+if [ -f "${VENV_PYTHON}" ]; then
+    exec "${VENV_PYTHON}" "$@"
+else
+    echo "Error: Virtual environment not found at ${VENV_PYTHON}" >&2
+    echo "Please run 'uv sync' or set up the .venv first." >&2
+    exit 1
+fi

@@ -1,0 +1,800 @@
+{
+  "batch_max_requests_per_job": 2000,
+  "batch_mode": false,
+  "batch_provider": "auto",
+  "batch_wait_timeout_seconds": 1800,
+  "generated_at": "2026-04-18T04:00:36.699120+00:00",
+  "phase_sequence": [
+    "A",
+    "H",
+    "D",
+    "C"
+  ],
+  "preset": "first-live",
+  "provider_preflight_status": "FAIL",
+  "route_readiness_summary": {
+    "api_key_env_categories": {
+      "configured_not_required": [],
+      "optional_fallback": [
+        "OPENAI_API_KEY",
+        "XAI_API_KEY"
+      ],
+      "required_active_route": [
+        "GEMINI_API_KEY",
+        "OPENAI_API_KEY",
+        "OPENROUTER_API_KEY",
+        "XAI_API_KEY"
+      ]
+    },
+    "provider_categories": {
+      "configured_not_required": [],
+      "optional_fallback": [
+        "openai",
+        "xai"
+      ],
+      "required_active_route": [
+        "gemini",
+        "openai",
+        "openrouter",
+        "xai"
+      ]
+    },
+    "routes": [
+      {
+        "api_key_env": "GEMINI_API_KEY",
+        "configured_not_required": false,
+        "fallback_chain_present": true,
+        "model_id": "gemini-3-flash-preview",
+        "optional_fallback": true,
+        "provider": "gemini",
+        "required_active_route": true,
+        "requirement_level": "required_active_route",
+        "route_signature": "gemini:gemini-3-flash-preview:GEMINI_API_KEY",
+        "steps": [
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "D",
+            "step_id": "D2"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "D",
+            "step_id": "D3"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 3,
+            "phase": "C",
+            "step_id": "C18"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 3,
+            "phase": "C",
+            "step_id": "C20"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 3,
+            "phase": "C",
+            "step_id": "C21"
+          }
+        ]
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "configured_not_required": false,
+        "fallback_chain_present": true,
+        "model_id": "gpt-5-mini",
+        "optional_fallback": true,
+        "provider": "openai",
+        "required_active_route": true,
+        "requirement_level": "required_active_route",
+        "route_signature": "openai:gpt-5-mini:OPENAI_API_KEY",
+        "steps": [
+          {
+            "ladder_index": 0,
+            "ladder_size": 3,
+            "phase": "C",
+            "step_id": "C18"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 3,
+            "phase": "C",
+            "step_id": "C19"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 3,
+            "phase": "C",
+            "step_id": "C21"
+          }
+        ]
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "configured_not_required": false,
+        "fallback_chain_present": true,
+        "model_id": "gpt-5-nano",
+        "optional_fallback": false,
+        "provider": "openai",
+        "required_active_route": true,
+        "requirement_level": "required_active_route",
+        "route_signature": "openai:gpt-5-nano:OPENAI_API_KEY",
+        "steps": [
+          {
+            "ladder_index": 0,
+            "ladder_size": 3,
+            "phase": "C",
+            "step_id": "C19"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 3,
+            "phase": "C",
+            "step_id": "C20"
+          }
+        ]
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "configured_not_required": false,
+        "fallback_chain_present": false,
+        "model_id": "gpt-5.2",
+        "optional_fallback": true,
+        "provider": "openai",
+        "required_active_route": false,
+        "requirement_level": "optional_fallback",
+        "route_signature": "openai:gpt-5.2:OPENAI_API_KEY",
+        "steps": [
+          {
+            "ladder_index": 2,
+            "ladder_size": 3,
+            "phase": "C",
+            "step_id": "C19"
+          }
+        ]
+      },
+      {
+        "api_key_env": "OPENROUTER_API_KEY",
+        "configured_not_required": false,
+        "fallback_chain_present": true,
+        "model_id": "openai/gpt-5.3-codex",
+        "optional_fallback": false,
+        "provider": "openrouter",
+        "required_active_route": true,
+        "requirement_level": "required_active_route",
+        "route_signature": "openrouter:openai/gpt-5.3-codex:OPENROUTER_API_KEY",
+        "steps": [
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A0"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A1"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A11"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A12"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A13"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "H",
+            "step_id": "H0"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "H",
+            "step_id": "H1"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "H",
+            "step_id": "H3"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "D",
+            "step_id": "D0"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "D",
+            "step_id": "D1"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "D",
+            "step_id": "D4"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "D",
+            "step_id": "D5"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C0"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C2"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C3"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C4"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C8"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C12"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C13"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C14"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C15"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C16"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C17"
+          }
+        ]
+      },
+      {
+        "api_key_env": "OPENROUTER_API_KEY",
+        "configured_not_required": false,
+        "fallback_chain_present": false,
+        "model_id": "openai/gpt-5.4",
+        "optional_fallback": true,
+        "provider": "openrouter",
+        "required_active_route": true,
+        "requirement_level": "required_active_route",
+        "route_signature": "openrouter:openai/gpt-5.4:OPENROUTER_API_KEY",
+        "steps": [
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A0"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A1"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A11"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A12"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A13"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 1,
+            "phase": "A",
+            "step_id": "A99"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "H",
+            "step_id": "H0"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "H",
+            "step_id": "H1"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "H",
+            "step_id": "H3"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 1,
+            "phase": "H",
+            "step_id": "H9"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "D",
+            "step_id": "D0"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "D",
+            "step_id": "D1"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "D",
+            "step_id": "D4"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "D",
+            "step_id": "D5"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C0"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C2"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C3"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C4"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C8"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 1,
+            "phase": "C",
+            "step_id": "C9"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C12"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C13"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C14"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C15"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C16"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C17"
+          }
+        ]
+      },
+      {
+        "api_key_env": "XAI_API_KEY",
+        "configured_not_required": false,
+        "fallback_chain_present": false,
+        "model_id": "grok-4.20-beta-0309-non-reasoning",
+        "optional_fallback": true,
+        "provider": "xai",
+        "required_active_route": false,
+        "requirement_level": "optional_fallback",
+        "route_signature": "xai:grok-4.20-beta-0309-non-reasoning:XAI_API_KEY",
+        "steps": [
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A2"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A3"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A4"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A5"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A6"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A7"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A8"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A9"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A10"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "H",
+            "step_id": "H2"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "H",
+            "step_id": "H4"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "H",
+            "step_id": "H5"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "H",
+            "step_id": "H6"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "H",
+            "step_id": "H7"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "D",
+            "step_id": "D2"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "D",
+            "step_id": "D3"
+          }
+        ]
+      },
+      {
+        "api_key_env": "XAI_API_KEY",
+        "configured_not_required": false,
+        "fallback_chain_present": true,
+        "model_id": "grok-4.20-beta-0309-reasoning",
+        "optional_fallback": true,
+        "provider": "xai",
+        "required_active_route": true,
+        "requirement_level": "required_active_route",
+        "route_signature": "xai:grok-4.20-beta-0309-reasoning:XAI_API_KEY",
+        "steps": [
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A2"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A3"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A4"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A5"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A6"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A7"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A8"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A9"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A10"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "H",
+            "step_id": "H2"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "H",
+            "step_id": "H4"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "H",
+            "step_id": "H5"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "H",
+            "step_id": "H6"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "H",
+            "step_id": "H7"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C1"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C5"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C6"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C7"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C10"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C11"
+          }
+        ]
+      },
+      {
+        "api_key_env": "XAI_API_KEY",
+        "configured_not_required": false,
+        "fallback_chain_present": true,
+        "model_id": "grok-code-fast-1",
+        "optional_fallback": true,
+        "provider": "xai",
+        "required_active_route": true,
+        "requirement_level": "required_active_route",
+        "route_signature": "xai:grok-code-fast-1:XAI_API_KEY",
+        "steps": [
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C1"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C5"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C6"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C7"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C10"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "C",
+            "step_id": "C11"
+          },
+          {
+            "ladder_index": 2,
+            "ladder_size": 3,
+            "phase": "C",
+            "step_id": "C18"
+          },
+          {
+            "ladder_index": 2,
+            "ladder_size": 3,
+            "phase": "C",
+            "step_id": "C20"
+          },
+          {
+            "ladder_index": 2,
+            "ladder_size": 3,
+            "phase": "C",
+            "step_id": "C21"
+          }
+        ]
+      }
+    ],
+    "target_phases": [
+      "A",
+      "H",
+      "D",
+      "C"
+    ],
+    "target_policy": "cost"
+  },
+  "routing_policy": "cost"
+}

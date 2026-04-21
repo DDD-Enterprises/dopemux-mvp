@@ -44,6 +44,10 @@ def test_apply_patch_applies_supported_unified_diff(tmp_path: Path):
 
     assert result["status"] == "applied"
     assert result["approval_receipt"]["execution_mode"] == "direct"
+    assert result["approval_receipt"]["execution_status"] == "ready"
+    assert result["approval_receipt"]["risk_tier"] == "low"
+    assert result["execution_receipt"]["event"]["event_type"] == "dopecode.mutation.applied"
+    assert result["execution_receipt"]["persistence"]["status"] == "recorded"
     assert target.read_text(encoding="utf-8") == "alpha = 1\nbeta = 20\ngamma = 3\n"
 
 
@@ -84,12 +88,16 @@ def test_batch_apply_patch_preserves_deterministic_order_and_reports_partial_fai
     preview = layer.batch_apply_patch(operations, preview=True)
     assert preview["ordered_files"] == ["a.py", "b.py"]
     assert preview["approval_receipt"]["execution_mode"] == "preview_required"
+    assert preview["approval_receipt"]["affected_file_summary"]["count"] == 2
+    assert preview["execution_receipt"]["event"]["event_type"] == "dopecode.mutation.previewed"
     assert workspace.joinpath("a.py").read_text(encoding="utf-8") == "value = 1\n"
     assert workspace.joinpath("b.py").read_text(encoding="utf-8") == "value = 2\n"
 
     result = layer.batch_apply_patch(operations, preview=False)
     assert result["status"] == "partial_failure"
     assert result["approval_receipt"]["execution_mode"] == "approval_required"
+    assert result["approval_receipt"]["execution_status"] == "approval_required"
+    assert result["execution_receipt"]["event"]["event_type"] == "dopecode.mutation.partial_failure"
     assert result["applied_count"] == 1
     assert result["failed_count"] == 1
     assert workspace.joinpath("b.py").read_text(encoding="utf-8") == "value = 20\n"

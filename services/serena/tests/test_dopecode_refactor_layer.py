@@ -46,12 +46,17 @@ async def test_rename_symbol_preview_and_apply_are_workspace_bounded(tmp_path: P
     preview = await refactor.rename_symbol(run_symbol_id, "execute", preview=True)
     assert preview["status"] == "preview"
     assert preview["approval_receipt"]["execution_mode"] == "preview_required"
+    assert preview["approval_receipt"]["execution_status"] == "preview_only"
+    assert preview["execution_receipt"]["event"]["event_type"] == "dopecode.mutation.previewed"
     assert preview["files_affected"] == ["pkg/mod.py", "pkg/other.py"]
+    assert preview["refactor_plan"]["confidence"] == "medium"
+    assert preview["refactor_plan"]["affected_file_summary"]["count"] == 2
     assert workspace.joinpath("pkg", "mod.py").read_text(encoding="utf-8").startswith("def run():")
 
     result = await refactor.rename_symbol(run_symbol_id, "execute", preview=False)
     assert result["status"] == "applied"
     assert result["approval_receipt"]["execution_mode"] == "approval_required"
+    assert result["execution_receipt"]["event"]["event_type"] == "dopecode.mutation.applied"
     assert workspace.joinpath("pkg", "mod.py").read_text(encoding="utf-8").startswith("def execute():")
     assert "run" not in workspace.joinpath("pkg", "other.py").read_text(encoding="utf-8")
 
@@ -83,6 +88,9 @@ async def test_replace_symbol_body_preview_and_apply_preserve_signature(tmp_path
     )
     assert preview["status"] == "preview"
     assert preview["approval_receipt"]["execution_mode"] == "preview_required"
+    assert preview["execution_receipt"]["event"]["event_type"] == "dopecode.mutation.previewed"
+    assert preview["refactor_plan"]["confidence"] == "high"
+    assert preview["refactor_plan"]["target_symbol"] == "run"
     assert preview["line_span"]["body_start_line"] == 2
 
     result = await refactor.replace_symbol_body(
@@ -92,6 +100,7 @@ async def test_replace_symbol_body_preview_and_apply_preserve_signature(tmp_path
     )
     assert result["status"] == "applied"
     assert result["approval_receipt"]["execution_mode"] == "approval_required"
+    assert result["execution_receipt"]["event"]["event_type"] == "dopecode.mutation.applied"
     assert workspace.joinpath("pkg", "mod.py").read_text(encoding="utf-8") == (
         "def run():\n"
         "    result = helper()\n"
@@ -131,6 +140,8 @@ async def test_replace_symbol_body_preview_and_apply_support_javascript(tmp_path
     )
     assert preview["status"] == "preview"
     assert preview["approval_receipt"]["execution_mode"] == "preview_required"
+    assert preview["approval_receipt"]["reason"] == "Symbol refactors must surface blast radius before apply."
+    assert preview["execution_receipt"]["event"]["event_type"] == "dopecode.mutation.previewed"
     assert preview["line_span"]["body_start_line"] == 4
 
     result = await refactor.replace_symbol_body(
@@ -140,6 +151,7 @@ async def test_replace_symbol_body_preview_and_apply_support_javascript(tmp_path
     )
     assert result["status"] == "applied"
     assert result["approval_receipt"]["execution_mode"] == "approval_required"
+    assert result["execution_receipt"]["event"]["event_type"] == "dopecode.mutation.applied"
     assert workspace.joinpath("pkg", "mod.js").read_text(encoding="utf-8") == (
         "import helper from \"./helper\";\n\n"
         "export function run(value) {\n"
@@ -184,6 +196,8 @@ async def test_replace_symbol_body_preview_and_apply_support_typescript_block_fu
     )
     assert preview["status"] == "preview"
     assert preview["approval_receipt"]["execution_mode"] == "preview_required"
+    assert preview["execution_receipt"]["event"]["event_type"] == "dopecode.mutation.previewed"
+    assert preview["refactor_plan"]["affected_file_summary"]["files"] == ["pkg/mod.ts"]
     assert preview["line_span"]["body_start_line"] == 4
 
     result = await refactor.replace_symbol_body(
@@ -193,6 +207,7 @@ async def test_replace_symbol_body_preview_and_apply_support_typescript_block_fu
     )
     assert result["status"] == "applied"
     assert result["approval_receipt"]["execution_mode"] == "approval_required"
+    assert result["execution_receipt"]["event"]["event_type"] == "dopecode.mutation.applied"
     assert workspace.joinpath("pkg", "mod.ts").read_text(encoding="utf-8") == (
         "import helper from \"./helper\";\n\n"
         "export function run(value: string): number {\n"
