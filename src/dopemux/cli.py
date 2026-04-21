@@ -2059,8 +2059,14 @@ def _trigger_dope_context_autoindex_startup(
         return {
             "status": "request_failed",
             "error": str(exc),
+            "endpoint": endpoint,
+        }
+
 from .commands.instances_commands import instances
 cli.add_command(instances, "instances")
+
+from .commands.native_hooks_commands import native_hooks
+cli.add_command(native_hooks, "native-hooks")
 
 from .commands.pr_commands import pr_merge_group
 cli.add_command(pr_merge_group, "pr-merge")
@@ -2548,10 +2554,7 @@ def _check_dangerous_mode_expiry():
 
 from .commands.state_commands import restore, save
 cli.add_command(save, "save")
-cli.add_command(save, "save")
 cli.add_command(save, "backup")
-cli.add_command(save, "save")
-cli.add_command(restore, "restore")
 cli.add_command(restore, "restore")
 
 
