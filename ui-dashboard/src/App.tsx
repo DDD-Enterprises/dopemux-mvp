@@ -123,20 +123,7 @@ const getNotificationColor = (type: string) => {
     case 'warning':
       return brandTokens.colors.saintGold;
     default:
-const getNotificationColor = (type: string) => {
-  switch (type) {
-    case 'info':
-      return brandTokens.colors.serumMint;
-const getNotificationColor = (type: string) => {
-  switch (type) {
-    case 'info':
-      return brandTokens.colors.serumMint;
-    case 'warning':
-      return brandTokens.colors.saintGold;
-    case 'error':
       return brandTokens.colors.gremlinPink;
-    default:
-      return brandTokens.colors.ritualCyan;
   }
 };
 
@@ -488,7 +475,7 @@ function App() {
                 <Chip
                   size="small"
                   variant="outlined"
-                  icon={<Trash2 size={14} />}
+                  icon={<Trash2 size={14} aria-hidden="true" />}
                   label="Clear"
                   onClick={() => {
                     setNotifications([]);
@@ -521,6 +508,7 @@ function App() {
                   <Fade in={true} key={`${notification.timestamp}-${notification.message}`}>
                     <Chip
                       label={`${notification.notificationType}: ${notification.message}`}
+                      variant="outlined"
                       sx={{
                         maxWidth: '100%',
                         borderColor: alpha(severityColor, 0.6),
