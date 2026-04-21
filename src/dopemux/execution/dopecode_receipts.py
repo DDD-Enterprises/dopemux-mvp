@@ -9,6 +9,15 @@ from typing import Any, Dict, Iterable, List
 
 DOPECODE_EXECUTION_RECEIPT_VERSION = "dopecode.execution_receipt.v1"
 DOPECODE_EXECUTION_RECEIPT_RELATIVE_PATH = Path(".dopemux/dopecode/execution_receipts.jsonl")
+DOPECODE_EVENT_TYPES = frozenset(
+    {
+        "dopecode.mutation.previewed",
+        "dopecode.mutation.applied",
+        "dopecode.mutation.noop",
+        "dopecode.mutation.partial_failure",
+        "dopecode.mutation.failed",
+    }
+)
 
 REQUIRED_EVENT_FIELDS = (
     "schema_version",
@@ -37,12 +46,23 @@ def dopecode_receipt_ledger_path(workspace_root: Path) -> Path:
     return Path(workspace_root).resolve() / DOPECODE_EXECUTION_RECEIPT_RELATIVE_PATH
 
 
-def _validate_event(event: Dict[str, Any], workspace_root: Path) -> Dict[str, Any]:
+def _validate_event(
+    event: Dict[str, Any], workspace_root: Path, expected_workspace_id: str | None = None
+) -> Dict[str, Any]:
     missing = [field for field in REQUIRED_EVENT_FIELDS if field not in event]
     if missing:
         raise DopeCodeReceiptReadError(f"Execution receipt missing required fields: {missing}")
     if event["schema_version"] != DOPECODE_EXECUTION_RECEIPT_VERSION:
         raise DopeCodeReceiptReadError(f"Unsupported execution receipt schema: {event['schema_version']!r}")
+    if event["event_type"] not in DOPECODE_EVENT_TYPES:
+        raise DopeCodeReceiptReadError(f"Unsupported execution receipt event type: {event['event_type']!r}")
+    workspace_id = str(event["workspace_id"]).strip()
+    if not workspace_id:
+        raise DopeCodeReceiptReadError("Execution receipt workspace_id must be non-empty")
+    if expected_workspace_id is not None and workspace_id != expected_workspace_id:
+        raise DopeCodeReceiptReadError(
+            f"Execution receipt workspace_id mismatch: {event['workspace_id']!r}"
+        )
     if Path(event["workspace_root"]).resolve() != workspace_root.resolve():
         raise DopeCodeReceiptReadError(
             f"Execution receipt workspace_root mismatch: {event['workspace_root']!r}"
@@ -52,7 +72,9 @@ def _validate_event(event: Dict[str, Any], workspace_root: Path) -> Dict[str, An
     return event
 
 
-def load_dopecode_execution_receipts(workspace_root: Path) -> List[Dict[str, Any]]:
+def load_dopecode_execution_receipts(
+    workspace_root: Path, expected_workspace_id: str | None = None
+) -> List[Dict[str, Any]]:
     ledger_path = dopecode_receipt_ledger_path(workspace_root)
     if not ledger_path.exists():
         return []
@@ -71,7 +93,13 @@ def load_dopecode_execution_receipts(workspace_root: Path) -> List[Dict[str, Any
             raise DopeCodeReceiptReadError(
                 f"Execution receipt ledger line {line_no} must decode to an object"
             )
-        events.append(_validate_event(payload, Path(workspace_root)))
+        events.append(
+            _validate_event(
+                payload,
+                Path(workspace_root),
+                expected_workspace_id=expected_workspace_id,
+            )
+        )
     return events
 
 

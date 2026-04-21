@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 import sys
 
@@ -11,11 +12,13 @@ for candidate in (REPO_ROOT, SRC_ROOT):
         sys.path.insert(0, str(candidate))
 
 from dopemux.execution.dopecode_receipts import (
+    DopeCodeReceiptReadError,
     build_dopecode_execution_history_view,
     load_dopecode_execution_receipts,
     replay_dopecode_execution_receipts,
 )
 from services.serena.dopecode.execution_receipts import (
+    DOPECODE_EXECUTION_RECEIPT_RELATIVE_PATH,
     DopeCodeExecutionReceiptStore,
     ReceiptReplayMismatchError,
 )
@@ -80,6 +83,51 @@ def test_execution_receipt_store_fails_closed_on_idempotency_mismatch(tmp_path: 
 
     with pytest.raises(ReceiptReplayMismatchError):
         store.append_event(conflicting)
+
+
+def test_dopemux_reader_rejects_unsupported_event_type(tmp_path: Path):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    store = DopeCodeExecutionReceiptStore(workspace, "ws-test")
+    event = store.build_event(
+        event_type="dopecode.mutation.applied",
+        lifecycle_stage="apply",
+        operation="apply_patch",
+        operation_class="single_file_patch",
+        execution_mode="direct",
+        execution_status="ready",
+        mutation_context={"path": "pkg/module.py", "diff_sha256": "abc"},
+        payload={"status": "applied", "summary": "ok", "files": ["pkg/module.py"]},
+        ts_utc="2026-04-18T12:00:00Z",
+    )
+    event["event_type"] = "dopecode.mutation.unknown"
+    ledger_path = workspace / DOPECODE_EXECUTION_RECEIPT_RELATIVE_PATH
+    ledger_path.parent.mkdir(parents=True, exist_ok=True)
+    ledger_path.write_text(f"{json.dumps(event)}\n", encoding="utf-8")
+
+    with pytest.raises(DopeCodeReceiptReadError, match="Unsupported execution receipt event type"):
+        load_dopecode_execution_receipts(workspace)
+
+
+def test_dopemux_reader_rejects_workspace_id_mismatch(tmp_path: Path):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    store = DopeCodeExecutionReceiptStore(workspace, "ws-test")
+    event = store.build_event(
+        event_type="dopecode.mutation.applied",
+        lifecycle_stage="apply",
+        operation="apply_patch",
+        operation_class="single_file_patch",
+        execution_mode="direct",
+        execution_status="ready",
+        mutation_context={"path": "pkg/module.py", "diff_sha256": "abc"},
+        payload={"status": "applied", "summary": "ok", "files": ["pkg/module.py"]},
+        ts_utc="2026-04-18T12:00:00Z",
+    )
+    store.append_event(event)
+
+    with pytest.raises(DopeCodeReceiptReadError, match="Execution receipt workspace_id mismatch"):
+        load_dopecode_execution_receipts(workspace, expected_workspace_id="ws-other")
 
 
 @pytest.mark.asyncio
