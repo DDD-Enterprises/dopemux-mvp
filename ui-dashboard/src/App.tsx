@@ -459,13 +459,7 @@ function App() {
             >
               Live Signal Feed
             </Typography>
-            {isLoading && (
-              <CircularProgress
-                size={16}
-                sx={{ ml: 'auto' }}
-                aria-label="Loading updates"
-              />
-            )}
+            {isLoading && <CircularProgress size={16} sx={{ ml: 'auto' }} />}
             {notifications.length > 0 && (
               <Tooltip title="Clear all notifications to reduce visual noise" arrow>
                 <Chip

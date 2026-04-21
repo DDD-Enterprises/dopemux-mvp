@@ -484,12 +484,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           </Box>
         </Tooltip>
         <Tooltip title="Consent → Calibration → Chaos → Care" arrow>
-          <Box
-            component="span"
-            tabIndex={0}
-            sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}
-            aria-label="Ritual phases: Consent, Calibration, Chaos, and Care"
-          >
+          <Box component="span" tabIndex={0} sx={{ display: 'flex', alignItems: 'center' }}>
             <Flame size={16} color={brandTokens.colors.gremlinPink} aria-hidden="true" />
           </Box>
         </Tooltip>
