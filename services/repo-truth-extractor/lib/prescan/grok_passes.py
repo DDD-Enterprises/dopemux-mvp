@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Any, List, Dict
@@ -131,19 +132,86 @@ class GrokPassRunner:
             plan = batch_plans.get(pass_id)
             if not plan or not plan.batches: continue
 
-            for i, batch in enumerate(plan.batches):
+            pass_results: list[dict[str, Any]] = []
+            for batch in plan.batches:
                 evidence = ExecutionEvidence(
                     pass_id=pass_id,
                     batch_id=batch.batch_id,
                     planned_candidates=(routing_plan or {}).get("candidate_routes", {}).get(pass_id, []),
                     online_authorized=self.config.allow_online_llm
                 )
-                result = self._call_grok_validated(pass_id, "payload", routing_plan, evidence, est_tokens=batch.estimated_tokens)
+                payload = self._build_batch_payload(
+                    pass_id=pass_id,
+                    intelligence=intelligence,
+                    manifest=manifest,
+                    batch=batch,
+                    prior_pass_results=all_results,
+                )
+                payload_json = json.dumps(payload, sort_keys=True)
+                result = self._call_grok_validated(
+                    pass_id,
+                    payload_json,
+                    routing_plan,
+                    evidence,
+                    est_tokens=batch.estimated_tokens,
+                )
                 self.evidence_log.append(evidence)
-                if result: all_results[f"{pass_id}_{i}"] = result
+                if result:
+                    pass_results.append(result)
+
+            merged = self._merge_pass_results(pass_results)
+            if merged:
+                all_results[pass_id] = merged
 
         self.save_attempts()
         return all_results
+
+    def _build_batch_payload(
+        self,
+        pass_id: str,
+        intelligence: dict[str, Any],
+        manifest: list[dict[str, Any]],
+        batch: Any,
+        prior_pass_results: dict[str, Any],
+    ) -> dict[str, Any]:
+        selected_paths = set(getattr(batch, "file_paths", []) or [])
+        batch_manifest = [row for row in manifest if row.get("rel_path") in selected_paths]
+        payload: dict[str, Any] = {
+            "pass_id": pass_id,
+            "batch_id": getattr(batch, "batch_id", None),
+            "estimated_tokens": getattr(batch, "estimated_tokens", 0),
+            "corpus_summary": dict(intelligence.get("corpus_summary") or {}),
+            "lifecycle_distribution": dict(
+                intelligence.get("lifecycle_distribution") or {}
+            ),
+            "manifest": batch_manifest,
+            "extraction_hints": dict(intelligence.get("extraction_hints") or {}),
+            "duplicate_groups": dict(intelligence.get("duplicate_groups") or {}),
+            "version_chains": dict(intelligence.get("version_chains") or {}),
+            "planned_features": dict(intelligence.get("planned_features") or {}),
+        }
+        if pass_id == "optimize":
+            payload["prior_pass_summaries"] = self._build_optimize_payload(
+                intelligence, prior_pass_results
+            )
+        return payload
+
+    def _merge_pass_results(self, results: list[dict[str, Any]]) -> dict[str, Any]:
+        merged: dict[str, Any] = {}
+        for item in results:
+            if not isinstance(item, Mapping):
+                continue
+            for key, value in item.items():
+                if key not in merged:
+                    merged[key] = value
+                    continue
+                if isinstance(merged[key], list) and isinstance(value, list):
+                    merged[key].extend(value)
+                elif isinstance(merged[key], dict) and isinstance(value, dict):
+                    merged[key].update(value)
+                else:
+                    merged[key] = value
+        return merged
 
     def _call_grok_validated(
         self, 

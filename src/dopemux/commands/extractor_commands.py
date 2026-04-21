@@ -113,8 +113,8 @@ def prescan(
         "Integrated Stage 0 prescan is now the default behavior for canonical v5 extraction.\n"
         "To run a prescan or full extraction, use:\n"
         "  dopemux extract truth-run --phase A --dry-run\n\n"
-        "To explicitly skip the integrated prescan, pass --skip-prescan.\n"
-        "To load precomputed prescan intelligence, pass --import-prescan <DIR>."
+        "For all supported truth-run options, use:\n"
+        "  dopemux extract truth-run --help"
     )
 
 # ---- Init command ----

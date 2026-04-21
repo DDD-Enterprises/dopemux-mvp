@@ -15,7 +15,6 @@ from .grok_passes import GrokPassRunner
 from .code_prescan import CodePrescan
 from .dependency_graph import DependencyGraph
 from .batch_planner import BatchPlanner
-from .cost_estimator import CostEstimator
 from .provider_catalog import (
     build_provider_model_catalog,
     build_prescan_routing_plan,
@@ -34,8 +33,6 @@ class PrescanEngine:
         self.detector = DuplicateDetector(config)
         self.code_scanner = CodePrescan(config)
         self.dep_graph = DependencyGraph()
-        self.cost_estimator = CostEstimator(config)
-        self.batch_planner = BatchPlanner(config, self.cost_estimator, self.dep_graph)
         self.grok_runner = GrokPassRunner(config, limiter=limiter)
 
     def run(self, passes: list[str] | None = None, incremental: bool = False) -> PrescanResult:
@@ -73,7 +70,9 @@ class PrescanEngine:
                 try:
                     code_entries = [e for e in entries if e.include and e.extension in self.config.code_languages]
                     code_intel = self.code_scanner.scan([e.rel_path for e in code_entries])
-                    self.dep_graph.build(code_intel)
+                    self.dep_graph.build_from_code_intelligence(
+                        code_intel, [entry.to_dict() for entry in entries]
+                    )
                 except Exception as e:
                     logger.warning(f"Code intelligence failed: {e}")
                     warnings.append(f"Code intelligence failed: {e}")
@@ -92,7 +91,11 @@ class PrescanEngine:
                 # 7a. Batch planning
                 logger.info("Planning token-aware batches...")
                 manifest = [e.to_dict() for e in entries]
-                batch_plans = self.batch_planner.plan(passes, intelligence, manifest)
+                batch_planner = BatchPlanner(self.config, entries, manifest)
+                batch_plans = {
+                    pass_id: batch_planner.plan_batches(pass_id, intelligence)
+                    for pass_id in passes
+                }
                 
                 # Save batch plan
                 batch_plan_path = self.config.output_dir / "batch_plan.json"
@@ -105,7 +108,9 @@ class PrescanEngine:
                 routing_plan = None
                 try:
                     catalog_data = build_provider_model_catalog(self.config)
-                    routing_plan = build_prescan_routing_plan(self.config, passes, batch_plans)
+                    routing_plan = build_prescan_routing_plan(
+                        self.config, catalog_data, passes
+                    )
                     
                     # Save routing plan
                     write_routing_plan(self.config.output_dir, routing_plan)
@@ -139,7 +144,7 @@ class PrescanEngine:
                 intelligence_path=intel_path,
                 manifest_path=manifest_path,
                 file_count=len(entries),
-                included_count=sum(1 for e in entries if e.include),
+                code_files_analyzed=len(code_intel),
                 duration_seconds=round(duration, 2),
                 warnings=warnings,
                 errors=errors,
@@ -152,7 +157,9 @@ class PrescanEngine:
             return PrescanResult(
                 success=False,
                 errors=[str(e)],
-                duration_seconds=round(time.time() - start_time, 2)
+                duration_seconds=round(time.time() - start_time, 2),
+                file_count=0,
+                code_files_analyzed=0,
             )
 
         finally:
