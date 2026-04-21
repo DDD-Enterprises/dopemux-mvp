@@ -265,9 +265,15 @@ After prescan completes:
 3. **Review cost estimate** — Plan token budget for extraction
 4. **Run extraction** — Use prescan output for extraction routing
    ```bash
+   # Method A: Integrated Prescan (Automatic Stage 0)
    python services/repo-truth-extractor/run_extraction_v5.py \
      --repo-root /path/to/repo \
-     --prescan-dir extraction/prescan_output
+     --phase A,B  # Runs local prescan automatically
+
+   # Method B: Import precomputed prescan
+   python services/repo-truth-extractor/run_extraction_v5.py \
+     --repo-root /path/to/repo \
+     --prescan-import-dir extraction/prescan_output
    ```
 
 ## Tips

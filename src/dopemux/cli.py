@@ -2654,7 +2654,7 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
             "🧠 Attention Metrics",
             ("Metric", {"style": "mint"}),
             ("Value", {"style": "mint.soft"}),
-            ("Status", {"style": "gold"}),
+            ("Status", {"style": "yellow"}),
         )
 
         table.add_row(
@@ -2712,7 +2712,7 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
                 "📋 Task Progress",
                 ("Task", {"style": "mint"}),
                 ("Status", {"style": "mint.soft"}),
-                ("Progress", {"style": "gold"}),
+                ("Progress", {"style": "yellow"}),
             )
 
             for task in progress_info.get("tasks", []):
@@ -2963,7 +2963,7 @@ def task(
         table = styled_table(
             f"{Glyphs.INFO} Current Tasks",
             ("Task", {"style": "mint"}),
-            ("Priority", {"style": "gold"}),
+                ("Priority", {"style": "yellow"}),
             ("Duration", {"style": "mint.soft"}),
             ("Status", {"style": "violet"}),
         )
@@ -3864,16 +3864,13 @@ def _check_dangerous_mode_expiry():
     return False
 
 
-@cli.command("backup")
-@click.option("--dest", help="Destination directory for tar backups (defaults to docker/mcp-servers/backups/volumes_<timestamp>)")
-@click.option("--pattern", help="Regex to filter volume names (default: ^(mcp_|dopemux_))")
-@click.option("--no-pull", is_flag=True, help="Do not pull alpine image if missing")
-@click.option("--schedule", type=click.Choice(["daily", "weekly"]), help="Print a cron entry to run backups on a schedule")
-@click.option("--apply", is_flag=True, help="Attempt to install the cron entry into your crontab")
+@cli.command("save")
+@click.option("--message", "-m", help="Add a note to the saved context snapshot.")
+@click.option("--force", "-f", is_flag=True, help="Save even if the workspace appears unchanged.")
 @click.pass_context
 def save(ctx, message: Optional[str], force: bool):
     """
-    💾 Archive Context: Save current development mental model
+    💾 Save Current Context
 
     Captures the active state of the flight-deck, including open artifacts, 
     cursor coordinates, and cognitive decisions. Stores this snapshot in 
@@ -3900,6 +3897,9 @@ def save(ctx, message: Optional[str], force: bool):
     )
     if message:
         console.logger.info(f"[text.dim]Note: {message}[/text.dim]")
+
+
+cli.add_command(save, "backup")
 
 
 @cli.command()
@@ -3935,7 +3935,7 @@ def restore(ctx, session: Optional[str], list_sessions: bool):
             "Available Sessions",
             ("ID", {"style": "mint"}),
             ("Timestamp", {"style": "mint.soft"}),
-            ("Goal", {"style": "gold"}),
+            ("Goal", {"style": "yellow"}),
             ("Files", {"justify": "right", "style": "violet"}),
         )
 
@@ -4771,6 +4771,11 @@ def extractor_list(ctx, pipeline_version: str, engine_version_legacy: Optional[s
     show_default=True,
     help="🔄 State Sync: Sync local artifacts before ignition (v4 only).",
 )
+@click.option("--skip-prescan", is_flag=True, help="⏩ Skip integrated Stage 0 prescan.")
+@click.option("--prescan-import-dir", type=click.Path(exists=True, file_okay=False), help="📥 Import external prescan artifacts.")
+@click.option("--prescan-online", is_flag=True, help="📡 Authorize online LLM passes in prescan.")
+@click.option("--prescan-allow-scope-reduction", is_flag=True, help="⚖️  Allow scope reduction.")
+@click.option("--allow-online-llm", is_flag=True, help="💸 Authorize online LLM spend for whole run.")
 @click.pass_context
 def extractor_run(
     ctx,
@@ -4804,6 +4809,11 @@ def extractor_run(
     quiet: bool,
     jsonl_events: bool,
     sync: bool,
+    skip_prescan: bool,
+    prescan_import_dir: Optional[str],
+    prescan_online: bool,
+    prescan_allow_scope_reduction: bool,
+    allow_online_llm: bool,
 ):
     """
     🚀 Ignite Pipeline: Run the Repo Truth Extractor (resumable)
@@ -4814,6 +4824,18 @@ def extractor_run(
     effective_version = _resolved_pipeline_version(
         pipeline_version, engine_version_legacy
     )
+    if effective_version != "v5" and any(
+        [
+            skip_prescan,
+            bool(prescan_import_dir),
+            prescan_online,
+            prescan_allow_scope_reduction,
+            allow_online_llm,
+        ]
+    ):
+        raise click.UsageError(
+            "Prescan flags are only supported with --version v5."
+        )
     effective_routing_policy = routing_policy or (
         _V5_DEFAULT_ROUTING_POLICY
         if effective_version == "v5"
@@ -4867,6 +4889,20 @@ def extractor_run(
         args.append("--jsonl-events")
     if effective_version == "v4":
         args.extend(["--sync" if sync else "--no-sync"])
+    
+    # ── Integrated Prescan Flags (v5 only) ──
+    if effective_version == "v5":
+        if skip_prescan:
+            args.append("--skip-prescan")
+        if prescan_import_dir:
+            args.extend(["--prescan-import-dir", prescan_import_dir])
+        if prescan_online:
+            args.append("--prescan-online")
+        if prescan_allow_scope_reduction:
+            args.append("--prescan-allow-scope-reduction")
+        if allow_online_llm:
+            args.append("--allow-online-llm")
+
     _run_extractor_runner(pipeline_version=effective_version, args=args)
 
 

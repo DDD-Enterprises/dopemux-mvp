@@ -1,0 +1,71 @@
+{
+  "packet": {
+    "name": "DMX-TP-DOPECODE-PHASE5-CODEX-001",
+    "project": "dopemux-mvp",
+    "objective": "Extend dopeCode with bounded TypeScript-aware navigation and refactor support while making approval requirements operator-visible and preserving verified Phase 4 policy and mutation guarantees."
+  },
+  "authoritative_surfaces": [
+    "services/serena/dopecode/navigation/ast_engine.py",
+    "services/serena/dopecode/transform/refactor_layer.py",
+    "services/serena/dopecode/transform/write_layer.py",
+    "services/serena/dopecode/policy/mutation_policy.py",
+    "services/serena/dopecode/runtime.py",
+    "services/serena/mcp_server.py"
+  ],
+  "files_changed": [
+    "services/serena/dopecode/navigation/ast_engine.py",
+    "services/serena/dopecode/policy/mutation_policy.py",
+    "services/serena/dopecode/transform/refactor_layer.py",
+    "services/serena/dopecode/transform/write_layer.py",
+    "services/serena/tests/test_dopecode_ast_engine.py",
+    "services/serena/tests/test_dopecode_policy.py",
+    "services/serena/tests/test_dopecode_refactor_layer.py",
+    "services/serena/tests/test_dopecode_write_layer.py",
+    "proof/dopecode_phase5_contract.md",
+    "proof/dopecode_phase5_implementation.md",
+    "proof/dopecode_phase5.proof.json"
+  ],
+  "implementation_notes": {
+    "typescript_scope": "Bounded TypeScript and TSX parser-backed symbol discovery, callee resolution, and import graph resolution for top-level value symbols and workspace-local relative value imports.",
+    "refactor_scope": "replace_symbol_body supports Python, JavaScript, and block-bodied TypeScript symbols where parser body boundaries are structurally provable.",
+    "approval_scope": "Mutation responses now expose approval_receipt derived from MutationPolicyDecision without moving approval authority into dopeCode.",
+    "runtime_wiring": "No public MCP tool rename or registration change was required; existing tools return the updated runtime response payloads."
+  },
+  "validation": {
+    "passed": [
+      "pytest -q services/serena/tests/test_dopecode_ast_engine.py services/serena/tests/test_dopecode_write_layer.py services/serena/tests/test_dopecode_refactor_layer.py services/serena/tests/test_dopecode_policy.py",
+      "pre-commit run --files services/serena/dopecode/navigation/ast_engine.py services/serena/dopecode/policy/mutation_policy.py services/serena/dopecode/transform/refactor_layer.py services/serena/dopecode/transform/write_layer.py services/serena/tests/test_dopecode_ast_engine.py services/serena/tests/test_dopecode_policy.py services/serena/tests/test_dopecode_refactor_layer.py services/serena/tests/test_dopecode_write_layer.py proof/dopecode_phase5_contract.md proof/dopecode_phase5_implementation.md proof/dopecode_phase5.proof.json",
+      "python -m json.tool proof/dopecode_phase5.proof.json"
+    ],
+    "codereview": {
+      "status": "manual_diff_review_clean_after_fix",
+      "issues_found": 1,
+      "issues_fixed": 1,
+      "scope": [
+        "services/serena/dopecode/navigation/ast_engine.py",
+        "services/serena/dopecode/policy/mutation_policy.py",
+        "services/serena/dopecode/transform/refactor_layer.py",
+        "services/serena/dopecode/transform/write_layer.py",
+        "services/serena/tests/test_dopecode_ast_engine.py",
+        "services/serena/tests/test_dopecode_policy.py",
+        "services/serena/tests/test_dopecode_refactor_layer.py",
+        "services/serena/tests/test_dopecode_write_layer.py"
+      ]
+    },
+    "observed_regression": []
+  },
+  "constraints_observed": [
+    "Workspace boundary checks remain in WriteLayer.",
+    "Preview paths remain non-mutating in write and refactor tests.",
+    "TypeScript import resolution is workspace-local and source-directory-relative.",
+    "Type-only TypeScript imports are not treated as value imports."
+  ],
+  "remaining_limits": [
+    "TypeScript semantic analysis is not implemented.",
+    "Inline TypeScript arrow-expression bodies remain fail-closed for replace_symbol_body.",
+    "TypeScript type-only declarations are not mutation targets.",
+    "Broader repository drift outside the dopeCode slice remains unverified."
+  ],
+  "confidence": "VERIFIED",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/478"
+}

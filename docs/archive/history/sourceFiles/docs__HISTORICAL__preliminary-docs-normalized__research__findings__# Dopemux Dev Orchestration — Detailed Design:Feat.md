@@ -1,3 +1,18 @@
+---
+id: "docs__HISTORICAL__preliminary-docs-normalized__research__findings__# Dopemux\
+  \ Dev Orchestration \u2014 Detailed Design:Feat"
+title: "Docs  Historical  Preliminary Docs Normalized  Research  Findings  # Dopemux\
+  \ Dev Orchestration \u2014 Detailed Design:Feat"
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: "Docs  Historical  Preliminary Docs Normalized  Research  Findings  # Dopemux\
+  \ Dev Orchestration \u2014 Detailed Design:Feat (explanation) for dopemux documentation\
+  \ and developer workflows."
+---
 # Dopemux Dev Orchestration — Detailed Design/Feature Spec (v0.2)
 
 **Author:** Dopemux Core • **Status:** Draft for implementation • **Updated:** 2025‑09‑17 • **Scope:** Phase 1–2

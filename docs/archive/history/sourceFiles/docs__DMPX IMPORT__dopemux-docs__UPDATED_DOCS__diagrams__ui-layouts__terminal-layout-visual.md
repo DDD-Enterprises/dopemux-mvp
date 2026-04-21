@@ -1,3 +1,16 @@
+---
+id: docs__DMPX IMPORT__dopemux-docs__UPDATED_DOCS__diagrams__ui-layouts__terminal-layout-visual
+title: Docs  Dmpx Import  Dopemux Docs  Updated Docs  Diagrams  Ui Layouts  Terminal
+  Layout Visual
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Dmpx Import  Dopemux Docs  Updated Docs  Diagrams  Ui Layouts  Terminal
+  Layout Visual (explanation) for dopemux documentation and developer workflows.
+---
 # Dopemux Terminal Layout - Visual Specification
 
 ## Main Development Layout (Default)

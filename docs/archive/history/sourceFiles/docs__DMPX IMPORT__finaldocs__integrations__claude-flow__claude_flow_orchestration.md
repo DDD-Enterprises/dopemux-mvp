@@ -1,3 +1,15 @@
+---
+id: docs__DMPX IMPORT__finaldocs__integrations__claude-flow__claude_flow_orchestration
+title: Docs  Dmpx Import  Finaldocs  Integrations  Claude Flow  Claude Flow Orchestration
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Dmpx Import  Finaldocs  Integrations  Claude Flow  Claude Flow Orchestration
+  (explanation) for dopemux documentation and developer workflows.
+---
 # Claude-Flow Multi-Agent Orchestration System
 
 **Version**: 1.0

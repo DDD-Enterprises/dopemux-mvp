@@ -31,7 +31,7 @@ sqlalchemy==2.0.23
 alembic==1.13.1
 
 # === Environment & Configuration ===
-python-dotenv==1.0.0
+python-dotenv==1.2.2
 
 # === Development & Testing ===
 pytest==9.0.3

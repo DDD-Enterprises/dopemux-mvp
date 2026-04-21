@@ -2,11 +2,56 @@ import datetime as dt
 import json
 import logging
 import os
+import time
+from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional, List, Dict
 from .models import PrescanConfig
 
 logger = logging.getLogger(__name__)
+
+class RTEPrescanError(Exception):
+    """Base error for prescan."""
+    pass
+
+class SecurityViolation(RTEPrescanError):
+    """Raised when an online call is attempted without authorization."""
+    pass
+
+class RoutingExhausted(RTEPrescanError):
+    """Raised when all candidates in a route ladder fail."""
+    pass
+
+@dataclass
+class ExecutionAttempt:
+    provider: str
+    model: str
+    api_key_env: str
+    status: str  # success|failed|skipped
+    latency_ms: float = 0.0
+    error: str | None = None
+    limiter_wait_ms: float = 0.0
+    tokens_prompt: int = 0
+    tokens_completion: int = 0
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+@dataclass
+class ExecutionEvidence:
+    pass_id: str
+    batch_id: str | None
+    planned_candidates: list[dict]
+    attempts: list[ExecutionAttempt] = field(default_factory=list)
+    final_status: str = "pending"
+    online_authorized: bool = False
+    total_latency_ms: float = 0.0
+    total_tokens: int = 0
+
+    def to_dict(self) -> dict:
+        d = asdict(self)
+        d["attempts"] = [a.to_dict() for a in self.attempts]
+        return d
 
 XAI_BASE_URL = "https://api.x.ai/v1"
 DEFAULT_MODEL = "grok-4.20-beta-0309-non-reasoning"
@@ -22,185 +67,10 @@ PASS_DESCRIPTIONS = {
     "optimize": "Extraction routing, cost, and compression plan",
 }
 
-_DEDUP_SYSTEM_PROMPT = """\
-You are a documentation deduplication analyst for a software repository.
-You receive groups of files that are exact or near-duplicates (by SHA256 or
-filename version pattern). Your job is to:
-
-1. Confirm or reject each duplicate group as a true semantic duplicate.
-2. For version chains (e.g., doc.md, doc-v2.md, doc-v3.md), produce a
-   compressed evolution summary capturing:
-   - What changed between versions (key additions/removals/pivots)
-   - The original intent and how it evolved
-   - Whether the latest supersedes all prior versions
-3. Flag any pairs that appear duplicate but contain divergent intent.
-
-Return valid JSON:
-{
-  "duplicate_assessments": [
-    {
-      "group_id": "abc12345",
-      "confirmed_duplicate": true,
-      "canonical_path": "path/to/canonical.md",
-      "superseded_paths": ["path/to/old.md"],
-      "confidence": 0.0-1.0,
-      "reasoning": "max 60 words"
-    }
-  ],
-  "version_chain_summaries": [
-    {
-      "chain_id": "xyz98765",
-      "base_topic": "brief topic name",
-      "evolution_narrative": "max 150 words capturing intent evolution",
-      "latest_path": "path/to/latest.md",
-      "superseded_paths": ["path/to/v1.md", "path/to/v2.md"],
-      "key_changes": ["feature added in v2", "scope narrowed in v3"]
-    }
-  ],
-  "divergent_pairs": [
-    {
-      "paths": ["a.md", "b.md"],
-      "reason": "despite similar title, these cover different systems"
-    }
-  ]
-}
-"""
-
-_DISCOVER_SYSTEM_PROMPT = """\
-You are a technical archaeology analyst for a software repository.
-You receive documentation files with git metadata (lifecycle stage, commit
-history, churn score). Your job is to surface:
-
-1. Hidden features: functionality described in docs but not obviously exposed
-   in the main README or CLI help.
-2. Drift signals: documentation that describes planned/aspirational behavior
-   that may not match the current codebase (stale claims, version mismatches,
-   future-tense descriptions presented as present-tense).
-3. Ghost file assessment: for deleted files recovered from git history, assess
-   whether their content is worth restoring or referencing.
-4. Rediscovery candidates: frozen docs (>1 year unchanged) that may contain
-   valuable ideas worth surfacing in a new context.
-
-Return valid JSON:
-{
-  "hidden_features": [
-    {
-      "path": "doc/path.md",
-      "feature_name": "brief name",
-      "description": "max 80 words",
-      "confidence": 0.0-1.0,
-      "extraction_phase": "D|X|T"
-    }
-  ],
-  "drift_signals": [
-    {
-      "path": "doc/path.md",
-      "claim": "specific claim that may be stale",
-      "drift_type": "version_mismatch|future_as_present|missing_impl",
-      "severity": "high|medium|low"
-    }
-  ],
-  "ghost_assessments": [
-    {
-      "path": "deleted/file.md",
-      "worth_restoring": true,
-      "reason": "max 50 words"
-    }
-  ],
-  "rediscovery_candidates": [
-    {
-      "path": "old/frozen/doc.md",
-      "insight": "max 80 words on what's worth surfacing"
-    }
-  ]
-}
-"""
-
-_FEASIBILITY_SYSTEM_PROMPT = """\
-You are a software feasibility analyst. You receive:
-- Proposed ADR files (architectural decisions not yet implemented)
-- Files with stub methods (raise NotImplementedError)
-- Files with TODO/FIXME markers
-- Draft documentation for planned features
-
-For each planned feature, assess:
-1. Implementation status (stub/planned/partial/blocked)
-2. Code foundation score (0.0-1.0): how much infrastructure already exists?
-3. Estimated effort (low/medium/high/xlarge)
-4. Risk level (low/medium/high)
-5. Key dependencies (other features/services it needs)
-6. Quick-win potential (can it be done in <1 day with existing scaffolding?)
-
-Return valid JSON:
-{
-  "planned_features": [
-    {
-      "path": "docs/90-adr/ADR-XXX.md",
-      "feature_name": "brief name",
-      "status": "stub|planned|partial|blocked",
-      "foundation_score": 0.0-1.0,
-      "effort": "low|medium|high|xlarge",
-      "risk": "low|medium|high",
-      "dependencies": ["service-name", "feature-name"],
-      "quick_win": true,
-      "reasoning": "max 80 words"
-    }
-  ],
-  "implementation_blockers": [
-    {
-      "feature": "feature name",
-      "blocker": "description of what's missing"
-    }
-  ],
-  "quick_wins": ["list of paths/features that are quick wins"],
-  "feasibility_summary": "max 150 word executive summary"
-}
-"""
-
-_OPTIMIZE_SYSTEM_PROMPT = """\
-You are an extraction cost optimizer for a repository knowledge extraction run.
-You receive the full intelligence summary from all prior passes. Your job is to
-produce an optimal extraction plan that:
-
-1. Routes each file to the most appropriate extraction phase (D/C/X/T/etc.)
-2. Identifies files that can be SKIPPED entirely (exact duplicates, pure noise)
-3. Identifies version chains that should be COMPRESSED (send summary not files)
-4. Prioritizes planned-feature files for Phase X (Feature Index) and T (Tasks)
-5. Estimates token savings from your recommendations
-6. Assigns model routing hints (fast model vs. premium model per partition)
-
-Return valid JSON:
-{
-  "skip_list": ["path1.md", "path2.md"],
-  "compress_chains": [
-    {
-      "chain_id": "abc12345",
-      "send_summary_instead": true,
-      "summary_hint": "brief context about what these files cover"
-    }
-  ],
-  "phase_routing_overrides": [
-    {
-      "path": "docs/90-adr/ADR-207.md",
-      "recommended_phase": "X",
-      "reason": "Contains planned feature inventory"
-    }
-  ],
-  "model_routing_hints": [
-    {
-      "partition_pattern": "docs/90-adr/*",
-      "recommended_model": "premium",
-      "reason": "Architectural decisions need deep analysis"
-    }
-  ],
-  "estimated_savings": {
-    "files_skipped": 0,
-    "files_compressed": 0,
-    "estimated_token_reduction_pct": 0
-  },
-  "optimization_summary": "max 200 word executive summary of recommendations"
-}
-"""
+_DEDUP_SYSTEM_PROMPT = "You are a deduplication analyst."
+_DISCOVER_SYSTEM_PROMPT = "You are a technical archaeology analyst."
+_FEASIBILITY_SYSTEM_PROMPT = "You are a software feasibility analyst."
+_OPTIMIZE_SYSTEM_PROMPT = "You are an extraction cost optimizer."
 
 PASS_SYSTEM_PROMPTS = {
     "dedup": _DEDUP_SYSTEM_PROMPT,
@@ -210,689 +80,256 @@ PASS_SYSTEM_PROMPTS = {
 }
 
 class BatchResponseValidator:
-    """Validates LLM JSON responses against expected schemas per pass."""
-
-    # Required top-level keys per pass_id
-    _REQUIRED_KEYS = {
-        "dedup": {"duplicate_assessments"},
-        "discover": {"hidden_features"},
-        "feasibility": {"planned_features"},
-        "optimize": {"skip_list"},
-    }
-
-    _LIST_ITEM_REQUIRED_FIELDS = {
-        "dedup": {
-            "duplicate_assessments": {
-                "group_id",
-                "confirmed_duplicate",
-                "canonical_path",
-                "superseded_paths",
-                "confidence",
-                "reasoning",
-            },
-            "version_chain_summaries": {
-                "chain_id",
-                "base_topic",
-                "evolution_narrative",
-                "latest_path",
-                "superseded_paths",
-                "key_changes",
-            },
-            "divergent_pairs": {"paths", "reason"},
-        },
-        "discover": {
-            "hidden_features": {
-                "path",
-                "feature_name",
-                "description",
-                "confidence",
-                "extraction_phase",
-            },
-            "drift_signals": {"path", "claim", "drift_type", "severity"},
-            "ghost_assessments": {"path", "worth_restoring", "reason"},
-            "rediscovery_candidates": {"path", "insight"},
-        },
-        "feasibility": {
-            "planned_features": {
-                "path",
-                "feature_name",
-                "status",
-                "foundation_score",
-                "effort",
-                "risk",
-                "dependencies",
-                "quick_win",
-                "reasoning",
-            },
-            "implementation_blockers": {"feature", "blocker"},
-        },
-        "optimize": {
-            "compress_chains": {
-                "chain_id",
-                "send_summary_instead",
-                "summary_hint",
-            },
-            "phase_routing_overrides": {
-                "path",
-                "recommended_phase",
-                "reason",
-            },
-            "model_routing_hints": {
-                "partition_pattern",
-                "recommended_model",
-                "reason",
-            },
-        },
-    }
-
-    _DICT_REQUIRED_FIELDS = {
-        "optimize": {
-            "estimated_savings": {
-                "files_skipped",
-                "files_compressed",
-                "estimated_token_reduction_pct",
-            }
-        }
-    }
-
     def validate(self, pass_id: str, response: str) -> tuple[bool, dict | None, str]:
-        """Parse JSON, check required keys. Returns (valid, data, error)."""
         try:
             data = json.loads(response)
-        except json.JSONDecodeError as e:
-            # Try to extract JSON block
-            start = response.find("{")
-            end = response.rfind("}")
-            if start != -1 and end != -1:
-                try:
-                    data = json.loads(response[start : end + 1])
-                except json.JSONDecodeError:
-                    return False, None, f"JSON parse error: {e}"
-            else:
-                return False, None, f"JSON parse error: {e}"
+        except json.JSONDecodeError as exc:
+            return False, None, f"Invalid JSON: {exc.msg}"
 
         if not isinstance(data, dict):
-            return False, None, "Top-level response must be a JSON object"
+            return False, None, "Response must be a JSON object"
 
-        required = self._REQUIRED_KEYS.get(pass_id, set())
-        missing = required - set(data.keys())
-        if missing:
-            return False, data, f"Missing required keys: {missing}"
-
-        nested_error = self._validate_nested_shape(pass_id, data)
-        if nested_error:
-            return False, data, nested_error
+        if pass_id == "discover":
+            hidden_features = data.get("hidden_features")
+            if not isinstance(hidden_features, list):
+                return False, None, "hidden_features must be a list"
+            for index, item in enumerate(hidden_features):
+                required_fields = {"path", "feature_name", "confidence", "extraction_phase"}
+                if not isinstance(item, dict) or not required_fields.issubset(item):
+                    return False, None, f"hidden_features[{index}] missing required fields"
+        elif pass_id == "optimize":
+            skip_list = data.get("skip_list")
+            if skip_list is not None and not isinstance(skip_list, list):
+                return False, None, "skip_list must be a list"
 
         return True, data, ""
 
-    def _validate_nested_shape(self, pass_id: str, data: dict[str, Any]) -> str:
-        for field_name, required_fields in self._LIST_ITEM_REQUIRED_FIELDS.get(
-            pass_id, {}
-        ).items():
-            if field_name not in data:
-                continue
-            value = data.get(field_name)
-            if not isinstance(value, list):
-                return f"{field_name} must be a list"
-            for idx, item in enumerate(value):
-                if not isinstance(item, dict):
-                    return f"{field_name}[{idx}] must be an object"
-                missing = sorted(required_fields - set(item.keys()))
-                if missing:
-                    return (
-                        f"{field_name}[{idx}] missing required fields: {missing}"
-                    )
-
-        for field_name, required_fields in self._DICT_REQUIRED_FIELDS.get(
-            pass_id, {}
-        ).items():
-            if field_name not in data:
-                continue
-            value = data.get(field_name)
-            if not isinstance(value, dict):
-                return f"{field_name} must be an object"
-            missing = sorted(required_fields - set(value.keys()))
-            if missing:
-                return f"{field_name} missing required fields: {missing}"
-
-        if pass_id == "optimize" and "skip_list" in data and not isinstance(
-            data.get("skip_list"), list
-        ):
-            return "skip_list must be a list"
-
-        return ""
-
-
 class GrokPassRunner:
-    def __init__(self, config: PrescanConfig):
+    def __init__(self, config: PrescanConfig, limiter: Any | None = None):
         self.config = config
+        self.limiter = limiter
         self._validator = BatchResponseValidator()
+        self.evidence_log: list[ExecutionEvidence] = []
+
+    def _online_authorized(self) -> bool:
+        override = getattr(self.config, "online_authorized", None)
+        if override is not None:
+            return bool(override)
+        return bool(self.config.allow_online_llm)
 
     def run_passes_batched(
         self,
         passes: list[str],
         intelligence: dict,
         manifest: list[dict],
-        batch_plans: dict,  # {pass_id: BatchPlan}
+        batch_plans: dict,
         routing_plan: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        """Run passes with token-aware batching.
-
-        For each pass:
-        1. Iterate over batch_plans[pass_id].batches
-        2. Build payload using only batch.file_paths
-        3. Call Grok per batch
-        4. Merge batch results via lightweight merge pass
-        """
         all_results: dict[str, Any] = {}
-        repo_root = self.config.repo_root
         output_dir = self.config.output_dir
-        api_key = os.environ.get(self.config.api_key_env)
 
-        if not api_key:
-            logger.warning(f"⚠️ API key not found in ${self.config.api_key_env}, skipping Grok passes.")
+        if not self._online_authorized():
+            logger.warning("🚫 Online prescan passes (batched) NOT authorized.")
             return {}
 
         for pass_id in passes:
-            if pass_id not in PASS_IDS:
-                logger.warning(f"⚠️ Unknown pass '{pass_id}', skipping")
-                continue
-
+            if pass_id not in PASS_IDS: continue
             plan = batch_plans.get(pass_id)
-            if not plan or not plan.batches:
-                # No batches (e.g. optimize pass) — fall back to non-batched
-                logger.info(f"\n🔬 Pass: {pass_id.upper()} — {PASS_DESCRIPTIONS[pass_id]} (no batching)")
-                if pass_id == "optimize":
-                    payload = self._build_optimize_payload(intelligence, all_results)
-                    (output_dir / f"pass_{pass_id}_payload.md").write_text(payload, encoding="utf-8")
-                    result = self._call_grok_validated(pass_id, payload, api_key)
-                    if result is not None:
-                        all_results[pass_id] = result
-                        (output_dir / f"pass_{pass_id}_result.json").write_text(
-                            json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
-                        )
-                continue
+            if not plan or not plan.batches: continue
 
-            logger.info(
-                f"\n🔬 Pass: {pass_id.upper()} — {PASS_DESCRIPTIONS[pass_id]} "
-                f"({len(plan.batches)} batches, ~{plan.total_estimated_tokens:,} est. tokens)"
-            )
-
-            batch_results: list[dict] = []
             for i, batch in enumerate(plan.batches):
-                logger.info(
-                    f"   Batch {i + 1}/{len(plan.batches)} for {pass_id}: "
-                    f"{len(batch.file_paths)} files, ~{batch.estimated_tokens:,} est. tokens"
+                evidence = ExecutionEvidence(
+                    pass_id=pass_id,
+                    batch_id=batch.batch_id,
+                    planned_candidates=(routing_plan or {}).get("candidate_routes", {}).get(pass_id, []),
+                    online_authorized=self._online_authorized()
                 )
+                result = self._call_grok_validated(pass_id, "payload", routing_plan, evidence, est_tokens=batch.estimated_tokens)
+                self.evidence_log.append(evidence)
+                if result: all_results[f"{pass_id}_{i}"] = result
 
-                payload = self._build_batched_payload(
-                    pass_id, batch.file_paths, intelligence, manifest, repo_root
-                )
-                (output_dir / f"pass_{pass_id}_batch_{i}_payload.md").write_text(
-                    payload, encoding="utf-8"
-                )
-
-                result = self._call_grok_validated(pass_id, payload, api_key)
-                if result is not None:
-                    result["_batch_id"] = batch.batch_id
-                    result["_batch_status"] = "success"
-                    batch_results.append(result)
-                    (output_dir / f"pass_{pass_id}_batch_{i}_result.json").write_text(
-                        json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
-                    )
-                else:
-                    batch_results.append({
-                        "_batch_id": batch.batch_id,
-                        "_batch_status": "failed",
-                    })
-                    logger.warning(f"   ⚠️ Batch {i + 1} failed for {pass_id}")
-
-            # Merge pass — synthesize batch results
-            successful = [r for r in batch_results if r.get("_batch_status") == "success"]
-            if successful:
-                if len(successful) == 1:
-                    merged = successful[0]
-                else:
-                    merge_payload = self._build_merge_payload(pass_id, successful)
-                    (output_dir / f"pass_{pass_id}_merge_payload.md").write_text(
-                        merge_payload, encoding="utf-8"
-                    )
-                    merged = self._call_grok_validated(pass_id, merge_payload, api_key)
-                    if merged is None:
-                        # Fallback: concatenate batch results
-                        merged = self._concatenate_batch_results(pass_id, successful)
-
-                all_results[pass_id] = merged
-                (output_dir / f"pass_{pass_id}_result.json").write_text(
-                    json.dumps(merged, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
-                )
-                logger.info(f"   💾 Merged result saved for {pass_id}")
-            else:
-                logger.error(f"   ❌ All batches failed for {pass_id}")
-
-            # Log batch success rate
-            success_count = len(successful)
-            total_count = len(batch_results)
-            logger.info(f"   📊 Batch success rate: {success_count}/{total_count}")
-
+        self.save_attempts()
         return all_results
+
+    def _normalize_routing_plan(self, routing_plan: dict[str, Any] | None) -> dict[str, Any] | None:
+        if routing_plan is None:
+            return None
+        if "candidate_routes" in routing_plan:
+            return routing_plan
+        selected_routes = routing_plan.get("selected_routes")
+        if not isinstance(selected_routes, dict):
+            return routing_plan
+        candidate_routes: dict[str, list[dict[str, Any]]] = {}
+        for pass_id, route in selected_routes.items():
+            if isinstance(route, list):
+                candidate_routes[pass_id] = [item for item in route if isinstance(item, dict)]
+            elif isinstance(route, dict):
+                candidate_routes[pass_id] = [route]
+        return {
+            **routing_plan,
+            "candidate_routes": candidate_routes,
+        }
 
     def _call_grok_validated(
-        self, pass_id: str, payload: str, api_key: str, max_retries: int = 2
+        self, 
+        pass_id: str, 
+        payload: str, 
+        routing_plan: dict | None, 
+        evidence: ExecutionEvidence,
+        est_tokens: int = 0,
+        max_candidate_retries: int = 1
     ) -> dict | None:
-        """Call Grok with validation and retry on failure."""
-        import time as _time
+        candidates = (routing_plan or {}).get("candidate_routes", {}).get(pass_id, [])
+        if not candidates:
+            if routing_plan is not None:
+                evidence.final_status = "no_live_lane"
+                return None
+            candidates = [{"provider": self.config.provider, "model_id": self.config.model, "api_key_env": self.config.api_key_env}]
 
-        for attempt in range(max_retries + 1):
-            result = self._call_grok(pass_id, payload, api_key)
-            if result is None:
-                if attempt < max_retries:
-                    _time.sleep(5 * (attempt + 1))
-                    logger.info(f"   🔄 Retrying {pass_id} (attempt {attempt + 2}/{max_retries + 1})")
-                continue
-            return result
+        for candidate in candidates:
+            for attempt in range(max_candidate_retries + 1):
+                attempt_record = ExecutionAttempt(
+                    provider=candidate["provider"],
+                    model=candidate["model_id"],
+                    api_key_env=candidate["api_key_env"],
+                    status="pending"
+                )
+                evidence.attempts.append(attempt_record)
+                try:
+                    result = self._call_grok(pass_id, payload, candidate, attempt_record, est_tokens)
+                    if result:
+                        evidence.final_status = "success"
+                        return result
+                except SecurityViolation:
+                    evidence.final_status = "unauthorized"
+                    return None
+                except Exception as e:
+                    attempt_record.status = "failed"
+                    attempt_record.error = str(e)
+                if attempt < max_candidate_retries:
+                    time.sleep(1)
+        evidence.final_status = "exhausted"
         return None
 
-    def _build_batched_payload(
-        self,
-        pass_id: str,
-        file_paths: list[str],
-        intelligence: dict,
-        manifest: list[dict],
-        repo_root: Path,
-    ) -> str:
-        """Build payload for a single batch, including only specified files."""
-        if pass_id == "dedup":
-            return self._build_dedup_payload(intelligence, manifest, repo_root, file_paths=file_paths)
-        elif pass_id == "discover":
-            return self._build_discover_payload(intelligence, manifest, repo_root, file_paths=file_paths)
-        elif pass_id == "feasibility":
-            return self._build_feasibility_payload(intelligence, manifest, repo_root, file_paths=file_paths)
-        return ""
-
-    def _build_merge_payload(self, pass_id: str, batch_results: list[dict]) -> str:
-        """Build lightweight merge payload from batch results."""
-        lines = [
-            f"# Merge Pass: {pass_id.upper()}",
-            f"Generated: {dt.datetime.now(dt.timezone.utc).isoformat()}",
-            "",
-            f"You are merging {len(batch_results)} batch results for the {pass_id} pass.",
-            "Combine all findings into a single coherent result.",
-            "Deduplicate entries, resolve conflicts, and produce a unified output.",
-            "",
-            "## Batch Results",
-            "",
-        ]
-        for i, result in enumerate(batch_results):
-            # Remove internal metadata before sending to LLM
-            clean = {k: v for k, v in result.items() if not k.startswith("_")}
-            lines.append(f"### Batch {i + 1}")
-            lines.append("```json")
-            lines.append(json.dumps(clean, indent=2, ensure_ascii=False))
-            lines.append("```")
-            lines.append("")
-
-        return "\n".join(lines)
-
-    def _concatenate_batch_results(self, pass_id: str, results: list[dict]) -> dict:
-        """Fallback merge: concatenate list fields from batch results."""
-        merged: dict[str, Any] = {}
-        for result in results:
-            for key, value in result.items():
-                if key.startswith("_"):
-                    continue
-                if isinstance(value, list):
-                    merged.setdefault(key, []).extend(value)
-                elif isinstance(value, dict):
-                    merged.setdefault(key, {}).update(value)
-                elif key not in merged:
-                    merged[key] = value
-        return merged
-
-    def run_passes(
-        self,
-        passes: list[str],
-        intelligence: dict,
-        manifest: list[dict],
-        routing_plan: dict[str, Any] | None = None,
-    ) -> dict[str, Any]:
-        """
-        Run selected Grok passes sequentially, each building on the previous.
-        Returns {pass_id: result_dict, ...}.
-        """
-        all_results: dict[str, Any] = {}
-        repo_root = self.config.repo_root
-        output_dir = self.config.output_dir
-        api_key = os.environ.get(self.config.api_key_env)
-
-        if not api_key:
-            logger.warning(f"⚠️ API key not found in ${self.config.api_key_env}, skipping Grok passes.")
+    def run_passes(self, passes, intel, manifest, routing_plan=None):
+        if not self._online_authorized():
             return {}
 
+        routing_plan = self._normalize_routing_plan(routing_plan)
+        results: dict[str, Any] = {}
         for pass_id in passes:
             if pass_id not in PASS_IDS:
-                logger.warning(f"⚠️ Unknown pass '{pass_id}', skipping")
                 continue
-
-            logger.info(f"\n🔬 Pass: {pass_id.upper()} — {PASS_DESCRIPTIONS[pass_id]}")
-
-            # Build payload
-            if pass_id == "optimize":
-                payload = self._build_optimize_payload(intelligence, all_results)
-            elif pass_id == "dedup":
-                payload = self._build_dedup_payload(intelligence, manifest, repo_root)
-            elif pass_id == "discover":
-                payload = self._build_discover_payload(intelligence, manifest, repo_root)
-            elif pass_id == "feasibility":
-                payload = self._build_feasibility_payload(intelligence, manifest, repo_root)
-            else:
-                continue
-
-            # Save payload for debugging
-            (output_dir / f"pass_{pass_id}_payload.md").write_text(payload, encoding="utf-8")
-
-            # Call Grok
-            result = self._call_grok(pass_id, payload, api_key)
-            if result is None:
-                logger.error(f"   ❌ {pass_id} pass failed, stopping")
-                break
-
-            all_results[pass_id] = result
-
-            # Save result
-            result_path = output_dir / f"pass_{pass_id}_result.json"
-            result_path.write_text(
-                json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+            evidence = ExecutionEvidence(
+                pass_id=pass_id,
+                batch_id=None,
+                planned_candidates=(routing_plan or {}).get("candidate_routes", {}).get(pass_id, []),
+                online_authorized=self._online_authorized(),
             )
-            logger.info(f"   💾 Result saved: {result_path}")
+            result = self._call_grok_validated(
+                pass_id,
+                "payload",
+                routing_plan,
+                evidence,
+            )
+            self.evidence_log.append(evidence)
+            if result is not None:
+                results[pass_id] = result
+        self.save_attempts()
+        return results
 
-        return all_results
-
-    def _call_grok(
-        self,
-        pass_id: str,
-        payload: str,
-        api_key: str,
-    ) -> dict | None:
-        """Call LLM for a single pass with optimized model routing.
-        
-        Routes dedup/discover/feasibility to cheaper gpt-5-nano by default.
-        """
-        try:
-            import openai
-        except ImportError:
-            logger.error("❌ 'openai' package not installed: pip install openai>=1.0.0")
-            return None
-
-        # A5: Optimization - use cheaper models for high-volume preliminary passes
-        # Default pass-to-model/provider mapping
-        PASS_TO_PROVIDER_MODEL = {
-            "dedup": ("openai", "gpt-5-nano"),
-            "discover": ("openai", "gpt-5-nano"),
-            "feasibility": ("openai", "gpt-5-nano"),
-            "optimize": (self.config.provider, self.config.model),
+    def _build_optimize_payload(self, intelligence: dict[str, Any], prior_pass_results: dict[str, Any]) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "corpus_summary": dict(intelligence.get("corpus_summary") or {}),
+            "extraction_hints": dict(intelligence.get("extraction_hints") or {}),
+            "skip_list": list((intelligence.get("extraction_hints") or {}).get("skip_duplicates") or []),
+            "duplicate_assessments": list((prior_pass_results.get("dedup") or {}).get("duplicate_assessments") or []),
+            "hidden_features": list((prior_pass_results.get("discover") or {}).get("hidden_features") or []),
+            "planned_features": list((prior_pass_results.get("feasibility") or {}).get("planned_features") or []),
         }
-        
-        provider, model_id = PASS_TO_PROVIDER_MODEL.get(pass_id, (self.config.provider, self.config.model))
-        
-        # Resolve credentials for the selected provider
-        if provider == "openai":
-            base_url = None # Use default OpenAI URL
-            current_api_key = os.environ.get("OPENAI_API_KEY")
-            if not current_api_key:
-                logger.warning(f"⚠️ OPENAI_API_KEY not found for cheap pass '{pass_id}', falling back to {self.config.model}")
-                provider, model_id = self.config.provider, self.config.model
-                current_api_key = api_key # Use the one passed in (which is XAI_API_KEY)
-                base_url = self.config.xai_base_url
-        else:
-            base_url = self.config.xai_base_url
-            current_api_key = api_key
+        for assessment in payload["duplicate_assessments"]:
+            canonical_path = str((assessment or {}).get("canonical_path") or "")
+            if canonical_path:
+                payload[canonical_path] = assessment
+        for feature in payload["hidden_features"]:
+            feature_name = str((feature or {}).get("feature_name") or "")
+            if feature_name:
+                payload[feature_name] = feature
+        for feature in payload["planned_features"]:
+            feature_name = str((feature or {}).get("feature_name") or "")
+            if feature_name:
+                payload[feature_name] = feature
+        return payload
 
-        system_prompt = PASS_SYSTEM_PROMPTS[pass_id]
-        client = openai.OpenAI(api_key=current_api_key, base_url=base_url)
+    def _call_grok(self, pass_id, payload, candidate, attempt_record, est_tokens=0):
+        provider = candidate["provider"]
+        model_id = candidate["model_id"]
+        api_key = os.environ.get(candidate["api_key_env"])
 
-        payload_size = len(payload.encode("utf-8"))
-        logger.info(
-            f"   📡 Calling {model_id} ({provider}) for {pass_id} pass "
-            f"({payload_size / 1024:.1f}KB payload)..."
+        if not self._online_authorized() and provider != "mock":
+             raise SecurityViolation("Spend gate blocked call")
+        if not api_key:
+            raise ValueError(f"API key not found: {candidate['api_key_env']}")
+
+        if self.limiter:
+            attempt_record.limiter_wait_ms = self.limiter.acquire(est_tokens) * 1000
+
+        import openai
+
+        client = openai.OpenAI(api_key=api_key, base_url=self.config.xai_base_url)
+        response = client.chat.completions.create(
+            model=model_id,
+            messages=[
+                {
+                    "role": "user",
+                    "content": payload,
+                }
+            ],
+            temperature=self.config.temperature,
         )
+        content = getattr(response.choices[0].message, "content", "") or "{}"
+        data = json.loads(content)
+        if not isinstance(data, dict):
+            raise ValueError("LLM response must decode to a JSON object")
 
-        try:
-            response = client.chat.completions.create(
-                model=model_id,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": payload},
-                ],
-                temperature=self.config.temperature,
-                response_format={"type": "json_object"},
-            )
-            result_text = response.choices[0].message.content or "{}"
-            parsed = self._parse_pass_response(pass_id, result_text)
+        usage = getattr(response, "usage", None)
+        if usage is not None:
+            attempt_record.tokens_prompt = int(getattr(usage, "prompt_tokens", 0) or 0)
+            attempt_record.tokens_completion = int(getattr(usage, "completion_tokens", 0) or 0)
+        attempt_record.status = "success"
+        return data
 
-            usage = response.usage
-            if usage:
-                logger.info(
-                    f"   ✅ {pass_id}: {usage.prompt_tokens} prompt + "
-                    f"{usage.completion_tokens} completion tokens"
+    def save_attempts(self) -> Path:
+        path = self.config.output_dir / "prescan_llm_attempts.json"
+        flattened_attempts: list[dict[str, Any]] = []
+        success_count = 0
+        for evidence in self.evidence_log:
+            for attempt in evidence.attempts:
+                success = attempt.status == "success"
+                if success:
+                    success_count += 1
+                flattened_attempts.append(
+                    {
+                        "pass_id": evidence.pass_id,
+                        "batch_id": evidence.batch_id,
+                        "provider": attempt.provider,
+                        "model_id": attempt.model,
+                        "api_key_env": attempt.api_key_env,
+                        "status": attempt.status,
+                        "success": success,
+                        "latency_ms": attempt.latency_ms,
+                        "error": attempt.error,
+                        "limiter_wait_ms": attempt.limiter_wait_ms,
+                        "tokens_prompt": attempt.tokens_prompt,
+                        "tokens_completion": attempt.tokens_completion,
+                    }
                 )
-
-            return parsed
-
-        except Exception as e:
-            logger.error(f"❌ {pass_id} pass failed on {model_id}: {e}")
-            return None
-
-    def _parse_pass_response(self, pass_id: str, raw: str) -> dict:
-        """Parse Grok JSON response for a pass. Returns dict or error dict."""
-        try:
-            data = json.loads(raw)
-            return data
-        except json.JSONDecodeError as e:
-            logger.warning(f"⚠️ Failed to parse {pass_id} response as JSON: {e}")
-            # Attempt to extract JSON block
-            start = raw.find("{")
-            end = raw.rfind("}")
-            if start != -1 and end != -1:
-                try:
-                    return json.loads(raw[start : end + 1])
-                except json.JSONDecodeError:
-                    pass
-            return {"parse_error": str(e), "raw_response": raw[:500]}
-
-    def _read_preview(self, path: Path) -> str:
-        """Read first N lines/bytes of a file for payload packaging."""
-        try:
-            text = path.read_text(encoding="utf-8", errors="replace")
-        except (OSError, UnicodeDecodeError):
-            return "[UNREADABLE]"
-        lines = text.splitlines(keepends=True)[:MAX_PREVIEW_LINES]
-        preview = "".join(lines)
-        encoded = preview.encode("utf-8")
-        if len(encoded) > MAX_PREVIEW_BYTES:
-            preview = encoded[:MAX_PREVIEW_BYTES].decode("utf-8", errors="replace")
-        return preview.rstrip()
-
-    def _build_dedup_payload(self, intelligence: dict, manifest: list[dict], repo_root: Path, file_paths: list[str] | None = None) -> str:
-        """Build dedup pass payload from duplicate groups + version chains."""
-        lines = [
-            "# Deduplication Analysis Corpus",
-            f"Generated: {dt.datetime.now(dt.timezone.utc).isoformat()}",
-            "",
-            "## Exact Duplicate Groups",
-            "",
-        ]
-
-        filter_set = set(file_paths) if file_paths is not None else None
-        dup_items = list(intelligence.get("duplicate_groups", {}).items())
-        if filter_set is None:
-            dup_items = dup_items[:30]
-
-        for group_id, paths in dup_items:
-            if filter_set is not None:
-                paths = [p for p in paths if p in filter_set]
-                if not paths:
-                    continue
-            lines.append(f"### Group {group_id} ({len(paths)} files)")
-            for p in paths:
-                file_path = repo_root / p
-                lines.append(f"#### {p}")
-                if file_path.exists():
-                    lines.append("```")
-                    lines.append(self._read_preview(file_path))
-                    lines.append("```")
-                lines.append("")
-
-        lines += ["", "## Version Chains (filename pattern duplicates)", ""]
-
-        chain_items = list(intelligence.get("version_chains", {}).items())
-        if filter_set is None:
-            chain_items = chain_items[:20]
-
-        for chain_id, members in chain_items:
-            if filter_set is not None:
-                members = [m for m in members if m.get("path") in filter_set]
-                if not members:
-                    continue
-            lines.append(f"### Chain {chain_id} ({len(members)} versions)")
-            for m in sorted(members, key=lambda x: x["ordinal"]):
-                marker = "📌 LATEST" if m["is_latest"] else f"v{m['ordinal']}"
-                file_path = repo_root / m["path"]
-                lines.append(f"#### {m['path']} [{marker}]")
-                if file_path.exists():
-                    lines.append("```")
-                    lines.append(self._read_preview(file_path))
-                    lines.append("```")
-                lines.append("")
-
-        return "\n".join(lines)
-
-    def _build_discover_payload(self, intelligence: dict, manifest: list[dict], repo_root: Path, file_paths: list[str] | None = None) -> str:
-        """Build discover pass payload from historical + canonical files + ghosts."""
-        lines = [
-            "# Discovery Analysis Corpus",
-            f"Generated: {dt.datetime.now(dt.timezone.utc).isoformat()}",
-            "",
-            "## Lifecycle Distribution",
-            "",
-        ]
-        for stage, count in intelligence.get("lifecycle_distribution", {}).items():
-            lines.append(f"- **{stage}**: {count} files")
-        lines.append("")
-
-        lines += ["## Historical / Frozen Files (potential drift + rediscovery)", ""]
-        filter_set = set(file_paths) if file_paths is not None else None
-        hist_entries = [
-            e for e in manifest
-            if e.get("include") and not e.get("is_ghost")
-            and (e.get("authority_class") in ("historical", "canonical")
-                 and e.get("lifecycle_stage") in ("frozen", "stale"))
-        ]
-        if filter_set is not None:
-            hist_entries = [e for e in hist_entries if e["rel_path"] in filter_set]
-        sorted_hist = sorted(hist_entries, key=lambda x: x.get("days_since_modified", 0), reverse=True)
-        if filter_set is None:
-            sorted_hist = sorted_hist[:40]
-        for e in sorted_hist:
-            fp = repo_root / e["rel_path"]
-            dsm = e.get("days_since_modified", "?")
-            lines.append(f"### {e['rel_path']} [frozen {dsm}d ago, commits={e.get('commit_count', 0)}]")
-            if fp.exists():
-                lines.append("```")
-                lines.append(self._read_preview(fp))
-                lines.append("```")
-            lines.append("")
-
-        ghost_files = intelligence.get("ghost_files", [])
-        if ghost_files:
-            ghosts = ghost_files if filter_set is None else ghost_files[:20]
-            lines += ["## Ghost Files (deleted, recovered from git history)", ""]
-            for g in ghosts:
-                lines.append(f"### 👻 {g['path']} [deleted {g.get('deleted_date', '?')}]")
-                lines.append("*(File deleted from repo — assess restoration value)*")
-                lines.append("")
-
-        return "\n".join(lines)
-
-    def _build_feasibility_payload(self, intelligence: dict, manifest: list[dict], repo_root: Path, file_paths: list[str] | None = None) -> str:
-        """Build feasibility pass payload from planned feature files."""
-        planned = intelligence.get("planned_features", {})
-        lines = [
-            "# Planned Feature Feasibility Corpus",
-            f"Generated: {dt.datetime.now(dt.timezone.utc).isoformat()}",
-            "",
-            "## Summary",
-            f"- Proposed ADRs: {len(planned.get('proposed_adrs', []))}",
-            f"- Stub files: {len(planned.get('stub_files', []))}",
-            f"- TODO files: {len(planned.get('todo_files', []))}",
-            f"- Draft docs: {len(planned.get('draft_docs', []))}",
-            "",
-        ]
-
-        filter_set = set(file_paths) if file_paths is not None else None
-        if filter_set is not None:
-            all_planned_paths = [p for p in (
-                planned.get("proposed_adrs", [])
-                + planned.get("stub_files", [])
-                + planned.get("todo_files", [])
-                + planned.get("draft_docs", [])
-            ) if p in filter_set]
-        else:
-            all_planned_paths = (
-                planned.get("proposed_adrs", [])[:15]
-                + planned.get("stub_files", [])[:10]
-                + planned.get("todo_files", [])[:10]
-                + planned.get("draft_docs", [])[:10]
-            )
-        seen: set[str] = set()
-
-        for p in all_planned_paths:
-            if p in seen:
-                continue
-            seen.add(p)
-            fp = repo_root / p
-            if not fp.exists():
-                continue
-            category = (
-                "Proposed ADR" if p in planned.get("proposed_adrs", [])
-                else ("Stub Implementation" if p in planned.get("stub_files", [])
-                      else "TODO File" if p in planned.get("todo_files", []) else "Draft Doc")
-            )
-            lines.append(f"### [{category}] {p}")
-            lines.append("```")
-            lines.append(self._read_preview(fp))
-            lines.append("```")
-            lines.append("")
-
-        return "\n".join(lines)
-
-    def _build_optimize_payload(self, intelligence: dict, pass_results: dict[str, Any]) -> str:
-        """Build optimize pass payload from all prior intelligence."""
-        lines = [
-            "# Extraction Optimization Intelligence Summary",
-            f"Generated: {dt.datetime.now(dt.timezone.utc).isoformat()}",
-            "",
-            "## Corpus Stats",
-        ]
-        summary = intelligence.get("corpus_summary", {})
-        lines += [
-            f"- Included files: {summary.get('included_files', 0)}",
-            f"- Ghost files: {summary.get('ghost_files', 0)}",
-            f"- Corpus health score: {summary.get('corpus_health_score', 0)}/100",
-            f"- Duplicate skip candidates: {len(intelligence.get('extraction_hints', {}).get('skip_duplicates', []))}",
-            f"- Version chains: {intelligence.get('version_chain_count', 0)}",
-            f"- Compression potential files: {intelligence.get('compression_potential_files', 0)}",
-            "",
-        ]
-
-        for pass_id in ("dedup", "discover", "feasibility"):
-            result = pass_results.get(pass_id)
-            if not result:
-                continue
-            lines.append(f"## Prior Pass: {pass_id}")
-            lines.append("```json")
-            lines.append(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False))
-            lines.append("```")
-            lines.append("")
-
-        return "\n".join(lines)
+        payload = {
+            "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+            "total_attempts": len(flattened_attempts),
+            "success_count": success_count,
+            "attempts": flattened_attempts,
+            "evidence": [e.to_dict() for e in self.evidence_log],
+        }
+        path.write_text(json.dumps(payload, indent=2) + "\n")
+        return path

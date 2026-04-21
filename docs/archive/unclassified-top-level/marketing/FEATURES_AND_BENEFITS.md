@@ -1,3 +1,15 @@
+---
+id: FEATURES_AND_BENEFITS
+title: Features And Benefits
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Features And Benefits (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Dopemux MVP: Features, Benefits, and Architecture
 
 Dopemux is not a unified monolithic "AI Brain." It is an **operator-centric control workspace** that coordinates a distributed multi-plane architecture. By explicitly separating execution, memory, project management, and cognitive support, Dopemux guarantees that context is preserved exactly where it belongs, decisions are logged structurally, and workflows execute deterministically.

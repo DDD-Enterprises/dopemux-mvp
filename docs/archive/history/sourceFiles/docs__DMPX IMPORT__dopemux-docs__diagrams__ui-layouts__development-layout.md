@@ -1,3 +1,15 @@
+---
+id: docs__DMPX IMPORT__dopemux-docs__diagrams__ui-layouts__development-layout
+title: Docs  Dmpx Import  Dopemux Docs  Diagrams  Ui Layouts  Development Layout
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Dmpx Import  Dopemux Docs  Diagrams  Ui Layouts  Development Layout
+  (explanation) for dopemux documentation and developer workflows.
+---
 # Development Layout - Primary Coding Interface
 
 ## Full Terminal Layout

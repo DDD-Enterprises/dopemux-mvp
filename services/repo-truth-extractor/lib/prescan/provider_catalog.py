@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import json
 import importlib
+import json
 import os
 from datetime import datetime, timezone
 from pathlib import Path
@@ -11,7 +11,7 @@ from .models import PrescanConfig
 
 try:
     from ..spend_ledger import get_model_cost_rate
-except ImportError:  # pragma: no cover - fallback only when imported out of tree
+except Exception:  # pragma: no cover - fallback only when imported out of tree
     get_model_cost_rate = None
 
 SANCTIONED_PROVIDERS = ("openai", "gemini", "xai", "openrouter")
@@ -47,7 +47,11 @@ def _iter_runner_routes() -> Iterable[tuple[str, str, str, str, str]]:
             for route in routes:
                 if not isinstance(route, (list, tuple)) or len(route) != 3:
                     continue
-                provider, model_id, api_key_env = (str(route[0]), str(route[1]), str(route[2]))
+                provider, model_id, api_key_env = (
+                    str(route[0]),
+                    str(route[1]),
+                    str(route[2]),
+                )
                 if provider not in SANCTIONED_PROVIDERS or not model_id or not api_key_env:
                     continue
                 yield policy, tier_name, provider, model_id, api_key_env
@@ -93,25 +97,34 @@ def _pricing(provider: str, model_id: str) -> dict[str, Any]:
         input_1m = 10.0
         output_1m = 40.0
         authority = "fallback_default"
-        status = "UNPRICED_UNKNOWN"
-        confidence = "UNKNOWN"
-        source_type = "inferred_estimated_fallback"
+        pricing_status = "UNPRICED_UNKNOWN"
+        pricing_confidence = "UNKNOWN"
     else:
         rate = get_model_cost_rate(provider=provider, model_id=model_id)
-        input_1m = rate.get("input_cost_per_1m_usd", 10.0)
-        output_1m = rate.get("output_cost_per_1m_usd", 40.0)
-        authority = str(rate.get("pricing_source") or "shared_spend_ledger_registry")
-        status = str(rate.get("pricing_status") or "UNPRICED_UNKNOWN")
-        confidence = str(rate.get("pricing_confidence") or "UNKNOWN")
-        source_type = str(rate.get("pricing_source_type") or "unknown")
-    return {
+        if isinstance(rate, dict):
+            input_1m = float(rate.get("input_cost_per_1m_usd", 10.0))
+            output_1m = float(rate.get("output_cost_per_1m_usd", 40.0))
+            authority = str(rate.get("pricing_source", "shared_spend_ledger_registry"))
+            pricing_status = str(rate.get("pricing_status", "UNPRICED_UNKNOWN"))
+            pricing_confidence = str(rate.get("pricing_confidence", "UNKNOWN"))
+            source_type = rate.get("pricing_source_type")
+        else:
+            input_1m, output_1m = rate
+            authority = "shared_spend_ledger_registry"
+            pricing_status = "UNPRICED_UNKNOWN"
+            pricing_confidence = "UNKNOWN"
+            source_type = None
+
+    payload = {
         "input_1m_usd": float(input_1m),
         "output_1m_usd": float(output_1m),
         "pricing_authority": authority,
-        "pricing_status": status,
-        "pricing_confidence": confidence,
-        "pricing_source_type": source_type,
+        "pricing_status": pricing_status,
+        "pricing_confidence": pricing_confidence,
     }
+    if get_model_cost_rate is not None and source_type:
+        payload["pricing_source_type"] = source_type
+    return payload
 
 
 def build_provider_model_catalog(config: PrescanConfig) -> dict[str, Any]:
@@ -208,11 +221,27 @@ def _select_route_for_tier(
 
 def build_prescan_routing_plan(
     config: PrescanConfig,
-    catalog: dict[str, Any],
-    passes: list[str] | None,
+    catalog_or_passes: dict[str, Any] | list[str] | None,
+    passes_or_batch_plans: list[str] | dict[str, Any] | None = None,
+    catalog: dict[str, Any] | None = None,
+    *,
+    passes: list[str] | None = None,
 ) -> dict[str, Any]:
+    if catalog is None and isinstance(catalog_or_passes, dict):
+        catalog = catalog_or_passes
+    if passes is not None:
+        pass_list = passes
+    elif isinstance(catalog_or_passes, dict) and catalog is None:
+        pass_list = passes_or_batch_plans if isinstance(passes_or_batch_plans, list) else None
+    else:
+        pass_list = catalog_or_passes if isinstance(catalog_or_passes, list) else None
+        if catalog is None and isinstance(passes_or_batch_plans, dict):
+            catalog = passes_or_batch_plans
+        elif catalog is None:
+            catalog = {}
+
     requested_passes = [
-        pass_id for pass_id in (passes or []) if pass_id in PRESCAN_PASS_REQUIREMENTS
+        pass_id for pass_id in (pass_list or []) if pass_id in PRESCAN_PASS_REQUIREMENTS
     ]
     routes = [
         row
@@ -256,6 +285,7 @@ def build_prescan_routing_plan(
         "status": "PASS" if not failures else "FAIL",
         "failures": failures,
         "selected_routes": selected_routes,
+        "candidate_routes": selected_routes,
     }
 
 

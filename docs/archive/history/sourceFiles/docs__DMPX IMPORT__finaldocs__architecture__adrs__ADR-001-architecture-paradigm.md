@@ -1,3 +1,15 @@
+---
+id: docs__DMPX IMPORT__finaldocs__architecture__adrs__ADR-001-architecture-paradigm
+title: Docs  Dmpx Import  Finaldocs  Architecture  Adrs  Adr 001 Architecture Paradigm
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-20'
+last_review: '2026-04-20'
+next_review: '2026-07-19'
+prelude: Docs  Dmpx Import  Finaldocs  Architecture  Adrs  Adr 001 Architecture Paradigm
+  (explanation) for dopemux documentation and developer workflows.
+---
 # ADR-001: Hub-and-Spoke Architecture with Agent Orchestration
 
 **Status**: Accepted
