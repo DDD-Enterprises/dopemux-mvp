@@ -42,8 +42,7 @@ PRESCAN_PASS_REQUIREMENTS: dict[str, str] = {
 
 
 def classify_prescan_route(provider: str, model_id: str) -> str:
-    _ = provider
-    token = str(model_id or "").strip().lower()
+    token = f"{provider}/{model_id}".strip("/").lower()
 
     premium_markers = (
         "gpt-5.4",
