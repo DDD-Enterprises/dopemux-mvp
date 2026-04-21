@@ -102,19 +102,14 @@ class TestCLI:
     @patch("dopemux.cli.Path.exists")
     def test_init_command_already_initialized(self, mock_exists, mock_config):
         """Test init command when project is already initialized."""
-
-        # Click may probe the path type first; the command itself then checks the
-        # workspace path and the `.dopemux/` directory.
-        def side_effect(*args, **kwargs):
-            if not args:
-                return False
-            return ".dopemux" in str(args[0])
-
-        mock_exists.side_effect = side_effect
+        mock_exists.return_value = True
 
         runner = CliRunner()
         with patch("dopemux.cli.Path.resolve", return_value=Path("/test/project")):
-            result = runner.invoke(cli, ["init", "."])
+            with patch(
+                "dopemux.commands.bootstrap_commands.Path.is_dir", return_value=True
+            ):
+                result = runner.invoke(cli, ["init", "."])
 
         assert result.exit_code == 1
         assert "already initialized" in result.output

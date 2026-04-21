@@ -81,7 +81,7 @@ def init(
         console.logger.info(f"[error]Directory does not exist: {workspace}[/error]")
         sys.exit(1)
 
-    if not force and not workspace_exists and dopemux_exists:
+    if not force and dopemux_dir.is_dir():
         console.logger.info(
             f"[warning]⚠️  Project already initialized (.dopemux/ exists)[/warning]"
         )
