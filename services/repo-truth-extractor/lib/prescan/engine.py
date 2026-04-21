@@ -4,7 +4,7 @@ import logging
 import time
 import subprocess
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from .models import PrescanConfig, PrescanResult, FileEntry
 from .corpus_walker import CorpusWalker
