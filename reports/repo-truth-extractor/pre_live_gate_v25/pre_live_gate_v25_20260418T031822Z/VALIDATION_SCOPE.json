@@ -1,0 +1,648 @@
+{
+  "all_route_api_key_envs": [
+    "GEMINI_API_KEY",
+    "OPENAI_API_KEY",
+    "OPENROUTER_API_KEY",
+    "XAI_API_KEY"
+  ],
+  "artifacts_sha256": "46fe20b8b09f12d7c50fd2bd6b50b6ad750a1be083f105a7a45b600ba390128f",
+  "configured_not_required_api_key_envs": [
+    "GEMINI_API_KEY",
+    "OPENAI_API_KEY",
+    "XAI_API_KEY"
+  ],
+  "fallback_api_key_envs": [
+    "XAI_API_KEY"
+  ],
+  "git_sha": "6683ef825f4b417405cf57df4f074b0f384b5b02",
+  "model_map_sha256": "78e933b51bb5616b25f683bfb5935fde5ef3582572f6d611bdd12b9cd7310651",
+  "phase_contract_map_hash": "25d6848ff0c5aaeb4f8700546a8341f68b2acea740f886cd3dc4eeab14de85c7",
+  "promptset_sha256": "5f3144180dda89e1dd4dfa11da27385f6614332268349af2435de99b361df0bc",
+  "required_api_key_envs": [
+    "OPENROUTER_API_KEY",
+    "XAI_API_KEY"
+  ],
+  "required_provider_routes": [
+    {
+      "active_route_required": false,
+      "api_key_env": "GEMINI_API_KEY",
+      "configured_not_required": true,
+      "fallback_chain_present": false,
+      "model_id": "gemini-3-flash-preview",
+      "optional_fallback": false,
+      "provider": "gemini",
+      "requirement_level": "configured_not_required",
+      "route_signature": "gemini:gemini-3-flash-preview:GEMINI_API_KEY",
+      "steps": []
+    },
+    {
+      "active_route_required": false,
+      "api_key_env": "OPENAI_API_KEY",
+      "configured_not_required": true,
+      "fallback_chain_present": false,
+      "model_id": "gpt-5-mini",
+      "optional_fallback": false,
+      "provider": "openai",
+      "requirement_level": "configured_not_required",
+      "route_signature": "openai:gpt-5-mini:OPENAI_API_KEY",
+      "steps": []
+    },
+    {
+      "active_route_required": false,
+      "api_key_env": "OPENAI_API_KEY",
+      "configured_not_required": true,
+      "fallback_chain_present": false,
+      "model_id": "gpt-5-nano",
+      "optional_fallback": false,
+      "provider": "openai",
+      "requirement_level": "configured_not_required",
+      "route_signature": "openai:gpt-5-nano:OPENAI_API_KEY",
+      "steps": []
+    },
+    {
+      "active_route_required": false,
+      "api_key_env": "OPENAI_API_KEY",
+      "configured_not_required": true,
+      "fallback_chain_present": false,
+      "model_id": "gpt-5.2",
+      "optional_fallback": false,
+      "provider": "openai",
+      "requirement_level": "configured_not_required",
+      "route_signature": "openai:gpt-5.2:OPENAI_API_KEY",
+      "steps": []
+    },
+    {
+      "active_route_required": true,
+      "api_key_env": "OPENROUTER_API_KEY",
+      "configured_not_required": false,
+      "fallback_chain_present": true,
+      "model_id": "openai/gpt-5.3-codex",
+      "optional_fallback": false,
+      "provider": "openrouter",
+      "requirement_level": "required_active_route",
+      "route_signature": "openrouter:openai/gpt-5.3-codex:OPENROUTER_API_KEY",
+      "steps": [
+        {
+          "ladder_index": 0,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A0"
+        },
+        {
+          "ladder_index": 0,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A1"
+        },
+        {
+          "ladder_index": 0,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A11"
+        },
+        {
+          "ladder_index": 0,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A12"
+        },
+        {
+          "ladder_index": 0,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A13"
+        }
+      ]
+    },
+    {
+      "active_route_required": true,
+      "api_key_env": "OPENROUTER_API_KEY",
+      "configured_not_required": false,
+      "fallback_chain_present": false,
+      "model_id": "openai/gpt-5.4",
+      "optional_fallback": true,
+      "provider": "openrouter",
+      "requirement_level": "required_active_route",
+      "route_signature": "openrouter:openai/gpt-5.4:OPENROUTER_API_KEY",
+      "steps": [
+        {
+          "ladder_index": 1,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A0"
+        },
+        {
+          "ladder_index": 1,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A1"
+        },
+        {
+          "ladder_index": 1,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A11"
+        },
+        {
+          "ladder_index": 1,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A12"
+        },
+        {
+          "ladder_index": 1,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A13"
+        },
+        {
+          "ladder_index": 0,
+          "ladder_size": 1,
+          "phase": "A",
+          "step_id": "A99"
+        }
+      ]
+    },
+    {
+      "active_route_required": false,
+      "api_key_env": "XAI_API_KEY",
+      "configured_not_required": false,
+      "fallback_chain_present": false,
+      "model_id": "grok-4.20-beta-0309-non-reasoning",
+      "optional_fallback": true,
+      "provider": "xai",
+      "requirement_level": "optional_fallback",
+      "route_signature": "xai:grok-4.20-beta-0309-non-reasoning:XAI_API_KEY",
+      "steps": [
+        {
+          "ladder_index": 1,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A2"
+        },
+        {
+          "ladder_index": 1,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A3"
+        },
+        {
+          "ladder_index": 1,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A4"
+        },
+        {
+          "ladder_index": 1,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A5"
+        },
+        {
+          "ladder_index": 1,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A6"
+        },
+        {
+          "ladder_index": 1,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A7"
+        },
+        {
+          "ladder_index": 1,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A8"
+        },
+        {
+          "ladder_index": 1,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A9"
+        },
+        {
+          "ladder_index": 1,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A10"
+        }
+      ]
+    },
+    {
+      "active_route_required": true,
+      "api_key_env": "XAI_API_KEY",
+      "configured_not_required": false,
+      "fallback_chain_present": true,
+      "model_id": "grok-4.20-beta-0309-reasoning",
+      "optional_fallback": false,
+      "provider": "xai",
+      "requirement_level": "required_active_route",
+      "route_signature": "xai:grok-4.20-beta-0309-reasoning:XAI_API_KEY",
+      "steps": [
+        {
+          "ladder_index": 0,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A2"
+        },
+        {
+          "ladder_index": 0,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A3"
+        },
+        {
+          "ladder_index": 0,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A4"
+        },
+        {
+          "ladder_index": 0,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A5"
+        },
+        {
+          "ladder_index": 0,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A6"
+        },
+        {
+          "ladder_index": 0,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A7"
+        },
+        {
+          "ladder_index": 0,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A8"
+        },
+        {
+          "ladder_index": 0,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A9"
+        },
+        {
+          "ladder_index": 0,
+          "ladder_size": 2,
+          "phase": "A",
+          "step_id": "A10"
+        }
+      ]
+    },
+    {
+      "active_route_required": false,
+      "api_key_env": "XAI_API_KEY",
+      "configured_not_required": true,
+      "fallback_chain_present": false,
+      "model_id": "grok-code-fast-1",
+      "optional_fallback": false,
+      "provider": "xai",
+      "requirement_level": "configured_not_required",
+      "route_signature": "xai:grok-code-fast-1:XAI_API_KEY",
+      "steps": []
+    }
+  ],
+  "route_readiness_summary": {
+    "api_key_env_categories": {
+      "configured_not_required": [
+        "GEMINI_API_KEY",
+        "OPENAI_API_KEY",
+        "XAI_API_KEY"
+      ],
+      "optional_fallback": [
+        "XAI_API_KEY"
+      ],
+      "required_active_route": [
+        "OPENROUTER_API_KEY",
+        "XAI_API_KEY"
+      ]
+    },
+    "provider_categories": {
+      "configured_not_required": [
+        "gemini",
+        "openai",
+        "xai"
+      ],
+      "optional_fallback": [
+        "xai"
+      ],
+      "required_active_route": [
+        "openrouter",
+        "xai"
+      ]
+    },
+    "routes": [
+      {
+        "api_key_env": "GEMINI_API_KEY",
+        "configured_not_required": true,
+        "fallback_chain_present": false,
+        "model_id": "gemini-3-flash-preview",
+        "optional_fallback": false,
+        "provider": "gemini",
+        "required_active_route": false,
+        "requirement_level": "configured_not_required",
+        "route_signature": "gemini:gemini-3-flash-preview:GEMINI_API_KEY",
+        "steps": []
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "configured_not_required": true,
+        "fallback_chain_present": false,
+        "model_id": "gpt-5-mini",
+        "optional_fallback": false,
+        "provider": "openai",
+        "required_active_route": false,
+        "requirement_level": "configured_not_required",
+        "route_signature": "openai:gpt-5-mini:OPENAI_API_KEY",
+        "steps": []
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "configured_not_required": true,
+        "fallback_chain_present": false,
+        "model_id": "gpt-5-nano",
+        "optional_fallback": false,
+        "provider": "openai",
+        "required_active_route": false,
+        "requirement_level": "configured_not_required",
+        "route_signature": "openai:gpt-5-nano:OPENAI_API_KEY",
+        "steps": []
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "configured_not_required": true,
+        "fallback_chain_present": false,
+        "model_id": "gpt-5.2",
+        "optional_fallback": false,
+        "provider": "openai",
+        "required_active_route": false,
+        "requirement_level": "configured_not_required",
+        "route_signature": "openai:gpt-5.2:OPENAI_API_KEY",
+        "steps": []
+      },
+      {
+        "api_key_env": "OPENROUTER_API_KEY",
+        "configured_not_required": false,
+        "fallback_chain_present": true,
+        "model_id": "openai/gpt-5.3-codex",
+        "optional_fallback": false,
+        "provider": "openrouter",
+        "required_active_route": true,
+        "requirement_level": "required_active_route",
+        "route_signature": "openrouter:openai/gpt-5.3-codex:OPENROUTER_API_KEY",
+        "steps": [
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A0"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A1"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A11"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A12"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A13"
+          }
+        ]
+      },
+      {
+        "api_key_env": "OPENROUTER_API_KEY",
+        "configured_not_required": false,
+        "fallback_chain_present": false,
+        "model_id": "openai/gpt-5.4",
+        "optional_fallback": true,
+        "provider": "openrouter",
+        "required_active_route": true,
+        "requirement_level": "required_active_route",
+        "route_signature": "openrouter:openai/gpt-5.4:OPENROUTER_API_KEY",
+        "steps": [
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A0"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A1"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A11"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A12"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A13"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 1,
+            "phase": "A",
+            "step_id": "A99"
+          }
+        ]
+      },
+      {
+        "api_key_env": "XAI_API_KEY",
+        "configured_not_required": false,
+        "fallback_chain_present": false,
+        "model_id": "grok-4.20-beta-0309-non-reasoning",
+        "optional_fallback": true,
+        "provider": "xai",
+        "required_active_route": false,
+        "requirement_level": "optional_fallback",
+        "route_signature": "xai:grok-4.20-beta-0309-non-reasoning:XAI_API_KEY",
+        "steps": [
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A2"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A3"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A4"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A5"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A6"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A7"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A8"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A9"
+          },
+          {
+            "ladder_index": 1,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A10"
+          }
+        ]
+      },
+      {
+        "api_key_env": "XAI_API_KEY",
+        "configured_not_required": false,
+        "fallback_chain_present": true,
+        "model_id": "grok-4.20-beta-0309-reasoning",
+        "optional_fallback": false,
+        "provider": "xai",
+        "required_active_route": true,
+        "requirement_level": "required_active_route",
+        "route_signature": "xai:grok-4.20-beta-0309-reasoning:XAI_API_KEY",
+        "steps": [
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A2"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A3"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A4"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A5"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A6"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A7"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A8"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A9"
+          },
+          {
+            "ladder_index": 0,
+            "ladder_size": 2,
+            "phase": "A",
+            "step_id": "A10"
+          }
+        ]
+      },
+      {
+        "api_key_env": "XAI_API_KEY",
+        "configured_not_required": true,
+        "fallback_chain_present": false,
+        "model_id": "grok-code-fast-1",
+        "optional_fallback": false,
+        "provider": "xai",
+        "required_active_route": false,
+        "requirement_level": "configured_not_required",
+        "route_signature": "xai:grok-code-fast-1:XAI_API_KEY",
+        "steps": []
+      }
+    ],
+    "target_phases": [
+      "A"
+    ],
+    "target_policy": "cost"
+  },
+  "routing_fingerprint_hash": "ae969034128e737da7e39c2299c9b2f853ba465ae7c8a5ee52a40bd4361779c6",
+  "target_contract_map_path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/lib/phase_contract_map.py",
+  "target_mode": "direct",
+  "target_phases": [
+    "A"
+  ],
+  "target_policy": "cost",
+  "target_runner_path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/run_extraction_v5.py",
+  "target_runner_sha256": "280cbeebb53a968810c156e4cd51ac5f0d749b60543f5410ba018262160aed0b",
+  "target_step": null,
+  "validation_started_at": "2026-04-18T03:18:22.843209+00:00",
+  "validator_host": "dddmbp.local",
+  "validator_python": "3.12.13"
+}

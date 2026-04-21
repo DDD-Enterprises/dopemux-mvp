@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from ..execution_receipts import DopeCodeExecutionReceiptStore, DOPECODE_EXECUTION_RECEIPT_RELATIVE_PATH, sha256_hex
 from ..policy.mutation_policy import MutationPolicy
 
 logger = logging.getLogger(__name__)
@@ -24,10 +25,17 @@ class _UnifiedDiffHunk:
 class WriteLayer:
     """Controlled code transformation layer. Strictly enforces workspace bounds."""
 
-    def __init__(self, workspace_root: Path, workspace_id: str, policy: Optional[MutationPolicy] = None):
+    def __init__(
+        self,
+        workspace_root: Path,
+        workspace_id: str,
+        policy: Optional[MutationPolicy] = None,
+        receipt_store: Optional[DopeCodeExecutionReceiptStore] = None,
+    ):
         self.workspace_root = workspace_root.resolve()
         self.workspace_id = workspace_id
         self.policy = policy or MutationPolicy(self.workspace_root, workspace_id)
+        self.receipt_store = receipt_store or DopeCodeExecutionReceiptStore(self.workspace_root, workspace_id)
 
     def _validate_boundary(self, relative_path: str) -> Path:
         """Resolve a workspace-relative path and reject any escape from the root."""
@@ -62,6 +70,49 @@ class WriteLayer:
             "ts": time.time(),
         }
         logger.info(json.dumps(log_entry, sort_keys=True))
+
+    def _event_type_for_status(self, status: str) -> str:
+        mapping = {
+            "preview": "dopecode.mutation.previewed",
+            "applied": "dopecode.mutation.applied",
+            "success": "dopecode.mutation.applied",
+            "noop": "dopecode.mutation.noop",
+            "partial_failure": "dopecode.mutation.partial_failure",
+            "failed": "dopecode.mutation.failed",
+        }
+        return mapping.get(status, "dopecode.mutation.failed")
+
+    def _attach_execution_receipt(
+        self,
+        result: Dict[str, Any],
+        *,
+        operation: str,
+        operation_class: str,
+        mutation_context: Dict[str, Any],
+        execution_receipt: Dict[str, Any],
+        lifecycle_stage: str,
+        payload: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        event = self.receipt_store.build_event(
+            event_type=self._event_type_for_status(str(result.get("status", "failed"))),
+            lifecycle_stage=lifecycle_stage,
+            operation=operation,
+            operation_class=operation_class,
+            execution_mode=str(execution_receipt["execution_mode"]),
+            execution_status=str(execution_receipt["execution_status"]),
+            mutation_context=mutation_context,
+            payload=payload,
+        )
+        stored_event, persistence_status = self.receipt_store.append_event(event)
+        response = dict(result)
+        response["execution_receipt"] = {
+            "event": stored_event,
+            "persistence": {
+                "status": persistence_status,
+                "path": str(DOPECODE_EXECUTION_RECEIPT_RELATIVE_PATH),
+            },
+        }
+        return response
 
     def _parse_unified_diff(self, diff_text: str, relative_path: str) -> List[_UnifiedDiffHunk]:
         lines = diff_text.splitlines(keepends=True)
@@ -192,7 +243,7 @@ class WriteLayer:
         result.extend(source_lines[cursor:])
         return result
 
-    def write_file(self, relative_path: str, content: str) -> str:
+    def write_file(self, relative_path: str, content: str, emit_receipt: bool = True) -> str:
         """Full overwrite of an existing file."""
         target = self._validate_boundary(relative_path)
         if not target.exists():
@@ -215,12 +266,32 @@ class WriteLayer:
                 [relative_path],
                 {"action": "overwrite", "diff_length": len(diff_text)},
             )
+            if emit_receipt:
+                self.receipt_store.append_event(
+                    self.receipt_store.build_event(
+                        event_type="dopecode.mutation.applied",
+                        lifecycle_stage="apply",
+                        operation="write_file",
+                        operation_class="file_overwrite",
+                        execution_mode="direct",
+                        execution_status="ready",
+                        mutation_context={
+                            "path": relative_path,
+                            "content_sha256": sha256_hex(content),
+                        },
+                        payload={
+                            "status": "applied",
+                            "summary": f"Successfully overwrote {relative_path}",
+                            "files": [relative_path],
+                        },
+                    )
+                )
             return f"Successfully overwrote {relative_path}"
         except Exception as e:
             logger.error(f"Failed to write file {relative_path}: {e}")
             raise
 
-    def create_file(self, relative_path: str, content: str) -> str:
+    def create_file(self, relative_path: str, content: str, emit_receipt: bool = True) -> str:
         """Create a new file within the workspace."""
         target = self._validate_boundary(relative_path)
         if target.exists():
@@ -230,6 +301,26 @@ class WriteLayer:
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(content, encoding="utf-8")
             self._log_mutation("create_file", [relative_path], {"action": "create"})
+            if emit_receipt:
+                self.receipt_store.append_event(
+                    self.receipt_store.build_event(
+                        event_type="dopecode.mutation.applied",
+                        lifecycle_stage="apply",
+                        operation="create_file",
+                        operation_class="file_create",
+                        execution_mode="direct",
+                        execution_status="ready",
+                        mutation_context={
+                            "path": relative_path,
+                            "content_sha256": sha256_hex(content),
+                        },
+                        payload={
+                            "status": "applied",
+                            "summary": f"Successfully created {relative_path}",
+                            "files": [relative_path],
+                        },
+                    )
+                )
             return f"Successfully created {relative_path}"
         except Exception as e:
             logger.error(f"Failed to create file {relative_path}: {e}")
@@ -252,7 +343,8 @@ class WriteLayer:
                 [relative_path],
                 {"action": "noop", "hunk_count": len(hunks), "changed": False, "policy": policy.as_dict()},
             )
-            return {
+            return self._attach_execution_receipt(
+                {
                 "status": "noop",
                 "operation": "apply_patch",
                 "file": relative_path,
@@ -261,7 +353,23 @@ class WriteLayer:
                 "policy": policy.as_dict(),
                 "approval_receipt": policy.approval_receipt(),
                 "message": "Patch produced no content changes.",
-            }
+                },
+                operation="apply_patch",
+                operation_class=policy.operation_class,
+                mutation_context={
+                    "path": relative_path,
+                    "diff_sha256": sha256_hex(diff_text),
+                },
+                execution_receipt=policy.approval_receipt(),
+                lifecycle_stage="apply",
+                payload={
+                    "status": "noop",
+                    "summary": "Patch produced no content changes.",
+                    "files": [relative_path],
+                    "changed": False,
+                    "hunk_count": len(hunks),
+                },
+            )
 
         target.write_text("".join(patched_lines), encoding="utf-8")
 
@@ -279,7 +387,8 @@ class WriteLayer:
                 "policy": policy.as_dict(),
             },
         )
-        return {
+        return self._attach_execution_receipt(
+            {
             "status": "applied",
             "operation": "apply_patch",
             "file": relative_path,
@@ -290,7 +399,25 @@ class WriteLayer:
             "policy": policy.as_dict(),
             "approval_receipt": policy.approval_receipt(),
             "message": f"Successfully applied patch to {relative_path}",
-        }
+            },
+            operation="apply_patch",
+            operation_class=policy.operation_class,
+            mutation_context={
+                "path": relative_path,
+                "diff_sha256": sha256_hex(diff_text),
+            },
+            execution_receipt=policy.approval_receipt(),
+            lifecycle_stage="apply",
+            payload={
+                "status": "applied",
+                "summary": f"Successfully applied patch to {relative_path}",
+                "files": [relative_path],
+                "changed": True,
+                "hunk_count": len(hunks),
+                "added_lines": added_lines,
+                "removed_lines": removed_lines,
+            },
+        )
 
     def batch_apply_patch(self, operations: List[Dict[str, str]], preview: bool = True) -> Dict[str, Any]:
         """Apply a deterministic batch of unified diff operations."""
@@ -322,7 +449,8 @@ class WriteLayer:
                     receipt["error"] = "Missing diff"
                 receipts.append(receipt)
 
-            return {
+            return self._attach_execution_receipt(
+                {
                 "status": "preview",
                 "operation": "batch_apply_patch",
                 "preview": True,
@@ -332,7 +460,29 @@ class WriteLayer:
                 "policy": policy.as_dict(),
                 "approval_receipt": policy.approval_receipt(),
                 "message": "Preview mode: no files were mutated.",
-            }
+                },
+                operation="batch_apply_patch",
+                operation_class=policy.operation_class,
+                mutation_context={
+                    "operations": [
+                        {
+                            "path": op.get("path"),
+                            "diff_sha256": sha256_hex(op.get("diff", "")) if op.get("diff") else None,
+                        }
+                        for _, op in ordered
+                    ]
+                },
+                execution_receipt=policy.approval_receipt(),
+                lifecycle_stage="preview",
+                payload={
+                    "status": "preview",
+                    "summary": "Preview mode: no files were mutated.",
+                    "files": unique_files,
+                    "preview": True,
+                    "total_operations": len(operations),
+                    "invalid_operations": sum(1 for item in receipts if item["status"] == "invalid"),
+                },
+            )
 
         receipts = []
         applied_count = 0
@@ -404,7 +554,8 @@ class WriteLayer:
                     "policy": policy.as_dict(),
                 },
         )
-        return {
+        return self._attach_execution_receipt(
+            {
             "status": batch_status,
             "operation": "batch_apply_patch",
             "preview": False,
@@ -415,4 +566,27 @@ class WriteLayer:
             "receipts": receipts,
             "policy": policy.as_dict(),
             "approval_receipt": policy.approval_receipt(),
-        }
+            },
+            operation="batch_apply_patch",
+            operation_class=policy.operation_class,
+            mutation_context={
+                "operations": [
+                    {
+                        "path": op.get("path"),
+                        "diff_sha256": sha256_hex(op.get("diff", "")) if op.get("diff") else None,
+                    }
+                    for _, op in ordered
+                ]
+            },
+            execution_receipt=policy.approval_receipt(),
+            lifecycle_stage="apply",
+            payload={
+                "status": batch_status,
+                "summary": f"Batch patch completed with status {batch_status}.",
+                "files": unique_files,
+                "preview": False,
+                "total_operations": len(operations),
+                "applied_count": applied_count,
+                "failed_count": failed_count,
+            },
+        )
