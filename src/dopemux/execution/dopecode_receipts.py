@@ -9,6 +9,7 @@ from typing import Any, Dict, Iterable, List
 
 DOPECODE_EXECUTION_RECEIPT_VERSION = "dopecode.execution_receipt.v1"
 DOPECODE_EXECUTION_RECEIPT_RELATIVE_PATH = Path(".dopemux/dopecode/execution_receipts.jsonl")
+
 DOPECODE_EVENT_TYPES = frozenset(
     {
         "dopecode.mutation.previewed",
@@ -134,6 +135,7 @@ def build_dopecode_execution_history_view(events: Iterable[Dict[str, Any]]) -> D
         payload = dict(event.get("payload", {}))
         files = [str(item) for item in payload.get("files", []) if item]
         summary = str(payload.get("summary", "")).strip() or f"{event['operation']} {event['event_type']}"
+        orchestration = _orchestration_summary(payload.get("orchestration"))
         timeline.append(
             {
                 "event_id": event["event_id"],
@@ -144,6 +146,7 @@ def build_dopecode_execution_history_view(events: Iterable[Dict[str, Any]]) -> D
                 "execution_status": event["execution_status"],
                 "files": files,
                 "summary": summary,
+                "orchestration": orchestration,
                 "display": _format_history_line(event, summary, files),
             }
         )
@@ -151,6 +154,46 @@ def build_dopecode_execution_history_view(events: Iterable[Dict[str, Any]]) -> D
         "schema_version": "dopemux.dopecode_history.v1",
         "event_count": len(timeline),
         "timeline": timeline,
+        "active_plans": build_dopecode_orchestration_view(replayed),
+    }
+
+
+def build_dopecode_orchestration_view(events: Iterable[Dict[str, Any]]) -> Dict[str, Any]:
+    replayed = replay_dopecode_execution_receipts(events)
+    latest_by_plan: Dict[str, Dict[str, Any]] = {}
+    for event in replayed:
+        payload = dict(event.get("payload", {}))
+        orchestration = payload.get("orchestration")
+        if not isinstance(orchestration, dict):
+            continue
+        plan_id = str(orchestration.get("plan_id", "")).strip()
+        if not plan_id:
+            continue
+        latest_by_plan[plan_id] = {
+            "event_id": event["event_id"],
+            "mutation_id": event["mutation_id"],
+            "ts_utc": event["ts_utc"],
+            "operation": event["operation"],
+            "plan_id": plan_id,
+            "plan_status": str(orchestration.get("plan_status", "")),
+            "current_step_id": orchestration.get("current_step_id"),
+            "blocked_reason": orchestration.get("blocked_reason"),
+            "next_action": orchestration.get("next_action"),
+            "current_step_title": _current_step_title(orchestration),
+            "step_count": int(orchestration.get("step_count", 0)),
+            "completed_step_count": int(orchestration.get("completed_step_count", 0)),
+            "status_counts": dict(orchestration.get("status_counts", {})),
+        }
+
+    plans = sorted(
+        latest_by_plan.values(),
+        key=lambda item: (item["ts_utc"], item["plan_id"]),
+        reverse=True,
+    )
+    return {
+        "schema_version": "dopemux.dopecode_orchestration_view.v1",
+        "plan_count": len(plans),
+        "plans": plans,
     }
 
 
@@ -160,3 +203,27 @@ def _format_history_line(event: Dict[str, Any], summary: str, files: List[str]) 
         f"{event['ts_utc']} | {event['operation']} | {event['event_type']} | "
         f"{event['execution_status']} | {file_summary} | {summary}"
     )
+
+
+def _orchestration_summary(raw: Any) -> Dict[str, Any] | None:
+    if not isinstance(raw, dict):
+        return None
+    return {
+        "plan_id": raw.get("plan_id"),
+        "plan_status": raw.get("plan_status"),
+        "current_step_id": raw.get("current_step_id"),
+        "current_step_title": _current_step_title(raw),
+        "blocked_reason": raw.get("blocked_reason"),
+        "next_action": raw.get("next_action"),
+        "completed_step_count": raw.get("completed_step_count"),
+        "step_count": raw.get("step_count"),
+    }
+
+
+def _current_step_title(orchestration: Dict[str, Any]) -> str | None:
+    current_step_id = orchestration.get("current_step_id")
+    for step in orchestration.get("steps", []):
+        if isinstance(step, dict) and step.get("step_id") == current_step_id:
+            title = str(step.get("title", "")).strip()
+            return title or None
+    return None
