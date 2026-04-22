@@ -100,5 +100,36 @@ def test_batch_apply_patch_preserves_deterministic_order_and_reports_partial_fai
     assert result["execution_receipt"]["event"]["event_type"] == "dopecode.mutation.partial_failure"
     assert result["applied_count"] == 1
     assert result["failed_count"] == 1
+    assert result["execution_plan"]["plan_status"] == "blocked"
+    assert result["execution_plan"]["resume_supported"] is False
     assert workspace.joinpath("b.py").read_text(encoding="utf-8") == "value = 20\n"
     assert workspace.joinpath("a.py").read_text(encoding="utf-8") == "value = 1\n"
+
+
+def test_batch_apply_patch_preview_emits_deterministic_execution_plan(tmp_path: Path):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    _write(workspace / "b.py", "value = 2\n")
+    _write(workspace / "a.py", "value = 1\n")
+
+    layer = WriteLayer(workspace, "ws-test")
+    operations = [
+        {
+            "path": "b.py",
+            "diff": "--- a/b.py\n+++ b/b.py\n@@ -1,1 +1,1 @@\n-value = 2\n+value = 20\n",
+        },
+        {
+            "path": "a.py",
+            "diff": "--- a/a.py\n+++ b/a.py\n@@ -1,1 +1,1 @@\n-value = 1\n+value = 10\n",
+        },
+    ]
+
+    first = layer.batch_apply_patch(operations, preview=True)
+    second = layer.batch_apply_patch(list(reversed(operations)), preview=True)
+
+    first_plan = first["execution_plan"]
+    second_plan = second["execution_plan"]
+
+    assert first_plan["plan_id"] == second_plan["plan_id"]
+    assert [step["file"] for step in first_plan["steps"]] == ["a.py", "a.py", "b.py", "b.py"]
+    assert [step["status"] for step in first_plan["steps"]] == ["ready", "pending", "pending", "pending"]

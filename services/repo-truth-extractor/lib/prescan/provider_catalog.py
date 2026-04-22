@@ -3,7 +3,6 @@ from __future__ import annotations
 import importlib
 import json
 import os
-from types import ModuleType
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
@@ -31,7 +30,7 @@ PRESCAN_PASS_REQUIREMENTS = {
 NO_LIVE_LANE = "NO_LIVE_LANE"
 
 
-def _runner_module() -> ModuleType:
+def _runner_module():
     return importlib.import_module("run_extraction_v5")
 
 
@@ -130,33 +129,21 @@ def _route_transport(provider: str) -> str:
     return "openai_sdk"
 
 
-def _route_admissibility(provider: str) -> dict[str, Any]:
-    transport = _route_transport(provider)
-    if transport != "openai_sdk":
-        return {
-            "route_admissible": False,
-            "route_admissibility_reason": f"unsupported_prescan_transport:{transport}",
-        }
-    return {
-        "route_admissible": True,
-        "route_admissibility_reason": "sanctioned_runtime_route",
-    }
-
-
 def _route_identity(provider: str, model_id: str) -> dict[str, Any]:
     normalized_provider = str(provider).strip().lower()
     normalized_model = str(model_id).strip()
     upstream_provider = normalized_provider
     if normalized_provider == "openrouter":
         prefix, sep, _rest = normalized_model.partition("/")
-        if sep and prefix in {"anthropic", "gemini", "openai", "xai", "x-ai"}:
-            upstream_provider = "xai" if prefix == "x-ai" else prefix
+        if sep and prefix in {"openai", "gemini", "xai", "anthropic"}:
+            upstream_provider = prefix
     dependency_class = "proxy" if normalized_provider == "openrouter" else "first_party"
-    if normalized_provider in {"local", "lmstudio", "mock", "ollama", "vllm"}:
+    if normalized_provider in {"ollama", "lmstudio", "vllm", "mock", "local"}:
         dependency_class = "local"
+    economic_surface = normalized_provider if normalized_provider else "unknown"
     return {
         "dependency_class": dependency_class,
-        "economic_surface": normalized_provider or "unknown",
+        "economic_surface": economic_surface,
         "upstream_provider": upstream_provider,
         "billing_independent_from_upstream": bool(
             normalized_provider == "openrouter" and upstream_provider != normalized_provider
@@ -169,21 +156,26 @@ def build_provider_model_catalog(config: PrescanConfig) -> dict[str, Any]:
     seen: dict[tuple[str, str, str], dict[str, Any]] = {}
     for policy, ladder_tier, provider, model_id, api_key_env in _iter_runner_routes():
         key = (provider, model_id, api_key_env)
-        credential_present = bool(os.environ.get(api_key_env, "").strip())
+        identity = _route_identity(provider, model_id)
         entry = seen.setdefault(
             key,
             {
                 "provider": provider,
                 "model_id": model_id,
                 "api_key_env": api_key_env,
-                "available": credential_present,
-                "credential_present": credential_present,
-                "availability_reason": "credential_present" if credential_present else "missing_credential",
+                "available": bool(os.environ.get(api_key_env, "").strip()),
+                "credential_present": bool(os.environ.get(api_key_env, "").strip()),
+                "availability_reason": (
+                    "credential_present"
+                    if os.environ.get(api_key_env, "").strip()
+                    else "missing_credential"
+                ),
                 "prescan_tier": classify_prescan_route(provider, model_id),
                 "pricing": _pricing(provider, model_id),
                 "sources": [],
-                **_route_identity(provider, model_id),
-                **_route_admissibility(provider),
+                "route_admissible": True,
+                "route_admissibility_reason": "sanctioned_runtime_route",
+                **identity,
             },
         )
         source = {"policy": policy, "ladder_tier": ladder_tier}
@@ -192,25 +184,28 @@ def build_provider_model_catalog(config: PrescanConfig) -> dict[str, Any]:
 
     if config.provider in SANCTIONED_PROVIDERS and config.model and config.api_key_env:
         key = (config.provider, config.model, config.api_key_env)
-        credential_present = bool(os.environ.get(config.api_key_env, "").strip())
+        identity = _route_identity(config.provider, config.model)
         entry = seen.setdefault(
             key,
             {
                 "provider": config.provider,
                 "model_id": config.model,
                 "api_key_env": config.api_key_env,
-                "available": credential_present,
-                "credential_present": credential_present,
-                "availability_reason": "credential_present" if credential_present else "missing_credential",
+                "available": bool(os.environ.get(config.api_key_env, "").strip()),
+                "credential_present": bool(os.environ.get(config.api_key_env, "").strip()),
+                "availability_reason": (
+                    "credential_present"
+                    if os.environ.get(config.api_key_env, "").strip()
+                    else "missing_credential"
+                ),
                 "prescan_tier": classify_prescan_route(config.provider, config.model),
                 "pricing": _pricing(config.provider, config.model),
                 "sources": [],
-                **_route_identity(config.provider, config.model),
-                **_route_admissibility(config.provider),
+                "route_admissible": True,
+                "route_admissibility_reason": "legacy_prescan_config",
+                **identity,
             },
         )
-        if entry["route_admissible"]:
-            entry["route_admissibility_reason"] = "legacy_prescan_config"
         source = {"policy": "legacy_prescan_config", "ladder_tier": "legacy_default"}
         if source not in entry["sources"]:
             entry["sources"].append(source)
@@ -230,46 +225,7 @@ def build_provider_model_catalog(config: PrescanConfig) -> dict[str, Any]:
     }
 
 
-def _offline_blocker(route: dict[str, Any], reason: str) -> dict[str, Any]:
-    if reason == "online_llm_not_authorized":
-        blocker = {
-            "ready": False,
-            "blocker_code": "ONLINE_LLM_NOT_AUTHORIZED",
-            "blocker_class": "operator_policy",
-            "remediation_class": "authorize_online_llm",
-            "rerun_worthiness": "rerun_after_operator_authorization",
-            "human_summary": "Online LLM execution was not authorized for prescan Stage 0 readiness probing.",
-        }
-        failure_type = "operator_policy"
-    else:
-        runner = _runner_module()
-        blocker = runner.classify_provider_readiness_blocker(
-            provider=str(route.get("provider") or ""),
-            model_id=str(route.get("model_id") or ""),
-            api_key_env=str(route.get("api_key_env") or ""),
-            api_key_present=bool(route.get("credential_present")),
-            status_code=None,
-            failure_type="auth_missing" if reason == "missing_credential" else "unknown",
-            provider_error_reason=reason,
-        )
-        failure_type = "auth_missing" if reason == "missing_credential" else "unknown"
-    return {
-        "provider": str(route.get("provider") or ""),
-        "model_id": str(route.get("model_id") or ""),
-        "api_key_env_name": str(route.get("api_key_env") or ""),
-        "api_key_env_resolved": str(route.get("api_key_env") or ""),
-        "api_key_present": bool(route.get("credential_present")),
-        "transport": str(route.get("execution_transport") or ""),
-        "status_code": None,
-        "failure_type": failure_type,
-        "provider_error_reason": reason,
-        "provider_signature": f"{route.get('provider')}:{route.get('model_id')}",
-        "ready": bool(blocker["ready"]),
-        "readiness_blocker": blocker,
-    }
-
-
-def _build_probe_cfg() -> Any:
+def _build_probe_cfg():
     runner = _runner_module()
     return runner.RunnerConfig(
         dry_run=True,
@@ -299,20 +255,64 @@ def _build_probe_cfg() -> Any:
     )
 
 
-def build_provider_readiness_matrix(config: PrescanConfig, catalog: dict[str, Any]) -> dict[str, Any]:
+def _offline_blocker(route: dict[str, Any], reason: str) -> dict[str, Any]:
+    runner = _runner_module()
+    if reason == "online_llm_not_authorized":
+        blocker = {
+            "ready": False,
+            "blocker_code": "ONLINE_LLM_NOT_AUTHORIZED",
+            "blocker_class": "operator_policy",
+            "remediation_class": "authorize_online_llm",
+            "rerun_worthiness": "rerun_after_operator_authorization",
+            "human_summary": "Online LLM execution was not authorized for prescan Stage 0 readiness probing.",
+        }
+        failure_type = "operator_policy"
+    else:
+        blocker = runner.classify_provider_readiness_blocker(
+            provider=str(route.get("provider") or ""),
+            model_id=str(route.get("model_id") or ""),
+            api_key_env=str(route.get("api_key_env") or ""),
+            api_key_present=bool(route.get("credential_present")),
+            status_code=None,
+            failure_type="auth_missing" if reason == "missing_credential" else "unknown",
+            provider_error_reason=reason,
+        )
+        failure_type = "auth_missing" if reason == "missing_credential" else "unknown"
+    return {
+        "provider": str(route.get("provider") or ""),
+        "model_id": str(route.get("model_id") or ""),
+        "api_key_env_name": str(route.get("api_key_env") or ""),
+        "api_key_env_resolved": str(route.get("api_key_env") or ""),
+        "api_key_present": bool(route.get("credential_present")),
+        "transport": str(route.get("execution_transport") or ""),
+        "status_code": None,
+        "failure_type": failure_type,
+        "provider_error_reason": reason,
+        "provider_signature": f"{route.get('provider')}:{route.get('model_id')}",
+        "ready": bool(blocker["ready"]),
+        "readiness_blocker": blocker,
+    }
+
+
+def build_provider_readiness_matrix(
+    config: PrescanConfig,
+    catalog: dict[str, Any],
+) -> dict[str, Any]:
+    runner = _runner_module()
+    probe_cfg = _build_probe_cfg()
     rows: list[dict[str, Any]] = []
     blocked_codes: set[str] = set()
-    allow_online = bool(getattr(config, "allow_online_llm", False))
-    probe_cfg = _build_probe_cfg() if allow_online else None
     for route in catalog.get("routes", []):
-        if not isinstance(route, dict) or not bool(route.get("route_admissible")):
+        if not isinstance(route, dict):
             continue
-        if not allow_online:
+        if not bool(route.get("route_admissible")):
+            continue
+        if not config.allow_online_llm:
             provider_probe = _offline_blocker(route, "online_llm_not_authorized")
         elif not bool(route.get("credential_present")):
             provider_probe = _offline_blocker(route, "missing_credential")
         else:
-            provider_probe = _runner_module().run_provider_doctor_probe(
+            provider_probe = runner.run_provider_doctor_probe(
                 str(route.get("provider") or ""),
                 str(route.get("model_id") or ""),
                 str(route.get("api_key_env") or ""),
@@ -335,7 +335,13 @@ def build_provider_readiness_matrix(config: PrescanConfig, catalog: dict[str, An
                 "exclusion_reason": None if provider_probe.get("ready") else str(blocker.get("blocker_code") or "unknown_readiness_block"),
             }
         )
-    rows.sort(key=lambda item: (str(item["provider"]), str(item["model_id"]), str(item["api_key_env"])))
+    rows.sort(
+        key=lambda item: (
+            str(item.get("provider") or ""),
+            str(item.get("model_id") or ""),
+            str(item.get("api_key_env") or ""),
+        )
+    )
     return {
         "status": "PASS" if rows and any(row["ready"] for row in rows) else "FAIL",
         "routes": rows,
@@ -370,109 +376,125 @@ def _select_route_for_tier(
     return selected, adjustment
 
 
-def _ready_routes(catalog: dict[str, Any], readiness: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[tuple[str, str, str], str]]:
+def _eligible_ready_routes(
+    catalog_routes: list[dict[str, Any]],
+    readiness_rows: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], dict[tuple[str, str, str], str]]:
     readiness_by_key = {
-        (str(row.get("provider") or ""), str(row.get("model_id") or ""), str(row.get("api_key_env") or "")): row
-        for row in readiness.get("routes", [])
-        if isinstance(row, dict)
+        (
+            str(row.get("provider") or ""),
+            str(row.get("model_id") or ""),
+            str(row.get("api_key_env") or ""),
+        ): row
+        for row in readiness_rows
     }
     eligible: list[dict[str, Any]] = []
     exclusions: dict[tuple[str, str, str], str] = {}
-    for route in catalog.get("routes", []):
-        if not isinstance(route, dict):
-            continue
-        key = (str(route.get("provider") or ""), str(route.get("model_id") or ""), str(route.get("api_key_env") or ""))
-        row = readiness_by_key.get(key)
-        if route.get("route_admissible") is False:
+    for route in catalog_routes:
+        key = (
+            str(route.get("provider") or ""),
+            str(route.get("model_id") or ""),
+            str(route.get("api_key_env") or ""),
+        )
+        readiness = readiness_by_key.get(key)
+        if not bool(route.get("route_admissible")):
             exclusions[key] = str(route.get("route_admissibility_reason") or "inadmissible")
-        elif row is None:
+            continue
+        if readiness is None:
             exclusions[key] = "missing_provider_readiness"
-        elif not bool(row.get("ready")):
-            exclusions[key] = str(row.get("exclusion_reason") or "provider_not_ready")
-        else:
-            eligible.append(route)
+            continue
+        if not bool(readiness.get("ready")):
+            exclusions[key] = str(readiness.get("exclusion_reason") or "provider_not_ready")
+            continue
+        eligible.append(route)
     return eligible, exclusions
 
 
-def _candidate_fallbacks(primary: dict[str, Any] | None, routes: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def _candidate_fallbacks(
+    primary: dict[str, Any] | None,
+    routes: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     if primary is None:
         return [], []
-    selected = [primary]
-    selected_classes = {str(primary.get("dependency_class") or "")}
-    selected_surfaces = {str(primary.get("economic_surface") or "")}
+    selected: list[dict[str, Any]] = [primary]
     decisions: list[dict[str, Any]] = []
+    selected_dependency_classes = {str(primary.get("dependency_class") or "")}
+    selected_surfaces = {str(primary.get("economic_surface") or "")}
     for route in routes:
         if route is primary:
             continue
         dependency_class = str(route.get("dependency_class") or "")
         economic_surface = str(route.get("economic_surface") or "")
-        decision = {
-            "provider": str(route.get("provider") or ""),
-            "model_id": str(route.get("model_id") or ""),
-        }
-        if dependency_class in selected_classes:
-            decisions.append({**decision, "decision": "excluded", "reason": "shared_dependency_class"})
+        if dependency_class in selected_dependency_classes:
+            decisions.append(
+                {
+                    "provider": str(route.get("provider") or ""),
+                    "model_id": str(route.get("model_id") or ""),
+                    "decision": "excluded",
+                    "reason": "shared_dependency_class",
+                }
+            )
             continue
         if economic_surface in selected_surfaces:
-            decisions.append({**decision, "decision": "excluded", "reason": "shared_economic_surface"})
+            decisions.append(
+                {
+                    "provider": str(route.get("provider") or ""),
+                    "model_id": str(route.get("model_id") or ""),
+                    "decision": "excluded",
+                    "reason": "shared_economic_surface",
+                }
+            )
             continue
-        primary_provider = str(primary.get("provider") or "")
-        route_provider = str(route.get("provider") or "")
-        primary_billing_unconfirmed = primary_provider == "openrouter" and not bool(
-            primary.get("billing_independent_from_upstream")
-        )
-        route_billing_unconfirmed = route_provider == "openrouter" and not bool(
-            route.get("billing_independent_from_upstream")
-        )
-        if primary_billing_unconfirmed or route_billing_unconfirmed:
-            decisions.append({**decision, "decision": "excluded", "reason": "billing_independence_unconfirmed"})
+        if (
+            str(primary.get("provider") or "") == "openai"
+            and str(route.get("provider") or "") == "openrouter"
+            and not bool(route.get("billing_independent_from_upstream"))
+        ):
+            decisions.append(
+                {
+                    "provider": str(route.get("provider") or ""),
+                    "model_id": str(route.get("model_id") or ""),
+                    "decision": "excluded",
+                    "reason": "billing_independence_unconfirmed",
+                }
+            )
             continue
         selected.append(route)
-        selected_classes.add(dependency_class)
+        selected_dependency_classes.add(dependency_class)
         selected_surfaces.add(economic_surface)
-        decisions.append({**decision, "decision": "admitted", "reason": "distinct_dependency_and_economic_surface"})
+        decisions.append(
+            {
+                "provider": str(route.get("provider") or ""),
+                "model_id": str(route.get("model_id") or ""),
+                "decision": "admitted",
+                "reason": "distinct_dependency_and_economic_surface",
+            }
+        )
     return selected, decisions
 
 
 def build_prescan_routing_plan(
     config: PrescanConfig,
     catalog: dict[str, Any],
-    readiness: dict[str, Any] | list[str] | None = None,
-    passes: list[str] | None = None,
+    readiness: dict[str, Any],
+    passes: list[str] | None,
 ) -> dict[str, Any]:
-    compatibility_mode = not isinstance(readiness, dict)
-    if compatibility_mode:
-        if passes is None:
-            passes = readiness if isinstance(readiness, list) else None
-        readiness = {
-            "status": "PASS",
-            "routes": [
-                {
-                    "provider": str(route.get("provider") or ""),
-                    "model_id": str(route.get("model_id") or ""),
-                    "api_key_env": str(route.get("api_key_env") or ""),
-                    "ready": bool(route.get("available", True)),
-                    "exclusion_reason": None if bool(route.get("available", True)) else "missing_provider_readiness",
-                }
-                for route in catalog.get("routes", [])
-                if isinstance(route, dict)
-            ],
-        }
-    if readiness is None:
-        readiness = {"status": "PASS", "routes": []}
     requested_passes = [pass_id for pass_id in (passes or []) if pass_id in PRESCAN_PASS_REQUIREMENTS]
-    routes, exclusions = _ready_routes(catalog, readiness)
-    selected_routes: dict[str, dict[str, Any]] = {}
+    catalog_routes = [row for row in catalog.get("routes", []) if isinstance(row, dict)]
+    ready_routes, exclusions = _eligible_ready_routes(catalog_routes, readiness.get("routes", []))
+
     candidate_routes: dict[str, list[dict[str, Any]]] = {}
-    fallback_decisions: dict[str, list[dict[str, Any]]] = {}
+    selected_routes: dict[str, dict[str, Any]] = {}
     failures: list[dict[str, Any]] = []
+    fallback_decisions: dict[str, list[dict[str, Any]]] = {}
     for pass_id in requested_passes:
         required_tier = PRESCAN_PASS_REQUIREMENTS[pass_id]
-        tier_routes = [
-            route for route in routes
+        tier_eligible = [
+            route
+            for route in ready_routes
             if PRESCAN_TIER_RANK.get(str(route.get("prescan_tier")), 0) >= PRESCAN_TIER_RANK[required_tier]
         ]
-        selected, adjustment = _select_route_for_tier(tier_routes, required_tier)
+        selected, adjustment = _select_route_for_tier(tier_eligible, required_tier)
         if selected is None:
             failures.append(
                 {
@@ -480,14 +502,19 @@ def build_prescan_routing_plan(
                     "required_tier": required_tier,
                     "reason": "no_executable_route_after_provider_readiness",
                     "excluded_routes": [
-                        {"provider": p, "model_id": m, "api_key_env": k, "reason": reason}
-                        for (p, m, k), reason in sorted(exclusions.items())
+                        {
+                            "provider": provider,
+                            "model_id": model_id,
+                            "api_key_env": api_key_env,
+                            "reason": reason,
+                        }
+                        for (provider, model_id, api_key_env), reason in sorted(exclusions.items())
                     ],
                 }
             )
             continue
         ordered = sorted(
-            tier_routes,
+            tier_eligible,
             key=lambda row: (
                 PRESCAN_TIER_RANK.get(str(row.get("prescan_tier")), 99),
                 float(((row.get("pricing") or {}).get("input_1m_usd", 999.0))),
@@ -496,7 +523,7 @@ def build_prescan_routing_plan(
                 str(row.get("model_id") or ""),
             ),
         )
-        candidates, decisions = _candidate_fallbacks(selected, ordered)
+        pass_candidates, decisions = _candidate_fallbacks(selected, ordered)
         fallback_decisions[pass_id] = decisions
         candidate_routes[pass_id] = [
             {
@@ -509,7 +536,7 @@ def build_prescan_routing_plan(
                 "execution_transport": str(route.get("execution_transport") or ""),
                 "pricing": dict(route.get("pricing") or {}),
             }
-            for route in candidates
+            for route in pass_candidates
         ]
         selected_routes[pass_id] = {
             "pass_id": pass_id,
@@ -530,9 +557,12 @@ def build_prescan_routing_plan(
             ),
         }
 
+    status = "PASS"
+    if failures:
+        status = NO_LIVE_LANE
     return {
         "requested_passes": requested_passes,
-        "status": ("FAIL" if compatibility_mode and failures else NO_LIVE_LANE if failures else "PASS"),
+        "status": status,
         "halt_before_stage_1": bool(failures),
         "failures": failures,
         "candidate_routes": candidate_routes,
@@ -543,7 +573,6 @@ def build_prescan_routing_plan(
 
 
 def write_provider_catalog(output_dir: Path, catalog: dict[str, Any]) -> Path:
-    output_dir.mkdir(parents=True, exist_ok=True)
     path = output_dir / "prescan_provider_model_catalog.json"
     payload = {"generated_at": datetime.now(timezone.utc).isoformat(), **catalog}
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -551,7 +580,6 @@ def write_provider_catalog(output_dir: Path, catalog: dict[str, Any]) -> Path:
 
 
 def write_provider_readiness(output_dir: Path, readiness: dict[str, Any]) -> Path:
-    output_dir.mkdir(parents=True, exist_ok=True)
     path = output_dir / "prescan_provider_readiness.json"
     payload = {"generated_at": datetime.now(timezone.utc).isoformat(), **readiness}
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -559,7 +587,6 @@ def write_provider_readiness(output_dir: Path, readiness: dict[str, Any]) -> Pat
 
 
 def write_routing_plan(output_dir: Path, plan: dict[str, Any]) -> Path:
-    output_dir.mkdir(parents=True, exist_ok=True)
     path = output_dir / "prescan_routing_plan.json"
     payload = {"generated_at": datetime.now(timezone.utc).isoformat(), **plan}
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -567,7 +594,6 @@ def write_routing_plan(output_dir: Path, plan: dict[str, Any]) -> Path:
 
 
 def write_no_live_lane_artifact(output_dir: Path, plan: dict[str, Any]) -> Path:
-    output_dir.mkdir(parents=True, exist_ok=True)
     path = output_dir / "prescan_no_live_lane.json"
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -575,23 +601,6 @@ def write_no_live_lane_artifact(output_dir: Path, plan: dict[str, Any]) -> Path:
         "halt_before_stage_1": True,
         "requested_passes": list(plan.get("requested_passes") or []),
         "failures": list(plan.get("failures") or []),
-    }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    return path
-
-
-def write_live_lane_success_artifact(output_dir: Path, plan: dict[str, Any]) -> Path:
-    output_dir.mkdir(parents=True, exist_ok=True)
-    path = output_dir / "prescan_live_lane_success.json"
-    payload = {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
-        "status": "LIVE_LANE_READY",
-        "halt_before_stage_1": False,
-        "requested_passes": list(plan.get("requested_passes") or []),
-        "provider_readiness_status": str(plan.get("provider_readiness_status") or "UNKNOWN"),
-        "selected_routes": dict(plan.get("selected_routes") or {}),
-        "candidate_routes": dict(plan.get("candidate_routes") or {}),
-        "fallback_decisions": dict(plan.get("fallback_decisions") or {}),
     }
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path

@@ -85,6 +85,7 @@ Configuration schemas and references.
 - **[PM Plane Write Matrix](../planes/pm/pm-plane-write-matrix.md)** - Canonical mutation writers, prechecks, mirrors, and forbidden paths
 - **[PM Plane Read Matrix](../planes/pm/pm-plane-read-matrix.md)** - Canonical read sources, normalization, and provenance expectations
 - **[PM Plane Write Surface Policy](../planes/pm/pm-plane-write-surface-policy.md)** - Tool classification and raw-surface exposure policy
+- **[Dopemux Hooksd](services/dopemux-hooksd.md)** - Hook-facing runtime reference covering the webhook sidecar, poller, local Claude native-hooks adapter, and current naming drift
 - **[Task Orchestrator Service Reference](services/task-orchestrator.md)** - Active runtime endpoints, defaults, persistence substrate, and known authority drift
 - **[Supervisor PM and Memory MCP Server Matrix](../05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md)** - Supervisor-facing matrix of PM, memory, retrieval, and adapter surfaces
 - **[Supervisor PM and Memory Evidence Packet](../05-audit-reports/supervisor-pm-evidence-packet-2026-03-27.md)** - Priority-ordered evidence packet for canonical roles, promotion rules, and storage boundaries
