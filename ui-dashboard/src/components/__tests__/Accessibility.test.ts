@@ -82,6 +82,10 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('role="status"');
   expect(content).toMatch(/aria-label=\{\s*totalRemainingMinutes === 0\s*\?\s*'Task sequence complete'\s*:\s*getDurationAriaLabel\(totalRemainingMinutes\)\s*\}/);
   expect(content).toContain('aria-label="Ritual Complete: All tasks finished"');
+  expect(content).toContain('const headerRef = useRef<HTMLHeadingElement>(null);');
+  expect(content).toContain('ref={headerRef}');
+  expect(content).toContain('tabIndex={-1}');
+  expect(content).toContain('headerRef.current?.focus();');
 });
 
 test('TaskSequencer.tsx implements overtime visual cues', () => {
