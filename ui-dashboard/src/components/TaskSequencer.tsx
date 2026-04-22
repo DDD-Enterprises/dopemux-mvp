@@ -121,11 +121,11 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   };
 
   const completeTask = (taskId: string) => {
-    const remainingTasks = optimizedTasks.filter((task) => task.id !== taskId);
     setTasks((prev) => prev.map((task) => (task.id === taskId ? { ...task, status: 'completed' } : task)));
-    const nextTaskId = remainingTasks.length > 0 ? remainingTasks[0].id : null;
-    setCurrentTaskId(nextTaskId);
-    if (!nextTaskId) {
+    const remainingTasks = tasks.filter((task) => task.id !== taskId && task.status !== 'completed');
+    const nextTask = optimizedTasks.find((task) => task.id !== taskId) ?? remainingTasks[0];
+    setCurrentTaskId(nextTask ? nextTask.id : null);
+    if (!nextTask) {
       headerRef.current?.focus();
     }
   };
