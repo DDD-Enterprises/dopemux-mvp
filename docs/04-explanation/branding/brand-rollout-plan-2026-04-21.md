@@ -1,13 +1,17 @@
 ---
 id: brand-rollout-plan-2026-04-21
-title: Dopemux Brand Rollout Plan — 2026-04-21
+title: "Dopemux Brand Rollout Plan \u2014 2026-04-21"
 type: how-to
 owner: brand-system
 date: 2026-04-21
 status: proposed
 complements: design-system-audit-2026-04-21
+author: '@hu3mann'
+last_review: '2026-04-22'
+next_review: '2026-07-21'
+prelude: "Dopemux Brand Rollout Plan \u2014 2026-04-21 (explanation) for dopemux documentation\
+  \ and developer workflows."
 ---
-
 # Dopemux Brand Rollout Plan — 2026-04-21
 
 ## Goals

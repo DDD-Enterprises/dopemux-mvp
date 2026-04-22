@@ -1,13 +1,17 @@
 ---
 id: design-system-audit-2026-04-21
-title: Dopemux Design System Audit — 2026-04-21
+title: "Dopemux Design System Audit \u2014 2026-04-21"
 type: reference
 owner: brand-system
 date: 2026-04-21
 audit_scope: repo-wide (16 surfaces)
 status: current
+author: '@hu3mann'
+last_review: '2026-04-22'
+next_review: '2026-07-21'
+prelude: "Dopemux Design System Audit \u2014 2026-04-21 (explanation) for dopemux\
+  \ documentation and developer workflows."
 ---
-
 # Dopemux Design System Audit — 2026-04-21
 
 ## Summary
