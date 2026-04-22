@@ -143,7 +143,7 @@ def main() -> int:
     parser.add_argument(
         "--allow-online-llm",
         action="store_true",
-        help="Explicitly authorize online LLM execution and API spend",
+        help="Authorize Stage 0 provider readiness probes and online LLM pass execution",
     )
     parser.add_argument(
         "-v",
@@ -212,6 +212,7 @@ def main() -> int:
     logger.info(f"   Passes: {', '.join(passes) if passes else 'none'}")
     logger.info(f"   Code prescan: {config.enable_code_prescan}")
     logger.info(f"   Git enrichment: {config.enable_git_enrichment}")
+    logger.info(f"   Online LLM authorized: {config.allow_online_llm}")
 
     # Run prescan
     engine = PrescanEngine(config)
