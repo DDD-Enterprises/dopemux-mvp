@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import {
   Paper,
   Box,
@@ -78,6 +78,7 @@ const INITIAL_TASKS: Task[] = [
 
 const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS);
+  const headerRef = useRef<HTMLHeadingElement>(null);
 
   const [currentTaskId, setCurrentTaskId] = useState<string | null>('1');
   const [taskTimer, setTaskTimer] = useState<number>(0);
@@ -120,9 +121,13 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   };
 
   const completeTask = (taskId: string) => {
-    const remainingTasks = optimizedTasks.filter((task) => task.id !== taskId);
     setTasks((prev) => prev.map((task) => (task.id === taskId ? { ...task, status: 'completed' } : task)));
-    setCurrentTaskId(remainingTasks.length > 0 ? remainingTasks[0].id : null);
+    const remainingTasks = tasks.filter((task) => task.id !== taskId && task.status !== 'completed');
+    const nextTask = optimizedTasks.find((task) => task.id !== taskId) ?? remainingTasks[0];
+    setCurrentTaskId(nextTask ? nextTask.id : null);
+    if (!nextTask) {
+      headerRef.current?.focus();
+    }
   };
 
   const skipTask = (taskId: string) => {
@@ -138,6 +143,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     setCurrentTaskId(freshTasks[0].id);
     setTaskTimer(0);
     setIsTimerRunning(false);
+    headerRef.current?.focus();
   };
 
   const formatTime = (seconds: number): string => {
@@ -207,7 +213,12 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     >
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
         <Timer size={24} aria-hidden="true" />
-        <Typography variant="h6" sx={{ letterSpacing: '0.16em' }}>
+        <Typography
+          variant="h6"
+          ref={headerRef}
+          tabIndex={-1}
+          sx={{ letterSpacing: '0.16em', outline: 'none' }}
+        >
           Task Sequencer
         </Typography>
         <Tooltip
@@ -431,28 +442,44 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         <Typography variant="subtitle2">
           Optimized Sequence ({optimizedTasks.length} tasks)
         </Typography>
-        <Tooltip title={getDurationAriaLabel(totalRemainingMinutes)} arrow>
+        <Tooltip
+          title={
+            totalRemainingMinutes === 0
+              ? 'Task sequence complete'
+              : getDurationAriaLabel(totalRemainingMinutes)
+          }
+          arrow
+        >
           <Box
             sx={{
               display: 'flex',
               alignItems: 'center',
               gap: 0.5,
               ml: 'auto',
-              color: brandTokens.colors.ritualCyan,
+              color: totalRemainingMinutes === 0 ? brandTokens.colors.serumMint : brandTokens.colors.ritualCyan,
               cursor: 'help',
+              transition: 'color 0.3s ease',
               '&:focus-visible': {
                 outline: 'none',
                 borderRadius: 1,
-                boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}`,
+                boxShadow: `0 0 0 2px ${totalRemainingMinutes === 0 ? brandTokens.colors.serumMint : brandTokens.colors.ritualCyan}`,
               }
             }}
             tabIndex={0}
             role="status"
-            aria-label={getDurationAriaLabel(totalRemainingMinutes)}
+            aria-label={
+              totalRemainingMinutes === 0
+                ? 'Task sequence complete'
+                : getDurationAriaLabel(totalRemainingMinutes)
+            }
           >
-            <Clock size={14} aria-hidden="true" />
+            {totalRemainingMinutes === 0 ? (
+              <CheckCircle size={14} aria-hidden="true" />
+            ) : (
+              <Clock size={14} aria-hidden="true" />
+            )}
             <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
-              {totalRemainingMinutes}m
+              {totalRemainingMinutes === 0 ? 'DONE' : `${totalRemainingMinutes}m`}
             </Typography>
           </Box>
         </Tooltip>
