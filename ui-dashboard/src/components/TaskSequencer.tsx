@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Paper,
   Box,
@@ -337,31 +337,45 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               </Typography>
             )}
           </Box>
-          <LinearProgress
-            variant="determinate"
-            value={Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100)}
-            sx={{
-              mb: 2.5,
-              height: 6,
-              borderRadius: 3,
-              bgcolor: alpha(isOvertime ? brandTokens.colors.gremlinPink : brandTokens.colors.saintGold, 0.1),
-              '& .MuiLinearProgress-bar': {
-                bgcolor: isOvertime ? brandTokens.colors.gremlinPink : brandTokens.colors.saintGold,
-                borderRadius: 3,
-                boxShadow: isOvertime
-                  ? `0 0 12px ${alpha(brandTokens.colors.gremlinPink, 0.6)}`
-                  : brandTokens.shadows.goldBloom,
-              },
-            }}
-            aria-label="Current task progress"
-            aria-valuetext={
-              isOvertime
-                ? `Overtime: ${Math.floor(taskTimer / 60 - currentTask.estimatedMinutes)} ${
-                    Math.floor(taskTimer / 60 - currentTask.estimatedMinutes) === 1 ? 'minute' : 'minutes'
-                  } past estimate`
-                : `${Math.round(Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100))}% of estimated time`
-            }
-          />
+          <Tooltip title="Current task progress based on estimate" arrow>
+            <Box
+              tabIndex={0}
+              sx={{
+                mb: 2.5,
+                outline: 'none',
+                cursor: 'help',
+                '&:focus-visible': {
+                  borderRadius: 1,
+                  boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}`,
+                },
+              }}
+            >
+              <LinearProgress
+                variant="determinate"
+                value={Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100)}
+                sx={{
+                  height: 6,
+                  borderRadius: 3,
+                  bgcolor: alpha(isOvertime ? brandTokens.colors.gremlinPink : brandTokens.colors.saintGold, 0.1),
+                  '& .MuiLinearProgress-bar': {
+                    bgcolor: isOvertime ? brandTokens.colors.gremlinPink : brandTokens.colors.saintGold,
+                    borderRadius: 3,
+                    boxShadow: isOvertime
+                      ? `0 0 12px ${alpha(brandTokens.colors.gremlinPink, 0.6)}`
+                      : brandTokens.shadows.goldBloom,
+                  },
+                }}
+                aria-label="Current task progress"
+                aria-valuetext={
+                  isOvertime
+                    ? `Overtime: ${Math.floor(taskTimer / 60 - currentTask.estimatedMinutes)} ${
+                        Math.floor(taskTimer / 60 - currentTask.estimatedMinutes) === 1 ? 'minute' : 'minutes'
+                      } past estimate`
+                    : `${Math.round(Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100))}% of estimated time`
+                }
+              />
+            </Box>
+          </Tooltip>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Tooltip title={isTimerRunning ? 'Pause Ritual' : 'Start Ritual'} arrow>
               <Button
@@ -419,22 +433,24 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           <Typography variant="body2" sx={{ mb: 2 }}>
             All muzzled. Your backlog is silent... for now.
           </Typography>
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<RotateCcw size={16} />}
-            onClick={resetTasks}
-            sx={{
-              borderColor: brandTokens.colors.serumMint,
-              color: brandTokens.colors.serumMint,
-              '&:hover': {
+          <Tooltip title="Restart the task sequence" arrow>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<RotateCcw size={16} />}
+              onClick={resetTasks}
+              sx={{
                 borderColor: brandTokens.colors.serumMint,
-                background: alpha(brandTokens.colors.serumMint, 0.1),
-              },
-            }}
-          >
-            Reset Ritual
-          </Button>
+                color: brandTokens.colors.serumMint,
+                '&:hover': {
+                  borderColor: brandTokens.colors.serumMint,
+                  background: alpha(brandTokens.colors.serumMint, 0.1),
+                },
+              }}
+            >
+              Reset Ritual
+            </Button>
+          </Tooltip>
         </Box>
       )}
 
@@ -513,7 +529,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                   {isCompleted ? (
                     <CheckCircle color={brandTokens.colors.serumMint} size={20} aria-hidden="true" />
                   ) : isCurrent ? (
-                    <Play color={brandTokens.colors.ritualCyan} size={20} aria-hidden="true" />
+                    <Play
+                      color={brandTokens.colors.ritualCyan}
+                      size={20}
+                      aria-hidden="true"
+                      style={{
+                        animation: isTimerRunning ? 'timer-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none'
+                      }}
+                    />
                   ) : (
                     <Circle color={alpha(brandTokens.text.primary, 0.3)} size={18} aria-hidden="true" />
                   )}
@@ -551,6 +574,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                   <Button
                     size="small"
                     variant="outlined"
+                    startIcon={<Play />}
                     onClick={() => startTask(task.id)}
                     aria-label={`Start task: ${task.title}`}
                   >
