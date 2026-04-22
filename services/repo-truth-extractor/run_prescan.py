@@ -198,7 +198,7 @@ def main() -> int:
     elif _passes_raw == "all":
         passes = list(ALL_PASSES)
     else:
-        passes = [p.strip() for p in args.passes.split(",") if p.strip()]
+        passes = [p.strip().lower() for p in args.passes.split(",") if p.strip()]
 
     # Dry run: skip expensive operations
     if args.dry_run:

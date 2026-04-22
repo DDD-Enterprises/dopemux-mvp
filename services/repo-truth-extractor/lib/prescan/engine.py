@@ -21,6 +21,7 @@ from .provider_catalog import (
     build_provider_model_catalog,
     build_prescan_routing_plan,
     build_provider_readiness_matrix,
+    write_live_lane_success_artifact,
     write_no_live_lane_artifact,
     write_provider_catalog,
     write_provider_readiness,
@@ -47,6 +48,7 @@ class PrescanEngine:
         warnings = []
         errors = []
         incremental_cache = IncrementalCodeCache(self.config)
+        self.config.output_dir.mkdir(parents=True, exist_ok=True)
         changed_files: set[str] | None = None
         cache_payload: dict[str, Any] | None = None
         cache_fallback_reason: str | None = None
@@ -191,9 +193,11 @@ class PrescanEngine:
             routing_plan = None
             routing_plan_path = None
             provider_readiness = None
+            live_lane_success_path = None
             if passes:
                 try:
                     logger.info("Building provider model catalog for routing...")
+                    self.config.output_dir.mkdir(parents=True, exist_ok=True)
                     catalog = build_provider_model_catalog(self.config)
                     catalog_path = write_provider_catalog(self.config.output_dir, catalog)
                     logger.info(f"Provider catalog saved: {catalog_path}")
@@ -205,6 +209,12 @@ class PrescanEngine:
                     routing_plan = build_prescan_routing_plan(self.config, catalog, provider_readiness, passes)
                     routing_plan_path = write_routing_plan(self.config.output_dir, routing_plan)
                     logger.info(f"Routing plan saved: {routing_plan_path}")
+                    if routing_plan.get("status") == "PASS":
+                        live_lane_success_path = write_live_lane_success_artifact(
+                            self.config.output_dir,
+                            routing_plan,
+                        )
+                        logger.info(f"Live lane success artifact saved: {live_lane_success_path}")
                 except Exception as e:
                     logger.exception("Provider routing failed during Stage 0 readiness gating")
                     return PrescanResult(
@@ -226,6 +236,7 @@ class PrescanEngine:
                                 "routing_plan_status": "ERROR",
                                 "routing_error": str(e),
                                 "routing_plan_path": None,
+                                "live_lane_success_artifact": None,
                             },
                             "incremental": {
                                 "enabled": incremental,
@@ -263,7 +274,9 @@ class PrescanEngine:
                                     provider_readiness or {}
                                 ).get("status", "UNKNOWN"),
                                 "routing_plan_status": routing_plan.get("status"),
+                                "routing_plan_path": str(routing_plan_path) if routing_plan_path else None,
                                 "no_live_lane_artifact": str(no_live_lane_path),
+                                "live_lane_success_artifact": None,
                             },
                             "incremental": {
                                 "enabled": incremental,
@@ -341,6 +354,18 @@ class PrescanEngine:
                 metadata={
                     "git_sha": self._get_git_sha(),
                     "timestamp": dt.datetime.now(dt.timezone.utc).isoformat(),
+                    "stage0": {
+                        "provider_readiness_status": (
+                            provider_readiness or {}
+                        ).get("status", "UNKNOWN") if passes else None,
+                        "routing_plan_status": (
+                            routing_plan or {}
+                        ).get("status", "NOT_REQUESTED") if passes else "NOT_REQUESTED",
+                        "routing_plan_path": str(routing_plan_path) if routing_plan_path else None,
+                        "live_lane_success_artifact": (
+                            str(live_lane_success_path) if live_lane_success_path else None
+                        ),
+                    },
                     "incremental": {
                         "enabled": incremental,
                         "changed_files_count": len(changed_files) if changed_files is not None else None,
@@ -485,7 +510,7 @@ class PrescanEngine:
                 stderr=subprocess.DEVNULL
             ).decode().splitlines()
             return set(output)
-        except:
+        except (subprocess.CalledProcessError, FileNotFoundError, OSError):
             return None
 
     def _get_git_sha(self) -> str:
@@ -496,5 +521,5 @@ class PrescanEngine:
                 cwd=self.config.repo_root, 
                 stderr=subprocess.DEVNULL
             ).decode().strip()
-        except:
+        except (subprocess.CalledProcessError, FileNotFoundError, OSError):
             return "unknown"

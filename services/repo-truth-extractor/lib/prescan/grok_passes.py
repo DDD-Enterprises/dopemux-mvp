@@ -22,10 +22,10 @@ class RoutingExhausted(RTEPrescanError):
     """Raised when all candidates in a route ladder fail."""
     pass
 
-@dataclass
+@dataclass(init=False)
 class ExecutionAttempt:
     provider: str
-    model: str
+    model_id: str
     api_key_env: str
     status: str  # success|failed|skipped
     latency_ms: float = 0.0
@@ -33,6 +33,37 @@ class ExecutionAttempt:
     limiter_wait_ms: float = 0.0
     tokens_prompt: int = 0
     tokens_completion: int = 0
+
+    def __init__(
+        self,
+        provider: str,
+        model_id: str | None = None,
+        api_key_env: str = "",
+        status: str = "pending",
+        latency_ms: float = 0.0,
+        error: str | None = None,
+        limiter_wait_ms: float = 0.0,
+        tokens_prompt: int = 0,
+        tokens_completion: int = 0,
+        *,
+        model: str | None = None,
+    ) -> None:
+        resolved_model_id = model_id if model_id is not None else model
+        if resolved_model_id is None:
+            raise TypeError("ExecutionAttempt requires model_id")
+        self.provider = provider
+        self.model_id = resolved_model_id
+        self.api_key_env = api_key_env
+        self.status = status
+        self.latency_ms = latency_ms
+        self.error = error
+        self.limiter_wait_ms = limiter_wait_ms
+        self.tokens_prompt = tokens_prompt
+        self.tokens_completion = tokens_completion
+
+    @property
+    def model(self) -> str:
+        return self.model_id
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -187,17 +218,21 @@ class GrokPassRunner:
             candidates = [{"provider": self.config.provider, "model_id": self.config.model, "api_key_env": self.config.api_key_env}]
 
         for candidate in candidates:
-            for attempt in range(max_candidate_retries + 1):
+            for attempt_index in range(max_candidate_retries + 1):
                 attempt_record = ExecutionAttempt(
-                    provider=candidate["provider"],
-                    model=candidate["model_id"],
-                    api_key_env=candidate["api_key_env"],
+                    provider=str(candidate["provider"]),
+                    model_id=str(candidate["model_id"]),
+                    api_key_env=str(candidate["api_key_env"]),
                     status="pending"
                 )
                 evidence.attempts.append(attempt_record)
                 try:
-                    result = self._call_grok(pass_id, payload, candidate, attempt_record, est_tokens)
-                    if result:
+                    if est_tokens:
+                        result = self._call_grok(pass_id, payload, candidate, attempt_record, est_tokens)
+                    else:
+                        result = self._call_grok(pass_id, payload, candidate, attempt_record)
+                    if result is not None:
+                        attempt_record.status = "success"
                         evidence.final_status = "success"
                         return result
                 except SecurityViolation:
@@ -206,7 +241,7 @@ class GrokPassRunner:
                 except Exception as e:
                     attempt_record.status = "failed"
                     attempt_record.error = str(e)
-                if attempt < max_candidate_retries:
+                if attempt_index < max_candidate_retries:
                     time.sleep(1)
         evidence.final_status = "exhausted"
         return None
@@ -309,6 +344,7 @@ class GrokPassRunner:
         return data
 
     def save_attempts(self) -> Path:
+        self.config.output_dir.mkdir(parents=True, exist_ok=True)
         path = self.config.output_dir / "prescan_llm_attempts.json"
         flattened_attempts: list[dict[str, Any]] = []
         success_count = 0
@@ -322,7 +358,7 @@ class GrokPassRunner:
                         "pass_id": evidence.pass_id,
                         "batch_id": evidence.batch_id,
                         "provider": attempt.provider,
-                        "model_id": attempt.model,
+                        "model_id": attempt.model_id,
                         "api_key_env": attempt.api_key_env,
                         "status": attempt.status,
                         "success": success,
