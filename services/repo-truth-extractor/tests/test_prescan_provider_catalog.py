@@ -13,12 +13,14 @@ if str(SERVICE_ROOT) not in sys.path:
 
 from lib.prescan.models import PrescanConfig
 from lib.prescan.provider_catalog import (
+    NO_LIVE_LANE,
     PRESCAN_PASS_REQUIREMENTS,
     PRESCAN_TIER_RANK,
     SANCTIONED_PROVIDERS,
     _pricing,
     _select_route_for_tier,
     build_prescan_routing_plan,
+    build_provider_readiness_matrix,
     build_provider_model_catalog,
     classify_prescan_route,
 )
@@ -79,8 +81,14 @@ def _available_route(
         "model_id": model_id,
         "api_key_env": api_key_env,
         "available": True,
+        "credential_present": True,
+        "route_admissible": True,
         "prescan_tier": tier,
         "pricing": {"input_1m_usd": input_1m, "output_1m_usd": output_1m},
+        "dependency_class": "proxy" if provider == "openrouter" else "first_party",
+        "economic_surface": provider,
+        "execution_transport": "sdk" if provider == "gemini" else "openai_sdk",
+        "billing_independent_from_upstream": provider == "openrouter",
     }
 
 
@@ -254,6 +262,22 @@ class TestBuildProviderModelCatalog:
         assert tier_map["gpt-5.4"] == "premium_planning"
         assert tier_map["gemini-2.5-pro"] == "premium_planning"
 
+    def test_catalog_marks_gemini_routes_inadmissible_for_prescan_runner(self, tmp_path: Path) -> None:
+        cfg = _make_config(tmp_path)
+        with patch(
+            "lib.prescan.provider_catalog._load_runner_authority",
+            return_value=(_FAKE_LADDERS, _FAKE_PROVIDER_ENV),
+        ), patch(
+            "lib.prescan.provider_catalog.get_model_cost_rate",
+            return_value={"input_cost_per_1m_usd": 1.0, "output_cost_per_1m_usd": 4.0},
+        ):
+            catalog = build_provider_model_catalog(cfg)
+
+        gemini_routes = [r for r in catalog["routes"] if r["provider"] == "gemini"]
+        assert gemini_routes
+        assert all(r["route_admissible"] is False for r in gemini_routes)
+        assert all(r["route_admissibility_reason"] == "unsupported_prescan_transport:sdk" for r in gemini_routes)
+
     def test_catalog_includes_legacy_prescan_config_entry(self, tmp_path: Path) -> None:
         cfg = _make_config(
             tmp_path,
@@ -314,6 +338,8 @@ class TestBuildProviderModelCatalog:
         assert "sanctioned_providers" in catalog
         assert "routes" in catalog
         assert isinstance(catalog["routes"], list)
+        assert "dependency_class" in catalog["routes"][0]
+        assert "economic_surface" in catalog["routes"][0]
 
 
 # ---------------------------------------------------------------------------
@@ -486,3 +512,106 @@ class TestBuildPrescanRoutingPlan:
         assert "pricing" in route
         assert "input_1m_usd" in route["pricing"]
         assert "output_1m_usd" in route["pricing"]
+
+    def test_plan_halts_when_readiness_blocks_all_routes(self, tmp_path: Path) -> None:
+        cfg = _make_config(tmp_path)
+        catalog = self._make_catalog_with_all_tiers()
+        readiness = {
+            "status": "FAIL",
+            "routes": [
+                {
+                    "provider": route["provider"],
+                    "model_id": route["model_id"],
+                    "api_key_env": route["api_key_env"],
+                    "ready": False,
+                    "exclusion_reason": "QUOTA_OR_BILLING_BLOCK",
+                }
+                for route in catalog["routes"]
+            ],
+        }
+        plan = build_prescan_routing_plan(cfg, catalog, readiness, passes=["dedup"])
+        assert plan["status"] == NO_LIVE_LANE
+        assert plan["halt_before_stage_1"] is True
+        assert plan["candidate_routes"] == {}
+        assert plan["failures"][0]["reason"] == "no_executable_route_after_provider_readiness"
+
+    def test_plan_excludes_fallbacks_with_same_dependency_class(self, tmp_path: Path) -> None:
+        cfg = _make_config(tmp_path)
+        catalog = {
+            "routes": [
+                _available_route("openai", "gpt-5-nano", "OPENAI_API_KEY", "cheap_structured", 1.0, 4.0),
+                _available_route("gemini", "gemini-2.5-flash", "GEMINI_API_KEY", "cheap_structured", 2.0, 8.0),
+                _available_route("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY", "cheap_structured", 3.0, 12.0),
+            ]
+        }
+        readiness = {
+            "status": "PASS",
+            "routes": [
+                {
+                    "provider": route["provider"],
+                    "model_id": route["model_id"],
+                    "api_key_env": route["api_key_env"],
+                    "ready": True,
+                    "exclusion_reason": None,
+                }
+                for route in catalog["routes"]
+            ],
+        }
+        plan = build_prescan_routing_plan(cfg, catalog, readiness, passes=["dedup"])
+        assert [row["provider"] for row in plan["candidate_routes"]["dedup"]] == ["openai", "openrouter"]
+        assert any(
+            item["provider"] == "gemini" and item["reason"] == "shared_dependency_class"
+            for item in plan["fallback_decisions"]["dedup"]
+        )
+
+    def test_plan_excludes_openrouter_primary_when_billing_independence_unconfirmed(self, tmp_path: Path) -> None:
+        cfg = _make_config(tmp_path)
+        catalog = {
+            "routes": [
+                {
+                    **_available_route(
+                        "openrouter",
+                        "gpt-5-nano",
+                        "OPENROUTER_API_KEY",
+                        "cheap_structured",
+                        0.5,
+                        2.0,
+                    ),
+                    "billing_independent_from_upstream": False,
+                },
+                _available_route("openai", "gpt-5-nano", "OPENAI_API_KEY", "cheap_structured", 1.0, 4.0),
+            ]
+        }
+        readiness = {
+            "status": "PASS",
+            "routes": [
+                {
+                    "provider": route["provider"],
+                    "model_id": route["model_id"],
+                    "api_key_env": route["api_key_env"],
+                    "ready": True,
+                    "exclusion_reason": None,
+                }
+                for route in catalog["routes"]
+            ],
+        }
+        plan = build_prescan_routing_plan(cfg, catalog, readiness, passes=["dedup"])
+        assert [row["provider"] for row in plan["candidate_routes"]["dedup"]] == ["openrouter"]
+        assert any(
+            item["provider"] == "openai" and item["reason"] == "billing_independence_unconfirmed"
+            for item in plan["fallback_decisions"]["dedup"]
+        )
+
+
+class TestProviderReadinessMatrix:
+    def test_readiness_matrix_marks_offline_authorization_separately(self, tmp_path: Path) -> None:
+        cfg = _make_config(tmp_path, allow_online_llm=False)
+        catalog = {
+            "routes": [
+                _available_route("openai", "gpt-5.4", "OPENAI_API_KEY", "premium_planning"),
+            ]
+        }
+        readiness = build_provider_readiness_matrix(cfg, catalog)
+        assert readiness["status"] == "FAIL"
+        assert readiness["failed_blocker_codes"] == ["ONLINE_LLM_NOT_AUTHORIZED"]
+        assert readiness["routes"][0]["provider_probe"]["readiness_blocker"]["blocker_code"] == "ONLINE_LLM_NOT_AUTHORIZED"
