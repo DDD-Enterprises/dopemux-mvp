@@ -140,7 +140,7 @@ Must end with one of: `NEXT:`, `Next:`, `Receipt:`, `PROGRESS`.
 
 Authority: [`cli-ux-design-spec.md`](../docs/04-explanation/branding/cli-ux-design-spec.md) + `src/dopemux/ui/theme.py`.
 
-### 4.1 Palette (hex values are lint-validated by [`sync_brand_tokens.py`](../scripts/sync_brand_tokens.py))
+### 4.1 Palette (listed values must stay aligned with [`src/dopemux/ui/theme.py`](../src/dopemux/ui/theme.py); [`sync_brand_tokens.py`](../scripts/sync_brand_tokens.py) currently lint-validates only syncable literal hex tokens)
 
 **Hero (mint/cyan family — primary data)**
 | Token | Hex | Role |
@@ -269,7 +269,7 @@ When you emit text or styled output, you are being gated. Know your gates:
 As of 2026-04-22 the branch **passes with 0 errors, 0 warnings**. Don't regress:
 
 1. **Syntax valid** — all AUDITED_PYTHON_FILES parse.
-2. **Logger wrapping** — 20 strict files must wrap `logger.info/warning/error` with `brand_log()`.
+2. **Logger wrapping** — files in `STRICT_LOG_FILES` must wrap `logger.info/warning/error` with `brand_log()`.
 3. **HTTPException branding** — `detail=` args in 2 HTTP files must use `brand_error()`.
 4. **Required snippets** — 3 files must contain specific tokens (`status_chip`, `tone`, `voice_header`, `switch_summary`).
 5. **Merge markers** — 5 authoritative brand docs scanned for `<<<<<<<`.
@@ -306,7 +306,7 @@ Ready-to-use prompt scaffolds for agents/LLMs. Inject these when generating copy
 ## 10. Open Items
 
 - **Q**: NSFW/KinkAccent audience filter. Currently no runtime gate for audience scope. If any web/dashboard surface can reach non-developer users, document permitted modes per audience in [`brand-compliance-checklist.md`](../docs/03-reference/brand-compliance-checklist.md). *(Medium priority)*
-- **Q**: Multi-palette support (`pastel-neon-dreamscape`, `pastel-neon-dreams`). Planned in [`claudedocs/brand-rollout-plan-2026-04-21.md`](../claudedocs/brand-rollout-plan-2026-04-21.md) but no hex tables yet. *(Medium priority — blocks sync_brand_tokens.py extension)*
+- **Q**: Multi-palette support (`pastel-neon-dreamscape`, `pastel-neon-dreams`). Runtime hex values already exist in [`src/dopemux/ui/theme.py`](../src/dopemux/ui/theme.py); reconcile this doc and the [rollout plan](../docs/04-explanation/branding/brand-rollout-plan-2026-04-21.md) against that source of truth before extending `sync_brand_tokens.py`. *(Medium priority — blocks sync_brand_tokens.py extension)*
 - **Q**: Rollout completion. Last audit (2026-04-21) reports 5/16 surfaces fully branded. Track remaining 11 surfaces in ConPort. *(Low priority for this doc; operational concern)*
 
 ---
