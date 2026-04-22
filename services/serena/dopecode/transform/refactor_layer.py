@@ -1,3 +1,4 @@
+import difflib
 import ast
 import logging
 import re
@@ -9,6 +10,15 @@ from ..policy.mutation_policy import MutationPolicy
 from .write_layer import WriteLayer
 from ..navigation.ast_engine import ASTEngine
 from ..navigation.symbol_manager import SymbolID
+from .orchestration import (
+    build_execution_plan,
+    describe_next_action,
+    execute_plan,
+    extract_latest_orchestration_state,
+    is_terminal_plan,
+    resume_requires_explicit_opt_in,
+    summarize_state_for_payload,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +63,69 @@ class RefactorLayer:
     def _replace_occurrences(self, content: str, symbol_name: str, new_name: str) -> Tuple[str, int]:
         pattern = self._symbol_pattern(symbol_name)
         return pattern.subn(new_name, content)
+
+    def _rename_execution_plan(
+        self,
+        *,
+        symbol_id_str: str,
+        symbol_name: str,
+        new_name: str,
+        files: List[str],
+    ) -> Dict[str, Any]:
+        mutation_context = {
+            "symbol_id": symbol_id_str,
+            "new_name": new_name,
+        }
+        mutation_id = self.write_layer.receipt_store.mutation_id_for(
+            operation="rename_symbol",
+            operation_class="symbol_refactor",
+            mutation_context=mutation_context,
+        )
+        steps: List[Dict[str, Any]] = []
+        for relative_path in files:
+            original = self._read_file_text(relative_path)
+            updated, replacements = self._replace_occurrences(original, symbol_name, new_name)
+            if replacements == 0:
+                continue
+            diff_text = "".join(
+                difflib.unified_diff(
+                    original.splitlines(keepends=True),
+                    updated.splitlines(keepends=True),
+                    fromfile=f"a/{relative_path}",
+                    tofile=f"b/{relative_path}",
+                )
+            )
+            steps.append(
+                {
+                    "step_type": "apply_patch",
+                    "title": f"Rename references in {relative_path}",
+                    "file": relative_path,
+                    "operation": {
+                        "path": relative_path,
+                        "diff_text": diff_text,
+                        "before_sha256": sha256_hex(original),
+                        "after_sha256": sha256_hex(updated),
+                    },
+                }
+            )
+            steps.append(
+                {
+                    "step_type": "verify_file_sha",
+                    "title": f"Verify renamed state in {relative_path}",
+                    "file": relative_path,
+                    "operation": {
+                        "path": relative_path,
+                        "expected_sha256": sha256_hex(updated),
+                    },
+                }
+            )
+        return build_execution_plan(
+            mutation_id=mutation_id,
+            operation="rename_symbol",
+            operation_class="symbol_refactor",
+            summary=f"Deterministic bounded rename plan for {symbol_name} -> {new_name}.",
+            steps=steps,
+        )
 
     def _refactor_plan_receipt(
         self,
@@ -116,7 +189,13 @@ class RefactorLayer:
         indented_lines = [f"{indent}{line}" if line.strip() else indent.rstrip() for line in lines]
         return "\n".join(indented_lines) + "\n"
 
-    async def rename_symbol(self, symbol_id_str: str, new_name: str, preview: bool = True) -> Dict[str, Any]:
+    async def rename_symbol(
+        self,
+        symbol_id_str: str,
+        new_name: str,
+        preview: bool = True,
+        resume: bool = False,
+    ) -> Dict[str, Any]:
         """Find all references and rename the symbol in a workspace-bounded way."""
         symbol = SymbolID.parse(symbol_id_str)
         if not new_name or not new_name.isidentifier():
@@ -127,6 +206,17 @@ class RefactorLayer:
         receipts = self._rename_preview_receipts(symbol.symbol_name, files, new_name)
         total_replacements = sum(item["replacement_count"] for item in receipts)
         policy = self.policy.refactor("rename_symbol", symbol_id_str, files, preview=preview)
+        execution_plan = self._rename_execution_plan(
+            symbol_id_str=symbol_id_str,
+            symbol_name=symbol.symbol_name,
+            new_name=new_name,
+            files=files,
+        )
+        prior_state = extract_latest_orchestration_state(
+            self.write_layer.receipt_store.load_events(),
+            mutation_id=execution_plan["mutation_id"],
+            operation="rename_symbol",
+        )
 
         if preview:
             return self.write_layer._attach_execution_receipt(
@@ -140,6 +230,7 @@ class RefactorLayer:
                 "file_receipts": receipts,
                 "reference_count": len(refs),
                 "replacement_count": total_replacements,
+                "execution_plan": execution_plan,
                 "refactor_plan": self._refactor_plan_receipt(
                     operation="rename_symbol",
                     symbol_id=symbol_id_str,
@@ -167,6 +258,7 @@ class RefactorLayer:
                     "files": files,
                     "reference_count": len(refs),
                     "replacement_count": total_replacements,
+                    "orchestration": summarize_state_for_payload(execution_plan),
                 },
             )
 
@@ -180,6 +272,7 @@ class RefactorLayer:
                 "new_name": new_name,
                 "files_affected": files,
                 "replacement_count": 0,
+                "execution_plan": execution_plan,
                 "policy": policy.as_dict(),
                 "approval_receipt": policy.approval_receipt(),
                 "message": "No occurrences found to rename.",
@@ -197,15 +290,42 @@ class RefactorLayer:
                     "summary": "No occurrences found to rename.",
                     "files": files,
                     "replacement_count": 0,
+                    "orchestration": summarize_state_for_payload(execution_plan),
                 },
             )
 
-        applied_receipts: List[Dict[str, Any]] = []
-        modified_files: List[str] = []
+        if prior_state is not None and resume_requires_explicit_opt_in(prior_state) and not resume:
+            state = prior_state
+        elif prior_state is not None and (resume or is_terminal_plan(prior_state)):
+            state = execute_plan(
+                prior_state,
+                read_file=self._read_file_text,
+                apply_patch=lambda path, diff: self.write_layer.apply_patch(path, diff, emit_receipt=False),
+                resume=resume,
+            )
+        else:
+            state = execute_plan(
+                execution_plan,
+                read_file=self._read_file_text,
+                apply_patch=lambda path, diff: self.write_layer.apply_patch(path, diff, emit_receipt=False),
+                resume=resume,
+            )
+
+        modified_files = sorted(
+            {
+                str(step["file"])
+                for step in state["steps"]
+                if step["step_type"] == "apply_patch" and step["status"] in {"applied", "skipped"}
+            }
+        )
+        applied_receipts = []
         for relative_path in files:
-            content = self._read_file_text(relative_path)
-            updated, replacements = self._replace_occurrences(content, symbol.symbol_name, new_name)
-            if replacements == 0:
+            matching_steps = [
+                step
+                for step in state["steps"]
+                if step["file"] == relative_path and step["step_type"] == "apply_patch"
+            ]
+            if not matching_steps:
                 applied_receipts.append(
                     {
                         "file": relative_path,
@@ -214,15 +334,27 @@ class RefactorLayer:
                     }
                 )
                 continue
-            self.write_layer.write_file(relative_path, updated, emit_receipt=False)
-            modified_files.append(relative_path)
-            applied_receipts.append(
-                {
-                    "file": relative_path,
-                    "status": "applied",
-                    "replacement_count": replacements,
-                }
-            )
+            step = matching_steps[0]
+            if step["status"] in {"applied", "skipped"}:
+                applied_receipts.append(
+                    {
+                        "file": relative_path,
+                        "status": step["status"],
+                        "replacement_count": next(
+                            (item["replacement_count"] for item in receipts if item["file"] == relative_path),
+                            0,
+                        ),
+                    }
+                )
+            else:
+                applied_receipts.append(
+                    {
+                        "file": relative_path,
+                        "status": step["status"],
+                        "replacement_count": 0,
+                        "error": step.get("error"),
+                    }
+                )
 
         self.write_layer._log_mutation(
             "rename_symbol",
@@ -234,11 +366,18 @@ class RefactorLayer:
                 "modified_file_count": len(modified_files),
                 "replacement_count": total_replacements,
                 "policy": policy.as_dict(),
+                "plan_status": state["plan_status"],
             },
+        )
+        result_status = "applied" if state["plan_status"] in {"verified", "completed"} else "partial_failure"
+        summary = (
+            f"Renamed {symbol.symbol_name} to {new_name}."
+            if result_status == "applied"
+            else describe_next_action(state)
         )
         return self.write_layer._attach_execution_receipt(
             {
-            "status": "applied",
+            "status": result_status,
             "action": "rename_symbol",
             "symbol_id": symbol_id_str,
             "old_name": symbol.symbol_name,
@@ -247,8 +386,10 @@ class RefactorLayer:
             "file_receipts": applied_receipts,
             "modified_files": modified_files,
             "replacement_count": total_replacements,
+            "execution_plan": state,
             "policy": policy.as_dict(),
             "approval_receipt": policy.approval_receipt(),
+            "message": summary,
             },
             operation="rename_symbol",
             operation_class=policy.operation_class,
@@ -257,13 +398,14 @@ class RefactorLayer:
                 "new_name": new_name,
             },
             execution_receipt=policy.approval_receipt(),
-            lifecycle_stage="apply",
+            lifecycle_stage="resume" if state["plan_status"] in {"blocked", "partial_failure"} else "apply",
             payload={
-                "status": "applied",
-                "summary": f"Renamed {symbol.symbol_name} to {new_name}.",
+                "status": result_status,
+                "summary": summary,
                 "files": files,
                 "modified_files": modified_files,
                 "replacement_count": total_replacements,
+                "orchestration": summarize_state_for_payload(state),
             },
         )
 

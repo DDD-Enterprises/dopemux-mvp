@@ -9,6 +9,15 @@ from typing import Any, Dict, List, Optional
 
 from ..execution_receipts import DopeCodeExecutionReceiptStore, DOPECODE_EXECUTION_RECEIPT_RELATIVE_PATH, sha256_hex
 from ..policy.mutation_policy import MutationPolicy
+from .orchestration import (
+    build_execution_plan,
+    describe_next_action,
+    execute_plan,
+    extract_latest_orchestration_state,
+    is_terminal_plan,
+    resume_requires_explicit_opt_in,
+    summarize_state_for_payload,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -113,6 +122,10 @@ class WriteLayer:
             },
         }
         return response
+
+    def _read_file_text(self, relative_path: str) -> str:
+        target = self._validate_boundary(relative_path)
+        return target.read_text(encoding="utf-8")
 
     def _parse_unified_diff(self, diff_text: str, relative_path: str) -> List[_UnifiedDiffHunk]:
         lines = diff_text.splitlines(keepends=True)
@@ -326,7 +339,7 @@ class WriteLayer:
             logger.error(f"Failed to create file {relative_path}: {e}")
             raise
 
-    def apply_patch(self, relative_path: str, diff_text: str) -> Dict[str, Any]:
+    def apply_patch(self, relative_path: str, diff_text: str, emit_receipt: bool = True) -> Dict[str, Any]:
         """Apply a supported unified diff patch to a single workspace file."""
         target = self._validate_boundary(relative_path)
         if not target.exists():
@@ -343,8 +356,7 @@ class WriteLayer:
                 [relative_path],
                 {"action": "noop", "hunk_count": len(hunks), "changed": False, "policy": policy.as_dict()},
             )
-            return self._attach_execution_receipt(
-                {
+            result = {
                 "status": "noop",
                 "operation": "apply_patch",
                 "file": relative_path,
@@ -353,7 +365,11 @@ class WriteLayer:
                 "policy": policy.as_dict(),
                 "approval_receipt": policy.approval_receipt(),
                 "message": "Patch produced no content changes.",
-                },
+            }
+            if not emit_receipt:
+                return result
+            return self._attach_execution_receipt(
+                result,
                 operation="apply_patch",
                 operation_class=policy.operation_class,
                 mutation_context={
@@ -387,8 +403,7 @@ class WriteLayer:
                 "policy": policy.as_dict(),
             },
         )
-        return self._attach_execution_receipt(
-            {
+        result = {
             "status": "applied",
             "operation": "apply_patch",
             "file": relative_path,
@@ -399,7 +414,11 @@ class WriteLayer:
             "policy": policy.as_dict(),
             "approval_receipt": policy.approval_receipt(),
             "message": f"Successfully applied patch to {relative_path}",
-            },
+        }
+        if not emit_receipt:
+            return result
+        return self._attach_execution_receipt(
+            result,
             operation="apply_patch",
             operation_class=policy.operation_class,
             mutation_context={
@@ -419,7 +438,116 @@ class WriteLayer:
             },
         )
 
-    def batch_apply_patch(self, operations: List[Dict[str, str]], preview: bool = True) -> Dict[str, Any]:
+    def _orchestration_lifecycle_stage(self, plan_status: str, preview: bool) -> str:
+        if preview:
+            return "preview"
+        if plan_status in {"blocked", "partial_failure"}:
+            return "resume"
+        return "apply"
+
+    def _orchestration_event_status(self, plan_status: str, preview: bool) -> str:
+        if preview:
+            return "preview"
+        if plan_status in {"verified", "completed"}:
+            return "applied"
+        if plan_status == "failed":
+            return "failed"
+        return "partial_failure"
+
+    def _build_patch_execution_plan(
+        self,
+        *,
+        operation: str,
+        operation_class: str,
+        mutation_context: Dict[str, Any],
+        operations: List[Dict[str, str]],
+    ) -> Dict[str, Any]:
+        mutation_id = self.receipt_store.mutation_id_for(
+            operation=operation,
+            operation_class=operation_class,
+            mutation_context=mutation_context,
+        )
+        ordered = sorted(
+            enumerate(operations),
+            key=lambda item: ((item[1].get("path") or ""), item[0]),
+        )
+        steps: List[Dict[str, Any]] = []
+        for _, op in ordered:
+            path = op.get("path")
+            diff = op.get("diff")
+            if not path or not diff:
+                raise ValueError("Batch patch orchestration requires every operation to include path and diff")
+            before_content = self._read_file_text(path)
+            hunks = self._parse_unified_diff(diff, path)
+            after_content = "".join(self._apply_hunks(before_content.splitlines(keepends=True), hunks))
+            steps.append(
+                {
+                    "step_type": "apply_patch",
+                    "title": f"Patch {path}",
+                    "file": path,
+                    "operation": {
+                        "path": path,
+                        "diff_text": diff,
+                        "before_sha256": sha256_hex(before_content),
+                        "after_sha256": sha256_hex(after_content),
+                    },
+                }
+            )
+            steps.append(
+                {
+                    "step_type": "verify_file_sha",
+                    "title": f"Verify patched state for {path}",
+                    "file": path,
+                    "operation": {
+                        "path": path,
+                        "expected_sha256": sha256_hex(after_content),
+                    },
+                }
+            )
+        return build_execution_plan(
+            mutation_id=mutation_id,
+            operation=operation,
+            operation_class=operation_class,
+            summary="Deterministic bounded batch patch execution.",
+            steps=steps,
+        )
+
+    def _unsupported_execution_plan(
+        self,
+        *,
+        operation: str,
+        operation_class: str,
+        mutation_context: Dict[str, Any],
+        files: List[str],
+        reason: str,
+    ) -> Dict[str, Any]:
+        mutation_id = self.receipt_store.mutation_id_for(
+            operation=operation,
+            operation_class=operation_class,
+            mutation_context=mutation_context,
+        )
+        return {
+            "schema_version": "dopecode.orchestration_state.v1",
+            "plan_id": None,
+            "mutation_id": mutation_id,
+            "operation": operation,
+            "operation_class": operation_class,
+            "plan_status": "blocked",
+            "summary": "Orchestration unavailable for the current bounded batch request.",
+            "resume_supported": False,
+            "deterministic": True,
+            "replay_safe": True,
+            "current_step_id": None,
+            "blocked_reason": reason,
+            "next_action": "inspect_request",
+            "affected_files": files,
+            "steps": [],
+            "status_counts": {},
+            "completed_step_count": 0,
+            "step_count": 0,
+        }
+
+    def batch_apply_patch(self, operations: List[Dict[str, str]], preview: bool = True, resume: bool = False) -> Dict[str, Any]:
         """Apply a deterministic batch of unified diff operations."""
         ordered = sorted(
             enumerate(operations),
@@ -428,6 +556,38 @@ class WriteLayer:
         ordered_files = [op.get("path") for _, op in ordered if op.get("path")]
         unique_files = sorted({path for path in ordered_files if path})
         policy = self.policy.batch_patch(operations, preview=preview)
+
+        mutation_context = {
+            "operations": [
+                {
+                    "path": op.get("path"),
+                    "diff_sha256": sha256_hex(op.get("diff", "")) if op.get("diff") else None,
+                }
+                for _, op in ordered
+            ]
+        }
+        execution_plan_error: Optional[str] = None
+        try:
+            execution_plan = self._build_patch_execution_plan(
+                operation="batch_apply_patch",
+                operation_class=policy.operation_class,
+                mutation_context=mutation_context,
+                operations=operations,
+            )
+        except Exception as exc:
+            execution_plan_error = str(exc)
+            execution_plan = self._unsupported_execution_plan(
+                operation="batch_apply_patch",
+                operation_class=policy.operation_class,
+                mutation_context=mutation_context,
+                files=unique_files,
+                reason=execution_plan_error,
+            )
+        prior_state = extract_latest_orchestration_state(
+            self.receipt_store.load_events(),
+            mutation_id=str(execution_plan["mutation_id"]),
+            operation="batch_apply_patch",
+        )
 
         if preview:
             receipts = []
@@ -457,6 +617,7 @@ class WriteLayer:
                 "total_operations": len(operations),
                 "ordered_files": unique_files,
                 "receipts": receipts,
+                "execution_plan": execution_plan,
                 "policy": policy.as_dict(),
                 "approval_receipt": policy.approval_receipt(),
                 "message": "Preview mode: no files were mutated.",
@@ -481,67 +642,121 @@ class WriteLayer:
                     "preview": True,
                     "total_operations": len(operations),
                     "invalid_operations": sum(1 for item in receipts if item["status"] == "invalid"),
+                    "orchestration": summarize_state_for_payload(execution_plan),
                 },
             )
 
-        receipts = []
-        applied_count = 0
-        failed_count = 0
+        if execution_plan_error is not None:
+            receipts = []
+            applied_count = 0
+            failed_count = 0
+            for original_index, op in ordered:
+                path = op.get("path")
+                diff = op.get("diff")
+                if not path:
+                    failed_count += 1
+                    receipts.append(
+                        {
+                            "index": original_index,
+                            "file": None,
+                            "status": "failed",
+                            "operation": "apply_patch",
+                            "error": "Missing path",
+                        }
+                    )
+                    continue
+                if not diff:
+                    failed_count += 1
+                    receipts.append(
+                        {
+                            "index": original_index,
+                            "file": path,
+                            "status": "failed",
+                            "operation": "apply_patch",
+                            "error": "Missing diff",
+                        }
+                    )
+                    continue
+                try:
+                    result = self.apply_patch(path, diff)
+                    applied_count += 1
+                    receipts.append(
+                        {
+                            "index": original_index,
+                            "file": path,
+                            "status": result["status"],
+                            "operation": "apply_patch",
+                            "result": result,
+                        }
+                    )
+                except Exception as exc:
+                    failed_count += 1
+                    receipts.append(
+                        {
+                            "index": original_index,
+                            "file": path,
+                            "status": "failed",
+                            "operation": "apply_patch",
+                            "error": str(exc),
+                        }
+                    )
+            batch_status = "success" if failed_count == 0 else ("partial_failure" if applied_count else "failed")
+            return self._attach_execution_receipt(
+                {
+                "status": batch_status,
+                "operation": "batch_apply_patch",
+                "preview": False,
+                "total_operations": len(operations),
+                "applied_count": applied_count,
+                "failed_count": failed_count,
+                "ordered_files": unique_files,
+                "receipts": receipts,
+                "execution_plan": execution_plan,
+                "policy": policy.as_dict(),
+                "approval_receipt": policy.approval_receipt(),
+                "message": execution_plan_error,
+                },
+                operation="batch_apply_patch",
+                operation_class=policy.operation_class,
+                mutation_context=mutation_context,
+                execution_receipt=policy.approval_receipt(),
+                lifecycle_stage="apply",
+                payload={
+                    "status": batch_status,
+                    "summary": execution_plan_error,
+                    "files": unique_files,
+                    "preview": False,
+                    "total_operations": len(operations),
+                    "applied_count": applied_count,
+                    "failed_count": failed_count,
+                    "orchestration": summarize_state_for_payload(execution_plan),
+                },
+            )
 
-        for original_index, op in ordered:
-            path = op.get("path")
-            diff = op.get("diff")
-            if not path:
-                failed_count += 1
-                receipts.append(
-                    {
-                        "index": original_index,
-                        "file": None,
-                        "status": "failed",
-                        "operation": "apply_patch",
-                        "error": "Missing path",
-                    }
-                )
-                continue
-            if not diff:
-                failed_count += 1
-                receipts.append(
-                    {
-                        "index": original_index,
-                        "file": path,
-                        "status": "failed",
-                        "operation": "apply_patch",
-                        "error": "Missing diff",
-                    }
-                )
-                continue
+        if prior_state is not None and resume_requires_explicit_opt_in(prior_state) and not resume:
+            state = prior_state
+        elif prior_state is not None and (resume or is_terminal_plan(prior_state)):
+            state = execute_plan(
+                prior_state,
+                read_file=self._read_file_text,
+                apply_patch=lambda path, diff: self.apply_patch(path, diff, emit_receipt=False),
+                resume=resume,
+            )
+        else:
+            state = execute_plan(
+                execution_plan,
+                read_file=self._read_file_text,
+                apply_patch=lambda path, diff: self.apply_patch(path, diff, emit_receipt=False),
+                resume=resume,
+            )
 
-            try:
-                result = self.apply_patch(path, diff)
-                applied_count += 1
-                receipts.append(
-                    {
-                        "index": original_index,
-                        "file": path,
-                        "status": result["status"],
-                        "operation": "apply_patch",
-                        "result": result,
-                    }
-                )
-            except Exception as exc:
-                failed_count += 1
-                logger.error(f"Batch patch failed for {path}: {exc}")
-                receipts.append(
-                    {
-                        "index": original_index,
-                        "file": path,
-                        "status": "failed",
-                        "operation": "apply_patch",
-                        "error": str(exc),
-                    }
-                )
-
-        batch_status = "success" if failed_count == 0 else ("partial_failure" if applied_count else "failed")
+        applied_count = sum(1 for step in state["steps"] if step["status"] == "applied")
+        failed_count = sum(1 for step in state["steps"] if step["status"] in {"failed", "blocked"})
+        batch_status = (
+            "success"
+            if state["plan_status"] in {"verified", "completed"}
+            else ("partial_failure" if failed_count or state["plan_status"] == "partial_failure" else "failed")
+        )
         self._log_mutation(
             "batch_apply_patch",
             unique_files,
@@ -563,30 +778,24 @@ class WriteLayer:
             "applied_count": applied_count,
             "failed_count": failed_count,
             "ordered_files": unique_files,
-            "receipts": receipts,
+            "execution_plan": state,
             "policy": policy.as_dict(),
             "approval_receipt": policy.approval_receipt(),
+            "message": describe_next_action(state),
             },
             operation="batch_apply_patch",
             operation_class=policy.operation_class,
-            mutation_context={
-                "operations": [
-                    {
-                        "path": op.get("path"),
-                        "diff_sha256": sha256_hex(op.get("diff", "")) if op.get("diff") else None,
-                    }
-                    for _, op in ordered
-                ]
-            },
+            mutation_context=mutation_context,
             execution_receipt=policy.approval_receipt(),
-            lifecycle_stage="apply",
+            lifecycle_stage=self._orchestration_lifecycle_stage(state["plan_status"], preview=False),
             payload={
-                "status": batch_status,
-                "summary": f"Batch patch completed with status {batch_status}.",
+                "status": self._orchestration_event_status(state["plan_status"], preview=False),
+                "summary": describe_next_action(state),
                 "files": unique_files,
                 "preview": False,
                 "total_operations": len(operations),
                 "applied_count": applied_count,
                 "failed_count": failed_count,
+                "orchestration": summarize_state_for_payload(state),
             },
         )
