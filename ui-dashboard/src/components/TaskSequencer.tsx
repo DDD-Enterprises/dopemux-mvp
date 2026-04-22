@@ -381,7 +381,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               <Button
                 size="small"
                 variant="contained"
-                startIcon={isTimerRunning ? <Pause /> : <Play />}
+                startIcon={isTimerRunning ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
                 onClick={() => setIsTimerRunning(!isTimerRunning)}
                 aria-label={isTimerRunning ? `Pause task: ${currentTask.title}` : `Start task: ${currentTask.title}`}
               >
@@ -392,24 +392,27 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               <Button
                 size="small"
                 variant="outlined"
-                startIcon={<CheckCircle />}
+                startIcon={<CheckCircle aria-hidden="true" />}
                 onClick={() => completeTask(currentTask.id)}
                 aria-label={`Complete task: ${currentTask.title}`}
               >
                 Complete
               </Button>
             </Tooltip>
-            <Tooltip title="Skip for Now" arrow>
-              <Button
-                size="small"
-                variant="text"
-                startIcon={<SkipForward />}
-                onClick={() => skipTask(currentTask.id)}
-                sx={{ color: brandTokens.colors.gremlinPink }}
-                aria-label={`Skip task: ${currentTask.title}`}
-              >
-                Skip
-              </Button>
+            <Tooltip title={optimizedTasks.length <= 1 ? 'No other tasks to skip to' : 'Skip for Now'} arrow>
+              <span>
+                <Button
+                  size="small"
+                  variant="text"
+                  startIcon={<SkipForward aria-hidden="true" />}
+                  onClick={() => skipTask(currentTask.id)}
+                  sx={{ color: brandTokens.colors.gremlinPink }}
+                  aria-label={`Skip task: ${currentTask.title}`}
+                  disabled={optimizedTasks.length <= 1}
+                >
+                  Skip
+                </Button>
+              </span>
             </Tooltip>
           </Box>
         </Box>
@@ -426,7 +429,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             background: alpha(brandTokens.colors.serumMint, 0.05),
           }}
         >
-          <CheckCircle size={32} color={brandTokens.colors.serumMint} style={{ marginBottom: 8 }} />
+          <CheckCircle size={32} color={brandTokens.colors.serumMint} style={{ marginBottom: 8 }} aria-hidden="true" />
           <Typography variant="h6" sx={{ color: brandTokens.colors.serumMint, mb: 1 }}>
             Ritual Complete
           </Typography>
@@ -437,7 +440,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             <Button
               variant="outlined"
               size="small"
-              startIcon={<RotateCcw size={16} />}
+              startIcon={<RotateCcw size={16} aria-hidden="true" />}
               onClick={resetTasks}
               sx={{
                 borderColor: brandTokens.colors.serumMint,
@@ -499,8 +502,13 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             </Typography>
           </Box>
         </Tooltip>
-        <Tooltip title="Consent → Calibration → Chaos → Care" arrow>
-          <Box component="span" tabIndex={0} sx={{ display: 'flex', alignItems: 'center' }}>
+        <Tooltip title="Ritual phases: Consent, Calibration, Chaos, and Care" arrow>
+          <Box
+            component="span"
+            tabIndex={0}
+            sx={{ display: 'flex', alignItems: 'center', cursor: 'help', outline: 'none' }}
+            aria-label="Ritual phases: Consent, Calibration, Chaos, and Care"
+          >
             <Flame size={16} color={brandTokens.colors.gremlinPink} aria-hidden="true" />
           </Box>
         </Tooltip>
@@ -574,7 +582,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                   <Button
                     size="small"
                     variant="outlined"
-                    startIcon={<Play />}
+                    startIcon={<Play aria-hidden="true" />}
                     onClick={() => startTask(task.id)}
                     aria-label={`Start task: ${task.title}`}
                   >
