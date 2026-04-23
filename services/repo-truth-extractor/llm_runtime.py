@@ -237,7 +237,11 @@ def call_llm(
                     "schema": schema_name,
                     "schema_name": schema_name,
                     "strict": bool(json_schema.get("strict")),
-                    "transport_mode": "response_format_json_schema",
+                    "transport_mode": (
+                        "response_json_schema"
+                        if provider == "gemini" and transport != "openai_compat_http"
+                        else "response_format_json_schema"
+                    ),
                 }
             )
         elif rf_type == "json_object":
@@ -445,18 +449,30 @@ def call_llm(
                 response_text = response_json["choices"][0]["message"]["content"]
             elif provider == "gemini":
                 client = deps.get_gemini_client(api_key)
+                gemini_config: Dict[str, Any] = {
+                    "temperature": 0.1,
+                    "system_instruction": system_prompt,
+                }
+                if using_structured_override:
+                    rf_type = str(response_format_override.get("type") or "").strip().lower()
+                    if rf_type == "json_schema":
+                        json_schema = (
+                            response_format_override.get("json_schema")
+                            if isinstance(response_format_override.get("json_schema"), dict)
+                            else {}
+                        )
+                        gemini_schema = json_schema.get("schema")
+                        if isinstance(gemini_schema, dict):
+                            gemini_config["response_mime_type"] = "application/json"
+                            gemini_config["response_json_schema"] = copy.deepcopy(gemini_schema)
+                    elif rf_type == "json_object":
+                        gemini_config["response_mime_type"] = "application/json"
+                elif force_json_output:
+                    gemini_config["response_mime_type"] = "application/json"
                 response = client.models.generate_content(
                     model=model_id,
                     contents=user_content,
-                    config={
-                        "temperature": 0.1,
-                        "system_instruction": system_prompt,
-                        **(
-                            {"response_mime_type": "application/json"}
-                            if force_json_output
-                            else {}
-                        ),
-                    },
+                    config=gemini_config,
                 )
                 status_code = 200
                 response_text = deps.extract_text_from_gemini_response(response)
