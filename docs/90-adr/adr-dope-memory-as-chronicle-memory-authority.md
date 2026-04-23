@@ -258,6 +258,22 @@ This preserves a clean split:
 
 ## Mirror and transport rules
 
+When other systems mirror packet lifecycle into dope-memory chronicle space, dope-memory remains authoritative only for the chronicle receipt, not the packet's canonical workflow or PM state.
+
+For Dopemux TUI packet pin mirrors, the chronicle receipt model is:
+
+- append-only receipt stream
+- field name `pinned_at`
+- `pinned_at: <timestamp>` means pinned at that time
+- `pinned_at: null` means an explicit unpin receipt
+- the effective pin state is resolved from the latest receipt for the packet id
+
+This preserves chronicle truthfulness:
+
+- no prior receipt is mutated
+- pin and unpin are both historical events
+- downstream readers can reconstruct pin history without inventing mutable state inside dope-memory
+
 ### SQLite chronicle
 
 The local SQLite chronicle is canonical.
