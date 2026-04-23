@@ -1,0 +1,199 @@
+{
+  "cleanup_id": "repo-branch-worktree-cleanup-phase2",
+  "task_packet_id": "TP-DMX-REPOHYG-002",
+  "parent_task_packet_id": "TP-DMX-REPOHYG-001",
+  "execution_date": "2026-04-23",
+  "execution_branch": "codex/repo-hygiene-phase2-safe-archive-cleanup",
+  "repo_identity": {
+    "repo_root": "/Users/hue/code/dopemux-mvp",
+    "repo_marker_present": true,
+    "origin_remote": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "origin_identity_match": true
+  },
+  "phase1_reference": {
+    "audit_doc": "/Users/hue/code/dopemux-mvp/docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md",
+    "audit_proof": "/Users/hue/code/dopemux-mvp/proof/repo-branch-worktree-audit-2026-04-23.proof.json",
+    "audit_packet": "/Users/hue/code/dopemux-mvp/task-packets/TP-DMX-REPOHYG-001.json"
+  },
+  "authority_refresh": {
+    "open_prs": [
+      {
+        "number": 501,
+        "head": "codex/repo-hygiene-audit-phase1",
+        "base": "main",
+        "title": "docs(repo-hygiene): audit branches and worktrees, add cleanup plan",
+        "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/501"
+      }
+    ],
+    "current_branch_before_cleanup": "codex/repo-hygiene-audit-phase1",
+    "phase2_branch_created": "codex/repo-hygiene-phase2-safe-archive-cleanup",
+    "preserved_due_to_current_authority": [
+      "codex/repo-hygiene-audit-phase1"
+    ]
+  },
+  "frozen_cleanup_set": {
+    "worktrees_to_remove": [
+      "/private/tmp/dopemux-pr492",
+      "/private/tmp/dopemux-pr493",
+      "/private/tmp/dopemux-pr494",
+      "/private/tmp/dopemux-pr495",
+      "/private/tmp/dopemux-pr497b",
+      "/private/tmp/dopemux-pr496",
+      "/Users/hue/code/dopemux-mvp-rte-main-integration-audit-staging",
+      "/Users/hue/code/dopemux-mvp-rte-seams-v2",
+      "/Users/hue/code/dopemux-mvp/.worktrees/tp-gh-review-thread-agent"
+    ],
+    "branches_to_try_delete_with_d": [
+      "docs/multi-agent-ingress-architecture-revision",
+      "tp/rte-full-run-hygiene-and-launch-readiness",
+      "codex/rte-seam-extraction-foundation-v2",
+      "tp/gh-review-thread-agent"
+    ],
+    "excluded_survivors": [
+      {
+        "item": "codex/ci-unit-shard-experiment",
+        "reason": "closed-unmerged PR #499"
+      },
+      {
+        "item": "codex/prompts-prefix-mirror",
+        "reason": "owner-ambiguous GTM worktree"
+      },
+      {
+        "item": "codex/dopecode-ast-navigation-20260417",
+        "reason": "closed-unmerged PR #471"
+      },
+      {
+        "item": "feat/rte-v5-prescan-contract-unification",
+        "reason": "closed-unmerged PR #470"
+      },
+      {
+        "item": "claude/inspiring-nobel-101730",
+        "reason": "owner-ambiguous assistant worktree"
+      },
+      {
+        "item": "claude/optimistic-mayer-6f6e75",
+        "reason": "owner-ambiguous assistant worktree"
+      },
+      {
+        "item": "claude/serene-swirles-f50ab3",
+        "reason": "owner-ambiguous assistant worktree"
+      }
+    ]
+  },
+  "worktree_removals": [
+    {
+      "command": "git worktree remove /private/tmp/dopemux-pr492",
+      "exit_code": 0
+    },
+    {
+      "command": "git worktree remove /private/tmp/dopemux-pr493",
+      "exit_code": 0
+    },
+    {
+      "command": "git worktree remove /private/tmp/dopemux-pr494",
+      "exit_code": 0
+    },
+    {
+      "command": "git worktree remove /private/tmp/dopemux-pr495",
+      "exit_code": 0
+    },
+    {
+      "command": "git worktree remove /private/tmp/dopemux-pr497b",
+      "exit_code": 0
+    },
+    {
+      "command": "git worktree remove /private/tmp/dopemux-pr496",
+      "exit_code": 0
+    },
+    {
+      "command": "git worktree remove /Users/hue/code/dopemux-mvp-rte-main-integration-audit-staging",
+      "exit_code": 0
+    },
+    {
+      "command": "git worktree remove /Users/hue/code/dopemux-mvp-rte-seams-v2",
+      "exit_code": 0
+    },
+    {
+      "command": "git worktree remove /Users/hue/code/dopemux-mvp/.worktrees/tp-gh-review-thread-agent",
+      "exit_code": 0
+    }
+  ],
+  "branch_delete_attempts": [
+    {
+      "command": "git branch -d docs/multi-agent-ingress-architecture-revision",
+      "exit_code": 0,
+      "result": "deleted"
+    },
+    {
+      "command": "git branch -d tp/rte-full-run-hygiene-and-launch-readiness",
+      "exit_code": 1,
+      "result": "blocked_not_fully_merged"
+    },
+    {
+      "command": "git branch -d codex/rte-seam-extraction-foundation-v2",
+      "exit_code": 1,
+      "result": "blocked_not_fully_merged"
+    },
+    {
+      "command": "git branch -d tp/gh-review-thread-agent",
+      "exit_code": 1,
+      "result": "blocked_not_fully_merged"
+    }
+  ],
+  "ancestor_checks_after_block": [
+    {
+      "branch": "tp/rte-full-run-hygiene-and-launch-readiness",
+      "against": "origin/main",
+      "is_ancestor": false
+    },
+    {
+      "branch": "codex/rte-seam-extraction-foundation-v2",
+      "against": "origin/main",
+      "is_ancestor": false
+    },
+    {
+      "branch": "tp/gh-review-thread-agent",
+      "against": "origin/main",
+      "is_ancestor": false
+    }
+  ],
+  "post_cleanup_state": {
+    "removed_worktrees_absent_from_inventory": [
+      "/private/tmp/dopemux-pr492",
+      "/private/tmp/dopemux-pr493",
+      "/private/tmp/dopemux-pr494",
+      "/private/tmp/dopemux-pr495",
+      "/private/tmp/dopemux-pr497b",
+      "/private/tmp/dopemux-pr496",
+      "/Users/hue/code/dopemux-mvp-rte-main-integration-audit-staging",
+      "/Users/hue/code/dopemux-mvp-rte-seams-v2",
+      "/Users/hue/code/dopemux-mvp/.worktrees/tp-gh-review-thread-agent"
+    ],
+    "deleted_local_branches": [
+      "docs/multi-agent-ingress-architecture-revision"
+    ],
+    "blocked_local_branches": [
+      "tp/rte-full-run-hygiene-and-launch-readiness",
+      "codex/rte-seam-extraction-foundation-v2",
+      "tp/gh-review-thread-agent"
+    ],
+    "pre_existing_unrelated_state": [
+      "M AGENTS.md",
+      "?? .claude/worktrees/"
+    ]
+  },
+  "constraints_honored": {
+    "no_runtime_code_modified": true,
+    "no_service_code_modified": true,
+    "no_production_config_modified": true,
+    "no_remote_branches_deleted": true,
+    "unknown_items_preserved": true,
+    "merge_first_items_preserved": true,
+    "dirty_items_preserved": true
+  },
+  "residual_risk": [
+    "Phase 2 is incomplete by design; blocked and unknown survivors remain.",
+    "The three blocked local branches were not force-deleted because current graph proof against origin/main failed.",
+    "Broken temp worktrees pr/467 and pr/480 remain unresolved."
+  ]
+}

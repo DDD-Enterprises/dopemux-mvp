@@ -1,0 +1,238 @@
+{
+  "audit_id": "rte-prelive-audit-pack-2026-04-23",
+  "task_packet_id": "TP-DMX-RTEAUDIT-001",
+  "execution_date": "2026-04-23",
+  "execution_branch": "codex/rte-audit-pack-assembly",
+  "scope": {
+    "assemble_evidence_only": true,
+    "live_rte_run_executed": false,
+    "runtime_code_modified": false,
+    "service_code_modified": false,
+    "prompt_content_modified": false,
+    "production_config_modified": false
+  },
+  "repo_identity": {
+    "repo_root": "/Users/hue/code/dopemux-mvp",
+    "repo_marker_present": true,
+    "origin_remote": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "origin_identity_match": true
+  },
+  "authority_used": {
+    "runtime_code": [
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/run_extraction_v4.py",
+      "services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+      "services/repo-truth-extractor/lib/prescan/grok_passes.py"
+    ],
+    "prompt_and_registry": [
+      "services/repo-truth-extractor/promptsets/v4/promptset.yaml",
+      "services/repo-truth-extractor/prompts/phase_s/registry.json",
+      "services/repo-truth-extractor/prompts/prescan/registry.json"
+    ],
+    "tests": [
+      "tests/unit/test_repo_truth_extractor_prompt_governance.py",
+      "tests/unit/test_prescan_online_gate.py"
+    ],
+    "emitted_evidence": [
+      "reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031822Z/VALIDATION_VERDICT.json",
+      "services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/RUN_MANIFEST.json",
+      "services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/PHASE_GATE_DECISION.json",
+      "services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/RUN_ROUTING_FINGERPRINT.json"
+    ],
+    "docs_and_prior_proofs": [
+      "docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md",
+      "services/repo-truth-extractor/README.md",
+      "docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md",
+      "docs/05-audit-reports/repo-branch-worktree-cleanup-phase2.md",
+      "proof/repo-branch-worktree-cleanup-phase2.proof.json",
+      "proof/rte-provider-preflight-scope-truth-hardening.proof.json",
+      "proof/rte-doctor-diagnostic-clarity-and-final-launch-gate-review.proof.json"
+    ]
+  },
+  "prompt_surface_classification": [
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/promptset.yaml",
+      "classification": "canonical",
+      "reason": "Active v4 prompt and artifact contract consumed by compatibility runtime and validator."
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/",
+      "classification": "canonical",
+      "reason": "Prompt files listed into current run manifests."
+    },
+    {
+      "path": "services/repo-truth-extractor/prompts/phase_s/registry.json",
+      "classification": "canonical",
+      "reason": "Registry authority for SP prompt steps and outputs."
+    },
+    {
+      "path": "services/repo-truth-extractor/prompts/prescan/registry.json",
+      "classification": "canonical_governance",
+      "reason": "Governance metadata for prescan steps, schemas, and providers."
+    },
+    {
+      "path": "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+      "classification": "canonical_runtime",
+      "reason": "Actual prescan prompt constants and online gate logic live here."
+    },
+    {
+      "path": "services/repo-truth-extractor/prompts/phase_fl_int/registry.json",
+      "classification": "compatibility",
+      "reason": "Registry population exists and is tested, but this packet does not prove it as the canonical pre-live runtime path."
+    },
+    {
+      "path": "services/repo-truth-extractor/prompts/phase_s_int/registry.json",
+      "classification": "compatibility",
+      "reason": "Registry population exists and is tested, but this packet does not prove it as the canonical pre-live runtime path."
+    },
+    {
+      "path": "audit_prep/",
+      "classification": "drifted",
+      "reason": "Historical prep bundles present in repo but not shown as active runtime authority in this packet."
+    },
+    {
+      "path": "docs/archive/",
+      "classification": "drifted",
+      "reason": "Archive location indicates non-canonical prompt history."
+    },
+    {
+      "path": "tmp/dmx-chatgpt-project-truth-extraction-002/TRUTH_*.md",
+      "classification": "unknown",
+      "reason": "Named in AGENTS.md but absent from this checkout."
+    }
+  ],
+  "recommended_upload_set": [
+    {
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "authority_class": "canonical_runtime",
+      "audit_relevance": "Current execution authority.",
+      "upload_to_gpt54_pro": true
+    },
+    {
+      "path": "services/repo-truth-extractor/run_extraction_v4.py",
+      "authority_class": "compatibility_runtime",
+      "audit_relevance": "Shows current v4 contract preservation boundary.",
+      "upload_to_gpt54_pro": true
+    },
+    {
+      "path": "services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+      "authority_class": "canonical_gate",
+      "audit_relevance": "Defines pre-live validation gates.",
+      "upload_to_gpt54_pro": true
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/promptset.yaml",
+      "authority_class": "canonical_prompt_contract",
+      "audit_relevance": "Declares active prompt contract.",
+      "upload_to_gpt54_pro": true
+    },
+    {
+      "path": "services/repo-truth-extractor/prompts/phase_s/registry.json",
+      "authority_class": "canonical_prompt_registry",
+      "audit_relevance": "Registry-driven SP authority.",
+      "upload_to_gpt54_pro": true
+    },
+    {
+      "path": "services/repo-truth-extractor/prompts/prescan/registry.json",
+      "authority_class": "canonical_governance_registry",
+      "audit_relevance": "Prescan governance metadata.",
+      "upload_to_gpt54_pro": true
+    },
+    {
+      "path": "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+      "authority_class": "canonical_runtime_prompt_source",
+      "audit_relevance": "Real prescan prompt constants and online gate logic.",
+      "upload_to_gpt54_pro": true
+    },
+    {
+      "path": "tests/unit/test_repo_truth_extractor_prompt_governance.py",
+      "authority_class": "canonical_test",
+      "audit_relevance": "Prompt registry and deterministic snapshot verification.",
+      "upload_to_gpt54_pro": true
+    },
+    {
+      "path": "tests/unit/test_prescan_online_gate.py",
+      "authority_class": "canonical_test",
+      "audit_relevance": "Prescan online-gate verification.",
+      "upload_to_gpt54_pro": true
+    },
+    {
+      "path": "reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031822Z/VALIDATION_VERDICT.json",
+      "authority_class": "emitted_launch_evidence",
+      "audit_relevance": "Current no-go gate evidence.",
+      "upload_to_gpt54_pro": true
+    },
+    {
+      "path": "services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/RUN_MANIFEST.json",
+      "authority_class": "emitted_run_evidence",
+      "audit_relevance": "Shows resolved prompts, routing, and dry-run state.",
+      "upload_to_gpt54_pro": true
+    },
+    {
+      "path": "services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/PHASE_GATE_DECISION.json",
+      "authority_class": "emitted_run_evidence",
+      "audit_relevance": "Compact gate outcome.",
+      "upload_to_gpt54_pro": true
+    },
+    {
+      "path": "services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/RUN_ROUTING_FINGERPRINT.json",
+      "authority_class": "emitted_run_evidence",
+      "audit_relevance": "Per-step routing and prompt-file mapping.",
+      "upload_to_gpt54_pro": true
+    },
+    {
+      "path": "docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md",
+      "authority_class": "documentation_context",
+      "audit_relevance": "Compact narrative context aligned to runtime authority.",
+      "upload_to_gpt54_pro": false
+    },
+    {
+      "path": "proof/rte-provider-preflight-scope-truth-hardening.proof.json",
+      "authority_class": "prior_hardening_proof",
+      "audit_relevance": "Provider preflight scope-hardening provenance.",
+      "upload_to_gpt54_pro": false
+    },
+    {
+      "path": "proof/rte-doctor-diagnostic-clarity-and-final-launch-gate-review.proof.json",
+      "authority_class": "prior_hardening_proof",
+      "audit_relevance": "Shared-doctor vs launch-authority provenance.",
+      "upload_to_gpt54_pro": false
+    },
+    {
+      "path": "docs/05-audit-reports/repo-branch-worktree-cleanup-phase2.md",
+      "authority_class": "repo_hygiene_context",
+      "audit_relevance": "Documents current open hygiene PR context.",
+      "upload_to_gpt54_pro": false
+    }
+  ],
+  "launch_relevant_open_prs": [
+    {
+      "number": 502,
+      "title": "docs(audit): execute phase2 safe archive cleanup",
+      "head": "codex/repo-hygiene-phase2-safe-archive-cleanup",
+      "base": "main",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/502",
+      "classification": "docs_hygiene_context"
+    },
+    {
+      "number": 501,
+      "title": "docs(repo-hygiene): audit branches and worktrees, add cleanup plan",
+      "head": "codex/repo-hygiene-audit-phase1",
+      "base": "main",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/501",
+      "classification": "docs_hygiene_context"
+    }
+  ],
+  "current_drift": [
+    "reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031822Z/VALIDATION_VERDICT.json reports NO_GO with ONLINE_PREFLIGHT_FAILURE for openrouter model openai/gpt-5.4.",
+    "The same validation verdict reports repo_drift_tests failure in services/repo-truth-extractor/tests/test_promptset_v4_lint.py for missing prescan prompt constants.",
+    "services/repo-truth-extractor/lib/prescan/grok_passes.py currently contains _DEDUP_SYSTEM_PROMPT, _DISCOVER_SYSTEM_PROMPT, _FEASIBILITY_SYSTEM_PROMPT, and _OPTIMIZE_SYSTEM_PROMPT, so the lint failure and runtime surface are presently out of sync.",
+    "services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/PHASE_GATE_DECISION.json is BLOCKED with provider_preflight_status FAIL.",
+    "AGENTS.md names tmp/dmx-chatgpt-project-truth-extraction-002/TRUTH_SYSTEMS.md, TRUTH_CANONICALS.md, and TRUTH_GAPS.md as present truth docs, but those exact paths are absent in this checkout."
+  ],
+  "audit_result": {
+    "pack_ready_for_project_upload": true,
+    "pack_ready_for_live_launch_claim": false,
+    "reason": "The upload pack is bounded and evidence-backed, but current emitted gate evidence still shows provider and drift blockers."
+  }
+}

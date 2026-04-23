@@ -1,0 +1,194 @@
+{
+  "id": "TP-DMX-REPOHYG-001",
+  "project": "dopemux-mvp",
+  "target": "Remote branch and local worktree audit with deterministic cleanup plan and non-destructive first-pass proof.",
+  "invariants": [
+    "Do not delete any local or remote branch in phase 1.",
+    "Do not delete any worktree in phase 1.",
+    "Do not modify runtime code, service code, or production configs.",
+    "Preserve Dopemux architectural authority boundaries.",
+    "Treat GitHub remote state and local worktree state as separate evidence domains.",
+    "Every branch/worktree recommendation must be evidence-backed and deterministic.",
+    "Open PRs and branches with unresolved or active work must not be marked safe-to-delete.",
+    "Merged, closed-unmerged, stale, duplicate, superseded, and unknown states must be explicitly distinguished.",
+    "No hidden heuristics or LLM-only scoring for cleanup decisions.",
+    "All outputs must be commit-sized, reviewable, and reproducible."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-REPO-HYGIENE-SERIES-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/repo-hygiene-audit-phase1"
+  },
+  "commit": {
+    "message": "docs(repo-hygiene): add branch and worktree audit with cleanup plan",
+    "allowlist": [
+      "docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md",
+      "proof/repo-branch-worktree-audit-2026-04-23.proof.json",
+      "task-packets/TP-DMX-REPOHYG-001.json",
+      "task-packets/INDEX.md"
+    ],
+    "verify": [
+      "git rev-parse --show-toplevel",
+      "test -f .dopetaskroot",
+      "git remote -v",
+      "git branch --format='%(refname:short) %(upstream:short) %(objectname:short)'",
+      "git worktree list --porcelain",
+      "git status --short --branch",
+      "python -m json.tool task-packets/TP-DMX-REPOHYG-001.json",
+      "python -m json.tool proof/repo-branch-worktree-audit-2026-04-23.proof.json"
+    ]
+  },
+  "pr": {
+    "title": "docs(repo-hygiene): audit branches and worktrees, add cleanup plan",
+    "body": "## Summary\n- audit remote branches, recent PR heads, and local worktrees\n- classify keep / merge-first / archive / delete-local / delete-remote / unknown with evidence\n- produce a non-destructive cleanup plan only\n\n## Scope\n- docs, proof, and task-packet surfaces only\n- no runtime code changes\n- no branch or worktree deletion in this PR\n\n## Validation\n- repo identity confirmed from .dopetaskroot and origin remote\n- remote branch and PR evidence collected\n- local worktree and branch evidence collected\n- proof JSON validates and matches audit report\n\n## Follow-up\nA separate packet will execute approved cleanup actions after review.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Establish repo identity and collect authoritative remote cleanup evidence.",
+      "requirements": [
+        "Confirm repo root via .dopetaskroot.",
+        "Confirm origin remote matches DDD-Enterprises/dopemux-mvp.",
+        "Collect recent PR evidence, including open PRs, closed-unmerged PRs, merged PRs, and branch heads.",
+        "Capture remote branch naming clusters and obvious duplicate or superseded lines."
+      ],
+      "commands": [
+        "git rev-parse --show-toplevel",
+        "test -f .dopetaskroot",
+        "git remote -v"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md",
+        "proof/repo-branch-worktree-audit-2026-04-23.proof.json"
+      ],
+      "validation": [
+        "Repo identity is explicit and matches the intended project.",
+        "Remote evidence distinguishes open, merged, closed-unmerged, duplicate, and unknown branch lines.",
+        "No deletion recommendations are issued without remote-state evidence."
+      ],
+      "context_files": [
+        "RULES.md",
+        "ARCHITECTURE.md",
+        "SYSTEM_Dopetask.md",
+"PAL_EXECUTION_RULES.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Collect authoritative local worktree and local branch evidence.",
+      "requirements": [
+        "Enumerate all local worktrees.",
+        "Enumerate local branches and upstream tracking state.",
+        "Capture ahead/behind or detached conditions where visible.",
+        "Record uncommitted or dirty state per worktree when present.",
+        "Detect orphaned, duplicate, stale, or ambiguous local worktrees."
+      ],
+      "commands": [
+        "git worktree list --porcelain",
+        "git branch --format='%(refname:short) %(upstream:short) %(objectname:short)'",
+        "git status --short --branch"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md",
+        "proof/repo-branch-worktree-audit-2026-04-23.proof.json"
+      ],
+      "validation": [
+        "Every local worktree is tied to a branch, detached state, or explicit unknown state.",
+        "Dirty state is surfaced instead of hidden.",
+        "Local-only branches are called out separately from remote branches."
+      ],
+      "context_files": [
+        "RULES.md",
+        "SYSTEM_BOUNDARIES.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Produce a deterministic cleanup ledger and recommendation table.",
+      "requirements": [
+        "Classify each branch/worktree as keep, merge-first, archive, delete-local-only, delete-remote, or unknown.",
+        "Every recommendation must include reason and blocking risk.",
+        "Open PR branches default to keep unless explicit supersession is proved.",
+        "Closed-unmerged branches require explicit disposition instead of silent deletion."
+      ],
+      "commands": [
+        "python -m json.tool proof/repo-branch-worktree-audit-2026-04-23.proof.json"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md",
+        "proof/repo-branch-worktree-audit-2026-04-23.proof.json"
+      ],
+      "validation": [
+        "The cleanup ledger is deterministic and reviewable.",
+        "No item is recommended for destructive cleanup without explicit evidence.",
+        "Unknown items remain unknown instead of being guessed into deletion."
+      ],
+      "context_files": [
+        "RULES.md",
+        "TRUTH_GAPS.md",
+        "TRUTH_CANONICALS.md",
+        "PAL_PACKET_TEMPLATE.md"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Package the phase-1 audit as docs, proof, and indexed task-packet output, then open a PR.",
+      "requirements": [
+        "Write the audit report.",
+        "Write the proof JSON.",
+        "Check in the task packet itself.",
+        "Update the task-packet index if required by repo convention.",
+        "Open a PR containing only phase-1 audit artifacts."
+      ],
+      "commands": [
+        "python -m json.tool task-packets/TP-DMX-REPOHYG-001.json",
+        "python -m json.tool proof/repo-branch-worktree-audit-2026-04-23.proof.json"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md",
+        "proof/repo-branch-worktree-audit-2026-04-23.proof.json",
+        "task-packets/TP-DMX-REPOHYG-001.json",
+        "task-packets/INDEX.md"
+      ],
+      "validation": [
+        "PR scope is docs/proof/packet only.",
+        "No branch deletions, worktree removals, or runtime file changes occur in phase 1.",
+        "The PR body clearly states that execution cleanup is deferred to a follow-up packet."
+      ],
+      "context_files": [
+        "dopetask-cannonical-spec.json",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_PACKET_TEMPLATE.md",
+        "INDEX.md"
+      ]
+    }
+  ]
+}
