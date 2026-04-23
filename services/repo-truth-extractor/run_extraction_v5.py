@@ -8260,15 +8260,18 @@ def _normalized_usage_from_payload(payload: Any) -> Optional[Dict[str, int]]:
     }
 
 
+from lib.prescan.token_counter import estimate_tokens
+
 def _estimate_text_tokens(*chunks: Any) -> int:
-    total_chars = sum(len(str(chunk or "")) for chunk in chunks)
-    return max(0, total_chars // 4)
+    text = "".join(str(chunk or "") for chunk in chunks)
+    return estimate_tokens(text)
 
 
 def _project_output_tokens(input_tokens: int, response_text: str = "") -> int:
     if response_text:
-        return max(1, len(str(response_text)) // 4)
-    return max(1, int(input_tokens) // 10) if input_tokens > 0 else 1
+        return estimate_tokens(str(response_text))
+    # Heuristic for output tokens: Project ~25% for complex logic/synthesis
+    return max(1, int(input_tokens) // 4) if input_tokens > 0 else 1
 
 
 def _project_preview_output_tokens(

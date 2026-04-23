@@ -20,14 +20,14 @@ except ImportError:
 
 def estimate_tokens(
     text: str,
-    method: str = "chars",
-    chars_per_token: float = 4.0,
+    method: str = "tiktoken",
+    chars_per_token: float = 3.5,
 ) -> int:
     """Estimate token count for a string.
 
     Args:
         text: Input string.
-        method: ``"chars"`` for character-based, ``"tiktoken"`` for cl100k_base.
+        method: ``"tiktoken"`` for cl100k_base, ``"chars"`` for character-based.
         chars_per_token: Divisor when using chars method.
 
     Returns:
@@ -36,23 +36,28 @@ def estimate_tokens(
     if not text:
         return 0
 
-    if method == "tiktoken" and _TIKTOKEN_AVAILABLE:
-        enc = tiktoken.get_encoding("cl100k_base")
-        return len(enc.encode(text))
+    if _TIKTOKEN_AVAILABLE:
+        try:
+            enc = tiktoken.get_encoding("cl100k_base")
+            return len(enc.encode(text))
+        except Exception as e:
+            logger.warning(f"tiktoken encoding failed, falling back to chars: {e}")
 
+    # Fallback to character-based heuristic
     return max(1, int(len(text) / chars_per_token))
 
 
 def estimate_file_tokens(
     path: Path,
     max_preview_bytes: int = 0,
-    chars_per_token: float = 4.0,
+    chars_per_token: float = 3.5,
 ) -> int:
     """Estimate token count for a file on disk.
 
     When *max_preview_bytes* is 0 the full file size is used for estimation
     without reading the file (fast path based on stat).  When > 0 the file
-    is read up to that many bytes and the actual text is measured.
+    is read up to that many bytes and the actual text is measured using the
+    tokenizer.
 
     Returns 0 on read error.
     """
@@ -65,11 +70,11 @@ def estimate_file_tokens(
         try:
             raw = path.read_bytes()[:max_preview_bytes]
             text = raw.decode("utf-8", errors="replace")
-            return estimate_tokens(text, chars_per_token=chars_per_token)
+            return estimate_tokens(text, method="tiktoken", chars_per_token=chars_per_token)
         except OSError:
             return 0
 
-    # Fast path — estimate from byte size without reading
+    # Fast path — estimate from byte size without reading (heuristic)
     return max(1, int(size / chars_per_token))
 
 
