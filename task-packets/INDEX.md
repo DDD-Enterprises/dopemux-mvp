@@ -43,12 +43,13 @@ A packet is superseded by another packet
 | TP-SIA-EXEC-0008 | Workflow Plane | Replay Repro Suite + Projection Hardening | Ready | SIA Packet Execution ADR |
 | TP-DMX-AIG-001 | Adaptive Ingress Plane | Service Census + Ingress Map + First Safe Slice | Ready | ADR — Adopt a Dopemux Adaptive Ingress Plane with Local Runtime Shims |
 | TP-DMX-REPOHYG-001 | Repo Hygiene | Branch and worktree audit with deterministic cleanup plan | Ready | N/A |
+| TP-DMX-REPOHYG-002 | Repo Hygiene | Execute phase2 safe archive cleanup | Ready | N/A |
+| TP-DMX-REPOHYG-003 | Repo Hygiene | Resolve blocked and ambiguous cleanup survivors | Ready | N/A |
+| TP-DMX-RTEAUDIT-001 | Repo Truth Extractor | Assemble pre-live audit pack for GPT-5.4 Pro | Ready | N/A |
 | PACKET_031 | Memory | Dual Capture Adapters, Single Ledger | Executing | ADR-213 |
 | PACKET_032 | Memory | Chronicle Promotion Guards | Pending Audit | ADR-214 |
 
 ────────────────────────────────────────────────────────────
-🟢 Completed Task Packets
-
 | Packet ID | Subsystem | Title | Completion Date | Outcome |
 | --- | --- | --- | --- | --- |
 | TP-PM-ARCH-04A | PM Plane | Canonical PMTask Model + Store (Unit-only) | 2026-03-22 | Accepted |
@@ -71,5 +72,5 @@ Status changes must be explicit
 Completed packets require an audit outcome
 Superseded packets must reference the replacing packet
 ────────────────────────────────────────────────────────────
-🧨 Final Rule
+Final Rule
 If it’s not indexed here, it didn’t happen.

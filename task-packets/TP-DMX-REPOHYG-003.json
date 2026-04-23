@@ -1,0 +1,181 @@
+{
+  "id": "TP-DMX-REPOHYG-003",
+  "project": "dopemux-mvp",
+  "target": "Resolve remaining broken, blocked, unknown, dirty, and owner-ambiguous branch/worktree survivors after safe archive cleanup phase 2.",
+  "invariants": [
+    "Do not delete any local or remote branch without current graph proof.",
+    "Do not force-delete blocked branches unless a separate proof step establishes supersession or disposal safety.",
+    "Do not modify runtime code, service code, or production configs.",
+    "Treat broken temp worktrees, owner-ambiguous survivors, dirty state, and closed-unmerged PR heads as separate classes.",
+    "Every destructive recommendation must be evidence-backed and reproducible.",
+    "Open PR branches and active review branches must be preserved unless explicitly superseded by current authority."
+  ],
+  "depends_on": [
+    "TP-DMX-REPOHYG-001",
+    "TP-DMX-REPOHYG-002"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-REPO-HYGIENE-SERIES-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-REPOHYG-002",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/repo-hygiene-phase3-unresolved-survivors"
+  },
+  "commit": {
+    "message": "docs(repo-hygiene): resolve broken and ambiguous survivors after phase 2",
+    "allowlist": [
+      "docs/05-audit-reports/repo-branch-worktree-cleanup-phase3.md",
+      "proof/repo-branch-worktree-cleanup-phase3.proof.json",
+      "task-packets/TP-DMX-REPOHYG-003.json",
+      "task-packets/INDEX.md"
+    ],
+    "verify": [
+      "git rev-parse --show-toplevel",
+      "test -f .dopetaskroot",
+      "git remote -v",
+      "git branch --show-current",
+      "git status --short --branch",
+      "git worktree list --porcelain",
+      "git branch -vv",
+      "python -m json.tool task-packets/TP-DMX-REPOHYG-003.json",
+      "python -m json.tool proof/repo-branch-worktree-cleanup-phase3.proof.json"
+    ]
+  },
+  "pr": {
+    "title": "docs(repo-hygiene): resolve blocked and ambiguous cleanup survivors",
+    "body": "## Summary\n- re-audit blocked local branches, broken temp worktrees, unknown survivors, dirty survivors, and owner-ambiguous survivors after phase 2\n- classify each item with current graph proof and current PR authority\n- execute only those cleanup actions newly proven safe in this phase\n\n## Scope\n- docs, proof, and task-packet outputs only unless specific cleanup actions are executed and recorded in proof\n- no runtime code changes\n- no remote branch deletion unless explicitly proven safe and within packet scope\n\n## Validation\n- current git graph, worktree, branch tracking, and PR state refreshed\n- proof JSON matches executed actions and preserved survivors\n- all unresolved items remain explicitly classified\n\n## Follow-up\nAdditional cleanup, if any, will be packetized separately.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Refresh current authority for all unresolved survivors from phases 1 and 2.",
+      "requirements": [
+        "Re-check open PRs, closed-unmerged PR heads, current branch graph, and worktree inventory.",
+        "Explicitly revisit broken temp worktrees pr/467 and pr/480.",
+        "Reconfirm status of blocked branches: tp/rte-full-run-hygiene-and-launch-readiness, codex/rte-seam-extraction-foundation-v2, tp/gh-review-thread-agent."
+      ],
+      "commands": [
+        "git worktree list --porcelain",
+        "git branch -vv",
+        "git status --short --branch"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/repo-branch-worktree-cleanup-phase3.md",
+        "proof/repo-branch-worktree-cleanup-phase3.proof.json"
+      ],
+      "validation": [
+        "Current authority is refreshed rather than inherited blindly from prior packets.",
+        "Broken and blocked survivors are individually classified."
+      ],
+      "context_files": [
+        "docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md",
+        "docs/05-audit-reports/repo-branch-worktree-cleanup-phase2.md",
+        "proof/repo-branch-worktree-cleanup-phase2.proof.json",
+        "task-packets/TP-DMX-REPOHYG-002.json"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Determine whether each blocked or ambiguous survivor is keep, merge-first, archive, broken-prunable, owner-ambiguous, or delete-safe.",
+      "requirements": [
+        "Use current graph proof and current PR authority for every recommendation.",
+        "Do not collapse unknown and owner-ambiguous into delete-safe.",
+        "Do not promote blocked branches to deletion without explicit ancestor or supersession proof."
+      ],
+      "commands": [
+        "git merge-base --is-ancestor tp/rte-full-run-hygiene-and-launch-readiness origin/main",
+        "git merge-base --is-ancestor codex/rte-seam-extraction-foundation-v2 origin/main",
+        "git merge-base --is-ancestor tp/gh-review-thread-agent origin/main"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/repo-branch-worktree-cleanup-phase3.md",
+        "proof/repo-branch-worktree-cleanup-phase3.proof.json"
+      ],
+      "validation": [
+        "Every survivor has explicit class, reason, and action.",
+        "No destructive action occurs without proof."
+      ],
+      "context_files": [
+        "RULES.md",
+        "TRUTH_GAPS.md",
+"SYSTEM_BOUNDARIES.md"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Execute only newly proven-safe cleanup actions and record exact command results.",
+      "requirements": [
+        "Record every attempted cleanup command and exit code.",
+        "Preserve any item that fails proof or deletion safety checks.",
+        "Do not use force deletion unless explicitly authorized by proof and packet scope."
+      ],
+      "commands": [
+        "python -m json.tool proof/repo-branch-worktree-cleanup-phase3.proof.json"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/repo-branch-worktree-cleanup-phase3.md",
+        "proof/repo-branch-worktree-cleanup-phase3.proof.json"
+      ],
+      "validation": [
+        "Executed actions exactly match proof.",
+        "Preserved survivors remain explicitly listed."
+      ],
+      "context_files": [
+        "proof/repo-branch-worktree-cleanup-phase2.proof.json",
+        "RULES.md",
+        "PAL_PACKET_TEMPLATE.md"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Publish the phase 3 cleanup record and open a PR.",
+      "requirements": [
+        "Write the phase 3 report and proof.",
+        "Update the task-packet index.",
+        "Open a PR with only packet/report/proof surfaces unless cleanup commands required tracked metadata changes."
+      ],
+      "commands": [
+        "python -m json.tool task-packets/TP-DMX-REPOHYG-003.json",
+        "python -m json.tool proof/repo-branch-worktree-cleanup-phase3.proof.json"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/repo-branch-worktree-cleanup-phase3.md",
+        "proof/repo-branch-worktree-cleanup-phase3.proof.json",
+        "task-packets/TP-DMX-REPOHYG-003.json",
+        "task-packets/INDEX.md"
+      ],
+      "validation": [
+        "PR is scoped and reviewable.",
+        "Residual risk is explicitly documented."
+      ],
+      "context_files": [
+        "task-packets/INDEX.md",
+        "dopetask-cannonical-spec.json",
+        "PAL_EXECUTION_RULES.md"
+      ]
+    }
+  ]
+}

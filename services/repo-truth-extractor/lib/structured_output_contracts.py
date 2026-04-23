@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 import json
 import re
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple
 
 
 GENERIC_ITEM_VALUE_SCHEMA: Dict[str, Any] = {
@@ -27,6 +27,61 @@ GENERIC_ITEM_VALUE_SCHEMA: Dict[str, Any] = {
         {"type": "null"},
     ]
 }
+
+STRUCTURED_OUTPUT_MODE_NONE = "none"
+STRUCTURED_OUTPUT_MODE_JSON_OBJECT = "json_object"
+STRUCTURED_OUTPUT_MODE_JSON_SCHEMA = "json_schema"
+STRUCTURED_OUTPUT_MODES = {
+    STRUCTURED_OUTPUT_MODE_NONE,
+    STRUCTURED_OUTPUT_MODE_JSON_OBJECT,
+    STRUCTURED_OUTPUT_MODE_JSON_SCHEMA,
+}
+
+_XAI_STRIP_KEYWORDS: Set[str] = {
+    "allOf",
+    "minLength",
+    "maxLength",
+    "minItems",
+    "maxItems",
+}
+_GEMINI_ALLOWED_SCHEMA_KEYS: Set[str] = {
+    "type",
+    "format",
+    "description",
+    "nullable",
+    "enum",
+    "properties",
+    "required",
+    "propertyOrdering",
+    "items",
+    "minItems",
+    "maxItems",
+    "minimum",
+    "maximum",
+    "anyOf",
+    "additionalProperties",
+}
+
+
+def normalize_structured_output_mode(value: Any) -> str:
+    token = str(value or "").strip().lower()
+    if token in STRUCTURED_OUTPUT_MODES:
+        return token
+    return STRUCTURED_OUTPUT_MODE_NONE
+
+
+def route_structured_output_mode(
+    route: Optional[Dict[str, Any]],
+    *,
+    step_contract: Optional[Dict[str, Any]] = None,
+) -> str:
+    if isinstance(route, dict):
+        token = normalize_structured_output_mode(route.get("structured_output_mode"))
+        if token != STRUCTURED_OUTPUT_MODE_NONE:
+            return token
+    if is_json_managed_step(step_contract):
+        return STRUCTURED_OUTPUT_MODE_JSON_SCHEMA
+    return STRUCTURED_OUTPUT_MODE_NONE
 
 
 def is_json_managed_step(step_contract: Optional[Dict[str, Any]]) -> bool:
@@ -112,6 +167,10 @@ def route_entries_for_stage(
                 "provider": provider,
                 "model_id": model_id,
                 "api_key_env": api_key_env,
+                "structured_output_mode": route_structured_output_mode(
+                    row,
+                    step_contract=step_contract,
+                ),
                 "strict_json_schema": bool(row.get("strict_json_schema", False)),
                 "strict_passthrough_verified": bool(row.get("strict_passthrough_verified", False)),
             }
@@ -125,6 +184,25 @@ def route_for_contract(step_contract: Optional[Dict[str, Any]]) -> Optional[Tupl
         return None
     row = rows[0]
     return (str(row["provider"]), str(row["model_id"]), str(row["api_key_env"]))
+
+
+def route_entry_by_identity(
+    routes: Iterable[Dict[str, Any]],
+    *,
+    provider: str,
+    model_id: str,
+    api_key_env: str,
+) -> Optional[Dict[str, Any]]:
+    for row in routes:
+        if not isinstance(row, dict):
+            continue
+        if (
+            str(row.get("provider") or "") == str(provider)
+            and str(row.get("model_id") or "") == str(model_id)
+            and str(row.get("api_key_env") or "") == str(api_key_env)
+        ):
+            return dict(row)
+    return None
 
 
 def strict_capability_reason(
@@ -150,6 +228,39 @@ def is_strict_capable_route(route: Optional[Dict[str, Any]], transport: Optional
     return strict_capability_reason(route, transport) is None
 
 
+def schema_capability_reason(
+    route: Optional[Dict[str, Any]],
+    transport: Optional[str],
+) -> Optional[str]:
+    if not isinstance(route, dict):
+        return "route_missing"
+    mode = route_structured_output_mode(route)
+    if mode == STRUCTURED_OUTPUT_MODE_NONE:
+        return "structured_output_disabled"
+    provider = str(route.get("provider") or "").strip().lower()
+    transport_mode = str(transport or "").strip().lower()
+    if mode == STRUCTURED_OUTPUT_MODE_JSON_OBJECT:
+        if provider == "gemini":
+            return None
+        if provider in {"openai", "openrouter", "xai"} and transport_mode in {
+            "openai_sdk",
+            "openai_compat_http",
+        }:
+            return None
+        return f"provider_not_json_object_capable:{provider or 'unknown'}"
+    if provider == "gemini":
+        return None
+    if provider == "openrouter":
+        return None if transport_mode in {"openai_sdk", "openai_compat_http"} else f"transport_not_schema_capable:{transport_mode or 'unknown'}"
+    if provider in {"openai", "xai"}:
+        return None if transport_mode in {"openai_sdk", "openai_compat_http"} else f"transport_not_schema_capable:{transport_mode or 'unknown'}"
+    return f"provider_not_schema_capable:{provider or 'unknown'}"
+
+
+def is_schema_capable_route(route: Optional[Dict[str, Any]], transport: Optional[str]) -> bool:
+    return schema_capability_reason(route, transport) is None
+
+
 def resolve_stage_route(
     *,
     step_contract: Optional[Dict[str, Any]],
@@ -164,16 +275,21 @@ def resolve_stage_route(
         transport = transport_for_provider(provider)
         reason = strict_capability_reason(route, transport)
         strict_capable = reason is None
+        schema_reason = schema_capability_reason(route, transport)
+        schema_capable = schema_reason is None
         attempts.append(
             {
                 "provider": provider,
                 "model_id": str(route["model_id"]),
                 # Deliberately omit api_key_env to avoid exposing authentication-related
                 # environment identifiers in any logged or serialized strict-route metadata.
+                "structured_output_mode": route_structured_output_mode(route, step_contract=step_contract),
                 "transport": transport,
                 "strict_json_schema": bool(route.get("strict_json_schema", False)),
                 "strict_passthrough_verified": bool(route.get("strict_passthrough_verified", False)),
                 "strict_capable": strict_capable,
+                "schema_capable": schema_capable,
+                "schema_reason": schema_reason,
                 "reason": reason,
             }
         )
@@ -243,10 +359,41 @@ def _generic_item_schema(artifact_meta: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def build_json_schema_response_format(
+    *,
+    schema: Dict[str, Any],
+    schema_name: str,
+    strict: bool,
+    contract_lane_name: Optional[str],
+    schema_names: Optional[Iterable[str]] = None,
+    artifact_names: Optional[Iterable[str]] = None,
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    response_format = {
+        "type": "json_schema",
+        "json_schema": {
+            "name": schema_name,
+            "strict": bool(strict),
+            "schema": schema,
+        },
+    }
+    meta = {
+        "schema": schema_name,
+        "schema_name": schema_name,
+        "schema_version": "v1",
+        "strict": bool(strict),
+        "contract_lane": contract_lane_name,
+        "schema_ids": list(schema_names or []),
+        "artifact_names": list(artifact_names or []),
+    }
+    return response_format, meta
+
+
 def build_openai_response_format(
     step_contract: Dict[str, Any],
     artifact_names: Optional[Iterable[str]] = None,
     schema_name_suffix: str = "draft",
+    *,
+    strict: bool = True,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     ordered_artifacts = artifact_order(step_contract, artifact_names)
     any_of_rows: List[Dict[str, Any]] = []
@@ -292,24 +439,232 @@ def build_openai_response_format(
         "required": ["artifacts"],
         "additionalProperties": False,
     }
-    response_format = {
-        "type": "json_schema",
-        "json_schema": {
-            "name": schema_name,
-            "strict": True,
-            "schema": schema,
-        },
-    }
-    meta = {
-        "schema": schema_name,
-        "schema_name": schema_name,
-        "schema_version": "v1",
-        "strict": True,
-        "contract_lane": contract_lane(step_contract),
-        "schema_ids": schema_names,
-        "artifact_names": ordered_artifacts,
-    }
+    return build_json_schema_response_format(
+        schema=schema,
+        schema_name=schema_name,
+        strict=bool(strict),
+        contract_lane_name=contract_lane(step_contract),
+        schema_names=schema_names,
+        artifact_names=ordered_artifacts,
+    )
+
+
+def _rewrite_const_to_enum(value: Any) -> Any:
+    if isinstance(value, dict):
+        out: Dict[str, Any] = {}
+        for key, child in value.items():
+            if key == "const":
+                out["enum"] = [child]
+            else:
+                out[key] = _rewrite_const_to_enum(child)
+        return out
+    if isinstance(value, list):
+        return [_rewrite_const_to_enum(item) for item in value]
+    return value
+
+
+def _strip_schema_keywords(value: Any, stripped: Set[str]) -> Any:
+    if isinstance(value, dict):
+        out: Dict[str, Any] = {}
+        for key, child in value.items():
+            if key in stripped:
+                continue
+            out[key] = _strip_schema_keywords(child, stripped)
+        return out
+    if isinstance(value, list):
+        return [_strip_schema_keywords(item, stripped) for item in value]
+    return value
+
+
+def _filter_gemini_schema(value: Any) -> Any:
+    if isinstance(value, dict):
+        out: Dict[str, Any] = {}
+        for key, child in value.items():
+            if key == "const":
+                out["enum"] = [child]
+                continue
+            if key not in _GEMINI_ALLOWED_SCHEMA_KEYS:
+                continue
+            if key == "properties" and isinstance(child, dict):
+                out[key] = {
+                    str(prop): _filter_gemini_schema(prop_schema)
+                    for prop, prop_schema in child.items()
+                    if isinstance(prop_schema, dict)
+                }
+                continue
+            out[key] = _filter_gemini_schema(child)
+        return out
+    if isinstance(value, list):
+        return [_filter_gemini_schema(item) for item in value]
+    return value
+
+
+def provider_schema_variant(
+    provider: str,
+    model_id: str,
+) -> str:
+    normalized_provider = str(provider or "").strip().lower()
+    normalized_model_id = str(model_id or "").strip().lower()
+    if normalized_provider == "xai":
+        return "xai_relaxed"
+    if normalized_provider == "gemini":
+        return "gemini_relaxed"
+    if normalized_provider == "openrouter":
+        if normalized_model_id.startswith("x-ai/"):
+            return "xai_relaxed"
+        if normalized_model_id.startswith("google/") or normalized_model_id.startswith("gemini"):
+            return "gemini_relaxed"
+        return "canonical"
+    return "canonical"
+
+
+def adapt_canonical_schema_for_variant(
+    schema: Dict[str, Any],
+    *,
+    variant: str,
+    model_id: Optional[str] = None,
+) -> Dict[str, Any]:
+    canonical = copy.deepcopy(schema)
+    if variant == "canonical":
+        return canonical
+    if variant == "xai_relaxed":
+        return _strip_schema_keywords(_rewrite_const_to_enum(canonical), _XAI_STRIP_KEYWORDS)
+    if variant == "gemini_relaxed":
+        adapted = _filter_gemini_schema(canonical)
+        normalized_model = str(model_id or "").strip().lower()
+        if normalized_model.startswith("gemini-2.0") and isinstance(adapted, dict):
+            properties = adapted.get("properties")
+            if isinstance(properties, dict) and properties and "propertyOrdering" not in adapted:
+                adapted["propertyOrdering"] = list(properties.keys())
+        return adapted
+    return canonical
+
+
+def build_provider_structured_output(
+    *,
+    route: Optional[Dict[str, Any]],
+    transport: Optional[str],
+    schema: Optional[Dict[str, Any]] = None,
+    schema_name: Optional[str] = None,
+    strict: Optional[bool] = None,
+    contract_lane_name: Optional[str] = None,
+    schema_ids: Optional[Iterable[str]] = None,
+    artifact_names: Optional[Iterable[str]] = None,
+    mode: Optional[str] = None,
+) -> Tuple[Optional[Dict[str, Any]], Dict[str, Any]]:
+    effective_mode = (
+        normalize_structured_output_mode(mode)
+        if mode is not None
+        else route_structured_output_mode(route)
+    )
+    provider = str((route or {}).get("provider") or "").strip().lower()
+    model_id = str((route or {}).get("model_id") or "").strip()
+    if effective_mode == STRUCTURED_OUTPUT_MODE_NONE:
+        return None, {
+            "enabled": False,
+            "structured_output_mode_requested": STRUCTURED_OUTPUT_MODE_NONE,
+            "structured_output_mode_effective": STRUCTURED_OUTPUT_MODE_NONE,
+            "schema": None,
+            "schema_name": None,
+            "schema_version": None,
+            "schema_variant": None,
+            "strict": bool(strict),
+            "contract_lane": contract_lane_name,
+            "transport_mode": None,
+        }
+    if effective_mode == STRUCTURED_OUTPUT_MODE_JSON_OBJECT:
+        return {"type": "json_object"}, {
+            "enabled": True,
+            "structured_output_mode_requested": effective_mode,
+            "structured_output_mode_effective": effective_mode,
+            "schema": None,
+            "schema_name": None,
+            "schema_version": None,
+            "schema_variant": None,
+            "strict": False,
+            "contract_lane": contract_lane_name,
+            "transport_mode": (
+                "response_mime_type"
+                if provider == "gemini" and str(transport or "").strip().lower() != "openai_compat_http"
+                else "response_format_json_object"
+            ),
+        }
+    if not isinstance(schema, dict) or not str(schema_name or "").strip():
+        raise ValueError("json_schema mode requires schema and schema_name")
+    variant = provider_schema_variant(provider, model_id)
+    effective_schema = adapt_canonical_schema_for_variant(
+        schema,
+        variant=variant,
+        model_id=model_id,
+    )
+    strict_flag = bool(strict)
+    response_format, meta = build_json_schema_response_format(
+        schema=effective_schema,
+        schema_name=str(schema_name),
+        strict=strict_flag,
+        contract_lane_name=contract_lane_name,
+        schema_names=schema_ids,
+        artifact_names=artifact_names,
+    )
+    meta.update(
+        {
+            "enabled": True,
+            "structured_output_mode_requested": effective_mode,
+            "structured_output_mode_effective": effective_mode,
+            "schema_variant": variant,
+            "transport_mode": (
+                "response_json_schema"
+                if provider == "gemini" and str(transport or "").strip().lower() != "openai_compat_http"
+                else "response_format_json_schema"
+            ),
+        }
+    )
     return response_format, meta
+
+
+def build_provider_step_contract_output(
+    *,
+    route: Optional[Dict[str, Any]],
+    transport: Optional[str],
+    step_contract: Dict[str, Any],
+    artifact_names: Optional[Iterable[str]] = None,
+    schema_name_suffix: str = "draft",
+) -> Tuple[Optional[Dict[str, Any]], Dict[str, Any]]:
+    effective_mode = route_structured_output_mode(route, step_contract=step_contract)
+    if effective_mode == STRUCTURED_OUTPUT_MODE_NONE:
+        return build_provider_structured_output(
+            route=route,
+            transport=transport,
+            mode=effective_mode,
+            contract_lane_name=contract_lane(step_contract),
+        )
+    if effective_mode == STRUCTURED_OUTPUT_MODE_JSON_OBJECT:
+        return build_provider_structured_output(
+            route=route,
+            transport=transport,
+            mode=effective_mode,
+            contract_lane_name=contract_lane(step_contract),
+        )
+    canonical_response_format, canonical_meta = build_openai_response_format(
+        step_contract,
+        artifact_names=artifact_names,
+        schema_name_suffix=schema_name_suffix,
+        strict=bool((route or {}).get("strict_json_schema", False)),
+    )
+    json_schema = canonical_response_format.get("json_schema")
+    schema = json_schema.get("schema") if isinstance(json_schema, dict) else None
+    schema_name = json_schema.get("name") if isinstance(json_schema, dict) else None
+    return build_provider_structured_output(
+        route=route,
+        transport=transport,
+        schema=schema if isinstance(schema, dict) else None,
+        schema_name=str(schema_name or ""),
+        strict=bool(canonical_meta.get("strict")),
+        contract_lane_name=contract_lane(step_contract),
+        schema_ids=canonical_meta.get("schema_ids"),
+        artifact_names=canonical_meta.get("artifact_names"),
+        mode=effective_mode,
+    )
 
 
 def empty_payload_for_artifact(artifact_meta: Dict[str, Any]) -> Dict[str, Any]:

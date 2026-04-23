@@ -1,0 +1,214 @@
+{
+  "id": "TP-DMX-REPOHYG-002",
+  "project": "dopemux-mvp",
+  "target": "Execute evidence-backed safe archive cleanup for phase-1 archive-class branches and worktrees only, removing only items proven disposable from the phase-1 audit while preserving unknown, merge-first, dirty, or owner-ambiguous survivors.",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-repo-hygiene",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-REPOHYG-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/repo-hygiene-phase2-safe-archive-cleanup"
+  },
+  "commit": {
+    "message": "docs(audit): execute phase2 safe archive cleanup",
+    "allowlist": [
+      "docs/05-audit-reports/**",
+      "proof/**",
+      "task-packets/**"
+    ],
+    "verify": [
+      "git rev-parse --show-toplevel",
+      "test -f .dopetaskroot",
+      "git remote -v",
+      "git branch --show-current",
+      "git status --short --branch",
+      "git worktree list --porcelain",
+      "git branch -vv",
+      "gh pr list --state open --json number,headRefName,baseRefName,title,url",
+      "python -m json.tool task-packets/TP-DMX-REPOHYG-002.json",
+      "python -m json.tool proof/repo-branch-worktree-cleanup-phase2.proof.json",
+      "git diff --check -- docs/05-audit-reports/repo-branch-worktree-cleanup-phase2.md proof/repo-branch-worktree-cleanup-phase2.proof.json task-packets/TP-DMX-REPOHYG-002.json task-packets/INDEX.md"
+    ]
+  },
+  "pr": {
+    "title": "docs(audit): execute phase2 safe archive cleanup",
+    "body": "## Summary\n- execute non-destructive-to-low-risk cleanup for only phase-1 archive-class items\n- remove only branches/worktrees proven disposable by the phase-1 audit and current verification\n- publish cleanup ledger and proof bundle with exact commands and raw outputs\n\n## Why\nPhase 1 established archive, keep, merge-first, and unknown states without deleting anything. Phase 2 should now remove only clearly disposable archive items while preserving ambiguous or risky survivors.\n\n## Validation\n- repo identity revalidated\n- each removed item was archive-class and rechecked before deletion\n- unknown, merge-first, dirty, and owner-ambiguous items were preserved\n- cleanup report and proof bundle committed and PR opened",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "step-01-refresh-phase1-authority",
+      "task": "Revalidate the repo identity and refresh the current local/remote state against the phase-1 audit so no cleanup action is taken on stale evidence.",
+      "requirements": [
+        "Use current git and GitHub state as primary authority.",
+        "Do not delete anything in this step.",
+        "If phase-1 archive items have become dirty or ambiguous, downgrade them from cleanup scope."
+      ],
+      "commands": [
+        "git rev-parse --show-toplevel",
+        "test -f .dopetaskroot",
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short --branch",
+        "git worktree list --porcelain",
+        "git branch -vv",
+        "gh pr list --state open --json number,headRefName,baseRefName,title,url",
+        "gh pr list --limit 200 --state all --json number,title,state,isDraft,headRefName,baseRefName,closedAt,mergedAt,url,author"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md",
+        "proof/repo-branch-worktree-audit-2026-04-23.proof.json",
+        "task-packets/TP-DMX-REPOHYG-001.json"
+      ],
+      "validation": [
+        "Repo identity still matches dopemux-mvp origin.",
+        "Current worktree/branch state has been refreshed.",
+        "No deletion has happened yet."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "task-packets/INDEX.md"
+      ]
+    },
+    {
+      "id": "step-02-freeze-phase2-cleanup-set",
+      "task": "Build the exact phase-2 cleanup set from phase-1 archive-class recommendations and current rechecks, excluding anything now dirty, diverged, unknown, merge-first, or owner-ambiguous.",
+      "requirements": [
+        "Only archive-class items are eligible.",
+        "Each candidate must be rechecked for local dirt and branch/worktree attachment state.",
+        "Anything uncertain is preserved and explicitly excluded."
+      ],
+      "commands": [
+        "git status --short --branch --worktree=/Users/hue/code/dopemux-mvp",
+        "git for-each-ref --sort=committerdate --format='%(refname:short)|%(upstream:short)|%(objectname:short)|%(committerdate:iso8601)|%(subject)' refs/heads refs/remotes/origin"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md",
+        "proof/repo-branch-worktree-audit-2026-04-23.proof.json"
+      ],
+      "validation": [
+        "A finite phase-2 cleanup set exists.",
+        "Every cleanup target is archive-class and currently disposable.",
+        "Excluded survivors are listed explicitly."
+      ],
+      "context_files": [
+        "docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md"
+      ]
+    },
+    {
+      "id": "step-03-execute-safe-worktree-removals",
+      "task": "Remove only archive-class worktrees proven disposable, recording exact commands and raw outputs.",
+      "requirements": [
+        "Prefer removing worktrees before deleting their attached local branches.",
+        "Do not remove dirty or ambiguous worktrees.",
+        "If a worktree removal fails, record the blocker and preserve it."
+      ],
+      "commands": [
+        "git worktree remove <archive_worktree_path>"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/**",
+        "proof/**"
+      ],
+      "validation": [
+        "Only pre-approved archive worktrees were removed.",
+        "Each worktree removal has exact command/output evidence.",
+        "No keep/unknown/merge-first worktree was touched."
+      ],
+      "context_files": [
+        "proof/repo-branch-worktree-audit-2026-04-23.proof.json"
+      ]
+    },
+    {
+      "id": "step-04-execute-safe-branch-removals",
+      "task": "Delete only archive-class local branches proven disposable after worktree removal or confirmed unattached, using the least-destructive git command that succeeds.",
+      "requirements": [
+        "Use `git branch -d` first.",
+        "Use `git branch -D` only if the branch is still archive-class and evidence proves forced deletion is safe.",
+        "Do not delete unknown, merge-first, keep, or dirty-attached branches."
+      ],
+      "commands": [
+        "git branch -d <archive_branch>",
+        "git branch -D <archive_branch_if_safe_and_required>"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/**",
+        "proof/**"
+      ],
+      "validation": [
+        "Only pre-approved archive branches were deleted.",
+        "Every deletion has exact command/output evidence.",
+        "No non-archive branch was touched."
+      ],
+      "context_files": [
+        "docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md"
+      ]
+    },
+    {
+      "id": "step-05-publish-phase2-ledger-and-proof",
+      "task": "Publish the phase-2 cleanup report and proof bundle, including removed items, preserved survivors, blocked removals, and the exact evidence trail for every decision.",
+      "requirements": [
+        "The report must distinguish removed, preserved, and blocked items.",
+        "The proof bundle must record current repo identity and every cleanup command/output.",
+        "Do not claim full repo hygiene closure if unknown or merge-first items remain."
+      ],
+      "commands": [
+        "python -m json.tool proof/repo-branch-worktree-cleanup-phase2.proof.json",
+        "git diff --check -- docs/05-audit-reports/repo-branch-worktree-cleanup-phase2.md proof/repo-branch-worktree-cleanup-phase2.proof.json task-packets/TP-DMX-REPOHYG-002.json task-packets/INDEX.md"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/repo-branch-worktree-cleanup-phase2.md",
+        "proof/repo-branch-worktree-cleanup-phase2.proof.json",
+        "task-packets/TP-DMX-REPOHYG-002.json",
+        "task-packets/INDEX.md"
+      ],
+      "validation": [
+        "Cleanup docs and proof are syntactically valid.",
+        "Removed and preserved items are both explicitly listed.",
+        "Residual risk and next-phase recommendations are documented."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "task-packets/INDEX.md"
+      ]
+    },
+    {
+      "id": "step-06-commit-push-pr",
+      "task": "Commit the allowlisted cleanup artifacts, push the packet branch, and open the PR.",
+      "requirements": [
+        "Only allowlisted docs/proof/task-packet files may be staged.",
+        "No runtime or service code changes are allowed.",
+        "Final report must include commit hash and PR reference."
+      ],
+      "commands": [
+        "git add docs/05-audit-reports/repo-branch-worktree-cleanup-phase2.md proof/repo-branch-worktree-cleanup-phase2.proof.json task-packets/TP-DMX-REPOHYG-002.json task-packets/INDEX.md",
+        "git commit -m \"docs(audit): execute phase2 safe archive cleanup\"",
+        "git push -u origin codex/repo-hygiene-phase2-safe-archive-cleanup",
+        "gh pr create --base main --head codex/repo-hygiene-phase2-safe-archive-cleanup --title \"docs(audit): execute phase2 safe archive cleanup\" --body-file <prepared_pr_body_file>"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/repo-branch-worktree-cleanup-phase2.md",
+        "proof/repo-branch-worktree-cleanup-phase2.proof.json",
+        "task-packets/TP-DMX-REPOHYG-002.json",
+        "task-packets/INDEX.md"
+      ],
+      "validation": [
+        "Commit created successfully.",
+        "Branch pushed successfully.",
+        "PR reference exists."
+      ],
+      "context_files": [
+        "task-packets/TP-DMX-REPOHYG-001.json"
+      ]
+    }
+  ]
+}
