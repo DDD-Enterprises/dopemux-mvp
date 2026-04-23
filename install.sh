@@ -55,6 +55,10 @@ SELECTED_COMPOSE_FILE="$DOCKER_COMPOSE_CORE"
 ENV_FILE="${ENV_FILE:-.env}"
 STACK_SELECTED_FROM_FLAG=false
 INSTALLER_TEST_MODE="${INSTALLER_TEST_MODE:-0}"
+STARTED_CAPABILITIES=()
+DEFERRED_CAPABILITIES=()
+RESOLVED_SECRET_VALUE=""
+SECRET_SOURCE_CHOICE=""
 
 CORE_STACK_PORTS=(5432 6379 6333 6334 3004 8000 8095)
 RESEARCH_STACK_EXTRA_PORTS=(3009 3011)
@@ -73,6 +77,7 @@ FULL_STACK_ENV_VARS=(
     OPENROUTER_API_KEY
     GEMINI_API_KEY
     XAI_API_KEY
+    VOYAGE_API_KEY
     LEANTIME_URL
     LEANTIME_TOKEN
     TASK_ORCHESTRATOR_API_KEY
@@ -225,11 +230,15 @@ env_prompt() {
         OPENROUTER_API_KEY) echo "OpenRouter API key (Grok/GPT routing)" ;;
         GEMINI_API_KEY) echo "Google Gemini API key (optional)" ;;
         XAI_API_KEY) echo "xAI Grok API key (optional)" ;;
+        VOYAGE_API_KEY) echo "Voyage API key (Dope-Context + GPT-Researcher embeddings)" ;;
+        TAVILY_API_KEY) echo "Tavily API key (GPT-Researcher web search)" ;;
+        EXA_API_KEY) echo "Exa API key (research fallback search)" ;;
         LEANTIME_URL) echo "Leantime base URL" ;;
         LEANTIME_TOKEN) echo "Leantime API token" ;;
         TASK_ORCHESTRATOR_API_KEY) echo "Task Orchestrator API key" ;;
         ADHD_ENGINE_API_KEY) echo "ADHD Engine API key" ;;
         LITELLM_DATABASE_URL) echo "LiteLLM database URL (PostgreSQL DSN)" ;;
+        OPENAI_WEBHOOK_SECRET) echo "OpenAI webhook secret (optional receiver verification)" ;;
         *) echo "$1" ;;
     esac
 }
@@ -247,7 +256,7 @@ env_default() {
 
 env_is_sensitive() {
     case "$1" in
-        AGE_PASSWORD|ANTHROPIC_API_KEY|OPENAI_API_KEY|OPENROUTER_API_KEY|GEMINI_API_KEY|XAI_API_KEY|LEANTIME_TOKEN|TASK_ORCHESTRATOR_API_KEY|ADHD_ENGINE_API_KEY)
+        AGE_PASSWORD|ANTHROPIC_API_KEY|OPENAI_API_KEY|OPENROUTER_API_KEY|GEMINI_API_KEY|XAI_API_KEY|VOYAGE_API_KEY|TAVILY_API_KEY|EXA_API_KEY|LEANTIME_TOKEN|TASK_ORCHESTRATOR_API_KEY|ADHD_ENGINE_API_KEY|LITELLM_DATABASE_URL|OPENAI_WEBHOOK_SECRET)
             return 0
             ;;
         *)
@@ -256,15 +265,326 @@ env_is_sensitive() {
     esac
 }
 
-env_is_required() {
+# Installer policy:
+# - local-defaultable: a deterministic repo-local default is safe to use.
+# - provider-optional: no safe default exists; the user can keep an existing
+#   value, enter one directly, source it from an external secret store/command,
+#   or defer the capability.
+# - boot-critical: reserved for future values that cannot be deferred.
+#   This installer currently keeps that set empty and fails closed in --yes
+#   mode when a provider-optional value is missing.
+env_policy() {
     case "$1" in
-        OPENAI_API_KEY|GEMINI_API_KEY|XAI_API_KEY|LEANTIME_URL|LEANTIME_TOKEN|TASK_ORCHESTRATOR_API_KEY|ADHD_ENGINE_API_KEY|LITELLM_DATABASE_URL)
-            return 1  # optional
+        AGE_PASSWORD|LEANTIME_URL|TASK_ORCHESTRATOR_API_KEY|ADHD_ENGINE_API_KEY|LITELLM_DATABASE_URL)
+            echo "local-defaultable"
+            ;;
+        ANTHROPIC_API_KEY|OPENAI_API_KEY|OPENROUTER_API_KEY|GEMINI_API_KEY|XAI_API_KEY|VOYAGE_API_KEY|TAVILY_API_KEY|EXA_API_KEY|LEANTIME_TOKEN|OPENAI_WEBHOOK_SECRET)
+            echo "provider-optional"
             ;;
         *)
-            return 0  # required
+            echo "boot-critical"
             ;;
     esac
+}
+
+capability_label() {
+    case "$1" in
+        AGE_PASSWORD) echo "PostgreSQL AGE password" ;;
+        ANTHROPIC_API_KEY) echo "Anthropic provider" ;;
+        OPENAI_API_KEY) echo "OpenAI provider" ;;
+        OPENROUTER_API_KEY) echo "OpenRouter provider" ;;
+        GEMINI_API_KEY) echo "Gemini provider" ;;
+        XAI_API_KEY) echo "xAI provider" ;;
+        VOYAGE_API_KEY) echo "Voyage embeddings" ;;
+        TAVILY_API_KEY) echo "Tavily research" ;;
+        EXA_API_KEY) echo "Exa search" ;;
+        LEANTIME_URL) echo "Leantime URL" ;;
+        LEANTIME_TOKEN) echo "Leantime sync" ;;
+        TASK_ORCHESTRATOR_API_KEY) echo "Task Orchestrator auth" ;;
+        ADHD_ENGINE_API_KEY) echo "ADHD Engine auth" ;;
+        LITELLM_DATABASE_URL) echo "LiteLLM database URL" ;;
+        OPENAI_WEBHOOK_SECRET) echo "OpenAI webhook verification" ;;
+        *) echo "$1" ;;
+    esac
+}
+
+record_capability_status() {
+    local status="$1"
+    local label="$2"
+
+    case "$status" in
+        started)
+            STARTED_CAPABILITIES+=("$label")
+            ;;
+        deferred)
+            DEFERRED_CAPABILITIES+=("$label")
+            ;;
+    esac
+}
+
+resolve_existing_env_value() {
+    local var="$1"
+    local env_file="$2"
+    local shell_override="${!var:-}"
+    if [ -n "$shell_override" ]; then
+        echo "$shell_override"
+        return 0
+    fi
+
+    read_env_file_value "$var" "$env_file"
+}
+
+read_secret_from_keychain() {
+    local service="$1"
+    if ! check_command security; then
+        return 1
+    fi
+    security find-generic-password -w -s "$service" 2>/dev/null
+}
+
+read_secret_from_1password() {
+    local ref="$1"
+    if ! check_command op; then
+        return 1
+    fi
+    if [ -z "$ref" ]; then
+        return 1
+    fi
+    op read "$ref" 2>/dev/null
+}
+
+read_secret_from_command() {
+    local command_spec="$1"
+    if [ -z "$command_spec" ]; then
+        return 1
+    fi
+    bash -lc "$command_spec" 2>/dev/null
+}
+
+prompt_secret_source() {
+    local var="$1"
+    SECRET_SOURCE_CHOICE=""
+
+    echo
+    echo "How should $(capability_label "$var") be provided?"
+    echo "  1) Enter it manually now"
+    echo "  2) Load from macOS Keychain"
+    echo "  3) Load from 1Password CLI"
+    echo "  4) Run a command"
+    echo "  5) Defer this capability for now"
+    if ! read -p "$(echo -e "${CYAN}?${NC} Choose [1-5]: ")" source_choice; then
+        echo >&2 "EOF encountered"
+        exit 1
+    fi
+
+    case "${source_choice:-1}" in
+        1) SECRET_SOURCE_CHOICE="manual" ;;
+        2) SECRET_SOURCE_CHOICE="keychain" ;;
+        3) SECRET_SOURCE_CHOICE="1password" ;;
+        4) SECRET_SOURCE_CHOICE="command" ;;
+        5) SECRET_SOURCE_CHOICE="defer" ;;
+        *)
+            warning "Please choose a source between 1 and 5."
+            SECRET_SOURCE_CHOICE="invalid"
+            ;;
+    esac
+    echo "$SECRET_SOURCE_CHOICE"
+}
+
+resolve_secret_value() {
+    local var="$1"
+    local current="$2"
+    local env_file="$3"
+    RESOLVED_SECRET_VALUE=""
+    local policy
+    policy=$(env_policy "$var")
+    local label
+    label=$(capability_label "$var")
+    local default
+    default=$(env_default "$var")
+    local prompt
+    prompt=$(env_prompt "$var")
+    local sensitive="false"
+    if env_is_sensitive "$var"; then
+        sensitive="true"
+    fi
+
+    if [ -n "$current" ]; then
+        if [ "$AUTO_CONFIRM" = true ]; then
+            export "$var=$current"
+            record_capability_status "started" "$label"
+            RESOLVED_SECRET_VALUE="$current"
+            echo "$current"
+            return 0
+        fi
+
+        local display_value="$current"
+        if [ "$sensitive" = "true" ] && [ ${#current} -gt 8 ]; then
+            display_value="${current:0:4}...${current: -4}"
+        fi
+        log "$var currently set to: $display_value"
+        if ask_yes_no "Keep existing value?" "y"; then
+            export "$var=$current"
+            record_capability_status "started" "$label"
+            RESOLVED_SECRET_VALUE="$current"
+            echo "$current"
+            return 0
+        fi
+    fi
+
+    case "$policy" in
+        local-defaultable)
+            if [ "$AUTO_CONFIRM" = true ]; then
+                export "$var=$default"
+                record_capability_status "started" "$label"
+                RESOLVED_SECRET_VALUE="$default"
+                echo "$default"
+                return 0
+            fi
+
+            local input=""
+            while true; do
+                local prompt_hint=""
+                if [ -n "$default" ]; then
+                    prompt_hint=" (press Enter for default)"
+                fi
+
+                if [ "$sensitive" = "true" ]; then
+                    if [ -n "$default" ]; then
+                        if ! read -s -p "$(echo -e "${CYAN}?${NC} $prompt${prompt_hint} [****]: ")" input; then echo >&2 "EOF"; exit 1; fi
+                        echo >&2
+                    else
+                        if ! read -s -p "$(echo -e "${CYAN}?${NC} $prompt${prompt_hint}: ")" input; then echo >&2 "EOF"; exit 1; fi
+                        echo >&2
+                    fi
+                else
+                    if [ -n "$default" ]; then
+                        if ! read -p "$(echo -e "${CYAN}?${NC} $prompt${prompt_hint} [$default]: ")" input; then echo >&2 "EOF"; exit 1; fi
+                    else
+                        if ! read -p "$(echo -e "${CYAN}?${NC} $prompt${prompt_hint}: ")" input; then echo >&2 "EOF"; exit 1; fi
+                    fi
+                fi
+
+                input=${input:-$default}
+                if [ -n "$input" ]; then
+                    export "$var=$input"
+                    record_capability_status "started" "$label"
+                    RESOLVED_SECRET_VALUE="$input"
+                    echo "$input"
+                    return 0
+                fi
+
+                warning "$var cannot be empty"
+            done
+            ;;
+        provider-optional)
+            if [ "$AUTO_CONFIRM" = true ]; then
+                unset "$var"
+                record_capability_status "deferred" "$label"
+                RESOLVED_SECRET_VALUE=""
+                echo ""
+                return 0
+            fi
+
+            while true; do
+                prompt_secret_source "$var" >/dev/null
+                case "$SECRET_SOURCE_CHOICE" in
+                    manual)
+                        local input=""
+                        if ! read -s -p "$(echo -e "${CYAN}?${NC} Enter $prompt: ")" input; then echo >&2 "EOF"; exit 1; fi
+                        echo >&2
+                        if [ -n "$input" ]; then
+                            export "$var=$input"
+                            record_capability_status "started" "$label"
+                            RESOLVED_SECRET_VALUE="$input"
+                            echo "$input"
+                            return 0
+                        fi
+                        warning "$var cannot be empty"
+                        ;;
+                    keychain)
+                        local service_name="${var}"
+                        local keychain_value=""
+                        if ! read -p "$(echo -e "${CYAN}?${NC} Keychain service name [$service_name]: ")" keychain_value; then echo >&2 "EOF"; exit 1; fi
+                        keychain_value=${keychain_value:-$service_name}
+                        if keychain_value=$(read_secret_from_keychain "$keychain_value"); then
+                            export "$var=$keychain_value"
+                            record_capability_status "started" "$label"
+                            RESOLVED_SECRET_VALUE="$keychain_value"
+                            echo "$keychain_value"
+                            return 0
+                        fi
+                        warning "Could not read $var from the macOS Keychain."
+                        ;;
+                    1password)
+                        local op_ref=""
+                        if ! read -p "$(echo -e "${CYAN}?${NC} 1Password item reference for $var: ")" op_ref; then echo >&2 "EOF"; exit 1; fi
+                        if op_value=$(read_secret_from_1password "$op_ref"); then
+                            export "$var=$op_value"
+                            record_capability_status "started" "$label"
+                            RESOLVED_SECRET_VALUE="$op_value"
+                            echo "$op_value"
+                            return 0
+                        fi
+                        warning "Could not read $var from 1Password CLI."
+                        ;;
+                    command)
+                        local command_spec=""
+                        if ! read -p "$(echo -e "${CYAN}?${NC} Command that prints $var: ")" command_spec; then echo >&2 "EOF"; exit 1; fi
+                        if command_value=$(read_secret_from_command "$command_spec"); then
+                            export "$var=$command_value"
+                            record_capability_status "started" "$label"
+                            RESOLVED_SECRET_VALUE="$command_value"
+                            echo "$command_value"
+                            return 0
+                        fi
+                        warning "Command lookup for $var failed."
+                        ;;
+                    defer)
+                        unset "$var"
+                        record_capability_status "deferred" "$label"
+                        RESOLVED_SECRET_VALUE=""
+                        echo ""
+                        return 0
+                        ;;
+                    invalid)
+                        continue
+                        ;;
+                esac
+            done
+            ;;
+        *)
+            if [ "$AUTO_CONFIRM" = true ]; then
+                fatal "$var is not configured. Pre-populate $ENV_FILE or export it before using --yes, or run without --yes to choose a source or defer the capability."
+            fi
+            warning "$var does not have a safe default."
+            ;;
+    esac
+}
+
+show_capability_summary() {
+    echo
+    echo -e "${BOLD}Capability status:${NC}"
+    if [ ${#STARTED_CAPABILITIES[@]} -gt 0 ]; then
+        echo -e "${GREEN}Started:${NC}"
+        local item
+        for item in "${STARTED_CAPABILITIES[@]}"; do
+            echo "  - $item"
+        done
+    else
+        echo -e "${GREEN}Started:${NC} none"
+    fi
+
+    if [ ${#DEFERRED_CAPABILITIES[@]} -gt 0 ]; then
+        echo -e "${YELLOW}Deferred:${NC}"
+        local deferred_item
+        for deferred_item in "${DEFERRED_CAPABILITIES[@]}"; do
+            echo "  - $deferred_item"
+        done
+    else
+        echo -e "${YELLOW}Deferred:${NC} none"
+    fi
+    echo
 }
 
 read_env_file_value() {
@@ -343,94 +663,15 @@ ensure_docker_networks() {
 resolve_env_value() {
     local var="$1"
     local current="$2"
-    local prompt
-    prompt=$(env_prompt "$var")
-    local default
-    default=$(env_default "$var")
-    local required="true"
-    if ! env_is_required "$var"; then
-        required="false"
-    fi
-    local sensitive="false"
-    if env_is_sensitive "$var"; then
-        sensitive="true"
-    fi
-
-    if [ -n "$current" ]; then
-        if [ "$AUTO_CONFIRM" = true ]; then
-            echo "$current"
-            return 0
-        fi
-        # Show masked value for sensitive fields
-        local display_value="$current"
-        if [ "$sensitive" = "true" ] && [ ${#current} -gt 8 ]; then
-            display_value="${current:0:4}...${current: -4}"
-        fi
-        log "$var currently set to: $display_value"
-        if ask_yes_no "Keep existing value?" "y"; then
-            echo "$current"
-            return 0
-        fi
-    fi
-
-    if [ "$AUTO_CONFIRM" = true ]; then
-        if [ "$required" = "true" ] && [ -z "$default" ]; then
-            fatal "$var is required for full installation. Export it or add it to $ENV_FILE before using --full/--yes."
-        else
-            echo "$default"
-            return 0
-        fi
-    fi
-
-    local input=""
-    while true; do
-        # Build prompt with hint
-        local prompt_hint=""
-        if [ "$required" = "false" ]; then
-            prompt_hint=" (optional, press Enter to skip)"
-        elif [ -n "$default" ]; then
-            prompt_hint=" (press Enter for default)"
-        fi
-        
-        if [ "$sensitive" = "true" ]; then
-            if [ -n "$default" ]; then
-                if ! read -s -p "$(echo -e "${CYAN}?${NC} $prompt${prompt_hint} [****]: ")" input; then echo >&2 "EOF"; exit 1; fi
-                echo >&2
-            else
-                if ! read -s -p "$(echo -e "${CYAN}?${NC} $prompt${prompt_hint}: ")" input; then echo >&2 "EOF"; exit 1; fi
-                echo >&2
-            fi
-        else
-            if [ -n "$default" ]; then
-                if ! read -p "$(echo -e "${CYAN}?${NC} $prompt${prompt_hint} [$default]: ")" input; then echo >&2 "EOF"; exit 1; fi
-            else
-                if ! read -p "$(echo -e "${CYAN}?${NC} $prompt${prompt_hint}: ")" input; then echo >&2 "EOF"; exit 1; fi
-            fi
-        fi
-        
-        input=${input:-$default}
-        
-        if [ -n "$input" ]; then
-            echo "$input"
-            return 0
-        fi
-        
-        if [ "$required" = "false" ]; then
-            log "Setting $var to empty (optional field)"
-            if ask_yes_no "Confirm leaving $var empty?" "y"; then
-                echo ""
-                return 0
-            fi
-            continue
-        fi
-        
-        warning "$var is required and cannot be empty"
-    done
+    resolve_secret_value "$var" "$current" "$ENV_FILE" >/dev/null
+    echo "$RESOLVED_SECRET_VALUE"
 }
 
 ensure_env_file() {
     local stack="${1:-core}"
     local env_file="$ENV_FILE"
+    STARTED_CAPABILITIES=()
+    DEFERRED_CAPABILITIES=()
     local -a required_vars=()
     if [ "$stack" = "full" ]; then
         required_vars=("${FULL_STACK_ENV_VARS[@]}")
@@ -455,12 +696,9 @@ ensure_env_file() {
     local var value current env_override
 
     for var in "${required_vars[@]}"; do
-        current=$(read_env_file_value "$var" "$env_file")
-        env_override="${!var:-}"
-        if [ -z "$current" ] && [ -n "$env_override" ]; then
-            current="$env_override"
-        fi
-        value=$(resolve_env_value "$var" "$current")
+        current=$(resolve_existing_env_value "$var" "$env_file")
+        resolve_secret_value "$var" "$current" "$env_file" >/dev/null
+        value="$RESOLVED_SECRET_VALUE"
         collected_vars+=("$var")
         collected_values+=("$value")
     done
@@ -472,7 +710,9 @@ ensure_env_file() {
         echo "# Dopemux installer managed values ($(date -Iseconds))"
         local idx
         for idx in "${!collected_vars[@]}"; do
-            echo "${collected_vars[$idx]}=${collected_values[$idx]}"
+            if [ -n "${collected_values[$idx]}" ]; then
+                echo "${collected_vars[$idx]}=${collected_values[$idx]}"
+            fi
         done
         if [ -f "$env_file" ]; then
             while IFS= read -r line || [ -n "$line" ]; do
@@ -496,6 +736,7 @@ ensure_env_file() {
     chmod 600 "$env_file"
 
     success "Environment variables saved to $env_file"
+    show_capability_summary
 }
 
 # --- Pre-flight Hardware Validation ---
@@ -542,6 +783,10 @@ wait_for_containers() {
     local stack="${1:-$SELECTED_STACK}"
     local compose_file
     compose_file=$(compose_file_for_stack "$stack")
+    local -a compose_env_args=()
+    if [ -f "$ENV_FILE" ]; then
+        compose_env_args=(--env-file "$ENV_FILE")
+    fi
 
     log "Waiting for services to be healthy..."
 
@@ -550,9 +795,9 @@ wait_for_containers() {
     local ready=false
 
     while [ $(($(date +%s) - start_time)) -lt $timeout ]; do
-        local total_containers=$(docker compose $compose_file ps -q | wc -l)
-        local healthy_containers=$(docker compose $compose_file ps | grep -c "healthy")
-        local running_containers=$(docker compose $compose_file ps | grep -c "Up")
+        local total_containers=$(docker compose "${compose_env_args[@]}" $compose_file ps -q | wc -l)
+        local healthy_containers=$(docker compose "${compose_env_args[@]}" $compose_file ps | grep -c "healthy")
+        local running_containers=$(docker compose "${compose_env_args[@]}" $compose_file ps | grep -c "Up")
 
         if [ "$healthy_containers" -eq "$total_containers" ] && [ "$total_containers" -gt 0 ]; then
             ready=true
@@ -1077,6 +1322,10 @@ install_docker_services() {
     local stack="${1:-$SELECTED_STACK}"
     local compose_file
     compose_file=$(compose_file_for_stack "$stack")
+    local -a compose_env_args=()
+    if [ -f "$ENV_FILE" ]; then
+        compose_env_args=(--env-file "$ENV_FILE")
+    fi
 
     # Validate resources before starting containers
     check_system_resources "$stack"
@@ -1100,14 +1349,14 @@ install_docker_services() {
     if [ "$stack" = "full" ]; then
         profile_arg="--profile full"
     fi
-    
+
     log "Pulling Docker images from $compose_file (this may take a few minutes)..."
-    docker compose $profile_arg $compose_file pull &
+    docker compose "${compose_env_args[@]}" $profile_arg $compose_file pull &
     spinner $!
     success "Docker images pulled"
     
     log "Starting Docker services..."
-    docker compose $profile_arg $compose_file up -d || fatal "Failed to start Docker services"
+    docker compose "${compose_env_args[@]}" $profile_arg $compose_file up -d || fatal "Failed to start Docker services"
     
     # Wait for services to be ready
     wait_for_containers "$stack"
@@ -1198,6 +1447,7 @@ verify_installation() {
     
     local checks_passed=0
     local checks_total=5
+    local stack="${1:-$SELECTED_STACK}"
     
     # Check 1: Directory structure
     if [ -d "$DOPEMUX_HOME" ]; then
@@ -1219,11 +1469,15 @@ verify_installation() {
     local docker_ok=false
     local compose_args
     compose_args=$(compose_file_for_stack "$stack")
+    local -a compose_env_args=()
+    if [ -f "$ENV_FILE" ]; then
+        compose_env_args=(--env-file "$ENV_FILE")
+    fi
 
     local profile_arg=""
     [ "$stack" = "full" ] && profile_arg="--profile full"
 
-    if docker compose $profile_arg $compose_args ps >/dev/null 2>&1 && docker compose $profile_arg $compose_args ps | grep -q "Up"; then
+    if docker compose "${compose_env_args[@]}" $profile_arg $compose_args ps >/dev/null 2>&1 && docker compose "${compose_env_args[@]}" $profile_arg $compose_args ps | grep -q "Up"; then
         success "Docker services OK"
         docker_ok=true
         ((checks_passed++))
@@ -1559,4 +1813,6 @@ main() {
 }
 
 # Run main function
-main "$@"
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    main "$@"
+fi

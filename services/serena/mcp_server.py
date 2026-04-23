@@ -1699,6 +1699,11 @@ class SerenaV2MCPServer:
                                 "type": "boolean",
                                 "description": "Preview only",
                                 "default": True
+                            },
+                            "resume": {
+                                "type": "boolean",
+                                "description": "Explicitly resume the latest matching bounded plan instead of starting a fresh execution attempt.",
+                                "default": False
                             }
                         },
                         "required": ["operations"]
@@ -1722,6 +1727,11 @@ class SerenaV2MCPServer:
                                 "type": "boolean",
                                 "description": "Preview only",
                                 "default": True
+                            },
+                            "resume": {
+                                "type": "boolean",
+                                "description": "Explicitly resume the latest matching bounded rename plan instead of starting a fresh execution attempt.",
+                                "default": False
                             }
                         },
                         "required": ["symbol_id_str", "new_name"]

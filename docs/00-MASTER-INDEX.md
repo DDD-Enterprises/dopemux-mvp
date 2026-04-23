@@ -179,6 +179,7 @@ Status: [LOGGED] Topology Complete
 ### Configuration
 - [Profile YAML Schema](03-reference/configuration/profile-yaml-schema.md)
 - [MCP Tools Overview](03-reference/mcp-tools-overview.md)
+- [Dopemux Hooksd](03-reference/services/dopemux-hooksd.md)
 - [Task Orchestrator Service Reference](03-reference/services/task-orchestrator.md)
 - [Dope-Context Docs Contextual Embedding Contract](03-reference/dope-context/dope-context-docs-contextual-embedding-v1.md)
 - [Dope-Context Architecture and Trinity Boundaries](03-reference/dope-context/dope-context-architecture-and-boundaries-v1.md)

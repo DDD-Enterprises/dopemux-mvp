@@ -174,3 +174,59 @@ async def test_dopemux_history_view_consumes_preview_and_apply_receipts_without_
         "Preview mode. Pass preview=False to apply the refactor."
     )
     assert "Renamed run to execute." in view["timeline"][1]["display"]
+    assert view["timeline"][1]["orchestration"]["plan_status"] == "verified"
+    assert view["active_plans"]["plan_count"] == 1
+    assert view["active_plans"]["plans"][0]["next_action"] == "none"
+
+
+@pytest.mark.asyncio
+async def test_dopemux_orchestration_view_reports_blocked_current_step(tmp_path: Path):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    _write(
+        workspace / "pkg" / "mod.py",
+        "def run():\n"
+        "    return helper()\n\n"
+        "def helper():\n"
+        "    return 1\n",
+    )
+    _write(
+        workspace / "pkg" / "other.py",
+        "from pkg.mod import run\n\n"
+        "def outer():\n"
+        "    return run()\n",
+    )
+
+    engine = ASTEngine(workspace, "ws-test")
+    write_layer = WriteLayer(workspace, "ws-test")
+    refactor = RefactorLayer(write_layer, engine)
+
+    symbols = await engine.get_file_symbols("pkg/mod.py")
+    run_symbol_id = symbols["symbols"][0]["symbol_id"]
+
+    real_apply_patch = write_layer.apply_patch
+    call_count = {"value": 0}
+
+    def flaky_apply_patch(relative_path: str, diff_text: str, emit_receipt: bool = True):
+        result = real_apply_patch(relative_path, diff_text, emit_receipt=emit_receipt)
+        call_count["value"] += 1
+        if call_count["value"] == 1:
+            workspace.joinpath("pkg", "other.py").write_text(
+                "from pkg.mod import run\n\n"
+                "def outer():\n"
+                "    return run() + 1\n",
+                encoding="utf-8",
+            )
+        return result
+
+    write_layer.apply_patch = flaky_apply_patch  # type: ignore[method-assign]
+    await refactor.rename_symbol(run_symbol_id, "execute", preview=False)
+
+    ledger_events = load_dopecode_execution_receipts(workspace)
+    view = build_dopecode_execution_history_view(ledger_events)
+
+    assert view["active_plans"]["plan_count"] == 1
+    active = view["active_plans"]["plans"][0]
+    assert active["plan_status"] == "blocked"
+    assert active["next_action"] == "resume"
+    assert active["current_step_title"] == "Rename references in pkg/other.py"
