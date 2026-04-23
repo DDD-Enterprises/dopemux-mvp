@@ -50,8 +50,6 @@ A packet is superseded by another packet
 | PACKET_032 | Memory | Chronicle Promotion Guards | Pending Audit | ADR-214 |
 
 ────────────────────────────────────────────────────────────
-🟢 Completed Task Packets
-
 | Packet ID | Subsystem | Title | Completion Date | Outcome |
 | --- | --- | --- | --- | --- |
 | TP-PM-ARCH-04A | PM Plane | Canonical PMTask Model + Store (Unit-only) | 2026-03-22 | Accepted |
@@ -74,5 +72,5 @@ Status changes must be explicit
 Completed packets require an audit outcome
 Superseded packets must reference the replacing packet
 ────────────────────────────────────────────────────────────
-🧨 Final Rule
+Final Rule
 If it’s not indexed here, it didn’t happen.
