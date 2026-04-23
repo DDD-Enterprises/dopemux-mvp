@@ -4,12 +4,23 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from dopemux.pm.adapters.orchestrator import SyncTaskOrchestratorAdapter
+from dopemux.pm.models import PMTaskStatus
+from dopemux.pm.writes import PMWriteConfig, pm_transition_work_item
+
 from ..clients import mcp_client
 from ..config import settings
 from ..models import Task, TaskPriority, TaskStatus
 
 
 logger = logging.getLogger(__name__)
+
+TASK_STATUS_TO_PM_STATUS = {
+    TaskStatus.PLANNED: PMTaskStatus.TODO,
+    TaskStatus.IN_PROGRESS: PMTaskStatus.IN_PROGRESS,
+    TaskStatus.BLOCKED: PMTaskStatus.BLOCKED,
+    TaskStatus.COMPLETED: PMTaskStatus.DONE,
+}
 
 
 def _utc_now_z() -> str:
@@ -217,35 +228,36 @@ class TaskIntegrationService:
         """
         logger.info(f"🔄 Routing task {task_id} status update to {new_status.value} via adapter")
 
-        try:
-            # Step 1: Execute transition via PM Plane (Canonical Workflow Authority)
-            from dopemux.pm.write import pm_transition_work_item
-            from dopemux.pm.store import get_pm_store
-            
-            store = get_pm_store()
-            
-            # In narrow bridge, we use the normalized PM-plane tools
-            # We need project_id and workflow_id. 
-            # (Stubbed for e2e test compatibility: assuming 'default' project)
-            try:
-                await pm_transition_work_item(
-                    store=store,
-                    task_id=task_id,
-                    project_id="default",
-                    workflow_id=task_id,
-                    new_status=new_status.value,
-                    expected_version=1, # Stubbed for early Wave 2
-                    idempotency_key=f"bridge-trans-{task_id}-{new_status.value}-{datetime.utcnow().timestamp()}",
-                )
-            except Exception as pm_err:
-                logger.warning(f"⚠️ PM Plane transition failed, falling back to legacy sync: {pm_err}")
-
-            # Step 2: Mirror to Leantime (PM Record Authority)
-            await self.mcp_manager.call_tool(
-                "leantime-bridge",
-                "update_ticket",
-                {"ticket_id": task_id, "status": new_status.value, "assigned_to": assigned_to}
+        if assigned_to is not None:
+            raise ValueError(
+                "assigned_to is not supported on the workflow transition path. "
+                "Phase 1 requires metadata changes to be dispatched separately to Leantime."
             )
+
+        try:
+            target_status = TASK_STATUS_TO_PM_STATUS.get(new_status)
+            if target_status is None:
+                raise ValueError(f"Unsupported task status for PM workflow transition: {new_status.value}")
+
+            orchestrator_client = SyncTaskOrchestratorAdapter(base_url=settings.task_orchestrator_url)
+            try:
+                pm_config = PMWriteConfig(
+                    leantime_client=None,
+                    orchestrator_client=orchestrator_client,
+                    conport_client=None,
+                    memory_client=None,
+                    project_id=project_id,
+                )
+                pm_transition_work_item(
+                    config=pm_config,
+                    task_id=task_id,
+                    new_status=target_status,
+                    reason="bridge task status update",
+                    idempotency_key=f"bridge-status:{project_id}:{task_id}:{new_status.value}",
+                    expected_version=1,
+                )
+            finally:
+                orchestrator_client.close()
 
             response = {
                 "success": True,

@@ -11,8 +11,8 @@ class TaskOrchestratorAdapter:
     """Adapter for communicating with the task-orchestrator HTTP API."""
 
     def __init__(self, base_url: Optional[str] = None):
-        # Default to PORT_BASE+14 (3014)
-        self.base_url = (base_url or os.getenv("TASK_ORCHESTRATOR_URL", "http://localhost:3014")).rstrip("/")
+        # Active runtime authority is app.main on port 8000 in this checkout.
+        self.base_url = (base_url or os.getenv("TASK_ORCHESTRATOR_URL", "http://localhost:8000")).rstrip("/")
 
     async def _request(self, method: str, path: str, **kwargs) -> httpx.Response:
         """Helper to make an HTTP request."""
@@ -97,8 +97,8 @@ class SyncTaskOrchestratorAdapter:
     """Synchronous adapter for communicating with the task-orchestrator HTTP API."""
 
     def __init__(self, base_url: Optional[str] = None, default_project_id: Optional[str] = None):
-        # Default to PORT_BASE+14 (3014)
-        self.base_url = (base_url or os.getenv("TASK_ORCHESTRATOR_URL", "http://localhost:3014")).rstrip("/")
+        # Active runtime authority is app.main on port 8000 in this checkout.
+        self.base_url = (base_url or os.getenv("TASK_ORCHESTRATOR_URL", "http://localhost:8000")).rstrip("/")
         self.default_project_id = default_project_id
         self.client = httpx.Client(timeout=10.0)
 
