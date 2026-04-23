@@ -1,7 +1,7 @@
 ---
 id: tui-spec-v2
 title: Dopemux TUI Specification v2.0a
-type: explanation
+type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-04-23'
@@ -82,10 +82,9 @@ Send does **not** trigger a task-orchestrator state transition and does **not** 
 #### 2.4.2 Packet Lifecycle
 
 - **Draft**: authored in dopemux, not visible in inspector
-- **Sent**: visible in inspector with `sent_at` timestamp
-- **Active**: 30 days after send
+- **Sent (Active)**: visible in inspector with `sent_at` timestamp; remains active for 30 days
 - **Archived**: after 30 days, moved to history/search
-- **Pinned**: exempt from auto-archive, marked with `[LOGGED]` chip on archive threshold
+- **Pinned**: exempt from auto-archive, marked with `[PIN]` chip at archive threshold
 
 Pin state is carried on the envelope and mirrored on the dope-memory chronicle receipt. Unpin writes a new receipt with `pinned_at: null`.
 
@@ -162,29 +161,27 @@ The following writes are forbidden:
 │ [1] PM    [2] Implementer  [3] Overview  [4] Services  [5] Events   │ workspace: dopemux-mvp  │ today: 2026-04-23 │
 ├─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                                                           │
-│ LEFT RAIL: TASK LIST              │ CENTER: TASK DETAILS           │ CENTER: RELATED                │ INSPECTOR        │
-│ authority: task-orchestrator      │ authority: leantime + conport  │ authority: conport             │ authority: mixed │
-├──────────────────────────────────┼────────────────────────────────┼──────────────────────────────┼──────────────────┤
+│ LEFT RAIL: TASK LIST              │ CENTER: PRIMARY (rows 5-24)                                 │ INSPECTOR        │
+│ authority: task-orchestrator      │ authority: leantime + conport + task-orchestrator          │ authority: mixed │
+├──────────────────────────────────┼────────────────────────────────────────────────────────────┼──────────────────┤
 │  > [LIVE]   T-1203               │ title: Refactor auth module    │ related decisions:           │ Packet PKT-481   │
 │    [BLOCKER] T-1205              │ assignee: @alice               │ ADR-042 (JWT schema)         │ sent: 2026-04-22 │
 │    T-1198 [unread PKT]           │ due: 2026-04-30                │ ADR-039 (session mgmt)       │ from: PM         │
 │    T-1192                        │ estimate: 8h                   │                              │ to: Implementer  │
-│                                  │ SRC: leantime                  │ related tasks:               │ [PIN]            │
-│                                  │                                │ T-1195 (session test)        │ NEXT: [a]pprove  │
-│                                  │ description: Implementation    │ T-1201 (e2e coverage)        │ or [x]close      │
-│                                  │ of OpenID Connect for...       │ SRC: task-orchestrator       │                  │
-│                                  │                                │                              │                  │
-│                                  │ progress entry: conport        │ chronicle excerpt:           │                  │
-│                                  │ status: in_progress            │ [LOGGED] handoff sent        │                  │
-│                                  │ linked_tasks: [T-1205, T-1192] │ to Implementer 2026-04-22    │                  │
-│                                  │ SRC: task-orchestrator         │ SRC: dope-memory             │                  │
-│                                  │                                │                              │                  │
-├──────────────────────────────────┼────────────────────────────────┼──────────────────────────────┼──────────────────┤
-│                                  │ HANDOFF PACKET DRAFT             │                              │                  │
-│                                  │ PKT-482 (draft)                 │ COMMAND HISTORY              │                  │
-│                                  │ [H] send [c] clear [p] pin      │ > [a] approve PKB-481        │                  │
-│                                  │ [o] open-full [x] abandon       │ [✓] decision logged          │                  │
-├──────────────────────────────────┼────────────────────────────────┴──────────────────────────────┤                  │
+│                                  │ SRC: leantime                                                    │ [PIN]            │
+│                                  │ description: Implementation of OpenID Connect for...            │ NEXT: [a]pprove  │
+│                                  │ progress entry: conport                                          │ or [x]close      │
+│                                  │ status: in_progress [SRC: task-orchestrator]                    │                  │
+│                                  │ linked_tasks: [T-1205, T-1192]                                   │                  │
+│                                  │                                                                  │                  │
+├──────────────────────────────────┼────────────────────────────────────────────────────────────┼──────────────────┤
+│                                  │ CENTER: SECONDARY (rows 25-34)                               │ authority: mixed │
+│                                  │ related decisions: ADR-042, ADR-039                          │ ─━━ BRIDGE ADAPTER DEBUG ━━━ │
+│                                  │ related tasks: T-1195, T-1201 [SRC: task-orchestrator]      │ adapter: idle    │
+│                                  │ chronicle: [LOGGED] handoff sent 2026-04-22 [SRC: dope-memory]│ shift-Y required │
+│                                  │ HANDOFF PACKET DRAFT PKT-482 [H] send [c] clear [p] pin     │                  │
+│                                  │ COMMAND HISTORY > [a] approve PKB-481 [✓] decision logged    │                  │
+├──────────────────────────────────┼────────────────────────────────────────────────────────────┤                  │
 │ [g] global [n] next [p] prev     │ command: _                                                     │ [g o] go Tasks   │
 │ [g o]Tasks [g d]Decisions        │ feedback: Ready.                                               │ [g d] Decisions  │
 │ [g m]Memory [g s]Search          │                                                                │ [g m] Memory     │
@@ -200,27 +197,24 @@ The following writes are forbidden:
 │ [1] PM    [2] Implementer  [3] Overview  [4] Services  [5] Events   │ workspace: dopemux-mvp  │ today: 2026-04-23 │
 ├─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                                                           │
-│ LEFT RAIL: CURRENT TASK          │ CENTER: TASK DETAILS           │ CENTER: EXECUTION            │ INSPECTOR        │
-│ authority: task-orchestrator     │ authority: conport + context   │ authority: dopetask          │ authority: mixed │
-├──────────────────────────────────┼────────────────────────────────┼──────────────────────────────┼──────────────────┤
+│ LEFT RAIL: CURRENT TASK          │ CENTER: PRIMARY (rows 5-24)                                 │ INSPECTOR        │
+│ authority: task-orchestrator     │ authority: conport + context + dopetask                      │ authority: mixed │
+├──────────────────────────────────┼────────────────────────────────────────────────────────────┼──────────────────┤
 │  > [LIVE] T-1203                 │ task: T-1203                   │ recent commits:              │ Packet PKB-481   │
 │    [BLOCKER] T-1205              │ acceptance criteria:            │ commit: 3ca12e (auth review) │ sent: 2026-04-22 │
 │    [unread PKB] T-1192           │ - login form works             │ branches: feature/auth       │ from: Implementer│
 │    T-1198                        │ - token validation OK           │ test status: 15/16 passing   │ to: PM           │
-│                                  │ - MFA optional                 │ coverage: 91%                │ [PIN]            │
-│                                  │ SRC: task-orchestrator         │ SRC: dopetask                │ NEXT: [a]pprove  │
-│                                  │                                │                              │ or [x]close      │
-│                                  │ linked decision:               │ code navigation:             │                  │
-│                                  │ ADR-042 (JWT schema)           │ src/auth.py:45 [✓] reviewed  │                  │
-│                                  │ [LOGGED] decision link from    │ tests/test_auth.py:120 [!]   │                  │
-│                                  │ conport progress entry         │ SRC: dope-context            │                  │
-│                                  │ SRC: conport                   │                              │                  │
-├──────────────────────────────────┼────────────────────────────────┼──────────────────────────────┼──────────────────┤
-│                                  │ HANDBACK PACKET DRAFT            │                              │                  │
-│                                  │ PKB-482 (draft)                 │ EVIDENCE LINKS               │                  │
-│                                  │ [H] send [c] clear [p] pin      │ PR: #298 (review opened)     │                  │
-│                                  │ [o] open-full [x] abandon       │ Test run: passed             │                  │
-├──────────────────────────────────┼────────────────────────────────┴──────────────────────────────┤                  │
+│                                  │ - MFA optional [SRC: task-orchestrator]                       │ [PIN]            │
+│                                  │ linked decision: ADR-042                                       │ NEXT: [a]pprove  │
+│                                  │ [LOGGED] decision link from conport progress entry             │ or [x]close      │
+│                                  │                                                                  │                  │
+├──────────────────────────────────┼────────────────────────────────────────────────────────────┼──────────────────┤
+│                                  │ CENTER: SECONDARY (rows 25-34)                               │ authority: mixed │
+│                                  │ recent commits: 3ca12e (auth review) [SRC: dopetask]        │ ─━━ BRIDGE ADAPTER DEBUG ━━━ │
+│                                  │ code navigation: src/auth.py:45 [✓], tests/test_auth.py:120 [!]│ adapter: idle  │
+│                                  │ HANDBACK PACKET DRAFT PKB-482 [H] send [c] clear [p] pin    │ shift-Y required │
+│                                  │ EVIDENCE LINKS PR: #298, Test run: passed                    │                  │
+├──────────────────────────────────┼────────────────────────────────────────────────────────────┤                  │
 │ [g] global [n] next [p] prev     │ command: _                                                     │ [g o] go Tasks   │
 │ [g o]Tasks [g d]Decisions        │ feedback: Ready to send handback.                              │ [g d] Decisions  │
 │ [g m]Memory [g s]Search          │                                                                │ [g m] Memory     │
@@ -410,16 +404,17 @@ Every user action in a confirm modal must include the target service name and ac
 | `[OVERRIDE]` | chip.override (gold) | Manual override | Scope edge crossed, decision override |
 | `[LOGGED]` | chip.logged (mint) | Successfully recorded | Packet sent, decision logged |
 | `[AFTERCARE]` | chip.aftercare (violet) | Post-action follow-up | Requires follow-up decision |
-| `[EDGE]` | chip.edge (cyan) | Edge case / experimental | Boundary condition flagged |
+| `[PIN]` | chip.logged (mint) | Pin exemption from archive | Pinned packet at archive threshold |
+| `[EDGE]` | chip.edge (cyan) | Scope edge crossed (pending brand review) | Boundary condition flagged |
 
 ### 7.2 Glyph Set
 
 | Glyph | Unicode | Nerd Font | Fallback | Color | Meaning |
 |-------|---------|-----------|----------|-------|---------|
-| `*` | U+002A | — | `*` | error | Task blocked / status error |
+| `*` | U+002A | — | `*` | info | Task in progress |
 | `~` | U+007E | — | `~` | text.dim | Pending / waiting |
 | `o` | U+006F | — | `o` | info | Task open |
-| `x` | U+0078 | — | `x` | success | Task closed |
+| `x` | U+0078 | — | `x` | error | Task closed / blocked |
 | `>` | U+003E | `\uf054` | `>` | mint | Selection / current item |
 | `✓` | U+2713 | — | `✓` | success | Checked / passed |
 | `!` | U+0021 | — | `!` | warning | Warning / attention |

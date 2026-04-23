@@ -1,7 +1,7 @@
 ---
 id: tui-unknown-questionnaire
 title: TUI Round 2 UNKNOWN Resolution Questionnaire
-type: explanation
+type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-04-23'
@@ -15,7 +15,7 @@ prelude: Seven open questions blocking implementation steps in the TUI Round 2 b
 **Date**: 2026-04-23
 **Status**: Open
 **Scope**: Seven items carried forward from SPEC.md §9.5 (v2.0a §11.5)
-**Impact**: Each item blocks one or more build steps. Resolution required before step 3.
+**Impact**: Each item blocks one or more build steps. U1 blocks step 3 directly; other items block later steps as noted below.
 
 ---
 

@@ -1,13 +1,18 @@
 ---
 id: adr-002
 title: ADR-002 - PM-Mode Authority Split and Bounded Leantime Write Scope
-type: explanation
+type: adr
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-04-23'
 last_review: '2026-04-23'
 next_review: '2026-05-23'
+status: proposed
 prelude: Architecture Decision Record for PM-mode action dispatch and Leantime write scope boundaries.
+graph_metadata:
+  node_type: ADR
+  impact: medium
+  relates_to: []
 ---
 
 # ADR-002: PM-Mode Authority Split and Bounded Leantime Write Scope
@@ -16,7 +21,7 @@ prelude: Architecture Decision Record for PM-mode action dispatch and Leantime w
 **Date**: 2026-04-23
 **Owners**: @hu3mann
 **Depends on**: ADR-001
-**Blocks**: build step 8 of §9.4a (PM-mode write dispatch)
+**Blocks**: build step 8 of §9.4 (PM-mode write dispatch)
 
 ## Context
 
