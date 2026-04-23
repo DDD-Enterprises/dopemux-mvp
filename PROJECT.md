@@ -145,7 +145,7 @@ In practical terms, the repository is shaped as a mixed workspace:
 - `services/*` for the major service families, including task-orchestrator, dopecon-bridge, dope-context, working-memory-assistant/dope-memory, ADHD Engine, and repo-truth-extractor
 - `docker/*` for compose support and container build/runtime sources, including active MCP server source trees
 - `docs/03-reference/*` for current reference documents
-- `docs/03-reference/truth/*`, `tmp/dmx-chatgpt-project-truth-extraction-002/*`, and related generated truth artifacts for prior extraction outputs
+- `docs/03-reference/truth/*` and related generated truth artifacts for prior extraction outputs
 
 This is not a single-package codebase and not a single-service repo. It is a mixed CLI, services, compose, adapters, and generated-artifact workspace.
 
