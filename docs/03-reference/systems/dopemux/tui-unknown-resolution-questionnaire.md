@@ -36,37 +36,38 @@ For the six unresolved backends, protocol, auth model, pagination contract, and 
 
 ## U2: `dopetask` Health Endpoint Path
 
-**Status**: PENDING
+**Status**: RESOLVED
 
-**Exact decision needed**:
-Does `dopetask` expose its own `/health` endpoint directly, or is its health surfaced only via `task-orchestrator` as a dependency rollup?
+**Resolution applied**:
+`dopetask` exposes its own `/health` endpoint directly. Services pane probes dopetask directly every 5 seconds. Response format: `{status: "healthy|degraded|critical", uptime: seconds, workers_active: int, timestamp: ISO8601}`. HTTP status codes: 200 (healthy), 503 (degraded), 500 (critical). Response time < 50ms, no external dependencies.
 
-**Why it blocks implementation**:
-`[4]Services` health row for `dopetask` must show either a direct probe result or a rolled-up status with a different glyph meaning. Blocks build step 12; currently degraded to "unknown" placeholder.
+**Why this decision**:
+Execution-critical service; direct endpoint ensures sub-5-second failure detection without cascading dependencies. Health rollup via task-orchestrator would create detection blind spot precisely when it's most needed.
 
-**Suggested default if fast**:
-Direct `/health` on `dopetask` — it's execution-critical and a rollup hides failure modes. If `dopetask` is strictly a worker with no HTTP surface, promote the rollup answer and document it explicitly in the Source adapter table.
+**Implementation effect**:
+Build step 12 may implement `[4]Services` health row for dopetask as a direct probe result with "real-time" glyph. No rolled-up aggregation; each service owns its health reporting.
 
-**Fallback if not decided**:
-Render as "unknown" on `[4]Services` and mark as TBD. Non-blocking for MVP.
+**See also**: ADR-220 (dopetask-direct-health-endpoint.md) for full architectural decision
 
 ---
 
 ## U3: Event Stream Rate Limits and Tail Retention
 
-**Status**: PENDING
+**Status**: RESOLVED
 
-**Exact decision needed**:
-Max events/sec the `[5]Events` pane will subscribe to without backpressure; tail retention window (minutes of history kept in the client ring buffer).
+**Resolution applied**:
+Server-side rate limit: 200 events/sec (3.3 events/frame at 60 FPS). Client-side tail buffer: 15 minutes (900 seconds) covering ADHD context-switch windows. Client-side coalescing debounce: 50ms (event deduplication for rapid updates). Fallback config available: 100 events/sec + 10-minute buffer + 100ms debounce if timeline pressures emerge.
 
-**Why it blocks implementation**:
-Frame budget (`max(2 fps, event-driven)`) and memory ceiling depend on this. Too permissive and the TUI drops frames on burst; too tight and operators miss events during context switch. Blocks build step 13 (event stream pane) and step 12 (packet lifecycle with reaper events).
+**Telemetry hooks**:
+events_dropped (rate-limited), events_coalesced (debounced), buffer_fullness (%), client_lag (ms). Post-launch tuning enabled via environment variables; no breaking API changes.
 
-**Suggested default if fast**:
-200 events/sec cap with client-side coalescing, 15-minute tail buffer. Tune after first week of real load. If upstream event rate is unknown, start with 50 events/sec and scale up.
+**Why this decision**:
+200 evt/sec balances real-time responsiveness with frame budget. 15-minute tail buffer preserves ADHD context across interruptions (tab switch, app switch, notifications). Coalescing reduces noise from progress spinners and task updates. Conservative defaults safe for launch; telemetry-driven optimization post-week-2.
 
-**Fallback if not decided**:
-Use 100 events/sec and 10-minute buffer; mark as experimental and plan first tuning session 1 week post-launch.
+**Implementation effect**:
+Build step 13 may implement event stream pane with hard rate limit enforcement at server, ring buffer at client, and coalescing for noisy event types. Memory budget: ~225KB per client.
+
+**See also**: ADR-221 (event-stream-rate-limits.md) for full architectural decision
 
 ---
 
@@ -140,8 +141,8 @@ Build step 11 may implement pin/unpin against append-only receipt semantics with
 | Item | Decision | Decided By | Date | Notes |
 |------|----------|-----------|------|-------|
 | U1 | PARTIAL: dope-context resolved (HTTP/JSON + bearer + cursor + structured filter); 6 remaining | Packet TP-DMX-TUI-DOCS-PATCH-003 | 2026-04-23 | `dope-context` only; six backend transport decisions still open |
-| U2 | PENDING | | | Direct endpoint preferred; rollup acceptable if no direct surface |
-| U3 | PENDING | | | 200 events/sec + 15-min buffer suggested; tune post-launch |
+| U2 | RESOLVED: Direct `/health` on dopetask, no aggregation | ADR-220 | 2026-04-23 | Direct probe ensures <5sec failure detection; sub-50ms response |
+| U3 | RESOLVED: 200 evt/sec + 15-min buffer + 50ms debounce | ADR-221 | 2026-04-23 | Balanced for frame budget & ADHD context windows; post-launch tuning enabled |
 | U4 | RESOLVED | Packet TP-DMX-TUI-DOCS-PATCH-003 | 2026-04-23 | Two-role session model: `operator`, `approver`, or both |
 | U5 | RESOLVED | Packet TP-DMX-TUI-DOCS-PATCH-003 | 2026-04-23 | Newest unread wins; mode-aware tie break; stable fallback ordering |
 | U6 | RESOLVED: `[LOGGED]` remains on the envelope; `[EDGE]` not approved for PKB arrival | Packet TP-DMX-TUI-U6-BRAND-CLOSURE-004 | 2026-04-23 | Scope-edge meaning is body-rendered only; no new chip |
