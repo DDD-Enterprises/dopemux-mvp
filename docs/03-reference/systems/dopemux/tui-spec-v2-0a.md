@@ -22,7 +22,7 @@ This specification defines the terminal-native operator shell for Dopemux Round 
 
 **Non-goals**: web framing, HTML/DOM, mouse, hover effects, automation-invoked human actions, unified task records, unified PM or Implementer records.
 
-**Authority**: This spec is normative for Terminal UI layout, interaction, and visual tokens. Per-backend HTTP/RPC contracts and role models are still UNKNOWN and will block specific implementation steps.
+**Authority**: This spec is normative for Terminal UI layout, interaction, and visual tokens. `dope-context` transport is frozen for this spec pass, but the other six backend HTTP/RPC contracts remain unresolved. The two-role session model is resolved; broader runtime wiring still blocks specific implementation steps.
 
 ---
 
@@ -57,6 +57,7 @@ Tasks, Decisions, Memory, and Search are demoted to supporting views reached by 
 **Left rail** (columns 1–24, rows 5–34):
 - Task list or workflow queue, scoped by mode
 - Each row shows: `[glyph] task-id / title [unread-indicator]`
+- Unread precedence is deterministic: render the newest unread packet; on equal timestamps, PM mode prefers `PKB`, Implementer mode prefers `PKT`; if still tied after mode-aware preference, `PKB` sorts before `PKT` lexically for stable rendering.
 - Pane authority: `task-orchestrator` for workflow state
 
 **Center** (columns 26–83, split at row 25):
@@ -85,8 +86,9 @@ Send does **not** trigger a task-orchestrator state transition and does **not** 
 - **Sent (Active)**: visible in inspector with `sent_at` timestamp; remains active for 30 days
 - **Archived**: after 30 days, moved to history/search
 - **Pinned**: exempt from auto-archive, marked with `[PIN]` chip at archive threshold
+- **Scope-edge PKB content**: if a `PKB` crosses an agreed scope edge, the envelope still renders `[LOGGED]`; the scope-edge condition is body-rendered only. `[EDGE]` is not approved for PKB arrival on the envelope.
 
-Pin state is carried on the envelope and mirrored on the dope-memory chronicle receipt. Unpin writes a new receipt with `pinned_at: null`.
+Pin state is carried on the envelope and mirrored on the dope-memory chronicle receipt. Pin exemption is resolved from the latest dope-memory receipt for the packet id. The dope-memory mirror uses append-only `pinned_at` receipt semantics: pin writes a receipt with non-null `pinned_at`, and unpin writes a new receipt with `pinned_at: null`.
 
 ---
 
@@ -94,15 +96,15 @@ Pin state is carried on the envelope and mirrored on the dope-memory chronicle r
 
 ### 3.1 Service Domain Table
 
-| Domain | Service | Authority Role | Canonical Operations |
-|--------|---------|------------------|----------------------|
-| Workflow state | task-orchestrator | Approver / Operator | status, queue order, blockers, approvals |
-| Metadata | leantime | Operator | title, description, assignee, labels, due date, estimate, linked references |
-| Decisions | conport | Operator | decision log, progress entry, pattern storage |
-| History | dope-memory | System | chronicle receipt, pin state, archive entries |
-| Retrieval | dope-context | System | code search, doc search, codebase navigation |
-| Execution | dopetask | System | task runner, no state ownership |
-| Bridge adapter | dopecon-bridge | Tier-2 (shift-Y) | adapter-only, never canonical |
+| Domain | Service | Authority Role | Transport | Canonical Operations |
+|--------|---------|------------------|-----------|----------------------|
+| Workflow state | task-orchestrator | Approver / Operator | PENDING | status, queue order, blockers, approvals |
+| Metadata | leantime | Operator | PENDING | title, description, assignee, labels, due date, estimate, linked references |
+| Decisions | conport | Operator | PENDING | decision log, progress entry, pattern storage |
+| History | dope-memory | System | PENDING | chronicle receipt, pin state, archive entries |
+| Retrieval | dope-context | System | HTTP/JSON | code search, doc search, codebase navigation |
+| Execution | dopetask | System | PENDING | task runner, no state ownership |
+| Bridge adapter | dopecon-bridge | Tier-2 (shift-Y) | PENDING | adapter-only, never canonical |
 
 ### 3.2 Four Authority Prevention Mechanisms
 
@@ -149,6 +151,14 @@ The following writes are forbidden:
 | History receipt | dope-memory | `WRITE -> dope-memory : <action>` | Step 11+ |
 
 **Note**: A pane displaying a field does not imply that pane's backing service owns that field. The confirm modal's target service name is canonical.
+
+### 3.6 Session Role Model
+
+The TUI uses exactly two canonical human roles:
+- `operator`
+- `approver`
+
+A session may carry `operator`, `approver`, or both. Non-`[a]` canonical writes (`[H] send`, `[c]`, `[x]`, `[p]`, `[o]` when it performs a write) require `operator`. `[a] approve` requires `approver`. Sessions carrying both roles may perform both classes of action without introducing a third role or new authority tier.
 
 ---
 
@@ -275,7 +285,7 @@ On 80×24 terminals:
 - `[p]` — pin packet (dope-memory ownership, with confirmation)
 - `[o]` — open full view (expand to supporting view)
 - `[x]` — close / abandon draft (with confirmation)
-- `[a]` — approve task (role-gated, task-orchestrator-only)
+- `[a]` — approve task (approver-gated, task-orchestrator-only)
 
 **Meta**:
 - `[q]` — quit
@@ -285,17 +295,17 @@ On 80×24 terminals:
 
 **Send packet**:
 ```
-[H] send  →  confirm modal names target (ConPort + dope-memory)  →  writes both  →  marks sent_at  →  pin offered
+[H] send  →  operator role check  →  confirm modal names target (ConPort + dope-memory)  →  writes both  →  marks sent_at  →  pin offered
 ```
 
 **Approve task**:
 ```
-[a] approve  →  role check  →  confirm modal → task-orchestrator write  →  return to mode
+[a] approve  →  approver role check  →  confirm modal → task-orchestrator write  →  return to mode
 ```
 
 **Pin packet**:
 ```
-[p] pin  →  dope-memory receipt updated  →  `pinned_at` set  →  exempt from 30-day archive
+[p] pin  →  operator role check  →  dope-memory receipt appended  →  `pinned_at` set  →  exempt from 30-day archive
 ```
 
 ### 5.3 Keyboard vs Mouse
@@ -314,16 +324,18 @@ All write confirms follow this pattern:
 │ target: <canonical service>     │
 │ action: <field or state change> │
 │ affected: <item id and scope>   │
+│ role required: <operator|approver> │
 │                                 │
 │ [Y]es [N]o [?]help              │
 └─────────────────────────────────┘
 ```
 
 **Examples**:
-- `WRITE -> leantime : title` — metadata
-- `WRITE -> task-orchestrator : status = in_progress` — workflow
-- `WRITE -> conport : decision logged` — decision
-- `WRITE -> dope-memory : pinned` — history
+- `WRITE -> leantime : title` — metadata, role required: `operator`
+- `WRITE -> task-orchestrator : status = in_progress` — workflow, role required: `operator`
+- `WRITE -> conport : decision logged` — decision, role required: `operator`
+- `WRITE -> dope-memory : pinned` — history, role required: `operator`
+- `WRITE -> task-orchestrator : approve` — approval, role required: `approver`
 - `ADAPTER -> dopecon-bridge : fallback-read` — bridge (requires `shift-Y`)
 
 ---
@@ -345,9 +357,11 @@ All write confirms follow this pattern:
 - `!` — warning
 
 **Unread indicators**:
-- `⊕` — unread PKT (in PM mode)
-- `⊖` — unread PKB (in Implementer mode)
+- `⊕` — newest unread packet resolves to `PKT`
+- `⊖` — newest unread packet resolves to `PKB`
 - empty — no unread packets
+
+If both unread `PKT` and unread `PKB` exist on the same task, the renderer compares unread timestamps first. If one is newer, it wins. If timestamps tie, PM mode prefers `PKB` and Implementer mode prefers `PKT`. If timestamps and preferred type still fail to break the tie, the renderer falls back to lexical packet-type ordering (`PKB` before `PKT`) so the row remains stable across redraws.
 
 **Authority**: always `task-orchestrator` for workflow state (status, queue order).
 
@@ -359,6 +373,8 @@ All write confirms follow this pattern:
 **Row format**: `field_name: value [SRC:service]`
 
 **Authority**: mixed — each row tagged with its canonical service (leantime, task-orchestrator, conport, dope-memory).
+
+**Unread drill-down rule**: even when the row affordance suppresses one unread type, the packet pane and drill-down view must surface unread `PKT` and unread `PKB` independently.
 
 ### 6.3 Inspector (Detailed View)
 
@@ -391,6 +407,25 @@ Every user action in a confirm modal must include the target service name and ac
 - **History**: `WRITE -> dope-memory : <receipt-type>`
 - **Bridge**: `ADAPTER -> dopecon-bridge : <action>` (shift-Y required)
 
+### 6.7 Scope-Edge Recommendation Rendering
+
+If a `PKB` arrives carrying a recommendation that crosses an agreed scope edge, the envelope renders `[LOGGED]`. The scope-edge condition is rendered in the packet body or inspector text, not by reusing `[EDGE]`. No new chip is introduced.
+
+**Approved fallback copy**:
+- PKB arrival line: `[LOGGED] PKB-0481 received. Scope-edge recommendation in body.`
+- Scope-edge body text: `Scope edge: This recommendation extends beyond the current agreed scope. Review before any workflow transition or metadata write.`
+- Confirm modal text:
+
+```text
+Confirm: apply recommended transition
+target: task-orchestrator
+action: transition after scope-edge review
+affected: T-1203 via PKB-0481
+role required: operator
+```
+
+- Role-required refusal: `[BLOCKER] Operator role required. Scope-edge recommendation cannot be actioned in this session.`
+
 ---
 
 ## 7. Visual Token Mapping
@@ -401,11 +436,13 @@ Every user action in a confirm modal must include the target service name and ac
 |------|-------|---------|-----|
 | `[LIVE]` | chip.live (cyan) | Active / running process | Task in progress, live service |
 | `[BLOCKER]` | chip.blocker (pink) | Blocking error | Task stuck, critical issue |
-| `[OVERRIDE]` | chip.override (gold) | Manual override | Scope edge crossed, decision override |
-| `[LOGGED]` | chip.logged (mint) | Successfully recorded | Packet sent, decision logged |
+| `[OVERRIDE]` | chip.override (gold) | Manual override | Decision override only |
+| `[LOGGED]` | chip.logged (mint) | Successfully recorded | Packet sent, decision logged, fallback packet state |
 | `[AFTERCARE]` | chip.aftercare (violet) | Post-action follow-up | Requires follow-up decision |
 | `[PIN]` | chip.logged (mint) | Pin exemption from archive | Pinned packet at archive threshold |
-| `[EDGE]` | chip.edge (cyan) | Scope edge crossed (pending brand review) | Boundary condition flagged |
+| `[EDGE]` | chip.edge (cyan) | Reserved vocabulary item; not approved for PKB scope-edge fallback | Do not reuse for packet arrival fallback |
+
+**Footnote**: PKB scope-edge recommendations render `[LOGGED]` on the envelope and body text carries the scope-edge meaning. `[EDGE]` is not reused on this surface.
 
 ### 7.2 Glyph Set
 
@@ -480,6 +517,17 @@ trait Source {
 
 **Authority enforcement**: Every pane carries `authority: ServiceId`. Bridge adapter always returns `canonical() = false`.
 
+**Transport note**: `dope-context` is the only backend whose transport surface is treated as resolved in this spec pass. The remaining six backend transports stay open and must not be normalized by assumption.
+
+#### dope-context Source Adapter Contract
+
+- **Protocol**: HTTP/JSON
+- **Auth**: bearer token sourced from environment
+- **Pagination**: cursor pagination
+- **Filter shape**: structured filter object
+- **Rationale binding**: this contract applies only to `dope-context`; the TUI must not assume cross-service transport symmetry
+- **Expected retrieval shape**: top-k retrieval with complexity and breadcrumb-bearing rows for `[g s]` search and the Implementer retrieval pane
+
 ### 9.3 Acceptance Criteria
 
 1. ✓ Five top-level modes (PM, Implementer, Overview, Services, Events)
@@ -490,45 +538,42 @@ trait Source {
 6. ✓ Confirm modals name target service (`WRITE -> <service> : <action>`)
 7. ✓ Bridge adapter output segregated below gold hazard line
 8. ✓ `[H] send` writes to ConPort and dope-memory only (no task-orchestrator transition)
-9. ✓ Pin state owned by dope-memory with `pinned_at` field on chronicle receipt
+9. ✓ Pin state owned by dope-memory with append-only `pinned_at` field on chronicle receipt
 10. ✓ 30-day packet archive with reaper owned by dopemux
 11. ✓ Leantime writes limited to 7 metadata fields only
 12. ✓ Workflow-significant writes blocked from Leantime (routed to task-orchestrator)
-13. ✓ Role gating on `[a] approve` (task-orchestrator-only)
-14. ✓ No mouse, no hover, no HTML/DOM
-15. ✓ DOPEMUX_THEME tokens enforced (no raw hex colors)
+13. ✓ Two-role session model: every authenticated session carries exactly `operator`, `approver`, or both
+14. ✓ Unread precedence algorithm is explicit and deterministic
+15. ✓ Scope-edge fallback remains `[LOGGED]` on the envelope; no packet-level `[EDGE]` reuse
+16. ✓ No mouse, no hover, no HTML/DOM
+17. ✓ DOPEMUX_THEME tokens enforced (no raw hex colors)
 
 ### 9.4 Build Order (17 Steps)
 
 1. **Grid skeleton**: Create 120×40 buffer, render fixed borders, initialize panes
 2. **Mode strip**: Render mode buttons (1–5), global status tile
-3. **Source abstraction**: Wire Source trait, mock backends for proof-of-concept (BLOCKED: U1 surface contract UNKNOWN)
+3. **Source abstraction**: Wire Source trait, concrete `dope-context` adapter, and mock backends for the remaining services (PARTIALLY UNBLOCKED: U1 is resolved for `dope-context`; six other backends remain mock-only)
 4. **Task list pane**: Load and display task-orchestrator task list in left rail
 5. **Task details center**: Display selected task metadata from leantime + conport
 6. **Handoff packet pane**: Draft / active packet rendering in center bottom
 7. **Inspector pane**: Expanded view of selected row, Bridge adapter subpane
-8. **Authority labeling**: Add `authority:` headers and `SRC:` tags to all rows (BLOCKED: Source contract UNKNOWN; degraded to mock until U1 resolved)
-9. **Role model wire**: Implement role resolver and gating for `[a] approve` and `shift-Y` (BLOCKED: U4 role model UNKNOWN; degraded until U4 resolved)
+8. **Authority labeling**: Add `authority:` headers and `SRC:` tags to all rows (PARTIALLY BLOCKED: backend source contracts remain unresolved outside `dope-context`)
+9. **Role model wire**: Implement role resolver and gating for canonical writes using the two-role session model (`operator`, `approver`, or both)
 10. **Confirm modals**: Build confirm dialog with target service name in body
-11. **Pin state**: Implement dope-memory integration for pin/unpin with `pinned_at` field (BLOCKED: U7 field schema UNKNOWN; degraded until U7 resolved)
-12. **Packet lifecycle**: 30-day archive trigger and reaper (BLOCKED: U3 tail retention window UNKNOWN; degraded until U3 resolved)
+11. **Pin state**: Implement dope-memory integration for pin/unpin with append-only `pinned_at` receipt schema
+12. **Packet lifecycle**: 30-day archive trigger and reaper (BLOCKED: U3 tail retention window UNKNOWN)
 13. **Event stream**: Real-time event pane with rate limiting and tail buffer (BLOCKED: U3 event rate limit UNKNOWN; degraded until U3 resolved)
-14. **Supporting views**: Task / Decision / Memory / Search views (BLOCKED: U6 [EDGE] brand-voice pending; degraded until review)
+14. **Supporting views**: Task / Decision / Memory / Search views with `[LOGGED]` packet fallback when a scope edge is crossed; body text carries the scope-edge detail
 15. **Keyboard input**: Command parsing and dispatch (all commands)
-16. **Brand voice gate**: Audit all output strings against DOPEMUX_THEME and hedging vocabulary
+16. **Copy conformance check**: Use the approved packet-body, confirm-modal, and role-refusal copy for scope-edge fallback; do not introduce a new chip
 17. **Resize handling**: Adapt grid to 100×32 and 80×24
 
 ### 9.5 Remaining UNKNOWNs
 
 **See UNKNOWN Resolution Questionnaire (§11.5 → §11.7)**:
-1. U1: Source adapter HTTP/RPC surface per backend
+1. U1: Source adapter HTTP/RPC surface remains open for six backends; `dope-context` only is partially resolved
 2. U2: dopetask health endpoint path
 3. U3: Event stream rate limits and tail retention window
-4. U4: Role model for non-`[a]` canonical writes
-5. U5: Display priority when unread PKT and unread PKB coexist
-6. U6: `[EDGE]` chip reuse on PKB recommendation arrival — pending brand-voice review
-7. U7: Pin-state schema (field name on chronicle receipt, append-only guarantee)
-
 ---
 
 ## 10. Change Log
@@ -536,17 +581,12 @@ trait Source {
 ### v2.0a (2026-04-23) — Clarifications Pass 1
 
 - **Frontmatter**: Bump version to v2.0a
-- **§2.4**: New §2.4.1 and §2.4.2 for send semantics and packet lifecycle (30-day archive, pin exemption)
-- **§3.4**: New Leantime write scope (enumerated 7 allowed fields, 4 forbidden mutations)
-- **§3.5**: New PM-mode authority split table (metadata → leantime, workflow → task-orchestrator, decision/progress → conport, history → dope-memory)
-- **§3.3**: Clarified write refusals (forbidden mutations listed explicitly)
-- **§5.4**: Confirm modal bodies (named target services, with examples)
-- **§6.6**: Action-suffix rules (explicit naming of target + action in every confirm)
-- **§9.3**: New acceptance criteria 11–15 (Leantime scope, role gating, workflow blocking, Bridge segregation, source contract)
-- **§9.4**: Updated build order (17 steps, blocks and degrades noted)
-- **§9.5**: Reduced UNKNOWN list from 10 to 7 items (U1–U7); moved resolved items to §11.6
-- **§11.6**: New resolved log (8 items with rationale)
-- **§11.7**: New data contracts (Packet schema, PinState schema, AppState shape)
+- **§1**: Clarified U1 partial resolution (`dope-context` only) and U4 resolved two-role model
+- **§2.3 / §6.1**: Added deterministic unread precedence algorithm for coexisting unread `PKT` and `PKB`
+- **§2.4 / §11.7**: Hardened append-only `pinned_at` receipt semantics for dope-memory pin mirror
+- **§3.6 / §5.2 / §9.3**: Added session role model (`operator`, `approver`, or both)
+- **§6.7 / §7.1 / §9.4**: Closed U6 with `[LOGGED]` on the envelope, body-rendered scope-edge meaning, approved fallback copy, and no `[EDGE]` reuse for packet fallback
+- **§9.4 / §9.5**: Reduced remaining UNKNOWNs to U1 partial, U2, and U3
 
 ### v2.0 (2026-04-23) — Initial Specification
 
@@ -623,45 +663,70 @@ struct Packet {
     mirror_refs: MirrorRefs, // {conport_progress_id, dope_memory_chronicle_id}
     fields: Map<String, Value>,
     field_src: Map<String, ServiceId>,  // SRC tagging per field
-    pinned: bool,
+    pin_render_state: bool,  // computed from latest dope-memory receipt for render only
 }
 ```
 
 ### 11.5 Remaining UNKNOWNs (See §9.5 for Details)
 
-Seven items remain open and will block specific implementation steps:
-1. U1: Source adapter HTTP/RPC surface per backend
+Three items remain open and will block specific implementation steps:
+1. U1: Source adapter HTTP/RPC surface per backend remains open for six backends; `dope-context` only is resolved
 2. U2: dopetask health endpoint path
 3. U3: Event stream rate limits and tail retention window
-4. U4: Role model for non-`[a]` canonical writes
-5. U5: Display priority when unread PKT and unread PKB coexist
-6. U6: `[EDGE]` chip reuse on PKB recommendation — pending brand-voice review
-7. U7: Pin-state schema (field name on chronicle receipt)
 
 ### 11.6 Resolved Items (From §9.5 v2.0)
 
-The following items from the baseline UNKNOWN list have been resolved via locked clarifications:
-1. ✓ Packet send creates mirror records only (clarification 2)
-2. ✓ Chronicle receipts use `[LOGGED]` chip (clarification 3)
-3. ✓ 30-day auto-archive with pin exemption (clarifications 4–5)
-4. ✓ Supporting-view mocks are layout-authoritative only (clarification 6)
-5. ✓ Old 7-tab strip is non-authoritative v1.0 carry-over (clarification 7)
-6. ✓ All mock ports are illustrative, not real (clarification 8)
-7. ✓ Leantime write scope enumerated (clarification 10)
-8. ✓ Forbidden Leantime mutations listed (clarification 11)
+The following items from the baseline UNKNOWN list have been resolved via locked clarifications and this decision pass:
+1. ✓ Packet send creates mirror records only
+2. ✓ Chronicle receipts use `[LOGGED]` chip
+3. ✓ 30-day auto-archive with pin exemption
+4. ✓ Supporting-view mocks are layout-authoritative only
+5. ✓ Old 7-tab strip is non-authoritative v1.0 carry-over
+6. ✓ All mock ports are illustrative, not real
+7. ✓ Leantime write scope enumerated
+8. ✓ Forbidden Leantime mutations listed
+9. ✓ U4 resolved to a two-role session model (`operator`, `approver`, or both)
+10. ✓ U5 resolved to newest-unread precedence with deterministic mode-aware tie break
+11. ✓ U6 closed with `[LOGGED]` on the envelope, body-rendered scope-edge meaning, and no `[EDGE]` reuse
+12. ✓ U7 resolved to append-only `pinned_at` receipt semantics in dope-memory
 
 ### 11.7 Data Contracts (Implementation Anchors)
 
+#### Session Role Schema
+
+```rust
+struct Session {
+    roles: Set<Role>,  // Role in {operator, approver}
+}
+```
+
+Every authenticated TUI session carries exactly one or both of these roles. Unknown-role sessions may render action glyphs but confirm modals must refuse with a role-required message rather than silently succeeding.
+
 #### Pin State Schema
 
-**Owner**: dope-memory (append-only in spirit)
+**Owner**: dope-memory
 
 **Field name on chronicle receipt**: `pinned_at: Option<DateTime>`
 - null = not pinned
 - non-null = pinned at that timestamp
 
+**Write model**: append-only receipt stream; pin and unpin each write a new receipt
+
 **Unpin operation**: writes new receipt with `pinned_at: null` and back-reference to original; reaper reads latest receipt per packet id.
+
+#### dope-context Source Contract
+
+```rust
+struct DopeContextSourceContract {
+    protocol: "HTTP/JSON",
+    auth: "BearerFromEnv",
+    pagination: "Cursor",
+    filter: StructuredFilter,  // language, doc_type, profile, workspace_path, ...
+}
+```
+
+This binding applies only to `dope-context`. Other services remain unresolved and must stay mock-only until their U1 slices are decided.
 
 ---
 
-**NEXT**: Apply ADR-001 and ADR-002 to implementation planning; resolve U1–U7 before build step 3.
+**NEXT**: Apply ADR-001 and ADR-002 to implementation planning; carry the six non-`dope-context` transport decisions, U2, and U3 as separate follow-up work.
