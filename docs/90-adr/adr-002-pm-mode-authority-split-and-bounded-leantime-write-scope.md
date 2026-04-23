@@ -27,7 +27,7 @@ graph_metadata:
 
 PM mode must support feature design, research packets, ideas/epics/stories, task breakdown, workflow queue/blockers/approvals, Leantime metadata visibility, ConPort decisions/progress/context, and dope-memory historical receipts. Left unscoped, a PM-mode "edit task" action is ambiguous: does it write title (metadata) or status (workflow)? Left unscoped, `leantime` becomes a convenient write sink for every field visible in a Leantime pane, including status — which is owned by `task-orchestrator`. This would silently route workflow-significant mutations through a metadata service.
 
-`PM_PLANE.md` and `system-boundaries.md` already enumerate split authorities; this ADR ratifies the PM-mode dispatch table and the Leantime write bound.
+`PM_PLANE.md` and `system-boundaries.md` already enumerate split authorities; this ADR ratifies the PM-mode dispatch table, the Leantime write bound, and the finalized two-role session model needed for PM-mode action availability.
 
 ## Decision
 
@@ -59,7 +59,7 @@ PM mode must support feature design, research packets, ideas/epics/stories, task
 
    These route to `task-orchestrator` regardless of which pane the operator invokes them from.
 
-5. **`[a] approve` is role-gated** and operates only on `task-orchestrator`-controlled workflow objects. Approvals never route through `leantime`.
+5. **The human role model is exactly two roles: `operator` and `approver`.** A session may carry `operator`, `approver`, or both. Non-`[a]` canonical writes require `operator`. `[a] approve` requires `approver`. This decision does not create a third role and does not alter bounded Leantime write scope.
 
 6. **Bridge and proxy services never own canonical state.** `dopecon-bridge` actions require `shift-Y` and render the adapter confirm label `ADAPTER -> dopecon-bridge : <action>`. `dopetask` is execution-only and does not own task or packet state.
 
@@ -67,6 +67,7 @@ PM mode must support feature design, research packets, ideas/epics/stories, task
 
 **Accepted**:
 - PM-mode input handling must disambiguate intent before dispatch, not after. The confirm modal text is the contract surface.
+- A session carrying both roles may perform both operator and approver actions without collapsing their distinct checks.
 - A Leantime pane showing `status: in_progress` is read-only for that field from the Leantime authority; editing status from that pane dispatches to `task-orchestrator` and the confirm label reflects it.
 - Integration tests must assert that no forbidden Leantime mutation ever lands on the `leantime` service, regardless of invocation path.
 
@@ -74,6 +75,7 @@ PM mode must support feature design, research packets, ideas/epics/stories, task
 - *Route all PM-mode writes through a dopemux dispatcher that fans out silently*: rejected — hides the authority boundary the confirm modal is designed to expose.
 - *Allow Leantime status writes as a convenience and reconcile later*: rejected — makes `leantime` and `task-orchestrator` race on the same field, violates single-writer invariant.
 - *Let `dopecon-bridge` carry canonical state during outages*: rejected — bridges are adapters; §3.2 mechanism 3 requires visual segregation precisely to prevent this drift.
+- *Introduce a third generic write role for packet operations*: rejected — the finalized role model is the bounded two-role session model.
 
 **Citations**: SPEC.md §3.1, §3.2, §3.4, §3.5, §5.4; `PM_PLANE.md`; `system-boundaries.md`; locked clarifications 9–12.
 
@@ -81,5 +83,6 @@ PM mode must support feature design, research packets, ideas/epics/stories, task
 
 - Step 8 (authority labeling) depends on this decision being binding. All confirm modals must validate their target service at runtime.
 - The input handler must include a dispatch table mapping action intent → canonical service. This table is the implementation of this ADR.
-- Role-gating for `[a] approve` does not block this ADR but depends on U4 (role model) being resolved.
+- Role-gating is no longer blocked on U4; implementation should wire the two-role session model directly.
+- U4 resolved: operator + approver, two roles, per TUI session.
 - Supporting-view panes may show read-only status fields from `task-orchestrator` even when the backing pane implementation is `leantime`-centric. The `SRC:` tag must be accurate.

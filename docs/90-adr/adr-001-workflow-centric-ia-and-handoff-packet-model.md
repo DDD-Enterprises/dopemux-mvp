@@ -35,6 +35,8 @@ v1.0 of the Dopemux TUI exposed seven top-level tabs keyed to services (`Tasks`,
 
 A naive reading of "PM mode" and "Implementer mode" invites the creation of a unified PM record and a unified Implementer record inside `dopemux`, which would silently centralize authority that is in fact split across `task-orchestrator`, `leantime`, `conport`, `dope-memory`, and `dope-context`. The handoff artifacts (`PKT-*`, `PKB-*`) amplify this risk: if they are modeled as new canonical objects, `dopemux` becomes a task-state authority by accident.
 
+The packet rendering review identified one brand-sensitive point: a `PKB` may arrive with a recommendation that crosses an agreed scope edge. The closed result is that this condition does not expand the chip vocabulary and does not alter the envelope chip.
+
 ## Decision
 
 1. **Top-level IA is `[1]PM [2]Implementer [3]Overview [4]Services [5]Events`.** Tasks, Decisions, Memory, and Search are demoted to supporting views reached by `g o` / `g d` / `g m` / `g s` from PM or Implementer, or by `Enter` drill-down on a pane row. They do not appear in the mode strip.
@@ -45,26 +47,32 @@ A naive reading of "PM mode" and "Implementer mode" invites the creation of a un
 
 4. **`[H] send` is the only action that converts a draft envelope into a sent packet.** Send is human-only, dopemux-authored, and produces exactly two mirror writes: one `conport` progress/log entry and one `dope-memory` chronicle receipt chipped `[LOGGED]`. Send does not transition `task-orchestrator` state and does not mutate `leantime` metadata.
 
-5. **Packet lifecycle**: sent packets remain active for 30 days, then archive to history/search. Pinned packets are exempt from auto-archive. Pin state is carried on the envelope and mirrored on the chronicle receipt. The archive reaper is owned by `dopemux` and runs daily.
+5. **Packet lifecycle**: sent packets remain active for 30 days, then archive to history/search. Pinned packets are exempt from auto-archive. Pin state is carried on the envelope and mirrored on append-only dope-memory chronicle receipts using `pinned_at`. The archive reaper is owned by `dopemux` and runs daily.
 
-6. **Supporting-view mocks (§4.4–§4.7) are authoritative for pane content and geometry only.** Their port numbers are illustrative only.
+6. **If a `PKB` carries a scope-edge recommendation, the envelope remains `[LOGGED]`.** The scope-edge condition is rendered in body text or inspector detail only. This ADR does not approve `[EDGE]` reuse for packet arrival state and does not introduce a new chip.
+
+7. **Supporting-view mocks (§4.4–§4.7) are authoritative for pane content and geometry only.** Their port numbers are illustrative only.
 
 ## Consequences
 
 **Accepted**:
 - `dopemux` gains an authoring store for envelopes (draft/sent/pinned/archived) and for reaper scheduling. This store is not a task store.
 - The integration test matrix must prove that no `[H] send` invocation ever triggers a `task-orchestrator` transition or a `leantime` write.
+- Packet fallback for scope-edge recommendations remains truthful without silently expanding the closed chip vocabulary.
 - The UI must surface `authority:` and `SRC` everywhere without exception; absence of either is a rendering bug.
 
 **Rejected alternatives**:
 - *Unified PM record inside dopemux*: rejected — collapses authority, violates §3.3, makes rollback of packet state ambiguous.
 - *Three top-level modes (PM, Implementer, Services)*: rejected — buries Overview and Events below operator shells, breaks monitor workflows.
 - *Packet send auto-transitioning task-orchestrator state*: rejected — makes the operator's handoff gesture a silent workflow mutation, violates clarification 2.
+- *Treat `[EDGE]` as implicitly approved for `PKB` arrival fallback*: rejected — the closed result keeps `[LOGGED]` on the envelope and body-renders the scope-edge meaning instead of amending vocabulary.
 
 **Citations**: SPEC.md §2.4, §3.3, §11.1, §11.4; locked clarifications 1–5; revision brief constraints 1–5.
 
 ## Implementation Notes
 
 - Grid skeleton work (step 1) is not blocked by this ADR. Authority labeling (step 8) is.
-- Mock `Source` implementations can proceed in parallel until the HTTP/RPC surface (U1) is finalized.
+- Mock `Source` implementations can proceed in parallel until the HTTP/RPC surface (U1) is finalized; only `dope-context` is partially frozen.
 - Integration tests must validate that `[H] send` produces exactly two writes (ConPort + dope-memory) and no side effects in other services.
+- Supporting views render scope-edge detail in packet body text while retaining `[LOGGED]` on the packet envelope.
+- U6 is closed: no chip vocabulary change is allowed for PKB scope-edge arrival without a future ADR that explicitly reopens the decision.
