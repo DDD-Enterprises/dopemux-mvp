@@ -1,3 +1,20 @@
+---
+id: adr-dopemux-adaptive-ingress-plane
+title: Adr Dopemux Adaptive Ingress Plane
+type: adr
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-22'
+last_review: '2026-04-22'
+next_review: '2026-07-21'
+prelude: Adr Dopemux Adaptive Ingress Plane (adr) for dopemux documentation and developer workflows.
+status: accepted
+graph_metadata:
+  node_type: ADR
+  impact: medium
+  relates_to: []
+---
+
 # ADR — Adopt a Dopemux Adaptive Ingress Plane with Local Runtime Shims
 
 ## Status

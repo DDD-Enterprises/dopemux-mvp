@@ -1,3 +1,15 @@
+---
+id: dopemux-multi-agent-ingress-architecture
+title: Dopemux Multi Agent Ingress Architecture
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-22'
+last_review: '2026-04-22'
+next_review: '2026-07-21'
+prelude: Dopemux Multi Agent Ingress Architecture (reference) for dopemux documentation and developer workflows.
+---
+
 # Dopemux Multi-Agent Ingress Architecture — Final Revised Pass
 
 ## 1. Executive decision

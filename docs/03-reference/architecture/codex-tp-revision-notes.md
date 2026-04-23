@@ -1,3 +1,15 @@
+---
+id: codex-tp-revision-notes
+title: Codex Tp Revision Notes
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-22'
+last_review: '2026-04-22'
+next_review: '2026-07-21'
+prelude: Codex Tp Revision Notes (reference) for dopemux documentation and developer workflows.
+---
+
 # Codex TP Revision Notes — Apply Before Execution
 
 Use the previously generated TP series with these revisions applied before execution.
