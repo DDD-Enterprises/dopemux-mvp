@@ -203,6 +203,85 @@ jobs:
               print(f"import-ok {name}")
           PY
 
+  tests-sharded-experiment:
+    name: "🧪 Unit Tests (Shard Experiment ${{ matrix.shard_label }})"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard_index: 0
+            shard_total: 2
+            shard_label: "1/2"
+          - shard_index: 1
+            shard_total: 2
+            shard_label: "2/2"
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: ⚡ Setup uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: 📦 Sync sharded unit test environment
+        run: uv sync --frozen --extra test --extra services
+
+      - name: 🧮 Build deterministic shard file list
+        id: shard
+        env:
+          SHARD_INDEX: ${{ matrix.shard_index }}
+          SHARD_TOTAL: ${{ matrix.shard_total }}
+        run: |
+          python - <<'PY'
+          import os
+          import shlex
+          from pathlib import Path
+
+          shard_index = int(os.environ["SHARD_INDEX"])
+          shard_total = int(os.environ["SHARD_TOTAL"])
+
+          unit_files = sorted(str(path) for path in Path("tests/unit").rglob("test_*.py"))
+          selected = unit_files[shard_index::shard_total]
+
+          if shard_index == shard_total - 1:
+              selected.extend([
+                  "tests/test_voice_core.py",
+                  "tests/test_brand_voice.py",
+              ])
+
+          shard_args = " ".join(shlex.quote(path) for path in selected)
+
+          github_output = Path(os.environ["GITHUB_OUTPUT"])
+          with github_output.open("a", encoding="utf-8") as handle:
+              handle.write(f"file_count={len(selected)}\n")
+              handle.write(f"pytest_args={shard_args}\n")
+          PY
+
+      - name: ▶️ Run sharded unit experiment
+        env:
+          PYTEST_ARGS: ${{ steps.shard.outputs.pytest_args }}
+        run: |
+          start_ts=$(date +%s)
+          eval "uv run --frozen pytest ${PYTEST_ARGS} -n auto --maxfail=1 --disable-warnings --no-cov"
+          end_ts=$(date +%s)
+          elapsed=$((end_ts - start_ts))
+          echo "## 🧪 Unit shard experiment ${{ matrix.shard_label }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Files: ${{ steps.shard.outputs.file_count }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Duration (s): ${elapsed}" >> "$GITHUB_STEP_SUMMARY"
+
   extractor-smoke:
     name: "🧪 Extractor Smoke"
     runs-on: ubuntu-latest
