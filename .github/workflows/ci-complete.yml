@@ -178,8 +178,11 @@ jobs:
 
       - name: ▶️ Run fast unit gate
         run: |
-          uv run --frozen pytest tests/unit -n auto --maxfail=1 --disable-warnings --no-cov
-          uv run --frozen pytest tests/test_voice_core.py tests/test_brand_voice.py --maxfail=1 --disable-warnings --no-cov
+          uv run --frozen pytest \
+            tests/unit \
+            tests/test_voice_core.py \
+            tests/test_brand_voice.py \
+            -n auto --maxfail=1 --disable-warnings --no-cov
 
       - name: 🎨 Run brand lint gate
         run: uv run --frozen python scripts/brand_lint.py
