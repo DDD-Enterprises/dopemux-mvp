@@ -12,9 +12,9 @@ prelude: Terminal UI specification for Round 2 operator shell redesign from serv
 
 # Dopemux TUI Specification v2.0a
 
-**Date**: 2026-04-23  
-**Version**: 2.0a (Clarifications Pass 1)  
-**Status**: Ready for implementation planning  
+**Date**: 2026-04-23
+**Version**: 2.0a (Clarifications Pass 1)
+**Status**: Ready for implementation planning
 
 ## 1. Design Interpretation
 
@@ -591,7 +591,7 @@ Before step 1 of the build order, remove:
 
 ### 11.3 Interaction Model Pivot
 
-v1.0 interaction was tab-centric (switch tab → see domain-specific view).  
+v1.0 interaction was tab-centric (switch tab → see domain-specific view).
 v2.0a interaction is mode-centric (stay in PM or Implementer, drill-down via `Enter` or navigate to supporting view via `g o` / `g d` / `g m` / `g s`).
 
 **Impact**: All key bindings, menu structures, and command dispatch must be rewritten.
