@@ -1,6 +1,6 @@
 ---
 id: TP-DMX-AIG-001
-title: Tp Dmx Aig 001
+title: Adaptive Ingress Plane Service Census
 type: explanation
 owner: '@codex'
 author: '@codex'
@@ -46,6 +46,10 @@ Out of scope:
 - Serena de-duplication
 - Existing TP series edits beyond creating this packet and indexing it
 
+## Objective
+
+- Produce a repo-truth census and ingress/control surface map for the adaptive ingress plane program without introducing gateway implementation scope.
+
 ## Invariants
 
 - Canonical backend authorities remain separate from the proposed ingress plane.
@@ -53,6 +57,35 @@ Out of scope:
 - Gateway coordination is not treated as authoritative success.
 - Dopetask runtime truth remains at the observed wrapper/runtime boundary, not in any gateway.
 - Dopecon-bridge, mcp-proxy configs, wrappers, aliases, and shims are not upgraded to authority by exposure alone.
+
+## Plan
+
+1. Inspect governing decision artifacts and repo runtime/config truth for ingress-relevant systems.
+2. Classify each relevant service by tier, role, authority slice, merge policy, and agent-facing relevance.
+3. Record the ingress/control surface map without collapsing canonical backend authorities into a gateway.
+4. Emit a keep / candidate-for-internalization / registry-only / deprecate matrix with `UNKNOWN` preserved where authority is unresolved.
+5. Confirm the first safe slice boundary and stop without authorizing TP-DMX-AIG-002 or gateway code.
+
+## Files To Touch
+
+- `task-packets/TP-DMX-AIG-001.md`
+- `task-packets/INDEX.md`
+
+## Exact Commands To Run
+
+```bash
+sed -n '1,260p' task-packets/TP-DMX-AIG-001.md
+rg -n "TP-DMX-AIG-001|task-orchestrator|dopetask|serena|dopecon-bridge|dope-context|conport|dope_memory_main" \
+  compose.yml services/registry.yaml mcp-proxy-config.json mcp-proxy-config.yaml \
+  mcp-proxy-config.copilot.yaml src/dopemux scripts services task-packets
+git diff -- task-packets/TP-DMX-AIG-001.md task-packets/INDEX.md
+```
+
+## Output Capture Rules
+
+- Record exact repo file paths for every runtime/config/doc surface cited as evidence.
+- Mark unresolved authority as `UNKNOWN`.
+- Do not claim gateway implementation progress, runtime consolidation, or authoritative success.
 
 ## 1. Service Census
 
@@ -197,48 +230,63 @@ Blocked until after this slice:
 - Any Serena consolidation packet
 - Any packet that claims one unified agent runtime authority
 
+## Acceptance Criteria
+
+- Service census covers ingress-relevant and authority-relevant surfaces inspected in this pass.
+- Ingress/control map distinguishes control, adapter, wrapper, and canonical backend surfaces.
+- Matrix uses only `keep`, `registry-only`, `internalize-if-proven`, and `deprecate`.
+- Unresolved authority remains `UNKNOWN`.
+- Evidence ledger contains exact file paths or explicitly external artifact identifiers.
+- Packet stops at TP-DMX-AIG-001 and does not authorize gateway implementation.
+
+## Rollback Steps
+
+1. Revert `task-packets/TP-DMX-AIG-001.md` and `task-packets/INDEX.md` to the prior committed state.
+2. Remove the TP-DMX-AIG-001 index entry if the packet is withdrawn.
+3. Do not preserve any downstream packet work based on this census unless a replacement packet is issued.
+
 ## 5. Evidence Ledger
 
 ### Governing external artifacts
 
-- `/Users/hue/Downloads/codex_tp_revision_notes_revised.md`
-- `/Users/hue/Downloads/adr_dopemux_adaptive_ingress_plane_revised.md`
-- `/Users/hue/Downloads/dopemux_multi_agent_ingress_architecture_revised_full.md`
-- `/Users/hue/Downloads/codex_54_synthesis/RULES.md`
-- `/Users/hue/Downloads/codex_54_synthesis/PROJECT.md`
-- `/Users/hue/Downloads/codex_54_synthesis/TRUTH_SYSTEMS.md`
-- `/Users/hue/Downloads/codex_54_synthesis/TRUTH_CANONICALS.md`
-- `/Users/hue/Downloads/codex_54_synthesis/TRUTH_GAPS.md`
+- External artifact: `codex_tp_revision_notes_revised.md`
+- External artifact: `adr_dopemux_adaptive_ingress_plane_revised.md`
+- External artifact: `dopemux_multi_agent_ingress_architecture_revised_full.md`
+- External artifact: `codex_54_synthesis/RULES.md`
+- External artifact: `codex_54_synthesis/PROJECT.md`
+- External artifact: `codex_54_synthesis/TRUTH_SYSTEMS.md`
+- External artifact: `codex_54_synthesis/TRUTH_CANONICALS.md`
+- External artifact: `codex_54_synthesis/TRUTH_GAPS.md`
 
 ### Repo runtime and config evidence
 
-- `/Users/hue/code/dopemux-mvp/compose.yml`
-- `/Users/hue/code/dopemux-mvp/services/registry.yaml`
-- `/Users/hue/code/dopemux-mvp/mcp-proxy-config.json`
-- `/Users/hue/code/dopemux-mvp/mcp-proxy-config.yaml`
-- `/Users/hue/code/dopemux-mvp/mcp-proxy-config.copilot.yaml`
-- `/Users/hue/code/dopemux-mvp/src/dopemux/cli.py`
-- `/Users/hue/code/dopemux-mvp/src/dopemux/pm/writes.py`
-- `/Users/hue/code/dopemux-mvp/scripts/dopetask`
-- `/Users/hue/code/dopemux-mvp/scripts/taskx`
-- `/Users/hue/code/dopemux-mvp/services/dopecon-bridge/dopecon_bridge/routes.py`
-- `/Users/hue/code/dopemux-mvp/services/dopecon-bridge/README.md`
-- `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/main.py`
-- `/Users/hue/code/dopemux-mvp/services/task-orchestrator/task_orchestrator/app.py`
-- `/Users/hue/code/dopemux-mvp/services/task-orchestrator/Dockerfile`
-- `/Users/hue/code/dopemux-mvp/services/working-memory-assistant/dope_memory_main.py`
-- `/Users/hue/code/dopemux-mvp/services/working-memory-assistant/main.py`
-- `/Users/hue/code/dopemux-mvp/services/working-memory-assistant/mcp/server.py`
-- `/Users/hue/code/dopemux-mvp/services/working-memory-assistant/Dockerfile.dope-memory`
-- `/Users/hue/code/dopemux-mvp/services/dope-memory/mcp_stdio_adapter.py`
-- `/Users/hue/code/dopemux-mvp/services/dope-context/src/mcp/server.py`
-- `/Users/hue/code/dopemux-mvp/services/dope-context/README.md`
-- `/Users/hue/code/dopemux-mvp/src/conport/memory_server.py`
-- `/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/run_extraction_v5.py`
-- `/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/README.md`
-- `/Users/hue/code/dopemux-mvp/docker/mcp-servers-source/serena/Dockerfile`
-- `/Users/hue/code/dopemux-mvp/src/dopemux/claude_config.py`
-- `/Users/hue/code/dopemux-mvp/services/agents/README.md`
+- `compose.yml`
+- `services/registry.yaml`
+- `mcp-proxy-config.json`
+- `mcp-proxy-config.yaml`
+- `mcp-proxy-config.copilot.yaml`
+- `src/dopemux/cli.py`
+- `src/dopemux/pm/writes.py`
+- `scripts/dopetask`
+- `scripts/taskx`
+- `services/dopecon-bridge/dopecon_bridge/routes.py`
+- `services/dopecon-bridge/README.md`
+- `services/task-orchestrator/app/main.py`
+- `services/task-orchestrator/task_orchestrator/app.py`
+- `services/task-orchestrator/Dockerfile`
+- `services/working-memory-assistant/dope_memory_main.py`
+- `services/working-memory-assistant/main.py`
+- `services/working-memory-assistant/mcp/server.py`
+- `services/working-memory-assistant/Dockerfile.dope-memory`
+- `services/dope-memory/mcp_stdio_adapter.py`
+- `services/dope-context/src/mcp/server.py`
+- `services/dope-context/README.md`
+- `src/conport/memory_server.py`
+- `services/repo-truth-extractor/run_extraction_v5.py`
+- `services/repo-truth-extractor/README.md`
+- `docker/mcp-servers-source/serena/Dockerfile`
+- `src/dopemux/claude_config.py`
+- `services/agents/README.md`
 
 ### Proof statements
 
