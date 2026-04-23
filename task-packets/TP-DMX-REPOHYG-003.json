@@ -121,8 +121,7 @@
       "context_files": [
         "RULES.md",
         "TRUTH_GAPS.md",
-        "SYSTEM_BOUNDARIES.md",
-        "dopetask-cannonical-spec.json"
+"SYSTEM_BOUNDARIES.md"
       ]
     },
     {
@@ -175,7 +174,6 @@
       "context_files": [
         "task-packets/INDEX.md",
         "dopetask-cannonical-spec.json",
-        "PAL_EXECUTION_RULES.md"
       ]
     }
   ]

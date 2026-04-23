@@ -36,13 +36,13 @@ Working constraints honored:
 - This pack uses runtime code, registries, tests, emitted artifacts, and existing proofs as evidence
 - Documentation-only claims are called out separately from code-path evidence
 
-Current worktree drift observed before this packet:
+Current worktree drift observed in the local checkout at packet start:
 
 - Modified `AGENTS.md`
 - Modified `task-packets/INDEX.md`
 - Untracked `.claude/worktrees/`
-- Untracked `docs/05-audit-reports/repo-branch-worktree-cleanup-phase3.md`
-- Untracked `task-packets/TP-DMX-REPOHYG-003.json`
+- Uncommitted/untracked in the local worktree at packet start: `docs/05-audit-reports/repo-branch-worktree-cleanup-phase3.md`
+- Uncommitted/untracked in the local worktree at packet start: `task-packets/TP-DMX-REPOHYG-003.json`
 
 This packet does not normalize or overwrite that unrelated state.
 
