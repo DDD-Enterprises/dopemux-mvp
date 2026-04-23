@@ -520,7 +520,7 @@ trait Source {
 
 ### 9.5 Remaining UNKNOWNs
 
-**See UNKNOWN Resolution Questionnaire (§11.5 → §11.7)**:
+**Canonical resolution artifact**: [tui-unknown-resolution-questionnaire.md](tui-unknown-resolution-questionnaire.md) (§11.5 → §11.7 summarize; the questionnaire is the tracking surface).
 1. U1: Source adapter HTTP/RPC surface per backend
 2. U2: dopetask health endpoint path
 3. U3: Event stream rate limits and tail retention window

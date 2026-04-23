@@ -22,6 +22,8 @@ graph_metadata:
     - adr-memory-trinity-authority-and-interaction-model
     - adr-serena-as-technical-context-plane
     - adr-dope-context-as-search-and-retrieval-plane
+    - adr-001-workflow-centric-ia-and-handoff-packet-model
+    - adr-002-pm-mode-authority-split-and-bounded-leantime-write-scope
 ---
 
 # ADR Index
@@ -37,6 +39,8 @@ graph_metadata:
 | [adr-memory-trinity-authority-and-interaction-model.md](adr-memory-trinity-authority-and-interaction-model.md) | ADR: Memory Trinity authority and interaction model | Proposed | Define ConPort, dope-memory, and dope-context as distinct canonical planes with no silent authority escalation. | PM Plane Authority Boundaries, ConPort, dope-memory, dope-context, Serena |
 | [adr-serena-as-technical-context-plane.md](adr-serena-as-technical-context-plane.md) | ADR: Serena as technical context plane | Proposed | Bound Serena to technical/code context authority without promoting it into PM, workflow, decision, or chronicle truth. | PM Plane Authority Boundaries, ConPort, dope-memory, dope-context, Memory Trinity |
 | [adr-dope-context-as-search-and-retrieval-plane.md](adr-dope-context-as-search-and-retrieval-plane.md) | ADR: dope-context as search and retrieval plane | Proposed | Bound dope-context to retrieval and provenance-aware search rather than canonical PM, workflow, context, or chronicle truth. | PM Plane Authority Boundaries, ConPort, dope-memory, Serena, Memory Trinity |
+| [adr-001-workflow-centric-ia-and-handoff-packet-model.md](adr-001-workflow-centric-ia-and-handoff-packet-model.md) | ADR-001: Workflow-Centric IA and Handoff Packet Authority Model | Proposed | Replace v1.0 service-centric 7-tab IA with dual-mode PM/Implementer operator shell and establish PKT/PKB envelopes as authored provenance, not new authority. | PM Plane Authority Boundaries, ConPort, dope-memory, Task Orchestrator, Leantime |
+| [adr-002-pm-mode-authority-split-and-bounded-leantime-write-scope.md](adr-002-pm-mode-authority-split-and-bounded-leantime-write-scope.md) | ADR-002: PM-Mode Authority Split and Bounded Leantime Write Scope | Proposed | Split PM-mode write dispatch by canonical authority (not by pane) and bound Leantime writes to passive metadata, forbidding workflow mutations. | ADR-001, PM Plane Authority Boundaries, Leantime, Task Orchestrator, ConPort, dope-memory, dopecon-bridge |
 
 ## Notes
 

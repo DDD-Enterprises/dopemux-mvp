@@ -12,7 +12,16 @@ prelude: Architecture Decision Record for PM-mode action dispatch and Leantime w
 graph_metadata:
   node_type: ADR
   impact: medium
-  relates_to: []
+  relates_to:
+    - adr-001-workflow-centric-ia-and-handoff-packet-model
+    - adr-pm-plane-authority-boundaries
+    - adr-leantime-json-rpc-plus-plugin-integration-strategy
+    - adr-task-orchestrator-as-workflow-authority
+    - adr-conport-as-decision-progress-and-context-authority
+    - adr-dope-memory-as-chronicle-memory-authority
+    - adr-dopecon-bridge-narrowing-to-adapter-only-role
+  depends_on:
+    - adr-001-workflow-centric-ia-and-handoff-packet-model
 ---
 
 # ADR-002: PM-Mode Authority Split and Bounded Leantime Write Scope

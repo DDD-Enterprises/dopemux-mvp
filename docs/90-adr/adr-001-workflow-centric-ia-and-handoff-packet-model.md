@@ -12,7 +12,15 @@ prelude: Architecture Decision Record for Round 2 operator shell redesign from s
 graph_metadata:
   node_type: ADR
   impact: medium
-  relates_to: []
+  relates_to:
+    - adr-pm-plane-authority-boundaries
+    - adr-conport-as-decision-progress-and-context-authority
+    - adr-dope-memory-as-chronicle-memory-authority
+    - adr-task-orchestrator-as-workflow-authority
+    - adr-leantime-json-rpc-plus-plugin-integration-strategy
+    - adr-002-pm-mode-authority-split-and-bounded-leantime-write-scope
+  supersedes:
+    - tui-spec-v1-service-centric-7-tab-ia
 ---
 
 # ADR-001: Workflow-Centric IA and Handoff Packet Authority Model
