@@ -163,6 +163,10 @@ def _isolated_gemini_home_env() -> Iterable[Dict[str, str]]:
         env = os.environ.copy()
         env["HOME"] = str(temp_home_path)
         env["XDG_CONFIG_HOME"] = str(temp_home_path / ".config")
+        # Preserve API keys if present in the parent environment
+        for key in ("GEMINI_API_KEY", "GOOGLE_GENAI_USE_VERTEXAI", "GOOGLE_GENAI_USE_GCA"):
+            if key in os.environ:
+                env[key] = os.environ[key]
         yield env
 
 
