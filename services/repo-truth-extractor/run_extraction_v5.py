@@ -352,7 +352,6 @@ try:
         build_openai_response_format,
         build_provider_step_contract_output,
         build_provider_structured_output,
-        canonicalize_artifacts,
         contract_lane as resolve_contract_lane,
         describe_contract_failure,
         empty_payload_for_artifact,
@@ -11070,11 +11069,16 @@ def execute_step_for_partitions(
     draft_structured_output_meta: Dict[str, Any] = {}
     if strict_contract_required and isinstance(step_contract, dict):
         primary_routes = route_entries_for_stage(step_contract, "primary")
-        route_entry = route_entry_by_identity(
-            primary_routes,
-            provider=initial_provider,
-            model_id=initial_model_id,
-            api_key_env=initial_api_key_env,
+route_entry = next(
+            (
+                candidate
+                for candidate in primary_routes
+                if isinstance(candidate, dict)
+                and candidate.get("provider") == initial_provider
+                and candidate.get("model_id") == initial_model_id
+                and candidate.get("api_key_env") == initial_api_key_env
+            ),
+            None,
         )
         if route_entry is None:
             route_entry = {

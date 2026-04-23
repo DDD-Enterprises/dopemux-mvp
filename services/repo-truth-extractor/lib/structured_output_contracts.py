@@ -619,8 +619,6 @@ def build_provider_structured_output(
             ),
         }
     )
-    if meta.get("transport_mode") == "response_json_schema":
-        return effective_schema, meta
     return response_format, meta
 
 
