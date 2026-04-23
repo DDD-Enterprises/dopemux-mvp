@@ -223,9 +223,19 @@ function App() {
         : { showTeamDashboard: true, showPredictions: true, compactMode: false };
 
   const statusMeta = statusStyles[cognitiveState.status];
-  const connectionLabel = connectionStatus === 'live' ? brandTokens.chips.live : '[DEGRADED]';
+  const connectionLabel =
+    connectionStatus === 'live'
+      ? brandTokens.chips.live
+      : connectionStatus === 'connecting'
+        ? brandTokens.chips.connecting
+        : brandTokens.chips.degraded;
+
   const connectionColor =
-    connectionStatus === 'live' ? brandTokens.colors.ritualCyan : brandTokens.colors.gremlinPink;
+    connectionStatus === 'live'
+      ? brandTokens.colors.ritualCyan
+      : connectionStatus === 'connecting'
+        ? brandTokens.colors.saintGold
+        : brandTokens.colors.gremlinPink;
 
   const metricCards = [
     {
@@ -300,6 +310,7 @@ function App() {
               <Chip
                 icon={
                   <Box
+                    aria-hidden="true"
                     sx={{
                       width: 8,
                       height: 8,
@@ -318,7 +329,13 @@ function App() {
                 label={`${connectionLabel} DØPEMÜX Ritual Daemon`}
                 aria-label={`System is actively monitoring ritual state: ${connectionLabel} DØPEMÜX Ritual Daemon`}
                 className="dopemux-chip"
-                color="primary"
+                color={
+                  connectionStatus === 'live'
+                    ? 'primary'
+                    : connectionStatus === 'connecting'
+                      ? 'secondary'
+                      : 'error'
+                }
                 tabIndex={0}
               />
             </Tooltip>
@@ -459,7 +476,13 @@ function App() {
             >
               Live Signal Feed
             </Typography>
-            {isLoading && <CircularProgress size={16} sx={{ ml: 'auto' }} />}
+            {isLoading && (
+              <CircularProgress
+                size={16}
+                sx={{ ml: 'auto' }}
+                aria-label="Loading updates"
+              />
+            )}
             {notifications.length > 0 && (
               <Tooltip title="Clear all notifications to reduce visual noise" arrow>
                 <Chip

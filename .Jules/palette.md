@@ -41,3 +41,11 @@
 ## 2026-03-25 - [Tooltip Visibility on Disabled Elements]
 **Learning:** Material UI Tooltips do not trigger on disabled elements (like buttons) because they don't emit pointer events. Wrapping the disabled element in a `<span>` ensures the tooltip remains accessible, allowing users to understand *why* an action is unavailable.
 **Action:** Always wrap disabled buttons in a `<span>` when using `Tooltip` to maintain accessibility and user feedback.
+
+## 2026-03-26 - [Multi-State Connection Indicators]
+**Learning:** For systems with asynchronous background services, a binary "Live/Down" connection status is insufficient. Introducing an explicit "Connecting" state with distinct visual (Gold/Secondary) and semantic cues reduces user uncertainty during initialization.
+**Action:** Implement three-tier status logic (Connecting, Live, Degraded) for all real-time service indicators.
+
+## 2026-03-26 - [Reducing Screen Reader Noise in Status Chips]
+**Learning:** Decorative pulsing animations inside status chips are helpful for sighted users but can be noisy for screen readers if not properly hidden. Since the Chip's `aria-label` already provides the full status context, the internal pulsing element should be marked `aria-hidden="true"`.
+**Action:** Always add `aria-hidden="true"` to purely visual status icons or animations when they are part of a larger component that already has a descriptive label.
