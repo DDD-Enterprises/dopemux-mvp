@@ -203,14 +203,14 @@ From [`cli-ux-design-spec.md §4`](../docs/04-explanation/branding/cli-ux-design
 
 | State | Glyph | Fallback | Style |
 |---|---|---|---|
-| Success | `` | `✓` | mint.soft |
-| Error | `` | `✗` | magenta |
-| Warning | `` | `!` | gold |
-| Info | `` | `i` | mint |
-| Running | `` | `▶` | mint |
-| Pending | `` | `~` | text.muted |
-| Blocked | `` | `#` | magenta |
-| Skipped | `` | `-` | text.muted |
+| Success | `` | `✓` | mint.soft |
+| Error | `` | `✗` | magenta |
+| Warning | `` | `!` | gold |
+| Info | `` | `i` | mint |
+| Running | `` | `▶` | mint |
+| Pending | `` | `~` | text.muted |
+| Blocked | `` | `#` | magenta |
+| Skipped | `` | `-` | text.muted |
 
 ---
 
