@@ -8,7 +8,7 @@ import subprocess
 import threading
 import time
 import json
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 import signal
 import sys
 import os
@@ -81,8 +81,8 @@ class ZenServerHandler(BaseHTTPRequestHandler):
             self.wfile.write(b'Not Found')
 
     def do_POST(self):
-        if self.path.startswith('/message'):
-            content_length = int(self.headers['Content-Length'])
+        if self.path == '/message' or self.path.startswith('/message?'):
+            content_length = int(self.headers.get('Content-Length', 0))
             post_data = self.rfile.read(content_length).decode('utf-8')
 
             if hasattr(self.server, 'mcp_process') and self.server.mcp_process.poll() is None:
@@ -161,7 +161,7 @@ def main():
     mcp_process = start_zen_server()
 
     # Create HTTP server
-    server = HTTPServer(('0.0.0.0', port), ZenServerHandler)
+    server = ThreadingHTTPServer(('0.0.0.0', port), ZenServerHandler)
     print(f"HTTP server started on 0.0.0.0:{port}", flush=True)
     server.mcp_process = mcp_process
 
