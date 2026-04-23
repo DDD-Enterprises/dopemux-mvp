@@ -11,7 +11,7 @@ prelude: System Boundaries (reference) for dopemux documentation and developer w
 ---
 # SYSTEM_BOUNDARIES
 
-This document is derived only from `TRUTH_SYSTEMS.md`, `TRUTH_INTERFACES.md`, `TRUTH_DATA_EVENTS.md`, `TRUTH_CANONICALS.md`, and `TRUTH_GAPS.md` in `tmp/dmx-chatgpt-project-truth-extraction-002/`. It does not normalize contradictions. It preserves `UNKNOWN`, `ambiguous`, and `split` where the truth packet does not establish a single authority. No public APIs, interfaces, or types are introduced or changed here.
+This document is derived only from the tracked truth references in `docs/03-reference/truth/`: `truth-systems.md`, `truth-interfaces.md`, `truth-data-events.md`, `truth-canonicals.md`, and `truth-gaps.md`. It does not normalize contradictions. It preserves `UNKNOWN`, `ambiguous`, and `split` where the truth packet does not establish a single authority. No public APIs, interfaces, or types are introduced or changed here.
 
 ## Authority Model Overview
 

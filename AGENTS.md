@@ -10,10 +10,13 @@ Repo truth beats docs.
 
 - The task packet names `RULES.md`, `PROJECT.md`, `ARCHITECTURE.md`, `SYSTEM_BOUNDARIES.md`, `PM_PLANE.md`, `DOC_TRUST_MAP.md`, and `DOCS_VS_REPO_DIFF.md` as allowed authority.
 - In this checkout, those files were not present during this rewrite.
-- The repo-truth artifacts present in this pass were:
-  - `tmp/dmx-chatgpt-project-truth-extraction-002/TRUTH_SYSTEMS.md`
-  - `tmp/dmx-chatgpt-project-truth-extraction-002/TRUTH_CANONICALS.md`
-  - `tmp/dmx-chatgpt-project-truth-extraction-002/TRUTH_GAPS.md`
+- The repo-truth artifacts present in this pass are tracked in:
+  - `docs/03-reference/truth/truth-systems.md`
+  - `docs/03-reference/truth/truth-canonicals.md`
+  - `docs/03-reference/truth/truth-gaps.md`
+  - `docs/03-reference/truth/truth-interfaces.md`
+  - `docs/03-reference/truth/truth-data-events.md`
+  - `docs/03-reference/truth/truth-scope.md`
 - Do not invent the contents of `RULES.md`, `SYSTEM_BOUNDARIES.md`, `PM_PLANE.md`, or `DOC_TRUST_MAP.md`. If those files are added later, use them, but repo truth beats docs.
 
 ## 3. Canonical Operator Surfaces
@@ -62,7 +65,7 @@ Repo truth beats docs.
 
 ## 8. Docs Trust
 
-- For this rewrite pass, the usable truth docs were `TRUTH_SYSTEMS.md`, `TRUTH_CANONICALS.md`, and `TRUTH_GAPS.md`.
+- For this rewrite pass, the usable truth docs are the tracked `docs/03-reference/truth/*` references, with `truth-systems.md`, `truth-canonicals.md`, and `truth-gaps.md` carrying the strongest direct operator guidance.
 - `DOC_TRUST_MAP.md` and `DOCS_VS_REPO_DIFF.md` were named in the packet but not present in this checkout.
 - Older docs and README surfaces may drift from runtime reality. Escalate the drift instead of normalizing it away.
 - Repo truth beats docs.
