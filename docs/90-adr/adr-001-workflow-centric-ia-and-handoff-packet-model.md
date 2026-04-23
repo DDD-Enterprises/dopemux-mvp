@@ -1,13 +1,18 @@
 ---
 id: adr-001
 title: ADR-001 - Workflow-Centric IA and Handoff Packet Authority Model
-type: explanation
+type: adr
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-04-23'
 last_review: '2026-04-23'
 next_review: '2026-05-23'
+status: proposed
 prelude: Architecture Decision Record for Round 2 operator shell redesign from service-centric to workflow-centric information architecture.
+graph_metadata:
+  node_type: ADR
+  impact: medium
+  relates_to: []
 ---
 
 # ADR-001: Workflow-Centric IA and Handoff Packet Authority Model
