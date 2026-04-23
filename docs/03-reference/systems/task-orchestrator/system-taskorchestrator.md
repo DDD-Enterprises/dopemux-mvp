@@ -139,7 +139,7 @@ Storage surfaces:
 - Mixed implementation maturity in coordinator health:
   `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/core/coordinator.py` reports several plane-health dependencies as placeholders returning `"healthy"` without observed real checks for Leantime, Task Master, Serena, or ConPort.
 - Older docs can overstate a cleaner architecture than the runtime earns:
-  repo-truth artifacts already record unresolved canonicality for Task Orchestrator in `/Users/hue/code/dopemux-mvp/tmp/dmx-chatgpt-project-truth-extraction-002/TRUTH_CANONICALS.md` and `/Users/hue/code/dopemux-mvp/tmp/dmx-chatgpt-project-truth-extraction-002/TRUTH_GAPS.md`.
+  repo-truth artifacts already record unresolved canonicality for Task Orchestrator in `/Users/hue/code/dopemux-mvp/docs/03-reference/truth/truth-canonicals.md` and `/Users/hue/code/dopemux-mvp/docs/03-reference/truth/truth-gaps.md`.
 
 ## 8. Working Rules
 

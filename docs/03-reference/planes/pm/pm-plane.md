@@ -11,7 +11,7 @@ prelude: Pm Plane (reference) for dopemux documentation and developer workflows.
 ---
 # PM_PLANE
 
-This document is derived only from repository truth. Primary authority for this file is, in order: `tmp/dmx-chatgpt-project-truth-extraction-002/TRUTH_GAPS.md`, `tmp/dmx-chatgpt-project-truth-extraction-002/TRUTH_DATA_EVENTS.md`, `tmp/dmx-chatgpt-project-truth-extraction-002/TRUTH_SYSTEMS.md`, `tmp/dmx-chatgpt-project-truth-extraction-002/TRUTH_CANONICALS.md`, `src/dopemux/pm/writes.py`, `services/dopecon-bridge/README.md`, `services/dopecon-bridge/dopecon_bridge/routes.py`, `services/task-orchestrator/app/services/workflow_store.py`, and `services/task-orchestrator/app/adapters/bridge_adapter.py`.
+This document is derived only from repository truth. Primary authority for this file is, in order: `docs/03-reference/truth/truth-gaps.md`, `docs/03-reference/truth/truth-data-events.md`, `docs/03-reference/truth/truth-systems.md`, `docs/03-reference/truth/truth-canonicals.md`, `src/dopemux/pm/writes.py`, `services/dopecon-bridge/README.md`, `services/dopecon-bridge/dopecon_bridge/routes.py`, `services/task-orchestrator/app/services/workflow_store.py`, and `services/task-orchestrator/app/adapters/bridge_adapter.py`.
 
 It preserves split, ambiguous, and contradictory states where repo truth does not establish a single authority. It does not normalize unresolved drift. No runtime APIs, interfaces, or types are introduced or changed here.
 
@@ -19,7 +19,7 @@ It preserves split, ambiguous, and contradictory states where repo truth does no
 
 The PM plane is not a single system.
 
-It is a distributed authority model for PM-domain concerns. Repo truth shows PM ownership split by domain slice, not collapsed into one service hub. `src/dopemux/pm/writes.py` assigns different canonical writers to metadata, workflow-significant transitions, and progress or decision logging. `tmp/dmx-chatgpt-project-truth-extraction-002/TRUTH_GAPS.md` and the derived secondary check in `docs/03-reference/systems/system-boundaries.md` both preserve PM authority as split rather than unified.
+It is a distributed authority model for PM-domain concerns. Repo truth shows PM ownership split by domain slice, not collapsed into one service hub. `src/dopemux/pm/writes.py` assigns different canonical writers to metadata, workflow-significant transitions, and progress or decision logging. `docs/03-reference/truth/truth-gaps.md` and the derived secondary check in `docs/03-reference/systems/system-boundaries.md` both preserve PM authority as split rather than unified.
 
 The safe current interpretation is:
 
@@ -37,7 +37,7 @@ Observed PM authority split from repo truth:
 - Progress -> `ConPort`
 - Memory receipts -> `dope-memory`
 
-This split is stated directly in `src/dopemux/pm/writes.py` and repeated in `tmp/dmx-chatgpt-project-truth-extraction-002/TRUTH_DATA_EVENTS.md`:
+This split is stated directly in `src/dopemux/pm/writes.py` and repeated in `docs/03-reference/truth/truth-data-events.md`:
 
 - `pm_update_work_item` performs canonical metadata writes through the Leantime client.
 - `pm_transition_work_item` performs canonical workflow transitions through the task-orchestrator client and mirrors the outcome to Leantime.
@@ -51,7 +51,7 @@ Mirror receipts are secondary evidence, not source truth. They record downstream
 
 `User / Agent -> task-orchestrator -> dopecon-bridge -> upstream systems (ConPort / Leantime) -> dope-memory (receipt)`
 
-This is an observed bridge-mediated integration path, not proof that every PM write in the repo currently passes through the bridge. `tmp/dmx-chatgpt-project-truth-extraction-002/TRUTH_DATA_EVENTS.md` shows task-orchestrator workflow persistence flowing outbound through DopeconBridge custom-data paths, and it separately shows `dopecon-bridge` routing selected PM calls to upstream services. At the same time, repo truth also includes normalized PM write helpers in `src/dopemux/pm/writes.py`, bridge-backed workflow persistence in `services/task-orchestrator/app/services/workflow_store.py`, and bridge-backed ConPort or PM adapters in `services/task-orchestrator/app/adapters/bridge_adapter.py`. The repo therefore contains multiple observed write-capable seams, and this document does not flatten them into one universal runtime path.
+This is an observed bridge-mediated integration path, not proof that every PM write in the repo currently passes through the bridge. `docs/03-reference/truth/truth-data-events.md` shows task-orchestrator workflow persistence flowing outbound through DopeconBridge custom-data paths, and it separately shows `dopecon-bridge` routing selected PM calls to upstream services. At the same time, repo truth also includes normalized PM write helpers in `src/dopemux/pm/writes.py`, bridge-backed workflow persistence in `services/task-orchestrator/app/services/workflow_store.py`, and bridge-backed ConPort or PM adapters in `services/task-orchestrator/app/adapters/bridge_adapter.py`. The repo therefore contains multiple observed write-capable seams, and this document does not flatten them into one universal runtime path.
 
 ## 4. Bridge Role
 
@@ -59,7 +59,7 @@ This is an observed bridge-mediated integration path, not proof that every PM wr
 
 Its active runtime role is adapter, router, translator, proxy, event transport, and policy-check layer. `services/dopecon-bridge/README.md` and `services/dopecon-bridge/dopecon_bridge/routes.py` explicitly constrain it to adapter-safe PM operations, ConPort-backed compatibility routes, and fail-closed blocking for bridge-local task creation or status mutation. Workflow-significant PM mutations are blocked unless adjudicated by task-orchestrator.
 
-This creates a boundary risk. `tmp/dmx-chatgpt-project-truth-extraction-002/TRUTH_GAPS.md` calls out that downstream operators may still treat bridge endpoints as authoritative because they expose `/kg/*`, `/ddg/*`, and PM routing surfaces while repo truth simultaneously says the bridge must not be canonical task, workflow, decision, or progress authority.
+This creates a boundary risk. `docs/03-reference/truth/truth-gaps.md` calls out that downstream operators may still treat bridge endpoints as authoritative because they expose `/kg/*`, `/ddg/*`, and PM routing surfaces while repo truth simultaneously says the bridge must not be canonical task, workflow, decision, or progress authority.
 
 The repo also contains a contradiction that must be preserved. `services/shared/dopecon_bridge_client/README.md` describes the bridge as a "single authority point" for coordination and several shared access paths. That wording conflicts with the sanctioned runtime truth in `services/dopecon-bridge/README.md` and the active route policy in `services/dopecon-bridge/dopecon_bridge/routes.py`, both of which explicitly deny canonical PM authority to the bridge. For PM-plane purposes, the sanctioned active runtime wins; the shared-client wording is terminology drift, not canonical PM authority.
 
@@ -92,7 +92,7 @@ The safe current model is eventual consistency where mirrors exist:
 Observed risks from current repo truth:
 
 - Split authority risk
-  - `tmp/dmx-chatgpt-project-truth-extraction-002/TRUTH_GAPS.md` states that PM authority is split across Leantime, task-orchestrator, ConPort, and dope-memory mirror receipts, and warns that any service expanding beyond its declared slice creates silent contract drift.
+  - `docs/03-reference/truth/truth-gaps.md` states that PM authority is split across Leantime, task-orchestrator, ConPort, and dope-memory mirror receipts, and warns that any service expanding beyond its declared slice creates silent contract drift.
 - Bridge confusion
   - `TRUTH_GAPS.md`, `services/dopecon-bridge/README.md`, and the active bridge routes all show the same risk: bridge endpoints can look authoritative while the sanctioned runtime explicitly says they are not.
 - Multiple write-capable paths
