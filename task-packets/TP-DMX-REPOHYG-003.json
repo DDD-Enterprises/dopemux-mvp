@@ -80,7 +80,9 @@
       "commands": [
         "git worktree list --porcelain",
         "git branch -vv",
-        "git status --short --branch"
+        "git status --short --branch",
+        "gh pr list --state open --limit 200",
+        "gh pr list --state closed --limit 200"
       ],
       "expected_files": [
         "docs/05-audit-reports/repo-branch-worktree-cleanup-phase3.md",
@@ -120,8 +122,8 @@
       ],
       "context_files": [
         "RULES.md",
-        "TRUTH_GAPS.md",
-"SYSTEM_BOUNDARIES.md"
+        "dopetask-canonical-spec.json",
+        "SYSTEM_BOUNDARIES.md"
       ]
     },
     {
@@ -173,7 +175,8 @@
       ],
       "context_files": [
         "task-packets/INDEX.md",
-        "dopetask-cannonical-spec.json",
+        "dopetask-canonical-spec.json",
+        "PAL_EXECUTION_RULES.md"
       ]
     }
   ]

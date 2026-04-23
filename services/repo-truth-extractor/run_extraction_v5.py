@@ -231,6 +231,10 @@ from llm_runtime import (
     run_comparison_lane as llm_runtime_run_comparison_lane,
     should_retry as llm_runtime_should_retry,
 )
+
+# Backward-compatible reporting seam aliases used by targeted tests.
+reporting_write_run_manifest = rte_write_run_manifest
+reporting_write_step_metrics_snapshot = rte_write_step_metrics_snapshot
 from extractor.phases.base import PhaseRunnerDeps
 from extractor.phases.a import run_phase as extracted_run_phase_A
 from extractor.phases.z import run_phase as extracted_run_phase_Z
@@ -344,8 +348,10 @@ try:
         artifact_contract as _artifact_contract,
         artifacts_pass_contract_gate,
         artifact_order as contract_artifact_order,
+        build_json_schema_response_format,
         build_openai_response_format,
-        canonicalize_artifacts,
+        build_provider_step_contract_output,
+        build_provider_structured_output,
         contract_lane as resolve_contract_lane,
         describe_contract_failure,
         empty_payload_for_artifact,
@@ -380,8 +386,17 @@ except ModuleNotFoundError:
         structured_contracts_module.artifacts_pass_contract_gate
     )
     contract_artifact_order = structured_contracts_module.artifact_order
+    build_json_schema_response_format = (
+        structured_contracts_module.build_json_schema_response_format
+    )
     build_openai_response_format = (
         structured_contracts_module.build_openai_response_format
+    )
+    build_provider_step_contract_output = (
+        structured_contracts_module.build_provider_step_contract_output
+    )
+    build_provider_structured_output = (
+        structured_contracts_module.build_provider_structured_output
     )
     canonicalize_artifacts = structured_contracts_module.canonicalize_artifacts
     resolve_contract_lane = structured_contracts_module.contract_lane
@@ -11053,19 +11068,38 @@ def execute_step_for_partitions(
     draft_response_format: Optional[Dict[str, Any]] = None
     draft_structured_output_meta: Dict[str, Any] = {}
     if strict_contract_required and isinstance(step_contract, dict):
-        response_format, response_meta = build_openai_response_format(
-            step_contract,
+        primary_routes = route_entries_for_stage(step_contract, "primary")
+route_entry = next(
+            (
+                candidate
+                for candidate in primary_routes
+                if isinstance(candidate, dict)
+                and candidate.get("provider") == initial_provider
+                and candidate.get("model_id") == initial_model_id
+                and candidate.get("api_key_env") == initial_api_key_env
+            ),
+            None,
+        )
+        if route_entry is None:
+            route_entry = {
+                "provider": initial_provider,
+                "model_id": initial_model_id,
+                "api_key_env": initial_api_key_env,
+                "structured_output_mode": "json_schema",
+                "strict_json_schema": False,
+                "strict_passthrough_verified": False,
+            }
+        response_format, response_meta = build_provider_step_contract_output(
+            route=route_entry,
+            transport=transport,
+            step_contract=step_contract,
             artifact_names=output_artifacts,
             schema_name_suffix="draft",
         )
         draft_response_format = response_format
-        draft_structured_output_meta = {
-            **response_meta,
-            "enabled": True,
-            "mime_type": "application/json",
-            "schema": response_meta.get("schema_name"),
-            "transport_mode": "response_format_json_schema",
-        }
+        draft_structured_output_meta = dict(response_meta)
+        if response_meta.get("enabled") and initial_provider == "gemini" and transport != "openai_compat_http":
+            force_json_output = True
     max_files = max_files_for_phase(phase, cfg)
     run_id = phase_dir.parent.name
     if routing_reason == "env_step_type_override":
@@ -12009,8 +12043,10 @@ def execute_step_for_partitions(
             strict_provider = str(selected_route["provider"])
             strict_model_id = str(selected_route["model_id"])
             strict_api_key_env = str(selected_route["api_key_env"])
-            response_format, response_meta = build_openai_response_format(
-                step_contract,
+            response_format, response_meta = build_provider_step_contract_output(
+                route=dict(selected_route),
+                transport=transport_for_provider(strict_provider, cfg),
+                step_contract=step_contract,
                 artifact_names=artifact_names,
                 schema_name_suffix=schema_name_suffix,
             )

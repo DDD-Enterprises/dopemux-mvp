@@ -21,10 +21,9 @@
   "commit": {
     "message": "docs(audit): execute phase2 safe archive cleanup",
     "allowlist": [
-"docs/05-audit-reports/repo-branch-worktree-cleanup-phase2.md",
-      "proof/repo-branch-worktree-cleanup-phase2.proof.json",
-      "task-packets/TP-DMX-REPOHYG-002.json",
-      "task-packets/INDEX.md"
+      "docs/05-audit-reports/**",
+      "proof/**",
+      "task-packets/**"
     ],
     "verify": [
       "git rev-parse --show-toplevel",

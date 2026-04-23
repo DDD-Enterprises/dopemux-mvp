@@ -97,7 +97,7 @@
         "ARCHITECTURE.md",
         "SYSTEM_Dopetask.md",
         "PAL_EXECUTION_RULES.md",
-        "dopetask-cannonical-spec.json"
+        "dopetask-canonical-spec.json"
       ]
     },
     {
@@ -185,9 +185,10 @@
         "The PR body clearly states that execution cleanup is deferred to a follow-up packet."
       ],
       "context_files": [
-"PAL_EXECUTION_RULES.md",
+        "dopetask-canonical-spec.json",
+        "PAL_EXECUTION_RULES.md",
         "PAL_PACKET_TEMPLATE.md",
-        "task-packets/INDEX.md"
+        "INDEX.md"
       ]
     }
   ]
