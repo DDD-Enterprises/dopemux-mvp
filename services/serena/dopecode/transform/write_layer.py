@@ -477,9 +477,24 @@ class WriteLayer:
             diff = op.get("diff")
             if not path or not diff:
                 raise ValueError("Batch patch orchestration requires every operation to include path and diff")
-            before_content = self._read_file_text(path)
+        steps: List[Dict[str, Any]] = []
+        file_state_cache: Dict[str, str] = {}
+        for _, op in ordered:
+            path = op.get(\"path\")
+            diff = op.get(\"diff\")
+            if not path or not diff:
+                raise ValueError(\"Batch patch orchestration requires every operation to include path and diff\")
+            
+            if path in file_state_cache:
+                before_content = file_state_cache[path]
+            else:
+                before_content = self._read_file_text(path)
+                
             hunks = self._parse_unified_diff(diff, path)
-            after_content = "".join(self._apply_hunks(before_content.splitlines(keepends=True), hunks))
+            after_content = \"\".join(self._apply_hunks(before_content.splitlines(keepends=True), hunks))
+            file_state_cache[path] = after_content
+            
+            steps.append(
             steps.append(
                 {
                     "step_type": "apply_patch",
