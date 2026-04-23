@@ -12,10 +12,10 @@ prelude: Architecture Decision Record for PM-mode action dispatch and Leantime w
 
 # ADR-002: PM-Mode Authority Split and Bounded Leantime Write Scope
 
-**Status**: Proposed  
-**Date**: 2026-04-23  
-**Owners**: @hu3mann  
-**Depends on**: ADR-001  
+**Status**: Proposed
+**Date**: 2026-04-23
+**Owners**: @hu3mann
+**Depends on**: ADR-001
 **Blocks**: build step 8 of §9.4a (PM-mode write dispatch)
 
 ## Context
