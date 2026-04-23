@@ -41,6 +41,7 @@ A packet is superseded by another packet
 | TP-SIA-EXEC-0006 | Workflow Plane | Auditor Runner + Proof Bundle Manifest | Ready | SIA Packet Execution ADR |
 | TP-SIA-EXEC-0007 | Workflow Plane | Manual Handoff + Operator Resume Semantics | Ready | SIA Packet Execution ADR |
 | TP-SIA-EXEC-0008 | Workflow Plane | Replay Repro Suite + Projection Hardening | Ready | SIA Packet Execution ADR |
+| TP-DMX-AIG-001 | Adaptive Ingress Plane | Service Census + Ingress Map + First Safe Slice | Ready | ADR — Adopt a Dopemux Adaptive Ingress Plane with Local Runtime Shims |
 | PACKET_031 | Memory | Dual Capture Adapters, Single Ledger | Executing | ADR-213 |
 | PACKET_032 | Memory | Chronicle Promotion Guards | Pending Audit | ADR-214 |
 
