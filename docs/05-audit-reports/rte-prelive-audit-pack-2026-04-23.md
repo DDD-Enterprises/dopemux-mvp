@@ -218,7 +218,7 @@ Each included file below has a stated reason and an upload recommendation.
 | `services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/RUN_ROUTING_FINGERPRINT.json` | emitted_run_evidence | Detailed per-step routing and prompt-file mapping evidence | yes |
 | `docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md` | documentation_context | Concise current reference doc that largely matches runtime authority | optional |
 | `proof/rte-provider-preflight-scope-truth-hardening.proof.json` | prior_hardening_proof | Shows earlier proof about run-scoped provider preflight authority boundaries | optional |
-| `proof/rte-doctor-diagnostic-clarity-and-final-launch-gate-review.proof.json` | prior_hardening_proof | Shows earlier proof separating diagnostic doctor artifacts from launch authority | optional |
+| `proof/rte-doctor-diagnostic-clarity-and-final-launch-gate-review.proof.json" | prior_hardening_proof | Shows earlier proof separating diagnostic doctor artifacts from launch authority | optional |
 | `docs/05-audit-reports/repo-branch-worktree-cleanup-phase2.md` | repo_hygiene_context | Compact evidence that open hygiene PRs are docs-only and bounded | optional |
 
 ---
@@ -269,4 +269,3 @@ This pack is not evidence of live-launch readiness. Current emitted evidence sti
 - provider/billing blockage for the sampled `openrouter:openai/gpt-5.4` live preflight path
 - repo drift around prescan prompt linting
 - absent named truth-doc paths in repo-level operator guidance
-
