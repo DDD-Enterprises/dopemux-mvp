@@ -37,3 +37,7 @@
 ## 2026-03-12 - [Cognitive Load & Feed Management]
 **Learning:** In high-stimulation environments (like a live signal feed), accumulating notifications can contribute to "cognitive clutter," which is particularly taxing for users with ADHD. Providing a "Clear" button that is only visible when the feed is active allows users to reset their visual field and reduce overwhelm once information has been processed.
 **Action:** Always provide a conditional "Clear" or "Reset" mechanism for live data feeds to help users manage cognitive load and maintain a clean workspace.
+
+## 2026-03-25 - [Tooltip Visibility on Disabled Elements]
+**Learning:** Material UI Tooltips do not trigger on disabled elements (like buttons) because they don't emit pointer events. Wrapping the disabled element in a `<span>` ensures the tooltip remains accessible, allowing users to understand *why* an action is unavailable.
+**Action:** Always wrap disabled buttons in a `<span>` when using `Tooltip` to maintain accessibility and user feedback.
