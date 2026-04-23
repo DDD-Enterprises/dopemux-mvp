@@ -1,0 +1,69 @@
+{
+  "id": "TP-DMX-RTEINT-001",
+  "project": "dopemux-mvp",
+  "target": "Determine which RTE-related branches contain current, incomplete, superseded, or mergeable implementation work; integrate the missing current work into a single staging branch before GPT-5.4 Pro performs the pre-live audit.",
+  "invariants": [
+    "Do not assume any RTE-related branch is mergeable solely from its name.",
+    "Do not merge branches into main directly in this packet; use a staging integration branch first.",
+    "Do not modify unrelated runtime, service, or product areas outside the RTE integration scope.",
+    "Preserve Dopemux architectural authority boundaries and repo-truth hierarchy.",
+    "Every branch classification must be evidence-backed using current git graph, PR state, diff scope, and validation state.",
+    "Explicitly distinguish already-merged, superseded, incomplete, conflicting, proof-only, and code-bearing branches.",
+    "Do not collapse docs/proof-only branches into code-bearing implementation lines.",
+    "Do not claim readiness for audit until the staging branch reflects the intended most-up-to-date RTE implementation.",
+    "All merge or cherry-pick actions must be reproducible and recorded in proof.",
+    "If integration conflicts or validation failures remain unresolved, stop fail-closed and record blockers instead of proceeding to audit."
+  ],
+  "depends_on": [
+    "TP-DMX-REPOHYG-001",
+    "TP-DMX-REPOHYG-002",
+    "TP-DMX-REPOHYG-003"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-RTE-INTEGRATION-SERIES-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-integration-staging-audit"
+  },
+  "commit": {
+    "message": "rte: integrate current branch deltas into pre-audit staging branch",
+    "allowlist": [
+      "docs/05-audit-reports/rte-branch-integration-audit-2026-04-23.md",
+      "proof/rte-branch-integration-audit-2026-04-23.proof.json",
+      "task-packets/TP-DMX-RTEINT-001.json",
+      "task-packets/INDEX.md",
+      "services/repo-truth-extractor/**",
+      "src/dopemux/commands/extractor_commands.py",
+      "src/dopemux/commands/**",
+      "UPGRADES/**",
+      "proof/**",
+      "docs/05-audit-reports/**"
+    ],
+    "verify": [
+      "git rev-parse --show-toplevel",
+      "test -f .dopetaskroot",
+      "git remote -v",
+      "git branch --show-current",
+      "git status --short --branch",
+      "git worktree list --porcelain",
+      "git branch -vv",
+      "python -m json.tool task-packets/TP-DMX-RTEINT-001.json",
+      "python -m json.tool proof/rte-branch-integration-audit-2026-04-23.proof.json"
+    ]
+  },
+  "pr": {
+    "title": "rte: integrate current branch deltas into pre-audit staging branch",
+    "body": "## Summary\n- audit all RTE-related branch lines against main\n- classify each line as merged, superseded, incomplete, conflicting, proof-only, or code-bearing\n- integrate the still-current code-bearing deltas into a single staging branch\n- validate the staging branch as the most up-to-date implementation for the GPT-5.4 Pro pre-live audit\n\n## Scope\n- RTE runner, prescan/stage-0, routing/gating, prompt/promptset, directly related tests, proofs, and directly affected wrapper/docs surfaces only\n- no unrelated runtime changes\n- no direct merge to main in this packet\n\n## Validation\n- current git graph and PR authority refreshed\n- integrated branch deltas recorded with reasons\n- targeted RTE validation run on staging branch\n- blockers recorded fail-closed if integration is incomplete\n\n## Follow-up\nUse the staging branch or the merged result as the authoritative target for the GPT-5.4 Pro code and prompt audit.",
+    "base": "main"
+  }
+}
