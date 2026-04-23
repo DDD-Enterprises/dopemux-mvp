@@ -434,3 +434,7 @@ This ADR is implemented successfully when:
 ## Final decision
 
 **Adopt dope-memory as the canonical chronicle memory authority for the Dopemux architecture, with strict exclusion from PM entity, workflow, and canonical decision authority.**
+
+---
+
+**Note (U7 resolved 2026-04-24)**: Pin state is owned by dope-memory and carried on the chronicle receipt as `pinned_at: Option<Timestamp>` (null = not pinned, non-null = pinned at that timestamp). Pin and unpin operations each write a new receipt (append-only semantics); reaper reads the latest receipt per packet id. This preserves the chronicle authority invariant and enables the TUI packet lifecycle without state mutation.
