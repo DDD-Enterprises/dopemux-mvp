@@ -135,8 +135,9 @@ def _route_identity(provider: str, model_id: str) -> dict[str, Any]:
     upstream_provider = normalized_provider
     if normalized_provider == "openrouter":
         prefix, sep, _rest = normalized_model.partition("/")
-        if sep and prefix in {"openai", "gemini", "xai", "anthropic"}:
-            upstream_provider = prefix
+        normalized_prefix = {"x-ai": "xai"}.get(prefix.lower(), prefix.lower())
+        if sep and normalized_prefix in {"openai", "gemini", "xai", "anthropic"}:
+            upstream_provider = normalized_prefix
     dependency_class = "proxy" if normalized_provider == "openrouter" else "first_party"
     if normalized_provider in {"ollama", "lmstudio", "vllm", "mock", "local"}:
         dependency_class = "local"

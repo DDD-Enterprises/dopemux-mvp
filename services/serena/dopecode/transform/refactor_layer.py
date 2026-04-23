@@ -369,7 +369,13 @@ class RefactorLayer:
                 "plan_status": state["plan_status"],
             },
         )
-        result_status = "applied" if state["plan_status"] in {"verified", "completed"} else "partial_failure"
+        plan_status = state["plan_status"]
+        if plan_status in {"verified", "completed"}:
+            result_status = "applied"
+        elif plan_status == "failed":
+            result_status = "failed"
+        else:
+            result_status = "partial_failure"
         summary = (
             f"Renamed {symbol.symbol_name} to {new_name}."
             if result_status == "applied"
