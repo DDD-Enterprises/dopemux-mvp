@@ -1,0 +1,288 @@
+{
+  "audit_id": "repo-branch-worktree-audit-2026-04-23",
+  "task_packet_id": "TP-DMX-REPOHYG-001",
+  "audit_date": "2026-04-23",
+  "phase": "phase1-non-destructive",
+  "execution_branch": "codex/repo-hygiene-audit-phase1",
+  "repo_identity": {
+    "repo_root": "/Users/hue/code/dopemux-mvp",
+    "repo_marker_present": true,
+    "origin_remote": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "origin_identity_match": true,
+    "out_of_scope_remotes": [
+      "git@github.com:DDD-Enterprises/dopemux-extractor-gtm.git"
+    ]
+  },
+  "authority_used": {
+    "files": [
+      "/Users/hue/code/dopemux-mvp/AGENTS.md",
+      "/Users/hue/code/dopemux-mvp/task-packets/INDEX.md"
+    ],
+    "commands": [
+      "git rev-parse --show-toplevel",
+      "test -f .dopetaskroot",
+      "git remote -v",
+      "git branch --format='%(refname:short) %(upstream:short) %(objectname:short)'",
+      "git branch -vv",
+      "git worktree list --porcelain",
+      "git status --short --branch",
+      "gh pr list --state open --json number,headRefName,baseRefName,title,url",
+      "gh pr list --limit 200 --state all --json number,title,state,isDraft,headRefName,baseRefName,createdAt,updatedAt,closedAt,mergedAt,url,author",
+      "git for-each-ref --sort=committerdate --format='%(refname:short)|%(upstream:short)|%(objectname:short)|%(committerdate:iso8601)|%(subject)' refs/heads refs/remotes/origin"
+    ],
+    "drift": [
+      {
+        "path": "tmp/dmx-chatgpt-project-truth-extraction-002/TRUTH_CANONICALS.md",
+        "status": "not_present_in_checkout"
+      },
+      {
+        "path": "tmp/dmx-chatgpt-project-truth-extraction-002/TRUTH_GAPS.md",
+        "status": "not_present_in_checkout"
+      },
+      {
+        "path": "tmp/dmx-chatgpt-project-truth-extraction-002/TRUTH_SYSTEMS.md",
+        "status": "not_present_in_checkout"
+      }
+    ]
+  },
+  "remote_state": {
+    "open_prs": [],
+    "recent_pr_heads": {
+      "merged": [
+        {
+          "number": 500,
+          "head": "codex/pal-sse-wrapper",
+          "base": "main"
+        },
+        {
+          "number": 497,
+          "head": "codex/phase0",
+          "base": "main"
+        },
+        {
+          "number": 496,
+          "head": "docs/multi-agent-ingress-architecture-revision",
+          "base": "main"
+        },
+        {
+          "number": 495,
+          "head": "design/wave7-rte-ui-contract",
+          "base": "main"
+        },
+        {
+          "number": 481,
+          "head": "tp/dopecode-phase8-events-replay",
+          "base": "main"
+        },
+        {
+          "number": 480,
+          "head": "feat/rte-prescan-stage0-live-lane-proving",
+          "base": "main"
+        },
+        {
+          "number": 465,
+          "head": "tp/gh-review-thread-agent",
+          "base": "main"
+        },
+        {
+          "number": 461,
+          "head": "tp/rte-full-run-hygiene-and-launch-readiness",
+          "base": "main"
+        }
+      ],
+      "closed_unmerged": [
+        {
+          "number": 499,
+          "head": "codex/ci-unit-shard-experiment",
+          "base": "codex/ci-fast-unit-gate"
+        },
+        {
+          "number": 471,
+          "head": "codex/dopecode-ast-navigation-20260417",
+          "base": "main"
+        },
+        {
+          "number": 470,
+          "head": "feat/rte-v5-prescan-contract-unification",
+          "base": "main"
+        },
+        {
+          "number": 469,
+          "head": "tp/dopecode-ast-navigation",
+          "base": "main"
+        },
+        {
+          "number": 468,
+          "head": "tp/serena-tool-surface-audit",
+          "base": "main"
+        },
+        {
+          "number": 467,
+          "head": "feat/rte-prescan-first-live-hardening",
+          "base": "main"
+        },
+        {
+          "number": 477,
+          "head": "tp/dopecode-phase3-decompose-policy",
+          "base": "main"
+        },
+        {
+          "number": 474,
+          "head": "tp/dopecode-phase3-decompose-policy",
+          "base": "main"
+        },
+        {
+          "number": 476,
+          "head": "tp/dopecode-phase4-language-approval",
+          "base": "main"
+        },
+        {
+          "number": 473,
+          "head": "tp/dopecode-phase2-harden",
+          "base": "main"
+        }
+      ]
+    },
+    "naming_clusters": [
+      "codex/",
+      "tp/",
+      "feat/",
+      "docs/",
+      "design/",
+      "bundle/",
+      "copilot/",
+      "dependabot/",
+      "palette/",
+      "rescue/",
+      "prmerge/"
+    ],
+    "delete_remote_recommendations": []
+  },
+  "local_state": {
+    "branch_count": 55,
+    "worktree_count": 26,
+    "detached_worktree_count": 6,
+    "prunable_worktree_count": 2,
+    "dirty_worktree_count": 7,
+    "worktrees": [
+      {
+        "path": "/Users/hue/code/dopemux-mvp",
+        "branch": "codex/repo-hygiene-audit-phase1",
+        "state": "dirty",
+        "recommendation": "keep"
+      },
+      {
+        "path": "/private/tmp/dopemux-pr467",
+        "branch": "pr/467",
+        "state": "prunable_broken",
+        "recommendation": "unknown"
+      },
+      {
+        "path": "/private/tmp/dopemux-pr480",
+        "branch": "pr/480",
+        "state": "prunable_broken",
+        "recommendation": "unknown"
+      },
+      {
+        "path": "/private/tmp/dopemux-pr497",
+        "branch": null,
+        "state": "detached_dirty",
+        "recommendation": "keep"
+      },
+      {
+        "path": "/Users/hue/code/dopemux-mvp-rte-seams",
+        "branch": "codex/rte-seam-extraction-foundation",
+        "state": "dirty",
+        "recommendation": "keep"
+      },
+      {
+        "path": "/Users/hue/code/dopemux-mvp-worktrees/v1-runtime-proof-linkage",
+        "branch": "codex/v1-runtime-proof-linkage",
+        "state": "dirty_stale",
+        "recommendation": "archive"
+      },
+      {
+        "path": "/Users/hue/code/dopemux-mvp/.claude/worktrees/gracious-poitras-850e4f",
+        "branch": "claude/gracious-poitras-850e4f",
+        "state": "dirty_stale",
+        "recommendation": "archive"
+      },
+      {
+        "path": "/Users/hue/code/dopemux-mvp/.claude/worktrees/rte-decompose",
+        "branch": "refactor/rte-decompose-snapshot",
+        "state": "dirty_large_delta",
+        "recommendation": "keep"
+      }
+    ]
+  },
+  "recommendation_ledger": [
+    {
+      "subject": "codex/ci-unit-shard-experiment",
+      "domain": "branch",
+      "recommendation": "archive",
+      "reason": "Closed-unmerged PR #499 with clean attached worktree",
+      "blocking_risk": "Local worktree exists"
+    },
+    {
+      "subject": "design/wave7-rte-ui-contract",
+      "domain": "branch",
+      "recommendation": "merge-first",
+      "reason": "Merged PR lineage but local branch is ahead 1 and behind 14",
+      "blocking_risk": "Diverged local branch"
+    },
+    {
+      "subject": "codex/phase0",
+      "domain": "branch",
+      "recommendation": "merge-first",
+      "reason": "Merged PR #497 but local branch remains ahead 1 and behind 4",
+      "blocking_risk": "Diverged local branch"
+    },
+    {
+      "subject": "feat/rte-prescan-first-live-hardening",
+      "domain": "branch",
+      "recommendation": "archive",
+      "reason": "Closed-unmerged PR #467 and broken temp worktree line still exists",
+      "blocking_risk": "Prunable broken worktree"
+    },
+    {
+      "subject": "/private/tmp/dopemux-pr496",
+      "domain": "worktree",
+      "recommendation": "archive",
+      "reason": "Merged PR #496 worktree still mounted",
+      "blocking_risk": "Needs explicit follow-up removal"
+    },
+    {
+      "subject": "/private/tmp/dopemux-pr492",
+      "domain": "worktree",
+      "recommendation": "archive",
+      "reason": "Detached checkout at merged PR head with no local changes observed",
+      "blocking_risk": "Detached state"
+    },
+    {
+      "subject": "/Users/hue/code/dopemux-mvp-rte-main-integration-audit-staging",
+      "domain": "worktree",
+      "recommendation": "archive",
+      "reason": "Merged PR #461 branch still mounted and upstream is gone",
+      "blocking_risk": "Follow-up must remove worktree first"
+    },
+    {
+      "subject": "tp/serena-audit-runtime-io-tools",
+      "domain": "branch",
+      "recommendation": "unknown",
+      "reason": "No definitive recent PR disposition established by available evidence",
+      "blocking_risk": "Owner review required"
+    }
+  ],
+  "phase1_constraints_honored": {
+    "deleted_local_branches": false,
+    "deleted_remote_branches": false,
+    "deleted_worktrees": false,
+    "runtime_or_service_code_modified": false,
+    "production_config_modified": false
+  },
+  "residual_risk": [
+    "No branch met the proof standard for delete-remote in phase 1.",
+    "Several clean worktrees remain unknown because current evidence does not establish final branch disposition.",
+    "Pre-existing dirty state means any execution packet must re-run status collection before acting."
+  ]
+}
