@@ -1,0 +1,200 @@
+{
+  "id": "TP-DMX-RTEAUDIT-001",
+  "project": "dopemux-mvp",
+  "target": "Assemble a deterministic pre-live RTE audit pack for GPT-5.4 Pro covering canonical code paths, prompt surfaces, proofs, tests, and current launch-relevant drift.",
+  "invariants": [
+    "Do not modify runtime code, service code, prompt content, or production configs in this packet.",
+    "Assemble evidence only; do not execute a live RTE run.",
+    "Prefer canonical runtime, prompt, and proof surfaces over legacy, shadow, or compatibility paths.",
+    "Every included file must have a stated reason for inclusion in the audit pack.",
+    "Prompt surfaces must be classified as canonical, compatibility, drifted, or unknown.",
+    "The audit pack must distinguish code-path evidence from documentation-only claims.",
+    "No hidden heuristics or LLM-only scoring for file selection.",
+    "Outputs must be deterministic, reviewable, and reproducible.",
+    "The pack must be small enough to work cleanly in a ChatGPT Project upload flow.",
+    "Do not normalize contradictions; preserve drift and UNKNOWN where repo truth requires it."
+  ],
+  "depends_on": [
+    "TP-DMX-REPOHYG-001",
+    "TP-DMX-REPOHYG-002"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-RTE-AUDIT-SERIES-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-audit-pack-assembly"
+  },
+  "commit": {
+    "message": "docs(rte): assemble pre-live audit pack for 5.4 Pro",
+    "allowlist": [
+      "docs/05-audit-reports/rte-prelive-audit-pack-2026-04-23.md",
+      "proof/rte-prelive-audit-pack-2026-04-23.proof.json",
+      "task-packets/TP-DMX-RTEAUDIT-001.json",
+      "task-packets/INDEX.md"
+    ],
+    "verify": [
+      "git rev-parse --show-toplevel",
+      "test -f .dopetaskroot",
+      "git remote -v",
+      "git branch --show-current",
+      "git status --short --branch",
+      "python -m json.tool task-packets/TP-DMX-RTEAUDIT-001.json",
+      "python -m json.tool proof/rte-prelive-audit-pack-2026-04-23.proof.json",
+      "git diff --check -- docs/05-audit-reports/rte-prelive-audit-pack-2026-04-23.md proof/rte-prelive-audit-pack-2026-04-23.proof.json task-packets/TP-DMX-RTEAUDIT-001.json task-packets/INDEX.md"
+    ]
+  },
+  "pr": {
+    "title": "docs(rte): assemble pre-live audit pack for 5.4 Pro",
+    "body": "## Summary\n- assemble a deterministic pre-live RTE audit pack for GPT-5.4 Pro\n- include canonical code paths, prompt surfaces, proofs, tests, and current drift notes\n- classify prompt and runtime surfaces by authority and launch relevance\n\n## Scope\n- packet, report, and proof only\n- no runtime code or prompt content changes\n- no live run execution\n\n## Validation\n- repo identity confirmed from .dopetaskroot and origin remote\n- included files are enumerated with authority classification and rationale\n- proof JSON matches the assembled audit pack\n\n## Follow-up\nUse the pack inside a ChatGPT Project for a GPT-5.4 Pro pre-live audit of code and prompts.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Refresh repo identity and collect the canonical RTE authority surfaces relevant to a pre-live audit.",
+      "requirements": [
+        "Confirm repo root from .dopetaskroot.",
+        "Confirm origin remote matches dopemux-mvp.",
+        "Identify the canonical RTE runtime entrypoint and adjacent compatibility surfaces.",
+        "Identify launch-relevant docs and truth artifacts.",
+        "Identify current open PRs that may affect RTE launch readiness."
+      ],
+      "commands": [
+        "git rev-parse --show-toplevel",
+        "test -f .dopetaskroot",
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short --branch"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/rte-prelive-audit-pack-2026-04-23.md",
+        "proof/rte-prelive-audit-pack-2026-04-23.proof.json"
+      ],
+      "validation": [
+        "Repo identity is explicit and correct.",
+        "Canonical RTE runtime and truth docs are named explicitly.",
+        "Launch-relevant open PRs are surfaced in the pack."
+      ],
+      "context_files": [
+        "RULES.md",
+        "ARCHITECTURE.md",
+        "SYSTEM_RepoTruthExtractor.md",
+        "TRUTH_GAPS.md",
+        "TRUTH_CANONICALS.md",
+        "TRUTH_INTERFACES.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Collect and classify the prompt surfaces that materially affect RTE execution.",
+      "requirements": [
+        "Identify canonical promptset files, manifests, routing config, and preflight/prompt gating surfaces.",
+        "Separate canonical prompts from compatibility, drifted, shadow, or unknown prompt paths.",
+        "Record why each prompt surface belongs in the audit pack.",
+        "Do not rewrite or edit prompt content."
+      ],
+      "commands": [
+        "git status --short --branch"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/rte-prelive-audit-pack-2026-04-23.md",
+        "proof/rte-prelive-audit-pack-2026-04-23.proof.json"
+      ],
+      "validation": [
+        "Prompt surfaces are classified by authority.",
+        "Compatibility and drift paths are not collapsed into canonical by narrative.",
+        "The pack contains an explicit prompt inventory."
+      ],
+      "context_files": [
+        "SYSTEM_RepoTruthExtractor.md",
+        "TRUTH_GAPS.md",
+        "TRUTH_CANONICALS.md",
+        "PAL_EXECUTION_RULES.md"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Collect launch-relevant code, tests, and proof artifacts into a deterministic audit pack manifest.",
+      "requirements": [
+        "Include canonical runner files, prescan/stage-0 files, highest-value tests, and recent launch-relevant proofs.",
+        "Include cleanup hygiene outputs only where they affect launch trust.",
+        "For each file, record: path, authority class, audit relevance, and whether it should be uploaded to 5.4 Pro.",
+        "Produce a recommended upload set sized for ChatGPT Project constraints."
+      ],
+      "commands": [
+        "python -m json.tool proof/rte-prelive-audit-pack-2026-04-23.proof.json"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/rte-prelive-audit-pack-2026-04-23.md",
+        "proof/rte-prelive-audit-pack-2026-04-23.proof.json"
+      ],
+      "validation": [
+        "Every included file has a reason.",
+        "The recommended upload set is bounded and usable.",
+        "Tests and proofs included are directly relevant to pre-live readiness."
+      ],
+      "context_files": [
+        "docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md",
+        "docs/05-audit-reports/repo-branch-worktree-cleanup-phase2.md",
+        "proof/repo-branch-worktree-cleanup-phase2.proof.json",
+        "SYSTEM_RepoTruthExtractor.md",
+        "PAL_PACKET_TEMPLATE.md"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Publish the pack report, proof, and packet, then open a PR.",
+      "requirements": [
+        "Write the audit-pack report.",
+        "Write the audit-pack proof JSON.",
+        "Check in the task packet.",
+        "Update the task-packet index if required by repo convention.",
+        "Open a PR limited to docs/proof/packet surfaces."
+      ],
+      "commands": [
+        "python -m json.tool task-packets/TP-DMX-RTEAUDIT-001.json",
+        "python -m json.tool proof/rte-prelive-audit-pack-2026-04-23.proof.json",
+        "git diff --check -- docs/05-audit-reports/rte-prelive-audit-pack-2026-04-23.md proof/rte-prelive-audit-pack-2026-04-23.proof.json task-packets/TP-DMX-RTEAUDIT-001.json task-packets/INDEX.md"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/rte-prelive-audit-pack-2026-04-23.md",
+        "proof/rte-prelive-audit-pack-2026-04-23.proof.json",
+        "task-packets/TP-DMX-RTEAUDIT-001.json",
+        "task-packets/INDEX.md"
+      ],
+      "validation": [
+        "PR scope is bounded to packet/report/proof surfaces.",
+        "No code or prompt edits are included.",
+        "The resulting pack is ready to hand to GPT-5.4 Pro."
+      ],
+      "context_files": [
+        "dopetask-cannonical-spec.json",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_PACKET_TEMPLATE.md"
+      ]
+    }
+  ]
+}
