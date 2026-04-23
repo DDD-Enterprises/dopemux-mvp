@@ -1,0 +1,164 @@
+{
+  "cleanup_id": "repo-branch-worktree-cleanup-phase3",
+  "task_packet_id": "TP-DMX-REPOHYG-003",
+  "parent_task_packet_id": "TP-DMX-REPOHYG-002",
+  "execution_date": "2026-04-23",
+  "execution_branch": "codex/repo-hygiene-phase3-unresolved-survivors",
+  "repo_identity": {
+    "repo_root": "/Users/hue/code/dopemux-mvp",
+    "repo_marker_present": true,
+    "origin_remote": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "origin_identity_match": true
+  },
+  "open_pr_authority": [
+    {
+      "number": 501,
+      "head": "codex/repo-hygiene-audit-phase1",
+      "base": "main",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/501"
+    },
+    {
+      "number": 502,
+      "head": "codex/repo-hygiene-phase2-safe-archive-cleanup",
+      "base": "main",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/502"
+    }
+  ],
+  "refreshed_classes": {
+    "broken_temp_worktrees": [
+      {
+        "path": "/private/tmp/dopemux-pr467",
+        "branch": "pr/467",
+        "class": "broken-prunable",
+        "branch_deleted": false
+      },
+      {
+        "path": "/private/tmp/dopemux-pr480",
+        "branch": "pr/480",
+        "class": "broken-prunable",
+        "branch_deleted": false
+      }
+    ],
+    "blocked_branches": [
+      "tp/rte-full-run-hygiene-and-launch-readiness",
+      "codex/rte-seam-extraction-foundation-v2",
+      "tp/gh-review-thread-agent"
+    ],
+    "closed_unmerged_survivors": [
+      "codex/ci-unit-shard-experiment",
+      "codex/dopecode-ast-navigation-20260417",
+      "feat/rte-v5-prescan-contract-unification"
+    ],
+    "dirty_survivors": [
+      "/private/tmp/dopemux-pr497",
+      "/Users/hue/code/dopemux-mvp-rte-seams",
+      "/Users/hue/code/dopemux-mvp-worktrees/v1-runtime-proof-linkage",
+      "/Users/hue/code/dopemux-mvp/.claude/worktrees/gracious-poitras-850e4f",
+      "/Users/hue/code/dopemux-mvp/.claude/worktrees/rte-decompose"
+    ],
+    "owner_ambiguous_survivors": [
+      "/Users/hue/code/dopemux-extractor-gtm",
+      "/Users/hue/code/dopemux-mvp/.claude/worktrees/inspiring-nobel-101730",
+      "/Users/hue/code/dopemux-mvp/.claude/worktrees/optimistic-mayer-6f6e75",
+      "/Users/hue/code/dopemux-mvp/.claude/worktrees/serene-swirles-f50ab3"
+    ],
+    "unknown_survivors": [
+      "codex/rte-benchmark-r1-first-campaign",
+      "tp/serena-audit-runtime-io-tools",
+      "tp/serena-runtime-fix",
+      "tp/serena-upstream-contract-diff",
+      "feat/rte-structured-outputs-all-providers"
+    ]
+  },
+  "graph_checks": [
+    {
+      "branch": "tp/rte-full-run-hygiene-and-launch-readiness",
+      "against": "origin/main",
+      "is_ancestor": false
+    },
+    {
+      "branch": "codex/rte-seam-extraction-foundation-v2",
+      "against": "origin/main",
+      "is_ancestor": false
+    },
+    {
+      "branch": "tp/gh-review-thread-agent",
+      "against": "origin/main",
+      "is_ancestor": false
+    },
+    {
+      "branch": "codex/ci-unit-shard-experiment",
+      "against": "origin/main",
+      "is_ancestor": false
+    },
+    {
+      "branch": "codex/dopecode-ast-navigation-20260417",
+      "against": "origin/main",
+      "is_ancestor": false
+    },
+    {
+      "branch": "feat/rte-v5-prescan-contract-unification",
+      "against": "origin/main",
+      "is_ancestor": false
+    }
+  ],
+  "cleanup_attempts": [
+    {
+      "command": "git worktree remove --force /private/tmp/dopemux-pr467",
+      "exit_code": 128,
+      "result": "blocked_missing_gitlink"
+    },
+    {
+      "command": "git worktree remove --force /private/tmp/dopemux-pr480",
+      "exit_code": 128,
+      "result": "blocked_missing_gitlink"
+    },
+    {
+      "command": "git worktree prune --verbose --expire now",
+      "exit_code": 0,
+      "result": "removed stale admin entries for dopemux-pr467 and dopemux-pr480"
+    },
+    {
+      "command": "rm -rf /private/tmp/dopemux-pr467",
+      "exit_code": 0,
+      "result": "orphan temp directory removed"
+    },
+    {
+      "command": "rm -rf /private/tmp/dopemux-pr480",
+      "exit_code": 0,
+      "result": "orphan temp directory removed"
+    }
+  ],
+  "post_cleanup_observations": {
+    "worktree_list_absent": [
+      "/private/tmp/dopemux-pr467",
+      "/private/tmp/dopemux-pr480"
+    ],
+    "filesystem_absent": [
+      "/private/tmp/dopemux-pr467",
+      "/private/tmp/dopemux-pr480"
+    ],
+    "preserved_local_branches": [
+      "pr/467",
+      "pr/480"
+    ],
+    "no_local_branch_deletions": true,
+    "pre_existing_unrelated_state": [
+      "M AGENTS.md",
+      "?? .claude/worktrees/"
+    ]
+  },
+  "constraints_honored": {
+    "no_runtime_code_modified": true,
+    "no_service_code_modified": true,
+    "no_production_config_modified": true,
+    "no_remote_branches_deleted": true,
+    "no_force_deleted_local_branches": true,
+    "open_pr_branches_preserved": true
+  },
+  "residual_risk": [
+    "Blocked local branches still lack current ancestor proof to origin/main.",
+    "Closed-unmerged survivors remain intentionally preserved.",
+    "Dirty, owner-ambiguous, and unknown survivors remain unresolved."
+  ]
+}
