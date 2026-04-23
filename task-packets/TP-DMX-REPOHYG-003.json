@@ -121,8 +121,7 @@
       "context_files": [
         "RULES.md",
         "TRUTH_GAPS.md",
-        "SYSTEM_BOUNDARIES.md",
-        "dopetask-cannonical-spec.json"
+"SYSTEM_BOUNDARIES.md"
       ]
     },
     {

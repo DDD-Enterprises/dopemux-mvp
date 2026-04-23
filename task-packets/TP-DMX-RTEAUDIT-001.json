@@ -191,7 +191,6 @@
         "The resulting pack is ready to hand to GPT-5.4 Pro."
       ],
       "context_files": [
-        "dopetask-cannonical-spec.json",
         "PAL_EXECUTION_RULES.md",
         "PAL_PACKET_TEMPLATE.md"
       ]
