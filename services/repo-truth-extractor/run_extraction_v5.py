@@ -5789,7 +5789,7 @@ def _resolve_phase_sp_prompts() -> List[PromptSpec]:
 def get_phase_prompts(phase: str) -> List[PromptSpec]:
     phase_code = str(phase or "").upper()
     if phase_code == "S":
-        return _legacy_phase_prompt_specs("S")
+        return _resolve_phase_s_prompts(get_active_s_prompts_mode())
     if phase_code == "SP":
         return _resolve_phase_sp_prompts()
     return _legacy_phase_prompt_specs(phase_code)
@@ -6468,6 +6468,20 @@ def _write_prescan_receipt(
     if result:
         receipt["duration_seconds"] = getattr(result, "duration_seconds", 0)
         receipt["file_count"] = getattr(result, "file_count", 0)
+        
+        # Log and record estimated savings from the optimize pass
+        intelligence = getattr(result, "intelligence", {}) or {}
+        grok_results = intelligence.get("grok_passes", {})
+        optimize_results = grok_results.get("optimize", {})
+        savings = optimize_results.get("estimated_savings")
+        if savings:
+            receipt["estimated_savings"] = savings
+            logger.info(
+                "💰 Prescan Savings: %d files skipped, %d compressed (est. %.1f%% reduction)",
+                savings.get("files_skipped", 0),
+                savings.get("files_compressed", 0),
+                savings.get("estimated_token_reduction_pct", 0.0),
+            )
 
     write_json(output_dir / "prescan_stage_receipt.json", receipt)
 
