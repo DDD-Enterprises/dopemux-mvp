@@ -83,73 +83,75 @@ Repo truth beats docs.
 <claude-mem-context>
 # Memory Context
 
-# [dopemux-mvp] recent context, 2026-04-23 8:11am PDT
+# [dopemux-mvp] recent context, 2026-04-23 10:42am PDT
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 50 obs (15,273t read) | 2,436,613t work | 99% savings
+Stats: 50 obs (18,808t read) | 1,725,644t work | 99% savings
 
-### Apr 22, 2026
-S2 Investigate and resolve 'find_file' policy warning (Apr 22 at 7:44 PM)
-S1 Address policy file warning and confirm Claude-Mem functionality (Apr 22 at 7:44 PM)
-S3 Identify and locate 'find_file' policy rules for removal (Apr 22 at 7:44 PM)
-S4 Fix Antigravity MCP config JSON error (Apr 22 at 7:44 PM)
-S5 Fix Antigravity MCP config JSON error (Apr 22 at 7:46 PM)
-S6 Rerun claude-mem installer after fixing Antigravity config (Apr 22 at 7:46 PM)
-S7 Rerun claude-mem installer after fixing Antigravity config (Apr 22 at 7:50 PM)
 ### Apr 23, 2026
-1967 6:22a 🔵 Initiated unit tests for dopemux PM writes
-1968 " 🔵 Initiated unit tests for dopemux UI PM writes
-1969 " 🔵 Initiated unit tests for PM route contracts
-1970 " 🔵 Initiated API tests for dopemux
-1971 " 🔵 Unit tests for dopemux PM writes passed
-1972 " 🔵 Unit tests for dopemux UI PM writes passed
-1977 " 🔴 Fixed PM API test for unrecognized status classification
-1986 " 🔵 Found remaining imports of dopemux.pm.writes
-1988 " 🔵 Found references to workflow transition and update operations
-1989 " ✅ Modified PM writes and related files
-1990 " 🔄 Refactored PM write boundary and models
-1991 " ✅ Staged modifications and untracked files
-1992 6:23a 🔴 Pre-commit hooks failed due to missing YAML dependency
-1960 " 🔵 Missing core Python dependencies in virtual environment
-1993 " 🔴 Pre-commit hooks failed due to missing YAML and trailing whitespace issues
-1994 " ✅ Staged modifications and untracked files after pre-commit hooks
-1995 " ✅ Cleaned up trailing whitespace in audit report files
-1997 " ✅ Applied patch to audit report files
-1999 6:24a ✅ Applied patch to audit report files
-2000 " 🔵 No staged changes detected in audit reports
-2001 " ✅ Pre-commit hooks passed for documentation files
-2002 " 🔴 Trailing whitespace detected and fixed in audit reports
-2003 " ✅ Applied patch to audit report files
-1976 6:26a 🔴 Fixed AttributeError in PM route contracts test
-1987 6:29a 🔵 Found usage of dormant /api/pm/work-items/ routes
-1998 6:31a ✅ Applied patch to audit report files
-2082 7:11a ✅ Verify and harden phase-1 PM writes slice
-2083 " 🔵 Staged modifications for PM writes slice
-2084 7:12a 🔵 No diff found for audit report files
-2085 " 🔵 GitHub CLI authentication status confirmed
-2087 7:13a 🔵 Worktree verification and staged files confirmed
-2086 " ✅ Staged changes for PM writes slice
-2088 " ✅ Committed changes for PM writes verification
-2089 " ✅ Pushed branch and created Pull Request
-2090 " ✅ Branch pushed and Pull Request created
-2091 " 🔵 Current commit hash confirmed
-2211 7:48a 🔵 Current Git Worktree and Branch Status
-2212 " 🔵 Codebase Search for PM Write and Mirroring Keywords
-2210 " ⚖️ Verification Strategy for PM Write Implementation
-2213 " 🔵 PM API Test Suite Structure and Functionality
-2214 " 🔵 UI Rendering Tests for PM Writes and Confirmations
-2215 " 🔵 Unit Tests for PM Write Functions and Classification
-2216 " 🔵 Task Orchestrator Adapter Contract Tests
-2217 7:49a 🔵 PM Writes Phase 1 Authority Map and Constraints
-2218 " 🔵 PM Writes Module: Core Logic and API Definitions
-2219 " 🔵 PM Writes UI Helper Functions for Confirmations and Receipts
-2320 8:07a 🔵 Open Pull Requests
-2322 " 🔵 GitHub Pull Request Status
-2319 " ✅ Status check
-2324 " 🔵 GitHub Pull Request Status Details
+2731 9:33a ✅ Initial repository and branch verification for RTE audit
+2732 " ✅ Verification of audit artifact integrity
+2733 " ✅ Verification of audit artifact diff
+2734 " 🔵 Identified canonical RTE runtime source
+2735 " 🔵 Established audit scope boundaries and authority documents
+2737 " 🔵 Confirmed project root directory
+2740 " ✅ Updated audit plan status
+2741 " 🔵 Confirmed repository remote origin
+2743 " 🔵 Confirmed presence of .dopetaskroot marker
+2744 " 🔵 Confirmed current branch
+2750 " 🔵 Repository status indicates divergence from remote
+2753 " 🔵 AGENTS.md content analyzed
+2755 " 🔵 Truth Canonicals document analyzed
+2756 " 🔵 Truth Systems document analyzed
+2758 " 🔵 Truth Gaps document analyzed
+2759 " 🔵 Truth Interfaces document analyzed
+2761 " 🔵 Truth Scope document analyzed
+2764 " 🔵 System Boundaries document analyzed
+2766 " 🔵 PM Plane document analyzed
+2826 9:45a 🔵 Dopemux MVP Project Root Confirmed
+2828 " 🔵 Dopemux Documentation Search Yields Relevant Architecture Files
+2819 9:46a ⚖️ Adopt Dopemux Adaptive Ingress Plane Architecture
+2820 " ⚖️ Dopemux Architecture: Gateway-Shim Split and Authority Separation
+2821 " ⚖️ Dopemux Gateway and Shim Responsibilities Defined
+2822 " ⚖️ Dopemux Canonical Event Model and Taxonomy
+2823 " ⚖️ Dopemux Service-Tier Consolidation Policy
+2824 " ⚖️ Dopemux Migration Plan for Adaptive Ingress Gateway
+2833 " 🔵 Dopemux ADR Index and PM-Plane Authority Spine
+2834 " 🔵 Dopemux ADR Light Template Structure
+2836 " 🔵 Dopemux Architecture Documentation Files
+2838 " 🔵 Dopemux ADR and Reference Documentation Snippets
+2840 " 🔵 Dopemux Multi-Agent Ingress Architecture Design
+2841 " 🔵 Dopemux ADR Record Template Structure
+2842 " 🔵 Dopemux PM Plane Authority Boundaries Defined
+2843 " 🔵 Dopemux Multi-Agent Ingress Architecture - Detailed Implementation and Migration
+2844 " 🔵 Dopemux Multi-Agent Ingress Architecture Document Line Count
+2848 " 🔵 Dopemux Multi-Agent Ingress Architecture - Failure Modes, Open Questions, and Task Packet Revisions
+2849 " 🔵 Dopemux Multi-Agent Ingress Architecture - Failure Modes, Open Questions, and Task Packet Revisions
+2892 9:54a ✅ Initializing Gemini Deep PAL Audit for RTE
+2893 " ✅ Establishing Audit Target and Scope Boundaries
+2894 " ✅ Auditing RTE Execution Logic and Gate Behavior
+2895 " ✅ Auditing Prompt Architecture and Canonicality
+2896 " ✅ Auditing Model Selection, Routing, and Repair Mechanisms
+2897 " ✅ Auditing Operator UX and Observability
+2898 " ✅ Finalizing Deep Audit Verdict and Action Map
+2899 9:55a 🔵 Repository Identity and State Confirmation
+2900 " 🔵 Detailed Repository State and Modified Files
+2902 " 🔵 Locating Canonical RTE Runtime and Configuration Directories
+S80 Examine `llm_runtime.py` for LLM interaction and routing implementation. (Apr 23 at 10:00 AM)
+S81 Audit RTE implementation: LLM interaction, routing, and reporting. (Apr 23 at 10:00 AM)
+S82 Audit RTE implementation: Locate UI classes in `run_extraction_v5.py`. (Apr 23 at 10:00 AM)
+S83 Audit RTE implementation: Investigate 'UNKNOWN' value handling. (Apr 23 at 10:00 AM)
+S84 Audit RTE implementation: Investigate 'UNKNOWN' value usage and provenance integrity. (Apr 23 at 10:00 AM)
+S85 Finalize audit report and proof artifact for RTE Gemini Deep PAL. (Apr 23 at 10:01 AM)
+S86 Draft final audit report for RTE Gemini Deep PAL. (Apr 23 at 10:01 AM)
+S87 Update Task Packet Index after audit completion. (Apr 23 at 10:01 AM)
+S88 Update Task Packet Index to reflect audit completion. (Apr 23 at 10:01 AM)
+S89 Complete RTE Deep PAL Audit and document findings. (Apr 23 at 10:28 AM)
+3039 10:29a 🔵 UI class initialization and rich output configuration
+3063 10:42a 🟣 Establish `dopemux rte` as canonical operator entrypoint
 
-Access 2437k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 1726k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>
