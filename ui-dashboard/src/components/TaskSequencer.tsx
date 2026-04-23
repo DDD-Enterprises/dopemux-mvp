@@ -400,7 +400,19 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               </Button>
             </Tooltip>
             <Tooltip title={optimizedTasks.length <= 1 ? 'No other tasks to skip to' : 'Skip for Now'} arrow>
-              <span>
+              <Box
+                component="span"
+                tabIndex={optimizedTasks.length <= 1 ? 0 : -1}
+                aria-disabled={optimizedTasks.length <= 1 ? 'true' : undefined}
+                sx={{
+                  display: 'inline-flex',
+                  borderRadius: 1,
+                  outline: 'none',
+                  '&:focus-visible': {
+                    boxShadow: `0 0 0 2px ${brandTokens.colors.gremlinPink}`,
+                  },
+                }}
+              >
                 <Button
                   size="small"
                   variant="text"
@@ -412,7 +424,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                 >
                   Skip
                 </Button>
-              </span>
+              </Box>
             </Tooltip>
           </Box>
         </Box>
@@ -506,7 +518,16 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           <Box
             component="span"
             tabIndex={0}
-            sx={{ display: 'flex', alignItems: 'center', cursor: 'help', outline: 'none' }}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              cursor: 'help',
+              outline: 'none',
+              borderRadius: 1,
+              '&:focus-visible': {
+                boxShadow: `0 0 0 2px ${brandTokens.colors.gremlinPink}`,
+              },
+            }}
             aria-label="Ritual phases: Consent, Calibration, Chaos, and Care"
           >
             <Flame size={16} color={brandTokens.colors.gremlinPink} aria-hidden="true" />
