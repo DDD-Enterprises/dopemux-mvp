@@ -65,7 +65,7 @@ class PrescanConfig:
     large_json_threshold: int = 256 * 1024
     max_corpus_size: int = 500 * 1024 * 1024
     chars_per_token: float = 4.0
-    
+
     # ── Orchestration ──
     deep_mode: bool = False
     deep_include_globs: list[str] = field(default_factory=lambda: [
@@ -73,30 +73,30 @@ class PrescanConfig:
         "docs/archive/**",
         "docs/archive/completed-projects/**"
     ])
-    
+
     # ── Enrichment ──
     enable_code_prescan: bool = True
     code_languages: list[str] = field(default_factory=lambda: ["python", "typescript", "javascript"])
     enable_git_enrichment: bool = True
-    
+
     # ── Execution ──
     incremental: bool = False
     incremental_baseline: str | None = None
     allow_online_llm: bool = False
     online_authorized: bool | None = None
     allow_scope_reduction: bool = False
-    
+
     # ── Batching ──
     batch_mode: bool = True
     max_tokens_per_batch: int = 1_500_000
-    
+
     # ── Model & Provider ──
     provider: str = "xai"
     model: str = "grok-4.20-beta-0309-non-reasoning"
     api_key_env: str = "XAI_API_KEY"
     xai_base_url: str = "https://api.x.ai/v1"
     temperature: float = 0.0
-    
+
     # ── Analysis ──
     cost_estimate: bool = True
     verbose: bool = False
@@ -118,11 +118,11 @@ class PrescanResult:
     errors: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
     metadata: dict = field(default_factory=dict)
-    
+
     # ── Extraction hints ──
     skip_duplicate_paths: list[str] = field(default_factory=list)
     version_chains: dict[str, list[str]] = field(default_factory=dict)
-    
+
     # ── Batching results ──
     batch_plan_path: Path | None = None
     batch_count: int = 0

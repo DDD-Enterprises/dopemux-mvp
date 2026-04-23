@@ -76,8 +76,11 @@ class PrescanEngine:
             intelligence["version_chains"] = duplicates["chains"]
             intelligence["version_chain_count"] = len(duplicates["chains"])
 
-            code_graph_path = self._write_code_graph()
-            code_report_path = self._write_code_report(entries, manifest)
+            code_graph_path: Path | None = None
+            code_report_path: Path | None = None
+            if self.config.enable_code_prescan:
+                code_graph_path = self._write_code_graph()
+                code_report_path = self._write_code_report(entries, manifest)
 
             batch_plans: dict[str, Any] = {}
             batch_plan_path: Path | None = None
@@ -226,7 +229,7 @@ class PrescanEngine:
     ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
         if not self.config.enable_code_prescan:
             return [], {
-                "enabled": bool(incremental),
+                "enabled": bool(self.config.enable_code_prescan),
                 "changed_files_count": 0,
                 "cached_code_analysis_reused": 0,
                 "reanalyzed_code_files": 0,
@@ -262,7 +265,7 @@ class PrescanEngine:
         code_intel.sort(key=lambda item: str(item.get("rel_path") or ""))
         cache.write(entries, code_intel, self._get_git_sha())
         return code_intel, {
-            "enabled": bool(incremental),
+            "enabled": bool(self.config.enable_code_prescan),
             "changed_files_count": len(changed_files or set()) if incremental else 0,
             "cached_code_analysis_reused": reused,
             "reanalyzed_code_files": reanalyzed,
