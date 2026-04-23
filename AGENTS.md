@@ -83,13 +83,13 @@ Repo truth beats docs.
 <claude-mem-context>
 # Memory Context
 
-# [dopemux-mvp] recent context, 2026-04-23 8:04am PDT
+# [dopemux-mvp] recent context, 2026-04-23 8:11am PDT
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 50 obs (15,639t read) | 2,704,189t work | 99% savings
+Stats: 50 obs (15,273t read) | 2,436,613t work | 99% savings
 
 ### Apr 22, 2026
 S2 Investigate and resolve 'find_file' policy warning (Apr 22 at 7:44 PM)
@@ -100,10 +100,6 @@ S5 Fix Antigravity MCP config JSON error (Apr 22 at 7:46 PM)
 S6 Rerun claude-mem installer after fixing Antigravity config (Apr 22 at 7:46 PM)
 S7 Rerun claude-mem installer after fixing Antigravity config (Apr 22 at 7:50 PM)
 ### Apr 23, 2026
-1963 6:21a 🔵 Verified core dependencies in multiple project worktrees
-1964 " 🔵 Identified uv cache directory
-1965 " ✅ Replaced virtual environment with a symbolic link
-1966 " 🔵 Verified core Python dependencies after symbolic link creation
 1967 6:22a 🔵 Initiated unit tests for dopemux PM writes
 1968 " 🔵 Initiated unit tests for dopemux UI PM writes
 1969 " 🔵 Initiated unit tests for PM route contracts
@@ -150,6 +146,10 @@ S7 Rerun claude-mem installer after fixing Antigravity config (Apr 22 at 7:50 PM
 2217 7:49a 🔵 PM Writes Phase 1 Authority Map and Constraints
 2218 " 🔵 PM Writes Module: Core Logic and API Definitions
 2219 " 🔵 PM Writes UI Helper Functions for Confirmations and Receipts
+2320 8:07a 🔵 Open Pull Requests
+2322 " 🔵 GitHub Pull Request Status
+2319 " ✅ Status check
+2324 " 🔵 GitHub Pull Request Status Details
 
-Access 2704k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 2437k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>
