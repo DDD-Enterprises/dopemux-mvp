@@ -86,9 +86,10 @@ services:
     - MYSQL_DATABASE=${MYSQL_DATABASE:-leantime}
     - MYSQL_USER=${MYSQL_USER:-leantime}
     - MYSQL_PASSWORD=${MYSQL_PASSWORD:-leantime_dev_password}
-command: >-
-      --character-set-server=UTF8MB4 --collation-server=UTF8MB4_unicode_ci
+    command: '--character-set-server=UTF8MB4 --collation-server=UTF8MB4_unicode_ci
       --default-authentication-plugin=mysql_native_password
+
+      '
     volumes:
     - leantime_mysql_data:/var/lib/mysql
     healthcheck:
@@ -107,8 +108,11 @@ command: >-
     networks:
     - dopemux-network
     command: 'sh -c ''if [ -n "$$REDIS_PASSWORD" ]; then exec redis-server --appendonly
-command: >-
-      sh -c 'if [ -n "$$REDIS_PASSWORD" ]; then exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD"; else exec redis-server --appendonly yes; fi'
+      yes --requirepass "$$REDIS_PASSWORD"; else exec redis-server --appendonly yes;
+      fi''
+
+      '
+    environment:
     - REDIS_PASSWORD=${REDIS_PASSWORD:-}
     volumes:
     - leantime_redis_data:/data
