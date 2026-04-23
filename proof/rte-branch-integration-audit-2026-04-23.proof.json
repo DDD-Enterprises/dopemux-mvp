@@ -1,0 +1,156 @@
+{
+  "packet_id": "TP-DMX-RTEINT-001",
+  "audit_id": "rte-branch-integration-audit-2026-04-23",
+  "execution_branch": "codex/rte-integration-staging-audit",
+  "execution_date": "2026-04-23",
+  "repo_identity": {
+    "repo_root": "/Users/hue/code/dopemux-mvp",
+    "repo_marker_present": true,
+    "origin_remote": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "origin_identity_match": true
+  },
+  "authority": {
+    "used": [
+      "runtime code under services/repo-truth-extractor/",
+      "wrapper code under src/dopemux/commands/",
+      "repo hygiene reports and proofs from TP-DMX-REPOHYG-002 and TP-DMX-REPOHYG-003",
+      "current git graph",
+      "current PR state from gh CLI"
+    ],
+    "missing_expected_docs": [
+      "TRUTH_SYSTEMS.md",
+      "TRUTH_CANONICALS.md",
+      "TRUTH_GAPS.md",
+      "SYSTEM_RepoTruthExtractor.md",
+      "TRUTH_INTERFACES.md",
+      "PAL_EXECUTION_RULES.md"
+    ]
+  },
+  "branch_inventory": [
+    {
+      "branch": "tp/rte-full-run-hygiene-and-launch-readiness",
+      "classification": "merged_with_ci_tail_excluded",
+      "integrated": false,
+      "evidence": [
+        "git cherry -v origin/main shows runtime-bearing commits as patch-equivalent (-)",
+        "only remaining positive tail is 3af380e42 chore(ci): retrigger CodeQL with updated workflow"
+      ]
+    },
+    {
+      "branch": "codex/rte-seam-extraction-foundation-v2",
+      "classification": "already_merged_or_superseded",
+      "integrated": false,
+      "evidence": [
+        "git cherry -v origin/main shows seam extraction commits as patch-equivalent (-)"
+      ]
+    },
+    {
+      "branch": "feat/rte-v5-full-prescan-integration",
+      "classification": "merged_line_with_stale_non_ancestor_head",
+      "integrated": false,
+      "evidence": [
+        "main already contains Stage 0 flags and run_integrated_prescan_stage",
+        "raw cherry-pick of 76dfeb6e2 conflicted with current runner and CLI surfaces"
+      ]
+    },
+    {
+      "branch": "feat/rte-v5-prescan-contract-unification",
+      "classification": "closed_unmerged_semantically_overlapped",
+      "integrated": false,
+      "evidence": [
+        "main already contains candidate_routes, ExecutionEvidence, RoutingExhausted, prescan_llm_attempts.json, and test_prescan_hardening.py",
+        "raw cherry-pick of bf3a9244d conflicted across current engine/grok/models/provider catalog surfaces"
+      ]
+    },
+    {
+      "branch": "feat/rte-prescan-first-live-hardening",
+      "classification": "closed_unmerged_partially_overlapped",
+      "integrated": false,
+      "evidence": [
+        "main already contains most hardening surfaces and test_prescan_hardening.py",
+        "no isolated required runtime delta was proven from this line"
+      ]
+    },
+    {
+      "branch": "feat/rte-prescan-stage0-live-lane-proving",
+      "classification": "still_current_bounded_delta",
+      "integrated": true,
+      "integration_mode": "manual_bounded_patch",
+      "evidence": [
+        "targeted validation initially failed in test_prescan_live_lane.py because prescan_live_lane_success.json was not written",
+        "non-batch live prescan runs were still forced through the batched path, leaving attempt evidence empty"
+      ]
+    },
+    {
+      "branch": "codex/rte-benchmark-r1-first-campaign",
+      "classification": "mixed_branch_not_mergeable",
+      "integrated": false
+    },
+    {
+      "branch": "feat/rte-structured-outputs-all-providers",
+      "classification": "divergent_multi_plane_branch",
+      "integrated": false
+    },
+    {
+      "branch": "codex/rte-intelligence-routing-proof",
+      "classification": "already_merged",
+      "integrated": false
+    },
+    {
+      "branch": "extractor/prompt-governance-gtm",
+      "classification": "already_landed_on_main",
+      "integrated": false
+    },
+    {
+      "branch": "packet/rte-07-post-v1-deferred",
+      "classification": "mixed_branch_excluded",
+      "integrated": false
+    },
+    {
+      "branch": "codex/rte-adapter-smoke",
+      "classification": "reference_only_other_plane",
+      "integrated": false
+    }
+  ],
+  "integrated_delta": {
+    "files_changed": [
+      "services/repo-truth-extractor/lib/prescan/engine.py",
+      "services/repo-truth-extractor/lib/prescan/provider_catalog.py",
+      "services/repo-truth-extractor/run_extraction_v5.py"
+    ],
+    "branch_line_delta": [
+      "write prescan_live_lane_success.json when an authorized live lane is selected",
+      "record selected_live_routes in stage0 metadata",
+      "run non-batch live prescan passes through run_passes instead of forcing the batched path"
+    ],
+    "validation_blocker_repair": {
+      "file": "services/repo-truth-extractor/run_extraction_v5.py",
+      "problem": "IndentationError at line 11083 on current main",
+      "source_commit": "b241d427b",
+      "repair": "re-indent route_entry assignment inside strict_contract_required block"
+    }
+  },
+  "validation": {
+    "commands": [
+      "python -m py_compile services/repo-truth-extractor/lib/prescan/engine.py services/repo-truth-extractor/lib/prescan/provider_catalog.py services/repo-truth-extractor/run_extraction_v5.py",
+      "uv run --with pytest python -m pytest -q services/repo-truth-extractor/tests/test_prescan_hardening.py services/repo-truth-extractor/tests/test_prescan_live_lane.py services/repo-truth-extractor/tests/test_prescan_provider_catalog.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py"
+    ],
+    "intermediate_failures": [
+      {
+        "test": "services/repo-truth-extractor/tests/test_prescan_live_lane.py::test_authorized_live_lane_writes_success_artifact_and_uses_selected_route",
+        "observed_problem": "prescan_live_lane_success.json absent, then attempt evidence empty on non-batch path"
+      },
+      {
+        "command": "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py",
+        "observed_problem": "IndentationError: unexpected indent (run_extraction_v5.py, line 11083)"
+      }
+    ],
+    "final_result": "pass",
+    "warning": "pytest reported PytestConfigWarning: Unknown config option: asyncio_mode"
+  },
+  "residual_risk": [
+    "Expected truth-doc paths referenced by AGENTS.md remain absent in this checkout.",
+    "No full live-provider end-to-end run was executed in this packet.",
+    "Several historical RTE branches still diverge from main, but no additional bounded missing delta was proven here."
+  ]
+}
