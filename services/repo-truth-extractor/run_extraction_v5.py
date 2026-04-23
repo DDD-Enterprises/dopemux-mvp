@@ -352,6 +352,7 @@ try:
         build_openai_response_format,
         build_provider_step_contract_output,
         build_provider_structured_output,
+        canonicalize_artifacts,
         contract_lane as resolve_contract_lane,
         describe_contract_failure,
         empty_payload_for_artifact,
@@ -7141,7 +7142,25 @@ def _apply_router_partition_hints(
     except (ImportError, ModuleNotFoundError):
         brief_gen = None
     for partition in partitions:
-        partition["paths"] = active_router.reorder_partition(partition["paths"])
+        paths = list(partition["paths"])
+        partition["paths"] = active_router.reorder_partition(paths)
+        
+        # Inject dynamic tier overrides based on prescan intelligence
+        highest_tier = None
+        for path in paths:
+            path_str = str(path)
+            router_tier = active_router.get_model_tier(path_str)
+            if router_tier == "premium":
+                highest_tier = "synthesis"
+                break # Synthesis is highest reachable via dynamic upgrade
+            elif router_tier == "standard" and highest_tier != "synthesis":
+                highest_tier = "extract"
+            elif router_tier == "economy" and highest_tier is None:
+                highest_tier = "bulk"
+        
+        if highest_tier:
+            partition["tier_override"] = highest_tier
+            
         if brief_gen:
             brief = brief_gen.generate_brief(phase, partition["paths"])
             if brief:
@@ -18517,8 +18536,13 @@ def main() -> None:
             webhook_required=_env_is_truthy(DPMX_WEBHOOK_REQUIRED_ENV),
             webhook_auto_continue=_env_is_truthy(DPMX_WEBHOOK_AUTO_CONTINUE_ENV),
             live_ok=_env_is_truthy(DPMX_LIVE_OK_ENV),
+            allow_online_llm=args.allow_online_llm,
             max_cost_usd=args.max_cost_usd,
             selected_execution_step=selected_execution_step,
+            prescan_skip=bool(args.skip_prescan),
+            prescan_online=bool(args.prescan_online),
+            prescan_import_dir=args.prescan_import_dir,
+            prescan_allow_scope_reduction=bool(args.prescan_allow_scope_reduction),
             d0_max_files=args.d0_max_files,
             d1_max_files=args.d1_max_files,
             router=router,
