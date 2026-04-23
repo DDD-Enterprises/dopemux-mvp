@@ -536,6 +536,8 @@ def build_prescan_routing_plan(
                 "economic_surface": str(route.get("economic_surface") or ""),
                 "execution_transport": str(route.get("execution_transport") or ""),
                 "pricing": dict(route.get("pricing") or {}),
+                "structured_output_mode": str(route.get("structured_output_mode") or "none"),
+                "strict_json_schema": bool(route.get("strict_json_schema", False)),
             }
             for route in pass_candidates
         ]
@@ -547,6 +549,8 @@ def build_prescan_routing_plan(
             "provider": str(selected.get("provider")),
             "model_id": str(selected.get("model_id")),
             "api_key_env": str(selected.get("api_key_env")),
+            "structured_output_mode": str(selected.get("structured_output_mode") or "none"),
+            "strict_json_schema": bool(selected.get("strict_json_schema", False)),
             "dependency_class": str(selected.get("dependency_class") or ""),
             "economic_surface": str(selected.get("economic_surface") or ""),
             "selection_basis": "lowest_estimated_cost_within_allowed_tier_band_after_readiness",
