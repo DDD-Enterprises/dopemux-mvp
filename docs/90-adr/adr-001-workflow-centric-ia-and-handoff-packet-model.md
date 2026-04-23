@@ -12,10 +12,10 @@ prelude: Architecture Decision Record for Round 2 operator shell redesign from s
 
 # ADR-001: Workflow-Centric IA and Handoff Packet Authority Model
 
-**Status**: Proposed  
-**Date**: 2026-04-23  
-**Owners**: @hu3mann  
-**Supersedes**: v1.0 service-centric 7-tab IA (SPEC.md §11.1)  
+**Status**: Proposed
+**Date**: 2026-04-23
+**Owners**: @hu3mann
+**Supersedes**: v1.0 service-centric 7-tab IA (SPEC.md §11.1)
 **Blocks**: any implementation decomposition or app-shell work that assumes packet or mode state.
 
 ## Context
