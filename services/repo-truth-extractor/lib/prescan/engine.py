@@ -25,6 +25,7 @@ from .provider_catalog import (
     build_prescan_routing_plan,
     build_provider_model_catalog,
     build_provider_readiness_matrix,
+    write_live_lane_success_artifact,
     write_no_live_lane_artifact,
     write_provider_catalog,
     write_provider_readiness,
@@ -91,6 +92,7 @@ class PrescanEngine:
                     "catalog_status": "PASS",
                     "provider_readiness_status": stage0["readiness"]["status"],
                     "routing_plan_status": stage0["routing_plan"]["status"],
+                    "selected_live_routes": stage0["routing_plan"].get("selected_routes", {}),
                 }
                 if stage0["routing_plan"]["status"] == NO_LIVE_LANE:
                     write_no_live_lane_artifact(self.config.output_dir, stage0["routing_plan"])
@@ -112,13 +114,23 @@ class PrescanEngine:
                         metadata=metadata,
                     )
                 if self.config.allow_online_llm:
-                    grok_results = self.grok_runner.run_passes_batched(
-                        passes,
-                        intelligence,
-                        manifest,
-                        batch_plans,
-                        routing_plan=stage0["routing_plan"],
-                    )
+                    write_live_lane_success_artifact(self.config.output_dir, stage0["routing_plan"])
+                if self.config.allow_online_llm:
+                    if self.config.batch_mode and batch_plans:
+                        grok_results = self.grok_runner.run_passes_batched(
+                            passes,
+                            intelligence,
+                            manifest,
+                            batch_plans,
+                            routing_plan=stage0["routing_plan"],
+                        )
+                    else:
+                        grok_results = self.grok_runner.run_passes(
+                            passes,
+                            intelligence,
+                            manifest,
+                            routing_plan=stage0["routing_plan"],
+                        )
                     intelligence["grok_passes"] = grok_results
 
             intelligence_path = self._write_json("prescan_intelligence.json", intelligence)

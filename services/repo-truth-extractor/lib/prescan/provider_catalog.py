@@ -609,3 +609,19 @@ def write_no_live_lane_artifact(output_dir: Path, plan: dict[str, Any]) -> Path:
     }
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
+
+
+def write_live_lane_success_artifact(output_dir: Path, plan: dict[str, Any]) -> Path:
+    path = output_dir / "prescan_live_lane_success.json"
+    payload = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "status": "LIVE_LANE_READY",
+        "halt_before_stage_1": False,
+        "requested_passes": list(plan.get("requested_passes") or []),
+        "provider_readiness_status": str(plan.get("provider_readiness_status") or "UNKNOWN"),
+        "selected_routes": dict(plan.get("selected_routes") or {}),
+        "candidate_routes": dict(plan.get("candidate_routes") or {}),
+        "fallback_decisions": dict(plan.get("fallback_decisions") or {}),
+    }
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path

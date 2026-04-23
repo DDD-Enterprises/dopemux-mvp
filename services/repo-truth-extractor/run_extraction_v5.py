@@ -11069,7 +11069,7 @@ def execute_step_for_partitions(
     draft_structured_output_meta: Dict[str, Any] = {}
     if strict_contract_required and isinstance(step_contract, dict):
         primary_routes = route_entries_for_stage(step_contract, "primary")
-route_entry = next(
+        route_entry = next(
             (
                 candidate
                 for candidate in primary_routes
