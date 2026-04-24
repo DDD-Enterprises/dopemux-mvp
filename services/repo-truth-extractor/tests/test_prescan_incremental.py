@@ -68,6 +68,56 @@ class FakeNoop:
         return None
 
 
+class CountingClassifier:
+    def __init__(self) -> None:
+        self.calls: list[str] = []
+
+    def classify_file(self, entry: FileEntry) -> str:
+        self.calls.append(entry.rel_path)
+        return "canonical" if entry.rel_path.startswith("src/") else "operational"
+
+
+class CountingGitEnricher:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def enrich(self, entries: list[FileEntry]) -> None:
+        self.calls += 1
+        for entry in entries:
+            entry.lifecycle_stage = "fresh"
+            entry.last_commit_date = "2026-04-01"
+            entry.contributor_count = 2
+            entry.churn_score = 0.5
+
+
+class CountingDuplicateDetector:
+    def __init__(self) -> None:
+        self.duplicate_calls = 0
+        self.chain_calls = 0
+
+    def detect_duplicates(self, entries: list[FileEntry]) -> None:
+        self.duplicate_calls += 1
+        by_hash: dict[str, list[FileEntry]] = {}
+        for entry in entries:
+            if entry.content_hash:
+                by_hash.setdefault(entry.content_hash, []).append(entry)
+        for content_hash, group in by_hash.items():
+            if len(group) < 2:
+                continue
+            canonical = min(group, key=lambda item: item.rel_path)
+            for entry in group:
+                entry.duplicate_group_id = content_hash[:8]
+                if entry is canonical:
+                    entry.is_duplicate = False
+                    entry.canonical_duplicate = None
+                else:
+                    entry.is_duplicate = True
+                    entry.canonical_duplicate = canonical.rel_path
+
+    def detect_version_chains(self, entries: list[FileEntry]) -> None:
+        self.chain_calls += 1
+
+
 class FakeCostEstimator:
     def estimate(self, entries: list[FileEntry]) -> dict[str, Any]:
         return {"estimated_tokens": len(entries)}
@@ -160,8 +210,10 @@ def _make_engine(tmp_path: Path, files: dict[str, str], *, output_name: str = "o
 
 def _patch_code_report_builder(monkeypatch) -> None:
     import lib.prescan.code_intelligence_report as code_report_module
+    import lib.prescan.engine as engine_module
 
     monkeypatch.setattr(code_report_module, "CodeIntelligenceBuilder", FakeCodeIntelligenceBuilder)
+    monkeypatch.setattr(engine_module, "CodeIntelligenceBuilder", FakeCodeIntelligenceBuilder)
 
 
 def _cache_path(output_dir: Path) -> Path:
@@ -180,6 +232,7 @@ def _normalized_outputs(output_dir: Path) -> dict[str, Any]:
 
     intelligence["generated_at"] = "normalized"
     report["generated_at"] = "normalized"
+    graph["generated_at"] = "normalized"
 
     return {
         "intelligence": intelligence,
@@ -209,6 +262,8 @@ def test_incremental_no_change_reuses_warm_cache(tmp_path: Path, monkeypatch) ->
     assert second.success
     assert code_prescan.calls == []
     assert second.warnings == []
+    assert second.metadata["incremental"]["cached_classifications_reused"] == 2
+    assert second.metadata["incremental"]["cached_duplicate_detection_reused"] == 2
 
 
 def test_incremental_changed_file_recomputes_only_changed_entry(tmp_path: Path, monkeypatch) -> None:
@@ -228,6 +283,73 @@ def test_incremental_changed_file_recomputes_only_changed_entry(tmp_path: Path, 
 
     assert result.success
     assert code_prescan.calls == ["src/b.py"]
+
+
+def test_incremental_no_change_reuses_classifier_git_and_duplicate_outputs(tmp_path: Path, monkeypatch) -> None:
+    _patch_code_report_builder(monkeypatch)
+    files = {
+        "src/a.py": "def same():\n    return 1\n",
+        "src/copy.py": "def same():\n    return 1\n",
+    }
+    engine, _walker, code_prescan = _make_engine(tmp_path, files, enable_git_enrichment=True)
+    classifier = CountingClassifier()
+    git_enricher = CountingGitEnricher()
+    duplicate_detector = CountingDuplicateDetector()
+    engine.classifier = classifier
+    engine.git_enricher = git_enricher
+    engine.duplicate_detector = duplicate_detector
+    monkeypatch.setattr(engine, "_get_changed_files", set)
+
+    first = engine.run()
+    assert first.success
+    assert classifier.calls == ["src/a.py", "src/copy.py"]
+    assert git_enricher.calls == 1
+    assert duplicate_detector.duplicate_calls == 1
+
+    classifier.calls.clear()
+    code_prescan.calls.clear()
+    second = engine.run(incremental=True)
+    manifest = _load_json(engine.config.output_dir / "corpus_manifest.json")
+
+    assert second.success
+    assert classifier.calls == []
+    assert code_prescan.calls == []
+    assert git_enricher.calls == 1
+    assert duplicate_detector.duplicate_calls == 1
+    assert second.metadata["incremental"]["cached_classifications_reused"] == 2
+    assert second.metadata["incremental"]["cached_git_enrichment_reused"] == 2
+    assert second.metadata["incremental"]["cached_duplicate_detection_reused"] == 2
+    assert {entry["lifecycle_stage"] for entry in manifest} == {"fresh"}
+    assert any(entry["is_duplicate"] for entry in manifest)
+
+
+def test_incremental_changed_file_recomputes_corpus_wide_git_and_duplicates(tmp_path: Path, monkeypatch) -> None:
+    _patch_code_report_builder(monkeypatch)
+    files = {
+        "src/a.py": "def same():\n    return 1\n",
+        "src/b.py": "def other():\n    return 2\n",
+    }
+    engine, walker, _code_prescan = _make_engine(tmp_path, files, enable_git_enrichment=True)
+    classifier = CountingClassifier()
+    git_enricher = CountingGitEnricher()
+    duplicate_detector = CountingDuplicateDetector()
+    engine.classifier = classifier
+    engine.git_enricher = git_enricher
+    engine.duplicate_detector = duplicate_detector
+    monkeypatch.setattr(engine, "_get_changed_files", lambda: {"src/b.py"})
+
+    assert engine.run().success
+    walker.files["src/b.py"] = "def same():\n    return 1\n"
+    classifier.calls.clear()
+    result = engine.run(incremental=True)
+
+    assert result.success
+    assert classifier.calls == ["src/b.py"]
+    assert git_enricher.calls == 2
+    assert duplicate_detector.duplicate_calls == 2
+    assert result.metadata["incremental"]["cached_classifications_reused"] == 1
+    assert result.metadata["incremental"]["cached_git_enrichment_reused"] == 0
+    assert result.metadata["incremental"]["cached_duplicate_detection_reused"] == 0
 
 
 def test_incremental_added_file_only_analyzes_new_entry(tmp_path: Path, monkeypatch) -> None:
