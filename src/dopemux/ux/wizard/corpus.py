@@ -1,11 +1,13 @@
-"""Stage 2: Corpus audit — run doc_audit_prescan and visualise results."""
+"""Stage 2: Corpus audit — run canonical v5 integrated prescan and visualize results."""
 
 from __future__ import annotations
 
+import importlib.util
 import json
-import subprocess
 import sys
 from pathlib import Path
+from types import ModuleType, SimpleNamespace
+from typing import Any, Dict, List, Tuple
 
 from dopemux.console import console
 
@@ -13,138 +15,129 @@ from .display import render_corpus_table, render_educational_panel
 from .stages import AUTHORITY_CLASSES, StageResult, StageStatus, WizardState
 
 
+def _load_v5_runner_module(repo_root: Path) -> ModuleType:
+    runner_path = repo_root / "services" / "repo-truth-extractor" / "run_extraction_v5.py"
+    if not runner_path.exists():
+        raise FileNotFoundError(f"Canonical v5 runner not found: {runner_path}")
+
+    spec = importlib.util.spec_from_file_location("dopemux_wizard_rte_v5", runner_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Could not load spec for {runner_path}")
+
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def _build_corpus_stats(manifest: List[Dict[str, Any]]) -> Dict[str, Any]:
+    included = [entry for entry in manifest if entry.get("include", False)]
+    by_class: Dict[str, Dict[str, int]] = {}
+    by_extension: Dict[str, int] = {}
+    by_directory: Dict[str, int] = {}
+
+    for entry in included:
+        authority_class = str(entry.get("authority_class", "unknown") or "unknown")
+        size_bytes = int(entry.get("size_bytes", 0) or 0)
+        rel_path = str(entry.get("rel_path", "") or "")
+        extension = str(entry.get("extension", "") or "")
+        top_dir = rel_path.split("/", 1)[0] if "/" in rel_path else "root"
+
+        cls_row = by_class.setdefault(authority_class, {"count": 0, "total_size": 0})
+        cls_row["count"] += 1
+        cls_row["total_size"] += size_bytes
+        by_extension[extension] = by_extension.get(extension, 0) + 1
+        by_directory[top_dir] = by_directory.get(top_dir, 0) + 1
+
+    return {
+        "total_files_scanned": len(manifest),
+        "included_count": len(included),
+        "excluded_count": len(manifest) - len(included),
+        "total_included_size": sum(int(entry.get("size_bytes", 0) or 0) for entry in included),
+        "by_class": by_class,
+        "by_extension": dict(sorted(by_extension.items())),
+        "by_directory": dict(sorted(by_directory.items())),
+    }
+
+
+def _run_integrated_v5_prescan(state: WizardState) -> Tuple[Path, Any]:
+    module = _load_v5_runner_module(state.repo_root)
+    run_root = (
+        state.repo_root
+        / "extraction"
+        / "repo-truth-extractor"
+        / "v5"
+        / "runs"
+        / state.run_id
+    )
+    run_root.mkdir(parents=True, exist_ok=True)
+    cfg = SimpleNamespace(
+        prescan_skip=False,
+        prescan_import_dir=None,
+        prescan_online=False,
+        allow_online_llm=False,
+        prescan_allow_scope_reduction=False,
+    )
+    router = module.run_integrated_prescan_stage(state.repo_root, run_root, cfg)
+    return run_root / "prescan", router
+
+
 def run_corpus_audit(state: WizardState) -> StageResult:
-    """Stage 2 — Run the prescan script and parse + display results."""
-    import os
-    from rich.prompt import Confirm
+    """Stage 2 — Run canonical Stage 0 prescan and parse its manifest/intelligence."""
+    if not state.run_id:
+        return StageResult(status=StageStatus.FAILED, message="Wizard run_id is missing")
 
-    prescan_script = state.repo_root / "scripts" / "doc_audit_prescan.py"
-    if not prescan_script.exists():
-        console.print("[bold red]❌  scripts/doc_audit_prescan.py not found[/bold red]")
-        return StageResult(status=StageStatus.FAILED, message="Prescan script missing")
-
-    # Stage 2a: Quick heuristic prescan
-    console.print("[bold cyan]Running corpus prescan (heuristic mode — fast, no API calls)…[/bold cyan]\n")
-    cmd = [sys.executable, str(prescan_script), "dry-run", "--verbose", "--force"]
-    result = subprocess.run(
-        cmd,
-        capture_output=True,
-        text=True,
-        cwd=str(state.repo_root),
-        timeout=300,
+    console.print(
+        "[bold cyan]Running canonical v5 integrated Phase 0 prescan "
+        "(local analysis only — no live provider spend)…[/bold cyan]\n"
     )
 
-    if result.returncode != 0:
-        console.print(f"[bold red]Prescan failed (exit {result.returncode})[/bold red]")
-        if result.stderr:
-            console.print(f"[red]{result.stderr[:500]}[/red]")
-        return StageResult(status=StageStatus.FAILED, message="Prescan subprocess failed")
+    try:
+        prescan_dir, router = _run_integrated_v5_prescan(state)
+    except Exception as exc:
+        console.print(f"[bold red]Integrated prescan failed: {exc}[/bold red]")
+        return StageResult(status=StageStatus.FAILED, message="Integrated prescan failed")
 
-    # Parse outputs
-    prescan_dir = state.repo_root / "extraction" / "prescan"
-    stats_path = prescan_dir / "corpus_stats.json"
+    # Parse canonical v5 outputs
     manifest_path = prescan_dir / "corpus_manifest.json"
+    intelligence_path = prescan_dir / "prescan_intelligence.json"
 
-    if not stats_path.exists():
-        console.print("[bold red]❌  corpus_stats.json not found after prescan[/bold red]")
+    if not manifest_path.exists():
+        console.print("[bold red]❌  corpus_manifest.json not found after integrated prescan[/bold red]")
         return StageResult(status=StageStatus.FAILED, message="Prescan output missing")
 
     try:
-        with open(stats_path) as f:
-            state.corpus_stats = json.load(f)
+        with open(manifest_path, encoding="utf-8") as f:
+            state.corpus_manifest = json.load(f)
     except (json.JSONDecodeError, OSError) as exc:
-        console.print(f"[bold red]Failed to parse corpus_stats.json: {exc}[/bold red]")
-        return StageResult(status=StageStatus.FAILED, message="Stats JSON parse error")
+        console.print(f"[bold red]Failed to parse corpus_manifest.json: {exc}[/bold red]")
+        return StageResult(status=StageStatus.FAILED, message="Manifest JSON parse error")
 
-    # Manifest is large — load only included files for phase mapping later
-    if manifest_path.exists():
+    intelligence: Dict[str, Any] = {}
+    if intelligence_path.exists():
         try:
-            with open(manifest_path) as f:
-                state.corpus_manifest = json.load(f)
+            with open(intelligence_path, encoding="utf-8") as f:
+                intelligence = json.load(f)
         except (json.JSONDecodeError, OSError):
-            state.corpus_manifest = None  # non-fatal
+            intelligence = {}
 
-    # Populate convenience fields
+    state.corpus_stats = _build_corpus_stats(state.corpus_manifest or [])
     state.corpus_included_count = state.corpus_stats.get("included_count", 0)
     state.corpus_total_size = state.corpus_stats.get("total_included_size", 0)
+    state.intelligence_router = router
+    state.prescan_dir = str(prescan_dir)
+    state.code_intelligence = intelligence.get("code_intelligence")
 
-    # Display heuristic results
+    # Display integrated prescan results
     console.print()
     render_corpus_table(state.corpus_stats)
 
-    # Show excluded count
     excluded = state.corpus_stats.get("excluded_count", 0)
     total_scanned = state.corpus_stats.get("total_files_scanned", 0)
     console.print(
         f"\n  [dim]Scanned {total_scanned:,} total files  •  "
-        f"{excluded:,} excluded (noise/binaries/vendor)[/dim]"
+        f"{excluded:,} excluded (noise/binaries/vendor/caches)[/dim]"
     )
-
-    # Stage 2b: Offer Grok 420 classification upgrade
-    console.print()
-    has_grok_key = bool(os.environ.get("XAI_API_KEY"))
-    if has_grok_key:
-        render_educational_panel(
-            "Upgrade: Grok 420 LLM Classification",
-            "The heuristic classification above uses file paths and names.\n\n"
-            "Grok 420 can provide more accurate authority classification by\n"
-            "analyzing actual file content. This costs ~$0.05-0.10 per 10K files\n"
-            "but gives higher precision for edge cases.\n\n"
-            "[bold]Your XAI_API_KEY is set.[/bold] You can upgrade to Grok classification now.",
-        )
-        if Confirm.ask("[cyan]Use Grok 420 for LLM-based classification?[/cyan]", default=False):
-            console.print("[bold cyan]Running prescan with Grok 420…[/bold cyan]\n")
-            cmd = [
-                sys.executable,
-                str(prescan_script),
-                "direct",
-                "--verbose",
-                "--model",
-                "grok-4.20-beta-0309-non-reasoning",
-            ]
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                cwd=str(state.repo_root),
-                timeout=600,  # Grok calls take longer
-            )
-            if result.returncode != 0:
-                console.print(
-                    "[bold yellow]⚠️   Grok call failed, using heuristic results[/bold yellow]"
-                )
-                if state.educate_mode:
-                    console.print(
-                        "[dim]This can happen if the API is unavailable or "
-                        "your quota is exhausted.[/dim]"
-                    )
-            else:
-                # Reload stats from Grok response
-                try:
-                    grok_response_path = (
-                        state.repo_root / "extraction" / "prescan" / "grok_response.json"
-                    )
-                    if grok_response_path.exists():
-                        with open(grok_response_path) as f:
-                            grok_data = json.load(f)
-                        # Merge Grok classifications into state
-                        state.grok_response = grok_data
-                        console.print(
-                            f"[bold green]✓ Grok classified {len(grok_data.get('classifications', []))} files[/bold green]"
-                        )
-                except (json.JSONDecodeError, OSError):
-                    console.print("[dim]Could not parse Grok response[/dim]")
-    else:
-        if state.educate_mode:
-            render_educational_panel(
-                "Grok 420 Optional Upgrade",
-                "The prescan supports Grok 420 (xAI) for LLM-based classification.\n\n"
-                "This gives more accurate authority detection for edge cases,\n"
-                "especially in mixed-content repositories.\n\n"
-                "[bold]Your XAI_API_KEY is not set.[/bold] To enable Grok:\n"
-                "  export XAI_API_KEY=xai-...\n\n"
-                "Or ask an admin to provision API credentials.",
-            )
 
     # Educational content
     if state.educate_mode:
@@ -153,15 +146,23 @@ def run_corpus_audit(state: WizardState) -> StageResult:
             for cls, meta in AUTHORITY_CLASSES.items()
         )
         render_educational_panel(
-            "What are authority classes?",
-            "The prescan classifies every file by its role in the repository:\n\n"
+            "Integrated Phase 0 prescan",
+            "The wizard now uses the same integrated Stage 0 prescan as the canonical v5 extractor.\n\n"
+            "This pass runs local dedup, discovery, feasibility, and optimization analysis,\n"
+            "writes canonical prescan artifacts under the current v5 run root, and prepares\n"
+            "routing intelligence that later wizard phases can reuse.\n\n"
+            "Authority classes still describe each file's role in the repository:\n\n"
             f"{class_descriptions}\n\n"
-            "This classification determines which extraction phases will process each file\n"
-            "and helps estimate cost and partition counts.",
+            f"Prescan artifacts for this wizard run live at:\n  {prescan_dir}",
         )
 
     return StageResult(
         status=StageStatus.COMPLETED,
         message=f"{state.corpus_included_count:,} files, {state.corpus_total_size / (1024*1024):.1f} MB",
-        data={"included": state.corpus_included_count, "size": state.corpus_total_size},
+        data={
+            "included": state.corpus_included_count,
+            "size": state.corpus_total_size,
+            "prescan_dir": state.prescan_dir,
+            "router_loaded": bool(state.intelligence_router),
+        },
     )

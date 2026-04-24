@@ -1,4 +1,4 @@
-"""Stage 7: Completion summary and next-steps recommendations."""
+"""Stage 8: Completion summary and next-steps recommendations."""
 
 from __future__ import annotations
 
@@ -50,7 +50,7 @@ def _parse_timeline(run_dir: Path) -> Dict[str, Any]:
 
 
 def run_summary(state: WizardState) -> StageResult:
-    """Stage 7 — Display final summary, telemetry stats, and next steps."""
+    """Stage 8 — Display final summary, telemetry stats, and next steps."""
 
     # Main summary panel
     render_summary_panel(state)

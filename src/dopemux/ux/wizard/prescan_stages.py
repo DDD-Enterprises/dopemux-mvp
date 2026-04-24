@@ -1,4 +1,4 @@
-"""New wizard stages: Code Intelligence (stage 6 in 9-stage layout).
+"""Code intelligence summary helper for prescan flows.
 
 Other prescan stages (prescan config, archaeology, quality gate) are merged
 into existing stages per DC3: prescan config → welcome, archaeology → corpus
@@ -14,7 +14,7 @@ from .stages import StageResult, StageStatus, WizardState
 
 
 def run_code_intelligence(state: WizardState) -> StageResult:
-    """Stage 6 — Display code intelligence summary.
+    """Display code intelligence summary.
 
     Shows dead code candidates, complexity hotspots, coverage gaps,
     hub files, and extraction priority ordering.
