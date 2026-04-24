@@ -3128,12 +3128,14 @@ cli.add_command(workflow_group, "workflow")
 
 
 from .commands.upgrades_commands import upgrades
+upgrades.help = "Legacy compatibility alias for `dopemux rte`. Use `dopemux rte` for Repo Truth Extractor operations."
 
 cli.add_command(upgrades)
 
 
 from .commands.extractor_commands import extractor, _run_extractor_runner, _run_repscan_runner
 from .commands.extractor_validation import ValidationConfig, run_live_validation
+extractor.help = "Legacy promptset and prescan tooling. Use `dopemux rte` for canonical Repo Truth Extractor execution."
 
 cli.add_command(extractor)
 
@@ -4628,7 +4630,7 @@ _ROUTING_POLICY_CHOICES = [
     "optimal",
 ]
 _LEGACY_DEFAULT_ROUTING_POLICY = "cost"
-_V5_DEFAULT_ROUTING_POLICY = "balanced_openrouter"
+_V5_DEFAULT_ROUTING_POLICY = "cost"
 
 
 def _pipeline_version_options(command_fn: Callable) -> Callable:
@@ -4673,6 +4675,12 @@ def _run_truth_v5_alias(
     args.extend(["--partition-workers", str(max(1, int(workers)))])
     args.extend(["--routing-policy", routing_policy])
     _run_extractor_runner(pipeline_version="v5", args=args)
+
+
+@click.group("rte")
+def rte():
+    """Canonical operator entrypoint for Repo Truth Extractor."""
+    pass
 
 
 @upgrades.command("list")
@@ -5102,10 +5110,10 @@ def extractor_validate_live(
 
     \b
     Examples:
-      dopemux upgrades validate-live --promptset-root /tmp/promptset
-      dopemux upgrades validate-live --stage provider_probe --promptset-root /tmp/promptset
-      dopemux upgrades validate-live --stage phase_slice --promptset-root /tmp/promptset --pricing-manifest pricing.json
-      dopemux upgrades validate-live --stage full_phased --promptset-root /tmp/promptset --pricing-manifest pricing.json
+      dopemux rte validate-live --promptset-root /tmp/promptset
+      dopemux rte validate-live --stage provider_probe --promptset-root /tmp/promptset
+      dopemux rte validate-live --stage phase_slice --promptset-root /tmp/promptset --pricing-manifest pricing.json
+      dopemux rte validate-live --stage full_phased --promptset-root /tmp/promptset --pricing-manifest pricing.json
     """
     payload = run_live_validation(
         ValidationConfig(
@@ -5164,7 +5172,7 @@ def extractor_promptset_audit(
 
     \b
     Example:
-      dopemux upgrades promptset audit --pipeline-version v4 --strict
+      dopemux rte promptset audit --pipeline-version v4 --strict
     """
     effective_version = _resolved_pipeline_version(
         pipeline_version, engine_version_legacy
@@ -5231,24 +5239,15 @@ def truth_command(
     routing_policy: str,
 ):
     """
-    👁️  Truth Extraction: Compatibility alias for canonical v5 extraction
-
-    Routes directly to the canonical v5 extractor with ``--phase ALL``.
+    👁️  Truth Extraction: deprecated legacy surface
     """
-    del ctx
-    if execute:
-        dry_run = False
-    if deep:
-        raise click.ClickException(
-            "`dopemux truth --deep` is not supported on the canonical v5 path. "
-            "Use `dopemux upgrades run --pipeline-version v5` with explicit promptset and phase controls."
-        )
-    _run_truth_v5_alias(
-        phase="ALL",
-        dry_run=dry_run,
-        resume=resume,
-        workers=workers,
-        routing_policy=routing_policy,
+    del ctx, dry_run, execute, deep, resume, workers, routing_policy
+    raise click.ClickException(
+        "`dopemux truth` is no longer a supported operator entrypoint for Repo Truth Extractor.\n\n"
+        "Use the canonical `dopemux rte` family instead:\n"
+        "  dopemux rte run --pipeline-version v5 --phase ALL --dry-run\n"
+        "  dopemux rte preflight --pipeline-version v5 --promptset-root /abs/path/to/generated/promptset\n"
+        "  dopemux rte validate-live --promptset-root /abs/path/to/generated/promptset"
     )
 
 
@@ -5264,6 +5263,14 @@ _add_extractor_alias_if_missing(extractor_status, "status")
 _add_extractor_alias_if_missing(extractor_preflight, "preflight")
 _add_extractor_alias_if_missing(extractor_trace, "trace")
 
+rte.add_command(extractor_list, "list")
+rte.add_command(extractor_run, "run")
+rte.add_command(extractor_doctor, "doctor")
+rte.add_command(extractor_status, "status")
+rte.add_command(extractor_preflight, "preflight")
+rte.add_command(extractor_validate_live, "validate-live")
+rte.add_command(extractor_trace, "trace")
+
 
 @extractor.group("promptset")
 def extractor_promptset_group():
@@ -5272,6 +5279,16 @@ def extractor_promptset_group():
 
 
 extractor_promptset_group.add_command(extractor_promptset_audit, "audit")
+
+
+@rte.group("promptset")
+def rte_promptset_group():
+    """Promptset utilities for Repo Truth Extractor."""
+    pass
+
+
+rte_promptset_group.add_command(extractor_promptset_audit, "audit")
+cli.add_command(rte, "rte")
 
 
 # from src/dopemux/commands/memory_commands.py

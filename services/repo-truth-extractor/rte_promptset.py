@@ -36,12 +36,6 @@ def set_active_s_prompts_mode(
         raise RuntimeError(
             f"Unsupported S prompts mode {mode!r}. Expected one of: {allowed}"
         )
-    if normalized != legacy_mode:
-        logger.warning(
-            "Ignoring S prompts mode=%s; phase S always uses legacy prompts. Use phase SP for registry-backed pipeline prompts.",
-            normalized,
-        )
-        normalized = legacy_mode
     return normalized
 
 
@@ -65,13 +59,6 @@ def get_active_s_prompts_mode(
         raise RuntimeError(
             f"{env_var_name} must be one of {allowed}. Got: {env_mode}"
         )
-    if env_mode != legacy_mode:
-        logger.warning(
-            "Ignoring %s=%s; phase S always uses legacy prompts. Use phase SP for registry-backed pipeline prompts.",
-            env_var_name,
-            env_mode,
-        )
-        return legacy_mode
     return env_mode
 
 

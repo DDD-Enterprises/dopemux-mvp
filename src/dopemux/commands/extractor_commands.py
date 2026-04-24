@@ -2,7 +2,7 @@
 Legacy extractor promptset and prescan tooling.
 
 `dopemux extractor` is not the canonical operator path for repo-truth runs.
-Operators should use `dopemux extract truth-run`, which launches the canonical
+Operators should use `dopemux rte run`, which launches the canonical
 `services/repo-truth-extractor/run_extraction_v5.py` runtime.
 """
 
@@ -33,12 +33,12 @@ def extractor(ctx):
 
     This group remains available for promptset generation, prescan, and validation
     chores. It is not the canonical operator path for running extraction. Use
-    `dopemux extract truth-run` for canonical v5 execution.
+    `dopemux rte run` for canonical v5 execution.
     """
     if ctx.invoked_subcommand:
         click.echo(
             "`dopemux extractor` is legacy promptset tooling. "
-            "Use `dopemux extract truth-run` for canonical v5 execution."
+            "Use `dopemux rte run` for canonical v5 execution."
         )
 
 
@@ -106,13 +106,13 @@ def prescan(
 
     This command is deprecated and no longer supported.
     Integrated Stage 0 prescan is now the default behavior for v5 extraction.
-    Use `dopemux extract truth-run` instead.
+    Use `dopemux rte run` instead.
     """
     raise click.ClickException(
         "The legacy 'dopemux extractor prescan' command is deprecated and has been disabled.\n\n"
         "Integrated Stage 0 prescan is now the default behavior for canonical v5 extraction.\n"
         "To run a prescan or full extraction, use:\n"
-        "  dopemux extract truth-run --phase A --dry-run\n\n"
+        "  dopemux rte run --pipeline-version v5 --phase A --dry-run\n\n"
         "To explicitly skip the integrated prescan, pass --skip-prescan.\n"
         "To load precomputed prescan intelligence, pass --import-prescan <DIR>."
     )
@@ -285,7 +285,7 @@ def run(
     """🚀 Legacy compatibility entrypoint for promptset-oriented extractor runs.
 
     This command is retained for legacy promptset workflows only. Canonical operator
-    execution should use `dopemux extract truth-run`, which launches the v5 runtime.
+    execution should use `dopemux rte run`, which launches the v5 runtime.
     """
     console.print(
         styled_panel(
@@ -299,7 +299,7 @@ def run(
     console.print(
         "[error]⚠ SAFETY NOTICE:[/error] `dopemux extractor run` is a legacy surface and "
         "direct execution is disabled to prevent accidental provider costs.\n"
-        "Use `dopemux extract truth-run` for the canonical operator path."
+        "Use `dopemux rte run` for the canonical operator path."
     )
     console.print(f"\nWould run: pipeline={pipeline}")
     if promptset_root:
@@ -350,12 +350,12 @@ def status(
     This is not the canonical runtime run-status surface. When a pipeline version
     or run identifier is supplied, this command acts as an explicit legacy alias
     to the extractor runtime status command while continuing to point operators
-    at `dopemux extract truth-run` as the canonical path.
+    at `dopemux rte run` as the canonical path.
     """
     if pipeline_version is not None or run_id is not None or status_json:
         console.print(
             "[warning]`dopemux extractor status` is a legacy alias.[/warning] "
-            "Use `dopemux extract truth-run` for the canonical operator path."
+            "Use `dopemux rte run` for the canonical operator path."
         )
         args: List[str] = ["--status-json" if status_json else "--status"]
         if run_id:

@@ -47,6 +47,7 @@ A packet is superseded by another packet
 | TP-DMX-REPOHYG-003 | Repo Hygiene | Resolve blocked and ambiguous cleanup survivors | Ready | N/A |
 | TP-DMX-RTEAUDIT-001 | Repo Truth Extractor | Assemble pre-live audit pack for GPT-5.4 Pro | Ready | N/A |
 | TP-DMX-RTEINT-001 | Repo Truth Extractor | Integrate current RTE branch deltas into staging audit branch | Ready | N/A |
+| TP-DMX-RTECANON-001 | Repo Truth Extractor | Establish `dopemux rte` as the canonical operator entrypoint | Ready | N/A |
 | PACKET_031 | Memory | Dual Capture Adapters, Single Ledger | Executing | ADR-213 |
 | PACKET_032 | Memory | Chronicle Promotion Guards | Pending Audit | ADR-214 |
 
@@ -55,6 +56,7 @@ A packet is superseded by another packet
 
 | Packet ID | Subsystem | Title | Completion Date | Outcome |
 | --- | --- | --- | --- | --- |
+| TP-DMX-RTEAUDIT-110 | Repo Truth Extractor | Gemini deep PAL audit across UX, prompts, routing, and operator readiness | 2026-04-23 | Accepted (Conditional Go) |
 | TP-PM-ARCH-04A | PM Plane | Canonical PMTask Model + Store (Unit-only) | 2026-03-22 | Accepted |
 | TP- PM-ARCH-04B | PM Plane | Canonical pm.* Events + Adapters | 2026-03-22 | Accepted |
 | PACKET_024 | Infra | MCP Health Surface Hardening | 2026-01-26 | Accepted |
