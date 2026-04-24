@@ -82,6 +82,26 @@ class TestTruthRunCommandRegistered(unittest.TestCase):
                          "doctor", "skip_hygiene", "apply_cleanup", "force"]:
             self.assertIn(expected, param_names, f"Option {expected!r} missing from truth-run")
 
+    def test_truth_run_default_routing_policy_is_cost(self):
+        """truth-run compatibility alias must inherit the canonical v5 cost policy."""
+        extract = self._import_extract_group()
+        cmd = extract.commands["truth-run"]
+        routing_option = next(p for p in cmd.params if p.name == "routing_policy")
+        self.assertEqual(routing_option.default, "cost")
+
+    def test_rte_group_is_registered(self):
+        """dopemux rte must exist as the canonical top-level operator family."""
+        src_path = str(_REPO_ROOT / "src")
+        if src_path not in sys.path:
+            sys.path.insert(0, src_path)
+        try:
+            from dopemux.cli import cli
+        except ImportError:
+            self.skipTest("dopemux.cli not importable in this test context")
+
+        self.assertIn("rte", cli.commands)
+        self.assertIn("run", cli.commands["rte"].commands)
+
 
 # ---------------------------------------------------------------------------
 # Test 2: partition_start_event adds to active dict
@@ -392,7 +412,7 @@ class TestImportV3MigrationLogic(unittest.TestCase):
             run_id="FULL_RUN",
             phase="ALL",
             workers=10,
-            routing_policy="balanced_openrouter",
+            routing_policy="cost",
             doctor=False,
             resume=True,
         )
@@ -418,7 +438,7 @@ class TestImportV3MigrationLogic(unittest.TestCase):
             run_id=None,
             phase="ALL",
             workers=10,
-            routing_policy="balanced_openrouter",
+            routing_policy="cost",
             doctor=False,
             resume=False,
         )
@@ -442,7 +462,7 @@ class TestImportV3MigrationLogic(unittest.TestCase):
             run_id=None,
             phase="ALL",
             workers=10,
-            routing_policy="balanced_openrouter",
+            routing_policy="cost",
             doctor=False,
             resume=True,
         )

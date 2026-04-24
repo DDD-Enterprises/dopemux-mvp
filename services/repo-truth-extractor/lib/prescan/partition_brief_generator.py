@@ -32,6 +32,7 @@ class PartitionBriefGenerator:
             h["rel_path"]: h
             for h in code_report.get("hub_files", [])
         }
+        self._global_imports: Dict[str, Set[str]] = {} # phase -> top imports
 
     def generate_brief(self, phase_key: str, partition_files: List[str]) -> str:
         """Build context brief for one partition."""
@@ -45,6 +46,12 @@ class PartitionBriefGenerator:
             f"Phase: {phase_key} | {len(partition_files)} files{hub_label}"
         ]
 
+        # Global context
+        phase_imports = sorted(
+            list(self._global_imports.get(phase_key, set())),
+            key=lambda x: x,
+        )[:10]
+        
         # Dependency flow (compact)
         flow = self._build_dependency_flow(partition_files)
         sig_lines = self._build_ranked_signatures(partition_files)
@@ -56,6 +63,9 @@ class PartitionBriefGenerator:
             lines: List[str] = []
             lines.extend(header_lines)
             lines.append("")
+            if phase_imports:
+                lines.append(f"Top imports in Phase {phase_key}: {', '.join(phase_imports)}")
+                lines.append("")
             if flow:
                 lines.append("Dependency Flow:")
                 for line in flow:
@@ -88,6 +98,17 @@ class PartitionBriefGenerator:
         self, phase_partitions: Dict[str, List[List[str]]]
     ) -> Dict[str, List[str]]:
         """Generate briefs for all partitions across all phases."""
+        # Pre-calculate global phase intelligence
+        for phase_key, partitions in phase_partitions.items():
+            all_imports: Set[str] = set()
+            for partition_files in partitions:
+                for f in partition_files:
+                    sigs = self._signatures.get(f, [])
+                    for sig in sigs:
+                        if sig.get("kind") == "import":
+                            all_imports.add(sig.get("name", ""))
+            self._global_imports[phase_key] = all_imports
+
         result: Dict[str, List[str]] = {}
         for phase_key, partitions in phase_partitions.items():
             result[phase_key] = [

@@ -140,6 +140,96 @@ models:
     pricing_caveat: Pricing is context-sensitive on the first-party page and the repo runtime model identifier is still preview-scoped.
     input_cost_per_m: 2.00
     output_cost_per_m: 12.00
+  anthropic/claude-3-5-sonnet-20241022:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://www.anthropic.com/pricing
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 3.00
+    output_unit_cost: 15.00
+    cached_input_cost: 0.30
+    batch_discount: 0.50
+    surface_scope: direct_provider
+    effective_start_date: "2024-10-22"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 3.00
+    output_cost_per_m: 15.00
+  anthropic/claude-3-5-haiku-20241022:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://www.anthropic.com/pricing
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 1.00
+    output_unit_cost: 5.00
+    cached_input_cost: 0.10
+    batch_discount: 0.50
+    surface_scope: direct_provider
+    effective_start_date: "2024-10-22"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 1.00
+    output_cost_per_m: 5.00
+  gemini/gemini-1.5-pro-002:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://ai.google.dev/pricing
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 1.25
+    output_unit_cost: 5.00
+    cached_input_cost: 0.3125
+    batch_discount: null
+    surface_scope: direct_provider
+    effective_start_date: "2024-09-24"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 1.25
+    output_cost_per_m: 5.00
+  gemini/gemini-1.5-flash-002:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://ai.google.dev/pricing
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 0.075
+    output_unit_cost: 0.30
+    cached_input_cost: 0.01875
+    batch_discount: null
+    surface_scope: direct_provider
+    effective_start_date: "2024-09-24"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 0.075
+    output_cost_per_m: 0.30
+  openai/gpt-4o:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://openai.com/api/pricing/
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 2.50
+    output_unit_cost: 10.00
+    cached_input_cost: 1.25
+    batch_discount: 0.50
+    surface_scope: direct_provider
+    effective_start_date: "2024-08-06"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 2.50
+    output_cost_per_m: 10.00
+  openai/gpt-4o-mini:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://openai.com/api/pricing/
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 0.15
+    output_unit_cost: 0.60
+    cached_input_cost: 0.075
+    batch_discount: 0.50
+    surface_scope: direct_provider
+    effective_start_date: "2024-07-18"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 0.15
+    output_cost_per_m: 0.60
   local/benchmark-fixture:
     pricing_source_type: not_applicable
     pricing_source_ref: local_fixture

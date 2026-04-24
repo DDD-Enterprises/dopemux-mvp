@@ -34,6 +34,9 @@ def extract(ctx):
     and pattern recognition. This subsystem synchronizes through markdown, YAML,
     and ADHD-specific content streams to build a high-fidelity model of your
     documentation corpus.
+
+    `dopemux extract truth-run` remains available as a compatibility alias for
+    Repo Truth Extractor, but `dopemux rte` is the canonical operator family.
     """
     pass
 
@@ -859,9 +862,9 @@ def _hygiene_severity_color(level: str) -> str:
 )
 @click.option(
     "--routing-policy",
-    default="balanced_openrouter",
+    default="cost",
     show_default=True,
-    help="📊 LLM routing policy for the extraction ritual (e.g., balanced_openrouter, high_fidelity).",
+    help="📊 LLM routing policy for the extraction ritual (default aligns with the canonical v5 runtime policy).",
 )
 @click.option(
     "--doctor",
@@ -955,6 +958,9 @@ def truth_run(
 
     \b
     To resume a legacy v3 session in the v5 cockpit:
+      dopemux rte run --pipeline-version v5 --run-id FULL_RUN --resume
+
+    Compatibility alias:
       dopemux extract truth-run --import-v3 FULL_RUN --resume
     """
     import shutil
@@ -1052,7 +1058,7 @@ def truth_run(
 
     resume_indicator = " [success]+resume[/success]" if resume else ""
     console.print(styled_panel(
-        f"[mint]🔬 dopemux extract truth-run[/mint]\n"
+        f"[mint]🔬 dopemux rte run[/mint] [text.dim](via dopemux extract truth-run compatibility alias)[/text.dim]\n"
         f"[text.dim]run_id=[/text.dim][bold]{display_run_id}[/bold]  "
         f"[text.dim]phase=[/text.dim][bold]{phase}[/bold]  "
         f"[text.dim]workers=[/text.dim][bold]{workers}[/bold]  "
