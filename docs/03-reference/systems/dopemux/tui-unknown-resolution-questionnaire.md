@@ -13,37 +13,24 @@ prelude: Seven open questions blocking implementation steps in the TUI Round 2 b
 # TUI Round 2 UNKNOWN Resolution Questionnaire
 
 **Date**: 2026-04-23
-**Status**: Fully Resolved
+**Status**: Partially Resolved
 **Scope**: Seven items carried forward from SPEC.md §9.5 (v2.0a §11.5)
-**Impact**: All seven items (U1-U7) are now resolved. Multi-backend source wiring is unblocked. Implementation can proceed with frozen transport contracts and immutable role/display/state/memory contracts.
+**Impact**: U1 remains partially open and still blocks broad source wiring. U2 and U3 remain open. U4, U5, U6, and U7 are resolved for this spec pass.
 
 ---
 
 ## U1: `Source` Adapter HTTP/RPC Surface Per Backend
 
-**Status**: RESOLVED
+**Status**: PARTIAL
 
 **Resolution applied**:
-All seven transports defined and locked. `dope-context` uses HTTP/JSON over bearer token from env, cursor pagination, and structured filter object. The six remaining backends (`task-orchestrator`, `leantime`, `conport`, `dope-memory`, `dopecon-bridge`, `dopetask`) each follow HTTP/JSON over HTTPS with bearer auth and cursor pagination.
+`dope-context` only is resolved to HTTP/JSON over bearer token from env, cursor pagination, and a structured filter object. The other six backends (`task-orchestrator`, `leantime`, `conport`, `dope-memory`, `dopecon-bridge`, `dopetask`) remain unresolved and must not be normalized by assumption.
 
-**Transport-Specific Details**:
-1. **task-orchestrator**: POST /transitions/{id} for workflow state changes; GET /work-items/{id}/workflow for queries
-2. **leantime**: PATCH /tickets/{id} for metadata updates; GET /tickets/{id}/metadata for queries
-3. **conport**: POST /progress-entries and POST /decisions for writes; GET /work-items/{id}/context for queries
-4. **dope-memory**: POST /chronicle-entries only (append-only); GET /chronicle/{id} for timeline queries; corrections via supersedes_id
-5. **dopecon-bridge**: POST /proxy/conport with policy-wrapped forwarding to canonical ConPort; role-gating enforced (shift-Y)
-6. **dopetask**: GET /health for direct health probing; POST /execute for task commands; POST /heartbeat for status (execution-only, no canonical writes)
+**What remains open**:
+For the six unresolved backends, protocol, auth model, pagination contract, and filter surface still need explicit runtime decisions.
 
-**Common Contract Elements**:
-All seven transports use:
-- Protocol: HTTP/JSON over HTTPS
-- Auth: Bearer token from DOPEMUX_<SERVICE>_API_KEY env variable
-- Pagination: Cursor-based (page_token, max_results)
-- Idempotency: X-Idempotency-Key header required
-- Error format: {error: string, code: string}
-
-**Why this decision**:
-Production wiring requires explicit, immutable transport contracts per backend. Append-only semantics (dope-memory), adapter-only proxy pattern (dopecon-bridge), and execution-only isolation (dopetask) preserve authority boundaries and prevent unintended cross-service mutations. Bearer-token auth over HTTPS with cursor pagination provides consistent auth model and scalable result handling across all seven services.
+**Why it still blocks implementation**:
+`Source` trait's concrete methods may now be written for `dope-context`, but multi-backend production wiring remains blocked for the other six services. Build step 3 is unblocked for `dope-context` rows only; build step 8 remains partial outside that slice.
 
 ---
 
@@ -153,7 +140,7 @@ Build step 11 may implement pin/unpin against append-only receipt semantics with
 
 | Item | Decision | Decided By | Date | Notes |
 |------|----------|-----------|------|-------|
-| U1 | RESOLVED: All seven transports defined and locked: dope-context (HTTP/JSON + bearer + cursor + filter) + six backends (task-orchestrator, leantime, conport, dope-memory, dopecon-bridge, dopetask) | Packet TP-DMX-TUI-TRANSPORT-ARCHITECTURE-005 | 2026-04-23 | All transports frozen; implementation can proceed; dopecon-bridge adapter-only (policy-wrapped proxy); dopetask execution-only (no canonical state); dope-memory append-only (chronicle) |
+| U1 | PARTIAL: dope-context resolved (HTTP/JSON + bearer + cursor + structured filter); 6 remaining | Packet TP-DMX-TUI-DOCS-PATCH-003 | 2026-04-23 | `dope-context` only; six backend transport decisions still open |
 | U2 | RESOLVED: Direct `/health` on dopetask, no aggregation | ADR-220 | 2026-04-23 | Direct probe ensures <5sec failure detection; sub-50ms response |
 | U3 | RESOLVED: 200 evt/sec + 15-min buffer + 50ms debounce | ADR-221 | 2026-04-23 | Balanced for frame budget & ADHD context windows; post-launch tuning enabled |
 | U4 | RESOLVED | Packet TP-DMX-TUI-DOCS-PATCH-003 | 2026-04-23 | Two-role session model: `operator`, `approver`, or both |
@@ -165,6 +152,6 @@ Build step 11 may implement pin/unpin against append-only receipt semantics with
 
 ## Next Steps
 
-1. All seven transports (U1 items) are now frozen and locked. Implementation can proceed immediately.
-2. All seven items (U1-U7) are resolved. Implementation planning can use all resolved constraints as hard bounds.
-3. Source wiring for all seven backends (task-orchestrator, leantime, conport, dope-memory, dopecon-bridge, dopetask, dope-context) is unblocked.
+1. Resolve the six non-`dope-context` transport decisions as engineering/runtime work.
+2. Resolve U2 and U3 against runtime evidence.
+3. Proceed with implementation planning using the resolved U4/U5/U6/U7 constraints and the partial U1 constraint as hard bounds.
