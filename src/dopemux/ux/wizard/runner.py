@@ -1,4 +1,4 @@
-"""WizardRunner — orchestrates the 8-stage guided extraction wizard."""
+"""WizardRunner — orchestrates the 9-stage guided extraction wizard."""
 
 from __future__ import annotations
 

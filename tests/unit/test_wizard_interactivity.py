@@ -132,6 +132,59 @@ def test_run_extraction_uses_v5_upgrades_wrapper_with_resume_and_rich_ui(
     assert recorded["env"]["PYTHONPATH"] == str(tmp_path / "src")
 
 
+def test_run_extraction_skips_pre_live_validator_when_disabled(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    recorded: dict[str, object] = {}
+
+    class _Prompt:
+        def ask(self) -> str:
+            return "Run"
+
+    fake_questionary = SimpleNamespace(
+        Style=lambda styles: styles,
+        select=lambda *args, **kwargs: _Prompt(),
+        confirm=lambda *args, **kwargs: _Prompt(),
+    )
+
+    class _Proc:
+        def __init__(self, cmd):
+            self.stdout = []
+            self.returncode = 0
+            recorded["cmd"] = list(cmd)
+
+        def wait(self) -> None:
+            return None
+
+    monkeypatch.setattr(
+        "dopemux.ux.wizard.extraction.require_questionary",
+        lambda: fake_questionary,
+    )
+    monkeypatch.setattr("dopemux.ux.wizard.extraction.PHASES", ["A"])
+    monkeypatch.setenv("PYTHONPATH", "")
+    monkeypatch.setattr(
+        "dopemux.ux.wizard.extraction.subprocess.Popen",
+        lambda cmd, **kwargs: recorded.update({"env": dict(kwargs.get("env") or {})}) or _Proc(cmd),
+    )
+
+    result = run_extraction(
+        WizardState(
+            repo_root=tmp_path,
+            execute_mode=True,
+            educate_mode=False,
+            selected_policy="balanced_openrouter",
+            workers=1,
+            run_id="RUN-20260415T120000",
+            validate_live=False,
+            skip_hygiene=True,
+        )
+    )
+
+    assert result.status is StageStatus.COMPLETED
+    assert "--skip-pre-live-validator" in recorded["cmd"]
+    assert "--skip-hygiene" not in recorded["cmd"]
+
+
 def test_run_corpus_audit_uses_integrated_v5_prescan_outputs(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:

@@ -42,7 +42,7 @@ class WizardState:
     intelligence_router: Optional[Any] = None
     prescan_dir: str = ""
     promptset_ready: bool = False
-    selected_policy: str = "cost"
+    selected_policy: str = "balanced_openrouter"
     run_id: str = ""
     workers: int = 1
     provider_key_overrides: Dict[str, str] = field(default_factory=dict)

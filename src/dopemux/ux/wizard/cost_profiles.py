@@ -1,4 +1,4 @@
-"""Stage 4: Cost profile selection sourced from canonical repo truth.
+"""Stage 5: Cost profile selection sourced from canonical repo truth.
 
 This module intentionally avoids importing ``run_extraction_v5.py`` directly.
 The runner has heavyweight runtime dependencies, so the wizard reads the

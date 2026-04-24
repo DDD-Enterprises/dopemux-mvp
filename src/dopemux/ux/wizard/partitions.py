@@ -1,4 +1,4 @@
-"""Stage 5: Partition preview — map corpus files to extraction phases."""
+"""Stage 6: Partition preview — map corpus files to extraction phases."""
 
 from __future__ import annotations
 
@@ -86,7 +86,7 @@ def map_corpus_to_phases(manifest: Optional[List[Dict[str, Any]]]) -> Dict[str, 
 
 
 def run_partition_preview(state: WizardState) -> StageResult:
-    """Stage 5 — Map corpus files to phases and show partition estimates."""
+    """Stage 6 — Map corpus files to phases and show partition estimates."""
 
     file_counts = map_corpus_to_phases(state.corpus_manifest)
 

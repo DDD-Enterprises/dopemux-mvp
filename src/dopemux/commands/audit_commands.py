@@ -101,8 +101,7 @@ def prescan(ctx, verbose: bool, force: bool, config: Optional[str]):
     help="💰 Spend Ceiling: Maximum USD to spend across all extraction phases before halting.",
 )
 @click.option(
-    "--validate-live",
-    is_flag=True,
+    "--validate-live/--no-validate-live",
     default=True,
     show_default=True,
     help="✅ Pre-Live Gate: Enforce the pre-live validator gate before spending.",
@@ -110,7 +109,7 @@ def prescan(ctx, verbose: bool, force: bool, config: Optional[str]):
 @click.option(
     "--skip-hygiene",
     is_flag=True,
-    help="⚠️ Bypass Preflight: Skip environment and credentials hygiene checks (not recommended).",
+    help="⚠️ Compatibility Flag: Accepted by the wizard UI but not forwarded to the v5 runner.",
 )
 @click.option(
     "--workers",

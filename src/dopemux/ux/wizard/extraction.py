@@ -1,4 +1,4 @@
-"""Stage 6: Phase-by-phase extraction via the canonical v5 runner."""
+"""Stage 7: Phase-by-phase extraction via the canonical v5 runner."""
 
 from __future__ import annotations
 
@@ -53,8 +53,9 @@ def _build_wizard_phase_command(state: WizardState, phase_key: str) -> list[str]
     if state.max_cost is not None:
         cmd.extend(["--max-cost-usd", str(state.max_cost)])
     if not state.validate_live:
+        cmd.append("--skip-pre-live-validator")
         console.print(
-            "[yellow]Validator bypass is not supported here; live execution still follows the runner's validator gate.[/yellow]"
+            "[yellow]Pre-live validator is disabled for this run; the runner will skip the validator-first gate.[/yellow]"
         )
     if state.skip_hygiene:
         console.print(
@@ -67,7 +68,7 @@ def _build_wizard_phase_command(state: WizardState, phase_key: str) -> list[str]
 
 
 def run_extraction(state: WizardState) -> StageResult:
-    """Stage 6 — Walk through extraction phases with interactive confirmation.
+    """Stage 7 — Walk through extraction phases with interactive confirmation.
 
     In preview mode (default), shows what would run without executing.
     With --execute, delegates each phase to the canonical v5 runner.
