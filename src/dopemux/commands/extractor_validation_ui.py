@@ -65,8 +65,14 @@ class BatchValidationUI:
         spend = payload.get("spend_ledger") or {}
         checkpoint.add_row("Promptset", str(payload.get("promptset_root") or ""))
         checkpoint.add_row("Routing", str(payload.get("routing_policy") or ""))
+        launch_profile = payload.get("launch_profile") or {}
+        checkpoint.add_row("Validator target", str(launch_profile.get("validator_target_policy") or payload.get("routing_policy") or ""))
         checkpoint.add_row("Consent", self._consent_state(payload))
-        checkpoint.add_row("Spend", f"${float(spend.get('total_estimated_upper_bound_usd', 0.0)):.2f}")
+        max_cost_val = payload.get("max_cost")
+        max_str = f" / max ${float(max_cost_val):.2f}" if max_cost_val is not None else ""
+        checkpoint.add_row("Spend", f"${float(spend.get('total_estimated_upper_bound_usd', 0.0)):.2f}{max_str}")
+        checkpoint.add_row("Launch fingerprint", str(payload.get("launch_profile_fingerprint") or ""))
+        checkpoint.add_row("Model map hash", str(launch_profile.get("promptset_model_map_sha256") or "unknown"))
         checkpoint.add_row("Safe to spend", self._safe_to_spend(payload))
         checkpoint.add_row("Why stopped spending", self._why_stopped(payload))
         self._console.print(checkpoint)
@@ -89,14 +95,28 @@ class BatchValidationUI:
             f"spend=${float(spend.get('total_estimated_upper_bound_usd', 0.0)):.2f} "
             f"open_breakers={self._open_breaker_count(payload)}"
         )
-        lines.append(f"promptset={payload.get('promptset_root')} routing_policy={payload.get('routing_policy')}")
+        launch_profile = payload.get("launch_profile") or {}
+        max_cost_val = payload.get("max_cost")
+        max_str = f"{float(max_cost_val):.2f}" if max_cost_val is not None else "none"
+        lines.append(
+            f"promptset={payload.get('promptset_root')} routing_policy={payload.get('routing_policy')} "
+            f"validator_target_policy={launch_profile.get('validator_target_policy') or payload.get('routing_policy')}"
+        )
+        lines.append(
+            f"launch_profile_fingerprint={payload.get('launch_profile_fingerprint')} "
+            f"model_map_sha256={launch_profile.get('promptset_model_map_sha256') or 'unknown'} "
+            f"max_cost={max_str}"
+        )
         lines.append(f"consent={self._consent_state(payload)}")
         lines.append("stage_rail=" + ", ".join(self._stage_rail(payload)))
+        lines.append(f"safe_to_spend={self._safe_to_spend(payload)}")
         lines.append(f"why_stopped_spending={self._why_stopped(payload)}")
         blockers = payload.get("blockers") or []
         if blockers:
             lines.append("blockers:")
-            lines.extend(f"- {blocker}" for blocker in blockers)
+            for blocker in blockers:
+                lines.append(f"- {blocker}")
+                lines.append(f"  next_action: {self._next_action_for_blocker(str(blocker))}")
         return "\n".join(lines)
 
     def _stage_rail(self, payload: Dict[str, Any]) -> List[str]:

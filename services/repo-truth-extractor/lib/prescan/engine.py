@@ -61,13 +61,34 @@ class PrescanEngine:
 
         try:
             entries = self.walker.walk()
-            self._classify(entries)
-            self._enrich(entries, warnings)
-            duplicates = self._detect_duplicates(entries)
+            cache = IncrementalCodeCache(self.config)
+            cache_payload, fallback_reason, changed_files = self._load_incremental_cache(cache, incremental, warnings)
+            incremental_meta: dict[str, Any] = {
+                "enabled": bool(incremental),
+                "changed_files_count": len(changed_files or set()) if incremental else 0,
+                "fallback_reason": fallback_reason,
+            }
+
+            incremental_meta.update(self._classify(entries, cache, cache_payload, changed_files))
+            incremental_meta.update(self._enrich(entries, warnings, cache, cache_payload, changed_files))
+            duplicates = self._detect_duplicates(entries, cache, cache_payload, changed_files)
+            incremental_meta.update(duplicates["metadata"])
 
             manifest = [entry.to_dict() for entry in entries]
-            code_intel, incremental_meta = self._analyze_code(entries, manifest, incremental, warnings)
+            code_intel, code_incremental_meta = self._analyze_code(
+                entries,
+                manifest,
+                cache,
+                cache_payload,
+                changed_files,
+            )
+            incremental_meta.update(code_incremental_meta)
+            incremental_meta["removed_cache_entries"] = cache.removed_entry_count(
+                cache_payload,
+                {entry.rel_path for entry in entries},
+            )
             metadata["incremental"] = incremental_meta
+            cache.write(entries, code_intel, self._get_git_sha())
 
             self.dep_graph = DependencyGraph()
             self.dep_graph.build_from_code_intelligence(code_intel, manifest)
@@ -166,48 +187,146 @@ class PrescanEngine:
             except Exception as exc:
                 logger.warning("Failed to persist prescan LLM attempts: %s", exc)
 
-    def _classify(self, entries: list[FileEntry]) -> None:
+    def _load_incremental_cache(
+        self,
+        cache: IncrementalCodeCache,
+        incremental: bool,
+        warnings: list[str],
+    ) -> tuple[dict[str, Any] | None, str | None, set[str] | None]:
+        if not incremental:
+            return None, None, None
+
+        cache_payload, fallback_reason = cache.load()
+        if fallback_reason:
+            warnings.append(fallback_reason)
+            return None, fallback_reason, None
+        return cache_payload, None, set(self._get_changed_files())
+
+    def _classify(
+        self,
+        entries: list[FileEntry],
+        cache: IncrementalCodeCache,
+        cache_payload: dict[str, Any] | None,
+        changed_files: set[str] | None,
+    ) -> dict[str, int]:
+        reused = 0
+        reclassified = 0
+        if hasattr(self.classifier, "classify_file"):
+            for entry in entries:
+                cached = cache.reusable_entry(cache_payload, entry, changed_files)
+                if cached is not None and cache.apply_cached_classification(entry, cached):
+                    reused += 1
+                    continue
+                entry.authority_class = self.classifier.classify_file(entry)
+                reclassified += 1
+            return {
+                "cached_classifications_reused": reused,
+                "reclassified_files": reclassified,
+            }
+
+        if cache.can_reuse_corpus_wide_outputs(cache_payload, entries, changed_files):
+            for entry in entries:
+                cached = cache.reusable_entry(cache_payload, entry, changed_files)
+                if cached is not None and cache.apply_cached_classification(entry, cached):
+                    reused += 1
+            if reused == len(entries):
+                return {
+                    "cached_classifications_reused": reused,
+                    "reclassified_files": 0,
+                }
+
         if hasattr(self.classifier, "classify_all"):
             self.classifier.classify_all(entries)
-            return
+            return {
+                "cached_classifications_reused": 0,
+                "reclassified_files": len(entries),
+            }
         if hasattr(self.classifier, "classify"):
             classified = self.classifier.classify(entries)
             if isinstance(classified, list):
-                return
+                return {
+                    "cached_classifications_reused": 0,
+                    "reclassified_files": len(entries),
+                }
         raise AttributeError("Prescan classifier does not expose classify_all or classify")
 
-    def _enrich(self, entries: list[FileEntry], warnings: list[str]) -> None:
+    def _enrich(
+        self,
+        entries: list[FileEntry],
+        warnings: list[str],
+        cache: IncrementalCodeCache,
+        cache_payload: dict[str, Any] | None,
+        changed_files: set[str] | None,
+    ) -> dict[str, int]:
         if not self.config.enable_git_enrichment:
-            return
+            return {
+                "cached_git_enrichment_reused": 0,
+                "git_enrichment_recomputed": 0,
+            }
+        if cache.can_reuse_corpus_wide_outputs(cache_payload, entries, changed_files):
+            reused = 0
+            for entry in entries:
+                cached = cache.reusable_entry(cache_payload, entry, changed_files)
+                if cached is not None and cache.apply_cached_git_enrichment(entry, cached):
+                    reused += 1
+            if reused == len(entries):
+                return {
+                    "cached_git_enrichment_reused": reused,
+                    "git_enrichment_recomputed": 0,
+                }
         try:
             self.git_enricher.enrich(entries)
+            return {
+                "cached_git_enrichment_reused": 0,
+                "git_enrichment_recomputed": len(entries),
+            }
         except Exception as exc:
             warnings.append(f"Git enrichment failed: {exc}")
+            return {
+                "cached_git_enrichment_reused": 0,
+                "git_enrichment_recomputed": 0,
+            }
 
-    def _detect_duplicates(self, entries: list[FileEntry]) -> dict[str, Any]:
+    def _detect_duplicates(
+        self,
+        entries: list[FileEntry],
+        cache: IncrementalCodeCache,
+        cache_payload: dict[str, Any] | None,
+        changed_files: set[str] | None,
+    ) -> dict[str, Any]:
         duplicate_groups: dict[str, list[str]] = {}
         version_chains: dict[str, list[dict[str, Any]]] = {}
+        duplicate_detection_recomputed = 0
+
+        if cache.can_reuse_corpus_wide_outputs(cache_payload, entries, changed_files):
+            reused = 0
+            for entry in entries:
+                cached = cache.reusable_entry(cache_payload, entry, changed_files)
+                if cached is not None and cache.apply_cached_duplicate_state(entry, cached):
+                    reused += 1
+            if reused == len(entries):
+                return {
+                    "groups": self._duplicate_groups_from_entries(entries),
+                    "chains": self._version_chains_from_entries(entries),
+                    "metadata": {
+                        "cached_duplicate_detection_reused": reused,
+                        "duplicate_detection_recomputed": 0,
+                    },
+                }
 
         duplicate_detector = self.duplicate_detector
         if hasattr(duplicate_detector, "detect_duplicates"):
             duplicate_detector.detect_duplicates(entries)
             duplicate_detector.detect_version_chains(entries)
-            for entry in entries:
-                if entry.duplicate_group_id:
-                    duplicate_groups.setdefault(entry.duplicate_group_id, []).append(entry.rel_path)
-                if entry.version_chain_id:
-                    version_chains.setdefault(entry.version_chain_id, []).append(
-                        {
-                            "path": entry.rel_path,
-                            "ordinal": entry.version_ordinal,
-                            "is_latest": entry.is_latest_version,
-                        }
-                    )
+            duplicate_detection_recomputed = len(entries)
+            duplicate_groups = self._duplicate_groups_from_entries(entries)
+            version_chains = self._version_chains_from_entries(entries)
         elif hasattr(duplicate_detector, "detect"):
             result = duplicate_detector.detect(entries)
             if isinstance(result, dict):
                 duplicate_groups = dict(result.get("groups") or {})
                 version_chains = dict(result.get("chains") or {})
+            duplicate_detection_recomputed = len(entries)
 
         ordered_groups = {
             group_id: sorted(paths)
@@ -220,7 +339,34 @@ class PrescanEngine:
             )
             for chain_id, members in sorted(version_chains.items())
         }
-        return {"groups": ordered_groups, "chains": ordered_chains}
+        return {
+            "groups": ordered_groups,
+            "chains": ordered_chains,
+            "metadata": {
+                "cached_duplicate_detection_reused": 0,
+                "duplicate_detection_recomputed": duplicate_detection_recomputed,
+            },
+        }
+
+    def _duplicate_groups_from_entries(self, entries: list[FileEntry]) -> dict[str, list[str]]:
+        duplicate_groups: dict[str, list[str]] = {}
+        for entry in entries:
+            if entry.duplicate_group_id:
+                duplicate_groups.setdefault(entry.duplicate_group_id, []).append(entry.rel_path)
+        return duplicate_groups
+
+    def _version_chains_from_entries(self, entries: list[FileEntry]) -> dict[str, list[dict[str, Any]]]:
+        version_chains: dict[str, list[dict[str, Any]]] = {}
+        for entry in entries:
+            if entry.version_chain_id:
+                version_chains.setdefault(entry.version_chain_id, []).append(
+                    {
+                        "path": entry.rel_path,
+                        "ordinal": entry.version_ordinal,
+                        "is_latest": entry.is_latest_version,
+                    }
+                )
+        return version_chains
 
     def _is_code_entry(self, entry: FileEntry) -> bool:
         language = entry.extension.lstrip(".").lower()
@@ -236,30 +382,17 @@ class PrescanEngine:
         self,
         entries: list[FileEntry],
         manifest: list[dict[str, Any]],
-        incremental: bool,
-        warnings: list[str],
+        cache: IncrementalCodeCache,
+        cache_payload: dict[str, Any] | None,
+        changed_files: set[str] | None,
     ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
         if not self.config.enable_code_prescan:
             return [], {
-                "enabled": bool(self.config.enable_code_prescan),
-                "changed_files_count": 0,
                 "cached_code_analysis_reused": 0,
                 "reanalyzed_code_files": 0,
-                "removed_cache_entries": 0,
-                "fallback_reason": None,
             }
 
         code_entries = [entry for entry in entries if entry.include and not entry.is_ghost and self._is_code_entry(entry)]
-        cache = IncrementalCodeCache(self.config)
-        cache_payload = None
-        fallback_reason = None
-        changed_files: set[str] | None = None
-        if incremental:
-            cache_payload, fallback_reason = cache.load()
-            if fallback_reason:
-                warnings.append(fallback_reason)
-            else:
-                changed_files = set(self._get_changed_files())
         reused = 0
         reanalyzed = 0
         code_intel: list[dict[str, Any]] = []
@@ -275,14 +408,9 @@ class PrescanEngine:
             reanalyzed += 1
 
         code_intel.sort(key=lambda item: str(item.get("rel_path") or ""))
-        cache.write(entries, code_intel, self._get_git_sha())
         return code_intel, {
-            "enabled": bool(self.config.enable_code_prescan),
-            "changed_files_count": len(changed_files or set()) if incremental else 0,
             "cached_code_analysis_reused": reused,
             "reanalyzed_code_files": reanalyzed,
-            "removed_cache_entries": cache.removed_entry_count(cache_payload, {entry.rel_path for entry in entries}),
-            "fallback_reason": fallback_reason,
         }
 
     def _plan_batches(

@@ -273,6 +273,39 @@ def test_phase_slice_stage_runs_preflight_then_probe_then_pilot_then_slice(
     ]
 
 
+def test_build_report_payload_includes_launch_profile_metadata(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    repo_root = tmp_path / "repo"
+    service_root = repo_root / "services" / "repo-truth-extractor"
+    promptset_root = tmp_path / "promptset"
+    service_root.mkdir(parents=True, exist_ok=True)
+    promptset_root.mkdir(parents=True, exist_ok=True)
+    (promptset_root / "model_map.yaml").write_text("version: '2.0'\nsteps: []\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        extractor_validation, "_resolve_extractor_root",
+        lambda _cwd: repo_root,
+    )
+
+    runner = LiveValidationRunner(
+        ValidationConfig(
+            promptset_root=promptset_root,
+            report_root=Path("reports/repo-truth-extractor/validation"),
+            routing_policy="balanced_openrouter",
+            full_max_usd=12.5,
+        )
+    )
+
+    payload = runner._build_report_payload()
+
+    assert payload["launch_profile_fingerprint"]
+    assert payload["launch_profile"]["routing_policy"] == "balanced_openrouter"
+    assert payload["launch_profile"]["validator_target_policy"] == "balanced_openrouter"
+    assert payload["launch_profile"]["max_cost_usd"] == 12.5
+    assert payload["launch_profile"]["promptset_model_map_sha256"]
+
+
 def test_validation_toolchain_report_includes_install_guidance(monkeypatch: pytest.MonkeyPatch) -> None:
     script_path = Path(__file__).resolve().parents[2] / "scripts" / "check_validation_toolchain.py"
     spec = importlib.util.spec_from_file_location("check_validation_toolchain", script_path)

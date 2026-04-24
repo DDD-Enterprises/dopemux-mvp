@@ -1,9 +1,11 @@
-"""Stage 6: Phase-by-phase extraction — delegates to `dopemux extract truth-run`."""
+"""Stage 7: Phase-by-phase extraction via the canonical v5 runner."""
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
+from pathlib import Path
 
 from rich.panel import Panel
 
@@ -14,11 +16,62 @@ from .display import render_educational_panel, render_stage_header
 from .stages import PHASE_INFO, PHASES, StageResult, StageStatus, WizardState
 
 
+def _wizard_pythonpath(repo_root: Path) -> str:
+    src_root = repo_root / "src"
+    existing = os.environ.get("PYTHONPATH", "").strip()
+    if existing:
+        return os.pathsep.join([str(src_root), existing])
+    return str(src_root)
+
+
+def _runner_path(repo_root: Path) -> Path:
+    return repo_root / "services" / "repo-truth-extractor" / "run_extraction_v5.py"
+
+
+def _promptset_root(repo_root: Path) -> Path:
+    return repo_root / "extraction" / "promptset"
+
+
+def _build_wizard_phase_command(state: WizardState, phase_key: str) -> list[str]:
+    cmd = [
+        sys.executable,
+        str(_runner_path(state.repo_root)),
+        "--phase",
+        phase_key,
+        "--run-id",
+        state.run_id,
+        "--partition-workers",
+        str(state.workers),
+        "--routing-policy",
+        state.selected_policy,
+        "--promptset-root",
+        str(_promptset_root(state.repo_root)),
+        "--ui",
+        "rich",
+        "--resume",
+    ]
+    if state.max_cost is not None:
+        cmd.extend(["--max-cost-usd", str(state.max_cost)])
+    if not state.validate_live:
+        cmd.append("--skip-pre-live-validator")
+        console.print(
+            "[yellow]Pre-live validator is disabled for this run; the runner will skip the validator-first gate.[/yellow]"
+        )
+    if state.skip_hygiene:
+        console.print(
+            "[yellow]Wizard skip-hygiene does not map to the canonical v5 runner and will not be forwarded.[/yellow]"
+        )
+    if state.prescan_dir:
+        cmd.extend(["--prescan-dir", state.prescan_dir, "--skip-prescan"])
+    cmd.append("--execute")
+    return cmd
+
+
 def run_extraction(state: WizardState) -> StageResult:
-    """Stage 6 — Walk through extraction phases with interactive confirmation.
+    """Stage 7 — Walk through extraction phases with interactive confirmation.
 
     In preview mode (default), shows what would run without executing.
-    With --execute, delegates each phase to ``dopemux extract truth-run``.
+    With --execute, delegates each phase to the canonical v5 runner.
     """
     if not state.execute_mode:
         console.print(
@@ -50,10 +103,10 @@ def run_extraction(state: WizardState) -> StageResult:
     if state.educate_mode:
         render_educational_panel(
             "Phase-by-phase extraction",
-            "Each phase will be executed via 'dopemux extract truth-run'.\n"
+            "Each phase will be executed via the canonical 'run_extraction_v5.py' runner.\n"
             "You can Run, Skip, or Abort at each phase.\n\n"
-            "truth-run handles the heavy lifting: hygiene scanning,\n"
-            "partition creation, LLM calls, retries, and live progress display.\n\n"
+            "This keeps routing-policy, promptset-root, resume state, cost cap,\n"
+            "and validator enforcement aligned with the runtime authority.\n\n"
             "Completed phases write artifacts to:\n"
             f"  extraction/repo-truth-extractor/v5/runs/{state.run_id}/",
         )
@@ -101,19 +154,16 @@ def run_extraction(state: WizardState) -> StageResult:
             skipped_count += 1
             continue
 
-        # Build truth-run command
-        cmd = [
-            sys.executable, "-m", "dopemux",
-            "extract", "truth-run",
-            "--phase", phase_key,
-            "--routing-policy", state.selected_policy,
-            "--workers", str(state.workers),
-            "--run-id", state.run_id,
-        ]
+        cmd = _build_wizard_phase_command(state, phase_key)
 
         console.print(f"\n  [bold cyan]Executing:[/bold cyan] {' '.join(cmd)}\n")
 
         try:
+            proc_env = dict(os.environ)
+            proc_env["PYTHONPATH"] = _wizard_pythonpath(state.repo_root)
+            for env_var, value in state.provider_key_overrides.items():
+                if str(value).strip():
+                    proc_env[env_var] = str(value).strip()
             proc = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
@@ -121,6 +171,7 @@ def run_extraction(state: WizardState) -> StageResult:
                 text=True,
                 bufsize=1,
                 cwd=str(state.repo_root),
+                env=proc_env,
             )
             for line in proc.stdout:
                 print(line, end="", flush=True)

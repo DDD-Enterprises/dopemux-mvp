@@ -1,4 +1,4 @@
-"""WizardRunner — orchestrates the 8-stage guided extraction wizard."""
+"""WizardRunner — orchestrates the 9-stage guided extraction wizard."""
 
 from __future__ import annotations
 
@@ -14,22 +14,24 @@ from .extraction import run_extraction
 from .partitions import run_partition_preview
 from .preflight import run_repo_health, run_welcome
 from .prompts import run_prompt_setup
+from .provider_overrides import run_provider_overrides
 from .stages import StageResult, StageStatus, WizardState
 from .summary import run_summary
 
 
 class WizardRunner:
-    """Orchestrates the 7-stage guided extraction wizard.
+    """Orchestrates the guided extraction wizard.
 
     Stages:
         0  Welcome & system checks
         1  Repository health
         2  Corpus audit (prescan)
         3  Prompt system setup
-        4  Cost profile selection
-        5  Partition preview
-        6  Extraction (phase-by-phase)
-        7  Summary & next steps
+        4  Provider key overrides
+        5  Cost profile selection
+        6  Partition preview
+        7  Extraction (phase-by-phase)
+        8  Summary & next steps
     """
 
     def __init__(
@@ -37,13 +39,19 @@ class WizardRunner:
         execute: bool = False,
         educate: bool = True,
         routing_policy: str = "balanced_openrouter",
-        workers: int = 10,
+        workers: int = 1,
+        max_cost: Optional[float] = 5.0,
+        validate_live: bool = True,
+        skip_hygiene: bool = False,
     ) -> None:
         self.state = WizardState(
             execute_mode=execute,
             educate_mode=educate,
             selected_policy=routing_policy,
             workers=workers,
+            max_cost=max_cost,
+            validate_live=validate_live,
+            skip_hygiene=skip_hygiene,
             run_id=datetime.now().strftime("RUN-%Y%m%dT%H%M%S"),
         )
 
@@ -54,10 +62,11 @@ class WizardRunner:
             (1, "Repo Health", "🩺", run_repo_health),
             (2, "Corpus Audit", "📊", run_corpus_audit),
             (3, "Prompt Setup", "⚙️", run_prompt_setup),
-            (4, "Cost Profile", "💰", run_cost_selection),
-            (5, "Partition Preview", "🧩", run_partition_preview),
-            (6, "Extraction", "🚀", run_extraction),
-            (7, "Summary", "🏆", run_summary),
+            (4, "Provider Overrides", "🔑", run_provider_overrides),
+            (5, "Cost Profile", "💰", run_cost_selection),
+            (6, "Partition Preview", "🧩", run_partition_preview),
+            (7, "Extraction", "🚀", run_extraction),
+            (8, "Summary", "🏆", run_summary),
         ]
 
         try:
