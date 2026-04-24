@@ -82,17 +82,9 @@ def test_truth_cli_routes_to_v5_runner(monkeypatch: pytest.MonkeyPatch) -> None:
 
     result = CliRunner().invoke(cli, ["truth"])
 
-    assert result.exit_code == 0, result.output
-    assert captured["pipeline_version"] == "v5"
-    assert captured["args"] == [
-        "--phase",
-        "ALL",
-        "--dry-run",
-        "--partition-workers",
-        "1",
-        "--routing-policy",
-        "cost",
-    ]
+    assert result.exit_code == 1
+    assert "`dopemux truth` is no longer a supported operator entrypoint" in result.output
+    assert captured == {}
 
 
 def test_import_surface_stability_for_packet_symbols() -> None:
