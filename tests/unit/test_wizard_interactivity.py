@@ -255,6 +255,7 @@ def test_run_corpus_audit_uses_integrated_v5_prescan_outputs(
     assert rendered["artifacts"]["provider_readiness"]["routes"][0]["ready"] is True
     assert rendered["artifacts"]["provider_readiness"]["failed_blocker_codes"] == []
     assert rendered["artifacts"]["provider_catalog"]["routes"][0]["provider"] == "openrouter"
+    assert rendered["artifacts"]["provider_catalog"]["routes"][0]["economic_surface"] == "budget"
     assert rendered["artifacts"]["no_live_lane"]["status"] == "NO_LIVE_LANE"
     assert rendered["artifacts"]["no_live_lane"]["halt_before_stage_1"] is True
     assert "dedup" in rendered["artifacts"]["no_live_lane"]["requested_passes"]
