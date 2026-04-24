@@ -1,4 +1,4 @@
-"""WizardRunner — orchestrates the 9-stage guided extraction wizard."""
+"""WizardRunner — orchestrates the 8-stage guided extraction wizard."""
 
 from __future__ import annotations
 
@@ -38,20 +38,14 @@ class WizardRunner:
         self,
         execute: bool = False,
         educate: bool = True,
-        routing_policy: str = "balanced_openrouter",
+        routing_policy: str = "cost",
         workers: int = 1,
-        max_cost: Optional[float] = 5.0,
-        validate_live: bool = True,
-        skip_hygiene: bool = False,
     ) -> None:
         self.state = WizardState(
             execute_mode=execute,
             educate_mode=educate,
             selected_policy=routing_policy,
             workers=workers,
-            max_cost=max_cost,
-            validate_live=validate_live,
-            skip_hygiene=skip_hygiene,
             run_id=datetime.now().strftime("RUN-%Y%m%dT%H%M%S"),
         )
 

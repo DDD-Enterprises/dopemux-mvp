@@ -9,6 +9,7 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 - Persistent `RUN_SUMMARY.md` writing at the end of `queue-drain` execution.
 - Git case-insensitivity warning in `preflight` for macOS environments.
 - Production certification audit artifacts and a machine-readable certification status for the repo-truth extractor and Dopemux operator surfaces.
+- A provider-override step in the extraction wizard for session-local API key overrides per supported model provider.
 
 ### Changed
 - `stage_and_push_if_needed` now uses `git add -A` to detect case-only renames on macOS.
@@ -20,6 +21,8 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 - Active extractor docs now describe the validated bounded v5 lane, the current reliability contract, and the upgrade-design reality check for this branch.
 - `dopemux truth`, `dopemux upgrades trace`, and `dopemux extractor trace` now delegate to the canonical v5 runtime contract instead of legacy `PipelineRunner` behavior.
 - Interactive wizard surfaces now load `questionary` through a deterministic dependency gate, and the production theme defaults to `mint-mojo`.
+- The extraction wizard now lets operators browse cost profiles with inline behavior details before selecting a run profile.
+- The extraction wizard now delegates execution through the v5 upgrades wrapper and defaults first-run posture to routing policy `cost` with `workers=1`.
 - The dashboard and detail views now resolve service endpoints from repo environment authority instead of assuming fixed localhost ports.
 - CI now includes wrapper-authority coverage, interactive import smoke, and the production `brand_lint.py` gate.
 
