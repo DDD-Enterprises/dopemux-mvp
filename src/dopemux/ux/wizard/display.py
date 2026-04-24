@@ -203,9 +203,13 @@ def render_cost_table(
         keys_ok = p.get("keys_ok", True)
         keys_str = f"[green]✓ {p.get('keys_status', '')}[/green]" if keys_ok else f"[red]✗ {p.get('keys_status', '')}[/red]"
 
-        style = "bold" if name == selected else ""
+        label = p.get("label", name)
+        if name == selected:
+            policy_cell = f"{prefix}{emoji} [bold]{label}[/bold]"
+        else:
+            policy_cell = f"{prefix}{emoji} {label}"
         table.add_row(
-            f"{prefix}{emoji} [{style}]{p.get('label', name)}[/{style}]",
+            policy_cell,
             cost_str,
             keys_str,
             f"[dim]{p.get('desc', '')}[/dim]",
@@ -214,6 +218,45 @@ def render_cost_table(
     corpus_mb = corpus_size / (1024 * 1024)
     table.caption = f"[dim]Estimates based on {corpus_mb:.1f} MB corpus, 14 phases[/dim]"
     console.print(table)
+
+
+def render_policy_detail(policy: Dict[str, Any], *, index: int, total: int) -> None:
+    """Display the currently highlighted routing profile in detail."""
+    title = f"[bold white]Profile {index + 1}/{total} • {policy.get('emoji', '💛')} {policy.get('label', policy.get('name', '?'))}[/bold white]"
+    low = policy.get("low_cost", 0)
+    high = policy.get("high_cost", 0)
+    keys_detail = policy.get("keys_detail", {})
+    tier_routes = policy.get("tier_routes", {})
+
+    lines = [
+        f"[bold]Policy:[/bold] {policy.get('name', '?')}",
+        f"[bold]Estimated cost:[/bold] ~${low:.0f}–${high:.0f}",
+        f"[bold]What it does:[/bold] {policy.get('desc', '')}",
+        "",
+        "[bold]Required keys:[/bold]",
+    ]
+
+    for env_var, is_set in keys_detail.items():
+        status = "[green]set[/green]" if is_set else "[red]missing[/red]"
+        lines.append(f"  • {env_var}: {status}")
+
+    lines.extend(["", "[bold]Tier routing:[/bold]"])
+    for tier in ("bulk", "extract", "synthesis", "qa"):
+        routes = tier_routes.get(tier, [])
+        pretty_routes = ", ".join(
+            f"{provider}/{model_id}" for provider, model_id, _env_var in routes
+        ) or "none"
+        lines.append(f"  • {tier}: {pretty_routes}")
+
+    console.print(
+        Panel(
+            "\n".join(lines),
+            title=title,
+            border_style="bright_cyan",
+            box=ROUNDED,
+            padding=(1, 2),
+        )
+    )
 
 
 # ── Phase preview ──────────────────────────────────────────────────────────
@@ -280,6 +323,7 @@ def render_summary_panel(state: WizardState) -> None:
         f"  [bold]Run ID:[/bold]          {state.run_id}",
         f"  [bold]Policy:[/bold]          {state.selected_policy}",
         f"  [bold]Workers:[/bold]         {state.workers}",
+        f"  [bold]Overrides:[/bold]       {len(state.provider_key_overrides)} provider key override(s)",
         "",
     ]
 

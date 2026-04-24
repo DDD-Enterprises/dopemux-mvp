@@ -37,13 +37,13 @@ resources.
 dopemux audit wizard
 
 # With extraction enabled
-dopemux audit wizard --execute
+DPMX_LIVE_OK=1 dopemux audit wizard --execute
 
 # Skip educational panels
 dopemux audit wizard --no-educate
 
 # Custom routing policy and workers
-dopemux audit wizard --routing-policy quality --workers 15
+DPMX_LIVE_OK=1 dopemux audit wizard --execute --routing-policy quality --workers 1
 ```
 
 ## Prerequisites
@@ -55,7 +55,7 @@ dopemux audit wizard --routing-policy quality --workers 15
 
 ## The 8 Stages
 
-The wizard progresses through eight numbered stages. Each stage performs a
+The wizard progresses through nine numbered stages. Each stage performs a
 discrete step in the extraction pipeline and can optionally display an
 educational panel explaining what is happening.
 
@@ -63,22 +63,22 @@ educational panel explaining what is happening.
 |---|-------|-------|--------------|
 | 0 | 🔬 | **Welcome** | System checks — verifies Python version and git availability |
 | 1 | 🩺 | **Repo Health** | Checks git status, current branch, and working-tree cleanliness |
-| 2 | 📊 | **Corpus Audit** | Runs a prescan classifying files by authority tier (canonical, historical, operational, audit, template, generated) |
+| 2 | 📊 | **Corpus Audit** | Runs the canonical v5 integrated Phase 0 prescan and records reusable prescan artifacts for the current wizard run |
 | 3 | ⚙️ | **Prompt Setup** | Validates the promptset configuration used during extraction |
-| 4 | 💰 | **Cost Profile** | Interactive selection from 8 routing policies (`cost`, `balanced`, `balanced_openrouter`, `balanced_grok_openrouter`, `quality`, `openrouter`, `gemini_primary`, `optimal`) with per-policy cost estimates |
-| 5 | 🧩 | **Partition Preview** | Shows the file → phase mapping and partition estimates across 14 extraction phases |
-| 6 | 🚀 | **Extraction** | Phase-by-phase extraction with per-phase confirmation (requires the `--execute` flag) |
-| 7 | 🏆 | **Summary** | Telemetry, completion stats, and suggested next steps |
+| 4 | 🔑 | **Provider Overrides** | Optional session-local API key overrides for OpenAI, OpenRouter, Gemini, xAI, and Anthropic |
+| 5 | 💰 | **Cost Profile** | Interactive browsing and selection from 8 routing policies with per-policy cost estimates and tier-routing detail |
+| 6 | 🧩 | **Partition Preview** | Shows the file → phase mapping and partition estimates across 14 extraction phases |
+| 7 | 🚀 | **Extraction** | Phase-by-phase extraction with per-phase confirmation (requires the `--execute` flag) |
+| 8 | 🏆 | **Summary** | Telemetry, completion stats, and suggested next steps |
 
 ## Common Workflows
 
 ### First-time audit (preview only)
 
-Run the prescan first to build the corpus index, then launch the wizard in
-preview mode:
+Launch the wizard directly in preview mode. Stage 2 now runs the canonical v5
+integrated prescan itself and reuses that output later in the wizard:
 
 ```bash
-dopemux audit prescan --verbose --force
 dopemux audit wizard --no-educate
 ```
 
@@ -87,7 +87,7 @@ dopemux audit wizard --no-educate
 Use the `cost` routing policy and fewer workers to minimise spend:
 
 ```bash
-dopemux audit wizard --execute --routing-policy cost --workers 5
+DPMX_LIVE_OK=1 dopemux audit wizard --execute --routing-policy cost --workers 1
 ```
 
 ### Full quality extraction
@@ -95,7 +95,7 @@ dopemux audit wizard --execute --routing-policy cost --workers 5
 Maximise output quality with the `quality` policy and a larger worker pool:
 
 ```bash
-dopemux audit wizard --execute --routing-policy quality --workers 15
+DPMX_LIVE_OK=1 dopemux audit wizard --execute --routing-policy quality --workers 1
 ```
 
 ## CLI Reference
@@ -104,8 +104,8 @@ dopemux audit wizard --execute --routing-policy quality --workers 15
 |------|---------|-------------|
 | `--execute` | off | Enable actual extraction (default: preview only) |
 | `--educate` / `--no-educate` | on | Show educational explanations at each stage |
-| `--routing-policy` | `balanced_openrouter` | LLM routing policy for extraction |
-| `-w`, `--workers` | `10` | Partition worker count |
+| `--routing-policy` | `cost` | LLM routing policy for extraction |
+| `-w`, `--workers` | `1` | Partition worker count |
 
 ## Safety Features
 
@@ -113,17 +113,25 @@ dopemux audit wizard --execute --routing-policy quality --workers 15
   unless you pass `--execute`.
 - **Explicit opt-in** — the `--execute` flag must be provided to enable
   extraction.
+- **Live consent still required** — live phase execution also requires
+  `DPMX_LIVE_OK=1` in the shell environment.
+- **Session-local key overrides** — provider overrides entered in the wizard
+  apply only to the spawned extraction subprocesses and do not modify local
+  shell or repo config.
+- **Canonical prescan reuse** — Stage 2 writes v5 prescan artifacts under the
+  current run root, and Stage 7 reuses them with `--prescan-dir ... --skip-prescan`
+  instead of recomputing Phase 0 for every phase launch.
 - **Per-phase confirmation** — before each extraction phase the wizard asks
   for interactive confirmation.
 - **No direct script execution** — the wizard never runs
   `run_extraction_v5.py` directly; it delegates to
-  `dopemux extract truth-run`.
+  `dopemux upgrades run --pipeline-version v5 --ui rich --resume`.
 
 ## Troubleshooting
 
 | Problem | Fix |
 |---------|-----|
-| Corpus over 50 MB | Run `dopemux audit prescan --force` before starting the wizard |
+| Corpus over 50 MB | Start with wizard preview mode and review the integrated Phase 0 prescan output before enabling `--execute` |
 | Missing promptset | Stage 3 will guide you through promptset initialisation |
 | API key errors | Verify provider credentials in your `.env` file |
 

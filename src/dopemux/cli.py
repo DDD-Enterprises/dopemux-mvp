@@ -3170,6 +3170,7 @@ def theme(ctx, name: Optional[str], list_themes: bool):
 
 
 cli.add_command(audit)
+cli.add_command(audit.commands["wizard"], "wizard")
 
 
 # ============================================================

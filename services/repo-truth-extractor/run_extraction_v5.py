@@ -492,7 +492,7 @@ R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
 }
 
 ROUTING_POLICY_VERSION = "RTE_ROUTING_V1"
-DEFAULT_ROUTING_POLICY = "cost"
+DEFAULT_ROUTING_POLICY = "balanced_openrouter"
 DEFAULT_GEMINI_MODEL_ID = "gemini-3-flash-preview"
 DEFAULT_GEMINI_BULK_MODEL = "gemini-3.1-flash-lite-preview"
 DEFAULT_GEMINI_EXTRACT_MODEL = "gemini-3-flash-preview"

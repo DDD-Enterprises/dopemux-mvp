@@ -103,9 +103,9 @@ def run_repo_health(state: WizardState) -> StageResult:
     except (FileNotFoundError, subprocess.TimeoutExpired):
         checks.append(("Working tree", False, "unknown"))
 
-    # Prescan script exists
-    prescan_script = state.repo_root / "scripts" / "doc_audit_prescan.py"
-    checks.append(("Prescan script", prescan_script.exists(), str(prescan_script.relative_to(state.repo_root))))
+    # Canonical v5 runner exists
+    v5_runner = state.repo_root / "services" / "repo-truth-extractor" / "run_extraction_v5.py"
+    checks.append(("V5 runner", v5_runner.exists(), str(v5_runner.relative_to(state.repo_root))))
 
     render_health_check(checks)
 

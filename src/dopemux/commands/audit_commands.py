@@ -91,17 +91,36 @@ def prescan(ctx, verbose: bool, force: bool, config: Optional[str]):
     "--routing-policy",
     default="balanced_openrouter",
     show_default=True,
-    help="🧠 Cognitive Routing: LLM policy for the extraction ritual.",
+    help="🧠 Cognitive Routing: LLM policy for the extraction ritual. Use balanced_openrouter for unified billing.",
+)
+@click.option(
+    "--max-cost",
+    type=float,
+    default=5.0,
+    show_default=True,
+    help="💰 Spend Ceiling: Maximum USD to spend across all extraction phases before halting.",
+)
+@click.option(
+    "--validate-live",
+    is_flag=True,
+    default=True,
+    show_default=True,
+    help="✅ Pre-Live Gate: Enforce the pre-live validator gate before spending.",
+)
+@click.option(
+    "--skip-hygiene",
+    is_flag=True,
+    help="⚠️ Bypass Preflight: Skip environment and credentials hygiene checks (not recommended).",
 )
 @click.option(
     "--workers",
     "-w",
-    default=10,
+    default=1,
     show_default=True,
-    help="⚡ Ritual Workers: Number of concurrent workers for partitioning.",
+    help="⚡ Ritual Workers: Number of concurrent workers for partitioning. Keep this at 1 for deterministic first runs.",
 )
 @click.pass_context
-def wizard(ctx, execute: bool, educate: bool, routing_policy: str, workers: int):
+def wizard(ctx, execute: bool, educate: bool, routing_policy: str, max_cost: float, validate_live: bool, skip_hygiene: bool, workers: int):
     """
     🧙 Ritual Guide: Guided extraction flight-deck walkthrough
 
@@ -116,6 +135,9 @@ def wizard(ctx, execute: bool, educate: bool, routing_policy: str, workers: int)
         educate=educate,
         routing_policy=routing_policy,
         workers=workers,
+        max_cost=max_cost,
+        validate_live=validate_live,
+        skip_hygiene=skip_hygiene,
     )
     runner.run()
 
