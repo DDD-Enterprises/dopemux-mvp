@@ -48,7 +48,7 @@ A packet is superseded by another packet
 | TP-DMX-RTEAUDIT-001 | Repo Truth Extractor | Assemble pre-live audit pack for GPT-5.4 Pro | Ready | N/A |
 | TP-DMX-RTEINT-001 | Repo Truth Extractor | Integrate current RTE branch deltas into staging audit branch | Ready | N/A |
 | TP-DMX-RTECANON-001 | Repo Truth Extractor | Establish `dopemux rte` as the canonical operator entrypoint | Ready | N/A |
-| DMX-COCKPIT-STATIC-002 | UI Cockpit | Expose deterministic static cockpit renderer through guarded CLI wrapper | Executing | N/A |
+| DMX-COCKPIT-STATIC-002 | UI Cockpit | Expose deterministic static cockpit renderer through guarded CLI wrapper | Staged / Draft PR open / blocked on DMX-COCKPIT-STATIC-001 merge | N/A |
 | PACKET_031 | Memory | Dual Capture Adapters, Single Ledger | Executing | ADR-213 |
 | PACKET_032 | Memory | Chronicle Promotion Guards | Pending Audit | ADR-214 |
 
