@@ -95,6 +95,43 @@ def test_contract_map_scope_matches_repo_truth_json_steps_exactly() -> None:
     assert observed == expected
 
 
+def test_repo_truth_json_scope_matches_promptset_json_steps_exactly() -> None:
+    module = _load_contract_module()
+    repo_truth = json.loads(Path(module.REPO_TRUTH_MAP_PATH).read_text(encoding="utf-8"))
+    repo_truth_expected = set()
+    for row in repo_truth.get("steps", []):
+        if not isinstance(row, dict):
+            continue
+        phase = str(row.get("phase") or "").strip().upper()
+        step = str(row.get("step") or row.get("step_id") or "").strip().upper()
+        prompt_declared = row.get("prompt_declared") if isinstance(row.get("prompt_declared"), dict) else {}
+        artifacts = prompt_declared.get("expected_artifacts")
+        if not isinstance(artifacts, list):
+            continue
+        if any(str(name).strip().endswith(".json") for name in artifacts):
+            repo_truth_expected.add(f"{phase}:{step}")
+
+    promptset = module._read_yaml(module.PROMPTSET_PATH)  # type: ignore[attr-defined]
+    promptset_expected = set()
+    phases = promptset.get("phases")
+    assert isinstance(phases, dict)
+    for phase, phase_payload in phases.items():
+        steps = phase_payload.get("steps") if isinstance(phase_payload, dict) else None
+        if not isinstance(steps, list):
+            continue
+        for row in steps:
+            if not isinstance(row, dict):
+                continue
+            step_id = str(row.get("step_id") or "").strip().upper()
+            outputs = row.get("outputs")
+            if not step_id or not isinstance(outputs, list):
+                continue
+            if any(str(name).strip().endswith(".json") for name in outputs):
+                promptset_expected.add(f"{str(phase).strip().upper()}:{step_id}")
+
+    assert repo_truth_expected == promptset_expected
+
+
 def test_unknown_lane_step_guard_warns_on_phantom_steps(capsys) -> None:
     module = _load_contract_module()
     module._warn_on_lane_map_scope_mismatch(  # type: ignore[attr-defined]
@@ -103,6 +140,18 @@ def test_unknown_lane_step_guard_warns_on_phantom_steps(capsys) -> None:
     )
     captured = capsys.readouterr()
     assert "WARNING: model_map.yaml steps outside repo_truth_map JSON scope: A:A11" in captured.err
+    assert captured.out == ""
+
+
+def test_unknown_lane_step_guard_ignores_repo_truth_markdown_only_steps(capsys) -> None:
+    module = _load_contract_module()
+    module._warn_on_lane_map_scope_mismatch(  # type: ignore[attr-defined]
+        {("R", "R0"): {}, ("A", "A11"): {}},
+        {("A", "A11"): {}},
+        {("R", "R0"): {"has_json_artifacts": False}},
+    )
+    captured = capsys.readouterr()
+    assert "R:R0" not in captured.err
     assert captured.out == ""
 
 

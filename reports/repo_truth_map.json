@@ -588,6 +588,66 @@
       "phase": "C",
       "prompt_declared": {
         "expected_artifacts": [
+          "OBSERVABILITY_SURFACE.json"
+        ],
+        "required_item_keys": [
+          "id",
+          "path",
+          "line_range"
+        ]
+      },
+      "step": "C18",
+      "step_id": "C18"
+    },
+    {
+      "phase": "C",
+      "prompt_declared": {
+        "expected_artifacts": [
+          "ERROR_HANDLING_PATTERNS.json"
+        ],
+        "required_item_keys": [
+          "id",
+          "path",
+          "line_range"
+        ]
+      },
+      "step": "C19",
+      "step_id": "C19"
+    },
+    {
+      "phase": "C",
+      "prompt_declared": {
+        "expected_artifacts": [
+          "STATE_MANAGEMENT_SURFACE.json"
+        ],
+        "required_item_keys": [
+          "id",
+          "path",
+          "line_range"
+        ]
+      },
+      "step": "C20",
+      "step_id": "C20"
+    },
+    {
+      "phase": "C",
+      "prompt_declared": {
+        "expected_artifacts": [
+          "PERFORMANCE_SURFACE.json"
+        ],
+        "required_item_keys": [
+          "id",
+          "path",
+          "line_range"
+        ]
+      },
+      "step": "C21",
+      "step_id": "C21"
+    },
+    {
+      "phase": "C",
+      "prompt_declared": {
+        "expected_artifacts": [
           "CODE_INVENTORY.json",
           "CODE_PARTITIONS.json"
         ],
@@ -1176,6 +1236,51 @@
       "phase": "G",
       "prompt_declared": {
         "expected_artifacts": [
+          "AUTH_FLOW_SURFACE.json"
+        ],
+        "required_item_keys": [
+          "id",
+          "path",
+          "line_range"
+        ]
+      },
+      "step": "G5",
+      "step_id": "G5"
+    },
+    {
+      "phase": "G",
+      "prompt_declared": {
+        "expected_artifacts": [
+          "DEPENDENCY_HEALTH_SURFACE.json"
+        ],
+        "required_item_keys": [
+          "id",
+          "path",
+          "line_range"
+        ]
+      },
+      "step": "G6",
+      "step_id": "G6"
+    },
+    {
+      "phase": "G",
+      "prompt_declared": {
+        "expected_artifacts": [
+          "TECHNICAL_DEBT_REGISTER.json"
+        ],
+        "required_item_keys": [
+          "id",
+          "path",
+          "line_range"
+        ]
+      },
+      "step": "G7",
+      "step_id": "G7"
+    },
+    {
+      "phase": "G",
+      "prompt_declared": {
+        "expected_artifacts": [
           "GOV_MERGED.json",
           "GOV_QA.json"
         ],
@@ -1263,6 +1368,21 @@
       },
       "step": "Q9",
       "step_id": "Q9"
+    },
+    {
+      "phase": "Q",
+      "prompt_declared": {
+        "expected_artifacts": [
+          "QA_ARTIFACT_COLLISION_REPORT.json"
+        ],
+        "required_item_keys": [
+          "id",
+          "path",
+          "line_range"
+        ]
+      },
+      "step": "Q11",
+      "step_id": "Q11"
     },
     {
       "phase": "R",
@@ -1380,6 +1500,16 @@
       },
       "step": "R10",
       "step_id": "R10"
+    },
+    {
+      "phase": "R",
+      "prompt_declared": {
+        "expected_artifacts": [
+          "SECURITY_RISK_SYNTHESIS.md"
+        ]
+      },
+      "step": "R11",
+      "step_id": "R11"
     },
     {
       "phase": "X",
@@ -1767,6 +1897,46 @@
       "phase": "S",
       "prompt_declared": {
         "expected_artifacts": [
+          "S8_ARCHITECTURE_DIAGRAMS.md"
+        ]
+      },
+      "step": "S8",
+      "step_id": "S8"
+    },
+    {
+      "phase": "S",
+      "prompt_declared": {
+        "expected_artifacts": [
+          "S9_DEPENDENCY_GRAPH_SUMMARY.md"
+        ]
+      },
+      "step": "S9",
+      "step_id": "S9"
+    },
+    {
+      "phase": "S",
+      "prompt_declared": {
+        "expected_artifacts": [
+          "S10_API_SURFACE_REFERENCE.md"
+        ]
+      },
+      "step": "S10",
+      "step_id": "S10"
+    },
+    {
+      "phase": "S",
+      "prompt_declared": {
+        "expected_artifacts": [
+          "S11_DOCUMENTATION_GENERATION.md"
+        ]
+      },
+      "step": "S11",
+      "step_id": "S11"
+    },
+    {
+      "phase": "S",
+      "prompt_declared": {
+        "expected_artifacts": [
           "CONTROL_PLANE_TRUTH_MAP.md",
           "DOPE_MEMORY_IMPLEMENTATION_TRUTH.md",
           "EVENTBUS_WIRING_TRUTH.md",
@@ -1848,6 +2018,21 @@
       },
       "step": "S6",
       "step_id": "S6"
+    },
+    {
+      "phase": "S",
+      "prompt_declared": {
+        "expected_artifacts": [
+          "S12_STABILITY_SIGNATURE.json"
+        ],
+        "required_item_keys": [
+          "id",
+          "path",
+          "line_range"
+        ]
+      },
+      "step": "S12",
+      "step_id": "S12"
     }
   ]
 }

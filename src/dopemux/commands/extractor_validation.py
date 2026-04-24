@@ -168,6 +168,13 @@ def _sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _promptset_model_map_sha256(promptset_root: Path) -> Optional[str]:
+    model_map_path = promptset_root / "model_map.yaml"
+    if not model_map_path.exists():
+        return None
+    return _sha256_file(model_map_path)
+
+
 def _normalize_payload(value: Any) -> Any:
     if isinstance(value, dict):
         normalized: Dict[str, Any] = {}
@@ -1647,6 +1654,20 @@ class LiveValidationRunner:
         status = "pass" if not self.blockers else "fail"
         baseline = _load_json(self.report_dir / "RUN_BASELINE.json")
         breaker_state = _load_json(self.report_dir / "BREAKER_STATE.json")
+        launch_profile = {
+            "routing_policy": self.config.routing_policy,
+            "validator_target_policy": self.config.routing_policy,
+            "validator_stage": self.config.stage,
+            "max_cost_usd": self.config.full_max_usd,
+            "promptset_root": str(self.config.promptset_root.resolve()),
+            "promptset_model_map_sha256": _promptset_model_map_sha256(self.config.promptset_root),
+            "selected_provider": self.config.selected_provider,
+        }
+        launch_fingerprint = hashlib.sha256(
+            json.dumps(_normalize_payload(launch_profile), sort_keys=True).encode("utf-8")
+        ).hexdigest()[:12]
+        launch_profile["fingerprint"] = launch_fingerprint
+
         return {
             "generated_at": now_iso(),
             "run_id": self.run_id,
@@ -1656,6 +1677,9 @@ class LiveValidationRunner:
             "repo_root": str(self.repo_root),
             "promptset_root": str(self.config.promptset_root.resolve()),
             "routing_policy": self.config.routing_policy,
+            "max_cost": self.config.full_max_usd,
+            "launch_profile_fingerprint": launch_fingerprint,
+            "launch_profile": launch_profile,
             "blockers": self.blockers,
             "baseline": baseline,
             "stage_decisions": self.stage_decisions,

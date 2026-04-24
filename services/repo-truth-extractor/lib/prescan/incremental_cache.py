@@ -9,12 +9,33 @@ from typing import Any
 from .models import FileEntry, PrescanConfig
 
 
-CACHE_VERSION = "PRESCAN_INCREMENTAL_CACHE_V1"
+CACHE_VERSION = "PRESCAN_INCREMENTAL_CACHE_V2"
 ANALYZER_FILES = (
     "engine.py",
+    "classifier.py",
     "code_prescan.py",
     "dependency_graph.py",
     "code_intelligence_report.py",
+    "duplicate_detector.py",
+    "git_enricher.py",
+)
+
+GIT_ENRICHMENT_FIELDS = (
+    "churn_score",
+    "contributor_count",
+    "git_metadata",
+    "last_commit_date",
+    "lifecycle_stage",
+    "tested_by",
+)
+
+DUPLICATE_STATE_FIELDS = (
+    "canonical_duplicate",
+    "duplicate_group_id",
+    "is_duplicate",
+    "is_latest_version",
+    "version_chain_id",
+    "version_ordinal",
 )
 
 
@@ -57,19 +78,30 @@ class IncrementalCodeCache:
         intel_by_path = {item["rel_path"]: item for item in code_intel if item.get("rel_path")}
         files: dict[str, Any] = {}
         for entry in sorted(entries, key=lambda item: item.rel_path):
-            if entry.rel_path not in intel_by_path:
-                continue
-            files[entry.rel_path] = {
+            cached_entry: dict[str, Any] = {
                 "content_hash": entry.content_hash,
-                "code_analysis": intel_by_path[entry.rel_path],
-                "entry_metrics": {
+                "classification": {
+                    "authority_class": entry.authority_class,
+                },
+                "git_enrichment": {
+                    field: getattr(entry, field)
+                    for field in GIT_ENRICHMENT_FIELDS
+                },
+                "duplicate_state": {
+                    field: getattr(entry, field)
+                    for field in DUPLICATE_STATE_FIELDS
+                },
+            }
+            if entry.rel_path in intel_by_path:
+                cached_entry["code_analysis"] = intel_by_path[entry.rel_path]
+                cached_entry["entry_metrics"] = {
                     "function_count": entry.function_count,
                     "class_count": entry.class_count,
                     "import_count": entry.import_count,
                     "docstring_coverage": entry.docstring_coverage,
                     "complexity_score": entry.complexity_score,
-                },
-            }
+                }
+            files[entry.rel_path] = cached_entry
 
         payload = {
             "version": CACHE_VERSION,
@@ -90,6 +122,21 @@ class IncrementalCodeCache:
         entry: FileEntry,
         changed_files: set[str] | None,
     ) -> dict[str, Any] | None:
+        cached = self.reusable_entry(payload, entry, changed_files)
+        if cached is None:
+            return None
+        code_analysis = cached.get("code_analysis")
+        entry_metrics = cached.get("entry_metrics")
+        if not isinstance(code_analysis, dict) or not isinstance(entry_metrics, dict):
+            return None
+        return cached
+
+    def reusable_entry(
+        self,
+        payload: dict[str, Any] | None,
+        entry: FileEntry,
+        changed_files: set[str] | None,
+    ) -> dict[str, Any] | None:
         if payload is None or changed_files is None:
             return None
         if entry.rel_path in changed_files:
@@ -99,11 +146,49 @@ class IncrementalCodeCache:
             return None
         if cached.get("content_hash") != entry.content_hash:
             return None
-        code_analysis = cached.get("code_analysis")
-        entry_metrics = cached.get("entry_metrics")
-        if not isinstance(code_analysis, dict) or not isinstance(entry_metrics, dict):
-            return None
         return cached
+
+    def can_reuse_corpus_wide_outputs(
+        self,
+        payload: dict[str, Any] | None,
+        entries: list[FileEntry],
+        changed_files: set[str] | None,
+    ) -> bool:
+        if payload is None or changed_files:
+            return False
+        cached_files = payload.get("files")
+        if not isinstance(cached_files, dict):
+            return False
+        current_paths = {entry.rel_path for entry in entries}
+        if set(cached_files) != current_paths:
+            return False
+        return all(self.reusable_entry(payload, entry, changed_files) is not None for entry in entries)
+
+    def apply_cached_classification(self, entry: FileEntry, cached: dict[str, Any]) -> bool:
+        classification = cached.get("classification")
+        if not isinstance(classification, dict):
+            return False
+        authority_class = classification.get("authority_class")
+        if not isinstance(authority_class, str):
+            return False
+        entry.authority_class = authority_class
+        return True
+
+    def apply_cached_git_enrichment(self, entry: FileEntry, cached: dict[str, Any]) -> bool:
+        enrichment = cached.get("git_enrichment")
+        if not isinstance(enrichment, dict):
+            return False
+        for field in GIT_ENRICHMENT_FIELDS:
+            setattr(entry, field, enrichment.get(field))
+        return True
+
+    def apply_cached_duplicate_state(self, entry: FileEntry, cached: dict[str, Any]) -> bool:
+        duplicate_state = cached.get("duplicate_state")
+        if not isinstance(duplicate_state, dict):
+            return False
+        for field in DUPLICATE_STATE_FIELDS:
+            setattr(entry, field, duplicate_state.get(field))
+        return True
 
     def apply_cached_metrics(self, entry: FileEntry, cached: dict[str, Any]) -> dict[str, Any]:
         metrics = cached.get("entry_metrics", {})

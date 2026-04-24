@@ -220,12 +220,12 @@ def _prompt_path_by_step() -> Dict[Tuple[str, str], Path]:
     return out
 
 
-def _repo_truth_scope_by_key() -> Dict[Tuple[str, str], Dict[str, Any]]:
+def _repo_truth_declared_by_key() -> Dict[Tuple[str, str], Dict[str, Any]]:
     payload = _read_json(REPO_TRUTH_MAP_PATH)
     steps = payload.get("steps")
     if not isinstance(steps, list):
         raise ValueError(f"{REPO_TRUTH_MAP_PATH} must contain a list at steps")
-    scope: Dict[Tuple[str, str], Dict[str, Any]] = {}
+    declared: Dict[Tuple[str, str], Dict[str, Any]] = {}
     for row in steps:
         if not isinstance(row, dict):
             continue
@@ -238,34 +238,47 @@ def _repo_truth_scope_by_key() -> Dict[Tuple[str, str], Dict[str, Any]]:
         expected_tokens = [str(value).strip() for value in expected if str(value).strip()]
         json_artifacts = [token for token in expected_tokens if token.endswith(".json")]
         markdown_artifacts = [token for token in expected_tokens if token.endswith(".md")]
-        if not phase or not step_id or not json_artifacts:
+        if not phase or not step_id:
             continue
         prompt_required = prompt_declared.get("required_item_keys")
-        scope[(phase, step_id)] = {
+        declared[(phase, step_id)] = {
             "phase": phase,
             "step_id": step_id,
             "json_artifacts": list(json_artifacts),
             "markdown_artifacts": list(markdown_artifacts),
             "all_declared_artifacts": expected_tokens,
             "mixed_step": bool(markdown_artifacts),
+            "has_json_artifacts": bool(json_artifacts),
             "prompt_required_item_keys": [
                 str(value).strip()
                 for value in (prompt_required if isinstance(prompt_required, list) else [])
                 if str(value).strip()
             ],
         }
-    return scope
+    return declared
+
+
+def _repo_truth_scope_by_key() -> Dict[Tuple[str, str], Dict[str, Any]]:
+    return {
+        key: value
+        for key, value in _repo_truth_declared_by_key().items()
+        if bool(value.get("has_json_artifacts"))
+    }
 
 
 def _warn_on_lane_map_scope_mismatch(
     lane_map: Dict[Tuple[str, str], Dict[str, Any]],
     scope_map: Dict[Tuple[str, str], Dict[str, Any]],
+    declared_map: Optional[Dict[Tuple[str, str], Dict[str, Any]]] = None,
 ) -> None:
     missing_lane_steps = sorted(set(scope_map.keys()) - set(lane_map.keys()))
     if missing_lane_steps:
         formatted = ", ".join(f"{phase}:{step}" for phase, step in missing_lane_steps)
         print(f"WARNING: repo_truth_map JSON-managed steps missing from model_map.yaml: {formatted}", file=sys.stderr)
-    extra_lane_steps = sorted(set(lane_map.keys()) - set(scope_map.keys()))
+    repo_truth_declared = set((declared_map or {}).keys())
+    extra_lane_steps = sorted(
+        key for key in (set(lane_map.keys()) - set(scope_map.keys())) if key not in repo_truth_declared
+    )
     if extra_lane_steps:
         formatted = ", ".join(f"{phase}:{step}" for phase, step in extra_lane_steps)
         print(f"WARNING: model_map.yaml steps outside repo_truth_map JSON scope: {formatted}", file=sys.stderr)
@@ -276,10 +289,11 @@ def _compile_phase_contract_map_cached(emit_warnings: bool) -> Dict[str, Any]:
     artifact_rules = _artifact_rules_by_key()
     lane_map = _model_map_by_key()
     prompt_paths = _prompt_path_by_step()
+    declared_map = _repo_truth_declared_by_key()
     scope_map = _repo_truth_scope_by_key()
     scoped_lane_map = {key: lane_map[key] for key in scope_map.keys() if key in lane_map}
     if emit_warnings:
-        _warn_on_lane_map_scope_mismatch(lane_map, scope_map)
+        _warn_on_lane_map_scope_mismatch(lane_map, scope_map, declared_map)
 
     steps_payload: Dict[str, Dict[str, Any]] = {}
     for (phase_code, step_id), scope in sorted(scope_map.items()):

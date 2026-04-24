@@ -114,17 +114,17 @@ def test_v5_post_review_preset_sequence_includes_sp_phase() -> None:
     ]
 
 
-def test_v5_phase_s_prompt_mode_is_legacy_only() -> None:
+def test_v5_phase_s_prompt_mode_tracks_explicit_selection() -> None:
     runner = _load_runner_module()
 
     runner.set_active_s_prompts_mode(None)
     assert runner.get_active_s_prompts_mode() == runner.S_PROMPTS_LEGACY
 
     runner.set_active_s_prompts_mode("auto")
-    assert runner.get_active_s_prompts_mode() == runner.S_PROMPTS_LEGACY
+    assert runner.get_active_s_prompts_mode() == "auto"
 
     runner.set_active_s_prompts_mode("registry")
-    assert runner.get_active_s_prompts_mode() == runner.S_PROMPTS_LEGACY
+    assert runner.get_active_s_prompts_mode() == "registry"
 
 
 def test_v5_phase_s_always_returns_legacy_prompts() -> None:
