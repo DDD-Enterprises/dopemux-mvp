@@ -11545,6 +11545,7 @@ def execute_step_for_partitions(
         p_provider, p_model_id, p_api_key_env = provider, model_id, initial_api_key_env
         p_transport = transport
         p_force_json = force_json_output
+        p_endpoint_base = endpoint_base
         p_response_format = draft_response_format
         p_structured_meta = draft_structured_output_meta
 
@@ -11563,6 +11564,7 @@ def execute_step_for_partitions(
                 or PROVIDER_API_KEY_ENV.get(p_provider, "")
             )
             p_transport = transport_for_provider(p_provider, cfg)
+            p_endpoint_base = llm_base_url(p_provider, cfg)
             p_force_json = p_provider == "gemini"
             
             if strict_contract_required and isinstance(step_contract, dict):
@@ -11689,7 +11691,7 @@ def execute_step_for_partitions(
         if payload_bytes > cfg.max_request_bytes:
             over_by = payload_bytes - cfg.max_request_bytes
             gemini_sequence = _gemini_auth_mode_sequence(
-                cfg.gemini_auth_mode, endpoint_base
+                cfg.gemini_auth_mode, p_endpoint_base
             )
             endpoint_url = transport_endpoint_url(
                 p_provider, p_model_id, cfg, "REDACTED", gemini_sequence[0]
@@ -11697,7 +11699,7 @@ def execute_step_for_partitions(
             failure_meta = {
                 "provider": p_provider,
                 "model_id": p_model_id,
-                "endpoint_base_url": endpoint_base,
+                "endpoint_base_url": p_endpoint_base,
                 "endpoint_effective": endpoint_effective(endpoint_url),
                 **endpoint_fingerprint(endpoint_url),
                 "status_code": None,
@@ -11835,7 +11837,7 @@ def execute_step_for_partitions(
                 ),
             )
             gemini_sequence = _gemini_auth_mode_sequence(
-                cfg.gemini_auth_mode, endpoint_base
+                cfg.gemini_auth_mode, p_endpoint_base
             )
             dry_mode = gemini_sequence[0] if p_provider == "gemini" else None
             endpoint_url = transport_endpoint_url(
@@ -11860,7 +11862,7 @@ else sdk_auth_present_flags(p_provider, True)
             dry_meta = {
                 "provider": p_provider,
                 "model_id": p_model_id,
-                "endpoint_base_url": endpoint_base,
+                "endpoint_base_url": p_endpoint_base,
                 "endpoint_effective": endpoint_effective(endpoint_url),
                 **endpoint_fingerprint(endpoint_url),
                 "status_code": None,
