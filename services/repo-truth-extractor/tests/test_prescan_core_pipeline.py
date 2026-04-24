@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import sys
 from pathlib import Path
 
@@ -12,6 +13,7 @@ if str(SERVICE_ROOT) not in sys.path:
 
 from lib.prescan.classifier import Classifier
 from lib.prescan.corpus_walker import CorpusWalker
+from lib.prescan.engine import PrescanEngine
 from lib.prescan.models import FileEntry, PrescanConfig
 
 
@@ -120,6 +122,33 @@ def test_classifier_detects_draft_and_adr(tmp_path: Path) -> None:
 
     archive_entry = next(e for e in entries if "archive" in e.rel_path)
     assert archive_entry.authority_class == "historical"
+
+
+def test_prescan_engine_emits_operator_progress(caplog, tmp_path: Path) -> None:
+    """Prescan should show real stage progress instead of a silent long-running wait."""
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src" / "main.py").write_text("def main():\n    return 1\n", encoding="utf-8")
+    (tmp_path / "README.md").write_text("# Fixture\n", encoding="utf-8")
+
+    config = PrescanConfig(
+        repo_root=tmp_path,
+        output_dir=tmp_path / "out",
+        enable_code_prescan=False,
+        enable_git_enrichment=False,
+        batch_mode=False,
+        cost_estimate=False,
+    )
+    engine = PrescanEngine(config)
+
+    with caplog.at_level(logging.INFO, logger="lib.prescan.engine"):
+        result = engine.run()
+
+    assert result.success is True
+    messages = [record.getMessage() for record in caplog.records]
+    assert any("PRESCAN_PROGRESS walk_corpus" in message for message in messages)
+    assert any("PRESCAN_PROGRESS classify_files" in message for message in messages)
+    assert any("PRESCAN_PROGRESS write_prescan_artifacts" in message for message in messages)
+    assert any("PRESCAN_PROGRESS complete" in message for message in messages)
 
 
 

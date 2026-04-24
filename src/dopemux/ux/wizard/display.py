@@ -170,6 +170,131 @@ def render_corpus_table(stats: Dict[str, Any]) -> None:
     console.print(table)
 
 
+def render_prescan_hud(
+    stats: Dict[str, Any],
+    intelligence: Dict[str, Any],
+    artifacts: Dict[str, Any],
+) -> None:
+    """Render the canonical v5 prescan outputs as an operator-facing HUD."""
+    total_scanned = int(stats.get("total_files_scanned", 0) or 0)
+    included = int(stats.get("included_count", 0) or 0)
+    excluded = int(stats.get("excluded_count", 0) or 0)
+    total_size = int(stats.get("total_included_size", 0) or 0)
+    code_intel = intelligence.get("code_intelligence") or {}
+    analyzed_files = int(code_intel.get("analyzed_files", 0) or 0)
+    compression_files = int(intelligence.get("compression_potential_files", 0) or 0)
+    version_chains = int(intelligence.get("version_chain_count", 0) or 0)
+    planned_features = intelligence.get("planned_features") or {}
+    planned_count = sum(
+        len(value) for value in planned_features.values() if isinstance(value, list)
+    )
+
+    receipt = artifacts.get("receipt") or {}
+    batch_plan = artifacts.get("batch_plan") or {}
+    routing_plan = artifacts.get("routing_plan") or {}
+    selected_routes = routing_plan.get("selected_routes") or {}
+    router_loaded = bool(receipt.get("router_loaded"))
+    online_authorized = bool(receipt.get("online_authorized"))
+
+    metric_table = Table.grid(expand=True)
+    metric_table.add_column(ratio=1)
+    metric_table.add_column(ratio=1)
+    metric_table.add_column(ratio=1)
+    metric_table.add_row(
+        f"[bold mint]{included:,}[/bold mint]\n[dim]included files[/dim]",
+        f"[bold warning]{excluded:,}[/bold warning]\n[dim]excluded noise[/dim]",
+        f"[bold info]{total_size / (1024 * 1024):.1f} MB[/bold info]\n[dim]included corpus[/dim]",
+    )
+    metric_table.add_row(
+        f"[bold success]{analyzed_files:,}[/bold success]\n[dim]code files analyzed[/dim]",
+        f"[bold magenta]{compression_files:,}[/bold magenta]\n[dim]compression candidates[/dim]",
+        f"[bold violet]{version_chains:,}[/bold violet]\n[dim]version chains[/dim]",
+    )
+
+    status_lines = [
+        f"[bold]Prescan mode:[/bold] {receipt.get('mode', 'integrated')}",
+        f"[bold]Router loaded:[/bold] {'yes' if router_loaded else 'no'}",
+        f"[bold]Online LLM spend:[/bold] {'authorized' if online_authorized else 'blocked'}",
+        f"[bold]Planned feature signals:[/bold] {planned_count:,}",
+        f"[bold]Files scanned:[/bold] {total_scanned:,}",
+    ]
+    if receipt.get("duration_seconds") is not None:
+        status_lines.append(f"[bold]Runtime:[/bold] {receipt['duration_seconds']}s")
+
+    console.print(
+        Panel(
+            Columns(
+                [
+                    Panel(metric_table, title="[bold]Corpus Signal[/bold]", border_style="mint", box=ROUNDED),
+                    Panel("\n".join(status_lines), title="[bold]Stage 0 State[/bold]", border_style="violet", box=ROUNDED),
+                ],
+                equal=True,
+                expand=True,
+            ),
+            title="[bold white]Integrated Prescan Telemetry[/bold white]",
+            subtitle="[dim]canonical v5 artifacts, local analysis, no provider spend unless explicitly authorized[/dim]",
+            border_style="bright_cyan",
+            box=ROUNDED,
+            padding=(1, 1),
+        )
+    )
+
+    if batch_plan:
+        plan_rows = []
+        for pass_id, plan in sorted(batch_plan.items()):
+            if not isinstance(plan, dict):
+                continue
+            batches = plan.get("batches") or []
+            plan_rows.append(
+                (
+                    pass_id,
+                    int(plan.get("total_files", 0) or 0),
+                    len(batches),
+                    int(plan.get("total_estimated_tokens", 0) or 0),
+                )
+            )
+        if plan_rows:
+            table = Table(
+                title="[bold]Prescan LLM Pass Plan[/bold]",
+                box=ROUNDED,
+                border_style="table.border",
+                padding=(0, 1),
+            )
+            table.add_column("Pass")
+            table.add_column("Files", justify="right")
+            table.add_column("Batches", justify="right")
+            table.add_column("Est. tokens", justify="right")
+            for pass_id, files, batches, tokens in plan_rows:
+                route = selected_routes.get(pass_id) or {}
+                provider = route.get("provider")
+                model_id = route.get("model_id")
+                route_label = f"  [dim]{provider}/{model_id}[/dim]" if provider and model_id else ""
+                table.add_row(pass_id + route_label, f"{files:,}", f"{batches:,}", f"{tokens:,}")
+            console.print(table)
+
+    savings = (
+        intelligence.get("grok_passes", {})
+        .get("optimize", {})
+        .get("estimated_savings")
+    )
+    if isinstance(savings, dict):
+        console.print(
+            Panel(
+                "\n".join(
+                    [
+                        f"[bold]Files skipped:[/bold] {int(savings.get('files_skipped', 0) or 0):,}",
+                        f"[bold]Files compressed:[/bold] {int(savings.get('files_compressed', 0) or 0):,}",
+                        f"[bold]Estimated token reduction:[/bold] {float(savings.get('estimated_token_reduction_pct', 0.0) or 0.0):.1f}%",
+                    ]
+                ),
+                title="[bold]Optimization Savings[/bold]",
+                border_style="success",
+                box=ROUNDED,
+                padding=(1, 2),
+            )
+        )
+
+
 # ── Cost profile comparison ────────────────────────────────────────────────
 
 def render_cost_table(

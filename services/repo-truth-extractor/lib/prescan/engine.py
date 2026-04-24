@@ -52,6 +52,13 @@ class PrescanEngine:
         self.detector = self.duplicate_detector
         self.code_scanner = self.code_prescan
 
+    def _log_progress(self, message: str, **fields: Any) -> None:
+        if fields:
+            details = " ".join(f"{key}={value}" for key, value in fields.items())
+            logger.info("PRESCAN_PROGRESS %s %s", message, details)
+            return
+        logger.info("PRESCAN_PROGRESS %s", message)
+
     def run(self, passes: list[str] | None = None, incremental: bool = False) -> PrescanResult:
         start_time = time.time()
         warnings: list[str] = []
@@ -60,21 +67,70 @@ class PrescanEngine:
         self.config.output_dir.mkdir(parents=True, exist_ok=True)
 
         try:
+            self._log_progress(
+                "start",
+                repo=self.config.repo_root,
+                output=self.config.output_dir,
+                incremental=bool(incremental),
+            )
+            self._log_progress("walk_corpus")
             entries = self.walker.walk()
+            included_count = sum(1 for entry in entries if entry.include)
+            self._log_progress(
+                "walk_corpus_done",
+                files=len(entries),
+                included=included_count,
+                excluded=len(entries) - included_count,
+            )
+
+            self._log_progress("load_incremental_cache")
             cache = IncrementalCodeCache(self.config)
             cache_payload, fallback_reason, changed_files = self._load_incremental_cache(cache, incremental, warnings)
+            self._log_progress(
+                "incremental_cache_done",
+                changed_files=len(changed_files or set()) if incremental else 0,
+                fallback=bool(fallback_reason),
+            )
             incremental_meta: dict[str, Any] = {
                 "enabled": bool(incremental),
                 "changed_files_count": len(changed_files or set()) if incremental else 0,
                 "fallback_reason": fallback_reason,
             }
 
+            self._log_progress("classify_files", files=len(entries))
             incremental_meta.update(self._classify(entries, cache, cache_payload, changed_files))
+            self._log_progress(
+                "classify_files_done",
+                reused=incremental_meta.get("cached_classifications_reused", 0),
+                reclassified=incremental_meta.get("reclassified_files", 0),
+            )
+            self._log_progress("git_enrichment", enabled=bool(self.config.enable_git_enrichment))
             incremental_meta.update(self._enrich(entries, warnings, cache, cache_payload, changed_files))
+            self._log_progress(
+                "git_enrichment_done",
+                reused=incremental_meta.get("cached_git_enrichment_reused", 0),
+                recomputed=incremental_meta.get("git_enrichment_recomputed", 0),
+            )
+            self._log_progress("duplicate_analysis", files=len(entries))
             duplicates = self._detect_duplicates(entries, cache, cache_payload, changed_files)
             incremental_meta.update(duplicates["metadata"])
+            self._log_progress(
+                "duplicate_analysis_done",
+                groups=len(duplicates["groups"]),
+                version_chains=len(duplicates["chains"]),
+            )
 
             manifest = [entry.to_dict() for entry in entries]
+            code_entries = sum(
+                1
+                for entry in entries
+                if entry.include and not entry.is_ghost and self._is_code_entry(entry)
+            )
+            self._log_progress(
+                "code_intelligence",
+                enabled=bool(self.config.enable_code_prescan),
+                files=code_entries,
+            )
             code_intel, code_incremental_meta = self._analyze_code(
                 entries,
                 manifest,
@@ -83,16 +139,25 @@ class PrescanEngine:
                 changed_files,
             )
             incremental_meta.update(code_incremental_meta)
+            self._log_progress(
+                "code_intelligence_done",
+                analyzed=len(code_intel),
+                reused=incremental_meta.get("cached_code_analysis_reused", 0),
+                reanalyzed=incremental_meta.get("reanalyzed_code_files", 0),
+            )
             incremental_meta["removed_cache_entries"] = cache.removed_entry_count(
                 cache_payload,
                 {entry.rel_path for entry in entries},
             )
             metadata["incremental"] = incremental_meta
+            self._log_progress("write_incremental_cache")
             cache.write(entries, code_intel, self._get_git_sha())
 
+            self._log_progress("build_dependency_graph", files=len(code_intel))
             self.dep_graph = DependencyGraph()
             self.dep_graph.build_from_code_intelligence(code_intel, manifest)
 
+            self._log_progress("build_intelligence")
             intelligence = self._build_intelligence_base(entries, code_intel)
             intelligence["duplicate_groups"] = duplicates["groups"]
             intelligence["version_chains"] = duplicates["chains"]
@@ -101,13 +166,21 @@ class PrescanEngine:
             code_graph_path: Path | None = None
             code_report_path: Path | None = None
             if self.config.enable_code_prescan:
+                self._log_progress("write_code_artifacts")
                 code_graph_path = self._write_code_graph()
                 code_report_path = self._write_code_report(entries, manifest)
 
             batch_plans: dict[str, Any] = {}
             batch_plan_path: Path | None = None
             if passes:
+                self._log_progress("plan_llm_passes", passes=",".join(passes))
                 batch_plans, batch_plan_path = self._plan_batches(passes, entries, manifest, intelligence)
+                self._log_progress(
+                    "plan_llm_passes_done",
+                    batches=sum(len(plan.batches) for plan in batch_plans.values()),
+                    tokens=sum(int(getattr(plan, "total_estimated_tokens", 0) or 0) for plan in batch_plans.values()),
+                )
+                self._log_progress("provider_readiness", passes=",".join(passes))
                 stage0 = self._run_stage0(passes)
                 metadata["stage0"] = {
                     "catalog_status": "PASS",
@@ -115,7 +188,13 @@ class PrescanEngine:
                     "routing_plan_status": stage0["routing_plan"]["status"],
                     "selected_live_routes": stage0["routing_plan"].get("selected_routes", {}),
                 }
+                self._log_progress(
+                    "provider_readiness_done",
+                    readiness=stage0["readiness"]["status"],
+                    routing=stage0["routing_plan"]["status"],
+                )
                 if stage0["routing_plan"]["status"] == NO_LIVE_LANE:
+                    self._log_progress("halt_no_live_lane")
                     write_no_live_lane_artifact(self.config.output_dir, stage0["routing_plan"])
                     errors.append("No executable live prescan lane survived Stage 0 readiness gating.")
                     return PrescanResult(
@@ -137,6 +216,10 @@ class PrescanEngine:
                 if self.config.allow_online_llm:
                     write_live_lane_success_artifact(self.config.output_dir, stage0["routing_plan"])
                 if self.config.allow_online_llm:
+                    self._log_progress(
+                        "run_online_passes",
+                        mode="batch" if self.config.batch_mode and batch_plans else "single",
+                    )
                     if self.config.batch_mode and batch_plans:
                         grok_results = self.grok_runner.run_passes_batched(
                             passes,
@@ -153,9 +236,20 @@ class PrescanEngine:
                             routing_plan=stage0["routing_plan"],
                         )
                     intelligence["grok_passes"] = grok_results
+                    self._log_progress("run_online_passes_done", results=len(grok_results))
+                else:
+                    self._log_progress("online_passes_skipped", reason="online_llm_not_authorized")
 
+            self._log_progress("write_prescan_artifacts")
             intelligence_path = self._write_json("prescan_intelligence.json", intelligence)
             manifest_path = self._write_json("corpus_manifest.json", manifest)
+            self._log_progress(
+                "complete",
+                files=len(entries),
+                included=sum(1 for entry in entries if entry.include),
+                code_files=len(code_intel),
+                seconds=round(time.time() - start_time, 2),
+            )
             return PrescanResult(
                 success=True,
                 duration_seconds=round(time.time() - start_time, 2),
