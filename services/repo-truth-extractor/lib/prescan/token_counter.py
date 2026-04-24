@@ -28,7 +28,7 @@ def estimate_tokens(
     Args:
         text: Input string.
         method: ``"tiktoken"`` for cl100k_base, ``"chars"`` for character-based.
-        chars_per_token: Divisor when using chars method.
+        chars_per_token: Divisor when using chars method (default 3.5 is accurate for modern code/text).
 
     Returns:
         Estimated token count (always ≥ 0).
@@ -36,7 +36,8 @@ def estimate_tokens(
     if not text:
         return 0
 
-    if _TIKTOKEN_AVAILABLE:
+    # Prioritize tiktoken if available and requested (or default)
+    if method == "tiktoken" and _TIKTOKEN_AVAILABLE:
         try:
             enc = tiktoken.get_encoding("cl100k_base")
             return len(enc.encode(text))
@@ -51,6 +52,7 @@ def estimate_file_tokens(
     path: Path,
     max_preview_bytes: int = 0,
     chars_per_token: float = 3.5,
+    method: str = "tiktoken",
 ) -> int:
     """Estimate token count for a file on disk.
 
@@ -70,11 +72,12 @@ def estimate_file_tokens(
         try:
             raw = path.read_bytes()[:max_preview_bytes]
             text = raw.decode("utf-8", errors="replace")
-            return estimate_tokens(text, method="tiktoken", chars_per_token=chars_per_token)
+            return estimate_tokens(text, method=method, chars_per_token=chars_per_token)
         except OSError:
             return 0
 
     # Fast path — estimate from byte size without reading (heuristic)
+    # Even if tiktoken is requested, we use the heuristic for fast stat-only checks
     return max(1, int(size / chars_per_token))
 
 
@@ -89,6 +92,8 @@ def estimate_payload_overhead(pass_id: str) -> int:
 
     system_prompt = PASS_SYSTEM_PROMPTS.get(pass_id, "")
     # Framing overhead: markdown headers, separators, metadata lines
+    # Use 3.5 for conservative estimate of framing overhead
+    chars_per_token = 3.5
     framing_chars = 2000  # conservative estimate for markdown scaffolding
     total_chars = len(system_prompt) + framing_chars
-    return max(1, int(total_chars / 4.0))
+    return max(1, int(total_chars / chars_per_token))

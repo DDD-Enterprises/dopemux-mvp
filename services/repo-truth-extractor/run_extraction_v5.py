@@ -8260,18 +8260,15 @@ def _normalized_usage_from_payload(payload: Any) -> Optional[Dict[str, int]]:
     }
 
 
-from lib.prescan.token_counter import estimate_tokens
-
 def _estimate_text_tokens(*chunks: Any) -> int:
-    text = "".join(str(chunk or "") for chunk in chunks)
-    return estimate_tokens(text)
+    total_chars = sum(len(str(chunk or "")) for chunk in chunks)
+    return max(0, total_chars // 4)
 
 
 def _project_output_tokens(input_tokens: int, response_text: str = "") -> int:
     if response_text:
-        return estimate_tokens(str(response_text))
-    # Heuristic for output tokens: Project ~25% for complex logic/synthesis
-    return max(1, int(input_tokens) // 4) if input_tokens > 0 else 1
+        return max(1, len(str(response_text)) // 4)
+    return max(1, int(input_tokens) // 10) if input_tokens > 0 else 1
 
 
 def _project_preview_output_tokens(
@@ -11548,6 +11545,7 @@ def execute_step_for_partitions(
         p_provider, p_model_id, p_api_key_env = provider, model_id, initial_api_key_env
         p_transport = transport
         p_force_json = force_json_output
+        p_endpoint_base = endpoint_base
         p_response_format = draft_response_format
         p_structured_meta = draft_structured_output_meta
 
@@ -11566,6 +11564,7 @@ def execute_step_for_partitions(
                 or PROVIDER_API_KEY_ENV.get(p_provider, "")
             )
             p_transport = transport_for_provider(p_provider, cfg)
+            p_endpoint_base = llm_base_url(p_provider, cfg)
             p_force_json = p_provider == "gemini"
             
             if strict_contract_required and isinstance(step_contract, dict):
@@ -11692,7 +11691,7 @@ def execute_step_for_partitions(
         if payload_bytes > cfg.max_request_bytes:
             over_by = payload_bytes - cfg.max_request_bytes
             gemini_sequence = _gemini_auth_mode_sequence(
-                cfg.gemini_auth_mode, endpoint_base
+                cfg.gemini_auth_mode, p_endpoint_base
             )
             endpoint_url = transport_endpoint_url(
                 p_provider, p_model_id, cfg, "REDACTED", gemini_sequence[0]
@@ -11700,7 +11699,7 @@ def execute_step_for_partitions(
             failure_meta = {
                 "provider": p_provider,
                 "model_id": p_model_id,
-                "endpoint_base_url": endpoint_base,
+                "endpoint_base_url": p_endpoint_base,
                 "endpoint_effective": endpoint_effective(endpoint_url),
                 **endpoint_fingerprint(endpoint_url),
                 "status_code": None,
@@ -11838,7 +11837,7 @@ def execute_step_for_partitions(
                 ),
             )
             gemini_sequence = _gemini_auth_mode_sequence(
-                cfg.gemini_auth_mode, endpoint_base
+                cfg.gemini_auth_mode, p_endpoint_base
             )
             dry_mode = gemini_sequence[0] if p_provider == "gemini" else None
             endpoint_url = transport_endpoint_url(
@@ -11854,7 +11853,7 @@ def execute_step_for_partitions(
                     dry_headers, p_provider == "gemini" and dry_mode == "query_key"
                 )
                 if p_transport == "openai_compat_http"
-                else sdk_auth_present_flags(provider, True)
+else sdk_auth_present_flags(p_provider, True)
             )
             trace_text = (
                 f"# PROMPT_FILE\n{prompt_path}\n\n# SYSTEM_PROMPT\n{prompt_text}\n\n"
@@ -11863,7 +11862,7 @@ def execute_step_for_partitions(
             dry_meta = {
                 "provider": p_provider,
                 "model_id": p_model_id,
-                "endpoint_base_url": endpoint_base,
+                "endpoint_base_url": p_endpoint_base,
                 "endpoint_effective": endpoint_effective(endpoint_url),
                 **endpoint_fingerprint(endpoint_url),
                 "status_code": None,
