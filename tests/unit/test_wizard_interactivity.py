@@ -168,11 +168,30 @@ def test_run_corpus_audit_uses_integrated_v5_prescan_outputs(
     (prescan_dir / "prescan_intelligence.json").write_text(
         json.dumps(intelligence), encoding="utf-8"
     )
+    (prescan_dir / "prescan_stage_receipt.json").write_text(
+        json.dumps({"mode": "integrated", "router_loaded": True}),
+        encoding="utf-8",
+    )
+    (prescan_dir / "batch_plan.json").write_text(
+        json.dumps({"dedup": {"total_files": 1, "total_estimated_tokens": 100, "batches": [{"batch_id": "dedup_0"}]}}),
+        encoding="utf-8",
+    )
+    (prescan_dir / "prescan_routing_plan.json").write_text(
+        json.dumps({"selected_routes": {"dedup": {"provider": "openrouter", "model_id": "openai/gpt-5-nano"}}}),
+        encoding="utf-8",
+    )
 
     router = object()
+    rendered: dict[str, object] = {}
     monkeypatch.setattr(
         "dopemux.ux.wizard.corpus._run_integrated_v5_prescan",
         lambda state: (prescan_dir, router),
+    )
+    monkeypatch.setattr(
+        "dopemux.ux.wizard.corpus.render_prescan_hud",
+        lambda stats, intelligence, artifacts: rendered.update(
+            {"stats": stats, "intelligence": intelligence, "artifacts": artifacts}
+        ),
     )
 
     state = WizardState(
@@ -188,6 +207,12 @@ def test_run_corpus_audit_uses_integrated_v5_prescan_outputs(
     assert state.corpus_included_count == 1
     assert state.corpus_total_size == 120
     assert state.corpus_stats["excluded_count"] == 1
+    assert rendered["artifacts"]["receipt"]["router_loaded"] is True
+    assert rendered["artifacts"]["batch_plan"]["dedup"]["total_estimated_tokens"] == 100
+    assert (
+        rendered["artifacts"]["routing_plan"]["selected_routes"]["dedup"]["model_id"]
+        == "openai/gpt-5-nano"
+    )
 
 
 def test_run_cost_selection_supports_profile_browsing(

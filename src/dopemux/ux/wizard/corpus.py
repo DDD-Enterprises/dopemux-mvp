@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Tuple
 
 from dopemux.console import console
 
-from .display import render_corpus_table, render_educational_panel
+from .display import render_corpus_table, render_educational_panel, render_prescan_hud
 from .stages import AUTHORITY_CLASSES, StageResult, StageStatus, WizardState
 
 
@@ -82,6 +82,17 @@ def _run_integrated_v5_prescan(state: WizardState) -> Tuple[Path, Any]:
     return run_root / "prescan", router
 
 
+def _load_optional_json(path: Path) -> Dict[str, Any]:
+    if not path.exists():
+        return {}
+    try:
+        with open(path, encoding="utf-8") as f:
+            payload = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
 def run_corpus_audit(state: WizardState) -> StageResult:
     """Stage 2 — Run canonical Stage 0 prescan and parse its manifest/intelligence."""
     if not state.run_id:
@@ -113,13 +124,7 @@ def run_corpus_audit(state: WizardState) -> StageResult:
         console.print(f"[bold red]Failed to parse corpus_manifest.json: {exc}[/bold red]")
         return StageResult(status=StageStatus.FAILED, message="Manifest JSON parse error")
 
-    intelligence: Dict[str, Any] = {}
-    if intelligence_path.exists():
-        try:
-            with open(intelligence_path, encoding="utf-8") as f:
-                intelligence = json.load(f)
-        except (json.JSONDecodeError, OSError):
-            intelligence = {}
+    intelligence = _load_optional_json(intelligence_path)
 
     state.corpus_stats = _build_corpus_stats(state.corpus_manifest or [])
     state.corpus_included_count = state.corpus_stats.get("included_count", 0)
@@ -130,6 +135,15 @@ def run_corpus_audit(state: WizardState) -> StageResult:
 
     # Display integrated prescan results
     console.print()
+    render_prescan_hud(
+        state.corpus_stats,
+        intelligence,
+        {
+            "receipt": _load_optional_json(prescan_dir / "prescan_stage_receipt.json"),
+            "batch_plan": _load_optional_json(prescan_dir / "batch_plan.json"),
+            "routing_plan": _load_optional_json(prescan_dir / "prescan_routing_plan.json"),
+        },
+    )
     render_corpus_table(state.corpus_stats)
 
     excluded = state.corpus_stats.get("excluded_count", 0)
