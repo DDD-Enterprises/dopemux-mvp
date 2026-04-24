@@ -66,7 +66,7 @@ def test_truth_run_finds_v5_runner_directly() -> None:
     assert runner_path == _repo_root() / "services" / "repo-truth-extractor" / "run_extraction_v5.py"
 
 
-def test_truth_cli_routes_to_v5_runner(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_truth_cli_shows_deprecation_error(monkeypatch: pytest.MonkeyPatch) -> None:
     src_path = str(_repo_root() / "src")
     if src_path not in sys.path:
         sys.path.insert(0, src_path)
