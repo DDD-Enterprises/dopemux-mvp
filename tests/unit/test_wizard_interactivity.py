@@ -183,26 +183,39 @@ def test_run_corpus_audit_uses_integrated_v5_prescan_outputs(
     (prescan_dir / "prescan_provider_readiness.json").write_text(
         json.dumps(
             {
-                "passes": {
-                    "dedup": {
-                        "provider_ready": True,
-                        "selected_route": {
-                            "provider": "openrouter",
-                            "model_id": "openai/gpt-5-nano",
-                            "tier": "budget",
-                        },
+                "status": "PASS",
+                "routes": [
+                    {
+                        "provider": "openrouter",
+                        "model_id": "openai/gpt-5-nano",
+                        "api_key_env": "OPENROUTER_API_KEY",
+                        "dependency_class": "primary",
+                        "economic_surface": "budget",
+                        "execution_transport": "openai_sdk",
+                        "route_admissible": True,
+                        "ready": True,
+                        "provider_probe": {"ready": True},
+                        "exclusion_reason": None,
                     }
-                }
+                ],
+                "failed_blocker_codes": [],
             }
         ),
         encoding="utf-8",
     )
     (prescan_dir / "prescan_provider_model_catalog.json").write_text(
-        json.dumps({"routes": [{"provider": "openrouter", "model_id": "openai/gpt-5-nano"}]}),
+        json.dumps({"routes": [{"provider": "openrouter", "model_id": "openai/gpt-5-nano", "economic_surface": "budget"}]}),
         encoding="utf-8",
     )
     (prescan_dir / "prescan_no_live_lane.json").write_text(
-        json.dumps({"reason": "missing credentials"}),
+        json.dumps(
+            {
+                "status": "NO_LIVE_LANE",
+                "halt_before_stage_1": True,
+                "requested_passes": ["dedup"],
+                "failures": [{"pass": "dedup", "blocker_code": "MISSING_CREDENTIAL"}],
+            }
+        ),
         encoding="utf-8",
     )
 
@@ -238,9 +251,13 @@ def test_run_corpus_audit_uses_integrated_v5_prescan_outputs(
         rendered["artifacts"]["routing_plan"]["selected_routes"]["dedup"]["model_id"]
         == "openai/gpt-5-nano"
     )
-    assert rendered["artifacts"]["provider_readiness"]["passes"]["dedup"]["provider_ready"] is True
+    assert rendered["artifacts"]["provider_readiness"]["status"] == "PASS"
+    assert rendered["artifacts"]["provider_readiness"]["routes"][0]["ready"] is True
+    assert rendered["artifacts"]["provider_readiness"]["failed_blocker_codes"] == []
     assert rendered["artifacts"]["provider_catalog"]["routes"][0]["provider"] == "openrouter"
-    assert rendered["artifacts"]["no_live_lane"]["reason"] == "missing credentials"
+    assert rendered["artifacts"]["no_live_lane"]["status"] == "NO_LIVE_LANE"
+    assert rendered["artifacts"]["no_live_lane"]["halt_before_stage_1"] is True
+    assert "dedup" in rendered["artifacts"]["no_live_lane"]["requested_passes"]
 
 
 def test_run_cost_selection_supports_profile_browsing(

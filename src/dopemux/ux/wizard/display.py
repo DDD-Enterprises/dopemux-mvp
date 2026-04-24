@@ -215,6 +215,11 @@ def render_prescan_hud(
         f"[bold violet]{version_chains:,}[/bold violet]\n[dim]version chains[/dim]",
     )
 
+    readiness_status = str(readiness.get("status") or "")
+    failed_blocker_codes = list(readiness.get("failed_blocker_codes") or [])
+    ready_routes = sum(1 for r in (readiness.get("routes") or []) if r.get("ready"))
+    total_routes = len(readiness.get("routes") or [])
+
     status_lines = [
         f"[bold]Prescan mode:[/bold] {receipt.get('mode', 'integrated')}",
         f"[bold]Router loaded:[/bold] {'yes' if router_loaded else 'no'}",
@@ -224,8 +229,21 @@ def render_prescan_hud(
     ]
     if receipt.get("duration_seconds") is not None:
         status_lines.append(f"[bold]Runtime:[/bold] {receipt['duration_seconds']}s")
+    if readiness_status:
+        color = "green" if readiness_status == "PASS" else "red"
+        route_detail = f" ({ready_routes}/{total_routes} routes ready)" if total_routes else ""
+        status_lines.append(f"[bold]Provider readiness:[/bold] [{color}]{readiness_status}{route_detail}[/{color}]")
+    if failed_blocker_codes:
+        status_lines.append(f"[bold yellow]Blocker codes:[/bold yellow] {', '.join(failed_blocker_codes)}")
     if no_live_lane:
-        status_lines.append("[bold red]Launch posture:[/bold red] blocked before Stage 1")
+        nl_passes = ", ".join(str(p) for p in (no_live_lane.get("requested_passes") or []))
+        nl_failures = no_live_lane.get("failures") or []
+        blocker_summary = ", ".join(
+            str(f.get("blocker_code") or "unknown") for f in nl_failures if isinstance(f, dict)
+        )
+        halt_detail = f" passes=[{nl_passes}]" if nl_passes else ""
+        blocker_detail = f" blockers=[{blocker_summary}]" if blocker_summary else ""
+        status_lines.append(f"[bold red]Launch posture:[/bold red] blocked before Stage 1{halt_detail}{blocker_detail}")
     elif live_lane_success:
         status_lines.append("[bold green]Launch posture:[/bold green] live lane ready")
 
