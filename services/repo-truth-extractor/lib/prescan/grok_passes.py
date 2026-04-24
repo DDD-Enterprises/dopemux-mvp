@@ -212,15 +212,27 @@ class GrokPassRunner:
         """Estimate tokens for a given text."""
         return estimate_tokens(text)
 
+def _cache_digest_default(self, value: Any) -> Any:
+        """Return a deterministic JSON-serializable representation for cache keys."""
+        if isinstance(value, Path):
+            return str(value)
+        if hasattr(value, "__dict__"):
+            return vars(value)
+        return repr(value)
+
     def _get_cache_path(self, pass_id: str, payload: dict) -> Path:
         """Generate a stable cache path for a pass and its payload."""
         hasher = hashlib.sha256()
-        # Key on pass_id and a digest of critical payload data
         digest_input = {
             "pass_id": pass_id,
-            "corpus_summary": payload.get("corpus_summary"),
+            "payload": payload,
         }
-        encoded = json.dumps(digest_input, sort_keys=True).encode("utf-8")
+        encoded = json.dumps(
+            digest_input,
+            sort_keys=True,
+            separators=(",", ":"),
+            default=self._cache_digest_default,
+        ).encode("utf-8")
         hasher.update(encoded)
         return self._cache_dir / f"{pass_id}_{hasher.hexdigest()[:16]}.json"
 

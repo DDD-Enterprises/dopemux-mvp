@@ -11851,7 +11851,7 @@ def execute_step_for_partitions(
                     dry_headers, p_provider == "gemini" and dry_mode == "query_key"
                 )
                 if p_transport == "openai_compat_http"
-                else sdk_auth_present_flags(provider, True)
+else sdk_auth_present_flags(p_provider, True)
             )
             trace_text = (
                 f"# PROMPT_FILE\n{prompt_path}\n\n# SYSTEM_PROMPT\n{prompt_text}\n\n"
