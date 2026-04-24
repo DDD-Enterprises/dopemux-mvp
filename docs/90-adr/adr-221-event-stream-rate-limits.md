@@ -1,12 +1,17 @@
 ---
 id: adr-221
 title: Event Stream Rate Limits and Backpressure
-type: Architecture Decision Record
+type: adr
 owner: Claude Agent
 date: 2026-04-23
-status: Accepted
+status: active
+prelude: "Defines three-tier event stream backpressure with a 200 events/second cap, 15-minute client tail buffer, and 50ms debounce to preserve responsiveness without overwhelming ADHD-oriented context windows."
 tags: [u3-resolved, event-stream, frame-budget, backpressure, rate-limiting, performance-tuning]
 adhd_summary: "200 evt/sec + 15min tail buffer + 50ms debounce for ADHD context windows"
+graph_metadata:
+  node_type: adr
+  category: architecture-decision
+  status: active
 ---
 
 # ADR-221: Event Stream Rate Limits and Backpressure

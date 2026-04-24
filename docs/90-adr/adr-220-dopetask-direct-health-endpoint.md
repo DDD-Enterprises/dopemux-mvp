@@ -1,12 +1,14 @@
 ---
 id: adr-220
 title: dopetask Direct Health Endpoint
-type: Architecture Decision Record
+type: adr
 owner: Claude Agent
 date: 2026-04-23
-status: Accepted
+status: active
+prelude: "dopetask exposes a direct /health endpoint so the Services pane can probe it without relying on a central aggregator."
 tags: [u2-resolved, services-health, dopetask, execution-plane, monitoring]
 adhd_summary: "Direct health probe from Services pane, no aggregation bottleneck"
+graph_metadata: {}
 ---
 
 # ADR-220: dopetask Direct Health Endpoint

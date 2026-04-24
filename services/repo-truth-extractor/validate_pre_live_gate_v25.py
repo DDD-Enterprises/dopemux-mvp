@@ -34,7 +34,7 @@ ARTIFACTS_PATH = SERVICE_DIR / "promptsets" / "v4" / "artifacts.yaml"
 MODEL_MAP_PATH = SERVICE_DIR / "promptsets" / "v4" / "model_map.yaml"
 
 DEFAULT_TARGET_PHASES = ("A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z")
-DEFAULT_TARGET_POLICY = "balanced_openrouter"
+DEFAULT_TARGET_POLICY = "cost"
 DEFAULT_TARGET_MODE = "direct"
 DEFAULT_TARGET_PROFILE = "P00_GENERIC"
 DEFAULT_RUN_ID_PREFIX = "pre_live_gate_v25"
@@ -308,6 +308,13 @@ def build_config(args: argparse.Namespace) -> GateConfig:
     output_dir = args.output_dir or (
         REPO_ROOT / "reports" / "repo-truth-extractor" / "pre_live_gate_v25" / run_id
     )
+
+    pal_file = args.pal_validation_file
+    if not pal_file:
+        candidate = REPO_ROOT / "pal_validation.json"
+        if candidate.exists():
+            pal_file = candidate
+
     return GateConfig(
         repo_root=REPO_ROOT,
         output_dir=output_dir.resolve(),
@@ -318,7 +325,7 @@ def build_config(args: argparse.Namespace) -> GateConfig:
         target_phases=tuple(str(phase).strip().upper() for phase in args.target_phases),
         target_step=args.step,
         allow_online_preflight=bool(args.allow_online_preflight),
-        pal_validation_file=args.pal_validation_file.resolve() if args.pal_validation_file else None,
+        pal_validation_file=pal_file.resolve() if pal_file else None,
         waiver_codes=tuple(sorted({str(code).strip() for code in args.waiver_code if str(code).strip()})),
         required_direct_providers=resolve_required_direct_providers(
             str(args.target_policy).strip(),
@@ -662,7 +669,7 @@ def evaluate_pal_validation(
                 PAL_REQUIRED_UNAVAILABLE,
                 "pal_provider_validation",
                 "PAL validation was not provided for the selected routes. Runtime eligibility remains environment-based.",
-                {"pal_validation_file": None, "routes_count": len(output_rows)},
+                {"pal_validation_file": str(config.pal_validation_file) if config.pal_validation_file else None, "routes_count": len(output_rows)},
             )
         )
         return (
