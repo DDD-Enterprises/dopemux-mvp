@@ -59,6 +59,80 @@ class PrescanEngine:
             return
         logger.info("PRESCAN_PROGRESS %s", message)
 
+    def _top_file_extensions(self, entries: list[FileEntry], limit: int = 3) -> str:
+        counts: dict[str, int] = {}
+        for entry in entries:
+            if not entry.include:
+                continue
+            ext = entry.extension or "(no_ext)"
+            counts[ext] = counts.get(ext, 0) + 1
+        ranked = sorted(counts.items(), key=lambda item: (-item[1], item[0]))[:limit]
+        return ",".join(f"{ext}:{count}" for ext, count in ranked) if ranked else "none"
+
+    def _count_code_languages(self, entries: list[FileEntry]) -> dict[str, int]:
+        counts: dict[str, int] = {}
+        for entry in entries:
+            if entry.include and not entry.is_ghost and self._is_code_entry(entry):
+                language = entry.extension.lstrip(".").lower() or "unknown"
+                counts[language] = counts.get(language, 0) + 1
+        return dict(sorted(counts.items(), key=lambda item: (-item[1], item[0])))
+
+    def _summarize_batch_plans(self, batch_plans: dict[str, Any]) -> list[dict[str, Any]]:
+        rows: list[dict[str, Any]] = []
+        for pass_id, plan in sorted(batch_plans.items()):
+            oversized = list(getattr(plan, "oversized_files", []) or [])
+            rows.append(
+                {
+                    "pass_id": str(pass_id),
+                    "total_files": int(getattr(plan, "total_files", 0) or 0),
+                    "batch_count": len(getattr(plan, "batches", []) or []),
+                    "estimated_tokens": int(getattr(plan, "total_estimated_tokens", 0) or 0),
+                    "oversized_files": len(oversized),
+                    "oversized_examples": ",".join(
+                        str(item.get("path") or "") for item in oversized[:3] if item.get("path")
+                    )
+                    or "none",
+                }
+            )
+        return rows
+
+    def _summarize_stage0_routes(self, stage0: dict[str, Any]) -> list[dict[str, Any]]:
+        routing_plan = stage0.get("routing_plan") or {}
+        selected_routes = routing_plan.get("selected_routes") or {}
+        fallback_decisions = routing_plan.get("fallback_decisions") or {}
+        rows: list[dict[str, Any]] = []
+        for pass_id, route in sorted(selected_routes.items()):
+            if not isinstance(route, dict):
+                continue
+            decisions = list(fallback_decisions.get(pass_id) or [])
+            admitted = sum(1 for item in decisions if str(item.get("decision")) == "admitted")
+            excluded = sum(1 for item in decisions if str(item.get("decision")) == "excluded")
+            exclusion_reasons: dict[str, int] = {}
+            for item in decisions:
+                if str(item.get("decision")) != "excluded":
+                    continue
+                reason = str(item.get("reason") or "unknown")
+                exclusion_reasons[reason] = exclusion_reasons.get(reason, 0) + 1
+            reason_summary = ",".join(
+                f"{reason}:{count}"
+                for reason, count in sorted(
+                    exclusion_reasons.items(), key=lambda item: (-item[1], item[0])
+                )[:3]
+            ) or "none"
+            rows.append(
+                {
+                    "pass_id": str(pass_id),
+                    "provider": str(route.get("provider") or ""),
+                    "model_id": str(route.get("model_id") or ""),
+                    "selected_tier": str(route.get("selected_tier") or ""),
+                    "tier_adjustment": str(route.get("tier_adjustment") or "exact"),
+                    "admitted_fallbacks": admitted,
+                    "excluded_fallbacks": excluded,
+                    "exclusion_summary": reason_summary,
+                }
+            )
+        return rows
+
     def run(self, passes: list[str] | None = None, incremental: bool = False) -> PrescanResult:
         start_time = time.time()
         warnings: list[str] = []
@@ -81,6 +155,7 @@ class PrescanEngine:
                 files=len(entries),
                 included=included_count,
                 excluded=len(entries) - included_count,
+                top_extensions=self._top_file_extensions(entries),
             )
 
             self._log_progress("load_incremental_cache")
@@ -90,6 +165,7 @@ class PrescanEngine:
                 "incremental_cache_done",
                 changed_files=len(changed_files or set()) if incremental else 0,
                 fallback=bool(fallback_reason),
+                fallback_reason=(fallback_reason or "none").replace(" ", "_"),
             )
             incremental_meta: dict[str, Any] = {
                 "enabled": bool(incremental),
@@ -144,6 +220,11 @@ class PrescanEngine:
                 analyzed=len(code_intel),
                 reused=incremental_meta.get("cached_code_analysis_reused", 0),
                 reanalyzed=incremental_meta.get("reanalyzed_code_files", 0),
+                languages=",".join(
+                    f"{lang}:{count}"
+                    for lang, count in self._count_code_languages(entries).items()
+                )
+                or "none",
             )
             incremental_meta["removed_cache_entries"] = cache.removed_entry_count(
                 cache_payload,
@@ -180,6 +261,16 @@ class PrescanEngine:
                     batches=sum(len(plan.batches) for plan in batch_plans.values()),
                     tokens=sum(int(getattr(plan, "total_estimated_tokens", 0) or 0) for plan in batch_plans.values()),
                 )
+                for row in self._summarize_batch_plans(batch_plans):
+                    self._log_progress(
+                        "plan_llm_pass_detail",
+                        pass_id=row["pass_id"],
+                        files=row["total_files"],
+                        batches=row["batch_count"],
+                        tokens=row["estimated_tokens"],
+                        oversized=row["oversized_files"],
+                        oversized_examples=row["oversized_examples"],
+                    )
                 self._log_progress("provider_readiness", passes=",".join(passes))
                 stage0 = self._run_stage0(passes)
                 metadata["stage0"] = {
@@ -193,6 +284,17 @@ class PrescanEngine:
                     readiness=stage0["readiness"]["status"],
                     routing=stage0["routing_plan"]["status"],
                 )
+                for row in self._summarize_stage0_routes(stage0):
+                    self._log_progress(
+                        "provider_readiness_detail",
+                        pass_id=row["pass_id"],
+                        route=f"{row['provider']}/{row['model_id']}",
+                        tier=row["selected_tier"],
+                        adjustment=row["tier_adjustment"],
+                        admitted_fallbacks=row["admitted_fallbacks"],
+                        excluded_fallbacks=row["excluded_fallbacks"],
+                        exclusion_summary=row["exclusion_summary"],
+                    )
                 if stage0["routing_plan"]["status"] == NO_LIVE_LANE:
                     self._log_progress("halt_no_live_lane")
                     write_no_live_lane_artifact(self.config.output_dir, stage0["routing_plan"])

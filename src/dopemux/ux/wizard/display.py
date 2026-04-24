@@ -192,6 +192,10 @@ def render_prescan_hud(
     receipt = artifacts.get("receipt") or {}
     batch_plan = artifacts.get("batch_plan") or {}
     routing_plan = artifacts.get("routing_plan") or {}
+    readiness = artifacts.get("provider_readiness") or {}
+    provider_catalog = artifacts.get("provider_catalog") or {}
+    live_lane_success = artifacts.get("live_lane_success") or {}
+    no_live_lane = artifacts.get("no_live_lane") or {}
     selected_routes = routing_plan.get("selected_routes") or {}
     router_loaded = bool(receipt.get("router_loaded"))
     online_authorized = bool(receipt.get("online_authorized"))
@@ -220,6 +224,10 @@ def render_prescan_hud(
     ]
     if receipt.get("duration_seconds") is not None:
         status_lines.append(f"[bold]Runtime:[/bold] {receipt['duration_seconds']}s")
+    if no_live_lane:
+        status_lines.append("[bold red]Launch posture:[/bold red] blocked before Stage 1")
+    elif live_lane_success:
+        status_lines.append("[bold green]Launch posture:[/bold green] live lane ready")
 
     console.print(
         Panel(
@@ -239,6 +247,57 @@ def render_prescan_hud(
         )
     )
 
+    highlights = Table(
+        title="[bold]Corpus Highlights[/bold]",
+        box=ROUNDED,
+        border_style="table.border",
+        padding=(0, 1),
+    )
+    highlights.add_column("Dimension")
+    highlights.add_column("Top values", min_width=40)
+
+    top_directories = sorted(
+        (stats.get("by_directory") or {}).items(),
+        key=lambda item: (-int(item[1] or 0), str(item[0])),
+    )[:5]
+    top_extensions = sorted(
+        (stats.get("by_extension") or {}).items(),
+        key=lambda item: (-int(item[1] or 0), str(item[0])),
+    )[:5]
+    highlights.add_row(
+        "Directories",
+        ", ".join(f"{name}:{count}" for name, count in top_directories) or "none",
+    )
+    highlights.add_row(
+        "Extensions",
+        ", ".join(f"{name or '(no_ext)'}:{count}" for name, count in top_extensions) or "none",
+    )
+    console.print(highlights)
+
+    incremental = intelligence.get("incremental") or {}
+    if not incremental:
+        incremental = (artifacts.get("receipt") or {}).get("incremental") or {}
+    if incremental or receipt:
+        cache_lines = [
+            f"[bold]Incremental:[/bold] {'enabled' if incremental.get('enabled') else 'disabled'}",
+            f"[bold]Changed files:[/bold] {int(incremental.get('changed_files_count', 0) or 0):,}",
+            f"[bold]Classifications:[/bold] reused {int(incremental.get('cached_classifications_reused', 0) or 0):,} / recomputed {int(incremental.get('reclassified_files', 0) or 0):,}",
+            f"[bold]Git enrichment:[/bold] reused {int(incremental.get('cached_git_enrichment_reused', 0) or 0):,} / recomputed {int(incremental.get('git_enrichment_recomputed', 0) or 0):,}",
+            f"[bold]Code analysis:[/bold] reused {int(incremental.get('cached_code_analysis_reused', 0) or 0):,} / reanalyzed {int(incremental.get('reanalyzed_code_files', 0) or 0):,}",
+        ]
+        fallback_reason = incremental.get("fallback_reason")
+        if fallback_reason:
+            cache_lines.append(f"[bold]Fallback reason:[/bold] {fallback_reason}")
+        console.print(
+            Panel(
+                "\n".join(cache_lines),
+                title="[bold]Incremental Cache Summary[/bold]",
+                border_style="gilt.edge",
+                box=ROUNDED,
+                padding=(1, 2),
+            )
+        )
+
     if batch_plan:
         plan_rows = []
         for pass_id, plan in sorted(batch_plan.items()):
@@ -251,6 +310,7 @@ def render_prescan_hud(
                     int(plan.get("total_files", 0) or 0),
                     len(batches),
                     int(plan.get("total_estimated_tokens", 0) or 0),
+                    int(plan.get("oversized_files_count", 0) or 0),
                 )
             )
         if plan_rows:
@@ -264,13 +324,158 @@ def render_prescan_hud(
             table.add_column("Files", justify="right")
             table.add_column("Batches", justify="right")
             table.add_column("Est. tokens", justify="right")
-            for pass_id, files, batches, tokens in plan_rows:
+            table.add_column("Oversized", justify="right")
+            for pass_id, files, batches, tokens, oversized in plan_rows:
                 route = selected_routes.get(pass_id) or {}
                 provider = route.get("provider")
                 model_id = route.get("model_id")
                 route_label = f"  [dim]{provider}/{model_id}[/dim]" if provider and model_id else ""
-                table.add_row(pass_id + route_label, f"{files:,}", f"{batches:,}", f"{tokens:,}")
+                table.add_row(pass_id + route_label, f"{files:,}", f"{batches:,}", f"{tokens:,}", f"{oversized:,}")
             console.print(table)
+
+        oversized_rows = []
+        for pass_id, plan in sorted(batch_plan.items()):
+            if not isinstance(plan, dict):
+                continue
+            for item in (plan.get("oversized_files") or [])[:3]:
+                oversized_rows.append(
+                    (
+                        pass_id,
+                        str(item.get("path") or ""),
+                        int(item.get("tokens", 0) or 0),
+                        str(item.get("reason") or ""),
+                    )
+                )
+        if oversized_rows:
+            oversized_table = Table(
+                title="[bold]Oversized Batch Exclusions[/bold]",
+                box=ROUNDED,
+                border_style="warning",
+                padding=(0, 1),
+            )
+            oversized_table.add_column("Pass")
+            oversized_table.add_column("Path", min_width=32)
+            oversized_table.add_column("Tokens", justify="right")
+            oversized_table.add_column("Reason")
+            for pass_id, path, tokens, reason in oversized_rows[:6]:
+                oversized_table.add_row(pass_id, path, f"{tokens:,}", reason)
+            console.print(oversized_table)
+
+    if selected_routes:
+        route_table = Table(
+            title="[bold]Route Readiness Summary[/bold]",
+            box=ROUNDED,
+            border_style="table.border",
+            padding=(0, 1),
+        )
+        route_table.add_column("Pass")
+        route_table.add_column("Selected route", min_width=24)
+        route_table.add_column("Tier")
+        route_table.add_column("Adjustment")
+        route_table.add_column("Ready")
+        route_table.add_column("Fallbacks")
+
+        readiness_rows = {}
+        for row in (readiness.get("routes") or []):
+            if isinstance(row, dict):
+                readiness_rows[
+                    (
+                        str(row.get("provider") or ""),
+                        str(row.get("model_id") or ""),
+                        str(row.get("api_key_env") or ""),
+                    )
+                ] = row
+
+        fallback_decisions = routing_plan.get("fallback_decisions") or {}
+        for pass_id, route in sorted(selected_routes.items()):
+            key = (
+                str(route.get("provider") or ""),
+                str(route.get("model_id") or ""),
+                str(route.get("api_key_env") or ""),
+            )
+            readiness_row = readiness_rows.get(key) or {}
+            decisions = list(fallback_decisions.get(pass_id) or [])
+            admitted = sum(1 for item in decisions if str(item.get("decision")) == "admitted")
+            excluded = sum(1 for item in decisions if str(item.get("decision")) == "excluded")
+            route_table.add_row(
+                pass_id,
+                f"{route.get('provider', '?')}/{route.get('model_id', '?')}",
+                str(route.get("selected_tier") or "?"),
+                str(route.get("tier_adjustment") or "?"),
+                "yes" if readiness_row.get("ready", True) else "no",
+                f"+{admitted} / -{excluded}",
+            )
+        console.print(route_table)
+
+        exclusion_counts: Dict[str, int] = {}
+        example_exclusions: List[Tuple[str, str, str]] = []
+        for pass_id, decisions in sorted(fallback_decisions.items()):
+            for item in decisions:
+                if str(item.get("decision")) != "excluded":
+                    continue
+                reason = str(item.get("reason") or "unknown")
+                exclusion_counts[reason] = exclusion_counts.get(reason, 0) + 1
+                if len(example_exclusions) < 6:
+                    example_exclusions.append(
+                        (
+                            str(pass_id),
+                            f"{item.get('provider', '?')}/{item.get('model_id', '?')}",
+                            reason,
+                        )
+                    )
+        if exclusion_counts:
+            summary = ", ".join(
+                f"{reason}:{count}"
+                for reason, count in sorted(
+                    exclusion_counts.items(), key=lambda item: (-item[1], item[0])
+                )
+            )
+            console.print(
+                Panel(
+                    f"[bold]Excluded fallback reasons:[/bold] {summary}",
+                    title="[bold]Fallback Summary[/bold]",
+                    border_style="violet",
+                    box=ROUNDED,
+                    padding=(1, 2),
+                )
+            )
+        if example_exclusions:
+            example_table = Table(
+                title="[bold]Fallback Exclusion Examples[/bold]",
+                box=ROUNDED,
+                border_style="table.border",
+                padding=(0, 1),
+            )
+            example_table.add_column("Pass")
+            example_table.add_column("Route", min_width=24)
+            example_table.add_column("Reason")
+            for pass_id, route_name, reason in example_exclusions:
+                example_table.add_row(pass_id, route_name, reason)
+            console.print(example_table)
+
+    catalog_routes = list(provider_catalog.get("routes") or [])
+    if catalog_routes:
+        surfaces: Dict[str, int] = {}
+        for row in catalog_routes:
+            if not isinstance(row, dict):
+                continue
+            surface = str(row.get("economic_surface") or "unknown")
+            surfaces[surface] = surfaces.get(surface, 0) + 1
+        console.print(
+            Panel(
+                "\n".join(
+                    [
+                        f"[bold]Catalog routes:[/bold] {len(catalog_routes):,}",
+                        "[bold]Economic surfaces:[/bold] "
+                        + (", ".join(f"{name}:{count}" for name, count in sorted(surfaces.items())) or "none"),
+                    ]
+                ),
+                title="[bold]Provider Catalog Snapshot[/bold]",
+                border_style="info",
+                box=ROUNDED,
+                padding=(1, 2),
+            )
+        )
 
     savings = (
         intelligence.get("grok_passes", {})

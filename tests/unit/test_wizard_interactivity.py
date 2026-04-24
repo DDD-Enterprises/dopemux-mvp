@@ -180,6 +180,31 @@ def test_run_corpus_audit_uses_integrated_v5_prescan_outputs(
         json.dumps({"selected_routes": {"dedup": {"provider": "openrouter", "model_id": "openai/gpt-5-nano"}}}),
         encoding="utf-8",
     )
+    (prescan_dir / "prescan_provider_readiness.json").write_text(
+        json.dumps(
+            {
+                "passes": {
+                    "dedup": {
+                        "provider_ready": True,
+                        "selected_route": {
+                            "provider": "openrouter",
+                            "model_id": "openai/gpt-5-nano",
+                            "tier": "budget",
+                        },
+                    }
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    (prescan_dir / "prescan_provider_model_catalog.json").write_text(
+        json.dumps({"routes": [{"provider": "openrouter", "model_id": "openai/gpt-5-nano"}]}),
+        encoding="utf-8",
+    )
+    (prescan_dir / "prescan_no_live_lane.json").write_text(
+        json.dumps({"reason": "missing credentials"}),
+        encoding="utf-8",
+    )
 
     router = object()
     rendered: dict[str, object] = {}
@@ -213,6 +238,9 @@ def test_run_corpus_audit_uses_integrated_v5_prescan_outputs(
         rendered["artifacts"]["routing_plan"]["selected_routes"]["dedup"]["model_id"]
         == "openai/gpt-5-nano"
     )
+    assert rendered["artifacts"]["provider_readiness"]["passes"]["dedup"]["provider_ready"] is True
+    assert rendered["artifacts"]["provider_catalog"]["routes"][0]["provider"] == "openrouter"
+    assert rendered["artifacts"]["no_live_lane"]["reason"] == "missing credentials"
 
 
 def test_run_cost_selection_supports_profile_browsing(

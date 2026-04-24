@@ -142,6 +142,16 @@ def run_corpus_audit(state: WizardState) -> StageResult:
             "receipt": _load_optional_json(prescan_dir / "prescan_stage_receipt.json"),
             "batch_plan": _load_optional_json(prescan_dir / "batch_plan.json"),
             "routing_plan": _load_optional_json(prescan_dir / "prescan_routing_plan.json"),
+            "provider_readiness": _load_optional_json(
+                prescan_dir / "prescan_provider_readiness.json"
+            ),
+            "provider_catalog": _load_optional_json(
+                prescan_dir / "prescan_provider_model_catalog.json"
+            ),
+            "no_live_lane": _load_optional_json(prescan_dir / "prescan_no_live_lane.json"),
+            "live_lane_success": _load_optional_json(
+                prescan_dir / "prescan_live_lane_success.json"
+            ),
         },
     )
     render_corpus_table(state.corpus_stats)

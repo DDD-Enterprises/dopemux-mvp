@@ -260,6 +260,25 @@ def test_upgrades_run_rejects_prescan_flags_for_v4() -> None:
     assert "only supported with --version v5" in result.output
 
 
+def test_rte_wizard_alias_exposes_audit_wizard_options() -> None:
+    runner = CliRunner()
+
+    result = runner.invoke(
+        cli,
+        [
+            "rte",
+            "wizard",
+            "--help",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "guided extraction flight-deck walkthrough" in result.output.lower()
+    assert "--routing-policy" in result.output
+    assert "--educate / --no-educate" in result.output
+    assert "--execute" in result.output
+
+
 def test_upgrades_run_forwards_prescan_flags_for_v5() -> None:
     runner = CliRunner()
     with runner.isolated_filesystem():
