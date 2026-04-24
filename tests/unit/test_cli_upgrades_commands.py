@@ -354,35 +354,11 @@ def test_upgrades_trace_routes_to_v5_dry_run_alias() -> None:
     )
 
 
-def test_truth_command_routes_to_v5_all_phase() -> None:
+def test_truth_command_is_deprecated() -> None:
     runner = CliRunner()
-    with patch("dopemux.cli._run_extractor_runner") as mocked:
-        result = runner.invoke(
-            cli,
-            [
-                "truth",
-                "--resume",
-                "--workers",
-                "3",
-                "--routing-policy",
-                "balanced",
-            ],
-        )
-
-    assert result.exit_code == 0, result.output
-    mocked.assert_called_once_with(
-        pipeline_version="v5",
-        args=[
-            "--phase",
-            "ALL",
-            "--dry-run",
-            "--resume",
-            "--partition-workers",
-            "3",
-            "--routing-policy",
-            "balanced",
-        ],
-    )
+    result = runner.invoke(cli, ["truth"])
+    assert result.exit_code != 0
+    assert "`dopemux truth` is no longer a supported operator entrypoint" in result.output
 
 
 def test_truth_command_rejects_legacy_deep_mode() -> None:
@@ -391,7 +367,7 @@ def test_truth_command_rejects_legacy_deep_mode() -> None:
     result = runner.invoke(cli, ["truth", "--deep"])
 
     assert result.exit_code != 0
-    assert "not supported on the canonical v5 path" in result.output
+    assert "`dopemux truth` is no longer a supported operator entrypoint" in result.output
 
 
 def test_upgrades_promptset_audit_routes_to_v4_runner() -> None:

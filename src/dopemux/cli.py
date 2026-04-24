@@ -4630,7 +4630,7 @@ _ROUTING_POLICY_CHOICES = [
     "optimal",
 ]
 _LEGACY_DEFAULT_ROUTING_POLICY = "cost"
-_V5_DEFAULT_ROUTING_POLICY = "cost"
+_V5_DEFAULT_ROUTING_POLICY = "balanced_openrouter"
 
 
 def _pipeline_version_options(command_fn: Callable) -> Callable:
