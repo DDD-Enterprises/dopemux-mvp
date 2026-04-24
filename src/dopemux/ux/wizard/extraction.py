@@ -25,7 +25,7 @@ def _wizard_pythonpath(repo_root: Path) -> str:
 
 
 def _build_wizard_phase_command(state: WizardState, phase_key: str) -> list[str]:
-    return [
+    cmd = [
         sys.executable,
         "-m",
         "dopemux.cli",
@@ -44,8 +44,11 @@ def _build_wizard_phase_command(state: WizardState, phase_key: str) -> list[str]
         "--ui",
         "rich",
         "--resume",
-        "--execute",
     ]
+    if state.prescan_dir:
+        cmd.extend(["--prescan-dir", state.prescan_dir, "--skip-prescan"])
+    cmd.append("--execute")
+    return cmd
 
 
 def run_extraction(state: WizardState) -> StageResult:

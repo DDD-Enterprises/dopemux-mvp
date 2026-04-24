@@ -40,6 +40,7 @@ class WizardState:
     grok_response: Optional[Dict[str, Any]] = None
     code_intelligence: Optional[Dict[str, Any]] = None
     intelligence_router: Optional[Any] = None
+    prescan_dir: str = ""
     promptset_ready: bool = False
     selected_policy: str = "cost"
     run_id: str = ""

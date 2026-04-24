@@ -68,7 +68,7 @@ No options. Shows latest run ID, directory, phases completed, and total size.
 |---|------|------|--------|-------------|
 | 0 | Welcome | 🔬 | `preflight.py` | System checks — Python version, git, dependencies |
 | 1 | Repo Health | 🩺 | `preflight.py` | Git status, branch, working tree cleanliness |
-| 2 | Corpus Audit | 📊 | `corpus.py` | Runs prescan subprocess, parses JSON stats |
+| 2 | Corpus Audit | 📊 | `corpus.py` | Runs canonical v5 integrated Stage 0 prescan and normalizes `corpus_manifest.json` into wizard stats |
 | 3 | Prompt Setup | ⚙️ | `prompts.py` | Promptset validation and interactive initialization |
 | 4 | Provider Overrides | 🔑 | `provider_overrides.py` | Optional session-local provider key overrides before cost selection |
 | 5 | Cost Profile | 💰 | `cost_profiles.py` | Interactive routing policy browsing, per-profile detail, and final selection |
@@ -105,7 +105,7 @@ The pipeline defines **14 phases** executed in order. Phases A–G produce prima
 
 ## Authority Classes
 
-Every file in the corpus is classified into one of six authority classes during the prescan audit.
+Every file in the corpus is classified into one of six authority classes during the integrated Phase 0 prescan.
 
 | Class | Icon | Color | Description |
 |-------|------|-------|-------------|
@@ -176,7 +176,7 @@ src/dopemux/ux/wizard/
 ├── stages.py            # StageStatus, StageResult, WizardState dataclasses + constants
 ├── display.py           # Rich rendering helpers (10 functions)
 ├── preflight.py         # Stages 0-1: welcome + repo health
-├── corpus.py            # Stage 2: prescan audit
+├── corpus.py            # Stage 2: integrated v5 Stage 0 prescan
 ├── prompts.py           # Stage 3: promptset validation
 ├── cost_profiles.py     # Stage 4: routing policies + cost estimation
 ├── partitions.py        # Stage 5: file→phase mapping
@@ -193,7 +193,8 @@ src/dopemux/ux/wizard/
 - **Per-phase confirmation** — each extraction phase requires interactive confirmation before proceeding.
 - **Session-local provider overrides** — provider keys entered in stage 4 override shell defaults only for wizard-launched subprocesses.
 - **Static routing snapshot** — `ROUTING_LADDERS` is defined as a static snapshot inside the wizard to avoid importing `run_extraction_v5.py`, which has import-time side effects.
-- **No direct v5 execution** — `run_extraction_v5.py` is **never** executed directly. All extraction is delegated through `dopemux upgrades run --pipeline-version v5 --ui rich --resume`.
+- **Canonical integrated prescan** — Stage 2 now uses the v5 Stage 0 prescan authority and stores its output under `extraction/repo-truth-extractor/v5/runs/<run_id>/prescan`.
+- **No direct v5 phase execution** — phase extraction is delegated through `dopemux upgrades run --pipeline-version v5 --ui rich --resume`, with the wizard passing `--prescan-dir` and `--skip-prescan` after Stage 2 succeeds.
 - ⚠️ **CRITICAL:** Accidental direct execution of v5 can cost **$10+** in provider preflight probes. See the workspace safety instructions for details.
 
 ---

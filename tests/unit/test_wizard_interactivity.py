@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib
+import json
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -12,6 +13,7 @@ from dopemux.ux.questionary_support import (
     QUESTIONARY_INSTALL_MESSAGE,
     require_questionary,
 )
+from dopemux.ux.wizard.corpus import run_corpus_audit
 from dopemux.ux.wizard.cost_profiles import run_cost_selection
 from dopemux.ux.wizard.extraction import run_extraction
 from dopemux.ux.wizard.provider_overrides import run_provider_overrides
@@ -99,6 +101,7 @@ def test_run_extraction_uses_v5_upgrades_wrapper_with_resume_and_rich_ui(
             selected_policy="cost",
             workers=1,
             run_id="RUN-20260415T120000",
+            prescan_dir=str(tmp_path / "prescan"),
         )
     )
 
@@ -122,9 +125,69 @@ def test_run_extraction_uses_v5_upgrades_wrapper_with_resume_and_rich_ui(
         "--ui",
         "rich",
         "--resume",
+        "--prescan-dir",
+        str(tmp_path / "prescan"),
+        "--skip-prescan",
         "--execute",
     ]
     assert recorded["env"]["PYTHONPATH"] == str(tmp_path / "src")
+
+
+def test_run_corpus_audit_uses_integrated_v5_prescan_outputs(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    prescan_dir = tmp_path / "extraction" / "repo-truth-extractor" / "v5" / "runs" / "RUN-20260415T120000" / "prescan"
+    prescan_dir.mkdir(parents=True)
+    manifest = [
+        {
+            "rel_path": "src/app.py",
+            "include": True,
+            "authority_class": "canonical",
+            "size_bytes": 120,
+            "extension": ".py",
+        },
+        {
+            "rel_path": ".pytest_cache/v/cache",
+            "include": False,
+            "authority_class": "generated",
+            "size_bytes": 20,
+            "extension": "",
+        },
+    ]
+    intelligence = {
+        "corpus_summary": {
+            "included_files": 1,
+            "total_files": 2,
+            "total_size_bytes": 120,
+        },
+        "code_intelligence": {"analyzed_files": 1},
+    }
+    (prescan_dir / "corpus_manifest.json").write_text(
+        json.dumps(manifest), encoding="utf-8"
+    )
+    (prescan_dir / "prescan_intelligence.json").write_text(
+        json.dumps(intelligence), encoding="utf-8"
+    )
+
+    router = object()
+    monkeypatch.setattr(
+        "dopemux.ux.wizard.corpus._run_integrated_v5_prescan",
+        lambda state: (prescan_dir, router),
+    )
+
+    state = WizardState(
+        repo_root=tmp_path,
+        run_id="RUN-20260415T120000",
+        educate_mode=False,
+    )
+    result = run_corpus_audit(state)
+
+    assert result.status is StageStatus.COMPLETED
+    assert state.prescan_dir == str(prescan_dir)
+    assert state.intelligence_router is router
+    assert state.corpus_included_count == 1
+    assert state.corpus_total_size == 120
+    assert state.corpus_stats["excluded_count"] == 1
 
 
 def test_run_cost_selection_supports_profile_browsing(
