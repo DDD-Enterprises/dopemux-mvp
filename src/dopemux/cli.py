@@ -3135,7 +3135,7 @@ cli.add_command(upgrades)
 
 from .commands.extractor_commands import extractor, _run_extractor_runner, _run_repscan_runner
 from .commands.extractor_validation import ValidationConfig, run_live_validation
-extractor.help = "Legacy promptset and prescan tooling. Use `dopemux rte` for canonical Repo Truth Extractor execution."
+extractor.help = "Legacy promptset/prescan cockpit for repo-truth extraction support workflows. Use `dopemux rte` for canonical Repo Truth Extractor execution."
 
 cli.add_command(extractor)
 
