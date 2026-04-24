@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib
-import json
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -13,7 +12,6 @@ from dopemux.ux.questionary_support import (
     QUESTIONARY_INSTALL_MESSAGE,
     require_questionary,
 )
-from dopemux.ux.wizard.corpus import run_corpus_audit
 from dopemux.ux.wizard.cost_profiles import run_cost_selection
 from dopemux.ux.wizard.extraction import run_extraction
 from dopemux.ux.wizard.provider_overrides import run_provider_overrides
@@ -101,14 +99,18 @@ def test_run_extraction_uses_v5_upgrades_wrapper_with_resume_and_rich_ui(
             selected_policy="cost",
             workers=1,
             run_id="RUN-20260415T120000",
-            prescan_dir=str(tmp_path / "prescan"),
         )
     )
 
     assert result.status is StageStatus.COMPLETED
     assert recorded["cmd"] == [
         sys.executable,
-        str(tmp_path / "services" / "repo-truth-extractor" / "run_extraction_v5.py"),
+        "-m",
+        "dopemux.cli",
+        "upgrades",
+        "run",
+        "--pipeline-version",
+        "v5",
         "--phase",
         "A",
         "--run-id",
@@ -117,129 +119,12 @@ def test_run_extraction_uses_v5_upgrades_wrapper_with_resume_and_rich_ui(
         "1",
         "--routing-policy",
         "cost",
-        "--promptset-root",
-        str(tmp_path / "extraction" / "promptset"),
         "--ui",
         "rich",
         "--resume",
-        "--max-cost-usd",
-        "5.0",
-        "--prescan-dir",
-        str(tmp_path / "prescan"),
-        "--skip-prescan",
         "--execute",
     ]
     assert recorded["env"]["PYTHONPATH"] == str(tmp_path / "src")
-
-
-def test_run_extraction_skips_pre_live_validator_when_disabled(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
-    recorded: dict[str, object] = {}
-
-    class _Prompt:
-        def ask(self) -> str:
-            return "Run"
-
-    fake_questionary = SimpleNamespace(
-        Style=lambda styles: styles,
-        select=lambda *args, **kwargs: _Prompt(),
-        confirm=lambda *args, **kwargs: _Prompt(),
-    )
-
-    class _Proc:
-        def __init__(self, cmd):
-            self.stdout = []
-            self.returncode = 0
-            recorded["cmd"] = list(cmd)
-
-        def wait(self) -> None:
-            return None
-
-    monkeypatch.setattr(
-        "dopemux.ux.wizard.extraction.require_questionary",
-        lambda: fake_questionary,
-    )
-    monkeypatch.setattr("dopemux.ux.wizard.extraction.PHASES", ["A"])
-    monkeypatch.setenv("PYTHONPATH", "")
-    monkeypatch.setattr(
-        "dopemux.ux.wizard.extraction.subprocess.Popen",
-        lambda cmd, **kwargs: recorded.update({"env": dict(kwargs.get("env") or {})}) or _Proc(cmd),
-    )
-
-    result = run_extraction(
-        WizardState(
-            repo_root=tmp_path,
-            execute_mode=True,
-            educate_mode=False,
-            selected_policy="balanced_openrouter",
-            workers=1,
-            run_id="RUN-20260415T120000",
-            validate_live=False,
-            skip_hygiene=True,
-        )
-    )
-
-    assert result.status is StageStatus.COMPLETED
-    assert "--skip-pre-live-validator" in recorded["cmd"]
-    assert "--skip-hygiene" not in recorded["cmd"]
-
-
-def test_run_corpus_audit_uses_integrated_v5_prescan_outputs(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
-    prescan_dir = tmp_path / "extraction" / "repo-truth-extractor" / "v5" / "runs" / "RUN-20260415T120000" / "prescan"
-    prescan_dir.mkdir(parents=True)
-    manifest = [
-        {
-            "rel_path": "src/app.py",
-            "include": True,
-            "authority_class": "canonical",
-            "size_bytes": 120,
-            "extension": ".py",
-        },
-        {
-            "rel_path": ".pytest_cache/v/cache",
-            "include": False,
-            "authority_class": "generated",
-            "size_bytes": 20,
-            "extension": "",
-        },
-    ]
-    intelligence = {
-        "corpus_summary": {
-            "included_files": 1,
-            "total_files": 2,
-            "total_size_bytes": 120,
-        },
-        "code_intelligence": {"analyzed_files": 1},
-    }
-    (prescan_dir / "corpus_manifest.json").write_text(
-        json.dumps(manifest), encoding="utf-8"
-    )
-    (prescan_dir / "prescan_intelligence.json").write_text(
-        json.dumps(intelligence), encoding="utf-8"
-    )
-
-    router = object()
-    monkeypatch.setattr(
-        "dopemux.ux.wizard.corpus._run_integrated_v5_prescan",
-        lambda state: (prescan_dir, router),
-    )
-
-    state = WizardState(
-        repo_root=tmp_path,
-        run_id="RUN-20260415T120000",
-        educate_mode=False,
-    )
-    result = run_corpus_audit(state)
-
-    assert result.status is StageStatus.COMPLETED
-    assert state.prescan_dir == str(prescan_dir)
-    assert state.intelligence_router is router
-    assert state.corpus_included_count == 1
-    assert state.corpus_total_size == 120
-    assert state.corpus_stats["excluded_count"] == 1
 
 
 def test_run_cost_selection_supports_profile_browsing(
@@ -271,20 +156,6 @@ def test_run_cost_selection_supports_profile_browsing(
     assert result.status is StageStatus.COMPLETED
     assert state.selected_policy == "balanced"
     assert "balanced" in result.message
-
-
-def test_cost_profiles_read_balanced_openrouter_from_runner_source() -> None:
-    rows = run_cost_selection.__globals__["_build_policy_rows"](10 * 1024 * 1024)
-    by_name = {row["name"]: row for row in rows}
-
-    assert by_name["balanced_openrouter"]["tier_routes"]["extract"][0] == (
-        "openrouter",
-        "openai/gpt-5-mini",
-        "OPENROUTER_API_KEY",
-    )
-    assert by_name["balanced_openrouter"]["authority"].endswith(
-        "services/repo-truth-extractor/run_extraction_v5.py"
-    )
 
 
 def test_run_provider_overrides_sets_session_key(

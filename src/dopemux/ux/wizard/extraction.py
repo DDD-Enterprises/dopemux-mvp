@@ -1,4 +1,4 @@
-"""Stage 7: Phase-by-phase extraction via the canonical v5 runner."""
+"""Stage 6: Phase-by-phase extraction via the safe v5 wrapper."""
 
 from __future__ import annotations
 
@@ -24,18 +24,15 @@ def _wizard_pythonpath(repo_root: Path) -> str:
     return str(src_root)
 
 
-def _runner_path(repo_root: Path) -> Path:
-    return repo_root / "services" / "repo-truth-extractor" / "run_extraction_v5.py"
-
-
-def _promptset_root(repo_root: Path) -> Path:
-    return repo_root / "extraction" / "promptset"
-
-
 def _build_wizard_phase_command(state: WizardState, phase_key: str) -> list[str]:
-    cmd = [
+    return [
         sys.executable,
-        str(_runner_path(state.repo_root)),
+        "-m",
+        "dopemux.cli",
+        "upgrades",
+        "run",
+        "--pipeline-version",
+        "v5",
         "--phase",
         phase_key,
         "--run-id",
@@ -44,34 +41,18 @@ def _build_wizard_phase_command(state: WizardState, phase_key: str) -> list[str]
         str(state.workers),
         "--routing-policy",
         state.selected_policy,
-        "--promptset-root",
-        str(_promptset_root(state.repo_root)),
         "--ui",
         "rich",
         "--resume",
+        "--execute",
     ]
-    if state.max_cost is not None:
-        cmd.extend(["--max-cost-usd", str(state.max_cost)])
-    if not state.validate_live:
-        cmd.append("--skip-pre-live-validator")
-        console.print(
-            "[yellow]Pre-live validator is disabled for this run; the runner will skip the validator-first gate.[/yellow]"
-        )
-    if state.skip_hygiene:
-        console.print(
-            "[yellow]Wizard skip-hygiene does not map to the canonical v5 runner and will not be forwarded.[/yellow]"
-        )
-    if state.prescan_dir:
-        cmd.extend(["--prescan-dir", state.prescan_dir, "--skip-prescan"])
-    cmd.append("--execute")
-    return cmd
 
 
 def run_extraction(state: WizardState) -> StageResult:
-    """Stage 7 — Walk through extraction phases with interactive confirmation.
+    """Stage 6 — Walk through extraction phases with interactive confirmation.
 
     In preview mode (default), shows what would run without executing.
-    With --execute, delegates each phase to the canonical v5 runner.
+    With --execute, delegates each phase to the canonical v5 upgrades wrapper.
     """
     if not state.execute_mode:
         console.print(
@@ -103,10 +84,10 @@ def run_extraction(state: WizardState) -> StageResult:
     if state.educate_mode:
         render_educational_panel(
             "Phase-by-phase extraction",
-            "Each phase will be executed via the canonical 'run_extraction_v5.py' runner.\n"
+            "Each phase will be executed via 'dopemux upgrades run --pipeline-version v5'.\n"
             "You can Run, Skip, or Abort at each phase.\n\n"
-            "This keeps routing-policy, promptset-root, resume state, cost cap,\n"
-            "and validator enforcement aligned with the runtime authority.\n\n"
+            "The v5 upgrades wrapper gives the wizard explicit control over\n"
+            "dry-run/live mode, rich UI, resume behavior, and current prescan flags.\n\n"
             "Completed phases write artifacts to:\n"
             f"  extraction/repo-truth-extractor/v5/runs/{state.run_id}/",
         )
