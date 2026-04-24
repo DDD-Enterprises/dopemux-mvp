@@ -42,16 +42,13 @@ class WizardState:
     intelligence_router: Optional[Any] = None
     prescan_dir: str = ""
     promptset_ready: bool = False
-    selected_policy: str = "balanced_openrouter"
+    selected_policy: str = "cost"
     run_id: str = ""
     workers: int = 1
     provider_key_overrides: Dict[str, str] = field(default_factory=dict)
     phase_results: Dict[str, "StageResult"] = field(default_factory=dict)
     execute_mode: bool = False
     educate_mode: bool = True
-    max_cost: Optional[float] = 5.0
-    validate_live: bool = True
-    skip_hygiene: bool = False
 
 
 # ── 14 extraction phases in pipeline order ──────────────────────────────────

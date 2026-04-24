@@ -53,7 +53,7 @@ DPMX_LIVE_OK=1 dopemux audit wizard --execute --routing-policy quality --workers
 - A **Git repository** (the wizard checks repo health at startup)
 - For extraction: **API keys** configured for your chosen routing policy
 
-## The 9 Stages
+## The 8 Stages
 
 The wizard progresses through nine numbered stages. Each stage performs a
 discrete step in the extraction pipeline and can optionally display an
@@ -104,10 +104,7 @@ DPMX_LIVE_OK=1 dopemux audit wizard --execute --routing-policy quality --workers
 |------|---------|-------------|
 | `--execute` | off | Enable actual extraction (default: preview only) |
 | `--educate` / `--no-educate` | on | Show educational explanations at each stage |
-| `--routing-policy` | `balanced_openrouter` | LLM routing policy for extraction |
-| `--max-cost` | `5.0` | Maximum estimated spend before execution is blocked |
-| `--validate-live` / `--no-validate-live` | on | Control whether the pre-live validator gate runs before spending |
-| `--skip-hygiene` | off | Legacy compatibility flag; accepted by the wizard but not forwarded to the v5 runner |
+| `--routing-policy` | `cost` | LLM routing policy for extraction |
 | `-w`, `--workers` | `1` | Partition worker count |
 
 ## Safety Features
@@ -126,12 +123,9 @@ DPMX_LIVE_OK=1 dopemux audit wizard --execute --routing-policy quality --workers
   instead of recomputing Phase 0 for every phase launch.
 - **Per-phase confirmation** — before each extraction phase the wizard asks
   for interactive confirmation.
-- **Direct runner execution** — the wizard invokes
-  `services/repo-truth-extractor/run_extraction_v5.py` directly with the
-  selected routing policy, `--prescan-dir`, `--skip-prescan`, and
-  `--skip-pre-live-validator` when `--no-validate-live` is selected.
-- **Compatibility-only hygiene flag** — `--skip-hygiene` remains available for
-  legacy wizard flows, but it is not forwarded to the v5 runner.
+- **No direct script execution** — the wizard never runs
+  `run_extraction_v5.py` directly; it delegates to
+  `dopemux upgrades run --pipeline-version v5 --ui rich --resume`.
 
 ## Troubleshooting
 
