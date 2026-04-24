@@ -11,7 +11,7 @@ def test_legacy_extractor_help_points_to_truth_run() -> None:
 
     assert result.exit_code == 0
     assert "legacy promptset/prescan cockpit" in result.output.lower()
-    assert "dopemux extract truth-run" in result.output
+    assert "dopemux rte" in result.output.lower()
 
 
 def test_legacy_extractor_run_warns_about_canonical_truth_run() -> None:
@@ -19,7 +19,7 @@ def test_legacy_extractor_run_warns_about_canonical_truth_run() -> None:
 
     assert result.exit_code == 0
     assert "legacy promptset tooling" in result.output
-    assert "dopemux extract truth-run" in result.output
+    assert "dopemux rte run" in result.output
     assert "canonical operator path" in result.output.lower()
 
 

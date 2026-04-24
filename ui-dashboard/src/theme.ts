@@ -37,6 +37,8 @@ export const brandTokens = {
   },
   chips: {
     live: '[LIVE]',
+    connecting: '[CONNECTING]',
+    degraded: '[DEGRADED]',
     override: '[OVERRIDE]',
     blocker: '[BLOCKER]',
     aftercare: '[AFTERCARE]',

@@ -66,7 +66,7 @@ def test_truth_run_finds_v5_runner_directly() -> None:
     assert runner_path == _repo_root() / "services" / "repo-truth-extractor" / "run_extraction_v5.py"
 
 
-def test_truth_cli_routes_to_v5_runner(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_truth_cli_shows_deprecation_error(monkeypatch: pytest.MonkeyPatch) -> None:
     src_path = str(_repo_root() / "src")
     if src_path not in sys.path:
         sys.path.insert(0, src_path)
@@ -82,17 +82,9 @@ def test_truth_cli_routes_to_v5_runner(monkeypatch: pytest.MonkeyPatch) -> None:
 
     result = CliRunner().invoke(cli, ["truth"])
 
-    assert result.exit_code == 0, result.output
-    assert captured["pipeline_version"] == "v5"
-    assert captured["args"] == [
-        "--phase",
-        "ALL",
-        "--dry-run",
-        "--partition-workers",
-        "1",
-        "--routing-policy",
-        "cost",
-    ]
+    assert result.exit_code == 1
+    assert "`dopemux truth` is no longer a supported operator entrypoint" in result.output
+    assert captured == {}
 
 
 def test_import_surface_stability_for_packet_symbols() -> None:

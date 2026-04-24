@@ -31,21 +31,26 @@ Repo Truth Extractor is the canonical extraction service for dopemux.
 
 ```bash
 pip install -e ".[dev]"
-dopemux upgrades run --pipeline-version v5 --phase ALL --dry-run
-dopemux upgrades preflight --pipeline-version v5 --auth-doctor
-dopemux upgrades validate-live --promptset-root /abs/path/to/generated/promptset
+dopemux rte run --pipeline-version v5 --phase ALL --dry-run
+dopemux rte preflight --pipeline-version v5 --auth-doctor
+dopemux rte validate-live --promptset-root /abs/path/to/generated/promptset
 dopemux extractor validate --output-dir /abs/path/to/generated/promptset
 ```
 
+Legacy compatibility surfaces:
+
+- `dopemux upgrades ...` remains an exact-policy compatibility alias to `dopemux rte ...`
+- `dopemux extract truth-run` remains a compatibility alias to the canonical v5 runtime entrypoint
+
 ## Validation Prerequisites
 
-`dopemux upgrades validate-live` now fails closed if the active `dopemux` import does not come from this checkout.
+`dopemux rte validate-live` now fails closed if the active `dopemux` import does not come from this checkout.
 
 Use one of:
 
 ```bash
 pip install -e ".[dev]"
-PYTHONPATH=src python -m dopemux.cli upgrades validate-live --promptset-root /abs/path/to/generated/promptset
+PYTHONPATH=src python -m dopemux.cli rte validate-live --promptset-root /abs/path/to/generated/promptset
 ```
 
 Local scanner/toolchain check:
@@ -110,6 +115,13 @@ isolated artifact tree for CI or controlled experiments.
 
 ```bash
 # Full run — all phases, canonical behavior
+dopemux rte run \
+  --pipeline-version v5 \
+  --run-id FULL_RUN \
+  --phase ALL \
+  --promptset-root /abs/path/to/generated/promptset
+
+# Compatibility alias (same policy inheritance)
 dopemux upgrades run \
   --pipeline-version v5 \
   --run-id FULL_RUN \
@@ -117,7 +129,7 @@ dopemux upgrades run \
   --promptset-root /abs/path/to/generated/promptset
 
 # Single phase dry-run (inspect without executing)
-dopemux upgrades run \
+dopemux rte run \
   --pipeline-version v5 \
   --run-id INSPECT \
   --phase H \
@@ -265,7 +277,7 @@ Live batch operations are phase-scoped by default.
 Example:
 
 ```bash
-DPMX_LIVE_OK=1 dopemux upgrades run \
+DPMX_LIVE_OK=1 dopemux rte run \
   --pipeline-version v5 \
   --phase D \
   --execute \
@@ -280,7 +292,7 @@ DPMX_LIVE_OK=1 dopemux upgrades run \
 Retrieve or watch uses the same consent gate:
 
 ```bash
-DPMX_LIVE_OK=1 dopemux upgrades run \
+DPMX_LIVE_OK=1 dopemux rte run \
   --pipeline-version v5 \
   --phase D \
   --execute \

@@ -352,6 +352,7 @@ try:
         build_openai_response_format,
         build_provider_step_contract_output,
         build_provider_structured_output,
+        canonicalize_artifacts,
         contract_lane as resolve_contract_lane,
         describe_contract_failure,
         empty_payload_for_artifact,
@@ -492,7 +493,7 @@ R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
 }
 
 ROUTING_POLICY_VERSION = "RTE_ROUTING_V1"
-DEFAULT_ROUTING_POLICY = "cost"
+DEFAULT_ROUTING_POLICY = "balanced_openrouter"
 DEFAULT_GEMINI_MODEL_ID = "gemini-3-flash-preview"
 DEFAULT_GEMINI_BULK_MODEL = "gemini-3.1-flash-lite-preview"
 DEFAULT_GEMINI_EXTRACT_MODEL = "gemini-3-flash-preview"
@@ -5789,7 +5790,7 @@ def _resolve_phase_sp_prompts() -> List[PromptSpec]:
 def get_phase_prompts(phase: str) -> List[PromptSpec]:
     phase_code = str(phase or "").upper()
     if phase_code == "S":
-        return _legacy_phase_prompt_specs("S")
+        return _resolve_phase_s_prompts(get_active_s_prompts_mode())
     if phase_code == "SP":
         return _resolve_phase_sp_prompts()
     return _legacy_phase_prompt_specs(phase_code)
@@ -6468,6 +6469,20 @@ def _write_prescan_receipt(
     if result:
         receipt["duration_seconds"] = getattr(result, "duration_seconds", 0)
         receipt["file_count"] = getattr(result, "file_count", 0)
+        
+        # Log and record estimated savings from the optimize pass
+        intelligence = getattr(result, "intelligence", {}) or {}
+        grok_results = intelligence.get("grok_passes", {})
+        optimize_results = grok_results.get("optimize", {})
+        savings = optimize_results.get("estimated_savings")
+        if savings:
+            receipt["estimated_savings"] = savings
+            logger.info(
+                "💰 Prescan Savings: %d files skipped, %d compressed (est. %.1f%% reduction)",
+                savings.get("files_skipped", 0),
+                savings.get("files_compressed", 0),
+                savings.get("estimated_token_reduction_pct", 0.0),
+            )
 
     write_json(output_dir / "prescan_stage_receipt.json", receipt)
 
@@ -7127,7 +7142,25 @@ def _apply_router_partition_hints(
     except (ImportError, ModuleNotFoundError):
         brief_gen = None
     for partition in partitions:
-        partition["paths"] = active_router.reorder_partition(partition["paths"])
+        paths = list(partition["paths"])
+        partition["paths"] = active_router.reorder_partition(paths)
+        
+        # Inject dynamic tier overrides based on prescan intelligence
+        highest_tier = None
+        for path in paths:
+            path_str = str(path)
+            router_tier = active_router.get_model_tier(path_str)
+            if router_tier == "premium":
+                highest_tier = "synthesis"
+                break # Synthesis is highest reachable via dynamic upgrade
+            elif router_tier == "standard" and highest_tier != "synthesis":
+                highest_tier = "extract"
+            elif router_tier == "economy" and highest_tier is None:
+                highest_tier = "bulk"
+        
+        if highest_tier:
+            partition["tier_override"] = highest_tier
+            
         if brief_gen:
             brief = brief_gen.generate_brief(phase, partition["paths"])
             if brief:
@@ -11038,6 +11071,9 @@ def execute_step_for_partitions(
             "auth_failures": 0,
         }
 
+    # Apply router hints (reordering, briefs, dynamic tiering)
+    partitions = _apply_router_partition_hints(phase, partitions, router=cfg.router)
+
     raw_dir = phase_dir / "raw"
     route_info = resolve_effective_step_route(
         phase,
@@ -11504,6 +11540,72 @@ def execute_step_for_partitions(
                     ),
                 )
 
+        # Dynamic Intelligence Routing: check if this partition has a tier override
+        partition_tier_override = partition.get("tier_override")
+        p_provider, p_model_id, p_api_key_env = provider, model_id, initial_api_key_env
+        p_transport = transport
+        p_force_json = force_json_output
+        p_endpoint_base = endpoint_base
+        p_response_format = draft_response_format
+        p_structured_meta = draft_structured_output_meta
+
+        if partition_tier_override and partition_tier_override != step_tier:
+            p_route_info = resolve_effective_step_route(
+                phase,
+                step_id,
+                cfg,
+                tier_override=partition_tier_override,
+                step_contract=step_contract,
+            )
+            p_provider = str(p_route_info["provider"])
+            p_model_id = str(p_route_info["model_id"])
+            p_api_key_env = str(
+                p_route_info.get("api_key_env")
+                or PROVIDER_API_KEY_ENV.get(p_provider, "")
+            )
+            p_transport = transport_for_provider(p_provider, cfg)
+            p_endpoint_base = llm_base_url(p_provider, cfg)
+            p_force_json = p_provider == "gemini"
+            
+            if strict_contract_required and isinstance(step_contract, dict):
+                p_primary_routes = route_entries_for_stage(step_contract, "primary")
+                p_route_entry = next(
+                    (
+                        candidate
+                        for candidate in p_primary_routes
+                        if isinstance(candidate, dict)
+                        and candidate.get("provider") == p_provider
+                        and candidate.get("model_id") == p_model_id
+                        and candidate.get("api_key_env") == p_api_key_env
+                    ),
+                    None,
+                )
+                if p_route_entry is None:
+                    p_route_entry = {
+                        "provider": p_provider,
+                        "model_id": p_model_id,
+                        "api_key_env": p_api_key_env,
+                        "structured_output_mode": "json_schema",
+                        "strict_json_schema": False,
+                        "strict_passthrough_verified": False,
+                    }
+                p_response_format, p_response_meta = build_provider_step_contract_output(
+                    route=p_route_entry,
+                    transport=p_transport,
+                    step_contract=step_contract,
+                    artifact_names=output_artifacts,
+                    schema_name_suffix="draft",
+                )
+                p_structured_meta = dict(p_response_meta)
+                if p_response_meta.get("enabled") and p_provider == "gemini" and p_transport != "openai_compat_http":
+                    p_force_json = True
+
+            _append_log(
+                logs,
+                "info",
+                f"ROUTING_UPGRADE partition={partition_id} tier={partition_tier_override} model={p_provider}/{p_model_id}",
+            )
+
         output_instructions = build_output_envelope_instructions(output_artifacts)
         context_brief = partition.get("context_brief", "")
         brief_section = f"\n{context_brief}\n" if context_brief else ""
@@ -11567,12 +11669,12 @@ def execute_step_for_partitions(
             )
             user_prompt = f"{prompt_prefix}{context}"
             payload = build_chat_payload(
-                provider,
-                model_id,
+                p_provider,
+                p_model_id,
                 prompt_text,
                 user_prompt,
-                force_json_output=force_json_output,
-                response_format_override=draft_response_format,
+                force_json_output=p_force_json,
+                response_format_override=p_response_format,
                 max_completion_tokens=_step_max_completion_tokens(phase, step_id),
             )
             payload_body = serialize_payload_body(payload)
@@ -11589,15 +11691,15 @@ def execute_step_for_partitions(
         if payload_bytes > cfg.max_request_bytes:
             over_by = payload_bytes - cfg.max_request_bytes
             gemini_sequence = _gemini_auth_mode_sequence(
-                cfg.gemini_auth_mode, endpoint_base
+                cfg.gemini_auth_mode, p_endpoint_base
             )
             endpoint_url = transport_endpoint_url(
-                provider, model_id, cfg, "REDACTED", gemini_sequence[0]
+                p_provider, p_model_id, cfg, "REDACTED", gemini_sequence[0]
             )
             failure_meta = {
-                "provider": provider,
-                "model_id": model_id,
-                "endpoint_base_url": endpoint_base,
+                "provider": p_provider,
+                "model_id": p_model_id,
+                "endpoint_base_url": p_endpoint_base,
                 "endpoint_effective": endpoint_effective(endpoint_url),
                 **endpoint_fingerprint(endpoint_url),
                 "status_code": None,
@@ -11605,55 +11707,55 @@ def execute_step_for_partitions(
                 "request_payload_bytes": payload_bytes,
                 "request_payload_bytes_mode": (
                     "sdk_estimate"
-                    if transport != "openai_compat_http"
+                    if p_transport != "openai_compat_http"
                     else "exact_http"
                 ),
                 "max_request_bytes": cfg.max_request_bytes,
                 "over_by_bytes": over_by,
                 "gemini_auth_mode_requested": (
-                    cfg.gemini_auth_mode if provider == "gemini" else None
+                    cfg.gemini_auth_mode if p_provider == "gemini" else None
                 ),
                 "gemini_auth_mode_effective": (
-                    gemini_sequence[0] if provider == "gemini" else None
+                    gemini_sequence[0] if p_provider == "gemini" else None
                 ),
                 "provider_signature": provider_signature(
-                    provider,
-                    model_id,
+                    p_provider,
+                    p_model_id,
                     endpoint_url,
-                    gemini_sequence[0] if provider == "gemini" else None,
+                    gemini_sequence[0] if p_provider == "gemini" else None,
                 ),
                 "provider_error_reason": None,
                 "gemini_endpoint_family": (
                     "openai_compat"
-                    if provider == "gemini"
+                    if p_provider == "gemini"
                     and _is_gemini_openai_compat_endpoint(endpoint_base)
-                    else ("native" if provider == "gemini" else None)
+                    else ("native" if p_provider == "gemini" else None)
                 ),
                 "gemini_auth_attempt_sequence": (
                     _gemini_auth_mode_sequence(cfg.gemini_auth_mode, endpoint_base)
-                    if provider == "gemini"
+                    if p_provider == "gemini"
                     else None
                 ),
-                "transport": transport,
+                "transport": p_transport,
                 "structured_output": (
                     {
                         **(
-                            dict(draft_structured_output_meta)
+                            dict(p_structured_meta)
                             if strict_contract_required
-                            and isinstance(draft_structured_output_meta, dict)
+                            and isinstance(p_structured_meta, dict)
                             else {}
                         ),
                         "enabled": bool(
-                            (force_json_output and not strict_contract_required)
+                            (p_force_json and not strict_contract_required)
                             or strict_contract_required
                         ),
                         "mime_type": (
                             "application/json"
-                            if (force_json_output or strict_contract_required)
+                            if (p_force_json or strict_contract_required)
                             else None
                         ),
                         "schema": (
-                            (draft_structured_output_meta or {}).get("schema_name")
+                            (p_structured_meta or {}).get("schema_name")
                             if strict_contract_required
                             else None
                         ),
@@ -11669,10 +11771,10 @@ def execute_step_for_partitions(
                 phase=phase,
                 step_id=step_id,
                 partition_id=partition_id,
-                provider=provider,
-                model_id=model_id,
+                provider=p_provider,
+                model_id=p_model_id,
             )
-            failure_meta["routing_tier"] = step_tier
+            failure_meta["routing_tier"] = partition_tier_override or step_tier
             failure_meta["routing_policy"] = cfg.routing_policy
             failure_meta["route_hop_index"] = 1
             failure_meta["route_hop_total"] = 1
@@ -11735,32 +11837,32 @@ def execute_step_for_partitions(
                 ),
             )
             gemini_sequence = _gemini_auth_mode_sequence(
-                cfg.gemini_auth_mode, endpoint_base
+                cfg.gemini_auth_mode, p_endpoint_base
             )
-            dry_mode = gemini_sequence[0] if provider == "gemini" else None
+            dry_mode = gemini_sequence[0] if p_provider == "gemini" else None
             endpoint_url = transport_endpoint_url(
-                provider, model_id, cfg, "REDACTED", dry_mode
+                p_provider, p_model_id, cfg, "REDACTED", dry_mode
             )
             dry_headers = (
-                make_headers(provider, "REDACTED", cfg, dry_mode)
-                if transport == "openai_compat_http"
+                make_headers(p_provider, "REDACTED", cfg, dry_mode)
+                if p_transport == "openai_compat_http"
                 else {}
             )
             dry_auth_flags = (
                 build_auth_present_flags(
-                    dry_headers, provider == "gemini" and dry_mode == "query_key"
+                    dry_headers, p_provider == "gemini" and dry_mode == "query_key"
                 )
-                if transport == "openai_compat_http"
-                else sdk_auth_present_flags(provider, True)
+                if p_transport == "openai_compat_http"
+else sdk_auth_present_flags(p_provider, True)
             )
             trace_text = (
                 f"# PROMPT_FILE\n{prompt_path}\n\n# SYSTEM_PROMPT\n{prompt_text}\n\n"
                 f"# PARTITION_ID\n{partition_id}\n\n# USER_CONTEXT_PREVIEW\n{context[:2000]}"
             )
             dry_meta = {
-                "provider": provider,
-                "model_id": model_id,
-                "endpoint_base_url": endpoint_base,
+                "provider": p_provider,
+                "model_id": p_model_id,
+                "endpoint_base_url": p_endpoint_base,
                 "endpoint_effective": endpoint_effective(endpoint_url),
                 **endpoint_fingerprint(endpoint_url),
                 "status_code": None,
@@ -11768,51 +11870,51 @@ def execute_step_for_partitions(
                 "request_payload_bytes": payload_bytes,
                 "request_payload_bytes_mode": (
                     "sdk_estimate"
-                    if transport != "openai_compat_http"
+                    if p_transport != "openai_compat_http"
                     else "exact_http"
                 ),
                 "gemini_auth_mode_requested": (
-                    cfg.gemini_auth_mode if provider == "gemini" else None
+                    cfg.gemini_auth_mode if p_provider == "gemini" else None
                 ),
                 "gemini_auth_mode_effective": dry_mode,
                 "gemini_auth_attempt_sequence": (
-                    gemini_sequence if provider == "gemini" else None
+                    gemini_sequence if p_provider == "gemini" else None
                 ),
                 "provider_signature": provider_signature(
-                    provider,
-                    model_id,
+                    p_provider,
+                    p_model_id,
                     endpoint_url,
-                    dry_mode if provider == "gemini" else None,
+                    dry_mode if p_provider == "gemini" else None,
                 ),
                 "provider_error_reason": None,
                 "gemini_endpoint_family": (
                     "openai_compat"
-                    if provider == "gemini"
+                    if p_provider == "gemini"
                     and _is_gemini_openai_compat_endpoint(endpoint_base)
-                    else ("native" if provider == "gemini" else None)
+                    else ("native" if p_provider == "gemini" else None)
                 ),
                 "sent_header_keys": sorted(list(dry_headers.keys())),
                 "auth_present_flags": dry_auth_flags,
-                "transport": transport,
+                "transport": p_transport,
                 "structured_output": (
                     {
                         **(
-                            dict(draft_structured_output_meta)
+                            dict(p_structured_meta)
                             if strict_contract_required
-                            and isinstance(draft_structured_output_meta, dict)
+                            and isinstance(p_structured_meta, dict)
                             else {}
                         ),
                         "enabled": bool(
-                            (force_json_output and not strict_contract_required)
+                            (p_force_json and not strict_contract_required)
                             or strict_contract_required
                         ),
                         "mime_type": (
                             "application/json"
-                            if (force_json_output or strict_contract_required)
+                            if (p_force_json or strict_contract_required)
                             else None
                         ),
                         "schema": (
-                            (draft_structured_output_meta or {}).get("schema_name")
+                            (p_structured_meta or {}).get("schema_name")
                             if strict_contract_required
                             else None
                         ),
@@ -11825,10 +11927,10 @@ def execute_step_for_partitions(
                 phase=phase,
                 step_id=step_id,
                 partition_id=partition_id,
-                provider=provider,
-                model_id=model_id,
+                provider=p_provider,
+                model_id=p_model_id,
             )
-            dry_meta["routing_tier"] = step_tier
+            dry_meta["routing_tier"] = partition_tier_override or step_tier
             dry_meta["routing_policy"] = cfg.routing_policy
             dry_meta["route_hop_index"] = 1
             dry_meta["route_hop_total"] = 1
@@ -11878,7 +11980,7 @@ def execute_step_for_partitions(
             logs,
             "info",
             (
-                f"Executing {step_id} partition {partition_id} using provider={provider} model={model_id} "
+                f"Executing {step_id} partition {partition_id} using provider={p_provider} model={p_model_id} "
                 f"files={context_stats['files_included']} skipped={context_stats['files_skipped']} "
                 f"context_bytes={context_stats['context_bytes']}"
             ),
@@ -13179,8 +13281,8 @@ def execute_step_for_partitions(
             step_id=step_id,
             partition_id=partition_id,
             routing_policy=cfg.routing_policy,
-            routing_tier=step_tier,
-            ladder=step_ladder,
+            routing_tier=partition_tier_override or step_tier,
+            ladder=[(p_provider, p_model_id, p_api_key_env)],
             cfg=cfg,
             execute_attempt=_route_attempt,
             ui=ui,
@@ -13198,10 +13300,10 @@ def execute_step_for_partitions(
         )
         final_route = tuple(
             ladder_result.get("route")
-            or (initial_provider, initial_model_id, initial_api_key_env)
+            or (p_provider, p_model_id, p_api_key_env)
         )
-        final_provider = final_route[0] if len(final_route) > 0 else initial_provider
-        final_model_id = final_route[1] if len(final_route) > 1 else initial_model_id
+        final_provider = final_route[0] if len(final_route) > 0 else p_provider
+        final_model_id = final_route[1] if len(final_route) > 1 else p_model_id
         request_meta["execution_mode"] = request_meta.get("execution_mode") or "sync"
         request_meta["batch_provider"] = request_meta.get("batch_provider") or None
         request_meta["batch_job_id"] = request_meta.get("batch_job_id") or None
@@ -18503,8 +18605,13 @@ def main() -> None:
             webhook_required=_env_is_truthy(DPMX_WEBHOOK_REQUIRED_ENV),
             webhook_auto_continue=_env_is_truthy(DPMX_WEBHOOK_AUTO_CONTINUE_ENV),
             live_ok=_env_is_truthy(DPMX_LIVE_OK_ENV),
+            allow_online_llm=args.allow_online_llm,
             max_cost_usd=args.max_cost_usd,
             selected_execution_step=selected_execution_step,
+            prescan_skip=bool(args.skip_prescan),
+            prescan_online=bool(args.prescan_online),
+            prescan_import_dir=args.prescan_import_dir,
+            prescan_allow_scope_reduction=bool(args.prescan_allow_scope_reduction),
             d0_max_files=args.d0_max_files,
             d1_max_files=args.d1_max_files,
             router=router,

@@ -1,0 +1,256 @@
+{
+  "id": "TP-DMX-RTEAUDIT-110",
+  "project": "dopemux-mvp",
+  "target": "Run an extensive Gemini PAL audit of the current authoritative RTE implementation across UX, prompts, execution logic, model selection, routing, sidefill, repair behavior, validator gates, and operator readiness, and produce an evidence-backed go/no-go judgment with corrective recommendations.",
+  "invariants": [
+    "Do not audit stale branch state; this packet assumes the current authoritative RTE implementation target has already been identified by prior branch audit or integration work.",
+    "Treat runtime code, config, and tests as higher authority than summaries, reports, or external research.",
+    "Treat services/repo-truth-extractor/run_extraction_v5.py as the canonical RTE runtime unless current code proves otherwise.",
+    "Audit both code and prompt surfaces.",
+    "Audit operator UX as an implementation and workflow concern, not a decorative design concern.",
+    "Do not normalize drift, contradictions, split authority, or UNKNOWNs away.",
+    "Do not execute a live extraction run unless separately authorized.",
+    "Do not modify runtime code, prompt content, or production configs in this packet.",
+    "Every readiness claim, critique, or recommendation must be evidence-backed.",
+    "The audit must end with an explicit go, no-go, or conditional-go verdict.",
+    "The audit must produce a deterministic checklist, blocker list, drift list, failure-mode ledger, and corrective action map."
+  ],
+  "depends_on": [
+    "TP-DMX-RTEAUDIT-000"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-RTE-AUDIT-SERIES-110",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-RTEAUDIT-000",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "gemini",
+    "branch": "audit/gemini-rte-deep-pal"
+  },
+  "commit": {
+    "message": "docs(rte): add Gemini deep PAL audit across prompts, routing, and operator readiness",
+    "allowlist": [
+      "docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md",
+      "proof/rte-gemini-deep-pal-audit-2026-04-23.proof.json",
+      "task-packets/TP-DMX-RTEAUDIT-110.json",
+      "task-packets/INDEX.md"
+    ],
+    "verify": [
+      "git rev-parse --show-toplevel",
+      "test -f .dopetaskroot",
+      "git remote -v",
+      "git branch --show-current",
+      "git status --short --branch",
+      "python -m json.tool task-packets/TP-DMX-RTEAUDIT-110.json",
+      "python -m json.tool proof/rte-gemini-deep-pal-audit-2026-04-23.proof.json",
+      "git diff --check -- docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md proof/rte-gemini-deep-pal-audit-2026-04-23.proof.json task-packets/TP-DMX-RTEAUDIT-110.json task-packets/INDEX.md"
+    ]
+  },
+  "pr": {
+    "title": "docs(rte): add Gemini deep PAL audit across prompts, routing, and operator readiness",
+    "body": "## Summary\n- run an extensive Gemini PAL audit of the current authoritative RTE implementation\n- evaluate UX, prompts, execution logic, model selection, routing, sidefill, repair behavior, validator gates, and operator readiness\n- produce a deterministic go/no-go judgment with blockers, drift, corrective actions, and failure modes\n\n## Scope\n- report, proof, and task-packet outputs only\n- no runtime code changes\n- no prompt edits\n- no live extraction run\n\n## Validation\n- repo identity refreshed\n- audit grounded in runtime code, config, tests, prompt surfaces, proof artifacts, and current operator flows\n- final report includes verdict, checklist, blocker map, drift list, and corrective action priorities\n\n## Follow-up\nUse separate implementation packets for any fixes or launch authorization.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "tracer",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "consensus",
+      "thinkdeep",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Establish the current authoritative audit target, authority docs, and audit scope boundaries.",
+      "requirements": [
+        "Confirm repo identity from .dopetaskroot and origin remote.",
+        "Confirm the current authoritative RTE implementation target from prior branch audit or integration output.",
+        "Identify canonical runtime, validator, doctor/preflight, prompt, routing, and test surfaces relevant to the audit.",
+        "Collect repo-truth docs that define authority, boundaries, drift handling, and PAL doctrine."
+      ],
+      "commands": [
+        "git rev-parse --show-toplevel",
+        "test -f .dopetaskroot",
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short --branch"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md",
+        "proof/rte-gemini-deep-pal-audit-2026-04-23.proof.json"
+      ],
+      "validation": [
+        "The audit target is explicit and current.",
+        "Authority docs and implementation evidence are separated.",
+        "Audit scope boundaries are explicit and bounded."
+      ],
+      "context_files": [
+        "RULES.md",
+        "ARCHITECTURE.md",
+        "PROJECT.md",
+        "SYSTEM_RepoTruthExtractor.md",
+        "TRUTH_CANONICALS.md",
+        "TRUTH_GAPS.md",
+        "TRUTH_INTERFACES.md",
+        "TRUTH_SCOPE.md",
+        "system-boundaries.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_PACKET_TEMPLATE.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Audit execution logic, runtime path integrity, and gate behavior.",
+      "requirements": [
+        "Confirm the canonical live execution path and identify any legacy, drifted, or shadow execution paths.",
+        "Audit doctor, preflight, coverage, status, verification, validator, and promptset gating surfaces.",
+        "Evaluate fail-closed behavior, evidence artifacts, and run-safety boundaries.",
+        "Record contradictions between intended path and actual runtime code/config/tests."
+      ],
+      "commands": [],
+      "expected_files": [
+        "docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md",
+        "proof/rte-gemini-deep-pal-audit-2026-04-23.proof.json"
+      ],
+      "validation": [
+        "The report states the canonical execution path explicitly.",
+        "Legacy and shadow paths are identified with evidence.",
+        "Gate behavior and fail-closed claims are audited against runtime truth."
+      ],
+      "context_files": [
+        "SYSTEM_RepoTruthExtractor.md",
+        "TRUTH_INTERFACES.md",
+        "TRUTH_GAPS.md",
+        "RULES.md"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Audit prompt architecture, prompt canonicality, and prompt-to-step fitness.",
+      "requirements": [
+        "Identify canonical prompt surfaces, promptset manifests, prompt generation paths, and any shadow or compatibility prompt paths.",
+        "Assess whether prompts are appropriately scoped for extraction, linking, validation, repair, and final synthesis tasks.",
+        "Evaluate prompt coupling, prompt drift risk, and operator visibility of promptset blocking conditions.",
+        "Record where prompts appear under-specified, over-broad, redundant, or structurally misaligned with the step they serve."
+      ],
+      "commands": [],
+      "expected_files": [
+        "docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md",
+        "proof/rte-gemini-deep-pal-audit-2026-04-23.proof.json"
+      ],
+      "validation": [
+        "Prompt canonicality is explicit.",
+        "Shadow or compatibility prompt risks are documented.",
+        "Prompt flaws are tied to concrete runtime consequences, not taste."
+      ],
+      "context_files": [
+        "SYSTEM_RepoTruthExtractor.md",
+        "TRUTH_GAPS.md",
+        "TRUTH_INTERFACES.md"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Audit model selection, routing policy, sidefill, repair loops, and validator interplay.",
+      "requirements": [
+        "Evaluate whether the current model portfolio and routing behavior fit the actual step types and strict structured-output needs.",
+        "Audit escalation policy, fallback behavior, sidefill strategy, repair passes, and validator interactions.",
+        "Treat external model-portfolio research as synthesis input only, not repo authority.",
+        "Identify where routing or repair behavior may hide failures, inflate cost, or degrade truth quality."
+      ],
+      "commands": [],
+      "expected_files": [
+        "docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md",
+        "proof/rte-gemini-deep-pal-audit-2026-04-23.proof.json"
+      ],
+      "validation": [
+        "Model and routing recommendations are tied to actual runtime needs.",
+        "Sidefill, repair, and validator risks are explicitly documented.",
+        "Structured-output risk and JSON reliability are treated as first-class concerns."
+      ],
+      "context_files": [
+        "SYSTEM_RepoTruthExtractor.md",
+        "TRUTH_GAPS.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "PAL_EXECUTION_RULES.md"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Audit operator UX, observability, and pre-live usability.",
+      "requirements": [
+        "Evaluate operator-facing command surfaces, readiness visibility, blocker visibility, and failure explanations.",
+        "Audit whether the UX makes the canonical path obvious and drifted paths dangerous rather than tempting.",
+        "Evaluate whether proofs, doctor output, coverage, and validator results are usable by an operator under launch pressure.",
+        "Treat UX as an operational-readability problem rather than a visual polish problem."
+      ],
+      "commands": [],
+      "expected_files": [
+        "docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md",
+        "proof/rte-gemini-deep-pal-audit-2026-04-23.proof.json"
+      ],
+      "validation": [
+        "UX findings are concrete and tied to operator risk.",
+        "Observability and launch ergonomics are explicitly audited.",
+        "Recommendations distinguish cosmetic issues from readiness-critical ones."
+      ],
+      "context_files": [
+        "BRAND_SYSTEM.md",
+        "RULES.md",
+        "ARCHITECTURE.md",
+        "SYSTEM_Dopemux.md",
+        "TRUTH_INTERFACES.md"
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Produce the final deep-audit verdict, corrective action map, and launch checklist.",
+      "requirements": [
+        "Issue a go, no-go, or conditional-go verdict.",
+        "Provide a deterministic checklist for launch readiness.",
+        "List blockers, warnings, residual risks, and highest-risk failure modes.",
+        "Provide corrective actions grouped by severity, effort, and dependency.",
+        "Separate proven blockers from open UNKNOWNs and future improvements."
+      ],
+      "commands": [
+        "python -m json.tool task-packets/TP-DMX-RTEAUDIT-110.json",
+        "python -m json.tool proof/rte-gemini-deep-pal-audit-2026-04-23.proof.json"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md",
+        "proof/rte-gemini-deep-pal-audit-2026-04-23.proof.json",
+        "task-packets/TP-DMX-RTEAUDIT-110.json",
+        "task-packets/INDEX.md"
+      ],
+      "validation": [
+        "The final verdict is explicit.",
+        "Checklist, blocker map, drift list, failure modes, and corrective actions are all present.",
+        "The proof artifact matches the report and preserves UNKNOWNs explicitly."
+      ],
+      "context_files": [
+        "PAL_CHAINING_DOCTRINE.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_PACKET_TEMPLATE.md",
+        "dopetask-cannonical-spec.json"
+      ]
+    }
+  ]
+}

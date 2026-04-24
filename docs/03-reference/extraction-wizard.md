@@ -54,7 +54,10 @@ Commands:
 | `--execute` | flag | off | Enable actual extraction |
 | `--educate/--no-educate` | flag | on | Educational explanations |
 | `--routing-policy` | text | balanced_openrouter | Routing policy name |
-| `-w, --workers` | int | 10 | Partition worker count |
+| `--max-cost` | float | 5.0 | Maximum estimated spend before extraction is blocked |
+| `--validate-live/--no-validate-live` | flag | on | Control whether the pre-live validator gate runs before spending |
+| `--skip-hygiene` | flag | off | Legacy compatibility flag; accepted by the wizard but not forwarded to the v5 runner |
+| `-w, --workers` | int | 1 | Partition worker count |
 
 ### `dopemux audit status`
 
@@ -68,12 +71,13 @@ No options. Shows latest run ID, directory, phases completed, and total size.
 |---|------|------|--------|-------------|
 | 0 | Welcome | 🔬 | `preflight.py` | System checks — Python version, git, dependencies |
 | 1 | Repo Health | 🩺 | `preflight.py` | Git status, branch, working tree cleanliness |
-| 2 | Corpus Audit | 📊 | `corpus.py` | Runs prescan subprocess, parses JSON stats |
+| 2 | Corpus Audit | 📊 | `corpus.py` | Runs canonical v5 integrated Stage 0 prescan and normalizes `corpus_manifest.json` into wizard stats |
 | 3 | Prompt Setup | ⚙️ | `prompts.py` | Promptset validation and interactive initialization |
-| 4 | Cost Profile | 💰 | `cost_profiles.py` | Interactive routing policy selection with estimates |
-| 5 | Partition Preview | 🧩 | `partitions.py` | File→phase mapping and partition estimates |
-| 6 | Extraction | 🚀 | `extraction.py` | Per-phase truth-run delegation with confirmation |
-| 7 | Summary | 🏆 | `summary.py` | Telemetry parsing and completion display |
+| 4 | Provider Overrides | 🔑 | `provider_overrides.py` | Optional session-local provider key overrides before cost selection |
+| 5 | Cost Profile | 💰 | `cost_profiles.py` | Interactive routing policy browsing, per-profile detail, and final selection |
+| 6 | Partition Preview | 🧩 | `partitions.py` | File→phase mapping and partition estimates |
+| 7 | Extraction | 🚀 | `extraction.py` | Per-phase direct `run_extraction_v5.py` delegation with confirmation |
+| 8 | Summary | 🏆 | `summary.py` | Telemetry parsing and completion display |
 
 ---
 
@@ -104,7 +108,7 @@ The pipeline defines **14 phases** executed in order. Phases A–G produce prima
 
 ## Authority Classes
 
-Every file in the corpus is classified into one of six authority classes during the prescan audit.
+Every file in the corpus is classified into one of six authority classes during the integrated Phase 0 prescan.
 
 | Class | Icon | Color | Description |
 |-------|------|-------|-------------|
@@ -119,7 +123,7 @@ Every file in the corpus is classified into one of six authority classes during 
 
 ## Routing Policies
 
-Eight routing policies control which models handle each extraction tier. The default policy is `balanced_openrouter`.
+Eight routing policies control which models handle each extraction tier. The wizard defaults to `cost` for bounded first runs.
 
 | Policy | Description | Bulk Tier | Extract Tier | Synthesis Tier | QA Tier |
 |--------|-------------|-----------|-------------|---------------|---------|
@@ -175,12 +179,12 @@ src/dopemux/ux/wizard/
 ├── stages.py            # StageStatus, StageResult, WizardState dataclasses + constants
 ├── display.py           # Rich rendering helpers (10 functions)
 ├── preflight.py         # Stages 0-1: welcome + repo health
-├── corpus.py            # Stage 2: prescan audit
+├── corpus.py            # Stage 2: integrated v5 Stage 0 prescan
 ├── prompts.py           # Stage 3: promptset validation
-├── cost_profiles.py     # Stage 4: routing policies + cost estimation
-├── partitions.py        # Stage 5: file→phase mapping
-├── extraction.py        # Stage 6: phase-by-phase extraction
-├── summary.py           # Stage 7: telemetry + completion
+├── cost_profiles.py     # Stage 5: routing policies + cost estimation
+├── partitions.py        # Stage 6: file→phase mapping
+├── extraction.py        # Stage 7: phase-by-phase extraction
+├── summary.py           # Stage 8: telemetry + completion
 └── runner.py            # WizardRunner orchestrator class
 ```
 
@@ -190,8 +194,11 @@ src/dopemux/ux/wizard/
 
 - **Preview-only by default** — no API calls are made without the `--execute` flag.
 - **Per-phase confirmation** — each extraction phase requires interactive confirmation before proceeding.
-- **Static routing snapshot** — `ROUTING_LADDERS` is defined as a static snapshot inside the wizard to avoid importing `run_extraction_v5.py`, which has import-time side effects.
-- **No direct v5 execution** — `run_extraction_v5.py` is **never** executed directly. All extraction is delegated through `dopemux extract truth-run`.
+- **Session-local provider overrides** — provider keys entered in stage 4 override shell defaults only for wizard-launched subprocesses.
+- **Runtime ladder parsing** — the wizard reads `ROUTING_LADDERS` from the v5 runner source at runtime and pairs it with `config/pricing.yaml` for cost estimation.
+- **Canonical integrated prescan** — Stage 2 now uses the v5 Stage 0 prescan authority and stores its output under `extraction/repo-truth-extractor/v5/runs/<run_id>/prescan`.
+- **Direct v5 phase execution** — phase extraction invokes `services/repo-truth-extractor/run_extraction_v5.py` directly with `--prescan-dir`, `--skip-prescan`, and `--skip-pre-live-validator` when live validation is disabled.
+- **Compatibility-only hygiene flag** — `--skip-hygiene` is retained as a wizard flag for legacy workflows, but it is not forwarded to the v5 runner.
 - ⚠️ **CRITICAL:** Accidental direct execution of v5 can cost **$10+** in provider preflight probes. See the workspace safety instructions for details.
 
 ---

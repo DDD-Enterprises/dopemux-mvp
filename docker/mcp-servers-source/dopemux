@@ -6,6 +6,21 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+PROJECT_SRC="$PROJECT_ROOT/src"
+PROJECT_PYTHON="$PROJECT_ROOT/.venv/bin/python"
 
-# Delegate to the Python CLI
-exec python3 -m dopemux.cli "$@"
+if [[ -x "$PROJECT_PYTHON" ]]; then
+    PYTHON_BIN="$PROJECT_PYTHON"
+else
+    PYTHON_BIN="python3"
+fi
+
+# Delegate to the Python CLI from the repo checkout.
+if [[ -n "${PYTHONPATH:-}" ]]; then
+    export PYTHONPATH="$PROJECT_SRC:$PYTHONPATH"
+else
+    export PYTHONPATH="$PROJECT_SRC"
+fi
+
+cd "$PROJECT_ROOT" || exit 1
+exec "$PYTHON_BIN" -m dopemux.cli "$@"

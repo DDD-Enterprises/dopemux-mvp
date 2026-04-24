@@ -1,0 +1,69 @@
+{
+  "audit_id": "DMX-RTE-AUDIT-2026-04-23",
+  "timestamp": "2026-04-23T10:30:00Z",
+  "verdict": "CONDITIONAL_GO",
+  "target": {
+    "runtime": "services/repo-truth-extractor/run_extraction_v5.py",
+    "validator": "services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+    "promptset": "services/repo-truth-extractor/promptsets/v4/"
+  },
+  "findings": {
+    "execution_logic": {
+      "canonical_path_verified": true,
+      "fail_closed_behavior": "RuntimeError raised on validator failure",
+      "shadow_paths_identified": ["run_extraction_v3.py", "run_extraction_v4.py", "run_extraction.py"],
+      "gate_integrity": "P0: validator enforces mandatory pre-live checks"
+    },
+    "prompt_architecture": {
+      "canonical_surfaces": "promptsets/v4/prompts/",
+      "structure_compliance": "High (Strict sections, schema, and procedure)",
+      "drift_risk": "Medium (Legacy prompts exist in archive and Phase S usage)"
+    },
+    "routing_and_model_selection": {
+      "portfolio_fit": "Appropriate (GPT-5 for logic, Grok for bulk)",
+      "routing_policy": "Explicitly defined in model_map.yaml",
+      "repair_behavior": "Deterministic with provenance preservation"
+    },
+    "operator_ux": {
+      "observability": "High (Rich UI + JSONL event stream)",
+      "readiness_visibility": "High (Clear validator output)"
+    }
+  },
+  "blockers": [],
+  "warnings": [
+    "Phase S continues to use legacy prompts while SP uses registry-backed prompts.",
+    "Multiple legacy extraction runtimes remain in the service directory, increasing operator confusion risk.",
+    "PAL validation requires a separate validation file which was not present in the root during audit."
+  ],
+  "corrective_actions": [
+    {
+      "id": "CA-001",
+      "severity": "MEDIUM",
+      "task": "Migrate Phase S to registry-backed prompt architecture or formalize its legacy status.",
+      "effort": "Low"
+    },
+    {
+      "id": "CA-002",
+      "severity": "LOW",
+      "task": "Decommission or move legacy runtimes (v3, v4, run_extraction.py) to archive.",
+      "effort": "Low"
+    },
+    {
+      "id": "CA-003",
+      "severity": "MEDIUM",
+      "task": "Ensure PAL validation file is part of standard repository root or clearly located.",
+      "effort": "Low"
+    }
+  ],
+  "launch_checklist": [
+    "Confirm DPMX_LIVE_OK_ENV=1",
+    "Verify API keys for all routed providers (OpenRouter, XAI, Gemini)",
+    "Run validator: services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+    "Review OFFLINE_GATE_RESULTS.json",
+    "Perform dry-run with --dry-run and review cost preview"
+  ],
+  "unknowns": [
+    "Actual performance of GPT-5.3-codex vs GPT-5.4 in critical extraction steps.",
+    "Completeness of prompt coverage for all repository edge cases."
+  ]
+}

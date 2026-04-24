@@ -38,13 +38,20 @@ class WizardState:
     corpus_included_count: int = 0
     corpus_total_size: int = 0
     grok_response: Optional[Dict[str, Any]] = None
+    code_intelligence: Optional[Dict[str, Any]] = None
+    intelligence_router: Optional[Any] = None
+    prescan_dir: str = ""
     promptset_ready: bool = False
     selected_policy: str = "balanced_openrouter"
     run_id: str = ""
-    workers: int = 10
+    workers: int = 1
+    provider_key_overrides: Dict[str, str] = field(default_factory=dict)
     phase_results: Dict[str, "StageResult"] = field(default_factory=dict)
     execute_mode: bool = False
     educate_mode: bool = True
+    max_cost: Optional[float] = 5.0
+    validate_live: bool = True
+    skip_hygiene: bool = False
 
 
 # ── 14 extraction phases in pipeline order ──────────────────────────────────

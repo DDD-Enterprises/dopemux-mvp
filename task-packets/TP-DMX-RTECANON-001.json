@@ -1,0 +1,213 @@
+{
+  "id": "TP-DMX-RTECANON-001",
+  "project": "dopemux-mvp",
+  "target": "Establish `dopemux rte` as the canonical operator entrypoint for Repo Truth Extractor, align wrapper behavior and launch-policy inheritance to the v5 runtime, and demote or hard-refuse legacy extractor entrypoints that are not exact-policy aliases.",
+  "invariants": [
+    "Treat `services/repo-truth-extractor/run_extraction_v5.py` as the canonical RTE runtime unless current code proves otherwise.",
+    "Treat `dopemux rte` as the canonical operator-facing command family after this packet.",
+    "Do not change extractor runtime semantics except where required to align wrapper inheritance and operator-path determinism.",
+    "Do not preserve legacy entrypoints as silently divergent alternatives.",
+    "Any retained legacy surface must be an exact-policy alias or must fail closed with an explicit redirect to `dopemux rte`.",
+    "Routing-policy defaults, validator target policy, and preset inheritance must be coherent under the canonical operator path.",
+    "Resume semantics must preserve v5 run identity behavior and must not inject a fresh run id when resuming without an explicit run id.",
+    "Operator help text, README guidance, and runtime-facing warnings must agree on the same canonical command family.",
+    "Do not normalize UNKNOWNs or drift away in prose; either align behavior or document the remaining incompatibility explicitly.",
+    "All outputs must be evidence-backed, commit-sized, reviewable, and reproducible."
+  ],
+  "depends_on": [
+    "TP-DMX-RTEAUDIT-000",
+    "TP-DMX-RTEAUDIT-110"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-RTE-CANON-SERIES-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-canonical-operator-entrypoint"
+  },
+  "commit": {
+    "message": "feat(rte): make dopemux rte the canonical operator entrypoint",
+    "allowlist": [
+      "src/dopemux/cli.py",
+      "src/dopemux/commands/extract_commands.py",
+      "src/dopemux/commands/extractor_commands.py",
+      "services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+      "services/repo-truth-extractor/README.md",
+      "tests/unit/test_cli_kernel_commands.py",
+      "services/repo-truth-extractor/tests/test_truth_run_cli.py",
+      "docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md",
+      "proof/rte-canonical-entrypoint-implementation-2026-04-23.proof.json",
+      "task-packets/TP-DMX-RTECANON-001.json",
+      "task-packets/INDEX.md"
+    ],
+    "verify": [
+      "git rev-parse --show-toplevel",
+      "test -f .dopetaskroot",
+      "git remote -v",
+      "git branch --show-current",
+      "git status --short --branch",
+      "python -m json.tool task-packets/TP-DMX-RTECANON-001.json",
+      "python -m json.tool proof/rte-canonical-entrypoint-implementation-2026-04-23.proof.json",
+      "python -m pytest services/repo-truth-extractor/tests/test_truth_run_cli.py -q",
+      "git diff --check -- src/dopemux/cli.py src/dopemux/commands/extract_commands.py src/dopemux/commands/extractor_commands.py services/repo-truth-extractor/validate_pre_live_gate_v25.py services/repo-truth-extractor/README.md docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md proof/rte-canonical-entrypoint-implementation-2026-04-23.proof.json task-packets/TP-DMX-RTECANON-001.json task-packets/INDEX.md"
+    ]
+  },
+  "pr": {
+    "title": "feat(rte): make dopemux rte the canonical operator entrypoint",
+    "body": "## Summary\n- establish `dopemux rte` as the canonical operator entrypoint for Repo Truth Extractor\n- align wrapper behavior, routing-policy inheritance, and validator policy expectations with the canonical v5 runtime path\n- demote or hard-refuse divergent legacy entrypoints that are not exact-policy aliases\n\n## Scope\n- canonical operator entrypoint wiring\n- wrapper and help-text alignment\n- validator/default-policy alignment where required\n- focused tests, proof, and implementation report\n\n## Validation\n- repo identity refreshed\n- canonical command surface is explicit in code and docs\n- divergent legacy surfaces are either redirected or exact aliases\n- truth-run resume semantics and routing-policy inheritance remain test-backed\n\n## Follow-up\nUse a separate packet for broader UX or prompt canonicality cleanup if needed.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Verify repo identity and map the current operator entrypoint surfaces against the canonical runtime.",
+      "requirements": [
+        "Confirm repo root from `.dopetaskroot` and origin remote.",
+        "Inspect current command families that expose RTE operations, including `dopemux truth`, `dopemux extractor`, `dopemux upgrades`, and existing extract truth-run surfaces.",
+        "Confirm that `services/repo-truth-extractor/run_extraction_v5.py` remains the canonical runtime authority.",
+        "Record the current routing-policy and validator-default drift that must be eliminated under `dopemux rte`."
+      ],
+      "commands": [
+        "git rev-parse --show-toplevel",
+        "test -f .dopetaskroot",
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short --branch"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md",
+        "proof/rte-canonical-entrypoint-implementation-2026-04-23.proof.json"
+      ],
+      "validation": [
+        "Repo identity is explicit and correct.",
+        "The current command-surface map is captured before edits.",
+        "The canonical runtime target is explicitly named."
+      ],
+      "context_files": [
+        "RULES.md",
+        "ARCHITECTURE.md",
+        "SYSTEM_RepoTruthExtractor.md",
+        "TRUTH_INTERFACES.md",
+        "TRUTH_GAPS.md",
+        "rte-gemini-deep-pal-audit-2026-04-23.md",
+        "rte-prelive-audit-pack-2026-04-23.md",
+        "rte-production-certification-audit-20260414.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Implement `dopemux rte` as the canonical operator command family and demote divergent legacy surfaces.",
+      "requirements": [
+        "Add or finalize `dopemux rte` as the canonical operator family for repo-truth-extractor work.",
+        "Make any retained legacy entrypoint either an exact-policy alias to `dopemux rte` or an explicit fail-closed redirect.",
+        "Do not leave `dopemux truth` or legacy extractor paths as silent alternative execution surfaces.",
+        "Preserve clear operator messaging about canonical versus compatibility surfaces."
+      ],
+      "commands": [],
+      "expected_files": [
+        "src/dopemux/cli.py",
+        "src/dopemux/commands/extract_commands.py",
+        "src/dopemux/commands/extractor_commands.py",
+        "docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md",
+        "proof/rte-canonical-entrypoint-implementation-2026-04-23.proof.json"
+      ],
+      "validation": [
+        "`dopemux rte` is the clearly named canonical family in code.",
+        "Legacy surfaces no longer behave as divergent operator choices.",
+        "Operator-facing warnings or redirects are explicit and bounded."
+      ],
+      "context_files": [
+        "src/dopemux/cli.py",
+        "src/dopemux/commands/extract_commands.py",
+        "src/dopemux/commands/extractor_commands.py",
+        "SYSTEM_RepoTruthExtractor.md"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Align wrapper inheritance for routing-policy defaults, validator expectations, and resume semantics under the canonical operator path.",
+      "requirements": [
+        "Ensure the canonical `dopemux rte` path inherits a coherent routing-policy default relative to the v5 runtime and validator.",
+        "Remove or explicitly resolve policy drift between runtime defaults, wrapper defaults, and validator target policy.",
+        "Preserve v5 resume behavior by not injecting a fresh run id when resume is requested without an explicit run id.",
+        "Update focused tests to cover canonical command routing, policy inheritance, and resume semantics."
+      ],
+      "commands": [
+        "python -m pytest services/repo-truth-extractor/tests/test_truth_run_cli.py -q"
+      ],
+      "expected_files": [
+        "src/dopemux/commands/extract_commands.py",
+        "services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+        "services/repo-truth-extractor/tests/test_truth_run_cli.py",
+        "docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md",
+        "proof/rte-canonical-entrypoint-implementation-2026-04-23.proof.json"
+      ],
+      "validation": [
+        "Canonical path policy inheritance is explicit and coherent.",
+        "Resume semantics are preserved and test-backed.",
+        "Validator alignment changes are documented with reasons."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+        "services/repo-truth-extractor/tests/test_truth_run_cli.py",
+        "rte-live-certification-gates.md",
+        "rte-gemini-deep-pal-audit-2026-04-23.md"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Align documentation and publish proof of canonicalization.",
+      "requirements": [
+        "Update README and operator-facing guidance to name `dopemux rte` as canonical.",
+        "Write an implementation report and proof JSON describing the old surfaces, new canonical mapping, and any remaining compatibility debt.",
+        "Update the task-packet index if required by repo convention.",
+        "Open a PR scoped to the canonicalization work."
+      ],
+      "commands": [
+        "python -m json.tool task-packets/TP-DMX-RTECANON-001.json",
+        "python -m json.tool proof/rte-canonical-entrypoint-implementation-2026-04-23.proof.json"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/README.md",
+        "docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md",
+        "proof/rte-canonical-entrypoint-implementation-2026-04-23.proof.json",
+        "task-packets/TP-DMX-RTECANON-001.json",
+        "task-packets/INDEX.md"
+      ],
+      "validation": [
+        "Docs and code agree on `dopemux rte` as canonical.",
+        "Remaining compatibility surfaces are explicitly described.",
+        "The PR is bounded and reviewable."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/README.md",
+        "rte-production-certification-audit-20260414.md",
+        "rte-gemini-deep-pal-audit-2026-04-23.md",
+        "dopetask-cannonical-spec.json"
+      ]
+    }
+  ]
+}
