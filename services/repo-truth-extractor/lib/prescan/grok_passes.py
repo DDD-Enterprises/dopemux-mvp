@@ -212,7 +212,7 @@ class GrokPassRunner:
         """Estimate tokens for a given text."""
         return estimate_tokens(text)
 
-def _cache_digest_default(self, value: Any) -> Any:
+    def _cache_digest_default(self, value: Any) -> Any:
         """Return a deterministic JSON-serializable representation for cache keys."""
         if isinstance(value, Path):
             return str(value)
