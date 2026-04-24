@@ -50,6 +50,10 @@
 **Learning:** Decorative pulsing animations inside status chips are helpful for sighted users but can be noisy for screen readers if not properly hidden. Since the Chip's `aria-label` already provides the full status context, the internal pulsing element should be marked `aria-hidden="true"`.
 **Action:** Always add `aria-hidden="true"` to purely visual status icons or animations when they are part of a larger component that already has a descriptive label.
 
+## 2026-04-24 - [Visual Liveness Indicators]
+**Learning:** For users in high-concentration "Flow" states, an empty dashboard panel can be ambiguous—is it broken or just quiet? Adding a subtle, low-contrast pulsing animation (like "Listening..." dots) provides a continuous "system alive" signal that reduces cognitive uncertainty without breaking focus.
+**Action:** Implement subtle pulsing animations for "listening" or "waiting" states in real-time feeds to provide passive reassurance.
+
 ## 2026-04-25 - [Temporal Context in Event Feeds]
 **Learning:** In high-density "live" feeds, notifications without timestamps can cause "temporal confusion" for users, especially when returning to a dashboard after a distraction. Adding a concise `[HH:mm:ss]` timestamp to each event chip provides immediate context on *when* an event occurred relative to the current ritual state.
 **Action:** Always include a formatted timestamp in live event or notification chips to ground the user in time and improve the auditability of the signal feed.
