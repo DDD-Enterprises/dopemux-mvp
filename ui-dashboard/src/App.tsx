@@ -117,6 +117,14 @@ function mapRealtimeState(message: Record<string, unknown>): CognitiveState | nu
   };
 }
 
+const formatTimestamp = (dateStr: string) => {
+  const date = new Date(dateStr);
+  const hh = date.getHours().toString().padStart(2, '0');
+  const mm = date.getMinutes().toString().padStart(2, '0');
+  const ss = date.getSeconds().toString().padStart(2, '0');
+  return `[${hh}:${mm}:${ss}]`;
+};
+
 function App() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const feedHeadingRef = useRef<HTMLHeadingElement>(null);
@@ -520,7 +528,7 @@ function App() {
                 return (
                   <Fade in={true} key={`${notification.timestamp}-${notification.message}`}>
                     <Chip
-                      label={`${notification.notificationType}: ${notification.message}`}
+                      label={`${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`}
                       variant="outlined"
                       sx={{
                         maxWidth: '100%',
