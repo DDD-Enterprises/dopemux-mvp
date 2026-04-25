@@ -144,7 +144,7 @@
   "packet_id": "DMX-COCKPIT-PMIMPL-PACK-001",
   "pr": {
     "draft": true,
-    "url": "UNKNOWN_UNTIL_PR_CREATED"
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/529"
   },
   "repo_identity": {
     "branch": "codex/rte-wizard-prescan-telemetry",
@@ -302,6 +302,12 @@
       "check": "live services",
       "command": "not run",
       "evidence": "No live service shell-outs were used beyond read-only gh PR inspection.",
+      "status": "passed"
+    },
+    {
+      "check": "draft PR created",
+      "command": "gh pr create --draft --base main --head codex/cockpit-pm-impl-processing-pack",
+      "evidence": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/529",
       "status": "passed"
     }
   ],
