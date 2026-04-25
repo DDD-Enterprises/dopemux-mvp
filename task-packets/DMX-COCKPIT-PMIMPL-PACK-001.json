@@ -1,0 +1,341 @@
+{
+  "id": "DMX-COCKPIT-PMIMPL-PACK-001",
+  "project": "dopemux-mvp",
+  "target": "Assemble a repo-grounded PM/Implementer cockpit processing pack for GPT-5.5 Pro and Claude Design, including all MCP/server/service callable surfaces compressed into operator capability groups.",
+  "invariants": [
+    "Do not implement UI changes in this packet.",
+    "Do not modify runtime code.",
+    "Do not modify service code.",
+    "Do not add live service adapters.",
+    "Do not add PM writes.",
+    "Do not run RTE extraction.",
+    "Do not shell out to live services except read-only repo inspection commands listed in this packet.",
+    "Preserve split PM authority across Leantime, task-orchestrator, ConPort, and dope-memory.",
+    "Preserve dopemux as operator control surface, not PM source of truth.",
+    "Preserve dopecon-bridge as adapter/proxy only, not authority.",
+    "Do not treat MCP exposure, HTTP exposure, bridge proxying, or config presence as authority by itself.",
+    "Do not collapse duplicate or unresolved services into one runtime.",
+    "Mark UNKNOWN explicitly.",
+    "Every UI recommendation input must be tied to repo evidence or marked as design hypothesis.",
+    "Inventory raw callable surfaces, but compress them into PM/Implementer capability groups before design use.",
+    "Do not feed raw function dumps directly to Claude Design.",
+    "Output must be optimized for GPT-5.5 Pro synthesis and Claude Design handoff, not Codex implementation."
+  ],
+  "depends_on": [
+    "DMX-COCKPIT-STATIC-001",
+    "DMX-COCKPIT-STATIC-002"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dopemux-cockpit-pm-impl-design",
+    "base_branch": "main",
+    "parent_tp_id": "DMX-COCKPIT-STATIC-002",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/cockpit-pm-impl-processing-pack"
+  },
+  "commit": {
+    "message": "docs(cockpit): assemble PM Implementer design processing pack",
+    "allowlist": [
+      "docs/05-audit-reports/cockpit-pm-implementer-processing-pack-2026-04-24.md",
+      "docs/05-audit-reports/cockpit-pm-implementer-callable-inventory-2026-04-24.md",
+      "docs/05-audit-reports/cockpit-pm-implementer-design-brief-2026-04-24.md",
+      "proof/cockpit-pm-implementer-processing-pack-2026-04-24.proof.json",
+      "task-packets/DMX-COCKPIT-PMIMPL-PACK-001.json",
+      "task-packets/INDEX.md"
+    ],
+    "verify": [
+      "git rev-parse --show-toplevel",
+      "test -f .dopetaskroot",
+      "git remote -v",
+      "git branch --show-current",
+      "git status --short --branch",
+      "python -m json.tool task-packets/DMX-COCKPIT-PMIMPL-PACK-001.json",
+      "python -m json.tool proof/cockpit-pm-implementer-processing-pack-2026-04-24.proof.json",
+      "git diff --check -- docs/05-audit-reports/cockpit-pm-implementer-processing-pack-2026-04-24.md docs/05-audit-reports/cockpit-pm-implementer-callable-inventory-2026-04-24.md docs/05-audit-reports/cockpit-pm-implementer-design-brief-2026-04-24.md proof/cockpit-pm-implementer-processing-pack-2026-04-24.proof.json task-packets/DMX-COCKPIT-PMIMPL-PACK-001.json task-packets/INDEX.md"
+    ]
+  },
+  "pr": {
+    "title": "docs(cockpit): assemble PM Implementer design processing pack",
+    "body": "## Summary\n- assemble repo-grounded PM/Implementer cockpit processing pack\n- map actual PM read/write authority, handoff/handback flows, operator scenarios, UI failure modes, and all callable MCP/service/API surfaces\n- compress all callable surfaces into PM/Implementer capability groups\n- produce GPT-5.5 Pro synthesis prompt and Claude Design handoff brief\n\n## Scope\n- docs/proof/task-packet only\n- no UI implementation\n- no runtime changes\n- no service adapters\n- no writes\n- no RTE execution\n\n## Validation\n- repo identity verified\n- PM/Implementer authority mapped from runtime/docs\n- callable inventory separates raw evidence from design input\n- design inputs separate evidence from hypothesis\n- pack ready for GPT-5.5 Pro and Claude Design use",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Verify repo identity and current cockpit stack state.",
+      "requirements": [
+        "Confirm repo root, marker, origin, branch, and clean status.",
+        "Confirm DMX-COCKPIT-STATIC-001 and DMX-COCKPIT-STATIC-002 status from branches or PRs.",
+        "Do not assume cockpit static branches are merged to main unless proven.",
+        "Record current stack dependency state explicitly."
+      ],
+      "commands": [
+        "git rev-parse --show-toplevel",
+        "test -f .dopetaskroot",
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short --branch",
+        "git branch -vv",
+        "gh pr list --state open --limit 100 --json number,title,headRefName,baseRefName,isDraft,url"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/cockpit-pm-implementer-processing-pack-2026-04-24.md",
+        "proof/cockpit-pm-implementer-processing-pack-2026-04-24.proof.json"
+      ],
+      "validation": [
+        "Repo identity is proven.",
+        "Current cockpit PR stack state is recorded.",
+        "Any dependency drift is explicit."
+      ],
+      "context_files": [
+        "ARCHITECTURE.md",
+        "PM_PLANE.md",
+        "SYSTEM_Dopemux.md",
+        "system-boundaries.md",
+        "dmx-cockpit-static-002-pr-body.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Map all MCP servers, service APIs, CLI commands, and callable function surfaces into a deterministic capability inventory.",
+      "requirements": [
+        "Inventory every observed MCP tool from active MCP servers.",
+        "Inventory every observed HTTP route from active services.",
+        "Inventory relevant CLI command groups and subcommands.",
+        "Inventory service-local public functions only where they are operator-facing, adapter-facing, route handlers, MCP tools, or PM/Implementer workflow-relevant.",
+        "Classify every callable as canonical, mirror, adapter, support, deprecated, duplicate, or UNKNOWN.",
+        "Record file path, symbol/function name, exposed surface, authority owner, input/output shape if discoverable, side-effect class, and PM/Implementer relevance.",
+        "Do not treat MCP exposure, HTTP exposure, bridge proxying, or config presence as authority by itself.",
+        "Do not collapse duplicate or unresolved services into one runtime.",
+        "Keep raw function inventory as appendix evidence; do not feed raw dumps directly to Claude Design."
+      ],
+      "commands": [
+        "rg -n \"@mcp\\.tool|FastMCP|Server\\(|@app\\.|APIRouter\\(|@router\\.|click\\.group|click\\.command|@click\\.group|@click\\.command|def .*\\(\" src services scripts docker/mcp-servers-source docker/mcp-servers mcp-proxy-config*.yaml mcp-proxy-config*.json | tee /tmp/cockpit-callable-surface-rg.txt",
+        "find src services scripts docker/mcp-servers-source docker/mcp-servers -type f \\( -name '*.py' -o -name '*.ts' -o -name '*.tsx' -o -name '*.js' -o -name '*.json' -o -name '*.yaml' -o -name '*.yml' \\) | sort | tee /tmp/cockpit-callable-files.txt",
+        "python - <<'PY'\nimport ast, json, pathlib\nroots = [pathlib.Path('src'), pathlib.Path('services'), pathlib.Path('scripts'), pathlib.Path('docker/mcp-servers-source'), pathlib.Path('docker/mcp-servers')]\nrows=[]\nfor root in roots:\n    if not root.exists():\n        continue\n    for path in root.rglob('*.py'):\n        try:\n            tree=ast.parse(path.read_text(errors='ignore'))\n        except Exception as e:\n            rows.append({'path': str(path), 'parse_error': type(e).__name__})\n            continue\n        for node in ast.walk(tree):\n            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):\n                decorators=[]\n                for d in node.decorator_list:\n                    try:\n                        decorators.append(ast.unparse(d))\n                    except Exception:\n                        decorators.append(type(d).__name__)\n                if decorators or node.name.startswith(('pm_', 'memory_', 'conport_', 'route_', 'handle_', 'get_', 'post_', 'put_', 'patch_', 'delete_')):\n                    rows.append({'path': str(path), 'name': node.name, 'async': isinstance(node, ast.AsyncFunctionDef), 'decorators': decorators, 'lineno': node.lineno})\nprint(json.dumps(rows, indent=2, sort_keys=True))\nPY > /tmp/cockpit-callable-functions.json"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/cockpit-pm-implementer-processing-pack-2026-04-24.md",
+        "docs/05-audit-reports/cockpit-pm-implementer-callable-inventory-2026-04-24.md",
+        "proof/cockpit-pm-implementer-processing-pack-2026-04-24.proof.json"
+      ],
+      "validation": [
+        "Callable inventory includes MCP tools, HTTP routes, CLI commands, and service-callable surfaces.",
+        "Each row has path, symbol or route, surface type, authority class, side-effect class, and PM/Implementer relevance.",
+        "Inventory distinguishes raw callable presence from operator-relevant capability.",
+        "Raw inventory is deterministic and reproducible.",
+        "No gateway implementation or service consolidation is introduced."
+      ],
+      "context_files": [
+        "TP-DMX-AIG-001.md",
+        "TRUTH_INTERFACES.md",
+        "SERVICE_CATALOG.md",
+        "SYSTEM_Dopemux.md",
+        "SYSTEM_TaskOrchestrator.md",
+        "SYSTEM_ConPort.md",
+        "SYSTEM_DopeMemory.md",
+        "SYSTEM_DopeContext.md",
+        "SYSTEM_DopeconBridge.md",
+        "SYSTEM_ADHDEngine.md",
+        "SYSTEM_RepoTruthExtractor.md"
+      ]
+    },
+    {
+      "id": "S2B",
+      "task": "Compress the all-functions inventory into PM/Implementer capability groups for design use.",
+      "requirements": [
+        "Produce a Top-3 operator capability list for PM mode.",
+        "Produce a Top-3 operator capability list for Implementer mode.",
+        "Produce a deferred capability list for everything not needed in the first PM/Implementer redesign.",
+        "Group functions by operator intent, not by repo path.",
+        "Each capability group must include canonical authority, supporting surfaces, allowed reads, allowed writes, forbidden actions, relevant functions/routes/tools, and UI implication.",
+        "Do not include huge raw tables in the Claude Design brief.",
+        "Use raw function inventory only as appendix evidence."
+      ],
+      "commands": [],
+      "expected_files": [
+        "docs/05-audit-reports/cockpit-pm-implementer-processing-pack-2026-04-24.md",
+        "docs/05-audit-reports/cockpit-pm-implementer-design-brief-2026-04-24.md"
+      ],
+      "validation": [
+        "PM design inputs are grouped into at most 3 primary capability areas plus deferred count.",
+        "Implementer design inputs are grouped into at most 3 primary capability areas plus deferred count.",
+        "Every capability links back to raw inventory evidence.",
+        "Claude Design brief contains only compressed workflow/capability inputs, not exhaustive function dumps."
+      ],
+      "context_files": [
+        "docs/05-audit-reports/cockpit-pm-implementer-callable-inventory-2026-04-24.md",
+        "docs/05-audit-reports/cockpit-pm-implementer-processing-pack-2026-04-24.md"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Map PM read/write authority and extract operator-relevant state surfaces.",
+      "requirements": [
+        "Map PM metadata, workflow transitions, decisions/progress, chronicle receipts, retrieval, and bridge routing as separate slices.",
+        "Identify the runtime files, functions, endpoints, and tests that prove each slice.",
+        "Separate canonical, derived, mirror, adapter, and UNKNOWN surfaces.",
+        "Do not collapse PM into a single PM record."
+      ],
+      "commands": [
+        "rg -n \"pm_get_|pm_update_|pm_transition_|pm_log_|canonical_backend|canonical_system|workflow|blocker|queue|decision|progress\" src/dopemux/pm services/task-orchestrator services/dopecon-bridge src/conport services/working-memory-assistant services/dope-context tests | head -300",
+        "find src/dopemux/pm services/task-orchestrator services/dopecon-bridge src/conport services/working-memory-assistant services/dope-context -type f | sort"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/cockpit-pm-implementer-processing-pack-2026-04-24.md",
+        "proof/cockpit-pm-implementer-processing-pack-2026-04-24.proof.json"
+      ],
+      "validation": [
+        "Each PM slice has evidence.",
+        "Unknowns remain marked UNKNOWN.",
+        "Bridge/proxy surfaces are not upgraded to authority."
+      ],
+      "context_files": [
+        "PM_PLANE.md",
+        "ARCHITECTURE.md",
+        "SYSTEM_TaskOrchestrator.md",
+        "SYSTEM_ConPort.md",
+        "SYSTEM_DopeMemory.md",
+        "SYSTEM_DopeContext.md",
+        "SYSTEM_DopeconBridge.md"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Extract real PM and Implementer workflow scenarios from repo surfaces.",
+      "requirements": [
+        "Produce 5 to 7 concrete operator scenarios.",
+        "Each scenario must include trigger, operator goal, canonical source, supporting sources, visible state, allowed actions, forbidden actions, failure mode, and next action.",
+        "At minimum include PM planning, handoff to Implementer, Implementer evidence gathering, handback to PM, blocker/approval, and bridge-risk scenario.",
+        "Include ADHD/operator-support only if repo evidence shows it matters to the workflow; otherwise mark deferred."
+      ],
+      "commands": [
+        "rg -n \"handoff|handback|blocker|approval|acceptance|evidence|chronicle|decision|transition|queue|next-action|workflow\" src services tests docs task-packets | head -400"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/cockpit-pm-implementer-processing-pack-2026-04-24.md"
+      ],
+      "validation": [
+        "Scenarios are concrete, bounded, and evidence-backed.",
+        "Each scenario preserves source authority.",
+        "Each scenario includes UI implications for PM and Implementer modes."
+      ],
+      "context_files": [
+        "SPEC.md",
+        "PM_PLANE.md",
+        "ARCHITECTURE.md",
+        "BRAND_SYSTEM.md"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Critique current PM and Implementer cockpit mocks against evidence.",
+      "requirements": [
+        "Identify where the current PM mock is useful.",
+        "Identify where the current PM mock is misleading, overcrowded, over-authoring, or unclear.",
+        "Identify where the current Implementer mock is useful.",
+        "Identify where the current Implementer mock is misleading, overcrowded, over-authoring, or unclear.",
+        "Separate architecture violations from visual preference.",
+        "Produce a Top-3 design risk list with next-token for remaining risks."
+      ],
+      "commands": [],
+      "expected_files": [
+        "docs/05-audit-reports/cockpit-pm-implementer-processing-pack-2026-04-24.md"
+      ],
+      "validation": [
+        "Critique is tied to evidence and operator workflows.",
+        "No critique is based on taste alone.",
+        "Top-3 risks follow ADHD output contract: items, more_count, next_token."
+      ],
+      "context_files": [
+        "SPEC.md",
+        "BRAND_SYSTEM.md",
+        "PM_PLANE.md",
+        "ARCHITECTURE.md"
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Produce GPT-5.5 Pro synthesis prompt and Claude Design handoff brief.",
+      "requirements": [
+        "The GPT-5.5 Pro prompt must ask for analysis, not design generation.",
+        "The Claude Design brief must contain final constraints, prioritized workflows, state model, and design questions.",
+        "Claude Design input must forbid architecture changes, new chips, new top-level modes, web UI, live writes, bridge-as-authority, and unified PM record.",
+        "Claude Design brief must use compressed PM/Implementer capability groups, not raw callable inventory.",
+        "The handoff must include exact expected outputs from Claude Design."
+      ],
+      "commands": [],
+      "expected_files": [
+        "docs/05-audit-reports/cockpit-pm-implementer-design-brief-2026-04-24.md"
+      ],
+      "validation": [
+        "GPT-5.5 Pro prompt is ready to paste.",
+        "Claude Design brief is ready to paste.",
+        "Both prompts preserve repo authority constraints.",
+        "Both prompts distinguish evidence from design hypotheses."
+      ],
+      "context_files": [
+        "BRAND_SYSTEM.md",
+        "SPEC.md",
+        "PM_PLANE.md",
+        "ARCHITECTURE.md"
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Publish proof, task packet, and index update.",
+      "requirements": [
+        "Write proof JSON listing inspected files, commands, outputs, and known gaps.",
+        "Add task packet JSON.",
+        "Update task-packets/INDEX.md.",
+        "Do not mark complete until PR proof exists.",
+        "Open PR with docs/proof/packet only."
+      ],
+      "commands": [
+        "python -m json.tool task-packets/DMX-COCKPIT-PMIMPL-PACK-001.json",
+        "python -m json.tool proof/cockpit-pm-implementer-processing-pack-2026-04-24.proof.json",
+        "git diff --check -- docs/05-audit-reports/cockpit-pm-implementer-processing-pack-2026-04-24.md docs/05-audit-reports/cockpit-pm-implementer-callable-inventory-2026-04-24.md docs/05-audit-reports/cockpit-pm-implementer-design-brief-2026-04-24.md proof/cockpit-pm-implementer-processing-pack-2026-04-24.proof.json task-packets/DMX-COCKPIT-PMIMPL-PACK-001.json task-packets/INDEX.md"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/cockpit-pm-implementer-processing-pack-2026-04-24.md",
+        "docs/05-audit-reports/cockpit-pm-implementer-callable-inventory-2026-04-24.md",
+        "docs/05-audit-reports/cockpit-pm-implementer-design-brief-2026-04-24.md",
+        "proof/cockpit-pm-implementer-processing-pack-2026-04-24.proof.json",
+        "task-packets/DMX-COCKPIT-PMIMPL-PACK-001.json",
+        "task-packets/INDEX.md"
+      ],
+      "validation": [
+        "Docs/proof/packet validate.",
+        "PR scope is docs/proof/packet only.",
+        "No runtime or UI code changed.",
+        "Outputs are ready for GPT-5.5 Pro and Claude Design."
+      ],
+      "context_files": [
+        "dopetask-cannonical-spec.json",
+        "PAL_EXECUTION_RULES.md",
+        "task-packets/INDEX.md"
+      ]
+    }
+  ]
+}

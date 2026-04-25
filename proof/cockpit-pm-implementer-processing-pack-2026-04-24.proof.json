@@ -1,0 +1,317 @@
+{
+  "authority_findings": [
+    {
+      "canonical": "leantime",
+      "evidence": "src/dopemux/pm/writes.py",
+      "slice": "metadata"
+    },
+    {
+      "canonical": "task-orchestrator",
+      "evidence": "src/dopemux/pm/reads.py and writes.py",
+      "slice": "workflow"
+    },
+    {
+      "canonical": "conport",
+      "evidence": "src/dopemux/pm/writes.py",
+      "slice": "decisions/progress"
+    },
+    {
+      "canonical": "dope-memory mirror/evidence sink",
+      "evidence": "docs/03-reference/truth/truth-canonicals.md",
+      "slice": "chronicle/evidence"
+    },
+    {
+      "canonical": "none",
+      "evidence": "services/dopecon-bridge/dopecon_bridge/routes.py",
+      "slice": "bridge"
+    }
+  ],
+  "callable_inventory": {
+    "total_adapter_functions": 386,
+    "total_cli_commands": 248,
+    "total_http_routes": 484,
+    "total_mcp_tools": 123,
+    "total_service_functions": 605,
+    "unknown_count": 870
+  },
+  "commands": [
+    {
+      "cmd": "git rev-parse --show-toplevel",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "/Users/hue/code/dopemux-mvp"
+    },
+    {
+      "cmd": "git remote -v",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "gtm-ssh\tgit@github.com:DDD-Enterprises/dopemux-extractor-gtm.git (fetch)\ngtm-ssh\tgit@github.com:DDD-Enterprises/dopemux-extractor-gtm.git (push)\norigin\thttps://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)\norigin\thttps://github.com/DDD-Enterprises/dopemux-mvp.git (push)"
+    },
+    {
+      "cmd": "git branch --show-current",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "codex/rte-wizard-prescan-telemetry"
+    },
+    {
+      "cmd": "git status --short --branch",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "## codex/rte-wizard-prescan-telemetry\n M AGENTS.md\n M services/repo-truth-extractor/lib/promptgen/feature_detector.py\n M services/repo-truth-extractor/tests/test_universal_extractor.py\n M src/dopemux/commands/extractor_commands.py\n M tests/unit/test_extractor_command_authority.py\n?? services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json\n?? services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/INTEGRITY_REPORT.json\n?? services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/SCOPE_OVERRIDES.json\n?? services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/SCOPE_RESOLUTION.json\n?? services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/SYNC_MANIFEST.json\n?? services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/artifacts.yaml\n?? services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/model_map.yaml\n?? services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/prompts/\n?? services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/promptset.yaml"
+    },
+    {
+      "cmd": "test -f .dopetaskroot",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "present"
+    },
+    {
+      "cmd": "git branch -vv",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "run during S1; output recorded in terminal history"
+    },
+    {
+      "cmd": "gh pr list --state open --limit 100 --json number,title,headRefName,baseRefName,isDraft,url",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "open PRs observed; no static cockpit PR open"
+    },
+    {
+      "cmd": "gh pr list --state all --limit 100 --search \"cockpit static\" --json number,title,headRefName,baseRefName,state,isDraft,mergedAt,url",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "[{\"baseRefName\": \"main\", \"headRefName\": \"codex/dopemux-cockpit-static\", \"isDraft\": false, \"mergedAt\": \"2026-04-24T23:40:08Z\", \"number\": 524, \"state\": \"MERGED\", \"title\": \"Add deterministic Dopemux cockpit static renderer\", \"url\": \"https://github.com/DDD-Enterprises/dopemux-mvp/pull/524\"}, {\"baseRefName\": \"main\", \"headRefName\": \"codex/dopemux-cockpit-cli-static-demo\", \"isDraft\": false, \"mergedAt\": \"2026-04-24T23:40:44Z\", \"number\": 528, \"state\": \"MERGED\", \"title\": \"ui: expose cockpit static renderer through guarded cli\", \"url\": \"https://github.com/DDD-Enterprises/dopemux-mvp/pull/528\"}, {\"baseRefName\": \"codex/dopemux-cockpit-static\", \"headRefName\": \"codex/dopemux-cockpit-cli-static-demo\", \"isDraft\": true, \"mergedAt\": null, \"number\": 525, \"state\": \"CLOSED\", \"title\": \"ui: expose cockpit static renderer through guarded cli\", \"url\": \"https://github.com/DDD-Enterprises/dopemux-mvp/pull/525\"}, {\"baseRefName\": \"main\", \"headRefName\": \"codex/pr-merge-cockpit-recovery-20260326\", \"isDraft\": false, \"mergedAt\": \"2026-03-26T22:42:22Z\", \"number\": 293, \"state\": \"MERGED\", \"title\": \"feat: restore pr-merge cockpit runtime and docs\", \"url\": \"https://github.com/DDD-Enterprises/dopemux-mvp/pull/293\"}]"
+    },
+    {
+      "cmd": "rg callable surface scan",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "/tmp/cockpit-callable-surface-rg.txt"
+    },
+    {
+      "cmd": "find callable files scan",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "/tmp/cockpit-callable-files.txt"
+    },
+    {
+      "cmd": "AST callable function scan",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "/tmp/cockpit-callable-functions.json rows=4961"
+    },
+    {
+      "cmd": "normalized inventory render",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "/tmp/cockpit-inventory-summary.json"
+    }
+  ],
+  "files_created": [
+    "docs/05-audit-reports/cockpit-pm-implementer-processing-pack-2026-04-24.md",
+    "docs/05-audit-reports/cockpit-pm-implementer-callable-inventory-2026-04-24.md",
+    "docs/05-audit-reports/cockpit-pm-implementer-design-brief-2026-04-24.md",
+    "proof/cockpit-pm-implementer-processing-pack-2026-04-24.proof.json",
+    "task-packets/DMX-COCKPIT-PMIMPL-PACK-001.json"
+  ],
+  "files_inspected": [
+    "src/dopemux/pm/reads.py",
+    "src/dopemux/pm/writes.py",
+    "src/dopemux/pm/models.py",
+    "services/task-orchestrator/app/main.py",
+    "services/task-orchestrator/app/api/project_workflow.py",
+    "services/task-orchestrator/task_orchestrator/mcp/__init__.py",
+    "services/dopecon-bridge/dopecon_bridge/routes.py",
+    "src/conport/memory_server.py",
+    "services/working-memory-assistant/dope_memory_main.py",
+    "services/working-memory-assistant/chronicle/store.py",
+    "services/dope-context/src/mcp/server.py",
+    "services/dope-context/README.md",
+    "docker/mcp-servers/leantime-bridge/leantime_bridge/http_server.py",
+    "mcp-proxy-config.yaml",
+    "mcp-proxy-config.json",
+    ".claude/task-master-mcp-config.json",
+    "docs/03-reference/truth/truth-canonicals.md",
+    "docs/03-reference/truth/truth-gaps.md",
+    "task-packets/INDEX.md",
+    "/Users/hue/Downloads/dmx-cockpit-pmimpl-processing-pack/DMX-COCKPIT-PMIMPL-PACK-001.json"
+  ],
+  "files_modified": [
+    "task-packets/INDEX.md"
+  ],
+  "id": "cockpit-pm-implementer-processing-pack-2026-04-24.proof",
+  "packet_id": "DMX-COCKPIT-PMIMPL-PACK-001",
+  "pr": {
+    "draft": true,
+    "url": "UNKNOWN_UNTIL_PR_CREATED"
+  },
+  "repo_identity": {
+    "branch": "codex/rte-wizard-prescan-telemetry",
+    "marker": ".dopetaskroot",
+    "marker_present": true,
+    "origin": "gtm-ssh\tgit@github.com:DDD-Enterprises/dopemux-extractor-gtm.git (fetch)\ngtm-ssh\tgit@github.com:DDD-Enterprises/dopemux-extractor-gtm.git (push)\norigin\thttps://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)\norigin\thttps://github.com/DDD-Enterprises/dopemux-mvp.git (push)",
+    "root": "/Users/hue/code/dopemux-mvp",
+    "worktree_path": "/Users/hue/code/dopemux-mvp"
+  },
+  "scope_attestation": {
+    "live_writes_added": false,
+    "new_dependencies_added": false,
+    "rte_executed": false,
+    "runtime_code_modified": false,
+    "service_code_modified": false,
+    "ui_code_modified": false
+  },
+  "top_implementer_capabilities": {
+    "items": [
+      {
+        "authority": "task-orchestrator workflow state plus dopetask execution handoff boundary",
+        "capability": "Focused handoff intake and next action",
+        "functions": [
+          "pm_get_workflow_state",
+          "pm_get_priority_queue",
+          "scripts/dopetask",
+          "kernel_* taskx compatibility commands"
+        ],
+        "ui_implication": "Implementer mode should show active packet, blockers, next action, and execution boundary without creating task state."
+      },
+      {
+        "authority": "dope-context retrieval, Serena technical context UNKNOWN/candidate, ConPort decisions",
+        "capability": "Evidence retrieval for implementation context",
+        "functions": [
+          "pm_search_project_knowledge",
+          "pm_get_technical_context",
+          "search_all",
+          "find_symbol",
+          "search_decisions"
+        ],
+        "ui_implication": "Context panes should be read-only, source-labeled, and capped to Top-3 with continuation token."
+      },
+      {
+        "authority": "ConPort decision/progress canonical logs with dope-memory mirror receipts; proof artifacts remain file-based evidence",
+        "capability": "Handback, progress, and proof logging",
+        "functions": [
+          "pm_log_progress",
+          "pm_log_decision",
+          "append_chronicle",
+          "create_progress",
+          "create_decision"
+        ],
+        "ui_implication": "Handback panel should capture evidence refs and validation status; writes must show canonical target and mirror result."
+      }
+    ],
+    "more_count": 4,
+    "next_token": "implementer-deferred-capability-groups"
+  },
+  "top_pm_capabilities": {
+    "items": [
+      {
+        "authority": "Leantime metadata plus task-orchestrator queue/blockers plus ConPort decisions",
+        "capability": "PM triage and planning from split sources",
+        "functions": [
+          "pm_get_sprint_snapshot",
+          "pm_get_priority_queue",
+          "pm_get_blockers",
+          "pm_get_decision_context",
+          "list_tickets",
+          "list_workflow_ideas"
+        ],
+        "ui_implication": "PM mode needs a triage panel with per-row SRC and authority labels, not a single PM record."
+      },
+      {
+        "authority": "task-orchestrator for workflow transitions; bridge routes are adapter-only and fail closed for workflow-significant mutations",
+        "capability": "Workflow adjudication and review",
+        "functions": [
+          "pm_get_workflow_state",
+          "pm_transition_work_item",
+          "POST /api/projects/{project_id}/workflows/{workflow_id}/transitions/{transition_name}",
+          "PATCH /tasks/{task_id}/status blocked"
+        ],
+        "ui_implication": "Transitions need guarded actions and visible blockers/allowed transitions; bridge controls must be segregated."
+      },
+      {
+        "authority": "ConPort for decisions/progress; dope-memory as chronicle/evidence mirror receipt",
+        "capability": "Decision, progress, chronicle evidence",
+        "functions": [
+          "pm_log_progress",
+          "pm_log_decision",
+          "create_decision",
+          "create_progress",
+          "append_chronicle",
+          "list_decisions",
+          "list_progress"
+        ],
+        "ui_implication": "Use evidence/decision panes with canonical SRC and mirror receipt state; do not imply dope-memory owns PM status."
+      }
+    ],
+    "more_count": 4,
+    "next_token": "pm-deferred-capability-groups"
+  },
+  "unknowns": [
+    "Task-orchestrator active Python runtime points to services/task-orchestrator/app/main.py, but Docker/runtime packaging drift remains unresolved.",
+    "Serena canonical surface is UNKNOWN because repo contains in-repo service code and external Docker wrapper/proxy config.",
+    "Active MCP server configs list external/proxy servers whose live tool inventories were not queried by packet rule; only repo-observed tool declarations are inventoried.",
+    "Bridge routes expose PM/ConPort-adjacent operations but are adapter/proxy only; UI must not upgrade them to authority.",
+    "Working-memory-assistant and dope-memory surfaces overlap; dope_memory_main.py is canonical for dope-memory, WMA MCP transport canonicality remains unresolved.",
+    "Current checkout has unrelated pre-existing runtime/test changes on codex/rte-wizard-prescan-telemetry; packet artifacts are limited to allowlisted docs/proof/task-packet files."
+  ],
+  "validations": [
+    {
+      "check": "repo root",
+      "command": "git rev-parse --show-toplevel",
+      "evidence": "/Users/hue/code/dopemux-mvp",
+      "status": "passed"
+    },
+    {
+      "check": "repo marker",
+      "command": "test -f .dopetaskroot",
+      "evidence": ".dopetaskroot present",
+      "status": "passed"
+    },
+    {
+      "check": "task packet JSON",
+      "command": "python -m json.tool task-packets/DMX-COCKPIT-PMIMPL-PACK-001.json",
+      "evidence": "json.tool exited 0",
+      "status": "passed"
+    },
+    {
+      "check": "proof JSON",
+      "command": "python -m json.tool proof/cockpit-pm-implementer-processing-pack-2026-04-24.proof.json",
+      "evidence": "json.tool exited 0 after validation update",
+      "status": "passed"
+    },
+    {
+      "check": "diff whitespace",
+      "command": "git diff --check -- allowlisted files",
+      "evidence": "exited 0",
+      "status": "passed"
+    },
+    {
+      "check": "scope boundary",
+      "command": "git status --short --branch",
+      "evidence": "Packet files are allowlisted; unrelated pre-existing runtime/test/generated changes remain in worktree and are not part of this packet.",
+      "status": "partial"
+    },
+    {
+      "check": "RTE extraction",
+      "command": "not run",
+      "evidence": "No RTE extraction command was executed for this packet.",
+      "status": "passed"
+    },
+    {
+      "check": "live services",
+      "command": "not run",
+      "evidence": "No live service shell-outs were used beyond read-only gh PR inspection.",
+      "status": "passed"
+    }
+  ],
+  "workflow_scenarios": [
+    "PM creates or triages story",
+    "PM sends handoff",
+    "Implementer receives/focuses",
+    "Implementer gathers evidence",
+    "Implementer sends handback",
+    "PM reviews/accepts/transitions",
+    "blocker or bridge-risk case"
+  ]
+}
