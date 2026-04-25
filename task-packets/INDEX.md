@@ -51,6 +51,7 @@ A packet is superseded by another packet
 | DMX-COCKPIT-STATIC-002 | UI Cockpit | Expose deterministic static cockpit renderer through guarded CLI wrapper | Staged / Draft PR open / blocked on DMX-COCKPIT-STATIC-001 merge | N/A |
 | PACKET_031 | Memory | Dual Capture Adapters, Single Ledger | Executing | ADR-213 |
 | PACKET_032 | Memory | Chronicle Promotion Guards | Pending Audit | ADR-214 |
+| DMX-COCKPIT-PMIMPL-PACK-001 | Cockpit / PM Plane | PM/Implementer cockpit processing pack | Ready | N/A |
 
 ────────────────────────────────────────────────────────────
 🟢 Completed Task Packets
