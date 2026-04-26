@@ -49,3 +49,11 @@
 ## 2026-03-26 - [Reducing Screen Reader Noise in Status Chips]
 **Learning:** Decorative pulsing animations inside status chips are helpful for sighted users but can be noisy for screen readers if not properly hidden. Since the Chip's `aria-label` already provides the full status context, the internal pulsing element should be marked `aria-hidden="true"`.
 **Action:** Always add `aria-hidden="true"` to purely visual status icons or animations when they are part of a larger component that already has a descriptive label.
+
+## 2026-04-26 - [Dynamic Empty States for Live Feeds]
+**Learning:** Static empty state messages like "Waiting for..." can make an application feel unresponsive or "dead" if no data is currently available. Replacing them with an active, animated "Listening..." state provides immediate visual feedback that the system is functioning and monitoring for events.
+**Action:** Use subtle animations (like pulsing dots) in empty state messages for real-time feeds to signal active background processes.
+
+## 2026-04-26 - [Semantic Error Severity Alignment]
+**Learning:** Using `warning` severity for critical system failures (like WebSocket disconnections or API errors) can lead to user confusion and "warning fatigue." Aligning the visual and semantic severity with `error` ensures users immediately recognize the criticality of the issue and trigger appropriate iconography.
+**Action:** Always use the most accurate semantic severity level (error vs warning) to match the criticality of the system state.
