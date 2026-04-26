@@ -396,7 +396,7 @@ function App() {
 
         <Collapse in={Boolean(errorMessage)}>
           <Alert
-            severity="warning"
+            severity="error"
             onClose={() => setErrorMessage(null)}
             sx={{
               mb: 3,
@@ -534,9 +534,35 @@ function App() {
               })}
             </Box>
           ) : (
-            <Typography variant="body2" color="text.secondary">
-              Waiting for ConPort and ADHD event traffic...
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Typography variant="body2" color="text.secondary">
+                Listening for ConPort and ADHD event traffic
+              </Typography>
+              <Box
+                aria-hidden="true"
+                sx={{
+                  display: 'flex',
+                  gap: 0.5,
+                  '& span': {
+                    width: 4,
+                    height: 4,
+                    borderRadius: '50%',
+                    bgcolor: brandTokens.colors.ritualCyan,
+                    animation: 'listeningPulse 1.4s infinite ease-in-out both',
+                  },
+                  '& span:nth-of-type(1)': { animationDelay: '-0.32s' },
+                  '& span:nth-of-type(2)': { animationDelay: '-0.16s' },
+                  '@keyframes listeningPulse': {
+                    '0%, 80%, 100%': { transform: 'scale(0)' },
+                    '40%': { transform: 'scale(1.0)' },
+                  },
+                }}
+              >
+                <span />
+                <span />
+                <span />
+              </Box>
+            </Box>
           )}
         </Paper>
 

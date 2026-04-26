@@ -136,6 +136,9 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('aria-label={`System is actively monitoring ritual state: ${connectionLabel} DØPEMÜX Ritual Daemon`}');
   expect(appContent).toContain('aria-label="Clear all notifications"');
   expect(appContent).toMatch(/<Tooltip title="Clear all notifications to reduce visual noise" arrow>/);
+  expect(appContent).toContain('Listening for ConPort and ADHD event traffic');
+  expect(appContent).toContain('animation: \'listeningPulse 1.4s infinite ease-in-out both\'');
+  expect(appContent).toContain('severity="error"');
   expect(themeContent).toContain('MuiChip');
   expect(themeContent).toContain('&:focus-visible');
   expect(appContent).toContain('ref={feedHeadingRef}');
