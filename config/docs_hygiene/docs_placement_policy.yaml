@@ -43,6 +43,7 @@ filename_exemptions:
   - docs/04-explanation/history/sourceFiles/*
   - docs/05-audit-reports/root-relocated/rgoutput-2.md
   - QUICK_START.md
+  - task-packets/INDEX.md
 
 keep_docs_root_files:
   - docs/00-MASTER-INDEX.md
