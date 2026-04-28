@@ -3175,6 +3175,11 @@ cli.add_command(audit)
 cli.add_command(audit.commands["wizard"], "wizard")
 
 
+from .commands.cockpit_commands import cockpit  # noqa: E402
+
+cli.add_command(cockpit)
+
+
 # ============================================================
 # Commands extracted back from submodules (use @cli.command)
 # ============================================================
