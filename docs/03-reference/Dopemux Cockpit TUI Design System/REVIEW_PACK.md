@@ -1,10 +1,21 @@
+---
+id: DOPEMUX_COCKPIT_TUI_DESIGN_SYSTEM_REVIEW_PACK
+title: Dopemux Cockpit Design System Review Pack
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-27'
+last_review: '2026-04-27'
+next_review: '2026-06-15'
+prelude: Audit package and verification instructions for the Cockpit design system.
+---
 # Dopemux Cockpit Design System Review Pack
 
 ## Scope
 
 - Package path: `docs/03-reference/Dopemux Cockpit TUI Design System/`
 - Branch required by task packet: `codex/cockpit-design-system`
-- Worktree required by task packet: `/Users/hue/code/dopemux-mvp-wt-cockpit-design-system`
+- Worktree required by task packet: `<worktree-root>/dopemux-mvp-wt-cockpit-design-system`
 - Package status: review package only. It does not generate final PM or Implementer screens.
 - Runtime status: no runtime code modified.
 - Staging status: not staged, not committed, not pushed.
@@ -171,7 +182,7 @@ Observed result:
 
 ## Verification Snapshot
 
-Run these commands from `/Users/hue/code/dopemux-mvp-wt-cockpit-design-system` before staging:
+Run these commands from the workspace root before staging:
 
 ```sh
 pwd
