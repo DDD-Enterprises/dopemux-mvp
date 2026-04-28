@@ -119,6 +119,7 @@ function mapRealtimeState(message: Record<string, unknown>): CognitiveState | nu
 
 const formatTimestamp = (dateStr: string) => {
   const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return '[--:--:--]';
   const hh = date.getHours().toString().padStart(2, '0');
   const mm = date.getMinutes().toString().padStart(2, '0');
   const ss = date.getSeconds().toString().padStart(2, '0');
