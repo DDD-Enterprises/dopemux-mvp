@@ -381,6 +381,7 @@ function App() {
             <Tooltip title="Current cognitive status and load percentage" arrow>
               <Chip
                 label={`${statusMeta.label} • ${(cognitiveState.load * 100).toFixed(0)}% load`}
+                aria-label={`Current status: ${statusMeta.label}, ${(cognitiveState.load * 100).toFixed(0)}% cognitive load`}
                 tabIndex={0}
                 sx={{
                   backgroundColor: alpha(statusMeta.color, 0.1),
@@ -392,6 +393,7 @@ function App() {
             <Tooltip title="AI-generated recommendation based on current load" arrow>
               <Chip
                 label={`Recommendation: ${cognitiveState.recommendation}`}
+                aria-label={`AI Recommendation: ${cognitiveState.recommendation}`}
                 tabIndex={0}
                 sx={{
                   backgroundColor: alpha(brandTokens.colors.voidNavy, 0.65),
