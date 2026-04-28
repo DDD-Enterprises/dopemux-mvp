@@ -1,6 +1,0 @@
-# Generated font binaries are build artifacts.
-# Do not commit font binaries without explicit packaging approval.
-*.ttf
-*.otf
-*.woff
-*.woff2
