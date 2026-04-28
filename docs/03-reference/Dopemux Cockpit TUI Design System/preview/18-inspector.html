@@ -17,7 +17,7 @@ provenance=EXTRACTED <span style="color:#4A9E94">provenance=repo-truth-extractor
 <span style="color:#4A9E94">────────────────────────────────────────────────</span>
 <span class="violet">Bridge adapter/proxy: dopecon-bridge</span>
 <span style="color:#4A9E94">SRC=dopecon-bridge</span> <span class="tui-chip edge">[EDGE]</span> adapter-only segregated
-WRITE -&gt; &lt;service&gt; : &lt;action&gt;
+ADAPTER -&gt; &lt;service&gt; : &lt;action&gt;
 <span style="color:#4A9E94">SRC=dopecon-bridge</span> ADAPTER -&gt; dopecon-bridge : replay-event
 <span class="muted">[EDGE] bridge actions are adapter/proxy only, never canonical writes. NEXT: prefer canonical write.</span>
 </div>

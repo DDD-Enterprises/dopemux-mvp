@@ -1,3 +1,14 @@
+---
+id: DOPEMUX_COCKPIT_TUI_DESIGN_SYSTEM_UI_KIT_README
+title: Cockpit UI Kit
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-27'
+last_review: '2026-04-27'
+next_review: '2026-06-15'
+prelude: CDN-dependent React reference render for the Surface-A cockpit composition.
+---
 # Cockpit UI Kit
 
 CDN-dependent React+Babel visual reference for the dopemux cockpit TUI

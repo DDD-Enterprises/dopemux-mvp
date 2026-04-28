@@ -1,3 +1,14 @@
+---
+id: DOPEMUX_COCKPIT_TUI_DESIGN_SYSTEM_FONTS_README
+title: Fonts
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-27'
+last_review: '2026-04-27'
+next_review: '2026-06-15'
+prelude: Local build recipe and substitution notes for Dopemux cockpit fonts.
+---
 # Fonts
 
 **Canonical brand mono:** `Dopemux Term Regular` (`DopemuxTerm-Regular.ttf`).

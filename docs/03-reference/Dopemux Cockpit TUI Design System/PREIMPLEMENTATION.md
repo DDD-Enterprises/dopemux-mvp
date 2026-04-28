@@ -1,5 +1,15 @@
+---
+id: DOPEMUX_COCKPIT_TUI_DESIGN_SYSTEM_PREIMPLEMENTATION
+title: Preimplementation
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-27'
+last_review: '2026-04-27'
+next_review: '2026-06-15'
+prelude: Safety and authority rules before any implementation use.
+---
 # PREIMPLEMENTATION.md
-
 > Read this **before** any implementer touches code.
 > The Dopemux cockpit design system is a **visual reference**. It is not
 > implementation-ready code. Treat every file in this folder as design

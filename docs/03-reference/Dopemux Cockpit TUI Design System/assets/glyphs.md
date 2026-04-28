@@ -1,3 +1,14 @@
+---
+id: DOPEMUX_COCKPIT_TUI_DESIGN_SYSTEM_ASSETS_GLYPHS
+title: Cockpit Glyph Contract
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-27'
+last_review: '2026-04-27'
+next_review: '2026-06-15'
+prelude: Wordmark, glyph, and text-fallback contract for cockpit reference cards.
+---
 # Cockpit Glyph Contract
 
 Canonical stylized wordmark: `DØPΞM∪X`.
