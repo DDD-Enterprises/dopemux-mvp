@@ -4,14 +4,14 @@ const { useState } = React;
 
 function Cockpit({ size = "120x40" }) {
     const seed = window.SEED;
-    const [activeMode, setActiveMode] = useState("Services");
-    const [activeService, setActiveService] = useState("repo-truth-extractor");
-    const [activeRun] = useState(seed.rte.runs[0].runId);
+    const [activeMode] = useState("Services");
+    const [activeService] = useState(seed.services.selected);
+    const [activeRun] = useState(seed.rte_child_surface.runs[0].run_id);
 
     return (
         <Frame
             size={size}
-            workspace="/users/hu3/code/dopemux-mvp"
+            workspace={seed.workspace.id}
             surface="services"
             mode="rich"
             state="STATIC DEMO"
@@ -20,7 +20,7 @@ function Cockpit({ size = "120x40" }) {
             role="chrome"
             next_action="select_mode"
         >
-            <ModeBar modes={seed.modes} current={activeMode} />
+            <ModeBar modes={seed.top_level_modes} current={activeMode} />
 
             <div className="cockpit-grid">
                 {/* LEFT: Services mode list */}
@@ -39,7 +39,7 @@ function Cockpit({ size = "120x40" }) {
                             name={s.name}
                             kind={s.kind}
                             status={s.status}
-                            src={s.src}
+                            src={s.SRC}
                         />
                     ))}
                 </Pane>
@@ -49,21 +49,21 @@ function Cockpit({ size = "120x40" }) {
                     <PaneHeader
                         title={`Services -> ${activeService}`}
                         domain="services_child_workload"
-                        authority={seed.rte.authority}
+                        authority={seed.rte_child_surface.authority}
                         role="canonical"
                         next_action="inspect_run_history"
                     />
                     <div className="center-tabs">
-                        {seed.rte.tabs.map((t, i) => (
+                        {seed.rte_child_surface.tabs.map((t, i) => (
                             <span key={t}>
-                                <span className={t === seed.rte.rendered_tab ? "tab-active" : ""}>{t}</span>
-                                {i < seed.rte.tabs.length - 1 && <span className="tab-sep"> | </span>}
+                                <span className={t === seed.rte_child_surface.rendered_tab ? "tab-active" : ""}>{t}</span>
+                                {i < seed.rte_child_surface.tabs.length - 1 && <span className="tab-sep"> | </span>}
                             </span>
                         ))}
                     </div>
                     <div className="row row-dim">RUN ID                          REPO · BRANCH        PHASE       ALERTS</div>
-                    {seed.rte.runs.map((r) => (
-                        <RunRow key={r.runId} active={r.runId === activeRun} run={r} />
+                    {seed.rte_child_surface.runs.map((r) => (
+                        <RunRow key={r.run_id} active={r.run_id === activeRun} run={r} />
                     ))}
                 </Pane>
 
@@ -75,7 +75,7 @@ function Cockpit({ size = "120x40" }) {
             <StatusRail
                 workspace={seed.workspace.id}
                 mode={activeMode}
-                render={seed.statusRail.right}
+                render={seed.status_rail.right}
             />
             <HintRail items={seed.hints} />
         </Frame>

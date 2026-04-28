@@ -1,8 +1,8 @@
 // Cockpit primitives — TUI rendering as React components.
-// Every component renders character-positioned text; no layout flex/grid
-// hides behind the scenes — what you see is what the framebuffer draws.
+// Every component renders character-positioned text; layout is explicit in
+// cockpit.css and never hidden behind component abstractions.
 
-const { useState, useMemo } = React;
+const { useState } = React;
 
 /* ── Closed chip set. Do not extend. ─────────────────────────────────── */
 const CHIP_STYLES = {
@@ -92,8 +92,8 @@ function ServiceRow({ active, name, kind, status, src }) {
 function RunRow({ active, run }) {
     return (
         <>
-            <Row active={active} src={run.src} chip={run.status}>
-                <span className="row-name">{run.runId}</span>
+            <Row active={active} src={run.SRC || run.src} chip={run.status}>
+                <span className="row-name">{run.run_id || run.runId}</span>
             </Row>
             <Row dim>
                 <span>phase={run.phase} repo={run.repo} alerts={run.alerts}</span>
@@ -137,7 +137,7 @@ function Inspector({ inspector }) {
             <div className="row">provenance={inspector.provenance} <Src value={inspector.authority} /></div>
             {inspector.rows.map((r, i) => (
                 <div key={i} className="row row-dim">
-                    {r.src && <><Src value={r.src} /> </>}{r.label}={r.value}
+                    {(r.SRC || r.src) && <><Src value={r.SRC || r.src} /> </>}{r.label}={r.value}
                 </div>
             ))}
             <Rule width={34} />
@@ -145,7 +145,7 @@ function Inspector({ inspector }) {
             <div className="row"><Src value="dopecon-bridge" /> <Chip kind="EDGE" /> adapter-only segregated</div>
             <div className="row row-dim">ADAPTER -&gt; &lt;service&gt; : &lt;action&gt;</div>
             {inspector.bridge.actions.map((a, i) => (
-                <div key={i} className="row row-dim"><Src value={a.src} /> {a.label}</div>
+                <div key={i} className="row row-dim"><Src value={a.SRC || a.src} /> {a.label}</div>
             ))}
             <div className="row row-muted">{inspector.bridge.footer}</div>
         </Pane>
@@ -198,7 +198,7 @@ function HintRail({ items }) {
  *   Data carries provenance; chrome does not. */
 function Frame({
     size = "120x40",
-    workspace = "/users/hu3/code/dopemux-mvp",
+    workspace = window.SEED?.workspace?.id ?? "dopemux-mvp",
     surface = "services",
     mode = "rich",
     state = "STATIC DEMO",

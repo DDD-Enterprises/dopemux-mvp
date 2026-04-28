@@ -1,3 +1,14 @@
+---
+id: DOPEMUX_COCKPIT_TUI_DESIGN_SYSTEM_ACCEPTANCE
+title: Acceptance
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-27'
+last_review: '2026-04-27'
+next_review: '2026-06-15'
+prelude: Pass/fail checklist for the Cockpit design-system package.
+---
 # ACCEPTANCE.md
 
 Acceptance checklist for the Dopemux cockpit design-system package.

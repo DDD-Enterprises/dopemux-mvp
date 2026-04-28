@@ -1,3 +1,14 @@
+---
+id: DOPEMUX_COCKPIT_TUI_DESIGN_SYSTEM_ASSETS_README
+title: Assets
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-27'
+last_review: '2026-04-27'
+next_review: '2026-06-15'
+prelude: Glyph and frame-character reference for the cockpit design system.
+---
 # Assets
 
 This system has no image assets. The cockpit is text-only.
