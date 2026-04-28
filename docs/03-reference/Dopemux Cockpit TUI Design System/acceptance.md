@@ -261,28 +261,28 @@ Re-run these checks after any edit to the four merged doctrine files:
 
 ```
 rg -n "UNKNOWN.?->.?EDGE|UNKNOWN.?->.?EDGE|UNKNOWN=EDGE" \
-  "docs/03-reference/Dopemux Cockpit TUI Design System/README.md" \
-  "docs/03-reference/Dopemux Cockpit TUI Design System/PREIMPLEMENTATION.md" \
-  "docs/03-reference/Dopemux Cockpit TUI Design System/ACCEPTANCE.md" \
-  "docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md"
+  "docs/03-reference/Dopemux Cockpit TUI Design System/readme.md" \
+  "docs/03-reference/Dopemux Cockpit TUI Design System/preimplementation.md" \
+  "docs/03-reference/Dopemux Cockpit TUI Design System/acceptance.md" \
+  "docs/03-reference/Dopemux Cockpit TUI Design System/skill.md"
 
 rg -n "Every row carries SRC|Every data row carries SRC|every row carries SRC|every row carries one|every row in every pane" \
-  "docs/03-reference/Dopemux Cockpit TUI Design System/README.md" \
-  "docs/03-reference/Dopemux Cockpit TUI Design System/PREIMPLEMENTATION.md" \
-  "docs/03-reference/Dopemux Cockpit TUI Design System/ACCEPTANCE.md" \
-  "docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md"
+  "docs/03-reference/Dopemux Cockpit TUI Design System/readme.md" \
+  "docs/03-reference/Dopemux Cockpit TUI Design System/preimplementation.md" \
+  "docs/03-reference/Dopemux Cockpit TUI Design System/acceptance.md" \
+  "docs/03-reference/Dopemux Cockpit TUI Design System/skill.md"
 
 rg -n "Bridge actions authority|Services authority: dopemux|command authority: dopemux|SRC=dopemux" \
-  "docs/03-reference/Dopemux Cockpit TUI Design System/README.md" \
-  "docs/03-reference/Dopemux Cockpit TUI Design System/PREIMPLEMENTATION.md" \
-  "docs/03-reference/Dopemux Cockpit TUI Design System/ACCEPTANCE.md" \
-  "docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md"
+  "docs/03-reference/Dopemux Cockpit TUI Design System/readme.md" \
+  "docs/03-reference/Dopemux Cockpit TUI Design System/preimplementation.md" \
+  "docs/03-reference/Dopemux Cockpit TUI Design System/acceptance.md" \
+  "docs/03-reference/Dopemux Cockpit TUI Design System/skill.md"
 
 rg -n "Canonical brand mono|UNKNOWN|Bridge adapter/proxy|Every logical data/provenance record carries SRC|Dopemux Term|Dopemux Term Nerd Font" \
-  "docs/03-reference/Dopemux Cockpit TUI Design System/README.md" \
-  "docs/03-reference/Dopemux Cockpit TUI Design System/PREIMPLEMENTATION.md" \
-  "docs/03-reference/Dopemux Cockpit TUI Design System/ACCEPTANCE.md" \
-  "docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md"
+  "docs/03-reference/Dopemux Cockpit TUI Design System/readme.md" \
+  "docs/03-reference/Dopemux Cockpit TUI Design System/preimplementation.md" \
+  "docs/03-reference/Dopemux Cockpit TUI Design System/acceptance.md" \
+  "docs/03-reference/Dopemux Cockpit TUI Design System/skill.md"
 ```
 
 Classify every remaining match as: allowed forbidden-pattern definition,
