@@ -16,7 +16,7 @@ prelude: Safety and authority rules before any implementation use.
 > intent, not a build target.
 >
 > This file is governed by
-> [`ARCHITECTURE_SAFETY_OVERLAY.md`](ARCHITECTURE_SAFETY_OVERLAY.md). The
+> [`ARCHITECTURE_SAFETY_OVERLAY.md`](architecture-safety-overlay.md). The
 > overlay wins on any conflict.
 
 ---

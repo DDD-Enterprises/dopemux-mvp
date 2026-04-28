@@ -26,12 +26,12 @@ is a control surface; it doesn't own data.
 > **Architecture Safety Overlay.** This package is governed by the safety
 > overlay set. Read in this order before mocking, designing, or
 > implementing:
-> [`ARCHITECTURE_SAFETY_OVERLAY.md`](ARCHITECTURE_SAFETY_OVERLAY.md) ·
-> [`PM_IMPLEMENTER_COCKPIT_REDIRECTION.md`](PM_IMPLEMENTER_COCKPIT_REDIRECTION.md) ·
-> [`UX_REFERENCE_RECONCILIATION.md`](UX_REFERENCE_RECONCILIATION.md) ·
-> [`PREIMPLEMENTATION.md`](PREIMPLEMENTATION.md) ·
-> [`ACCEPTANCE.md`](ACCEPTANCE.md) ·
-> [`SKILL.md`](SKILL.md).
+> [`ARCHITECTURE_SAFETY_OVERLAY.md`](architecture-safety-overlay.md) ·
+> [`PM_IMPLEMENTER_COCKPIT_REDIRECTION.md`](pm-implementer-cockpit-redirection.md) ·
+> [`UX_REFERENCE_RECONCILIATION.md`](ux-reference-reconciliation.md) ·
+> [`PREIMPLEMENTATION.md`](preimplementation.md) ·
+> [`ACCEPTANCE.md`](acceptance.md) ·
+> [`SKILL.md`](skill.md).
 > The overlay wins on conflict with anything else in this folder.
 
 This system targets **120×40 first**, with explicit adaptation rules for
