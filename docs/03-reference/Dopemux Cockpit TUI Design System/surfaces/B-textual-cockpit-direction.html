@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Live Textual cockpit · direction</title>
+<link rel="stylesheet" href="_surface.css" />
+<style>
+    .focus-outline {
+        outline: 1px solid var(--ritual-cyan);
+        outline-offset: 0;
+    }
+    .blink {
+        animation: cursor-blink 1.1s steps(2, start) infinite;
+    }
+    @keyframes cursor-blink {
+        to { color: transparent; }
+    }
+    .ws-pulse {
+        color: var(--ritual-cyan);
+        animation: ws-pulse 1.4s steps(2, start) infinite;
+    }
+    @keyframes ws-pulse {
+        50% { color: var(--mint-dim); }
+    }
+    .panel-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        max-width: 1280px;
+        width: 100%;
+    }
+    .render-pane {
+        background: var(--surface-black);
+        border: 1px solid var(--mint-dim);
+        padding: 10px 12px;
+        font-size: 13px;
+        line-height: 1.5;
+        color: var(--text);
+        white-space: pre;
+        overflow: hidden;
+    }
+    .render-pane h4 {
+        font-weight: 700;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+        white-space: normal;
+    }
+    .render-pane.compact span { font-weight: 400 !important; }
+    .render-pane.plain * {
+        color: var(--text) !important;
+        font-weight: normal !important;
+    }
+    .render-pane.audit { background: #000; }
+    .render-pane.audit * { color: #d0d0d0 !important; font-weight: normal !important; }
+</style>
+</head>
+<body>
+
+<div class="surface-label">
+    Surface B · Live Textual Cockpit · <span class="demo">DESIGN DIRECTION</span> · not implemented · scope marker only
+</div>
+
+<pre class="snap snap-120" aria-label="Textual cockpit live direction"
+><span class="c-frame-s">┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓</span>
+<span class="c-frame-s">┃</span> <span class="c-cyan-b">dopemux cockpit</span>  <span class="c-dim">workspace</span> <span class="c-mint">/users/hu3/code/dopemux-mvp</span>  <span class="c-dim">surface</span> <span class="c-cyan">Services / repo-truth-extractor</span>  <span class="c-dim">render</span> <span class="c-cyan">rich</span> <span class="c-state">READ ONLY</span><span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span> <span class="c-dim">domain:</span><span class="c-cyan">cockpit_chrome</span> <span class="c-dim">authority:</span><span class="c-cyan">dopemux</span> <span class="c-dim">role:</span><span class="c-cyan">chrome</span> <span class="c-dim">next_action:</span><span class="c-cyan">select_mode</span> <span class="c-gold">read-only</span> <span class="c-frame-s">┃</span>
+<span class="c-frame">┠───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┨</span>
+<span class="c-frame-s">┃</span> <span class="c-cyan-b">1</span> PM   <span class="c-frame">│</span> <span class="c-cyan-b">2</span> Implementer <span class="c-frame">│</span> <span class="c-cyan-b">3</span> Overview <span class="c-frame">│</span> <span class="c-cyan-b">4</span>*<span class="c-emph">Services</span> <span class="c-frame">│</span> <span class="c-cyan-b">5</span> Events  <span class="c-frame">│</span> <span class="c-dim">child</span> <span class="c-cyan">repo-truth-extractor</span> <span class="c-frame">│</span> <span class="c-dim">k</span> <span class="c-frame-s">┃</span>
+<span class="c-frame">┠───────────────────────────────────┬───────────────────────────────────────────────────────────┬───────────────────┨</span>
+<span class="c-frame-s">┃</span> <span class="c-dim">domain:</span><span class="c-cyan">workload_record</span> <span class="c-dim">authority:</span><span class="c-cyan">repo-truth-extractor</span> <span class="c-dim">role:</span><span class="c-cyan">derived</span> <span class="c-dim">next_action:</span><span class="c-cyan">inspect record</span> <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span> <span class="c-mint">v5-2026-04-22T14:32Z-a91c</span>          <span class="c-frame">│</span>   <span class="c-mint-b">[LOGGED]</span>   <span class="c-dim">prescan</span>   <span class="c-dim">provenance=repo-truth-extractor</span>      <span class="c-frame">│</span> <span class="c-dim">subject</span>           <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span> <span class="c-cyan-b">[LIVE]</span> <span class="c-cyan">normalize</span> <span class="c-dim">phase 3 of 7</span>      <span class="c-frame">│</span>   <span class="c-mint-b">[LOGGED]</span>   <span class="c-dim">extract</span>   <span class="c-dim">provenance=repo-truth-extractor</span>      <span class="c-frame">│</span>   <span class="c-mint">a91c</span>            <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span> <span class="c-dim">provenance=repo-truth-extractor</span>           <span class="c-frame">│</span>   <span class="c-mint-b">[LOGGED]</span>   <span class="c-dim">classify</span>  <span class="c-dim">provenance=repo-truth-extractor</span>      <span class="c-frame">│</span> <span class="c-dim">authority</span>         <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span> <span class="c-frame">─────────────────────────────────</span> <span class="c-frame">│</span>   <span class="c-cyan-b">[LIVE]</span>     <span class="c-cyan">normalize</span> <span class="c-dim">provenance=repo-truth-extractor</span> <span class="blink">▌</span>    <span class="c-frame">│</span>   <span class="c-cyan">repo-truth-</span>      <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span> <span class="c-dim">providers</span>                          <span class="c-frame">│</span>   <span class="c-dim">[····]</span>     <span class="c-dim">verify     queued      provenance=repo-truth-extractor</span> <span class="c-frame">│</span>   <span class="c-cyan">extractor</span>        <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>   <span class="c-cyan">anthropic+ollama</span>                  <span class="c-frame">│</span>   <span class="c-dim">[····]</span>     <span class="c-dim">coverage   queued      provenance=repo-truth-extractor</span> <span class="c-frame">│</span> <span class="c-dim">last gate</span>         <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span> <span class="c-dim">artifacts</span>                          <span class="c-frame">│</span>   <span class="c-dim">[····]</span>     <span class="c-dim">recap      queued      provenance=repo-truth-extractor</span> <span class="c-frame">│</span>   <span class="c-mint">classify</span> <span class="c-mint-b">ok</span>     <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>   <span class="c-mint-b">7</span> <span class="c-dim">pinned</span>                          <span class="c-frame">│</span>                                                            <span class="c-frame">│</span> <span class="c-dim">duration</span>          <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span> <span class="c-dim">alerts</span>                             <span class="c-frame">│</span> <span class="c-frame">─────────────────────────────────────────────────────────</span> <span class="c-frame">│</span>   <span class="c-mint">04:12 / est 11:05</span> <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>   <span class="c-gold-b">2</span> <span class="c-gold">OVERRIDE</span>  <span class="c-dim">route reduced</span>     <span class="c-frame">│</span> <span class="c-violet-b">Log refs</span>                                                   <span class="c-frame">│</span> <span class="c-dim">writes</span>            <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span> <span class="c-dim">scope</span>                              <span class="c-frame">│</span>   <span class="c-dim">2026-04-22T14:36:08Z normalized batch 3/7</span>                <span class="c-frame">│</span>   <span class="c-gold">out of scope</span>     <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>   <span class="c-mint">services</span>                           <span class="c-frame">│</span>   <span class="c-dim">2026-04-22T14:36:11Z classified 142 paths</span>               <span class="c-frame">│</span>                   <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span> <span class="c-frame">─────────────────────────────────</span> <span class="c-frame">│</span>   <span class="c-dim">2026-04-22T14:36:12Z</span> <span class="c-gold">route reduced anthropic->ollama</span>     <span class="c-frame">│</span> <span class="c-frame">─────────────────</span><span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span> <span class="c-violet">controls</span>                           <span class="c-frame">│</span>   <span class="c-dim">2026-04-22T14:36:13Z normalize batch 4/7 begin</span> <span class="blink">▌</span>          <span class="c-frame">│</span> <span class="c-violet-b">Bridge adapter/</span>   <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>   <span class="c-dim">enter</span> <span class="c-cyan-b">open details</span>             <span class="c-frame">│</span>                                                            <span class="c-frame">│</span> <span class="c-violet">proxy: dopecon-bridge</span><span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>   <span class="c-dim">tab</span> <span class="c-cyan-b">cycle</span>                        <span class="c-frame">│</span>                                                            <span class="c-frame">│</span> <span class="c-cyan-b">[EDGE]</span> <span class="c-dim">segregated</span>  <span class="c-frame-s">┃</span>
+<span class="c-frame">┠───────────────────────────────────┴─────────────────────────────────────────────────────────────────┴─────────────┨</span>
+<span class="c-frame-s">┃</span> <span class="c-dim">enter</span> <span class="c-cyan-b">open</span>  <span class="c-frame">│</span>  <span class="c-dim">n</span> <span class="c-cyan-b">inspect workload</span>  <span class="c-frame">│</span>  <span class="c-dim">d</span> <span class="c-cyan-b">health</span>  <span class="c-frame">│</span>  <span class="c-dim">p</span> <span class="c-cyan-b">view state</span>  <span class="c-frame">│</span>  <span class="c-dim">f</span> <span class="c-cyan-b">view log ref</span>  <span class="c-frame">│</span>  <span class="c-dim">/</span> <span class="c-cyan-b">filter</span>  <span class="c-frame">│</span>  <span class="c-dim">q</span> <span class="c-cyan-b">quit</span>      <span class="c-frame-s">┃</span>
+<span class="c-frame">┠───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┨</span>
+<span class="c-frame-s">┃</span> <span class="c-state">DIRECTION · not implemented</span>  <span class="c-dim">writes:</span> <span class="c-gold">out-of-scope</span>  <span class="c-dim">proof artifacts:</span> <span class="c-gold">refs only</span>  <span class="c-dim">repo-truth-extractor exec:</span> <span class="c-gold">out-of-scope</span> <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛</span></pre>
+
+<div class="surface-label" style="margin-top:24px">
+    Surface B · render mode references — same content, four renderers
+</div>
+
+<div class="panel-grid">
+    <div class="render-pane">
+        <h4>rich · default · color + chips + box-drawing</h4>
+<span class="c-cyan-b">[LIVE]</span>     <span class="c-cyan">normalize</span> <span class="c-dim">batch 4 of 7</span>  <span class="c-dim">provenance=repo-truth-extractor</span>
+<span class="c-mint-b">[LOGGED]</span>   <span class="c-mint">classify</span>  <span class="c-dim">142 paths</span>      <span class="c-dim">provenance=repo-truth-extractor</span>
+<span class="c-pink-b">[BLOCKER]</span>  <span class="c-pink">preflight</span> <span class="c-dim">route missing</span>   <span class="c-dim">provenance=repo-truth-extractor</span>
+<span class="c-gold-b">[OVERRIDE]</span> <span class="c-gold">coverage</span>  <span class="c-dim">route reduced</span>   <span class="c-dim">provenance=repo-truth-extractor</span>
+    </div>
+
+    <div class="render-pane compact">
+        <h4>compact · single-line, color preserved, chips kept</h4>
+<span class="c-cyan-b">LIVE</span> <span class="c-cyan">normalize</span> <span class="c-dim">4/7 provenance=repo-truth-extractor</span>
+<span class="c-mint-b">LOGGED</span> <span class="c-mint">classify</span> <span class="c-dim">142p provenance=repo-truth-extractor</span>
+<span class="c-pink-b">BLOCKER</span> <span class="c-pink">preflight</span> <span class="c-dim">route provenance=repo-truth-extractor</span>
+<span class="c-gold-b">OVERRIDE</span> <span class="c-gold">coverage</span> <span class="c-dim">reduced provenance=repo-truth-extractor</span>
+    </div>
+
+    <div class="render-pane plain">
+        <h4>plain · NO_COLOR / pipe-safe · chips become bracketed literals</h4>
+[LIVE]     normalize batch 4 of 7  provenance=repo-truth-extractor
+[LOGGED]   classify  142 paths      provenance=repo-truth-extractor
+[BLOCKER]  preflight route missing  provenance=repo-truth-extractor
+[OVERRIDE] coverage  route reduced  provenance=repo-truth-extractor
+    </div>
+
+    <div class="render-pane audit">
+        <h4>audit · monochrome · forensic · timestamps mandatory</h4>
+2026-04-22T14:36:08Z [LIVE]     normalize  batch=4/7 src_service=repo-truth-extractor
+2026-04-22T14:36:11Z [LOGGED]   classify   paths=142 src_service=repo-truth-extractor
+2026-04-22T14:36:12Z [BLOCKER]  preflight  reason=route-missing src_service=repo-truth-extractor
+2026-04-22T14:36:13Z [OVERRIDE] coverage   reason=route-reduced src_service=repo-truth-extractor
+    </div>
+</div>
+
+<div class="caption" style="margin-top: 18px;">
+    <b>Surface B · Live Textual cockpit direction.</b>
+    Same anatomy as Surface A; adds phase-record and log-reference panes as read-only design direction.
+    No backend writes are implied — the chrome explicitly carries
+    <span class="gold">domain: cockpit_chrome · authority: dopemux · role: chrome · next_action: select_mode · writes out-of-scope</span>.
+    The cursor and stream tokens are decorative motion only; everything else is single-frame.
+    <br>
+    Render-mode reference shows how the same row renders under <b>rich</b> / <b>compact</b> / <b>plain</b> / <b>audit</b>.
+    Color is removed, never the chip token. Audit mode adds timestamps and disables color even where the terminal supports it.
+</div>
+
+</body>
+</html>

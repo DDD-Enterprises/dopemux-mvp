@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Services repo-truth-extractor · 100x32 · static</title>
+<link rel="stylesheet" href="_surface.css" />
+</head>
+<body>
+
+<div class="surface-label">
+    Surface A · Static Terminal Snapshot · 100×32 ·
+    <span class="demo">STATIC DEMO</span> · seed-only · read-only · no service adapters · read-only references only
+</div>
+
+<pre class="snap snap-100" aria-label="Services repo-truth-extractor static snapshot, 100 columns by 32 rows"
+><span class="c-frame-s">┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓</span>
+<span class="c-frame-s">┃</span> <span class="c-cyan-b">dopemux cockpit</span>  <span class="c-dim">workspace</span> <span class="c-mint">/users/hu3/code/dopemux-mvp</span>  <span class="c-dim">surface</span> <span class="c-cyan">Services / repo-truth-extractor</span><span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span> <span class="c-dim">domain:</span><span class="c-cyan">cockpit_chrome</span> <span class="c-dim">authority:</span><span class="c-cyan">dopemux</span> <span class="c-dim">role:</span><span class="c-cyan">chrome</span> <span class="c-dim">next_action:</span><span class="c-cyan">select_mode</span> <span class="c-frame-s">┃</span>
+<span class="c-frame">┠────────────────────────────────────────────────────────────────────────────────────────────────┨</span>
+<span class="c-frame-s">┃</span> <span class="c-cyan-b">1</span> PM <span class="c-frame">│</span> <span class="c-cyan-b">2</span> Implementer <span class="c-frame">│</span> <span class="c-cyan-b">3</span> Overview <span class="c-frame">│</span> <span class="c-cyan-b">4</span>*<span class="c-emph">Services</span> <span class="c-frame">│</span> <span class="c-cyan-b">5</span> Events <span class="c-frame">│</span> <span class="c-dim">child</span> <span class="c-cyan">repo-truth-extractor</span> <span class="c-frame">│</span> <span class="c-dim">ctrl+k</span>  <span class="c-frame-s">┃</span>
+<span class="c-frame">┠────────────────────────────────────────────────┬───────────────────────────────────────────────┨</span>
+<span class="c-frame-s">┃</span> <span class="c-dim">active</span> <span class="c-cyan-b">3</span> <span class="c-mint">LIVE</span>  <span class="c-dim">blocked</span> <span class="c-pink-b">2</span> <span class="c-pink">BLOCKER</span>      <span class="c-frame">│</span> <span class="c-dim">proof</span> <span class="c-mint-b">17</span> <span class="c-mint">LOGGED</span>  <span class="c-dim">cov</span> <span class="c-gold-b">82.4%</span> <span class="c-gold">OVERRIDE</span>  <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span> <span class="c-dim">alerts</span> <span class="c-gold-b">9</span>  <span class="c-dim">last failure 6m ago</span>           <span class="c-frame">│</span> <span class="c-dim">last bundle 2026-04-22  stale &gt; 7d</span>            <span class="c-frame-s">┃</span>
+<span class="c-frame">┠────────────────────────────────────────────────┴───────────────────────────────────────────────┨</span>
+<span class="c-frame-s">┃</span> <span class="c-dim">domain:</span><span class="c-cyan">services_child_workload</span> <span class="c-dim">authority:</span><span class="c-cyan">repo-truth-extractor</span> <span class="c-dim">role:</span><span class="c-cyan">derived</span> <span class="c-dim">next_action:</span><span class="c-cyan">inspect record</span> <span class="c-frame-s">┃</span>
+<span class="c-frame">┠─────────────────────────────────────────────────────────────────────────┬──────────────────────┨</span>
+<span class="c-frame-s">┃</span>   <span class="c-dim">RUN ID                       BRANCH         SCOPE     STATUS    ALERTS</span> <span class="c-frame">│</span> <span class="c-violet-b">Inspector</span>            <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span> <span class="row-sel"> <span class="c-cyan-b">&gt;</span> <span class="c-emph">v5-2026-04-22T14:32Z-a91c</span>  <span class="c-mint">main</span>      <span class="c-dim">services</span> <span class="c-cyan-b">[LIVE]</span>    <span class="c-gold-b">2</span>     </span><span class="c-frame">│</span> <span class="c-dim">subject</span>              <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>     <span class="c-dim">provenance=repo-truth-extractor  phase=normalize  dur=04:12</span>             <span class="c-frame">│</span>   <span class="c-mint">a91c</span>               <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>     <span class="c-dim">v5-2026-04-22T11:04Z-7f18  main      services <span class="c-pink-b">[BLOCKER]</span> <span class="c-pink-b">1</span></span>     <span class="c-frame">│</span>   <span class="c-cyan">repo-truth-</span>         <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>     <span class="c-dim">provenance=repo-truth-extractor  phase=preflight  dur=00:08</span>             <span class="c-frame">│</span>   <span class="c-cyan">extractor</span>            <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>     <span class="c-dim">v5-2026-04-22T09:51Z-3e2a  feat-bridge bridge  <span class="c-mint-b">[LOGGED]</span>  0</span>     <span class="c-frame">│</span>   <span class="c-cyan">normalize</span>            <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>     <span class="c-dim">provenance=repo-truth-extractor  phase=verify     dur=08:41</span>             <span class="c-frame">│</span> <span class="c-dim">providers</span>            <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>                                                                          <span class="c-frame">│</span>   <span class="c-cyan">anthropic+ollama</span>    <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>     <span class="c-dim">v5-2026-04-21T22:48Z-1d9b  main      docs     <span class="c-gold-b">[OVERRIDE]</span> <span class="c-gold-b">6</span></span>    <span class="c-frame">│</span> <span class="c-dim">duration</span>             <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>     <span class="c-dim">provenance=repo-truth-extractor  phase=coverage   dur=12:07</span>             <span class="c-frame">│</span>   <span class="c-mint">04:12</span>                <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>                                                                          <span class="c-frame">│</span> <span class="c-dim">artifacts</span> <span class="c-mint-b">7</span> <span class="c-dim">pinned</span>    <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>     <span class="c-dim">v5-2026-04-21T18:02Z-ce44  main      services <span class="c-pink-b">[BLOCKER]</span>  0</span>     <span class="c-frame">│</span> <span class="c-dim">writes</span> <span class="c-gold">none</span>           <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>     <span class="c-dim">provenance=repo-truth-extractor  phase=health     dur=00:02</span>             <span class="c-frame">│</span>                      <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>                                                                          <span class="c-frame">│</span> <span class="c-frame">─────────────────────</span><span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>     <span class="c-dim">v5-2026-04-21T09:15Z-f02d  main      services <span class="c-mint-b">[LOGGED]</span>   0</span>     <span class="c-frame">│</span> <span class="c-violet-b">Bridge adapter/proxy:</span><span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>     <span class="c-dim">provenance=repo-truth-extractor  phase=verify     dur=09:33</span>             <span class="c-frame">│</span>   <span class="c-violet">dopecon-bridge</span> <span class="c-cyan-b">[EDGE]</span> <span class="c-frame-s">┃</span>
+<span class="c-frame">┠─────────────────────────────────────────────────────────────────────────┴──────────────────────┨</span>
+<span class="c-frame-s">┃</span> <span class="c-dim">enter</span> <span class="c-cyan-b">open</span> <span class="c-frame">│</span> <span class="c-dim">n</span> <span class="c-cyan-b">inspect</span> <span class="c-frame">│</span> <span class="c-dim">d</span> <span class="c-cyan-b">health</span> <span class="c-frame">│</span> <span class="c-dim">c</span> <span class="c-cyan-b">copy ref</span> <span class="c-frame">│</span> <span class="c-dim">x</span> <span class="c-cyan-b">copy ref</span> <span class="c-frame">│</span> <span class="c-dim">/</span> <span class="c-cyan-b">filter</span> <span class="c-frame">│</span> <span class="c-dim">q</span> <span class="c-cyan-b">quit</span> <span class="c-frame-s">┃</span>
+<span class="c-frame">┠────────────────────────────────────────────────────────────────────────────────────────────────┨</span>
+<span class="c-frame-s">┃</span> <span class="c-state">STATIC DEMO · NO WRITES</span>  <span class="c-dim">snapshot</span> <span class="c-mint">100×32 seed-only</span>  <span class="c-dim">read-only references only</span>  <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛</span></pre>
+
+<div class="caption">
+    <b>Surface A · 100×32 · compact.</b> Same IA, narrower columns.
+    Inspector trims to one provenance row + last-phase + provider + duration; bridge segregator pins as a single adapter/proxy line for dopecon-bridge.
+    The summary strip collapses from four cells to two cells.
+    Branch is dropped; phase + duration are the only continuation-row tokens.
+</div>
+
+</body>
+</html>
