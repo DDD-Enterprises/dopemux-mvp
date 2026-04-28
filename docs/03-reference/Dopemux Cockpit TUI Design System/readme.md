@@ -23,16 +23,16 @@ chip, and is never collapsed into `EDGE`. No web, chat, mouse, hover, new
 chips, or unified-PM record. **Authorities never collapse** — the cockpit
 is a control surface; it doesn't own data.
 
-> **Architecture Safety Overlay.** This package is governed by the safety
-> overlay set. Read in this order before mocking, designing, or
-> implementing:
-> [`ARCHITECTURE_SAFETY_OVERLAY.md`](architecture-safety-overlay.md) ·
-> [`PM_IMPLEMENTER_COCKPIT_REDIRECTION.md`](pm-implementer-cockpit-redirection.md) ·
-> [`UX_REFERENCE_RECONCILIATION.md`](ux-reference-reconciliation.md) ·
-> [`PREIMPLEMENTATION.md`](preimplementation.md) ·
-> [`ACCEPTANCE.md`](acceptance.md) ·
-> [`SKILL.md`](skill.md).
-> The overlay wins on conflict with anything else in this folder.
+## Architecture Safety Overlay (Read First)
+
+This package is governed by the safety overlay set. Read in this order before mocking, designing, or implementing:
+
+- [`ARCHITECTURE_SAFETY_OVERLAY.md`](architecture-safety-overlay.md) — Authority model, visual hierarchy law, pane declaration law, SRC/provenance law, bridge law, viewport degradation, chip/status law, PM/agent law, forbidden phrases. **Wins on all conflicts.**
+- [`PM_IMPLEMENTER_COCKPIT_REDIRECTION.md`](pm-implementer-cockpit-redirection.md) — PM and Implementer mode pane semantics; narrower than the overlay and compatible with it.
+- [`UX_REFERENCE_RECONCILIATION.md`](ux-reference-reconciliation.md) — How docs/ux supporting references are reconciled; the overlay wins on conflict.
+- [`PREIMPLEMENTATION.md`](preimplementation.md) — Safety preconditions and fail-closed rules before promoting any pane from mock to implementation.
+- [`ACCEPTANCE.md`](acceptance.md) — Checklist and contradiction gate enforcing the overlay.
+- [`SKILL.md`](skill.md) — Operational skill summary for cockpit work.
 
 This system targets **120×40 first**, with explicit adaptation rules for
 **100×32** and **80×24**. Anything smaller is a `[BLOCKER]`.

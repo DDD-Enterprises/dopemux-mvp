@@ -196,7 +196,7 @@ the doctrine files (`README.md`, `PREIMPLEMENTATION.md`, this file,
 - `command authority: dopemux`.
 - `Bridge actions authority: dopecon-bridge`.
 - `SRC=dopemux` used as canonical data provenance or in chrome.
-- `UNKNOWN->EDGE`, `UNKNOWN -> EDGE`, `UNKNOWN -> EDGE`, `UNKNOWN=EDGE`
+- `UNKNOWN->EDGE`, `UNKNOWN -> EDGE`, `UNKNOWN=EDGE`
   used as positive doctrine.
 - Any task-packet-forbidden named fallback font described as canonical,
   preferred, fallback, comparison baseline, or glyph source.
