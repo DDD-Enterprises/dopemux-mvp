@@ -1,3 +1,15 @@
+---
+id: cockpit-pm-implementer-design-brief-2026-04-24
+title: Cockpit Pm Implementer Design Brief 2026 04 24
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-27'
+last_review: '2026-04-27'
+next_review: '2026-07-26'
+prelude: Cockpit Pm Implementer Design Brief 2026 04 24 (reference) for dopemux documentation
+  and developer workflows.
+---
 # PM/Implementer Cockpit Design Brief - 2026-04-24
 
 ## 1. GPT-5.5 Pro prompt

@@ -1,3 +1,15 @@
+---
+id: cockpit-pm-implementer-processing-pack-2026-04-24
+title: Cockpit Pm Implementer Processing Pack 2026 04 24
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-27'
+last_review: '2026-04-27'
+next_review: '2026-07-26'
+prelude: Cockpit Pm Implementer Processing Pack 2026 04 24 (reference) for dopemux
+  documentation and developer workflows.
+---
 # PM/Implementer Cockpit Processing Pack - 2026-04-24
 
 ## 1. Executive readout
