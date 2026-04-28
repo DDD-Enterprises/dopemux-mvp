@@ -1,0 +1,22 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Error Panel</title>
+<link rel="stylesheet" href="_shared.css"></head>
+<body>
+<div class="label">Error pattern · Problem / Why / Fix / NEXT</div>
+<div class="pane" style="font-size:13px; line-height:1.7; border-color:#FF8BD1;">
+<span class="pink" style="font-weight:700">[BLOCKER] terminal size unsupported.</span>
+<span class="dim">Problem:</span> cockpit snapshot supports 120x40, 100x32, or 80x24.
+<span class="dim">Why:</span>     layout invariants are size-bound in slice 1.
+<span class="dim">Fix:</span>     <span class="cyan">choose a supported size.</span>
+<span class="dim">NEXT:</span>    rerun with <span class="cyan">--snapshot 120x40</span>.
+</div>
+<div class="label" style="margin-top:14px;">Inline failure (one-line)</div>
+<div class="pane" style="font-size:13px;">
+<span class="pink" style="font-weight:700">Failed:</span> task-orchestrator health check returned 503.
+<span class="pink" style="font-weight:700">Blocked:</span> missing workspace id.
+<span class="gold" style="font-weight:700">Warning:</span> ConPort reachable, but decision history query timed out.
+</div>
+<div class="note" style="margin-top:10px;">
+Errors identify <i>what failed</i>, <i>where</i>, and <i>what to do next</i>. No softening, no apologies, no <span class="mono">"Something went wrong"</span>. Border in BLOCKER color when the panel itself is the failure.
+</div>
+</body></html>
