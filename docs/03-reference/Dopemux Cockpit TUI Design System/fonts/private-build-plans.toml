@@ -1,0 +1,35 @@
+# Dopemux Term starter build plan.
+#
+# This is a conservative starter plan for the canonical cockpit terminal
+# font. Final variant keys should be exported from the Iosevka Customizer
+# rather than guessed by hand.
+#
+# Do not hand-expand a large style matrix until the cockpit needs it.
+# Slab is intentionally excluded from the canonical cockpit terminal font.
+
+[buildPlans.IosevkaDopemuxTerm]
+family = "Dopemux Term"
+spacing = "term"
+serifs = "sans"
+noCvSs = false
+exportGlyphNames = true
+
+# Final ambiguity-reduction variants belong here after export from the
+# Iosevka Customizer. Keep this starter minimal until those keys are known.
+[buildPlans.IosevkaDopemuxTerm.variants.design]
+
+[buildPlans.IosevkaDopemuxTerm.weights.Regular]
+shape = 400
+menu = 400
+css = 400
+
+[buildPlans.IosevkaDopemuxTerm.slopes.Upright]
+shape = "upright"
+angle = 0
+menu = "upright"
+css = "normal"
+
+[buildPlans.IosevkaDopemuxTerm.widths.Normal]
+shape = 500
+menu = 5
+css = "normal"

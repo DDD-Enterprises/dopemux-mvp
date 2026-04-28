@@ -1,0 +1,326 @@
+# AUDIT_VALIDATION
+Generated: 2026-04-27T12:38:45.131Z
+Task: DMX-COCKPIT-DESIGN-PACK-FINAL-SEMANTIC-PATCH-005
+
+## $ pwd
+exit_code: 0
+
+```text
+/Users/hue/code/dopemux-mvp-wt-cockpit-design-system
+```
+
+## $ git rev-parse --show-toplevel
+exit_code: 0
+
+```text
+/Users/hue/code/dopemux-mvp-wt-cockpit-design-system
+```
+
+## $ git branch --show-current
+exit_code: 0
+
+```text
+codex/cockpit-design-system
+```
+
+## $ test -f .dopetaskroot
+exit_code: 0
+
+```text
+(no output)
+```
+
+## $ test -f .dopetask-pin
+exit_code: 0
+
+```text
+(no output)
+```
+
+## $ git status --short --untracked-files=all
+exit_code: 0
+
+```text
+ M AGENTS.md
+?? AUDIT_BUNDLE.md
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/ACCEPTANCE.md"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/ARCHITECTURE_SAFETY_OVERLAY.md"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/PM_IMPLEMENTER_COCKPIT_REDIRECTION.md"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/PREIMPLEMENTATION.md"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/README.md"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/REVIEW_PACK.md"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/UX_REFERENCE_RECONCILIATION.md"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/assets/README.md"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/assets/brand_mark.txt"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/assets/frame_chars.md"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/assets/glyphs.md"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/colors_and_type.css"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/.gitignore"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/BUILD.md"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/README.md"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/patch-nerd-font.sh"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/private-build-plans.toml"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/preview/01-brand-palette.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/preview/02-surfaces-text.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/preview/03-status-chips.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/preview/04-type-specimen.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/preview/04b-brand-font.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/preview/05-type-roles.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/preview/06-frame-grid-120.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/preview/07-adaptation.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/preview/08-row-anatomy.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/preview/09-authority-bridge.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/preview/10-mode-bar.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/preview/11-rails.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/preview/12-render-modes.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/preview/13-error-panel.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/preview/14-status-language.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/preview/15-glyphs.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/preview/16-frame-chars.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/preview/17-spacing.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/preview/18-inspector.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/preview/19-voice.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/preview/20-cockpit-composition.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/preview/21-ascii-fallback.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/preview/_shared.css"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/A1-services-repo-truth-workload-120x40.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/A2-services-repo-truth-workload-100x32.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/A3-services-repo-truth-workload-80x24.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/B-textual-cockpit-direction.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/C-web-dashboard-direction.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/_surface.css"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Cockpit.jsx"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/README.md"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/cockpit.css"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/index.html"
+?? "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/seed.js"
+?? docs/03-reference/gpt55_pm_implementer_redesign.md
+?? docs/05-audit-reports/cockpit-adhd-lifestyle-feature-map-2026-04-24.md
+?? docs/05-audit-reports/cockpit-archive-intent-pack-2026-04-24.md
+?? docs/05-audit-reports/cockpit-design-input-merged-brief-2026-04-24.md
+?? docs/05-audit-reports/cockpit-pm-implementer-callable-inventory-2026-04-24.md
+?? docs/05-audit-reports/cockpit-pm-implementer-design-brief-2026-04-24.md
+?? docs/05-audit-reports/cockpit-pm-implementer-processing-pack-2026-04-24.md
+?? out/AUDIT_ARTIFACTS_SHA256SUMS.txt
+?? out/AUDIT_BUNDLE.md
+?? out/AUDIT_PREFLIGHT_ZIP_AUDIT.md
+?? out/AUDIT_UPLOAD_README.md
+?? out/AUDIT_ZIPINFO.txt
+?? out/REVIEW_PACK.md
+?? out/opus-design-pack/AUTHORITY_NOTES.md
+?? out/opus-design-pack/MANIFEST.md
+?? out/opus-design-pack/OPUS_PROMPT.md
+?? out/opus-design-pack/PM_PLANE_DESIGN_CONSTRAINTS.md
+?? out/opus-design-pack/README_OPUS_DESIGN_PACK.md
+?? out/opus-design-pack/SOURCE_AUDIT_CONTEXT.md
+?? out/opus-design-pack/VALIDATION_SUMMARY.md
+?? out/opus-design-pack/sources/ARCHITECTURE.md
+?? out/opus-design-pack/sources/BRAND_SYSTEM.md
+?? out/opus-design-pack/sources/PM_PLANE.md
+?? out/opus-design-pack/sources/PROJECT.md
+?? out/opus-design-pack/sources/SERVICE_CATALOG.md
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/ACCEPTANCE.md"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/ARCHITECTURE_SAFETY_OVERLAY.md"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/PM_IMPLEMENTER_COCKPIT_REDIRECTION.md"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/PREIMPLEMENTATION.md"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/README.md"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/REVIEW_PACK.md"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/UX_REFERENCE_RECONCILIATION.md"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/assets/README.md"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/assets/brand_mark.txt"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/assets/frame_chars.md"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/assets/glyphs.md"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/colors_and_type.css"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/fonts/.gitignore"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/fonts/BUILD.md"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/fonts/README.md"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/fonts/patch-nerd-font.sh"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/fonts/private-build-plans.toml"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/preview/01-brand-palette.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/preview/02-surfaces-text.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/preview/03-status-chips.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/preview/04-type-specimen.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/preview/04b-brand-font.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/preview/05-type-roles.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/preview/06-frame-grid-120.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/preview/07-adaptation.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/preview/08-row-anatomy.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/preview/09-authority-bridge.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/preview/10-mode-bar.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/preview/11-rails.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/preview/12-render-modes.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/preview/13-error-panel.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/preview/14-status-language.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/preview/15-glyphs.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/preview/16-frame-chars.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/preview/17-spacing.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/preview/18-inspector.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/preview/19-voice.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/preview/20-cockpit-composition.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/preview/21-ascii-fallback.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/preview/_shared.css"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/A1-services-repo-truth-workload-120x40.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/A2-services-repo-truth-workload-100x32.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/A3-services-repo-truth-workload-80x24.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/B-textual-cockpit-direction.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/C-web-dashboard-direction.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/_surface.css"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Cockpit.jsx"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/README.md"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/cockpit.css"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/index.html"
+?? "out/opus-design-pack/sources/docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/seed.js"
+?? out/opus-design-pack/sources/docs/03-reference/gpt55_pm_implementer_redesign.md
+?? out/opus-design-pack/sources/docs/03-reference/planes/pm/pm-plane.md
+?? out/opus-design-pack/sources/docs/03-reference/systems/adhd-engine/system-adhdengine.md
+?? out/opus-design-pack/sources/docs/03-reference/systems/conport/system-conport.md
+?? out/opus-design-pack/sources/docs/03-reference/systems/dope-context/system-dopecontext.md
+?? out/opus-design-pack/sources/docs/03-reference/systems/dope-memory/system-dopememory.md
+?? out/opus-design-pack/sources/docs/03-reference/systems/dopecon-bridge/system-dopeconbridge.md
+?? out/opus-design-pack/sources/docs/03-reference/systems/dopemux/system-dopemux.md
+?? out/opus-design-pack/sources/docs/03-reference/systems/dopetask/system-dopetask.md
+?? out/opus-design-pack/sources/docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md
+?? out/opus-design-pack/sources/docs/03-reference/systems/system-boundaries.md
+?? out/opus-design-pack/sources/docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md
+?? out/opus-design-pack/sources/docs/03-reference/truth/truth-canonicals.md
+?? out/opus-design-pack/sources/docs/03-reference/truth/truth-data-events.md
+?? out/opus-design-pack/sources/docs/03-reference/truth/truth-gaps.md
+?? out/opus-design-pack/sources/docs/03-reference/truth/truth-interfaces.md
+?? out/opus-design-pack/sources/docs/03-reference/truth/truth-scope.md
+?? out/opus-design-pack/sources/docs/03-reference/truth/truth-systems.md
+?? out/opus-design-pack/sources/docs/05-audit-reports/cockpit-design-input-merged-brief-2026-04-24.md
+?? out/opus-design-pack/sources/docs/05-audit-reports/cockpit-pm-implementer-callable-inventory-2026-04-24.md
+?? out/opus-design-pack/sources/docs/05-audit-reports/cockpit-pm-implementer-design-brief-2026-04-24.md
+?? out/opus-design-pack/sources/docs/05-audit-reports/cockpit-pm-implementer-processing-pack-2026-04-24.md
+?? out/opus-design-pack/sources/out/AUDIT_ARTIFACTS_SHA256SUMS.txt
+?? out/opus-design-pack/sources/out/AUDIT_BUNDLE.md
+?? out/opus-design-pack/sources/out/AUDIT_PREFLIGHT_ZIP_AUDIT.md
+?? out/opus-design-pack/sources/out/AUDIT_UPLOAD_README.md
+?? out/opus-design-pack/sources/out/AUDIT_ZIPINFO.txt
+?? out/opus-design-pack/sources/out/REVIEW_PACK.md
+?? task-packets/DMX-COCKPIT-ARCHIVE-INTENT-001.json
+?? task-packets/DMX-COCKPIT-PMIMPL-PACK-001.json
+```
+
+## $ rg -n "<span class=\"c-dim\">n</span> <span class=\"c-cyan-b\">new</span>|\bn[[:space:]]+new\b|new run|doctor|follow tail|pause|export|compare|proof generation|execute|execution" "docs/03-reference/Dopemux Cockpit TUI Design System/surfaces" "docs/03-reference/Dopemux Cockpit TUI Design System/preview" "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits" || true
+exit_code: 0
+
+```text
+(no output)
+```
+
+## $ rg -n "\bnew\b" "docs/03-reference/Dopemux Cockpit TUI Design System/surfaces" "docs/03-reference/Dopemux Cockpit TUI Design System/preview" "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits" || true
+exit_code: 0
+
+```text
+docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx:17:const PANE_ROLES = new Set(["canonical", "derived", "mirrored", "proxied", "authoring", "chrome"]);
+docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx:21:    if (!cls) throw new Error(`forbidden chip: ${kind}`);
+docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx:30:    if (!value || value === "UNKNOWN") throw new Error("SRC requires known service provenance");
+docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx:53:    if (!PANE_ROLES.has(role)) throw new Error(`forbidden pane role: ${role}`);
+docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/README.md:39:- no new chips, modes, or status tokens beyond the closed set
+```
+
+## $ rg -n "shortcut rail │ authority: dopemux · role: chrome │ no writes no shellouts|Command rail and status rail are chrome rows\. Their declared authority is dopemux and their function is operator control surface and their role is chrome|R T E   c h i l d" "docs/03-reference/Dopemux Cockpit TUI Design System/preview/06-frame-grid-120.html" || true
+exit_code: 0
+
+```text
+(no output)
+```
+
+## $ rg -n "Run[ ]History|6\\*Run[ ]History|R1\\*Run[ ]History|surface.*r[t]e|surface r[t]e|A[123]-r[t]e-runs|r[t]e-runs" "docs/03-reference/Dopemux Cockpit TUI Design System" || true
+exit_code: 0
+
+```text
+(no output)
+```
+
+## $ rg -n "SRC=r[t]e|src=r[t]e|SRC=repo-truth-ext[r]|SRC=UNKNOW[N]|src: \"UNKNOW[N]\"|src: 'UNKNOW[N]'" "docs/03-reference/Dopemux Cockpit TUI Design System" || true
+exit_code: 0
+
+```text
+(no output)
+```
+
+## $ find "docs/03-reference/Dopemux Cockpit TUI Design System" -maxdepth 4 -type f ! -name .DS_Store | sort | wc -l
+exit_code: 0
+
+```text
+      53
+```
+
+## $ zipinfo -1 "out/DMX-COCKPIT-DESIGN-PACK-REMEDIATE-003-CURRENT.zip" | grep -v '/$' | grep -v '\.DS_Store$' | wc -l
+exit_code: 0
+
+```text
+      53
+```
+
+## $ zipinfo -1 "out/DMX-COCKPIT-DESIGN-PACK-REMEDIATE-003-CURRENT.zip" | sort
+exit_code: 0
+
+```text
+docs/03-reference/Dopemux Cockpit TUI Design System/ACCEPTANCE.md
+docs/03-reference/Dopemux Cockpit TUI Design System/ARCHITECTURE_SAFETY_OVERLAY.md
+docs/03-reference/Dopemux Cockpit TUI Design System/PM_IMPLEMENTER_COCKPIT_REDIRECTION.md
+docs/03-reference/Dopemux Cockpit TUI Design System/PREIMPLEMENTATION.md
+docs/03-reference/Dopemux Cockpit TUI Design System/README.md
+docs/03-reference/Dopemux Cockpit TUI Design System/REVIEW_PACK.md
+docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md
+docs/03-reference/Dopemux Cockpit TUI Design System/UX_REFERENCE_RECONCILIATION.md
+docs/03-reference/Dopemux Cockpit TUI Design System/assets/README.md
+docs/03-reference/Dopemux Cockpit TUI Design System/assets/brand_mark.txt
+docs/03-reference/Dopemux Cockpit TUI Design System/assets/frame_chars.md
+docs/03-reference/Dopemux Cockpit TUI Design System/assets/glyphs.md
+docs/03-reference/Dopemux Cockpit TUI Design System/colors_and_type.css
+docs/03-reference/Dopemux Cockpit TUI Design System/fonts/.gitignore
+docs/03-reference/Dopemux Cockpit TUI Design System/fonts/BUILD.md
+docs/03-reference/Dopemux Cockpit TUI Design System/fonts/README.md
+docs/03-reference/Dopemux Cockpit TUI Design System/fonts/patch-nerd-font.sh
+docs/03-reference/Dopemux Cockpit TUI Design System/fonts/private-build-plans.toml
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/01-brand-palette.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/02-surfaces-text.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/03-status-chips.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/04-type-specimen.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/04b-brand-font.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/05-type-roles.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/06-frame-grid-120.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/07-adaptation.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/08-row-anatomy.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/09-authority-bridge.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/10-mode-bar.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/11-rails.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/12-render-modes.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/13-error-panel.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/14-status-language.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/15-glyphs.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/16-frame-chars.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/17-spacing.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/18-inspector.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/19-voice.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/20-cockpit-composition.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/21-ascii-fallback.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/_shared.css
+docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/A1-services-repo-truth-workload-120x40.html
+docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/A2-services-repo-truth-workload-100x32.html
+docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/A3-services-repo-truth-workload-80x24.html
+docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/B-textual-cockpit-direction.html
+docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/C-web-dashboard-direction.html
+docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/_surface.css
+docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Cockpit.jsx
+docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx
+docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/README.md
+docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/cockpit.css
+docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/index.html
+docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/seed.js
+```
+
+## $ zipinfo -1 "out/DMX-COCKPIT-DESIGN-PACK-REMEDIATE-003-CURRENT.zip" | rg '(^|/)(screenshots|uploads|proof|node_modules|\.venv|venv|dist|build|target|__pycache__)(/|$)|\.(png|jpe?g|gif|webp|ttf|otf|woff2?|zip|tar|gz|pyc)$|^AGENTS\.md$|^(src|services|scripts)/' || true
+exit_code: 0
+
+```text
+(no output)
+```
