@@ -1,0 +1,193 @@
+/* Cockpit kit — TUI rendered in HTML */
+@import url("../../colors_and_type.css");
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+    background: var(--surface-black);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+}
+
+body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.app-meta {
+    color: var(--text-muted);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+.app-meta b { color: var(--ritual-cyan); font-weight: 700; }
+
+/* ── Frame ──────────────────────────────────────────────────────────── */
+.frame {
+    background: var(--surface-black);
+    border: 1px solid var(--mint-dim);
+    width: 1180px;
+    max-width: 100%;
+    overflow: hidden;
+}
+.frame-120-40 { width: 1180px; }
+.frame-100-32 { width: 980px; }
+.frame-80-24  { width: 780px; }
+
+.frame-header {
+    border-bottom: 1px solid var(--mint-dim);
+    padding: 6px 14px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--ritual-cyan);
+    font-weight: 700;
+    font-size: 13px;
+}
+.frame-meta { color: var(--text-dim); font-weight: 400; }
+.frame-state { color: var(--gilt-edge); font-weight: 700; letter-spacing: 0.04em; }
+
+.frame-body {
+    display: grid;
+    grid-template-columns: 1fr;
+}
+
+/* ── Modebar ───────────────────────────────────────────────────────── */
+.modebar {
+    border-bottom: 1px solid var(--mint-dim);
+    padding: 6px 14px;
+    color: var(--text);
+    font-size: 13px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 0;
+}
+.mode { color: var(--text-dim); }
+.mode-active { color: var(--ritual-cyan); font-weight: 700; }
+.modesep { color: var(--mint-dim); }
+
+/* ── Layout (three panes) ──────────────────────────────────────────── */
+.cockpit-grid {
+    display: grid;
+    grid-template-columns: 240px 1fr 320px;
+    min-height: 540px;
+}
+.frame-100-32 .cockpit-grid { grid-template-columns: 200px 1fr 280px; min-height: 420px; }
+.frame-80-24  .cockpit-grid { grid-template-columns: 160px 1fr 220px; min-height: 320px; }
+
+.pane {
+    border-right: 1px solid var(--mint-dim);
+    padding: 8px 12px;
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.55;
+    overflow: hidden;
+}
+.pane:last-child { border-right: none; }
+
+.pane-header { color: var(--ritual-cyan); font-weight: 700; padding-bottom: 4px; border-bottom: 1px solid var(--mint-dim); margin-bottom: 6px; }
+.pane-header-violet { color: var(--aftercare-violet); }
+.pane-title { font-weight: 700; }
+.pane-auth { color: var(--text-dim); font-weight: 400; }
+.pane-role { color: var(--text-muted); font-weight: 400; }
+
+.row {
+    white-space: pre;
+    overflow: hidden;
+    text-overflow: clip;
+}
+.row-active { color: var(--text-emphasis); font-weight: 700; background: var(--surface-navy); }
+.row-dim    { color: var(--text-dim); }
+.row-muted  { color: var(--text-muted); }
+.row-name   { color: var(--text); }
+.row-kind   { color: var(--text-dim); }
+
+.sel { color: var(--ritual-cyan); font-weight: 700; display: inline-block; width: 1ch; }
+.src { color: var(--mint-dim); }
+
+.chip { font-weight: 700; }
+.chip-live      { color: var(--chip-live); }
+.chip-blocker   { color: var(--chip-blocker); }
+.chip-override  { color: var(--chip-override); }
+.chip-logged    { color: var(--chip-logged); }
+.chip-aftercare { color: var(--chip-aftercare); }
+.chip-edge      { color: var(--chip-edge); }
+
+.rule {
+    color: var(--mint-dim);
+    margin: 6px 0;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+/* ── Center pane (repo-truth-extractor child surface) ───────────────────────────────── */
+.center-tabs {
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    font-size: 12px;
+}
+.center-tabs .tab-active { color: var(--ritual-cyan); font-weight: 700; }
+.center-tabs .tab-sep { color: var(--mint-dim); }
+
+/* ── Inspector / bridge ────────────────────────────────────────────── */
+.bridge-header { color: var(--aftercare-violet); font-weight: 700; margin-top: 6px; }
+
+/* ── Rails ─────────────────────────────────────────────────────────── */
+.rail {
+    border-top: 1px solid var(--mint-dim);
+    display: flex;
+    flex-wrap: nowrap;
+    font-size: 12px;
+}
+
+.rail-cell {
+    padding: 4px 12px;
+    border-right: 1px solid var(--mint-dim);
+    color: var(--text);
+    flex: 1 1 0;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: clip;
+}
+.rail-cell:last-child { border-right: none; }
+.rail-status .rail-cell { color: var(--text-muted); }
+
+/* ── Hints ─────────────────────────────────────────────────────────── */
+.hintrail {
+    border-top: 1px solid var(--mint-dim);
+    padding: 6px 14px;
+    font-size: 12px;
+    color: var(--text-dim);
+}
+.hint-key { color: var(--ritual-cyan); font-weight: 700; }
+
+/* ── Controls (above the frame) ────────────────────────────────────── */
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+.controls button {
+    background: var(--surface-navy);
+    border: 1px solid var(--mint-dim);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 4px 12px;
+    cursor: pointer;
+    border-radius: 0;
+}
+.controls button.active {
+    color: var(--ritual-cyan);
+    border-color: var(--ritual-cyan);
+    font-weight: 700;
+}
+.controls button:focus { outline: 1px solid var(--ritual-cyan); }

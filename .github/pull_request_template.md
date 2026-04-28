@@ -28,3 +28,7 @@ Describe the problem and what this PR changes.
 - [ ] No secrets/credentials added
 - [ ] Security implications reviewed
 - [ ] Docs updated (README/INSTALL/QUICK_START/docs) as needed
+
+## Gemini Review
+
+- [ ] `@gemini-cli /review` added in a PR comment when a Gemini review is requested

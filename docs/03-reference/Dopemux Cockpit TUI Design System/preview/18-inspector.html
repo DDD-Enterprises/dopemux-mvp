@@ -1,0 +1,30 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Inspector Pane</title>
+<link rel="stylesheet" href="_shared.css"></head>
+<body>
+<div class="label">Inspector pane · subject + provenance + bridge segregator</div>
+<div class="pane" style="font-size:13px; line-height:1.7;">
+<span class="cyan">domain:       inspector</span>
+<span class="cyan">authority:    repo-truth-extractor</span>
+<span class="dim">role:         derived</span>
+<span class="dim">next_action:  open canonical · copy ref · copy ref</span>
+
+subject <span style="color:#4A9E94">provenance=repo-truth-extractor</span> repo-truth-extractor
+provenance=EXTRACTED <span style="color:#4A9E94">provenance=repo-truth-extractor</span>
+<span style="color:#4A9E94">provenance=repo-truth-extractor</span> canonical=services/repo-truth-extractor/run_extraction_v5.py
+<span class="muted">                          shell boundary: workload view not shell owner</span>
+<span style="color:#4A9E94">provenance=repo-truth-extractor</span> state=seed only no live run
+<span style="color:#4A9E94">────────────────────────────────────────────────</span>
+<span class="violet">Bridge adapter/proxy: dopecon-bridge</span>
+<span style="color:#4A9E94">SRC=dopecon-bridge</span> <span class="tui-chip edge">[EDGE]</span> adapter-only segregated
+ADAPTER -&gt; &lt;service&gt; : &lt;action&gt;
+<span style="color:#4A9E94">SRC=dopecon-bridge</span> ADAPTER -&gt; dopecon-bridge : replay-event
+<span class="muted">[EDGE] bridge actions are adapter/proxy only, never canonical writes. NEXT: prefer canonical write.</span>
+</div>
+<div class="note" style="margin-top:10px;">
+Inspector header declares: <span class="mono">domain:</span>, <span class="mono">authority:</span>, <span class="mono">role:</span>, <span class="mono">next_action:</span>.
+Subject + provenance (one of <span class="mono">RUNTIME_TRUTH, EXTRACTED, MIRRORED, ADAPTER, UNKNOWN</span>) + canonical evidence rows use <span class="mono">SRC=&lt;service&gt;</span> once per logical data/provenance record. Shell-boundary copy is chrome and does not carry SRC.
+<br><br>
+Below the inspector split: bridge segregator, separated from subject authority content. Always its own pane. Bridge actions are adapter/proxy only — never canonical writes — and never inlined into the canonical surface.
+</div>
+</body></html>
