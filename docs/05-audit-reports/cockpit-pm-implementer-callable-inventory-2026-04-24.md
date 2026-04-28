@@ -1,3 +1,15 @@
+---
+id: cockpit-pm-implementer-callable-inventory-2026-04-24
+title: Cockpit Pm Implementer Callable Inventory 2026 04 24
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-27'
+last_review: '2026-04-27'
+next_review: '2026-07-26'
+prelude: Cockpit Pm Implementer Callable Inventory 2026 04 24 (reference) for dopemux
+  documentation and developer workflows.
+---
 # PM/Implementer Cockpit Callable Inventory - 2026-04-24
 
 Mode: evidence-processing only. Source: static repo inspection of active MCP configs, route decorators, Click/argparse command surfaces, MCP tool declarations, and operator-relevant service functions. Live services were not queried.
