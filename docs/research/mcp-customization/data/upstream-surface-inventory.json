@@ -1,0 +1,77 @@
+{
+  "accessed_at": "2026-04-28",
+  "rows": [
+    {
+      "authority_conflict": "Search results must remain derived retrieval, not code/docs source truth or ConPort decision authority.",
+      "confidence": "HIGH",
+      "disposition": "adapt",
+      "dopemux_target": "dope-context deterministic code/docs indexing and retrieval",
+      "notes": "npm package and monorepo active as of 2026-04-28. Require deterministic ranking, provenance, local-first storage evaluation.",
+      "server": "claude_context",
+      "storage": "vector/search backend requires DR verification",
+      "surface_kind": "MCP code search package",
+      "surface_name": "@zilliz/claude-context-mcp",
+      "transport": "MCP package, exact transports require DR extraction"
+    },
+    {
+      "authority_conflict": "CLAUDE.md/context injection must not become canonical memory; hooks must not store unredacted raw tool output.",
+      "confidence": "MEDIUM",
+      "disposition": "adapt",
+      "dopemux_target": "hook ingestion and dope-memory chronicle with ConPort promotion",
+      "notes": "Lineage split between customable seed and active npm/thedotmack package must be investigated.",
+      "server": "claude_mem",
+      "storage": "SQLite/Qdrant claims require DR verification",
+      "surface_kind": "hooks, worker, memory package, docs",
+      "surface_name": "Claude-Mem hook and context injection",
+      "transport": "Claude Code hooks and local service, exact transport requires DR extraction"
+    },
+    {
+      "authority_conflict": "May overlap with dope-memory chronology and dope-context retrieval if memory-bank or RAG claims are adopted without constraints.",
+      "confidence": "MEDIUM",
+      "disposition": "adapt",
+      "dopemux_target": "ConPort structured context, decisions, progress, custom data, and graph links",
+      "notes": "Dopemux repo ConPort runtime exposes mem.upsert, mem.search, graph.link, graph.neighbors plus HTTP search/upsert/link/neighbors.",
+      "server": "conport",
+      "storage": "upstream UNKNOWN pending DR; Dopemux runtime uses PostgreSQL plus vector backend in src/conport/memory_server.py",
+      "surface_kind": "MCP tools and HTTP API",
+      "surface_name": "structured memory and graph",
+      "transport": "stdio, SSE/HTTP in Dopemux runtime; upstream transport requires DR verification"
+    },
+    {
+      "authority_conflict": "Hosted external memory must not become canonical private Dopemux chronicle or structured decision authority.",
+      "confidence": "MEDIUM",
+      "disposition": "defer",
+      "dopemux_target": "optional external-memory adapter or UX reference only",
+      "notes": "Official PyPI package repository URL returned 404 through GitHub API; hosted docs reachable.",
+      "server": "mem0",
+      "storage": "hosted Mem0 plus package-specific storage UNKNOWN",
+      "surface_kind": "hosted MCP and package",
+      "surface_name": "Mem0 MCP memory CRUD",
+      "transport": "hosted MCP / package transport requires DR extraction"
+    },
+    {
+      "authority_conflict": "Serena shell/write/refactor tools can bypass task-packet and worktree gates; memory tools overlap with ConPort.",
+      "confidence": "HIGH",
+      "disposition": "adapt",
+      "dopemux_target": "read-only support/code-intelligence by default",
+      "notes": "Dopemux runtime authority is ambiguous between external Docker wrapper and in-repo services/serena. Hide write/shell tools by default.",
+      "server": "serena",
+      "storage": "Serena project memory and repo-local .serena volume; exact upstream persistence requires DR extraction",
+      "surface_kind": "MCP toolkit",
+      "surface_name": "symbol/code intelligence and edit tools",
+      "transport": "SSE through mcp-proxy in Dopemux configs; upstream transports require DR extraction"
+    },
+    {
+      "authority_conflict": "Task orchestration must not absorb Leantime metadata, ConPort decision/progress, or dope-memory chronicle authority.",
+      "confidence": "HIGH",
+      "disposition": "adapt",
+      "dopemux_target": "task-orchestrator workflow transitions and workflow views",
+      "notes": "Use jpicklyk/task-orchestrator as preferred active upstream; keep EchoingVesper/iflow as lineage comparison.",
+      "server": "task_orchestrator",
+      "storage": "preferred upstream storage requires DR extraction; Dopemux runtime persists workflow idea/epic/audit through bridge custom-data",
+      "surface_kind": "MCP workflow/task orchestration",
+      "surface_name": "workflow state and gates",
+      "transport": "upstream requires DR extraction; Dopemux current runtime exposes FastAPI plus MCP tool wrapper"
+    }
+  ]
+}
