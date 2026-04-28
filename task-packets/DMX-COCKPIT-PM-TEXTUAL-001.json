@@ -1,0 +1,100 @@
+{
+  "id": "DMX-COCKPIT-PM-TEXTUAL-001",
+  "project": "dopemux-mvp",
+  "target": "Implement the first repo-bound Dopemux Cockpit PM Textual TUI slice with deterministic render output, split authority labels, viewport degradation law, and architecture safety tests.",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "codex/cockpit-pm-textual",
+    "base_branch": "main",
+    "parent_tp_id": "DMX-COCKPIT-PMIMPL-PACK-001",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "ui: add PM cockpit textual shell",
+    "allowlist": [
+      "src/dopemux/ui/cockpit/__init__.py",
+      "src/dopemux/ui/cockpit/render.py",
+      "src/dopemux/ui/cockpit/app.py",
+      "src/dopemux/commands/cockpit_commands.py",
+      "src/dopemux/cli.py",
+      "tests/unit/dopemux/ui/cockpit/__init__.py",
+      "tests/unit/dopemux/ui/cockpit/test_cockpit_render.py",
+      "tests/unit/dopemux/ui/cockpit/test_cockpit_command.py",
+      "task-packets/DMX-COCKPIT-PM-TEXTUAL-001.json"
+    ],
+    "verify": [
+      "uv run --with pytest python -m pytest tests/unit/dopemux/ui/cockpit -q",
+      "uv run --with pytest --with pytest-asyncio python -m pytest tests/unit -q --ignore=tests/unit/conport",
+      "rg -n 'Run History|authority: dopemux|Services authority: dopemux|command authority: dopemux|Bridge actions authority|SRC=dopemux|UNKNOWN.?->.?EDGE|UNKNOWN.?\u2192.?EDGE|UNKNOWN=EDGE' src/dopemux/ui/cockpit src/dopemux/commands/cockpit_commands.py tests/unit/dopemux/ui/cockpit || echo 'clean'"
+    ]
+  },
+  "pr": {
+    "number": 536,
+    "title": "Add PM cockpit Textual shell",
+    "body": "Adds the first architecture-safe PM cockpit Textual TUI slice with deterministic render output, PM pane declarations, split authority labels, viewport degradation law, and architecture safety tests. This introduces `dopemux cockpit run --mode pm --size 120x40|100x32|80x24 [--plain|--audit]` as the primary entrypoint. No live PM writes or backend mutations are included.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Inspect existing cockpit surfaces, CLI patterns, and Textual/static renderer patterns.",
+      "validation": [
+        "Implementation path chosen from runtime evidence in src/dopemux/ui/ and src/dopemux/commands/.",
+        "No unrelated RTE, agent, or design-system files are edited."
+      ]
+    },
+    {
+      "id": "step-2",
+      "task": "Create deterministic PM cockpit render module (src/dopemux/ui/cockpit/render.py).",
+      "validation": [
+        "render.py exports TOP_LEVEL_MODES with exactly [PM, Implementer, Overview, Services, Events].",
+        "pm_panes() returns 6 panes each with complete four-field declaration (domain, authority, role, next_action).",
+        "All split-authority labels present: task-orchestrator, leantime, conport, dope-memory, dope-context, dopecon-bridge.",
+        "render_pm(cols, rows) produces deterministic output stable across calls.",
+        "render_pm() enforces viewport degradation law at 120x40, 100x32, 80x24, <80x24."
+      ]
+    },
+    {
+      "id": "step-3",
+      "task": "Create Textual app shell (src/dopemux/ui/cockpit/app.py) and CLI command (src/dopemux/commands/cockpit_commands.py).",
+      "validation": [
+        "CockpitApp is a textual.app.App subclass with mode bar and PM screen.",
+        "run_cockpit(mode='pm', size=(120, 40), plain=False, audit=False) entry function works.",
+        "CLI command `dopemux cockpit run --mode pm --size {120x40,100x32,80x24} [--plain|--audit]` is registered in cli.py.",
+        "Plain and audit modes return deterministic text output instead of launching TUI."
+      ]
+    },
+    {
+      "id": "step-4",
+      "task": "Verify Top-3 list contract (items, more_count, next_token) in render output.",
+      "validation": [
+        "Top3Block.to_lines() returns items 1, 2, 3 with more_count and next_token fields.",
+        "All PM list panes render Top-3 contract correctly.",
+        "more_count and next_token fields visible in render_pm() output."
+      ]
+    },
+    {
+      "id": "step-5",
+      "task": "Verify SRC placement and authority claims.",
+      "validation": [
+        "SRC= labels appear only on data rows (never on chrome).",
+        "SRC values are: task-orchestrator, leantime, conport, dope-memory, dope-context, dopecon-bridge (never dopemux).",
+        "No forbidden phrases present: authority: dopemux, Services authority: dopemux, command authority: dopemux, Bridge actions authority, SRC=dopemux, UNKNOWN\u2192EDGE, UNKNOWN -> EDGE, UNKNOWN=EDGE."
+      ]
+    },
+    {
+      "id": "step-6",
+      "task": "Write architecture safety tests covering all contract requirements.",
+      "validation": [
+        "Test suite covers: top-level modes, pane declarations, split authority, forbidden strings, SRC placement, viewport degradation, Top-3 contract, determinism.",
+        "Cockpit unit suite passes (25 tests minimum).",
+        "Broad unit lane passes (tests/unit excluding quarantined conport)."
+      ]
+    }
+  ]
+}
