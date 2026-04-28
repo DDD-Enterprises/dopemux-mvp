@@ -1,7 +1,16 @@
 ---
+id: DOPEMUX_COCKPIT_DESIGN_SKILL
+title: Dopemux Cockpit Design Skill
+type: reference
 name: dopemux-cockpit-design
 description: Use this skill to generate well-branded TUI / cockpit interfaces and assets for dopemux, either for production or throwaway prototypes/mocks/etc. Contains essential design guidelines, colors, type, fonts, assets, and the cockpit UI kit (frame, panes, status chips, mode bar, inspector, command/status rails) for terminal-native operator surfaces. Authority before aesthetics; closed chip set; 120x40 first.
 user-invocable: true
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-27'
+last_review: '2026-04-27'
+next_review: '2026-06-15'
+prelude: Agent skill for generating Dopemux cockpit TUI assets and references.
 ---
 
 Read the `README.md` file within this skill, and explore the other available files.

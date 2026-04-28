@@ -1,3 +1,14 @@
+---
+id: DOPEMUX_COCKPIT_TUI_DESIGN_SYSTEM
+title: Dopemux Cockpit TUI Design System
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-27'
+last_review: '2026-04-27'
+next_review: '2026-06-15'
+prelude: Terminal-native operator cockpit reference for the Dopemux design system.
+---
 # Dopemux Cockpit TUI Design System v0
 
 Terminal-native operator cockpit. **Authority before aesthetics.** Every pane

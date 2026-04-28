@@ -142,17 +142,20 @@ body {
 /* ── Rails ─────────────────────────────────────────────────────────── */
 .rail {
     border-top: 1px solid var(--mint-dim);
-    display: grid;
-    grid-template-columns: 240px 1fr 320px;
+    display: flex;
+    flex-wrap: nowrap;
     font-size: 12px;
 }
-.frame-100-32 .rail { grid-template-columns: 200px 1fr 280px; }
-.frame-80-24  .rail { grid-template-columns: 160px 1fr 220px; }
 
 .rail-cell {
     padding: 4px 12px;
     border-right: 1px solid var(--mint-dim);
     color: var(--text);
+    flex: 1 1 0;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: clip;
 }
 .rail-cell:last-child { border-right: none; }
 .rail-status .rail-cell { color: var(--text-muted); }

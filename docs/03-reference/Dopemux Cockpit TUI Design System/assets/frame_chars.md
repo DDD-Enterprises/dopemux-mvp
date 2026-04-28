@@ -1,3 +1,14 @@
+---
+id: DOPEMUX_COCKPIT_TUI_DESIGN_SYSTEM_ASSETS_FRAME_CHARS
+title: Frame Characters
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-27'
+last_review: '2026-04-27'
+next_review: '2026-06-15'
+prelude: Fixed frame-character contract for static cockpit rendering.
+---
 # Frame Characters
 
 The static cockpit grid (`src/dopemux/ui/cockpit/frame.py`) is drawn from
