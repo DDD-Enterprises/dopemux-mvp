@@ -19,8 +19,6 @@ defaults:
 jobs:
   invoke:
     runs-on: 'ubuntu-latest'
-    env:
-      GEMINI_CLI_TRUST_WORKSPACE: 'true'
     permissions:
       contents: 'read'
       id-token: 'write'
