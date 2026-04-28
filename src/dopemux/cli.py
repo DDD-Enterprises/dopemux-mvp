@@ -3110,10 +3110,6 @@ from .commands.memory_commands import memory
 
 cli.add_command(memory)
 
-from .commands.cockpit_commands import cockpit
-
-cli.add_command(cockpit)
-
 
 from .commands.trigger_group_commands import trigger_group
 from .commands.personas_commands import personas
