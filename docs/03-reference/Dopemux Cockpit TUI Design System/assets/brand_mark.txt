@@ -1,0 +1,26 @@
+DØPΞM∪X
+DOPEMUX
+
+Canonical stylized wordmark: DØPΞM∪X
+Plain fallback wordmark: DOPEMUX
+Compact seal: ◆DØPΞM∪X◆
+Rejected artifact: ᗪØƤΞM∪╳
+
+Allowed use:
+- chrome
+- title bars
+- splash / brand previews
+- non-semantic headers
+
+Forbidden use:
+- domain
+- authority
+- role
+- next_action
+- SRC
+- status
+- result
+
+Decorative brand line examples:
+◆DØPΞM∪X◆
+━━◆ Ø ◆━━ DØPΞM∪X ━━ operator control ━━◆ ◈ ◆━━

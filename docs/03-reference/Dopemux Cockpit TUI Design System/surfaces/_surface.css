@@ -1,0 +1,93 @@
+/* Surface A — Static Terminal Snapshot cockpit styling.
+   These mocks render an exact-cell terminal grid using <pre>/whitespace.
+   No flex/grid is allowed inside the snapshot body — the renderer in
+   src/dopemux/ui/cockpit/ is char-by-char on a fixed framebuffer; the
+   visual reference must read the same way. */
+@import url("../colors_and_type.css");
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+    background: #000; /* terminal letterbox */
+    color: var(--text);
+    font-family: var(--font-mono);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: geometricPrecision;
+    min-height: 100vh;
+}
+
+body {
+    padding: 32px 24px 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.surface-label {
+    color: var(--text-muted);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+.surface-label .live   { color: var(--chip-live); }
+.surface-label .static { color: var(--gilt-edge); }
+.surface-label .demo   { color: var(--gilt-edge); font-weight: 700; }
+
+/* The snapshot itself — a <pre> block. Sized to the canonical grid. */
+.snap {
+    color: var(--text);
+    background: var(--surface-black);
+    border: 1px solid var(--mint-dim);
+    padding: 14px 16px;
+    white-space: pre;
+    overflow: hidden;
+    font-size: 13px;
+    line-height: 1.28;
+    letter-spacing: 0;
+    tab-size: 4;
+}
+.snap-120 { font-size: 12px; }
+.snap-100 { font-size: 13px; }
+.snap-80  { font-size: 15px; }
+
+/* In-line spans for state color inside the <pre>. */
+.c-cyan      { color: var(--ritual-cyan); }
+.c-cyan-b    { color: var(--ritual-cyan); font-weight: 700; }
+.c-mint      { color: var(--serum-mint); }
+.c-mint-b    { color: var(--serum-mint); font-weight: 700; }
+.c-pink      { color: var(--gremlin-pink); }
+.c-pink-b    { color: var(--gremlin-pink); font-weight: 700; }
+.c-gold      { color: var(--gilt-edge); }
+.c-gold-b    { color: var(--gilt-edge); font-weight: 700; }
+.c-violet    { color: var(--aftercare-violet); }
+.c-violet-b  { color: var(--aftercare-violet); font-weight: 700; }
+.c-dim       { color: var(--text-dim); }
+.c-muted     { color: var(--text-muted); }
+.c-frame     { color: var(--mint-dim); }
+.c-frame-s   { color: var(--ritual-cyan); }   /* strong frame */
+.c-emph      { color: var(--text-emphasis); font-weight: 700; }
+.c-state     { color: var(--gilt-edge); font-weight: 700; }
+
+/* Selected row uses a navy background plus mint emphasis. We can't paint
+   a background through plain <pre> easily, so we mark the whole line as
+   a styled span and rely on the inline color/weight to read as selected. */
+.row-sel {
+    background: var(--surface-navy);
+    color: var(--text-emphasis);
+    font-weight: 700;
+    display: inline-block;
+    width: 100%;
+}
+
+.caption {
+    color: var(--text-dim);
+    font-size: 12px;
+    line-height: 1.55;
+    max-width: 980px;
+    margin: 0 auto;
+    text-align: left;
+}
+.caption b { color: var(--ritual-cyan); }
+.caption .gold { color: var(--gilt-edge); }
+.caption .pink { color: var(--gremlin-pink); }
