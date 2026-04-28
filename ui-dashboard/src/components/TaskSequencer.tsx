@@ -169,14 +169,6 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     return `Total remaining duration: ${label}`;
   };
 
-  const getFinishTimeLabel = (minutes: number): string => {
-    const now = new Date();
-    const finishDate = new Date(now.getTime() + minutes * 60000);
-    const hh = finishDate.getHours().toString().padStart(2, '0');
-    const mm = finishDate.getMinutes().toString().padStart(2, '0');
-    return `${hh}:${mm}`;
-  };
-
   const currentTask = tasks.find((task) => task.id === currentTaskId);
   const statusTone = statusStyles[cognitiveState.status];
 
@@ -207,6 +199,26 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     return Math.ceil(otherTasksTotal + Math.max(0, currentTaskEstimate - elapsedMinutes));
   }, [tasks, currentTaskId, currentTask, taskTimer]);
 
+  const finishTimeLabel = useMemo(() => {
+    if (totalRemainingMinutes === 0) return '';
+
+    const finishDate = new Date(Date.now() + totalRemainingMinutes * 60000);
+    const hh = finishDate.getHours().toString().padStart(2, '0');
+    const mm = finishDate.getMinutes().toString().padStart(2, '0');
+
+    return `${hh}:${mm}`;
+  }, [totalRemainingMinutes]);
+
+  const remainingTimeAriaLabel =
+    totalRemainingMinutes === 0
+      ? 'Task sequence complete'
+      : `${getDurationAriaLabel(totalRemainingMinutes)}. Estimated completion: ${finishTimeLabel}`;
+
+  const remainingTimeTooltipLabel =
+    totalRemainingMinutes === 0
+      ? 'Task sequence complete'
+      : `${totalRemainingMinutes}m • ${finishTimeLabel}`;
+
   return (
     <Paper
       sx={{
@@ -230,20 +242,12 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           Task Sequencer
         </Typography>
         <Tooltip
-          title={
-            totalRemainingMinutes === 0
-              ? 'Task sequence complete'
-              : `${getDurationAriaLabel(totalRemainingMinutes)}. Estimated completion: ${getFinishTimeLabel(totalRemainingMinutes)}`
-          }
+          title={remainingTimeTooltipLabel}
           arrow
         >
           <Box
             role="status"
-            aria-label={
-              totalRemainingMinutes === 0
-                ? 'Task sequence complete'
-                : `${getDurationAriaLabel(totalRemainingMinutes)}. Estimated completion: ${getFinishTimeLabel(totalRemainingMinutes)}`
-            }
+            aria-label={remainingTimeAriaLabel}
             tabIndex={0}
             sx={{
               ml: 'auto',
@@ -482,11 +486,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           Optimized Sequence ({optimizedTasks.length} tasks)
         </Typography>
         <Tooltip
-          title={
-            totalRemainingMinutes === 0
-              ? 'Task sequence complete'
-              : `${getDurationAriaLabel(totalRemainingMinutes)}. Estimated completion: ${getFinishTimeLabel(totalRemainingMinutes)}`
-          }
+          title={remainingTimeTooltipLabel}
           arrow
         >
           <Box
@@ -506,11 +506,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             }}
             tabIndex={0}
             role="status"
-            aria-label={
-              totalRemainingMinutes === 0
-                ? 'Task sequence complete'
-                : `${getDurationAriaLabel(totalRemainingMinutes)}. Estimated completion: ${getFinishTimeLabel(totalRemainingMinutes)}`
-            }
+            aria-label={remainingTimeAriaLabel}
           >
             {totalRemainingMinutes === 0 ? (
               <CheckCircle size={14} aria-hidden="true" />
@@ -560,6 +556,9 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                     ? `1px solid ${brandTokens.borders.cyan}`
                     : `1px solid ${brandTokens.borders.subtle}`,
                   mb: 0.5,
+                  '&:hover': {
+                    bgcolor: isCurrent ? alpha(brandTokens.colors.ritualCyan, 0.12) : alpha(brandTokens.colors.ritualCyan, 0.04),
+                  },
                 }}
               >
                 <ListItemIcon>
