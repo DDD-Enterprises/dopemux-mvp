@@ -51,13 +51,13 @@
       "cmd": "git branch --show-current",
       "returncode": 0,
       "stderr": "",
-      "stdout": "codex/rte-wizard-prescan-telemetry"
+      "stdout": "codex/cockpit-pm-impl-processing-pack"
     },
     {
       "cmd": "git status --short --branch",
       "returncode": 0,
       "stderr": "",
-      "stdout": "## codex/rte-wizard-prescan-telemetry\n M AGENTS.md\n M services/repo-truth-extractor/lib/promptgen/feature_detector.py\n M services/repo-truth-extractor/tests/test_universal_extractor.py\n M src/dopemux/commands/extractor_commands.py\n M tests/unit/test_extractor_command_authority.py\n?? services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json\n?? services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/INTEGRITY_REPORT.json\n?? services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/SCOPE_OVERRIDES.json\n?? services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/SCOPE_RESOLUTION.json\n?? services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/SYNC_MANIFEST.json\n?? services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/artifacts.yaml\n?? services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/model_map.yaml\n?? services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/prompts/\n?? services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/promptset.yaml"
+      "stdout": "## codex/cockpit-pm-impl-processing-pack\n M docs/05-audit-reports/cockpit-pm-implementer-callable-inventory-2026-04-24.md\n M task-packets/DMX-COCKPIT-PMIMPL-PACK-001.json"
     },
     {
       "cmd": "test -f .dopetaskroot",
@@ -69,7 +69,7 @@
       "cmd": "git branch -vv",
       "returncode": 0,
       "stderr": "",
-      "stdout": "run during S1; output recorded in terminal history"
+      "stdout": "  codex/cockpit-design-system           f4375b935 [origin/cockpit-design-system] docs: normalize cockpit package filenames\n* codex/cockpit-pm-impl-processing-pack bdb078b1a [origin/cockpit-pm-impl-processing-pack] docs: add cockpit pm implementer frontmatter"
     },
     {
       "cmd": "gh pr list --state open --limit 100 --json number,title,headRefName,baseRefName,isDraft,url",
@@ -84,25 +84,25 @@
       "stdout": "[{\"baseRefName\": \"main\", \"headRefName\": \"codex/dopemux-cockpit-static\", \"isDraft\": false, \"mergedAt\": \"2026-04-24T23:40:08Z\", \"number\": 524, \"state\": \"MERGED\", \"title\": \"Add deterministic Dopemux cockpit static renderer\", \"url\": \"https://github.com/DDD-Enterprises/dopemux-mvp/pull/524\"}, {\"baseRefName\": \"main\", \"headRefName\": \"codex/dopemux-cockpit-cli-static-demo\", \"isDraft\": false, \"mergedAt\": \"2026-04-24T23:40:44Z\", \"number\": 528, \"state\": \"MERGED\", \"title\": \"ui: expose cockpit static renderer through guarded cli\", \"url\": \"https://github.com/DDD-Enterprises/dopemux-mvp/pull/528\"}, {\"baseRefName\": \"codex/dopemux-cockpit-static\", \"headRefName\": \"codex/dopemux-cockpit-cli-static-demo\", \"isDraft\": true, \"mergedAt\": null, \"number\": 525, \"state\": \"CLOSED\", \"title\": \"ui: expose cockpit static renderer through guarded cli\", \"url\": \"https://github.com/DDD-Enterprises/dopemux-mvp/pull/525\"}, {\"baseRefName\": \"main\", \"headRefName\": \"codex/pr-merge-cockpit-recovery-20260326\", \"isDraft\": false, \"mergedAt\": \"2026-03-26T22:42:22Z\", \"number\": 293, \"state\": \"MERGED\", \"title\": \"feat: restore pr-merge cockpit runtime and docs\", \"url\": \"https://github.com/DDD-Enterprises/dopemux-mvp/pull/293\"}]"
     },
     {
-      "cmd": "rg callable surface scan",
+      "cmd": "sh -c \"rg -n --hidden --glob '*.py' --glob '*.ts' --glob '*.js' '(def |async def |@router\\\\.|@app\\\\.|@mcp\\\\.|click\\\\.command|typer\\\\.)' src services > /tmp/cockpit-callable-surface-rg.txt\"",
       "returncode": 0,
       "stderr": "",
       "stdout": "/tmp/cockpit-callable-surface-rg.txt"
     },
     {
-      "cmd": "find callable files scan",
+      "cmd": "sh -c \"find src services -type f \\( -name '*.py' -o -name '*.ts' -o -name '*.js' \\) | sort > /tmp/cockpit-callable-files.txt\"",
       "returncode": 0,
       "stderr": "",
       "stdout": "/tmp/cockpit-callable-files.txt"
     },
     {
-      "cmd": "AST callable function scan",
+      "cmd": "sh -c \"python scripts/callable_inventory_ast_scan.py --input /tmp/cockpit-callable-files.txt --output /tmp/cockpit-callable-functions.json\"",
       "returncode": 0,
       "stderr": "",
       "stdout": "/tmp/cockpit-callable-functions.json rows=4961"
     },
     {
-      "cmd": "normalized inventory render",
+      "cmd": "sh -c \"python scripts/render_callable_inventory_summary.py --input /tmp/cockpit-callable-functions.json --output /tmp/cockpit-inventory-summary.json\"",
       "returncode": 0,
       "stderr": "",
       "stdout": "/tmp/cockpit-inventory-summary.json"
@@ -135,7 +135,7 @@
     "docs/03-reference/truth/truth-canonicals.md",
     "docs/03-reference/truth/truth-gaps.md",
     "task-packets/INDEX.md",
-    "/Users/hue/Downloads/dmx-cockpit-pmimpl-processing-pack/DMX-COCKPIT-PMIMPL-PACK-001.json"
+    "task-packets/DMX-COCKPIT-PMIMPL-PACK-001.json"
   ],
   "files_modified": [
     "task-packets/INDEX.md"
@@ -147,7 +147,7 @@
     "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/529"
   },
   "repo_identity": {
-    "branch": "codex/rte-wizard-prescan-telemetry",
+    "branch": "codex/cockpit-pm-impl-processing-pack",
     "marker": ".dopetaskroot",
     "marker_present": true,
     "origin": "gtm-ssh\tgit@github.com:DDD-Enterprises/dopemux-extractor-gtm.git (fetch)\ngtm-ssh\tgit@github.com:DDD-Enterprises/dopemux-extractor-gtm.git (push)\norigin\thttps://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)\norigin\thttps://github.com/DDD-Enterprises/dopemux-mvp.git (push)",
@@ -253,7 +253,7 @@
     "Active MCP server configs list external/proxy servers whose live tool inventories were not queried by packet rule; only repo-observed tool declarations are inventoried.",
     "Bridge routes expose PM/ConPort-adjacent operations but are adapter/proxy only; UI must not upgrade them to authority.",
     "Working-memory-assistant and dope-memory surfaces overlap; dope_memory_main.py is canonical for dope-memory, WMA MCP transport canonicality remains unresolved.",
-    "Current checkout has unrelated pre-existing runtime/test changes on codex/rte-wizard-prescan-telemetry; packet artifacts are limited to allowlisted docs/proof/task-packet files."
+    "Current checkout has unrelated pre-existing docs changes on codex/cockpit-pm-impl-processing-pack; packet artifacts are limited to allowlisted docs/proof/task-packet files."
   ],
   "validations": [
     {

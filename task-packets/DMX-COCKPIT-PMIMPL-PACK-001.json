@@ -22,7 +22,6 @@
     "Output must be optimized for GPT-5.5 Pro synthesis and Claude Design handoff, not Codex implementation."
   ],
   "depends_on": [
-    "DMX-COCKPIT-STATIC-001",
     "DMX-COCKPIT-STATIC-002"
   ],
   "repo_binding": {
