@@ -5275,6 +5275,7 @@ rte.add_command(extractor_status, "status")
 rte.add_command(extractor_preflight, "preflight")
 rte.add_command(extractor_validate_live, "validate-live")
 rte.add_command(extractor_trace, "trace")
+rte.add_command(audit.commands["wizard"], "wizard")
 
 
 @extractor.group("promptset")

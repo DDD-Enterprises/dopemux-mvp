@@ -6,6 +6,8 @@ import logging
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[3]
 SERVICE_ROOT = ROOT / "services" / "repo-truth-extractor"
 if str(SERVICE_ROOT) not in sys.path:
@@ -149,6 +151,76 @@ def test_prescan_engine_emits_operator_progress(caplog, tmp_path: Path) -> None:
     assert any("PRESCAN_PROGRESS classify_files" in message for message in messages)
     assert any("PRESCAN_PROGRESS write_prescan_artifacts" in message for message in messages)
     assert any("PRESCAN_PROGRESS complete" in message for message in messages)
+
+
+def test_prescan_engine_emits_detailed_route_and_batch_progress(
+    caplog, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Detailed operator telemetry should expose batch plans and selected routes."""
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src" / "main.py").write_text("def main():\n    return 1\n", encoding="utf-8")
+    (tmp_path / "README.md").write_text("# Fixture\n", encoding="utf-8")
+
+    config = PrescanConfig(
+        repo_root=tmp_path,
+        output_dir=tmp_path / "out",
+        enable_code_prescan=False,
+        enable_git_enrichment=False,
+        batch_mode=False,
+        cost_estimate=False,
+    )
+    engine = PrescanEngine(config)
+
+    monkeypatch.setattr(
+        PrescanEngine,
+        "_run_stage0",
+        lambda self, passes: {
+            "catalog": {"routes": [{"provider": "openrouter"}]},
+            "readiness": {"status": "ready"},
+            "routing_plan": {
+                "status": "READY",
+                "selected_routes": {
+                    "dedup": {
+                        "provider": "openrouter",
+                        "model_id": "openai/gpt-5-nano",
+                        "selected_tier": "budget",
+                        "tier_adjustment": "none",
+                    }
+                },
+                "fallback_decisions": {
+                    "dedup": [
+                        {
+                            "decision": "admitted",
+                            "provider": "openai",
+                            "model_id": "gpt-5-mini",
+                        },
+                        {
+                            "decision": "excluded",
+                            "provider": "anthropic",
+                            "model_id": "claude-sonnet-4.5",
+                            "reason": "missing_credentials",
+                        },
+                    ]
+                },
+            },
+        },
+    )
+
+    with caplog.at_level(logging.INFO, logger="lib.prescan.engine"):
+        result = engine.run(passes=["dedup"])
+
+    assert result.success is True
+    messages = [record.getMessage() for record in caplog.records]
+    assert any(
+        "PRESCAN_PROGRESS plan_llm_pass_detail" in message and "pass_id=dedup" in message
+        for message in messages
+    )
+    assert any(
+        "PRESCAN_PROGRESS provider_readiness_detail" in message
+        and "route=openrouter/openai/gpt-5-nano" in message
+        and "excluded_fallbacks=1" in message
+        for message in messages
+    )
 
 
 
