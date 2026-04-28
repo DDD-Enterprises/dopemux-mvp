@@ -1,0 +1,174 @@
+{
+  "id": "TP-DMX-MCP-DATA-ASSEMBLY-001",
+  "project": "dopemux",
+  "target": "Codex data assembly for base MCP server Deep Research upload packs",
+  "invariants": [
+    "Codex performs data assembly only; Deep Research owns current external research and synthesis.",
+    "Preserve Dopemux split authority across control, execution, PM, memory, retrieval, bridge, and support planes.",
+    "Do not promote bridge, Serena, hosted memory, or retrieval surfaces to canonical authority without runtime proof.",
+    "Every assembled fact must include source URL, access date, version or commit when available, and confidence.",
+    "Every unresolved upstream lineage, package version, or runtime surface must be marked UNKNOWN."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MCP-CUSTOMIZATION-DR-DATA",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "research/dmx-mcp-customization-dr-data"
+  },
+  "commit": {
+    "message": "docs: assemble MCP customization deep research data packs",
+    "allowlist": [
+      "docs/research/mcp-customization/**",
+      "task-packets/TP-DMX-MCP-DATA-ASSEMBLY-001.json"
+    ],
+    "verify": [
+      "validate task packet JSON against dopetask-cannonical-spec.json",
+      "verify every source row includes source_url, access_date, and confidence",
+      "verify every DR pack preserves Dopemux authority boundaries",
+      "verify no production code files are modified"
+    ]
+  },
+  "pr": {
+    "title": "docs: MCP customization deep research data packs",
+    "body": "Assembles source inventories, authority context, and Deep Research upload packs for ConPort, task-orchestrator, Serena, Claude Context, Claude-Mem, and Mem0 customization planning.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Create a fresh dedicated worktree and verify repo identity before file writes.",
+      "requirements": [
+        "Worktree from main",
+        "Branch equals research/dmx-mcp-customization-dr-data",
+        "Current directory is inside dedicated worktree",
+        "Repo marker .dopetaskroot exists"
+      ],
+      "commands": [
+        "git rev-parse --show-toplevel",
+        "test -f .dopetaskroot",
+        "git branch --show-current",
+        "git status --short"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Stop if repo identity, branch, marker, or worktree verification fails."
+      ],
+      "context_files": [
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "RULES.md",
+        "dopetask-cannonical-spec.json"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Assemble upstream source manifest for all six base server families.",
+      "requirements": [
+        "Cover ConPort, task-orchestrator, Serena, claude-context, claude-mem, and mem0",
+        "Capture task-orchestrator lineage ambiguity explicitly"
+      ],
+      "commands": [],
+      "expected_files": [
+        "docs/research/mcp-customization/data/upstream-source-manifest.json"
+      ],
+      "validation": [
+        "Every source row includes source_url, source_type, owner, accessed_at, freshness_signal, authority_level, and confidence."
+      ],
+      "context_files": [
+        "SERVICE_CATALOG.md",
+        "TRUTH_GAPS.md",
+        "TRUTH_CANONICALS.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Assemble Dopemux authority and boundary context pack.",
+      "requirements": [
+        "Extract repo-proven authority claims only",
+        "Separate runtime truth from docs/truth artifacts",
+        "Preserve UNKNOWN gaps"
+      ],
+      "commands": [],
+      "expected_files": [
+        "docs/research/mcp-customization/data/dopemux-authority-map.json"
+      ],
+      "validation": [
+        "Boundary map includes dopemux, dopetask, task-orchestrator, ConPort, dope-memory, dope-context, dopecon-bridge, Serena, Leantime, ADHD Engine, and repo-truth-extractor."
+      ],
+      "context_files": [
+        "ARCHITECTURE.md",
+        "PM_PLANE.md",
+        "SYSTEM_BOUNDARIES.md"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Generate one Deep Research upload pack per base server plus one synthesis pack.",
+      "requirements": [
+        "Each pack is standalone and uploadable",
+        "Each pack includes source seeds, extraction questions, boundary checks, and output contract"
+      ],
+      "commands": [],
+      "expected_files": [
+        "docs/research/mcp-customization/dr-upload/00-foundation.md",
+        "docs/research/mcp-customization/dr-upload/01-conport.md",
+        "docs/research/mcp-customization/dr-upload/02-task-orchestrator.md",
+        "docs/research/mcp-customization/dr-upload/03-serena.md",
+        "docs/research/mcp-customization/dr-upload/04-claude-context.md",
+        "docs/research/mcp-customization/dr-upload/05-claude-mem.md",
+        "docs/research/mcp-customization/dr-upload/06-mem0.md",
+        "docs/research/mcp-customization/dr-upload/07-synthesis.md"
+      ],
+      "validation": [
+        "Every pack requires current source/version capture and fact vs inference separation."
+      ],
+      "context_files": [
+        "PAL_EXECUTION_RULES.md",
+        "dopetask-cannonical-spec.json"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Validate artifacts for schema, determinism, and upload readiness.",
+      "requirements": [
+        "Stable deterministic ordering",
+        "No secrets",
+        "No production code changes"
+      ],
+      "commands": [
+        "python -m json.tool task-packets/TP-DMX-MCP-DATA-ASSEMBLY-001.json >/dev/null"
+      ],
+      "expected_files": [
+        "docs/research/mcp-customization/MANIFEST.sha256"
+      ],
+      "validation": [
+        "Task packet validates against schema.",
+        "Manifest hashes are stable after rerun.",
+        "Upload order is explicit."
+      ],
+      "context_files": [
+        "RULES.md",
+        "dopetask-cannonical-spec.json"
+      ]
+    }
+  ]
+}

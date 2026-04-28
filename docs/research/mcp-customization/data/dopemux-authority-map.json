@@ -1,0 +1,100 @@
+{
+  "accessed_at": "2026-04-28",
+  "authority_basis": [
+    "PROJECT.md",
+    "ARCHITECTURE.md",
+    "PM_PLANE.md",
+    "docs/03-reference/truth/truth-canonicals.md",
+    "docs/03-reference/truth/truth-gaps.md",
+    "docs/03-reference/truth/truth-interfaces.md",
+    "docs/03-reference/systems/system-boundaries.md",
+    "src/dopemux/pm/writes.py",
+    "src/dopemux/pm/reads.py",
+    "services/dopecon-bridge/dopecon_bridge/routes.py"
+  ],
+  "systems": [
+    {
+      "authority": "operator support and cognitive-state service",
+      "canonical_writer": "services/adhd_engine for active service family",
+      "confidence": "HIGH",
+      "must_not_own": "PM truth, ConPort authority, dope-memory chronology, retrieval authority",
+      "system": "ADHD Engine"
+    },
+    {
+      "authority": "structured decisions, progress, project context, custom data, graph/relationship query",
+      "canonical_writer": "ConPort runtime/client surfaces; PM reads/writes label ConPort canonical for context/decision/progress",
+      "confidence": "HIGH",
+      "must_not_own": "passive PM metadata, workflow legality, dope-memory chronology, dope-context source retrieval",
+      "system": "ConPort"
+    },
+    {
+      "authority": "derived code/docs indexing and retrieval",
+      "canonical_writer": "services/dope-context/src/mcp/server.py for indexing/search service",
+      "confidence": "HIGH",
+      "must_not_own": "source truth of code/docs, PM truth, memory chronology, ConPort decision authority",
+      "system": "dope-context"
+    },
+    {
+      "authority": "historical chronicle and evidence-preserving receipts",
+      "canonical_writer": "services/working-memory-assistant/dope_memory_main.py chronicle ledger",
+      "confidence": "HIGH",
+      "must_not_own": "current PM state, workflow legality, structured decision authority",
+      "system": "dope-memory"
+    },
+    {
+      "authority": "adapter/proxy/event transport and compatibility routing",
+      "canonical_writer": "services/dopecon-bridge/dopecon_bridge/routes.py for bridge routes only",
+      "confidence": "HIGH",
+      "must_not_own": "canonical task, workflow, decision, progress, memory, or retrieval authority",
+      "system": "dopecon-bridge"
+    },
+    {
+      "authority": "operator/control plane: CLI, startup, routing, MCP coordination, local environment shaping",
+      "canonical_writer": "src/dopemux for operator/control only",
+      "confidence": "HIGH",
+      "must_not_own": "PM truth, durable memory truth, retrieval source truth, external execution after handoff",
+      "system": "dopemux"
+    },
+    {
+      "authority": "external execution runtime reached through scripts/taskx then scripts/dopetask",
+      "canonical_writer": "external dopetask binary pinned by .dopetask-pin after wrapper validation",
+      "confidence": "HIGH",
+      "must_not_own": "PM metadata, workflow legality, memory, retrieval, CLI orchestration",
+      "system": "dopetask"
+    },
+    {
+      "authority": "passive PM metadata and project/ticket snapshots",
+      "canonical_writer": "Leantime clients/adapters for metadata; not repo-local application code",
+      "confidence": "HIGH",
+      "must_not_own": "workflow legality, decision/progress context, chronicle history",
+      "system": "leantime"
+    },
+    {
+      "authority": "repo-truth extraction and audit artifacts",
+      "canonical_writer": "services/repo-truth-extractor/run_extraction_v5.py",
+      "confidence": "HIGH",
+      "must_not_own": "operator runtime, PM plane, live system source truth beyond extracted evidence artifacts",
+      "system": "repo-truth-extractor"
+    },
+    {
+      "authority": "support/code-intelligence surface only unless runtime authority is proven",
+      "canonical_writer": "UNKNOWN; Dopemux truth says deployment leans to Docker wrapper while in-repo implementation remains unresolved",
+      "confidence": "LOW",
+      "must_not_own": "dope-context retrieval authority, ConPort memory authority, task-orchestrator workflow authority, dope-memory chronology",
+      "system": "Serena"
+    },
+    {
+      "authority": "workflow-significant transitions, queue, blockers, workflow views",
+      "canonical_writer": "services/task-orchestrator/app/main.py and project workflow APIs, with runtime packaging drift",
+      "confidence": "MEDIUM",
+      "must_not_own": "passive PM metadata, ConPort decisions/progress, dope-memory chronology",
+      "system": "task-orchestrator"
+    }
+  ],
+  "unknowns": [
+    "Task-orchestrator Docker/runtime entrypoint and port authority are conflicted.",
+    "Serena canonical implementation/deployment authority remains UNKNOWN.",
+    "working-memory-assistant authority outside the dope-memory chronicle slice remains UNKNOWN.",
+    "No dopetask-cannonical-spec.json file was found in this checkout during data assembly."
+  ]
+}
