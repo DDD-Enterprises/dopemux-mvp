@@ -1,0 +1,30 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Frame Characters</title>
+<link rel="stylesheet" href="_shared.css"></head>
+<body>
+<div class="label">Frame characters · protected cells</div>
+<div class="pane" style="font-size:16px; line-height:1.5; text-align:center;">
+<span class="cyan">◆DØPΞM∪X◆</span>
+<span class="dim">brand chrome only</span>
+</div>
+<div class="pane" style="font-size:18px; line-height:1.6; text-align:center;">
+<span class="cyan">┏ ━ ━ ┓</span>
+<span class="cyan">┃     ┃</span>
+<span class="cyan">┠─┬─┴─┨</span>
+<span class="cyan">┃ │ │ ┃</span>
+<span class="cyan">┗ ━ ━ ┛</span>
+</div>
+<div style="display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-top:10px; font-size:12px;">
+    <div class="pane"><span class="cyan" style="font-size:18px">━</span> <span class="dim">top/bottom</span></div>
+    <div class="pane"><span class="cyan" style="font-size:18px">┃</span> <span class="dim">left/right</span></div>
+    <div class="pane"><span class="cyan" style="font-size:18px">─</span> <span class="dim">rule</span></div>
+    <div class="pane"><span class="cyan" style="font-size:18px">│</span> <span class="dim">divider col</span></div>
+    <div class="pane"><span class="cyan" style="font-size:18px">┏┓┗┛</span> <span class="dim">corners</span></div>
+    <div class="pane"><span class="cyan" style="font-size:18px">┠┨</span> <span class="dim">rule edges</span></div>
+    <div class="pane"><span class="cyan" style="font-size:18px">┬┴</span> <span class="dim">divider tee</span></div>
+    <div class="pane"><span class="cyan" style="font-size:18px">├┤</span> <span class="dim">split tee</span></div>
+</div>
+<div class="note" style="margin-top:10px;">
+Framebuffer refuses normal writes into protected rows/columns. Only <span class="mono">force=True</span> can draw a frame char. Frame glyphs and brand glyphs remain visual only and do not replace semantic declarations.
+</div>
+</body></html>
