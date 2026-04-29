@@ -556,6 +556,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                     ? `1px solid ${brandTokens.borders.cyan}`
                     : `1px solid ${brandTokens.borders.subtle}`,
                   mb: 0.5,
+                  transition: 'background-color 0.2s ease',
                   '&:hover': {
                     bgcolor: isCurrent ? alpha(brandTokens.colors.ritualCyan, 0.12) : alpha(brandTokens.colors.ritualCyan, 0.04),
                   },
