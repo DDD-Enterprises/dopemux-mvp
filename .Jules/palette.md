@@ -69,3 +69,7 @@
 ## 2026-04-30 - [Mitigating Time Blindness with Absolute Anchors]
 **Learning:** For users with ADHD, relative durations (e.g., "45 minutes remaining") can feel abstract and fail to trigger a realistic sense of time ("time blindness"). Providing an absolute completion time (e.g., "Estimated completion: 14:30") grounds the relative effort in the real world, making the remaining workload feel more tangible and manageable.
 **Action:** Always supplement relative duration displays with an absolute estimated completion time to provide a concrete temporal anchor.
+
+## 2026-05-14 - [Temporal Grounding for Task Management]
+**Learning:** Displaying relative durations (e.g., "45m remaining") is helpful but can still feel abstract to users with ADHD who experience "time blindness." Providing an absolute wall-clock finish estimate (e.g., "Finish at 14:30") grounds the relative duration in real-world time, making the workload feel more concrete and manageable.
+**Action:** Supplement relative duration counters with absolute estimated completion times to improve temporal grounding and reduce cognitive load.
