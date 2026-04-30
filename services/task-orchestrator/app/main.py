@@ -73,6 +73,7 @@ configure_logging("task-orchestrator")
 logger = logging.getLogger(__name__)
 SERVICE_NAME = os.getenv("SERVICE_NAME", "task-orchestrator")
 HEALTH_CHECK_PATH = os.getenv("HEALTH_CHECK_PATH", "/health")
+DEFAULT_PORT = 8000
 
 # Initialize MCP server
 mcp = FastMCP("Task-Orchestrator")
@@ -349,7 +350,7 @@ async def health_check():
 @app.get("/info")
 async def service_info():
     """Service discovery endpoint - auto-config support (ADR-208)"""
-    port = int(os.getenv("PORT", 3014))
+    port = int(os.getenv("PORT", str(DEFAULT_PORT)))
     return {
         "name": SERVICE_NAME,
         "version": "1.0.0",
@@ -870,7 +871,7 @@ if __name__ == "__main__":
         logger.info("📡 Event handlers registered for WebSocket broadcasting")
 
     # Log startup configuration
-    port = int(os.getenv("PORT", 3014))
+    port = int(os.getenv("PORT", str(DEFAULT_PORT)))
     redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
     
     logger.info("=" * 60)
