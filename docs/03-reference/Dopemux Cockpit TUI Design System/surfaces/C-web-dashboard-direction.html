@@ -162,26 +162,26 @@
         margin-left: 6px;
     }
 
-    /* ── Tab strip (repo-truth-extractor sub-views) ────────────── */
-    .repo-truth-workload-tabs {
+    /* ── Tab strip (RTE sub-views) ────────────── */
+    .rte-tabs {
         display: flex;
         gap: 0;
         border-bottom: 1px solid var(--mint-dim);
         padding: 0;
         align-items: center;
     }
-    .repo-truth-workload-tabs .tab {
+    .rte-tabs .tab {
         padding: 10px 16px;
         color: var(--text-dim);
         border-right: 1px solid var(--mint-dim);
         font-size: 12px;
     }
-    .repo-truth-workload-tabs .tab-active {
+    .rte-tabs .tab-active {
         color: var(--ritual-cyan);
         font-weight: 700;
         background: var(--surface-navy);
     }
-    .repo-truth-workload-tabs .auth {
+    .rte-tabs .auth {
         margin-left: auto;
         padding-right: 18px;
         color: var(--aftercare-violet);
@@ -348,13 +348,10 @@
     <div class="web-rail">
         <span class="brand">dopemux cockpit</span>
         <span class="meta">workspace <b>/users/hu3/code/dopemux-mvp</b></span>
-        <span class="meta">surface <b>Services / repo-truth-extractor</b></span>
+        <span class="meta">surface <b>rte / Runs</b></span>
         <span class="meta">render <b>rich</b></span>
-        <span class="meta">domain: <b>cockpit_chrome</b></span>
-        <span class="meta">authority: <b>dopemux</b></span>
-        <span class="meta">role: <b>chrome</b></span>
-        <span class="meta">next_action: <b>select_mode</b></span>
-        <span class="cmdk"><b>K</b> quick ref</span>
+        <span class="meta">command authority <b>dopemux</b></span>
+        <span class="cmdk"><b>⌘K</b> command</span>
         <span class="state">DESIGN DIRECTION · NOT IMPLEMENTED</span>
     </div>
 
@@ -363,14 +360,15 @@
         <span class="mode">PM</span>
         <span class="mode">Implementer</span>
         <span class="mode">Overview</span>
-        <span class="mode mode-active">Services</span>
+        <span class="mode">Services</span>
         <span class="mode">Events</span>
+        <span class="mode mode-active">Runs</span>
     </div>
 
     <!-- Summary metrics strip -->
     <div class="summary">
         <div class="cell">
-            <div class="label">Active Workload Records <span class="chip live">LIVE</span></div>
+            <div class="label">Active Runs <span class="chip live">LIVE</span></div>
             <div class="num">3</div>
             <div class="sub">last 24h · alerts <b style="color:var(--gilt-edge)">9</b></div>
         </div>
@@ -391,12 +389,12 @@
         </div>
     </div>
 
-    <!-- repo-truth-extractor tabs -->
-    <div class="repo-truth-workload-tabs">
-        <span class="tab tab-active">R1 Workload Records</span>
+    <!-- RTE tabs -->
+    <div class="rte-tabs">
+        <span class="tab tab-active">R1 Runs</span>
         <span class="tab">R2 Active</span>
         <span class="tab">R3 Prescan</span>
-        <span class="tab">R4 Health</span>
+        <span class="tab">R4 Doctor</span>
         <span class="tab">R5 Coverage</span>
         <span class="tab">R6 Audit</span>
         <span class="auth">authority: repo-truth-extractor</span>
@@ -407,7 +405,7 @@
 
         <!-- Left: services nav -->
         <div class="col nav">
-            <h4>Services <span class="auth">domain: services_index</span><span class="auth">authority: dopemux</span><span class="auth">role: derived</span><span class="auth">next_action: select_workload</span></h4>
+            <h4>Services <span class="auth">authority: dopemux</span></h4>
             <div class="nav-row">dopemux <span class="chip live">LIVE</span></div>
             <div class="nav-row">task-orchestrator <span class="chip live">LIVE</span></div>
             <div class="nav-row">conport <span class="chip live">LIVE</span></div>
@@ -420,9 +418,8 @@
             <div class="nav-row">dopetask <span class="chip edge">EDGE</span></div>
         </div>
 
-        <!-- Center: repo-truth-extractor workload table -->
+        <!-- Center: runs table -->
         <div class="col runs">
-            <h4><span class="auth">domain: services_child_workload</span><span class="auth">authority: repo-truth-extractor</span><span class="auth">role: canonical</span><span class="auth">next_action: inspect_workload_record</span></h4>
             <div class="head">
                 <span></span>
                 <span>Run ID</span>
@@ -444,13 +441,13 @@
                 <span class="dur">04:12</span>
                 <span class="alerts">2</span>
             </div>
-            <div class="src-row">provenance=repo-truth-extractor · providers anthropic+ollama · artifacts 7 pinned</div>
+            <div class="src-row">SRC=repo-truth-extractor · providers anthropic+ollama · artifacts 7 pinned</div>
 
             <div class="row">
                 <span></span>
                 <span class="id">v5-2026-04-22T11:04Z-7f18</span>
                 <span class="repo">dopemux/main</span>
-                <span class="scope">services</span>
+                <span class="scope">rte</span>
                 <span><span class="chip blocker">[BLOCKER]</span></span>
                 <span class="phase">preflight</span>
                 <span class="dur">00:08</span>
@@ -485,7 +482,7 @@
                 <span class="repo">dopemux/main</span>
                 <span class="scope">services</span>
                 <span><span class="chip blocker">[BLOCKER]</span></span>
-                <span class="phase">health</span>
+                <span class="phase">doctor</span>
                 <span class="dur">00:02</span>
                 <span class="alerts zero">0</span>
             </div>
@@ -515,27 +512,27 @@
 
         <!-- Right: inspector -->
         <div class="col inspector">
-            <h4>Inspector <span class="auth">domain: services_child_detail</span><span class="auth">authority: repo-truth-extractor</span><span class="auth">role: derived</span><span class="auth">next_action: inspect_workload</span></h4>
+            <h4>Inspector <span class="auth">authority: repo-truth-extractor</span></h4>
 
             <div class="row">
                 <div class="label">Subject</div>
                 <div class="v">v5-2026-04-22T14:32Z-a91c</div>
-                <div class="src">provenance=repo-truth-extractor</div>
+                <div class="src">SRC=repo-truth-extractor</div>
             </div>
             <div class="row">
                 <div class="label">Scope</div>
                 <div class="v">services</div>
-                <div class="src">provenance=repo-truth-extractor</div>
+                <div class="src">SRC=repo-truth-extractor</div>
             </div>
             <div class="row">
                 <div class="label">Last Phase</div>
                 <div class="v">normalize <span class="chip live" style="font-size:10px">[LIVE]</span></div>
-                <div class="src">provenance=repo-truth-extractor</div>
+                <div class="src">SRC=repo-truth-extractor</div>
             </div>
             <div class="row">
                 <div class="label">Providers</div>
                 <div class="v">anthropic + ollama</div>
-                <div class="src">provenance=repo-truth-extractor</div>
+                <div class="src">SRC=repo-truth-extractor</div>
             </div>
             <div class="row">
                 <div class="label">Duration</div>
@@ -544,12 +541,12 @@
             <div class="row">
                 <div class="label">Artifacts</div>
                 <div class="v">7 pinned</div>
-                <div class="src">provenance=repo-truth-extractor</div>
+                <div class="src">SRC=repo-truth-extractor</div>
             </div>
             <div class="row">
                 <div class="label">Alerts</div>
                 <div class="v"><span style="color:var(--gilt-edge);font-weight:700">2</span> · route reduced</div>
-                <div class="src">provenance=repo-truth-extractor</div>
+                <div class="src">SRC=repo-truth-extractor</div>
             </div>
             <div class="row">
                 <div class="label">Writes from cockpit</div>
@@ -557,10 +554,10 @@
             </div>
 
             <div class="bridge">
-                <h5>Bridge adapter/proxy: dopecon-bridge</h5>
-                <div class="auth-line">domain: bridge_transport · authority: dopecon-bridge · role: proxied · next_action: route_adapter_call · <span class="chip edge" style="font-size:10px">[EDGE]</span> adapter-only segregated</div>
+                <h5>Bridge actions</h5>
+                <div class="auth-line">authority: dopecon-bridge · <span class="chip edge" style="font-size:10px">[EDGE]</span> adapter-only segregated</div>
                 <div class="auth-line" style="color:var(--text-muted)">ADAPTER -&gt; dopecon-bridge : replay-event &nbsp;<span class="src">SRC=dopecon-bridge</span></div>
-                <div class="write-out">bridge actions are adapter/proxy actions only · canonical writes route through their owners</div>
+                <div class="write-out">writes from cockpit: out of scope · prefer canonical write</div>
             </div>
         </div>
     </div>
@@ -568,24 +565,24 @@
     <!-- Bottom rail -->
     <div class="bottom-rail">
         <span><span class="key">↵</span> open</span>
-        <span><span class="key">N</span> inspect workload</span>
-        <span><span class="key">D</span> health</span>
-        <span><span class="key">C</span> copy ref</span>
-        <span><span class="key">X</span> copy ref</span>
+        <span><span class="key">N</span> new run</span>
+        <span><span class="key">D</span> doctor</span>
+        <span><span class="key">C</span> compare</span>
+        <span><span class="key">X</span> export</span>
         <span><span class="key">/</span> filter</span>
-        <span><span class="key">K</span> quick ref</span>
-        <span class="static-flag">DIRECTION · NO WRITES · NO repo-truth-extractor EXECUTION</span>
+        <span><span class="key">⌘K</span> command</span>
+        <span class="static-flag">DIRECTION · NO WRITES · NO RTE EXECUTION</span>
     </div>
 
 </div>
 
 <div class="caption">
     <b>Surface C · Web / operator dashboard direction.</b>
-    Same IA as the TUI cockpit (mode bar -> summary strip -> tab strip -> list + inspector -> shortcut rail).
-    Web idioms allowed: ⌘K quick ref palette, modest scale changes for summary numerics, responsive grid columns.
+    Same IA as the TUI cockpit (mode bar → summary strip → tab strip → list + inspector → command rail).
+    Web idioms allowed: ⌘K command palette, modest scale changes for summary numerics, responsive grid columns.
     <br>
     Authority boundaries are still hard: the inspector declares <span class="mono">authority: repo-truth-extractor</span>,
-    the bridge segregator declares <span class="mono">Bridge adapter/proxy: dopecon-bridge · [EDGE] adapter-only</span>,
+    the bridge segregator declares <span class="mono">authority: dopecon-bridge · [EDGE] adapter-only</span>,
     and writes are explicitly <span class="gold">out of scope</span>. Chip vocabulary is unchanged.
     SRC stays on rows and inspector data; never on rail/chrome.
 </div>

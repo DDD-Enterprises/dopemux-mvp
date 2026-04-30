@@ -3,10 +3,6 @@
 <link rel="stylesheet" href="_shared.css"></head>
 <body>
 <div class="label">Frame characters · protected cells</div>
-<div class="pane" style="font-size:16px; line-height:1.5; text-align:center;">
-<span class="cyan">◆DØPΞM∪X◆</span>
-<span class="dim">brand chrome only</span>
-</div>
 <div class="pane" style="font-size:18px; line-height:1.6; text-align:center;">
 <span class="cyan">┏ ━ ━ ┓</span>
 <span class="cyan">┃     ┃</span>
@@ -25,6 +21,6 @@
     <div class="pane"><span class="cyan" style="font-size:18px">├┤</span> <span class="dim">split tee</span></div>
 </div>
 <div class="note" style="margin-top:10px;">
-Framebuffer refuses normal writes into protected rows/columns. Only <span class="mono">force=True</span> can draw a frame char. Frame glyphs and brand glyphs remain visual only and do not replace semantic declarations.
+Framebuffer refuses normal writes into protected rows/columns. Only <span class="mono">force=True</span> can draw a frame char. ASCII substitutes are forbidden.
 </div>
 </body></html>

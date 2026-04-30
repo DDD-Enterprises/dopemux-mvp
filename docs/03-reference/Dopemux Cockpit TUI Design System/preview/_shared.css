@@ -34,7 +34,6 @@ body {
 }
 
 .mono { font-family: var(--font-mono); }
-.rich-glyph { font-family: var(--font-mono-rich); }
 
 /* Swatches */
 .swatch-grid {
