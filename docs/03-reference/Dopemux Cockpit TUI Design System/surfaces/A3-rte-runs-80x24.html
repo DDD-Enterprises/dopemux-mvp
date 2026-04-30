@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>RTE Runs · 80x24 · fallback</title>
+<link rel="stylesheet" href="_surface.css" />
+</head>
+<body>
+
+<div class="surface-label">
+    Surface A · Static Terminal Snapshot · 80×24 fallback ·
+    <span class="demo">STATIC DEMO</span> · seed-only · read-only
+</div>
+
+<pre class="snap snap-80" aria-label="RTE Runs static snapshot, 80 columns by 24 rows"
+><span class="c-frame-s">┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓</span>
+<span class="c-frame-s">┃</span> <span class="c-cyan-b">dopemux cockpit</span>  <span class="c-dim">surface</span> <span class="c-cyan">rte / Runs</span>  <span class="c-state">STATIC DEMO</span>  <span class="c-dim">80×24</span>     <span class="c-frame-s">┃</span>
+<span class="c-frame">┠────────────────────────────────────────────────────────────────────────────┨</span>
+<span class="c-frame-s">┃</span> <span class="c-cyan-b">6</span>*<span class="c-emph">Runs</span> <span class="c-frame">│</span> <span class="c-dim">PM Implementer Overview Services Events</span>  <span class="c-dim">ctrl+k</span>      <span class="c-frame-s">┃</span>
+<span class="c-frame">┠────────────────────────────────────────────────────────────────────────────┨</span>
+<span class="c-frame-s">┃</span> <span class="c-dim">active</span> <span class="c-cyan-b">3</span> <span class="c-mint">LIVE</span>  <span class="c-dim">blocked</span> <span class="c-pink-b">2</span> <span class="c-pink">BLOCKER</span>  <span class="c-dim">cov</span> <span class="c-gold-b">82.4%</span> <span class="c-gold">OVERRIDE</span>          <span class="c-frame-s">┃</span>
+<span class="c-frame">┠────────────────────────────────────────────────────────────────────────────┨</span>
+<span class="c-frame-s">┃</span> <span class="c-violet">authority: repo-truth-extractor</span>   <span class="c-cyan-b">R1</span>*<span class="c-emph">Runs</span> <span class="c-frame">│</span> <span class="c-dim">R2 R3 R4 R5 R6</span>      <span class="c-frame-s">┃</span>
+<span class="c-frame">┠────────────────────────────────────────────────────────────────────────────┨</span>
+<span class="c-frame-s">┃</span>   <span class="c-dim">RUN                          SCOPE     STATUS     ALERTS</span>             <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span> <span class="row-sel"> <span class="c-cyan-b">&gt;</span> <span class="c-emph">v5-22T14:32Z-a91c</span>          <span class="c-dim">services</span> <span class="c-cyan-b">[LIVE]</span>     <span class="c-gold-b">2</span>      </span>           <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>     <span class="c-dim">SRC=repo-truth-extractor   phase=normalize  dur=04:12</span>            <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>     <span class="c-dim">v5-22T11:04Z-7f18           rte      <span class="c-pink-b">[BLOCKER]</span>  <span class="c-pink-b">1</span></span>                 <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>     <span class="c-dim">v5-22T09:51Z-3e2a           bridge   <span class="c-mint-b">[LOGGED]</span>   0</span>                 <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>     <span class="c-dim">v5-21T22:48Z-1d9b           docs     <span class="c-gold-b">[OVERRIDE]</span> <span class="c-gold-b">6</span></span>                 <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>     <span class="c-dim">v5-21T18:02Z-ce44           services <span class="c-pink-b">[BLOCKER]</span>  0</span>                 <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span>     <span class="c-dim">v5-21T09:15Z-f02d           services <span class="c-mint-b">[LOGGED]</span>   0</span>                 <span class="c-frame-s">┃</span>
+<span class="c-frame">┠────────────────────────────────────────────────────────────────────────────┨</span>
+<span class="c-frame-s">┃</span> <span class="c-violet-b">Inspector</span> <span class="c-mint">a91c</span> <span class="c-dim">·</span> <span class="c-cyan">normalize</span> <span class="c-dim">·</span> <span class="c-cyan">anthropic+ollama</span> <span class="c-dim">·</span> <span class="c-mint">04:12</span> <span class="c-dim">·</span> <span class="c-mint-b">7</span><span class="c-dim">art</span> <span class="c-dim">·</span> <span class="c-gold-b">2</span><span class="c-gold">!</span>     <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┃</span> <span class="c-violet">bridge</span> <span class="c-cyan-b">[EDGE]</span> <span class="c-dim">adapter-only · dopecon-bridge · writes from cockpit</span> <span class="c-gold">none</span>  <span class="c-frame-s">┃</span>
+<span class="c-frame">┠────────────────────────────────────────────────────────────────────────────┨</span>
+<span class="c-frame-s">┃</span> <span class="c-dim">enter</span> <span class="c-cyan-b">open</span>  <span class="c-dim">n</span> <span class="c-cyan-b">new</span>  <span class="c-dim">d</span> <span class="c-cyan-b">doctor</span>  <span class="c-dim">c</span> <span class="c-cyan-b">compare</span>  <span class="c-dim">/</span> <span class="c-cyan-b">filter</span>  <span class="c-dim">q</span> <span class="c-cyan-b">quit</span>          <span class="c-frame-s">┃</span>
+<span class="c-frame">┠────────────────────────────────────────────────────────────────────────────┨</span>
+<span class="c-frame-s">┃</span> <span class="c-state">STATIC DEMO · NO WRITES</span>  <span class="c-dim">no service adapters · no rte execution</span>      <span class="c-frame-s">┃</span>
+<span class="c-frame-s">┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛</span></pre>
+
+<div class="caption">
+    <b>Surface A · 80×24 · fallback.</b>
+    The inspector compresses to a single delimited row at the bottom of the runs list. Bridge segregator stays as a single line, still self-labeled <span class="mono">[EDGE] adapter-only</span>.
+    Repo column drops; the run id is shortened to <span class="mono">v5-DD&times;HH:MM&times;...</span>; phase/dur live on continuation rows for the selected row only.
+    Below 80×24 the renderer refuses with a <span class="pink">[BLOCKER]</span> panel — see <span class="mono">render.py::TOO_SMALL_MESSAGE</span>.
+</div>
+
+</body>
+</html>

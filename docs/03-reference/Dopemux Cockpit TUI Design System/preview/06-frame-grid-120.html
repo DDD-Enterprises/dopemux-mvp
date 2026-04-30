@@ -11,21 +11,19 @@
 ┠─────────────────────────┬────────────────────────────────────────────────┬──────────────────────────────────┨
 ┃                         │                                                │                                  ┃
 ┃                         │                                                │                                  ┃
-┃    services pane        │            repo-truth child                     │     subject + provenance         ┃
+┃    services pane        │            R T E   c h i l d                   │     subject + provenance         ┃
 ┃                         │                                                │                                  ┃
 ┃                         │                                                ├──── inspector split (row 22) ────┨
 ┃                         │                                                │                                  ┃
 ┃                         │                                                │     bridge segregator            ┃
 ┃                         ├────── center split (row 25) ──────────────────┤<span style="color:#9B78FF">     adapter-only segregated      </span>│
 ┠─────────────────────────┴────────────────────────────────────────────────┴──────────────────────────────────┨
-┃<span class="dim">  domain: shortcut        </span>│<span class="dim">  authority: dopemux · role: chrome </span>│<span class="dim">  next_action: key_ref           </span>┃
+┃<span class="dim">  command rail           </span>│<span class="dim">  SRC=dopemux snapshot-only                                 </span>│<span class="dim">  no writes no shellouts          </span>┃
 ┠─────────────────────────┬────────────────────────────────────────────────┬──────────────────────────────────┨
 ┃<span class="muted">  workspace dopemux-mvp  </span>│<span class="muted">  mode Services                                             </span>│<span class="muted">  seed static no-writes           </span>┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 </div>
 <div class="note" style="margin-top:10px;">
 Three panes left/center/right. Dividers at col 25 / col 84. Inspector split row 22, center split row 25, body rule 35, command 36, status rule 37, status row 38, bottom 39. <b>Protected cells are immutable</b> — content writes refuse to overwrite them.
-<br><br>
-<b>Chrome doctrine:</b> Command rail and status rail are chrome rows. They explicitly declare <span class="mono">domain:</span>, <span class="mono">authority:</span>, <span class="mono">role:</span>, and <span class="mono">next_action:</span>. Their declared authority is <span class="mono">dopemux</span>, their role is <span class="mono">chrome</span>, and their function is operator control surface. Chrome rows do not carry SRC — SRC is provenance and only appears on logical data/provenance records inside content panes.
 </div>
 </body></html>

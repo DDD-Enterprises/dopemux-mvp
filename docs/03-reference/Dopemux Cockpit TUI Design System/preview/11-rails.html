@@ -5,15 +5,13 @@
 <div class="label">Bottom rails · command (rule) + status (rail)</div>
 <div class="pane" style="font-size:13px; line-height:1.7; color:#4A9E94">
 ┠────────────────────────┬────────────────────────────────────────────────┬─────────────────────────────┨
-┃<span style="color:#E2E8F0"> domain: shortcut       </span>│<span style="color:#E2E8F0"> authority: dopemux    </span>│<span style="color:#E2E8F0"> role: chrome             </span>┃
-┃<span style="color:#E2E8F0"> next_action: key ref   </span>│<span style="color:#E2E8F0"> snapshot-only no writes no shellouts  </span>│                             ┃
+┃<span style="color:#E2E8F0"> command authority:    </span>│<span style="color:#E2E8F0"> SRC=dopemux snapshot-only                     </span>│<span style="color:#E2E8F0"> no writes no shellouts      </span>┃
+┃<span style="color:#E2E8F0"> dopemux               </span>│                                                │                             ┃
 ┠────────────────────────┼────────────────────────────────────────────────┼─────────────────────────────┨
 ┃<span class="muted"> workspace dopemux-mvp </span>│<span class="muted"> mode Services                                 </span>│<span class="muted"> seed static no-writes       </span>┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 </div>
 <div class="note" style="margin-top:10px;">
-Shortcut rail (row 36) declares the shortcut surface with <span class="mono">domain:</span>, <span class="mono">authority:</span>, <span class="mono">role:</span>, and <span class="mono">next_action:</span>. Status rail (row 38) is read-only context: workspace · mode · render flags. Both must always render — they are protected chrome rows.
-<br><br>
-<b>Chrome doctrine:</b> Rails are protected chrome rows; they do not carry SRC. SRC is provenance and only appears on logical data/provenance records inside content panes.
+Command rail (row 36) declares the command surface's authority and active capability tier. Status rail (row 38) is read-only context: workspace · mode · render flags. Both must always render — they are protected rows.
 </div>
 </body></html>
