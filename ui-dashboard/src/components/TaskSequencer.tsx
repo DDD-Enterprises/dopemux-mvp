@@ -169,6 +169,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     return `Total remaining duration: ${label}`;
   };
 
+  const getFinishTimeLabel = (minutes: number): string => {
+    const now = new Date();
+    const finishDate = new Date(now.getTime() + minutes * 60000);
+    const hh = finishDate.getHours().toString().padStart(2, '0');
+    const mm = finishDate.getMinutes().toString().padStart(2, '0');
+    return `${hh}:${mm}`;
+  };
+
   const currentTask = tasks.find((task) => task.id === currentTaskId);
   const statusTone = statusStyles[cognitiveState.status];
 
@@ -225,7 +233,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           title={
             totalRemainingMinutes === 0
               ? 'Task sequence complete'
-              : getDurationAriaLabel(totalRemainingMinutes)
+              : `${getDurationAriaLabel(totalRemainingMinutes)}. Estimated completion: ${getFinishTimeLabel(totalRemainingMinutes)}`
           }
           arrow
         >
@@ -234,7 +242,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             aria-label={
               totalRemainingMinutes === 0
                 ? 'Task sequence complete'
-                : getDurationAriaLabel(totalRemainingMinutes)
+                : `${getDurationAriaLabel(totalRemainingMinutes)}. Estimated completion: ${getFinishTimeLabel(totalRemainingMinutes)}`
             }
             tabIndex={0}
             sx={{
@@ -477,7 +485,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           title={
             totalRemainingMinutes === 0
               ? 'Task sequence complete'
-              : getDurationAriaLabel(totalRemainingMinutes)
+              : `${getDurationAriaLabel(totalRemainingMinutes)}. Estimated completion: ${getFinishTimeLabel(totalRemainingMinutes)}`
           }
           arrow
         >
@@ -501,7 +509,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             aria-label={
               totalRemainingMinutes === 0
                 ? 'Task sequence complete'
-                : getDurationAriaLabel(totalRemainingMinutes)
+                : `${getDurationAriaLabel(totalRemainingMinutes)}. Estimated completion: ${getFinishTimeLabel(totalRemainingMinutes)}`
             }
           >
             {totalRemainingMinutes === 0 ? (

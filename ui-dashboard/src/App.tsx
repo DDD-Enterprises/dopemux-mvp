@@ -405,7 +405,7 @@ function App() {
 
         <Collapse in={Boolean(errorMessage)}>
           <Alert
-            severity="warning"
+            severity="error"
             onClose={() => setErrorMessage(null)}
             sx={{
               mb: 3,
