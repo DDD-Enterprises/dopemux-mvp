@@ -1,0 +1,166 @@
+{
+  "id": "TP-DMX-AGENTS-CODEX-ENDTOEND-0001",
+  "project": "dopemux-mvp",
+  "target": "durable Codex/agent guidance for end-to-end repo-changing work",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-AGENTS-CODEX-ENDTOEND",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/agents-codex-endtoend-default"
+  },
+  "commit": {
+    "message": "docs: make Codex execute TP lifecycle end-to-end",
+    "allowlist": [
+      "AGENTS.md",
+      "task-packets/INDEX.md",
+      "task-packets/TP-DMX-AGENTS-CODEX-ENDTOEND-0001.json"
+    ],
+    "verify": [
+      "python3 -m json.tool task-packets/TP-DMX-AGENTS-CODEX-ENDTOEND-0001.json >/dev/null",
+      "python3 - <<'PY'\nimport json\nfrom pathlib import Path\npacket = json.loads(Path('task-packets/TP-DMX-AGENTS-CODEX-ENDTOEND-0001.json').read_text())\nroot_allowed = {'id','project','target','repo_binding','series','execution','commit','pr','pal_chain','steps'}\nassert set(packet) <= root_allowed\nfor key in ['id','project','target','repo_binding','series','commit','pr','steps']:\n    assert key in packet\nassert packet['project'] == 'dopemux-mvp'\nassert packet['repo_binding']['repo_marker'] == '.dopetaskroot'\nassert packet['repo_binding']['require_identity_match'] is True\nassert packet['series']['id'] == 'DMX-AGENTS-CODEX-ENDTOEND'\nassert packet['series']['base_branch'] == 'main'\nassert packet['series']['parent_tp_id'] is None\nassert packet['series']['final_packet'] is True\nassert packet['execution']['agent'] == 'codex'\nassert packet['execution']['branch'] == 'codex/agents-codex-endtoend-default'\nfor step in packet['steps']:\n    assert step.get('id') and step.get('task') and step.get('validation')\nprint('manual TP schema check passed')\nPY",
+      "python3 - <<'PY'\nfrom pathlib import Path\nagents = Path('AGENTS.md').read_text()\npacket = Path('task-packets/TP-DMX-AGENTS-CODEX-ENDTOEND-0001.json').read_text()\nindex = Path('task-packets/INDEX.md').read_text()\nrequired = [\n    'Codex End-to-End Default',\n    'Do not stop at a standalone Task Packet',\n    'fresh dedicated worktree',\n    'codereview before precommit',\n    'git diff --check',\n    'Final confidence must be `VERIFIED`',\n    'No proof means incomplete',\n    'dopecon-bridge routes, proxies, and transports events only'\n]\nfor phrase in required:\n    assert phrase in agents, phrase\nassert 'TP-DMX-AGENTS-CODEX-ENDTOEND-0001' in packet\nassert 'TP-DMX-AGENTS-CODEX-ENDTOEND-0001' in index\nprint('instruction sanity check passed')\nPY",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "Make Codex execute TP lifecycle end-to-end by default",
+    "body": "## Summary\n- Update durable repo guidance so non-trivial Codex repo-changing work creates and executes a Task Packet end-to-end.\n- Preserve Dopemux authority boundaries, truth hierarchy, PAL discipline, proof standards, and UNKNOWN handling.\n- Add the governing TP and register it in the task-packet index.\n\n## Validation\n- JSON parse and manual schema checks for the TP.\n- AGENTS.md instruction sanity checks.\n- git diff --check.\n\n## Residual risks / UNKNOWNs\n- origin/main does not contain a tracked dopetask-cannonical-spec.json; schema validation uses the schema inspected in the dirty primary checkout when available, otherwise manual schema checks.\n- Agent runtime authority remains UNKNOWN across multiple agent families.\n\nFuture non-trivial repo-changing work should be TP-created and executed by Codex end-to-end, not answered as a standalone TP dump.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight and authority inspection.",
+      "requirements": [
+        "Inspect primary checkout identity, remotes, branch, status, and repo markers.",
+        "Read present authority files and preserve UNKNOWN where tracked base branch lacks uploaded authority artifacts."
+      ],
+      "commands": [
+        "pwd",
+        "git rev-parse --show-toplevel",
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short",
+        "find . -maxdepth 1 \\( -name .git -o -name .dopemux -o -name .dopetaskroot -o -name .dopetask-pin \\) -print"
+      ],
+      "validation": [
+        "Repo identity is dopemux-mvp with origin https://github.com/DDD-Enterprises/dopemux-mvp.git.",
+        "Strongest proven repo marker is .dopetaskroot.",
+        "Base branch is main."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "config/instructions/agents.instructions.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "TP creation and schema validation.",
+      "requirements": [
+        "Create this packet before implementation.",
+        "Use only schema-declared fields.",
+        "Record validation commands in commit.verify."
+      ],
+      "commands": [
+        "python3 -m json.tool task-packets/TP-DMX-AGENTS-CODEX-ENDTOEND-0001.json >/dev/null",
+        "manual schema check using declared root and nested fields"
+      ],
+      "expected_files": [
+        "task-packets/TP-DMX-AGENTS-CODEX-ENDTOEND-0001.json",
+        "task-packets/INDEX.md"
+      ],
+      "validation": [
+        "Packet JSON parses.",
+        "Packet contains required root fields.",
+        "Every step has id, task, and non-empty validation."
+      ],
+      "context_files": [
+        "task-packets/INDEX.md",
+        "task-packets/TP-DMX-REPOHYG-001.json"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Update durable agent guidance.",
+      "requirements": [
+        "Update AGENTS.md only for durable Codex/agent execution guidance.",
+        "Do not modify production code, schemas, dependency files, or generated assembled files.",
+        "Preserve architecture boundaries and truth hierarchy."
+      ],
+      "expected_files": [
+        "AGENTS.md"
+      ],
+      "validation": [
+        "AGENTS.md states Codex must not stop at a standalone TP for non-trivial repo-changing work.",
+        "AGENTS.md includes preflight, worktree, TP validation, slice validation, review, precommit, commit, push, PR, proof, and cleanup closeout.",
+        "AGENTS.md preserves PM, memory, retrieval, bridge, ADHD, and repo-truth boundaries."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Validate docs/instruction consistency.",
+      "requirements": [
+        "Inspect config/instructions/agents.instructions.md and clearly active repo-local agent instructions.",
+        "Update only if proven to govern Codex or repo-wide agent behavior.",
+        "Leave unproven surfaces untouched and record UNKNOWN."
+      ],
+      "validation": [
+        "config/instructions/agents.instructions.md is not changed unless proven active for this Codex behavior.",
+        "AGENTS.md records UNKNOWN for unresolved agent runtime authority.",
+        "Instruction sanity check passes."
+      ],
+      "context_files": [
+        "config/instructions/agents.instructions.md",
+        ".github/copilot-instructions.md"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Review, commit, push, PR, proof, cleanup.",
+      "requirements": [
+        "Inspect git diff --stat and full git diff.",
+        "Perform codereview-equivalent review before precommit.",
+        "Run targeted validation and git diff --check.",
+        "Commit only allowlisted files, push branch, open PR when authenticated, emit proof, and remove worktree when safe after PR creation."
+      ],
+      "validation": [
+        "Codereview confirms no architecture boundary collapse, no standalone-TP default remains, and TP lifecycle closeout is explicit.",
+        "Precommit-equivalent gate confirms validations passed, no forbidden files changed, no secrets exposed, and no generated noise committed.",
+        "PR URL or exact blocker is reported.",
+        "Cleanup status is reported."
+      ]
+    }
+  ]
+}
