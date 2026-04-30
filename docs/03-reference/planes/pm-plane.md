@@ -54,7 +54,7 @@ It does not own all PM truth. `src/dopemux/pm/writes.py` assigns only workflow-s
 
 ### Leantime
 
-Leantime is treated by the dopemux PM layer as PM metadata authority and sprint/project snapshot authority. `src/dopemux/pm/writes.py` routes passive metadata updates to `leantime_client.update_task(...)` and mirrors workflow transitions back to `leantime_client.update_status(...)`. `src/dopemux/pm/reads.py` uses `LeantimeJSONRPCClient` for sprint snapshots through `get_project(...)` and `get_tickets(...)`.
+Leantime is treated by the dopemux PM layer as PM metadata authority and sprint/project snapshot authority. `src/dopemux/pm/writes.py` routes passive metadata updates to `leantime_client.update_ticket(...)`, with `update_task(...)` retained only as a legacy injected-client shim. `src/dopemux/pm/reads.py` uses `LeantimeJSONRPCClient` for sprint snapshots through `get_project(...)` and `get_tickets(...)`.
 
 In this repo, Leantime is mostly reached through adapters and route builders rather than local application code. The repo does not prove Leantime as the owner of workflow legality, decision context, or chronicle history.
 
@@ -102,7 +102,7 @@ This means PM context reads are already split inside the ConPort integration its
 - `pm_get_blockers(...)`
 - `pm_get_workflow_state(...)`
 
-These calls go through `TaskOrchestratorAdapter`, which defaults to `TASK_ORCHESTRATOR_URL=http://localhost:3014` and calls:
+These calls go through `TaskOrchestratorAdapter`, which defaults to `TASK_ORCHESTRATOR_URL=http://localhost:8000` and calls:
 
 - `GET /api/projects/{project_id}/workflow/queue`
 - `GET /api/projects/{project_id}/workflow/blockers`
@@ -135,15 +135,15 @@ Observed PM writes are also split by concern.
 
 ### Metadata updates
 
-`src/dopemux/pm/writes.py` `pm_update_work_item(...)` treats Leantime as canonical for passive metadata. It rejects workflow-significant fields, fails closed if the Leantime client is missing, and calls `leantime_client.update_task(...)`. The returned receipt declares `canonical_system="leantime"`.
+`src/dopemux/pm/writes.py` `pm_update_work_item(...)` treats Leantime as canonical for passive metadata. It rejects workflow-significant fields, fails closed if the Leantime client is missing, and calls `leantime_client.update_ticket(...)` when the client exposes that method. `update_task(...)` remains a legacy injected-client fallback. The returned receipt declares `canonical_system="leantime"`.
 
 This is the clearest observed PM metadata write authority in the repo.
 
 ### Workflow transitions
 
-`src/dopemux/pm/writes.py` `pm_transition_work_item(...)` treats task-orchestrator as canonical for workflow-significant transitions. It calls `orchestrator_client.transition(...)` first, then best-effort mirrors the resulting status into Leantime through `leantime_client.update_status(...)`. The returned receipt declares `canonical_system="task-orchestrator"` and includes Leantime mirror receipts.
+`src/dopemux/pm/writes.py` `pm_transition_work_item(...)` treats task-orchestrator as canonical for workflow-significant transitions. It calls `orchestrator_client.transition(...)` through the project-scoped workflow transition path. The returned receipt declares `canonical_system="task-orchestrator"` and currently returns no Leantime mirror receipts from this helper.
 
-The HTTP surface for this shared logic is `services/task-orchestrator/app/api/pm_tools.py` `POST /api/pm/work-items/{task_id}/transition`. The project-scoped workflow transition surface also exists in `services/task-orchestrator/app/api/project_workflow.py` `POST /api/projects/{project_id}/workflow/transition`.
+The PM tools router surface for this shared logic is `services/task-orchestrator/app/api/pm_tools.py` `POST /api/pm/work-items/{task_id}/transition`. The project-scoped workflow transition surface also exists in `services/task-orchestrator/app/api/project_workflow.py` `POST /api/projects/{project_id}/workflow/transition`, and this project-scoped route is included by the active `services/task-orchestrator/app/main.py` FastAPI app.
 
 Write ownership is therefore fragmented but explicit: workflow transitions are not owned by Leantime in the dopemux PM layer.
 
@@ -191,7 +191,27 @@ Write ownership is fragmented by design in the observed code:
 
 The repo does not support a single PM writer claim.
 
-## 6. Authority Model
+## 6. Endpoint Contract
+
+Observed endpoint defaults and writer labels in the current PM surfaces:
+
+| PM slice | Canonical writer | Runtime/default endpoint | Code authority | Receipt behavior |
+| --- | --- | --- | --- | --- |
+| Passive metadata | Leantime | `LEANTIME_API_URL` or `LEANTIME_URL`, default `http://localhost:8080`; JSON-RPC endpoint `/api/jsonrpc` for reads | `src/dopemux/pm/writes.py` `pm_update_work_item(...)`; `src/dopemux/pm/reads.py` `_leantime_client(...)` | `canonical_system="leantime"`; no mirror receipts from metadata helper |
+| Workflow transitions | task-orchestrator | `TASK_ORCHESTRATOR_URL`, default `http://localhost:8000`; `POST /api/projects/{project_id}/workflow/transition` | `src/dopemux/pm/writes.py` `pm_transition_work_item(...)`; `src/dopemux/pm/adapters/orchestrator.py` `SyncTaskOrchestratorAdapter.transition(...)` | `canonical_system="task-orchestrator"`; no Leantime mirror receipt in current helper |
+| Progress logging | ConPort | `CONPORT_URL`, default `http://localhost:3004`; progress writer is injected as `conport_client.record_progress(...)` | `src/dopemux/pm/writes.py` `pm_log_progress(...)`; `src/dopemux/pm/adapters/conport.py` | `canonical_system="conport"`; dope-memory appears only as `mirror_receipts[].system` |
+| Decision logging | ConPort | `CONPORT_URL`, default `http://localhost:3004`; decision context reads call `GET /api/decisions` | `src/dopemux/pm/writes.py` `pm_log_decision(...)`; `src/dopemux/pm/adapters/conport.py` | `canonical_system="conport"`; dope-memory appears only as `mirror_receipts[].system` |
+| Historical PM receipts | dope-memory | `DOPE_MEMORY_URL`, default `http://localhost:3020`; `POST /tools/memory_store` in the async adapter | `src/dopemux/pm/writes.py` mirror receipt construction; `src/dopemux/pm/adapters/dope_memory.py` | mirror only for PM write helpers; not current PM state |
+| Project context reads | ConPort | `CONPORT_CONTEXT_URL`, default `http://localhost:3005`; `GET /api/context/{workspace_id}` | `src/dopemux/pm/reads.py` `_conport_context_client(...)` | read envelope labels `canonical_backend="conport"` |
+
+The ConPort `3004` and `3005` split remains explicit. This document does not claim those endpoints are unified, and it does not imply a single PM reader reconciles Leantime, task-orchestrator, ConPort, and dope-memory into one stored PM snapshot.
+
+Command-level validation for this contract:
+
+- `python -m pytest -q tests/unit/test_pm_authority_endpoints.py`
+- `python scripts/verify_runtime_authority.py --manifest config/runtime_authority_manifest.json --check static`
+
+## 7. Authority Model
 
 Authority must be classified per PM slice, not per brand name.
 
@@ -205,7 +225,7 @@ Authority must be classified per PM slice, not per brand name.
 ### Workflow transition authority
 
 - canonical: task-orchestrator, as used by `src/dopemux/pm/writes.py` `pm_transition_work_item(...)` and served by `services/task-orchestrator/app/api/project_workflow.py`
-- derived: Leantime reflections after task-orchestrator transitions
+- derived: any downstream reflections after task-orchestrator transitions
 - operational: bridge policy blocks and adapter routing around workflow mutations
 - unknown: whether task-orchestrator runtime authority is consistently exercised through the intended `app/main.py` path in deployed packaging, because Docker and code paths conflict
 
@@ -230,13 +250,15 @@ Authority must be classified per PM slice, not per brand name.
 - derived: PM-facing representations of runtime task state
 - unknown: one unified execution authority across dopetask, task-orchestrator runtime tasks, and other agent/task families is not proven
 
-## 7. Known Drift / Issues
+## 8. Known Drift / Issues
 
 - Bridge breadth vs non-authority is real drift. `services/dopecon-bridge/dopecon_bridge/routes.py` exposes `/route/pm`, `/kg/*`, and `/ddg/*`, but its module header explicitly says bridge must not be canonical task, workflow, decision, or progress authority.
 
-- Task-orchestrator runtime and port configuration conflict. `src/dopemux/pm/adapters/orchestrator.py` defaults to `http://localhost:3014`, while `compose.yml` and `services/registry.yaml` expose task-orchestrator on `8000`. The repo-truth pack also marks Docker/runtime entrypoint conflict between `services/task-orchestrator/app/main.py`, `services/task-orchestrator/task_orchestrator/app.py`, and `services/task-orchestrator/Dockerfile`.
+- Task-orchestrator legacy surfaces still carry stale port or runtime assumptions in places outside the active PM adapter path. `src/dopemux/pm/adapters/orchestrator.py`, `compose.yml`, and `services/registry.yaml` now align on `8000`, while the runtime authority manifest still records legacy `3014` references under known conflicts.
 
 - PM reads use split ConPort ports. `src/dopemux/pm/reads.py` reads project context through `ConPortClient` defaulting to `3005`, but decision context through `ConPortAdapter` defaulting to `3004`. That is an observed interface split inside one PM backend role.
+
+- PM tools router registration is not claimed as active runtime wiring here. `services/task-orchestrator/app/api/pm_tools.py` defines `/api/pm/work-items/{task_id}/update`, `/transition`, and `/progress`, but the active `services/task-orchestrator/app/main.py` route table observed by tests includes the project workflow router, not the PM tools router.
 
 - Task-orchestrator workflow persistence is not task-orchestrator-local. `services/task-orchestrator/app/services/workflow_store.py` persists workflow ideas, epics, and audit via DopeconBridge custom-data categories. This means task-orchestrator serves workflow authority while depending on bridge-mediated storage.
 
@@ -248,7 +270,7 @@ Authority must be classified per PM slice, not per brand name.
 
 - dope-memory is PM-adjacent but not PM state authority. The repo makes this explicit, but its presence in PM mirror receipts can still mislead downstream readers into treating chronicle history as current PM truth.
 
-## 8. Working Rules
+## 9. Working Rules
 
 - Trust Leantime for passive work-item metadata and project/ticket snapshot reads when the question is about PM record data rather than workflow legality.
 
