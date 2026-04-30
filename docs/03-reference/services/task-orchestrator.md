@@ -67,10 +67,12 @@ That FastAPI app currently combines:
 
 ## Runtime defaults
 
-- Config module: `services/task-orchestrator/task_orchestrator/config.py`
-- Default port: `PORT_BASE + 14`
-- With default `PORT_BASE=3000`, the observed default resolves to `3014`
-- The `/info` route also reports `3014` as the default fallback port when `PORT` is unset
+- Active app runtime: `services/task-orchestrator/app/main.py`
+- Container entrypoint: `uvicorn app.main:app --host 0.0.0.0 --port 8000`
+- Default app/container/compose/registry port: `8000`
+- Unsupported runtime marker: `services/task-orchestrator/task_orchestrator/app.py`
+- Historical/legacy port references to `3014` remain outside the active Docker/compose/registry/app path
+- `docker/compose.core.yml` is named by older packet/docs material but is absent in this checkout
 
 ## Persistence boundary
 
@@ -99,9 +101,11 @@ This is runtime fact, not intended authority expansion. It means current workflo
 ## Known drift to keep explicit
 
 - Architectural target: Task Orchestrator is the workflow authority
+- Runtime packaging status: active Docker/compose/registry/app surfaces agree on `app.main:app` at `8000`
 - Runtime drift: primary workflow persistence still depends on dopecon-bridge `custom_data`
 - Runtime drift: `/api/projects/{project_id}/workflow/transition` is present but not yet bound to canonical transition execution
 - Runtime drift: adjacent PM read envelopes elsewhere in the repo still contain stale backend labels; do not infer authority from those envelopes alone
+- Runtime drift: legacy MCP bridge and historical docs still mention `3014`; those are not active port authority
 
 ## Evidence companions
 
