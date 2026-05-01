@@ -7,13 +7,36 @@ from click.testing import CliRunner
 from dopemux.cli import cli
 
 
-def test_repscan_cli_passthrough_invokes_runner_with_raw_args() -> None:
+def test_legacy_repscan_cli_is_disabled_with_canonical_replacement() -> None:
     runner = CliRunner()
     with patch("dopemux.cli._run_repscan_runner") as mocked:
         result = runner.invoke(
             cli,
             [
                 "repscan",
+                "--promptgen",
+                "v1",
+                "--phase",
+                "C",
+                "--run-id",
+                "RID123",
+                "--promptgen-only",
+            ],
+        )
+
+    assert result.exit_code != 0, result.output
+    assert "dopemux rte scan" in result.output
+    mocked.assert_not_called()
+
+
+def test_rte_scan_invokes_runner_with_raw_args() -> None:
+    runner = CliRunner()
+    with patch("dopemux.cli._run_repscan_runner") as mocked:
+        result = runner.invoke(
+            cli,
+            [
+                "rte",
+                "scan",
                 "--promptgen",
                 "v1",
                 "--phase",

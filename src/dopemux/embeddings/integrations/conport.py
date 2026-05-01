@@ -27,7 +27,12 @@ class ConPortAdapter(BaseIntegration):
     ADHD-optimized knowledge graph integration.
     """
 
-    def __init__(self, config: AdvancedEmbeddingConfig, workspace_id: str):
+    def __init__(
+        self,
+        config: AdvancedEmbeddingConfig,
+        workspace_id: str,
+        conport_client: Optional[Any] = None,
+    ):
         """
         Initialize ConPort adapter.
 
@@ -37,6 +42,8 @@ class ConPortAdapter(BaseIntegration):
         """
         super().__init__(config)
         self.workspace_id = workspace_id
+        self.conport_client = conport_client
+        self.integration_name = "conport"
         self.connection_status = "unknown"
         self.last_sync_time: Optional[datetime] = None
 
@@ -59,11 +66,10 @@ class ConPortAdapter(BaseIntegration):
             True if ConPort is accessible and responsive
         """
         try:
-            # Mock ConPort health check - in practice this would call MCP
-            # Example: await mcp_conport.get_product_context(workspace_id=self.workspace_id)
-
-            # Simulate connection check
-            await asyncio.sleep(0.1)  # Simulate network delay
+            if self.conport_client is not None:
+                await self.conport_client.get_active_context()
+            else:
+                await asyncio.sleep(0)
 
             self.connection_status = "healthy"
             logger.info("✅ ConPort connection validated")
@@ -273,13 +279,19 @@ class ConPortAdapter(BaseIntegration):
 
             for doc, embedding in zip(documents, embeddings):
                 try:
-                    # Mock storage - would use actual MCP calls
-                    # Example: await mcp_conport.store_embedding(
-                    #     workspace_id=self.workspace_id,
-                    #     doc_id=doc['id'],
-                    #     embedding=embedding,
-                    #     metadata=doc['metadata']
-                    # )
+                    if self.conport_client is not None:
+                        enhanced_doc = await self._add_adhd_metadata(doc)
+                        await self.conport_client.log_custom_data(
+                            workspace_id=self.workspace_id,
+                            category="DocumentEmbeddings",
+                            key=f"embedding_{doc['id']}",
+                            value={
+                                "document_id": doc["id"],
+                                "embedding_vector": embedding,
+                                "metadata": doc.get("metadata", {}),
+                                "adhd_metadata": enhanced_doc["adhd_metadata"],
+                            },
+                        )
 
                     stored_count += 1
 
@@ -310,9 +322,25 @@ class ConPortAdapter(BaseIntegration):
         """
         try:
             enhanced_results = []
+            query = context.get("query", "")
+            related_decisions = []
+            project_patterns = []
+            if self.conport_client is not None:
+                try:
+                    related_decisions = await self.conport_client.semantic_search_conport(query=query)
+                except Exception:
+                    related_decisions = []
+                try:
+                    project_patterns = await self.conport_client.get_custom_data(category="system_patterns")
+                except Exception:
+                    project_patterns = []
 
             for result in results:
                 enhanced_result = result  # Copy original result
+                enhanced_result.metadata["conport_context"] = {
+                    "related_decisions": related_decisions,
+                    "project_patterns": project_patterns,
+                }
 
                 # Add ConPort contextual metadata
                 if result.doc_id.startswith("decision_"):
@@ -379,6 +407,42 @@ class ConPortAdapter(BaseIntegration):
         # Mock implementation
         return []
 
+    async def _add_adhd_metadata(self, document: Dict[str, Any]) -> Dict[str, Any]:
+        content = document.get("content", "")
+        enhanced = dict(document)
+        enhanced["adhd_metadata"] = {
+            "urgency_level": self._calculate_urgency_level(content),
+            "complexity_score": self._calculate_content_complexity(content),
+            "estimated_focus_time": self._estimate_focus_time(content),
+            "context_tags": document.get("metadata", {}).get("tags", []),
+        }
+        return enhanced
+
+    async def _get_relevant_decisions(self, query: str) -> List[Dict[str, Any]]:
+        if self.conport_client is None:
+            return []
+        try:
+            summary = await self.conport_client.get_recent_activity_summary()
+        except Exception:
+            return []
+        return list(summary.get("decisions", []))
+
+    def _calculate_urgency_level(self, content: str) -> int:
+        lowered = content.lower()
+        if any(token in lowered for token in ["urgent", "critical", "production", "immediate", "blocker"]):
+            return 5
+        if any(token in lowered for token in ["sprint", "feature request", "next"]):
+            return 3
+        return 1
+
+    def _calculate_content_complexity(self, content: str) -> float:
+        words = content.split()
+        technical_terms = ["algorithm", "architecture", "neural", "machine", "optimization", "implementation"]
+        score = 1 + min(len(words) / 80, 3)
+        if any(term in content.lower() for term in technical_terms):
+            score += 1
+        return max(1, min(score, 5))
+
     def _calculate_urgency(self, result: SearchResult) -> str:
         """Calculate ADHD-friendly urgency indicator."""
         # Simplified urgency calculation
@@ -400,17 +464,13 @@ class ConPortAdapter(BaseIntegration):
         else:
             return "low"
 
-    def _estimate_focus_time(self, result: SearchResult) -> str:
+    def _estimate_focus_time(self, result: Any) -> int:
         """Estimate focus time needed for ADHD time management."""
-        complexity = self._calculate_complexity(result)
-
-        time_mapping = {
-            "low": "5-15 minutes",
-            "medium": "20-45 minutes",
-            "high": "1-2 hours (break into chunks)"
-        }
-
-        return time_mapping.get(complexity, "unknown")
+        content = result.content if isinstance(result, SearchResult) else str(result)
+        minutes = max(3, len(content.split()) // 40 * 5)
+        if any(term in content.lower() for term in ["algorithm", "optimization", "implementation"]):
+            minutes += 10
+        return minutes
 
     def get_integration_status(self) -> Dict[str, Any]:
         """

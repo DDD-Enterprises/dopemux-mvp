@@ -113,7 +113,7 @@ class TestDocumentPipeline:
     def mock_provider(self):
         """Create mock embedding provider."""
         provider = AsyncMock(spec=VoyageAPIClient)
-        provider.embed_texts.return_value = [[0.1] * 2048, [0.2] * 2048]
+        provider.embed_texts.side_effect = lambda texts: [[0.1] * 2048 for _ in texts]
         return provider
 
     @pytest.fixture

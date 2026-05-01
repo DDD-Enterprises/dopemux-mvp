@@ -17,13 +17,37 @@ sys.path.insert(0, str(extraction_path))
 
 try:
     # Import from our extraction package
-    from document_classifier import DocumentClassifier
-    from adhd_entities import ADHDEntityExtractor
-    from markdown_patterns import MarkdownPatternExtractor
-    from yaml_extractor import YamlExtractor
+    from document_classifier import DocumentClassifier, MarkdownPatternExtractor, YamlExtractor
 except ImportError as e:
     print(f"⚠️ Could not import extraction modules: {e}")
     print("Make sure you're running from the dopemux-mvp directory")
+    DocumentClassifier = None
+    MarkdownPatternExtractor = None
+    YamlExtractor = None
+
+try:
+    from adhd_entities import ADHDEntityExtractor
+except ImportError:
+    class ADHDEntityExtractor:
+        """Deterministic fallback ADHD extractor."""
+
+        def extract_to_dict(self, content: str, filename: str) -> Dict[str, List[Dict[str, Any]]]:
+            lower_content = content.lower()
+            if "adhd" not in lower_content and "attention" not in lower_content:
+                return {}
+            return {
+                "attention_support": [{
+                    "content": "ADHD/attention-related content detected",
+                    "value": filename,
+                    "confidence": 0.6,
+                }]
+            }
+
+        def extract_adhd_profile(self, content: str) -> Optional[Dict[str, Any]]:
+            lower_content = content.lower()
+            if "adhd" not in lower_content and "attention" not in lower_content:
+                return None
+            return {"detected": True, "confidence": 0.6}
 
 # Import from analysis module
 try:
@@ -69,6 +93,9 @@ class UnifiedDocumentExtractor:
 
     def __init__(self):
         """Initialize all extraction components."""
+        if DocumentClassifier is None or MarkdownPatternExtractor is None or YamlExtractor is None:
+            raise RuntimeError("Local document extraction modules are unavailable")
+
         # Layer 1: Basic extraction
         self.document_classifier = DocumentClassifier()
         self.markdown_extractor = MarkdownPatternExtractor()

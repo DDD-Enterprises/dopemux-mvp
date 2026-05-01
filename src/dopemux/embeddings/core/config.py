@@ -16,6 +16,9 @@ logger = logging.getLogger(__name__)
 class IndexType(str, Enum):
     """Supported vector index types."""
     HNSW = "hnsw"              # Hierarchical Navigable Small World
+    FAISS = "faiss"            # FAISS flat/IVF family
+    BM25 = "bm25"              # Lexical-only index
+    HYBRID = "hybrid"          # BM25 + best available local vector index
     IVF_PQ = "ivf_pq"          # Inverted File with Product Quantization
     SCANN = "scann"            # Scalable Nearest Neighbors
 
@@ -26,6 +29,17 @@ class SecurityLevel(str, Enum):
     INTERNAL = "internal"      # Company-internal documents
     CONFIDENTIAL = "confidential"  # Requires PII redaction
     RESTRICTED = "restricted"  # On-premise only, no cloud APIs
+
+    def __lt__(self, other):
+        if not isinstance(other, SecurityLevel):
+            return NotImplemented
+        order = {
+            SecurityLevel.PUBLIC: 0,
+            SecurityLevel.INTERNAL: 1,
+            SecurityLevel.CONFIDENTIAL: 2,
+            SecurityLevel.RESTRICTED: 3,
+        }
+        return order[self] < order[other]
 
 
 @dataclass
@@ -47,27 +61,33 @@ class AdvancedEmbeddingConfig:
     # Initial static weights (will be optimized via learning-to-rank)
     bm25_weight: float = 0.3
     vector_weight: float = 0.7
-    enable_learning_to_rank: bool = False  # Requires training data
+    enable_learning_to_rank: bool = True   # Uses static weights until trained
+    search_k_multiplier: int = 2
 
     # === Vector Index Configuration ===
-    index_type: IndexType = IndexType.HNSW
+    index_type: IndexType = IndexType.HYBRID
     enable_quantization: bool = True       # 8-bit PQ for 4x memory reduction
+    quantization_bits: int = 8
     distance_metric: str = "cosine"        # cosine, l2, ip
 
     # HNSW-specific parameters (expert-recommended)
     hnsw_m: int = 32                      # Connections per node
+    hnsw_max_m: int = 32                  # Compatibility alias for max M
     hnsw_ef: int = 128                    # Search parameter
-    hnsw_ef_construction: int = 200       # Build parameter
+    hnsw_ef_construction: int = 128       # Build parameter
 
     # IVF-PQ parameters
     ivf_nlist: int = 2048                 # Number of clusters
     pq_m: int = 64                        # Product quantization subspaces
 
     # === Performance Configuration ===
-    batch_size: int = 8                   # Embedding batch size (GPU optimized)
+    batch_size: int = 16                  # Embedding batch size (GPU optimized)
     top_k_candidates: int = 25            # Candidates for reranking (vs 100)
     rerank_batch_size: int = 4            # Reranker batch size
     max_concurrent_requests: int = 10     # API concurrency limit
+    search_timeout: float = 10.0
+    log_level: str = "INFO"
+    enable_performance_metrics: bool = True
 
     # === Storage Configuration ===
     persist_directory: str = "./.advanced_vectors"
@@ -77,6 +97,10 @@ class AdvancedEmbeddingConfig:
     # === Security & Privacy ===
     security_level: SecurityLevel = SecurityLevel.INTERNAL
     enable_pii_redaction: bool = False    # Auto-enabled for CONFIDENTIAL+
+    enable_pii_detection: bool = True
+    pii_redaction_mode: str = "mask"
+    audit_embedding_requests: bool = True
+    require_encryption: bool = False
     use_on_premise: bool = False          # Use local models vs APIs
     redaction_patterns: List[str] = field(default_factory=list)
 
@@ -91,9 +115,16 @@ class AdvancedEmbeddingConfig:
     progress_update_interval: int = 100   # Update every N documents
     visual_progress_indicators: bool = True
     gentle_error_messages: bool = True
+    enable_reranking: bool = True
+    max_results_display: int = 10
+    result_complexity_scoring: bool = True
+    enable_result_preview: bool = True
+    enable_code_analysis: bool = False
+    enable_semantic_search: bool = True
 
     # === Multi-Model Consensus ===
     enable_consensus: bool = False        # Expensive, use selectively
+    enable_consensus_validation: bool = False
     consensus_models: List[str] = field(default_factory=lambda: [
         "text-embedding-3-large",         # OpenAI comparison
         "embed-english-v3.0"              # Cohere comparison
@@ -110,15 +141,24 @@ class AdvancedEmbeddingConfig:
         # Auto-enable PII redaction for sensitive data
         if self.security_level in [SecurityLevel.CONFIDENTIAL, SecurityLevel.RESTRICTED]:
             self.enable_pii_redaction = True
+            self.enable_pii_detection = True
 
         # Force on-premise for restricted data
         if self.security_level == SecurityLevel.RESTRICTED:
             self.use_on_premise = True
+            self.require_encryption = True
+            self.pii_redaction_mode = "remove"
             logger.warning("🔒 Restricted data detected - forcing on-premise processing")
 
         # Validate dimensions
-        if self.embedding_dimension not in [1024, 2048]:
+        if self.embedding_dimension not in [384, 1024, 1536, 2048, 3072]:
             logger.warning(f"⚠️ Unusual embedding dimension: {self.embedding_dimension}")
+
+        # Keep compatibility aliases synchronized with the canonical settings.
+        self.hnsw_max_m = self.hnsw_m
+        self.enable_pii_redaction = self.enable_pii_redaction or self.enable_pii_detection
+        self.enable_consensus = self.enable_consensus or self.enable_consensus_validation
+        self.enable_consensus_validation = self.enable_consensus_validation or self.enable_consensus
 
         # Validate weights
         if abs(self.bm25_weight + self.vector_weight - 1.0) > 0.01:

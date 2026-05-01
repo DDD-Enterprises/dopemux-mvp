@@ -15,6 +15,7 @@ from .base import (
 
 # Vector index implementations
 from .vector_indices import (
+    InMemoryVectorIndex,
     HNSWIndex,
     FAISSIndex
 )
@@ -44,6 +45,7 @@ __all__ = [
     "BaseDocumentStore",
 
     # Vector indices
+    "InMemoryVectorIndex",
     "HNSWIndex",
     "FAISSIndex",
 

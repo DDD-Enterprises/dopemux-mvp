@@ -14,13 +14,12 @@ def test_legacy_extractor_help_points_to_truth_run() -> None:
     assert "dopemux rte" in result.output.lower()
 
 
-def test_legacy_extractor_run_warns_about_canonical_truth_run() -> None:
+def test_legacy_extractor_run_is_disabled_with_canonical_replacement() -> None:
     result = CliRunner().invoke(extractor, ["run"])
 
-    assert result.exit_code == 0
-    assert "legacy promptset tooling" in result.output
+    assert result.exit_code != 0
+    assert "legacy command disabled" in result.output.lower()
     assert "dopemux rte run" in result.output
-    assert "canonical operator path" in result.output.lower()
 
 
 def test_legacy_extractor_status_help_marks_promptset_scope() -> None:
@@ -31,7 +30,7 @@ def test_legacy_extractor_status_help_marks_promptset_scope() -> None:
     assert "not the canonical runtime run-status surface" in result.output.lower()
 
 
-def test_legacy_extractor_status_alias_warns_and_accepts_runtime_options() -> None:
+def test_legacy_extractor_status_alias_is_disabled_for_runtime_options() -> None:
     from unittest.mock import patch
 
     with patch("dopemux.commands.extractor_commands._run_extractor_runner") as mocked:
@@ -40,12 +39,9 @@ def test_legacy_extractor_status_alias_warns_and_accepts_runtime_options() -> No
             ["status", "--pipeline-version", "v4", "--run-id", "rid2"],
         )
 
-    assert result.exit_code == 0
-    assert "legacy alias" in result.output.lower()
-    mocked.assert_called_once_with(
-        pipeline_version="v4",
-        args=["--status", "--run-id", "rid2"],
-    )
+    assert result.exit_code != 0
+    assert "dopemux rte status" in result.output
+    mocked.assert_not_called()
 
 
 def test_truth_run_help_remains_canonical_operator_surface() -> None:
@@ -62,6 +58,6 @@ def test_cli_import_does_not_override_legacy_extractor_run_command() -> None:
 
     result = CliRunner().invoke(extractor, ["run"])
 
-    assert result.exit_code == 0
-    assert "legacy promptset tooling" in result.output
-    assert "direct execution is disabled" in result.output.lower()
+    assert result.exit_code != 0
+    assert "legacy command disabled" in result.output.lower()
+    assert "dopemux rte run" in result.output

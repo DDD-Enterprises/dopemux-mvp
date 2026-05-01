@@ -23,6 +23,23 @@ from .base import BaseTextIndex
 logger = logging.getLogger(__name__)
 
 
+class _SimpleBM25Okapi:
+    """Small lexical scorer fallback used when rank_bm25 is not installed."""
+
+    def __init__(self, corpus):
+        self.corpus = corpus
+
+    def get_scores(self, query_tokens):
+        query_set = set(query_tokens)
+        scores = []
+        for document_tokens in self.corpus:
+            token_set = set(document_tokens)
+            overlap = query_set & token_set
+            score = float(sum(document_tokens.count(token) for token in overlap))
+            scores.append(score)
+        return np.asarray(scores, dtype=np.float32)
+
+
 class BM25Index(BaseTextIndex):
     """
     BM25 text search index for lexical keyword matching.
@@ -42,7 +59,7 @@ class BM25Index(BaseTextIndex):
             ImportError: If rank-bm25 is not available
         """
         if BM25Okapi is None:
-            raise ImportError("rank-bm25 not available. Install with: pip install rank-bm25")
+            logger.info("rank-bm25 unavailable; using dependency-free lexical fallback")
 
         self.language = language
         self.bm25: Optional[BM25Okapi] = None
@@ -53,6 +70,10 @@ class BM25Index(BaseTextIndex):
         # Basic tokenization patterns
         self.token_pattern = re.compile(r'\b\w+\b')
         self.stop_words = self._get_stop_words(language)
+
+    def _build_bm25(self):
+        scorer_cls = BM25Okapi or _SimpleBM25Okapi
+        return scorer_cls(self.tokenized_docs)
 
     def _get_stop_words(self, language: str) -> Set[str]:
         """
@@ -124,7 +145,7 @@ class BM25Index(BaseTextIndex):
 
             # Rebuild BM25 index
             if self.tokenized_docs:
-                self.bm25 = BM25Okapi(self.tokenized_docs)
+                self.bm25 = self._build_bm25()
 
             logger.debug(f"➕ Added {len(documents)} documents to BM25 index")
 
@@ -221,7 +242,7 @@ class BM25Index(BaseTextIndex):
 
             # Rebuild BM25
             if self.tokenized_docs:
-                self.bm25 = BM25Okapi(self.tokenized_docs)
+                self.bm25 = self._build_bm25()
 
             logger.info(f"📁 BM25 index loaded from {path} ({len(self.doc_ids):,} documents)")
 
@@ -316,7 +337,7 @@ class BM25Index(BaseTextIndex):
             self.tokenized_docs[doc_idx] = self._tokenize(new_content)
 
             # Rebuild BM25 index
-            self.bm25 = BM25Okapi(self.tokenized_docs)
+            self.bm25 = self._build_bm25()
 
             logger.debug(f"✏️ Updated document {doc_id} in BM25 index")
 
@@ -348,7 +369,7 @@ class BM25Index(BaseTextIndex):
 
             # Rebuild BM25 index if documents remain
             if self.tokenized_docs:
-                self.bm25 = BM25Okapi(self.tokenized_docs)
+                self.bm25 = self._build_bm25()
             else:
                 self.bm25 = None
 

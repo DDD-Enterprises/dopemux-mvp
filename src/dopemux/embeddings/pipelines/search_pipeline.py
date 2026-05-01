@@ -97,7 +97,7 @@ class SearchPipeline(BasePipeline):
         try:
             # Define pipeline stages
             stages = [
-                (PipelineStage.VALIDATION, self._validate_stage, query, search_params),
+                (PipelineStage.VALIDATION, self._validate_stage, (query, search_params)),
                 (PipelineStage.PROCESSING, self._search_stage),
                 (PipelineStage.ENHANCEMENT, self._enhancement_stage),
                 (PipelineStage.COMPLETION, self._completion_stage)
@@ -343,7 +343,9 @@ class SearchPipeline(BasePipeline):
             "final_results_count": len(self.enhanced_results),
             "quality_metrics": quality_metrics,
             "completion_duration": completion_duration,
-            "total_pipeline_duration": (datetime.now() - self.start_time).total_seconds()
+            "total_pipeline_duration": (
+                datetime.now() - (self.start_time or completion_start)
+            ).total_seconds()
         }
 
     def _add_adhd_metadata(self):
