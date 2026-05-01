@@ -50,7 +50,7 @@ def test_system_data_commands_registered():
     result = runner.invoke(system_data, ["--help"])
 
     assert result.exit_code == 0
-    for command in ("doctor", "scan", "report", "plan", "clean", "restore", "tui"):
+    for command in ("doctor", "scan", "report", "plan", "clean", "restore", "tui", "proof"):
         assert command in result.output
 
 
@@ -86,3 +86,20 @@ def test_clean_execute_requires_yes(monkeypatch):
 
     assert result.exit_code != 0
     assert "--execute requires --yes" in result.output
+
+
+def test_clean_execute_rejects_foreign_home(monkeypatch):
+    monkeypatch.setattr("dopemux.system_data.cli.scan", lambda home: _scan_result())
+
+    result = CliRunner().invoke(system_data, ["clean", "--execute", "--yes", "--home", "/"])
+
+    assert result.exit_code != 0
+    assert "--execute cannot be combined with --home" in result.output
+
+
+def test_plan_accepts_no_dry_run(monkeypatch):
+    monkeypatch.setattr("dopemux.system_data.cli.scan", lambda home: _scan_result())
+
+    result = CliRunner().invoke(system_data, ["plan", "--no-dry-run", "--home", "/tmp"])
+
+    assert result.exit_code == 0

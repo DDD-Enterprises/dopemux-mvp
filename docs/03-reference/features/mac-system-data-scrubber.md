@@ -31,6 +31,7 @@ policy, mutation, manifests, restore posture, and proof.
 - `dopemux system-data clean`
 - `dopemux system-data restore`
 - `dopemux system-data tui`
+- `dopemux system-data proof`
 
 `clean` defaults to dry-run. Dry-run does not create manifests or mutate the
 filesystem. Real mutation requires `--execute --yes`.
