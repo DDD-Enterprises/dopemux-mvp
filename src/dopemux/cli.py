@@ -2513,112 +2513,6 @@ def _trigger_dope_context_autoindex_startup(
         }
 
 
-from .commands.instances_commands import instances
-cli.add_command(instances, "instances")
-
-@cli.group("native-hooks")
-def native_hooks():
-    """
-    🔗 Protocol Synchronization: Manage Claude Code internal hooks
-
-    Orchestrates the registration and management of high-fidelity internal 
-    hooks. These rituals ensure that Claude Code activity is seamlessly 
-    synchronized with the DØPEMÜX cockpit telemetry.
-    """
-    pass
-
-@native_hooks.command("register")
-@click.option("--global", "is_global", is_flag=True, help="🌐 Global Calibration: Register ritual hooks in the global configuration ledger.")
-def native_hooks_register(is_global: bool):
-    """
-    ⚡ Synchronize Protocol: Register DØPEMÜX hooks in Claude settings
-
-    Automates the injection of ritual hook coordinates into the Claude 
-    Code configuration ledger, enabling real-time signal detection.
-    """
-    import json
-    from pathlib import Path
-    
-    # Path to this script's native hook entry point
-    hook_script = Path(__file__).resolve().parent / "claude" / "native_hooks.py"
-    cmd = f"python3 {hook_script}"
-    
-    # Define hook configuration
-    hooks_config = {
-        "hooks": {
-            "command": [
-                {
-                    "events": [
-                        "SessionStart", 
-                        "UserPromptSubmit", 
-                        "PreToolUse", 
-                        "PermissionRequest", 
-                        "PostToolUse", 
-                        "PostToolUseFailure", 
-                        "Stop", 
-                        "SubagentStop", 
-                        "PreCompact", 
-                        "SessionEnd"
-                    ],
-                    "command": cmd
-                }
-            ]
-        }
-    }
-    
-    # Target settings file
-    if is_global:
-        settings_path = Path.home() / ".claude" / "settings.json"
-    else:
-        settings_path = Path.cwd() / ".claude" / "settings.json"
-        
-    # Read existing settings
-    existing = {}
-    if settings_path.exists():
-        try:
-            existing = json.loads(settings_path.read_text())
-        except:
-            pass
-            
-    # Simple merge (Dopemux hooks first)
-    if "hooks" not in existing:
-        existing["hooks"] = {}
-    if "command" not in existing["hooks"]:
-        existing["hooks"]["command"] = []
-        
-    # Check if already registered
-    already_registered = any(h.get("command") == cmd for h in existing["hooks"]["command"])
-    
-    if not already_registered:
-        existing["hooks"]["command"].insert(0, hooks_config["hooks"]["command"][0])
-        settings_path.parent.mkdir(parents=True, exist_ok=True)
-        settings_path.write_text(json.dumps(existing, indent=2))
-        console.print(f"[success]✓ Registered Dopemux native hooks in {settings_path}[/success]")
-    else:
-        console.print(f"[info]Dopemux native hooks already registered in {settings_path}[/info]")
-
-
-@cli.command(name="pr-merge", context_settings=dict(ignore_unknown_options=True))
-@click.argument("args", nargs=-1, type=click.UNPROCESSED)
-def pr_merge_command(args):
-    """
-    🚀 Policy-Governed Enforcement: PR Merge Specialist
-
-    Engages the PR remediation and queue diagnosis engine. This specialist 
-    synchronizes across active pull requests, performing WSEMT-prioritized 
-    merging and automated conflict resolution.
-    """
-    import sys
-    from dopemux_pr_merge_specialist.cli import main as pr_merge_main
-    
-    # Bridge to the specialist's argparse CLI
-    sys.argv = ["dopemux pr-merge"] + list(args)
-    try:
-        pr_merge_main()
-    except SystemExit as e:
-        sys.exit(e.code)
-
-
 @cli.command()
 @click.option("--attention", "-a", is_flag=True, help="🧠 Cognitive Load: Show attention metrics and focus state.")
 @click.option("--context", "-c", is_flag=True, help="🔬 Mental Model: Show active mental model and context density.")
@@ -4013,11 +3907,12 @@ def native_hooks_register(is_global: bool):
     Code configuration ledger, enabling real-time signal detection.
     """
     import json
+    import shutil
     from pathlib import Path
     
     # Path to this script's native hook entry point
     hook_script = Path(__file__).resolve().parent / "claude" / "native_hooks.py"
-    cmd = f"python3 {hook_script}"
+    cmd = f"python3 {shlex.quote(str(hook_script))}"
     
     # Define hook configuration
     hooks_config = {
@@ -4048,27 +3943,50 @@ def native_hooks_register(is_global: bool):
     else:
         settings_path = Path.cwd() / ".claude" / "settings.json"
         
-    # Read existing settings
+    # Read existing settings. Invalid JSON must fail closed so a registration
+    # attempt cannot silently discard the operator's existing settings.
     existing = {}
     if settings_path.exists():
         try:
-            existing = json.loads(settings_path.read_text())
-        except:
-            pass
+            existing = json.loads(settings_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            raise click.ClickException(
+                f"Invalid JSON in {settings_path}; refusing to overwrite it: {exc}"
+            ) from exc
+        if not isinstance(existing, dict):
+            raise click.ClickException(
+                f"Invalid settings in {settings_path}; expected a JSON object"
+            )
             
     # Simple merge (Dopemux hooks first)
     if "hooks" not in existing:
         existing["hooks"] = {}
+    if not isinstance(existing["hooks"], dict):
+        raise click.ClickException(
+            f"Invalid settings in {settings_path}; hooks must be a JSON object"
+        )
     if "command" not in existing["hooks"]:
         existing["hooks"]["command"] = []
+    if not isinstance(existing["hooks"]["command"], list):
+        raise click.ClickException(
+            f"Invalid settings in {settings_path}; hooks.command must be a JSON array"
+        )
         
     # Check if already registered
-    already_registered = any(h.get("command") == cmd for h in existing["hooks"]["command"])
+    already_registered = any(
+        isinstance(h, dict) and h.get("command") == cmd
+        for h in existing["hooks"]["command"]
+    )
     
     if not already_registered:
         existing["hooks"]["command"].insert(0, hooks_config["hooks"]["command"][0])
         settings_path.parent.mkdir(parents=True, exist_ok=True)
-        settings_path.write_text(json.dumps(existing, indent=2))
+        if settings_path.exists():
+            backup_path = settings_path.with_suffix(settings_path.suffix + ".bak")
+            shutil.copy2(settings_path, backup_path)
+        tmp_path = settings_path.with_name(f".{settings_path.name}.tmp")
+        tmp_path.write_text(json.dumps(existing, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        tmp_path.replace(settings_path)
         console.print(f"[success]✓ Registered Dopemux native hooks in {settings_path}[/success]")
     else:
         console.print(f"[info]Dopemux native hooks already registered in {settings_path}[/info]")
