@@ -1,3 +1,15 @@
+---
+id: COCKPIT_FONTS_README
+title: Fonts
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-25'
+last_review: '2026-04-25'
+next_review: '2026-07-25'
+prelude: Font stack notes and substitution guidance for the cockpit design system.
+---
+
 # Fonts
 
 This design system declares the following font stack:

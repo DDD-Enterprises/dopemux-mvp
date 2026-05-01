@@ -1,3 +1,15 @@
+---
+id: COCKPIT_ASSETS_README
+title: Assets
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-25'
+last_review: '2026-04-25'
+next_review: '2026-07-25'
+prelude: Asset inventory and guardrails for the text-only cockpit design system.
+---
+
 # Assets
 
 This system has no image assets. The cockpit is text-only.

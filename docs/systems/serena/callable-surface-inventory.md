@@ -11,7 +11,7 @@ prelude: Inventory and classification of repo-proven Serena callable surfaces, w
 ---
 # Serena Callable Surface Inventory
 
-For the current merged deployment/local capability view, see [capability-manifest.md](/Users/hue/code/dopemux-mvp/docs/systems/serena/capability-manifest.md).
+For the current merged deployment/local capability view, see [capability-manifest.md](./capability-manifest.md).
 
 ## Active runtime surfaces
 

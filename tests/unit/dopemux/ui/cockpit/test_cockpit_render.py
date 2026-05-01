@@ -16,7 +16,7 @@ from dopemux.ui.cockpit.render import (
 )
 
 
-# Forbidden phrases per architecture-safety-overlay.md and the slice contract.
+# Forbidden phrases per ARCHITECTURE_SAFETY_OVERLAY.md and the slice contract.
 FORBIDDEN_PHRASES: tuple[str, ...] = (
     "Run History",
     "authority: dopemux",

@@ -1,10 +1,22 @@
+---
+id: cockpit-archive-intent-pack-2026-04-24
+title: Cockpit Archive Intent Pack - 2026-04-24
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-24'
+last_review: '2026-04-24'
+next_review: '2026-07-24'
+prelude: Archive and planned-intent evidence pack for cockpit synthesis; not runtime truth.
+---
+
 # Cockpit Archive Intent Pack - 2026-04-24
 
 Mode: evidence pack for GPT-5.5 Pro synthesis and Claude Design. No runtime code, UI, service, or adapter changes are requested by this artifact.
 
 ## 1. Repo Identity and Scope
 
-- repo root observed: `/Users/hue/code/dopemux-mvp`
+- repo root observed: `<repo-root>`
 - repo marker observed: `.dopetaskroot`
 - origin observed: `https://github.com/DDD-Enterprises/dopemux-mvp.git`
 - requested branch: `codex/cockpit-archive-intent-pack`

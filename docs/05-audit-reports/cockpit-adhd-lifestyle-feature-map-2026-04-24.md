@@ -1,3 +1,15 @@
+---
+id: cockpit-adhd-lifestyle-feature-map-2026-04-24
+title: Cockpit ADHD/Lifestyle Feature Map - 2026-04-24
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-24'
+last_review: '2026-04-24'
+next_review: '2026-07-24'
+prelude: Feature map separating runtime-backed operator support from planned-only lifestyle intent.
+---
+
 # Cockpit ADHD/Lifestyle Feature Map - 2026-04-24
 
 Mode: design-input extraction only. This file does not promote archived docs to runtime truth and does not request implementation.

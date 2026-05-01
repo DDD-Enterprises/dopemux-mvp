@@ -1,3 +1,15 @@
+---
+id: COCKPIT_TUI_DESIGN_SYSTEM_README
+title: Dopemux Cockpit TUI Design System v0
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-25'
+last_review: '2026-04-25'
+next_review: '2026-07-25'
+prelude: Terminal-native operator cockpit design system reference with split authority, closed chips, and 120x40-first layout.
+---
+
 # Dopemux Cockpit TUI Design System v0
 
 Terminal-native operator cockpit. **Authority before aesthetics.** Every pane
@@ -39,7 +51,7 @@ nothing in this folder requires the source to render.
 - **Repo:** `DDD-Enterprises/dopemux-mvp` @ `main`
 - **Brand bible:** `BRAND_SYSTEM.md`
 - **Theme (Rich/Textual):** `src/dopemux/ui/theme.py`
-- **Cockpit renderer:** `src/dopemux/ui/cockpit/{tokens.py, frame.py, render.py, model.py, seed.py}`
+- **Cockpit renderer:** `src/dopemux/ui/cockpit/{tokens.py, frame.py, render.py, model.py}`
 - **Reference screenshots:** `uploads/Screenshot 2026-04-24 at *.png`
   (web cockpit + Rich/Textual TUI for `repo-truth-extractor`)
 
@@ -116,8 +128,8 @@ is required.
 **Forbidden chips** (will fail the validator if rendered):
 `UNKNOWN`, `DEGRADED`, `FAILED`, `BLOCKED`, `SYNC`, `DRAFT`, `READY`,
 `SUCCESS`, `ERROR`. The closed set is the only set. Web equivalents map:
-`DEGRADED→OVERRIDE`, `FAILED→BLOCKER`, `BLOCKED→BLOCKER`, `SYNC→AFTERCARE`,
-`UNKNOWN→EDGE`.
+`DEGRADED→OVERRIDE`, `FAILED→BLOCKER`, `BLOCKED→BLOCKER`, `SYNC→AFTERCARE`.
+`UNKNOWN` remains literal unresolved text and is not mapped to a chip.
 
 **Sentence shapes.**
 - Success: one line. `Started: MCP services for current workspace.`

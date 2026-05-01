@@ -8,10 +8,10 @@
 subject <span style="color:#4A9E94">SRC=repo-truth-extractor</span> repo-truth-extractor
 provenance=EXTRACTED <span style="color:#4A9E94">SRC=repo-truth-extractor</span>
 <span style="color:#4A9E94">SRC=repo-truth-extractor</span> canonical=services/repo-truth-extractor/run_extraction_v5.py
-<span style="color:#4A9E94">SRC=dopemux</span>              boundary=workload view not shell owner
+<span style="color:#4A9E94">SRC=repo-truth-extractor</span>      boundary=workload view not shell owner
 <span style="color:#4A9E94">SRC=repo-truth-extractor</span> state=seed only no live run
 <span style="color:#4A9E94">────────────────────────────────────────────────</span>
-<span class="violet">Bridge actions authority: dopecon-bridge</span>
+<span class="violet">Bridge adapter/proxy: dopecon-bridge</span>
 <span style="color:#4A9E94">SRC=dopecon-bridge</span> <span class="tui-chip edge">[EDGE]</span> adapter-only segregated
 WRITE -&gt; &lt;service&gt; : &lt;action&gt;
 <span style="color:#4A9E94">SRC=dopecon-bridge</span> ADAPTER -&gt; dopecon-bridge : replay-event
