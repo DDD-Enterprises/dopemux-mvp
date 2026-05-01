@@ -267,6 +267,29 @@ class TestConsensusValidator:
             assert result["reasoning"] == "Good content"
 
     @pytest.mark.asyncio
+    async def test_get_provider_assessment_invalid_json_falls_back(self, validator):
+        """Test invalid JSON provider payload fails closed."""
+        with patch('openai.AsyncOpenAI') as mock_openai:
+            mock_client = AsyncMock()
+            mock_openai.return_value = mock_client
+
+            mock_response = MagicMock()
+            mock_response.choices = [
+                MagicMock(message=MagicMock(content='not-json'))
+            ]
+            mock_client.chat.completions.create.return_value = mock_response
+
+            result = await validator._get_provider_assessment(
+                ModelProvider.OPENAI,
+                "test content",
+                "test query"
+            )
+
+            assert result["quality_score"] == 0.5
+            assert result["confidence"] == 0.0
+            assert "invalid json" in result["reasoning"].lower()
+
+    @pytest.mark.asyncio
     async def test_get_provider_assessment_error_handling(self, validator):
         """Test provider assessment error handling."""
         with patch('openai.AsyncOpenAI') as mock_openai:
