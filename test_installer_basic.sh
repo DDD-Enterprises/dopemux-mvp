@@ -31,11 +31,15 @@ OPENAI_API_KEY=test_openai_key
 OPENROUTER_API_KEY=test_openrouter_key
 GEMINI_API_KEY=test_gemini_key
 XAI_API_KEY=test_xai_key
+VOYAGE_API_KEY=test_voyage_key
 LEANTIME_URL=http://localhost:8097
 LEANTIME_TOKEN=test_leantime_token
 TASK_ORCHESTRATOR_API_KEY=test_task_key
 ADHD_ENGINE_API_KEY=test_adhd_key
 LITELLM_DATABASE_URL=postgresql://dopemux_age:test_age_password@localhost:5432/litellm
+TAVILY_API_KEY=test_tavily_key
+EXA_API_KEY=test_exa_key
+OPENAI_WEBHOOK_SECRET=test_openai_webhook_secret
 EOF
     fi
     
