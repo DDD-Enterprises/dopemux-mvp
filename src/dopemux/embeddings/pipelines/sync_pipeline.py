@@ -97,8 +97,8 @@ class SyncPipeline(BasePipeline):
         try:
             # Define pipeline stages
             stages = [
-                (PipelineStage.VALIDATION, self._validate_stage, sync_config),
-                (PipelineStage.PROCESSING, self._sync_stage, sync_config),
+                (PipelineStage.VALIDATION, self._validate_stage, (sync_config,)),
+                (PipelineStage.PROCESSING, self._sync_stage, (sync_config,)),
                 (PipelineStage.STORAGE, self._storage_stage),
                 (PipelineStage.COMPLETION, self._completion_stage)
             ]

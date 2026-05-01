@@ -52,6 +52,8 @@ class ProcessingStats:
     fields_by_type: Dict[str, int] = field(default_factory=dict)
     high_confidence_fields: int = 0
     documents_generated: int = 0
+    embedded_count: int = 0
+    indexed_count: int = 0
     processing_time: float = 0.0
     phase_times: Dict[str, float] = field(default_factory=dict)
     errors: List[str] = field(default_factory=list)
@@ -69,10 +71,16 @@ class PipelineConfig:
     include_basic_extractors: bool = True
     include_pro_extractors: bool = True
     enable_synthesis: bool = True
+    generate_embeddings: bool = True
+    embedding_provider: str = "auto"
+    embedding_model: str = "voyage-context-3"
+    embedding_dimension: int = 2048
+    require_embeddings: bool = False
     max_documents: int = 6
     verbose: bool = True
-    persist_to_conport: bool = True
+    persist_to_conport: bool = False
     workspace_id: Optional[str] = None
+    archive_mode: str = "copy"
 
 
 class ExtractionPipeline:
@@ -86,6 +94,7 @@ class ExtractionPipeline:
     def __init__(self, config: PipelineConfig):
         self.config = config
         self.stats = ProcessingStats()
+        self.embedding_summary: Dict[str, Any] = {}
         self.setup_logging()
         self.setup_directories()
         self.initialize_components()
@@ -119,11 +128,15 @@ class ExtractionPipeline:
         (self.config.output_directory / "documents").mkdir(exist_ok=True)
         (self.config.output_directory / "reports").mkdir(exist_ok=True)
         (self.config.output_directory / "logs").mkdir(exist_ok=True)
+        (self.config.output_directory / "embeddings").mkdir(exist_ok=True)
 
         # Setup archive directory
-        if not self.config.archive_directory:
-            self.config.archive_directory = self.config.output_directory / "archive"
-        self.config.archive_directory.mkdir(parents=True, exist_ok=True)
+        if self.config.archive_mode not in {"copy", "move", "none"}:
+            raise ValueError(f"Unsupported archive_mode: {self.config.archive_mode}")
+        if self.config.archive_mode != "none":
+            if not self.config.archive_directory:
+                self.config.archive_directory = self.config.output_directory / "archive"
+            self.config.archive_directory.mkdir(parents=True, exist_ok=True)
 
         logger.info(f"Directories created - Output: {self.config.output_directory}")
 
@@ -167,8 +180,17 @@ class ExtractionPipeline:
         files = []
         for ext in supported_extensions:
             files.extend(self.config.source_directory.glob(f"**/*{ext}"))
+        files = [
+            file_path
+            for file_path in files
+            if not self._is_internal_output_path(file_path)
+        ]
 
         # Filter out already processed files (check archive)
+        if self.config.archive_mode == "none" or self.config.archive_directory is None:
+            logger.info(f"Discovered {len(files)} files")
+            return files
+
         unprocessed_files = []
         for file_path in files:
             archived_path = self.config.archive_directory / file_path.name
@@ -177,6 +199,21 @@ class ExtractionPipeline:
 
         logger.info(f"Discovered {len(unprocessed_files)} unprocessed files")
         return unprocessed_files
+
+    def _is_internal_output_path(self, file_path: Path) -> bool:
+        try:
+            resolved = file_path.resolve()
+            resolved.relative_to(self.config.output_directory.resolve())
+            return True
+        except ValueError:
+            pass
+        if self.config.archive_directory:
+            try:
+                resolved.relative_to(self.config.archive_directory.resolve())
+                return True
+            except ValueError:
+                pass
+        return False
 
     def run_extraction(self, files: Optional[List[Path]] = None) -> Dict[str, Any]:
         """
@@ -209,16 +246,65 @@ class ExtractionPipeline:
         # Phase 4: Knowledge Graph Construction
         knowledge_graph = self._phase_4_knowledge_graph(filtered_fields)
 
-        # Phase 5: Document Synthesis
+        # Phase 5: Embedding indexing
+        self.embedding_summary = self._phase_embeddings(chunks_by_file, filtered_fields)
+
+        # Phase 6: Document Synthesis
         documents = self._phase_5_synthesis(filtered_fields)
 
-        # Phase 6: Archive & Reporting
+        # Phase 7: Archive & Reporting
         self._phase_6_archive_and_report(files, documents)
 
         # Calculate final statistics
         self.stats.processing_time = (datetime.now() - start_time).total_seconds()
 
         return self._create_results(start_time)
+
+    def _resolve_embedding_provider(self) -> Dict[str, Any]:
+        requested = (self.config.embedding_provider or "auto").lower()
+        if requested not in {"auto", "voyage", "none"}:
+            raise ValueError(f"Unsupported embedding provider: {self.config.embedding_provider}")
+
+        api_key_present = bool(os.environ.get("VOYAGE_API_KEY"))
+        if not self.config.generate_embeddings:
+            resolved = "none"
+            status = "disabled"
+            reason = "embeddings_disabled"
+        elif requested == "none":
+            resolved = "none"
+            status = "skipped_provider_none"
+            reason = "provider_none"
+        elif requested == "voyage":
+            resolved = "voyage" if api_key_present else "none"
+            status = "ready" if api_key_present else "skipped_no_credentials"
+            reason = None if api_key_present else "voyage_api_key_missing"
+        elif api_key_present:
+            resolved = "voyage"
+            status = "ready"
+            reason = None
+        else:
+            resolved = "none"
+            status = "skipped_no_credentials"
+            reason = "voyage_api_key_missing"
+
+        return {
+            "requested_provider": requested,
+            "resolved_provider": resolved,
+            "api_key_present": api_key_present,
+            "status": status,
+            "skipped_reason": reason,
+        }
+
+    def _embedding_manifest_path(self) -> Path:
+        return self.config.output_directory / "embeddings" / "embedding_manifest.json"
+
+    def _write_embedding_manifest(self, manifest: Dict[str, Any]) -> Dict[str, Any]:
+        manifest_path = self._embedding_manifest_path()
+        manifest_path.parent.mkdir(parents=True, exist_ok=True)
+        with manifest_path.open("w", encoding="utf-8") as f:
+            json.dump(manifest, f, indent=2, sort_keys=True, default=str)
+        manifest["manifest_path"] = str(manifest_path)
+        return manifest
 
     def _phase_1_chunking(self, files: List[Path]) -> Dict[Path, List[Dict[str, Any]]]:
         """Phase 1: Semantic chunking with batch synchronization."""
@@ -454,6 +540,142 @@ class ExtractionPipeline:
 
         return synthesis_result
 
+    def _phase_embeddings(
+        self,
+        chunks_by_file: Dict[Path, List[Dict[str, Any]]],
+        filtered_fields: Dict[Path, List[ExtractedField]],
+    ) -> Dict[str, Any]:
+        """Index chunks and extracted fields with optional Voyage embeddings."""
+        phase_start = datetime.now()
+        provider_status = self._resolve_embedding_provider()
+
+        documents: List[Dict[str, Any]] = []
+        for file_path, chunks in chunks_by_file.items():
+            for idx, chunk in enumerate(chunks):
+                content = chunk.get("content", "")
+                if not content.strip():
+                    continue
+                documents.append({
+                    "id": f"chunk:{file_path.stem}:{idx}",
+                    "content": content,
+                    "metadata": {
+                        "kind": "chatlog_chunk",
+                        "source_file": str(file_path),
+                        "chunk_id": chunk.get("id"),
+                        "chunk_index": chunk.get("chunk_index", idx),
+                    },
+                })
+
+        for file_path, fields in filtered_fields.items():
+            for idx, extracted in enumerate(fields):
+                content = "\n\n".join(
+                    part for part in [extracted.content, extracted.context] if part
+                )
+                if not content.strip():
+                    continue
+                documents.append({
+                    "id": f"field:{file_path.stem}:{idx}:{extracted.field_type}",
+                    "content": content,
+                    "metadata": {
+                        "kind": "extracted_field",
+                        "source_file": str(file_path),
+                        "field_type": extracted.field_type,
+                        "confidence": extracted.confidence,
+                        "stakeholders": extracted.stakeholders,
+                    },
+                })
+
+        manifest = {
+            **provider_status,
+            "model": self.config.embedding_model,
+            "total_units": len(documents),
+            "embedded_count": 0,
+            "indexed_count": 0,
+            "embedding_status": provider_status["status"],
+            "cost_estimate_usd": None,
+            "output_paths": {
+                "manifest": str(self._embedding_manifest_path()),
+                "index_directory": str(self.config.output_directory / "embeddings" / "vectors"),
+            },
+        }
+
+        if (
+            self.config.require_embeddings
+            and provider_status["resolved_provider"] != "voyage"
+        ):
+            manifest["embedding_status"] = "failed_required_embeddings"
+            self._write_embedding_manifest(manifest)
+            raise RuntimeError("Embeddings were required, but VOYAGE_API_KEY is not configured")
+
+        if not self.config.generate_embeddings:
+            self.stats.phase_times["embeddings"] = (datetime.now() - phase_start).total_seconds()
+            return self._write_embedding_manifest(manifest)
+
+        if not documents:
+            manifest["embedding_status"] = "skipped_no_documents"
+            self.stats.phase_times["embeddings"] = (datetime.now() - phase_start).total_seconds()
+            return self._write_embedding_manifest(manifest)
+
+        try:
+            from dopemux.embeddings import HybridVectorStore, create_production_config
+
+            embedding_config = create_production_config(
+                embedding_model=self.config.embedding_model,
+                embedding_dimension=self.config.embedding_dimension,
+                persist_directory=str(self.config.output_directory / "embeddings" / "vectors"),
+                enable_progress_tracking=False,
+            )
+            if provider_status["resolved_provider"] == "voyage":
+                embedding_config.voyage_api_key = os.environ.get("VOYAGE_API_KEY")
+                embedding_config.use_on_premise = False
+            else:
+                embedding_config.voyage_api_key = None
+                embedding_config.use_on_premise = True
+
+            store = HybridVectorStore(
+                embedding_config,
+                persist_directory=Path(embedding_config.persist_directory),
+            )
+            import asyncio
+            asyncio.run(store.add_documents(documents))
+            asyncio.run(store.save())
+
+            stats = store.get_stats()
+            indexed_count = stats.get("documents", {}).get("document_count", 0)
+            embedded_count = store.metrics.documents_embedded
+            self.stats.indexed_count = indexed_count
+            self.stats.embedded_count = embedded_count
+
+            manifest.update({
+                "embedded_count": embedded_count,
+                "indexed_count": indexed_count,
+                "embedding_status": (
+                    "completed"
+                    if provider_status["resolved_provider"] == "voyage" and embedded_count > 0
+                    else provider_status["status"]
+                ),
+                "index_size_mb": store.get_index_size_mb(),
+            })
+            self.stats.phase_times["embeddings"] = (datetime.now() - phase_start).total_seconds()
+            logger.info(
+                "PHASE EMBEDDINGS COMPLETE: %s indexed, %s embedded in %.2fs",
+                indexed_count,
+                embedded_count,
+                self.stats.phase_times["embeddings"],
+            )
+            return self._write_embedding_manifest(manifest)
+        except Exception as e:
+            manifest.update({
+                "embedding_status": "failed",
+                "error": str(e),
+            })
+            self.stats.errors.append(f"Embeddings: {e}")
+            self.stats.phase_times["embeddings"] = (datetime.now() - phase_start).total_seconds()
+            self._write_embedding_manifest(manifest)
+            if self.config.require_embeddings:
+                raise
+            return manifest
+
     def _phase_6_archive_and_report(self, processed_files: List[Path], synthesis_result: Dict[str, Any]):
         """Phase 6: Archive processed files and generate comprehensive report."""
         phase_start = datetime.now()
@@ -462,9 +684,15 @@ class ExtractionPipeline:
         # Archive processed files
         for file_path in processed_files:
             try:
-                archived_path = self.config.archive_directory / file_path.name
-                shutil.move(str(file_path), str(archived_path))
-                logger.debug(f"Archived: {file_path.name}")
+                if self.config.archive_mode == "none":
+                    logger.debug(f"Archive skipped: {file_path.name}")
+                else:
+                    archived_path = self.config.archive_directory / file_path.name
+                    if self.config.archive_mode == "move":
+                        shutil.move(str(file_path), str(archived_path))
+                    else:
+                        shutil.copy2(str(file_path), str(archived_path))
+                    logger.debug(f"Archived ({self.config.archive_mode}): {file_path.name}")
                 self.stats.files_processed += 1
             except Exception as e:
                 logger.error(f"Error archiving {file_path}: {e}")
@@ -675,7 +903,10 @@ class ExtractionPipeline:
                     'output_directory': str(self.config.output_directory),
                     'confidence_threshold': self.config.confidence_threshold,
                     'extractors_used': list(self.extractors.keys()),
-                    'synthesis_enabled': self.config.enable_synthesis
+                    'synthesis_enabled': self.config.enable_synthesis,
+                    'archive_mode': self.config.archive_mode,
+                    'persist_to_conport': self.config.persist_to_conport,
+                    'embedding_provider': self.config.embedding_provider
                 }
             },
             'processing_statistics': {
@@ -686,9 +917,12 @@ class ExtractionPipeline:
                 'fields_by_type': self.stats.fields_by_type,
                 'high_confidence_fields': self.stats.high_confidence_fields,
                 'documents_generated': self.stats.documents_generated,
+                'embedded_count': self.stats.embedded_count,
+                'indexed_count': self.stats.indexed_count,
                 'processing_time_seconds': self.stats.processing_time,
                 'phase_times': self.stats.phase_times
             },
+            'embedding_summary': self.embedding_summary,
             'quality_metrics': {
                 'confidence_distribution': self._calculate_confidence_distribution(),
                 'extraction_coverage': self._calculate_extraction_coverage(),
@@ -733,11 +967,15 @@ class ExtractionPipeline:
                 'fields_by_type': self.stats.fields_by_type,
                 'high_confidence_fields': self.stats.high_confidence_fields,
                 'documents_generated': self.stats.documents_generated,
+                'embedded_count': self.stats.embedded_count,
+                'indexed_count': self.stats.indexed_count,
                 'processing_time': self.stats.processing_time,
                 'phase_times': self.stats.phase_times
             },
             'errors': self.stats.errors,
             'output_directory': str(self.config.output_directory),
-            'archive_directory': str(self.config.archive_directory),
+            'archive_directory': str(self.config.archive_directory) if self.config.archive_directory else None,
+            'archive_mode': self.config.archive_mode,
+            'embedding_summary': self.embedding_summary,
             'timestamp': start_time.isoformat()
         }

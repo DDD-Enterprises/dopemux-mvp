@@ -20,9 +20,16 @@ from datetime import datetime, timedelta
 import hashlib
 import logging
 
-import spacy
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+try:
+    import spacy
+except ImportError:
+    spacy = None
+try:
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.metrics.pairwise import cosine_similarity
+except ImportError:
+    TfidfVectorizer = None
+    cosine_similarity = None
 import numpy as np
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
@@ -112,7 +119,7 @@ class SemanticChunker:
 
         # Load spaCy model for advanced NLP
         self.nlp = None
-        if enable_spacy:
+        if enable_spacy and spacy is not None:
             try:
                 self.nlp = spacy.load("en_core_web_sm")
                 logger.info("spaCy model loaded for semantic analysis")
@@ -120,10 +127,14 @@ class SemanticChunker:
                 logger.warning("spaCy model not found. Install with: python -m spacy download en_core_web_sm")
 
         # TF-IDF vectorizer for topic similarity
-        self.vectorizer = TfidfVectorizer(
-            max_features=1000,
-            stop_words='english',
-            ngram_range=(1, 2)
+        self.vectorizer = (
+            TfidfVectorizer(
+                max_features=1000,
+                stop_words='english',
+                ngram_range=(1, 2)
+            )
+            if TfidfVectorizer is not None
+            else None
         )
 
         # Patterns for detecting conversation markers
@@ -150,6 +161,8 @@ class SemanticChunker:
     def _detect_topic_shift(self, messages: List[ChatMessage], window_size: int = 3) -> List[int]:
         """Detect topic shifts using TF-IDF similarity."""
         if len(messages) < window_size * 2:
+            return []
+        if self.vectorizer is None or cosine_similarity is None:
             return []
 
         # Extract text windows
@@ -472,10 +485,18 @@ class SemanticChunker:
             chunk for chunk in chunks
             if chunk.estimated_tokens >= self.min_chunk_tokens
         ]
+        if not filtered_chunks and chunks:
+            filtered_chunks = chunks
+
+        average_tokens = (
+            float(np.mean([c.estimated_tokens for c in filtered_chunks]))
+            if filtered_chunks
+            else 0.0
+        )
 
         console.print(Panel(
             f"✅ Created {len(filtered_chunks)} conversation chunks\n"
-            f"📊 Average size: {np.mean([c.estimated_tokens for c in filtered_chunks]):.0f} tokens\n"
+            f"📊 Average size: {average_tokens:.0f} tokens\n"
             f"🔗 Overlap chunks: {sum(1 for c in filtered_chunks if c.chunk_type == 'overlap')}",
             title="Semantic Chunking Complete",
             border_style="green"

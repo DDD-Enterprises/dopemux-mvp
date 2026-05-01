@@ -18,9 +18,86 @@ try:
     from .markdown_patterns import MarkdownPatternExtractor
     from .yaml_extractor import YamlExtractor
 except ImportError:
-    # Fall back to direct imports (when run as script)
-    from markdown_patterns import MarkdownPatternExtractor
-    from yaml_extractor import YamlExtractor
+    try:
+        # Fall back to direct imports (when run as script)
+        from markdown_patterns import MarkdownPatternExtractor
+        from yaml_extractor import YamlExtractor
+    except ImportError:
+        class MarkdownPatternExtractor:
+            """Deterministic fallback markdown/text extractor."""
+
+            def extract_to_dict(self, content: str, filename: str) -> Dict[str, List[Dict[str, Any]]]:
+                entities: Dict[str, List[Dict[str, Any]]] = {
+                    "headers": [],
+                    "decisions": [],
+                    "bullets": [],
+                }
+                for line_number, raw_line in enumerate(content.splitlines(), start=1):
+                    line = raw_line.strip()
+                    if not line:
+                        continue
+                    if line.startswith("#"):
+                        title = line.lstrip("#").strip()
+                        if title:
+                            entities["headers"].append({
+                                "content": title,
+                                "line": line_number,
+                                "confidence": 0.9,
+                                "source": filename,
+                            })
+                    lower_line = line.lower()
+                    if lower_line.startswith(("decision:", "decided:", "we decided", "adr:")):
+                        entities["decisions"].append({
+                            "content": line,
+                            "line": line_number,
+                            "confidence": 0.8,
+                            "source": filename,
+                        })
+                    if line.startswith(("-", "*", "+")):
+                        entities["bullets"].append({
+                            "content": line.lstrip("-*+ ").strip(),
+                            "line": line_number,
+                            "confidence": 0.6,
+                            "source": filename,
+                        })
+                return {key: value for key, value in entities.items() if value}
+
+        class YamlExtractor:
+            """Deterministic fallback YAML extractor."""
+
+            def extract_to_dict(self, content: str, filename: str) -> Dict[str, List[Dict[str, Any]]]:
+                try:
+                    import yaml
+                    payload = yaml.safe_load(content) or {}
+                except Exception:
+                    payload = {}
+
+                entities: Dict[str, List[Dict[str, Any]]] = {"yaml_properties": []}
+
+                def walk(value: Any, path: str = "") -> None:
+                    if isinstance(value, dict):
+                        for key, child in value.items():
+                            next_path = f"{path}.{key}" if path else str(key)
+                            walk(child, next_path)
+                    elif isinstance(value, list):
+                        for index, child in enumerate(value):
+                            walk(child, f"{path}[{index}]")
+                    elif path:
+                        entities["yaml_properties"].append({
+                            "content": path,
+                            "value": value,
+                            "confidence": 0.8,
+                            "source": filename,
+                        })
+
+                walk(payload)
+                return {key: value for key, value in entities.items() if value}
+
+            def extract_adhd_profile(self, content: str) -> Optional[Dict[str, Any]]:
+                lower_content = content.lower()
+                if "adhd" not in lower_content and "attention" not in lower_content:
+                    return None
+                return {"detected": True, "confidence": 0.6}
 
 
 @dataclass

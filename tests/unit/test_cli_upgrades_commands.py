@@ -333,7 +333,7 @@ def test_upgrades_run_rejects_openrouter_batch_provider_choice() -> None:
     assert result.exit_code != 0
     assert "openrouter" in result.output
 
-def test_extractor_alias_warns_and_executes() -> None:
+def test_extractor_alias_is_disabled_for_runtime_status() -> None:
     runner = CliRunner()
     with patch("dopemux.commands.extractor_commands._run_extractor_runner") as mocked:
         result = runner.invoke(
@@ -348,9 +348,9 @@ def test_extractor_alias_warns_and_executes() -> None:
             ],
         )
 
-    assert result.exit_code == 0, result.output
-    assert "legacy" in result.output.lower()
-    mocked.assert_called_once()
+    assert result.exit_code != 0, result.output
+    assert "dopemux rte status" in result.output
+    mocked.assert_not_called()
 
 
 def test_upgrades_trace_routes_to_v5_dry_run_alias() -> None:
