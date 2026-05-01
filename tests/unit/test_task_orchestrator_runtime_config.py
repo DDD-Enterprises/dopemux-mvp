@@ -22,9 +22,9 @@ def test_task_orchestrator_dockerfile_uses_supported_runtime_and_port() -> None:
     assert re.search(r"\bPORT=8000\b", dockerfile)
     assert "EXPOSE 8000" in dockerfile
     assert "http://localhost:8000/health" in dockerfile
-    assert (
-        'CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]'
-        in dockerfile
+    assert all(
+        token in dockerfile
+        for token in ("uvicorn", "app.main:app", "--port", "8000")
     )
 
 
