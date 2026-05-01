@@ -12,7 +12,7 @@ If the user invokes this skill without any other guidance, ask them what they wa
 
 ## Hard contract (do not violate)
 
-- **Status chips are closed**: `LIVE | BLOCKER | OVERRIDE | LOGGED | AFTERCARE | EDGE`. Never invent new chips. Web variants map: `DEGRADED→OVERRIDE`, `FAILED→BLOCKER`, `BLOCKED→BLOCKER`, `SYNC→AFTERCARE`, `UNKNOWN→EDGE`.
+- **Status chips are closed**: `LIVE | BLOCKER | OVERRIDE | LOGGED | AFTERCARE | EDGE`. Never invent new chips. Web variants map: `DEGRADED→OVERRIDE`, `FAILED→BLOCKER`, `BLOCKED→BLOCKER`, `SYNC→AFTERCARE`; `UNKNOWN` remains `UNKNOWN` and must not be collapsed into `EDGE`.
 - **Authority before aesthetics**: every pane declares `authority:`; every row carries `SRC=<service>`.
 - **Bridge / proxy actions are segregated** into their own pane labeled `adapter-only segregated`.
 - **Three sizes only**: `120x40` (canonical), `100x32`, `80x24`. Below 80x24 = `[BLOCKER]`.
