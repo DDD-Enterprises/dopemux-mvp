@@ -27,6 +27,10 @@ HOSTED_FREE_PROVIDERS = {
     "github_models_poc",
     "hf_credits",
 }
+PAID_CAP_PROVIDERS = {
+    "gemini_paid_cap",
+    "openrouter_paid_cap",
+}
 BLOCKED_PAID_PROVIDERS = {
     "anthropic",
     "deepseek",
@@ -133,6 +137,40 @@ PROVIDER_CATALOG: Dict[str, Dict[str, Any]] = {
         "limits": {},
         "score": 20,
     },
+    "gemini_paid_cap": {
+        "kind": "paid_cap",
+        "zero_cost": False,
+        "source_url": "https://ai.google.dev/gemini-api/docs/pricing",
+        "last_verified": "2026-05-01",
+        "pricing": {
+            "gemini/gemini-2.5-flash-lite": {
+                "input_usd_per_million": 0.18,
+                "output_usd_per_million": 0.72,
+            },
+            "gemini/gemini-2.5-flash-lite-preview-09-2025": {
+                "input_usd_per_million": 0.10,
+                "output_usd_per_million": 0.40,
+            },
+        },
+        "score": 12,
+    },
+    "openrouter_paid_cap": {
+        "kind": "paid_cap",
+        "zero_cost": False,
+        "source_url": "https://openrouter.ai/qwen/qwen3-coder-next/pricing",
+        "last_verified": "2026-05-01",
+        "pricing": {
+            "openrouter/qwen/qwen3-coder-next": {
+                "input_usd_per_million": 0.12,
+                "output_usd_per_million": 0.80,
+            },
+            "openrouter/qwen/qwen3-coder": {
+                "input_usd_per_million": 0.22,
+                "output_usd_per_million": 1.80,
+            },
+        },
+        "score": 10,
+    },
 }
 
 
@@ -201,9 +239,24 @@ def freeflow_policy(config: Dict[str, Any]) -> Dict[str, Any]:
     return policy
 
 
+def paid_cap_policy(config: Dict[str, Any]) -> Dict[str, Any]:
+    policy = dict(freeflow_policy(config).get("paid_cap") or {})
+    policy.setdefault("enabled", False)
+    policy.setdefault("daily_usd", 0.0)
+    policy.setdefault("monthly_usd", 0.0)
+    policy.setdefault("allowed_models", [])
+    policy.setdefault("default_fallbacks", [])
+    policy.setdefault("day_reset", "utc_midnight")
+    return policy
+
+
 def strict_free_enabled(config: Dict[str, Any]) -> bool:
     policy = freeflow_policy(config)
     return bool(policy.get("enabled")) and policy.get("mode") == STRICT_FREE_MODE
+
+
+def paid_cap_enabled(config: Dict[str, Any]) -> bool:
+    return strict_free_enabled(config) and bool(paid_cap_policy(config).get("enabled"))
 
 
 def is_openrouter_free_model(model_id: str) -> bool:
@@ -242,6 +295,12 @@ def classify_route(provider: str, model_id: str) -> Dict[str, Any]:
         }
     if provider_token in HOSTED_FREE_PROVIDERS:
         return {"allowed": True, "local": False, "reason": "hosted_free_tier"}
+    if provider_token in PAID_CAP_PROVIDERS:
+        return {
+            "allowed": False,
+            "local": False,
+            "reason": "paid_cap_route_requires_allowlist",
+        }
     if provider_token in BLOCKED_PAID_PROVIDERS:
         return {"allowed": False, "local": False, "reason": "paid_provider_blocked"}
     return {"allowed": False, "local": False, "reason": "unknown_provider_blocked"}
@@ -254,6 +313,26 @@ def _provider_catalog_key(provider: str, model_id: str) -> str:
 
 def _safe_json(value: Any) -> str:
     return json.dumps(value or {}, ensure_ascii=True, sort_keys=True)
+
+
+def estimate_cost_usd(
+    pricing: Dict[str, Any], input_tokens: int, output_tokens: int
+) -> float:
+    input_rate = float(pricing.get("input_usd_per_million") or 0.0)
+    output_rate = float(pricing.get("output_usd_per_million") or 0.0)
+    cost = (
+        max(0, int(input_tokens or 0)) * input_rate
+        + max(0, int(output_tokens or 0)) * output_rate
+    ) / 1_000_000
+    return round(cost, 8)
+
+
+def _catalog_pricing(catalog_key: str, model_id: str) -> Dict[str, Any]:
+    catalog = PROVIDER_CATALOG.get(catalog_key, {})
+    pricing = catalog.get("pricing") or {}
+    if "input_usd_per_million" in pricing:
+        return dict(pricing)
+    return dict(pricing.get(model_id) or {})
 
 
 def _window_start(window: str, now: datetime, day_reset: str | None = None) -> datetime:
@@ -332,6 +411,20 @@ class FreeflowQuotaLedger:
                     input_tokens INTEGER NOT NULL,
                     output_tokens INTEGER NOT NULL,
                     neurons INTEGER NOT NULL,
+                    status TEXT NOT NULL,
+                    metadata_json TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS spend_events (
+                    event_id TEXT PRIMARY KEY,
+                    recorded_at TEXT NOT NULL,
+                    route_decision_id TEXT,
+                    provider TEXT NOT NULL,
+                    model_name TEXT NOT NULL,
+                    model_id TEXT NOT NULL,
+                    bucket_id TEXT NOT NULL,
+                    input_tokens INTEGER NOT NULL,
+                    output_tokens INTEGER NOT NULL,
+                    cost_usd REAL NOT NULL,
                     status TEXT NOT NULL,
                     metadata_json TEXT NOT NULL
                 );
@@ -445,6 +538,26 @@ class FreeflowQuotaLedger:
             return {"requests": 0, "input_tokens": 0, "output_tokens": 0, "neurons": 0}
         return {key: int(row[key] or 0) for key in row.keys()}
 
+    def _spend_total(
+        self,
+        *,
+        window: str,
+        start: datetime,
+        now: datetime,
+    ) -> float:
+        with self._connect() as conn:
+            row = conn.execute(
+                """
+                SELECT COALESCE(SUM(cost_usd), 0.0) AS cost_usd
+                FROM spend_events
+                WHERE recorded_at >= ?
+                  AND recorded_at <= ?
+                  AND status != 'voided'
+                """,
+                (isoformat_utc(start), isoformat_utc(now)),
+            ).fetchone()
+        return round(float(row["cost_usd"] or 0.0), 8)
+
     def check_quota(
         self,
         provider: str,
@@ -486,6 +599,43 @@ class FreeflowQuotaLedger:
                 reset_at = isoformat_utc(_window_end(window, current, day_reset))
                 return QuotaCheck(False, f"{limit_key}_exhausted", reset_at)
         return QuotaCheck(True, "within_quota")
+
+    def check_paid_cap(
+        self,
+        cap_policy: Dict[str, Any],
+        pricing: Dict[str, Any],
+        input_tokens: int,
+        output_tokens: int,
+        now: Optional[datetime] = None,
+    ) -> QuotaCheck:
+        current = now or now_utc()
+        if not bool(cap_policy.get("enabled")):
+            return QuotaCheck(False, "paid_cap_disabled")
+        if not pricing:
+            return QuotaCheck(False, "paid_pricing_missing")
+        estimated_cost = estimate_cost_usd(pricing, input_tokens, output_tokens)
+        if estimated_cost <= 0:
+            return QuotaCheck(False, "paid_pricing_zero")
+
+        day_reset = str(cap_policy.get("day_reset") or "utc_midnight")
+        checks = (
+            ("day", "daily_usd", "daily_paid_cap_exhausted"),
+            ("month", "monthly_usd", "monthly_paid_cap_exhausted"),
+        )
+        any_positive_cap = False
+        for window, cap_key, reason in checks:
+            cap = float(cap_policy.get(cap_key) or 0.0)
+            if cap <= 0:
+                continue
+            any_positive_cap = True
+            start = _window_start(window, current, day_reset)
+            used = self._spend_total(window=window, start=start, now=current)
+            if used + estimated_cost > cap:
+                reset_at = isoformat_utc(_window_end(window, current, day_reset))
+                return QuotaCheck(False, reason, reset_at)
+        if not any_positive_cap:
+            return QuotaCheck(False, "paid_cap_limit_missing")
+        return QuotaCheck(True, "within_paid_cap")
 
     def record_route_decision(
         self, decision: Dict[str, Any], now: Optional[datetime] = None
@@ -602,6 +752,51 @@ class FreeflowQuotaLedger:
                 )
         return event_id
 
+    def record_spend(
+        self,
+        provider: str,
+        model_name: str,
+        model_id: str,
+        bucket_id: str,
+        pricing: Dict[str, Any],
+        input_tokens: int,
+        output_tokens: int,
+        *,
+        route_decision_id: str | None = None,
+        status: str = "reserved",
+        metadata: Optional[Dict[str, Any]] = None,
+        now: Optional[datetime] = None,
+    ) -> str:
+        current = now or now_utc()
+        event_id = uuid.uuid4().hex
+        cost_usd = estimate_cost_usd(pricing, input_tokens, output_tokens)
+        with self._connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO spend_events (
+                    event_id, recorded_at, route_decision_id, provider, model_name,
+                    model_id, bucket_id, input_tokens, output_tokens, cost_usd,
+                    status, metadata_json
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    event_id,
+                    isoformat_utc(current),
+                    route_decision_id,
+                    provider,
+                    model_name,
+                    model_id,
+                    bucket_id,
+                    max(0, int(input_tokens or 0)),
+                    max(0, int(output_tokens or 0)),
+                    cost_usd,
+                    status,
+                    _safe_json(metadata),
+                ),
+            )
+        return event_id
+
     def ingest_response_headers(
         self,
         provider: str,
@@ -665,12 +860,32 @@ class FreeflowQuotaLedger:
                 FROM cooldowns
                 ORDER BY provider, model_name, bucket_id
                 """).fetchall()
+            spend_rows = conn.execute("""
+                SELECT event_id, recorded_at, route_decision_id, provider,
+                       model_name, model_id, bucket_id, input_tokens,
+                       output_tokens, cost_usd, status
+                FROM spend_events
+                ORDER BY recorded_at, event_id
+                """).fetchall()
+        spend_summary = {}
+        for window in ("day", "month"):
+            start = _window_start(window, current)
+            spend_summary[window] = {
+                "window_start": isoformat_utc(start),
+                "cost_usd": self._spend_total(
+                    window=window, start=start, now=current
+                ),
+            }
         return {
             "ledger_path": str(self.path),
             "generated_at": isoformat_utc(current),
             "active_window_starts": active_starts,
             "buckets": [dict(row) for row in rows],
             "cooldowns": [dict(row) for row in cooldown_rows],
+            "spend": {
+                "summary": spend_summary,
+                "events": [dict(row) for row in spend_rows],
+            },
         }
 
 
@@ -697,6 +912,10 @@ class FreeflowRouter:
         providers = self._providers()
         rows: list[Dict[str, Any]] = []
         disabled = set(self.policy.get("disabled_models") or [])
+        paid_policy = paid_cap_policy(self.config)
+        paid_allowed_names = set(paid_policy.get("allowed_models") or [])
+        paid_allowed_names.update(paid_policy.get("allow") or [])
+        paid_cap_active = bool(paid_policy.get("enabled"))
         for model in self.config.get("models", []):
             model_name = str(model.get("name") or "")
             provider_name = str(model.get("provider") or "")
@@ -706,6 +925,22 @@ class FreeflowRouter:
             catalog_key = _provider_catalog_key(provider_name, model_id)
             catalog = PROVIDER_CATALOG.get(catalog_key, {})
             local = bool(classification.get("local"))
+            paid_provider = catalog_key in PAID_CAP_PROVIDERS
+            pricing = _catalog_pricing(catalog_key, model_id)
+            paid_cap_allowed = (
+                paid_cap_active
+                and paid_provider
+                and model_name in paid_allowed_names
+                and bool(pricing)
+            )
+            paid_cap_blocked_reason = None
+            if paid_provider and not paid_cap_allowed:
+                if not paid_cap_active:
+                    paid_cap_blocked_reason = "paid_cap_disabled"
+                elif model_name not in paid_allowed_names:
+                    paid_cap_blocked_reason = "paid_cap_model_not_allowlisted"
+                elif not pricing:
+                    paid_cap_blocked_reason = "paid_pricing_missing"
             auth_mode = str(
                 provider.get("auth_mode") or catalog.get("auth_mode") or "env"
             ).lower()
@@ -716,7 +951,9 @@ class FreeflowRouter:
                 else bool(api_key_env and os.getenv(str(api_key_env)))
             )
             blocked_reason = (
-                None if classification["allowed"] else classification["reason"]
+                None
+                if classification["allowed"] or paid_cap_allowed or paid_provider
+                else classification["reason"]
             )
             enabled = model_name not in disabled and bool(model.get("enabled", True))
             rows.append(
@@ -729,6 +966,10 @@ class FreeflowRouter:
                     "local": local,
                     "zero_cost": bool(catalog.get("zero_cost", False)) or local,
                     "strict_free_allowed": bool(classification["allowed"]),
+                    "paid": paid_provider,
+                    "paid_cap_allowed": paid_cap_allowed,
+                    "paid_cap_blocked_reason": paid_cap_blocked_reason,
+                    "pricing": pricing,
                     "blocked_reason": blocked_reason,
                     "enabled": enabled,
                     "credential_present": credential_present,
@@ -779,9 +1020,15 @@ class FreeflowRouter:
             if not route["enabled"]:
                 rejected.append({"name": route["name"], "reason": "disabled"})
                 continue
-            if not route["strict_free_allowed"]:
+            if not route["strict_free_allowed"] and not route["paid_cap_allowed"]:
                 rejected.append(
-                    {"name": route["name"], "reason": str(route["blocked_reason"])}
+                    {
+                        "name": route["name"],
+                        "reason": str(
+                            route["blocked_reason"]
+                            or route["paid_cap_blocked_reason"]
+                        ),
+                    }
                 )
                 continue
             if sensitivity not in route["sensitivity_allowed"]:
@@ -803,10 +1050,31 @@ class FreeflowRouter:
             if not quota.allowed:
                 rejected.append({"name": route["name"], "reason": quota.reason})
                 continue
+            estimated_cost = 0.0
+            reason = "strict_free_route_selected"
+            if route["paid_cap_allowed"]:
+                paid_quota = ledger.check_paid_cap(
+                    paid_cap_policy(self.config),
+                    route["pricing"],
+                    estimated_input_tokens,
+                    estimated_output_tokens,
+                    now=current,
+                )
+                if not paid_quota.allowed:
+                    rejected.append(
+                        {"name": route["name"], "reason": paid_quota.reason}
+                    )
+                    continue
+                estimated_cost = estimate_cost_usd(
+                    route["pricing"],
+                    estimated_input_tokens,
+                    estimated_output_tokens,
+                )
+                reason = "paid_cap_route_selected"
             decision = {
                 "decision_id": uuid.uuid4().hex,
                 "decision": "selected",
-                "reason": "strict_free_route_selected",
+                "reason": reason,
                 "sensitivity_class": sensitivity,
                 "provider": route["effective_provider"],
                 "model_name": route["name"],
@@ -814,13 +1082,18 @@ class FreeflowRouter:
                 "bucket_id": route["bucket_id"],
                 "estimated_input_tokens": int(estimated_input_tokens or 0),
                 "estimated_output_tokens": int(estimated_output_tokens or 0),
-                "metadata": {"rejected": rejected},
+                "metadata": {
+                    "rejected": rejected,
+                    "paid": route["paid_cap_allowed"],
+                    "estimated_cost_usd": estimated_cost,
+                },
             }
             ledger.record_route_decision(decision, current)
             return decision
 
         local_configured = any(
-            route["local"] and route["strict_free_allowed"] for route in candidates
+            route["local"] and route["strict_free_allowed"] and route["enabled"]
+            for route in candidates
         )
         reason = (
             "blocked_local_unavailable"
@@ -866,6 +1139,24 @@ def validate_freeflow_config(config: Dict[str, Any]) -> None:
             raise ValueError(
                 f"freeflow default fallback references unknown model: {model_name}"
             )
+    paid_policy = paid_cap_policy(config)
+    for cap_key in ("daily_usd", "monthly_usd"):
+        try:
+            cap_value = float(paid_policy.get(cap_key) or 0.0)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"freeflow.paid_cap.{cap_key} must be numeric") from exc
+        if cap_value < 0:
+            raise ValueError(f"freeflow.paid_cap.{cap_key} must be non-negative")
+    for model_name in paid_policy.get("allowed_models") or []:
+        if model_name not in model_names:
+            raise ValueError(
+                f"freeflow paid_cap allowed model references unknown model: {model_name}"
+            )
+    for model_name in paid_policy.get("default_fallbacks") or []:
+        if model_name not in model_names:
+            raise ValueError(
+                f"freeflow paid_cap fallback references unknown model: {model_name}"
+            )
 
 
 def generate_freeflow_litellm_config(
@@ -875,7 +1166,8 @@ def generate_freeflow_litellm_config(
     routes = [
         route
         for route in router.routes()
-        if route["strict_free_allowed"] and route["enabled"]
+        if (route["strict_free_allowed"] or route["paid_cap_allowed"])
+        and route["enabled"]
     ]
     allowed_names = {route["name"] for route in routes}
     providers = router._providers()
@@ -901,23 +1193,39 @@ def generate_freeflow_litellm_config(
             litellm_params["api_base"] = provider["base_url"]
         if provider.get("extra_headers"):
             litellm_params["extra_headers"] = provider["extra_headers"]
+        model_info = {
+            "freeflow_provider": route["effective_provider"],
+            "freeflow_model": route["name"],
+            "freeflow_bucket_id": route["bucket_id"],
+            "quota_bucket": route["bucket_id"],
+            "freeflow_limits": route["limits"],
+            "sensitivity_class": NON_SENSITIVE_CLASS,
+            "selected_fallback_tier": "generated",
+            "route_reason": (
+                "paid_cap_generated_config"
+                if route["paid_cap_allowed"]
+                else "strict_free_generated_config"
+            ),
+            "zero_cost": route["zero_cost"],
+            "freeflow_paid": route["paid_cap_allowed"],
+            "source_url": route["source_url"],
+            "last_verified": route["last_verified"],
+        }
+        if route["paid_cap_allowed"]:
+            paid_policy = paid_cap_policy(config)
+            model_info["freeflow_pricing"] = route["pricing"]
+            model_info["freeflow_paid_cap"] = {
+                "enabled": bool(paid_policy.get("enabled")),
+                "daily_usd": float(paid_policy.get("daily_usd") or 0.0),
+                "monthly_usd": float(paid_policy.get("monthly_usd") or 0.0),
+                "day_reset": paid_policy.get("day_reset") or "utc_midnight",
+            }
+            model_info["estimated_cost_source_url"] = route["source_url"]
         model_list.append(
             {
                 "model_name": route["name"],
                 "litellm_params": litellm_params,
-                "model_info": {
-                    "freeflow_provider": route["effective_provider"],
-                    "freeflow_model": route["name"],
-                    "freeflow_bucket_id": route["bucket_id"],
-                    "quota_bucket": route["bucket_id"],
-                    "freeflow_limits": route["limits"],
-                    "sensitivity_class": NON_SENSITIVE_CLASS,
-                    "selected_fallback_tier": "generated",
-                    "route_reason": "strict_free_generated_config",
-                    "zero_cost": route["zero_cost"],
-                    "source_url": route["source_url"],
-                    "last_verified": route["last_verified"],
-                },
+                "model_info": model_info,
             }
         )
 
@@ -959,11 +1267,15 @@ def generate_freeflow_litellm_config(
         if filtered:
             fallback_dict[model_name] = filtered
 
-    default_fallbacks = [
-        model_name
-        for model_name in (policy.get("default_fallbacks") or [])
-        if model_name in allowed_names
-    ]
+    paid_policy = paid_cap_policy(config)
+    combined_default_fallbacks = list(policy.get("default_fallbacks") or [])
+    combined_default_fallbacks.extend(paid_policy.get("default_fallbacks") or [])
+    seen_default_fallbacks: set[str] = set()
+    default_fallbacks = []
+    for model_name in combined_default_fallbacks:
+        if model_name in allowed_names and model_name not in seen_default_fallbacks:
+            default_fallbacks.append(model_name)
+            seen_default_fallbacks.add(model_name)
 
     return {
         "model_list": model_list,
@@ -992,27 +1304,45 @@ def build_doctor_report(
     quota_ledger = ledger or FreeflowQuotaLedger()
     router = FreeflowRouter(config, quota_ledger)
     routes = router.routes()
-    blocked = [route for route in routes if not route["strict_free_allowed"]]
+    blocked = [
+        route
+        for route in routes
+        if not route["strict_free_allowed"] and not route["paid_cap_allowed"]
+    ]
     hosted = [
         route for route in routes if route["strict_free_allowed"] and not route["local"]
     ]
     local = [
         route for route in routes if route["strict_free_allowed"] and route["local"]
     ]
+    paid = [route for route in routes if route["paid_cap_allowed"]]
     issues = []
     if strict_free_enabled(config) and not local:
         issues.append("strict_free_enabled_without_local_route")
     if any(route for route in hosted if not route["credential_present"]):
         issues.append("hosted_free_credentials_missing")
+    if paid_cap_enabled(config) and not paid:
+        issues.append("paid_cap_enabled_without_allowed_route")
+    if any(route for route in paid if not route["credential_present"]):
+        issues.append("paid_cap_credentials_missing")
+    paid_policy = paid_cap_policy(config)
     return {
         "mode": freeflow_policy(config).get("mode"),
         "enabled": bool(freeflow_policy(config).get("enabled")),
+        "paid_cap": {
+            "enabled": bool(paid_policy.get("enabled")),
+            "daily_usd": float(paid_policy.get("daily_usd") or 0.0),
+            "monthly_usd": float(paid_policy.get("monthly_usd") or 0.0),
+            "allowed_models": list(paid_policy.get("allowed_models") or []),
+            "default_fallbacks": list(paid_policy.get("default_fallbacks") or []),
+        },
         "offline": offline,
         "ledger_path": str(quota_ledger.path),
         "summary": {
             "routes_total": len(routes),
             "local_routes": len(local),
             "hosted_free_routes": len(hosted),
+            "paid_cap_routes": len(paid),
             "blocked_paid_or_unknown_routes": len(blocked),
         },
         "issues": sorted(set(issues)),

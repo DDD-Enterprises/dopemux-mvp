@@ -20,10 +20,12 @@ FREEFLOW_METADATA_KEYS = (
     "route_decision_id",
     "freeflow_provider",
     "freeflow_model",
+    "freeflow_paid",
     "quota_bucket",
     "sensitivity_class",
     "selected_fallback_tier",
     "route_reason",
+    "estimated_cost_usd",
 )
 
 
@@ -324,6 +326,7 @@ class DopemuxLiteLLMTraceLogger(CustomLogger):
                 LOCAL_PROVIDERS,
                 NON_SENSITIVE_CLASS,
                 PROVIDER_CATALOG,
+                estimate_cost_usd,
                 normalize_sensitivity,
             )
 
@@ -369,6 +372,15 @@ class DopemuxLiteLLMTraceLogger(CustomLogger):
                     "call_type": str(call_type) if call_type is not None else None,
                 },
             }
+            paid_cap = _as_dict(model_info.get("freeflow_paid_cap"))
+            pricing = _as_dict(model_info.get("freeflow_pricing"))
+            freeflow_paid = bool(model_info.get("freeflow_paid") or pricing)
+            if freeflow_paid:
+                decision["reason"] = "paid_cap_pre_call_admitted"
+                metadata["freeflow_paid"] = True
+                metadata["estimated_cost_usd"] = estimate_cost_usd(
+                    pricing, estimated_input_tokens, estimated_output_tokens
+                )
             limits = _as_dict(model_info.get("freeflow_limits")) or _as_dict(
                 PROVIDER_CATALOG.get(provider, {}).get("limits")
             )
@@ -396,10 +408,42 @@ class DopemuxLiteLLMTraceLogger(CustomLogger):
                 kwargs["metadata"] = metadata
                 raise FreeflowQuotaExceeded(quota.reason, quota.reset_at)
 
+            if freeflow_paid:
+                paid_quota = ledger.check_paid_cap(
+                    paid_cap,
+                    pricing,
+                    estimated_input_tokens,
+                    estimated_output_tokens,
+                )
+                if not paid_quota.allowed:
+                    decision["decision"] = "blocked"
+                    decision["reason"] = paid_quota.reason
+                    metadata["route_reason"] = paid_quota.reason
+                    metadata["route_decision_id"] = ledger.record_route_decision(
+                        decision
+                    )
+                    kwargs["metadata"] = metadata
+                    raise FreeflowQuotaExceeded(
+                        paid_quota.reason, paid_quota.reset_at
+                    )
+
             metadata["route_reason"] = str(
                 metadata.get("route_reason") or decision["reason"]
             )
             metadata["route_decision_id"] = ledger.record_route_decision(decision)
+            if freeflow_paid:
+                ledger.record_spend(
+                    provider,
+                    model_name,
+                    str(kwargs.get("model") or ""),
+                    bucket_id,
+                    pricing,
+                    estimated_input_tokens,
+                    estimated_output_tokens,
+                    route_decision_id=metadata["route_decision_id"],
+                    status="reserved",
+                    metadata={"trace_id": trace_id},
+                )
         kwargs["metadata"] = metadata
 
         extra_headers = dict(kwargs.get("extra_headers") or {})
