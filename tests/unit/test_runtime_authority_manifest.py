@@ -76,7 +76,10 @@ def test_known_task_orchestrator_conflict_is_represented() -> None:
     task_orchestrator = systems_by_name()["task-orchestrator"]
     assert task_orchestrator["authority_status"] == "CONFLICTING"
     assert "task_orchestrator_unsupported_runtime_variant" in conflict_ids(task_orchestrator)
-    assert "task_orchestrator_port_3014_vs_8000" in conflict_ids(task_orchestrator)
+    assert "task_orchestrator_port_3014_vs_8000" not in conflict_ids(task_orchestrator)
+    ports = {item["port"]: item["status"] for item in task_orchestrator["expected_ports"]}
+    assert ports[8000] == "observed"
+    assert 3014 not in ports
 
 
 def test_known_conport_conflict_is_represented() -> None:
