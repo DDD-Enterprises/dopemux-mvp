@@ -74,6 +74,6 @@
 **Learning:** Displaying relative durations (e.g., "45m remaining") is helpful but can still feel abstract to users with ADHD who experience "time blindness." Providing an absolute wall-clock finish estimate (e.g., "Finish at 14:30") grounds the relative duration in real-world time, making the workload feel more concrete and manageable.
 **Action:** Supplement relative duration counters with absolute estimated completion times to improve temporal grounding and reduce cognitive load.
 
-## 2025-05-15 - [Safe Destructive Actions with Soft Confirmation]
+## 2026-05-15 - [Safe Destructive Actions with Soft Confirmation]
 **Learning:** For ADHD users who may experience impulsivity or accidental clicks, immediate destructive actions (like resetting a hard-won ritual progress) can lead to significant frustration. Implementing a "soft" two-step confirmation (Confirm Reset?) within a short temporal window (3s) provides a safety net without the friction of a modal dialog.
 **Action:** Use a two-step confirmation state on buttons for destructive actions that are not easily reversible to prevent accidental progress loss.
