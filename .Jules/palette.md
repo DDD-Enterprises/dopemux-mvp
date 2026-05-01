@@ -65,3 +65,7 @@
 ## 2026-04-26 - [Semantic Error Severity Alignment]
 **Learning:** Using `warning` severity for critical system failures (like WebSocket disconnections or API errors) can lead to user confusion and "warning fatigue." Aligning the visual and semantic severity with `error` ensures users immediately recognize the criticality of the issue and trigger appropriate iconography.
 **Action:** Always use the most accurate semantic severity level (error vs warning) to match the criticality of the system state.
+
+## 2026-04-30 - [Mitigating Time Blindness with Absolute Anchors]
+**Learning:** For users with ADHD, relative durations (e.g., "45 minutes remaining") can feel abstract and fail to trigger a realistic sense of time ("time blindness"). Providing an absolute completion time (e.g., "Estimated completion: 14:30") grounds the relative effort in the real world, making the remaining workload feel more tangible and manageable.
+**Action:** Always supplement relative duration displays with an absolute estimated completion time to provide a concrete temporal anchor.
