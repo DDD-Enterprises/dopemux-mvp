@@ -26,7 +26,13 @@ artifact inspection.
 - Forbidden legacy targets are not referenced from declared active launch files.
 - Known drift is reported as expected conflict instead of silently normalized.
 
-Static mode performs no network calls and does not mutate production state.
+Static mode does not perform external network I/O and does not mutate
+production state. When `repo_identity.require_identity_match` is enabled in the
+manifest, the verifier may still invoke local `git` commands such as
+`git remote get-url origin` to inspect repository identity. In that mode,
+operators need `git` available and an `origin` remote configured in the
+checkout, or they should disable the identity-match requirement in the
+manifest for non-git environments.
 
 ## Authority Boundaries
 
@@ -47,9 +53,9 @@ authority by this manifest:
 ## Commands
 
 ```bash
-python -m json.tool config/runtime_authority_manifest.json
-python -m pytest -q tests/unit/test_runtime_authority_manifest.py
-python scripts/verify_runtime_authority.py --manifest config/runtime_authority_manifest.json --check static
+python3 -m json.tool config/runtime_authority_manifest.json
+python3 -m pytest -q tests/unit/test_runtime_authority_manifest.py
+python3 scripts/verify_runtime_authority.py --manifest config/runtime_authority_manifest.json --check static
 ```
 
 ## Failure Handling
