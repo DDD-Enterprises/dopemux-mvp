@@ -1,3 +1,15 @@
+---
+id: gpt55_pm_implementer_redesign
+title: Gpt55 Pm Implementer Redesign
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-01'
+last_review: '2026-05-01'
+next_review: '2026-07-30'
+prelude: Gpt55 Pm Implementer Redesign (reference) for dopemux documentation and developer
+  workflows.
+---
 {\rtf1\ansi\ansicpg1252\cocoartf2869
 \cocoatextscaling0\cocoaplatform0{\fonttbl\f0\froman\fcharset0 Times-Bold;\f1\froman\fcharset0 Times-Roman;\f2\fmodern\fcharset0 Courier;
 }
