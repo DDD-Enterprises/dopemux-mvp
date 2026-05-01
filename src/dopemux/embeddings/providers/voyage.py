@@ -8,6 +8,7 @@ with ADHD-optimized error handling and comprehensive cost tracking.
 import asyncio
 import logging
 import time
+from types import SimpleNamespace
 from typing import Dict, List, Optional
 
 import httpx
@@ -81,7 +82,7 @@ class VoyageAPIClient(EmbeddingProvider, RerankProvider, AsyncContextManager):
             EmbeddingError: When embedding generation fails
         """
         if not self.api_key:
-            raise EmbeddingError("🔑 Voyage API key not configured")
+            raise EmbeddingError("Voyage embedding failed: API key not configured")
 
         if not texts:
             return []
@@ -125,7 +126,7 @@ class VoyageAPIClient(EmbeddingProvider, RerankProvider, AsyncContextManager):
                 logger.error(f"💙 API request had trouble: {e}. Taking a short break and trying again...")
             else:
                 logger.error(f"Voyage API error: {e}")
-            raise EmbeddingError(f"Voyage embedding failed: {e}") from e
+            raise EmbeddingError(f"Voyage API request failed: {e}") from e
 
         except Exception as e:
             logger.error(f"Unexpected error during embedding: {e}")
@@ -255,6 +256,21 @@ class VoyageAPIClient(EmbeddingProvider, RerankProvider, AsyncContextManager):
         except Exception as e:
             logger.error(f"❌ Voyage API connection test failed: {e}")
             return False
+
+    async def validate_connection(self) -> bool:
+        """Compatibility alias used by health checks and tests."""
+        return await self.test_connection()
+
+    async def get_health_metrics(self):
+        """Return provider health metrics in a lightweight namespace."""
+        return SimpleNamespace(
+            provider_name="voyage",
+            total_requests=self.total_requests,
+            total_tokens=self.total_tokens,
+            embedding_requests=self.embedding_requests,
+            rerank_requests=self.rerank_requests,
+            estimated_cost_usd=self.get_cost_estimate()["total_cost"],
+        )
 
     def reset_usage_tracking(self):
         """Reset usage tracking counters (e.g., for monthly reset)."""

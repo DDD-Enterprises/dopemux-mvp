@@ -28,6 +28,113 @@ from .base import BaseVectorIndex
 logger = logging.getLogger(__name__)
 
 
+class InMemoryVectorIndex(BaseVectorIndex):
+    """
+    Dependency-free vector index used when native ANN libraries are absent.
+
+    This keeps local extraction and tests functional without hnswlib/faiss. It
+    is exact-search and intended for small local indexes, not high-volume ANN.
+    """
+
+    def __init__(self, config: AdvancedEmbeddingConfig):
+        self.config = config
+        self.dimension = config.embedding_dimension
+        self.doc_ids: List[str] = []
+        self._vectors: Optional[np.ndarray] = None
+
+    def add_vectors(self, vectors: np.ndarray, ids: List[str]) -> None:
+        try:
+            if len(vectors) != len(ids):
+                raise ValueError("Number of vectors must match number of IDs")
+            if len(ids) == 0:
+                return
+
+            vectors = np.asarray(vectors, dtype=np.float32)
+            if vectors.ndim != 2:
+                raise ValueError("Vectors must be a 2D array")
+            if vectors.shape[1] != self.dimension:
+                raise ValueError(
+                    f"Vector dimension {vectors.shape[1]} does not match config dimension {self.dimension}"
+                )
+
+            if self._vectors is None:
+                self._vectors = vectors.copy()
+            else:
+                self._vectors = np.vstack([self._vectors, vectors])
+            self.doc_ids.extend(ids)
+        except Exception as e:
+            logger.error(f"❌ Failed to add vectors to in-memory index: {e}")
+            raise VectorStoreError(f"In-memory vector addition failed: {e}") from e
+
+    def search(self, query_vector: np.ndarray, k: int) -> Tuple[List[float], List[int]]:
+        try:
+            if self._vectors is None or len(self.doc_ids) == 0:
+                return [], []
+
+            query = np.asarray(query_vector, dtype=np.float32)
+            if query.ndim == 2:
+                query = query[0]
+            if query.shape[0] != self.dimension:
+                raise ValueError(
+                    f"Query dimension {query.shape[0]} does not match config dimension {self.dimension}"
+                )
+
+            k = min(k, len(self.doc_ids))
+            if self.config.distance_metric == "cosine":
+                matrix_norm = np.linalg.norm(self._vectors, axis=1)
+                query_norm = np.linalg.norm(query)
+                denom = np.maximum(matrix_norm * query_norm, 1e-12)
+                scores = (self._vectors @ query) / denom
+                order = np.argsort(scores)[::-1][:k]
+                ranked_scores = scores[order]
+            else:
+                distances = np.linalg.norm(self._vectors - query, axis=1)
+                order = np.argsort(distances)[:k]
+                ranked_scores = 1.0 / (1.0 + distances[order])
+
+            return ranked_scores.astype(float).tolist(), order.astype(int).tolist()
+        except Exception as e:
+            logger.error(f"❌ In-memory vector search failed: {e}")
+            raise VectorStoreError(f"In-memory vector search failed: {e}") from e
+
+    def save(self, path: str) -> None:
+        try:
+            index_path = Path(path)
+            index_path.parent.mkdir(parents=True, exist_ok=True)
+            np.savez_compressed(
+                str(index_path) + ".npz",
+                vectors=self._vectors if self._vectors is not None else np.empty((0, self.dimension)),
+            )
+            with open(str(index_path) + ".meta", "w") as f:
+                json.dump({"doc_ids": self.doc_ids, "dimension": self.dimension}, f)
+        except Exception as e:
+            logger.error(f"❌ Failed to save in-memory vector index: {e}")
+            raise VectorStoreError(f"In-memory vector save failed: {e}") from e
+
+    def load(self, path: str) -> None:
+        try:
+            with open(str(path) + ".meta", "r") as f:
+                metadata = json.load(f)
+            data = np.load(str(path) + ".npz")
+            vectors = data["vectors"].astype(np.float32)
+            self.dimension = int(metadata["dimension"])
+            self.doc_ids = list(metadata["doc_ids"])
+            self._vectors = vectors if len(vectors) else None
+        except Exception as e:
+            logger.error(f"❌ Failed to load in-memory vector index: {e}")
+            raise VectorStoreError(f"In-memory vector load failed: {e}") from e
+
+    def get_stats(self) -> Dict[str, Any]:
+        vector_count = 0 if self._vectors is None else int(self._vectors.shape[0])
+        return {
+            "initialized": True,
+            "backend": "in_memory",
+            "document_count": len(self.doc_ids),
+            "vector_count": vector_count,
+            "dimension": self.dimension,
+        }
+
+
 class HNSWIndex(BaseVectorIndex):
     """
     HNSW vector index optimized for 2048-dimensional embeddings.

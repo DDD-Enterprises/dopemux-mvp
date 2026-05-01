@@ -7,8 +7,28 @@ from typing import Dict, List, Any, Optional, Union
 from dataclasses import dataclass, field
 from datetime import datetime
 import re
-import spacy
-from spacy.lang.en import English
+try:
+    import spacy
+    from spacy.lang.en import English
+except ImportError:
+    spacy = None
+
+    class _SimpleSentence:
+        def __init__(self, text: str):
+            self.text = text
+
+    class _SimpleDoc:
+        def __init__(self, text: str):
+            self.ents = []
+            self.sents = [
+                _SimpleSentence(sentence.strip())
+                for sentence in re.split(r"(?<=[.!?])\s+|\n+", text)
+                if sentence.strip()
+            ]
+
+    class English:
+        def __call__(self, text: str):
+            return _SimpleDoc(text)
 
 @dataclass
 class ExtractedField:
@@ -61,7 +81,7 @@ class BaseExtractor(ABC):
     def __init__(self, nlp_model: str = "en_core_web_sm"):
         """Initialize the extractor with spaCy model."""
         try:
-            self.nlp = spacy.load(nlp_model)
+            self.nlp = spacy.load(nlp_model) if spacy is not None else English()
         except OSError:
             # Fallback to basic English model
             self.nlp = English()

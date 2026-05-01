@@ -21,7 +21,7 @@ import time
 import warnings
 from datetime import datetime
 from pathlib import Path
-from typing import Callable, Dict, Iterable, List, Optional, Sequence
+from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence
 
 import click
 
@@ -62,6 +62,41 @@ from subprocess import CalledProcessError
 from urllib.parse import urlparse
 
 import yaml
+
+
+class LegacyReplacementCommand(click.Command):
+    """Click command that reports a canonical replacement surface."""
+
+    def __init__(
+        self,
+        *args: Any,
+        replacement_command: str,
+        replacement_by_arg: Optional[Dict[str, str]] = None,
+        **kwargs: Any,
+    ) -> None:
+        self.replacement_command = replacement_command
+        self.replacement_by_arg = replacement_by_arg or {}
+        super().__init__(*args, **kwargs)
+
+    def format_help(self, ctx: click.Context, formatter: click.HelpFormatter) -> None:
+        formatter.write_text(
+            f"Legacy command disabled. Use `{self.replacement_command}` instead."
+        )
+
+    def parse_args(self, ctx: click.Context, args: List[str]) -> List[str]:
+        if any(arg in ("--help", "-h") for arg in args):
+            click.echo(ctx.get_help(), color=ctx.color)
+            ctx.exit()
+        if args and args[0] in self.replacement_by_arg:
+            ctx.meta["legacy_replacement_command"] = self.replacement_by_arg[args[0]]
+        ctx.args = []
+        return []
+
+    def invoke(self, ctx: click.Context) -> Any:
+        replacement = ctx.meta.get("legacy_replacement_command", self.replacement_command)
+        raise click.ClickException(
+            f"Legacy command disabled. Use `{replacement}` instead."
+        )
 
 from .pm.writes import PMWriteConfig
 from .adhd import AttentionMonitor, ContextManager, TaskDecomposer
@@ -3033,8 +3068,23 @@ cli.add_command(upgrades)
 from .commands.extractor_commands import extractor, _run_extractor_runner, _run_repscan_runner
 from .commands.extractor_validation import ValidationConfig, run_live_validation
 extractor.help = "Legacy promptset/prescan cockpit for repo-truth extraction support workflows. Use `dopemux rte` for canonical Repo Truth Extractor execution."
+extractor.hidden = True
 
-cli.add_command(extractor)
+cli.add_command(
+    LegacyReplacementCommand(
+        name="extractor",
+        replacement_command="dopemux rte",
+        replacement_by_arg={
+            "run": "dopemux rte run",
+            "status": "dopemux rte status",
+            "prescan": "dopemux rte run",
+            "promptset": "dopemux rte promptset",
+            "init": "dopemux rte promptset sync",
+            "validate": "dopemux rte promptset validate",
+        },
+        hidden=True,
+    )
+)
 
 from .commands.audit_commands import audit
 
@@ -4044,7 +4094,12 @@ def _print_or_apply_cron(frequency: str, apply: bool) -> None:
         console.logger.info(cron_entry)
 
 
-@cli.command("extract-chatlog")
+@cli.command(
+    "extract-chatlog",
+    hidden=True,
+    cls=LegacyReplacementCommand,
+    replacement_command="dopemux extract chatlog basic",
+)
 @click.argument("directory", default=".")
 @click.option("--output", "-o", help="📂 Harvest Coordinate: Output directory for extraction results.")
 @click.option(
@@ -4084,22 +4139,9 @@ def extract_chatlog(
     and ritual progress from local chat log artifacts. Synchronizes the 
     extracted intelligence with the persistent knowledge graph.
     """
-    with mobile_task_notification(
-        ctx,
-        "Chatlog extraction",
-        success_message="✅ Chatlog extraction complete",
-        failure_message="❌ Chatlog extraction failed",
-    ):
-        _run_extract_chatlog(
-            ctx,
-            directory,
-            output,
-            confidence,
-            batch_size,
-            max_workers,
-            archive,
-            workspace_id,
-        )
+    raise click.ClickException(
+        "Legacy command disabled. Use `dopemux extract chatlog basic` instead."
+    )
 
 
 def _run_extract_chatlog(
@@ -4111,6 +4153,11 @@ def _run_extract_chatlog(
     max_workers: int,
     archive: Optional[str],
     workspace_id: Optional[str],
+    embeddings: bool = True,
+    embedding_provider: str = "auto",
+    require_embeddings: bool = False,
+    archive_mode: str = "copy",
+    persist_conport: bool = False,
 ) -> None:
 
     backend_path = (
@@ -4160,8 +4207,12 @@ def _run_extract_chatlog(
         include_pro_extractors=False,
         enable_synthesis=True,
         max_documents=4,
-        verbose=ctx.obj.get("verbose", False),
-        persist_to_conport=True,
+        generate_embeddings=embeddings,
+        embedding_provider=embedding_provider,
+        require_embeddings=require_embeddings,
+        archive_mode=archive_mode,
+        verbose=(ctx.obj or {}).get("verbose", False),
+        persist_to_conport=persist_conport,
         workspace_id=workspace_id,
     )
 
@@ -4223,8 +4274,13 @@ def _run_extract_chatlog(
                     f"\n[success]📁 Results saved to: {output_path}[/success]"
                 )
                 console.logger.info(
-                    f"[success]📦 Processed files archived to: {result['archive_directory']}[/success]"
+                    f"[success]📦 Archive mode: {result.get('archive_mode')} ({result.get('archive_directory')})[/success]"
                 )
+                if result.get("embedding_summary"):
+                    embedding_summary = result["embedding_summary"]
+                    console.logger.info(
+                        f"[success]🔍 Embeddings: {embedding_summary.get('embedding_status')} via {embedding_summary.get('resolved_provider')}[/success]"
+                    )
 
             else:
                 progress.update(
@@ -4242,14 +4298,19 @@ def _run_extract_chatlog(
         except Exception as e:
             progress.update(task, description="Error occurred", completed=True)
             console.logger.error(f"[error]❌ Extraction pipeline failed: {e}[/error]")
-            if ctx.obj.get("verbose"):
+            if (ctx.obj or {}).get("verbose"):
                 import traceback
 
                 traceback.print_exc()
             sys.exit(1)
 
 
-@cli.command()
+@cli.command(
+    "extractpro",
+    hidden=True,
+    cls=LegacyReplacementCommand,
+    replacement_command="dopemux extract chatlog pro",
+)
 @click.argument("directory", default=".")
 @click.option("--output", "-o", help="📂 Harvest Coordinate: Output directory for high-fidelity extraction results.")
 @click.option(
@@ -4293,23 +4354,9 @@ def extractPro(
     dependencies, and architectural patterns from chat logs. Synthesizes a 
     comprehensive knowledge graph and materializes high-fidelity reports.
     """
-    with mobile_task_notification(
-        ctx,
-        "Pro chatlog extraction",
-        success_message="✅ Pro chatlog extraction complete",
-        failure_message="❌ Pro chatlog extraction failed",
-    ):
-        _run_extract_pro(
-            ctx,
-            directory,
-            output,
-            confidence,
-            batch_size,
-            max_workers,
-            archive,
-            workspace_id,
-            max_documents,
-        )
+    raise click.ClickException(
+        "Legacy command disabled. Use `dopemux extract chatlog pro` instead."
+    )
 
 
 def _run_extract_pro(
@@ -4322,6 +4369,11 @@ def _run_extract_pro(
     archive: Optional[str],
     workspace_id: Optional[str],
     max_documents: int,
+    embeddings: bool = True,
+    embedding_provider: str = "auto",
+    require_embeddings: bool = False,
+    archive_mode: str = "copy",
+    persist_conport: bool = False,
 ) -> None:
 
     # Add the gpt-researcher backend to the path
@@ -4377,9 +4429,13 @@ def _run_extract_pro(
         include_basic_extractors=True,
         include_pro_extractors=True,  # Pro mode includes ALL extractors
         enable_synthesis=True,
+        generate_embeddings=embeddings,
+        embedding_provider=embedding_provider,
+        require_embeddings=require_embeddings,
+        archive_mode=archive_mode,
         max_documents=max_documents,
-        verbose=ctx.obj.get("verbose", False),
-        persist_to_conport=True,
+        verbose=(ctx.obj or {}).get("verbose", False),
+        persist_to_conport=persist_conport,
         workspace_id=workspace_id,
     )
 
@@ -4454,8 +4510,13 @@ def _run_extract_pro(
                     f"\n[success]📁 Results saved to: {output_path}[/success]"
                 )
                 console.logger.info(
-                    f"[success]📦 Processed files archived to: {result['archive_directory']}[/success]"
+                    f"[success]📦 Archive mode: {result.get('archive_mode')} ({result.get('archive_directory')})[/success]"
                 )
+                if result.get("embedding_summary"):
+                    embedding_summary = result["embedding_summary"]
+                    console.logger.info(
+                        f"[success]🔍 Embeddings: {embedding_summary.get('embedding_status')} via {embedding_summary.get('resolved_provider')}[/success]"
+                    )
                 console.logger.info(
                     f"[success]📊 Knowledge graph: {output_path}/knowledge_graph.json[/success]"
                 )
@@ -4481,17 +4542,189 @@ def _run_extract_pro(
             console.logger.error(
                 f"[error]❌ Pro extraction pipeline failed: {e}[/error]"
             )
-            if ctx.obj.get("verbose"):
+            if (ctx.obj or {}).get("verbose"):
                 import traceback
 
                 traceback.print_exc()
             sys.exit(1)
 
 
+def _chatlog_common_options(command_fn: Callable) -> Callable:
+    command_fn = click.option(
+        "--persist-conport/--no-persist-conport",
+        default=False,
+        show_default=True,
+        help="Persist extracted results to a configured ConPort adapter.",
+    )(command_fn)
+    command_fn = click.option(
+        "--require-embeddings/--allow-embedding-skip",
+        default=False,
+        show_default=True,
+        help="Fail when cloud embeddings cannot run instead of writing a skipped manifest.",
+    )(command_fn)
+    command_fn = click.option(
+        "--embedding-provider",
+        type=click.Choice(["auto", "voyage", "none"]),
+        default="auto",
+        show_default=True,
+        help="Embedding provider policy: auto uses Voyage when VOYAGE_API_KEY is present.",
+    )(command_fn)
+    command_fn = click.option(
+        "--embeddings/--no-embeddings",
+        default=True,
+        show_default=True,
+        help="Index chunks and extracted fields; cloud embeddings run only when provider policy resolves to Voyage.",
+    )(command_fn)
+    command_fn = click.option(
+        "--workspace-id",
+        help="🆔 Ritual Chamber: ConPort workspace ID for persistent synchronization.",
+    )(command_fn)
+    command_fn = click.option(
+        "--archive-mode",
+        type=click.Choice(["copy", "move", "none"]),
+        default="copy",
+        show_default=True,
+        help="Archive policy for processed source chatlogs.",
+    )(command_fn)
+    command_fn = click.option("--archive", "-a", help="📦 Temporal Archive: Directory for processed artifact storage.")(command_fn)
+    command_fn = click.option(
+        "--max-workers",
+        "-w",
+        type=int,
+        default=4,
+        show_default=True,
+        help="⚡ Extraction Workers: Maximum parallel ritual workers.",
+    )(command_fn)
+    command_fn = click.option(
+        "--batch-size",
+        "-b",
+        type=int,
+        default=10,
+        show_default=True,
+        help="📊 Signal Density: Number of artifacts to process per batch.",
+    )(command_fn)
+    command_fn = click.option(
+        "--confidence",
+        "-c",
+        type=float,
+        default=0.5,
+        show_default=True,
+        help="🎯 Confidence Gate: Minimum threshold for signal extraction (0.0-1.0).",
+    )(command_fn)
+    command_fn = click.option("--output", "-o", help="📂 Harvest Coordinate: Output directory for extraction results.")(command_fn)
+    command_fn = click.argument("directory", default=".")(command_fn)
+    return command_fn
+
+
+@click.group("chatlog")
+def extract_chatlog_group():
+    """Extract decisions, fields, chunks, reports, graph data, and embeddings from chatlogs."""
+
+
+@extract_chatlog_group.command("basic")
+@_chatlog_common_options
+@click.pass_context
+def extract_chatlog_basic(
+    ctx,
+    directory: str,
+    output: Optional[str],
+    confidence: float,
+    batch_size: int,
+    max_workers: int,
+    archive: Optional[str],
+    archive_mode: str,
+    workspace_id: Optional[str],
+    embeddings: bool,
+    embedding_provider: str,
+    require_embeddings: bool,
+    persist_conport: bool,
+) -> None:
+    """Run the basic chatlog extraction path."""
+    with mobile_task_notification(
+        ctx,
+        "Basic chatlog extraction",
+        success_message="✅ Basic chatlog extraction complete",
+        failure_message="❌ Basic chatlog extraction failed",
+    ):
+        _run_extract_chatlog(
+            ctx,
+            directory,
+            output,
+            confidence,
+            batch_size,
+            max_workers,
+            archive,
+            workspace_id,
+            embeddings,
+            embedding_provider,
+            require_embeddings,
+            archive_mode,
+            persist_conport,
+        )
+
+
+@extract_chatlog_group.command("pro")
+@_chatlog_common_options
+@click.option(
+    "--max-documents",
+    "-d",
+    type=int,
+    default=8,
+    show_default=True,
+    help="📜 Materialization Limit: Maximum documents to synthesize during the ritual.",
+)
+@click.pass_context
+def extract_chatlog_pro(
+    ctx,
+    directory: str,
+    output: Optional[str],
+    confidence: float,
+    batch_size: int,
+    max_workers: int,
+    archive: Optional[str],
+    archive_mode: str,
+    workspace_id: Optional[str],
+    embeddings: bool,
+    embedding_provider: str,
+    require_embeddings: bool,
+    persist_conport: bool,
+    max_documents: int,
+) -> None:
+    """Run the pro chatlog extraction path with all extractors."""
+    with mobile_task_notification(
+        ctx,
+        "Pro chatlog extraction",
+        success_message="✅ Pro chatlog extraction complete",
+        failure_message="❌ Pro chatlog extraction failed",
+    ):
+        _run_extract_pro(
+            ctx,
+            directory,
+            output,
+            confidence,
+            batch_size,
+            max_workers,
+            archive,
+            workspace_id,
+            max_documents,
+            embeddings,
+            embedding_provider,
+            require_embeddings,
+            archive_mode,
+            persist_conport,
+        )
+
+
+extract.add_command(extract_chatlog_group, "chatlog")
+
+
 # from src/dopemux/commands/extractor_commands.py
 @cli.command(
     "repscan",
     context_settings={"ignore_unknown_options": True, "allow_extra_args": True},
+    hidden=True,
+    cls=LegacyReplacementCommand,
+    replacement_command="dopemux rte scan",
 )
 @click.option(
     "--phase",
@@ -4525,6 +4758,22 @@ def repscan_passthrough(
     Engages the deterministic repository scanner to audit the codebase and 
     synthesize high-fidelity prompts for extraction rituals.
     """
+    raise click.ClickException(
+        "Legacy command disabled. Use `dopemux rte scan` instead."
+    )
+
+
+def _build_repscan_args(
+    phase: Optional[str],
+    run_id: Optional[str],
+    promptgen: Optional[str],
+    promptpack: Optional[str],
+    promptgen_only: bool,
+    prompt_root: Optional[str],
+    profiles_dir: Optional[str],
+    legacy_runner: Optional[str],
+    args: tuple[str, ...],
+) -> List[str]:
     forwarded: List[str] = [*args]
     if phase:
         forwarded.extend(["--phase", phase])
@@ -4542,7 +4791,7 @@ def repscan_passthrough(
         forwarded.extend(["--profiles-dir", profiles_dir])
     if legacy_runner:
         forwarded.extend(["--legacy-runner", legacy_runner])
-    _run_repscan_runner(args=forwarded)
+    return forwarded
 
 
 _PIPELINE_VERSION_CHOICES = ["v5", "v4", "v3"]
@@ -4608,6 +4857,52 @@ def _run_truth_v5_alias(
 def rte():
     """Canonical operator entrypoint for Repo Truth Extractor."""
     pass
+
+
+@rte.command(
+    "scan",
+    context_settings={"ignore_unknown_options": True, "allow_extra_args": True},
+)
+@click.option(
+    "--phase",
+    type=click.Choice(
+        ["ALL", "A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z"]
+    ),
+    help="📊 Target Phase: Phase code or ALL for the repo scan ritual.",
+)
+@click.option("--run-id", type=str, help="🆔 Ritual Session: Unique identifier for the scan run.")
+@click.option("--promptgen", type=click.Choice(["off", "v1", "v2", "auto"]), help="🧠 Prompt Synthesis: Mode for automated prompt generation.")
+@click.option("--promptpack", type=str, help="📦 Prompt Package: Specific promptpack to use for the ritual.")
+@click.option("--promptgen-only", is_flag=True, help="⚡ Synthesis Only: Execute only the prompt generation phase.")
+@click.option("--prompt-root", type=str, help="🔬 Prompt Source: Root directory for ritual prompts.")
+@click.option("--profiles-dir", type=str, help="📂 Profile Registry: Path to the ritual profiles directory.")
+@click.option("--legacy-runner", type=str, help="⏪ Legacy Engine: Path to the legacy v3 runner.")
+@click.argument("args", nargs=-1, type=click.UNPROCESSED)
+def rte_scan(
+    phase: Optional[str],
+    run_id: Optional[str],
+    promptgen: Optional[str],
+    promptpack: Optional[str],
+    promptgen_only: bool,
+    prompt_root: Optional[str],
+    profiles_dir: Optional[str],
+    legacy_runner: Optional[str],
+    args: tuple[str, ...],
+) -> None:
+    """Run deterministic repo scan and prompt synthesis through the canonical RTE surface."""
+    _run_repscan_runner(
+        args=_build_repscan_args(
+            phase,
+            run_id,
+            promptgen,
+            promptpack,
+            promptgen_only,
+            prompt_root,
+            profiles_dir,
+            legacy_runner,
+            args,
+        )
+    )
 
 
 @upgrades.command("list")
@@ -5183,13 +5478,6 @@ def _add_extractor_alias_if_missing(command, name: str) -> None:
         extractor.add_command(command, name)
 
 
-_add_extractor_alias_if_missing(extractor_list, "list")
-_add_extractor_alias_if_missing(extractor_run, "run")
-_add_extractor_alias_if_missing(extractor_doctor, "doctor")
-_add_extractor_alias_if_missing(extractor_status, "status")
-_add_extractor_alias_if_missing(extractor_preflight, "preflight")
-_add_extractor_alias_if_missing(extractor_trace, "trace")
-
 rte.add_command(extractor_list, "list")
 rte.add_command(extractor_run, "run")
 rte.add_command(extractor_doctor, "doctor")
@@ -5216,6 +5504,10 @@ def rte_promptset_group():
 
 
 rte_promptset_group.add_command(extractor_promptset_audit, "audit")
+if "init" in extractor.commands:
+    rte_promptset_group.add_command(extractor.commands["init"], "sync")
+if "validate" in extractor.commands:
+    rte_promptset_group.add_command(extractor.commands["validate"], "validate")
 cli.add_command(rte, "rte")
 
 

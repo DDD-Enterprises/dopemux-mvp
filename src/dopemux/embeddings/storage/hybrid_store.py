@@ -23,7 +23,7 @@ from ..core import (
 )
 from ..providers import VoyageAPIClient
 from .base import BaseDocumentStore
-from .vector_indices import HNSWIndex, FAISSIndex
+from .vector_indices import FAISSIndex, HNSWIndex, InMemoryVectorIndex
 from .text_indices import BM25Index
 from .ranking import HybridRanker, RRFFusion
 
@@ -87,7 +87,12 @@ class HybridVectorStore(VectorStore):
     learned fusion weights and optional cross-encoder reranking.
     """
 
-    def __init__(self, config: AdvancedEmbeddingConfig, persist_directory: Optional[Path] = None):
+    def __init__(
+        self,
+        config: AdvancedEmbeddingConfig,
+        persist_directory: Optional[Path] = None,
+        api_client: Optional[VoyageAPIClient] = None,
+    ):
         """
         Initialize hybrid vector store.
 
@@ -106,14 +111,9 @@ class HybridVectorStore(VectorStore):
             # Initialize components
             self.document_store = InMemoryDocumentStore()
 
-            # Initialize vector index based on configuration
-            if config.index_type.value == "hnsw":
-                self.vector_index = HNSWIndex(config)
-            elif config.index_type.value == "ivf_pq":
-                self.vector_index = FAISSIndex(config)
-            else:
-                # Default to HNSW
-                self.vector_index = HNSWIndex(config)
+            # Initialize vector index based on configuration, falling back to
+            # an exact in-memory index when native ANN libraries are absent.
+            self.vector_index = self._create_vector_index(config)
 
             self.bm25_index = BM25Index()
 
@@ -124,8 +124,8 @@ class HybridVectorStore(VectorStore):
                 self.ranker = RRFFusion()
 
             # Initialize API client if not using on-premise
-            self.api_client: Optional[VoyageAPIClient] = None
-            if not config.use_on_premise and config.voyage_api_key:
+            self.api_client: Optional[VoyageAPIClient] = api_client
+            if self.api_client is None and not config.use_on_premise and config.voyage_api_key:
                 self.api_client = VoyageAPIClient(config)
 
             # Metrics tracking
@@ -139,6 +139,28 @@ class HybridVectorStore(VectorStore):
         except Exception as e:
             logger.error(f"❌ Failed to initialize hybrid vector store: {e}")
             raise VectorStoreError(f"Initialization failed: {e}") from e
+
+    def _create_vector_index(self, config: AdvancedEmbeddingConfig):
+        index_type = config.index_type.value
+        if index_type == "bm25":
+            return InMemoryVectorIndex(config)
+
+        if index_type in {"faiss", "ivf_pq", "scann"}:
+            try:
+                return FAISSIndex(config)
+            except ImportError:
+                logger.info("FAISS unavailable; using dependency-free in-memory vector index")
+                return InMemoryVectorIndex(config)
+
+        try:
+            return HNSWIndex(config)
+        except ImportError:
+            logger.info("hnswlib unavailable; using dependency-free in-memory vector index")
+            return InMemoryVectorIndex(config)
+
+    async def initialize(self) -> "HybridVectorStore":
+        """Async compatibility hook for callers that explicitly initialize stores."""
+        return self
 
     async def add_documents(self, documents: List[Dict[str, Any]]) -> None:
         """
@@ -173,14 +195,32 @@ class HybridVectorStore(VectorStore):
                 doc_contents.append(content)
                 doc_ids.append(doc_id)
 
-            # Generate embeddings if using API
-            if self.api_client and not self.config.use_on_premise:
+            # Generate embeddings if using API. Pipelines may pass documents
+            # that already carry provider embeddings; reuse those to avoid
+            # double-charging and double-counting the same batch.
+            embedded_count = 0
+            existing_embeddings = [
+                doc.get("embedding")
+                for doc in documents
+                if isinstance(doc.get("embedding"), list)
+            ]
+            if len(existing_embeddings) == len(documents):
+                embeddings_array = np.array(existing_embeddings, dtype=np.float32)
+                self.vector_index.add_vectors(embeddings_array, doc_ids)
+                embedded_count = len(doc_ids)
+            elif self.api_client and not self.config.use_on_premise:
                 try:
                     embeddings = await self.api_client.embed_texts(doc_contents)
+                    if len(embeddings) < len(doc_ids):
+                        raise VectorStoreError(
+                            f"Embedding provider returned {len(embeddings)} vectors for {len(doc_ids)} documents"
+                        )
+                    embeddings = embeddings[:len(doc_ids)]
                     embeddings_array = np.array(embeddings, dtype=np.float32)
 
                     # Add to vector index
                     self.vector_index.add_vectors(embeddings_array, doc_ids)
+                    embedded_count = len(doc_ids)
 
                 except Exception as e:
                     logger.error(f"❌ Embedding generation failed: {e}")
@@ -194,7 +234,7 @@ class HybridVectorStore(VectorStore):
             # Update metrics
             processing_time = time.time() - start_time
             self.metrics.documents_processed += len(documents)
-            self.metrics.documents_embedded += len(documents)
+            self.metrics.documents_embedded += embedded_count
 
             if self.config.enable_progress_tracking:
                 speed = len(documents) / processing_time
@@ -203,6 +243,14 @@ class HybridVectorStore(VectorStore):
         except Exception as e:
             logger.error(f"❌ Failed to add documents: {e}")
             raise VectorStoreError(f"Document addition failed: {e}") from e
+
+    async def validate_connection(self) -> bool:
+        """Validate the local store and optional embedding provider."""
+        if self.api_client is not None and not self.config.use_on_premise:
+            validator = getattr(self.api_client, "validate_connection", None)
+            if validator is not None:
+                return bool(await validator())
+        return True
 
     async def search(self, query_vector: List[float], k: int = 10) -> List[SearchResult]:
         """
@@ -252,6 +300,34 @@ class HybridVectorStore(VectorStore):
         except Exception as e:
             logger.error(f"❌ Vector search failed: {e}")
             raise SearchError(f"Search failed: {e}") from e
+
+    async def vector_search(self, query_vector: List[float], k: int = 10) -> List[SearchResult]:
+        """Compatibility alias for vector-only search."""
+        return await self.search(query_vector, k=k)
+
+    async def lexical_search(self, query: str, k: int = 10) -> List[SearchResult]:
+        """Search the local BM25 index without requiring cloud embeddings."""
+        try:
+            lexical_results = self.bm25_index.search(query, k)
+            results = []
+            for doc_id, score in lexical_results:
+                try:
+                    doc_data = self.document_store.get_document(doc_id)
+                except VectorStoreError:
+                    continue
+                results.append(
+                    SearchResult(
+                        doc_id=doc_id,
+                        score=score,
+                        content=doc_data["content"],
+                        metadata=doc_data["metadata"],
+                        bm25_score=score,
+                    )
+                )
+            return results
+        except Exception as e:
+            logger.error(f"❌ Lexical search failed: {e}")
+            raise SearchError(f"Lexical search failed: {e}") from e
 
     async def hybrid_search(self, query: str, k: int = 10,
                            enable_reranking: bool = True) -> List[SearchResult]:
@@ -367,15 +443,38 @@ class HybridVectorStore(VectorStore):
             for doc_id in doc_ids:
                 # Remove from document store
                 self.document_store.delete_document(doc_id)
-
-                # Note: Vector and BM25 indices don't support individual deletion
-                # In production, implement tombstone marking or periodic rebuild
+                if doc_id in self.bm25_index.doc_ids:
+                    self.bm25_index.remove_document(doc_id)
 
             logger.info(f"🗑️ Marked {len(doc_ids)} documents for deletion")
 
         except Exception as e:
             logger.error(f"❌ Failed to delete documents: {e}")
             raise VectorStoreError(f"Document deletion failed: {e}") from e
+
+    async def update_document(self, doc_id: str, document: Dict[str, Any]) -> None:
+        """Update a document and rebuild lexical state deterministically."""
+        try:
+            if document.get("id", doc_id) != doc_id:
+                raise ValueError("Updated document id must match doc_id")
+            content = document["content"]
+            metadata = document.get("metadata", {})
+
+            if doc_id in self.document_store.documents:
+                self.document_store.store_document(doc_id, content, metadata)
+                if doc_id in self.bm25_index.doc_ids:
+                    self.bm25_index.update_document(doc_id, content)
+                else:
+                    self.bm25_index.add_documents([content], [doc_id])
+            else:
+                await self.add_documents([{"id": doc_id, "content": content, "metadata": metadata}])
+        except Exception as e:
+            logger.error(f"❌ Failed to update document: {e}")
+            raise VectorStoreError(f"Document update failed: {e}") from e
+
+    async def delete_document(self, doc_id: str) -> None:
+        """Compatibility wrapper for single-document deletion."""
+        await self.delete_documents([doc_id])
 
     def get_stats(self) -> Dict[str, Any]:
         """
@@ -389,6 +488,7 @@ class HybridVectorStore(VectorStore):
                 "documents": self.document_store.get_stats(),
                 "vector_index": self.vector_index.get_stats(),
                 "bm25_index": self.bm25_index.get_stats(),
+                "lexical_index": self.bm25_index.get_stats(),
                 "ranker": self.ranker.get_stats(),
                 "metrics": self.metrics.get_summary(),
                 "config": {
@@ -403,6 +503,20 @@ class HybridVectorStore(VectorStore):
         except Exception as e:
             logger.error(f"❌ Failed to get stats: {e}")
             return {"error": str(e)}
+
+    def get_index_size_mb(self) -> float:
+        """Return the persisted index footprint in megabytes when available."""
+        try:
+            if not self.persist_directory.exists():
+                return 0.0
+            total_bytes = sum(
+                path.stat().st_size
+                for path in self.persist_directory.rglob("*")
+                if path.is_file()
+            )
+            return total_bytes / (1024 * 1024)
+        except Exception:
+            return 0.0
 
     async def save(self, path: Optional[str] = None) -> None:
         """

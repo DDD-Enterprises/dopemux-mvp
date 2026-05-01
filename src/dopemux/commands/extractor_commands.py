@@ -287,27 +287,10 @@ def run(
     This command is retained for legacy promptset workflows only. Canonical operator
     execution should use `dopemux rte run`, which launches the v5 runtime.
     """
-    console.print(
-        styled_panel(
-            f"[mint]Running extraction pipeline {pipeline}[/mint]",
-            title="[bold]DØPEMÜX Extractor Run[/bold]",
-            border_style="info",
-        )
+    del promptset_root, prescan, pipeline, runner_args
+    raise click.ClickException(
+        "Legacy command disabled. Use `dopemux rte run` for Repo Truth Extractor execution."
     )
-
-    # SAFETY: Never execute extraction scripts — warn and exit
-    console.print(
-        "[error]⚠ SAFETY NOTICE:[/error] `dopemux extractor run` is a legacy surface and "
-        "direct execution is disabled to prevent accidental provider costs.\n"
-        "Use `dopemux rte run` for the canonical operator path."
-    )
-    console.print(f"\nWould run: pipeline={pipeline}")
-    if promptset_root:
-        console.print(f"  --promptset-root {promptset_root}")
-    if prescan:
-        console.print(f"  --prescan {prescan}")
-    if runner_args:
-        console.print(f"  Extra args: {' '.join(runner_args)}")
 
 
 # ---- Status command ----
@@ -353,18 +336,9 @@ def status(
     at `dopemux rte run` as the canonical path.
     """
     if pipeline_version is not None or run_id is not None or status_json:
-        console.print(
-            "[warning]`dopemux extractor status` is a legacy alias.[/warning] "
-            "Use `dopemux rte run` for the canonical operator path."
+        raise click.ClickException(
+            "Legacy runtime status disabled. Use `dopemux rte status` instead."
         )
-        args: List[str] = ["--status-json" if status_json else "--status"]
-        if run_id:
-            args.extend(["--run-id", run_id])
-        _run_extractor_runner(
-            pipeline_version=pipeline_version or "v5",
-            args=args,
-        )
-        return
 
     if output_dir is None:
         console.print("[warning]No --output-dir specified. Looking for latest...[/warning]")

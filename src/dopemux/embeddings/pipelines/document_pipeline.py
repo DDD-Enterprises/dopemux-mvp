@@ -84,6 +84,8 @@ class DocumentPipeline(BasePipeline):
         """
         self.start_time = datetime.now()
         self.documents_to_process = documents.copy()
+        self.processed_documents = []
+        self.failed_documents = []
 
         if self.config.enable_progress_tracking:
             print(f"🚀 Starting document pipeline: {len(documents)} documents")
@@ -91,7 +93,7 @@ class DocumentPipeline(BasePipeline):
         try:
             # Define pipeline stages
             stages = [
-                (PipelineStage.VALIDATION, self._validate_stage, documents),
+                (PipelineStage.VALIDATION, self._validate_stage, (documents,)),
                 (PipelineStage.PROCESSING, self._processing_stage),
                 (PipelineStage.STORAGE, self._storage_stage),
                 (PipelineStage.ENHANCEMENT, self._enhancement_stage),
@@ -102,15 +104,18 @@ class DocumentPipeline(BasePipeline):
             stage_results = await self.run_with_stages(stages)
 
             # Calculate final result
-            overall_success = all(r.success for r in stage_results)
-            total_processed = sum(r.processed_items for r in stage_results)
-            total_failed = sum(r.failed_items for r in stage_results)
+            overall_success = all(r.success for r in stage_results) and not self.failed_documents
+            total_processed = len(self.processed_documents)
+            total_failed = len(self.failed_documents)
+            errors = [error for r in stage_results for error in r.errors]
+            errors.extend(str(failed.get("error", "document failed")) for failed in self.failed_documents)
 
             final_result = PipelineResult(
                 success=overall_success,
                 stage=PipelineStage.COMPLETION,
                 processed_items=total_processed,
                 failed_items=total_failed,
+                errors=errors,
                 duration_seconds=(datetime.now() - self.start_time).total_seconds(),
                 metadata={
                     "documents_input": len(documents),
@@ -182,9 +187,28 @@ class DocumentPipeline(BasePipeline):
         """Validate input documents and pipeline components."""
         validation_start = datetime.now()
 
-        # Validate inputs
-        if not await self.validate_inputs(documents):
+        valid_documents = []
+        invalid_documents = []
+        for i, doc in enumerate(documents):
+            if (
+                isinstance(doc, dict)
+                and isinstance(doc.get("id"), str)
+                and doc.get("id")
+                and isinstance(doc.get("content"), str)
+                and doc.get("content", "").strip()
+            ):
+                valid_documents.append(doc)
+            else:
+                invalid_documents.append({"document": doc, "error": f"Invalid document at index {i}"})
+
+        if invalid_documents:
+            self.failed_documents.extend(invalid_documents)
+            self.metrics.documents_failed += len(invalid_documents)
+
+        if not valid_documents:
             raise EmbeddingError("Document validation failed")
+
+        self.documents_to_process = valid_documents
 
         # Validate vector store
         if not self.vector_store:
@@ -207,7 +231,8 @@ class DocumentPipeline(BasePipeline):
         validation_duration = (datetime.now() - validation_start).total_seconds()
 
         return {
-            "documents_count": len(documents),
+            "documents_count": len(valid_documents),
+            "documents_skipped": len(invalid_documents),
             "vector_store_ready": True,
             "provider_ready": self.provider is not None,
             "integration_status": integration_status,
@@ -264,7 +289,7 @@ class DocumentPipeline(BasePipeline):
                 for doc in batch:
                     self.failed_documents.append({
                         "document": doc,
-                        "error": str(e)
+                        "error": f"error: {e}"
                     })
                     failed_count += 1
 
@@ -399,7 +424,9 @@ class DocumentPipeline(BasePipeline):
         return {
             "sync_results": sync_results,
             "completion_duration": completion_duration,
-            "total_pipeline_duration": (datetime.now() - self.start_time).total_seconds()
+            "total_pipeline_duration": (
+                datetime.now() - (self.start_time or completion_start)
+            ).total_seconds()
         }
 
     async def cleanup(self) -> None:

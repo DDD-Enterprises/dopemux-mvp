@@ -23,6 +23,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeEl
 from rich.text import Text
 
 from ..console import console
+from ..mobile.hooks import mobile_task_notification
 from ..ui.theme import styled_panel, styled_table, error_panel, Glyphs, StatusChip
 
 @click.group()
@@ -35,8 +36,7 @@ def extract(ctx):
     and ADHD-specific content streams to build a high-fidelity model of your
     documentation corpus.
 
-    `dopemux extract truth-run` remains available as a compatibility alias for
-    Repo Truth Extractor, but `dopemux rte` is the canonical operator family.
+    Repo Truth Extractor lives under the canonical `dopemux rte` operator family.
     """
     pass
 
@@ -130,7 +130,7 @@ def _run_extract_docs(
     from io import StringIO
 
     # Add extraction package to path
-    sys.path.append(str(Path(__file__).parent.parent.parent / "extraction"))
+    sys.path.append(str(Path(__file__).resolve().parents[3] / "extraction"))
 
     try:
         from document_classifier import DocumentClassifier, extract_from_directory
@@ -176,7 +176,15 @@ def _run_extract_docs(
                     filtered_entities[entity_type] = filtered_list
 
             if mode == "basic":
-                basic_types = ['section_header', 'project_metadata', 'yaml_properties', 'markdown_headers']
+                basic_types = [
+                    'section_header',
+                    'project_metadata',
+                    'yaml_properties',
+                    'markdown_headers',
+                    'headers',
+                    'decisions',
+                    'bullets',
+                ]
                 filtered_entities = {k: v for k, v in filtered_entities.items() if k in basic_types}
             elif mode == "adhd":
                 adhd_keywords = ['adhd', 'focus', 'break', 'attention', 'cognitive', 'accommodation']
@@ -220,7 +228,7 @@ def _run_extract_docs(
         except Exception as e:
             progress.update(task, description="Error occurred", completed=True)
             console.logger.error(f"[error]❌ Extraction failed: {e}[/error]")
-            if ctx.obj.get("verbose"):
+            if (ctx.obj or {}).get("verbose"):
                 import traceback
                 traceback.print_exc()
             sys.exit(1)
@@ -313,7 +321,20 @@ def _run_extract_docs(
 @click.option(
     "--embeddings/--no-embeddings",
     default=True,
-    help="🔍 Generate vector embeddings for the extracted corpus to enable semantic HUD search.",
+    help="🔍 Index the extracted corpus for semantic search; uses Voyage only when credentials are configured.",
+)
+@click.option(
+    "--embedding-provider",
+    type=click.Choice(["auto", "voyage", "none"]),
+    default="auto",
+    show_default=True,
+    help="Embedding provider policy: auto uses Voyage when VOYAGE_API_KEY is present, voyage selects Voyage, none indexes locally only.",
+)
+@click.option(
+    "--require-embeddings/--allow-embedding-skip",
+    default=False,
+    show_default=True,
+    help="Fail if cloud embeddings cannot run instead of writing a skipped embedding manifest.",
 )
 @click.option(
     "--tsv/--no-tsv",
@@ -351,7 +372,7 @@ def _run_extract_docs(
 @click.option(
     "--synthesis/--no-synthesis",
     default=True,
-    help="⚡ Enable LLM-powered document synthesis and executive summaries for the flight-deck.",
+    help="⚡ Enable local rule/template document synthesis and executive summaries for the flight-deck.",
 )
 @click.option(
     "--synthesis-types",
@@ -374,6 +395,8 @@ def extract_pipeline(
     adhd: bool,
     multi_angle: bool,
     embeddings: bool,
+    embedding_provider: str,
+    require_embeddings: bool,
     tsv: bool,
     confidence: float,
     embedding_model: str,
@@ -404,6 +427,8 @@ def extract_pipeline(
             adhd,
             multi_angle,
             embeddings,
+            embedding_provider,
+            require_embeddings,
             tsv,
             confidence,
             embedding_model,
@@ -423,6 +448,8 @@ def _run_extract_pipeline(
     adhd: bool,
     multi_angle: bool,
     embeddings: bool,
+    embedding_provider: str,
+    require_embeddings: bool,
     tsv: bool,
     confidence: float,
     embedding_model: str,
@@ -467,6 +494,8 @@ def _run_extract_pipeline(
         confidence_threshold=confidence,
         generate_tsv_registries=tsv,
         generate_embeddings=embeddings,
+        embedding_provider=embedding_provider,
+        require_embeddings=require_embeddings,
         embedding_model=embedding_model,
         milvus_uri=milvus_uri,
         export_json=(format == "json"),
@@ -490,7 +519,8 @@ def _run_extract_pipeline(
 
         try:
             pipeline = UnifiedDocumentPipeline(config)
-            result = pipeline.process_documents()
+            import asyncio
+            result = asyncio.run(pipeline.process_documents())
 
             if result.success:
                 progress.update(task, description="Pipeline completed successfully! ✅", completed=True)
@@ -529,6 +559,8 @@ def _run_extract_pipeline(
                 if result.embedding_summary:
                     console.logger.info("\n[success]🔍 Embeddings:[/success]")
                     console.logger.info(f"  • Model: {result.embedding_summary.get('model', 'N/A')}")
+                    console.logger.info(f"  • Status: {result.embedding_summary.get('embedding_status', result.embedding_summary.get('status', 'N/A'))}")
+                    console.logger.info(f"  • Provider: {result.embedding_summary.get('resolved_provider', 'N/A')}")
                     console.logger.info(f"  • Vectors: {result.vector_count}")
 
             else:
@@ -841,7 +873,7 @@ def _hygiene_severity_color(level: str) -> str:
 # truth-run command
 # ---------------------------------------------------------------------------
 
-@extract.command("truth-run")
+@extract.command("truth-run", hidden=True)
 @click.option(
     "--run-id",
     default=None,
@@ -963,6 +995,10 @@ def truth_run(
     Compatibility alias:
       dopemux extract truth-run --import-v3 FULL_RUN --resume
     """
+    raise click.ClickException(
+        "Legacy command disabled. Use `dopemux rte run` for Repo Truth Extractor execution."
+    )
+
     import shutil
 
     # ------------------------------------------------------------------

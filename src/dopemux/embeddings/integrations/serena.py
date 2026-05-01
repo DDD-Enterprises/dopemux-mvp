@@ -28,7 +28,12 @@ class SerenaAdapter(BaseIntegration):
     ADHD-optimized development workflows.
     """
 
-    def __init__(self, config: AdvancedEmbeddingConfig, project_root: str):
+    def __init__(
+        self,
+        config: AdvancedEmbeddingConfig,
+        project_root: str = ".",
+        serena_client: Optional[Any] = None,
+    ):
         """
         Initialize Serena adapter.
 
@@ -38,6 +43,8 @@ class SerenaAdapter(BaseIntegration):
         """
         super().__init__(config)
         self.project_root = Path(project_root)
+        self.serena_client = serena_client
+        self.integration_name = "serena"
         self.connection_status = "unknown"
         self.last_sync_time: Optional[datetime] = None
 
@@ -53,6 +60,9 @@ class SerenaAdapter(BaseIntegration):
             "__pycache__", "node_modules", ".git", ".pytest_cache",
             "venv", "env", ".env", "dist", "build", "target"
         }
+        self.supported_languages = [
+            "python", "javascript", "typescript", "java", "cpp", "go", "rust"
+        ]
 
         # Code analysis patterns
         self.function_patterns = {
@@ -82,6 +92,11 @@ class SerenaAdapter(BaseIntegration):
             True if project root exists and is accessible
         """
         try:
+            if self.serena_client is not None:
+                result = await self.serena_client.health_check()
+                self.connection_status = result.get("status", "healthy")
+                return self.connection_status == "healthy"
+
             if not self.project_root.exists():
                 self.connection_status = f"error: project root not found at {self.project_root}"
                 return False
@@ -189,7 +204,7 @@ class SerenaAdapter(BaseIntegration):
 
                     # Extract code metadata
                     file_ext = file_path.suffix.lower()
-                    language = self._detect_language(file_ext)
+                    language = self._detect_language_by_ext(file_ext)
                     functions = self._extract_functions(content, language)
                     classes = self._extract_classes(content, language)
 
@@ -360,7 +375,7 @@ class SerenaAdapter(BaseIntegration):
         """Get relative path from project root."""
         return file_path.relative_to(self.project_root)
 
-    def _detect_language(self, file_ext: str) -> str:
+    def _detect_language_by_ext(self, file_ext: str) -> str:
         """Detect programming language from file extension."""
         language_map = {
             ".py": "python",
@@ -375,6 +390,10 @@ class SerenaAdapter(BaseIntegration):
             ".hpp": "cpp"
         }
         return language_map.get(file_ext, "unknown")
+
+    async def _detect_language(self, code: str, filename: str) -> str:
+        del code
+        return self._detect_language_by_ext(Path(filename).suffix.lower())
 
     def _extract_functions(self, content: str, language: str) -> Dict[str, str]:
         """Extract function definitions from code."""
@@ -488,7 +507,21 @@ class SerenaAdapter(BaseIntegration):
 
             for doc, embedding in zip(documents, embeddings):
                 try:
-                    # Store embedding with file metadata for code navigation
+                    if self.serena_client is not None:
+                        language = doc.get("metadata", {}).get("language")
+                        if not language:
+                            language = await self._detect_language(
+                                doc.get("content", ""),
+                                doc.get("metadata", {}).get("file_path", doc["id"]),
+                            )
+                        analysis = await self._analyze_code_structure(doc.get("content", ""), language)
+                        await self.serena_client.store_code_analysis(
+                            file_path=doc.get("metadata", {}).get("file_path", doc["id"]),
+                            functions=analysis["functions"],
+                            classes=analysis["classes"],
+                            complexity_score=await self._calculate_complexity(doc.get("content", ""), language),
+                            embedding=embedding,
+                        )
                     stored_count += 1
 
                 except Exception as e:
@@ -518,6 +551,22 @@ class SerenaAdapter(BaseIntegration):
 
             for result in results:
                 enhanced_result = result  # Copy original result
+                if self.serena_client is not None:
+                    try:
+                        similar_code = await self.serena_client.search_similar_code(
+                            query=context.get("query", result.content),
+                            language=context.get("language"),
+                        )
+                    except Exception:
+                        similar_code = []
+                    try:
+                        function_docs = await self.serena_client.get_function_documentation(result.doc_id)
+                    except Exception:
+                        function_docs = {}
+                    enhanced_result.metadata["serena_context"] = {
+                        "similar_code": similar_code,
+                        "function_docs": function_docs,
+                    }
 
                 # Add code-specific enhancements
                 if result.metadata.get("type") == "code":
@@ -595,6 +644,108 @@ class SerenaAdapter(BaseIntegration):
         """Find code files related to documentation."""
         # Mock implementation - would analyze mentions and links
         return []
+
+    async def _analyze_code_structure(self, code: str, language: str) -> Dict[str, List[Dict[str, Any]]]:
+        """Return lightweight, deterministic code structure metadata."""
+        try:
+            functions = [
+                {"name": name, "content": content}
+                for name, content in self._extract_functions(code, language).items()
+            ]
+            classes = [
+                {"name": name, "content": content}
+                for name, content in self._extract_classes(code, language).items()
+            ]
+            return {
+                "functions": functions,
+                "classes": classes,
+                "imports": self._extract_imports(code, language),
+            }
+        except Exception:
+            return {"functions": [], "classes": [], "imports": []}
+
+    async def _calculate_complexity(self, code: str, language: str) -> int:
+        """Estimate code complexity from simple control-flow signals."""
+        del language
+        control_flow_tokens = [
+            r"\bif\b",
+            r"\belif\b",
+            r"\belse\b",
+            r"\bfor\b",
+            r"\bwhile\b",
+            r"\btry\b",
+            r"\bexcept\b",
+            r"\bcase\b",
+            r"\bswitch\b",
+            r"\breturn\b",
+        ]
+        complexity = 1
+        for pattern in control_flow_tokens:
+            complexity += len(re.findall(pattern, code))
+        return max(1, min(complexity, 10))
+
+    async def _generate_documentation(self, function_code: str, function_name: str) -> Dict[str, Any]:
+        """Generate or synthesize function documentation."""
+        if self.serena_client is not None:
+            try:
+                return await self.serena_client.generate_documentation(
+                    function_code=function_code,
+                    function_name=function_name,
+                )
+            except TypeError:
+                return await self.serena_client.generate_documentation(function_code, function_name)
+            except Exception:
+                pass
+
+        return {
+            "summary": f"Function `{function_name}` extracted from source code.",
+            "parameters": {},
+            "returns": "unknown",
+            "complexity": f"{await self._calculate_complexity(function_code, 'unknown')} estimated branches",
+            "examples": [],
+        }
+
+    async def _find_related_patterns(self, query_code: str, language: str) -> List[Dict[str, Any]]:
+        """Find related code patterns through Serena when available."""
+        if self.serena_client is None:
+            return []
+        try:
+            return await self.serena_client.find_similar_patterns(
+                query_code=query_code,
+                language=language,
+            )
+        except TypeError:
+            try:
+                return await self.serena_client.find_similar_patterns(query_code, language)
+            except Exception:
+                return []
+        except Exception:
+            return []
+
+    def _is_code_file(self, path: str) -> bool:
+        """Return whether a path is treated as source code."""
+        return self._detect_language_by_ext(Path(path).suffix.lower()) in self.supported_languages
+
+    def _extract_imports(self, code: str, language: str) -> List[str]:
+        """Extract import/dependency names from source text."""
+        imports: Set[str] = set()
+
+        if language == "python":
+            for line in code.splitlines():
+                stripped = line.strip()
+                import_match = re.match(r"import\s+([A-Za-z_][\w.]*)", stripped)
+                from_match = re.match(r"from\s+([A-Za-z_][\w.]*)\s+import\s+", stripped)
+                if import_match:
+                    imports.add(import_match.group(1).split(".")[0])
+                elif from_match:
+                    imports.add(from_match.group(1).split(".")[0])
+        elif language in {"javascript", "typescript"}:
+            for match in re.finditer(r"from\s+['\"]([^'\"]+)['\"]|require\(['\"]([^'\"]+)['\"]\)", code):
+                module = match.group(1) or match.group(2)
+                if module and not module.startswith("."):
+                    imports.add(module.split("/")[0])
+
+        return sorted(imports)
 
     def get_integration_status(self) -> Dict[str, Any]:
         """

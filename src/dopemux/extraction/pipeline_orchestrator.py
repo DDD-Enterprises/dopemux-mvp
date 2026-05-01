@@ -11,6 +11,7 @@ Coordinates the complete document processing pipeline:
 
 import sys
 import asyncio
+import os
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
@@ -69,6 +70,8 @@ class PipelineConfig:
 
     # Advanced Embedding settings
     embedding_model: str = "voyage-context-3"
+    embedding_provider: str = "auto"
+    require_embeddings: bool = False
     rerank_model: str = "voyage-rerank-2.5"
     embedding_dimension: int = 2048
 
@@ -186,7 +189,123 @@ class UnifiedDocumentPipeline:
         # Set output directory for persistence
         config.persist_directory = str(self.config.output_directory / ".advanced_vectors")
 
+        provider_status = self._resolve_embedding_provider()
+        if provider_status["resolved_provider"] == "voyage":
+            config.voyage_api_key = os.environ.get("VOYAGE_API_KEY")
+            config.use_on_premise = False
+        else:
+            config.voyage_api_key = None
+            config.use_on_premise = True
+
         return config
+
+    def _resolve_embedding_provider(self) -> Dict[str, Any]:
+        requested = (self.config.embedding_provider or "auto").lower()
+        if requested not in {"auto", "voyage", "none"}:
+            raise ValueError(f"Unsupported embedding provider: {self.config.embedding_provider}")
+
+        api_key_present = bool(os.environ.get("VOYAGE_API_KEY"))
+        if not self.config.generate_embeddings:
+            resolved = "none"
+            status = "disabled"
+            reason = "embeddings_disabled"
+        elif requested == "none":
+            resolved = "none"
+            status = "skipped_provider_none"
+            reason = "provider_none"
+        elif requested == "voyage":
+            resolved = "voyage" if api_key_present else "none"
+            status = "ready" if api_key_present else "skipped_no_credentials"
+            reason = None if api_key_present else "voyage_api_key_missing"
+        elif api_key_present:
+            resolved = "voyage"
+            status = "ready"
+            reason = None
+        else:
+            resolved = "none"
+            status = "skipped_no_credentials"
+            reason = "voyage_api_key_missing"
+
+        return {
+            "requested_provider": requested,
+            "resolved_provider": resolved,
+            "api_key_present": api_key_present,
+            "status": status,
+            "skipped_reason": reason,
+        }
+
+    def _embedding_manifest_path(self) -> Path:
+        return self.config.output_directory / "embedding_manifest.json"
+
+    def _write_embedding_manifest(self, manifest: Dict[str, Any]) -> Path:
+        manifest_path = self._embedding_manifest_path()
+        manifest_path.parent.mkdir(parents=True, exist_ok=True)
+        with manifest_path.open("w", encoding="utf-8") as f:
+            json.dump(manifest, f, indent=2, sort_keys=True, default=str)
+        return manifest_path
+
+    def _build_embedding_documents(self) -> List[Dict[str, Any]]:
+        documents: List[Dict[str, Any]] = []
+        if self.atomic_units:
+            for unit in self.atomic_units:
+                doc_content = f"{unit.title}\n\n{unit.content}"
+                documents.append({
+                    'id': unit.id,
+                    'content': doc_content,
+                    'metadata': {
+                        'source_file': unit.source_file,
+                        'doc_type': unit.doc_type,
+                        'tags': unit.tags,
+                        'title': unit.title
+                    }
+                })
+            return documents
+
+        for result_index, result in enumerate(self.extraction_results):
+            if not result.success:
+                continue
+
+            entity_texts: List[str] = []
+            for layer_entities in [
+                result.basic_entities,
+                result.adhd_entities,
+                result.multi_angle_entities,
+            ]:
+                for entity_list in layer_entities.values():
+                    for entity in entity_list:
+                        if not isinstance(entity, dict):
+                            continue
+                        parts = [
+                            str(entity.get("content", "")).strip(),
+                            str(entity.get("value", "")).strip(),
+                        ]
+                        text = ": ".join(part for part in parts if part)
+                        if text:
+                            entity_texts.append(text)
+
+            if entity_texts:
+                content = "\n".join(entity_texts)
+            else:
+                try:
+                    content = result.document_path.read_text(encoding="utf-8", errors="ignore")
+                except Exception:
+                    content = ""
+
+            if not content.strip():
+                continue
+
+            documents.append({
+                'id': f"document:{result.document_path.stem}:{result_index}",
+                'content': content,
+                'metadata': {
+                    'source_file': str(result.document_path),
+                    'doc_type': result.document_type,
+                    'title': result.document_path.name,
+                    'fallback_from_extraction_results': True,
+                }
+            })
+
+        return documents
 
     async def process_documents(self) -> PipelineResult:
         """Execute the complete document processing pipeline."""
@@ -234,6 +353,8 @@ class UnifiedDocumentPipeline:
             print("📤 Step 6: Exporting results...")
             output_files = self._export_results(extraction_summary)
             output_files.extend(synthesis_files)
+            if embedding_summary.get("manifest_path"):
+                output_files.append(embedding_summary["manifest_path"])
 
             processing_time = time.time() - self.start_time
             print(f"✅ Pipeline complete! ({processing_time:.2f}s)")
@@ -400,16 +521,54 @@ class UnifiedDocumentPipeline:
 
     async def _generate_embeddings(self) -> tuple[Dict[str, Any], int]:
         """Generate advanced vector embeddings with hybrid search capability."""
-        if not self.atomic_units:
-            print("⚠️ No atomic units available for embedding")
-            return {}, 0
+        provider_status = self._resolve_embedding_provider()
+
+        documents = self._build_embedding_documents()
+
+        if (
+            self.config.require_embeddings
+            and provider_status["resolved_provider"] != "voyage"
+        ):
+            manifest = {
+                **provider_status,
+                "model": self.advanced_embedding_config.embedding_model,
+                "total_units": len(documents),
+                "embedded_count": 0,
+                "indexed_count": 0,
+                "embedding_status": "failed_required_embeddings",
+                "cost_estimate_usd": None,
+                "output_paths": {
+                    "manifest": str(self._embedding_manifest_path()),
+                    "index_directory": self.advanced_embedding_config.persist_directory,
+                },
+            }
+            self._write_embedding_manifest(manifest)
+            raise RuntimeError("Embeddings were required, but VOYAGE_API_KEY is not configured")
+
+        if not documents:
+            print("⚠️ No documents available for embedding")
+            manifest = {
+                **provider_status,
+                "model": self.advanced_embedding_config.embedding_model,
+                "total_units": 0,
+                "embedded_count": 0,
+                "indexed_count": 0,
+                "embedding_status": "skipped_no_documents",
+                "cost_estimate_usd": None,
+                "output_paths": {
+                    "manifest": str(self._embedding_manifest_path()),
+                    "index_directory": self.advanced_embedding_config.persist_directory,
+                },
+            }
+            self._write_embedding_manifest(manifest)
+            return manifest, 0
 
         try:
             from datetime import datetime
             self.embedding_health_metrics.processing_start_time = datetime.now()
             self.embedding_health_metrics.documents_processed = len(self.atomic_units)
 
-            print(f"🔍 Initializing advanced embedding system for {len(self.atomic_units)} units...")
+            print(f"🔍 Initializing advanced embedding system for {len(documents)} units...")
 
             # Initialize hybrid vector store
             self.hybrid_vector_store = HybridVectorStore(
@@ -423,28 +582,15 @@ class UnifiedDocumentPipeline:
                 self.consensus_validator = ConsensusValidator(consensus_config)
                 print("🤝 Consensus validation enabled")
 
-            # Convert atomic units to document format for embedding
-            documents = []
-            for unit in self.atomic_units:
-                doc_content = f"{unit.title}\n\n{unit.content}"
-                documents.append({
-                    'id': unit.id,
-                    'content': doc_content,
-                    'metadata': {
-                        'source_file': unit.source_file,
-                        'doc_type': unit.doc_type,
-                        'tags': unit.tags,
-                        'title': unit.title
-                    }
-                })
-
-            print(f"📝 Converted {len(documents)} atomic units to embedding format")
+            print(f"📝 Prepared {len(documents)} local extraction units for embedding/indexing")
 
             # Add documents to hybrid vector store
             await self.hybrid_vector_store.add_documents(documents)
+            indexed_count = self.hybrid_vector_store.get_stats().get("documents", {}).get("document_count", 0)
+            embedded_count = self.hybrid_vector_store.metrics.documents_embedded
 
             # Update health metrics
-            self.embedding_health_metrics.documents_embedded = len(documents)
+            self.embedding_health_metrics.documents_embedded = embedded_count
             self.embedding_health_metrics.vector_index_size_mb = self.hybrid_vector_store.get_index_size_mb()
 
             # Run consensus validation on sample documents if enabled
@@ -464,12 +610,24 @@ class UnifiedDocumentPipeline:
                 print(f"✅ Consensus validation complete: {consensus_summary.get('avg_consensus_score', 0):.3f} avg score")
 
             # Create comprehensive embedding summary
+            embedding_status = (
+                "completed"
+                if provider_status["resolved_provider"] == "voyage" and embedded_count > 0
+                else provider_status["status"]
+            )
             embedding_summary = {
                 'model': self.advanced_embedding_config.embedding_model,
                 'rerank_model': self.advanced_embedding_config.rerank_model,
                 'dimension': self.advanced_embedding_config.embedding_dimension,
-                'total_units': len(self.atomic_units),
-                'embedded_documents': len(documents),
+                'requested_provider': provider_status["requested_provider"],
+                'resolved_provider': provider_status["resolved_provider"],
+                'credential_source_present': provider_status["api_key_present"],
+                'total_units': len(documents),
+                'embedded_documents': embedded_count,
+                'embedded_count': embedded_count,
+                'indexed_count': indexed_count,
+                'skipped_reason': provider_status["skipped_reason"],
+                'embedding_status': embedding_status,
                 'hybrid_search_enabled': True,
                 'bm25_weight': self.advanced_embedding_config.bm25_weight,
                 'vector_weight': self.advanced_embedding_config.vector_weight,
@@ -477,26 +635,50 @@ class UnifiedDocumentPipeline:
                 'consensus_validation_enabled': self.config.enable_consensus_validation,
                 'index_size_mb': self.embedding_health_metrics.vector_index_size_mb,
                 'persist_directory': self.advanced_embedding_config.persist_directory,
-                'status': 'completed',
+                'status': embedding_status,
+                'cost_estimate_usd': None,
+                'output_paths': {
+                    'manifest': str(self._embedding_manifest_path()),
+                    'index_directory': self.advanced_embedding_config.persist_directory,
+                },
                 'processing_time_ms': self.embedding_health_metrics.avg_embedding_time_ms,
                 'consensus_summary': consensus_summary if consensus_summary else None
             }
+            manifest_path = self._write_embedding_manifest(embedding_summary)
+            embedding_summary['manifest_path'] = str(manifest_path)
 
             # Display ADHD-friendly progress summary
             if self.advanced_embedding_config.visual_progress_indicators:
                 self.embedding_health_metrics.display_progress(gentle_mode=True)
 
-            print(f"✅ Advanced embedding generation complete! {len(documents)} documents indexed")
+            print(f"✅ Advanced embedding indexing complete! {indexed_count} documents indexed")
             print(f"   📊 Model: {self.advanced_embedding_config.embedding_model} ({self.advanced_embedding_config.embedding_dimension}D)")
             print(f"   🔍 Hybrid search: BM25({self.advanced_embedding_config.bm25_weight}) + Vector({self.advanced_embedding_config.vector_weight})")
             print(f"   💾 Index size: {self.embedding_health_metrics.vector_index_size_mb:.1f}MB")
 
-            return embedding_summary, len(documents)
+            return embedding_summary, embedded_count
 
         except Exception as e:
             print(f"❌ Advanced embedding generation failed: {e}")
             self.embedding_health_metrics.documents_failed += 1
-            return {'error': str(e), 'status': 'failed'}, 0
+            failure_summary = {
+                **provider_status,
+                'model': self.advanced_embedding_config.embedding_model,
+                'total_units': len(documents),
+                'embedded_count': 0,
+                'indexed_count': 0,
+                'embedding_status': 'failed',
+                'status': 'failed',
+                'skipped_reason': provider_status.get('skipped_reason'),
+                'cost_estimate_usd': None,
+                'output_paths': {
+                    'manifest': str(self._embedding_manifest_path()),
+                    'index_directory': self.advanced_embedding_config.persist_directory,
+                },
+                'error': str(e),
+            }
+            self._write_embedding_manifest(failure_summary)
+            return failure_summary, 0
 
     def _generate_synthesis(self, extraction_summary: Dict[str, Any]) -> List[str]:
         """Generate document synthesis using DocumentSynthesizer."""

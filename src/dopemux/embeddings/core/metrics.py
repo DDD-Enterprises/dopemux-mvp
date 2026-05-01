@@ -30,6 +30,7 @@ class EmbeddingHealthMetrics:
     p95_embedding_time_ms: float = 0.0
     total_api_calls: int = 0
     api_errors: int = 0
+    searches_performed: int = 0
 
     # === Quality Metrics ===
     recall_at_10: float = 0.0
