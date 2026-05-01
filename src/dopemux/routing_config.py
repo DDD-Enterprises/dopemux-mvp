@@ -7,14 +7,37 @@ import logging
 from pathlib import Path
 import shutil
 from typing import Any, Dict, Optional
+from urllib.parse import urlparse
 
 import yaml
 
 logger = logging.getLogger(__name__)
 
+LOCAL_PROVIDER_NAMES = {"ollama", "lmstudio"}
+LOCAL_PROVIDER_HOSTNAMES = {"localhost", "127.0.0.1", "::1"}
+
 
 class RoutingConfigError(RuntimeError):
     """Raised when routing configuration is invalid or cannot be loaded."""
+
+
+def _provider_hostname(provider: Dict[str, Any]) -> Optional[str]:
+    base_url = str(provider.get("base_url") or "").strip()
+    if not base_url:
+        return None
+    parsed = urlparse(base_url)
+    hostname = parsed.hostname
+    if hostname is None and "://" not in base_url:
+        hostname = urlparse(f"http://{base_url}").hostname
+    return hostname.lower() if hostname else None
+
+
+def _provider_allows_inline_auth(provider: Dict[str, Any]) -> bool:
+    name = str(provider.get("name") or "").strip().lower()
+    if name in LOCAL_PROVIDER_NAMES:
+        return True
+    hostname = _provider_hostname(provider)
+    return bool(hostname and hostname in LOCAL_PROVIDER_HOSTNAMES)
 
 
 class RoutingConfig:
@@ -244,6 +267,12 @@ class RoutingConfig:
                 raise RoutingConfigError(
                     f"Provider {provider['name']} has unsupported auth_mode: {auth_mode}"
                 )
+            if auth_mode in {"none", "ignored"} and not _provider_allows_inline_auth(
+                provider
+            ):
+                raise RoutingConfigError(
+                    f"Provider {provider['name']} has auth_mode {auth_mode} but is not a local provider"
+                )
             if auth_mode == "env" and "api_key_env" not in provider:
                 raise RoutingConfigError(
                     f"Provider {provider['name']} missing 'api_key_env' field"
@@ -377,8 +406,14 @@ class RoutingConfig:
                 "max_tokens": model.get("max_tokens", 131072),
             }
             if auth_mode in {"none", "ignored"}:
+                if not _provider_allows_inline_auth(provider):
+                    raise RoutingConfigError(
+                        f"Provider {provider['name']} has auth_mode {auth_mode} but is not a local provider"
+                    )
+                # Inline placeholder keys are reserved for local providers only.
                 litellm_params["api_key"] = str(provider.get("api_key") or "local")
             else:
+                # Hosted providers stay env-driven so credentials are never embedded.
                 litellm_params["api_key"] = f"os.environ/{provider['api_key_env']}"
 
             # Add provider-specific settings

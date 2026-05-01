@@ -205,6 +205,27 @@ def test_strict_free_litellm_config_filters_paid_routes(tmp_path: Path) -> None:
     assert set(generated["litellm_settings"]["default_fallbacks"]).issubset(model_names)
 
 
+def test_strict_free_litellm_config_uses_deterministic_default_fallback(
+    tmp_path: Path,
+) -> None:
+    data = _config()
+    data["freeflow"]["slots"].pop("default")
+    data["freeflow"]["slots"].pop("sonnet")
+    path = tmp_path / "routing.yaml"
+    path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+    routing_config = RoutingConfig(path)
+    routing_config.load()
+
+    generated = routing_config.generate_litellm_config("sk-test")
+
+    assert generated["litellm_settings"]["model_alias_map"]["claude-sonnet"] == (
+        "ollama-qwen3-coder"
+    )
+    assert generated["litellm_settings"]["model_alias_map"]["gpt-5"] == (
+        "ollama-qwen3-coder"
+    )
+
+
 def test_local_auth_mode_validates_without_api_key_env(tmp_path: Path) -> None:
     path = tmp_path / "routing.yaml"
     path.write_text(yaml.safe_dump(_config(), sort_keys=False), encoding="utf-8")
@@ -213,6 +234,65 @@ def test_local_auth_mode_validates_without_api_key_env(tmp_path: Path) -> None:
     loaded = config.load()
 
     assert loaded["providers"][0]["auth_mode"] == "none"
+
+
+def test_local_base_url_with_inline_auth_mode_validates(
+    tmp_path: Path,
+) -> None:
+    data = _config()
+    data["providers"].append(
+        {
+            "name": "proxy_local",
+            "auth_mode": "none",
+            "base_url": "http://localhost:12345/v1",
+        }
+    )
+    data["models"].append(
+        {
+            "name": "proxy-local-model",
+            "provider": "proxy_local",
+            "model_id": "proxy/local-model",
+        }
+    )
+    path = tmp_path / "routing.yaml"
+    path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+
+    config = RoutingConfig(path)
+    loaded = config.load()
+
+    assert loaded["providers"][-1]["auth_mode"] == "none"
+
+
+def test_hosted_provider_with_inline_auth_mode_fails_validation(
+    tmp_path: Path,
+) -> None:
+    data = _config()
+    data["providers"].append(
+        {
+            "name": "openai_inline",
+            "auth_mode": "none",
+            "api_key": "dummy",
+            "base_url": "https://api.openai.com/v1",
+        }
+    )
+    data["models"].append(
+        {
+            "name": "openai-inline-model",
+            "provider": "openai_inline",
+            "model_id": "openai/gpt-5-mini",
+        }
+    )
+    path = tmp_path / "routing.yaml"
+    path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+
+    config = RoutingConfig(path)
+
+    try:
+        config.load()
+    except Exception as exc:
+        assert "not a local provider" in str(exc)
+    else:
+        raise AssertionError("expected hosted inline auth validation to fail")
 
 
 def test_hosted_provider_without_api_key_env_fails_validation(tmp_path: Path) -> None:

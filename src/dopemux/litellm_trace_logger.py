@@ -10,6 +10,16 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 from litellm.integrations.custom_logger import CustomLogger
+from dopemux.freeflow import (
+    FreeflowQuotaExceeded,
+    FreeflowQuotaLedger,
+    LOCAL_PROVIDERS,
+    NON_SENSITIVE_CLASS,
+    PROVIDER_CATALOG,
+    estimate_cost_usd,
+    estimate_text_tokens,
+    normalize_sensitivity,
+)
 
 TRACE_HEADER_NAME = "X-Dopemux-Trace-Id"
 LITELLM_COMPONENT_NAME = "dopemux_litellm_proxy"
@@ -176,8 +186,6 @@ def _extract_message_text(value: Any) -> str:
 
 
 def _estimate_input_tokens(kwargs: Dict[str, Any], metadata: Dict[str, Any]) -> int:
-    from dopemux.freeflow import estimate_text_tokens
-
     explicit = metadata.get("estimated_input_tokens")
     if explicit is not None:
         try:
@@ -245,9 +253,8 @@ def _record_freeflow_usage(
     response_obj: Any,
     *,
     status: str,
+    ledger: Optional[FreeflowQuotaLedger] = None,
 ) -> None:
-    from dopemux.freeflow import FreeflowQuotaExceeded, FreeflowQuotaLedger
-
     if isinstance(response_obj, FreeflowQuotaExceeded):
         return
     metadata = _get_metadata(kwargs)
@@ -267,8 +274,8 @@ def _record_freeflow_usage(
     if output_tokens is None:
         output_tokens = metadata.get("estimated_output_tokens") or 0
 
-    ledger = FreeflowQuotaLedger()
-    ledger.record_usage(
+    quota_ledger = ledger or FreeflowQuotaLedger()
+    quota_ledger.record_usage(
         provider=str(provider),
         model_name=str(model_name),
         model_id=model_id,
@@ -282,7 +289,7 @@ def _record_freeflow_usage(
 
     status_code = _extract_status_code(response_obj)
     if status_code is not None:
-        ledger.ingest_response_headers(
+        quota_ledger.ingest_response_headers(
             provider=str(provider),
             model_name=str(model_name),
             bucket_id=str(bucket_id),
@@ -310,6 +317,12 @@ class DopemuxLiteLLMTraceLogger(CustomLogger):
 
     def __init__(self) -> None:
         super().__init__(turn_off_message_logging=True)
+        self._freeflow_ledger: Optional[FreeflowQuotaLedger] = None
+
+    def _get_freeflow_ledger(self) -> FreeflowQuotaLedger:
+        if self._freeflow_ledger is None:
+            self._freeflow_ledger = FreeflowQuotaLedger()
+        return self._freeflow_ledger
 
     async def async_pre_call_deployment_hook(
         self, kwargs: Dict[str, Any], call_type: Optional[Any]
@@ -320,16 +333,7 @@ class DopemuxLiteLLMTraceLogger(CustomLogger):
         model_info = _get_model_info(kwargs)
         freeflow = _freeflow_metadata({"metadata": metadata, "model_info": model_info})
         if freeflow.get("freeflow_provider"):
-            from dopemux.freeflow import (
-                FreeflowQuotaExceeded,
-                FreeflowQuotaLedger,
-                LOCAL_PROVIDERS,
-                NON_SENSITIVE_CLASS,
-                PROVIDER_CATALOG,
-                estimate_cost_usd,
-                normalize_sensitivity,
-            )
-
+            ledger = self._get_freeflow_ledger()
             provider = str(freeflow["freeflow_provider"])
             model_name = str(
                 freeflow.get("freeflow_model")
@@ -356,7 +360,6 @@ class DopemuxLiteLLMTraceLogger(CustomLogger):
                     "estimated_output_tokens": estimated_output_tokens,
                 }
             )
-            ledger = FreeflowQuotaLedger()
             decision = {
                 "decision": "selected",
                 "reason": "strict_free_pre_call_admitted",
@@ -444,7 +447,7 @@ class DopemuxLiteLLMTraceLogger(CustomLogger):
                     status="reserved",
                     metadata={"trace_id": trace_id},
                 )
-        kwargs["metadata"] = metadata
+            kwargs["metadata"] = metadata
 
         extra_headers = dict(kwargs.get("extra_headers") or {})
         extra_headers.setdefault(TRACE_HEADER_NAME, trace_id)
@@ -476,7 +479,12 @@ class DopemuxLiteLLMTraceLogger(CustomLogger):
     def log_success_event(
         self, kwargs: Dict[str, Any], response_obj: Any, start_time: Any, end_time: Any
     ) -> None:
-        _record_freeflow_usage(kwargs, response_obj, status="completed")
+        _record_freeflow_usage(
+            kwargs,
+            response_obj,
+            status="completed",
+            ledger=self._get_freeflow_ledger(),
+        )
         trace_id = _extract_trace_id(kwargs)
         metadata = _get_metadata(kwargs)
         usage = _extract_usage(response_obj)
@@ -516,7 +524,12 @@ class DopemuxLiteLLMTraceLogger(CustomLogger):
     def log_failure_event(
         self, kwargs: Dict[str, Any], response_obj: Any, start_time: Any, end_time: Any
     ) -> None:
-        _record_freeflow_usage(kwargs, response_obj, status="failed")
+        _record_freeflow_usage(
+            kwargs,
+            response_obj,
+            status="failed",
+            ledger=self._get_freeflow_ledger(),
+        )
         trace_id = _extract_trace_id(kwargs)
         metadata = _get_metadata(kwargs)
         latency_ms = None
