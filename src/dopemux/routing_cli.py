@@ -5,8 +5,6 @@ import click
 import logging
 from pathlib import Path
 
-import yaml
-
 from dopemux.launchd_services import LaunchdServiceManager
 from dopemux.routing_config import RoutingConfig, RoutingConfigError
 from dopemux.freeflow import (
@@ -546,27 +544,7 @@ def repair(max_passes: int, allow_sync_keys: bool):
 
 
 def _set_routing_mode(config_path: Path, mode: str) -> None:
-    if mode not in {"api", "subscription"}:
-        raise RoutingConfigError(f"Unsupported routing mode: {mode}")
-
-    try:
-        if config_path.exists():
-            loaded = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
-        else:
-            loaded = {}
-    except yaml.YAMLError as exc:
-        raise RoutingConfigError(f"Invalid routing config {config_path}: {exc}") from exc
-
-    if not isinstance(loaded, dict):
-        raise RoutingConfigError(f"Invalid routing config {config_path}: expected a mapping")
-
-    loaded["mode"] = mode
-    rendered = yaml.safe_dump(loaded, sort_keys=False)
-
-    config_path.parent.mkdir(parents=True, exist_ok=True)
-    tmp_path = config_path.with_name(f".{config_path.name}.tmp")
-    tmp_path.write_text(rendered, encoding="utf-8")
-    tmp_path.replace(config_path)
+    config_path.write_text(content)
 
 
 def _set_claude_base_url(url: str) -> None:

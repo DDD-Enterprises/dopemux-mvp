@@ -18,17 +18,6 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from ..console import console
 
-
-def _ensure_genetic_agent_path() -> Path:
-    """Expose the repo-local genetic_agent service package when present."""
-    repo_root = Path(__file__).resolve().parents[3]
-    services_path = repo_root / "services"
-    if not (services_path / "genetic_agent").exists():
-        raise ImportError(f"genetic_agent service not found under {services_path}")
-    if str(services_path) not in sys.path:
-        sys.path.insert(0, str(services_path))
-    return services_path
-
 @click.group()
 @click.pass_context
 def code(ctx):
@@ -59,7 +48,10 @@ def repair(ctx, bug_description, file_path, line, verbose, dry_run):
     """
     # Import here to avoid circular dependencies
     try:
-        _ensure_genetic_agent_path()
+        # Add services to Python path if needed
+        services_path = Path(__file__).resolve().parent.parent / 'services'
+        if str(services_path) not in sys.path:
+            sys.path.insert(0, str(services_path))
 
         from genetic_agent.vanilla.vanilla_agent import VanillaAgent
         from genetic_agent.core.config import AgentConfig
@@ -82,7 +74,7 @@ def repair(ctx, bug_description, file_path, line, verbose, dry_run):
                 console.logger.info(f"  Description: {analysis.get('description', 'N/A')}")
                 console.logger.info(f"  Complexity: {analysis.get('complexity', {}).get('score', 'N/A')}")
                 console.logger.info(f"  Similar patterns: {len(analysis.get('similar_patterns', {}).get('results', []))}")
-                return True
+                return
 
             result = await agent.process_task(task)
 
@@ -95,25 +87,19 @@ def repair(ctx, bug_description, file_path, line, verbose, dry_run):
                     console.logger.info(result['repair'])
                 if result.get('explanation'):
                     console.logger.info(f"\n[warning]Explanation:[/warning] {result['explanation']}")
-                return True
             else:
                 console.logger.error("[error]❌ Repair failed[/error]")
                 console.logger.error(f"Reason: {result.get('explanation', 'Unknown error')}")
                 if verbose:
                     console.logger.debug(f"Debug: Iterations attempted: {result.get('iterations', 0)}")
-                return False
 
-        if not asyncio.run(run_repair()):
-            raise click.ClickException("Code repair failed")
+        asyncio.run(run_repair())
 
-    except click.ClickException:
-        raise
     except Exception as e:
         console.logger.error(f"[error]❌ Code repair failed: {e}[/error]")
         if verbose:
             import traceback
             traceback.print_exc()
-        raise click.ClickException(f"Code repair failed: {e}") from e
 
 
 @code.command()
@@ -130,7 +116,9 @@ def analyze(ctx, bug_description, file_path, line, verbose):
     recommended repair strategies for manual remediation.
     """
     try:
-        _ensure_genetic_agent_path()
+        services_path = Path(__file__).resolve().parent.parent / 'services'
+        if str(services_path) not in sys.path:
+            sys.path.insert(0, str(services_path))
 
         from genetic_agent.vanilla.vanilla_agent import VanillaAgent
         from genetic_agent.core.config import AgentConfig
@@ -155,19 +143,27 @@ def analyze(ctx, bug_description, file_path, line, verbose):
 
         asyncio.run(run_analysis())
 
-    except click.ClickException:
-        raise
     except Exception as e:
         console.logger.error(f"[error]❌ Analysis failed: {e}[/error]")
         if verbose:
             import traceback
             traceback.print_exc()
-        raise click.ClickException(f"Analysis failed: {e}") from e
 
 
-def _run_code_agent_status(verbose):
+@code.command()
+@click.option('--verbose', '-v', is_flag=True, help='📊 Deep Telemetry: Enable verbose diagnostic output.')
+@click.pass_context
+def code_agent_status_cmd(ctx, verbose):
+    """
+    📊 Monitoring HUD: Show code agent status and configuration
+
+    Displays the current operational state, cognitive parameters, and
+    service connectivity for the vanilla code agent daemon.
+    """
     try:
-        _ensure_genetic_agent_path()
+        services_path = Path(__file__).resolve().parent.parent / 'services'
+        if str(services_path) not in sys.path:
+            sys.path.insert(0, str(services_path))
 
         import aiohttp
         from genetic_agent.core.config import AgentConfig
@@ -185,6 +181,7 @@ def _run_code_agent_status(verbose):
             console.logger.info(f"Confidence Threshold: {config.confidence_threshold}")
             console.logger.info(f"Workspace: {config.workspace_id}")
 
+            # Test MCP connectivity from host (localhost URLs)
             console.logger.info("\n[warning]Host MCP Service Status (localhost):[/warning]")
             host_urls = {
                 "Zen": "http://localhost:3003",
@@ -193,7 +190,6 @@ def _run_code_agent_status(verbose):
                 "Dope-Context": "http://localhost:3010"
             }
 
-            failed_services = []
             timeout = aiohttp.ClientTimeout(total=3.0)
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 for service, url in host_urls.items():
@@ -213,44 +209,15 @@ def _run_code_agent_status(verbose):
                     status_icon = "✅" if reachable else "❌"
                     console.logger.info(f"  {status_icon} {service}")
                     if not reachable:
-                        failed_services.append(service)
                         console.logger.error(f"    Error: {error_msg}")
 
             console.logger.info("\n[text.dim]Note: Container uses Docker network names, host uses localhost[/text.dim]")
-            return failed_services
 
-        failed_services = asyncio.run(show_status())
-        if failed_services:
-            raise click.ClickException(
-                f"Code agent status check failed for: {', '.join(failed_services)}"
-            )
+        asyncio.run(show_status())
 
-    except click.ClickException:
-        raise
     except Exception as e:
         console.logger.error(f"[error]❌ Status check failed: {e}[/error]")
         if verbose:
             import traceback
             traceback.print_exc()
-        raise click.ClickException(f"Status check failed: {e}") from e
 
-
-@code.command("status")
-@click.option('--verbose', '-v', is_flag=True, help='📊 Deep Telemetry: Enable verbose diagnostic output.')
-@click.pass_context
-def code_agent_status_cmd(ctx, verbose):
-    """
-    📊 Monitoring HUD: Show code agent status and configuration
-
-    Displays the current operational state, cognitive parameters, and
-    service connectivity for the vanilla code agent daemon.
-    """
-    return _run_code_agent_status(verbose)
-
-
-@code.command("code-agent-status-cmd", hidden=True)
-@click.option('--verbose', '-v', is_flag=True, help='📊 Deep Telemetry: Enable verbose diagnostic output.')
-@click.pass_context
-def code_agent_status_legacy_cmd(ctx, verbose):
-    """Deprecated compatibility alias for `status`."""
-    return _run_code_agent_status(verbose)
