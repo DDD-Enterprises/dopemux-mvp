@@ -152,8 +152,8 @@ prelude: System Dopemux (reference) for dopemux documentation and developer work
 
 ### 7. Known Drift / Issues
 
-- CLI import path is currently broken in this checkout.
-  Observed: `python -m dopemux.cli --help` fails with `ModuleNotFoundError: No module named 'core'` while importing `dopemux.pm.reads`.
+- CLI root help is currently importable through the package entrypoint.
+  Observed on 2026-05-01: `uv run --frozen python -m dopemux --help` exits 0. Older `python -m dopemux.cli --help` import-failure notes are stale for the runtime CLI surface audited in `reports/dopemux-cli-command-audit-2026-05-01.md`.
 
 - Kernel naming still drifts between TaskX and dopetask.
   Observed: `src/dopemux/commands/kernel_commands.py` talks about TaskX and invokes `scripts/taskx`; `scripts/taskx` is only a shim to `scripts/dopetask`; the truth pack also flags this naming drift.
