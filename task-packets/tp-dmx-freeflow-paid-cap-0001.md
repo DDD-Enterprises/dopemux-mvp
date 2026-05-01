@@ -62,7 +62,7 @@ OUT:
 * `tests/test_freeflow_quota.py`
 * `tests/test_freeflow_router.py`
 * `tests/test_freeflow_trace_logger.py`
-* `task-packets/TP-DMX-FREEFLOW-PAID-CAP-0001.md`
+* `task-packets/tp-dmx-freeflow-paid-cap-0001.md`
 * `task-packets/freeflow-paid-cap-research.md`
 * `task-packets/implementation-notes.md`
 
