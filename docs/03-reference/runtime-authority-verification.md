@@ -4,9 +4,12 @@ title: Runtime Authority Verification
 type: reference
 owner: '@hu3mann'
 date: '2026-04-30'
-prelude: Static runtime authority verification harness for Dopemux entrypoints, ports, wrappers, and known drift.
+prelude: Static runtime authority verification harness for Dopemux entrypoints, ports,
+  wrappers, and known drift.
+author: '@hu3mann'
+last_review: '2026-04-30'
+next_review: '2026-07-29'
 ---
-
 # Runtime Authority Verification
 
 ## Purpose
