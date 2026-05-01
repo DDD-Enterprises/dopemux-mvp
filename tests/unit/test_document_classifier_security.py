@@ -2,15 +2,7 @@ try:
     import pytest
 except ImportError:
     pytest = None
-from unittest.mock import MagicMock
-import sys
 from pathlib import Path
-
-# Mock missing dependencies
-sys.modules['markdown_patterns'] = MagicMock()
-sys.modules['yaml_extractor'] = MagicMock()
-sys.modules['extraction.markdown_patterns'] = MagicMock()
-sys.modules['extraction.yaml_extractor'] = MagicMock()
 
 from extraction.document_classifier import DocumentClassifier
 
