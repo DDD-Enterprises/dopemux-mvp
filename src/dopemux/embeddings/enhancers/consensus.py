@@ -267,7 +267,32 @@ class ConsensusValidator(BaseEnhancer):
                     temperature=0,
                 )
                 raw = response.choices[0].message.content
-                return self._normalize_assessment(json.loads(raw))
+                if isinstance(raw, dict):
+                    return self._normalize_assessment(raw)
+
+                try:
+                    payload = json.loads(raw or "{}")
+                except (TypeError, json.JSONDecodeError) as exc:
+                    logger.warning("Invalid provider assessment JSON from %s: %s", provider.value, exc)
+                    return {
+                        "quality_score": 0.5,
+                        "confidence": 0.0,
+                        "reasoning": f"{provider.value} assessment returned invalid JSON",
+                    }
+
+                if not isinstance(payload, dict):
+                    logger.warning(
+                        "Provider assessment JSON from %s was not an object: %s",
+                        provider.value,
+                        type(payload).__name__,
+                    )
+                    return {
+                        "quality_score": 0.5,
+                        "confidence": 0.0,
+                        "reasoning": f"{provider.value} assessment returned non-object JSON",
+                    }
+
+                return self._normalize_assessment(payload)
 
             return {
                 "quality_score": 0.5,
