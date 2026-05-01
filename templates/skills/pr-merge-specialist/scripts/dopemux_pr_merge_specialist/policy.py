@@ -128,6 +128,7 @@ DEFAULT_POLICY: Dict[str, Any] = {
         "block_on_changes_requested": True,
     },
     "thread_rules": {
+        "enable_agentic_fix": False,
         "auto_resolve_outdated": True,
         "auto_resolve_resolution_signals": True,
         "resolution_markers": [
