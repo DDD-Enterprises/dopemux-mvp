@@ -25,6 +25,7 @@ import {
   Flame,
   Swords,
   RotateCcw,
+  AlertTriangle,
 } from 'lucide-react';
 import { brandTokens, statusStyles } from '../theme';
 
@@ -83,6 +84,8 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   const [currentTaskId, setCurrentTaskId] = useState<string | null>('1');
   const [taskTimer, setTaskTimer] = useState<number>(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [isResetConfirming, setIsResetConfirming] = useState(false);
+  const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
@@ -98,6 +101,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     setTaskTimer(0);
     setIsTimerRunning(false);
   }, [currentTaskId]);
+
+  useEffect(() => {
+    return () => {
+      if (resetTimeoutRef.current) {
+        clearTimeout(resetTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const optimizedTasks = useMemo(() => {
     const sortedTasks = [...tasks].filter((task) => task.status !== 'completed');
@@ -138,6 +149,19 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   };
 
   const resetTasks = () => {
+    if (!isResetConfirming) {
+      setIsResetConfirming(true);
+      resetTimeoutRef.current = setTimeout(() => {
+        setIsResetConfirming(false);
+      }, 3000);
+      return;
+    }
+
+    if (resetTimeoutRef.current) {
+      clearTimeout(resetTimeoutRef.current);
+    }
+    setIsResetConfirming(false);
+
     const freshTasks = INITIAL_TASKS.map((task) => ({ ...task }));
     setTasks(freshTasks);
     setCurrentTaskId(freshTasks[0].id);
@@ -459,22 +483,31 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           <Typography variant="body2" sx={{ mb: 2 }}>
             All muzzled. Your backlog is silent... for now.
           </Typography>
-          <Tooltip title="Restart the task sequence" arrow>
+          <Tooltip title={isResetConfirming ? 'Confirm to clear all progress' : 'Restart the task sequence'} arrow>
             <Button
               variant="outlined"
               size="small"
-              startIcon={<RotateCcw size={16} aria-hidden="true" />}
+              startIcon={
+                isResetConfirming ? (
+                  <AlertTriangle size={16} aria-hidden="true" />
+                ) : (
+                  <RotateCcw size={16} aria-hidden="true" />
+                )
+              }
               onClick={resetTasks}
               sx={{
-                borderColor: brandTokens.colors.serumMint,
-                color: brandTokens.colors.serumMint,
+                borderColor: isResetConfirming ? brandTokens.colors.saintGold : brandTokens.colors.serumMint,
+                color: isResetConfirming ? brandTokens.colors.saintGold : brandTokens.colors.serumMint,
                 '&:hover': {
-                  borderColor: brandTokens.colors.serumMint,
-                  background: alpha(brandTokens.colors.serumMint, 0.1),
+                  borderColor: isResetConfirming ? brandTokens.colors.saintGold : brandTokens.colors.serumMint,
+                  background: alpha(
+                    isResetConfirming ? brandTokens.colors.saintGold : brandTokens.colors.serumMint,
+                    0.1
+                  ),
                 },
               }}
             >
-              Reset Ritual
+              {isResetConfirming ? 'Confirm Reset?' : 'Reset Ritual'}
             </Button>
           </Tooltip>
         </Box>
