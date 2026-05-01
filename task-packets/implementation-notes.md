@@ -11,7 +11,7 @@ prelude: Implementation notes for the strict-free LLM router task packet.
 ---
 # Implementation Notes: Strict-Free LLM Router
 
-Task packet: `task-packets/TP-DMX-FREEFLOW-ROUTER-0001.md`
+Task packet: `task-packets/tp-dmx-freeflow-router-0001.md`
 
 ## Changes
 
@@ -30,7 +30,7 @@ Task packet: `task-packets/TP-DMX-FREEFLOW-ROUTER-0001.md`
 * `uv run --extra test python -m pytest tests/test_litellm_proxy.py tests/test_litellm_manager.py services/repo-truth-extractor/tests/test_prescan_provider_catalog.py` -> 56 passed.
 * `uv run --extra test python -m dopemux.cli routing freeflow doctor --offline --json` -> exit 0.
 * `uv run --extra test python -m compileall -q src/dopemux/freeflow.py src/dopemux/routing_config.py src/dopemux/routing_cli.py src/dopemux/litellm_trace_logger.py` -> exit 0.
-* `uv run --with pre-commit pre-commit run --files src/dopemux/freeflow.py src/dopemux/litellm_trace_logger.py src/dopemux/routing_cli.py src/dopemux/routing_config.py templates/routing.yaml tests/test_freeflow_quota.py tests/test_freeflow_router.py tests/test_freeflow_trace_logger.py task-packets/TP-DMX-FREEFLOW-ROUTER-0001.md task-packets/implementation-notes.md` -> exit 0.
+* `uv run --with pre-commit pre-commit run --files src/dopemux/freeflow.py src/dopemux/litellm_trace_logger.py src/dopemux/routing_cli.py src/dopemux/routing_config.py templates/routing.yaml tests/test_freeflow_quota.py tests/test_freeflow_router.py tests/test_freeflow_trace_logger.py task-packets/tp-dmx-freeflow-router-0001.md task-packets/implementation-notes.md` -> exit 0.
 * `git diff --check` -> exit 0.
 
 ## Residual Risk
