@@ -89,7 +89,7 @@
   "repo_identity": {
     "origin_hint": "dopemux-mvp",
     "repo_marker": ".dopetaskroot",
-    "require_identity_match": true
+"require_identity_match": false
   },
   "schema_version": "1.0",
   "systems": [

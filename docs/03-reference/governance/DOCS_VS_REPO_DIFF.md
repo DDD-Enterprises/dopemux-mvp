@@ -76,7 +76,7 @@ Warnings were for expected conflicts in:
 - dope-memory stale `8096` adapter/smoke references versus `3020`.
 - task-orchestrator expected conflict and stale `3014` legacy references versus `8000`.
 
-The packet command using `python` was also attempted and failed in this shell because no `python` executable is installed. Validation therefore used `python3`.
+Validation used `python3` because `python` is not guaranteed to exist across operator environments.
 
 ## Non-Normalization Rule
 
