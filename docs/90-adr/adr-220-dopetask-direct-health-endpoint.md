@@ -4,13 +4,21 @@ title: dopetask Direct Health Endpoint
 type: adr
 owner: Claude Agent
 date: 2026-04-23
-status: active
-prelude: "dopetask exposes a direct /health endpoint so the Services pane can probe it without relying on a central aggregator."
-tags: [u2-resolved, services-health, dopetask, execution-plane, monitoring]
-adhd_summary: "Direct health probe from Services pane, no aggregation bottleneck"
+status: accepted
+prelude: dopetask exposes a direct /health endpoint so the Services pane can probe
+  it without relying on a central aggregator.
+tags:
+- u2-resolved
+- services-health
+- dopetask
+- execution-plane
+- monitoring
+adhd_summary: Direct health probe from Services pane, no aggregation bottleneck
 graph_metadata: {}
+author: '@hu3mann'
+last_review: '2026-05-01'
+next_review: '2026-07-30'
 ---
-
 # ADR-220: dopetask Direct Health Endpoint
 
 ## Summary

@@ -1,3 +1,14 @@
+---
+id: 03-serena
+title: 03 Serena
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-01'
+last_review: '2026-05-01'
+next_review: '2026-07-30'
+prelude: 03 Serena (explanation) for dopemux documentation and developer workflows.
+---
 # DR Pack 03: Serena
 
 Access date: 2026-04-28
