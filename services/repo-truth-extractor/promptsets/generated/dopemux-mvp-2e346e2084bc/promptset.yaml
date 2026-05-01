@@ -1,0 +1,532 @@
+version: '4.0'
+name: repo-truth-extractor-dopemux-mvp
+generated_at: '2073-02-07T04:00:51+00:00'
+run_id: sync-dopemux-mvp-2e346e2084bc-2032-08-13T08:57:34+00:00
+all_phase_order:
+- A
+- H
+- D
+- C
+- E
+- W
+- B
+- G
+- Q
+- R
+- X
+- T
+- Z
+- S
+- M
+optional_phases: []
+required_prompt_sections:
+- Goal
+- Inputs
+- Outputs
+- Schema
+- Extraction Procedure
+- Evidence Rules
+- Determinism Rules
+- Anti-Fabrication Rules
+- Failure Modes
+phases:
+  A:
+    required_steps:
+    - A0
+    - A1
+    - A6
+    - A99
+    steps:
+    - step_id: A0
+      prompt_file: /Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/prompts/PROMPT_A0_CONTROL_INVENTORY.md
+      coverage_targets:
+      - .
+      - config/
+      - compose.yml
+      - docker-compose*.yml
+      - .github/
+      - ./
+      - .worktrees/
+      - services/
+      - .venv/
+      - .dopemux/
+      - .vibe/
+      outputs:
+      - PHASE_A_INVENTORY.json
+    - step_id: A1
+      prompt_file: prompts/PROMPT_A1.md
+      coverage_targets:
+      - .
+      outputs:
+      - A1_EXTRACTION.json
+    - step_id: A6
+      prompt_file: prompts/PROMPT_A6.md
+      coverage_targets:
+      - scripts/
+      - tools/
+      - Makefile
+      outputs:
+      - A6_EXTRACTION.json
+    - step_id: A99
+      prompt_file: prompts/PROMPT_A99.md
+      coverage_targets:
+      - .
+      outputs:
+      - PHASE_A_MERGED.json
+  D:
+    required_steps:
+    - D0
+    - D1
+    - D2
+    - D3
+    - D4
+    - D5
+    steps:
+    - step_id: D0
+      prompt_file: /Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/prompts/PROMPT_D0_DOCS_INVENTORY.md
+      coverage_targets:
+      - docs/
+      outputs:
+      - PHASE_D_INVENTORY.json
+    - step_id: D1
+      prompt_file: prompts/PROMPT_D1.md
+      coverage_targets:
+      - docs/
+      - .venv/
+      - .worktrees/
+      outputs:
+      - D1_EXTRACTION.json
+    - step_id: D2
+      prompt_file: prompts/PROMPT_D2.md
+      coverage_targets:
+      - docs/
+      outputs:
+      - D2_EXTRACTION.json
+    - step_id: D3
+      prompt_file: prompts/PROMPT_D3.md
+      coverage_targets:
+      - docs/
+      outputs:
+      - D3_EXTRACTION.json
+    - step_id: D4
+      prompt_file: prompts/PROMPT_D4.md
+      coverage_targets:
+      - docs/
+      outputs:
+      - D4_EXTRACTION.json
+    - step_id: D5
+      prompt_file: prompts/PROMPT_D5.md
+      coverage_targets:
+      - docs/
+      outputs:
+      - D5_EXTRACTION.json
+  C:
+    required_steps:
+    - C0
+    - C1
+    - C14
+    - C16
+    - C6
+    - C7
+    - C8
+    - C9
+    steps:
+    - step_id: C0
+      prompt_file: /Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/prompts/PROMPT_C0_CODE_INVENTORY.md
+      coverage_targets:
+      - src/
+      - lib/
+      - pkg/
+      - app/
+      - services/
+      outputs:
+      - PHASE_C_INVENTORY.json
+    - step_id: C1
+      prompt_file: prompts/PROMPT_C1.md
+      coverage_targets:
+      - src/
+      - services/
+      - app/
+      - .uv-cache/
+      - .venv/
+      - .worktrees/
+      - docker/
+      - ./
+      outputs:
+      - C1_EXTRACTION.json
+    - step_id: C14
+      prompt_file: prompts/PROMPT_C14.md
+      coverage_targets:
+      - src/
+      - lib/
+      - .uv-cache/
+      - .venv/
+      - .worktrees/
+      - docker/
+      - services/
+      - ./
+      outputs:
+      - C14_EXTRACTION.json
+    - step_id: C16
+      prompt_file: prompts/PROMPT_C16.md
+      coverage_targets:
+      - src/
+      - lib/
+      - services/
+      - .uv-cache/
+      - .venv/
+      - ./
+      outputs:
+      - C16_EXTRACTION.json
+    - step_id: C6
+      prompt_file: prompts/PROMPT_C6.md
+      coverage_targets:
+      - src/
+      - services/
+      - .uv-cache/
+      - .venv/
+      - .worktrees/
+      - docker/
+      outputs:
+      - C6_EXTRACTION.json
+    - step_id: C7
+      prompt_file: prompts/PROMPT_C7.md
+      coverage_targets:
+      - src/
+      - services/
+      - .uv-cache/
+      - .venv/
+      - .worktrees/
+      - docker/
+      outputs:
+      - C7_EXTRACTION.json
+    - step_id: C8
+      prompt_file: prompts/PROMPT_C8.md
+      coverage_targets:
+      - src/
+      - bin/
+      - .uv-cache/
+      - .venv/
+      - .worktrees/
+      - services/
+      outputs:
+      - C8_EXTRACTION.json
+    - step_id: C9
+      prompt_file: prompts/PROMPT_C9.md
+      coverage_targets:
+      - src/
+      - bin/
+      - .uv-cache/
+      - .venv/
+      - .worktrees/
+      - services/
+      outputs:
+      - PHASE_C_MERGED.json
+  E:
+    required_steps:
+    - E0
+    - E1
+    - E2
+    - E6
+    - E9
+    steps:
+    - step_id: E0
+      prompt_file: /Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/prompts/PROMPT_E0_EXECUTION_INVENTORY.md
+      coverage_targets:
+      - .github/
+      - .env*
+      - ./
+      - .uv-cache/
+      - tests/
+      - .worktrees/
+      - services/
+      - ui-dashboard/
+      - .venv/
+      - config/
+      - .dopemux/
+      - .vibe/
+      outputs:
+      - PHASE_E_INVENTORY.json
+    - step_id: E1
+      prompt_file: prompts/PROMPT_E1.md
+      coverage_targets:
+      - .
+      outputs:
+      - E1_EXTRACTION.json
+    - step_id: E2
+      prompt_file: prompts/PROMPT_E2.md
+      coverage_targets:
+      - .
+      outputs:
+      - E2_EXTRACTION.json
+    - step_id: E6
+      prompt_file: prompts/PROMPT_E6.md
+      coverage_targets:
+      - tests/
+      - test/
+      - ./
+      - .uv-cache/
+      - .worktrees/
+      - services/
+      - ui-dashboard/
+      outputs:
+      - E6_EXTRACTION.json
+    - step_id: E9
+      prompt_file: prompts/PROMPT_E9.md
+      coverage_targets:
+      - .
+      outputs:
+      - PHASE_E_MERGED.json
+  G:
+    required_steps:
+    - G0
+    - G1
+    - G2
+    - G3
+    - G4
+    - G9
+    steps:
+    - step_id: G0
+      prompt_file: /Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/prompts/PROMPT_G0_GOVERNANCE_INVENTORY.md
+      coverage_targets:
+      - .
+      outputs:
+      - PHASE_G_INVENTORY.json
+    - step_id: G1
+      prompt_file: prompts/PROMPT_G1.md
+      coverage_targets:
+      - .github/workflows/
+      - .github/
+      outputs:
+      - G1_EXTRACTION.json
+    - step_id: G2
+      prompt_file: prompts/PROMPT_G2.md
+      coverage_targets:
+      - .
+      outputs:
+      - G2_EXTRACTION.json
+    - step_id: G3
+      prompt_file: prompts/PROMPT_G3.md
+      coverage_targets:
+      - .
+      outputs:
+      - G3_EXTRACTION.json
+    - step_id: G4
+      prompt_file: prompts/PROMPT_G4.md
+      coverage_targets:
+      - .
+      outputs:
+      - G4_EXTRACTION.json
+    - step_id: G9
+      prompt_file: prompts/PROMPT_G9.md
+      coverage_targets:
+      - .
+      outputs:
+      - PHASE_G_MERGED.json
+  Q:
+    required_steps:
+    - Q0
+    - Q1
+    - Q2
+    - Q3
+    - Q9
+    steps:
+    - step_id: Q0
+      prompt_file: prompts/PROMPT_Q0.md
+      coverage_targets: []
+      outputs:
+      - PHASE_Q_INVENTORY.json
+    - step_id: Q1
+      prompt_file: prompts/PROMPT_Q1.md
+      coverage_targets: []
+      outputs:
+      - Q1_EXTRACTION.json
+    - step_id: Q2
+      prompt_file: prompts/PROMPT_Q2.md
+      coverage_targets: []
+      outputs:
+      - Q2_EXTRACTION.json
+    - step_id: Q3
+      prompt_file: prompts/PROMPT_Q3.md
+      coverage_targets: []
+      outputs:
+      - Q3_EXTRACTION.json
+    - step_id: Q9
+      prompt_file: prompts/PROMPT_Q9.md
+      coverage_targets: []
+      outputs:
+      - PHASE_Q_MERGED.json
+  R:
+    required_steps:
+    - R0
+    - R2
+    - R3
+    - R5
+    - R6
+    - R7
+    - R8
+    steps:
+    - step_id: R0
+      prompt_file: prompts/PROMPT_R0.md
+      coverage_targets: []
+      outputs:
+      - PHASE_R_INVENTORY.json
+    - step_id: R2
+      prompt_file: prompts/PROMPT_R2.md
+      coverage_targets: []
+      outputs:
+      - R2_EXTRACTION.json
+    - step_id: R3
+      prompt_file: prompts/PROMPT_R3.md
+      coverage_targets: []
+      outputs:
+      - R3_EXTRACTION.json
+    - step_id: R5
+      prompt_file: prompts/PROMPT_R5.md
+      coverage_targets: []
+      outputs:
+      - R5_EXTRACTION.json
+    - step_id: R6
+      prompt_file: prompts/PROMPT_R6.md
+      coverage_targets: []
+      outputs:
+      - R6_EXTRACTION.json
+    - step_id: R7
+      prompt_file: prompts/PROMPT_R7.md
+      coverage_targets: []
+      outputs:
+      - R7_EXTRACTION.json
+    - step_id: R8
+      prompt_file: prompts/PROMPT_R8.md
+      coverage_targets: []
+      outputs:
+      - R8_EXTRACTION.json
+  X:
+    required_steps:
+    - X0
+    - X1
+    - X2
+    - X3
+    - X4
+    - X9
+    steps:
+    - step_id: X0
+      prompt_file: prompts/PROMPT_X0.md
+      coverage_targets: []
+      outputs:
+      - PHASE_X_INVENTORY.json
+    - step_id: X1
+      prompt_file: prompts/PROMPT_X1.md
+      coverage_targets: []
+      outputs:
+      - X1_EXTRACTION.json
+    - step_id: X2
+      prompt_file: prompts/PROMPT_X2.md
+      coverage_targets: []
+      outputs:
+      - X2_EXTRACTION.json
+    - step_id: X3
+      prompt_file: prompts/PROMPT_X3.md
+      coverage_targets: []
+      outputs:
+      - X3_EXTRACTION.json
+    - step_id: X4
+      prompt_file: prompts/PROMPT_X4.md
+      coverage_targets: []
+      outputs:
+      - X4_EXTRACTION.json
+    - step_id: X9
+      prompt_file: prompts/PROMPT_X9.md
+      coverage_targets: []
+      outputs:
+      - PHASE_X_MERGED.json
+  Z:
+    required_steps:
+    - Z0
+    - Z1
+    - Z2
+    - Z9
+    steps:
+    - step_id: Z0
+      prompt_file: prompts/PROMPT_Z0.md
+      coverage_targets: []
+      outputs:
+      - PHASE_Z_INVENTORY.json
+    - step_id: Z1
+      prompt_file: prompts/PROMPT_Z1.md
+      coverage_targets: []
+      outputs:
+      - Z1_EXTRACTION.json
+    - step_id: Z2
+      prompt_file: prompts/PROMPT_Z2.md
+      coverage_targets: []
+      outputs:
+      - Z2_EXTRACTION.json
+    - step_id: Z9
+      prompt_file: prompts/PROMPT_Z9.md
+      coverage_targets: []
+      outputs:
+      - PHASE_Z_MERGED.json
+  S:
+    required_steps:
+    - S0
+    - S1
+    - S10
+    - S11
+    - S2
+    - S3
+    - S4
+    - S5
+    - S8
+    - S9
+    steps:
+    - step_id: S0
+      prompt_file: prompts/PROMPT_S0.md
+      coverage_targets: []
+      outputs:
+      - PHASE_S_INVENTORY.json
+    - step_id: S1
+      prompt_file: prompts/PROMPT_S1.md
+      coverage_targets: []
+      outputs:
+      - S1_EXTRACTION.json
+    - step_id: S10
+      prompt_file: prompts/PROMPT_S10.md
+      coverage_targets: []
+      outputs:
+      - S10_EXTRACTION.json
+    - step_id: S11
+      prompt_file: prompts/PROMPT_S11.md
+      coverage_targets: []
+      outputs:
+      - S11_EXTRACTION.json
+    - step_id: S2
+      prompt_file: prompts/PROMPT_S2.md
+      coverage_targets: []
+      outputs:
+      - S2_EXTRACTION.json
+    - step_id: S3
+      prompt_file: prompts/PROMPT_S3.md
+      coverage_targets: []
+      outputs:
+      - S3_EXTRACTION.json
+    - step_id: S4
+      prompt_file: prompts/PROMPT_S4.md
+      coverage_targets: []
+      outputs:
+      - S4_EXTRACTION.json
+    - step_id: S5
+      prompt_file: prompts/PROMPT_S5.md
+      coverage_targets: []
+      outputs:
+      - S5_EXTRACTION.json
+    - step_id: S8
+      prompt_file: prompts/PROMPT_S8.md
+      coverage_targets: []
+      outputs:
+      - S8_EXTRACTION.json
+    - step_id: S9
+      prompt_file: prompts/PROMPT_S9.md
+      coverage_targets: []
+      outputs:
+      - PHASE_S_MERGED.json

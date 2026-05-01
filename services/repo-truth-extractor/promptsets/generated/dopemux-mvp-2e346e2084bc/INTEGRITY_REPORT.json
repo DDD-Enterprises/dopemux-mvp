@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "total_checks": 5,
+  "error_count": 0,
+  "warning_count": 0,
+  "errors": [],
+  "warnings": [],
+  "summary": {
+    "promptset_steps": 61,
+    "model_map_steps": 61,
+    "artifacts": 61
+  }
+}

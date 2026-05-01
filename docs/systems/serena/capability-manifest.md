@@ -18,8 +18,8 @@ Current authority for Serena runtime/deployment status is:
 - `docker/compose.core.yml`
 - `docker/mcp-servers-source/serena/`
 - `services/serena/`
-- [deployment-alignment-and-sanctioned-contract.md](/Users/hue/code/dopemux-mvp/docs/systems/serena/deployment-alignment-and-sanctioned-contract.md)
-- [runtime-candidate-inventory.md](/Users/hue/code/dopemux-mvp/docs/systems/serena/runtime-candidate-inventory.md)
+- [deployment-alignment-and-sanctioned-contract.md](./deployment-alignment-and-sanctioned-contract.md)
+- [runtime-candidate-inventory.md](./runtime-candidate-inventory.md)
 
 ## Runtime surfaces
 

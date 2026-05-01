@@ -96,7 +96,6 @@ body {
 .pane-header-violet { color: var(--aftercare-violet); }
 .pane-title { font-weight: 700; }
 .pane-auth { color: var(--text-dim); font-weight: 400; }
-.pane-role { color: var(--text-muted); font-weight: 400; }
 
 .row {
     white-space: pre;
@@ -127,7 +126,7 @@ body {
     white-space: nowrap;
 }
 
-/* ── Center pane (repo-truth-extractor child surface) ───────────────────────────────── */
+/* ── Center pane (RTE child surface) ───────────────────────────────── */
 .center-tabs {
     color: var(--text-dim);
     margin-bottom: 6px;
@@ -142,20 +141,17 @@ body {
 /* ── Rails ─────────────────────────────────────────────────────────── */
 .rail {
     border-top: 1px solid var(--mint-dim);
-    display: flex;
-    flex-wrap: nowrap;
+    display: grid;
+    grid-template-columns: 240px 1fr 320px;
     font-size: 12px;
 }
+.frame-100-32 .rail { grid-template-columns: 200px 1fr 280px; }
+.frame-80-24  .rail { grid-template-columns: 160px 1fr 220px; }
 
 .rail-cell {
     padding: 4px 12px;
     border-right: 1px solid var(--mint-dim);
     color: var(--text);
-    flex: 1 1 0;
-    min-width: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: clip;
 }
 .rail-cell:last-child { border-right: none; }
 .rail-status .rail-cell { color: var(--text-muted); }

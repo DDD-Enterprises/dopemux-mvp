@@ -1,0 +1,31 @@
+{
+  "success": true,
+  "run_id": "sync-dopemux-mvp-2e346e2084bc-2032-08-13T08:57:34+00:00",
+  "output_dir": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc",
+  "stages_completed": [
+    "feature_detection",
+    "phase_plan",
+    "feature_discovery",
+    "scope_resolution",
+    "template_rendering",
+    "contract_generation",
+    "integrity_validation"
+  ],
+  "errors": [],
+  "warnings": [],
+  "artifacts": {
+    "auto_features": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/AUTO_FEATURES.json",
+    "phase_plan": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/PHASE_PLAN.json",
+    "feature_map": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json",
+    "promptset": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/promptset.yaml",
+    "artifacts": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/artifacts.yaml",
+    "model_map": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/model_map.yaml"
+  },
+  "summary": {
+    "templates_rendered": 5,
+    "templates_skipped": 0,
+    "phases": 10,
+    "steps": 61,
+    "artifacts": 61
+  }
+}

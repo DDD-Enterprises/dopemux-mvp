@@ -10,16 +10,8 @@
    ========================================================================== */
 
 @font-face {
-    font-family: "Dopemux Term";
-    src: url("fonts/DopemuxTerm-Regular.ttf") format("truetype");
-    font-weight: 400 700;   /* single weight file; bold is synthesized */
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: "Dopemux Term Nerd Font";
-    src: url("fonts/DopemuxTermNerdFont-Regular.ttf") format("truetype");
+    font-family: "Iosevka Hue Term";
+    src: url("fonts/IosevkaHueTerm-Regular.ttf") format("truetype");
     font-weight: 400 700;   /* single weight file; bold is synthesized */
     font-style: normal;
     font-display: swap;
@@ -66,18 +58,16 @@
        closed chip set, it doesn't exist. */
 
     /* --- Type system --------------------------------------------------- */
-    --font-mono:            "Dopemux Term",
-                            "Dopemux Term Nerd Font",
-                            ui-monospace, monospace;
-    --font-mono-rich:       "Dopemux Term Nerd Font",
-                            "Dopemux Term",
-                            ui-monospace, monospace;
+    --font-mono:            "Iosevka Hue Term", "IosevkaHueTerm",
+                            "JetBrainsMono Nerd Font", "JetBrains Mono",
+                            "Fira Code", "SFMono-Regular", "Menlo",
+                            "Consolas", ui-monospace, monospace;
     --font-display:         var(--font-mono);   /* TUI is mono-only           */
 
     /* Cell metrics. The cockpit renders char-by-char on a fixed grid,
        so size is determined by character cell, not pt. These are the
        reference cell sizes used by preview cards. */
-    --cell-w:               9.6px;     /* approx for 16px Dopemux Term       */
+    --cell-w:               9.6px;     /* approx for 16px JetBrains Mono     */
     --cell-h:               20px;
     --line-height:          1.25;
 
