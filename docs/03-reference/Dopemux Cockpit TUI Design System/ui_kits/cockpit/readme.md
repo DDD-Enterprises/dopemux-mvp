@@ -1,8 +1,20 @@
+---
+id: COCKPIT_COCKPIT_UI_KIT_README
+title: Cockpit UI Kit
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-25'
+last_review: '2026-04-25'
+next_review: '2026-07-25'
+prelude: React+Babel cockpit UI kit mirroring the deterministic terminal render contract and the in-browser demo seed.
+---
+
 # Cockpit UI Kit
 
 React+Babel recreation of the dopemux cockpit TUI as it renders in a real
-terminal. Mirrors `src/dopemux/ui/cockpit/render.py` and the seed data in
-`src/dopemux/ui/cockpit/seed.py`.
+terminal. Mirrors `src/dopemux/ui/cockpit/render.py` and the in-browser
+demo seed in `seed.js`.
 
 ## Files
 
@@ -12,7 +24,7 @@ terminal. Mirrors `src/dopemux/ui/cockpit/render.py` and the seed data in
   `Rule`, `Row`, `ServiceRow`, `RunRow`, `ModeBar`, `Inspector`, `Chip`,
   `Src`, `Selector`, `CommandRail`, `StatusRail`, `HintRail`
 - `Cockpit.jsx` — composed screen + size-switch shell
-- `seed.js` — deterministic seed data (mirrors `seed.py`)
+- `seed.js` — deterministic seed data for the UI kit
 - `cockpit.css` — styling layer; consumes `colors_and_type.css`
 
 ## Component contract

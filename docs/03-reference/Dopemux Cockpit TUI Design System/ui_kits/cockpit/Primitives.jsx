@@ -118,7 +118,7 @@ function Inspector({ inspector }) {
                 </div>
             ))}
             <Rule width={34} />
-            <div className="bridge-header">Bridge actions authority: dopecon-bridge</div>
+            <div className="bridge-header">Bridge adapter/proxy: dopecon-bridge</div>
             <div className="row"><Src value="dopecon-bridge" /> <Chip kind="EDGE" /> adapter-only segregated</div>
             <div className="row row-dim">WRITE -&gt; &lt;service&gt; : &lt;action&gt;</div>
             {inspector.bridge.actions.map((a, i) => (
@@ -135,7 +135,7 @@ function Inspector({ inspector }) {
 function CommandRail({ authority = "dopemux", flags = "static-demo · no writes" }) {
     return (
         <div className="rail rail-command">
-            <span className="rail-cell">command authority: {authority}</span>
+            <span className="rail-cell">authority: {authority}</span>
             <span className="rail-cell">{flags}</span>
             <span className="rail-cell">no service adapters · no rte execution</span>
         </div>
@@ -164,16 +164,16 @@ function HintRail({ items }) {
 }
 
 /* ── Frame: the outer cockpit shell.
- *   Chrome row — declares workspace, surface, mode, render mode, command
+ *   Chrome row — declares workspace, surface, mode, render mode,
  *   authority, flags, and snapshot size. Never carries SRC= (data is
  *   provenance, chrome is not data). */
 function Frame({
     size = "120x40",
-    workspace = "/users/hu3/code/dopemux-mvp",
+    workspace = "dopemux-mvp",
     surface = "services",
     mode = "rich",
     state = "STATIC DEMO",
-    authority = "dopemux static-demo",
+    authority = "dopemux",
     children,
 }) {
     return (
@@ -183,7 +183,7 @@ function Frame({
                 <span className="frame-meta">workspace {workspace}</span>
                 <span className="frame-meta">surface {surface}</span>
                 <span className="frame-meta">mode {mode}</span>
-                <span className="frame-meta">command authority {authority}</span>
+                <span className="frame-meta">authority: {authority}</span>
                 <span className="frame-meta frame-state">{state}</span>
                 <span className="frame-meta">snapshot {size}</span>
             </div>

@@ -1,3 +1,15 @@
+---
+id: COCKPIT_PREIMPLEMENTATION
+title: Dopemux Cockpit TUI Preimplementation
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-25'
+last_review: '2026-04-25'
+next_review: '2026-07-25'
+prelude: Preconditions and fail-closed rules before any cockpit pane is promoted from mock to implementation.
+---
+
 # PREIMPLEMENTATION.md
 
 > Read this **before** any implementer touches code.

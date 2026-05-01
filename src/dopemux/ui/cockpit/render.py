@@ -6,7 +6,7 @@ plain / audit modes, and it provides the structured data the Textual
 shell consumes.
 
 Authority model (per
-``docs/03-reference/Dopemux Cockpit TUI Design System/architecture-safety-overlay.md``):
+``docs/03-reference/Dopemux Cockpit TUI Design System/ARCHITECTURE_SAFETY_OVERLAY.md``):
 
 - Leantime owns PM metadata.
 - task-orchestrator owns workflow transitions, queue, blockers.
@@ -266,7 +266,7 @@ def viewport_supported(cols: int, rows: int) -> bool:
 
 
 def _bridge_role_for_viewport(cols: int, rows: int) -> str:
-    """Per-Viewport Degradation Law from architecture-safety-overlay.md.
+    """Per-Viewport Degradation Law from ARCHITECTURE_SAFETY_OVERLAY.md.
 
     - 120 x 40: dedicated bridge segregator pane allowed.
     - 100 x 32: bridge lives in inspector / lower detail (no segregator pane).

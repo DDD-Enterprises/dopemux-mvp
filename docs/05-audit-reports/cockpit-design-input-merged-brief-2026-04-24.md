@@ -1,3 +1,15 @@
+---
+id: cockpit-design-input-merged-brief-2026-04-24
+title: Cockpit Design Input Merged Brief - 2026-04-24
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-24'
+last_review: '2026-04-24'
+next_review: '2026-07-24'
+prelude: Design input synthesis for the Dopemux PM and Implementer cockpit, separated from runtime truth.
+---
+
 # Cockpit Design Input Merged Brief - 2026-04-24
 
 Mode: paste-ready synthesis/design input. This is not an implementation plan.

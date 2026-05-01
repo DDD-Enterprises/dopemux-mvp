@@ -21,7 +21,7 @@ Current repo truth:
 - test file path: `services/serena/intelligence/test_database.py`
 - pytest collection from repo root now succeeds
 - database tests still skip when local Postgres test initialization is unavailable
-- current validation authority: [capability-manifest.md](/Users/hue/code/dopemux-mvp/docs/systems/serena/capability-manifest.md)
+- current validation authority: [capability-manifest.md](../capability-manifest.md)
 
 **Date**: 2025-10-24
 **Status**: ✅ Test Suite Created | ⚠️ Import Issues Preventing Execution

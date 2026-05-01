@@ -1,3 +1,15 @@
+---
+id: COCKPIT_ACCEPTANCE
+title: Dopemux Cockpit TUI Acceptance
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-04-25'
+last_review: '2026-04-25'
+next_review: '2026-07-25'
+prelude: Acceptance checklist and contradiction gate for the Dopemux Cockpit TUI Design System.
+---
+
 # ACCEPTANCE.md
 
 Acceptance checklist for the Dopemux cockpit design-system package.
@@ -22,8 +34,7 @@ Every box must be checkable against the artifacts in this folder.
       `UNKNOWN, DEGRADED, FAILED, BLOCKED, SYNC, DRAFT, READY, SUCCESS, ERROR`.
 - [x] External vocab mapping is documented:
       `DEGRADED → OVERRIDE`, `FAILED → BLOCKER`, `BLOCKED → BLOCKER`,
-`SYNC → AFTERCARE`.
-- [x] `UNKNOWN` remains literal unresolved text and is not mapped to a chip.
+      `SYNC → AFTERCARE`, `UNKNOWN → EDGE`.
 - [x] Status Language explainer (`preview/14-status-language.html`)
       lives in design-system reference, not in the runtime cockpit.
 

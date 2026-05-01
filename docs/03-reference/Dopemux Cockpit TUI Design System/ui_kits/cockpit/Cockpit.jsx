@@ -11,11 +11,11 @@ function Cockpit({ size = "120x40" }) {
     return (
         <Frame
             size={size}
-            workspace="/users/hu3/code/dopemux-mvp"
+            workspace={seed.workspace.id}
             surface="services"
             mode="rich"
             state="STATIC DEMO"
-            authority="dopemux static-demo"
+            authority={seed.services.authority}
         >
             <ModeBar modes={seed.modes} current={activeMode} />
 
@@ -56,7 +56,7 @@ function Cockpit({ size = "120x40" }) {
                 <Inspector inspector={seed.services.inspector} />
             </div>
 
-            <CommandRail authority="dopemux static-demo" flags="static-demo · no writes · seed-only" />
+            <CommandRail authority={seed.services.authority} flags="static-demo · no writes · seed-only" />
             <StatusRail
                 workspace={seed.workspace.id}
                 mode={activeMode}

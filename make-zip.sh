@@ -2,10 +2,11 @@
 set -e
 setopt NULL_GLOB
 
-PKG="docs/03-reference/Dopemux Cockpit TUI Design System"
-WT="docs/03-reference/.claude/worktrees/jovial-hellman-c3848d/docs/03-reference/Dopemux Cockpit TUI Design System"
-OUT_DIR="/tmp/dopemux-cockpit-review-pack"
-ZIP="/tmp/dopemux-cockpit-doctrine-review-pack.zip"
+ROOT_DIR="${ROOT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
+PKG="${PKG_DIR:-$ROOT_DIR/docs/03-reference/Dopemux Cockpit TUI Design System}"
+WT="${WT_DIR:-$PKG}"
+OUT_DIR="${OUT_DIR:-$ROOT_DIR/out/dopemux-cockpit-review-pack}"
+ZIP="${ZIP_PATH:-$ROOT_DIR/out/dopemux-cockpit-doctrine-review-pack.zip}"
 
 rm -rf "$OUT_DIR" "$ZIP"
 mkdir -p "$OUT_DIR/current-package"

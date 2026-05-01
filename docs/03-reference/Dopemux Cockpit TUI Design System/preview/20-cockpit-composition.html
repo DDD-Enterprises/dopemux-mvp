@@ -5,25 +5,25 @@
 <div class="label">Cockpit · 120×40 · composed primitives</div>
 <div class="pane" style="font-size:9px; line-height:1.15; color:#4A9E94; padding:6px;">
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃<span style="color:#7DFBF6"> dopemux cockpit static  </span>│<span style="color:#7DFBF6"> workspace dopemux-mvp SRC=dopemux                          </span>│<span style="color:#7DFBF6"> mode Services SRC=dopemux        </span>┃
+┃<span style="color:#7DFBF6"> dopemux cockpit static  </span>│<span style="color:#7DFBF6"> workspace dopemux-mvp                                      </span>│<span style="color:#7DFBF6"> mode Services                    </span>┃
 ┠─────────────────────────┴────────────────────────────────────────────────┴──────────────────────────────────┨
-┃<span style="color:#94FADB"> 1  PM SRC=dopemux       </span>│<span style="color:#94FADB"> 2  Implementer | 3  Overview                               </span>│<span style="color:#94FADB"> 4 *Services | 5 Events           </span>┃
+┃<span style="color:#94FADB"> 1  PM                   </span>│<span style="color:#94FADB"> 2  Implementer | 3  Overview                               </span>│<span style="color:#94FADB"> 4 *Services | 5 Events           </span>┃
 ┠─────────────────────────┬────────────────────────────────────────────────┬──────────────────────────────────┨
-┃<span style="color:#7DFBF6"> Services authority:     </span>│<span style="color:#7DFBF6"> Services -&gt; repo-truth-extractor                           </span>│<span style="color:#7DFBF6"> Inspector authority: rte         </span>┃
+┃<span style="color:#7DFBF6"> authority: dopemux      </span>│<span style="color:#7DFBF6"> Services -&gt; repo-truth-extractor                           </span>│<span style="color:#7DFBF6"> Inspector authority: repo-truth-extractor </span>┃
 ┃<span style="color:#7DFBF6"> dopemux                 </span>│                                                            │                                  ┃
-┃<span style="color:#4A9E94">  SRC=dopemux            </span>│<span class="cyan"> Tabs SRC=rte R1 Runs | R2 Active                          </span>│<span style="color:#4A9E94"> subject SRC=rte                  </span>┃
+┃<span style="color:#4A9E94">                          </span>│<span class="cyan"> Tabs SRC=rte R1 Runs | R2 Active                          </span>│<span style="color:#4A9E94"> subject SRC=rte                  </span>┃
 ┃<span style="color:#7DFBF6"> [LIVE]</span><span style="color:#E2E8F0"> dopemux         </span>│<span style="color:#4A9E94"> Tabs SRC=rte R3 Prescan | R4 Doctor                       </span>│<span style="color:#94FADB"> provenance=EXTRACTED             </span>┃
 ┃<span style="color:#7DFBF6"> [LIVE]</span><span style="color:#E2E8F0"> task-orch       </span>│<span style="color:#4A9E94"> Tabs SRC=rte R5 Coverage | R6 Audit                       </span>│<span style="color:#4A9E94"> SRC=rte canonical=services/...   </span>┃
-┃<span style="color:#94FADB"> [LOGGED]</span><span style="color:#E2E8F0"> conport       </span>│<span style="color:#7DFBF6"> R1 Runs authority: rte                                    </span>│<span style="color:#4A9E94"> SRC=dopemux boundary=workload    </span>┃
+┃<span style="color:#94FADB"> [LOGGED]</span><span style="color:#E2E8F0"> conport       </span>│<span style="color:#7DFBF6"> R1 Runs authority: rte                                    </span>│<span style="color:#4A9E94"> SRC=repo-truth-extractor boundary=workload </span>┃
 ┃<span style="color:#94FADB"> [LOGGED]</span><span style="color:#E2E8F0"> dope-memory  </span>│<span style="color:#7DFBF6"> &gt; SRC=rte [LIVE] v5-...-a91c                              </span>│<span style="color:#4A9E94"> SRC=rte state=seed only          </span>┃
 ┃<span style="color:#94FADB"> [LOGGED]</span><span style="color:#E2E8F0"> dope-context </span>│<span style="color:#4A9E94">   SRC=rte phase=normalize                                 </span>├──────────────────────────────────┨
-┃<span style="color:#F5F26D"> [OVERRIDE]</span><span style="color:#E2E8F0"> dopecon-b </span>│<span style="color:#FF8BD1">   SRC=rte [BLOCKER] v5-...-7f18                           </span>│<span style="color:#9B78FF"> Bridge actions: dopecon-bridge   </span>┃
+┃<span style="color:#F5F26D"> [OVERRIDE]</span><span style="color:#E2E8F0"> dopecon-b </span>│<span style="color:#FF8BD1">   SRC=rte [BLOCKER] v5-...-7f18                           </span>│<span style="color:#9B78FF"> Bridge adapter/proxy: dopecon-bridge </span>┃
 ┃<span style="color:#7DFBF6"> [LIVE]</span><span style="color:#E2E8F0"> adhd-engine     </span>│<span style="color:#4A9E94">   SRC=rte phase=preflight                                 </span>│<span style="color:#7DFBF6"> SRC=dopecon-bridge [EDGE]        </span>┃
 ┃<span style="color:#9B78FF"> [AFTERCARE]</span><span style="color:#E2E8F0"> rte        </span>│<span style="color:#94FADB">   SRC=rte [LOGGED] v5-...-3e2a                            </span>│<span style="color:#94A3B8"> adapter-only segregated          </span>┃
 ┃                         │<span style="color:#4A9E94">   SRC=rte phase=verify                                    </span>│<span style="color:#94A3B8"> WRITE -&gt; &lt;service&gt; : &lt;action&gt;     </span>┃
 ┃                         │                                                            │                                  ┃
 ┠─────────────────────────┴────────────────────────────────────────────────┴──────────────────────────────────┨
-┃<span style="color:#E2E8F0"> command authority:      </span>│<span style="color:#E2E8F0"> SRC=dopemux snapshot-only                                 </span>│<span style="color:#E2E8F0"> no writes no shellouts           </span>┃
+┃<span style="color:#E2E8F0"> authority: dopemux     </span>│<span style="color:#E2E8F0"> snapshot-only                                              </span>│<span style="color:#E2E8F0"> no writes no shellouts           </span>┃
 ┠─────────────────────────┼────────────────────────────────────────────────┼──────────────────────────────────┨
 ┃<span style="color:#94A3B8"> workspace dopemux-mvp   </span>│<span style="color:#94A3B8"> mode Services                                              </span>│<span style="color:#94A3B8"> seed static no-writes            </span>┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛

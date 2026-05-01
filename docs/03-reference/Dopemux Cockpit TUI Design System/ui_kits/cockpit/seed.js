@@ -1,4 +1,5 @@
-// Demo-state seed mirrors src/dopemux/ui/cockpit/seed.py
+// Demo-state seed mirrors the deterministic cockpit render contract in
+// src/dopemux/ui/cockpit/render.py.
 window.SEED = {
     workspace: { id: "dopemux-mvp", instance: "local", src: "dopemux" },
     modes: ["PM", "Implementer", "Overview", "Services", "Events"],
