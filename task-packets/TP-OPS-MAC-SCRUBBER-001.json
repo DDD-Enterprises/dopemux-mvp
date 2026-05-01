@@ -1,0 +1,93 @@
+{
+  "id": "TP-OPS-MAC-SCRUBBER-001",
+  "project": "dopemux-mvp",
+  "target": "Required external-tool macOS system-data scrubber with Textual TUI, dry-run cleanup, restore manifests, docs, tests, and bundled proof.",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "OPS-MAC-SCRUBBER",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/ops-mac-system-data-scrubber"
+  },
+  "commit": {
+    "message": "feat(system-data): add required-tool mac system data scrubber",
+    "allowlist": [
+      "src/dopemux/cli.py",
+      "src/dopemux/commands/system_data_commands.py",
+      "src/dopemux/system_data/**",
+      "tests/system_data/**",
+      "docs/03-reference/features/mac-system-data-scrubber.md",
+      "docs/02-how-to/operations/mac-system-data-scrubber-operator-guide.md",
+      "docs/03-reference/features/mac-system-data-scrubber-safety-model.md",
+      ".gitignore",
+      "proof/TP-OPS-MAC-SCRUBBER-001/**",
+      "task-packets/TP-OPS-MAC-SCRUBBER-001.json"
+    ],
+    "verify": [
+      "python -m pytest -q tests/system_data",
+      "python -m pytest -q tests/test_cli.py tests/system_data",
+      "python -m json.tool task-packets/TP-OPS-MAC-SCRUBBER-001.json",
+      "python -m json.tool proof/TP-OPS-MAC-SCRUBBER-001/PROOF.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(system-data): add required-tool mac system data scrubber",
+    "body": "Adds macOS system-data diagnosis, planning, dry-run cleanup, Textual TUI, docs, tests, and proof.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Implement required external tool preflight and parsers.",
+      "validation": [
+        "Missing required tools fail closed.",
+        "duf, dust, gdu, ncdu, dua, and procs parser tests pass."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Implement scanner, classifier, planner, executor, restore, and proof.",
+      "validation": [
+        "Same-volume quarantine expected reclaim is zero.",
+        "Dry-run does not mutate.",
+        "Blocked and review-first classes do not broad-delete."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement CLI and Textual TUI.",
+      "validation": [
+        "system-data command group is registered.",
+        "TUI smoke path is importable."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Add docs, tests, and proof bundle.",
+      "validation": [
+        "Docs describe command surface, operator flow, and safety model.",
+        "Proof JSON parses.",
+        "git diff --check passes."
+      ]
+    }
+  ]
+}

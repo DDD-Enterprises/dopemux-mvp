@@ -361,6 +361,8 @@ proof/*
 !proof/rte-certification-overclaim-and-escalation-truth-hardening.proof.json
 !proof/rte-all-valid-work-branch-scan.proof.json
 !proof/rte-provider-preflight-scope-truth-hardening.proof.json
+!proof/TP-OPS-MAC-SCRUBBER-001/
+!proof/TP-OPS-MAC-SCRUBBER-001/**
 
 # Extraction and Research artifacts
 _audit_out/
