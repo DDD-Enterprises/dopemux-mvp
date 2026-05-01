@@ -39,6 +39,12 @@ def _config() -> dict:
                 "api_key_env": "OPENROUTER_API_KEY",
                 "base_url": "https://openrouter.ai/api/v1",
             },
+            {"name": "gemini_paid_cap", "api_key_env": "GEMINI_API_KEY"},
+            {
+                "name": "openrouter_paid_cap",
+                "api_key_env": "OPENROUTER_API_KEY",
+                "base_url": "https://openrouter.ai/api/v1",
+            },
             {"name": "openai", "api_key_env": "OPENAI_API_KEY"},
             {"name": "openrouter", "api_key_env": "OPENROUTER_API_KEY"},
         ],
@@ -62,6 +68,21 @@ def _config() -> dict:
                 "name": "openrouter-free-router",
                 "provider": "openrouter_free",
                 "model_id": "openrouter/openrouter/free",
+            },
+            {
+                "name": "gemini-flash-lite-preview-paid-cap",
+                "provider": "gemini_paid_cap",
+                "model_id": "gemini/gemini-2.5-flash-lite-preview-09-2025",
+            },
+            {
+                "name": "openrouter-qwen3-coder-next-paid-cap",
+                "provider": "openrouter_paid_cap",
+                "model_id": "openrouter/qwen/qwen3-coder-next",
+            },
+            {
+                "name": "openrouter-qwen3-coder-paid-cap",
+                "provider": "openrouter_paid_cap",
+                "model_id": "openrouter/qwen/qwen3-coder",
             },
             {
                 "name": "openai-paid",
@@ -96,6 +117,19 @@ def _config() -> dict:
                 "gemini-2.5-flash-lite",
                 "openrouter-free-router",
             ],
+            "paid_cap": {
+                "enabled": False,
+                "daily_usd": 0.5,
+                "monthly_usd": 5.0,
+                "allowed_models": [
+                    "gemini-flash-lite-preview-paid-cap",
+                    "openrouter-qwen3-coder-next-paid-cap",
+                ],
+                "default_fallbacks": [
+                    "gemini-flash-lite-preview-paid-cap",
+                    "openrouter-qwen3-coder-next-paid-cap",
+                ],
+            },
         },
     }
 
@@ -113,6 +147,8 @@ def test_provider_catalog_contains_required_freeflow_providers() -> None:
         "mistral_experiment",
         "github_models_poc",
         "hf_credits",
+        "gemini_paid_cap",
+        "openrouter_paid_cap",
     }.issubset(PROVIDER_CATALOG)
 
 
@@ -158,6 +194,8 @@ def test_strict_free_litellm_config_filters_paid_routes(tmp_path: Path) -> None:
 
     assert "openai-paid" not in model_names
     assert "openrouter-paid" not in model_names
+    assert "gemini-flash-lite-preview-paid-cap" not in model_names
+    assert "openrouter-qwen3-coder-next-paid-cap" not in model_names
     assert "openai/gpt-5-mini" not in serialized
     assert "openrouter/openai/gpt-5" not in serialized
     assert (
@@ -248,3 +286,81 @@ def test_freeflow_cli_routes_json(tmp_path: Path, monkeypatch) -> None:
         route for route in payload["routes"] if route["name"] == "openai-paid"
     )
     assert paid_route["strict_free_allowed"] is False
+
+
+def test_paid_cap_enabled_adds_only_allowlisted_paid_routes(tmp_path: Path) -> None:
+    data = _config()
+    data["freeflow"]["paid_cap"]["enabled"] = True
+    path = tmp_path / "routing.yaml"
+    path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+    routing_config = RoutingConfig(path)
+    routing_config.load()
+
+    generated = routing_config.generate_litellm_config("sk-test")
+    model_names = {row["model_name"] for row in generated["model_list"]}
+    preview = next(
+        row
+        for row in generated["model_list"]
+        if row["model_name"] == "gemini-flash-lite-preview-paid-cap"
+    )
+
+    assert "gemini-flash-lite-preview-paid-cap" in model_names
+    assert "openrouter-qwen3-coder-next-paid-cap" in model_names
+    assert "openrouter-qwen3-coder-paid-cap" not in model_names
+    assert "openai-paid" not in model_names
+    assert (
+        preview["litellm_params"]["model"]
+        == "gemini/gemini-2.5-flash-lite-preview-09-2025"
+    )
+    assert preview["model_info"]["freeflow_paid"] is True
+    assert preview["model_info"]["freeflow_pricing"] == {
+        "input_usd_per_million": 0.10,
+        "output_usd_per_million": 0.40,
+    }
+
+
+def test_paid_cap_route_selected_only_when_free_routes_disabled(
+    tmp_path: Path, monkeypatch
+) -> None:
+    data = _config()
+    data["freeflow"]["paid_cap"]["enabled"] = True
+    data["freeflow"]["disabled_models"] = [
+        "ollama-qwen3-coder",
+        "lmstudio-local",
+        "gemini-2.5-flash-lite",
+        "openrouter-free-router",
+    ]
+    monkeypatch.setenv("GEMINI_API_KEY", "test")
+    ledger = FreeflowQuotaLedger(tmp_path / "quota.sqlite")
+    decision = FreeflowRouter(data, ledger).choose_route(
+        sensitivity_class="non_sensitive",
+        estimated_input_tokens=1000,
+        estimated_output_tokens=1000,
+    )
+
+    assert decision["decision"] == "selected"
+    assert decision["reason"] == "paid_cap_route_selected"
+    assert decision["model_name"] == "gemini-flash-lite-preview-paid-cap"
+
+
+def test_sensitive_requests_do_not_select_paid_cap_route(
+    tmp_path: Path, monkeypatch
+) -> None:
+    data = _config()
+    data["freeflow"]["paid_cap"]["enabled"] = True
+    data["freeflow"]["disabled_models"] = [
+        "ollama-qwen3-coder",
+        "lmstudio-local",
+        "gemini-2.5-flash-lite",
+        "openrouter-free-router",
+    ]
+    monkeypatch.setenv("GEMINI_API_KEY", "test")
+    ledger = FreeflowQuotaLedger(tmp_path / "quota.sqlite")
+    decision = FreeflowRouter(data, ledger).choose_route(
+        sensitivity_class="memory",
+        estimated_input_tokens=1000,
+        estimated_output_tokens=1000,
+    )
+
+    assert decision["decision"] != "selected"
+    assert decision["provider"] is None

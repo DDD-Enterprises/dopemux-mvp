@@ -44,6 +44,18 @@ providers:
       HTTP-Referer: "https://dopemux.local"
       X-Title: "Dopemux LiteLLM Proxy"
 
+  - name: gemini_paid_cap
+    label: "Google Gemini Paid Cap"
+    api_key_env: "GEMINI_API_KEY"
+
+  - name: openrouter_paid_cap
+    label: "OpenRouter Paid Cap"
+    api_key_env: "OPENROUTER_API_KEY"
+    base_url: "https://openrouter.ai/api/v1"
+    extra_headers:
+      HTTP-Referer: "https://dopemux.local"
+      X-Title: "Dopemux LiteLLM Proxy"
+
   - name: ollama
     label: "Ollama Local"
     auth_mode: "none"
@@ -213,6 +225,22 @@ models:
     model_id: "huggingface/openai/gpt-oss-20b"
     max_tokens: 8192
 
+  # OPT-IN PAID-CAP ROUTES (disabled unless freeflow.paid_cap.enabled is true)
+  - name: gemini-flash-lite-preview-paid-cap
+    provider: gemini_paid_cap
+    model_id: "gemini/gemini-2.5-flash-lite-preview-09-2025"
+    max_tokens: 131072
+
+  - name: openrouter-qwen3-coder-next-paid-cap
+    provider: openrouter_paid_cap
+    model_id: "openrouter/qwen/qwen3-coder-next"
+    max_tokens: 262144
+
+  - name: openrouter-qwen3-coder-paid-cap
+    provider: openrouter_paid_cap
+    model_id: "openrouter/qwen/qwen3-coder"
+    max_tokens: 262144
+
 # Slot definitions - assign models to usage slots
 # These are exposed to Claude Code via CCR
 slots:
@@ -291,6 +319,17 @@ freeflow:
     - groq-llama-3.1-8b-instant
     - cerebras-llama3.1-8b
     - openrouter-free-router
+  paid_cap:
+    enabled: false
+    daily_usd: 0.50
+    monthly_usd: 5.00
+    day_reset: utc_midnight
+    allowed_models:
+      - gemini-flash-lite-preview-paid-cap
+      - openrouter-qwen3-coder-next-paid-cap
+    default_fallbacks:
+      - gemini-flash-lite-preview-paid-cap
+      - openrouter-qwen3-coder-next-paid-cap
 
 # Model alias map for compatibility
 # Maps common model names to Dopemux slot names

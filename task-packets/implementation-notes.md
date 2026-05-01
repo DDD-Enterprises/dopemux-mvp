@@ -20,10 +20,13 @@ Task packet: `task-packets/TP-DMX-FREEFLOW-ROUTER-0001.md`
 * Added `dopemux routing freeflow doctor|quota|routes` commands with JSON output.
 * Added freeflow provider/model/template defaults and LiteLLM callback admission control for route decision IDs, quota buckets, sensitivity, quota checks, usage events, and provider cooldown ingestion.
 * Added focused tests for quota behavior, provider catalog coverage, privacy routing, strict-free config filtering, validation, trace metadata, and CLI JSON output.
+* Added opt-in `freeflow.paid_cap` routing for super-cheap hosted overflow, with spend reservations, daily/monthly cap checks, and no paid routes generated while disabled.
+* Added paid-cap catalog records for Gemini Flash-Lite Preview and OpenRouter Qwen3-Coder routes, with the preview Gemini route as the first allowed paid-cap fallback.
+* Added paid-cap research notes covering local M4 Pro model choices, cheap hosted API options, and self-host cloud tradeoffs.
 
 ## Verification
 
-* `uv run --extra test python -m pytest tests/test_freeflow_router.py tests/test_freeflow_quota.py tests/test_freeflow_trace_logger.py` -> 18 passed.
+* `uv run --extra test python -m pytest tests/test_freeflow_router.py tests/test_freeflow_quota.py tests/test_freeflow_trace_logger.py` -> 25 passed.
 * `uv run --extra test python -m pytest tests/test_litellm_proxy.py tests/test_litellm_manager.py services/repo-truth-extractor/tests/test_prescan_provider_catalog.py` -> 56 passed.
 * `uv run --extra test python -m dopemux.cli routing freeflow doctor --offline --json` -> exit 0.
 * `uv run --extra test python -m compileall -q src/dopemux/freeflow.py src/dopemux/routing_config.py src/dopemux/routing_cli.py src/dopemux/litellm_trace_logger.py` -> exit 0.
@@ -35,3 +38,4 @@ Task packet: `task-packets/TP-DMX-FREEFLOW-ROUTER-0001.md`
 * Live provider probes are intentionally not implemented in this slice.
 * Workspace-specific quota limits for Mistral, GitHub Models, and Hugging Face credits remain advisory until runtime credentials can query account state.
 * The current user-level `~/.dopemux/routing.yaml` loaded by the CLI did not have `freeflow.enabled: true`; the template and generated config path include strict-free policy, but existing installed user configs may need regeneration or manual migration.
+* Paid-cap spend reservations are conservative estimates. They block overspend before upstream calls but do not yet reconcile reserved cost against provider-billed actual cost after completion.

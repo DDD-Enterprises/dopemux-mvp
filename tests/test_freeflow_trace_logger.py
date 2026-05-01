@@ -36,6 +36,38 @@ def _freeflow_kwargs() -> dict:
     }
 
 
+def _paid_cap_kwargs() -> dict:
+    return {
+        "model": "gemini/gemini-2.5-flash-lite-preview-09-2025",
+        "messages": [{"role": "user", "content": "paid cap test prompt"}],
+        "metadata": {
+            "request_id": "req-paid-1",
+            "estimated_input_tokens": 1000,
+            "estimated_output_tokens": 1000,
+        },
+        "model_info": {
+            "freeflow_provider": "gemini_paid_cap",
+            "freeflow_model": "gemini-flash-lite-preview-paid-cap",
+            "freeflow_bucket_id": (
+                "gemini_paid_cap:gemini-flash-lite-preview-paid-cap"
+            ),
+            "quota_bucket": "gemini_paid_cap:gemini-flash-lite-preview-paid-cap",
+            "freeflow_paid": True,
+            "freeflow_pricing": {
+                "input_usd_per_million": 0.10,
+                "output_usd_per_million": 0.40,
+            },
+            "freeflow_paid_cap": {
+                "enabled": True,
+                "daily_usd": 0.5,
+                "monthly_usd": 5.0,
+                "day_reset": "utc_midnight",
+            },
+            "selected_fallback_tier": "paid_cap",
+        },
+    }
+
+
 def test_trace_logger_pre_call_adds_freeflow_decision_metadata(
     tmp_path: Path, monkeypatch
 ) -> None:
@@ -124,3 +156,54 @@ def test_trace_logger_records_usage_without_prompt_content(
             """).fetchone()
 
     assert row == (1, 12, 7, "completed")
+
+
+def test_trace_logger_reserves_paid_cap_spend(tmp_path: Path, monkeypatch) -> None:
+    ledger_path = tmp_path / "quota.sqlite"
+    monkeypatch.setenv("DOPEMUX_FREEFLOW_LEDGER", str(ledger_path))
+    logger = DopemuxLiteLLMTraceLogger()
+
+    kwargs = asyncio.run(
+        logger.async_pre_call_deployment_hook(_paid_cap_kwargs(), call_type=None)
+    )
+
+    assert kwargs["metadata"]["route_decision_id"]
+    assert kwargs["metadata"]["estimated_cost_usd"] == 0.0005
+    with sqlite3.connect(ledger_path) as conn:
+        row = conn.execute("""
+            SELECT provider, model_name, cost_usd, status
+            FROM spend_events
+            """).fetchone()
+
+    assert row == (
+        "gemini_paid_cap",
+        "gemini-flash-lite-preview-paid-cap",
+        0.0005,
+        "reserved",
+    )
+
+
+def test_trace_logger_blocks_paid_cap_over_limit(
+    tmp_path: Path, monkeypatch
+) -> None:
+    ledger_path = tmp_path / "quota.sqlite"
+    monkeypatch.setenv("DOPEMUX_FREEFLOW_LEDGER", str(ledger_path))
+    logger = DopemuxLiteLLMTraceLogger()
+    kwargs = _paid_cap_kwargs()
+    kwargs["model_info"]["freeflow_paid_cap"]["daily_usd"] = 0.0004
+
+    try:
+        asyncio.run(logger.async_pre_call_deployment_hook(kwargs, call_type=None))
+    except FreeflowQuotaExceeded as exc:
+        assert exc.reason == "daily_paid_cap_exhausted"
+    else:
+        raise AssertionError("expected paid cap block")
+
+    with sqlite3.connect(ledger_path) as conn:
+        spend_count = conn.execute("SELECT COUNT(*) FROM spend_events").fetchone()[0]
+        decision = conn.execute(
+            "SELECT decision, reason FROM route_decisions"
+        ).fetchone()
+
+    assert spend_count == 0
+    assert decision == ("blocked", "daily_paid_cap_exhausted")
