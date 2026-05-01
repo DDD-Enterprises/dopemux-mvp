@@ -501,7 +501,7 @@ def _check_forbidden_legacy_targets(manifest: dict[str, Any], repo_root: Path) -
         system = str(target.get("system") or "manifest")
         needle = str(target.get("target") or "")
         expected_conflict = bool(target.get("expected_conflict", False))
-paths = target.get("paths", [])
+        paths = target.get("paths", [])
         if not isinstance(paths, list) or any(not isinstance(rel_path, str) for rel_path in paths):
             findings.append(
                 _finding(
@@ -546,42 +546,17 @@ def _check_known_conflicts(manifest: dict[str, Any], repo_root: Path) -> list[di
             _finding(
                 severity=ERROR,
                 code="known_conflicts_invalid",
-evidence_entries = conflict.get("evidence", [])
-        if not isinstance(evidence_entries, list):
-            findings.append(
-                _finding(
-                    severity=ERROR,
-                    code="known_conflict_evidence_invalid",
-                    system=system,
-                    message="known_conflicts[*].evidence must be a list.",
-                    details={"conflict_type": conflict_type},
-                )
+                system="manifest",
+                message="known_conflicts must be a list.",
             )
-            continue
+        ]
 
-        for evidence in evidence_entries:
-            if not isinstance(evidence, dict):
-                continue
-            rel_path = str(evidence.get("path") or "")
-            if not rel_path:
-                continue
-            patterns = evidence.get("patterns", [])
-            if not isinstance(patterns, list) or not all(isinstance(pattern, str) for pattern in patterns):
-                findings.append(
-                    _finding(
-                        severity=ERROR,
-                        code="known_conflict_patterns_invalid",
-                        system=system,
-                        path=rel_path,
-                        message="known_conflicts[*].evidence[*].patterns must be a list of strings.",
-                        details={"conflict_type": conflict_type},
-                    )
-                )
-                continue
-            if not _path_exists(repo_root, rel_path):
-                missing_paths.append(rel_path)
-                continue
-            text = _path_text(repo_root, rel_path)
+    for conflict in sorted(conflicts, key=lambda item: (str(item.get("system", "")), str(item.get("type", ""))) if isinstance(item, dict) else ("", "")):
+        if not isinstance(conflict, dict):
+            continue
+        system = str(conflict.get("system") or "UNKNOWN")
+        conflict_type = str(conflict.get("type") or "conflict")
+        observed_paths: list[str] = []
         missing_paths: list[str] = []
         for evidence in conflict.get("evidence", []):
             if not isinstance(evidence, dict):
