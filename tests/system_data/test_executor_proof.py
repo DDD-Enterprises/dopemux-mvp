@@ -23,6 +23,24 @@ def _action(path: str) -> PlanItem:
     )
 
 
+def _unknown_action(path: str) -> PlanItem:
+    return PlanItem(
+        action_id="A0002",
+        target_finding_id="F2",
+        path=path,
+        action_type="advise_only",
+        dry_run_supported=True,
+        requires_confirmation=False,
+        destructive_level="none",
+        expected_reclaim_bytes=0,
+        preconditions=(),
+        rollback_mode="none",
+        blocked_reason=None,
+        execution_order=1,
+        rationale="test",
+    )
+
+
 def test_dry_run_does_not_mutate(tmp_path):
     target = tmp_path / "cache"
     target.mkdir()
@@ -47,6 +65,24 @@ def test_execute_safe_clear_writes_manifest(tmp_path):
     assert not target.exists()
     assert records[0].status == "executed"
     assert records[0].manifest_path
+
+
+def test_execute_unknown_action_is_blocked(tmp_path):
+    target = tmp_path / "cache"
+    target.mkdir()
+    (target / "file").write_text("x", encoding="utf-8")
+
+    records = execute_plan(
+        (_unknown_action(str(target)),),
+        dry_run=False,
+        yes=True,
+        proof_dir=tmp_path / "proof",
+    )
+
+    assert target.exists()
+    assert records[0].status == "blocked"
+    assert records[0].manifest_path
+    assert "unsupported action type" in (records[0].error or "")
 
 
 def test_stable_json_sorts_keys():

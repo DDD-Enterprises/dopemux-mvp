@@ -91,7 +91,7 @@ def report(json_output: bool, home_path: str | None) -> None:
 
 @system_data.command("plan")
 @click.option("--json", "json_output", is_flag=True)
-@click.option("--dry-run", is_flag=True, default=True, help="Kept for CLI symmetry; plan never mutates.")
+@click.option("--dry-run/--no-dry-run", default=True, show_default=True, help="Plan never mutates; flag kept for CLI symmetry.")
 @click.option("--target", "targets", multiple=True, help="Finding id or category to include.")
 @click.option("--quarantine-dir", type=click.Path(path_type=Path), default=None)
 @click.option("--home", "home_path", default=None, help="Override home root for tests/sandbox scans.")
@@ -114,6 +114,10 @@ def plan_cmd(json_output: bool, dry_run: bool, targets: tuple[str, ...], quarant
 def clean(json_output: bool, dry_run: bool, yes: bool, targets: tuple[str, ...], quarantine_dir: Path | None, home_path: str | None) -> None:
     if not dry_run and not yes:
         raise click.ClickException("--execute requires --yes. No hidden mutation.")
+    if not dry_run and home_path is not None and _home(home_path) != Path.home():
+        raise click.ClickException(
+            "--execute cannot be combined with --home unless it matches the current home directory."
+        )
     try:
         result = scan(_home(home_path))
     except ToolError as exc:

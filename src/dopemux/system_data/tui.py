@@ -11,7 +11,6 @@ from .models import PlanResult, ScanResult, bytes_to_human
 def run_tui(scan_result: ScanResult, plan_result: PlanResult) -> None:
     try:
         from textual.app import App, ComposeResult
-        from textual.containers import Horizontal, Vertical
         from textual.widgets import (
             DataTable,
             Footer,
