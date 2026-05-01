@@ -87,11 +87,13 @@ def freeflow_routes(json_output: bool):
             click.echo(json.dumps({"routes": routes}, indent=2, sort_keys=True))
             return
         for route in routes:
-            status = (
-                "allowed"
-                if route["strict_free_allowed"]
-                else f"blocked:{route['blocked_reason']}"
-            )
+            if route["strict_free_allowed"]:
+                status = "allowed"
+            elif route["paid_cap_allowed"]:
+                status = "paid_cap_allowed"
+            else:
+                reason = route["blocked_reason"] or route["paid_cap_blocked_reason"]
+                status = f"blocked:{reason}"
             click.echo(f"{route['name']} -> {route['effective_provider']} ({status})")
     except RoutingConfigError as e:
         click.echo(f"Error: {e}", err=True)

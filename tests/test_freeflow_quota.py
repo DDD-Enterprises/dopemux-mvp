@@ -26,6 +26,7 @@ def test_quota_ledger_creates_required_tables(tmp_path: Path) -> None:
 
     assert {
         "usage_events",
+        "spend_events",
         "route_decisions",
         "cooldowns",
         "bucket_state",
@@ -166,3 +167,61 @@ def test_route_decisions_are_append_only(tmp_path: Path) -> None:
 
     assert first != second
     assert count == 2
+
+
+def test_paid_cap_spend_blocks_daily_cap(tmp_path: Path) -> None:
+    ledger = FreeflowQuotaLedger(tmp_path / "quota.sqlite")
+    when = datetime(2026, 5, 1, 12, 0, tzinfo=timezone.utc)
+    pricing = {"input_usd_per_million": 0.10, "output_usd_per_million": 0.40}
+
+    ledger.record_spend(
+        provider="gemini_paid_cap",
+        model_name="gemini-flash-lite-preview-paid-cap",
+        model_id="gemini/gemini-2.5-flash-lite-preview-09-2025",
+        bucket_id="gemini_paid_cap:gemini-flash-lite-preview-paid-cap",
+        pricing=pricing,
+        input_tokens=1_000_000,
+        output_tokens=1_000_000,
+        now=when,
+    )
+
+    result = ledger.check_paid_cap(
+        {
+            "enabled": True,
+            "daily_usd": 0.51,
+            "monthly_usd": 5.0,
+            "day_reset": "utc_midnight",
+        },
+        pricing,
+        input_tokens=100_000,
+        output_tokens=100_000,
+        now=when,
+    )
+
+    assert result.allowed is False
+    assert result.reason == "daily_paid_cap_exhausted"
+    assert result.reset_at == "2026-05-02T00:00:00Z"
+
+
+def test_paid_spend_summary_is_auditable(tmp_path: Path) -> None:
+    ledger = FreeflowQuotaLedger(tmp_path / "quota.sqlite")
+    when = datetime(2026, 5, 1, 12, 0, tzinfo=timezone.utc)
+
+    event_id = ledger.record_spend(
+        provider="openrouter_paid_cap",
+        model_name="openrouter-qwen3-coder-next-paid-cap",
+        model_id="openrouter/qwen/qwen3-coder-next",
+        bucket_id="openrouter_paid_cap:openrouter-qwen3-coder-next-paid-cap",
+        pricing={"input_usd_per_million": 0.12, "output_usd_per_million": 0.80},
+        input_tokens=1_000,
+        output_tokens=1_000,
+        route_decision_id="decision-1",
+        metadata={"source": "test"},
+        now=when,
+    )
+
+    summary = ledger.quota_summary(now=when)
+
+    assert summary["spend"]["events"][0]["event_id"] == event_id
+    assert summary["spend"]["events"][0]["cost_usd"] == 0.00092
+    assert summary["spend"]["summary"]["day"]["cost_usd"] == 0.00092
