@@ -336,8 +336,22 @@ def _check_ports(manifest: dict[str, Any], repo_root: Path) -> list[dict[str, An
                 continue
             registry_name = str(port_entry.get("registry_service") or "")
             compose_name = str(port_entry.get("compose_service") or registry_name)
-            expected_host = int(port_entry["host_port"])
-            expected_container = int(port_entry["container_port"])
+            host_port = port_entry.get("host_port")
+            container_port = port_entry.get("container_port")
+            try:
+                expected_host = int(host_port)
+                expected_container = int(container_port)
+            except (TypeError, ValueError):
+                findings.append(
+                    _finding(
+                        severity=ERROR,
+                        code="expected_port_entry_invalid",
+                        system=system,
+                        message="expected_ports[*].host_port and expected_ports[*].container_port must be integers.",
+                        details={"registry_service": registry_name} if registry_name else None,
+                    )
+                )
+                continue
 
             registry_entry = registry.get(registry_name)
             if registry_entry is None:
