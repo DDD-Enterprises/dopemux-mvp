@@ -239,7 +239,12 @@ class RoutingConfig:
         for provider in providers:
             if "name" not in provider:
                 raise RoutingConfigError("Provider missing 'name' field")
-            if "api_key_env" not in provider:
+            auth_mode = str(provider.get("auth_mode") or "env").lower()
+            if auth_mode not in {"env", "none", "ignored"}:
+                raise RoutingConfigError(
+                    f"Provider {provider['name']} has unsupported auth_mode: {auth_mode}"
+                )
+            if auth_mode == "env" and "api_key_env" not in provider:
                 raise RoutingConfigError(
                     f"Provider {provider['name']} missing 'api_key_env' field"
                 )
@@ -324,6 +329,13 @@ class RoutingConfig:
                 msg = f"Alias {alias} references unknown slot: {target}"
                 raise RoutingConfigError(msg)
 
+        try:
+            from dopemux.freeflow import validate_freeflow_config
+
+            validate_freeflow_config(self.config)
+        except ValueError as exc:
+            raise RoutingConfigError(str(exc)) from exc
+
     def generate_litellm_config(self, master_key: str) -> Dict[str, Any]:
         """Generate LiteLLM configuration from routing config.
 
@@ -340,6 +352,14 @@ class RoutingConfig:
         if not self._loaded:
             raise RoutingConfigError("Config not loaded - call load() first")
 
+        from dopemux.freeflow import (
+            generate_freeflow_litellm_config,
+            strict_free_enabled,
+        )
+
+        if strict_free_enabled(self.config):
+            return generate_freeflow_litellm_config(self.config, master_key)
+
         models = self.config.get("models", [])
         slots = self.config.get("slots", {})
         fallbacks = self.config.get("fallbacks", {})
@@ -350,12 +370,16 @@ class RoutingConfig:
         model_list = []
         for model in models:
             provider = self._get_provider_by_name(model["provider"])
+            auth_mode = str(provider.get("auth_mode") or "env").lower()
 
             litellm_params = {
                 "model": model.get("model_id") or model.get("litellm_model"),
-                "api_key": f"os.environ/{provider['api_key_env']}",
                 "max_tokens": model.get("max_tokens", 131072),
             }
+            if auth_mode in {"none", "ignored"}:
+                litellm_params["api_key"] = str(provider.get("api_key") or "local")
+            else:
+                litellm_params["api_key"] = f"os.environ/{provider['api_key_env']}"
 
             # Add provider-specific settings
             if "base_url" in provider:
