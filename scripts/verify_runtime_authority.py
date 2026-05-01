@@ -118,12 +118,32 @@ def _validate_entry_shape(entry: dict[str, Any]) -> list[str]:
     return failures
 
 
+def _safe_resolve(repo_root: Path, raw_path: str) -> Path | None:
+    """Return the resolved absolute path only if it stays within repo_root.
+
+    Returns None for absolute raw_path values or any path that resolves
+    outside repo_root (e.g. paths containing '..').
+    """
+    if Path(raw_path).is_absolute():
+        return None
+    resolved = (repo_root / raw_path).resolve()
+    try:
+        resolved.relative_to(repo_root.resolve())
+    except ValueError:
+        return None
+    return resolved
+
+
 def _path_exists(repo_root: Path, raw_path: str) -> bool:
-    return (repo_root / raw_path).exists()
+    safe = _safe_resolve(repo_root, raw_path)
+    return safe is not None and safe.exists()
 
 
 def _read_text(repo_root: Path, raw_path: str) -> str:
-    return (repo_root / raw_path).read_text(encoding="utf-8", errors="replace")
+    safe = _safe_resolve(repo_root, raw_path)
+    if safe is None:
+        raise ValueError(f"Path {raw_path!r} is outside the repository root.")
+    return safe.read_text(encoding="utf-8", errors="replace")
 
 
 def _validate_expected_paths(
@@ -229,20 +249,33 @@ def _validate_conflict_markers(
     return failures
 
 
+def _port_sort_key(item: Any) -> tuple[int, str]:
+    if not isinstance(item, dict):
+        return (-1, "")
+    port_val = item.get("port")
+    try:
+        port_int = int(port_val)
+    except (TypeError, ValueError):
+        port_int = -1
+    return (port_int, str(item.get("role", "")))
+
+
 def _report_ports(entry: dict[str, Any], lines: list[str]) -> None:
     system = entry["system"]
     expected_ports = _as_list(entry.get("expected_ports"), "expected_ports", system)
-    for port_info in sorted(
-        expected_ports,
-        key=lambda item: (
-            int(item.get("port", -1)) if isinstance(item, dict) else -1,
-            str(item.get("role", "")) if isinstance(item, dict) else str(item),
-        ),
-    ):
+    for port_info in sorted(expected_ports, key=_port_sort_key):
         if not isinstance(port_info, dict):
             lines.append(f"PORT INVALID {system}")
             continue
         port = port_info.get("port")
+        if port is None:
+            lines.append(f"PORT INVALID_PORT {system} missing_port unspecified")
+            continue
+        try:
+            int(port)
+        except (TypeError, ValueError):
+            lines.append(f"PORT INVALID_PORT {system} {port!r} unspecified")
+            continue
         status = str(port_info.get("status", "unspecified"))
         role = str(port_info.get("role", "unspecified"))
         lines.append(f"PORT {status.upper()} {system} {port} {role}")

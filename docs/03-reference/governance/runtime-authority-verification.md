@@ -20,7 +20,7 @@ The verifier records observed runtime pointers, ports, known conflicts, wrapper 
 
 ## Authority Hierarchy
 
-The verifier follows the packet authority order:
+The verifier resolves evidence priority as follows:
 
 1. Runtime code, config, compose wiring, tests, and active entrypoints
 2. `TRUTH_*.md`
@@ -29,6 +29,8 @@ The verifier follows the packet authority order:
 5. PAL, TP, proof, and adapter contracts
 6. Generated navigation and meta docs
 7. Everything else
+
+Note: this is the manifest's evidence priority for resolving runtime claims, not the operator Task Packet authority precedence order. The governing authority precedence (Task Packet → `.claude/PROJECT_INSTRUCTIONS.md` → `.claude/PRIMER.md` → ADRs → other docs) is defined in `task-packets/README.md`.
 
 When docs and runtime disagree, runtime evidence wins. The manifest preserves conflict instead of normalizing it.
 

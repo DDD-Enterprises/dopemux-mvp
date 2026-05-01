@@ -139,7 +139,12 @@ def test_verifier_produces_stable_output() -> None:
 
 def test_verifier_exits_nonzero_for_missing_required_path(tmp_path: Path) -> None:
     manifest = copy.deepcopy(load_manifest())
-    manifest["systems"][0]["expected_paths"][0]["path"] = "missing-required-file.txt"
+    by_name = {entry["system"]: entry for entry in manifest["systems"]}
+    target_entry = by_name["dopemux"]
+    required_path = next(
+        p for p in target_entry["expected_paths"] if p.get("required", True)
+    )
+    required_path["path"] = "missing-required-file.txt"
     temp_manifest = tmp_path / "runtime_authority_manifest.json"
     temp_manifest.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
@@ -147,7 +152,7 @@ def test_verifier_exits_nonzero_for_missing_required_path(tmp_path: Path) -> Non
         "--manifest",
         str(temp_manifest),
         "--system",
-        manifest["systems"][0]["system"],
+        "dopemux",
         "--check",
         "static",
     )
