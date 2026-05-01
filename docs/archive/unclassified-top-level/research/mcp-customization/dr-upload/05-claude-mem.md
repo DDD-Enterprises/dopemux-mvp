@@ -1,3 +1,14 @@
+---
+id: 05-claude-mem
+title: 05 Claude Mem
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-01'
+last_review: '2026-05-01'
+next_review: '2026-07-30'
+prelude: 05 Claude Mem (explanation) for dopemux documentation and developer workflows.
+---
 # DR Pack 05: Claude-Mem / claude-mem
 
 Access date: 2026-04-28

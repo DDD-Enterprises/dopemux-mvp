@@ -1,3 +1,15 @@
+---
+id: pm-writes-phase1-verification
+title: Pm Writes Phase1 Verification
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-01'
+last_review: '2026-05-01'
+next_review: '2026-07-30'
+prelude: Pm Writes Phase1 Verification (explanation) for dopemux documentation and
+  developer workflows.
+---
 # PM Writes Phase 1 Verification Note
 
 This note records focused verification for the published phase-1 PM writes slice in the dedicated worktree.

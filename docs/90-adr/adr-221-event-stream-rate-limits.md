@@ -4,16 +4,26 @@ title: Event Stream Rate Limits and Backpressure
 type: adr
 owner: Claude Agent
 date: 2026-04-23
-status: active
-prelude: "Defines three-tier event stream backpressure with a 200 events/second cap, 15-minute client tail buffer, and 50ms debounce to preserve responsiveness without overwhelming ADHD-oriented context windows."
-tags: [u3-resolved, event-stream, frame-budget, backpressure, rate-limiting, performance-tuning]
-adhd_summary: "200 evt/sec + 15min tail buffer + 50ms debounce for ADHD context windows"
+status: accepted
+prelude: Defines three-tier event stream backpressure with a 200 events/second cap,
+  15-minute client tail buffer, and 50ms debounce to preserve responsiveness without
+  overwhelming ADHD-oriented context windows.
+tags:
+- u3-resolved
+- event-stream
+- frame-budget
+- backpressure
+- rate-limiting
+- performance-tuning
+adhd_summary: 200 evt/sec + 15min tail buffer + 50ms debounce for ADHD context windows
 graph_metadata:
-  node_type: adr
+  node_type: ADR
   category: architecture-decision
-  status: active
+  status: accepted
+author: '@hu3mann'
+last_review: '2026-05-01'
+next_review: '2026-07-30'
 ---
-
 # ADR-221: Event Stream Rate Limits and Backpressure
 
 ## Summary
@@ -48,16 +58,16 @@ Three-tier rate limiting strategy:
 ```python
 class EventBroadcaster:
     max_events_per_second = 200
-    
+
     async def broadcast(self, event):
         current_second = int(time.time())
         if current_second not in self.events_per_second:
             self.events_per_second[current_second] = 0
-        
+
         if self.events_per_second[current_second] >= self.max_events_per_second:
             self.telemetry.increment("events_dropped")
             return  # Event rate-limited
-        
+
         self.events_per_second[current_second] += 1
         await self._send_to_clients(event)
 ```
@@ -95,11 +105,11 @@ class EventStreamClient:
         max_events = int(200 * 60 * 15)  # 180,000 events
         self.tail_buffer = deque(maxlen=max_events)
         self.buffer_duration = timedelta(minutes=15)
-    
+
     async def on_receive(self, event):
         self.tail_buffer.append(event)  # Auto-evicts oldest on overflow
         await self._notify_ui(event)
-    
+
     async def get_buffer_snapshot(self):
         """Restore history after interruption."""
         cutoff = datetime.now() - self.buffer_duration
@@ -125,10 +135,10 @@ class EventStreamClient:
 ```python
 class EventCoalescer:
     coalesce_window_ms = 50
-    
+
     async def coalesce_and_send(self, event):
         event_type = event.type
-        
+
         if event_type in self.pending_coalesce:
             # Merge with existing pending event
             self.pending_coalesce[event_type].merge(event)
@@ -136,7 +146,7 @@ class EventCoalescer:
             # New event type, add to coalesce buffer
             self.pending_coalesce[event_type] = event
             await self._schedule_flush(delay_ms=self.coalesce_window_ms)
-    
+
     async def _flush_coalesce_buffer(self):
         """Send coalesced events to clients."""
         for event in self.pending_coalesce.values():

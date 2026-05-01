@@ -1,7 +1,19 @@
+---
+id: rte-gemini-deep-pal-audit-2026-04-23
+title: Rte Gemini Deep Pal Audit 2026 04 23
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-01'
+last_review: '2026-05-01'
+next_review: '2026-07-30'
+prelude: Rte Gemini Deep Pal Audit 2026 04 23 (reference) for dopemux documentation
+  and developer workflows.
+---
 # Repo Truth Extractor (RTE) Deep PAL Audit Report
 
-**Audit ID:** DMX-RTE-AUDIT-2026-04-23  
-**Date:** 2026-04-23  
+**Audit ID:** DMX-RTE-AUDIT-2026-04-23
+**Date:** 2026-04-23
 **Verdict:** **CONDITIONAL_GO**
 
 ---

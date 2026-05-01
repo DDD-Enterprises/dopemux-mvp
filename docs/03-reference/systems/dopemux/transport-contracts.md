@@ -5,9 +5,12 @@ type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-04-23'
-decision_packet: 'TP-DMX-TUI-TRANSPORT-ARCHITECTURE-005'
+decision_packet: TP-DMX-TUI-TRANSPORT-ARCHITECTURE-005
+last_review: '2026-05-01'
+next_review: '2026-07-30'
+prelude: TUI Transport Contracts (U1.2-U1.7) (reference) for dopemux documentation
+  and developer workflows.
 ---
-
 # Transport Contracts: Seven Backend Services (U1.2-U1.7)
 
 **Date**: 2026-04-23
@@ -641,7 +644,7 @@ Each transport must pass:
 
 ---
 
-**Locked By**: Packet TP-DMX-TUI-TRANSPORT-ARCHITECTURE-005  
-**Date**: 2026-04-23  
-**Author**: @hu3mann  
+**Locked By**: Packet TP-DMX-TUI-TRANSPORT-ARCHITECTURE-005
+**Date**: 2026-04-23
+**Author**: @hu3mann
 **Status**: IMMUTABLE (changes require new decision packet)
