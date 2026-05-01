@@ -46,7 +46,10 @@ def _compose_services(compose_path: Path | None = None) -> set[str]:
     except yaml.YAMLError as exc:
         raise click.ClickException(f"Invalid compose file {path}: {exc}") from exc
 
-    services = data.get("services", {}) if isinstance(data, dict) else {}
+    if not isinstance(data, dict):
+        raise click.ClickException(f"Invalid compose file {path}: root must be a mapping")
+
+    services = data.get("services", {})
     if not isinstance(services, dict):
         raise click.ClickException(f"Invalid compose file {path}: services must be a mapping")
     return {str(name) for name in services}
@@ -138,8 +141,9 @@ def mcp_status_cmd():
     all registered MCP daemons. Essential for diagnosing sensor disconnects.
     """
     try:
-        subprocess.run(["docker", "compose", "-f", "compose.yml", "ps"], check=True)
-    except (CalledProcessError, FileNotFoundError):
+        result = subprocess.run(["docker", "compose", "-f", "compose.yml", "ps"], check=False)
+        sys.exit(result.returncode)
+    except FileNotFoundError:
         sys.exit(1)
 
 
@@ -159,8 +163,9 @@ def mcp_logs_cmd(service: str):
         else:
             cmd = ["docker", "compose", "-f", "compose.yml", "logs", "-f"]
         console.logger.info(f"[info]{' '.join(cmd)}[/info]")
-        subprocess.run(cmd, check=True)
-    except (CalledProcessError, FileNotFoundError):
+        result = subprocess.run(cmd, check=False)
+        sys.exit(result.returncode)
+    except FileNotFoundError:
         sys.exit(1)
 
 
