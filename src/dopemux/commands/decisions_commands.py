@@ -54,9 +54,45 @@ def patterns():
     """
     pass
 
-# No concrete decision-management callbacks are present in this module today.
-# Keep the runtime surface limited to the real groups above instead of swallowing
-# a self-import failure and implying hidden subcommands exist.
+
+# Import and register decision commands
+try:
+    from .commands.decisions_commands import (
+        review_decisions,
+        decision_stats,
+        log_energy,
+        energy_status,
+        show_decision,
+        list_decisions,
+        energy_analytics,
+        graph_decision,
+        update_outcome,
+        enhanced_stats,
+        query_decisions,
+        pattern_tags
+    )
+
+    # Decision management commands
+    decisions.add_command(review_decisions, "review")
+    decisions.add_command(decision_stats, "stats")
+    decisions.add_command(show_decision, "show")
+    decisions.add_command(list_decisions, "list")
+    decisions.add_command(graph_decision, "graph")
+    decisions.add_command(update_outcome, "update-outcome")
+    decisions.add_command(enhanced_stats, "stats-enhanced")
+    decisions.add_command(query_decisions, "query")
+
+    # Energy tracking commands
+    energy.add_command(log_energy, "log")
+    energy.add_command(energy_status, "status")
+    energy.add_command(energy_analytics, "analytics")
+
+    # Pattern detection commands (Phase 3)
+    patterns.add_command(pattern_tags, "tags")
+
+except ImportError as e:
+    # Graceful degradation if dependencies not installed
+    pass  # Commands won't be available but CLI still works
 
 
 

@@ -106,7 +106,6 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     return () => {
       if (resetTimeoutRef.current) {
         clearTimeout(resetTimeoutRef.current);
-        resetTimeoutRef.current = null;
       }
     };
   }, []);
@@ -152,6 +151,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   const resetTasks = () => {
     if (!isResetConfirming) {
       setIsResetConfirming(true);
+      if (resetTimeoutRef.current) clearTimeout(resetTimeoutRef.current);
       resetTimeoutRef.current = setTimeout(() => {
         setIsResetConfirming(false);
         resetTimeoutRef.current = null;
