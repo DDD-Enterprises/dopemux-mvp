@@ -1,3 +1,15 @@
+---
+id: runtime-authority-verification
+title: Runtime Authority Verification
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-01'
+last_review: '2026-05-01'
+next_review: '2026-07-30'
+prelude: Runtime Authority Verification (reference) for dopemux documentation and
+  developer workflows.
+---
 # Runtime Authority Verification
 
 ## Purpose
