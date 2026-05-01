@@ -1,7 +1,7 @@
 # Dopemux CLI Command Remediation Plan
 
 Date: 2026-05-01
-Workspace: `/Users/hue/.codex/worktrees/e252/dopemux-mvp-wt-cockpit-pm-textual`
+Workspace: `[repo workspace path redacted]`
 
 ## Summary
 
