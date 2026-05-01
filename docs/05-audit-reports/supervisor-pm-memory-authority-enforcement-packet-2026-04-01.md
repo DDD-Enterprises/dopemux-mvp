@@ -24,4 +24,3 @@ This file preserves the legacy audit-report path used by docs indexes.
 
 - bridge surfaces remain adapter/proxy only
 - PM-plane writes stay behind the sanctioned writers documented in the current truth layers
-

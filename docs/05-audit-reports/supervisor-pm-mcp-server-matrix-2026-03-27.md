@@ -27,4 +27,3 @@ This file preserves the legacy audit-report path used by docs indexes.
 - dopecon-bridge: adapter/proxy only
 - dope-memory: durable evidence sink
 - dope-context: deterministic code and docs retrieval
-

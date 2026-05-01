@@ -21,4 +21,3 @@ This file preserves the legacy audit-report path used by docs indexes.
 - [truth-interfaces.md](../03-reference/truth/truth-interfaces.md)
 - [truth-data-events.md](../03-reference/truth/truth-data-events.md)
 - [truth-gaps.md](../03-reference/truth/truth-gaps.md)
-

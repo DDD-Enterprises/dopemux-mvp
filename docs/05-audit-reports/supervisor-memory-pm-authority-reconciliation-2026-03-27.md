@@ -26,4 +26,3 @@ This file preserves the legacy audit-report path used by docs indexes.
 - dope-memory is a durable evidence sink, not PM status authority
 - ConPort owns structured decisions, progress, and context
 - task-orchestrator owns workflow coordination and PM normalization
-
