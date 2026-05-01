@@ -1,3 +1,14 @@
+---
+id: frame_chars
+title: Frame Chars
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-01'
+last_review: '2026-05-01'
+next_review: '2026-07-30'
+prelude: Frame Chars (reference) for dopemux documentation and developer workflows.
+---
 # Frame Characters
 
 The static cockpit grid (`src/dopemux/ui/cockpit/frame.py`) is drawn from
