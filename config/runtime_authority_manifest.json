@@ -159,15 +159,6 @@
             "services/task-orchestrator/Dockerfile"
           ],
           "status": "observed"
-        },
-        {
-          "port": 3014,
-          "role": "legacy_or_default_app_port",
-          "source_paths": [
-            "services/task-orchestrator/app/main.py",
-            "services/task-orchestrator/task_orchestrator/app.py"
-          ],
-          "status": "conflicting"
         }
       ],
       "forbidden_authority_paths": [
@@ -187,29 +178,12 @@
             }
           ],
           "summary": "A legacy task_orchestrator app module remains present but must not be used as runtime authority."
-        },
-        {
-          "id": "task_orchestrator_port_3014_vs_8000",
-          "markers": [
-            {
-              "contains": "os.getenv(\"PORT\", 3014)",
-              "path": "services/task-orchestrator/app/main.py"
-            },
-            {
-              "contains": "PORT=8000",
-              "path": "services/task-orchestrator/Dockerfile"
-            },
-            {
-              "contains": "${TASK_ORCHESTRATOR_PORT:-8000}:8000",
-              "path": "compose.yml"
-            }
-          ],
-          "summary": "Task Orchestrator still carries 3014 in app code while compose, registry, and Docker use 8000."
         }
       ],
       "notes": [
         "Workflow transitions are an authority slice, not all PM truth.",
-        "Bridge-backed workflow storage does not promote dopecon-bridge into workflow authority."
+        "Bridge-backed workflow storage does not promote dopecon-bridge into workflow authority.",
+        "Active task-orchestrator runtime, compose, and registry wiring now align on 8000; 3014 remains only in legacy and archival surfaces."
       ],
       "system": "task-orchestrator",
       "validation_mode": "static_paths_and_markers"

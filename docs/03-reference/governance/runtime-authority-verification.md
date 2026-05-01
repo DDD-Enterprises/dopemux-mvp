@@ -80,7 +80,7 @@ System matching is case-insensitive and ignores punctuation.
 
 The manifest intentionally preserves these conflicts:
 
-- `task-orchestrator`: active runtime code is `services/task-orchestrator/app/main.py`, while unsupported legacy `services/task-orchestrator/task_orchestrator/app.py` remains present and port evidence still includes `3014` versus `8000`.
+- `task-orchestrator`: active runtime code is `services/task-orchestrator/app/main.py`, while unsupported legacy `services/task-orchestrator/task_orchestrator/app.py` remains present and active runtime, compose, and registry wiring now align on `8000`.
 - `ConPort`: Docker-packaged ConPort and `src/conport/memory_server.py` both exist, and PM access paths still use both `3004` and `3005`.
 - `dope-memory`: active HTTP runtime is `3020`, while the stdio adapter still targets legacy `8096`.
 - `taskx`: `scripts/taskx` is a compatibility shim only.
