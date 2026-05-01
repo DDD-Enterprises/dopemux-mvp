@@ -10,10 +10,11 @@ Repo truth beats docs.
 
 When sources conflict, use this order:
 
-1. Runtime code, config, compose wiring, tests, and active entrypoints.
-2. `TRUTH_*.md` if present, otherwise the tracked `docs/03-reference/truth/*` equivalents.
-3. `RULES.md`, `PROJECT.md`, `ARCHITECTURE.md`, `SYSTEM_BOUNDARIES.md`, `PM_PLANE.md`, `SERVICE_CATALOG.md`, and `SYSTEM_*.md` if present, plus tracked equivalents under `docs/03-reference/`.
-4. Historical, generated, exploratory, uploaded, assembled, or design docs.
+1. Active Task Packet for the current work slice, for execution control and repo-changing scope.
+2. Runtime code, config, compose wiring, tests, and active entrypoints.
+3. `TRUTH_*.md` if present, otherwise the tracked `docs/03-reference/truth/*` equivalents.
+4. `RULES.md`, `PROJECT.md`, `ARCHITECTURE.md`, `SYSTEM_BOUNDARIES.md`, `PM_PLANE.md`, `SERVICE_CATALOG.md`, and `SYSTEM_*.md` if present, plus tracked equivalents under `docs/03-reference/`.
+5. Historical, generated, exploratory, uploaded, assembled, or design docs.
 
 Never let extracted artifacts outrank the runtime they describe. Mark absent or unresolved authority as `UNKNOWN`.
 
@@ -33,7 +34,7 @@ For implementation or repo-changing work, ChatGPT/Codex must execute this lifecy
 3. Create a fresh dedicated worktree from the verified base branch.
 4. Verify the worktree root, remote, branch, markers, clean status, and that execution is not in the primary checkout.
 5. Create a Task Packet before implementation.
-6. Validate the Task Packet against `dopetask-cannonical-spec.json` when the schema is present; otherwise perform and report a manual schema check.
+6. Validate the Task Packet against `dopetask-canonical-spec.json` when the schema is present; otherwise perform and report a manual schema check.
 7. Implement only files in the TP allowlist, in commit-sized slices.
 8. After each meaningful slice, run the smallest relevant validation and inspect the diff before continuing.
 9. Run codereview before precommit.
@@ -46,7 +47,7 @@ Do not emit standalone Task Packets as the final deliverable unless the user exp
 
 ## 5. Task Packet Rules
 
-Task Packets must conform to `dopetask-cannonical-spec.json` when that schema is available.
+Task Packets must conform to `dopetask-canonical-spec.json` when that schema is available.
 
 Required root fields:
 - `id`
