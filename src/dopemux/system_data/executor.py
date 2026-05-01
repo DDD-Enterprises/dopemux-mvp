@@ -89,13 +89,29 @@ def execute_plan(
                 shutil.move(str(path), str(dest))
                 status = "executed"
                 error = None
-            else:
+            elif action.action_type == "clear_safe_path":
                 if path.is_dir():
                     shutil.rmtree(path)
                 elif path.exists():
                     path.unlink()
                 status = "executed"
                 error = None
+            else:
+                record = ExecutionRecord(
+                    action_id=action.action_id,
+                    action_type=action.action_type,
+                    path=action.path,
+                    dry_run=False,
+                    status="blocked",
+                    manifest_path=str(manifest),
+                    error=f"unsupported action type: {action.action_type}",
+                )
+                manifest.write_text(
+                    stable_json({"timestamp_utc": utc_now(), "record": record}),
+                    encoding="utf-8",
+                )
+                records.append(record)
+                continue
             record = ExecutionRecord(
                 action_id=action.action_id,
                 action_type=action.action_type,
