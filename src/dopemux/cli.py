@@ -3101,6 +3101,9 @@ from .commands.code_commands import code
 
 cli.add_command(code)
 cli.add_command(tmux_commands, "tmux")
+from .commands.system_data_commands import system_data
+
+cli.add_command(system_data, "system-data")
 from .claude_tools.cli import register_commands
 
 register_commands(cli)
