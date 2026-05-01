@@ -142,8 +142,10 @@ def test_verifier_exits_nonzero_for_missing_required_path(tmp_path: Path) -> Non
     by_name = {entry["system"]: entry for entry in manifest["systems"]}
     target_entry = by_name["dopemux"]
     required_path = next(
-        p for p in target_entry["expected_paths"] if p.get("required", True)
+        (p for p in target_entry["expected_paths"] if p.get("required", True)),
+        None,
     )
+    assert required_path is not None, "dopemux must have at least one required expected_path"
     required_path["path"] = "missing-required-file.txt"
     temp_manifest = tmp_path / "runtime_authority_manifest.json"
     temp_manifest.write_text(json.dumps(manifest, indent=2), encoding="utf-8")

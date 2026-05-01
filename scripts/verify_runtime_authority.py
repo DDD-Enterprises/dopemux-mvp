@@ -122,14 +122,23 @@ def _safe_resolve(repo_root: Path, raw_path: str) -> Path | None:
     """Return the resolved absolute path only if it stays within repo_root.
 
     Returns None for absolute raw_path values or any path that resolves
-    outside repo_root (e.g. paths containing '..').
+    outside repo_root (e.g. paths containing '..'), and prints a warning
+    to stderr so rejected paths are visible for debugging.
     """
     if Path(raw_path).is_absolute():
+        print(
+            f"WARNING: rejected absolute path {raw_path!r} (only relative paths are allowed)",
+            file=sys.stderr,
+        )
         return None
     resolved = (repo_root / raw_path).resolve()
     try:
         resolved.relative_to(repo_root.resolve())
     except ValueError:
+        print(
+            f"WARNING: rejected path {raw_path!r} (resolves outside repository root via '..')",
+            file=sys.stderr,
+        )
         return None
     return resolved
 
@@ -142,7 +151,13 @@ def _path_exists(repo_root: Path, raw_path: str) -> bool:
 def _read_text(repo_root: Path, raw_path: str) -> str:
     safe = _safe_resolve(repo_root, raw_path)
     if safe is None:
-        raise ValueError(f"Path {raw_path!r} is outside the repository root.")
+        if Path(raw_path).is_absolute():
+            raise ValueError(
+                f"Path {raw_path!r} is rejected (absolute path is not allowed)."
+            )
+        raise ValueError(
+            f"Path {raw_path!r} is rejected (absolute path or escapes repository root)."
+        )
     return safe.read_text(encoding="utf-8", errors="replace")
 
 
