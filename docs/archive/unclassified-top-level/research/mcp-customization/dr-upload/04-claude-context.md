@@ -1,3 +1,14 @@
+---
+id: 04-claude-context
+title: 04 Claude Context
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-01'
+last_review: '2026-05-01'
+next_review: '2026-07-30'
+prelude: 04 Claude Context (explanation) for dopemux documentation and developer workflows.
+---
 # DR Pack 04: Claude Context / claude-context
 
 Access date: 2026-04-28

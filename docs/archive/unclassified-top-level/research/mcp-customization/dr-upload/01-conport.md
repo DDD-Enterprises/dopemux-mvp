@@ -1,3 +1,14 @@
+---
+id: 01-conport
+title: 01 Conport
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-01'
+last_review: '2026-05-01'
+next_review: '2026-07-30'
+prelude: 01 Conport (explanation) for dopemux documentation and developer workflows.
+---
 # DR Pack 01: ConPort / Context Portal
 
 Access date: 2026-04-28

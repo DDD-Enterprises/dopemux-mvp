@@ -1,3 +1,15 @@
+---
+id: pm-writes-phase1-authority-map
+title: Pm Writes Phase1 Authority Map
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-01'
+last_review: '2026-05-01'
+next_review: '2026-07-30'
+prelude: Pm Writes Phase1 Authority Map (explanation) for dopemux documentation and
+  developer workflows.
+---
 # PM Writes Phase 1 Authority Map
 
 This note freezes the phase-1 PM write surface against repo truth in this worktree.

@@ -1,3 +1,15 @@
+---
+id: 07-cross-system-synthesis
+title: 07 Cross System Synthesis
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-01'
+last_review: '2026-05-01'
+next_review: '2026-07-30'
+prelude: 07 Cross System Synthesis (explanation) for dopemux documentation and developer
+  workflows.
+---
 # DR Pack 07: Cross-System Dopemux Customization Synthesis
 
 Access date: 2026-04-28
