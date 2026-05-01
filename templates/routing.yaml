@@ -20,8 +20,8 @@ ports:
   litellm: 4000
   ccr: 4010
 
-# Provider definitions - API keys are NOT stored here
-# Keys must be in ~/.dopemux/routing.env
+# Provider definitions - hosted API keys are NOT stored here
+# Local providers may use inline placeholder keys; hosted keys must be in ~/.dopemux/routing.env
 providers:
   - name: gemini
     label: "Google Gemini"
