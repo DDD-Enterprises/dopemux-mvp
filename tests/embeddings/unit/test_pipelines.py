@@ -8,6 +8,7 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime
 import asyncio
+from pathlib import Path
 
 from dopemux.embeddings.pipelines import (
     DocumentPipeline,
@@ -330,6 +331,14 @@ class TestDocumentPipeline:
             progress_calls = [call for call in mock_print.call_args_list
                             if "pipeline" in str(call).lower()]
             assert len(progress_calls) > 0
+
+    def test_unified_document_pipeline_uses_public_consensus_stats(self):
+        """Test the extraction orchestrator stays on public consensus APIs."""
+        repo_root = Path(__file__).resolve().parents[3]
+        content = (repo_root / "src/dopemux/extraction/pipeline_orchestrator.py").read_text()
+        assert "documents_processed = len(self.atomic_units)" not in content
+        assert "_get_query_vector" not in content
+        assert "get_enhancement_stats()" in content
 
 
 class TestSearchPipeline:

@@ -566,7 +566,7 @@ class UnifiedDocumentPipeline:
         try:
             from datetime import datetime
             self.embedding_health_metrics.processing_start_time = datetime.now()
-            self.embedding_health_metrics.documents_processed = len(self.atomic_units)
+            self.embedding_health_metrics.documents_processed = len(documents)
 
             print(f"🔍 Initializing advanced embedding system for {len(documents)} units...")
 
@@ -600,14 +600,17 @@ class UnifiedDocumentPipeline:
                 # Validate first 5 documents as sample
                 sample_docs = documents[:5]
                 for doc in sample_docs:
-                    # Get primary embedding from hybrid store
-                    query_vector = await self.hybrid_vector_store._get_query_vector(doc['content'])
                     await self.consensus_validator.validate_embedding(
-                        doc['id'], doc['content'], query_vector
+                        doc['id'],
+                        doc['content'],
+                        doc.get('embedding', []),
                     )
 
-                consensus_summary = self.consensus_validator.get_consensus_summary()
-                print(f"✅ Consensus validation complete: {consensus_summary.get('avg_consensus_score', 0):.3f} avg score")
+                consensus_summary = self.consensus_validator.get_enhancement_stats()
+                print(
+                    "✅ Consensus validation complete: "
+                    f"{consensus_summary.get('consensus_rate', 0):.1%} consensus rate"
+                )
 
             # Create comprehensive embedding summary
             embedding_status = (
