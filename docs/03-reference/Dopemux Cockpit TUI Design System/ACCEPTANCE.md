@@ -22,7 +22,8 @@ Every box must be checkable against the artifacts in this folder.
       `UNKNOWN, DEGRADED, FAILED, BLOCKED, SYNC, DRAFT, READY, SUCCESS, ERROR`.
 - [x] External vocab mapping is documented:
       `DEGRADED → OVERRIDE`, `FAILED → BLOCKER`, `BLOCKED → BLOCKER`,
-      `SYNC → AFTERCARE`, `UNKNOWN → EDGE`.
+`SYNC → AFTERCARE`.
+- [x] `UNKNOWN` remains literal unresolved text and is not mapped to a chip.
 - [x] Status Language explainer (`preview/14-status-language.html`)
       lives in design-system reference, not in the runtime cockpit.
 
