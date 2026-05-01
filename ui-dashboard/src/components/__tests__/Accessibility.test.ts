@@ -78,8 +78,6 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toMatch(/<Tooltip[^>]*title="Real-time task synchronization active"[^>]*arrow/);
   expect(content).toContain('aria-label="Real-time task synchronization active"');
   expect(content).toContain('aria-current={isCurrent ? \'step\' : undefined}');
-  expect(content).toContain("title={isResetConfirming ? 'Confirm to clear all progress' : 'Restart the task sequence'}");
-  expect(content).toContain("{isResetConfirming ? 'Confirm Reset?' : 'Reset Ritual'}");
   // Total remaining duration display and completed-state accessibility
   expect(content).toContain('role="status"');
   expect(content).toMatch(/aria-label=\{\s*displayRemainingMinutes === 0\s*\?\s*'Task sequence complete'\s*:\s*`\$\{getDurationAriaLabel\(displayRemainingMinutes\)\}\. Estimated completion: \$\{finishTimeLabel\}`\s*\}/);

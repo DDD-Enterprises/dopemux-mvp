@@ -77,3 +77,7 @@
 ## 2026-05-15 - [Safe Destructive Actions with Soft Confirmation]
 **Learning:** For ADHD users who may experience impulsivity or accidental clicks, immediate destructive actions (like resetting a hard-won ritual progress) can lead to significant frustration. Implementing a "soft" two-step confirmation (Confirm Reset?) within a short temporal window (3s) provides a safety net without the friction of a modal dialog.
 **Action:** Use a two-step confirmation state on buttons for destructive actions that are not easily reversible to prevent accidental progress loss.
+
+## 2026-05-16 - [Hardening Async Micro-interactions]
+**Learning:** Hardening asynchronous state transitions in React (like multi-step confirmation buttons) requires defensive timeout management. Always clear existing timeouts before starting new ones and explicitly nullify the timer reference after clearing or firing to maintain deterministic component behavior and avoid race conditions.
+**Action:** Add explicit timeout clearing and ref nullification when implementing time-windowed micro-interactions.

@@ -57,7 +57,6 @@ class FindingSeverity(str, Enum):
 
 class ThreadDispositionType(str, Enum):
     IMPLEMENT = "implement"
-    AGENTIC_FIX = "agentic_fix"
     DECLINE_WITH_RATIONALE = "decline_with_rationale"
     AUTO_RESOLVE_OUTDATED = "auto_resolve_outdated"
     ESCALATE = "escalate"

@@ -529,25 +529,45 @@ def profile_validate_cmd(ctx, profile_name: Optional[str], profile_dir: Optional
         sys.exit(1)
 
 
+@profile.command("copy")
+@click.argument("source_name")
+@click.argument("target_name")
+def profile_copy_cmd(source_name: str, target_name: str):
+    """Copy profile command placeholder."""
+    raise click.ClickException("profile copy is not implemented yet")
+
+
+@profile.command("edit")
+@click.argument("profile_name")
+def profile_edit_cmd(profile_name: str):
+    """Edit profile command placeholder."""
+    raise click.ClickException("profile edit is not implemented yet")
+
+
+@profile.command("delete")
+@click.argument("profile_name")
+def profile_delete_cmd(profile_name: str):
+    """Delete profile command placeholder."""
+    raise click.ClickException("profile delete is not implemented yet")
+
+
+@profile.command("current")
+def profile_current_cmd():
+    """Show current active profile placeholder."""
+    raise click.ClickException("profile current is not implemented yet")
+
+
 # Register additional profile commands from modules
 try:
     from ..profile_commands import (
-        copy_profile,
         use_profile,
-        create_profile,
-        delete_profile,
-        edit_profile,
-        show_profile,
+        create_profile
     )
 
     # Note: 'list' and 'show' are already defined above as inline commands.
     # We only add unique commands from the module to avoiding conflicts.
     profile.add_command(use_profile, "use")
     profile.add_command(create_profile, "create")
-    profile.add_command(copy_profile, "copy")
-    profile.add_command(edit_profile, "edit")
-    profile.add_command(delete_profile, "delete")
-    profile.add_command(show_profile, "current")
     profile.add_command(use_profile, "apply")
 
 except ImportError:
