@@ -1002,6 +1002,7 @@ class FreeflowRouter:
             or NON_SENSITIVE_CLASS
         )
         current = now or now_utc()
+        ledger = self.ledger or FreeflowQuotaLedger()
 
         def route_sort_key(row: Dict[str, Any]) -> tuple[int, str, str]:
             score = int(row["score"])
@@ -1037,7 +1038,6 @@ class FreeflowRouter:
             if not route["credential_present"]:
                 rejected.append({"name": route["name"], "reason": "missing_credential"})
                 continue
-            ledger = self.ledger or FreeflowQuotaLedger()
             quota = ledger.check_quota(
                 route["effective_provider"],
                 route["name"],
@@ -1114,7 +1114,6 @@ class FreeflowRouter:
             "estimated_output_tokens": int(estimated_output_tokens or 0),
             "metadata": {"rejected": rejected},
         }
-        ledger = self.ledger or FreeflowQuotaLedger()
         ledger.record_route_decision(decision, current)
         return decision
 
@@ -1231,7 +1230,7 @@ def generate_freeflow_litellm_config(
 
     policy = freeflow_policy(config)
     freeflow_slots = dict(policy.get("slots") or {})
-    fallback_default = next(iter(allowed_names), None)
+    fallback_default = routes[0]["name"] if routes else None
     default_model = (
         freeflow_slots.get("default")
         if freeflow_slots.get("default") in allowed_names

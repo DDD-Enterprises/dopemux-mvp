@@ -14,6 +14,7 @@ if str(SRC_PATH) not in sys.path:
     sys.path.insert(0, str(SRC_PATH))
 
 from dopemux.freeflow import FreeflowQuotaExceeded  # noqa: E402
+import dopemux.litellm_trace_logger as trace_logger  # noqa: E402
 from dopemux.litellm_trace_logger import (  # noqa: E402
     LOG_PATH_ENV,
     DopemuxLiteLLMTraceLogger,
@@ -207,3 +208,70 @@ def test_trace_logger_blocks_paid_cap_over_limit(
 
     assert spend_count == 0
     assert decision == ("blocked", "daily_paid_cap_exhausted")
+
+
+def test_trace_logger_reuses_single_freeflow_ledger_instance(
+    tmp_path: Path, monkeypatch
+) -> None:
+    instances = []
+
+    class FakeLedger:
+        def __init__(self) -> None:
+            self.calls = []
+            instances.append(self)
+
+        def check_quota(self, *args, **kwargs):
+            self.calls.append(("check_quota", args, kwargs))
+            return SimpleNamespace(allowed=True, reason="ok", reset_at=None)
+
+        def check_paid_cap(self, *args, **kwargs):
+            self.calls.append(("check_paid_cap", args, kwargs))
+            return SimpleNamespace(allowed=True, reason="ok", reset_at=None)
+
+        def record_route_decision(self, decision, now=None):
+            self.calls.append(("record_route_decision", decision["reason"]))
+            return "decision-1"
+
+        def record_spend(self, *args, **kwargs):
+            self.calls.append(("record_spend", kwargs.get("status")))
+
+        def record_usage(self, *args, **kwargs):
+            self.calls.append(("record_usage", kwargs.get("status")))
+
+        def ingest_response_headers(self, *args, **kwargs):
+            self.calls.append(("ingest_response_headers", kwargs.get("status_code")))
+
+    monkeypatch.setattr(trace_logger, "FreeflowQuotaLedger", FakeLedger)
+    monkeypatch.setenv("DOPEMUX_FREEFLOW_LEDGER", str(tmp_path / "quota.sqlite"))
+    logger = DopemuxLiteLLMTraceLogger()
+
+    kwargs = asyncio.run(
+        logger.async_pre_call_deployment_hook(_freeflow_kwargs(), call_type=None)
+    )
+    response = SimpleNamespace(
+        id="upstream-2",
+        model="gemini/gemini-2.5-flash-lite",
+        status_code=200,
+        usage=SimpleNamespace(
+            prompt_tokens=12,
+            completion_tokens=7,
+            total_tokens=19,
+            reasoning_tokens=None,
+            cached_tokens=None,
+        ),
+        choices=[SimpleNamespace(finish_reason="stop")],
+    )
+
+    logger.log_success_event(
+        kwargs,
+        response,
+        datetime(2026, 5, 1, 12, 0, tzinfo=timezone.utc),
+        datetime(2026, 5, 1, 12, 0, 1, tzinfo=timezone.utc),
+    )
+
+    assert len(instances) == 1
+    assert logger._freeflow_ledger is instances[0]
+    assert kwargs["metadata"]["route_decision_id"] == "decision-1"
+    assert ("record_route_decision", "strict_free_pre_call_admitted") in instances[0].calls
+    assert ("record_usage", "completed") in instances[0].calls
+    assert ("ingest_response_headers", 200) in instances[0].calls
