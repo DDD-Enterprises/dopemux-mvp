@@ -43,6 +43,6 @@ Current repo truth:
 
 ## Current authority
 
-- [capability-manifest.md](/Users/hue/code/dopemux-mvp/docs/systems/serena/capability-manifest.md)
-- [deployment-alignment-and-sanctioned-contract.md](/Users/hue/code/dopemux-mvp/docs/systems/serena/deployment-alignment-and-sanctioned-contract.md)
-- [runtime-candidate-inventory.md](/Users/hue/code/dopemux-mvp/docs/systems/serena/runtime-candidate-inventory.md)
+- [capability-manifest.md](../systems/serena/capability-manifest.md)
+- [deployment-alignment-and-sanctioned-contract.md](../systems/serena/deployment-alignment-and-sanctioned-contract.md)
+- [runtime-candidate-inventory.md](../systems/serena/runtime-candidate-inventory.md)

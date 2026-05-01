@@ -24,7 +24,7 @@ This file is compatible with `ARCHITECTURE_SAFETY_OVERLAY.md` and narrower in sc
 
 The current cockpit model should be revised, not replaced.
 
-- Shared outer geometry (mode bar, three-column body, shortcut rail, status rail) may remain.
+- Shared outer geometry (mode bar, three-column body, command rail, status rail) may remain.
 - Pane semantics inside the body differ by mode.
 - PM mode is workflow triage and adjudication first.
 - Implementer mode is current task, acceptance, evidence, and validation first.
@@ -73,7 +73,7 @@ next_action:  <transition | open | inspect | handoff | none>
 - Leantime metadata shown as workflow authority. Leantime is metadata; workflow legality is task-orchestrator.
 - dope-memory mirror receipts shown as canonical PM success. Receipts mirror what already happened.
 - Service / system map as PM primary left rail. The PM left rail is workflow / slice map.
-- Universal cross-authority search as the PM primary surface.
+- Global "search everything" as the PM primary surface.
 
 ---
 
@@ -105,18 +105,18 @@ Each Implementer pane carries the four-field declaration:
 domain:       <e.g. current_task | acceptance | evidence | proof>
 authority:    <task-orchestrator | conport | dope-context | repo-truth-extractor>
 role:         canonical | derived | mirrored | proxied | authoring | chrome
-next_action:  <record | inspect | request_more | handback | none>
+next_action:  <run | record | inspect | request_more | handback | none>
 ```
 
 ### Implementer Forbidden Patterns
 
-- Retrieval-only console as the primary Implementer mode.
+- Retrieval console as the primary Implementer mode.
 - Handback draft dominating the inspector.
 - PM metadata edits performed inside Implementer mode.
 - Workflow transitions routed through dopecon-bridge instead of through task-orchestrator.
 - Retrieval (dope-context) treated as source truth for acceptance, decisions, or workflow state. Retrieval is retrieval.
 - Serena treated as canonical. Serena is optional UNKNOWN support unless runtime authority is proven.
-- Universal cross-authority search as the Implementer primary surface.
+- Global "search everything" as the Implementer primary surface.
 - Dopemux owning execution truth. Execution is owned by agents and runtimes; outcomes are logged to ConPort and mirrored to dope-memory.
 - Service / system map as Implementer primary left rail. The Implementer left rail is work contract / support rail.
 
@@ -171,11 +171,8 @@ role:        authoring
 next_action: log_decision
 
 # PM right inspector lower (hard-divided bridge segregator)
-domain:      bridge_transport
-authority:   dopecon-bridge
 Bridge adapter/proxy: dopecon-bridge
 role:        proxied
-next_action: inspect_adapter_ref
 note:        Adapter actions only. Canonical writes route through their owners.
 
 # Implementer center upper
@@ -191,11 +188,9 @@ role:        derived
 next_action: request_more
 
 # Implementer status rail cue
-domain:      implementer_status
-next_action: observe_cue
 cue: ADHD_engine: scattered attention; suggest 25-min focus block
 role:        chrome
-authority:   dopemux
+authority:   dopemux control surface
 note:        advisory only; does not gate transitions
 ```
 

@@ -39,6 +39,8 @@ quarantine_prefixes:
 
 filename_exemptions:
   - docs/05-audit-reports/*
+  - docs/03-reference/Dopemux Cockpit TUI Design System/*
+  - docs/03-reference/gpt55_pm_implementer_redesign.md
   - docs/archive/*
   - docs/04-explanation/history/sourceFiles/*
   - docs/05-audit-reports/root-relocated/rgoutput-2.md

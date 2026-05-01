@@ -1,0 +1,81 @@
+{
+  "id": "DMX-COCKPIT-ARCHIVE-INTENT-001",
+  "project": "dopemux-mvp",
+  "target": "Extract archived ADHD, lifestyle, operator-support, and planned capability intent into a clearly labeled design-input pack without promoting archived docs to runtime truth.",
+  "invariants": [
+    "Do not modify runtime code.",
+    "Do not implement UI changes.",
+    "Do not add services or adapters.",
+    "Do not treat archived docs as runtime truth.",
+    "Do not merge planned features into implemented capability inventory without an evidence class label.",
+    "Every planned feature must be classified as implemented, partially implemented, planned-only, deprecated, conflicting, or UNKNOWN.",
+    "Every planned feature must include source path evidence.",
+    "ADHD and lifestyle features must not be forced into PM/Implementer views unless they support a concrete operator workflow.",
+    "Preserve current authority boundaries: dopemux control surface, task-orchestrator workflow, ConPort structured context, dope-memory chronicle, dope-context retrieval, dopecon-bridge adapter-only.",
+    "Output must be optimized for GPT-5.5 Pro synthesis and Claude Design, not implementation."
+  ],
+  "depends_on": [
+    "DMX-COCKPIT-PMIMPL-PACK-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dopemux-cockpit-pm-impl-design",
+    "base_branch": "main",
+    "parent_tp_id": "DMX-COCKPIT-PMIMPL-PACK-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/cockpit-archive-intent-pack"
+  },
+  "commit": {
+    "message": "docs(cockpit): extract archived ADHD lifestyle intent for design",
+    "allowlist": [
+      "docs/05-audit-reports/cockpit-archive-intent-pack-2026-04-24.md",
+      "docs/05-audit-reports/cockpit-adhd-lifestyle-feature-map-2026-04-24.md",
+      "docs/05-audit-reports/cockpit-design-input-merged-brief-2026-04-24.md",
+      "proof/cockpit-archive-intent-pack-2026-04-24.proof.json",
+      "task-packets/DMX-COCKPIT-ARCHIVE-INTENT-001.json",
+      "task-packets/INDEX.md"
+    ],
+    "verify": [
+      "git rev-parse --show-toplevel",
+      "test -f .dopetaskroot",
+      "git remote -v",
+      "git branch --show-current",
+      "git status --short --branch",
+      "python -m json.tool task-packets/DMX-COCKPIT-ARCHIVE-INTENT-001.json",
+      "python -m json.tool proof/cockpit-archive-intent-pack-2026-04-24.proof.json",
+      "git diff --check -- docs/05-audit-reports/cockpit-archive-intent-pack-2026-04-24.md docs/05-audit-reports/cockpit-adhd-lifestyle-feature-map-2026-04-24.md docs/05-audit-reports/cockpit-design-input-merged-brief-2026-04-24.md proof/cockpit-archive-intent-pack-2026-04-24.proof.json task-packets/DMX-COCKPIT-ARCHIVE-INTENT-001.json task-packets/INDEX.md"
+    ]
+  },
+  "pr": {
+    "title": "docs(cockpit): extract archived ADHD lifestyle intent for design",
+    "body": "## Summary\n- extracts archived ADHD, lifestyle, operator-support, and planned capability intent\n- classifies each feature by evidence class and runtime status\n- produces a merged design-input brief for GPT-5.5 Pro and Claude Design\n\n## Scope\n- docs/proof/task-packet only\n- no runtime code changes\n- no UI implementation\n- no service/adaptor work\n\n## Validation\n- archived docs searched deterministically\n- feature claims include source-path evidence\n- planned-only features are not promoted to runtime truth\n- design inputs separate implemented capability from product intent",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "outputs": [
+    "docs/05-audit-reports/cockpit-archive-intent-pack-2026-04-24.md",
+    "docs/05-audit-reports/cockpit-adhd-lifestyle-feature-map-2026-04-24.md",
+    "docs/05-audit-reports/cockpit-design-input-merged-brief-2026-04-24.md",
+    "proof/cockpit-archive-intent-pack-2026-04-24.proof.json"
+  ]
+}

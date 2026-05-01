@@ -2,13 +2,13 @@
 <html><head><meta charset="utf-8"><title>Glyphs · ASCII fallback</title>
 <link rel="stylesheet" href="_shared.css"></head>
 <body>
-<div class="label">Glyphs · optional rich mode · ASCII fallback under NO_COLOR / non-Nerd-Font</div>
+<div class="label">Glyphs · Nerd Font primary · ASCII fallback under NO_COLOR / non-Nerd-Font</div>
 
 <div class="pane" style="font-size:12px; line-height:1.6; padding: 14px;">
 <span class="dim">  CHIP / TOKEN          NERD FONT     ASCII   USAGE</span>
   <span class="cyan">[LIVE]</span>                <span class="cyan">\uf04b</span>          <span class="mono">&gt;</span>      phase or run executing
   <span class="mint">[LOGGED]</span>              <span class="mint">\uf058</span>          <span class="mono">+</span>      verified, completed, archived
-  <span class="pink">[BLOCKER]</span>             <span class="pink">\uf057</span>          <span class="mono">!</span>      gate refused operation
+  <span class="pink">[BLOCKER]</span>             <span class="pink">\uf057</span>          <span class="mono">!</span>      gate refused execution
   <span class="gold">[OVERRIDE]</span>            <span class="gold">\uf071</span>          <span class="mono">*</span>      operator-forced path / reduced lane
   <span class="violet">[AFTERCARE]</span>           <span class="violet">\uf06a</span>          <span class="mono">~</span>      post-phase follow-up
   <span class="cyan">[EDGE]</span>                <span class="cyan">\uf059</span>          <span class="mono">?</span>      experimental / unwired
@@ -27,46 +27,16 @@
   <span class="cyan">│ ─</span>                   <span class="cyan">U+2502 U+2500</span>  <span class="mono">| -</span>    divider cell, in-pane rule
 
 <span class="dim">  BRAND MARK            UNICODE       ASCII   POLICY</span>
-  <span class="cyan">DØPΞM∪X</span>                <span class="cyan">wordmark</span>       <span class="mono">DOPEMUX</span>        chrome-only wordmark
-  <span class="cyan">◆DØPΞM∪X◆</span>              <span class="cyan">brand line</span>     <span class="mono">*DOPEMUX*</span>      brand preview only
-  <span class="cyan">━━◆ Ø ◆━━</span>              <span class="cyan">brand rule</span>     <span class="mono">== * O * ==</span>    decorative chrome
-
-<span class="dim">  COCKPIT GLYPH         RICH          ASCII   POLICY</span>
-  <span class="cyan">brand_core</span>            <span class="cyan">Ø</span>             <span class="mono">O</span>      visual cue only
-  <span class="cyan">seal</span>                  <span class="cyan">◆</span>             <span class="mono">*</span>      visual cue only
-  <span class="cyan">double_seal</span>           <span class="cyan">◈</span>             <span class="mono">&lt;&gt;</span>     visual cue only
-  <span class="cyan">void_node</span>             <span class="cyan">◉</span>             <span class="mono">(o)</span>    visual cue only
-  <span class="cyan">idle_node</span>             <span class="cyan">◎</span>             <span class="mono">( )</span>    visual cue only
-  <span class="cyan">canonical_node</span>        <span class="cyan">⬢</span>             <span class="mono">#</span>      visual cue only
-  <span class="cyan">derived_node</span>          <span class="cyan">⬡</span>             <span class="mono">&lt;&gt;</span>     visual cue only
-  <span class="cyan">mirror_receipt</span>        <span class="cyan">◌</span>             <span class="mono">()</span>     visual cue only
-  <span class="cyan">proxy_gate</span>            <span class="cyan">⧉</span>             <span class="mono">[proxy]</span> visual cue only
-  <span class="cyan">adapter_gate</span>          <span class="cyan">⊡</span>             <span class="mono">[adapter]</span> visual cue only
-  <span class="pink">blocked_gate</span>          <span class="pink">▣</span>             <span class="mono">[BLOCKED]</span> visual cue only
-  <span class="pink">hard_stop</span>             <span class="pink">▰</span>             <span class="mono">[FAIL]</span> visual cue only
-  <span class="gold">warning_spike</span>         <span class="gold">▲</span>             <span class="mono">!</span>      visual cue only
-  <span class="gold">advisory_spike</span>        <span class="gold">△</span>             <span class="mono">?</span>      visual cue only
-  <span class="cyan">drift_signal</span>          <span class="cyan">⌁</span>             <span class="mono">~</span>      visual cue only
-  <span class="cyan">doctrine_mark</span>         <span class="cyan">※</span>             <span class="mono">*</span>      visual cue only
-  <span class="cyan">operator_cursor</span>       <span class="cyan">▸</span>             <span class="mono">&gt;</span>      visual cue only
-  <span class="cyan">section_bar</span>           <span class="cyan">━</span>             <span class="mono">=</span>      visual cue only
-  <span class="cyan">soft_scanline</span>         <span class="cyan">┄</span>             <span class="mono">-</span>      visual cue only
-  <span class="cyan">continuation</span>          <span class="cyan">│</span>             <span class="mono">|</span>      visual cue only
-  <span class="cyan">more</span>                  <span class="cyan">+</span>             <span class="mono">+</span>      visual cue only
+  <span class="cyan">━━━◆ Ø ◆━━━</span>           <span class="cyan">U+25C6 U+00D8</span>  <span class="mono">--- &lt;O&gt; ---</span>  brand wordmark line
 </div>
 
 <div class="note" style="margin-top:10px;">
-  Rich glyphs may be loaded from Dopemux Term Nerd Font. <span class="mono">_FALLBACK</span>
-  in <span class="mono">src/dopemux/ui/theme.py::Glyphs</span> declares the plain-text
-  fallback. Some runtime fallbacks are Unicode symbols rather than ASCII, so
-  treat the "ASCII" column here as the legible text substitute column, not a
-  promise that every path degrades to pure ASCII. Frame characters never
-  substitute to ASCII unless the renderer cannot draw box-drawing at all (e.g.
-  dumb pipe). Nerd Font glyphs are rich-mode enhancements only; they are not
-  the canonical brand mono and must never be the only signal. The stylized
-  wordmark never replaces domain, authority, role, next_action, SRC, status, or
-  result.
+  Glyphs are loaded from the Nerd Font codepoint range. <span class="mono">_FALLBACK</span>
+  in <span class="mono">src/dopemux/ui/theme.py::Glyphs</span> declares the ASCII
+  substitute. ASCII is the only acceptable substitute — no emoji, no Lucide,
+  no SVG icon library. Frame characters never substitute to ASCII unless
+  the renderer cannot draw box-drawing at all (e.g. dumb pipe).
   <br>
-  Unicode arrows and Unicode ellipsis are forbidden. Use <span class="mono">-&gt;</span> when directionality is required.
+  Forbidden arrows: <span class="mono">→ ⇒ ➜</span>. Use <span class="mono">-&gt;</span> when directionality is required.
 </div>
 </body></html>

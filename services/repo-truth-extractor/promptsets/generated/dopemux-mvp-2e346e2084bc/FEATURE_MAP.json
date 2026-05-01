@@ -1,0 +1,1049 @@
+{
+  "version": "FEATURE_MAP_V1",
+  "generated_at": "2073-02-07T04:00:51+00:00",
+  "run_id": "sync-dopemux-mvp-2e346e2084bc-2032-08-13T08:57:34+00:00",
+  "discovery_mode": "auto_only",
+  "confirmed_features": [
+    {
+      "feature_id": "http_api_python",
+      "label": "Python HTTP API",
+      "description": "Python web framework (FastAPI, Flask, Django, Starlette)",
+      "confidence": "medium",
+      "evidence": [
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/_api_client.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/_interactions/types/mcp_server_tool_result_content.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/_replay_api_client.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/tests/afc/test_should_append_afc_history.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/tests/errors/test_api_error.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/tests/models/test_generate_content_from_apikey.py",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/externals/_array_api_compat_vendor.py",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/kernel_approximation.py",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/tests/test_kernel_approximation.py",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/utils/_array_api.py"
+      ],
+      "content_evidence": [],
+      "maps_to_steps": [
+        "C1",
+        "C14",
+        "C15"
+      ],
+      "maps_to_phases": [
+        "C"
+      ],
+      "scan_roots": [
+        ".uv-cache/",
+        ".venv/",
+        ".worktrees/",
+        "docker/",
+        "services/"
+      ],
+      "file_count": 104
+    },
+    {
+      "feature_id": "http_api_node",
+      "label": "Node/TS HTTP API",
+      "description": "Node.js web framework (Express, Fastify, Nest, Koa, Hono)",
+      "confidence": "medium",
+      "evidence": [
+        "services/conport_kg_ui/node_modules/@types/node/web-globals/abortcontroller.d.ts",
+        "services/conport_kg_ui/node_modules/ink/build/hooks/use-app.d.ts",
+        "services/conport_kg_ui/node_modules/typescript/lib/tsserverlibrary.d.ts"
+      ],
+      "content_evidence": [],
+      "maps_to_steps": [
+        "C1",
+        "C15"
+      ],
+      "maps_to_phases": [
+        "C"
+      ],
+      "scan_roots": [
+        "services/"
+      ],
+      "file_count": 3
+    },
+    {
+      "feature_id": "grpc_api",
+      "label": "gRPC API",
+      "description": "gRPC service definitions and generated code",
+      "confidence": "medium",
+      "evidence": [
+        ".venv/lib/python3.12/site-packages/google/api/annotations.proto",
+        ".venv/lib/python3.12/site-packages/google/api/annotations_pb2.py",
+        ".venv/lib/python3.12/site-packages/google/api/auth.proto",
+        ".venv/lib/python3.12/site-packages/google/api/auth_pb2.py",
+        ".venv/lib/python3.12/site-packages/google/api/backend.proto",
+        ".venv/lib/python3.12/site-packages/google/api/backend_pb2.py",
+        ".venv/lib/python3.12/site-packages/google/api/billing.proto",
+        ".venv/lib/python3.12/site-packages/google/api/billing_pb2.py",
+        ".venv/lib/python3.12/site-packages/google/api/client.proto",
+        ".venv/lib/python3.12/site-packages/google/api/client_pb2.py"
+      ],
+      "content_evidence": [],
+      "maps_to_steps": [
+        "C1",
+        "C15"
+      ],
+      "maps_to_phases": [
+        "C"
+      ],
+      "scan_roots": [
+        ".venv/",
+        ".worktrees/"
+      ],
+      "file_count": 57
+    },
+    {
+      "feature_id": "graphql_api",
+      "label": "GraphQL API",
+      "description": "GraphQL schema definitions and resolvers",
+      "confidence": "medium",
+      "evidence": [
+        ".venv/lib/python3.12/site-packages/aiohttp/resolver.py",
+        ".venv/lib/python3.12/site-packages/dns/asyncresolver.py",
+        ".venv/lib/python3.12/site-packages/dns/resolver.py",
+        ".venv/lib/python3.12/site-packages/jsonschema_path/resolvers.py",
+        ".venv/lib/python3.12/site-packages/litellm/a2a_protocol/card_resolver.py",
+        ".venv/lib/python3.12/site-packages/litellm/integrations/litellm_agent/litellm_agent_model_resolver.py",
+        ".venv/lib/python3.12/site-packages/litellm/proxy/policy_engine/policy_resolver.py",
+        ".venv/lib/python3.12/site-packages/litellm/types/proxy/policy_engine/resolver_types.py",
+        ".venv/lib/python3.12/site-packages/mcp/shared/experimental/tasks/resolver.py",
+        ".venv/lib/python3.12/site-packages/pip/_internal/resolution/legacy/resolver.py"
+      ],
+      "content_evidence": [],
+      "maps_to_steps": [
+        "C1",
+        "C15"
+      ],
+      "maps_to_phases": [
+        "C"
+      ],
+      "scan_roots": [
+        ".venv/",
+        ".worktrees/"
+      ],
+      "file_count": 20
+    },
+    {
+      "feature_id": "event_bus",
+      "label": "Event Bus / Message Queue",
+      "description": "Event-driven architecture (Redis Streams, RabbitMQ, Kafka, NATS, custom)",
+      "confidence": "high",
+      "evidence": [
+        ".venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py",
+        ".venv/lib/python3.12/site-packages/google/api/consumer.proto",
+        ".venv/lib/python3.12/site-packages/google/api/consumer_pb2.py",
+        ".venv/lib/python3.12/site-packages/google/api/consumer_pb2.pyi",
+        ".venv/lib/python3.12/site-packages/mcp/shared/experimental/tasks/__pycache__/message_queue.cpython-312.pyc",
+        ".venv/lib/python3.12/site-packages/mcp/shared/experimental/tasks/message_queue.py",
+        ".venv/lib/python3.12/site-packages/opentelemetry/sdk/metrics/_internal/measurement_consumer.py",
+        ".venv/lib/python3.12/site-packages/textual/__pycache__/_event_broker.cpython-312.pyc",
+        ".venv/lib/python3.12/site-packages/textual/_event_broker.py",
+        ".worktrees/rte-live-cert-artifact-contract-hardening/.uv-cache/archive-v0/bqoebJ9mg_-HQkno4zzuf/textual/_event_broker.py"
+      ],
+      "content_evidence": [
+        ".venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py:24"
+      ],
+      "maps_to_steps": [
+        "C2",
+        "A13"
+      ],
+      "maps_to_phases": [
+        "C",
+        "A"
+      ],
+      "scan_roots": [
+        ".venv/",
+        ".worktrees/",
+        "SYSTEM_ARCHIVE/",
+        "build/",
+        "docker/",
+        "docs/",
+        "services/",
+        "src/"
+      ],
+      "file_count": 81
+    },
+    {
+      "feature_id": "database_relational",
+      "label": "Relational Database",
+      "description": "SQL database (PostgreSQL, MySQL, SQLite) with migrations",
+      "confidence": "medium",
+      "evidence": [
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/_base_transformers.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/_interactions/_models.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/_transformers.py",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/compose/_column_transformer.py",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/compose/tests/test_column_transformer.py",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/datasets/_svmlight_format_io.py",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/datasets/tests/test_svmlight_format.py",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/preprocessing/_function_transformer.py",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/preprocessing/tests/test_function_transformer.py",
+        ".uv-cache/archive-v0/_UHLtaDCwnZdzwYxspo7Z/prometheus_client/platform_collector.py"
+      ],
+      "content_evidence": [],
+      "maps_to_steps": [
+        "C6",
+        "C7"
+      ],
+      "maps_to_phases": [
+        "C"
+      ],
+      "scan_roots": [
+        ".uv-cache/",
+        ".venv/",
+        ".worktrees/",
+        "docker/",
+        "services/"
+      ],
+      "file_count": 50
+    },
+    {
+      "feature_id": "database_graph",
+      "label": "Graph Database",
+      "description": "Graph database (Neo4j, AGE, ArangoDB)",
+      "confidence": "medium",
+      "evidence": [
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/covariance/_graph_lasso.py",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/covariance/tests/test_graphical_lasso.py",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/neighbors/_graph.py",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/neighbors/tests/test_graph.py",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/utils/graph.py",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/utils/tests/test_graph.py",
+        ".uv-cache/archive-v0/UhSmpYd0rlpb1VuBnJfQS/google/auth/crypt/_cryptography_rsa.py",
+        ".uv-cache/archive-v0/_UHLtaDCwnZdzwYxspo7Z/prometheus_client/bridge/graphite.py",
+        ".venv/lib/python3.12/site-packages/authlib/jose/drafts/_jwe_enc_cryptography.py",
+        ".venv/lib/python3.12/site-packages/authlib/jose/rfc7517/_cryptography_key.py"
+      ],
+      "content_evidence": [],
+      "maps_to_steps": [
+        "C6",
+        "C16"
+      ],
+      "maps_to_phases": [
+        "C"
+      ],
+      "scan_roots": [
+        ".uv-cache/",
+        ".venv/"
+      ],
+      "file_count": 20
+    },
+    {
+      "feature_id": "database_vector",
+      "label": "Vector Database",
+      "description": "Vector/embedding database (Qdrant, Pinecone, Weaviate, ChromaDB)",
+      "confidence": "medium",
+      "evidence": [
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/tests/batches/test_embedding.py",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/manifold/_spectral_embedding.py",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/manifold/tests/test_spectral_embedding.py",
+        ".venv/lib/python3.12/site-packages/cffi/_embedding.h",
+        ".venv/lib/python3.12/site-packages/google/genai/tests/batches/test_embedding.py",
+        ".venv/lib/python3.12/site-packages/langchain_core/embeddings/embeddings.py",
+        ".venv/lib/python3.12/site-packages/langsmith/_internal/_embedding_distance.py",
+        ".venv/lib/python3.12/site-packages/litellm/caching/__pycache__/qdrant_semantic_cache.cpython-312.pyc",
+        ".venv/lib/python3.12/site-packages/litellm/caching/qdrant_semantic_cache.py",
+        ".venv/lib/python3.12/site-packages/litellm/llms/bedrock/embed/__pycache__/embedding.cpython-312.pyc"
+      ],
+      "content_evidence": [],
+      "maps_to_steps": [
+        "C6"
+      ],
+      "maps_to_phases": [
+        "C"
+      ],
+      "scan_roots": [
+        ".uv-cache/",
+        ".venv/",
+        ".worktrees/"
+      ],
+      "file_count": 40
+    },
+    {
+      "feature_id": "ci_github_actions",
+      "label": "GitHub Actions CI",
+      "description": "GitHub Actions workflows",
+      "confidence": "medium",
+      "evidence": [
+        ".github/workflows/ci-complete.yml",
+        ".github/workflows/codeql.yml",
+        ".github/workflows/containers.yml",
+        ".github/workflows/docker-scout.yml",
+        ".github/workflows/docs.yml",
+        ".github/workflows/gemini-dispatch.yml",
+        ".github/workflows/gemini-invoke.yml",
+        ".github/workflows/gemini-plan-execute.yml",
+        ".github/workflows/gemini-review.yml",
+        ".github/workflows/gemini-scheduled-triage.yml"
+      ],
+      "content_evidence": [],
+      "maps_to_steps": [
+        "G1",
+        "E0"
+      ],
+      "maps_to_phases": [
+        "G",
+        "E"
+      ],
+      "scan_roots": [
+        ".github/"
+      ],
+      "file_count": 13
+    },
+    {
+      "feature_id": "docker_compose",
+      "label": "Docker Compose",
+      "description": "Docker Compose service definitions",
+      "confidence": "medium",
+      "evidence": [
+        "compose.yml",
+        "docker-compose.unified.yml"
+      ],
+      "content_evidence": [],
+      "maps_to_steps": [
+        "A0",
+        "A2",
+        "C1"
+      ],
+      "maps_to_phases": [
+        "A",
+        "C"
+      ],
+      "scan_roots": [
+        "./"
+      ],
+      "file_count": 2
+    },
+    {
+      "feature_id": "dockerfile",
+      "label": "Dockerfiles",
+      "description": "Container build definitions",
+      "confidence": "medium",
+      "evidence": [
+        ".worktrees/rte-live-cert-artifact-contract-hardening/Dockerfile",
+        ".worktrees/rte-live-cert-artifact-contract-hardening/Dockerfile.frontend",
+        ".worktrees/rte-live-cert-artifact-contract-hardening/docker/leantime/Dockerfile",
+        ".worktrees/rte-live-cert-artifact-contract-hardening/docker/mcp-servers-source/conport-bridge/Dockerfile",
+        ".worktrees/rte-live-cert-artifact-contract-hardening/docker/mcp-servers-source/conport/Dockerfile",
+        ".worktrees/rte-live-cert-artifact-contract-hardening/docker/mcp-servers-source/desktop-commander/Dockerfile",
+        ".worktrees/rte-live-cert-artifact-contract-hardening/docker/mcp-servers-source/docker/mcp-servers/task-master-ai/Dockerfile",
+        ".worktrees/rte-live-cert-artifact-contract-hardening/docker/mcp-servers-source/exa/Dockerfile",
+        ".worktrees/rte-live-cert-artifact-contract-hardening/docker/mcp-servers-source/gptr-mcp/Dockerfile",
+        ".worktrees/rte-live-cert-artifact-contract-hardening/docker/mcp-servers-source/leantime-bridge/Dockerfile"
+      ],
+      "content_evidence": [],
+      "maps_to_steps": [
+        "A0",
+        "E3"
+      ],
+      "maps_to_phases": [
+        "A",
+        "E"
+      ],
+      "scan_roots": [
+        "./",
+        ".worktrees/",
+        "services/"
+      ],
+      "file_count": 24
+    },
+    {
+      "feature_id": "mcp_tools",
+      "label": "MCP Tools",
+      "description": "Model Context Protocol server/tool definitions",
+      "confidence": "high",
+      "evidence": [
+        ".claude.json",
+        ".claude/mcp-system.md",
+        ".claude/personas/python-mcp-expert.agent.md",
+        ".claude/task-master-mcp-config.json",
+        ".dopemux/mcp.instances.toml",
+        ".git/logs/refs/heads/codex/mcp-audit-hardening",
+        ".git/refs/heads/codex/mcp-audit-hardening",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/_interactions/types/mcp_server_tool_result_content.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/_mcp_utils.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/tests/mcp/test_has_mcp_tool_usage.py"
+      ],
+      "content_evidence": [
+        ".claude.json:100",
+        ".claude/personas/python-mcp-expert.agent.md:27",
+        ".claude/task-master-mcp-config.json:27"
+      ],
+      "maps_to_steps": [
+        "A4",
+        "A5",
+        "C10"
+      ],
+      "maps_to_phases": [
+        "A",
+        "C"
+      ],
+      "scan_roots": [
+        "./",
+        ".claude/",
+        ".dopemux/",
+        ".git/",
+        ".uv-cache/",
+        ".venv/",
+        ".worktrees/",
+        "build/",
+        "scripts/",
+        "src/"
+      ],
+      "file_count": 57
+    },
+    {
+      "feature_id": "cli_python",
+      "label": "Python CLI",
+      "description": "Python CLI application (Click, Typer, argparse)",
+      "confidence": "medium",
+      "evidence": [
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/_api_client.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/_interactions/_base_client.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/_interactions/_client.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/_interactions/_client_adapter.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/_replay_api_client.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/client.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/tests/client/test_client_close.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/tests/client/test_client_initialization.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/tests/client/test_client_requests.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/tests/client/test_custom_client.py"
+      ],
+      "content_evidence": [],
+      "maps_to_steps": [
+        "C8",
+        "C9"
+      ],
+      "maps_to_phases": [
+        "C"
+      ],
+      "scan_roots": [
+        ".uv-cache/",
+        ".venv/",
+        ".worktrees/"
+      ],
+      "file_count": 60
+    },
+    {
+      "feature_id": "cli_node",
+      "label": "Node CLI",
+      "description": "Node.js CLI application (Commander, Yargs, Oclif)",
+      "confidence": "medium",
+      "evidence": [
+        ".venv/bin/activate",
+        ".venv/bin/activate.bat",
+        ".venv/bin/activate.csh",
+        ".venv/bin/activate.fish",
+        ".venv/bin/activate.nu",
+        ".venv/bin/activate.ps1",
+        ".venv/bin/activate_this.py",
+        ".venv/bin/alembic",
+        ".venv/bin/bandit",
+        ".venv/bin/bandit-baseline"
+      ],
+      "content_evidence": [],
+      "maps_to_steps": [
+        "C8",
+        "C9"
+      ],
+      "maps_to_phases": [
+        "C"
+      ],
+      "scan_roots": [
+        ".venv/",
+        ".worktrees/",
+        "services/"
+      ],
+      "file_count": 29
+    },
+    {
+      "feature_id": "docs_structured",
+      "label": "Structured Documentation",
+      "description": "Organized documentation directory with markdown/RST",
+      "confidence": "medium",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/01-tutorials/examples-2.md",
+        "docs/01-tutorials/examples.md",
+        "docs/01-tutorials/extraction-quickstart.md",
+        "docs/01-tutorials/installation-2.md",
+        "docs/01-tutorials/installation-3.md",
+        "docs/01-tutorials/installation.md",
+        "docs/01-tutorials/learning/operational-learning-model.md",
+        "docs/01-tutorials/learning/outcome-taxonomy.md",
+        "docs/01-tutorials/learning/override-capture-guide.md"
+      ],
+      "content_evidence": [],
+      "maps_to_steps": [
+        "D0",
+        "D1",
+        "D2",
+        "D3",
+        "D4",
+        "D5"
+      ],
+      "maps_to_phases": [
+        "D"
+      ],
+      "scan_roots": [
+        "docs/"
+      ],
+      "file_count": 20
+    },
+    {
+      "feature_id": "docs_api_spec",
+      "label": "API Specification",
+      "description": "OpenAPI/Swagger API specification",
+      "confidence": "medium",
+      "evidence": [
+        ".venv/lib/python3.12/site-packages/litellm/proxy/openapi.json",
+        ".venv/lib/python3.12/site-packages/litellm/proxy/openapi_registry.json",
+        ".worktrees/rte-live-cert-artifact-contract-hardening/.uv-cache/archive-v0/GbcOb9stWYZM4kG3XV2sb/litellm/proxy/openapi.json",
+        ".worktrees/rte-live-cert-artifact-contract-hardening/.uv-cache/archive-v0/GbcOb9stWYZM4kG3XV2sb/litellm/proxy/openapi_registry.json",
+        ".worktrees/rte-live-cert-artifact-contract-hardening/.venv/lib/python3.11/site-packages/litellm/proxy/openapi.json",
+        ".worktrees/rte-live-cert-artifact-contract-hardening/.venv/lib/python3.11/site-packages/litellm/proxy/openapi_registry.json"
+      ],
+      "content_evidence": [],
+      "maps_to_steps": [
+        "C15",
+        "D1"
+      ],
+      "maps_to_phases": [
+        "C",
+        "D"
+      ],
+      "scan_roots": [
+        ".venv/",
+        ".worktrees/"
+      ],
+      "file_count": 6
+    },
+    {
+      "feature_id": "testing_python",
+      "label": "Python Tests",
+      "description": "Python test suite (pytest, unittest)",
+      "confidence": "high",
+      "evidence": [
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/tests/afc/test_convert_if_exist_pydantic_model.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/tests/afc/test_convert_number_values_for_function_call_args.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/tests/afc/test_find_afc_incompatible_tool_indexes.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/tests/afc/test_generate_content_stream_afc.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/tests/afc/test_generate_content_stream_afc_thoughts.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/tests/afc/test_get_function_map.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/tests/afc/test_get_function_response_parts.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/tests/afc/test_get_max_remote_calls_for_afc.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/tests/afc/test_invoke_function_from_dict_args.py",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/tests/afc/test_raise_error_for_afc_incompatible_config.py"
+      ],
+      "content_evidence": [
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/tests/afc/test_convert_if_exist_pydantic_model.py:22",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/tests/afc/test_find_afc_incompatible_tool_indexes.py:20",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/tests/afc/test_generate_content_stream_afc.py:16",
+        ".uv-cache/archive-v0/09jv8F7VaB0Li1LMpH0go/google/genai/tests/afc/test_generate_content_stream_afc_thoughts.py:15"
+      ],
+      "maps_to_steps": [
+        "E0",
+        "E6"
+      ],
+      "maps_to_phases": [
+        "E"
+      ],
+      "scan_roots": [
+        "./",
+        ".uv-cache/",
+        "tests/"
+      ],
+      "file_count": 41
+    },
+    {
+      "feature_id": "testing_node",
+      "label": "Node/TS Tests",
+      "description": "JavaScript/TypeScript test suite (Jest, Vitest, Mocha)",
+      "confidence": "high",
+      "evidence": [
+        ".worktrees/rte-live-cert-artifact-contract-hardening/ui-dashboard/src/components/__tests__/Accessibility.test.ts",
+        "services/conport_kg_ui/node_modules/is-lower-case/dist.es2015/index.spec.js",
+        "services/conport_kg_ui/node_modules/is-lower-case/dist/index.spec.js",
+        "services/conport_kg_ui/node_modules/is-upper-case/dist.es2015/index.spec.js",
+        "services/conport_kg_ui/node_modules/is-upper-case/dist/index.spec.js",
+        "ui-dashboard/src/components/__tests__/Accessibility.test.ts",
+        "ui-dashboard/src/notificationColors.test.ts"
+      ],
+      "content_evidence": [
+        ".worktrees/rte-live-cert-artifact-contract-hardening/ui-dashboard/src/components/__tests__/Accessibility.test.ts:14",
+        "services/conport_kg_ui/node_modules/is-lower-case/dist.es2015/index.spec.js:10",
+        "services/conport_kg_ui/node_modules/is-lower-case/dist/index.spec.js:12",
+        "services/conport_kg_ui/node_modules/is-upper-case/dist.es2015/index.spec.js:10",
+        "services/conport_kg_ui/node_modules/is-upper-case/dist/index.spec.js:12"
+      ],
+      "maps_to_steps": [
+        "E0",
+        "E6"
+      ],
+      "maps_to_phases": [
+        "E"
+      ],
+      "scan_roots": [
+        ".worktrees/",
+        "services/",
+        "ui-dashboard/"
+      ],
+      "file_count": 7
+    },
+    {
+      "feature_id": "python_packaging",
+      "label": "Python Packaging",
+      "description": "Python package management (pyproject.toml, setup.py, requirements.txt)",
+      "confidence": "medium",
+      "evidence": [
+        "pyproject.toml",
+        "uv.lock"
+      ],
+      "content_evidence": [],
+      "maps_to_steps": [
+        "A0",
+        "C14",
+        "C16"
+      ],
+      "maps_to_phases": [
+        "A",
+        "C"
+      ],
+      "scan_roots": [
+        "./"
+      ],
+      "file_count": 2
+    },
+    {
+      "feature_id": "node_packaging",
+      "label": "Node Packaging",
+      "description": "Node.js package management (package.json, yarn, pnpm)",
+      "confidence": "medium",
+      "evidence": [
+        "package-lock.json",
+        "package.json"
+      ],
+      "content_evidence": [],
+      "maps_to_steps": [
+        "A0",
+        "C16"
+      ],
+      "maps_to_phases": [
+        "A",
+        "C"
+      ],
+      "scan_roots": [
+        "./"
+      ],
+      "file_count": 2
+    },
+    {
+      "feature_id": "agent_orchestration",
+      "label": "Agent Orchestration",
+      "description": "AI agent or bot orchestration patterns",
+      "confidence": "medium",
+      "evidence": [
+        ".claude/modules/pm-plane/task-orchestrator.md",
+        ".claude/modules/shared/superclaude-workflows.md",
+        ".claude/personas/Ultimate-Transparent-Thinking-Beast-Mode.agent.md",
+        ".claude/personas/adr-generator.agent.md",
+        ".claude/personas/context7.agent.md",
+        ".claude/personas/critical-thinking.agent.md",
+        ".claude/personas/devils-advocate.agent.md",
+        ".claude/personas/devops-expert.agent.md",
+        ".claude/personas/gilfoyle.agent.md",
+        ".claude/personas/github-actions-expert.agent.md"
+      ],
+      "content_evidence": [],
+      "maps_to_steps": [
+        "C12"
+      ],
+      "maps_to_phases": [
+        "C"
+      ],
+      "scan_roots": [
+        "./",
+        ".claude/",
+        ".git/",
+        ".uv-cache/",
+        ".venv/",
+        ".worktrees/",
+        "ARCHIVED_RECOVERY/",
+        "docker/"
+      ],
+      "file_count": 86
+    },
+    {
+      "feature_id": "plugin_system",
+      "label": "Plugin System",
+      "description": "Plugin/extension architecture",
+      "confidence": "medium",
+      "evidence": [
+        ".uv-cache/archive-v0/Ax9fGG4SaZqyX99KnI2q2/sqlite_utils/hookspecs.py",
+        ".uv-cache/archive-v0/Ax9fGG4SaZqyX99KnI2q2/sqlite_utils/plugins.py",
+        ".uv-cache/archive-v0/hPENxbl2poDFPMemZzP4P/setuptools/_distutils/extension.py",
+        ".uv-cache/archive-v0/hPENxbl2poDFPMemZzP4P/setuptools/_distutils/tests/test_extension.py",
+        ".uv-cache/archive-v0/hPENxbl2poDFPMemZzP4P/setuptools/extension.py",
+        ".venv/lib/python3.12/site-packages/_pytest/hookspec.py",
+        ".venv/lib/python3.12/site-packages/aiohttp/pytest_plugin.py",
+        ".venv/lib/python3.12/site-packages/alembic/runtime/plugins.py",
+        ".venv/lib/python3.12/site-packages/alembic/script/write_hooks.py",
+        ".venv/lib/python3.12/site-packages/anyio/pytest_plugin.py"
+      ],
+      "content_evidence": [],
+      "maps_to_steps": [
+        "B0",
+        "B1"
+      ],
+      "maps_to_phases": [
+        "B"
+      ],
+      "scan_roots": [
+        ".uv-cache/",
+        ".venv/"
+      ],
+      "file_count": 60
+    },
+    {
+      "feature_id": "config_yaml",
+      "label": "YAML Configuration",
+      "description": "YAML-based configuration files",
+      "confidence": "medium",
+      "evidence": [
+        ".pre-commit-config.yaml",
+        ".venv/lib/python3.12/site-packages/litellm/proxy/_new_new_secret_config.yaml",
+        ".venv/lib/python3.12/site-packages/litellm/proxy/_new_secret_config.yaml",
+        ".venv/lib/python3.12/site-packages/litellm/proxy/_super_secret_config.yaml",
+        ".venv/lib/python3.12/site-packages/litellm/proxy/example_config_yaml/_health_check_test_config.yaml",
+        ".venv/lib/python3.12/site-packages/litellm/proxy/example_config_yaml/aliases_config.yaml",
+        ".venv/lib/python3.12/site-packages/litellm/proxy/example_config_yaml/azure_config.yaml",
+        ".venv/lib/python3.12/site-packages/litellm/proxy/example_config_yaml/enterprise_config.yaml",
+        ".venv/lib/python3.12/site-packages/litellm/proxy/example_config_yaml/langfuse_config.yaml",
+        ".venv/lib/python3.12/site-packages/litellm/proxy/example_config_yaml/multi_instance_simple_config.yaml"
+      ],
+      "content_evidence": [],
+      "maps_to_steps": [
+        "A0",
+        "E0"
+      ],
+      "maps_to_phases": [
+        "A",
+        "E"
+      ],
+      "scan_roots": [
+        "./",
+        ".venv/",
+        "config/"
+      ],
+      "file_count": 32
+    },
+    {
+      "feature_id": "config_toml",
+      "label": "TOML Configuration",
+      "description": "TOML-based configuration files",
+      "confidence": "medium",
+      "evidence": [
+        ".dopemux/mcp.instances.toml",
+        ".github/commands/gemini-invoke.toml",
+        ".github/commands/gemini-plan-execute.toml",
+        ".github/commands/gemini-review.toml",
+        ".github/commands/gemini-scheduled-triage.toml",
+        ".github/commands/gemini-triage.toml",
+        ".lychee.toml",
+        ".venv/lib/python3.12/site-packages/glom/test/data/test_invalid.toml",
+        ".venv/lib/python3.12/site-packages/glom/test/data/test_valid.toml",
+        ".venv/lib/python3.12/site-packages/pandas/pyproject.toml"
+      ],
+      "content_evidence": [],
+      "maps_to_steps": [
+        "A0",
+        "E0"
+      ],
+      "maps_to_phases": [
+        "A",
+        "E"
+      ],
+      "scan_roots": [
+        "./",
+        ".dopemux/",
+        ".github/",
+        ".venv/",
+        ".vibe/",
+        ".worktrees/"
+      ],
+      "file_count": 21
+    },
+    {
+      "feature_id": "monitoring",
+      "label": "Monitoring / Observability",
+      "description": "Logging, metrics, tracing (Prometheus, Grafana, OpenTelemetry)",
+      "confidence": "high",
+      "evidence": [
+        ".venv/bin/opentelemetry-bootstrap",
+        ".venv/bin/opentelemetry-instrument",
+        ".venv/lib/python3.12/site-packages/docket/_prometheus_exporter.py",
+        ".venv/lib/python3.12/site-packages/langsmith/_internal/_otel_utils.py",
+        ".venv/lib/python3.12/site-packages/langsmith/_internal/otel/_otel_client.py",
+        ".venv/lib/python3.12/site-packages/langsmith/_internal/otel/_otel_exporter.py",
+        ".venv/lib/python3.12/site-packages/litellm/integrations/__pycache__/opentelemetry.cpython-312.pyc",
+        ".venv/lib/python3.12/site-packages/litellm/integrations/datadog/__pycache__/datadog.cpython-312.pyc",
+        ".venv/lib/python3.12/site-packages/litellm/integrations/datadog/__pycache__/datadog_handler.cpython-312.pyc",
+        ".venv/lib/python3.12/site-packages/litellm/integrations/datadog/__pycache__/datadog_llm_obs.cpython-312.pyc"
+      ],
+      "content_evidence": [
+        ".venv/bin/opentelemetry-bootstrap:5",
+        ".venv/bin/opentelemetry-instrument:5",
+        ".venv/lib/python3.12/site-packages/docket/_prometheus_exporter.py:32",
+        ".venv/lib/python3.12/site-packages/langsmith/_internal/otel/_otel_client.py:9"
+      ],
+      "maps_to_steps": [
+        "E5",
+        "W0"
+      ],
+      "maps_to_phases": [
+        "E",
+        "W"
+      ],
+      "scan_roots": [
+        ".venv/",
+        ".worktrees/"
+      ],
+      "file_count": 69
+    },
+    {
+      "feature_id": "dopemux_core",
+      "label": "Dopemux Core",
+      "description": "Dopemux-specific core components (ConPort, Dope-Memory, TaskX, ADHD Engine)",
+      "confidence": "high",
+      "evidence": [
+        ".claude/modules/cognitive-plane/conport-memory.md",
+        ".claude/modules/pm-plane/task-orchestrator.md",
+        ".claude/modules/shared/adhd-patterns.md",
+        ".claude/personas/backend-architect-dopemux.md",
+        ".claude/personas/devops-architect-dopemux.md",
+        ".claude/personas/frontend-architect-dopemux.md",
+        ".claude/personas/general-purpose-dopemux.md",
+        ".claude/personas/learning-guide-dopemux.md",
+        ".claude/personas/performance-engineer-dopemux.md",
+        ".claude/personas/python-expert-dopemux.md"
+      ],
+      "content_evidence": [
+        ".claude/modules/cognitive-plane/conport-memory.md:1",
+        ".claude/modules/pm-plane/task-orchestrator.md:1",
+        ".claude/modules/shared/adhd-patterns.md:121",
+        ".claude/personas/backend-architect-dopemux.md:159",
+        ".claude/personas/devops-architect-dopemux.md:151"
+      ],
+      "maps_to_steps": [
+        "C3",
+        "C4",
+        "C5",
+        "C11",
+        "C13",
+        "C17"
+      ],
+      "maps_to_phases": [
+        "C"
+      ],
+      "scan_roots": [
+        ".claude/",
+        ".git/",
+        ".uv-cache/",
+        ".venv/",
+        ".worktrees/",
+        "build/",
+        "docs/",
+        "reports/",
+        "services/",
+        "src/"
+      ],
+      "file_count": 124
+    },
+    {
+      "feature_id": "dopemux_home_control",
+      "label": "Dopemux Home Control",
+      "description": "Dopemux user-home control plane (~/.dopemux, ~/.config/dopemux)",
+      "confidence": "high",
+      "evidence": [
+        ".worktrees/rte-live-cert-artifact-contract-hardening/UPGRADES/H_home_control_plane.md",
+        "UPGRADES/H_home_control_plane.md"
+      ],
+      "content_evidence": [
+        ".worktrees/rte-live-cert-artifact-contract-hardening/UPGRADES/H_home_control_plane.md:26",
+        "UPGRADES/H_home_control_plane.md:26"
+      ],
+      "maps_to_steps": [
+        "H0",
+        "H1",
+        "H2",
+        "H3",
+        "H4",
+        "H5",
+        "H6",
+        "H7",
+        "H8",
+        "H9"
+      ],
+      "maps_to_phases": [
+        "H"
+      ],
+      "scan_roots": [
+        ".worktrees/",
+        "UPGRADES/"
+      ],
+      "file_count": 2
+    },
+    {
+      "feature_id": "dopemux_task_packets",
+      "label": "Dopemux Task Packets",
+      "description": "Dopemux task packet system",
+      "confidence": "high",
+      "evidence": [
+        ".venv/lib/python3.12/site-packages/dopetask_schemas/task_packet.schema.json",
+        ".worktrees/rte-live-cert-artifact-contract-hardening/docs/02-how-to/operations/log-task-packets.md",
+        ".worktrees/rte-live-cert-artifact-contract-hardening/scripts/collect_task_packet.py",
+        ".worktrees/rte-live-cert-artifact-contract-hardening/src/dopemux_pr_merge_specialist/dopetask_packet_launcher.py",
+        ".worktrees/rte-live-cert-artifact-contract-hardening/templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/dopetask_packet_launcher.py",
+        "build/lib/dopemux_pr_merge_specialist/dopetask_packet_launcher.py",
+        "docs/02-how-to/operations/log-task-packets.md",
+        "scripts/collect_task_packet.py",
+        "src/dopemux_pr_merge_specialist/__pycache__/dopetask_packet_launcher.cpython-312.pyc",
+        "src/dopemux_pr_merge_specialist/dopetask_packet_launcher.py"
+      ],
+      "content_evidence": [
+        ".venv/lib/python3.12/site-packages/dopetask_schemas/task_packet.schema.json:8",
+        ".worktrees/rte-live-cert-artifact-contract-hardening/docs/02-how-to/operations/log-task-packets.md:2",
+        ".worktrees/rte-live-cert-artifact-contract-hardening/scripts/collect_task_packet.py:737"
+      ],
+      "maps_to_steps": [
+        "T0",
+        "T1",
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T9"
+      ],
+      "maps_to_phases": [
+        "T"
+      ],
+      "scan_roots": [
+        ".venv/",
+        ".worktrees/",
+        "build/",
+        "docs/",
+        "scripts/",
+        "src/",
+        "templates/"
+      ],
+      "file_count": 11
+    },
+    {
+      "feature_id": "llm_integration",
+      "label": "LLM Integration",
+      "description": "LLM/AI model integration (LiteLLM, OpenAI, Anthropic)",
+      "confidence": "medium",
+      "evidence": [
+        ".claude/llm.md",
+        ".claude/llms.md",
+        ".git/logs/refs/remotes/origin/feat/openai-batch-retrieval-integration",
+        ".git/refs/remotes/origin/feat/openai-batch-retrieval-integration",
+        ".venv/bin/litellm",
+        ".venv/bin/litellm-proxy",
+        ".venv/bin/openai",
+        ".venv/lib/python3.12/site-packages/anthropic/types/anthropic_beta_param.py",
+        ".venv/lib/python3.12/site-packages/dopetask/docs/llm_refresh.py",
+        ".venv/lib/python3.12/site-packages/dopetask/docs/refresh_llm.py"
+      ],
+      "content_evidence": [],
+      "maps_to_steps": [
+        "A7",
+        "A8"
+      ],
+      "maps_to_phases": [
+        "A"
+      ],
+      "scan_roots": [
+        ".claude/",
+        ".git/",
+        ".venv/",
+        ".worktrees/"
+      ],
+      "file_count": 74
+    },
+    {
+      "feature_id": "task_management",
+      "label": "Task Management",
+      "description": "Task/project management integration (Leantime, Jira, Linear)",
+      "confidence": "high",
+      "evidence": [
+        ".claude/modules/pm-plane/leantime.md",
+        ".git/logs/refs/remotes/origin/\u26a1-optimize-leantime-task-sync-8535698096616785593",
+        ".git/refs/remotes/origin/\u26a1-optimize-leantime-task-sync-8535698096616785593",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/linear_model/_linear_loss.py",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/linear_model/tests/test_linear_loss.py",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/manifold/_locally_linear.py",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/manifold/tests/test_locally_linear.py",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/svm/_liblinear.cpython-311-darwin.so",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/svm/_liblinear.pxi",
+        ".uv-cache/archive-v0/D0TwYyQoqEsrTeUPezPMz/sklearn/svm/_liblinear.pyx"
+      ],
+      "content_evidence": [
+        ".claude/modules/pm-plane/leantime.md:55"
+      ],
+      "maps_to_steps": [
+        "C5",
+        "C11"
+      ],
+      "maps_to_phases": [
+        "C"
+      ],
+      "scan_roots": [
+        ".claude/",
+        ".git/",
+        ".uv-cache/",
+        ".venv/",
+        ".worktrees/"
+      ],
+      "file_count": 43
+    }
+  ],
+  "rejected_features": [],
+  "added_features": [],
+  "domain_vocabulary": {},
+  "skip_phases": [],
+  "is_dopemux_repo": true,
+  "feature_ids": [
+    "agent_orchestration",
+    "ci_github_actions",
+    "cli_node",
+    "cli_python",
+    "config_toml",
+    "config_yaml",
+    "database_graph",
+    "database_relational",
+    "database_vector",
+    "docker_compose",
+    "dockerfile",
+    "docs_api_spec",
+    "docs_structured",
+    "dopemux_core",
+    "dopemux_home_control",
+    "dopemux_task_packets",
+    "event_bus",
+    "graphql_api",
+    "grpc_api",
+    "http_api_node",
+    "http_api_python",
+    "llm_integration",
+    "mcp_tools",
+    "monitoring",
+    "node_packaging",
+    "plugin_system",
+    "python_packaging",
+    "task_management",
+    "testing_node",
+    "testing_python"
+  ]
+}

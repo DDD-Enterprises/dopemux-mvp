@@ -4,9 +4,9 @@ const { useState } = React;
 
 function Cockpit({ size = "120x40" }) {
     const seed = window.SEED;
-    const [activeMode] = useState("Services");
-    const [activeService] = useState(seed.services.selected);
-    const [activeRun] = useState(seed.rte_child_surface.runs[0].run_id);
+    const [activeMode, setActiveMode] = useState("Services");
+    const [activeService, setActiveService] = useState("repo-truth-extractor");
+    const [activeRun, setActiveRun] = useState(seed.rte.runs[0].runId);
 
     return (
         <Frame
@@ -15,23 +15,14 @@ function Cockpit({ size = "120x40" }) {
             surface="services"
             mode="rich"
             state="STATIC DEMO"
-            authority="dopemux"
-            domain="cockpit_chrome"
-            role="chrome"
-            next_action="select_mode"
+            authority={seed.services.authority}
         >
-            <ModeBar modes={seed.top_level_modes} current={activeMode} />
+            <ModeBar modes={seed.modes} current={activeMode} />
 
             <div className="cockpit-grid">
-                {/* LEFT: Services mode list */}
+                {/* LEFT: Services pane */}
                 <Pane className="services-pane">
-                    <PaneHeader
-                        title="Services"
-                        domain="services_index"
-                        authority={seed.services.authority}
-                        role="derived"
-                        next_action="select_workload"
-                    />
+                    <PaneHeader title="Services" authority={seed.services.authority} />
                     {seed.services.rows.map((s) => (
                         <ServiceRow
                             key={s.name}
@@ -39,31 +30,25 @@ function Cockpit({ size = "120x40" }) {
                             name={s.name}
                             kind={s.kind}
                             status={s.status}
-                            src={s.SRC}
+                            src={s.src}
                         />
                     ))}
                 </Pane>
 
-                {/* CENTER: repo-truth-extractor child/workload surface */}
+                {/* CENTER: RTE child surface */}
                 <Pane className="center-pane">
-                    <PaneHeader
-                        title={`Services -> ${activeService}`}
-                        domain="services_child_workload"
-                        authority={seed.rte_child_surface.authority}
-                        role="canonical"
-                        next_action="inspect_run_history"
-                    />
+                    <PaneHeader title={`Services -> ${activeService}`} authority={seed.rte.authority} />
                     <div className="center-tabs">
-                        {seed.rte_child_surface.tabs.map((t, i) => (
+                        {seed.rte.tabs.map((t, i) => (
                             <span key={t}>
-                                <span className={t === seed.rte_child_surface.rendered_tab ? "tab-active" : ""}>{t}</span>
-                                {i < seed.rte_child_surface.tabs.length - 1 && <span className="tab-sep"> | </span>}
+                                <span className={t === seed.rte.rendered_tab ? "tab-active" : ""}>{t}</span>
+                                {i < seed.rte.tabs.length - 1 && <span className="tab-sep"> | </span>}
                             </span>
                         ))}
                     </div>
                     <div className="row row-dim">RUN ID                          REPO · BRANCH        PHASE       ALERTS</div>
-                    {seed.rte_child_surface.runs.map((r) => (
-                        <RunRow key={r.run_id} active={r.run_id === activeRun} run={r} />
+                    {seed.rte.runs.map((r) => (
+                        <RunRow key={r.runId} active={r.runId === activeRun} run={r} />
                     ))}
                 </Pane>
 
@@ -71,11 +56,11 @@ function Cockpit({ size = "120x40" }) {
                 <Inspector inspector={seed.services.inspector} />
             </div>
 
-            <CommandRail authority="dopemux" flags="static-demo · no writes · seed-only" />
+            <CommandRail authority={seed.services.authority} flags="static-demo · no writes · seed-only" />
             <StatusRail
                 workspace={seed.workspace.id}
                 mode={activeMode}
-                render={seed.status_rail.right}
+                render={seed.statusRail.right}
             />
             <HintRail items={seed.hints} />
         </Frame>

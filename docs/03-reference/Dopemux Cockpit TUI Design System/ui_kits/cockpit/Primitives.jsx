@@ -1,8 +1,8 @@
 // Cockpit primitives — TUI rendering as React components.
-// Every component renders character-positioned text; layout is explicit in
-// cockpit.css and never hidden behind component abstractions.
+// Every component renders character-positioned text; no layout flex/grid
+// hides behind the scenes — what you see is what the framebuffer draws.
 
-const { useState } = React;
+const { useState, useMemo } = React;
 
 /* ── Closed chip set. Do not extend. ─────────────────────────────────── */
 const CHIP_STYLES = {
@@ -14,20 +14,14 @@ const CHIP_STYLES = {
     EDGE:      "chip-edge",
 };
 
-const PANE_ROLES = new Set(["canonical", "derived", "mirrored", "proxied", "authoring", "chrome"]);
-
 function Chip({ kind }) {
     const cls = CHIP_STYLES[kind];
     if (!cls) throw new Error(`forbidden chip: ${kind}`);
     return <span className={`chip ${cls}`}>[{kind}]</span>;
 }
 
-/* ── SRC tag: provenance, not authority.
- *   Chrome does not carry SRC.
- *   Each logical data/provenance record carries SRC once.
- * ───────────────────────────────────────────────────────────────────── */
+/* ── SRC tag — every row carries one. ────────────────────────────────── */
 function Src({ value }) {
-    if (!value || value === "UNKNOWN") throw new Error("SRC requires known service provenance");
     return <span className="src">SRC={value}</span>;
 }
 
@@ -41,23 +35,12 @@ function Pane({ children, className = "" }) {
     return <div className={`pane ${className}`}>{children}</div>;
 }
 
-/* ── PaneHeader: declares the required four-field pane contract. ─────── */
-function PaneHeader({
-    title,
-    domain,
-    authority,
-    role = "canonical",
-    next_action,
-    accent = "cyan",
-}) {
-    if (!PANE_ROLES.has(role)) throw new Error(`forbidden pane role: ${role}`);
+/* ── PaneHeader: declares authority for everything below. ───────────── */
+function PaneHeader({ title, authority, accent = "cyan" }) {
     return (
         <div className={`pane-header pane-header-${accent}`}>
             <span className="pane-title">{title}</span>
-            <span className="pane-domain"> domain: {domain}</span>
             <span className="pane-auth"> authority: {authority}</span>
-            <span className="pane-role"> role: {role}</span>
-            <span className="pane-next"> next_action: {next_action}</span>
         </div>
     );
 }
@@ -92,10 +75,10 @@ function ServiceRow({ active, name, kind, status, src }) {
 function RunRow({ active, run }) {
     return (
         <>
-            <Row active={active} src={run.SRC || run.src} chip={run.status}>
-                <span className="row-name">{run.run_id || run.runId}</span>
+            <Row active={active} src={run.src} chip={run.status}>
+                <span className="row-name">{run.runId}</span>
             </Row>
-            <Row dim>
+            <Row src={run.src} dim>
                 <span>phase={run.phase} repo={run.repo} alerts={run.alerts}</span>
             </Row>
         </>
@@ -126,26 +109,20 @@ function ModeBar({ modes, current }) {
 function Inspector({ inspector }) {
     return (
         <Pane className="inspector">
-            <PaneHeader
-                title="Inspector"
-                domain="services_child_detail"
-                authority={inspector.authority}
-                role="derived"
-                next_action="inspect_workload"
-            />
+            <PaneHeader title="Inspector" authority={inspector.authority} />
             <div className="row">subject <Src value={inspector.authority} /> {inspector.subject}</div>
             <div className="row">provenance={inspector.provenance} <Src value={inspector.authority} /></div>
             {inspector.rows.map((r, i) => (
                 <div key={i} className="row row-dim">
-                    {(r.SRC || r.src) && <><Src value={r.SRC || r.src} /> </>}{r.label}={r.value}
+                    <Src value={r.src} /> {r.label}={r.value}
                 </div>
             ))}
             <Rule width={34} />
             <div className="bridge-header">Bridge adapter/proxy: dopecon-bridge</div>
             <div className="row"><Src value="dopecon-bridge" /> <Chip kind="EDGE" /> adapter-only segregated</div>
-            <div className="row row-dim">ADAPTER -&gt; &lt;service&gt; : &lt;action&gt;</div>
+            <div className="row row-dim">WRITE -&gt; &lt;service&gt; : &lt;action&gt;</div>
             {inspector.bridge.actions.map((a, i) => (
-                <div key={i} className="row row-dim"><Src value={a.SRC || a.src} /> {a.label}</div>
+                <div key={i} className="row row-dim"><Src value={a.src} /> {a.label}</div>
             ))}
             <div className="row row-muted">{inspector.bridge.footer}</div>
         </Pane>
@@ -158,11 +135,9 @@ function Inspector({ inspector }) {
 function CommandRail({ authority = "dopemux", flags = "static-demo · no writes" }) {
     return (
         <div className="rail rail-command">
-            <span className="rail-cell">domain: commands</span>
             <span className="rail-cell">authority: {authority}</span>
-            <span className="rail-cell">role: chrome</span>
-            <span className="rail-cell">next_action: operator_shortcut</span>
             <span className="rail-cell">{flags}</span>
+            <span className="rail-cell">no service adapters · no rte execution</span>
         </div>
     );
 }
@@ -173,10 +148,6 @@ function StatusRail({ workspace, mode, render }) {
             <span className="rail-cell">workspace {workspace}</span>
             <span className="rail-cell">mode {mode}</span>
             <span className="rail-cell">render {render}</span>
-            <span className="rail-cell">domain: status</span>
-            <span className="rail-cell">authority: dopemux</span>
-            <span className="rail-cell">role: chrome</span>
-            <span className="rail-cell">next_action: observe_state</span>
         </div>
     );
 }
@@ -193,19 +164,16 @@ function HintRail({ items }) {
 }
 
 /* ── Frame: the outer cockpit shell.
- *   Chrome row — declares workspace, surface, mode, render mode, command
- *   authority, role, flags, and snapshot size. Never carries SRC=.
- *   Data carries provenance; chrome does not. */
+ *   Chrome row — declares workspace, surface, mode, render mode,
+ *   authority, flags, and snapshot size. Never carries SRC= (data is
+ *   provenance, chrome is not data). */
 function Frame({
     size = "120x40",
-    workspace = window.SEED?.workspace?.id ?? "dopemux-mvp",
+    workspace = "dopemux-mvp",
     surface = "services",
     mode = "rich",
     state = "STATIC DEMO",
     authority = "dopemux",
-    role = "chrome",
-    domain = "cockpit_chrome",
-    next_action = "select_mode",
     children,
 }) {
     return (
@@ -215,10 +183,7 @@ function Frame({
                 <span className="frame-meta">workspace {workspace}</span>
                 <span className="frame-meta">surface {surface}</span>
                 <span className="frame-meta">mode {mode}</span>
-                <span className="frame-meta">domain: {domain}</span>
                 <span className="frame-meta">authority: {authority}</span>
-                <span className="frame-meta">role: {role}</span>
-                <span className="frame-meta">next_action: {next_action}</span>
                 <span className="frame-meta frame-state">{state}</span>
                 <span className="frame-meta">snapshot {size}</span>
             </div>

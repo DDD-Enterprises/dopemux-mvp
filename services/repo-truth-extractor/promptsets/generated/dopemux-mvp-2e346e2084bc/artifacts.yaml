@@ -1,0 +1,619 @@
+version: '4.0'
+generated_at: '2073-02-07T04:00:51+00:00'
+run_id: sync-dopemux-mvp-2e346e2084bc-2032-08-13T08:57:34+00:00
+forbidden_norm_keys:
+- generated_at
+- timestamp
+- created_at
+- updated_at
+artifacts:
+- phase: A
+  artifact_name: PHASE_A_INVENTORY.json
+  canonical_writer_step_id: A0
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: A
+  artifact_name: A1_EXTRACTION.json
+  canonical_writer_step_id: A1
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: A
+  artifact_name: A6_EXTRACTION.json
+  canonical_writer_step_id: A6
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: A
+  artifact_name: PHASE_A_MERGED.json
+  canonical_writer_step_id: A99
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: D
+  artifact_name: PHASE_D_INVENTORY.json
+  canonical_writer_step_id: D0
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: D
+  artifact_name: D1_EXTRACTION.json
+  canonical_writer_step_id: D1
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: D
+  artifact_name: D2_EXTRACTION.json
+  canonical_writer_step_id: D2
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: D
+  artifact_name: D3_EXTRACTION.json
+  canonical_writer_step_id: D3
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: D
+  artifact_name: D4_EXTRACTION.json
+  canonical_writer_step_id: D4
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: D
+  artifact_name: D5_EXTRACTION.json
+  canonical_writer_step_id: D5
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: C
+  artifact_name: PHASE_C_INVENTORY.json
+  canonical_writer_step_id: C0
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: C
+  artifact_name: C1_EXTRACTION.json
+  canonical_writer_step_id: C1
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: C
+  artifact_name: C14_EXTRACTION.json
+  canonical_writer_step_id: C14
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: C
+  artifact_name: C16_EXTRACTION.json
+  canonical_writer_step_id: C16
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: C
+  artifact_name: C6_EXTRACTION.json
+  canonical_writer_step_id: C6
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: C
+  artifact_name: C7_EXTRACTION.json
+  canonical_writer_step_id: C7
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: C
+  artifact_name: C8_EXTRACTION.json
+  canonical_writer_step_id: C8
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: C
+  artifact_name: PHASE_C_MERGED.json
+  canonical_writer_step_id: C9
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: E
+  artifact_name: PHASE_E_INVENTORY.json
+  canonical_writer_step_id: E0
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: E
+  artifact_name: E1_EXTRACTION.json
+  canonical_writer_step_id: E1
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: E
+  artifact_name: E2_EXTRACTION.json
+  canonical_writer_step_id: E2
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: E
+  artifact_name: E6_EXTRACTION.json
+  canonical_writer_step_id: E6
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: E
+  artifact_name: PHASE_E_MERGED.json
+  canonical_writer_step_id: E9
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: G
+  artifact_name: PHASE_G_INVENTORY.json
+  canonical_writer_step_id: G0
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: G
+  artifact_name: G1_EXTRACTION.json
+  canonical_writer_step_id: G1
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: G
+  artifact_name: G2_EXTRACTION.json
+  canonical_writer_step_id: G2
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: G
+  artifact_name: G3_EXTRACTION.json
+  canonical_writer_step_id: G3
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: G
+  artifact_name: G4_EXTRACTION.json
+  canonical_writer_step_id: G4
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: G
+  artifact_name: PHASE_G_MERGED.json
+  canonical_writer_step_id: G9
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: Q
+  artifact_name: PHASE_Q_INVENTORY.json
+  canonical_writer_step_id: Q0
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: Q
+  artifact_name: Q1_EXTRACTION.json
+  canonical_writer_step_id: Q1
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: Q
+  artifact_name: Q2_EXTRACTION.json
+  canonical_writer_step_id: Q2
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: Q
+  artifact_name: Q3_EXTRACTION.json
+  canonical_writer_step_id: Q3
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: Q
+  artifact_name: PHASE_Q_MERGED.json
+  canonical_writer_step_id: Q9
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: R
+  artifact_name: PHASE_R_INVENTORY.json
+  canonical_writer_step_id: R0
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: R
+  artifact_name: R2_EXTRACTION.json
+  canonical_writer_step_id: R2
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: R
+  artifact_name: R3_EXTRACTION.json
+  canonical_writer_step_id: R3
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: R
+  artifact_name: R5_EXTRACTION.json
+  canonical_writer_step_id: R5
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: R
+  artifact_name: R6_EXTRACTION.json
+  canonical_writer_step_id: R6
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: R
+  artifact_name: R7_EXTRACTION.json
+  canonical_writer_step_id: R7
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: R
+  artifact_name: R8_EXTRACTION.json
+  canonical_writer_step_id: R8
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: X
+  artifact_name: PHASE_X_INVENTORY.json
+  canonical_writer_step_id: X0
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: X
+  artifact_name: X1_EXTRACTION.json
+  canonical_writer_step_id: X1
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: X
+  artifact_name: X2_EXTRACTION.json
+  canonical_writer_step_id: X2
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: X
+  artifact_name: X3_EXTRACTION.json
+  canonical_writer_step_id: X3
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: X
+  artifact_name: X4_EXTRACTION.json
+  canonical_writer_step_id: X4
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: X
+  artifact_name: PHASE_X_MERGED.json
+  canonical_writer_step_id: X9
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: Z
+  artifact_name: PHASE_Z_INVENTORY.json
+  canonical_writer_step_id: Z0
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: Z
+  artifact_name: Z1_EXTRACTION.json
+  canonical_writer_step_id: Z1
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: Z
+  artifact_name: Z2_EXTRACTION.json
+  canonical_writer_step_id: Z2
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: Z
+  artifact_name: PHASE_Z_MERGED.json
+  canonical_writer_step_id: Z9
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: S
+  artifact_name: PHASE_S_INVENTORY.json
+  canonical_writer_step_id: S0
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: S
+  artifact_name: S1_EXTRACTION.json
+  canonical_writer_step_id: S1
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: S
+  artifact_name: S10_EXTRACTION.json
+  canonical_writer_step_id: S10
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: S
+  artifact_name: S11_EXTRACTION.json
+  canonical_writer_step_id: S11
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: S
+  artifact_name: S2_EXTRACTION.json
+  canonical_writer_step_id: S2
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: S
+  artifact_name: S3_EXTRACTION.json
+  canonical_writer_step_id: S3
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: S
+  artifact_name: S4_EXTRACTION.json
+  canonical_writer_step_id: S4
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: S
+  artifact_name: S5_EXTRACTION.json
+  canonical_writer_step_id: S5
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: S
+  artifact_name: S8_EXTRACTION.json
+  canonical_writer_step_id: S8
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
+- phase: S
+  artifact_name: PHASE_S_MERGED.json
+  canonical_writer_step_id: S9
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - id
+  - path
