@@ -1,0 +1,467 @@
+{
+  "version": "SCOPE_RESOLUTION_V1",
+  "generated_at": "2073-02-07T04:00:51+00:00",
+  "run_id": "sync-dopemux-mvp-2e346e2084bc-2032-08-13T08:57:34+00:00",
+  "included_phases": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "G",
+    "H",
+    "M",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "W",
+    "X",
+    "Z"
+  ],
+  "total_steps_resolved": 61,
+  "skipped_steps": [
+    "E4"
+  ],
+  "step_scopes": {
+    "A0": {
+      "scopes": [
+        ".",
+        "config/",
+        "compose.yml",
+        "docker-compose*.yml",
+        ".github/",
+        "./",
+        ".worktrees/",
+        "services/",
+        ".venv/",
+        ".dopemux/",
+        ".vibe/"
+      ],
+      "source": "feature_roots:config_toml",
+      "phase": "A"
+    },
+    "A1": {
+      "scopes": [
+        "."
+      ],
+      "source": "default",
+      "phase": "A"
+    },
+    "A6": {
+      "scopes": [
+        "scripts/",
+        "tools/",
+        "Makefile"
+      ],
+      "source": "default",
+      "phase": "A"
+    },
+    "A99": {
+      "scopes": [
+        "."
+      ],
+      "source": "default",
+      "phase": "A"
+    },
+    "C0": {
+      "scopes": [
+        "src/",
+        "lib/",
+        "pkg/",
+        "app/",
+        "services/"
+      ],
+      "source": "default",
+      "phase": "C"
+    },
+    "C1": {
+      "scopes": [
+        "src/",
+        "services/",
+        "app/",
+        ".uv-cache/",
+        ".venv/",
+        ".worktrees/",
+        "docker/",
+        "./"
+      ],
+      "source": "feature_roots:docker_compose",
+      "phase": "C"
+    },
+    "C14": {
+      "scopes": [
+        "src/",
+        "lib/",
+        ".uv-cache/",
+        ".venv/",
+        ".worktrees/",
+        "docker/",
+        "services/",
+        "./"
+      ],
+      "source": "feature_roots:python_packaging",
+      "phase": "C"
+    },
+    "C16": {
+      "scopes": [
+        "src/",
+        "lib/",
+        "services/",
+        ".uv-cache/",
+        ".venv/",
+        "./"
+      ],
+      "source": "feature_roots:node_packaging",
+      "phase": "C"
+    },
+    "C6": {
+      "scopes": [
+        "src/",
+        "services/",
+        ".uv-cache/",
+        ".venv/",
+        ".worktrees/",
+        "docker/"
+      ],
+      "source": "feature_roots:database_vector",
+      "phase": "C"
+    },
+    "C7": {
+      "scopes": [
+        "src/",
+        "services/",
+        ".uv-cache/",
+        ".venv/",
+        ".worktrees/",
+        "docker/"
+      ],
+      "source": "feature_roots:database_relational",
+      "phase": "C"
+    },
+    "C8": {
+      "scopes": [
+        "src/",
+        "bin/",
+        ".uv-cache/",
+        ".venv/",
+        ".worktrees/",
+        "services/"
+      ],
+      "source": "feature_roots:cli_node",
+      "phase": "C"
+    },
+    "C9": {
+      "scopes": [
+        "src/",
+        "bin/",
+        ".uv-cache/",
+        ".venv/",
+        ".worktrees/",
+        "services/"
+      ],
+      "source": "feature_roots:cli_node",
+      "phase": "C"
+    },
+    "D0": {
+      "scopes": [
+        "docs/"
+      ],
+      "source": "feature_roots:docs_structured",
+      "phase": "D"
+    },
+    "D1": {
+      "scopes": [
+        "docs/",
+        ".venv/",
+        ".worktrees/"
+      ],
+      "source": "feature_roots:docs_api_spec",
+      "phase": "D"
+    },
+    "D2": {
+      "scopes": [
+        "docs/"
+      ],
+      "source": "feature_roots:docs_structured",
+      "phase": "D"
+    },
+    "D3": {
+      "scopes": [
+        "docs/"
+      ],
+      "source": "feature_roots:docs_structured",
+      "phase": "D"
+    },
+    "D4": {
+      "scopes": [
+        "docs/"
+      ],
+      "source": "feature_roots:docs_structured",
+      "phase": "D"
+    },
+    "D5": {
+      "scopes": [
+        "docs/"
+      ],
+      "source": "feature_roots:docs_structured",
+      "phase": "D"
+    },
+    "E0": {
+      "scopes": [
+        ".github/",
+        ".env*",
+        "./",
+        ".uv-cache/",
+        "tests/",
+        ".worktrees/",
+        "services/",
+        "ui-dashboard/",
+        ".venv/",
+        "config/",
+        ".dopemux/",
+        ".vibe/"
+      ],
+      "source": "feature_roots:config_toml",
+      "phase": "E"
+    },
+    "E1": {
+      "scopes": [
+        "."
+      ],
+      "source": "default",
+      "phase": "E"
+    },
+    "E2": {
+      "scopes": [
+        "."
+      ],
+      "source": "default",
+      "phase": "E"
+    },
+    "E6": {
+      "scopes": [
+        "tests/",
+        "test/",
+        "./",
+        ".uv-cache/",
+        ".worktrees/",
+        "services/",
+        "ui-dashboard/"
+      ],
+      "source": "feature_roots:testing_node",
+      "phase": "E"
+    },
+    "E9": {
+      "scopes": [
+        "."
+      ],
+      "source": "default",
+      "phase": "E"
+    },
+    "G0": {
+      "scopes": [
+        "."
+      ],
+      "source": "default",
+      "phase": "G"
+    },
+    "G1": {
+      "scopes": [
+        ".github/workflows/",
+        ".github/"
+      ],
+      "source": "feature_roots:ci_github_actions",
+      "phase": "G"
+    },
+    "G2": {
+      "scopes": [
+        "."
+      ],
+      "source": "default",
+      "phase": "G"
+    },
+    "G3": {
+      "scopes": [
+        "."
+      ],
+      "source": "default",
+      "phase": "G"
+    },
+    "G4": {
+      "scopes": [
+        "."
+      ],
+      "source": "default",
+      "phase": "G"
+    },
+    "G9": {
+      "scopes": [
+        "."
+      ],
+      "source": "default",
+      "phase": "G"
+    },
+    "Q0": {
+      "scopes": [],
+      "source": "default",
+      "phase": "Q"
+    },
+    "Q1": {
+      "scopes": [],
+      "source": "default",
+      "phase": "Q"
+    },
+    "Q2": {
+      "scopes": [],
+      "source": "default",
+      "phase": "Q"
+    },
+    "Q3": {
+      "scopes": [],
+      "source": "default",
+      "phase": "Q"
+    },
+    "Q9": {
+      "scopes": [],
+      "source": "default",
+      "phase": "Q"
+    },
+    "R0": {
+      "scopes": [],
+      "source": "default",
+      "phase": "R"
+    },
+    "R2": {
+      "scopes": [],
+      "source": "default",
+      "phase": "R"
+    },
+    "R3": {
+      "scopes": [],
+      "source": "default",
+      "phase": "R"
+    },
+    "R5": {
+      "scopes": [],
+      "source": "default",
+      "phase": "R"
+    },
+    "R6": {
+      "scopes": [],
+      "source": "default",
+      "phase": "R"
+    },
+    "R7": {
+      "scopes": [],
+      "source": "default",
+      "phase": "R"
+    },
+    "R8": {
+      "scopes": [],
+      "source": "default",
+      "phase": "R"
+    },
+    "S0": {
+      "scopes": [],
+      "source": "default",
+      "phase": "S"
+    },
+    "S1": {
+      "scopes": [],
+      "source": "default",
+      "phase": "S"
+    },
+    "S10": {
+      "scopes": [],
+      "source": "default",
+      "phase": "S"
+    },
+    "S11": {
+      "scopes": [],
+      "source": "default",
+      "phase": "S"
+    },
+    "S2": {
+      "scopes": [],
+      "source": "default",
+      "phase": "S"
+    },
+    "S3": {
+      "scopes": [],
+      "source": "default",
+      "phase": "S"
+    },
+    "S4": {
+      "scopes": [],
+      "source": "default",
+      "phase": "S"
+    },
+    "S5": {
+      "scopes": [],
+      "source": "default",
+      "phase": "S"
+    },
+    "S8": {
+      "scopes": [],
+      "source": "default",
+      "phase": "S"
+    },
+    "S9": {
+      "scopes": [],
+      "source": "default",
+      "phase": "S"
+    },
+    "X0": {
+      "scopes": [],
+      "source": "default",
+      "phase": "X"
+    },
+    "X1": {
+      "scopes": [],
+      "source": "default",
+      "phase": "X"
+    },
+    "X2": {
+      "scopes": [],
+      "source": "default",
+      "phase": "X"
+    },
+    "X3": {
+      "scopes": [],
+      "source": "default",
+      "phase": "X"
+    },
+    "X4": {
+      "scopes": [],
+      "source": "default",
+      "phase": "X"
+    },
+    "X9": {
+      "scopes": [],
+      "source": "default",
+      "phase": "X"
+    },
+    "Z0": {
+      "scopes": [],
+      "source": "default",
+      "phase": "Z"
+    },
+    "Z1": {
+      "scopes": [],
+      "source": "default",
+      "phase": "Z"
+    },
+    "Z2": {
+      "scopes": [],
+      "source": "default",
+      "phase": "Z"
+    },
+    "Z9": {
+      "scopes": [],
+      "source": "default",
+      "phase": "Z"
+    }
+  },
+  "phase_budgets": null
+}

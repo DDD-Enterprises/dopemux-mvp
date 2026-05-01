@@ -4,30 +4,20 @@
 <body>
 <div class="label">Authority headers · bridge segregation</div>
 <div class="pane" style="font-size:13px; line-height:1.7;">
-<span class="cyan">domain: services_chrome</span>
 <span class="cyan">authority: dopemux</span>
-<span class="dim">role: chrome</span>
-<span class="dim">next_action: select workload</span>
-  <span style="color:#4A9E94">provenance=repo-truth-extractor</span> <span class="tui-chip aftercare">[AFTERCARE]</span> repo-truth-extractor extraction
+  <span style="color:#4A9E94">SRC=repo-truth-extractor</span> <span class="tui-chip aftercare">[AFTERCARE]</span> repo-truth-extractor extraction
   <span style="color:#4A9E94">SRC=dopecon-bridge</span>        <span class="tui-chip override">[OVERRIDE]</span> dopecon-bridge adapter
 
-<span class="cyan">domain: services_child_detail</span>
-<span class="cyan">authority: repo-truth-extractor</span>
-<span class="dim">role: derived</span>
-<span class="dim">next_action: inspect workload record</span>
-  subject <span style="color:#4A9E94">provenance=repo-truth-extractor</span> repo-truth-extractor
-  provenance=EXTRACTED <span style="color:#4A9E94">provenance=repo-truth-extractor</span>
+<span class="cyan">Inspector authority: repo-truth-extractor</span>
+  subject <span style="color:#4A9E94">SRC=repo-truth-extractor</span> repo-truth-extractor
+  provenance=EXTRACTED <span style="color:#4A9E94">SRC=repo-truth-extractor</span>
 
 <span class="violet">Bridge adapter/proxy: dopecon-bridge</span>
-  domain: bridge_transport
-  authority: dopecon-bridge
-  role: proxied
-  next_action: inspect adapter ref
   <span style="color:#4A9E94">SRC=dopecon-bridge</span> <span class="tui-chip edge">[EDGE]</span> adapter-only segregated
-  ADAPTER -&gt; &lt;service&gt; : inspect ref
-  <span class="muted">[EDGE] bridge actions are adapter/proxy only, never canonical writes. NEXT: use canonical owner surface.</span>
+  WRITE -&gt; &lt;service&gt; : &lt;action&gt;
+  <span class="muted">[EDGE] bridge is adapter/proxy only. NEXT: prefer canonical write.</span>
 </div>
 <div class="note" style="margin-top:10px;">
-Each content pane declares <span class="mono">domain:</span>, <span class="mono">authority:</span>, <span class="mono">role:</span>, and <span class="mono">next_action:</span>. Services shell authority is the dopemux control surface (chrome); actual data authority is declared per child surface / row. Bridge / proxy actions are pulled into a separate pane that announces <b>adapter-only segregated</b>, never claims authority over the subject, and is visually + semantically segregated from canonical subject/provenance areas. Bridge actions are adapter/proxy actions only — never canonical writes. This is a hard rule.
+Each pane declares <span class="mono">authority:</span> on its first line. Bridge / proxy actions are pulled into a separate pane that announces <b>adapter-only segregated</b> and never claims authority over the subject. This is a hard rule.
 </div>
 </body></html>

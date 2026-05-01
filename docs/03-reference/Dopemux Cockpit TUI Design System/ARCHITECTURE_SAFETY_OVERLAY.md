@@ -26,7 +26,7 @@ Dopemux is a composed multi-system operator workspace. Authority is per-domain, 
 
 | Domain                                   | Authority owner                                                  | Cockpit role                                          |
 |------------------------------------------|------------------------------------------------------------------|-------------------------------------------------------|
-| Operator control surface / coordination  | dopemux                                          | host chrome, mode bar, shortcut rail, status rail      |
+| Operator control surface / coordination  | dopemux control surface                                          | host chrome, mode bar, command rail, status rail      |
 | PM metadata, project & ticket snapshots  | Leantime                                                         | passive read; never mutated through cockpit chrome    |
 | Workflow transitions, queue, blockers    | task-orchestrator                                                | canonical workflow state; transitions live here       |
 | Decisions, progress, custom data, project context | ConPort                                                  | canonical structured records and knowledge graph      |
@@ -71,7 +71,7 @@ next_action:  <what the operator can do from this pane>
 Rules:
 
 - Unknown authority renders as `UNKNOWN` literally. Do not guess.
-- Chrome panes (top frame, mode bar, shortcut rail, status rail, bottom flag rail) declare `role: chrome` and `authority: dopemux`.
+- Chrome panes (top frame, mode bar, command rail, status rail, bottom flag rail) declare `role: chrome` and `authority: dopemux control surface`.
 - A pane with `role: chrome` carries no SRC, no canonical data labels, and no transition controls.
 - Authoring panes (PM authoring, Implementer authoring) describe the surface authority for the artifact being authored, not for upstream truth.
 - A pane that cannot answer all four fields is not promoted from mock to implementation.
@@ -85,15 +85,15 @@ SRC is provenance, not authority. SRC denotes which service produced or stores a
 Rules:
 
 1. SRC appears only on logical data/provenance records, never on chrome.
-2. SRC must not appear in the top frame header, mode bar, shortcut rail, status rail, or bottom flag rail.
+2. SRC must not appear in the top frame header, mode bar, command rail, status rail, or bottom flag rail.
 3. SRC appears once per logical record. Wrapped continuation rows align under the content column and do not repeat SRC.
-4. SRC may repeat only when physical rows are independently selectable or independently copyable as separate logical records.
+4. SRC may repeat only when physical rows are independently selectable or independently exportable as separate logical records.
 5. SRC is never a status. SRC does not change with transitions or chips.
-6. SRC values name a service (for example: `SRC=conport`, `SRC=task-orchestrator`, `SRC=leantime`, `SRC=dope-memory`, `SRC=dope-context`, `provenance=repo-truth-extractor`). `SRC=dopemux` is forbidden in chrome and is forbidden as a label for canonical data, because dopemux is a control surface, not a data authority.
+6. SRC values name a service (for example: `SRC=conport`, `SRC=task-orchestrator`, `SRC=leantime`, `SRC=dope-memory`, `SRC=dope-context`, `SRC=repo-truth-extractor`). `SRC=dopemux` is forbidden in chrome and is forbidden as a label for canonical data, because dopemux is a control surface, not a data authority.
 
 The replacement doctrine (canonical) is:
 
-> Every logical data/provenance record carries SRC=<service> once. Wrapped continuation rows align under the content column and do not repeat SRC unless physical rows are independently selectable/copyable.
+> Every logical data/provenance record carries SRC=<service> once. Wrapped continuation rows align under the content column and do not repeat SRC unless physical rows are independently selectable/exportable.
 
 ---
 
@@ -155,7 +155,7 @@ LIVE | BLOCKER | OVERRIDE | LOGGED | AFTERCARE | EDGE
 Rules:
 
 - Chips are visual category markers only. They do not replace explicit status words in body text.
-- Explicit status words may appear in body text: `queued`, `running`, `complete`, `blocked`, `failed`, `degraded`, `unknown`, `copy refed`, `needs verification`.
+- Explicit status words may appear in body text: `queued`, `running`, `complete`, `blocked`, `failed`, `degraded`, `unknown`, `exported`, `needs verification`.
 - UNKNOWN remains literal. UNKNOWN is never a chip. Do not collapse UNKNOWN into EDGE.
 - A row whose authority or status is not proven shows `UNKNOWN` as plain text in the affected field. UNKNOWN preserves the unresolved condition; it is not a status.
 - Chips may be color-tinted, but color is secondary. Removing color must leave the chip readable from text alone.
@@ -168,7 +168,7 @@ PM and Implementer modes are shells / chrome that frame work, not PM truth owner
 
 - The PM mode does not own task state. task-orchestrator owns workflow transitions; ConPort owns decisions and progress; Leantime owns metadata. PM mode coordinates these surfaces.
 - The Implementer mode does not own execution truth. Agents and runtimes own execution; ConPort owns logged outcomes; dope-memory owns receipts.
-- Agent panes are executors / supervisors / advisors. Agent panes never declare PM truth ownership and never declare canonical decision authority.
+- Agent panes are executors / supervisors / advisors. Agent panes never imply PM truth ownership and never imply canonical decision authority.
 - Agents may surface advisory cues, suggested handoffs, and proposed records, but commit only through the canonical authority's own action surface.
 - The ADHD Engine surfaces advisory cues only. ADHD cues never gate PM transitions, never override workflow legality, and never become status chips.
 
@@ -185,9 +185,9 @@ The following phrases must not appear anywhere in this package's doctrine files,
 - `Services authority: dopemux`
 - `command authority: dopemux`
 - `Bridge actions authority: dopecon-bridge`
-- `SRC=dopemux` in chrome (top frame, mode bar, shortcut rail, status rail, bottom flag rail)
+- `SRC=dopemux` in chrome (top frame, mode bar, command rail, status rail, bottom flag rail)
 - `UNKNOWN->EDGE` as semantic collapse
-- `UNKNOWN->EDGE` as semantic collapse
+- `UNKNOWN→EDGE` as semantic collapse
 - `UNKNOWN=EDGE` as semantic collapse
 
 These phrases are also gated by the Contradiction Gate in `ACCEPTANCE.md`.

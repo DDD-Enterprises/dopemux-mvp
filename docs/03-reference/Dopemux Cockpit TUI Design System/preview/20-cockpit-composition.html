@@ -7,36 +7,28 @@
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃<span style="color:#7DFBF6"> dopemux cockpit static  </span>│<span style="color:#7DFBF6"> workspace dopemux-mvp                                      </span>│<span style="color:#7DFBF6"> mode Services                    </span>┃
 ┠─────────────────────────┴────────────────────────────────────────────────┴──────────────────────────────────┨
-┃<span style="color:#94FADB"> mode chrome: control     </span>│<span style="color:#94FADB"> 1 PM | 2 Implementer | 3 Overview                          </span>│<span style="color:#94FADB"> 4 *Services | 5 Events           </span>┃
+┃<span style="color:#94FADB"> 1  PM                   </span>│<span style="color:#94FADB"> 2  Implementer | 3  Overview                               </span>│<span style="color:#94FADB"> 4 *Services | 5 Events           </span>┃
 ┠─────────────────────────┬────────────────────────────────────────────────┬──────────────────────────────────┨
-┃<span style="color:#7DFBF6"> domain: services        </span>│<span style="color:#7DFBF6"> domain: services_child                                    </span>│<span style="color:#7DFBF6"> domain: inspector               </span>┃
-┃<span style="color:#7DFBF6"> authority: dopemux </span>│<span style="color:#7DFBF6"> authority: repo-truth-extractor                            </span>│<span style="color:#7DFBF6"> authority: repo-truth-extractor </span>┃
-┃<span class="dim"> role: chrome · next_action: select workload </span>│<span class="dim"> role: derived · next_action: inspect workload record           </span>│<span class="dim"> role: derived · next_action: open details </span>┃
-┃<span style="color:#7DFBF6"> [LIVE]</span><span style="color:#E2E8F0"> control surface</span>│<span class="cyan"> Services child: repo-truth-extractor workload records          </span>│<span style="color:#4A9E94"> subject provenance=repo-truth-extractor</span>┃
-┃<span style="color:#7DFBF6"> [LIVE]</span><span style="color:#E2E8F0"> task-orchestr. </span>│<span style="color:#4A9E94"> Tabs: R3 Prescan | R4 Health                             </span>│<span style="color:#94FADB"> provenance=EXTRACTED             </span>┃
-┃<span style="color:#94FADB"> [LOGGED]</span><span style="color:#E2E8F0"> ConPort       </span>│<span style="color:#4A9E94"> Tabs: R5 Coverage | R6 Audit                             </span>│<span style="color:#4A9E94"> provenance=repo-truth-extractor canon. </span>┃
-┃<span style="color:#94FADB"> [LOGGED]</span><span style="color:#E2E8F0"> Leantime      </span>│<span style="color:#7DFBF6"> Workload records authority: repo-truth-extractor              </span>│<span class="muted"> shell boundary: workload view    </span>┃
-┃<span style="color:#94FADB"> [LOGGED]</span><span style="color:#E2E8F0"> dope-memory   </span>│<span style="color:#7DFBF6"> &gt; provenance=repo-truth-extractor [LIVE] v5-...-a91c             </span>│<span style="color:#4A9E94"> provenance=repo-truth-extractor state </span>┃
-┃<span style="color:#94FADB"> [LOGGED]</span><span style="color:#E2E8F0"> dope-context  </span>│<span style="color:#4A9E94">                phase=normalize                            </span>├──────────────────────────────────┨
-┃<span style="color:#F5F26D"> [OVERRIDE]</span><span style="color:#E2E8F0"> bridge    </span>│<span style="color:#FF8BD1">   provenance=repo-truth-extractor [BLOCKER] v5-...-7f18          </span>│<span style="color:#9B78FF"> Bridge adapter/proxy:            </span>┃
-┃<span style="color:#7DFBF6"> [LIVE]</span><span style="color:#E2E8F0"> adhd-engine     </span>│<span style="color:#4A9E94">                phase=preflight                            </span>│<span style="color:#9B78FF"> dopecon-bridge                   </span>┃
-┃<span style="color:#9B78FF"> [AFTERCARE]</span><span style="color:#E2E8F0"> repo-truth </span>│<span style="color:#94FADB">   provenance=repo-truth-extractor [LOGGED] v5-...-3e2a           </span>│<span style="color:#7DFBF6"> SRC=dopecon-bridge [EDGE]        </span>┃
-┃                         │<span style="color:#4A9E94">                phase=verify                               </span>│<span style="color:#94A3B8"> adapter-only segregated          </span>┃
-┃                         │                                                            │<span style="color:#94A3B8"> ADAPTER -&gt; &lt;service&gt; : inspect ref </span>┃
+┃<span style="color:#7DFBF6"> authority: dopemux      </span>│<span style="color:#7DFBF6"> Services -&gt; repo-truth-extractor                           </span>│<span style="color:#7DFBF6"> Inspector authority: repo-truth-extractor </span>┃
+┃<span style="color:#7DFBF6"> dopemux                 </span>│                                                            │                                  ┃
+┃<span style="color:#4A9E94">                          </span>│<span class="cyan"> Tabs SRC=rte R1 Runs | R2 Active                          </span>│<span style="color:#4A9E94"> subject SRC=rte                  </span>┃
+┃<span style="color:#7DFBF6"> [LIVE]</span><span style="color:#E2E8F0"> dopemux         </span>│<span style="color:#4A9E94"> Tabs SRC=rte R3 Prescan | R4 Doctor                       </span>│<span style="color:#94FADB"> provenance=EXTRACTED             </span>┃
+┃<span style="color:#7DFBF6"> [LIVE]</span><span style="color:#E2E8F0"> task-orch       </span>│<span style="color:#4A9E94"> Tabs SRC=rte R5 Coverage | R6 Audit                       </span>│<span style="color:#4A9E94"> SRC=rte canonical=services/...   </span>┃
+┃<span style="color:#94FADB"> [LOGGED]</span><span style="color:#E2E8F0"> conport       </span>│<span style="color:#7DFBF6"> R1 Runs authority: rte                                    </span>│<span style="color:#4A9E94"> SRC=repo-truth-extractor boundary=workload </span>┃
+┃<span style="color:#94FADB"> [LOGGED]</span><span style="color:#E2E8F0"> dope-memory  </span>│<span style="color:#7DFBF6"> &gt; SRC=rte [LIVE] v5-...-a91c                              </span>│<span style="color:#4A9E94"> SRC=rte state=seed only          </span>┃
+┃<span style="color:#94FADB"> [LOGGED]</span><span style="color:#E2E8F0"> dope-context </span>│<span style="color:#4A9E94">   SRC=rte phase=normalize                                 </span>├──────────────────────────────────┨
+┃<span style="color:#F5F26D"> [OVERRIDE]</span><span style="color:#E2E8F0"> dopecon-b </span>│<span style="color:#FF8BD1">   SRC=rte [BLOCKER] v5-...-7f18                           </span>│<span style="color:#9B78FF"> Bridge adapter/proxy: dopecon-bridge </span>┃
+┃<span style="color:#7DFBF6"> [LIVE]</span><span style="color:#E2E8F0"> adhd-engine     </span>│<span style="color:#4A9E94">   SRC=rte phase=preflight                                 </span>│<span style="color:#7DFBF6"> SRC=dopecon-bridge [EDGE]        </span>┃
+┃<span style="color:#9B78FF"> [AFTERCARE]</span><span style="color:#E2E8F0"> rte        </span>│<span style="color:#94FADB">   SRC=rte [LOGGED] v5-...-3e2a                            </span>│<span style="color:#94A3B8"> adapter-only segregated          </span>┃
+┃                         │<span style="color:#4A9E94">   SRC=rte phase=verify                                    </span>│<span style="color:#94A3B8"> WRITE -&gt; &lt;service&gt; : &lt;action&gt;     </span>┃
+┃                         │                                                            │                                  ┃
 ┠─────────────────────────┴────────────────────────────────────────────────┴──────────────────────────────────┨
-┃<span style="color:#E2E8F0"> domain: shortcut        </span>│<span style="color:#E2E8F0"> authority: dopemux                </span>│<span style="color:#E2E8F0"> role: chrome                   </span>┃
-┃<span style="color:#E2E8F0"> next_action: key ref    </span>│<span style="color:#E2E8F0"> snapshot-only no writes no shellouts              </span>│                                  ┃
+┃<span style="color:#E2E8F0"> authority: dopemux     </span>│<span style="color:#E2E8F0"> snapshot-only                                              </span>│<span style="color:#E2E8F0"> no writes no shellouts           </span>┃
 ┠─────────────────────────┼────────────────────────────────────────────────┼──────────────────────────────────┨
 ┃<span style="color:#94A3B8"> workspace dopemux-mvp   </span>│<span style="color:#94A3B8"> mode Services                                              </span>│<span style="color:#94A3B8"> seed static no-writes            </span>┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 </div>
 <div class="note" style="margin-top:10px;">
-Full composition: header chrome, mode-bar chrome, three content panes, shortcut rail, status rail.
-<br><br>
-<b>Chrome</b> (header, mode-bar, shortcut rail, status rail) declares <span class="mono">domain:</span>, <span class="mono">authority:</span>, <span class="mono">role:</span>, and <span class="mono">next_action:</span>. No SRC on chrome rows.
-<br><br>
-<b>Content panes</b> declare <span class="mono">domain:</span>, <span class="mono">authority:</span>, <span class="mono">role:</span>, and <span class="mono">next_action:</span>. Child / data surfaces declare actual authority — <span class="mono">repo-truth-extractor</span> for repo-truth-extractor child views; <span class="mono">task-orchestrator</span> for workflow transitions / queue / blockers / state; <span class="mono">ConPort</span> for decisions / progress / project context; <span class="mono">Leantime</span> for passive PM metadata / snapshots; <span class="mono">dope-memory</span> for chronicle / historical receipts; <span class="mono">dope-context</span> for retrieval / index behavior. SRC appears once per logical data / provenance record.
-<br><br>
-<b>Bridge</b> uses <span class="mono">Bridge adapter/proxy: dopecon-bridge</span>; pinned bottom-right and segregated. Bridge is not a peer canonical pane at 80×24.
+Full composition: header rule, mode bar, three panes, command rail, status rail. Authority + SRC every row. Bridge segregator pinned bottom-right.
 </div>
 </body></html>
