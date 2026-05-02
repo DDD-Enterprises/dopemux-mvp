@@ -1,0 +1,155 @@
+{
+  "commit": {
+    "allowlist": [
+      ".gitignore",
+      "task-packets/TP-DMX-REPOHYG-005.json",
+      "docs/05-audit-reports/repo-remaining-work-disposition-2026-05-02.md",
+      "proof/repo-remaining-work-disposition-2026-05-02.proof.json",
+      "task-packets/INDEX.md"
+    ],
+    "message": "docs(repo-hygiene): classify remaining work and cleanup safe locals",
+    "verify": [
+      "python -m json.tool task-packets/TP-DMX-REPOHYG-005.json",
+      "python -m json.tool proof/repo-remaining-work-disposition-2026-05-02.proof.json",
+      "git diff --check",
+      "python3 -m dopemux_pr_merge_specialist.cli self-check --out-dir /Users/hue/.codex/recovery/dopemux-mvp/repo-hygiene-20260502/remaining-disposition-20260502/pr-merge-self-check",
+      "pre-commit run --files .gitignore task-packets/TP-DMX-REPOHYG-005.json docs/05-audit-reports/repo-remaining-work-disposition-2026-05-02.md proof/repo-remaining-work-disposition-2026-05-02.proof.json task-packets/INDEX.md"
+    ]
+  },
+  "depends_on": [
+    "TP-DMX-REPOHYG-001",
+    "TP-DMX-REPOHYG-002",
+    "TP-DMX-REPOHYG-003",
+    "TP-DMX-REPOHYG-004"
+  ],
+  "execution": {
+    "agent": "codex",
+    "base_branch": "codex/repo-hygiene-lost-work-audit-20260502",
+    "branch": "codex/repo-hygiene-remaining-disposition-20260502",
+    "stacked_because": "PR #561 normal merge is blocked by base-branch policy after an external Gemini review provider failure; admin bypass was not used."
+  },
+  "id": "TP-DMX-REPOHYG-005",
+  "invariants": [
+    "Do not use admin bypass to merge PR #561.",
+    "Do not delete dirty worktrees.",
+    "Do not drop stashes in this packet.",
+    "Do not delete remote branches in this packet.",
+    "Delete local branch refs only after patch-equivalence proof and local bundle preservation.",
+    "Keep runtime, service, schema, API, and production config behavior unchanged in this hygiene packet.",
+    "Recovered runtime/docs/test work must land through separate topic PRs."
+  ],
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "pr": {
+    "base": "codex/repo-hygiene-lost-work-audit-20260502",
+    "body": "## Summary\n- stack TP005 behind #561 because normal merge is blocked by an external Gemini review-provider failure\n- classify remaining worktrees, local branches, and stashes into cleanup/topic/unfinished/dirty/blocked dispositions\n- remove 7 clean worktrees and 13 patch-equivalent local branch refs after preserving a local bundle\n\n## Validation\n- packet/proof JSON validation\n- git diff whitespace check\n- dopemux-pr-merge self-check\n- pre-commit on allowlisted packet/report/proof/index files\n\n## Follow-up\nRuntime recovery candidates remain separate topic PR inputs.",
+    "title": "docs(repo-hygiene): classify remaining work and cleanup safe locals"
+  },
+  "project": "dopemux-mvp",
+  "repo_binding": {
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "require_identity_match": true
+  },
+  "series": {
+    "base_branch": "main",
+    "final_packet": false,
+    "id": "DMX-REPO-HYGIENE-SERIES-001",
+    "parent_tp_id": "TP-DMX-REPOHYG-004"
+  },
+  "steps": [
+    {
+      "commands": [
+        "gh pr view 561 --json ...",
+        "gh pr merge 561 --squash --delete-branch"
+      ],
+      "id": "S1",
+      "requirements": [
+        "Attempt the normal GitHub PR merge path for #561 without admin bypass.",
+        "If blocked, stack TP005 on the TP004 branch and record the check failure authority."
+      ],
+      "task": "Resolve the TP004 merge gate or record the exact blocker.",
+      "validation": [
+        "Proof records the normal merge failure and the external review-provider blocker."
+      ]
+    },
+    {
+      "commands": [
+        "git worktree list --porcelain",
+        "git branch -vv",
+        "git stash list --date=iso",
+        "gh pr list --state all --limit 1000"
+      ],
+      "id": "S2",
+      "requirements": [
+        "Use a fresh TP005 worktree based on the TP004 branch because #561 is blocked.",
+        "Capture worktree registry, branch inventory, stash inventory, and PR metadata under the local recovery root."
+      ],
+      "task": "Refresh final worktree, branch, PR, and stash authority from a dedicated worktree.",
+      "validation": [
+        "Machine-readable local disposition ledgers exist under the recovery root."
+      ]
+    },
+    {
+      "commands": [
+        "git cherry -v origin/main <branch>",
+        "git diff --name-status origin/main <branch>",
+        "git stash show --name-status <stash>"
+      ],
+      "id": "S3",
+      "requirements": [
+        "Use patch equivalence, PR state, dirty attachment, and stash file paths.",
+        "Classify only clean, zero-patch-unique local branch refs as merged-cleanup-safe.",
+        "Classify merged-PR branches with patch-unique commits as topic-pr candidates, not delete-safe."
+      ],
+      "task": "Classify every remaining local worktree, branch, and stash.",
+      "validation": [
+        "Proof contains post-cleanup counts and branch/worktree/stash dispositions."
+      ]
+    },
+    {
+      "commands": [
+        "git bundle create <local recovery bundle> <branches>",
+        "git worktree remove <clean worktree>",
+        "git branch -d|-D <patch-equivalent branch>"
+      ],
+      "id": "S4",
+      "requirements": [
+        "Preserve deleted branch refs in a local bundle first.",
+        "Remove only clean worktrees.",
+        "Delete only local branch refs with zero patch-unique commits.",
+        "Do not drop stashes or delete remote refs."
+      ],
+      "task": "Execute conservative local cleanup for finished duplicate work.",
+      "validation": [
+        "Cleanup execution JSON records 7 worktree removals, 13 branch deletions, and zero failures."
+      ]
+    },
+    {
+      "commands": [
+        "python -m json.tool task-packets/TP-DMX-REPOHYG-005.json",
+        "python -m json.tool proof/repo-remaining-work-disposition-2026-05-02.proof.json",
+        "git diff --check",
+        "dopemux-pr-merge self-check"
+      ],
+      "id": "S5",
+      "requirements": [
+        "Commit only allowlisted hygiene files.",
+        "Leave local recovery artifacts untracked."
+      ],
+      "task": "Publish TP005 packet, report, proof, and index update.",
+      "validation": [
+        "Validation results are recorded in proof before commit."
+      ]
+    }
+  ],
+  "target": "Classify remaining worktrees, local branches, and stashes after the lost-work audit; remove only clean patch-equivalent local sprawl; flag topic recovery and unfinished work without touching runtime code in this packet."
+}
