@@ -1,0 +1,154 @@
+{
+  "commit": {
+    "allowlist": [
+      "task-packets/TP-DMX-REPOHYG-004.json",
+      "docs/05-audit-reports/repo-branch-worktree-stash-audit-2026-05-02.md",
+      "proof/repo-branch-worktree-stash-audit-2026-05-02.proof.json",
+      "task-packets/INDEX.md"
+    ],
+    "message": "docs(repo-hygiene): audit lost work and execute conservative cleanup",
+    "verify": [
+      "git rev-parse --show-toplevel",
+      "test -f .dopetaskroot",
+      "git remote -v",
+      "git status --short --branch",
+      "git worktree list --porcelain",
+      "git branch -vv",
+      "git stash list --date=iso",
+      "python -m json.tool task-packets/TP-DMX-REPOHYG-004.json",
+      "python -m json.tool proof/repo-branch-worktree-stash-audit-2026-05-02.proof.json",
+      "git diff --check -- task-packets/TP-DMX-REPOHYG-004.json docs/05-audit-reports/repo-branch-worktree-stash-audit-2026-05-02.md proof/repo-branch-worktree-stash-audit-2026-05-02.proof.json task-packets/INDEX.md",
+      "python3 -m dopemux_pr_merge_specialist.cli self-check --out-dir proof/pr_merge/repo-hygiene-20260502"
+    ]
+  },
+  "depends_on": [
+    "TP-DMX-REPOHYG-001",
+    "TP-DMX-REPOHYG-002",
+    "TP-DMX-REPOHYG-003"
+  ],
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/repo-hygiene-lost-work-audit-20260502"
+  },
+  "id": "TP-DMX-REPOHYG-004",
+  "invariants": [
+    "Do not delete dirty worktrees or stashes.",
+    "Do not delete remote branches in this packet.",
+    "Do not open recovery PRs without file-level verification of candidate work.",
+    "Use origin/main as graph authority for local cleanup safety.",
+    "Preserve local recovery artifacts before cleanup commands.",
+    "Keep repo runtime, service, schema, API, and production config behavior unchanged.",
+    "Record every cleanup command with exit code and output."
+  ],
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "pr": {
+    "base": "main",
+    "body": "## Summary\n- audit local worktrees, branches, reflogs, PR heads, and stashes for work not in main\n- preserve dirty/stash content under a local recovery root before cleanup\n- prune stale worktree metadata, remove one clean duplicate worktree, and delete only graph-proven local merged branches\n\n## Validation\n- packet and proof JSON validate\n- cleanup commands recorded with exit codes\n- git diff whitespace check run\n- dopemux-pr-merge self-check run\n\n## Follow-up\nContent-audit and stash-recovery items need file-level review before topic recovery PRs.",
+    "title": "docs(repo-hygiene): audit lost work and execute conservative cleanup"
+  },
+  "project": "dopemux-mvp",
+  "repo_binding": {
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "require_identity_match": true
+  },
+  "series": {
+    "base_branch": "main",
+    "final_packet": false,
+    "id": "DMX-REPO-HYGIENE-SERIES-001",
+    "parent_tp_id": "TP-DMX-REPOHYG-003"
+  },
+  "steps": [
+    {
+      "commands": [
+        "git fetch origin --prune",
+        "git worktree list --porcelain",
+        "git branch -vv",
+        "git stash list --date=iso",
+        "gh pr list --state all --limit 500"
+      ],
+      "id": "S1",
+      "requirements": [
+        "Confirm origin/main base, remotes, worktree root, open PR state, worktree inventory, branch inventory, stash inventory, and reflog evidence."
+      ],
+      "task": "Refresh repo identity and current Git/GitHub authority from a clean dedicated worktree.",
+      "validation": [
+        "Authority outputs are captured under the local recovery root and summarized in proof."
+      ]
+    },
+    {
+      "commands": [
+        "git -C <worktree> status --short --untracked-files=all > /Users/hue/.codex/recovery/dopemux-mvp/repo-hygiene-20260502/worktrees/<worktree-slug>/status-short.txt",
+        "git -C <worktree> diff --binary > /Users/hue/.codex/recovery/dopemux-mvp/repo-hygiene-20260502/worktrees/<worktree-slug>/dirty.diff",
+        "git -C <worktree> diff --cached --binary > /Users/hue/.codex/recovery/dopemux-mvp/repo-hygiene-20260502/worktrees/<worktree-slug>/staged.diff",
+        "git -C <repo-root> bundle create /Users/hue/.codex/recovery/dopemux-mvp/repo-hygiene-20260502/branches/<branch-slug>/unique.bundle <branch> --not origin/main",
+        "git -C <repo-root> diff --binary origin/main..<branch> > /Users/hue/.codex/recovery/dopemux-mvp/repo-hygiene-20260502/branches/<branch-slug>/tree-diff.patch",
+        "git -C <repo-root> stash show --name-status <stash> > /Users/hue/.codex/recovery/dopemux-mvp/repo-hygiene-20260502/stashes/<stash-index>/name-status.txt",
+        "git -C <repo-root> stash show --patch --binary <stash> > /Users/hue/.codex/recovery/dopemux-mvp/repo-hygiene-20260502/stashes/<stash-index>/patch.diff"
+      ],
+      "id": "S2",
+      "requirements": [
+        "Write binary patches, untracked-file archives, branch diffs/bundles where applicable, stash patches, and a local machine-readable ledger."
+      ],
+      "task": "Preserve dirty worktree, branch, and stash content outside the repo before cleanup.",
+      "validation": [
+        "Recovery root exists and proof references it."
+      ]
+    },
+    {
+      "commands": [
+        "git cherry -v origin/main <branch>",
+        "git diff --name-status origin/main <branch>",
+        "git merge-base --is-ancestor <ref> origin/main"
+      ],
+      "id": "S3",
+      "requirements": [
+        "Use graph proof, patch equivalence, dirty state, and attachment state; do not classify unknown or dirty items as delete-safe."
+      ],
+      "task": "Classify every worktree, branch, and stash into deterministic cleanup/recovery classes.",
+      "validation": [
+        "Proof lists worktrees, branches, stashes, and topic recovery candidates with class and reason."
+      ]
+    },
+    {
+      "commands": [
+        "git worktree prune --verbose --expire now",
+        "git worktree remove <clean-duplicate-worktree>",
+        "git branch -d <graph-proven-local-branch>"
+      ],
+      "id": "S4",
+      "requirements": [
+        "Prune missing worktree metadata, remove only clean duplicate worktrees, delete only local branches fully merged by graph proof, and preserve the original thread checkout."
+      ],
+      "task": "Execute only conservative local cleanup actions and record exact outputs.",
+      "validation": [
+        "Cleanup result JSON records every command and no failures."
+      ]
+    },
+    {
+      "commands": [
+        "python -m json.tool task-packets/TP-DMX-REPOHYG-004.json",
+        "python -m json.tool proof/repo-branch-worktree-stash-audit-2026-05-02.proof.json",
+        "git diff --check"
+      ],
+      "id": "S5",
+      "requirements": [
+        "Commit only the allowlisted docs/proof/task-packet files; do not commit local recovery artifacts."
+      ],
+      "task": "Publish packet, audit report, proof, and index update.",
+      "validation": [
+        "JSON validation and whitespace validation pass."
+      ]
+    }
+  ],
+  "target": "Audit all worktrees, branches, reflogs, PR heads, and stashes for unique work not in main; preserve dirty/stash content first; execute only conservative local cleanup; publish proof for follow-up topic recovery PRs."
+}
