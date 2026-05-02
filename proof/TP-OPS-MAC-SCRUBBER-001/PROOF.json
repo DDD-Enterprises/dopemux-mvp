@@ -1,0 +1,312 @@
+{
+  "acceptance": {
+    "criteria": [
+      "system-data command family exists",
+      "required external tools are preflighted and missing tools fail closed",
+      "scan ranks external-tool evidence-backed candidates",
+      "classifier separates safe-clear, rebuildable, tool-mediated, review-first, and blocked targets",
+      "same-volume quarantine reports zero reclaim",
+      "dry-run performs no filesystem writes",
+      "safe execution remains inside Dopemux executor",
+      "Messages attachments, backups, downloads, archives, and simulator runtimes are review-first",
+      "Docker cleanup is daemon-aware and not raw filesystem deletion",
+      "single proof JSON exists"
+    ],
+    "pass_fail": {
+      "critical_disk_mode": "pass",
+      "docker_daemon_unavailable": "pass",
+      "docs_added": "pass",
+      "dry_run_no_mutation": "pass",
+      "live_scan_on_current_machine": "blocked_by_missing_dua_ncdu",
+      "proof_json": "pass",
+      "required_tool_preflight": "pass",
+      "same_volume_truthfulness": "pass",
+      "system_data_cli": "pass"
+    },
+    "unresolved": [
+      "Current machine is missing dua and ncdu, so live scan/plan/clean/tui correctly fail closed until brew install dust duf btop procs gdu dua-cli ncdu is satisfied.",
+      "Current PATH resolves gdu to GNU coreutils du; code supports that fallback, but dundee/gdu JSON export was not live-validated here."
+    ]
+  },
+  "docs": {
+    "files": [
+      "docs/03-reference/features/mac-system-data-scrubber.md",
+      "docs/02-how-to/operations/mac-system-data-scrubber-operator-guide.md",
+      "docs/03-reference/features/mac-system-data-scrubber-safety-model.md"
+    ],
+    "status": "added and aligned with dry-run, required-tool, safety, and restore behavior"
+  },
+  "git": {
+    "branch": "codex/restore-system-data-command",
+    "commits": [],
+    "head": "8765535a153a9986edaa72a3dde8a0f6c8191a73",
+    "head_after": "8765535a153a9986edaa72a3dde8a0f6c8191a73",
+    "head_before": "8765535a153a9986edaa72a3dde8a0f6c8191a73",
+    "status_short": "M .gitignore\n M src/dopemux/cli.py\n?? docs/02-how-to/operations/mac-system-data-scrubber-operator-guide.md\n?? docs/03-reference/features/mac-system-data-scrubber-safety-model.md\n?? docs/03-reference/features/mac-system-data-scrubber.md\n?? proof/TP-OPS-MAC-SCRUBBER-001/\n?? src/dopemux/commands/system_data_commands.py\n?? src/dopemux/system_data/\n?? task-packets/TP-OPS-MAC-SCRUBBER-001.json\n?? tests/system_data/"
+  },
+  "implementation": {
+    "commands_run": [
+      "python3 -m py_compile src/dopemux/system_data/*.py src/dopemux/commands/system_data_commands.py",
+      "uv run --extra test python -m pytest -q tests/system_data",
+      "uv run --extra test python -m pytest -q tests/test_cli.py tests/system_data",
+      "uv run --extra test python - <<'PY' ... system_data doctor --json ... PY",
+      "python3 -m json.tool task-packets/TP-OPS-MAC-SCRUBBER-001.json >/dev/null && python3 -m json.tool proof/TP-OPS-MAC-SCRUBBER-001/PROOF.json >/dev/null",
+      "git diff --check",
+      "PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m dopemux.cli system-data --help"
+    ],
+    "features_delivered": [
+      "system-data command group registered under dopemux CLI",
+      "required external tool preflight for dust, duf, btop, procs, gdu, dua, and ncdu",
+      "duf/dust/gdu/ncdu/dua/procs parsers and runners",
+      "macOS environment, disk pressure, external volume, Full Disk Access, and Docker reachability detection",
+      "classifier and adaptive planner with same-volume quarantine truthfulness",
+      "dry-run-first executor with Dopemux-owned mutation and manifests only for real execution",
+      "Docker, Homebrew, simctl, Messages, CloudKit, Xcode, package-cache, backup, and Downloads policy coverage",
+      "Textual TUI with overview, findings, plan, processes, monitor, execute posture, and restore screens",
+      "single bundled proof JSON artifact"
+    ],
+    "files_added": [
+      "src/dopemux/commands/system_data_commands.py",
+      "src/dopemux/system_data/__init__.py",
+      "src/dopemux/system_data/models.py",
+      "src/dopemux/system_data/tools.py",
+      "src/dopemux/system_data/platform_macos.py",
+      "src/dopemux/system_data/classifier.py",
+      "src/dopemux/system_data/scanner.py",
+      "src/dopemux/system_data/planner.py",
+      "src/dopemux/system_data/executor.py",
+      "src/dopemux/system_data/proof.py",
+      "src/dopemux/system_data/reporters.py",
+      "src/dopemux/system_data/tui.py",
+      "src/dopemux/system_data/cli.py",
+      "tests/system_data/test_tools.py",
+      "tests/system_data/test_classifier_planner.py",
+      "tests/system_data/test_executor_proof.py",
+      "tests/system_data/test_cli.py",
+      "docs/03-reference/features/mac-system-data-scrubber.md",
+      "docs/02-how-to/operations/mac-system-data-scrubber-operator-guide.md",
+      "docs/03-reference/features/mac-system-data-scrubber-safety-model.md",
+      "task-packets/TP-OPS-MAC-SCRUBBER-001.json",
+      "proof/TP-OPS-MAC-SCRUBBER-001/implementation-notes.md",
+      "proof/TP-OPS-MAC-SCRUBBER-001/PROOF.json"
+    ],
+    "files_modified": [
+      ".gitignore",
+      "src/dopemux/cli.py"
+    ]
+  },
+  "repo": "dopemux-mvp",
+  "runtime_validation": {
+    "critical_disk_mode_check": {
+      "behavior": "safe-clear same-volume quarantine flips to delete-in-place in critical mode",
+      "covered_by": "tests/system_data/test_classifier_planner.py::test_critical_disk_prefers_delete_for_safe_clear_same_volume"
+    },
+    "docker_unavailable_check": {
+      "behavior": "Docker prune is blocked when daemon is unreachable",
+      "covered_by": "tests/system_data/test_classifier_planner.py::test_docker_daemon_unavailable_blocks_prune"
+    },
+    "doctor_missing_tools_check": {
+      "command": "click.testing CliRunner invoke system_data doctor --json",
+      "exit_code": 1,
+      "install_command": "brew install dust duf btop procs gdu dua-cli ncdu",
+      "missing_tools": [
+        "dua",
+        "ncdu"
+      ]
+    },
+    "dry_run_no_mutation_check": {
+      "behavior": "dry-run leaves target and proof directory untouched",
+      "covered_by": "tests/system_data/test_executor_proof.py::test_dry_run_does_not_mutate"
+    },
+    "same_volume_quarantine_truthfulness_check": {
+      "covered_by": "tests/system_data/test_classifier_planner.py::test_same_volume_quarantine_reports_zero_reclaim",
+      "expected_reclaim_bytes": 0
+    },
+    "tool_preflight": {
+      "install_command": "brew install dust duf btop procs gdu dua-cli ncdu",
+      "required": [
+        "dust",
+        "duf",
+        "btop",
+        "procs",
+        "gdu",
+        "dua",
+        "ncdu"
+      ],
+      "statuses": [
+        {
+          "available": true,
+          "error": null,
+          "name": "dust",
+          "path": "/opt/homebrew/bin/dust",
+          "required": true,
+          "version": "Dust 1.2.4"
+        },
+        {
+          "available": true,
+          "error": null,
+          "name": "duf",
+          "path": "/opt/homebrew/bin/duf",
+          "required": true,
+          "version": "duf (built from source)"
+        },
+        {
+          "available": true,
+          "error": null,
+          "name": "btop",
+          "path": "/opt/homebrew/bin/btop",
+          "required": true,
+          "version": "btop version: \u001b[1m1.4.6\u001b[0m"
+        },
+        {
+          "available": true,
+          "error": null,
+          "name": "procs",
+          "path": "/opt/homebrew/bin/procs",
+          "required": true,
+          "version": "procs 0.14.11"
+        },
+        {
+          "available": true,
+          "error": null,
+          "name": "gdu",
+          "path": "/opt/homebrew/bin/gdu",
+          "required": true,
+          "version": "du (GNU coreutils) 9.11"
+        },
+        {
+          "available": false,
+          "error": "dua not found on PATH",
+          "name": "dua",
+          "path": null,
+          "required": true,
+          "version": null
+        },
+        {
+          "available": false,
+          "error": "ncdu not found on PATH",
+          "name": "ncdu",
+          "path": null,
+          "required": true,
+          "version": null
+        }
+      ]
+    }
+  },
+  "schema_version": "system-data-proof.v1",
+  "tests": {
+    "commands": [
+      {
+        "command": "python3 -m py_compile src/dopemux/system_data/*.py src/dopemux/commands/system_data_commands.py",
+        "exit_code": 0
+      },
+      {
+        "command": "PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest -q tests/system_data",
+        "exit_code": 0,
+        "output_excerpt": "........................ [100%]"
+      },
+      {
+        "command": "uv run --extra test python -m pytest -q tests/test_cli.py tests/system_data (original PR validation)",
+        "exit_code": 0,
+        "output_excerpt": "......................................... [100%]"
+      },
+      {
+        "command": "python3 -m json.tool task-packets/TP-OPS-MAC-SCRUBBER-001.json >/dev/null && python3 -m json.tool proof/TP-OPS-MAC-SCRUBBER-001/PROOF.json >/dev/null",
+        "exit_code": 0
+      },
+      {
+        "command": "git diff --check",
+        "exit_code": 0
+      }
+    ],
+    "coverage_notes": [
+      "Tests mock external tool output and do not mutate the live user Library.",
+      "Live scan/plan/clean/tui intentionally fail closed on this machine until dua and ncdu are installed.",
+      "TUI code path is smoke-covered by command registration/import tests; visual interaction was not manually exercised."
+    ],
+    "results": [
+      "restore branch command help verified",
+      "system_data unit suite passed",
+      "CLI plus system_data focused suite passed",
+      "task packet and proof JSON parse successfully",
+      "git diff --check passed",
+      "base uv run without --extra test was not usable because pytest was not installed in the base environment"
+    ]
+  },
+  "timestamp_utc": "2026-05-01T22:02:23+00:00",
+  "tool_report": {
+    "install_command": "brew install dust duf btop procs gdu dua-cli ncdu",
+    "required": [
+      "dust",
+      "duf",
+      "btop",
+      "procs",
+      "gdu",
+      "dua",
+      "ncdu"
+    ],
+    "statuses": [
+      {
+        "available": true,
+        "error": null,
+        "name": "dust",
+        "path": "/opt/homebrew/bin/dust",
+        "required": true,
+        "version": "Dust 1.2.4"
+      },
+      {
+        "available": true,
+        "error": null,
+        "name": "duf",
+        "path": "/opt/homebrew/bin/duf",
+        "required": true,
+        "version": "duf (built from source)"
+      },
+      {
+        "available": true,
+        "error": null,
+        "name": "btop",
+        "path": "/opt/homebrew/bin/btop",
+        "required": true,
+        "version": "btop version: \u001b[1m1.4.6\u001b[0m"
+      },
+      {
+        "available": true,
+        "error": null,
+        "name": "procs",
+        "path": "/opt/homebrew/bin/procs",
+        "required": true,
+        "version": "procs 0.14.11"
+      },
+      {
+        "available": true,
+        "error": null,
+        "name": "gdu",
+        "path": "/opt/homebrew/bin/gdu",
+        "required": true,
+        "version": "du (GNU coreutils) 9.11"
+      },
+      {
+        "available": false,
+        "error": "dua not found on PATH",
+        "name": "dua",
+        "path": null,
+        "required": true,
+        "version": null
+      },
+      {
+        "available": false,
+        "error": "ncdu not found on PATH",
+        "name": "ncdu",
+        "path": null,
+        "required": true,
+        "version": null
+      }
+    ]
+  },
+  "tp_id": "TP-OPS-MAC-SCRUBBER-001",
+  "unresolved": [
+    "missing required tools: dua, ncdu",
+    "live TUI visual interaction not manually exercised"
+  ]
+}
