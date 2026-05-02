@@ -1,0 +1,2152 @@
+{
+  "base": {
+    "execution_branch": "codex/repo-hygiene-remaining-disposition-20260502",
+    "execution_worktree": "/Users/hue/.codex/worktrees/repo-hygiene-20260502-tp005/dopemux-mvp",
+    "origin_main": "af5c462747860ad8382efa72304dd18970374205",
+    "stacked_base": "codex/repo-hygiene-lost-work-audit-20260502"
+  },
+  "branch": "codex/repo-hygiene-remaining-disposition-20260502",
+  "cleanup": {
+    "branch_bundle": "/Users/hue/.codex/recovery/dopemux-mvp/repo-hygiene-20260502/remaining-disposition-20260502/cleanup-execution/merged-cleanup-safe-branches.bundle",
+    "branches_deleted": [
+      "audit/rte-pre-run-hygiene-gemini-001",
+      "claude/inspiring-nobel-101730",
+      "codex/agents-codex-endtoend-default",
+      "codex/ops-mac-system-data-scrubber",
+      "codex/production-extraction-embeddings-hardening",
+      "codex/rte-prescan-progress-hud",
+      "extractor/prompt-governance-gtm",
+      "fix/restore-runtime-authority-verifier",
+      "work/pr-549",
+      "work/pr-551",
+      "work/pr-551-fix",
+      "work/pr-552",
+      "work/pr-553"
+    ],
+    "counts": {
+      "branch_delete_success": 13,
+      "failures": 0,
+      "worktree_remove_success": 7
+    },
+    "worktrees_removed": [
+      "/Users/hue/.codex/worktrees/4292/dopemux-mvp",
+      "/Users/hue/.codex/worktrees/eb8e/dopemux-mvp-wt-cockpit-pm-textual",
+      "/Users/hue/.codex/worktrees/eb8e/dopemux-pr-551-fix",
+      "/Users/hue/.codex/worktrees/eb8e/dopemux-pr-552",
+      "/Users/hue/.codex/worktrees/eb8e/dopemux-pr-553",
+      "/Users/hue/code/dopemux-mvp-wt-agents-copilot-specs-fresh",
+      "/Users/hue/code/restore-runtime-authority-verifier"
+    ]
+  },
+  "codereview": {
+    "files_checked": 5,
+    "issues_found": 0,
+    "model": "gpt-5-codex",
+    "residual_note": "Operational residual risks remain for retained stashes, dirty worktrees, and separate topic recovery candidates.",
+    "review_validation_type": "internal",
+    "status": "complete",
+    "tool": "mcp__pal__.codereview"
+  },
+  "dirty_blocked_branches": [
+    {
+      "attached_worktrees": [
+        "/Users/hue/code/dopemux-mvp-wt-agents-copilot-specs"
+      ],
+      "dirty_attached_worktrees": [
+        "/Users/hue/code/dopemux-mvp-wt-agents-copilot-specs"
+      ],
+      "matched_prs": [
+        {
+          "headRefName": "agents/dopemux-copilot-agent-specs",
+          "mergedAt": "2026-05-01T06:05:47Z",
+          "number": 543,
+          "state": "MERGED",
+          "title": "Create deterministic Dopemux Copilot agent specs",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/543"
+        }
+      ],
+      "name": "agents/dopemux-copilot-agent-specs",
+      "unique_commits": 0
+    },
+    {
+      "attached_worktrees": [
+        "/Users/hue/code/dopemux-mvp-wt-runtime-authority-20260430-195535"
+      ],
+      "dirty_attached_worktrees": [
+        "/Users/hue/code/dopemux-mvp-wt-runtime-authority-20260430-195535"
+      ],
+      "matched_prs": [],
+      "name": "audit/runtime-authority-verifier-20260430-195535",
+      "unique_commits": 0
+    },
+    {
+      "attached_worktrees": [
+        "/Users/hue/code/dopemux-mvp-wt-runtime-authority-20260430-201805"
+      ],
+      "dirty_attached_worktrees": [
+        "/Users/hue/code/dopemux-mvp-wt-runtime-authority-20260430-201805"
+      ],
+      "matched_prs": [],
+      "name": "audit/runtime-authority-verifier-20260430-201805",
+      "unique_commits": 0
+    },
+    {
+      "attached_worktrees": [
+        "/Users/hue/.codex/worktrees/7f48/dopemux-mvp-wt-cockpit-pm-textual"
+      ],
+      "dirty_attached_worktrees": [
+        "/Users/hue/.codex/worktrees/7f48/dopemux-mvp-wt-cockpit-pm-textual"
+      ],
+      "matched_prs": [
+        {
+          "headRefName": "codex/add-audit-authority-files",
+          "mergedAt": "2026-05-01T23:19:57Z",
+          "number": 551,
+          "state": "MERGED",
+          "title": "docs: restore audit authority evidence files",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/551"
+        }
+      ],
+      "name": "codex/add-audit-authority-files",
+      "unique_commits": 0
+    },
+    {
+      "attached_worktrees": [
+        "/Users/hue/code/dopemux-mvp-wt-cockpit-design-system"
+      ],
+      "dirty_attached_worktrees": [
+        "/Users/hue/code/dopemux-mvp-wt-cockpit-design-system"
+      ],
+      "matched_prs": [
+        {
+          "headRefName": "codex/cockpit-design-system",
+          "mergedAt": "2026-04-28T03:53:30Z",
+          "number": 535,
+          "state": "MERGED",
+          "title": "refactor(cockpit-tui): upgrade Architecture Safety Overlay section",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/535"
+        },
+        {
+          "headRefName": "codex/cockpit-design-system",
+          "mergedAt": "2026-04-28T01:54:41Z",
+          "number": 532,
+          "state": "MERGED",
+          "title": "Add audited Cockpit TUI design system",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/532"
+        }
+      ],
+      "name": "codex/cockpit-design-system",
+      "unique_commits": 1
+    },
+    {
+      "attached_worktrees": [
+        "/Users/hue/.codex/worktrees/e252/dopemux-mvp-wt-cockpit-pm-textual"
+      ],
+      "dirty_attached_worktrees": [
+        "/Users/hue/.codex/worktrees/e252/dopemux-mvp-wt-cockpit-pm-textual"
+      ],
+      "matched_prs": [
+        {
+          "headRefName": "codex/dopemux-cli-audit-remediation",
+          "mergedAt": "2026-05-01T23:22:58Z",
+          "number": 554,
+          "state": "MERGED",
+          "title": "fix(cli): harden dopemux audit surfaces",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/554"
+        }
+      ],
+      "name": "codex/dopemux-cli-audit-remediation",
+      "unique_commits": 1
+    },
+    {
+      "attached_worktrees": [
+        "/Users/hue/.codex/worktrees/e270/dopemux-mvp-wt-cockpit-pm-textual"
+      ],
+      "dirty_attached_worktrees": [
+        "/Users/hue/.codex/worktrees/e270/dopemux-mvp-wt-cockpit-pm-textual"
+      ],
+      "matched_prs": [
+        {
+          "headRefName": "codex/freeflow-strict-router",
+          "mergedAt": "2026-05-01T23:11:04Z",
+          "number": 552,
+          "state": "MERGED",
+          "title": "feat(freeflow): add strict-free llm router",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/552"
+        }
+      ],
+      "name": "codex/freeflow-strict-router",
+      "unique_commits": 0
+    },
+    {
+      "attached_worktrees": [
+        "/Users/hue/.codex/worktrees/b8c4/dopemux-mvp"
+      ],
+      "dirty_attached_worktrees": [
+        "/Users/hue/.codex/worktrees/b8c4/dopemux-mvp"
+      ],
+      "matched_prs": [
+        {
+          "headRefName": "codex/installer-smoke-python-deps",
+          "mergedAt": "2026-05-01T22:47:09Z",
+          "number": 549,
+          "state": "MERGED",
+          "title": "[codex] stabilize installer smoke python deps",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/549"
+        }
+      ],
+      "name": "codex/installer-smoke-python-deps",
+      "unique_commits": 0
+    },
+    {
+      "attached_worktrees": [
+        "/Users/hue/code/dopemux-mvp-wt-mcp-audit-hardening"
+      ],
+      "dirty_attached_worktrees": [
+        "/Users/hue/code/dopemux-mvp-wt-mcp-audit-hardening"
+      ],
+      "matched_prs": [],
+      "name": "codex/mcp-audit-hardening",
+      "unique_commits": 0
+    },
+    {
+      "attached_worktrees": [
+        "/Users/hue/.codex/worktrees/38c4/dopemux-mvp"
+      ],
+      "dirty_attached_worktrees": [
+        "/Users/hue/.codex/worktrees/38c4/dopemux-mvp"
+      ],
+      "matched_prs": [
+        {
+          "headRefName": "codex/remove-stale-root-next-surface",
+          "mergedAt": "2026-05-01T23:52:48Z",
+          "number": 550,
+          "state": "MERGED",
+          "title": "[codex] Remove stale root Next surface",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/550"
+        }
+      ],
+      "name": "codex/remove-stale-root-next-surface",
+      "unique_commits": 0
+    },
+    {
+      "attached_worktrees": [
+        "/Users/hue/.codex/worktrees/b840/dopemux-mvp-wt-cockpit-pm-textual"
+      ],
+      "dirty_attached_worktrees": [
+        "/Users/hue/.codex/worktrees/b840/dopemux-mvp-wt-cockpit-pm-textual"
+      ],
+      "matched_prs": [
+        {
+          "headRefName": "codex/restore-system-data-command",
+          "mergedAt": "2026-05-02T06:00:11Z",
+          "number": 560,
+          "state": "MERGED",
+          "title": "[codex] Quiet system-data scanner evidence noise",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/560"
+        },
+        {
+          "headRefName": "codex/restore-system-data-command",
+          "mergedAt": "2026-05-02T05:45:35Z",
+          "number": 559,
+          "state": "MERGED",
+          "title": "[codex] Restore system-data command after main overwrite",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/559"
+        }
+      ],
+      "name": "codex/restore-system-data-command",
+      "unique_commits": 0
+    },
+    {
+      "attached_worktrees": [
+        "/Users/hue/code/dopemux-mvp-wt-tui-hardening"
+      ],
+      "dirty_attached_worktrees": [
+        "/Users/hue/code/dopemux-mvp-wt-tui-hardening"
+      ],
+      "matched_prs": [],
+      "name": "codex/tui-runtime-unknown-hardening",
+      "unique_commits": 0
+    },
+    {
+      "attached_worktrees": [
+        "/Users/hue/code/dopemux-mvp"
+      ],
+      "dirty_attached_worktrees": [
+        "/Users/hue/code/dopemux-mvp"
+      ],
+      "matched_prs": [],
+      "name": "main",
+      "unique_commits": 0
+    },
+    {
+      "attached_worktrees": [
+        "/Users/hue/code/dopemux-mvp-wt-mcp-customization-dr-data"
+      ],
+      "dirty_attached_worktrees": [
+        "/Users/hue/code/dopemux-mvp-wt-mcp-customization-dr-data"
+      ],
+      "matched_prs": [
+        {
+          "headRefName": "research/dmx-mcp-customization-dr-data",
+          "mergedAt": "2026-05-01T07:08:50Z",
+          "number": 537,
+          "state": "MERGED",
+          "title": "docs: MCP customization deep research data packs",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/537"
+        }
+      ],
+      "name": "research/dmx-mcp-customization-dr-data",
+      "unique_commits": 0
+    },
+    {
+      "attached_worktrees": [
+        "/Users/hue/code/dopemux-mvp-wt-cockpit-pm-textual"
+      ],
+      "dirty_attached_worktrees": [
+        "/Users/hue/code/dopemux-mvp-wt-cockpit-pm-textual"
+      ],
+      "matched_prs": [],
+      "name": "test/pm-authority-ports",
+      "unique_commits": 1
+    }
+  ],
+  "id": "repo-remaining-work-disposition-2026-05-02",
+  "local_recovery_root": "/Users/hue/.codex/recovery/dopemux-mvp/repo-hygiene-20260502/remaining-disposition-20260502",
+  "post_cleanup_counts": {
+    "branches_by_class": {
+      "blocked": 2,
+      "preserve-dirty": 15,
+      "topic-pr": 14,
+      "unfinished": 14
+    },
+    "stashes_by_class": {
+      "merged-cleanup-safe": 2,
+      "preserve-dirty": 7,
+      "topic-pr": 3,
+      "unfinished": 4
+    },
+    "topic_pr_candidates_by_group": {
+      "cli/system": 5,
+      "mixed/unknown": 1,
+      "rte/dopecode": 8
+    },
+    "worktrees_by_class": {
+      "blocked": 2,
+      "preserve-dirty": 20,
+      "topic-pr": 3,
+      "unfinished": 2
+    }
+  },
+  "pr_561_gate": {
+    "blocker": "GitHub base branch policy prohibits merge; review / review failed from Gemini provider 403 PERMISSION_DENIED; admin bypass not used.",
+    "normal_merge_attempted": true,
+    "normal_merge_exit_code": 1,
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/561"
+  },
+  "proof_tracking_policy": {
+    "gitignore_allowlist": [
+      "proof/repo-branch-worktree-stash-audit-2026-05-02.proof.json",
+      "proof/repo-remaining-work-disposition-2026-05-02.proof.json"
+    ],
+    "implementation_notes": "The TP005 implementation notes are retained as local recovery evidence only, not as a tracked proof/ markdown artifact."
+  },
+  "remaining_branches": [
+    {
+      "class": "preserve-dirty",
+      "matched_prs": [
+        {
+          "headRefName": "agents/dopemux-copilot-agent-specs",
+          "mergedAt": "2026-05-01T06:05:47Z",
+          "number": 543,
+          "state": "MERGED",
+          "title": "Create deterministic Dopemux Copilot agent specs",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/543"
+        }
+      ],
+      "name": "agents/dopemux-copilot-agent-specs",
+      "object": "225477ce199e0c068428cc6fe0b563c6dce1c11e",
+      "patch_equivalent_commits": 1,
+      "reason": "attached worktree has dirty state",
+      "topic_group": "mixed/unknown",
+      "unique_commits": 0,
+      "unique_path_count": 0
+    },
+    {
+      "class": "topic-pr",
+      "matched_prs": [
+        {
+          "headRefName": "audit/rte-cost-profiles-ladders-wizard-gemini-001",
+          "mergedAt": "2026-04-24T03:39:47Z",
+          "number": 520,
+          "state": "MERGED",
+          "title": "audit: stabilize RTE cost profiles, routing ladders, and dopemux wizard launch policy",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/520"
+        }
+      ],
+      "name": "audit/rte-cost-profiles-ladders-wizard-gemini-001",
+      "object": "1d79eb6b22b3aebb91594d1af1d5e6a28bda983b",
+      "patch_equivalent_commits": 1,
+      "reason": "merged PR exists but branch still has patch-unique commits requiring recovery review",
+      "topic_group": "rte/dopecode",
+      "unique_commits": 7,
+      "unique_path_count": 50
+    },
+    {
+      "class": "preserve-dirty",
+      "matched_prs": [],
+      "name": "audit/runtime-authority-verifier-20260430-195535",
+      "object": "5f216582cf3443777cbbf8eedf8b50f68f0d511d",
+      "patch_equivalent_commits": 0,
+      "reason": "attached worktree has dirty state",
+      "topic_group": "mixed/unknown",
+      "unique_commits": 0,
+      "unique_path_count": 0
+    },
+    {
+      "class": "preserve-dirty",
+      "matched_prs": [],
+      "name": "audit/runtime-authority-verifier-20260430-201805",
+      "object": "5f216582cf3443777cbbf8eedf8b50f68f0d511d",
+      "patch_equivalent_commits": 0,
+      "reason": "attached worktree has dirty state",
+      "topic_group": "mixed/unknown",
+      "unique_commits": 0,
+      "unique_path_count": 0
+    },
+    {
+      "class": "topic-pr",
+      "matched_prs": [
+        {
+          "headRefName": "audit/runtime-authority-verifier-project-docs-improvement",
+          "mergedAt": "2026-05-01T05:58:47Z",
+          "number": 547,
+          "state": "MERGED",
+          "title": "Add deterministic runtime authority verifier",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/547"
+        }
+      ],
+      "name": "audit/runtime-authority-verifier-project-docs-improvement",
+      "object": "00cb80dd9cd2763ef42472503505692f5895c949",
+      "patch_equivalent_commits": 0,
+      "reason": "merged PR exists but branch still has patch-unique commits requiring recovery review",
+      "topic_group": "cli/system",
+      "unique_commits": 1,
+      "unique_path_count": 4
+    },
+    {
+      "class": "preserve-dirty",
+      "matched_prs": [
+        {
+          "headRefName": "codex/add-audit-authority-files",
+          "mergedAt": "2026-05-01T23:19:57Z",
+          "number": 551,
+          "state": "MERGED",
+          "title": "docs: restore audit authority evidence files",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/551"
+        }
+      ],
+      "name": "codex/add-audit-authority-files",
+      "object": "5ad4be889fc738fae83547027ad24e8d89d21304",
+      "patch_equivalent_commits": 1,
+      "reason": "attached worktree has dirty state",
+      "topic_group": "mixed/unknown",
+      "unique_commits": 0,
+      "unique_path_count": 0
+    },
+    {
+      "class": "preserve-dirty",
+      "matched_prs": [
+        {
+          "headRefName": "codex/cockpit-design-system",
+          "mergedAt": "2026-04-28T03:53:30Z",
+          "number": 535,
+          "state": "MERGED",
+          "title": "refactor(cockpit-tui): upgrade Architecture Safety Overlay section",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/535"
+        },
+        {
+          "headRefName": "codex/cockpit-design-system",
+          "mergedAt": "2026-04-28T01:54:41Z",
+          "number": 532,
+          "state": "MERGED",
+          "title": "Add audited Cockpit TUI design system",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/532"
+        }
+      ],
+      "name": "codex/cockpit-design-system",
+      "object": "c836e3410a74cd19e342e4748970255b1e7346ac",
+      "patch_equivalent_commits": 5,
+      "reason": "attached worktree has dirty state",
+      "topic_group": "ui/cockpit",
+      "unique_commits": 1,
+      "unique_path_count": 2
+    },
+    {
+      "class": "unfinished",
+      "matched_prs": [
+        {
+          "headRefName": "codex/dopecode-ast-navigation-20260417",
+          "mergedAt": null,
+          "number": 471,
+          "state": "CLOSED",
+          "title": "feat(serena): add dopecode AST navigation layer",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/471"
+        }
+      ],
+      "name": "codex/dopecode-ast-navigation-20260417",
+      "object": "40edc271c8f9f8c6d41fcf126d708c22db1ba1bc",
+      "patch_equivalent_commits": 0,
+      "reason": "closed/unmerged PR has patch-unique commits",
+      "topic_group": "rte/dopecode",
+      "unique_commits": 1,
+      "unique_path_count": 7
+    },
+    {
+      "class": "preserve-dirty",
+      "matched_prs": [
+        {
+          "headRefName": "codex/dopemux-cli-audit-remediation",
+          "mergedAt": "2026-05-01T23:22:58Z",
+          "number": 554,
+          "state": "MERGED",
+          "title": "fix(cli): harden dopemux audit surfaces",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/554"
+        }
+      ],
+      "name": "codex/dopemux-cli-audit-remediation",
+      "object": "d18ddab40a91f57c2566ff5826a12045d7925a14",
+      "patch_equivalent_commits": 0,
+      "reason": "attached worktree has dirty state",
+      "topic_group": "cli/system",
+      "unique_commits": 1,
+      "unique_path_count": 19
+    },
+    {
+      "class": "preserve-dirty",
+      "matched_prs": [
+        {
+          "headRefName": "codex/freeflow-strict-router",
+          "mergedAt": "2026-05-01T23:11:04Z",
+          "number": 552,
+          "state": "MERGED",
+          "title": "feat(freeflow): add strict-free llm router",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/552"
+        }
+      ],
+      "name": "codex/freeflow-strict-router",
+      "object": "5eccaee6e0fc7aa0c4c3694218da5a8c02f3e073",
+      "patch_equivalent_commits": 2,
+      "reason": "attached worktree has dirty state",
+      "topic_group": "cli/system",
+      "unique_commits": 0,
+      "unique_path_count": 0
+    },
+    {
+      "class": "unfinished",
+      "matched_prs": [
+        {
+          "headRefName": "codex/infra-compose-uv-db-init",
+          "mergedAt": null,
+          "number": 436,
+          "state": "CLOSED",
+          "title": "chore(infra): migrate Dockerfiles to uv, fix compose build contexts, add unified DB init",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/436"
+        }
+      ],
+      "name": "codex/infra-compose-uv-db-init",
+      "object": "bc9df1385535c19249b9c3a449061d2b5d3a0fa7",
+      "patch_equivalent_commits": 0,
+      "reason": "closed/unmerged PR has patch-unique commits",
+      "topic_group": "rte/dopecode",
+      "unique_commits": 6,
+      "unique_path_count": 41
+    },
+    {
+      "class": "preserve-dirty",
+      "matched_prs": [
+        {
+          "headRefName": "codex/installer-smoke-python-deps",
+          "mergedAt": "2026-05-01T22:47:09Z",
+          "number": 549,
+          "state": "MERGED",
+          "title": "[codex] stabilize installer smoke python deps",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/549"
+        }
+      ],
+      "name": "codex/installer-smoke-python-deps",
+      "object": "75454e5d373d760f062d0dadad2960cc22c03e41",
+      "patch_equivalent_commits": 1,
+      "reason": "attached worktree has dirty state",
+      "topic_group": "cli/system",
+      "unique_commits": 0,
+      "unique_path_count": 0
+    },
+    {
+      "class": "preserve-dirty",
+      "matched_prs": [],
+      "name": "codex/mcp-audit-hardening",
+      "object": "087f993291aaa404e514c2616dd77cc7984c5097",
+      "patch_equivalent_commits": 0,
+      "reason": "attached worktree has dirty state",
+      "topic_group": "mixed/unknown",
+      "unique_commits": 0,
+      "unique_path_count": 0
+    },
+    {
+      "class": "topic-pr",
+      "matched_prs": [
+        {
+          "headRefName": "codex/pm-writes-phase1",
+          "mergedAt": "2026-04-23T15:13:34Z",
+          "number": 512,
+          "state": "MERGED",
+          "title": "test: verify and harden phase-1 PM writes slice",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/512"
+        }
+      ],
+      "name": "codex/pm-writes-phase1",
+      "object": "94c5086050cc8b873acf0c9f5397c3c0435abd2e",
+      "patch_equivalent_commits": 0,
+      "reason": "merged PR exists but branch still has patch-unique commits requiring recovery review",
+      "topic_group": "mixed/unknown",
+      "unique_commits": 3,
+      "unique_path_count": 13
+    },
+    {
+      "class": "unfinished",
+      "matched_prs": [],
+      "name": "codex/pm-writes-phase1-local-pre-remote-sync",
+      "object": "5c3e362f3155201b54c074a4f3ccc689cfcc626c",
+      "patch_equivalent_commits": 0,
+      "reason": "no merged PR proof for patch-unique commits",
+      "topic_group": "mixed/unknown",
+      "unique_commits": 2,
+      "unique_path_count": 12
+    },
+    {
+      "class": "preserve-dirty",
+      "matched_prs": [
+        {
+          "headRefName": "codex/remove-stale-root-next-surface",
+          "mergedAt": "2026-05-01T23:52:48Z",
+          "number": 550,
+          "state": "MERGED",
+          "title": "[codex] Remove stale root Next surface",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/550"
+        }
+      ],
+      "name": "codex/remove-stale-root-next-surface",
+      "object": "d661b6e1cd6a6592e3db3e60c1b5e9820942c9fe",
+      "patch_equivalent_commits": 2,
+      "reason": "attached worktree has dirty state",
+      "topic_group": "mixed/unknown",
+      "unique_commits": 0,
+      "unique_path_count": 0
+    },
+    {
+      "class": "blocked",
+      "matched_prs": [
+        {
+          "headRefName": "codex/repo-hygiene-lost-work-audit-20260502",
+          "mergedAt": null,
+          "number": 561,
+          "state": "OPEN",
+          "title": "docs(repo-hygiene): audit lost work and execute conservative cleanup",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/561"
+        }
+      ],
+      "name": "codex/repo-hygiene-lost-work-audit-20260502",
+      "object": "c2daf3808e0d2a2a929abe0a4e4cd7298f47be45",
+      "patch_equivalent_commits": 0,
+      "reason": "PR #561 remains blocked by base-branch policy after external Gemini review provider failure",
+      "topic_group": "docs/audit",
+      "unique_commits": 1,
+      "unique_path_count": 4
+    },
+    {
+      "class": "blocked",
+      "matched_prs": [
+        {
+          "headRefName": "codex/repo-hygiene-lost-work-audit-20260502",
+          "mergedAt": null,
+          "number": 561,
+          "state": "OPEN",
+          "title": "docs(repo-hygiene): audit lost work and execute conservative cleanup",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/561"
+        }
+      ],
+      "name": "codex/repo-hygiene-remaining-disposition-20260502",
+      "object": "c2daf3808e0d2a2a929abe0a4e4cd7298f47be45",
+      "patch_equivalent_commits": 0,
+      "reason": "active TP005 execution branch",
+      "topic_group": "docs/audit",
+      "unique_commits": 1,
+      "unique_path_count": 4
+    },
+    {
+      "class": "unfinished",
+      "matched_prs": [],
+      "name": "codex/restore-canonical-compose",
+      "object": "72900b2344121c8b291d5015544d1dbdc8442a65",
+      "patch_equivalent_commits": 0,
+      "reason": "no merged PR proof for patch-unique commits",
+      "topic_group": "cli/system",
+      "unique_commits": 1,
+      "unique_path_count": 10
+    },
+    {
+      "class": "preserve-dirty",
+      "matched_prs": [
+        {
+          "headRefName": "codex/restore-system-data-command",
+          "mergedAt": "2026-05-02T06:00:11Z",
+          "number": 560,
+          "state": "MERGED",
+          "title": "[codex] Quiet system-data scanner evidence noise",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/560"
+        },
+        {
+          "headRefName": "codex/restore-system-data-command",
+          "mergedAt": "2026-05-02T05:45:35Z",
+          "number": 559,
+          "state": "MERGED",
+          "title": "[codex] Restore system-data command after main overwrite",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/559"
+        }
+      ],
+      "name": "codex/restore-system-data-command",
+      "object": "042a60bdd05541b06216a9f8bc4ddd9568939e3f",
+      "patch_equivalent_commits": 0,
+      "reason": "attached worktree has dirty state",
+      "topic_group": "cli/system",
+      "unique_commits": 0,
+      "unique_path_count": 0
+    },
+    {
+      "class": "topic-pr",
+      "matched_prs": [
+        {
+          "headRefName": "codex/rte-wizard-prescan-telemetry",
+          "mergedAt": "2026-04-28T02:15:39Z",
+          "number": 523,
+          "state": "MERGED",
+          "title": "feat(rte): add wizard alias and richer prescan telemetry",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/523"
+        }
+      ],
+      "name": "codex/rte-wizard-prescan-telemetry",
+      "object": "a442ed141bd4302038dc5b9347e76672453f5450",
+      "patch_equivalent_commits": 0,
+      "reason": "merged PR exists but branch still has patch-unique commits requiring recovery review",
+      "topic_group": "rte/dopecode",
+      "unique_commits": 2,
+      "unique_path_count": 10
+    },
+    {
+      "class": "preserve-dirty",
+      "matched_prs": [],
+      "name": "codex/tui-runtime-unknown-hardening",
+      "object": "f23c3294c5726b569a9903dd242559afca649577",
+      "patch_equivalent_commits": 1,
+      "reason": "attached worktree has dirty state",
+      "topic_group": "ui/cockpit",
+      "unique_commits": 0,
+      "unique_path_count": 0
+    },
+    {
+      "class": "topic-pr",
+      "matched_prs": [
+        {
+          "headRefName": "feat/rte-cost-stabilization-v2",
+          "mergedAt": "2026-04-24T00:28:41Z",
+          "number": 516,
+          "state": "MERGED",
+          "title": "feat(rte): enforce tiktoken tokenization and authoritative pricing",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/516"
+        }
+      ],
+      "name": "feat/rte-cost-stabilization-v2",
+      "object": "bd16c3eadf23b15d800e7aba2415cf7a4d6f6268",
+      "patch_equivalent_commits": 0,
+      "reason": "merged PR exists but branch still has patch-unique commits requiring recovery review",
+      "topic_group": "rte/dopecode",
+      "unique_commits": 1,
+      "unique_path_count": 5
+    },
+    {
+      "class": "topic-pr",
+      "matched_prs": [
+        {
+          "headRefName": "feat/rte-intelligence-wiring",
+          "mergedAt": "2026-04-24T00:06:18Z",
+          "number": 514,
+          "state": "MERGED",
+          "title": "feat(rte): wire intelligence router to dynamic model routing",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/514"
+        }
+      ],
+      "name": "feat/rte-intelligence-wiring",
+      "object": "6566ac6c8efa1206f53c818fac9224da4ea7d833",
+      "patch_equivalent_commits": 0,
+      "reason": "merged PR exists but branch still has patch-unique commits requiring recovery review",
+      "topic_group": "rte/dopecode",
+      "unique_commits": 1,
+      "unique_path_count": 194
+    },
+    {
+      "class": "preserve-dirty",
+      "matched_prs": [],
+      "name": "main",
+      "object": "af5c462747860ad8382efa72304dd18970374205",
+      "patch_equivalent_commits": 0,
+      "reason": "primary branch; attached primary checkout dirty",
+      "topic_group": "mixed/unknown",
+      "unique_commits": 0,
+      "unique_path_count": 0
+    },
+    {
+      "class": "topic-pr",
+      "matched_prs": [
+        {
+          "headRefName": "feat/rte-v5-full-prescan-integration",
+          "mergedAt": "2026-04-21T23:18:19Z",
+          "number": 464,
+          "state": "MERGED",
+          "title": "feat(rte): integrate prescan as stage 0 of v5 extraction",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/464"
+        }
+      ],
+      "name": "pr/464",
+      "object": "57354faec7e659828ba665a912f2fea2f694558a",
+      "patch_equivalent_commits": 0,
+      "reason": "merged PR exists but branch still has patch-unique commits requiring recovery review",
+      "topic_group": "rte/dopecode",
+      "unique_commits": 3,
+      "unique_path_count": 12
+    },
+    {
+      "class": "unfinished",
+      "matched_prs": [
+        {
+          "headRefName": "feat/rte-prescan-first-live-hardening",
+          "mergedAt": null,
+          "number": 467,
+          "state": "CLOSED",
+          "title": "feat(rte): harden prescan for first-live spend and auditability",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/467"
+        }
+      ],
+      "name": "pr/467",
+      "object": "c50af8a575af76e0ae1b95295385613cc8d2e37a",
+      "patch_equivalent_commits": 0,
+      "reason": "closed/unmerged PR has patch-unique commits",
+      "topic_group": "rte/dopecode",
+      "unique_commits": 2,
+      "unique_path_count": 11
+    },
+    {
+      "class": "topic-pr",
+      "matched_prs": [
+        {
+          "headRefName": "feat/rte-prescan-stage0-live-lane-proving",
+          "mergedAt": "2026-04-22T00:26:52Z",
+          "number": 480,
+          "state": "MERGED",
+          "title": "prescan: prove live-lane success path with independent executable routes",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/480"
+        }
+      ],
+      "name": "pr/480",
+      "object": "8ff407fab18b80e14fe719b4474d006f350bf638",
+      "patch_equivalent_commits": 0,
+      "reason": "merged PR exists but branch still has patch-unique commits requiring recovery review",
+      "topic_group": "rte/dopecode",
+      "unique_commits": 2,
+      "unique_path_count": 8
+    },
+    {
+      "class": "topic-pr",
+      "matched_prs": [
+        {
+          "headRefName": "tp/dopecode-phase8-events-replay",
+          "mergedAt": "2026-04-21T23:16:37Z",
+          "number": 481,
+          "state": "MERGED",
+          "title": "dopeCode Phase 8: event receipts and replay-safe audit trail",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/481"
+        }
+      ],
+      "name": "pr/481",
+      "object": "ecda19ac006e60fd7ddd6757e0c93a0db4209754",
+      "patch_equivalent_commits": 0,
+      "reason": "merged PR exists but branch still has patch-unique commits requiring recovery review",
+      "topic_group": "rte/dopecode",
+      "unique_commits": 18,
+      "unique_path_count": 163
+    },
+    {
+      "class": "unfinished",
+      "matched_prs": [],
+      "name": "prmerge/539",
+      "object": "eeafc5ad89b40ba0d8ee28125d3192ded6406297",
+      "patch_equivalent_commits": 0,
+      "reason": "no merged PR proof for patch-unique commits",
+      "topic_group": "cli/system",
+      "unique_commits": 2,
+      "unique_path_count": 8
+    },
+    {
+      "class": "topic-pr",
+      "matched_prs": [
+        {
+          "headRefName": "audit/runtime-authority-verifier-project-docs-improvement",
+          "mergedAt": "2026-05-01T05:58:47Z",
+          "number": 547,
+          "state": "MERGED",
+          "title": "Add deterministic runtime authority verifier",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/547"
+        }
+      ],
+      "name": "recover/tp1-547",
+      "object": "2e42f81476b4d18e9fea706d6e378f9ac56a5524",
+      "patch_equivalent_commits": 0,
+      "reason": "merged PR exists but branch still has patch-unique commits requiring recovery review",
+      "topic_group": "cli/system",
+      "unique_commits": 4,
+      "unique_path_count": 4
+    },
+    {
+      "class": "unfinished",
+      "matched_prs": [],
+      "name": "repo-precommit-debt-cleanup",
+      "object": "0ca2fb13d723556855a4529f755e500ad1d08956",
+      "patch_equivalent_commits": 9,
+      "reason": "no merged PR proof for patch-unique commits",
+      "topic_group": "rte/dopecode",
+      "unique_commits": 6,
+      "unique_path_count": 29
+    },
+    {
+      "class": "preserve-dirty",
+      "matched_prs": [
+        {
+          "headRefName": "research/dmx-mcp-customization-dr-data",
+          "mergedAt": "2026-05-01T07:08:50Z",
+          "number": 537,
+          "state": "MERGED",
+          "title": "docs: MCP customization deep research data packs",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/537"
+        }
+      ],
+      "name": "research/dmx-mcp-customization-dr-data",
+      "object": "cba686305c91e46556e522aacc326989462b8fa3",
+      "patch_equivalent_commits": 1,
+      "reason": "attached worktree has dirty state",
+      "topic_group": "mixed/unknown",
+      "unique_commits": 0,
+      "unique_path_count": 0
+    },
+    {
+      "class": "preserve-dirty",
+      "matched_prs": [],
+      "name": "test/pm-authority-ports",
+      "object": "c90ed07c0d5c9150f767ab2e5b27b3b1973cff7d",
+      "patch_equivalent_commits": 2,
+      "reason": "attached worktree has dirty state",
+      "topic_group": "mixed/unknown",
+      "unique_commits": 1,
+      "unique_path_count": 2
+    },
+    {
+      "class": "unfinished",
+      "matched_prs": [
+        {
+          "headRefName": "tp/dopecode-ast-navigation",
+          "mergedAt": null,
+          "number": 469,
+          "state": "CLOSED",
+          "title": "feat: Implement dopeCode AST navigation and controlled transform foundation",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/469"
+        }
+      ],
+      "name": "tp/dopecode-ast-navigation",
+      "object": "bf3a9244df9dc4e18497b9306ff8ef27893c81a6",
+      "patch_equivalent_commits": 0,
+      "reason": "closed/unmerged PR has patch-unique commits",
+      "topic_group": "rte/dopecode",
+      "unique_commits": 1,
+      "unique_path_count": 7
+    },
+    {
+      "class": "unfinished",
+      "matched_prs": [],
+      "name": "tp/dopecode-ast-navigation-phase1",
+      "object": "6683ef825f4b417405cf57df4f074b0f384b5b02",
+      "patch_equivalent_commits": 0,
+      "reason": "no merged PR proof for patch-unique commits",
+      "topic_group": "rte/dopecode",
+      "unique_commits": 3,
+      "unique_path_count": 16
+    },
+    {
+      "class": "unfinished",
+      "matched_prs": [
+        {
+          "headRefName": "tp/dopecode-phase2-harden",
+          "mergedAt": null,
+          "number": 473,
+          "state": "CLOSED",
+          "title": "dopeCode Phase 2 Hardening and Final Verification",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/473"
+        }
+      ],
+      "name": "tp/dopecode-phase2-harden",
+      "object": "3046c2364c67624a2eb95a7d6dc574ed01469c84",
+      "patch_equivalent_commits": 0,
+      "reason": "closed/unmerged PR has patch-unique commits",
+      "topic_group": "rte/dopecode",
+      "unique_commits": 7,
+      "unique_path_count": 34
+    },
+    {
+      "class": "unfinished",
+      "matched_prs": [
+        {
+          "headRefName": "tp/dopecode-phase3-decompose-policy",
+          "mergedAt": null,
+          "number": 474,
+          "state": "CLOSED",
+          "title": "dopeCode Phase 3: runtime decomposition and mutation policy",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/474"
+        }
+      ],
+      "name": "tp/dopecode-phase3-decompose-policy",
+      "object": "4aec5e1500978dacf5eb93b98ba79d21b164a18d",
+      "patch_equivalent_commits": 0,
+      "reason": "closed/unmerged PR has patch-unique commits",
+      "topic_group": "rte/dopecode",
+      "unique_commits": 9,
+      "unique_path_count": 41
+    },
+    {
+      "class": "unfinished",
+      "matched_prs": [
+        {
+          "headRefName": "tp/dopecode-phase4-language-approval",
+          "mergedAt": null,
+          "number": 476,
+          "state": "CLOSED",
+          "title": "dopeCode Phase 4: language expansion and approval-aware execution",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/476"
+        }
+      ],
+      "name": "tp/dopecode-phase4-language-approval",
+      "object": "c47e7d49c808aa5a5cc2bd3a7b0486da339abdb6",
+      "patch_equivalent_commits": 0,
+      "reason": "closed/unmerged PR has patch-unique commits",
+      "topic_group": "rte/dopecode",
+      "unique_commits": 20,
+      "unique_path_count": 50
+    },
+    {
+      "class": "topic-pr",
+      "matched_prs": [
+        {
+          "headRefName": "tp/dopecode-phase8-events-replay",
+          "mergedAt": "2026-04-21T23:16:37Z",
+          "number": 481,
+          "state": "MERGED",
+          "title": "dopeCode Phase 8: event receipts and replay-safe audit trail",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/481"
+        }
+      ],
+      "name": "tp/dopecode-phase8-events-replay",
+      "object": "4320ef8148147cba2041b05d3685d459fd6614cc",
+      "patch_equivalent_commits": 0,
+      "reason": "merged PR exists but branch still has patch-unique commits requiring recovery review",
+      "topic_group": "rte/dopecode",
+      "unique_commits": 23,
+      "unique_path_count": 166
+    },
+    {
+      "class": "topic-pr",
+      "matched_prs": [
+        {
+          "headRefName": "tp/gh-review-thread-agent",
+          "mergedAt": "2026-04-18T06:43:17Z",
+          "number": 465,
+          "state": "MERGED",
+          "title": "Add deterministic review-thread remediation workflow",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/465"
+        }
+      ],
+      "name": "tp/gh-review-thread-agent",
+      "object": "82486613b03f6f3039ab028ff3a00a06eed134f9",
+      "patch_equivalent_commits": 0,
+      "reason": "merged PR exists but branch still has patch-unique commits requiring recovery review",
+      "topic_group": "cli/system",
+      "unique_commits": 1,
+      "unique_path_count": 5
+    },
+    {
+      "class": "unfinished",
+      "matched_prs": [
+        {
+          "headRefName": "tp/serena-tool-surface-audit",
+          "mergedAt": null,
+          "number": 468,
+          "state": "CLOSED",
+          "title": "feat(serena): add dopecode layers and mcp tool surface updates",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/468"
+        }
+      ],
+      "name": "tp/serena-tool-surface-audit",
+      "object": "6683ef825f4b417405cf57df4f074b0f384b5b02",
+      "patch_equivalent_commits": 0,
+      "reason": "closed/unmerged PR has patch-unique commits",
+      "topic_group": "rte/dopecode",
+      "unique_commits": 3,
+      "unique_path_count": 16
+    },
+    {
+      "class": "unfinished",
+      "matched_prs": [],
+      "name": "tp/serena-v2-truth",
+      "object": "76dfeb6e2628bf37786104d2ffd65227d838495a",
+      "patch_equivalent_commits": 0,
+      "reason": "no merged PR proof for patch-unique commits",
+      "topic_group": "rte/dopecode",
+      "unique_commits": 1,
+      "unique_path_count": 10
+    },
+    {
+      "class": "topic-pr",
+      "matched_prs": [
+        {
+          "headRefName": "codex/dopemux-cli-audit-remediation",
+          "mergedAt": "2026-05-01T23:22:58Z",
+          "number": 554,
+          "state": "MERGED",
+          "title": "fix(cli): harden dopemux audit surfaces",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/554"
+        }
+      ],
+      "name": "work/pr-554",
+      "object": "7c75b61710073d327dbc2919b64a2480ba5cd194",
+      "patch_equivalent_commits": 1,
+      "reason": "merged PR exists but branch still has patch-unique commits requiring recovery review",
+      "topic_group": "cli/system",
+      "unique_commits": 1,
+      "unique_path_count": 19
+    },
+    {
+      "class": "topic-pr",
+      "matched_prs": [
+        {
+          "headRefName": "codex/dopemux-cli-audit-remediation",
+          "mergedAt": "2026-05-01T23:22:58Z",
+          "number": 554,
+          "state": "MERGED",
+          "title": "fix(cli): harden dopemux audit surfaces",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/554"
+        }
+      ],
+      "name": "work/pr-554-fix",
+      "object": "98da7f5525c6dd55028fe1cbe42d68bbe6660be1",
+      "patch_equivalent_commits": 1,
+      "reason": "merged PR exists but branch still has patch-unique commits requiring recovery review",
+      "topic_group": "cli/system",
+      "unique_commits": 1,
+      "unique_path_count": 19
+    }
+  ],
+  "remaining_stashes": [
+    {
+      "class": "preserve-dirty",
+      "file_count": 1,
+      "files": [
+        "AGENTS.md"
+      ],
+      "object": "15de39d769b2d5b7888e94ac5d51b791c24bcea7",
+      "reason": "AGENTS.md-only stash retained",
+      "ref": "stash@{0}",
+      "topic_group": "docs/audit"
+    },
+    {
+      "class": "topic-pr",
+      "file_count": 11,
+      "files": [
+        "AGENTS.md",
+        "docs/05-audit-reports/cockpit-pm-implementer-callable-inventory-2026-04-24.md",
+        "docs/05-audit-reports/cockpit-pm-implementer-design-brief-2026-04-24.md",
+        "docs/05-audit-reports/cockpit-pm-implementer-processing-pack-2026-04-24.md",
+        "proof/cockpit-pm-implementer-processing-pack-2026-04-24.proof.json",
+        "services/repo-truth-extractor/lib/promptgen/feature_detector.py",
+        "services/repo-truth-extractor/tests/test_universal_extractor.py",
+        "src/dopemux/commands/extractor_commands.py",
+        "task-packets/DMX-COCKPIT-PMIMPL-PACK-001.json",
+        "task-packets/INDEX.md",
+        "tests/unit/test_extractor_command_authority.py"
+      ],
+      "object": "8dce51ff197f9ebe8ef0500140392d0977d637db",
+      "reason": "source/test/operator stash requires recovery branch review",
+      "ref": "stash@{1}",
+      "topic_group": "rte/dopecode"
+    },
+    {
+      "class": "preserve-dirty",
+      "file_count": 1,
+      "files": [
+        "AGENTS.md"
+      ],
+      "object": "9eefe8bfcd573b709779a89e811db8569ab35ec8",
+      "reason": "AGENTS.md-only stash retained",
+      "ref": "stash@{2}",
+      "topic_group": "docs/audit"
+    },
+    {
+      "class": "preserve-dirty",
+      "file_count": 1,
+      "files": [
+        "AGENTS.md"
+      ],
+      "object": "d02a81793565a5e59c69281ca72709f862d65321",
+      "reason": "AGENTS.md-only stash retained",
+      "ref": "stash@{3}",
+      "topic_group": "docs/audit"
+    },
+    {
+      "class": "preserve-dirty",
+      "file_count": 1,
+      "files": [
+        "AGENTS.md"
+      ],
+      "object": "6c9ad669d473abc5bc87f85fc7cf7ea163b65b42",
+      "reason": "AGENTS.md-only stash retained",
+      "ref": "stash@{4}",
+      "topic_group": "docs/audit"
+    },
+    {
+      "class": "unfinished",
+      "file_count": 18,
+      "files": [
+        "AGENTS.md",
+        "proof/rte_pre_run_hygiene_codereview.md",
+        "proof/rte_pre_run_hygiene_do_not_touch_ledger.md",
+        "proof/rte_pre_run_hygiene_final.json",
+        "proof/rte_pre_run_hygiene_final.md",
+        "proof/rte_pre_run_hygiene_final_challenge.md",
+        "proof/rte_pre_run_hygiene_precommit.md",
+        "proof/rte_pre_run_hygiene_stage1_boundary_model.md",
+        "proof/rte_pre_run_hygiene_stage1_challenge.md",
+        "proof/rte_pre_run_hygiene_stage2_challenge.md",
+        "proof/rte_pre_run_hygiene_stage2_worktree_ledger.md",
+        "proof/rte_pre_run_hygiene_stage3_challenge.md",
+        "proof/rte_pre_run_hygiene_stage3_input_boundary.md",
+        "proof/rte_pre_run_hygiene_stage4_arbitration.md",
+        "proof/rte_pre_run_hygiene_stage4_challenge.md",
+        "proof/rte_pre_run_hygiene_stage4_consensus.md",
+        "proof/rte_pre_run_hygiene_stage5_quarantine_ledger.md",
+        "proof/rte_pre_run_hygiene_stage5_review.md"
+      ],
+      "object": "fc2a3b4c8a8ae695331e15ae182906f34c4d691f",
+      "reason": "docs/proof or mixed stash requires manual disposition",
+      "ref": "stash@{5}",
+      "topic_group": "rte/dopecode"
+    },
+    {
+      "class": "preserve-dirty",
+      "file_count": 1,
+      "files": [
+        "AGENTS.md"
+      ],
+      "object": "21e7fce76072d577726a3d17810b979503a23d6e",
+      "reason": "AGENTS.md-only stash retained",
+      "ref": "stash@{6}",
+      "topic_group": "docs/audit"
+    },
+    {
+      "class": "preserve-dirty",
+      "file_count": 1,
+      "files": [
+        "AGENTS.md"
+      ],
+      "object": "f1527ae23c1522ba9ce4c6e144032e426bc41533",
+      "reason": "AGENTS.md-only stash retained",
+      "ref": "stash@{7}",
+      "topic_group": "docs/audit"
+    },
+    {
+      "class": "preserve-dirty",
+      "file_count": 1,
+      "files": [
+        "AGENTS.md"
+      ],
+      "object": "d1c2b3e0824564c1e300870f62cea2a8da839485",
+      "reason": "AGENTS.md-only stash retained",
+      "ref": "stash@{8}",
+      "topic_group": "docs/audit"
+    },
+    {
+      "class": "unfinished",
+      "file_count": 6,
+      "files": [
+        "AGENTS.md",
+        "docs/03-reference/systems/dopemux/tui-spec-v2-0a.md",
+        "docs/03-reference/systems/dopemux/tui-unknown-resolution-questionnaire.md",
+        "docs/90-adr/adr-001-workflow-centric-ia-and-handoff-packet-model.md",
+        "docs/90-adr/adr-002-pm-mode-authority-split-and-bounded-leantime-write-scope.md",
+        "docs/90-adr/adr-dope-memory-as-chronicle-memory-authority.md"
+      ],
+      "object": "957cec606b3e2bf4550b2ec13e3cd69b69ce3b8d",
+      "reason": "docs/proof or mixed stash requires manual disposition",
+      "ref": "stash@{9}",
+      "topic_group": "ui/cockpit"
+    },
+    {
+      "class": "merged-cleanup-safe",
+      "file_count": 0,
+      "files": [],
+      "object": "4a63bece58ce6239667bc48470cddebaa52372d5",
+      "reason": "zero visible files; retained until explicit stash-drop approval",
+      "ref": "stash@{10}",
+      "topic_group": "mixed/unknown"
+    },
+    {
+      "class": "merged-cleanup-safe",
+      "file_count": 0,
+      "files": [],
+      "object": "3ef0715d6330b7d50be8703505a8d285c831180b",
+      "reason": "zero visible files; retained until explicit stash-drop approval",
+      "ref": "stash@{11}",
+      "topic_group": "mixed/unknown"
+    },
+    {
+      "class": "unfinished",
+      "file_count": 5,
+      "files": [
+        "AGENTS.md",
+        "docs/03-reference/systems/dopemux/tui-spec-v2-0a.md",
+        "docs/90-adr/adr-001-workflow-centric-ia-and-handoff-packet-model.md",
+        "docs/90-adr/adr-002-pm-mode-authority-split-and-bounded-leantime-write-scope.md",
+        "docs/90-adr/adr-index.md"
+      ],
+      "object": "87959256681959d53e21452dfad8ae41709eb249",
+      "reason": "docs/proof or mixed stash requires manual disposition",
+      "ref": "stash@{12}",
+      "topic_group": "ui/cockpit"
+    },
+    {
+      "class": "unfinished",
+      "file_count": 6,
+      "files": [
+        ".claude/worktrees/cli-refactor",
+        ".github/copilot-instructions.md",
+        ".github/workflows/ci-complete.yml",
+        "AGENTS.md",
+        "compose.yml",
+        "docker/mcp-servers-source/pal/pal_http_wrapper.py"
+      ],
+      "object": "2ab1207b74c83031bfb90bcbd8468de4815e21fa",
+      "reason": "docs/proof or mixed stash requires manual disposition",
+      "ref": "stash@{13}",
+      "topic_group": "cli/system"
+    },
+    {
+      "class": "topic-pr",
+      "file_count": 17,
+      "files": [
+        "INSTALL.md",
+        "docs/00-MASTER-INDEX.md",
+        "docs/02-how-to/install.md",
+        "docs/03-reference/overview.md",
+        "install.sh",
+        "services/repo-truth-extractor/extraction/repo-truth-extractor/v5/doctor/PROVIDER_PREFLIGHT.json",
+        "services/repo-truth-extractor/lib/prescan/engine.py",
+        "services/repo-truth-extractor/lib/prescan/models.py",
+        "services/repo-truth-extractor/lib/prescan/provider_catalog.py",
+        "services/repo-truth-extractor/tests/test_prescan_provider_catalog.py",
+        "services/serena/dopecode/transform/refactor_layer.py",
+        "services/serena/dopecode/transform/write_layer.py",
+        "services/serena/mcp_server.py",
+        "services/serena/tests/test_dopecode_execution_receipts.py",
+        "services/serena/tests/test_dopecode_refactor_layer.py",
+        "services/serena/tests/test_dopecode_write_layer.py",
+        "src/dopemux_pr_merge_specialist/queue_drain.py"
+      ],
+      "object": "e59bb13f2c177c6e55a2512bac8fc9ec78cc0127",
+      "reason": "source/test/operator stash requires recovery branch review",
+      "ref": "stash@{14}",
+      "topic_group": "rte/dopecode"
+    },
+    {
+      "class": "topic-pr",
+      "file_count": 62,
+      "files": [
+        ".claude/WORKTREE_MCP_SETUP.md",
+        ".gitignore",
+        "docker/mcp-servers-source/serena/Dockerfile",
+        "docker/mcp-servers-source/serena/info_server.py",
+        "docker/mcp-servers-source/serena/wrapper.py",
+        "docs/02-how-to/extraction/run-prescan.md",
+        "services/repo-truth-extractor/lib/prescan/classifier.py",
+        "services/repo-truth-extractor/lib/prescan/engine.py",
+        "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+        "services/repo-truth-extractor/lib/prescan/models.py",
+        "services/repo-truth-extractor/lib/prescan/provider_catalog.py",
+        "services/repo-truth-extractor/run_prescan.py",
+        "services/repo-truth-extractor/tests/test_prescan_online_gate.py",
+        "services/serena/mcp_server.py",
+        "services/serena/v2/__init__.py",
+        "services/serena/v2/adhd_features.py",
+        "services/serena/v2/claude_context_integration.py",
+        "services/serena/v2/code_graph_storage.py",
+        "services/serena/v2/code_structure_analyzer.py",
+        "services/serena/v2/developer_learning_engine.py",
+        "services/serena/v2/enhanced_lsp.py",
+        "services/serena/v2/focus_manager.py",
+        "services/serena/v2/indexing_pipeline.py",
+        "services/serena/v2/intelligence/DATABASE_AUDIT.md",
+        "services/serena/v2/intelligence/__init__.py",
+        "services/serena/v2/intelligence/accommodation_harmonizer.py",
+        "services/serena/v2/intelligence/adaptive_learning.py",
+        "services/serena/v2/intelligence/adhd_relationship_filter.py",
+        "services/serena/v2/intelligence/cognitive_load_orchestrator.py",
+        "services/serena/v2/intelligence/complete_system_integration_test.py",
+        "services/serena/v2/intelligence/conport_bridge.py",
+        "services/serena/v2/intelligence/context_switching_optimizer.py",
+        "services/serena/v2/intelligence/convergence_test.py",
+        "services/serena/v2/intelligence/cross_session_persistence_bridge.py",
+        "services/serena/v2/intelligence/database.py",
+        "services/serena/v2/intelligence/effectiveness_evolution_system.py",
+        "services/serena/v2/intelligence/effectiveness_tracker.py",
+        "services/serena/v2/intelligence/enhanced_tree_sitter.py",
+        "services/serena/v2/intelligence/fatigue_detection_engine.py",
+        "services/serena/v2/intelligence/graph_operations.py",
+        "services/serena/v2/intelligence/integration_test.py",
+        "services/serena/v2/intelligence/intelligent_relationship_builder.py",
+        "services/serena/v2/intelligence/learning_profile_manager.py",
+        "services/serena/v2/intelligence/navigation_success_validator.py",
+        "services/serena/v2/intelligence/pattern_recognition.py",
+        "services/serena/v2/intelligence/pattern_reuse_recommendation_engine.py",
+        "services/serena/v2/intelligence/performance_validation_system.py",
+        "services/serena/v2/intelligence/personal_pattern_adapter.py",
+        "services/serena/v2/intelligence/personalized_threshold_coordinator.py",
+        "services/serena/v2/intelligence/progressive_disclosure_director.py",
+        "services/serena/v2/intelligence/realtime_relevance_scorer.py",
+        "services/serena/v2/intelligence/schema.sql",
+        "services/serena/v2/intelligence/schema_manager.py",
+        "services/serena/v2/intelligence/strategy_template_manager.py",
+        "services/serena/v2/layer1_validation.py",
+        "services/serena/v2/mcp_client.py",
+        "services/serena/v2/navigation_cache.py",
+        "services/serena/v2/performance_monitor.py",
+        "services/serena/v2/redis_optimizer.py",
+        "services/serena/v2/tree_sitter_analyzer.py",
+        "src/dopemux/claude_config.py",
+        "src/dopemux/cli.py"
+      ],
+      "object": "e5c5cdbd7acdce4ffb0418e12d7df70b2f3dbee0",
+      "reason": "source/test/operator stash requires recovery branch review",
+      "ref": "stash@{15}",
+      "topic_group": "rte/dopecode"
+    }
+  ],
+  "remaining_worktrees": [
+    {
+      "branch": "main",
+      "class": "preserve-dirty",
+      "dirty": true,
+      "head": "af5c462747860ad8382efa72304dd18970374205",
+      "path": "/Users/hue/code/dopemux-mvp",
+      "reason": "dirty worktree retained"
+    },
+    {
+      "branch": null,
+      "class": "preserve-dirty",
+      "dirty": true,
+      "head": "1fdf61b457fb7894f1d34dedf188b8d3d58a98b9",
+      "path": "/Users/hue/.codex/worktrees/11a0/dopemux-mvp",
+      "reason": "dirty worktree retained"
+    },
+    {
+      "branch": null,
+      "class": "preserve-dirty",
+      "dirty": true,
+      "head": "1fdf61b457fb7894f1d34dedf188b8d3d58a98b9",
+      "path": "/Users/hue/.codex/worktrees/22c5/dopemux-mvp-wt-cockpit-pm-textual",
+      "reason": "dirty worktree retained"
+    },
+    {
+      "branch": "codex/remove-stale-root-next-surface",
+      "class": "preserve-dirty",
+      "dirty": true,
+      "head": "d661b6e1cd6a6592e3db3e60c1b5e9820942c9fe",
+      "path": "/Users/hue/.codex/worktrees/38c4/dopemux-mvp",
+      "reason": "dirty worktree retained"
+    },
+    {
+      "branch": null,
+      "class": "preserve-dirty",
+      "dirty": true,
+      "head": "3bb5464db6eb35e1666fe487257e8cf68ef47b71",
+      "path": "/Users/hue/.codex/worktrees/558a/dopemux-mvp-wt-cockpit-pm-textual",
+      "reason": "dirty worktree retained"
+    },
+    {
+      "branch": null,
+      "class": "blocked",
+      "dirty": false,
+      "head": "af5c462747860ad8382efa72304dd18970374205",
+      "path": "/Users/hue/.codex/worktrees/7f12/dopemux-mvp",
+      "reason": "operator thread checkout intentionally retained"
+    },
+    {
+      "branch": "codex/add-audit-authority-files",
+      "class": "preserve-dirty",
+      "dirty": true,
+      "head": "5ad4be889fc738fae83547027ad24e8d89d21304",
+      "path": "/Users/hue/.codex/worktrees/7f48/dopemux-mvp-wt-cockpit-pm-textual",
+      "reason": "dirty worktree retained"
+    },
+    {
+      "branch": null,
+      "class": "preserve-dirty",
+      "dirty": true,
+      "head": "420d40ff3fe508423a68103a81a9e692486b12a0",
+      "path": "/Users/hue/.codex/worktrees/8444/dopemux-mvp-wt-cockpit-pm-textual",
+      "reason": "dirty worktree retained"
+    },
+    {
+      "branch": "codex/restore-system-data-command",
+      "class": "preserve-dirty",
+      "dirty": true,
+      "head": "042a60bdd05541b06216a9f8bc4ddd9568939e3f",
+      "path": "/Users/hue/.codex/worktrees/b840/dopemux-mvp-wt-cockpit-pm-textual",
+      "reason": "dirty worktree retained"
+    },
+    {
+      "branch": "codex/installer-smoke-python-deps",
+      "class": "preserve-dirty",
+      "dirty": true,
+      "head": "75454e5d373d760f062d0dadad2960cc22c03e41",
+      "path": "/Users/hue/.codex/worktrees/b8c4/dopemux-mvp",
+      "reason": "dirty worktree retained"
+    },
+    {
+      "branch": "codex/restore-canonical-compose",
+      "class": "unfinished",
+      "dirty": false,
+      "head": "72900b2344121c8b291d5015544d1dbdc8442a65",
+      "path": "/Users/hue/.codex/worktrees/dopemux-compose-restore",
+      "reason": "no merged PR proof for patch-unique commits"
+    },
+    {
+      "branch": "codex/dopemux-cli-audit-remediation",
+      "class": "preserve-dirty",
+      "dirty": true,
+      "head": "d18ddab40a91f57c2566ff5826a12045d7925a14",
+      "path": "/Users/hue/.codex/worktrees/e252/dopemux-mvp-wt-cockpit-pm-textual",
+      "reason": "dirty worktree retained"
+    },
+    {
+      "branch": "codex/freeflow-strict-router",
+      "class": "preserve-dirty",
+      "dirty": true,
+      "head": "5eccaee6e0fc7aa0c4c3694218da5a8c02f3e073",
+      "path": "/Users/hue/.codex/worktrees/e270/dopemux-mvp-wt-cockpit-pm-textual",
+      "reason": "dirty worktree retained"
+    },
+    {
+      "branch": "work/pr-554-fix",
+      "class": "topic-pr",
+      "dirty": false,
+      "head": "98da7f5525c6dd55028fe1cbe42d68bbe6660be1",
+      "path": "/Users/hue/.codex/worktrees/eb8e/dopemux-pr-554-fix",
+      "reason": "merged PR exists but branch still has patch-unique commits requiring recovery review"
+    },
+    {
+      "branch": "codex/repo-hygiene-remaining-disposition-20260502",
+      "class": "blocked",
+      "dirty": false,
+      "head": "c2daf3808e0d2a2a929abe0a4e4cd7298f47be45",
+      "path": "/Users/hue/.codex/worktrees/repo-hygiene-20260502-tp005/dopemux-mvp",
+      "reason": "active TP005 execution worktree"
+    },
+    {
+      "branch": null,
+      "class": "preserve-dirty",
+      "dirty": true,
+      "head": "5f216582cf3443777cbbf8eedf8b50f68f0d511d",
+      "path": "/Users/hue/code/ARCH-5.5-PRO",
+      "reason": "dirty worktree retained"
+    },
+    {
+      "branch": "agents/dopemux-copilot-agent-specs",
+      "class": "preserve-dirty",
+      "dirty": true,
+      "head": "225477ce199e0c068428cc6fe0b563c6dce1c11e",
+      "path": "/Users/hue/code/dopemux-mvp-wt-agents-copilot-specs",
+      "reason": "dirty worktree retained"
+    },
+    {
+      "branch": "codex/cockpit-design-system",
+      "class": "preserve-dirty",
+      "dirty": true,
+      "head": "c836e3410a74cd19e342e4748970255b1e7346ac",
+      "path": "/Users/hue/code/dopemux-mvp-wt-cockpit-design-system",
+      "reason": "dirty worktree retained"
+    },
+    {
+      "branch": "test/pm-authority-ports",
+      "class": "preserve-dirty",
+      "dirty": true,
+      "head": "c90ed07c0d5c9150f767ab2e5b27b3b1973cff7d",
+      "path": "/Users/hue/code/dopemux-mvp-wt-cockpit-pm-textual",
+      "reason": "dirty worktree retained"
+    },
+    {
+      "branch": "codex/dopecode-ast-navigation-20260417",
+      "class": "unfinished",
+      "dirty": false,
+      "head": "40edc271c8f9f8c6d41fcf126d708c22db1ba1bc",
+      "path": "/Users/hue/code/dopemux-mvp-wt-dopecode-ast",
+      "reason": "closed/unmerged PR has patch-unique commits"
+    },
+    {
+      "branch": "codex/mcp-audit-hardening",
+      "class": "preserve-dirty",
+      "dirty": true,
+      "head": "087f993291aaa404e514c2616dd77cc7984c5097",
+      "path": "/Users/hue/code/dopemux-mvp-wt-mcp-audit-hardening",
+      "reason": "dirty worktree retained"
+    },
+    {
+      "branch": "research/dmx-mcp-customization-dr-data",
+      "class": "preserve-dirty",
+      "dirty": true,
+      "head": "cba686305c91e46556e522aacc326989462b8fa3",
+      "path": "/Users/hue/code/dopemux-mvp-wt-mcp-customization-dr-data",
+      "reason": "dirty worktree retained"
+    },
+    {
+      "branch": "codex/pm-writes-phase1",
+      "class": "topic-pr",
+      "dirty": false,
+      "head": "94c5086050cc8b873acf0c9f5397c3c0435abd2e",
+      "path": "/Users/hue/code/dopemux-mvp-wt-pm-writes-phase1",
+      "reason": "merged PR exists but branch still has patch-unique commits requiring recovery review"
+    },
+    {
+      "branch": "audit/runtime-authority-verifier-20260430-195535",
+      "class": "preserve-dirty",
+      "dirty": true,
+      "head": "5f216582cf3443777cbbf8eedf8b50f68f0d511d",
+      "path": "/Users/hue/code/dopemux-mvp-wt-runtime-authority-20260430-195535",
+      "reason": "dirty worktree retained"
+    },
+    {
+      "branch": "audit/runtime-authority-verifier-20260430-201805",
+      "class": "preserve-dirty",
+      "dirty": true,
+      "head": "5f216582cf3443777cbbf8eedf8b50f68f0d511d",
+      "path": "/Users/hue/code/dopemux-mvp-wt-runtime-authority-20260430-201805",
+      "reason": "dirty worktree retained"
+    },
+    {
+      "branch": "codex/tui-runtime-unknown-hardening",
+      "class": "preserve-dirty",
+      "dirty": true,
+      "head": "f23c3294c5726b569a9903dd242559afca649577",
+      "path": "/Users/hue/code/dopemux-mvp-wt-tui-hardening",
+      "reason": "dirty worktree retained"
+    },
+    {
+      "branch": "audit/runtime-authority-verifier-project-docs-improvement",
+      "class": "topic-pr",
+      "dirty": false,
+      "head": "00cb80dd9cd2763ef42472503505692f5895c949",
+      "path": "/Users/hue/code/project-docs-improvement",
+      "reason": "merged PR exists but branch still has patch-unique commits requiring recovery review"
+    }
+  ],
+  "residual_risks": [
+    "PR #561 remains blocked by an external required review provider failure.",
+    "Topic-pr candidates are not proof of ready-to-merge work; each needs a separate recovery branch with path-specific validation.",
+    "Dirty worktrees and all stashes were retained; stale local instruction or generated content may remain until reviewed.",
+    "Remote branch cleanup was intentionally not performed."
+  ],
+  "task_packet": "TP-DMX-REPOHYG-005",
+  "topic_pr_candidates": {
+    "branches": [
+      {
+        "matched_prs": [
+          {
+            "headRefName": "audit/rte-cost-profiles-ladders-wizard-gemini-001",
+            "mergedAt": "2026-04-24T03:39:47Z",
+            "number": 520,
+            "state": "MERGED",
+            "title": "audit: stabilize RTE cost profiles, routing ladders, and dopemux wizard launch policy",
+            "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/520"
+          }
+        ],
+        "name": "audit/rte-cost-profiles-ladders-wizard-gemini-001",
+        "topic_group": "rte/dopecode",
+        "unique_commits": 7,
+        "unique_path_count": 50
+      },
+      {
+        "matched_prs": [
+          {
+            "headRefName": "audit/runtime-authority-verifier-project-docs-improvement",
+            "mergedAt": "2026-05-01T05:58:47Z",
+            "number": 547,
+            "state": "MERGED",
+            "title": "Add deterministic runtime authority verifier",
+            "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/547"
+          }
+        ],
+        "name": "audit/runtime-authority-verifier-project-docs-improvement",
+        "topic_group": "cli/system",
+        "unique_commits": 1,
+        "unique_path_count": 4
+      },
+      {
+        "matched_prs": [
+          {
+            "headRefName": "codex/pm-writes-phase1",
+            "mergedAt": "2026-04-23T15:13:34Z",
+            "number": 512,
+            "state": "MERGED",
+            "title": "test: verify and harden phase-1 PM writes slice",
+            "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/512"
+          }
+        ],
+        "name": "codex/pm-writes-phase1",
+        "topic_group": "mixed/unknown",
+        "unique_commits": 3,
+        "unique_path_count": 13
+      },
+      {
+        "matched_prs": [
+          {
+            "headRefName": "codex/rte-wizard-prescan-telemetry",
+            "mergedAt": "2026-04-28T02:15:39Z",
+            "number": 523,
+            "state": "MERGED",
+            "title": "feat(rte): add wizard alias and richer prescan telemetry",
+            "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/523"
+          }
+        ],
+        "name": "codex/rte-wizard-prescan-telemetry",
+        "topic_group": "rte/dopecode",
+        "unique_commits": 2,
+        "unique_path_count": 10
+      },
+      {
+        "matched_prs": [
+          {
+            "headRefName": "feat/rte-cost-stabilization-v2",
+            "mergedAt": "2026-04-24T00:28:41Z",
+            "number": 516,
+            "state": "MERGED",
+            "title": "feat(rte): enforce tiktoken tokenization and authoritative pricing",
+            "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/516"
+          }
+        ],
+        "name": "feat/rte-cost-stabilization-v2",
+        "topic_group": "rte/dopecode",
+        "unique_commits": 1,
+        "unique_path_count": 5
+      },
+      {
+        "matched_prs": [
+          {
+            "headRefName": "feat/rte-intelligence-wiring",
+            "mergedAt": "2026-04-24T00:06:18Z",
+            "number": 514,
+            "state": "MERGED",
+            "title": "feat(rte): wire intelligence router to dynamic model routing",
+            "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/514"
+          }
+        ],
+        "name": "feat/rte-intelligence-wiring",
+        "topic_group": "rte/dopecode",
+        "unique_commits": 1,
+        "unique_path_count": 194
+      },
+      {
+        "matched_prs": [
+          {
+            "headRefName": "feat/rte-v5-full-prescan-integration",
+            "mergedAt": "2026-04-21T23:18:19Z",
+            "number": 464,
+            "state": "MERGED",
+            "title": "feat(rte): integrate prescan as stage 0 of v5 extraction",
+            "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/464"
+          }
+        ],
+        "name": "pr/464",
+        "topic_group": "rte/dopecode",
+        "unique_commits": 3,
+        "unique_path_count": 12
+      },
+      {
+        "matched_prs": [
+          {
+            "headRefName": "feat/rte-prescan-stage0-live-lane-proving",
+            "mergedAt": "2026-04-22T00:26:52Z",
+            "number": 480,
+            "state": "MERGED",
+            "title": "prescan: prove live-lane success path with independent executable routes",
+            "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/480"
+          }
+        ],
+        "name": "pr/480",
+        "topic_group": "rte/dopecode",
+        "unique_commits": 2,
+        "unique_path_count": 8
+      },
+      {
+        "matched_prs": [
+          {
+            "headRefName": "tp/dopecode-phase8-events-replay",
+            "mergedAt": "2026-04-21T23:16:37Z",
+            "number": 481,
+            "state": "MERGED",
+            "title": "dopeCode Phase 8: event receipts and replay-safe audit trail",
+            "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/481"
+          }
+        ],
+        "name": "pr/481",
+        "topic_group": "rte/dopecode",
+        "unique_commits": 18,
+        "unique_path_count": 163
+      },
+      {
+        "matched_prs": [
+          {
+            "headRefName": "audit/runtime-authority-verifier-project-docs-improvement",
+            "mergedAt": "2026-05-01T05:58:47Z",
+            "number": 547,
+            "state": "MERGED",
+            "title": "Add deterministic runtime authority verifier",
+            "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/547"
+          }
+        ],
+        "name": "recover/tp1-547",
+        "topic_group": "cli/system",
+        "unique_commits": 4,
+        "unique_path_count": 4
+      },
+      {
+        "matched_prs": [
+          {
+            "headRefName": "tp/dopecode-phase8-events-replay",
+            "mergedAt": "2026-04-21T23:16:37Z",
+            "number": 481,
+            "state": "MERGED",
+            "title": "dopeCode Phase 8: event receipts and replay-safe audit trail",
+            "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/481"
+          }
+        ],
+        "name": "tp/dopecode-phase8-events-replay",
+        "topic_group": "rte/dopecode",
+        "unique_commits": 23,
+        "unique_path_count": 166
+      },
+      {
+        "matched_prs": [
+          {
+            "headRefName": "tp/gh-review-thread-agent",
+            "mergedAt": "2026-04-18T06:43:17Z",
+            "number": 465,
+            "state": "MERGED",
+            "title": "Add deterministic review-thread remediation workflow",
+            "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/465"
+          }
+        ],
+        "name": "tp/gh-review-thread-agent",
+        "topic_group": "cli/system",
+        "unique_commits": 1,
+        "unique_path_count": 5
+      },
+      {
+        "matched_prs": [
+          {
+            "headRefName": "codex/dopemux-cli-audit-remediation",
+            "mergedAt": "2026-05-01T23:22:58Z",
+            "number": 554,
+            "state": "MERGED",
+            "title": "fix(cli): harden dopemux audit surfaces",
+            "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/554"
+          }
+        ],
+        "name": "work/pr-554",
+        "topic_group": "cli/system",
+        "unique_commits": 1,
+        "unique_path_count": 19
+      },
+      {
+        "matched_prs": [
+          {
+            "headRefName": "codex/dopemux-cli-audit-remediation",
+            "mergedAt": "2026-05-01T23:22:58Z",
+            "number": 554,
+            "state": "MERGED",
+            "title": "fix(cli): harden dopemux audit surfaces",
+            "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/554"
+          }
+        ],
+        "name": "work/pr-554-fix",
+        "topic_group": "cli/system",
+        "unique_commits": 1,
+        "unique_path_count": 19
+      }
+    ],
+    "stashes": [
+      {
+        "file_count": 11,
+        "ref": "stash@{1}",
+        "topic_group": "rte/dopecode"
+      },
+      {
+        "file_count": 17,
+        "ref": "stash@{14}",
+        "topic_group": "rte/dopecode"
+      },
+      {
+        "file_count": 62,
+        "ref": "stash@{15}",
+        "topic_group": "rte/dopecode"
+      }
+    ]
+  },
+  "unfinished_branches": [
+    {
+      "matched_prs": [
+        {
+          "headRefName": "codex/dopecode-ast-navigation-20260417",
+          "mergedAt": null,
+          "number": 471,
+          "state": "CLOSED",
+          "title": "feat(serena): add dopecode AST navigation layer",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/471"
+        }
+      ],
+      "name": "codex/dopecode-ast-navigation-20260417",
+      "reason": "closed/unmerged PR has patch-unique commits",
+      "unique_commits": 1,
+      "unique_path_count": 7
+    },
+    {
+      "matched_prs": [
+        {
+          "headRefName": "codex/infra-compose-uv-db-init",
+          "mergedAt": null,
+          "number": 436,
+          "state": "CLOSED",
+          "title": "chore(infra): migrate Dockerfiles to uv, fix compose build contexts, add unified DB init",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/436"
+        }
+      ],
+      "name": "codex/infra-compose-uv-db-init",
+      "reason": "closed/unmerged PR has patch-unique commits",
+      "unique_commits": 6,
+      "unique_path_count": 41
+    },
+    {
+      "matched_prs": [],
+      "name": "codex/pm-writes-phase1-local-pre-remote-sync",
+      "reason": "no merged PR proof for patch-unique commits",
+      "unique_commits": 2,
+      "unique_path_count": 12
+    },
+    {
+      "matched_prs": [],
+      "name": "codex/restore-canonical-compose",
+      "reason": "no merged PR proof for patch-unique commits",
+      "unique_commits": 1,
+      "unique_path_count": 10
+    },
+    {
+      "matched_prs": [
+        {
+          "headRefName": "feat/rte-prescan-first-live-hardening",
+          "mergedAt": null,
+          "number": 467,
+          "state": "CLOSED",
+          "title": "feat(rte): harden prescan for first-live spend and auditability",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/467"
+        }
+      ],
+      "name": "pr/467",
+      "reason": "closed/unmerged PR has patch-unique commits",
+      "unique_commits": 2,
+      "unique_path_count": 11
+    },
+    {
+      "matched_prs": [],
+      "name": "prmerge/539",
+      "reason": "no merged PR proof for patch-unique commits",
+      "unique_commits": 2,
+      "unique_path_count": 8
+    },
+    {
+      "matched_prs": [],
+      "name": "repo-precommit-debt-cleanup",
+      "reason": "no merged PR proof for patch-unique commits",
+      "unique_commits": 6,
+      "unique_path_count": 29
+    },
+    {
+      "matched_prs": [
+        {
+          "headRefName": "tp/dopecode-ast-navigation",
+          "mergedAt": null,
+          "number": 469,
+          "state": "CLOSED",
+          "title": "feat: Implement dopeCode AST navigation and controlled transform foundation",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/469"
+        }
+      ],
+      "name": "tp/dopecode-ast-navigation",
+      "reason": "closed/unmerged PR has patch-unique commits",
+      "unique_commits": 1,
+      "unique_path_count": 7
+    },
+    {
+      "matched_prs": [],
+      "name": "tp/dopecode-ast-navigation-phase1",
+      "reason": "no merged PR proof for patch-unique commits",
+      "unique_commits": 3,
+      "unique_path_count": 16
+    },
+    {
+      "matched_prs": [
+        {
+          "headRefName": "tp/dopecode-phase2-harden",
+          "mergedAt": null,
+          "number": 473,
+          "state": "CLOSED",
+          "title": "dopeCode Phase 2 Hardening and Final Verification",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/473"
+        }
+      ],
+      "name": "tp/dopecode-phase2-harden",
+      "reason": "closed/unmerged PR has patch-unique commits",
+      "unique_commits": 7,
+      "unique_path_count": 34
+    },
+    {
+      "matched_prs": [
+        {
+          "headRefName": "tp/dopecode-phase3-decompose-policy",
+          "mergedAt": null,
+          "number": 474,
+          "state": "CLOSED",
+          "title": "dopeCode Phase 3: runtime decomposition and mutation policy",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/474"
+        }
+      ],
+      "name": "tp/dopecode-phase3-decompose-policy",
+      "reason": "closed/unmerged PR has patch-unique commits",
+      "unique_commits": 9,
+      "unique_path_count": 41
+    },
+    {
+      "matched_prs": [
+        {
+          "headRefName": "tp/dopecode-phase4-language-approval",
+          "mergedAt": null,
+          "number": 476,
+          "state": "CLOSED",
+          "title": "dopeCode Phase 4: language expansion and approval-aware execution",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/476"
+        }
+      ],
+      "name": "tp/dopecode-phase4-language-approval",
+      "reason": "closed/unmerged PR has patch-unique commits",
+      "unique_commits": 20,
+      "unique_path_count": 50
+    },
+    {
+      "matched_prs": [
+        {
+          "headRefName": "tp/serena-tool-surface-audit",
+          "mergedAt": null,
+          "number": 468,
+          "state": "CLOSED",
+          "title": "feat(serena): add dopecode layers and mcp tool surface updates",
+          "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/468"
+        }
+      ],
+      "name": "tp/serena-tool-surface-audit",
+      "reason": "closed/unmerged PR has patch-unique commits",
+      "unique_commits": 3,
+      "unique_path_count": 16
+    },
+    {
+      "matched_prs": [],
+      "name": "tp/serena-v2-truth",
+      "reason": "no merged PR proof for patch-unique commits",
+      "unique_commits": 1,
+      "unique_path_count": 10
+    }
+  ],
+  "validation": [
+    {
+      "command": "python -m json.tool task-packets/TP-DMX-REPOHYG-005.json",
+      "exit_code": 0,
+      "stderr_tail": "",
+      "stdout_tail": "            \"gh pr view 561 --json ...\",\n                \"gh pr merge 561 --squash --delete-branch\"\n            ],\n            \"id\": \"S1\",\n            \"requirements\": [\n                \"Attempt the normal GitHub PR merge path for #561 without admin bypass.\",\n                \"If blocked, stack TP005 on the TP004 branch and record the check failure authority.\"\n            ],\n            \"task\": \"Resolve the TP004 merge gate or record the exact blocker.\",\n            \"validation\": [\n                \"Proof records the normal merge failure and the external review-provider blocker.\"\n            ]\n        },\n        {\n            \"commands\": [\n                \"git worktree list --porcelain\",\n                \"git branch -vv\",\n                \"git stash list --date=iso\",\n                \"gh pr list --state all --limit 1000\"\n            ],\n            \"id\": \"S2\",\n            \"requirements\": [\n                \"Use a fresh TP005 worktree based on the TP004 branch because #561 is blocked.\",\n                \"Capture worktree registry, branch inventory, stash inventory, and PR metadata under the local recovery root.\"\n            ],\n            \"task\": \"Refresh final worktree, branch, PR, and stash authority from a dedicated worktree.\",\n            \"validation\": [\n                \"Machine-readable local disposition ledgers exist under the recovery root.\"\n            ]\n        },\n        {\n            \"commands\": [\n                \"git cherry -v origin/main <branch>\",\n                \"git diff --name-status origin/main <branch>\",\n                \"git stash show --name-status <stash>\"\n            ],\n            \"id\": \"S3\",\n            \"requirements\": [\n                \"Use patch equivalence, PR state, dirty attachment, and stash file paths.\",\n                \"Classify only clean, zero-patch-unique local branch refs as merged-cleanup-safe.\",\n                \"Classify merged-PR branches with patch-unique commits as topic-pr candidates, not delete-safe.\"\n            ],\n            \"task\": \"Classify every remaining local worktree, branch, and stash.\",\n            \"validation\": [\n                \"Proof contains post-cleanup counts and branch/worktree/stash dispositions.\"\n            ]\n        },\n        {\n            \"commands\": [\n                \"git bundle create <local recovery bundle> <branches>\",\n                \"git worktree remove <clean worktree>\",\n                \"git branch -d|-D <patch-equivalent branch>\"\n            ],\n            \"id\": \"S4\",\n            \"requirements\": [\n                \"Preserve deleted branch refs in a local bundle first.\",\n                \"Remove only clean worktrees.\",\n                \"Delete only local branch refs with zero patch-unique commits.\",\n                \"Do not drop stashes or delete remote refs.\"\n            ],\n            \"task\": \"Execute conservative local cleanup for finished duplicate work.\",\n            \"validation\": [\n                \"Cleanup execution JSON records 7 worktree removals, 13 branch deletions, and zero failures.\"\n            ]\n        },\n        {\n            \"commands\": [\n                \"python -m json.tool task-packets/TP-DMX-REPOHYG-005.json\",\n                \"python -m json.tool proof/repo-remaining-work-disposition-2026-05-02.proof.json\",\n                \"git diff --check\",\n                \"dopemux-pr-merge self-check\"\n            ],\n            \"id\": \"S5\",\n            \"requirements\": [\n                \"Commit only allowlisted hygiene files.\",\n                \"Leave local recovery artifacts untracked.\"\n            ],\n            \"task\": \"Publish TP005 packet, report, proof, implementation notes, and index update.\",\n            \"validation\": [\n                \"Validation results are recorded in proof before commit.\"\n            ]\n        }\n    ],\n    \"target\": \"Classify remaining worktrees, local branches, and stashes after the lost-work audit; remove only clean patch-equivalent local sprawl; flag topic recovery and unfinished work without touching runtime code in this packet.\"\n}\n"
+    },
+    {
+      "command": "python -m json.tool proof/repo-remaining-work-disposition-2026-05-02.proof.json",
+      "exit_code": 0,
+      "note": "stdout intentionally omitted because this command emits the self-referential proof JSON; command was rerun after final proof updates.",
+      "stderr_tail": "",
+      "stdout_tail": ""
+    },
+    {
+      "command": "python3 -m dopemux_pr_merge_specialist.cli self-check --out-dir /Users/hue/.codex/recovery/dopemux-mvp/repo-hygiene-20260502/remaining-disposition-20260502/pr-merge-self-check",
+      "exit_code": 0,
+      "stderr_tail": "",
+      "stdout_tail": "  [PASS] import:dopemux_pr_merge_specialist.schema\n  [PASS] import:dopemux_pr_merge_specialist.engine\n  [PASS] import:dopemux_pr_merge_specialist.classification\n  [PASS] import:dopemux_pr_merge_specialist.queue\n  [PASS] import:dopemux_pr_merge_specialist.thread_resolution\n  [PASS] import:dopemux_pr_merge_specialist.conflict\n  [PASS] import:dopemux_pr_merge_specialist.merge\n  [PASS] import:dopemux_pr_merge_specialist.worktree\n  [PASS] import:dopemux_pr_merge_specialist.preflight\n  [PASS] import:dopemux_pr_merge_specialist.plan_builder\n  [PASS] import:dopemux_pr_merge_specialist.queue_drain\n  [PASS] import:dopemux_pr_merge_specialist.consensus_engine\n  [PASS] import:dopemux_pr_merge_specialist.strategy_library\n  [PASS] import:dopemux_pr_merge_specialist.ux_engine\n  [PASS] import:dopemux_pr_merge_specialist.ops_engine\n  [PASS] import:dopemux_pr_merge_specialist.dopetask_adapter\n  [PASS] import:dopemux_pr_merge_specialist.closed_loop_engine\n  [PASS] schema:consensus_types\n  [PASS] strategy_library:completeness\n  [PASS] preflight\n\nSelf-check: OK\n"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "stderr_tail": "",
+      "stdout_tail": ""
+    },
+    {
+      "command": "pre-commit run --files .gitignore task-packets/TP-DMX-REPOHYG-005.json docs/05-audit-reports/repo-remaining-work-disposition-2026-05-02.md proof/repo-remaining-work-disposition-2026-05-02.proof.json task-packets/INDEX.md",
+      "exit_code": 0,
+      "stderr_tail": "",
+      "stdout_tail": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude \u2264100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped\n"
+    },
+    {
+      "artifact": "/Users/hue/.codex/recovery/dopemux-mvp/repo-hygiene-20260502/remaining-disposition-20260502/final-raw/worktree_list.stdout.txt",
+      "command": "git worktree list --porcelain",
+      "exit_code": 0
+    },
+    {
+      "artifact": "/Users/hue/.codex/recovery/dopemux-mvp/repo-hygiene-20260502/remaining-disposition-20260502/final-raw/branch_vv.stdout.txt",
+      "command": "git branch -vv",
+      "exit_code": 0
+    },
+    {
+      "artifact": "/Users/hue/.codex/recovery/dopemux-mvp/repo-hygiene-20260502/remaining-disposition-20260502/final-raw/stash_list.stdout.txt",
+      "command": "git stash list --date=iso",
+      "exit_code": 0
+    },
+    {
+      "command": "mcp__pal__.codereview internal quick review",
+      "exit_code": 0,
+      "stderr_tail": "",
+      "stdout_tail": "code_review_complete=true; issues_found=0; continuation_id=8cad4109-5f47-4d5f-829a-1c8d23c70438"
+    }
+  ]
+}
