@@ -1,10 +1,10 @@
 {
   "commit": {
     "allowlist": [
+      ".gitignore",
       "task-packets/TP-DMX-REPOHYG-006.json",
       "docs/05-audit-reports/repo-deep-remaining-work-audit-2026-05-02.md",
       "proof/repo-deep-remaining-work-audit-2026-05-02.proof.json",
-      "proof/repo-deep-remaining-work-audit-2026-05-02.implementation-notes.md",
       "task-packets/INDEX.md"
     ],
     "message": "docs(repo-hygiene): deep audit remaining local work",
@@ -13,7 +13,7 @@
       "python -m json.tool proof/repo-deep-remaining-work-audit-2026-05-02.proof.json",
       "git diff --check",
       "python3 -m dopemux_pr_merge_specialist.cli self-check --out-dir /Users/hue/.codex/recovery/dopemux-mvp/repo-hygiene-20260502/deep-audit-20260502/pr-merge-self-check",
-      "pre-commit run --files task-packets/TP-DMX-REPOHYG-006.json docs/05-audit-reports/repo-deep-remaining-work-audit-2026-05-02.md proof/repo-deep-remaining-work-audit-2026-05-02.proof.json proof/repo-deep-remaining-work-audit-2026-05-02.implementation-notes.md task-packets/INDEX.md"
+      "pre-commit run --files .gitignore task-packets/TP-DMX-REPOHYG-006.json docs/05-audit-reports/repo-deep-remaining-work-audit-2026-05-02.md proof/repo-deep-remaining-work-audit-2026-05-02.proof.json task-packets/INDEX.md"
     ]
   },
   "depends_on": [
@@ -127,7 +127,7 @@
         "Commit only allowlisted hygiene files.",
         "Leave local recovery evidence untracked."
       ],
-      "task": "Publish TP006 packet, report, proof, implementation notes, and index update.",
+      "task": "Publish TP006 packet, report, proof, and index update.",
       "validation": [
         "JSON, whitespace, self-check, codereview, and pre-commit validations pass or exact blocker is recorded."
       ]

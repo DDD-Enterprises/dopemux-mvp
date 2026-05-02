@@ -2395,6 +2395,14 @@
       "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/561"
     }
   ],
+  "proof_tracking_policy": {
+    "gitignore_allowlist": [
+      "proof/repo-branch-worktree-stash-audit-2026-05-02.proof.json",
+      "proof/repo-remaining-work-disposition-2026-05-02.proof.json",
+      "proof/repo-deep-remaining-work-audit-2026-05-02.proof.json"
+    ],
+    "implementation_notes": "The TP006 implementation notes are retained as local recovery evidence only, not as a tracked proof/ markdown artifact."
+  },
   "recovery_queue": [
     {
       "candidate_recovery_branch": "codex/recover-cli-system-20260502-work-pr-554",
@@ -3309,7 +3317,29 @@
     "topic-pr-ready-review",
     "unfinished-abandoned"
   ],
-  "validation": [],
+  "validation": [
+    {
+      "command": "python -m json.tool task-packets/TP-DMX-REPOHYG-006.json",
+      "exit_code": 0
+    },
+    {
+      "command": "python -m json.tool proof/repo-deep-remaining-work-audit-2026-05-02.proof.json",
+      "exit_code": 0,
+      "note": "stdout intentionally omitted because this command emits self-referential proof JSON"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 -m dopemux_pr_merge_specialist.cli self-check --out-dir /Users/hue/.codex/recovery/dopemux-mvp/repo-hygiene-20260502/stack-unblock-20260502/pr-564-self-check",
+      "exit_code": 0
+    },
+    {
+      "command": "pre-commit run --files .gitignore task-packets/TP-DMX-REPOHYG-006.json docs/05-audit-reports/repo-deep-remaining-work-audit-2026-05-02.md proof/repo-deep-remaining-work-audit-2026-05-02.proof.json task-packets/INDEX.md",
+      "exit_code": 0
+    }
+  ],
   "validation_performed": {
     "final_inventory": [
       {
@@ -3360,13 +3390,14 @@
       }
     ],
     "prestage_results_path": "/Users/hue/.codex/recovery/dopemux-mvp/repo-hygiene-20260502/deep-audit-20260502/validation-results-prestage.json",
+    "proof_self_validation_note": "Self-referential json.tool stdout is intentionally not embedded; command exit codes are recorded and rerun after final proof updates.",
     "staged_checks": [
       {
-        "command": "git diff --cached --check",
+        "command": "git diff --check",
         "exit_code": 0
       },
       {
-        "command": "pre-commit run --files task-packets/TP-DMX-REPOHYG-006.json docs/05-audit-reports/repo-deep-remaining-work-audit-2026-05-02.md proof/repo-deep-remaining-work-audit-2026-05-02.proof.json proof/repo-deep-remaining-work-audit-2026-05-02.implementation-notes.md task-packets/INDEX.md",
+        "command": "pre-commit run --files .gitignore task-packets/TP-DMX-REPOHYG-006.json docs/05-audit-reports/repo-deep-remaining-work-audit-2026-05-02.md proof/repo-deep-remaining-work-audit-2026-05-02.proof.json task-packets/INDEX.md",
         "exit_code": 0
       }
     ],
