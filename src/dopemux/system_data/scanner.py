@@ -59,6 +59,55 @@ def _evidence_size(evidence: EvidenceRecord) -> int:
         return 0
 
 
+def _is_under(path: str, root: Path) -> bool:
+    root_text = str(root).rstrip("/")
+    path_text = str(Path(path)).rstrip("/")
+    return path_text == root_text or path_text.startswith(root_text + "/")
+
+
+def _records_for_root(
+    root: Path, evidence_by_path: dict[str, list[EvidenceRecord]]
+) -> tuple[EvidenceRecord, ...]:
+    records: list[EvidenceRecord] = []
+    for path, path_records in evidence_by_path.items():
+        if _is_under(path, root):
+            records.extend(path_records)
+    return tuple(records)
+
+
+def _root_size(root: Path, records: tuple[EvidenceRecord, ...]) -> int:
+    root_text = str(root).rstrip("/")
+    exact = [
+        _evidence_size(record)
+        for record in records
+        if record.path and str(Path(record.path)).rstrip("/") == root_text
+    ]
+    if exact:
+        return max(exact)
+    return max((_evidence_size(record) for record in records), default=0)
+
+
+def _warning(source: str, text: str) -> str:
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    denied = [
+        line
+        for line in lines
+        if (
+            "Operation not permitted" in line
+            or "PermissionDenied" in line
+            or "Permission denied" in line
+        )
+    ]
+    if denied:
+        return (
+            f"{source}: {len(denied)} permission-limited paths hidden; "
+            "grant Full Disk Access for deeper visibility"
+        )
+    if len(lines) > 3:
+        return f"{source}: {' | '.join(lines[:3])} | ... ({len(lines)} lines)"
+    return f"{source}: {' | '.join(lines)}"
+
+
 def _finding_from_evidence(
     path: str, size_bytes: int, evidence: tuple[EvidenceRecord, ...]
 ) -> Finding:
@@ -94,7 +143,7 @@ def scan(home: Path, runner: ToolRunner | None = None) -> ScanResult:
     evidence_by_path: dict[str, list[EvidenceRecord]] = {}
     for record in run_dust(runner, paths):
         if record.warning:
-            warnings.append(f"dust: {record.warning}")
+            warnings.append(_warning("dust", record.warning))
             continue
         if record.path:
             evidence_by_path.setdefault(record.path, []).append(record)
@@ -115,12 +164,12 @@ def scan(home: Path, runner: ToolRunner | None = None) -> ScanResult:
         ):
             for record in run_gdu(runner, root):
                 if record.warning:
-                    warnings.append(f"gdu: {record.warning}")
+                    warnings.append(_warning("gdu", record.warning))
                 elif record.path:
                     evidence_by_path.setdefault(record.path, []).append(record)
             for record in run_dua(runner, root):
                 if record.warning:
-                    warnings.append(f"dua: {record.warning}")
+                    warnings.append(_warning("dua", record.warning))
                 elif record.path:
                     evidence_by_path.setdefault(record.path, []).append(record)
 
@@ -128,7 +177,7 @@ def scan(home: Path, runner: ToolRunner | None = None) -> ScanResult:
     for root in (home / "Library" / "Messages" / "Attachments", home / "Downloads"):
         for record in run_ncdu(runner, root):
             if record.warning:
-                warnings.append(f"ncdu: {record.warning}")
+                warnings.append(_warning("ncdu", record.warning))
             elif record.path:
                 evidence_by_path.setdefault(record.path, []).append(record)
 
@@ -154,11 +203,12 @@ def scan(home: Path, runner: ToolRunner | None = None) -> ScanResult:
         )
 
     findings: list[Finding] = []
-    for path, records in evidence_by_path.items():
-        size_bytes = max((_evidence_size(record) for record in records), default=0)
+    for root in paths:
+        records = _records_for_root(root, evidence_by_path)
+        size_bytes = _root_size(root, records)
         if size_bytes <= 0:
             continue
-        findings.append(_finding_from_evidence(path, size_bytes, tuple(records)))
+        findings.append(_finding_from_evidence(str(root), size_bytes, records))
 
     findings.sort(
         key=lambda item: (

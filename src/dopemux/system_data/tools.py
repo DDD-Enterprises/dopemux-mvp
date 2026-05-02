@@ -14,6 +14,7 @@ from .models import CommandResult, DiskVolume, EvidenceRecord, ToolReport, ToolS
 
 REQUIRED_TOOLS: tuple[str, ...] = ("dust", "duf", "btop", "procs", "gdu", "dua", "ncdu")
 INSTALL_COMMAND = "brew install dust duf btop procs gdu dua-cli ncdu"
+ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
 
 
 class ToolError(RuntimeError):
@@ -195,6 +196,23 @@ def parse_gdu_text(text: str) -> tuple[EvidenceRecord, ...]:
     return tuple(records)
 
 
+def parse_dua_text(text: str) -> tuple[EvidenceRecord, ...]:
+    records: list[EvidenceRecord] = []
+    for line in text.splitlines():
+        cleaned = ANSI_RE.sub("", line).strip()
+        match = re.match(r"^([0-9]+(?:\.[0-9]+)?\s*[A-Za-z]*)\s+(.+)$", cleaned)
+        if not match:
+            continue
+        records.append(
+            EvidenceRecord(
+                source="dua",
+                path=match.group(2),
+                data={"size_bytes": parse_human_size(match.group(1))},
+            )
+        )
+    return tuple(records)
+
+
 def parse_json_export(text: str, *, source: str) -> tuple[EvidenceRecord, ...]:
     cleaned = text.strip()
     if not cleaned:
@@ -269,13 +287,21 @@ def run_ncdu(runner: ToolRunner, path: Path) -> tuple[EvidenceRecord, ...]:
 def run_dua(runner: ToolRunner, path: Path) -> tuple[EvidenceRecord, ...]:
     if not path.exists():
         return ()
-    result = runner.run(["dua", "aggregate", "--format", "json", str(path)], timeout=60)
+    result = runner.run(
+        ["dua", "aggregate", "--format", "bytes", "--no-total", str(path)],
+        timeout=60,
+    )
     if result.returncode != 0:
         return (EvidenceRecord(source="dua", command=result.command, warning=result.stderr.strip()),)
-    try:
-        return parse_json_export(result.stdout, source="dua")
-    except Exception:
-        return (EvidenceRecord(source="dua", command=result.command, warning="dua JSON parse failed"),)
+    return tuple(
+        EvidenceRecord(
+            source=record.source,
+            command=result.command,
+            path=record.path,
+            data=record.data,
+        )
+        for record in parse_dua_text(result.stdout)
+    )
 
 
 def run_procs(runner: ToolRunner, keywords: Iterable[str]) -> tuple[dict[str, Any], ...]:
