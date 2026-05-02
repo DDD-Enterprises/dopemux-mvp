@@ -2320,8 +2320,9 @@
   "commit_and_pr": {
     "base": "codex/repo-hygiene-remaining-disposition-20260502",
     "branch": "codex/repo-hygiene-deep-audit-20260502",
-    "commit_sha": "pending_until_commit; final response records exact SHA because proof file cannot self-reference its containing commit without changing that SHA",
-    "pr_url": "pending_until_pr_creation"
+    "commit_sha": "recorded in final response; a proof file cannot contain the hash of the commit that contains it without changing that hash",
+    "pr_number": 564,
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/564"
   },
   "counts": {
     "branches_by_class": {
