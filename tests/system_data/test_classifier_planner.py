@@ -9,6 +9,7 @@ from dopemux.system_data.models import (
     ToolReport,
 )
 from dopemux.system_data.planner import build_plan
+from dopemux.system_data.scanner import _records_for_root, _root_size, _warning
 
 
 def _scan_result(
@@ -189,3 +190,41 @@ def test_ios_backups_are_review_first():
 
     assert risk == "review_first"
     assert action == "review_ios_backups"
+
+
+def test_scanner_collapses_nested_cache_evidence_to_root():
+    root = Path("/tmp/home/.npm")
+    records = {
+        "/tmp/home/.npm": [
+            EvidenceRecord(
+                source="dust",
+                path="/tmp/home/.npm",
+                data={"size_bytes": 100},
+            )
+        ],
+        "/tmp/home/.npm/_cacache": [
+            EvidenceRecord(
+                source="dust",
+                path="/tmp/home/.npm/_cacache",
+                data={"size_bytes": 80},
+            )
+        ],
+    }
+
+    root_records = _records_for_root(root, records)
+
+    assert len(root_records) == 2
+    assert _root_size(root, root_records) == 100
+
+
+def test_permission_warnings_are_compacted():
+    warning = _warning(
+        "gdu",
+        "gdu: cannot read directory '/Users/hue/Library/Caches/CloudKit': Operation not permitted\n"
+        "gdu: cannot read directory '/Users/hue/Library/Caches/Safari': Operation not permitted",
+    )
+
+    assert (
+        warning
+        == "gdu: 2 permission-limited paths hidden; grant Full Disk Access for deeper visibility"
+    )
