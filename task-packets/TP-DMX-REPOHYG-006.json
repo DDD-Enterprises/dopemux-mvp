@@ -1,0 +1,137 @@
+{
+  "commit": {
+    "allowlist": [
+      ".gitignore",
+      "task-packets/TP-DMX-REPOHYG-006.json",
+      "docs/05-audit-reports/repo-deep-remaining-work-audit-2026-05-02.md",
+      "proof/repo-deep-remaining-work-audit-2026-05-02.proof.json",
+      "task-packets/INDEX.md"
+    ],
+    "message": "docs(repo-hygiene): deep audit remaining local work",
+    "verify": [
+      "python -m json.tool task-packets/TP-DMX-REPOHYG-006.json",
+      "python -m json.tool proof/repo-deep-remaining-work-audit-2026-05-02.proof.json",
+      "git diff --check",
+      "python3 -m dopemux_pr_merge_specialist.cli self-check --out-dir /Users/hue/.codex/recovery/dopemux-mvp/repo-hygiene-20260502/deep-audit-20260502/pr-merge-self-check",
+      "pre-commit run --files .gitignore task-packets/TP-DMX-REPOHYG-006.json docs/05-audit-reports/repo-deep-remaining-work-audit-2026-05-02.md proof/repo-deep-remaining-work-audit-2026-05-02.proof.json task-packets/INDEX.md"
+    ]
+  },
+  "depends_on": [
+    "TP-DMX-REPOHYG-001",
+    "TP-DMX-REPOHYG-002",
+    "TP-DMX-REPOHYG-003",
+    "TP-DMX-REPOHYG-004",
+    "TP-DMX-REPOHYG-005"
+  ],
+  "execution": {
+    "agent": "codex",
+    "base_branch": "origin/codex/repo-hygiene-remaining-disposition-20260502",
+    "branch": "codex/repo-hygiene-deep-audit-20260502",
+    "stacked_because": "PR #561 is behind current main and PR #563 remains stacked/unstable due to the external Gemini review provider failure."
+  },
+  "id": "TP-DMX-REPOHYG-006",
+  "invariants": [
+    "Do not delete local branches, remote branches, worktrees, or stashes in this packet.",
+    "Do not modify runtime/source/test files in this packet.",
+    "Compare all remaining candidates against current origin/main, not the TP005 origin/main snapshot.",
+    "Preserve dirty deltas, untracked manifests, branch evidence, and stash patches under the local recovery root.",
+    "Classify each item into exactly one declared disposition class.",
+    "Recovered runtime/docs/test work must land through later subsystem topic PRs."
+  ],
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "pr": {
+    "base": "codex/repo-hygiene-remaining-disposition-20260502",
+    "body": "## Summary\n- deep-audit remaining local worktrees, branches, and stashes against current origin/main\n- preserve local dirty/stash/branch evidence under the recovery root\n- publish a decision-ready recovery queue without runtime changes or cleanup mutations\n\n## Validation\n- packet/proof JSON validation\n- git diff whitespace check\n- dopemux-pr-merge self-check\n- internal codereview\n- pre-commit on allowlisted files\n\n## Follow-up\nLater packets should recover topic candidates and perform cleanup-safe deletion/drop work.",
+    "title": "docs(repo-hygiene): deep audit remaining local work"
+  },
+  "project": "dopemux-mvp",
+  "repo_binding": {
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "require_identity_match": true
+  },
+  "series": {
+    "base_branch": "main",
+    "final_packet": false,
+    "id": "DMX-REPO-HYGIENE-SERIES-001",
+    "parent_tp_id": "TP-DMX-REPOHYG-005"
+  },
+  "steps": [
+    {
+      "commands": [
+        "git fetch origin --prune",
+        "git worktree list --porcelain",
+        "git branch -vv",
+        "git stash list --date=iso",
+        "gh pr list --state all --limit 1000"
+      ],
+      "id": "S1",
+      "requirements": [
+        "Use the TP005 hygiene branch as stack base while comparing all candidates against current origin/main.",
+        "Record open hygiene PR state and base drift."
+      ],
+      "task": "Refresh current repo and GitHub authority from a dedicated TP006 worktree.",
+      "validation": [
+        "Raw command outputs are captured under the local recovery root."
+      ]
+    },
+    {
+      "commands": [
+        "git -C <worktree> status --porcelain",
+        "git -C <worktree> diff --binary",
+        "git cherry -v origin/main <branch>",
+        "git stash show --patch --binary <stash>"
+      ],
+      "id": "S2",
+      "requirements": [
+        "Write dirty status, binary diffs, staged diffs, untracked manifests, branch cherry/diff logs, stash object IDs, stash name-status, and stash patches.",
+        "Do not archive or commit large operator-local output directories into the repo."
+      ],
+      "task": "Preserve local evidence for dirty worktrees, branches, and stashes.",
+      "validation": [
+        "Local evidence directories are referenced from the machine-readable ledger."
+      ]
+    },
+    {
+      "commands": [
+        "classification script driven by Git and GitHub outputs"
+      ],
+      "id": "S3",
+      "requirements": [
+        "Use exactly already-in-main, cleanup-safe-next, topic-pr-ready-review, recover-partial, unfinished-abandoned, dirty-local, operator-local-artifact, or blocked.",
+        "Record subsystem, unique commits, unique paths, nearest PR proof, candidate recovery branch, and validation commands where relevant."
+      ],
+      "task": "Classify every remaining item into a declared disposition class.",
+      "validation": [
+        "Proof and report include class counts and recovery queue."
+      ]
+    },
+    {
+      "commands": [
+        "python -m json.tool task-packets/TP-DMX-REPOHYG-006.json",
+        "python -m json.tool proof/repo-deep-remaining-work-audit-2026-05-02.proof.json",
+        "git diff --check",
+        "pre-commit run --files <allowlist>"
+      ],
+      "id": "S4",
+      "requirements": [
+        "Commit only allowlisted hygiene files.",
+        "Leave local recovery evidence untracked."
+      ],
+      "task": "Publish TP006 packet, report, proof, and index update.",
+      "validation": [
+        "JSON, whitespace, self-check, codereview, and pre-commit validations pass or exact blocker is recorded."
+      ]
+    }
+  ],
+  "target": "Deep-audit every remaining local worktree, branch, and stash against current origin/main; preserve local evidence; produce a decision-ready recovery and cleanup ledger without changing runtime code or deleting refs/stashes."
+}
