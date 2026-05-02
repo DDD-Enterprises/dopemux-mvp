@@ -1675,10 +1675,6 @@ uninstall_dopemux() {
     fi
     
     # Stop Docker services
-    if [ -f "docker compose.unified.yml" ]; then
-        log "Removing old unified stack..."
-        docker compose -f docker compose.unified.yml down -v 2>/dev/null || true
-    fi
     if [ -f "compose.yml" ]; then
         log "Stopping current stack..."
         docker compose --profile full -f compose.yml down -v 2>/dev/null || true

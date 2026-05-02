@@ -8,6 +8,7 @@ This script ensures the canonical compose.yml file:
 3. Contains no deploy.replicas directives (single-instance default)
 4. Contains no exposed API keys/tokens (must use ${VAR} references)
 5. Uses the new `docker compose` command format (not docker-compose)
+6. Has no root-level compose drift files competing with compose.yml
 
 Usage:
     python scripts/compose_guard.py
@@ -221,6 +222,39 @@ def check_docker_compose_command(compose_file):
         return False
 
 
+def check_for_extra_root_compose_files(repo_root, canonical_compose):
+    """Check for non-canonical root-level compose files."""
+    print("✓ Checking for extra root-level compose files...")
+
+    try:
+        canonical = canonical_compose.resolve()
+        patterns = ("compose.*.yml", "compose.*.yaml", "docker-compose*.yml", "docker-compose*.yaml")
+        matches = []
+
+        for pattern in patterns:
+            for path in sorted(repo_root.glob(pattern)):
+                if path.resolve() == canonical:
+                    continue
+                if path.is_file():
+                    matches.append(path)
+
+        if matches:
+            print(f"✗ Found {len(matches)} non-canonical root compose file(s):")
+            for path in matches:
+                print(f"   {path.relative_to(repo_root)}")
+            print()
+            print("  compose.yml is the canonical root compose file.")
+            print("  Move historical variants under compose/legacy/ or delete obsolete root files.")
+            return False
+
+        print("✓ No extra root-level compose files found")
+        return True
+
+    except Exception as e:
+        print(f"✗ Error checking root compose files: {e}")
+        return False
+
+
 def main():
     parser = argparse.ArgumentParser(description="Validate Dopemux compose.yml")
     parser.add_argument(
@@ -257,6 +291,7 @@ def main():
         check_for_deploy_replicas(compose_file),
         check_for_exposed_secrets(compose_file),
         check_docker_compose_command(compose_file),
+        check_for_extra_root_compose_files(repo_root, compose_file),
     ]
     
     print()

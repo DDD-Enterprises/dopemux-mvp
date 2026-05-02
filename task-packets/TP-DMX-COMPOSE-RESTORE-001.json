@@ -1,0 +1,174 @@
+{
+  "id": "TP-DMX-COMPOSE-RESTORE-001",
+  "project": "dopemux-mvp",
+  "target": "Restore compose.yml as the single canonical root Docker Compose file and prevent root-level compose drift from recurring.",
+  "invariants": [
+    "Preserve compose.yml as the canonical root compose file.",
+    "Do not modify unrelated runtime, service, or PM authority surfaces.",
+    "Preserve current runtime service definitions except for removing the missing leantime-bridge env_file dependency.",
+    "Keep root-level historical compose variants out of the active root namespace.",
+    "Validate compose syntax, registry alignment, and guard behavior before commit."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-COMPOSE-RESTORE-SERIES-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/restore-canonical-compose"
+  },
+  "commit": {
+    "message": "fix(infra): restore canonical compose",
+    "allowlist": [
+      "CHANGELOG.md",
+      "compose.yml",
+      "docker-compose.unified.yml",
+      "install.sh",
+      "scripts/compose_guard.py",
+      "tests/arch/test_compose_guard.py",
+      "verify_dopecon_bridge.sh",
+      "task-packets/INDEX.md",
+      "task-packets/TP-DMX-COMPOSE-RESTORE-001.json",
+      "proof/TP-DMX-COMPOSE-RESTORE-001/implementation-notes.md"
+    ],
+    "verify": [
+      "python scripts/compose_guard.py",
+      "docker compose -f compose.yml config --services",
+      "/Users/hue/.local/share/mise/installs/python/3.12.13/bin/python -m pytest tests/arch/test_registry_compose_alignment.py tests/arch/test_service_env_contract.py tests/arch/test_compose_guard.py",
+      "git diff --check",
+      "pre-commit run --files <changed files>"
+    ]
+  },
+  "pr": {
+    "title": "[codex] restore canonical compose",
+    "body": "## Summary\n- restore compose.yml to the hand-authored canonical root compose format\n- preserve the current root build-context semantics for services that need repo-wide build context\n- remove stale root docker-compose.unified.yml and harden compose guard against future root-level compose drift\n\n## Root cause\nPR #505 normalized compose.yml while changing build contexts, which stripped canonical comments and temporarily produced invalid YAML. Later repair preserved the normalized form. Current compose guard also fails because leantime-bridge references a missing env file.\n\n## Validation\n- python scripts/compose_guard.py\n- docker compose -f compose.yml config --services\n- targeted architecture tests\n- git diff --check\n- pre-commit run --files <changed files>\n\n@codex @clauee @copilot",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Restore canonical compose.yml formatting while preserving intended runtime semantics.",
+      "requirements": [
+        "Use 67a3ffcf5 as the hand-authored canonical compose format authority.",
+        "Reapply current root build contexts and Dockerfile paths.",
+        "Remove only services.leantime-bridge.env_file from runtime semantics."
+      ],
+      "commands": [
+        "git checkout 67a3ffcf5 -- compose.yml"
+      ],
+      "expected_files": [
+        "compose.yml"
+      ],
+      "validation": [
+        "compose.yml parses through docker compose config.",
+        "Semantic runtime drift is limited to removal of the missing leantime-bridge env_file dependency."
+      ],
+      "context_files": [
+        "compose.yml",
+        "scripts/compose_guard.py",
+        "docs/03-reference/ports-and-registry-truth.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Remove non-canonical root compose drift and harden guard enforcement.",
+      "requirements": [
+        "Delete root docker-compose.unified.yml.",
+        "Make compose_guard.py fail on root-level compose variants competing with compose.yml.",
+        "Allow compose/legacy files to remain historical evidence."
+      ],
+      "commands": [
+        "python scripts/compose_guard.py"
+      ],
+      "expected_files": [
+        "docker-compose.unified.yml",
+        "scripts/compose_guard.py",
+        "tests/arch/test_compose_guard.py"
+      ],
+      "validation": [
+        "Guard fails for synthetic root docker-compose variants.",
+        "Guard allows nested compose/legacy files."
+      ],
+      "context_files": [
+        "scripts/compose_guard.py",
+        "tests/arch/test_registry_compose_alignment.py"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Align active helper scripts and release notes with canonical compose authority.",
+      "requirements": [
+        "Update verify_dopecon_bridge.sh to inspect compose.yml.",
+        "Remove the broken uninstall reference to docker compose.unified.yml from install.sh.",
+        "Record the fix in CHANGELOG.md."
+      ],
+      "commands": [
+        "git diff --check"
+      ],
+      "expected_files": [
+        "verify_dopecon_bridge.sh",
+        "install.sh",
+        "CHANGELOG.md"
+      ],
+      "validation": [
+        "No active helper script references docker-compose.unified.yml as a runtime authority.",
+        "Changelog records the user-facing fix."
+      ],
+      "context_files": [
+        "verify_dopecon_bridge.sh",
+        "install.sh",
+        "CHANGELOG.md"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Validate, commit, publish, open PR, and merge if repository protections permit.",
+      "requirements": [
+        "Stage only allowlisted files.",
+        "Commit with fix(infra): restore canonical compose.",
+        "Push codex/restore-canonical-compose.",
+        "Open a ready PR to main.",
+        "Merge only after GitHub checks and branch protection allow it."
+      ],
+      "commands": [
+        "/Users/hue/.local/share/mise/installs/python/3.12.13/bin/python -m pytest tests/arch/test_registry_compose_alignment.py tests/arch/test_service_env_contract.py tests/arch/test_compose_guard.py",
+        "git diff --check",
+        "pre-commit run --files <changed files>",
+        "gh pr create",
+        "gh pr checks --watch",
+        "gh pr merge --squash --delete-branch"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-COMPOSE-RESTORE-001/implementation-notes.md"
+      ],
+      "validation": [
+        "Local validation commands pass or exact blockers are recorded.",
+        "PR URL is recorded.",
+        "Merge status is recorded."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        ".pre-commit-config.yaml",
+        "CHANGELOG.md"
+      ]
+    }
+  ]
+}
