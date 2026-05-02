@@ -2,6 +2,7 @@ import json
 
 from dopemux.system_data.tools import (
     ToolRunner,
+    parse_dua_text,
     parse_duf_json,
     parse_dust_json,
     parse_gdu_text,
@@ -55,6 +56,15 @@ def test_parse_gdu_text_bytes():
 
     assert [record.path for record in records] == ["/tmp/a", "/tmp/b"]
     assert records[1].data["size_bytes"] == 2048
+
+
+def test_parse_dua_text_bytes_with_ansi_color():
+    records = parse_dua_text(
+        "\x1b[32m      4096 b\x1b[39m docs/03-reference/features/mac-system-data-scrubber.md\n"
+    )
+
+    assert records[0].path == "docs/03-reference/features/mac-system-data-scrubber.md"
+    assert records[0].data["size_bytes"] == 4096
 
 
 def test_parse_procs_json():
