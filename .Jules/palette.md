@@ -81,3 +81,7 @@
 ## 2026-05-16 - [Hardening Async Micro-interactions]
 **Learning:** Hardening asynchronous state transitions in React (like multi-step confirmation buttons) requires defensive timeout management. Always clear existing timeouts before starting new ones and explicitly nullify the timer reference after clearing or firing to maintain deterministic component behavior and avoid race conditions.
 **Action:** Add explicit timeout clearing and ref nullification when implementing time-windowed micro-interactions.
+
+## 2026-05-20 - [Pulsing Soft Confirmation Feedbacks]
+**Learning:** For destructive actions using a multi-step "soft" confirmation (e.g., "Reset Ritual"), a static label change might be too subtle for users in high-stimulation dashboard environments. Adding a rhythmic scale-and-glow pulse animation during the confirmation window provides a clear "active warning" state that reduces accidental progress loss while increasing the perceived safety of the interaction.
+**Action:** Use subtle `reset-pulse` animations for button components during time-limited confirmation windows to provide stronger visual feedback for destructive actions.
