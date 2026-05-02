@@ -99,17 +99,11 @@ else
 fi
 
 echo
-echo "4. Checking Docker Compose files..."
-if grep "DOPECON_BRIDGE_URL" docker-compose.master.yml > /dev/null 2>&1; then
-    check "docker-compose.master.yml has DOPECON_BRIDGE_URL"
+echo "4. Checking canonical Docker Compose file..."
+if grep "DOPECON_BRIDGE_URL" compose.yml > /dev/null 2>&1; then
+    check "compose.yml has DOPECON_BRIDGE_URL"
 else
-    warn "docker-compose.master.yml missing DOPECON_BRIDGE_URL"
-fi
-
-if grep "DOPECON_BRIDGE_URL" docker-compose.unified.yml > /dev/null 2>&1; then
-    check "docker-compose.unified.yml has DOPECON_BRIDGE_URL"
-else
-    warn "docker-compose.unified.yml missing DOPECON_BRIDGE_URL"
+    warn "compose.yml missing DOPECON_BRIDGE_URL"
 fi
 
 echo
