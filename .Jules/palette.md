@@ -81,3 +81,7 @@
 ## 2026-05-16 - [Hardening Async Micro-interactions]
 **Learning:** Hardening asynchronous state transitions in React (like multi-step confirmation buttons) requires defensive timeout management. Always clear existing timeouts before starting new ones and explicitly nullify the timer reference after clearing or firing to maintain deterministic component behavior and avoid race conditions.
 **Action:** Add explicit timeout clearing and ref nullification when implementing time-windowed micro-interactions.
+
+## 2026-05-18 - [Card-Level Interactive Surfaces]
+**Learning:** Expanding the interactive hit area of informational cards by making the entire container focusable (rather than just small internal icons) significantly improves usability for both mouse and keyboard users. Adding thematic visual feedback like hover lifts and border glows reinforces the card's interactability and provides a more delightful experience.
+**Action:** Prefer making informational containers interactive surfaces with clear focus/hover states over burying interaction in small, secondary elements.
