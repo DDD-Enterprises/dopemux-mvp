@@ -364,6 +364,8 @@ proof/*
 !proof/repo-branch-worktree-stash-audit-2026-05-02.proof.json
 !proof/repo-remaining-work-disposition-2026-05-02.proof.json
 !proof/repo-deep-remaining-work-audit-2026-05-02.proof.json
+!proof/repo-cli-system-recovery-tranche-2026-05-02.proof.json
+!proof/repo-cli-system-recovery-tranche-2026-05-02.implementation-notes.md
 !proof/TP-OPS-MAC-SCRUBBER-001/
 !proof/TP-OPS-MAC-SCRUBBER-001/**
 

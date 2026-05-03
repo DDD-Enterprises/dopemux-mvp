@@ -235,7 +235,13 @@ def _self_check(args: argparse.Namespace) -> int:
             {"name": "preflight", "status": "PASS" if preflight_rc == 0 else "FAIL"}
         )
         if preflight_rc != 0:
-            results["ok"] = False
+            if getattr(args, "allow_dirty", False):
+                results["checks"][-1]["status"] = "WARN"
+                results["checks"][-1][
+                    "note"
+                ] = "environment-dependent preflight failed; nonfatal under --allow-dirty"
+            else:
+                results["ok"] = False
 
     if getattr(args, "json", False):
         print(json.dumps(results, indent=2))

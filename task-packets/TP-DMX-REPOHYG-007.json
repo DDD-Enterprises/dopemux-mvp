@@ -1,0 +1,144 @@
+{
+  "commit": {
+    "allowlist": [
+      ".gitignore",
+      "task-packets/TP-DMX-REPOHYG-007.json",
+      "docs/05-audit-reports/repo-cli-system-recovery-tranche-2026-05-02.md",
+      "proof/repo-cli-system-recovery-tranche-2026-05-02.proof.json",
+      "proof/repo-cli-system-recovery-tranche-2026-05-02.implementation-notes.md",
+      "task-packets/INDEX.md",
+      "docs/03-reference/systems/dopemux/system-dopemux.md",
+      "reports/dopemux-cli-command-audit-2026-05-01.md",
+      "reports/dopemux-cli-command-reference-2026-05-01.md",
+      "reports/dopemux-cli-command-remediation-plan-2026-05-01.md",
+      "src/dopemux/cli.py",
+      "src/dopemux/commands/code_commands.py",
+      "src/dopemux/commands/decisions_commands.py",
+      "src/dopemux/commands/mcp_commands.py",
+      "src/dopemux/commands/profile_commands.py",
+      "src/dopemux/commands/update_commands.py",
+      "src/dopemux/routing_cli.py",
+      "src/dopemux_pr_merge_specialist/cli.py",
+      "src/dopemux_pr_merge_specialist/strategy_library.py",
+      "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/cli.py",
+      "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/policy.py",
+      "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/schema.py",
+      "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/strategy_library.py",
+      "tests/unit/test_cli_audit_remediations.py"
+    ],
+    "message": "fix(cli): recover audit hardening tranche",
+    "verify": [
+      "python -m json.tool task-packets/TP-DMX-REPOHYG-007.json",
+      "python -m json.tool proof/repo-cli-system-recovery-tranche-2026-05-02.proof.json",
+      "git range-diff origin/main...work/pr-554 origin/main...work/pr-554-fix",
+      "git diff --check",
+      "uv run --frozen --extra test python -m pytest -q tests/unit/test_cli_audit_remediations.py tests/unit/test_cli_repscan_passthrough.py tests/unit/test_cli_upgrades_commands.py",
+      "uv run --frozen --extra test dopemux --help",
+      "uv run --frozen --extra test dopemux-pr-merge self-check",
+      "uv run --frozen --extra dev pre-commit run --files .gitignore task-packets/TP-DMX-REPOHYG-007.json docs/05-audit-reports/repo-cli-system-recovery-tranche-2026-05-02.md proof/repo-cli-system-recovery-tranche-2026-05-02.proof.json proof/repo-cli-system-recovery-tranche-2026-05-02.implementation-notes.md task-packets/INDEX.md docs/03-reference/systems/dopemux/system-dopemux.md reports/dopemux-cli-command-audit-2026-05-01.md reports/dopemux-cli-command-reference-2026-05-01.md reports/dopemux-cli-command-remediation-plan-2026-05-01.md src/dopemux/cli.py src/dopemux/commands/code_commands.py src/dopemux/commands/decisions_commands.py src/dopemux/commands/mcp_commands.py src/dopemux/commands/profile_commands.py src/dopemux/commands/update_commands.py src/dopemux/routing_cli.py src/dopemux_pr_merge_specialist/cli.py src/dopemux_pr_merge_specialist/strategy_library.py templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/cli.py templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/policy.py templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/schema.py templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/strategy_library.py tests/unit/test_cli_audit_remediations.py"
+    ]
+  },
+  "depends_on": [
+    "TP-DMX-REPOHYG-004",
+    "TP-DMX-REPOHYG-005",
+    "TP-DMX-REPOHYG-006"
+  ],
+  "execution": {
+    "agent": "codex",
+    "base_branch": "origin/main",
+    "branch": "codex/recover-cli-system-20260502-work-pr-554-fix",
+    "worktree": "/Users/hue/.codex/worktrees/repo-hygiene-20260503-tp007/dopemux-mvp"
+  },
+  "id": "TP-DMX-REPOHYG-007",
+  "invariants": [
+    "Do not delete local branches, remote branches, worktrees, or stashes in this packet.",
+    "Recover only the scoped CLI/system patch-unique work from work/pr-554-fix.",
+    "Use work/pr-554 only as a comparator and do not recover unrelated cockpit or dependency commits from it.",
+    "Exclude reports/implementation-notes.md from the tracked recovery surface.",
+    "Preserve current origin/main changes while resolving old-branch conflicts.",
+    "Declare and test operator-facing CLI behavior changes."
+  ],
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "pr": {
+    "base": "main",
+    "body": "## Summary\n- recover the patch-unique CLI/system hardening work from work/pr-554-fix\n- preserve current main command registrations while restoring fail-closed CLI behavior\n- add focused tests and audit documentation for the recovered behavior\n\n## Validation\n- packet/proof JSON validation\n- range-diff comparison of work/pr-554 and work/pr-554-fix\n- focused CLI tests\n- dopemux and dopemux-pr-merge smoke checks\n- pre-commit on touched files\n\n## Follow-up\nContinue the TP006 recovery queue with the next CLI/system candidate after this PR lands.",
+    "title": "fix(cli): recover audit hardening tranche"
+  },
+  "project": "dopemux-mvp",
+  "repo_binding": {
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "require_identity_match": true
+  },
+  "series": {
+    "base_branch": "main",
+    "final_packet": false,
+    "id": "DMX-REPO-HYGIENE-SERIES-001",
+    "parent_tp_id": "TP-DMX-REPOHYG-006"
+  },
+  "steps": [
+    {
+      "commands": [
+        "git fetch origin --prune",
+        "git range-diff origin/main...work/pr-554 origin/main...work/pr-554-fix",
+        "git cherry -v origin/main work/pr-554-fix"
+      ],
+      "id": "S1",
+      "requirements": [
+        "Confirm current origin/main authority.",
+        "Confirm work/pr-554-fix is the recovery source and work/pr-554 is comparator-only.",
+        "Identify patch-equivalent commits already present on main."
+      ],
+      "task": "Refresh recovery authority and compare source branches.",
+      "validation": [
+        "Proof records current origin/main, source branch objects, range-diff summary, and patch-unique commit selection."
+      ]
+    },
+    {
+      "commands": [
+        "git cherry-pick --no-commit 595b8e8783863754e9487e00257b57d3af217639",
+        "resolve conflicts by preserving current main command registrations and recovered helper/alias behavior",
+        "exclude reports/implementation-notes.md"
+      ],
+      "id": "S2",
+      "requirements": [
+        "Apply only scoped CLI/system runtime, tests, templates, and current reports.",
+        "Do not restore whole files from the old branch over current main."
+      ],
+      "task": "Recover the CLI/system hardening patch onto current main.",
+      "validation": [
+        "No conflict markers remain and git diff shows no unrelated cockpit, dependency, stash, or cleanup changes."
+      ]
+    },
+    {
+      "commands": [
+        "python -m json.tool task-packets/TP-DMX-REPOHYG-007.json",
+        "python -m json.tool proof/repo-cli-system-recovery-tranche-2026-05-02.proof.json",
+        "git diff --check",
+        "uv run --frozen --extra test python -m pytest -q tests/unit/test_cli_audit_remediations.py tests/unit/test_cli_repscan_passthrough.py tests/unit/test_cli_upgrades_commands.py",
+        "uv run --frozen --extra test dopemux --help",
+        "uv run --frozen --extra test dopemux-pr-merge self-check",
+        "uv run --frozen --extra dev pre-commit run --files <allowlist>"
+      ],
+      "id": "S3",
+      "requirements": [
+        "Run the narrow validation declared by the approved plan.",
+        "Record any failing command as a blocker instead of broadening scope silently."
+      ],
+      "task": "Validate the recovered CLI/system tranche.",
+      "validation": [
+        "Proof records command outcomes and residual risk."
+      ]
+    }
+  ],
+  "target": "Recover the first TP006 CLI/system topic candidate from work/pr-554-fix into one focused PR without cleanup mutations."
+}
