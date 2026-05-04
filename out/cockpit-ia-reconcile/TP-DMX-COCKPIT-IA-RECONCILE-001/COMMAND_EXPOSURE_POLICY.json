@@ -1,0 +1,231 @@
+{
+  "classes": {
+    "BLOCKED_IN_COCKPIT": {
+      "allowed_ui_form": [
+        "blocked row",
+        "external instruction reference",
+        "reason and required external workflow"
+      ],
+      "examples_from_inventory": [
+        "./scripts/dopetask commit-run",
+        "./scripts/dopetask commit-sequence",
+        "./scripts/dopetask finish",
+        "./scripts/dopetask metrics reset",
+        "./scripts/dopetask tmux kill"
+      ],
+      "forbidden_ui_form": [
+        "button",
+        "confirm modal that still executes",
+        "keyboard shortcut"
+      ],
+      "meaning": "Action must not execute from Cockpit because it is destructive, high-trust, legacy-blocked, or unsafe without external governance.",
+      "required_evidence_or_proof": [
+        "block reason",
+        "replacement command or external workflow if any"
+      ],
+      "risk_rationale": "The inventory contains 48 blocked rows; Cockpit must preserve fail-closed behavior."
+    },
+    "COMMAND_PALETTE_ONLY": {
+      "allowed_ui_form": [
+        "global command palette result",
+        "parameter preview",
+        "dry-run/preflight first"
+      ],
+      "examples_from_inventory": [
+        "./scripts/dopetask project disable",
+        "./scripts/dopetask project enable",
+        "./scripts/dopetask project init",
+        "./scripts/dopetask project mode set",
+        "./scripts/dopetask project shell init"
+      ],
+      "forbidden_ui_form": [
+        "mode home-screen button",
+        "toolbar shortcut",
+        "implicit default parameters"
+      ],
+      "meaning": "Rare, parameter-heavy, admin, or specialist action that must not occupy primary navigation.",
+      "required_evidence_or_proof": [
+        "parameter display",
+        "authority domain",
+        "safety class",
+        "required gate state"
+      ],
+      "risk_rationale": "The inventory places 139 rows in Command Palette and 40 rows explicitly as command-palette-only."
+    },
+    "CONFIRM_REQUIRED": {
+      "allowed_ui_form": [
+        "secondary action behind confirmation",
+        "safe action gate",
+        "command palette preview plus confirm"
+      ],
+      "examples_from_inventory": [
+        "./scripts/dopetask bundle export",
+        "./scripts/dopetask bundle ingest",
+        "./scripts/dopetask case audit",
+        "./scripts/dopetask collect-evidence",
+        "./scripts/dopetask compile-tasks"
+      ],
+      "forbidden_ui_form": [
+        "one-click primary button",
+        "auto-run on selection",
+        "success state without proof"
+      ],
+      "meaning": "Action may mutate local state, generate artifacts, start services, or hand off execution; it needs explicit confirmation and post-action evidence.",
+      "required_evidence_or_proof": [
+        "preflight summary",
+        "confirmation record",
+        "post-action artifact or exit code"
+      ],
+      "risk_rationale": "The inventory contains 111 confirm-required rows; direct buttons would hide risk and authority boundaries."
+    },
+    "DISPLAY_ONLY": {
+      "allowed_ui_form": [
+        "status row",
+        "read-only table row",
+        "badge",
+        "detail inspector"
+      ],
+      "examples_from_inventory": [
+        "./scripts/dopetask",
+        "./scripts/dopetask bundle",
+        "./scripts/dopetask case",
+        "./scripts/dopetask ci-gate",
+        "./scripts/dopetask docs"
+      ],
+      "forbidden_ui_form": [
+        "primary action button",
+        "silent refresh that mutates state"
+      ],
+      "meaning": "Read-only state or status data that Cockpit may render without presenting an execution affordance.",
+      "required_evidence_or_proof": [
+        "source authority label",
+        "last observed timestamp when available"
+      ],
+      "risk_rationale": "Safe to show, but still must not imply Cockpit owns the underlying authority."
+    },
+    "EXTERNAL_ONLY": {
+      "allowed_ui_form": [
+        "external-only row",
+        "copyable command text",
+        "link to runbook"
+      ],
+      "examples_from_inventory": [
+        "dopemux decisions energy analytics",
+        "dopemux decisions energy log",
+        "dopemux decisions energy status",
+        "dopemux decisions graph",
+        "dopemux decisions list"
+      ],
+      "forbidden_ui_form": [
+        "Cockpit execution path",
+        "state mutation from UI"
+      ],
+      "meaning": "Action is outside Cockpit execution scope even if visible as documentation or provenance.",
+      "required_evidence_or_proof": [
+        "external authority owner",
+        "reason Cockpit cannot own it"
+      ],
+      "risk_rationale": "External-only keeps raw wrappers, deprecated commands, and specialist flows from becoming accidental UI authority."
+    },
+    "INSPECT_ACTION": {
+      "allowed_ui_form": [
+        "inspect command row",
+        "diagnostic drawer",
+        "doctor/preflight button with no write semantics"
+      ],
+      "examples_from_inventory": [
+        "./scripts/dopetask doctor",
+        "./scripts/dopetask manifest check",
+        "./scripts/dopetask ops doctor",
+        "./scripts/dopetask project doctor",
+        "./scripts/dopetask tp git doctor"
+      ],
+      "forbidden_ui_form": [
+        "default-on polling with side effects",
+        "success chip before result exists"
+      ],
+      "meaning": "Read-only or diagnostic action the operator intentionally invokes to inspect state.",
+      "required_evidence_or_proof": [
+        "command path",
+        "exit/result summary",
+        "source authority"
+      ],
+      "risk_rationale": "Diagnostics can be expensive or environment-sensitive; they require explicit operator invocation."
+    },
+    "UNKNOWN": {
+      "allowed_ui_form": [
+        "unknown/drift queue row",
+        "blocked until classified"
+      ],
+      "examples_from_inventory": [
+        "dopemux genetic",
+        "dopemux vault",
+        "dopemux worktree",
+        "dopemux worktrees",
+        "python -m dopemux"
+      ],
+      "forbidden_ui_form": [
+        "execution affordance",
+        "success or readiness claim"
+      ],
+      "meaning": "Activation, authority, side effects, or runtime ownership is unresolved.",
+      "required_evidence_or_proof": [
+        "missing authority note",
+        "required investigation packet"
+      ],
+      "risk_rationale": "Unknown actions must fail closed; UI can track them but cannot execute or imply readiness."
+    }
+  },
+  "metadata": {
+    "external_only_count": 37,
+    "source_counts": {
+      "activation_status": {
+        "ACTIVE": 366,
+        "DEFINED_NOT_REGISTERED": 30,
+        "DEPRECATED_BLOCKED": 7,
+        "OPTIONAL_IMPORT_UNKNOWN": 2
+      },
+      "active_rows": 366,
+      "authority_domain": {
+        "ADHD/operator support": 21,
+        "ConPort structured context/decision/progress": 15,
+        "Repo Truth Extractor audit/extraction": 44,
+        "dope-memory chronicle": 15,
+        "dopecon-bridge adapter/proxy/event transport": 11,
+        "dopemux operator control": 145,
+        "dopetask execution handoff": 109,
+        "routing/model-provider support": 20,
+        "task-orchestrator workflow": 11,
+        "unknown / conflicting": 14
+      },
+      "coverage": {
+        "MISSING": 284,
+        "OUT_OF_SCOPE": 7,
+        "PARTIAL": 82,
+        "UNKNOWN": 32
+      },
+      "high_risk_rows": 199,
+      "placement": {
+        "Command Palette": 139,
+        "Events": 15,
+        "External/Not Cockpit": 37,
+        "Implementer": 73,
+        "Overview": 9,
+        "PM": 15,
+        "Services": 54,
+        "Settings/Admin": 62,
+        "UNKNOWN": 1
+      },
+      "safe_ui_exposure": {
+        "BLOCKED_IN_COCKPIT": 48,
+        "COMMAND_PALETTE_ONLY": 40,
+        "CONFIRM_REQUIRED": 111,
+        "DISPLAY_ONLY": 178,
+        "INSPECT_ACTION": 23,
+        "UNKNOWN": 5
+      },
+      "total_inventory_rows": 405
+    },
+    "task_id": "TP-DMX-COCKPIT-IA-RECONCILE-001"
+  }
+}
