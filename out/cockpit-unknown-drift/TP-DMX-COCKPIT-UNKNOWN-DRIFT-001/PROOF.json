@@ -8,7 +8,7 @@
   "base_branch": "codex/cockpit-settings-runtime-001",
   "base_head": "d27c4995f22ceba646763759fa4a8f53d547ac67",
   "head_before": "d27c4995f22ceba646763759fa4a8f53d547ac67",
-  "implementation_commit_sha": "PENDING_IMPLEMENTATION_COMMIT",
+  "implementation_commit_sha": "19b74d2aecf937160235e0efffb272c80cd5328a",
   "pr_url": null,
   "pr_blocker": "PENDING_PUSH_AND_PR_CREATE",
   "tp_path": "task-packets/generated/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001.json",
@@ -176,6 +176,6 @@
     "Root RULES.md and root TRUTH_*.md were absent in this worktree.",
     "Per-row queue data is unavailable for several accepted source classes; aggregate items preserve UNKNOWN instead of inventing rows."
   ],
-  "final_head_recording_policy": "This proof file is committed before the final Git SHA can be self-referenced. If proof metadata cleanup records the implementation commit, final HEAD is reported in closeout and PR metadata rather than self-hashed inside PROOF.json.",
+  "final_head_recording_policy": "PROOF.json records implementation commit 19b74d2aecf937160235e0efffb272c80cd5328a. The proof metadata cleanup commit and final branch HEAD are reported in closeout and PR metadata rather than self-hashed inside PROOF.json.",
   "cleanup_status": "PENDING"
 }
