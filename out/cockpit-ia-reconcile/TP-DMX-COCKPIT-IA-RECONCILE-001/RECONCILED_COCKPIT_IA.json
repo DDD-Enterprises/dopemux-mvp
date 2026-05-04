@@ -1,0 +1,136 @@
+{
+  "blocked_action_count": 48,
+  "command_palette_only_count": 40,
+  "command_palette_required": true,
+  "confirm_required_count": 111,
+  "counts_used": {
+    "activation_status": {
+      "ACTIVE": 366,
+      "DEFINED_NOT_REGISTERED": 30,
+      "DEPRECATED_BLOCKED": 7,
+      "OPTIONAL_IMPORT_UNKNOWN": 2
+    },
+    "active_rows": 366,
+    "authority_domain": {
+      "ADHD/operator support": 21,
+      "ConPort structured context/decision/progress": 15,
+      "Repo Truth Extractor audit/extraction": 44,
+      "dope-memory chronicle": 15,
+      "dopecon-bridge adapter/proxy/event transport": 11,
+      "dopemux operator control": 145,
+      "dopetask execution handoff": 109,
+      "routing/model-provider support": 20,
+      "task-orchestrator workflow": 11,
+      "unknown / conflicting": 14
+    },
+    "coverage": {
+      "MISSING": 284,
+      "OUT_OF_SCOPE": 7,
+      "PARTIAL": 82,
+      "UNKNOWN": 32
+    },
+    "high_risk_rows": 199,
+    "placement": {
+      "Command Palette": 139,
+      "Events": 15,
+      "External/Not Cockpit": 37,
+      "Implementer": 73,
+      "Overview": 9,
+      "PM": 15,
+      "Services": 54,
+      "Settings/Admin": 62,
+      "UNKNOWN": 1
+    },
+    "safe_ui_exposure": {
+      "BLOCKED_IN_COCKPIT": 48,
+      "COMMAND_PALETTE_ONLY": 40,
+      "CONFIRM_REQUIRED": 111,
+      "DISPLAY_ONLY": 178,
+      "INSPECT_ACTION": 23,
+      "UNKNOWN": 5
+    },
+    "total_inventory_rows": 405
+  },
+  "display_only_count": 178,
+  "evidence_sources": [
+    "COMMAND_INVENTORY.json",
+    "COCKPIT_COVERAGE_MATRIX.json",
+    "IA_GAP_ANALYSIS.md",
+    "AUTHORITY_ACTION_TAXONOMY.md",
+    "EVIDENCE_LEDGER.md",
+    "PROOF.json",
+    "AGENTS.md",
+    "ARCHITECTURE.md",
+    "PM_PLANE.md",
+    "SERVICE_CATALOG.md",
+    "docs/03-reference/systems/system-boundaries.md",
+    "docs/03-reference/truth/truth-scope.md",
+    "docs/03-reference/truth/truth-systems.md",
+    "docs/03-reference/truth/truth-interfaces.md",
+    "docs/03-reference/truth/truth-canonicals.md",
+    "docs/03-reference/truth/truth-gaps.md",
+    "docs/03-reference/systems/*/system-*.md",
+    "docs/03-reference/Dopemux Cockpit TUI Design System/*"
+  ],
+  "external_only_count": 37,
+  "inspect_action_count": 23,
+  "ready_for_claude_design": "conditional",
+  "recommended_next_packets": [
+    "TP-DMX-COCKPIT-COMMAND-PALETTE-001",
+    "TP-DMX-COCKPIT-SAFE-ACTIONS-001",
+    "TP-DMX-COCKPIT-UIKIT-RENDER-001",
+    "TP-DMX-COCKPIT-RUNTIME-RENDER-001"
+  ],
+  "safe_action_gate_required": true,
+  "safe_for_claude_design": "CONDITIONAL",
+  "secondary_surfaces": [
+    "Command Palette",
+    "Settings/Admin/Runtime",
+    "Routing/Model Provider",
+    "Execution Handoff",
+    "Repo Truth / Audit",
+    "PR Merge",
+    "System Data",
+    "Mobile/Tmux",
+    "Hooks/Profile/Env",
+    "Safe Actions / Proof Gate",
+    "Unknown/Drift Queue"
+  ],
+  "settings_admin_runtime_required": true,
+  "top_level_modes": [
+    {
+      "decision": "keep top-level",
+      "name": "PM",
+      "scope": "workflow triage and PM handoff readiness across split PM authorities"
+    },
+    {
+      "decision": "keep top-level",
+      "name": "Implementer",
+      "scope": "bounded task, evidence, validation, and explicit execution handoff readiness"
+    },
+    {
+      "decision": "keep top-level",
+      "name": "Overview",
+      "scope": "operator status, health, drift, and safe summaries"
+    },
+    {
+      "decision": "keep top-level",
+      "name": "Services",
+      "scope": "service status and child workload inspection, not admin mutation by default"
+    },
+    {
+      "decision": "keep top-level",
+      "name": "Events",
+      "scope": "chronicle/event/capture inspection with dope-memory authority boundaries"
+    }
+  ],
+  "unknowns": [
+    "Root RULES.md is absent in the fresh worktree; docs/reference rules and AGENTS.md were used where available.",
+    "Root TRUTH_*.md files are absent; docs/03-reference/truth equivalents were used.",
+    "Prior command inventory was generated at old HEAD af5c4627 while this fresh worktree is origin/main 4959a089f; no new command inventory was regenerated in this packet.",
+    "Runtime dopemux help remained an input UNKNOWN from the inventory packet because its environment lacked litellm.",
+    "Decision subcommands, optional genetic, and defined-but-not-registered worktree/vault surfaces remain unresolved until runtime registration is repaired or rejected.",
+    "Final runtime renderer, browser visual approval, screenshot approval, and proof JSON validation for Cockpit remain outside this packet."
+  ],
+  "verdict": "CURRENT_COCKPIT_IA_PARTIAL_CONDITIONAL_PRIMITIVES_ONLY"
+}

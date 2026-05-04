@@ -1,0 +1,300 @@
+{
+  "schema_id": "dopemux.cockpit.package_remediation.index.v1",
+  "packet_id": "TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA",
+  "title": "Cockpit IA Package Remediation Index",
+  "status": "ARTIFACT_ONLY_HANDOFF",
+  "ia_verdict": "CURRENT_COCKPIT_IA_NEEDS_MAJOR_RECONCILIATION",
+  "safe_for_claude_design": "NO",
+  "ready_for_claude_design": false,
+  "branch": "pack/cockpit-pack-remediate-006-ia",
+  "base_branch": "audit/cockpit-ia-reconcile-001",
+  "head_at_packet_creation": "88c188d551719b60e6a560a04b6da2939b27d34b",
+  "worktree": "/Users/hue/code/dopemux-worktrees/dopemux-cockpit-ia-reconcile-001",
+  "upstream_packets": [
+    {
+      "packet_id": "TP-DMX-COCKPIT-IA-RECONCILE-001",
+      "verdict": "IA_RECONCILED_FOR_PACKAGE_REMEDIATION",
+      "safe_for_claude_design": "NO",
+      "proof_path": "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/PROOF.json"
+    },
+    {
+      "packet_id": "TP-DMX-COCKPIT-COMMAND-PALETTE-001",
+      "verdict": "COMMAND_PALETTE_SPEC_READY_FOR_PACKAGE_REMEDIATION",
+      "safe_for_claude_design": "NO",
+      "proof_path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PROOF.json"
+    },
+    {
+      "packet_id": "TP-DMX-COCKPIT-SAFE-ACTIONS-001",
+      "verdict": "SAFE_ACTION_GATE_SPEC_READY_FOR_PACKAGE_REMEDIATION",
+      "safe_for_claude_design": "NO",
+      "proof_path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/PROOF.json"
+    }
+  ],
+  "package_artifacts": [
+    {
+      "name": "PACKAGE_REMEDIATION_INDEX.md",
+      "purpose": "Human-readable index and entry point",
+      "path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PACKAGE_REMEDIATION_INDEX.md",
+      "sha256": "f041d770a806b81ef75eac7070a6adc107fb70721925b5fff768e3b866a36400"
+    },
+    {
+      "name": "INTEGRATED_COCKPIT_IA_CONTRACT.md",
+      "purpose": "Single integrated contract: five top-level modes + four secondary surfaces + cross-cutting Safe Action Gate + Unknown/Drift Queue",
+      "path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/INTEGRATED_COCKPIT_IA_CONTRACT.md",
+      "sha256": "3554167099eb6b9007cbe474ec19bbfad3eb1736d00aa7ef07aaf44fb3cd980a"
+    },
+    {
+      "name": "TOP_LEVEL_MODE_PACKAGE_MATRIX.md",
+      "purpose": "Per-mode (PM, Implementer, Overview, Services, Events) package-level expectations",
+      "path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/TOP_LEVEL_MODE_PACKAGE_MATRIX.md",
+      "sha256": "b115e2b69631897307a3e73350f6ba7790741c22c86cb61007e3362f7b953c44"
+    },
+    {
+      "name": "GLOBAL_SURFACE_PACKAGE_MATRIX.md",
+      "purpose": "Per-surface (Command Palette, Settings/Admin/Runtime, Safe Actions/Proof Gate, Unknown/Drift Queue) package-level expectations",
+      "path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/GLOBAL_SURFACE_PACKAGE_MATRIX.md",
+      "sha256": "bf427215d2be859a86a40c022c076f7de4175201b44a73ddcd490e6de202a3b3"
+    },
+    {
+      "name": "COMMAND_TO_GATE_TO_SCREEN_MATRIX.md",
+      "purpose": "Cross-walk: command exposure class to gate tier to screen contract to proof requirement",
+      "path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/COMMAND_TO_GATE_TO_SCREEN_MATRIX.md",
+      "sha256": "75c6f318f7dcf44daa3f808be105062ce876c20ca8f3dcc6c8e37ab752d8ceeb"
+    },
+    {
+      "name": "SAFE_ACTION_GATE_INTEGRATION_MATRIX.md",
+      "purpose": "Per-tier integration of preflight, confirmation, refusal, proof, and event/receipt across the IA",
+      "path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/SAFE_ACTION_GATE_INTEGRATION_MATRIX.md",
+      "sha256": "9722f3157e3ad2a7cc940c61a9fc2d1ebb732d0b821102dcb11a15b9ff361f18"
+    },
+    {
+      "name": "SETTINGS_ADMIN_RUNTIME_PACKAGE_HANDOFF.md",
+      "purpose": "Per-flow-group package-level handoff for the 62 Settings/Admin rows",
+      "path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/SETTINGS_ADMIN_RUNTIME_PACKAGE_HANDOFF.md",
+      "sha256": "e80b5f706c996d985893dc327d62a559da14eb29e63c180de2146a156c5a8c3a"
+    },
+    {
+      "name": "UNKNOWN_DRIFT_PACKAGE_HANDOFF.md",
+      "purpose": "Package-level routing of UNKNOWN/MISSING/BLOCKED/STALE-PROOF rows into the queue",
+      "path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/UNKNOWN_DRIFT_PACKAGE_HANDOFF.md",
+      "sha256": "8d588139893fb0291cdddce37f0e7920d2d7938767cf3f073bbc5b84796fcd5d"
+    },
+    {
+      "name": "RUNTIME_RENDERER_PACKAGE_HANDOFF.md",
+      "purpose": "Inputs the runtime renderer packet may consume; explicitly does not authorize runtime execution",
+      "path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/RUNTIME_RENDERER_PACKAGE_HANDOFF.md",
+      "sha256": "f37de3080c9fda0bc8b91e4dec839bb1cb1cd8b317fb126e4e1bf065325a01ce"
+    },
+    {
+      "name": "CLAUDE_DESIGN_PRIMITIVE_BOUNDARY.md",
+      "purpose": "Primitive vs final-screen boundary; explicit Claude Design blocker preservation",
+      "path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/CLAUDE_DESIGN_PRIMITIVE_BOUNDARY.md",
+      "sha256": "8dbeae35ab92c261128b3557ffeeaa9a4a2f9e846911a8570f718450862e92c8"
+    },
+    {
+      "name": "PACKAGE_REMEDIATION_TEST_MATRIX.md",
+      "purpose": "Contract test catalog spanning IA, Palette, Gate, Settings, Drift Queue",
+      "path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PACKAGE_REMEDIATION_TEST_MATRIX.md",
+      "sha256": "f313263ee60c6d3d27cf5ba17e79a8ba5ccc4a6bd38d21314c41191775aad536"
+    }
+  ],
+  "ia_topology": {
+    "top_level_modes": ["PM", "Implementer", "Overview", "Services", "Events"],
+    "secondary_surfaces": [
+      "Command Palette",
+      "Settings/Admin/Runtime",
+      "Safe Actions / Proof Gate",
+      "Unknown / Drift Queue"
+    ],
+    "sixth_top_level_mode_introduced": false,
+    "secondary_surface_promoted_to_top_level": false
+  },
+  "authority_boundaries_preserved": [
+    "dopemux operator control",
+    "dopetask execution handoff",
+    "Repo Truth Extractor audit/extraction",
+    "ADHD/operator support",
+    "routing/model-provider support",
+    "ConPort structured context/decision/progress",
+    "dope-memory chronicle",
+    "task-orchestrator workflow",
+    "dopecon-bridge adapter/proxy/event transport",
+    "unknown / conflicting"
+  ],
+  "authority_collapse": false,
+  "carried_inventory_counts": {
+    "total_inventory_rows": 405,
+    "active_rows": 366,
+    "high_risk_rows": 199,
+    "external_only_count": 37,
+    "safe_ui_exposure": {
+      "DISPLAY_ONLY": 178,
+      "CONFIRM_REQUIRED": 111,
+      "BLOCKED_IN_COCKPIT": 48,
+      "COMMAND_PALETTE_ONLY": 40,
+      "INSPECT_ACTION": 23,
+      "UNKNOWN": 5
+    },
+    "placement": {
+      "Command Palette": 139,
+      "Implementer": 73,
+      "Settings/Admin": 62,
+      "Services": 54,
+      "External/Not Cockpit": 37,
+      "Events": 15,
+      "PM": 15,
+      "Overview": 9,
+      "UNKNOWN": 1
+    },
+    "coverage": {
+      "MISSING": 284,
+      "PARTIAL": 82,
+      "UNKNOWN": 32,
+      "OUT_OF_SCOPE": 7
+    },
+    "activation_status": {
+      "ACTIVE": 366,
+      "DEFINED_NOT_REGISTERED": 30,
+      "DEPRECATED_BLOCKED": 7,
+      "OPTIONAL_IMPORT_UNKNOWN": 2
+    },
+    "authority_domain": {
+      "dopemux operator control": 145,
+      "dopetask execution handoff": 109,
+      "Repo Truth Extractor audit/extraction": 44,
+      "ADHD/operator support": 21,
+      "routing/model-provider support": 20,
+      "ConPort structured context/decision/progress": 15,
+      "dope-memory chronicle": 15,
+      "dopecon-bridge adapter/proxy/event transport": 11,
+      "task-orchestrator workflow": 11,
+      "unknown / conflicting": 14
+    }
+  },
+  "gate_tier_summary": {
+    "T0_DISPLAY_ONLY": {"executes": false},
+    "T0i_INSPECT_ACTION": {"executes": true, "confirmation": "EXPLICIT_INVOKE_NO_DEFAULTS_ON"},
+    "T1_GENERATED_ARTIFACT": {"executes": true, "confirmation": "EXPLICIT_BUTTON"},
+    "T2_CONFIG_MUTATION": {"executes": true, "confirmation": "EXPLICIT_BUTTON_WITH_DIFF_ACK"},
+    "T3_WRITE_LOCAL": {"executes": true, "confirmation": "EXPLICIT_BUTTON"},
+    "T4_WRITE_REMOTE": {"executes": false, "confirmation": "EXPLICIT_BUTTON_PLUS_TYPED_CONFIRMATION", "blocked_until_policy_approves": true},
+    "T5_START_STOP_SERVICE": {"executes": true, "confirmation": "EXPLICIT_BUTTON_PLUS_TYPED_CONFIRMATION"},
+    "T6_EXECUTION_HANDOFF": {"executes": true, "confirmation": "EXPLICIT_BUTTON_PLUS_TYPED_CONFIRMATION"},
+    "TX_BLOCKED_IN_COCKPIT": {"executes": false},
+    "TU_UNKNOWN": {"executes": false}
+  },
+  "blocked_claims": [
+    {
+      "claim": "Final screens approved",
+      "approved": false,
+      "reason": "Claude Design boundary; CLAUDE_DESIGN_BLOCKERS.md and CLAUDE_DESIGN_PRIMITIVE_BOUNDARY.md."
+    },
+    {
+      "claim": "Runtime execution implemented",
+      "approved": false,
+      "reason": "Owner: TP-DMX-COCKPIT-RUNTIME-RENDER-001; not implemented in this packet."
+    },
+    {
+      "claim": "Cockpit package HTML/CSS/React edits",
+      "approved": false,
+      "reason": "Out of scope this packet."
+    },
+    {
+      "claim": "T4 (write remote) execution",
+      "approved": false,
+      "reason": "Blocked by default; remote-mutation policy required and runtime renderer wiring required."
+    },
+    {
+      "claim": "TX (BLOCKED_IN_COCKPIT) execution",
+      "approved": false,
+      "reason": "Permanently blocked in Cockpit per COMMAND_EXPOSURE_POLICY.json:classes.BLOCKED_IN_COCKPIT.forbidden_ui_form."
+    },
+    {
+      "claim": "TU (UNKNOWN) execution",
+      "approved": false,
+      "reason": "Never executable; reclassification requires a packet."
+    },
+    {
+      "claim": "Auto-confirm in any tier",
+      "approved": false,
+      "reason": "SAFE_ACTION_GATE_CONTRACT.md §5; COMMAND_EXPOSURE_POLICY.json:classes.CONFIRM_REQUIRED.forbidden_ui_form."
+    },
+    {
+      "claim": "Sixth top-level mode",
+      "approved": false,
+      "reason": "Five top-level modes preserved per RECONCILED_COCKPIT_IA.md §4; no sixth introduced."
+    },
+    {
+      "claim": "Authority collapse into one control brain",
+      "approved": false,
+      "reason": "COMMAND_PALETTE_CONTRACT.md §8; REVISED_COCKPIT_IA.md §5."
+    },
+    {
+      "claim": "Claude Design upload",
+      "approved": false,
+      "reason": "Blocked at the Claude Design boundary."
+    }
+  ],
+  "residual_unknowns": [
+    {
+      "unknown": "Inventory regenerated against current HEAD",
+      "owner": "Separate inventory-regeneration packet",
+      "blocker_condition": "CLAUDE_DESIGN_BLOCKERS.md §3 condition 7"
+    },
+    {
+      "unknown": "Decision subcommands; optional `genetic`; defined-but-not-registered `worktree`/`vault`",
+      "owner": "Separate reclassification packets",
+      "blocker_condition": "CLAUDE_DESIGN_BLOCKERS.md §3 condition 8"
+    },
+    {
+      "unknown": "Root RULES.md; root TRUTH_*.md absences",
+      "owner": "Repo-level documentation packet",
+      "blocker_condition": "CLAUDE_DESIGN_BLOCKERS.md §3 condition 8"
+    },
+    {
+      "unknown": "Runtime `dopemux help` resolution",
+      "owner": "Runtime environment with `litellm` configured",
+      "blocker_condition": "EVIDENCE_LEDGER.md residual UNKNOWN"
+    },
+    {
+      "unknown": "Stale-proof window duration",
+      "owner": "TP-DMX-COCKPIT-RUNTIME-RENDER-001",
+      "blocker_condition": "Runtime configuration"
+    },
+    {
+      "unknown": "Confirm-flow operator timeout duration",
+      "owner": "TP-DMX-COCKPIT-RUNTIME-RENDER-001",
+      "blocker_condition": "Runtime configuration"
+    },
+    {
+      "unknown": "Operator authentication wiring (`operator_id` capture)",
+      "owner": "TP-DMX-COCKPIT-RUNTIME-RENDER-001",
+      "blocker_condition": "Auth wiring not yet present"
+    },
+    {
+      "unknown": "Remote-mutation policy reference document",
+      "owner": "Separate policy artifact",
+      "blocker_condition": "T4 blocked until policy approves"
+    },
+    {
+      "unknown": "Per-flow tier mapping for the 62 Settings/Admin rows beyond seven flow groups",
+      "owner": "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001",
+      "blocker_condition": "Pending downstream packet"
+    }
+  ],
+  "downstream_packets": [
+    "TP-DMX-COCKPIT-RUNTIME-RENDER-001",
+    "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001",
+    "TP-DMX-COCKPIT-UNKNOWN-DRIFT-001"
+  ],
+  "package_invariants": [
+    "Five top-level modes preserved exactly (PM, Implementer, Overview, Services, Events).",
+    "Four secondary surfaces preserved (Command Palette, Settings/Admin/Runtime, Safe Actions/Proof Gate, Unknown/Drift Queue).",
+    "Authority boundaries preserved per inventory; no collapse into one control brain.",
+    "Safe Action Gate is cross-cutting, never auto-confirms, never lets BLOCKED_IN_COCKPIT or UNKNOWN execute, never reclassifies in-gate.",
+    "T4 remote mutation blocked by default until remote-mutation policy approves and runtime renderer wires it.",
+    "Carried inventory counts and verdicts preserved verbatim; no regeneration.",
+    "UNKNOWNs and residual blockers preserved instead of smoothed into design-ready claims.",
+    "No final screens; no runtime execution; no Claude Design upload; no READY_FOR_CLAUDE_DESIGN claim."
+  ]
+}
