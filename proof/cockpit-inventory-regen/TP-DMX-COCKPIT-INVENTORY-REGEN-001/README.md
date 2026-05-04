@@ -10,6 +10,10 @@ Base branch: `codex/cockpit-unknown-drift-001`
 
 Base/source HEAD: `b6b89fae076a669952ef1178d7d7d17a3e01eb7b`
 
+Implementation commit: `e9e7e286422304266d98717a176775d6428689f1`
+
+PR: `https://github.com/DDD-Enterprises/dopemux-mvp/pull/571`
+
 ## Artifact Paths
 
 - `out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json`
