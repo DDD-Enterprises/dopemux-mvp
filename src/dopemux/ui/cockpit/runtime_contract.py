@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 import hashlib
@@ -14,6 +15,8 @@ from uuid import NAMESPACE_URL, uuid5
 
 PACKAGE_PACKET_ID = "TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA"
 RUNTIME_PACKET_ID = "TP-DMX-COCKPIT-RUNTIME-RENDER-001"
+SETTINGS_RUNTIME_PACKET_ID = "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001"
+SETTINGS_ADMIN_SOURCE_ARTIFACT = "SETTINGS_ADMIN_RUNTIME_PACKAGE_HANDOFF.md"
 
 TOP_LEVEL_MODES: tuple[str, ...] = (
     "PM",
@@ -48,6 +51,93 @@ CONFIRMABLE_TIERS: frozenset[str] = frozenset(("T1", "T2", "T3", "T5", "T6"))
 NON_CONFIRM_TIERS: frozenset[str] = frozenset(("T0", "T0i"))
 BLOCKED_TIERS: frozenset[str] = frozenset(("TX",))
 UNKNOWN_TIERS: frozenset[str] = frozenset(("TU",))
+SETTINGS_ADMIN_GATE_REQUIRED_TIERS: frozenset[str] = frozenset(
+    ("T0i", "T1", "T2", "T3", "T4", "T5", "T6")
+)
+
+SETTINGS_ADMIN_FLOW_GROUPS: tuple[dict[str, Any], ...] = (
+    {
+        "name": "Routing / Model Provider",
+        "authority_owner": "routing/model-provider support (LiteLLM/CCR)",
+        "primary_tiers": ("T2",),
+        "inspect_tiers": ("T0i",),
+        "confirmation_strength": "Explicit button + diff acknowledgment",
+        "typical_proof": "CONFIG_DIFF_OR_STATUS",
+        "row_tier_mapping_status": "per-row UNKNOWN until packet evidence exists",
+    },
+    {
+        "name": "Profile management",
+        "authority_owner": "dopemux operator control",
+        "primary_tiers": ("T2",),
+        "inspect_tiers": ("T0i",),
+        "confirmation_strength": "Explicit button + diff acknowledgment",
+        "typical_proof": "CONFIG_DIFF_OR_STATUS",
+        "row_tier_mapping_status": "per-row UNKNOWN until packet evidence exists",
+    },
+    {
+        "name": "Environment management",
+        "authority_owner": "dopemux operator control",
+        "primary_tiers": ("T2",),
+        "inspect_tiers": ("T0i",),
+        "confirmation_strength": "Explicit button + diff acknowledgment",
+        "typical_proof": "CONFIG_DIFF_OR_STATUS",
+        "row_tier_mapping_status": "per-row UNKNOWN until packet evidence exists",
+    },
+    {
+        "name": "MCP server control",
+        "authority_owner": "dopemux operator control + per-MCP authority",
+        "primary_tiers": ("T2", "T5"),
+        "inspect_tiers": ("T0i",),
+        "confirmation_strength": "Explicit button or typed service-id",
+        "typical_proof": "CONFIG_DIFF_OR_STATUS / SERVICE_STATUS_AND_LOG",
+        "row_tier_mapping_status": "per-row UNKNOWN until packet evidence exists",
+    },
+    {
+        "name": "Service startup / lifecycle (admin)",
+        "authority_owner": "per-service authority (Cockpit shows status only)",
+        "primary_tiers": ("T5",),
+        "inspect_tiers": ("T0i",),
+        "confirmation_strength": "Explicit button + typed service-id",
+        "typical_proof": "SERVICE_STATUS_AND_LOG",
+        "row_tier_mapping_status": "per-row UNKNOWN until packet evidence exists",
+    },
+    {
+        "name": "Hooks / native-hooks",
+        "authority_owner": "dopemux operator control",
+        "primary_tiers": ("T2",),
+        "inspect_tiers": ("T0i",),
+        "confirmation_strength": "Explicit button + diff acknowledgment",
+        "typical_proof": "CONFIG_DIFF_OR_STATUS",
+        "row_tier_mapping_status": "per-row UNKNOWN until packet evidence exists",
+    },
+    {
+        "name": "Runtime configuration",
+        "authority_owner": "dopemux operator control",
+        "primary_tiers": ("T2",),
+        "inspect_tiers": ("T0i",),
+        "confirmation_strength": "Explicit button + diff acknowledgment",
+        "typical_proof": "CONFIG_DIFF_OR_STATUS",
+        "row_tier_mapping_status": "per-row UNKNOWN until packet evidence exists",
+    },
+    {
+        "name": "Admin / safe / debug helpers",
+        "authority_owner": "dopemux operator control",
+        "primary_tiers": ("T0i", "T2", "T5"),
+        "inspect_tiers": ("T0i",),
+        "confirmation_strength": "per tier",
+        "typical_proof": "per tier",
+        "row_tier_mapping_status": "per-row UNKNOWN until packet evidence exists",
+    },
+    {
+        "name": "Drift inspection (read-only)",
+        "authority_owner": "drift evidence (no execution)",
+        "primary_tiers": (),
+        "inspect_tiers": ("T0", "T0i"),
+        "confirmation_strength": "None / explicit invoke",
+        "typical_proof": "INSPECT_RESULT_AND_TIMESTAMP",
+        "row_tier_mapping_status": "per-row UNKNOWN until packet evidence exists",
+    },
+)
 
 ALLOWED_SURFACE_ORIGINS: frozenset[str] = frozenset(
     (
@@ -269,6 +359,7 @@ class RuntimeRenderModel:
     ia_verdict: str
     invariants: dict[str, bool]
     config: RuntimeConfig
+    settings_admin_runtime: SettingsAdminRuntimeSummary
 
 
 @dataclass(frozen=True)
@@ -279,6 +370,53 @@ class PreflightResult:
     missing_fields: tuple[str, ...]
     routing_destination: str
     execution_status: str = "not_attempted"
+
+
+@dataclass(frozen=True)
+class SettingsAdminTierMapping:
+    tier: str
+    safety_class: str
+    source: str
+    can_confirm: bool
+    gate_required: bool
+    refusal_route: str
+    refusal_reason: str | None
+    execution_status: str = "not_attempted"
+    remote_policy_required: bool = False
+
+
+@dataclass(frozen=True)
+class SettingsAdminRuntimeSummary:
+    surface_name: str
+    surface_kind: str
+    source_artifact_path: str
+    flow_groups: tuple[dict[str, Any], ...]
+    row_count: int | str
+    mapped_tier_counts: dict[str, int]
+    unknown_tier_count: int | str
+    refusal_counts: dict[str, int | str]
+    gate_required_count: int | str
+    blocked_count: int | str
+    open_downstream_owner: str
+    safe_for_claude_design: str
+    ready_for_claude_design: str
+
+    def as_payload(self) -> dict[str, Any]:
+        return {
+            "surface_name": self.surface_name,
+            "surface_kind": self.surface_kind,
+            "source_artifact_path": self.source_artifact_path,
+            "flow_groups": list(self.flow_groups),
+            "row_count": self.row_count,
+            "mapped_tier_counts": dict(self.mapped_tier_counts),
+            "unknown_tier_count": self.unknown_tier_count,
+            "refusal_counts": dict(self.refusal_counts),
+            "gate_required_count": self.gate_required_count,
+            "blocked_count": self.blocked_count,
+            "open_downstream_owner": self.open_downstream_owner,
+            "safe_for_claude_design": self.safe_for_claude_design,
+            "READY_FOR_CLAUDE_DESIGN": self.ready_for_claude_design,
+        }
 
 
 def stable_sha256(value: Any) -> str:
@@ -356,6 +494,221 @@ def load_package_artifacts(package_dir: str | Path) -> LoadedPackage:
     )
 
 
+def _settings_admin_source_path(package: LoadedPackage) -> str:
+    return str(package.package_dir / SETTINGS_ADMIN_SOURCE_ARTIFACT)
+
+
+def _settings_admin_row_count(package: LoadedPackage) -> int | str:
+    count = (
+        package.index.get("carried_inventory_counts", {})
+        .get("placement", {})
+        .get("Settings/Admin")
+    )
+    return count if isinstance(count, int) else "UNKNOWN"
+
+
+def build_settings_admin_runtime_summary(package: LoadedPackage) -> SettingsAdminRuntimeSummary:
+    row_count = _settings_admin_row_count(package)
+    unknown_tier_count: int | str = row_count if isinstance(row_count, int) else "UNKNOWN"
+    unknown_refusals: int | str = row_count if isinstance(row_count, int) else "UNKNOWN"
+    mapped_tier_counts = {tier: 0 for tier in SAFE_ACTION_TIERS}
+    return SettingsAdminRuntimeSummary(
+        surface_name="Settings/Admin/Runtime",
+        surface_kind="secondary/global surface",
+        source_artifact_path=_settings_admin_source_path(package),
+        flow_groups=SETTINGS_ADMIN_FLOW_GROUPS,
+        row_count=row_count,
+        mapped_tier_counts=mapped_tier_counts,
+        unknown_tier_count=unknown_tier_count,
+        refusal_counts={
+            "UNKNOWN_DRIFT_QUEUE": unknown_refusals,
+            "SHOW_BLOCKED_REASON": "UNKNOWN",
+        },
+        gate_required_count="UNKNOWN",
+        blocked_count="UNKNOWN",
+        open_downstream_owner=SETTINGS_RUNTIME_PACKET_ID,
+        safe_for_claude_design="NO",
+        ready_for_claude_design="not approved",
+    )
+
+
+def _first_present(row: Mapping[str, Any], *keys: str) -> Any:
+    for key in keys:
+        if key in row:
+            return row[key]
+    return None
+
+
+def _normalize_token(value: Any) -> str:
+    if value is None:
+        return "UNKNOWN"
+    if isinstance(value, str):
+        cleaned = value.strip()
+        return cleaned if cleaned else "UNKNOWN"
+    return str(value)
+
+
+def _row_evidence_tokens(value: Any) -> tuple[str, ...]:
+    if value is None:
+        return ()
+    if isinstance(value, Mapping):
+        tokens: list[str] = []
+        for child in value.values():
+            tokens.extend(_row_evidence_tokens(child))
+        return tuple(tokens)
+    if isinstance(value, (list, tuple, set)):
+        tokens = []
+        for child in value:
+            tokens.extend(_row_evidence_tokens(child))
+        return tuple(tokens)
+    return (_normalize_token(value).lower().replace("-", "_").replace(" ", "_"),)
+
+
+def _settings_admin_side_effect_tokens(row: Mapping[str, Any]) -> tuple[str, ...]:
+    values = (
+        _first_present(row, "side_effect_kind", "side_effect_classification", "operation_class"),
+        row.get("side_effects"),
+        row.get("expected_proof"),
+        row.get("proof_requirement"),
+    )
+    tokens: list[str] = []
+    for value in values:
+        tokens.extend(_row_evidence_tokens(value))
+    return tuple(tokens)
+
+
+def _tokens_match(tokens: tuple[str, ...], *needles: str) -> bool:
+    return any(any(needle in token for needle in needles) for token in tokens)
+
+
+def _settings_admin_mapping(
+    *,
+    tier: str,
+    safety_class: str,
+    source: str,
+    refusal_route: str,
+    refusal_reason: str | None,
+    remote_policy_required: bool = False,
+) -> SettingsAdminTierMapping:
+    return SettingsAdminTierMapping(
+        tier=tier,
+        safety_class=safety_class,
+        source=source,
+        can_confirm=tier in CONFIRMABLE_TIERS and not remote_policy_required,
+        gate_required=tier in SETTINGS_ADMIN_GATE_REQUIRED_TIERS,
+        refusal_route=refusal_route,
+        refusal_reason=refusal_reason,
+        remote_policy_required=remote_policy_required,
+    )
+
+
+def map_settings_admin_row_to_gate_tier(row: Mapping[str, Any]) -> SettingsAdminTierMapping:
+    """Map one Settings/Admin row from explicit evidence; missing evidence fails to TU."""
+
+    safety_class = _normalize_token(_first_present(row, "safety_class", "safe_ui_exposure"))
+    explicit_tier = _normalize_token(_first_present(row, "gate_tier", "proposed_gate_tier"))
+
+    if safety_class == "BLOCKED_IN_COCKPIT" or explicit_tier == "TX":
+        return _settings_admin_mapping(
+            tier="TX",
+            safety_class="BLOCKED_IN_COCKPIT",
+            source="explicit blocked evidence",
+            refusal_route="SHOW_BLOCKED_REASON",
+            refusal_reason="BLOCKED_IN_COCKPIT",
+        )
+    if safety_class in {"UNKNOWN", "EXTERNAL_ONLY"} or explicit_tier == "TU":
+        return _settings_admin_mapping(
+            tier="TU",
+            safety_class=safety_class,
+            source="explicit unknown or external-only evidence",
+            refusal_route="UNKNOWN_DRIFT_QUEUE",
+            refusal_reason="UNKNOWN_CLASS",
+        )
+    if explicit_tier in SAFE_ACTION_TIERS:
+        return _settings_admin_mapping(
+            tier=explicit_tier,
+            safety_class=safety_class,
+            source="explicit gate tier evidence",
+            refusal_route="UNKNOWN_DRIFT_QUEUE" if explicit_tier == "T4" else "NOT_APPLICABLE",
+            refusal_reason="REMOTE_MUTATION_POLICY_MISSING" if explicit_tier == "T4" else None,
+            remote_policy_required=explicit_tier == "T4",
+        )
+    if safety_class == "DISPLAY_ONLY":
+        return _settings_admin_mapping(
+            tier="T0",
+            safety_class=safety_class,
+            source="explicit DISPLAY_ONLY safety class",
+            refusal_route="NOT_APPLICABLE",
+            refusal_reason=None,
+        )
+    if safety_class == "INSPECT_ACTION":
+        return _settings_admin_mapping(
+            tier="T0i",
+            safety_class=safety_class,
+            source="explicit INSPECT_ACTION safety class",
+            refusal_route="NOT_APPLICABLE",
+            refusal_reason=None,
+        )
+    if safety_class != "CONFIRM_REQUIRED":
+        return _settings_admin_mapping(
+            tier="TU",
+            safety_class=safety_class,
+            source="insufficient Settings/Admin tier evidence",
+            refusal_route="UNKNOWN_DRIFT_QUEUE",
+            refusal_reason="GATE_TIER_UNKNOWN",
+        )
+
+    tokens = _settings_admin_side_effect_tokens(row)
+    if _tokens_match(tokens, "remote_mutation", "write_remote", "remote_receipt"):
+        return _settings_admin_mapping(
+            tier="T4",
+            safety_class=safety_class,
+            source="explicit remote mutation evidence",
+            refusal_route="UNKNOWN_DRIFT_QUEUE",
+            refusal_reason="REMOTE_MUTATION_POLICY_MISSING",
+            remote_policy_required=True,
+        )
+    if _tokens_match(tokens, "execution_handoff", "tp_runner_proof"):
+        return _settings_admin_mapping(
+            tier="T6",
+            safety_class=safety_class,
+            source="explicit execution handoff evidence",
+            refusal_route="NOT_APPLICABLE",
+            refusal_reason=None,
+        )
+    if _tokens_match(tokens, "service_start", "service_stop", "start_stop_service", "service_status"):
+        return _settings_admin_mapping(
+            tier="T5",
+            safety_class=safety_class,
+            source="explicit service lifecycle evidence",
+            refusal_route="NOT_APPLICABLE",
+            refusal_reason=None,
+        )
+    if _tokens_match(tokens, "local_write", "write_local", "filesystem_diff"):
+        return _settings_admin_mapping(
+            tier="T3",
+            safety_class=safety_class,
+            source="explicit local write evidence",
+            refusal_route="NOT_APPLICABLE",
+            refusal_reason=None,
+        )
+    if _tokens_match(tokens, "config_mutation", "config_diff", "configuration"):
+        return _settings_admin_mapping(
+            tier="T2",
+            safety_class=safety_class,
+            source="explicit config mutation evidence",
+            refusal_route="NOT_APPLICABLE",
+            refusal_reason=None,
+        )
+    return _settings_admin_mapping(
+        tier="TU",
+        safety_class=safety_class,
+        source="insufficient Settings/Admin tier evidence",
+        refusal_route="UNKNOWN_DRIFT_QUEUE",
+        refusal_reason="GATE_TIER_UNKNOWN",
+    )
+
+
 def build_runtime_render_model(
     package: LoadedPackage,
     *,
@@ -402,6 +755,7 @@ def build_runtime_render_model(
         ia_verdict=str(package.proof.get("ia_verdict", "UNKNOWN")),
         invariants=invariants,
         config=config or RuntimeConfig(),
+        settings_admin_runtime=build_settings_admin_runtime_summary(package),
     )
 
 
@@ -433,6 +787,26 @@ def render_runtime_snapshot(
     ]
     for key in sorted(model.invariants):
         lines.append(f"  {key}: {str(model.invariants[key]).lower()}")
+    settings = model.settings_admin_runtime
+    lines.extend(
+        (
+            "settings_admin_runtime:",
+            f"  surface_name: {settings.surface_name}",
+            f"  surface_kind: {settings.surface_kind}",
+            f"  source_artifact_path: {settings.source_artifact_path}",
+            f"  flow_group_count: {len(settings.flow_groups)}",
+            f"  flow_groups: {' | '.join(group['name'] for group in settings.flow_groups)}",
+            f"  row_count: {settings.row_count}",
+            f"  mapped_tier_counts: {json.dumps(settings.mapped_tier_counts, sort_keys=True)}",
+            f"  unknown_tier_count: {settings.unknown_tier_count}",
+            f"  refusal_counts: {json.dumps(settings.refusal_counts, sort_keys=True)}",
+            f"  gate_required_count: {settings.gate_required_count}",
+            f"  blocked_count: {settings.blocked_count}",
+            f"  open_downstream_owner: {settings.open_downstream_owner}",
+            f"  safe_for_claude_design: {settings.safe_for_claude_design}",
+            f"  READY_FOR_CLAUDE_DESIGN: {settings.ready_for_claude_design}",
+        )
+    )
     lines.extend(
         (
             "runtime_config:",
@@ -473,6 +847,7 @@ def runtime_snapshot_payload(
         "top_level_modes": list(model.top_level_modes),
         "global_surfaces": list(model.global_surfaces),
         "safe_action_tiers": list(model.safe_action_tiers),
+        "settings_admin_runtime": model.settings_admin_runtime.as_payload(),
         "artifact_provenance": [
             {
                 "name": artifact.name,
