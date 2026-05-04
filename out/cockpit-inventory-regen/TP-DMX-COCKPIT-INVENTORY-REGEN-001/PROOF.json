@@ -325,5 +325,5 @@
     "Root SYSTEM_*.md",
     "dopetask-canonical-spec.json or dopetask-cannonical-spec.json"
   ],
-  "cleanup_status": "PR_OPENED_PROOF_METADATA_CLEANUP_PENDING"
+  "cleanup_status": "PR_OPENED_PROOF_METADATA_PUSHED_WORKTREE_RETAINED_FOR_OPERATOR_INSPECTION"
 }
