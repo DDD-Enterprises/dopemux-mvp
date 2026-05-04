@@ -27,7 +27,7 @@
     "safe_for_claude_design": "NO"
   },
   "branch": "codex/cockpit-merge-stack-consolidate-001",
-  "cleanup_status": "WORKTREE_RETAINED_AFTER_PRECOMMIT_PENDING_COMMIT_AND_PR",
+  "cleanup_status": "PR_OPENED_PROOF_METADATA_PENDING_PUSH_WORKTREE_RETAINED",
   "codereview_status": {
     "evidence": "which codereview exited 1 with output: codereview not found",
     "fallback": "explicit diff/artifact review plus JSON parsing, checksum validation, ancestry checks, focused tests, boundary greps, and pre-commit",
@@ -35,9 +35,9 @@
     "tool": "codereview"
   },
   "created_at_utc": "2026-05-04T22:43:10Z",
-  "final_head_recording_policy": "Initial proof records pending commit/PR metadata; after PR creation, proof metadata may be updated in a follow-up commit while preserving generated artifact hashes and reporting final branch HEAD in closeout.",
+  "final_head_recording_policy": "PROOF.json records the first implementation commit dadc618f9a24e9eaae65ec45ae104407a709faa9 and PR https://github.com/DDD-Enterprises/dopemux-mvp/pull/572. This proof metadata update commit is reported in closeout and PR metadata rather than self-hashed inside implementation_commit_sha.",
   "head_before": "93702834fbb05963685ed4919c6d099040399426",
-  "implementation_commit_sha": "PENDING_UNCOMMITTED_ARTIFACTS",
+  "implementation_commit_sha": "dadc618f9a24e9eaae65ec45ae104407a709faa9",
   "merge_recommendation": {
     "mode": "MERGE_COMMIT_RECOMMENDED",
     "order": [
@@ -51,14 +51,16 @@
   },
   "mutation_statement": "No pull request merge, base retarget, rebase, force-push, or branch deletion operation was performed by this packet.",
   "packet_id": "TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001",
-  "pr_blocker": "PENDING_PR_CREATION_AFTER_VALIDATION",
-  "pr_url": null,
+  "pr_blocker": null,
+  "pr_number": 572,
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/572",
   "precommit_status": {
     "command": "pre-commit run --files <allowlisted files>",
     "exit_code": 0,
     "recorded_at_utc": "2026-05-04T22:48:18Z",
     "stdout_summary": "YAML frontmatter, documentation schema, prohibited patterns, prelude, markdownlint, whitespace, EOF, root hygiene, and related hooks passed; non-applicable hooks skipped."
   },
+  "proof_metadata_updated_at_utc": "2026-05-04T22:50:20Z",
   "readiness_verdict": "READY_WITH_RISKS_NEEDS_LEDGER_DECISION",
   "residual_risks": [
     "PR 569 carries accepted residual risks for Settings/Admin per-row tier mapping and remote mutation policy absence.",
