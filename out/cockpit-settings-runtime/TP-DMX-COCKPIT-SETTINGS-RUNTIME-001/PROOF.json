@@ -8,10 +8,19 @@
   "base_branch": "codex/cockpit-runtime-render-001",
   "base_head": "9ad522df341375b7fede75eaa8e43e1f44097b41",
   "head_before": "9ad522df341375b7fede75eaa8e43e1f44097b41",
-  "implementation_commit_sha": "PENDING_FIRST_COMMIT",
+  "implementation_commit_sha": "8599eae672802d85b7c0d4dfae3d4477381b7ab4",
   "final_head_recording_policy": "If proof metadata is updated after the implementation commit, this file records implementation_commit_sha and uses this policy to avoid self-referential final-head churn.",
-  "pr_url": null,
-  "pr_blocker": "PENDING_PR_CREATION",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/569",
+  "pr_blocker": null,
+  "pr": {
+    "number": 569,
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/569",
+    "state": "OPEN",
+    "is_draft": false,
+    "base": "codex/cockpit-runtime-render-001",
+    "head": "codex/cockpit-settings-runtime-001",
+    "head_ref_oid_at_creation": "8599eae672802d85b7c0d4dfae3d4477381b7ab4"
+  },
   "tp_path": "task-packets/generated/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001.json",
   "accepted_inputs": {
     "package_dir": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA",
@@ -150,6 +159,11 @@
       "command": "pre-commit run --files src/dopemux/ui/cockpit/runtime_contract.py tests/unit/dopemux/ui/cockpit/test_runtime_contract.py tests/unit/test_cockpit_cli.py task-packets/generated/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001.json task-packets/INDEX.md out/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/PROOF.json proof/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/README.md",
       "exit_code": 0,
       "output_summary": "hooks passed; check yaml skipped no files"
+    },
+    {
+      "command": "gh pr view 569 --json number,url,state,isDraft,baseRefName,headRefName,headRefOid",
+      "exit_code": 0,
+      "output_summary": "PR 569 open, ready, base codex/cockpit-runtime-render-001, head codex/cockpit-settings-runtime-001"
     }
   ],
   "residual_risks": [
@@ -177,5 +191,5 @@
       "sha256": "reported externally to avoid self-referential proof churn"
     }
   ],
-  "cleanup_status": "PENDING"
+  "cleanup_status": "proof metadata cleanup recorded here; final push status is reported in closeout to avoid self-referential proof churn"
 }
