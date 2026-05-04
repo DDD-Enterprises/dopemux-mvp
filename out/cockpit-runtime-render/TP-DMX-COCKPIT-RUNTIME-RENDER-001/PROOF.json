@@ -6,6 +6,126 @@
   "branch": "codex/cockpit-runtime-render-001",
   "base_branch": "pack/cockpit-pack-remediate-006-ia",
   "base_head": "d23e4d4de8d686e875f131b40e53a07d4f41dd25",
+  "closeout_metadata": {
+    "head_before": "d23e4d4de8d686e875f131b40e53a07d4f41dd25",
+    "head_after": "ea640b47b333855c5d25cb61b3939402d55917fd",
+    "commit_sha": "ea640b47b333855c5d25cb61b3939402d55917fd",
+    "final_local_head": "ea640b47b333855c5d25cb61b3939402d55917fd",
+    "final_origin_head": "ea640b47b333855c5d25cb61b3939402d55917fd",
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/568",
+    "pr_number": 568,
+    "pr_state": "open",
+    "pr_is_draft": false,
+    "pr_base": "pack/cockpit-pack-remediate-006-ia",
+    "pr_head": "codex/cockpit-runtime-render-001",
+    "files_changed": [
+      "out/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/PROOF.json",
+      "proof/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/README.md",
+      "src/dopemux/commands/cockpit_commands.py",
+      "src/dopemux/ui/cockpit/app.py",
+      "src/dopemux/ui/cockpit/runtime_contract.py",
+      "task-packets/generated/TP-DMX-COCKPIT-RUNTIME-RENDER-001.json",
+      "task-packets/INDEX.md",
+      "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+      "tests/unit/test_cockpit_cli.py"
+    ],
+    "final_status": "pushed_pr_open",
+    "final_worktree_status": {
+      "before_proof_cleanup": "clean",
+      "before_proof_cleanup_output": "## codex/cockpit-runtime-render-001...origin/codex/cockpit-runtime-render-001",
+      "after_proof_metadata_update_before_commit": "only PROOF.json modified",
+      "after_cleanup_closeout": "reported by cleanup closeout after metadata commit and push"
+    },
+    "validation_commands": [
+      {
+        "command": "git ls-remote --heads origin pack/cockpit-pack-remediate-006-ia",
+        "exit_code": 0,
+        "output_summary": "d23e4d4de8d686e875f131b40e53a07d4f41dd25 refs/heads/pack/cockpit-pack-remediate-006-ia"
+      },
+      {
+        "command": "python -m json.tool out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PACKAGE_REMEDIATION_INDEX.json >/dev/null",
+        "exit_code": 0
+      },
+      {
+        "command": "python -m json.tool out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PROOF.json >/dev/null",
+        "exit_code": 0
+      },
+      {
+        "command": "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-RUNTIME-RENDER-001.json >/dev/null",
+        "exit_code": 0
+      },
+      {
+        "command": "python -m json.tool out/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/PROOF.json >/dev/null",
+        "exit_code": 0
+      },
+      {
+        "command": "manual TP schema check for required root fields, required values, PAL chain, and step validation fields",
+        "exit_code": 0,
+        "output": "manual TP schema check passed"
+      },
+      {
+        "command": "python -m compileall -q src/dopemux tests",
+        "exit_code": 0
+      },
+      {
+        "command": "python -m pytest tests/unit/dopemux/ui/cockpit -q",
+        "exit_code": 0,
+        "output_summary": "44 passed; warning: unknown pytest asyncio_mode config option"
+      },
+      {
+        "command": "python -m pytest tests/unit/test_cockpit_cli.py -q",
+        "exit_code": 0,
+        "output_summary": "5 passed; warning: unknown pytest asyncio_mode config option"
+      },
+      {
+        "command": "grep -R -E \"safe_for_claude_design: NO|READY_FOR_CLAUDE_DESIGN: not approved\" -n src/dopemux tests out/cockpit-runtime-render proof/cockpit-runtime-render || true",
+        "exit_code": 0
+      },
+      {
+        "command": "! grep -R -E \"READY_FOR_CLAUDE_DESIGN:\\u0020approved|safe_for_claude_design:\\u0020YES|Claude Design upload\\u0020allowed|T4\\u0020authorized|runtime execution\\u0020implemented\" -n src/dopemux tests out/cockpit-runtime-render proof/cockpit-runtime-render",
+        "exit_code": 0,
+        "encoding_note": "JSON source escapes spaces inside forbidden positive phrases so repository boundary greps do not self-trigger; parsed JSON value preserves the command."
+      },
+      {
+        "command": "! grep -R -E \"subprocess|shell=True|os\\.system|requests|httpx|urllib|socket|docker|kubectl|gh pr create|git push\" -n src/dopemux/ui/cockpit src/dopemux/commands/cockpit_commands.py tests/unit/dopemux/ui/cockpit tests/unit/test_cockpit_cli.py",
+        "exit_code": 0
+      },
+      {
+        "command": "git diff --check",
+        "exit_code": 0
+      },
+      {
+        "command": "git diff --cached --check",
+        "exit_code": 0
+      },
+      {
+        "command": "pre-commit run --files src/dopemux/commands/cockpit_commands.py src/dopemux/ui/cockpit/app.py src/dopemux/ui/cockpit/runtime_contract.py tests/unit/dopemux/ui/cockpit/test_runtime_contract.py tests/unit/test_cockpit_cli.py task-packets/generated/TP-DMX-COCKPIT-RUNTIME-RENDER-001.json task-packets/INDEX.md out/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/PROOF.json proof/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/README.md",
+        "exit_code": 0
+      }
+    ],
+    "proof_artifacts": [
+      {
+        "path": "out/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/PROOF.json",
+        "sha256": "d00b53b1af72945ef369c59bacfb7b96acc4e740e6efa32832a60e44c72153de",
+        "sha256_scope": "pre-closeout-metadata-repair PROOF.json; post-repair PROOF.json sha256 is emitted by cleanup closeout because embedding it would change this file"
+      },
+      {
+        "path": "proof/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/README.md",
+        "sha256": "9fb4fe238a0f63d489b50c9cf720f67f72ca782edf773830b0a3a3e241c89725",
+        "sha256_scope": "proof marker file"
+      }
+    ],
+    "preserved_boundaries": {
+      "safe_for_claude_design": "NO",
+      "READY_FOR_CLAUDE_DESIGN": "not approved",
+      "no_final_screens": true,
+      "no_claude_design_upload": true,
+      "no_runtime_action_execution": true,
+      "no_t4_remote_mutation": true,
+      "no_live_service_adapters": true,
+      "no_canonical_writes": true
+    }
+  },
   "package_dir": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA",
   "package_proof": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PROOF.json",
   "governance_header_lines": [
