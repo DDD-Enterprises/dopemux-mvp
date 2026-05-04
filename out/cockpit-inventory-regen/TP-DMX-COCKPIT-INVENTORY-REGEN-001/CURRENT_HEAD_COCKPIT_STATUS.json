@@ -1,0 +1,123 @@
+{
+  "schema_version": "dopemux.cockpit.current_head_status.v1",
+  "packet_id": "TP-DMX-COCKPIT-INVENTORY-REGEN-001",
+  "generated_at_utc": "2026-05-04T21:53:46Z",
+  "current_head": "b6b89fae076a669952ef1178d7d7d17a3e01eb7b",
+  "branch": "codex/cockpit-inventory-regen-001",
+  "base_branch": "codex/cockpit-unknown-drift-001",
+  "pr_base": "codex/cockpit-unknown-drift-001",
+  "accepted_upstream_pr_chain": [
+    {
+      "number": 568,
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/568",
+      "head": "codex/cockpit-runtime-render-001",
+      "base": "pack/cockpit-pack-remediate-006-ia",
+      "status_from_artifact": "accepted with risks"
+    },
+    {
+      "number": 569,
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/569",
+      "head": "codex/cockpit-settings-runtime-001",
+      "base": "codex/cockpit-runtime-render-001",
+      "status_from_artifact": "accepted with risks"
+    },
+    {
+      "number": 570,
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/570",
+      "head": "codex/cockpit-unknown-drift-001",
+      "base": "codex/cockpit-settings-runtime-001",
+      "status_from_artifact": "audit PASS; Ledger request ACCEPT_WITH_RISKS",
+      "head_ref_oid_verified": "b6b89fae076a669952ef1178d7d7d17a3e01eb7b"
+    }
+  ],
+  "runtime_model_status": {
+    "five_top_level_modes": [
+      "PM",
+      "Implementer",
+      "Overview",
+      "Services",
+      "Events"
+    ],
+    "four_global_surfaces": [
+      "Command Palette",
+      "Settings/Admin/Runtime",
+      "Safe Actions / Proof Gate",
+      "Unknown / Drift Queue"
+    ],
+    "settings_admin_summary_present": true,
+    "unknown_drift_summary_present": true,
+    "safe_action_tiers_present": true,
+    "safe_action_tiers": [
+      "T0",
+      "T0i",
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "TX",
+      "TU"
+    ],
+    "t4_blocked": true,
+    "tx_tu_never_executable": true,
+    "claude_design_blocked": true,
+    "command_palette_broker_only": true,
+    "unknown_drift_does_not_execute": true,
+    "runtime_reclassification_disabled": true,
+    "no_live_service_adapters": true,
+    "no_canonical_writes": true
+  },
+  "current_inventory_status": {
+    "total_inventory_rows": 405,
+    "per_row_records_available": false,
+    "aggregate_records_used": true,
+    "settings_admin_row_count": 62,
+    "unknown_drift_lower_bound_queue_count": 487,
+    "t4_policy_missing_count": 1,
+    "stale_proof_count": 1
+  },
+  "remaining_blockers": [
+    {
+      "blocker": "remote-mutation policy",
+      "status": "MISSING",
+      "effect": "T4 remains blocked"
+    },
+    {
+      "blocker": "Claude Design final screens",
+      "status": "BLOCKED",
+      "effect": "No final screens or upload approval"
+    },
+    {
+      "blocker": "unresolved UNKNOWN inventory classes",
+      "status": "PRESENT",
+      "effect": "Unknown/Drift and reclassification packets still required"
+    },
+    {
+      "blocker": "per-row inventory data gaps",
+      "status": "PRESENT",
+      "effect": "Aggregate records preserve counts without row-level claims"
+    },
+    {
+      "blocker": "root authority docs and schema gaps",
+      "status": "PRESENT",
+      "effect": "Root RULES.md, TRUTH_*.md, SYSTEM_*.md, and dopetask canonical schema are absent in this worktree"
+    },
+    {
+      "blocker": "runtime dopemux help resolution",
+      "status": "UNKNOWN",
+      "effect": "Accepted residual remains unresolved because live runtime discovery was out of scope"
+    }
+  ],
+  "governance": {
+    "safe_for_claude_design": "NO",
+    "READY_FOR_CLAUDE_DESIGN": "not approved",
+    "no_final_screens": true,
+    "no_claude_design_upload": true,
+    "no_runtime_action_execution": true,
+    "no_t4_remote_mutation": true,
+    "no_live_service_adapters": true,
+    "no_canonical_writes": true,
+    "no_runtime_reclassification": true
+  }
+}
