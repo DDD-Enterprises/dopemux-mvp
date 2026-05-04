@@ -1,0 +1,133 @@
+{
+  "entries": [
+    {
+      "audit_verdict": "PASS",
+      "classification": "READY_WITH_RISKS",
+      "mergeable": "MERGEABLE",
+      "notes": [
+        "Merge action requires a later Ledger authorization.",
+        "Current packet is artifact-only and performed no PR/base/branch mutation."
+      ],
+      "packet_id": "TP-DMX-COCKPIT-RUNTIME-RENDER-001",
+      "pr_number": 568,
+      "review_decision": "NOT_REPORTED",
+      "risks": [
+        "T4 remains blocked until a separate remote-mutation policy packet exists and is accepted.",
+        "Settings/Admin per-row tier mapping remains owned by TP-DMX-COCKPIT-SETTINGS-RUNTIME-001.",
+        "Unknown/Drift Queue full runtime surface remains owned by TP-DMX-COCKPIT-UNKNOWN-DRIFT-001.",
+        "Inventory regeneration against current HEAD remains separate.",
+        "Full dopemux.cli module invocation in this local environment is blocked by missing optional litellm dependency; focused Click command tests exercise the Cockpit command group directly."
+      ],
+      "status_check_counts": {
+        "SKIPPED": 3,
+        "SUCCESS": 12
+      }
+    },
+    {
+      "audit_verdict": "PASS_WITH_RISKS",
+      "classification": "READY_WITH_RISKS",
+      "mergeable": "MERGEABLE",
+      "notes": [
+        "Merge action requires a later Ledger authorization.",
+        "Current packet is artifact-only and performed no PR/base/branch mutation."
+      ],
+      "packet_id": "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001",
+      "pr_number": 569,
+      "review_decision": "NOT_REPORTED",
+      "risks": [
+        "Per-row Settings/Admin tier mapping remains UNKNOWN for the accepted 62-row package inventory because the accepted package provides flow-group defaults, not complete per-row proof.",
+        "T4 remains refused until a separate remote-mutation policy exists and is accepted.",
+        "Blocked row count inside Settings/Admin remains UNKNOWN because only total Settings/Admin row count is proven by the accepted package artifacts.",
+        "Gate-required count inside Settings/Admin remains UNKNOWN until per-row inventory regeneration or row evidence exists.",
+        "Unknown/Drift Queue full runtime surface remains owned by TP-DMX-COCKPIT-UNKNOWN-DRIFT-001.",
+        "Inventory regeneration against current HEAD remains a separate packet."
+      ],
+      "status_check_counts": {
+        "SKIPPED": 3,
+        "SUCCESS": 12
+      }
+    },
+    {
+      "audit_verdict": "PASS",
+      "classification": "READY_WITH_RISKS",
+      "mergeable": "MERGEABLE",
+      "notes": [
+        "Merge action requires a later Ledger authorization.",
+        "Current packet is artifact-only and performed no PR/base/branch mutation."
+      ],
+      "packet_id": "TP-DMX-COCKPIT-UNKNOWN-DRIFT-001",
+      "pr_number": 570,
+      "review_decision": "NOT_REPORTED",
+      "risks": [
+        "Inventory regeneration against current HEAD remains a separate packet; queue counts are aggregate lower bounds from accepted artifacts.",
+        "Accepted source artifacts do not expose per-row data for every queue class, so route-only refusal classes use UNKNOWN aggregate counts.",
+        "Remote-mutation policy remains absent; T4 remains refused.",
+        "Promotions, demotions, and reclassification remain packet-owned outside the runtime renderer."
+      ],
+      "status_check_counts": {
+        "SKIPPED": 10,
+        "SUCCESS": 12
+      }
+    },
+    {
+      "audit_verdict": "PASS",
+      "classification": "READY_WITH_RISKS",
+      "mergeable": "MERGEABLE",
+      "notes": [
+        "Merge action requires a later Ledger authorization.",
+        "Current packet is artifact-only and performed no PR/base/branch mutation."
+      ],
+      "packet_id": "TP-DMX-COCKPIT-INVENTORY-REGEN-001",
+      "pr_number": 571,
+      "review_decision": "NOT_REPORTED",
+      "risks": [
+        "Per-row command inventory is unavailable in accepted artifacts, so this packet emits aggregate records.",
+        "Settings/Admin per-row tier mapping remains UNKNOWN for 62 rows.",
+        "Remote-mutation policy remains absent; T4 remains refused.",
+        "Unknown/Drift lower-bound queue remains 487 and requires downstream packet decisions.",
+        "Root RULES.md, TRUTH_*.md, SYSTEM_*.md, and dopetask canonical schema files were absent in this worktree.",
+        "Runtime dopemux help resolution remains an accepted residual UNKNOWN because live runtime discovery was out of scope."
+      ],
+      "status_check_counts": {
+        "SKIPPED": 10,
+        "SUCCESS": 12
+      }
+    }
+  ],
+  "generated_at_utc": "2026-05-04T22:43:10Z",
+  "governance": {
+    "READY_FOR_CLAUDE_DESIGN": "not approved",
+    "no_canonical_writes": true,
+    "no_claude_design_upload": true,
+    "no_final_screens": true,
+    "no_live_service_adapters": true,
+    "no_runtime_action_execution": true,
+    "no_runtime_reclassification": true,
+    "no_t4_remote_mutation": true,
+    "safe_for_claude_design": "NO"
+  },
+  "merge_commit_recommendation": "MERGE_COMMIT_RECOMMENDED",
+  "merge_mode_reason": "Merge commits preserve per-packet implementation and proof metadata commits; squash would flatten the audit trail.",
+  "merge_order_recommendation": [
+    568,
+    569,
+    570,
+    571
+  ],
+  "mutation_statement": "No pull request merge, base retarget, rebase, force-push, or branch deletion operation was performed by this packet.",
+  "operator_command_candidates_are_handoff_only": true,
+  "overall_readiness_verdict": "READY_WITH_RISKS_NEEDS_LEDGER_DECISION",
+  "packet_id": "TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001",
+  "proof_to_preserve_after_each_merge": [
+    "GitHub PR URL, final head OID, merge result OID, and CI status rollup",
+    "Existing out/cockpit-* proof artifacts and proof/cockpit-* markers",
+    "A post-merge git ancestry check and targeted Cockpit validation result",
+    "A Ledger decision reference authorizing the merge executor"
+  ],
+  "retargeting_needed_after_each_merge": "NEEDS_OPERATOR_DECISION",
+  "retargeting_note": "If the operator intends all four PRs to land into the pack base branch through GitHub PRs, downstream PR bases likely need Ledger-authorized retargeting or an equivalent Ledger-approved stack-drain method after each upstream merge.",
+  "schema_version": "dopemux.cockpit.merge_stack.readiness.v1",
+  "sequential_merge_reason": "Each downstream PR base is the previous PR head branch, so consolidation must preserve the accepted packet order.",
+  "sequential_merge_required": true,
+  "squash_merge_recommendation": "NOT_RECOMMENDED_FOR_AUDIT_STACK"
+}
