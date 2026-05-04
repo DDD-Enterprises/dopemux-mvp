@@ -27,7 +27,7 @@
     "safe_for_claude_design": "NO"
   },
   "branch": "codex/cockpit-merge-stack-consolidate-001",
-  "cleanup_status": "PR_OPENED_PROOF_METADATA_PENDING_PUSH_WORKTREE_RETAINED",
+  "cleanup_status": "PR_OPENED_WORKTREE_RETAINED_FOR_OPERATOR_INSPECTION",
   "codereview_status": {
     "evidence": "which codereview exited 1 with output: codereview not found",
     "fallback": "explicit diff/artifact review plus JSON parsing, checksum validation, ancestry checks, focused tests, boundary greps, and pre-commit",
