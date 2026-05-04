@@ -7,10 +7,11 @@
   "branch": "pack/cockpit-pack-remediate-006-ia",
   "base_branch": "audit/cockpit-ia-reconcile-001",
   "head_before_packet": "88c188d551719b60e6a560a04b6da2939b27d34b",
-  "head_after_packet": "1c2c1355c69d16a2ee696d589804b3473a43bda9",
-  "commit_sha": "1c2c1355c69d16a2ee696d589804b3473a43bda9",
+  "implementation_commit_sha": "1c2c1355c69d16a2ee696d589804b3473a43bda9",
+  "prior_proof_commit_sha": "bdc457ea3c277f515be3eea4bb024b9babd4ef58",
+  "final_head_recording_policy": "Final HEAD is recorded in closeout report after this cleanup commit; PROOF.json records implementation and prior proof commits to avoid self-referential checksum drift.",
   "pr_url": null,
-  "pr_blocker": "Base branch audit/cockpit-ia-reconcile-001 does not exist on origin (it is local-only, at the same commit as origin/main). Pushing the base branch to origin was denied by the operator's permission policy as a scope escalation beyond this artifact-only handoff. To open the PR, the operator must either (a) push audit/cockpit-ia-reconcile-001 to origin themselves, or (b) retarget the PR base to main (since audit/cockpit-ia-reconcile-001 is at origin/main HEAD = 88c188d551719b60e6a560a04b6da2939b27d34b). The branch pack/cockpit-pack-remediate-006-ia is pushed to origin at sha 1c2c1355c69d16a2ee696d589804b3473a43bda9 and is ready for the operator to open the PR via either path.",
+  "pr_blocker": "Base branch audit/cockpit-ia-reconcile-001 does not exist on origin; pushing the base branch was denied as a scope escalation beyond the artifact-only handoff. The branch pack/cockpit-pack-remediate-006-ia is pushed to origin and is ready to PR. Operator may either (a) push audit/cockpit-ia-reconcile-001 to origin manually, or (b) retarget the PR base to main (audit/cockpit-ia-reconcile-001 is at origin/main HEAD = 88c188d551719b60e6a560a04b6da2939b27d34b). No PR has been created.",
   "worktree": "/Users/hue/code/dopemux-worktrees/dopemux-cockpit-ia-reconcile-001",
   "upstream_packets": [
     {
