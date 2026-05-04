@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+import hashlib
 from pathlib import Path
 
 import pytest
@@ -13,11 +14,14 @@ from dopemux.ui.cockpit.runtime_contract import (
     TOP_LEVEL_MODES,
     PackageLoadError,
     RuntimeConfig,
+    build_settings_admin_runtime_summary,
     build_gate_receipt,
     build_runtime_render_model,
     evaluate_safe_action_preflight,
     load_package_artifacts,
+    map_settings_admin_row_to_gate_tier,
     render_runtime_snapshot,
+    runtime_snapshot_payload,
 )
 
 
@@ -78,6 +82,10 @@ def _candidate(**overrides: object) -> dict[str, object]:
     return data
 
 
+def _sha(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
 def test_package_loader_fails_closed_on_missing_required_files(tmp_path: Path):
     with pytest.raises(PackageLoadError, match=r"\[BLOCKER\]"):
         load_package_artifacts(tmp_path)
@@ -124,6 +132,8 @@ def test_runtime_render_model_preserves_modes_surfaces_and_tiers():
     assert TOP_LEVEL_MODES == model.top_level_modes
     assert GLOBAL_SURFACES == model.global_surfaces
     assert SAFE_ACTION_TIERS == model.safe_action_tiers
+    assert "Settings/Admin/Runtime" not in model.top_level_modes
+    assert "Settings/Admin/Runtime" in model.global_surfaces
 
 
 def test_runtime_snapshot_preserves_governance_and_boundaries():
@@ -137,6 +147,192 @@ def test_runtime_snapshot_preserves_governance_and_boundaries():
     assert "cross-cutting and non-executing here" in output
     assert "T4 blocked until remote mutation policy exists" in output
     assert "TX/TU never executable" in output
+    assert "settings_admin_runtime:" in output
+    assert "surface_name: Settings/Admin/Runtime" in output
+    assert "flow_group_count: 9" in output
+    assert "row_count: 62" in output
+    assert "unknown_tier_count: 62" in output
+
+
+def test_settings_admin_summary_uses_package_handoff_without_mutating_artifact():
+    source = PACKAGE_DIR / "SETTINGS_ADMIN_RUNTIME_PACKAGE_HANDOFF.md"
+    before = _sha(source)
+    package = load_package_artifacts(PACKAGE_DIR)
+    summary = build_settings_admin_runtime_summary(package)
+    after = _sha(source)
+    assert before == after
+    assert summary.surface_kind == "secondary/global surface"
+    assert summary.surface_name == "Settings/Admin/Runtime"
+    assert summary.row_count == 62
+    assert summary.unknown_tier_count == 62
+    assert summary.gate_required_count == "UNKNOWN"
+    assert summary.blocked_count == "UNKNOWN"
+    assert summary.open_downstream_owner == "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001"
+    assert len(summary.flow_groups) == 9
+    assert "SETTINGS_ADMIN_RUNTIME_PACKAGE_HANDOFF.md" in summary.source_artifact_path
+
+
+def test_runtime_snapshot_payload_includes_settings_admin_summary():
+    payload = runtime_snapshot_payload(PACKAGE_DIR)
+    settings = payload["settings_admin_runtime"]
+    assert settings["surface_name"] == "Settings/Admin/Runtime"
+    assert settings["surface_kind"] == "secondary/global surface"
+    assert settings["row_count"] == 62
+    assert settings["unknown_tier_count"] == 62
+    assert settings["mapped_tier_counts"]["TU"] == 0
+    assert settings["refusal_counts"]["UNKNOWN_DRIFT_QUEUE"] == 62
+    assert settings["safe_for_claude_design"] == "NO"
+    assert settings["READY_FOR_CLAUDE_DESIGN"] == "not approved"
+    assert len(settings["flow_groups"]) == 9
+
+
+@pytest.mark.parametrize(
+    ("row", "tier", "can_confirm", "gate_required", "route", "reason"),
+    [
+        (
+            {"safety_class": "DISPLAY_ONLY"},
+            "T0",
+            False,
+            False,
+            "NOT_APPLICABLE",
+            None,
+        ),
+        (
+            {"safety_class": "INSPECT_ACTION"},
+            "T0i",
+            False,
+            True,
+            "NOT_APPLICABLE",
+            None,
+        ),
+        (
+            {
+                "safety_class": "CONFIRM_REQUIRED",
+                "side_effect_kind": "config_mutation",
+            },
+            "T2",
+            True,
+            True,
+            "NOT_APPLICABLE",
+            None,
+        ),
+        (
+            {
+                "safety_class": "CONFIRM_REQUIRED",
+                "side_effect_kind": "local_write",
+            },
+            "T3",
+            True,
+            True,
+            "NOT_APPLICABLE",
+            None,
+        ),
+        (
+            {
+                "safety_class": "CONFIRM_REQUIRED",
+                "side_effect_kind": "remote_mutation",
+            },
+            "T4",
+            False,
+            True,
+            "UNKNOWN_DRIFT_QUEUE",
+            "REMOTE_MUTATION_POLICY_MISSING",
+        ),
+        (
+            {
+                "safety_class": "CONFIRM_REQUIRED",
+                "side_effect_kind": "service_start_stop",
+            },
+            "T5",
+            True,
+            True,
+            "NOT_APPLICABLE",
+            None,
+        ),
+        (
+            {
+                "safety_class": "CONFIRM_REQUIRED",
+                "side_effect_kind": "execution_handoff",
+            },
+            "T6",
+            True,
+            True,
+            "NOT_APPLICABLE",
+            None,
+        ),
+        (
+            {"safety_class": "BLOCKED_IN_COCKPIT"},
+            "TX",
+            False,
+            False,
+            "SHOW_BLOCKED_REASON",
+            "BLOCKED_IN_COCKPIT",
+        ),
+        (
+            {"safety_class": "UNKNOWN"},
+            "TU",
+            False,
+            False,
+            "UNKNOWN_DRIFT_QUEUE",
+            "UNKNOWN_CLASS",
+        ),
+    ],
+)
+def test_settings_admin_row_tier_mapping_from_explicit_evidence(
+    row: dict[str, object],
+    tier: str,
+    can_confirm: bool,
+    gate_required: bool,
+    route: str,
+    reason: str | None,
+):
+    mapping = map_settings_admin_row_to_gate_tier(row)
+    assert mapping.tier == tier
+    assert mapping.can_confirm is can_confirm
+    assert mapping.gate_required is gate_required
+    assert mapping.refusal_route == route
+    assert mapping.refusal_reason == reason
+    assert mapping.execution_status == "not_attempted"
+
+
+def test_settings_admin_insufficient_evidence_maps_to_unknown_drift_queue():
+    mapping = map_settings_admin_row_to_gate_tier({"safety_class": "CONFIRM_REQUIRED"})
+    assert mapping.tier == "TU"
+    assert mapping.can_confirm is False
+    assert mapping.gate_required is False
+    assert mapping.refusal_route == "UNKNOWN_DRIFT_QUEUE"
+    assert mapping.refusal_reason == "GATE_TIER_UNKNOWN"
+
+
+def test_settings_admin_blocked_rows_never_confirm():
+    mapping = map_settings_admin_row_to_gate_tier(
+        {"safety_class": "BLOCKED_IN_COCKPIT", "side_effect_kind": "config_mutation"}
+    )
+    assert mapping.tier == "TX"
+    assert mapping.can_confirm is False
+    assert mapping.gate_required is False
+    assert mapping.refusal_route == "SHOW_BLOCKED_REASON"
+
+
+def test_settings_admin_t4_maps_but_refuses_until_remote_policy_exists():
+    mapping = map_settings_admin_row_to_gate_tier(
+        {"safety_class": "CONFIRM_REQUIRED", "side_effect_kind": "remote_mutation"}
+    )
+    assert mapping.tier == "T4"
+    assert mapping.can_confirm is False
+    assert mapping.gate_required is True
+    assert mapping.remote_policy_required is True
+    assert mapping.refusal_reason == "REMOTE_MUTATION_POLICY_MISSING"
+
+
+def test_confirmable_settings_admin_rows_require_safe_action_gate():
+    for side_effect in ("config_mutation", "local_write", "service_start_stop", "execution_handoff"):
+        mapping = map_settings_admin_row_to_gate_tier(
+            {"safety_class": "CONFIRM_REQUIRED", "side_effect_kind": side_effect}
+        )
+        assert mapping.can_confirm is True
+        assert mapping.gate_required is True
+        assert mapping.execution_status == "not_attempted"
 
 
 def test_preflight_allows_confirm_for_resolved_executable_candidate():

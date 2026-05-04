@@ -54,6 +54,9 @@ def test_runtime_render_text_snapshot_preserves_blocked_governance_state():
     assert "READY_FOR_CLAUDE_DESIGN: not approved" in output
     assert "top_level_modes: PM | Implementer | Overview | Services | Events" in output
     assert "Command Palette broker-only" in output
+    assert "settings_admin_runtime:" in output
+    assert "surface_name: Settings/Admin/Runtime" in output
+    assert "unknown_tier_count: 62" in output
     assert "T4 blocked until remote mutation policy exists" in output
     assert "TX/TU never executable" in output
 
@@ -87,6 +90,9 @@ def test_runtime_render_json_snapshot_preserves_modes_and_surfaces():
     assert payload["artifact_provenance"][0]["actual_sha256"]
     assert payload["safe_for_claude_design"] == "NO"
     assert payload["READY_FOR_CLAUDE_DESIGN"] == "not approved"
+    assert payload["settings_admin_runtime"]["surface_name"] == "Settings/Admin/Runtime"
+    assert payload["settings_admin_runtime"]["row_count"] == 62
+    assert payload["settings_admin_runtime"]["unknown_tier_count"] == 62
 
 
 def test_runtime_render_output_has_no_forbidden_positive_claims():
