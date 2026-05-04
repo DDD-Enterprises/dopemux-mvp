@@ -7,8 +7,8 @@
   "base_branch": "codex/cockpit-unknown-drift-001",
   "base_head": "b6b89fae076a669952ef1178d7d7d17a3e01eb7b",
   "head_before": "b6b89fae076a669952ef1178d7d7d17a3e01eb7b",
-  "implementation_commit_sha": "PENDING_COMMIT",
-  "pr_url": "PENDING_PR",
+  "implementation_commit_sha": "e9e7e286422304266d98717a176775d6428689f1",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/571",
   "pr_blocker": null,
   "codereview_status": {
     "tool": "codereview",
@@ -21,7 +21,7 @@
     "exit_code": 0,
     "stdout_summary": "Validate YAML frontmatter, documentation schema, prohibited documentation patterns, prelude, markdownlint, whitespace, EOF, root hygiene, and related hooks passed; non-applicable hooks skipped."
   },
-  "final_head_recording_policy": "PROOF.json will record the first implementation commit and PR URL after they exist. If a proof metadata cleanup commit follows, the final branch HEAD is reported in closeout and PR metadata rather than self-hashed inside PROOF.json.",
+  "final_head_recording_policy": "PROOF.json records the first implementation commit e9e7e286422304266d98717a176775d6428689f1 and PR https://github.com/DDD-Enterprises/dopemux-mvp/pull/571. The proof metadata cleanup commit and final branch HEAD are reported in closeout and PR metadata rather than self-hashed inside PROOF.json.",
   "tp_path": "task-packets/generated/TP-DMX-COCKPIT-INVENTORY-REGEN-001.json",
   "files_changed": [
     "task-packets/generated/TP-DMX-COCKPIT-INVENTORY-REGEN-001.json",
@@ -303,7 +303,7 @@
     },
     {
       "path": "proof/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/README.md",
-      "sha256": "3f6fe44e08470b8940368689250f5302cfe7de1b42ad84eaff45bf4fe131f968"
+      "sha256": "21adcd61bae9e791e1cebe8cb7bd78afc040ce6fb6c1057d9d080d0f23a1ae1b"
     }
   ],
   "residual_risks": [
@@ -325,5 +325,5 @@
     "Root SYSTEM_*.md",
     "dopetask-canonical-spec.json or dopetask-cannonical-spec.json"
   ],
-  "cleanup_status": "PENDING_COMMIT_PR_AND_FINAL_CLOSEOUT"
+  "cleanup_status": "PR_OPENED_PROOF_METADATA_CLEANUP_PENDING"
 }
