@@ -57,6 +57,11 @@ def test_runtime_render_text_snapshot_preserves_blocked_governance_state():
     assert "settings_admin_runtime:" in output
     assert "surface_name: Settings/Admin/Runtime" in output
     assert "unknown_tier_count: 62" in output
+    assert "unknown_drift_queue:" in output
+    assert "surface_name: Unknown / Drift Queue" in output
+    assert "settings_unknown_tier_count: 62" in output
+    assert "execution_allowed: false" in output
+    assert "runtime_reclassification_allowed: false" in output
     assert "T4 blocked until remote mutation policy exists" in output
     assert "TX/TU never executable" in output
 
@@ -93,6 +98,12 @@ def test_runtime_render_json_snapshot_preserves_modes_and_surfaces():
     assert payload["settings_admin_runtime"]["surface_name"] == "Settings/Admin/Runtime"
     assert payload["settings_admin_runtime"]["row_count"] == 62
     assert payload["settings_admin_runtime"]["unknown_tier_count"] == 62
+    assert payload["unknown_drift_queue"]["surface_name"] == "Unknown / Drift Queue"
+    assert payload["unknown_drift_queue"]["surface_kind"] == "secondary/global surface"
+    assert payload["unknown_drift_queue"]["settings_unknown_tier_count"] == 62
+    assert payload["unknown_drift_queue"]["execution_allowed"] is False
+    assert payload["unknown_drift_queue"]["runtime_reclassification_allowed"] is False
+    assert payload["unknown_drift_queue"]["requires_packet_for_resolution"] is True
 
 
 def test_runtime_render_output_has_no_forbidden_positive_claims():

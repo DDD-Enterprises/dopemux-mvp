@@ -1,0 +1,181 @@
+{
+  "schema_version": "dopemux.cockpit.unknown_drift.proof.v1",
+  "packet_id": "TP-DMX-COCKPIT-UNKNOWN-DRIFT-001",
+  "proof_role": "implementation proof for local-only Cockpit Unknown / Drift Queue runtime primitives",
+  "created_at_utc": "2026-05-04T21:13:30Z",
+  "worktree": "/Users/hue/code/dopemux-worktrees/dopemux-cockpit-unknown-drift-001",
+  "branch": "codex/cockpit-unknown-drift-001",
+  "base_branch": "codex/cockpit-settings-runtime-001",
+  "base_head": "d27c4995f22ceba646763759fa4a8f53d547ac67",
+  "head_before": "d27c4995f22ceba646763759fa4a8f53d547ac67",
+  "implementation_commit_sha": "PENDING_IMPLEMENTATION_COMMIT",
+  "pr_url": null,
+  "pr_blocker": "PENDING_PUSH_AND_PR_CREATE",
+  "tp_path": "task-packets/generated/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001.json",
+  "files_changed": [
+    "src/dopemux/ui/cockpit/runtime_contract.py",
+    "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+    "tests/unit/test_cockpit_cli.py",
+    "task-packets/generated/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001.json",
+    "task-packets/INDEX.md",
+    "proof/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/README.md",
+    "out/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/PROOF.json"
+  ],
+  "implementation_summary": [
+    "Added deterministic Unknown / Drift Queue reason taxonomy and display-only affordance list.",
+    "Added queue item and summary models with non-executable, no runtime reclassification, packet-required defaults.",
+    "Built aggregate queue items from accepted package, runtime-render, settings-runtime, Safe Action, Palette, and IA evidence without mutating upstream artifacts.",
+    "Extended runtime-render text and JSON snapshots with Unknown / Drift Queue summary data while preserving exactly five top-level modes.",
+    "Added focused tests for taxonomy, redaction, aggregate counts, allowed affordances, CLI output, and fail-closed guard behavior."
+  ],
+  "accepted_inputs": [
+    "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PROOF.json",
+    "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PACKAGE_REMEDIATION_INDEX.json",
+    "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/UNKNOWN_DRIFT_PACKAGE_HANDOFF.md",
+    "out/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/PROOF.json",
+    "out/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/PROOF.json",
+    "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_GATE_TO_UNKNOWN_DRIFT_HANDOFF.md",
+    "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_REFUSAL_RULES.md",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_TO_UNKNOWN_DRIFT_HANDOFF.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/UNKNOWN_DRIFT_QUEUE_SPEC.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/COMMAND_EXPOSURE_POLICY.json"
+  ],
+  "runtime_snapshot_summary": {
+    "top_level_mode_count": 5,
+    "unknown_drift_surface_kind": "secondary/global surface",
+    "unknown_drift_total_queue_items_lower_bound": 487,
+    "unknown_drift_aggregated_item_count": 45,
+    "settings_unknown_tier_count": 62,
+    "stale_proof_count": 1,
+    "index_drift_count": 1,
+    "execution_allowed": false,
+    "runtime_reclassification_allowed": false,
+    "requires_packet_for_resolution": true,
+    "safe_for_claude_design": "NO",
+    "READY_FOR_CLAUDE_DESIGN": "not approved"
+  },
+  "boundary_preservation": {
+    "safe_for_claude_design": "NO",
+    "READY_FOR_CLAUDE_DESIGN": "not approved",
+    "t4_blocked": true,
+    "tx_tu_never_executable": true,
+    "unknown_drift_does_not_execute": true,
+    "runtime_reclassification_disabled": true,
+    "no_claude_design_upload": true,
+    "no_final_screens": true,
+    "no_live_service_adapters": true,
+    "no_canonical_writes": true,
+    "no_remote_mutation": true
+  },
+  "validation_commands": [
+    {
+      "command": "python -m json.tool out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PACKAGE_REMEDIATION_INDEX.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m json.tool out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m json.tool out/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m json.tool out/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m json.tool out/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m compileall -q src/dopemux tests",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit -q",
+      "exit_code": 0,
+      "stdout": "................................................................         [100%]\n=============================== warnings summary ===============================\n../../../.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/_pytest/config/__init__.py:1434\n  /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/_pytest/config/__init__.py:1434: PytestConfigWarning: Unknown config option: asyncio_mode\n  \n    self._warn_or_fail_if_strict(f\"Unknown config option: {key}\\n\")\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n",
+      "stderr": ""
+    },
+    {
+      "command": "python -m pytest tests/unit/test_cockpit_cli.py -q",
+      "exit_code": 0,
+      "stdout": ".....                                                                    [100%]\n=============================== warnings summary ===============================\n../../../.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/_pytest/config/__init__.py:1434\n  /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/_pytest/config/__init__.py:1434: PytestConfigWarning: Unknown config option: asyncio_mode\n  \n    self._warn_or_fail_if_strict(f\"Unknown config option: {key}\\n\")\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n",
+      "stderr": ""
+    },
+    {
+      "command": "! grep -R -E \"READY_FOR_CLAUDE_DESIGN:\\u0020approved|safe_for_claude_design:\\u0020YES|Claude\\u0020Design\\u0020upload\\u0020allowed|T4\\u0020authorized|runtime\\u0020execution\\u0020implemented|Unknown \\/ Drift\\u0020execution|runtime\\u0020reclassification\\u0020allowed|execute\\u0020anyway|approve\\u0020anyway|resolve\\u0020now\" -n src/dopemux tests out/cockpit-unknown-drift proof/cockpit-unknown-drift",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "! grep -R -E \"subprocess|shell=True|os\\.system|requests|httpx|urllib|socket|docker|kubectl|gh pr create|git push\" -n src/dopemux/ui/cockpit src/dopemux/commands/cockpit_commands.py tests/unit/dopemux/ui/cockpit tests/unit/test_cockpit_cli.py",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "git status --short --branch",
+      "exit_code": 0,
+      "stdout": "## codex/cockpit-unknown-drift-001...origin/codex/cockpit-settings-runtime-001\n M src/dopemux/ui/cockpit/runtime_contract.py\n M task-packets/INDEX.md\n M tests/unit/dopemux/ui/cockpit/test_runtime_contract.py\n M tests/unit/test_cockpit_cli.py\n?? out/cockpit-unknown-drift/\n?? task-packets/generated/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001.json\n",
+      "stderr": ""
+    },
+    {
+      "command": "pre-commit run --files src/dopemux/ui/cockpit/runtime_contract.py tests/unit/dopemux/ui/cockpit/test_runtime_contract.py tests/unit/test_cockpit_cli.py task-packets/generated/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001.json task-packets/INDEX.md proof/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/README.md out/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/PROOF.json",
+      "exit_code": 0,
+      "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude \u2264100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).........................(no files to check)Skipped\nEnforce docs filename hygiene (kebab-case).............................(no files to check)Skipped\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped\n",
+      "stderr": ""
+    }
+  ],
+  "proof_artifact_hashes": [
+    {
+      "path": "proof/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/README.md",
+      "sha256": "e74de5306d54786b0ef6e64db305594a199de4d05a1108bee2040e6e3841382b"
+    },
+    {
+      "path": "task-packets/generated/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001.json",
+      "sha256": "5bb8e9088c9ad5717bd41b849cfd7ee21dbee083e3849cc25b4b259a9abbe758"
+    }
+  ],
+  "codereview_status": "codereview executable unavailable in PATH; explicit diff review performed with git diff --stat, git diff --name-status, and targeted source/test diff inspection.",
+  "precommit_status": "PASSED: pre-commit run --files on changed implementation, test, task-packet, index, and proof files.",
+  "residual_risks": [
+    "Inventory regeneration against current HEAD remains a separate packet; queue counts are aggregate lower bounds from accepted artifacts.",
+    "Accepted source artifacts do not expose per-row data for every queue class, so route-only refusal classes use UNKNOWN aggregate counts.",
+    "Remote-mutation policy remains absent; T4 remains refused.",
+    "Promotions, demotions, and reclassification remain packet-owned outside the runtime renderer."
+  ],
+  "unknowns": [
+    "No dopetask canonical schema file was present in the worktree; TP validation was manual plus JSON parsing.",
+    "Root RULES.md and root TRUTH_*.md were absent in this worktree.",
+    "Per-row queue data is unavailable for several accepted source classes; aggregate items preserve UNKNOWN instead of inventing rows."
+  ],
+  "final_head_recording_policy": "This proof file is committed before the final Git SHA can be self-referenced. If proof metadata cleanup records the implementation commit, final HEAD is reported in closeout and PR metadata rather than self-hashed inside PROOF.json.",
+  "cleanup_status": "PENDING"
+}
