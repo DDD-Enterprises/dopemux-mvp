@@ -1,0 +1,329 @@
+{
+  "schema_version": "dopemux.cockpit.inventory_regen.proof.v1",
+  "packet_id": "TP-DMX-COCKPIT-INVENTORY-REGEN-001",
+  "created_at_utc": "2026-05-04T21:53:46Z",
+  "worktree": "/Users/hue/code/dopemux-worktrees/dopemux-cockpit-inventory-regen-001",
+  "branch": "codex/cockpit-inventory-regen-001",
+  "base_branch": "codex/cockpit-unknown-drift-001",
+  "base_head": "b6b89fae076a669952ef1178d7d7d17a3e01eb7b",
+  "head_before": "b6b89fae076a669952ef1178d7d7d17a3e01eb7b",
+  "implementation_commit_sha": "e9e7e286422304266d98717a176775d6428689f1",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/571",
+  "pr_blocker": null,
+  "codereview_status": {
+    "tool": "codereview",
+    "status": "unavailable",
+    "evidence": "which codereview exited 1 with output: codereview not found",
+    "fallback": "explicit diff and artifact review performed with git diff, JSON parsing, checksum validation, focused tests, boundary greps, and pre-commit"
+  },
+  "precommit_status": {
+    "command": "pre-commit run --files <allowlisted files>",
+    "exit_code": 0,
+    "stdout_summary": "Validate YAML frontmatter, documentation schema, prohibited documentation patterns, prelude, markdownlint, whitespace, EOF, root hygiene, and related hooks passed; non-applicable hooks skipped."
+  },
+  "final_head_recording_policy": "PROOF.json records the first implementation commit e9e7e286422304266d98717a176775d6428689f1 and PR https://github.com/DDD-Enterprises/dopemux-mvp/pull/571. The proof metadata cleanup commit and final branch HEAD are reported in closeout and PR metadata rather than self-hashed inside PROOF.json.",
+  "tp_path": "task-packets/generated/TP-DMX-COCKPIT-INVENTORY-REGEN-001.json",
+  "files_changed": [
+    "task-packets/generated/TP-DMX-COCKPIT-INVENTORY-REGEN-001.json",
+    "task-packets/INDEX.md",
+    "tests/unit/dopemux/ui/cockpit/test_inventory_regen_artifacts.py",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.md",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/INVENTORY_DRIFT_REPORT.json",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/INVENTORY_DRIFT_REPORT.md",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/CURRENT_HEAD_COCKPIT_STATUS.json",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/CURRENT_HEAD_COCKPIT_STATUS.md",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/NEXT_PACKET_DECISION_MATRIX.md",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/PROOF.json",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/sha256sums.txt",
+    "proof/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/README.md"
+  ],
+  "source_artifacts_read": [
+    "AGENTS.md",
+    "PROJECT.md",
+    "ARCHITECTURE.md",
+    "PM_PLANE.md",
+    "SERVICE_CATALOG.md",
+    "task-packets/INDEX.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/COMMAND_EXPOSURE_POLICY.json",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SCREEN_CONTRACT_MATRIX.json",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/UNKNOWN_DRIFT_QUEUE_SPEC.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/CLAUDE_DESIGN_BLOCKERS.md",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/COMMAND_PALETTE_INDEX_SCHEMA.json",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/COMMAND_PALETTE_CONTRACT.md",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_ROUTING_RULES.md",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_BLOCKED_UNKNOWN_STATES.md",
+    "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_GATE_TIER_SCHEMA.json",
+    "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_PREFLIGHT_SCHEMA.json",
+    "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_REFUSAL_RULES.md",
+    "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PROOF.json",
+    "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PACKAGE_REMEDIATION_INDEX.json",
+    "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/COMMAND_TO_GATE_TO_SCREEN_MATRIX.md",
+    "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/SAFE_ACTION_GATE_INTEGRATION_MATRIX.md",
+    "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/SETTINGS_ADMIN_RUNTIME_PACKAGE_HANDOFF.md",
+    "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/UNKNOWN_DRIFT_PACKAGE_HANDOFF.md",
+    "out/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/PROOF.json",
+    "out/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/PROOF.json",
+    "out/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/PROOF.json",
+    "src/dopemux/ui/cockpit/__init__.py",
+    "src/dopemux/ui/cockpit/app.py",
+    "src/dopemux/ui/cockpit/render.py",
+    "src/dopemux/ui/cockpit/runtime_contract.py",
+    "src/dopemux/commands/cockpit_commands.py"
+  ],
+  "generated_artifacts": [
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.md",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/INVENTORY_DRIFT_REPORT.json",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/INVENTORY_DRIFT_REPORT.md",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/CURRENT_HEAD_COCKPIT_STATUS.json",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/CURRENT_HEAD_COCKPIT_STATUS.md",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/NEXT_PACKET_DECISION_MATRIX.md",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/PROOF.json",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/sha256sums.txt",
+    "proof/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/README.md"
+  ],
+  "carried_counts": {
+    "total_inventory_rows": 405,
+    "active_rows": 366,
+    "safe_ui_exposure": {
+      "BLOCKED_IN_COCKPIT": 48,
+      "COMMAND_PALETTE_ONLY": 40,
+      "CONFIRM_REQUIRED": 111,
+      "DISPLAY_ONLY": 178,
+      "INSPECT_ACTION": 23,
+      "UNKNOWN": 5
+    },
+    "placement": {
+      "Command Palette": 139,
+      "Events": 15,
+      "External/Not Cockpit": 37,
+      "Implementer": 73,
+      "Overview": 9,
+      "PM": 15,
+      "Services": 54,
+      "Settings/Admin": 62,
+      "UNKNOWN": 1
+    },
+    "activation_status": {
+      "ACTIVE": 366,
+      "DEFINED_NOT_REGISTERED": 30,
+      "DEPRECATED_BLOCKED": 7,
+      "OPTIONAL_IMPORT_UNKNOWN": 2
+    },
+    "coverage": {
+      "MISSING": 284,
+      "OUT_OF_SCOPE": 7,
+      "PARTIAL": 82,
+      "UNKNOWN": 32
+    }
+  },
+  "regenerated_counts": {
+    "total_rows": 405,
+    "active_rows": 366,
+    "aggregate_record_count": 16,
+    "per_row_record_count": 0,
+    "settings_admin_row_count": 62,
+    "settings_admin_unknown_tier_count": 62,
+    "unknown_drift_total_queue_items_lower_bound": 487,
+    "unknown_drift_aggregated_item_count": 45,
+    "safe_action_t4_policy_missing_count": 1,
+    "stale_proof_count": 1
+  },
+  "drift_summary": {
+    "same": 11,
+    "resolved_unknown": 1,
+    "stale_input": 2,
+    "uncomparable": 2,
+    "needs_packet_decision": 1,
+    "notes": [
+      "Inventory freshness blocker is addressed by this artifact packet only.",
+      "No command row was reclassified.",
+      "Per-row data gaps remain visible."
+    ]
+  },
+  "boundary_preservation": {
+    "safe_for_claude_design": "NO",
+    "READY_FOR_CLAUDE_DESIGN": "not approved",
+    "t4_blocked": true,
+    "tx_tu_never_executable": true,
+    "unknown_drift_does_not_execute": true,
+    "runtime_reclassification_disabled": true,
+    "no_claude_design_upload": true,
+    "no_final_screens": true,
+    "no_runtime_action_execution": true,
+    "no_t4_remote_mutation": true,
+    "no_live_service_adapters": true,
+    "no_canonical_writes": true
+  },
+  "validation_commands": [
+    {
+      "command": "python -m json.tool out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PACKAGE_REMEDIATION_INDEX.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m json.tool out/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m json.tool out/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m json.tool out/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-INVENTORY-REGEN-001.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m json.tool out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m json.tool out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/INVENTORY_DRIFT_REPORT.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m json.tool out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/CURRENT_HEAD_COCKPIT_STATUS.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m json.tool out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "cd out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001 && shasum -a 256 -c sha256sums.txt",
+      "exit_code": 0,
+      "stdout": "COMMAND_SURFACE_INVENTORY.json: OK\nCOMMAND_SURFACE_INVENTORY.md: OK\nINVENTORY_DRIFT_REPORT.json: OK\nINVENTORY_DRIFT_REPORT.md: OK\nCURRENT_HEAD_COCKPIT_STATUS.json: OK\nCURRENT_HEAD_COCKPIT_STATUS.md: OK\nNEXT_PACKET_DECISION_MATRIX.md: OK\nPROOF.json: OK",
+      "stderr": ""
+    },
+    {
+      "command": "manual TP schema check for required root fields, required packet values, PAL chain, and non-empty step validation fields",
+      "exit_code": 0,
+      "stdout": "Manual check passed; dopetask canonical schema file was absent.",
+      "stderr": ""
+    },
+    {
+      "command": "python -m compileall -q src/dopemux tests",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit -q",
+      "exit_code": 0,
+      "stdout": "74 passed",
+      "stderr": "PytestConfigWarning: Unknown config option: asyncio_mode"
+    },
+    {
+      "command": "python -m pytest tests/unit/test_cockpit_cli.py -q",
+      "exit_code": 0,
+      "stdout": "5 passed",
+      "stderr": "PytestConfigWarning: Unknown config option: asyncio_mode"
+    },
+    {
+      "command": "forbidden positive governance-claim grep over src/dopemux tests out/cockpit-inventory-regen proof/cockpit-inventory-regen",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "forbidden runtime call-token grep over Cockpit implementation and focused tests",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "pre-commit run --files <allowlisted files>",
+      "exit_code": 0,
+      "stdout": "Validate YAML frontmatter in docs: Passed\nValidate documentation against knowledge graph schema: Passed\nBlock prohibited documentation patterns: Passed\nValidate prelude <=100 tokens for efficient embeddings: Passed\nEnforce markdown file locations for changed files: Passed\nAudit docs filename hygiene: Passed\nEnforce repository root hygiene: Passed\nmarkdownlint: Passed\ntrim trailing whitespace: Passed\nfix end of files: Passed",
+      "stderr": ""
+    },
+    {
+      "command": "git status --short --branch",
+      "exit_code": 0,
+      "stdout": "## codex/cockpit-inventory-regen-001...origin/codex/cockpit-unknown-drift-001\n M task-packets/INDEX.md\n?? out/cockpit-inventory-regen/\n?? task-packets/generated/TP-DMX-COCKPIT-INVENTORY-REGEN-001.json\n?? tests/unit/dopemux/ui/cockpit/test_inventory_regen_artifacts.py",
+      "stderr": ""
+    }
+  ],
+  "proof_artifact_hashes": [
+    {
+      "path": "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json",
+      "sha256": "e843cb1523d3d49db49a079ee6b2fed4fec7971409acc8732e99ad022951e536"
+    },
+    {
+      "path": "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.md",
+      "sha256": "4497edd6df128b45cbc0b2a115ba9ee003c46e0986b54951167750d8468506af"
+    },
+    {
+      "path": "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/INVENTORY_DRIFT_REPORT.json",
+      "sha256": "00ce9ad2f2b7bd21ac070ecd6c3bcb49ba5225fc1c88e9eea19903b6b9d7bff2"
+    },
+    {
+      "path": "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/INVENTORY_DRIFT_REPORT.md",
+      "sha256": "9f2b93ea2f072e14d8efa72d49f33f05d762490e279136c0baebbfca05297456"
+    },
+    {
+      "path": "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/CURRENT_HEAD_COCKPIT_STATUS.json",
+      "sha256": "d0c73469827b7a302c2259376e21f97c9c71ba54857ce72b8c715d00286bf5f0"
+    },
+    {
+      "path": "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/CURRENT_HEAD_COCKPIT_STATUS.md",
+      "sha256": "46ff852580f0df1ddc5ccc560a6913711c6eaa88884041f4de6f03694b7a3393"
+    },
+    {
+      "path": "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/NEXT_PACKET_DECISION_MATRIX.md",
+      "sha256": "90a1726ef9c1173fa03ec5476aeb92a4af7e14a5197469122d4ae0bb6a62e86b"
+    },
+    {
+      "path": "proof/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/README.md",
+      "sha256": "21adcd61bae9e791e1cebe8cb7bd78afc040ce6fb6c1057d9d080d0f23a1ae1b"
+    }
+  ],
+  "residual_risks": [
+    "Per-row command inventory is unavailable in accepted artifacts, so this packet emits aggregate records.",
+    "Settings/Admin per-row tier mapping remains UNKNOWN for 62 rows.",
+    "Remote-mutation policy remains absent; T4 remains refused.",
+    "Unknown/Drift lower-bound queue remains 487 and requires downstream packet decisions.",
+    "Root RULES.md, TRUTH_*.md, SYSTEM_*.md, and dopetask canonical schema files were absent in this worktree.",
+    "Runtime dopemux help resolution remains an accepted residual UNKNOWN because live runtime discovery was out of scope."
+  ],
+  "unknowns": [
+    "Complete per-row command inventory source",
+    "Settings/Admin per-row gate tiers",
+    "Exact TX/TU row counts without overlap",
+    "Remote-mutation policy reference",
+    "Runtime dopemux help resolution",
+    "Root RULES.md",
+    "Root TRUTH_*.md",
+    "Root SYSTEM_*.md",
+    "dopetask-canonical-spec.json or dopetask-cannonical-spec.json"
+  ],
+  "cleanup_status": "PR_OPENED_PROOF_METADATA_PUSHED_WORKTREE_RETAINED_FOR_OPERATOR_INSPECTION"
+}
