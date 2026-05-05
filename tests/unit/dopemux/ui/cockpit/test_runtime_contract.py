@@ -9,14 +9,18 @@ from pathlib import Path
 import pytest
 
 from dopemux.ui.cockpit.runtime_contract import (
+    ALLOWED_UNKNOWN_DRIFT_AFFORDANCES,
     GLOBAL_SURFACES,
     SAFE_ACTION_TIERS,
     TOP_LEVEL_MODES,
+    UNKNOWN_DRIFT_REASON_CODES,
     PackageLoadError,
     RuntimeConfig,
     build_settings_admin_runtime_summary,
     build_gate_receipt,
     build_runtime_render_model,
+    build_unknown_drift_queue_item,
+    build_unknown_drift_queue_summary,
     evaluate_safe_action_preflight,
     load_package_artifacts,
     map_settings_admin_row_to_gate_tier,
@@ -134,6 +138,10 @@ def test_runtime_render_model_preserves_modes_surfaces_and_tiers():
     assert SAFE_ACTION_TIERS == model.safe_action_tiers
     assert "Settings/Admin/Runtime" not in model.top_level_modes
     assert "Settings/Admin/Runtime" in model.global_surfaces
+    assert "Unknown / Drift Queue" not in model.top_level_modes
+    assert "Unknown / Drift Queue" in model.global_surfaces
+    assert model.unknown_drift_queue.surface_kind == "secondary/global surface"
+    assert model.unknown_drift_queue.execution_allowed is False
 
 
 def test_runtime_snapshot_preserves_governance_and_boundaries():
@@ -152,6 +160,12 @@ def test_runtime_snapshot_preserves_governance_and_boundaries():
     assert "flow_group_count: 9" in output
     assert "row_count: 62" in output
     assert "unknown_tier_count: 62" in output
+    assert "unknown_drift_queue:" in output
+    assert "surface_name: Unknown / Drift Queue" in output
+    assert "settings_unknown_tier_count: 62" in output
+    assert "execution_allowed: false" in output
+    assert "runtime_reclassification_allowed: false" in output
+    assert "requires_packet_for_resolution: true" in output
 
 
 def test_settings_admin_summary_uses_package_handoff_without_mutating_artifact():
@@ -184,6 +198,122 @@ def test_runtime_snapshot_payload_includes_settings_admin_summary():
     assert settings["safe_for_claude_design"] == "NO"
     assert settings["READY_FOR_CLAUDE_DESIGN"] == "not approved"
     assert len(settings["flow_groups"]) == 9
+
+
+def test_unknown_drift_reason_taxonomy_contains_required_codes():
+    required = {
+        "UNKNOWN",
+        "AUTHORITY_CONFLICT",
+        "PARAM_UNRESOLVED",
+        "CWD_UNRESOLVED",
+        "PROOF_REQUIREMENT_UNKNOWN",
+        "ROLLBACK_UNKNOWN",
+        "SIDE_EFFECTS_UNKNOWN",
+        "REMOTE_MUTATION_POLICY_MISSING",
+        "TP_GATE_ABSENT",
+        "AUTHORITY_DRIFT_MID_FLOW",
+        "CLASS_DRIFT_MID_FLOW",
+        "UNSAFE_SOURCE_SURFACE",
+        "STALE_PROOF_GATE",
+        "INDEX_DRIFT",
+        "STALE_HANDOFF",
+        "DEFINED_NOT_REGISTERED",
+        "OPTIONAL_IMPORT_UNKNOWN",
+        "DEPRECATED_BLOCKED",
+        "MISSING_REQUIRED_FIELD",
+        "UNKNOWN_CANONICAL_WRITER",
+        "UNKNOWN_AUTHORITY_DOMAIN",
+        "SETTINGS_ROW_TIER_UNKNOWN",
+    }
+    assert required <= set(UNKNOWN_DRIFT_REASON_CODES)
+
+
+def test_unknown_drift_queue_item_defaults_and_redacts_secret_like_values():
+    item = build_unknown_drift_queue_item(
+        source_surface="Command Palette",
+        source_artifact_path="out/example.md",
+        source_packet_id="TP-EXAMPLE",
+        source_row_id="row-1",
+        command_or_row_label="show token=abc123",
+        reason_code="UNKNOWN",
+        reason_detail="blocked because api_key=secret123",
+        evidence_refs=("Authorization: Bearer abc123", "password=hunter2"),
+    )
+    payload = item.as_payload()
+    assert payload["can_execute"] is False
+    assert payload["can_reclassify_at_runtime"] is False
+    assert payload["requires_packet"] is True
+    assert payload["command_or_row_label"] == "show token=[REDACTED]"
+    assert payload["reason_detail"] == "blocked because api_key=[REDACTED]"
+    assert payload["evidence_refs"] == [
+        "Authorization: [REDACTED]",
+        "password=[REDACTED]",
+    ]
+
+
+def test_unknown_drift_summary_uses_accepted_sources_without_mutating_artifacts():
+    source_paths = [
+        PACKAGE_DIR / "PACKAGE_REMEDIATION_INDEX.json",
+        PACKAGE_DIR / "PROOF.json",
+        PACKAGE_DIR / "UNKNOWN_DRIFT_PACKAGE_HANDOFF.md",
+        REPO_ROOT
+        / "out"
+        / "cockpit-runtime-render"
+        / "TP-DMX-COCKPIT-RUNTIME-RENDER-001"
+        / "PROOF.json",
+        REPO_ROOT
+        / "out"
+        / "cockpit-settings-runtime"
+        / "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001"
+        / "PROOF.json",
+    ]
+    before = {path: _sha(path) for path in source_paths}
+    package = load_package_artifacts(PACKAGE_DIR)
+    summary = build_unknown_drift_queue_summary(package)
+    after = {path: _sha(path) for path in source_paths}
+    assert before == after
+    assert summary.surface_name == "Unknown / Drift Queue"
+    assert summary.surface_kind == "secondary/global surface"
+    assert summary.execution_allowed is False
+    assert summary.runtime_reclassification_allowed is False
+    assert summary.requires_packet_for_resolution is True
+    assert summary.settings_unknown_tier_count == 62
+
+
+def test_unknown_drift_snapshot_payload_contains_aggregate_counts_and_sources():
+    payload = runtime_snapshot_payload(PACKAGE_DIR)
+    queue = payload["unknown_drift_queue"]
+    assert queue["surface_name"] == "Unknown / Drift Queue"
+    assert queue["surface_kind"] == "secondary/global surface"
+    assert queue["total_queue_items"] >= 487
+    assert queue["total_queue_items_is_lower_bound"] is True
+    assert queue["reason_counts"]["DEFINED_NOT_REGISTERED"] == 30
+    assert queue["reason_counts"]["OPTIONAL_IMPORT_UNKNOWN"] == 2
+    assert queue["reason_counts"]["DEPRECATED_BLOCKED"] == 7
+    assert queue["reason_counts"]["AUTHORITY_CONFLICT"] == 14
+    assert queue["reason_counts"]["SETTINGS_ROW_TIER_UNKNOWN"] == 62
+    assert queue["reason_counts"]["REMOTE_MUTATION_POLICY_MISSING"] == 1
+    assert queue["stale_proof_count"] == 1
+    assert queue["index_drift_count"] == 1
+    assert queue["settings_unknown_tier_count"] == 62
+    assert queue["execution_allowed"] is False
+    assert queue["runtime_reclassification_allowed"] is False
+    assert queue["requires_packet_for_resolution"] is True
+    assert "Unknown / Drift Queue" in payload["global_surfaces"]
+    assert "Unknown / Drift Queue" not in payload["top_level_modes"]
+    refs = "\n".join(queue["source_artifact_refs"])
+    assert "SAFE_ACTION_GATE_TO_UNKNOWN_DRIFT_HANDOFF.md" in refs
+    assert "PALETTE_TO_UNKNOWN_DRIFT_HANDOFF.md" in refs
+    assert "UNKNOWN_DRIFT_QUEUE_SPEC.md" in refs
+
+
+def test_unknown_drift_queue_allows_only_display_copy_inspect_affordances():
+    payload = runtime_snapshot_payload(PACKAGE_DIR)
+    allowed = payload["unknown_drift_queue"]["allowed_affordances"]
+    assert allowed == list(ALLOWED_UNKNOWN_DRIFT_AFFORDANCES)
+    forbidden_fragments = ("Resolve", "Approve", "Promote", "Demote", "Retry", "Execute")
+    for affordance in allowed:
+        assert not any(fragment in affordance for fragment in forbidden_fragments)
 
 
 @pytest.mark.parametrize(
