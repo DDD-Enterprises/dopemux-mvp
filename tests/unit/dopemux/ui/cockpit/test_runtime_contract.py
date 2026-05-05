@@ -24,8 +24,10 @@ from dopemux.ui.cockpit.runtime_contract import (
     evaluate_safe_action_preflight,
     load_package_artifacts,
     map_settings_admin_row_to_gate_tier,
+    redact_secrets,
     render_runtime_snapshot,
     runtime_snapshot_payload,
+    stable_sha256,
 )
 
 
@@ -102,6 +104,14 @@ def test_package_loader_parses_accepted_proof_and_index_files():
     assert package.proof["ready_for_claude_design"] is False
     assert len(package.package_index_sha256) == 64
     assert len(package.proof_sha256) == 64
+
+
+def test_package_loader_resolves_repo_relative_package_dir_from_subdirectory(monkeypatch):
+    monkeypatch.chdir(REPO_ROOT / "src")
+    package = load_package_artifacts(
+        "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA"
+    )
+    assert package.package_dir == PACKAGE_DIR
 
 
 def test_runtime_render_model_preserves_modes_surfaces_and_tiers():
@@ -251,6 +261,31 @@ def test_unknown_drift_queue_item_defaults_and_redacts_secret_like_values():
     ]
 
 
+def test_unknown_drift_queue_hashes_redacted_seed_before_deriving_ids():
+    first = build_unknown_drift_queue_item(
+        source_surface="Command Palette",
+        source_artifact_path="out/example.md",
+        source_packet_id="TP-EXAMPLE",
+        source_row_id="row-1",
+        command_or_row_label="rotate token=alpha",
+        reason_code="UNKNOWN",
+        reason_detail="blocked because token=alpha",
+    )
+    second = build_unknown_drift_queue_item(
+        source_surface="Command Palette",
+        source_artifact_path="out/example.md",
+        source_packet_id="TP-EXAMPLE",
+        source_row_id="row-1",
+        command_or_row_label="rotate token=beta",
+        reason_code="UNKNOWN",
+        reason_detail="blocked because token=beta",
+    )
+    assert first.row_hash == second.row_hash
+    assert first.queue_item_id == second.queue_item_id
+    assert "alpha" not in str(first.as_payload())
+    assert "beta" not in str(second.as_payload())
+
+
 def test_unknown_drift_summary_uses_accepted_sources_without_mutating_artifacts():
     source_paths = [
         PACKAGE_DIR / "PACKAGE_REMEDIATION_INDEX.json",
@@ -291,10 +326,11 @@ def test_unknown_drift_snapshot_payload_contains_aggregate_counts_and_sources():
     assert queue["reason_counts"]["OPTIONAL_IMPORT_UNKNOWN"] == 2
     assert queue["reason_counts"]["DEPRECATED_BLOCKED"] == 7
     assert queue["reason_counts"]["AUTHORITY_CONFLICT"] == 14
-    assert queue["reason_counts"]["SETTINGS_ROW_TIER_UNKNOWN"] == 62
-    assert queue["reason_counts"]["REMOTE_MUTATION_POLICY_MISSING"] == 1
+    assert queue["reason_counts"]["SETTINGS_ROW_TIER_UNKNOWN"] == "UNKNOWN"
+    assert queue["reason_counts"]["REMOTE_MUTATION_POLICY_MISSING"] == "UNKNOWN"
+    assert queue["reason_counts"]["UNKNOWN"] == "UNKNOWN"
     assert queue["stale_proof_count"] == 1
-    assert queue["index_drift_count"] == 1
+    assert queue["index_drift_count"] == "UNKNOWN"
     assert queue["settings_unknown_tier_count"] == 62
     assert queue["execution_allowed"] is False
     assert queue["runtime_reclassification_allowed"] is False
@@ -405,6 +441,14 @@ def test_unknown_drift_queue_allows_only_display_copy_inspect_affordances():
             False,
             "UNKNOWN_DRIFT_QUEUE",
             "UNKNOWN_CLASS",
+        ),
+        (
+            {"safety_class": "EXTERNAL_ONLY"},
+            "TU",
+            False,
+            False,
+            "ORIGINATING_SURFACE",
+            "EXTERNAL_ONLY",
         ),
     ],
 )
@@ -518,6 +562,18 @@ def test_tx_and_tu_never_reach_confirm_affordance(
     assert result.can_confirm is False
 
 
+def test_external_only_preflight_routes_to_originating_inspect_copy_path():
+    result = evaluate_safe_action_preflight(
+        _candidate(safety_class="EXTERNAL_ONLY"),
+        current_row_hash="row-hash-001",
+        evaluated_at_utc=EVALUATED_AT,
+    )
+    assert result.status == "REFUSE_EXTERNAL_ONLY"
+    assert result.can_confirm is False
+    assert result.refusal_reason == "EXTERNAL_ONLY"
+    assert result.routing_destination == "ORIGINATING_SURFACE"
+
+
 def test_missing_required_preflight_field_refuses():
     candidate = _candidate()
     candidate.pop("output_target_path")
@@ -601,11 +657,81 @@ def test_receipts_include_required_fields_and_utc_timestamp():
         "surface_origin",
         "operator_id",
         "created_at_utc",
+        "event_timestamp_utc",
+        "gate_open_timestamp_utc",
+        "confirm_timestamp_utc",
+        "proof_timestamp_utc",
+        "typed_confirmation_match",
+        "diff_acknowledged",
+        "remote_mutation_policy_reference",
+        "tp_or_task_id",
+        "service_id",
+        "stale_proof_tag",
+        "event_type",
+        "schema_version",
     }
     assert required_fields <= set(receipt)
     assert receipt["created_at_utc"].endswith("Z")
+    assert receipt["event_timestamp_utc"] == BASE_TIME
+    assert receipt["gate_open_timestamp_utc"] == BASE_TIME
+    assert receipt["schema_version"] == "dopemux.cockpit.safe_action_gate.receipt.v1"
     assert receipt["operator_id"] == "NULL_NOT_AUTHENTICATED"
     assert receipt["execution_status"] == "not_attempted"
+
+
+def test_receipt_recomputes_action_hash_from_redacted_canonical_candidate():
+    candidate = _candidate(action_row_hash="caller-supplied", token="secret-one")
+    preflight = evaluate_safe_action_preflight(
+        candidate,
+        current_row_hash="row-hash-001",
+        evaluated_at_utc=EVALUATED_AT,
+    )
+    receipt = build_gate_receipt(
+        event_type="gate_open",
+        candidate=candidate,
+        preflight=preflight,
+        created_at_utc=BASE_TIME,
+    )
+    canonical = redact_secrets(candidate)
+    canonical.pop("action_row_hash")
+    assert receipt["action_row_hash"] == stable_sha256(canonical)
+    assert receipt["action_row_hash"] != "caller-supplied"
+
+
+def test_receipt_nulls_palette_request_id_for_non_palette_origin():
+    preflight = evaluate_safe_action_preflight(
+        _candidate(surface_origin="PM"),
+        current_row_hash="row-hash-001",
+        evaluated_at_utc=EVALUATED_AT,
+    )
+    receipt = build_gate_receipt(
+        event_type="gate_open",
+        candidate=_candidate(surface_origin="PM"),
+        preflight=preflight,
+        created_at_utc=BASE_TIME,
+    )
+    assert receipt["palette_request_id"] is None
+
+
+def test_receipt_default_gate_request_id_is_stable_across_lifecycle_events():
+    preflight = evaluate_safe_action_preflight(
+        _candidate(),
+        current_row_hash="row-hash-001",
+        evaluated_at_utc=EVALUATED_AT,
+    )
+    opened = build_gate_receipt(
+        event_type="gate_open",
+        candidate=_candidate(),
+        preflight=preflight,
+        created_at_utc=BASE_TIME,
+    )
+    confirmed = build_gate_receipt(
+        event_type="gate_confirmed",
+        candidate=_candidate(),
+        preflight=preflight,
+        created_at_utc="2026-05-04T12:01:00Z",
+    )
+    assert opened["gate_request_id"] == confirmed["gate_request_id"]
 
 
 def test_receipt_redacts_secret_payloads():
