@@ -16,7 +16,9 @@ from uuid import NAMESPACE_URL, uuid5
 PACKAGE_PACKET_ID = "TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA"
 RUNTIME_PACKET_ID = "TP-DMX-COCKPIT-RUNTIME-RENDER-001"
 SETTINGS_RUNTIME_PACKET_ID = "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001"
+UNKNOWN_DRIFT_PACKET_ID = "TP-DMX-COCKPIT-UNKNOWN-DRIFT-001"
 SETTINGS_ADMIN_SOURCE_ARTIFACT = "SETTINGS_ADMIN_RUNTIME_PACKAGE_HANDOFF.md"
+UNKNOWN_DRIFT_SOURCE_ARTIFACT = "UNKNOWN_DRIFT_PACKAGE_HANDOFF.md"
 
 TOP_LEVEL_MODES: tuple[str, ...] = (
     "PM",
@@ -31,6 +33,39 @@ GLOBAL_SURFACES: tuple[str, ...] = (
     "Settings/Admin/Runtime",
     "Safe Actions / Proof Gate",
     "Unknown / Drift Queue",
+)
+
+UNKNOWN_DRIFT_REASON_CODES: tuple[str, ...] = (
+    "UNKNOWN",
+    "AUTHORITY_CONFLICT",
+    "PARAM_UNRESOLVED",
+    "CWD_UNRESOLVED",
+    "PROOF_REQUIREMENT_UNKNOWN",
+    "ROLLBACK_UNKNOWN",
+    "SIDE_EFFECTS_UNKNOWN",
+    "REMOTE_MUTATION_POLICY_MISSING",
+    "TP_GATE_ABSENT",
+    "AUTHORITY_DRIFT_MID_FLOW",
+    "CLASS_DRIFT_MID_FLOW",
+    "UNSAFE_SOURCE_SURFACE",
+    "STALE_PROOF_GATE",
+    "INDEX_DRIFT",
+    "STALE_HANDOFF",
+    "DEFINED_NOT_REGISTERED",
+    "OPTIONAL_IMPORT_UNKNOWN",
+    "DEPRECATED_BLOCKED",
+    "MISSING_REQUIRED_FIELD",
+    "UNKNOWN_CANONICAL_WRITER",
+    "UNKNOWN_AUTHORITY_DOMAIN",
+    "SETTINGS_ROW_TIER_UNKNOWN",
+)
+
+ALLOWED_UNKNOWN_DRIFT_AFFORDANCES: tuple[str, ...] = (
+    "Inspect",
+    "CopyEvidence",
+    "CopyRecommendedPacketPrompt",
+    "ShowBlockedReason",
+    "ShowUpstreamArtifact",
 )
 
 SAFE_ACTION_TIERS: tuple[str, ...] = (
@@ -360,6 +395,7 @@ class RuntimeRenderModel:
     invariants: dict[str, bool]
     config: RuntimeConfig
     settings_admin_runtime: SettingsAdminRuntimeSummary
+    unknown_drift_queue: UnknownDriftQueueSummary
 
 
 @dataclass(frozen=True)
@@ -416,6 +452,106 @@ class SettingsAdminRuntimeSummary:
             "open_downstream_owner": self.open_downstream_owner,
             "safe_for_claude_design": self.safe_for_claude_design,
             "READY_FOR_CLAUDE_DESIGN": self.ready_for_claude_design,
+        }
+
+
+@dataclass(frozen=True)
+class UnknownDriftQueueItem:
+    queue_item_id: str
+    source_surface: str
+    source_artifact_path: str
+    source_packet_id: str
+    source_row_id: str
+    row_hash: str
+    command_or_row_label: str
+    reason_code: str
+    reason_detail: str
+    authority_domain: str
+    canonical_writer: str
+    safety_class: str
+    gate_tier: str
+    routing_destination: str
+    recommended_next_packet: str
+    created_at_utc: str
+    evidence_refs: tuple[str, ...]
+    aggregated_count: int | str = 1
+    can_execute: bool = False
+    can_reclassify_at_runtime: bool = False
+    requires_packet: bool = True
+
+    def as_payload(self) -> dict[str, Any]:
+        return {
+            "queue_item_id": self.queue_item_id,
+            "source_surface": self.source_surface,
+            "source_artifact_path": self.source_artifact_path,
+            "source_packet_id": self.source_packet_id,
+            "source_row_id": self.source_row_id,
+            "row_hash": self.row_hash,
+            "command_or_row_label": self.command_or_row_label,
+            "reason_code": self.reason_code,
+            "reason_detail": self.reason_detail,
+            "authority_domain": self.authority_domain,
+            "canonical_writer": self.canonical_writer,
+            "safety_class": self.safety_class,
+            "gate_tier": self.gate_tier,
+            "routing_destination": self.routing_destination,
+            "recommended_next_packet": self.recommended_next_packet,
+            "can_execute": self.can_execute,
+            "can_reclassify_at_runtime": self.can_reclassify_at_runtime,
+            "requires_packet": self.requires_packet,
+            "created_at_utc": self.created_at_utc,
+            "evidence_refs": list(self.evidence_refs),
+            "aggregated_count": self.aggregated_count,
+        }
+
+
+@dataclass(frozen=True)
+class UnknownDriftQueueSummary:
+    surface_name: str
+    surface_kind: str
+    items: tuple[UnknownDriftQueueItem, ...]
+    total_queue_items: int
+    total_queue_items_is_lower_bound: bool
+    aggregated_item_count: int
+    aggregated_item_counts: dict[str, int | str]
+    reason_counts: dict[str, int | str]
+    source_surface_counts: dict[str, int | str]
+    owner_packet_counts: dict[str, int | str]
+    execution_allowed: bool
+    runtime_reclassification_allowed: bool
+    requires_packet_for_resolution: bool
+    top_unresolved_owners: tuple[dict[str, int | str], ...]
+    stale_proof_count: int | str
+    index_drift_count: int | str
+    settings_unknown_tier_count: int | str
+    source_artifact_refs: tuple[str, ...]
+    safe_for_claude_design: str
+    ready_for_claude_design: str
+    allowed_affordances: tuple[str, ...]
+
+    def as_payload(self) -> dict[str, Any]:
+        return {
+            "surface_name": self.surface_name,
+            "surface_kind": self.surface_kind,
+            "total_queue_items": self.total_queue_items,
+            "total_queue_items_is_lower_bound": self.total_queue_items_is_lower_bound,
+            "aggregated_item_count": self.aggregated_item_count,
+            "aggregated_item_counts": dict(self.aggregated_item_counts),
+            "reason_counts": dict(self.reason_counts),
+            "source_surface_counts": dict(self.source_surface_counts),
+            "owner_packet_counts": dict(self.owner_packet_counts),
+            "execution_allowed": self.execution_allowed,
+            "runtime_reclassification_allowed": self.runtime_reclassification_allowed,
+            "requires_packet_for_resolution": self.requires_packet_for_resolution,
+            "top_unresolved_owners": list(self.top_unresolved_owners),
+            "stale_proof_count": self.stale_proof_count,
+            "index_drift_count": self.index_drift_count,
+            "settings_unknown_tier_count": self.settings_unknown_tier_count,
+            "source_artifact_refs": list(self.source_artifact_refs),
+            "safe_for_claude_design": self.safe_for_claude_design,
+            "READY_FOR_CLAUDE_DESIGN": self.ready_for_claude_design,
+            "allowed_affordances": list(self.allowed_affordances),
+            "items": [item.as_payload() for item in self.items],
         }
 
 
@@ -529,6 +665,522 @@ def build_settings_admin_runtime_summary(package: LoadedPackage) -> SettingsAdmi
         open_downstream_owner=SETTINGS_RUNTIME_PACKET_ID,
         safe_for_claude_design="NO",
         ready_for_claude_design="not approved",
+    )
+
+
+def _repo_root_from_package(package: LoadedPackage) -> Path:
+    package_dir = package.package_dir.resolve()
+    if (
+        package_dir.name != PACKAGE_PACKET_ID
+        or package_dir.parent.name != "cockpit-pack-remediation"
+        or package_dir.parent.parent.name != "out"
+    ):
+        raise RuntimeContractError(
+            "[BLOCKER] package directory is not the accepted cockpit package artifact path"
+        )
+    return package_dir.parent.parent.parent
+
+
+def _required_source_path(repo_root: Path, *parts: str) -> Path:
+    path = repo_root.joinpath(*parts)
+    if not path.is_file():
+        raise RuntimeContractError(f"[BLOCKER] accepted source artifact missing: {path}")
+    return path
+
+
+def _source_created_at(*sources: Mapping[str, Any]) -> str:
+    for source in sources:
+        value = source.get("created_at_utc")
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return "UNKNOWN"
+
+
+def _count_value(value: Any) -> int | str:
+    return value if isinstance(value, int) else "UNKNOWN"
+
+
+def _redact_queue_text(value: Any) -> str:
+    redacted = redact_secrets(value)
+    if isinstance(redacted, str):
+        return redacted
+    return json.dumps(redacted, sort_keys=True, default=str)
+
+
+def _redact_queue_refs(values: tuple[str, ...]) -> tuple[str, ...]:
+    return tuple(_redact_queue_text(value) for value in values)
+
+
+def build_unknown_drift_queue_item(
+    *,
+    source_surface: str,
+    source_artifact_path: str,
+    source_packet_id: str,
+    source_row_id: str,
+    command_or_row_label: str,
+    reason_code: str,
+    reason_detail: str,
+    authority_domain: str = "UNKNOWN",
+    canonical_writer: str = "UNKNOWN",
+    safety_class: str = "UNKNOWN",
+    gate_tier: str = "TU",
+    routing_destination: str = "UNKNOWN_DRIFT_QUEUE",
+    recommended_next_packet: str = UNKNOWN_DRIFT_PACKET_ID,
+    created_at_utc: str = "UNKNOWN",
+    evidence_refs: tuple[str, ...] = (),
+    aggregated_count: int | str = 1,
+) -> UnknownDriftQueueItem:
+    if reason_code not in UNKNOWN_DRIFT_REASON_CODES:
+        raise RuntimeContractError(f"[BLOCKER] unsupported Unknown / Drift reason: {reason_code}")
+    seed = {
+        "source_surface": source_surface,
+        "source_artifact_path": source_artifact_path,
+        "source_packet_id": source_packet_id,
+        "source_row_id": source_row_id,
+        "command_or_row_label": command_or_row_label,
+        "reason_code": reason_code,
+    }
+    row_hash = stable_sha256(seed)
+    return UnknownDriftQueueItem(
+        queue_item_id=f"unknown-drift-{row_hash[:16]}",
+        source_surface=_redact_queue_text(source_surface),
+        source_artifact_path=_redact_queue_text(source_artifact_path),
+        source_packet_id=_redact_queue_text(source_packet_id),
+        source_row_id=_redact_queue_text(source_row_id),
+        row_hash=row_hash,
+        command_or_row_label=_redact_queue_text(command_or_row_label),
+        reason_code=reason_code,
+        reason_detail=_redact_queue_text(reason_detail),
+        authority_domain=_redact_queue_text(authority_domain),
+        canonical_writer=_redact_queue_text(canonical_writer),
+        safety_class=_redact_queue_text(safety_class),
+        gate_tier=_redact_queue_text(gate_tier),
+        routing_destination=routing_destination,
+        recommended_next_packet=_redact_queue_text(recommended_next_packet),
+        created_at_utc=_redact_queue_text(created_at_utc),
+        evidence_refs=_redact_queue_refs(evidence_refs),
+        aggregated_count=aggregated_count,
+    )
+
+
+def _increment_count(
+    counts: dict[str, int | str],
+    key: str,
+    amount: int | str,
+) -> None:
+    if isinstance(amount, int):
+        current = counts.get(key, 0)
+        counts[key] = current + amount if isinstance(current, int) else current
+        return
+    if key not in counts:
+        counts[key] = "UNKNOWN"
+
+
+def _top_unresolved_owners(counts: dict[str, int | str]) -> tuple[dict[str, int | str], ...]:
+    sortable: list[tuple[int, str, int | str]] = []
+    for owner, count in counts.items():
+        rank = count if isinstance(count, int) else -1
+        sortable.append((rank, owner, count))
+    sortable.sort(key=lambda item: (-item[0], item[1]))
+    return tuple({"owner_packet": owner, "count": count} for _, owner, count in sortable[:5])
+
+
+def _aggregate_unknown_drift_items(
+    package: LoadedPackage,
+    settings: SettingsAdminRuntimeSummary,
+) -> tuple[UnknownDriftQueueItem, ...]:
+    repo_root = _repo_root_from_package(package)
+    runtime_proof_path = _required_source_path(
+        repo_root,
+        "out",
+        "cockpit-runtime-render",
+        RUNTIME_PACKET_ID,
+        "PROOF.json",
+    )
+    settings_proof_path = _required_source_path(
+        repo_root,
+        "out",
+        "cockpit-settings-runtime",
+        SETTINGS_RUNTIME_PACKET_ID,
+        "PROOF.json",
+    )
+    ia_spec_path = _required_source_path(
+        repo_root,
+        "out",
+        "cockpit-ia-reconcile",
+        "TP-DMX-COCKPIT-IA-RECONCILE-001",
+        "UNKNOWN_DRIFT_QUEUE_SPEC.md",
+    )
+    ia_policy_path = _required_source_path(
+        repo_root,
+        "out",
+        "cockpit-ia-reconcile",
+        "TP-DMX-COCKPIT-IA-RECONCILE-001",
+        "COMMAND_EXPOSURE_POLICY.json",
+    )
+    palette_handoff_path = _required_source_path(
+        repo_root,
+        "out",
+        "cockpit-command-palette",
+        "TP-DMX-COCKPIT-COMMAND-PALETTE-001",
+        "PALETTE_TO_UNKNOWN_DRIFT_HANDOFF.md",
+    )
+    safe_handoff_path = _required_source_path(
+        repo_root,
+        "out",
+        "cockpit-safe-actions",
+        "TP-DMX-COCKPIT-SAFE-ACTIONS-001",
+        "SAFE_ACTION_GATE_TO_UNKNOWN_DRIFT_HANDOFF.md",
+    )
+    safe_refusal_path = _required_source_path(
+        repo_root,
+        "out",
+        "cockpit-safe-actions",
+        "TP-DMX-COCKPIT-SAFE-ACTIONS-001",
+        "SAFE_ACTION_REFUSAL_RULES.md",
+    )
+    package_handoff_path = package.package_dir / UNKNOWN_DRIFT_SOURCE_ARTIFACT
+    runtime_proof = _load_json(runtime_proof_path)
+    settings_proof = _load_json(settings_proof_path)
+    ia_policy = _load_json(ia_policy_path)
+    source_counts = (
+        package.index.get("carried_inventory_counts")
+        or ia_policy.get("metadata", {}).get("source_counts")
+        or {}
+    )
+    created_at = _source_created_at(package.proof, runtime_proof, settings_proof)
+
+    items: list[UnknownDriftQueueItem] = []
+
+    def append_item(**kwargs: Any) -> None:
+        items.append(build_unknown_drift_queue_item(created_at_utc=created_at, **kwargs))
+
+    inventory_refs = (
+        str(ia_spec_path),
+        str(ia_policy_path),
+        str(package_handoff_path),
+    )
+    coverage_counts = source_counts.get("coverage", {})
+    safe_counts = source_counts.get("safe_ui_exposure", {})
+    activation_counts = source_counts.get("activation_status", {})
+    authority_counts = source_counts.get("authority_domain", {})
+
+    append_item(
+        source_surface="IA Reconcile inventory",
+        source_artifact_path=str(ia_policy_path),
+        source_packet_id="TP-DMX-COCKPIT-IA-RECONCILE-001",
+        source_row_id="coverage.MISSING",
+        command_or_row_label="coverage.MISSING carried rows",
+        reason_code="UNKNOWN",
+        reason_detail=(
+            "Accepted inventory carries coverage.MISSING rows; per-row unknown axes are not "
+            "available in accepted artifacts, so rows remain aggregate-only."
+        ),
+        authority_domain="UNKNOWN",
+        canonical_writer="UNKNOWN",
+        safety_class="UNKNOWN",
+        gate_tier="TU",
+        recommended_next_packet="Separate inventory-regeneration packet",
+        evidence_refs=inventory_refs,
+        aggregated_count=_count_value(coverage_counts.get("MISSING")),
+    )
+    append_item(
+        source_surface="IA Reconcile inventory",
+        source_artifact_path=str(ia_policy_path),
+        source_packet_id="TP-DMX-COCKPIT-IA-RECONCILE-001",
+        source_row_id="coverage.UNKNOWN",
+        command_or_row_label="coverage.UNKNOWN carried rows",
+        reason_code="UNKNOWN",
+        reason_detail="Accepted inventory carries coverage.UNKNOWN rows without per-row runtime proof.",
+        authority_domain="UNKNOWN",
+        canonical_writer="UNKNOWN",
+        safety_class="UNKNOWN",
+        gate_tier="TU",
+        recommended_next_packet="Separate inventory-regeneration packet",
+        evidence_refs=inventory_refs,
+        aggregated_count=_count_value(coverage_counts.get("UNKNOWN")),
+    )
+    append_item(
+        source_surface="Command Palette",
+        source_artifact_path=str(palette_handoff_path),
+        source_packet_id="TP-DMX-COCKPIT-COMMAND-PALETTE-001",
+        source_row_id="safe_ui_exposure.UNKNOWN",
+        command_or_row_label="safe_ui_exposure.UNKNOWN carried rows",
+        reason_code="UNKNOWN",
+        reason_detail="Palette unknown rows remain visible and non-executable until packet evidence exists.",
+        authority_domain="UNKNOWN",
+        canonical_writer="UNKNOWN",
+        safety_class="UNKNOWN",
+        gate_tier="TU",
+        evidence_refs=(str(palette_handoff_path), str(ia_spec_path)),
+        aggregated_count=_count_value(safe_counts.get("UNKNOWN")),
+    )
+    append_item(
+        source_surface="Command Palette",
+        source_artifact_path=str(palette_handoff_path),
+        source_packet_id="TP-DMX-COCKPIT-COMMAND-PALETTE-001",
+        source_row_id="safe_ui_exposure.BLOCKED_IN_COCKPIT",
+        command_or_row_label="safe_ui_exposure.BLOCKED_IN_COCKPIT carried rows",
+        reason_code="UNKNOWN",
+        reason_detail="Blocked rows remain visible through blocked-reason display and never execute.",
+        authority_domain="UNKNOWN",
+        canonical_writer="UNKNOWN",
+        safety_class="BLOCKED_IN_COCKPIT",
+        gate_tier="TX",
+        routing_destination="SHOW_BLOCKED_REASON",
+        recommended_next_packet="Separate blocked-row reclassification packet",
+        evidence_refs=(str(palette_handoff_path), str(ia_spec_path)),
+        aggregated_count=_count_value(safe_counts.get("BLOCKED_IN_COCKPIT")),
+    )
+    for status, reason_code in (
+        ("DEFINED_NOT_REGISTERED", "DEFINED_NOT_REGISTERED"),
+        ("OPTIONAL_IMPORT_UNKNOWN", "OPTIONAL_IMPORT_UNKNOWN"),
+        ("DEPRECATED_BLOCKED", "DEPRECATED_BLOCKED"),
+    ):
+        append_item(
+            source_surface="Command Palette",
+            source_artifact_path=str(palette_handoff_path),
+            source_packet_id="TP-DMX-COCKPIT-COMMAND-PALETTE-001",
+            source_row_id=f"activation_status.{status}",
+            command_or_row_label=f"activation_status.{status} carried rows",
+            reason_code=reason_code,
+            reason_detail=f"Accepted inventory carries {status} rows; runtime does not reclassify them.",
+            authority_domain="UNKNOWN" if status != "DEPRECATED_BLOCKED" else "unknown / conflicting",
+            canonical_writer="UNKNOWN",
+            safety_class="BLOCKED_IN_COCKPIT" if status == "DEPRECATED_BLOCKED" else "UNKNOWN",
+            gate_tier="TX" if status == "DEPRECATED_BLOCKED" else "TU",
+            routing_destination="SHOW_BLOCKED_REASON"
+            if status == "DEPRECATED_BLOCKED"
+            else "UNKNOWN_DRIFT_QUEUE",
+            recommended_next_packet="Separate reclassification packet",
+            evidence_refs=(str(palette_handoff_path), str(ia_spec_path)),
+            aggregated_count=_count_value(activation_counts.get(status)),
+        )
+    append_item(
+        source_surface="IA Reconcile inventory",
+        source_artifact_path=str(ia_policy_path),
+        source_packet_id="TP-DMX-COCKPIT-IA-RECONCILE-001",
+        source_row_id="authority_domain.unknown / conflicting",
+        command_or_row_label="authority_domain.unknown / conflicting carried rows",
+        reason_code="AUTHORITY_CONFLICT",
+        reason_detail="Multiple authority claims remain unresolved; queue records without reclassification.",
+        authority_domain="unknown / conflicting",
+        canonical_writer="UNKNOWN",
+        safety_class="UNKNOWN",
+        gate_tier="TU",
+        recommended_next_packet="Separate authority reclassification packet",
+        evidence_refs=inventory_refs,
+        aggregated_count=_count_value(authority_counts.get("unknown / conflicting")),
+    )
+    append_item(
+        source_surface="Settings/Admin/Runtime",
+        source_artifact_path=settings.source_artifact_path,
+        source_packet_id=SETTINGS_RUNTIME_PACKET_ID,
+        source_row_id="settings_admin_runtime.unknown_tier_count",
+        command_or_row_label="Settings/Admin unresolved tier rows",
+        reason_code="SETTINGS_ROW_TIER_UNKNOWN",
+        reason_detail="Accepted Settings/Admin evidence proves 62 rows but not per-row gate tiers.",
+        authority_domain="dopemux operator control",
+        canonical_writer="UNKNOWN",
+        safety_class="UNKNOWN",
+        gate_tier="TU",
+        recommended_next_packet=SETTINGS_RUNTIME_PACKET_ID,
+        evidence_refs=(settings.source_artifact_path, str(settings_proof_path)),
+        aggregated_count=settings.unknown_tier_count,
+    )
+    append_item(
+        source_surface="Safe Actions / Proof Gate",
+        source_artifact_path=str(safe_refusal_path),
+        source_packet_id="TP-DMX-COCKPIT-SAFE-ACTIONS-001",
+        source_row_id="gate_tier.T4.remote_mutation_policy_reference",
+        command_or_row_label="T4 remote mutation policy missing",
+        reason_code="REMOTE_MUTATION_POLICY_MISSING",
+        reason_detail="T4 remains refused until a separate approved remote-mutation policy exists.",
+        authority_domain="UNKNOWN",
+        canonical_writer="UNKNOWN",
+        safety_class="CONFIRM_REQUIRED",
+        gate_tier="T4",
+        recommended_next_packet="Separate remote-mutation policy packet",
+        evidence_refs=(str(safe_refusal_path), str(safe_handoff_path)),
+        aggregated_count=1,
+    )
+    append_item(
+        source_surface="Runtime Render residual risk",
+        source_artifact_path=str(runtime_proof_path),
+        source_packet_id=RUNTIME_PACKET_ID,
+        source_row_id="runtime_render.stale_proof_window",
+        command_or_row_label="Stale proof gate representation",
+        reason_code="STALE_PROOF_GATE",
+        reason_detail="Accepted runtime-render proof preserved stale proof as a downstream queue concern.",
+        authority_domain="dopemux operator control",
+        canonical_writer="UNKNOWN",
+        safety_class="UNKNOWN",
+        gate_tier="TU",
+        recommended_next_packet=UNKNOWN_DRIFT_PACKET_ID,
+        evidence_refs=(str(runtime_proof_path), str(safe_handoff_path)),
+        aggregated_count=1,
+    )
+    append_item(
+        source_surface="Package residual risk",
+        source_artifact_path=str(package.package_dir / "PACKAGE_REMEDIATION_INDEX.json"),
+        source_packet_id=PACKAGE_PACKET_ID,
+        source_row_id="residual_unknown.inventory_regeneration_current_head",
+        command_or_row_label="Inventory freshness drift risk",
+        reason_code="INDEX_DRIFT",
+        reason_detail=(
+            "Accepted package states inventory was not regenerated against current HEAD; "
+            "this is a drift-risk aggregate, not proof of a specific per-row drift."
+        ),
+        authority_domain="UNKNOWN",
+        canonical_writer="UNKNOWN",
+        safety_class="UNKNOWN",
+        gate_tier="TU",
+        recommended_next_packet="Separate inventory-regeneration packet",
+        evidence_refs=(str(package.package_dir / "PACKAGE_REMEDIATION_INDEX.json"),),
+        aggregated_count=1,
+    )
+
+    route_classes = (
+        ("PARAM_UNRESOLVED", "required parameter unresolved"),
+        ("CWD_UNRESOLVED", "cwd or worktree path unresolved"),
+        ("PROOF_REQUIREMENT_UNKNOWN", "expected proof unknown"),
+        ("ROLLBACK_UNKNOWN", "rollback or abort unknown"),
+        ("SIDE_EFFECTS_UNKNOWN", "side effects unknown"),
+        ("TP_GATE_ABSENT", "TP gate absent"),
+        ("AUTHORITY_DRIFT_MID_FLOW", "authority drift mid-flow"),
+        ("CLASS_DRIFT_MID_FLOW", "class drift mid-flow"),
+        ("UNSAFE_SOURCE_SURFACE", "unsafe source surface"),
+        ("STALE_HANDOFF", "stale handoff timestamp"),
+        ("MISSING_REQUIRED_FIELD", "required preflight field missing"),
+        ("UNKNOWN_CANONICAL_WRITER", "canonical writer unknown"),
+        ("UNKNOWN_AUTHORITY_DOMAIN", "authority domain unknown"),
+    )
+    for reason_code, detail in route_classes:
+        append_item(
+            source_surface="Safe Actions / Proof Gate",
+            source_artifact_path=str(safe_handoff_path),
+            source_packet_id="TP-DMX-COCKPIT-SAFE-ACTIONS-001",
+            source_row_id=f"safe_action_refusal.{reason_code}",
+            command_or_row_label=f"Safe Action refusal route: {reason_code}",
+            reason_code=reason_code,
+            reason_detail=f"Accepted Safe Action handoff routes {detail} to the queue without execution.",
+            authority_domain="UNKNOWN",
+            canonical_writer="UNKNOWN",
+            safety_class="UNKNOWN",
+            gate_tier="TU",
+            recommended_next_packet=UNKNOWN_DRIFT_PACKET_ID,
+            evidence_refs=(str(safe_handoff_path), str(safe_refusal_path)),
+            aggregated_count="UNKNOWN",
+        )
+
+    package_residuals = package.index.get("residual_unknowns", ())
+    if isinstance(package_residuals, list):
+        for index, residual in enumerate(package_residuals):
+            if not isinstance(residual, Mapping):
+                continue
+            append_item(
+                source_surface="Package residual unknown",
+                source_artifact_path=str(package.package_dir / "PACKAGE_REMEDIATION_INDEX.json"),
+                source_packet_id=PACKAGE_PACKET_ID,
+                source_row_id=f"package_residual_unknown.{index}",
+                command_or_row_label=str(residual.get("unknown") or "Package residual unknown"),
+                reason_code="UNKNOWN",
+                reason_detail=str(residual.get("blocker_condition") or "Accepted package residual UNKNOWN."),
+                authority_domain="UNKNOWN",
+                canonical_writer="UNKNOWN",
+                safety_class="UNKNOWN",
+                gate_tier="TU",
+                recommended_next_packet=str(residual.get("owner") or UNKNOWN_DRIFT_PACKET_ID),
+                evidence_refs=(str(package.package_dir / "PACKAGE_REMEDIATION_INDEX.json"),),
+                aggregated_count="UNKNOWN",
+            )
+
+    for proof_name, proof_packet_id, proof_path, proof in (
+        ("Runtime Render residual risk", RUNTIME_PACKET_ID, runtime_proof_path, runtime_proof),
+        ("Settings Runtime residual risk", SETTINGS_RUNTIME_PACKET_ID, settings_proof_path, settings_proof),
+    ):
+        residuals = proof.get("residual_risks", ())
+        if not isinstance(residuals, list):
+            continue
+        for index, residual in enumerate(residuals):
+            detail = str(residual)
+            reason_code = "UNKNOWN"
+            if "T4" in detail or "remote-mutation" in detail:
+                reason_code = "REMOTE_MUTATION_POLICY_MISSING"
+            elif "Settings/Admin" in detail and "UNKNOWN" in detail:
+                reason_code = "SETTINGS_ROW_TIER_UNKNOWN"
+            elif "Inventory regeneration" in detail or "inventory regeneration" in detail:
+                reason_code = "INDEX_DRIFT"
+            append_item(
+                source_surface=proof_name,
+                source_artifact_path=str(proof_path),
+                source_packet_id=proof_packet_id,
+                source_row_id=f"{proof_packet_id}.residual_risk.{index}",
+                command_or_row_label=f"{proof_name} {index}",
+                reason_code=reason_code,
+                reason_detail=detail,
+                authority_domain="UNKNOWN",
+                canonical_writer="UNKNOWN",
+                safety_class="UNKNOWN",
+                gate_tier="TU",
+                recommended_next_packet=UNKNOWN_DRIFT_PACKET_ID,
+                evidence_refs=(str(proof_path),),
+                aggregated_count="UNKNOWN",
+            )
+
+    return tuple(sorted(items, key=lambda item: item.queue_item_id))
+
+
+def build_unknown_drift_queue_summary(
+    package: LoadedPackage,
+    *,
+    settings_admin_runtime: SettingsAdminRuntimeSummary | None = None,
+) -> UnknownDriftQueueSummary:
+    settings = settings_admin_runtime or build_settings_admin_runtime_summary(package)
+    items = _aggregate_unknown_drift_items(package, settings)
+    aggregated_item_counts = {
+        item.command_or_row_label: item.aggregated_count
+        for item in sorted(items, key=lambda candidate: candidate.command_or_row_label)
+    }
+    reason_counts = {reason: 0 for reason in UNKNOWN_DRIFT_REASON_CODES}
+    source_surface_counts: dict[str, int | str] = {}
+    owner_packet_counts: dict[str, int | str] = {}
+    total_known = 0
+    has_unknown_counts = False
+    for item in items:
+        count = item.aggregated_count
+        if isinstance(count, int):
+            total_known += count
+        else:
+            has_unknown_counts = True
+        _increment_count(reason_counts, item.reason_code, count)
+        _increment_count(source_surface_counts, item.source_surface, count)
+        _increment_count(owner_packet_counts, item.recommended_next_packet, count)
+    source_artifacts = tuple(
+        sorted({ref for item in items for ref in (item.source_artifact_path, *item.evidence_refs)})
+    )
+    return UnknownDriftQueueSummary(
+        surface_name="Unknown / Drift Queue",
+        surface_kind="secondary/global surface",
+        items=items,
+        total_queue_items=total_known,
+        total_queue_items_is_lower_bound=has_unknown_counts,
+        aggregated_item_count=len(items),
+        aggregated_item_counts=aggregated_item_counts,
+        reason_counts=reason_counts,
+        source_surface_counts=source_surface_counts,
+        owner_packet_counts=owner_packet_counts,
+        execution_allowed=False,
+        runtime_reclassification_allowed=False,
+        requires_packet_for_resolution=True,
+        top_unresolved_owners=_top_unresolved_owners(owner_packet_counts),
+        stale_proof_count=reason_counts.get("STALE_PROOF_GATE", 0),
+        index_drift_count=reason_counts.get("INDEX_DRIFT", 0),
+        settings_unknown_tier_count=settings.unknown_tier_count,
+        source_artifact_refs=source_artifacts,
+        safe_for_claude_design="NO",
+        ready_for_claude_design="not approved",
+        allowed_affordances=ALLOWED_UNKNOWN_DRIFT_AFFORDANCES,
     )
 
 
@@ -742,6 +1394,7 @@ def build_runtime_render_model(
     if not all(invariants.values()):
         raise RuntimeContractError("[BLOCKER] package invariants are not preserved")
 
+    settings_admin_runtime = build_settings_admin_runtime_summary(package)
     return RuntimeRenderModel(
         top_level_modes=TOP_LEVEL_MODES,
         global_surfaces=GLOBAL_SURFACES,
@@ -755,7 +1408,11 @@ def build_runtime_render_model(
         ia_verdict=str(package.proof.get("ia_verdict", "UNKNOWN")),
         invariants=invariants,
         config=config or RuntimeConfig(),
-        settings_admin_runtime=build_settings_admin_runtime_summary(package),
+        settings_admin_runtime=settings_admin_runtime,
+        unknown_drift_queue=build_unknown_drift_queue_summary(
+            package,
+            settings_admin_runtime=settings_admin_runtime,
+        ),
     )
 
 
@@ -807,6 +1464,32 @@ def render_runtime_snapshot(
             f"  READY_FOR_CLAUDE_DESIGN: {settings.ready_for_claude_design}",
         )
     )
+    queue = model.unknown_drift_queue
+    lines.extend(
+        (
+            "unknown_drift_queue:",
+            f"  surface_name: {queue.surface_name}",
+            f"  surface_kind: {queue.surface_kind}",
+            f"  total_queue_items: {queue.total_queue_items}",
+            f"  total_queue_items_is_lower_bound: {str(queue.total_queue_items_is_lower_bound).lower()}",
+            f"  aggregated_item_count: {queue.aggregated_item_count}",
+            f"  reason_counts: {json.dumps(queue.reason_counts, sort_keys=True)}",
+            f"  source_surface_counts: {json.dumps(queue.source_surface_counts, sort_keys=True)}",
+            f"  owner_packet_counts: {json.dumps(queue.owner_packet_counts, sort_keys=True)}",
+            f"  execution_allowed: {str(queue.execution_allowed).lower()}",
+            "  runtime_reclassification_allowed: "
+            f"{str(queue.runtime_reclassification_allowed).lower()}",
+            f"  requires_packet_for_resolution: {str(queue.requires_packet_for_resolution).lower()}",
+            f"  top_unresolved_owners: {json.dumps(list(queue.top_unresolved_owners), sort_keys=True)}",
+            f"  stale_proof_count: {queue.stale_proof_count}",
+            f"  index_drift_count: {queue.index_drift_count}",
+            f"  settings_unknown_tier_count: {queue.settings_unknown_tier_count}",
+            f"  source_artifact_ref_count: {len(queue.source_artifact_refs)}",
+            f"  allowed_affordances: {' | '.join(queue.allowed_affordances)}",
+            f"  safe_for_claude_design: {queue.safe_for_claude_design}",
+            f"  READY_FOR_CLAUDE_DESIGN: {queue.ready_for_claude_design}",
+        )
+    )
     lines.extend(
         (
             "runtime_config:",
@@ -848,6 +1531,7 @@ def runtime_snapshot_payload(
         "global_surfaces": list(model.global_surfaces),
         "safe_action_tiers": list(model.safe_action_tiers),
         "settings_admin_runtime": model.settings_admin_runtime.as_payload(),
+        "unknown_drift_queue": model.unknown_drift_queue.as_payload(),
         "artifact_provenance": [
             {
                 "name": artifact.name,
@@ -1063,7 +1747,10 @@ SECRET_KEY_RE = re.compile(
 )
 
 SECRET_VALUE_RE = re.compile(
-    r"(bearer\s+)[A-Za-z0-9._~+/=-]+|([A-Za-z0-9_]*token=)[^&\s]+",
+    r"(bearer\s+)[A-Za-z0-9._~+/=-]+|"
+    r"([A-Za-z0-9_]*token=)[^&\s]+|"
+    r"((?:authorization|cookie|session)[=:]\s*)[^&\n]+|"
+    r"((?:api[_-]?key|password|secret|private[_-]?key)[=:]\s*)[^&\s]+",
     re.IGNORECASE,
 )
 
@@ -1082,7 +1769,13 @@ def redact_secrets(value: Any) -> Any:
     if isinstance(value, tuple):
         return tuple(redact_secrets(child) for child in value)
     if isinstance(value, str):
-        return SECRET_VALUE_RE.sub(lambda match: f"{match.group(1) or match.group(2)}[REDACTED]", value)
+        return SECRET_VALUE_RE.sub(
+            lambda match: (
+                f"{match.group(1) or match.group(2) or match.group(3) or match.group(4)}"
+                "[REDACTED]"
+            ),
+            value,
+        )
     return value
 
 
