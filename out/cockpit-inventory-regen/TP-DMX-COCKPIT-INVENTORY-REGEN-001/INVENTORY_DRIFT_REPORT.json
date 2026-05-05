@@ -1,0 +1,230 @@
+{
+  "schema_version": "dopemux.cockpit.inventory_drift_report.v1",
+  "packet_id": "TP-DMX-COCKPIT-INVENTORY-REGEN-001",
+  "generated_at_utc": "2026-05-04T21:53:46Z",
+  "base_branch": "codex/cockpit-unknown-drift-001",
+  "base_head": "b6b89fae076a669952ef1178d7d7d17a3e01eb7b",
+  "current_head": "b6b89fae076a669952ef1178d7d7d17a3e01eb7b",
+  "comparison_policy": "Compare regenerated aggregate evidence to accepted carried counts only where both sides expose comparable fields. Do not infer per-row drift from aggregates.",
+  "classifications_used": [
+    "SAME",
+    "INCREASED",
+    "DECREASED",
+    "NEW_UNKNOWN",
+    "RESOLVED_UNKNOWN",
+    "STALE_INPUT",
+    "UNCOMPARABLE",
+    "NEEDS_PACKET_DECISION"
+  ],
+  "summary": {
+    "total_comparisons": 17,
+    "same": 11,
+    "increased": 0,
+    "decreased": 0,
+    "new_unknown": 0,
+    "resolved_unknown": 1,
+    "stale_input": 2,
+    "uncomparable": 2,
+    "needs_packet_decision": 1
+  },
+  "comparisons": [
+    {
+      "metric": "total_inventory_rows",
+      "accepted_value": 405,
+      "regenerated_value": 405,
+      "delta": 0,
+      "classification": "SAME",
+      "evidence": "Carried count from COMMAND_EXPOSURE_POLICY.json and PACKAGE_REMEDIATION_INDEX.json."
+    },
+    {
+      "metric": "active_rows",
+      "accepted_value": 366,
+      "regenerated_value": 366,
+      "delta": 0,
+      "classification": "SAME",
+      "evidence": "Carried activation count."
+    },
+    {
+      "metric": "placement_counts",
+      "accepted_value": {
+        "Command Palette": 139,
+        "Events": 15,
+        "External/Not Cockpit": 37,
+        "Implementer": 73,
+        "Overview": 9,
+        "PM": 15,
+        "Services": 54,
+        "Settings/Admin": 62,
+        "UNKNOWN": 1
+      },
+      "regenerated_value": {
+        "Command Palette": 139,
+        "Events": 15,
+        "External/Not Cockpit": 37,
+        "Implementer": 73,
+        "Overview": 9,
+        "PM": 15,
+        "Services": 54,
+        "Settings/Admin": 62,
+        "UNKNOWN": 1
+      },
+      "delta": 0,
+      "classification": "SAME",
+      "evidence": "Accepted aggregate placement counts preserved."
+    },
+    {
+      "metric": "safe_ui_exposure_counts",
+      "accepted_value": {
+        "BLOCKED_IN_COCKPIT": 48,
+        "COMMAND_PALETTE_ONLY": 40,
+        "CONFIRM_REQUIRED": 111,
+        "DISPLAY_ONLY": 178,
+        "INSPECT_ACTION": 23,
+        "UNKNOWN": 5
+      },
+      "regenerated_value": {
+        "BLOCKED_IN_COCKPIT": 48,
+        "COMMAND_PALETTE_ONLY": 40,
+        "CONFIRM_REQUIRED": 111,
+        "DISPLAY_ONLY": 178,
+        "INSPECT_ACTION": 23,
+        "UNKNOWN": 5
+      },
+      "delta": 0,
+      "classification": "SAME",
+      "evidence": "Accepted aggregate safety counts preserved."
+    },
+    {
+      "metric": "activation_status_counts",
+      "accepted_value": {
+        "ACTIVE": 366,
+        "DEFINED_NOT_REGISTERED": 30,
+        "DEPRECATED_BLOCKED": 7,
+        "OPTIONAL_IMPORT_UNKNOWN": 2
+      },
+      "regenerated_value": {
+        "ACTIVE": 366,
+        "DEFINED_NOT_REGISTERED": 30,
+        "DEPRECATED_BLOCKED": 7,
+        "OPTIONAL_IMPORT_UNKNOWN": 2
+      },
+      "delta": 0,
+      "classification": "SAME",
+      "evidence": "Accepted activation counts preserved."
+    },
+    {
+      "metric": "coverage_counts",
+      "accepted_value": {
+        "MISSING": 284,
+        "OUT_OF_SCOPE": 7,
+        "PARTIAL": 82,
+        "UNKNOWN": 32
+      },
+      "regenerated_value": {
+        "MISSING": 284,
+        "OUT_OF_SCOPE": 7,
+        "PARTIAL": 82,
+        "UNKNOWN": 32
+      },
+      "delta": 0,
+      "classification": "SAME",
+      "evidence": "Accepted coverage counts preserved."
+    },
+    {
+      "metric": "settings_admin_row_count",
+      "accepted_value": 62,
+      "regenerated_value": 62,
+      "delta": 0,
+      "classification": "SAME",
+      "evidence": "Accepted package and Settings/Admin proof both carry 62 rows."
+    },
+    {
+      "metric": "settings_admin_per_row_tier_mapping",
+      "accepted_value": "UNKNOWN",
+      "regenerated_value": "UNKNOWN",
+      "delta": "NOT_NUMERIC",
+      "classification": "NEEDS_PACKET_DECISION",
+      "evidence": "Accepted artifacts prove 62 rows but not complete per-row tier evidence."
+    },
+    {
+      "metric": "unknown_drift_lower_bound_queue_count",
+      "accepted_value": 487,
+      "regenerated_value": 487,
+      "delta": 0,
+      "classification": "SAME",
+      "evidence": "Accepted Unknown/Drift proof lower bound preserved."
+    },
+    {
+      "metric": "t4_blocked_count",
+      "accepted_value": 1,
+      "regenerated_value": 1,
+      "delta": 0,
+      "classification": "SAME",
+      "evidence": "T4 remote-mutation policy missing aggregate remains blocked."
+    },
+    {
+      "metric": "tx_exact_row_count",
+      "accepted_value": "UNKNOWN",
+      "regenerated_value": "UNKNOWN",
+      "delta": "NOT_NUMERIC",
+      "classification": "UNCOMPARABLE",
+      "evidence": "Blocked safety count and deprecated activation count may overlap; accepted artifacts do not expose row-level TX mapping."
+    },
+    {
+      "metric": "tu_exact_row_count",
+      "accepted_value": "UNKNOWN",
+      "regenerated_value": "UNKNOWN",
+      "delta": "NOT_NUMERIC",
+      "classification": "UNCOMPARABLE",
+      "evidence": "Unknown, non-active, missing coverage, authority conflict, and Settings/Admin unknown-tier axes overlap without row records."
+    },
+    {
+      "metric": "stale_proof_count",
+      "accepted_value": 1,
+      "regenerated_value": 1,
+      "delta": 0,
+      "classification": "SAME",
+      "evidence": "Accepted Unknown/Drift proof reports stale_proof_count 1."
+    },
+    {
+      "metric": "accepted_unknown_drift_index_drift_count",
+      "accepted_value": 1,
+      "regenerated_value": 1,
+      "delta": 0,
+      "classification": "STALE_INPUT",
+      "evidence": "Accepted Unknown/Drift proof carried inventory-regeneration gap as index drift. This packet records current-head regeneration but does not rewrite upstream proof."
+    },
+    {
+      "metric": "inventory_regeneration_blocker_condition",
+      "accepted_value": "Inventory regeneration against current HEAD remains a separate packet",
+      "regenerated_value": "Current packet emits inventory, drift, status, decision, hash, and proof artifacts",
+      "delta": "NOT_NUMERIC",
+      "classification": "RESOLVED_UNKNOWN",
+      "evidence": "Resolution is limited to the freshness blocker for this artifact packet; no command row is reclassified."
+    },
+    {
+      "metric": "runtime_dopemux_help_resolution",
+      "accepted_value": "UNKNOWN",
+      "regenerated_value": "UNKNOWN",
+      "delta": "NOT_NUMERIC",
+      "classification": "STALE_INPUT",
+      "evidence": "Runtime dopemux help remains unresolved in accepted residuals. This packet did not invoke live runtime discovery."
+    },
+    {
+      "metric": "per_row_inventory_precision",
+      "accepted_value": "aggregate_only",
+      "regenerated_value": "aggregate_only",
+      "delta": "NOT_NUMERIC",
+      "classification": "SAME",
+      "evidence": "Aggregate-only precision is preserved rather than hidden."
+    }
+  ],
+  "drift_not_resolved_in_this_packet": [
+    "Settings/Admin per-row tier mapping",
+    "Decision subcommands and optional/defined-not-registered rows",
+    "Root authority doc/schema gaps",
+    "Remote-mutation policy absence",
+    "Claude Design final-screen blockers",
+    "Runtime dopemux help resolution"
+  ]
+}
