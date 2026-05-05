@@ -1,0 +1,105 @@
+{
+  "id": "TP-DMX-COCKPIT-RUNTIME-RENDER-001",
+  "project": "dopemux-mvp",
+  "target": "Wire Cockpit runtime renderer primitives to the accepted package-remediation contract while keeping execution, remote mutation, and Claude Design final screens blocked.",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dopemux-cockpit-ia-remediation",
+    "base_branch": "pack/cockpit-pack-remediate-006-ia",
+    "parent_tp_id": "TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/cockpit-runtime-render-001"
+  },
+  "commit": {
+    "message": "ui(cockpit): wire runtime renderer primitives to IA package",
+    "allowlist": [
+      "src/dopemux/ui/cockpit/**",
+      "src/dopemux/commands/cockpit_commands.py",
+      "src/dopemux/cli.py",
+      "tests/unit/dopemux/ui/cockpit/**",
+      "tests/unit/test_cockpit_cli.py",
+      "task-packets/generated/TP-DMX-COCKPIT-RUNTIME-RENDER-001.json",
+      "task-packets/INDEX.md",
+      "proof/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/**",
+      "out/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/**"
+    ],
+    "verify": [
+      "python -m json.tool out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PACKAGE_REMEDIATION_INDEX.json >/dev/null",
+      "python -m json.tool out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PROOF.json >/dev/null",
+      "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-RUNTIME-RENDER-001.json >/dev/null",
+      "python -m compileall -q src/dopemux tests",
+      "python -m pytest tests/unit/dopemux/ui/cockpit -q",
+      "python -m pytest tests/unit/test_cockpit_cli.py -q",
+      "grep -R -E \"safe_for_claude_design: NO|READY_FOR_CLAUDE_DESIGN: not approved\" -n src/dopemux tests out/cockpit-runtime-render proof/cockpit-runtime-render || true",
+      "! grep -R -E \"READY_FOR_CLAUDE_DESIGN: approved|safe_for_claude_design: YES|Claude Design upload allowed|T4 authorized|runtime execution implemented\" -n src/dopemux tests out/cockpit-runtime-render proof/cockpit-runtime-render",
+      "! grep -R -E \"subprocess|shell=True|os\\.system|requests|httpx|urllib|socket|docker|kubectl|gh pr create|git push\" -n src/dopemux/ui/cockpit src/dopemux/commands/cockpit_commands.py tests/unit/dopemux/ui/cockpit tests/unit/test_cockpit_cli.py",
+      "git diff --check",
+      "git status --short --branch"
+    ]
+  },
+  "pr": {
+    "title": "ui(cockpit): wire runtime renderer primitives to IA package",
+    "body": "## Summary\n- add deterministic local-only Cockpit runtime renderer primitives for the accepted IA package contract\n- load package proof/index artifacts with provenance and fail-closed blockers\n- implement Safe Action preflight and receipt primitives without runtime execution\n\n## Strict scope\n- no final screens\n- no Claude Design upload\n- no runtime action execution\n- no T4 remote mutation\n- no live service adapters\n\n## Governance state\nsafe_for_claude_design: NO\nREADY_FOR_CLAUDE_DESIGN: not approved\n\n## Validation\nSee closeout proof for command outputs and exit codes.\n\n## Residual risks and downstream packets\n- T4 remains blocked until a remote-mutation policy packet exists\n- Settings/Admin per-row tier mapping remains owned by TP-DMX-COCKPIT-SETTINGS-RUNTIME-001\n- Unknown/Drift Queue full surface remains owned by TP-DMX-COCKPIT-UNKNOWN-DRIFT-001\n- inventory regeneration remains a separate packet",
+    "base": "pack/cockpit-pack-remediate-006-ia"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Inspect repo authority, accepted package artifacts, and current Cockpit runtime surfaces before implementation.",
+      "validation": [
+        "Package branch and accepted HEAD are verified.",
+        "Root authority absences are marked UNKNOWN.",
+        "Cockpit runtime files and tests are inspected before editing."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Implement deterministic package loading, render model, Safe Action preflight, and receipt primitives without execution.",
+      "validation": [
+        "Loader fails closed on missing package inputs and parses accepted proof/index files.",
+        "Render model preserves exactly five top-level modes and four global surfaces.",
+        "Safe Action preflight refuses blocked, unknown, stale, drifted, unsafe, and policy-missing candidates."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Wire the guarded Cockpit CLI runtime-render flag and keep default Cockpit rendering fail-closed.",
+      "validation": [
+        "Runtime render requires an explicit flag and package directory.",
+        "CLI snapshot output preserves Claude Design blocked state.",
+        "No shellout, network, live service, DB, PM, ConPort, dope-memory, or remote mutation code is introduced."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Add focused unit tests and local proof artifacts for the runtime-render primitive layer.",
+      "validation": [
+        "Focused Cockpit tests pass.",
+        "CLI tests pass.",
+        "Boundary greps pass without forbidden positive claims.",
+        "Proof output is written only under the allowed runtime-render proof/out paths and is labeled as proof, not runtime authority."
+      ]
+    }
+  ]
+}
