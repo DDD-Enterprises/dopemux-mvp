@@ -151,5 +151,6 @@
     "proof/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/BLOCKER_REPORT.md absent."
   ],
   "upstream_artifact_mutation": "not_modified",
+  "cleanup_status": "WORKTREE_RETAINED_FOR_USER_INSPECTION_AFTER_CLEAN_PUSH_AND_PR",
   "confidence": "VERIFIED"
 }

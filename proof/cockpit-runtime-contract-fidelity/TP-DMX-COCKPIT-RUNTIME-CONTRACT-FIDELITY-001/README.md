@@ -52,3 +52,7 @@ Validated so far:
 ## Final Head Policy
 
 `PROOF.json` records implementation commit `3b1c426379ee141a7929cfc31644f86830fe9f0d` and PR https://github.com/DDD-Enterprises/dopemux-mvp/pull/573. The proof metadata cleanup commit and final branch HEAD are reported in closeout rather than self-hashed inside `PROOF.json`.
+
+## Cleanup Status
+
+The dedicated worktree is retained for user inspection after clean push and PR creation.
