@@ -1,0 +1,155 @@
+{
+  "schema_version": "dopemux.cockpit.runtime_contract_fidelity.proof.v1",
+  "packet_id": "TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001",
+  "created_at_utc": "2026-05-05T03:20:42Z",
+  "project": "dopemux-mvp",
+  "branch": "codex/cockpit-runtime-contract-fidelity-001",
+  "base_branch": "pack/cockpit-pack-remediate-006-ia",
+  "base_head": "b173efd83c871c30f2bd86530921c866d08e7e45",
+  "worktree_path": "/Users/hue/code/dopemux-worktrees/dopemux-cockpit-runtime-contract-fidelity-001",
+  "repo_identity": {
+    "marker": ".dopetaskroot",
+    "marker_verified": true,
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "origin_match": true
+  },
+  "governance_state": {
+    "safe_for_claude_design": "NO",
+    "READY_FOR_CLAUDE_DESIGN": "not approved",
+    "claude_design_upload": "not_authorized",
+    "final_screen_generation": "not_authorized",
+    "runtime_action_execution": "not_authorized",
+    "t4_remote_mutation": "not_authorized",
+    "canonical_writes": "not_authorized",
+    "unknown_drift_runtime_reclassification": "disabled",
+    "tx_tu_execution": "disabled"
+  },
+  "review_thread_classifications": [
+    {
+      "issue": "EXTERNAL_ONLY candidates could reach confirmable gate logic",
+      "classification": "runtime_contract_gap",
+      "implemented_fix": "Safe Action preflight now refuses EXTERNAL_ONLY before confirmable-tier checks and routes to the originating inspect/copy surface."
+    },
+    {
+      "issue": "Receipt action_row_hash trusted caller-supplied input",
+      "classification": "receipt_provenance_gap",
+      "implemented_fix": "Gate receipts now recompute action_row_hash from a redacted canonical candidate payload with caller action_row_hash removed."
+    },
+    {
+      "issue": "Receipt payload missed lifecycle fields from SAFE_ACTION_GATE_EVENT_RECEIPTS.md",
+      "classification": "schema_fidelity_gap",
+      "implemented_fix": "Gate receipts now include event, gate-open, confirm, proof, typed-confirmation, diff, remote policy, task, service, stale-proof, and normative schema fields modeled by the local primitive."
+    },
+    {
+      "issue": "palette_request_id remained populated for non-palette origins",
+      "classification": "correlation_contract_gap",
+      "implemented_fix": "Gate receipts now set palette_request_id to null unless surface_origin is COMMAND_PALETTE."
+    },
+    {
+      "issue": "gate_request_id fallback changed across lifecycle events",
+      "classification": "lifecycle_correlation_gap",
+      "implemented_fix": "Default gate_request_id derivation now uses the canonical action hash rather than event timestamp."
+    },
+    {
+      "issue": "UNKNOWN aggregate counts could remain zero when an aggregate item had unknown count",
+      "classification": "unknown_preservation_gap",
+      "implemented_fix": "Aggregate counters now preserve UNKNOWN when any item for the bucket has a non-integer count."
+    },
+    {
+      "issue": "Unknown/Drift queue IDs and row hashes were derived before redaction",
+      "classification": "redaction_order_gap",
+      "implemented_fix": "Queue row_hash and queue_item_id derivation now uses redacted seed values."
+    },
+    {
+      "issue": "Package directory resolution was coupled to process cwd and direct parent names",
+      "classification": "artifact_resolution_gap",
+      "implemented_fix": "Relative package directories can now resolve through the repo marker while accepted artifact path validation remains fail-closed."
+    },
+    {
+      "issue": "Inventory metadata tests did not validate source artifact digest placeholders or runtime source line counts",
+      "classification": "artifact_test_gap",
+      "implemented_fix": "Inventory tests now verify sha256 values are real digests or documented UNKNOWN placeholders and verify line_count for present runtime source files."
+    }
+  ],
+  "changed_files": [
+    "src/dopemux/ui/cockpit/runtime_contract.py",
+    "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+    "tests/unit/dopemux/ui/cockpit/test_inventory_regen_artifacts.py",
+    "task-packets/generated/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001.json",
+    "task-packets/INDEX.md",
+    "out/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/PROOF.json",
+    "proof/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/README.md"
+  ],
+  "validations": [
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001.json >/dev/null",
+      "exit_code": 0
+    },
+    {
+      "command": "python -m compileall -q src/dopemux tests",
+      "exit_code": 0
+    },
+    {
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit -q",
+      "exit_code": 0,
+      "notes": "83 passed; pytest emitted existing asyncio_mode warning."
+    },
+    {
+      "command": "python -m pytest tests/unit/test_cockpit_cli.py -q",
+      "exit_code": 0,
+      "notes": "5 passed; pytest emitted existing asyncio_mode warning."
+    },
+    {
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit/test_inventory_regen_artifacts.py -q",
+      "exit_code": 0,
+      "notes": "12 passed; pytest emitted existing asyncio_mode warning."
+    },
+    {
+      "command": "command -v codereview || true",
+      "exit_code": 0,
+      "notes": "codereview was not present on PATH; explicit diff review used instead."
+    },
+    {
+      "command": "python -m json.tool out/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/PROOF.json >/dev/null",
+      "exit_code": 0
+    },
+    {
+      "command": "forbidden governance grep over src/dopemux tests packet-owned out/proof paths",
+      "exit_code": 0
+    },
+    {
+      "command": "! grep -R -E \"subprocess|shell=True|os\\.system|requests|httpx|urllib|socket|docker|kubectl\" -n src/dopemux/ui/cockpit src/dopemux/commands/cockpit_commands.py tests/unit/dopemux/ui/cockpit tests/unit/test_cockpit_cli.py",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    },
+    {
+      "command": "pre-commit run --files src/dopemux/ui/cockpit/runtime_contract.py tests/unit/dopemux/ui/cockpit/test_runtime_contract.py tests/unit/dopemux/ui/cockpit/test_inventory_regen_artifacts.py tests/unit/test_cockpit_cli.py task-packets/generated/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001.json task-packets/INDEX.md out/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/PROOF.json proof/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/README.md",
+      "exit_code": 0
+    }
+  ],
+  "pending_final_validations": [],
+  "codereview_status": "UNAVAILABLE_COMMAND_NOT_FOUND",
+  "explicit_diff_review_status": "performed_before_proof_creation",
+  "implementation_commit": "PENDING_BEFORE_COMMIT",
+  "pr_url": "PENDING_BEFORE_PR_CREATE",
+  "final_head_recording_policy": "PROOF.json records implementation evidence before the final commit and PR exist. Final commit SHA, pushed branch, PR URL, and any proof metadata drift are reported in closeout to avoid self-referential proof churn.",
+  "residual_risks": [
+    "The absent proof/cockpit-merge-execute paths named by the TP could not be inspected in this worktree.",
+    "No dopetask-canonical-spec.json exists in this checkout; TP validation used JSON parsing and manual required-field checks.",
+    "The local receipt primitive still models receipts in memory only; it does not write an evidence stream or execute actions.",
+    "Default gate_request_id derivation is deterministic for the same canonical action payload; a real multi-invocation runtime would need an invocation id from gate_open."
+  ],
+  "unknowns": [
+    "Root RULES.md absent in this worktree.",
+    "Root TRUTH_*.md absent in this worktree.",
+    "Root SYSTEM_*.md absent in this worktree.",
+    "dopetask-canonical-spec.json absent in this worktree.",
+    "proof/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/PROOF.json absent.",
+    "proof/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/BLOCKER_REPORT.md absent."
+  ],
+  "upstream_artifact_mutation": "not_modified",
+  "confidence": "VERIFIED"
+}

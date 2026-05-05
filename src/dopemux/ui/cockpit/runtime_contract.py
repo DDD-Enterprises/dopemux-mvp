@@ -12,7 +12,6 @@ import re
 from typing import Any
 from uuid import NAMESPACE_URL, uuid5
 
-
 PACKAGE_PACKET_ID = "TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA"
 RUNTIME_PACKET_ID = "TP-DMX-COCKPIT-RUNTIME-RENDER-001"
 SETTINGS_RUNTIME_PACKET_ID = "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001"
@@ -334,14 +333,11 @@ PROOF_BY_TIER: dict[str, str] = {
     "TU": "INVESTIGATION_PACKET_REFERENCE",
 }
 
-
 class PackageLoadError(RuntimeError):
     """Fail-closed package loader error with an operator-visible blocker."""
 
-
 class RuntimeContractError(RuntimeError):
     """Fail-closed runtime contract validation error."""
-
 
 @dataclass(frozen=True)
 class RuntimeConfig:
@@ -349,14 +345,12 @@ class RuntimeConfig:
     confirm_flow_timeout_seconds: int = 900
     unauthenticated_operator_id: str = "NULL_NOT_AUTHENTICATED"
 
-
 @dataclass(frozen=True)
 class ArtifactProvenance:
     name: str
     path: str
     expected_sha256: str | None
     actual_sha256: str
-
 
 @dataclass(frozen=True)
 class LoadedPackage:
@@ -379,7 +373,6 @@ class LoadedPackage:
                 return artifact.actual_sha256
         raise RuntimeContractError(f"[BLOCKER] artifact provenance missing for {name}")
 
-
 @dataclass(frozen=True)
 class RuntimeRenderModel:
     top_level_modes: tuple[str, ...]
@@ -397,7 +390,6 @@ class RuntimeRenderModel:
     settings_admin_runtime: SettingsAdminRuntimeSummary
     unknown_drift_queue: UnknownDriftQueueSummary
 
-
 @dataclass(frozen=True)
 class PreflightResult:
     status: str
@@ -406,7 +398,6 @@ class PreflightResult:
     missing_fields: tuple[str, ...]
     routing_destination: str
     execution_status: str = "not_attempted"
-
 
 @dataclass(frozen=True)
 class SettingsAdminTierMapping:
@@ -419,7 +410,6 @@ class SettingsAdminTierMapping:
     refusal_reason: str | None
     execution_status: str = "not_attempted"
     remote_policy_required: bool = False
-
 
 @dataclass(frozen=True)
 class SettingsAdminRuntimeSummary:
@@ -453,7 +443,6 @@ class SettingsAdminRuntimeSummary:
             "safe_for_claude_design": self.safe_for_claude_design,
             "READY_FOR_CLAUDE_DESIGN": self.ready_for_claude_design,
         }
-
 
 @dataclass(frozen=True)
 class UnknownDriftQueueItem:
@@ -504,7 +493,6 @@ class UnknownDriftQueueItem:
             "aggregated_count": self.aggregated_count,
         }
 
-
 @dataclass(frozen=True)
 class UnknownDriftQueueSummary:
     surface_name: str
@@ -554,11 +542,9 @@ class UnknownDriftQueueSummary:
             "items": [item.as_payload() for item in self.items],
         }
 
-
 def stable_sha256(value: Any) -> str:
     payload = json.dumps(value, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 def _file_sha256(path: Path) -> str:
     digest = hashlib.sha256()
@@ -566,7 +552,6 @@ def _file_sha256(path: Path) -> str:
         for block in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
-
 
 def _load_json(path: Path) -> dict[str, Any]:
     try:
@@ -576,7 +561,6 @@ def _load_json(path: Path) -> dict[str, Any]:
     if not isinstance(data, dict):
         raise PackageLoadError(f"[BLOCKER] required JSON is not an object: {path}")
     return data
-
 
 def _read_sha256sums(package_dir: Path) -> dict[str, str]:
     sha_file = package_dir / "sha256sums.txt"
@@ -592,9 +576,16 @@ def _read_sha256sums(package_dir: Path) -> dict[str, str]:
             checksums[parts[1].strip()] = parts[0].strip()
     return checksums
 
+def _repo_root_marker(start: Path) -> Path | None:
+    resolved = start.resolve()
+    current = resolved.parent if resolved.is_file() else resolved
+    return next((path for path in (current, *current.parents) if (path / ".dopetaskroot").is_file()), None)
 
 def load_package_artifacts(package_dir: str | Path) -> LoadedPackage:
-    root = Path(package_dir)
+    raw = Path(package_dir)
+    root = raw.resolve() if raw.is_absolute() else (Path.cwd() / raw).resolve()
+    if not raw.is_absolute() and not root.exists() and (repo_root := _repo_root_marker(Path.cwd())):
+        root = (repo_root / raw).resolve()
     if not root.exists() or not root.is_dir():
         raise PackageLoadError(f"[BLOCKER] package directory missing: {root}")
 
@@ -629,10 +620,8 @@ def load_package_artifacts(package_dir: str | Path) -> LoadedPackage:
         artifacts=tuple(artifacts),
     )
 
-
 def _settings_admin_source_path(package: LoadedPackage) -> str:
     return str(package.package_dir / SETTINGS_ADMIN_SOURCE_ARTIFACT)
-
 
 def _settings_admin_row_count(package: LoadedPackage) -> int | str:
     count = (
@@ -641,7 +630,6 @@ def _settings_admin_row_count(package: LoadedPackage) -> int | str:
         .get("Settings/Admin")
     )
     return count if isinstance(count, int) else "UNKNOWN"
-
 
 def build_settings_admin_runtime_summary(package: LoadedPackage) -> SettingsAdminRuntimeSummary:
     row_count = _settings_admin_row_count(package)
@@ -667,26 +655,25 @@ def build_settings_admin_runtime_summary(package: LoadedPackage) -> SettingsAdmi
         ready_for_claude_design="not approved",
     )
 
-
 def _repo_root_from_package(package: LoadedPackage) -> Path:
     package_dir = package.package_dir.resolve()
-    if (
-        package_dir.name != PACKAGE_PACKET_ID
-        or package_dir.parent.name != "cockpit-pack-remediation"
-        or package_dir.parent.parent.name != "out"
-    ):
+    repo_root = _repo_root_marker(package_dir)
+    expected = (
+        (repo_root / "out" / "cockpit-pack-remediation" / PACKAGE_PACKET_ID).resolve()
+        if repo_root is not None
+        else None
+    )
+    if repo_root is None or package_dir != expected:
         raise RuntimeContractError(
             "[BLOCKER] package directory is not the accepted cockpit package artifact path"
         )
-    return package_dir.parent.parent.parent
-
+    return repo_root
 
 def _required_source_path(repo_root: Path, *parts: str) -> Path:
     path = repo_root.joinpath(*parts)
     if not path.is_file():
         raise RuntimeContractError(f"[BLOCKER] accepted source artifact missing: {path}")
     return path
-
 
 def _source_created_at(*sources: Mapping[str, Any]) -> str:
     for source in sources:
@@ -695,10 +682,8 @@ def _source_created_at(*sources: Mapping[str, Any]) -> str:
             return value.strip()
     return "UNKNOWN"
 
-
 def _count_value(value: Any) -> int | str:
     return value if isinstance(value, int) else "UNKNOWN"
-
 
 def _redact_queue_text(value: Any) -> str:
     redacted = redact_secrets(value)
@@ -706,10 +691,8 @@ def _redact_queue_text(value: Any) -> str:
         return redacted
     return json.dumps(redacted, sort_keys=True, default=str)
 
-
 def _redact_queue_refs(values: tuple[str, ...]) -> tuple[str, ...]:
     return tuple(_redact_queue_text(value) for value in values)
-
 
 def build_unknown_drift_queue_item(
     *,
@@ -733,22 +716,22 @@ def build_unknown_drift_queue_item(
     if reason_code not in UNKNOWN_DRIFT_REASON_CODES:
         raise RuntimeContractError(f"[BLOCKER] unsupported Unknown / Drift reason: {reason_code}")
     seed = {
-        "source_surface": source_surface,
-        "source_artifact_path": source_artifact_path,
-        "source_packet_id": source_packet_id,
-        "source_row_id": source_row_id,
-        "command_or_row_label": command_or_row_label,
+        "source_surface": _redact_queue_text(source_surface),
+        "source_artifact_path": _redact_queue_text(source_artifact_path),
+        "source_packet_id": _redact_queue_text(source_packet_id),
+        "source_row_id": _redact_queue_text(source_row_id),
+        "command_or_row_label": _redact_queue_text(command_or_row_label),
         "reason_code": reason_code,
     }
     row_hash = stable_sha256(seed)
     return UnknownDriftQueueItem(
         queue_item_id=f"unknown-drift-{row_hash[:16]}",
-        source_surface=_redact_queue_text(source_surface),
-        source_artifact_path=_redact_queue_text(source_artifact_path),
-        source_packet_id=_redact_queue_text(source_packet_id),
-        source_row_id=_redact_queue_text(source_row_id),
+        source_surface=seed["source_surface"],
+        source_artifact_path=seed["source_artifact_path"],
+        source_packet_id=seed["source_packet_id"],
+        source_row_id=seed["source_row_id"],
         row_hash=row_hash,
-        command_or_row_label=_redact_queue_text(command_or_row_label),
+        command_or_row_label=seed["command_or_row_label"],
         reason_code=reason_code,
         reason_detail=_redact_queue_text(reason_detail),
         authority_domain=_redact_queue_text(authority_domain),
@@ -762,7 +745,6 @@ def build_unknown_drift_queue_item(
         aggregated_count=aggregated_count,
     )
 
-
 def _increment_count(
     counts: dict[str, int | str],
     key: str,
@@ -772,9 +754,7 @@ def _increment_count(
         current = counts.get(key, 0)
         counts[key] = current + amount if isinstance(current, int) else current
         return
-    if key not in counts:
-        counts[key] = "UNKNOWN"
-
+    counts[key] = "UNKNOWN"
 
 def _top_unresolved_owners(counts: dict[str, int | str]) -> tuple[dict[str, int | str], ...]:
     sortable: list[tuple[int, str, int | str]] = []
@@ -783,7 +763,6 @@ def _top_unresolved_owners(counts: dict[str, int | str]) -> tuple[dict[str, int 
         sortable.append((rank, owner, count))
     sortable.sort(key=lambda item: (-item[0], item[1]))
     return tuple({"owner_packet": owner, "count": count} for _, owner, count in sortable[:5])
-
 
 def _aggregate_unknown_drift_items(
     package: LoadedPackage,
@@ -1130,7 +1109,6 @@ def _aggregate_unknown_drift_items(
 
     return tuple(sorted(items, key=lambda item: item.queue_item_id))
 
-
 def build_unknown_drift_queue_summary(
     package: LoadedPackage,
     *,
@@ -1182,7 +1160,6 @@ def build_unknown_drift_queue_summary(
         ready_for_claude_design="not approved",
         allowed_affordances=ALLOWED_UNKNOWN_DRIFT_AFFORDANCES,
     )
-
 
 def _first_present(row: Mapping[str, Any], *keys: str) -> Any:
     for key in keys:
@@ -1269,12 +1246,13 @@ def map_settings_admin_row_to_gate_tier(row: Mapping[str, Any]) -> SettingsAdmin
             refusal_reason="BLOCKED_IN_COCKPIT",
         )
     if safety_class in {"UNKNOWN", "EXTERNAL_ONLY"} or explicit_tier == "TU":
+        is_external = safety_class == "EXTERNAL_ONLY"
         return _settings_admin_mapping(
             tier="TU",
             safety_class=safety_class,
             source="explicit unknown or external-only evidence",
-            refusal_route="UNKNOWN_DRIFT_QUEUE",
-            refusal_reason="UNKNOWN_CLASS",
+            refusal_route="ORIGINATING_SURFACE" if is_external else "UNKNOWN_DRIFT_QUEUE",
+            refusal_reason="EXTERNAL_ONLY" if is_external else "UNKNOWN_CLASS",
         )
     if explicit_tier in SAFE_ACTION_TIERS:
         return _settings_admin_mapping(
@@ -1625,13 +1603,14 @@ def evaluate_safe_action_preflight(
             (),
             "SHOW_BLOCKED_REASON",
         )
-    if tier in UNKNOWN_TIERS or safety_class == "UNKNOWN":
+    if tier in UNKNOWN_TIERS or safety_class in {"UNKNOWN", "EXTERNAL_ONLY"}:
+        is_external = safety_class == "EXTERNAL_ONLY"
         return PreflightResult(
-            "REFUSE_UNKNOWN",
+            "REFUSE_EXTERNAL_ONLY" if is_external else "REFUSE_UNKNOWN",
             False,
-            "UNKNOWN_CLASS",
+            "EXTERNAL_ONLY" if is_external else "UNKNOWN_CLASS",
             (),
-            "UNKNOWN_DRIFT_QUEUE",
+            "ORIGINATING_SURFACE" if is_external else "UNKNOWN_DRIFT_QUEUE",
         )
     if surface_origin in UNSAFE_SURFACE_ORIGINS or (
         surface_origin != "UNKNOWN" and surface_origin not in ALLOWED_SURFACE_ORIGINS
@@ -1788,6 +1767,12 @@ def _gate_request_id(seed: str) -> str:
     return str(uuid5(NAMESPACE_URL, f"dopemux:{RUNTIME_PACKET_ID}:{seed}"))
 
 
+def _canonical_action_hash(candidate: dict[str, Any]) -> str:
+    return stable_sha256(
+        {str(key): value for key, value in redact_secrets(candidate).items() if key != "action_row_hash"}
+    )
+
+
 def build_gate_receipt(
     *,
     event_type: str,
@@ -1804,8 +1789,9 @@ def build_gate_receipt(
 
     cfg = config or RuntimeConfig()
     event_timestamp = created_at_utc or _utc_now_string()
-    action_row_hash = str(candidate.get("action_row_hash") or stable_sha256(candidate))
-    request_id = gate_request_id or _gate_request_id(f"{action_row_hash}:{event_timestamp}")
+    action_row_hash = _canonical_action_hash(candidate)
+    request_id = gate_request_id or _gate_request_id(action_row_hash)
+    surface_origin = str(candidate.get("surface_origin", "UNKNOWN"))
     confirmation_status = {
         "gate_open": "pending" if preflight.can_confirm else "refused",
         "gate_refuse": "refused",
@@ -1828,7 +1814,7 @@ def build_gate_receipt(
     }[event_type]
     receipt = {
         "gate_request_id": request_id,
-        "palette_request_id": candidate.get("palette_request_id"),
+        "palette_request_id": candidate.get("palette_request_id") if surface_origin == "COMMAND_PALETTE" else None,
         "action_row_hash": action_row_hash,
         "tier": candidate.get("gate_tier", "UNKNOWN"),
         "safety_class": candidate.get("safety_class", "UNKNOWN"),
@@ -1845,10 +1831,24 @@ def build_gate_receipt(
         "proof_artifacts": proof_artifacts or {},
         "refusal_reason": preflight.refusal_reason,
         "routing_destination": preflight.routing_destination,
-        "surface_origin": candidate.get("surface_origin", "UNKNOWN"),
+        "surface_origin": surface_origin,
         "operator_id": operator_id or cfg.unauthenticated_operator_id,
         "created_at_utc": event_timestamp,
+        "event_timestamp_utc": event_timestamp,
+        "gate_open_timestamp_utc": candidate.get("gate_open_timestamp_utc") or event_timestamp,
+        "confirm_timestamp_utc": event_timestamp
+        if event_type in {"gate_confirmed", "gate_proof_captured", "gate_proof_incomplete"}
+        else None,
+        "proof_timestamp_utc": event_timestamp
+        if event_type in {"gate_proof_captured", "gate_proof_incomplete"}
+        else None,
+        "typed_confirmation_match": candidate.get("typed_confirmation_match", "not_required"),
+        "diff_acknowledged": candidate.get("diff_acknowledged"),
+        "remote_mutation_policy_reference": candidate.get("remote_mutation_policy_reference"),
+        "tp_or_task_id": candidate.get("tp_or_task_id"),
+        "service_id": candidate.get("service_id"),
+        "stale_proof_tag": event_type in {"gate_proof_incomplete", "gate_proof_stale"},
         "event_type": event_type,
-        "schema_version": "dopemux.cockpit.safe_action_gate.receipt.runtime_render.v1",
+        "schema_version": "dopemux.cockpit.safe_action_gate.receipt.v1",
     }
     return redact_secrets(receipt)

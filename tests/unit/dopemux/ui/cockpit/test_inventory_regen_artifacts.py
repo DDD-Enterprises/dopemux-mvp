@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import re
 
 
 REPO_ROOT = Path(__file__).resolve().parents[5]
 PACKET_ID = "TP-DMX-COCKPIT-INVENTORY-REGEN-001"
 ARTIFACT_DIR = REPO_ROOT / "out" / "cockpit-inventory-regen" / PACKET_ID
 PROOF_DIR = REPO_ROOT / "proof" / "cockpit-inventory-regen" / PACKET_ID
+SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+DOCUMENTED_UNKNOWN_SHA256 = {"UNKNOWN_NOT_HASHED_IN_PREFLIGHT_SAMPLE"}
 
 
 def _load_json(name: str) -> dict[str, object]:
@@ -54,6 +57,21 @@ def test_inventory_preserves_five_modes_and_four_global_surfaces():
     assert runtime["global_surface_count"] == 4
     assert status["runtime_model_status"]["five_top_level_modes"] == runtime["top_level_modes"]
     assert status["runtime_model_status"]["four_global_surfaces"] == runtime["global_surfaces"]
+
+
+def test_source_artifact_sha256_values_are_hashes_or_documented_unknowns():
+    inventory = _load_json("COMMAND_SURFACE_INVENTORY.json")
+    for artifact in inventory["source_artifacts"]:
+        value = artifact["sha256"]
+        assert SHA256_RE.fullmatch(value) or value in DOCUMENTED_UNKNOWN_SHA256
+
+
+def test_runtime_source_line_counts_match_current_files_when_present():
+    inventory = _load_json("COMMAND_SURFACE_INVENTORY.json")
+    for source in inventory["runtime_sources"]:
+        path = REPO_ROOT / source["path"]
+        if path.is_file():
+            assert source["line_count"] == len(path.read_text(encoding="utf-8").splitlines())
 
 
 def test_settings_admin_and_unknown_drift_summaries_are_included():
