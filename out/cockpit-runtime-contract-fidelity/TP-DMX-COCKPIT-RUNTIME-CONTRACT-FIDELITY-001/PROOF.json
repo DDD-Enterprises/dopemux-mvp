@@ -133,9 +133,9 @@
   "pending_final_validations": [],
   "codereview_status": "UNAVAILABLE_COMMAND_NOT_FOUND",
   "explicit_diff_review_status": "performed_before_proof_creation",
-  "implementation_commit": "PENDING_BEFORE_COMMIT",
-  "pr_url": "PENDING_BEFORE_PR_CREATE",
-  "final_head_recording_policy": "PROOF.json records implementation evidence before the final commit and PR exist. Final commit SHA, pushed branch, PR URL, and any proof metadata drift are reported in closeout to avoid self-referential proof churn.",
+  "implementation_commit": "3b1c426379ee141a7929cfc31644f86830fe9f0d",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/573",
+  "final_head_recording_policy": "PROOF.json records implementation commit 3b1c426379ee141a7929cfc31644f86830fe9f0d and PR https://github.com/DDD-Enterprises/dopemux-mvp/pull/573. The proof metadata cleanup commit and final branch HEAD are reported in closeout rather than self-hashed inside PROOF.json.",
   "residual_risks": [
     "The absent proof/cockpit-merge-execute paths named by the TP could not be inspected in this worktree.",
     "No dopetask-canonical-spec.json exists in this checkout; TP validation used JSON parsing and manual required-field checks.",
