@@ -19,7 +19,7 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { Bell, Brain, Droplet, Eye, Trash2, TrendingUp, Zap } from 'lucide-react';
+import { AlertTriangle, Bell, Brain, Droplet, Eye, Trash2, TrendingUp, Zap } from 'lucide-react';
 
 import { dashboardApiHeaders, dashboardApiUrl, dashboardWsUrl } from './config';
 import CognitiveLoadGauge from './components/CognitiveLoadGauge';
@@ -140,6 +140,16 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'live' | 'degraded'>('connecting');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isConfirmingClear, setIsConfirmingClear] = useState(false);
+  const clearTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (clearTimeoutRef.current) {
+        clearTimeout(clearTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -495,25 +505,55 @@ function App() {
               />
             )}
             {notifications.length > 0 && (
-              <Tooltip title="Clear all notifications to reduce visual noise" arrow>
+              <Tooltip
+                title={isConfirmingClear ? 'Confirm to clear all notifications' : 'Clear all notifications to reduce visual noise'}
+                arrow
+              >
                 <Chip
                   size="small"
                   variant="outlined"
-                  icon={<Trash2 size={14} aria-hidden="true" />}
-                  label="Clear"
+                  icon={
+                    isConfirmingClear ? (
+                      <AlertTriangle size={14} aria-hidden="true" />
+                    ) : (
+                      <Trash2 size={14} aria-hidden="true" />
+                    )
+                  }
+                  label={isConfirmingClear ? 'Confirm Clear?' : 'Clear'}
                   onClick={() => {
+                    if (!isConfirmingClear) {
+                      setIsConfirmingClear(true);
+                      if (clearTimeoutRef.current) clearTimeout(clearTimeoutRef.current);
+                      clearTimeoutRef.current = setTimeout(() => {
+                        setIsConfirmingClear(false);
+                        clearTimeoutRef.current = null;
+                      }, 3000);
+                      return;
+                    }
+
+                    if (clearTimeoutRef.current) {
+                      clearTimeout(clearTimeoutRef.current);
+                      clearTimeoutRef.current = null;
+                    }
+                    setIsConfirmingClear(false);
                     setNotifications([]);
                     feedHeadingRef.current?.focus();
                   }}
-                  aria-label="Clear all notifications"
+                  aria-label={isConfirmingClear ? 'Confirm clear all notifications' : 'Clear all notifications'}
                   sx={{
                     ml: isLoading ? 1 : 'auto',
                     cursor: 'pointer',
-                    bgcolor: alpha(brandTokens.colors.gremlinPink, 0.1),
-                    color: brandTokens.colors.gremlinPink,
-                    borderColor: brandTokens.colors.gremlinPink,
+                    bgcolor: alpha(
+                      isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.gremlinPink,
+                      0.1
+                    ),
+                    color: isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.gremlinPink,
+                    borderColor: isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.gremlinPink,
                     '&:hover': {
-                      bgcolor: alpha(brandTokens.colors.gremlinPink, 0.2),
+                      bgcolor: alpha(
+                        isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.gremlinPink,
+                        0.2
+                      ),
                     },
                   }}
                 />

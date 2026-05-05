@@ -81,3 +81,7 @@
 ## 2026-05-16 - [Hardening Async Micro-interactions]
 **Learning:** Hardening asynchronous state transitions in React (like multi-step confirmation buttons) requires defensive timeout management. Always clear existing timeouts before starting new ones and explicitly nullify the timer reference after clearing or firing to maintain deterministic component behavior and avoid race conditions.
 **Action:** Add explicit timeout clearing and ref nullification when implementing time-windowed micro-interactions.
+
+## 2026-05-20 - [Soft Confirmation for Destructive Actions]
+**Learning:** Immediate execution of destructive actions (like clearing a notification feed) can be frustrating if triggered accidentally. A "soft" confirmation pattern—where the first click changes the button's state to "Confirm?"—provides a non-intrusive safety net.
+**Action:** Implement two-step confirmation logic for all destructive UI actions to prevent accidental data loss and improve user confidence.
