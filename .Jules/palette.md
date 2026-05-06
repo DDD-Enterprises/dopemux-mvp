@@ -81,3 +81,7 @@
 ## 2026-05-16 - [Hardening Async Micro-interactions]
 **Learning:** Hardening asynchronous state transitions in React (like multi-step confirmation buttons) requires defensive timeout management. Always clear existing timeouts before starting new ones and explicitly nullify the timer reference after clearing or firing to maintain deterministic component behavior and avoid race conditions.
 **Action:** Add explicit timeout clearing and ref nullification when implementing time-windowed micro-interactions.
+
+## 2026-05-17 - [Visual Reinforcement for Soft Confirmations]
+**Learning:** A two-step "soft" confirmation button (e.g., "Confirm Clear?") benefits from subtle visual feedback like a slow pulse animation and a high-contrast color shift (e.g., to `saintGold`). This reinforces that the interface is in a "pending" state and effectively draws the user's attention to the decision point without the abruptness of a modal.
+**Action:** Use subtle pulse animations and distinct semantic colors (like gold for warning/confirmation) to visually reinforce temporary confirmation states.

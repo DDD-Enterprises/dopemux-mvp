@@ -134,8 +134,8 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toMatch(/<Tooltip title="Current cognitive status and load percentage" arrow>[\s\S]*tabIndex=\{0\}/);
   expect(appContent).toMatch(/<Tooltip title="AI-generated recommendation based on current load" arrow>[\s\S]*tabIndex=\{0\}/);
   expect(appContent).toContain('aria-label={`System is actively monitoring ritual state: ${connectionLabel} DØPEMÜX Ritual Daemon`}');
-  expect(appContent).toContain('aria-label="Clear all notifications"');
-  expect(appContent).toMatch(/<Tooltip title="Clear all notifications to reduce visual noise" arrow>/);
+  expect(appContent).toContain('aria-label={isConfirmingClear ? \'Confirm clear all notifications\' : \'Clear all notifications\'}');
+  expect(appContent).toMatch(/<Tooltip title=\{isConfirmingClear \? 'Confirm to clear all progress' : 'Clear all notifications to reduce visual noise'\} arrow>/);
   expect(appContent).toContain('Listening for ConPort and ADHD event traffic');
   expect(appContent).toContain('animation: \'listeningPulse 1.4s infinite ease-in-out both\'');
   expect(appContent).toContain('severity="error"');
