@@ -76,7 +76,7 @@ mcp__conport__log_custom_data --workspace_id "$WORKSPACE_ID" --category "sprint_
 
 ## 🎯 SuperClaude Integration (v4.1.5)
 
-**Status**: Fully integrated with Dopemux MCP stack (Decision #142-144)
+**Status**: Fully integrated with Dopemux MCP stack (see ConPort decisions #142–144)
 
 **Available Tools**:
 - **25 Slash Commands**: `/sc:implement`, `/sc:workflow`, `/sc:research`, `/sc:analyze`, etc.
@@ -106,7 +106,7 @@ When you need comprehensive details, refer to:
 **SuperClaude Workflows**: `.claude/modules/shared/superclaude-workflows.md` (integration patterns, command selection, ADHD sessions)
 **Task Management**: `.claude/modules/superclaude-integration.md`, `.claude/modules/custom-commands.md`
 **Cognitive Plane**: `.claude/modules/cognitive-plane/` (serena-lsp.md, conport-memory.md)
-**ADHD Engine**: `.claude/modules/adhd-patterns.md` (sessions, energy tracking, break management)
+**ADHD Engine**: `.claude/modules/shared/adhd-patterns.md` (sessions, energy tracking, break management)
 **Shared Systems**: `.claude/modules/shared/` (sprint.md, event-patterns.md, superclaude-workflows.md)
 **Filesystem Organization**: `docs/03-reference/filesystem-guide.md` (directory structure, file placement rules)
 
