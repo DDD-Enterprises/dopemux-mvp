@@ -4,21 +4,104 @@
     "command": ".claude/statusline.sh"
   },
   "hooks": {
-    "command": [
+    "SessionStart": [
       {
-        "events": [
-          "SessionStart",
-          "UserPromptSubmit",
-          "PreToolUse",
-          "PermissionRequest",
-          "PostToolUse",
-          "PostToolUseFailure",
-          "Stop",
-          "SubagentStop",
-          "PreCompact",
-          "SessionEnd"
-        ],
-        "command": "python3 /Users/hue/code/dopemux-mvp/src/dopemux/claude/native_hooks.py"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/hue/code/dopemux-mvp/src/dopemux/claude/native_hooks.py"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/hue/code/dopemux-mvp/src/dopemux/claude/native_hooks.py"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/hue/code/dopemux-mvp/src/dopemux/claude/native_hooks.py"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/hue/code/dopemux-mvp/src/dopemux/claude/native_hooks.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/hue/code/dopemux-mvp/src/dopemux/claude/native_hooks.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/hue/code/dopemux-mvp/src/dopemux/claude/native_hooks.py"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/hue/code/dopemux-mvp/src/dopemux/claude/native_hooks.py"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/hue/code/dopemux-mvp/src/dopemux/claude/native_hooks.py"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/hue/code/dopemux-mvp/src/dopemux/claude/native_hooks.py"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/hue/code/dopemux-mvp/src/dopemux/claude/native_hooks.py"
+          }
+        ]
       }
     ]
   }
