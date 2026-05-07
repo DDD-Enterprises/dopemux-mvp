@@ -429,47 +429,44 @@ function App() {
         <Grid container spacing={3} sx={{ mb: 3 }}>
           {metricCards.map((metric) => (
             <Grid item xs={12} md={6} lg={3} key={metric.label}>
-              <Paper
-                sx={{
-                  p: 2.5,
-                  minHeight: 140,
-                  borderRadius: 3,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 1.2,
-                  border: `1px solid ${brandTokens.borders.subtle}`,
-                  background: brandTokens.gradients.focusCard,
-                }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Tooltip title={metric.tooltip} arrow>
-                    <Box
-                      tabIndex={0}
-                      aria-label={`${metric.label}: ${metric.value !== null ? (metric.value * 100).toFixed(0) : 'N/A'}%`}
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        outline: 'none',
-                        cursor: 'help',
-                        '&:focus-visible': {
-                          borderRadius: 1,
-                          boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}`,
-                        },
-                      }}
-                    >
+              <Tooltip title={metric.tooltip} arrow describeChild>
+                <Paper
+                  tabIndex={0}
+                  aria-label={`${metric.label}: ${metric.value !== null ? (metric.value * 100).toFixed(0) : 'N/A'}%`}
+                  sx={{
+                    p: 2.5,
+                    minHeight: 140,
+                    borderRadius: 3,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 1.2,
+                    border: `1px solid ${brandTokens.borders.subtle}`,
+                    background: brandTokens.gradients.focusCard,
+                    cursor: 'help',
+                    outline: 'none',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    '&:hover, &:focus-visible': {
+                      borderColor: brandTokens.colors.ritualCyan,
+                      transform: 'translateY(-4px)',
+                      boxShadow: `0 0 20px ${alpha(brandTokens.colors.ritualCyan, 0.2)}`,
+                    },
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       {metric.icon}
                     </Box>
-                  </Tooltip>
-                  <Box>
-                    <Typography variant="h6">
-                      {metric.value !== null ? `${(metric.value * 100).toFixed(0)}%` : 'N/A'}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">{metric.label}</Typography>
+                    <Box>
+                      <Typography variant="h6">
+                        {metric.value !== null ? `${(metric.value * 100).toFixed(0)}%` : 'N/A'}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">{metric.label}</Typography>
+                    </Box>
                   </Box>
-                </Box>
-                <Typography className="dopemux-roast">{metric.roast}</Typography>
-                <Typography className="dopemux-aftercare">Logged. Hydrate.</Typography>
-              </Paper>
+                  <Typography className="dopemux-roast">{metric.roast}</Typography>
+                  <Typography className="dopemux-aftercare">Logged. Hydrate.</Typography>
+                </Paper>
+              </Tooltip>
             </Grid>
           ))}
         </Grid>

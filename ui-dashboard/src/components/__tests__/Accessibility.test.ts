@@ -56,8 +56,8 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
 
 test('App.tsx exposes metric card tooltips with focus indicators and labels', () => {
   const appContent = fs.readFileSync(path.join(componentsDir, '..', 'App.tsx'), 'utf8');
-  expect(appContent).toContain('<Tooltip title={metric.tooltip} arrow>');
-  expect(appContent).toMatch(/<Tooltip title=\{metric\.tooltip\} arrow>[\s\S]*tabIndex=\{0\}/);
+  expect(appContent).toContain('<Tooltip title={metric.tooltip} arrow describeChild>');
+  expect(appContent).toMatch(/<Tooltip title=\{metric\.tooltip\} arrow describeChild>[\s\S]*tabIndex=\{0\}/);
   expect(appContent).toContain('aria-label={`${metric.label}: ${metric.value !== null ? (metric.value * 100).toFixed(0) : \'N/A\'}%`}');
   expect(appContent).toContain('&:focus-visible');
 });
