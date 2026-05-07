@@ -30,7 +30,7 @@ prelude: Features_Index (reference) for dopemux documentation and developer work
 - Status: ✅ Implemented on `codex/security-review-instructions`
 - Scope: Repository-specific scan guidance and false-positive filters for the Claude security review workflows
 - Operator Impact: `security-review.yml` and `ci-complete.yml` now resolve their custom instruction files without missing-path failures or generic filtering noise
-- Validation: Workflow-referenced files exist, are ASCII-clean, and pass `git diff --check`
+- Validation: `.github/security-scan-instructions.txt` and `.github/security-filtering-instructions.txt` exist, are ASCII-clean, and pass `git diff --check`
 
 ---
 
