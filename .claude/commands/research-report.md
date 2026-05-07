@@ -1,9 +1,9 @@
-# /research:report
-Generate a formatted report from a completed `/research:deep` run. Writes the result to `claudedocs/research/<slug>-<date>.md` so it survives the session.
+# /research-report
+Generate a formatted report from a completed `/research-deep` run. Writes the result to `claudedocs/research/<slug>-<date>.md` so it survives the session.
 
 **Usage**
-- `/research:report` — uses the most recent `research_id` saved in ConPort active context.
-- `/research:report abc-123-def` — explicit `research_id` (e.g., to format an older run).
+- `/research-report` — uses the most recent `research_id` saved in ConPort active context.
+- `/research-report abc-123-def` — explicit `research_id` (e.g., to format an older run).
 
 **What you do**
 1) Resolve the `research_id`:
@@ -13,7 +13,7 @@ Generate a formatted report from a completed `/research:deep` run. Writes the re
      ctx = mcp__conport__get_active_context(workspace_id="$(git rev-parse --show-toplevel)")
      research_id = ctx.last_research.id
      ```
-   - If neither is available, tell me to run `/research:deep "..."` first and stop.
+   - If neither is available, tell me to run `/research-deep "..."` first and stop.
 2) Verify the MCP server is reachable (`docker ps --filter name=dopemux-mcp-gptr-mcp`). If not, ask me to start it.
 3) Call `mcp__gpt-researcher__write_report` with the resolved `research_id`. Optionally pass a `custom_prompt` if I included guidance like "focus on cost trade-offs."
 4) Compute the output path:
