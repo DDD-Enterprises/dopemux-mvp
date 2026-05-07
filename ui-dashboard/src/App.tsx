@@ -429,7 +429,7 @@ function App() {
         <Grid container spacing={3} sx={{ mb: 3 }}>
           {metricCards.map((metric) => (
             <Grid item xs={12} md={6} lg={3} key={metric.label}>
-              <Tooltip title={metric.tooltip} arrow>
+              <Tooltip title={metric.tooltip} arrow describeChild>
                 <Paper
                   tabIndex={0}
                   aria-label={`${metric.label}: ${metric.value !== null ? (metric.value * 100).toFixed(0) : 'N/A'}%`}
