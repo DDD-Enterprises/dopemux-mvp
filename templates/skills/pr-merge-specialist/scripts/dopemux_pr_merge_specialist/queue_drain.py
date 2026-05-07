@@ -144,14 +144,33 @@ def _gemini_ci_remediation_command(prompt: str) -> List[str]:
 
 
 @contextlib.contextmanager
+_GEMINI_AUTH_ENV_ALLOWLIST = (
+    "GEMINI_API_KEY",
+    "GOOGLE_API_KEY",
+    "GOOGLE_APPLICATION_CREDENTIALS",
+    "GOOGLE_GENAI_USE_VERTEXAI",
+    "GOOGLE_CLOUD_PROJECT",
+    "GOOGLE_CLOUD_LOCATION",
+    "GEMINI_MODEL",
+    "GEMINI_DEBUG",
+)
+
+
 def _isolated_gemini_home_env() -> Iterable[Dict[str, str]]:
     """
     Run Gemini in a minimal temporary HOME with a constrained environment.
+
+    A tight allowlist of Gemini auth/config env vars is forwarded so the CLI
+    can authenticate via the operator's intentional secret (typically
+    GEMINI_API_KEY in CI). Repository-side env vars (PYTHONPATH, VIRTUAL_ENV,
+    service URLs, test credentials, etc.) are deliberately *not* forwarded —
+    Gemini operates on a stripped environment and the queue-drain caller
+    runs its own pre-checks and final verification with the real env.
     """
     with tempfile.TemporaryDirectory(prefix="dopemux-gemini-home-") as temp_home:
         temp_home_path = Path(temp_home)
 
-        env = {
+        env: Dict[str, str] = {
             "HOME": str(temp_home_path),
             "XDG_CONFIG_HOME": str(temp_home_path / ".config"),
             "PATH": os.environ.get("PATH", ""),
@@ -159,6 +178,10 @@ def _isolated_gemini_home_env() -> Iterable[Dict[str, str]]:
             "LC_ALL": os.environ.get("LC_ALL", "C.UTF-8"),
             "TERM": os.environ.get("TERM", "xterm"),
         }
+        for key in _GEMINI_AUTH_ENV_ALLOWLIST:
+            value = os.environ.get(key)
+            if value:
+                env[key] = value
         yield env
 
 
@@ -468,7 +491,7 @@ Output/Error:
 {error_output}
 ```
 
-Please diagnose the issue and FIX IT. You are running in YOLO mode with full tool access. 
+Please diagnose the issue and FIX IT.
 
 CRITICAL: You MUST follow the ci-remediation-specialist runbook:
 1. REPRODUCE the failure locally first by running the command `{step.command}`.
@@ -478,8 +501,8 @@ CRITICAL: You MUST follow the ci-remediation-specialist runbook:
 
 Identify the root cause, modify the necessary files, and ensure the command passes.
 """
-    
-    log(f"Launching Gemini CLI agent in YOLO mode (worktree: {worktree_path.name})...")
+
+    log(f"Launching Gemini CLI agent (worktree: {worktree_path.name})...")
     
     try:
         cmd = _gemini_ci_remediation_command(prompt)
@@ -1565,7 +1588,7 @@ Output/Error:
 {error_output}
 ```
 
-Please diagnose the issue and FIX IT against the `main` branch. You are running in YOLO mode with full tool access. 
+Please diagnose the issue and FIX IT against the `main` branch.
 CRITICAL: You MUST follow the ci-remediation-specialist runbook:
 1. REPRODUCE the failure locally first by running the command `{targeted_repro_command}`.
 2. USE AUTO-FIXERS if applicable (e.g., ruff check --fix).
