@@ -1,0 +1,36 @@
+{
+  "mcpServers": {
+    "conport": {
+      "type": "sse",
+      "url": "http://localhost:${CONPORT_MCP_PORT}/mcp",
+      "env": {
+        "DOPEMUX_WORKSPACE_ID": "${DOPEMUX_WORKSPACE_ID:-}",
+        "GEMINI_API_KEY": "${GEMINI_API_KEY:-}",
+        "VOYAGEAI_API_KEY": "${VOYAGEAI_API_KEY:-}",
+        "OPENAI_API_KEY": "${OPENAI_API_KEY:-}"
+      },
+      "description": "Knowledge graph, decisions, progress (PostgreSQL+AGE; per-worktree state)"
+    },
+    "dope-memory": {
+      "type": "sse",
+      "url": "http://localhost:${DOPE_MEMORY_PORT}/mcp",
+      "env": {
+        "DOPE_MEMORY_WORKSPACE_ID": "${DOPE_MEMORY_WORKSPACE_ID:-}",
+        "DOPE_MEMORY_INSTANCE_ID": "${DOPE_MEMORY_INSTANCE_ID:-}"
+      },
+      "description": "Temporal chronicle and working-context (per worktree instance)"
+    },
+    "task-orchestrator": {
+      "type": "stdio",
+      "command": "python3",
+      "args": [
+        "${DOPEMUX_WORKSPACE_ROOT}/services/task-orchestrator/task_orchestrator/app.py"
+      ],
+      "env": {
+        "WORKSPACE_ID": "${DOPEMUX_WORKSPACE_ID}",
+        "PYTHONPATH": "${DOPEMUX_WORKSPACE_ROOT}/services/task-orchestrator"
+      },
+      "description": "Task orchestration & dependency management (project-local Python service)"
+    }
+  }
+}

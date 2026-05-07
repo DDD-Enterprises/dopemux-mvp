@@ -4,6 +4,8 @@
 **Design**: ADHD-optimized task specialization with seamless handoffs
 **Integration**: Mode-aware coordination between PM and Cognitive planes
 
+> **agents/** is the curated active set used by `/dx:` and `/sc:` flows. The full library of 48 personas (covering specialized roles, mentors, advocates, and domain experts) lives in `../personas/` — see `personas/PERSONA_INDEX.md` for a domain-grouped decision tree and overlap notes.
+
 ## 🤖 Agent Ecosystem Overview
 
 ### Core Agent Types

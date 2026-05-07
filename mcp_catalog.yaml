@@ -1,0 +1,136 @@
+# MCP Server Catalog
+#
+# Registry of MCP servers known to the `dopemux mcp` CLI subcommands.
+# Single source of truth for what `dopemux mcp init`, `dopemux mcp add`,
+# `dopemux mcp sync-globals`, and `dopemux mcp doctor` understand.
+#
+# Scope semantics:
+#   singleton    — one shared instance, declared in ~/.claude.json `mcpServers`.
+#                  Stateless, or routes by per-call workspace_path / cwd auto-detection.
+#                  Does NOT need per-worktree isolation.
+#   per-worktree — needs isolated state per git worktree (own port, own container,
+#                  own DB volume). Declared in each worktree's .mcp.json with
+#                  env-var-driven port allocation.
+#
+# Transport:
+#   http  — Streamable HTTP (Claude Code "type": "http")
+#   sse   — Server-Sent Events  (Claude Code "type": "sse")
+#   stdio — Local process (Claude Code "type": "stdio") with command + args
+#
+# Env-var conventions for per-worktree servers:
+#   DOPEMUX_PORT_<NAME>      — host port allocated by `dopemux mcp init`
+#   DOPEMUX_WORKSPACE_ID     — worktree absolute path (used as logical workspace key)
+#   DOPEMUX_INSTANCE_ID      — short hash of worktree path (4 hex chars)
+#
+# `dopemux mcp init` will write these into a per-worktree `.envrc` (or `.env.mcp`)
+# and substitute them into `.mcp.json` at session start (Claude Code expands ${VAR}).
+
+version: 1
+
+defaults:
+  # What `dopemux mcp init` scaffolds into a fresh worktree's .mcp.json by default.
+  per_worktree:
+    - conport
+    - dope-memory
+    - task-orchestrator
+
+servers:
+
+  # ---------- Singletons (live in ~/.claude.json) ----------
+
+  pal:
+    scope: singleton
+    transport: http
+    url: "http://localhost:3003/mcp"
+    docker_compose_service: pal
+    description: "Multi-model reasoning suite (thinkdeep, planner, consensus, debug, codereview)"
+
+  serena:
+    scope: singleton
+    transport: http
+    url: "http://localhost:3006/mcp"
+    docker_compose_service: serena
+    description: "Semantic code intelligence (LSP + Tree-sitter); workspace auto-detected from cwd"
+
+  dope-context:
+    scope: singleton
+    transport: http
+    url: "http://localhost:3010/mcp"
+    docker_compose_service: dope-context
+    description: "AST-aware semantic code & docs search; per-call workspace_path"
+
+  desktop-commander:
+    scope: singleton
+    transport: sse
+    url: "http://localhost:3012/sse"
+    docker_compose_service: desktop-commander
+    description: "Desktop automation (PR #575: pinned fastmcp==2.14.7, Starlette /health)"
+
+  gpt-researcher:
+    scope: singleton
+    transport: stdio
+    command: docker
+    args: ["exec", "-i", "dopemux-mcp-gptr-mcp", "python", "/app/server.py"]
+    docker_compose_service: gptr-mcp
+    requires_env: ["OPENAI_API_KEY"]
+    optional_env: ["TAVILY_API_KEY", "EXA_API_KEY", "PERPLEXITY_API_KEY", "ANTHROPIC_API_KEY"]
+    description: "Deep multi-source research (PR #575: gpt-researcher==0.14.8 pinned)"
+
+  exa:
+    scope: singleton
+    transport: stdio
+    command: docker
+    args: ["exec", "-i", "mcp-litellm", "python", "/app/exa_server.py"]
+    docker_compose_service: exa
+    requires_env: ["EXA_API_KEY"]
+    description: "Neural web search"
+
+  MCP_DOCKER:
+    scope: singleton
+    transport: stdio
+    command: docker
+    args: ["mcp", "gateway", "run"]
+    description: "Docker MCP gateway — surfaces containerized MCPs from Docker MCP Toolkit"
+
+  # ---------- Per-worktree (live in <worktree>/.mcp.json) ----------
+
+  conport:
+    scope: per-worktree
+    transport: sse
+    # Port var names match compose.yml conventions so `init` writes env that
+    # `docker compose up` reads directly.
+    url_template: "http://localhost:${CONPORT_MCP_PORT}/mcp"
+    port_var: CONPORT_MCP_PORT
+    default_port_base: 3005
+    extra_port_vars:
+      # Conport exposes three host ports (HTTP/health, MCP, info). Per-worktree
+      # isolation requires all three to be unique; same hash offset is reused.
+      - var: CONPORT_HTTP_PORT
+        base: 3004
+      - var: CONPORT_INFO_PORT
+        base: 4004
+    docker_compose_service: conport
+    requires_env: ["DOPEMUX_WORKSPACE_ID"]
+    optional_env: ["GEMINI_API_KEY", "VOYAGEAI_API_KEY", "OPENAI_API_KEY"]
+    description: "Knowledge graph, decisions, progress (PostgreSQL+AGE; per-worktree state)"
+
+  dope-memory:
+    scope: per-worktree
+    transport: sse
+    url_template: "http://localhost:${DOPE_MEMORY_PORT}/mcp"
+    port_var: DOPE_MEMORY_PORT
+    default_port_base: 3020
+    docker_compose_service: dope-memory
+    requires_env: ["DOPE_MEMORY_WORKSPACE_ID", "DOPE_MEMORY_INSTANCE_ID"]
+    description: "Temporal chronicle and working-context (per worktree instance)"
+
+  task-orchestrator:
+    scope: per-worktree
+    transport: stdio
+    command: python3
+    args_template:
+      - "${DOPEMUX_WORKSPACE_ROOT}/services/task-orchestrator/task_orchestrator/app.py"
+    env_template:
+      WORKSPACE_ID: "${DOPEMUX_WORKSPACE_ID}"
+      PYTHONPATH: "${DOPEMUX_WORKSPACE_ROOT}/services/task-orchestrator"
+    description: "Task orchestration & dependency management (project-local Python service)"
