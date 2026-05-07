@@ -19,14 +19,23 @@ RUN apt-get update && apt-get install -y \
 # Install dependencies from centralized manifest
 RUN uv pip install --system --no-cache .[services]
 
-# Clone GPT Researcher MCP server to /app/gptr-mcp
-RUN git clone https://github.com/assafelovic/gptr-mcp.git /app/gptr-mcp
+# Clone GPT Researcher MCP server to /app/gptr-mcp at a pinned ref for reproducibility.
+# Override at build time with --build-arg GPTR_MCP_REF=<branch|tag|sha>.
+ARG GPTR_MCP_REF=63884773685b1f12c7f0d9e283b3d71a5b9b5fda
+RUN git clone https://github.com/assafelovic/gptr-mcp.git /app/gptr-mcp \
+    && cd /app/gptr-mcp && git checkout "${GPTR_MCP_REF}"
 
 # Modify server.py to use MCP_SERVER_PORT environment variable
 RUN sed -i 's/port=8000/port=int(os.getenv("MCP_SERVER_PORT", "8000"))/g' /app/gptr-mcp/server.py
 
 # Install Python dependencies from the cloned repo
 RUN uv pip install --system --no-cache -r /app/gptr-mcp/requirements.txt
+
+# Force-pin gpt-researcher to an explicit version so rebuilds don't drift backward
+# when upstream gptr-mcp's requirements.txt changes. Override at build time with
+# --build-arg GPT_RESEARCHER_VERSION=<version>.
+ARG GPT_RESEARCHER_VERSION=0.14.8
+RUN uv pip install --system --no-cache "gpt-researcher==${GPT_RESEARCHER_VERSION}"
 
 # Create logs and data directories
 RUN mkdir -p /app/logs /app/data
