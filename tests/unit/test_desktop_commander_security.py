@@ -94,7 +94,7 @@ class TestDesktopCommanderSecurity(unittest.TestCase):
             args, kwargs = mock_run.call_args
             cmd_list = args[0]
 
-            self.assertEqual(cmd_list, ["xdotool", "type", input_with_dash])
+            self.assertEqual(cmd_list, ["xdotool", "type", "--", input_with_dash])
             self.assertEqual(kwargs["timeout"], 10)
 
     def test_screenshot_linux_argument_passthrough(self):
@@ -110,7 +110,7 @@ class TestDesktopCommanderSecurity(unittest.TestCase):
             args, kwargs = mock_run.call_args
             cmd_list = args[0]
 
-            self.assertEqual(cmd_list, ["scrot", input_with_dash])
+            self.assertEqual(cmd_list, ["scrot", "--", input_with_dash])
             self.assertEqual(kwargs["timeout"], 10)
 
 
