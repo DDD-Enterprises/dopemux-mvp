@@ -140,29 +140,25 @@ def _refresh_client_state(client: GitHubClient, pr_id: int) -> None:
 def _gemini_ci_remediation_command(prompt: str) -> List[str]:
     # Gemini CLI no longer accepts --skill in headless mode, so the runbook
     # must live in the prompt and the invocation stays prompt-only.
-    return ["gemini", "--prompt", prompt, "--yolo"]
+    return ["gemini", "--prompt", prompt]
 
 
 @contextlib.contextmanager
 def _isolated_gemini_home_env() -> Iterable[Dict[str, str]]:
     """
-    Run Gemini in a minimal temporary HOME so it does not inherit the user's
-    desktop MCP registry and stall on unrelated server discovery.
+    Run Gemini in a minimal temporary HOME with a constrained environment.
     """
     with tempfile.TemporaryDirectory(prefix="dopemux-gemini-home-") as temp_home:
         temp_home_path = Path(temp_home)
-        gemini_dir = temp_home_path / ".gemini"
-        gemini_dir.mkdir(parents=True, exist_ok=True)
 
-        source_gemini_dir = Path.home() / ".gemini"
-        for name in ("oauth_creds.json", "google_accounts.json", "installation_id"):
-            source = source_gemini_dir / name
-            if source.exists():
-                shutil.copy2(source, gemini_dir / name)
-
-        env = os.environ.copy()
-        env["HOME"] = str(temp_home_path)
-        env["XDG_CONFIG_HOME"] = str(temp_home_path / ".config")
+        env = {
+            "HOME": str(temp_home_path),
+            "XDG_CONFIG_HOME": str(temp_home_path / ".config"),
+            "PATH": os.environ.get("PATH", ""),
+            "LANG": os.environ.get("LANG", "C.UTF-8"),
+            "LC_ALL": os.environ.get("LC_ALL", "C.UTF-8"),
+            "TERM": os.environ.get("TERM", "xterm"),
+        }
         yield env
 
 
@@ -1766,10 +1762,7 @@ def _handle_global_ci_blockers(
             status="failed",
             returncode=1,
             stdout="",
-            stderr=(
-                f"{remote_failure.evidence_summary}\n\n"
-                + (remote_failure.evidence.log_text or "")[-6000:]
-            ).strip(),
+            stderr=remote_failure.evidence_summary.strip(),
         )
         failing_prs_by_fingerprint[remote_failure.fingerprint].append((r, failed_step))
         remote_group_metadata.setdefault(remote_failure.fingerprint, remote_failure)
