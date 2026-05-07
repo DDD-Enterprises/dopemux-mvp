@@ -529,6 +529,117 @@ Identify the root cause, modify the necessary files, and ensure the command pass
     return True
 
 
+def remediate_review_thread(
+    *,
+    worktree_path: Path,
+    thread: ReviewThread,
+    log: Callable,
+    timeout_seconds: int = 600,
+) -> bool:
+    """Engage agentic remediation for a specific review thread."""
+    comment = latest_comment(thread)
+    if not comment:
+        return False
+
+    resolved_path = comment.path or getattr(thread, "path", "") or "unknown"
+    resolved_line = comment.line
+    if resolved_line is None:
+        resolved_line = getattr(thread, "line", None)
+    if resolved_line is None:
+        resolved_line = getattr(thread, "original_line", None)
+    if resolved_line is None:
+        resolved_line = getattr(thread, "original_start_line", None)
+
+    log(f"Engaging agentic remediation for thread {thread.id} in {resolved_path}...")
+
+    prompt = f"""
+You are an expert developer addressing review feedback in the dopemux-mvp workspace.
+The following feedback was provided on file: `{resolved_path}` at line {resolved_line or 'unknown'}.
+
+Feedback:
+```
+{comment.body}
+```
+
+Please address this feedback with a deterministic, minimal, and auditable remediation.
+
+CRITICAL:
+1. APPLY the smallest surgical fix that addresses the review comment.
+2. LIMIT changes to `{resolved_path}` unless another file is strictly required to make the fix correct.
+3. DO NOT introduce unrelated changes or refactors.
+4. DO NOT use network access, install dependencies, or invoke external tools beyond what is strictly necessary to edit files and run a minimal local verification step.
+5. VERIFY the fix with the narrowest relevant local check available for the changed file(s), then stop.
+
+Modify the necessary files to satisfy the reviewer's request.
+"""
+
+    log(
+        f"Launching Gemini CLI agent with constrained remediation instructions "
+        f"(worktree: {worktree_path.name})..."
+    )
+
+    try:
+        cmd = _gemini_ci_remediation_command(prompt)
+        with _isolated_gemini_home_env() as gemini_env:
+            # We explicitly set cwd to worktree_path as per user steering
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                cwd=worktree_path,
+                env=gemini_env,
+                bufsize=1,  # Line buffered
+                universal_newlines=True,
+            )
+
+            if process.stdout:
+                output_raw, _ = process.communicate(timeout=timeout_seconds)
+                output = (
+                    output_raw.decode("utf-8", errors="replace")
+                    if isinstance(output_raw, bytes)
+                    else output_raw
+                )
+                quota_detected = False
+                for line in output.splitlines():
+                    if any(
+                        x in line.lower()
+                        for x in ["quota", "rate limit", "429", "exhausted"]
+                    ):
+                        quota_detected = True
+                    clean_line = line.strip()
+                    if clean_line:
+                        log(f"[gemini] {clean_line}")
+                if quota_detected:
+                    log("CRITICAL: API QUOTA EXHAUSTED.", "ERROR")
+            else:
+                process.wait(timeout=timeout_seconds)
+
+    except subprocess.TimeoutExpired:
+        process.kill()
+        try:
+            process.communicate(timeout=5)
+        except subprocess.TimeoutExpired:
+            log(
+                "Process did not terminate cleanly after kill; continuing timeout handling.",
+                "WARNING",
+            )
+        log("Gemini agent timed out.", "ERROR")
+        return False
+    except Exception as e:
+        log(f"Agentic remediation process crash: {e}", "ERROR")
+        return False
+
+    if process.returncode != 0:
+        log(
+            f"Agent finished with non-zero exit code ({process.returncode}).", "WARNING"
+        )
+        return False
+
+    log("Agentic remediation cycle complete for thread.")
+    return True
+
+
 def reproduce_remote_required_check_failure(
     *,
     worktree_path: Path,
@@ -714,16 +825,72 @@ def pr_apply(args: argparse.Namespace, progress_callback: Optional[Callable[[str
             execute=execute,
             commands_log=commands_log,
             repo_root=repo_root,
-            policy=policy
+            policy=policy,
         )
-        _implemented = sum(1 for d in applied_threads if d.disposition == ThreadDispositionType.IMPLEMENT and d.applied)
-        _declined = sum(1 for d in applied_threads if d.disposition == ThreadDispositionType.DECLINE_WITH_RATIONALE)
-        _escalated = sum(1 for d in applied_threads if d.disposition == ThreadDispositionType.ESCALATE)
+
+        # Phase 1.5: Handle Agentic Thread Remediation
+        final_applied_threads: List[ThreadDisposition] = []
+        for d in applied_threads:
+            if d.disposition == ThreadDispositionType.AGENTIC_FIX and execute:
+                thread = threads_by_id[d.thread_id]
+                success = remediate_review_thread(
+                    worktree_path=worktree_path,
+                    thread=thread,
+                    log=log,
+                )
+                if success:
+                    final_applied_threads.append(replace(d, applied=True))
+                else:
+                    final_applied_threads.append(
+                        replace(
+                            d,
+                            applied=False,
+                            reason=f"Agentic remediation failed: {d.reason}",
+                        )
+                    )
+            else:
+                final_applied_threads.append(d)
+        applied_threads = final_applied_threads
+
+        _implemented = sum(
+            1
+            for d in applied_threads
+            if d.disposition
+            in {ThreadDispositionType.IMPLEMENT, ThreadDispositionType.AGENTIC_FIX}
+            and d.applied
+        )
+        _declined = sum(
+            1
+            for d in applied_threads
+            if d.disposition == ThreadDispositionType.DECLINE_WITH_RATIONALE
+        )
+        _escalated = sum(
+            1
+            for d in applied_threads
+            if d.disposition == ThreadDispositionType.ESCALATE
+        )
         if _implemented or _declined or _escalated:
-            log(f"Thread dispositions: {_implemented} implemented, {_declined} declined, {_escalated} escalated")
-        if any(d.disposition == ThreadDispositionType.IMPLEMENT for d in applied_threads):
-            log("Pushing implemented suggestions...")
-            if stage_and_push_if_needed(worktree_path=worktree_path, head_ref=pr.head_ref, active_run_id=active_run_id, pr_id=pr.pr_id, execute=execute, commands_log=commands_log, policy=policy, log=log):
+            log(
+                f"Thread dispositions: {_implemented} implemented/agentic, {_declined} declined, {_escalated} escalated"
+            )
+
+        if any(
+            d.applied
+            for d in applied_threads
+            if d.disposition
+            in {ThreadDispositionType.IMPLEMENT, ThreadDispositionType.AGENTIC_FIX}
+        ):
+            log("Pushing applied suggestions/agentic fixes...")
+            if stage_and_push_if_needed(
+                worktree_path=worktree_path,
+                head_ref=pr.head_ref,
+                active_run_id=active_run_id,
+                pr_id=pr.pr_id,
+                execute=execute,
+                commands_log=commands_log,
+                policy=policy,
+                log=log,
+            ):
                 _refresh_client_state(client, pr.pr_id)
 
         # Phase 2: Rebase on Base Branch

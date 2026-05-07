@@ -27,6 +27,57 @@ from ..console import console
 from ..worktree_commands import get_repo_root
 
 
+DEFAULT_MCP_SERVICES = {
+    "conport",
+    "desktop-commander",
+    "dope-context",
+    "dope-memory",
+    "dopecon-bridge",
+    "gptr-mcp",
+    "leantime-bridge",
+    "litellm",
+    "pal",
+    "serena",
+    "task-orchestrator",
+}
+
+
+def _compose_path() -> Path:
+    return Path.cwd() / "compose.yml"
+
+
+def _compose_services(compose_path: Path | None = None) -> set[str]:
+    """Return service names declared by the active compose file."""
+    path = compose_path or _compose_path()
+    if not path.exists():
+        return set(DEFAULT_MCP_SERVICES)
+
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:
+        raise click.ClickException(f"Invalid compose file {path}: {exc}") from exc
+
+    services = data.get("services", {}) if isinstance(data, dict) else {}
+    if not isinstance(services, dict):
+        raise click.ClickException(f"Invalid compose file {path}: services must be a mapping")
+    return {str(name) for name in services}
+
+
+def _parse_services(services: str | None, *, allowed: set[str] | None = None) -> list[str]:
+    parsed = [svc.strip() for svc in (services or "").split(",") if svc.strip()]
+    if not parsed:
+        return []
+
+    allowed_services = allowed or _compose_services()
+    invalid = sorted(set(parsed) - allowed_services)
+    if invalid:
+        valid_hint = ", ".join(sorted(allowed_services))
+        raise click.ClickException(
+            f"Unknown compose service(s): {', '.join(invalid)}. Valid services: {valid_hint}"
+        )
+    return parsed
+
+
 @click.group()
 def mcp():
     """
@@ -54,15 +105,15 @@ def mcp_up_cmd(all_services: bool, services: str):
         script_path = script_dir / "start-all-mcp-servers.sh"
 
         if all_services or not services:
-            cmd = f"bash {script_path}"
+            cmd = ["bash", str(script_path)]
         else:
-            svc_list = " ".join(s.strip() for s in services.split(",") if s.strip())
-            cmd = f"docker compose -f compose.yml up -d --build {svc_list}"
-        console.logger.info(f"[info]{cmd}[/info]")
-        subprocess.run(["bash", "-lc", cmd], check=True)
+            svc_list = _parse_services(services)
+            cmd = ["docker", "compose", "-f", "compose.yml", "up", "-d", "--build"] + svc_list
+        console.logger.info(f"[info]{' '.join(cmd)}[/info]")
+        subprocess.run(cmd, check=True)
         console.logger.info("[success]MCP servers started[/success]")
-    except CalledProcessError:
-        console.logger.error("[error]Failed to start MCP servers[/error]")
+    except (CalledProcessError, FileNotFoundError) as exc:
+        console.logger.error(f"[error]Failed to start MCP servers: {exc}[/error]")
         sys.exit(1)
 
 
@@ -84,8 +135,8 @@ def mcp_down_cmd():
             check=True,
         )
         console.logger.info("[success]MCP servers stopped[/success]")
-    except CalledProcessError:
-        console.logger.error("[error]Failed to stop MCP servers[/error]")
+    except (CalledProcessError, FileNotFoundError) as exc:
+        console.logger.error(f"[error]Failed to stop MCP servers: {exc}[/error]")
         sys.exit(1)
 
 
@@ -98,8 +149,8 @@ def mcp_status_cmd():
     all registered MCP daemons. Essential for diagnosing sensor disconnects.
     """
     try:
-        subprocess.run(["docker", "compose", "-f", "compose.yml", "ps"], check=False)
-    except CalledProcessError:
+        subprocess.run(["docker", "compose", "-f", "compose.yml", "ps"], check=True)
+    except (CalledProcessError, FileNotFoundError):
         sys.exit(1)
 
 
@@ -114,12 +165,13 @@ def mcp_logs_cmd(service: str):
     """
     try:
         if service:
-            cmd = f"docker compose -f compose.yml logs -f {service}"
+            svc_list = _parse_services(service)
+            cmd = ["docker", "compose", "-f", "compose.yml", "logs", "-f"] + svc_list
         else:
-            cmd = "docker compose -f compose.yml logs -f"
-        console.logger.info(f"[info]{cmd}[/info]")
-        subprocess.run(["bash", "-lc", cmd], check=False)
-    except CalledProcessError:
+            cmd = ["docker", "compose", "-f", "compose.yml", "logs", "-f"]
+        console.logger.info(f"[info]{' '.join(cmd)}[/info]")
+        subprocess.run(cmd, check=True)
+    except (CalledProcessError, FileNotFoundError):
         sys.exit(1)
 
 
