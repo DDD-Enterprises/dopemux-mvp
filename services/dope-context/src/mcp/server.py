@@ -115,7 +115,7 @@ def _resolve_transport_runtime() -> Tuple[str, str, int]:
         logger.warning("Unknown MCP transport '%s'; defaulting to 'stdio'", transport)
         transport = "stdio"
 
-    host = os.getenv("MCP_SERVER_HOST") or os.getenv("FASTMCP_HOST") or "0.0.0.0"
+    host = os.getenv("MCP_SERVER_HOST") or os.getenv("FASTMCP_HOST") or "127.0.0.1"
     port_str = (
         os.getenv("MCP_SERVER_PORT") or os.getenv("FASTMCP_PORT") or os.getenv("PORT")
     )
