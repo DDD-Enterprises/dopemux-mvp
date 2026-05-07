@@ -88,7 +88,7 @@
       ],
       "commands": [],
       "expected_files": [
-        "docs/research/mcp-customization/data/upstream-source-manifest.json"
+        "docs/research/mcp-customization/dopemux-constraints/upstream-source-manifest.json"
       ],
       "validation": [
         "Every source row includes source_url, source_type, owner, accessed_at, freshness_signal, authority_level, and confidence."
@@ -109,7 +109,7 @@
       ],
       "commands": [],
       "expected_files": [
-        "docs/research/mcp-customization/data/dopemux-authority-map.json"
+        "docs/research/mcp-customization/dopemux-constraints/dopemux-authority-map.json"
       ],
       "validation": [
         "Boundary map includes dopemux, dopetask, task-orchestrator, ConPort, dope-memory, dope-context, dopecon-bridge, Serena, Leantime, ADHD Engine, and repo-truth-extractor."
@@ -129,14 +129,14 @@
       ],
       "commands": [],
       "expected_files": [
-        "docs/research/mcp-customization/dr-upload/00-foundation.md",
+        "docs/research/mcp-customization/dr-upload/00-dopemux-context-boundaries.md",
         "docs/research/mcp-customization/dr-upload/01-conport.md",
         "docs/research/mcp-customization/dr-upload/02-task-orchestrator.md",
         "docs/research/mcp-customization/dr-upload/03-serena.md",
         "docs/research/mcp-customization/dr-upload/04-claude-context.md",
         "docs/research/mcp-customization/dr-upload/05-claude-mem.md",
         "docs/research/mcp-customization/dr-upload/06-mem0.md",
-        "docs/research/mcp-customization/dr-upload/07-synthesis.md"
+        "docs/research/mcp-customization/dr-upload/07-cross-system-synthesis.md"
       ],
       "validation": [
         "Every pack requires current source/version capture and fact vs inference separation."
