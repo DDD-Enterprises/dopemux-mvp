@@ -22,8 +22,8 @@ These rules are constraints on reasoning, implementation, validation, and comple
 When sources conflict, use this order:
 
 1. Runtime code, config, compose wiring, tests, and active entrypoints
-2. Standard workspace truth artifacts: `TRUTH_*.md`
-3. Canonical documentation: `RULES.md`, `PROJECT.md`, `ARCHITECTURE.md`, `SYSTEM_BOUNDARIES.md`, `PM_PLANE.md`, `SERVICE_CATALOG.md`
+2. Standard workspace truth artifacts: root `TRUTH_*.md` files when present, otherwise tracked equivalents under `docs/03-reference/truth/`
+3. Canonical documentation: root `RULES.md`, `PROJECT.md`, `ARCHITECTURE.md`, `SYSTEM_BOUNDARIES.md`, `PM_PLANE.md`, `SERVICE_CATALOG.md`, and `SYSTEM_*.md` files when present, otherwise tracked equivalents under `docs/03-reference/`
 4. Historical, exploratory, generated, or design docs
 
 Historical or exploratory docs are treated as untrusted until runtime or truth artifacts support them.
@@ -107,7 +107,7 @@ Bridge rules:
 
 ## 5. Task Packet Contract
 
-All non-trivial implementation or repo-changing work requires a Task Packet conforming to `dopetask-canonical-spec.json`.
+All non-trivial implementation or repo-changing work requires a Task Packet conforming to `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json`.
 
 Required fields:
 

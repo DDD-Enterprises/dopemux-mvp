@@ -12,7 +12,7 @@ prelude: Pal Execution Rules (reference) for dopemux documentation and developer
 # PAL_EXECUTION_RULES.md
 
 ## Status
-Compressed operational rules derived from `PAL_CHAINING_DOCTRINE.md`.
+Compressed operational rules derived from `docs/03-reference/execution/pal-chaining-doctrine.md` (historical source label: `PAL_CHAINING_DOCTRINE.md`).
 
 ## Purpose
 Daily-use rules for running PAL-driven engineering packets without re-litigating the doctrine every time.
