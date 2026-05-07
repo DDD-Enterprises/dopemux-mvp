@@ -10,6 +10,8 @@ import logging
 import platform
 from typing import Dict, Any
 from fastmcp import FastMCP
+from starlette.responses import JSONResponse
+from starlette.routing import Route
 
 # Configure logging
 logging.basicConfig(
@@ -116,12 +118,10 @@ if __name__ == "__main__":
     port = int(os.getenv("MCP_SERVER_PORT", "3012"))
     logger.info(f"🚀 Starting Desktop Commander MCP Server on port {port} (SSE)")
 
-    # Get the SSE app and add a health check route
-    app = mcp.sse_app()
+    async def health_check(_request):
+        return JSONResponse({"status": "ok"})
 
-    @app.get("/health")
-    async def health_check():
-        """Health check endpoint."""
-        return {"status": "ok"}
+    app = mcp.sse_app()
+    app.routes.append(Route("/health", health_check))
 
     uvicorn.run(app, host="0.0.0.0", port=port)
