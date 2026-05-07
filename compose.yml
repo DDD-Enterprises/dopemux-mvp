@@ -326,7 +326,7 @@ services:
 
     environment:
       - MCP_SERVER_PORT=${DOPE_CONTEXT_PORT:-3010}
-      - MCP_SERVER_HOST=127.0.0.1
+      - MCP_SERVER_HOST=0.0.0.0
       - VOYAGE_API_KEY=${VOYAGE_API_KEY}
       - VOYAGEAI_API_KEY=${VOYAGE_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
@@ -336,7 +336,7 @@ services:
       - HOST_PROJECT_RELATIVE_PATH=${HOST_PROJECT_RELATIVE_PATH}
       - DOPEMUX_WORKSPACE_ROOT=/workspaces/${HOST_PROJECT_RELATIVE_PATH}
     ports:
-      - "${DOPE_CONTEXT_PORT:-3010}:3010"
+      - "127.0.0.1:${DOPE_CONTEXT_PORT:-3010}:3010"
     volumes:
       - ./services/dope-context/data:/app/data
       - ./services/dope-context/logs:/app/logs
