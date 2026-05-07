@@ -82,6 +82,14 @@
 **Learning:** Hardening asynchronous state transitions in React (like multi-step confirmation buttons) requires defensive timeout management. Always clear existing timeouts before starting new ones and explicitly nullify the timer reference after clearing or firing to maintain deterministic component behavior and avoid race conditions.
 **Action:** Add explicit timeout clearing and ref nullification when implementing time-windowed micro-interactions.
 
+## 2026-05-17 - [Visual Reinforcement for Soft Confirmations]
+**Learning:** A two-step "soft" confirmation button (e.g., "Confirm Clear?") benefits from subtle visual feedback like a slow pulse animation and a high-contrast color shift (e.g., to `saintGold`). This reinforces that the interface is in a "pending" state and effectively draws the user's attention to the decision point without the abruptness of a modal.
+**Action:** Use subtle pulse animations and distinct semantic colors (like gold for warning/confirmation) to visually reinforce temporary confirmation states.
+
 ## 2026-05-18 - [Card-Level Interactive Surfaces]
 **Learning:** Expanding the interactive hit area of informational cards by making the entire container focusable (rather than just small internal icons) significantly improves usability for both mouse and keyboard users. Adding thematic visual feedback like hover lifts and border glows reinforces the card's interactability and provides a more delightful experience.
 **Action:** Prefer making informational containers interactive surfaces with clear focus/hover states over burying interaction in small, secondary elements.
+
+## 2026-05-20 - [Pulsing Soft Confirmation Feedbacks]
+**Learning:** For destructive actions using a multi-step "soft" confirmation (e.g., "Reset Ritual"), a static label change might be too subtle for users in high-stimulation dashboard environments. Adding a rhythmic scale-and-glow pulse animation during the confirmation window provides a clear "active warning" state that reduces accidental progress loss while increasing the perceived safety of the interaction.
+**Action:** Use subtle `reset-pulse` animations for button components during time-limited confirmation windows to provide stronger visual feedback for destructive actions.
