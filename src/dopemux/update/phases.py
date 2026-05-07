@@ -594,7 +594,7 @@ class OrchestrationPhase(BasePhase):
             await asyncio.sleep(15)
 
             # Other services
-            other_services = ["gptr-mcp", "serena", "task-master-ai"]
+            other_services = ["gptr-mcp", "serena"]
             await self._restart_service_group(other_services, "Other services")
 
             return True

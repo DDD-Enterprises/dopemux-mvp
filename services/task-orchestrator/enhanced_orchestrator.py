@@ -45,7 +45,6 @@ class AgentType(str, Enum):
     """AI agent types for task coordination."""
     CONPORT = "conport"
     SERENA = "serena"
-    TASKMASTER = "taskmaster"
     CLAUDE_FLOW = "claude_flow"
     ZEN = "zen"
 
@@ -246,12 +245,6 @@ class EnhancedTaskOrchestrator:
                 "current_tasks": [],
                 "capabilities": ["code_navigation", "file_analysis", "refactoring"],
                 "max_concurrent": 3
-            },
-            AgentType.TASKMASTER: {
-                "available": True,
-                "current_tasks": [],
-                "capabilities": ["prd_parsing", "complexity_analysis", "research"],
-                "max_concurrent": 2
             },
             AgentType.ZEN: {
                 "available": True,
@@ -529,10 +522,10 @@ class EnhancedTaskOrchestrator:
                      for keyword in ["implement", "refactor", "debug", "code", "function"]):
                 return AgentType.SERENA
 
-            # Research/analysis tasks → TaskMaster
+            # Research/analysis tasks → Zen
             elif any(keyword in title_lower or keyword in description_lower
                      for keyword in ["research", "analyze", "requirements", "prd"]):
-                return AgentType.TASKMASTER
+                return AgentType.ZEN
 
             # Complex coordination → Zen
             elif task.complexity_score > 0.8:
@@ -569,8 +562,6 @@ class EnhancedTaskOrchestrator:
                 dispatch_success = await self._dispatch_to_conport(task)
             elif agent == AgentType.SERENA:
                 dispatch_success = await self._dispatch_to_serena(task)
-            elif agent == AgentType.TASKMASTER:
-                dispatch_success = await self._dispatch_to_taskmaster(task)
             elif agent == AgentType.ZEN:
                 dispatch_success = await self._dispatch_to_zen(task)
 
@@ -611,18 +602,6 @@ class EnhancedTaskOrchestrator:
 
         except Exception as e:
             logger.error(f"Serena dispatch failed: {e}")
-            return False
-
-    async def _dispatch_to_taskmaster(self, task: OrchestrationTask) -> bool:
-        """Dispatch task to TaskMaster for analysis."""
-        try:
-            # This would make MCP calls to TaskMaster
-            # For now, simulate dispatch
-            logger.debug(f"🔍 TaskMaster dispatch: {task.title}")
-            return True
-
-        except Exception as e:
-            logger.error(f"TaskMaster dispatch failed: {e}")
             return False
 
     async def _dispatch_to_zen(self, task: OrchestrationTask) -> bool:

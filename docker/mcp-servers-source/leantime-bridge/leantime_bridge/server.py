@@ -240,7 +240,7 @@ async def list_tools() -> List[types.Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "source": {"type": "string", "enum": ["task-master-ai", "task-orchestrator"], "description": "External system to sync with"},
+                    "source": {"type": "string", "enum": ["task-orchestrator"], "description": "External system to sync with"},
                     "projectId": {"type": "integer", "description": "Project ID to sync"},
                     "syncDirection": {"type": "string", "enum": ["import", "export", "bidirectional"], "default": "bidirectional"}
                 },

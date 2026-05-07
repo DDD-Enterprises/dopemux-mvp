@@ -63,27 +63,6 @@ CANONICAL_TO_CONPORT: dict[PMTaskStatus, str] = {
 }
 
 
-# ─── Taskmaster dialect ↔ Canonical ─────────────────────────────
-
-# Taskmaster bridge writes hardcoded "TODO" (bridge_adapter.py:69)
-# and emits status_updated events with arbitrary strings
-
-TASKMASTER_TO_CANONICAL: dict[str, PMTaskStatus] = {
-    "TODO": PMTaskStatus.TODO,
-    "IN_PROGRESS": PMTaskStatus.IN_PROGRESS,
-    "DONE": PMTaskStatus.DONE,
-    "BLOCKED": PMTaskStatus.BLOCKED,
-}
-
-CANONICAL_TO_TASKMASTER: dict[PMTaskStatus, str] = {
-    PMTaskStatus.TODO: "TODO",
-    PMTaskStatus.IN_PROGRESS: "IN_PROGRESS",
-    PMTaskStatus.DONE: "DONE",
-    PMTaskStatus.BLOCKED: "BLOCKED",
-    PMTaskStatus.CANCELED: "DONE",  # Lossy: taskmaster has no canceled
-}
-
-
 # ─── Lossy mapping documentation ────────────────────────────────
 
 # All lossy mappings documented here for audit trail.
@@ -118,11 +97,5 @@ LOSSY_MAPPINGS: list[dict[str, str]] = [
         "dialect_status": "canceled (reverse)",
         "canonical_status": "DONE",
         "reason": "ConPort has no canceled status; maps to DONE",
-    },
-    {
-        "source": "taskmaster",
-        "dialect_status": "canceled (reverse)",
-        "canonical_status": "DONE",
-        "reason": "Taskmaster has no canceled status; maps to DONE",
     },
 ]

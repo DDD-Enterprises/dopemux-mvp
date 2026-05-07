@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 import os
 from dataclasses import dataclass
-from importlib import import_module
 from typing import Any, Dict, List, Optional
 
 import httpx
@@ -128,18 +127,58 @@ def _leantime_client() -> LeantimeJSONRPCClient:
     return LeantimeJSONRPCClient(Config({"leantime": {"api_url": api_url, "api_token": api_token}}))
 
 
-def _dope_context_client():
-    client_cls = import_module("services.genetic_agent.shared.mcp.dope_context_client").DopeContextClient
-    return client_cls(
-        os.getenv("GENETIC_AGENT_DOPE_CONTEXT_URL", "http://localhost:3002"),
+class _SupportingMCPClient:
+    """Minimal HTTP client for supporting PM read backends."""
+
+    def __init__(self, base_url: str, config: _LocalMCPConfig):
+        self.base_url = base_url.rstrip("/")
+        self.config = config
+        self.client: Optional[httpx.AsyncClient] = None
+
+    async def __aenter__(self):
+        self.client = httpx.AsyncClient(
+            base_url=self.base_url,
+            timeout=float(self.config.timeout),
+        )
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        if self.client is not None:
+            await self.client.aclose()
+            self.client = None
+
+    async def _post_json(self, endpoint: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        if self.client is None:
+            raise RuntimeError("supporting MCP client is not initialized")
+        response = await self.client.post(f"/{endpoint.lstrip('/')}", json=data)
+        response.raise_for_status()
+        payload = response.json()
+        return payload if isinstance(payload, dict) else {"result": payload}
+
+
+class _DopeContextClient(_SupportingMCPClient):
+    async def search_all(self, query: str, top_k: int = 10) -> Dict[str, Any]:
+        return await self._post_json("search_all", {"query": query, "top_k": top_k})
+
+
+class _SerenaClient(_SupportingMCPClient):
+    async def find_symbol(self, query: str, symbol_type: str = "") -> Dict[str, Any]:
+        return await self._post_json(
+            "find_symbol",
+            {"query": query, "symbol_type": symbol_type},
+        )
+
+
+def _dope_context_client() -> _DopeContextClient:
+    return _DopeContextClient(
+        os.getenv("DOPE_CONTEXT_URL", "http://localhost:3002"),
         _mcp_config(),
     )
 
 
-def _serena_client():
-    client_cls = import_module("services.genetic_agent.shared.mcp.serena_client").SerenaClient
-    return client_cls(
-        os.getenv("GENETIC_AGENT_SERENA_URL", "http://localhost:3001"),
+def _serena_client() -> _SerenaClient:
+    return _SerenaClient(
+        os.getenv("SERENA_URL", "http://localhost:3001"),
         _mcp_config(),
     )
 

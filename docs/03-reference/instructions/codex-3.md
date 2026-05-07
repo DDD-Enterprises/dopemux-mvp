@@ -88,7 +88,6 @@ Codex interfaces with Dopemux via the local MCP fabric listed in `docker/mcp-ser
 
 ### Workflow Servers
 - **ConPort** (`mcp-conport`, port `3004`, `/health`): project memory/knowledge graph + decision authority.
-- **Task Master AI** (`mcp-task-master-ai`, port `3005`, `/health`): PRD parsing, task breakdown, and requirements interpretation.
 - **Task Orchestrator** (`mcp-task-orchestrator`, port `3014`, `/health`): dependency analysis, scheduling, and task planning with 37 specialized tools.
 - **Serena** (`mcp-serena`, port `3006`, `/health`): ADHD-optimized LSP for code navigation, complexity scoring, and working memory.
 - **Claude Context** (`mcp-claude-context`, port `3007`, `/health`): semantic code search and vector-based context retrieval.

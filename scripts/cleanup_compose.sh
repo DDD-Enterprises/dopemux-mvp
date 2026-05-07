@@ -29,7 +29,6 @@ OTHER_PROJECTS=(
   "leantime"
   "conport-kg"
   "working-memory-assistant"
-  "genetic_agent"
   "docker"
   "test-task-orchestrator"
 )

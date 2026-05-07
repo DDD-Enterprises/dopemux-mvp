@@ -648,7 +648,6 @@ class TokenBudgetManager:
             "sequential-thinking": 4000,
             "zen": 2500,
             "exa": 1500,
-            "task-master-ai": 800,
             "pal": 600,
             "serena": 400,
             "conport": 300,

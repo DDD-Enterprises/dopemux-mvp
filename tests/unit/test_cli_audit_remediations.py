@@ -7,7 +7,7 @@ import pytest
 from click.testing import CliRunner
 
 from dopemux.cli import cli
-from dopemux.commands import code_commands, mcp_commands
+from dopemux.commands import mcp_commands
 from dopemux.routing_cli import _set_routing_mode
 from dopemux.routing_config import RoutingConfigError
 
@@ -108,42 +108,24 @@ def test_decisions_runtime_does_not_advertise_missing_subcommands():
     assert "list" not in decisions.commands
 
 
-def test_code_repair_missing_dependency_returns_nonzero(monkeypatch):
-    runner = CliRunner()
-
-    def missing_agent():
-        raise ImportError("genetic_agent missing")
-
-    monkeypatch.setattr(code_commands, "_ensure_genetic_agent_path", missing_agent)
-
-    result = runner.invoke(code_commands.code, ["repair", "bug"])
-
-    assert result.exit_code != 0
-    assert "Code repair failed" in result.output
+def test_removed_genetic_code_commands_are_not_registered():
+    assert "genetic" not in cli.commands
+    assert "code" not in cli.commands
 
 
 def test_operator_status_aliases_are_public_and_legacy_names_hidden():
     update_group = cli.commands["update"]
-    code_group = cli.commands["code"]
 
     assert "status" in update_group.commands
     assert "update-status-cmd" in update_group.commands
     assert update_group.commands["update-status-cmd"].hidden is True
 
-    assert "status" in code_group.commands
-    assert "code-agent-status-cmd" in code_group.commands
-    assert code_group.commands["code-agent-status-cmd"].hidden is True
-
     runner = CliRunner()
     update_help = runner.invoke(cli, ["update", "--help"])
-    code_help = runner.invoke(cli, ["code", "--help"])
 
     assert update_help.exit_code == 0
     assert "status" in update_help.output
     assert "update-status-cmd" not in update_help.output
-    assert code_help.exit_code == 0
-    assert "status" in code_help.output
-    assert "code-agent-status-cmd" not in code_help.output
 
 
 def test_profile_lifecycle_commands_are_real_callbacks():

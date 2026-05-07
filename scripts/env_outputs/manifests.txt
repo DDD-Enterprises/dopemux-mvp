@@ -1,6 +1,5 @@
 docker/mcp-servers-source/conport-bridge/requirements.txt
 docker/mcp-servers-source/desktop-commander/requirements.txt
-docker/mcp-servers-source/docker/mcp-servers/task-master-ai/package.json
 docker/mcp-servers-source/exa/requirements.txt
 docker/mcp-servers-source/leantime-bridge/requirements.txt
 docker/mcp-servers-source/pal/pal-mcp-server/pyproject.toml
@@ -22,7 +21,6 @@ services/dopemux-gpt-researcher/backend/requirements.txt
 services/dopemux-gpt-researcher/backend/requirements_enhanced.txt
 services/dopemux-gpt-researcher/requirements.txt
 services/dopemux-gpt-researcher/research_api/requirements.txt
-services/genetic_agent/pyproject.toml
 services/mcp-integration-bridge/requirements.txt
 services/session-manager/pyproject.toml
 services/shared/complexity_coordinator/requirements.txt

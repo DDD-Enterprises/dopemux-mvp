@@ -268,17 +268,6 @@ def create_server_configs():
     """Create MCP server configurations"""
     configs = {}
 
-    # Task Master AI (stdio)
-    configs['task-master-ai'] = {
-        'transport': 'stdio',
-        'command': 'docker',
-        'args': ['exec', 'mcp-task-master-ai', 'node', '/app/dist/mcp-server.js'],
-        'env': {
-            'MCP_SERVER_PORT': '3005',
-            'MCP_TRANSPORT': 'stdio'
-        }
-    }
-
     # Zen (http)
     configs['zen'] = {
         'transport': 'http',
@@ -344,18 +333,6 @@ async def main():
             logger.info(f"\n{server_name}:")
             for tool in tools:
                 logger.info(f"  - {tool['name']}: {tool.get('description', 'No description')}")
-
-        # Test task-master-ai batch_tasks tool if available
-        if 'task-master-ai' in manager.clients:
-            logger.info("\n🛠️  Testing task-master-ai batch_tasks tool...")
-            try:
-                result = await manager.call_tool_by_name(
-                    'batch_tasks',
-                    {'tasks': ['task1', 'task2', 'task3', 'task4', 'task5']}
-                )
-                logger.info("Result:", json.dumps(result, indent=2))
-            except Exception as e:
-                logger.error(f"Task not available or failed: {e}")
 
     except Exception as e:
         logger.error(f"❌ MCP Client error: {e}")

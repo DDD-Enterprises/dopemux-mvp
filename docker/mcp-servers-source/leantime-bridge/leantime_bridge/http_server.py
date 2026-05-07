@@ -319,7 +319,7 @@ def _tool_specs() -> List[types.Tool]:
                 "properties": {
                     "source": {
                         "type": "string",
-                        "enum": ["task-master-ai", "task-orchestrator"],
+                        "enum": ["task-orchestrator"],
                         "description": "External system to sync with",
                     },
                     "projectId": {"type": "integer", "description": "Project ID to sync"},
