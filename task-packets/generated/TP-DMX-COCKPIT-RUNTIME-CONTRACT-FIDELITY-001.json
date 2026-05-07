@@ -1,0 +1,313 @@
+{
+  "id": "TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001",
+  "project": "dopemux-mvp",
+  "target": "Repair Cockpit runtime contract-fidelity issues found during post-merge review-thread audit while preserving no runtime execution, no T4 mutation, no Claude Design unlock, and no canonical writes.",
+  "invariants": [
+    "safe_for_claude_design remains NO.",
+    "READY_FOR_CLAUDE_DESIGN remains not approved.",
+    "No Claude Design upload or final-screen generation is authorized.",
+    "No runtime action execution is authorized.",
+    "No T4 remote mutation is authorized.",
+    "No live service adapters, network calls, Docker calls, browser/OpenClaw/CDP calls, PM writes, ConPort writes, dope-memory writes, dopecon-bridge writes, or canonical writes are authorized.",
+    "Safe Action Gate remains cross-cutting and non-executing.",
+    "Unknown / Drift Queue remains non-executing and runtime reclassification remains disabled.",
+    "TX and TU remain non-executable.",
+    "External-only rows must never reach a confirmable execution path.",
+    "Proof and receipts must preserve provenance without trusting caller-supplied hashes.",
+    "Secrets must be redacted before labels, evidence refs, row hashes, queue item IDs, or receipts can persist or display derived values.",
+    "No accepted upstream proof/artifact directories may be mutated."
+  ],
+  "depends_on": [
+    "TP-DMX-COCKPIT-MERGE-EXECUTE-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dopemux-cockpit-ia-remediation",
+    "base_branch": "pack/cockpit-pack-remediate-006-ia",
+    "parent_tp_id": "TP-DMX-COCKPIT-MERGE-EXECUTE-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/cockpit-runtime-contract-fidelity-001"
+  },
+  "commit": {
+    "message": "fix(cockpit): repair runtime contract fidelity gaps",
+    "allowlist": [
+      "src/dopemux/ui/cockpit/runtime_contract.py",
+      "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+      "tests/unit/dopemux/ui/cockpit/test_inventory_regen_artifacts.py",
+      "tests/unit/test_cockpit_cli.py",
+      "task-packets/generated/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001.json",
+      "task-packets/INDEX.md",
+      "out/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/**",
+      "proof/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001.json >/dev/null",
+      "python -m json.tool out/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/PROOF.json >/dev/null",
+      "python -m compileall -q src/dopemux tests",
+      "python -m pytest tests/unit/dopemux/ui/cockpit -q",
+      "python -m pytest tests/unit/test_cockpit_cli.py -q",
+      "python -m pytest tests/unit/dopemux/ui/cockpit/test_inventory_regen_artifacts.py -q",
+      "! grep -R -E \"READY_FOR_CLAUDE_DESIGN: approved|safe_for_claude_design: YES|Claude Design upload allowed|T4 authorized|runtime execution implemented|Unknown / Drift execution|runtime reclassification allowed|execute anyway|approve anyway|resolve now|final screens approved\" -n src/dopemux tests out/cockpit-runtime-contract-fidelity proof/cockpit-runtime-contract-fidelity",
+      "! grep -R -E \"subprocess|shell=True|os\\.system|requests|httpx|urllib|socket|docker|kubectl\" -n src/dopemux/ui/cockpit src/dopemux/commands/cockpit_commands.py tests/unit/dopemux/ui/cockpit tests/unit/test_cockpit_cli.py",
+      "git diff --check",
+      "pre-commit run --files src/dopemux/ui/cockpit/runtime_contract.py tests/unit/dopemux/ui/cockpit/test_runtime_contract.py tests/unit/dopemux/ui/cockpit/test_inventory_regen_artifacts.py tests/unit/test_cockpit_cli.py task-packets/generated/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001.json task-packets/INDEX.md out/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/PROOF.json proof/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/README.md"
+    ]
+  },
+  "pr": {
+    "title": "fix(cockpit): repair runtime contract fidelity gaps",
+    "body": "Implements TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001. Repairs post-merge review-thread contract-fidelity issues in Cockpit runtime primitives: EXTERNAL_ONLY fail-closed gating, canonical action row hashing, receipt schema completeness, palette_request_id nullability, gate_request_id lifecycle stability, package-dir resolution coupling, UNKNOWN aggregate counting, redaction-before-hash for queue IDs, and inventory metadata tests. Preserves safe_for_claude_design: NO and READY_FOR_CLAUDE_DESIGN: not approved. No final screens, no Claude Design upload, no runtime action execution, no T4 remote mutation, no live service adapters, no canonical writes, and no runtime reclassification.",
+    "base": "pack/cockpit-pack-remediate-006-ia"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight the dedicated worktree and verify the post-merge base before making any edits.",
+      "requirements": [
+        "Create a fresh dedicated worktree from origin/pack/cockpit-pack-remediate-006-ia.",
+        "Use worktree path /Users/hue/code/dopemux-worktrees/dopemux-cockpit-runtime-contract-fidelity-001.",
+        "Use branch codex/cockpit-runtime-contract-fidelity-001.",
+        "Verify repo marker .dopetaskroot.",
+        "Verify origin is DDD-Enterprises/dopemux-mvp.",
+        "Verify base branch HEAD is b173efd83c871c30f2bd86530921c866d08e7e45 or stop and report drift.",
+        "Verify worktree is clean before edits.",
+        "Do not run live services."
+      ],
+      "commands": [
+        "git fetch origin --prune",
+        "git worktree list",
+        "git worktree add -b codex/cockpit-runtime-contract-fidelity-001 /Users/hue/code/dopemux-worktrees/dopemux-cockpit-runtime-contract-fidelity-001 origin/pack/cockpit-pack-remediate-006-ia",
+        "cd /Users/hue/code/dopemux-worktrees/dopemux-cockpit-runtime-contract-fidelity-001",
+        "pwd",
+        "git rev-parse --show-toplevel",
+        "test -f .dopetaskroot",
+        "git remote -v",
+        "git branch --show-current",
+        "git rev-parse HEAD",
+        "git status --short --branch",
+        "git ls-remote --heads origin pack/cockpit-pack-remediate-006-ia"
+      ],
+      "expected_files": [],
+      "validation": [
+        "pwd prints /Users/hue/code/dopemux-worktrees/dopemux-cockpit-runtime-contract-fidelity-001.",
+        "git branch --show-current prints codex/cockpit-runtime-contract-fidelity-001.",
+        "git rev-parse HEAD equals b173efd83c871c30f2bd86530921c866d08e7e45.",
+        "git status --short --branch shows a clean worktree.",
+        ".dopetaskroot exists."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "task-packets/INDEX.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create the TP JSON and inspect accepted proof/audit evidence for the post-merge contract-fidelity defects.",
+      "requirements": [
+        "Create task-packets/generated/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001.json before implementation.",
+        "Read the merge execute audit summary and local proof artifacts if present.",
+        "Inspect accepted Safe Action receipt, preflight, refusal, runtime-render, Settings/Admin, Unknown/Drift, and inventory proof artifacts.",
+        "Record missing root RULES/TRUTH/SYSTEM/dopetask schema files as UNKNOWN if absent.",
+        "Do not mutate accepted upstream artifacts."
+      ],
+      "commands": [
+        "test -f task-packets/generated/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001.json || true",
+        "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001.json >/dev/null",
+        "rg -n \"EXTERNAL_ONLY|action_row_hash|gate_request_id|palette_request_id|receipt|SAFE_ACTION_GATE_EVENT_RECEIPTS|_increment_count|queue_item_id|row_hash|redact|source_artifacts|runtime_sources|line_count\" src/dopemux tests out proof task-packets -S"
+      ],
+      "expected_files": [
+        "task-packets/generated/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001.json"
+      ],
+      "validation": [
+        "Generated TP JSON parses.",
+        "Relevant contract files and runtime/test files are identified.",
+        "Accepted upstream artifact directories remain unmodified."
+      ],
+      "context_files": [
+        "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_GATE_CONTRACT.md",
+        "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_PREFLIGHT_SCHEMA.json",
+        "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_REFUSAL_RULES.md",
+        "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_GATE_EVENT_RECEIPTS.md",
+        "out/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/PROOF.json",
+        "out/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/PROOF.json",
+        "out/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/PROOF.json",
+        "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/PROOF.json",
+        "proof/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/PROOF.json",
+        "proof/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/BLOCKER_REPORT.md"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Repair Safe Action preflight and receipt contract fidelity in runtime_contract.py.",
+      "requirements": [
+        "Ensure EXTERNAL_ONLY candidates cannot reach a confirmable gate path and route only to inspect/copy behavior.",
+        "Recompute action_row_hash from a canonical preflight/action representation at gate-open time instead of trusting caller-supplied input.",
+        "Complete receipt payload fields required by SAFE_ACTION_GATE_EVENT_RECEIPTS.md where local runtime primitives model them.",
+        "Set palette_request_id to null for non-palette origins.",
+        "Keep gate_request_id stable across a modeled gate lifecycle and avoid timestamp-derived fallback churn between events.",
+        "Add or update tests for each behavior.",
+        "Do not add execution, network, subprocess, live-service, database, PM, memory, bridge, or T4 behavior."
+      ],
+      "commands": [
+        "python -m pytest tests/unit/dopemux/ui/cockpit/test_runtime_contract.py -q"
+      ],
+      "expected_files": [
+        "src/dopemux/ui/cockpit/runtime_contract.py",
+        "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py"
+      ],
+      "validation": [
+        "Tests prove EXTERNAL_ONLY cannot confirm or execute.",
+        "Tests prove action_row_hash is recomputed canonically.",
+        "Tests prove receipt required fields are present.",
+        "Tests prove palette_request_id is null for non-palette origins.",
+        "Tests prove gate_request_id remains stable across lifecycle events.",
+        "Focused cockpit tests pass."
+      ],
+      "context_files": [
+        "src/dopemux/ui/cockpit/runtime_contract.py",
+        "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Repair Unknown/Drift queue and inventory fidelity gaps.",
+      "requirements": [
+        "Make UNKNOWN aggregate counting preserve UNKNOWN when any aggregate item has an unknown/non-integer count instead of silently leaving a zero.",
+        "Redact secret-like values before deriving queue_item_id, row_hash, labels, details, or evidence-derived display values.",
+        "Reduce package-dir hard-coupling where safe by resolving package-dir through deterministic repo-relative behavior, while preserving fail-closed behavior for missing or invalid paths.",
+        "Add inventory artifact tests that validate source_artifacts[*].sha256 fields are either valid sha256 digests or explicitly documented UNKNOWN placeholders.",
+        "Add inventory artifact tests that validate runtime_sources[*].line_count matches current source files where the file exists.",
+        "Do not create row-level precision when only aggregate evidence exists."
+      ],
+      "commands": [
+        "python -m pytest tests/unit/dopemux/ui/cockpit/test_runtime_contract.py -q",
+        "python -m pytest tests/unit/dopemux/ui/cockpit/test_inventory_regen_artifacts.py -q"
+      ],
+      "expected_files": [
+        "src/dopemux/ui/cockpit/runtime_contract.py",
+        "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+        "tests/unit/dopemux/ui/cockpit/test_inventory_regen_artifacts.py"
+      ],
+      "validation": [
+        "Tests prove UNKNOWN aggregate counts are preserved.",
+        "Tests prove redaction occurs before queue item ID / row hash derivation.",
+        "Tests prove package-dir resolution is deterministic and fail-closed.",
+        "Inventory artifact tests validate sha256 placeholders and real digests.",
+        "Inventory artifact tests validate runtime source line counts."
+      ],
+      "context_files": [
+        "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json",
+        "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/CURRENT_HEAD_COCKPIT_STATUS.json",
+        "tests/unit/dopemux/ui/cockpit/test_inventory_regen_artifacts.py"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Create proof artifacts for the contract-fidelity cleanup.",
+      "requirements": [
+        "Create out/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/PROOF.json.",
+        "Create proof/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/README.md.",
+        "Record review-thread classifications and implemented fixes.",
+        "Record validation commands and exit codes.",
+        "Record changed files, branch, base, implementation commit placeholder, PR URL or blocker, residual risks, and UNKNOWNs.",
+        "Use final_head_recording_policy if proof metadata cleanup happens.",
+        "Preserve safe_for_claude_design: NO and READY_FOR_CLAUDE_DESIGN: not approved.",
+        "Do not claim runtime execution, T4 authorization, Claude Design approval, or final screens."
+      ],
+      "commands": [
+        "python -m json.tool out/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/PROOF.json >/dev/null"
+      ],
+      "expected_files": [
+        "out/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/PROOF.json",
+        "proof/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/README.md"
+      ],
+      "validation": [
+        "PROOF.json parses.",
+        "Proof README preserves no-runtime/no-Claude/no-T4/no-canonical-write boundaries.",
+        "Proof records all contract-fidelity fixes and residual risks."
+      ],
+      "context_files": [
+        "proof/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/PROOF.json",
+        "proof/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/BLOCKER_REPORT.md"
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Run full validation, inspect diff, commit, push, and open PR.",
+      "requirements": [
+        "Run JSON validation, compileall, focused tests, forbidden greps, git diff checks, codereview if available, and pre-commit.",
+        "If codereview is unavailable, record that and perform explicit diff review.",
+        "Commit only allowlisted files.",
+        "Push codex/cockpit-runtime-contract-fidelity-001.",
+        "Open PR against pack/cockpit-pack-remediate-006-ia.",
+        "Return closeout with exact commands, exit codes, commit SHA, PR URL or blocker, proof paths, and residual risks."
+      ],
+      "commands": [
+        "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001.json >/dev/null",
+        "python -m json.tool out/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/PROOF.json >/dev/null",
+        "python -m compileall -q src/dopemux tests",
+        "python -m pytest tests/unit/dopemux/ui/cockpit -q",
+        "python -m pytest tests/unit/test_cockpit_cli.py -q",
+        "python -m pytest tests/unit/dopemux/ui/cockpit/test_inventory_regen_artifacts.py -q",
+        "! grep -R -E \"READY_FOR_CLAUDE_DESIGN: approved|safe_for_claude_design: YES|Claude Design upload allowed|T4 authorized|runtime execution implemented|Unknown / Drift execution|runtime reclassification allowed|execute anyway|approve anyway|resolve now|final screens approved\" -n src/dopemux tests out/cockpit-runtime-contract-fidelity proof/cockpit-runtime-contract-fidelity",
+        "! grep -R -E \"subprocess|shell=True|os\\.system|requests|httpx|urllib|socket|docker|kubectl\" -n src/dopemux/ui/cockpit src/dopemux/commands/cockpit_commands.py tests/unit/dopemux/ui/cockpit tests/unit/test_cockpit_cli.py",
+        "git diff --check",
+        "command -v codereview || true",
+        "pre-commit run --files src/dopemux/ui/cockpit/runtime_contract.py tests/unit/dopemux/ui/cockpit/test_runtime_contract.py tests/unit/dopemux/ui/cockpit/test_inventory_regen_artifacts.py tests/unit/test_cockpit_cli.py task-packets/generated/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001.json task-packets/INDEX.md out/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/PROOF.json proof/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/README.md",
+        "git status --short --branch"
+      ],
+      "expected_files": [
+        "src/dopemux/ui/cockpit/runtime_contract.py",
+        "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+        "tests/unit/dopemux/ui/cockpit/test_inventory_regen_artifacts.py",
+        "tests/unit/test_cockpit_cli.py",
+        "task-packets/generated/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001.json",
+        "task-packets/INDEX.md",
+        "out/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/PROOF.json",
+        "proof/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/README.md"
+      ],
+      "validation": [
+        "All JSON files parse.",
+        "compileall passes.",
+        "Focused cockpit UI tests pass.",
+        "Focused CLI tests pass.",
+        "Inventory artifact tests pass.",
+        "Forbidden governance grep has no matches.",
+        "Forbidden runtime token grep has no matches.",
+        "git diff --check passes.",
+        "pre-commit passes.",
+        "Branch is pushed and PR is opened or exact blocker is reported."
+      ],
+      "context_files": [
+        "src/dopemux/ui/cockpit/runtime_contract.py",
+        "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+        "tests/unit/dopemux/ui/cockpit/test_inventory_regen_artifacts.py",
+        "tests/unit/test_cockpit_cli.py"
+      ]
+    }
+  ]
+}
