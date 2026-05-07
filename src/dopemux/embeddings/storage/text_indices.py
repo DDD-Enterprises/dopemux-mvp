@@ -75,6 +75,15 @@ class BM25Index(BaseTextIndex):
         scorer_cls = BM25Okapi or _SimpleBM25Okapi
         return scorer_cls(self.tokenized_docs)
 
+    def _lexical_match_scores(self, query_tokens: List[str]) -> np.ndarray:
+        """Return deterministic token-overlap scores for exact lexical matches."""
+        query_set = set(query_tokens)
+        scores = []
+        for document_tokens in self.tokenized_docs:
+            score = float(sum(document_tokens.count(token) for token in query_set))
+            scores.append(score)
+        return np.asarray(scores, dtype=np.float32)
+
     def _get_stop_words(self, language: str) -> Set[str]:
         """
         Get stop words for the specified language.
@@ -177,16 +186,27 @@ class BM25Index(BaseTextIndex):
             if not query_tokens:
                 return []
 
-            # Get BM25 scores for all documents
-            scores = self.bm25.get_scores(query_tokens)
+            # Get BM25 scores for all documents. rank_bm25 can return zero or
+            # negative scores for tiny corpora, so preserve exact lexical
+            # matches with a deterministic overlap fallback.
+            scores = np.asarray(self.bm25.get_scores(query_tokens), dtype=np.float32)
+            lexical_scores = self._lexical_match_scores(query_tokens)
+            effective_scores = np.where(
+                (scores > 0) | (lexical_scores <= 0),
+                scores,
+                lexical_scores,
+            )
 
             # Get top-k results
-            top_indices = np.argsort(scores)[::-1][:k]
+            top_indices = sorted(
+                range(len(effective_scores)),
+                key=lambda idx: (-float(effective_scores[idx]), idx),
+            )[:k]
 
             results = []
             for idx in top_indices:
-                if scores[idx] > 0:  # Only return non-zero scores
-                    results.append((self.doc_ids[idx], float(scores[idx])))
+                if effective_scores[idx] > 0:  # Only return lexical matches
+                    results.append((self.doc_ids[idx], float(effective_scores[idx])))
 
             return results
 
