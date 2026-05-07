@@ -19,7 +19,7 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { Bell, Brain, Droplet, Eye, Trash2, TrendingUp, Zap } from 'lucide-react';
+import { AlertTriangle, Bell, Brain, Droplet, Eye, Trash2, TrendingUp, Zap } from 'lucide-react';
 
 import { dashboardApiHeaders, dashboardApiUrl, dashboardWsUrl } from './config';
 import CognitiveLoadGauge from './components/CognitiveLoadGauge';
@@ -140,6 +140,8 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'live' | 'degraded'>('connecting');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isConfirmingClear, setIsConfirmingClear] = useState(false);
+  const clearConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -221,6 +223,10 @@ function App() {
 
     return () => {
       socket.close();
+      if (clearConfirmTimeoutRef.current) {
+        clearTimeout(clearConfirmTimeoutRef.current);
+        clearConfirmTimeoutRef.current = null;
+      }
     };
   }, []);
 
@@ -360,7 +366,7 @@ function App() {
             </Tooltip>
             <Tooltip title="Health and hydration status" arrow>
               <Chip
-                icon={<Droplet size={16} color={brandTokens.colors.aftercareViolet} />}
+                icon={<Droplet size={16} color={brandTokens.colors.aftercareViolet} aria-hidden="true" />}
                 label="[AFTERCARE] Logged. Hydrate."
                 aria-label="Health and hydration status: [AFTERCARE] Logged. Hydrate."
                 className="dopemux-chip"
@@ -423,47 +429,44 @@ function App() {
         <Grid container spacing={3} sx={{ mb: 3 }}>
           {metricCards.map((metric) => (
             <Grid item xs={12} md={6} lg={3} key={metric.label}>
-              <Paper
-                sx={{
-                  p: 2.5,
-                  minHeight: 140,
-                  borderRadius: 3,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 1.2,
-                  border: `1px solid ${brandTokens.borders.subtle}`,
-                  background: brandTokens.gradients.focusCard,
-                }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Tooltip title={metric.tooltip} arrow>
-                    <Box
-                      tabIndex={0}
-                      aria-label={`${metric.label}: ${metric.value !== null ? (metric.value * 100).toFixed(0) : 'N/A'}%`}
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        outline: 'none',
-                        cursor: 'help',
-                        '&:focus-visible': {
-                          borderRadius: 1,
-                          boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}`,
-                        },
-                      }}
-                    >
+              <Tooltip title={metric.tooltip} arrow describeChild>
+                <Paper
+                  tabIndex={0}
+                  aria-label={`${metric.label}: ${metric.value !== null ? (metric.value * 100).toFixed(0) : 'N/A'}%`}
+                  sx={{
+                    p: 2.5,
+                    minHeight: 140,
+                    borderRadius: 3,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 1.2,
+                    border: `1px solid ${brandTokens.borders.subtle}`,
+                    background: brandTokens.gradients.focusCard,
+                    cursor: 'help',
+                    outline: 'none',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    '&:hover, &:focus-visible': {
+                      borderColor: brandTokens.colors.ritualCyan,
+                      transform: 'translateY(-4px)',
+                      boxShadow: `0 0 20px ${alpha(brandTokens.colors.ritualCyan, 0.2)}`,
+                    },
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       {metric.icon}
                     </Box>
-                  </Tooltip>
-                  <Box>
-                    <Typography variant="h6">
-                      {metric.value !== null ? `${(metric.value * 100).toFixed(0)}%` : 'N/A'}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">{metric.label}</Typography>
+                    <Box>
+                      <Typography variant="h6">
+                        {metric.value !== null ? `${(metric.value * 100).toFixed(0)}%` : 'N/A'}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">{metric.label}</Typography>
+                    </Box>
                   </Box>
-                </Box>
-                <Typography className="dopemux-roast">{metric.roast}</Typography>
-                <Typography className="dopemux-aftercare">Logged. Hydrate.</Typography>
-              </Paper>
+                  <Typography className="dopemux-roast">{metric.roast}</Typography>
+                  <Typography className="dopemux-aftercare">Logged. Hydrate.</Typography>
+                </Paper>
+              </Tooltip>
             </Grid>
           ))}
         </Grid>
@@ -495,25 +498,48 @@ function App() {
               />
             )}
             {notifications.length > 0 && (
-              <Tooltip title="Clear all notifications to reduce visual noise" arrow>
+              <Tooltip title={isConfirmingClear ? 'Confirm to clear all notifications' : 'Clear all notifications to reduce visual noise'} arrow>
                 <Chip
                   size="small"
                   variant="outlined"
-                  icon={<Trash2 size={14} aria-hidden="true" />}
-                  label="Clear"
+                  icon={isConfirmingClear ? <AlertTriangle size={14} aria-hidden="true" /> : <Trash2 size={14} aria-hidden="true" />}
+                  label={isConfirmingClear ? 'Confirm Clear?' : 'Clear'}
                   onClick={() => {
+                    if (!isConfirmingClear) {
+                      setIsConfirmingClear(true);
+                      if (clearConfirmTimeoutRef.current) clearTimeout(clearConfirmTimeoutRef.current);
+                      clearConfirmTimeoutRef.current = setTimeout(() => {
+                        setIsConfirmingClear(false);
+                        clearConfirmTimeoutRef.current = null;
+                      }, 3000);
+                      return;
+                    }
+                    if (clearConfirmTimeoutRef.current) {
+                      clearTimeout(clearConfirmTimeoutRef.current);
+                      clearConfirmTimeoutRef.current = null;
+                    }
+                    setIsConfirmingClear(false);
                     setNotifications([]);
                     feedHeadingRef.current?.focus();
                   }}
-                  aria-label="Clear all notifications"
+                  aria-label={isConfirmingClear ? 'Confirm clear all notifications' : 'Clear all notifications'}
                   sx={{
                     ml: isLoading ? 1 : 'auto',
                     cursor: 'pointer',
-                    bgcolor: alpha(brandTokens.colors.gremlinPink, 0.1),
-                    color: brandTokens.colors.gremlinPink,
-                    borderColor: brandTokens.colors.gremlinPink,
+                    bgcolor: alpha(isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.gremlinPink, 0.1),
+                    color: isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.gremlinPink,
+                    borderColor: isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.gremlinPink,
+                    transition: 'all 0.2s ease',
+                    ...(isConfirmingClear && {
+                      animation: 'clear-pulse 2s infinite',
+                      '@keyframes clear-pulse': {
+                        '0%': { transform: 'scale(1)' },
+                        '50%': { transform: 'scale(1.03)', boxShadow: `0 0 12px ${alpha(brandTokens.colors.saintGold, 0.4)}` },
+                        '100%': { transform: 'scale(1)' },
+                      }
+                    }),
                     '&:hover': {
-                      bgcolor: alpha(brandTokens.colors.gremlinPink, 0.2),
+                      bgcolor: alpha(isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.gremlinPink, 0.2),
                     },
                   }}
                 />
