@@ -228,6 +228,13 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
 
   const displayRemainingMinutes = Math.ceil(totalRemainingMinutes);
 
+  const { completedCount, totalCount } = useMemo(() => {
+    return {
+      completedCount: tasks.filter((t) => t.status === 'completed').length,
+      totalCount: tasks.length,
+    };
+  }, [tasks]);
+
   const finishTimeLabel = useMemo(() => {
     if (totalRemainingMinutes === 0) return '';
     // Use fractional minutes to ensure a stable finish time that only moves with taskTimer
@@ -263,7 +270,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           title={
             displayRemainingMinutes === 0
               ? 'Task sequence complete'
-              : `${getDurationAriaLabel(displayRemainingMinutes)} (${finishTimeLabel})`
+              : `${completedCount}/${totalCount} tasks • ${getDurationAriaLabel(displayRemainingMinutes)} (${finishTimeLabel})`
           }
           arrow
         >
@@ -272,7 +279,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             aria-label={
               displayRemainingMinutes === 0
                 ? 'Task sequence complete'
-                : `${getDurationAriaLabel(displayRemainingMinutes)}. Estimated completion: ${finishTimeLabel}`
+                : `${completedCount}/${totalCount} tasks completed. ${getDurationAriaLabel(displayRemainingMinutes)}. Estimated completion: ${finishTimeLabel}`
             }
             tabIndex={0}
             sx={{
@@ -282,7 +289,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               gap: 0.5,
               color: displayRemainingMinutes === 0 ? brandTokens.colors.serumMint : brandTokens.colors.saintGold,
               cursor: 'help',
-              transition: 'color 0.3s ease',
+              transition: 'all 0.3s ease',
+              ...(displayRemainingMinutes === 0 && {
+                animation: 'done-glow 2s infinite ease-in-out',
+                '@keyframes done-glow': {
+                  '0%, 100%': { transform: 'scale(1)', filter: 'drop-shadow(0 0 0px transparent)' },
+                  '50%': { transform: 'scale(1.05)', filter: `drop-shadow(0 0 4px ${alpha(brandTokens.colors.serumMint, 0.4)})` },
+                },
+              }),
               '&:focus-visible': {
                 outline: 'none',
                 borderRadius: 1,
@@ -296,7 +310,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               <Clock size={16} aria-hidden="true" />
             )}
             <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
-              {displayRemainingMinutes === 0 ? 'DONE' : `${displayRemainingMinutes}m`}
+              {displayRemainingMinutes === 0 ? 'DONE' : `${completedCount}/${totalCount} • ${displayRemainingMinutes}m`}
             </Typography>
           </Box>
         </Tooltip>
@@ -539,7 +553,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           title={
             displayRemainingMinutes === 0
               ? 'Task sequence complete'
-              : `${getDurationAriaLabel(displayRemainingMinutes)} (${finishTimeLabel})`
+              : `${completedCount}/${totalCount} tasks • ${getDurationAriaLabel(displayRemainingMinutes)} (${finishTimeLabel})`
           }
           arrow
         >
@@ -551,7 +565,10 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               ml: 'auto',
               color: displayRemainingMinutes === 0 ? brandTokens.colors.serumMint : brandTokens.colors.ritualCyan,
               cursor: 'help',
-              transition: 'color 0.3s ease',
+              transition: 'all 0.3s ease',
+              ...(displayRemainingMinutes === 0 && {
+                animation: 'done-glow 2s infinite ease-in-out',
+              }),
               '&:focus-visible': {
                 outline: 'none',
                 borderRadius: 1,
@@ -563,7 +580,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             aria-label={
               displayRemainingMinutes === 0
                 ? 'Task sequence complete'
-                : `${getDurationAriaLabel(displayRemainingMinutes)}. Estimated completion: ${finishTimeLabel}`
+                : `${completedCount}/${totalCount} tasks completed. ${getDurationAriaLabel(displayRemainingMinutes)}. Estimated completion: ${finishTimeLabel}`
             }
           >
             {displayRemainingMinutes === 0 ? (
@@ -572,7 +589,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               <Clock size={14} aria-hidden="true" />
             )}
             <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
-              {displayRemainingMinutes === 0 ? 'DONE' : `${displayRemainingMinutes}m`}
+              {displayRemainingMinutes === 0 ? 'DONE' : `${completedCount}/${totalCount} • ${displayRemainingMinutes}m`}
             </Typography>
           </Box>
         </Tooltip>
@@ -614,11 +631,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                     ? `1px solid ${brandTokens.borders.cyan}`
                     : `1px solid ${brandTokens.borders.subtle}`,
                   mb: 0.5,
-                  transition: 'background-color 0.2s ease',
-                  '&:hover': {
+                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover, &:focus-within': {
                     bgcolor: isCurrent
                       ? alpha(brandTokens.colors.ritualCyan, 0.12)
                       : alpha(brandTokens.colors.ritualCyan, 0.04),
+                    transform: 'translateY(-2px)',
+                    boxShadow: `0 4px 12px ${alpha(brandTokens.colors.inkBlack, 0.4)}`,
+                    borderColor: alpha(brandTokens.colors.ritualCyan, 0.4),
                   },
                 }}
               >
