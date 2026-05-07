@@ -24,7 +24,7 @@ Research current Claude-Mem hook, worker, memory, and context-injection patterns
 - https://docs.claude-mem.ai/
 - https://docs.claude-mem.ai/hooks-architecture
 - https://www.npmjs.com/package/claude-mem
-- `docs/06-research/mcp-customization/data/upstream-source-manifest.json`
+- `docs/research/mcp-customization/data/upstream-source-manifest.json`
 - Dopemux memory seed: `services/working-memory-assistant/dope_memory_main.py`
 - Dopemux memory docs seed: `docs/03-reference/planes/memory-plane.md`
 

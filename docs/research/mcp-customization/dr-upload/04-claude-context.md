@@ -21,7 +21,7 @@ Research current `zilliztech/claude-context` and map it to Dopemux dope-context 
 
 - https://github.com/zilliztech/claude-context
 - https://www.npmjs.com/package/@zilliz/claude-context-mcp
-- `docs/06-research/mcp-customization/data/upstream-source-manifest.json`
+- `docs/research/mcp-customization/data/upstream-source-manifest.json`
 - Dopemux runtime seed: `services/dope-context/src/mcp/server.py`
 - Dopemux docs seed: `docs/03-reference/systems/dope-context/system-dopecontext.md`
 

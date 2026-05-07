@@ -21,7 +21,7 @@ Research current `oraios/serena` and map it to a Dopemux optional code-intellige
 
 - https://github.com/oraios/serena
 - https://oraios.github.io/serena/
-- `docs/06-research/mcp-customization/data/upstream-source-manifest.json`
+- `docs/research/mcp-customization/data/upstream-source-manifest.json`
 - Dopemux deployment seed: `docker/mcp-servers-source/serena/Dockerfile`
 - Dopemux in-repo seed: `services/serena/mcp_server.py`
 - Dopemux truth seed: `docs/03-reference/truth/truth-canonicals.md`

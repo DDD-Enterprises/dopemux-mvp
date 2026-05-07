@@ -18,7 +18,7 @@ Access date: 2026-04-28
 - Worktree path verified: `/Users/hue/code/dopemux-mvp-wt-mcp-customization-dr-data`
 - Branch verified: `research/dmx-mcp-customization-dr-data`
 - Repo marker verified: `.dopetaskroot` present
-- Primary checkout was not used for final generated artifacts. An initial generated docs directory was accidentally created in the original thread checkout and then moved into the required dedicated worktree; a follow-up status check showed no `docs/06-research/mcp-customization` changes remained in the original checkout.
+- Primary checkout was not used for final generated artifacts. An initial generated docs directory was accidentally created in the original thread checkout and then moved into the required dedicated worktree; a follow-up status check showed no `docs/research/mcp-customization` changes remained in the original checkout.
 
 ## Repo Authority Evidence
 

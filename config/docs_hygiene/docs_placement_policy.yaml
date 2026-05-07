@@ -10,6 +10,7 @@ canonical_roots:
   - 04-explanation
   - 05-audit-reports
   - 06-research
+  - research
   - 90-adr
   - 91-rfc
   - 92-runbooks
@@ -38,7 +39,7 @@ quarantine_prefixes:
   - docs/04-explanation/history/sourceFiles/
 
 filename_exemptions:
-  - docs/06-research/mcp-customization/**
+  - docs/research/mcp-customization/**
   - docs/05-audit-reports/*
   - docs/03-reference/Dopemux Cockpit TUI Design System/*
   - docs/03-reference/gpt55_pm_implementer_redesign.md
