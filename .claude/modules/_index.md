@@ -19,11 +19,8 @@ Modules for code intelligence and knowledge management:
 - `serena-lsp.md` - Serena v2 LSP with ADHD accommodations (max 10 results, 3-level depth, complexity scoring)
 - `conport-memory.md` - ConPort PostgreSQL AGE for decisions, progress, knowledge graph
 
-### PM Plane (`pm-plane/`) - Deprecated Components
-**Note**: Per Decision #132-134, simplified to ConPort + SuperClaude
-- `task-master.md` - ⚠️ DEPRECATED - See Migration Notes section
-- `task-orchestrator.md` - ⚠️ DEPRECATED - Use ConPort progress_entry instead
-- `leantime.md` - ⚠️ DEPRECATED - Use ConPort `progress_entry` instead
+### PM Plane (`pm-plane/`) - Archived
+**Note**: Per Decision #132-134, simplified to ConPort + SuperClaude. The three legacy module docs are retained for historical reference only — moved to `pm-plane/_deprecated/` as of 2026-05. Use ConPort `progress_entry` and the `link_conport_items` knowledge graph for all task management.
 
 ### Coordination (`coordination/`)
 Modules for integration patterns and authority boundaries:
