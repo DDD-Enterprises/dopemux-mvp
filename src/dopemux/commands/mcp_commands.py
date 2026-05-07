@@ -422,6 +422,25 @@ def _write_envrc(envrc_path: Path, port_vars: Dict[str, int], worktree: str) -> 
     envrc_path.write_text("\n".join(lines) + "\n")
 
 
+def _append_missing_env_exports(envrc_path: Path, port_vars: Dict[str, int]) -> List[str]:
+    """Append missing port exports to an existing env file without rewriting user content."""
+    existing = envrc_path.read_text() if envrc_path.exists() else ""
+    missing = [
+        (var, port)
+        for var, port in sorted(port_vars.items())
+        if f"export {var}=" not in existing
+    ]
+    if not missing:
+        return []
+
+    prefix = "" if not existing or existing.endswith("\n") else "\n"
+    with envrc_path.open("a") as fh:
+        fh.write(prefix)
+        for var, port in missing:
+            fh.write(f"export {var}={port}\n")
+    return [var for var, _ in missing]
+
+
 def shlex_quote(value: str) -> str:
     """Local shlex.quote shim (avoid importing shlex into top-of-module namespace)."""
     import shlex
@@ -476,18 +495,32 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...]):
     mcp_json_path = repo_path / PROJECT_MCP_FILENAME
     envrc_path = repo_path / ENVRC_FILENAME
 
-    if (mcp_json_path.exists() or envrc_path.exists()) and not force:
-        raise click.ClickException(
-            f"{mcp_json_path.name} or {envrc_path.name} already exists. Use --force to overwrite."
-        )
-
     port_vars = _allocate_ports(repo, ordered, catalog)
     config = _build_local_mcp_json(ordered, catalog)
 
-    _atomic_write_json(mcp_json_path, config)
+    if envrc_path.exists() and not force:
+        raise click.ClickException(
+            f"{envrc_path.name} already exists. Use --force to overwrite."
+        )
+
+    wrote_mcp_json = True
+    if mcp_json_path.exists() and not force:
+        existing_config = _read_json(mcp_json_path)
+        if existing_config != config:
+            raise click.ClickException(
+                f"{mcp_json_path.name} already exists and does not match the catalog template. "
+                "Use --force to overwrite."
+            )
+        wrote_mcp_json = False
+    else:
+        _atomic_write_json(mcp_json_path, config)
+
     _write_envrc(envrc_path, port_vars, repo)
 
-    console.logger.info(f"[success]Wrote {mcp_json_path}[/success]")
+    if wrote_mcp_json:
+        console.logger.info(f"[success]Wrote {mcp_json_path}[/success]")
+    else:
+        console.logger.info(f"[info]Kept existing catalog-matching {mcp_json_path}[/info]")
     console.logger.info(f"[success]Wrote {envrc_path}[/success]")
     console.logger.info(f"[info]Worktree:   {repo}[/info]")
     console.logger.info(f"[info]Instance:   {_instance_id(repo)}[/info]")
@@ -537,15 +570,12 @@ def mcp_add_cmd(name: str):
     servers[name] = _render_local_entry(name, catalog["servers"][name])
     _atomic_write_json(mcp_json_path, data)
 
-    spec = catalog["servers"][name]
-    if spec.get("default_port_base") and spec.get("port_var"):
-        port = _port_for(repo, spec["default_port_base"])
+    port_vars = _allocate_ports(repo, [name], catalog)
+    if port_vars:
         envrc_path = Path(repo) / ENVRC_FILENAME
-        existing = envrc_path.read_text() if envrc_path.exists() else ""
-        if f"export {spec['port_var']}=" not in existing:
-            with envrc_path.open("a") as fh:
-                fh.write(f"export {spec['port_var']}={port}\n")
-            console.logger.info(f"[info]Appended {spec['port_var']}={port} to {envrc_path.name}.[/info]")
+        appended = _append_missing_env_exports(envrc_path, port_vars)
+        for var in appended:
+            console.logger.info(f"[info]Appended {var}={port_vars[var]} to {envrc_path.name}.[/info]")
 
     console.logger.info(f"[success]Added `{name}` to {mcp_json_path}.[/success]")
 
