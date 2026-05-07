@@ -34,7 +34,7 @@ next_token: 5_5_pro_audit_prompt
 | System docs | `SYSTEM_ConPort(4).md`, `SYSTEM_DopeContext(4).md`, `SYSTEM_DopeMemory(4).md`, `SYSTEM_TaskOrchestrator(1).md` | Used to ground canonical writer, active runtime, and non-responsibilities. |
 | Truth docs | `TRUTH_DATA_EVENTS(9).md`, `TRUTH_GAPS(7).md` | Used for determinism, event contract, and drift/unknowns. |
 | Baseline substitute | `00-dopemux-context-boundaries(4).md`, `responsibility-collision-matrix(8).md` | Used because the separately named `00_baseline_DR_report.md` was not accessible. |
-| Not used | Fresh broad web research; unuploaded local wrapper/build files; unuploaded `dopetask-cannonical-spec.json` | These gaps are carried as `UNKNOWN` or blockers rather than guessed across. |
+| Schema contract | Audit-evidence-tree copy of `dopetask-cannonical-spec.json` | Used to normalize the draft Task Packets to the observed strict contract; the copy is evidence, not source authority. |
 
 **Baseline authority restatement.** Dopemux is a multi-system workspace, not a monolith. The repo-level docs are consistent that `dopemux` owns operator control and routing, `dopetask` is the external execution runtime after wrapper handoff, PM authority is split across Leantime, Task Orchestrator, ConPort, and dope-memory receipts, memory is split across dope-memory and ConPort, retrieval is split across dope-context and ConPort, and bridge/proxy transport must never be promoted into source truth. The docs also repeatedly say that services may span planes, but authority remains domain-specific, with the canonical writer named before any write. (Sources: `RULES(6).md` L44-L93; `ARCHITECTURE(7).md` L11-L23, L41-L84; `system-boundaries(8).md` L16-L23, L24-L50, L61-L69, L93-L109; `00-dopemux-context-boundaries(4).md` L37-L49)
 
@@ -237,7 +237,7 @@ The most important retrieval blocker is that the current dope-context runtime is
 | Series F | Build authority-boundary, determinism, redaction, and proxy non-authority test suites | Tests and CI | Full plan in next section passes | No “No issues” shortcut | Series A-E | Medium |
 | Series F | Prepare 5.5 Pro audit bundle and surface inventory diff | Audit docs and generated manifests | Audit prompt reproduces all blockers and `UNKNOWN`s | Prevents silent authority transfer before rollout | Series A-E | Low |
 
-**Task Packet drafts.** The repo rules require Task Packets to conform to `dopetask-cannonical-spec.json`, require the named top-level fields, require worktree verification as the first step, and require Codex work to follow `analyze -> planner -> codereview -> precommit`. The actual schema file was **not** uploaded in this session, so the drafts below are intentionally marked **BLOCKED_BY_UNKNOWN** even though they include the fields named in `RULES(6).md` plus the requested `execution` and `pal_chain` objects. They should be treated as near-schema drafts, not merge-ready packets. (Sources: `RULES(6).md` L97-L119, L123-L176)
+**Task Packet drafts.** The repo rules require Task Packets to conform to `dopetask-cannonical-spec.json`, require the named top-level fields, require worktree verification as the first step, and require Codex work to follow `analyze -> planner -> codereview -> precommit`. The audit evidence tree includes a schema copy, so the drafts below are normalized to that observed contract while still remaining **BLOCKED_BY_UNKNOWN** because the underlying work is future-facing and not merge-ready. (Sources: `RULES(6).md` L97-L119, L123-L176)
 
 **Draft TP-A1 — BLOCKED_BY_UNKNOWN**
 
@@ -246,34 +246,65 @@ The most important retrieval blocker is that the current dope-context runtime is
   "id": "TP-A1-mcp-synthesis-evidence-registry",
   "project": "dopemux-mvp",
   "target": "docs/research/mcp-customization and policy registry surfaces",
-  "repo_binding": "dopemux-mvp",
-  "series": "A",
-  "commit": "docs(mcp): normalize synthesis evidence and unknown ledger",
-  "pr": "docs/mcp-synthesis-evidence-registry",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "A",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "docs(mcp): normalize synthesis evidence and unknown ledger",
+    "allowlist": [
+      "docs/05-audit-reports/mcp-customization/07-mcp-customization-synthesis-dr-report.md"
+    ]
+  },
+  "pr": {
+    "title": "docs(mcp): normalize synthesis evidence and unknown ledger",
+    "body": "Schema-valid draft packet for the evidence registry slice. The work remains blocked by upstream unknowns and is not an execution-ready packet.",
+    "base": "main"
+  },
   "steps": [
     {
+      "id": "A1-1",
       "task": "Verify dedicated worktree, repo identity, repo marker, and branch scope before any modification.",
-      "validation": "Confirm repo_binding matches checkout, required repo marker exists, current directory is inside a dedicated worktree, and branch matches TP-A1 scope."
+      "validation": [
+        "Confirm repo_binding matches checkout, required repo marker exists, current directory is inside a dedicated worktree, and branch matches TP-A1 scope."
+      ]
     },
     {
+      "id": "A1-2",
       "task": "Create a single evidence registry that lists the six server reports, the cross-system synthesis seed, and all authority/truth docs used by the synthesis.",
-      "validation": "Registry file exists and names every source used in this report, including missing baseline and missing spec as explicit blockers."
+      "validation": [
+        "Registry file exists and names every source used in this report, including the baseline surrogate and schema-copy references as explicit blockers."
+      ]
     },
     {
+      "id": "A1-3",
       "task": "Add a per-server posture registry that records canonical, derived, support-only, reject, and deferred classifications with canonical Dopemux writer mapping.",
-      "validation": "Registry entries for ConPort, Task Orchestrator, Serena, Claude Context, Claude-Mem, and Mem0 match the synthesized posture matrix."
+      "validation": [
+        "Registry entries for ConPort, Task Orchestrator, Serena, Claude Context, Claude-Mem, and Mem0 match the synthesized posture matrix."
+      ]
     },
     {
+      "id": "A1-4",
       "task": "Record all known UNKNOWNs and blockers in one normalized ledger for later 5.5 Pro audit consumption.",
-      "validation": "Ledger includes missing baseline report, missing dopetask schema file, local Serena runtime ambiguity, Task Orchestrator drift, and Mem0 graph/lineage uncertainty."
+      "validation": [
+        "Ledger includes missing baseline report, schema-copy handling, local Serena runtime ambiguity, Task Orchestrator drift, and Mem0 graph/lineage uncertainty."
+      ]
     }
   ],
   "execution": {
-    "agent": "codex"
+    "agent": "codex",
+    "branch": "codex/mcp-synthesis-evidence-registry"
   },
   "pal_chain": {
     "enabled": true,
-    "sequence": ["analyze", "planner", "codereview", "precommit"]
+    "steps": ["analyze", "planner", "codereview", "precommit"]
   }
 }
 ```
@@ -285,34 +316,65 @@ The most important retrieval blocker is that the current dope-context runtime is
   "id": "TP-B1-boundary-enforcing-adapters",
   "project": "dopemux-mvp",
   "target": "ConPort and Task Orchestrator adapter surfaces",
-  "repo_binding": "dopemux-mvp",
-  "series": "B",
-  "commit": "feat(boundaries): add conport and workflow shims with explicit writer guards",
-  "pr": "feat/boundary-enforcing-adapters",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "B",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "feat(boundaries): add conport and workflow shims with explicit writer guards",
+    "allowlist": [
+      "docs/05-audit-reports/mcp-customization/07-mcp-customization-synthesis-dr-report.md"
+    ]
+  },
+  "pr": {
+    "title": "feat(boundary-enforcing-adapters)",
+    "body": "Schema-valid draft packet for the boundary adapter slice. The work remains blocked by upstream unknowns and is not an execution-ready packet.",
+    "base": "main"
+  },
   "steps": [
     {
+      "id": "B1-1",
       "task": "Verify dedicated worktree, repo identity, repo marker, and branch scope before any modification.",
-      "validation": "Confirm repo_binding matches checkout, required repo marker exists, current directory is inside a dedicated worktree, and branch matches TP-B1 scope."
+      "validation": [
+        "Confirm repo_binding matches checkout, required repo marker exists, current directory is inside a dedicated worktree, and branch matches TP-B1 scope."
+      ]
     },
     {
+      "id": "B1-2",
       "task": "Implement a ConPort adapter that uses Dopemux-owned external IDs, enforces namespace reservations, and keeps decisions/progress/context/custom data separate from PM metadata and workflow state.",
-      "validation": "Round-trip adapter tests pass for context, custom data, decisions, and progress; forbidden namespace writes are rejected."
+      "validation": [
+        "Round-trip adapter tests pass for context, custom data, decisions, and progress; forbidden namespace writes are rejected."
+      ]
     },
     {
+      "id": "B1-3",
       "task": "Implement a Task Orchestrator adapter that wraps workflow transitions, queue/state/blockers, and dependencies without transferring PM ownership.",
-      "validation": "Workflow transition legality, queue, blocker, and dependency tests pass; PM metadata is not writable through the adapter."
+      "validation": [
+        "Workflow transition legality, queue, blocker, and dependency tests pass; PM metadata is not writable through the adapter."
+      ]
     },
     {
+      "id": "B1-4",
       "task": "Add explicit bridge non-authority labeling to any persistence path that traverses dopecon-bridge.",
-      "validation": "Logs and envelopes show upstream canonical writer, while bridge is labeled transport/proxy only."
+      "validation": [
+        "Logs and envelopes show upstream canonical writer, while bridge is labeled transport/proxy only."
+      ]
     }
   ],
   "execution": {
-    "agent": "codex"
+    "agent": "codex",
+    "branch": "codex/boundary-enforcing-adapters"
   },
   "pal_chain": {
     "enabled": true,
-    "sequence": ["analyze", "planner", "codereview", "precommit"]
+    "steps": ["analyze", "planner", "codereview", "precommit"]
   }
 }
 ```
@@ -324,34 +386,65 @@ The most important retrieval blocker is that the current dope-context runtime is
   "id": "TP-C1-exposure-controls",
   "project": "dopemux-mvp",
   "target": "custom MCP exposure policy and wrapper config",
-  "repo_binding": "dopemux-mvp",
-  "series": "C",
-  "commit": "feat(mcp): add safe exposure profiles and hidden-tool policy",
-  "pr": "feat/mcp-exposure-controls",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "C",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "feat(mcp): add safe exposure profiles and hidden-tool policy",
+    "allowlist": [
+      "docs/05-audit-reports/mcp-customization/07-mcp-customization-synthesis-dr-report.md"
+    ]
+  },
+  "pr": {
+    "title": "feat(mcp-exposure-controls)",
+    "body": "Schema-valid draft packet for the MCP exposure control slice. The work remains blocked by upstream unknowns and is not an execution-ready packet.",
+    "base": "main"
+  },
   "steps": [
     {
+      "id": "C1-1",
       "task": "Verify dedicated worktree, repo identity, repo marker, and branch scope before any modification.",
-      "validation": "Confirm repo_binding matches checkout, required repo marker exists, current directory is inside a dedicated worktree, and branch matches TP-C1 scope."
+      "validation": [
+        "Confirm repo_binding matches checkout, required repo marker exists, current directory is inside a dedicated worktree, and branch matches TP-C1 scope."
+      ]
     },
     {
+      "id": "C1-2",
       "task": "Create default-safe exposure profiles that keep Serena read-only, hide Claude Context destructive/auto-provisioning surfaces, expose Claude-Mem as read-only session memory, and hide Mem0 destructive or hosted surfaces.",
-      "validation": "Tool inventory snapshot shows only approved surfaces are exposed in the default profile."
+      "validation": [
+        "Tool inventory snapshot shows only approved surfaces are exposed in the default profile."
+      ]
     },
     {
+      "id": "C1-3",
       "task": "Hide ConPort delete tools and Task Orchestrator claims/leases from the default operator profile until separate validation gates are satisfied.",
-      "validation": "Default operator profile cannot invoke destructive ConPort tools or unvalidated Task Orchestrator claim surfaces."
+      "validation": [
+        "Default operator profile cannot invoke destructive ConPort tools or unvalidated Task Orchestrator claim surfaces."
+      ]
     },
     {
+      "id": "C1-4",
       "task": "Add operator-visible blocked reasons that name the canonical owner whenever a hidden tool is requested.",
-      "validation": "Blocked tool requests return a domain-safe explanation containing the canonical writer and next validation action."
+      "validation": [
+        "Blocked tool requests return a domain-safe explanation containing the canonical writer and next validation action."
+      ]
     }
   ],
   "execution": {
-    "agent": "codex"
+    "agent": "codex",
+    "branch": "codex/mcp-exposure-controls"
   },
   "pal_chain": {
     "enabled": true,
-    "sequence": ["analyze", "planner", "codereview", "precommit"]
+    "steps": ["analyze", "planner", "codereview", "precommit"]
   }
 }
 ```
@@ -363,34 +456,65 @@ The most important retrieval blocker is that the current dope-context runtime is
   "id": "TP-D1-retrieval-and-memory-guardrails",
   "project": "dopemux-mvp",
   "target": "retrieval wrappers and derived-memory promotion gate",
-  "repo_binding": "dopemux-mvp",
-  "series": "D",
-  "commit": "feat(guardrails): split retrieval phases and gate derived memory promotion",
-  "pr": "feat/retrieval-memory-guardrails",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "D",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "feat(guardrails): split retrieval phases and gate derived memory promotion",
+    "allowlist": [
+      "docs/05-audit-reports/mcp-customization/07-mcp-customization-synthesis-dr-report.md"
+    ]
+  },
+  "pr": {
+    "title": "feat(retrieval-memory-guardrails)",
+    "body": "Schema-valid draft packet for the retrieval and memory guardrail slice. The work remains blocked by upstream unknowns and is not an execution-ready packet.",
+    "base": "main"
+  },
   "steps": [
     {
+      "id": "D1-1",
       "task": "Verify dedicated worktree, repo identity, repo marker, and branch scope before any modification.",
-      "validation": "Confirm repo_binding matches checkout, required repo marker exists, current directory is inside a dedicated worktree, and branch matches TP-D1 scope."
+      "validation": [
+        "Confirm repo_binding matches checkout, required repo marker exists, current directory is inside a dedicated worktree, and branch matches TP-D1 scope."
+      ]
     },
     {
+      "id": "D1-2",
       "task": "Add a lexical-first retrieval wrapper that enforces Phase 1 determinism and fails closed if lexical-only behavior cannot be proven.",
-      "validation": "Phase-1 retrieval tests show stable lexical ordering or explicit fail-closed behavior when lexical-only enforcement is unavailable."
+      "validation": [
+        "Phase-1 retrieval tests show stable lexical ordering or explicit fail-closed behavior when lexical-only enforcement is unavailable."
+      ]
     },
     {
+      "id": "D1-3",
       "task": "Add a derived-memory promotion gate that redacts before storage, redacts again at promotion, and requires canonical writer declaration before any ConPort or dope-memory write.",
-      "validation": "Promotion tests fail when provenance or redaction is missing and pass only with explicit review and full envelope fields."
+      "validation": [
+        "Promotion tests fail when provenance or redaction is missing and pass only with explicit review and full envelope fields."
+      ]
     },
     {
+      "id": "D1-4",
       "task": "Keep Claude-Mem and Mem0 on separate continuity lanes that never enter code/docs retrieval ranking.",
-      "validation": "Search result sets for code/docs never contain continuity-memory hits unless explicit promotion has occurred."
+      "validation": [
+        "Search result sets for code/docs never contain continuity-memory hits unless explicit promotion has occurred."
+      ]
     }
   ],
   "execution": {
-    "agent": "codex"
+    "agent": "codex",
+    "branch": "codex/retrieval-memory-guardrails"
   },
   "pal_chain": {
     "enabled": true,
-    "sequence": ["analyze", "planner", "codereview", "precommit"]
+    "steps": ["analyze", "planner", "codereview", "precommit"]
   }
 }
 ```
@@ -402,34 +526,65 @@ The most important retrieval blocker is that the current dope-context runtime is
   "id": "TP-F1-boundary-test-and-audit-pack",
   "project": "dopemux-mvp",
   "target": "tests, CI checks, and audit bundle generation",
-  "repo_binding": "dopemux-mvp",
-  "series": "F",
-  "commit": "test(boundaries): add authority, determinism, redaction, and proxy-leak checks",
-  "pr": "test/boundary-audit-pack",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "F",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "test(boundaries): add authority, determinism, redaction, and proxy-leak checks",
+    "allowlist": [
+      "docs/05-audit-reports/mcp-customization/07-mcp-customization-synthesis-dr-report.md"
+    ]
+  },
+  "pr": {
+    "title": "test/boundary-audit-pack",
+    "body": "Schema-valid draft packet for the boundary test and audit pack slice. The work remains blocked by upstream unknowns and is not an execution-ready packet.",
+    "base": "main"
+  },
   "steps": [
     {
+      "id": "F1-1",
       "task": "Verify dedicated worktree, repo identity, repo marker, and branch scope before any modification.",
-      "validation": "Confirm repo_binding matches checkout, required repo marker exists, current directory is inside a dedicated worktree, and branch matches TP-F1 scope."
+      "validation": [
+        "Confirm repo_binding matches checkout, required repo marker exists, current directory is inside a dedicated worktree, and branch matches TP-F1 scope."
+      ]
     },
     {
+      "id": "F1-2",
       "task": "Add authority-boundary tests, redaction tests, no-secrets-persisted tests, retrieval determinism tests, and adapter/proxy non-authority tests.",
-      "validation": "All new tests fail on known boundary violations and pass on the intended safe profiles."
+      "validation": [
+        "All new tests fail on known boundary violations and pass on the intended safe profiles."
+      ]
     },
     {
+      "id": "F1-3",
       "task": "Add integration-flow tests for workflow transitions, ConPort writes plus dope-memory receipts, retrieval wrappers, and session-memory promotion gates.",
-      "validation": "End-to-end flows pass with explicit provenance and canonical writer declarations."
+      "validation": [
+        "End-to-end flows pass with explicit provenance and canonical writer declarations."
+      ]
     },
     {
+      "id": "F1-4",
       "task": "Generate an audit bundle for 5.5 Pro containing surface inventories, enabled/disabled tool lists, UNKNOWNs, blockers, and Task Packet drafts.",
-      "validation": "Audit bundle includes all required artifacts and matches the final synthesis report."
+      "validation": [
+        "Audit bundle includes all required artifacts and matches the final synthesis report."
+      ]
     }
   ],
   "execution": {
-    "agent": "codex"
+    "agent": "codex",
+    "branch": "codex/boundary-audit-pack"
   },
   "pal_chain": {
     "enabled": true,
-    "sequence": ["analyze", "planner", "codereview", "precommit"]
+    "steps": ["analyze", "planner", "codereview", "precommit"]
   }
 }
 ```
@@ -456,7 +611,7 @@ The most important retrieval blocker is that the current dope-context runtime is
 | Category | Unresolved fact or blocker |
 |---|---|
 | Upstream lineage | `00_baseline_DR_report.md` was not accessible in this session; several server reports therefore already carried a missing-baseline blocker. |
-| Upstream lineage | `dopetask-cannonical-spec.json` was not uploaded, so exact Task Packet schema allowance beyond the fields named in `RULES(6).md` remains `UNKNOWN`. |
+| Schema contract | Audit-evidence-tree copy of `dopetask-cannonical-spec.json` was used to normalize the draft packets, while root-level provenance and runtime execution authority remain separate. |
 | Upstream feature uncertainty | Task Orchestrator surface drift remains unresolved: README/Quick Start say 13 tools, API docs say 14 including `claim_item`, and `server.json` still shows `3.2.0` while the report anchored `v3.3.0`. |
 | Upstream feature uncertainty | Serena’s local Dopemux canonical implementation/deployment writer remains `UNKNOWN` because local truth docs still show duplicate surfaces and alias sprawl. |
 | Upstream feature uncertainty | ConPort relationship-query surfaces are proven more clearly than relationship-write authority; relation writes remain `UNKNOWN` until runtime proof. |
@@ -471,7 +626,7 @@ The most important retrieval blocker is that the current dope-context runtime is
 | Retrieval determinism | Phase-1 lexical-only enforcement path for dope-context is not proven in the uploaded docs even though the repo rules require it. |
 | Operator UX | Telegram Topic implementation details were not evidenced in the uploaded files; the mapping in this report is therefore design guidance, not runtime fact. |
 
-**What 5.5 Pro should audit after this synthesis.** The audit should focus on the places where architecture safety is easy to lose: hidden authority transfer, schema drift, and unsupported write exposure. At minimum, it should verify that no custom surface collapses PM, workflow, context, chronicle, retrieval, bridge, support memory, and execution into one server; that all write paths name the canonical writer; that proxy routes remain labeled as transport; that hidden tools are actually hidden in default profiles; that retrieval phase separation is real; that Task Packet drafts are not falsely claimed conformant in the absence of the uploaded schema; and that no hosted/external memory mode is enabled without explicit policy, exportability, and data-movement disclosure. (Sources: `07-cross-system-synthesis.md` L49-L91; `RULES(6).md` L26-L40, L44-L93, L97-L119, L189-L256; `TRUTH_GAPS(7).md` L19-L28, L70-L89)
+**What 5.5 Pro should audit after this synthesis.** The audit should focus on the places where architecture safety is easy to lose: hidden authority transfer, schema drift, and unsupported write exposure. At minimum, it should verify that no custom surface collapses PM, workflow, context, chronicle, retrieval, bridge, support memory, and execution into one server; that all write paths name the canonical writer; that proxy routes remain labeled as transport; that hidden tools are actually hidden in default profiles; that retrieval phase separation is real; that Task Packet drafts only claim conformance when they are actually normalized to the observed schema contract; and that no hosted/external memory mode is enabled without explicit policy, exportability, and data-movement disclosure. (Sources: `07-cross-system-synthesis.md` L49-L91; `RULES(6).md` L26-L40, L44-L93, L97-L119, L189-L256; `TRUTH_GAPS(7).md` L19-L28, L70-L89)
 
 **5.5 Pro audit prompt seed**
 
@@ -483,7 +638,7 @@ The most important retrieval blocker is that the current dope-context runtime is
 > - Serena, Claude Context, Claude-Mem, and Mem0 are not granted hidden canonical ownership;
 > - default-safe tool exposure really hides shell, edit, mutation, onboarding, external-project, destructive index, destructive memory, and hosted-memory surfaces where the synthesis says it does;
 > - all unresolved facts stay marked `UNKNOWN`;
-> - the Task Packet drafts are explicitly blocked by the missing uploaded `dopetask-cannonical-spec.json` and are not overclaimed as schema-valid;
+> - the Task Packet drafts are normalized to the observed `dopetask-cannonical-spec.json` schema copy and are not overclaimed as execution-ready packets;
 > - the test plan covers determinism, redaction, no-secrets-persisted, authority boundaries, proxy non-authority, ranking stability, performance, and idempotent retry behavior;
 > - no recommendation assumes a hosted external-memory service is safe by default.
 
