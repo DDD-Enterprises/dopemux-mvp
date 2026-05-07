@@ -225,6 +225,7 @@ function App() {
       socket.close();
       if (clearConfirmTimeoutRef.current) {
         clearTimeout(clearConfirmTimeoutRef.current);
+        clearConfirmTimeoutRef.current = null;
       }
     };
   }, []);
@@ -500,7 +501,7 @@ function App() {
               />
             )}
             {notifications.length > 0 && (
-              <Tooltip title={isConfirmingClear ? 'Confirm to clear all progress' : 'Clear all notifications to reduce visual noise'} arrow>
+              <Tooltip title={isConfirmingClear ? 'Confirm to clear all notifications' : 'Clear all notifications to reduce visual noise'} arrow>
                 <Chip
                   size="small"
                   variant="outlined"
