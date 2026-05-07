@@ -113,6 +113,34 @@ class TestDesktopCommanderSecurity(unittest.TestCase):
             self.assertEqual(cmd_list, ["scrot", "--", input_with_dash])
             self.assertEqual(kwargs["timeout"], 10)
 
+    def test_screenshot_macos_leading_dash_filename_canonicalized(self):
+        server = _import_server_module()
+        with patch.object(server, "IS_MACOS", True), patch.object(
+            server.subprocess, "run"
+        ) as mock_run:
+            mock_run.return_value = MagicMock(returncode=0, stdout="")
+
+            self.run_async(server.screenshot("-rm-rf.png"))
+
+            args, _ = mock_run.call_args
+            cmd_list = args[0]
+
+            self.assertEqual(cmd_list, ["screencapture", "-x", "./-rm-rf.png"])
+
+    def test_screenshot_macos_normal_filename_passthrough(self):
+        server = _import_server_module()
+        with patch.object(server, "IS_MACOS", True), patch.object(
+            server.subprocess, "run"
+        ) as mock_run:
+            mock_run.return_value = MagicMock(returncode=0, stdout="")
+
+            self.run_async(server.screenshot("/tmp/screenshot.png"))
+
+            args, _ = mock_run.call_args
+            cmd_list = args[0]
+
+            self.assertEqual(cmd_list, ["screencapture", "-x", "/tmp/screenshot.png"])
+
 
 if __name__ == "__main__":
     unittest.main()
