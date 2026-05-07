@@ -1,0 +1,195 @@
+{
+  "schema_version": "dopemux.cockpit.settings_runtime.proof.v1",
+  "packet_id": "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001",
+  "proof_role": "closeout proof for Settings/Admin/Runtime primitive wiring",
+  "created_at_utc": "2026-05-04T20:34:34Z",
+  "worktree": "/Users/hue/code/dopemux-worktrees/dopemux-cockpit-settings-runtime-001",
+  "branch": "codex/cockpit-settings-runtime-001",
+  "base_branch": "codex/cockpit-runtime-render-001",
+  "base_head": "9ad522df341375b7fede75eaa8e43e1f44097b41",
+  "head_before": "9ad522df341375b7fede75eaa8e43e1f44097b41",
+  "implementation_commit_sha": "8599eae672802d85b7c0d4dfae3d4477381b7ab4",
+  "final_head_recording_policy": "If proof metadata is updated after the implementation commit, this file records implementation_commit_sha and uses this policy to avoid self-referential final-head churn.",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/569",
+  "pr_blocker": null,
+  "pr": {
+    "number": 569,
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/569",
+    "state": "OPEN",
+    "is_draft": false,
+    "base": "codex/cockpit-runtime-render-001",
+    "head": "codex/cockpit-settings-runtime-001",
+    "head_ref_oid_at_creation": "8599eae672802d85b7c0d4dfae3d4477381b7ab4"
+  },
+  "tp_path": "task-packets/generated/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001.json",
+  "accepted_inputs": {
+    "package_dir": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA",
+    "package_proof": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PROOF.json",
+    "runtime_render_proof": "out/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/PROOF.json",
+    "settings_admin_handoff": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/SETTINGS_ADMIN_RUNTIME_PACKAGE_HANDOFF.md"
+  },
+  "implementation_summary": [
+    "Added deterministic Settings/Admin/Runtime summary data to the runtime-render model and JSON/text snapshot.",
+    "Added a pure Settings/Admin row tier mapper that maps only from explicit safety/tier/side-effect evidence and fails unresolved rows to TU.",
+    "Kept Settings/Admin/Runtime as a secondary/global surface; exactly five top-level modes remain.",
+    "Preserved Safe Action Gate routing for confirmable/admin rows and kept execution status not_attempted."
+  ],
+  "files_changed": [
+    "src/dopemux/ui/cockpit/runtime_contract.py",
+    "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+    "tests/unit/test_cockpit_cli.py",
+    "task-packets/generated/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001.json",
+    "task-packets/INDEX.md",
+    "proof/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/README.md",
+    "out/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/PROOF.json"
+  ],
+  "boundary_preservation": {
+    "safe_for_claude_design": "NO",
+    "READY_FOR_CLAUDE_DESIGN": "not approved",
+    "no_final_screens": true,
+    "no_claude_design_upload": true,
+    "no_runtime_action_execution": true,
+    "no_t4_remote_mutation": true,
+    "no_live_service_adapters": true,
+    "no_canonical_writes": true,
+    "settings_admin_does_not_directly_execute": true,
+    "t4_blocked": true,
+    "tx_tu_never_executable": true
+  },
+  "codereview_status": {
+    "command": "command -v codereview",
+    "exit_code": 1,
+    "result": "codereview command unavailable on PATH; explicit diff review performed with no blockers found"
+  },
+  "precommit_status": {
+    "command": "pre-commit run --files src/dopemux/ui/cockpit/runtime_contract.py tests/unit/dopemux/ui/cockpit/test_runtime_contract.py tests/unit/test_cockpit_cli.py task-packets/generated/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001.json task-packets/INDEX.md out/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/PROOF.json proof/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/README.md",
+    "exit_code": 0,
+    "output_summary": "frontmatter/schema/docs hygiene/markdownlint/trim trailing whitespace/end-of-file hooks passed; yaml hook skipped no files"
+  },
+  "settings_admin_runtime_summary": {
+    "surface_name": "Settings/Admin/Runtime",
+    "surface_kind": "secondary/global surface",
+    "source_artifact_path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/SETTINGS_ADMIN_RUNTIME_PACKAGE_HANDOFF.md",
+    "flow_group_count": 9,
+    "row_count": 62,
+    "mapped_tier_counts": {
+      "T0": 0,
+      "T0i": 0,
+      "T1": 0,
+      "T2": 0,
+      "T3": 0,
+      "T4": 0,
+      "T5": 0,
+      "T6": 0,
+      "TX": 0,
+      "TU": 0
+    },
+    "unknown_tier_count": 62,
+    "refusal_counts": {
+      "UNKNOWN_DRIFT_QUEUE": 62,
+      "SHOW_BLOCKED_REASON": "UNKNOWN"
+    },
+    "gate_required_count": "UNKNOWN",
+    "blocked_count": "UNKNOWN",
+    "open_downstream_owner": "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001"
+  },
+  "validation_commands": [
+    {
+      "command": "python -m json.tool out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PACKAGE_REMEDIATION_INDEX.json >/dev/null",
+      "exit_code": 0,
+      "output_summary": "no output"
+    },
+    {
+      "command": "python -m json.tool out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "output_summary": "no output"
+    },
+    {
+      "command": "python -m json.tool out/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "output_summary": "no output"
+    },
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001.json >/dev/null",
+      "exit_code": 0,
+      "output_summary": "no output"
+    },
+    {
+      "command": "python -m json.tool out/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "output_summary": "no output"
+    },
+    {
+      "command": "python -m compileall -q src/dopemux tests",
+      "exit_code": 0,
+      "output_summary": "no output"
+    },
+    {
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit -q",
+      "exit_code": 0,
+      "output_summary": "59 passed; warning: unknown pytest asyncio_mode config option"
+    },
+    {
+      "command": "python -m pytest tests/unit/test_cockpit_cli.py -q",
+      "exit_code": 0,
+      "output_summary": "5 passed; warning: unknown pytest asyncio_mode config option"
+    },
+    {
+      "command": "! grep -R -E \"READY_FOR_CLAUDE_DESIGN:\\u0020approved|safe_for_claude_design:\\u0020YES|Claude Design upload\\u0020allowed|T4\\u0020authorized|runtime execution\\u0020implemented|Settings/Admin\\u0020direct\\u0020execution\" -n src/dopemux tests out/cockpit-settings-runtime proof/cockpit-settings-runtime",
+      "exit_code": 0,
+      "output_summary": "no output",
+      "encoding_note": "Spaces in forbidden positive phrases are escaped in this JSON source so boundary greps do not self-trigger."
+    },
+    {
+      "command": "! grep -R -E \"subprocess|shell=True|os\\.system|requests|httpx|urllib|socket|docker|kubectl|gh pr create|git push\" -n src/dopemux/ui/cockpit src/dopemux/commands/cockpit_commands.py tests/unit/dopemux/ui/cockpit tests/unit/test_cockpit_cli.py",
+      "exit_code": 0,
+      "output_summary": "no output"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "output_summary": "no output"
+    },
+    {
+      "command": "git status --short --branch",
+      "exit_code": 0,
+      "output_summary": "modified runtime_contract.py, task-packets/INDEX.md, test_runtime_contract.py, test_cockpit_cli.py; untracked settings-runtime PROOF.json and generated TP"
+    },
+    {
+      "command": "pre-commit run --files src/dopemux/ui/cockpit/runtime_contract.py tests/unit/dopemux/ui/cockpit/test_runtime_contract.py tests/unit/test_cockpit_cli.py task-packets/generated/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001.json task-packets/INDEX.md out/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/PROOF.json proof/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/README.md",
+      "exit_code": 0,
+      "output_summary": "hooks passed; check yaml skipped no files"
+    },
+    {
+      "command": "gh pr view 569 --json number,url,state,isDraft,baseRefName,headRefName,headRefOid",
+      "exit_code": 0,
+      "output_summary": "PR 569 open, ready, base codex/cockpit-runtime-render-001, head codex/cockpit-settings-runtime-001"
+    }
+  ],
+  "residual_risks": [
+    "Per-row Settings/Admin tier mapping remains UNKNOWN for the accepted 62-row package inventory because the accepted package provides flow-group defaults, not complete per-row proof.",
+    "T4 remains refused until a separate remote-mutation policy exists and is accepted.",
+    "Blocked row count inside Settings/Admin remains UNKNOWN because only total Settings/Admin row count is proven by the accepted package artifacts.",
+    "Gate-required count inside Settings/Admin remains UNKNOWN until per-row inventory regeneration or row evidence exists.",
+    "Unknown/Drift Queue full runtime surface remains owned by TP-DMX-COCKPIT-UNKNOWN-DRIFT-001.",
+    "Inventory regeneration against current HEAD remains a separate packet."
+  ],
+  "unknowns": [
+    "Root RULES.md absent in this worktree.",
+    "Root TRUTH_*.md absent in this worktree.",
+    "Root SYSTEM_*.md absent in this worktree.",
+    "dopetask-cannonical-spec.json and dopetask-canonical-spec.json absent in this worktree; TP schema was checked manually.",
+    "Operator authentication remains unwired; runtime receipts still use NULL_NOT_AUTHENTICATED."
+  ],
+  "proof_artifact_hashes": [
+    {
+      "path": "proof/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/README.md",
+      "sha256": "aa50ddb875dd057b40c881fadb6882d08e53e07da69e0dde615f87ec7c879eef"
+    },
+    {
+      "path": "out/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/PROOF.json",
+      "sha256": "reported externally to avoid self-referential proof churn"
+    }
+  ],
+  "cleanup_status": "proof metadata cleanup recorded here; final push status is reported in closeout to avoid self-referential proof churn"
+}

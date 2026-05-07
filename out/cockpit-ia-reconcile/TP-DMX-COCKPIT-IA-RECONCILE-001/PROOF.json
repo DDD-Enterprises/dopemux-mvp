@@ -1,0 +1,166 @@
+{
+  "packet_id": "TP-DMX-COCKPIT-IA-RECONCILE-001",
+  "ia_verdict": "CURRENT_COCKPIT_IA_NEEDS_MAJOR_RECONCILIATION",
+  "safe_for_claude_design": "NO",
+  "ready_for_claude_design": false,
+  "validation_state": "NORMALIZED_CANONICAL_OUTPUT_SET_PRODUCED",
+  "created_at_utc": "2026-05-04T00:00:00Z",
+  "worktree": "/Users/hue/code/dopemux-worktrees/dopemux-cockpit-ia-reconcile-001",
+  "branch": "audit/cockpit-ia-reconcile-001",
+  "head": "88c188d551719b60e6a560a04b6da2939b27d34b",
+  "origin_main": "88c188d551719b60e6a560a04b6da2939b27d34b",
+  "output_directory": "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/",
+  "inputs": {
+    "carried_forward_artifacts": [
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/RECONCILED_COCKPIT_IA.md",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/RECONCILED_COCKPIT_IA.json",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/COMMAND_EXPOSURE_POLICY.md",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/COMMAND_EXPOSURE_POLICY.json",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SCREEN_CONTRACT_MATRIX.md",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SCREEN_CONTRACT_MATRIX.json",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/COMMAND_PALETTE_POLICY.md",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SAFE_ACTION_GATES.md",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/CLAUDE_DESIGN_GATE.md",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/EVIDENCE_LEDGER.md"
+    ],
+    "upstream_evidence_referenced": [
+      "out/cockpit-command-inventory/TP-DMX-COCKPIT-COMMAND-INVENTORY-001/COMMAND_INVENTORY.json",
+      "out/cockpit-command-inventory/TP-DMX-COCKPIT-COMMAND-INVENTORY-001/COCKPIT_COVERAGE_MATRIX.json",
+      "out/cockpit-command-inventory/TP-DMX-COCKPIT-COMMAND-INVENTORY-001/IA_GAP_ANALYSIS.md",
+      "out/cockpit-command-inventory/TP-DMX-COCKPIT-COMMAND-INVENTORY-001/AUTHORITY_ACTION_TAXONOMY.md"
+    ]
+  },
+  "outputs": {
+    "required_normalized": [
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/REVISED_COCKPIT_IA.md",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/COMMAND_PALETTE_SPEC.md",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SAFE_ACTION_GATE_SPEC.md",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SETTINGS_ADMIN_RUNTIME_SPEC.md",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/UNKNOWN_DRIFT_QUEUE_SPEC.md",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/COMMAND_MAPPING_DECISIONS.md",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/UPDATED_COVERAGE_DECISION.md",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/CLAUDE_DESIGN_BLOCKERS.md",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/OPUS_REMEDIATION_PLAN.md",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/PROOF.json",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/sha256sums.txt"
+    ],
+    "preserved_carried_forward": [
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/RECONCILED_COCKPIT_IA.md",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/RECONCILED_COCKPIT_IA.json",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/COMMAND_EXPOSURE_POLICY.md",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/COMMAND_EXPOSURE_POLICY.json",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SCREEN_CONTRACT_MATRIX.md",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SCREEN_CONTRACT_MATRIX.json",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/COMMAND_PALETTE_POLICY.md",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SAFE_ACTION_GATES.md",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/CLAUDE_DESIGN_GATE.md",
+      "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/EVIDENCE_LEDGER.md"
+    ],
+    "supersession_map": {
+      "RECONCILED_COCKPIT_IA.md": "REVISED_COCKPIT_IA.md",
+      "COMMAND_PALETTE_POLICY.md": "COMMAND_PALETTE_SPEC.md",
+      "SAFE_ACTION_GATES.md": "SAFE_ACTION_GATE_SPEC.md",
+      "CLAUDE_DESIGN_GATE.md": "CLAUDE_DESIGN_BLOCKERS.md"
+    }
+  },
+  "retained_modes": [
+    {
+      "name": "PM",
+      "decision": "keep top-level",
+      "scope": "workflow triage and PM handoff readiness across split PM authorities"
+    },
+    {
+      "name": "Implementer",
+      "decision": "keep top-level",
+      "scope": "bounded task focus, evidence framing, validation, and explicit execution handoff readiness"
+    },
+    {
+      "name": "Overview",
+      "decision": "keep top-level",
+      "scope": "operator status, health, drift summaries, safe launch context"
+    },
+    {
+      "name": "Services",
+      "decision": "keep top-level",
+      "scope": "service status and child workload inspection (admin/runtime mutation moved to Settings/Admin/Runtime)"
+    },
+    {
+      "name": "Events",
+      "decision": "keep top-level",
+      "scope": "chronicle, capture, trigger, and event-inspection views with dope-memory authority boundaries"
+    }
+  ],
+  "added_surfaces": [
+    {
+      "name": "Command Palette",
+      "kind": "global secondary surface",
+      "role": "broker, not executor",
+      "spec": "COMMAND_PALETTE_SPEC.md"
+    },
+    {
+      "name": "Settings/Admin/Runtime",
+      "kind": "major secondary surface",
+      "role": "routing/profile/env/MCP/service-startup/hooks/runtime/admin/debug placement",
+      "spec": "SETTINGS_ADMIN_RUNTIME_SPEC.md"
+    },
+    {
+      "name": "Safe Actions / Proof Gate",
+      "kind": "cross-cutting contract layer",
+      "role": "confirmation tiers, proof, governance gate, fail-closed behavior",
+      "spec": "SAFE_ACTION_GATE_SPEC.md"
+    },
+    {
+      "name": "Unknown / Drift Queue",
+      "kind": "non-executable visibility queue",
+      "role": "surface unknown, blocked, drifted, missing-coverage, stale-proof rows without execution",
+      "spec": "UNKNOWN_DRIFT_QUEUE_SPEC.md"
+    }
+  ],
+  "blocked_claims": [
+    "READY_FOR_CLAUDE_DESIGN must not be claimed under this packet.",
+    "Final Cockpit screens for Claude Design remain blocked.",
+    "No runtime execution flows are approved.",
+    "No destructive action affordances are approved.",
+    "No remote-mutation flows are approved.",
+    "No unified PM or unified brain screens are approved.",
+    "No claim of complete command coverage is approved.",
+    "No package edits to the Cockpit HTML/CSS/React or ZIPs were performed in this packet.",
+    "No staging, commits, pushes, or PRs were performed."
+  ],
+  "unknowns": [
+    "Root RULES.md is absent in the worktree; docs/03-reference and AGENTS.md were used in the carried artifacts.",
+    "Root TRUTH_*.md files are absent; docs/03-reference/truth/* equivalents were used.",
+    "Carried command inventory was generated at HEAD af5c4627; this worktree is at 88c188d (origin/main 88c188d). Inventory was not regenerated in this packet.",
+    "Runtime dopemux help is an UNKNOWN inherited from the inventory packet because the inventory environment lacked litellm.",
+    "Decision subcommands, optional genetic, and defined-but-not-registered worktree/vault surfaces remain unresolved until runtime registration is repaired or rejected.",
+    "Final runtime renderer, browser visual approval, screenshot approval, and proof JSON validation for Cockpit remain outside this packet."
+  ],
+  "preflight_evidence": {
+    "pwd": "/Users/hue/code/dopemux-worktrees/dopemux-cockpit-ia-reconcile-001",
+    "git_toplevel": "/Users/hue/code/dopemux-worktrees/dopemux-cockpit-ia-reconcile-001",
+    "branch": "audit/cockpit-ia-reconcile-001",
+    "branch_detached": false,
+    "output_path_under_required_root": true,
+    "tmp_used_as_authoritative": false
+  },
+  "non_destructive_state": {
+    "source_or_package_edits": false,
+    "runtime_code_edits": false,
+    "cockpit_package_edits": false,
+    "zip_edits": false,
+    "claude_design_uploaded": false,
+    "staged": false,
+    "committed": false,
+    "pushed": false,
+    "pr_opened": false
+  },
+  "task_id": "TP-DMX-COCKPIT-IA-RECONCILE-001",
+  "supersedes_prior_proof": {
+    "reason": "Carried PROOF.json used CONDITIONAL framing; supervisor thread requires NO / not approved framing with verdict CURRENT_COCKPIT_IA_NEEDS_MAJOR_RECONCILIATION.",
+    "prior_proof_state_inlined": {
+      "READY_FOR_CLAUDE_DESIGN": "conditional",
+      "safe_for_claude_design": "CONDITIONAL",
+      "verdict": "CURRENT_COCKPIT_IA_PARTIAL_CONDITIONAL_PRIMITIVES_ONLY"
+    }
+  }
+}

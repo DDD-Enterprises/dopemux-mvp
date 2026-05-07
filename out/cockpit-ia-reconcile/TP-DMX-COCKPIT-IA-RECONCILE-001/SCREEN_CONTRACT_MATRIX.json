@@ -1,0 +1,458 @@
+{
+  "metadata": {
+    "source_counts": {
+      "activation_status": {
+        "ACTIVE": 366,
+        "DEFINED_NOT_REGISTERED": 30,
+        "DEPRECATED_BLOCKED": 7,
+        "OPTIONAL_IMPORT_UNKNOWN": 2
+      },
+      "active_rows": 366,
+      "authority_domain": {
+        "ADHD/operator support": 21,
+        "ConPort structured context/decision/progress": 15,
+        "Repo Truth Extractor audit/extraction": 44,
+        "dope-memory chronicle": 15,
+        "dopecon-bridge adapter/proxy/event transport": 11,
+        "dopemux operator control": 145,
+        "dopetask execution handoff": 109,
+        "routing/model-provider support": 20,
+        "task-orchestrator workflow": 11,
+        "unknown / conflicting": 14
+      },
+      "coverage": {
+        "MISSING": 284,
+        "OUT_OF_SCOPE": 7,
+        "PARTIAL": 82,
+        "UNKNOWN": 32
+      },
+      "high_risk_rows": 199,
+      "placement": {
+        "Command Palette": 139,
+        "Events": 15,
+        "External/Not Cockpit": 37,
+        "Implementer": 73,
+        "Overview": 9,
+        "PM": 15,
+        "Services": 54,
+        "Settings/Admin": 62,
+        "UNKNOWN": 1
+      },
+      "safe_ui_exposure": {
+        "BLOCKED_IN_COCKPIT": 48,
+        "COMMAND_PALETTE_ONLY": 40,
+        "CONFIRM_REQUIRED": 111,
+        "DISPLAY_ONLY": 178,
+        "INSPECT_ACTION": 23,
+        "UNKNOWN": 5
+      },
+      "total_inventory_rows": 405
+    },
+    "task_id": "TP-DMX-COCKPIT-IA-RECONCILE-001",
+    "verdict": "CURRENT_COCKPIT_IA_PARTIAL_CONDITIONAL_PRIMITIVES_ONLY"
+  },
+  "screens": [
+    {
+      "allowed_command_classes": [
+        "DISPLAY_ONLY",
+        "INSPECT_ACTION"
+      ],
+      "claude_design_allowance": "ALLOW_PRIMITIVES_ONLY",
+      "current_coverage_status": "PARTIAL",
+      "data_sources": [
+        "dopemux status/health/doctor",
+        "inventory summaries",
+        "authority docs"
+      ],
+      "forbidden_command_classes": [
+        "BLOCKED_IN_COCKPIT",
+        "UNKNOWN"
+      ],
+      "owner_authority_domain": "dopemux operator control",
+      "purpose": "Operator status, health, drift summaries, and safe launch points into secondary surfaces.",
+      "required_confirmation_proof_gates": [
+        "No direct mutation; diagnostics require inspect result evidence."
+      ],
+      "screen_surface_name": "Overview"
+    },
+    {
+      "allowed_command_classes": [
+        "DISPLAY_ONLY",
+        "INSPECT_ACTION",
+        "CONFIRM_REQUIRED with governance gate"
+      ],
+      "claude_design_allowance": "ALLOW_PRIMITIVES_ONLY",
+      "current_coverage_status": "PARTIAL",
+      "data_sources": [
+        "PM_PLANE.md",
+        "task-orchestrator workflow APIs",
+        "ConPort decision/progress context",
+        "Leantime metadata via PM adapters"
+      ],
+      "forbidden_command_classes": [
+        "BLOCKED_IN_COCKPIT",
+        "UNKNOWN",
+        "EXTERNAL_ONLY"
+      ],
+      "owner_authority_domain": "split: Leantime, task-orchestrator, ConPort, dope-memory receipts",
+      "purpose": "Workflow triage and PM handoff readiness without claiming unified PM truth.",
+      "required_confirmation_proof_gates": [
+        "Workflow transition confirmation",
+        "authority slice declaration",
+        "receipt/provenance output."
+      ],
+      "screen_surface_name": "PM"
+    },
+    {
+      "allowed_command_classes": [
+        "DISPLAY_ONLY",
+        "INSPECT_ACTION",
+        "CONFIRM_REQUIRED with TP/proof gate"
+      ],
+      "claude_design_allowance": "ALLOW_PRIMITIVES_ONLY",
+      "current_coverage_status": "PARTIAL",
+      "data_sources": [
+        "scripts/dopetask",
+        "scripts/taskx",
+        "kernel command inventory",
+        "dopetask help"
+      ],
+      "forbidden_command_classes": [
+        "BLOCKED_IN_COCKPIT",
+        "UNKNOWN"
+      ],
+      "owner_authority_domain": "dopetask execution handoff plus task evidence systems",
+      "purpose": "Current task, acceptance, evidence, validation, and bounded execution handoff readiness.",
+      "required_confirmation_proof_gates": [
+        "Task Packet gate for execution",
+        "validation command evidence",
+        "post-run proof location."
+      ],
+      "screen_surface_name": "Implementer"
+    },
+    {
+      "allowed_command_classes": [
+        "DISPLAY_ONLY",
+        "INSPECT_ACTION",
+        "CONFIRM_REQUIRED for start/stop through gate"
+      ],
+      "claude_design_allowance": "ALLOW_PRIMITIVES_ONLY",
+      "current_coverage_status": "PARTIAL",
+      "data_sources": [
+        "mcp/servers commands",
+        "service system docs",
+        "Cockpit seed service rows"
+      ],
+      "forbidden_command_classes": [
+        "BLOCKED_IN_COCKPIT",
+        "UNKNOWN"
+      ],
+      "owner_authority_domain": "per-service authority; dopemux only as operator control",
+      "purpose": "Service status, logs, health, and child workload inspection while preserving authority boundaries.",
+      "required_confirmation_proof_gates": [
+        "Service action confirmation",
+        "preflight state",
+        "exit code/log evidence."
+      ],
+      "screen_surface_name": "Services"
+    },
+    {
+      "allowed_command_classes": [
+        "DISPLAY_ONLY",
+        "INSPECT_ACTION",
+        "CONFIRM_REQUIRED for capture/emit"
+      ],
+      "claude_design_allowance": "ALLOW_PRIMITIVES_ONLY",
+      "current_coverage_status": "PARTIAL",
+      "data_sources": [
+        "dope-memory docs",
+        "memory/capture/trigger inventory rows"
+      ],
+      "forbidden_command_classes": [
+        "BLOCKED_IN_COCKPIT",
+        "UNKNOWN"
+      ],
+      "owner_authority_domain": "dope-memory chronicle plus upstream event producers",
+      "purpose": "Chronicle, capture, trigger, and event-inspection surface; not current PM truth.",
+      "required_confirmation_proof_gates": [
+        "Capture payload preview",
+        "chronicle receipt or failure evidence."
+      ],
+      "screen_surface_name": "Events"
+    },
+    {
+      "allowed_command_classes": [
+        "DISPLAY_ONLY",
+        "INSPECT_ACTION",
+        "COMMAND_PALETTE_ONLY",
+        "CONFIRM_REQUIRED through gate"
+      ],
+      "claude_design_allowance": "ALLOW_PRIMITIVES_ONLY",
+      "current_coverage_status": "MISSING",
+      "data_sources": [
+        "COMMAND_INVENTORY.json",
+        "COMMAND_EXPOSURE_POLICY.json"
+      ],
+      "forbidden_command_classes": [
+        "direct BLOCKED_IN_COCKPIT execution",
+        "UNKNOWN execution"
+      ],
+      "owner_authority_domain": "dopemux operator control",
+      "purpose": "Global search and launch surface for rare, parameter-heavy, and admin commands.",
+      "required_confirmation_proof_gates": [
+        "Parameter preview",
+        "safety class",
+        "authority owner",
+        "gate status before confirm."
+      ],
+      "screen_surface_name": "Command Palette"
+    },
+    {
+      "allowed_command_classes": [
+        "DISPLAY_ONLY",
+        "INSPECT_ACTION",
+        "COMMAND_PALETTE_ONLY",
+        "CONFIRM_REQUIRED through admin gate"
+      ],
+      "claude_design_allowance": "ALLOW_PRIMITIVES_ONLY",
+      "current_coverage_status": "MISSING",
+      "data_sources": [
+        "routing_cli.py inventory rows",
+        "profile/hooks/env/debug inventory rows"
+      ],
+      "forbidden_command_classes": [
+        "BLOCKED_IN_COCKPIT",
+        "UNKNOWN execution"
+      ],
+      "owner_authority_domain": "dopemux operator control and routing/model-provider support",
+      "purpose": "Secondary/admin surface for profile, hooks, routing, env, debug, runtime configuration, and drift queues.",
+      "required_confirmation_proof_gates": [
+        "Admin confirmation",
+        "config diff preview where available",
+        "post-action evidence."
+      ],
+      "screen_surface_name": "Settings/Admin/Runtime"
+    },
+    {
+      "allowed_command_classes": [
+        "DISPLAY_ONLY",
+        "INSPECT_ACTION",
+        "COMMAND_PALETTE_ONLY",
+        "CONFIRM_REQUIRED through admin gate"
+      ],
+      "claude_design_allowance": "ALLOW_PRIMITIVES_ONLY",
+      "current_coverage_status": "MISSING",
+      "data_sources": [
+        "src/dopemux/routing_cli.py",
+        "routing command inventory"
+      ],
+      "forbidden_command_classes": [
+        "BLOCKED_IN_COCKPIT",
+        "UNKNOWN"
+      ],
+      "owner_authority_domain": "routing/model-provider support",
+      "purpose": "Inspect and administer LiteLLM/CCR routing mode without silent route changes.",
+      "required_confirmation_proof_gates": [
+        "Effective config preview",
+        "route mode diff",
+        "service status proof."
+      ],
+      "screen_surface_name": "Routing/Model Provider"
+    },
+    {
+      "allowed_command_classes": [
+        "DISPLAY_ONLY",
+        "INSPECT_ACTION",
+        "CONFIRM_REQUIRED through TP/proof gate"
+      ],
+      "claude_design_allowance": "ALLOW_PRIMITIVES_ONLY",
+      "current_coverage_status": "MISSING",
+      "data_sources": [
+        "scripts/dopetask",
+        "scripts/taskx",
+        "kernel command inventory"
+      ],
+      "forbidden_command_classes": [
+        "BLOCKED_IN_COCKPIT",
+        "UNKNOWN"
+      ],
+      "owner_authority_domain": "dopetask execution handoff",
+      "purpose": "Explicit handoff boundary from Cockpit to dopetask/kernel/task execution.",
+      "required_confirmation_proof_gates": [
+        "TP id/path",
+        "preflight",
+        "expected artifacts",
+        "exit/proof capture."
+      ],
+      "screen_surface_name": "Execution Handoff"
+    },
+    {
+      "allowed_command_classes": [
+        "DISPLAY_ONLY",
+        "INSPECT_ACTION",
+        "CONFIRM_REQUIRED through proof gate"
+      ],
+      "claude_design_allowance": "ALLOW_PRIMITIVES_ONLY",
+      "current_coverage_status": "PARTIAL",
+      "data_sources": [
+        "rte/upgrades/extract/audit inventory",
+        "repo-truth-extractor system doc"
+      ],
+      "forbidden_command_classes": [
+        "BLOCKED_IN_COCKPIT",
+        "UNKNOWN"
+      ],
+      "owner_authority_domain": "Repo Truth Extractor audit/extraction",
+      "purpose": "Inspect RTE status, audit runs, promptset/preflight, and extraction evidence.",
+      "required_confirmation_proof_gates": [
+        "Run scope preview",
+        "promptset gate status",
+        "proof artifact path."
+      ],
+      "screen_surface_name": "Repo Truth / Audit"
+    },
+    {
+      "allowed_command_classes": [
+        "DISPLAY_ONLY",
+        "INSPECT_ACTION"
+      ],
+      "claude_design_allowance": "BLOCKED",
+      "current_coverage_status": "MISSING",
+      "data_sources": [
+        "dopemux-pr-merge inventory",
+        "src/dopemux_pr_merge_specialist/cli.py"
+      ],
+      "forbidden_command_classes": [
+        "CONFIRM_REQUIRED execution",
+        "BLOCKED_IN_COCKPIT",
+        "UNKNOWN"
+      ],
+      "owner_authority_domain": "dopemux operator control plus GitHub remote state",
+      "purpose": "Expose PR merge specialist status and plans without enabling remote mutation inside Cockpit.",
+      "required_confirmation_proof_gates": [
+        "External-only governance until remote mutation policy exists."
+      ],
+      "screen_surface_name": "PR Merge"
+    },
+    {
+      "allowed_command_classes": [
+        "DISPLAY_ONLY",
+        "INSPECT_ACTION",
+        "CONFIRM_REQUIRED for proof/planning"
+      ],
+      "claude_design_allowance": "ALLOW_PRIMITIVES_ONLY",
+      "current_coverage_status": "MISSING",
+      "data_sources": [
+        "src/dopemux/system_data/cli.py",
+        "system-data inventory rows"
+      ],
+      "forbidden_command_classes": [
+        "direct clean/restore execution",
+        "UNKNOWN"
+      ],
+      "owner_authority_domain": "dopemux operator control",
+      "purpose": "Mac system-data diagnosis and cleanup planning with strict execute gating.",
+      "required_confirmation_proof_gates": [
+        "Dry-run first",
+        "execute requires explicit yes and proof capture."
+      ],
+      "screen_surface_name": "System Data"
+    },
+    {
+      "allowed_command_classes": [
+        "DISPLAY_ONLY",
+        "INSPECT_ACTION",
+        "CONFIRM_REQUIRED for start/stop/send"
+      ],
+      "claude_design_allowance": "ALLOW_PRIMITIVES_ONLY",
+      "current_coverage_status": "MISSING",
+      "data_sources": [
+        "src/dopemux/tmux/cli.py",
+        "src/dopemux/mobile/*"
+      ],
+      "forbidden_command_classes": [
+        "direct send/kill/close/stop without gate",
+        "UNKNOWN"
+      ],
+      "owner_authority_domain": "ADHD/operator support and dopemux operator control",
+      "purpose": "Process/pane/session support with no hidden keystroke or process mutation.",
+      "required_confirmation_proof_gates": [
+        "Target pane/session preview",
+        "confirm before send/kill/stop."
+      ],
+      "screen_surface_name": "Mobile/Tmux"
+    },
+    {
+      "allowed_command_classes": [
+        "DISPLAY_ONLY",
+        "INSPECT_ACTION",
+        "COMMAND_PALETTE_ONLY",
+        "CONFIRM_REQUIRED through admin gate"
+      ],
+      "claude_design_allowance": "ALLOW_PRIMITIVES_ONLY",
+      "current_coverage_status": "MISSING",
+      "data_sources": [
+        "profile/hooks/env/debug inventory rows"
+      ],
+      "forbidden_command_classes": [
+        "BLOCKED_IN_COCKPIT",
+        "UNKNOWN execution"
+      ],
+      "owner_authority_domain": "dopemux operator control",
+      "purpose": "Admin shell for hooks, native-hooks, profile, env, session, safe, and debug helper surfaces.",
+      "required_confirmation_proof_gates": [
+        "Config target preview",
+        "before/after evidence where mutation occurs."
+      ],
+      "screen_surface_name": "Hooks/Profile/Env"
+    },
+    {
+      "allowed_command_classes": [
+        "INSPECT_ACTION",
+        "CONFIRM_REQUIRED",
+        "COMMAND_PALETTE_ONLY",
+        "BLOCKED_IN_COCKPIT as non-executable row",
+        "UNKNOWN as blocked row"
+      ],
+      "claude_design_allowance": "ALLOW_PRIMITIVES_ONLY",
+      "current_coverage_status": "MISSING",
+      "data_sources": [
+        "COMMAND_EXPOSURE_POLICY.json",
+        "SAFE_ACTION_GATES.md"
+      ],
+      "forbidden_command_classes": [
+        "silent execution",
+        "direct destructive execution"
+      ],
+      "owner_authority_domain": "cross-cutting safety contract",
+      "purpose": "Interpose confirmation, proof, TP/governance, and blocked-action behavior before any non-read action.",
+      "required_confirmation_proof_gates": [
+        "Class-specific gate from SAFE_ACTION_GATES.md."
+      ],
+      "screen_surface_name": "Safe Actions / Proof Gate"
+    },
+    {
+      "allowed_command_classes": [
+        "DISPLAY_ONLY",
+        "UNKNOWN as blocked row",
+        "EXTERNAL_ONLY as documentation row"
+      ],
+      "claude_design_allowance": "ALLOW_PRIMITIVES_ONLY",
+      "current_coverage_status": "MISSING",
+      "data_sources": [
+        "activation_status counts",
+        "residual unknowns",
+        "truth gaps"
+      ],
+      "forbidden_command_classes": [
+        "any execution"
+      ],
+      "owner_authority_domain": "evidence/drift tracking only",
+      "purpose": "Track unregistered, optional, deprecated, or unresolved authority surfaces without executing them.",
+      "required_confirmation_proof_gates": [
+        "Investigation packet reference before reclassification."
+      ],
+      "screen_surface_name": "Unknown/Drift Queue"
+    }
+  ]
+}
