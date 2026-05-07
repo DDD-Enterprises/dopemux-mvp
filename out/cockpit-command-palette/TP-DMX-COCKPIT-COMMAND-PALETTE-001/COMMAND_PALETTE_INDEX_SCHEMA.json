@@ -1,0 +1,347 @@
+{
+  "schema_id": "dopemux.cockpit.command_palette.index_row.v1",
+  "packet_id": "TP-DMX-COCKPIT-COMMAND-PALETTE-001",
+  "title": "Command Palette Index Row",
+  "description": "Per-row schema for the Cockpit Command Palette index. Rows are derived from the carried command inventory (COMMAND_INVENTORY.json) and the carried policy (COMMAND_EXPOSURE_POLICY.json). All fields are required. Missing values render as the literal string 'UNKNOWN' and trigger fail-closed routing to the Unknown/Drift Queue. The palette never invents values for missing fields and never silently substitutes defaults.",
+  "fail_closed_rule": "If any field on this row resolves to 'UNKNOWN' and the operator selects an outcome that requires the field, the palette must not invoke the Safe Action Gate or Settings/Admin/Runtime; it must route the row to the Unknown/Drift Queue with the missing-field reason.",
+  "source_artifacts": [
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/COMMAND_EXPOSURE_POLICY.json",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/COMMAND_PALETTE_SPEC.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SAFE_ACTION_GATE_SPEC.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SETTINGS_ADMIN_RUNTIME_SPEC.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/UNKNOWN_DRIFT_QUEUE_SPEC.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/COMMAND_MAPPING_DECISIONS.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SCREEN_CONTRACT_MATRIX.json"
+  ],
+  "fields": {
+    "command_path": {
+      "type": "string",
+      "required": true,
+      "source": "COMMAND_INVENTORY.json:rows[*].command_path",
+      "description": "Fully qualified invocation path including subcommands, e.g. './scripts/dopetask doctor' or 'dopemux routing status'. Carried verbatim from the inventory.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": true
+    },
+    "parent_group": {
+      "type": "string",
+      "required": true,
+      "source": "COMMAND_INVENTORY.json:rows[*].parent_group",
+      "description": "Top-level command group/family the row belongs to (e.g. 'dopetask', 'dopemux routing', 'dopemux mcp', 'mcp/servers'). Carried verbatim.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": false
+    },
+    "authority_domain": {
+      "type": "string",
+      "required": true,
+      "source": "COMMAND_INVENTORY.json:rows[*].authority_domain",
+      "enum": [
+        "dopemux operator control",
+        "dopetask execution handoff",
+        "Repo Truth Extractor audit/extraction",
+        "ADHD/operator support",
+        "routing/model-provider support",
+        "ConPort structured context/decision/progress",
+        "dope-memory chronicle",
+        "task-orchestrator workflow",
+        "dopecon-bridge adapter/proxy/event transport",
+        "unknown / conflicting"
+      ],
+      "description": "Authority domain that owns the row. The palette never substitutes its own authority. 'unknown / conflicting' triggers fail-closed routing.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": true,
+      "fail_closed_when_conflicting": true
+    },
+    "canonical_writer": {
+      "type": "string",
+      "required": true,
+      "source": "derived from authority_domain + system docs in docs/03-reference/systems/*",
+      "description": "System or service that owns the write/state mutation for this row. If multiple writers exist, all writers are listed comma-separated. Required so Safe Action Gate can show every writer for T2–T6 actions.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": true
+    },
+    "safe_ui_exposure": {
+      "type": "string",
+      "required": true,
+      "source": "COMMAND_INVENTORY.json:rows[*].safe_UI_exposure / COMMAND_EXPOSURE_POLICY.json:classes",
+      "enum": [
+        "DISPLAY_ONLY",
+        "INSPECT_ACTION",
+        "CONFIRM_REQUIRED",
+        "COMMAND_PALETTE_ONLY",
+        "BLOCKED_IN_COCKPIT",
+        "EXTERNAL_ONLY",
+        "UNKNOWN"
+      ],
+      "description": "Safety class governing the row's allowed UI form. Drives outcome routing per PALETTE_ROUTING_RULES.md.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": true
+    },
+    "cockpit_placement": {
+      "type": "string",
+      "required": true,
+      "source": "COMMAND_INVENTORY.json:rows[*].likely_cockpit_placement",
+      "enum": [
+        "PM",
+        "Implementer",
+        "Overview",
+        "Services",
+        "Events",
+        "Command Palette",
+        "Settings/Admin",
+        "External/Not Cockpit",
+        "UNKNOWN"
+      ],
+      "description": "Carried Cockpit placement. Drives placement-axis routing in PALETTE_ROUTING_RULES.md §3.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": true
+    },
+    "current_cockpit_coverage": {
+      "type": "string",
+      "required": true,
+      "source": "COMMAND_INVENTORY.json:rows[*].current_Cockpit_coverage",
+      "enum": [
+        "PARTIAL",
+        "MISSING",
+        "UNKNOWN",
+        "OUT_OF_SCOPE"
+      ],
+      "description": "Carried coverage status. MISSING and UNKNOWN coverage are surfaced as filterable badges and feed the Unknown/Drift Queue when other fields also fail.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": false
+    },
+    "activation_status": {
+      "type": "string",
+      "required": true,
+      "source": "COMMAND_INVENTORY.json:rows[*].activation_status",
+      "enum": [
+        "ACTIVE",
+        "DEFINED_NOT_REGISTERED",
+        "OPTIONAL_IMPORT_UNKNOWN",
+        "DEPRECATED_BLOCKED"
+      ],
+      "description": "Whether the runtime has the row registered. DEFINED_NOT_REGISTERED, OPTIONAL_IMPORT_UNKNOWN, and DEPRECATED_BLOCKED route the row to Unknown/Drift Queue per UNKNOWN_DRIFT_QUEUE_SPEC.md §1.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_not_active": true
+    },
+    "source_file": {
+      "type": "string",
+      "required": true,
+      "source": "COMMAND_INVENTORY.json:rows[*].source_file",
+      "description": "Absolute or repo-relative path to the source file that defines the row (e.g. 'src/dopemux/routing_cli.py').",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": false
+    },
+    "source_symbol": {
+      "type": "string",
+      "required": true,
+      "source": "COMMAND_INVENTORY.json:rows[*].source_symbol",
+      "description": "Function, class, or registration symbol within source_file. Required for provenance, not for execution decisions.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": false
+    },
+    "help_text_or_summary": {
+      "type": "string",
+      "required": true,
+      "source": "COMMAND_INVENTORY.json:rows[*].help_text or doc string",
+      "description": "Short human-readable description from the row's --help text or docstring. Used for display only; never for executability decisions.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": false
+    },
+    "evidence_path_or_command": {
+      "type": "string",
+      "required": true,
+      "source": "COMMAND_INVENTORY.json:rows[*].evidence_path_or_command",
+      "description": "Path or command that produces evidence proving the row exists and works (e.g. an inspect command, a manifest entry). Required for provenance and for the Inspect outcome.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": false
+    },
+    "parameter_schema": {
+      "type": "object",
+      "required": true,
+      "source": "derived from source_file/source_symbol parsing + carried inventory parameters",
+      "description": "Schema describing required and optional parameters, defaults made explicit, target types (path, service, remote endpoint, task id), and side-effect class per parameter.",
+      "shape": {
+        "required_parameters": {
+          "type": "array",
+          "items": {
+            "name": "string",
+            "type": "string",
+            "description": "string",
+            "examples": "array of strings"
+          },
+          "description": "Parameters that must be supplied; the palette refuses to invoke a gate if any value is unresolved or 'UNKNOWN'."
+        },
+        "optional_parameters": {
+          "type": "array",
+          "items": {
+            "name": "string",
+            "type": "string",
+            "default": "explicit value or null; never implicit",
+            "description": "string",
+            "side_effect_when_default": "string or NOT_APPLICABLE"
+          },
+          "description": "Optional parameters with explicit defaults. No implicit defaults are permitted."
+        },
+        "cwd_target": {
+          "type": "string",
+          "description": "Working directory the palette resolves against. Must be the current worktree, never '/tmp' as authoritative."
+        },
+        "output_target": {
+          "type": "string",
+          "description": "File path, log target, dry-run output, or NOT_APPLICABLE."
+        },
+        "side_effects": {
+          "type": "array",
+          "items": "string",
+          "description": "Enumerated side effects (config mutation, write local, write remote, start service, stop service, execution handoff, none)."
+        }
+      },
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": true
+    },
+    "proof_requirement": {
+      "type": "string",
+      "required": true,
+      "source": "derived from safe_ui_exposure + SAFE_ACTION_GATE_SPEC.md §1",
+      "enum": [
+        "NONE",
+        "INSPECT_RESULT_AND_TIMESTAMP",
+        "ARTIFACT_AND_CHECKSUM",
+        "CONFIG_DIFF_OR_STATUS",
+        "FILESYSTEM_DIFF_OR_EXIT_CODE",
+        "REMOTE_RECEIPT",
+        "SERVICE_STATUS_AND_LOG",
+        "TP_RUNNER_PROOF",
+        "BLOCK_REASON_RECORD",
+        "INVESTIGATION_PACKET_REFERENCE"
+      ],
+      "description": "Required post-action proof category. Mapped from class to Safe Action Gate tier. Stale proof reroutes the row to the Unknown/Drift Queue.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": true
+    },
+    "gate_tier": {
+      "type": "string",
+      "required": true,
+      "source": "derived from safe_ui_exposure + parameter_schema.side_effects + SAFE_ACTION_GATE_SPEC.md §1",
+      "enum": [
+        "T0",
+        "T0i",
+        "T1",
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T6",
+        "TX",
+        "TU"
+      ],
+      "description": "Confirmation tier the row maps to. T0/T0i never invoke the gate; TX/TU never execute. T1–T6 require Safe Action Gate handoff.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": true
+    },
+    "allowed_palette_outcomes": {
+      "type": "array",
+      "required": true,
+      "items": {
+        "enum": [
+          "Inspect",
+          "CopyCommand",
+          "OpenSafeActionGate",
+          "OpenSettingsAdminRuntime",
+          "ShowBlockedReason",
+          "ShowUnknownDriftReason"
+        ]
+      },
+      "description": "Subset of outcomes the row may resolve to, given its class, placement, activation, and coverage. Always exactly one outcome at click; this list defines the candidate set.",
+      "missing_value": "[]",
+      "fail_closed_when_empty": true
+    },
+    "blocked_reason": {
+      "type": "string",
+      "required": true,
+      "source": "COMMAND_INVENTORY.json:rows[*].blocked_reason or derived from class + activation_status",
+      "description": "Human-readable reason a BLOCKED_IN_COCKPIT row is blocked, including replacement command (if any) and required external workflow. Required for any row where safe_ui_exposure = 'BLOCKED_IN_COCKPIT' or activation_status = 'DEPRECATED_BLOCKED'. 'NOT_APPLICABLE' for non-blocked rows.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown_for_blocked_row": true
+    },
+    "unknown_reason": {
+      "type": "string",
+      "required": true,
+      "source": "derived from authority_domain == 'unknown / conflicting' OR activation_status in {'DEFINED_NOT_REGISTERED','OPTIONAL_IMPORT_UNKNOWN'} OR safe_ui_exposure == 'UNKNOWN' OR current_cockpit_coverage in {'UNKNOWN','MISSING'}",
+      "description": "Reason the row is unknown or has drift. Required so Unknown/Drift Queue can show why and what investigation packet is needed. 'NOT_APPLICABLE' for rows that are fully resolved.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown_for_unknown_row": true
+    },
+    "updated_at_or_source_timestamp": {
+      "type": "string",
+      "required": true,
+      "source": "COMMAND_INVENTORY.json metadata or filesystem mtime of source_file",
+      "description": "ISO-8601 UTC timestamp indicating when the row was last sourced from the inventory or its source file. Stale entries beyond a configured window route to Unknown/Drift Queue with reason 'STALE_INDEX'.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": false
+    }
+  },
+  "row_validation_rules": [
+    {
+      "id": "RV-1",
+      "rule": "If safe_ui_exposure == 'UNKNOWN', allowed_palette_outcomes MUST be ['ShowUnknownDriftReason'] and gate_tier MUST be 'TU'.",
+      "source": "COMMAND_EXPOSURE_POLICY.json:classes.UNKNOWN.forbidden_ui_form"
+    },
+    {
+      "id": "RV-2",
+      "rule": "If safe_ui_exposure == 'BLOCKED_IN_COCKPIT', allowed_palette_outcomes MUST be ['ShowBlockedReason'] and gate_tier MUST be 'TX'. blocked_reason MUST NOT be 'UNKNOWN'.",
+      "source": "COMMAND_EXPOSURE_POLICY.json:classes.BLOCKED_IN_COCKPIT.forbidden_ui_form"
+    },
+    {
+      "id": "RV-3",
+      "rule": "If safe_ui_exposure == 'EXTERNAL_ONLY', allowed_palette_outcomes MUST be ['CopyCommand'] (optionally with 'Inspect' for help text). gate_tier MUST be 'TX' or 'T0i' (no execution path).",
+      "source": "COMMAND_EXPOSURE_POLICY.json:classes.EXTERNAL_ONLY.forbidden_ui_form"
+    },
+    {
+      "id": "RV-4",
+      "rule": "If safe_ui_exposure == 'DISPLAY_ONLY', allowed_palette_outcomes MUST include 'Inspect' and MUST NOT include 'OpenSafeActionGate' or 'OpenSettingsAdminRuntime'. gate_tier MUST be 'T0'.",
+      "source": "COMMAND_EXPOSURE_POLICY.json:classes.DISPLAY_ONLY.forbidden_ui_form"
+    },
+    {
+      "id": "RV-5",
+      "rule": "If safe_ui_exposure == 'INSPECT_ACTION', allowed_palette_outcomes MUST include 'Inspect' and MUST NOT include any executing outcome. gate_tier MUST be 'T0i'.",
+      "source": "COMMAND_EXPOSURE_POLICY.json:classes.INSPECT_ACTION.forbidden_ui_form"
+    },
+    {
+      "id": "RV-6",
+      "rule": "If safe_ui_exposure == 'CONFIRM_REQUIRED', the row MUST resolve to 'OpenSafeActionGate' (or 'OpenSettingsAdminRuntime' which itself invokes the gate). gate_tier MUST be one of T1–T6 based on side_effects. The palette MUST NOT auto-confirm.",
+      "source": "COMMAND_EXPOSURE_POLICY.json:classes.CONFIRM_REQUIRED.forbidden_ui_form; SAFE_ACTION_GATE_SPEC.md §1"
+    },
+    {
+      "id": "RV-7",
+      "rule": "If safe_ui_exposure == 'COMMAND_PALETTE_ONLY', the row MUST be reachable only via the palette and MUST NOT appear on a primary mode home screen via the palette. allowed_palette_outcomes MUST include 'Inspect' (parameter preview) and MAY include 'OpenSafeActionGate' or 'OpenSettingsAdminRuntime' depending on derived gate_tier.",
+      "source": "COMMAND_EXPOSURE_POLICY.json:classes.COMMAND_PALETTE_ONLY.forbidden_ui_form"
+    },
+    {
+      "id": "RV-8",
+      "rule": "If activation_status in {'DEFINED_NOT_REGISTERED','OPTIONAL_IMPORT_UNKNOWN','DEPRECATED_BLOCKED'}, allowed_palette_outcomes MUST be a subset of {'Inspect','ShowBlockedReason','ShowUnknownDriftReason','CopyCommand'} and the palette MUST NOT route to Safe Action Gate or Settings/Admin/Runtime.",
+      "source": "UNKNOWN_DRIFT_QUEUE_SPEC.md §1"
+    },
+    {
+      "id": "RV-9",
+      "rule": "If authority_domain == 'unknown / conflicting' OR canonical_writer == 'UNKNOWN', the row MUST route to Unknown/Drift Queue with unknown_reason set; no Safe Action Gate handoff is permitted.",
+      "source": "UNKNOWN_DRIFT_QUEUE_SPEC.md §1"
+    },
+    {
+      "id": "RV-10",
+      "rule": "If parameter_schema.required_parameters contains any value resolving to 'UNKNOWN' at preview time, the row MUST NOT be handed off to the Safe Action Gate. The palette routes to Unknown/Drift Queue with reason 'PARAM_UNRESOLVED'.",
+      "source": "COMMAND_PALETTE_SPEC.md §4"
+    },
+    {
+      "id": "RV-11",
+      "rule": "cockpit_placement is the placement axis for routing; the palette never relabels a row's home. If cockpit_placement == 'External/Not Cockpit', allowed_palette_outcomes MUST be a subset of {'Inspect','CopyCommand'} and gate_tier MUST be 'T0i' or 'TX'.",
+      "source": "COMMAND_MAPPING_DECISIONS.md §2; COMMAND_EXPOSURE_POLICY.json:classes.EXTERNAL_ONLY"
+    }
+  ],
+  "index_invariants": [
+    "Every row in the index has every required field present; missing fields are stored as the literal string 'UNKNOWN', not null.",
+    "Counts of rows by safe_ui_exposure, placement, activation_status, coverage, and authority_domain MUST match the carried counts in COMMAND_EXPOSURE_POLICY.json:metadata.source_counts. The palette is a view, not a source of new counts.",
+    "No row may be assigned an authority_domain or canonical_writer not listed in the carried inputs.",
+    "No row may be reclassified inside the palette index. Reclassification requires a packet (UNKNOWN_DRIFT_QUEUE_SPEC.md §5)."
+  ]
+}
