@@ -93,3 +93,7 @@
 ## 2026-05-20 - [Pulsing Soft Confirmation Feedbacks]
 **Learning:** For destructive actions using a multi-step "soft" confirmation (e.g., "Reset Ritual"), a static label change might be too subtle for users in high-stimulation dashboard environments. Adding a rhythmic scale-and-glow pulse animation during the confirmation window provides a clear "active warning" state that reduces accidental progress loss while increasing the perceived safety of the interaction.
 **Action:** Use subtle `reset-pulse` animations for button components during time-limited confirmation windows to provide stronger visual feedback for destructive actions.
+
+## 2026-05-07 - [Progressive Ritual Awareness]
+**Learning:** For users with ADHD, seeing a list of tasks without a clear progress fraction (e.g., "1/3") can contribute to a sense of being lost in a sequence. Prefixing duration indicators with a task completion counter provides immediate spatial and temporal grounding. Additionally, providing tactile feedback (vertical lift and shadows) on list item hover/focus bridges the gap between static content and interactive ritual steps.
+**Action:** Always provide a clear "n/m tasks" counter in sequential task managers and use subtle vertical transforms for interactive list elements.
