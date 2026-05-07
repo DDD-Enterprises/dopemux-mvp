@@ -501,7 +501,13 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               sx={{
                 borderColor: isResetConfirming ? brandTokens.colors.saintGold : brandTokens.colors.serumMint,
                 color: isResetConfirming ? brandTokens.colors.saintGold : brandTokens.colors.serumMint,
-                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                transition: [
+                  'color 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  'border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  'background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  'box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                ].join(', '),
                 ...(isResetConfirming && {
                   animation: 'reset-pulse 1.5s infinite',
                   '@keyframes reset-pulse': {
