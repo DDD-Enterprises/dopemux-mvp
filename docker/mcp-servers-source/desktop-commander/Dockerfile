@@ -2,9 +2,8 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Copy dependency manifests first for better caching
-COPY pyproject.toml .
-COPY src/dopemux/__init__.py src/dopemux/
+# Copy the service-local dependency manifest first for better caching.
+COPY docker/mcp-servers-source/desktop-commander/requirements.txt /app/requirements.txt
 
 ENV PYTHONUNBUFFERED=1 \
     MCP_SERVER_HOST=0.0.0.0 \
@@ -18,8 +17,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xdotool \
     && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies from centralized manifest
-RUN pip install --no-cache-dir .[services]
+# Install the desktop-commander runtime from its service-local manifest.
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY docker/mcp-servers-source/desktop-commander/server.py /app/server.py
 COPY docker/mcp-servers-source/desktop-commander/integration_bridge_connector.py /app/integration_bridge_connector.py
