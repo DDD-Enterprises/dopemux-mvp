@@ -27,10 +27,10 @@ Synthesize Deep Research outputs for ConPort, Task Orchestrator, Serena, Claude 
 - `dr-upload/04-claude-context.md`
 - `dr-upload/05-claude-mem.md`
 - `dr-upload/06-mem0.md`
-- `data/upstream-source-manifest.json`
-- `data/upstream-surface-inventory.json`
-- `data/dopemux-authority-map.json`
-- `data/responsibility-collision-matrix.md`
+- `dopemux-constraints/upstream-source-manifest.json`
+- `dopemux-constraints/upstream-surface-inventory.json`
+- `dopemux-constraints/dopemux-authority-map.json`
+- `dopemux-constraints/responsibility-collision-matrix.md`
 
 ## Required Extraction Fields
 

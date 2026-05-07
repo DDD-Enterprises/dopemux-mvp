@@ -27,8 +27,8 @@ Establish Dopemux authority boundaries before evaluating upstream MCP/server fam
 - `docs/03-reference/truth/truth-gaps.md`
 - `docs/03-reference/truth/truth-interfaces.md`
 - `docs/03-reference/systems/system-boundaries.md`
-- `docs/research/mcp-customization/data/dopemux-authority-map.json`
-- `docs/research/mcp-customization/data/responsibility-collision-matrix.md`
+- `docs/research/mcp-customization/dopemux-constraints/dopemux-authority-map.json`
+- `docs/research/mcp-customization/dopemux-constraints/responsibility-collision-matrix.md`
 
 ## Required Extraction Fields
 

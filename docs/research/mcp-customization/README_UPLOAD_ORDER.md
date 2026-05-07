@@ -17,10 +17,10 @@ Access date: 2026-04-28
 Upload in this order:
 
 1. `dr-upload/00-dopemux-context-boundaries.md`
-2. `data/upstream-source-manifest.json`
-3. `data/dopemux-authority-map.json`
-4. `data/upstream-surface-inventory.json`
-5. `data/responsibility-collision-matrix.md`
+2. `dopemux-constraints/upstream-source-manifest.json`
+3. `dopemux-constraints/dopemux-authority-map.json`
+4. `dopemux-constraints/upstream-surface-inventory.json`
+5. `dopemux-constraints/responsibility-collision-matrix.md`
 6. `dr-upload/01-conport.md`
 7. `dr-upload/02-task-orchestrator.md`
 8. `dr-upload/03-serena.md`

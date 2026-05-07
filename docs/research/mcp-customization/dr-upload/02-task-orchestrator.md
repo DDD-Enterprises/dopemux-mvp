@@ -30,7 +30,7 @@ Lineage and packaging context:
 - https://pypi.org/project/mcp-task-orchestrator/
 - https://github.com/iflow-mcp/echoingvesper-mcp-task-orchestrator
 - https://pypi.org/project/iflow-mcp_echoingvesper_mcp-task-orchestrator/
-- `docs/research/mcp-customization/data/upstream-source-manifest.json`
+- `docs/research/mcp-customization/dopemux-constraints/upstream-source-manifest.json`
 - Dopemux runtime seed: `services/task-orchestrator/app/main.py`
 - Dopemux workflow seed: `services/task-orchestrator/app/api/project_workflow.py`
 - Dopemux PM seed: `src/dopemux/pm/writes.py`
