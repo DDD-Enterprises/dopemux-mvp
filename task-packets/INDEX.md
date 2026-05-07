@@ -48,6 +48,7 @@ A packet is superseded by another packet
 | TP-DMX-REPOHYG-004 | Repo Hygiene | Lost-work audit, stash preservation, and conservative cleanup | Ready | N/A |
 | TP-DMX-REPOHYG-005 | Repo Hygiene | Remaining work disposition audit and cleanup-safe local pruning | Ready | N/A |
 | TP-DMX-REPOHYG-006 | Repo Hygiene | Deep remaining work audit and recovery queue classification | Ready | N/A |
+| TP-DMX-REPOHYG-007 | Repo Hygiene | Recover CLI/system audit hardening tranche from PR #554 | Ready | N/A |
 | TP-DMX-RTEAUDIT-001 | Repo Truth Extractor | Assemble pre-live audit pack for GPT-5.4 Pro | Ready | N/A |
 | TP-DMX-RTEINT-001 | Repo Truth Extractor | Integrate current RTE branch deltas into staging audit branch | Ready | N/A |
 | TP-DMX-RTECANON-001 | Repo Truth Extractor | Establish `dopemux rte` as the canonical operator entrypoint | Ready | N/A |

@@ -595,6 +595,30 @@ def test_self_check_json_suppresses_preflight_banner(monkeypatch, capsys):
     assert payload["checks"][-1] == {"name": "preflight", "status": "PASS"}
 
 
+def test_self_check_allow_dirty_warn_renders_warning_icon(monkeypatch, capsys):
+    def fake_preflight(args):
+        return 1
+
+    monkeypatch.setattr(pr_merge_cli, "preflight", fake_preflight)
+
+    rc = pr_merge_cli._self_check(
+        Namespace(
+            json=False,
+            out_dir="proof/pr_merge",
+            repo=None,
+            policy=None,
+            allow_dirty=True,
+            run_id="selfcheck",
+        )
+    )
+
+    assert rc == 0
+    output = capsys.readouterr().out
+    assert "[WARN] preflight" in output
+    assert "nonfatal under --allow-dirty" in output
+    assert "[FAIL] preflight" not in output
+
+
 def test_remediate_ci_failure_uses_prompt_only_gemini_command(monkeypatch, tmp_path: Path):
     captured: dict[str, object] = {}
 
