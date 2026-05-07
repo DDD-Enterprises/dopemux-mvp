@@ -34,7 +34,7 @@ next_token: 5_5_pro_audit_prompt
 | System docs | `SYSTEM_ConPort(4).md`, `SYSTEM_DopeContext(4).md`, `SYSTEM_DopeMemory(4).md`, `SYSTEM_TaskOrchestrator(1).md` | Used to ground canonical writer, active runtime, and non-responsibilities. |
 | Truth docs | `TRUTH_DATA_EVENTS(9).md`, `TRUTH_GAPS(7).md` | Used for determinism, event contract, and drift/unknowns. |
 | Baseline substitute | `00-dopemux-context-boundaries(4).md`, `responsibility-collision-matrix(8).md` | Used because the separately named `00_baseline_DR_report.md` was not accessible. |
-| Schema contract | Audit-evidence-tree copy of `dopetask-cannonical-spec.json` | Used to normalize the draft Task Packets to the observed strict contract; the copy is evidence, not source authority. |
+| Schema contract | Audit-evidence-tree copy of `dopetask-canonical-spec.json` | Used to normalize the draft Task Packets to the observed strict contract; the copy is evidence, not source authority. |
 
 **Baseline authority restatement.** Dopemux is a multi-system workspace, not a monolith. The repo-level docs are consistent that `dopemux` owns operator control and routing, `dopetask` is the external execution runtime after wrapper handoff, PM authority is split across Leantime, Task Orchestrator, ConPort, and dope-memory receipts, memory is split across dope-memory and ConPort, retrieval is split across dope-context and ConPort, and bridge/proxy transport must never be promoted into source truth. The docs also repeatedly say that services may span planes, but authority remains domain-specific, with the canonical writer named before any write. (Sources: `RULES(6).md` L44-L93; `ARCHITECTURE(7).md` L11-L23, L41-L84; `system-boundaries(8).md` L16-L23, L24-L50, L61-L69, L93-L109; `00-dopemux-context-boundaries(4).md` L37-L49)
 
@@ -237,7 +237,7 @@ The most important retrieval blocker is that the current dope-context runtime is
 | Series F | Build authority-boundary, determinism, redaction, and proxy non-authority test suites | Tests and CI | Full plan in next section passes | No “No issues” shortcut | Series A-E | Medium |
 | Series F | Prepare 5.5 Pro audit bundle and surface inventory diff | Audit docs and generated manifests | Audit prompt reproduces all blockers and `UNKNOWN`s | Prevents silent authority transfer before rollout | Series A-E | Low |
 
-**Task Packet drafts.** The repo rules require Task Packets to conform to `dopetask-cannonical-spec.json`, require the named top-level fields, require worktree verification as the first step, and require Codex work to follow `analyze -> planner -> codereview -> precommit`. The audit evidence tree includes a schema copy, so the drafts below are normalized to that observed contract while still remaining **BLOCKED_BY_UNKNOWN** because the underlying work is future-facing and not merge-ready. (Sources: `RULES(6).md` L97-L119, L123-L176)
+**Task Packet drafts.** The repo rules require Task Packets to conform to `dopetask-canonical-spec.json`, require the named top-level fields, require worktree verification as the first step, and require Codex work to follow `analyze -> planner -> codereview -> precommit`. The audit evidence tree includes a schema copy, so the drafts below are normalized to that observed contract while still remaining **BLOCKED_BY_UNKNOWN** because the underlying work is future-facing and not merge-ready. (Sources: `RULES(6).md` L97-L119, L123-L176)
 
 **Draft TP-A1 — BLOCKED_BY_UNKNOWN**
 
@@ -611,7 +611,7 @@ The most important retrieval blocker is that the current dope-context runtime is
 | Category | Unresolved fact or blocker |
 |---|---|
 | Upstream lineage | `00_baseline_DR_report.md` was not accessible in this session; several server reports therefore already carried a missing-baseline blocker. |
-| Schema contract | Audit-evidence-tree copy of `dopetask-cannonical-spec.json` was used to normalize the draft packets, while root-level provenance and runtime execution authority remain separate. |
+| Schema contract | Audit-evidence-tree copy of `dopetask-canonical-spec.json` was used to normalize the draft packets, while root-level provenance and runtime execution authority remain separate. |
 | Upstream feature uncertainty | Task Orchestrator surface drift remains unresolved: README/Quick Start say 13 tools, API docs say 14 including `claim_item`, and `server.json` still shows `3.2.0` while the report anchored `v3.3.0`. |
 | Upstream feature uncertainty | Serena’s local Dopemux canonical implementation/deployment writer remains `UNKNOWN` because local truth docs still show duplicate surfaces and alias sprawl. |
 | Upstream feature uncertainty | ConPort relationship-query surfaces are proven more clearly than relationship-write authority; relation writes remain `UNKNOWN` until runtime proof. |
@@ -638,7 +638,7 @@ The most important retrieval blocker is that the current dope-context runtime is
 > - Serena, Claude Context, Claude-Mem, and Mem0 are not granted hidden canonical ownership;
 > - default-safe tool exposure really hides shell, edit, mutation, onboarding, external-project, destructive index, destructive memory, and hosted-memory surfaces where the synthesis says it does;
 > - all unresolved facts stay marked `UNKNOWN`;
-> - the Task Packet drafts are normalized to the observed `dopetask-cannonical-spec.json` schema copy and are not overclaimed as execution-ready packets;
+> - the Task Packet drafts are normalized to the observed `dopetask-canonical-spec.json` schema copy and are not overclaimed as execution-ready packets;
 > - the test plan covers determinism, redaction, no-secrets-persisted, authority boundaries, proxy non-authority, ranking stability, performance, and idempotent retry behavior;
 > - no recommendation assumes a hosted external-memory service is safe by default.
 

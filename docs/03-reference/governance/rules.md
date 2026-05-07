@@ -107,7 +107,7 @@ Bridge rules:
 
 ## 5. Task Packet Contract
 
-All non-trivial implementation or repo-changing work requires a Task Packet conforming to `dopetask-cannonical-spec.json`.
+All non-trivial implementation or repo-changing work requires a Task Packet conforming to `dopetask-canonical-spec.json`.
 
 Required fields:
 
