@@ -15,7 +15,7 @@ The `gpt-researcher` MCP server runs an autonomous research agent that coordinat
 
 **TL;DR**:
 - Quick fact (< 30s) → `/research:quick "..."` or `mcp__gpt-researcher__quick_search`
-- Deep dive (2–10 min) → `/research:deep "..."`, take a break, then `/research:report`
+- Deep dive (2–10 min) → `/research:deep "..."`, wait for the completed result, then `/research:report`
 - Already running on port 3009 inside the dopemux compose stack as `dopemux-mcp-gptr-mcp`
 
 ## When to use it (vs. Exa)
@@ -49,14 +49,14 @@ All five tools are available via `mcp__gpt-researcher__<name>`:
 | `get_research_sources` | Pull source list from a `research_id` | < 1s |
 | `get_research_context` | Pull synthesized context from a `research_id` | < 1s |
 
-`deep_research` returns a `research_id`. Save it — every other tool can refer back to it later.
+`deep_research` waits for the research run to complete, then returns a `research_id`. Save it — every other tool can refer back to the completed run later.
 
 ## Slash commands
 
 For ADHD-friendly default flows the project ships three slash commands. Each calls the underlying MCP tool with sensible defaults and writes outputs in conventional locations.
 
 - **`/research:quick "<query>"`** — fast lookup, prints a synthesis inline. No state saved.
-- **`/research:deep "<query>"`** — kicks off `deep_research` and saves the `research_id` to ConPort active context. Tells you when to come back.
+- **`/research:deep "<query>"`** — runs `deep_research`, waits for completion, and saves the returned `research_id` to ConPort active context.
 - **`/research:report [research_id]`** — formats a finished research session into `claudedocs/research/<slug>-<date>.md`. If you omit `research_id`, it pulls the most recent one from ConPort.
 
 ## ADHD workflow recipe
@@ -64,12 +64,12 @@ For ADHD-friendly default flows the project ships three slash commands. Each cal
 This pattern works well when you have research to do but not the focus to read 15 sources:
 
 1. **Frame the question** in one sentence. If you can't, your task is "narrow the question," not "research it."
-2. **Kick off**: `/research:deep "..."`. Note the `research_id` shown in the response.
-3. **Walk away** — refill water, stretch, take the break. The research runs in the container.
-4. **Come back** in 5–10 min. Check progress with `mcp__gpt-researcher__get_research_context` if you're impatient, otherwise just run `/research:report`.
+2. **Run**: `/research:deep "..."`. Wait for the command to return, then note the `research_id` shown in the response.
+3. **Wait for completion** — this is the 2–10 minute part. Keep the session alive until the command returns; the saved ID exists only after completion.
+4. **Format** the completed run with `/research:report`, or inspect raw context with `mcp__gpt-researcher__get_research_context`.
 5. **Read the synthesis** first (top of the report). If it answers your question, stop. If not, scan the sources list and follow up with a focused `/research:quick` on the gap.
 
-The `research_id` is your interrupt-safe handle: leave the session, restart Claude Code, come back tomorrow — the report still generates from the same research run.
+The `research_id` is your durable handle after `/research:deep` returns: leave the session, restart Claude Code, come back tomorrow — the report still generates from the same completed research run. If the session is interrupted before `/research:deep` returns, rerun the command because no completed ID is guaranteed to be saved yet.
 
 ## Cost & timing
 
