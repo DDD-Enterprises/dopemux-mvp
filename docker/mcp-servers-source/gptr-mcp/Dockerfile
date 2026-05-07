@@ -21,7 +21,7 @@ RUN uv pip install --system --no-cache .[services]
 
 # Clone GPT Researcher MCP server to /app/gptr-mcp at a pinned ref for reproducibility.
 # Override at build time with --build-arg GPTR_MCP_REF=<branch|tag|sha>.
-ARG GPTR_MCP_REF=master
+ARG GPTR_MCP_REF=63884773685b1f12c7f0d9e283b3d71a5b9b5fda
 RUN git clone https://github.com/assafelovic/gptr-mcp.git /app/gptr-mcp \
     && cd /app/gptr-mcp && git checkout "${GPTR_MCP_REF}"
 
