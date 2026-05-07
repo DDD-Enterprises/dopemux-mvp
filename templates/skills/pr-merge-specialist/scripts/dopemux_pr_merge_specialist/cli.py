@@ -247,10 +247,15 @@ def _self_check(args: argparse.Namespace) -> int:
         print(json.dumps(results, indent=2))
     else:
         for check in results["checks"]:
-            icon = "PASS" if check["status"] == "PASS" else "FAIL"
+            icon = {
+                "PASS": "PASS",
+                "WARN": "WARN",
+                "SKIPPED": "SKIP",
+            }.get(check["status"], "FAIL")
             print(
                 f"  [{icon}] {check['name']}"
                 + (f" — {check.get('error', '')}" if check.get("error") else "")
+                + (f" — {check.get('note', '')}" if check.get("note") else "")
             )
         print(f"\nSelf-check: {'OK' if results['ok'] else 'FAILED'}")
 
