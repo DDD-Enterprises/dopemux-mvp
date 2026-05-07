@@ -1,0 +1,108 @@
+{
+  "packet_id": "TP-DMX-COCKPIT-MAIN-STATE-RECON-001",
+  "as_of_utc": "2026-05-07",
+  "gaps": [
+    {
+      "id": "GAP-MAIN-001",
+      "title": "All Cockpit pack remediation work is missing from origin/main",
+      "evidence": "ancestry-probe via merge-base --is-ancestor reports NO for cockpit feature merge commits 39ad991f7 / a4ca22da6 / 7ff3ea44e / b173efd83 against origin/main",
+      "severity": "blocking_for_design_pickup",
+      "recommended_followup": "Author TP-DMX-COCKPIT-MERGE-EXECUTE-001 and route through Ledger; do not bypass with ad hoc consolidation"
+    },
+    {
+      "id": "GAP-MAIN-002",
+      "title": "task-packets/generated/ directory does not exist on origin/main",
+      "evidence": "git ls-tree origin/main task-packets/generated/ returned empty",
+      "severity": "informational",
+      "recommended_followup": "directory will be created the first time a packet authored on a main-tracking branch lands; no immediate fix required"
+    },
+    {
+      "id": "GAP-MAIN-003",
+      "title": "No proof tree exists on main for the cockpit pack series",
+      "evidence": "main carries only the legacy file proof/cockpit-pm-implementer-processing-pack-2026-04-24.proof.json",
+      "severity": "blocking_for_design_pickup",
+      "recommended_followup": "Pack-to-main consolidation must bring forward the proof/cockpit-* directories (inventory-regen, runtime-render, settings-runtime, unknown-drift) currently on pack"
+    },
+    {
+      "id": "GAP-PACK-001",
+      "title": "PR 572 stack consolidation artifact does not audit PR 573 (runtime contract fidelity)",
+      "evidence": "PR 572 body and PR 573 body do not cross-reference each other; PR 572's PROOF/MD artifacts cover only PRs 568-571",
+      "severity": "blocking_for_design_pickup",
+      "recommended_followup": "Regenerate the merge-stack consolidation artifact to include PR 573 once it is reviewed, or land PR 573 into pack first and refresh PR 572"
+    },
+    {
+      "id": "GAP-PACK-002",
+      "title": "Settings/Admin per-row tier mapping residual risk is accepted but not disposed",
+      "evidence": "PR 572 body residual risks section flags PR 569 carries this risk",
+      "severity": "needs_ledger_decision",
+      "recommended_followup": "Capture an explicit Ledger acceptance or remediation packet"
+    },
+    {
+      "id": "GAP-PACK-003",
+      "title": "Remote-mutation policy is absent and PR 572 explicitly recommends not proceeding with it on a stacked branch until the stack lands",
+      "evidence": "PR 572 body downstream recommendation",
+      "severity": "needs_ledger_decision",
+      "recommended_followup": "Defer remote-mutation policy work until pack lands on main, or capture explicit Ledger authorization to proceed on a stacked branch"
+    },
+    {
+      "id": "GAP-PACK-004",
+      "title": "Inventory artifact still records prior upstream current_head and aggregate-only inventory precision residual risks remain",
+      "evidence": "PR 572 body residual risks section flags PR 571 carries these risks",
+      "severity": "needs_ledger_decision",
+      "recommended_followup": "Either accept the inventory drift in the Ledger or author a regen packet that updates current_head and addresses precision gaps"
+    },
+    {
+      "id": "GAP-PACK-005",
+      "title": "TP-DMX-COCKPIT-MERGE-EXECUTE-001 is referenced but not authored",
+      "evidence": "task-packets/generated/TP-DMX-COCKPIT-MERGE-EXECUTE-001.json absent on both origin/main and origin/pack/cockpit-pack-remediate-006-ia",
+      "severity": "blocking_for_design_pickup",
+      "recommended_followup": "Author the operator-initiated consolidation packet and route via Ledger; treat this as the only authorized path from pack to main"
+    },
+    {
+      "id": "GAP-PACK-006",
+      "title": "No authored TP JSONs on pack for command-palette, ia-reconcile, pack-remediation, safe-actions",
+      "evidence": "out/cockpit-* on pack includes command-palette, ia-reconcile, pack-remediation, safe-actions but task-packets/generated/ on pack contains only the four packet JSONs corresponding to PRs 568-571",
+      "severity": "informational",
+      "recommended_followup": "Identify whether these out/* trees were authored under different packet IDs or are uncommitted artifacts; classify them in any future consolidation packet"
+    }
+  ],
+  "drift_items": [
+    {
+      "id": "DRIFT-001",
+      "title": "Pack divergence vs main is 18 commits and 196 files",
+      "evidence": "git rev-list --count returns ahead 18 / behind 9; git diff --name-only returns 196 files",
+      "implication": "any pack-to-main consolidation must reconcile a wide surface beyond the four merged feature PRs (e.g., docs, configs, MCP source)"
+    },
+    {
+      "id": "DRIFT-002",
+      "title": "Cockpit PR stack base is the pack branch, not main",
+      "evidence": "all four merged PRs (568-571) and both open PRs (572, 573) target pack/cockpit-pack-remediate-006-ia as base",
+      "implication": "main can only receive this work via an operator-initiated consolidation; no individual cockpit PR currently targets main"
+    },
+    {
+      "id": "DRIFT-003",
+      "title": "Open PR 573 modifies cockpit runtime surface that PR 572's readiness verdict does not cover",
+      "evidence": "git diff --name-status shows M for src/dopemux/ui/cockpit/runtime_contract.py on PR 573; PR 572 body and artifacts do not reference PR 573",
+      "implication": "if PR 572 is treated as the consolidation gate, PR 573 will land unaudited"
+    },
+    {
+      "id": "DRIFT-004",
+      "title": "Non-cockpit open PRs do not block design pickup but should be tracked",
+      "evidence": "PR 582, 583 (dependabot) and PR 584 (MCP follow-ups) target main; PR 584's authority-matrix.md edit is scoped to a stale pm-plane reference and does not touch Cockpit/Claude Design rows",
+      "implication": "do not let dependency churn or MCP review confound the Cockpit consolidation timeline"
+    }
+  ],
+  "non_actions": [
+    "no PR merges performed",
+    "no PR retargets performed",
+    "no PR edits performed",
+    "no PR closes performed",
+    "no rebases performed",
+    "no force pushes performed",
+    "no Claude Design upload performed",
+    "no T4 remote mutation performed",
+    "no canonical writes performed",
+    "no runtime action execution performed",
+    "no runtime reclassification performed"
+  ]
+}
