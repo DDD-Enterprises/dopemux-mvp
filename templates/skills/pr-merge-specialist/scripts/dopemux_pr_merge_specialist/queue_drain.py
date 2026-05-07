@@ -143,7 +143,6 @@ def _gemini_ci_remediation_command(prompt: str) -> List[str]:
     return ["gemini", "--prompt", prompt]
 
 
-@contextlib.contextmanager
 _GEMINI_AUTH_ENV_ALLOWLIST = (
     "GEMINI_API_KEY",
     "GOOGLE_API_KEY",
@@ -156,6 +155,7 @@ _GEMINI_AUTH_ENV_ALLOWLIST = (
 )
 
 
+@contextlib.contextmanager
 def _isolated_gemini_home_env() -> Iterable[Dict[str, str]]:
     """
     Run Gemini in a minimal temporary HOME with a constrained environment.
