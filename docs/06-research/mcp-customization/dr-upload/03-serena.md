@@ -1,3 +1,14 @@
+---
+id: 03-serena
+title: 03 Serena
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-07'
+last_review: '2026-05-07'
+next_review: '2026-08-05'
+prelude: 03 Serena (explanation) for dopemux documentation and developer workflows.
+---
 # DR Pack 03: Serena
 
 Access date: 2026-04-28
@@ -10,7 +21,7 @@ Research current `oraios/serena` and map it to a Dopemux optional code-intellige
 
 - https://github.com/oraios/serena
 - https://oraios.github.io/serena/
-- `docs/research/mcp-customization/data/upstream-source-manifest.json`
+- `docs/06-research/mcp-customization/data/upstream-source-manifest.json`
 - Dopemux deployment seed: `docker/mcp-servers-source/serena/Dockerfile`
 - Dopemux in-repo seed: `services/serena/mcp_server.py`
 - Dopemux truth seed: `docs/03-reference/truth/truth-canonicals.md`

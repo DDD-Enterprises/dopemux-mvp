@@ -1,3 +1,15 @@
+---
+id: README_UPLOAD_ORDER
+title: Readme Upload Order
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-07'
+last_review: '2026-05-07'
+next_review: '2026-08-05'
+prelude: Readme Upload Order (explanation) for dopemux documentation and developer
+  workflows.
+---
 # MCP Customization Deep Research Upload Order
 
 Access date: 2026-04-28

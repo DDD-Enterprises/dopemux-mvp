@@ -1,3 +1,14 @@
+---
+id: RULES
+title: Rules
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-07'
+last_review: '2026-05-07'
+next_review: '2026-08-05'
+prelude: Rules (explanation) for dopemux documentation and developer workflows.
+---
 # RULES.md
 
 This document defines the rules of engagement for the `dopemux-mvp` repository.

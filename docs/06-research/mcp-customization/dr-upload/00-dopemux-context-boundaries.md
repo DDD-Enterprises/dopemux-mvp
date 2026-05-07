@@ -1,3 +1,15 @@
+---
+id: 00-dopemux-context-boundaries
+title: 00 Dopemux Context Boundaries
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-07'
+last_review: '2026-05-07'
+next_review: '2026-08-05'
+prelude: 00 Dopemux Context Boundaries (explanation) for dopemux documentation and
+  developer workflows.
+---
 # DR Pack 00: Dopemux Context Boundaries
 
 Access date: 2026-04-28
@@ -15,8 +27,8 @@ Establish Dopemux authority boundaries before evaluating upstream MCP/server fam
 - `docs/03-reference/truth/truth-gaps.md`
 - `docs/03-reference/truth/truth-interfaces.md`
 - `docs/03-reference/systems/system-boundaries.md`
-- `docs/research/mcp-customization/data/dopemux-authority-map.json`
-- `docs/research/mcp-customization/data/responsibility-collision-matrix.md`
+- `docs/06-research/mcp-customization/data/dopemux-authority-map.json`
+- `docs/06-research/mcp-customization/data/responsibility-collision-matrix.md`
 
 ## Required Extraction Fields
 

@@ -1,3 +1,14 @@
+---
+id: 04-claude-context
+title: 04 Claude Context
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-07'
+last_review: '2026-05-07'
+next_review: '2026-08-05'
+prelude: 04 Claude Context (explanation) for dopemux documentation and developer workflows.
+---
 # DR Pack 04: Claude Context / claude-context
 
 Access date: 2026-04-28
@@ -10,7 +21,7 @@ Research current `zilliztech/claude-context` and map it to Dopemux dope-context 
 
 - https://github.com/zilliztech/claude-context
 - https://www.npmjs.com/package/@zilliz/claude-context-mcp
-- `docs/research/mcp-customization/data/upstream-source-manifest.json`
+- `docs/06-research/mcp-customization/data/upstream-source-manifest.json`
 - Dopemux runtime seed: `services/dope-context/src/mcp/server.py`
 - Dopemux docs seed: `docs/03-reference/systems/dope-context/system-dopecontext.md`
 

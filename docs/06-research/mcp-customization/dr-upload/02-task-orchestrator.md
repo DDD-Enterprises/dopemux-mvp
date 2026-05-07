@@ -1,3 +1,15 @@
+---
+id: 02-task-orchestrator
+title: 02 Task Orchestrator
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-07'
+last_review: '2026-05-07'
+next_review: '2026-08-05'
+prelude: 02 Task Orchestrator (explanation) for dopemux documentation and developer
+  workflows.
+---
 # DR Pack 02: Task Orchestrator
 
 Access date: 2026-04-28
@@ -18,7 +30,7 @@ Lineage and packaging context:
 - https://pypi.org/project/mcp-task-orchestrator/
 - https://github.com/iflow-mcp/echoingvesper-mcp-task-orchestrator
 - https://pypi.org/project/iflow-mcp_echoingvesper_mcp-task-orchestrator/
-- `docs/research/mcp-customization/data/upstream-source-manifest.json`
+- `docs/06-research/mcp-customization/data/upstream-source-manifest.json`
 - Dopemux runtime seed: `services/task-orchestrator/app/main.py`
 - Dopemux workflow seed: `services/task-orchestrator/app/api/project_workflow.py`
 - Dopemux PM seed: `src/dopemux/pm/writes.py`

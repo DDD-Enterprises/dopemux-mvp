@@ -1,3 +1,15 @@
+---
+id: responsibility-collision-matrix
+title: Responsibility Collision Matrix
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-07'
+last_review: '2026-05-07'
+next_review: '2026-08-05'
+prelude: Responsibility Collision Matrix (explanation) for dopemux documentation and
+  developer workflows.
+---
 # Responsibility Collision Matrix
 
 Access date: 2026-04-28

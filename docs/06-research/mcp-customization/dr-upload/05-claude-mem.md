@@ -1,3 +1,14 @@
+---
+id: 05-claude-mem
+title: 05 Claude Mem
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-07'
+last_review: '2026-05-07'
+next_review: '2026-08-05'
+prelude: 05 Claude Mem (explanation) for dopemux documentation and developer workflows.
+---
 # DR Pack 05: Claude-Mem / claude-mem
 
 Access date: 2026-04-28
@@ -13,7 +24,7 @@ Research current Claude-Mem hook, worker, memory, and context-injection patterns
 - https://docs.claude-mem.ai/
 - https://docs.claude-mem.ai/hooks-architecture
 - https://www.npmjs.com/package/claude-mem
-- `docs/research/mcp-customization/data/upstream-source-manifest.json`
+- `docs/06-research/mcp-customization/data/upstream-source-manifest.json`
 - Dopemux memory seed: `services/working-memory-assistant/dope_memory_main.py`
 - Dopemux memory docs seed: `docs/03-reference/planes/memory-plane.md`
 
