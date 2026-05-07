@@ -1,0 +1,106 @@
+{
+  "id": "TP-DMX-COCKPIT-UNKNOWN-DRIFT-001",
+  "project": "dopemux-mvp",
+  "target": "Wire Unknown / Drift Queue primitive surface to runtime renderer while preserving fail-closed behavior, no runtime reclassification, no execution, and Claude Design blockers.",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dopemux-cockpit-ia-remediation",
+    "base_branch": "codex/cockpit-settings-runtime-001",
+    "parent_tp_id": "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/cockpit-unknown-drift-001"
+  },
+  "commit": {
+    "message": "ui(cockpit): wire unknown drift queue primitives",
+    "allowlist": [
+      "src/dopemux/ui/cockpit/**",
+      "src/dopemux/commands/cockpit_commands.py",
+      "tests/unit/dopemux/ui/cockpit/**",
+      "tests/unit/test_cockpit_cli.py",
+      "task-packets/generated/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001.json",
+      "task-packets/INDEX.md",
+      "proof/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/**",
+      "out/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/**"
+    ],
+    "verify": [
+      "python -m json.tool out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PACKAGE_REMEDIATION_INDEX.json >/dev/null",
+      "python -m json.tool out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PROOF.json >/dev/null",
+      "python -m json.tool out/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/PROOF.json >/dev/null",
+      "python -m json.tool out/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/PROOF.json >/dev/null",
+      "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001.json >/dev/null",
+      "python -m json.tool out/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/PROOF.json >/dev/null",
+      "python -m compileall -q src/dopemux tests",
+      "python -m pytest tests/unit/dopemux/ui/cockpit -q",
+      "python -m pytest tests/unit/test_cockpit_cli.py -q",
+      "! grep -R -E \"READY_FOR_CLAUDE_DESIGN: approved|safe_for_claude_design: YES|Claude Design upload allowed|T4 authorized|runtime execution implemented|Unknown / Drift execution|runtime reclassification allowed|execute anyway|approve anyway|resolve now\" -n src/dopemux tests out/cockpit-unknown-drift proof/cockpit-unknown-drift",
+      "! grep -R -E \"subprocess|shell=True|os\\.system|requests|httpx|urllib|socket|docker|kubectl|gh pr create|git push\" -n src/dopemux/ui/cockpit src/dopemux/commands/cockpit_commands.py tests/unit/dopemux/ui/cockpit tests/unit/test_cockpit_cli.py",
+      "git diff --check",
+      "git status --short --branch"
+    ]
+  },
+  "pr": {
+    "title": "ui(cockpit): wire unknown drift queue primitives",
+    "body": "## Summary\n- add deterministic Unknown / Drift Queue primitive summary to the local runtime-render snapshot\n- build aggregated queue items from accepted package, runtime-render, settings-runtime, Safe Action, Palette, and IA artifacts without mutating upstream artifacts\n- preserve five top-level modes, fail-closed Safe Action behavior, and Claude Design blockers\n\n## Strict scope\n- no final screens\n- no Claude Design upload\n- no runtime action execution\n- no T4 remote mutation\n- no live service adapters\n- no canonical writes\n- no Unknown / Drift execution\n- no runtime reclassification\n\n## Governance state\nsafe_for_claude_design: NO\nREADY_FOR_CLAUDE_DESIGN: not approved\n\n## Validation\nSee closeout proof for command outputs and exit codes.\n\n## Residual risks and downstream packets\n- inventory regeneration against current HEAD remains a separate packet\n- queue items are aggregated where accepted artifacts expose counts rather than per-row data\n- remote-mutation policy remains absent, so T4 stays refused\n- promotions, demotions, and reclassification remain packet-owned outside the runtime renderer",
+    "base": "codex/cockpit-settings-runtime-001"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Inspect repo authority, accepted package/runtime/settings artifacts, Safe Action, Palette, IA handoffs, and current Cockpit runtime surfaces before implementation.",
+      "validation": [
+        "Dedicated worktree is verified from origin/codex/cockpit-settings-runtime-001 at the audited SHA.",
+        "Accepted package, runtime-render, and settings-runtime proof artifacts parse.",
+        "Missing root authority files and schema files are recorded as UNKNOWN rather than inferred."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Implement deterministic Unknown / Drift Queue taxonomy, item model, aggregated builder, and allowed display-only affordances.",
+      "validation": [
+        "Reason taxonomy contains all required reason codes.",
+        "Queue item defaults are non-executable, non-reclassifying at runtime, and packet-required.",
+        "Secret-like values are redacted in labels, details, and evidence references."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Extend runtime-render text and JSON snapshots with Unknown / Drift Queue summary fields while preserving existing modes and Settings/Admin/Runtime output.",
+      "validation": [
+        "Unknown / Drift Queue is represented as a secondary/global surface, not a sixth top-level mode.",
+        "Snapshot includes counts by reason, source surface, owner packet, stale proof, index drift, Settings/Admin unknown tier count, source artifacts, and blocked governance state.",
+        "CLI runtime-render output includes the Unknown / Drift Queue summary and still fails closed without explicit --runtime-render and --package-dir."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Add focused tests and proof artifacts for the Unknown / Drift Queue primitive layer.",
+      "validation": [
+        "Focused Cockpit tests pass.",
+        "CLI tests pass.",
+        "Boundary greps pass without forbidden positive claims or runtime call tokens.",
+        "Proof output is written only under the allowed unknown-drift proof/out paths and records validation evidence."
+      ]
+    }
+  ]
+}
