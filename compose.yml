@@ -553,7 +553,7 @@ services:
     networks:
       - dopemux-network
     ports:
-      - "${DESKTOP_COMMANDER_PORT:-3012}:3012"
+      - "127.0.0.1:${DESKTOP_COMMANDER_PORT:-3012}:3012"
     environment:
       - MCP_SERVER_PORT=${DESKTOP_COMMANDER_PORT:-3012}
       - DISPLAY=${DISPLAY:-:0}
