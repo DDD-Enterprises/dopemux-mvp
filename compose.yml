@@ -508,10 +508,8 @@ services:
       - MCP_SERVER_PORT=${SERENA_PORT:-3006}
       - HTTP_PORT=${SERENA_HTTP_PORT:-4006}
       - WORKSPACE_ID=${WORKSPACE_ID:-/workspace}
-      - HOST_CODE_PARENT_DIR=${HOST_CODE_PARENT_DIR}
-      - HOST_PROJECT_RELATIVE_PATH=${HOST_PROJECT_RELATIVE_PATH}
     volumes:
-      - ${HOST_CODE_PARENT_DIR:-/tmp}:/workspaces
+      - ${DOPEMUX_WORKSPACE_ROOT:-.}:/workspace:ro
       - ${HOME:?HOME is required}/.serena:/root/.serena:rw
       - ${HOME:?HOME is required}/code:${HOME:?HOME is required}/code:ro
     healthcheck:
