@@ -512,7 +512,6 @@ services:
     volumes:
       - ${DOPEMUX_WORKSPACE_ROOT:-.}:/workspace:ro
       - ${HOME:?HOME is required}/.serena:/root/.serena:rw
-      - ${HOME:?HOME is required}/code:${HOME:?HOME is required}/code:ro
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:4006/health || exit 1"]
       timeout: 10s
