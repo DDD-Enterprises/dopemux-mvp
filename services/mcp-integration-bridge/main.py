@@ -55,7 +55,6 @@ NETWORK_NAME = os.getenv("NETWORK_NAME", f"mcp-network-{INSTANCE_NAME}")
 MCP_INTEGRATION_PORT = PORT_BASE + 16
 
 # Service discovery - instance-aware container names
-TASK_MASTER_URL = f"http://{CONTAINER_PREFIX}-task-master-ai:3005"
 TASK_ORCHESTRATOR_URL = f"http://{CONTAINER_PREFIX}-task-orchestrator:3014"
 LEANTIME_BRIDGE_URL = f"http://{CONTAINER_PREFIX}-leantime-bridge:3015"
 
@@ -69,7 +68,6 @@ REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "")
 
 logger.info(f"🚀 MCP Integration Bridge starting for instance: {INSTANCE_NAME}")
 logger.info(f"📊 Port allocation: {MCP_INTEGRATION_PORT} (BASE+16)")
-logger.info(f"🔗 Task Master: {TASK_MASTER_URL}")
 logger.info(f"🔗 Task Orchestrator: {TASK_ORCHESTRATOR_URL}")
 logger.info(f"🔗 Leantime Bridge: {LEANTIME_BRIDGE_URL}")
 
@@ -297,7 +295,6 @@ class MCPClientManager:
     def _get_service_url(self, service: str) -> str:
         """Get instance-specific service URL"""
         urls = {
-            "task-master-ai": TASK_MASTER_URL,
             "task-orchestrator": TASK_ORCHESTRATOR_URL,
             "leantime-bridge": LEANTIME_BRIDGE_URL,
         }
@@ -311,7 +308,7 @@ class MCPClientManager:
         if not self.session:
             return {"status": "not_initialized"}
 
-        services = ["task-master-ai", "task-orchestrator", "leantime-bridge"]
+        services = ["task-orchestrator", "leantime-bridge"]
         health_status = {}
 
         for service in services:
@@ -550,63 +547,19 @@ class TaskIntegrationService:
 
     async def parse_prd_to_tasks(self, prd_content: str, project_id: str) -> List[Task]:
         """
-        Parse PRD using Task-Master-AI and create shared task structure
-        ADHD-friendly: Clear progress indicators and manageable chunks
+        Reject bridge-local PRD parsing.
+
+        Task creation must be adjudicated by the canonical workflow surface before
+        any shared-state or Leantime reflection.
         """
-        logger.info(
-            f"🔍 Parsing PRD for project {project_id} (instance: {INSTANCE_NAME})"
+        del prd_content
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"PRD parsing is disabled for project {project_id}: no canonical "
+                "workflow adjudication backend is configured for bridge-local task creation."
+            ),
         )
-
-        try:
-            # Step 1: Use Task-Master-AI to parse PRD
-            prd_result = await self.mcp_manager.call_tool(
-                "task-master-ai",
-                "parse_prd",
-                {"content": prd_content, "project_id": project_id},
-            )
-
-            # Step 2: Convert to unified task format and store in shared database
-            tasks = []
-            async with self.db_manager.get_session() as session:
-                for i, task_data in enumerate(prd_result.get("tasks", [])):
-                    task = Task(
-                        id=str(uuid.uuid4()),
-                        title=task_data.get("title", ""),
-                        description=task_data.get("description", ""),
-                        status=TaskStatus.PLANNED,
-                        priority=TaskPriority(task_data.get("priority", "medium")),
-                        project_id=project_id,
-                        instance_id=INSTANCE_NAME,
-                        tags=task_data.get("tags", []),
-                    )
-
-                    # Store in shared database
-                    task_record = TaskRecord(**asdict(task))
-                    session.add(task_record)
-                    tasks.append(task)
-
-                await session.commit()
-
-            # Step 3: Use Task-Orchestrator to analyze dependencies
-            await self._analyze_task_dependencies(tasks)
-
-            # Step 4: Create tasks in Leantime for tracking
-            await self._sync_tasks_to_leantime(tasks)
-
-            # Step 5: Cache results for fast access
-            cache_client = await self.cache_manager.get_client()
-            await cache_client.setex(
-                f"project:{project_id}:tasks",
-                3600,  # 1 hour cache
-                json.dumps([asdict(task) for task in tasks], default=str),
-            )
-
-            logger.info(f"✅ Successfully processed {len(tasks)} tasks from PRD")
-            return tasks
-
-        except Exception as e:
-            logger.error(f"❌ PRD parsing failed: {e}")
-            raise
 
     async def _analyze_task_dependencies(self, tasks: List[Task]):
         """Use Task-Orchestrator to analyze and set dependencies"""
@@ -1734,7 +1687,6 @@ async def debug_instance_info():
         "container_prefix": CONTAINER_PREFIX,
         "network_name": NETWORK_NAME,
         "service_urls": {
-            "task_master": TASK_MASTER_URL,
             "task_orchestrator": TASK_ORCHESTRATOR_URL,
             "leantime_bridge": LEANTIME_BRIDGE_URL,
         },

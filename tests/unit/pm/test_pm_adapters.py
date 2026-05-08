@@ -10,28 +10,8 @@ import pytest
 from dopemux.pm.adapters import (
     orchestrator_event_to_pm,
     pm_to_bus_event,
-    taskmaster_event_to_pm,
 )
 from dopemux.pm.models import content_hash_task_id
-
-
-def test_taskmaster_mapping_created_status_updated_completed() -> None:
-    base = {
-        "task_id": "tm-100",
-        "title": "Build parser",
-        "description": "Implement parser",
-        "status": "IN_PROGRESS",
-        "ts_utc": "2026-02-12T19:00:00Z",
-        "idempotency_key": "idem-tm",
-    }
-
-    created = taskmaster_event_to_pm("taskmaster.task.created", dict(base))
-    status_updated = taskmaster_event_to_pm("taskmaster.task.status_updated", dict(base))
-    completed = taskmaster_event_to_pm("taskmaster.task.completed", dict(base))
-
-    assert created["event_type"] == "pm.task.created"
-    assert status_updated["event_type"] == "pm.task.status_changed"
-    assert completed["event_type"] == "pm.task.completed"
 
 
 def test_orchestrator_mapping_created_updated_completed() -> None:
@@ -58,47 +38,43 @@ def test_unknown_orchestrator_event_gracefully_maps_to_updated_with_reason() -> 
     assert event["payload"]["dialect_status"] == "paused"
 
 
-def test_dialect_breadcrumbs_present_for_taskmaster_mapping() -> None:
-    event = taskmaster_event_to_pm(
-        "taskmaster.task.status_updated",
+def test_dialect_breadcrumbs_present_for_orchestrator_mapping() -> None:
+    event = orchestrator_event_to_pm(
         {
-            "task_id": "tm-333",
-            "status": "BLOCKED",
+            "event_type": "task_updated",
+            "task_id": "orch-333",
+            "status": "blocked",
             "title": "Write docs",
             "description": "Long form",
         },
     )
-    assert event["payload"]["dialect_event_type"] == "taskmaster.task.status_updated"
-    assert event["payload"]["dialect_status"] == "BLOCKED"
+    assert event["payload"]["dialect_event_type"] == "task_updated"
+    assert event["payload"]["dialect_status"] == "blocked"
 
 
 def test_task_id_matches_packet_a_policy() -> None:
-    event = taskmaster_event_to_pm(
-        "taskmaster.task.created",
-        {"source_task_id": "tm-stable", "title": "A", "description": "B"},
+    event = orchestrator_event_to_pm(
+        {"task_id": "orch-stable", "title": "A", "description": "B"},
     )
-    assert event["task_id"] == content_hash_task_id("taskmaster", "tm-stable", "A", "B")
+    assert event["task_id"] == content_hash_task_id("task-orchestrator", "orch-stable", "A", "B")
 
 
 def test_empty_string_source_task_id_is_treated_as_present_per_packet_a() -> None:
-    event = taskmaster_event_to_pm(
-        "taskmaster.task.created",
-        {"source_task_id": "", "title": "T", "description": "D"},
+    event = orchestrator_event_to_pm(
+        {"task_id": "", "title": "T", "description": "D"},
     )
-    assert event["task_id"] == content_hash_task_id("taskmaster", "", "T", "D")
+    assert event["task_id"] == content_hash_task_id("task-orchestrator", "", "T", "D")
 
 
 def test_task_id_fallback_matches_packet_a_policy() -> None:
-    event = taskmaster_event_to_pm(
-        "taskmaster.task.created",
+    event = orchestrator_event_to_pm(
         {
-            "source_task_id": None,
             "title": "  Fix   Bug  ",
             "description": "  In   Auth ",
         },
     )
     assert event["task_id"] == content_hash_task_id(
-        "taskmaster",
+        "task-orchestrator",
         None,
         "  Fix   Bug  ",
         "  In   Auth ",
@@ -106,19 +82,17 @@ def test_task_id_fallback_matches_packet_a_policy() -> None:
 
 
 def test_source_task_id_path_ignores_created_at_drift() -> None:
-    event_a = taskmaster_event_to_pm(
-        "taskmaster.task.created",
+    event_a = orchestrator_event_to_pm(
         {
-            "source_task_id": "tm-stable",
+            "task_id": "orch-stable",
             "title": "Title A",
             "description": "Desc A",
             "created_at_utc": "2026-02-12T10:00:00Z",
         },
     )
-    event_b = taskmaster_event_to_pm(
-        "taskmaster.task.created",
+    event_b = orchestrator_event_to_pm(
         {
-            "source_task_id": "tm-stable",
+            "task_id": "orch-stable",
             "title": "Title A",
             "description": "Desc A",
             "created_at_utc": "2030-01-01T00:00:00Z",
@@ -128,8 +102,7 @@ def test_source_task_id_path_ignores_created_at_drift() -> None:
 
 
 def test_pm_to_bus_event_namespace_starts_with_pm() -> None:
-    envelope = taskmaster_event_to_pm(
-        "taskmaster.task.created",
+    envelope = orchestrator_event_to_pm(
         {"task_id": "tm-999", "title": "Task", "description": "Desc"},
     )
     bus_event = pm_to_bus_event(envelope)

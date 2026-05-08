@@ -120,7 +120,6 @@ class MCPClientManager:
     def _get_service_url(self, service: str) -> str:
         """Get instance-specific service URL."""
         urls = {
-            "task-master-ai": settings.task_master_url,
             "task-orchestrator": settings.task_orchestrator_url,
             "leantime-bridge": settings.leantime_bridge_url,
         }

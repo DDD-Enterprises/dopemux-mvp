@@ -141,17 +141,6 @@ from .protection_interceptor import (
 )
 from .tmux import tmux as tmux_commands
 
-# Import genetic agent CLI
-try:
-    # Ensure services directory is in Python path for production environments
-    services_path = Path(__file__).resolve().parent.parent / "services"
-    if str(services_path) not in sys.path:
-        sys.path.insert(0, str(services_path))
-
-    from services.genetic_agent.cli import cli as genetic_group
-except ImportError:
-    # Fallback if genetic agent service is not available
-    genetic_group = None
 from .memory.capture_client import CaptureError, emit_capture_event
 from .roles.catalog import (
     RoleNotFoundError,
@@ -3043,13 +3032,6 @@ from .commands.dev_commands import dev
 cli.add_command(dev)
 cli.add_command(mobile_commands, "mobile")
 cli.add_command(mobile_env_commands, "mobile-env")
-if genetic_group:
-    cli.add_command(genetic_group, "genetic")
-
-
-from .commands.code_commands import code
-
-cli.add_command(code)
 cli.add_command(tmux_commands, "tmux")
 from .commands.system_data_commands import system_data
 

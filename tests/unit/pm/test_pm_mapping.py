@@ -3,12 +3,10 @@
 from dopemux.pm.mapping import (
     CANONICAL_TO_CONPORT,
     CANONICAL_TO_ORCHESTRATOR,
-    CANONICAL_TO_TASKMASTER,
     CONPORT_TO_CANONICAL,
     LOSSY_MAPPINGS,
     ORCHESTRATOR_LOSSY_REASONS,
     ORCHESTRATOR_TO_CANONICAL,
-    TASKMASTER_TO_CANONICAL,
 )
 from dopemux.pm.models import PMTaskStatus
 
@@ -24,10 +22,6 @@ class TestMappingTableCompleteness:
         for status in CONPORT_TO_CANONICAL.values():
             assert isinstance(status, PMTaskStatus)
 
-    def test_taskmaster_to_canonical_values_are_canonical(self):
-        for status in TASKMASTER_TO_CANONICAL.values():
-            assert isinstance(status, PMTaskStatus)
-
     def test_canonical_to_orchestrator_covers_all_statuses(self):
         """Every canonical status has an orchestrator mapping."""
         for status in PMTaskStatus:
@@ -36,10 +30,6 @@ class TestMappingTableCompleteness:
     def test_canonical_to_conport_covers_all_statuses(self):
         for status in PMTaskStatus:
             assert status in CANONICAL_TO_CONPORT
-
-    def test_canonical_to_taskmaster_covers_all_statuses(self):
-        for status in PMTaskStatus:
-            assert status in CANONICAL_TO_TASKMASTER
 
 
 class TestOrchestatorMapping:

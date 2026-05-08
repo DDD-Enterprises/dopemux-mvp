@@ -6,7 +6,7 @@
 # Services Included:
 # - Infrastructure: PostgreSQL (AGE), Redis (2x), Qdrant
 # - MCP Servers: ConPort, PAL, LiteLLM, Dope-Context, Serena, GPT-Researcher, Exa, Desktop Commander, Leantime Bridge
-# - Application Services: DopeconBridge, Task Orchestrator, ADHD Engine, Genetic Agent
+# - Application Services: DopeconBridge, Task Orchestrator, ADHD Engine
 #
 # Usage:
 #   docker compose up -d                    # Start all services

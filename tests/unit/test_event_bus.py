@@ -124,7 +124,7 @@ class TestInMemoryAdapter:
     @pytest.mark.asyncio
     async def test_publish_rejects_pm_event_without_idempotency_key(self):
         adapter = InMemoryAdapter()
-        event = DopemuxEvent.create("pm", "pm.task.created", {"envelope": {"source": "taskmaster"}})
+        event = DopemuxEvent.create("pm", "pm.task.created", {"envelope": {"source": "task-orchestrator"}})
 
         with pytest.raises(ValueError, match="idempotency_key"):
             await adapter.publish(event)
@@ -209,7 +209,7 @@ class TestRedisStreamsAdapter:
     @pytest.mark.asyncio
     async def test_publish_rejects_pm_event_without_idempotency_key(self):
         adapter = RedisStreamsAdapter(redis_url="redis://localhost")
-        event = DopemuxEvent.create("pm", "pm.task.created", {"envelope": {"source": "taskmaster"}})
+        event = DopemuxEvent.create("pm", "pm.task.created", {"envelope": {"source": "task-orchestrator"}})
 
         with pytest.raises(ValueError, match="idempotency_key"):
             await adapter.publish(event)

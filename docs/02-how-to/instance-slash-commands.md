@@ -305,7 +305,6 @@ When switching instances, these environment variables are automatically updated 
 DOPEMUX_INSTANCE_ID       # A, B, C, D, E (or empty for main)
 DOPEMUX_WORKSPACE_ID      # /Users/hue/code/dopemux-mvp
 DOPEMUX_PORT_BASE         # 3000, 3030, 3060, 3090, 3120
-TASK_MASTER_PORT          # port_base + 5
 SERENA_PORT               # port_base + 6
 CONPORT_PORT              # port_base + 7
 DOPECON_BRIDGE_PORT   # port_base + 16

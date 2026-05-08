@@ -40,11 +40,6 @@ class AgentCoordinator:
                 capabilities=["code_navigation", "file_analysis", "refactoring"],
                 max_concurrent=3
             ),
-            AgentType.TASKMASTER: AgentPoolEntry(
-                available=True,
-                capabilities=["prd_parsing", "complexity_analysis", "research"],
-                max_concurrent=2
-            ),
             AgentType.PAL: AgentPoolEntry(
                 available=True,
                 capabilities=["consensus", "code_review", "architecture_analysis"],
@@ -107,10 +102,10 @@ class AgentCoordinator:
                      for keyword in ["implement", "refactor", "debug", "code", "function"]):
                 return AgentType.SERENA
 
-            # Research/analysis tasks → TaskMaster
+            # Research/analysis tasks → Pal
             elif any(keyword in title_lower or keyword in description_lower
                      for keyword in ["research", "analyze", "requirements", "prd"]):
-                return AgentType.TASKMASTER
+                return AgentType.PAL
 
             # Step 4: Default fallback - ConPort for progress tracking
             return AgentType.CONPORT

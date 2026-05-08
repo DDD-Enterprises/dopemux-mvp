@@ -215,7 +215,6 @@ def instances_resume(ctx, instance_id: str, restore_context: bool):
         "DOPEMUX_INSTANCE_ID": instance_id,
         "DOPEMUX_WORKSPACE_ID": workspace_id,
         "DOPEMUX_PORT_BASE": str(state.port_base),
-        "TASK_MASTER_PORT": str(state.port_base + 5),
         "SERENA_PORT": str(state.port_base + 6),
         "CONPORT_PORT": str(state.port_base + 7),
         "INTEGRATION_BRIDGE_PORT": str(state.port_base + 16),

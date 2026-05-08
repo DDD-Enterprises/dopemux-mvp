@@ -90,59 +90,6 @@ def _derive_idempotency_key(
     return sha256_hex(seed)
 
 
-def taskmaster_event_to_pm(
-    event_type: str,
-    data: dict[str, Any],
-    source: str = "taskmaster",
-) -> dict[str, Any]:
-    """Convert taskmaster event surfaces to canonical PM envelope."""
-    mapping = {
-        "taskmaster.task.created": PMEventType.TASK_CREATED.value,
-        "taskmaster.task.status_updated": PMEventType.TASK_STATUS_CHANGED.value,
-        "taskmaster.task.completed": PMEventType.TASK_COMPLETED.value,
-    }
-
-    mapping_reason: str | None = None
-    canonical_event_type = mapping.get(event_type)
-    if canonical_event_type is None:
-        canonical_event_type = PMEventType.TASK_UPDATED.value
-        mapping_reason = "unknown_taskmaster_event_type"
-
-    source_task_id = _first_non_none(
-        data.get("source_task_id"),
-        data.get("task_id"),
-        data.get("id"),
-    )
-    task_id = content_hash_task_id(
-        source=source,
-        source_task_id=str(source_task_id) if source_task_id is not None else None,
-        title=str(data.get("title") or ""),
-        description=str(data.get("description") or ""),
-    )
-
-    payload = dict(data)
-    payload["dialect_event_type"] = event_type
-    dialect_status = data.get("status")
-    if dialect_status is not None:
-        payload["dialect_status"] = str(dialect_status)
-    if mapping_reason is not None:
-        payload["mapping_reason"] = mapping_reason
-
-    return create_pm_event(
-        event_type=canonical_event_type,
-        ts_utc=_derive_ts_utc(data),
-        idempotency_key=_derive_idempotency_key(
-            source=source,
-            dialect_event_type=event_type,
-            raw_data=data,
-            existing_key=data.get("idempotency_key"),
-        ),
-        source=source,
-        task_id=task_id,
-        payload=payload,
-    )
-
-
 def orchestrator_event_to_pm(
     coord_event_like: Any,
     source: str = "task-orchestrator",

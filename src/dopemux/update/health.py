@@ -85,11 +85,6 @@ class HealthChecker:
                 'url': 'http://localhost:3006/health',
                 'container': 'serena'
             },
-            'task-master-ai': {
-                'type': 'http',
-                'url': 'http://localhost:3005/health',
-                'container': 'task-master-ai'
-            },
         }
 
         try:
