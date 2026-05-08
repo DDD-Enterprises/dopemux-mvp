@@ -1,7 +1,7 @@
 {
   "id": "TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001",
   "project": "dopemux-mvp",
-  "target": "Audit and prepare Cockpit PR stack 568-571 for safe consolidation without merging or mutating PRs.",
+  "target": "Refresh Cockpit PR #572 consolidation coverage so the covered PR set is {568, 569, 570, 571, 573} without runtime, PR, branch, Claude Design, T4, TX/TU, or Unknown/Drift reclassification mutations.",
   "repo_binding": {
     "project_id": "dopemux-mvp",
     "repo_marker": ".dopetaskroot",
@@ -19,7 +19,7 @@
     "branch": "codex/cockpit-merge-stack-consolidate-001"
   },
   "commit": {
-    "message": "docs(cockpit): prepare merge stack consolidation",
+    "message": "docs(cockpit): refresh merge stack coverage for PR 573",
     "allowlist": [
       "task-packets/generated/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001.json",
       "task-packets/INDEX.md",
@@ -28,27 +28,18 @@
       "proof/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/**"
     ],
     "verify": [
-      "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001.json >/dev/null",
-      "python -m json.tool out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_STATE_REPORT.json >/dev/null",
-      "python -m json.tool out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_ANCESTRY_REPORT.json >/dev/null",
-      "python -m json.tool out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/CONSOLIDATION_READINESS_MATRIX.json >/dev/null",
-      "python -m json.tool out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_VALIDATION_REPORT.json >/dev/null",
-      "python -m json.tool out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/PROOF.json >/dev/null",
-      "cd out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001 && shasum -a 256 -c sha256sums.txt",
-      "python -m compileall -q src/dopemux tests",
-      "python -m pytest tests/unit/dopemux/ui/cockpit -q",
-      "python -m pytest tests/unit/test_cockpit_cli.py -q",
-      "python -m pytest tests/unit/dopemux/ui/cockpit/test_merge_stack_artifacts.py -q",
-      "! grep -R -E \"READY_FOR_CLAUDE_DESIGN: approved|safe_for_claude_design: YES|Claude Design upload allowed|T4 authorized|runtime execution implemented|Unknown / Drift execution|runtime reclassification allowed|execute anyway|approve anyway|resolve now|final screens approved|PRs merged|merged successfully\" -n out/cockpit-merge-stack proof/cockpit-merge-stack tests/unit/dopemux/ui/cockpit/test_merge_stack_artifacts.py",
-      "! grep -R -E \"gh pr merge|git merge|git rebase|git push --force|git branch -d|git branch -D|gh pr edit|gh pr close\" -n out/cockpit-merge-stack proof/cockpit-merge-stack tests/unit/dopemux/ui/cockpit/test_merge_stack_artifacts.py",
-      "git diff --check",
-      "git status --short --branch"
+      "git status --short",
+      "python3 -m json.tool task-packets/generated/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001.json >/dev/null",
+      "python3 -m json.tool out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/PROOF.json >/dev/null",
+      "python3 -m compileall -q src/dopemux/ui/cockpit tests/unit/dopemux/ui/cockpit",
+      "python3 -m pytest -q tests/unit/dopemux/ui/cockpit/test_merge_stack_artifacts.py",
+      "git diff --check"
     ]
   },
   "pr": {
     "title": "docs(cockpit): prepare merge stack consolidation",
-    "body": "## Summary\n- audit Cockpit PR stack 568-571 for consolidation readiness\n- produce deterministic stack state, ancestry, readiness, validation, handoff, next-step, checksum, and proof artifacts\n- preserve Cockpit governance blockers and avoid all PR/base/branch mutations\n\n## Strict scope\n- artifact-only and read-mostly\n- no PRs merged\n- no branches retargeted\n- no rebase\n- no force push\n- no branch deletion\n- no final screens\n- no Claude Design upload\n- no runtime action execution\n- no T4 remote mutation\n- no canonical writes\n- no runtime reclassification\n\n## Governance state\nsafe_for_claude_design: NO\nREADY_FOR_CLAUDE_DESIGN: not approved\n\n## Validation\nSee proof artifact for command outputs and exit codes.\n\n## Residual risks and downstream packet\n- merge execution requires a later Ledger authorization\n- remote-mutation policy should not proceed until the stack is merged or Ledger explicitly accepts building on a stacked branch",
-    "base": "codex/cockpit-inventory-regen-001"
+    "body": "## Summary\n- refresh PR #572 consolidation coverage from {568,569,570,571} to {568,569,570,571,573}\n- cite PR #573 merge commit c0c32c1639e675d3415257f2444437ae1fa2ea3c and runtime-contract proof bundle\n- preserve Cockpit governance blockers and avoid all runtime/PR/base/branch mutations\n\n## Strict scope\n- artifact-only and read-mostly\n- no PRs merged\n- no branches retargeted\n- no rebase\n- no force push\n- no branch deletion\n- no final screens\n- no Claude Design upload\n- no runtime action execution\n- no T4 remote mutation\n- no canonical writes\n- no runtime reclassification\n- no TX/TU execution\n\n## Governance state\nsafe_for_claude_design: NO\nREADY_FOR_CLAUDE_DESIGN: not approved\n\n## Validation\nSee proof artifact for command outputs and exit codes.\n\n## Residual risks and downstream packet\n- PR #572 remains reported by GitHub as CONFLICTING against main during refresh preflight\n- merge execution requires a later Ledger authorization\n- remote-mutation policy should not proceed until the stack is landed or Ledger explicitly accepts building on a stacked branch",
+    "base": "main"
   },
   "pal_chain": {
     "enabled": true,
@@ -66,47 +57,46 @@
   "steps": [
     {
       "id": "S1",
-      "task": "Verify dedicated worktree identity, GitHub PR metadata, expected audited heads, accepted proof artifacts, repo authority files, and Cockpit stack scope before writing consolidation artifacts.",
+      "task": "Verify dedicated worktree identity, GitHub PR #572/#573 metadata, expected audited heads, accepted proof artifacts, repo authority files, and Cockpit coverage scope before writing consolidation artifacts.",
       "validation": [
-        "Worktree root, branch, marker, origin, HEAD, and clean status are verified.",
-        "PRs 568-571 are open, non-draft, expected base/head pairs, and expected audited head OIDs.",
-        "Accepted proof and inventory artifacts exist and parse."
+        "Worktree root, branch, marker, origin, HEAD, and clean tracked status are verified.",
+        "PR #572 is open with live head/base refs and GitHub reports mergeable=CONFLICTING.",
+        "PR #573 is MERGED with merge commit c0c32c1639e675d3415257f2444437ae1fa2ea3c; the proof bundle path is verified from the merge commit."
       ]
     },
     {
       "id": "S2",
-      "task": "Create deterministic stack state and ancestry reports without merging, rebasing, retargeting, deleting branches, or editing accepted upstream artifacts.",
+      "task": "Refresh deterministic stack state and ancestry reports so coverage includes PRs 568, 569, 570, 571, and 573 without merging, rebasing, retargeting, deleting branches, or editing runtime code.",
       "validation": [
         "STACK_STATE_REPORT.json and STACK_ANCESTRY_REPORT.json parse.",
-        "Ancestry checks confirm the declared stack order 568 -> 569 -> 570 -> 571 and this packet branch base.",
-        "Report records diff file counts, changed file summaries, proof paths, residual risks, and boundary preservation."
+        "Covered PR set records [568, 569, 570, 571, 573].",
+        "Merge-candidate order remains [568, 569, 570, 571]; PR #573 is recorded as reviewed merged evidence, not an operator merge candidate."
       ]
     },
     {
       "id": "S3",
-      "task": "Create consolidation readiness, validation, merge handoff, downstream recommendation, checksum, proof, and proof marker artifacts.",
+      "task": "Refresh consolidation readiness, validation, merge handoff, downstream recommendation, checksum, proof, and proof marker artifacts with PR #573 evidence and unchanged governance posture.",
       "validation": [
         "CONSOLIDATION_READINESS_MATRIX.json and STACK_VALIDATION_REPORT.json parse.",
-        "Merge handoff states it is not authorization and uses operator-only command candidates that do not self-trigger forbidden command greps.",
-        "sha256sums.txt validates generated artifacts.",
-        "PROOF.json records no PR/base/branch mutation happened and preserves governance blockers."
+        "Merge handoff states it is not authorization and PR #573 adds no merge command candidate.",
+        "PROOF.json records PR #573 verdict PASS_WITH_RISKS with auditor-side/process-risk qualifier and preserved governance blockers."
       ]
     },
     {
       "id": "S4",
-      "task": "Add focused artifact tests for merge stack proof invariants and governance preservation.",
+      "task": "Update focused artifact tests for refreshed coverage and governance preservation.",
       "validation": [
         "Generated JSON artifacts parse.",
-        "Tests verify stack order, no merge claim, no final-screen unlock recommendation, no mutation claim, and blocked Claude Design governance."
+        "Tests verify covered PR set [568, 569, 570, 571, 573], PR #573 evidence fields, no mutation claim, and blocked Claude Design governance."
       ]
     },
     {
       "id": "S5",
-      "task": "Run required validation commands, inspect diff, run codereview/precommit where available, commit allowed files, push, and open a PR against codex/cockpit-inventory-regen-001 if authenticated.",
+      "task": "Run required validation commands, inspect diff, run codereview/precommit where available, commit allowed files, push the PR #572 branch if authenticated, and report PR #572 blocker state.",
       "validation": [
-        "Required JSON, checksum, compileall, pytest, boundary grep, forbidden mutation grep, and git diff checks pass or exact blocker is recorded.",
+        "Required JSON, compileall, pytest, and git diff checks pass or exact blocker is recorded.",
         "Only allowlisted files are staged and committed.",
-        "PR URL or exact PR creation blocker is recorded in proof and final closeout."
+        "PR #572 URL or exact update/push blocker is recorded in proof and final closeout."
       ]
     }
   ]

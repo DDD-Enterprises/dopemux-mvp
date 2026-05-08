@@ -11,9 +11,16 @@
   "base_branch": "codex/cockpit-inventory-regen-001",
   "base_head": "93702834fbb05963685ed4919c6d099040399426",
   "branch": "codex/cockpit-merge-stack-consolidate-001",
-  "generated_at_utc": "2026-05-04T22:43:10Z",
+  "generated_at_utc": "2026-05-08T01:03:38Z",
   "governance": {
     "READY_FOR_CLAUDE_DESIGN": "not approved",
+    "claude_design_upload": "not_authorized",
+    "final_screen_generation": "not_authorized",
+    "runtime_action_execution": "not_authorized",
+    "t4_remote_mutation": "not_authorized",
+    "canonical_writes": "not_authorized",
+    "unknown_drift_runtime_reclassification": "disabled",
+    "tx_tu_execution": "disabled",
     "no_canonical_writes": true,
     "no_claude_design_upload": true,
     "no_final_screens": true,
@@ -169,75 +176,75 @@
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83e\udd16 Claude Code Security Analysis",
+            "name": "🤖 Claude Code Security Analysis",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\udd12 Security Review with Claude Code"
+            "workflowName": "🔒 Security Review with Claude Code"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83d\udc85 Code Quality & Linting",
+            "name": "💅 Code Quality & Linting",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83d\udcca ADHD-Friendly Security Summary",
+            "name": "📊 ADHD-Friendly Security Summary",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\udd12 Security Review with Claude Code"
+            "workflowName": "🔒 Security Review with Claude Code"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83d\udd12 Security Review",
+            "name": "🔒 Security Review",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83d\udcda Documentation Check",
+            "name": "📚 Documentation Check",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83e\uddea Unit Tests",
+            "name": "🧪 Unit Tests",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83e\uddea Extractor Smoke",
+            "name": "🧪 Extractor Smoke",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83e\uddea Extractor Full (Advisory)",
+            "name": "🧪 Extractor Full (Advisory)",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SKIPPED",
-            "name": "\ud83e\uddea Installer Smoke",
+            "name": "🧪 Installer Smoke",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SKIPPED",
-            "name": "\ud83d\udcca Scoped Coverage",
+            "name": "📊 Scoped Coverage",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SKIPPED",
-            "name": "\ud83d\udd17 Integration Tests",
+            "name": "🔗 Integration Tests",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83d\udcca CI Pipeline Summary",
+            "name": "📊 CI Pipeline Summary",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           }
         ],
         "counts": {
@@ -357,75 +364,75 @@
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83e\udd16 Claude Code Security Analysis",
+            "name": "🤖 Claude Code Security Analysis",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\udd12 Security Review with Claude Code"
+            "workflowName": "🔒 Security Review with Claude Code"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83d\udc85 Code Quality & Linting",
+            "name": "💅 Code Quality & Linting",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83d\udcca ADHD-Friendly Security Summary",
+            "name": "📊 ADHD-Friendly Security Summary",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\udd12 Security Review with Claude Code"
+            "workflowName": "🔒 Security Review with Claude Code"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83d\udd12 Security Review",
+            "name": "🔒 Security Review",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83d\udcda Documentation Check",
+            "name": "📚 Documentation Check",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83e\uddea Unit Tests",
+            "name": "🧪 Unit Tests",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83e\uddea Extractor Smoke",
+            "name": "🧪 Extractor Smoke",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83e\uddea Extractor Full (Advisory)",
+            "name": "🧪 Extractor Full (Advisory)",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SKIPPED",
-            "name": "\ud83e\uddea Installer Smoke",
+            "name": "🧪 Installer Smoke",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SKIPPED",
-            "name": "\ud83d\udcca Scoped Coverage",
+            "name": "📊 Scoped Coverage",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SKIPPED",
-            "name": "\ud83d\udd17 Integration Tests",
+            "name": "🔗 Integration Tests",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83d\udcca CI Pipeline Summary",
+            "name": "📊 CI Pipeline Summary",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           }
         ],
         "counts": {
@@ -527,7 +534,7 @@
             "conclusion": "SKIPPED",
             "name": "debugger",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\udd00 Gemini Dispatch"
+            "workflowName": "🔀 Gemini Dispatch"
           },
           {
             "conclusion": "SUCCESS",
@@ -549,111 +556,111 @@
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83e\udd16 Claude Code Security Analysis",
+            "name": "🤖 Claude Code Security Analysis",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\udd12 Security Review with Claude Code"
+            "workflowName": "🔒 Security Review with Claude Code"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83d\udc85 Code Quality & Linting",
+            "name": "💅 Code Quality & Linting",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SKIPPED",
             "name": "dispatch",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\udd00 Gemini Dispatch"
+            "workflowName": "🔀 Gemini Dispatch"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83d\udcca ADHD-Friendly Security Summary",
+            "name": "📊 ADHD-Friendly Security Summary",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\udd12 Security Review with Claude Code"
+            "workflowName": "🔒 Security Review with Claude Code"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83d\udd12 Security Review",
+            "name": "🔒 Security Review",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SKIPPED",
             "name": "review",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\udd00 Gemini Dispatch"
+            "workflowName": "🔀 Gemini Dispatch"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83d\udcda Documentation Check",
+            "name": "📚 Documentation Check",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SKIPPED",
             "name": "triage",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\udd00 Gemini Dispatch"
+            "workflowName": "🔀 Gemini Dispatch"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83e\uddea Unit Tests",
+            "name": "🧪 Unit Tests",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83e\uddea Extractor Smoke",
+            "name": "🧪 Extractor Smoke",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SKIPPED",
             "name": "invoke",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\udd00 Gemini Dispatch"
+            "workflowName": "🔀 Gemini Dispatch"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83e\uddea Extractor Full (Advisory)",
+            "name": "🧪 Extractor Full (Advisory)",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SKIPPED",
             "name": "plan-execute",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\udd00 Gemini Dispatch"
+            "workflowName": "🔀 Gemini Dispatch"
           },
           {
             "conclusion": "SKIPPED",
-            "name": "\ud83e\uddea Installer Smoke",
+            "name": "🧪 Installer Smoke",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SKIPPED",
             "name": "fallthrough",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\udd00 Gemini Dispatch"
+            "workflowName": "🔀 Gemini Dispatch"
           },
           {
             "conclusion": "SKIPPED",
-            "name": "\ud83d\udcca Scoped Coverage",
+            "name": "📊 Scoped Coverage",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SKIPPED",
-            "name": "\ud83d\udd17 Integration Tests",
+            "name": "🔗 Integration Tests",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83d\udcca CI Pipeline Summary",
+            "name": "📊 CI Pipeline Summary",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           }
         ],
         "counts": {
@@ -782,7 +789,7 @@
             "conclusion": "SKIPPED",
             "name": "debugger",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\udd00 Gemini Dispatch"
+            "workflowName": "🔀 Gemini Dispatch"
           },
           {
             "conclusion": "SUCCESS",
@@ -804,111 +811,111 @@
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83e\udd16 Claude Code Security Analysis",
+            "name": "🤖 Claude Code Security Analysis",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\udd12 Security Review with Claude Code"
+            "workflowName": "🔒 Security Review with Claude Code"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83d\udc85 Code Quality & Linting",
+            "name": "💅 Code Quality & Linting",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SKIPPED",
             "name": "dispatch",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\udd00 Gemini Dispatch"
+            "workflowName": "🔀 Gemini Dispatch"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83d\udcca ADHD-Friendly Security Summary",
+            "name": "📊 ADHD-Friendly Security Summary",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\udd12 Security Review with Claude Code"
+            "workflowName": "🔒 Security Review with Claude Code"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83d\udd12 Security Review",
+            "name": "🔒 Security Review",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SKIPPED",
             "name": "review",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\udd00 Gemini Dispatch"
+            "workflowName": "🔀 Gemini Dispatch"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83d\udcda Documentation Check",
+            "name": "📚 Documentation Check",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SKIPPED",
             "name": "triage",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\udd00 Gemini Dispatch"
+            "workflowName": "🔀 Gemini Dispatch"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83e\uddea Unit Tests",
+            "name": "🧪 Unit Tests",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83e\uddea Extractor Smoke",
+            "name": "🧪 Extractor Smoke",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SKIPPED",
             "name": "invoke",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\udd00 Gemini Dispatch"
+            "workflowName": "🔀 Gemini Dispatch"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83e\uddea Extractor Full (Advisory)",
+            "name": "🧪 Extractor Full (Advisory)",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SKIPPED",
             "name": "plan-execute",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\udd00 Gemini Dispatch"
+            "workflowName": "🔀 Gemini Dispatch"
           },
           {
             "conclusion": "SKIPPED",
-            "name": "\ud83e\uddea Installer Smoke",
+            "name": "🧪 Installer Smoke",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SKIPPED",
             "name": "fallthrough",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\udd00 Gemini Dispatch"
+            "workflowName": "🔀 Gemini Dispatch"
           },
           {
             "conclusion": "SKIPPED",
-            "name": "\ud83d\udcca Scoped Coverage",
+            "name": "📊 Scoped Coverage",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SKIPPED",
-            "name": "\ud83d\udd17 Integration Tests",
+            "name": "🔗 Integration Tests",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           },
           {
             "conclusion": "SUCCESS",
-            "name": "\ud83d\udcca CI Pipeline Summary",
+            "name": "📊 CI Pipeline Summary",
             "status": "COMPLETED",
-            "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
           }
         ],
         "counts": {
@@ -917,7 +924,167 @@
         }
       },
       "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/571"
+    },
+    {
+      "audit_qualifier": "auditor-side/process risks only; no PR-side runtime-contract defect",
+      "audit_validation_summary": "58 cockpit tests passed",
+      "audit_verdict": "PASS_WITH_RISKS",
+      "audit_verdict_source": "active task input; PR #573 merge commit and proof bundle corroborate preserved governance boundaries, while the proof bundle does not expose a uniform audit_verdict field",
+      "base_branch": "pack/cockpit-pack-remediate-006-ia",
+      "boundary_preservation_status": {
+        "safe_for_claude_design": "NO",
+        "READY_FOR_CLAUDE_DESIGN": "not approved",
+        "claude_design_upload": "not_authorized",
+        "final_screen_generation": "not_authorized",
+        "runtime_action_execution": "not_authorized",
+        "t4_remote_mutation": "not_authorized",
+        "canonical_writes": "not_authorized",
+        "unknown_drift_runtime_reclassification": "disabled",
+        "tx_tu_execution": "disabled",
+        "cockpit_non_execution_preserved": true,
+        "palette_broker_only": true,
+        "safe_action_gate_confirmation_preflight_proof_refusal_only": true,
+        "t4_blocked": true,
+        "tx_tu_non_executable": true,
+        "unknown_drift_runtime_reclassification_disabled": true,
+        "claude_design_not_approved": true,
+        "auditor_side_process_risk_only": true,
+        "pr_side_runtime_contract_defect": false
+      },
+      "changed_files_summary": {
+        "command": "gh pr view 573 --json files",
+        "exit_code": 0,
+        "file_count": 7,
+        "files": [
+          {
+            "path": "out/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/PROOF.json",
+            "status": "A"
+          },
+          {
+            "path": "proof/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/README.md",
+            "status": "A"
+          },
+          {
+            "path": "src/dopemux/ui/cockpit/runtime_contract.py",
+            "status": "M"
+          },
+          {
+            "path": "task-packets/INDEX.md",
+            "status": "M"
+          },
+          {
+            "path": "task-packets/generated/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001.json",
+            "status": "A"
+          },
+          {
+            "path": "tests/unit/dopemux/ui/cockpit/test_inventory_regen_artifacts.py",
+            "status": "M"
+          },
+          {
+            "path": "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+            "status": "M"
+          }
+        ],
+        "status_counts": {
+          "A": 3,
+          "M": 4
+        }
+      },
+      "coverage_role": "reviewed_merged_evidence_not_merge_candidate",
+      "current_remote_head": "1236757c15b1bfdf0926ee476908d56ed71b0dc6",
+      "diff_file_count": 7,
+      "expected_audited_head": "1236757c15b1bfdf0926ee476908d56ed71b0dc6",
+      "expected_head_matches_current_remote": true,
+      "head_branch": "codex/cockpit-runtime-contract-fidelity-001",
+      "head_branch_exists_on_origin": false,
+      "implementation_commit": "3b1c426379ee141a7929cfc31644f86830fe9f0d",
+      "implementation_proof_validation_summary": "PR #573 proof records tests/unit/dopemux/ui/cockpit -q as 83 passed at proof-generation time; the completed audit verdict supplied for this refresh records 58 cockpit tests passed.",
+      "is_draft": false,
+      "local_ancestry_relation": {
+        "command_parts": [
+          "git",
+          "merge-base",
+          "--is-ancestor",
+          "b173efd83c871c30f2bd86530921c866d08e7e45",
+          "1236757c15b1bfdf0926ee476908d56ed71b0dc6"
+        ],
+        "declared_base_is_ancestor_of_head": true,
+        "exit_code": 0
+      },
+      "merge_commit": "c0c32c1639e675d3415257f2444437ae1fa2ea3c",
+      "merge_commit_parent_relation": {
+        "base_parent": "b173efd83c871c30f2bd86530921c866d08e7e45",
+        "head_parent": "1236757c15b1bfdf0926ee476908d56ed71b0dc6",
+        "merge_commit_has_base_parent": true,
+        "merge_commit_has_head_parent": true
+      },
+      "mergeable": "NOT_APPLICABLE_MERGED_EVIDENCE",
+      "packet_id": "TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001",
+      "pr_number": 573,
+      "pr_state": "MERGED",
+      "proof_path": "out/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/PROOF.json",
+      "residual_risk_summary": [
+        "Completed audit verdict is PASS_WITH_RISKS because of auditor-side/process risk only; no PR-side runtime-contract defect is recorded for this refresh.",
+        "PR #573 proof bundle exists on its merge commit/main lineage but is absent from the stale PR #572 branch until a later authorized base normalization or merge path includes it.",
+        "PR #573 is covered evidence for PR #572 consolidation refresh; it is not a merge candidate in this handoff."
+      ],
+      "review_decision": "NOT_REPORTED",
+      "status_checks": {
+        "blocking_or_unknown": [],
+        "checks_source": "gh pr view 573 statusCheckRollup during refresh preflight",
+        "counts": {
+          "SKIPPED": 10,
+          "SUCCESS": 12
+        }
+      },
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/573",
+      "validation_summary": "58 cockpit tests passed"
     }
   ],
-  "worktree": "/Users/hue/code/dopemux-worktrees/dopemux-cockpit-merge-stack-consolidate-001"
+  "worktree": "/Users/hue/code/dopemux-worktrees/dopemux-cockpit-merge-stack-consolidate-001",
+  "covered_pr_set_before_refresh": [
+    568,
+    569,
+    570,
+    571
+  ],
+  "covered_pr_set": [
+    568,
+    569,
+    570,
+    571,
+    573
+  ],
+  "merge_candidate_prs": [
+    568,
+    569,
+    570,
+    571
+  ],
+  "reviewed_merged_evidence_prs": [
+    573
+  ],
+  "coverage_refresh": {
+    "refreshed_at_utc": "2026-05-08T01:03:38Z",
+    "reason": "PR #573 completed audit and merge post-date the original PR #572 consolidation artifact.",
+    "pr_572_current_state": {
+      "base_branch": "main",
+      "head_branch": "codex/cockpit-merge-stack-consolidate-001",
+      "head_ref_oid": "23ec8b70fea140908ecc53d919452e5345976596",
+      "is_draft": false,
+      "merge_state_status": "DIRTY",
+      "mergeable": "CONFLICTING",
+      "state": "OPEN",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/572"
+    },
+    "pr_573_current_state": {
+      "base_branch": "pack/cockpit-pack-remediate-006-ia",
+      "head_branch": "codex/cockpit-runtime-contract-fidelity-001",
+      "head_branch_exists_on_origin": false,
+      "head_ref_oid": "1236757c15b1bfdf0926ee476908d56ed71b0dc6",
+      "merge_commit": "c0c32c1639e675d3415257f2444437ae1fa2ea3c",
+      "state": "MERGED",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/573"
+    }
+  }
 }

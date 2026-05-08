@@ -1,23 +1,24 @@
 # Post-Consolidation Next Step
 
 Packet: `TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001`
-Generated: `2026-05-04T22:43:10Z`
+Generated: `2026-05-08T01:03:38Z`
 
 ## Recommendation
 
-Recommended next packet: Ledger-authorized merge execution packet, if the Ledger accepts the `READY_WITH_RISKS_NEEDS_LEDGER_DECISION` readiness verdict.
+Recommended next packet: Ledger-authorized merge execution or blocker-cleanup packet, only after PR 572's current GitHub conflict state is explicitly handled by an authorized packet.
 
 ## Rationale
 
-The stack is currently open, non-draft, expected-head aligned, GitHub-mergeable, and ancestry-aligned in the declared order 568 -> 569 -> 570 -> 571. PR 569 and PR 571 still carry residual risks from accepted proof artifacts, so this is not a blanket execution approval.
+The refreshed covered PR set is `{568, 569, 570, 571, 573}`. PR 573 is included as reviewed merged runtime-contract evidence with verdict `PASS_WITH_RISKS`; the qualifier is auditor-side/process risk only with no PR-side runtime-contract defect. PR 569, PR 571, and PR 573 still carry recorded risks, so this is not a blanket execution approval.
 
 ## Not Recommended Yet
 
 - Remote-mutation policy packet should not start until the stack lands or Ledger explicitly accepts building policy on the stacked branch.
 - Claude Design primitive/final-screen unlock packet is not recommended.
 - Final screens remain blocked.
+- Unknown/Drift runtime reclassification remains disabled.
 
 ## Fallbacks
 
-- If any PR becomes non-mergeable or checks fail: create a blocker cleanup packet.
-- If the pack base branch proves unsuitable for consolidation: create a base branch normalization packet.
+- If any merge candidate remains non-mergeable or checks fail: create a blocker cleanup packet.
+- If the current PR 572 base proves unsuitable for consolidation: create a base branch normalization packet.

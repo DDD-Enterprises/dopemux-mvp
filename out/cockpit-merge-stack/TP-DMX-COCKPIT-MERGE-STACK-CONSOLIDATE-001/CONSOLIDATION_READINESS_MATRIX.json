@@ -92,11 +92,44 @@
         "SKIPPED": 10,
         "SUCCESS": 12
       }
+    },
+    {
+      "audit_qualifier": "auditor-side/process risks only; no PR-side runtime-contract defect",
+      "audit_verdict": "PASS_WITH_RISKS",
+      "classification": "REVIEWED_MERGED_EVIDENCE",
+      "coverage_role": "covered evidence; not a merge candidate",
+      "merge_commit": "c0c32c1639e675d3415257f2444437ae1fa2ea3c",
+      "mergeable": "NOT_APPLICABLE_MERGED_EVIDENCE",
+      "notes": [
+        "PR #573 is already merged and is included so PR #572 coverage accounts for the runtime-contract fidelity audit.",
+        "Completed audit verdict records 58 cockpit tests passed and no PR-side runtime-contract defect.",
+        "Current packet is artifact-only and performed no PR/base/branch mutation."
+      ],
+      "packet_id": "TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001",
+      "pr_number": 573,
+      "proof_path": "out/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/PROOF.json",
+      "review_decision": "NOT_REPORTED",
+      "risks": [
+        "Auditor-side/process risk only; no PR-side runtime-contract defect recorded for this refresh.",
+        "PR #573 proof bundle is cited from its merge commit/main lineage and is not copied into the stale PR #572 branch."
+      ],
+      "status_check_counts": {
+        "SKIPPED": 10,
+        "SUCCESS": 12
+      },
+      "validation_summary": "58 cockpit tests passed"
     }
   ],
-  "generated_at_utc": "2026-05-04T22:43:10Z",
+  "generated_at_utc": "2026-05-08T01:03:38Z",
   "governance": {
     "READY_FOR_CLAUDE_DESIGN": "not approved",
+    "claude_design_upload": "not_authorized",
+    "final_screen_generation": "not_authorized",
+    "runtime_action_execution": "not_authorized",
+    "t4_remote_mutation": "not_authorized",
+    "canonical_writes": "not_authorized",
+    "unknown_drift_runtime_reclassification": "disabled",
+    "tx_tu_execution": "disabled",
     "no_canonical_writes": true,
     "no_claude_design_upload": true,
     "no_final_screens": true,
@@ -129,5 +162,28 @@
   "schema_version": "dopemux.cockpit.merge_stack.readiness.v1",
   "sequential_merge_reason": "Each downstream PR base is the previous PR head branch, so consolidation must preserve the accepted packet order.",
   "sequential_merge_required": true,
-  "squash_merge_recommendation": "NOT_RECOMMENDED_FOR_AUDIT_STACK"
+  "squash_merge_recommendation": "NOT_RECOMMENDED_FOR_AUDIT_STACK",
+  "covered_pr_set_before_refresh": [
+    568,
+    569,
+    570,
+    571
+  ],
+  "covered_pr_set": [
+    568,
+    569,
+    570,
+    571,
+    573
+  ],
+  "merge_candidate_prs": [
+    568,
+    569,
+    570,
+    571
+  ],
+  "reviewed_merged_evidence_prs": [
+    573
+  ],
+  "coverage_note": "Covered PR set includes PR #573 as reviewed merged evidence. Merge order remains limited to open stack candidates 568-571 and is not authorization."
 }

@@ -1,196 +1,104 @@
 {
   "commands": [
     {
-      "command": "python -m json.tool out/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/PROOF.json >/dev/null",
-      "exact_command_recorded_in_final_only": false,
+      "id": "git_status_short",
+      "command": "git status --short",
       "exit_code": 0,
-      "id": "accepted_runtime_render_proof_json",
-      "stderr": "",
-      "stdout": ""
+      "stdout": " M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/CONSOLIDATION_READINESS_MATRIX.json\n M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/CONSOLIDATION_READINESS_MATRIX.md\n M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/MERGE_EXECUTION_HANDOFF.md\n M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/POST_CONSOLIDATION_NEXT_STEP.md\n M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/PROOF.json\n M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_ANCESTRY_REPORT.json\n M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_ANCESTRY_REPORT.md\n M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_STATE_REPORT.json\n M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_STATE_REPORT.md\n M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_VALIDATION_REPORT.json\n M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_VALIDATION_REPORT.md\n M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/sha256sums.txt\n M proof/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/README.md\n M task-packets/INDEX.md\n M task-packets/generated/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001.json\n M tests/unit/dopemux/ui/cockpit/test_merge_stack_artifacts.py\n",
+      "stderr": ""
     },
     {
-      "command": "python -m json.tool out/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/PROOF.json >/dev/null",
-      "exact_command_recorded_in_final_only": false,
-      "exit_code": 0,
-      "id": "accepted_settings_runtime_proof_json",
-      "stderr": "",
-      "stdout": ""
-    },
-    {
-      "command": "python -m json.tool out/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/PROOF.json >/dev/null",
-      "exact_command_recorded_in_final_only": false,
-      "exit_code": 0,
-      "id": "accepted_unknown_drift_proof_json",
-      "stderr": "",
-      "stdout": ""
-    },
-    {
-      "command": "python -m json.tool out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/PROOF.json >/dev/null",
-      "exact_command_recorded_in_final_only": false,
-      "exit_code": 0,
-      "id": "accepted_inventory_regen_proof_json",
-      "stderr": "",
-      "stdout": ""
-    },
-    {
-      "command": "python -m json.tool out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json >/dev/null",
-      "exact_command_recorded_in_final_only": false,
-      "exit_code": 0,
-      "id": "accepted_inventory_json",
-      "stderr": "",
-      "stdout": ""
-    },
-    {
-      "command": "python -m json.tool out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/INVENTORY_DRIFT_REPORT.json >/dev/null",
-      "exact_command_recorded_in_final_only": false,
-      "exit_code": 0,
-      "id": "accepted_inventory_drift_json",
-      "stderr": "",
-      "stdout": ""
-    },
-    {
-      "command": "python -m json.tool out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/CURRENT_HEAD_COCKPIT_STATUS.json >/dev/null",
-      "exact_command_recorded_in_final_only": false,
-      "exit_code": 0,
-      "id": "accepted_current_head_status_json",
-      "stderr": "",
-      "stdout": ""
-    },
-    {
-      "command": "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001.json >/dev/null",
-      "exact_command_recorded_in_final_only": false,
-      "exit_code": 0,
       "id": "task_packet_json",
-      "stderr": "",
-      "stdout": ""
+      "command": "python3 -m json.tool task-packets/generated/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
     },
     {
-      "command": "python -m json.tool out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_STATE_REPORT.json >/dev/null",
-      "exact_command_recorded_in_final_only": false,
-      "exit_code": 0,
-      "id": "stack_state_json",
-      "stderr": "",
-      "stdout": ""
-    },
-    {
-      "command": "python -m json.tool out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_ANCESTRY_REPORT.json >/dev/null",
-      "exact_command_recorded_in_final_only": false,
-      "exit_code": 0,
-      "id": "stack_ancestry_json",
-      "stderr": "",
-      "stdout": ""
-    },
-    {
-      "command": "python -m json.tool out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/CONSOLIDATION_READINESS_MATRIX.json >/dev/null",
-      "exact_command_recorded_in_final_only": false,
-      "exit_code": 0,
-      "id": "readiness_json",
-      "stderr": "",
-      "stdout": ""
-    },
-    {
-      "command": "python -m json.tool out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_VALIDATION_REPORT.json >/dev/null",
-      "exact_command_recorded_in_final_only": false,
-      "exit_code": 0,
-      "id": "validation_report_json",
-      "stderr": "",
-      "stdout": ""
-    },
-    {
-      "command": "python -m json.tool out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/PROOF.json >/dev/null",
-      "exact_command_recorded_in_final_only": false,
-      "exit_code": 0,
       "id": "proof_json",
-      "stderr": "",
-      "stdout": ""
+      "command": "python3 -m json.tool out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
     },
     {
-      "command": "cd out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001 && shasum -a 256 -c sha256sums.txt",
-      "exact_command_recorded_in_final_only": false,
+      "id": "compileall_cockpit",
+      "command": "python3 -m compileall -q src/dopemux/ui/cockpit tests/unit/dopemux/ui/cockpit",
       "exit_code": 0,
-      "id": "accepted_inventory_shasums",
-      "stderr": "",
-      "stdout": "COMMAND_SURFACE_INVENTORY.json: OK\nCOMMAND_SURFACE_INVENTORY.md: OK\nINVENTORY_DRIFT_REPORT.json: OK\nINVENTORY_DRIFT_REPORT.md: OK\nCURRENT_HEAD_COCKPIT_STATUS.json: OK\nCURRENT_HEAD_COCKPIT_STATUS.md: OK\nNEXT_PACKET_DECISION_MATRIX.md: OK\nPROOF.json: OK\n"
+      "stdout": "",
+      "stderr": ""
     },
     {
-      "command": "cd out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001 && shasum -a 256 -c sha256sums.txt",
-      "exact_command_recorded_in_final_only": false,
-      "exit_code": 0,
-      "id": "generated_shasums",
-      "stderr": "",
-      "stdout": "CONSOLIDATION_READINESS_MATRIX.json: OK\nCONSOLIDATION_READINESS_MATRIX.md: OK\nMERGE_EXECUTION_HANDOFF.md: OK\nPOST_CONSOLIDATION_NEXT_STEP.md: OK\nPROOF.json: OK\nSTACK_ANCESTRY_REPORT.json: OK\nSTACK_ANCESTRY_REPORT.md: OK\nSTACK_STATE_REPORT.json: OK\nSTACK_STATE_REPORT.md: OK\nSTACK_VALIDATION_REPORT.json: OK\nSTACK_VALIDATION_REPORT.md: OK\n../../../proof/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/README.md: OK\n"
-    },
-    {
-      "command": "python -m compileall -q src/dopemux tests",
-      "exact_command_recorded_in_final_only": false,
-      "exit_code": 0,
-      "id": "compileall",
-      "stderr": "",
-      "stdout": ""
-    },
-    {
-      "command": "python -m pytest tests/unit/dopemux/ui/cockpit -q",
-      "exact_command_recorded_in_final_only": false,
-      "exit_code": 0,
-      "id": "cockpit_ui_tests",
-      "stderr": "",
-      "stdout": "........................................................................ [ 86%]\n...........                                                              [100%]\n=============================== warnings summary ===============================\n../../../.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/_pytest/config/__init__.py:1434\n  /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/_pytest/config/__init__.py:1434: PytestConfigWarning: Unknown config option: asyncio_mode\n  \n    self._warn_or_fail_if_strict(f\"Unknown config option: {key}\\n\")\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n"
-    },
-    {
-      "command": "python -m pytest tests/unit/test_cockpit_cli.py -q",
-      "exact_command_recorded_in_final_only": false,
-      "exit_code": 0,
-      "id": "cockpit_cli_tests",
-      "stderr": "",
-      "stdout": ".....                                                                    [100%]\n=============================== warnings summary ===============================\n../../../.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/_pytest/config/__init__.py:1434\n  /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/_pytest/config/__init__.py:1434: PytestConfigWarning: Unknown config option: asyncio_mode\n  \n    self._warn_or_fail_if_strict(f\"Unknown config option: {key}\\n\")\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n"
-    },
-    {
-      "command": "python -m pytest tests/unit/dopemux/ui/cockpit/test_merge_stack_artifacts.py -q",
-      "exact_command_recorded_in_final_only": false,
-      "exit_code": 0,
       "id": "merge_stack_artifact_tests",
-      "stderr": "",
-      "stdout": ".........                                                                [100%]\n=============================== warnings summary ===============================\n../../../.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/_pytest/config/__init__.py:1434\n  /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/_pytest/config/__init__.py:1434: PytestConfigWarning: Unknown config option: asyncio_mode\n  \n    self._warn_or_fail_if_strict(f\"Unknown config option: {key}\\n\")\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n"
+      "command": "python3 -m pytest -q tests/unit/dopemux/ui/cockpit/test_merge_stack_artifacts.py",
+      "exit_code": 0,
+      "stdout": "..........                                                               [100%]\n=============================== warnings summary ===============================\n../../../.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/_pytest/config/__init__.py:1434\n  /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/_pytest/config/__init__.py:1434: PytestConfigWarning: Unknown config option: asyncio_mode\n  \n    self._warn_or_fail_if_strict(f\"Unknown config option: {key}\\n\")\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n",
+      "stderr": ""
     },
     {
-      "command": "forbidden positive governance grep over merge-stack artifacts and tests",
-      "exact_command_recorded_in_final_only": true,
+      "id": "stack_state_json",
+      "command": "python3 -m json.tool out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_STATE_REPORT.json >/dev/null",
       "exit_code": 0,
-      "id": "boundary_grep",
-      "stderr": "",
-      "stdout": ""
+      "stdout": "",
+      "stderr": ""
     },
     {
-      "command": "forbidden mutation command-token grep over merge-stack artifacts and tests",
-      "exact_command_recorded_in_final_only": true,
+      "id": "stack_ancestry_json",
+      "command": "python3 -m json.tool out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_ANCESTRY_REPORT.json >/dev/null",
       "exit_code": 0,
-      "id": "forbidden_mutation_grep",
-      "stderr": "",
-      "stdout": ""
+      "stdout": "",
+      "stderr": ""
     },
     {
-      "command": "git diff --check",
-      "exact_command_recorded_in_final_only": false,
+      "id": "readiness_json",
+      "command": "python3 -m json.tool out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/CONSOLIDATION_READINESS_MATRIX.json >/dev/null",
       "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "validation_report_json",
+      "command": "python3 -m json.tool out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_VALIDATION_REPORT.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
       "id": "git_diff_check",
-      "stderr": "",
-      "stdout": ""
+      "command": "git diff --check",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
     },
     {
-      "command": "git status --short --branch",
-      "exact_command_recorded_in_final_only": false,
+      "id": "generated_shasums",
+      "command": "cd out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001 && shasum -a 256 -c sha256sums.txt",
       "exit_code": 0,
-      "id": "git_status",
-      "stderr": "",
-      "stdout": "## codex/cockpit-merge-stack-consolidate-001...origin/codex/cockpit-inventory-regen-001\n M task-packets/INDEX.md\n?? out/cockpit-merge-stack/\n?? task-packets/generated/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001.json\n?? tests/unit/dopemux/ui/cockpit/test_merge_stack_artifacts.py\n"
+      "stdout": "CONSOLIDATION_READINESS_MATRIX.json: OK\nCONSOLIDATION_READINESS_MATRIX.md: OK\nMERGE_EXECUTION_HANDOFF.md: OK\nPOST_CONSOLIDATION_NEXT_STEP.md: OK\nPROOF.json: OK\nSTACK_ANCESTRY_REPORT.json: OK\nSTACK_ANCESTRY_REPORT.md: OK\nSTACK_STATE_REPORT.json: OK\nSTACK_STATE_REPORT.md: OK\nSTACK_VALIDATION_REPORT.json: OK\nSTACK_VALIDATION_REPORT.md: OK\n../../../proof/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/README.md: OK\n",
+      "stderr": ""
+    },
+    {
+      "id": "precommit_allowlist",
+      "command": "pre-commit run --files out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/CONSOLIDATION_READINESS_MATRIX.json out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/CONSOLIDATION_READINESS_MATRIX.md out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/MERGE_EXECUTION_HANDOFF.md out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/POST_CONSOLIDATION_NEXT_STEP.md out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/PROOF.json out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_ANCESTRY_REPORT.json out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_ANCESTRY_REPORT.md out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_STATE_REPORT.json out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_STATE_REPORT.md out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_VALIDATION_REPORT.json out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_VALIDATION_REPORT.md out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/sha256sums.txt proof/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/README.md task-packets/INDEX.md task-packets/generated/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001.json tests/unit/dopemux/ui/cockpit/test_merge_stack_artifacts.py",
+      "exit_code": 0,
+      "stdout": "Validate YAML frontmatter in docs: Passed; knowledge graph schema: Passed; prohibited docs patterns: Passed; prelude length: Passed; markdown location/hygiene checks passed or skipped when not applicable; markdownlint: Passed; trim trailing whitespace: Passed; fix end of files: Passed; check yaml skipped when not applicable.",
+      "stderr": ""
     }
   ],
-  "generated_at_utc": "2026-05-04T22:46:45Z",
+  "generated_at_utc": "2026-05-08T01:03:38Z",
   "governance": {
     "READY_FOR_CLAUDE_DESIGN": "not approved",
+    "claude_design_upload": "not_authorized",
+    "final_screen_generation": "not_authorized",
+    "runtime_action_execution": "not_authorized",
+    "t4_remote_mutation": "not_authorized",
+    "canonical_writes": "not_authorized",
+    "unknown_drift_runtime_reclassification": "disabled",
+    "tx_tu_execution": "disabled",
     "no_canonical_writes": true,
     "no_claude_design_upload": true,
     "no_final_screens": true,
+    "no_live_service_adapters": true,
     "no_runtime_action_execution": true,
     "no_runtime_reclassification": true,
     "no_t4_remote_mutation": true,
@@ -198,11 +106,34 @@
   },
   "no_live_services_run": true,
   "notes": [
-    "Boundary and mutation grep commands are stored by label in artifacts to avoid self-triggering forbidden-pattern scans; exact grep commands are reported in closeout.",
+    "Live services were not run.",
+    "PR #573 proof was read from merge commit c0c32c1639e675d3415257f2444437ae1fa2ea3c because the stale PR #572 branch does not contain that proof path.",
     "Pytest emitted PytestConfigWarning for unknown asyncio_mode; tests exited 0."
   ],
   "overall_status": "PASS",
   "packet_id": "TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001",
   "schema_version": "dopemux.cockpit.merge_stack.validation.v1",
-  "validation_scope": "current top-of-stack branch after artifact generation; live services intentionally not run"
+  "validation_scope": "PR #572 consolidation artifact refresh; live services intentionally not run",
+  "covered_pr_set_before_refresh": [
+    568,
+    569,
+    570,
+    571
+  ],
+  "covered_pr_set": [
+    568,
+    569,
+    570,
+    571,
+    573
+  ],
+  "merge_candidate_prs": [
+    568,
+    569,
+    570,
+    571
+  ],
+  "reviewed_merged_evidence_prs": [
+    573
+  ]
 }
