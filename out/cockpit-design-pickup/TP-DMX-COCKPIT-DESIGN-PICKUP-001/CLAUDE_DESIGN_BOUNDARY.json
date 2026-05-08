@@ -1,0 +1,129 @@
+{
+  "schema_version": "dopemux.cockpit.design_pickup.claude_boundary.v1",
+  "packet_id": "TP-DMX-COCKPIT-DESIGN-PICKUP-001",
+  "generated_at_utc": "2026-05-07T23:58:54Z",
+  "safe_for_claude_design": "NO",
+  "READY_FOR_CLAUDE_DESIGN": "not approved",
+  "design_pickup_verdict": "READY_FOR_DESIGN_DISCUSSION",
+  "allowed_activities": [
+    {
+      "activity": "architecture and design discussion",
+      "classification": "OBSERVED",
+      "boundary": "Allowed as discussion only; must preserve authority split and UNKNOWN labels."
+    },
+    {
+      "activity": "primitive-level sketches",
+      "classification": "INFERRED",
+      "boundary": "Allowed only as non-final primitive discussion tied to existing runtime primitives and blocked states."
+    },
+    {
+      "activity": "IA critique",
+      "classification": "OBSERVED",
+      "boundary": "Allowed when based on current main artifacts and runtime snapshot evidence."
+    },
+    {
+      "activity": "component inventory review",
+      "classification": "OBSERVED",
+      "boundary": "Allowed as inventory review; not a claim that all row-level gaps are resolved."
+    },
+    {
+      "activity": "flow descriptions",
+      "classification": "INFERRED",
+      "boundary": "Allowed for describing blocked, inspect-only, confirmable, and future flows."
+    },
+    {
+      "activity": "state diagrams",
+      "classification": "INFERRED",
+      "boundary": "Allowed if states preserve T4, TX, TU, Unknown/Drift, and proof-durability blockers."
+    },
+    {
+      "activity": "design input briefs",
+      "classification": "OBSERVED",
+      "boundary": "Allowed as continuation briefs for human discussion."
+    }
+  ],
+  "forbidden_activities": [
+    {
+      "activity": "Claude Design upload",
+      "classification": "OBSERVED",
+      "reason": "safe_for_claude_design remains NO."
+    },
+    {
+      "activity": "final Claude Design screens",
+      "classification": "OBSERVED",
+      "reason": "READY_FOR_CLAUDE_DESIGN remains not approved."
+    },
+    {
+      "activity": "production UI screen generation",
+      "classification": "OBSERVED",
+      "reason": "This packet is artifact-only and final-screen design remains blocked."
+    },
+    {
+      "activity": "T4 remote mutation design as approved behavior",
+      "classification": "OBSERVED",
+      "reason": "Remote-mutation policy is absent and T4 remains blocked."
+    },
+    {
+      "activity": "runtime action execution claims",
+      "classification": "OBSERVED",
+      "reason": "Current runtime evidence is local-only primitive rendering and preflight modeling."
+    },
+    {
+      "activity": "READY_FOR_CLAUDE_DESIGN positive readiness claim",
+      "classification": "OBSERVED",
+      "reason": "The gate is not approved."
+    },
+    {
+      "activity": "live service adapters",
+      "classification": "OBSERVED",
+      "reason": "No live adapters are authorized by this artifact packet."
+    },
+    {
+      "activity": "canonical writes",
+      "classification": "OBSERVED",
+      "reason": "Authority boundaries remain split and this packet does not own writes."
+    },
+    {
+      "activity": "runtime reclassification of Unknown/Drift rows",
+      "classification": "OBSERVED",
+      "reason": "Unknown/Drift reclassification remains blocked and packet-owned."
+    },
+    {
+      "activity": "PR, branch, merge, or proof governance mutation",
+      "classification": "OBSERVED",
+      "reason": "This packet inspects provider state only and does not mutate PRs or governance state."
+    }
+  ],
+  "unblock_conditions_for_final_screens": [
+    {
+      "condition": "PR #572 disposed or superseded with durable evidence",
+      "current_status": "BLOCKED",
+      "classification": "OBSERVED"
+    },
+    {
+      "condition": "pack-to-main proof durability accepted or landed",
+      "current_status": "BLOCKED",
+      "classification": "OBSERVED"
+    },
+    {
+      "condition": "T4 remote-mutation policy accepted if T4 appears in final designs",
+      "current_status": "BLOCKED",
+      "classification": "OBSERVED"
+    },
+    {
+      "condition": "Settings/Admin 62 per-row tier gaps resolved or explicitly waived",
+      "current_status": "BLOCKED",
+      "classification": "OBSERVED"
+    },
+    {
+      "condition": "Unknown/Drift aggregate and per-row gaps resolved or explicitly waived",
+      "current_status": "BLOCKED",
+      "classification": "OBSERVED"
+    },
+    {
+      "condition": "open PRs that affect inventory or Cockpit design are disposed or incorporated",
+      "current_status": "BLOCKED",
+      "classification": "INFERRED"
+    }
+  ]
+}
