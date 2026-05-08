@@ -276,7 +276,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           title={
             isComplete
               ? 'Task sequence complete'
-              : `${completedCount}/${totalCount} tasks • ${getDurationAriaLabel(displayRemainingMinutes)} (${finishTimeLabel})`
+              : `${completedCount}/${totalCount} tasks • ${getDurationAriaLabel(displayRemainingMinutes)}${finishTimeLabel ? ` (${finishTimeLabel})` : ''}`
           }
           arrow
         >
@@ -285,7 +285,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             aria-label={
               isComplete
                 ? 'Task sequence complete'
-                : `${completedCount}/${totalCount} tasks completed. ${getDurationAriaLabel(displayRemainingMinutes)}. Estimated completion: ${finishTimeLabel}`
+                : `${completedCount}/${totalCount} tasks completed. ${getDurationAriaLabel(displayRemainingMinutes)}.${finishTimeLabel ? ` Estimated completion: ${finishTimeLabel}` : ''}`
             }
             tabIndex={0}
             sx={{
@@ -559,7 +559,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           title={
             isComplete
               ? 'Task sequence complete'
-              : `${completedCount}/${totalCount} tasks • ${getDurationAriaLabel(displayRemainingMinutes)} (${finishTimeLabel})`
+              : `${completedCount}/${totalCount} tasks • ${getDurationAriaLabel(displayRemainingMinutes)}${finishTimeLabel ? ` (${finishTimeLabel})` : ''}`
           }
           arrow
         >
@@ -586,7 +586,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             aria-label={
               isComplete
                 ? 'Task sequence complete'
-                : `${completedCount}/${totalCount} tasks completed. ${getDurationAriaLabel(displayRemainingMinutes)}. Estimated completion: ${finishTimeLabel}`
+                : `${completedCount}/${totalCount} tasks completed. ${getDurationAriaLabel(displayRemainingMinutes)}.${finishTimeLabel ? ` Estimated completion: ${finishTimeLabel}` : ''}`
             }
           >
             {isComplete ? (
