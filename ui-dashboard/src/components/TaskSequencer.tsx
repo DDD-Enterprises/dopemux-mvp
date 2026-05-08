@@ -197,6 +197,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   };
 
   const currentTask = tasks.find((task) => task.id === currentTaskId);
+  const nextTask = useMemo(() => {
+    if (!currentTaskId || optimizedTasks.length <= 1) return null;
+    const currentIndex = optimizedTasks.findIndex((task) => task.id === currentTaskId);
+    if (currentIndex === -1) return null;
+    const nextIndex = (currentIndex + 1) % optimizedTasks.length;
+    return optimizedTasks[nextIndex];
+  }, [optimizedTasks, currentTaskId]);
+
   const statusTone = statusStyles[cognitiveState.status];
 
   const isOvertime = useMemo(() => {
@@ -457,7 +465,16 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                 Complete
               </Button>
             </Tooltip>
-            <Tooltip title={optimizedTasks.length <= 1 ? 'No other tasks to skip to' : 'Skip for Now'} arrow>
+            <Tooltip
+              title={
+                nextTask
+                  ? `Skip to: ${nextTask.title}`
+                  : optimizedTasks.length <= 1
+                    ? 'No other tasks to skip to'
+                    : 'Skip for Now'
+              }
+              arrow
+            >
               <Box
                 component="span"
                 tabIndex={optimizedTasks.length <= 1 ? 0 : -1}
@@ -477,7 +494,11 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                   startIcon={<SkipForward aria-hidden="true" />}
                   onClick={() => skipTask(currentTask.id)}
                   sx={{ color: brandTokens.colors.gremlinPink }}
-                  aria-label={`Skip task: ${currentTask.title}`}
+                  aria-label={
+                    nextTask
+                      ? `Skip ${currentTask.title}, proceed to ${nextTask.title}`
+                      : `Skip task: ${currentTask.title}`
+                  }
                   disabled={optimizedTasks.length <= 1}
                 >
                   Skip
