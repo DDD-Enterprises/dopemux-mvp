@@ -43,8 +43,12 @@ jobs:
           claude-model: "claude-opus-4-1-20250805"
 
           # Custom instructions for memory/intelligence systems
-          custom-security-scan-instructions: .github/security-scan-instructions.txt
-          false-positive-filtering-instructions: .github/security-filtering-instructions.txt
+          # Use absolute paths: the upstream composite action chdirs into
+          # `github.action_path` before opening these files, so a repo-relative
+          # path resolves under the action's checkout instead of the workspace
+          # and the customizations silently fall back to defaults.
+          custom-security-scan-instructions: ${{ github.workspace }}/.github/security-scan-instructions.txt
+          false-positive-filtering-instructions: ${{ github.workspace }}/.github/security-filtering-instructions.txt
 
           # Exclude test directories and generated files to reduce noise
           exclude-directories: "tests,__pycache__,node_modules,.git,docker/leantime/data"
