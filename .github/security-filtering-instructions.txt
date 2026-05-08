@@ -1,0 +1,66 @@
+Dopemux false-positive filtering instructions
+
+Use these filters after producing candidate findings. Keep true positives even
+when they appear in noisy areas, but require a clear runtime or operator-impact
+path before reporting.
+
+Report a candidate finding when at least one is true
+- It is reachable from compose.yml, an active Dockerfile, an active package
+  entrypoint, an active GitHub Actions workflow, or documented startup commands.
+- It affects an exposed HTTP, WebSocket, SSE, webhook, MCP, CLI, or automation
+  surface.
+- It can modify or disclose PM state, workflow transitions, ConPort context,
+  dope-memory chronicles, indexed code/docs, event streams, provider API keys,
+  local workspace files, host-mounted data, or generated proof artifacts.
+- It can weaken authentication, authorization, signature verification, replay
+  protection, CORS isolation, process execution safety, or host/container
+  boundaries.
+- It is in code copied into a runtime image even if the exact endpoint is not
+  currently wired.
+
+Suppress or downgrade a candidate finding when all are true
+- The vulnerable-looking code is only in tests, simulator tests, generated
+  reports, archived material, backup compose files, examples, or fixture data.
+- There is no active import, package entrypoint, compose service, CI path,
+  Docker COPY path, or documented operator path to the code.
+- The value is an obvious placeholder such as example.com, changeme, dummy,
+  fake, test-only, or redacted text and is not used as a runtime default.
+
+Common repo-specific noise
+- docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests contains
+  intentional vulnerable examples for security tool validation.
+- tests, service-local test_* files, generated reports, proof artifacts, and
+  extraction outputs can contain historical or synthetic vulnerability text.
+- Archived, backup, and legacy compose files can show old Docker socket mounts,
+  host networking, or permissive mounts. Report only if an active workflow or
+  operator command still uses them.
+- Documentation may mention old service ports or stale architecture. Treat this
+  as documentation drift unless the stale value causes an exploitable runtime
+  path.
+
+Do not suppress these without proof
+- Default runtime credentials in compose.yml or active service config.
+- Missing auth on endpoints that mutate workflow, PM, memory, event, retrieval,
+  bridge, or local workspace state.
+- Credentialed wildcard CORS on active services.
+- Webhook signature verification or replay/deduplication defects.
+- Arbitrary file access through user-controlled workspace, relative path,
+  transcript path, archive path, or retrieval parameters.
+- Shell command injection, unsafe subprocess execution, or untrusted environment
+  propagation in active CLI/service code.
+- Unsafe deserialization in active memory, cache, checkpoint, or session flows.
+- Writable host mounts or Docker socket exposure in active compose/runtime paths.
+
+How to phrase retained findings
+- Lead with the affected service and reachable entrypoint.
+- Include exact file and line references.
+- Explain the authority boundary crossed, if any.
+- State why the code is active or plausibly active.
+- State exploit prerequisites and impact.
+- Recommend the smallest fail-closed mitigation.
+
+If runtime authority is unclear
+- Mark the finding as "needs runtime confirmation" instead of suppressing it
+  when the issue is security-significant and the code is copied into images or
+  reachable through an active package path.
+- Mark pure architecture drift separately from exploitable vulnerabilities.
