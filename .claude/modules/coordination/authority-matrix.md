@@ -215,4 +215,4 @@ Integration Bridge enforces tool-level access per role:
 **See Also:**
 - `.claude/modules/coordination/integration-bridge.md` - Event routing details
 - `.claude/modules/superclaude-integration.md` - SuperClaude configuration
-- `.claude/modules/pm-plane/task-orchestrator.md` - ConPort task management
+- `.claude/modules/pm-plane/_deprecated/task-orchestrator.md` - ConPort task management (archived; see Decision #132-134)
