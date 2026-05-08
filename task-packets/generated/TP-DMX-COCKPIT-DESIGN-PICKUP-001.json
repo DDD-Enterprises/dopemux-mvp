@@ -1,0 +1,172 @@
+{
+  "id": "TP-DMX-COCKPIT-DESIGN-PICKUP-001",
+  "project": "dopemux-mvp",
+  "target": "Create a current-state Dopemux Cockpit design pickup brief from main after pack-to-main consolidation, identifying what design discussion can safely resume, what remains blocked, and what Claude Design must not do yet.",
+  "invariants": [
+    "This packet is artifact-only.",
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must not modify runtime behavior.",
+    "This packet must not generate final UI screens.",
+    "This packet must not upload anything to Claude Design.",
+    "This packet must not claim READY_FOR_CLAUDE_DESIGN.",
+    "This packet must preserve safe_for_claude_design: NO.",
+    "This packet must preserve READY_FOR_CLAUDE_DESIGN: not approved.",
+    "This packet must not authorize runtime action execution.",
+    "This packet must not authorize T4 remote mutation.",
+    "This packet must not add live service adapters.",
+    "This packet must not add canonical writes.",
+    "This packet must not runtime-reclassify Unknown/Drift rows.",
+    "This packet must distinguish design discussion, primitive sketching, final-screen design, runtime implementation, and merge/proof governance.",
+    "This packet must classify all claims as OBSERVED, INFERRED, UNKNOWN, or CONFLICTING.",
+    "This packet must account for PR #572 stale/conflicting state and proof-durability risk from TP-DMX-COCKPIT-PACK-TO-MAIN-MERGE-001.",
+    "This packet must not treat local-only proof as durable unless Ledger explicitly accepted it or durable proof exists.",
+    "This packet must not recommend Claude Design final screens unless every unblock condition is proven cleared."
+  ],
+  "depends_on": [
+    "TP-DMX-COCKPIT-PACK-TO-MAIN-MERGE-001",
+    "TP-DMX-COCKPIT-MAIN-STATE-RECON-001",
+    "TP-DMX-COCKPIT-MERGE-EXECUTE-001",
+    "TP-DMX-COCKPIT-INVENTORY-REGEN-001",
+    "TP-DMX-COCKPIT-UNKNOWN-DRIFT-001",
+    "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001",
+    "TP-DMX-COCKPIT-RUNTIME-RENDER-001",
+    "TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dopemux-cockpit-design-pickup",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-COCKPIT-PACK-TO-MAIN-MERGE-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/cockpit-design-pickup-001"
+  },
+  "commit": {
+    "message": "docs(cockpit): create design pickup brief",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-COCKPIT-DESIGN-PICKUP-001.json",
+      "task-packets/INDEX.md",
+      "out/cockpit-design-pickup/TP-DMX-COCKPIT-DESIGN-PICKUP-001/**",
+      "proof/cockpit-design-pickup/TP-DMX-COCKPIT-DESIGN-PICKUP-001/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-DESIGN-PICKUP-001.json >/dev/null",
+      "python -m json.tool out/cockpit-design-pickup/TP-DMX-COCKPIT-DESIGN-PICKUP-001/DESIGN_PICKUP_STATE.json >/dev/null",
+      "python -m json.tool out/cockpit-design-pickup/TP-DMX-COCKPIT-DESIGN-PICKUP-001/DESIGN_BLOCKER_MATRIX.json >/dev/null",
+      "python -m json.tool out/cockpit-design-pickup/TP-DMX-COCKPIT-DESIGN-PICKUP-001/CLAUDE_DESIGN_BOUNDARY.json >/dev/null",
+      "python -m json.tool out/cockpit-design-pickup/TP-DMX-COCKPIT-DESIGN-PICKUP-001/PROOF.json >/dev/null",
+      "cd out/cockpit-design-pickup/TP-DMX-COCKPIT-DESIGN-PICKUP-001 && shasum -a 256 -c sha256sums.txt",
+      "python -m compileall -q src/dopemux tests",
+      "python -m pytest tests/unit/dopemux/ui/cockpit -q || true",
+      "python -m pytest tests/unit/test_cockpit_cli.py -q || true",
+      "! grep -R -E \"READY_FOR_CLAUDE_DESIGN: approved|safe_for_claude_design: YES|Claude Design upload allowed|final screens approved|T4 authorized|runtime execution implemented|Unknown / Drift execution|runtime reclassification allowed|execute anyway|approve anyway|resolve now\" -n out/cockpit-design-pickup proof/cockpit-design-pickup",
+      "! grep -R -E \"gh pr merge|git merge|git rebase|git push --force|git branch -d|git branch -D|gh pr edit|gh pr close\" -n out/cockpit-design-pickup proof/cockpit-design-pickup",
+      "git diff --check",
+      "git status --short --branch"
+    ]
+  },
+  "pr": {
+    "title": "docs(cockpit): create design pickup brief",
+    "body": "Creates a current-state Dopemux Cockpit design pickup brief after pack-to-main consolidation. This is artifact-only and does not modify runtime behavior, generate final screens, upload to Claude Design, authorize runtime action execution, authorize T4 remote mutation, add live adapters, add canonical writes, or runtime-reclassify Unknown/Drift rows. It preserves safe_for_claude_design: NO and READY_FOR_CLAUDE_DESIGN: not approved.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from origin/main. Run git fetch origin --prune, create /Users/hue/code/dopemux-worktrees/dopemux-cockpit-design-pickup-001 on branch codex/cockpit-design-pickup-001 from origin/main, verify .dopetaskroot, verify origin identity, verify branch and HEAD, and ensure the worktree is clean.",
+      "validation": [
+        "Stop if repo identity, marker, branch, HEAD, or clean status cannot be verified. Record origin/main HEAD and whether it contains the pack-to-main merge commit 0ca8fae9dee59bc410cf013cc9af741aa28b88e7."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create task-packets/generated/TP-DMX-COCKPIT-DESIGN-PICKUP-001.json before any deliverable artifacts. Inspect authority files on main: AGENTS.md, PROJECT.md, ARCHITECTURE.md, PM_PLANE.md, SERVICE_CATALOG.md, task-packets/INDEX.md, RULES.md if present, TRUTH_*.md if present, SYSTEM_*.md if present, and dopetask schema if present.",
+      "validation": [
+        "TP JSON parses. Missing authority files are recorded as UNKNOWN. No authority content is invented."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Inspect current main Cockpit state. Read Cockpit runtime sources, focused tests, merged proof/artifact directories, task packet index entries, and merged proof records for runtime-render, Settings/Admin, Unknown/Drift, inventory, runtime-contract fidelity if present, and pack-to-main merge evidence if present.",
+      "validation": [
+        "DESIGN_PICKUP_STATE.json records OBSERVED files, commit evidence, proof artifacts, missing artifacts, and current governance status. It must not claim design readiness from memory alone."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Build DESIGN_PICKUP_STATE.md/json summarizing what is now on main and what is not. Include: main HEAD, pack-to-main merge evidence, relevant PRs merged, PR #572 state, PR #573 state, proof durability status, Cockpit runtime model status, test status, and current design status.",
+      "validation": [
+        "State report must include classification labels OBSERVED, INFERRED, UNKNOWN, and CONFLICTING. It must explicitly say whether design discussion can resume and whether final Claude Design remains blocked."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Build DESIGN_BLOCKER_MATRIX.md/json. Track every known blocker: Claude Design final-screen approval, remote-mutation policy, runtime action execution, T4 policy, PR #572 stale/conflicting state, local-only proof durability, unresolved runtime-contract fidelity concerns if any, Unknown/Drift gaps, per-row inventory gaps, root authority/schema gaps, and any open PR touching Cockpit.",
+      "validation": [
+        "Each blocker must include status, evidence, owner packet, severity, whether it blocks design discussion, whether it blocks primitive sketches, whether it blocks Claude Design final screens, and required next action."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Build CLAUDE_DESIGN_BOUNDARY.md/json. Clearly separate allowed and forbidden design activities. Allowed may include architecture/design discussion, primitive-level sketches, IA critique, component inventory, flow descriptions, state diagrams, and design input briefs. Forbidden must include Claude Design upload, final screens, production UI screen generation, T4 remote mutation design as approved behavior, runtime execution claims, and any READY_FOR_CLAUDE_DESIGN approved claim.",
+      "validation": [
+        "Boundary file preserves safe_for_claude_design: NO and READY_FOR_CLAUDE_DESIGN: not approved. It must not contain forbidden positive claims."
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Build DESIGN_PICKUP_BRIEF.md. This is the human-facing continuation brief for this ChatGPT thread. It must say exactly where to resume, what artifacts to read first, what design work is allowed, what is blocked, what questions remain, and what packet should be next if implementation is needed. It must include a short operator summary and a detailed evidence-backed section.",
+      "validation": [
+        "Brief must be self-contained, concise enough to paste into a new design thread, and must not recommend Claude Design final screens unless blockers are proven cleared."
+      ]
+    },
+    {
+      "id": "S8",
+      "task": "Build OPEN_PR_DESIGN_IMPACT.md/json. Inspect current open PRs and classify whether any still affect Cockpit design, proof durability, runtime-contract fidelity, Claude Design blockers, or main readiness. Include PR #572 and any newer open PRs. Do not mutate PRs.",
+      "validation": [
+        "Open PR design impact must not treat open work as landed. It must classify each relevant PR as BLOCKS_DESIGN_DISCUSSION, BLOCKS_FINAL_SCREENS, NON_BLOCKING, SUPERSEDED, or NEEDS_HUMAN_DECISION."
+      ]
+    },
+    {
+      "id": "S9",
+      "task": "Run validation. Parse all generated JSON. Verify sha256sums. Run compileall. Run focused Cockpit tests and CLI tests if environment supports them; if a dependency such as textual is absent, record ENV_LIMITATION instead of hiding it. Run forbidden governance grep and forbidden mutation grep over generated artifacts. Run git diff --check.",
+      "validation": [
+        "VALIDATION_REPORT.json records every command, exit code, stdout/stderr summary, and interpretation. Validation failures must be explicit."
+      ]
+    },
+    {
+      "id": "S10",
+      "task": "Create PROOF.json, sha256sums.txt, and proof README under out/cockpit-design-pickup/TP-DMX-COCKPIT-DESIGN-PICKUP-001/ and proof/cockpit-design-pickup/TP-DMX-COCKPIT-DESIGN-PICKUP-001/. Record worktree, branch, base head, generated artifacts, validation results, design pickup verdict, blockers, residual risks, UNKNOWNs, and final_head_recording_policy if cleanup commits occur.",
+      "validation": [
+        "PROOF.json parses. sha256sums.txt verifies. Proof README preserves no-runtime/no-Claude/no-T4/no-canonical-write boundaries."
+      ]
+    },
+    {
+      "id": "S11",
+      "task": "Run final validation, inspect diff, commit only allowlisted files, push branch, and open PR to main if authenticated. If Codex is running read-only by operator preference, skip commit/PR and return local artifact paths.",
+      "validation": [
+        "All commit.verify commands pass or are explicitly classified as ENV_LIMITATION. Closeout includes final commit SHA, PR URL or blocker, proof paths, validation summary, design pickup verdict, and recommended next action."
+      ]
+    }
+  ]
+}

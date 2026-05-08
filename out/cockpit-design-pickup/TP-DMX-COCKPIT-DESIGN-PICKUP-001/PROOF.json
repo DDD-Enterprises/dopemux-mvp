@@ -1,0 +1,107 @@
+{
+  "schema_version": "dopemux.cockpit.design_pickup.proof.v1",
+  "packet_id": "TP-DMX-COCKPIT-DESIGN-PICKUP-001",
+  "generated_at_utc": "2026-05-08T00:22:36Z",
+  "worktree": "/Users/hue/code/dopemux-worktrees/dopemux-cockpit-design-pickup-001",
+  "branch": "codex/cockpit-design-pickup-001",
+  "base_ref": "origin/main",
+  "base_head": "4206a297232f6398df1964431c7b56ecbf931d82",
+  "initial_base_head": "e4f01cb176fe0d9f6a1dac410598b04985b92b2c",
+  "repo_identity": {
+    "remote_origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker": ".dopetaskroot",
+    "marker_present": true
+  },
+  "design_pickup_verdict": "READY_FOR_DESIGN_DISCUSSION",
+  "safe_for_claude_design": "NO",
+  "READY_FOR_CLAUDE_DESIGN": "not approved",
+  "boundaries": [
+    "artifact-only",
+    "no final screens",
+    "no Claude Design upload",
+    "no runtime action execution",
+    "no T4 remote mutation",
+    "no live service adapters",
+    "no canonical writes",
+    "no runtime reclassification of Unknown/Drift rows",
+    "no mutation of inspected PRs or governance state outside this packet's own delivery PR"
+  ],
+  "generated_artifacts": [
+    "out/cockpit-design-pickup/TP-DMX-COCKPIT-DESIGN-PICKUP-001/DESIGN_PICKUP_STATE.json",
+    "out/cockpit-design-pickup/TP-DMX-COCKPIT-DESIGN-PICKUP-001/DESIGN_PICKUP_STATE.md",
+    "out/cockpit-design-pickup/TP-DMX-COCKPIT-DESIGN-PICKUP-001/DESIGN_BLOCKER_MATRIX.json",
+    "out/cockpit-design-pickup/TP-DMX-COCKPIT-DESIGN-PICKUP-001/DESIGN_BLOCKER_MATRIX.md",
+    "out/cockpit-design-pickup/TP-DMX-COCKPIT-DESIGN-PICKUP-001/CLAUDE_DESIGN_BOUNDARY.json",
+    "out/cockpit-design-pickup/TP-DMX-COCKPIT-DESIGN-PICKUP-001/CLAUDE_DESIGN_BOUNDARY.md",
+    "out/cockpit-design-pickup/TP-DMX-COCKPIT-DESIGN-PICKUP-001/DESIGN_PICKUP_BRIEF.md",
+    "out/cockpit-design-pickup/TP-DMX-COCKPIT-DESIGN-PICKUP-001/OPEN_PR_DESIGN_IMPACT.json",
+    "out/cockpit-design-pickup/TP-DMX-COCKPIT-DESIGN-PICKUP-001/OPEN_PR_DESIGN_IMPACT.md",
+    "out/cockpit-design-pickup/TP-DMX-COCKPIT-DESIGN-PICKUP-001/VALIDATION_REPORT.json",
+    "out/cockpit-design-pickup/TP-DMX-COCKPIT-DESIGN-PICKUP-001/PROOF.json",
+    "out/cockpit-design-pickup/TP-DMX-COCKPIT-DESIGN-PICKUP-001/sha256sums.txt",
+    "proof/cockpit-design-pickup/TP-DMX-COCKPIT-DESIGN-PICKUP-001/README.md"
+  ],
+  "validation_results": [
+    {
+      "label": "task_packet_schema_validate",
+      "exit_code": 0
+    },
+    {
+      "label": "generated_json_parse",
+      "exit_code": 0
+    },
+    {
+      "label": "sha256_manifest_verify",
+      "exit_code": 0
+    },
+    {
+      "label": "compileall",
+      "exit_code": 0
+    },
+    {
+      "label": "pytest_cockpit_ui",
+      "exit_code": 0,
+      "summary": "83 passed; existing asyncio_mode warning"
+    },
+    {
+      "label": "pytest_cockpit_cli",
+      "exit_code": 0,
+      "summary": "5 passed; existing asyncio_mode warning"
+    },
+    {
+      "label": "forbidden_governance_claim_grep",
+      "exit_code": 0
+    },
+    {
+      "label": "forbidden_mutation_command_grep",
+      "exit_code": 0
+    },
+    {
+      "label": "git_diff_check",
+      "exit_code": 0
+    },
+    {
+      "label": "pre_commit",
+      "exit_code": 0
+    }
+  ],
+  "codereview_status": "ENV_LIMITATION: codereview executable absent on PATH; manual diff review performed.",
+  "precommit_status": "pre-commit run --files allowlisted packet files exited 0.",
+  "blockers": [
+    "PR #572 remains open with current dirty mergeability.",
+    "Pack-to-main proof is local-only unless Ledger accepts it or durable proof lands.",
+    "Settings/Admin per-row tiers remain unresolved for 62 rows.",
+    "Unknown/Drift lower-bound queue remains 487.",
+    "T4 remote mutation policy remains absent.",
+    "PR #586 may alter inventory if it lands.",
+    "PR #585 is merged but its design pickup plan is stale and conflicts with post-pack-to-main current state."
+  ],
+  "unknowns": [
+    "Ledger acceptance state for local-only pack-to-main proof.",
+    "Operator disposition for PR #572.",
+    "Exact per-row Settings/Admin tier mapping.",
+    "Exact row-level data behind several Unknown/Drift aggregate classes.",
+    "Whether PR #586 will land before final-screen review."
+  ],
+  "final_head_recording_policy": "This PROOF.json records the base head used for artifact generation. Final commit SHA is reported out-of-band after commit to avoid self-referential proof drift."
+}
