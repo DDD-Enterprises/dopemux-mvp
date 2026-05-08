@@ -24,6 +24,7 @@
       "task-packets/generated/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001.json",
       "task-packets/INDEX.md",
       "tests/unit/dopemux/ui/cockpit/test_merge_stack_artifacts.py",
+      "tests/conftest.py",
       "out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/**",
       "proof/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/**"
     ],

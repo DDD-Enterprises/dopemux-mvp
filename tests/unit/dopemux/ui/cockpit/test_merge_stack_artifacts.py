@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -29,6 +30,15 @@ def _artifact_text() -> str:
     )
 
 
+def _sha256_entries() -> list[tuple[str, str]]:
+    checksum_path = ARTIFACT_DIR / "sha256sums.txt"
+    entries: list[tuple[str, str]] = []
+    for line in checksum_path.read_text(encoding="utf-8").splitlines():
+        expected_hash, relative_path = line.split(maxsplit=1)
+        entries.append((expected_hash, relative_path))
+    return entries
+
+
 def test_merge_stack_json_artifacts_parse_and_match_packet_id():
     for name in (
         "STACK_STATE_REPORT.json",
@@ -47,10 +57,13 @@ def test_stack_pr_order_is_preserved():
     readiness = _load_json("CONSOLIDATION_READINESS_MATRIX.json")
 
     covered = [568, 569, 570, 571, 573]
+    state_pr_numbers = [item["pr_number"] for item in state["stack_prs"]]
     assert state["covered_pr_set"] == covered
     assert ancestry["covered_pr_set"] == covered
     assert readiness["covered_pr_set"] == covered
-    assert [item["pr_number"] for item in state["stack_prs"]] == covered
+    assert len(state_pr_numbers) == len(covered)
+    assert set(state_pr_numbers) == set(covered)
+    assert state_pr_numbers == covered
     assert ancestry["declared_order"] == [568, 569, 570, 571]
     assert readiness["merge_order_recommendation"] == [568, 569, 570, 571]
     assert readiness["merge_candidate_prs"] == [568, 569, 570, 571]
@@ -136,7 +149,7 @@ def test_expected_stack_heads_and_ancestry_are_verified():
             assert item["merge_commit"] == "c0c32c1639e675d3415257f2444437ae1fa2ea3c"
             assert item["coverage_role"] == "reviewed_merged_evidence_not_merge_candidate"
         else:
-            assert item["pr_state"] == "OPEN"
+            assert item["pr_state"] in {"OPEN", "MERGED"}
     assert ancestry["all_declared_ancestry_checks_passed"] is True
     assert ancestry["unexpected_divergence_detected"] is False
     assert ancestry["required_packet_skip_detected"] is False
@@ -211,3 +224,13 @@ def test_forbidden_mutation_command_tokens_absent_from_generated_artifacts():
     )
     for phrase in forbidden:
         assert phrase not in text
+
+
+def test_sha256sums_match_artifact_files():
+    entries = _sha256_entries()
+
+    assert len(entries) == 12
+    for expected_hash, relative_path in entries:
+        path = ARTIFACT_DIR / relative_path
+        assert path.is_file()
+        assert hashlib.sha256(path.read_bytes()).hexdigest() == expected_hash

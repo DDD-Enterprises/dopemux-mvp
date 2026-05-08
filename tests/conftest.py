@@ -89,6 +89,13 @@ try:  # pragma: no cover - best effort compatibility
     import pytest_asyncio  # type: ignore  # noqa: F401
 except ImportError:  # pragma: no cover - fallback
 
+    def pytest_addoption(parser):
+        parser.addini(
+            "asyncio_mode",
+            "Compatibility setting consumed by pytest-asyncio when installed.",
+            default="auto",
+        )
+
     @pytest.hookimpl(tryfirst=True)
     def pytest_runtest_setup(item):
         if item.get_closest_marker("asyncio"):

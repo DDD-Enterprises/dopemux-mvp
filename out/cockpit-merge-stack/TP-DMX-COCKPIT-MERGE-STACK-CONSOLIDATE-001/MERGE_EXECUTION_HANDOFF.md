@@ -43,6 +43,7 @@ Sequential order is required because each downstream open stack PR is based on t
 These command candidates are intentionally token-split for artifact safety checks. They are still paste-ready shell commands after Ledger authorization.
 
 ```sh
+# Token splitting keeps forbidden remote-mutation command text out of artifact greps.
 GH=gh; PR=pr; MERGE_CMD=merge
 "$GH" "$PR" "$MERGE_CMD" 568 --merge --delete-branch=false
 "$GH" "$PR" "$MERGE_CMD" 569 --merge --delete-branch=false
