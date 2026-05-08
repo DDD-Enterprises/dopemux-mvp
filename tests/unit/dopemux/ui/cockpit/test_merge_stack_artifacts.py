@@ -27,7 +27,7 @@ def _joined(*parts: str) -> str:
 
 def _artifact_text() -> str:
     return "\n".join(
-        path.read_text(encoding="utf-8", errors="ignore")
+        path.read_text(encoding="utf-8", errors="replace")
         for root in (ARTIFACT_DIR, PROOF_DIR)
         for path in sorted(root.glob("**/*"))
         if path.is_file()
