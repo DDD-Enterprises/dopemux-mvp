@@ -1,0 +1,76 @@
+Dopemux security review instructions
+
+Review this repository as a composed multi-system workspace, not as a single
+monolithic app. Preserve the repo's authority boundaries when classifying
+impact and proposed fixes.
+
+Primary authority and runtime surfaces
+- Treat compose.yml, runtime entrypoints, Dockerfiles, active workflow files,
+  pyproject.toml, package.json, and tests as the strongest evidence.
+- Treat README.md, ARCHITECTURE.md, SERVICE_CATALOG.md, PM_PLANE.md, and
+  docs/03-reference systems docs as supporting architecture evidence.
+- Do not promote generated, archived, legacy, exploratory, or extracted
+  artifacts above current runtime code and compose wiring.
+- Keep adapter/proxy/bridge surfaces separate from canonical data authorities.
+
+Architecture boundaries that matter for security impact
+- dopemux is the operator control surface for CLI, startup, routing, and MCP
+  coordination.
+- dopetask is the external execution runtime reached through scripts/dopetask.
+- Leantime owns passive PM metadata; task-orchestrator owns workflow-significant
+  transitions; ConPort owns structured context, decisions, and progress;
+  dope-memory owns chronicle receipts.
+- dope-context owns deterministic code/docs indexing and retrieval.
+- dopecon-bridge routes, proxies, and transports events only. It is not the
+  source of truth for PM, workflow, decisions, progress, memory, or retrieval.
+- ADHD Engine is operator-support/cognitive-state infrastructure only.
+- Repo Truth Extractor emits evidence artifacts about the repo; its outputs are
+  not runtime truth.
+
+Prioritize these attack surfaces
+- Public or locally exposed HTTP, WebSocket, MCP, SSE, and webhook endpoints.
+- Authentication bypass, weak default credentials, dev-only keys that can reach
+  non-dev deployments, JWT secret defaults, and missing authorization checks.
+- OpenAI webhook verification, replay/deduplication, event ledger writes, and
+  provider event normalization.
+- CORS configuration, especially wildcard origins or broad methods/headers on
+  credentialed services.
+- SSRF, path traversal, arbitrary file read/write, workspace escape, and host
+  mount exposure through code/docs retrieval, MCP tools, Serena, dope-context,
+  desktop automation, and workspace watcher paths.
+- Command execution and process spawning in CLI, MCP client/server wrappers,
+  task orchestration, update flows, session managers, and scripts. Check for
+  shell=True, string-built shell commands, unsanitized command arguments, and
+  inherited secret-heavy environments.
+- Unsafe deserialization, especially pickle, dynamic exec/eval, raw YAML load,
+  and untrusted JSON-to-command or JSON-to-path flows.
+- Secret leakage through logs, generated artifacts, docs, test fixtures,
+  compose defaults, config dumps, env extraction outputs, and proof bundles.
+- Docker and compose hardening: exposed ports, default credentials, privileged
+  containers, Docker socket mounts, writable host mounts, broad HOME/code
+  mounts, image provenance, and missing health/fail-closed behavior.
+- Cross-plane authorization: PM writes, workflow transitions, decision/progress
+  writes, event publication, memory writes, and bridge-mediated routes must not
+  allow one plane to silently mutate another plane without explicit authority.
+
+Expected finding quality
+- Cite concrete files and lines.
+- State exploit prerequisites, affected service, data impact, and likely
+  runtime path.
+- Distinguish verified runtime exposure from inferred or legacy exposure.
+- Prefer fail-closed, minimal fixes that preserve deterministic behavior and
+  auditability.
+- Do not suggest broad architecture rewrites unless the vulnerability cannot be
+  fixed locally.
+- If docs and runtime disagree, report the drift separately from the code issue.
+
+Noise controls
+- Tests, simulator fixtures, generated reports, archived docs, and legacy backup
+  compose files may intentionally contain vulnerable examples. Report them only
+  if they are reachable from active runtime, active CI, packaging, published
+  docs, or operator setup paths.
+- Do not flag placeholders in .env.example, docs, or tests as leaked secrets
+  unless they are real-looking credentials or copied into runtime defaults.
+- Do not treat dopecon-bridge exposure of PM-like routes as proof that the bridge
+  owns PM authority. The security question is whether routing enforces authority
+  boundaries and authentication.
