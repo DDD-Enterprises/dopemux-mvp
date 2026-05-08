@@ -1,7 +1,7 @@
 {
   "schema_version": "dopemux.cockpit.design_pickup.state.v1",
   "packet_id": "TP-DMX-COCKPIT-DESIGN-PICKUP-001",
-  "generated_at_utc": "2026-05-07T23:58:54Z",
+  "generated_at_utc": "2026-05-08T00:18:39Z",
   "design_pickup_verdict": "READY_FOR_DESIGN_DISCUSSION",
   "safe_for_claude_design": "NO",
   "READY_FOR_CLAUDE_DESIGN": "not approved",
@@ -16,7 +16,8 @@
     "worktree": "/Users/hue/code/dopemux-worktrees/dopemux-cockpit-design-pickup-001",
     "branch": "codex/cockpit-design-pickup-001",
     "base_ref": "origin/main",
-    "base_head": "e4f01cb176fe0d9f6a1dac410598b04985b92b2c",
+    "base_head": "3a6b40853e21117fd8469736027b22bad1463c29",
+    "initial_base_head": "e4f01cb176fe0d9f6a1dac410598b04985b92b2c",
     "remote_origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
     "repo_marker": ".dopetaskroot",
     "repo_marker_present": true,
@@ -77,13 +78,13 @@
   ],
   "main_state": {
     "classification": "OBSERVED",
-    "main_head": "e4f01cb176fe0d9f6a1dac410598b04985b92b2c",
+    "main_head": "3a6b40853e21117fd8469736027b22bad1463c29",
     "recent_security_commits_after_cockpit_pack_merge": [
+      "3a6b40853e21117fd8469736027b22bad1463c29",
+      "af39122ab",
       "e4f01cb176fe0d9f6a1dac410598b04985b92b2c",
       "486661f70",
-      "8901ade02",
-      "42da4dc6e",
-      "3e97dfe4"
+      "8901ade02"
     ],
     "pack_to_main_merge": {
       "classification": "OBSERVED",
@@ -102,6 +103,16 @@
       "merge_commit": "c0c32c1639e675d3415257f2444437ae1fa2ea3c",
       "merged_at_utc": "2026-05-07T11:07:33Z",
       "included_in_pack_to_main_merge": true
+    },
+    "main_state_recon": {
+      "classification": "OBSERVED",
+      "pr": 585,
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/585",
+      "state": "MERGED",
+      "merge_commit": "3a6b40853e21117fd8469736027b22bad1463c29",
+      "merged_at_utc": "2026-05-08T00:07:20Z",
+      "artifact_status": "DURABLE_BUT_STALE",
+      "reason": "The merged DESIGN_PICKUP_PLAN.md still says the pack is not on main, which conflicts with the current main state after PR #587."
     }
   },
   "cockpit_runtime_model_status": {
@@ -172,7 +183,7 @@
       "task-packets/generated/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001.json"
     ]
   },
-  "local_only_or_non_landed_artifacts": [
+  "local_only_or_stale_artifacts": [
     {
       "path": "/Users/hue/code/dopemux-worktrees/dopemux-cockpit-pack-to-main-merge-001/out/cockpit-pack-to-main-merge/TP-DMX-COCKPIT-PACK-TO-MAIN-MERGE-001/PROOF.json",
       "classification": "OBSERVED",
@@ -180,32 +191,34 @@
       "reason": "pack-to-main worktree is dirty and proof branch was not pushed; current main does not contain out/cockpit-pack-to-main-merge"
     },
     {
-      "path": "/Users/hue/code/dopemux-worktrees/dopemux-cockpit-main-state-recon-001/out/cockpit-main-state-recon/TP-DMX-COCKPIT-MAIN-STATE-RECON-001/DESIGN_PICKUP_PLAN.md",
+      "path": "out/cockpit-main-state-recon/TP-DMX-COCKPIT-MAIN-STATE-RECON-001/DESIGN_PICKUP_PLAN.md",
       "classification": "CONFLICTING",
-      "durable_on_main": false,
-      "reason": "open PR #585 artifact predates the pack-to-main merge and states that no pack work landed on main, which is now false"
+      "durable_on_main": true,
+      "reason": "PR #585 is now merged, but its plan predates the pack-to-main merge and states that no pack work landed on main, which is now false."
     }
   ],
   "open_pr_state_summary": {
     "classification": "OBSERVED",
     "source": "gh CLI and GitHub pulls API",
-    "open_pr_count": 10,
+    "open_pr_count_excluding_this_packet_pr": 9,
+    "open_pr_count_including_this_packet_pr_after_publication": 10,
     "pr572": {
       "state": "open",
       "base": "main",
       "head": "codex/cockpit-merge-stack-consolidate-001",
-      "mergeable": false,
-      "mergeable_state": "dirty",
+      "mergeable": null,
+      "mergeable_state": "unknown",
       "updated_at_utc": "2026-05-07T11:13:12Z",
-      "design_impact": "stale/conflicting stack-consolidation evidence; needs human disposition"
+      "design_impact": "stale stack-consolidation evidence with unresolved current mergeability; needs human disposition",
+      "prior_local_proof_state": "local pack-to-main proof recorded merge_state=DIRTY after pack branch disappearance"
     },
     "pr585": {
-      "state": "open",
+      "state": "merged",
       "base": "main",
       "head": "codex/cockpit-main-state-recon-001",
-      "mergeable": true,
-      "mergeable_state": "behind",
-      "design_impact": "stale current-state artifact; superseded by pack-to-main merge and this pickup"
+      "merge_commit": "3a6b40853e21117fd8469736027b22bad1463c29",
+      "merged_at_utc": "2026-05-08T00:07:20Z",
+      "design_impact": "durable but stale current-state artifact; superseded by pack-to-main merge and this pickup"
     }
   },
   "current_design_status": {

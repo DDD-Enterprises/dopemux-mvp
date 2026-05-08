@@ -11,8 +11,9 @@ OBSERVED through `gh` and the GitHub pulls API on 2026-05-07:
 
 - PR #587 is merged; pack remediation is on `main`.
 - PR #573 is merged; runtime-contract fidelity repair is on `main`.
-- PR #572 is open against `main`, `mergeable=false`, `mergeable_state=dirty`.
-- There are 10 open PRs.
+- PR #585 is merged, but its design pickup plan is stale after PR #587.
+- PR #572 is open against `main`; GitHub currently reports `mergeable=null`, `mergeable_state=unknown`, while local pack-to-main proof recorded dirty state after pack branch disappearance.
+- There are 9 open PRs excluding this packet's PR, or 10 including this packet's PR after publication.
 
 ## Impact Matrix
 
@@ -23,10 +24,9 @@ OBSERVED through `gh` and the GitHub pulls API on 2026-05-07:
 | #589 | NON_BLOCKING | No | No | PR queue template security changes. |
 | #588 | NON_BLOCKING | No | No | Security instruction docs. |
 | #586 | BLOCKS_FINAL_SCREENS | No | Yes | Removes genetic-agent/taskmaster surfaces that may change inventory and Unknown/Drift counts. |
-| #585 | SUPERSEDED | No | Yes | Stale Cockpit recon artifact conflicts with post-PR #587 main. |
 | #584 | NON_BLOCKING | No | No | MCP follow-up paths. |
 | #583 | NON_BLOCKING | No | No | Dependency updates. |
 | #582 | NON_BLOCKING | No | No | Dependency updates. |
-| #572 | NEEDS_HUMAN_DECISION | No | Yes | Stale/conflicting Cockpit merge-stack evidence remains open. |
+| #572 | NEEDS_HUMAN_DECISION | No | Yes | Stale Cockpit merge-stack evidence remains open with unresolved current mergeability. |
 
-Design discussion can continue, but final screens cannot be recommended while #572 is unresolved and #586/#585 remain relevant to final-screen readiness.
+Design discussion can continue, but final screens cannot be recommended while #572 is unresolved, #586 may alter inventory, and merged PR #585 remains stale historical evidence.

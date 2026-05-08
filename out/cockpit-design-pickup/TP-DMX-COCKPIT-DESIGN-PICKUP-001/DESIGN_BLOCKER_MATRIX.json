@@ -1,7 +1,7 @@
 {
   "schema_version": "dopemux.cockpit.design_pickup.blocker_matrix.v1",
   "packet_id": "TP-DMX-COCKPIT-DESIGN-PICKUP-001",
-  "generated_at_utc": "2026-05-07T23:58:54Z",
+  "generated_at_utc": "2026-05-08T00:18:39Z",
   "safe_for_claude_design": "NO",
   "READY_FOR_CLAUDE_DESIGN": "not approved",
   "design_pickup_verdict": "READY_FOR_DESIGN_DISCUSSION",
@@ -54,11 +54,11 @@
     {
       "id": "B04_PR572_STALE_CONFLICTING",
       "claim_classification": "OBSERVED",
-      "status": "NEEDS_HUMAN_DECISION",
+      "status": "OPEN_STALE_MERGEABILITY_UNKNOWN",
       "severity": "HIGH",
       "owner_packet": "TP-DMX-COCKPIT-PACK-TO-MAIN-MERGE-001 follow-up or successor",
       "evidence": [
-        "GitHub pulls API reports PR #572 state=open base=main mergeable=false mergeable_state=dirty",
+        "GitHub pulls API currently reports PR #572 state=open base=main mergeable=null mergeable_state=unknown",
         "local pack-to-main proof records PR #572 base changed after pack branch disappearance"
       ],
       "blocks_design_discussion": false,
@@ -161,19 +161,19 @@
       "required_next_action": "If PR #586 lands, regenerate Cockpit inventory before any final-screen gate review."
     },
     {
-      "id": "B11_OPEN_PR585_STALE_RECON",
+      "id": "B11_MERGED_PR585_STALE_RECON",
       "claim_classification": "CONFLICTING",
-      "status": "SUPERSEDED_OPEN_PR",
+      "status": "MERGED_STALE_RECON_ARTIFACT",
       "severity": "MEDIUM",
       "owner_packet": "TP-DMX-COCKPIT-MAIN-STATE-RECON-001 or this successor packet",
       "evidence": [
-        "PR #585 remains open and behind main",
-        "its DESIGN_PICKUP_PLAN.md predates PR #587 and contradicts current main"
+        "PR #585 merged at 3a6b40853e21117fd8469736027b22bad1463c29",
+        "its DESIGN_PICKUP_PLAN.md predates PR #587 and still contradicts current main"
       ],
       "blocks_design_discussion": false,
       "blocks_primitive_sketches": false,
       "blocks_claude_design_final_screens": true,
-      "required_next_action": "Treat PR #585 as stale evidence; do not use it as current design authority."
+      "required_next_action": "Treat PR #585 artifacts as historical stale evidence; use this packet for current design pickup state."
     }
   ]
 }

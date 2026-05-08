@@ -1,7 +1,7 @@
 {
   "schema_version": "dopemux.cockpit.design_pickup.claude_boundary.v1",
   "packet_id": "TP-DMX-COCKPIT-DESIGN-PICKUP-001",
-  "generated_at_utc": "2026-05-07T23:58:54Z",
+  "generated_at_utc": "2026-05-08T00:18:39Z",
   "safe_for_claude_design": "NO",
   "READY_FOR_CLAUDE_DESIGN": "not approved",
   "design_pickup_verdict": "READY_FOR_DESIGN_DISCUSSION",
@@ -91,7 +91,7 @@
     {
       "activity": "PR, branch, merge, or proof governance mutation",
       "classification": "OBSERVED",
-      "reason": "This packet inspects provider state only and does not mutate PRs or governance state."
+      "reason": "This packet inspects provider state only and does not mutate inspected PRs or governance state."
     }
   ],
   "unblock_conditions_for_final_screens": [

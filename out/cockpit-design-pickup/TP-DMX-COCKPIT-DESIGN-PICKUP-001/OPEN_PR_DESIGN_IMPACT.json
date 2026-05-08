@@ -1,11 +1,17 @@
 {
   "schema_version": "dopemux.cockpit.design_pickup.open_pr_impact.v1",
   "packet_id": "TP-DMX-COCKPIT-DESIGN-PICKUP-001",
-  "generated_at_utc": "2026-05-07T23:58:54Z",
+  "generated_at_utc": "2026-05-08T00:18:39Z",
   "source": "gh pr list, gh pr view, and GitHub pulls API",
   "safe_for_claude_design": "NO",
   "READY_FOR_CLAUDE_DESIGN": "not approved",
   "merged_reference_prs": [
+    {
+      "number": 585,
+      "state": "MERGED",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/585",
+      "impact": "main-state recon artifacts are now on main, but their design pickup plan is stale after PR #587"
+    },
     {
       "number": 573,
       "state": "MERGED",
@@ -27,7 +33,7 @@
       "state": "OPEN",
       "base": "main",
       "head": "palette/ritual-progress-feedback-18337158806223683382",
-      "mergeable_state": "behind",
+      "mergeable_state": "unknown",
       "primary_classification": "NON_BLOCKING",
       "affects_cockpit_design": false,
       "affects_proof_durability": false,
@@ -44,7 +50,7 @@
       "state": "OPEN",
       "base": "main",
       "head": "codex/propose-fix-for-gemini-review-vulnerability",
-      "mergeable_state": "behind",
+      "mergeable_state": "blocked",
       "primary_classification": "NON_BLOCKING",
       "affects_cockpit_design": false,
       "affects_proof_durability": true,
@@ -61,7 +67,7 @@
       "state": "OPEN",
       "base": "main",
       "head": "codex/fix-ci-prompt-injection-vulnerability",
-      "mergeable_state": "behind",
+      "mergeable_state": "blocked",
       "primary_classification": "NON_BLOCKING",
       "affects_cockpit_design": false,
       "affects_proof_durability": false,
@@ -95,7 +101,7 @@
       "state": "OPEN",
       "base": "main",
       "head": "codex/remove-genetic-agent-taskmaster",
-      "mergeable_state": "behind",
+      "mergeable_state": "unknown",
       "primary_classification": "BLOCKS_FINAL_SCREENS",
       "affects_cockpit_design": true,
       "affects_proof_durability": false,
@@ -106,30 +112,13 @@
       "evidence": "Changed paths remove genetic-agent/taskmaster surfaces; Cockpit Unknown/Drift artifacts identify optional genetic and related surfaces as unresolved inventory concerns."
     },
     {
-      "number": 585,
-      "title": "docs(cockpit): reconcile main and open PR cockpit state",
-      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/585",
-      "state": "OPEN",
-      "base": "main",
-      "head": "codex/cockpit-main-state-recon-001",
-      "mergeable_state": "behind",
-      "primary_classification": "SUPERSEDED",
-      "affects_cockpit_design": true,
-      "affects_proof_durability": true,
-      "affects_runtime_contract_fidelity": true,
-      "affects_claude_design_blockers": true,
-      "blocks_design_discussion": false,
-      "blocks_final_screens": true,
-      "evidence": "Open artifact PR predates pack-to-main merge; its plan says pack work is not on main, which now conflicts with current main."
-    },
-    {
       "number": 584,
       "title": "chore(mcp): apply PR #576 review follow-ups",
       "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/584",
       "state": "OPEN",
       "base": "main",
       "head": "chore/pr576-followups",
-      "mergeable_state": "behind",
+      "mergeable_state": "unknown",
       "primary_classification": "NON_BLOCKING",
       "affects_cockpit_design": false,
       "affects_proof_durability": false,
@@ -146,7 +135,7 @@
       "state": "OPEN",
       "base": "main",
       "head": "dependabot/uv/uv-5d9f238ea4",
-      "mergeable_state": "behind",
+      "mergeable_state": "unknown",
       "primary_classification": "NON_BLOCKING",
       "affects_cockpit_design": false,
       "affects_proof_durability": false,
@@ -163,7 +152,7 @@
       "state": "OPEN",
       "base": "main",
       "head": "dependabot/pip/pip-ca44cf9e00",
-      "mergeable_state": "behind",
+      "mergeable_state": "unknown",
       "primary_classification": "NON_BLOCKING",
       "affects_cockpit_design": false,
       "affects_proof_durability": false,
@@ -180,7 +169,7 @@
       "state": "OPEN",
       "base": "main",
       "head": "codex/cockpit-merge-stack-consolidate-001",
-      "mergeable_state": "dirty",
+      "mergeable_state": "unknown",
       "primary_classification": "NEEDS_HUMAN_DECISION",
       "affects_cockpit_design": true,
       "affects_proof_durability": true,
@@ -188,7 +177,7 @@
       "affects_claude_design_blockers": true,
       "blocks_design_discussion": false,
       "blocks_final_screens": true,
-      "evidence": "GitHub pulls API reports mergeable=false and mergeable_state=dirty; local pack-to-main proof says PR #572 was not merged and its base changed after pack branch disappearance."
+      "evidence": "GitHub pulls API currently reports mergeable=null and mergeable_state=unknown; local pack-to-main proof says PR #572 was not merged and its base changed after pack branch disappearance."
     }
   ]
 }

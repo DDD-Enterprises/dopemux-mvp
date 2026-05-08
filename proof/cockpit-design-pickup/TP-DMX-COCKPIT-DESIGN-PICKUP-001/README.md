@@ -16,7 +16,7 @@ This proof records an artifact-only design pickup from current `origin/main` aft
 - no live service adapters
 - no canonical writes
 - no runtime reclassification of Unknown/Drift rows
-- no PR or branch mutation
+- no mutation of inspected PRs or governance state outside this packet's own delivery PR
 
 ## Primary Artifacts
 
@@ -29,8 +29,8 @@ This proof records an artifact-only design pickup from current `origin/main` aft
 
 ## Residual Risks
 
-- PR #572 remains open and dirty against main.
+- PR #572 remains open with current mergeability unresolved.
 - Pack-to-main proof is local-only unless Ledger accepts it or durable proof lands.
 - Settings/Admin and Unknown/Drift gaps still block final screens.
 - T4 remains blocked until an accepted remote-mutation policy exists.
-- PR #585 is stale and conflicts with current main.
+- PR #585 is merged but its design pickup plan is stale and conflicts with current main.
