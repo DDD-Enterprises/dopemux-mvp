@@ -64,7 +64,7 @@ A packet is superseded by another packet
 | PACKET_032 | Memory | Chronicle Promotion Guards | Pending Audit | ADR-214 |
 | DMX-COCKPIT-PMIMPL-PACK-001 | Cockpit / PM Plane | PM/Implementer cockpit processing pack | Ready | N/A |
 | TP-DMX-COCKPIT-MAIN-STATE-RECON-001 | UI Cockpit | Reconcile origin/main and open PR cockpit state vs the pack remediation stack | Executed | N/A |
-| TP-DMX-COCKPIT-MERGE-EXECUTE-001 | UI Cockpit | Define Ledger-gated Cockpit pack merge execution procedure without authorizing runtime mutation | Ledger Review | N/A |
+| TP-DMX-COCKPIT-MERGE-EXECUTE-001 | UI Cockpit | Define Ledger-gated Cockpit pack merge execution procedure without authorizing runtime mutation | Blocked Preflight | N/A |
 
 ────────────────────────────────────────────────────────────
 🟢 Completed Task Packets

@@ -1,0 +1,76 @@
+{
+  "schema_version": "dopemux.cockpit.merge_execute.blocked_preflight_closeout.v1",
+  "packet_id": "TP-DMX-COCKPIT-MERGE-EXECUTE-001",
+  "created_at_utc": "2026-05-08T04:05:42Z",
+  "result": "BLOCKED_PREFLIGHT",
+  "closeout_status": "TRACKED_CLOSEOUT_PROOF",
+  "finding": [
+    "TP-DMX-COCKPIT-MERGE-EXECUTE-001 execution attempt ended as BLOCKED_PREFLIGHT.",
+    "PR #572 is stale/conflicting and unsafe to merge.",
+    "The #568-#571 pack work and PR #573 runtime-contract fidelity work are already present on current origin/main.",
+    "Do not re-merge #568-#571.",
+    "Do not merge #572 as-is.",
+    "If #572's merge-stack proof artifacts are still desired, salvage them through a fresh artifact-only packet from current main, not by merging stale #572."
+  ],
+  "evidence_artifacts": {
+    "attempt_proof": "out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/EXECUTION_ATTEMPT_001_PROOF.json",
+    "human_closeout": "out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/BLOCKED_PREFLIGHT_CLOSEOUT.md",
+    "machine_closeout": "out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/BLOCKED_PREFLIGHT_CLOSEOUT.json"
+  },
+  "current_refs": {
+    "origin_main": "7788f34701cf94501f186aa44c43f6f12da649de",
+    "pr_572_head": "e28db50f2c4fc06819cb278da1e149afd7e39d49",
+    "pr_598_merge_commit": "7788f34701cf94501f186aa44c43f6f12da649de"
+  },
+  "pr_572": {
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/572",
+    "state": "OPEN",
+    "mergeable": "CONFLICTING",
+    "merge_state_status": "DIRTY",
+    "classification": "superseded/stale; unsafe to merge as-is"
+  },
+  "already_on_origin_main": [
+    {
+      "pr": 568,
+      "merge_commit": "39ad991f72dd58b22944146a38649ac1b0de04fc"
+    },
+    {
+      "pr": 569,
+      "merge_commit": "a4ca22da678f0578895eb237ac270041811d80d4"
+    },
+    {
+      "pr": 570,
+      "merge_commit": "7ff3ea44e31749ce75e653b81790ab6eba3ae65e"
+    },
+    {
+      "pr": 571,
+      "merge_commit": "b173efd83c871c30f2bd86530921c866d08e7e45"
+    },
+    {
+      "pr": 573,
+      "merge_commit": "c0c32c1639e675d3415257f2444437ae1fa2ea3c"
+    }
+  ],
+  "closeout_actions": {
+    "add_tracked_proof_files": [
+      "out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/EXECUTION_ATTEMPT_001_PROOF.json",
+      "out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/BLOCKED_PREFLIGHT_CLOSEOUT.md",
+      "out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/BLOCKED_PREFLIGHT_CLOSEOUT.json"
+    ],
+    "refresh_sha256sums": true,
+    "index_update": "Set TP-DMX-COCKPIT-MERGE-EXECUTE-001 status from Ledger Review to Blocked Preflight."
+  },
+  "next_ledger_actions_after_pr_acceptance": [
+    "Close PR #572 as superseded/stale with a precise comment.",
+    "Run a fresh current-main Cockpit design pickup audit.",
+    "Resume primitive Cockpit design only if that audit says it is safe."
+  ],
+  "non_actions": [
+    "no PR #572 repair",
+    "no PR #572 merge",
+    "no PR #568-#571 re-merge",
+    "no merge execution re-run",
+    "no runtime source change",
+    "no canonical write"
+  ]
+}
