@@ -1,0 +1,145 @@
+{
+  "id": "TP-DMX-COCKPIT-MERGE-EXECUTE-001",
+  "project": "dopemux-mvp",
+  "target": "Author the Ledger-review packet and proof/governance artifacts that define a later explicitly authorized Cockpit pack consolidation procedure. This packet does not execute merges, rebase, force-push, retarget or close PRs, modify runtime source, change Cockpit UI runtime code, upload to Claude Design, generate final screens, authorize runtime execution, authorize T4 remote mutation, authorize TX/TU execution, enable Unknown/Drift runtime reclassification, or authorize canonical writes.",
+  "invariants": [
+    "safe_for_claude_design=NO",
+    "READY_FOR_CLAUDE_DESIGN=not approved",
+    "Claude Design upload not authorized",
+    "final screens not authorized",
+    "runtime_action_execution=not_authorized",
+    "t4_remote_mutation=not_authorized",
+    "canonical_writes=not_authorized",
+    "unknown_drift_runtime_reclassification=disabled",
+    "tx_tu_execution=disabled",
+    "execution requires explicit Ledger authorization before any future merge action"
+  ],
+  "depends_on": [
+    "TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001",
+    "TP-DMX-COCKPIT-MAIN-STATE-RECON-001",
+    "TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001",
+    "TP-DMX-COCKPIT-INVENTORY-REGEN-001",
+    "TP-DMX-COCKPIT-UNKNOWN-DRIFT-001",
+    "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001",
+    "TP-DMX-COCKPIT-RUNTIME-RENDER-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dopemux-cockpit-pack-consolidation",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-COCKPIT-MAIN-STATE-RECON-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/cockpit-merge-execute-packet-001",
+    "base_branch": "main",
+    "stacked_because": "artifact-only governance packet for Ledger review; no merge execution is authorized by this branch"
+  },
+  "commit": {
+    "message": "docs(cockpit): add merge execute packet",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-COCKPIT-MERGE-EXECUTE-001.json",
+      "task-packets/INDEX.md",
+      "out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/MERGE_EXECUTE_PLAN.md",
+      "out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/MERGE_EXECUTE_PLAN.json",
+      "out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/PRECHECK_MATRIX.md",
+      "out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/PRECHECK_MATRIX.json",
+      "out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/GOVERNANCE_INVARIANTS.md",
+      "out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/PROOF.json",
+      "out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/sha256sums.txt"
+    ],
+    "verify": [
+      "git status --short",
+      "python3 -m json.tool task-packets/generated/TP-DMX-COCKPIT-MERGE-EXECUTE-001.json",
+      "python3 -m json.tool out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/PROOF.json",
+      "git diff --check",
+      "shasum -a 256 -c out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/sha256sums.txt"
+    ]
+  },
+  "pr": {
+    "title": "docs(cockpit): add merge execute packet",
+    "body": "## Summary\n- add TP-DMX-COCKPIT-MERGE-EXECUTE-001 for Ledger review\n- define preflight gates, stop conditions, merge-candidate order, and proof requirements for a later explicitly authorized Cockpit pack consolidation\n- preserve no-merge, no-runtime, no-Claude-Design, no-T4, no-TX/TU, no-reclassification, and no-canonical-write boundaries\n\n## Strict scope\n- packet/proof/governance authoring only\n- does not merge PR #572 or PRs #568-#571\n- does not treat PR #573 as a merge candidate\n- does not rebase, force-push, retarget, close PRs, or change runtime source\n\n## Governance state\nsafe_for_claude_design=NO\nREADY_FOR_CLAUDE_DESIGN=not approved\nruntime_action_execution=not_authorized\nt4_remote_mutation=not_authorized\ncanonical_writes=not_authorized\nunknown_drift_runtime_reclassification=disabled\ntx_tu_execution=disabled\n\n## Validation\nSee packet proof for command outputs and exit codes.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Encode audited PR #572 evidence and current packet-authoring observations without converting them into merge authorization.",
+      "requirements": [
+        "Record post-conflict-fix re-audit verdict PASS_WITH_RISKS_READY_FOR_MERGE_EXECUTE_PACKET.",
+        "Record PR #572 URL https://github.com/DDD-Enterprises/dopemux-mvp/pull/572.",
+        "Record audited head e28db50f2c4fc06819cb278da1e149afd7e39d49 and audit base main 4206a297232f6398df1964431c7b56ecbf931d82.",
+        "Record audit state mergeable=MERGEABLE, mergeStateStatus=UNSTABLE, 25 SUCCESS / 3 SKIPPED / 9 IN_PROGRESS, no failing checks, and empty reviewDecision.",
+        "Record packet-authoring observation that PR #572 still had mergeStateStatus=UNSTABLE and reviewDecision empty, with status checks not fully settled.",
+        "Record that e28db50f2c4fc06819cb278da1e149afd7e39d49 is a single-parent commit with merge-like content, not a true merge commit."
+      ],
+      "validation": [
+        "MERGE_EXECUTE_PLAN.md and MERGE_EXECUTE_PLAN.json include the audited evidence, current observations, and stated risks.",
+        "PROOF.json distinguishes user-supplied audit evidence from newly observed packet-authoring evidence."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Define the mandatory preflight gate and stop conditions for any later Ledger-authorized executor.",
+      "requirements": [
+        "Require re-check of repo identity, clean worktree, current origin/main, current PR #572 head, descendant relationship from e28db50f2c4fc06819cb278da1e149afd7e39d49, PR #572 mergeability, settled required checks, reviewDecision or branch protection status, clean merge-tree against current origin/main, no runtime source changes, exact governance invariant matches, and stale PROOF conflict text treated as historical snapshot only.",
+        "Stop if PR #572 becomes DIRTY or CONFLICTING.",
+        "Stop if PR #572 no longer descends from e28db50f2c4fc06819cb278da1e149afd7e39d49.",
+        "Stop if required checks fail, required review is missing, merge-tree conflict appears, runtime source changes appear unexpectedly, or any artifact claims Claude Design, final-screen, runtime execution, T4, or Unknown/Drift runtime reclassification readiness."
+      ],
+      "validation": [
+        "PRECHECK_MATRIX.md and PRECHECK_MATRIX.json contain every required preflight gate and stop condition.",
+        "GOVERNANCE_INVARIANTS.md contains the exact non-authorization invariants."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Define the future merge procedure as Ledger-gated guidance only.",
+      "requirements": [
+        "State candidate order as PR #568, PR #569, PR #570, PR #571.",
+        "State PR #573 is reviewed merged evidence only and not a merge candidate.",
+        "State PR #572 is the consolidation artifact/proof PR.",
+        "State future execution requires explicit Ledger authorization before any merge, branch mutation, or canonical write."
+      ],
+      "validation": [
+        "MERGE_EXECUTE_PLAN.md and MERGE_EXECUTE_PLAN.json carry the required procedure and non-actions.",
+        "No artifact authorizes merge execution in the present packet."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Define closeout proof requirements for the future executor and produce packet-authoring proof artifacts.",
+      "requirements": [
+        "Require a single JSON proof bundle at future closeout.",
+        "Future proof must include command outputs and exit codes, branch/head/base SHAs, merge-tree output, checks/reviewDecision state, changed files, commit/merge SHAs, final git status, and no-runtime/no-Claude-Design/no-T4/no-reclassification confirmation.",
+        "Generate sha256sums.txt for packet-owned out artifacts."
+      ],
+      "validation": [
+        "python3 -m json.tool task-packets/generated/TP-DMX-COCKPIT-MERGE-EXECUTE-001.json",
+        "python3 -m json.tool out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/PROOF.json",
+        "git diff --check",
+        "shasum -a 256 -c out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/sha256sums.txt"
+      ]
+    }
+  ]
+}

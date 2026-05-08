@@ -1,0 +1,136 @@
+{
+  "schema_version": "dopemux.cockpit.merge_execute_precheck_matrix.v1",
+  "packet_id": "TP-DMX-COCKPIT-MERGE-EXECUTE-001",
+  "authorization": {
+    "explicit_ledger_authorization_required": true,
+    "passing_precheck_authorizes_execution": false
+  },
+  "preflight_gates": [
+    {
+      "id": "P01",
+      "gate": "repo_identity",
+      "required_evidence": [
+        ".dopetaskroot marker exists",
+        "origin URL is https://github.com/DDD-Enterprises/dopemux-mvp.git"
+      ],
+      "stop_condition": "repo marker or origin mismatch"
+    },
+    {
+      "id": "P02",
+      "gate": "clean_worktree",
+      "required_evidence": [
+        "git status --short is clean before execution"
+      ],
+      "stop_condition": "worktree dirty before execution"
+    },
+    {
+      "id": "P03",
+      "gate": "current_origin_main",
+      "required_evidence": [
+        "git ls-remote origin refs/heads/main",
+        "local origin/main SHA",
+        "resolution of any GitHub API base SHA mismatch"
+      ],
+      "stop_condition": "base cannot be resolved or authority conflicts remain unresolved"
+    },
+    {
+      "id": "P04",
+      "gate": "current_pr_572_head",
+      "required_evidence": [
+        "GitHub PR #572 head SHA",
+        "local fetched PR #572 ref SHA"
+      ],
+      "stop_condition": "head cannot be fetched or head evidence disagrees"
+    },
+    {
+      "id": "P05",
+      "gate": "pr_572_descends_from_audited_head",
+      "required_evidence": [
+        "git merge-base --is-ancestor e28db50f2c4fc06819cb278da1e149afd7e39d49 <current-pr-572-head> exits 0"
+      ],
+      "stop_condition": "PR #572 no longer descends from e28db50f2c4fc06819cb278da1e149afd7e39d49"
+    },
+    {
+      "id": "P06",
+      "gate": "pr_572_mergeable_state",
+      "required_evidence": [
+        "GitHub mergeable state is not DIRTY",
+        "GitHub mergeable state is not CONFLICTING"
+      ],
+      "stop_condition": "PR #572 becomes DIRTY or CONFLICTING"
+    },
+    {
+      "id": "P07",
+      "gate": "status_checks",
+      "required_evidence": [
+        "status checks settled",
+        "no required failures"
+      ],
+      "stop_condition": "required checks fail or required checks remain unresolved"
+    },
+    {
+      "id": "P08",
+      "gate": "review_decision_and_branch_protection",
+      "required_evidence": [
+        "reviewDecision value",
+        "branch protection or required-review state"
+      ],
+      "stop_condition": "required review is missing"
+    },
+    {
+      "id": "P09",
+      "gate": "merge_tree_clean",
+      "required_evidence": [
+        "merge-tree output against current origin/main",
+        "exit code and conflict scan"
+      ],
+      "stop_condition": "merge-tree conflict appears"
+    },
+    {
+      "id": "P10",
+      "gate": "no_unexpected_runtime_source_changes",
+      "required_evidence": [
+        "changed files list",
+        "explicit classification of runtime source paths"
+      ],
+      "stop_condition": "runtime source changes appear unexpectedly"
+    },
+    {
+      "id": "P11",
+      "gate": "governance_invariant_exact_matches",
+      "required_evidence": [
+        "safe_for_claude_design=NO",
+        "READY_FOR_CLAUDE_DESIGN=not approved",
+        "Claude Design upload not authorized",
+        "final screens not authorized",
+        "runtime_action_execution=not_authorized",
+        "t4_remote_mutation=not_authorized",
+        "canonical_writes=not_authorized",
+        "unknown_drift_runtime_reclassification=disabled",
+        "tx_tu_execution=disabled"
+      ],
+      "stop_condition": "any invariant is missing, changed, or upgraded to an authorization"
+    },
+    {
+      "id": "P12",
+      "gate": "stale_proof_conflict_text",
+      "required_evidence": [
+        "stale PR #572 PROOF.json CONFLICTING text classified as historical generation-time snapshot only"
+      ],
+      "stop_condition": "stale conflict text is treated as current merge state or hidden"
+    }
+  ],
+  "stop_conditions": [
+    "PR #572 becomes DIRTY or CONFLICTING",
+    "PR #572 no longer descends from e28db50f2c4fc06819cb278da1e149afd7e39d49",
+    "required checks fail",
+    "required review is missing",
+    "merge-tree conflict appears",
+    "runtime source changes appear unexpectedly",
+    "any artifact claims Claude Design readiness",
+    "any artifact claims final-screen readiness",
+    "any artifact claims runtime execution readiness",
+    "any artifact claims T4 readiness",
+    "any artifact claims Unknown/Drift runtime reclassification readiness"
+  ]
+}
