@@ -222,20 +222,6 @@ def select_strategy(result: PRResult, policy: Dict[str, Any]) -> StrategyAssignm
             priority_boost=STRATEGY_PRIORITY_BOOSTS["SPLIT_DECISION_REQUIRED"],
         )
 
-    # MERGE_READY or QUEUED with green CI: direct rebase merge
-    if lifecycle in ("merge_ready", "queued_for_merge"):
-        if pr.ci_status == "SUCCESS":
-            return StrategyAssignment(
-                strategy_id="DIRECT_REBASE_MERGE",
-                rationale="Clean PR with green CI, eligible for direct rebase merge",
-                priority_boost=STRATEGY_PRIORITY_BOOSTS["DIRECT_REBASE_MERGE"],
-            )
-        return StrategyAssignment(
-            strategy_id="AUTO_MERGE_FALLBACK",
-            rationale="Structurally ready but awaiting CI signals; opting for auto-merge handoff",
-            priority_boost=STRATEGY_PRIORITY_BOOSTS["AUTO_MERGE_FALLBACK"],
-        )
-
     # CI failures only: isolate the fix
     if pr.pr_class == "CI_ONLY":
         return StrategyAssignment(
@@ -250,6 +236,20 @@ def select_strategy(result: PRResult, policy: Dict[str, Any]) -> StrategyAssignm
             strategy_id="STAGED_SEQUENCE_MERGE",
             rationale="Multiple blocker types require staged resolution",
             priority_boost=STRATEGY_PRIORITY_BOOSTS["STAGED_SEQUENCE_MERGE"],
+        )
+
+    # MERGE_READY or QUEUED with green CI: direct rebase merge
+    if lifecycle in ("merge_ready", "queued_for_merge"):
+        if pr.ci_status == "SUCCESS":
+            return StrategyAssignment(
+                strategy_id="DIRECT_REBASE_MERGE",
+                rationale="Clean PR with green CI, eligible for direct rebase merge",
+                priority_boost=STRATEGY_PRIORITY_BOOSTS["DIRECT_REBASE_MERGE"],
+            )
+        return StrategyAssignment(
+            strategy_id="AUTO_MERGE_FALLBACK",
+            rationale="Structurally ready but awaiting CI signals; opting for auto-merge handoff",
+            priority_boost=STRATEGY_PRIORITY_BOOSTS["AUTO_MERGE_FALLBACK"],
         )
 
     # Default

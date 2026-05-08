@@ -46,7 +46,7 @@ def test_quarantine_and_keeper_are_exempt_from_rename():
 
 def test_needs_rename_detected_for_non_kebab_name():
     record = MODULE.classify_filename(
-        rel_path="docs/03-reference/services/server-registry.md",
+        rel_path="docs/03-reference/services/Server Registry.md",
         policy=_policy(),
     )
     assert record.status == "needs_rename"

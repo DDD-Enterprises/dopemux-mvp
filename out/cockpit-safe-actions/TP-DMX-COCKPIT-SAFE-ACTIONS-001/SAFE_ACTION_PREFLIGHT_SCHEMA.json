@@ -1,0 +1,280 @@
+{
+  "schema_id": "dopemux.cockpit.safe_action_gate.preflight.v1",
+  "packet_id": "TP-DMX-COCKPIT-SAFE-ACTIONS-001",
+  "title": "Safe Action Gate Preflight Schema",
+  "description": "Required preflight object the Safe Action Gate must collect and display BEFORE rendering a confirm affordance for any executable tier (T0i, T1, T2, T3, T4, T5, T6). The schema is normative. Missing values render as the literal string 'UNKNOWN' and trigger fail-closed refusal: the gate refuses confirmation and routes to the Unknown/Drift Queue with the missing-field reason.",
+  "fail_closed_rule": "If any required field on this preflight object resolves to 'UNKNOWN' for the assigned tier, the gate MUST NOT render a confirm affordance. The gate routes to the Unknown/Drift Queue with the missing-field reason (see SAFE_ACTION_REFUSAL_RULES.md). The gate never invents values, never silently substitutes defaults, and never auto-confirms.",
+  "source_artifacts": [
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SAFE_ACTION_GATE_SPEC.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/COMMAND_EXPOSURE_POLICY.json",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/UNKNOWN_DRIFT_QUEUE_SPEC.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SETTINGS_ADMIN_RUNTIME_SPEC.md",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/COMMAND_PALETTE_INDEX_SCHEMA.json",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_TO_SAFE_ACTION_GATE_HANDOFF.md",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_TO_SETTINGS_RUNTIME_HANDOFF.md"
+  ],
+  "fields": {
+    "command": {
+      "type": "string",
+      "required": true,
+      "applies_to_tiers": ["T0", "T0i", "T1", "T2", "T3", "T4", "T5", "T6", "TX", "TU"],
+      "source": "PALETTE_TO_SAFE_ACTION_GATE_HANDOFF.md §2 'command' or upstream surface equivalent",
+      "description": "Fully resolved invocation including subcommands. No shell-escape ambiguity. Verbatim from upstream payload.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": true
+    },
+    "resolved_params": {
+      "type": "object",
+      "required": true,
+      "applies_to_tiers": ["T0i", "T1", "T2", "T3", "T4", "T5", "T6"],
+      "source": "PALETTE_TO_SAFE_ACTION_GATE_HANDOFF.md §2 'resolved_params.required' and 'resolved_params.optional'",
+      "description": "Map of required and optional parameters with values resolved per PALETTE_PARAMETER_PREVIEW_SPEC.md. No required value may be 'UNKNOWN'. Optional defaults are explicit (was_default flag set).",
+      "shape": {
+        "required": {
+          "type": "object",
+          "description": "Map of name → value. No value may be 'UNKNOWN'."
+        },
+        "optional": {
+          "type": "object",
+          "description": "Map of name → {value, was_default: bool}. Defaults are explicit; never implicit."
+        }
+      },
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": true
+    },
+    "cwd": {
+      "type": "string",
+      "required": true,
+      "applies_to_tiers": ["T0i", "T1", "T2", "T3", "T4", "T5", "T6"],
+      "source": "PALETTE_TO_SAFE_ACTION_GATE_HANDOFF.md §2 'cwd' (resolved against current worktree)",
+      "description": "Absolute path within the current worktree. Never '/tmp' or any non-worktree path. The gate refuses if cwd is outside the worktree.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": true,
+      "fail_closed_when_outside_worktree": true
+    },
+    "worktree_metadata": {
+      "type": "object",
+      "required": true,
+      "applies_to_tiers": ["T0i", "T1", "T2", "T3", "T4", "T5", "T6"],
+      "source": "PALETTE_TO_SAFE_ACTION_GATE_HANDOFF.md §2 'worktree_metadata'",
+      "description": "Runtime worktree info: branch, detached-state, dirty flag (when knowable). The gate refuses for tiers requiring clean state if dirty flag is set.",
+      "shape": {
+        "branch": "string or UNKNOWN",
+        "detached": "boolean or UNKNOWN",
+        "dirty": "boolean or UNKNOWN",
+        "worktree_root": "absolute path string"
+      },
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": true
+    },
+    "authority_domain": {
+      "type": "string",
+      "required": true,
+      "applies_to_tiers": ["T0", "T0i", "T1", "T2", "T3", "T4", "T5", "T6", "TX", "TU"],
+      "source": "PALETTE_TO_SAFE_ACTION_GATE_HANDOFF.md §2 'authority_domain' (verbatim from inventory)",
+      "enum": [
+        "dopemux operator control",
+        "dopetask execution handoff",
+        "Repo Truth Extractor audit/extraction",
+        "ADHD/operator support",
+        "routing/model-provider support",
+        "ConPort structured context/decision/progress",
+        "dope-memory chronicle",
+        "task-orchestrator workflow",
+        "dopecon-bridge adapter/proxy/event transport",
+        "unknown / conflicting"
+      ],
+      "description": "Authority domain that owns the action. The gate never substitutes its own authority. 'unknown / conflicting' fails closed.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": true,
+      "fail_closed_when_conflicting": true
+    },
+    "canonical_writer": {
+      "type": "string",
+      "required": true,
+      "applies_to_tiers": ["T0i", "T1", "T2", "T3", "T4", "T5", "T6"],
+      "source": "PALETTE_TO_SAFE_ACTION_GATE_HANDOFF.md §2 'canonical_writer' (comma-joined when multiple writers)",
+      "description": "System or service that owns the write/state mutation for this row. If multiple writers exist, all writers are listed comma-separated. Required for the gate to display every writer for T2–T6 actions.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": true
+    },
+    "safety_class": {
+      "type": "string",
+      "required": true,
+      "applies_to_tiers": ["T0", "T0i", "T1", "T2", "T3", "T4", "T5", "T6", "TX", "TU"],
+      "source": "PALETTE_TO_SAFE_ACTION_GATE_HANDOFF.md §2 'safety_class' (from safe_ui_exposure)",
+      "enum": [
+        "DISPLAY_ONLY",
+        "INSPECT_ACTION",
+        "CONFIRM_REQUIRED",
+        "COMMAND_PALETTE_ONLY",
+        "BLOCKED_IN_COCKPIT",
+        "EXTERNAL_ONLY",
+        "UNKNOWN"
+      ],
+      "description": "Safety class governing the row's allowed UI form. Only CONFIRM_REQUIRED and COMMAND_PALETTE_ONLY (with executable tier) reach a confirm affordance.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": true,
+      "fail_closed_when_blocked": true,
+      "fail_closed_when_external_only": true
+    },
+    "gate_tier": {
+      "type": "string",
+      "required": true,
+      "applies_to_tiers": ["T0", "T0i", "T1", "T2", "T3", "T4", "T5", "T6", "TX", "TU"],
+      "source": "PALETTE_TO_SAFE_ACTION_GATE_HANDOFF.md §2 'gate_tier'",
+      "enum": ["T0", "T0i", "T1", "T2", "T3", "T4", "T5", "T6", "TX", "TU"],
+      "description": "Confirmation tier. Carried verbatim from upstream surface; the gate never reclassifies. Only T1–T6 reach a confirm affordance.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": true
+    },
+    "side_effects": {
+      "type": "array",
+      "required": true,
+      "applies_to_tiers": ["T1", "T2", "T3", "T4", "T5", "T6"],
+      "source": "PALETTE_TO_SAFE_ACTION_GATE_HANDOFF.md §2 'side_effects' (from parameter_schema.side_effects)",
+      "items": {
+        "type": "string",
+        "enum": [
+          "config mutation",
+          "write local",
+          "write remote",
+          "start service",
+          "stop service",
+          "execution handoff",
+          "generated artifact",
+          "none"
+        ]
+      },
+      "description": "Enumerated side effects. Must not be empty for any executable tier (T1–T6). Empty or 'UNKNOWN' fails closed for executable tiers.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": true,
+      "fail_closed_when_empty_for_executable_tier": true
+    },
+    "expected_proof": {
+      "type": "string",
+      "required": true,
+      "applies_to_tiers": ["T0", "T0i", "T1", "T2", "T3", "T4", "T5", "T6", "TX", "TU"],
+      "source": "PALETTE_TO_SAFE_ACTION_GATE_HANDOFF.md §2 'expected_proof' (from proof_requirement)",
+      "enum": [
+        "NONE",
+        "INSPECT_RESULT_AND_TIMESTAMP",
+        "ARTIFACT_AND_CHECKSUM",
+        "CONFIG_DIFF_OR_STATUS",
+        "FILESYSTEM_DIFF_OR_EXIT_CODE",
+        "REMOTE_RECEIPT",
+        "SERVICE_STATUS_AND_LOG",
+        "TP_RUNNER_PROOF",
+        "BLOCK_REASON_RECORD",
+        "INVESTIGATION_PACKET_REFERENCE"
+      ],
+      "description": "Proof category the gate must capture. UNKNOWN fails closed for executable tiers (T1–T6).",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown_for_executable_tier": true
+    },
+    "rollback_or_abort": {
+      "type": "object",
+      "required": true,
+      "applies_to_tiers": ["T1", "T2", "T3", "T4", "T5", "T6"],
+      "source": "PALETTE_TO_SAFE_ACTION_GATE_HANDOFF.md §2 'rollback_or_abort'",
+      "description": "Explicit rollback path, abort token, or NOT_APPLICABLE with documented reason. Required for executable tiers; UNKNOWN fails closed for T3, T4, T5, T6 (and T2 with destructive scope).",
+      "shape": {
+        "kind": "string enum: ROLLBACK_PATH | ABORT_TOKEN | NOT_APPLICABLE",
+        "value": "string (path, token, or reason)",
+        "reason": "string or NOT_APPLICABLE"
+      },
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown_for_destructive_tier": true
+    },
+    "source_provenance": {
+      "type": "object",
+      "required": true,
+      "applies_to_tiers": ["T0", "T0i", "T1", "T2", "T3", "T4", "T5", "T6", "TX", "TU"],
+      "source": "PALETTE_TO_SAFE_ACTION_GATE_HANDOFF.md §2 'source_provenance'",
+      "description": "End-to-end provenance preserved. Used for audit trail and operator inspection.",
+      "shape": {
+        "source_file": "string (repo-relative or absolute path)",
+        "source_symbol": "string (function/class/registration)",
+        "evidence_path_or_command": "string"
+      },
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": false,
+      "fail_closed_when_unknown_for_executable_tier": true
+    },
+    "palette_request_id": {
+      "type": "string",
+      "required": true,
+      "applies_to_tiers": ["T0i", "T1", "T2", "T3", "T4", "T5", "T6", "TX", "TU"],
+      "source": "PALETTE_TO_SAFE_ACTION_GATE_HANDOFF.md §2 'palette_request_id' or upstream-surface equivalent",
+      "description": "UUID generated at upstream handoff. Correlation id for evidence/audit logs. The gate event/receipt records the same id.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": true
+    },
+    "palette_index_row_hash": {
+      "type": "string",
+      "required": true,
+      "applies_to_tiers": ["T1", "T2", "T3", "T4", "T5", "T6"],
+      "source": "PALETTE_TO_SAFE_ACTION_GATE_HANDOFF.md §2 'palette_index_row_hash' (SHA-256 of normalized row)",
+      "description": "SHA-256 of the normalized index row at handoff time. Lets the gate verify the row hasn't drifted in flight (INDEX_DRIFT detection). Stale hash fails closed.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": true,
+      "fail_closed_when_stale": true
+    },
+    "surface_origin": {
+      "type": "string",
+      "required": true,
+      "applies_to_tiers": ["T0", "T0i", "T1", "T2", "T3", "T4", "T5", "T6", "TX", "TU"],
+      "source": "Upstream surface that originated the action request",
+      "enum": [
+        "COMMAND_PALETTE",
+        "SETTINGS_ADMIN_RUNTIME",
+        "PM",
+        "IMPLEMENTER",
+        "OVERVIEW",
+        "SERVICES",
+        "EVENTS",
+        "UNKNOWN"
+      ],
+      "description": "Which surface originated this gate invocation. Other origins (deep-link, URL parameter, keyboard shortcut bypassing the surface) are refused.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": true,
+      "fail_closed_when_unsafe": true
+    },
+    "operator_intent": {
+      "type": "string",
+      "required": true,
+      "applies_to_tiers": ["T0i", "T1", "T2", "T3", "T4", "T5", "T6"],
+      "source": "Upstream surface (operator's selected outcome at the surface)",
+      "enum": [
+        "INSPECT_ONLY",
+        "CONFIRM_AND_RUN",
+        "CONFIRM_AND_DRY_RUN",
+        "ABORT",
+        "UNKNOWN"
+      ],
+      "description": "What the operator intends. Required so the gate displays the action's purpose before confirmation. UNKNOWN fails closed for executable tiers.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown_for_executable_tier": true
+    },
+    "created_at_utc": {
+      "type": "string",
+      "required": true,
+      "applies_to_tiers": ["T0", "T0i", "T1", "T2", "T3", "T4", "T5", "T6", "TX", "TU"],
+      "source": "Generated at handoff time at upstream surface",
+      "description": "ISO-8601 UTC timestamp recording when the upstream surface produced the action request. The gate uses this to detect stale handoffs.",
+      "missing_value": "UNKNOWN",
+      "fail_closed_when_unknown": true
+    }
+  },
+  "preflight_invariants": [
+    "Every required field for the row's tier MUST be present before the gate renders a confirm affordance.",
+    "Missing fields render as the literal string 'UNKNOWN', never blank.",
+    "The gate never invents values for missing fields and never silently substitutes defaults.",
+    "Optional parameter defaults are explicit (was_default: true); implicit defaults are forbidden.",
+    "cwd MUST be inside the current worktree; '/tmp' or non-worktree paths are refused.",
+    "authority_domain == 'unknown / conflicting' or canonical_writer == 'UNKNOWN' fails closed for any executable tier.",
+    "safety_class in {BLOCKED_IN_COCKPIT, UNKNOWN, EXTERNAL_ONLY} never reaches a confirm affordance.",
+    "palette_index_row_hash MUST match the live index hash at gate-open time; mismatch is INDEX_DRIFT and fails closed.",
+    "surface_origin MUST be one of the allowed origins; deep-links and bypass paths are refused."
+  ]
+}

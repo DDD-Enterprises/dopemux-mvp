@@ -1,0 +1,70 @@
+{
+  "packet_id": "TP-DMX-COCKPIT-MAIN-STATE-RECON-001",
+  "as_of_utc": "2026-05-07",
+  "observed": {
+    "origin_main_head": {
+      "sha": "d52fbf1b8786b27305afb6c52ac294ba7a12f2d5",
+      "subject": "fix(extraction): preserve lexical BM25 matches"
+    },
+    "origin_pack_head": {
+      "sha": "b173efd83c871c30f2bd86530921c866d08e7e45",
+      "subject": "docs(cockpit): regenerate current head inventory (#571)"
+    },
+    "main_vs_pack": {
+      "ahead_main": 9,
+      "ahead_pack": 18,
+      "diff_file_count": 196
+    },
+    "main_cockpit_runtime_files": [
+      "src/dopemux/ui/cockpit/__init__.py",
+      "src/dopemux/ui/cockpit/app.py",
+      "src/dopemux/ui/cockpit/render.py"
+    ],
+    "main_cockpit_test_files": [
+      "tests/unit/dopemux/ui/cockpit/__init__.py",
+      "tests/unit/dopemux/ui/cockpit/test_cockpit_command.py",
+      "tests/unit/dopemux/ui/cockpit/test_cockpit_render.py"
+    ],
+    "main_cockpit_proof_artifacts": [
+      "proof/cockpit-pm-implementer-processing-pack-2026-04-24.proof.json (legacy, predates pack series)"
+    ],
+    "main_cockpit_out_artifacts": [],
+    "main_task_packets_generated_dir_present": false,
+    "open_cockpit_prs": [572, 573],
+    "open_unrelated_prs": [582, 583, 584]
+  },
+  "inferred": {
+    "no_pack_to_main_merge_observed": "no merge commit on origin/main contains any of the four cockpit feature merge commits, and no pack->main merge has been authored",
+    "main_carries_only_pre_pack_cockpit_surface": "the cockpit src/test files on main predate this pack series",
+    "pr_572_does_not_audit_pr_573": "neither PR body cross-references the other; PR 573 modifies pre-existing runtime_contract.py and tests, but PR 572's consolidation artifact only covers PRs 568-571"
+  },
+  "unknown": {
+    "review_decisions_for_572_and_573": "review decision empty in API response; whether human reviews are pending or absent is not asserted by this packet",
+    "ledger_decision_status": "the parent merge-stack consolidation packet self-reports verdict READY_WITH_RISKS_NEEDS_LEDGER_DECISION; whether the Ledger has accepted or rejected the residual risks is not visible in this audit",
+    "remote_mutation_policy_state": "PR 572 body flags absence of a remote-mutation policy as a residual risk; current policy state is not recorded in main artifacts",
+    "settings_admin_per_row_tier_mapping_status": "PR 572 body flags this as an accepted residual risk; current acceptance state is not visible in main artifacts",
+    "tp_dmx_cockpit_merge_execute_001_existence": "no authored TP JSON found on origin/main or origin/pack/cockpit-pack-remediate-006-ia"
+  },
+  "conflicting": [],
+  "governance_state": {
+    "safe_for_claude_design": "NO",
+    "ready_for_claude_design": "not approved",
+    "claude_design_upload": "no upload performed by this packet",
+    "t4_remote_mutation": "no T4 remote mutation performed by this packet",
+    "canonical_writes": "no canonical writes performed by this packet",
+    "runtime_action_execution": "no runtime action execution performed by this packet",
+    "runtime_reclassification": "no runtime reclassification performed by this packet",
+    "unknown_drift_queue_state": "non-executing per PR 573 body and parent series boundaries",
+    "tx_tu_state": "non-executable per PR 573 body"
+  },
+  "design_continuation_blockers": [
+    "PRs 568-571 are merged into pack only, not into main; 196 files of cockpit remediation surface remain unmerged on main",
+    "PR 572 (stack consolidation artifact) is open and self-reports READY_WITH_RISKS_NEEDS_LEDGER_DECISION",
+    "PR 573 (runtime contract fidelity) is open and modifies pack runtime surface; not audited by PR 572",
+    "Settings/Admin per-row tier mapping and remote-mutation policy residual risks accepted by PR 572 require Ledger disposition",
+    "Inventory artifact still records prior upstream current_head per PR 572 residual risks",
+    "TP-DMX-COCKPIT-MERGE-EXECUTE-001 is referenced but not authored on either branch",
+    "safe_for_claude_design remains NO and READY_FOR_CLAUDE_DESIGN remains not approved"
+  ],
+  "design_pickup_recommendation": "Do not resume Cockpit design work directly on origin/main yet. Resume design work only after (a) PR 573 is audited and a refreshed merge-stack consolidation artifact accounts for it, (b) the Ledger explicitly accepts or rejects the residual risks PR 572 flagged, (c) an authored TP-DMX-COCKPIT-MERGE-EXECUTE-001 packet drives an operator-initiated consolidation of pack into main, and (d) governance fields (safe_for_claude_design, READY_FOR_CLAUDE_DESIGN) are revisited by an authorized actor following the consolidation."
+}

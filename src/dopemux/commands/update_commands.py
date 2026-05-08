@@ -224,15 +224,7 @@ def rollback(ctx, backup_name: Optional[str], list_backups: bool):
         sys.exit(1)
 
 
-@update.command()
-@click.pass_context
-def update_status_cmd(ctx):
-    """
-    📊 Diagnostic HUD: Show system update status and health
-
-    Displays current version coordinates, available upgrades,
-    system service health, and temporal update history.
-    """
+def _run_update_status(ctx):
     import asyncio
     from ..update import UpdateManager
     from ..update.health import HealthChecker
@@ -276,6 +268,25 @@ def update_status_cmd(ctx):
             import traceback
             traceback.print_exc()
         sys.exit(1)
+
+
+@update.command("status")
+@click.pass_context
+def update_status_cmd(ctx):
+    """
+    📊 Diagnostic HUD: Show system update status and health
+
+    Displays current version coordinates, available upgrades,
+    system service health, and temporal update history.
+    """
+    return _run_update_status(ctx)
+
+
+@update.command("update-status-cmd", hidden=True)
+@click.pass_context
+def update_status_legacy_cmd(ctx):
+    """Deprecated compatibility alias for `status`."""
+    return _run_update_status(ctx)
 
 
 def _show_update_plan(plan):

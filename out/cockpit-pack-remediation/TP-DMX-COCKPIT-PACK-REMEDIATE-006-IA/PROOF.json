@@ -1,0 +1,210 @@
+{
+  "packet_id": "TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA",
+  "validation_state": "PACKAGE_REMEDIATION_HANDOFF_READY_FOR_DOWNSTREAM",
+  "ia_verdict": "CURRENT_COCKPIT_IA_NEEDS_MAJOR_RECONCILIATION",
+  "safe_for_claude_design": "NO",
+  "ready_for_claude_design": false,
+  "branch": "pack/cockpit-pack-remediate-006-ia",
+  "base_branch": "audit/cockpit-ia-reconcile-001",
+  "head_before_packet": "88c188d551719b60e6a560a04b6da2939b27d34b",
+  "implementation_commit_sha": "1c2c1355c69d16a2ee696d589804b3473a43bda9",
+  "prior_proof_commit_sha": "bdc457ea3c277f515be3eea4bb024b9babd4ef58",
+  "final_head_recording_policy": "Final HEAD is recorded in closeout report after this cleanup commit; PROOF.json records implementation and prior proof commits to avoid self-referential checksum drift.",
+  "pr_url": null,
+  "pr_blocker": "Base branch audit/cockpit-ia-reconcile-001 does not exist on origin; pushing the base branch was denied as a scope escalation beyond the artifact-only handoff. The branch pack/cockpit-pack-remediate-006-ia is pushed to origin and is ready to PR. Operator may either (a) push audit/cockpit-ia-reconcile-001 to origin manually, or (b) retarget the PR base to main (audit/cockpit-ia-reconcile-001 is at origin/main HEAD = 88c188d551719b60e6a560a04b6da2939b27d34b). No PR has been created.",
+  "worktree": "/Users/hue/code/dopemux-worktrees/dopemux-cockpit-ia-reconcile-001",
+  "upstream_packets": [
+    {
+      "packet_id": "TP-DMX-COCKPIT-IA-RECONCILE-001",
+      "verdict": "IA_RECONCILED_FOR_PACKAGE_REMEDIATION",
+      "proof_path": "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/PROOF.json",
+      "proof_sha256": "267c8809bc1e6ad5aeab692ed651eb45d0fbc23331e0161345b791675d0b07e9"
+    },
+    {
+      "packet_id": "TP-DMX-COCKPIT-COMMAND-PALETTE-001",
+      "verdict": "COMMAND_PALETTE_SPEC_READY_FOR_PACKAGE_REMEDIATION",
+      "proof_path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PROOF.json",
+      "proof_sha256": "467042a49c494f341dfc00aa04375048c6dd9814dd776f70e0896117f28156f8"
+    },
+    {
+      "packet_id": "TP-DMX-COCKPIT-SAFE-ACTIONS-001",
+      "verdict": "SAFE_ACTION_GATE_SPEC_READY_FOR_PACKAGE_REMEDIATION",
+      "proof_path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/PROOF.json",
+      "proof_sha256": "b9d8e764da419bbea76d16a6339d481f768d7b24853a70b0d06b20155b27a9b6"
+    }
+  ],
+  "inputs": [
+    {"path": "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/RECONCILED_COCKPIT_IA.md", "sha256": "0517c614d6f0e007b0452f99f347c57b7397f1279f38ce0e6f4d65fb992ba48e"},
+    {"path": "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SCREEN_CONTRACT_MATRIX.md", "sha256": "e907518d1687d735f3664c449df9e28ad48c88a0c182a7ff4a7f50d8cdc2bcda"},
+    {"path": "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SCREEN_CONTRACT_MATRIX.json", "sha256": "1be02acf87adbd93e6ca5d64f3b28d6c5b7ebd962be6c066e989bbe5a937efe3"},
+    {"path": "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/COMMAND_EXPOSURE_POLICY.json", "sha256": "62aa31129e68e0f6c51b7df56d91940301b062c29836dfc89026954bc5b8205a"},
+    {"path": "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/CLAUDE_DESIGN_BLOCKERS.md", "sha256": "d929cb83d93f5d1da4afc50d3bbdfbe1032c03f5a81f71c0f8419d7dbe85c038"},
+    {"path": "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/UNKNOWN_DRIFT_QUEUE_SPEC.md", "sha256": "dff637f31fd10484436edbe7a1b5eff6cf35d68ca8d6c92c4f68839cfd16cb1d"},
+    {"path": "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SETTINGS_ADMIN_RUNTIME_SPEC.md", "sha256": "a40bbf5019334187c8bf6e8ab77c609546777bba07aed5864053b55d65b86943"},
+    {"path": "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SAFE_ACTION_GATE_SPEC.md", "sha256": "4f9c4cb2130ac2567b2a0ca980ad3ee21e655c51fc8cfcbcfb29d1a74e2a0c07"},
+    {"path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/COMMAND_PALETTE_CONTRACT.md", "sha256": "39ae90c7d9f55055dad932e3eb2ae0225adc11b2113f28e48b92cb449a36cc68"},
+    {"path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/COMMAND_PALETTE_INDEX_SCHEMA.json", "sha256": "8f4b452dcafe0cb66e3fa31cf7b64731ee0f2a8f5249e832b3ec84e95bd66800"},
+    {"path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_ROUTING_RULES.md", "sha256": "d798c3fd7aa686cc17ddb8525574d37b6a2bb36c138b5feae0e0b70f62eebad4"},
+    {"path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_TO_SAFE_ACTION_GATE_HANDOFF.md", "sha256": "fdcb0c104510e462031d56d84766d25a0fca2cc86857b8fdeff8fe9144b1d373"},
+    {"path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_TO_SETTINGS_RUNTIME_HANDOFF.md", "sha256": "a8708c64ffa30221219d447b49aa9e33670967b7e9feedb01a8cefb67a1fc5b5"},
+    {"path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_TO_UNKNOWN_DRIFT_HANDOFF.md", "sha256": "d692220c7897fdf5e2958a2620130ceecfc4c1ec1af58bbd73a4e9e23d2aa51b"},
+    {"path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_PROOF_REQUIREMENTS.md", "sha256": "052a88784ebed10005efb6e3ee320b40c5f3c87382efd1f9490037f33eb02ca0"},
+    {"path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_GATE_CONTRACT.md", "sha256": "afc3ec940ce77b6fe4c2a4d9bfdbe675f9c30e172e542032be63b1db2c31e732"},
+    {"path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_GATE_TIER_SCHEMA.json", "sha256": "731b93c68b509652d337c2cc2a8be6ccb7d3eb0186f1079f9e482ba3aa04996d"},
+    {"path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_PREFLIGHT_SCHEMA.json", "sha256": "b897607d3bf0370d71326f2212500240f3a15ef4224b34948a22f69e77e4f3e4"},
+    {"path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_REFUSAL_RULES.md", "sha256": "7b83c366ed28e69bb1ec8d9de37123bfdecc5e13336be0ce25ea02a3bcbd2564"},
+    {"path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_PROOF_REQUIREMENTS.md", "sha256": "86662649484c44007a25b96d78c78449ed88dc251fd5928196b8eaf3e0e8c45b"},
+    {"path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_GATE_EVENT_RECEIPTS.md", "sha256": "9e9f6e79c16a08904b4ca84aa621d49b214ca384344209b8adfbe596ad42bf39"},
+    {"path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/CLAUDE_DESIGN_SAFE_ACTION_BLOCKERS.md", "sha256": "aded3ffd3fab9c62289b1b924a1912cd7ea850e3c8227abbfc6a00f44997c326"}
+  ],
+  "outputs": [
+    {"path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PACKAGE_REMEDIATION_INDEX.md", "sha256": "f041d770a806b81ef75eac7070a6adc107fb70721925b5fff768e3b866a36400"},
+    {"path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PACKAGE_REMEDIATION_INDEX.json", "sha256": "a7f8cb356473aa0deb0e5e501e52851f881e4dbdf4676e4f19ceeb472dfcce66"},
+    {"path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/INTEGRATED_COCKPIT_IA_CONTRACT.md", "sha256": "3554167099eb6b9007cbe474ec19bbfad3eb1736d00aa7ef07aaf44fb3cd980a"},
+    {"path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/TOP_LEVEL_MODE_PACKAGE_MATRIX.md", "sha256": "b115e2b69631897307a3e73350f6ba7790741c22c86cb61007e3362f7b953c44"},
+    {"path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/GLOBAL_SURFACE_PACKAGE_MATRIX.md", "sha256": "bf427215d2be859a86a40c022c076f7de4175201b44a73ddcd490e6de202a3b3"},
+    {"path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/COMMAND_TO_GATE_TO_SCREEN_MATRIX.md", "sha256": "75c6f318f7dcf44daa3f808be105062ce876c20ca8f3dcc6c8e37ab752d8ceeb"},
+    {"path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/SAFE_ACTION_GATE_INTEGRATION_MATRIX.md", "sha256": "9722f3157e3ad2a7cc940c61a9fc2d1ebb732d0b821102dcb11a15b9ff361f18"},
+    {"path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/SETTINGS_ADMIN_RUNTIME_PACKAGE_HANDOFF.md", "sha256": "e80b5f706c996d985893dc327d62a559da14eb29e63c180de2146a156c5a8c3a"},
+    {"path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/UNKNOWN_DRIFT_PACKAGE_HANDOFF.md", "sha256": "8d588139893fb0291cdddce37f0e7920d2d7938767cf3f073bbc5b84796fcd5d"},
+    {"path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/RUNTIME_RENDERER_PACKAGE_HANDOFF.md", "sha256": "f37de3080c9fda0bc8b91e4dec839bb1cb1cd8b317fb126e4e1bf065325a01ce"},
+    {"path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/CLAUDE_DESIGN_PRIMITIVE_BOUNDARY.md", "sha256": "8dbeae35ab92c261128b3557ffeeaa9a4a2f9e846911a8570f718450862e92c8"},
+    {"path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PACKAGE_REMEDIATION_TEST_MATRIX.md", "sha256": "f313263ee60c6d3d27cf5ba17e79a8ba5ccc4a6bd38d21314c41191775aad536"}
+  ],
+  "validation_commands": [
+    {
+      "command": "python -m json.tool out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PACKAGE_REMEDIATION_INDEX.json >/dev/null",
+      "exit_code_expected": 0
+    },
+    {
+      "command": "python -m json.tool out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PROOF.json >/dev/null",
+      "exit_code_expected": 0
+    },
+    {
+      "command": "(cd out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA && shasum -a 256 -c sha256sums.txt)",
+      "exit_code_expected": 0
+    },
+    {
+      "command": "grep -R -E \"safe_for_claude_design: NO|READY_FOR_CLAUDE_DESIGN: not approved\" -n out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA",
+      "exit_code_expected": 0,
+      "purpose": "Confirm header preservation across artifacts."
+    },
+    {
+      "command_description": "Run the forbidden-claim grep over the package directory. The exact regex is enumerated in the TP plan's S4.commands array (verify step) and intentionally not duplicated verbatim here; reproducing the literal forbidden phrases inside this PROOF.json would self-trigger the grep.",
+      "command_alternatives_for_audit": [
+        "See TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA plan S4.commands[4] for the literal grep command",
+        "See PACKAGE_REMEDIATION_TEST_MATRIX.md §8 (PRMR-BLOK-01..05) for sanitized descriptions"
+      ],
+      "exit_code_expected": 0,
+      "purpose": "Confirm no forbidden positive claims (none of the [APPROVED-CLAIM]/[YES-CLAIM]/[PERMITTED-CLAIM]/[AUTHORIZED-CLAIM]/[IMPLEMENTED-CLAIM] flips are present)."
+    },
+    {
+      "command": "git diff --check",
+      "exit_code_expected": 0
+    },
+    {
+      "command": "git status --short --branch",
+      "exit_code_expected": 0
+    }
+  ],
+  "changed_files_observed": [
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/** (untracked from upstream packets)",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/** (untracked from upstream packets)",
+    "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/** (untracked from upstream packets)",
+    "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/** (newly created in this packet)"
+  ],
+  "package_invariants": {
+    "five_top_level_modes_preserved": true,
+    "four_secondary_surfaces_preserved": true,
+    "no_sixth_top_level_mode": true,
+    "secondary_surface_promoted_to_top_level": false,
+    "safe_action_gate_cross_cutting": true,
+    "safe_action_gate_auto_confirm_allowed": false,
+    "safe_action_gate_blocked_execution_allowed": false,
+    "safe_action_gate_unknown_execution_allowed": false,
+    "safe_action_gate_in_gate_reclassification_allowed": false,
+    "t4_remote_mutation_blocked_until_policy_approves": true,
+    "authority_boundaries_preserved_per_inventory": true,
+    "authority_collapse_into_one_brain": false,
+    "carried_inventory_counts_preserved": true,
+    "unknowns_preserved": true,
+    "blockers_preserved": true,
+    "runtime_code_added_in_this_packet": false,
+    "cockpit_package_html_css_react_edited": false,
+    "final_screens_authored_in_this_packet": false,
+    "claude_design_upload_attempted": false,
+    "ready_for_claude_design_claimed": false
+  },
+  "blocked_claims": [
+    {"claim": "Final screens approved.", "approved": false, "reason": "Claude Design boundary preserved per CLAUDE_DESIGN_BLOCKERS.md and CLAUDE_DESIGN_PRIMITIVE_BOUNDARY.md."},
+    {"claim": "Runtime execution implemented.", "approved": false, "reason": "Owner: TP-DMX-COCKPIT-RUNTIME-RENDER-001."},
+    {"claim": "Cockpit package HTML/CSS/React edits.", "approved": false, "reason": "Out of scope this packet."},
+    {"claim": "T4 (write remote) execution.", "approved": false, "reason": "Blocked by default; remote-mutation policy required."},
+    {"claim": "TX (BLOCKED_IN_COCKPIT) execution.", "approved": false, "reason": "Permanently blocked in Cockpit."},
+    {"claim": "TU (UNKNOWN) execution.", "approved": false, "reason": "Never executable; reclassification requires a packet."},
+    {"claim": "Auto-confirm in any tier.", "approved": false, "reason": "SAFE_ACTION_GATE_CONTRACT.md §5."},
+    {"claim": "Sixth top-level mode.", "approved": false, "reason": "Five top-level modes preserved per RECONCILED_COCKPIT_IA.md §4."},
+    {"claim": "Authority collapse into one control brain.", "approved": false, "reason": "COMMAND_PALETTE_CONTRACT.md §8; REVISED_COCKPIT_IA.md §5."},
+    {"claim": "Claude Design upload.", "approved": false, "reason": "Blocked at the Claude Design boundary."},
+    {"claim": "READY_FOR_CLAUDE_DESIGN gate flipped to approved.", "approved": false, "reason": "Eight unblock conditions in CLAUDE_DESIGN_BLOCKERS.md §3 still pending."}
+  ],
+  "residual_risks": [
+    {
+      "risk": "Inventory was not regenerated against current HEAD.",
+      "impact": "Counts of safety classes, placements, activations, coverage, and authority domains are carried from the IA-Reconcile packet's inventory snapshot. Drift since then is unobserved.",
+      "owner": "Separate inventory-regeneration packet.",
+      "mitigation": "The package contract documents this as residual UNKNOWN; downstream runtime renderer must regenerate before final screens."
+    },
+    {
+      "risk": "Per-row tier mapping for the 62 Settings/Admin rows is not yet finalized.",
+      "impact": "The downstream Settings/Runtime packet must finalize per-row tiers before runtime renderer can render Settings/Admin/Runtime.",
+      "owner": "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001.",
+      "mitigation": "Default tiers per flow group documented in SETTINGS_ADMIN_RUNTIME_PACKAGE_HANDOFF.md §6."
+    },
+    {
+      "risk": "Remote-mutation policy is not authored.",
+      "impact": "T4 remains blocked indefinitely until an approved policy ships and the runtime renderer wires T4.",
+      "owner": "Separate policy artifact.",
+      "mitigation": "T4 is documented as blocked-by-default in SAFE_ACTION_GATE_TIER_SCHEMA.json, SAFE_ACTION_GATE_INTEGRATION_MATRIX.md, and PROOF.json."
+    },
+    {
+      "risk": "Operator authentication wiring not yet present.",
+      "impact": "Receipts capture `operator_id` as `NULL_NOT_AUTHENTICATED`; correlation/audit will be incomplete until auth wiring lands.",
+      "owner": "TP-DMX-COCKPIT-RUNTIME-RENDER-001.",
+      "mitigation": "Documented in SAFE_ACTION_GATE_EVENT_RECEIPTS.md §3 and CLAUDE_DESIGN_BLOCKERS.md §3 condition 6."
+    },
+    {
+      "risk": "Stale-proof window and confirm-flow operator timeout are not yet configured.",
+      "impact": "Runtime renderer must define defaults and operator-tunability; missing values would disable stale-proof routing or hold confirmation flows indefinitely.",
+      "owner": "TP-DMX-COCKPIT-RUNTIME-RENDER-001.",
+      "mitigation": "Documented as runtime-renderer-owned UNKNOWNs in PACKAGE_REMEDIATION_INDEX.md."
+    },
+    {
+      "risk": "Decision subcommands, `genetic`, `worktree`/`vault` defined-but-not-registered surfaces are unresolved.",
+      "impact": "Until reclassified, these rows remain in the Unknown/Drift Queue. Final screens cannot be approved while these UNKNOWNs persist (CLAUDE_DESIGN_BLOCKERS.md §3 condition 8).",
+      "owner": "Separate reclassification packets per surface.",
+      "mitigation": "Routing to Unknown/Drift Queue is normative; promotion requires packet evidence."
+    },
+    {
+      "risk": "Final visual treatment for tier badges, refusal panels, completed-with-proof states, and stale-proof states is not authored.",
+      "impact": "Final screens are blocked at the Claude Design boundary.",
+      "owner": "Downstream Cockpit package remediation + Claude Design after all eight unblock conditions hold.",
+      "mitigation": "Documented in CLAUDE_DESIGN_PRIMITIVE_BOUNDARY.md."
+    },
+    {
+      "risk": "RECONCILED_COCKPIT_IA.md §1 still records the older 'CONDITIONAL' Claude Design verdict from when it was authored.",
+      "impact": "Readers might infer the gate is conditional; the normalized CLAUDE_DESIGN_BLOCKERS.md tightened it to 'NO / not approved'.",
+      "owner": "This packet preserves the upstream artifact verbatim and documents the precedence in PACKAGE_REMEDIATION_INDEX.md §'Header State (Preserved)'.",
+      "mitigation": "Tightened state is reflected in all artifacts authored in this packet; upstream historical evidence preserved."
+    }
+  ],
+  "downstream_packets": [
+    "TP-DMX-COCKPIT-RUNTIME-RENDER-001",
+    "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001",
+    "TP-DMX-COCKPIT-UNKNOWN-DRIFT-001",
+    "Inventory regeneration packet (separate)",
+    "Remote-mutation policy packet (separate)"
+  ],
+  "schema_version": "dopemux.cockpit.package_remediation.proof.v1",
+  "created_at_utc": "2026-05-04T12:02:29Z"
+}

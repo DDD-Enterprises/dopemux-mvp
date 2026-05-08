@@ -1,0 +1,104 @@
+{
+  "packet_id": "TP-DMX-COCKPIT-MAIN-STATE-RECON-001",
+  "as_of_utc": "2026-05-07",
+  "rows": [
+    {
+      "pr": 572,
+      "title": "docs(cockpit): prepare merge stack consolidation",
+      "head": "codex/cockpit-merge-stack-consolidate-001",
+      "head_oid": "23ec8b70fea140908ecc53d919452e5345976596",
+      "base": "pack/cockpit-pack-remediate-006-ia",
+      "touched_files_summary": {
+        "task_packet_json": ["task-packets/generated/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001.json"],
+        "task_packet_index": ["task-packets/INDEX.md"],
+        "tests_changed": ["tests/unit/dopemux/ui/cockpit/test_merge_stack_artifacts.py"],
+        "runtime_files_changed": [],
+        "out_artifacts": [
+          "out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/CONSOLIDATION_READINESS_MATRIX.{json,md}",
+          "out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/MERGE_EXECUTION_HANDOFF.md",
+          "out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/POST_CONSOLIDATION_NEXT_STEP.md",
+          "out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_*_REPORT.{json,md}",
+          "out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/PROOF.json",
+          "out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/sha256sums.txt"
+        ],
+        "proof_artifacts": ["proof/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/README.md"]
+      },
+      "packet_ids_mentioned": [
+        "TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001",
+        "TP-DMX-COCKPIT-RUNTIME-RENDER-001",
+        "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001",
+        "TP-DMX-COCKPIT-UNKNOWN-DRIFT-001",
+        "TP-DMX-COCKPIT-INVENTORY-REGEN-001"
+      ],
+      "governance_boundaries_touched": [
+        "task-packets/INDEX.md",
+        "claude_design_governance: preserved at NOT approved",
+        "no Claude Design upload performed by this PR",
+        "no T4 remote mutation performed by this PR",
+        "no canonical writes performed by this PR"
+      ],
+      "review_state": "no decision",
+      "ci_state": "all SUCCESS or SKIPPED",
+      "overlaps_with_merged_work": "audits PRs 568-571 (already merged into pack); also edits task-packets/INDEX.md which is also edited by PR 573 (potential textual overlap)",
+      "blocks_design_pickup": true,
+      "open_pr_status": "OPEN_STACKED",
+      "recommended_action": "route the PR self-reported READY_WITH_RISKS_NEEDS_LEDGER_DECISION verdict to the Ledger before any operator-initiated consolidation; regenerate the merge-stack consolidation artifact to include PR 573 because the current artifact does not audit it"
+    },
+    {
+      "pr": 573,
+      "title": "fix(cockpit): repair runtime contract fidelity gaps",
+      "head": "codex/cockpit-runtime-contract-fidelity-001",
+      "head_oid": "1236757c15b1bfdf0926ee476908d56ed71b0dc6",
+      "base": "pack/cockpit-pack-remediate-006-ia",
+      "touched_files_summary": {
+        "task_packet_json": ["task-packets/generated/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001.json"],
+        "task_packet_index": ["task-packets/INDEX.md"],
+        "tests_changed": [
+          "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+          "tests/unit/dopemux/ui/cockpit/test_inventory_regen_artifacts.py"
+        ],
+        "runtime_files_changed": [
+          "src/dopemux/ui/cockpit/runtime_contract.py (M; pre-exists on pack HEAD)"
+        ],
+        "out_artifacts": [
+          "out/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/PROOF.json"
+        ],
+        "proof_artifacts": [
+          "proof/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/README.md"
+        ]
+      },
+      "packet_ids_mentioned": [
+        "TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001"
+      ],
+      "governance_boundaries_touched": [
+        "introduces new Cockpit runtime surface file (runtime_contract.py)",
+        "EXTERNAL_ONLY gating semantics",
+        "canonical action-row hashing",
+        "receipt lifecycle fields",
+        "palette_request_id nullability",
+        "gate_request_id stability",
+        "UNKNOWN aggregate counting",
+        "redaction-before-hash queue IDs",
+        "deterministic package-dir resolution",
+        "inventory metadata tests",
+        "claude_design_governance: preserved at NOT approved",
+        "no Claude Design upload performed by this PR",
+        "no T4 remote mutation performed by this PR",
+        "no canonical writes performed by this PR",
+        "Unknown / Drift Queue remains non-executing per PR body"
+      ],
+      "review_state": "no decision",
+      "ci_state": "all SUCCESS or SKIPPED",
+      "overlaps_with_merged_work": "stacked on PRs 568-571 already merged into pack; PR 572 (merge-stack consolidation artifact) does not audit this runtime surface",
+      "blocks_design_pickup": true,
+      "open_pr_status": "OPEN_RELEVANT",
+      "recommended_action": "must be audited before any operator-initiated consolidation of pack into main; merge-stack consolidation artifact (PR 572) must be regenerated to cover this runtime surface"
+    }
+  ],
+  "non_actions": [
+    "no PR merges performed",
+    "no PR retargets performed",
+    "no PR edits performed",
+    "no PR closes performed"
+  ]
+}

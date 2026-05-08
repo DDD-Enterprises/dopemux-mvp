@@ -18,7 +18,7 @@
 ### Task Management (ConPort + SuperClaude + Python ADHD Engine)
 **Authorities**: Task storage, PRD decomposition, ADHD optimization, progress tracking
 - **ConPort (PostgreSQL AGE)**: Task storage via progress_entry, metadata in custom_data, dependencies via link_conport_items, knowledge graph queries for unblocked tasks, decision logging
-- **SuperClaude**: PRD parsing via `/dx:prd-parse` with Zen planner, 25 standard commands, 15 specialized agents, `/dx:` custom commands for ADHD workflows
+- **SuperClaude**: PRD parsing via `/dx:prd-parse` with PAL planner, 25 standard commands, 15 specialized agents, `/dx:` custom commands for ADHD workflows
 - **Python ADHD Engine**: Energy tracking, cognitive load calculation, break monitoring, attention state analysis, smart task routing, hyperfocus protection
 - **React Ink Dashboard**: Visual task progress, ADHD metrics, attention-aware UI, real-time updates
 
@@ -68,7 +68,7 @@ mcp__conport__log_custom_data --workspace_id "$WORKSPACE_ID" --category "sprint_
 
 ### Authority Routing
 - **Task Storage**: ConPort progress_entry + custom_data only (no external orchestrators)
-- **PRD Decomposition**: SuperClaude `/dx:prd-parse` with Zen planner (human review required)
+- **PRD Decomposition**: SuperClaude `/dx:prd-parse` with PAL planner (human review required)
 - **ADHD Optimization**: Python ADHD Engine queries ConPort, no direct task modification
 - **Decisions**: Log in ConPort only (single source of truth)
 - **Code Navigation**: Serena LSP only (LSP protocol + semantic analysis)
@@ -76,7 +76,7 @@ mcp__conport__log_custom_data --workspace_id "$WORKSPACE_ID" --category "sprint_
 
 ## 🎯 SuperClaude Integration (v4.1.5)
 
-**Status**: Fully integrated with Dopemux MCP stack (Decision #142-144)
+**Status**: Fully integrated with Dopemux MCP stack (see ConPort decisions #142–144)
 
 **Available Tools**:
 - **25 Slash Commands**: `/sc:implement`, `/sc:workflow`, `/sc:research`, `/sc:analyze`, etc.
@@ -84,7 +84,7 @@ mcp__conport__log_custom_data --workspace_id "$WORKSPACE_ID" --category "sprint_
 - **16 Specialized Agents**: Frontend, Backend, Security, QA, DevOps, Performance, Refactoring, etc.
 
 **MCP Customization**:
-- `sequential` → `zen` (multi-model reasoning: thinkdeep, planner, consensus, debug, codereview)
+- `sequential` → `pal` (multi-model reasoning: thinkdeep, planner, consensus, debug, codereview; formerly named `zen`)
 - `tavily` → `exa` + `gpt-researcher` (neural search + deep research)
 - Kept: `magic` (UI generation), `playwright` (testing), `context7` (docs), `serena` (code), `morphllm` (transforms)
 
@@ -93,11 +93,17 @@ See `.claude/modules/shared/superclaude-workflows.md` for complete integration p
 
 **MCP Documentation**:
 All Dopemux MCPs documented in `~/.claude/MCP_*.md` (auto-imported):
-- MCP_Zen.md - Multi-model reasoning suite (6 tools)
+- MCP_PAL.md - Multi-model reasoning suite (6 tools; formerly MCP_Zen)
 - MCP_ConPort.md - Knowledge graph & task management (9 capabilities)
 - MCP_Serena.md - Code intelligence v2 (LSP + semantic analysis)
 - MCP_Exa.md - Neural search for simple queries
 - MCP_GPTResearcher.md - Deep multi-source research
+
+## 🪝 Lifecycle Hooks
+
+The project's `.claude/settings.json` registers 10 lifecycle hooks (`SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`, `Stop`, `SubagentStop`, `PreCompact`, `SessionEnd`), all dispatched through one entry point: `src/dopemux/claude/native_hooks.py`. Individual hook scripts live under `.claude/hooks/` (e.g., `check_energy.sh`, `log_progress.sh`, `save_context.sh`, `track_file_edit.sh`, `prompt_analyzer.py`, `session_lifecycle.py`).
+
+Hooks run outside the model's turn — they're how the project automates auto-save, energy/break tracking, and ConPort context preservation. If you want to change hook behavior, edit the dispatcher or `.claude/hooks/` scripts; routine settings tweaks should go through the `update-config` skill rather than hand-editing `settings.json`. Hook output reaches the model as `<user-prompt-submit-hook>` blocks — treat as user input.
 
 ## 📚 Detailed Information Locations
 
@@ -106,9 +112,10 @@ When you need comprehensive details, refer to:
 **SuperClaude Workflows**: `.claude/modules/shared/superclaude-workflows.md` (integration patterns, command selection, ADHD sessions)
 **Task Management**: `.claude/modules/superclaude-integration.md`, `.claude/modules/custom-commands.md`
 **Cognitive Plane**: `.claude/modules/cognitive-plane/` (serena-lsp.md, conport-memory.md)
-**ADHD Engine**: `.claude/modules/adhd-patterns.md` (sessions, energy tracking, break management)
+**ADHD Engine**: `.claude/modules/shared/adhd-patterns.md` (sessions, energy tracking, break management)
 **Shared Systems**: `.claude/modules/shared/` (sprint.md, event-patterns.md, superclaude-workflows.md)
 **Filesystem Organization**: `docs/03-reference/filesystem-guide.md` (directory structure, file placement rules)
+**Harness features** (Plan mode, advisor, /loop, ToolSearch, Skill): `~/.claude/MODES_AND_TOOLS.md`
 
 ## 🎖️ Success Metrics
 

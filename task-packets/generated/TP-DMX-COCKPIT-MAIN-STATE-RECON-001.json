@@ -1,0 +1,60 @@
+{
+  "id": "TP-DMX-COCKPIT-MAIN-STATE-RECON-001",
+  "project": "dopemux-mvp",
+  "target": "Reconcile origin/main, pack/cockpit-pack-remediate-006-ia, and all open PR work against the completed Cockpit remediation stack; prove what landed, what remains open, what is stale, and where this thread should resume design work without changing runtime behavior.",
+  "status": "executed",
+  "execution_branch": "codex/cockpit-main-state-recon-001",
+  "base_branch": "main",
+  "depends_on": [
+    "TP-DMX-COCKPIT-MERGE-EXECUTE-001",
+    "TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001",
+    "TP-DMX-COCKPIT-INVENTORY-REGEN-001",
+    "TP-DMX-COCKPIT-UNKNOWN-DRIFT-001",
+    "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001",
+    "TP-DMX-COCKPIT-RUNTIME-RENDER-001",
+    "TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA"
+  ],
+  "boundaries": {
+    "no_runtime_changes": true,
+    "no_pr_merges": true,
+    "no_rebase": true,
+    "no_force_push": true,
+    "no_branch_deletion": true,
+    "no_pr_retargeting": true,
+    "no_final_screens": true,
+    "no_claude_design_upload": true,
+    "no_runtime_action_execution": true,
+    "no_t4_remote_mutation": true,
+    "no_canonical_writes": true,
+    "no_runtime_reclassification": true,
+    "safe_for_claude_design": "NO",
+    "ready_for_claude_design": "not approved"
+  },
+  "deliverables": [
+    "out/cockpit-main-state-recon/TP-DMX-COCKPIT-MAIN-STATE-RECON-001/MAIN_STATE_REPORT.json",
+    "out/cockpit-main-state-recon/TP-DMX-COCKPIT-MAIN-STATE-RECON-001/MAIN_STATE_REPORT.md",
+    "out/cockpit-main-state-recon/TP-DMX-COCKPIT-MAIN-STATE-RECON-001/LANDED_WORK_MATRIX.json",
+    "out/cockpit-main-state-recon/TP-DMX-COCKPIT-MAIN-STATE-RECON-001/LANDED_WORK_MATRIX.md",
+    "out/cockpit-main-state-recon/TP-DMX-COCKPIT-MAIN-STATE-RECON-001/BRANCH_AND_PR_STATE.json",
+    "out/cockpit-main-state-recon/TP-DMX-COCKPIT-MAIN-STATE-RECON-001/BRANCH_AND_PR_STATE.md",
+    "out/cockpit-main-state-recon/TP-DMX-COCKPIT-MAIN-STATE-RECON-001/OPEN_PR_AUDIT.json",
+    "out/cockpit-main-state-recon/TP-DMX-COCKPIT-MAIN-STATE-RECON-001/OPEN_PR_AUDIT.md",
+    "out/cockpit-main-state-recon/TP-DMX-COCKPIT-MAIN-STATE-RECON-001/OPEN_PR_COCKPIT_IMPACT_MATRIX.json",
+    "out/cockpit-main-state-recon/TP-DMX-COCKPIT-MAIN-STATE-RECON-001/OPEN_PR_COCKPIT_IMPACT_MATRIX.md",
+    "out/cockpit-main-state-recon/TP-DMX-COCKPIT-MAIN-STATE-RECON-001/GAP_AND_DRIFT_REPORT.json",
+    "out/cockpit-main-state-recon/TP-DMX-COCKPIT-MAIN-STATE-RECON-001/GAP_AND_DRIFT_REPORT.md",
+    "out/cockpit-main-state-recon/TP-DMX-COCKPIT-MAIN-STATE-RECON-001/VALIDATION_REPORT.json",
+    "out/cockpit-main-state-recon/TP-DMX-COCKPIT-MAIN-STATE-RECON-001/VALIDATION_REPORT.md",
+    "out/cockpit-main-state-recon/TP-DMX-COCKPIT-MAIN-STATE-RECON-001/DESIGN_PICKUP_PLAN.md",
+    "out/cockpit-main-state-recon/TP-DMX-COCKPIT-MAIN-STATE-RECON-001/PROOF.json",
+    "out/cockpit-main-state-recon/TP-DMX-COCKPIT-MAIN-STATE-RECON-001/sha256sums.txt",
+    "proof/cockpit-main-state-recon/TP-DMX-COCKPIT-MAIN-STATE-RECON-001/README.md"
+  ],
+  "evidence": {
+    "origin_main_head": "d52fbf1b8786b27305afb6c52ac294ba7a12f2d5",
+    "pack_branch_head": "b173efd83c871c30f2bd86530921c866d08e7e45",
+    "pack_ahead_main": 18,
+    "pack_behind_main": 9,
+    "files_differing_main_vs_pack": 196
+  }
+}
