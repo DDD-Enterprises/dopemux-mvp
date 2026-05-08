@@ -63,30 +63,34 @@ Format: {{
 }}"""
 
         try:
-            async with self:
-                response = await self.planner(
-                    step=planning_prompt,
-                    step_number=1,
-                    total_steps=1,
-                    next_step_required=False,
-                    model="gemini-2.5-pro"
-                )
+            # Do not wrap the call in `async with self:` here. The base class's
+            # __aexit__ closes the underlying httpx.AsyncClient, which would
+            # leave this long-lived TaskOrchestratorPALClient instance with a
+            # closed transport on the next call. Callers manage the client's
+            # lifetime explicitly via close()/__aexit__ at shutdown.
+            response = await self.planner(
+                step=planning_prompt,
+                step_number=1,
+                total_steps=1,
+                next_step_required=False,
+                model="gemini-2.5-pro"
+            )
 
-                return response.get('plan', {
-                    'subtasks': [{
-                        'name': 'Basic execution',
-                        'description': task_description,
-                        'duration_minutes': estimated_duration,
-                        'dependencies': [],
-                        'adhd_accommodations': ['Standard breaks']
-                    }],
-                    'execution_order': ['Basic execution'],
-                    'total_duration': estimated_duration,
-                    'break_points': [],
-                    'progress_checkpoints': [],
-                    'risk_mitigation': ['Standard practices'],
-                    'confidence': 0.3
-                })
+            return response.get('plan', {
+                'subtasks': [{
+                    'name': 'Basic execution',
+                    'description': task_description,
+                    'duration_minutes': estimated_duration,
+                    'dependencies': [],
+                    'adhd_accommodations': ['Standard breaks']
+                }],
+                'execution_order': ['Basic execution'],
+                'total_duration': estimated_duration,
+                'break_points': [],
+                'progress_checkpoints': [],
+                'risk_mitigation': ['Standard practices'],
+                'confidence': 0.3
+            })
 
         except Exception as e:
             logger.error(f"Zen task breakdown planning failed: {e}")
@@ -141,29 +145,31 @@ Format: {{
 }}"""
 
         try:
-            async with self:
-                response = await self.planner(
-                    step=prioritization_prompt,
-                    step_number=1,
-                    total_steps=1,
-                    next_step_required=False,
-                    model="gemini-2.5-pro"
-                )
+            # See plan_task_breakdown for the rationale on not using
+            # `async with self:` here — the base __aexit__ closes the shared
+            # AsyncClient and would break subsequent calls on this instance.
+            response = await self.planner(
+                step=prioritization_prompt,
+                step_number=1,
+                total_steps=1,
+                next_step_required=False,
+                model="gemini-2.5-pro"
+            )
 
-                plan = response.get('plan', '')
-                # Parse the prioritization plan
-                if 'prioritized_order' in plan:
-                    return plan
-                else:
-                    # Fallback to simple prioritization
-                    return {
-                        'prioritized_order': list(range(len(task_queue))),
-                        'execution_batches': [list(range(len(task_queue)))],
-                        'estimated_completion': f"{sum(t.get('estimated_minutes', 30) for t in task_queue)} minutes",
-                        'break_schedule': [],
-                        'energy_distribution': 'sequential',
-                        'rationale': 'Fallback to original order'
-                    }
+            plan = response.get('plan', '')
+            # Parse the prioritization plan
+            if 'prioritized_order' in plan:
+                return plan
+            else:
+                # Fallback to simple prioritization
+                return {
+                    'prioritized_order': list(range(len(task_queue))),
+                    'execution_batches': [list(range(len(task_queue)))],
+                    'estimated_completion': f"{sum(t.get('estimated_minutes', 30) for t in task_queue)} minutes",
+                    'break_schedule': [],
+                    'energy_distribution': 'sequential',
+                    'rationale': 'Fallback to original order'
+                }
 
         except Exception as e:
             logger.error(f"Zen task prioritization failed: {e}")
