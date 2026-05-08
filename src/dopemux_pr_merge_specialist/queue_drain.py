@@ -156,6 +156,22 @@ _GEMINI_AUTH_ENV_ALLOWLIST = (
 )
 
 
+def _sanitize_for_prompt(text: str, max_length: int = 4000) -> str:
+    """Reduce prompt-injection surface in untrusted CI log content.
+
+    Replaces fence-breaking triple backticks so the content can't escape its
+    enclosing ``` block, and length-caps to keep the prompt bounded. The
+    rest of the input is left intact so legitimate signal (stack frames,
+    file paths, error class names) still reaches the remediation agent.
+    """
+    if not text:
+        return ""
+    sanitized = text.replace("```", "''' ")
+    if len(sanitized) > max_length:
+        sanitized = "[truncated]\n" + sanitized[-(max_length - len("[truncated]\n")) :]
+    return sanitized
+
+
 @contextlib.contextmanager
 def _isolated_gemini_home_env() -> Iterable[Dict[str, str]]:
     """
@@ -1825,10 +1841,13 @@ def _handle_global_ci_blockers(
             status="failed",
             returncode=1,
             stdout="",
-            stderr=(
-                f"{remote_failure.evidence_summary}\n\n"
-                + (remote_failure.evidence.log_text or "")[-6000:]
-            ).strip(),
+            stderr=_sanitize_for_prompt(
+                (
+                    f"{remote_failure.evidence_summary}\n\n"
+                    + (remote_failure.evidence.log_text or "")[-6000:]
+                ).strip(),
+                max_length=8000,
+            ),
         )
         failing_prs_by_fingerprint[remote_failure.fingerprint].append((r, failed_step))
         remote_group_metadata.setdefault(remote_failure.fingerprint, remote_failure)
