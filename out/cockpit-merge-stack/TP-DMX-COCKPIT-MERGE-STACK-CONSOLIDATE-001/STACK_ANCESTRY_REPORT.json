@@ -1,0 +1,125 @@
+{
+  "all_declared_ancestry_checks_passed": true,
+  "checks": [
+    {
+      "base_label": "PR568 base branch head",
+      "base_sha": "d23e4d4de8d686e875f131b40e53a07d4f41dd25",
+      "command_parts": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "d23e4d4de8d686e875f131b40e53a07d4f41dd25",
+        "9ad522df341375b7fede75eaa8e43e1f44097b41"
+      ],
+      "exit_code": 0,
+      "head_label": "PR568 head",
+      "head_sha": "9ad522df341375b7fede75eaa8e43e1f44097b41",
+      "is_ancestor": true
+    },
+    {
+      "base_label": "PR568 head",
+      "base_sha": "9ad522df341375b7fede75eaa8e43e1f44097b41",
+      "command_parts": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "9ad522df341375b7fede75eaa8e43e1f44097b41",
+        "d27c4995f22ceba646763759fa4a8f53d547ac67"
+      ],
+      "exit_code": 0,
+      "head_label": "PR569 head",
+      "head_sha": "d27c4995f22ceba646763759fa4a8f53d547ac67",
+      "is_ancestor": true
+    },
+    {
+      "base_label": "PR569 head",
+      "base_sha": "d27c4995f22ceba646763759fa4a8f53d547ac67",
+      "command_parts": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "d27c4995f22ceba646763759fa4a8f53d547ac67",
+        "b6b89fae076a669952ef1178d7d7d17a3e01eb7b"
+      ],
+      "exit_code": 0,
+      "head_label": "PR570 head",
+      "head_sha": "b6b89fae076a669952ef1178d7d7d17a3e01eb7b",
+      "is_ancestor": true
+    },
+    {
+      "base_label": "PR570 head",
+      "base_sha": "b6b89fae076a669952ef1178d7d7d17a3e01eb7b",
+      "command_parts": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "b6b89fae076a669952ef1178d7d7d17a3e01eb7b",
+        "93702834fbb05963685ed4919c6d099040399426"
+      ],
+      "exit_code": 0,
+      "head_label": "PR571 head",
+      "head_sha": "93702834fbb05963685ed4919c6d099040399426",
+      "is_ancestor": true
+    },
+    {
+      "base_label": "PR571 head",
+      "base_sha": "93702834fbb05963685ed4919c6d099040399426",
+      "command_parts": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "93702834fbb05963685ed4919c6d099040399426",
+        "93702834fbb05963685ed4919c6d099040399426"
+      ],
+      "exit_code": 0,
+      "head_label": "this packet branch HEAD before edits",
+      "head_sha": "93702834fbb05963685ed4919c6d099040399426",
+      "is_ancestor": true
+    }
+  ],
+  "declared_order": [
+    568,
+    569,
+    570,
+    571
+  ],
+  "generated_at_utc": "2026-05-08T01:03:38Z",
+  "log_graph_command": "git log --oneline --decorate --graph --max-count=30 --all --branches='codex/cockpit-*'",
+  "log_graph_exit_code": 0,
+  "log_graph_stdout": "* 93702834f (HEAD -> codex/cockpit-merge-stack-consolidate-001, origin/codex/cockpit-inventory-regen-001, codex/cockpit-inventory-regen-001) docs(cockpit): record inventory regen cleanup status\n* 35da45003 docs(cockpit): record inventory regen pr proof\n* e9e7e2864 docs(cockpit): regenerate current head inventory\n* b6b89fae0 (origin/codex/cockpit-unknown-drift-001, codex/cockpit-unknown-drift-001) docs(cockpit): record unknown drift pr proof\n* 5834a6dd1 docs(cockpit): record unknown drift proof metadata\n* 19b74d2ae ui(cockpit): wire unknown drift queue primitives\n* d27c4995f (origin/codex/cockpit-settings-runtime-001, codex/cockpit-settings-runtime-001) docs(cockpit): record settings runtime proof metadata\n* 8599eae67 ui(cockpit): wire settings runtime primitives\n* 9ad522df3 (origin/codex/cockpit-runtime-render-001, codex/cockpit-runtime-render-001) docs(cockpit): clarify runtime renderer proof head metadata\n* 54c7bb27e docs(cockpit): record runtime renderer proof closeout\n* ea640b47b ui(cockpit): wire runtime renderer primitives to IA package\n* d23e4d4de (origin/pack/cockpit-pack-remediate-006-ia, pack/cockpit-pack-remediate-006-ia) docs(cockpit): repair package proof commit metadata\n* bdc457ea3 docs(cockpit): record commit sha and PR blocker in package PROOF\n* 1c2c1355c docs(cockpit): assemble IA package remediation handoff\n| * 5f383f18c (origin/palette-metric-card-ux-8469405661169098689) 🎨 Palette: Enhance metric card UX and harden Gemini CI workflows\n| * 3a4a07b5c 🎨 Palette: Enhance metric card hit area and accessibility\n|/  \n| * 64b50a6a8 (origin/codex/recover-cli-system-20260502-work-pr-554-fix, codex/recover-cli-system-20260502-work-pr-554-fix) fix(cli): recover audit hardening tranche\n|/  \n| * f86149da1 (origin/palette-soft-reset-pulse-17995409341551293176) 🎨 Palette: Add pulsing animation to Reset Ritual soft confirmation\n| * dc55bfb0e 🎨 Palette: Add pulsing animation to Reset Ritual soft confirmation\n|/  \n* 88c188d55 (origin/main, origin/HEAD, main, claude/optimistic-williams-98f54b, claude/optimistic-shamir-a90855, audit/cockpit-ia-reconcile-001) docs(repo-hygiene): deep audit remaining local work (#564)\n| * ab57b4974 (codex/repo-hygiene-deep-audit-20260502) docs(repo-hygiene): align tp006 proof tracking\n| * c0e7aa8ee docs(repo-hygiene): record tp006 pr proof\n| * 17b8139e0 docs(repo-hygiene): deep audit remaining local work\n|/  \n* bdf472ca8 docs(repo-hygiene): classify remaining work and cleanup safe locals (#563)\n| * 6cf77bf5d (codex/repo-hygiene-remaining-disposition-20260502) docs(repo-hygiene): classify remaining work and cleanup safe locals\n|/  \n* 2cc29b0f4 docs(repo-hygiene): audit lost work and execute conservative cleanup (#561)\n| * 17584adc6 (codex/repo-hygiene-lost-work-audit-20260502) docs(repo-hygiene): audit lost work and execute conservative cleanup\n|/  \n* 4959a089f fix(infra): restore canonical compose\n| * 72900b234 (codex/restore-canonical-compose) fix(infra): restore canonical compose\n|/  \n*   af5c46274 [codex] Quiet system-data scanner evidence noise (#560)\n|\\  \n",
+  "packet_id": "TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001",
+  "required_packet_skip_detected": false,
+  "schema_version": "dopemux.cockpit.merge_stack.ancestry.v1",
+  "skip_detection_basis": "Declared PR bases form a contiguous packet chain and git ancestry checks passed for each adjacent head.",
+  "unexpected_divergence_detected": false,
+  "covered_pr_set_before_refresh": [
+    568,
+    569,
+    570,
+    571
+  ],
+  "covered_pr_set": [
+    568,
+    569,
+    570,
+    571,
+    573
+  ],
+  "merge_candidate_prs": [
+    568,
+    569,
+    570,
+    571
+  ],
+  "reviewed_merged_evidence_prs": [
+    573
+  ],
+  "coverage_refresh_note": "PR #573 is covered as reviewed merged runtime-contract evidence and is intentionally excluded from declared stack ancestry and merge-candidate order.",
+  "pr_573_evidence_relation": {
+    "merge_commit": "c0c32c1639e675d3415257f2444437ae1fa2ea3c",
+    "merge_commit_is_ancestor_of_origin_main": true,
+    "base_parent": "b173efd83c871c30f2bd86530921c866d08e7e45",
+    "head_parent": "1236757c15b1bfdf0926ee476908d56ed71b0dc6",
+    "proof_path": "out/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/PROOF.json"
+  }
+}

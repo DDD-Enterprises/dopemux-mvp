@@ -1,0 +1,1253 @@
+{
+  "artifacts_generated": [
+    "out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/CONSOLIDATION_READINESS_MATRIX.json",
+    "out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/CONSOLIDATION_READINESS_MATRIX.md",
+    "out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/MERGE_EXECUTION_HANDOFF.md",
+    "out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/POST_CONSOLIDATION_NEXT_STEP.md",
+    "out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/PROOF.json",
+    "out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_ANCESTRY_REPORT.json",
+    "out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_ANCESTRY_REPORT.md",
+    "out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_STATE_REPORT.json",
+    "out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_STATE_REPORT.md",
+    "out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_VALIDATION_REPORT.json",
+    "out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_VALIDATION_REPORT.md",
+    "proof/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/README.md"
+  ],
+  "base_branch": "main",
+  "base_head": "93702834fbb05963685ed4919c6d099040399426",
+  "boundary_preservation": {
+    "READY_FOR_CLAUDE_DESIGN": "not approved",
+    "claude_design_upload": "not_authorized",
+    "final_screen_generation": "not_authorized",
+    "runtime_action_execution": "not_authorized",
+    "t4_remote_mutation": "not_authorized",
+    "canonical_writes": "not_authorized",
+    "unknown_drift_runtime_reclassification": "disabled",
+    "tx_tu_execution": "disabled",
+    "no_canonical_writes": true,
+    "no_claude_design_upload": true,
+    "no_final_screens": true,
+    "no_live_service_adapters": true,
+    "no_runtime_action_execution": true,
+    "no_runtime_reclassification": true,
+    "no_t4_remote_mutation": true,
+    "safe_for_claude_design": "NO"
+  },
+  "branch": "codex/cockpit-merge-stack-consolidate-001",
+  "cleanup_status": "PR_OPENED_WORKTREE_RETAINED_FOR_OPERATOR_INSPECTION",
+  "codereview_status": "codereview not installed on PATH; explicit diff review performed with git diff --stat, targeted artifact field inspection, forbidden-claim grep, and focused artifact tests.",
+  "created_at_utc": "2026-05-04T22:43:10Z",
+  "final_head_recording_policy": "This refreshed PROOF.json records PR #573 coverage evidence and the pre-commit PR #572 head. The refresh commit SHA is reported in closeout and PR metadata rather than self-hashed inside implementation_commit_sha; later index conflict resolution is recorded in validation notes.",
+  "head_before": "23ec8b70fea140908ecc53d919452e5345976596",
+  "implementation_commit_sha": "dadc618f9a24e9eaae65ec45ae104407a709faa9",
+  "merge_recommendation": {
+    "mode": "MERGE_COMMIT_RECOMMENDED",
+    "order": [
+      568,
+      569,
+      570,
+      571
+    ],
+    "remote_mutation_policy_next": "Do not start remote-mutation policy until this stack lands or Ledger explicitly accepts stacked-branch policy work.",
+    "requires_ledger_authorization": true,
+    "covered_pr_set": [
+      568,
+      569,
+      570,
+      571,
+      573
+    ],
+    "reviewed_merged_evidence_prs": [
+      573
+    ],
+    "pr_573_merge_candidate": false
+  },
+  "mutation_statement": "No pull request merge, base retarget, rebase, force-push, or branch deletion operation was performed by this packet.",
+  "packet_id": "TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001",
+  "pr_blocker": null,
+  "pr_number": 572,
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/572",
+  "precommit_status": "PASS",
+  "proof_metadata_updated_at_utc": "2026-05-08T02:05:58Z",
+  "readiness_verdict": "READY_WITH_RISKS_NEEDS_LEDGER_DECISION",
+  "residual_risks": [
+    "PR 569 carries accepted residual risks for Settings/Admin per-row tier mapping and remote mutation policy absence.",
+    "PR 571 carries accepted residual risks for aggregate-only inventory precision and root authority/schema gaps.",
+    "Accepted inventory status artifact records current_head as the prior upstream head; this packet records but does not rewrite that accepted artifact.",
+    "Downstream retargeting/base normalization requires a separate Ledger decision if chosen by the merge executor.",
+    "PR #572 conflict against main was resolved after artifact generation at commit 950491ae3; downstream merge execution still requires separate Ledger authorization.",
+    "PR #573 carries PASS_WITH_RISKS auditor-side/process risk only; no PR-side runtime-contract defect is recorded for this refresh.",
+    "PR #573 proof bundle is cited from merge commit c0c32c1639e675d3415257f2444437ae1fa2ea3c/main lineage and is not copied into the stale PR #572 branch."
+  ],
+  "schema_version": "dopemux.cockpit.merge_stack.proof.v1",
+  "stack_pr_metadata": [
+    {
+      "audit_verdict": "PASS",
+      "audit_verdict_source": "active task input; accepted proof artifacts do not expose a uniform audit_verdict field",
+      "base_branch": "pack/cockpit-pack-remediate-006-ia",
+      "boundary_preservation_status": {
+        "canonical_writes_added": false,
+        "claude_design_upload_attempted": false,
+        "final_screens_generated": false,
+        "five_top_level_modes": [
+          "PM",
+          "Implementer",
+          "Overview",
+          "Services",
+          "Events"
+        ],
+        "four_global_surfaces": [
+          "Command Palette",
+          "Settings/Admin/Runtime",
+          "Safe Actions / Proof Gate",
+          "Unknown / Drift Queue"
+        ],
+        "live_service_adapters_added": false,
+        "no_sixth_top_level_mode": true,
+        "palette_broker_only": true,
+        "safe_action_gate_cross_cutting": true,
+        "safe_action_gate_executes_actions": false,
+        "safe_action_tiers": [
+          "T0",
+          "T0i",
+          "T1",
+          "T2",
+          "T3",
+          "T4",
+          "T5",
+          "T6",
+          "TX",
+          "TU"
+        ],
+        "t4_blocked_until_remote_policy": true,
+        "tx_tu_never_executable": true,
+        "unknown_drift_visible": true
+      },
+      "changed_files_summary": {
+        "command": "git diff --name-status origin/pack/cockpit-pack-remediate-006-ia..origin/codex/cockpit-runtime-render-001",
+        "exit_code": 0,
+        "file_count": 9,
+        "files": [
+          {
+            "path": "out/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/PROOF.json",
+            "status": "A"
+          },
+          {
+            "path": "proof/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/README.md",
+            "status": "A"
+          },
+          {
+            "path": "src/dopemux/commands/cockpit_commands.py",
+            "status": "M"
+          },
+          {
+            "path": "src/dopemux/ui/cockpit/app.py",
+            "status": "M"
+          },
+          {
+            "path": "src/dopemux/ui/cockpit/runtime_contract.py",
+            "status": "A"
+          },
+          {
+            "path": "task-packets/INDEX.md",
+            "status": "M"
+          },
+          {
+            "path": "task-packets/generated/TP-DMX-COCKPIT-RUNTIME-RENDER-001.json",
+            "status": "A"
+          },
+          {
+            "path": "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+            "status": "A"
+          },
+          {
+            "path": "tests/unit/test_cockpit_cli.py",
+            "status": "A"
+          }
+        ],
+        "status_counts": {
+          "A": 6,
+          "M": 3
+        }
+      },
+      "current_remote_head": "9ad522df341375b7fede75eaa8e43e1f44097b41",
+      "diff_file_count": 9,
+      "expected_audited_head": "9ad522df341375b7fede75eaa8e43e1f44097b41",
+      "expected_head_matches_current_remote": true,
+      "head_branch": "codex/cockpit-runtime-render-001",
+      "is_draft": false,
+      "local_ancestry_relation": {
+        "command_parts": [
+          "git",
+          "merge-base",
+          "--is-ancestor",
+          "origin/pack/cockpit-pack-remediate-006-ia",
+          "origin/codex/cockpit-runtime-render-001"
+        ],
+        "declared_base_is_ancestor_of_head": true,
+        "exit_code": 0
+      },
+      "mergeable": "MERGEABLE",
+      "packet_id": "TP-DMX-COCKPIT-RUNTIME-RENDER-001",
+      "pr_number": 568,
+      "pr_state": "OPEN",
+      "proof_path": "out/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/PROOF.json",
+      "residual_risk_summary": [
+        "T4 remains blocked until a separate remote-mutation policy packet exists and is accepted.",
+        "Settings/Admin per-row tier mapping remains owned by TP-DMX-COCKPIT-SETTINGS-RUNTIME-001.",
+        "Unknown/Drift Queue full runtime surface remains owned by TP-DMX-COCKPIT-UNKNOWN-DRIFT-001.",
+        "Inventory regeneration against current HEAD remains separate.",
+        "Full dopemux.cli module invocation in this local environment is blocked by missing optional litellm dependency; focused Click command tests exercise the Cockpit command group directly."
+      ],
+      "review_decision": "NOT_REPORTED",
+      "status_checks": {
+        "blocking_or_unknown": [],
+        "checks": [
+          {
+            "conclusion": "SUCCESS",
+            "name": "identity-check",
+            "status": "COMPLETED",
+            "workflowName": "Repo Identity Check"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "identity-check",
+            "status": "COMPLETED",
+            "workflowName": "Repo Identity Check"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "checks",
+            "status": "COMPLETED",
+            "workflowName": "docs"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "🤖 Claude Code Security Analysis",
+            "status": "COMPLETED",
+            "workflowName": "🔒 Security Review with Claude Code"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "💅 Code Quality & Linting",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "📊 ADHD-Friendly Security Summary",
+            "status": "COMPLETED",
+            "workflowName": "🔒 Security Review with Claude Code"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "🔒 Security Review",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "📚 Documentation Check",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "🧪 Unit Tests",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "🧪 Extractor Smoke",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "🧪 Extractor Full (Advisory)",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "🧪 Installer Smoke",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "📊 Scoped Coverage",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "🔗 Integration Tests",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "📊 CI Pipeline Summary",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          }
+        ],
+        "counts": {
+          "SKIPPED": 3,
+          "SUCCESS": 12
+        }
+      },
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/568"
+    },
+    {
+      "audit_verdict": "PASS_WITH_RISKS",
+      "audit_verdict_source": "active task input; accepted proof artifacts do not expose a uniform audit_verdict field",
+      "base_branch": "codex/cockpit-runtime-render-001",
+      "boundary_preservation_status": {
+        "READY_FOR_CLAUDE_DESIGN": "not approved",
+        "no_canonical_writes": true,
+        "no_claude_design_upload": true,
+        "no_final_screens": true,
+        "no_live_service_adapters": true,
+        "no_runtime_action_execution": true,
+        "no_t4_remote_mutation": true,
+        "safe_for_claude_design": "NO",
+        "settings_admin_does_not_directly_execute": true,
+        "t4_blocked": true,
+        "tx_tu_never_executable": true
+      },
+      "changed_files_summary": {
+        "command": "git diff --name-status origin/codex/cockpit-runtime-render-001..origin/codex/cockpit-settings-runtime-001",
+        "exit_code": 0,
+        "file_count": 7,
+        "files": [
+          {
+            "path": "out/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/PROOF.json",
+            "status": "A"
+          },
+          {
+            "path": "proof/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/README.md",
+            "status": "A"
+          },
+          {
+            "path": "src/dopemux/ui/cockpit/runtime_contract.py",
+            "status": "M"
+          },
+          {
+            "path": "task-packets/INDEX.md",
+            "status": "M"
+          },
+          {
+            "path": "task-packets/generated/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001.json",
+            "status": "A"
+          },
+          {
+            "path": "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+            "status": "M"
+          },
+          {
+            "path": "tests/unit/test_cockpit_cli.py",
+            "status": "M"
+          }
+        ],
+        "status_counts": {
+          "A": 3,
+          "M": 4
+        }
+      },
+      "current_remote_head": "d27c4995f22ceba646763759fa4a8f53d547ac67",
+      "diff_file_count": 7,
+      "expected_audited_head": "d27c4995f22ceba646763759fa4a8f53d547ac67",
+      "expected_head_matches_current_remote": true,
+      "head_branch": "codex/cockpit-settings-runtime-001",
+      "is_draft": false,
+      "local_ancestry_relation": {
+        "command_parts": [
+          "git",
+          "merge-base",
+          "--is-ancestor",
+          "origin/codex/cockpit-runtime-render-001",
+          "origin/codex/cockpit-settings-runtime-001"
+        ],
+        "declared_base_is_ancestor_of_head": true,
+        "exit_code": 0
+      },
+      "mergeable": "MERGEABLE",
+      "packet_id": "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001",
+      "pr_number": 569,
+      "pr_state": "OPEN",
+      "proof_path": "out/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/PROOF.json",
+      "residual_risk_summary": [
+        "Per-row Settings/Admin tier mapping remains UNKNOWN for the accepted 62-row package inventory because the accepted package provides flow-group defaults, not complete per-row proof.",
+        "T4 remains refused until a separate remote-mutation policy exists and is accepted.",
+        "Blocked row count inside Settings/Admin remains UNKNOWN because only total Settings/Admin row count is proven by the accepted package artifacts.",
+        "Gate-required count inside Settings/Admin remains UNKNOWN until per-row inventory regeneration or row evidence exists.",
+        "Unknown/Drift Queue full runtime surface remains owned by TP-DMX-COCKPIT-UNKNOWN-DRIFT-001.",
+        "Inventory regeneration against current HEAD remains a separate packet."
+      ],
+      "review_decision": "NOT_REPORTED",
+      "status_checks": {
+        "blocking_or_unknown": [],
+        "checks": [
+          {
+            "conclusion": "SUCCESS",
+            "name": "identity-check",
+            "status": "COMPLETED",
+            "workflowName": "Repo Identity Check"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "identity-check",
+            "status": "COMPLETED",
+            "workflowName": "Repo Identity Check"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "checks",
+            "status": "COMPLETED",
+            "workflowName": "docs"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "🤖 Claude Code Security Analysis",
+            "status": "COMPLETED",
+            "workflowName": "🔒 Security Review with Claude Code"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "💅 Code Quality & Linting",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "📊 ADHD-Friendly Security Summary",
+            "status": "COMPLETED",
+            "workflowName": "🔒 Security Review with Claude Code"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "🔒 Security Review",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "📚 Documentation Check",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "🧪 Unit Tests",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "🧪 Extractor Smoke",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "🧪 Extractor Full (Advisory)",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "🧪 Installer Smoke",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "📊 Scoped Coverage",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "🔗 Integration Tests",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "📊 CI Pipeline Summary",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          }
+        ],
+        "counts": {
+          "SKIPPED": 3,
+          "SUCCESS": 12
+        }
+      },
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/569"
+    },
+    {
+      "audit_verdict": "PASS",
+      "audit_verdict_source": "active task input; accepted proof artifacts do not expose a uniform audit_verdict field",
+      "base_branch": "codex/cockpit-settings-runtime-001",
+      "boundary_preservation_status": {
+        "READY_FOR_CLAUDE_DESIGN": "not approved",
+        "no_canonical_writes": true,
+        "no_claude_design_upload": true,
+        "no_final_screens": true,
+        "no_live_service_adapters": true,
+        "no_remote_mutation": true,
+        "runtime_reclassification_disabled": true,
+        "safe_for_claude_design": "NO",
+        "t4_blocked": true,
+        "tx_tu_never_executable": true,
+        "unknown_drift_does_not_execute": true
+      },
+      "changed_files_summary": {
+        "command": "git diff --name-status origin/codex/cockpit-settings-runtime-001..origin/codex/cockpit-unknown-drift-001",
+        "exit_code": 0,
+        "file_count": 7,
+        "files": [
+          {
+            "path": "out/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/PROOF.json",
+            "status": "A"
+          },
+          {
+            "path": "proof/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/README.md",
+            "status": "A"
+          },
+          {
+            "path": "src/dopemux/ui/cockpit/runtime_contract.py",
+            "status": "M"
+          },
+          {
+            "path": "task-packets/INDEX.md",
+            "status": "M"
+          },
+          {
+            "path": "task-packets/generated/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001.json",
+            "status": "A"
+          },
+          {
+            "path": "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+            "status": "M"
+          },
+          {
+            "path": "tests/unit/test_cockpit_cli.py",
+            "status": "M"
+          }
+        ],
+        "status_counts": {
+          "A": 3,
+          "M": 4
+        }
+      },
+      "current_remote_head": "b6b89fae076a669952ef1178d7d7d17a3e01eb7b",
+      "diff_file_count": 7,
+      "expected_audited_head": "b6b89fae076a669952ef1178d7d7d17a3e01eb7b",
+      "expected_head_matches_current_remote": true,
+      "head_branch": "codex/cockpit-unknown-drift-001",
+      "is_draft": false,
+      "local_ancestry_relation": {
+        "command_parts": [
+          "git",
+          "merge-base",
+          "--is-ancestor",
+          "origin/codex/cockpit-settings-runtime-001",
+          "origin/codex/cockpit-unknown-drift-001"
+        ],
+        "declared_base_is_ancestor_of_head": true,
+        "exit_code": 0
+      },
+      "mergeable": "MERGEABLE",
+      "packet_id": "TP-DMX-COCKPIT-UNKNOWN-DRIFT-001",
+      "pr_number": 570,
+      "pr_state": "OPEN",
+      "proof_path": "out/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/PROOF.json",
+      "residual_risk_summary": [
+        "Inventory regeneration against current HEAD remains a separate packet; queue counts are aggregate lower bounds from accepted artifacts.",
+        "Accepted source artifacts do not expose per-row data for every queue class, so route-only refusal classes use UNKNOWN aggregate counts.",
+        "Remote-mutation policy remains absent; T4 remains refused.",
+        "Promotions, demotions, and reclassification remain packet-owned outside the runtime renderer."
+      ],
+      "review_decision": "NOT_REPORTED",
+      "status_checks": {
+        "blocking_or_unknown": [],
+        "checks": [
+          {
+            "conclusion": "SKIPPED",
+            "name": "debugger",
+            "status": "COMPLETED",
+            "workflowName": "🔀 Gemini Dispatch"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "identity-check",
+            "status": "COMPLETED",
+            "workflowName": "Repo Identity Check"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "identity-check",
+            "status": "COMPLETED",
+            "workflowName": "Repo Identity Check"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "checks",
+            "status": "COMPLETED",
+            "workflowName": "docs"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "🤖 Claude Code Security Analysis",
+            "status": "COMPLETED",
+            "workflowName": "🔒 Security Review with Claude Code"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "💅 Code Quality & Linting",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "dispatch",
+            "status": "COMPLETED",
+            "workflowName": "🔀 Gemini Dispatch"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "📊 ADHD-Friendly Security Summary",
+            "status": "COMPLETED",
+            "workflowName": "🔒 Security Review with Claude Code"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "🔒 Security Review",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "review",
+            "status": "COMPLETED",
+            "workflowName": "🔀 Gemini Dispatch"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "📚 Documentation Check",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "triage",
+            "status": "COMPLETED",
+            "workflowName": "🔀 Gemini Dispatch"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "🧪 Unit Tests",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "🧪 Extractor Smoke",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "invoke",
+            "status": "COMPLETED",
+            "workflowName": "🔀 Gemini Dispatch"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "🧪 Extractor Full (Advisory)",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "plan-execute",
+            "status": "COMPLETED",
+            "workflowName": "🔀 Gemini Dispatch"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "🧪 Installer Smoke",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "fallthrough",
+            "status": "COMPLETED",
+            "workflowName": "🔀 Gemini Dispatch"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "📊 Scoped Coverage",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "🔗 Integration Tests",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "📊 CI Pipeline Summary",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          }
+        ],
+        "counts": {
+          "SKIPPED": 10,
+          "SUCCESS": 12
+        }
+      },
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/570"
+    },
+    {
+      "audit_verdict": "PASS",
+      "audit_verdict_source": "active task input; accepted proof artifacts do not expose a uniform audit_verdict field",
+      "base_branch": "codex/cockpit-unknown-drift-001",
+      "boundary_preservation_status": {
+        "READY_FOR_CLAUDE_DESIGN": "not approved",
+        "no_canonical_writes": true,
+        "no_claude_design_upload": true,
+        "no_final_screens": true,
+        "no_live_service_adapters": true,
+        "no_runtime_action_execution": true,
+        "no_t4_remote_mutation": true,
+        "runtime_reclassification_disabled": true,
+        "safe_for_claude_design": "NO",
+        "t4_blocked": true,
+        "tx_tu_never_executable": true,
+        "unknown_drift_does_not_execute": true
+      },
+      "changed_files_summary": {
+        "command": "git diff --name-status origin/codex/cockpit-unknown-drift-001..origin/codex/cockpit-inventory-regen-001",
+        "exit_code": 0,
+        "file_count": 13,
+        "files": [
+          {
+            "path": "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json",
+            "status": "A"
+          },
+          {
+            "path": "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.md",
+            "status": "A"
+          },
+          {
+            "path": "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/CURRENT_HEAD_COCKPIT_STATUS.json",
+            "status": "A"
+          },
+          {
+            "path": "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/CURRENT_HEAD_COCKPIT_STATUS.md",
+            "status": "A"
+          },
+          {
+            "path": "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/INVENTORY_DRIFT_REPORT.json",
+            "status": "A"
+          },
+          {
+            "path": "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/INVENTORY_DRIFT_REPORT.md",
+            "status": "A"
+          },
+          {
+            "path": "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/NEXT_PACKET_DECISION_MATRIX.md",
+            "status": "A"
+          },
+          {
+            "path": "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/PROOF.json",
+            "status": "A"
+          },
+          {
+            "path": "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/sha256sums.txt",
+            "status": "A"
+          },
+          {
+            "path": "proof/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/README.md",
+            "status": "A"
+          },
+          {
+            "path": "task-packets/INDEX.md",
+            "status": "M"
+          },
+          {
+            "path": "task-packets/generated/TP-DMX-COCKPIT-INVENTORY-REGEN-001.json",
+            "status": "A"
+          },
+          {
+            "path": "tests/unit/dopemux/ui/cockpit/test_inventory_regen_artifacts.py",
+            "status": "A"
+          }
+        ],
+        "status_counts": {
+          "A": 12,
+          "M": 1
+        }
+      },
+      "current_remote_head": "93702834fbb05963685ed4919c6d099040399426",
+      "diff_file_count": 13,
+      "expected_audited_head": "93702834fbb05963685ed4919c6d099040399426",
+      "expected_head_matches_current_remote": true,
+      "head_branch": "codex/cockpit-inventory-regen-001",
+      "is_draft": false,
+      "local_ancestry_relation": {
+        "command_parts": [
+          "git",
+          "merge-base",
+          "--is-ancestor",
+          "origin/codex/cockpit-unknown-drift-001",
+          "origin/codex/cockpit-inventory-regen-001"
+        ],
+        "declared_base_is_ancestor_of_head": true,
+        "exit_code": 0
+      },
+      "mergeable": "MERGEABLE",
+      "packet_id": "TP-DMX-COCKPIT-INVENTORY-REGEN-001",
+      "pr_number": 571,
+      "pr_state": "OPEN",
+      "proof_path": "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/PROOF.json",
+      "residual_risk_summary": [
+        "Per-row command inventory is unavailable in accepted artifacts, so this packet emits aggregate records.",
+        "Settings/Admin per-row tier mapping remains UNKNOWN for 62 rows.",
+        "Remote-mutation policy remains absent; T4 remains refused.",
+        "Unknown/Drift lower-bound queue remains 487 and requires downstream packet decisions.",
+        "Root RULES.md, TRUTH_*.md, SYSTEM_*.md, and dopetask canonical schema files were absent in this worktree.",
+        "Runtime dopemux help resolution remains an accepted residual UNKNOWN because live runtime discovery was out of scope."
+      ],
+      "review_decision": "NOT_REPORTED",
+      "status_checks": {
+        "blocking_or_unknown": [],
+        "checks": [
+          {
+            "conclusion": "SKIPPED",
+            "name": "debugger",
+            "status": "COMPLETED",
+            "workflowName": "🔀 Gemini Dispatch"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "identity-check",
+            "status": "COMPLETED",
+            "workflowName": "Repo Identity Check"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "identity-check",
+            "status": "COMPLETED",
+            "workflowName": "Repo Identity Check"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "checks",
+            "status": "COMPLETED",
+            "workflowName": "docs"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "🤖 Claude Code Security Analysis",
+            "status": "COMPLETED",
+            "workflowName": "🔒 Security Review with Claude Code"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "💅 Code Quality & Linting",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "dispatch",
+            "status": "COMPLETED",
+            "workflowName": "🔀 Gemini Dispatch"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "📊 ADHD-Friendly Security Summary",
+            "status": "COMPLETED",
+            "workflowName": "🔒 Security Review with Claude Code"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "🔒 Security Review",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "review",
+            "status": "COMPLETED",
+            "workflowName": "🔀 Gemini Dispatch"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "📚 Documentation Check",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "triage",
+            "status": "COMPLETED",
+            "workflowName": "🔀 Gemini Dispatch"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "🧪 Unit Tests",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "🧪 Extractor Smoke",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "invoke",
+            "status": "COMPLETED",
+            "workflowName": "🔀 Gemini Dispatch"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "🧪 Extractor Full (Advisory)",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "plan-execute",
+            "status": "COMPLETED",
+            "workflowName": "🔀 Gemini Dispatch"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "🧪 Installer Smoke",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "fallthrough",
+            "status": "COMPLETED",
+            "workflowName": "🔀 Gemini Dispatch"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "📊 Scoped Coverage",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SKIPPED",
+            "name": "🔗 Integration Tests",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "name": "📊 CI Pipeline Summary",
+            "status": "COMPLETED",
+            "workflowName": "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          }
+        ],
+        "counts": {
+          "SKIPPED": 10,
+          "SUCCESS": 12
+        }
+      },
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/571"
+    },
+    {
+      "audit_qualifier": "auditor-side/process risks only; no PR-side runtime-contract defect",
+      "audit_validation_summary": "58 cockpit tests passed",
+      "audit_verdict": "PASS_WITH_RISKS",
+      "audit_verdict_source": "active task input; PR #573 merge commit and proof bundle corroborate preserved governance boundaries, while the proof bundle does not expose a uniform audit_verdict field",
+      "base_branch": "pack/cockpit-pack-remediate-006-ia",
+      "boundary_preservation_status": {
+        "safe_for_claude_design": "NO",
+        "READY_FOR_CLAUDE_DESIGN": "not approved",
+        "claude_design_upload": "not_authorized",
+        "final_screen_generation": "not_authorized",
+        "runtime_action_execution": "not_authorized",
+        "t4_remote_mutation": "not_authorized",
+        "canonical_writes": "not_authorized",
+        "unknown_drift_runtime_reclassification": "disabled",
+        "tx_tu_execution": "disabled",
+        "cockpit_non_execution_preserved": true,
+        "palette_broker_only": true,
+        "safe_action_gate_confirmation_preflight_proof_refusal_only": true,
+        "t4_blocked": true,
+        "tx_tu_non_executable": true,
+        "unknown_drift_runtime_reclassification_disabled": true,
+        "claude_design_not_approved": true,
+        "auditor_side_process_risk_only": true,
+        "pr_side_runtime_contract_defect": false
+      },
+      "changed_files_summary": {
+        "command": "gh pr view 573 --json files",
+        "exit_code": 0,
+        "file_count": 7,
+        "files": [
+          {
+            "path": "out/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/PROOF.json",
+            "status": "A"
+          },
+          {
+            "path": "proof/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/README.md",
+            "status": "A"
+          },
+          {
+            "path": "src/dopemux/ui/cockpit/runtime_contract.py",
+            "status": "M"
+          },
+          {
+            "path": "task-packets/INDEX.md",
+            "status": "M"
+          },
+          {
+            "path": "task-packets/generated/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001.json",
+            "status": "A"
+          },
+          {
+            "path": "tests/unit/dopemux/ui/cockpit/test_inventory_regen_artifacts.py",
+            "status": "M"
+          },
+          {
+            "path": "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+            "status": "M"
+          }
+        ],
+        "status_counts": {
+          "A": 3,
+          "M": 4
+        }
+      },
+      "coverage_role": "reviewed_merged_evidence_not_merge_candidate",
+      "current_remote_head": "1236757c15b1bfdf0926ee476908d56ed71b0dc6",
+      "diff_file_count": 7,
+      "expected_audited_head": "1236757c15b1bfdf0926ee476908d56ed71b0dc6",
+      "expected_head_matches_current_remote": true,
+      "head_branch": "codex/cockpit-runtime-contract-fidelity-001",
+      "head_branch_exists_on_origin": false,
+      "implementation_commit": "3b1c426379ee141a7929cfc31644f86830fe9f0d",
+      "implementation_proof_validation_summary": "PR #573 proof records tests/unit/dopemux/ui/cockpit -q as 83 passed at proof-generation time; the completed audit verdict supplied for this refresh records 58 cockpit tests passed.",
+      "is_draft": false,
+      "local_ancestry_relation": {
+        "command_parts": [
+          "git",
+          "merge-base",
+          "--is-ancestor",
+          "b173efd83c871c30f2bd86530921c866d08e7e45",
+          "1236757c15b1bfdf0926ee476908d56ed71b0dc6"
+        ],
+        "declared_base_is_ancestor_of_head": true,
+        "exit_code": 0
+      },
+      "merge_commit": "c0c32c1639e675d3415257f2444437ae1fa2ea3c",
+      "merge_commit_parent_relation": {
+        "base_parent": "b173efd83c871c30f2bd86530921c866d08e7e45",
+        "head_parent": "1236757c15b1bfdf0926ee476908d56ed71b0dc6",
+        "merge_commit_has_base_parent": true,
+        "merge_commit_has_head_parent": true
+      },
+      "mergeable": "NOT_APPLICABLE_MERGED_EVIDENCE",
+      "packet_id": "TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001",
+      "pr_number": 573,
+      "pr_state": "MERGED",
+      "proof_path": "out/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/PROOF.json",
+      "residual_risk_summary": [
+        "Completed audit verdict is PASS_WITH_RISKS because of auditor-side/process risk only; no PR-side runtime-contract defect is recorded for this refresh.",
+        "PR #573 proof bundle exists on its merge commit/main lineage but is absent from the stale PR #572 branch until a later authorized base normalization or merge path includes it.",
+        "PR #573 is covered evidence for PR #572 consolidation refresh; it is not a merge candidate in this handoff."
+      ],
+      "review_decision": "NOT_REPORTED",
+      "status_checks": {
+        "blocking_or_unknown": [],
+        "checks_source": "gh pr view 573 statusCheckRollup during refresh preflight",
+        "counts": {
+          "SKIPPED": 10,
+          "SUCCESS": 12
+        }
+      },
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/573",
+      "validation_summary": "58 cockpit tests passed"
+    }
+  ],
+  "unknowns": [
+    "Root RULES.md absent in this worktree.",
+    "Root TRUTH_*.md absent; docs/03-reference/truth equivalents inspected.",
+    "Root SYSTEM_*.md absent; docs/03-reference/systems/system-boundaries.md inspected.",
+    "dopetask-canonical-spec.json and dopetask-cannonical-spec.json absent; TP schema validation is manual.",
+    "Review decision field is not reported by GitHub for the inspected PRs.",
+    "Ledger merge authorization is absent from this packet.",
+    "Local branch artifact schema has no separate canonical writer script; refreshed generated artifacts were updated directly and validated by focused artifact tests.",
+    "PR #573 proof bundle does not expose a uniform audit_verdict field; PASS_WITH_RISKS comes from the completed audit verdict supplied for this refresh and is corroborated by PR/proof boundary evidence."
+  ],
+  "validation_overall_status": "PASS",
+  "validation_updated_at_utc": "2026-05-08T01:03:38Z",
+  "validations": [
+    {
+      "id": "git_status_short",
+      "command": "git status --short",
+      "exit_code": 0,
+      "stdout": " M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/CONSOLIDATION_READINESS_MATRIX.json\n M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/CONSOLIDATION_READINESS_MATRIX.md\n M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/MERGE_EXECUTION_HANDOFF.md\n M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/POST_CONSOLIDATION_NEXT_STEP.md\n M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/PROOF.json\n M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_ANCESTRY_REPORT.json\n M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_ANCESTRY_REPORT.md\n M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_STATE_REPORT.json\n M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_STATE_REPORT.md\n M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_VALIDATION_REPORT.json\n M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_VALIDATION_REPORT.md\n M out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/sha256sums.txt\n M proof/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/README.md\n M task-packets/INDEX.md\n M task-packets/generated/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001.json\n M tests/unit/dopemux/ui/cockpit/test_merge_stack_artifacts.py\n",
+      "stderr": ""
+    },
+    {
+      "id": "task_packet_json",
+      "command": "python3 -m json.tool task-packets/generated/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "proof_json",
+      "command": "python3 -m json.tool out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "compileall_cockpit",
+      "command": "python3 -m compileall -q src/dopemux/ui/cockpit tests/unit/dopemux/ui/cockpit",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "merge_stack_artifact_tests",
+      "command": "python3 -m pytest -q tests/unit/dopemux/ui/cockpit/test_merge_stack_artifacts.py",
+      "exit_code": 0,
+      "stdout": "..........                                                               [100%]\n=============================== warnings summary ===============================\n../../../.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/_pytest/config/__init__.py:1434\n  /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/_pytest/config/__init__.py:1434: PytestConfigWarning: Unknown config option: asyncio_mode\n  \n    self._warn_or_fail_if_strict(f\"Unknown config option: {key}\\n\")\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n",
+      "stderr": ""
+    },
+    {
+      "id": "stack_state_json",
+      "command": "python3 -m json.tool out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_STATE_REPORT.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "stack_ancestry_json",
+      "command": "python3 -m json.tool out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_ANCESTRY_REPORT.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "readiness_json",
+      "command": "python3 -m json.tool out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/CONSOLIDATION_READINESS_MATRIX.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "validation_report_json",
+      "command": "python3 -m json.tool out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_VALIDATION_REPORT.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "git_diff_check",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "generated_shasums",
+      "command": "cd out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001 && shasum -a 256 -c sha256sums.txt",
+      "exit_code": 0,
+      "stdout": "CONSOLIDATION_READINESS_MATRIX.json: OK\nCONSOLIDATION_READINESS_MATRIX.md: OK\nMERGE_EXECUTION_HANDOFF.md: OK\nPOST_CONSOLIDATION_NEXT_STEP.md: OK\nPROOF.json: OK\nSTACK_ANCESTRY_REPORT.json: OK\nSTACK_ANCESTRY_REPORT.md: OK\nSTACK_STATE_REPORT.json: OK\nSTACK_STATE_REPORT.md: OK\nSTACK_VALIDATION_REPORT.json: OK\nSTACK_VALIDATION_REPORT.md: OK\n../../../proof/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/README.md: OK\n",
+      "stderr": ""
+    },
+    {
+      "id": "precommit_allowlist",
+      "command": "pre-commit run --files out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/CONSOLIDATION_READINESS_MATRIX.json out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/CONSOLIDATION_READINESS_MATRIX.md out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/MERGE_EXECUTION_HANDOFF.md out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/POST_CONSOLIDATION_NEXT_STEP.md out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/PROOF.json out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_ANCESTRY_REPORT.json out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_ANCESTRY_REPORT.md out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_STATE_REPORT.json out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_STATE_REPORT.md out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_VALIDATION_REPORT.json out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/STACK_VALIDATION_REPORT.md out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/sha256sums.txt proof/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/README.md task-packets/INDEX.md task-packets/generated/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001.json tests/unit/dopemux/ui/cockpit/test_merge_stack_artifacts.py",
+      "exit_code": 0,
+      "stdout": "Validate YAML frontmatter in docs: Passed; knowledge graph schema: Passed; prohibited docs patterns: Passed; prelude length: Passed; markdown location/hygiene checks passed or skipped when not applicable; markdownlint: Passed; trim trailing whitespace: Passed; fix end of files: Passed; check yaml skipped when not applicable.",
+      "stderr": ""
+    }
+  ],
+  "worktree": "/Users/hue/code/dopemux-worktrees/dopemux-cockpit-merge-stack-consolidate-001",
+  "covered_pr_set_before_refresh": [
+    568,
+    569,
+    570,
+    571
+  ],
+  "covered_pr_set": [
+    568,
+    569,
+    570,
+    571,
+    573
+  ],
+  "merge_candidate_prs": [
+    568,
+    569,
+    570,
+    571
+  ],
+  "reviewed_merged_evidence_prs": [
+    573
+  ],
+  "coverage_refresh": {
+    "refreshed_at_utc": "2026-05-08T01:03:38Z",
+    "pr_572_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/572",
+    "pr_572_state": "OPEN",
+    "pr_572_mergeable": "MERGEABLE",
+    "pr_573_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/573",
+    "pr_573_state": "MERGED",
+    "pr_573_merge_commit": "c0c32c1639e675d3415257f2444437ae1fa2ea3c",
+    "covered_pr_set_before": [
+      568,
+      569,
+      570,
+      571
+    ],
+    "covered_pr_set_after": [
+      568,
+      569,
+      570,
+      571,
+      573
+    ],
+    "pr_572_merge_state_status": "BEHIND",
+    "pr_572_conflict_resolution_commit": "950491ae3"
+  },
+  "pr_573_audit_evidence": {
+    "audit_qualifier": "auditor-side/process risks only; no PR-side runtime-contract defect",
+    "audit_verdict": "PASS_WITH_RISKS",
+    "merge_commit": "c0c32c1639e675d3415257f2444437ae1fa2ea3c",
+    "proof_bundle_path": "out/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/PROOF.json",
+    "proof_bundle_read_source": "git show c0c32c1639e675d3415257f2444437ae1fa2ea3c:out/cockpit-runtime-contract-fidelity/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001/PROOF.json",
+    "validation_summary": "58 cockpit tests passed",
+    "preserved_boundaries": [
+      "cockpit non-execution preserved",
+      "Command Palette remains broker, not executor",
+      "Safe Action Gate remains confirmation/preflight/proof/refusal layer only",
+      "T4 remains blocked",
+      "TX/TU remain non-executable",
+      "Unknown/Drift runtime reclassification remains disabled",
+      "Claude Design remains not approved"
+    ]
+  }
+}

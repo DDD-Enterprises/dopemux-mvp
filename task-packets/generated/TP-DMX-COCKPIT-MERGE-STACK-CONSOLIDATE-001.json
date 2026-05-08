@@ -1,0 +1,104 @@
+{
+  "id": "TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001",
+  "project": "dopemux-mvp",
+  "target": "Refresh Cockpit PR #572 consolidation coverage so the covered PR set is {568, 569, 570, 571, 573} without runtime, PR, branch, Claude Design, T4, TX/TU, or Unknown/Drift reclassification mutations.",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dopemux-cockpit-ia-remediation",
+    "base_branch": "codex/cockpit-inventory-regen-001",
+    "parent_tp_id": "TP-DMX-COCKPIT-INVENTORY-REGEN-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/cockpit-merge-stack-consolidate-001"
+  },
+  "commit": {
+    "message": "docs(cockpit): refresh merge stack coverage for PR 573",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001.json",
+      "task-packets/INDEX.md",
+      "tests/unit/dopemux/ui/cockpit/test_merge_stack_artifacts.py",
+      "tests/conftest.py",
+      "out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/**",
+      "proof/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/**"
+    ],
+    "verify": [
+      "git status --short",
+      "python3 -m json.tool task-packets/generated/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001.json >/dev/null",
+      "python3 -m json.tool out/cockpit-merge-stack/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001/PROOF.json >/dev/null",
+      "python3 -m compileall -q src/dopemux/ui/cockpit tests/unit/dopemux/ui/cockpit",
+      "python3 -m pytest -q tests/unit/dopemux/ui/cockpit/test_merge_stack_artifacts.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(cockpit): prepare merge stack consolidation",
+    "body": "## Summary\n- refresh PR #572 consolidation coverage from {568,569,570,571} to {568,569,570,571,573}\n- cite PR #573 merge commit c0c32c1639e675d3415257f2444437ae1fa2ea3c and runtime-contract proof bundle\n- preserve Cockpit governance blockers and avoid all runtime/PR/base/branch mutations\n\n## Strict scope\n- artifact-only and read-mostly\n- no PRs merged\n- no branches retargeted\n- no rebase\n- no force push\n- no branch deletion\n- no final screens\n- no Claude Design upload\n- no runtime action execution\n- no T4 remote mutation\n- no canonical writes\n- no runtime reclassification\n- no TX/TU execution\n\n## Governance state\nsafe_for_claude_design: NO\nREADY_FOR_CLAUDE_DESIGN: not approved\n\n## Validation\nSee proof artifact for command outputs and exit codes.\n\n## Residual risks and downstream packet\n- PR #572 conflict against main was resolved later at commit 950491ae3; this packet remains non-authorizing\n- merge execution requires a later Ledger authorization\n- remote-mutation policy should not proceed until the stack is landed or Ledger explicitly accepts building on a stacked branch",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Verify dedicated worktree identity, GitHub PR #572/#573 metadata, expected audited heads, accepted proof artifacts, repo authority files, and Cockpit coverage scope before writing consolidation artifacts.",
+      "validation": [
+        "Worktree root, branch, marker, origin, HEAD, and clean tracked status are verified.",
+        "PR #572 is open with live head/base refs and GitHub reports mergeable=CONFLICTING.",
+        "PR #573 is MERGED with merge commit c0c32c1639e675d3415257f2444437ae1fa2ea3c; the proof bundle path is verified from the merge commit."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Refresh deterministic stack state and ancestry reports so coverage includes PRs 568, 569, 570, 571, and 573 without merging, rebasing, retargeting, deleting branches, or editing runtime code.",
+      "validation": [
+        "STACK_STATE_REPORT.json and STACK_ANCESTRY_REPORT.json parse.",
+        "Covered PR set records [568, 569, 570, 571, 573].",
+        "Merge-candidate order remains [568, 569, 570, 571]; PR #573 is recorded as reviewed merged evidence, not an operator merge candidate."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Refresh consolidation readiness, validation, merge handoff, downstream recommendation, checksum, proof, and proof marker artifacts with PR #573 evidence and unchanged governance posture.",
+      "validation": [
+        "CONSOLIDATION_READINESS_MATRIX.json and STACK_VALIDATION_REPORT.json parse.",
+        "Merge handoff states it is not authorization and PR #573 adds no merge command candidate.",
+        "PROOF.json records PR #573 verdict PASS_WITH_RISKS with auditor-side/process-risk qualifier and preserved governance blockers."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Update focused artifact tests for refreshed coverage and governance preservation.",
+      "validation": [
+        "Generated JSON artifacts parse.",
+        "Tests verify covered PR set [568, 569, 570, 571, 573], PR #573 evidence fields, no mutation claim, and blocked Claude Design governance."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run required validation commands, inspect diff, run codereview/precommit where available, commit allowed files, push the PR #572 branch if authenticated, and report PR #572 blocker state.",
+      "validation": [
+        "Required JSON, compileall, pytest, and git diff checks pass or exact blocker is recorded.",
+        "Only allowlisted files are staged and committed.",
+        "PR #572 URL or exact update/push blocker is recorded in proof and final closeout."
+      ]
+    }
+  ]
+}
