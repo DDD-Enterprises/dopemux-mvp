@@ -1,0 +1,116 @@
+{
+  "schema_version": "dopemux.cockpit.design_pickup.validation_report.v1",
+  "packet_id": "TP-DMX-COCKPIT-DESIGN-PICKUP-001",
+  "generated_at_utc": "2026-05-08T00:22:36Z",
+  "status": "PASSED_WITH_RESIDUAL_RISKS",
+  "commands": [
+    {
+      "label": "task_packet_json_parse",
+      "command": "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-DESIGN-PICKUP-001.json >/dev/null",
+      "exit_code": 0,
+      "interpretation": "Task Packet JSON parses."
+    },
+    {
+      "label": "task_packet_schema_validate",
+      "command": "python jsonschema validation against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "interpretation": "Task Packet conforms to the current repo schema after adding step IDs and validation arrays."
+    },
+    {
+      "label": "design_pickup_json_parse",
+      "command": "python -m json.tool over generated design pickup JSON files",
+      "exit_code": 0,
+      "stdout_summary": "DESIGN_PICKUP_STATE, DESIGN_BLOCKER_MATRIX, CLAUDE_DESIGN_BOUNDARY, OPEN_PR_DESIGN_IMPACT, VALIDATION_REPORT, and PROOF parsed.",
+      "interpretation": "Generated JSON artifacts are machine-readable."
+    },
+    {
+      "label": "runtime_snapshot_probe",
+      "command": "PYTHONPATH=src python runtime snapshot probe",
+      "exit_code": 0,
+      "stdout_summary": "safe_for_claude_design=NO; READY_FOR_CLAUDE_DESIGN=not approved; Settings/Admin unknown_tier_count=62; Unknown/Drift total=487.",
+      "interpretation": "Current runtime primitive model preserves blocked governance state."
+    },
+    {
+      "label": "open_pr_provider_state",
+      "command": "gh pr list, gh pr view, and GitHub pulls API for PR #572",
+      "exit_code": 0,
+      "stdout_summary": "8 open PRs observed excluding this packet's PR; PR #595 merged; PR #585 merged; PR #572 open with current dirty mergeability.",
+      "interpretation": "Open PR design impact uses current provider state and does not treat open work as landed."
+    },
+    {
+      "label": "sha256_manifest_verify",
+      "command": "cd out/cockpit-design-pickup/TP-DMX-COCKPIT-DESIGN-PICKUP-001 && shasum -a 256 -c sha256sums.txt",
+      "exit_code": 0,
+      "stdout_summary": "All listed design pickup artifacts verified.",
+      "interpretation": "Checksum manifest verified after artifact generation."
+    },
+    {
+      "label": "compileall",
+      "command": "python -m compileall -q src/dopemux tests",
+      "exit_code": 0,
+      "interpretation": "Python sources and tests compile."
+    },
+    {
+      "label": "pytest_cockpit_ui",
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit -q",
+      "exit_code": 0,
+      "stdout_summary": "83 passed; existing PytestConfigWarning for unknown asyncio_mode.",
+      "interpretation": "Focused Cockpit UI/runtime contract tests passed."
+    },
+    {
+      "label": "pytest_cockpit_cli",
+      "command": "python -m pytest tests/unit/test_cockpit_cli.py -q",
+      "exit_code": 0,
+      "stdout_summary": "5 passed; existing PytestConfigWarning for unknown asyncio_mode.",
+      "interpretation": "Focused Cockpit CLI tests passed."
+    },
+    {
+      "label": "forbidden_governance_claim_grep",
+      "command": "forbidden governance claim grep over out/cockpit-design-pickup and proof/cockpit-design-pickup",
+      "exit_code": 0,
+      "interpretation": "Generated artifacts contain no forbidden positive readiness claims."
+    },
+    {
+      "label": "forbidden_mutation_command_grep",
+      "command": "forbidden mutation command grep over out/cockpit-design-pickup and proof/cockpit-design-pickup",
+      "exit_code": 0,
+      "interpretation": "Generated artifacts contain no forbidden PR, branch, or history mutation command strings."
+    },
+    {
+      "label": "git_diff_check",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "interpretation": "No whitespace errors in the diff."
+    },
+    {
+      "label": "codereview_lookup",
+      "command": "command -v codereview || true",
+      "exit_code": 0,
+      "stdout_summary": "No codereview executable on PATH.",
+      "interpretation": "ENV_LIMITATION: codereview tool unavailable; manual diff review was performed."
+    },
+    {
+      "label": "manual_diff_review",
+      "command": "git add -N -f allowlisted new files && git diff --stat",
+      "exit_code": 0,
+      "stdout_summary": "Final refresh diff after merging current origin/main stayed within the packet artifact/proof surfaces: 12 files, 68 insertions, 62 deletions.",
+      "interpretation": "Diff remained inside the packet allowlist."
+    },
+    {
+      "label": "pre_commit",
+      "command": "pre-commit run --files allowlisted packet files",
+      "exit_code": 0,
+      "stdout_summary": "Documentation, markdownlint, whitespace, EOF, and YAML checks passed or were skipped where no matching files existed.",
+      "interpretation": "Configured pre-commit hooks passed for changed files."
+    }
+  ],
+  "residual_risks": [
+    "PR #572 remains open with current dirty mergeability.",
+    "Pack-to-main proof is local-only unless Ledger accepts it or durable proof lands.",
+    "Settings/Admin per-row tiers remain unresolved for 62 rows.",
+    "Unknown/Drift lower-bound queue remains 487.",
+    "T4 remote mutation policy remains absent.",
+    "PR #586 may alter inventory if it lands.",
+    "PR #585 is merged but its design pickup plan is stale and conflicts with current main."
+  ]
+}
