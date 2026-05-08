@@ -1,7 +1,7 @@
 {
   "schema_version": "dopemux.cockpit.design_pickup.blocker_matrix.v1",
   "packet_id": "TP-DMX-COCKPIT-DESIGN-PICKUP-001",
-  "generated_at_utc": "2026-05-08T00:18:39Z",
+  "generated_at_utc": "2026-05-08T00:22:36Z",
   "safe_for_claude_design": "NO",
   "READY_FOR_CLAUDE_DESIGN": "not approved",
   "design_pickup_verdict": "READY_FOR_DESIGN_DISCUSSION",
@@ -54,11 +54,11 @@
     {
       "id": "B04_PR572_STALE_CONFLICTING",
       "claim_classification": "OBSERVED",
-      "status": "OPEN_STALE_MERGEABILITY_UNKNOWN",
+      "status": "OPEN_STALE_DIRTY",
       "severity": "HIGH",
       "owner_packet": "TP-DMX-COCKPIT-PACK-TO-MAIN-MERGE-001 follow-up or successor",
       "evidence": [
-        "GitHub pulls API currently reports PR #572 state=open base=main mergeable=null mergeable_state=unknown",
+        "GitHub pulls API currently reports PR #572 state=open base=main mergeable=false mergeable_state=dirty",
         "local pack-to-main proof records PR #572 base changed after pack branch disappearance"
       ],
       "blocks_design_discussion": false,

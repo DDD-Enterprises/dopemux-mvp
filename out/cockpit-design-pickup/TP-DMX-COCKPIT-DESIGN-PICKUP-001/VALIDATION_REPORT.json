@@ -1,7 +1,7 @@
 {
   "schema_version": "dopemux.cockpit.design_pickup.validation_report.v1",
   "packet_id": "TP-DMX-COCKPIT-DESIGN-PICKUP-001",
-  "generated_at_utc": "2026-05-08T00:18:39Z",
+  "generated_at_utc": "2026-05-08T00:22:36Z",
   "status": "PASSED_WITH_RESIDUAL_RISKS",
   "commands": [
     {
@@ -34,7 +34,7 @@
       "label": "open_pr_provider_state",
       "command": "gh pr list, gh pr view, and GitHub pulls API for PR #572",
       "exit_code": 0,
-      "stdout_summary": "9 open PRs observed excluding this packet's PR; PR #585 merged; PR #572 open with current mergeability unknown.",
+      "stdout_summary": "8 open PRs observed excluding this packet's PR; PR #595 merged; PR #585 merged; PR #572 open with current dirty mergeability.",
       "interpretation": "Open PR design impact uses current provider state and does not treat open work as landed."
     },
     {
@@ -93,7 +93,7 @@
       "label": "manual_diff_review",
       "command": "git add -N -f allowlisted new files && git diff --stat",
       "exit_code": 0,
-      "stdout_summary": "Final refresh diff after merging current origin/main stayed within the packet artifact/proof surfaces: 12 files, 97 insertions, 93 deletions.",
+      "stdout_summary": "Final refresh diff after merging current origin/main stayed within the packet artifact/proof surfaces: 12 files, 68 insertions, 62 deletions.",
       "interpretation": "Diff remained inside the packet allowlist."
     },
     {
@@ -105,7 +105,7 @@
     }
   ],
   "residual_risks": [
-    "PR #572 remains open with current mergeability unresolved.",
+    "PR #572 remains open with current dirty mergeability.",
     "Pack-to-main proof is local-only unless Ledger accepts it or durable proof lands.",
     "Settings/Admin per-row tiers remain unresolved for 62 rows.",
     "Unknown/Drift lower-bound queue remains 487.",

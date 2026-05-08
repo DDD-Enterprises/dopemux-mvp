@@ -9,7 +9,7 @@ READY_FOR_CLAUDE_DESIGN: not approved
 
 `READY_FOR_DESIGN_DISCUSSION`
 
-Design discussion can resume from `origin/main` at `3a6b40853e21117fd8469736027b22bad1463c29`. Primitive-level sketching, IA critique, component inventory review, flow descriptions, state diagrams, and design-input briefs are acceptable discussion artifacts.
+Design discussion can resume from `origin/main` at `4206a297232f6398df1964431c7b56ecbf931d82`. Primitive-level sketching, IA critique, component inventory review, flow descriptions, state diagrams, and design-input briefs are acceptable discussion artifacts.
 
 Final Claude Design screens remain blocked.
 
@@ -37,7 +37,7 @@ OBSERVED from `PYTHONPATH=src python` runtime snapshot probe:
 ## Conflicting Or Stale Evidence
 
 - CONFLICTING: PR #585 is now merged, but its design pickup plan says nothing from the pack landed on `origin/main`; that was true when authored, but is false after PR #587 merged on 2026-05-07.
-- OBSERVED: PR #572 remains open against `main`; GitHub pulls API currently reports `mergeable=null` and `mergeable_state=unknown`, while local pack-to-main proof recorded a dirty merge state after pack branch disappearance.
+- OBSERVED: PR #572 remains open against `main`; GitHub pulls API currently reports `mergeable=false` and `mergeable_state=dirty`, matching the local pack-to-main proof's stale/conflicting risk.
 - OBSERVED: the pack-to-main proof bundle exists only in the retained local worktree and is not present on `main`.
 
 ## Unknowns

@@ -1,7 +1,7 @@
 {
   "schema_version": "dopemux.cockpit.design_pickup.open_pr_impact.v1",
   "packet_id": "TP-DMX-COCKPIT-DESIGN-PICKUP-001",
-  "generated_at_utc": "2026-05-08T00:18:39Z",
+  "generated_at_utc": "2026-05-08T00:22:36Z",
   "source": "gh pr list, gh pr view, and GitHub pulls API",
   "safe_for_claude_design": "NO",
   "READY_FOR_CLAUDE_DESIGN": "not approved",
@@ -11,6 +11,12 @@
       "state": "MERGED",
       "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/585",
       "impact": "main-state recon artifacts are now on main, but their design pickup plan is stale after PR #587"
+    },
+    {
+      "number": 595,
+      "state": "MERGED",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/595",
+      "impact": "Gemini review workflow hardening is now on main and does not change Cockpit design readiness"
     },
     {
       "number": 573,
@@ -42,23 +48,6 @@
       "blocks_design_discussion": false,
       "blocks_final_screens": false,
       "evidence": "Changed paths are ui-dashboard TaskSequencer/accessibility and .Jules palette metadata."
-    },
-    {
-      "number": 595,
-      "title": "fix(ci): stop trusting PR workspace in gemini review",
-      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/595",
-      "state": "OPEN",
-      "base": "main",
-      "head": "codex/propose-fix-for-gemini-review-vulnerability",
-      "mergeable_state": "blocked",
-      "primary_classification": "NON_BLOCKING",
-      "affects_cockpit_design": false,
-      "affects_proof_durability": true,
-      "affects_runtime_contract_fidelity": false,
-      "affects_claude_design_blockers": false,
-      "blocks_design_discussion": false,
-      "blocks_final_screens": false,
-      "evidence": "Workflow security change may affect future review trust but does not alter current Cockpit artifact contracts."
     },
     {
       "number": 589,
@@ -101,7 +90,7 @@
       "state": "OPEN",
       "base": "main",
       "head": "codex/remove-genetic-agent-taskmaster",
-      "mergeable_state": "unknown",
+      "mergeable_state": "dirty",
       "primary_classification": "BLOCKS_FINAL_SCREENS",
       "affects_cockpit_design": true,
       "affects_proof_durability": false,
@@ -177,7 +166,7 @@
       "affects_claude_design_blockers": true,
       "blocks_design_discussion": false,
       "blocks_final_screens": true,
-      "evidence": "GitHub pulls API currently reports mergeable=null and mergeable_state=unknown; local pack-to-main proof says PR #572 was not merged and its base changed after pack branch disappearance."
+      "evidence": "GitHub pulls API currently reports mergeable=false and mergeable_state=dirty; local pack-to-main proof says PR #572 was not merged and its base changed after pack branch disappearance."
     }
   ]
 }

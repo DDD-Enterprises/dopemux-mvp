@@ -14,7 +14,7 @@ Design discussion is open. Final Claude Design screens remain blocked.
 | Claude Design final-screen gate | BLOCKED | No | No | Yes | OBSERVED |
 | T4 remote-mutation policy | BLOCKED | No | No | Yes | OBSERVED |
 | Runtime action execution | NOT_AUTHORIZED | No | No | Yes | OBSERVED |
-| PR #572 stale mergeability unknown | OPEN_STALE_MERGEABILITY_UNKNOWN | No | No | Yes | OBSERVED |
+| PR #572 stale dirty state | OPEN_STALE_DIRTY | No | No | Yes | OBSERVED |
 | Pack-to-main proof durability | LOCAL_ONLY_PROOF | No | No | Yes | OBSERVED |
 | Runtime-contract fidelity | CLEARED_ON_MAIN_WITH_RESIDUAL_RISKS | No | No | Yes | OBSERVED |
 | Unknown/Drift queue gaps | BLOCKED_FOR_FINAL_SCREENS | No | No | Yes | OBSERVED |

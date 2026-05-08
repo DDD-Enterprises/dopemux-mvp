@@ -9,7 +9,7 @@ READY_FOR_CLAUDE_DESIGN: not approved
 
 Verdict: `READY_FOR_DESIGN_DISCUSSION`.
 
-Resume design discussion from `origin/main` at `3a6b40853e21117fd8469736027b22bad1463c29`. The pack-to-main merge has landed, and the runtime primitive model is now inspectable on main. Do not proceed to final Claude Design screens, upload to Claude Design, claim final readiness, authorize runtime action execution, approve T4 remote mutation, add live adapters, add canonical writes, or runtime-reclassify Unknown/Drift rows.
+Resume design discussion from `origin/main` at `4206a297232f6398df1964431c7b56ecbf931d82`. The pack-to-main merge has landed, and the runtime primitive model is now inspectable on main. Do not proceed to final Claude Design screens, upload to Claude Design, claim final readiness, authorize runtime action execution, approve T4 remote mutation, add live adapters, add canonical writes, or runtime-reclassify Unknown/Drift rows.
 
 ## Read First
 
@@ -38,7 +38,7 @@ Resume design discussion from `origin/main` at `3a6b40853e21117fd8469736027b22ba
 - Live service adapters.
 - Canonical writes.
 - Runtime reclassification of Unknown/Drift rows.
-- PR, branch, merge, or proof governance mutation.
+- Mutation of inspected PRs, branch history, or proof governance.
 
 ## Evidence
 
@@ -46,13 +46,13 @@ Resume design discussion from `origin/main` at `3a6b40853e21117fd8469736027b22ba
 - OBSERVED: PR #573 merged runtime-contract fidelity repairs at merge commit `c0c32c1639e675d3415257f2444437ae1fa2ea3c`.
 - OBSERVED: runtime snapshot reports `safe_for_claude_design=NO`, `READY_FOR_CLAUDE_DESIGN=not approved`, five top-level modes, four global surfaces, 62 Settings/Admin unknown tier rows, and 487 lower-bound Unknown/Drift queue items.
 - OBSERVED: PR #585 is merged, but its design pickup plan still says pack work is not on main; that plan is stale historical evidence.
-- OBSERVED: PR #572 is still open and based on `main`; GitHub pulls API currently reports `mergeable=null`, `mergeable_state=unknown`, while local pack-to-main proof recorded dirty state after pack branch disappearance.
+- OBSERVED: PR #572 is still open and based on `main`; GitHub pulls API currently reports `mergeable=false`, `mergeable_state=dirty`, matching the local pack-to-main proof's stale/conflicting risk.
 - OBSERVED: pack-to-main proof exists only in the retained local worktree and is not present on `main`.
 - CONFLICTING: PR #585's merged design pickup plan says pack work is not on main; this is stale after PR #587.
 
 ## Questions To Preserve
 
-- What is the intended disposition of PR #572 now that the pack branch disappeared and current mergeability is unresolved?
+- What is the intended disposition of PR #572 now that the pack branch disappeared and current mergeability is dirty?
 - Will Ledger accept the local-only pack-to-main proof bundle, or should durable proof be landed separately?
 - Which packet will resolve Settings/Admin per-row tiers for the 62 rows?
 - Which packet will resolve or explicitly waive the remaining Unknown/Drift queue gaps?

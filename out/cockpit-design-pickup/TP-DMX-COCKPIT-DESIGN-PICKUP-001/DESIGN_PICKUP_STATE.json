@@ -1,7 +1,7 @@
 {
   "schema_version": "dopemux.cockpit.design_pickup.state.v1",
   "packet_id": "TP-DMX-COCKPIT-DESIGN-PICKUP-001",
-  "generated_at_utc": "2026-05-08T00:18:39Z",
+  "generated_at_utc": "2026-05-08T00:22:36Z",
   "design_pickup_verdict": "READY_FOR_DESIGN_DISCUSSION",
   "safe_for_claude_design": "NO",
   "READY_FOR_CLAUDE_DESIGN": "not approved",
@@ -16,7 +16,7 @@
     "worktree": "/Users/hue/code/dopemux-worktrees/dopemux-cockpit-design-pickup-001",
     "branch": "codex/cockpit-design-pickup-001",
     "base_ref": "origin/main",
-    "base_head": "3a6b40853e21117fd8469736027b22bad1463c29",
+    "base_head": "4206a297232f6398df1964431c7b56ecbf931d82",
     "initial_base_head": "e4f01cb176fe0d9f6a1dac410598b04985b92b2c",
     "remote_origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
     "repo_marker": ".dopetaskroot",
@@ -78,13 +78,13 @@
   ],
   "main_state": {
     "classification": "OBSERVED",
-    "main_head": "3a6b40853e21117fd8469736027b22bad1463c29",
+    "main_head": "4206a297232f6398df1964431c7b56ecbf931d82",
     "recent_security_commits_after_cockpit_pack_merge": [
+      "4206a297232f6398df1964431c7b56ecbf931d82",
       "3a6b40853e21117fd8469736027b22bad1463c29",
       "af39122ab",
       "e4f01cb176fe0d9f6a1dac410598b04985b92b2c",
-      "486661f70",
-      "8901ade02"
+      "486661f70"
     ],
     "pack_to_main_merge": {
       "classification": "OBSERVED",
@@ -113,6 +113,15 @@
       "merged_at_utc": "2026-05-08T00:07:20Z",
       "artifact_status": "DURABLE_BUT_STALE",
       "reason": "The merged DESIGN_PICKUP_PLAN.md still says the pack is not on main, which conflicts with the current main state after PR #587."
+    },
+    "review_workflow_security": {
+      "classification": "OBSERVED",
+      "pr": 595,
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/595",
+      "state": "MERGED",
+      "merge_commit": "4206a297232f6398df1964431c7b56ecbf931d82",
+      "merged_at_utc": "2026-05-08T00:12:07Z",
+      "design_impact": "non-Cockpit CI review workflow hardening; does not change Cockpit runtime or design readiness gates"
     }
   },
   "cockpit_runtime_model_status": {
@@ -200,16 +209,16 @@
   "open_pr_state_summary": {
     "classification": "OBSERVED",
     "source": "gh CLI and GitHub pulls API",
-    "open_pr_count_excluding_this_packet_pr": 9,
-    "open_pr_count_including_this_packet_pr_after_publication": 10,
+    "open_pr_count_excluding_this_packet_pr": 8,
+    "open_pr_count_including_this_packet_pr_after_publication": 9,
     "pr572": {
       "state": "open",
       "base": "main",
       "head": "codex/cockpit-merge-stack-consolidate-001",
-      "mergeable": null,
-      "mergeable_state": "unknown",
+      "mergeable": false,
+      "mergeable_state": "dirty",
       "updated_at_utc": "2026-05-07T11:13:12Z",
-      "design_impact": "stale stack-consolidation evidence with unresolved current mergeability; needs human disposition",
+      "design_impact": "stale stack-consolidation evidence with current dirty mergeability; needs human disposition",
       "prior_local_proof_state": "local pack-to-main proof recorded merge_state=DIRTY after pack branch disappearance"
     },
     "pr585": {
@@ -219,6 +228,14 @@
       "merge_commit": "3a6b40853e21117fd8469736027b22bad1463c29",
       "merged_at_utc": "2026-05-08T00:07:20Z",
       "design_impact": "durable but stale current-state artifact; superseded by pack-to-main merge and this pickup"
+    },
+    "pr595": {
+      "state": "merged",
+      "base": "main",
+      "head": "codex/propose-fix-for-gemini-review-vulnerability",
+      "merge_commit": "4206a297232f6398df1964431c7b56ecbf931d82",
+      "merged_at_utc": "2026-05-08T00:12:07Z",
+      "design_impact": "nonblocking CI review workflow change, now landed on main"
     }
   },
   "current_design_status": {

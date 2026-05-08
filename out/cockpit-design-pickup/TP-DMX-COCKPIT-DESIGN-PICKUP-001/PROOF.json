@@ -1,11 +1,11 @@
 {
   "schema_version": "dopemux.cockpit.design_pickup.proof.v1",
   "packet_id": "TP-DMX-COCKPIT-DESIGN-PICKUP-001",
-  "generated_at_utc": "2026-05-08T00:18:39Z",
+  "generated_at_utc": "2026-05-08T00:22:36Z",
   "worktree": "/Users/hue/code/dopemux-worktrees/dopemux-cockpit-design-pickup-001",
   "branch": "codex/cockpit-design-pickup-001",
   "base_ref": "origin/main",
-  "base_head": "3a6b40853e21117fd8469736027b22bad1463c29",
+  "base_head": "4206a297232f6398df1964431c7b56ecbf931d82",
   "initial_base_head": "e4f01cb176fe0d9f6a1dac410598b04985b92b2c",
   "repo_identity": {
     "remote_origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
@@ -88,7 +88,7 @@
   "codereview_status": "ENV_LIMITATION: codereview executable absent on PATH; manual diff review performed.",
   "precommit_status": "pre-commit run --files allowlisted packet files exited 0.",
   "blockers": [
-    "PR #572 remains open with current mergeability unresolved.",
+    "PR #572 remains open with current dirty mergeability.",
     "Pack-to-main proof is local-only unless Ledger accepts it or durable proof lands.",
     "Settings/Admin per-row tiers remain unresolved for 62 rows.",
     "Unknown/Drift lower-bound queue remains 487.",

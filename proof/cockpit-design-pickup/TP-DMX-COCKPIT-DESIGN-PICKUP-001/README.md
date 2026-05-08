@@ -29,7 +29,7 @@ This proof records an artifact-only design pickup from current `origin/main` aft
 
 ## Residual Risks
 
-- PR #572 remains open with current mergeability unresolved.
+- PR #572 remains open with current dirty mergeability.
 - Pack-to-main proof is local-only unless Ledger accepts it or durable proof lands.
 - Settings/Admin and Unknown/Drift gaps still block final screens.
 - T4 remains blocked until an accepted remote-mutation policy exists.
