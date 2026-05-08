@@ -29,12 +29,6 @@ mcp = FastMCP(
     name="Desktop Commander"
 )
 
-def _macos_safe_path(filename: str) -> str:
-    if filename.startswith("-"):
-        return f"./{filename}"
-    return filename
-
-
 @mcp.tool()
 async def screenshot(filename: str = "/tmp/screenshot.png") -> Dict[str, Any]:
     """
@@ -45,9 +39,9 @@ async def screenshot(filename: str = "/tmp/screenshot.png") -> Dict[str, Any]:
     """
     try:
         if IS_MACOS:
-            result = subprocess.run(["screencapture", "-x", _macos_safe_path(filename)], capture_output=True, text=True, timeout=10)
+            result = subprocess.run(["screencapture", "-x", filename], capture_output=True, text=True, timeout=10)
         else:
-            result = subprocess.run(["scrot", "--", filename], capture_output=True, text=True, timeout=10)
+            result = subprocess.run(["scrot", filename], capture_output=True, text=True, timeout=10)
 
         if result.returncode == 0:
             return {"success": True, "filename": filename, "message": f"Screenshot saved to {filename}"}
@@ -113,7 +107,7 @@ async def type_text(text: str) -> Dict[str, Any]:
             result = subprocess.run(["osascript", "-e", applescript], capture_output=True, text=True, timeout=10)
             return {"success": result.returncode == 0, "message": "Typed text"}
         else:
-            result = subprocess.run(["xdotool", "type", "--", text], capture_output=True, text=True, timeout=10)
+            result = subprocess.run(["xdotool", "type", text], capture_output=True, text=True, timeout=10)
             return {"success": result.returncode == 0, "message": "Typed text"}
     except Exception as e:
         return {"success": False, "error": str(e)}
@@ -127,8 +121,7 @@ if __name__ == "__main__":
     async def health_check(_request):
         return JSONResponse({"status": "ok"})
 
-    # FastMCP v3 removed mcp.sse_app(); use http_app(transport="sse") instead.
-    app = mcp.http_app(transport="sse")
+    app = mcp.sse_app()
     app.routes.append(Route("/health", health_check))
 
-    uvicorn.run(app, host=os.getenv("MCP_SERVER_HOST", "127.0.0.1"), port=port)
+    uvicorn.run(app, host="0.0.0.0", port=port)

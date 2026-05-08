@@ -368,8 +368,6 @@ proof/*
 !proof/repo-cli-system-recovery-tranche-2026-05-02.implementation-notes.md
 !proof/TP-OPS-MAC-SCRUBBER-001/
 !proof/TP-OPS-MAC-SCRUBBER-001/**
-!proof/cockpit-main-state-recon/
-!proof/cockpit-main-state-recon/**
 
 # Extraction and Research artifacts
 _audit_out/
