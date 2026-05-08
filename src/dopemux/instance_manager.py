@@ -299,9 +299,6 @@ class InstanceManager:
             "LEANTIME_BRIDGE_PORT": str(port_base + 15),
             "DOPE_MEMORY_PORT": str(port_base + 20),
             "ADHD_ENGINE_PORT": str(port_base + 25),
-
-            # Backward compatibility
-            "TASK_MASTER_PORT": str(port_base + 14),
             "CONPORT_PORT": str(conport_port),
 
             # Leantime (shared, always on port 8080)

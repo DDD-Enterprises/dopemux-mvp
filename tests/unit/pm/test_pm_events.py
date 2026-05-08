@@ -40,7 +40,7 @@ def test_create_pm_event_is_deterministic_for_same_inputs() -> None:
         "event_type": PMEventType.TASK_CREATED.value,
         "ts_utc": datetime(2026, 2, 12, 18, 30, tzinfo=timezone.utc),
         "idempotency_key": "idem-001",
-        "source": "taskmaster",
+        "source": "task-orchestrator",
         "task_id": "task-123",
         "payload": {"x": 1, "y": [3, 2, 1]},
     }
@@ -54,7 +54,7 @@ def test_event_id_changes_when_payload_changes() -> None:
         "event_type": PMEventType.TASK_UPDATED.value,
         "ts_utc": "2026-02-12T18:30:00Z",
         "idempotency_key": "idem-002",
-        "source": "taskmaster",
+        "source": "task-orchestrator",
         "task_id": "task-123",
     }
     event_1 = create_pm_event(payload={"status": "a"}, **common)
@@ -73,7 +73,7 @@ def test_datetime_is_normalized_to_utc_with_z_suffix() -> None:
         event_type=PMEventType.TASK_COMPLETED.value,
         ts_utc=dt,
         idempotency_key="idem-003",
-        source="taskmaster",
+        source="task-orchestrator",
         task_id="task-xyz",
         payload={},
     )

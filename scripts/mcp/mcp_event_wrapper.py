@@ -365,7 +365,7 @@ def main():
     parser.add_argument(
         "--server",
         required=True,
-        choices=["conport", "pal", "zen", "task-master-ai", "gptr-researcher"],
+        choices=["conport", "pal", "zen", "gptr-researcher"],
         help="MCP server to wrap"
     )
     parser.add_argument(

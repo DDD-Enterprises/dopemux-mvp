@@ -42,7 +42,7 @@ EXPOSE 3016
 LABEL mcp.role="integration"
 LABEL mcp.priority="critical"
 LABEL mcp.description="Central task management coordination layer"
-LABEL mcp.integrates="task-master-ai,task-orchestrator,leantime-bridge"
+LABEL mcp.integrates="task-orchestrator,leantime-bridge"
 
 # Run the integration bridge service
 # Run the integration bridge service

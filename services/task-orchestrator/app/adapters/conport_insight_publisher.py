@@ -268,28 +268,6 @@ class ConPortInsightPublisher:
             tags=["ai-generated", "agent-serena", "code-analysis"]
         )
 
-    def parse_taskmaster_result(self, taskmaster_result: Dict[str, Any], task_id: Optional[str] = None) -> AIDecisionEvent:
-        """
-        Parse TaskMaster agent result into AIDecisionEvent.
-
-        Args:
-            taskmaster_result: Result from TaskMaster PRD parsing
-            task_id: Related OrchestrationTask ID
-
-        Returns:
-            AIDecisionEvent ready to log
-        """
-        return AIDecisionEvent(
-            summary=taskmaster_result.get("summary", "TaskMaster PRD analysis"),
-            rationale=taskmaster_result.get("complexity_analysis", ""),
-            implementation_details=taskmaster_result.get("decomposition", ""),
-            agent_type=AgentType.TASKMASTER,
-            confidence=taskmaster_result.get("confidence", 0.75),
-            alternatives_considered=[],
-            related_task_id=task_id,
-            tags=["ai-generated", "agent-taskmaster", "prd-parsing"]
-        )
-
     # ------------------------------------------------------------------------
     # ConPort MCP Client Methods (Resilient wrappers)
     # ------------------------------------------------------------------------

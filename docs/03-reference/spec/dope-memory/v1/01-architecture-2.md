@@ -42,7 +42,7 @@ prelude: 01_Architecture (explanation) for dopemux documentation and developer w
 Event Producers
 - Workspace watcher
 - Git watcher
-- TaskMaster
+- Task Orchestrator
 - DopeQuery/ConPort hooks
 - Test runner / CI reporter
 - Manual tool calls (memory_store, mark_issue, etc)
@@ -78,7 +78,7 @@ Every query must scope by workspace_id and instance_id at minimum.
 ## Phase 1 Minimal Event Policy (to avoid noise)
 Phase 1 promotion MUST be high-signal only:
 - decision.logged (from DopeQuery)
-- task.completed / task.failed / task.blocked (TaskMaster)
+- task.completed / task.failed / task.blocked (Task Orchestrator)
 - error.encountered (test runner / CI)
 - workflow.phase_changed (explicit transitions)
 - manual.memory_store (user-initiated)

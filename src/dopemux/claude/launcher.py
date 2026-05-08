@@ -538,7 +538,7 @@ Alternative: Set CLAUDE_PATH environment variable
                     )
 
             # Install Python packages
-            python_packages = ["context-portal-mcp"]  # Removed task-master-ai (crashes)
+            python_packages = ["context-portal-mcp"]
 
             for package in python_packages:
                 console.logger.info(f"[info]Installing {package}...[/info]")
