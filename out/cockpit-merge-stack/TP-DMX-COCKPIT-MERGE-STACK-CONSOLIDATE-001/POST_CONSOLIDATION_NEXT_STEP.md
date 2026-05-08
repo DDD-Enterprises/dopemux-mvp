@@ -5,7 +5,7 @@ Generated: `2026-05-08T01:03:38Z`
 
 ## Recommendation
 
-Recommended next packet: Ledger-authorized merge execution or blocker-cleanup packet, only after PR 572's current GitHub conflict state is explicitly handled by an authorized packet.
+Recommended next packet: Ledger-authorized merge execution or blocker-cleanup packet. PR 572 conflict resolution was recorded later at commit `950491ae3`; merge execution still requires explicit Ledger authorization.
 
 ## Rationale
 

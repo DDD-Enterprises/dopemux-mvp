@@ -85,7 +85,7 @@
       "stderr": ""
     }
   ],
-  "generated_at_utc": "2026-05-08T01:03:38Z",
+  "generated_at_utc": "2026-05-08T02:05:58Z",
   "governance": {
     "READY_FOR_CLAUDE_DESIGN": "not approved",
     "claude_design_upload": "not_authorized",
@@ -108,7 +108,8 @@
   "notes": [
     "Live services were not run.",
     "PR #573 proof was read from merge commit c0c32c1639e675d3415257f2444437ae1fa2ea3c because the stale PR #572 branch does not contain that proof path.",
-    "Pytest emitted PytestConfigWarning for unknown asyncio_mode; tests exited 0."
+    "Pytest emitted PytestConfigWarning for unknown asyncio_mode; tests exited 0.",
+    "task-packets/INDEX.md conflict state referenced during generation was resolved afterward at commit 950491ae3."
   ],
   "overall_status": "PASS",
   "packet_id": "TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001",

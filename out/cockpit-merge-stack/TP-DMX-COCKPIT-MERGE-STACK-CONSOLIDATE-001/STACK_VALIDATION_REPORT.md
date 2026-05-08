@@ -7,6 +7,7 @@ Overall status: `PASS`
 
 Live services were not run.
 PR 573 proof was read from merge commit `c0c32c1639e675d3415257f2444437ae1fa2ea3c` because the stale PR 572 branch does not contain that proof path.
+`task-packets/INDEX.md` conflict state referenced during generation was resolved afterward at commit `950491ae3`.
 
 | Command ID | Exit | Evidence |
 | --- | --- | --- |

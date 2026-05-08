@@ -1,4 +1,8 @@
-"""Artifact tests for TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001."""
+"""Artifact tests for TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001.
+
+Forbidden phrases are token-split in assertions so this file does not
+self-match if future scans ingest test source as artifact text.
+"""
 
 from __future__ import annotations
 
@@ -23,7 +27,7 @@ def _joined(*parts: str) -> str:
 
 def _artifact_text() -> str:
     return "\n".join(
-        path.read_text(encoding="utf-8")
+        path.read_text(encoding="utf-8", errors="ignore")
         for root in (ARTIFACT_DIR, PROOF_DIR)
         for path in sorted(root.glob("**/*"))
         if path.is_file()
@@ -123,7 +127,7 @@ def test_next_step_does_not_unlock_final_screens_or_remote_policy_first():
         encoding="utf-8"
     )
     assert "Ledger-authorized merge execution or blocker-cleanup packet" in next_step
-    assert "PR 572's current GitHub conflict state" in next_step
+    assert "PR 572 conflict resolution was recorded later at commit `950491ae3`" in next_step
     assert "Remote-mutation policy packet should not start" in next_step
     assert "Claude Design primitive/final-screen unlock packet is not recommended" in next_step
     assert _joined("final screens ", "approved") not in next_step

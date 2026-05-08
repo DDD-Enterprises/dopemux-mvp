@@ -37,7 +37,7 @@
   "cleanup_status": "PR_OPENED_WORKTREE_RETAINED_FOR_OPERATOR_INSPECTION",
   "codereview_status": "codereview not installed on PATH; explicit diff review performed with git diff --stat, targeted artifact field inspection, forbidden-claim grep, and focused artifact tests.",
   "created_at_utc": "2026-05-04T22:43:10Z",
-  "final_head_recording_policy": "This refreshed PROOF.json records PR #573 coverage evidence and the pre-commit PR #572 head. The refresh commit SHA is reported in closeout and PR metadata rather than self-hashed inside implementation_commit_sha.",
+  "final_head_recording_policy": "This refreshed PROOF.json records PR #573 coverage evidence and the pre-commit PR #572 head. The refresh commit SHA is reported in closeout and PR metadata rather than self-hashed inside implementation_commit_sha; later index conflict resolution is recorded in validation notes.",
   "head_before": "23ec8b70fea140908ecc53d919452e5345976596",
   "implementation_commit_sha": "dadc618f9a24e9eaae65ec45ae104407a709faa9",
   "merge_recommendation": {
@@ -68,14 +68,14 @@
   "pr_number": 572,
   "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/572",
   "precommit_status": "PASS",
-  "proof_metadata_updated_at_utc": "2026-05-08T01:03:38Z",
+  "proof_metadata_updated_at_utc": "2026-05-08T02:05:58Z",
   "readiness_verdict": "READY_WITH_RISKS_NEEDS_LEDGER_DECISION",
   "residual_risks": [
     "PR 569 carries accepted residual risks for Settings/Admin per-row tier mapping and remote mutation policy absence.",
     "PR 571 carries accepted residual risks for aggregate-only inventory precision and root authority/schema gaps.",
     "Accepted inventory status artifact records current_head as the prior upstream head; this packet records but does not rewrite that accepted artifact.",
     "Downstream retargeting/base normalization requires a separate Ledger decision if chosen by the merge executor.",
-    "PR #572 is currently reported by GitHub as CONFLICTING against main; this refresh records coverage and does not resolve branch/base conflicts.",
+    "PR #572 conflict against main was resolved after artifact generation at commit 950491ae3; downstream merge execution still requires separate Ledger authorization.",
     "PR #573 carries PASS_WITH_RISKS auditor-side/process risk only; no PR-side runtime-contract defect is recorded for this refresh.",
     "PR #573 proof bundle is cited from merge commit c0c32c1639e675d3415257f2444437ae1fa2ea3c/main lineage and is not copied into the stale PR #572 branch."
   ],
@@ -1213,7 +1213,7 @@
     "refreshed_at_utc": "2026-05-08T01:03:38Z",
     "pr_572_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/572",
     "pr_572_state": "OPEN",
-    "pr_572_mergeable": "CONFLICTING",
+    "pr_572_mergeable": "MERGEABLE",
     "pr_573_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/573",
     "pr_573_state": "MERGED",
     "pr_573_merge_commit": "c0c32c1639e675d3415257f2444437ae1fa2ea3c",
@@ -1229,7 +1229,9 @@
       570,
       571,
       573
-    ]
+    ],
+    "pr_572_merge_state_status": "BEHIND",
+    "pr_572_conflict_resolution_commit": "950491ae3"
   },
   "pr_573_audit_evidence": {
     "audit_qualifier": "auditor-side/process risks only; no PR-side runtime-contract defect",
