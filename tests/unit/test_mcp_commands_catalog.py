@@ -232,7 +232,7 @@ def test_doctor_aggregates_problems_and_exits_nonzero(tmp_path, monkeypatch):
             "ghost": {"type": "http", "url": "http://localhost:9999/mcp"},
         }
     }, indent=2) + "\n")
-    # No .envrc file → that's a separate problem.
+    # No mcp_commands.ENVRC_FILENAME (.envrc.dopemux-mcp) file → that's a separate problem.
 
     monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(tmp_path))
     monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
