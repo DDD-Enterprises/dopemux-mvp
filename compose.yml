@@ -326,7 +326,6 @@ services:
 
     environment:
       - MCP_SERVER_PORT=${DOPE_CONTEXT_PORT:-3010}
-      - MCP_SERVER_HOST=0.0.0.0
       - VOYAGE_API_KEY=${VOYAGE_API_KEY}
       - VOYAGEAI_API_KEY=${VOYAGE_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
@@ -336,7 +335,7 @@ services:
       - HOST_PROJECT_RELATIVE_PATH=${HOST_PROJECT_RELATIVE_PATH}
       - DOPEMUX_WORKSPACE_ROOT=/workspaces/${HOST_PROJECT_RELATIVE_PATH}
     ports:
-      - "127.0.0.1:${DOPE_CONTEXT_PORT:-3010}:3010"
+      - "${DOPE_CONTEXT_PORT:-3010}:3010"
     volumes:
       - ./services/dope-context/data:/app/data
       - ./services/dope-context/logs:/app/logs
@@ -509,9 +508,12 @@ services:
       - MCP_SERVER_PORT=${SERENA_PORT:-3006}
       - HTTP_PORT=${SERENA_HTTP_PORT:-4006}
       - WORKSPACE_ID=${WORKSPACE_ID:-/workspace}
+      - HOST_CODE_PARENT_DIR=${HOST_CODE_PARENT_DIR}
+      - HOST_PROJECT_RELATIVE_PATH=${HOST_PROJECT_RELATIVE_PATH}
     volumes:
-      - ${DOPEMUX_WORKSPACE_ROOT:-.}:/workspace:ro
+      - ${HOST_CODE_PARENT_DIR:-/tmp}:/workspaces
       - ${HOME:?HOME is required}/.serena:/root/.serena:rw
+      - ${HOME:?HOME is required}/code:${HOME:?HOME is required}/code:ro
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:4006/health || exit 1"]
       timeout: 10s
@@ -550,7 +552,7 @@ services:
     networks:
       - dopemux-network
     ports:
-      - "127.0.0.1:${DESKTOP_COMMANDER_PORT:-3012}:3012"
+      - "${DESKTOP_COMMANDER_PORT:-3012}:3012"
     environment:
       - MCP_SERVER_PORT=${DESKTOP_COMMANDER_PORT:-3012}
       - DISPLAY=${DISPLAY:-:0}

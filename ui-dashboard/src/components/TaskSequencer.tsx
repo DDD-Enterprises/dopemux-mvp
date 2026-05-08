@@ -234,9 +234,6 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     return {
       completedCount: completed,
       totalCount: total,
-      // Real completion state: every task is marked done.
-      // Distinct from displayRemainingMinutes === 0, which can fire when the
-      // current task overruns its estimate but later tasks remain.
       isComplete: total > 0 && completed === total,
     };
   }, [tasks]);
@@ -276,7 +273,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           title={
             isComplete
               ? 'Task sequence complete'
-              : `${completedCount}/${totalCount} tasks • ${getDurationAriaLabel(displayRemainingMinutes)}${finishTimeLabel ? ` (${finishTimeLabel})` : ''}`
+              : `${completedCount}/${totalCount} tasks • ${getDurationAriaLabel(displayRemainingMinutes)} (${finishTimeLabel})`
           }
           arrow
         >
@@ -285,7 +282,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             aria-label={
               isComplete
                 ? 'Task sequence complete'
-                : `${completedCount}/${totalCount} tasks completed. ${getDurationAriaLabel(displayRemainingMinutes)}.${finishTimeLabel ? ` Estimated completion: ${finishTimeLabel}` : ''}`
+                : `${completedCount}/${totalCount} tasks completed. ${getDurationAriaLabel(displayRemainingMinutes)}. Estimated completion: ${finishTimeLabel}`
             }
             tabIndex={0}
             sx={{
@@ -559,7 +556,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           title={
             isComplete
               ? 'Task sequence complete'
-              : `${completedCount}/${totalCount} tasks • ${getDurationAriaLabel(displayRemainingMinutes)}${finishTimeLabel ? ` (${finishTimeLabel})` : ''}`
+              : `${completedCount}/${totalCount} tasks • ${getDurationAriaLabel(displayRemainingMinutes)} (${finishTimeLabel})`
           }
           arrow
         >
@@ -586,7 +583,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             aria-label={
               isComplete
                 ? 'Task sequence complete'
-                : `${completedCount}/${totalCount} tasks completed. ${getDurationAriaLabel(displayRemainingMinutes)}.${finishTimeLabel ? ` Estimated completion: ${finishTimeLabel}` : ''}`
+                : `${completedCount}/${totalCount} tasks completed. ${getDurationAriaLabel(displayRemainingMinutes)}. Estimated completion: ${finishTimeLabel}`
             }
           >
             {isComplete ? (
@@ -631,7 +628,6 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                 alignItems="flex-start"
                 aria-current={isCurrent ? 'step' : undefined}
                 sx={{
-                  position: 'relative',
                   bgcolor: isCurrent ? alpha(brandTokens.colors.ritualCyan, 0.08) : 'transparent',
                   borderRadius: 2,
                   border: isCurrent
@@ -646,8 +642,6 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                     transform: 'translateY(-2px)',
                     boxShadow: `0 4px 12px ${alpha(brandTokens.colors.inkBlack, 0.4)}`,
                     borderColor: alpha(brandTokens.colors.ritualCyan, 0.4),
-                    // Lift above the next sibling so the drop shadow isn't clipped.
-                    zIndex: 1,
                   },
                 }}
               >
