@@ -143,30 +143,46 @@ def _gemini_ci_remediation_command(prompt: str) -> List[str]:
     return ["gemini", "--prompt", prompt, "--yolo"]
 
 
+_GEMINI_AUTH_ENV_ALLOWLIST = (
+    "GEMINI_API_KEY",
+    "GOOGLE_API_KEY",
+    "GOOGLE_APPLICATION_CREDENTIALS",
+    "GOOGLE_GENAI_USE_VERTEXAI",
+    "GOOGLE_GENAI_USE_GCA",
+    "GOOGLE_CLOUD_PROJECT",
+    "GOOGLE_CLOUD_LOCATION",
+    "GEMINI_MODEL",
+    "GEMINI_DEBUG",
+)
+
+
 @contextlib.contextmanager
 def _isolated_gemini_home_env() -> Iterable[Dict[str, str]]:
     """
-    Run Gemini in a minimal temporary HOME so it does not inherit the user's
-    desktop MCP registry and stall on unrelated server discovery.
+    Run Gemini in a minimal temporary HOME with a constrained environment.
+
+    A tight allowlist of Gemini auth/config env vars is forwarded so the CLI
+    can authenticate via the operator's intentional secret (typically
+    GEMINI_API_KEY in CI). Repository-side env vars (PYTHONPATH, VIRTUAL_ENV,
+    service URLs, test credentials, etc.) are deliberately not forwarded:
+    Gemini operates on a stripped environment and the queue-drain caller
+    runs its own pre-checks and final verification with the real env.
     """
     with tempfile.TemporaryDirectory(prefix="dopemux-gemini-home-") as temp_home:
         temp_home_path = Path(temp_home)
-        gemini_dir = temp_home_path / ".gemini"
-        gemini_dir.mkdir(parents=True, exist_ok=True)
 
-        source_gemini_dir = Path.home() / ".gemini"
-        for name in ("oauth_creds.json", "google_accounts.json", "installation_id"):
-            source = source_gemini_dir / name
-            if source.exists():
-                shutil.copy2(source, gemini_dir / name)
-
-        env = os.environ.copy()
-        env["HOME"] = str(temp_home_path)
-        env["XDG_CONFIG_HOME"] = str(temp_home_path / ".config")
-        # Preserve API keys if present in the parent environment
-        for key in ("GEMINI_API_KEY", "GOOGLE_GENAI_USE_VERTEXAI", "GOOGLE_GENAI_USE_GCA"):
-            if key in os.environ:
-                env[key] = os.environ[key]
+        env: Dict[str, str] = {
+            "HOME": str(temp_home_path),
+            "XDG_CONFIG_HOME": str(temp_home_path / ".config"),
+            "PATH": os.environ.get("PATH", ""),
+            "LANG": os.environ.get("LANG", "C.UTF-8"),
+            "LC_ALL": os.environ.get("LC_ALL", "C.UTF-8"),
+            "TERM": os.environ.get("TERM", "xterm"),
+        }
+        for key in _GEMINI_AUTH_ENV_ALLOWLIST:
+            value = os.environ.get(key)
+            if value:
+                env[key] = value
         yield env
 
 
