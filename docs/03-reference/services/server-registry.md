@@ -120,35 +120,10 @@ docker-compose logs -f mas-sequential-thinking        # Tail logs
 - ADHD-optimized context preservation
 
 **Foundational Role:**
-- **Serves ALL Systems**: Task-Master, Task-Orchestrator, Leantime, Serena, DopeconBridge
+- **Serves Active Systems**: Task-Orchestrator, Leantime, Serena, DopeconBridge
 - **Persistent Memory**: Maintains context across the entire Two-Plane Architecture
 - **Decision Authority**: Single source of truth for "why we made this choice"
 - **Context Bridge**: Connects decisions to code changes, tasks, and outcomes
-
-### Task Master AI - Task Management & PRD Processing
-- **Container**: `mcp-task-master-ai`
-- **Port**: `3005`
-- **Role**: `workflow`
-- **Package**: `task-master-ai` (uvx)
-- **Description**: Natural language task management and PRD parsing
-- **Health Check**: `http://localhost:3005/health`
-
-**Authority Scope:**
-- **PRD Analysis**: Authoritative for parsing and understanding PRDs
-- **Task Creation**: Primary source for initial task breakdown
-- **Requirements Interpretation**: AI-powered analysis of natural language requirements
-- **Task Hierarchy**: Initial structure and relationship definition
-
-**Key Features:**
-- PRD parsing and task generation
-- Complexity analysis and dependency tracking
-- Natural language task management
-- AI-powered requirement analysis
-
-**Integration Boundaries:**
-- **Hands off to**: Task-Orchestrator for dependency analysis and execution planning
-- **Coordinates with**: ConPort for decision logging, DopeconBridge for workflow orchestration
-- **Does NOT**: Manage task status (Leantime authority), handle code context (Serena authority)
 
 ### Task Orchestrator - Dependency Analysis & Task Orchestration
 - **Container**: `mcp-task-orchestrator`
@@ -173,11 +148,10 @@ docker-compose logs -f mas-sequential-thinking        # Tail logs
 - File context provision for Serena LSP
 
 **Integration Boundaries:**
-- **Receives from**: Task-Master-AI for initial task breakdown
 - **Hands off to**: Leantime Bridge for status management and team coordination
 - **Provides to**: Serena LSP for file and symbol context during development
 - **Coordinates with**: DopeconBridge for execution workflow, ConPort for dependency decisions
-- **Does NOT**: Create or modify tasks (Task-Master authority), manage status (Leantime authority)
+- **Does NOT**: Manage status (Leantime authority)
 
 ### Serena - ADHD-Optimized Code Navigation & Project Memory
 - **Container**: `mcp-serena`

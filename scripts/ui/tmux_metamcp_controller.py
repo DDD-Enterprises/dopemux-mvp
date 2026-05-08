@@ -116,7 +116,7 @@ class TmuxMetaMCPController:
         role_tools = {
             'developer': ['serena', 'claude-context', 'morphllm-fast-apply'],
             'researcher': ['exa', 'docrag'],
-            'planner': ['task-master-ai', 'conport'],
+            'planner': ['task-orchestrator', 'conport'],
             'reviewer': ['claude-context', 'conport'],
             'ops': ['desktop-commander', 'conport'],
             'architect': ['zen', 'sequential-thinking'],

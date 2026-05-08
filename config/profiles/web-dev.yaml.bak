@@ -18,7 +18,6 @@ mcp_servers:
 
   disabled:
     - leantime
-    - task-master
 
 adhd_config:
   session_duration_minutes: 25

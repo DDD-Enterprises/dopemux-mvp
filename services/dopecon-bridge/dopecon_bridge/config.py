@@ -31,7 +31,6 @@ class Settings:
     health_check_path: str = field(default_factory=lambda: os.getenv("HEALTH_CHECK_PATH", "/health"))
     
     # Service discovery URLs
-    task_master_url: str = ""  # Set in __post_init__
     task_orchestrator_url: str = ""  # Set in __post_init__
     leantime_bridge_url: str = ""  # Set in __post_init__
     conport_url: str = field(default_factory=lambda: os.getenv("CONPORT_URL", "http://conport:3004"))
@@ -80,10 +79,6 @@ class Settings:
         self.port = int(os.getenv("PORT", str(self.port_base + 16)))
         
         # Service URLs from container prefix
-        self.task_master_url = os.getenv(
-            "TASK_MASTER_URL",
-            f"http://{self.container_prefix}-task-master-ai:3005",
-        )
         self.task_orchestrator_url = os.getenv(
             "TASK_ORCHESTRATOR_URL",
             f"http://{self.container_prefix}-task-orchestrator:8000",

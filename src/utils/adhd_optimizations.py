@@ -192,7 +192,7 @@ class ADHDTaskOptimizer:
         Optimize a task for ADHD-friendly execution.
 
         Args:
-            task: Task object (Leantime or TaskMaster format)
+            task: Task object from the active PM surfaces.
             user_id: Optional user ID for personalization
 
         Returns:
@@ -227,57 +227,6 @@ class ADHDTaskOptimizer:
         except Exception as e:
             logger.error(f"Task optimization failed: {e}")
             return task  # Return original task if optimization fails
-
-    async def optimize_taskmaster_task(self, tm_task: Any) -> Any:
-        """Optimize TaskMaster task specifically."""
-        try:
-            # Analyze complexity based on TaskMaster fields
-            complexity_score = tm_task.complexity_score or 3.0
-            estimated_hours = tm_task.estimated_hours or 1.0
-
-            # Calculate ADHD-friendly metrics
-            cognitive_load = min(complexity_score, 5.0)
-            attention_duration = min(estimated_hours * 60, 120)  # Max 2 hours
-
-            # Adjust based on ADHD principles
-            if cognitive_load > 4.0:
-                # High complexity tasks need special handling
-                tm_task.priority = max(tm_task.priority, 2)  # Increase priority
-
-                # Add ADHD-specific tags
-                if not hasattr(tm_task, "tags"):
-                    tm_task.tags = []
-
-                if "deep_work" not in tm_task.tags:
-                    tm_task.tags.append("deep_work")
-
-                if "hyperfocus_required" not in tm_task.tags:
-                    tm_task.tags.append("hyperfocus_required")
-
-            elif cognitive_load < 2.0:
-                # Low complexity tasks are quick wins
-                if "quick_win" not in (tm_task.tags or []):
-                    tm_task.tags = (tm_task.tags or []) + ["quick_win"]
-
-            # Add ADHD optimization metadata
-            if not hasattr(tm_task, "ai_analysis") or tm_task.ai_analysis is None:
-                tm_task.ai_analysis = {}
-
-            tm_task.ai_analysis["adhd_optimization"] = {
-                "cognitive_load": cognitive_load,
-                "estimated_attention_duration": attention_duration,
-                "recommended_break_frequency": self._calculate_break_frequency(
-                    attention_duration
-                ),
-                "optimal_scheduling": self._get_optimal_scheduling(cognitive_load),
-                "context_preservation_tips": self._get_context_tips(tm_task),
-            }
-
-            return tm_task
-
-        except Exception as e:
-            logger.error(f"TaskMaster optimization failed: {e}")
-            return tm_task
 
     async def schedule_optimal_sequence(
         self, tasks: List[Any], user_id: str = None, time_window: int = 480

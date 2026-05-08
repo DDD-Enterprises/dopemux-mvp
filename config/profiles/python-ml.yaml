@@ -21,7 +21,6 @@ mcp_servers:
   # Disabled (not needed for ML work)
   disabled:
     - leantime         # Project management (overkill for solo ML)
-    - task-master      # Task decomposition (use ConPort decisions instead)
     - desktop-commander # Desktop automation (rarely needed)
 
 # ADHD Configuration

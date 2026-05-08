@@ -50,8 +50,8 @@ class TestContentHashTaskId:
 
     def test_with_source_task_id_deterministic(self):
         """Same (source, source_task_id) always produces same ID."""
-        id1 = content_hash_task_id("taskmaster", "tm-123", "Some Title")
-        id2 = content_hash_task_id("taskmaster", "tm-123", "Different Title")
+        id1 = content_hash_task_id("task-orchestrator", "orch-123", "Some Title")
+        id2 = content_hash_task_id("task-orchestrator", "orch-123", "Different Title")
         assert id1 == id2  # source_task_id takes precedence
 
     def test_without_source_task_id_uses_content(self):

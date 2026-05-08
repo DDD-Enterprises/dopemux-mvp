@@ -128,14 +128,6 @@ class PreToolHookManager:
                 optimizations.append(optimization)
                 optimized_call = optimization.optimized_call
 
-        elif tool_name == "task-master-ai":
-            optimization = await self._optimize_task_master(
-                optimized_call, budget_status
-            )
-            if optimization:
-                optimizations.append(optimization)
-                optimized_call = optimization.optimized_call
-
         elif tool_name == "exa":
             optimization = await self._optimize_exa_search(
                 optimized_call, budget_status
@@ -231,57 +223,6 @@ class PreToolHookManager:
                 explanation=f"Limited search to {max_results} results, preferred file types, and {max_file_size} char files",
                 user_message=f"🎯 Optimized search scope - estimated {estimated_savings} tokens saved",
             )
-
-        return None
-
-    async def _optimize_task_master(
-        self, call: Dict[str, Any], budget: BudgetStatus
-    ) -> Optional[OptimizationResult]:
-        """Optimize task-master-ai calls to reduce verbose responses."""
-        params = call.get("args", {})
-        method = call.get("method", "")
-
-        if method == "list_tasks":
-            trim_rules = (
-                self.policy.get("rules", {})
-                .get("trims", {})
-                .get("task-master-ai", {})
-                .get("list_tasks", {})
-            )
-
-            params.copy()
-            optimized = False
-
-            # Limit number of tasks returned
-            limit = trim_rules.get("limit", 50)
-            if params.get("limit", 100) > limit:
-                params["limit"] = limit
-                optimized = True
-
-            # Exclude completed tasks by default
-            if "includeCompleted" not in params and not trim_rules.get(
-                "include_completed", False
-            ):
-                params["includeCompleted"] = False
-                optimized = True
-
-            # Limit description length
-            max_desc_len = trim_rules.get("max_description_length", 200)
-            if "maxDescriptionLength" not in params:
-                params["maxDescriptionLength"] = max_desc_len
-                optimized = True
-
-            if optimized:
-                estimated_savings = min(1500, int(budget.remaining_tokens * 0.10))
-
-                return OptimizationResult(
-                    action_taken=OptimizationAction.TRIM_RESULTS,
-                    original_call=call,
-                    optimized_call={**call, "args": params},
-                    estimated_token_savings=estimated_savings,
-                    explanation=f"Limited to {limit} active tasks with {max_desc_len} char descriptions",
-                    user_message=f"📋 Streamlined task list - estimated {estimated_savings} tokens saved",
-                )
 
         return None
 
@@ -443,7 +384,7 @@ class PreToolHookManager:
         # Try to reduce scope to fit budget
         tool_name = call.get("tool", "")
 
-        if tool_name in ["claude-context", "exa", "task-master-ai"]:
+        if tool_name in ["claude-context", "exa"]:
             # For search tools, suggest reducing scope
             return OptimizationResult(
                 action_taken=OptimizationAction.SUGGEST_ALTERNATIVE,
@@ -484,7 +425,6 @@ class PreToolHookManager:
             "sequential-thinking": 4000,
             "zen": 2500,
             "exa": 1500,
-            "task-master-ai": 800,
             "pal": 600,
             "serena": 400,
             "conport": 300,

@@ -8,15 +8,14 @@ from pathlib import Path
 import pytest
 
 from dopemux.event_bus import InMemoryAdapter
-from dopemux.pm.adapters import taskmaster_event_to_pm
+from dopemux.pm.adapters import orchestrator_event_to_pm
 from dopemux.pm_publish import pm_envelope_to_dopemux_event, publish_pm_envelope
 
 
 def test_pm_envelope_to_dopemux_event_wraps_namespace_and_payload() -> None:
-    envelope = taskmaster_event_to_pm(
-        "taskmaster.task.created",
+    envelope = orchestrator_event_to_pm(
         {
-            "source_task_id": "tm-200",
+            "task_id": "orch-200",
             "title": "Publish envelope",
             "description": "Bridge test",
             "ts_utc": "2026-02-12T20:00:00Z",
@@ -32,10 +31,9 @@ def test_pm_envelope_to_dopemux_event_wraps_namespace_and_payload() -> None:
 @pytest.mark.asyncio
 async def test_publish_pm_envelope_emits_to_inmemory_bus_subscriber() -> None:
     bus = InMemoryAdapter()
-    envelope = taskmaster_event_to_pm(
-        "taskmaster.task.created",
+    envelope = orchestrator_event_to_pm(
         {
-            "source_task_id": "tm-201",
+            "task_id": "orch-201",
             "title": "Publish to bus",
             "description": "In-memory subscriber",
             "ts_utc": "2026-02-12T20:01:00Z",

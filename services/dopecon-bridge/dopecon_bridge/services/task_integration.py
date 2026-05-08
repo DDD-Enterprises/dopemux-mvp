@@ -1,7 +1,6 @@
 import asyncio
 import logging
-import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from dopemux.pm.adapters.orchestrator import SyncTaskOrchestratorAdapter
@@ -42,52 +41,17 @@ class TaskIntegrationService:
 
     async def parse_prd_to_tasks(self, prd_content: str, project_id: str) -> List[Task]:
         """
-        Parse a PRD document into structured tasks using Task-Master-AI.
-        
-        This method utilizes the `task-master-ai` MCP tool to perform semantic 
-        decomposition of requirement text into structured task objects, 
-        associating them with the specified project.
+        Reject bridge-local PRD parsing.
 
-        Args:
-            prd_content: The raw text of the PRD.
-            project_id: The project identifier.
-
-        Returns:
-            A list of initialized Task objects.
+        Task creation must be adjudicated by the canonical workflow surface before
+        any Leantime reflection. This adapter no longer owns a decomposition
+        backend.
         """
-        logger.info(f"🔍 Parsing PRD for project {project_id} via adapter (instance: {settings.instance_name})")
-
-        try:
-            # Step 1: Use Task-Master-AI to parse PRD
-            prd_result = await self.mcp_manager.call_tool(
-                "task-master-ai",
-                "parse_prd",
-                {"content": prd_content, "project_id": project_id}
-            )
-
-            tasks = []
-            for task_data in prd_result.get("tasks", []):
-                task = Task(
-                    id=str(uuid.uuid4()),
-                    title=task_data.get("title", ""),
-                    description=task_data.get("description", ""),
-                    status=TaskStatus.PLANNED,
-                    priority=TaskPriority(task_data.get("priority", "medium")),
-                    project_id=project_id,
-                    instance_id=settings.instance_name,
-                    tags=task_data.get("tags", [])
-                )
-                tasks.append(task)
-
-            # Step 2: Directly route tasks to Leantime for tracking
-            await self._sync_tasks_to_leantime(tasks)
-
-            logger.info(f"✅ Successfully processed {len(tasks)} tasks from PRD")
-            return tasks
-
-        except Exception as e:
-            logger.error(f"❌ PRD parsing failed: {e}")
-            raise
+        del prd_content
+        raise RuntimeError(
+            f"PRD parsing is disabled for project {project_id}: no canonical workflow "
+            "adjudication backend is configured for bridge-local task creation."
+        )
 
     async def _sync_tasks_to_leantime(self, tasks: List[Task]):
         """Sync tasks to Leantime for project management tracking.

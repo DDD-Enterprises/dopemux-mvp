@@ -1,0 +1,141 @@
+{
+  "id": "TP-DMX-REPOHYG-008",
+  "project": "dopemux-mvp",
+  "target": "Remove active Genetic Agent and Taskmaster/Task-Master-AI runtime surfaces while preserving archive evidence, then prepare the open PR queue for re-evaluation.",
+  "invariants": [
+    "Base all implementation work on origin/main, not chore/pr576-followups.",
+    "Preserve SYSTEM_ARCHIVE/**, docs/archive/**, and historical proof or research artifacts unless an active config or test consumes them.",
+    "Remove active runtime, CLI, PM, MCP, service, config, script, test, and active documentation references to Genetic Agent and Taskmaster/Task-Master-AI.",
+    "Do not merge or close existing PRs in this cleanup packet.",
+    "Report remaining UNKNOWN authority instead of inventing replacement ownership."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-REPO-HYGIENE-SERIES-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-REPOHYG-007",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/remove-genetic-agent-taskmaster",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "chore(repo): remove genetic agent and taskmaster surfaces",
+    "allowlist": [
+      "task-packets/TP-DMX-REPOHYG-008.json",
+      "task-packets/INDEX.md",
+      "proof/remove-genetic-agent-taskmaster.implementation-notes.md",
+      "src/**",
+      "services/**",
+      "docker/mcp-servers-source/**",
+      "config/**",
+      "scripts/**",
+      "tests/**",
+      "docs/02-how-to/**",
+      "docs/03-reference/**",
+      "INSTALL.md",
+      "compose.yml",
+      "pytest.ini",
+      "pyproject.toml",
+      "uv.lock"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/TP-DMX-REPOHYG-008.json",
+      "python -m jsonschema docs/03-reference/spec/dopetask/dopetask-canonical-spec.json task-packets/TP-DMX-REPOHYG-008.json",
+      "rg -n \"services\\\\.genetic_agent|genetic_agent|Genetic Agent|task-master-ai|TaskMaster|taskmaster_bridge|TaskMasterMCPClient\" src services tests scripts config compose.yml INSTALL.md docs/02-how-to docs/03-reference -S --glob '!SYSTEM_ARCHIVE/**' --glob '!docs/archive/**'",
+      "pytest tests/unit/test_cli_audit_remediations.py",
+      "pytest tests/unit/pm",
+      "python -m compileall -q src services tests",
+      "git diff --check",
+      "pre-commit run --from-ref origin/main --to-ref HEAD"
+    ]
+  },
+  "pr": {
+    "title": "chore(repo): remove genetic agent and taskmaster surfaces",
+    "body": "## Summary\n- remove active Genetic Agent runtime and CLI wiring while preserving archive evidence\n- remove active Taskmaster and Task-Master-AI service, MCP, PM, script, config, test, and docs surfaces\n- document validation and PR queue follow-up analysis\n\n## Validation\n- Task Packet JSON/schema validation\n- focused CLI and PM tests\n- active-reference scan\n- compileall, diff check, and pre-commit where available\n\n## PR queue follow-up\nAfter this cleanup lands, refresh #584, Dependabot #582/#583, and pack-branch PRs #572/#573 against the new main before merging.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Inspect active Genetic Agent and Taskmaster authority surfaces.",
+      "requirements": [
+        "Use runtime code, config, compose, tests, and active docs before editing.",
+        "Classify archive and evidence references as preserved unless active code consumes them."
+      ],
+      "commands": [
+        "rg active references for Genetic Agent and Taskmaster terms",
+        "inspect CLI, PM, MCP, service, config, script, and test owners"
+      ],
+      "validation": [
+        "Implementation notes record directly observed active surfaces and preserved evidence areas."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Remove active Genetic Agent runtime and neutralize dependent callers.",
+      "requirements": [
+        "Delete services/genetic_agent/**.",
+        "Remove Genetic CLI commands and Genetic-backed code command surfaces.",
+        "Replace imports from services.genetic_agent.shared.mcp with neutral local clients or direct lightweight clients."
+      ],
+      "commands": [
+        "apply scoped removals",
+        "run focused CLI tests"
+      ],
+      "validation": [
+        "No active caller imports services.genetic_agent and CLI tests reflect removed commands."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Remove active Taskmaster and Task-Master-AI services, adapters, config, docs, and tests.",
+      "requirements": [
+        "Delete local taskmaster services and MCP wrapper source trees.",
+        "Remove taskmaster PM adapters, mappings, sync manager, and direct tests.",
+        "Remove task-master-ai entries from active MCP, update, health, script, and docs surfaces."
+      ],
+      "commands": [
+        "apply scoped removals",
+        "run focused PM tests"
+      ],
+      "validation": [
+        "No active taskmaster adapter, mapping, MCP, health, restart, or script reference remains except intentional historical evidence."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Validate, document implementation evidence, and prepare PR queue analysis.",
+      "requirements": [
+        "Run declared narrow and structural validation.",
+        "Create implementation notes with command outcomes and residual risks.",
+        "Inspect open PR state after the cleanup branch is ready without merging or closing PRs."
+      ],
+      "commands": [
+        "run active-reference scan",
+        "run compileall, diff check, and pre-commit",
+        "gh pr list and gh pr view for open PR analysis"
+      ],
+      "validation": [
+        "Final response includes validation outcomes, PR queue disposition, commit SHA, PR URL or blocker, and remaining UNKNOWNs."
+      ]
+    }
+  ]
+}

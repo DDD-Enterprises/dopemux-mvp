@@ -301,53 +301,6 @@ class TestADHDTaskOptimizer:
             assert result == task
 
     @pytest.mark.asyncio
-    async def test_optimize_taskmaster_task(self, optimizer):
-        """Test TaskMaster task optimization."""
-        # Mock TaskMaster task
-        tm_task = MagicMock()
-        tm_task.complexity_score = 4.5
-        tm_task.estimated_hours = 3.0
-        tm_task.priority = 1
-        tm_task.tags = []
-        tm_task.ai_analysis = {}
-
-        result = await optimizer.optimize_taskmaster_task(tm_task)
-
-        assert result == tm_task
-        assert "deep_work" in tm_task.tags
-        assert "hyperfocus_required" in tm_task.tags
-        assert "adhd_optimization" in tm_task.ai_analysis
-
-    @pytest.mark.asyncio
-    async def test_optimize_taskmaster_task_low_complexity(self, optimizer):
-        """Test TaskMaster task optimization for low complexity."""
-        tm_task = MagicMock()
-        tm_task.complexity_score = 1.5
-        tm_task.estimated_hours = 0.5
-        tm_task.priority = 3
-        tm_task.tags = []
-        tm_task.ai_analysis = {}
-
-        await optimizer.optimize_taskmaster_task(tm_task)
-
-        assert "quick_win" in tm_task.tags
-        assert "adhd_optimization" in tm_task.ai_analysis
-
-    @pytest.mark.asyncio
-    async def test_optimize_taskmaster_task_error_handling(self, optimizer):
-        """Test TaskMaster task optimization error handling."""
-        tm_task = MagicMock()
-
-        # Simulate error during optimization
-        with patch.object(
-            optimizer, "_calculate_break_frequency", side_effect=Exception("Error")
-        ):
-            result = await optimizer.optimize_taskmaster_task(tm_task)
-
-            # Should return original task on error
-            assert result == tm_task
-
-    @pytest.mark.asyncio
     async def test_schedule_optimal_sequence(self, optimizer):
         """Test optimal task sequence scheduling."""
         tasks = [

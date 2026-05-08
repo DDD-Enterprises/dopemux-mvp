@@ -40,7 +40,7 @@ That's it! The installer handles everything automatically.
 ```bash
 ./install.sh --full
 ```
-- Installs everything from quick mode **plus** Zen, PAL apilookup, LiteLLM, DopeconBridge, Genetic Agent, coordination plane services, and shared Redis/PostgreSQL infra
+- Installs everything from quick mode **plus** Zen, PAL apilookup, LiteLLM, DopeconBridge, coordination plane services, and shared Redis/PostgreSQL infra
 - Prompts for provider secrets when needed, but you can also source them from your shell, a custom `--env-file`, macOS Keychain, 1Password CLI, or a command output
 - Provider-gated capabilities may be deferred instead of blocking installation
 - Takes ~10-15 minutes
@@ -84,7 +84,7 @@ See `docs/TASKX_KERNEL_INTEGRATION.md` for contract details, update procedure, a
 
 | Mode | Compose File | Services Included |
 |------|--------------|-------------------|
-| **Canonical (recommended)** | `compose.yml` | All services: PostgreSQL + AGE, Redis (2x), Qdrant, ConPort MCP, PAL, LiteLLM, Dope-Context, Serena, GPT-Researcher, Exa, Desktop Commander, Leantime Bridge, DopeconBridge, Task Orchestrator, ADHD Engine, Genetic Agent |
+| **Canonical (recommended)** | `compose.yml` | All services: PostgreSQL + AGE, Redis (2x), Qdrant, ConPort MCP, PAL, LiteLLM, Dope-Context, Serena, GPT-Researcher, Exa, Desktop Commander, Leantime Bridge, DopeconBridge, Task Orchestrator, ADHD Engine |
 
 The canonical `compose.yml` file at the repository root is now the single source of truth for running Dopemux services. Legacy compose files (docker-compose.master.yml, docker-compose.staging.yml, etc.) are deprecated.
 

@@ -17,7 +17,6 @@ mcp_servers:
 
   disabled:
     - leantime
-    - task-master
     - desktop-commander
 
 # Maximum ADHD support

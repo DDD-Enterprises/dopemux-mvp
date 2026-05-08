@@ -132,15 +132,7 @@ docker inspect dopemux-mcp-<server-name> | grep ExitCode
 
 #### ❌ mcp-client: "No response from MCP server"
 **Cause**: Trying to connect to stdio servers that don't exist
-**Solution**: Either start required servers OR mark as optional
-```bash
-# Option 1: Start task-master-ai (requires mcp-client)
-docker-compose up -d task-master-ai
-
-# Option 2: Mark as optional (comment out in docker-compose.yml)
-# mcp-client:
-#   ...
-```
+**Solution**: Remove stale stdio server entries from the MCP client configuration or mark them optional.
 
 #### ❌ activity-capture: Redis connection failed
 **Cause**: Wrong Redis hostname in environment

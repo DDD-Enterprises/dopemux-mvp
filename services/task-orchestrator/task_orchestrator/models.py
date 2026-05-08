@@ -25,7 +25,6 @@ class AgentType(str, Enum):
     """AI agent types for task coordination."""
     CONPORT = "conport"
     SERENA = "serena"
-    TASKMASTER = "taskmaster"
     CLAUDE_FLOW = "claude_flow"
     PAL = "pal"  # Renamed from ZEN
 
