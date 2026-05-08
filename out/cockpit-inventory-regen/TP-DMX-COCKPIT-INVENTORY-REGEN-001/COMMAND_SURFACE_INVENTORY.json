@@ -1,0 +1,511 @@
+{
+  "schema_version": "dopemux.cockpit.command_surface_inventory.v1",
+  "packet_id": "TP-DMX-COCKPIT-INVENTORY-REGEN-001",
+  "inventory_id": "cockpit-command-surface-inventory-2026-05-04T215346Z-b6b89fae",
+  "generated_at_utc": "2026-05-04T21:53:46Z",
+  "base_branch": "codex/cockpit-unknown-drift-001",
+  "base_head": "b6b89fae076a669952ef1178d7d7d17a3e01eb7b",
+  "current_head": "b6b89fae076a669952ef1178d7d7d17a3e01eb7b",
+  "generation_scope": "artifact-only aggregate regeneration against current HEAD; no live service calls, no runtime action execution, no canonical writes",
+  "per_row_data_status": "UNAVAILABLE_IN_ACCEPTED_ARTIFACTS",
+  "per_row_data_policy": "Aggregate records are preserved where accepted artifacts expose counts but not row-level evidence. No row is reclassified by this packet.",
+  "safe_for_claude_design": "NO",
+  "READY_FOR_CLAUDE_DESIGN": "not approved",
+  "ia_verdict": "CURRENT_COCKPIT_IA_NEEDS_MAJOR_RECONCILIATION",
+  "source_artifacts": [
+    {
+      "path": "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/COMMAND_EXPOSURE_POLICY.json",
+      "role": "carried command exposure counts and safety classes",
+      "sha256": "62aa31129e68e0f6c51b7df56d91940301b062c29836dfc89026954bc5b8205a"
+    },
+    {
+      "path": "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SCREEN_CONTRACT_MATRIX.json",
+      "role": "screen and surface contract matrix",
+      "sha256": "1be02acf87adbd93e6ca5d64f3b28d6c5b7ebd962be6c066e989bbe5a937efe3"
+    },
+    {
+      "path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/COMMAND_PALETTE_INDEX_SCHEMA.json",
+      "role": "palette row fields and fail-closed schema expectations",
+      "sha256": "8f4b452dcafe0cb66e3fa31cf7b64731ee0f2a8f5249e832b3ec84e95bd66800"
+    },
+    {
+      "path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/COMMAND_PALETTE_CONTRACT.md",
+      "role": "palette broker-only contract",
+      "sha256": "UNKNOWN_NOT_HASHED_IN_PREFLIGHT_SAMPLE"
+    },
+    {
+      "path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_ROUTING_RULES.md",
+      "role": "deterministic routing rules",
+      "sha256": "UNKNOWN_NOT_HASHED_IN_PREFLIGHT_SAMPLE"
+    },
+    {
+      "path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_BLOCKED_UNKNOWN_STATES.md",
+      "role": "blocked and unknown display states",
+      "sha256": "UNKNOWN_NOT_HASHED_IN_PREFLIGHT_SAMPLE"
+    },
+    {
+      "path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_GATE_TIER_SCHEMA.json",
+      "role": "Safe Action tier schema",
+      "sha256": "731b93c68b509652d337c2cc2a8be6ccb7d3eb0186f1079f9e482ba3aa04996d"
+    },
+    {
+      "path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_PREFLIGHT_SCHEMA.json",
+      "role": "Safe Action preflight fields",
+      "sha256": "b897607d3bf0370d71326f2212500240f3a15ef4224b34948a22f69e77e4f3e4"
+    },
+    {
+      "path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_REFUSAL_RULES.md",
+      "role": "Safe Action refusal routing",
+      "sha256": "UNKNOWN_NOT_HASHED_IN_PREFLIGHT_SAMPLE"
+    },
+    {
+      "path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PACKAGE_REMEDIATION_INDEX.json",
+      "role": "accepted package counts and IA topology",
+      "sha256": "a7f8cb356473aa0deb0e5e501e52851f881e4dbdf4676e4f19ceeb472dfcce66"
+    },
+    {
+      "path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PROOF.json",
+      "role": "accepted package proof",
+      "sha256": "8ddc008813bdfa9433ef9c60382c72a31e068c5f3a89bb78b01805e2392cb836"
+    },
+    {
+      "path": "out/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/PROOF.json",
+      "role": "accepted runtime-render proof",
+      "sha256": "4ec31de0869a5cb55c926de66a1b3da514f551408808ecd50a593261e31840c0"
+    },
+    {
+      "path": "out/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/PROOF.json",
+      "role": "accepted Settings/Admin/Runtime proof",
+      "sha256": "39ec48e8f37a5d720c98f3129b817fb2e0c6143220831940a5118888d269d2d4"
+    },
+    {
+      "path": "out/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/PROOF.json",
+      "role": "accepted Unknown / Drift proof",
+      "sha256": "ab1b9dcb9072616667b53d7337abc26497e7dd035120a3049ac8d1e7e4353b48"
+    }
+  ],
+  "runtime_sources": [
+    {
+      "path": "src/dopemux/ui/cockpit/__init__.py",
+      "sha256": "088175175bad2981dbe4f91aa8a1e1b5f2021fd22ccda7ba23c2e2d745c910b4",
+      "line_count": 29,
+      "observed_role": "Cockpit package export surface"
+    },
+    {
+      "path": "src/dopemux/ui/cockpit/app.py",
+      "sha256": "4cb07f3729d21bd422e1b026af0d54478abb505704d53209ac109c45d08df506",
+      "line_count": 126,
+      "observed_role": "Textual wrapper and static PM shell entry"
+    },
+    {
+      "path": "src/dopemux/ui/cockpit/render.py",
+      "sha256": "8999e8aa0272b9da09f70cdd27dbb5aea63be6e903ae4392452bf53fe479c6b2",
+      "line_count": 353,
+      "observed_role": "deterministic PM render model with five top-level modes"
+    },
+    {
+      "path": "src/dopemux/ui/cockpit/runtime_contract.py",
+      "sha256": "f69f169a4753247311596577d32d8daa9cabd9f3d1a6e790637ae8bf70eb8939",
+      "line_count": 1854,
+      "observed_role": "local-only package-derived runtime primitives and Safe Action preflight model"
+    },
+    {
+      "path": "src/dopemux/commands/cockpit_commands.py",
+      "sha256": "16be51a2de3560b7e75deec13ca56e00e64172eda63647b1e6a34ca3eabbf631",
+      "line_count": 150,
+      "observed_role": "guarded Cockpit CLI command group"
+    }
+  ],
+  "runtime_model_status": {
+    "top_level_modes": [
+      "PM",
+      "Implementer",
+      "Overview",
+      "Services",
+      "Events"
+    ],
+    "top_level_mode_count": 5,
+    "global_surfaces": [
+      "Command Palette",
+      "Settings/Admin/Runtime",
+      "Safe Actions / Proof Gate",
+      "Unknown / Drift Queue"
+    ],
+    "global_surface_count": 4,
+    "settings_admin_summary_present": true,
+    "unknown_drift_summary_present": true,
+    "safe_action_tiers": [
+      "T0",
+      "T0i",
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "TX",
+      "TU"
+    ],
+    "safe_action_tier_count": 10,
+    "t4_blocked": true,
+    "tx_tu_never_executable": true,
+    "command_palette_broker_only": true,
+    "unknown_drift_does_not_execute": true,
+    "runtime_reclassification_disabled": true,
+    "claude_design_blocked": true
+  },
+  "carried_counts": {
+    "total_inventory_rows": 405,
+    "active_rows": 366,
+    "high_risk_rows": 199,
+    "external_only_count": 37,
+    "safe_ui_exposure": {
+      "BLOCKED_IN_COCKPIT": 48,
+      "COMMAND_PALETTE_ONLY": 40,
+      "CONFIRM_REQUIRED": 111,
+      "DISPLAY_ONLY": 178,
+      "INSPECT_ACTION": 23,
+      "UNKNOWN": 5
+    },
+    "placement": {
+      "Command Palette": 139,
+      "Events": 15,
+      "External/Not Cockpit": 37,
+      "Implementer": 73,
+      "Overview": 9,
+      "PM": 15,
+      "Services": 54,
+      "Settings/Admin": 62,
+      "UNKNOWN": 1
+    },
+    "coverage": {
+      "MISSING": 284,
+      "OUT_OF_SCOPE": 7,
+      "PARTIAL": 82,
+      "UNKNOWN": 32
+    },
+    "activation_status": {
+      "ACTIVE": 366,
+      "DEFINED_NOT_REGISTERED": 30,
+      "DEPRECATED_BLOCKED": 7,
+      "OPTIONAL_IMPORT_UNKNOWN": 2
+    },
+    "authority_domain": {
+      "ADHD/operator support": 21,
+      "ConPort structured context/decision/progress": 15,
+      "Repo Truth Extractor audit/extraction": 44,
+      "dope-memory chronicle": 15,
+      "dopecon-bridge adapter/proxy/event transport": 11,
+      "dopemux operator control": 145,
+      "dopetask execution handoff": 109,
+      "routing/model-provider support": 20,
+      "task-orchestrator workflow": 11,
+      "unknown / conflicting": 14
+    }
+  },
+  "regenerated_counts": {
+    "total_rows": 405,
+    "active_rows": 366,
+    "aggregate_record_count": 16,
+    "per_row_record_count": 0,
+    "settings_admin_row_count": 62,
+    "settings_admin_unknown_tier_count": 62,
+    "unknown_drift_total_queue_items_lower_bound": 487,
+    "unknown_drift_aggregated_item_count": 45,
+    "safe_action_t4_policy_missing_count": 1,
+    "stale_proof_count": 1,
+    "index_drift_count_from_accepted_unknown_drift": 1,
+    "tx_tu_exact_row_counts_available": false
+  },
+  "records": [
+    {
+      "record_id": "aggregate.total_inventory_rows",
+      "record_kind": "aggregate_count",
+      "aggregate_count": 405,
+      "source_surface": "Accepted IA inventory",
+      "placement": "MIXED",
+      "activation_status": "MIXED",
+      "safety_class": "MIXED",
+      "gate_tier": "UNCOMPARABLE_AGGREGATE",
+      "authority_domain": "MIXED",
+      "canonical_writer": "MIXED",
+      "routing_destination": "MIXED_BY_ROW",
+      "proof_requirement": "MIXED_BY_ROW",
+      "source_ref": "COMMAND_EXPOSURE_POLICY.json:metadata.source_counts.total_inventory_rows",
+      "confidence": "HIGH_FOR_COUNT_ONLY",
+      "unresolved_reason": "Accepted artifacts expose total count but not complete per-row records.",
+      "downstream_owner_packet": "TP-DMX-COCKPIT-INVENTORY-REGEN-001"
+    },
+    {
+      "record_id": "aggregate.safe_ui_exposure.DISPLAY_ONLY",
+      "record_kind": "aggregate_count",
+      "aggregate_count": 178,
+      "source_surface": "Command Palette / contextual surfaces",
+      "placement": "MIXED",
+      "activation_status": "MIXED",
+      "safety_class": "DISPLAY_ONLY",
+      "gate_tier": "T0",
+      "authority_domain": "MIXED",
+      "canonical_writer": "MIXED",
+      "routing_destination": "Inspect",
+      "proof_requirement": "INSPECT_RESULT_AND_TIMESTAMP",
+      "source_ref": "COMMAND_EXPOSURE_POLICY.json:metadata.source_counts.safe_ui_exposure.DISPLAY_ONLY",
+      "confidence": "HIGH_FOR_COUNT_ONLY",
+      "unresolved_reason": "Per-row source provenance unavailable in accepted artifacts.",
+      "downstream_owner_packet": "No packet unless a row-level inventory source is restored."
+    },
+    {
+      "record_id": "aggregate.safe_ui_exposure.INSPECT_ACTION",
+      "record_kind": "aggregate_count",
+      "aggregate_count": 23,
+      "source_surface": "Command Palette / contextual inspect drawers",
+      "placement": "MIXED",
+      "activation_status": "MIXED",
+      "safety_class": "INSPECT_ACTION",
+      "gate_tier": "T0i",
+      "authority_domain": "MIXED",
+      "canonical_writer": "MIXED",
+      "routing_destination": "Inspect",
+      "proof_requirement": "INSPECT_RESULT_AND_TIMESTAMP",
+      "source_ref": "COMMAND_EXPOSURE_POLICY.json:metadata.source_counts.safe_ui_exposure.INSPECT_ACTION",
+      "confidence": "HIGH_FOR_COUNT_ONLY",
+      "unresolved_reason": "Per-row source provenance unavailable in accepted artifacts.",
+      "downstream_owner_packet": "No packet unless a row-level inventory source is restored."
+    },
+    {
+      "record_id": "aggregate.safe_ui_exposure.CONFIRM_REQUIRED",
+      "record_kind": "aggregate_count",
+      "aggregate_count": 111,
+      "source_surface": "Safe Actions / Proof Gate",
+      "placement": "MIXED",
+      "activation_status": "MIXED",
+      "safety_class": "CONFIRM_REQUIRED",
+      "gate_tier": "T1_TO_T6_BY_SIDE_EFFECT",
+      "authority_domain": "MIXED",
+      "canonical_writer": "MIXED",
+      "routing_destination": "OpenSafeActionGate_OR_OpenSettingsAdminRuntime",
+      "proof_requirement": "MIXED_BY_TIER",
+      "source_ref": "COMMAND_EXPOSURE_POLICY.json:metadata.source_counts.safe_ui_exposure.CONFIRM_REQUIRED",
+      "confidence": "HIGH_FOR_COUNT_ONLY",
+      "unresolved_reason": "Accepted artifacts do not expose per-row side-effect tier mapping.",
+      "downstream_owner_packet": "Remote-mutation policy and row-level mapping packets as needed."
+    },
+    {
+      "record_id": "aggregate.safe_ui_exposure.COMMAND_PALETTE_ONLY",
+      "record_kind": "aggregate_count",
+      "aggregate_count": 40,
+      "source_surface": "Command Palette",
+      "placement": "Command Palette",
+      "activation_status": "MIXED",
+      "safety_class": "COMMAND_PALETTE_ONLY",
+      "gate_tier": "T0i_OR_T1_TO_T6_BY_SIDE_EFFECT",
+      "authority_domain": "MIXED",
+      "canonical_writer": "MIXED",
+      "routing_destination": "Inspect_OR_OpenSafeActionGate_OR_OpenSettingsAdminRuntime",
+      "proof_requirement": "MIXED_BY_TIER",
+      "source_ref": "COMMAND_EXPOSURE_POLICY.json:metadata.source_counts.safe_ui_exposure.COMMAND_PALETTE_ONLY",
+      "confidence": "HIGH_FOR_COUNT_ONLY",
+      "unresolved_reason": "Accepted artifacts do not expose per-row side effects.",
+      "downstream_owner_packet": "No packet unless a row-level inventory source is restored."
+    },
+    {
+      "record_id": "aggregate.safe_ui_exposure.BLOCKED_IN_COCKPIT",
+      "record_kind": "aggregate_count",
+      "aggregate_count": 48,
+      "source_surface": "Safe Actions / Proof Gate",
+      "placement": "MIXED",
+      "activation_status": "MIXED",
+      "safety_class": "BLOCKED_IN_COCKPIT",
+      "gate_tier": "TX",
+      "authority_domain": "MIXED_OR_UNKNOWN",
+      "canonical_writer": "UNKNOWN",
+      "routing_destination": "ShowBlockedReason",
+      "proof_requirement": "BLOCK_REASON_RECORD",
+      "source_ref": "COMMAND_EXPOSURE_POLICY.json:metadata.source_counts.safe_ui_exposure.BLOCKED_IN_COCKPIT",
+      "confidence": "HIGH_FOR_COUNT_ONLY",
+      "unresolved_reason": "Blocked rows remain visible but non-executable; no row reclassification in this packet.",
+      "downstream_owner_packet": "Separate blocked-row reclassification packet if policy changes."
+    },
+    {
+      "record_id": "aggregate.safe_ui_exposure.UNKNOWN",
+      "record_kind": "aggregate_count",
+      "aggregate_count": 5,
+      "source_surface": "Unknown / Drift Queue",
+      "placement": "UNKNOWN",
+      "activation_status": "MIXED",
+      "safety_class": "UNKNOWN",
+      "gate_tier": "TU",
+      "authority_domain": "UNKNOWN",
+      "canonical_writer": "UNKNOWN",
+      "routing_destination": "ShowUnknownDriftReason",
+      "proof_requirement": "INVESTIGATION_PACKET_REFERENCE",
+      "source_ref": "COMMAND_EXPOSURE_POLICY.json:metadata.source_counts.safe_ui_exposure.UNKNOWN",
+      "confidence": "HIGH_FOR_COUNT_ONLY",
+      "unresolved_reason": "Unknown rows remain non-executable and require packet evidence.",
+      "downstream_owner_packet": "Separate reclassification packet"
+    },
+    {
+      "record_id": "aggregate.safe_ui_exposure.EXTERNAL_ONLY",
+      "record_kind": "aggregate_count",
+      "aggregate_count": 37,
+      "source_surface": "External/Not Cockpit",
+      "placement": "External/Not Cockpit",
+      "activation_status": "MIXED",
+      "safety_class": "EXTERNAL_ONLY",
+      "gate_tier": "T0i_OR_TX_NO_COCKPIT_EXECUTION",
+      "authority_domain": "EXTERNAL_OR_MIXED",
+      "canonical_writer": "EXTERNAL",
+      "routing_destination": "Inspect_OR_CopyCommand",
+      "proof_requirement": "NONE_OR_INSPECT_RESULT_AND_TIMESTAMP",
+      "source_ref": "COMMAND_EXPOSURE_POLICY.json:metadata.external_only_count",
+      "confidence": "HIGH_FOR_COUNT_ONLY",
+      "unresolved_reason": "External rows remain outside Cockpit execution scope.",
+      "downstream_owner_packet": "Remote-mutation policy packet if any external row is reconsidered."
+    },
+    {
+      "record_id": "aggregate.placement.Command_Palette",
+      "record_kind": "aggregate_count",
+      "aggregate_count": 139,
+      "source_surface": "Command Palette",
+      "placement": "Command Palette",
+      "activation_status": "MIXED",
+      "safety_class": "MIXED",
+      "gate_tier": "MIXED_BY_ROW",
+      "authority_domain": "MIXED",
+      "canonical_writer": "MIXED",
+      "routing_destination": "PaletteBrokerRoutesOnly",
+      "proof_requirement": "MIXED_BY_ROW",
+      "source_ref": "COMMAND_EXPOSURE_POLICY.json:metadata.source_counts.placement.Command Palette",
+      "confidence": "HIGH_FOR_COUNT_ONLY",
+      "unresolved_reason": "No complete per-row palette index is emitted by accepted artifacts.",
+      "downstream_owner_packet": "No packet unless row-level source is restored."
+    },
+    {
+      "record_id": "aggregate.placement.Settings_Admin",
+      "record_kind": "aggregate_count",
+      "aggregate_count": 62,
+      "source_surface": "Settings/Admin/Runtime",
+      "placement": "Settings/Admin",
+      "activation_status": "MIXED",
+      "safety_class": "MIXED",
+      "gate_tier": "UNKNOWN_PER_ROW",
+      "authority_domain": "dopemux operator control and routing/model-provider support",
+      "canonical_writer": "UNKNOWN_PER_ROW",
+      "routing_destination": "OpenSettingsAdminRuntime",
+      "proof_requirement": "UNKNOWN_PER_ROW",
+      "source_ref": "PACKAGE_REMEDIATION_INDEX.json:carried_inventory_counts.placement.Settings/Admin",
+      "confidence": "HIGH_FOR_COUNT_ONLY",
+      "unresolved_reason": "Accepted Settings/Admin evidence proves 62 rows but not per-row gate tiers.",
+      "downstream_owner_packet": "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001"
+    },
+    {
+      "record_id": "aggregate.unknown_drift.lower_bound",
+      "record_kind": "aggregate_lower_bound",
+      "aggregate_count": 487,
+      "source_surface": "Unknown / Drift Queue",
+      "placement": "Unknown / Drift Queue",
+      "activation_status": "MIXED_NON_ACTIVE_AND_MISSING_COVERAGE",
+      "safety_class": "UNKNOWN_OR_BLOCKED_AGGREGATE",
+      "gate_tier": "TU_OR_TX_AGGREGATE",
+      "authority_domain": "MIXED_OR_UNKNOWN",
+      "canonical_writer": "UNKNOWN",
+      "routing_destination": "UNKNOWN_DRIFT_QUEUE_OR_SHOW_BLOCKED_REASON",
+      "proof_requirement": "INVESTIGATION_PACKET_REFERENCE_OR_BLOCK_REASON_RECORD",
+      "source_ref": "out/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/PROOF.json:runtime_snapshot_summary.unknown_drift_total_queue_items_lower_bound",
+      "confidence": "HIGH_FOR_LOWER_BOUND_ONLY",
+      "unresolved_reason": "Unknown/Drift proof reports aggregate lower bound with per-row gaps.",
+      "downstream_owner_packet": "TP-DMX-COCKPIT-UNKNOWN-DRIFT-001 plus reclassification packets"
+    },
+    {
+      "record_id": "aggregate.safe_action.T4_policy_missing",
+      "record_kind": "aggregate_policy_block",
+      "aggregate_count": 1,
+      "source_surface": "Safe Actions / Proof Gate",
+      "placement": "MIXED",
+      "activation_status": "MIXED",
+      "safety_class": "CONFIRM_REQUIRED",
+      "gate_tier": "T4",
+      "authority_domain": "UNKNOWN_UNTIL_POLICY",
+      "canonical_writer": "UNKNOWN_UNTIL_POLICY",
+      "routing_destination": "UNKNOWN_DRIFT_QUEUE",
+      "proof_requirement": "REMOTE_RECEIPT_BLOCKED_UNTIL_POLICY",
+      "source_ref": "SAFE_ACTION_REFUSAL_RULES.md:Remote Mutation Failures",
+      "confidence": "HIGH_FOR_POLICY_STATE",
+      "unresolved_reason": "Remote-mutation policy is absent; T4 remains refused.",
+      "downstream_owner_packet": "Separate remote-mutation policy packet"
+    },
+    {
+      "record_id": "aggregate.activation.DEFINED_NOT_REGISTERED",
+      "record_kind": "aggregate_count",
+      "aggregate_count": 30,
+      "source_surface": "Unknown / Drift Queue",
+      "placement": "MIXED",
+      "activation_status": "DEFINED_NOT_REGISTERED",
+      "safety_class": "UNKNOWN",
+      "gate_tier": "TU",
+      "authority_domain": "UNKNOWN",
+      "canonical_writer": "UNKNOWN",
+      "routing_destination": "UNKNOWN_DRIFT_QUEUE",
+      "proof_requirement": "INVESTIGATION_PACKET_REFERENCE",
+      "source_ref": "COMMAND_EXPOSURE_POLICY.json:metadata.source_counts.activation_status.DEFINED_NOT_REGISTERED",
+      "confidence": "HIGH_FOR_COUNT_ONLY",
+      "unresolved_reason": "Defined source rows remain unregistered in accepted inventory.",
+      "downstream_owner_packet": "Separate reclassification packet"
+    },
+    {
+      "record_id": "aggregate.activation.OPTIONAL_IMPORT_UNKNOWN",
+      "record_kind": "aggregate_count",
+      "aggregate_count": 2,
+      "source_surface": "Unknown / Drift Queue",
+      "placement": "MIXED",
+      "activation_status": "OPTIONAL_IMPORT_UNKNOWN",
+      "safety_class": "UNKNOWN",
+      "gate_tier": "TU",
+      "authority_domain": "UNKNOWN",
+      "canonical_writer": "UNKNOWN",
+      "routing_destination": "UNKNOWN_DRIFT_QUEUE",
+      "proof_requirement": "INVESTIGATION_PACKET_REFERENCE",
+      "source_ref": "COMMAND_EXPOSURE_POLICY.json:metadata.source_counts.activation_status.OPTIONAL_IMPORT_UNKNOWN",
+      "confidence": "HIGH_FOR_COUNT_ONLY",
+      "unresolved_reason": "Optional dependency state is unresolved in accepted inventory.",
+      "downstream_owner_packet": "Separate reclassification packet"
+    },
+    {
+      "record_id": "aggregate.activation.DEPRECATED_BLOCKED",
+      "record_kind": "aggregate_count",
+      "aggregate_count": 7,
+      "source_surface": "Blocked row visibility",
+      "placement": "MIXED",
+      "activation_status": "DEPRECATED_BLOCKED",
+      "safety_class": "BLOCKED_IN_COCKPIT",
+      "gate_tier": "TX",
+      "authority_domain": "unknown / conflicting",
+      "canonical_writer": "UNKNOWN",
+      "routing_destination": "ShowBlockedReason",
+      "proof_requirement": "BLOCK_REASON_RECORD",
+      "source_ref": "COMMAND_EXPOSURE_POLICY.json:metadata.source_counts.activation_status.DEPRECATED_BLOCKED",
+      "confidence": "HIGH_FOR_COUNT_ONLY",
+      "unresolved_reason": "Deprecated rows stay blocked; no runtime resurrection in this packet.",
+      "downstream_owner_packet": "Separate reclassification packet"
+    },
+    {
+      "record_id": "aggregate.authority.unknown_conflicting",
+      "record_kind": "aggregate_count",
+      "aggregate_count": 14,
+      "source_surface": "Unknown / Drift Queue",
+      "placement": "MIXED",
+      "activation_status": "MIXED",
+      "safety_class": "UNKNOWN",
+      "gate_tier": "TU",
+      "authority_domain": "unknown / conflicting",
+      "canonical_writer": "UNKNOWN",
+      "routing_destination": "UNKNOWN_DRIFT_QUEUE",
+      "proof_requirement": "INVESTIGATION_PACKET_REFERENCE",
+      "source_ref": "COMMAND_EXPOSURE_POLICY.json:metadata.source_counts.authority_domain.unknown / conflicting",
+      "confidence": "HIGH_FOR_COUNT_ONLY",
+      "unresolved_reason": "Authority conflict requires packet evidence before any reclassification.",
+      "downstream_owner_packet": "Separate authority reclassification packet"
+    }
+  ],
+  "aggregate_record_note": "The records array intentionally contains representative aggregate records for contractual axes. Complete per-placement and per-authority counts remain available in carried_counts."
+}

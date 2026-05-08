@@ -20,8 +20,6 @@ jobs:
   plan-execute:
     timeout-minutes: 30
     runs-on: 'ubuntu-latest'
-    env:
-      GEMINI_CLI_TRUST_WORKSPACE: 'true'
     permissions:
       contents: 'write'
       id-token: 'write'

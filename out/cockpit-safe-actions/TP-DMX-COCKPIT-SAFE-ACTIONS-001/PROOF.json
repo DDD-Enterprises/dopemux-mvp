@@ -1,0 +1,352 @@
+{
+  "packet_id": "TP-DMX-COCKPIT-SAFE-ACTIONS-001",
+  "validation_state": "SAFE_ACTION_GATE_SPEC_READY_FOR_PACKAGE_REMEDIATION",
+  "ia_verdict": "CURRENT_COCKPIT_IA_NEEDS_MAJOR_RECONCILIATION",
+  "safe_for_claude_design": "NO",
+  "ready_for_claude_design": false,
+  "upstream_packets": [
+    {
+      "packet_id": "TP-DMX-COCKPIT-IA-RECONCILE-001",
+      "verdict": "IA_RECONCILED_FOR_PACKAGE_REMEDIATION"
+    },
+    {
+      "packet_id": "TP-DMX-COCKPIT-COMMAND-PALETTE-001",
+      "verdict": "COMMAND_PALETTE_SPEC_READY_FOR_PACKAGE_REMEDIATION"
+    }
+  ],
+  "downstream_packets": [
+    "TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA",
+    "TP-DMX-COCKPIT-RUNTIME-RENDER-001",
+    "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001",
+    "TP-DMX-COCKPIT-UNKNOWN-DRIFT-001"
+  ],
+  "inputs": [
+    {
+      "path": "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SAFE_ACTION_GATE_SPEC.md",
+      "sha256": "4f9c4cb2130ac2567b2a0ca980ad3ee21e655c51fc8cfcbcfb29d1a74e2a0c07"
+    },
+    {
+      "path": "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/COMMAND_EXPOSURE_POLICY.json",
+      "sha256": "62aa31129e68e0f6c51b7df56d91940301b062c29836dfc89026954bc5b8205a"
+    },
+    {
+      "path": "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/COMMAND_MAPPING_DECISIONS.md",
+      "sha256": "6aa926ba9397c1a2957ee886342eb41234477be6bfc053b66fcbdb87114285a5"
+    },
+    {
+      "path": "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/UPDATED_COVERAGE_DECISION.md",
+      "sha256": "a6fee6b7f16a987d9b5205009ef65214568820b3c7cad4532e0145fe87711cd2"
+    },
+    {
+      "path": "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/CLAUDE_DESIGN_BLOCKERS.md",
+      "sha256": "d929cb83d93f5d1da4afc50d3bbdfbe1032c03f5a81f71c0f8419d7dbe85c038"
+    },
+    {
+      "path": "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SCREEN_CONTRACT_MATRIX.json",
+      "sha256": "1be02acf87adbd93e6ca5d64f3b28d6c5b7ebd962be6c066e989bbe5a937efe3"
+    },
+    {
+      "path": "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SETTINGS_ADMIN_RUNTIME_SPEC.md",
+      "sha256": "a40bbf5019334187c8bf6e8ab77c609546777bba07aed5864053b55d65b86943"
+    },
+    {
+      "path": "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/UNKNOWN_DRIFT_QUEUE_SPEC.md",
+      "sha256": "dff637f31fd10484436edbe7a1b5eff6cf35d68ca8d6c92c4f68839cfd16cb1d"
+    },
+    {
+      "path": "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/PROOF.json",
+      "sha256": "267c8809bc1e6ad5aeab692ed651eb45d0fbc23331e0161345b791675d0b07e9"
+    },
+    {
+      "path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/COMMAND_PALETTE_CONTRACT.md",
+      "sha256": "39ae90c7d9f55055dad932e3eb2ae0225adc11b2113f28e48b92cb449a36cc68"
+    },
+    {
+      "path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/COMMAND_PALETTE_INDEX_SCHEMA.json",
+      "sha256": "8f4b452dcafe0cb66e3fa31cf7b64731ee0f2a8f5249e832b3ec84e95bd66800"
+    },
+    {
+      "path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_ROUTING_RULES.md",
+      "sha256": "d798c3fd7aa686cc17ddb8525574d37b6a2bb36c138b5feae0e0b70f62eebad4"
+    },
+    {
+      "path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_PARAMETER_PREVIEW_SPEC.md",
+      "sha256": "f5ab20ae5b981a1b2fea49a2e64c32606612525926fbfdab13e6baf7744d65b8"
+    },
+    {
+      "path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_TO_SAFE_ACTION_GATE_HANDOFF.md",
+      "sha256": "fdcb0c104510e462031d56d84766d25a0fca2cc86857b8fdeff8fe9144b1d373"
+    },
+    {
+      "path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_TO_SETTINGS_RUNTIME_HANDOFF.md",
+      "sha256": "a8708c64ffa30221219d447b49aa9e33670967b7e9feedb01a8cefb67a1fc5b5"
+    },
+    {
+      "path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_TO_UNKNOWN_DRIFT_HANDOFF.md",
+      "sha256": "d692220c7897fdf5e2958a2620130ceecfc4c1ec1af58bbd73a4e9e23d2aa51b"
+    },
+    {
+      "path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_PROOF_REQUIREMENTS.md",
+      "sha256": "052a88784ebed10005efb6e3ee320b40c5f3c87382efd1f9490037f33eb02ca0"
+    },
+    {
+      "path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PROOF.json",
+      "sha256": "467042a49c494f341dfc00aa04375048c6dd9814dd776f70e0896117f28156f8"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_GATE_CONTRACT.md",
+      "sha256": "afc3ec940ce77b6fe4c2a4d9bfdbe675f9c30e172e542032be63b1db2c31e732"
+    },
+    {
+      "path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_GATE_TIER_SCHEMA.json",
+      "sha256": "731b93c68b509652d337c2cc2a8be6ccb7d3eb0186f1079f9e482ba3aa04996d"
+    },
+    {
+      "path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_GATE_TIER_SCHEMA.md",
+      "sha256": "26ca6dc8cd814196d787590e875b1a5af818e35679a31423375f4c3d9cee9260"
+    },
+    {
+      "path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_PREFLIGHT_SCHEMA.json",
+      "sha256": "b897607d3bf0370d71326f2212500240f3a15ef4224b34948a22f69e77e4f3e4"
+    },
+    {
+      "path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_PREFLIGHT_SCHEMA.md",
+      "sha256": "14ae65e0ae1dddee0dd28bf1a6bc4bfcd9625b1611f8b100d88f3394b2a5593d"
+    },
+    {
+      "path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_CONFIRMATION_FLOWS.md",
+      "sha256": "3944f0afeda47689b55b78b5b1792d95dee8cd32b39c2b9ac9ac1b15a9346e9c"
+    },
+    {
+      "path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_REFUSAL_RULES.md",
+      "sha256": "7b83c366ed28e69bb1ec8d9de37123bfdecc5e13336be0ce25ea02a3bcbd2564"
+    },
+    {
+      "path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_PROOF_REQUIREMENTS.md",
+      "sha256": "86662649484c44007a25b96d78c78449ed88dc251fd5928196b8eaf3e0e8c45b"
+    },
+    {
+      "path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_GATE_EVENT_RECEIPTS.md",
+      "sha256": "9e9f6e79c16a08904b4ca84aa621d49b214ca384344209b8adfbe596ad42bf39"
+    },
+    {
+      "path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_GATE_UI_PRIMITIVES.md",
+      "sha256": "74b4bc278a93393f7f33f7d138627133a10d3f5a62700eb63de7089522849535"
+    },
+    {
+      "path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_GATE_TO_UNKNOWN_DRIFT_HANDOFF.md",
+      "sha256": "8a108698a5d58b6612422dd4fda742dc6c15da3184565591fe2ed809289cbaf2"
+    },
+    {
+      "path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_GATE_TEST_MATRIX.md",
+      "sha256": "a047356f2aba9db9c3ae120505668a537074960613c29d3c248727b4e86b2257"
+    },
+    {
+      "path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/CLAUDE_DESIGN_SAFE_ACTION_BLOCKERS.md",
+      "sha256": "aded3ffd3fab9c62289b1b924a1912cd7ea850e3c8227abbfc6a00f44997c326"
+    }
+  ],
+  "gate_contract": {
+    "cross_cutting_not_mode": true,
+    "auto_confirm_allowed": false,
+    "blocked_execution_allowed": false,
+    "unknown_execution_allowed": false,
+    "proof_required_for_completion": true,
+    "refuses_unknown_required_fields": true,
+    "typed_confirmation_required_for_high_risk_tiers": ["T4", "T5", "T6"],
+    "blocks_remote_mutation_until_policy_approved": true,
+    "settings_admin_runtime_must_invoke_gate_for_admin_rows": true,
+    "preserves_authority_domains_per_inventory": true,
+    "never_reclassifies_in_gate": true,
+    "emits_event_receipt_on_every_invocation": true,
+    "fails_closed_on_index_drift_or_stale_handoff": true,
+    "no_runtime_execution_in_this_packet": true
+  },
+  "tiers": [
+    {
+      "tier_id": "T0",
+      "action_class": "DISPLAY_ONLY",
+      "execution_allowed": false,
+      "confirmation_required": "NONE",
+      "post_action_proof": "INSPECT_RESULT_AND_TIMESTAMP_at_view_time"
+    },
+    {
+      "tier_id": "T0i",
+      "action_class": "INSPECT_ACTION",
+      "execution_allowed": true,
+      "confirmation_required": "EXPLICIT_INVOKE_NO_DEFAULTS_ON",
+      "post_action_proof": "command_path + exit_or_result_summary + source_authority"
+    },
+    {
+      "tier_id": "T1",
+      "action_class": "CONFIRM_REQUIRED_GENERATED_ARTIFACT",
+      "execution_allowed": true,
+      "confirmation_required": "EXPLICIT_BUTTON",
+      "post_action_proof": "ARTIFACT_AND_CHECKSUM"
+    },
+    {
+      "tier_id": "T2",
+      "action_class": "CONFIRM_REQUIRED_CONFIG_MUTATION",
+      "execution_allowed": true,
+      "confirmation_required": "EXPLICIT_BUTTON_WITH_DIFF_ACK",
+      "post_action_proof": "CONFIG_DIFF_OR_STATUS"
+    },
+    {
+      "tier_id": "T3",
+      "action_class": "CONFIRM_REQUIRED_WRITE_LOCAL",
+      "execution_allowed": true,
+      "confirmation_required": "EXPLICIT_BUTTON",
+      "post_action_proof": "FILESYSTEM_DIFF_OR_EXIT_CODE"
+    },
+    {
+      "tier_id": "T4",
+      "action_class": "CONFIRM_REQUIRED_WRITE_REMOTE",
+      "execution_allowed": false,
+      "confirmation_required": "EXPLICIT_BUTTON_PLUS_TYPED_CONFIRMATION",
+      "post_action_proof": "REMOTE_RECEIPT",
+      "blocked_until_policy_approved": true
+    },
+    {
+      "tier_id": "T5",
+      "action_class": "CONFIRM_REQUIRED_START_STOP_SERVICE",
+      "execution_allowed": true,
+      "confirmation_required": "EXPLICIT_BUTTON_PLUS_TYPED_CONFIRMATION",
+      "post_action_proof": "SERVICE_STATUS_AND_LOG"
+    },
+    {
+      "tier_id": "T6",
+      "action_class": "CONFIRM_REQUIRED_EXECUTION_HANDOFF",
+      "execution_allowed": true,
+      "confirmation_required": "EXPLICIT_BUTTON_PLUS_TYPED_CONFIRMATION",
+      "post_action_proof": "TP_RUNNER_PROOF"
+    },
+    {
+      "tier_id": "TX",
+      "action_class": "BLOCKED_IN_COCKPIT",
+      "execution_allowed": false,
+      "confirmation_required": "NONE_NEVER_EXECUTABLE",
+      "post_action_proof": "BLOCK_REASON_RECORD"
+    },
+    {
+      "tier_id": "TU",
+      "action_class": "UNKNOWN",
+      "execution_allowed": false,
+      "confirmation_required": "NONE_NEVER_EXECUTABLE",
+      "post_action_proof": "INVESTIGATION_PACKET_REFERENCE"
+    }
+  ],
+  "refusal_routes": [
+    {
+      "trigger": "BLOCKED_IN_COCKPIT or DEPRECATED_BLOCKED",
+      "destination": "ShowBlockedReason",
+      "executes": false
+    },
+    {
+      "trigger": "UNKNOWN class or AUTHORITY_CONFLICT or NOT_ACTIVE or PARAM_UNRESOLVED or CWD_UNRESOLVED or PROOF_REQUIREMENT_UNKNOWN or ROLLBACK_UNKNOWN or SIDE_EFFECTS_UNKNOWN or REMOTE_MUTATION_POLICY_MISSING or TP_GATE_ABSENT or AUTHORITY_DRIFT_MID_FLOW or CLASS_DRIFT_MID_FLOW or UNSAFE_SOURCE_SURFACE or STALE_PROOF_GATE",
+      "destination": "Unknown / Drift Queue",
+      "executes": false
+    },
+    {
+      "trigger": "INDEX_DRIFT or STALE_HANDOFF",
+      "destination": "Re-render at upstream surface; require new handoff",
+      "executes": false
+    },
+    {
+      "trigger": "EXTERNAL_ONLY at confirm path",
+      "destination": "Inspect / CopyCommand only at originating surface",
+      "executes": false
+    },
+    {
+      "trigger": "TYPED_CONFIRMATION_MISMATCH (operator-abandoned) or OPERATOR_ABORTED or OPERATOR_TIMEOUT",
+      "destination": "gate close; abort/timeout receipt recorded; no execution",
+      "executes": false
+    }
+  ],
+  "blocked_claims": [
+    {
+      "claim": "Final Safe Action Gate screens approved.",
+      "approved": false,
+      "reason": "Final screens require runtime renderer + remote-mutation policy + IA reconciliation per CLAUDE_DESIGN_BLOCKERS.md §3."
+    },
+    {
+      "claim": "Runtime execution of any Safe Action Gate tier in this packet.",
+      "approved": false,
+      "reason": "This packet is contract-only. Runtime wiring is TP-DMX-COCKPIT-RUNTIME-RENDER-001."
+    },
+    {
+      "claim": "T4 (write remote) execution.",
+      "approved": false,
+      "reason": "Blocked by default until remote-mutation policy approves and runtime renderer wires T4."
+    },
+    {
+      "claim": "TX (BLOCKED_IN_COCKPIT) execution.",
+      "approved": false,
+      "reason": "Permanently blocked in Cockpit per COMMAND_EXPOSURE_POLICY.json:classes.BLOCKED_IN_COCKPIT.forbidden_ui_form."
+    },
+    {
+      "claim": "TU (UNKNOWN) execution.",
+      "approved": false,
+      "reason": "Never executable. Reclassification requires a packet per UNKNOWN_DRIFT_QUEUE_SPEC.md §5."
+    },
+    {
+      "claim": "Auto-confirm in any tier.",
+      "approved": false,
+      "reason": "SAFE_ACTION_GATE_SPEC.md §5; this contract §5 (SAFE_ACTION_GATE_CONTRACT.md)."
+    },
+    {
+      "claim": "Cockpit package HTML/CSS/React edits.",
+      "approved": false,
+      "reason": "Out of scope this packet."
+    },
+    {
+      "claim": "Claude Design uploads.",
+      "approved": false,
+      "reason": "Blocked at the Claude Design boundary; CLAUDE_DESIGN_SAFE_ACTION_BLOCKERS.md."
+    }
+  ],
+  "unknowns": [
+    {
+      "unknown": "Final visual treatment for tier badges, refusal panels, completed-with-proof states, and stale-proof states.",
+      "owner": "TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA + TP-DMX-COCKPIT-RUNTIME-RENDER-001 (final design downstream)."
+    },
+    {
+      "unknown": "Stale-proof window duration (configured timeout for declaring a row's proof stale).",
+      "owner": "TP-DMX-COCKPIT-RUNTIME-RENDER-001 (runtime configuration)."
+    },
+    {
+      "unknown": "Confirm-flow operator timeout duration.",
+      "owner": "TP-DMX-COCKPIT-RUNTIME-RENDER-001 (runtime configuration)."
+    },
+    {
+      "unknown": "Remote-mutation policy reference document (referenced by T4 preflight).",
+      "owner": "Policy artifact pending; this packet does not author it."
+    },
+    {
+      "unknown": "Operator authentication wiring (operator_id capture).",
+      "owner": "Per CLAUDE_DESIGN_BLOCKERS.md §3 condition 6; runtime renderer."
+    },
+    {
+      "unknown": "Per-flow tier mapping for the 62 Settings/Admin rows beyond the seven flow groups.",
+      "owner": "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001."
+    },
+    {
+      "unknown": "Open inventory UNKNOWNs (decision subcommands; optional `genetic`; defined-but-not-registered `worktree`/`vault`; root `RULES.md`/`TRUTH_*.md`).",
+      "owner": "Per CLAUDE_DESIGN_BLOCKERS.md §3 condition 8; not in scope for this packet."
+    }
+  ],
+  "preflight_invariants": [
+    "Every required field for the row's tier MUST be present before the gate renders a confirm affordance.",
+    "Missing fields render as the literal string 'UNKNOWN', never blank.",
+    "The gate never invents values for missing fields and never silently substitutes defaults.",
+    "cwd MUST be inside the current worktree; '/tmp' or non-worktree paths are refused.",
+    "authority_domain == 'unknown / conflicting' or canonical_writer == 'UNKNOWN' fails closed for any executable tier.",
+    "safety_class in {BLOCKED_IN_COCKPIT, UNKNOWN, EXTERNAL_ONLY} never reaches a confirm affordance.",
+    "palette_index_row_hash MUST match the live index hash at gate-open time; mismatch is INDEX_DRIFT and fails closed.",
+    "surface_origin MUST be one of the allowed origins; deep-links and bypass paths are refused.",
+    "T4/T5/T6 require typed confirmation matching the relevant identifier exactly."
+  ],
+  "schema_version": "dopemux.cockpit.safe_action_gate.proof.v1",
+  "created_at_utc": "2026-05-04T10:42:41Z"
+}

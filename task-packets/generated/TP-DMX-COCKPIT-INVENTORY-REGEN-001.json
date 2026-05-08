@@ -1,0 +1,119 @@
+{
+  "id": "TP-DMX-COCKPIT-INVENTORY-REGEN-001",
+  "project": "dopemux-mvp",
+  "target": "Regenerate Cockpit command/surface inventory against current HEAD and produce drift evidence without resolving or reclassifying rows at runtime.",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dopemux-cockpit-ia-remediation",
+    "base_branch": "codex/cockpit-unknown-drift-001",
+    "parent_tp_id": "TP-DMX-COCKPIT-UNKNOWN-DRIFT-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/cockpit-inventory-regen-001"
+  },
+  "commit": {
+    "message": "docs(cockpit): regenerate current head inventory",
+    "allowlist": [
+      "src/dopemux/ui/cockpit/**",
+      "src/dopemux/commands/cockpit_commands.py",
+      "tests/unit/dopemux/ui/cockpit/**",
+      "tests/unit/test_cockpit_cli.py",
+      "task-packets/generated/TP-DMX-COCKPIT-INVENTORY-REGEN-001.json",
+      "task-packets/INDEX.md",
+      "proof/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/**",
+      "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/**"
+    ],
+    "verify": [
+      "python -m json.tool out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PACKAGE_REMEDIATION_INDEX.json >/dev/null",
+      "python -m json.tool out/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/PROOF.json >/dev/null",
+      "python -m json.tool out/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/PROOF.json >/dev/null",
+      "python -m json.tool out/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/PROOF.json >/dev/null",
+      "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-INVENTORY-REGEN-001.json >/dev/null",
+      "python -m json.tool out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json >/dev/null",
+      "python -m json.tool out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/INVENTORY_DRIFT_REPORT.json >/dev/null",
+      "python -m json.tool out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/CURRENT_HEAD_COCKPIT_STATUS.json >/dev/null",
+      "python -m json.tool out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/PROOF.json >/dev/null",
+      "cd out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001 && shasum -a 256 -c sha256sums.txt",
+      "python -m compileall -q src/dopemux tests",
+      "python -m pytest tests/unit/dopemux/ui/cockpit -q",
+      "python -m pytest tests/unit/test_cockpit_cli.py -q",
+      "! grep -R -E \"READY_FOR_CLAUDE_DESIGN: approved|safe_for_claude_design: YES|Claude Design upload allowed|T4 authorized|runtime execution implemented|Unknown / Drift execution|runtime reclassification allowed|execute anyway|approve anyway|resolve now|final screens approved\" -n src/dopemux tests out/cockpit-inventory-regen proof/cockpit-inventory-regen",
+      "! grep -R -E \"subprocess|shell=True|os\\.system|requests|httpx|urllib|socket|docker|kubectl|gh pr create|git push\" -n src/dopemux/ui/cockpit src/dopemux/commands/cockpit_commands.py tests/unit/dopemux/ui/cockpit tests/unit/test_cockpit_cli.py",
+      "git diff --check",
+      "git status --short --branch"
+    ]
+  },
+  "pr": {
+    "title": "docs(cockpit): regenerate current head inventory",
+    "body": "## Summary\n- regenerate Cockpit command/surface inventory evidence against current HEAD using accepted artifacts and current runtime source inspection\n- produce deterministic inventory, drift, current-head status, next-packet, hash, and proof artifacts\n- preserve UNKNOWN/drift, T4 refusal, TX/TU non-execution, and Claude Design blockers\n\n## Strict scope\n- artifact-only plus focused artifact tests\n- no final screens\n- no Claude Design upload\n- no runtime action execution\n- no T4 remote mutation\n- no live service adapters\n- no canonical writes\n- no runtime reclassification\n\n## Governance state\nsafe_for_claude_design: NO\nREADY_FOR_CLAUDE_DESIGN: not approved\n\n## Validation\nSee closeout proof for command outputs and exit codes.\n\n## Residual risks and downstream packets\n- aggregate records are used where accepted artifacts do not expose per-row evidence\n- remote-mutation policy remains absent, so T4 stays refused\n- additional UNKNOWN resolution remains packet-owned outside runtime\n- PR chain may need merge/stack consolidation before further design work",
+    "base": "codex/cockpit-unknown-drift-001"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Inspect repo authority, accepted Cockpit package/runtime/settings/unknown-drift artifacts, current Cockpit runtime sources, tests, and existing inventory tooling before implementation.",
+      "validation": [
+        "Dedicated worktree is verified from origin/codex/cockpit-unknown-drift-001 at b6b89fae076a669952ef1178d7d7d17a3e01eb7b.",
+        "Accepted package/runtime/settings/unknown-drift proof artifacts parse as JSON.",
+        "Missing root authority files and schema files are recorded as UNKNOWN rather than inferred."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create deterministic aggregate inventory artifacts from accepted counts and current runtime source evidence without mutating accepted upstream artifacts.",
+      "validation": [
+        "COMMAND_SURFACE_INVENTORY.json parses.",
+        "Inventory preserves five top-level modes, four global surfaces, Settings/Admin summary, Unknown/Drift summary, T4 blocked state, and TX/TU non-execution.",
+        "Aggregate records are used wherever per-row evidence is unavailable."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Create drift, current-head status, next-packet decision, hash, and proof artifacts.",
+      "validation": [
+        "INVENTORY_DRIFT_REPORT.json and CURRENT_HEAD_COCKPIT_STATUS.json parse.",
+        "Drift report classifies stale/uncomparable inputs without pretending row-level precision.",
+        "NEXT_PACKET_DECISION_MATRIX.md does not recommend Claude Design final screens while blockers remain.",
+        "sha256sums.txt validates generated artifacts."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Add focused artifact tests for inventory regeneration invariants and boundary preservation.",
+      "validation": [
+        "Focused Cockpit tests pass.",
+        "Top-level Cockpit CLI tests pass.",
+        "Boundary greps pass without forbidden positive governance claims or forbidden runtime call tokens."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Review diff, run codereview/precommit where available, commit allowed files, push, and open PR against codex/cockpit-unknown-drift-001.",
+      "validation": [
+        "git diff --check passes.",
+        "Only allowlisted files are staged.",
+        "PR URL or exact blocker is recorded in proof and final closeout."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,511 @@
+{
+  "schema_id": "dopemux.cockpit.safe_action_gate.tier.v1",
+  "packet_id": "TP-DMX-COCKPIT-SAFE-ACTIONS-001",
+  "title": "Safe Action Gate Tier Schema",
+  "description": "Per-tier schema for the Cockpit Safe Action Gate. Tiers are normative and carried verbatim from SAFE_ACTION_GATE_SPEC.md §1 and COMMAND_PALETTE_INDEX_SCHEMA.json:fields.gate_tier. The Safe Action Gate never reclassifies a tier; the upstream surface (Command Palette or Settings/Admin/Runtime) carries the tier. Tier determines confirmation, preflight, proof, and refusal behavior.",
+  "fail_closed_rule": "If any required preflight field for the row's tier is UNKNOWN at gate-open time, the gate refuses confirmation and routes the action to the Unknown/Drift Queue with the missing-field reason. Confirmation is never offered when required fields are missing.",
+  "source_artifacts": [
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SAFE_ACTION_GATE_SPEC.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/COMMAND_EXPOSURE_POLICY.json",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SCREEN_CONTRACT_MATRIX.json",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/UNKNOWN_DRIFT_QUEUE_SPEC.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SETTINGS_ADMIN_RUNTIME_SPEC.md",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/COMMAND_PALETTE_INDEX_SCHEMA.json",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_TO_SAFE_ACTION_GATE_HANDOFF.md"
+  ],
+  "tier_invariants": [
+    "Tiers are immutable inside the gate: the upstream surface carries the tier; the gate never reclassifies.",
+    "Only T1–T6 reach a confirm affordance; T0/T0i never confirm; TX/TU never execute.",
+    "Every executable tier (T1–T6) requires non-empty side_effects, expected_proof, and rollback_or_abort.",
+    "Every refusal_condition is fail-closed; the gate never silently bypasses a refusal.",
+    "Every tier records a gate event/receipt regardless of outcome (confirm, abort, refuse, stale-proof)."
+  ],
+  "tiers": {
+    "T0": {
+      "tier_id": "T0",
+      "action_class": "DISPLAY_ONLY",
+      "execution_allowed": false,
+      "confirmation_required": "NONE",
+      "required_preflight_fields": [
+        "command",
+        "authority_domain",
+        "source_provenance",
+        "surface_origin",
+        "created_at_utc"
+      ],
+      "required_post_action_proof": [
+        "INSPECT_RESULT_AND_TIMESTAMP_at_view_time",
+        "source_authority_label"
+      ],
+      "rollback_or_abort_requirement": "NOT_APPLICABLE",
+      "refusal_conditions": [
+        "command resolves to UNKNOWN",
+        "authority_domain == unknown / conflicting",
+        "source_provenance missing"
+      ],
+      "allowed_sources": [
+        "Command Palette Inspect outcome",
+        "Contextual surface read-only display",
+        "Overview drift summary read-only"
+      ],
+      "forbidden_behaviors": [
+        "primary action button",
+        "silent refresh that mutates state",
+        "any execute affordance"
+      ]
+    },
+    "T0i": {
+      "tier_id": "T0i",
+      "action_class": "INSPECT_ACTION",
+      "execution_allowed": true,
+      "confirmation_required": "EXPLICIT_INVOKE_NO_DEFAULTS_ON",
+      "required_preflight_fields": [
+        "command",
+        "resolved_params",
+        "cwd",
+        "worktree_metadata",
+        "authority_domain",
+        "canonical_writer",
+        "safety_class",
+        "gate_tier",
+        "source_provenance",
+        "surface_origin",
+        "created_at_utc"
+      ],
+      "required_post_action_proof": [
+        "command_path",
+        "exit_or_result_summary",
+        "source_authority"
+      ],
+      "rollback_or_abort_requirement": "NOT_APPLICABLE_INSPECTION_HAS_NO_WRITE",
+      "refusal_conditions": [
+        "command resolves to UNKNOWN",
+        "any required parameter resolves to UNKNOWN",
+        "cwd resolves to UNKNOWN or outside worktree",
+        "authority_domain == unknown / conflicting",
+        "canonical_writer == UNKNOWN",
+        "activation_status non-ACTIVE",
+        "stale palette_index_row_hash"
+      ],
+      "allowed_sources": [
+        "Command Palette Inspect outcome (executable inspect)",
+        "Settings/Admin/Runtime drift inspector (read-only)",
+        "Contextual surface inspect drawer"
+      ],
+      "forbidden_behaviors": [
+        "default-on polling with side effects",
+        "success chip before result exists",
+        "auto-invoke on row hover or selection"
+      ]
+    },
+    "T1": {
+      "tier_id": "T1",
+      "action_class": "CONFIRM_REQUIRED_GENERATED_ARTIFACT",
+      "execution_allowed": true,
+      "confirmation_required": "EXPLICIT_BUTTON",
+      "required_preflight_fields": [
+        "command",
+        "resolved_params",
+        "cwd",
+        "worktree_metadata",
+        "authority_domain",
+        "canonical_writer",
+        "safety_class",
+        "gate_tier",
+        "side_effects",
+        "expected_proof",
+        "rollback_or_abort",
+        "source_provenance",
+        "palette_request_id",
+        "palette_index_row_hash",
+        "surface_origin",
+        "operator_intent",
+        "created_at_utc",
+        "output_target_path",
+        "overwrite_behavior"
+      ],
+      "required_post_action_proof": [
+        "ARTIFACT_AND_CHECKSUM",
+        "artifact_path",
+        "exit_code_when_runner_invoked"
+      ],
+      "rollback_or_abort_requirement": "ABORT_BEFORE_WRITE_ALLOWED; ROLLBACK_IF_WRITER_SUPPORTS",
+      "refusal_conditions": [
+        "any required preflight field UNKNOWN",
+        "output_target_path UNKNOWN",
+        "overwrite_behavior UNKNOWN when output exists",
+        "authority_domain == unknown / conflicting",
+        "canonical_writer == UNKNOWN",
+        "activation_status non-ACTIVE",
+        "expected_proof UNKNOWN",
+        "stale palette_index_row_hash"
+      ],
+      "allowed_sources": [
+        "Command Palette OpenSafeActionGate",
+        "Contextual surface action that produces an artifact"
+      ],
+      "forbidden_behaviors": [
+        "one-click primary button (must be confirm-required)",
+        "auto-run on selection",
+        "success state without artifact proof"
+      ]
+    },
+    "T2": {
+      "tier_id": "T2",
+      "action_class": "CONFIRM_REQUIRED_CONFIG_MUTATION",
+      "execution_allowed": true,
+      "confirmation_required": "EXPLICIT_BUTTON_WITH_DIFF_ACK",
+      "required_preflight_fields": [
+        "command",
+        "resolved_params",
+        "cwd",
+        "worktree_metadata",
+        "authority_domain",
+        "canonical_writer",
+        "safety_class",
+        "gate_tier",
+        "side_effects",
+        "expected_proof",
+        "rollback_or_abort",
+        "source_provenance",
+        "palette_request_id",
+        "palette_index_row_hash",
+        "surface_origin",
+        "operator_intent",
+        "created_at_utc",
+        "config_target_file_or_service",
+        "effective_config_diff_or_unknown_flag"
+      ],
+      "required_post_action_proof": [
+        "CONFIG_DIFF_OR_STATUS",
+        "before_after_status",
+        "command_exit_code"
+      ],
+      "rollback_or_abort_requirement": "EXPLICIT_ROLLBACK_PATH_OR_BLOCK",
+      "refusal_conditions": [
+        "any required preflight field UNKNOWN",
+        "config target UNKNOWN",
+        "effective_config_diff UNKNOWN AND operator did not explicitly accept UNKNOWN diff",
+        "rollback path UNKNOWN",
+        "authority_domain == unknown / conflicting",
+        "canonical_writer == UNKNOWN",
+        "activation_status non-ACTIVE",
+        "stale palette_index_row_hash"
+      ],
+      "allowed_sources": [
+        "Command Palette OpenSafeActionGate",
+        "Settings/Admin/Runtime: Routing/Profile/Env/Hooks/Runtime/MCP-config flows"
+      ],
+      "forbidden_behaviors": [
+        "implicit defaults that change runtime configuration on selection",
+        "auto-confirm on diff display",
+        "hide UNKNOWN diff state"
+      ]
+    },
+    "T3": {
+      "tier_id": "T3",
+      "action_class": "CONFIRM_REQUIRED_WRITE_LOCAL",
+      "execution_allowed": true,
+      "confirmation_required": "EXPLICIT_BUTTON",
+      "required_preflight_fields": [
+        "command",
+        "resolved_params",
+        "cwd",
+        "worktree_metadata",
+        "authority_domain",
+        "canonical_writer",
+        "safety_class",
+        "gate_tier",
+        "side_effects",
+        "expected_proof",
+        "rollback_or_abort",
+        "source_provenance",
+        "palette_request_id",
+        "palette_index_row_hash",
+        "surface_origin",
+        "operator_intent",
+        "created_at_utc",
+        "write_target_path",
+        "side_effect_classification"
+      ],
+      "required_post_action_proof": [
+        "FILESYSTEM_DIFF_OR_EXIT_CODE",
+        "filesystem_path",
+        "action_verb",
+        "result",
+        "exit_code"
+      ],
+      "rollback_or_abort_requirement": "EXPLICIT_ROLLBACK_PATH_OR_BLOCK_FOR_DESTRUCTIVE_WRITES",
+      "refusal_conditions": [
+        "any required preflight field UNKNOWN",
+        "write_target_path UNKNOWN or outside worktree",
+        "side_effect_classification UNKNOWN",
+        "rollback_or_abort UNKNOWN for destructive writes",
+        "authority_domain == unknown / conflicting",
+        "canonical_writer == UNKNOWN",
+        "activation_status non-ACTIVE",
+        "dirty worktree if tier requires clean state",
+        "stale palette_index_row_hash"
+      ],
+      "allowed_sources": [
+        "Command Palette OpenSafeActionGate",
+        "Contextual surface action that writes locally"
+      ],
+      "forbidden_behaviors": [
+        "implicit defaults that change side effects",
+        "destructive write without rollback path",
+        "writes outside the resolved worktree"
+      ]
+    },
+    "T4": {
+      "tier_id": "T4",
+      "action_class": "CONFIRM_REQUIRED_WRITE_REMOTE",
+      "execution_allowed": false,
+      "confirmation_required": "EXPLICIT_BUTTON_PLUS_TYPED_CONFIRMATION",
+      "required_preflight_fields": [
+        "command",
+        "resolved_params",
+        "cwd",
+        "worktree_metadata",
+        "authority_domain",
+        "canonical_writer",
+        "safety_class",
+        "gate_tier",
+        "side_effects",
+        "expected_proof",
+        "rollback_or_abort",
+        "source_provenance",
+        "palette_request_id",
+        "palette_index_row_hash",
+        "surface_origin",
+        "operator_intent",
+        "created_at_utc",
+        "remote_target_endpoint",
+        "remote_account_or_context",
+        "idempotency_key",
+        "remote_mutation_policy_reference"
+      ],
+      "required_post_action_proof": [
+        "REMOTE_RECEIPT",
+        "remote_endpoint",
+        "remote_actor",
+        "remote_status",
+        "captured_response_excerpt_when_governance_allows"
+      ],
+      "rollback_or_abort_requirement": "BLOCKED_BY_DEFAULT_UNTIL_REMOTE_MUTATION_POLICY_APPROVES",
+      "refusal_conditions": [
+        "any required preflight field UNKNOWN",
+        "remote_target_endpoint UNKNOWN",
+        "remote_account_or_context UNKNOWN",
+        "idempotency_key UNKNOWN",
+        "remote_mutation_policy_reference missing or not approved",
+        "typed_confirmation not entered or does not match required token",
+        "authority_domain == unknown / conflicting",
+        "canonical_writer == UNKNOWN",
+        "activation_status non-ACTIVE",
+        "stale palette_index_row_hash"
+      ],
+      "allowed_sources": [
+        "Command Palette OpenSafeActionGate (only when remote-mutation policy is in scope)",
+        "Settings/Admin/Runtime: only flows whose policy approves T4"
+      ],
+      "forbidden_behaviors": [
+        "remote mutation without remote-mutation policy",
+        "remote mutation without typed confirmation",
+        "T4 from a contextual surface that has not loaded the policy",
+        "any execution in this packet (this packet is contract-only)"
+      ]
+    },
+    "T5": {
+      "tier_id": "T5",
+      "action_class": "CONFIRM_REQUIRED_START_STOP_SERVICE",
+      "execution_allowed": true,
+      "confirmation_required": "EXPLICIT_BUTTON_PLUS_TYPED_CONFIRMATION",
+      "required_preflight_fields": [
+        "command",
+        "resolved_params",
+        "cwd",
+        "worktree_metadata",
+        "authority_domain",
+        "canonical_writer",
+        "safety_class",
+        "gate_tier",
+        "side_effects",
+        "expected_proof",
+        "rollback_or_abort",
+        "source_provenance",
+        "palette_request_id",
+        "palette_index_row_hash",
+        "surface_origin",
+        "operator_intent",
+        "created_at_utc",
+        "service_id",
+        "service_scope",
+        "expected_state_transition",
+        "pre_state_snapshot"
+      ],
+      "required_post_action_proof": [
+        "SERVICE_STATUS_AND_LOG",
+        "post_state_status",
+        "log_excerpt",
+        "exit_code"
+      ],
+      "rollback_or_abort_requirement": "ABORT_BEFORE_TRANSITION_ALLOWED; EXPLICIT_REVERT_PATH_REQUIRED",
+      "refusal_conditions": [
+        "any required preflight field UNKNOWN",
+        "service_id UNKNOWN",
+        "expected_state_transition UNKNOWN",
+        "pre_state_snapshot missing",
+        "revert path UNKNOWN",
+        "typed_confirmation not entered or does not match service id",
+        "authority_domain == unknown / conflicting",
+        "canonical_writer == UNKNOWN",
+        "activation_status non-ACTIVE",
+        "stale palette_index_row_hash"
+      ],
+      "allowed_sources": [
+        "Settings/Admin/Runtime: Service startup/lifecycle (admin)",
+        "Command Palette OpenSafeActionGate when placement is Services and confirmation flow allows"
+      ],
+      "forbidden_behaviors": [
+        "service start/stop without typed service-id confirmation",
+        "implicit revert assumption",
+        "treating start as proof of running state without log evidence"
+      ]
+    },
+    "T6": {
+      "tier_id": "T6",
+      "action_class": "CONFIRM_REQUIRED_EXECUTION_HANDOFF",
+      "execution_allowed": true,
+      "confirmation_required": "EXPLICIT_BUTTON_PLUS_TYPED_CONFIRMATION",
+      "required_preflight_fields": [
+        "command",
+        "resolved_params",
+        "cwd",
+        "worktree_metadata",
+        "authority_domain",
+        "canonical_writer",
+        "safety_class",
+        "gate_tier",
+        "side_effects",
+        "expected_proof",
+        "rollback_or_abort",
+        "source_provenance",
+        "palette_request_id",
+        "palette_index_row_hash",
+        "surface_origin",
+        "operator_intent",
+        "created_at_utc",
+        "tp_or_task_id",
+        "runner_id",
+        "branch",
+        "output_or_proof_target",
+        "tp_gate_present"
+      ],
+      "required_post_action_proof": [
+        "TP_RUNNER_PROOF",
+        "exit_code",
+        "proof_path",
+        "validation_summary"
+      ],
+      "rollback_or_abort_requirement": "ABORT_BEFORE_RUNNER_STARTS_ALLOWED; IN_FLIGHT_CANCELLATION_VIA_RUNNER_AUTHORITY",
+      "refusal_conditions": [
+        "any required preflight field UNKNOWN",
+        "tp_or_task_id UNKNOWN",
+        "runner_id UNKNOWN",
+        "branch UNKNOWN",
+        "output_or_proof_target UNKNOWN",
+        "tp_gate_present == false",
+        "typed_confirmation not entered or does not match tp_or_task_id",
+        "authority_domain == unknown / conflicting",
+        "canonical_writer == UNKNOWN",
+        "activation_status non-ACTIVE",
+        "stale palette_index_row_hash"
+      ],
+      "allowed_sources": [
+        "Command Palette OpenSafeActionGate for execution handoff rows (Implementer/Palette)",
+        "Implementer contextual surface that originates a TP run"
+      ],
+      "forbidden_behaviors": [
+        "TP run without TP gate present",
+        "TP run without typed TP id confirmation",
+        "treat handoff as proof of completion",
+        "auto-cancel without routing through runner authority"
+      ]
+    },
+    "TX": {
+      "tier_id": "TX",
+      "action_class": "BLOCKED_IN_COCKPIT",
+      "execution_allowed": false,
+      "confirmation_required": "NONE_NEVER_EXECUTABLE",
+      "required_preflight_fields": [
+        "command",
+        "authority_domain",
+        "safety_class",
+        "gate_tier",
+        "block_reason",
+        "replacement_command_or_NOT_APPLICABLE",
+        "required_external_workflow_or_NOT_APPLICABLE",
+        "source_provenance",
+        "surface_origin",
+        "created_at_utc"
+      ],
+      "required_post_action_proof": [
+        "BLOCK_REASON_RECORD",
+        "replacement_command_if_any",
+        "evidence_of_attempted_selection"
+      ],
+      "rollback_or_abort_requirement": "NOT_APPLICABLE_NEVER_EXECUTES",
+      "refusal_conditions": [
+        "block_reason UNKNOWN",
+        "any presentation that implies the row is executable in Cockpit"
+      ],
+      "allowed_sources": [
+        "Command Palette ShowBlockedReason outcome",
+        "Unknown/Drift Queue blocked-row visibility"
+      ],
+      "forbidden_behaviors": [
+        "button",
+        "confirm modal that still executes",
+        "keyboard shortcut",
+        "any path from TX to confirm affordance"
+      ]
+    },
+    "TU": {
+      "tier_id": "TU",
+      "action_class": "UNKNOWN",
+      "execution_allowed": false,
+      "confirmation_required": "NONE_NEVER_EXECUTABLE",
+      "required_preflight_fields": [
+        "command_or_UNKNOWN",
+        "authority_domain_or_UNKNOWN",
+        "safety_class",
+        "gate_tier",
+        "unknown_reason",
+        "required_investigation_packet_or_UNKNOWN",
+        "source_provenance",
+        "surface_origin",
+        "created_at_utc"
+      ],
+      "required_post_action_proof": [
+        "INVESTIGATION_PACKET_REFERENCE",
+        "unknown_reason_record"
+      ],
+      "rollback_or_abort_requirement": "NOT_APPLICABLE_NEVER_EXECUTES",
+      "refusal_conditions": [
+        "unknown_reason UNKNOWN",
+        "any reclassification attempt inside the gate",
+        "any presentation that implies the row is executable in Cockpit"
+      ],
+      "allowed_sources": [
+        "Command Palette ShowUnknownDriftReason outcome",
+        "Unknown/Drift Queue visibility surface"
+      ],
+      "forbidden_behaviors": [
+        "execution affordance",
+        "success or readiness claim",
+        "in-gate reclassification (requires a packet)"
+      ]
+    }
+  }
+}
