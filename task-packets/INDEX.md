@@ -55,6 +55,7 @@ A packet is superseded by another packet
 | TP-DMX-AGENTS-CODEX-ENDTOEND-0001 | Agent Guidance | Make Codex execute TP lifecycle end-to-end by default | Ready | N/A |
 | TP-DMX-COMPOSE-RESTORE-001 | Infra | Restore canonical Docker Compose authority | Ready | N/A |
 | DMX-COCKPIT-STATIC-002 | UI Cockpit | Expose deterministic static cockpit renderer through guarded CLI wrapper | Merged (PR #528) | N/A |
+| TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001 | UI Cockpit | Audit and prepare Cockpit PR stack 568-571 plus PR 573 evidence for safe consolidation | Active | N/A |
 | TP-DMX-COCKPIT-RUNTIME-RENDER-001 | UI Cockpit | Wire runtime renderer primitives to accepted Cockpit IA package contract | Active | N/A |
 | TP-DMX-COCKPIT-SETTINGS-RUNTIME-001 | UI Cockpit | Wire Settings/Admin/Runtime primitive surface to runtime renderer | Active | N/A |
 | TP-DMX-COCKPIT-UNKNOWN-DRIFT-001 | UI Cockpit | Wire Unknown / Drift Queue primitive surface to runtime renderer | Active | N/A |
