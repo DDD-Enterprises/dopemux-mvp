@@ -127,7 +127,8 @@ if __name__ == "__main__":
     async def health_check(_request):
         return JSONResponse({"status": "ok"})
 
-    app = mcp.sse_app()
+    # FastMCP v3 removed mcp.sse_app(); use http_app(transport="sse") instead.
+    app = mcp.http_app(transport="sse")
     app.routes.append(Route("/health", health_check))
 
     uvicorn.run(app, host=os.getenv("MCP_SERVER_HOST", "127.0.0.1"), port=port)
