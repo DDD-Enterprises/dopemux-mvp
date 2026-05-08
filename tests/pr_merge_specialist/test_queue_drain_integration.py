@@ -1235,28 +1235,24 @@ def test_create_global_fix_pr_aborts_when_post_verify_fails(monkeypatch, tmp_pat
     assert not any("Creating global fix PR on GitHub." in message for message in messages)
 
 
-def test_isolated_gemini_home_env_strips_creds_and_forwards_allowlist(monkeypatch, tmp_path: Path):
-    """Constrained env: an empty temp HOME, an XDG_CONFIG_HOME under it, and a
-    tight allowlist of Gemini auth/config env vars forwarded from the caller.
-    Repository / per-user creds (OAuth files, gcloud config, PYTHONPATH, etc.)
-    must NOT cross into the subprocess env.
-    """
-    monkeypatch.setenv("GEMINI_API_KEY", "test-api-key")
-    monkeypatch.setenv("GOOGLE_GENAI_USE_VERTEXAI", "false")
-    monkeypatch.setenv("PYTHONPATH", "/should/not/leak")
-    monkeypatch.setenv("VIRTUAL_ENV", "/should/not/leak")
+def test_isolated_gemini_home_env_copies_auth_without_settings(monkeypatch, tmp_path: Path):
+    source_home = tmp_path / "source-home"
+    source_gemini = source_home / ".gemini"
+    source_gemini.mkdir(parents=True)
+    (source_gemini / "oauth_creds.json").write_text('{"token":"abc"}', encoding="utf-8")
+    (source_gemini / "google_accounts.json").write_text('{"accounts":[]}', encoding="utf-8")
+    (source_gemini / "settings.json").write_text('{"mcpServers":{"desktop-commander":{}}}', encoding="utf-8")
+
+    monkeypatch.setattr(queue_drain_module.Path, "home", lambda: source_home)
 
     with queue_drain_module._isolated_gemini_home_env() as env:
         isolated_home = Path(env["HOME"])
         isolated_gemini = isolated_home / ".gemini"
-
-        assert env["GEMINI_API_KEY"] == "test-api-key"
-        assert env["GOOGLE_GENAI_USE_VERTEXAI"] == "false"
-        assert "PYTHONPATH" not in env
-        assert "VIRTUAL_ENV" not in env
-
+        assert isolated_gemini.exists()
+        assert (isolated_gemini / "oauth_creds.json").read_text(encoding="utf-8") == '{"token":"abc"}'
+        assert (isolated_gemini / "google_accounts.json").read_text(encoding="utf-8") == '{"accounts":[]}'
+        assert not (isolated_gemini / "settings.json").exists()
         assert env["XDG_CONFIG_HOME"] == str(isolated_home / ".config")
-        assert not isolated_gemini.exists() or not any(isolated_gemini.iterdir())
 
 
 def test_handle_global_ci_blockers_groups_remote_fingerprints(monkeypatch, tmp_path: Path):

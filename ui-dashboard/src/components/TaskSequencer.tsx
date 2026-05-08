@@ -239,13 +239,13 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   }, [tasks]);
 
   const finishTimeLabel = useMemo(() => {
-    if (totalRemainingMinutes === 0) return '';
+    if (isComplete || totalRemainingMinutes <= 0) return '';
     // Use fractional minutes to ensure a stable finish time that only moves with taskTimer
     const finishDate = new Date(Date.now() + totalRemainingMinutes * 60000);
     const hh = finishDate.getHours().toString().padStart(2, '0');
     const mm = finishDate.getMinutes().toString().padStart(2, '0');
     return `Finish at ${hh}:${mm}`;
-  }, [totalRemainingMinutes]);
+  }, [totalRemainingMinutes, isComplete]);
 
   return (
     <Paper
@@ -628,6 +628,8 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                 alignItems="flex-start"
                 aria-current={isCurrent ? 'step' : undefined}
                 sx={{
+                  position: 'relative',
+                  zIndex: 1,
                   bgcolor: isCurrent ? alpha(brandTokens.colors.ritualCyan, 0.08) : 'transparent',
                   borderRadius: 2,
                   border: isCurrent
