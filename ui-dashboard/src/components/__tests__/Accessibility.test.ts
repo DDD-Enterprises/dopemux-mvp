@@ -74,13 +74,13 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('aria-label={getTimerAriaLabel(taskTimer)}');
   // Total remaining duration
   expect(content).toContain('role="status"');
-  expect(content).toMatch(/aria-label=\{\s*displayRemainingMinutes === 0\s*\?\s*'Task sequence complete'\s*:\s*`\$\{getDurationAriaLabel\(displayRemainingMinutes\)\}\. Estimated completion: \$\{finishTimeLabel\}`\s*\}/);
+  expect(content).toMatch(/aria-label=\{\s*isComplete\s*\?\s*'Task sequence complete'\s*:\s*`\$\{completedCount\}\/\$\{totalCount\} tasks completed\. \$\{getDurationAriaLabel\(displayRemainingMinutes\)\}\.\$\{finishTimeLabel\s*\?\s*` Estimated completion: \$\{finishTimeLabel\}`\s*:\s*''\}`\s*\}/);
   expect(content).toMatch(/<Tooltip[^>]*title="Real-time task synchronization active"[^>]*arrow/);
   expect(content).toContain('aria-label="Real-time task synchronization active"');
   expect(content).toContain('aria-current={isCurrent ? \'step\' : undefined}');
   // Total remaining duration display and completed-state accessibility
   expect(content).toContain('role="status"');
-  expect(content).toMatch(/aria-label=\{\s*displayRemainingMinutes === 0\s*\?\s*'Task sequence complete'\s*:\s*`\$\{getDurationAriaLabel\(displayRemainingMinutes\)\}\. Estimated completion: \$\{finishTimeLabel\}`\s*\}/);
+  expect(content).toMatch(/aria-label=\{\s*isComplete\s*\?\s*'Task sequence complete'\s*:\s*`\$\{completedCount\}\/\$\{totalCount\} tasks completed\. \$\{getDurationAriaLabel\(displayRemainingMinutes\)\}\.\$\{finishTimeLabel\s*\?\s*` Estimated completion: \$\{finishTimeLabel\}`\s*:\s*''\}`\s*\}/);
   expect(content).toContain('aria-label="Ritual Complete: All tasks finished"');
   expect(content).toContain('const headerRef = useRef<HTMLHeadingElement>(null);');
   expect(content).toContain('ref={headerRef}');
@@ -119,9 +119,9 @@ test('TaskSequencer.tsx has accessible timer with pluralization', () => {
 test('TaskSequencer.tsx displays total remaining duration with accessibility', () => {
   const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
   expect(content).toContain('const totalRemainingMinutes = useMemo(() =>');
-  expect(content).toMatch(/aria-label=\{\s*displayRemainingMinutes === 0\s*\?\s*'Task sequence complete'\s*:\s*`\$\{getDurationAriaLabel\(displayRemainingMinutes\)\}\. Estimated completion: \$\{finishTimeLabel\}`\s*\}/);
+  expect(content).toMatch(/aria-label=\{\s*isComplete\s*\?\s*'Task sequence complete'\s*:\s*`\$\{completedCount\}\/\$\{totalCount\} tasks completed\. \$\{getDurationAriaLabel\(displayRemainingMinutes\)\}\.\$\{finishTimeLabel\s*\?\s*` Estimated completion: \$\{finishTimeLabel\}`\s*:\s*''\}`\s*\}/);
   expect(content).toContain('tabIndex={0}');
-  expect(content).toMatch(/<Tooltip\s+title=\{\s*displayRemainingMinutes === 0\s*\?\s*'Task sequence complete'\s*:\s*`\$\{getDurationAriaLabel\(displayRemainingMinutes\)\}\s+\(\$\{finishTimeLabel\}\)`\s*\}\s+arrow\s*>/);
+  expect(content).toMatch(/<Tooltip\s+title=\{\s*isComplete\s*\?\s*'Task sequence complete'\s*:\s*`\$\{completedCount\}\/\$\{totalCount\} tasks • \$\{getDurationAriaLabel\(displayRemainingMinutes\)\}\$\{finishTimeLabel\s*\?\s*` \(\$\{finishTimeLabel\}\)`\s*:\s*''\}`\s*\}\s+arrow\s*>/);
 });
 
 test('App.tsx has accessible header chips and skip link', () => {
