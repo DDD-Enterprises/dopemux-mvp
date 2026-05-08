@@ -321,13 +321,27 @@ def _instance_id(worktree_path: str) -> str:
 
 
 def _port_for(worktree_path: str, base_port: int) -> int:
-    """Deterministic port within `[base, base+99]` keyed by worktree path."""
+    """Deterministic port within `[base, base+99]` keyed by worktree path.
+
+    The 100-slot ceiling means inter-worktree port collisions become probable
+    by birthday-paradox math past ~12 active worktrees and likely past ~50.
+    `_allocate_ports` only catches *intra*-worktree collisions; cross-worktree
+    collisions surface at runtime (port already in use). Widen the modulus
+    here and bump `default_port_base` spacing in mcp_catalog.yaml if you need
+    more headroom.
+    """
     offset = int(_instance_id(worktree_path), 16) % 100
     return base_port + offset
 
 
 def _port_is_free(port: int, host: str = "127.0.0.1") -> bool:
-    """True if nothing is currently bound on (host, port)."""
+    """True if nothing is currently bound on (host, port).
+
+    Note: `doctor` inverts this (`not _port_is_free(port)`) because a *listening*
+    port means the worktree's MCP server is actually running — the opposite of
+    what `init`/`list` want, which is to confirm a port is *available* before
+    claiming it.
+    """
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(0.5)
     try:
