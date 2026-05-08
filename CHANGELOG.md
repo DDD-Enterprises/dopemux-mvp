@@ -27,6 +27,7 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 - CI now includes wrapper-authority coverage, interactive import smoke, and the production `brand_lint.py` gate.
 
 ### Fixed
+- Claude security review automation now resolves the repository-specific scan and false-positive instruction files referenced by `security-review.yml` and `ci-complete.yml`, preventing missing-path failures during AI security analysis.
 - Restored `compose.yml` as the canonical hand-authored Docker Compose file, removed the stale root unified compose variant, and hardened compose guard checks against future root-level compose drift.
 - Validation-only PRs are no longer shown as queued-for-merge before local verification is complete.
 - A single failed speculative rebase or push no longer aborts the rest of the train pass.
