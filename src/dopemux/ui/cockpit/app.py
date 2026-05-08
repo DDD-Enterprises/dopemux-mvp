@@ -7,9 +7,7 @@ chrome footer. It performs no live writes and no PM mutations.
 
 from __future__ import annotations
 
-from textual.app import App, ComposeResult
-from textual.containers import Vertical
-from textual.widgets import Footer, Header, Static
+from typing import Any
 
 from .render import (
     TOO_SMALL_MESSAGE,
@@ -18,11 +16,28 @@ from .render import (
     viewport_supported,
 )
 
+try:
+    from textual.app import App, ComposeResult
+    from textual.containers import Vertical
+    from textual.widgets import Footer, Header, Static
+except ModuleNotFoundError as exc:
+    App = object
+    ComposeResult = Any
+    Vertical = None
+    Footer = None
+    Header = None
+    Static = None
+    _TEXTUAL_IMPORT_ERROR: ModuleNotFoundError | None = exc
+else:
+    _TEXTUAL_IMPORT_ERROR = None
 
-class CockpitModeBar(Static):
+
+class CockpitModeBar(Static if Static is not None else object):
     """Top-level mode bar (PM, Implementer, Overview, Services, Events)."""
 
     def __init__(self, active: str = "PM") -> None:
+        if Static is None:
+            raise RuntimeError("[BLOCKER] textual unavailable for interactive cockpit")
         super().__init__(id="cockpit-mode-bar")
         self._active = active
 
@@ -36,10 +51,12 @@ class CockpitModeBar(Static):
         return " | ".join(cells)
 
 
-class CockpitPMScreen(Static):
+class CockpitPMScreen(Static if Static is not None else object):
     """Static PM render. Reuses the deterministic render module."""
 
     def __init__(self, *, cols: int, rows: int) -> None:
+        if Static is None:
+            raise RuntimeError("[BLOCKER] textual unavailable for interactive cockpit")
         super().__init__(id="cockpit-pm-screen")
         self._cols = cols
         self._rows = rows
@@ -59,11 +76,17 @@ class CockpitApp(App):
     ]
 
     def __init__(self, *, cols: int = 120, rows: int = 40) -> None:
+        if _TEXTUAL_IMPORT_ERROR is not None:
+            raise RuntimeError("[BLOCKER] textual unavailable for interactive cockpit")
         super().__init__()
         self._cols = cols
         self._rows = rows
 
     def compose(self) -> ComposeResult:
+        assert Header is not None
+        assert Static is not None
+        assert Footer is not None
+        assert Vertical is not None
         yield Header()
         if not viewport_supported(self._cols, self._rows):
             yield Static(TOO_SMALL_MESSAGE, id="cockpit-too-small")

@@ -1,0 +1,316 @@
+{
+  "packet_id": "TP-DMX-COCKPIT-MAIN-STATE-RECON-001",
+  "as_of_utc": "2026-05-07",
+  "status_legend": {
+    "landed_status": ["LANDED_ON_MAIN", "LANDED_ON_PACK_ONLY", "PARTIAL_ON_MAIN", "NOT_PRESENT_ON_MAIN", "STALE_ON_MAIN", "UNKNOWN", "NOT_PRESENT"],
+    "open_pr_status": ["NO_OPEN_PR", "OPEN_RELEVANT", "OPEN_STACKED", "SUPERSEDED", "STALE", "CONFLICTING", "BLOCKED_BY_CHECKS", "BLOCKED_BY_REVIEW", "NEEDS_HUMAN_DECISION", "OPEN_UNRELATED"]
+  },
+  "rows": [
+    {
+      "packet_id": "TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA",
+      "expected_role": "parent series anchor for PRs 568-571",
+      "expected_pr": null,
+      "expected_artifacts": [
+        "pack branch carrying merged PRs 568-571",
+        "out/cockpit-pack-remediation/** if authored",
+        "task-packets/generated/<series>.json"
+      ],
+      "landed_on_main": {
+        "branch_present": false,
+        "src_files_present": false,
+        "tests_present": false,
+        "packet_json_present": false,
+        "out_dir_present": false,
+        "proof_dir_present": false
+      },
+      "landed_on_pack": {
+        "branch_head_sha": "b173efd83c871c30f2bd86530921c866d08e7e45",
+        "out_dir_present": true,
+        "out_dir_path": "out/cockpit-pack-remediation/",
+        "packet_json_present": false,
+        "proof_dir_present": false
+      },
+      "landed_status": "LANDED_ON_PACK_ONLY",
+      "open_pr_status": "OPEN_STACKED",
+      "open_pr_refs": [572, 573],
+      "evidence": "All four cockpit feature PRs (568-571) are merge-base ancestors of pack but not of origin/main. No pack->main merge commit observed."
+    },
+    {
+      "packet_id": "TP-DMX-COCKPIT-RUNTIME-RENDER-001",
+      "expected_role": "wire runtime renderer primitives to IA package",
+      "expected_pr": 568,
+      "expected_artifacts": [
+        "task-packets/generated/TP-DMX-COCKPIT-RUNTIME-RENDER-001.json",
+        "out/cockpit-runtime-render/**",
+        "proof/cockpit-runtime-render/**"
+      ],
+      "landed_on_main": {
+        "src_present": false,
+        "tests_present": false,
+        "packet_json_present": false,
+        "out_dir_present": false,
+        "proof_dir_present": false
+      },
+      "landed_on_pack": {
+        "merge_commit": "39ad991f72dd58b22944146a38649ac1b0de04fc",
+        "packet_json_present": true,
+        "out_dir_present": true,
+        "proof_dir_present": true
+      },
+      "landed_status": "LANDED_ON_PACK_ONLY",
+      "open_pr_status": "NO_OPEN_PR",
+      "open_pr_refs": [],
+      "evidence": "PR 568 merged into pack; merge commit not in origin/main."
+    },
+    {
+      "packet_id": "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001",
+      "expected_role": "wire settings runtime primitives",
+      "expected_pr": 569,
+      "expected_artifacts": [
+        "task-packets/generated/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001.json",
+        "out/cockpit-settings-runtime/**",
+        "proof/cockpit-settings-runtime/**"
+      ],
+      "landed_on_main": {
+        "src_present": false,
+        "tests_present": false,
+        "packet_json_present": false,
+        "out_dir_present": false,
+        "proof_dir_present": false
+      },
+      "landed_on_pack": {
+        "merge_commit": "a4ca22da678f0578895eb237ac270041811d80d4",
+        "packet_json_present": true,
+        "out_dir_present": true,
+        "proof_dir_present": true
+      },
+      "landed_status": "LANDED_ON_PACK_ONLY",
+      "open_pr_status": "NO_OPEN_PR",
+      "open_pr_refs": [],
+      "evidence": "PR 569 merged into pack; merge commit not in origin/main. PR 572 records residual Settings/Admin per-row tier mapping and remote-mutation policy risks."
+    },
+    {
+      "packet_id": "TP-DMX-COCKPIT-UNKNOWN-DRIFT-001",
+      "expected_role": "wire unknown drift queue primitives",
+      "expected_pr": 570,
+      "expected_artifacts": [
+        "task-packets/generated/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001.json",
+        "out/cockpit-unknown-drift/**",
+        "proof/cockpit-unknown-drift/**"
+      ],
+      "landed_on_main": {
+        "src_present": false,
+        "tests_present": false,
+        "packet_json_present": false,
+        "out_dir_present": false,
+        "proof_dir_present": false
+      },
+      "landed_on_pack": {
+        "merge_commit": "7ff3ea44e31749ce75e653b81790ab6eba3ae65e",
+        "packet_json_present": true,
+        "out_dir_present": true,
+        "proof_dir_present": true
+      },
+      "landed_status": "LANDED_ON_PACK_ONLY",
+      "open_pr_status": "NO_OPEN_PR",
+      "open_pr_refs": [],
+      "evidence": "PR 570 merged into pack; merge commit not in origin/main. Per PR 573 body, the queue surface remains non-executing."
+    },
+    {
+      "packet_id": "TP-DMX-COCKPIT-INVENTORY-REGEN-001",
+      "expected_role": "regenerate current head inventory",
+      "expected_pr": 571,
+      "expected_artifacts": [
+        "task-packets/generated/TP-DMX-COCKPIT-INVENTORY-REGEN-001.json",
+        "out/cockpit-inventory-regen/**",
+        "proof/cockpit-inventory-regen/**"
+      ],
+      "landed_on_main": {
+        "src_present": false,
+        "tests_present": false,
+        "packet_json_present": false,
+        "out_dir_present": false,
+        "proof_dir_present": false
+      },
+      "landed_on_pack": {
+        "merge_commit": "b173efd83c871c30f2bd86530921c866d08e7e45",
+        "packet_json_present": true,
+        "out_dir_present": true,
+        "proof_dir_present": true
+      },
+      "landed_status": "LANDED_ON_PACK_ONLY",
+      "open_pr_status": "NO_OPEN_PR",
+      "open_pr_refs": [],
+      "evidence": "PR 571 merged into pack and is the pack HEAD. Per PR 572 body, the accepted inventory artifact still records prior upstream `current_head`; aggregate-only inventory precision and root authority/schema gap residual risks are documented."
+    },
+    {
+      "packet_id": "TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001",
+      "expected_role": "audit readiness of PRs 568-571 for consolidation",
+      "expected_pr": 572,
+      "expected_artifacts": [
+        "task-packets/generated/TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001.json",
+        "out/cockpit-merge-stack/**",
+        "proof/cockpit-merge-stack/README.md"
+      ],
+      "landed_on_main": {
+        "src_present": false,
+        "tests_present": false,
+        "packet_json_present": false,
+        "out_dir_present": false,
+        "proof_dir_present": false
+      },
+      "landed_on_pack": {
+        "merge_commit": null,
+        "packet_json_present": false,
+        "out_dir_present": false,
+        "proof_dir_present": false
+      },
+      "landed_status": "NOT_PRESENT_ON_MAIN",
+      "open_pr_status": "OPEN_STACKED",
+      "open_pr_refs": [572],
+      "evidence": "Authored only on PR 572 head branch; not yet merged into pack or main. The consolidation artifact does not audit PR 573."
+    },
+    {
+      "packet_id": "TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001",
+      "expected_role": "repair Cockpit runtime contract gaps in pre-existing runtime_contract.py",
+      "expected_pr": 573,
+      "expected_artifacts": [
+        "modifications to src/dopemux/ui/cockpit/runtime_contract.py (file pre-exists on pack)",
+        "modifications to tests/unit/dopemux/ui/cockpit/test_runtime_contract.py (file pre-exists on pack)",
+        "modifications to tests/unit/dopemux/ui/cockpit/test_inventory_regen_artifacts.py",
+        "task-packets/generated/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001.json",
+        "out/cockpit-runtime-contract-fidelity/**",
+        "proof/cockpit-runtime-contract-fidelity/**"
+      ],
+      "landed_on_main": {
+        "src_present": false,
+        "tests_present": false,
+        "packet_json_present": false,
+        "out_dir_present": false,
+        "proof_dir_present": false
+      },
+      "landed_on_pack": {
+        "merge_commit": null,
+        "packet_json_present": false,
+        "out_dir_present": false,
+        "proof_dir_present": false,
+        "note": "the runtime_contract.py file targeted by this PR exists on pack HEAD, but the PR's contract-fidelity modifications are not yet merged into pack"
+      },
+      "landed_status": "NOT_PRESENT_ON_MAIN",
+      "open_pr_status": "OPEN_RELEVANT",
+      "open_pr_refs": [573],
+      "evidence": "Authored only on PR 573 head branch (1236757c1); the diff status is M for runtime_contract.py and test files (modifications, not additions). Not merged into pack or main. PR 572 does not audit these modifications."
+    },
+    {
+      "packet_id": "TP-DMX-COCKPIT-MERGE-EXECUTE-001",
+      "expected_role": "operator-authorized execution packet to consolidate cockpit work into main",
+      "expected_pr": null,
+      "expected_artifacts": [
+        "task-packets/generated/TP-DMX-COCKPIT-MERGE-EXECUTE-001.json (referenced by parent packet)"
+      ],
+      "landed_on_main": {
+        "packet_json_present": false,
+        "out_dir_present": false,
+        "proof_dir_present": false
+      },
+      "landed_on_pack": {
+        "packet_json_present": false,
+        "out_dir_present": false,
+        "proof_dir_present": false
+      },
+      "landed_status": "NOT_PRESENT",
+      "open_pr_status": "NO_OPEN_PR",
+      "open_pr_refs": [],
+      "evidence": "Referenced under depends_on of this packet but no authored TP JSON exists on origin/main or origin/pack/cockpit-pack-remediate-006-ia. It is a referenced future packet."
+    },
+    {
+      "packet_id": "TP-DMX-COCKPIT-MAIN-STATE-RECON-001",
+      "expected_role": "this packet (artifact-only main vs open PR reconciliation)",
+      "expected_pr": null,
+      "expected_artifacts": [
+        "task-packets/generated/TP-DMX-COCKPIT-MAIN-STATE-RECON-001.json",
+        "out/cockpit-main-state-recon/TP-DMX-COCKPIT-MAIN-STATE-RECON-001/**",
+        "proof/cockpit-main-state-recon/TP-DMX-COCKPIT-MAIN-STATE-RECON-001/**"
+      ],
+      "landed_on_main": {
+        "packet_json_present": false,
+        "out_dir_present": false,
+        "proof_dir_present": false
+      },
+      "landed_on_pack": {
+        "packet_json_present": false,
+        "out_dir_present": false,
+        "proof_dir_present": false
+      },
+      "landed_status": "NOT_PRESENT_ON_MAIN",
+      "open_pr_status": "NO_OPEN_PR",
+      "open_pr_refs": [],
+      "evidence": "Newly authored on this packet's audit branch."
+    }
+  ],
+  "main_observed": {
+    "src_dopemux_ui_cockpit_files": [
+      "src/dopemux/ui/cockpit/__init__.py",
+      "src/dopemux/ui/cockpit/app.py",
+      "src/dopemux/ui/cockpit/render.py"
+    ],
+    "tests_cockpit": [
+      "tests/unit/dopemux/ui/cockpit/__init__.py",
+      "tests/unit/dopemux/ui/cockpit/test_cockpit_command.py",
+      "tests/unit/dopemux/ui/cockpit/test_cockpit_render.py"
+    ],
+    "out_cockpit_dirs": [],
+    "proof_cockpit_dirs": [
+      "proof/cockpit-pm-implementer-processing-pack-2026-04-24.proof.json (legacy file, predates pack series)"
+    ],
+    "task_packets_generated": [
+      "(empty: directory does not exist on origin/main)"
+    ]
+  },
+  "pack_observed": {
+    "src_dopemux_ui_cockpit_files": [
+      "src/dopemux/ui/cockpit/__init__.py",
+      "src/dopemux/ui/cockpit/app.py",
+      "src/dopemux/ui/cockpit/render.py",
+      "src/dopemux/ui/cockpit/runtime_contract.py"
+    ],
+    "runtime_contract_py_first_added_in": "ea640b47b (part of PR 568, ui(cockpit): wire runtime renderer primitives to IA package)",
+    "runtime_contract_py_modified_again_in": ["8599eae67 (PR 569)", "19b74d2ae (PR 570)"],
+    "tests_cockpit": [
+      "tests/unit/dopemux/ui/cockpit/__init__.py",
+      "tests/unit/dopemux/ui/cockpit/test_cockpit_command.py",
+      "tests/unit/dopemux/ui/cockpit/test_cockpit_render.py",
+      "tests/unit/dopemux/ui/cockpit/test_inventory_regen_artifacts.py",
+      "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+      "tests/unit/test_cockpit_cli.py"
+    ],
+    "out_cockpit_dirs": [
+      "out/cockpit-command-palette",
+      "out/cockpit-ia-reconcile",
+      "out/cockpit-inventory-regen",
+      "out/cockpit-pack-remediation",
+      "out/cockpit-runtime-render",
+      "out/cockpit-safe-actions",
+      "out/cockpit-settings-runtime",
+      "out/cockpit-unknown-drift"
+    ],
+    "proof_cockpit_dirs": [
+      "proof/cockpit-inventory-regen",
+      "proof/cockpit-runtime-render",
+      "proof/cockpit-settings-runtime",
+      "proof/cockpit-unknown-drift"
+    ],
+    "task_packets_generated": [
+      "task-packets/generated/TP-DMX-COCKPIT-INVENTORY-REGEN-001.json",
+      "task-packets/generated/TP-DMX-COCKPIT-RUNTIME-RENDER-001.json",
+      "task-packets/generated/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001.json",
+      "task-packets/generated/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001.json"
+    ]
+  },
+  "non_actions": [
+    "no merges performed",
+    "no rebases performed",
+    "no force pushes performed",
+    "no PR retargets performed"
+  ]
+}

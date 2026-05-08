@@ -1,0 +1,202 @@
+{
+  "packet_id": "TP-DMX-COCKPIT-COMMAND-PALETTE-001",
+  "task_id": "TP-DMX-COCKPIT-COMMAND-PALETTE-001",
+  "upstream_packet_id": "TP-DMX-COCKPIT-IA-RECONCILE-001",
+  "validation_state": "COMMAND_PALETTE_SPEC_PRIMITIVE_LEVEL_PRODUCED",
+  "ia_verdict": "CURRENT_COCKPIT_IA_NEEDS_MAJOR_RECONCILIATION",
+  "safe_for_claude_design": "NO",
+  "ready_for_claude_design": false,
+  "created_at_utc": "2026-05-04T00:00:00Z",
+  "worktree": "/Users/hue/code/dopemux-worktrees/dopemux-cockpit-ia-reconcile-001",
+  "branch": "audit/cockpit-ia-reconcile-001",
+  "head": "88c188d551719b60e6a560a04b6da2939b27d34b",
+  "origin_main": "88c188d551719b60e6a560a04b6da2939b27d34b",
+  "output_directory": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/",
+  "inputs": [
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/REVISED_COCKPIT_IA.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/COMMAND_PALETTE_SPEC.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SAFE_ACTION_GATE_SPEC.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SETTINGS_ADMIN_RUNTIME_SPEC.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/UNKNOWN_DRIFT_QUEUE_SPEC.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/COMMAND_MAPPING_DECISIONS.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/UPDATED_COVERAGE_DECISION.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/CLAUDE_DESIGN_BLOCKERS.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/OPUS_REMEDIATION_PLAN.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/PROOF.json",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/COMMAND_EXPOSURE_POLICY.json",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/SCREEN_CONTRACT_MATRIX.json",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/EVIDENCE_LEDGER.md"
+  ],
+  "outputs": [
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/COMMAND_PALETTE_CONTRACT.md",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/COMMAND_PALETTE_INDEX_SCHEMA.json",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/COMMAND_PALETTE_INDEX_SCHEMA.md",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_ROUTING_RULES.md",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_RESULT_ROW_SPEC.md",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_PARAMETER_PREVIEW_SPEC.md",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_BLOCKED_UNKNOWN_STATES.md",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_TO_SAFE_ACTION_GATE_HANDOFF.md",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_TO_SETTINGS_RUNTIME_HANDOFF.md",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_TO_UNKNOWN_DRIFT_HANDOFF.md",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_PROOF_REQUIREMENTS.md",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/CLAUDE_DESIGN_PALETTE_BLOCKERS.md",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PROOF.json",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/sha256sums.txt"
+  ],
+  "palette_contract": {
+    "broker_not_executor": true,
+    "silent_execution_allowed": false,
+    "unknown_execution_allowed": false,
+    "blocked_execution_allowed": false,
+    "auto_confirm_allowed": false,
+    "implicit_default_parameters_allowed": false,
+    "reclassification_inside_palette_allowed": false,
+    "sixth_top_level_mode": false,
+    "owns_authority": false,
+    "preserves_authority_per_row": true,
+    "fail_closed_on_unknown_required_field": true,
+    "preserves_provenance_end_to_end": true
+  },
+  "routing_outcomes": [
+    {
+      "name": "Inspect",
+      "executes": false,
+      "applies_to_classes": ["DISPLAY_ONLY", "INSPECT_ACTION", "EXTERNAL_ONLY", "COMMAND_PALETTE_ONLY"],
+      "downstream_target": "Inspect drawer in current mode"
+    },
+    {
+      "name": "CopyCommand",
+      "executes": false,
+      "applies_to_classes": ["EXTERNAL_ONLY", "DISPLAY_ONLY", "DEFINED_NOT_REGISTERED rows for documentation"],
+      "downstream_target": "Clipboard with evidence-stream log"
+    },
+    {
+      "name": "OpenSafeActionGate",
+      "executes": false,
+      "applies_to_classes": ["CONFIRM_REQUIRED", "COMMAND_PALETTE_ONLY"],
+      "applies_to_placements": ["PM", "Implementer", "Overview", "Services", "Events", "Command Palette"],
+      "downstream_target": "Safe Action Gate (TP-DMX-COCKPIT-SAFE-ACTIONS-001)"
+    },
+    {
+      "name": "OpenSettingsAdminRuntime",
+      "executes": false,
+      "applies_to_classes": ["DISPLAY_ONLY", "INSPECT_ACTION", "COMMAND_PALETTE_ONLY", "CONFIRM_REQUIRED"],
+      "applies_to_placements": ["Settings/Admin"],
+      "downstream_target": "Settings/Admin/Runtime surface (TP-DMX-COCKPIT-SETTINGS-RUNTIME-001), which then invokes Safe Action Gate"
+    },
+    {
+      "name": "ShowBlockedReason",
+      "executes": false,
+      "applies_to_classes": ["BLOCKED_IN_COCKPIT"],
+      "applies_to_activation_status": ["DEPRECATED_BLOCKED"],
+      "downstream_target": "Blocked-row inspector inside palette"
+    },
+    {
+      "name": "ShowUnknownDriftReason",
+      "executes": false,
+      "applies_to_classes": ["UNKNOWN"],
+      "applies_to_activation_status": ["DEFINED_NOT_REGISTERED", "OPTIONAL_IMPORT_UNKNOWN"],
+      "applies_to_authority_domain": ["unknown / conflicting"],
+      "applies_to_coverage": ["UNKNOWN", "MISSING (combined with another unknown)"],
+      "applies_to_proof_state": ["STALE_PROOF"],
+      "downstream_target": "Unknown / Drift Queue (TP-DMX-COCKPIT-UNKNOWN-DRIFT-001)"
+    }
+  ],
+  "blocked_claims": [
+    "READY_FOR_CLAUDE_DESIGN must not be claimed under this packet.",
+    "Final Cockpit screens for Claude Design remain blocked.",
+    "No runtime execution flows are approved.",
+    "No destructive action affordances are approved.",
+    "No remote-mutation flows are approved.",
+    "No reclassification of UNKNOWN, BLOCKED_IN_COCKPIT, DEFINED_NOT_REGISTERED, OPTIONAL_IMPORT_UNKNOWN, or DEPRECATED_BLOCKED rows is approved.",
+    "No package edits to the Cockpit HTML/CSS/React or ZIPs were performed in this packet.",
+    "No runtime code edits were performed in this packet.",
+    "No upload to Claude Design was performed.",
+    "No staging, commits, pushes, or PRs were performed.",
+    "Palette is not a sixth top-level authority mode.",
+    "Palette does not execute commands."
+  ],
+  "unknowns": [
+    "Carried command inventory was generated at HEAD af5c4627; this worktree is at 88c188d (origin/main 88c188d). Inventory was not regenerated in this packet.",
+    "Runtime dopemux help remains an inherited UNKNOWN from the inventory packet because that environment lacked litellm.",
+    "Decision subcommands, optional genetic, and defined-but-not-registered worktree/vault surfaces remain unresolved.",
+    "Root RULES.md absent in worktree; docs/03-reference and AGENTS.md were used in the upstream packet.",
+    "Root TRUTH_*.md files absent; docs/03-reference/truth equivalents were used.",
+    "Stale-proof gate detection is defined as a runtime concern; no stale-proof scan was executed in this packet.",
+    "No palette runtime exists yet; this packet authors only the contract."
+  ],
+  "preflight_evidence": {
+    "pwd": "/Users/hue/code/dopemux-worktrees/dopemux-cockpit-ia-reconcile-001",
+    "git_toplevel": "/Users/hue/code/dopemux-worktrees/dopemux-cockpit-ia-reconcile-001",
+    "branch": "audit/cockpit-ia-reconcile-001",
+    "branch_detached": false,
+    "head": "88c188d551719b60e6a560a04b6da2939b27d34b",
+    "origin_main": "88c188d551719b60e6a560a04b6da2939b27d34b",
+    "ia_reconcile_dir_present": true,
+    "command_palette_spec_present": true,
+    "command_exposure_policy_present": true,
+    "screen_contract_matrix_present": true,
+    "claude_design_blockers_present": true,
+    "output_path_under_required_root": true,
+    "tmp_used_as_authoritative": false
+  },
+  "non_destructive_state": {
+    "source_or_package_edits": false,
+    "runtime_code_edits": false,
+    "cockpit_package_edits": false,
+    "zip_edits": false,
+    "claude_design_uploaded": false,
+    "staged": false,
+    "committed": false,
+    "pushed": false,
+    "pr_opened": false
+  },
+  "carried_counts_referenced": {
+    "total_inventory_rows": 405,
+    "active_rows": 366,
+    "high_risk_rows": 199,
+    "placement": {
+      "Command Palette": 139,
+      "Implementer": 73,
+      "Settings/Admin": 62,
+      "Services": 54,
+      "External/Not Cockpit": 37,
+      "Events": 15,
+      "PM": 15,
+      "Overview": 9,
+      "UNKNOWN": 1
+    },
+    "safe_ui_exposure": {
+      "DISPLAY_ONLY": 178,
+      "CONFIRM_REQUIRED": 111,
+      "BLOCKED_IN_COCKPIT": 48,
+      "COMMAND_PALETTE_ONLY": 40,
+      "INSPECT_ACTION": 23,
+      "EXTERNAL_ONLY": 37,
+      "UNKNOWN": 5
+    },
+    "activation_status": {
+      "ACTIVE": 366,
+      "DEFINED_NOT_REGISTERED": 30,
+      "DEPRECATED_BLOCKED": 7,
+      "OPTIONAL_IMPORT_UNKNOWN": 2
+    },
+    "coverage": {
+      "MISSING": 284,
+      "PARTIAL": 82,
+      "UNKNOWN": 32,
+      "OUT_OF_SCOPE": 7
+    }
+  },
+  "primitive_level_only": true,
+  "claude_design_palette_unblock_conditions": [
+    "P-1: This packet accepted by the supervisor.",
+    "P-2: TP-DMX-COCKPIT-SAFE-ACTIONS-001 complete (Safe Action Gate primitive).",
+    "P-3: TP-DMX-COCKPIT-SETTINGS-RUNTIME-001 complete (Settings/Admin/Runtime primitive).",
+    "P-4: TP-DMX-COCKPIT-UNKNOWN-DRIFT-001 complete (Unknown/Drift Queue primitive).",
+    "P-5: Inventory regenerated against current HEAD; runtime dopemux help resolved.",
+    "P-6: Open UNKNOWNs reduced (root RULES.md, TRUTH_*.md, worktree/vault registration, optional genetic, litellm import).",
+    "Even with P-1..P-6 satisfied, Claude Design receives palette PRIMITIVE SKETCHES ONLY, not final screens."
+  ],
+  "supersession_map": {}
+}

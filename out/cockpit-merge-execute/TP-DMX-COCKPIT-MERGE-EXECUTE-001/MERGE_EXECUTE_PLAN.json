@@ -1,0 +1,122 @@
+{
+  "schema_version": "dopemux.cockpit.merge_execute_plan.v1",
+  "packet_id": "TP-DMX-COCKPIT-MERGE-EXECUTE-001",
+  "purpose": "Define a later Ledger-authorized Cockpit pack consolidation procedure without executing or authorizing runtime mutation.",
+  "authorization_state": {
+    "ledger_authorization_required": true,
+    "ledger_authorization_present_in_this_packet": false,
+    "merge_execution_authorized": false,
+    "runtime_action_execution": "not_authorized",
+    "t4_remote_mutation": "not_authorized",
+    "tx_tu_execution": "disabled",
+    "canonical_writes": "not_authorized",
+    "unknown_drift_runtime_reclassification": "disabled"
+  },
+  "non_actions": [
+    "no merge of PR #572",
+    "no merge of PRs #568-#571",
+    "no rebase",
+    "no force-push",
+    "no PR retargeting",
+    "no PR closing",
+    "no runtime source modification",
+    "no Cockpit UI runtime code change",
+    "no Claude Design upload",
+    "no final screens",
+    "no runtime execution authorization",
+    "no T4 remote mutation authorization",
+    "no TX/TU execution authorization",
+    "no Unknown/Drift runtime reclassification authorization",
+    "no canonical write authorization"
+  ],
+  "source_evidence": {
+    "user_supplied_audit": {
+      "pr_572_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/572",
+      "verdict": "PASS_WITH_RISKS_READY_FOR_MERGE_EXECUTE_PACKET",
+      "audited_head": "e28db50f2c4fc06819cb278da1e149afd7e39d49",
+      "base_main_at_audit": "4206a297232f6398df1964431c7b56ecbf931d82",
+      "mergeable": "MERGEABLE",
+      "merge_state_status": "UNSTABLE",
+      "status_check_counts": {
+        "success": 25,
+        "skipped": 3,
+        "in_progress": 9,
+        "failing": 0
+      },
+      "review_decision": "",
+      "conflict_repair": {
+        "resolved_file": "task-packets/INDEX.md",
+        "merge_tree_clean": true,
+        "merge_tree_result": "d5d28ae60af977c17dbe860a1d53c8e5859015f2"
+      }
+    },
+    "packet_authoring_observation": {
+      "observed_at_utc": "2026-05-08T02:28:29Z",
+      "origin_main_from_git_ls_remote": "4206a297232f6398df1964431c7b56ecbf931d82",
+      "origin_main_from_branch_api": "4206a297232f6398df1964431c7b56ecbf931d82",
+      "pr_572_head": "e28db50f2c4fc06819cb278da1e149afd7e39d49",
+      "pr_572_base_ref_name": "main",
+      "pr_572_graphql_base_ref_target_oid": "4206a297232f6398df1964431c7b56ecbf931d82",
+      "pr_572_graphql_base_ref_oid": "0ca8fae9dee59bc410cf013cc9af741aa28b88e7",
+      "pr_572_rest_base_sha": "0ca8fae9dee59bc410cf013cc9af741aa28b88e7",
+      "base_oid_mismatch": "observed; future executor must resolve effective base before merge execution",
+      "mergeable": "MERGEABLE",
+      "merge_state_status": "UNSTABLE",
+      "review_decision": "",
+      "status_check_counts": {
+        "success": 33,
+        "skipped": 3,
+        "in_progress": 1,
+        "failing": 0
+      },
+      "in_progress_check": "Scout adhd-engine",
+      "descends_from_audited_head_exit_code": 0,
+      "audited_head_parent_line": "e28db50f2c4fc06819cb278da1e149afd7e39d49 f91b7784a1135a8d30b5c58787235f1a70f708ca",
+      "audited_head_commit_classification": "single-parent commit with merge-like content, not a true merge commit",
+      "merge_tree_against_git_observed_main": {
+        "base": "4206a297232f6398df1964431c7b56ecbf931d82",
+        "exit_code": 0,
+        "output": "d5d28ae60af977c17dbe860a1d53c8e5859015f2"
+      },
+      "merge_tree_against_api_reported_base_oid": {
+        "base": "0ca8fae9dee59bc410cf013cc9af741aa28b88e7",
+        "output_summary": "content conflict surfaced in docker/mcp-servers-source/desktop-commander/server.py; recorded as base/API drift because refs/heads/main was observed at 4206a297232f6398df1964431c7b56ecbf931d82"
+      }
+    }
+  },
+  "covered_pr_set": [
+    568,
+    569,
+    570,
+    571,
+    573
+  ],
+  "merge_candidate_order": [
+    568,
+    569,
+    570,
+    571
+  ],
+  "non_candidate_prs": [
+    {
+      "pr": 572,
+      "role": "consolidation artifact/proof PR",
+      "merge_candidate": false
+    },
+    {
+      "pr": 573,
+      "role": "reviewed merged evidence only",
+      "merge_candidate": false,
+      "merge_commit": "c0c32c1639e675d3415257f2444437ae1fa2ea3c"
+    }
+  ],
+  "risks": [
+    "PR #572 was UNSTABLE at audit because checks were still running.",
+    "PR #572 had no reviewDecision at audit and still had empty reviewDecision during packet authoring.",
+    "e28db50f2c4fc06819cb278da1e149afd7e39d49 is a single-parent commit with merge-like content, not a true merge commit.",
+    "PR #572 PROOF.json residual_risks still references stale CONFLICTING status from generation time; future executor must treat that text as historical snapshot only.",
+    "Branch status may drift before execution.",
+    "Packet-authoring observation found API/base OID drift that must be resolved during future preflight."
+  ],
+  "future_executor_rule": "No merge, branch mutation, canonical write, runtime action, Claude Design upload, final-screen generation, T4 remote mutation, TX/TU execution, or Unknown/Drift runtime reclassification may occur without explicit Ledger authorization and all preflight gates passing."
+}
