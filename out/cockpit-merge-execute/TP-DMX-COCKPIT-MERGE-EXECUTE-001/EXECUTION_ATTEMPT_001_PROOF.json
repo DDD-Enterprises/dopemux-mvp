@@ -1,0 +1,215 @@
+{
+  "schema_version": "dopemux.cockpit.merge_execute.execution_attempt_proof.v1",
+  "packet_id": "TP-DMX-COCKPIT-MERGE-EXECUTE-001",
+  "attempt_id": "001",
+  "created_at_utc": "2026-05-08T04:05:42Z",
+  "result": "BLOCKED_PREFLIGHT",
+  "scope": "Tracked closeout proof for a preflight-blocked merge execution attempt. This closeout PR does not execute a merge, rebase, force-push, retarget, close, or runtime mutation.",
+  "required_finding": [
+    "TP-DMX-COCKPIT-MERGE-EXECUTE-001 execution attempt ended as BLOCKED_PREFLIGHT.",
+    "PR #572 is stale/conflicting and unsafe to merge.",
+    "The #568-#571 pack work and PR #573 runtime-contract fidelity work are already present on current origin/main.",
+    "Do not re-merge #568-#571.",
+    "Do not merge #572 as-is.",
+    "If #572's merge-stack proof artifacts are still desired, salvage them through a fresh artifact-only packet from current main, not by merging stale #572."
+  ],
+  "authority_classification": {
+    "ledger_intake": "user-supplied decision accepted as current execution control",
+    "github_pr_state": "directly observed through gh pr view",
+    "git_refs_and_ancestry": "directly observed through git fetch, git rev-parse, git merge-base, and git diff",
+    "existing_packet_artifacts": "directly observed on current origin/main",
+    "merge_execution": "not performed"
+  },
+  "repo_identity": {
+    "worktree_path": "/Users/hue/code/dopemux-mvp-closeout-blocked-preflight",
+    "branch": "codex/blocked-preflight-closeout",
+    "repo_marker": ".dopetaskroot",
+    "repo_marker_verified": true,
+    "origin_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "origin_main": "7788f34701cf94501f186aa44c43f6f12da649de",
+    "worktree_head_before_closeout_edits": "7788f34701cf94501f186aa44c43f6f12da649de",
+    "base_commit_subject": "docs(cockpit): add merge execute packet (#598)"
+  },
+  "source_decision": {
+    "accepted_result": "BLOCKED_PREFLIGHT",
+    "do_not_repair_pr_572_again": true,
+    "do_not_merge_pr_572": true,
+    "do_not_rerun_merge_execution": true,
+    "authorized_next_step": "Create a tracked closeout proof PR from current main.",
+    "closeout_pr_scope": [
+      "add tracked execution-attempt proof",
+      "add blocked-preflight closeout markdown",
+      "add blocked-preflight closeout JSON",
+      "refresh packet sha256sums.txt",
+      "update task-packets/INDEX.md only if clean and appropriate"
+    ]
+  },
+  "observed_current_state": {
+    "pr_572": {
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/572",
+      "state": "OPEN",
+      "title": "docs(cockpit): prepare merge stack consolidation",
+      "head_ref": "codex/cockpit-merge-stack-consolidate-001",
+      "head_sha": "e28db50f2c4fc06819cb278da1e149afd7e39d49",
+      "base_ref": "main",
+      "base_ref_oid_from_pull_request": "0ca8fae9dee59bc410cf013cc9af741aa28b88e7",
+      "mergeable": "CONFLICTING",
+      "merge_state_status": "DIRTY",
+      "updated_at_utc": "2026-05-08T02:29:00Z",
+      "classification": "stale/conflicting and unsafe to merge"
+    },
+    "current_origin_main": {
+      "sha": "7788f34701cf94501f186aa44c43f6f12da649de",
+      "contains_pr_598_merge_commit": true
+    },
+    "pr_598": {
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/598",
+      "state": "MERGED",
+      "title": "docs(cockpit): add merge execute packet",
+      "head_sha": "097a22f9dc8c5054b4084d7585f68807df82a457",
+      "merge_commit": "7788f34701cf94501f186aa44c43f6f12da649de",
+      "merged_at_utc": "2026-05-08T02:53:05Z"
+    },
+    "covered_prs": [
+      {
+        "pr": 568,
+        "state": "MERGED",
+        "title": "ui(cockpit): wire runtime renderer primitives to IA package",
+        "head_sha": "9ad522df341375b7fede75eaa8e43e1f44097b41",
+        "merge_commit": "39ad991f72dd58b22944146a38649ac1b0de04fc",
+        "merge_commit_is_ancestor_of_origin_main": true
+      },
+      {
+        "pr": 569,
+        "state": "MERGED",
+        "title": "ui(cockpit): wire settings runtime primitives",
+        "head_sha": "d27c4995f22ceba646763759fa4a8f53d547ac67",
+        "merge_commit": "a4ca22da678f0578895eb237ac270041811d80d4",
+        "merge_commit_is_ancestor_of_origin_main": true
+      },
+      {
+        "pr": 570,
+        "state": "MERGED",
+        "title": "ui(cockpit): wire unknown drift queue primitives",
+        "head_sha": "b6b89fae076a669952ef1178d7d7d17a3e01eb7b",
+        "merge_commit": "7ff3ea44e31749ce75e653b81790ab6eba3ae65e",
+        "merge_commit_is_ancestor_of_origin_main": true
+      },
+      {
+        "pr": 571,
+        "state": "MERGED",
+        "title": "docs(cockpit): regenerate current head inventory",
+        "head_sha": "93702834fbb05963685ed4919c6d099040399426",
+        "merge_commit": "b173efd83c871c30f2bd86530921c866d08e7e45",
+        "merge_commit_is_ancestor_of_origin_main": true
+      },
+      {
+        "pr": 573,
+        "state": "MERGED",
+        "title": "fix(cockpit): repair runtime contract fidelity gaps",
+        "head_sha": "1236757c15b1bfdf0926ee476908d56ed71b0dc6",
+        "merge_commit": "c0c32c1639e675d3415257f2444437ae1fa2ea3c",
+        "merge_commit_is_ancestor_of_origin_main": true
+      }
+    ]
+  },
+  "preflight_evidence": [
+    {
+      "id": "PF01",
+      "claim": "PR #572 is currently dirty/conflicting.",
+      "command": "gh pr view 572 --json number,title,state,mergeable,mergeStateStatus,baseRefName,headRefName,headRepositoryOwner,headRefOid,baseRefOid,url,updatedAt,author",
+      "exit_code": 0,
+      "observed": {
+        "mergeable": "CONFLICTING",
+        "merge_state_status": "DIRTY",
+        "head_sha": "e28db50f2c4fc06819cb278da1e149afd7e39d49"
+      }
+    },
+    {
+      "id": "PF02",
+      "claim": "The #568-#571 pack work and #573 runtime-contract fidelity work are already ancestors of current origin/main.",
+      "command": "git merge-base --is-ancestor <merge_commit> origin/main for PRs #568, #569, #570, #571, and #573",
+      "exit_code": 0,
+      "observed": {
+        "568_merge_commit_ancestor_exit": 0,
+        "569_merge_commit_ancestor_exit": 0,
+        "570_merge_commit_ancestor_exit": 0,
+        "571_merge_commit_ancestor_exit": 0,
+        "573_merge_commit_ancestor_exit": 0
+      }
+    },
+    {
+      "id": "PF03",
+      "claim": "PR #572 still points at the previously audited head, but current main has moved on.",
+      "command": "git rev-parse origin/main && git rev-parse refs/remotes/origin/pr/572 && git merge-base --is-ancestor e28db50f2c4fc06819cb278da1e149afd7e39d49 refs/remotes/origin/pr/572",
+      "exit_code": 0,
+      "observed": {
+        "origin_main": "7788f34701cf94501f186aa44c43f6f12da649de",
+        "pr_572_head": "e28db50f2c4fc06819cb278da1e149afd7e39d49",
+        "pr_572_descends_from_audited_head_exit": 0
+      }
+    },
+    {
+      "id": "PF04",
+      "claim": "Current origin/main contains the PR #598 packet artifacts.",
+      "command": "git show --name-status --format='%H %s' --no-renames 7788f34701cf94501f186aa44c43f6f12da649de -- out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001 task-packets/generated/TP-DMX-COCKPIT-MERGE-EXECUTE-001.json task-packets/INDEX.md",
+      "exit_code": 0,
+      "observed_added_paths": [
+        "out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/GOVERNANCE_INVARIANTS.md",
+        "out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/MERGE_EXECUTE_PLAN.json",
+        "out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/MERGE_EXECUTE_PLAN.md",
+        "out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/PRECHECK_MATRIX.json",
+        "out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/PRECHECK_MATRIX.md",
+        "out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/PROOF.json",
+        "out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/sha256sums.txt",
+        "task-packets/generated/TP-DMX-COCKPIT-MERGE-EXECUTE-001.json"
+      ]
+    }
+  ],
+  "artifact_tree_delta": {
+    "command": "git diff --name-status origin/main..refs/remotes/origin/pr/572 -- out/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001 task-packets/INDEX.md task-packets/generated/TP-DMX-COCKPIT-MERGE-EXECUTE-001.json",
+    "exit_code": 0,
+    "interpretation": "The PR #572 head tree is missing the current-main PR #598 packet artifacts listed as deleted in this tree comparison. This supports the stale/unsafe classification. This command is a read-only diff, not merge execution.",
+    "name_status": [
+      "D\tout/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/GOVERNANCE_INVARIANTS.md",
+      "D\tout/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/MERGE_EXECUTE_PLAN.json",
+      "D\tout/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/MERGE_EXECUTE_PLAN.md",
+      "D\tout/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/PRECHECK_MATRIX.json",
+      "D\tout/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/PRECHECK_MATRIX.md",
+      "D\tout/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/PROOF.json",
+      "D\tout/cockpit-merge-execute/TP-DMX-COCKPIT-MERGE-EXECUTE-001/sha256sums.txt",
+      "D\ttask-packets/generated/TP-DMX-COCKPIT-MERGE-EXECUTE-001.json",
+      "M\ttask-packets/INDEX.md"
+    ]
+  },
+  "non_actions": [
+    "no merge of PR #572",
+    "no merge of PR #568",
+    "no merge of PR #569",
+    "no merge of PR #570",
+    "no merge of PR #571",
+    "no re-run of merge execution",
+    "no conflict repair of PR #572",
+    "no rebase",
+    "no force-push",
+    "no PR retargeting",
+    "no PR closing",
+    "no runtime source change",
+    "no Cockpit UI runtime code change",
+    "no Claude Design upload",
+    "no final screens generated",
+    "no T4 remote mutation",
+    "no TX/TU execution",
+    "no Unknown/Drift runtime reclassification",
+    "no canonical writes"
+  ],
+  "closeout_conclusion": {
+    "status": "BLOCKED_PREFLIGHT",
+    "durable_repo_evidence_created": true,
+    "recommended_next_ledger_actions": [
+      "After this closeout PR is accepted, close PR #572 as superseded/stale with a precise comment.",
+      "Run a fresh current-main Cockpit design pickup audit.",
+      "Resume primitive Cockpit design only if that audit says it is safe."
+    ]
+  }
+}
