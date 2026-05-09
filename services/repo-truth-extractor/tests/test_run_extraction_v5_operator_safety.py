@@ -28,7 +28,50 @@ def _load_runner_module() -> types.ModuleType:
     return module
 
 
-def _run_print_config_and_load_manifest(
+def _assert_no_readonly_artifacts(output_root: Path, run_id: str | None = None) -> None:
+    if run_id is not None:
+        assert not (output_root / "runs" / run_id).exists()
+    assert not (output_root / "latest_run_id.txt").exists()
+    for artifact_name in (
+        "RUN_MANIFEST.json",
+        "RUNNER_IDENTITY.json",
+        "RUN_ROUTING_FINGERPRINT.json",
+        "PROVIDER_PREFLIGHT.json",
+        "DOCTOR_FULL.json",
+        "AUTH_DOCTOR.json",
+        "COVERAGE_REPORT.json",
+    ):
+        assert list(output_root.glob(f"**/{artifact_name}")) == []
+    assert list(output_root.glob("**/prescan")) == []
+
+
+def _invoke_runner_main(
+    runner: types.ModuleType,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    args: list[str],
+) -> tuple[int, str, str, Path]:
+    output_root = tmp_path / "artifact-root"
+    stdout = io.StringIO()
+    stderr = io.StringIO()
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            str(_repo_root() / "services" / "repo-truth-extractor" / "run_extraction_v5.py"),
+            *args,
+            "--output-root",
+            str(output_root),
+        ],
+    )
+    with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+        with pytest.raises(SystemExit) as exc_info:
+            runner.main()
+    code = exc_info.value.code
+    return int(code) if isinstance(code, int) else 0, stdout.getvalue(), stderr.getvalue(), output_root
+
+
+def _run_print_config(
     tmp_path: Path,
     *,
     resume: bool,
@@ -64,9 +107,7 @@ def _run_print_config_and_load_manifest(
         check=True,
     )
     config_payload = json.loads(result.stdout)
-    manifest_path = output_root / "runs" / config_payload["run_id"] / "RUN_MANIFEST.json"
-    manifest_payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-    return config_payload, manifest_payload
+    return config_payload, output_root
 
 
 def _make_cfg(runner: types.ModuleType):
@@ -227,6 +268,137 @@ def test_output_root_layout_redirects_run_and_doctor_paths(tmp_path: Path) -> No
         assert runner.latest_run_id_path(tmp_path) == artifact_root / "latest_run_id.txt"
     finally:
         runner.configure_output_layout(tmp_path, None)
+
+
+def test_print_config_is_readonly_and_does_not_create_run_artifacts(tmp_path: Path) -> None:
+    payload, output_root = _run_print_config(tmp_path, resume=False)
+
+    assert payload["cli"]["print_config"] is True
+    assert payload["cli"]["latest_run_id_written"] is False
+    _assert_no_readonly_artifacts(output_root, payload["run_id"])
+
+
+def test_print_config_resume_reads_latest_without_mutating_pointer(tmp_path: Path) -> None:
+    payload, output_root = _run_print_config(
+        tmp_path,
+        resume=True,
+        latest_run_id="existing_readonly_run",
+    )
+
+    assert payload["run_id"] == "existing_readonly_run"
+    assert payload["cli"]["run_id_source"] == "latest_run_id"
+    assert (output_root / "latest_run_id.txt").read_text(encoding="utf-8") == "existing_readonly_run\n"
+    assert not (output_root / "runs" / "existing_readonly_run" / "RUN_MANIFEST.json").exists()
+
+
+def test_status_for_missing_explicit_run_id_is_readonly_json(tmp_path: Path) -> None:
+    output_root = tmp_path / "artifact-root"
+    run_id = "missing_status_typo"
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(_repo_root() / "services" / "repo-truth-extractor" / "run_extraction_v5.py"),
+            "--status",
+            "--status-json",
+            "--run-id",
+            run_id,
+            "--output-root",
+            str(output_root),
+        ],
+        cwd=str(_repo_root()),
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    payload = json.loads(result.stdout)
+
+    assert payload["run_id"] == run_id
+    assert payload["summary"]["NOT_STARTED"] == len(payload["phases"])
+    _assert_no_readonly_artifacts(output_root, run_id)
+
+
+@pytest.mark.parametrize(
+    ("args", "expected_code"),
+    [
+        (["--phase", "A", "--dry-run", "--print-run-order", "--run-id", "ro_order"], 0),
+        (["--phase", "A", "--dry-run", "--print-phase-routing", "--run-id", "ro_routing"], 0),
+        (["--phase", "A", "--dry-run", "--print-phase-prompts", "A", "--run-id", "ro_prompts"], 0),
+        (["--phase", "A", "--dry-run", "--print-promptpack", "--run-id", "ro_promptpack"], 0),
+        (["--phase", "A", "--dry-run", "--coverage-report", "--run-id", "ro_coverage"], 0),
+        (["--phase", "A", "--dry-run", "--verify-phase-output", "A", "--run-id", "ro_verify"], 3),
+    ],
+)
+def test_print_and_report_commands_are_readonly(
+    tmp_path: Path, args: list[str], expected_code: int
+) -> None:
+    output_root = tmp_path / "artifact-root"
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(_repo_root() / "services" / "repo-truth-extractor" / "run_extraction_v5.py"),
+            *args,
+            "--output-root",
+            str(output_root),
+        ],
+        cwd=str(_repo_root()),
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == expected_code
+    _assert_no_readonly_artifacts(output_root, args[args.index("--run-id") + 1])
+
+
+def test_doctor_preflight_and_auth_doctor_do_not_run_prescan_or_create_run_artifacts(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    runner = _load_runner_module()
+
+    def fail_prescan(*_args, **_kwargs):
+        raise AssertionError("readonly command must not run integrated prescan")
+
+    monkeypatch.setattr(runner, "run_integrated_prescan_stage", fail_prescan)
+    monkeypatch.setattr(
+        runner,
+        "run_provider_doctor_probe",
+        lambda **kwargs: {
+            "provider": kwargs["provider"],
+            "model_id": kwargs["model_id"],
+            "api_key_env_name": kwargs["api_key_env"],
+            "api_key_env_resolved": kwargs["api_key_env"],
+            "api_key_present": False,
+            "transport": "test",
+            "endpoint_effective": "test://readonly",
+            "status_code": 200,
+            "failure_type": None,
+            "provider_error_reason": None,
+            "provider_signature": "test",
+            "ready": True,
+            "readiness_blocker": {"ready": True},
+        },
+    )
+    monkeypatch.setattr(
+        runner,
+        "call_llm",
+        lambda **_kwargs: {
+            "ok": True,
+            "text": "OK",
+            "meta": {"response_received": True, "status_code": 200},
+        },
+    )
+
+    for args in (
+        ["--phase", "A", "--dry-run", "--doctor", "--run-id", "ro_doctor"],
+        ["--phase", "A", "--dry-run", "--preflight-providers", "--run-id", "ro_preflight"],
+        ["--phase", "A", "--dry-run", "--doctor-auth", "--run-id", "ro_auth"],
+    ):
+        code, stdout, _stderr, output_root = _invoke_runner_main(
+            runner, monkeypatch, tmp_path / args[4], args
+        )
+        assert code == 0
+        assert stdout.strip()
+        _assert_no_readonly_artifacts(output_root, args[args.index("--run-id") + 1])
 
 
 def test_non_resume_launch_generates_fresh_run_id_even_when_latest_exists(tmp_path: Path) -> None:
@@ -992,8 +1164,8 @@ def test_print_config_includes_route_readiness_summary() -> None:
     assert summary["target_phases"] == ["A", "H", "D", "C"]
     assert "OPENROUTER_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
     assert "XAI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
-    assert "OPENAI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
-    assert summary["api_key_env_categories"]["configured_not_required"] == []
+    assert "GEMINI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
+    assert summary["api_key_env_categories"]["configured_not_required"] == ["OPENAI_API_KEY"]
     assert payload["effective_model_routing"]["A"]["scope"] == "representative_phase_default_not_step_authoritative"
 
 
@@ -1072,7 +1244,7 @@ def test_print_phase_routing_handles_two_tuple_ladder_rows(
     ]
 
 
-def test_staged_safe_print_config_writes_confidence_ramp_artifacts(
+def test_staged_safe_print_config_is_readonly_and_reports_preset(
     tmp_path: Path,
 ) -> None:
     output_root = tmp_path / "artifact-root"
@@ -1097,29 +1269,11 @@ def test_staged_safe_print_config_writes_confidence_ramp_artifacts(
         check=True,
     )
     payload = json.loads(result.stdout)
-    run_root = output_root / "runs" / run_id
-    batch_pilot = json.loads((run_root / "BATCH_PILOT.json").read_text(encoding="utf-8"))
-    phase_slice = json.loads((run_root / "PHASE_SLICE.json").read_text(encoding="utf-8"))
-    breaker_state = json.loads((run_root / "BREAKER_STATE.json").read_text(encoding="utf-8"))
-    gate_decision = json.loads((run_root / "PHASE_GATE_DECISION.json").read_text(encoding="utf-8"))
-    certification_result = json.loads((run_root / "CERTIFICATION_RESULT.json").read_text(encoding="utf-8"))
 
     assert payload["cli"]["preset"] == "staged-safe"
     assert payload["cli"]["batch_mode"] is True
-    assert batch_pilot["preset"] == "staged-safe"
-    assert batch_pilot["batch_mode"] is True
-    assert phase_slice["selected_phases"] == ["A", "H", "D", "C"]
-    assert breaker_state["preset"] == "staged-safe"
-    assert gate_decision["preset"] == "staged-safe"
-    assert gate_decision["decision"] == "PREVIEW_ONLY"
-    assert certification_result["artifact_version"] == "RTE_CERTIFICATION_V1"
-    assert certification_result["overall_status"] == "UNKNOWN"
-    assert set(certification_result["gate_classification"]) == {
-        "artifact_contract_stability",
-        "canonical_runner_correctness",
-        "live_provider_readiness",
-        "operator_topology_resilience",
-    }
+    assert payload["phases"] == ["A", "H", "D", "C"]
+    _assert_no_readonly_artifacts(output_root, run_id)
 
 
 def test_run_phase_s_blocks_on_empty_r_outputs(

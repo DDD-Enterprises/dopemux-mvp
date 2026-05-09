@@ -154,6 +154,7 @@ def generate_run_id(
     *,
     extraction_root_rel: Path,
     active_output_layout: Optional[OutputLayout],
+    readonly: bool = False,
 ) -> str:
     base = datetime.now(timezone.utc).strftime("run_%Y%m%dT%H%M%SZ")
     runs_root = current_runs_root(
@@ -161,6 +162,8 @@ def generate_run_id(
         extraction_root_rel=extraction_root_rel,
         active_output_layout=active_output_layout,
     )
+    if readonly:
+        return base
     runs_root.mkdir(parents=True, exist_ok=True)
     candidate = runs_root / base
     suffix = 1
@@ -195,6 +198,7 @@ def resolve_run_context(
     extraction_root_rel: Path,
     active_output_layout: Optional[OutputLayout],
     logger: Any,
+    readonly: bool = False,
 ) -> RunContext:
     latest_file = latest_run_id_path(
         repo_root,
@@ -206,13 +210,14 @@ def resolve_run_context(
 
     if args.run_id:
         run_id = args.run_id
-        validate_existing_run_dir(
-            repo_root,
-            run_id,
-            allow_create_if_missing=allow_create_if_missing,
-            extraction_root_rel=extraction_root_rel,
-            active_output_layout=active_output_layout,
-        )
+        if not readonly:
+            validate_existing_run_dir(
+                repo_root,
+                run_id,
+                allow_create_if_missing=allow_create_if_missing,
+                extraction_root_rel=extraction_root_rel,
+                active_output_layout=active_output_layout,
+            )
         run_id_source = "explicit"
     elif resume_requested:
         latest = load_run_id(
@@ -243,9 +248,10 @@ def resolve_run_context(
             repo_root,
             extraction_root_rel=extraction_root_rel,
             active_output_layout=active_output_layout,
+            readonly=readonly,
         )
 
-    write_latest = not args.no_write_latest and (
+    write_latest = (not readonly) and not args.no_write_latest and (
         not args.dry_run or args.write_latest_even_on_dry_run
     )
     if write_latest:
@@ -272,13 +278,14 @@ def get_run_dirs(
     legacy_phase_dir_aliases: Dict[str, str],
     phase_dir_names: Dict[str, str],
     phases: Iterable[str],
+    readonly: bool = False,
 ) -> Dict[str, Path]:
     base = current_runs_root(
         repo_root,
         extraction_root_rel=extraction_root_rel,
         active_output_layout=active_output_layout,
     ) / run_id
-    if not base.exists():
+    if not base.exists() and not readonly:
         raise FileNotFoundError(f"Run directory {base} does not exist.")
     for legacy_name, canonical_name in legacy_phase_dir_aliases.items():
         legacy_path = base / legacy_name
@@ -296,6 +303,9 @@ def get_run_dirs(
     dirs: Dict[str, Path] = {"root": base, "inputs": base / "00_inputs"}
     for phase, suffix in phase_dir_names.items():
         dirs[phase] = base / suffix
+
+    if readonly:
+        return dirs
 
     dirs["inputs"].mkdir(parents=True, exist_ok=True)
     for phase in phases:
