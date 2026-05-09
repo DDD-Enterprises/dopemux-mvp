@@ -66,7 +66,7 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
   expect(content).toContain('aria-label={isTimerRunning ? `Pause task: ${currentTask.title}` : `Start task: ${currentTask.title}`}');
   expect(content).toContain('aria-label={`Complete task: ${currentTask.title}`}');
-  expect(content).toContain('aria-label={`Skip task: ${currentTask.title}`}');
+  expect(content).toMatch(/nextTask\s*\?\s*`Skip \$\{currentTask\.title\}, proceed to \$\{nextTask\.title\}`\s*:\s*`Skip task: \$\{currentTask\.title\}`/);
   expect(content).toContain('aria-label={`Start task: ${task.title}`}');
   // New LinearProgress for task progress
   expect(content).toContain('aria-label="Current task progress"');
