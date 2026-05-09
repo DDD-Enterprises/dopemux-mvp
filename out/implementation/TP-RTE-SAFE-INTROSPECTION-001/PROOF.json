@@ -79,6 +79,16 @@
       "Integrated prescan remains in the normal execution path after readonly branches exit."
     ]
   },
+  "codeql_unblock_patch": {
+    "alert": "#212 Clear-text logging of sensitive information",
+    "annotation": "services/repo-truth-extractor/run_extraction_v5.py:19264",
+    "strategy": "A",
+    "details": [
+      "Removed only the stale duplicate post-prescan --preflight-providers branch that was unreachable after the readonly pre-prescan exit block.",
+      "The reachable readonly --preflight-providers branch remains before integrated prescan and calls run_provider_preflight(..., persist_run_root=False).",
+      "Added regression coverage proving provider preflight output can include env-var names and api_key_present booleans without emitting a resolved raw API key value."
+    ]
+  },
   "validation": [
     {
       "command": "git status --short",
@@ -93,7 +103,7 @@
     {
       "command": "pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
       "exit_code": 0,
-      "output_excerpt": "42 passed; warning: Unknown config option asyncio_mode."
+      "output_excerpt": "43 passed; warning: Unknown config option asyncio_mode."
     },
     {
       "command": "pytest -q services/repo-truth-extractor/tests/test_structured_output_provider_modes.py",
@@ -107,6 +117,11 @@
     },
     {
       "command": "git diff --check",
+      "exit_code": 0,
+      "output_excerpt": ""
+    },
+    {
+      "command": "python -m json.tool out/implementation/TP-RTE-SAFE-INTROSPECTION-001/PROOF.json >/dev/null",
       "exit_code": 0,
       "output_excerpt": ""
     },
@@ -136,7 +151,8 @@
   "residual_risks": [
     "Full repository pytest was not run.",
     "Readonly doctor/preflight still compute diagnostic payloads; provider/model calls were not exercised live by design.",
+    "CodeQL re-run occurs in GitHub after branch push; local validation verifies the flagged duplicate print branch is removed but cannot locally prove GitHub alert closure before CI completes.",
     "Final commit SHA cannot be embedded inside this committed proof file without changing the SHA; final response records the actual commit SHA."
   ],
-  "final_git_status_at_proof_creation": " M services/repo-truth-extractor/rte_output_layout.py; M services/repo-truth-extractor/run_extraction_v5.py; M services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py; M services/repo-truth-extractor/tests/test_structured_output_provider_modes.py; ?? task-packets/generated/TP-RTE-SAFE-INTROSPECTION-001.json; ?? out/implementation/TP-RTE-SAFE-INTROSPECTION-001/PROOF.json; ?? out/implementation/TP-RTE-SAFE-INTROSPECTION-001/IMPLEMENTER_REPORT.md"
+  "final_git_status_at_proof_creation": " M services/repo-truth-extractor/run_extraction_v5.py; M services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py; M out/implementation/TP-RTE-SAFE-INTROSPECTION-001/PROOF.json; M out/implementation/TP-RTE-SAFE-INTROSPECTION-001/IMPLEMENTER_REPORT.md"
 }
