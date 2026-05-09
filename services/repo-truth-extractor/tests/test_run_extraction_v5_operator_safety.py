@@ -1423,3 +1423,62 @@ def test_run_provider_preflight_emits_machine_readable_readiness_blockers(
         "PROVIDER_AUTH_REJECTED",
         "QUOTA_OR_BILLING_BLOCK",
     }
+
+
+def test_provider_preflight_output_omits_raw_api_key_values(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    runner = _load_runner_module()
+    cfg = _make_cfg(runner)
+    object.__setattr__(cfg, "batch_mode", True)
+    object.__setattr__(cfg, "batch_provider", "openai")
+
+    monkeypatch.setattr(
+        runner,
+        "collect_provider_routes",
+        lambda phases, routing_policy, selected_step_ids_by_phase=None: {
+            "openai:gpt-5.4:OPENAI_API_KEY": {
+                "provider": "openai",
+                "model_id": "gpt-5.4",
+                "api_key_env": "OPENAI_API_KEY",
+            },
+        },
+    )
+    monkeypatch.setattr(
+        runner,
+        "run_provider_doctor_probe",
+        lambda **kwargs: {
+            "provider": kwargs["provider"],
+            "model_id": kwargs["model_id"],
+            "api_key_env_name": kwargs["api_key_env"],
+            "api_key_env_resolved": kwargs["api_key_env"],
+            "api_key_present": True,
+            "status_code": 200,
+            "failure_type": None,
+            "provider_error_reason": None,
+            "provider_signature": f"{kwargs['provider']}:{kwargs['model_id']}",
+            "ready": True,
+            "readiness_blocker": {"ready": True},
+        },
+    )
+    monkeypatch.setattr(
+        runner,
+        "resolve_api_key",
+        lambda provider, api_key_env: ("sk-test-raw-secret-value", api_key_env),
+    )
+
+    ok, payload = runner.run_provider_preflight(
+        tmp_path,
+        "safe_preflight_output",
+        cfg,
+        ["A"],
+        persist_run_root=False,
+    )
+    output_text = runner.sanitized_json_text(
+        payload, indent=2, sort_keys=False, ensure_ascii=True
+    )
+
+    assert ok is True
+    assert "OPENAI_API_KEY" in output_text
+    assert "api_key_present" in output_text
+    assert "sk-test-raw-secret-value" not in output_text

@@ -21,12 +21,18 @@ Observed authority-location drift remains: `TRUTH_*.md` and `SYSTEM_*.md` files 
 ## Validation
 
 - `python -m compileall -q services/repo-truth-extractor src/dopemux tests` exited 0.
-- `pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py` exited 0 with 42 passed.
+- `pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py` exited 0 with 43 passed.
 - `pytest -q services/repo-truth-extractor/tests/test_structured_output_provider_modes.py` exited 0 with 3 passed.
 - `pytest -q services/repo-truth-extractor/tests -k "operator_safety or promptset or status or print_config or doctor or preflight" --no-cov` exited 0 with 98 passed.
 - `git diff --check` exited 0.
 - Task Packet JSON parse and schema validation exited 0.
 - `pre-commit run --files ...` exited 0 for changed files.
+
+## CodeQL Unblock Addendum
+
+PR #603 was blocked by CodeQL alert #212 on the stale post-prescan `--preflight-providers` duplicate exit branch in `services/repo-truth-extractor/run_extraction_v5.py`. That branch is unreachable after the readonly pre-prescan `--preflight-providers` exit added by this TP, so the unblock patch removed only the stale duplicate branch. The reachable readonly provider preflight path remains before integrated prescan and uses `persist_run_root=False`.
+
+Added `test_provider_preflight_output_omits_raw_api_key_values` to verify preflight output keeps env-var names and `api_key_present` booleans visible while omitting a resolved raw API key value.
 
 ## Explicit Non-Scope
 

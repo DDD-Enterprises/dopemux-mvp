@@ -19250,19 +19250,6 @@ def main() -> None:
         sys.exit(PROMPTSET_BLOCKED_EXIT_CODE)
     if args.doctor_auth:
         sys.exit(run_auth_doctor(root, args, cfg))
-    if args.preflight_providers:
-        targets = phase_sequence if phase_sequence else PHASES
-        ok, payload = run_provider_preflight(root, run_id, cfg, targets)
-        if args.preset:
-            write_confidence_ramp_artifacts(
-                dirs["root"],
-                args=args,
-                cfg=cfg,
-                phase_sequence=targets,
-                provider_preflight_payload=payload,
-            )
-        print(sanitized_json_text(payload, indent=2, sort_keys=False, ensure_ascii=True))
-        sys.exit(0 if ok else 1)
     if args.print_promptpack:
         targets = phase_sequence if phase_sequence else PHASES
         sys.exit(print_promptpack(targets))
