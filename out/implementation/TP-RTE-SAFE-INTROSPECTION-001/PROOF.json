@@ -1,0 +1,142 @@
+{
+  "tp_id": "TP-RTE-SAFE-INTROSPECTION-001",
+  "repo_root": "/Users/hue/.codex/worktrees/7322/tp-rte-safe-introspection-001",
+  "worktree_path": "/Users/hue/.codex/worktrees/7322/tp-rte-safe-introspection-001",
+  "branch": "codex/tp-rte-safe-introspection-001",
+  "starting_head": "bd1796742a1cd3b29c0c1faa37308c5ad37fe339",
+  "ending_head_at_proof_creation": "bd1796742a1cd3b29c0c1faa37308c5ad37fe339",
+  "repo_identity": {
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "repo_marker": ".dopetaskroot",
+    "base_branch": "main"
+  },
+  "task_packet": "task-packets/generated/TP-RTE-SAFE-INTROSPECTION-001.json",
+  "files_changed": [
+    "services/repo-truth-extractor/rte_output_layout.py",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+    "services/repo-truth-extractor/tests/test_structured_output_provider_modes.py",
+    "task-packets/generated/TP-RTE-SAFE-INTROSPECTION-001.json",
+    "out/implementation/TP-RTE-SAFE-INTROSPECTION-001/PROOF.json",
+    "out/implementation/TP-RTE-SAFE-INTROSPECTION-001/IMPLEMENTER_REPORT.md"
+  ],
+  "allowlist_check": {
+    "status": "PASS",
+    "allowed_patterns": [
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/rte_output_layout.py",
+      "services/repo-truth-extractor/tests/**",
+      "task-packets/generated/TP-RTE-SAFE-INTROSPECTION-001.json",
+      "out/implementation/TP-RTE-SAFE-INTROSPECTION-001/**"
+    ]
+  },
+  "forbidden_scope_check": {
+    "status": "PASS",
+    "observed": [
+      "No provider/model routing implementation changed.",
+      "No promptsets changed.",
+      "No batch clients changed.",
+      "No v3/v4 runtime files changed.",
+      "No prescan exclude-glob policy implemented.",
+      "No v3 consent-gate implementation changed.",
+      "No batch strictness implementation changed.",
+      "No Cockpit, Claude Design, or final-screen files changed."
+    ]
+  },
+  "before_after_bug_statements": [
+    {
+      "before": "run_extraction_v5.py resolved run context, created run/phase directories, and reached manifest/identity/routing/prescan setup before multiple informational branches.",
+      "after": "Protected readonly branches resolve run paths with readonly=True and exit before manifest, identity, routing fingerprint, confidence-ramp, coverage persistence, certification, and integrated prescan writes."
+    },
+    {
+      "before": "--status --run-id <missing> could create phantom run state via eager run context creation.",
+      "after": "--status --run-id <missing> --json returns NOT_STARTED phase status without creating the fake run directory or latest-run pointer."
+    },
+    {
+      "before": "--print-config and staged-safe print config tests expected run artifacts.",
+      "after": "--print-config returns useful JSON and tests assert no run root, RUN_MANIFEST.json, RUNNER_IDENTITY.json, RUN_ROUTING_FINGERPRINT.json, prescan directory, phase directory, or latest-run pointer mutation."
+    }
+  ],
+  "protected_introspection_commands": [
+    "--status",
+    "--status-json",
+    "--print-config",
+    "--print-run-order",
+    "--print-phase-routing",
+    "--print-phase-prompts",
+    "--doctor-auth",
+    "--preflight-providers",
+    "--print-promptpack",
+    "--coverage-report",
+    "--verify-phase-output",
+    "--doctor"
+  ],
+  "live_run_behavior_preservation": {
+    "status": "SUPPORTED_BY_SCOPE_AND_TESTS",
+    "details": [
+      "Default get_run_dirs and resolve_run_context behavior remains mutating unless readonly=True is passed.",
+      "Existing tests still assert non-resume launch creates a fresh run directory and output-root layout creates phase directories.",
+      "Integrated prescan remains in the normal execution path after readonly branches exit."
+    ]
+  },
+  "validation": [
+    {
+      "command": "git status --short",
+      "exit_code": 0,
+      "output_excerpt": "Modified RTE runtime/layout/tests plus TP/proof artifacts only."
+    },
+    {
+      "command": "python -m compileall -q services/repo-truth-extractor src/dopemux tests",
+      "exit_code": 0,
+      "output_excerpt": ""
+    },
+    {
+      "command": "pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+      "exit_code": 0,
+      "output_excerpt": "42 passed; warning: Unknown config option asyncio_mode."
+    },
+    {
+      "command": "pytest -q services/repo-truth-extractor/tests/test_structured_output_provider_modes.py",
+      "exit_code": 0,
+      "output_excerpt": "3 passed; warning: Unknown config option asyncio_mode."
+    },
+    {
+      "command": "pytest -q services/repo-truth-extractor/tests -k \"operator_safety or promptset or status or print_config or doctor or preflight\" --no-cov",
+      "exit_code": 0,
+      "output_excerpt": "98 passed; warning: Unknown config option asyncio_mode."
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "output_excerpt": ""
+    },
+    {
+      "command": "python -m json.tool task-packets/generated/TP-RTE-SAFE-INTROSPECTION-001.json >/dev/null",
+      "exit_code": 0,
+      "output_excerpt": ""
+    },
+    {
+      "command": "jsonschema validation for docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "output_excerpt": "schema: pass"
+    },
+    {
+      "command": "pre-commit run --files services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/rte_output_layout.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/test_structured_output_provider_modes.py task-packets/generated/TP-RTE-SAFE-INTROSPECTION-001.json out/implementation/TP-RTE-SAFE-INTROSPECTION-001/PROOF.json out/implementation/TP-RTE-SAFE-INTROSPECTION-001/IMPLEMENTER_REPORT.md",
+      "exit_code": 0,
+      "output_excerpt": "Changed-file hooks passed; several docs/YAML hooks skipped because no matching files."
+    }
+  ],
+  "no_live_execution": true,
+  "no_provider_model_calls": true,
+  "provider_call_note": "Doctor/preflight/auth-doctor safety tests monkeypatched provider probes/call_llm; no live provider/model calls were run.",
+  "authority_location_drift": {
+    "status": "OBSERVED",
+    "details": "TRUTH_*.md and SYSTEM_*.md exist under docs/research/mcp-customization/dopemux-constraints/ but are not present at the expected root/canonical paths from earlier authority inventory."
+  },
+  "residual_risks": [
+    "Full repository pytest was not run.",
+    "Readonly doctor/preflight still compute diagnostic payloads; provider/model calls were not exercised live by design.",
+    "Final commit SHA cannot be embedded inside this committed proof file without changing the SHA; final response records the actual commit SHA."
+  ],
+  "final_git_status_at_proof_creation": " M services/repo-truth-extractor/rte_output_layout.py; M services/repo-truth-extractor/run_extraction_v5.py; M services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py; M services/repo-truth-extractor/tests/test_structured_output_provider_modes.py; ?? task-packets/generated/TP-RTE-SAFE-INTROSPECTION-001.json; ?? out/implementation/TP-RTE-SAFE-INTROSPECTION-001/PROOF.json; ?? out/implementation/TP-RTE-SAFE-INTROSPECTION-001/IMPLEMENTER_REPORT.md"
+}
