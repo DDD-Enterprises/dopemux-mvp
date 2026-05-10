@@ -29,7 +29,8 @@ HARDCODED_EXCLUDE_DIRS = frozenset(
     {
         "node_modules", ".venv", "venv", "__pycache__", ".git", "dist", "build",
         ".mypy_cache", ".pytest_cache", ".ruff_cache", "htmlcov", ".tox",
-        ".eggs", ".egg-info", ".DS_Store",
+        ".eggs", ".egg-info", ".DS_Store", ".codex", ".conport",
+        ".dopemux", ".dopetask",
     }
 )
 
@@ -46,11 +47,15 @@ class CorpusWalker:
             if not path.is_file():
                 continue
 
+            rel_path = self._relative_posix_path(path, repo_root)
+
             # Skip excluded directories
             if self._is_excluded_dir(path, repo_root):
                 continue
 
-            rel_path = str(path.relative_to(repo_root))
+            if self._matches_any_glob(rel_path, self._effective_exclude_globs()):
+                continue
+
             ext = path.suffix.lower()
             size = path.stat().st_size
 
@@ -64,9 +69,6 @@ class CorpusWalker:
             if ext in BINARY_EXTENSIONS:
                 entry.include = False
                 entry.exclude_reason = f"binary_extension:{ext}"
-            elif self._matches_any_glob(rel_path, self._effective_exclude_globs()):
-                entry.include = False
-                entry.exclude_reason = "matched_exclude_glob"
             elif size > self._effective_max_file_size(ext):
                 entry.include = False
                 entry.exclude_reason = f"size_exceeds_max:{size}>{self.config.max_file_size}"
@@ -96,13 +98,17 @@ class CorpusWalker:
 
         return entries
 
+    def _relative_posix_path(self, path: Path, repo_root: Path) -> str:
+        rel = path.relative_to(repo_root)
+        return PurePosixPath(*rel.parts).as_posix()
+
     def _is_excluded_dir(self, path: Path, repo_root: Path) -> bool:
         """Check if any path component is a hardcoded exclude."""
         try:
             rel = path.relative_to(repo_root)
         except ValueError:
             return False
-        for part in rel.parts:
+        for part in PurePosixPath(*rel.parts).parts:
             if part in HARDCODED_EXCLUDE_DIRS:
                 return True
             if part.endswith(".egg-info"):
@@ -111,10 +117,12 @@ class CorpusWalker:
 
     def _matches_any_glob(self, rel_path_str: str, globs: list[str]) -> bool:
         """Check if relative path matches any glob pattern."""
+        rel_path = PurePosixPath(rel_path_str.replace("\\", "/")).as_posix()
         for pattern in globs:
-            if fnmatch.fnmatch(rel_path_str, pattern):
+            normalized_pattern = PurePosixPath(pattern.replace("\\", "/")).as_posix()
+            if fnmatch.fnmatchcase(rel_path, normalized_pattern):
                 return True
-            if fnmatch.fnmatch(rel_path_str + "/", pattern):
+            if fnmatch.fnmatchcase(rel_path + "/", normalized_pattern):
                 return True
         return False
 

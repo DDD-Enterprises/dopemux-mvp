@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import sys
 from pathlib import Path
@@ -17,6 +18,20 @@ from lib.prescan.classifier import Classifier
 from lib.prescan.corpus_walker import CorpusWalker
 from lib.prescan.engine import PrescanEngine
 from lib.prescan.models import FileEntry, PrescanConfig
+
+
+def _write_fixture_file(root: Path, rel_path: str, text: str = "fixture\n") -> None:
+    path = root / rel_path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+
+
+def _included_paths(entries: list[FileEntry]) -> set[str]:
+    return {entry.rel_path for entry in entries if entry.include}
+
+
+def _all_paths(entries: list[FileEntry]) -> set[str]:
+    return {entry.rel_path for entry in entries}
 
 
 def test_corpus_walker_finds_files(tmp_path: Path) -> None:
@@ -72,6 +87,132 @@ def test_corpus_walker_respects_exclusions(tmp_path: Path) -> None:
     assert "src/main.py" in paths
     assert not any("node_modules" in p for p in paths)
     assert not any(".venv" in p for p in paths)
+
+
+def test_corpus_walker_excludes_generated_output_dirs_by_default(tmp_path: Path) -> None:
+    """Generated RTE/proof/audit output trees must not become source corpus input."""
+    legitimate = {
+        "src/app.py",
+        "services/example/service.py",
+        "docs/source.md",
+        "tests/test_example.py",
+        "task-packets/INDEX.md",
+        "task-packets/TP-SOURCE.json",
+    }
+    generated = {
+        "extraction/repo-truth-extractor/v5/runs/old/PROOF_PACK.json",
+        "proof/TP-OLD/PROOF.json",
+        "out/report.md",
+        "audit_prep/input.md",
+        "task-packets/generated/TP-OLD.json",
+        "_audit_out/findings.md",
+        "claudedocs/old.md",
+    }
+    for rel_path in sorted(legitimate | generated):
+        _write_fixture_file(tmp_path, rel_path)
+
+    config = PrescanConfig(
+        repo_root=tmp_path,
+        output_dir=tmp_path / "prescan-output",
+        enable_code_prescan=False,
+        enable_git_enrichment=False,
+    )
+    entries = CorpusWalker(config).walk()
+
+    paths = _all_paths(entries)
+    included = _included_paths(entries)
+    assert legitimate <= included
+    assert generated.isdisjoint(paths)
+
+
+def test_corpus_walker_excludes_nested_generated_output_dirs(tmp_path: Path) -> None:
+    """Nested generated trees are excluded when the walker sees nested workspace copies."""
+    _write_fixture_file(tmp_path, "src/app.py")
+    _write_fixture_file(tmp_path, "some/project/extraction/generated.json")
+    _write_fixture_file(tmp_path, "nested/proof/PROOF.json")
+    _write_fixture_file(tmp_path, "nested/out/report.md")
+    _write_fixture_file(tmp_path, "nested/task-packets/generated/TP-OLD.json")
+
+    config = PrescanConfig(
+        repo_root=tmp_path,
+        output_dir=tmp_path / "prescan-output",
+        enable_code_prescan=False,
+        enable_git_enrichment=False,
+    )
+    entries = CorpusWalker(config).walk()
+
+    paths = _all_paths(entries)
+    assert "src/app.py" in _included_paths(entries)
+    assert "some/project/extraction/generated.json" not in paths
+    assert "nested/proof/PROOF.json" not in paths
+    assert "nested/out/report.md" not in paths
+    assert "nested/task-packets/generated/TP-OLD.json" not in paths
+
+
+def test_corpus_walker_excludes_secret_bearing_files_by_default(tmp_path: Path) -> None:
+    """Secret-bearing local files must not be inventoried for prescan input."""
+    secrets = {
+        ".env",
+        ".env.local",
+        ".env.production",
+        "private.pem",
+        "deploy.key",
+        "id_rsa",
+        "id_ed25519",
+        "nested/.env",
+        "nested/private.pem",
+    }
+    for rel_path in sorted(secrets):
+        _write_fixture_file(tmp_path, rel_path, "SECRET_VALUE_SHOULD_NOT_APPEAR=true\n")
+    _write_fixture_file(tmp_path, "src/app.py", "print('ok')\n")
+    _write_fixture_file(tmp_path, "docs/source.md", "# source\n")
+
+    config = PrescanConfig(
+        repo_root=tmp_path,
+        output_dir=tmp_path / "prescan-output",
+        enable_code_prescan=False,
+        enable_git_enrichment=False,
+    )
+    entries = CorpusWalker(config).walk()
+
+    paths = _all_paths(entries)
+    assert secrets.isdisjoint(paths)
+    assert {"src/app.py", "docs/source.md"} <= _included_paths(entries)
+
+
+def test_prescan_engine_manifest_preserves_source_and_omits_excluded_inputs(tmp_path: Path) -> None:
+    """The emitted prescan manifest should not reintroduce excluded generated or secret paths."""
+    _write_fixture_file(tmp_path, "src/app.py", "def app():\n    return 1\n")
+    _write_fixture_file(tmp_path, "services/example/service.py", "def service():\n    return 1\n")
+    _write_fixture_file(tmp_path, "docs/source.md", "# Source\n")
+    _write_fixture_file(tmp_path, "tests/test_example.py", "def test_example():\n    assert True\n")
+    _write_fixture_file(tmp_path, "proof/TP-OLD/PROOF.json", "{}\n")
+    _write_fixture_file(tmp_path, "extraction/repo-truth-extractor/v5/runs/old/PROOF_PACK.json", "{}\n")
+    _write_fixture_file(tmp_path, ".env", "SECRET_VALUE_SHOULD_NOT_APPEAR=true\n")
+
+    config = PrescanConfig(
+        repo_root=tmp_path,
+        output_dir=tmp_path / "prescan-output",
+        enable_code_prescan=False,
+        enable_git_enrichment=False,
+        batch_mode=False,
+        cost_estimate=False,
+    )
+    result = PrescanEngine(config).run()
+
+    assert result.success is True
+    manifest = json.loads((tmp_path / "prescan-output" / "corpus_manifest.json").read_text())
+    paths = {item["rel_path"] for item in manifest}
+    assert {
+        "src/app.py",
+        "services/example/service.py",
+        "docs/source.md",
+        "tests/test_example.py",
+    } <= paths
+    assert "proof/TP-OLD/PROOF.json" not in paths
+    assert "extraction/repo-truth-extractor/v5/runs/old/PROOF_PACK.json" not in paths
+    assert ".env" not in paths
+    assert "SECRET_VALUE_SHOULD_NOT_APPEAR" not in json.dumps(manifest)
 
 
 def test_classifier_categorizes_files(tmp_path: Path) -> None:

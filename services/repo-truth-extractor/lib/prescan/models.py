@@ -4,6 +4,95 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 
+def _root_and_nested_globs(*dir_names: str) -> tuple[str, ...]:
+    patterns: list[str] = []
+    for dir_name in dir_names:
+        patterns.extend((f"{dir_name}/**", f"**/{dir_name}/**"))
+    return tuple(patterns)
+
+
+DEFAULT_BASE_EXCLUDE_GLOBS = (
+    ".git/**",
+    "**/.git/**",
+    "node_modules/**",
+    "**/node_modules/**",
+    ".venv/**",
+    "**/.venv/**",
+    "venv/**",
+    "**/venv/**",
+    "__pycache__/**",
+    "**/__pycache__/**",
+    "dist/**",
+    "**/dist/**",
+    "build/**",
+    "**/build/**",
+)
+
+DEFAULT_GENERATED_OUTPUT_EXCLUDE_GLOBS = (
+    *_root_and_nested_globs(
+        "extraction",
+        "proof",
+        "out",
+        "audit_prep",
+        "_audit_out",
+        "claudedocs",
+    ),
+    "task-packets/generated/**",
+    "**/task-packets/generated/**",
+)
+
+DEFAULT_OPERATOR_LOCAL_EXCLUDE_GLOBS = (
+    ".codex/**",
+    "**/.codex/**",
+    ".conport/**",
+    "**/.conport/**",
+    ".dopemux/**",
+    "**/.dopemux/**",
+    ".dopetask/**",
+    "**/.dopetask/**",
+    ".pytest_cache/**",
+    "**/.pytest_cache/**",
+    ".mypy_cache/**",
+    "**/.mypy_cache/**",
+    ".ruff_cache/**",
+    "**/.ruff_cache/**",
+    ".tox/**",
+    "**/.tox/**",
+    ".eggs/**",
+    "**/.eggs/**",
+    "*.egg-info/**",
+    "**/*.egg-info/**",
+    "htmlcov/**",
+    "**/htmlcov/**",
+)
+
+DEFAULT_SECRET_BEARING_EXCLUDE_GLOBS = (
+    ".env",
+    ".env.*",
+    "**/.env",
+    "**/.env.*",
+    "*.pem",
+    "**/*.pem",
+    "*.key",
+    "**/*.key",
+    "*.p12",
+    "**/*.p12",
+    "*.pfx",
+    "**/*.pfx",
+    "id_rsa",
+    "**/id_rsa",
+    "id_ed25519",
+    "**/id_ed25519",
+)
+
+DEFAULT_PRESCAN_EXCLUDE_GLOBS = (
+    *DEFAULT_BASE_EXCLUDE_GLOBS,
+    *DEFAULT_GENERATED_OUTPUT_EXCLUDE_GLOBS,
+    *DEFAULT_OPERATOR_LOCAL_EXCLUDE_GLOBS,
+    *DEFAULT_SECRET_BEARING_EXCLUDE_GLOBS,
+)
+
+
 @dataclass
 class FileEntry:
     rel_path: str
@@ -52,15 +141,9 @@ class PrescanConfig:
     repo_root: Path
     output_dir: Path
     include_globs: list[str] = field(default_factory=lambda: ["**/*"])
-    exclude_globs: list[str] = field(default_factory=lambda: [
-        ".git/**",
-        "node_modules/**",
-        ".venv/**",
-        "venv/**",
-        "__pycache__/**",
-        "dist/**",
-        "build/**",
-    ])
+    exclude_globs: list[str] = field(
+        default_factory=lambda: list(DEFAULT_PRESCAN_EXCLUDE_GLOBS)
+    )
     max_file_size: int = 5 * 1024 * 1024
     large_json_threshold: int = 256 * 1024
     max_corpus_size: int = 500 * 1024 * 1024
