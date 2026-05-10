@@ -11180,39 +11180,56 @@ def _v3_read_only_command_mode(args: argparse.Namespace) -> bool:
     )
 
 
-def _v3_live_operation_requested(args: argparse.Namespace) -> bool:
-    """Return True when args request an operation that may execute providers.
+def _v3_always_live_requested(args: argparse.Namespace) -> bool:
+    """Return True for operations that always execute providers.
 
-    Read-only command modes (--print-*, --status*, --coverage-report, etc.)
-    short-circuit before provider calls and so are not considered live, even
-    when --phase is also supplied. Provider-call flags such as
-    --preflight-providers and --gemini-list-models are always live.
+    These code paths do not honor --dry-run, so consent must apply
+    regardless of dry-run state.
     """
-    if _v3_read_only_command_mode(args):
-        return False
     if (
         getattr(args, "preflight_providers", False)
         or getattr(args, "gemini_list_models", False)
         or getattr(args, "doctor", False)
-        or getattr(args, "async_provider", None)
         or getattr(args, "finalize", False)
         or getattr(args, "batch_watch", False)
         or getattr(args, "batch_retrieve", False)
     ):
         return True
+    return bool(getattr(args, "async_provider", None))
+
+
+def _v3_phase_execution_requested(args: argparse.Namespace) -> bool:
+    """Return True when args request phase execution.
+
+    Phase execution honors --dry-run (the per-phase code path skips LLM
+    calls when args.dry_run is set), so consent only applies when not
+    dry-run. Read-only command modes short-circuit before phase code runs.
+    """
+    if _v3_read_only_command_mode(args):
+        return False
     return bool(getattr(args, "phase", None))
+
+
+def _v3_live_operation_requested(args: argparse.Namespace) -> bool:
+    """Return True when args request any operation that may execute providers."""
+    return _v3_always_live_requested(args) or _v3_phase_execution_requested(args)
 
 
 _V3_LIVE_CONSENT_REQUIRED_MESSAGE = (
     "Legacy v3 live execution requires explicit consent. Use --dry-run "
-    f"for preview, or rerun with --execute and {DPMX_LIVE_OK_ENV}=1 after approval."
+    "with phase execution for preview, or rerun with --execute and "
+    f"{DPMX_LIVE_OK_ENV}=1 after approval."
 )
 
 
 def _enforce_v3_live_consent(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
-    if not _v3_live_operation_requested(args):
+    always_live = _v3_always_live_requested(args)
+    phase_live = _v3_phase_execution_requested(args)
+    if not (always_live or phase_live):
         return
-    if bool(getattr(args, "dry_run", False)):
+    # Phase execution honors --dry-run; always-live flags do not, so a
+    # bare --dry-run cannot bypass consent for provider-call commands.
+    if not always_live and bool(getattr(args, "dry_run", False)):
         return
     if not bool(getattr(args, "execute", False)) or not _env_is_truthy(DPMX_LIVE_OK_ENV):
         parser.error(_V3_LIVE_CONSENT_REQUIRED_MESSAGE)
