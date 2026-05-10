@@ -40,6 +40,28 @@ def test_v3_execute_without_live_env_refuses_before_artifacts(tmp_path: Path) ->
     assert not (tmp_path / "extraction" / "repo-truth-extractor" / "v3").exists()
 
 
+def test_v3_read_only_phase_does_not_require_consent(tmp_path: Path) -> None:
+    proc = _run_v3(tmp_path, "--phase", "A", "--print-run-order")
+
+    assert "Legacy v3 live execution requires explicit consent" not in proc.stderr
+
+
+def test_v3_preflight_providers_requires_consent(tmp_path: Path) -> None:
+    proc = _run_v3(tmp_path, "--preflight-providers")
+
+    assert proc.returncode != 0
+    assert "Legacy v3 live execution requires explicit consent" in proc.stderr
+    assert not (tmp_path / "extraction" / "repo-truth-extractor" / "v3").exists()
+
+
+def test_v3_gemini_list_models_requires_consent(tmp_path: Path) -> None:
+    proc = _run_v3(tmp_path, "--gemini-list-models")
+
+    assert proc.returncode != 0
+    assert "Legacy v3 live execution requires explicit consent" in proc.stderr
+    assert not (tmp_path / "extraction" / "repo-truth-extractor" / "v3").exists()
+
+
 def test_v3_dry_run_and_execute_conflict_is_rejected(tmp_path: Path) -> None:
     proc = _run_v3(
         tmp_path,

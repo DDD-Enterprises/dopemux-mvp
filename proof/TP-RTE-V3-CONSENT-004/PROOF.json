@@ -9,7 +9,8 @@
   "worktree": "/Users/hue/.codex/worktrees/tp-rte-v3-consent-004",
   "base_branch": "main",
   "starting_head": "8ea182dd38ecd7754dff1c49224221cc49e390f4",
-  "ending_head": "8ea182dd38ecd7754dff1c49224221cc49e390f4",
+  "ending_head": "fb57ee9c3400adc65ad28ccec2a8bc706d08dbe9",
+  "ending_head_note": "Branch tip moves with each review-feedback commit on PR #605; this field records the latest verified-end snapshot. See pr_url for the live HEAD.",
   "files_changed": [
     "services/repo-truth-extractor/run_extraction_v3.py",
     "services/repo-truth-extractor/run_repscan.py",
@@ -51,7 +52,7 @@
       "summary": "Task Packet JSON parsed."
     },
     {
-      "command": "python - <<'PY' ... Draft7Validator(dopetask-canonical-spec.json) ... PY",
+      "command": "python - <<'PY'\nimport json\nfrom pathlib import Path\nfrom jsonschema import Draft7Validator\nschema = json.loads(Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text())\npayload = json.loads(Path('task-packets/generated/TP-RTE-V3-CONSENT-004.json').read_text())\nerrors = sorted(Draft7Validator(schema).iter_errors(payload), key=lambda e: list(e.path))\nassert not errors, [e.message for e in errors]\nPY",
       "exit_code": 0,
       "summary": "Task Packet validated against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json."
     },
@@ -120,6 +121,7 @@
   ],
   "no_provider_calls_confirmation": true,
   "no_live_extraction_confirmation": true,
-  "commit_sha": null,
-  "pr_url": null
+  "commit_sha": "fb57ee9c3400adc65ad28ccec2a8bc706d08dbe9",
+  "commit_sha_note": "Most recently verified branch HEAD at proof snapshot time. Subsequent review-feedback commits on PR #605 (e.g. broader v3 live-op classification, expanded read-only allow-list) extend this packet; see PR commits for the full trail.",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/605"
 }

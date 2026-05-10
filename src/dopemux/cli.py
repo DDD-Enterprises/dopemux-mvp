@@ -4898,7 +4898,14 @@ def rte_scan(
     allow_legacy_v3_scan: bool,
     args: tuple[str, ...],
 ) -> None:
-    """Run deterministic repo scan and prompt synthesis through the canonical RTE surface."""
+    """Delegate a deterministic repo scan to the legacy v3 RepoScan route.
+
+    This command wraps `run_repscan.py`, which is part of the legacy v3
+    extraction chain. It is disabled by default and requires explicit
+    `--allow-legacy-v3-scan` opt-in. A v5-native scan replacement is not yet
+    implemented; live delegated execution additionally requires the v3
+    consent posture (`--execute` and `DPMX_LIVE_OK=1`).
+    """
     if not allow_legacy_v3_scan:
         raise click.ClickException(
             "`dopemux rte scan` delegates to the legacy v3 extraction chain and is "

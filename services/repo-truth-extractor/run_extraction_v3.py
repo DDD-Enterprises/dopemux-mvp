@@ -11157,14 +11157,50 @@ def run_phase_Z(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = Non
 
 # --- Master Orchestrator ---
 
-def _v3_live_operation_requested(args: argparse.Namespace) -> bool:
+def _v3_read_only_command_mode(args: argparse.Namespace) -> bool:
+    """Return True when args select a strictly read-only command mode.
+
+    These modes short-circuit to introspection paths before any provider call
+    or phase work, so live consent does not apply even if --phase is supplied.
+    """
     return bool(
-        args.phase
-        or args.async_provider
-        or args.finalize
-        or args.batch_watch
-        or args.batch_retrieve
+        getattr(args, "print_config", False)
+        or getattr(args, "print_promptpack", False)
+        or getattr(args, "print_run_order", False)
+        or getattr(args, "print_phase_routing", False)
+        or (getattr(args, "print_phase_prompts", None) is not None)
+        or getattr(args, "coverage_report", False)
+        or (getattr(args, "verify_phase_output", None) is not None)
+        or getattr(args, "tail_run_log", False)
+        or getattr(args, "show_provider_usage", False)
+        or getattr(args, "status", False)
+        or getattr(args, "status_json", False)
+        or getattr(args, "promptgen_scan", False)
+        or getattr(args, "doctor_auth", False)
     )
+
+
+def _v3_live_operation_requested(args: argparse.Namespace) -> bool:
+    """Return True when args request an operation that may execute providers.
+
+    Read-only command modes (--print-*, --status*, --coverage-report, etc.)
+    short-circuit before provider calls and so are not considered live, even
+    when --phase is also supplied. Provider-call flags such as
+    --preflight-providers and --gemini-list-models are always live.
+    """
+    if _v3_read_only_command_mode(args):
+        return False
+    if (
+        getattr(args, "preflight_providers", False)
+        or getattr(args, "gemini_list_models", False)
+        or getattr(args, "doctor", False)
+        or getattr(args, "async_provider", None)
+        or getattr(args, "finalize", False)
+        or getattr(args, "batch_watch", False)
+        or getattr(args, "batch_retrieve", False)
+    ):
+        return True
+    return bool(getattr(args, "phase", None))
 
 
 _V3_LIVE_CONSENT_REQUIRED_MESSAGE = (
