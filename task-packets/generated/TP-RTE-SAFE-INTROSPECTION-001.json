@@ -1,0 +1,219 @@
+{
+  "id": "TP-RTE-SAFE-INTROSPECTION-001",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor",
+  "invariants": [
+    "RTE introspection and readonly commands must not create run directories, phase directories, latest-run pointers, run manifests, runner identity artifacts, routing fingerprints, integrated prescan artifacts, or prescan-derived output.",
+    "Live extraction behavior must remain unchanged: normal phase execution still creates run directories and artifacts and still runs integrated prescan unless explicitly skipped.",
+    "No provider/model routing semantics, promptsets, batch clients, v3/v4 runtime behavior, prescan exclude policy, v3 consent-gate behavior, or batch strictness behavior are in scope.",
+    "No live provider/model calls, --execute runs, --allow-online-llm runs, repair/reprocess commands, or mutating RTE commands against the real repository run roots are authorized.",
+    "Earlier audit language that TRUTH_*.md and SYSTEM_*.md were missing everywhere is corrected to path-drift / authority-location drift because those files exist under docs/research/mcp-customization/dopemux-constraints/ but not at expected root/canonical paths."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "rte-operator-safety",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-rte-safe-introspection-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(rte): make introspection commands readonly",
+    "allowlist": [
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/rte_output_layout.py",
+      "services/repo-truth-extractor/tests/**",
+      "task-packets/generated/TP-RTE-SAFE-INTROSPECTION-001.json",
+      "out/implementation/TP-RTE-SAFE-INTROSPECTION-001/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-RTE-SAFE-INTROSPECTION-001.json >/dev/null",
+      "python -m json.tool out/implementation/TP-RTE-SAFE-INTROSPECTION-001/PROOF.json >/dev/null",
+      "python -m compileall -q services/repo-truth-extractor src/dopemux tests",
+      "pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+      "pytest -q services/repo-truth-extractor/tests -k \"operator_safety or promptset or status or print_config or doctor or preflight\" --no-cov",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): make introspection commands readonly",
+    "body": "Implements TP-RTE-SAFE-INTROSPECTION-001. Fixes the Repo Truth Extractor operator-safety bug where introspection/read-only commands could create run context, phase directories, latest-run pointers, run manifests, runner identity artifacts, routing fingerprints, or integrated prescan artifacts before returning informational output. No live extraction was executed, no provider/model calls were made, no broad RTE go-live claim is made, prescan exclude policy remains deferred to TP-RTE-PRESCAN-EXCLUDES-001, v3 consent gate remains deferred to a separate TP, and batch strictness remains deferred to a separate TP.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repo identity and create a dedicated implementation worktree from current origin/main.",
+      "requirements": [
+        "Verify repo root, remote, branch, HEAD, .dopetaskroot, clean status, and fetched origin/main before implementation.",
+        "Stop without stashing if the primary checkout is dirty.",
+        "Use branch codex/tp-rte-safe-introspection-001 from origin/main.",
+        "Use worktree path /Users/hue/.codex/worktrees/7322/tp-rte-safe-introspection-001."
+      ],
+      "commands": [
+        "pwd",
+        "git rev-parse --show-toplevel",
+        "git remote -v",
+        "git branch --show-current",
+        "git rev-parse HEAD",
+        "git status --short",
+        "test -e .dopetaskroot",
+        "git fetch origin main --prune",
+        "git worktree add -b codex/tp-rte-safe-introspection-001 /Users/hue/.codex/worktrees/7322/tp-rte-safe-introspection-001 origin/main"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Primary checkout is clean before worktree creation.",
+        "Dedicated worktree is clean, on codex/tp-rte-safe-introspection-001, and bound to DDD-Enterprises/dopemux-mvp.",
+        ".dopetaskroot exists in the dedicated worktree."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        ".dopetaskroot"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create and validate this Task Packet before runtime edits.",
+      "requirements": [
+        "Create task-packets/generated/TP-RTE-SAFE-INTROSPECTION-001.json before implementation.",
+        "Conform to docs/03-reference/spec/dopetask/dopetask-canonical-spec.json.",
+        "Record allowlist, forbidden scope, validation commands, proof requirements, commit plan, and governance closeout requirements in schema-approved fields.",
+        "Treat docs/research/mcp-customization/dopemux-constraints/TRUTH_*.md and SYSTEM_*.md as path-drift / authority-location drift, not total absence."
+      ],
+      "commands": [
+        "python -m json.tool task-packets/generated/TP-RTE-SAFE-INTROSPECTION-001.json >/dev/null",
+        "python - <<'PY'\nimport json\nfrom pathlib import Path\nfrom jsonschema import Draft7Validator\nschema=json.loads(Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text())\npayload=json.loads(Path('task-packets/generated/TP-RTE-SAFE-INTROSPECTION-001.json').read_text())\nerrors=sorted(Draft7Validator(schema).iter_errors(payload), key=lambda e: e.path)\nassert not errors, [e.message for e in errors]\nPY"
+      ],
+      "expected_files": [
+        "task-packets/generated/TP-RTE-SAFE-INTROSPECTION-001.json"
+      ],
+      "validation": [
+        "TP JSON parses.",
+        "TP validates against dopetask-canonical-spec.json when jsonschema is available."
+      ],
+      "context_files": [
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "task-packets/generated/TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001.json",
+        "docs/research/mcp-customization/dopemux-constraints/TRUTH_SYSTEMS.md",
+        "docs/research/mcp-customization/dopemux-constraints/SYSTEM_RepoTruthExtractor.md"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Inspect RTE runtime, output-layout helpers, Dopemux CLI handoff, and relevant operator-safety tests.",
+      "requirements": [
+        "Inspect services/repo-truth-extractor/run_extraction_v5.py as canonical RTE runtime.",
+        "Inspect services/repo-truth-extractor/rte_output_layout.py for get_run_dirs and resolve_run_context behavior.",
+        "Inspect src/dopemux/cli.py and src/dopemux/commands/extractor_commands.py for operator entrypoint context.",
+        "Inspect tests that exercise --status, --print-config, --doctor, --preflight-providers, --doctor-auth, --print-run-order, --print-phase-routing, --print-phase-prompts, --print-promptpack, --coverage-report, or --verify-phase-output.",
+        "Identify current eager run-context, directory, manifest, routing fingerprint, runner identity, and integrated prescan paths before changing them."
+      ],
+      "commands": [
+        "rg -n \"status|print-config|doctor|preflight|print-run-order|print-phase-routing|print-phase-prompts|print-promptpack|coverage-report|verify-phase-output|prescan|resolve_run_context|get_run_dirs|RUN_MANIFEST|RUNNER_IDENTITY|RUN_ROUTING_FINGERPRINT|latest_run_id\" services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/rte_output_layout.py src/dopemux/cli.py src/dopemux/commands/extractor_commands.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Authoritative runtime and helper boundaries are identified before implementation.",
+        "Known bad tests are identified for inversion rather than deletion."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/rte_output_layout.py",
+        "src/dopemux/cli.py",
+        "src/dopemux/commands/extractor_commands.py",
+        "services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Implement an explicit readonly/introspection path while preserving live extraction behavior.",
+      "requirements": [
+        "Add readonly behavior to resolve_run_context and get_run_dirs or equivalent output-layout helpers.",
+        "Readonly mode must not create directories, phase directories, latest_run_id.txt, RUN_MANIFEST.json, RUNNER_IDENTITY.json, RUN_ROUTING_FINGERPRINT.json, or prescan artifacts.",
+        "Readonly status with a missing explicit run id must return useful not-found / empty status output and must not create phantom state.",
+        "Classify introspection/print/doctor/preflight branches before eager write/prescan setup in run_extraction_v5.main().",
+        "Prevent integrated prescan from running for --status, --print-config, --print-run-order, --print-phase-routing, --print-phase-prompts, --doctor-auth, --preflight-providers, --print-promptpack, --coverage-report, --verify-phase-output, and --doctor.",
+        "Preserve normal dry-run/live extraction directory creation, run artifacts, integrated prescan behavior, consent gate behavior, and provider/cost/preset semantics."
+      ],
+      "commands": [
+        "pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/rte_output_layout.py",
+        "services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py"
+      ],
+      "validation": [
+        "Focused operator-safety tests fail before the bug fix and pass after the bug fix.",
+        "Existing live/dry-run extraction test coverage still proves expected run artifact creation where applicable."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/rte_output_layout.py",
+        "services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Create proof artifacts and run closeout validation.",
+      "requirements": [
+        "Create out/implementation/TP-RTE-SAFE-INTROSPECTION-001/PROOF.json.",
+        "Create out/implementation/TP-RTE-SAFE-INTROSPECTION-001/IMPLEMENTER_REPORT.md.",
+        "PROOF.json must include TP id, repo root, branch, worktree path, starting HEAD, ending HEAD if committed, files changed, allowlist check, forbidden-scope check, validation commands with exit codes, relevant output excerpts, before/after bug statements, protected introspection command list, live/run behavior preservation statement, residual risks, and final git status.",
+        "Run narrow targeted validations first and broader safe non-network validations afterward where feasible.",
+        "Run codereview before precommit by inspecting git diff for scope and operator-safety behavior.",
+        "Commit only allowed files, push if authenticated, and open a PR if safe."
+      ],
+      "commands": [
+        "git status --short",
+        "python -m compileall -q services/repo-truth-extractor src/dopemux tests",
+        "pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+        "pytest -q services/repo-truth-extractor/tests -k \"operator_safety or promptset or status or print_config or doctor or preflight\" --no-cov",
+        "git diff --check",
+        "python -m json.tool task-packets/generated/TP-RTE-SAFE-INTROSPECTION-001.json >/dev/null",
+        "python -m json.tool out/implementation/TP-RTE-SAFE-INTROSPECTION-001/PROOF.json >/dev/null",
+        "pre-commit run --files services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/rte_output_layout.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py task-packets/generated/TP-RTE-SAFE-INTROSPECTION-001.json out/implementation/TP-RTE-SAFE-INTROSPECTION-001/PROOF.json out/implementation/TP-RTE-SAFE-INTROSPECTION-001/IMPLEMENTER_REPORT.md"
+      ],
+      "expected_files": [
+        "out/implementation/TP-RTE-SAFE-INTROSPECTION-001/PROOF.json",
+        "out/implementation/TP-RTE-SAFE-INTROSPECTION-001/IMPLEMENTER_REPORT.md"
+      ],
+      "validation": [
+        "Validation commands and exit codes are recorded truthfully.",
+        "Proof artifacts parse and describe residual risks.",
+        "git diff --check passes.",
+        "Final git status is recorded.",
+        "PR body states no live extraction, no provider/model calls, no broad RTE go-live claim, prescan exclude policy deferred, v3 consent gate deferred, and batch strictness deferred."
+      ],
+      "context_files": [
+        "out/implementation/TP-RTE-SAFE-INTROSPECTION-001/PROOF.json",
+        "out/implementation/TP-RTE-SAFE-INTROSPECTION-001/IMPLEMENTER_REPORT.md"
+      ]
+    }
+  ]
+}

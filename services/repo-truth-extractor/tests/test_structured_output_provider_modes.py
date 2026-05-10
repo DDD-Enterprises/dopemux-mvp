@@ -32,17 +32,18 @@ def test_gemini_structured_output_mode_mapping() -> None:
     
     assert response_meta["enabled"] is True
     assert response_meta["transport_mode"] == "response_json_schema"
-    # For gemini_native, it should return the inner schema directly
-    assert "type" in response_format
-    assert response_format["type"] == "object"
-    assert "properties" in response_format
-
-# Gemini should preserve the json_schema wrapper so downstream runtime
+    # Gemini should preserve the json_schema wrapper so downstream runtime
     # wiring can pass the nested schema through response_json_schema.
     assert response_format["type"] == "json_schema"
     assert response_format["json_schema"]["strict"] is True
     assert response_format["json_schema"]["schema"]["type"] == "object"
     assert "properties" in response_format["json_schema"]["schema"]
+
+
+def test_openai_structured_output_mode_mapping() -> None:
+    root = Path(__file__).resolve().parents[3]
+    service_root = root / "services" / "repo-truth-extractor"
+    if str(service_root) not in sys.path:
         sys.path.insert(0, str(service_root))
     
     from lib.structured_output_contracts import build_provider_step_contract_output
