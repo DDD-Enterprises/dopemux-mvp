@@ -11167,21 +11167,19 @@ def _v3_live_operation_requested(args: argparse.Namespace) -> bool:
     )
 
 
+_V3_LIVE_CONSENT_REQUIRED_MESSAGE = (
+    "Legacy v3 live execution requires explicit consent. Use --dry-run "
+    f"for preview, or rerun with --execute and {DPMX_LIVE_OK_ENV}=1 after approval."
+)
+
+
 def _enforce_v3_live_consent(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
     if not _v3_live_operation_requested(args):
         return
     if bool(getattr(args, "dry_run", False)):
         return
-    if not bool(getattr(args, "execute", False)):
-        parser.error(
-            "Legacy v3 live execution requires explicit consent. Use --dry-run "
-            f"for preview, or rerun with --execute and {DPMX_LIVE_OK_ENV}=1 after approval."
-        )
-    if not _env_is_truthy(DPMX_LIVE_OK_ENV):
-        parser.error(
-            "Legacy v3 live execution requires explicit consent. Use --dry-run "
-            f"for preview, or rerun with --execute and {DPMX_LIVE_OK_ENV}=1 after approval."
-        )
+    if not bool(getattr(args, "execute", False)) or not _env_is_truthy(DPMX_LIVE_OK_ENV):
+        parser.error(_V3_LIVE_CONSENT_REQUIRED_MESSAGE)
 
 def main() -> None:
     try:
@@ -11363,8 +11361,8 @@ def main() -> None:
     promptgen_group.add_argument("--promptgen-exclude-globs", action="append")
     promptgen_group.add_argument("--promptgen-output-dir", type=str, default=PROMPTGEN_DEFAULT_OUTPUT_DIR)
     args = parser.parse_args()
-    if args.execute:
-        args.dry_run = False
+    if args.execute and args.dry_run:
+        parser.error("--execute and --dry-run are mutually exclusive.")
     args.partition_workers = max(1, min(16, int(args.partition_workers)))
     if args.max_partitions_per_step is not None:
         args.max_partitions_per_step = max(0, int(args.max_partitions_per_step))

@@ -4906,6 +4906,9 @@ def rte_scan(
             "the v3 consent posture; live delegated execution still requires v3 "
             "--execute and DPMX_LIVE_OK=1."
         )
+    # Defense in depth: run_repscan.py independently requires --allow-legacy-v3-scan
+    # so direct invocation cannot bypass the consent gate. Forward the flag here so
+    # the wrapper continues to work after this Click guard has already approved it.
     _run_repscan_runner(
         args=_build_repscan_args(
             phase,

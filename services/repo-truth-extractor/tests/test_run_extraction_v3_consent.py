@@ -38,3 +38,19 @@ def test_v3_execute_without_live_env_refuses_before_artifacts(tmp_path: Path) ->
     assert "Legacy v3 live execution requires explicit consent" in proc.stderr
     assert "DPMX_LIVE_OK=1" in proc.stderr
     assert not (tmp_path / "extraction" / "repo-truth-extractor" / "v3").exists()
+
+
+def test_v3_dry_run_and_execute_conflict_is_rejected(tmp_path: Path) -> None:
+    proc = _run_v3(
+        tmp_path,
+        "--phase",
+        "A",
+        "--run-id",
+        "conflict",
+        "--dry-run",
+        "--execute",
+    )
+
+    assert proc.returncode != 0
+    assert "--execute and --dry-run are mutually exclusive" in proc.stderr
+    assert not (tmp_path / "extraction" / "repo-truth-extractor" / "v3").exists()
