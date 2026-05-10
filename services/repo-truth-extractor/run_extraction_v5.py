@@ -2636,6 +2636,7 @@ def resolve_run_context(
     root: Path,
     args: argparse.Namespace,
     allow_create_if_missing: bool = False,
+    readonly: bool = False,
 ) -> RunContext:
     return _resolve_run_context_impl(
         root,
@@ -2644,10 +2645,11 @@ def resolve_run_context(
         extraction_root_rel=V5_EXTRACTION_ROOT,
         active_output_layout=ACTIVE_OUTPUT_LAYOUT,
         logger=logger,
+        readonly=readonly,
     )
 
 
-def get_run_dirs(root: Path, run_id: str) -> Dict[str, Path]:
+def get_run_dirs(root: Path, run_id: str, readonly: bool = False) -> Dict[str, Path]:
     """Return dict of run paths and ensure required folders exist."""
     return _get_run_dirs_impl(
         root,
@@ -2657,6 +2659,7 @@ def get_run_dirs(root: Path, run_id: str) -> Dict[str, Path]:
         legacy_phase_dir_aliases=LEGACY_PHASE_DIR_ALIASES,
         phase_dir_names=PHASE_DIR_NAMES,
         phases=PHASES,
+        readonly=readonly,
     )
 
 
@@ -6360,6 +6363,111 @@ def run_provider_preflight(
     scope_complete_for_launch: bool = True,
     persist_run_root: bool = True,
 ) -> Tuple[bool, Dict[str, Any]]:
+    if not persist_run_root:
+        selected_step_ids_by_phase = {
+            phase: selected_ids
+            for phase in phases
+            if (selected_ids := _selected_execution_step_ids_for_phase(cfg, phase))
+            is not None
+        }
+        provider_routes = collect_provider_routes(
+            phases=phases,
+            routing_policy=cfg.routing_policy,
+            selected_step_ids_by_phase=selected_step_ids_by_phase or None,
+        )
+        provider_probes = [
+            run_provider_doctor_probe(
+                provider=route["provider"],
+                model_id=route["model_id"],
+                api_key_env=route["api_key_env"],
+                cfg=cfg,
+            )
+            for route in provider_routes.values()
+        ]
+        batch_capability: Dict[str, Any] = {
+            "enabled": bool(cfg.batch_mode),
+            "provider": cfg.batch_provider,
+            "status": "SKIPPED",
+            "checks": [],
+        }
+        if cfg.batch_mode:
+            providers_to_check = (
+                {str(route["provider"]) for route in provider_routes.values()}
+                if cfg.batch_provider == "auto"
+                else {cfg.batch_provider}
+            )
+            checks = []
+            for provider in sorted(providers_to_check):
+                api_key_env = (
+                    "GEMINI_API_KEY"
+                    if provider == "gemini"
+                    else ("XAI_API_KEY" if provider == "xai" else "OPENAI_API_KEY")
+                )
+                api_key, _ = resolve_api_key(provider, api_key_env)
+                checks.append(
+                    {
+                        "provider": provider,
+                        "api_key_env": api_key_env,
+                        "api_key_present": bool(api_key),
+                    }
+                )
+            batch_capability = {
+                "enabled": True,
+                "provider": cfg.batch_provider,
+                "status": (
+                    "PASS"
+                    if all(row["api_key_present"] for row in checks)
+                    else "FAIL"
+                ),
+                "checks": checks,
+            }
+        failures = [probe for probe in provider_probes if not bool(probe.get("ready"))]
+        blocker_codes = sorted(
+            {
+                str(blocker.get("blocker_code"))
+                for probe in failures
+                if isinstance((blocker := probe.get("readiness_blocker")), dict)
+                and str(blocker.get("blocker_code"))
+            }
+        )
+        payload = {
+            "generated_at": now_iso(),
+            "run_id": run_id,
+            "status": "PASS" if not failures else "FAIL",
+            "phase_scope": [str(phase).upper() for phase in phases],
+            "step_scope": {
+                str(phase).upper(): [
+                    str(step_id).strip().upper() for step_id in selected_ids
+                ]
+                for phase, selected_ids in selected_step_ids_by_phase.items()
+            },
+            "scope_kind": str(scope_kind or "launch"),
+            "scope_complete_for_launch": bool(scope_complete_for_launch),
+            "routes": provider_routes,
+            "probes": provider_probes,
+            "failed_providers": [probe.get("provider") for probe in failures],
+            "failed_blocker_codes": blocker_codes,
+            "failure_summary": [
+                {
+                    "provider": str(probe.get("provider") or ""),
+                    "model_id": str(probe.get("model_id") or ""),
+                    "api_key_env": probe.get("api_key_env_resolved")
+                    or probe.get("api_key_env_name"),
+                    "failure_type": probe.get("failure_type"),
+                    "status_code": probe.get("status_code"),
+                    "provider_signature": probe.get("provider_signature"),
+                    "readiness_blocker": probe.get("readiness_blocker"),
+                    "remediation": None,
+                }
+                for probe in failures
+            ],
+            "rerun_worthiness": "ready_now" if not failures else "not_until_root_caused",
+            "routing_policy": cfg.routing_policy,
+            "routing_policy_version": ROUTING_POLICY_VERSION,
+            "batch_capability": batch_capability,
+        }
+        return (not failures), payload
+
     ok, payload = _run_provider_preflight_impl(
         root,
         run_id,
@@ -6376,10 +6484,10 @@ def run_provider_preflight(
         scope_kind=scope_kind,
         scope_complete_for_launch=scope_complete_for_launch,
     )
-    run_root = current_runs_root(root) / run_id
-    run_root.mkdir(parents=True, exist_ok=True)
-    canonical_path = run_root / "PROVIDER_PREFLIGHT.json"
     if persist_run_root:
+        run_root = current_runs_root(root) / run_id
+        run_root.mkdir(parents=True, exist_ok=True)
+        canonical_path = run_root / "PROVIDER_PREFLIGHT.json"
         write_json(canonical_path, payload)
     return ok, payload
 
@@ -6896,6 +7004,8 @@ def run_doctor_full(
     run_id: str,
     phases: List[str],
     cfg: RunnerConfig,
+    *,
+    persist: bool = True,
 ) -> int:
     prompt_index, duplicates = collect_prompt_index()
     missing_steps: Dict[str, List[str]] = {}
@@ -6955,13 +7065,14 @@ def run_doctor_full(
     }
     payload.update(_shared_doctor_advisory_fields("DOCTOR_FULL.json", run_id=run_id))
 
-    doctor_dir = current_doctor_root(root)
-    doctor_dir.mkdir(parents=True, exist_ok=True)
-    write_json(doctor_dir / "DOCTOR_FULL.json", payload)
-    write_certification_result(
-        dirs["root"],
-        topology_payload=payload,
-    )
+    if persist:
+        doctor_dir = current_doctor_root(root)
+        doctor_dir.mkdir(parents=True, exist_ok=True)
+        write_json(doctor_dir / "DOCTOR_FULL.json", payload)
+        write_certification_result(
+            dirs["root"],
+            topology_payload=payload,
+        )
     print(sanitized_json_text(payload, indent=2, sort_keys=False, ensure_ascii=True))
 
     has_missing = any(missing_steps.values())
@@ -9210,7 +9321,9 @@ def _auth_failure_bucket(
     return "other"
 
 
-def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> int:
+def run_auth_doctor(
+    root: Path, args: argparse.Namespace, cfg: RunnerConfig, *, persist: bool = True
+) -> int:
     phase = args.phase if args.phase in PHASES else "A"
     provider, model_id, api_key_env = MODEL_ROUTING.get(
         phase, ("gemini", DEFAULT_GEMINI_MODEL_ID, "GEMINI_API_KEY")
@@ -9347,10 +9460,6 @@ def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> 
         f"succeeded_modes={','.join(succeeded_modes) if succeeded_modes else '-'} "
         f"failed_modes={','.join(failed_modes) if failed_modes else '-'}"
     )
-    doctor_dir = current_doctor_root(root)
-    doctor_dir.mkdir(parents=True, exist_ok=True)
-    doctor_json = doctor_dir / "AUTH_DOCTOR.json"
-    doctor_txt = doctor_dir / "AUTH_DOCTOR.txt"
     payload = {
         "generated_at": now_iso(),
         "phase": phase,
@@ -9371,7 +9480,6 @@ def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> 
         "summary": summary,
     }
     payload.update(_shared_doctor_advisory_fields("AUTH_DOCTOR.json"))
-    write_json(doctor_json, payload)
     lines = [summary]
     lines.extend(
         [
@@ -9392,7 +9500,13 @@ def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> 
             f"authority_note={payload['authority_note']}",
         ]
     )
-    doctor_txt.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    if persist:
+        doctor_dir = current_doctor_root(root)
+        doctor_dir.mkdir(parents=True, exist_ok=True)
+        doctor_json = doctor_dir / "AUTH_DOCTOR.json"
+        doctor_txt = doctor_dir / "AUTH_DOCTOR.txt"
+        write_json(doctor_json, payload)
+        doctor_txt.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(sanitized_json_text(payload, indent=2, sort_keys=False, ensure_ascii=True))
     return 0 if succeeded_modes else 1
 
@@ -15596,7 +15710,12 @@ def write_strict_passthrough_attestations(
 
 
 def generate_coverage_report(
-    root: Path, dirs: Dict[str, Path], run_id: str, phases: List[str]
+    root: Path,
+    dirs: Dict[str, Path],
+    run_id: str,
+    phases: List[str],
+    *,
+    persist: bool = True,
 ) -> int:
     phase_rows = [_coverage_for_phase(phase, dirs[phase]) for phase in phases]
     required_status = get_required_artifact_status(dirs, R_REQUIRED_INPUT_PHASES)
@@ -15608,12 +15727,13 @@ def generate_coverage_report(
         "phases": {row["phase"]: row for row in phase_rows},
         "required_artifact_coverage": required_status,
     }
-    write_json(dirs["root"] / "COVERAGE_REPORT.json", payload)
-    proof_path = dirs["root"] / PROOF_PACK_FILENAME
-    proof = _load_json(proof_path)
-    proof["coverage_report"] = payload
-    proof["updated_at"] = now_iso()
-    write_json(proof_path, proof)
+    if persist:
+        write_json(dirs["root"] / "COVERAGE_REPORT.json", payload)
+        proof_path = dirs["root"] / PROOF_PACK_FILENAME
+        proof = _load_json(proof_path)
+        proof["coverage_report"] = payload
+        proof["updated_at"] = now_iso()
+        write_json(proof_path, proof)
     print(sanitized_json_text(payload, indent=2, sort_keys=False, ensure_ascii=True))
     return 0
 
@@ -18490,6 +18610,20 @@ def main() -> None:
 
     root = Path.cwd()
     configure_output_layout(root, args.output_root)
+    readonly_introspection = bool(
+        args.status
+        or args.status_json
+        or args.print_config
+        or args.print_run_order
+        or args.print_phase_routing
+        or args.print_phase_prompts is not None
+        or args.doctor_auth
+        or args.preflight_providers
+        or args.print_promptpack
+        or args.coverage_report
+        or args.verify_phase_output
+        or args.doctor
+    )
     if args.batch_mode and args.execute and args.batch_wait_timeout_seconds >= 86400:
         logger.warning(
             "Batch wait timeout is using the 86400-second legacy default; this increases zombie-session risk. "
@@ -18760,10 +18894,13 @@ def main() -> None:
             args.promptgen_scan or args.run_id or args.gemini_list_models
         )
         run_context = resolve_run_context(
-            root, args, allow_create_if_missing=allow_create_if_missing
+            root,
+            args,
+            allow_create_if_missing=allow_create_if_missing,
+            readonly=readonly_introspection,
         )
         run_id = run_context.run_id
-        dirs = get_run_dirs(root, run_id)
+        dirs = get_run_dirs(root, run_id, readonly=readonly_introspection)
     except Exception as exc:
         logger.error("Setup failed: %s", exc)
         sys.exit(1)
@@ -18774,7 +18911,7 @@ def main() -> None:
         or args.print_phase_routing
         or args.print_phase_prompts is not None
     )
-    if not contract_map_print_only_mode:
+    if not (contract_map_print_only_mode or readonly_introspection):
         try:
             phase_contract_map_path = write_phase_contract_map(dirs["root"], run_id)
         except Exception as exc:
@@ -18918,6 +19055,55 @@ def main() -> None:
         allow_online_llm=bool(args.allow_online_llm),
         router=router,
     )
+
+    if not phase_sequence and preset_phase_sequence:
+        phase_sequence = list(preset_phase_sequence)
+
+    if args.print_config:
+        print_config(args, root, run_id, dirs, cfg, phase_sequence, run_context)
+        sys.exit(0)
+    if args.print_run_order:
+        targets = phase_sequence if phase_sequence else PHASES
+        sys.exit(print_run_order(targets))
+    if args.print_phase_routing:
+        targets = phase_sequence if phase_sequence else PHASES
+        sys.exit(print_phase_routing(targets, cfg))
+    if args.print_phase_prompts is not None:
+        token = (
+            str(args.print_phase_prompts).strip().upper()
+            if args.print_phase_prompts
+            else "ALL"
+        )
+        if token == "ALL":
+            targets = PHASES
+        elif token in PHASES:
+            targets = [token]
+        else:
+            parser.error("--print-phase-prompts expects ALL or a single phase letter.")
+        sys.exit(print_phase_prompts(targets))
+    if args.doctor_auth:
+        sys.exit(run_auth_doctor(root, args, cfg, persist=False))
+    if args.preflight_providers:
+        targets = phase_sequence if phase_sequence else PHASES
+        ok, payload = run_provider_preflight(
+            root, run_id, cfg, targets, persist_run_root=False
+        )
+        print(sanitized_json_text(payload, indent=2, sort_keys=False, ensure_ascii=True))
+        sys.exit(0 if ok else 1)
+    if args.print_promptpack:
+        targets = phase_sequence if phase_sequence else PHASES
+        sys.exit(print_promptpack(targets))
+    if args.coverage_report:
+        targets = phase_sequence if phase_sequence else PHASES
+        sys.exit(generate_coverage_report(root, dirs, run_id, targets, persist=False))
+    if args.verify_phase_output:
+        verify_targets = (
+            PHASES if args.verify_phase_output == "ALL" else [args.verify_phase_output]
+        )
+        sys.exit(verify_phase_output(dirs, verify_targets, ui=None))
+    if args.doctor:
+        targets = phase_sequence if phase_sequence else PHASES
+        sys.exit(run_doctor_full(root, dirs, run_id, targets, cfg, persist=False))
 
     if SpendLedger is not None:
         cfg = replace(
@@ -19064,19 +19250,6 @@ def main() -> None:
         sys.exit(PROMPTSET_BLOCKED_EXIT_CODE)
     if args.doctor_auth:
         sys.exit(run_auth_doctor(root, args, cfg))
-    if args.preflight_providers:
-        targets = phase_sequence if phase_sequence else PHASES
-        ok, payload = run_provider_preflight(root, run_id, cfg, targets)
-        if args.preset:
-            write_confidence_ramp_artifacts(
-                dirs["root"],
-                args=args,
-                cfg=cfg,
-                phase_sequence=targets,
-                provider_preflight_payload=payload,
-            )
-        print(sanitized_json_text(payload, indent=2, sort_keys=False, ensure_ascii=True))
-        sys.exit(0 if ok else 1)
     if args.print_promptpack:
         targets = phase_sequence if phase_sequence else PHASES
         sys.exit(print_promptpack(targets))
