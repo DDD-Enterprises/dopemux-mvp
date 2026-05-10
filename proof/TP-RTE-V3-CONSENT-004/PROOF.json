@@ -9,7 +9,7 @@
   "worktree": "/Users/hue/.codex/worktrees/tp-rte-v3-consent-004",
   "base_branch": "main",
   "starting_head": "8ea182dd38ecd7754dff1c49224221cc49e390f4",
-  "ending_head": "fb57ee9c3400adc65ad28ccec2a8bc706d08dbe9",
+  "ending_head": "9fa294d4c0b0ea73cb7d36586f72eee29ea03b95",
   "ending_head_note": "Branch tip moves with each review-feedback commit on PR #605; this field records the latest verified-end snapshot. See pr_url for the live HEAD.",
   "files_changed": [
     "services/repo-truth-extractor/run_extraction_v3.py",
@@ -121,7 +121,7 @@
   ],
   "no_provider_calls_confirmation": true,
   "no_live_extraction_confirmation": true,
-  "commit_sha": "fb57ee9c3400adc65ad28ccec2a8bc706d08dbe9",
+  "commit_sha": "9fa294d4c0b0ea73cb7d36586f72eee29ea03b95",
   "commit_sha_note": "Most recently verified branch HEAD at proof snapshot time. Subsequent review-feedback commits on PR #605 (e.g. broader v3 live-op classification, expanded read-only allow-list) extend this packet; see PR commits for the full trail.",
   "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/605"
 }

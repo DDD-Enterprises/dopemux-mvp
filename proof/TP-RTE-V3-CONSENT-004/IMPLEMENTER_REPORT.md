@@ -70,5 +70,6 @@ Implemented a bounded RTE safety slice for legacy v3 execution:
 
 - Branch: `codex/tp-rte-v3-consent-004`
 - Worktree: `/Users/hue/.codex/worktrees/tp-rte-v3-consent-004`
-- Commit SHA: pending at report creation
-- PR URL: pending at report creation
+- Initial commit SHA: `96397e51072a6abe79fd7912d72f38282834bf73`
+- PR URL: https://github.com/DDD-Enterprises/dopemux-mvp/pull/605
+- Subsequent review-feedback commits extend this packet; see PR commit log for the live trail.
