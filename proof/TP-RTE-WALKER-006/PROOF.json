@@ -1,0 +1,165 @@
+{
+  "tp_id": "TP-RTE-WALKER-006",
+  "objective": "Close the RTE source-truth poisoning blocker by excluding generated outputs, proof/audit outputs, ignored runtime outputs, and known secret-bearing files from default Repo Truth Extractor prescan corpus input.",
+  "starting_head": "8ea182dd38ecd7754dff1c49224221cc49e390f4",
+  "ending_head": "8c8756eba924d89b3e35368b15ededb94c8911ab",
+  "ending_head_note": "Branch tip moves with each review-feedback commit on PR #606; this field records the latest verified implementation snapshot. See pr_url for the live HEAD.",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/606",
+  "branch": "codex/tp-rte-walker-006",
+  "base_branch": "main",
+  "worktree_path": "/Users/hue/.codex/worktrees/tp-rte-walker-006",
+  "repo_identity": {
+    "repo_root": "/Users/hue/.codex/worktrees/tp-rte-walker-006",
+    "repo_marker": ".dopetaskroot",
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "head_at_start": "8ea182dd38ecd7754dff1c49224221cc49e390f4",
+    "primary_checkout_observed": "/Users/hue/code/dopemux-mvp",
+    "dedicated_worktree_verified": true
+  },
+  "files_created": [
+    "task-packets/generated/TP-RTE-WALKER-006.json",
+    "proof/TP-RTE-WALKER-006/PROOF.json",
+    "proof/TP-RTE-WALKER-006/IMPLEMENTER_REPORT.md"
+  ],
+  "files_modified": [
+    "services/repo-truth-extractor/lib/prescan/models.py",
+    "services/repo-truth-extractor/lib/prescan/corpus_walker.py",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/tests/test_prescan_core_pipeline.py",
+    "services/repo-truth-extractor/tests/test_prescan_v5_integration.py",
+    "task-packets/INDEX.md"
+  ],
+  "tests_added_or_modified": [
+    "services/repo-truth-extractor/tests/test_prescan_core_pipeline.py",
+    "services/repo-truth-extractor/tests/test_prescan_v5_integration.py"
+  ],
+  "implementation_evidence": {
+    "generated_exclude_authority": "services/repo-truth-extractor/lib/prescan/models.py defines DEFAULT_GENERATED_OUTPUT_EXCLUDE_GLOBS and DEFAULT_PRESCAN_EXCLUDE_GLOBS.",
+    "secret_exclude_authority": "services/repo-truth-extractor/lib/prescan/models.py defines DEFAULT_SECRET_BEARING_EXCLUDE_GLOBS for .env, .env.*, *.pem, *.key, *.p12, *.pfx, id_rsa, and id_ed25519.",
+    "walker_usage": "services/repo-truth-extractor/lib/prescan/corpus_walker.py skips paths matching effective exclude globs before FileEntry creation or hashing.",
+    "integrated_prescan_usage": "services/repo-truth-extractor/run_extraction_v5.py imports DEFAULT_PRESCAN_EXCLUDE_GLOBS and passes exclude_globs=list(DEFAULT_PRESCAN_EXCLUDE_GLOBS) into LibPrescanConfig in run_integrated_prescan_stage.",
+    "operator_local_decision": ".codex, .conport, .dopemux, .dopetask, and common cache dirs are excluded by default; .claude is preserved because run_extraction_v5.py and existing tests explicitly include .claude as a governance/boundary input in non-prescan phases."
+  },
+  "validation_commands": [
+    {
+      "command": "python -m json.tool task-packets/generated/TP-RTE-WALKER-006.json",
+      "exit_code": 0,
+      "summary": "Task packet parses as JSON."
+    },
+    {
+      "command": "python -c \"import json, pathlib; from jsonschema import Draft7Validator; schema=json.loads(pathlib.Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text()); doc=json.loads(pathlib.Path('task-packets/generated/TP-RTE-WALKER-006.json').read_text()); errs=sorted(Draft7Validator(schema).iter_errors(doc), key=lambda e: e.path); raise SystemExit(0 if not errs else (print(errs) or 1))\"",
+      "exit_code": 0,
+      "summary": "Task packet validates against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json."
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_prescan_core_pipeline.py",
+      "exit_code": 0,
+      "summary": "10 focused walker/core prescan tests passed, including generated-output and secret-bearing exclusion regressions."
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_prescan_v5_integration.py",
+      "exit_code": 0,
+      "summary": "5 integration tests passed, including run_integrated_prescan_stage fixture proof that generated and secret-bearing paths are absent from integrated corpus_manifest.json."
+    },
+    {
+      "command": "python -m compileall -q services/repo-truth-extractor",
+      "exit_code": 0,
+      "summary": "Repo Truth Extractor Python files compile."
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests -k \"walker or prescan or corpus or exclude or secret\"",
+      "exit_code": 1,
+      "summary": "Broader selection ran offline but failed 7 pre-existing/off-scope tests: code_prescan_truthfulness missing keys, prescan_contracts optimize payload shape, prescan_e2e incremental reuse count, and prescan_hardening tests requiring unavailable openai module."
+    },
+    {
+      "command": "(cd /Users/hue/.codex/worktrees/806d/dopemux-mvp && RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests -k \"walker or prescan or corpus or exclude or secret\")",
+      "exit_code": 1,
+      "summary": "The same 7 failures reproduce on the untouched starting checkout, supporting classification as pre-existing/off-scope."
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_output_safety.py",
+      "exit_code": 0,
+      "summary": "5 existing output safety tests passed."
+    },
+    {
+      "command": "rg -n \"DEFAULT_PRESCAN_EXCLUDE_GLOBS|DEFAULT_GENERATED_OUTPUT_EXCLUDE_GLOBS|DEFAULT_SECRET_BEARING_EXCLUDE_GLOBS|exclude_globs=list\\(DEFAULT_PRESCAN_EXCLUDE_GLOBS\\)|_matches_any_glob|\\.env\\.\\*|id_ed25519|id_rsa|\\*\\.pem|\\*\\.key\" services/repo-truth-extractor/lib/prescan/models.py services/repo-truth-extractor/lib/prescan/corpus_walker.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_prescan_core_pipeline.py services/repo-truth-extractor/tests/test_prescan_v5_integration.py",
+      "exit_code": 0,
+      "summary": "Safety grep confirms exclude constants and integrated prescan pass-through are present in the changed files."
+    },
+    {
+      "command": "git diff --name-only | rg '(^services/repo-truth-extractor/promptsets/|routing|batch_clients|package-lock|requirements|pyproject|docs/03-reference|docs/05-audit-reports|ui|cockpit|tui)'",
+      "exit_code": 1,
+      "summary": "Expected no-match result: changed files do not include promptsets, routing/model files, batch clients, dependency files, docs sweep paths, or cockpit/TUI paths."
+    },
+    {
+      "command": "git diff -- services/repo-truth-extractor/run_extraction_v5.py",
+      "exit_code": 0,
+      "summary": "Manual diff inspection: only integrated prescan default exclude import and explicit exclude_globs pass-through changed in run_extraction_v5.py."
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_prescan_core_pipeline.py services/repo-truth-extractor/tests/test_prescan_v5_integration.py",
+      "exit_code": 0,
+      "summary": "15 focused walker and integrated-prescan tests passed in the final combined run."
+    },
+    {
+      "command": "python -m json.tool proof/TP-RTE-WALKER-006/PROOF.json",
+      "exit_code": 0,
+      "summary": "Proof JSON parses."
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "summary": "No whitespace errors found."
+    },
+    {
+      "command": "pre-commit run --files services/repo-truth-extractor/lib/prescan/models.py services/repo-truth-extractor/lib/prescan/corpus_walker.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_prescan_core_pipeline.py services/repo-truth-extractor/tests/test_prescan_v5_integration.py task-packets/INDEX.md task-packets/generated/TP-RTE-WALKER-006.json proof/TP-RTE-WALKER-006/PROOF.json proof/TP-RTE-WALKER-006/IMPLEMENTER_REPORT.md",
+      "exit_code": 0,
+      "summary": "Configured pre-commit hooks passed for changed allowlist files."
+    }
+  ],
+  "safety_boundary_confirmation": {
+    "live_provider_calls_run": false,
+    "live_extraction_runs_run": false,
+    "batch_execution_run": false,
+    "promptsets_touched": false,
+    "model_routing_touched": false,
+    "docs_sweep_included": false,
+    "provider_behavior_touched": false,
+    "dependency_files_changed": false,
+    "real_extraction_artifacts_mutated": false
+  },
+  "live_provider_calls_run": false,
+  "live_extraction_runs_run": false,
+  "batch_execution_run": false,
+  "generated_dirs_excluded_by_default": {
+    "value": true,
+    "evidence": "test_corpus_walker_excludes_generated_output_dirs_by_default, test_corpus_walker_excludes_nested_generated_output_dirs, and test_integrated_prescan_stage_uses_default_excludes passed."
+  },
+  "integrated_prescan_uses_excludes": {
+    "value": true,
+    "evidence": "run_integrated_prescan_stage passes exclude_globs=list(DEFAULT_PRESCAN_EXCLUDE_GLOBS) and integration test validates the emitted corpus_manifest.json."
+  },
+  "secret_bearing_files_excluded": {
+    "value": true,
+    "evidence": "DEFAULT_SECRET_BEARING_EXCLUDE_GLOBS covers .env, .env.*, *.pem, *.key, *.p12, *.pfx, id_rsa, id_ed25519; focused walker and integration tests passed."
+  },
+  "legitimate_source_preserved": {
+    "value": true,
+    "evidence": "Focused tests assert src/**, services/**, docs/**, tests/**, task-packets/INDEX.md, and non-generated task packet files remain included."
+  },
+  "blockers": [],
+  "residual_risks": [
+    "The broader prescan-related pytest selection has 7 failures that reproduce on the untouched starting checkout; they remain outside this TP scope.",
+    ".claude/** is not excluded in prescan defaults because current run_extraction_v5.py and tests explicitly treat .claude as input for non-prescan governance/boundary phases; whether prescan should also preserve or classify .claude remains a scoped UNKNOWN for a future packet.",
+    "The walker still traverses excluded directories via Path.rglob before skipping matched files; this fixes source input poisoning but does not optimize traversal cost."
+  ],
+  "codereview_status": {
+    "status": "passed",
+    "evidence": "Manual diff review after tests found no scope expansion and no blockers; run_extraction_v5.py diff is limited to integrated prescan exclude wiring."
+  },
+  "precommit_status": {
+    "status": "passed",
+    "evidence": "pre-commit run --files completed with exit code 0 for changed allowlist files."
+  },
+  "final_git_status_before_commit": "## codex/tp-rte-walker-006; modified: services/repo-truth-extractor/lib/prescan/corpus_walker.py, services/repo-truth-extractor/lib/prescan/models.py, services/repo-truth-extractor/run_extraction_v5.py, services/repo-truth-extractor/tests/test_prescan_core_pipeline.py, services/repo-truth-extractor/tests/test_prescan_v5_integration.py, task-packets/INDEX.md; untracked: task-packets/generated/TP-RTE-WALKER-006.json; ignored proof directory: proof/TP-RTE-WALKER-006/ (staged later with git add -f due .gitignore proof/*)."
+}

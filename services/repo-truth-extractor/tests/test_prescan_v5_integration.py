@@ -6,11 +6,14 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[3]
 SERVICE_ROOT = ROOT / "services" / "repo-truth-extractor"
 if str(SERVICE_ROOT) not in sys.path:
     sys.path.insert(0, str(SERVICE_ROOT))
 
+import run_extraction_v5 as runner
 from lib.intelligence_router import IntelligenceRouter
 from lib.prescan.engine import PrescanEngine
 from lib.prescan.models import FileEntry, PrescanConfig
@@ -207,6 +210,112 @@ def test_grok_passes_result_structure_compatible_with_router(tmp_path: Path) -> 
     assert "src/old_impl.py" in router.skip_list  # Original skip list
     assert router._phase_routing.get("src/api.py") == "phase2"
     assert len(router._model_routing) == 1
+
+
+def _write_fixture_file(root: Path, rel_path: str, text: str = "fixture\n") -> None:
+    path = root / rel_path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+
+
+def _make_runner_config() -> runner.RunnerConfig:
+    return runner.RunnerConfig(
+        dry_run=True,
+        max_files_docs=35,
+        max_files_code=20,
+        max_chars=650000,
+        max_request_bytes=200000,
+        file_truncate_chars=70000,
+        home_scan_mode="safe",
+        resume=False,
+        fail_fast_auth=True,
+        gemini_auth_mode="auto",
+        gemini_transport="sdk",
+        openai_transport="openai_sdk",
+        xai_transport="openai_sdk",
+        retry_policy="default",
+        retry_max_attempts=1,
+        retry_base_seconds=0.0,
+        retry_max_seconds=0.0,
+        phase_auth_fail_threshold=1,
+        partition_workers=1,
+        debug_phase_inputs=False,
+        fail_fast_missing_inputs=False,
+        routing_policy="cost",
+        batch_mode=False,
+        live_ok=False,
+        prescan_skip=False,
+        prescan_online=False,
+        allow_online_llm=False,
+    )
+
+
+def test_integrated_prescan_stage_uses_default_excludes(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """The actual v5 integrated prescan wrapper must apply the hardened walker excludes."""
+    repo_root = tmp_path / "repo"
+    run_root = tmp_path / "run"
+    _write_fixture_file(repo_root, "src/app.py", "def app():\n    return 1\n")
+    _write_fixture_file(repo_root, "services/example/service.py", "def service():\n    return 1\n")
+    _write_fixture_file(repo_root, "docs/source.md", "# Source\n")
+    _write_fixture_file(repo_root, "tests/test_example.py", "def test_example():\n    assert True\n")
+    _write_fixture_file(repo_root, "task-packets/INDEX.md", "# Index\n")
+    _write_fixture_file(repo_root, "task-packets/TP-SOURCE.json", "{}\n")
+    _write_fixture_file(repo_root, "task-packets/generated/TP-OLD.json", "{}\n")
+    _write_fixture_file(repo_root, "extraction/repo-truth-extractor/v5/runs/old/PROOF_PACK.json", "{}\n")
+    _write_fixture_file(repo_root, "proof/TP-OLD/PROOF.json", "{}\n")
+    _write_fixture_file(repo_root, "out/report.md", "# old report\n")
+    _write_fixture_file(repo_root, "audit_prep/input.md", "# audit\n")
+    _write_fixture_file(repo_root, "_audit_out/findings.md", "# findings\n")
+    _write_fixture_file(repo_root, "claudedocs/old.md", "# old\n")
+    _write_fixture_file(repo_root, ".env", "SECRET_VALUE_SHOULD_NOT_APPEAR=true\n")
+    _write_fixture_file(repo_root, "deploy.key", "SECRET_VALUE_SHOULD_NOT_APPEAR\n")
+
+    monkeypatch.setattr(
+        PrescanEngine,
+        "_run_stage0",
+        lambda self, passes: {
+            "catalog": {"routes": []},
+            "readiness": {"status": "PASS"},
+            "routing_plan": {
+                "status": "READY",
+                "selected_routes": {},
+                "fallback_decisions": {},
+            },
+        },
+    )
+
+    router_obj = runner.run_integrated_prescan_stage(repo_root, run_root, _make_runner_config())
+
+    assert router_obj is not None
+    prescan_dir = run_root / "prescan"
+    manifest = json.loads((prescan_dir / "corpus_manifest.json").read_text())
+    manifest_text = json.dumps(manifest, sort_keys=True)
+    paths = {item["rel_path"] for item in manifest}
+    assert {
+        "src/app.py",
+        "services/example/service.py",
+        "docs/source.md",
+        "tests/test_example.py",
+        "task-packets/INDEX.md",
+        "task-packets/TP-SOURCE.json",
+    } <= paths
+    assert "task-packets/generated/TP-OLD.json" not in paths
+    assert "extraction/repo-truth-extractor/v5/runs/old/PROOF_PACK.json" not in paths
+    assert "proof/TP-OLD/PROOF.json" not in paths
+    assert "out/report.md" not in paths
+    assert "audit_prep/input.md" not in paths
+    assert "_audit_out/findings.md" not in paths
+    assert "claudedocs/old.md" not in paths
+    assert ".env" not in paths
+    assert "deploy.key" not in paths
+    assert "SECRET_VALUE_SHOULD_NOT_APPEAR" not in manifest_text
+
+    receipt = json.loads((prescan_dir / "prescan_stage_receipt.json").read_text())
+    assert receipt["status"] == "success"
+    assert receipt["mode"] == "integrated"
 
 
 if __name__ == "__main__":

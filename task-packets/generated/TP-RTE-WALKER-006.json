@@ -1,0 +1,218 @@
+{
+  "id": "TP-RTE-WALKER-006",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / prescan / walker",
+  "invariants": [
+    "Treat services/repo-truth-extractor/run_extraction_v5.py as the strongest RTE runtime authority for integrated prescan wiring.",
+    "Treat services/repo-truth-extractor/lib/prescan/corpus_walker.py and services/repo-truth-extractor/lib/prescan/models.py as the prescan corpus inventory authority for this slice.",
+    "Do not run live extraction, provider/model calls, or batch execution.",
+    "Do not modify promptsets, model routing, docs sweep logic, batch clients, v3 consent gates, cockpit/TUI surfaces, provider behavior, or dependency declarations.",
+    "Preserve normal source scanning for src, services, docs, tests, task-packets/INDEX.md, and non-generated task packet sources.",
+    "Generated output, proof, audit, ignored runtime output, and known secret-bearing files must not be default source corpus input.",
+    "PR #605 / TP-RTE-V3-CONSENT-004 is open, not merged, at packet creation time; this packet therefore records no accepted parent."
+  ],
+  "depends_on": [
+    "TP-RTE-V3-CONSENT-004"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-GOLIVE-BLOCKERS",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-rte-walker-006",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(rte): exclude generated artifacts from prescan",
+    "allowlist": [
+      "services/repo-truth-extractor/lib/prescan/models.py",
+      "services/repo-truth-extractor/lib/prescan/corpus_walker.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/test_prescan_core_pipeline.py",
+      "services/repo-truth-extractor/tests/test_prescan_v5_integration.py",
+      "task-packets/INDEX.md",
+      "task-packets/generated/TP-RTE-WALKER-006.json",
+      "proof/TP-RTE-WALKER-006/PROOF.json",
+      "proof/TP-RTE-WALKER-006/IMPLEMENTER_REPORT.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-RTE-WALKER-006.json",
+      "python -m compileall -q services/repo-truth-extractor",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_prescan_core_pipeline.py services/repo-truth-extractor/tests/test_prescan_v5_integration.py",
+      "git diff --check",
+      "python -m json.tool proof/TP-RTE-WALKER-006/PROOF.json"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): exclude generated artifacts from prescan",
+    "body": "## Summary\n- harden the RTE prescan corpus walker so generated outputs, proof/audit outputs, caches, local operator metadata, and secret-bearing files are excluded from default source corpus input\n- wire the default exclusions through the integrated v5 prescan stage\n- add fixture-based regression tests for generated-output, nested-output, secret-file, integrated-prescan, and preserved-source behavior\n\n## Scope\n- Repo Truth Extractor prescan walker/config/integrated prescan path\n- focused tests, task packet, proof, and implementer report\n- no live extraction, provider/model calls, batch execution, promptset edits, model routing edits, docs sweep, dependency changes, or generated artifact cleanup\n\n## Validation\n- task packet JSON and schema validation\n- compileall for services/repo-truth-extractor\n- focused prescan/walker/integration pytest tests\n- proof JSON validation\n- git diff whitespace check",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Create and validate the repo-bound task packet before implementation.",
+      "requirements": [
+        "Verify repo root, marker, remote, branch, status, and HEAD.",
+        "Inspect RTE authority files and existing walker/prescan tests.",
+        "Record PR #605 status before selecting parent_tp_id."
+      ],
+      "commands": [
+        "python -m json.tool task-packets/generated/TP-RTE-WALKER-006.json"
+      ],
+      "expected_files": [
+        "task-packets/generated/TP-RTE-WALKER-006.json",
+        "task-packets/INDEX.md"
+      ],
+      "validation": [
+        "Task packet parses as JSON.",
+        "Task packet validates against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "PROJECT.md",
+        "docs/research/mcp-customization/dopemux-constraints/RULES.md",
+        "docs/research/mcp-customization/dopemux-constraints/SYSTEM_RepoTruthExtractor.md",
+        "docs/research/mcp-customization/dopemux-constraints/TRUTH_GAPS.md",
+        "docs/research/mcp-customization/dopemux-constraints/TRUTH_INTERFACES.md",
+        "task-packets/INDEX.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Centralize deterministic default excludes for generated-output, audit/proof, cache/runtime, and secret-bearing paths.",
+      "requirements": [
+        "Exclude extraction, proof, out, audit_prep, task-packets/generated, _audit_out, and claudedocs by default.",
+        "Exclude known secret-bearing local files such as .env, .env.*, *.pem, *.key, *.p12, *.pfx, id_rsa, and id_ed25519 by default.",
+        "Use normalized POSIX-style relative paths and deterministic matching for root-level and nested paths.",
+        "Preserve legitimate source files in src, services, docs, tests, task-packets/INDEX.md, and non-generated task packets."
+      ],
+      "commands": [
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_prescan_core_pipeline.py"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/lib/prescan/models.py",
+        "services/repo-truth-extractor/lib/prescan/corpus_walker.py",
+        "services/repo-truth-extractor/tests/test_prescan_core_pipeline.py"
+      ],
+      "validation": [
+        "Focused walker tests prove generated-output directories and secret-bearing files are excluded by default.",
+        "Focused walker tests prove legitimate source files remain included."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/lib/prescan/models.py",
+        "services/repo-truth-extractor/lib/prescan/corpus_walker.py",
+        "services/repo-truth-extractor/tests/test_prescan_core_pipeline.py"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Wire default excludes through the actual integrated v5 prescan call path.",
+      "requirements": [
+        "Ensure run_integrated_prescan_stage uses the same default generated-output and secret-bearing exclusions as the walker.",
+        "Prove this through the actual integrated prescan wrapper or the closest testable call path.",
+        "Do not run live extraction or provider/model calls."
+      ],
+      "commands": [
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_prescan_v5_integration.py"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/tests/test_prescan_v5_integration.py"
+      ],
+      "validation": [
+        "Integrated prescan fixture output excludes generated and secret-bearing paths.",
+        "Integrated prescan fixture output preserves legitimate source paths."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/tests/test_prescan_v5_integration.py"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run focused validation, inspect the diff, and produce proof artifacts.",
+      "requirements": [
+        "Run JSON, schema, compileall, focused pytest, proof JSON, and whitespace checks.",
+        "Inspect git diff stat and full diff before commit.",
+        "Record validation exit codes and residual UNKNOWNs in proof artifacts."
+      ],
+      "commands": [
+        "python -m json.tool task-packets/generated/TP-RTE-WALKER-006.json",
+        "python -m compileall -q services/repo-truth-extractor",
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_prescan_core_pipeline.py services/repo-truth-extractor/tests/test_prescan_v5_integration.py",
+        "git diff --check",
+        "python -m json.tool proof/TP-RTE-WALKER-006/PROOF.json"
+      ],
+      "expected_files": [
+        "proof/TP-RTE-WALKER-006/PROOF.json",
+        "proof/TP-RTE-WALKER-006/IMPLEMENTER_REPORT.md"
+      ],
+      "validation": [
+        "Validation results are recorded with exit codes.",
+        "Proof JSON parses.",
+        "Final git status before commit is recorded."
+      ],
+      "context_files": [
+        "proof/TP-RTE-WALKER-006/PROOF.json",
+        "proof/TP-RTE-WALKER-006/IMPLEMENTER_REPORT.md"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run codereview/precommit flow, commit allowlisted files, push, and open a PR when authenticated.",
+      "requirements": [
+        "Run codereview before precommit.",
+        "Run pre-commit on changed files if configured and safe.",
+        "Commit only allowlisted files.",
+        "Push codex/tp-rte-walker-006 and open a PR against main when gh authentication permits."
+      ],
+      "commands": [
+        "git diff --stat",
+        "git diff",
+        "pre-commit run --files <files changed>",
+        "git commit -m \"fix(rte): exclude generated artifacts from prescan\"",
+        "git push -u origin codex/tp-rte-walker-006",
+        "gh pr create --base main --head codex/tp-rte-walker-006 --title \"fix(rte): exclude generated artifacts from prescan\" --body-file <body>"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/lib/prescan/models.py",
+        "services/repo-truth-extractor/lib/prescan/corpus_walker.py",
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/tests/test_prescan_core_pipeline.py",
+        "services/repo-truth-extractor/tests/test_prescan_v5_integration.py",
+        "task-packets/INDEX.md",
+        "task-packets/generated/TP-RTE-WALKER-006.json",
+        "proof/TP-RTE-WALKER-006/PROOF.json",
+        "proof/TP-RTE-WALKER-006/IMPLEMENTER_REPORT.md"
+      ],
+      "validation": [
+        "Commit SHA is recorded.",
+        "Push succeeds or exact blocker is recorded.",
+        "PR URL is recorded or exact blocker is recorded."
+      ],
+      "context_files": [
+        "task-packets/generated/TP-RTE-WALKER-006.json"
+      ]
+    }
+  ]
+}
