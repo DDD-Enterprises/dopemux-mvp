@@ -4,6 +4,7 @@ import logging
 from pathlib import Path, PurePosixPath
 from .models import (
     DEFAULT_SECRET_BEARING_ALLOWLIST_BASENAMES,
+    DEFAULT_SECRET_BEARING_EXCLUDE_GLOBS,
     FileEntry,
     PrescanConfig,
 )
@@ -41,6 +42,7 @@ HARDCODED_EXCLUDE_DIRS = frozenset(
 SECRET_BEARING_ALLOWLIST_BASENAMES = frozenset(
     DEFAULT_SECRET_BEARING_ALLOWLIST_BASENAMES
 )
+SECRET_BEARING_EXCLUDE_GLOB_SET = frozenset(DEFAULT_SECRET_BEARING_EXCLUDE_GLOBS)
 
 class CorpusWalker:
     def __init__(self, config: PrescanConfig):
@@ -62,8 +64,16 @@ class CorpusWalker:
             if self._is_excluded_dir(path, repo_root):
                 continue
 
+            non_secret_excludes, secret_excludes = self._partition_exclude_globs(
+                self._effective_exclude_globs()
+            )
+            # Path-level excludes (generated trees, caches, operator-local dirs) are
+            # always honored — the secret-template allowlist only overrides
+            # secret-bearing patterns, not unrelated directory excludes.
+            if self._matches_any_glob(rel_path, non_secret_excludes):
+                continue
             if not template_allowlisted and self._matches_any_glob(
-                rel_path, self._effective_exclude_globs()
+                rel_path, secret_excludes
             ):
                 continue
 
@@ -140,6 +150,19 @@ class CorpusWalker:
             if fnmatch.fnmatchcase(rel_path + "/", normalized_pattern):
                 return True
         return False
+
+    def _partition_exclude_globs(
+        self, globs: list[str]
+    ) -> tuple[list[str], list[str]]:
+        """Split exclude globs into (non_secret, secret) groups."""
+        non_secret: list[str] = []
+        secret: list[str] = []
+        for pattern in globs:
+            if pattern in SECRET_BEARING_EXCLUDE_GLOB_SET:
+                secret.append(pattern)
+            else:
+                non_secret.append(pattern)
+        return non_secret, secret
 
     def _effective_exclude_globs(self) -> list[str]:
         """Return exclude globs adjusted for deep mode.

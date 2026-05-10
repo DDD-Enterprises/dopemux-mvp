@@ -126,7 +126,12 @@ def test_corpus_walker_excludes_generated_output_dirs_by_default(tmp_path: Path)
 
 
 def test_corpus_walker_excludes_nested_generated_output_dirs(tmp_path: Path) -> None:
-    """Nested generated trees are excluded when the walker sees nested workspace copies."""
+    """Nested generated trees are excluded for unambiguous output names (proof, out, task-packets/generated).
+
+    Ambiguous names like ``extraction`` and ``claudedocs`` are only excluded at repo
+    root, since they also appear as legitimate source/doc directories
+    (e.g. ``src/dopemux/extraction``, ``docs/archive/claudedocs``).
+    """
     _write_fixture_file(tmp_path, "src/app.py")
     _write_fixture_file(tmp_path, "some/project/extraction/generated.json")
     _write_fixture_file(tmp_path, "nested/proof/PROOF.json")
@@ -142,11 +147,49 @@ def test_corpus_walker_excludes_nested_generated_output_dirs(tmp_path: Path) -> 
     entries = CorpusWalker(config).walk()
 
     paths = _all_paths(entries)
-    assert "src/app.py" in _included_paths(entries)
-    assert "some/project/extraction/generated.json" not in paths
+    included = _included_paths(entries)
+    assert "src/app.py" in included
+    # extraction is ambiguous → nested instances stay in corpus
+    assert "some/project/extraction/generated.json" in included
+    # proof, out, task-packets/generated remain excluded at any nesting depth
     assert "nested/proof/PROOF.json" not in paths
     assert "nested/out/report.md" not in paths
     assert "nested/task-packets/generated/TP-OLD.json" not in paths
+
+
+def test_corpus_walker_includes_legit_extraction_and_claudedocs_subtrees(tmp_path: Path) -> None:
+    """Legit nested 'extraction' and 'claudedocs' dirs (real source/docs) must be included."""
+    legitimate = {
+        "src/dopemux/extraction/parser.py",
+        "services/repo-truth-extractor/extraction/runtime.py",
+        "docs/02-how-to/extraction/guide.md",
+        "docs/03-reference/extraction/spec.md",
+        "docs/archive/claudedocs/old-note.md",
+    }
+    # And the root-level generated dirs must still be excluded.
+    generated_at_root = {
+        "extraction/run/output.json",
+        "claudedocs/work-note.md",
+    }
+    for rel_path in sorted(legitimate | generated_at_root):
+        _write_fixture_file(tmp_path, rel_path)
+
+    config = PrescanConfig(
+        repo_root=tmp_path,
+        output_dir=tmp_path / "prescan-output",
+        enable_code_prescan=False,
+        enable_git_enrichment=False,
+    )
+    entries = CorpusWalker(config).walk()
+
+    paths = _all_paths(entries)
+    included = _included_paths(entries)
+    assert legitimate <= included, (
+        f"legit nested extraction/claudedocs dropped: {legitimate - included}"
+    )
+    assert generated_at_root.isdisjoint(paths), (
+        f"root-level generated tree leaked: {generated_at_root & paths}"
+    )
 
 
 def test_corpus_walker_excludes_secret_bearing_files_by_default(tmp_path: Path) -> None:
@@ -216,6 +259,39 @@ def test_corpus_walker_allowlists_env_templates(tmp_path: Path) -> None:
     assert real_secrets.isdisjoint(paths), (
         f"real secret files leaked into corpus: {real_secrets & paths}"
     )
+
+
+def test_corpus_walker_template_allowlist_does_not_bypass_directory_excludes(
+    tmp_path: Path,
+) -> None:
+    """Env templates are allowlisted only against secret-bearing patterns; directory excludes still apply."""
+    _write_fixture_file(tmp_path, ".env.example", "API_KEY=placeholder\n")
+    _write_fixture_file(tmp_path, "src/.env.template", "API_KEY=placeholder\n")
+    # These should remain excluded even though basename is allowlisted: directory excludes win.
+    _write_fixture_file(
+        tmp_path, "proof/TP-FOO/.env.example", "LEAKED=should_be_excluded\n"
+    )
+    _write_fixture_file(
+        tmp_path, "task-packets/generated/.env.example", "LEAKED=should_be_excluded\n"
+    )
+    _write_fixture_file(
+        tmp_path, "extraction/.env.example", "LEAKED=should_be_excluded\n"
+    )
+
+    config = PrescanConfig(
+        repo_root=tmp_path,
+        output_dir=tmp_path / "prescan-output",
+        enable_code_prescan=False,
+        enable_git_enrichment=False,
+    )
+    entries = CorpusWalker(config).walk()
+
+    paths = _all_paths(entries)
+    included = _included_paths(entries)
+    assert {".env.example", "src/.env.template"} <= included
+    assert "proof/TP-FOO/.env.example" not in paths
+    assert "task-packets/generated/.env.example" not in paths
+    assert "extraction/.env.example" not in paths
 
 
 def test_prescan_engine_manifest_preserves_source_and_omits_excluded_inputs(tmp_path: Path) -> None:

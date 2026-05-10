@@ -11,6 +11,10 @@ def _root_and_nested_globs(*dir_names: str) -> tuple[str, ...]:
     return tuple(patterns)
 
 
+def _root_globs(*dir_names: str) -> tuple[str, ...]:
+    return tuple(f"{dir_name}/**" for dir_name in dir_names)
+
+
 DEFAULT_BASE_EXCLUDE_GLOBS = (
     ".git/**",
     "**/.git/**",
@@ -29,13 +33,20 @@ DEFAULT_BASE_EXCLUDE_GLOBS = (
 )
 
 DEFAULT_GENERATED_OUTPUT_EXCLUDE_GLOBS = (
-    *_root_and_nested_globs(
+    # Root-only: these directory names also occur as legitimate source/doc trees
+    # (e.g. src/dopemux/extraction, docs/02-how-to/extraction, docs/archive/claudedocs),
+    # so excluding `**/<name>/**` would drop canonical sources.
+    *_root_globs(
         "extraction",
+        "claudedocs",
+    ),
+    # Root + nested: these names are unambiguously generated output trees in this
+    # repo and have no legitimate non-generated occurrences.
+    *_root_and_nested_globs(
         "proof",
         "out",
         "audit_prep",
         "_audit_out",
-        "claudedocs",
     ),
     "task-packets/generated/**",
     "**/task-packets/generated/**",
