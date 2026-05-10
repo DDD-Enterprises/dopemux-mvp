@@ -1,0 +1,127 @@
+{
+  "tp_id": "TP-RTE-V3-CONSENT-004",
+  "repo": {
+    "project": "dopemux-mvp",
+    "remote": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker": ".dopetaskroot"
+  },
+  "branch": "codex/tp-rte-v3-consent-004",
+  "worktree": "/Users/hue/.codex/worktrees/tp-rte-v3-consent-004",
+  "base_branch": "main",
+  "starting_head": "8ea182dd38ecd7754dff1c49224221cc49e390f4",
+  "ending_head": "9fa294d4c0b0ea73cb7d36586f72eee29ea03b95",
+  "ending_head_note": "Branch tip moves with each review-feedback commit on PR #605; this field records the latest verified-end snapshot. See pr_url for the live HEAD.",
+  "files_changed": [
+    "services/repo-truth-extractor/run_extraction_v3.py",
+    "services/repo-truth-extractor/run_repscan.py",
+    "services/repo-truth-extractor/tests/test_run_extraction_v3_consent.py",
+    "services/repo-truth-extractor/tests/test_run_repscan.py",
+    "services/repo-truth-extractor/tests/test_truth_run_cli.py",
+    "src/dopemux/cli.py",
+    "src/dopemux/commands/extractor_commands.py",
+    "task-packets/INDEX.md",
+    "task-packets/generated/TP-RTE-V3-CONSENT-004.json",
+    "proof/TP-RTE-V3-CONSENT-004/PROOF.json",
+    "proof/TP-RTE-V3-CONSENT-004/IMPLEMENTER_REPORT.md"
+  ],
+  "findings_addressed": {
+    "F1-CRIT-1": "Addressed: run_extraction_v3.py now supports --execute and refuses live-capable v3 operations unless --execute and DPMX_LIVE_OK=1 are both present. The refusal happens before root/run context resolution and before run artifact creation.",
+    "F1-CRIT-2": "Addressed: _extractor_runner_path now accepts only v5, v4, and v3, and raises ClickException for unknown values instead of returning run_extraction_v3.py.",
+    "F1-HIGH-2": "Narrowed/addressed for the inspected route: dopemux rte scan refuses by default before launching run_repscan.py, and run_repscan.py itself requires --allow-legacy-v3-scan before creating v3 scan artifacts or delegating to v3."
+  },
+  "behavior_before": [
+    "_extractor_runner_path returned run_extraction_v3.py for any pipeline_version other than v5 or v4.",
+    "run_extraction_v3.py had no --execute flag and treated omitted --dry-run as live-capable execution.",
+    "run_extraction_v3.py resolved run context and created v3 run directories before any live consent posture existed.",
+    "run_repscan.py created v3 run artifacts and delegated to run_extraction_v3.py without a wrapper-level legacy opt-in.",
+    "dopemux rte scan called run_repscan.py without an operator-facing legacy-v3 refusal."
+  ],
+  "behavior_after": [
+    "_extractor_runner_path returns runners only for v5, v4, or v3 and fails closed for unknown programmatic input.",
+    "run_extraction_v3.py exposes --execute and requires both --execute and DPMX_LIVE_OK=1 for live-capable phase, async, finalize, batch-watch, or batch-retrieve operations.",
+    "v3 consent refusal runs before Path.cwd() run context setup, latest pointer writes, run manifest writes, phase directory creation, provider calls, model calls, and batch calls.",
+    "v3 --dry-run remains allowed for live-capable operations without DPMX_LIVE_OK because it is not live execution.",
+    "dopemux rte run passes --execute to the selected runner when the operator chooses the Click --execute side of --dry-run/--execute.",
+    "dopemux rte scan refuses by default; explicit --allow-legacy-v3-scan is required before invoking run_repscan.py.",
+    "run_repscan.py also refuses by default without --allow-legacy-v3-scan, so direct wrapper invocation cannot silently enter the v3 scan route."
+  ],
+  "validations": [
+    {
+      "command": "python -m json.tool task-packets/generated/TP-RTE-V3-CONSENT-004.json >/dev/null",
+      "exit_code": 0,
+      "summary": "Task Packet JSON parsed."
+    },
+    {
+      "command": "python - <<'PY'\nimport json\nfrom pathlib import Path\nfrom jsonschema import Draft7Validator\nschema = json.loads(Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text())\npayload = json.loads(Path('task-packets/generated/TP-RTE-V3-CONSENT-004.json').read_text())\nerrors = sorted(Draft7Validator(schema).iter_errors(payload), key=lambda e: list(e.path))\nassert not errors, [e.message for e in errors]\nPY",
+      "exit_code": 0,
+      "summary": "Task Packet validated against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json."
+    },
+    {
+      "command": "python -m compileall -q src/dopemux services/repo-truth-extractor",
+      "exit_code": 0,
+      "summary": "Python compile check passed for dopemux and repo-truth-extractor trees."
+    },
+    {
+      "command": "python services/repo-truth-extractor/run_extraction_v3.py --help >/tmp/rte_v3_help.txt",
+      "exit_code": 0,
+      "summary": "v3 help rendered successfully and includes the updated argparse surface."
+    },
+    {
+      "command": "python services/repo-truth-extractor/run_extraction_v4.py --help >/tmp/rte_v4_help.txt",
+      "exit_code": 0,
+      "summary": "v4 compatibility wrapper help rendered successfully."
+    },
+    {
+      "command": "python services/repo-truth-extractor/run_extraction_v5.py --help >/tmp/rte_v5_help.txt",
+      "exit_code": 0,
+      "summary": "v5 canonical runner help rendered successfully."
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+      "exit_code": 0,
+      "summary": "43 v5 operator-safety tests passed."
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v3_consent.py services/repo-truth-extractor/tests/test_truth_run_cli.py services/repo-truth-extractor/tests/test_run_repscan.py",
+      "exit_code": 0,
+      "summary": "28 tests passed and 2 existing CLI import tests skipped because litellm is not installed in this environment."
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "summary": "Whitespace diff check passed."
+    },
+    {
+      "command": "pre-commit run --files services/repo-truth-extractor/run_extraction_v3.py services/repo-truth-extractor/run_repscan.py services/repo-truth-extractor/tests/test_run_extraction_v3_consent.py services/repo-truth-extractor/tests/test_run_repscan.py services/repo-truth-extractor/tests/test_truth_run_cli.py src/dopemux/cli.py src/dopemux/commands/extractor_commands.py task-packets/generated/TP-RTE-V3-CONSENT-004.json",
+      "exit_code": 0,
+      "summary": "Configured pre-commit hooks passed or skipped as not applicable; repository root hygiene hook passed."
+    }
+  ],
+  "tests_run": [
+    "services/repo-truth-extractor/tests/test_run_extraction_v3_consent.py",
+    "services/repo-truth-extractor/tests/test_run_repscan.py",
+    "services/repo-truth-extractor/tests/test_truth_run_cli.py",
+    "services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py"
+  ],
+  "artifacts_created": [
+    "task-packets/generated/TP-RTE-V3-CONSENT-004.json",
+    "proof/TP-RTE-V3-CONSENT-004/PROOF.json",
+    "proof/TP-RTE-V3-CONSENT-004/IMPLEMENTER_REPORT.md"
+  ],
+  "remaining_risks": [
+    "The full repository test suite was not run; validation was targeted to RTE operator safety and the touched routes.",
+    "Two pre-existing dopemux.cli import-dependent tests in test_truth_run_cli.py skipped because litellm is not installed in this environment.",
+    "run_repscan.py remains a legacy v3 wrapper when --allow-legacy-v3-scan is explicitly supplied; this packet blocks silent use but does not replace it with a v5 scan implementation.",
+    "v4 wrapper internals were not redesigned; only help smoke validation was run to confirm the wrapper still imports and exposes CLI help."
+  ],
+  "unknowns": [
+    "Root-level RULES.md, SYSTEM_RepoTruthExtractor.md, TRUTH_SYSTEMS.md, TRUTH_INTERFACES.md, TRUTH_CANONICALS.md, TRUTH_GAPS.md, and dopetask-cannonical-spec.json are absent in this checkout; tracked research/reference equivalents and docs/03-reference/spec/dopetask/dopetask-canonical-spec.json were used.",
+    "Broader repo-wide agent runtime authority remains UNKNOWN per AGENTS.md and was not touched.",
+    "Whether every external operator practice has stopped using direct run_repscan.py is UNKNOWN; direct run_repscan.py now fails closed unless explicitly opted in."
+  ],
+  "no_provider_calls_confirmation": true,
+  "no_live_extraction_confirmation": true,
+  "commit_sha": "9fa294d4c0b0ea73cb7d36586f72eee29ea03b95",
+  "commit_sha_note": "Most recently verified branch HEAD at proof snapshot time. Subsequent review-feedback commits on PR #605 (e.g. broader v3 live-op classification, expanded read-only allow-list) extend this packet; see PR commits for the full trail.",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/605"
+}

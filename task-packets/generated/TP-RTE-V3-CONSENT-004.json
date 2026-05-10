@@ -1,0 +1,216 @@
+{
+  "id": "TP-RTE-V3-CONSENT-004",
+  "project": "dopemux-mvp",
+  "target": "Repo Truth Extractor v3 consent and pipeline-version safety",
+  "invariants": [
+    "v5 canonical runtime remains services/repo-truth-extractor/run_extraction_v5.py.",
+    "v4 compatibility wrapper behavior must not be broken.",
+    "v3 must not execute live without explicit --execute and DPMX_LIVE_OK=1 consent.",
+    "Unknown pipeline versions must fail closed instead of falling back to v3.",
+    "No provider calls in tests.",
+    "No live extraction in tests.",
+    "No batch path changes.",
+    "No broad docs canonical-name sweep. Root-level RULES/TRUTH/SYSTEM files are absent; tracked research/reference locations are used as observed authority drift."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "rte-v3-consent-safety",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-rte-v3-consent-004",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(rte): gate legacy v3 execution and reject unknown pipeline versions",
+    "allowlist": [
+      "task-packets/generated/TP-RTE-V3-CONSENT-004.json",
+      "src/dopemux/commands/extractor_commands.py",
+      "src/dopemux/cli.py",
+      "services/repo-truth-extractor/run_extraction_v3.py",
+      "services/repo-truth-extractor/run_repscan.py",
+      "services/repo-truth-extractor/tests/**",
+      "proof/TP-RTE-V3-CONSENT-004/PROOF.json",
+      "proof/TP-RTE-V3-CONSENT-004/IMPLEMENTER_REPORT.md",
+      "task-packets/INDEX.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-RTE-V3-CONSENT-004.json >/dev/null",
+      "python - <<'PY'\nimport json\nfrom pathlib import Path\nfrom jsonschema import Draft7Validator\nschema=json.loads(Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text())\npayload=json.loads(Path('task-packets/generated/TP-RTE-V3-CONSENT-004.json').read_text())\nerrors=sorted(Draft7Validator(schema).iter_errors(payload), key=lambda e: e.path)\nassert not errors, [e.message for e in errors]\nPY",
+      "python -m compileall -q src/dopemux services/repo-truth-extractor",
+      "python services/repo-truth-extractor/run_extraction_v3.py --help",
+      "python services/repo-truth-extractor/run_extraction_v4.py --help",
+      "python services/repo-truth-extractor/run_extraction_v5.py --help",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v3_consent.py services/repo-truth-extractor/tests/test_truth_run_cli.py services/repo-truth-extractor/tests/test_run_repscan.py",
+      "git diff --check",
+      "python -m json.tool proof/TP-RTE-V3-CONSENT-004/PROOF.json >/dev/null"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): gate legacy v3 execution and reject unknown pipeline versions",
+    "body": "Implements TP-RTE-V3-CONSENT-004. Adds fail-closed pipeline-version routing, adds explicit --execute plus DPMX_LIVE_OK=1 consent for legacy v3 live execution, and blocks dopemux rte scan unless the operator explicitly opts into the legacy v3 scan route. No provider calls, no live extraction, no batch-path changes, and no broad docs sweep are in scope.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "implement",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Verify repo identity, authority files, worktree, and existing RTE safety contracts before implementation.",
+      "requirements": [
+        "Verify repo root, remote, branch, clean status, HEAD, .git, and .dopetaskroot.",
+        "Read root authority files where present and tracked research/reference authority where root truth files are absent.",
+        "Inspect v5, v4, v3, run_repscan, dopemux CLI routing, and focused operator-safety tests."
+      ],
+      "commands": [
+        "pwd",
+        "git rev-parse --show-toplevel",
+        "git remote -v",
+        "git status --short",
+        "git rev-parse HEAD",
+        "ls -la .git .dopetaskroot"
+      ],
+      "expected_files": [
+        "task-packets/generated/TP-RTE-V3-CONSENT-004.json"
+      ],
+      "validation": [
+        "Dedicated worktree is clean and on codex/tp-rte-v3-consent-004.",
+        "Runtime authority confirms v5 canonical, v4 compatibility wrapper, v3 legacy/fallback, and dopemux rte as operator surface."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/research/mcp-customization/dopemux-constraints/RULES.md",
+        "docs/research/mcp-customization/dopemux-constraints/SYSTEM_RepoTruthExtractor.md",
+        "docs/research/mcp-customization/dopemux-constraints/TRUTH_SYSTEMS.md",
+        "docs/research/mcp-customization/dopemux-constraints/TRUTH_INTERFACES.md",
+        "docs/research/mcp-customization/dopemux-constraints/TRUTH_CANONICALS.md",
+        "docs/research/mcp-customization/dopemux-constraints/TRUTH_GAPS.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Make unknown pipeline versions fail closed and cover programmatic invalid input.",
+      "requirements": [
+        "_extractor_runner_path must accept only v5, v4, and v3.",
+        "Unknown values must raise a clear ClickException or equivalent instead of returning run_extraction_v3.py.",
+        "Add focused test coverage that calls the helper programmatically."
+      ],
+      "commands": [
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_truth_run_cli.py"
+      ],
+      "expected_files": [
+        "src/dopemux/commands/extractor_commands.py",
+        "services/repo-truth-extractor/tests/test_truth_run_cli.py"
+      ],
+      "validation": [
+        "Invalid pipeline version no longer resolves to run_extraction_v3.py."
+      ],
+      "context_files": [
+        "src/dopemux/commands/extractor_commands.py",
+        "src/dopemux/cli.py"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Add v3 explicit live consent gate before artifact creation or provider-capable work.",
+      "requirements": [
+        "Add --execute to run_extraction_v3.py with default false.",
+        "For live-capable v3 operations, require both --execute and DPMX_LIVE_OK=1.",
+        "Refuse before provider calls, model calls, batch calls, run manifest writes, phase directories, latest-run pointer updates, or phase execution.",
+        "Preserve dry-run and safe introspection where runtime behavior is clear."
+      ],
+      "commands": [
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v3_consent.py"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/run_extraction_v3.py",
+        "services/repo-truth-extractor/tests/test_run_extraction_v3_consent.py"
+      ],
+      "validation": [
+        "v3 refusals exit non-zero and do not create v3 run artifacts under a temp repo root."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/run_extraction_v3.py",
+        "services/repo-truth-extractor/run_extraction_v5.py"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Block or narrow dopemux rte scan so it cannot silently route into unsafe v3 behavior.",
+      "requirements": [
+        "Inspect run_repscan.py and dopemux rte scan wiring.",
+        "Use the smallest safe route: fail closed by default, with explicit legacy opt-in only if needed.",
+        "Do not invent a new v5 scan implementation."
+      ],
+      "commands": [
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_repscan.py services/repo-truth-extractor/tests/test_truth_run_cli.py"
+      ],
+      "expected_files": [
+        "src/dopemux/cli.py",
+        "services/repo-truth-extractor/run_repscan.py",
+        "services/repo-truth-extractor/tests/test_run_repscan.py",
+        "services/repo-truth-extractor/tests/test_truth_run_cli.py"
+      ],
+      "validation": [
+        "dopemux rte scan refuses safely by default and direct run_repscan requires explicit legacy consent before delegation."
+      ],
+      "context_files": [
+        "src/dopemux/cli.py",
+        "services/repo-truth-extractor/run_repscan.py"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run focused validation, inspect diff, create proof artifacts, commit, push, and open PR if authenticated.",
+      "requirements": [
+        "Run compile/help checks and targeted tests without provider calls or live extraction.",
+        "Run git diff --check and configured pre-commit if safe.",
+        "Create proof/TP-RTE-V3-CONSENT-004/PROOF.json and IMPLEMENTER_REPORT.md with command exit codes and residual risks.",
+        "Commit only allowlisted files, push the branch, and open a PR when gh auth permits."
+      ],
+      "commands": [
+        "python -m compileall -q src/dopemux services/repo-truth-extractor",
+        "python services/repo-truth-extractor/run_extraction_v3.py --help",
+        "python services/repo-truth-extractor/run_extraction_v4.py --help",
+        "python services/repo-truth-extractor/run_extraction_v5.py --help",
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v3_consent.py services/repo-truth-extractor/tests/test_truth_run_cli.py services/repo-truth-extractor/tests/test_run_repscan.py",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "proof/TP-RTE-V3-CONSENT-004/PROOF.json",
+        "proof/TP-RTE-V3-CONSENT-004/IMPLEMENTER_REPORT.md"
+      ],
+      "validation": [
+        "Validation commands and exit codes are recorded truthfully.",
+        "Proof JSON parses.",
+        "No provider calls and no live extraction are confirmed by test scope and command arguments."
+      ],
+      "context_files": [
+        "proof/TP-RTE-V3-CONSENT-004/PROOF.json",
+        "proof/TP-RTE-V3-CONSENT-004/IMPLEMENTER_REPORT.md"
+      ]
+    }
+  ]
+}

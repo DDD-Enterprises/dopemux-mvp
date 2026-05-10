@@ -53,6 +53,7 @@ A packet is superseded by another packet
 | TP-DMX-RTEAUDIT-001 | Repo Truth Extractor | Assemble pre-live audit pack for GPT-5.4 Pro | Ready | N/A |
 | TP-DMX-RTEINT-001 | Repo Truth Extractor | Integrate current RTE branch deltas into staging audit branch | Ready | N/A |
 | TP-DMX-RTECANON-001 | Repo Truth Extractor | Establish `dopemux rte` as the canonical operator entrypoint | Ready | N/A |
+| TP-RTE-V3-CONSENT-004 | Repo Truth Extractor | Gate legacy v3 execution and fail closed on unknown pipeline versions | Active | N/A |
 | TP-RTE-WALKER-006 | Repo Truth Extractor | Exclude generated artifacts and secret-bearing files from prescan walker input | Active | N/A |
 | TP-DMX-AGENTS-CODEX-ENDTOEND-0001 | Agent Guidance | Make Codex execute TP lifecycle end-to-end by default | Ready | N/A |
 | TP-DMX-COMPOSE-RESTORE-001 | Infra | Restore canonical Docker Compose authority | Ready | N/A |

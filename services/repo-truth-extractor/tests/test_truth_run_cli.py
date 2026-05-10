@@ -19,6 +19,9 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 from unittest.mock import MagicMock, patch
 
+import click
+from click.testing import CliRunner
+
 # ---------------------------------------------------------------------------
 # Load modules under test without modifying installed packages
 # ---------------------------------------------------------------------------
@@ -101,6 +104,36 @@ class TestTruthRunCommandRegistered(unittest.TestCase):
 
         self.assertIn("rte", cli.commands)
         self.assertIn("run", cli.commands["rte"].commands)
+
+    def test_unknown_pipeline_version_does_not_fall_back_to_v3(self):
+        """Programmatic invalid pipeline versions must fail closed."""
+        src_path = str(_REPO_ROOT / "src")
+        if src_path not in sys.path:
+            sys.path.insert(0, src_path)
+        try:
+            from dopemux.commands.extractor_commands import _extractor_runner_path
+        except ImportError:
+            self.skipTest("dopemux package not importable in this test context")
+
+        with self.assertRaises(click.ClickException) as ctx:
+            _extractor_runner_path(_REPO_ROOT, "v9")
+
+        self.assertIn("Unknown Repo Truth Extractor pipeline version", str(ctx.exception))
+
+    def test_rte_scan_refuses_without_legacy_v3_opt_in(self):
+        """dopemux rte scan must not silently route into the v3 scan wrapper."""
+        src_path = str(_REPO_ROOT / "src")
+        if src_path not in sys.path:
+            sys.path.insert(0, src_path)
+        try:
+            from dopemux.cli import cli
+        except ImportError:
+            self.skipTest("dopemux.cli not importable in this test context")
+
+        result = CliRunner().invoke(cli, ["rte", "scan", "--promptgen-only"])
+
+        self.assertNotEqual(result.exit_code, 0)
+        self.assertIn("disabled by default", result.output)
 
 
 # ---------------------------------------------------------------------------
