@@ -11157,6 +11157,83 @@ def run_phase_Z(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = Non
 
 # --- Master Orchestrator ---
 
+def _v3_read_only_command_mode(args: argparse.Namespace) -> bool:
+    """Return True when args select a strictly read-only command mode.
+
+    These modes short-circuit to introspection paths before any provider call
+    or phase work, so live consent does not apply even if --phase is supplied.
+    """
+    return bool(
+        getattr(args, "print_config", False)
+        or getattr(args, "print_promptpack", False)
+        or getattr(args, "print_run_order", False)
+        or getattr(args, "print_phase_routing", False)
+        or (getattr(args, "print_phase_prompts", None) is not None)
+        or getattr(args, "coverage_report", False)
+        or (getattr(args, "verify_phase_output", None) is not None)
+        or getattr(args, "tail_run_log", False)
+        or getattr(args, "show_provider_usage", False)
+        or getattr(args, "status", False)
+        or getattr(args, "status_json", False)
+        or getattr(args, "promptgen_scan", False)
+        or getattr(args, "doctor_auth", False)
+    )
+
+
+def _v3_always_live_requested(args: argparse.Namespace) -> bool:
+    """Return True for operations that always execute providers.
+
+    These code paths do not honor --dry-run, so consent must apply
+    regardless of dry-run state.
+    """
+    if (
+        getattr(args, "preflight_providers", False)
+        or getattr(args, "gemini_list_models", False)
+        or getattr(args, "doctor", False)
+        or getattr(args, "finalize", False)
+        or getattr(args, "batch_watch", False)
+        or getattr(args, "batch_retrieve", False)
+    ):
+        return True
+    return bool(getattr(args, "async_provider", None))
+
+
+def _v3_phase_execution_requested(args: argparse.Namespace) -> bool:
+    """Return True when args request phase execution.
+
+    Phase execution honors --dry-run (the per-phase code path skips LLM
+    calls when args.dry_run is set), so consent only applies when not
+    dry-run. Read-only command modes short-circuit before phase code runs.
+    """
+    if _v3_read_only_command_mode(args):
+        return False
+    return bool(getattr(args, "phase", None))
+
+
+def _v3_live_operation_requested(args: argparse.Namespace) -> bool:
+    """Return True when args request any operation that may execute providers."""
+    return _v3_always_live_requested(args) or _v3_phase_execution_requested(args)
+
+
+_V3_LIVE_CONSENT_REQUIRED_MESSAGE = (
+    "Legacy v3 live execution requires explicit consent. Use --dry-run "
+    "with phase execution for preview, or rerun with --execute and "
+    f"{DPMX_LIVE_OK_ENV}=1 after approval."
+)
+
+
+def _enforce_v3_live_consent(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
+    always_live = _v3_always_live_requested(args)
+    phase_live = _v3_phase_execution_requested(args)
+    if not (always_live or phase_live):
+        return
+    # Phase execution honors --dry-run; always-live flags do not, so a
+    # bare --dry-run cannot bypass consent for provider-call commands.
+    if not always_live and bool(getattr(args, "dry_run", False)):
+        return
+    if not bool(getattr(args, "execute", False)) or not _env_is_truthy(DPMX_LIVE_OK_ENV):
+        parser.error(_V3_LIVE_CONSENT_REQUIRED_MESSAGE)
+
 def main() -> None:
     try:
         signal.signal(signal.SIGPIPE, signal.SIG_DFL)
@@ -11165,6 +11242,14 @@ def main() -> None:
     parser = argparse.ArgumentParser("Master Extraction Runner")
     parser.add_argument("--phase", choices=PHASES + ["S_INT", "ALL"], required=False)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--execute",
+        action="store_true",
+        help=(
+            "Explicitly permit legacy v3 live provider execution. Requires "
+            f"{DPMX_LIVE_OK_ENV}=1."
+        ),
+    )
     parser.add_argument("--max-files-docs", type=int, default=35)
     parser.add_argument("--max-files-code", type=int, default=20)
     parser.add_argument("--max-chars", type=int, default=650000)
@@ -11329,6 +11414,8 @@ def main() -> None:
     promptgen_group.add_argument("--promptgen-exclude-globs", action="append")
     promptgen_group.add_argument("--promptgen-output-dir", type=str, default=PROMPTGEN_DEFAULT_OUTPUT_DIR)
     args = parser.parse_args()
+    if args.execute and args.dry_run:
+        parser.error("--execute and --dry-run are mutually exclusive.")
     args.partition_workers = max(1, min(16, int(args.partition_workers)))
     if args.max_partitions_per_step is not None:
         args.max_partitions_per_step = max(0, int(args.max_partitions_per_step))
@@ -11398,6 +11485,8 @@ def main() -> None:
             "--phase ALL --batch-mode --execute requires --allow-multi-phase-live-batch "
             f"and {DPMX_LIVE_OK_ENV}=1."
         )
+
+    _enforce_v3_live_consent(args, parser)
 
     root = Path.cwd()
     s_prompts_mode = str(args.s_prompts or os.getenv(S_PROMPTS_MODE_ENV_VAR, "")).strip().lower() or S_PROMPTS_AUTO

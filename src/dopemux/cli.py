@@ -4880,6 +4880,11 @@ def rte():
 @click.option("--prompt-root", type=str, help="🔬 Prompt Source: Root directory for ritual prompts.")
 @click.option("--profiles-dir", type=str, help="📂 Profile Registry: Path to the ritual profiles directory.")
 @click.option("--legacy-runner", type=str, help="⏪ Legacy Engine: Path to the legacy v3 runner.")
+@click.option(
+    "--allow-legacy-v3-scan",
+    is_flag=True,
+    help="Explicitly permit the legacy v3 RepoScan route.",
+)
 @click.argument("args", nargs=-1, type=click.UNPROCESSED)
 def rte_scan(
     phase: Optional[str],
@@ -4890,9 +4895,27 @@ def rte_scan(
     prompt_root: Optional[str],
     profiles_dir: Optional[str],
     legacy_runner: Optional[str],
+    allow_legacy_v3_scan: bool,
     args: tuple[str, ...],
 ) -> None:
-    """Run deterministic repo scan and prompt synthesis through the canonical RTE surface."""
+    """Delegate a deterministic repo scan to the legacy v3 RepoScan route.
+
+    This command wraps `run_repscan.py`, which is part of the legacy v3
+    extraction chain. It is disabled by default and requires explicit
+    `--allow-legacy-v3-scan` opt-in. A v5-native scan replacement is not yet
+    implemented; live delegated execution additionally requires the v3
+    consent posture (`--execute` and `DPMX_LIVE_OK=1`).
+    """
+    if not allow_legacy_v3_scan:
+        raise click.ClickException(
+            "`dopemux rte scan` delegates to the legacy v3 extraction chain and is "
+            "disabled by default. Pass --allow-legacy-v3-scan only after accepting "
+            "the v3 consent posture; live delegated execution still requires v3 "
+            "--execute and DPMX_LIVE_OK=1."
+        )
+    # Defense in depth: run_repscan.py independently requires --allow-legacy-v3-scan
+    # so direct invocation cannot bypass the consent gate. Forward the flag here so
+    # the wrapper continues to work after this Click guard has already approved it.
     _run_repscan_runner(
         args=_build_repscan_args(
             phase,
@@ -4903,7 +4926,7 @@ def rte_scan(
             prompt_root,
             profiles_dir,
             legacy_runner,
-            args,
+            ("--allow-legacy-v3-scan", *args),
         )
     )
 
@@ -5087,6 +5110,8 @@ def extractor_run(
         args.extend(["--promptset-root", promptset_root])
     if dry_run:
         args.append("--dry-run")
+    else:
+        args.append("--execute")
     if resume:
         args.append("--resume")
     args.extend(["--partition-workers", str(partition_workers)])
