@@ -470,7 +470,12 @@ def _extractor_runner_path(repo_root: Path, pipeline_version: str) -> Path:
         return base / "run_extraction_v5.py"
     if pipeline_version == "v4":
         return base / "run_extraction_v4.py"
-    return base / "run_extraction_v3.py"
+    if pipeline_version == "v3":
+        return base / "run_extraction_v3.py"
+    raise click.ClickException(
+        "Unknown Repo Truth Extractor pipeline version "
+        f"{pipeline_version!r}. Expected one of: v5, v4, v3."
+    )
 
 
 def _run_extractor_runner(

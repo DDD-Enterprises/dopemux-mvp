@@ -38,6 +38,7 @@ def test_promptgen_only_v1_emits_required_artifacts(tmp_path: Path, monkeypatch)
         runner,
         [
             str(RUNNER_PATH),
+            "--allow-legacy-v3-scan",
             "--promptgen",
             "v1",
             "--promptgen-only",
@@ -64,6 +65,38 @@ def test_promptgen_only_v1_emits_required_artifacts(tmp_path: Path, monkeypatch)
     assert (run_root / "promptpacks" / "PROMPTPACK.v1.json").exists()
     assert (run_root / "promptpacks" / "PROMPTPACK.v1.sha256.json").exists()
     assert (run_root / "RUN_PROMPTPACK_FINGERPRINT.json").exists()
+
+
+def test_repscan_refuses_without_legacy_v3_opt_in(tmp_path: Path, monkeypatch) -> None:
+    runner = _load_module()
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "README.md").write_text("fixture\n", encoding="utf-8")
+
+    try:
+        _run_main(
+            runner,
+            [
+                str(RUNNER_PATH),
+                "--promptgen",
+                "v1",
+                "--promptgen-only",
+                "--run-id",
+                "blocked_repscan",
+                "--phase",
+                "C",
+                "--prompt-root",
+                str(PROMPT_ROOT),
+                "--profiles-dir",
+                str(PROFILES_DIR),
+            ],
+            monkeypatch,
+        )
+    except SystemExit as exc:
+        assert exc.code == 2
+    else:
+        raise AssertionError("run_repscan should require --allow-legacy-v3-scan")
+
+    assert not (tmp_path / "extraction" / "repo-truth-extractor" / "v3").exists()
 
 
 def test_auto_mode_runs_once_then_emits_v2_suggestion(tmp_path: Path, monkeypatch) -> None:
@@ -109,6 +142,7 @@ def test_auto_mode_runs_once_then_emits_v2_suggestion(tmp_path: Path, monkeypatc
         runner,
         [
             str(RUNNER_PATH),
+            "--allow-legacy-v3-scan",
             "--promptgen",
             "auto",
             "--run-id",
@@ -129,4 +163,3 @@ def test_auto_mode_runs_once_then_emits_v2_suggestion(tmp_path: Path, monkeypatc
     assert "--coverage-report" in calls[1]
     assert (run_root / "promptpacks" / "PROMPTPACK.v2.json").exists()
     assert (run_root / "promptpacks" / "PROMPT_ADJUSTMENTS.json").exists()
-

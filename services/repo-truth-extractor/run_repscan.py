@@ -70,6 +70,11 @@ PROMPTPACK_DIRNAME = "promptpacks"
 DEFAULT_PROMPT_ROOT = SERVICE_DIR / "prompts" / "v3"
 DEFAULT_PROFILES_DIR = SERVICE_DIR / "lib" / "promptgen" / "profiles"
 DEFAULT_LEGACY_RUNNER = SERVICE_DIR / "run_extraction_v3.py"
+LEGACY_SCAN_DISABLED_MESSAGE = (
+    "RepoScan delegates to the legacy v3 extraction chain and is disabled by default. "
+    "Pass --allow-legacy-v3-scan only after accepting the v3 consent posture; live "
+    "delegated execution still requires v3 --execute and DPMX_LIVE_OK=1."
+)
 
 V3_EXTRACTION_ROOT = Path("extraction/repo-truth-extractor/v3")
 V3_RUNS_ROOT = V3_EXTRACTION_ROOT / "runs"
@@ -306,6 +311,11 @@ def main() -> int:
     parser.add_argument("--prompt-root", type=str, default=str(DEFAULT_PROMPT_ROOT))
     parser.add_argument("--profiles-dir", type=str, default=str(DEFAULT_PROFILES_DIR))
     parser.add_argument("--legacy-runner", type=str, default=str(DEFAULT_LEGACY_RUNNER))
+    parser.add_argument(
+        "--allow-legacy-v3-scan",
+        action="store_true",
+        help="Explicitly permit this wrapper to use the legacy v3 scan/delegation path.",
+    )
     parser.add_argument("--promptgen-max-files", type=int, default=600)
     parser.add_argument("--promptgen-include-globs", action="append")
     parser.add_argument("--promptgen-exclude-globs", action="append")
@@ -316,6 +326,8 @@ def main() -> int:
         parser.error("--promptgen-only requires --promptgen v1|v2|auto or --promptpack.")
     if args.promptpack and args.promptgen != "off":
         print("warning: --promptpack takes precedence over --promptgen mode.", file=sys.stderr)
+    if not args.allow_legacy_v3_scan:
+        parser.error(LEGACY_SCAN_DISABLED_MESSAGE)
 
     repo_root = _repo_root(Path.cwd())
     run_id = _resolve_run_id(repo_root, args.run_id, args.promptgen, args.promptgen_only)

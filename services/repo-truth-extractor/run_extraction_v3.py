@@ -11157,6 +11157,32 @@ def run_phase_Z(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = Non
 
 # --- Master Orchestrator ---
 
+def _v3_live_operation_requested(args: argparse.Namespace) -> bool:
+    return bool(
+        args.phase
+        or args.async_provider
+        or args.finalize
+        or args.batch_watch
+        or args.batch_retrieve
+    )
+
+
+def _enforce_v3_live_consent(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
+    if not _v3_live_operation_requested(args):
+        return
+    if bool(getattr(args, "dry_run", False)):
+        return
+    if not bool(getattr(args, "execute", False)):
+        parser.error(
+            "Legacy v3 live execution requires explicit consent. Use --dry-run "
+            f"for preview, or rerun with --execute and {DPMX_LIVE_OK_ENV}=1 after approval."
+        )
+    if not _env_is_truthy(DPMX_LIVE_OK_ENV):
+        parser.error(
+            "Legacy v3 live execution requires explicit consent. Use --dry-run "
+            f"for preview, or rerun with --execute and {DPMX_LIVE_OK_ENV}=1 after approval."
+        )
+
 def main() -> None:
     try:
         signal.signal(signal.SIGPIPE, signal.SIG_DFL)
@@ -11165,6 +11191,14 @@ def main() -> None:
     parser = argparse.ArgumentParser("Master Extraction Runner")
     parser.add_argument("--phase", choices=PHASES + ["S_INT", "ALL"], required=False)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--execute",
+        action="store_true",
+        help=(
+            "Explicitly permit legacy v3 live provider execution. Requires "
+            f"{DPMX_LIVE_OK_ENV}=1."
+        ),
+    )
     parser.add_argument("--max-files-docs", type=int, default=35)
     parser.add_argument("--max-files-code", type=int, default=20)
     parser.add_argument("--max-chars", type=int, default=650000)
@@ -11329,6 +11363,8 @@ def main() -> None:
     promptgen_group.add_argument("--promptgen-exclude-globs", action="append")
     promptgen_group.add_argument("--promptgen-output-dir", type=str, default=PROMPTGEN_DEFAULT_OUTPUT_DIR)
     args = parser.parse_args()
+    if args.execute:
+        args.dry_run = False
     args.partition_workers = max(1, min(16, int(args.partition_workers)))
     if args.max_partitions_per_step is not None:
         args.max_partitions_per_step = max(0, int(args.max_partitions_per_step))
@@ -11398,6 +11434,8 @@ def main() -> None:
             "--phase ALL --batch-mode --execute requires --allow-multi-phase-live-batch "
             f"and {DPMX_LIVE_OK_ENV}=1."
         )
+
+    _enforce_v3_live_consent(args, parser)
 
     root = Path.cwd()
     s_prompts_mode = str(args.s_prompts or os.getenv(S_PROMPTS_MODE_ENV_VAR, "")).strip().lower() or S_PROMPTS_AUTO
