@@ -4,6 +4,115 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 
+def _root_and_nested_globs(*dir_names: str) -> tuple[str, ...]:
+    patterns: list[str] = []
+    for dir_name in dir_names:
+        patterns.extend((f"{dir_name}/**", f"**/{dir_name}/**"))
+    return tuple(patterns)
+
+
+def _root_globs(*dir_names: str) -> tuple[str, ...]:
+    return tuple(f"{dir_name}/**" for dir_name in dir_names)
+
+
+DEFAULT_BASE_EXCLUDE_GLOBS = (
+    ".git/**",
+    "**/.git/**",
+    "node_modules/**",
+    "**/node_modules/**",
+    ".venv/**",
+    "**/.venv/**",
+    "venv/**",
+    "**/venv/**",
+    "__pycache__/**",
+    "**/__pycache__/**",
+    "dist/**",
+    "**/dist/**",
+    "build/**",
+    "**/build/**",
+)
+
+DEFAULT_GENERATED_OUTPUT_EXCLUDE_GLOBS = (
+    # Root-only: these directory names also occur as legitimate source/doc trees
+    # (e.g. src/dopemux/extraction, docs/02-how-to/extraction, docs/archive/claudedocs),
+    # so excluding `**/<name>/**` would drop canonical sources.
+    *_root_globs(
+        "extraction",
+        "claudedocs",
+    ),
+    # Root + nested: these names are unambiguously generated output trees in this
+    # repo and have no legitimate non-generated occurrences.
+    *_root_and_nested_globs(
+        "proof",
+        "out",
+        "audit_prep",
+        "_audit_out",
+    ),
+    "task-packets/generated/**",
+    "**/task-packets/generated/**",
+)
+
+DEFAULT_OPERATOR_LOCAL_EXCLUDE_GLOBS = (
+    ".codex/**",
+    "**/.codex/**",
+    ".conport/**",
+    "**/.conport/**",
+    ".dopemux/**",
+    "**/.dopemux/**",
+    ".dopetask/**",
+    "**/.dopetask/**",
+    ".pytest_cache/**",
+    "**/.pytest_cache/**",
+    ".mypy_cache/**",
+    "**/.mypy_cache/**",
+    ".ruff_cache/**",
+    "**/.ruff_cache/**",
+    ".tox/**",
+    "**/.tox/**",
+    ".eggs/**",
+    "**/.eggs/**",
+    "*.egg-info/**",
+    "**/*.egg-info/**",
+    "htmlcov/**",
+    "**/htmlcov/**",
+)
+
+DEFAULT_SECRET_BEARING_EXCLUDE_GLOBS = (
+    ".env",
+    ".env.*",
+    "**/.env",
+    "**/.env.*",
+    "*.pem",
+    "**/*.pem",
+    "*.key",
+    "**/*.key",
+    "*.p12",
+    "**/*.p12",
+    "*.pfx",
+    "**/*.pfx",
+    "id_rsa",
+    "**/id_rsa",
+    "id_ed25519",
+    "**/id_ed25519",
+)
+
+# Repo-visible env templates that look like secret-bearing files but are intentionally
+# committed (placeholders only). These are kept in the prescan corpus and treated as text.
+# See docs/02-how-to/create-llm-archive.md for the parallel rule on .env handling.
+DEFAULT_SECRET_BEARING_ALLOWLIST_BASENAMES = (
+    ".env.example",
+    ".env.template",
+    ".env.sample",
+)
+
+DEFAULT_PRESCAN_EXCLUDE_GLOBS = (
+    *DEFAULT_BASE_EXCLUDE_GLOBS,
+    *DEFAULT_GENERATED_OUTPUT_EXCLUDE_GLOBS,
+    *DEFAULT_OPERATOR_LOCAL_EXCLUDE_GLOBS,
+    *DEFAULT_SECRET_BEARING_EXCLUDE_GLOBS,
+)
+
+
 @dataclass
 class FileEntry:
     rel_path: str
@@ -52,15 +161,9 @@ class PrescanConfig:
     repo_root: Path
     output_dir: Path
     include_globs: list[str] = field(default_factory=lambda: ["**/*"])
-    exclude_globs: list[str] = field(default_factory=lambda: [
-        ".git/**",
-        "node_modules/**",
-        ".venv/**",
-        "venv/**",
-        "__pycache__/**",
-        "dist/**",
-        "build/**",
-    ])
+    exclude_globs: list[str] = field(
+        default_factory=lambda: list(DEFAULT_PRESCAN_EXCLUDE_GLOBS)
+    )
     max_file_size: int = 5 * 1024 * 1024
     large_json_threshold: int = 256 * 1024
     max_corpus_size: int = 500 * 1024 * 1024

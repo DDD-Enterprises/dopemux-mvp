@@ -6523,6 +6523,7 @@ def run_integrated_prescan_stage(
     # 2. Run local prescan
     try:
         from lib.prescan.engine import PrescanEngine
+        from lib.prescan.models import DEFAULT_PRESCAN_EXCLUDE_GLOBS
         from lib.prescan.models import PrescanConfig as LibPrescanConfig
     except ImportError as e:
         logger.warning(f"Prescan library not available: {e}")
@@ -6537,6 +6538,7 @@ def run_integrated_prescan_stage(
         output_dir=prescan_output_dir,
         online_authorized=cfg.prescan_online or cfg.allow_online_llm,
         allow_scope_reduction=cfg.prescan_allow_scope_reduction,
+        exclude_globs=list(DEFAULT_PRESCAN_EXCLUDE_GLOBS),
         verbose=True,
     )
 
