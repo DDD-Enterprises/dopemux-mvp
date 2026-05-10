@@ -2,7 +2,11 @@ import fnmatch
 import hashlib
 import logging
 from pathlib import Path, PurePosixPath
-from .models import FileEntry, PrescanConfig
+from .models import (
+    DEFAULT_SECRET_BEARING_ALLOWLIST_BASENAMES,
+    FileEntry,
+    PrescanConfig,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +38,10 @@ HARDCODED_EXCLUDE_DIRS = frozenset(
     }
 )
 
+SECRET_BEARING_ALLOWLIST_BASENAMES = frozenset(
+    DEFAULT_SECRET_BEARING_ALLOWLIST_BASENAMES
+)
+
 class CorpusWalker:
     def __init__(self, config: PrescanConfig):
         self.config = config
@@ -48,12 +56,15 @@ class CorpusWalker:
                 continue
 
             rel_path = self._relative_posix_path(path, repo_root)
+            template_allowlisted = path.name in SECRET_BEARING_ALLOWLIST_BASENAMES
 
             # Skip excluded directories
             if self._is_excluded_dir(path, repo_root):
                 continue
 
-            if self._matches_any_glob(rel_path, self._effective_exclude_globs()):
+            if not template_allowlisted and self._matches_any_glob(
+                rel_path, self._effective_exclude_globs()
+            ):
                 continue
 
             ext = path.suffix.lower()
@@ -77,7 +88,11 @@ class CorpusWalker:
                 entry.exclude_reason = (
                     f"large_json_blob:{size}>{self.config.large_json_threshold}"
                 )
-            elif ext not in TEXT_EXTENSIONS and ext != "":
+            elif (
+                ext not in TEXT_EXTENSIONS
+                and ext != ""
+                and not template_allowlisted
+            ):
                 # Unknown extension — exclude unless it's small and looks textual
                 entry.include = False
                 entry.exclude_reason = f"unknown_extension:{ext}"

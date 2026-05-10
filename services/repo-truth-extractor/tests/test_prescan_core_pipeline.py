@@ -180,6 +180,44 @@ def test_corpus_walker_excludes_secret_bearing_files_by_default(tmp_path: Path) 
     assert {"src/app.py", "docs/source.md"} <= _included_paths(entries)
 
 
+def test_corpus_walker_allowlists_env_templates(tmp_path: Path) -> None:
+    """Repo-visible env templates must remain in prescan corpus, while real .env files stay excluded."""
+    templates = {
+        ".env.example",
+        ".env.template",
+        ".env.sample",
+        "nested/.env.example",
+        "config/.env.template",
+    }
+    real_secrets = {
+        ".env",
+        ".env.local",
+        ".env.production",
+        "nested/.env",
+    }
+    for rel_path in sorted(templates):
+        _write_fixture_file(tmp_path, rel_path, "API_KEY=placeholder\n")
+    for rel_path in sorted(real_secrets):
+        _write_fixture_file(tmp_path, rel_path, "SECRET_VALUE_SHOULD_NOT_APPEAR=true\n")
+
+    config = PrescanConfig(
+        repo_root=tmp_path,
+        output_dir=tmp_path / "prescan-output",
+        enable_code_prescan=False,
+        enable_git_enrichment=False,
+    )
+    entries = CorpusWalker(config).walk()
+
+    paths = _all_paths(entries)
+    included = _included_paths(entries)
+    assert templates <= included, (
+        f"env templates dropped from corpus: {templates - included}"
+    )
+    assert real_secrets.isdisjoint(paths), (
+        f"real secret files leaked into corpus: {real_secrets & paths}"
+    )
+
+
 def test_prescan_engine_manifest_preserves_source_and_omits_excluded_inputs(tmp_path: Path) -> None:
     """The emitted prescan manifest should not reintroduce excluded generated or secret paths."""
     _write_fixture_file(tmp_path, "src/app.py", "def app():\n    return 1\n")

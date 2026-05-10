@@ -85,6 +85,15 @@ DEFAULT_SECRET_BEARING_EXCLUDE_GLOBS = (
     "**/id_ed25519",
 )
 
+# Repo-visible env templates that look like secret-bearing files but are intentionally
+# committed (placeholders only). These are kept in the prescan corpus and treated as text.
+# See docs/02-how-to/create-llm-archive.md for the parallel rule on .env handling.
+DEFAULT_SECRET_BEARING_ALLOWLIST_BASENAMES = (
+    ".env.example",
+    ".env.template",
+    ".env.sample",
+)
+
 DEFAULT_PRESCAN_EXCLUDE_GLOBS = (
     *DEFAULT_BASE_EXCLUDE_GLOBS,
     *DEFAULT_GENERATED_OUTPUT_EXCLUDE_GLOBS,

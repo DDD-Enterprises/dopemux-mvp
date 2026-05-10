@@ -2,7 +2,9 @@
   "tp_id": "TP-RTE-WALKER-006",
   "objective": "Close the RTE source-truth poisoning blocker by excluding generated outputs, proof/audit outputs, ignored runtime outputs, and known secret-bearing files from default Repo Truth Extractor prescan corpus input.",
   "starting_head": "8ea182dd38ecd7754dff1c49224221cc49e390f4",
-  "ending_head": "PRE_COMMIT_CAVEAT: proof authored before commit; final commit SHA must be taken from git after commit because this file is part of the commit payload.",
+  "ending_head": "8c8756eba924d89b3e35368b15ededb94c8911ab",
+  "ending_head_note": "Branch tip moves with each review-feedback commit on PR #606; this field records the latest verified implementation snapshot. See pr_url for the live HEAD.",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/606",
   "branch": "codex/tp-rte-walker-006",
   "base_branch": "main",
   "worktree_path": "/Users/hue/.codex/worktrees/tp-rte-walker-006",
@@ -45,7 +47,7 @@
       "summary": "Task packet parses as JSON."
     },
     {
-      "command": "python - <<'PY' ... Draft7Validator(dopetask-canonical-spec.json) ... PY",
+      "command": "python -c \"import json, pathlib; from jsonschema import Draft7Validator; schema=json.loads(pathlib.Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text()); doc=json.loads(pathlib.Path('task-packets/generated/TP-RTE-WALKER-006.json').read_text()); errs=sorted(Draft7Validator(schema).iter_errors(doc), key=lambda e: e.path); raise SystemExit(0 if not errs else (print(errs) or 1))\"",
       "exit_code": 0,
       "summary": "Task packet validates against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json."
     },
@@ -70,7 +72,7 @@
       "summary": "Broader selection ran offline but failed 7 pre-existing/off-scope tests: code_prescan_truthfulness missing keys, prescan_contracts optimize payload shape, prescan_e2e incremental reuse count, and prescan_hardening tests requiring unavailable openai module."
     },
     {
-      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q <same failing subset> (run from untouched starting checkout /Users/hue/.codex/worktrees/806d/dopemux-mvp)",
+      "command": "(cd /Users/hue/.codex/worktrees/806d/dopemux-mvp && RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests -k \"walker or prescan or corpus or exclude or secret\")",
       "exit_code": 1,
       "summary": "The same 7 failures reproduce on the untouched starting checkout, supporting classification as pre-existing/off-scope."
     },
@@ -80,7 +82,7 @@
       "summary": "5 existing output safety tests passed."
     },
     {
-      "command": "rg -n \"DEFAULT_PRESCAN_EXCLUDE_GLOBS|DEFAULT_GENERATED_OUTPUT_EXCLUDE_GLOBS|DEFAULT_SECRET_BEARING_EXCLUDE_GLOBS|exclude_globs=list\\(DEFAULT_PRESCAN_EXCLUDE_GLOBS\\)|_matches_any_glob|\\.env\\.\\*|id_ed25519|id_rsa|\\*\\.pem|\\*\\.key\" <changed RTE files>",
+      "command": "rg -n \"DEFAULT_PRESCAN_EXCLUDE_GLOBS|DEFAULT_GENERATED_OUTPUT_EXCLUDE_GLOBS|DEFAULT_SECRET_BEARING_EXCLUDE_GLOBS|exclude_globs=list\\(DEFAULT_PRESCAN_EXCLUDE_GLOBS\\)|_matches_any_glob|\\.env\\.\\*|id_ed25519|id_rsa|\\*\\.pem|\\*\\.key\" services/repo-truth-extractor/lib/prescan/models.py services/repo-truth-extractor/lib/prescan/corpus_walker.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_prescan_core_pipeline.py services/repo-truth-extractor/tests/test_prescan_v5_integration.py",
       "exit_code": 0,
       "summary": "Safety grep confirms exclude constants and integrated prescan pass-through are present in the changed files."
     },

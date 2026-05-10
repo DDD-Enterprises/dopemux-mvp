@@ -63,7 +63,7 @@ The v5 integrated prescan stage now explicitly passes the shared default exclude
 - `RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_prescan_core_pipeline.py services/repo-truth-extractor/tests/test_prescan_v5_integration.py` -> 0
 - `python -m json.tool proof/TP-RTE-WALKER-006/PROOF.json` -> 0
 - `git diff --check` -> 0
-- `pre-commit run --files <changed allowlist files>` -> 0
+- `pre-commit run --files services/repo-truth-extractor/lib/prescan/models.py services/repo-truth-extractor/lib/prescan/corpus_walker.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_prescan_core_pipeline.py services/repo-truth-extractor/tests/test_prescan_v5_integration.py task-packets/INDEX.md task-packets/generated/TP-RTE-WALKER-006.json proof/TP-RTE-WALKER-006/PROOF.json proof/TP-RTE-WALKER-006/IMPLEMENTER_REPORT.md` -> 0
 
 ## 8. Safety boundary confirmation
 
