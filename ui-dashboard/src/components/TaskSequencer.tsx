@@ -124,6 +124,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     return sortedTasks.sort((a, b) => a.complexity - b.complexity);
   }, [tasks, cognitiveState.status]);
 
+  const nextTask = useMemo(() => {
+    if (optimizedTasks.length <= 1 || !currentTaskId) return null;
+    const currentIndex = optimizedTasks.findIndex((task) => task.id === currentTaskId);
+    if (currentIndex === -1) return null;
+    const nextIndex = (currentIndex + 1) % optimizedTasks.length;
+    return optimizedTasks[nextIndex];
+  }, [optimizedTasks, currentTaskId]);
+
   const startTask = (taskId: string) => {
     setTasks((prev) =>
       prev.map((task) => (task.id === taskId ? { ...task, status: 'in_progress' } : task))
@@ -259,6 +267,10 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         background: brandTokens.gradients.focusCard,
         border: `1px solid ${statusTone.border}`,
         boxShadow: statusTone.shadow,
+        '@keyframes timer-pulse': {
+          '0%, 100%': { opacity: 1 },
+          '50%': { opacity: 0.6 },
+        },
       }}
       className="dopemux-panel"
     >
@@ -368,10 +380,6 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                 color: isOvertime ? brandTokens.colors.gremlinPink : 'inherit',
                 ...(isTimerRunning && {
                   animation: 'timer-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                  '@keyframes timer-pulse': {
-                    '0%, 100%': { opacity: 1 },
-                    '50%': { opacity: 0.6 },
-                  },
                 }),
               }}
             >
@@ -457,7 +465,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                 Complete
               </Button>
             </Tooltip>
-            <Tooltip title={optimizedTasks.length <= 1 ? 'No other tasks to skip to' : 'Skip for Now'} arrow>
+            <Tooltip title={optimizedTasks.length <= 1 ? 'No other tasks to skip to' : `Skip to: ${nextTask?.title}`} arrow>
               <Box
                 component="span"
                 tabIndex={optimizedTasks.length <= 1 ? 0 : -1}
@@ -477,7 +485,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                   startIcon={<SkipForward aria-hidden="true" />}
                   onClick={() => skipTask(currentTask.id)}
                   sx={{ color: brandTokens.colors.gremlinPink }}
-                  aria-label={`Skip task: ${currentTask.title}`}
+                  aria-label={`Skip ${currentTask.title}, proceed to ${nextTask?.title}`}
                   disabled={optimizedTasks.length <= 1}
                 >
                   Skip
