@@ -97,3 +97,7 @@
 ## 2026-05-07 - [Progressive Ritual Awareness]
 **Learning:** For users with ADHD, seeing a list of tasks without a clear progress fraction (e.g., "1/3") can contribute to a sense of being lost in a sequence. Prefixing duration indicators with a task completion counter provides immediate spatial and temporal grounding. Additionally, providing tactile feedback (vertical lift and shadows) on list item hover/focus bridges the gap between static content and interactive ritual steps.
 **Action:** Always provide a clear "n/m tasks" counter in sequential task managers and use subtle vertical transforms for interactive list elements.
+
+## 2026-05-21 - [Predictive Skip for Temporal Grounding]
+**Learning:** For users with ADHD, skipping a task can feel like falling into a void if they don't know what's coming next. Providing a "Predictive Skip" pattern by dynamically labeling the Skip button with the title of the next task (e.g., "Skip to: [Next Task]") reduces uncertainty and helps maintain temporal grounding within the ritual.
+**Action:** Always provide the name of the destination task when implementing skip or "next" interactions in sequential workflows.

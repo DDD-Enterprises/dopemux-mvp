@@ -66,7 +66,7 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
   expect(content).toContain('aria-label={isTimerRunning ? `Pause task: ${currentTask.title}` : `Start task: ${currentTask.title}`}');
   expect(content).toContain('aria-label={`Complete task: ${currentTask.title}`}');
-  expect(content).toContain('aria-label={`Skip task: ${currentTask.title}`}');
+  expect(content).toMatch(/aria-label=\{\s*nextTask\s*\?\s*`Skip \$\{currentTask\.title\}, proceed to \$\{nextTask\.title\}`\s*:\s*`Skip task: \$\{currentTask\.title\}`\s*\}/);
   expect(content).toContain('aria-label={`Start task: ${task.title}`}');
   // New LinearProgress for task progress
   expect(content).toContain('aria-label="Current task progress"');
@@ -135,7 +135,7 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toMatch(/<Tooltip title="AI-generated recommendation based on current load" arrow>[\s\S]*tabIndex=\{0\}/);
   expect(appContent).toContain('aria-label={`System is actively monitoring ritual state: ${connectionLabel} DØPEMÜX Ritual Daemon`}');
   expect(appContent).toContain('aria-label={isConfirmingClear ? \'Confirm clear all notifications\' : \'Clear all notifications\'}');
-  expect(appContent).toMatch(/<Tooltip title=\{isConfirmingClear \? 'Confirm to clear all notifications' : 'Clear all notifications to reduce visual noise'\} arrow>/);
+  expect(appContent).toMatch(/<Tooltip\s+title=\{isConfirmingClear \? 'Confirm to clear all notifications' : 'Clear all notifications to reduce visual noise'\}\s+arrow\s*>/);
   expect(appContent).toContain('Listening for ConPort and ADHD event traffic');
   expect(appContent).toContain('animation: \'listeningPulse 1.4s infinite ease-in-out both\'');
   expect(appContent).toContain('severity="error"');
