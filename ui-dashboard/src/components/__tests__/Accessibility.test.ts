@@ -66,15 +66,22 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
   expect(content).toContain('aria-label={isTimerRunning ? `Pause task: ${currentTask.title}` : `Start task: ${currentTask.title}`}');
   expect(content).toContain('aria-label={`Complete task: ${currentTask.title}`}');
-  expect(content).toContain('aria-label={`Skip task: ${currentTask.title}`}');
+  expect(content).toContain('aria-label={');
+  expect(content).toContain('nextTask');
+  expect(content).toContain('? `Skip ${currentTask.title}, proceed to ${nextTask.title}`');
+  expect(content).toContain(': `Skip task: ${currentTask.title}`');
   expect(content).toContain('aria-label={`Start task: ${task.title}`}');
   // New LinearProgress for task progress
-  expect(content).toContain('aria-label="Current task progress"');
+  expect(content).toContain('aria-label={`Progress for task: ${currentTask.title}`}');
   // Timer accessibility
   expect(content).toContain('aria-label={getTimerAriaLabel(taskTimer)}');
   // Total remaining duration
   expect(content).toContain('role="status"');
   expect(content).toMatch(/aria-label=\{\s*isComplete\s*\?\s*'Task sequence complete'\s*:\s*`\$\{completedCount\}\/\$\{totalCount\} tasks completed\. \$\{getDurationAriaLabel\(displayRemainingMinutes\)\}\.\$\{finishTimeLabel\s*\?\s*` Estimated completion: \$\{finishTimeLabel\}`\s*:\s*''\}`\s*\}/);
+  expect(content).toContain('title={');
+  expect(content).toContain('optimizedTasks.length <= 1');
+  expect(content).toContain("? 'No other tasks to skip to'");
+  expect(content).toContain(": `Skip to: ${nextTask?.title || 'next ritual'}`");
   expect(content).toMatch(/<Tooltip[^>]*title="Real-time task synchronization active"[^>]*arrow/);
   expect(content).toContain('aria-label="Real-time task synchronization active"');
   expect(content).toContain('aria-current={isCurrent ? \'step\' : undefined}');
