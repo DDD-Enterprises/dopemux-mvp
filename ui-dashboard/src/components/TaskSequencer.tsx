@@ -197,6 +197,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   };
 
   const currentTask = tasks.find((task) => task.id === currentTaskId);
+
+  const nextTask = useMemo(() => {
+    if (!currentTaskId || optimizedTasks.length <= 1) return null;
+    const currentIndex = optimizedTasks.findIndex((t) => t.id === currentTaskId);
+    const nextIndex = (currentIndex + 1) % optimizedTasks.length;
+    return optimizedTasks[nextIndex];
+  }, [currentTaskId, optimizedTasks]);
+
   const statusTone = statusStyles[cognitiveState.status];
 
   const isOvertime = useMemo(() => {
@@ -423,7 +431,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                       : brandTokens.shadows.goldBloom,
                   },
                 }}
-                aria-label="Current task progress"
+                aria-label={`Progress for task: ${currentTask.title}`}
                 aria-valuetext={
                   isOvertime
                     ? `Overtime: ${Math.floor(taskTimer / 60 - currentTask.estimatedMinutes)} ${
@@ -457,7 +465,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                 Complete
               </Button>
             </Tooltip>
-            <Tooltip title={optimizedTasks.length <= 1 ? 'No other tasks to skip to' : 'Skip for Now'} arrow>
+            <Tooltip
+              title={
+                optimizedTasks.length <= 1
+                  ? 'No other tasks to skip to'
+                  : `Skip to: ${nextTask?.title || 'next ritual'}`
+              }
+              arrow
+            >
               <Box
                 component="span"
                 tabIndex={optimizedTasks.length <= 1 ? 0 : -1}
@@ -477,7 +492,11 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                   startIcon={<SkipForward aria-hidden="true" />}
                   onClick={() => skipTask(currentTask.id)}
                   sx={{ color: brandTokens.colors.gremlinPink }}
-                  aria-label={`Skip task: ${currentTask.title}`}
+                  aria-label={
+                    nextTask
+                      ? `Skip ${currentTask.title}, proceed to ${nextTask.title}`
+                      : `Skip task: ${currentTask.title}`
+                  }
                   disabled={optimizedTasks.length <= 1}
                 >
                   Skip
