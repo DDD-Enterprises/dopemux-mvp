@@ -35,7 +35,8 @@
     "batch_path_wiring": "The real run_extraction_v5.py batch branch now calls build_v5_batch_request(...) before resolving API keys or constructing the batch client.",
     "strict_fail_closed": "Strict batch request construction validates response_format.type=json_schema, json_schema.schema object presence, json_schema.strict=true, and non-empty artifact schema metadata before upload/submission.",
     "non_strict_preservation": "Non-strict OpenAI-compatible batch request construction still returns response_format=None when force_json_output is false; existing batch client force_json_output behavior remains in batch_clients.py.",
-    "codex_p1_followup": "_resolve_batch_route_override widens strict route ladder 2-tuples to 3-tuples by deriving api_key_env from PROVIDER_API_KEY_ENV when a batch_provider override selects a strict ladder route."
+    "codex_p1_followup": "_resolve_batch_route_override widens strict route ladder 2-tuples to 3-tuples by deriving api_key_env from PROVIDER_API_KEY_ENV when a batch_provider override selects a strict ladder route.",
+    "codex_review_followup": "Strict batch route resolution now preserves contract-derived api_key_env values when strict ladders omit env names, reuses route_entry_by_identity for exact route matching before provider/model fallback, and surfaces strict_capability_reason before response_format construction."
   },
   "validation_commands": [
     {
@@ -61,7 +62,7 @@
     {
       "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py",
       "exit_code": 0,
-      "summary": "Focused v5 batch response_format and strict 2-tuple ladder override regression tests passed: 5 passed."
+      "summary": "Focused v5 batch response_format, strict route matching, and strict 2-tuple ladder override regression tests passed: 6 passed."
     },
     {
       "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_batch_clients_integration.py",
@@ -76,7 +77,7 @@
     {
       "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests -k \"batch or strict\"",
       "exit_code": 0,
-      "summary": "Broader batch/strict selection passed: 49 passed."
+      "summary": "Broader batch/strict selection passed: 50 passed."
     },
     {
       "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
@@ -131,7 +132,11 @@
   },
   "strict_two_tuple_ladder_override_supported": {
     "value": true,
-    "evidence": "test_v5_resolve_batch_route_override_handles_strict_two_tuple_ladder passed and covered no-override passthrough, strict 2-tuple provider override widening through PROVIDER_API_KEY_ENV, and missing override fallback."
+    "evidence": "test_v5_resolve_batch_route_override_handles_strict_two_tuple_ladder passed and covered no-override passthrough, strict 2-tuple provider override widening through PROVIDER_API_KEY_ENV, contract-derived api_key_env preservation for omitted strict env names, and missing override fallback."
+  },
+  "strict_contract_api_key_env_preserved": {
+    "value": true,
+    "evidence": "test_v5_batch_request_matches_strict_route_when_api_key_env_was_omitted_from_ladder passed and proved strict response_format construction can match a provider/model contract route even when selected_route carries a fallback/default api_key_env from an env-redacted strict ladder."
   },
   "strict_missing_schema_fails_closed_before_submit": {
     "value": true,

@@ -152,14 +152,22 @@ def test_v5_batch_request_construction_propagates_strict_response_format_to_wire
 
 def test_v5_strict_batch_request_missing_schema_fails_before_upload_or_submit() -> None:
     runner = _load_runner_module()
-    _unused_client, fake = _client(runner)
+    client, fake = _client(runner)
 
-    with pytest.raises(ValueError, match="requires at least one artifact schema"):
-        _batch_request(
+    def _construct_and_submit() -> None:
+        request = _batch_request(
             runner,
             step_contract=_strict_step_contract(expected_artifacts=()),
             artifact_names=(ARTIFACT_NAME,),
         )
+        client.submit(
+            [request],
+            runner.BatchRoute(*SELECTED_ROUTE),
+            {"phase": "A", "step_id": "A1", "partition_id": "A_P0001"},
+        )
+
+    with pytest.raises(ValueError, match="requires at least one artifact schema"):
+        _construct_and_submit()
 
     assert fake.files.uploads == []
     assert fake.batches.created == []
@@ -168,7 +176,7 @@ def test_v5_strict_batch_request_missing_schema_fails_before_upload_or_submit() 
 def test_v5_strict_batch_request_cannot_downgrade_to_json_object() -> None:
     runner = _load_runner_module()
 
-    with pytest.raises(ValueError, match="response_format.type=json_schema"):
+    with pytest.raises(ValueError, match="strict_json_schema_disabled"):
         _batch_request(
             runner,
             step_contract=_strict_step_contract(
@@ -178,6 +186,22 @@ def test_v5_strict_batch_request_cannot_downgrade_to_json_object() -> None:
                 }
             ),
         )
+
+
+def test_v5_batch_request_matches_strict_route_when_api_key_env_was_omitted_from_ladder() -> None:
+    runner = _load_runner_module()
+
+    request = _batch_request(
+        runner,
+        selected_route=("openai", "gpt-5-nano", "OPENAI_API_KEY"),
+        step_contract=_strict_step_contract(
+            route_overrides={"api_key_env": "OPENAI_TENANT_API_KEY"}
+        ),
+    )
+
+    assert request.response_format is not None
+    assert request.response_format["type"] == "json_schema"
+    assert request.response_format["json_schema"]["strict"] is True
 
 
 def test_v5_resolve_batch_route_override_handles_strict_two_tuple_ladder() -> None:
@@ -201,6 +225,22 @@ def test_v5_resolve_batch_route_override_handles_strict_two_tuple_ladder() -> No
         step_ladder=strict_ladder,
     )
     assert resolved == ("xai", "grok-2", runner.PROVIDER_API_KEY_ENV["xai"])
+
+    contract = _strict_step_contract(
+        route_overrides={
+            "provider": "xai",
+            "model_id": "grok-2",
+            "api_key_env": "XAI_TENANT_API_KEY",
+        }
+    )
+    resolved = runner._resolve_batch_route_override(
+        fallback=fallback,
+        batch_provider="xai",
+        step_ladder=strict_ladder,
+        step_contract=contract,
+        prefer_contract_api_key_env=True,
+    )
+    assert resolved == ("xai", "grok-2", "XAI_TENANT_API_KEY")
 
     # Override target absent from ladder falls back to the supplied default.
     assert runner._resolve_batch_route_override(

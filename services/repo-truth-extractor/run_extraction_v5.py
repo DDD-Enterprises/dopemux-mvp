@@ -364,6 +364,7 @@ try:
         repair_mode as resolve_contract_repair_mode,
         resolve_stage_route,
         route_entries_for_stage,
+        route_entry_by_identity,
         route_for_contract,
         strict_capability_reason,
         sidefill_enabled as resolve_contract_sidefill_enabled,
@@ -415,6 +416,7 @@ except ModuleNotFoundError:
     resolve_contract_repair_mode = structured_contracts_module.repair_mode
     resolve_stage_route = structured_contracts_module.resolve_stage_route
     route_entries_for_stage = structured_contracts_module.route_entries_for_stage
+    route_entry_by_identity = structured_contracts_module.route_entry_by_identity
     route_for_contract = structured_contracts_module.route_for_contract
     strict_capability_reason = structured_contracts_module.strict_capability_reason
     resolve_contract_sidefill_enabled = structured_contracts_module.sidefill_enabled
@@ -10520,15 +10522,63 @@ def build_batch_client(
     raise RuntimeError(f"Unsupported batch provider: {provider}")
 
 
+def _contract_route_entry_for_provider_model(
+    step_contract: Optional[Dict[str, Any]],
+    *,
+    provider: str,
+    model_id: str,
+) -> Optional[Dict[str, Any]]:
+    if not isinstance(step_contract, dict):
+        return None
+    for route_entry in route_entries_for_stage(step_contract, "primary"):
+        if not isinstance(route_entry, dict):
+            continue
+        if (
+            str(route_entry.get("provider") or "") == str(provider)
+            and str(route_entry.get("model_id") or "") == str(model_id)
+        ):
+            return dict(route_entry)
+    return None
+
+
 def _resolve_batch_route_override(
     *,
     fallback: Tuple[str, str, str],
     batch_provider: str,
     step_ladder: Sequence[Sequence[str]],
+    step_contract: Optional[Dict[str, Any]] = None,
+    prefer_contract_api_key_env: bool = False,
 ) -> Tuple[str, str, str]:
+    def _resolved_route(
+        provider: str,
+        model_id: str,
+        api_key_env: str,
+        *,
+        allow_contract_api_key_env: bool,
+    ) -> Tuple[str, str, str]:
+        selected_api_key_env = str(api_key_env)
+        if allow_contract_api_key_env:
+            route_entry = _contract_route_entry_for_provider_model(
+                step_contract,
+                provider=provider,
+                model_id=model_id,
+            )
+            if route_entry is not None:
+                selected_api_key_env = str(
+                    route_entry.get("api_key_env") or selected_api_key_env
+                )
+        if not selected_api_key_env:
+            selected_api_key_env = PROVIDER_API_KEY_ENV.get(provider, "")
+        return (str(provider), str(model_id), str(selected_api_key_env))
+
     fallback_provider = str(fallback[0]) if fallback else ""
     if batch_provider == fallback_provider:
-        return (str(fallback[0]), str(fallback[1]), str(fallback[2]))
+        return _resolved_route(
+            str(fallback[0]),
+            str(fallback[1]),
+            str(fallback[2]),
+            allow_contract_api_key_env=bool(prefer_contract_api_key_env),
+        )
     for candidate in step_ladder:
         candidate_tuple = tuple(candidate)
         if not candidate_tuple or str(candidate_tuple[0]) != batch_provider:
@@ -10540,9 +10590,21 @@ def _resolve_batch_route_override(
         if len(candidate_tuple) >= 3:
             candidate_api_key_env = str(candidate_tuple[2])
         else:
-            candidate_api_key_env = PROVIDER_API_KEY_ENV.get(candidate_provider, "")
-        return (candidate_provider, candidate_model, candidate_api_key_env)
-    return (str(fallback[0]), str(fallback[1]), str(fallback[2]))
+            candidate_api_key_env = ""
+        return _resolved_route(
+            candidate_provider,
+            candidate_model,
+            candidate_api_key_env,
+            allow_contract_api_key_env=bool(
+                prefer_contract_api_key_env and not candidate_api_key_env
+            ),
+        )
+    return _resolved_route(
+        str(fallback[0]),
+        str(fallback[1]),
+        str(fallback[2]),
+        allow_contract_api_key_env=bool(prefer_contract_api_key_env),
+    )
 
 
 def _batch_route_entry_for_selected_route(
@@ -10552,17 +10614,20 @@ def _batch_route_entry_for_selected_route(
     if not isinstance(step_contract, dict):
         return None
     selected_provider, selected_model_id, selected_api_key_env = selected_route
-    for route_entry in route_entries_for_stage(step_contract, "primary"):
-        if not isinstance(route_entry, dict):
-            continue
-        if (
-            str(route_entry.get("provider") or "") == str(selected_provider)
-            and str(route_entry.get("model_id") or "") == str(selected_model_id)
-            and str(route_entry.get("api_key_env") or "")
-            == str(selected_api_key_env)
-        ):
-            return dict(route_entry)
-    return None
+    routes = route_entries_for_stage(step_contract, "primary")
+    route_entry = route_entry_by_identity(
+        routes,
+        provider=str(selected_provider),
+        model_id=str(selected_model_id),
+        api_key_env=str(selected_api_key_env),
+    )
+    if route_entry is not None:
+        return route_entry
+    return _contract_route_entry_for_provider_model(
+        step_contract,
+        provider=str(selected_provider),
+        model_id=str(selected_model_id),
+    )
 
 
 def _validate_strict_batch_response_format(
@@ -10631,6 +10696,11 @@ def build_v5_batch_request(
         if route_entry is None:
             raise ValueError(
                 f"Strict batch request for {phase}/{step_id} requires a strict-capable route contract"
+            )
+        strict_reason = strict_capability_reason(route_entry, transport)
+        if strict_reason is not None:
+            raise ValueError(
+                f"Strict batch request for {phase}/{step_id} requires a strict-capable route contract: {strict_reason}"
             )
         response_format, response_meta = build_provider_step_contract_output(
             route=route_entry,
@@ -12952,6 +13022,11 @@ else sdk_auth_present_flags(p_provider, True)
                         ),
                         batch_provider=batch_provider,
                         step_ladder=step_ladder,
+                        step_contract=step_contract,
+                        prefer_contract_api_key_env=bool(
+                            strict_contract_required
+                            and not route_info.get("api_key_env")
+                        ),
                     )
                     batch_provider, batch_model_id, batch_api_key_env = selected_route
                     batch_transport = transport_for_provider(batch_provider, cfg)
