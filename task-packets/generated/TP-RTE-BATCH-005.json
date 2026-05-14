@@ -1,0 +1,234 @@
+{
+  "id": "TP-RTE-BATCH-005",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / batch clients",
+  "invariants": [
+    "Treat services/repo-truth-extractor/lib/batch_clients.py as the batch client request and result parsing authority for this slice.",
+    "Treat services/repo-truth-extractor/run_extraction_v5.py as the strongest RTE runtime authority for active batch invocation context.",
+    "Do not run live extraction, provider/model calls, external provider batch submission, or real provider result retrieval.",
+    "Do not modify sync extraction behavior, promptsets, model routing, walker/prescan, v3 consent, docs canonical naming, cockpit/TUI, dependencies, or unrelated tests.",
+    "Valid batch result lines must be parsed into BatchResult entries before corruption/discard threshold enforcement.",
+    "Strict batch request intent must not silently serialize as response_format.type=json_object."
+  ],
+  "depends_on": [
+    "TP-RTE-V3-CONSENT-004",
+    "TP-RTE-WALKER-006"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-GOLIVE-BLOCKERS",
+    "base_branch": "main",
+    "parent_tp_id": "TP-RTE-WALKER-006",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-rte-batch-005",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(rte): repair batch result and strict handling",
+    "allowlist": [
+      "services/repo-truth-extractor/lib/batch_clients.py",
+      "services/repo-truth-extractor/tests/test_batch_clients_integration.py",
+      "task-packets/INDEX.md",
+      "task-packets/generated/TP-RTE-BATCH-005.json",
+      "proof/TP-RTE-BATCH-005/PROOF.json",
+      "proof/TP-RTE-BATCH-005/IMPLEMENTER_REPORT.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-RTE-BATCH-005.json",
+      "python -m json.tool proof/TP-RTE-BATCH-005/PROOF.json",
+      "python -m compileall -q services/repo-truth-extractor src/dopemux",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_batch_clients_integration.py",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests -k \"batch or strict\"",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+      "git diff --check",
+      "pre-commit run --files <changed files>"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): repair batch result and strict handling",
+    "body": "## Summary\n- repair OpenAI-compatible batch result parsing so valid JSONL result rows produce BatchResult entries before corruption threshold enforcement\n- make strict batch request intent fail closed unless an actual json_schema response_format is supplied, and serialize that schema on the wire when present\n- add offline fake-client regression tests for valid results, corruption thresholds, strict/non-strict request bodies, and xAI inherited parsing\n\n## Scope\n- Repo Truth Extractor batch client request/result handling\n- focused tests, task packet, proof, and implementer report\n- no live extraction, provider/model calls, external batch jobs, sync path changes, promptsets, model routing, walker/prescan, docs sweep, dependencies, or cockpit/TUI work\n\n## Validation\n- task packet/proof JSON validation and task packet schema validation\n- compileall for services/repo-truth-extractor and src/dopemux\n- focused batch regression tests and batch/strict test selection\n- operator safety preservation tests\n- git diff whitespace check and pre-commit on changed files",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Create and validate the repo-bound task packet before implementation.",
+      "requirements": [
+        "Verify repo root, marker, remote, branch, status, and HEAD.",
+        "Confirm PR #605 and PR #606 are present in current main.",
+        "Inspect batch client runtime code, active RTE runtime context, task packet schema, task packet index, and existing batch/strict tests."
+      ],
+      "commands": [
+        "python -m json.tool task-packets/generated/TP-RTE-BATCH-005.json",
+        "python -c \"import json, pathlib; from jsonschema import Draft7Validator; schema=json.loads(pathlib.Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text()); doc=json.loads(pathlib.Path('task-packets/generated/TP-RTE-BATCH-005.json').read_text()); errs=sorted(Draft7Validator(schema).iter_errors(doc), key=lambda e: e.path); raise SystemExit(0 if not errs else 1)\""
+      ],
+      "expected_files": [
+        "task-packets/generated/TP-RTE-BATCH-005.json",
+        "task-packets/INDEX.md"
+      ],
+      "validation": [
+        "Task packet parses as JSON.",
+        "Task packet validates against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "PROJECT.md",
+        "docs/research/mcp-customization/dopemux-constraints/RULES.md",
+        "docs/research/mcp-customization/dopemux-constraints/SYSTEM_RepoTruthExtractor.md",
+        "task-packets/INDEX.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "services/repo-truth-extractor/lib/batch_clients.py",
+        "services/repo-truth-extractor/run_extraction_v5.py"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add offline regression tests for OpenAI-compatible batch result parsing and strict/non-strict request serialization.",
+      "requirements": [
+        "Use fake client/file/batch transports at the provider boundary only.",
+        "Exercise actual fetch_results parsing and submit payload construction.",
+        "Prove no credentials, network, live extraction, or real provider files are required."
+      ],
+      "commands": [
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_batch_clients_integration.py"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/tests/test_batch_clients_integration.py"
+      ],
+      "validation": [
+        "New tests fail before the runtime fix and pass after it.",
+        "Tests prove valid result extraction, under/over threshold behavior, strict json_schema serialization, non-strict json_object compatibility, and xAI inherited parsing."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/tests/test_run_extraction_v3_batch_mode.py",
+        "services/repo-truth-extractor/lib/batch_clients.py"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Fix batch result extraction reachability and corruption threshold ordering.",
+      "requirements": [
+        "Parse valid JSONL rows into BatchResult entries inside the result loop.",
+        "Count malformed/discarded rows.",
+        "Apply the existing corruption threshold after parsing all rows.",
+        "Preserve public method names and return shape."
+      ],
+      "commands": [
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_batch_clients_integration.py"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/lib/batch_clients.py",
+        "services/repo-truth-extractor/tests/test_batch_clients_integration.py"
+      ],
+      "validation": [
+        "Valid fixture results return non-empty BatchResult rows.",
+        "Malformed rows under threshold do not suppress valid results.",
+        "Malformed rows over threshold raise the existing BatchCorruptionError-style RuntimeError."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/lib/batch_clients.py"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Fix strict batch response-format honesty without changing non-strict behavior.",
+      "requirements": [
+        "Strict batch requests must serialize response_format.type=json_schema when supplied with a valid schema payload.",
+        "Strict batch requests without a json_schema response format must fail closed before upload/submission.",
+        "Non-strict force_json_output requests must preserve existing json_object behavior."
+      ],
+      "commands": [
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_batch_clients_integration.py"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/lib/batch_clients.py",
+        "services/repo-truth-extractor/tests/test_batch_clients_integration.py"
+      ],
+      "validation": [
+        "Strict payload test observes actual serialized request body with response_format.type=json_schema.",
+        "Strict missing-schema test observes explicit fail-closed behavior.",
+        "Non-strict payload test observes existing json_object behavior."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/lib/structured_output_contracts.py",
+        "services/repo-truth-extractor/lib/batch_clients.py"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Verify xAI inherited batch behavior and preserve runtime boundaries.",
+      "requirements": [
+        "If XAIBatchClient inherits OpenAIBatchClient parsing, test the inherited path directly.",
+        "Do not alter OpenRouter unsupported-batch behavior or Gemini batch behavior unless tests prove a required minimal fix.",
+        "Do not touch run_extraction_v5.py unless runtime inspection proves a tiny metadata plumbing change is required."
+      ],
+      "commands": [
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_batch_clients_integration.py"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/lib/batch_clients.py",
+        "services/repo-truth-extractor/tests/test_batch_clients_integration.py"
+      ],
+      "validation": [
+        "xAI inherited fetch_results path returns parsed results from fake OpenAI-compatible result JSONL.",
+        "Scope grep confirms promptsets, model routing, walker/prescan, dependencies, cockpit/TUI, and docs sweep paths were not touched."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/lib/batch_clients.py"
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Run final validation, update proof, inspect diff, codereview, precommit, commit, push, and open PR.",
+      "requirements": [
+        "Record every validation command and exit code in proof artifacts.",
+        "Run codereview before pre-commit.",
+        "Commit only allowlisted files.",
+        "Push codex/tp-rte-batch-005 and open a PR against main when gh authentication permits."
+      ],
+      "commands": [
+        "python -m json.tool task-packets/generated/TP-RTE-BATCH-005.json",
+        "python -m json.tool proof/TP-RTE-BATCH-005/PROOF.json",
+        "python -m compileall -q services/repo-truth-extractor src/dopemux",
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_batch_clients_integration.py",
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests -k \"batch or strict\"",
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+        "git diff --check",
+        "pre-commit run --files <changed files>",
+        "git commit -m \"fix(rte): repair batch result and strict handling\"",
+        "git push -u origin codex/tp-rte-batch-005",
+        "gh pr create --base main --head codex/tp-rte-batch-005 --title \"fix(rte): repair batch result and strict handling\" --body-file <body>"
+      ],
+      "expected_files": [
+        "proof/TP-RTE-BATCH-005/PROOF.json",
+        "proof/TP-RTE-BATCH-005/IMPLEMENTER_REPORT.md"
+      ],
+      "validation": [
+        "Proof JSON parses.",
+        "All required validation results are recorded with exit codes.",
+        "Commit SHA, push result, PR URL or exact blocker, residual risks, and cleanup status are recorded."
+      ],
+      "context_files": [
+        "proof/TP-RTE-BATCH-005/PROOF.json",
+        "proof/TP-RTE-BATCH-005/IMPLEMENTER_REPORT.md"
+      ]
+    }
+  ]
+}
