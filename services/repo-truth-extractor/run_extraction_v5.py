@@ -4597,12 +4597,20 @@ def _resolve_explicit_route_override(
     if selected is None:
         return None
     provider, model_id, api_key_env = selected
+    contract_route_entry = _contract_route_entry_for_provider_model(
+        step_contract,
+        provider=str(provider),
+        model_id=str(model_id),
+    )
+    contract_strict_passthrough_verified = bool(
+        contract_route_entry.get("strict_passthrough_verified", False)
+    ) if isinstance(contract_route_entry, dict) else False
     route = {
         "provider": str(provider),
         "model_id": str(model_id),
         "api_key_env": str(api_key_env),
         "strict_json_schema": strict_required,
-        "strict_passthrough_verified": strict_required,
+        "strict_passthrough_verified": contract_strict_passthrough_verified,
     }
     transport = transport_for_provider(str(provider), cfg)
     strict_reason = strict_capability_reason(route, transport) if strict_required else None
@@ -4619,8 +4627,8 @@ def _resolve_explicit_route_override(
                 "model_id": str(model_id),
                 "transport": transport,
                 "strict_json_schema": True,
-                "strict_passthrough_verified": True,
-                "strict_capable": True,
+                "strict_passthrough_verified": contract_strict_passthrough_verified,
+                "strict_capable": strict_reason is None,
                 "reason": None,
                 "ownership_mode": "explicit_step_routes_v1",
                 "ownership_source": "explicit_step_routes_env",
@@ -4686,6 +4694,15 @@ def _resolve_benchmark_owned_stage_route(
             payload.get("strict_passthrough_verified", False)
         ),
     }
+    contract_route_entry = _contract_route_entry_for_provider_model(
+        step_contract,
+        provider=str(route["provider"]),
+        model_id=str(route["model_id"]),
+    )
+    if str(route["provider"]) == "openrouter":
+        route["strict_passthrough_verified"] = bool(
+            contract_route_entry.get("strict_passthrough_verified", False)
+        ) if isinstance(contract_route_entry, dict) else False
     transport = transport_for_provider(str(route["provider"]), cfg)
     reason = strict_capability_reason(route, transport)
     attempts = [
@@ -10656,6 +10673,229 @@ def _validate_strict_batch_response_format(
         )
 
 
+STRICT_PASSTHROUGH_RUNTIME_EVIDENCE_KEY = "strict_passthrough_runtime_evidence"
+STRICT_PASSTHROUGH_VERIFIED_STATES = {"VERIFIED"}
+STRICT_PASSTHROUGH_OBSERVED_EVIDENCE_SOURCES = {
+    "wire_payload",
+    "BatchRequest",
+    "constructed_request",
+}
+
+
+def _stable_schema_hash(payload: Any) -> Optional[str]:
+    if not isinstance(payload, dict):
+        return None
+    serialized = json.dumps(
+        payload,
+        ensure_ascii=True,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+
+def _strict_passthrough_evidence_from_response_format(
+    *,
+    response_format: Any,
+    evidence_source: str,
+    provider: str,
+    model_id: str,
+    transport: str,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    custom_id: Optional[str] = None,
+    request_id: Optional[str] = None,
+) -> Dict[str, Any]:
+    response_format_obj = response_format if isinstance(response_format, dict) else {}
+    json_schema = (
+        response_format_obj.get("json_schema")
+        if isinstance(response_format_obj.get("json_schema"), dict)
+        else {}
+    )
+    schema = json_schema.get("schema") if isinstance(json_schema, dict) else None
+    return {
+        "evidence_source": str(evidence_source or "unavailable"),
+        "provider": str(provider),
+        "model_id": str(model_id),
+        "transport": str(transport),
+        "phase": str(phase).strip().upper(),
+        "step_id": str(step_id).strip().upper(),
+        "partition_id": str(partition_id),
+        "custom_id": str(custom_id or partition_id or ""),
+        "request_id": str(request_id or custom_id or partition_id or ""),
+        "response_format_present": isinstance(response_format, dict),
+        "response_format_type": str(response_format_obj.get("type") or ""),
+        "json_schema_present": isinstance(json_schema, dict) and bool(json_schema),
+        "json_schema_strict": (
+            json_schema.get("strict") if isinstance(json_schema, dict) else None
+        ),
+        "schema_name": str(json_schema.get("name") or "")
+        if isinstance(json_schema, dict)
+        else "",
+        "schema_present": isinstance(schema, dict),
+        "schema_sha256": _stable_schema_hash(schema),
+    }
+
+
+def build_strict_passthrough_evidence_from_batch_request(
+    request: BatchRequest,
+    *,
+    provider: str,
+    transport: str,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    evidence_source: str = "BatchRequest",
+) -> Dict[str, Any]:
+    return _strict_passthrough_evidence_from_response_format(
+        response_format=request.response_format,
+        evidence_source=evidence_source,
+        provider=provider,
+        model_id=request.model_id,
+        transport=transport,
+        phase=phase,
+        step_id=step_id,
+        partition_id=partition_id,
+        custom_id=request.custom_id,
+        request_id=request.custom_id,
+    )
+
+
+def build_strict_passthrough_evidence_from_wire_payload(
+    payload_row: Dict[str, Any],
+    *,
+    provider: str,
+    model_id: str,
+    transport: str,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+) -> Dict[str, Any]:
+    body = payload_row.get("body") if isinstance(payload_row.get("body"), dict) else {}
+    custom_id = str(payload_row.get("custom_id") or partition_id)
+    return _strict_passthrough_evidence_from_response_format(
+        response_format=body.get("response_format"),
+        evidence_source="wire_payload",
+        provider=provider,
+        model_id=model_id,
+        transport=transport,
+        phase=phase,
+        step_id=step_id,
+        partition_id=partition_id,
+        custom_id=custom_id,
+        request_id=custom_id,
+    )
+
+
+def _append_strict_passthrough_evidence(
+    request_meta: Dict[str, Any],
+    evidence_rows: Sequence[Dict[str, Any]],
+) -> None:
+    rows = [
+        dict(row)
+        for row in evidence_rows
+        if isinstance(row, dict) and str(row.get("evidence_source") or "").strip()
+    ]
+    if not rows:
+        return
+    existing = request_meta.get(STRICT_PASSTHROUGH_RUNTIME_EVIDENCE_KEY)
+    if isinstance(existing, list):
+        request_meta[STRICT_PASSTHROUGH_RUNTIME_EVIDENCE_KEY] = [
+            row for row in existing if isinstance(row, dict)
+        ] + rows
+    else:
+        request_meta[STRICT_PASSTHROUGH_RUNTIME_EVIDENCE_KEY] = rows
+
+
+def _evidence_matches_strict_attestation(
+    evidence: Dict[str, Any],
+    *,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    provider: str,
+    model_id: str,
+) -> bool:
+    comparisons = {
+        "phase": phase,
+        "step_id": step_id,
+        "partition_id": partition_id,
+        "provider": provider,
+        "model_id": model_id,
+    }
+    for key, expected in comparisons.items():
+        observed = str(evidence.get(key) or "").strip()
+        wanted = str(expected or "").strip()
+        if observed and wanted and observed != wanted:
+            return False
+    return True
+
+
+def _select_strict_passthrough_evidence(
+    evidence_rows: Sequence[Dict[str, Any]],
+    *,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    provider: str,
+    model_id: str,
+) -> Optional[Dict[str, Any]]:
+    for row in evidence_rows:
+        if not isinstance(row, dict):
+            continue
+        if _evidence_matches_strict_attestation(
+            row,
+            phase=phase,
+            step_id=step_id,
+            partition_id=partition_id,
+            provider=provider,
+            model_id=model_id,
+        ):
+            return dict(row)
+    return None
+
+
+def _strict_passthrough_truth_state(
+    entry: Dict[str, Any],
+    evidence: Optional[Dict[str, Any]],
+) -> Tuple[str, str]:
+    if "strict_required" in entry:
+        strict_expected = bool(entry.get("strict_required"))
+    else:
+        strict_expected = bool(
+            entry.get("strict_json_schema")
+            or entry.get("strict_capable")
+            or entry.get("strict_passthrough_verified")
+            or entry.get("attempts")
+        )
+    if entry.get("selected") is False:
+        return "FAILED", "no_selected_strict_route"
+    if not strict_expected:
+        return "NOT_APPLICABLE", "strict_schema_not_required"
+    provider = str(entry.get("provider") or "").strip().lower()
+    if provider == "gemini":
+        return "FAILED", "provider_not_strict_capable:gemini"
+    if evidence is None:
+        return "UNVERIFIED", "runtime_or_wire_evidence_missing"
+    source = str(evidence.get("evidence_source") or "").strip()
+    if source not in STRICT_PASSTHROUGH_OBSERVED_EVIDENCE_SOURCES:
+        return "UNKNOWN", f"unsupported_evidence_source:{source or 'missing'}"
+    if not bool(evidence.get("response_format_present", False)):
+        return "FAILED", "response_format_missing"
+    if str(evidence.get("response_format_type") or "") != "json_schema":
+        return "FAILED", "response_format_not_json_schema"
+    if not bool(evidence.get("json_schema_present", False)):
+        return "FAILED", "json_schema_missing"
+    if evidence.get("json_schema_strict") is not True:
+        return "FAILED", "json_schema_strict_not_true"
+    if not bool(evidence.get("schema_present", False)) or not evidence.get(
+        "schema_sha256"
+    ):
+        return "FAILED", "json_schema_schema_missing"
+    return "VERIFIED", "observed_strict_json_schema"
+
+
 def build_v5_batch_request(
     *,
     custom_id: str,
@@ -13039,13 +13279,24 @@ else sdk_auth_present_flags(p_provider, True)
                         "explicit_phase_route_override",
                         "benchmark_route_ownership_primary",
                     }:
+                        contract_route_entry = _contract_route_entry_for_provider_model(
+                            step_contract,
+                            provider=batch_provider,
+                            model_id=batch_model_id,
+                        )
                         selected_route_entry = {
                             "provider": batch_provider,
                             "model_id": batch_model_id,
                             "api_key_env": batch_api_key_env,
                             "structured_output_mode": "json_schema",
                             "strict_json_schema": True,
-                            "strict_passthrough_verified": True,
+                            "strict_passthrough_verified": bool(
+                                contract_route_entry.get(
+                                    "strict_passthrough_verified", False
+                                )
+                            )
+                            if isinstance(contract_route_entry, dict)
+                            else False,
                         }
                     try:
                         batch_requests = [
@@ -13069,6 +13320,20 @@ else sdk_auth_present_flags(p_provider, True)
                                 },
                             )
                         ]
+                        strict_passthrough_evidence_rows = (
+                            [
+                                build_strict_passthrough_evidence_from_batch_request(
+                                    batch_requests[0],
+                                    provider=batch_provider,
+                                    transport=batch_transport,
+                                    phase=phase,
+                                    step_id=step_id,
+                                    partition_id=partition_id,
+                                )
+                            ]
+                            if strict_contract_required
+                            else []
+                        )
                     except ValueError as exc:
                         failed_meta = {
                             "provider": batch_provider,
@@ -13106,6 +13371,10 @@ else sdk_auth_present_flags(p_provider, True)
                             "estimated_input_tokens": projected_input_tokens,
                             "estimated_output_tokens": projected_output_tokens,
                         }
+                        _append_strict_passthrough_evidence(
+                            failed_meta,
+                            strict_passthrough_evidence_rows,
+                        )
                         return "", enrich_request_meta(
                             failed_meta,
                             run_id=run_id,
@@ -13224,6 +13493,10 @@ else sdk_auth_present_flags(p_provider, True)
                             "estimated_output_tokens": projected_output_tokens,
                             **capture_exception_metadata(exc),
                         }
+                        _append_strict_passthrough_evidence(
+                            failed_meta,
+                            strict_passthrough_evidence_rows,
+                        )
                         return "", enrich_request_meta(
                             failed_meta,
                             run_id=run_id,
@@ -13264,6 +13537,10 @@ else sdk_auth_present_flags(p_provider, True)
                                 reserved_spend if "reserved_spend" in locals() else None
                             ),
                         }
+                        _append_strict_passthrough_evidence(
+                            meta,
+                            strict_passthrough_evidence_rows,
+                        )
                         return json.dumps(
                             submit_payload, ensure_ascii=True, sort_keys=True
                         ), enrich_request_meta(
@@ -13307,6 +13584,10 @@ else sdk_auth_present_flags(p_provider, True)
                                 "estimated_input_tokens": projected_input_tokens,
                                 "estimated_output_tokens": projected_output_tokens,
                             }
+                            _append_strict_passthrough_evidence(
+                                failed_meta,
+                                strict_passthrough_evidence_rows,
+                            )
                             return "", enrich_request_meta(
                                 failed_meta,
                                 run_id=run_id,
@@ -13366,6 +13647,10 @@ else sdk_auth_present_flags(p_provider, True)
                             "estimated_input_tokens": projected_input_tokens,
                             "estimated_output_tokens": projected_output_tokens,
                         }
+                        _append_strict_passthrough_evidence(
+                            failed_meta,
+                            strict_passthrough_evidence_rows,
+                        )
                         return "", enrich_request_meta(
                             failed_meta,
                             run_id=run_id,
@@ -13388,6 +13673,10 @@ else sdk_auth_present_flags(p_provider, True)
                         "estimated_input_tokens": projected_input_tokens,
                         "estimated_output_tokens": projected_output_tokens,
                     }
+                    _append_strict_passthrough_evidence(
+                        meta,
+                        strict_passthrough_evidence_rows,
+                    )
                     for job_row in batch_job_rows:
                         if (
                             str(job_row.get("partition_id")) == partition_id
@@ -13494,6 +13783,24 @@ else sdk_auth_present_flags(p_provider, True)
                     provider=route_provider,
                     model_id=route_model_id,
                 )
+                if strict_contract_required and isinstance(draft_response_format, dict):
+                    _append_strict_passthrough_evidence(
+                        request_meta_local,
+                        [
+                            _strict_passthrough_evidence_from_response_format(
+                                response_format=draft_response_format,
+                                evidence_source="constructed_request",
+                                provider=route_provider,
+                                model_id=route_model_id,
+                                transport=transport_for_provider(route_provider, cfg),
+                                phase=phase,
+                                step_id=step_id,
+                                partition_id=partition_id,
+                                custom_id=partition_id,
+                                request_id=partition_id,
+                            )
+                        ],
+                    )
                 if request_meta_local.get("response_received") or llm_result.get("ok"):
                     spend_record = _accumulate_runtime_spend(
                         cfg,
@@ -15905,6 +16212,7 @@ def write_strict_passthrough_attestations(
     rows: List[Dict[str, Any]] = []
     by_provider = Counter()
     by_stage = Counter()
+    by_status = Counter()
     strict_capable_rows = 0
     for phase in phases:
         phase_dir = dirs.get(phase)
@@ -15930,24 +16238,95 @@ def write_strict_passthrough_attestations(
             phase_id = str(payload.get("phase") or phase).strip().upper()
             step_id = str(payload.get("step_id") or "").strip().upper()
             partition_id = str(payload.get("partition_id") or "").strip()
+            evidence_rows = (
+                request_meta.get(STRICT_PASSTHROUGH_RUNTIME_EVIDENCE_KEY)
+                if isinstance(
+                    request_meta.get(STRICT_PASSTHROUGH_RUNTIME_EVIDENCE_KEY), list
+                )
+                else []
+            )
             for entry in attestations:
                 if not isinstance(entry, dict):
                     continue
+                provider = str(entry.get("provider") or "").strip()
+                model_id = str(entry.get("model_id") or "").strip()
+                entry_evidence = (
+                    entry.get(STRICT_PASSTHROUGH_RUNTIME_EVIDENCE_KEY)
+                    if isinstance(
+                        entry.get(STRICT_PASSTHROUGH_RUNTIME_EVIDENCE_KEY), dict
+                    )
+                    else None
+                )
+                evidence = entry_evidence or _select_strict_passthrough_evidence(
+                    evidence_rows,
+                    phase=phase_id,
+                    step_id=step_id,
+                    partition_id=partition_id,
+                    provider=provider,
+                    model_id=model_id,
+                )
+                attestation_status, attestation_reason = _strict_passthrough_truth_state(
+                    entry,
+                    evidence,
+                )
+                verified = attestation_status in STRICT_PASSTHROUGH_VERIFIED_STATES
                 row = {
                     "phase": phase_id,
                     "step_id": step_id,
                     "partition_id": partition_id,
                     "stage": str(entry.get("stage") or "").strip(),
                     "selected": bool(entry.get("selected", False)),
-                    "provider": str(entry.get("provider") or "").strip(),
-                    "model_id": str(entry.get("model_id") or "").strip(),
+                    "provider": provider,
+                    "model_id": model_id,
                     "api_key_env": str(entry.get("api_key_env") or "").strip(),
                     "transport": str(entry.get("transport") or "").strip(),
+                    "strict_required": bool(entry.get("strict_required", False)),
                     "strict_json_schema": bool(entry.get("strict_json_schema", False)),
-                    "strict_passthrough_verified": bool(
+                    "route_strict_passthrough_claim": bool(
                         entry.get("strict_passthrough_verified", False)
                     ),
-                    "strict_capable": bool(entry.get("strict_capable", False)),
+                    "route_strict_capable_claim": bool(
+                        entry.get("strict_capable", False)
+                    ),
+                    "strict_passthrough_verified": verified,
+                    "strict_capable": verified,
+                    "attestation_status": attestation_status,
+                    "attestation_reason": attestation_reason,
+                    "evidence_source": (
+                        str(evidence.get("evidence_source") or "")
+                        if isinstance(evidence, dict)
+                        else "unavailable"
+                    ),
+                    "response_format_present": (
+                        bool(evidence.get("response_format_present", False))
+                        if isinstance(evidence, dict)
+                        else False
+                    ),
+                    "response_format_type": (
+                        str(evidence.get("response_format_type") or "")
+                        if isinstance(evidence, dict)
+                        else ""
+                    ),
+                    "json_schema_present": (
+                        bool(evidence.get("json_schema_present", False))
+                        if isinstance(evidence, dict)
+                        else False
+                    ),
+                    "json_schema_strict": (
+                        evidence.get("json_schema_strict")
+                        if isinstance(evidence, dict)
+                        else None
+                    ),
+                    "schema_name": (
+                        str(evidence.get("schema_name") or "")
+                        if isinstance(evidence, dict)
+                        else ""
+                    ),
+                    "schema_sha256": (
+                        str(evidence.get("schema_sha256") or "")
+                        if isinstance(evidence, dict)
+                        else ""
+                    ),
                     "attempts": (
                         entry.get("attempts")
                         if isinstance(entry.get("attempts"), list)
@@ -15961,17 +16340,25 @@ def write_strict_passthrough_attestations(
                     by_stage[row["stage"]] += 1
                 if row["strict_capable"]:
                     strict_capable_rows += 1
+                if row["attestation_status"]:
+                    by_status[row["attestation_status"]] += 1
     payload = {
-        "version": "STRICT_PASSTHROUGH_ATTESTATIONS_V1",
+        "version": "STRICT_PASSTHROUGH_ATTESTATIONS_V2",
         "generated_at": now_iso(),
         "run_id": run_id,
-        "policy": {"no_auto_transport_flips": True},
+        "policy": {
+            "no_auto_transport_flips": True,
+            "verified_requires_observed_runtime_or_wire_evidence": True,
+            "intent_or_static_route_config_alone_verified": False,
+        },
         "rows": rows,
         "summary": {
             "row_count": len(rows),
             "strict_capable_rows": strict_capable_rows,
+            "verified_rows": by_status.get("VERIFIED", 0),
             "provider_histogram": dict(sorted(by_provider.items())),
             "stage_histogram": dict(sorted(by_stage.items())),
+            "attestation_status_histogram": dict(sorted(by_status.items())),
         },
     }
     write_json(dirs["root"] / STRICT_PASSTHROUGH_ATTESTATIONS_FILENAME, payload)
