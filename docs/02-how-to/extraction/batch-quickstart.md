@@ -6,12 +6,12 @@ owner: '@hu3mann'
 date: '2026-02-20'
 author: '@codex'
 prelude: Quick operational guide for running Repo Truth Extractor in batch mode
-  with OpenAI, Gemini, or xAI providers through the authoritative v5 CLI.
+  with OpenAI, Gemini, or xAI providers through the canonical dopemux rte v5 CLI.
 graph_metadata:
   node_type: DocPage
   impact: high
   relates_to:
-  - services/repo-truth-extractor/run_extraction_v3.py
+  - services/repo-truth-extractor/run_extraction_v5.py
   - services/repo-truth-extractor/lib/batch_clients.py
 last_review: '2026-02-21'
 next_review: '2026-05-22'
@@ -21,6 +21,9 @@ next_review: '2026-05-22'
 Use this when you want lower-cost async execution for high-volume extraction steps.
 
 Batch is opt-in and live by default only when explicit consent is present.
+The canonical operator command family is `dopemux rte`; `dopemux upgrades` is only a legacy compatibility alias.
+The strongest v5 runtime authority remains `services/repo-truth-extractor/run_extraction_v5.py`.
+Batch request/response proof is safer after TP-RTE-BATCH-005, TP-RTE-BATCH-E2E-006, and TP-RTE-STRICT-ATTESTATION-007, but live provider and batch execution remain policy-gated.
 
 ## 1. When to use batch mode
 
@@ -68,7 +71,7 @@ Tuning flags:
 ## 3. Minimal end-to-end command
 
 ```bash
-DPMX_LIVE_OK=1 dopemux upgrades run \
+DPMX_LIVE_OK=1 dopemux rte run \
   --pipeline-version v5 \
   --phase D \
   --execute \
@@ -86,7 +89,7 @@ DPMX_LIVE_OK=1 dopemux upgrades run \
 OpenAI:
 
 ```bash
-DPMX_LIVE_OK=1 dopemux upgrades run \
+DPMX_LIVE_OK=1 dopemux rte run \
   --pipeline-version v5 \
   --phase D \
   --execute \
@@ -100,7 +103,7 @@ DPMX_LIVE_OK=1 dopemux upgrades run \
 Gemini:
 
 ```bash
-DPMX_LIVE_OK=1 dopemux upgrades run \
+DPMX_LIVE_OK=1 dopemux rte run \
   --pipeline-version v5 \
   --phase D \
   --execute \
@@ -114,7 +117,7 @@ DPMX_LIVE_OK=1 dopemux upgrades run \
 xAI:
 
 ```bash
-DPMX_LIVE_OK=1 dopemux upgrades run \
+DPMX_LIVE_OK=1 dopemux rte run \
   --pipeline-version v5 \
   --phase D \
   --execute \
@@ -149,13 +152,13 @@ After run:
 1. Check status:
 
 ```bash
-dopemux upgrades status --pipeline-version v5 --run-id rte_batch_d_001
+dopemux rte status --pipeline-version v5 --run-id rte_batch_d_001
 ```
 
 2. Confirm batch artifacts exist:
 
 ```bash
-find extraction/repo-truth-extractor/v3/runs/rte_batch_d_001 -path \"*/batch/*\" -type f
+find extraction/repo-truth-extractor/v5/runs/rte_batch_d_001 -path "*/batch/*" -type f
 ```
 
 3. Confirm step summaries show execution mode split:
@@ -172,7 +175,7 @@ Timeout waiting for batch completion:
 Provider mismatch or auth failures:
 
 - Run:
-  - `dopemux upgrades preflight --pipeline-version v5 --auth-doctor`
+  - `dopemux rte preflight --pipeline-version v5 --auth-doctor`
 - Verify corresponding key env vars:
   - OpenAI: `OPENAI_API_KEY`
   - Gemini: `GEMINI_API_KEY`

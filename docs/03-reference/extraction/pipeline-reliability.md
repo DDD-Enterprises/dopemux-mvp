@@ -27,7 +27,9 @@ Authoritative surfaces:
 - `services/repo-truth-extractor/validate_pre_live_gate_v25.py`
 - `config/pricing.yaml`
 
-Canonical CLI: `dopemux upgrades ...` (legacy alias: `dopemux extractor ...`).
+Canonical operator CLI: `dopemux rte ...`.
+`dopemux upgrades ...` is a legacy compatibility alias, and
+`dopemux extractor ...` is a hidden legacy/refusal surface.
 
 ## Validated bounded target
 

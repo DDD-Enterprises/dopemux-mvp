@@ -158,13 +158,16 @@ Method:
 
 ### `repo-truth-extractor` execution flow
 
-- Observed CLI flow:
-  - `dopemux extractor` / `dopemux upgrades` -> `/Users/hue/code/dopemux-mvp/src/dopemux/commands/extractor_commands.py`
+- Observed canonical operator flow:
+  - `dopemux rte` -> `/Users/hue/code/dopemux-mvp/src/dopemux/cli.py`
   - command resolves runner path -> `run_extraction_v5.py`
   - subprocess executes runner in resolved repo root
-  - artifacts are written under `/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs`
-- Observed contradiction:
-  - `dopemux truth` in `/Users/hue/code/dopemux-mvp/src/dopemux/cli.py` bypasses this path and invokes legacy `PipelineRunner`.
+  - artifacts are written under `/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v5/runs`
+- Observed legacy/compatibility and refusal surfaces:
+  - `dopemux upgrades` is a legacy compatibility alias for `dopemux rte`.
+  - `dopemux extractor` is hidden/blocked and points operators to `dopemux rte`.
+  - `dopemux truth` in `/Users/hue/code/dopemux-mvp/src/dopemux/cli.py` is a legacy/refusal surface, not the v5 RTE path.
+  - `dopemux rte scan` is a gated legacy v3 scan route that requires `--allow-legacy-v3-scan`; live delegated execution still requires `--execute` and `DPMX_LIVE_OK=1`.
 
 ## C. Retrieval / Ranking / Determinism Behavior
 
@@ -220,8 +223,8 @@ Method:
   - `/Users/hue/code/dopemux-mvp/services/task-orchestrator/task_orchestrator/app.py` says canonical runtime is `app/main.py (Port 3014)`, while `/Users/hue/code/dopemux-mvp/services/registry.yaml` and `compose.yml` use `8000`, and the Dockerfile targets the hard-failing module.
 - Contradiction:
   - `/Users/hue/code/dopemux-mvp/mcp-proxy-config*.{json,yaml}` reference missing `services/dope-context/run_mcp.sh`, while the Dockerfile and tests indicate `python -m src.mcp.server`.
-- Contradiction:
-  - `/Users/hue/code/dopemux-mvp/src/dopemux/cli.py` `truth` command uses legacy `PipelineRunner`, while `/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/README.md` and extractor commands point to v5.
+- RTE command drift:
+  - `/Users/hue/code/dopemux-mvp/src/dopemux/cli.py` now makes `dopemux rte` the canonical operator family and turns `dopemux truth` into a legacy/refusal surface. Older docs may still mention the historical `PipelineRunner` path and must not treat it as v5 RTE.
 - UNKNOWN:
   - Canonical Serena implementation authority between `/Users/hue/code/dopemux-mvp/services/serena` and `/Users/hue/code/dopemux-mvp/docker/mcp-servers-source/serena`.
 - UNKNOWN:
