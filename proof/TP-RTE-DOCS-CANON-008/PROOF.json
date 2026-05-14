@@ -13,12 +13,14 @@
   ],
   "files_modified": [
     "README.md",
+    "docs/00-MASTER-INDEX.md",
     "docs/02-how-to/extraction/batch-quickstart.md",
     "docs/02-how-to/extraction/repo-truth-extractor-user-guide.md",
     "docs/02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md",
     "docs/02-how-to/extraction/run-prescan.md",
     "docs/02-how-to/extraction/run-v4-from-dopemux-cli.md",
     "docs/02-how-to/extraction/truth-run-command.md",
+    "docs/03-reference/extraction/pipeline-reliability.md",
     "docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md",
     "docs/03-reference/truth/truth-canonicals.md",
     "docs/03-reference/truth/truth-data-events.md",
@@ -45,17 +47,17 @@
       "result": "Task packet validates against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json."
     },
     {
-      "command": "python - <<'PY'\nfrom pathlib import Path\npaths = [Path('README.md'), *Path('docs/02-how-to/extraction').glob('*.md'), *Path('docs/03-reference/systems/repo-truth-extractor').glob('*.md'), *Path('docs/03-reference/truth').glob('*.md')]\npatterns = ['dopemux upgrades is the canonical','dopemux upgrades as the canonical','dopemux upgrades as canonical','canonical dopemux upgrades','dopemux extractor is the canonical','dopemux extractor as the canonical','canonical dopemux extractor','dopemux truth is the canonical','dopemux truth as the canonical','canonical dopemux truth','dopemux truth is the v5','dopemux extract truth-run is the canonical']\nfailures=[]\nfor path in sorted(paths):\n    text = path.read_text(encoding='utf-8').lower() if path.exists() else ''\n    for pat in patterns:\n        if pat in text:\n            failures.append(f'{path}: stale canonical phrase: {pat}')\nif failures:\n    print('\\n'.join(failures)); raise SystemExit(1)\nprint('stale-canonical-phrases-absent')\nPY",
+      "command": "python - <<'PY'\nfrom pathlib import Path\npaths = [Path('README.md'), Path('docs/00-MASTER-INDEX.md'), *Path('docs/02-how-to/extraction').glob('*.md'), Path('docs/03-reference/extraction/pipeline-reliability.md'), *Path('docs/03-reference/systems/repo-truth-extractor').glob('*.md'), *Path('docs/03-reference/truth').glob('*.md')]\npatterns = ['dopemux upgrades is the canonical','dopemux upgrades as the canonical','dopemux upgrades as canonical','canonical dopemux upgrades','canonical command namespace: `dopemux upgrades','canonical cli: `dopemux upgrades','dopemux extractor is the canonical','dopemux extractor as the canonical','canonical dopemux extractor','dopemux truth is the canonical','dopemux truth as the canonical','canonical dopemux truth','dopemux truth is the v5','dopemux extract truth-run is the canonical']\nfailures=[]\nfor path in sorted(paths):\n    text = path.read_text(encoding='utf-8').lower() if path.exists() else ''\n    for pat in patterns:\n        if pat in text:\n            failures.append(f'{path}: stale canonical phrase: {pat}')\nif failures:\n    print('\\n'.join(failures)); raise SystemExit(1)\nprint('stale-canonical-phrases-absent')\nPY",
       "exit_code": 0,
       "result": "No stale canonical phrase claims found for dopemux upgrades, dopemux extractor, dopemux truth, or dopemux extract truth-run."
     },
     {
-      "command": "python - <<'PY'\nfrom pathlib import Path\npaths = [Path('README.md'), *Path('docs/02-how-to/extraction').glob('*.md'), *Path('docs/03-reference/systems/repo-truth-extractor').glob('*.md'), *Path('docs/03-reference/truth').glob('*.md')]\nchecks = {'dopemux upgrades': ('legacy','compatibility','do not use','not use','stale command'), 'dopemux extractor': ('legacy','deprecated','hidden','blocked','refusal','deprioritized'), 'dopemux truth': ('legacy','refusal','not the v5','deprioritized'), 'dopemux extract truth-run': ('legacy','compatibility','hidden','disabled','refusal'), 'PipelineRunner': ('legacy','not the v5','drift'), 'python services/repo-truth-extractor/run_extraction_v5.py': ('advanced','debug','manual','runner-level','specific runbook'), 'run_repscan': ('legacy','gated')}\nfailures=[]\nfor path in sorted(paths):\n    if not path.exists():\n        continue\n    lines = path.read_text(encoding='utf-8').splitlines(); whole='\\n'.join(lines).lower()\n    for i,line in enumerate(lines,1):\n        low=line.lower()\n        for term,allowed in checks.items():\n            if term.lower() not in low:\n                continue\n            window='\\n'.join(lines[max(0,i-6):min(len(lines),i+6)]).lower()\n            if not any(marker in window for marker in allowed) and not any(marker in whole for marker in allowed):\n                failures.append(f'{path}:{i}: {term} lacks classification context: {line}')\nif failures:\n    print('\\n'.join(failures)); raise SystemExit(1)\nprint('legacy-classification-ok')\nPY",
+      "command": "python - <<'PY'\nfrom pathlib import Path\npaths = [Path('README.md'), Path('docs/00-MASTER-INDEX.md'), *Path('docs/02-how-to/extraction').glob('*.md'), Path('docs/03-reference/extraction/pipeline-reliability.md'), *Path('docs/03-reference/systems/repo-truth-extractor').glob('*.md'), *Path('docs/03-reference/truth').glob('*.md')]\nchecks = {'dopemux upgrades': ('legacy','compatibility','do not use','not use','stale command'), 'dopemux extractor': ('legacy','deprecated','hidden','blocked','refusal','deprioritized'), 'dopemux truth': ('legacy','refusal','not the v5','deprioritized'), 'dopemux extract truth-run': ('legacy','compatibility','hidden','disabled','refusal'), 'PipelineRunner': ('legacy','not the v5','drift'), 'python services/repo-truth-extractor/run_extraction_v5.py': ('advanced','debug','manual','runner-level','specific runbook'), 'run_repscan': ('legacy','gated')}\nfailures=[]\nfor path in sorted(paths):\n    if not path.exists():\n        continue\n    lines = path.read_text(encoding='utf-8').splitlines(); whole='\\n'.join(lines).lower()\n    for i,line in enumerate(lines,1):\n        low=line.lower()\n        for term,allowed in checks.items():\n            if term.lower() not in low:\n                continue\n            window='\\n'.join(lines[max(0,i-6):min(len(lines),i+6)]).lower()\n            if not any(marker in window for marker in allowed) and not any(marker in whole for marker in allowed):\n                failures.append(f'{path}:{i}: {term} lacks classification context: {line}')\nif failures:\n    print('\\n'.join(failures)); raise SystemExit(1)\nprint('legacy-classification-ok')\nPY",
       "exit_code": 0,
       "result": "Remaining legacy/direct-runner mentions have legacy, compatibility, deprecated, refusal, gated, advanced, debug, manual, or runner-level context."
     },
     {
-      "command": "rg -n \"dopemux rte.*canonical|canonical.*dopemux rte|services/repo-truth-extractor/run_extraction_v5.py|evidence artifacts|evidence artifact|not source truth|do not outrank|DPMX_LIVE_OK|--execute|P5|supervisor verdict|proof-gated|unattended go-live\" README.md docs/02-how-to/extraction docs/03-reference/systems/repo-truth-extractor docs/03-reference/truth",
+      "command": "rg -n \"dopemux rte.*canonical|canonical.*dopemux rte|services/repo-truth-extractor/run_extraction_v5.py|evidence artifacts|evidence artifact|not source truth|do not outrank|DPMX_LIVE_OK|--execute|P5|supervisor verdict|proof-gated|unattended go-live\" README.md docs/00-MASTER-INDEX.md docs/02-how-to/extraction docs/03-reference/extraction/pipeline-reliability.md docs/03-reference/systems/repo-truth-extractor docs/03-reference/truth",
       "exit_code": 0,
       "result": "Docs contain canonical dopemux rte assertions, v5 runtime authority, source-truth separation, and guarded live/go-live language."
     },
@@ -80,7 +82,7 @@
       "result": "Proof parses as JSON."
     },
     {
-      "command": "pre-commit run --files <changed files>",
+      "command": "pre-commit run --files README.md docs/00-MASTER-INDEX.md docs/02-how-to/extraction/batch-quickstart.md docs/02-how-to/extraction/repo-truth-extractor-user-guide.md docs/02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md docs/02-how-to/extraction/run-prescan.md docs/02-how-to/extraction/run-v4-from-dopemux-cli.md docs/02-how-to/extraction/truth-run-command.md docs/03-reference/extraction/pipeline-reliability.md docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md docs/03-reference/truth/truth-canonicals.md docs/03-reference/truth/truth-data-events.md docs/03-reference/truth/truth-gaps.md docs/03-reference/truth/truth-interfaces.md docs/03-reference/truth/truth-scope.md docs/03-reference/truth/truth-systems.md proof/TP-RTE-DOCS-CANON-008/IMPLEMENTER_REPORT.md proof/TP-RTE-DOCS-CANON-008/PROOF.json task-packets/INDEX.md task-packets/generated/TP-RTE-DOCS-CANON-008.json",
       "exit_code": 0,
       "result": "All configured hooks for the changed file set passed."
     }
@@ -104,14 +106,16 @@
     "status": true,
     "evidence": [
       "README.md documents `dopemux rte` as the canonical RTE operator command family.",
+      "docs/00-MASTER-INDEX.md points the RTE runbook at the `dopemux rte` canonical command namespace.",
       "docs/02-how-to/extraction/repo-truth-extractor-user-guide.md documents current operator truth with `dopemux rte` as canonical.",
+      "docs/03-reference/extraction/pipeline-reliability.md documents `dopemux rte ...` as the canonical operator CLI.",
       "docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md documents CLI wiring evidence for `dopemux rte`."
     ]
   },
   "stale_upgrades_canonicalization_removed": {
     "status": true,
     "evidence": [
-      "Focused stale canonical phrase validation found no current docs claiming `dopemux upgrades` is canonical/current/preferred.",
+      "Focused stale canonical phrase validation now includes docs/00-MASTER-INDEX.md and docs/03-reference/extraction/pipeline-reliability.md and found no current docs claiming `dopemux upgrades` is canonical/current/preferred.",
       "Remaining `dopemux upgrades` mentions classify it as a legacy compatibility alias."
     ]
   },
@@ -124,7 +128,7 @@
   "v5_runtime_authority_documented": {
     "status": true,
     "evidence": [
-      "README.md, the user guide, first-live runbook, batch quickstart, system reference, and truth docs identify `services/repo-truth-extractor/run_extraction_v5.py` as strongest v5 runtime authority."
+      "README.md, the user guide, first-live runbook, batch quickstart, pipeline reliability reference, system reference, and truth docs identify `services/repo-truth-extractor/run_extraction_v5.py` as strongest v5 runtime authority."
     ]
   },
   "full_unattended_go_live_not_claimed": {
@@ -147,5 +151,5 @@
     "Direct runner examples remain in the first-live runbook because runtime evidence shows first-live preset controls are runner-level controls not exposed by `dopemux rte run`.",
     "docs/assembled was not edited because current RTE operator docs did not require generated pointer bundle updates."
   ],
-  "final_git_status_before_commit": "## codex/tp-rte-docs-canon-008; modified: README.md, docs/02-how-to/extraction/batch-quickstart.md, docs/02-how-to/extraction/repo-truth-extractor-user-guide.md, docs/02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md, docs/02-how-to/extraction/run-prescan.md, docs/02-how-to/extraction/run-v4-from-dopemux-cli.md, docs/02-how-to/extraction/truth-run-command.md, docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md, docs/03-reference/truth/truth-canonicals.md, docs/03-reference/truth/truth-data-events.md, docs/03-reference/truth/truth-gaps.md, docs/03-reference/truth/truth-interfaces.md, docs/03-reference/truth/truth-scope.md, docs/03-reference/truth/truth-systems.md, task-packets/INDEX.md; untracked: task-packets/generated/TP-RTE-DOCS-CANON-008.json; proof/TP-RTE-DOCS-CANON-008/* ignored by .gitignore and must be force-added."
+  "final_git_status_before_commit": "## codex/tp-rte-docs-canon-008; modified: README.md, docs/00-MASTER-INDEX.md, docs/02-how-to/extraction/batch-quickstart.md, docs/02-how-to/extraction/repo-truth-extractor-user-guide.md, docs/02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md, docs/02-how-to/extraction/run-prescan.md, docs/02-how-to/extraction/run-v4-from-dopemux-cli.md, docs/02-how-to/extraction/truth-run-command.md, docs/03-reference/extraction/pipeline-reliability.md, docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md, docs/03-reference/truth/truth-canonicals.md, docs/03-reference/truth/truth-data-events.md, docs/03-reference/truth/truth-gaps.md, docs/03-reference/truth/truth-interfaces.md, docs/03-reference/truth/truth-scope.md, docs/03-reference/truth/truth-systems.md, proof/TP-RTE-DOCS-CANON-008/IMPLEMENTER_REPORT.md, proof/TP-RTE-DOCS-CANON-008/PROOF.json, task-packets/INDEX.md, task-packets/generated/TP-RTE-DOCS-CANON-008.json."
 }
