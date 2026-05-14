@@ -34,7 +34,8 @@
     "schema_source": "build_v5_batch_request uses route_entries_for_stage(...) and build_provider_step_contract_output(...) from structured_output_contracts.py to build the provider-specific json_schema response_format.",
     "batch_path_wiring": "The real run_extraction_v5.py batch branch now calls build_v5_batch_request(...) before resolving API keys or constructing the batch client.",
     "strict_fail_closed": "Strict batch request construction validates response_format.type=json_schema, json_schema.schema object presence, json_schema.strict=true, and non-empty artifact schema metadata before upload/submission.",
-    "non_strict_preservation": "Non-strict OpenAI-compatible batch request construction still returns response_format=None when force_json_output is false; existing batch client force_json_output behavior remains in batch_clients.py."
+    "non_strict_preservation": "Non-strict OpenAI-compatible batch request construction still returns response_format=None when force_json_output is false; existing batch client force_json_output behavior remains in batch_clients.py.",
+    "codex_p1_followup": "_resolve_batch_route_override widens strict route ladder 2-tuples to 3-tuples by deriving api_key_env from PROVIDER_API_KEY_ENV when a batch_provider override selects a strict ladder route."
   },
   "validation_commands": [
     {
@@ -60,7 +61,7 @@
     {
       "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py",
       "exit_code": 0,
-      "summary": "Focused v5 batch response_format regression tests passed: 4 passed."
+      "summary": "Focused v5 batch response_format and strict 2-tuple ladder override regression tests passed: 5 passed."
     },
     {
       "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_batch_clients_integration.py",
@@ -75,7 +76,7 @@
     {
       "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests -k \"batch or strict\"",
       "exit_code": 0,
-      "summary": "Broader batch/strict selection passed: 48 passed."
+      "summary": "Broader batch/strict selection passed: 49 passed."
     },
     {
       "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
@@ -128,6 +129,10 @@
     "value": true,
     "evidence": "test_v5_batch_request_construction_propagates_strict_response_format_to_wire_payload passed and inspected the BatchRequest plus fake OpenAI-compatible upload JSONL with response_format.type=json_schema and json_schema.strict=true."
   },
+  "strict_two_tuple_ladder_override_supported": {
+    "value": true,
+    "evidence": "test_v5_resolve_batch_route_override_handles_strict_two_tuple_ladder passed and covered no-override passthrough, strict 2-tuple provider override widening through PROVIDER_API_KEY_ENV, and missing override fallback."
+  },
   "strict_missing_schema_fails_closed_before_submit": {
     "value": true,
     "evidence": "test_v5_strict_batch_request_missing_schema_fails_before_upload_or_submit passed and asserted fake files.uploads and fake batches.created stayed empty."
@@ -163,5 +168,5 @@
     "status": "passed",
     "evidence": "pre-commit run --files completed with exit code 0 for changed allowlist files."
   },
-  "final_git_status_before_commit": "## codex/tp-rte-batch-e2e-006; modified: services/repo-truth-extractor/run_extraction_v5.py, task-packets/INDEX.md; untracked: services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py, task-packets/generated/TP-RTE-BATCH-E2E-006.json; ignored proof/TP-RTE-BATCH-E2E-006/* will be staged with git add -f."
+  "final_git_status_before_commit": "## codex/tp-rte-batch-e2e-006...origin/codex/tp-rte-batch-e2e-006; modified: services/repo-truth-extractor/run_extraction_v5.py, services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py, proof/TP-RTE-BATCH-E2E-006/PROOF.json, proof/TP-RTE-BATCH-E2E-006/IMPLEMENTER_REPORT.md."
 }

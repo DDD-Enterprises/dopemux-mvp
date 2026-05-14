@@ -180,6 +180,36 @@ def test_v5_strict_batch_request_cannot_downgrade_to_json_object() -> None:
         )
 
 
+def test_v5_resolve_batch_route_override_handles_strict_two_tuple_ladder() -> None:
+    runner = _load_runner_module()
+    fallback = ("openai", "gpt-5-nano", "OPENAI_API_KEY")
+
+    # No override requested: fallback returned untouched.
+    assert runner._resolve_batch_route_override(
+        fallback=fallback,
+        batch_provider="openai",
+        step_ladder=[fallback],
+    ) == fallback
+
+    # Strict ladder rows are 2-tuples by contract; override must widen them
+    # to 3-tuples by deriving api_key_env from PROVIDER_API_KEY_ENV instead
+    # of unpacking 2 values into 3 and crashing.
+    strict_ladder = [("openai", "gpt-5-nano"), ("xai", "grok-2")]
+    resolved = runner._resolve_batch_route_override(
+        fallback=fallback,
+        batch_provider="xai",
+        step_ladder=strict_ladder,
+    )
+    assert resolved == ("xai", "grok-2", runner.PROVIDER_API_KEY_ENV["xai"])
+
+    # Override target absent from ladder falls back to the supplied default.
+    assert runner._resolve_batch_route_override(
+        fallback=fallback,
+        batch_provider="gemini",
+        step_ladder=strict_ladder,
+    ) == fallback
+
+
 def test_v5_non_strict_batch_request_preserves_omitted_openai_response_format() -> None:
     runner = _load_runner_module()
     request = _batch_request(

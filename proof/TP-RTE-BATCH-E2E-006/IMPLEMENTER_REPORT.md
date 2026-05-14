@@ -35,6 +35,7 @@ Wired v5 strict batch request construction to build and attach the existing stru
 ## 5. Behavior changes
 
 - Added `build_v5_batch_request(...)` in `run_extraction_v5.py` as the v5 batch request construction seam used by the real batch branch.
+- Added `_resolve_batch_route_override(...)` so strict 2-tuple route ladders are widened to 3-tuples when a `batch_provider` override selects one.
 - Removed the `not strict_contract_required` exclusion from the v5 batch path.
 - Strict batch construction uses `route_entries_for_stage(...)` and `build_provider_step_contract_output(...)` to populate `BatchRequest.response_format`.
 - Strict batch construction requires `response_format.type == "json_schema"`, a schema object, `json_schema.strict == true`, and non-empty artifact schema metadata.
@@ -49,6 +50,7 @@ Added `services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response
 - fake OpenAI-compatible upload JSONL containing `response_format.type == "json_schema"`
 - strict missing schema failing before fake upload/submission
 - strict `json_object` downgrade rejection
+- strict 2-tuple ladder provider override widening via `PROVIDER_API_KEY_ENV`
 - non-strict OpenAI-compatible behavior preserving omitted `response_format`
 
 ## 7. Validation commands and exit codes
@@ -57,10 +59,10 @@ Added `services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response
 - `python -m json.tool proof/TP-RTE-BATCH-E2E-006/PROOF.json` -> 0
 - Task packet Draft7 schema validation -> 0
 - `RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py` -> 1 during intermediate guard correction
-- `RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py` -> 0; 4 passed
+- `RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py` -> 0; 5 passed
 - `RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_batch_clients_integration.py` -> 0; 7 passed
 - `python -m compileall -q services/repo-truth-extractor src/dopemux` -> 0
-- `RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests -k "batch or strict"` -> 0; 48 passed
+- `RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests -k "batch or strict"` -> 0; 49 passed
 - `RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py` -> 0; 43 passed
 - Forbidden-scope diff grep -> 1 expected no-match
 - Strict batch exclusion/downgrade grep -> 1 expected no-match

@@ -10520,6 +10520,31 @@ def build_batch_client(
     raise RuntimeError(f"Unsupported batch provider: {provider}")
 
 
+def _resolve_batch_route_override(
+    *,
+    fallback: Tuple[str, str, str],
+    batch_provider: str,
+    step_ladder: Sequence[Sequence[str]],
+) -> Tuple[str, str, str]:
+    fallback_provider = str(fallback[0]) if fallback else ""
+    if batch_provider == fallback_provider:
+        return (str(fallback[0]), str(fallback[1]), str(fallback[2]))
+    for candidate in step_ladder:
+        candidate_tuple = tuple(candidate)
+        if not candidate_tuple or str(candidate_tuple[0]) != batch_provider:
+            continue
+        candidate_provider = str(candidate_tuple[0])
+        candidate_model = (
+            str(candidate_tuple[1]) if len(candidate_tuple) > 1 else ""
+        )
+        if len(candidate_tuple) >= 3:
+            candidate_api_key_env = str(candidate_tuple[2])
+        else:
+            candidate_api_key_env = PROVIDER_API_KEY_ENV.get(candidate_provider, "")
+        return (candidate_provider, candidate_model, candidate_api_key_env)
+    return (str(fallback[0]), str(fallback[1]), str(fallback[2]))
+
+
 def _batch_route_entry_for_selected_route(
     step_contract: Optional[Dict[str, Any]],
     selected_route: Tuple[str, str, str],
@@ -12919,12 +12944,15 @@ else sdk_auth_present_flags(p_provider, True)
                         if cfg.batch_provider != "auto"
                         else route_provider
                     )
-                    selected_route = (route_provider, route_model_id, route_api_key_env)
-                    if batch_provider != route_provider:
-                        for candidate in step_ladder:
-                            if candidate[0] == batch_provider:
-                                selected_route = candidate
-                                break
+                    selected_route = _resolve_batch_route_override(
+                        fallback=(
+                            route_provider,
+                            route_model_id,
+                            route_api_key_env,
+                        ),
+                        batch_provider=batch_provider,
+                        step_ladder=step_ladder,
+                    )
                     batch_provider, batch_model_id, batch_api_key_env = selected_route
                     batch_transport = transport_for_provider(batch_provider, cfg)
                     try:
