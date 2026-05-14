@@ -1,0 +1,230 @@
+{
+  "id": "TP-RTE-DOCS-CANON-008",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / operator docs canonical command alignment",
+  "invariants": [
+    "Treat runtime code, active CLI wiring, and tests as stronger authority than docs.",
+    "Treat services/repo-truth-extractor/run_extraction_v5.py as the strongest extraction runtime authority for active v5 RTE execution.",
+    "Document dopemux rte as the canonical operator command family only because current CLI runtime registers it as canonical.",
+    "Preserve legacy command families honestly as legacy, compatibility, advanced, debug, gated, or refusal surfaces where runtime proves they still exist.",
+    "Do not change runtime code, promptsets, model routing, walker/prescan code, v3/v4/v5 runner code, batch clients, strict attestation code, dependencies, or generated extraction artifacts.",
+    "Do not run live extraction, provider/model calls, provider preflight probes, external batch jobs, or docs generators that rewrite unrelated files."
+  ],
+  "depends_on": [
+    "TP-RTE-STRICT-ATTESTATION-007"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-GOLIVE-BLOCKERS",
+    "base_branch": "main",
+    "parent_tp_id": "TP-RTE-STRICT-ATTESTATION-007",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-rte-docs-canon-008",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(rte): canonicalize rte operator path",
+    "allowlist": [
+      "README.md",
+      "docs/02-how-to/extraction/batch-quickstart.md",
+      "docs/02-how-to/extraction/repo-truth-extractor-user-guide.md",
+      "docs/02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md",
+      "docs/02-how-to/extraction/run-prescan.md",
+      "docs/02-how-to/extraction/run-v4-from-dopemux-cli.md",
+      "docs/02-how-to/extraction/truth-run-command.md",
+      "docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md",
+      "docs/03-reference/truth/truth-canonicals.md",
+      "docs/03-reference/truth/truth-data-events.md",
+      "docs/03-reference/truth/truth-gaps.md",
+      "docs/03-reference/truth/truth-interfaces.md",
+      "docs/03-reference/truth/truth-scope.md",
+      "docs/03-reference/truth/truth-systems.md",
+      "task-packets/INDEX.md",
+      "task-packets/generated/TP-RTE-DOCS-CANON-008.json",
+      "proof/TP-RTE-DOCS-CANON-008/PROOF.json",
+      "proof/TP-RTE-DOCS-CANON-008/IMPLEMENTER_REPORT.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-RTE-DOCS-CANON-008.json",
+      "python -m json.tool proof/TP-RTE-DOCS-CANON-008/PROOF.json",
+      "python -c \"import json, pathlib; from jsonschema import Draft7Validator; schema=json.loads(pathlib.Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text()); doc=json.loads(pathlib.Path('task-packets/generated/TP-RTE-DOCS-CANON-008.json').read_text()); errs=sorted(Draft7Validator(schema).iter_errors(doc), key=lambda e: e.path); raise SystemExit(0 if not errs else 1)\"",
+      "rg -n \"dopemux upgrades|dopemux rte|dopemux extractor|dopemux truth|PipelineRunner|run_extraction_v5|run_extraction_v4|run_extraction_v3|run_repscan|canonical|legacy|deprecated|compatibility|go-live|unattended|bounded|provider|batch\" README.md docs/02-how-to/extraction docs/03-reference/systems/repo-truth-extractor docs/03-reference/truth task-packets/INDEX.md",
+      "python -m compileall -q src/dopemux services/repo-truth-extractor",
+      "git diff --check",
+      "pre-commit run --files <changed files>"
+    ]
+  },
+  "pr": {
+    "title": "docs(rte): canonicalize rte operator path",
+    "body": "## Summary\n- update RTE operator docs so current usage points to the runtime-backed `dopemux rte` command family\n- reclassify stale `dopemux upgrades`, `dopemux extractor`, `dopemux truth`, direct runner, v3/v4, and legacy scan references according to runtime evidence\n- preserve v5 runtime authority, proof/source-truth separation, and guarded go-live posture without runtime changes\n\n## Scope\n- operator docs, active RTE reference/truth docs, task-packet index hygiene, task packet, and proof artifacts\n- no runtime code, promptsets, model routing, walker/prescan code, batch clients, strict attestation code, dependencies, live extraction, provider calls, or external batch jobs\n\n## Validation\n- task packet/proof JSON parse and task-packet schema validation\n- focused grep validations for canonical command claims, legacy classification, v5 authority, proof/source-truth wording, and go-live guardrails\n- compileall to confirm no accidental Python damage\n- git diff whitespace check and pre-commit on changed files",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Create and validate the repo-bound task packet and proof skeleton before implementation.",
+      "requirements": [
+        "Verify repo root, marker, remote, branch, status, and HEAD.",
+        "Confirm PR #616 is merged into main or equivalent F3-HIGH-2 closure exists in current base.",
+        "Inspect the task packet schema and task-packet index convention."
+      ],
+      "commands": [
+        "python -m json.tool task-packets/generated/TP-RTE-DOCS-CANON-008.json",
+        "python -m json.tool proof/TP-RTE-DOCS-CANON-008/PROOF.json",
+        "python -c \"import json, pathlib; from jsonschema import Draft7Validator; schema=json.loads(pathlib.Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text()); doc=json.loads(pathlib.Path('task-packets/generated/TP-RTE-DOCS-CANON-008.json').read_text()); errs=sorted(Draft7Validator(schema).iter_errors(doc), key=lambda e: e.path); raise SystemExit(0 if not errs else 1)\""
+      ],
+      "expected_files": [
+        "task-packets/generated/TP-RTE-DOCS-CANON-008.json",
+        "proof/TP-RTE-DOCS-CANON-008/PROOF.json",
+        "proof/TP-RTE-DOCS-CANON-008/IMPLEMENTER_REPORT.md"
+      ],
+      "validation": [
+        "Task packet parses as JSON.",
+        "Proof skeleton parses as JSON.",
+        "Task packet validates against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "task-packets/INDEX.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "proof/TP-RTE-STRICT-ATTESTATION-007/IMPLEMENTER_REPORT.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Inventory runtime command authority and current docs drift.",
+      "requirements": [
+        "Determine canonical operator command family from src/dopemux/cli.py.",
+        "Determine legacy, compatibility, gated, and refusal surfaces from CLI/runtime evidence.",
+        "Map stale operator docs and active truth docs containing RTE command guidance."
+      ],
+      "commands": [
+        "rg -n \"rte|extractor|truth|upgrades|LegacyReplacementCommand|run_extraction|run_repscan|PipelineRunner\" src/dopemux/cli.py src/dopemux/commands/extractor_commands.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/run_extraction_v4.py services/repo-truth-extractor/run_extraction_v3.py services/repo-truth-extractor/run_repscan.py",
+        "rg -n \"dopemux upgrades|dopemux rte|dopemux extractor|dopemux truth|PipelineRunner|run_extraction_v5|run_extraction_v4|run_extraction_v3|run_repscan|canonical|legacy|deprecated|compatibility|go-live|unattended|bounded|provider|batch\" README.md docs/02-how-to/extraction docs/03-reference/systems/repo-truth-extractor docs/03-reference/truth task-packets/INDEX.md"
+      ],
+      "expected_files": [
+        "README.md",
+        "docs/02-how-to/extraction/*.md",
+        "docs/03-reference/systems/repo-truth-extractor/*.md",
+        "docs/03-reference/truth/*.md"
+      ],
+      "validation": [
+        "Inventory identifies runtime-backed canonical command, legacy command classifications, and docs paths requiring edits."
+      ],
+      "context_files": [
+        "src/dopemux/cli.py",
+        "src/dopemux/commands/extractor_commands.py",
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/run_extraction_v4.py",
+        "services/repo-truth-extractor/run_extraction_v3.py",
+        "services/repo-truth-extractor/run_repscan.py"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Update current RTE operator docs to canonicalize dopemux rte and reclassify stale paths.",
+      "requirements": [
+        "Current operator usage examples must use dopemux rte where runtime confirms that family.",
+        "Remaining dopemux upgrades, dopemux extractor, dopemux truth, direct runner, v3/v4, and run_repscan mentions must be classified according to runtime evidence.",
+        "Do not remove legacy paths that still exist."
+      ],
+      "commands": [
+        "rg -n \"dopemux upgrades|dopemux extractor|dopemux truth|PipelineRunner|run_extraction_v3|run_extraction_v4|run_repscan|python services/repo-truth-extractor/run_extraction_v5.py\" README.md docs/02-how-to/extraction docs/03-reference/systems/repo-truth-extractor docs/03-reference/truth"
+      ],
+      "expected_files": [
+        "README.md",
+        "docs/02-how-to/extraction/*.md",
+        "docs/03-reference/systems/repo-truth-extractor/*.md",
+        "docs/03-reference/truth/*.md"
+      ],
+      "validation": [
+        "No current operator doc presents dopemux upgrades, dopemux extractor, dopemux truth, direct runner invocation, v3, v4, or run_repscan as the primary v5 RTE operator path."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Update go-live posture and source-truth wording narrowly.",
+      "requirements": [
+        "Docs must state v5 runtime authority as services/repo-truth-extractor/run_extraction_v5.py.",
+        "Docs must state extracted artifacts and proof packs are evidence, not source truth.",
+        "Docs must preserve guarded live/provider/batch operation and avoid claiming full unattended go-live readiness."
+      ],
+      "commands": [
+        "rg -n \"services/repo-truth-extractor/run_extraction_v5.py|evidence, not source truth|proof pack|provider|batch|go-live|unattended|P5|supervisor verdict\" README.md docs/02-how-to/extraction docs/03-reference/systems/repo-truth-extractor docs/03-reference/truth"
+      ],
+      "expected_files": [
+        "docs/02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md",
+        "docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md",
+        "docs/03-reference/truth/*.md"
+      ],
+      "validation": [
+        "Docs preserve runtime source truth and guarded go-live posture."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Apply narrow task-packet index hygiene for related RTE packets.",
+      "requirements": [
+        "Mark TP-RTE-STRICT-ATTESTATION-007 as merged if PR #616 evidence proves it.",
+        "Add TP-RTE-DOCS-CANON-008 using the active packet convention.",
+        "Do not broad-rewrite the index."
+      ],
+      "commands": [
+        "git diff -- task-packets/INDEX.md"
+      ],
+      "expected_files": [
+        "task-packets/INDEX.md"
+      ],
+      "validation": [
+        "Index diff only touches directly related RTE packet rows."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Create final proof, run safety validation, review, commit, push, and open PR if authenticated.",
+      "requirements": [
+        "Record validation commands and exit codes in proof and implementer report.",
+        "Confirm no runtime, promptset, model routing, walker/prescan, batch client, strict attestation, or dependency files changed.",
+        "Run codereview before precommit.",
+        "Commit and push only allowlisted files."
+      ],
+      "commands": [
+        "python -m json.tool proof/TP-RTE-DOCS-CANON-008/PROOF.json",
+        "python -m compileall -q src/dopemux services/repo-truth-extractor",
+        "git diff --check",
+        "pre-commit run --files <changed files>",
+        "git commit -m \"docs(rte): canonicalize rte operator path\"",
+        "git push -u origin codex/tp-rte-docs-canon-008",
+        "gh pr create --base main --head codex/tp-rte-docs-canon-008 --title \"docs(rte): canonicalize rte operator path\" --body-file <generated body file>"
+      ],
+      "expected_files": [
+        "proof/TP-RTE-DOCS-CANON-008/PROOF.json",
+        "proof/TP-RTE-DOCS-CANON-008/IMPLEMENTER_REPORT.md"
+      ],
+      "validation": [
+        "Proof JSON parses.",
+        "Compileall exits zero.",
+        "Whitespace diff check exits zero.",
+        "Pre-commit exits zero or exact blocker is reported.",
+        "Commit, push, and PR creation either succeed or exact blocker is reported."
+      ]
+    }
+  ]
+}

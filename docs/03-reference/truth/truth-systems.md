@@ -206,18 +206,22 @@ Method:
 - Responsibilities:
   - Executes extraction pipelines through `run_extraction_v5.py`.
   - Preserves v4 contract compatibility through `run_extraction_v4.py`.
+  - Exposes current operator workflow through `dopemux rte`; `dopemux upgrades` remains a legacy compatibility alias.
   - Provides doctor, preflight, coverage, status, routing, compare, and validation surfaces.
   - Ships hygiene scanning policies and tests for phase interaction.
 - Non-responsibilities:
-  - Legacy `PipelineRunner` shortcut is not the same as the v5 extraction service.
+  - Legacy `PipelineRunner`/`dopemux truth` shortcut is not the same as the v5 extraction service.
+  - Generated proof packs and truth docs are evidence artifacts, not source truth above runtime code/config/tests.
 - Dependencies:
   - `/Users/hue/code/dopemux-mvp/config/extraction_hygiene/authority_tiers.yaml`
   - extractor tests under `/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/tests`
 - Inbound interfaces:
-  - CLI execution via `/Users/hue/code/dopemux-mvp/src/dopemux/commands/extractor_commands.py`
-  - direct execution of `run_extraction_v5.py`
+  - canonical CLI execution via `dopemux rte` in `/Users/hue/code/dopemux-mvp/src/dopemux/cli.py`
+  - legacy compatibility CLI execution via `dopemux upgrades`
+  - advanced/debug direct execution of `run_extraction_v5.py`
+  - deprecated/refusal `dopemux extractor`, `dopemux truth`, and hidden `dopemux extract truth-run` surfaces
 - Outbound interfaces:
-  - Writes extraction run artifacts under `/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs`
+  - Writes extraction run artifacts under `/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v5/runs`
 - Role in overall dopemux development workflow:
   - Canonical truth/audit pipeline for repository analysis work.
 

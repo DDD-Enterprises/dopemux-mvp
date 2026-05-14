@@ -30,7 +30,7 @@ The stack is composed of cooperating systems with explicit boundaries:
 - **Retrieval Plane**: Split between `dope-context` (deterministic code/docs indexing) and `ConPort` (semantic retrieval).
 - **Bridge/Adapter Plane (`dopecon-bridge`)**: Proxies routes and event transport. **It is an operational bridge, not the source of truth.**
 - **Operator-Support Plane (`ADHD Engine`)**: Serves cognitive-state, workload, and accommodation projections. It does not own PM or memory truth.
-- **Extraction/Audit Plane (`repo-truth-extractor`)**: Extracts and generates evidence-backed artifacts about repo architecture (`run_extraction_v5.py`).
+- **Extraction/Audit Plane (`repo-truth-extractor`)**: Extracts and generates evidence-backed artifacts about repo architecture. The canonical operator command family is `dopemux rte`; the strongest v5 runtime authority is `services/repo-truth-extractor/run_extraction_v5.py`.
 
 ## 3. Getting Started
 
@@ -57,7 +57,9 @@ docker compose -f compose.yml up -d
 - `dopemux kernel <command>`: Routes execution to the dopetask kernel.
 - `dopemux routing <mode>`: Toggles model routing modes.
 - `dopemux workspace switch <path>`: Switches context across configured workspaces.
-- `dopemux truth`: (Legacy path) Extracts repo truth. See `repo-truth-extractor` for canonical v5 extraction.
+- `dopemux rte`: Canonical Repo Truth Extractor operator command family. Use `dopemux rte run`, `dopemux rte preflight`, `dopemux rte status`, `dopemux rte doctor`, and `dopemux rte validate-live` for current RTE operations.
+- `dopemux upgrades`: Legacy compatibility alias for `dopemux rte`; do not use it as the canonical RTE path in new operator guidance.
+- `dopemux truth`: Legacy/refusal path for repo truth. It is not the v5 RTE path.
 
 ## 5. Truth Hierarchy and Documentation Trust
 
