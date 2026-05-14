@@ -1,0 +1,210 @@
+{
+  "packet_id": "TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001",
+  "repo_root": "/Users/hue/code/dopemux-mvp",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-rte-55pro-audit-assembly-001",
+  "branch": "codex/tp-dmx-rte-55pro-audit-assembly-001",
+  "base_branch": "main",
+  "starting_head": "a4214ca5bf431e1b59791661e2b664a6cd24c1da",
+  "ending_head": "a4214ca5bf431e1b59791661e2b664a6cd24c1da",
+  "files_created": [
+    "task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json",
+    "proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/PROOF.json",
+    "proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/IMPLEMENTER_REPORT.md",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/00_README.md",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/01_BASELINE_STATE.md",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/02_OPUS_FINDINGS_CROSSWALK.md",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/03_RTE_SURFACE_MAP.md",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/04_RTE_RUNTIME_POINTERS.md",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/05_PROMPTSET_INVENTORY.md",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/06_MODEL_ROUTING_AND_ESCALATION_INVENTORY.md",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/07_ARTIFACT_PROOF_INVENTORY.md",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/08_VALIDATION_BASELINE.md",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/09_UX_OPERATOR_JOURNEY_CURRENT.md",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/10_KNOWN_DRIFT_AND_UNKNOWNS.md",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/11_DEEP_RESEARCH_QUESTIONS.md",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/12_GPT55_PROJECT_INSTRUCTIONS.md",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/13_GPT55_PASS1_BROAD_AUDIT_PROMPT.md",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/14_GPT55_SPECIALIST_PASS_PROMPTS.md",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/15_UPLOAD_MANIFEST.json",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/16_UPLOAD_ORDER.md",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/17_SOURCE_EXCERPT_INDEX.md",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/18_CHATGPT_PROJECT_PRIMING_PROMPT.md",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/19_ASSEMBLY_SUMMARY.md",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/RTE_55PRO_AUDIT_PACK_SHA256SUMS.txt"
+  ],
+  "files_modified": [
+    "task-packets/INDEX.md"
+  ],
+  "forbidden_files_touched": false,
+  "validation_commands": [
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json >/dev/null",
+      "exit_code": 0
+    },
+    {
+      "command": "python -m json.tool out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/15_UPLOAD_MANIFEST.json >/dev/null",
+      "exit_code": 0
+    },
+    {
+      "command": "python -m json.tool proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/PROOF.json >/dev/null",
+      "exit_code": 0
+    },
+    {
+      "command": "python -c 'import json, pathlib; from jsonschema import Draft7Validator; schema=json.loads(pathlib.Path(\"docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\").read_text()); doc=json.loads(pathlib.Path(\"task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json\").read_text()); errs=sorted(Draft7Validator(schema).iter_errors(doc), key=lambda e: e.path); raise SystemExit(0 if not errs else 1)'",
+      "exit_code": 0
+    },
+    {
+      "command": "python - <<'PY'\nfrom pathlib import Path\nexpected = ['task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json', 'task-packets/INDEX.md', 'proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/PROOF.json', 'proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/IMPLEMENTER_REPORT.md', 'out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/00_README.md', 'out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/01_BASELINE_STATE.md', 'out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/02_OPUS_FINDINGS_CROSSWALK.md', 'out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/03_RTE_SURFACE_MAP.md', 'out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/04_RTE_RUNTIME_POINTERS.md', 'out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/05_PROMPTSET_INVENTORY.md', 'out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/06_MODEL_ROUTING_AND_ESCALATION_INVENTORY.md', 'out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/07_ARTIFACT_PROOF_INVENTORY.md', 'out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/08_VALIDATION_BASELINE.md', 'out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/09_UX_OPERATOR_JOURNEY_CURRENT.md', 'out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/10_KNOWN_DRIFT_AND_UNKNOWNS.md', 'out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/11_DEEP_RESEARCH_QUESTIONS.md', 'out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/12_GPT55_PROJECT_INSTRUCTIONS.md', 'out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/13_GPT55_PASS1_BROAD_AUDIT_PROMPT.md', 'out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/14_GPT55_SPECIALIST_PASS_PROMPTS.md', 'out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/15_UPLOAD_MANIFEST.json', 'out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/16_UPLOAD_ORDER.md', 'out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/17_SOURCE_EXCERPT_INDEX.md', 'out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/18_CHATGPT_PROJECT_PRIMING_PROMPT.md', 'out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/19_ASSEMBLY_SUMMARY.md', 'out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/RTE_55PRO_AUDIT_PACK_SHA256SUMS.txt']\nmissing=[p for p in expected if not Path(p).is_file()]\nif missing:\n    print('missing generated paths:')\n    print('\\n'.join(missing))\n    raise SystemExit(1)\nprint(f'all-generated-paths-present {len(expected)}')\nPY",
+      "exit_code": 0
+    },
+    {
+      "command": "test -f out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/00_README.md",
+      "exit_code": 0
+    },
+    {
+      "command": "test -f out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/13_GPT55_PASS1_BROAD_AUDIT_PROMPT.md",
+      "exit_code": 0
+    },
+    {
+      "command": "test -f out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/18_CHATGPT_PROJECT_PRIMING_PROMPT.md",
+      "exit_code": 0
+    },
+    {
+      "command": "test -f out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/RTE_55PRO_AUDIT_PACK_SHA256SUMS.txt",
+      "exit_code": 0
+    },
+    {
+      "command": "test -f proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/PROOF.json",
+      "exit_code": 0
+    },
+    {
+      "command": "test -f proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/IMPLEMENTER_REPORT.md",
+      "exit_code": 0
+    },
+    {
+      "command": "shasum -a 256 $(find out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001 proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001 -type f | sort) task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --name-only",
+      "exit_code": 0
+    },
+    {
+      "command": "python - <<'PY'\nimport subprocess, sys\nfrom pathlib import Path\nallowed_exact = {'task-packets/INDEX.md', 'task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json'}\nallowed_prefixes = ('out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/', 'proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/')\nraw = subprocess.check_output(['git','status','--short','--untracked-files=all'], text=True).splitlines()\npaths = []\nfor line in raw:\n    path = line[3:] if len(line) > 3 else ''\n    if ' -> ' in path:\n        path = path.split(' -> ', 1)[1]\n    if path:\n        paths.append(path)\nfor p in ['proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/PROOF.json', 'proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/IMPLEMENTER_REPORT.md']:\n    if Path(p).is_file():\n        paths.append(p)\nbad = sorted({p for p in paths if p not in allowed_exact and not p.startswith(allowed_prefixes)})\nif bad:\n    print('forbidden changed paths:')\n    print('\\n'.join(bad))\n    sys.exit(1)\nprint('allowlist-ok')\nPY",
+      "exit_code": 0
+    },
+    {
+      "command": "git status --short",
+      "exit_code": 0
+    }
+  ],
+  "source_files_inspected": [
+    "AGENTS.md",
+    "PROJECT.md",
+    "ARCHITECTURE.md",
+    "docs/03-reference/systems/system-boundaries.md",
+    "PM_PLANE.md",
+    "SERVICE_CATALOG.md",
+    "task-packets/INDEX.md",
+    "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+    "docs/03-reference/governance/proof-contract.md",
+    "docs/03-reference/governance/proof-bundle-schema.md",
+    "docs/03-reference/truth/truth-scope.md",
+    "docs/03-reference/truth/truth-systems.md",
+    "docs/03-reference/truth/truth-interfaces.md",
+    "docs/03-reference/truth/truth-data-events.md",
+    "docs/03-reference/truth/truth-canonicals.md",
+    "docs/03-reference/truth/truth-gaps.md",
+    "docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md",
+    "docs/03-reference/systems/repo-truth-extractor/benchmark-storage-contract.md",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/run_extraction_v4.py",
+    "services/repo-truth-extractor/run_extraction_v3.py",
+    "services/repo-truth-extractor/extraction_hygiene.py",
+    "services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+    "services/repo-truth-extractor/rte_config.py",
+    "services/repo-truth-extractor/rte_output_layout.py",
+    "services/repo-truth-extractor/rte_promptset.py",
+    "services/repo-truth-extractor/rte_reports.py",
+    "services/repo-truth-extractor/llm_runtime.py",
+    "services/repo-truth-extractor/run_prescan.py",
+    "services/repo-truth-extractor/run_repscan.py",
+    "services/repo-truth-extractor/lib/batch_clients.py",
+    "services/repo-truth-extractor/lib/batch_retriever.py",
+    "services/repo-truth-extractor/lib/structured_output_contracts.py",
+    "services/repo-truth-extractor/lib/phase_contract_map.py",
+    "services/repo-truth-extractor/lib/prescan/engine.py",
+    "services/repo-truth-extractor/lib/prescan/corpus_walker.py",
+    "services/repo-truth-extractor/lib/prescan/provider_catalog.py",
+    "services/repo-truth-extractor/lib/promptgen/",
+    "services/repo-truth-extractor/promptsets/v4/",
+    "services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/",
+    "services/repo-truth-extractor/prompts/phase_s/registry.json",
+    "services/repo-truth-extractor/prompts/prescan/registry.json",
+    "services/repo-truth-extractor/prompts/phase_fl_int/registry.json",
+    "services/repo-truth-extractor/prompts/phase_s_int/registry.json",
+    "services/repo-truth-extractor/tests/",
+    "src/dopemux/commands/extractor_commands.py",
+    "src/dopemux/cli.py",
+    "task-packets/TP-DMX-RTEAUDIT-001.json",
+    "task-packets/TP-DMX-RTEAUDIT-110.json",
+    "proof/rte-prelive-audit-pack-2026-04-23.proof.json",
+    "proof/rte-gemini-deep-pal-audit-2026-04-23.proof.json",
+    "docs/05-audit-reports/rte-prelive-audit-pack-2026-04-23.md",
+    "docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md",
+    "proof/TP-RTE-V3-CONSENT-004/PROOF.json",
+    "proof/TP-RTE-WALKER-006/PROOF.json",
+    "proof/TP-RTE-BATCH-005/PROOF.json",
+    "proof/TP-RTE-BATCH-E2E-006/PROOF.json",
+    "proof/TP-RTE-STRICT-ATTESTATION-007/PROOF.json",
+    "proof/TP-RTE-DOCS-CANON-008/PROOF.json"
+  ],
+  "generated_artifact_hashes": {
+    "task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json": "f120a6d44640ebfae055b7783cc2f25afe57b679c14b2c0844aedae7c7db5432",
+    "proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/IMPLEMENTER_REPORT.md": "0a2bee22075ea1b545be7b5986eb539668b01e3423aa46b1ffd4246789b941b9",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/00_README.md": "ba2b836e9d77380afb9dc94f4a129e8c824dece193357078336e47b3ff47fac2",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/01_BASELINE_STATE.md": "a25d154a0d06114620496e573c602766274961cf67e6da96d93f379996004cbe",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/02_OPUS_FINDINGS_CROSSWALK.md": "28dce202d811b7d581019935e6eef4a72f90fec3381af559be10ae5efd967834",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/03_RTE_SURFACE_MAP.md": "1b4ed8c3a9912706664f2b0cb4d423104d260c97eb4820c9d5a16e7ca90f683e",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/04_RTE_RUNTIME_POINTERS.md": "3e26463b48ad381b56a176b5290f9f499d0aabcb2c961c64aa791e17ce60cf93",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/05_PROMPTSET_INVENTORY.md": "e85767d1a225536106c0617063beefb178d663a2526eb6cda2fc407a8c748df1",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/06_MODEL_ROUTING_AND_ESCALATION_INVENTORY.md": "6e0e70de8e7ba0d3cf9b04b685a64ce67436f01e14f16df4fde2899950f18e67",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/07_ARTIFACT_PROOF_INVENTORY.md": "5bcbf0488427d83d127263c2fc8741f1636990d6f79d3105e68fac43370ea2c4",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/08_VALIDATION_BASELINE.md": "133838828c983b421bb62e667b49bfa14f49ad7ce1eeaac31541237ac0227f7a",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/09_UX_OPERATOR_JOURNEY_CURRENT.md": "3795a6341338c9154a0b7c417c6ae57c322b1fccf6c2ffdd7d2362e71b77f7c8",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/10_KNOWN_DRIFT_AND_UNKNOWNS.md": "62a5273ffeef9eaa60c42aa5527fc29eeddccbc34febbb57529e18eb340ea99a",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/11_DEEP_RESEARCH_QUESTIONS.md": "5423fd8baedc8d9a1255b6ec42a203adde97ad7e951cf37d795a74493b394399",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/12_GPT55_PROJECT_INSTRUCTIONS.md": "e479d3b7ae2215ef82b7716dd494ff0b13c220c6078c9cf1ab222867d35f986d",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/13_GPT55_PASS1_BROAD_AUDIT_PROMPT.md": "c548b70a93ec049748caa96d937d7d3cce45d39bc0f19ed7944d221e12addc6c",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/14_GPT55_SPECIALIST_PASS_PROMPTS.md": "136100f60d7e17911ffe22ddc9c779d7552b6147b21711de4b48821770f94e3b",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/16_UPLOAD_ORDER.md": "dedbf4f54afb1a18416e94f7bd89db10d7d129caa035824f075697a14825a7f8",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/17_SOURCE_EXCERPT_INDEX.md": "a9281691e80601c18090a350e5c62895ed3478eed68040fbc42492d07d470a5a",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/18_CHATGPT_PROJECT_PRIMING_PROMPT.md": "23c355dc154080cd179772b1e84266cf73da061a615d02fe7ac9a99e576fae60",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/19_ASSEMBLY_SUMMARY.md": "098b0e1b8e93ef18bf1c51841b1e3d7c91bdb7ff67f2d850bef9f3b68c440422"
+  },
+  "hash_scope_note": "PROOF.json, 15_UPLOAD_MANIFEST.json, and the checksum file are omitted from PROOF.json hash map to avoid recursive self-reference; final hashes are listed in RTE_55PRO_AUDIT_PACK_SHA256SUMS.txt and the upload manifest where practical.",
+  "skipped_unsafe_files": [
+    ".env*",
+    "secret-bearing files and credential paths",
+    "private keys and tokens",
+    "full historical run raw outputs",
+    "large generated extraction output trees outside this audit pack"
+  ],
+  "unknowns": [
+    "Root RULES.md, SYSTEM_BOUNDARIES.md, TRUTH_*.md, SYSTEM_RepoTruthExtractor.md, PAL files, and root dopetask schema spellings were absent.",
+    "No docs/assembled/chatgpt_project_top40_upload_files directory was present in this worktree.",
+    "Current Opus-specific RTE audit authority was not found beyond Phase S Opus-labeled material and Gemini PAL audit proof.",
+    "External provider/model structured-output behavior was not verified.",
+    "Live RTE extraction UX was not exercised."
+  ],
+  "residual_risks": [
+    "Generated pack is advisory context, not RTE launch proof.",
+    "Prior proof claims can be stale and must be rechecked against runtime source in GPT-5.5 Pro audit.",
+    "No broad RTE tests or live provider checks were run due artifact-only scope."
+  ],
+  "final_status": "READY_FOR_REVIEW"
+}

@@ -1,0 +1,308 @@
+{
+  "id": "TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001",
+  "project": "dopemux-mvp",
+  "target": "Repo Truth Extractor audit-pack assembly for GPT-5.5 Pro multi-pass review",
+  "invariants": [
+    "Artifact assembly only; no RTE runtime, prompt, model routing, schema, CLI, test, compose, or production documentation behavior edits.",
+    "Runtime code/config/tests/active entrypoints outrank generated or historical artifacts.",
+    "All audit-pack claims must preserve OBSERVED, INFERRED, UNKNOWN, CONFLICTING, or CLAIMED status where appropriate.",
+    "No live extraction, no provider calls, no API-key-dependent commands, and no generated extraction outputs outside the audit pack.",
+    "Writes are limited to the task packet, task-packet index registration, out/rte-55pro-audit-pack packet artifacts, and proof packet artifacts.",
+    "Proof must include exact validation commands, exit codes, source files inspected, unknowns, residual risks, and an allowlist check."
+  ],
+  "depends_on": [
+    "TP-DMX-RTEAUDIT-110",
+    "TP-DMX-RTEAUDIT-001",
+    "TP-RTE-V3-CONSENT-004",
+    "TP-RTE-WALKER-006",
+    "TP-RTE-BATCH-005",
+    "TP-RTE-BATCH-E2E-006",
+    "TP-RTE-STRICT-ATTESTATION-007",
+    "TP-RTE-DOCS-CANON-008"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-RTE-55PRO-AUDIT",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-rte-55pro-audit-assembly-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "chore(rte): assemble gpt-5.5 pro audit pack",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json",
+      "task-packets/INDEX.md",
+      "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/**",
+      "proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json >/dev/null",
+      "python -m json.tool out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/15_UPLOAD_MANIFEST.json >/dev/null",
+      "python -m json.tool proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/PROOF.json >/dev/null",
+      "python -c 'import json, pathlib; from jsonschema import Draft7Validator; schema=json.loads(pathlib.Path(\"docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\").read_text()); doc=json.loads(pathlib.Path(\"task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json\").read_text()); errs=sorted(Draft7Validator(schema).iter_errors(doc), key=lambda e: e.path); raise SystemExit(0 if not errs else 1)'",
+      "test -f out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/00_README.md",
+      "test -f out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/13_GPT55_PASS1_BROAD_AUDIT_PROMPT.md",
+      "test -f out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/18_CHATGPT_PROJECT_PRIMING_PROMPT.md",
+      "shasum -a 256 $(find out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001 proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001 -type f | sort) task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json",
+      "git diff --check",
+      "git diff --name-only",
+      "git status --short"
+    ]
+  },
+  "pr": {
+    "title": "chore(rte): assemble gpt-5.5 pro audit pack",
+    "body": "## Summary\n- assemble upload-safe GPT-5.5 Pro audit-pack artifacts for Repo Truth Extractor review\n- crosswalk current prior audit/proof material against runtime source pointers and unresolved drift\n- include proof, manifest, upload order, project instructions, pass prompts, and validation baseline\n\n## Scope\n- task packet, task-packet index registration, audit-pack artifacts, and proof artifacts only\n- no RTE runtime behavior, prompt text, model routing, CLI behavior, tests, schemas, compose files, or canonical docs changed\n- no live extraction and no provider/API-key-dependent commands\n\n## Validation\n- JSON parsing for task packet, upload manifest, and proof JSON\n- task packet schema validation against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- generated artifact existence checks, SHA-256 generation, diff whitespace check, status review, and allowlist path check",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repository identity, branch, base branch, marker files, status, and required authority files.",
+      "requirements": [
+        "Record pwd, remotes, status, branch, HEAD, base branch, and repo markers.",
+        "Read repo-local instructions and authority files where present; mark missing files UNKNOWN.",
+        "Create and verify the dedicated worktree before writes."
+      ],
+      "commands": [
+        "pwd",
+        "git remote -v",
+        "git status --short --branch",
+        "git rev-parse HEAD",
+        "git branch --show-current",
+        "git symbolic-ref refs/remotes/origin/HEAD",
+        "ls -d .git .dopemux .dopetaskroot .dopetask-pin pyproject.toml"
+      ],
+      "expected_files": [
+        "task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json"
+      ],
+      "validation": [
+        "Dedicated worktree is on the task branch and not the primary checkout.",
+        "Required missing authority files are recorded as UNKNOWN instead of invented."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "task-packets/INDEX.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Inspect RTE runtime, CLI, prompt, model, proof, and prior audit surfaces without executing live extraction.",
+      "requirements": [
+        "Map v5, v4, v3, pre-live gate, hygiene, CLI, prescan, promptset, model-routing, proof, and test surfaces.",
+        "Inspect prior RTE audit/remediation proof and PR metadata where discoverable.",
+        "Do not run live extraction or provider/API-key commands."
+      ],
+      "commands": [
+        "rg -n 'repo-truth-extractor|RTE|Opus|audit|pre-live|proof|CRIT|F4' services src docs task-packets proof",
+        "find services/repo-truth-extractor -maxdepth 3 -type f | sort",
+        "gh pr list --state all --search 'RTE repo-truth-extractor OR rte OR extractor' --limit 50 --json number,title,state,mergedAt,headRefName,baseRefName"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Runtime and proof surfaces are summarized with evidence paths.",
+        "Unavailable or stale evidence is marked UNKNOWN."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "task-packets/INDEX.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/truth/truth-scope.md",
+        "docs/03-reference/truth/truth-systems.md",
+        "docs/03-reference/truth/truth-interfaces.md",
+        "docs/03-reference/truth/truth-data-events.md",
+        "docs/03-reference/truth/truth-canonicals.md",
+        "docs/03-reference/truth/truth-gaps.md",
+        "docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md",
+        "docs/03-reference/systems/repo-truth-extractor/benchmark-storage-contract.md",
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/run_extraction_v4.py",
+        "services/repo-truth-extractor/run_extraction_v3.py",
+        "services/repo-truth-extractor/extraction_hygiene.py",
+        "services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+        "services/repo-truth-extractor/rte_config.py",
+        "services/repo-truth-extractor/rte_output_layout.py",
+        "services/repo-truth-extractor/rte_promptset.py",
+        "services/repo-truth-extractor/rte_reports.py",
+        "services/repo-truth-extractor/llm_runtime.py",
+        "services/repo-truth-extractor/run_prescan.py",
+        "services/repo-truth-extractor/run_repscan.py",
+        "services/repo-truth-extractor/lib/batch_clients.py",
+        "services/repo-truth-extractor/lib/batch_retriever.py",
+        "services/repo-truth-extractor/lib/structured_output_contracts.py",
+        "services/repo-truth-extractor/lib/phase_contract_map.py",
+        "services/repo-truth-extractor/lib/prescan/engine.py",
+        "services/repo-truth-extractor/lib/prescan/corpus_walker.py",
+        "services/repo-truth-extractor/lib/prescan/provider_catalog.py",
+        "services/repo-truth-extractor/lib/promptgen/",
+        "services/repo-truth-extractor/promptsets/v4/",
+        "services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/",
+        "services/repo-truth-extractor/prompts/phase_s/registry.json",
+        "services/repo-truth-extractor/prompts/prescan/registry.json",
+        "services/repo-truth-extractor/prompts/phase_fl_int/registry.json",
+        "services/repo-truth-extractor/prompts/phase_s_int/registry.json",
+        "services/repo-truth-extractor/tests/",
+        "src/dopemux/commands/extractor_commands.py",
+        "src/dopemux/cli.py",
+        "task-packets/TP-DMX-RTEAUDIT-001.json",
+        "task-packets/TP-DMX-RTEAUDIT-110.json",
+        "proof/rte-prelive-audit-pack-2026-04-23.proof.json",
+        "proof/rte-gemini-deep-pal-audit-2026-04-23.proof.json",
+        "docs/05-audit-reports/rte-prelive-audit-pack-2026-04-23.md",
+        "docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md",
+        "proof/TP-RTE-V3-CONSENT-004/PROOF.json",
+        "proof/TP-RTE-WALKER-006/PROOF.json",
+        "proof/TP-RTE-BATCH-005/PROOF.json",
+        "proof/TP-RTE-BATCH-E2E-006/PROOF.json",
+        "proof/TP-RTE-STRICT-ATTESTATION-007/PROOF.json",
+        "proof/TP-RTE-DOCS-CANON-008/PROOF.json"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Assemble the GPT-5.5 Pro audit-pack artifacts and proof outputs in allowlisted paths only.",
+      "requirements": [
+        "Create all requested 00-19 audit-pack artifacts and checksum file.",
+        "Create PROOF.json and IMPLEMENTER_REPORT.md.",
+        "Update task-packets/INDEX.md only because repo convention explicitly requires packet registration."
+      ],
+      "commands": [
+        "python artifact generation script constrained to allowlisted paths"
+      ],
+      "expected_files": [
+        "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001",
+        "proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001",
+        "task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json",
+        "task-packets/INDEX.md"
+      ],
+      "validation": [
+        "All requested artifact paths exist.",
+        "Generated content stays advisory and does not edit runtime behavior."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "task-packets/INDEX.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/truth/truth-scope.md",
+        "docs/03-reference/truth/truth-systems.md",
+        "docs/03-reference/truth/truth-interfaces.md",
+        "docs/03-reference/truth/truth-data-events.md",
+        "docs/03-reference/truth/truth-canonicals.md",
+        "docs/03-reference/truth/truth-gaps.md",
+        "docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md",
+        "docs/03-reference/systems/repo-truth-extractor/benchmark-storage-contract.md",
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/run_extraction_v4.py",
+        "services/repo-truth-extractor/run_extraction_v3.py",
+        "services/repo-truth-extractor/extraction_hygiene.py",
+        "services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+        "services/repo-truth-extractor/rte_config.py",
+        "services/repo-truth-extractor/rte_output_layout.py",
+        "services/repo-truth-extractor/rte_promptset.py",
+        "services/repo-truth-extractor/rte_reports.py",
+        "services/repo-truth-extractor/llm_runtime.py",
+        "services/repo-truth-extractor/run_prescan.py",
+        "services/repo-truth-extractor/run_repscan.py",
+        "services/repo-truth-extractor/lib/batch_clients.py",
+        "services/repo-truth-extractor/lib/batch_retriever.py",
+        "services/repo-truth-extractor/lib/structured_output_contracts.py",
+        "services/repo-truth-extractor/lib/phase_contract_map.py",
+        "services/repo-truth-extractor/lib/prescan/engine.py",
+        "services/repo-truth-extractor/lib/prescan/corpus_walker.py",
+        "services/repo-truth-extractor/lib/prescan/provider_catalog.py",
+        "services/repo-truth-extractor/lib/promptgen/",
+        "services/repo-truth-extractor/promptsets/v4/",
+        "services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/",
+        "services/repo-truth-extractor/prompts/phase_s/registry.json",
+        "services/repo-truth-extractor/prompts/prescan/registry.json",
+        "services/repo-truth-extractor/prompts/phase_fl_int/registry.json",
+        "services/repo-truth-extractor/prompts/phase_s_int/registry.json",
+        "services/repo-truth-extractor/tests/",
+        "src/dopemux/commands/extractor_commands.py",
+        "src/dopemux/cli.py",
+        "task-packets/TP-DMX-RTEAUDIT-001.json",
+        "task-packets/TP-DMX-RTEAUDIT-110.json",
+        "proof/rte-prelive-audit-pack-2026-04-23.proof.json",
+        "proof/rte-gemini-deep-pal-audit-2026-04-23.proof.json",
+        "docs/05-audit-reports/rte-prelive-audit-pack-2026-04-23.md",
+        "docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md",
+        "proof/TP-RTE-V3-CONSENT-004/PROOF.json",
+        "proof/TP-RTE-WALKER-006/PROOF.json",
+        "proof/TP-RTE-BATCH-005/PROOF.json",
+        "proof/TP-RTE-BATCH-E2E-006/PROOF.json",
+        "proof/TP-RTE-STRICT-ATTESTATION-007/PROOF.json",
+        "proof/TP-RTE-DOCS-CANON-008/PROOF.json"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run safe validation and produce proof-backed final status.",
+      "requirements": [
+        "Validate JSON artifacts.",
+        "Generate SHA-256 evidence.",
+        "Run git diff --check and allowlist checks.",
+        "Report exact commands, exit codes, dirty state, unknowns, and residual risks."
+      ],
+      "commands": [
+        "python -m json.tool task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json >/dev/null",
+        "python -m json.tool out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/15_UPLOAD_MANIFEST.json >/dev/null",
+        "python -m json.tool proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/PROOF.json >/dev/null",
+        "python -c 'import json, pathlib; from jsonschema import Draft7Validator; schema=json.loads(pathlib.Path(\"docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\").read_text()); doc=json.loads(pathlib.Path(\"task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json\").read_text()); errs=sorted(Draft7Validator(schema).iter_errors(doc), key=lambda e: e.path); raise SystemExit(0 if not errs else 1)'",
+        "test -f out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/00_README.md",
+        "test -f out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/13_GPT55_PASS1_BROAD_AUDIT_PROMPT.md",
+        "test -f out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/18_CHATGPT_PROJECT_PRIMING_PROMPT.md",
+        "test -f out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/RTE_55PRO_AUDIT_PACK_SHA256SUMS.txt",
+        "shasum -a 256 $(find out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001 proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001 -type f | sort) task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json",
+        "git diff --check",
+        "git diff --name-only",
+        "python - <<'PY'\nfrom pathlib import Path\nallowed_exact = {'task-packets/INDEX.md', 'task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json'}\nallowed_prefixes = ('out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/', 'proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/')\nchanged = [p for p in Path('.').joinpath('.').glob('**/*') if False]\nPY",
+        "git status --short"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/PROOF.json",
+        "proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/IMPLEMENTER_REPORT.md",
+        "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/RTE_55PRO_AUDIT_PACK_SHA256SUMS.txt"
+      ],
+      "validation": [
+        "Required validation commands exit 0.",
+        "No forbidden paths are modified.",
+        "Final status is READY_FOR_REVIEW only if validations pass."
+      ]
+    }
+  ]
+}
