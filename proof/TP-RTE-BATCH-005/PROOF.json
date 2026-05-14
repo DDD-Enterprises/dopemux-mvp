@@ -1,0 +1,152 @@
+{
+  "tp_id": "TP-RTE-BATCH-005",
+  "objective": "Close RTE batch correctness blockers by repairing OpenAI-compatible batch result extraction and strict batch response-format honesty without live provider calls.",
+  "starting_head": "c5ea7be47f3ae9e8b5af7e9aee72eea8dc5069f6",
+  "ending_head": null,
+  "ending_head_note": "Self-referential commit caveat: this proof is committed with the code, so the final commit SHA is reported in the closeout rather than embedded here before commit creation.",
+  "branch": "codex/tp-rte-batch-005",
+  "base_branch": "main",
+  "worktree_path": "/Users/hue/.codex/worktrees/tp-rte-batch-005",
+  "repo_identity": {
+    "repo_root": "/Users/hue/.codex/worktrees/tp-rte-batch-005",
+    "repo_marker": ".dopetaskroot",
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "head_at_start": "c5ea7be47f3ae9e8b5af7e9aee72eea8dc5069f6",
+    "dedicated_worktree_verified": true,
+    "primary_checkout_observed": "/Users/hue/code/dopemux-mvp"
+  },
+  "files_created": [
+    "services/repo-truth-extractor/tests/test_batch_clients_integration.py",
+    "task-packets/generated/TP-RTE-BATCH-005.json",
+    "proof/TP-RTE-BATCH-005/PROOF.json",
+    "proof/TP-RTE-BATCH-005/IMPLEMENTER_REPORT.md"
+  ],
+  "files_modified": [
+    "services/repo-truth-extractor/lib/batch_clients.py",
+    "task-packets/INDEX.md"
+  ],
+  "tests_added_or_modified": [
+    "services/repo-truth-extractor/tests/test_batch_clients_integration.py"
+  ],
+  "implementation_evidence": {
+    "broken_result_extraction_observed": "Pre-fix focused test run returned empty parsed results for valid OpenAI-compatible JSONL lines and xAI inherited parsing.",
+    "strict_noop_observed": "Pre-fix focused test run showed BatchRequest rejected response_format and strict metadata without schema serialized without fail-closed behavior.",
+    "result_extraction_fix": "services/repo-truth-extractor/lib/batch_clients.py parses valid JSON object lines inside the fetch_results loop, appends BatchResult rows, counts invalid/non-object lines, and applies the >5% corruption threshold after parsing all rows.",
+    "strict_payload_fix": "BatchRequest now accepts optional response_format; OpenAIBatchClient.submit uses _response_format_for_request so strict metadata requires response_format.type=json_schema and serializes the provided schema instead of json_object.",
+    "non_strict_preservation": "Non-strict force_json_output requests still serialize response_format={\"type\":\"json_object\"}.",
+    "xai_behavior": "XAIBatchClient inherits OpenAIBatchClient.fetch_results and the new test exercises that inherited path with fake OpenAI-compatible result JSONL.",
+    "attestation_boundary": "No attestation/proof writer was changed; strict wire payload honesty is narrowed at the batch client boundary, while broader strict passthrough attestation semantics remain a residual risk."
+  },
+  "validation_commands": [
+    {
+      "command": "python -m json.tool task-packets/generated/TP-RTE-BATCH-005.json",
+      "exit_code": 0,
+      "summary": "Task packet parses as JSON."
+    },
+    {
+      "command": "python -m json.tool proof/TP-RTE-BATCH-005/PROOF.json",
+      "exit_code": 0,
+      "summary": "Proof JSON parses."
+    },
+    {
+      "command": "python -c \"import json, pathlib; from jsonschema import Draft7Validator; schema=json.loads(pathlib.Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text()); doc=json.loads(pathlib.Path('task-packets/generated/TP-RTE-BATCH-005.json').read_text()); errs=sorted(Draft7Validator(schema).iter_errors(doc), key=lambda e: e.path); raise SystemExit(0 if not errs else 1)\"",
+      "exit_code": 0,
+      "summary": "Task packet validates against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json."
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_batch_clients_integration.py",
+      "exit_code": 1,
+      "summary": "Pre-fix regression reproduction: 5 expected failures for empty parsed results, strict schema payload absence, fail-closed absence, and xAI inherited parsing."
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_batch_clients_integration.py",
+      "exit_code": 0,
+      "summary": "Post-fix focused batch client tests passed: 7 passed."
+    },
+    {
+      "command": "python -m compileall -q services/repo-truth-extractor src/dopemux",
+      "exit_code": 0,
+      "summary": "Repo Truth Extractor and dopemux Python files compile."
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests -k \"batch or strict\"",
+      "exit_code": 0,
+      "summary": "Broader batch/strict selection passed: 44 passed."
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+      "exit_code": 0,
+      "summary": "Existing v5 operator safety preservation tests passed: 43 passed."
+    },
+    {
+      "command": "rg -n \"strict.*pass\" services/repo-truth-extractor/lib/batch_clients.py",
+      "exit_code": 1,
+      "summary": "Expected no-match result: strict batch no-op is removed from batch_clients.py."
+    },
+    {
+      "command": "git diff --name-only | rg '(^services/repo-truth-extractor/promptsets/|model|routing|walker|prescan|cockpit|tui|package-lock|requirements|pyproject|docs/)'",
+      "exit_code": 1,
+      "summary": "Expected no-match result: changed files do not include promptsets, model routing, walker/prescan, cockpit/TUI, dependency files, or docs sweep paths."
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "summary": "No whitespace errors found."
+    },
+    {
+      "command": "pre-commit run --files services/repo-truth-extractor/lib/batch_clients.py services/repo-truth-extractor/tests/test_batch_clients_integration.py task-packets/INDEX.md task-packets/generated/TP-RTE-BATCH-005.json proof/TP-RTE-BATCH-005/PROOF.json proof/TP-RTE-BATCH-005/IMPLEMENTER_REPORT.md",
+      "exit_code": 0,
+      "summary": "Configured pre-commit hooks passed for changed allowlist files."
+    }
+  ],
+  "safety_boundary_confirmation": {
+    "live_provider_calls_run": false,
+    "live_extraction_runs_run": false,
+    "external_batch_jobs_submitted": false,
+    "sync_path_changed": false,
+    "promptsets_touched": false,
+    "model_routing_touched": false,
+    "walker_prescan_touched": false,
+    "docs_sweep_included": false,
+    "dependency_files_changed": false,
+    "real_provider_files_retrieved": false
+  },
+  "live_provider_calls_run": false,
+  "live_extraction_runs_run": false,
+  "external_batch_jobs_submitted": false,
+  "batch_result_extraction_fixed": {
+    "value": true,
+    "evidence": "test_openai_fetch_results_parses_valid_provider_jsonl and test_openai_fetch_results_keeps_valid_rows_when_corrupt_lines_under_threshold passed against OpenAIBatchClient.fetch_results."
+  },
+  "strict_batch_wire_payload_fixed": {
+    "value": true,
+    "evidence": "test_openai_submit_serializes_strict_json_schema_response_format passed and inspected the generated JSONL request body with response_format.type=json_schema; missing-schema strict requests fail closed before upload."
+  },
+  "non_strict_behavior_preserved": {
+    "value": true,
+    "evidence": "test_openai_submit_preserves_non_strict_json_object_payload passed and observed response_format={\"type\":\"json_object\"}."
+  },
+  "xai_batch_behavior_verified": {
+    "value": true,
+    "evidence": "test_xai_fetch_results_uses_inherited_openai_compatible_parser passed against XAIBatchClient with fake OpenAI-compatible result JSONL."
+  },
+  "attestation_risk_status": {
+    "status": "narrowed",
+    "evidence": "Batch client wire payload is now honest for strict requests carrying json_schema response_format. No broad STRICT_PASSTHROUGH_ATTESTATIONS writer rewrite was performed, so end-to-end attestation semantics remain a residual risk."
+  },
+  "blockers": [],
+  "residual_risks": [
+    "Strict batch response_format support is exposed on BatchRequest and covered by direct client tests; existing v5 runtime does not batch strict contract steps, and no broad runner/attestation plumbing was changed.",
+    "Generic cleanup pass blocks still exist in batch_clients.py outside strict handling; exact strict metadata pass/no-op was removed.",
+    "Proof files are under ignored proof/ and must be staged with git add -f."
+  ],
+  "codereview_status": {
+    "status": "passed",
+    "evidence": "Manual diff review found the runtime changes limited to batch_clients.py and focused tests; no sync path, promptset, routing, walker/prescan, dependency, cockpit/TUI, or docs sweep files changed."
+  },
+  "precommit_status": {
+    "status": "passed",
+    "evidence": "pre-commit run --files completed with exit code 0 for changed allowlist files."
+  },
+  "final_git_status_before_commit": "## codex/tp-rte-batch-005...origin/main; modified: services/repo-truth-extractor/lib/batch_clients.py, task-packets/INDEX.md; untracked: services/repo-truth-extractor/tests/test_batch_clients_integration.py, task-packets/generated/TP-RTE-BATCH-005.json; ignored proof/TP-RTE-BATCH-005/* will be staged with git add -f."
+}
