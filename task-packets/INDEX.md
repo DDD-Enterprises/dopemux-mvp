@@ -56,6 +56,7 @@ A packet is superseded by another packet
 | TP-RTE-V3-CONSENT-004 | Repo Truth Extractor | Gate legacy v3 execution and fail closed on unknown pipeline versions | Active | N/A |
 | TP-RTE-WALKER-006 | Repo Truth Extractor | Exclude generated artifacts and secret-bearing files from prescan walker input | Active | N/A |
 | TP-RTE-BATCH-005 | Repo Truth Extractor | Repair batch result extraction and strict batch request payload handling | Active | N/A |
+| TP-RTE-BATCH-E2E-006 | Repo Truth Extractor | Wire strict batch response_format through v5 request construction | Active | N/A |
 | TP-DMX-AGENTS-CODEX-ENDTOEND-0001 | Agent Guidance | Make Codex execute TP lifecycle end-to-end by default | Ready | N/A |
 | TP-DMX-COMPOSE-RESTORE-001 | Infra | Restore canonical Docker Compose authority | Ready | N/A |
 | DMX-COCKPIT-STATIC-002 | UI Cockpit | Expose deterministic static cockpit renderer through guarded CLI wrapper | Merged (PR #528) | N/A |
