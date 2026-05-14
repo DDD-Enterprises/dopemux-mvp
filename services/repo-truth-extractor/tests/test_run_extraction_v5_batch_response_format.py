@@ -204,6 +204,31 @@ def test_v5_batch_request_matches_strict_route_when_api_key_env_was_omitted_from
     assert request.response_format["json_schema"]["strict"] is True
 
 
+def test_v5_batch_request_accepts_strict_selected_route_outside_primary_contract() -> None:
+    runner = _load_runner_module()
+    selected_route = ("xai", "grok-2", "XAI_API_KEY")
+
+    request = _batch_request(
+        runner,
+        provider="xai",
+        model_id="grok-2",
+        selected_route=selected_route,
+        selected_route_entry={
+            "provider": selected_route[0],
+            "model_id": selected_route[1],
+            "api_key_env": selected_route[2],
+            "structured_output_mode": "json_schema",
+            "strict_json_schema": True,
+            "strict_passthrough_verified": True,
+        },
+        transport="openai_compat_http",
+    )
+
+    assert request.response_format is not None
+    assert request.response_format["type"] == "json_schema"
+    assert request.response_format["json_schema"]["strict"] is True
+
+
 def test_v5_resolve_batch_route_override_handles_strict_two_tuple_ladder() -> None:
     runner = _load_runner_module()
     fallback = ("openai", "gpt-5-nano", "OPENAI_API_KEY")

@@ -10664,6 +10664,7 @@ def build_v5_batch_request(
     user_content: str,
     provider: str,
     selected_route: Tuple[str, str, str],
+    selected_route_entry: Optional[Dict[str, Any]] = None,
     transport: str,
     strict_contract_required: bool,
     step_contract: Optional[Dict[str, Any]],
@@ -10693,6 +10694,8 @@ def build_v5_batch_request(
         route_entry = _batch_route_entry_for_selected_route(
             step_contract, selected_route
         )
+        if route_entry is None and isinstance(selected_route_entry, dict):
+            route_entry = dict(selected_route_entry)
         if route_entry is None:
             raise ValueError(
                 f"Strict batch request for {phase}/{step_id} requires a strict-capable route contract"
@@ -13030,6 +13033,20 @@ else sdk_auth_present_flags(p_provider, True)
                     )
                     batch_provider, batch_model_id, batch_api_key_env = selected_route
                     batch_transport = transport_for_provider(batch_provider, cfg)
+                    selected_route_entry = None
+                    if strict_contract_required and routing_reason in {
+                        "explicit_step_route_override",
+                        "explicit_phase_route_override",
+                        "benchmark_route_ownership_primary",
+                    }:
+                        selected_route_entry = {
+                            "provider": batch_provider,
+                            "model_id": batch_model_id,
+                            "api_key_env": batch_api_key_env,
+                            "structured_output_mode": "json_schema",
+                            "strict_json_schema": True,
+                            "strict_passthrough_verified": True,
+                        }
                     try:
                         batch_requests = [
                             build_v5_batch_request(
@@ -13039,6 +13056,7 @@ else sdk_auth_present_flags(p_provider, True)
                                 user_content=effective_user_prompt,
                                 provider=batch_provider,
                                 selected_route=selected_route,
+                                selected_route_entry=selected_route_entry,
                                 transport=batch_transport,
                                 strict_contract_required=strict_contract_required,
                                 step_contract=step_contract,
