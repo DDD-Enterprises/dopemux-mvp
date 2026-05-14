@@ -1,0 +1,298 @@
+{
+  "id": "TP-RTE-STRICT-ATTESTATION-007",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / strict passthrough attestations",
+  "invariants": [
+    "Treat services/repo-truth-extractor/run_extraction_v5.py as the strongest RTE runtime authority for active v5 extraction and strict attestation assembly.",
+    "Treat services/repo-truth-extractor/lib/batch_clients.py as the OpenAI-compatible batch JSONL serialization authority.",
+    "Strict passthrough attestation VERIFIED status must derive from observed runtime, constructed request, BatchRequest, or wire payload evidence, not requested intent alone.",
+    "Synthesized explicit or benchmark OpenRouter routes outside contract primary routes must not self-attest strict passthrough verification.",
+    "Do not run live extraction, provider/model calls, external provider batch submission, or real provider file retrieval.",
+    "Do not modify promptsets, broad model routing, walker/prescan, v3 consent, cockpit/TUI, dependencies, or docs outside targeted task-packet index hygiene."
+  ],
+  "depends_on": [
+    "TP-RTE-BATCH-005",
+    "TP-RTE-BATCH-E2E-006"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-GOLIVE-BLOCKERS",
+    "base_branch": "main",
+    "parent_tp_id": "TP-RTE-BATCH-E2E-006",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-rte-strict-attestation-007",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(rte): ground strict attestations in runtime evidence",
+    "allowlist": [
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py",
+      "task-packets/INDEX.md",
+      "task-packets/generated/TP-RTE-STRICT-ATTESTATION-007.json",
+      "proof/TP-RTE-STRICT-ATTESTATION-007/PROOF.json",
+      "proof/TP-RTE-STRICT-ATTESTATION-007/IMPLEMENTER_REPORT.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-RTE-STRICT-ATTESTATION-007.json",
+      "python -m json.tool proof/TP-RTE-STRICT-ATTESTATION-007/PROOF.json",
+      "python -c \"import json, pathlib; from jsonschema import Draft7Validator; schema=json.loads(pathlib.Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text()); doc=json.loads(pathlib.Path('task-packets/generated/TP-RTE-STRICT-ATTESTATION-007.json').read_text()); errs=sorted(Draft7Validator(schema).iter_errors(doc), key=lambda e: e.path); raise SystemExit(0 if not errs else 1)\"",
+      "python -m compileall -q services/repo-truth-extractor src/dopemux",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_batch_clients_integration.py",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests -k \"batch or strict\"",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+      "git diff --check",
+      "pre-commit run --files <changed files>"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): ground strict attestations in runtime evidence",
+    "body": "## Summary\n- derive strict passthrough attestation VERIFIED status from observed runtime/request/wire evidence instead of route intent\n- prevent synthesized explicit or benchmark OpenRouter routes from self-attesting strict passthrough verification\n- add offline regression tests for strict evidence, intent-only non-verification, OpenRouter bypass closure, Gemini exclusion, and existing batch behavior\n\n## Scope\n- Repo Truth Extractor v5 strict batch attestation and route proof semantics\n- focused tests, task packet, proof, implementer report, and targeted task-packet index hygiene\n- no live extraction, provider/model calls, external batch jobs, real provider file retrieval, promptsets, broad routing, walker/prescan, dependencies, cockpit/TUI, or docs sweep\n\n## Validation\n- task packet/proof JSON validation and schema validation\n- compileall for services/repo-truth-extractor and src/dopemux\n- focused strict attestation tests, existing batch response_format and batch client tests, batch/strict subset, and operator safety tests\n- git diff whitespace check and pre-commit on changed files",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Create and validate the repo-bound task packet before implementation.",
+      "requirements": [
+        "Verify repo root, marker, remote, branch, status, and HEAD.",
+        "Confirm origin/main contains PR #614 and PR #615 merge commits or equivalent behavior.",
+        "Inspect RTE runtime, batch client, structured-output contracts, phase contract map, task packet schema, index, and existing strict/batch tests."
+      ],
+      "commands": [
+        "python -m json.tool task-packets/generated/TP-RTE-STRICT-ATTESTATION-007.json",
+        "python -c \"import json, pathlib; from jsonschema import Draft7Validator; schema=json.loads(pathlib.Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text()); doc=json.loads(pathlib.Path('task-packets/generated/TP-RTE-STRICT-ATTESTATION-007.json').read_text()); errs=sorted(Draft7Validator(schema).iter_errors(doc), key=lambda e: e.path); raise SystemExit(0 if not errs else 1)\""
+      ],
+      "expected_files": [
+        "task-packets/generated/TP-RTE-STRICT-ATTESTATION-007.json"
+      ],
+      "validation": [
+        "Task packet parses as JSON.",
+        "Task packet validates against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "PROJECT.md",
+        "docs/research/mcp-customization/dopemux-constraints/RULES.md",
+        "docs/research/mcp-customization/dopemux-constraints/SYSTEM_RepoTruthExtractor.md",
+        "docs/research/mcp-customization/dopemux-constraints/TRUTH_CANONICALS.md",
+        "task-packets/INDEX.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/lib/batch_clients.py",
+        "services/repo-truth-extractor/lib/structured_output_contracts.py",
+        "services/repo-truth-extractor/lib/phase_contract_map.py"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Trace current strict attestation writer and strict route inputs.",
+      "requirements": [
+        "Locate write_strict_passthrough_attestations and all current metadata inputs.",
+        "Identify current selected route and strict capability fields.",
+        "Identify whether current VERIFIED-style output is derived from intent, config, contract, request construction, runtime request metadata, or wire payload."
+      ],
+      "commands": [
+        "rg -n \"STRICT_PASSTHROUGH_ATTESTATIONS|write_strict_passthrough_attestations|strict_passthrough_verified|selected_route_entry|explicit_step_route_override|explicit_phase_route_override|benchmark_route_ownership_primary|BatchRequest|response_format|json_schema\" services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/lib services/repo-truth-extractor/tests"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py"
+      ],
+      "validation": [
+        "Evidence identifies the attestation writer, strict metadata producers, and synthesized route bypass before implementation."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/lib/structured_output_contracts.py",
+        "services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py",
+        "services/repo-truth-extractor/tests/test_run_extraction_v5_benchmark_route_ownership.py"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Add minimal runtime/request/wire evidence records for strict batch requests.",
+      "requirements": [
+        "Capture provider, model, transport, phase, step, partition, response_format presence, response_format.type, json_schema presence, json_schema.strict, schema hash, schema name, and evidence source.",
+        "Use the existing BatchRequest and response_format construction path.",
+        "Do not dump full schemas into proof artifacts."
+      ],
+      "commands": [
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py"
+      ],
+      "validation": [
+        "Focused test proves strict evidence can be derived from fake OpenAI-compatible JSONL wire payload.",
+        "Focused test proves strict evidence records a stable schema hash instead of full schema proof sprawl."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/lib/batch_clients.py"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Update strict passthrough attestation writer to classify truth state from evidence.",
+      "requirements": [
+        "Classify VERIFIED only when evidence proves response_format.type=json_schema with json_schema.strict=true.",
+        "Classify missing evidence as UNVERIFIED or UNKNOWN, malformed or downgraded evidence as FAILED, and non-strict as NOT_APPLICABLE.",
+        "Do not treat requested strict intent or static strict_passthrough_verified=True as VERIFIED."
+      ],
+      "commands": [
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py"
+      ],
+      "validation": [
+        "Focused test proves VERIFIED comes from observed strict json_schema evidence.",
+        "Focused test proves strict intent alone is not VERIFIED."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Remove or neutralize synthesized OpenRouter strict passthrough bypass.",
+      "requirements": [
+        "Do not hardcode strict_passthrough_verified=True in synthesized explicit or benchmark selected_route_entry paths.",
+        "Require contract-side proof for OpenRouter strict passthrough before strict capability passes outside lane.primary_routes.",
+        "Preserve useful explicit/benchmark fallback behavior for direct strict-capable providers."
+      ],
+      "commands": [
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py"
+      ],
+      "validation": [
+        "Focused test proves an explicit or benchmark OpenRouter route outside primary contract cannot become VERIFIED from a synthesized selected route alone.",
+        "Grep proves no hardcoded strict_passthrough_verified=True remains in synthesized OpenRouter selected_route_entry logic."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/tests/test_run_extraction_v5_benchmark_route_ownership.py"
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Preserve existing strict batch behavior and Gemini exclusion.",
+      "requirements": [
+        "Keep strict response_format propagation to fake OpenAI-compatible JSONL.",
+        "Keep missing strict schema and json_object downgrade fail-closed behavior.",
+        "Keep Gemini strict excluded or fail-closed according to strict_capability_reason.",
+        "Preserve non-strict batch behavior."
+      ],
+      "commands": [
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py",
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_batch_clients_integration.py",
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests -k \"batch or strict\"",
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py"
+      ],
+      "validation": [
+        "Existing batch response_format tests pass.",
+        "Existing batch client tests pass.",
+        "Batch/strict test subset passes or any unrelated pre-existing failures are documented.",
+        "Operator safety tests pass."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py",
+        "services/repo-truth-extractor/tests/test_batch_clients_integration.py",
+        "services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py"
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Apply targeted task-packet index hygiene and write proof artifacts.",
+      "requirements": [
+        "Mark TP-RTE-BATCH-005 and TP-RTE-BATCH-E2E-006 as merged using repo index convention.",
+        "Add TP-RTE-STRICT-ATTESTATION-007 as active or ready using repo index convention.",
+        "Create PROOF.json and IMPLEMENTER_REPORT.md with truthful validation and safety evidence.",
+        "Do not perform a broad documentation sweep."
+      ],
+      "commands": [
+        "python -m json.tool proof/TP-RTE-STRICT-ATTESTATION-007/PROOF.json",
+        "python -m compileall -q services/repo-truth-extractor src/dopemux",
+        "git diff --check",
+        "pre-commit run --files <changed files>"
+      ],
+      "expected_files": [
+        "task-packets/INDEX.md",
+        "proof/TP-RTE-STRICT-ATTESTATION-007/PROOF.json",
+        "proof/TP-RTE-STRICT-ATTESTATION-007/IMPLEMENTER_REPORT.md"
+      ],
+      "validation": [
+        "Proof JSON parses.",
+        "Compileall passes.",
+        "Diff whitespace check passes.",
+        "Pre-commit passes or exact blocker is documented."
+      ],
+      "context_files": [
+        "task-packets/INDEX.md",
+        "proof/TP-RTE-STRICT-ATTESTATION-007/PROOF.json",
+        "proof/TP-RTE-STRICT-ATTESTATION-007/IMPLEMENTER_REPORT.md"
+      ]
+    },
+    {
+      "id": "S8",
+      "task": "Review, commit, push, and open PR when authenticated.",
+      "requirements": [
+        "Inspect git diff stat and full diff before commit.",
+        "Commit only allowlisted files.",
+        "Push branch and open a PR when gh auth permits.",
+        "Report exact blocker if push or PR creation fails."
+      ],
+      "commands": [
+        "git diff --stat",
+        "git diff",
+        "git status --short --branch",
+        "git add <allowlisted files>",
+        "git commit -m \"fix(rte): ground strict attestations in runtime evidence\"",
+        "git push -u origin codex/tp-rte-strict-attestation-007",
+        "gh pr create --base main --head codex/tp-rte-strict-attestation-007 --title \"fix(rte): ground strict attestations in runtime evidence\" --body-file <generated body file>"
+      ],
+      "expected_files": [
+        "task-packets/generated/TP-RTE-STRICT-ATTESTATION-007.json",
+        "proof/TP-RTE-STRICT-ATTESTATION-007/PROOF.json",
+        "proof/TP-RTE-STRICT-ATTESTATION-007/IMPLEMENTER_REPORT.md"
+      ],
+      "validation": [
+        "Diff contains only authorized files.",
+        "Commit SHA exists on the TP branch.",
+        "PR URL or exact PR creation blocker is recorded."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "task-packets/generated/TP-RTE-STRICT-ATTESTATION-007.json"
+      ]
+    }
+  ]
+}
