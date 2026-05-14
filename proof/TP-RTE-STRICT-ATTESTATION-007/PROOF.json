@@ -1,0 +1,142 @@
+{
+  "tp_id": "TP-RTE-STRICT-ATTESTATION-007",
+  "objective": "Ground RTE strict passthrough attestations in observed runtime or wire evidence and remove synthesized OpenRouter strict passthrough verification bypass.",
+  "starting_head": "a4227982fde16b99799882506265f29ec0de303d",
+  "ending_head": "SELF_REFERENTIAL_COMMIT_SHA_REPORTED_IN_CLOSEOUT",
+  "ending_head_note": "The commit SHA cannot be embedded in this file before creating the commit without amending; closeout reports the actual commit SHA.",
+  "branch": "codex/tp-rte-strict-attestation-007",
+  "base_branch": "main",
+  "worktree_path": "/Users/hue/.codex/worktrees/tp-rte-strict-attestation-007",
+  "repo_identity": {
+    "root": "/Users/hue/.codex/worktrees/tp-rte-strict-attestation-007",
+    "remote_origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "repo_marker": "AGENTS.md",
+    "base_contains_pr_614": "PASS: 9c30e9e869878e752782b9f95b6a1de262de974b is ancestor of origin/main.",
+    "base_contains_pr_615": "PASS: origin/main is a4227982fde16b99799882506265f29ec0de303d, subject fix(rte): wire strict batch response format (#615)."
+  },
+  "files_created": [
+    "services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py",
+    "task-packets/generated/TP-RTE-STRICT-ATTESTATION-007.json",
+    "proof/TP-RTE-STRICT-ATTESTATION-007/PROOF.json",
+    "proof/TP-RTE-STRICT-ATTESTATION-007/IMPLEMENTER_REPORT.md"
+  ],
+  "files_modified": [
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "task-packets/INDEX.md"
+  ],
+  "tests_added_or_modified": [
+    "services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py"
+  ],
+  "validation_commands": [
+    {
+      "command": "python -m json.tool task-packets/generated/TP-RTE-STRICT-ATTESTATION-007.json",
+      "exit_code": 0,
+      "summary": "PASS: task packet JSON parses."
+    },
+    {
+      "command": "python -m json.tool proof/TP-RTE-STRICT-ATTESTATION-007/PROOF.json",
+      "exit_code": 0,
+      "summary": "PASS: proof JSON parses."
+    },
+    {
+      "command": "python -c \"import json, pathlib; from jsonschema import Draft7Validator; schema=json.loads(pathlib.Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text()); doc=json.loads(pathlib.Path('task-packets/generated/TP-RTE-STRICT-ATTESTATION-007.json').read_text()); errs=sorted(Draft7Validator(schema).iter_errors(doc), key=lambda e: e.path); [print('/'.join(map(str,e.path)) + ': ' + e.message) for e in errs]; raise SystemExit(0 if not errs else 1)\"",
+      "exit_code": 0,
+      "summary": "PASS: task packet conforms to docs/03-reference/spec/dopetask/dopetask-canonical-spec.json."
+    },
+    {
+      "command": "python -m compileall -q services/repo-truth-extractor src/dopemux",
+      "exit_code": 0,
+      "summary": "PASS: compileall completed."
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py",
+      "exit_code": 0,
+      "summary": "PASS: 4 passed; proves wire-payload VERIFIED, intent-only UNVERIFIED, synthesized OpenRouter strict passthrough not verified, and Gemini strict not verified."
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py",
+      "exit_code": 0,
+      "summary": "PASS: 7 passed; strict response_format propagation and fail-closed batch construction preserved."
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_batch_clients_integration.py",
+      "exit_code": 0,
+      "summary": "PASS: 7 passed; batch client strict JSONL serialization and strict missing-schema rejection preserved."
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests -k \"batch or strict\"",
+      "exit_code": 0,
+      "summary": "PASS: 55 passed; broad strict/batch selector passed."
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+      "exit_code": 0,
+      "summary": "PASS: 43 passed; operator safety suite passed."
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "summary": "PASS: no whitespace errors."
+    },
+    {
+      "command": "rg -n \"strict_passthrough_verified=True|strict_passthrough_verified = True\" services/repo-truth-extractor/run_extraction_v5.py",
+      "exit_code": 1,
+      "summary": "PASS: rg returned no matches for hardcoded strict_passthrough_verified=True."
+    },
+    {
+      "command": "pre-commit run --files services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py task-packets/INDEX.md task-packets/generated/TP-RTE-STRICT-ATTESTATION-007.json proof/TP-RTE-STRICT-ATTESTATION-007/PROOF.json proof/TP-RTE-STRICT-ATTESTATION-007/IMPLEMENTER_REPORT.md",
+      "exit_code": 0,
+      "summary": "PASS: repo pre-commit hooks passed for the scoped changed files, including ignored proof files."
+    }
+  ],
+  "safety_boundary_confirmation": {
+    "live_provider_calls_run": false,
+    "live_extraction_runs_run": false,
+    "external_batch_jobs_submitted": false,
+    "real_provider_files_retrieved": false,
+    "sync_behavior_broadened": false,
+    "promptsets_changed": false,
+    "model_routing_broad_edit": false,
+    "walker_prescan_changed": false,
+    "docs_sweep_performed": false,
+    "dependencies_changed": false
+  },
+  "live_provider_calls_run": false,
+  "live_extraction_runs_run": false,
+  "external_batch_jobs_submitted": false,
+  "real_provider_files_retrieved": false,
+  "strict_attestation_uses_observed_runtime_or_wire_evidence": {
+    "value": true,
+    "evidence": "write_strict_passthrough_attestations now emits STRICT_PASSTHROUGH_ATTESTATIONS_V2 and sets strict_passthrough_verified only when attestation_status is VERIFIED; VERIFIED requires evidence_source in wire_payload, BatchRequest, or constructed_request plus response_format.type=json_schema, json_schema present, strict=true, and schema hash present."
+  },
+  "strict_intent_alone_not_verified": {
+    "value": true,
+    "evidence": "test_strict_intent_alone_is_not_verified asserts a static strict_route_attestation with strict_passthrough_verified=True but no runtime evidence produces attestation_status=UNVERIFIED and strict_passthrough_verified=false."
+  },
+  "synthesized_openrouter_passthrough_bypass_removed_or_made_honest": {
+    "value": true,
+    "evidence": "Explicit and benchmark synthesized route entries now use primary contract strict_passthrough_verified proof only when present; otherwise OpenRouter strict routes fail strict_capability_reason with openrouter_strict_passthrough_unverified. rg found no strict_passthrough_verified=True hardcode in run_extraction_v5.py."
+  },
+  "gemini_strict_still_excluded": {
+    "value": true,
+    "evidence": "test_gemini_strict_route_cannot_be_verified asserts Gemini strict evidence is FAILED with provider_not_strict_capable:gemini and strict batch construction rejects Gemini strict selected routes."
+  },
+  "batch_response_format_regressions_passed": {
+    "value": true,
+    "evidence": "test_run_extraction_v5_batch_response_format.py, test_batch_clients_integration.py, and tests -k \"batch or strict\" passed."
+  },
+  "index_hygiene_updated": {
+    "value": true,
+    "evidence": "task-packets/INDEX.md marks TP-RTE-BATCH-005 as Merged (PR #614), TP-RTE-BATCH-E2E-006 as Merged (PR #615), and adds TP-RTE-STRICT-ATTESTATION-007 as Active."
+  },
+  "f3_high_2_status": {
+    "value": "closed",
+    "evidence": "The attestation writer now requires runtime/wire/construction evidence for VERIFIED; strict intent alone is UNVERIFIED; synthesized OpenRouter strict passthrough proof is no longer hardcoded and fails closed without primary contract proof; focused and existing strict/batch tests pass."
+  },
+  "blockers": [],
+  "residual_risks": [
+    "No live provider calls, live extraction, external batch submission, or real provider file retrieval was run by design; external provider passthrough is proven only by offline wire-payload construction and BatchRequest evidence.",
+    "F4-CRIT-2 docs canonical naming inversion remains open and out of scope."
+  ],
+  "final_git_status_before_commit": "## codex/tp-rte-strict-attestation-007...origin/main; modified: services/repo-truth-extractor/run_extraction_v5.py, task-packets/INDEX.md; untracked: services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py, task-packets/generated/TP-RTE-STRICT-ATTESTATION-007.json; ignored proof/TP-RTE-STRICT-ATTESTATION-007/* will be staged with git add -f."
+}
