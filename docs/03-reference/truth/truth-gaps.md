@@ -98,9 +98,10 @@ Method:
 - `/Users/hue/code/dopemux-mvp/.dopetask-pin`
 - `/Users/hue/code/dopemux-mvp/pyproject.toml`
   - README mentions `dopetask==0.2.0`; repo pin and dependency declarations show `0.5.1`.
-- `/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/README.md`
 - `/Users/hue/code/dopemux-mvp/src/dopemux/cli.py`
-  - README points to extractor v5/v4 family; CLI still exposes legacy `truth` runner path.
+  - `dopemux rte` is the canonical operator command family, `dopemux upgrades` is a legacy compatibility alias, and `dopemux truth` now refuses with guidance to use `dopemux rte`.
+- RTE operator docs
+  - Older docs may still carry stale command examples; current docs should classify `dopemux upgrades`, `dopemux extractor`, `dopemux truth`, direct runner calls, and legacy scan paths according to runtime evidence.
 - `/Users/hue/code/dopemux-mvp/services/registry.yaml`
 - `/Users/hue/code/dopemux-mvp/services/task-orchestrator/task_orchestrator/app.py`
   - Registry and runtime module disagree on task-orchestrator port.

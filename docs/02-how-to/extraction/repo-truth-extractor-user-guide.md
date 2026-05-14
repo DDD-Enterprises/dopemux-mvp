@@ -16,6 +16,15 @@ prelude: Repo Truth Extractor User Guide (how-to) for dopemux documentation and 
 
 The Repo Truth Extractor (RTE) is a deterministic, multi-phase extraction engine designed to produce machine-verifiable truth maps of complex software repositories. It uses a tiered routing system to balance cost, performance, and reasoning depth across different extraction tasks.
 
+Current operator truth:
+
+- `dopemux rte` is the canonical operator command family.
+- `services/repo-truth-extractor/run_extraction_v5.py` is the strongest v5 extraction runtime authority.
+- `dopemux upgrades` remains a legacy compatibility alias for `dopemux rte`; do not use it as the canonical path in new operator guidance.
+- `dopemux extractor`, `dopemux extract truth-run`, and `dopemux truth` are legacy/refusal surfaces, not the v5 operator path.
+- Direct `python services/repo-truth-extractor/run_extraction_v5.py ...` invocation is an advanced/debug path for runner-level work, not the normal operator entrypoint.
+- RTE outputs, proof packs, and generated truth artifacts are evidence artifacts. They do not outrank runtime code, config, tests, and active entrypoints.
+
 ## 2. Architecture
 
 RTE operates in distinct phases:
@@ -43,12 +52,12 @@ Defines the output schema and merge strategy for each extracted artifact.
 
 ### Scanning for drift
 ```bash
-dopemux upgrades run --phase ALL --dry-run
+dopemux rte run --pipeline-version v5 --phase ALL --dry-run
 ```
 
 ### Executing an extraction
 ```bash
-dopemux upgrades run --phase A --execute
+DPMX_LIVE_OK=1 dopemux rte run --pipeline-version v5 --phase A --execute
 ```
 
 ## 5. Resume and Reliability
@@ -56,7 +65,7 @@ dopemux upgrades run --phase A --execute
 RTE is designed to be resumed. If a run is interrupted, use the `--resume` flag:
 
 ```bash
-dopemux upgrades run --phase C --execute --resume
+DPMX_LIVE_OK=1 dopemux rte run --pipeline-version v5 --phase C --execute --resume
 ```
 
 ## 6. Hygiene and Maintenance
@@ -81,7 +90,7 @@ Validation stages:
 ### For paid stages, provide a pricing manifest so spend caps can be enforced:
 
 ```bash
-dopemux upgrades validate-live \
+dopemux rte validate-live \
   --promptset-root /abs/path/to/generated/promptset \
   --stage phase_slice \
   --provider openai \
@@ -90,8 +99,9 @@ dopemux upgrades validate-live \
 
 Live validation stages that would spend money still require explicit consent:
 
-- `--execute` on the underlying runner path
+- `--execute` on the underlying v5 runner path
 - `DPMX_LIVE_OK=1`
+- explicit pricing/spend caps where the validation stage requires them
 
 Use the phase-scoped confidence ramp:
 
@@ -128,7 +138,7 @@ If `validate-live` exits immediately with an import-origin error, the command is
 Run root:
 
 ```text
-extraction/repo-truth-extractor/v4/runs/<RUN_ID>/
+extraction/repo-truth-extractor/v5/runs/<RUN_ID>/
 ```
 
 Per phase:
@@ -166,10 +176,10 @@ Unexpected run size growth:
 
 ## 11. Engine fallback
 
-Use v3 only when needed:
+Use v3 only when needed as a legacy gated fallback. It requires explicit operator consent and is not the canonical v5 path.
 
 ```bash
-dopemux upgrades run --pipeline-version v3 --phase ALL --execute --run-id rte_v3_fallback_001
+DPMX_LIVE_OK=1 dopemux rte run --pipeline-version v3 --phase ALL --execute --run-id rte_v3_fallback_001
 ```
 
 ## 12. Recommended operator workflow
@@ -181,3 +191,5 @@ dopemux upgrades run --pipeline-version v3 --phase ALL --execute --run-id rte_v3
 5. Check status
 6. Run doctor and reprocess plan
 7. Archive run artifacts and QA outputs
+
+Full unattended go-live is not claimed by this guide. Final go-live still depends on the P5 rerun, supervisor verdict, and proof-gated acceptance for the current head.
