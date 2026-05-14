@@ -197,6 +197,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   };
 
   const currentTask = tasks.find((task) => task.id === currentTaskId);
+
+  const nextTask = useMemo(() => {
+    if (!currentTaskId) return null;
+    const currentIndex = optimizedTasks.findIndex((t) => t.id === currentTaskId);
+    if (currentIndex === -1 || currentIndex === optimizedTasks.length - 1) return null;
+    return optimizedTasks[currentIndex + 1];
+  }, [optimizedTasks, currentTaskId]);
+
   const statusTone = statusStyles[cognitiveState.status];
 
   const isOvertime = useMemo(() => {
@@ -259,6 +267,25 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         background: brandTokens.gradients.focusCard,
         border: `1px solid ${statusTone.border}`,
         boxShadow: statusTone.shadow,
+        '@keyframes done-glow': {
+          '0%, 100%': { transform: 'scale(1)', filter: 'drop-shadow(0 0 0px transparent)' },
+          '50%': {
+            transform: 'scale(1.05)',
+            filter: `drop-shadow(0 0 4px ${alpha(brandTokens.colors.serumMint, 0.4)})`,
+          },
+        },
+        '@keyframes timer-pulse': {
+          '0%, 100%': { opacity: 1 },
+          '50%': { opacity: 0.6 },
+        },
+        '@keyframes reset-pulse': {
+          '0%': { transform: 'scale(1)' },
+          '50%': {
+            transform: 'scale(1.03)',
+            boxShadow: `0 0 12px ${alpha(brandTokens.colors.saintGold, 0.3)}`,
+          },
+          '100%': { transform: 'scale(1)' },
+        },
       }}
       className="dopemux-panel"
     >
@@ -298,10 +325,6 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               transition: 'all 0.3s ease',
               ...(isComplete && {
                 animation: 'done-glow 2s infinite ease-in-out',
-                '@keyframes done-glow': {
-                  '0%, 100%': { transform: 'scale(1)', filter: 'drop-shadow(0 0 0px transparent)' },
-                  '50%': { transform: 'scale(1.05)', filter: `drop-shadow(0 0 4px ${alpha(brandTokens.colors.serumMint, 0.4)})` },
-                },
               }),
               '&:focus-visible': {
                 outline: 'none',
@@ -368,10 +391,6 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                 color: isOvertime ? brandTokens.colors.gremlinPink : 'inherit',
                 ...(isTimerRunning && {
                   animation: 'timer-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                  '@keyframes timer-pulse': {
-                    '0%, 100%': { opacity: 1 },
-                    '50%': { opacity: 0.6 },
-                  },
                 }),
               }}
             >
@@ -414,7 +433,10 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                 sx={{
                   height: 6,
                   borderRadius: 3,
-                  bgcolor: alpha(isOvertime ? brandTokens.colors.gremlinPink : brandTokens.colors.saintGold, 0.1),
+                  bgcolor: alpha(
+                    isOvertime ? brandTokens.colors.gremlinPink : brandTokens.colors.saintGold,
+                    0.1
+                  ),
                   '& .MuiLinearProgress-bar': {
                     bgcolor: isOvertime ? brandTokens.colors.gremlinPink : brandTokens.colors.saintGold,
                     borderRadius: 3,
@@ -423,13 +445,17 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                       : brandTokens.shadows.goldBloom,
                   },
                 }}
-                aria-label="Current task progress"
+                aria-label={`Progress for task: ${currentTask.title}`}
                 aria-valuetext={
                   isOvertime
                     ? `Overtime: ${Math.floor(taskTimer / 60 - currentTask.estimatedMinutes)} ${
-                        Math.floor(taskTimer / 60 - currentTask.estimatedMinutes) === 1 ? 'minute' : 'minutes'
+                        Math.floor(taskTimer / 60 - currentTask.estimatedMinutes) === 1
+                          ? 'minute'
+                          : 'minutes'
                       } past estimate`
-                    : `${Math.round(Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100))}% of estimated time`
+                    : `${Math.round(
+                        Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100)
+                      )}% of estimated time`
                 }
               />
             </Box>
@@ -446,18 +472,38 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                 {isTimerRunning ? 'Pause' : 'Start'}
               </Button>
             </Tooltip>
-            <Tooltip title="Complete and Proceed" arrow>
+            <Tooltip
+              title={
+                nextTask
+                  ? `Complete ${currentTask.title} and proceed to ${nextTask.title}`
+                  : `Complete ${currentTask.title} and finish ritual`
+              }
+              arrow
+            >
               <Button
                 size="small"
                 variant="outlined"
                 startIcon={<CheckCircle aria-hidden="true" />}
                 onClick={() => completeTask(currentTask.id)}
-                aria-label={`Complete task: ${currentTask.title}`}
+                aria-label={
+                  nextTask
+                    ? `Complete ${currentTask.title}, proceed to ${nextTask.title}`
+                    : `Complete ${currentTask.title}, finish ritual`
+                }
               >
                 Complete
               </Button>
             </Tooltip>
-            <Tooltip title={optimizedTasks.length <= 1 ? 'No other tasks to skip to' : 'Skip for Now'} arrow>
+            <Tooltip
+              title={
+                optimizedTasks.length <= 1
+                  ? 'No other tasks to skip to'
+                  : nextTask
+                    ? `Skip to: ${nextTask.title}`
+                    : 'Skip to next task'
+              }
+              arrow
+            >
               <Box
                 component="span"
                 tabIndex={optimizedTasks.length <= 1 ? 0 : -1}
@@ -477,7 +523,11 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                   startIcon={<SkipForward aria-hidden="true" />}
                   onClick={() => skipTask(currentTask.id)}
                   sx={{ color: brandTokens.colors.gremlinPink }}
-                  aria-label={`Skip task: ${currentTask.title}`}
+                  aria-label={
+                    nextTask
+                      ? `Skip ${currentTask.title}, proceed to ${nextTask.title}`
+                      : `Skip task: ${currentTask.title}`
+                  }
                   disabled={optimizedTasks.length <= 1}
                 >
                   Skip
@@ -499,7 +549,15 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             background: alpha(brandTokens.colors.serumMint, 0.05),
           }}
         >
-          <CheckCircle size={32} color={brandTokens.colors.serumMint} style={{ marginBottom: 8 }} aria-hidden="true" />
+          <CheckCircle
+            size={32}
+            color={brandTokens.colors.serumMint}
+            style={{ marginBottom: 8 }}
+            aria-hidden="true"
+            sx={{
+              animation: 'done-glow 2s infinite ease-in-out',
+            }}
+          />
           <Typography variant="h6" sx={{ color: brandTokens.colors.serumMint, mb: 1 }}>
             Ritual Complete
           </Typography>
@@ -530,11 +588,6 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                 ].join(', '),
                 ...(isResetConfirming && {
                   animation: 'reset-pulse 1.5s infinite',
-                  '@keyframes reset-pulse': {
-                    '0%': { transform: 'scale(1)' },
-                    '50%': { transform: 'scale(1.03)', boxShadow: `0 0 12px ${alpha(brandTokens.colors.saintGold, 0.3)}` },
-                    '100%': { transform: 'scale(1)' },
-                  },
                 }),
                 '&:hover': {
                   borderColor: isResetConfirming ? brandTokens.colors.saintGold : brandTokens.colors.serumMint,
