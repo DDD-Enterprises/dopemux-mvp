@@ -56,7 +56,7 @@ Status: [LOGGED] Topology Complete
 - [Internal Workflow Kit](02-how-to/internal-workflow-kit.md)
 - [Workflow Idea to Epic Lifecycle](02-how-to/operations/workflow-idea-epic-lifecycle.md)
 - [Serena V2 Deployment](02-how-to/serena-v2-production-deployment.md)
-- [Repo Truth Extractor CLI Runbook](02-how-to/extraction/run-v4-from-dopemux-cli.md) - canonical command namespace: `dopemux upgrades ...` (`extractor` is legacy alias)
+- [Repo Truth Extractor CLI Runbook](02-how-to/extraction/run-v4-from-dopemux-cli.md) - canonical command namespace: `dopemux rte ...` (`upgrades` is a legacy compatibility alias; `extractor` is a hidden legacy/refusal surface)
 - [Repo Truth Extractor User Guide](02-how-to/extraction/repo-truth-extractor-user-guide.md)
 - [Repo Truth Extractor v5 First Live Run](02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md)
 - [Repo Truth Extractor Truth-Run Command](02-how-to/extraction/truth-run-command.md)

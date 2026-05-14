@@ -34,12 +34,14 @@
     "message": "docs(rte): canonicalize rte operator path",
     "allowlist": [
       "README.md",
+      "docs/00-MASTER-INDEX.md",
       "docs/02-how-to/extraction/batch-quickstart.md",
       "docs/02-how-to/extraction/repo-truth-extractor-user-guide.md",
       "docs/02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md",
       "docs/02-how-to/extraction/run-prescan.md",
       "docs/02-how-to/extraction/run-v4-from-dopemux-cli.md",
       "docs/02-how-to/extraction/truth-run-command.md",
+      "docs/03-reference/extraction/pipeline-reliability.md",
       "docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md",
       "docs/03-reference/truth/truth-canonicals.md",
       "docs/03-reference/truth/truth-data-events.md",
@@ -56,10 +58,10 @@
       "python -m json.tool task-packets/generated/TP-RTE-DOCS-CANON-008.json",
       "python -m json.tool proof/TP-RTE-DOCS-CANON-008/PROOF.json",
       "python -c \"import json, pathlib; from jsonschema import Draft7Validator; schema=json.loads(pathlib.Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text()); doc=json.loads(pathlib.Path('task-packets/generated/TP-RTE-DOCS-CANON-008.json').read_text()); errs=sorted(Draft7Validator(schema).iter_errors(doc), key=lambda e: e.path); raise SystemExit(0 if not errs else 1)\"",
-      "rg -n \"dopemux upgrades|dopemux rte|dopemux extractor|dopemux truth|PipelineRunner|run_extraction_v5|run_extraction_v4|run_extraction_v3|run_repscan|canonical|legacy|deprecated|compatibility|go-live|unattended|bounded|provider|batch\" README.md docs/02-how-to/extraction docs/03-reference/systems/repo-truth-extractor docs/03-reference/truth task-packets/INDEX.md",
+      "rg -n \"dopemux upgrades|dopemux rte|dopemux extractor|dopemux truth|PipelineRunner|run_extraction_v5|run_extraction_v4|run_extraction_v3|run_repscan|canonical|legacy|deprecated|compatibility|go-live|unattended|bounded|provider|batch\" README.md docs/00-MASTER-INDEX.md docs/02-how-to/extraction docs/03-reference/extraction/pipeline-reliability.md docs/03-reference/systems/repo-truth-extractor docs/03-reference/truth task-packets/INDEX.md",
       "python -m compileall -q src/dopemux services/repo-truth-extractor",
       "git diff --check",
-      "pre-commit run --files <changed files>"
+      "pre-commit run --files README.md docs/00-MASTER-INDEX.md docs/02-how-to/extraction/batch-quickstart.md docs/02-how-to/extraction/repo-truth-extractor-user-guide.md docs/02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md docs/02-how-to/extraction/run-prescan.md docs/02-how-to/extraction/run-v4-from-dopemux-cli.md docs/02-how-to/extraction/truth-run-command.md docs/03-reference/extraction/pipeline-reliability.md docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md docs/03-reference/truth/truth-canonicals.md docs/03-reference/truth/truth-data-events.md docs/03-reference/truth/truth-gaps.md docs/03-reference/truth/truth-interfaces.md docs/03-reference/truth/truth-scope.md docs/03-reference/truth/truth-systems.md proof/TP-RTE-DOCS-CANON-008/IMPLEMENTER_REPORT.md proof/TP-RTE-DOCS-CANON-008/PROOF.json task-packets/INDEX.md task-packets/generated/TP-RTE-DOCS-CANON-008.json"
     ]
   },
   "pr": {
@@ -117,11 +119,13 @@
       ],
       "commands": [
         "rg -n \"rte|extractor|truth|upgrades|LegacyReplacementCommand|run_extraction|run_repscan|PipelineRunner\" src/dopemux/cli.py src/dopemux/commands/extractor_commands.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/run_extraction_v4.py services/repo-truth-extractor/run_extraction_v3.py services/repo-truth-extractor/run_repscan.py",
-        "rg -n \"dopemux upgrades|dopemux rte|dopemux extractor|dopemux truth|PipelineRunner|run_extraction_v5|run_extraction_v4|run_extraction_v3|run_repscan|canonical|legacy|deprecated|compatibility|go-live|unattended|bounded|provider|batch\" README.md docs/02-how-to/extraction docs/03-reference/systems/repo-truth-extractor docs/03-reference/truth task-packets/INDEX.md"
+        "rg -n \"dopemux upgrades|dopemux rte|dopemux extractor|dopemux truth|PipelineRunner|run_extraction_v5|run_extraction_v4|run_extraction_v3|run_repscan|canonical|legacy|deprecated|compatibility|go-live|unattended|bounded|provider|batch\" README.md docs/00-MASTER-INDEX.md docs/02-how-to/extraction docs/03-reference/extraction/pipeline-reliability.md docs/03-reference/systems/repo-truth-extractor docs/03-reference/truth task-packets/INDEX.md"
       ],
       "expected_files": [
         "README.md",
+        "docs/00-MASTER-INDEX.md",
         "docs/02-how-to/extraction/*.md",
+        "docs/03-reference/extraction/pipeline-reliability.md",
         "docs/03-reference/systems/repo-truth-extractor/*.md",
         "docs/03-reference/truth/*.md"
       ],
@@ -146,11 +150,13 @@
         "Do not remove legacy paths that still exist."
       ],
       "commands": [
-        "rg -n \"dopemux upgrades|dopemux extractor|dopemux truth|PipelineRunner|run_extraction_v3|run_extraction_v4|run_repscan|python services/repo-truth-extractor/run_extraction_v5.py\" README.md docs/02-how-to/extraction docs/03-reference/systems/repo-truth-extractor docs/03-reference/truth"
+        "rg -n \"dopemux upgrades|dopemux extractor|dopemux truth|PipelineRunner|run_extraction_v3|run_extraction_v4|run_repscan|python services/repo-truth-extractor/run_extraction_v5.py\" README.md docs/00-MASTER-INDEX.md docs/02-how-to/extraction docs/03-reference/extraction/pipeline-reliability.md docs/03-reference/systems/repo-truth-extractor docs/03-reference/truth"
       ],
       "expected_files": [
         "README.md",
+        "docs/00-MASTER-INDEX.md",
         "docs/02-how-to/extraction/*.md",
+        "docs/03-reference/extraction/pipeline-reliability.md",
         "docs/03-reference/systems/repo-truth-extractor/*.md",
         "docs/03-reference/truth/*.md"
       ],
@@ -167,10 +173,11 @@
         "Docs must preserve guarded live/provider/batch operation and avoid claiming full unattended go-live readiness."
       ],
       "commands": [
-        "rg -n \"services/repo-truth-extractor/run_extraction_v5.py|evidence, not source truth|proof pack|provider|batch|go-live|unattended|P5|supervisor verdict\" README.md docs/02-how-to/extraction docs/03-reference/systems/repo-truth-extractor docs/03-reference/truth"
+        "rg -n \"services/repo-truth-extractor/run_extraction_v5.py|evidence, not source truth|proof pack|provider|batch|go-live|unattended|P5|supervisor verdict\" README.md docs/00-MASTER-INDEX.md docs/02-how-to/extraction docs/03-reference/extraction/pipeline-reliability.md docs/03-reference/systems/repo-truth-extractor docs/03-reference/truth"
       ],
       "expected_files": [
         "docs/02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md",
+        "docs/03-reference/extraction/pipeline-reliability.md",
         "docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md",
         "docs/03-reference/truth/*.md"
       ],
@@ -209,7 +216,7 @@
         "python -m json.tool proof/TP-RTE-DOCS-CANON-008/PROOF.json",
         "python -m compileall -q src/dopemux services/repo-truth-extractor",
         "git diff --check",
-        "pre-commit run --files <changed files>",
+        "pre-commit run --files README.md docs/00-MASTER-INDEX.md docs/02-how-to/extraction/batch-quickstart.md docs/02-how-to/extraction/repo-truth-extractor-user-guide.md docs/02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md docs/02-how-to/extraction/run-prescan.md docs/02-how-to/extraction/run-v4-from-dopemux-cli.md docs/02-how-to/extraction/truth-run-command.md docs/03-reference/extraction/pipeline-reliability.md docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md docs/03-reference/truth/truth-canonicals.md docs/03-reference/truth/truth-data-events.md docs/03-reference/truth/truth-gaps.md docs/03-reference/truth/truth-interfaces.md docs/03-reference/truth/truth-scope.md docs/03-reference/truth/truth-systems.md proof/TP-RTE-DOCS-CANON-008/IMPLEMENTER_REPORT.md proof/TP-RTE-DOCS-CANON-008/PROOF.json task-packets/INDEX.md task-packets/generated/TP-RTE-DOCS-CANON-008.json",
         "git commit -m \"docs(rte): canonicalize rte operator path\"",
         "git push -u origin codex/tp-rte-docs-canon-008",
         "gh pr create --base main --head codex/tp-rte-docs-canon-008 --title \"docs(rte): canonicalize rte operator path\" --body-file <generated body file>"
