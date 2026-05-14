@@ -17,12 +17,14 @@ next_review: '2026-07-06'
 ---
 # Repo Truth Extractor v5 First Live Run
 
-Use this flow when you want the safest operator path into live v5 execution.
+Use this flow when you need the runner-level first-live preset path. The canonical operator command family is `dopemux rte`, but this specific runbook uses direct `python services/repo-truth-extractor/run_extraction_v5.py ...` invocation because the first-live preset and several inspection flags are runner-level controls.
 
 ## What this guide reflects on the current branch
 
 This guide is aligned to the active v5 runner on this branch:
 
+- `dopemux rte` is the canonical operator command family
+- `services/repo-truth-extractor/run_extraction_v5.py` is the strongest v5 runtime authority
 - `config/pricing.yaml` is the cost authority
 - emitted JSON is sanitized at the write sink before it hits disk
 - auth-missing logging avoids echoing raw credential-bearing values
@@ -199,7 +201,7 @@ python services/repo-truth-extractor/validate_pre_live_gate_v25.py \
   --allow-online-preflight
 ```
 
-Canonical bounded live command for the validated lane:
+Runner-level bounded live command for the validated lane:
 
 ```bash
 env XAI_API_KEY='<masked>' DPMX_LIVE_OK=1 python services/repo-truth-extractor/run_extraction_v5.py \
@@ -229,6 +231,7 @@ DPMX_LIVE_OK=1 python services/repo-truth-extractor/run_extraction_v5.py \
 ```
 
 This stage runs `R,X,T,Z,S`.
+It is still not a full unattended go-live claim; final go-live requires the P5 rerun, supervisor verdict, and proof-gated acceptance for the current head.
 
 ## 7. Prescan guidance
 
@@ -253,6 +256,8 @@ present in the resolved inventory.
 - Audit `RUN_MANIFEST.json`, `RESUME_PROOF.json`, and `COVERAGE_ROLLUP.json`
   against raw failure artifacts and `SPEND_LEDGER.json` during bounded live
   validation.
+- Treat `PROOF_PACK.json`, run dashboards, coverage rollups, and generated truth
+  docs as evidence artifacts, not source truth above runtime code/config/tests.
 - Auth-missing metadata is intentionally redacted at the sink for the
   credential-bearing env-name fields in that failure path.
 - Coverage rollup reads now warn on malformed phase coverage payloads.

@@ -202,22 +202,28 @@ Method:
   - `/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/run_extraction_v5.py`
   - `/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/run_extraction_v4.py`
   - `/Users/hue/code/dopemux-mvp/src/dopemux/commands/extractor_commands.py`
+  - `/Users/hue/code/dopemux-mvp/src/dopemux/cli.py` `rte` command group
   - `/Users/hue/code/dopemux-mvp/src/dopemux/extractor/runner.py`
   - `/Users/hue/code/dopemux-mvp/src/dopemux/cli.py` `truth` command
 - Evidence for v5/v4 extractor family:
-  - README names the service the canonical extraction system.
-  - `extractor_commands.py` resolves and runs `run_extraction_v5.py`.
+  - `src/dopemux/cli.py` registers `dopemux rte` as the "Canonical operator entrypoint for Repo Truth Extractor."
+  - `src/dopemux/cli.py` attaches `run`, `list`, `doctor`, `status`, `preflight`, `validate-live`, `trace`, and `promptset` commands to `dopemux rte`.
+  - `src/dopemux/cli.py` labels `dopemux upgrades` as a legacy compatibility alias for `dopemux rte`.
+  - `extractor_commands.py` resolves and runs `run_extraction_v5.py` through the shared command implementation.
   - `run_extraction_v4.py` explicitly wraps v5 for v4 contract compatibility.
 - Evidence for legacy runner:
-  - `src/dopemux/cli.py` `truth` command instantiates `PipelineRunner`.
-  - `PipelineRunner` emits legacy trace behavior and dry-run/execution ritual language.
+  - `src/dopemux/cli.py` `truth` command raises a refusal pointing to `dopemux rte`.
+  - Older `PipelineRunner` surfaces remain legacy drift and are not the v5 path.
 - Canonical recommendation:
-  - Repo-truth extraction authority: `run_extraction_v5.py` via `dopemux upgrades` / extractor commands
-  - Legacy alias/drift: `dopemux truth` via `PipelineRunner`
+  - Repo-truth operator command family: `dopemux rte`
+  - Strongest v5 extraction runtime authority: `run_extraction_v5.py`
+  - Legacy compatibility alias: `dopemux upgrades`
+  - Deprecated/refusal paths: `dopemux extractor`, `dopemux truth`, hidden `dopemux extract truth-run`
+  - Advanced/debug/manual direct runner path: `python services/repo-truth-extractor/run_extraction_v5.py ...`
 - Confidence:
   - HIGH
 - Unresolved questions:
-  - Whether `dopemux truth` is intentionally kept as a legacy shortcut or is simply stale CLI drift.
+  - Whether every older operator-facing document has been updated away from stale command framing.
 
 ## Cluster: agent families
 
