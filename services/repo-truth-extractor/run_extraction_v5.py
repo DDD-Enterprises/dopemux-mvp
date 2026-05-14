@@ -10869,13 +10869,13 @@ def _strict_passthrough_truth_state(
             or entry.get("strict_passthrough_verified")
             or entry.get("attempts")
         )
+    if entry.get("selected") is False:
+        return "FAILED", "no_selected_strict_route"
     if not strict_expected:
         return "NOT_APPLICABLE", "strict_schema_not_required"
     provider = str(entry.get("provider") or "").strip().lower()
     if provider == "gemini":
         return "FAILED", "provider_not_strict_capable:gemini"
-    if entry.get("selected") is False:
-        return "FAILED", "no_selected_strict_route"
     if evidence is None:
         return "UNVERIFIED", "runtime_or_wire_evidence_missing"
     source = str(evidence.get("evidence_source") or "").strip()

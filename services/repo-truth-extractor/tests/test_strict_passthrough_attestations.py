@@ -299,6 +299,31 @@ def test_strict_intent_alone_is_not_verified(tmp_path: Path) -> None:
     assert row["route_strict_passthrough_claim"] is True
 
 
+def test_missing_strict_route_is_failed_even_without_attempts(tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    dirs = _dirs(runner, tmp_path)
+    _write_raw(
+        dirs,
+        request_meta={
+            "strict_route_attestations": [
+                {
+                    "stage": "primary",
+                    "selected": False,
+                    "attempts": [],
+                }
+            ]
+        },
+    )
+
+    payload = runner.write_strict_passthrough_attestations(dirs, "run-test", ["A"])
+
+    row = payload["rows"][0]
+    assert row["attestation_status"] == "FAILED"
+    assert row["attestation_reason"] == "no_selected_strict_route"
+    assert row["strict_passthrough_verified"] is False
+    assert payload["summary"]["attestation_status_histogram"]["FAILED"] == 1
+
+
 def test_explicit_openrouter_route_outside_primary_contract_is_not_synthesized_verified(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

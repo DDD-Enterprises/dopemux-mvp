@@ -51,7 +51,7 @@
     {
       "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py",
       "exit_code": 0,
-      "summary": "PASS: 4 passed; proves wire-payload VERIFIED, intent-only UNVERIFIED, synthesized OpenRouter strict passthrough not verified, and Gemini strict not verified."
+      "summary": "PASS: 5 passed; proves wire-payload VERIFIED, intent-only UNVERIFIED, selected:false strict-route misses FAILED, synthesized OpenRouter strict passthrough not verified, and Gemini strict not verified."
     },
     {
       "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py",
@@ -66,7 +66,7 @@
     {
       "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests -k \"batch or strict\"",
       "exit_code": 0,
-      "summary": "PASS: 55 passed; broad strict/batch selector passed."
+      "summary": "PASS: 56 passed; broad strict/batch selector passed."
     },
     {
       "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
@@ -111,7 +111,7 @@
   },
   "strict_intent_alone_not_verified": {
     "value": true,
-    "evidence": "test_strict_intent_alone_is_not_verified asserts a static strict_route_attestation with strict_passthrough_verified=True but no runtime evidence produces attestation_status=UNVERIFIED and strict_passthrough_verified=false."
+    "evidence": "test_strict_intent_alone_is_not_verified asserts a static strict_route_attestation with strict_passthrough_verified=True but no runtime evidence produces attestation_status=UNVERIFIED and strict_passthrough_verified=false. test_missing_strict_route_is_failed_even_without_attempts asserts selected:false strict-route misses are FAILED even when attempts is empty and strict_required is absent."
   },
   "synthesized_openrouter_passthrough_bypass_removed_or_made_honest": {
     "value": true,
@@ -131,12 +131,12 @@
   },
   "f3_high_2_status": {
     "value": "closed",
-    "evidence": "The attestation writer now requires runtime/wire/construction evidence for VERIFIED; strict intent alone is UNVERIFIED; synthesized OpenRouter strict passthrough proof is no longer hardcoded and fails closed without primary contract proof; focused and existing strict/batch tests pass."
+    "evidence": "The attestation writer now requires runtime/wire/construction evidence for VERIFIED; strict intent alone is UNVERIFIED; missing selected strict routes are FAILED; synthesized OpenRouter strict passthrough proof is no longer hardcoded and fails closed without primary contract proof; focused and existing strict/batch tests pass."
   },
   "blockers": [],
   "residual_risks": [
     "No live provider calls, live extraction, external batch submission, or real provider file retrieval was run by design; external provider passthrough is proven only by offline wire-payload construction and BatchRequest evidence.",
     "F4-CRIT-2 docs canonical naming inversion remains open and out of scope."
   ],
-  "final_git_status_before_commit": "## codex/tp-rte-strict-attestation-007...origin/main; modified: services/repo-truth-extractor/run_extraction_v5.py, task-packets/INDEX.md; untracked: services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py, task-packets/generated/TP-RTE-STRICT-ATTESTATION-007.json; ignored proof/TP-RTE-STRICT-ATTESTATION-007/* will be staged with git add -f."
+  "final_git_status_before_commit": "## codex/tp-rte-strict-attestation-007...origin/codex/tp-rte-strict-attestation-007; modified: proof/TP-RTE-STRICT-ATTESTATION-007/IMPLEMENTER_REPORT.md, proof/TP-RTE-STRICT-ATTESTATION-007/PROOF.json, services/repo-truth-extractor/run_extraction_v5.py, services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py."
 }

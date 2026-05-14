@@ -5,6 +5,7 @@
 - Added strict passthrough runtime evidence summaries from BatchRequest, constructed request, and fake wire JSONL payload rows.
 - Updated `STRICT_PASSTHROUGH_ATTESTATIONS` generation to V2 with explicit `VERIFIED`, `UNVERIFIED`, `FAILED`, `UNKNOWN`, and `NOT_APPLICABLE` truth states.
 - Removed the unsafe synthesized OpenRouter strict passthrough bypass for explicit and benchmark selected routes outside primary contract proof.
+- Addressed post-PR review feedback by classifying `selected: false` strict-route misses as `FAILED` before any `NOT_APPLICABLE` fallback, including rows with no `strict_required` field and empty attempts.
 - Applied targeted INDEX hygiene for TP-RTE-BATCH-005, TP-RTE-BATCH-E2E-006, and this packet.
 
 ## 2. Authority used
@@ -40,12 +41,13 @@
 
 - `strict_passthrough_verified` in the attestation artifact is now true only when observed runtime/wire/construction evidence proves `response_format.type == "json_schema"`, `json_schema` exists, `json_schema.strict is true`, and a schema hash exists.
 - Static route claims are retained as `route_strict_passthrough_claim` and `route_strict_capable_claim` rather than promoted to verification.
+- Missing selected strict routes are reported as `FAILED` with `no_selected_strict_route`, not `NOT_APPLICABLE`, even if the attestation row has no attempts.
 - Explicit/benchmark OpenRouter selected route synthesis now uses primary contract proof when present; otherwise strict capability fails closed.
 - Gemini strict routes remain failed/excluded, not verified.
 
 ## 6. Tests added/modified
 
-- Added `services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py`.
+- Added `services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py`, including post-review coverage for selected:false strict-route misses with no attempts.
 
 ## 7. Validation commands and exit codes
 
@@ -53,10 +55,10 @@
 - `python -m json.tool proof/TP-RTE-STRICT-ATTESTATION-007/PROOF.json` -> 0
 - `python -c "import json, pathlib; from jsonschema import Draft7Validator; schema=json.loads(pathlib.Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text()); doc=json.loads(pathlib.Path('task-packets/generated/TP-RTE-STRICT-ATTESTATION-007.json').read_text()); errs=sorted(Draft7Validator(schema).iter_errors(doc), key=lambda e: e.path); [print('/'.join(map(str,e.path)) + ': ' + e.message) for e in errs]; raise SystemExit(0 if not errs else 1)"` -> 0
 - `python -m compileall -q services/repo-truth-extractor src/dopemux` -> 0
-- `RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py` -> 0, 4 passed
+- `RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py` -> 0, 5 passed
 - `RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py` -> 0, 7 passed
 - `RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_batch_clients_integration.py` -> 0, 7 passed
-- `RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests -k "batch or strict"` -> 0, 55 passed
+- `RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests -k "batch or strict"` -> 0, 56 passed
 - `RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py` -> 0, 43 passed
 - `git diff --check` -> 0
 - `rg -n "strict_passthrough_verified=True|strict_passthrough_verified = True" services/repo-truth-extractor/run_extraction_v5.py` -> 1, no matches
@@ -77,7 +79,7 @@
 
 ## 9. F3-HIGH-2 classification
 
-CLOSED. Evidence: V2 strict passthrough attestations require observed runtime/wire/construction evidence for VERIFIED, intent-only strict claims are UNVERIFIED, synthesized OpenRouter passthrough proof is no longer hardcoded, and focused plus existing strict/batch tests pass.
+CLOSED. Evidence: V2 strict passthrough attestations require observed runtime/wire/construction evidence for VERIFIED, intent-only strict claims are UNVERIFIED, missing selected strict routes are FAILED, synthesized OpenRouter passthrough proof is no longer hardcoded, and focused plus existing strict/batch tests pass.
 
 ## 10. Index hygiene summary
 
