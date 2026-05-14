@@ -364,6 +364,7 @@ try:
         repair_mode as resolve_contract_repair_mode,
         resolve_stage_route,
         route_entries_for_stage,
+        route_entry_by_identity,
         route_for_contract,
         strict_capability_reason,
         sidefill_enabled as resolve_contract_sidefill_enabled,
@@ -415,6 +416,7 @@ except ModuleNotFoundError:
     resolve_contract_repair_mode = structured_contracts_module.repair_mode
     resolve_stage_route = structured_contracts_module.resolve_stage_route
     route_entries_for_stage = structured_contracts_module.route_entries_for_stage
+    route_entry_by_identity = structured_contracts_module.route_entry_by_identity
     route_for_contract = structured_contracts_module.route_for_contract
     strict_capability_reason = structured_contracts_module.strict_capability_reason
     resolve_contract_sidefill_enabled = structured_contracts_module.sidefill_enabled
@@ -10520,6 +10522,218 @@ def build_batch_client(
     raise RuntimeError(f"Unsupported batch provider: {provider}")
 
 
+def _contract_route_entry_for_provider_model(
+    step_contract: Optional[Dict[str, Any]],
+    *,
+    provider: str,
+    model_id: str,
+) -> Optional[Dict[str, Any]]:
+    if not isinstance(step_contract, dict):
+        return None
+    for route_entry in route_entries_for_stage(step_contract, "primary"):
+        if not isinstance(route_entry, dict):
+            continue
+        if (
+            str(route_entry.get("provider") or "") == str(provider)
+            and str(route_entry.get("model_id") or "") == str(model_id)
+        ):
+            return dict(route_entry)
+    return None
+
+
+def _resolve_batch_route_override(
+    *,
+    fallback: Tuple[str, str, str],
+    batch_provider: str,
+    step_ladder: Sequence[Sequence[str]],
+    step_contract: Optional[Dict[str, Any]] = None,
+    prefer_contract_api_key_env: bool = False,
+) -> Tuple[str, str, str]:
+    def _resolved_route(
+        provider: str,
+        model_id: str,
+        api_key_env: str,
+        *,
+        allow_contract_api_key_env: bool,
+    ) -> Tuple[str, str, str]:
+        selected_api_key_env = str(api_key_env)
+        if allow_contract_api_key_env:
+            route_entry = _contract_route_entry_for_provider_model(
+                step_contract,
+                provider=provider,
+                model_id=model_id,
+            )
+            if route_entry is not None:
+                selected_api_key_env = str(
+                    route_entry.get("api_key_env") or selected_api_key_env
+                )
+        if not selected_api_key_env:
+            selected_api_key_env = PROVIDER_API_KEY_ENV.get(provider, "")
+        return (str(provider), str(model_id), str(selected_api_key_env))
+
+    fallback_provider = str(fallback[0]) if fallback else ""
+    if batch_provider == fallback_provider:
+        return _resolved_route(
+            str(fallback[0]),
+            str(fallback[1]),
+            str(fallback[2]),
+            allow_contract_api_key_env=bool(prefer_contract_api_key_env),
+        )
+    for candidate in step_ladder:
+        candidate_tuple = tuple(candidate)
+        if not candidate_tuple or str(candidate_tuple[0]) != batch_provider:
+            continue
+        candidate_provider = str(candidate_tuple[0])
+        candidate_model = (
+            str(candidate_tuple[1]) if len(candidate_tuple) > 1 else ""
+        )
+        if len(candidate_tuple) >= 3:
+            candidate_api_key_env = str(candidate_tuple[2])
+        else:
+            candidate_api_key_env = ""
+        return _resolved_route(
+            candidate_provider,
+            candidate_model,
+            candidate_api_key_env,
+            allow_contract_api_key_env=bool(
+                prefer_contract_api_key_env and not candidate_api_key_env
+            ),
+        )
+    return _resolved_route(
+        str(fallback[0]),
+        str(fallback[1]),
+        str(fallback[2]),
+        allow_contract_api_key_env=bool(prefer_contract_api_key_env),
+    )
+
+
+def _batch_route_entry_for_selected_route(
+    step_contract: Optional[Dict[str, Any]],
+    selected_route: Tuple[str, str, str],
+) -> Optional[Dict[str, Any]]:
+    if not isinstance(step_contract, dict):
+        return None
+    selected_provider, selected_model_id, selected_api_key_env = selected_route
+    routes = route_entries_for_stage(step_contract, "primary")
+    route_entry = route_entry_by_identity(
+        routes,
+        provider=str(selected_provider),
+        model_id=str(selected_model_id),
+        api_key_env=str(selected_api_key_env),
+    )
+    if route_entry is not None:
+        return route_entry
+    return _contract_route_entry_for_provider_model(
+        step_contract,
+        provider=str(selected_provider),
+        model_id=str(selected_model_id),
+    )
+
+
+def _validate_strict_batch_response_format(
+    response_format: Optional[Dict[str, Any]],
+    *,
+    phase: str,
+    step_id: str,
+) -> None:
+    if not isinstance(response_format, dict):
+        raise ValueError(
+            f"Strict batch request for {phase}/{step_id} requires response_format.type=json_schema"
+        )
+    json_schema = response_format.get("json_schema")
+    schema = json_schema.get("schema") if isinstance(json_schema, dict) else None
+    if (
+        response_format.get("type") != "json_schema"
+        or not isinstance(json_schema, dict)
+        or not isinstance(schema, dict)
+    ):
+        raise ValueError(
+            f"Strict batch request for {phase}/{step_id} requires response_format.type=json_schema"
+        )
+    if json_schema.get("strict") is not True:
+        raise ValueError(
+            f"Strict batch request for {phase}/{step_id} requires json_schema.strict=true"
+        )
+
+
+def build_v5_batch_request(
+    *,
+    custom_id: str,
+    model_id: str,
+    system_prompt: str,
+    user_content: str,
+    provider: str,
+    selected_route: Tuple[str, str, str],
+    selected_route_entry: Optional[Dict[str, Any]] = None,
+    transport: str,
+    strict_contract_required: bool,
+    step_contract: Optional[Dict[str, Any]],
+    artifact_names: Tuple[str, ...],
+    force_json_output: bool,
+    metadata: Dict[str, Any],
+    schema_name_suffix: str = "batch",
+) -> BatchRequest:
+    batch_metadata = {
+        str(key): str(value)
+        for key, value in dict(metadata or {}).items()
+        if str(key).strip()
+    }
+    response_format: Optional[Dict[str, Any]] = None
+    if strict_contract_required:
+        batch_metadata["strict"] = "true"
+        phase = str(batch_metadata.get("phase") or "")
+        step_id = str(batch_metadata.get("step_id") or "")
+        if not isinstance(step_contract, dict):
+            raise ValueError(
+                f"Strict batch request for {phase}/{step_id} requires a step contract"
+            )
+        if not artifact_names:
+            raise ValueError(
+                f"Strict batch request for {phase}/{step_id} requires at least one artifact schema"
+            )
+        route_entry = _batch_route_entry_for_selected_route(
+            step_contract, selected_route
+        )
+        if route_entry is None and isinstance(selected_route_entry, dict):
+            route_entry = dict(selected_route_entry)
+        if route_entry is None:
+            raise ValueError(
+                f"Strict batch request for {phase}/{step_id} requires a strict-capable route contract"
+            )
+        strict_reason = strict_capability_reason(route_entry, transport)
+        if strict_reason is not None:
+            raise ValueError(
+                f"Strict batch request for {phase}/{step_id} requires a strict-capable route contract: {strict_reason}"
+            )
+        response_format, response_meta = build_provider_step_contract_output(
+            route=route_entry,
+            transport=transport,
+            step_contract=step_contract,
+            artifact_names=artifact_names,
+            schema_name_suffix=schema_name_suffix,
+        )
+        _validate_strict_batch_response_format(
+            response_format,
+            phase=phase,
+            step_id=step_id,
+        )
+        response_artifacts = response_meta.get("artifact_names")
+        if not isinstance(response_artifacts, list) or not response_artifacts:
+            raise ValueError(
+                f"Strict batch request for {phase}/{step_id} requires at least one artifact schema"
+            )
+
+    return BatchRequest(
+        custom_id=custom_id,
+        model_id=model_id,
+        system_prompt=system_prompt,
+        user_content=user_content,
+        force_json_output=bool(force_json_output and not strict_contract_required),
+        metadata=batch_metadata,
+        response_format=response_format,
+    )
+
+
 def validate_success_partition_output(
     success_json_path: Path,
     phase: str,
@@ -12797,19 +13011,86 @@ else sdk_auth_present_flags(p_provider, True)
                 projected_output_tokens = _project_output_tokens(
                     projected_input_tokens
                 )
-                if cfg.batch_mode and not strict_contract_required:
+                if cfg.batch_mode:
                     batch_provider = (
                         cfg.batch_provider
                         if cfg.batch_provider != "auto"
                         else route_provider
                     )
-                    selected_route = (route_provider, route_model_id, route_api_key_env)
-                    if batch_provider != route_provider:
-                        for candidate in step_ladder:
-                            if candidate[0] == batch_provider:
-                                selected_route = candidate
-                                break
+                    selected_route = _resolve_batch_route_override(
+                        fallback=(
+                            route_provider,
+                            route_model_id,
+                            route_api_key_env,
+                        ),
+                        batch_provider=batch_provider,
+                        step_ladder=step_ladder,
+                        step_contract=step_contract,
+                        prefer_contract_api_key_env=bool(
+                            strict_contract_required
+                            and not route_info.get("api_key_env")
+                        ),
+                    )
                     batch_provider, batch_model_id, batch_api_key_env = selected_route
+                    batch_transport = transport_for_provider(batch_provider, cfg)
+                    selected_route_entry = None
+                    if strict_contract_required and routing_reason in {
+                        "explicit_step_route_override",
+                        "explicit_phase_route_override",
+                        "benchmark_route_ownership_primary",
+                    }:
+                        selected_route_entry = {
+                            "provider": batch_provider,
+                            "model_id": batch_model_id,
+                            "api_key_env": batch_api_key_env,
+                            "structured_output_mode": "json_schema",
+                            "strict_json_schema": True,
+                            "strict_passthrough_verified": True,
+                        }
+                    try:
+                        batch_requests = [
+                            build_v5_batch_request(
+                                custom_id=partition_id,
+                                model_id=batch_model_id,
+                                system_prompt=prompt_text,
+                                user_content=effective_user_prompt,
+                                provider=batch_provider,
+                                selected_route=selected_route,
+                                selected_route_entry=selected_route_entry,
+                                transport=batch_transport,
+                                strict_contract_required=strict_contract_required,
+                                step_contract=step_contract,
+                                artifact_names=tuple(output_artifacts),
+                                force_json_output=(batch_provider == "gemini"),
+                                metadata={
+                                    "phase": phase,
+                                    "step_id": step_id,
+                                    "partition_id": partition_id,
+                                },
+                            )
+                        ]
+                    except ValueError as exc:
+                        failed_meta = {
+                            "provider": batch_provider,
+                            "model_id": batch_model_id,
+                            "failure_type": "batch_request_invalid",
+                            "provider_error_reason": str(exc),
+                            "execution_mode": "batch",
+                            "batch_provider": batch_provider,
+                            "batch_job_id": None,
+                            "estimated_input_tokens": projected_input_tokens,
+                            "estimated_output_tokens": projected_output_tokens,
+                            "strict_schema_required": bool(strict_contract_required),
+                        }
+                        return "", enrich_request_meta(
+                            failed_meta,
+                            run_id=run_id,
+                            phase=phase,
+                            step_id=step_id,
+                            partition_id=partition_id,
+                            provider=batch_provider,
+                            model_id=batch_model_id,
+                        )
                     batch_api_key, _ = resolve_api_key(
                         batch_provider, batch_api_key_env
                     )
@@ -12837,20 +13118,6 @@ else sdk_auth_present_flags(p_provider, True)
                     batch_client = build_batch_client(
                         batch_provider, batch_api_key, cfg
                     )
-                    batch_requests = [
-                        BatchRequest(
-                            custom_id=partition_id,
-                            model_id=batch_model_id,
-                            system_prompt=prompt_text,
-                            user_content=effective_user_prompt,
-                            force_json_output=(batch_provider == "gemini"),
-                            metadata={
-                                "phase": phase,
-                                "step_id": step_id,
-                                "partition_id": partition_id,
-                            },
-                        )
-                    ]
                     batch_request_rows.append(
                         {
                             "partition_id": partition_id,
