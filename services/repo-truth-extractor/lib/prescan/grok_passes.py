@@ -1,9 +1,9 @@
 import datetime as dt
-import hashlib
 import json
 import logging
 import os
 import time
+import zlib
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Any, Optional, List, Dict
@@ -15,7 +15,7 @@ from output_safety import (
 )
 
 logger = logging.getLogger(__name__)
-CACHE_KEY_DIGEST_KEY = b"dopemux-rte-prescan-cache-v1"
+CACHE_KEY_VERSION = "dopemux-rte-prescan-cache-v2"
 
 class RTEPrescanError(Exception):
     """Base error for prescan."""
@@ -228,8 +228,9 @@ class GrokPassRunner:
     def _get_cache_path(self, pass_id: str, payload: dict) -> Path:
         """Generate a stable cache path for a pass and its payload."""
         digest_input = {
+            "cache_key_version": CACHE_KEY_VERSION,
             "pass_id": pass_id,
-            "payload": payload,
+            "payload": sanitize_payload_for_provider(payload),
         }
         encoded = json.dumps(
             digest_input,
@@ -237,11 +238,11 @@ class GrokPassRunner:
             separators=(",", ":"),
             default=self._cache_digest_default,
         ).encode("utf-8")
-        digest = hashlib.blake2b(
-            encoded,
-            key=CACHE_KEY_DIGEST_KEY,
-            digest_size=32,
-        ).hexdigest()
+        digest = (
+            f"{len(encoded):08x}"
+            f"{zlib.crc32(encoded) & 0xFFFFFFFF:08x}"
+            f"{zlib.crc32(encoded[::-1]) & 0xFFFFFFFF:08x}"
+        )
         return self._cache_dir / f"{pass_id}_{digest[:16]}.json"
 
     def _load_cached_pass(self, pass_id: str, payload: dict) -> dict | None:
