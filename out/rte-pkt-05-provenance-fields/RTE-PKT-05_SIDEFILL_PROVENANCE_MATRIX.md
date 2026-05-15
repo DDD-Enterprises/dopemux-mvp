@@ -1,0 +1,10 @@
+# RTE-PKT-05 Sidefill Provenance Matrix
+
+| Path | Trigger | Provenance kind | Field-level coverage | Original context | Test coverage | Remaining risk |
+| --- | --- | --- | --- | --- | --- | --- |
+| Missing artifact sidefill | `missing_expected_artifacts:*` with `sidefill_enabled` | `sidefill` plus parse repair records if sidefill response parse was repaired | All fields returned by sidefill artifacts are marked sidefill-derived | `request_meta.schema_gate_context`, `request_meta.sidefill_filled_artifacts`, provider/model, raw partition ref | `test_sidefilled_fields_are_distinguishable_from_primary`; existing `test_phase_d_sidefill.py` | Live provider behavior not exercised. |
+| Sidefill grounded filter drops invalid rows | `_grounded_sidefill_filter` | `sidefill` only for kept fields | Dropped rows are counted in `sidefill_dropped_rows`; kept fields are marked sidefill-derived | `request_meta.sidefill_dropped_rows` and sidefill provenance records | Existing sidefill regression plus focused sidefill provenance test | Dropped-row field-level records are not emitted because no replacement value survives into artifacts. |
+| Sidefill scalar conflict | `_merge_with_conflict_tracking` | `sidefill` for sidefill replacement fields | Replacement fields are marked sidefill-derived; conflicts remain separately visible in `sidefill_conflicts` | `request_meta.sidefill_conflicts` | Existing scalar conflict test in `test_run_extraction_v5_prelive_hardening.py` | This packet does not add a new conflict fixture with full provenance assertions. |
+| Primary fields adjacent to sidefill | Final artifact-level records | `primary_observed` for untouched artifacts | Untouched artifacts retain artifact-level primary counts and no derived field records | Raw partition ref | `test_sidefilled_fields_are_distinguishable_from_primary` | Full semantic UNKNOWN/CONFLICTING label preservation remains for RTE-PKT-06. |
+
+No sidefill route selection, prompt content, model id, or provider client behavior was changed.

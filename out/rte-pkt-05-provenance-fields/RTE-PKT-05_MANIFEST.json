@@ -1,0 +1,123 @@
+{
+  "packet_id": "RTE-PKT-05-PROVENANCE-FIELDS",
+  "generated_at_utc": "2026-05-15T08:24:06Z",
+  "worktree": "/Users/hue/.codex/worktrees/b635/dopemux-mvp",
+  "branch": "codex/rte-pkt-05-provenance-fields",
+  "base_commit_sha": "59b1ef0db2efe815d5f29d4955a666510206ae8d",
+  "commit_sha": null,
+  "commit_state": "NOT_COMMITTED_AT_MANIFEST_GENERATION",
+  "repo_identity": {
+    "markers_verified": [
+      "pyproject.toml",
+      "src/dopemux/cli.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/lib/structured_output_contracts.py",
+      "services/repo-truth-extractor/tests/"
+    ],
+    "remotes": [
+      "origin https://github.com/DDD-Enterprises/dopemux-mvp.git",
+      "mvp https://github.com/DDD-Enterprises/dopemux-mvp.git"
+    ]
+  },
+  "changed_files_expected": [
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/lib/artifact_provenance.py",
+    "services/repo-truth-extractor/tests/test_artifact_provenance_fields.py",
+    "out/rte-pkt-05-provenance-fields/RTE-PKT-05_MANIFEST.json",
+    "out/rte-pkt-05-provenance-fields/RTE-PKT-05_PROVENANCE_SCHEMA.md",
+    "out/rte-pkt-05-provenance-fields/RTE-PKT-05_REPAIR_PROVENANCE_MATRIX.md",
+    "out/rte-pkt-05-provenance-fields/RTE-PKT-05_SIDEFILL_PROVENANCE_MATRIX.md",
+    "out/rte-pkt-05-provenance-fields/RTE-PKT-05_PROVENANCE_EXAMPLES.md",
+    "out/rte-pkt-05-provenance-fields/RTE-PKT-05_TEST_REPORT.md",
+    "out/rte-pkt-05-provenance-fields/RTE-PKT-05_NO_PROVIDER_CALLS_ATTESTATION.md",
+    "out/rte-pkt-05-provenance-fields/RTE-PKT-05_DIFF_SUMMARY.md",
+    "out/rte-pkt-05-provenance-fields/RTE-PKT-05_REMAINING_UNKNOWNS.md",
+    "out/rte-pkt-05-provenance-fields/implementation-notes.md"
+  ],
+  "runtime_changes": [
+    "Added field-level derived provenance metadata for deterministic parse repair, deterministic schema repair, provider repair, sidefill, and comparison lanes.",
+    "Added artifact-level provenance summaries that count derived fields and primary-observed fields without embedding raw values.",
+    "Added a QA companion rollup named <STEP>_ARTIFACT_PROVENANCE.json during normalization when raw partition provenance is present."
+  ],
+  "provider_boundary": {
+    "provider_credentials_required": false,
+    "live_provider_calls_performed": false,
+    "batch_submit_poll_retrieve_cancel_performed": false,
+    "external_research_performed": false
+  },
+  "validation": [
+    {
+      "command": "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/lib/artifact_provenance.py",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_artifact_provenance_fields.py -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "5 passed; pytest warning for unknown asyncio_mode"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_phase_d_sidefill.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator_repair_provenance.py -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "11 passed; pytest warning for unknown asyncio_mode"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_comparison_summary.py services/repo-truth-extractor/tests/test_comparison_lane.py -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "13 passed; pytest warning for unknown asyncio_mode"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests -k 'provenance and repair' -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "12 passed; pytest warning for unknown asyncio_mode"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests -k 'sidefill and provenance' -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "1 passed; pytest warning for unknown asyncio_mode"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_failed_sidecar_redaction.py -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "5 passed; pytest warning for unknown asyncio_mode"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests -k 'repair or sidefill' -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "24 passed; pytest warning for unknown asyncio_mode"
+    },
+    {
+      "command": "python -m json.tool out/rte-pkt-05-provenance-fields/RTE-PKT-05_MANIFEST.json >/dev/null",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "pre-commit run --files services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/lib/artifact_provenance.py services/repo-truth-extractor/tests/test_artifact_provenance_fields.py out/rte-pkt-05-provenance-fields/RTE-PKT-05_MANIFEST.json out/rte-pkt-05-provenance-fields/RTE-PKT-05_PROVENANCE_SCHEMA.md out/rte-pkt-05-provenance-fields/RTE-PKT-05_REPAIR_PROVENANCE_MATRIX.md out/rte-pkt-05-provenance-fields/RTE-PKT-05_SIDEFILL_PROVENANCE_MATRIX.md out/rte-pkt-05-provenance-fields/RTE-PKT-05_PROVENANCE_EXAMPLES.md out/rte-pkt-05-provenance-fields/RTE-PKT-05_TEST_REPORT.md out/rte-pkt-05-provenance-fields/RTE-PKT-05_NO_PROVIDER_CALLS_ATTESTATION.md out/rte-pkt-05-provenance-fields/RTE-PKT-05_DIFF_SUMMARY.md out/rte-pkt-05-provenance-fields/RTE-PKT-05_REMAINING_UNKNOWNS.md out/rte-pkt-05-provenance-fields/implementation-notes.md",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "(git diff --name-only; git ls-files --others --exclude-standard) | rg '(^services/repo-truth-extractor/promptsets/|^services/repo-truth-extractor/prompts/|model_map\\.yaml$|^config/|^docs/|(^|/)compose\\.ya?ml$|docker-compose\\.ya?ml$)'",
+      "exit_code": 1,
+      "result": "PASS",
+      "summary": "Expected no-match result; no forbidden roots are in the change set."
+    }
+  ],
+  "remaining_unknowns": [
+    "No runtime path was observed that directly merges prescan-derived values into normalized artifacts; prescan remains prompt/context influence in the inspected path.",
+    "Full UNKNOWN/CONFLICTING semantic preservation remains out of scope for RTE-PKT-06.",
+    "Provider-repair tests monkeypatch local provider dispatch and do not validate live provider output behavior."
+  ]
+}
