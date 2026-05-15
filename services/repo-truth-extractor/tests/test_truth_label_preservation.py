@@ -351,6 +351,9 @@ def test_provider_repair_cannot_upgrade_unknown_without_source_backed_evidence(
     assert calls["count"] == 2
     assert payload["request_meta"]["repair_invocations"] >= 1
     assert item["truth_label"] == "UNKNOWN"
+    assert item["label_source"] == "primary_extraction"
+    assert item["label_reason"] == "not established by source excerpt"
+    assert item["unknown_reason_if_any"] == "source excerpt does not establish value"
     blocked = [
         record
         for record in truth_payload["records"]
@@ -360,6 +363,8 @@ def test_provider_repair_cannot_upgrade_unknown_without_source_backed_evidence(
     assert blocked[0]["truth_label"] == "UNKNOWN"
     assert blocked[0]["attempted_truth_label_if_any"] == "OBSERVED"
     assert blocked[0]["provenance_kind"] == "provider_repair"
+    assert blocked[0]["label_source"] == "primary_extraction"
+    assert blocked[0]["label_reason"] == "not established by source excerpt"
 
 
 def test_sidefill_and_prescan_candidates_cannot_hide_conflicting_or_unknown() -> None:

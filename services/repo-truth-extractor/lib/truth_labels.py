@@ -281,11 +281,18 @@ def _has_source_backed_resolution(
     return True
 
 
-def _copy_missing_context(source: Dict[str, Any], target: Dict[str, Any]) -> None:
+def _copy_missing_context(
+    source: Dict[str, Any],
+    target: Dict[str, Any],
+    *,
+    overwrite: bool = False,
+) -> None:
     for key in _PRESERVED_CONTEXT_KEYS:
         if key not in source:
+            if overwrite:
+                target.pop(key, None)
             continue
-        if key not in target or target.get(key) in (None, "", []):
+        if overwrite or key not in target or target.get(key) in (None, "", []):
             target[key] = copy.deepcopy(source[key])
 
 
@@ -367,7 +374,7 @@ def _preserve_value(
                 )
             else:
                 candidate["truth_label"] = old_label
-                _copy_missing_context(original, candidate)
+                _copy_missing_context(original, candidate, overwrite=True)
                 transition_action = (
                     "blocked_protected_label_drop"
                     if attempted_label is None

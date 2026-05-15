@@ -18,6 +18,8 @@
 - Defines protected label constants.
 - Builds and validates truth-label preservation payloads.
 - Preserves protected labels across candidate artifact updates.
+- Restores original protected-label provenance context when a derived candidate
+  attempts a blocked upgrade or drop.
 - Records blocked upgrades and whole-artifact substitution context.
 - Sanitizes secret-shaped values before records are emitted.
 
@@ -36,6 +38,7 @@
 - Covers `UNKNOWN` through parse repair.
 - Covers `CONFLICTING` through schema repair.
 - Covers provider repair candidate upgrade rejection.
+- Covers provider repair blocked-upgrade context preservation.
 - Covers sidefill and prescan-derived candidate upgrade rejection.
 - Covers comparison non-authoritative truth labels.
 - Covers primary `OBSERVED` non-degradation and normalization rollup.
