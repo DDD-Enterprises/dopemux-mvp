@@ -240,6 +240,11 @@ from llm_runtime import (
     run_comparison_lane as llm_runtime_run_comparison_lane,
     should_retry as llm_runtime_should_retry,
 )
+from lib.risk_dashboard import (
+    build_rte_risk_dashboard,
+    collect_rte_risk_dashboard_inputs,
+    write_rte_risk_dashboard_artifacts,
+)
 
 # Backward-compatible reporting seam aliases used by targeted tests.
 reporting_write_run_manifest = rte_write_run_manifest
@@ -17166,6 +17171,19 @@ def emit_run_dashboard_snapshot(
 ) -> Dict[str, Any]:
     payload = phase_status_snapshot(run_id, dirs, PHASES)
     write_run_dashboard_snapshot(dirs["root"], payload, source=source)
+    risk_inputs = collect_rte_risk_dashboard_inputs(
+        run_id=run_id,
+        run_root=dirs["root"],
+        repo_root=REPO_ROOT,
+        git_sha=get_git_sha(REPO_ROOT),
+        run_dashboard=payload,
+    )
+    risk_dashboard = build_rte_risk_dashboard(risk_inputs)
+    write_rte_risk_dashboard_artifacts(
+        run_root=dirs["root"],
+        dashboard=risk_dashboard,
+        write_json=write_json,
+    )
     if ui is not None:
         ui.run_dashboard_snapshot(payload, source=source)
     return payload
