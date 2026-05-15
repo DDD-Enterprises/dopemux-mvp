@@ -1378,6 +1378,7 @@ class RunnerConfig:
     prescan_skip: bool = False
     prescan_online: bool = False
     prescan_import_dir: Optional[str] = None
+    prescan_import_validation: Optional[Dict[str, Any]] = None
     prescan_allow_scope_reduction: bool = False
     allow_online_llm: bool = False
     max_cost_usd: Optional[float] = None
@@ -6536,23 +6537,61 @@ def run_integrated_prescan_stage(
 
     Returns IntelligenceRouter instance if successful.
     """
-    if cfg.prescan_skip:
-        logger.info("⏭️  Stage 0: Prescan skipped via --skip-prescan.")
-        return None
-
     prescan_output_dir = run_root / "prescan"
     prescan_output_dir.mkdir(parents=True, exist_ok=True)
+
+    if cfg.prescan_skip:
+        logger.info("⏭️  Stage 0: Prescan skipped via --skip-prescan.")
+        _write_prescan_receipt(prescan_output_dir, "skip_prescan", cfg, root=root)
+        return None
 
     # 1. Use imported prescan if provided
     if cfg.prescan_import_dir:
         logger.info(f"📥 Stage 0: Importing prescan from {cfg.prescan_import_dir}")
         if IntelligenceRouter:
-            router = IntelligenceRouter.from_dir(Path(cfg.prescan_import_dir))
+            validation_fields = cfg.prescan_import_validation
+            router = cfg.router if validation_fields and validation_fields.get("can_influence_execution") else None
+            if router is None and (
+                not validation_fields
+                or bool(validation_fields.get("can_influence_execution"))
+            ):
+                router, validation_fields = _load_imported_prescan_router(
+                    Path(cfg.prescan_import_dir),
+                    root,
+                )
             if router:
-                _write_prescan_receipt(prescan_output_dir, "imported", cfg)
+                _write_prescan_receipt(
+                    prescan_output_dir,
+                    "imported_prescan_accepted",
+                    cfg,
+                    root=root,
+                    import_validation=validation_fields,
+                )
                 return router
+            _write_prescan_receipt(
+                prescan_output_dir,
+                str((validation_fields or {}).get("mode") or "imported_prescan_rejected_stale"),
+                cfg,
+                root=root,
+                import_validation=validation_fields,
+            )
+            logger.warning("Rejected imported prescan from %s", cfg.prescan_import_dir)
+            return None
         logger.warning(f"Failed to import prescan from {cfg.prescan_import_dir}")
-        _write_prescan_receipt(prescan_output_dir, "failed", cfg)
+        _write_prescan_receipt(
+            prescan_output_dir,
+            "imported_prescan_rejected_stale",
+            cfg,
+            root=root,
+            import_validation={
+                "advisory_only": True,
+                "can_influence_execution": False,
+                "mode": "imported_prescan_rejected_stale",
+                "prescan_import_dir": cfg.prescan_import_dir,
+                "reason_codes": ["intelligence_router_unavailable"],
+                "verdict": "rejected_stale",
+            },
+        )
         return None
 
     # 2. Run local prescan
@@ -6562,7 +6601,7 @@ def run_integrated_prescan_stage(
         from lib.prescan.models import PrescanConfig as LibPrescanConfig
     except ImportError as e:
         logger.warning(f"Prescan library not available: {e}")
-        _write_prescan_receipt(prescan_output_dir, "unavailable", cfg)
+        _write_prescan_receipt(prescan_output_dir, "local_prescan_unavailable", cfg, root=root)
         return None
 
     logger.info("🔭 Stage 0: Integrated Prescan starting...")
@@ -6585,32 +6624,115 @@ def run_integrated_prescan_stage(
     if result.success and result.intelligence_path:
         if IntelligenceRouter:
             router = IntelligenceRouter.from_dir(prescan_output_dir)
-            _write_prescan_receipt(prescan_output_dir, "integrated", cfg, result=result)
+            _write_prescan_receipt(
+                prescan_output_dir,
+                "local_prescan",
+                cfg,
+                result=result,
+                root=root,
+            )
             return router
 
     logger.warning("Stage 0: Integrated Prescan failed or produced no intelligence.")
-    _write_prescan_receipt(prescan_output_dir, "failed", cfg)
+    _write_prescan_receipt(prescan_output_dir, "local_prescan_failed", cfg, root=root)
     return None
 
 
+def _load_imported_prescan_router(
+    import_dir: Path,
+    root: Path,
+) -> Tuple[Optional[Any], Optional[Dict[str, Any]]]:
+    if IntelligenceRouter is None:
+        return None, {
+            "advisory_only": True,
+            "can_influence_execution": False,
+            "mode": "imported_prescan_rejected_stale",
+            "prescan_import_dir": str(import_dir),
+            "reason_codes": ["intelligence_router_unavailable"],
+            "verdict": "rejected_stale",
+        }
+    try:
+        router, validation = IntelligenceRouter.load_imported(
+            import_dir,
+            current_repo_root=root,
+            current_source_root=root,
+            current_git_sha=get_git_sha(root),
+        )
+    except Exception as exc:
+        logger.warning("Imported prescan validation failed unexpectedly: %s", exc)
+        return None, {
+            "advisory_only": True,
+            "can_influence_execution": False,
+            "mode": "imported_prescan_rejected_stale",
+            "prescan_import_dir": str(import_dir),
+            "reason_codes": ["import_validation_error"],
+            "verdict": "rejected_stale",
+        }
+    return router, validation.to_receipt_fields()
+
+
 def _write_prescan_receipt(
-    output_dir: Path, mode: str, cfg: RunnerConfig, result: Any = None
+    output_dir: Path,
+    mode: str,
+    cfg: RunnerConfig,
+    result: Any = None,
+    *,
+    root: Optional[Path] = None,
+    import_validation: Optional[Dict[str, Any]] = None,
 ) -> None:
-    status = "success"
-    if mode == "failed":
-        status = "failed"
-    elif mode == "unavailable":
-        status = "unavailable"
+    source_identity = (
+        getattr(result, "metadata", {}).get("source_identity", {})
+        if result is not None and isinstance(getattr(result, "metadata", None), dict)
+        else {}
+    )
+    validation_fields = dict(import_validation or {})
+    if validation_fields:
+        mode = str(validation_fields.get("mode") or mode)
+    status = _prescan_receipt_status(mode)
+    can_influence = (
+        bool(validation_fields.get("can_influence_execution"))
+        if validation_fields
+        else mode in {"imported_prescan_accepted", "local_prescan"}
+    )
+    online_authorized = bool(cfg.prescan_online or cfg.allow_online_llm)
+    online_mode = (
+        "online_prescan_authorized"
+        if online_authorized
+        else "online_prescan_not_authorized"
+    )
     receipt = {
+        "advisory_only": not can_influence,
+        "can_influence_execution": can_influence,
+        "corpus_manifest_hash_current_if_available": source_identity.get("corpus_manifest_hash"),
+        "corpus_manifest_hash_imported_if_present": None,
+        "generated_at": now_iso(),
+        "git_sha_current_if_available": get_git_sha(root) if root is not None else source_identity.get("git_sha"),
+        "git_sha_imported_if_present": None,
+        "mode": mode,
+        "online_mode": online_mode,
+        "prescan_artifact_version": source_identity.get("prescan_artifact_version"),
+        "prescan_import_dir": cfg.prescan_import_dir,
+        "reason_codes": _prescan_receipt_reason_codes(mode),
+        "repo_root_current": str(root.resolve()) if root is not None else source_identity.get("repo_root"),
+        "repo_root_imported_if_present": None,
+        "source_root_current": str(root.resolve()) if root is not None else source_identity.get("source_root"),
+        "source_root_imported_if_present": None,
         "stage": "prescan",
         "status": status,
-        "mode": mode,
-        "online_authorized": bool(cfg.prescan_online or cfg.allow_online_llm),
+        "online_authorized": online_authorized,
         "artifacts_dir": str(output_dir.resolve()),
-        "scope_reduction_applied": bool(cfg.prescan_allow_scope_reduction),
-        "router_loaded": mode in {"integrated", "imported"},
-        "generated_at": now_iso(),
+        "scope_reduction_applied": bool(cfg.prescan_allow_scope_reduction and can_influence),
+        "router_loaded": can_influence,
+        "verdict": _prescan_receipt_verdict(mode),
     }
+    if validation_fields:
+        for key in _PRESCAN_RECEIPT_VALIDATION_FIELD_KEYS:
+            if key in validation_fields:
+                receipt[key] = validation_fields[key]
+        receipt["scope_reduction_applied"] = bool(
+            cfg.prescan_allow_scope_reduction and receipt.get("can_influence_execution")
+        )
+        receipt["router_loaded"] = bool(receipt.get("can_influence_execution"))
     if result:
         receipt["duration_seconds"] = getattr(result, "duration_seconds", 0)
         receipt["file_count"] = getattr(result, "file_count", 0)
@@ -6630,6 +6752,78 @@ def _write_prescan_receipt(
             )
 
     write_json(output_dir / "prescan_stage_receipt.json", receipt)
+
+
+_PRESCAN_RECEIPT_VALIDATION_FIELD_KEYS = frozenset(
+    {
+        "advisory_only",
+        "can_influence_execution",
+        "corpus_manifest_hash_current_if_available",
+        "corpus_manifest_hash_imported_if_present",
+        "generated_at_imported_if_present",
+        "git_sha_current_if_available",
+        "git_sha_imported_if_present",
+        "mode",
+        "prescan_artifact_version",
+        "prescan_import_dir",
+        "reason_codes",
+        "repo_root_current",
+        "repo_root_imported_if_present",
+        "source_root_current",
+        "source_root_imported_if_present",
+        "verdict",
+    }
+)
+
+
+def _prescan_receipt_status(mode: str) -> str:
+    if mode in {
+        "imported_prescan_rejected_stale",
+        "imported_prescan_missing_metadata",
+        "local_prescan_failed",
+    }:
+        return "failed"
+    if mode == "local_prescan_unavailable":
+        return "unavailable"
+    if mode == "skip_prescan":
+        return "skipped"
+    return "success"
+
+
+def _prescan_receipt_reason_codes(mode: str) -> List[str]:
+    if mode == "skip_prescan":
+        return ["prescan_skipped_by_operator"]
+    if mode == "local_prescan":
+        return ["local_prescan_completed"]
+    if mode == "local_prescan_unavailable":
+        return ["prescan_library_unavailable"]
+    if mode == "local_prescan_failed":
+        return ["local_prescan_failed"]
+    if mode == "imported_prescan_accepted":
+        return ["identity_match"]
+    if mode == "imported_prescan_missing_metadata":
+        return ["missing_required_import_identity"]
+    if mode == "imported_prescan_rejected_stale":
+        return ["stale_import_rejected"]
+    return [f"{mode}_recorded"]
+
+
+def _prescan_receipt_verdict(mode: str) -> str:
+    if mode == "skip_prescan":
+        return "skipped"
+    if mode == "local_prescan":
+        return "local_prescan"
+    if mode == "local_prescan_unavailable":
+        return "unavailable"
+    if mode == "local_prescan_failed":
+        return "failed"
+    if mode == "imported_prescan_accepted":
+        return "accepted"
+    if mode == "imported_prescan_missing_metadata":
+        return "missing_metadata"
+    if mode == "imported_prescan_rejected_stale":
+        return "rejected_stale"
+    return mode
 
 
 def phase_requires_provider_preflight(phase: str, cfg: RunnerConfig) -> bool:
@@ -19199,18 +19393,30 @@ def main() -> None:
     if args.max_cost_usd is not None and args.max_cost_usd <= 0:
         parser.error("--max-cost-usd must be > 0 when provided.")
 
+    root = Path.cwd()
+
     # Initialize optional imported prescan router before RunnerConfig assembly.
     router = None
+    prescan_import_validation = None
     if args.prescan_import_dir:
         if IntelligenceRouter:
-            router = IntelligenceRouter.from_dir(Path(args.prescan_import_dir))
+            router, prescan_import_validation = _load_imported_prescan_router(
+                Path(args.prescan_import_dir),
+                root,
+            )
             if router:
-                logger.info(f"Initialized IntelligenceRouter from {args.prescan_import_dir}")
+                logger.info("Validated imported IntelligenceRouter from %s", args.prescan_import_dir)
             else:
-                logger.warning(
-                    f"Failed to initialize IntelligenceRouter from {args.prescan_import_dir}"
-                )
+                logger.warning("Imported prescan is non-authoritative: %s", prescan_import_validation)
         else:
+            prescan_import_validation = {
+                "advisory_only": True,
+                "can_influence_execution": False,
+                "mode": "imported_prescan_rejected_stale",
+                "prescan_import_dir": args.prescan_import_dir,
+                "reason_codes": ["intelligence_router_unavailable"],
+                "verdict": "rejected_stale",
+            }
             logger.warning(
                 "IntelligenceRouter class not available, skipping imported prescan logic."
             )
@@ -19294,7 +19500,6 @@ def main() -> None:
     if args.print_cost_preview and not (args.phase or args.preset):
         parser.error("--print-cost-preview requires --phase or --preset.")
 
-    root = Path.cwd()
     configure_output_layout(root, args.output_root)
     readonly_introspection = bool(
         args.status
@@ -19431,6 +19636,7 @@ def main() -> None:
             prescan_skip=bool(args.skip_prescan),
             prescan_online=bool(args.prescan_online),
             prescan_import_dir=args.prescan_import_dir,
+            prescan_import_validation=prescan_import_validation,
             prescan_allow_scope_reduction=bool(args.prescan_allow_scope_reduction),
             d0_max_files=args.d0_max_files,
             d1_max_files=args.d1_max_files,
@@ -19735,6 +19941,7 @@ def main() -> None:
         prescan_skip=bool(args.skip_prescan),
         prescan_online=bool(args.prescan_online),
         prescan_import_dir=args.prescan_import_dir,
+        prescan_import_validation=prescan_import_validation,
         prescan_allow_scope_reduction=bool(
             getattr(args, "prescan_allow_scope_reduction", False)
         ),

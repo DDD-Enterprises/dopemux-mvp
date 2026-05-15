@@ -315,7 +315,9 @@ def test_integrated_prescan_stage_uses_default_excludes(
 
     receipt = json.loads((prescan_dir / "prescan_stage_receipt.json").read_text())
     assert receipt["status"] == "success"
-    assert receipt["mode"] == "integrated"
+    assert receipt["mode"] == "local_prescan"
+    assert receipt["can_influence_execution"] is True
+    assert receipt["online_mode"] == "online_prescan_not_authorized"
 
 
 if __name__ == "__main__":
