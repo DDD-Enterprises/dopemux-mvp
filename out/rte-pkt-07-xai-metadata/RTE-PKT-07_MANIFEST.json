@@ -1,0 +1,99 @@
+{
+  "id": "RTE-PKT-07-XAI-METADATA",
+  "generated_at_utc": "2026-05-15T10:34:49Z",
+  "closeout_generated_at_utc": "2026-05-15T12:56:16Z",
+  "worktree_path": "/Users/hue/.codex/worktrees/39a6/dopemux-mvp",
+  "branch": "codex/rte-pkt-07-xai-metadata",
+  "head_sha": "0179b17b03cf46518aa324bd8f50c805b627631d",
+  "final_commit_sha": "PENDING_REPORTED_AFTER_COMMIT",
+  "task_packet_source": "conversation-provided JSON; no additional task packet file created per packet non-goal",
+  "scope_status": "inside_allowed_code_paths_and_allowed_output_root",
+  "changed_files": [
+    {
+      "path": "services/repo-truth-extractor/llm_runtime.py",
+      "purpose": "Propagate requested route fields, returned/effective response metadata, structured-output metadata, retry/failure flags, and comparison-lane response metadata into request_meta surfaces."
+    },
+    {
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "purpose": "Harden local response summary extraction for OpenAI-compatible, xAI-style, OpenRouter x-ai proxy, refusal, incomplete, and Gemini-style response objects; flatten summary fields during request_meta enrichment."
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_rte_pkt_07_xai_metadata.py",
+      "purpose": "Add local fake-response tests for provider metadata extraction and no-provider-client invocation."
+    },
+    {
+      "path": "out/rte-pkt-07-xai-metadata/",
+      "purpose": "Packet proof artifacts only."
+    }
+  ],
+  "proof_outputs": [
+    "out/rte-pkt-07-xai-metadata/RTE-PKT-07_MANIFEST.json",
+    "out/rte-pkt-07-xai-metadata/RTE-PKT-07_PROVIDER_METADATA_MATRIX.md",
+    "out/rte-pkt-07-xai-metadata/RTE-PKT-07_FAKE_RESPONSE_FIXTURES.md",
+    "out/rte-pkt-07-xai-metadata/RTE-PKT-07_REQUEST_META_EXAMPLES.md",
+    "out/rte-pkt-07-xai-metadata/RTE-PKT-07_TEST_REPORT.md",
+    "out/rte-pkt-07-xai-metadata/RTE-PKT-07_NO_PROVIDER_CALLS_ATTESTATION.md",
+    "out/rte-pkt-07-xai-metadata/RTE-PKT-07_DIFF_SUMMARY.md",
+    "out/rte-pkt-07-xai-metadata/RTE-PKT-07_REMAINING_UNKNOWNS.md",
+    "out/rte-pkt-07-xai-metadata/RTE-PKT-07_REGRESSION_TRIAGE_CLOSEOUT.md",
+    "out/rte-pkt-07-xai-metadata/RTE-PKT-07_FINAL_CLOSEOUT.md"
+  ],
+  "validation_status": {
+    "py_compile": "PASS",
+    "targeted_metadata_tests": "PASS",
+    "packet_selector_xai_and_metadata": "PASS",
+    "packet_selector_provider_and_metadata": "PASS",
+    "llm_runtime_or_response_summary_selector": "PASS",
+    "adjacent_runtime_redaction_structured_comparison_suite": "PASS",
+    "provenance_and_truth_label_tests": "PASS",
+    "adjacent_live_readiness_route_test": "BASELINE_FAILURE",
+    "manifest_json_valid": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "regression_triage": {
+    "id": "REG-XM-001",
+    "classification": "BASELINE_FAILURE",
+    "implementation_worktree": "/Users/hue/.codex/worktrees/39a6/dopemux-mvp",
+    "implementation_head_sha": "0179b17b03cf46518aa324bd8f50c805b627631d",
+    "implementation_result": {
+      "exit_code": 1,
+      "failed_test": "services/repo-truth-extractor/tests/test_run_extraction_v5_live_readiness.py::test_route_readiness_summary_honors_benchmark_owned_lane",
+      "observed_providers": [
+        "gemini",
+        "openai",
+        "xai"
+      ],
+      "expected_providers": [
+        "openai"
+      ]
+    },
+    "clean_base_worktree": "/Users/hue/.codex/worktrees/rte-pkt-07-base-0179b17",
+    "clean_base_head_sha": "0179b17b03cf46518aa324bd8f50c805b627631d",
+    "clean_base_result": {
+      "exit_code": 1,
+      "failed_test": "services/repo-truth-extractor/tests/test_run_extraction_v5_live_readiness.py::test_route_readiness_summary_honors_benchmark_owned_lane",
+      "observed_providers": [
+        "gemini",
+        "openai",
+        "xai"
+      ],
+      "expected_providers": [
+        "openai"
+      ]
+    },
+    "acceptance_impact": "Expanded adjacent live-readiness failure is baseline and does not block the RTE-PKT-07 metadata commit."
+  },
+  "no_provider_calls": {
+    "status": "PASS",
+    "basis": "Tests used local fake response objects and one monkeypatch test that raises if provider client constructors are invoked. No live extraction, provider preflight, provider doctor, batch submit, batch poll, batch retrieve, or batch cancel command was run."
+  },
+  "live_validation": {
+    "status": "NOT_RUN",
+    "reason": "Packet forbids live provider validation."
+  },
+  "remaining_unknowns": [
+    "Actual live xAI response object shape remains LIVE_VALIDATION_REQUIRED.",
+    "Actual OpenRouter x-ai upstream response metadata fields remain LIVE_VALIDATION_REQUIRED.",
+    "Actual Gemini SDK and OpenAI-compatible response refusal/incomplete edge cases remain fixture-proven only."
+  ]
+}

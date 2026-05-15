@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import json
 import logging
 import time
@@ -144,6 +145,109 @@ def _normalize_route_tuple(
     )
 
 
+def _provider_route_kind(provider: str, model_id: str) -> str:
+    provider_token = str(provider or "").strip().lower()
+    model_token = str(model_id or "").strip().lower()
+    if provider_token == "openrouter" and model_token.startswith("x-ai/"):
+        return "openrouter_proxy_xai"
+    return "direct_provider"
+
+
+def _request_route_metadata(
+    provider: str,
+    model_id: str,
+    api_key_env: str,
+) -> Dict[str, Any]:
+    return {
+        "requested_provider": provider,
+        "requested_model_id": model_id,
+        "api_key_env": api_key_env,
+        "provider_route_kind": _provider_route_kind(provider, model_id),
+    }
+
+
+def _structured_output_request_metadata(
+    structured_output: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    if not isinstance(structured_output, dict):
+        return {}
+    mode = (
+        structured_output.get("structured_output_mode_effective")
+        or structured_output.get("structured_output_mode_requested")
+        or structured_output.get("transport_mode")
+    )
+    result: Dict[str, Any] = {}
+    if mode is not None:
+        result["structured_output_mode"] = mode
+    response_format_type = structured_output.get("response_format_type")
+    if response_format_type is not None:
+        result["response_format_type"] = response_format_type
+    schema_name = structured_output.get("schema_name") or structured_output.get("schema")
+    if schema_name is not None:
+        result["json_schema_name_if_present"] = schema_name
+    result["strict_schema_required"] = bool(structured_output.get("strict", False))
+    schema_variant = structured_output.get("schema_variant")
+    if schema_variant is not None:
+        result["provider_schema_variant"] = schema_variant
+    return result
+
+
+def _response_summary_metadata(
+    response_summary: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    if not isinstance(response_summary, dict):
+        return {}
+    summary = copy.deepcopy(response_summary)
+    result: Dict[str, Any] = {"response_summary": summary}
+    passthrough_keys = (
+        "response_id",
+        "returned_model_id",
+        "effective_model_id",
+        "finish_reason",
+        "finish_reasons",
+        "response_status",
+        "refusal",
+        "refusal_reason",
+        "incomplete",
+        "incomplete_reason",
+        "stop_reason",
+        "safety_reason",
+        "usage",
+        "input_tokens",
+        "output_tokens",
+        "total_tokens",
+        "prompt_tokens",
+        "completion_tokens",
+        "response_text_length",
+        "choice_count",
+        "candidate_count",
+        "created",
+        "system_fingerprint_if_present",
+    )
+    for key in passthrough_keys:
+        if key in summary and summary.get(key) is not None:
+            result[key] = copy.deepcopy(summary[key])
+    if "response_text_length" not in result and summary.get("text_length") is not None:
+        result["response_text_length"] = summary.get("text_length")
+    if "choice_count" not in result and summary.get("candidate_count") is not None:
+        result["choice_count"] = summary.get("candidate_count")
+    usage = summary.get("usage")
+    if isinstance(usage, dict):
+        if "input_tokens" not in result and usage.get("input_tokens") is not None:
+            result["input_tokens"] = usage.get("input_tokens")
+        if "output_tokens" not in result and usage.get("output_tokens") is not None:
+            result["output_tokens"] = usage.get("output_tokens")
+        if "total_tokens" not in result and usage.get("total_tokens") is not None:
+            result["total_tokens"] = usage.get("total_tokens")
+    return result
+
+
+def _retry_attempted(retry_trace: Sequence[Dict[str, Any]]) -> bool:
+    return len(retry_trace) > 1 or any(
+        float(row.get("delay_seconds", 0.0) or 0.0) > 0 for row in retry_trace
+    )
+
+
 def call_llm(
     deps: LLMRuntimeDeps,
     provider: str,
@@ -224,9 +328,12 @@ def call_llm(
                 else None
             )
         ),
+        "response_format_type": None,
+        "schema_variant": None,
     }
     if using_structured_override:
         rf_type = str(response_format_override.get("type") or "").strip()
+        structured_output["response_format_type"] = rf_type or None
         if rf_type == "json_schema":
             json_schema = (
                 response_format_override.get("json_schema")
@@ -247,6 +354,7 @@ def call_llm(
                     ),
                 }
             )
+            structured_output["json_schema_name_if_present"] = schema_name
         elif rf_type == "json_object":
             structured_output.update(
                 {
@@ -303,8 +411,15 @@ def call_llm(
                 "endpoint_base_url": base_url,
                 "endpoint_effective": deps.endpoint_effective(endpoint_url),
                 **deps.endpoint_fingerprint(endpoint_url),
+                **_request_route_metadata(provider, model_id, resolved_api_key_env or api_key_env),
+                **_structured_output_request_metadata(structured_output),
                 "status_code": None,
                 "failure_type": "auth_missing",
+                "retry_attempted": False,
+                "auth_failure": True,
+                "quota_or_billing": False,
+                "timeout": False,
+                "provider_failure": False,
                 "sent_header_keys": sent_header_keys,
                 "auth_present_flags": auth_flags,
                 "gemini_auth_mode_requested": gemini_mode_requested,
@@ -330,29 +445,41 @@ def call_llm(
         }
 
     if deps.is_spend_aborted():
+        cost_meta = deps.cost_abort_failure_meta(
+            provider=provider,
+            model_id=model_id,
+            api_key_env=api_key_env,
+            base_url=base_url,
+            request_payload_bytes=request_payload_bytes,
+            request_payload_bytes_mode=request_payload_bytes_mode,
+            sent_header_keys=sent_header_keys,
+            auth_flags=auth_flags,
+            transport=transport,
+            gemini_mode_requested=gemini_mode_requested,
+            gemini_mode_effective=(
+                effective_mode if provider == "gemini" else None
+            ),
+            gemini_family=gemini_family,
+            auth_mode_sequence=(
+                auth_mode_sequence if provider == "gemini" else None
+            ),
+            structured_output=structured_output,
+        )
+        cost_meta.update(
+            {
+                **_request_route_metadata(provider, model_id, resolved_api_key_env or api_key_env),
+                **_structured_output_request_metadata(structured_output),
+                "retry_attempted": False,
+                "auth_failure": False,
+                "quota_or_billing": False,
+                "timeout": False,
+                "provider_failure": False,
+            }
+        )
         return {
             "ok": False,
             "text": "",
-            "meta": deps.cost_abort_failure_meta(
-                provider=provider,
-                model_id=model_id,
-                api_key_env=api_key_env,
-                base_url=base_url,
-                request_payload_bytes=request_payload_bytes,
-                request_payload_bytes_mode=request_payload_bytes_mode,
-                sent_header_keys=sent_header_keys,
-                auth_flags=auth_flags,
-                transport=transport,
-                gemini_mode_requested=gemini_mode_requested,
-                gemini_mode_effective=(
-                    effective_mode if provider == "gemini" else None
-                ),
-                gemini_family=gemini_family,
-                auth_mode_sequence=(
-                    auth_mode_sequence if provider == "gemini" else None
-                ),
-                structured_output=structured_output,
-            ),
+            "meta": cost_meta,
         }
 
     last_failure_meta: Dict[str, Any] = {
@@ -361,8 +488,15 @@ def call_llm(
         "endpoint_base_url": base_url,
         "endpoint_effective": deps.endpoint_effective(endpoint_url),
         **deps.endpoint_fingerprint(endpoint_url),
+        **_request_route_metadata(provider, model_id, resolved_api_key_env or api_key_env),
+        **_structured_output_request_metadata(structured_output),
         "status_code": None,
         "failure_type": "unknown",
+        "retry_attempted": False,
+        "auth_failure": False,
+        "quota_or_billing": False,
+        "timeout": False,
+        "provider_failure": False,
         "request_payload_bytes": request_payload_bytes,
         "request_payload_bytes_mode": request_payload_bytes_mode,
         "sent_header_keys": sent_header_keys,
@@ -541,8 +675,16 @@ def call_llm(
                     "endpoint_base_url": base_url,
                     "endpoint_effective": deps.endpoint_effective(endpoint_url),
                     **deps.endpoint_fingerprint(endpoint_url),
+                    **_request_route_metadata(provider, model_id, resolved_api_key_env or api_key_env),
+                    **_response_summary_metadata(response_summary),
+                    **_structured_output_request_metadata(structured_output),
                     "status_code": status_code,
                     "failure_type": None,
+                    "retry_attempted": _retry_attempted(retry_trace),
+                    "auth_failure": False,
+                    "quota_or_billing": False,
+                    "timeout": False,
+                    "provider_failure": False,
                     "request_payload_bytes": request_payload_bytes,
                     "request_payload_bytes_mode": request_payload_bytes_mode,
                     "max_completion_tokens_requested": max_completion_tokens_override,
@@ -571,7 +713,6 @@ def call_llm(
                     "parent_span_id": request_parent_span_id,
                     "retry_trace": retry_trace,
                     "response_received": True,
-                    "response_summary": response_summary,
                     "structured_output": structured_output,
                 },
             }
@@ -603,8 +744,15 @@ def call_llm(
                 "endpoint_base_url": base_url,
                 "endpoint_effective": deps.endpoint_effective(endpoint_url),
                 **deps.endpoint_fingerprint(endpoint_url),
+                **_request_route_metadata(provider, model_id, resolved_api_key_env or api_key_env),
+                **_structured_output_request_metadata(structured_output),
                 "status_code": status_code,
                 "failure_type": failure_type,
+                "retry_attempted": _retry_attempted(retry_trace),
+                "auth_failure": deps.is_auth_classified_failure(failure_type),
+                "quota_or_billing": failure_type == "quota_or_billing",
+                "timeout": failure_type == "timeout",
+                "provider_failure": failure_type in {"provider", "rate_limit", "quota_or_billing", "timeout"},
                 "request_payload_bytes": request_payload_bytes,
                 "request_payload_bytes_mode": request_payload_bytes_mode,
                 "max_completion_tokens_requested": max_completion_tokens_override,
@@ -709,6 +857,7 @@ def call_llm(
         total_retry_delay,
     )
     last_failure_meta["total_retry_delay_seconds"] = total_retry_delay
+    last_failure_meta["retry_attempted"] = _retry_attempted(retry_trace)
     return {
         "ok": False,
         "text": "",
@@ -787,6 +936,18 @@ def call_llm_with_ladder(
                 "hop_index": hop_index + 1,
                 "provider": provider,
                 "model_id": model_id,
+                "requested_provider": request_meta.get("requested_provider", provider),
+                "requested_model_id": request_meta.get("requested_model_id", model_id),
+                "provider_route_kind": request_meta.get(
+                    "provider_route_kind",
+                    _provider_route_kind(provider, model_id),
+                ),
+                "returned_model_id": request_meta.get("returned_model_id"),
+                "effective_model_id": request_meta.get("effective_model_id"),
+                "finish_reason": request_meta.get("finish_reason"),
+                "response_id": request_meta.get("response_id"),
+                "refusal": request_meta.get("refusal"),
+                "incomplete": request_meta.get("incomplete"),
                 "api_key_env": api_key_env,
                 "failure_type": request_meta.get("failure_type"),
                 "status_code": request_meta.get("status_code"),
@@ -1265,6 +1426,9 @@ def run_comparison_lane(
                 "authoritative": False,
                 "provider": compare_provider,
                 "model_id": compare_model,
+                "requested_provider": compare_provider,
+                "requested_model_id": compare_model,
+                "provider_route_kind": _provider_route_kind(compare_provider, compare_model),
                 "comparison_of_step": step_id,
                 "elapsed_ms": elapsed_ms,
                 "final_contract_status": "pass",
@@ -1272,6 +1436,32 @@ def run_comparison_lane(
                 "repair_successes": 0,
                 "response_parse_provenance": parse_provenance,
             }
+            for key, value in _response_summary_metadata(
+                llm_meta.get("response_summary")
+                if isinstance(llm_meta.get("response_summary"), dict)
+                else None
+            ).items():
+                request_meta.setdefault(key, value)
+            for key in (
+                "endpoint_base_url",
+                "endpoint_effective",
+                "endpoint_host",
+                "endpoint_path",
+                "transport",
+                "provider_signature",
+                "response_received",
+                "status_code",
+                "failure_type",
+                "retry_attempted",
+                "retry_trace",
+                "structured_output_mode",
+                "response_format_type",
+                "json_schema_name_if_present",
+                "strict_schema_required",
+                "provider_schema_variant",
+            ):
+                if key in llm_meta and llm_meta.get(key) is not None:
+                    request_meta.setdefault(key, copy.deepcopy(llm_meta[key]))
             if llm_meta.get("response_received") or llm_result.get("ok"):
                 spend_record = deps.accumulate_runtime_spend(
                     cfg,

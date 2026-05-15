@@ -9267,6 +9267,95 @@ def extract_text_from_gemini_response(response_obj: Any) -> str:
     return ""
 
 
+def _metadata_value(source: Any, *keys: str) -> Any:
+    for key in keys:
+        if isinstance(source, dict) and key in source:
+            value = source.get(key)
+            if value not in (None, ""):
+                return value
+        value = getattr(source, key, None)
+        if value not in (None, ""):
+            return value
+    return None
+
+
+def _metadata_int(value: Any) -> Optional[int]:
+    try:
+        if value in (None, ""):
+            return None
+        return int(value)
+    except Exception:
+        return None
+
+
+def _metadata_text(value: Any, *, limit: int = 240) -> Optional[str]:
+    if value in (None, ""):
+        return None
+    if isinstance(value, bool):
+        return str(value).lower()
+    if isinstance(value, (int, float)):
+        return str(value)
+    if isinstance(value, dict):
+        reason = _metadata_value(
+            value,
+            "reason",
+            "type",
+            "code",
+            "message",
+            "finish_reason",
+            "finishReason",
+        )
+        if reason in (None, ""):
+            reason = json.dumps(value, ensure_ascii=True, sort_keys=True, default=str)
+    else:
+        reason = str(value)
+    sanitized = sanitize_text_for_provider_payload(str(reason)).strip()
+    if not sanitized:
+        return None
+    if len(sanitized) > limit:
+        return sanitized[:limit] + "...[TRUNCATED]"
+    return sanitized
+
+
+def _metadata_sequence(value: Any) -> List[Any]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    if isinstance(value, tuple):
+        return list(value)
+    return []
+
+
+def _first_metadata_value(sources: Sequence[Any], *keys: str) -> Any:
+    for source in sources:
+        value = _metadata_value(source, *keys)
+        if value not in (None, ""):
+            return value
+    return None
+
+
+def _provider_route_kind(provider: str, model_id: str) -> str:
+    provider_token = str(provider or "").strip().lower()
+    model_token = str(model_id or "").strip().lower()
+    if provider_token == "openrouter" and model_token.startswith("x-ai/"):
+        return "openrouter_proxy_xai"
+    return "direct_provider"
+
+
+def _choice_message(choice: Any) -> Any:
+    return _metadata_value(choice, "message", "delta") or {}
+
+
+def _finish_reasons(choices: Sequence[Any]) -> List[str]:
+    reasons: List[str] = []
+    for choice in choices:
+        reason = _metadata_text(_metadata_value(choice, "finish_reason", "finishReason"))
+        if reason:
+            reasons.append(reason)
+    return reasons
+
+
 def summarize_llm_response(
     provider: str,
     transport: str,
@@ -9274,59 +9363,138 @@ def summarize_llm_response(
     response_json: Optional[Dict[str, Any]],
     response_text: str,
 ) -> Dict[str, Any]:
-    summary: Dict[str, Any] = {"text_length": len(response_text)}
-    finish_reason = None
-    candidate_count: Optional[int] = None
-    response_id: Optional[str] = None
-    prompt_tokens: Optional[int] = None
-    completion_tokens: Optional[int] = None
-    total_tokens: Optional[int] = None
+    response_text_length = len(response_text)
+    summary: Dict[str, Any] = {
+        "text_length": response_text_length,
+        "response_text_length": response_text_length,
+    }
+    response_payload = response_json if isinstance(response_json, dict) else {}
+    sources = [response_payload, response_obj]
+    finish_reason: Optional[str] = None
+    finish_reasons: List[str] = []
+    choice_count: Optional[int] = None
+    response_id: Optional[str] = _metadata_text(
+        _first_metadata_value(sources, "id", "response_id", "responseId")
+    )
+    returned_model_id: Optional[str] = _metadata_text(
+        _first_metadata_value(sources, "model", "model_id", "modelId")
+    )
+    response_status: Optional[str] = _metadata_text(
+        _first_metadata_value(sources, "status", "response_status", "responseStatus")
+    )
+    created = _first_metadata_value(sources, "created", "created_at", "createdAt")
+    system_fingerprint = _metadata_text(
+        _first_metadata_value(
+            sources,
+            "system_fingerprint",
+            "systemFingerprint",
+            "system_fingerprint_if_present",
+        )
+    )
 
     if provider == "gemini":
-        candidates = getattr(response_obj, "candidates", None) or []
-        candidate_count = len(candidates)
+        candidates = _metadata_sequence(
+            _metadata_value(response_payload, "candidates")
+            or getattr(response_obj, "candidates", None)
+        )
+        choice_count = len(candidates)
         if candidates:
-            finish_reason = getattr(candidates[0], "finish_reason", None)
-        usage_metadata = getattr(response_obj, "usage_metadata", None)
-        if usage_metadata is not None:
-            prompt_tokens = getattr(usage_metadata, "prompt_token_count", None)
-            completion_tokens = getattr(usage_metadata, "candidates_token_count", None)
-            total_tokens = getattr(usage_metadata, "total_token_count", None)
+            finish_reasons = _finish_reasons(candidates)
+            finish_reason = finish_reasons[0] if finish_reasons else None
+        prompt_feedback = _metadata_value(
+            response_payload, "prompt_feedback", "promptFeedback"
+        ) or getattr(response_obj, "prompt_feedback", None)
+        safety_reason = _metadata_text(
+            _first_metadata_value(
+                [candidates[0] if candidates else {}, prompt_feedback],
+                "safety_reason",
+                "safetyReason",
+                "block_reason",
+                "blockReason",
+            )
+        )
+        if safety_reason:
+            summary["safety_reason"] = safety_reason
     else:
-        choices = None
-        if isinstance(response_json, dict):
-            choices = response_json.get("choices")
-            response_id = str(response_json.get("id") or "") or None
-            usage = response_json.get("usage")
-            if isinstance(usage, dict):
-                prompt_tokens = usage.get("prompt_tokens")
-                completion_tokens = usage.get("completion_tokens")
-                total_tokens = usage.get("total_tokens")
-        else:
-            choices = getattr(response_obj, "choices", None)
-            response_id = str(getattr(response_obj, "id", "") or "") or None
-            usage = getattr(response_obj, "usage", None)
-            if usage is not None:
-                prompt_tokens = getattr(usage, "prompt_tokens", None)
-                completion_tokens = getattr(usage, "completion_tokens", None)
-                total_tokens = getattr(usage, "total_tokens", None)
-        if isinstance(choices, list):
-            candidate_count = len(choices)
-            if choices:
-                finish_reason = getattr(choices[0], "finish_reason", None)
+        choices = _metadata_sequence(
+            _metadata_value(response_payload, "choices")
+            or getattr(response_obj, "choices", None)
+        )
+        choice_count = len(choices)
+        if choices:
+            finish_reasons = _finish_reasons(choices)
+            finish_reason = finish_reasons[0] if finish_reasons else None
+            first_choice = choices[0]
+            message = _choice_message(first_choice)
+            refusal_value = _first_metadata_value(
+                [message, first_choice, response_payload, response_obj],
+                "refusal",
+                "refusal_reason",
+                "refusalReason",
+            )
+            refusal_reason_value = _first_metadata_value(
+                [message, first_choice, response_payload, response_obj],
+                "refusal_reason",
+                "refusalReason",
+            )
+            if isinstance(refusal_value, bool):
+                summary["refusal"] = refusal_value
+            elif refusal_value not in (None, ""):
+                summary["refusal"] = True
+                summary["refusal_reason"] = _metadata_text(
+                    refusal_reason_value or refusal_value
+                )
+            elif refusal_reason_value not in (None, ""):
+                summary["refusal"] = True
+                summary["refusal_reason"] = _metadata_text(refusal_reason_value)
+            incomplete_value = _first_metadata_value(
+                [first_choice, response_payload, response_obj],
+                "incomplete",
+                "incomplete_details",
+                "incompleteDetails",
+            )
+            incomplete_reason = _metadata_text(
+                _first_metadata_value(
+                    [incomplete_value, first_choice, response_payload, response_obj],
+                    "reason",
+                    "incomplete_reason",
+                    "incompleteReason",
+                )
+            )
+            provider_incomplete = (
+                bool(incomplete_value)
+                or str(response_status or "").strip().lower() == "incomplete"
+                or str(finish_reason or "").strip().lower()
+                in {"length", "max_tokens", "max_output_tokens"}
+            )
+            if provider_incomplete:
+                summary["incomplete"] = True
+                if incomplete_reason:
+                    summary["incomplete_reason"] = incomplete_reason
 
-    if candidate_count is not None:
-        summary["candidate_count"] = candidate_count
+    if choice_count is not None:
+        summary["choice_count"] = choice_count
+        summary["candidate_count"] = choice_count
+    if finish_reasons:
+        summary["finish_reasons"] = finish_reasons
     if finish_reason:
         summary["finish_reason"] = finish_reason
+        if str(finish_reason).strip().lower() != "stop":
+            summary["stop_reason"] = finish_reason
     if response_id:
         summary["response_id"] = response_id
-    if prompt_tokens is not None:
-        summary["prompt_tokens"] = int(prompt_tokens)
-    if completion_tokens is not None:
-        summary["completion_tokens"] = int(completion_tokens)
-    if total_tokens is not None:
-        summary["total_tokens"] = int(total_tokens)
+    if returned_model_id:
+        summary["returned_model_id"] = returned_model_id
+        summary["effective_model_id"] = returned_model_id
+    if response_status:
+        summary["response_status"] = response_status
+    created_int = _metadata_int(created)
+    if created_int is not None:
+        summary["created"] = created_int
+    elif created not in (None, ""):
+        summary["created"] = _metadata_text(created)
+    if system_fingerprint:
+        summary["system_fingerprint_if_present"] = system_fingerprint
     usage = _normalized_usage_from_payload(
         getattr(response_obj, "usage", None)
         or getattr(response_obj, "usage_metadata", None)
@@ -9344,6 +9512,11 @@ def summarize_llm_response(
     )
     if usage is not None:
         summary["usage"] = usage
+        summary["input_tokens"] = int(usage.get("input_tokens", 0) or 0)
+        summary["output_tokens"] = int(usage.get("output_tokens", 0) or 0)
+        summary["total_tokens"] = int(usage.get("total_tokens", 0) or 0)
+        summary["prompt_tokens"] = summary["input_tokens"]
+        summary["completion_tokens"] = summary["output_tokens"]
     return summary
 
 
@@ -10152,7 +10325,112 @@ def enrich_request_meta(
     enriched["partition_id"] = partition_id
     enriched.setdefault("provider", provider)
     enriched.setdefault("model_id", model_id)
+    enriched.setdefault("requested_provider", provider)
+    enriched.setdefault("requested_model_id", model_id)
+    enriched.setdefault("provider_route_kind", _provider_route_kind(provider, model_id))
+    api_key_env = (
+        enriched.get("api_key_env")
+        or enriched.get("api_key_env_resolved")
+        or enriched.get("api_key_env_requested")
+        or PROVIDER_API_KEY_ENV.get(provider)
+    )
+    if api_key_env:
+        enriched.setdefault("api_key_env", api_key_env)
     enriched.setdefault("endpoint_base_url", endpoint_base)
+    response_summary = (
+        enriched.get("response_summary")
+        if isinstance(enriched.get("response_summary"), dict)
+        else {}
+    )
+    if isinstance(response_summary, dict) and response_summary:
+        for key in (
+            "response_id",
+            "returned_model_id",
+            "effective_model_id",
+            "finish_reason",
+            "finish_reasons",
+            "response_status",
+            "refusal",
+            "refusal_reason",
+            "incomplete",
+            "incomplete_reason",
+            "stop_reason",
+            "safety_reason",
+            "usage",
+            "input_tokens",
+            "output_tokens",
+            "total_tokens",
+            "prompt_tokens",
+            "completion_tokens",
+            "response_text_length",
+            "choice_count",
+            "candidate_count",
+            "created",
+            "system_fingerprint_if_present",
+        ):
+            if key in response_summary and response_summary.get(key) is not None:
+                enriched.setdefault(key, copy.deepcopy(response_summary[key]))
+        if (
+            "response_text_length" not in enriched
+            and response_summary.get("text_length") is not None
+        ):
+            enriched["response_text_length"] = response_summary.get("text_length")
+        if (
+            "choice_count" not in enriched
+            and response_summary.get("candidate_count") is not None
+        ):
+            enriched["choice_count"] = response_summary.get("candidate_count")
+        usage = response_summary.get("usage")
+        if isinstance(usage, dict):
+            enriched.setdefault("input_tokens", usage.get("input_tokens"))
+            enriched.setdefault("output_tokens", usage.get("output_tokens"))
+            enriched.setdefault("total_tokens", usage.get("total_tokens"))
+    structured_output = (
+        enriched.get("structured_output")
+        if isinstance(enriched.get("structured_output"), dict)
+        else {}
+    )
+    if isinstance(structured_output, dict) and structured_output:
+        structured_mode = (
+            structured_output.get("structured_output_mode_effective")
+            or structured_output.get("structured_output_mode_requested")
+            or structured_output.get("transport_mode")
+        )
+        if structured_mode is not None:
+            enriched.setdefault("structured_output_mode", structured_mode)
+        if structured_output.get("response_format_type") is not None:
+            enriched.setdefault(
+                "response_format_type", structured_output.get("response_format_type")
+            )
+        schema_name = structured_output.get("schema_name") or structured_output.get("schema")
+        if schema_name is not None:
+            enriched.setdefault("json_schema_name_if_present", schema_name)
+        enriched.setdefault(
+            "strict_schema_required", bool(structured_output.get("strict", False))
+        )
+        if structured_output.get("schema_variant") is not None:
+            enriched.setdefault(
+                "provider_schema_variant", structured_output.get("schema_variant")
+            )
+    failure_type = str(enriched.get("failure_type") or "").strip()
+    retry_trace = enriched.get("retry_trace")
+    if isinstance(retry_trace, list):
+        enriched.setdefault(
+            "retry_attempted",
+            len(retry_trace) > 1
+            or any(
+                float(row.get("delay_seconds", 0.0) or 0.0) > 0
+                for row in retry_trace
+                if isinstance(row, dict)
+            ),
+        )
+    enriched.setdefault("auth_failure", is_auth_classified_failure(failure_type))
+    enriched.setdefault("quota_or_billing", failure_type == "quota_or_billing")
+    enriched.setdefault("timeout", failure_type == "timeout")
+    enriched.setdefault(
+        "provider_failure",
+        failure_type in {"provider", "rate_limit", "quota_or_billing", "timeout"},
+    )
     if "provider_signature" not in enriched:
         enriched["provider_signature"] = provider_signature(
             provider,
