@@ -200,6 +200,24 @@ def test_grok_execute_pass_sends_only_sanitized_payload_to_provider_boundary(
     assert SAFE_HASH in captured["payload"]
 
 
+def test_grok_cache_path_uses_sanitized_payload_fingerprint(tmp_path: Path) -> None:
+    _fixture_text, values = _secret_fixture_text()
+    runner = GrokPassRunner(PrescanConfig(repo_root=tmp_path, output_dir=tmp_path / "out"))
+    payload = {
+        "password": values["password"],
+        "preview": f"{SAFE_PATH}\npassword={values['password']}",
+        "sha256": SAFE_HASH,
+    }
+
+    first_path = runner._get_cache_path("dedup", payload)
+    second_path = runner._get_cache_path("dedup", payload)
+
+    assert first_path == second_path
+    assert values["password"] not in first_path.name
+    assert first_path.name.startswith("dedup_")
+    assert first_path.suffix == ".json"
+
+
 def test_path_exclusions_remain_and_env_templates_are_preview_sanitized(
     tmp_path: Path,
 ) -> None:
