@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import copy
-import importlib.util
 import json
 import sys
 import tempfile
@@ -12,18 +11,10 @@ from typing import Any, Dict, List, Optional, Protocol, Sequence, Tuple
 try:
     from output_safety import sanitize_payload_for_output, sanitize_text_for_output
 except ModuleNotFoundError:  # pragma: no cover - supports direct importlib test loading
-    _service_dir = Path(__file__).resolve().parents[1]
-    _safety_path = _service_dir / "output_safety.py"
-    _safety_spec = importlib.util.spec_from_file_location(
-        "repo_truth_output_safety_for_batch_clients", _safety_path
-    )
-    if _safety_spec is None or _safety_spec.loader is None:
-        raise
-    _safety_module = importlib.util.module_from_spec(_safety_spec)
-    sys.modules[_safety_spec.name] = _safety_module
-    _safety_spec.loader.exec_module(_safety_module)
-    sanitize_payload_for_output = _safety_module.sanitize_payload_for_output
-    sanitize_text_for_output = _safety_module.sanitize_text_for_output
+    _service_dir = str(Path(__file__).resolve().parents[1])
+    if _service_dir not in sys.path:
+        sys.path.insert(0, _service_dir)
+    from output_safety import sanitize_payload_for_output, sanitize_text_for_output
 
 
 class UnsupportedBatchProvider(RuntimeError):
@@ -272,9 +263,13 @@ def _error_row_metadata(row: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+_DISCARDED_LINES_SAMPLE_LIMIT = 50
+
+
 def _parse_jsonl_rows(raw_text: str) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
     discarded_lines: List[Dict[str, Any]] = []
+    discarded_count = 0
     total_lines = 0
     blank_line_count = 0
     for line_number, raw_line in enumerate(str(raw_text or "").splitlines(), start=1):
@@ -286,26 +281,29 @@ def _parse_jsonl_rows(raw_text: str) -> Tuple[List[Dict[str, Any]], Dict[str, An
         try:
             row = json.loads(line)
         except Exception as exc:
-            discarded_lines.append(
-                {
-                    "line_number": line_number,
-                    "reason": "invalid_json",
-                    "error_type": type(exc).__name__,
-                    "preview_redacted": sanitize_text_for_output(line[:200]),
-                }
-            )
+            discarded_count += 1
+            if len(discarded_lines) < _DISCARDED_LINES_SAMPLE_LIMIT:
+                discarded_lines.append(
+                    {
+                        "line_number": line_number,
+                        "reason": "invalid_json",
+                        "error_type": type(exc).__name__,
+                        "preview_redacted": sanitize_text_for_output(line[:200]),
+                    }
+                )
             continue
         if not isinstance(row, dict):
-            discarded_lines.append(
-                {
-                    "line_number": line_number,
-                    "reason": "non_object_json",
-                    "preview_redacted": sanitize_text_for_output(line[:200]),
-                }
-            )
+            discarded_count += 1
+            if len(discarded_lines) < _DISCARDED_LINES_SAMPLE_LIMIT:
+                discarded_lines.append(
+                    {
+                        "line_number": line_number,
+                        "reason": "non_object_json",
+                        "preview_redacted": sanitize_text_for_output(line[:200]),
+                    }
+                )
             continue
         rows.append(row)
-    discarded_count = len(discarded_lines)
     threshold_exceeded = (
         total_lines > 0
         and (discarded_count / total_lines) > BATCH_JSONL_CORRUPTION_THRESHOLD
@@ -610,12 +608,19 @@ class OpenAIBatchClient:
                     str(error_row.get("message") or error_row.get("code") or "batch_error")
                 )
             safe_meta = sanitize_payload_for_output(row)
+            if not isinstance(safe_meta, dict):
+                logger.warning(
+                    "sanitize_payload_for_output returned non-dict for custom_id=%s; "
+                    "dropping row metadata",
+                    custom_id,
+                )
+                safe_meta = {}
             results.append(
                 BatchResult(
                     custom_id=custom_id,
                     output_text=output_text,
                     error=error,
-                    meta=safe_meta if isinstance(safe_meta, dict) else {},
+                    meta=safe_meta,
                 )
             )
 
