@@ -65,11 +65,13 @@ test('App.tsx exposes metric card tooltips with focus indicators and labels', ()
 test('TaskSequencer.tsx has contextual aria-labels and current step indicator', () => {
   const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
   expect(content).toContain('aria-label={isTimerRunning ? `Pause task: ${currentTask.title}` : `Start task: ${currentTask.title}`}');
-  expect(content).toContain('aria-label={`Complete task: ${currentTask.title}`}');
-  expect(content).toContain('aria-label={`Skip task: ${currentTask.title}`}');
+  expect(content).toContain('getCompletionTransitionTask(currentTaskId, tasks, optimizedTasks)');
+  expect(content).toContain('getSkipTransitionTask(currentTaskId, optimizedTasks)');
+  expect(content).toMatch(/aria-label=\{\s*nextTaskAfterCompletion\s*\?\s*`Complete \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterCompletion\.title\}`\s*:\s*`Complete \$\{currentTask\.title\}, finish ritual`\s*\}/);
+  expect(content).toMatch(/aria-label=\{\s*nextTaskAfterSkip\s*\?\s*`Skip \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterSkip\.title\}`\s*:\s*`Skip task: \$\{currentTask\.title\}`\s*\}/);
   expect(content).toContain('aria-label={`Start task: ${task.title}`}');
   // New LinearProgress for task progress
-  expect(content).toContain('aria-label="Current task progress"');
+  expect(content).toContain('aria-label={`Progress for task: ${currentTask.title}`}');
   // Timer accessibility
   expect(content).toContain('aria-label={getTimerAriaLabel(taskTimer)}');
   // Total remaining duration
@@ -93,7 +95,7 @@ test('TaskSequencer.tsx implements overtime visual cues', () => {
   expect(content).toContain('const isOvertime = useMemo(() =>');
   expect(content).toContain('color: isOvertime ? brandTokens.colors.gremlinPink : \'inherit\'');
   expect(content).toContain('OVERTIME +{overtimeMinutes}M');
-  expect(content).toContain('bgcolor: alpha(isOvertime ? brandTokens.colors.gremlinPink : brandTokens.colors.saintGold, 0.1)');
+  expect(content).toMatch(/bgcolor:\s*alpha\(\s*isOvertime\s*\?\s*brandTokens\.colors\.gremlinPink\s*:\s*brandTokens\.colors\.saintGold,\s*0\.1\s*\)/);
 });
 
 test('Components have aria-hidden="true" on decorative icons', () => {
