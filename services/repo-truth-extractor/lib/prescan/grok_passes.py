@@ -1,5 +1,6 @@
 import datetime as dt
 import hashlib
+import hmac
 import json
 import logging
 import os
@@ -15,6 +16,7 @@ from output_safety import (
 )
 
 logger = logging.getLogger(__name__)
+CACHE_KEY_HMAC_KEY = b"dopemux-rte-prescan-cache-v1"
 
 class RTEPrescanError(Exception):
     """Base error for prescan."""
@@ -226,7 +228,6 @@ class GrokPassRunner:
 
     def _get_cache_path(self, pass_id: str, payload: dict) -> Path:
         """Generate a stable cache path for a pass and its payload."""
-        hasher = hashlib.sha256()
         digest_input = {
             "pass_id": pass_id,
             "payload": payload,
@@ -237,8 +238,8 @@ class GrokPassRunner:
             separators=(",", ":"),
             default=self._cache_digest_default,
         ).encode("utf-8")
-        hasher.update(encoded)
-        return self._cache_dir / f"{pass_id}_{hasher.hexdigest()[:16]}.json"
+        digest = hmac.new(CACHE_KEY_HMAC_KEY, encoded, hashlib.sha256).hexdigest()
+        return self._cache_dir / f"{pass_id}_{digest[:16]}.json"
 
     def _load_cached_pass(self, pass_id: str, payload: dict) -> dict | None:
         """Load pass results from cache if valid."""
