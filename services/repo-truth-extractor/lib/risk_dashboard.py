@@ -443,6 +443,13 @@ def build_rte_risk_dashboard(inputs: Mapping[str, Any]) -> Dict[str, Any]:
     accepted_risks.extend(str(item) for item in _as_list(inputs.get("accepted_risks")))
     unknowns.extend(str(item) for item in _as_list(inputs.get("unknowns")))
 
+    final_blockers = _dedupe_sorted(blockers)
+    # These three labels are intentionally static, human-curated assessments of the
+    # codebase's proof state, not derived from runtime blockers.  Runtime blockers
+    # (e.g. live-validation not yet authorized) widen the NOT-READY surface for live
+    # use, but they don't change what this static-proof run was designed to cover.
+    # The "READY_FOR_LIMITED_DRY_STATIC_USE" label explicitly documents that this is
+    # a static-only proof, not a production-readiness signal.
     dashboard = {
         "run_id_if_available": _first_string(inputs.get("run_id_if_available")),
         "generated_at": _first_string(inputs.get("generated_at")) or _now_iso(),
@@ -457,7 +464,7 @@ def build_rte_risk_dashboard(inputs: Mapping[str, Any]) -> Dict[str, Any]:
         "proof_contract_status": proof_contract_status,
         "artifact_authority_status": "generated_artifacts_are_non_authoritative_evidence",
         "risk_items": risk_items,
-        "blockers": _dedupe_sorted(blockers),
+        "blockers": final_blockers,
         "warnings": _dedupe_sorted(warnings),
         "accepted_risks": _dedupe_sorted(accepted_risks),
         "unknowns": _dedupe_sorted(unknowns),

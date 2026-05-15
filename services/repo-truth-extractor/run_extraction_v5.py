@@ -17171,19 +17171,24 @@ def emit_run_dashboard_snapshot(
 ) -> Dict[str, Any]:
     payload = phase_status_snapshot(run_id, dirs, PHASES)
     write_run_dashboard_snapshot(dirs["root"], payload, source=source)
-    risk_inputs = collect_rte_risk_dashboard_inputs(
-        run_id=run_id,
-        run_root=dirs["root"],
-        repo_root=REPO_ROOT,
-        git_sha=get_git_sha(REPO_ROOT),
-        run_dashboard=payload,
-    )
-    risk_dashboard = build_rte_risk_dashboard(risk_inputs)
-    write_rte_risk_dashboard_artifacts(
-        run_root=dirs["root"],
-        dashboard=risk_dashboard,
-        write_json=write_json,
-    )
+    try:
+        risk_inputs = collect_rte_risk_dashboard_inputs(
+            run_id=run_id,
+            run_root=dirs["root"],
+            repo_root=REPO_ROOT,
+            git_sha=get_git_sha(REPO_ROOT),
+            run_dashboard=payload,
+        )
+        risk_dashboard = build_rte_risk_dashboard(risk_inputs)
+        write_rte_risk_dashboard_artifacts(
+            run_root=dirs["root"],
+            dashboard=risk_dashboard,
+            write_json=write_json,
+        )
+    except Exception as _dashboard_exc:
+        logger.warning(
+            "Risk dashboard emission failed (non-fatal): %s", _dashboard_exc
+        )
     if ui is not None:
         ui.run_dashboard_snapshot(payload, source=source)
     return payload
