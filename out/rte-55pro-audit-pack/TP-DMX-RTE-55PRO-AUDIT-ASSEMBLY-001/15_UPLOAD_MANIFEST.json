@@ -4,7 +4,7 @@
   "repo": "DDD-Enterprises/dopemux-mvp",
   "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-rte-55pro-audit-assembly-001",
   "branch": "codex/tp-dmx-rte-55pro-audit-assembly-001",
-  "head": "a4214ca5bf431e1b59791661e2b664a6cd24c1da",
+  "head": "6c621e362be14a3d6d6d9d6875f38d58ea4cc720",
   "base_branch": "main",
   "generated_files": [
     "task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json",
@@ -139,7 +139,7 @@
   "sha256": {
     "task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json": "f120a6d44640ebfae055b7783cc2f25afe57b679c14b2c0844aedae7c7db5432",
     "task-packets/INDEX.md": "62a757a65ced8ef59f2f76406a371aa109cf14150a7bccdd5e04c320b0e2ddfa",
-    "proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/PROOF.json": "4e21995b6492327a84b6f51b4a732de3dbc9ec582795955014598973c6b84254",
+    "proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/PROOF.json": "dc60ccc25832372349f9c70fecbf08cbf7fda89fd658617c9a4ea0865cb7db1f",
     "proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/IMPLEMENTER_REPORT.md": "0a2bee22075ea1b545be7b5986eb539668b01e3423aa46b1ffd4246789b941b9",
     "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/00_README.md": "ba2b836e9d77380afb9dc94f4a129e8c824dece193357078336e47b3ff47fac2",
     "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/01_BASELINE_STATE.md": "a25d154a0d06114620496e573c602766274961cf67e6da96d93f379996004cbe",
@@ -245,5 +245,6 @@
     "proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/PROOF.json": "generated",
     "proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/IMPLEMENTER_REPORT.md": "generated",
     "task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json": "generated"
-  }
+  },
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/618"
 }

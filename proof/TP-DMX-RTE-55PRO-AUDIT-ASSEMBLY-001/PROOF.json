@@ -5,7 +5,7 @@
   "branch": "codex/tp-dmx-rte-55pro-audit-assembly-001",
   "base_branch": "main",
   "starting_head": "a4214ca5bf431e1b59791661e2b664a6cd24c1da",
-  "ending_head": "a4214ca5bf431e1b59791661e2b664a6cd24c1da",
+  "ending_head": "6c621e362be14a3d6d6d9d6875f38d58ea4cc720",
   "files_created": [
     "task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json",
     "proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/PROOF.json",
@@ -206,5 +206,6 @@
     "Prior proof claims can be stale and must be rechecked against runtime source in GPT-5.5 Pro audit.",
     "No broad RTE tests or live provider checks were run due artifact-only scope."
   ],
-  "final_status": "READY_FOR_REVIEW"
+  "final_status": "READY_FOR_REVIEW",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/618"
 }
