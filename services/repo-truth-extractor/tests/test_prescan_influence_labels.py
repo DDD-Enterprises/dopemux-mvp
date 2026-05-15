@@ -321,3 +321,31 @@ def test_compression_hint_label_is_advisory_and_redacted_from_proof(
     assert "compression_hint" in proof_text
     assert "SECRET_VALUE_SHOULD_NOT_APPEAR" not in proof_text
     assert stats["prescan_influence"]["labels"][0]["advisory_model_derived"] is True
+
+
+def test_compression_hint_influence_is_recorded_only_for_admitted_chunks(
+    tmp_path: Path,
+) -> None:
+    repo_root = _setup_repo(tmp_path)
+    router_obj = IntelligenceRouter(_router_payload(repo_root, tmp_path / "prescan"))
+    first_chunk = f"--- FILE: {repo_root / 'src/low.py'} ---\nfixture\n\n"
+
+    context, stats = runner.build_partition_context(
+        phase="A",
+        partition_paths=[
+            str(repo_root / "src/low.py"),
+            str(repo_root / "docs/old.md"),
+        ],
+        file_truncate_chars=1000,
+        home_scan_mode="safe",
+        max_files=5,
+        max_chars=len(first_chunk.encode("utf-8")) + 5,
+        router=router_obj,
+    )
+
+    assert str(repo_root / "src/low.py") in context
+    assert str(repo_root / "docs/old.md") not in context
+    assert stats["files_included"] == 1
+    assert stats["files_skipped"] == 1
+    assert stats["compressed_files"] == 0
+    assert "prescan_influence" not in stats

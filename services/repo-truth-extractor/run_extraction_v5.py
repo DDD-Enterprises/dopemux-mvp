@@ -10528,24 +10528,22 @@ def build_partition_context(
         compression_hint = (
             active_router.get_compression_hint(path_str) if active_router else None
         )
+        compression_label: Optional[Dict[str, Any]] = None
 
         if compression_hint:
             content = f"[PRESCAN COMPRESSION] {compression_hint}"
-            compressed_files += 1
             hint_source = (
                 active_router.get_compression_hint_source(path_str)
                 if hasattr(active_router, "get_compression_hint_source")
                 else None
             )
-            compression_labels.append(
-                _prescan_influence_label(
-                    active_router,
-                    "compression_hint",
-                    applied=True,
-                    affected_paths_or_count=_paths_or_count([path_str]),
-                    hint_source=hint_source
-                    or "prescan.extraction_hints.compress_candidates",
-                )
+            compression_label = _prescan_influence_label(
+                active_router,
+                "compression_hint",
+                applied=True,
+                affected_paths_or_count=_paths_or_count([path_str]),
+                hint_source=hint_source
+                or "prescan.extraction_hints.compress_candidates",
             )
         else:
             content = safe_read(path)
@@ -10573,6 +10571,9 @@ def build_partition_context(
 
         chunks.append(chunk_text)
         context_bytes += chunk_bytes
+        if compression_label:
+            compressed_files += 1
+            compression_labels.append(compression_label)
 
     context = "\n".join(chunks)
     stats: Dict[str, Any] = {
