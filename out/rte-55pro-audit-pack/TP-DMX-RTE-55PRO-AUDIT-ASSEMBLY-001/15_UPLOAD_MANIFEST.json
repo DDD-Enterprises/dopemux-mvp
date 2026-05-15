@@ -137,7 +137,7 @@
     "Deep Research questions if provider-current facts are needed"
   ],
   "sha256": {
-    "task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json": "f120a6d44640ebfae055b7783cc2f25afe57b679c14b2c0844aedae7c7db5432",
+    "task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json": "68237389daf87f7298e0edc5069f384b21582fdb309fcc88196d7de01e9066bd",
     "task-packets/INDEX.md": "62a757a65ced8ef59f2f76406a371aa109cf14150a7bccdd5e04c320b0e2ddfa",
     "proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/PROOF.json": "dc60ccc25832372349f9c70fecbf08cbf7fda89fd658617c9a4ea0865cb7db1f",
     "proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/IMPLEMENTER_REPORT.md": "0a2bee22075ea1b545be7b5986eb539668b01e3423aa46b1ffd4246789b941b9",

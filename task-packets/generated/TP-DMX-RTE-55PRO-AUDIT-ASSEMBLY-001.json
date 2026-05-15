@@ -290,7 +290,7 @@
         "shasum -a 256 $(find out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001 proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001 -type f | sort) task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json",
         "git diff --check",
         "git diff --name-only",
-        "python - <<'PY'\nfrom pathlib import Path\nallowed_exact = {'task-packets/INDEX.md', 'task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json'}\nallowed_prefixes = ('out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/', 'proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/')\nchanged = [p for p in Path('.').joinpath('.').glob('**/*') if False]\nPY",
+        "python - <<'PY'\nimport subprocess, sys\nallowed_exact = {'task-packets/INDEX.md', 'task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json'}\nallowed_prefixes = ('out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/', 'proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/')\nbase = subprocess.check_output(['git', 'merge-base', 'HEAD', 'origin/main'], text=True).strip()\nchanged = subprocess.check_output(['git', 'diff', '--name-only', f'{base}...HEAD'], text=True).splitlines()\nbad = sorted({p for p in changed if p not in allowed_exact and not p.startswith(allowed_prefixes)})\nif bad:\n    print('forbidden changed paths:')\n    print('\\n'.join(bad))\n    sys.exit(1)\nprint('allowlist-ok')\nPY",
         "git status --short"
       ],
       "expected_files": [
