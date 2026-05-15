@@ -28,6 +28,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { brandTokens, statusStyles } from '../theme';
+import { getCompletionTransitionTask, getSkipTransitionTask } from './taskSequencerTransitions';
 
 interface Task {
   id: string;
@@ -133,8 +134,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
 
   const completeTask = (taskId: string) => {
     setTasks((prev) => prev.map((task) => (task.id === taskId ? { ...task, status: 'completed' } : task)));
-    const remainingTasks = tasks.filter((task) => task.id !== taskId && task.status !== 'completed');
-    const nextTask = optimizedTasks.find((task) => task.id !== taskId) ?? remainingTasks[0];
+    const nextTask = getCompletionTransitionTask(taskId, tasks, optimizedTasks);
     setCurrentTaskId(nextTask ? nextTask.id : null);
     if (!nextTask) {
       headerRef.current?.focus();
@@ -142,10 +142,9 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   };
 
   const skipTask = (taskId: string) => {
-    if (optimizedTasks.length <= 1) return;
-    const currentIndex = optimizedTasks.findIndex((task) => task.id === taskId);
-    const nextIndex = (currentIndex + 1) % optimizedTasks.length;
-    setCurrentTaskId(optimizedTasks[nextIndex].id);
+    const nextTask = getSkipTransitionTask(taskId, optimizedTasks);
+    if (!nextTask) return;
+    setCurrentTaskId(nextTask.id);
   };
 
   const resetTasks = () => {
@@ -197,13 +196,16 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   };
 
   const currentTask = tasks.find((task) => task.id === currentTaskId);
-  const nextTask = useMemo(() => {
-    if (!currentTaskId || optimizedTasks.length <= 1) return null;
-    const currentIndex = optimizedTasks.findIndex((task) => task.id === currentTaskId);
-    if (currentIndex === -1) return null;
-    const nextIndex = (currentIndex + 1) % optimizedTasks.length;
-    return optimizedTasks[nextIndex];
-  }, [optimizedTasks, currentTaskId]);
+
+  const nextTaskAfterCompletion = useMemo(
+    () => getCompletionTransitionTask(currentTaskId, tasks, optimizedTasks),
+    [currentTaskId, optimizedTasks, tasks]
+  );
+
+  const nextTaskAfterSkip = useMemo(
+    () => getSkipTransitionTask(currentTaskId, optimizedTasks),
+    [currentTaskId, optimizedTasks]
+  );
 
   const statusTone = statusStyles[cognitiveState.status];
 
@@ -454,24 +456,35 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                 {isTimerRunning ? 'Pause' : 'Start'}
               </Button>
             </Tooltip>
-            <Tooltip title="Complete and Proceed" arrow>
+            <Tooltip
+              title={
+                nextTaskAfterCompletion
+                  ? `Complete ${currentTask.title} and proceed to ${nextTaskAfterCompletion.title}`
+                  : `Complete ${currentTask.title} and finish ritual`
+              }
+              arrow
+            >
               <Button
                 size="small"
                 variant="outlined"
                 startIcon={<CheckCircle aria-hidden="true" />}
                 onClick={() => completeTask(currentTask.id)}
-                aria-label={`Complete task: ${currentTask.title}`}
+                aria-label={
+                  nextTaskAfterCompletion
+                    ? `Complete ${currentTask.title}, proceed to ${nextTaskAfterCompletion.title}`
+                    : `Complete ${currentTask.title}, finish ritual`
+                }
               >
                 Complete
               </Button>
             </Tooltip>
             <Tooltip
               title={
-                nextTask
-                  ? `Skip to: ${nextTask.title}`
-                  : optimizedTasks.length <= 1
-                    ? 'No other tasks to skip to'
-                    : 'Skip for Now'
+                optimizedTasks.length <= 1
+                  ? 'No other tasks to skip to'
+                  : nextTaskAfterSkip
+                    ? `Skip to: ${nextTaskAfterSkip.title}`
+                    : 'Skip to next task'
               }
               arrow
             >
@@ -495,8 +508,8 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                   onClick={() => skipTask(currentTask.id)}
                   sx={{ color: brandTokens.colors.gremlinPink }}
                   aria-label={
-                    nextTask
-                      ? `Skip ${currentTask.title}, proceed to ${nextTask.title}`
+                    nextTaskAfterSkip
+                      ? `Skip ${currentTask.title}, proceed to ${nextTaskAfterSkip.title}`
                       : `Skip task: ${currentTask.title}`
                   }
                   disabled={optimizedTasks.length <= 1}
@@ -520,7 +533,15 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             background: alpha(brandTokens.colors.serumMint, 0.05),
           }}
         >
-          <CheckCircle size={32} color={brandTokens.colors.serumMint} style={{ marginBottom: 8 }} aria-hidden="true" />
+          <CheckCircle
+            size={32}
+            color={brandTokens.colors.serumMint}
+            style={{
+              marginBottom: 8,
+              animation: 'done-glow 2s infinite ease-in-out',
+            }}
+            aria-hidden="true"
+          />
           <Typography variant="h6" sx={{ color: brandTokens.colors.serumMint, mb: 1 }}>
             Ritual Complete
           </Typography>
