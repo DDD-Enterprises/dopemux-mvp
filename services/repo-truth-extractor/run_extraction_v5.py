@@ -1368,6 +1368,21 @@ PROVIDER_API_KEY_ENV: Dict[str, str] = {
     "xai": "XAI_API_KEY",
     "openrouter": "OPENROUTER_API_KEY",
 }
+STATIC_ROUTE_FINGERPRINT_AUTHORITY = "static_request_route_metadata"
+ROUTE_FINGERPRINT_INPUT_FIELDS: Tuple[str, ...] = (
+    "requested_provider",
+    "requested_model_id",
+    "provider_route_kind",
+    "upstream_provider",
+    "economic_surface",
+    "api_key_env",
+    "endpoint_effective",
+    "transport",
+    "provider_signature",
+    "structured_output_mode",
+    "provider_schema_variant",
+    "live_validation_status",
+)
 
 
 # --- Setup Logging ---
@@ -5745,16 +5760,71 @@ def routing_ladders_payload() -> Dict[str, Dict[str, List[Dict[str, str]]]]:
     return payload
 
 
-def effective_model_routing_payload() -> Dict[str, Dict[str, str]]:
-    payload: Dict[str, Dict[str, str]] = {}
+def _structured_output_mode_for_static_route(
+    phase: str,
+    step_id: str,
+    provider: str,
+    model_id: str,
+    api_key_env: str,
+) -> str:
+    contract = _step_contract_for(phase, step_id)
+    route_entry = route_entry_by_identity(
+        route_entries_for_stage(contract, "primary"),
+        provider=provider,
+        model_id=model_id,
+        api_key_env=api_key_env,
+    )
+    if route_entry is not None:
+        return str(route_entry.get("structured_output_mode") or "none")
+    if is_json_managed_step(contract):
+        return "json_schema"
+    return "none"
+
+
+def effective_model_routing_payload(
+    cfg: Optional[RunnerConfig] = None,
+) -> Dict[str, Dict[str, Any]]:
+    payload: Dict[str, Dict[str, Any]] = {}
     for phase in PHASES:
         provider, model_id, api_key_env = MODEL_ROUTING.get(phase, ("", "", ""))
-        payload[phase] = {
+        row: Dict[str, Any] = {
             "provider": provider,
             "model_id": model_id,
             "api_key_env": api_key_env,
             "scope": "representative_phase_default_not_step_authoritative",
         }
+        if cfg is not None and provider and model_id:
+            step_id = _representative_step_id_for_phase(phase)
+            endpoint_base = llm_base_url(provider, cfg)
+            auth_sequence = (
+                _gemini_auth_mode_sequence(cfg.gemini_auth_mode, endpoint_base)
+                if provider == "gemini"
+                else ["sdk_bearer"]
+            )
+            endpoint_url = transport_endpoint_url(
+                provider, model_id, cfg, "REDACTED", auth_sequence[0]
+            )
+            row.update(
+                build_static_route_fingerprint_metadata(
+                    provider=provider,
+                    model_id=model_id,
+                    api_key_env=api_key_env,
+                    endpoint_base_url=endpoint_base,
+                    endpoint_url=endpoint_url,
+                    transport=transport_for_provider(provider, cfg),
+                    structured_output_mode=_structured_output_mode_for_static_route(
+                        phase,
+                        step_id,
+                        provider,
+                        model_id,
+                        api_key_env,
+                    ),
+                    gemini_auth_mode_effective=(
+                        auth_sequence[0] if provider == "gemini" else None
+                    ),
+                )
+            )
+        payload[phase] = row
     return payload
 
 
@@ -6165,6 +6235,25 @@ def write_run_routing_fingerprint(
             endpoint_url = transport_endpoint_url(
                 provider, model_id, cfg, "REDACTED", default_sequence[0]
             )
+            transport = transport_for_provider(provider, cfg)
+            route_fingerprint = build_static_route_fingerprint_metadata(
+                provider=provider,
+                model_id=model_id,
+                api_key_env=api_key_env,
+                endpoint_base_url=endpoint_base,
+                endpoint_url=endpoint_url,
+                transport=transport,
+                structured_output_mode=_structured_output_mode_for_static_route(
+                    phase,
+                    prompt.step_id,
+                    provider,
+                    model_id,
+                    api_key_env,
+                ),
+                gemini_auth_mode_effective=(
+                    default_sequence[0] if provider == "gemini" else None
+                ),
+            )
             entries.append(
                 {
                     "step_id": prompt.step_id,
@@ -6182,7 +6271,7 @@ def write_run_routing_fingerprint(
                         }
                         for route_provider, route_model, route_key_env in ladder
                     ],
-                    "transport": transport_for_provider(provider, cfg),
+                    "transport": transport,
                     "endpoint_base_url": endpoint_base,
                     "endpoint_effective": endpoint_effective(endpoint_url),
                     "gemini_endpoint_family": (
@@ -6200,6 +6289,7 @@ def write_run_routing_fingerprint(
                         endpoint_base,
                         default_sequence[0] if provider == "gemini" else None,
                     ),
+                    **route_fingerprint,
                 }
             )
         phase_entries[phase] = entries
@@ -6207,6 +6297,13 @@ def write_run_routing_fingerprint(
     payload = {
         "run_id": run_id,
         "created_at": now_iso(),
+        "fingerprint_authority": STATIC_ROUTE_FINGERPRINT_AUTHORITY,
+        "live_provider_behavior_proven": False,
+        "live_validation_status": "LIVE_VALIDATION_REQUIRED",
+        "route_fingerprint_input_fields": list(ROUTE_FINGERPRINT_INPUT_FIELDS),
+        "returned_model_identity_policy": (
+            "returned_model_id_is_response_metadata_only_and_does_not_rewrite_requested_route_identity"
+        ),
         "config": {
             "routing_policy": cfg.routing_policy,
             "routing_policy_version": ROUTING_POLICY_VERSION,
@@ -6243,7 +6340,7 @@ def write_run_routing_fingerprint(
             "wait_timeout_seconds": cfg.batch_wait_timeout_seconds,
             "max_requests_per_job": cfg.batch_max_requests_per_job,
         },
-        "effective_model_routing": effective_model_routing_payload(),
+        "effective_model_routing": effective_model_routing_payload(cfg),
         "benchmark_route_ownership": benchmark_route_ownership_payload(validate=False),
         "phases": phase_entries,
     }
@@ -9058,7 +9155,61 @@ def routing_signature(
     encoded = sanitized_json_bytes(
         canonical, ensure_ascii=True, sort_keys=True, separators=(",", ":")
     )
-    return hashlib.blake2b(encoded, digest_size=32).hexdigest()
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def static_route_fingerprint_material(route_meta: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        field: route_meta.get(field)
+        for field in ROUTE_FINGERPRINT_INPUT_FIELDS
+    }
+
+
+def static_route_fingerprint_hash(material: Dict[str, Any]) -> str:
+    encoded = sanitized_json_bytes(
+        material, ensure_ascii=True, sort_keys=True, separators=(",", ":")
+    )
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def build_static_route_fingerprint_metadata(
+    *,
+    provider: str,
+    model_id: str,
+    api_key_env: str,
+    endpoint_base_url: str,
+    endpoint_url: str,
+    transport: str,
+    structured_output_mode: str,
+    gemini_auth_mode_effective: Optional[str] = None,
+) -> Dict[str, Any]:
+    endpoint_url_effective = endpoint_effective(endpoint_url)
+    route_signature = provider_signature(
+        provider,
+        model_id,
+        endpoint_url,
+        gemini_auth_mode_effective if provider == "gemini" else None,
+    )
+    route_meta = llm_runtime_classify_route_identity(
+        provider=provider,
+        model_id=model_id,
+        api_key_env=api_key_env,
+        endpoint_base_url=endpoint_base_url,
+        endpoint_effective=endpoint_url_effective,
+        transport=transport,
+        provider_signature=route_signature,
+        structured_output={
+            "structured_output_mode_effective": structured_output_mode,
+        },
+    )
+    route_meta["route_identity_authority"] = STATIC_ROUTE_FINGERPRINT_AUTHORITY
+    route_meta.setdefault("direct_provider_guarantees_inherited", None)
+    route_meta["fingerprint_authority"] = STATIC_ROUTE_FINGERPRINT_AUTHORITY
+    route_meta["live_provider_behavior_proven"] = False
+    material = static_route_fingerprint_material(route_meta)
+    route_meta["route_fingerprint_material"] = material
+    route_meta["route_fingerprint_hash"] = static_route_fingerprint_hash(material)
+    return route_meta
 
 
 def build_auth_present_flags(
@@ -10442,8 +10593,8 @@ def enrich_request_meta(
     endpoint_sig = json.dumps(
         endpoint_sig_src, ensure_ascii=True, separators=(",", ":"), sort_keys=True
     )
-    enriched["endpoint_transport_signature"] = hashlib.blake2b(
-        endpoint_sig.encode("utf-8"), digest_size=32
+    enriched["endpoint_transport_signature"] = hashlib.sha256(
+        endpoint_sig.encode("utf-8")
     ).hexdigest()
     enriched.setdefault("routing_tier", None)
     enriched.setdefault("routing_policy", None)

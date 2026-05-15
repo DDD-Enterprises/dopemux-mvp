@@ -133,16 +133,34 @@ def _route_identity(provider: str, model_id: str) -> dict[str, Any]:
     normalized_provider = str(provider).strip().lower()
     normalized_model = str(model_id).strip()
     upstream_provider = normalized_provider
+    provider_route_kind = "unknown"
     if normalized_provider == "openrouter":
         prefix, sep, _rest = normalized_model.partition("/")
         normalized_prefix = {"x-ai": "xai"}.get(prefix.lower(), prefix.lower())
-        if sep and normalized_prefix in {"openai", "gemini", "xai", "anthropic"}:
+        if sep and normalized_prefix == "xai":
+            upstream_provider = "xai"
+            provider_route_kind = "openrouter_proxy_xai"
+        elif sep and normalized_prefix in {"openai", "gemini", "anthropic"}:
             upstream_provider = normalized_prefix
+            provider_route_kind = "openrouter_proxy_other"
+        else:
+            upstream_provider = "unknown"
+            provider_route_kind = "openrouter_native_or_unknown"
+    elif normalized_provider in {"openai", "gemini", "xai"}:
+        provider_route_kind = "direct_provider"
     dependency_class = "proxy" if normalized_provider == "openrouter" else "first_party"
     if normalized_provider in {"ollama", "lmstudio", "vllm", "mock", "local"}:
         dependency_class = "local"
-    economic_surface = normalized_provider if normalized_provider else "unknown"
+    economic_surface = {
+        "xai": "xai_direct",
+        "openai": "openai_direct",
+        "gemini": "gemini_direct",
+        "openrouter": "openrouter",
+    }.get(normalized_provider, "unknown")
     return {
+        "requested_provider": normalized_provider or "unknown",
+        "requested_model_id": normalized_model,
+        "provider_route_kind": provider_route_kind,
         "dependency_class": dependency_class,
         "economic_surface": economic_surface,
         "upstream_provider": upstream_provider,
@@ -150,6 +168,11 @@ def _route_identity(provider: str, model_id: str) -> dict[str, Any]:
             normalized_provider == "openrouter" and upstream_provider != normalized_provider
         ),
         "execution_transport": _route_transport(normalized_provider),
+        "live_validation_status": (
+            "LIVE_VALIDATION_REQUIRED"
+            if normalized_provider in {"openai", "gemini", "xai", "openrouter"}
+            else "UNKNOWN"
+        ),
     }
 
 
@@ -327,9 +350,12 @@ def build_provider_readiness_matrix(
                 "provider": str(route.get("provider") or ""),
                 "model_id": str(route.get("model_id") or ""),
                 "api_key_env": str(route.get("api_key_env") or ""),
+                "provider_route_kind": str(route.get("provider_route_kind") or ""),
+                "upstream_provider": str(route.get("upstream_provider") or ""),
                 "dependency_class": str(route.get("dependency_class") or ""),
                 "economic_surface": str(route.get("economic_surface") or ""),
                 "execution_transport": str(route.get("execution_transport") or ""),
+                "live_validation_status": str(route.get("live_validation_status") or ""),
                 "route_admissible": bool(route.get("route_admissible")),
                 "ready": bool(provider_probe.get("ready")),
                 "provider_probe": provider_probe,
@@ -532,9 +558,12 @@ def build_prescan_routing_plan(
                 "model_id": str(route.get("model_id") or ""),
                 "api_key_env": str(route.get("api_key_env") or ""),
                 "prescan_tier": str(route.get("prescan_tier") or ""),
+                "provider_route_kind": str(route.get("provider_route_kind") or ""),
+                "upstream_provider": str(route.get("upstream_provider") or ""),
                 "dependency_class": str(route.get("dependency_class") or ""),
                 "economic_surface": str(route.get("economic_surface") or ""),
                 "execution_transport": str(route.get("execution_transport") or ""),
+                "live_validation_status": str(route.get("live_validation_status") or ""),
                 "pricing": dict(route.get("pricing") or {}),
                 "structured_output_mode": str(route.get("structured_output_mode") or "none"),
                 "strict_json_schema": bool(route.get("strict_json_schema", False)),
@@ -551,8 +580,11 @@ def build_prescan_routing_plan(
             "api_key_env": str(selected.get("api_key_env")),
             "structured_output_mode": str(selected.get("structured_output_mode") or "none"),
             "strict_json_schema": bool(selected.get("strict_json_schema", False)),
+            "provider_route_kind": str(selected.get("provider_route_kind") or ""),
+            "upstream_provider": str(selected.get("upstream_provider") or ""),
             "dependency_class": str(selected.get("dependency_class") or ""),
             "economic_surface": str(selected.get("economic_surface") or ""),
+            "live_validation_status": str(selected.get("live_validation_status") or ""),
             "selection_basis": "lowest_estimated_cost_within_allowed_tier_band_after_readiness",
             "pricing": dict(selected.get("pricing") or {}),
             "legacy_route_changed": bool(
