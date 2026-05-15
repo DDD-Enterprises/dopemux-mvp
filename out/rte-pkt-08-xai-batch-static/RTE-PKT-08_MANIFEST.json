@@ -1,0 +1,68 @@
+{
+  "id": "RTE-PKT-08-XAI-BATCH-STATIC",
+  "version": "1.0.0",
+  "generated_at_utc": "2026-05-15T15:30:31Z",
+  "worktree": "/Users/hue/.codex/worktrees/d17a/dopemux-mvp",
+  "branch": "codex/rte-pkt-08-xai-batch-static-d17a",
+  "base_branch_observed": "origin/main",
+  "head_at_preflight": "0179b17b03cf46518aa324bd8f50c805b627631d",
+  "repo_remote_observed": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+  "active_packet_source": "conversation_supplied_packet_json",
+  "implementation_source": {
+    "observed_local_branch": "codex/rte-pkt-08-xai-batch-static",
+    "observed_commit": "261a06dc9d8047f7ba1e82f74a63f13cd8ea4f0d",
+    "applied_via": "git cherry-pick into current dedicated worktree before revalidation"
+  },
+  "task_packet_conflict": {
+    "observed": true,
+    "summary": "AGENTS.md requires creating and validating a local task packet; active packet forbids additional task packets and limits writes to code/tests plus this proof output root. No task-packets/ file was written."
+  },
+  "changed_files": [
+    "services/repo-truth-extractor/lib/batch_clients.py",
+    "services/repo-truth-extractor/lib/batch_retriever.py",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/tests/test_batch_retriever.py",
+    "services/repo-truth-extractor/tests/test_rte_pkt_08_batch_static_proof.py",
+    "out/rte-pkt-08-xai-batch-static/RTE-PKT-08_MANIFEST.json",
+    "out/rte-pkt-08-xai-batch-static/RTE-PKT-08_BATCH_STATIC_METADATA_MATRIX.md",
+    "out/rte-pkt-08-xai-batch-static/RTE-PKT-08_JSONL_FIXTURE_EXAMPLES.md",
+    "out/rte-pkt-08-xai-batch-static/RTE-PKT-08_DOWNLOADED_JSONL_INVENTORY.md",
+    "out/rte-pkt-08-xai-batch-static/RTE-PKT-08_LIVE_UNVALIDATED_MARKERS.md",
+    "out/rte-pkt-08-xai-batch-static/RTE-PKT-08_TEST_REPORT.md",
+    "out/rte-pkt-08-xai-batch-static/RTE-PKT-08_NO_PROVIDER_CALLS_ATTESTATION.md",
+    "out/rte-pkt-08-xai-batch-static/RTE-PKT-08_DIFF_SUMMARY.md",
+    "out/rte-pkt-08-xai-batch-static/RTE-PKT-08_REMAINING_UNKNOWNS.md",
+    "out/rte-pkt-08-xai-batch-static/implementation-notes.md"
+  ],
+  "markers": [
+    "STATIC_FIXTURE_VALIDATED",
+    "DOWNLOADED_JSONL_MISSING_IF_NOT_FOUND",
+    "NOT_LIVE_VALIDATED",
+    "LIVE_VALIDATION_REQUIRED",
+    "NO_PROVIDER_CALLS_PERFORMED"
+  ],
+  "downloaded_jsonl_inventory": {
+    "searched_patterns": [
+      "*_output.jsonl",
+      "*_error.jsonl"
+    ],
+    "found_count": 0,
+    "status": "DOWNLOADED_JSONL_MISSING"
+  },
+  "validation_summary": {
+    "python_py_compile": "PASS",
+    "new_static_tests": "PASS",
+    "batch_and_static_selector": "PASS",
+    "existing_batch_strict_redaction_suite": "PASS",
+    "provider_payload_redaction": "PASS",
+    "downloaded_jsonl_inventory": "PASS",
+    "manifest_json": "PASS",
+    "git_diff_check": "PASS",
+    "pre_commit": "PASS"
+  },
+  "no_provider_calls_performed": true,
+  "live_validation_allowed": false,
+  "provider_calls_allowed": false,
+  "batch_provider_operations_allowed": false,
+  "commit_state": "proof_generated_before_final_amend; final SHA reported in closeout"
+}
