@@ -51,6 +51,7 @@ A packet is superseded by another packet
 | TP-DMX-REPOHYG-007 | Repo Hygiene | Recover CLI/system audit hardening tranche from PR #554 | Ready | N/A |
 | TP-DMX-REPOHYG-008 | Repo Hygiene | Remove Genetic Agent and Taskmaster active surfaces | Ready | N/A |
 | TP-DMX-RTEAUDIT-001 | Repo Truth Extractor | Assemble pre-live audit pack for GPT-5.4 Pro | Ready | N/A |
+| TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001 | Repo Truth Extractor | Assemble GPT-5.5 Pro multi-pass audit pack | Active | N/A |
 | TP-DMX-RTEINT-001 | Repo Truth Extractor | Integrate current RTE branch deltas into staging audit branch | Ready | N/A |
 | TP-DMX-RTECANON-001 | Repo Truth Extractor | Establish `dopemux rte` as the canonical operator entrypoint | Ready | N/A |
 | TP-RTE-V3-CONSENT-004 | Repo Truth Extractor | Gate legacy v3 execution and fail closed on unknown pipeline versions | Active | N/A |
