@@ -231,6 +231,7 @@ from llm_runtime import (
     call_llm_with_ladder as llm_runtime_call_llm_with_ladder,
     coerce_artifacts_from_response as llm_runtime_coerce_artifacts_from_response,
     comparison_artifact_dir as llm_runtime_comparison_artifact_dir,
+    classify_route_identity as llm_runtime_classify_route_identity,
     compute_comparison_resume_decision as llm_runtime_compute_comparison_resume_decision,
     is_auth_classified_failure as llm_runtime_is_auth_classified_failure,
     is_retryable_exception as llm_runtime_is_retryable_exception,
