@@ -357,7 +357,7 @@ def classify_route_identity(
             if normalized_provider in {"xai", "openai", "gemini", "openrouter"}
             else "UNKNOWN"
         ),
-        "route_identity_authority": "static_request_metadata",
+        "route_identity_authority": "static_request_route_metadata",
         "direct_provider_guarantees_inherited": (
             False if normalized_provider == "openrouter" else None
         ),

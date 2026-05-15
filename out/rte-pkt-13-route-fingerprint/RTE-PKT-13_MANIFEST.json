@@ -1,0 +1,127 @@
+{
+  "packet_id": "RTE-PKT-13-ROUTE-FINGERPRINT-STATIC-PROOF",
+  "generated_at_local": "2026-05-15T11:18:29-0700",
+  "worktree": "/Users/hue/.codex/worktrees/536d/dopemux-mvp",
+  "branch": "codex/rte-pkt-13-route-fingerprint",
+  "base_head": "fac81ac877b61ea5762f4fc84a3c4e73f061c9b8",
+  "predecessor_packet": "RTE-PKT-12-OPENROUTER-XAI",
+  "predecessor_verdict": "PASS_WITH_RISKS",
+  "predecessor_verdict_source": "active_packet_instruction",
+  "predecessor_local_manifest_status_observed": "STATIC_METADATA_IMPLEMENTED_TARGETED_VALIDATION_PASS",
+  "changed_code_files": [
+    "services/repo-truth-extractor/llm_runtime.py",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/tests/test_route_fingerprint_static_identity.py"
+  ],
+  "proof_outputs": [
+    "out/rte-pkt-13-route-fingerprint/RTE-PKT-13_MANIFEST.json",
+    "out/rte-pkt-13-route-fingerprint/RTE-PKT-13_DIFF_SUMMARY.md",
+    "out/rte-pkt-13-route-fingerprint/RTE-PKT-13_ROUTE_FINGERPRINT_MATRIX.md",
+    "out/rte-pkt-13-route-fingerprint/RTE-PKT-13_STATIC_FIXTURE_EXAMPLES.md",
+    "out/rte-pkt-13-route-fingerprint/RTE-PKT-13_TEST_REPORT.md",
+    "out/rte-pkt-13-route-fingerprint/RTE-PKT-13_NO_PROVIDER_CALLS_ATTESTATION.md",
+    "out/rte-pkt-13-route-fingerprint/RTE-PKT-13_REMAINING_UNKNOWNS.md"
+  ],
+  "validation_summary": [
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_route_fingerprint_static_identity.py -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "5 passed"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_openrouter_xai_route_identity.py -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "6 passed"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests -k \"routing_fingerprint or route_fingerprint or fingerprint\" -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "8 passed"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests -k \"openrouter and xai\" -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "8 passed"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests -k \"xai and metadata\" -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "2 passed"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_structured_output_provider_modes.py -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "3 passed"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_llm_runtime_seam.py services/repo-truth-extractor/tests/test_provider_payload_redaction.py -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "12 passed"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_v5_golden_fixture_smoke.py -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "1 passed"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests -k \"proof_pack or proof or status\" -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "25 passed"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests -k \"risk and dashboard\" -q",
+      "exit_code": 5,
+      "result": "NOT_RUN_NO_TESTS_SELECTED",
+      "summary": "No tests selected"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests -k \"proof_contract or artifact_authority\" -q",
+      "exit_code": 5,
+      "result": "NOT_RUN_NO_TESTS_SELECTED",
+      "summary": "No tests selected"
+    },
+    {
+      "command": "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/llm_runtime.py",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "Compilation passed"
+    },
+    {
+      "command": "python -m json.tool out/rte-pkt-13-route-fingerprint/RTE-PKT-13_MANIFEST.json >/dev/null",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "Manifest JSON parsed"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "No whitespace errors in unstaged diff"
+    },
+    {
+      "command": "pre-commit run --files services/repo-truth-extractor/llm_runtime.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_route_fingerprint_static_identity.py out/rte-pkt-13-route-fingerprint/RTE-PKT-13_MANIFEST.json out/rte-pkt-13-route-fingerprint/RTE-PKT-13_DIFF_SUMMARY.md out/rte-pkt-13-route-fingerprint/RTE-PKT-13_ROUTE_FINGERPRINT_MATRIX.md out/rte-pkt-13-route-fingerprint/RTE-PKT-13_STATIC_FIXTURE_EXAMPLES.md out/rte-pkt-13-route-fingerprint/RTE-PKT-13_TEST_REPORT.md out/rte-pkt-13-route-fingerprint/RTE-PKT-13_NO_PROVIDER_CALLS_ATTESTATION.md out/rte-pkt-13-route-fingerprint/RTE-PKT-13_REMAINING_UNKNOWNS.md",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "Configured pre-commit hooks passed for changed files"
+    }
+  ],
+  "no_provider_call_status": "PASS_TARGETED_STATIC_TESTS",
+  "remaining_unknowns": [
+    "OpenRouter x-ai live upstream metadata UNKNOWN",
+    "OpenRouter x-ai returned model behavior UNKNOWN unless live evidence exists",
+    "OpenRouter x-ai schema acceptance LIVE_VALIDATION_REQUIRED",
+    "OpenRouter x-ai retention/ZDR/billing/rate-limit equivalence UNKNOWN",
+    "Direct xAI live safety LIVE_VALIDATION_REQUIRED",
+    "proof_contract.py surface MISSING/UNKNOWN in services/repo-truth-extractor",
+    "risk_dashboard.py surface MISSING/UNKNOWN in services/repo-truth-extractor"
+  ]
+}
