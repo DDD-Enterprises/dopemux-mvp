@@ -224,6 +224,8 @@ from rte_reports import (
 from reporting import build_run_id_resolution_precedence
 from llm_runtime import (
     LLMRuntimeDeps,
+    _RESPONSE_SUMMARY_PASSTHROUGH_KEYS,
+    _provider_route_kind,
     backoff_seconds as llm_runtime_backoff_seconds,
     call_llm as llm_runtime_call_llm,
     call_llm_with_ladder as llm_runtime_call_llm_with_ladder,
@@ -9284,7 +9286,7 @@ def _metadata_int(value: Any) -> Optional[int]:
         if value in (None, ""):
             return None
         return int(value)
-    except Exception:
+    except (TypeError, ValueError):
         return None
 
 
@@ -9333,14 +9335,6 @@ def _first_metadata_value(sources: Sequence[Any], *keys: str) -> Any:
         if value not in (None, ""):
             return value
     return None
-
-
-def _provider_route_kind(provider: str, model_id: str) -> str:
-    provider_token = str(provider or "").strip().lower()
-    model_token = str(model_id or "").strip().lower()
-    if provider_token == "openrouter" and model_token.startswith("x-ai/"):
-        return "openrouter_proxy_xai"
-    return "direct_provider"
 
 
 def _choice_message(choice: Any) -> Any:
@@ -10343,31 +10337,7 @@ def enrich_request_meta(
         else {}
     )
     if isinstance(response_summary, dict) and response_summary:
-        for key in (
-            "response_id",
-            "returned_model_id",
-            "effective_model_id",
-            "finish_reason",
-            "finish_reasons",
-            "response_status",
-            "refusal",
-            "refusal_reason",
-            "incomplete",
-            "incomplete_reason",
-            "stop_reason",
-            "safety_reason",
-            "usage",
-            "input_tokens",
-            "output_tokens",
-            "total_tokens",
-            "prompt_tokens",
-            "completion_tokens",
-            "response_text_length",
-            "choice_count",
-            "candidate_count",
-            "created",
-            "system_fingerprint_if_present",
-        ):
+        for key in _RESPONSE_SUMMARY_PASSTHROUGH_KEYS:
             if key in response_summary and response_summary.get(key) is not None:
                 enriched.setdefault(key, copy.deepcopy(response_summary[key]))
         if (

@@ -192,6 +192,33 @@ def _structured_output_request_metadata(
     return result
 
 
+_RESPONSE_SUMMARY_PASSTHROUGH_KEYS: tuple = (
+    "response_id",
+    "returned_model_id",
+    "effective_model_id",
+    "finish_reason",
+    "finish_reasons",
+    "response_status",
+    "refusal",
+    "refusal_reason",
+    "incomplete",
+    "incomplete_reason",
+    "stop_reason",
+    "safety_reason",
+    "usage",
+    "input_tokens",
+    "output_tokens",
+    "total_tokens",
+    "prompt_tokens",
+    "completion_tokens",
+    "response_text_length",
+    "choice_count",
+    "candidate_count",
+    "created",
+    "system_fingerprint_if_present",
+)
+
+
 def _response_summary_metadata(
     response_summary: Optional[Dict[str, Any]],
 ) -> Dict[str, Any]:
@@ -199,32 +226,7 @@ def _response_summary_metadata(
         return {}
     summary = copy.deepcopy(response_summary)
     result: Dict[str, Any] = {"response_summary": summary}
-    passthrough_keys = (
-        "response_id",
-        "returned_model_id",
-        "effective_model_id",
-        "finish_reason",
-        "finish_reasons",
-        "response_status",
-        "refusal",
-        "refusal_reason",
-        "incomplete",
-        "incomplete_reason",
-        "stop_reason",
-        "safety_reason",
-        "usage",
-        "input_tokens",
-        "output_tokens",
-        "total_tokens",
-        "prompt_tokens",
-        "completion_tokens",
-        "response_text_length",
-        "choice_count",
-        "candidate_count",
-        "created",
-        "system_fingerprint_if_present",
-    )
-    for key in passthrough_keys:
+    for key in _RESPONSE_SUMMARY_PASSTHROUGH_KEYS:
         if key in summary and summary.get(key) is not None:
             result[key] = copy.deepcopy(summary[key])
     if "response_text_length" not in result and summary.get("text_length") is not None:
