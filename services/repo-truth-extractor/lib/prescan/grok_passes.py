@@ -1,16 +1,21 @@
 import datetime as dt
-import hashlib
 import json
 import logging
 import os
 import time
+import zlib
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Any, Optional, List, Dict
 from .models import PrescanConfig
 from .token_counter import estimate_tokens
+from output_safety import (
+    sanitize_payload_for_provider,
+    sanitize_text_for_provider_payload,
+)
 
 logger = logging.getLogger(__name__)
+CACHE_KEY_VERSION = "dopemux-rte-prescan-cache-v3"
 
 class RTEPrescanError(Exception):
     """Base error for prescan."""
@@ -204,9 +209,9 @@ class GrokPassRunner:
             lines = text.splitlines()
             if len(lines) > MAX_PREVIEW_LINES:
                 text = "\n".join(lines[:MAX_PREVIEW_LINES]) + "\n...[TRUNCATED]"
-            return text
+            return sanitize_text_for_provider_payload(text)
         except Exception as e:
-            return f"[Error reading file: {e}]"
+            return sanitize_text_for_provider_payload(f"[Error reading file: {e}]")
 
     def _estimate_tokens(self, text: str) -> int:
         """Estimate tokens for a given text."""
@@ -222,10 +227,10 @@ class GrokPassRunner:
 
     def _get_cache_path(self, pass_id: str, payload: dict) -> Path:
         """Generate a stable cache path for a pass and its payload."""
-        hasher = hashlib.sha256()
         digest_input = {
+            "cache_key_version": CACHE_KEY_VERSION,
             "pass_id": pass_id,
-            "payload": payload,
+            "payload": sanitize_payload_for_provider(payload),
         }
         encoded = json.dumps(
             digest_input,
@@ -233,8 +238,12 @@ class GrokPassRunner:
             separators=(",", ":"),
             default=self._cache_digest_default,
         ).encode("utf-8")
-        hasher.update(encoded)
-        return self._cache_dir / f"{pass_id}_{hasher.hexdigest()[:16]}.json"
+        digest = (
+            f"{len(encoded):08x}"
+            f"{zlib.crc32(encoded) & 0xFFFFFFFF:08x}"
+            f"{zlib.crc32(encoded[::-1]) & 0xFFFFFFFF:08x}"
+        )
+        return self._cache_dir / f"{pass_id}_{digest}.json"
 
     def _load_cached_pass(self, pass_id: str, payload: dict) -> dict | None:
         """Load pass results from cache if valid."""
@@ -255,6 +264,12 @@ class GrokPassRunner:
             path.write_text(json.dumps(result, indent=2), encoding="utf-8")
         except Exception as e:
             logger.warning(f"Failed to save cache for {pass_id}: {e}")
+
+    def _sanitize_provider_payload(self, payload: dict[str, Any]) -> dict[str, Any]:
+        sanitized = sanitize_payload_for_provider(payload)
+        if isinstance(sanitized, dict):
+            return sanitized
+        return {"payload": sanitized}
 
     def _online_authorized(self) -> bool:
         override = getattr(self.config, "online_authorized", None)
@@ -371,16 +386,11 @@ class GrokPassRunner:
         batch_info: Any | None = None
     ) -> dict | None:
         """Execute a single grok pass with caching and validation."""
-        # 1. Build payload
-        if pass_id == "dedup":
-            payload_data = self._build_dedup_payload(intelligence)
-        elif pass_id == "discover":
-            payload_data = self._build_discover_payload(intelligence)
-        elif pass_id == "feasibility":
-            payload_data = self._build_feasibility_payload(intelligence)
-        elif pass_id == "optimize":
-            payload_data = self._build_optimize_payload(intelligence, prior_pass_results)
-        else:
+        # 1. Build provider-bound payload
+        payload_data = self._build_provider_payload(
+            pass_id, intelligence, prior_pass_results
+        )
+        if payload_data is None:
             return None
 
         # 2. Check Cache
@@ -413,6 +423,24 @@ class GrokPassRunner:
             self._save_cached_pass(pass_id, payload_data, result)
 
         return result
+
+    def _build_provider_payload(
+        self,
+        pass_id: str,
+        intelligence: dict[str, Any],
+        prior_pass_results: dict[str, Any],
+    ) -> dict[str, Any] | None:
+        if pass_id == "dedup":
+            payload_data = self._build_dedup_payload(intelligence)
+        elif pass_id == "discover":
+            payload_data = self._build_discover_payload(intelligence)
+        elif pass_id == "feasibility":
+            payload_data = self._build_feasibility_payload(intelligence)
+        elif pass_id == "optimize":
+            payload_data = self._build_optimize_payload(intelligence, prior_pass_results)
+        else:
+            return None
+        return self._sanitize_provider_payload(payload_data)
 
     def run_passes(self, passes, intel, manifest, routing_plan=None):
         if not self._online_authorized():

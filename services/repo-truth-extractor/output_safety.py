@@ -7,10 +7,34 @@ from typing import Any, Mapping, Sequence
 
 _SECRET_QUERY_RE = re.compile(r"([?&](?:key|api[_-]?key|token|access[_-]?token|secret)=)[^&\s]+", re.IGNORECASE)
 _SECRET_ASSIGN_RE = re.compile(
-    r"(?i)(\b(?:api[_-]?key|authorization|bearer|token|secret|password|private[_-]?key|webhook_secret)\b\s*[:=]\s*)([^,\s\]}]+)"
+    r"(?i)((?:[\"']?\b(?:api[_-]?key|bearer|token|secret|password|private[_-]?key|webhook[_-]?secret)\b[\"']?\s*[:=]\s*)[\"']?)([^\"',\s\]}]+)([\"']?)"
 )
 _BEARER_INLINE_RE = re.compile(r"(?i)(\bBearer\s+)([^\s,;]+)")
-_AUTH_HEADER_RE = re.compile(r"(?i)(\b(?:Authorization|x-goog-api-key)\b\s*[:=]\s*)([^\n\r]+)")
+_AUTH_HEADER_RE = re.compile(
+    r"(?i)((?:[\"']?\b(?:Authorization|x-goog-api-key)\b[\"']?\s*[:=]\s*)[\"']?)([^\n\r\"']+)([\"']?)"
+)
+_PRIVATE_KEY_BLOCK_RE = re.compile(
+    r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----.*?-----END [A-Z0-9 ]*PRIVATE KEY-----",
+    re.DOTALL,
+)
+_PROVIDER_TOKEN_RE = re.compile(
+    r"(?<![A-Za-z0-9_-])(?:"
+    r"sk-(?:proj-)?[A-Za-z0-9_-]{16,}|"
+    r"xai-[A-Za-z0-9_-]{16,}|"
+    r"gsk_[A-Za-z0-9_-]{16,}|"
+    r"xox[baprs]-[A-Za-z0-9-]{16,}|"
+    r"gh[pousr]_[A-Za-z0-9_]{20,}|"
+    r"github_pat_[A-Za-z0-9_-]{16,}|"
+    r"glpat-[A-Za-z0-9_-]{20,}|"
+    r"AIza[0-9A-Za-z_-]{20,}|"
+    r"ya29\.[0-9A-Za-z_-]{20,}|"
+    r"(?:AKIA|ASIA)[0-9A-Z]{16}|"
+    r"eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}"
+    r")(?![A-Za-z0-9_-])"
+)
+_LONG_TOKEN_CANDIDATE_RE = re.compile(
+    r"(?<![A-Za-z0-9_])([A-Za-z0-9][A-Za-z0-9_-]{39,})(?![A-Za-z0-9_])"
+)
 
 
 _SAFE_SENSITIVE_KEYS = {
@@ -62,10 +86,46 @@ def sanitize_text_for_output(text: str) -> str:
     if not text:
         return ""
     value = str(text)
+    value = _PRIVATE_KEY_BLOCK_RE.sub("[REDACTED PRIVATE KEY]", value)
     value = _SECRET_QUERY_RE.sub(r"\1REDACTED", value)
-    value = _SECRET_ASSIGN_RE.sub(r"\1[REDACTED]", value)
-    value = _AUTH_HEADER_RE.sub(r"\1[REDACTED]", value)
+    value = _AUTH_HEADER_RE.sub(r"\1[REDACTED]\3", value)
+    value = _SECRET_ASSIGN_RE.sub(r"\1[REDACTED]\3", value)
     value = _BEARER_INLINE_RE.sub(r"\1[REDACTED]", value)
+    value = _PROVIDER_TOKEN_RE.sub("[REDACTED]", value)
+    return value
+
+
+def sanitize_failed_sidecar_text(text: str) -> str:
+    return sanitize_text_for_output(text)
+
+
+def _looks_like_hex_digest(value: str) -> bool:
+    if len(value) not in {32, 40, 64, 96, 128}:
+        return False
+    return bool(re.fullmatch(r"[0-9a-fA-F]+", value))
+
+
+def _redact_long_token_candidate(match: re.Match[str]) -> str:
+    token = match.group(1)
+    if _looks_like_hex_digest(token):
+        return token
+    has_upper = any(ch.isupper() for ch in token)
+    has_lower = any(ch.islower() for ch in token)
+    has_digit = any(ch.isdigit() for ch in token)
+    if has_upper and has_lower and has_digit:
+        return "[REDACTED]"
+    return token
+
+
+def sanitize_text_for_provider_payload(text: str) -> str:
+    """Redact secret-shaped values before text is sent to an LLM provider."""
+    if not text:
+        return ""
+    value = str(text)
+    value = _PRIVATE_KEY_BLOCK_RE.sub("[REDACTED PRIVATE KEY]", value)
+    value = sanitize_text_for_output(value)
+    value = _PROVIDER_TOKEN_RE.sub("[REDACTED]", value)
+    value = _LONG_TOKEN_CANDIDATE_RE.sub(_redact_long_token_candidate, value)
     return value
 
 
@@ -87,6 +147,27 @@ def sanitize_payload_for_output(payload: Any, *, field_name: str | None = None) 
         }
     if isinstance(payload, Sequence) and not isinstance(payload, (str, bytes, bytearray)):
         return [sanitize_payload_for_output(item) for item in payload]
+    return payload
+
+
+def sanitize_payload_for_provider(payload: Any, *, field_name: str | None = None) -> Any:
+    if isinstance(payload, Path):
+        return sanitize_text_for_provider_payload(str(payload))
+    if field_name is not None and _is_sensitive_key(field_name):
+        if payload is None or isinstance(payload, bool):
+            return payload
+        if isinstance(payload, (int, float)):
+            return payload
+        return "[REDACTED]"
+    if isinstance(payload, str):
+        return sanitize_text_for_provider_payload(payload)
+    if isinstance(payload, Mapping):
+        return {
+            str(key): sanitize_payload_for_provider(value, field_name=str(key))
+            for key, value in payload.items()
+        }
+    if isinstance(payload, Sequence) and not isinstance(payload, (str, bytes, bytearray)):
+        return [sanitize_payload_for_provider(item) for item in payload]
     return payload
 
 

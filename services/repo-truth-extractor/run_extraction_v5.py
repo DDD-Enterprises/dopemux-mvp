@@ -42,7 +42,14 @@ RUNNER_SERVICE_DIR = Path(__file__).resolve().parent
 if str(RUNNER_SERVICE_DIR) not in sys.path:
     sys.path.insert(0, str(RUNNER_SERVICE_DIR))
 
-from output_safety import sanitize_payload_for_output, sanitize_text_for_output, sanitized_json_bytes, sanitized_json_text
+from output_safety import (
+    sanitize_failed_sidecar_text,
+    sanitize_payload_for_output,
+    sanitize_text_for_output,
+    sanitize_text_for_provider_payload,
+    sanitized_json_bytes,
+    sanitized_json_text,
+)
 from phases import (
     CODE_HEAVY_PHASES,
     LEGACY_PHASE_DIR_ALIASES,
@@ -2682,6 +2689,15 @@ def write_json(path: Path, payload: Any) -> None:
     )
 
 
+def _is_failed_text_sidecar_path(path: Path) -> bool:
+    return path.name.endswith(".FAILED.txt")
+
+
+def write_failed_sidecar_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(sanitize_failed_sidecar_text(str(text)), encoding="utf-8")
+
+
 def build_pre_live_validator_command(
     *,
     target_policy: str,
@@ -2763,6 +2779,149 @@ def should_enforce_pre_live_validator(
     if bool(getattr(args, "finalize", False)):
         return False
     return bool(_validator_phase_targets(args, phase_sequence))
+
+
+def is_read_only_introspection_mode(args: argparse.Namespace) -> bool:
+    """Return True for CLI paths that report state without dispatching work."""
+    return bool(
+        getattr(args, "coverage_report", False)
+        or getattr(args, "status", False)
+        or getattr(args, "status_json", False)
+        or getattr(args, "tail_run_log", False)
+        or getattr(args, "show_provider_usage", False)
+        or getattr(args, "print_config", False)
+        or getattr(args, "print_run_order", False)
+        or getattr(args, "print_phase_routing", False)
+        or getattr(args, "print_phase_prompts", None) is not None
+        or getattr(args, "print_promptpack", False)
+        or getattr(args, "promptgen_scan", False)
+        or getattr(args, "verify_phase_output", None)
+    )
+
+
+@dataclass(frozen=True)
+class LiveCapableOperation:
+    name: str
+    category: str
+    explicit_intent: str
+    requires_execute_flag: bool = False
+
+
+def classify_live_capable_operations(
+    args: argparse.Namespace,
+    phase_sequence: Sequence[str],
+) -> Tuple[LiveCapableOperation, ...]:
+    operations: List[LiveCapableOperation] = []
+    read_only_introspection = is_read_only_introspection_mode(args)
+
+    def add(
+        name: str,
+        category: str,
+        explicit_intent: str,
+        *,
+        requires_execute_flag: bool = False,
+    ) -> None:
+        operations.append(
+            LiveCapableOperation(
+                name=name,
+                category=category,
+                explicit_intent=explicit_intent,
+                requires_execute_flag=requires_execute_flag,
+            )
+        )
+
+    if bool(getattr(args, "preflight_providers", False)):
+        add("provider preflight", "provider-live", "--preflight-providers")
+    if bool(getattr(args, "doctor_auth", False)):
+        add("auth doctor", "provider-live", "--doctor-auth")
+    if bool(getattr(args, "doctor", False)):
+        add("full doctor provider probes", "provider-live", "--doctor")
+    if bool(getattr(args, "gemini_list_models", False)):
+        add("Gemini model listing", "provider-live", "--gemini-list-models")
+    if bool(getattr(args, "batch_watch", False)):
+        add("batch watch", "batch-provider-live", "--batch-watch")
+    if bool(getattr(args, "batch_retrieve", False)):
+        add("batch retrieve", "batch-provider-live", "--batch-retrieve")
+    if getattr(args, "async_provider", None) and not bool(getattr(args, "finalize", False)):
+        add("async Phase R submit", "async-provider-live", "--async-provider")
+
+    online_prescan_flags: List[str] = []
+    if bool(getattr(args, "prescan_online", False)):
+        online_prescan_flags.append("--prescan-online")
+    if bool(getattr(args, "allow_online_llm", False)):
+        online_prescan_flags.append("--allow-online-llm")
+    if (
+        online_prescan_flags
+        and not bool(getattr(args, "skip_prescan", False))
+        and not read_only_introspection
+    ):
+        add(
+            "online prescan/Grok",
+            "provider-live",
+            ",".join(online_prescan_flags),
+        )
+
+    special_dispatch = bool(
+        getattr(args, "preflight_providers", False)
+        or getattr(args, "doctor_auth", False)
+        or getattr(args, "doctor", False)
+        or getattr(args, "gemini_list_models", False)
+        or getattr(args, "batch_watch", False)
+        or getattr(args, "batch_retrieve", False)
+        or getattr(args, "async_provider", None)
+        or getattr(args, "finalize", False)
+    )
+    live_phases = [
+        str(phase).strip().upper()
+        for phase in phase_sequence
+        if str(phase).strip().upper() in set(PHASES) | {"S_INT"}
+    ]
+    if (
+        live_phases
+        and not special_dispatch
+        and not read_only_introspection
+        and not bool(getattr(args, "dry_run", False))
+        and bool(getattr(args, "execute", False))
+    ):
+        add(
+            "sync phase execution",
+            "provider-live",
+            "--execute",
+            requires_execute_flag=True,
+        )
+
+    return tuple(operations)
+
+
+def enforce_live_operation_consent(
+    parser: argparse.ArgumentParser,
+    *,
+    args: argparse.Namespace,
+    phase_sequence: Sequence[str],
+    raw_argv: Sequence[str],
+) -> Tuple[LiveCapableOperation, ...]:
+    operations = classify_live_capable_operations(args, phase_sequence)
+    if not operations:
+        return operations
+
+    missing: List[str] = []
+    if any(operation.requires_execute_flag for operation in operations) and not _argv_has_flag(
+        raw_argv, "--execute"
+    ):
+        missing.append("--execute")
+    if not _env_is_truthy(DPMX_LIVE_OK_ENV):
+        missing.append(f"{DPMX_LIVE_OK_ENV}=1")
+    if missing:
+        operation_summary = ", ".join(
+            f"{operation.name} [{operation.category}]"
+            for operation in operations
+        )
+        parser.error(
+            "Live-capable operation refused before provider/network dispatch. "
+            f"Missing consent: {', '.join(missing)}. "
+            f"Operations: {operation_summary}."
+        )
+    return operations
 
 
 def enforce_pre_live_validator_for_execution(
@@ -6535,7 +6694,10 @@ def run_integrated_prescan_stage(
         if IntelligenceRouter:
             validation_fields = cfg.prescan_import_validation
             router = cfg.router if validation_fields and validation_fields.get("can_influence_execution") else None
-            if router is None:
+            if router is None and (
+                not validation_fields
+                or bool(validation_fields.get("can_influence_execution"))
+            ):
                 router, validation_fields = _load_imported_prescan_router(
                     Path(cfg.prescan_import_dir),
                     root,
@@ -6887,6 +7049,7 @@ def _merge_prescan_influence_payloads(*payloads: Optional[Dict[str, Any]]) -> Op
     return merged
 
 
+
 def _write_prescan_receipt(
     output_dir: Path,
     mode: str,
@@ -6897,18 +7060,6 @@ def _write_prescan_receipt(
     import_validation: Optional[Dict[str, Any]] = None,
     router: Optional[Any] = None,
 ) -> None:
-    status = "success"
-    if mode in {
-        "imported_prescan_rejected_stale",
-        "imported_prescan_missing_metadata",
-        "local_prescan_failed",
-    }:
-        status = "failed"
-    elif mode == "local_prescan_unavailable":
-        status = "unavailable"
-    elif mode == "skip_prescan":
-        status = "skipped"
-    can_influence = mode in {"imported_prescan_accepted", "local_prescan"}
     source_identity = (
         getattr(result, "metadata", {}).get("source_identity", {})
         if result is not None and isinstance(getattr(result, "metadata", None), dict)
@@ -6917,7 +7068,18 @@ def _write_prescan_receipt(
     validation_fields = dict(import_validation or {})
     if validation_fields:
         mode = str(validation_fields.get("mode") or mode)
-        can_influence = bool(validation_fields.get("can_influence_execution"))
+    status = _prescan_receipt_status(mode)
+    can_influence = (
+        bool(validation_fields.get("can_influence_execution"))
+        if validation_fields
+        else mode in {"imported_prescan_accepted", "local_prescan"}
+    )
+    online_authorized = bool(cfg.prescan_online or cfg.allow_online_llm)
+    online_mode = (
+        "online_prescan_authorized"
+        if online_authorized
+        else "online_prescan_not_authorized"
+    )
     receipt = {
         "advisory_only": not can_influence,
         "can_influence_execution": can_influence,
@@ -6927,11 +7089,7 @@ def _write_prescan_receipt(
         "git_sha_current_if_available": get_git_sha(root) if root is not None else source_identity.get("git_sha"),
         "git_sha_imported_if_present": None,
         "mode": mode,
-        "online_mode": (
-            "online_prescan_authorized"
-            if bool(cfg.prescan_online or cfg.allow_online_llm)
-            else "online_prescan_not_authorized"
-        ),
+        "online_mode": online_mode,
         "prescan_artifact_version": source_identity.get("prescan_artifact_version"),
         "prescan_import_dir": cfg.prescan_import_dir,
         "reason_codes": _prescan_receipt_reason_codes(mode),
@@ -6941,28 +7099,17 @@ def _write_prescan_receipt(
         "source_root_imported_if_present": None,
         "stage": "prescan",
         "status": status,
-        "online_authorized": bool(cfg.prescan_online or cfg.allow_online_llm),
+        "online_authorized": online_authorized,
         "artifacts_dir": str(output_dir.resolve()),
-        "scope_reduction_applied": False,
-        "scope_reduction_enabled_by_prescan_allow_scope_reduction": bool(
-            cfg.prescan_allow_scope_reduction and can_influence
-        ),
+        "scope_reduction_applied": bool(cfg.prescan_allow_scope_reduction and can_influence),
         "router_loaded": can_influence,
         "verdict": _prescan_receipt_verdict(mode),
     }
     if validation_fields:
-        receipt.update(validation_fields)
-        receipt["stage"] = "prescan"
-        receipt["status"] = status
-        receipt["online_authorized"] = bool(cfg.prescan_online or cfg.allow_online_llm)
-        receipt["online_mode"] = (
-            "online_prescan_authorized"
-            if bool(cfg.prescan_online or cfg.allow_online_llm)
-            else "online_prescan_not_authorized"
-        )
-        receipt["artifacts_dir"] = str(output_dir.resolve())
-        receipt["scope_reduction_applied"] = False
-        receipt["scope_reduction_enabled_by_prescan_allow_scope_reduction"] = bool(
+        for key in _PRESCAN_RECEIPT_VALIDATION_FIELD_KEYS:
+            if key in validation_fields:
+                receipt[key] = validation_fields[key]
+        receipt["scope_reduction_applied"] = bool(
             cfg.prescan_allow_scope_reduction and receipt.get("can_influence_execution")
         )
         receipt["router_loaded"] = bool(receipt.get("can_influence_execution"))
@@ -7038,6 +7185,42 @@ def _write_prescan_dir_receipt(
         )
     )
     write_json(output_dir / "prescan_dir_receipt.json", receipt)
+
+
+_PRESCAN_RECEIPT_VALIDATION_FIELD_KEYS = frozenset(
+    {
+        "advisory_only",
+        "can_influence_execution",
+        "corpus_manifest_hash_current_if_available",
+        "corpus_manifest_hash_imported_if_present",
+        "generated_at_imported_if_present",
+        "git_sha_current_if_available",
+        "git_sha_imported_if_present",
+        "mode",
+        "prescan_artifact_version",
+        "prescan_import_dir",
+        "reason_codes",
+        "repo_root_current",
+        "repo_root_imported_if_present",
+        "source_root_current",
+        "source_root_imported_if_present",
+        "verdict",
+    }
+)
+
+
+def _prescan_receipt_status(mode: str) -> str:
+    if mode in {
+        "imported_prescan_rejected_stale",
+        "imported_prescan_missing_metadata",
+        "local_prescan_failed",
+    }:
+        return "failed"
+    if mode == "local_prescan_unavailable":
+        return "unavailable"
+    if mode == "skip_prescan":
+        return "skipped"
+    return "success"
 
 
 def _prescan_receipt_reason_codes(mode: str) -> List[str]:
@@ -8530,11 +8713,13 @@ def build_chat_payload(
     max_completion_tokens: Optional[int] = None,
 ) -> Dict[str, Any]:
     temperature = resolve_temperature(provider, model_id, 0.1)
+    safe_system_prompt = sanitize_text_for_provider_payload(system_prompt)
+    safe_user_content = sanitize_text_for_provider_payload(user_content)
     payload: Dict[str, Any] = {
         "model": model_id,
         "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_content},
+            {"role": "system", "content": safe_system_prompt},
+            {"role": "user", "content": safe_user_content},
         ],
     }
     if temperature is not None:
@@ -11561,6 +11746,8 @@ def build_v5_batch_request(
     metadata: Dict[str, Any],
     schema_name_suffix: str = "batch",
 ) -> BatchRequest:
+    safe_system_prompt = sanitize_text_for_provider_payload(system_prompt)
+    safe_user_content = sanitize_text_for_provider_payload(user_content)
     batch_metadata = {
         str(key): str(value)
         for key, value in dict(metadata or {}).items()
@@ -11614,8 +11801,8 @@ def build_v5_batch_request(
     return BatchRequest(
         custom_id=custom_id,
         model_id=model_id,
-        system_prompt=system_prompt,
-        user_content=user_content,
+        system_prompt=safe_system_prompt,
+        user_content=safe_user_content,
         force_json_output=bool(force_json_output and not strict_contract_required),
         metadata=batch_metadata,
         response_format=response_format,
@@ -12450,7 +12637,12 @@ def execute_step_for_partitions(
         logs.append((level, message))
 
     def _op_write_text(write_ops: List[Dict[str, Any]], path: Path, text: str) -> None:
-        write_ops.append({"kind": "write_text", "path": str(path), "text": text})
+        text_value = str(text)
+        if _is_failed_text_sidecar_path(path):
+            text_value = sanitize_failed_sidecar_text(text_value)
+        write_ops.append(
+            {"kind": "write_text", "path": str(path), "text": text_value}
+        )
 
     def _op_write_json(
         write_ops: List[Dict[str, Any]], path: Path, payload: Dict[str, Any]
@@ -12472,7 +12664,10 @@ def execute_step_for_partitions(
                     continue
 
                 if kind == "write_text":
-                    op_path.write_text(str(op["text"]), encoding="utf-8")
+                    if _is_failed_text_sidecar_path(op_path):
+                        write_failed_sidecar_text(op_path, str(op["text"]))
+                    else:
+                        op_path.write_text(str(op["text"]), encoding="utf-8")
                 elif kind == "write_json":
                     payload = op["payload"] if isinstance(op["payload"], dict) else {}
                     write_json(op_path, payload)
@@ -17785,8 +17980,9 @@ def run_batch_watch(
                 artifacts_missing = list(output_artifacts)
                 step_stats[step_id]["recomputed"] += 1
                 step_stats[step_id]["failed"] += 1
-                out_failed.write_text(
-                    "batch_missing_result_for_partition\n", encoding="utf-8"
+                write_failed_sidecar_text(
+                    out_failed,
+                    "batch_missing_result_for_partition\n",
                 )
                 write_json(
                     out_failed_json,
@@ -17830,9 +18026,9 @@ def run_batch_watch(
                     row["completed_at_utc"] = now_iso()
                     artifacts_missing = list(output_artifacts)
                     step_stats[step_id]["failed"] += 1
-                    out_failed.write_text(
+                    write_failed_sidecar_text(
+                        out_failed,
                         response_text or (result.error or "batch_parse_failure"),
-                        encoding="utf-8",
                     )
                     write_json(
                         out_failed_json,
@@ -18024,8 +18220,9 @@ def run_batch_watch(
                     },
                 },
             )
-            out_failed.write_text(
-                f"batch_terminal_state:{terminal_status}\n", encoding="utf-8"
+            write_failed_sidecar_text(
+                out_failed,
+                f"batch_terminal_state:{terminal_status}\n",
             )
 
         row["updated_at_utc"] = now_iso()
@@ -19847,6 +20044,8 @@ def main() -> None:
     if args.max_cost_usd is not None and args.max_cost_usd <= 0:
         parser.error("--max-cost-usd must be > 0 when provided.")
 
+    root = Path.cwd()
+
     # Initialize optional imported prescan router before RunnerConfig assembly.
     router = None
     prescan_import_validation = None
@@ -19927,6 +20126,7 @@ def main() -> None:
         or args.print_phase_prompts
         or args.promptgen_scan
         or args.gemini_list_models
+        or args.batch_retrieve
         or args.preset
     ):
         parser.error(
@@ -19935,7 +20135,7 @@ def main() -> None:
             "--status, --status-json, --print-promptpack, --list-phases, --print-run-order, "
             "--print-phase-routing, --print-routing-guide, --print-prescan-guide, "
             "--tail-run-log, --show-provider-usage, --print-phase-prompts, "
-            "--gemini-list-models, or --preset."
+            "--gemini-list-models, --batch-retrieve, or --preset."
         )
     if args.watch is not None and args.watch <= 0:
         parser.error("--watch must be > 0 when provided.")
@@ -19952,7 +20152,6 @@ def main() -> None:
     if args.print_cost_preview and not (args.phase or args.preset):
         parser.error("--print-cost-preview requires --phase or --preset.")
 
-    root = Path.cwd()
     configure_output_layout(root, args.output_root)
     readonly_introspection = bool(
         args.status
@@ -20016,12 +20215,20 @@ def main() -> None:
         logger.error("%s", exc)
         sys.exit(1)
     phase_sequence = resolve_phase_list(args.phase)
+    if not phase_sequence and preset_phase_sequence:
+        phase_sequence = list(preset_phase_sequence)
     if _active_profile:
         _enabled = _active_profile.get("phase_policy", {}).get("enabled_phases")
         if _enabled and phase_sequence:
             phase_sequence = [p for p in phase_sequence if p in _enabled]
         elif _enabled and not phase_sequence:
             phase_sequence = [p for p in PHASES if p in _enabled]
+    enforce_live_operation_consent(
+        parser,
+        args=args,
+        phase_sequence=phase_sequence,
+        raw_argv=raw_argv,
+    )
     if should_enforce_pre_live_validator(args, phase_sequence):
         try:
             enforce_pre_live_validator_for_execution(

@@ -4,7 +4,7 @@ version = "9.0.3"
 description = "AI-powered PAL MCP server with multiple model providers"
 requires-python = ">=3.10"
 dependencies = [
-    "mcp>=1.27.0",
+    "mcp>=1.27.1",
     "google-genai>=1.19.0",
     "openai>=1.55.2",
     "pydantic>=2.0.0",

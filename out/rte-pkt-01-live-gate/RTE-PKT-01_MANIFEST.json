@@ -1,0 +1,339 @@
+{
+  "baseline_comparison": {
+    "base_head": "a4214ca5bf431e1b59791661e2b664a6cd24c1da",
+    "base_worktree": "/Users/hue/.codex/worktrees/rte-pkt-01-base-triage",
+    "tests": [
+      {
+        "base_result": "FAIL exit 1 on clean detached base a4214ca5; same AssertionError: provider_failure is not None.",
+        "classification": "BASELINE_FAILURE",
+        "implementation_result": "FAIL exit 1; AssertionError: request_meta.escalation_trigger observed provider_failure, expected None.",
+        "intake_path_note": "The intake path services/repo-truth-extractor/tests/test_run_extraction_v5_current_partition_execution.py does not exist in this checkout; rg found this test in test_run_extraction_v5_prelive_hardening.py.",
+        "packet_action": "No runtime/test change in RTE-PKT-01; documented as baseline drift outside live-gate terminality scope.",
+        "test": "services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py::test_current_partition_execution_preserves_provider_failure_semantics_before_parse_fallback"
+      },
+      {
+        "base_result": "FAIL exit 1 on clean detached base a4214ca5; same AssertionError: cost != balanced_openrouter.",
+        "classification": "BASELINE_FAILURE",
+        "implementation_result": "FAIL exit 1; AssertionError: DEFAULT_TARGET_POLICY observed cost, expected balanced_openrouter.",
+        "intake_path_note": "Path exists as provided.",
+        "packet_action": "No validator default-policy change in RTE-PKT-01; documented as baseline drift outside live-gate terminality scope.",
+        "test": "services/repo-truth-extractor/tests/test_pre_live_gate_v25.py::test_default_policy_requires_direct_gemini_and_xai"
+      }
+    ]
+  },
+  "batch_provider_operations": "NOT_RUN",
+  "branch": "codex/rte-pkt-01-live-gate",
+  "changed_files": [
+    {
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "purpose": "Add live-capable operation classifier and early parser-level consent refusal before provider/network dispatch; allow batch retrieve to reach its own guarded dispatch without requiring a phase.",
+      "scope_status": "allowed_code_path"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_run_extraction_v5_live_gate_terminality.py",
+      "purpose": "New local monkeypatch tests for consent classification, refusal before live-capable dispatch, dry-run allowance, and consent-success path without provider calls.",
+      "scope_status": "allowed_test_path"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py",
+      "purpose": "Align validator-behavior tests with explicit --execute plus DPMX_LIVE_OK=1 so they test validator behavior rather than consent refusal.",
+      "scope_status": "allowed_test_path"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_run_extraction_v5_validator_repair_provenance.py",
+      "purpose": "Same validator-behavior alignment as the sibling validator test module.",
+      "scope_status": "allowed_test_path"
+    }
+  ],
+  "commit_created": true,
+  "commit_readiness": "COMMIT_CREATED_FOR_REVIEW",
+  "commit_sha_note": "Final commit SHA is reported in the Codex closeout response after commit finalization; embedding it in this tracked manifest would require an additional proof-only commit.",
+  "external_research": "NOT_RUN",
+  "final_closeout_generated_at": "2026-05-15T02:41:39.645693+00:00",
+  "final_closeout_status": "READY_FOR_REVIEW_CLEAN",
+  "final_closeout_validation": [
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_run_extraction_v5_live_gate_terminality.py -q",
+      "detail": "26 passed; warning: unknown pytest config option asyncio_mode.",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_run_extraction_v5_live_gate_terminality.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator_repair_provenance.py services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py::test_cli_help_mentions_execute_live_ok_and_list_phases services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py::test_cli_live_execution_requires_explicit_consent -q",
+      "detail": "41 passed; warning: unknown pytest config option asyncio_mode.",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py",
+      "detail": "No syntax errors.",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "detail": "No whitespace errors in tracked diff at closeout validation.",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "git status --short --branch",
+      "detail": "Dirty state before staging was limited to allowed runtime/test/proof paths; post-commit status is verified in the Codex closeout response.",
+      "exit_code": 0,
+      "result": "PASS"
+    }
+  ],
+  "finalize_classification": "FINALIZE_LOCAL_ONLY_CONFIRMED",
+  "generated_at": "2026-05-15T02:18:28.825840+00:00",
+  "git_diff_name_only_at_triage_closeout": [
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py",
+    "services/repo-truth-extractor/tests/test_run_extraction_v5_validator_repair_provenance.py"
+  ],
+  "git_diff_name_status_at_finalization": [
+    "M\tservices/repo-truth-extractor/run_extraction_v5.py",
+    "M\tservices/repo-truth-extractor/tests/test_run_extraction_v5_validator.py",
+    "M\tservices/repo-truth-extractor/tests/test_run_extraction_v5_validator_repair_provenance.py"
+  ],
+  "git_diff_name_status_at_generation": [
+    "M\tservices/repo-truth-extractor/run_extraction_v5.py",
+    "M\tservices/repo-truth-extractor/tests/test_run_extraction_v5_validator.py",
+    "M\tservices/repo-truth-extractor/tests/test_run_extraction_v5_validator_repair_provenance.py"
+  ],
+  "git_diff_stat_at_finalization": [
+    "services/repo-truth-extractor/run_extraction_v5.py | 128 ++++++++++++++++++++-",
+    " .../tests/test_run_extraction_v5_validator.py      |   7 +-",
+    " ...un_extraction_v5_validator_repair_provenance.py |   6 +-",
+    " 3 files changed, 135 insertions(+), 6 deletions(-)"
+  ],
+  "git_diff_stat_at_generation": [
+    "services/repo-truth-extractor/run_extraction_v5.py | 128 ++++++++++++++++++++-",
+    " .../tests/test_run_extraction_v5_validator.py      |   7 +-",
+    " ...un_extraction_v5_validator_repair_provenance.py |   6 +-",
+    " 3 files changed, 135 insertions(+), 6 deletions(-)"
+  ],
+  "git_diff_stat_at_triage_closeout": [
+    "services/repo-truth-extractor/run_extraction_v5.py | 128 ++++++++++++++++++++-",
+    " .../tests/test_run_extraction_v5_validator.py      |   7 +-",
+    " ...un_extraction_v5_validator_repair_provenance.py |   6 +-",
+    " 3 files changed, 135 insertions(+), 6 deletions(-)"
+  ],
+  "git_status_before_staging_closeout": [
+    "## codex/rte-pkt-01-live-gate",
+    " M services/repo-truth-extractor/run_extraction_v5.py",
+    " M services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py",
+    " M services/repo-truth-extractor/tests/test_run_extraction_v5_validator_repair_provenance.py",
+    "?? out/rte-pkt-01-live-gate/",
+    "?? services/repo-truth-extractor/tests/test_run_extraction_v5_live_gate_terminality.py"
+  ],
+  "git_status_short_branch_at_finalization": [
+    "## codex/rte-pkt-01-live-gate",
+    " M services/repo-truth-extractor/run_extraction_v5.py",
+    " M services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py",
+    " M services/repo-truth-extractor/tests/test_run_extraction_v5_validator_repair_provenance.py",
+    "?? out/rte-pkt-01-live-gate/",
+    "?? services/repo-truth-extractor/tests/test_run_extraction_v5_live_gate_terminality.py"
+  ],
+  "git_status_short_branch_at_generation": [
+    "## codex/rte-pkt-01-live-gate",
+    " M services/repo-truth-extractor/run_extraction_v5.py",
+    " M services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py",
+    " M services/repo-truth-extractor/tests/test_run_extraction_v5_validator_repair_provenance.py",
+    "?? services/repo-truth-extractor/tests/test_run_extraction_v5_live_gate_terminality.py"
+  ],
+  "git_status_short_branch_at_triage_closeout": [
+    "## codex/rte-pkt-01-live-gate",
+    " M services/repo-truth-extractor/run_extraction_v5.py",
+    " M services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py",
+    " M services/repo-truth-extractor/tests/test_run_extraction_v5_validator_repair_provenance.py",
+    "?? out/rte-pkt-01-live-gate/",
+    "?? services/repo-truth-extractor/tests/test_run_extraction_v5_live_gate_terminality.py"
+  ],
+  "head": "a4214ca5bf431e1b59791661e2b664a6cd24c1da",
+  "id": "RTE-PKT-01-LIVE-GATE",
+  "live_extraction": "NOT_RUN",
+  "no_live_calls_after_triage": {
+    "batch_submit_poll_retrieve_cancel": "NOT_RUN",
+    "external_research": "NOT_RUN",
+    "live_extraction": "NOT_RUN",
+    "provider_calls": "NOT_RUN"
+  },
+  "no_live_provider_calls_closeout": {
+    "external_research": "NOT_RUN",
+    "live_extraction": "NOT_RUN",
+    "provider_batch_submit_poll_retrieve_cancel": "NOT_RUN",
+    "provider_calls": "NOT_RUN",
+    "provider_credentials_required": "NOT_RUN"
+  },
+  "online_diagnostic_classification": {
+    "--doctor": "PROVIDER_CONTACTING_EXPLICIT_INTENT",
+    "--doctor-auth": "PROVIDER_CONTACTING_EXPLICIT_INTENT",
+    "--gemini-list-models": "PROVIDER_CONTACTING_EXPLICIT_INTENT",
+    "--preflight-providers": "PROVIDER_CONTACTING_EXPLICIT_INTENT"
+  },
+  "outputs": [
+    {
+      "bytes": 4616,
+      "path": "out/rte-pkt-01-live-gate/RTE-PKT-01_CLOSEOUT.md",
+      "sha256": "3c817dadfe4e9c099f6238b26bc708ce8b07c568a84005af135174a66789b44e"
+    },
+    {
+      "bytes": 2066,
+      "path": "out/rte-pkt-01-live-gate/RTE-PKT-01_DIFF_SUMMARY.md",
+      "sha256": "7bcd925d1e82da9119fd22607c97897b2707b8b9fe0d427f938c19fd2a029a38"
+    },
+    {
+      "bytes": 6829,
+      "path": "out/rte-pkt-01-live-gate/RTE-PKT-01_LIVE_OPERATION_MATRIX.md",
+      "sha256": "5991f41fbabacfcd7a8e2b8b46a131aa9c95f9eab4363af1d447b248e154ac4b"
+    },
+    {
+      "bytes": 737,
+      "path": "out/rte-pkt-01-live-gate/RTE-PKT-01_NO_LIVE_CALLS_ATTESTATION.md",
+      "sha256": "17d64fa36fcd9b2ba468f6e34eaa7a3c939f2e57155894ecb6b320173e9dbb5f"
+    },
+    {
+      "bytes": 7018,
+      "path": "out/rte-pkt-01-live-gate/RTE-PKT-01_REGRESSION_TRIAGE_CLOSEOUT.md",
+      "sha256": "72deca8a0e384416742fb28e5b956588d0d966a8446990fe7c64fe955f5eb3b1"
+    },
+    {
+      "bytes": 1772,
+      "path": "out/rte-pkt-01-live-gate/RTE-PKT-01_REMAINING_UNKNOWNS.md",
+      "sha256": "c98b94fd85a593d5c490273be0cc092c96878a452db7e1293b8598e8e188a976"
+    },
+    {
+      "bytes": 6118,
+      "path": "out/rte-pkt-01-live-gate/RTE-PKT-01_TEST_REPORT.md",
+      "sha256": "b552a7d4ae351d9668dfacf813c91f8bb131c333c7be6737725b116c1924239b"
+    },
+    {
+      "bytes": 17913,
+      "path": "out/rte-pkt-01-live-gate/RTE-PKT-01_MANIFEST.json",
+      "sha256": "SELF_REFERENTIAL_NOT_EMBEDDED",
+      "sha256_note": "Compute this file hash externally after generation; embedding its final hash would change the file."
+    }
+  ],
+  "proof_artifacts_preserved_under": "out/rte-pkt-01-live-gate/",
+  "proof_artifacts_tracking_plan": "Track proof artifacts with the RTE-PKT-01 closeout commit.",
+  "proof_artifacts_tracking_status": "TRACKED_WITH_RTE_PKT_01_COMMIT",
+  "provider_calls": "NOT_RUN",
+  "regression_triage_retained": {
+    "test_current_partition_execution_preserves_provider_failure_semantics_before_parse_fallback": "BASELINE_FAILURE",
+    "test_default_policy_requires_direct_gemini_and_xai": "BASELINE_FAILURE"
+  },
+  "review_file_list": [
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/tests/test_run_extraction_v5_live_gate_terminality.py",
+    "services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py",
+    "services/repo-truth-extractor/tests/test_run_extraction_v5_validator_repair_provenance.py"
+  ],
+  "source_basis": "RTE-PKT-00-SOURCE-CLOSURE plus runtime source/tests in this worktree",
+  "triage_closeout_generated_at": "2026-05-15T02:27:34.447685+00:00",
+  "triage_status": "READY_FOR_REVIEW_CLEAN",
+  "triage_validation_summary": [
+    {
+      "command": "pwd; git rev-parse --show-toplevel; git branch --show-current || true; git rev-parse HEAD; git status --short --branch; git diff --name-only",
+      "detail": "Captured implementation branch state before triage.",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py::test_current_partition_execution_preserves_provider_failure_semantics_before_parse_fallback -q",
+      "detail": "Implementation branch failure: escalation_trigger observed provider_failure, expected None.",
+      "exit_code": 1,
+      "result": "FAIL_BASELINE_COMPARISON_IMPL"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_pre_live_gate_v25.py::test_default_policy_requires_direct_gemini_and_xai -q",
+      "detail": "Implementation branch failure: DEFAULT_TARGET_POLICY observed cost, expected balanced_openrouter.",
+      "exit_code": 1,
+      "result": "FAIL_BASELINE_COMPARISON_IMPL"
+    },
+    {
+      "command": "git worktree add --detach /Users/hue/.codex/worktrees/rte-pkt-01-base-triage a4214ca5bf431e1b59791661e2b664a6cd24c1da",
+      "detail": "Created clean detached base comparison worktree.",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py::test_current_partition_execution_preserves_provider_failure_semantics_before_parse_fallback -q (base worktree)",
+      "detail": "Clean base failure: same escalation_trigger provider_failure vs None assertion.",
+      "exit_code": 1,
+      "result": "FAIL_BASELINE"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_pre_live_gate_v25.py::test_default_policy_requires_direct_gemini_and_xai -q (base worktree)",
+      "detail": "Clean base failure: same DEFAULT_TARGET_POLICY cost vs balanced_openrouter assertion.",
+      "exit_code": 1,
+      "result": "FAIL_BASELINE"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_run_extraction_v5_live_gate_terminality.py -q",
+      "detail": "26 passed; warning: unknown pytest config option asyncio_mode.",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py",
+      "detail": "No syntax errors.",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "detail": "No whitespace errors.",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "git status --short --branch",
+      "detail": "Dirty state is limited to allowed runtime/test/proof outputs.",
+      "exit_code": 0,
+      "result": "PASS"
+    }
+  ],
+  "validation_summary": [
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_run_extraction_v5_live_gate_terminality.py -q",
+      "details": "26 passed; warning: unknown pytest config option asyncio_mode.",
+      "result": "PASS"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_run_extraction_v5_live_gate_terminality.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator_repair_provenance.py services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py::test_cli_help_mentions_execute_live_ok_and_list_phases services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py::test_cli_live_execution_requires_explicit_consent -q",
+      "details": "41 passed; warning: unknown pytest config option asyncio_mode.",
+      "result": "PASS"
+    },
+    {
+      "command": "env -u DPMX_LIVE_OK python services/repo-truth-extractor/run_extraction_v5.py --phase A --run-id rte_pkt_01_cli_no_consent",
+      "details": "Exited 2 with explicit refusal before provider/network dispatch; message listed missing --execute and DPMX_LIVE_OK=1.",
+      "result": "PASS_EXPECTED_REFUSAL"
+    },
+    {
+      "command": "env -u DPMX_LIVE_OK python services/repo-truth-extractor/run_extraction_v5.py --batch-retrieve --batch-ids batch_123 --dry-run",
+      "details": "Exited 2 with explicit refusal before batch retrieval dispatch; message listed missing DPMX_LIVE_OK=1.",
+      "result": "PASS_EXPECTED_REFUSAL"
+    },
+    {
+      "command": "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py",
+      "details": "Exit 0.",
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "details": "Exit 0 before proof artifact generation; rerun after proof generation is required.",
+      "result": "PASS"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_run_extraction_v5_live_gate_terminality.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator_repair_provenance.py services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py -q",
+      "details": "Exit 1. Unrelated failure in test_current_partition_execution_preserves_provider_failure_semantics_before_parse_fallback: escalation_trigger observed provider_failure, expected None.",
+      "result": "FAIL_EXISTING_OUT_OF_SCOPE"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests -k 'live_gate or consent or pre_live or batch_watch or batch_retrieve or online_prescan' -q",
+      "details": "Exit 1. Selector includes test_pre_live_gate_v25.py::test_default_policy_requires_direct_gemini_and_xai; DEFAULT_TARGET_POLICY observed cost, expected balanced_openrouter.",
+      "result": "FAIL_EXISTING_OUT_OF_SCOPE"
+    }
+  ],
+  "worktree": "/Users/hue/.codex/worktrees/rte-pkt-01-live-gate"
+}
