@@ -1,0 +1,191 @@
+{
+  "packet_id": "RTE-PKT-10-PROOF-CONTRACT",
+  "title": "Proof Contract Gap Report and Run-Proof Classification for Dopemux RTE",
+  "generated_at_utc": "2026-05-15T16:13:41Z",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED_TARGETED_STATIC_VALIDATION",
+  "worktree_path": "/Users/hue/.codex/worktrees/e3e0/dopemux-mvp",
+  "branch": "codex/rte-pkt-10-proof-contract",
+  "starting_head": "0179b17b03cf46518aa324bd8f50c805b627631d",
+  "base_branch_observed": "origin/main is remote HEAD; active packet base_branch is UNKNOWN and this worktree started from detached HEAD 0179b17b03cf46518aa324bd8f50c805b627631d.",
+  "repo_identity": {
+    "repository_name": "dopemux-mvp",
+    "remotes": [
+      "origin https://github.com/DDD-Enterprises/dopemux-mvp.git",
+      "mvp https://github.com/DDD-Enterprises/dopemux-mvp.git"
+    ],
+    "markers_verified": [
+      "pyproject.toml",
+      "src/dopemux/cli.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/",
+      ".dopetaskroot"
+    ]
+  },
+  "active_task_packet": {
+    "id": "RTE-PKT-10-PROOF-CONTRACT",
+    "source": "conversation",
+    "canonical_schema_validation": "NOT_RUN",
+    "schema": "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+    "reason": "The conversation packet is the active scope but uses an audit-packet shape with undeclared fields under the strict dopetask schema. The packet also says not to create additional Task Packets, so no extra task-packet file was written."
+  },
+  "authority_used": [
+    "AGENTS.md",
+    "docs/03-reference/governance/agent-workflow.md",
+    "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+    "docs/03-reference/governance/proof-contract.md",
+    "docs/03-reference/governance/proof-bundle-schema.md",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/rte_reports.py",
+    "services/repo-truth-extractor/reporting.py",
+    "out/rte-pkt-01-live-gate through out/rte-pkt-06-truth-labels where present",
+    "out/rte-pkt-15-failed-sidecars where present",
+    "proof/TP-RTE-* proof files where present"
+  ],
+  "runtime_trace": {
+    "primary_runtime": "services/repo-truth-extractor/run_extraction_v5.py",
+    "proof_writer_observed": "services/repo-truth-extractor/reporting.py via services/repo-truth-extractor/rte_reports.py imports used by run_extraction_v5.py",
+    "proof_writer_changed": false,
+    "proof_writer_change_reason": "reporting.py is outside the active packet allowlist; this packet added a narrow conformance helper and tests instead of changing runtime proof semantics."
+  },
+  "changed_files": [
+    {
+      "path": "services/repo-truth-extractor/lib/proof_contract.py",
+      "scope_status": "conditional_code_path",
+      "purpose": "Small deterministic helper for proof-contract field mapping, artifact authority classification, conformance status, static/live status carry-forward, and exact Pass 1 identity gap reporting."
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_proof_contract.py",
+      "scope_status": "allowed_test_path",
+      "purpose": "Focused local tests for run proof vs full bundle proof, missing declarations, static-only proof, source authority ordering, exact Pass 1 unknowns, packet proof authority, redaction/no-provider status, and no-provider-client safety."
+    },
+    {
+      "path": "out/rte-pkt-10-proof-contract/",
+      "scope_status": "allowed_output_root",
+      "purpose": "Packet proof reports and no-provider-call attestation."
+    }
+  ],
+  "proof_files": [
+    "out/rte-pkt-10-proof-contract/RTE-PKT-10_MANIFEST.json",
+    "out/rte-pkt-10-proof-contract/RTE-PKT-10_PROOF_CONTRACT_GAP_MATRIX.md",
+    "out/rte-pkt-10-proof-contract/RTE-PKT-10_ARTIFACT_AUTHORITY_MAP.md",
+    "out/rte-pkt-10-proof-contract/RTE-PKT-10_CONFORMANCE_EXAMPLES.md",
+    "out/rte-pkt-10-proof-contract/RTE-PKT-10_RUN_PROOF_VS_BUNDLE_PROOF.md",
+    "out/rte-pkt-10-proof-contract/RTE-PKT-10_TEST_REPORT.md",
+    "out/rte-pkt-10-proof-contract/RTE-PKT-10_NO_PROVIDER_CALLS_ATTESTATION.md",
+    "out/rte-pkt-10-proof-contract/RTE-PKT-10_DIFF_SUMMARY.md",
+    "out/rte-pkt-10-proof-contract/RTE-PKT-10_REMAINING_UNKNOWNS.md"
+  ],
+  "local_artifact_inventory": {
+    "present_packet_roots": [
+      "out/rte-pkt-01-live-gate",
+      "out/rte-pkt-02-payload-redaction",
+      "out/rte-pkt-03-prescan-stale",
+      "out/rte-pkt-04-prescan-influence",
+      "out/rte-pkt-05-provenance-fields",
+      "out/rte-pkt-06-truth-labels",
+      "out/rte-pkt-15-failed-sidecars"
+    ],
+    "missing_packet_roots_in_this_worktree": [
+      "out/rte-pkt-07-xai-metadata",
+      "out/rte-pkt-08-xai-batch-static",
+      "out/rte-pkt-09-live-validation-plan"
+    ],
+    "runtime_run_artifact_examples": [
+      "services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/*/RUN_MANIFEST.json",
+      "services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/*/CERTIFICATION_RESULT.json"
+    ],
+    "runtime_proof_pack_examples_found": []
+  },
+  "conformance_helper": {
+    "required_fields_count": 32,
+    "artifact_classifications": [
+      "runtime_authority",
+      "runtime_generated_evidence",
+      "proof_governance_artifact",
+      "generated_audit_context",
+      "external_advisory_context",
+      "sample_artifact_uncertain_lineage",
+      "unknown"
+    ],
+    "status_values": [
+      "SATISFIED",
+      "PARTIAL",
+      "MISSING",
+      "UNKNOWN",
+      "NOT_APPLICABLE"
+    ],
+    "full_bundle_requires_explicit_declarations": true
+  },
+  "validation_summary": [
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_proof_contract.py -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "9 passed; existing PytestConfigWarning for unknown asyncio_mode."
+    },
+    {
+      "command": "python -m py_compile services/repo-truth-extractor/lib/proof_contract.py",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "No syntax errors."
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests -k 'proof_contract or artifact_authority' -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "9 passed; existing PytestConfigWarning for unknown asyncio_mode."
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests -k 'proof and contract' -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "9 passed; existing PytestConfigWarning for unknown asyncio_mode."
+    },
+    {
+      "command": "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/lib/proof_contract.py",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "No syntax errors in the v5 runner or proof-contract helper."
+    },
+    {
+      "command": "python -m json.tool out/rte-pkt-10-proof-contract/RTE-PKT-10_MANIFEST.json",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "Packet manifest parses as JSON."
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "No whitespace errors."
+    },
+    {
+      "command": "git status --short --branch",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "Dirty state before staging was limited to the helper, tests, and allowed packet proof output root."
+    },
+    {
+      "command": "pre-commit run --files services/repo-truth-extractor/lib/proof_contract.py services/repo-truth-extractor/tests/test_proof_contract.py out/rte-pkt-10-proof-contract/RTE-PKT-10_MANIFEST.json out/rte-pkt-10-proof-contract/RTE-PKT-10_PROOF_CONTRACT_GAP_MATRIX.md out/rte-pkt-10-proof-contract/RTE-PKT-10_ARTIFACT_AUTHORITY_MAP.md out/rte-pkt-10-proof-contract/RTE-PKT-10_CONFORMANCE_EXAMPLES.md out/rte-pkt-10-proof-contract/RTE-PKT-10_RUN_PROOF_VS_BUNDLE_PROOF.md out/rte-pkt-10-proof-contract/RTE-PKT-10_TEST_REPORT.md out/rte-pkt-10-proof-contract/RTE-PKT-10_NO_PROVIDER_CALLS_ATTESTATION.md out/rte-pkt-10-proof-contract/RTE-PKT-10_DIFF_SUMMARY.md out/rte-pkt-10-proof-contract/RTE-PKT-10_REMAINING_UNKNOWNS.md",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "Configured hooks passed or skipped for the changed file set."
+    }
+  ],
+  "provider_boundary": {
+    "provider_credentials_required": false,
+    "provider_calls_run": false,
+    "live_extraction_run": false,
+    "batch_submit_poll_retrieve_cancel_run": false,
+    "external_research_run": false
+  },
+  "commit_created": "PENDING_FINAL_COMMIT",
+  "commit_sha_note": "The final commit SHA is reported in the Codex closeout after commit creation; embedding it here would require a self-referential proof-only amend.",
+  "pr_created": "PENDING_PUSH_OR_PR",
+  "remaining_unknowns": [
+    "Exact Pass 1 artifact identity remains UNKNOWN because no exact Pass 1 hashes plus run IDs were found in local proof examples.",
+    "RTE-PKT-07, RTE-PKT-08, and RTE-PKT-09 packet output roots were not present in this worktree.",
+    "The active conversation packet is not schema-validated as a canonical dopetask packet because it intentionally uses a different audit packet shape and forbids creating additional Task Packets."
+  ]
+}
