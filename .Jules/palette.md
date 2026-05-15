@@ -97,3 +97,7 @@
 ## 2026-05-07 - [Progressive Ritual Awareness]
 **Learning:** For users with ADHD, seeing a list of tasks without a clear progress fraction (e.g., "1/3") can contribute to a sense of being lost in a sequence. Prefixing duration indicators with a task completion counter provides immediate spatial and temporal grounding. Additionally, providing tactile feedback (vertical lift and shadows) on list item hover/focus bridges the gap between static content and interactive ritual steps.
 **Action:** Always provide a clear "n/m tasks" counter in sequential task managers and use subtle vertical transforms for interactive list elements.
+
+## 2025-05-22 - [Predictive Action Labels for ADHD Grounding]
+**Learning:** For users with ADHD, ambiguity about what happens after a current task can increase cognitive friction. Providing "Predictive Labels" (e.g., "Complete task and proceed to [Next Task Name]") directly in tooltips and ARIA labels provides immediate temporal grounding and reduces the anxiety of transitioning between ritual steps.
+**Action:** Use `useMemo` to calculate the next step in a sequence and incorporate its identity into the primary action button's feedback (Tooltips and ARIA labels).
