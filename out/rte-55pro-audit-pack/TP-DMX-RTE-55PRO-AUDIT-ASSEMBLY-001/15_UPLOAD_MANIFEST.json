@@ -2,9 +2,9 @@
   "packet_id": "TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001",
   "created_at": "2026-05-14T08:23:19Z",
   "repo": "DDD-Enterprises/dopemux-mvp",
-  "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-rte-55pro-audit-assembly-001",
+  "worktree_path": "~/code/dopemux-mvp/.worktrees/tp-dmx-rte-55pro-audit-assembly-001",
   "branch": "codex/tp-dmx-rte-55pro-audit-assembly-001",
-  "head": "6c621e362be14a3d6d6d9d6875f38d58ea4cc720",
+  "head": "UNKNOWN_FINAL_COMMIT_SELF_REFERENCE",
   "base_branch": "main",
   "generated_files": [
     "task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json",
@@ -137,19 +137,19 @@
     "Deep Research questions if provider-current facts are needed"
   ],
   "sha256": {
-    "task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json": "68237389daf87f7298e0edc5069f384b21582fdb309fcc88196d7de01e9066bd",
+    "task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json": "2d86f986cdcd958aa1e50de476b9bd04edab7d42a729c08ea134ee73610fc233",
     "task-packets/INDEX.md": "62a757a65ced8ef59f2f76406a371aa109cf14150a7bccdd5e04c320b0e2ddfa",
-    "proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/PROOF.json": "dc60ccc25832372349f9c70fecbf08cbf7fda89fd658617c9a4ea0865cb7db1f",
-    "proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/IMPLEMENTER_REPORT.md": "0a2bee22075ea1b545be7b5986eb539668b01e3423aa46b1ffd4246789b941b9",
+    "proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/PROOF.json": "280bf13cf3fb3b84ddbc0c7f67d8350a36e19bfab09189244e6a3fc0c583543d",
+    "proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/IMPLEMENTER_REPORT.md": "a7128256e91dad54a464ed5a9a36d3d9c77b7e3b56bf6ba3076c9fb79c3782c3",
     "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/00_README.md": "ba2b836e9d77380afb9dc94f4a129e8c824dece193357078336e47b3ff47fac2",
-    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/01_BASELINE_STATE.md": "a25d154a0d06114620496e573c602766274961cf67e6da96d93f379996004cbe",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/01_BASELINE_STATE.md": "39ee237edf6952969da9c9ebcbd8f53b5266930faa52c95e505fb204c79c1a81",
     "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/02_OPUS_FINDINGS_CROSSWALK.md": "28dce202d811b7d581019935e6eef4a72f90fec3381af559be10ae5efd967834",
     "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/03_RTE_SURFACE_MAP.md": "1b4ed8c3a9912706664f2b0cb4d423104d260c97eb4820c9d5a16e7ca90f683e",
     "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/04_RTE_RUNTIME_POINTERS.md": "3e26463b48ad381b56a176b5290f9f499d0aabcb2c961c64aa791e17ce60cf93",
     "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/05_PROMPTSET_INVENTORY.md": "e85767d1a225536106c0617063beefb178d663a2526eb6cda2fc407a8c748df1",
     "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/06_MODEL_ROUTING_AND_ESCALATION_INVENTORY.md": "6e0e70de8e7ba0d3cf9b04b685a64ce67436f01e14f16df4fde2899950f18e67",
     "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/07_ARTIFACT_PROOF_INVENTORY.md": "5bcbf0488427d83d127263c2fc8741f1636990d6f79d3105e68fac43370ea2c4",
-    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/08_VALIDATION_BASELINE.md": "133838828c983b421bb62e667b49bfa14f49ad7ce1eeaac31541237ac0227f7a",
+    "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/08_VALIDATION_BASELINE.md": "0706bc383c8aa78d3d8d4b94e79ad996558fc8e2609c46bc38566fbf11a3a1de",
     "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/09_UX_OPERATOR_JOURNEY_CURRENT.md": "3795a6341338c9154a0b7c417c6ae57c322b1fccf6c2ffdd7d2362e71b77f7c8",
     "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/10_KNOWN_DRIFT_AND_UNKNOWNS.md": "62a5273ffeef9eaa60c42aa5527fc29eeddccbc34febbb57529e18eb340ea99a",
     "out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/11_DEEP_RESEARCH_QUESTIONS.md": "5423fd8baedc8d9a1255b6ec42a203adde97ad7e951cf37d795a74493b394399",
@@ -246,5 +246,6 @@
     "proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/IMPLEMENTER_REPORT.md": "generated",
     "task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json": "generated"
   },
-  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/618"
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/618",
+  "head_note": "The final commit containing this manifest cannot embed its own SHA without changing that SHA; use the PR head/Git history as the authoritative final commit pointer."
 }

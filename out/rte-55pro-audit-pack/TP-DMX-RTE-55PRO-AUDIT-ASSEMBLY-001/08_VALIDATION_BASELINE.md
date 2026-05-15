@@ -16,7 +16,7 @@ Safe validation only. No live extraction, provider calls, API-key probes, broad 
 | `shasum -a 256 $(find out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001 proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001 -type f \| sort) task-packets/generated/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001.json` | PASS | SHA-256 command ran. The checksum file itself is intentionally not self-listed inside its own contents. |
 | `git diff --check` | PASS | No whitespace errors reported. |
 | `git diff --name-only` | PASS | Diff path listing available for allowlist review. |
-| custom allowlist path check over `git status --short --untracked-files=all` plus the expected proof path | PASS | No forbidden paths changed. |
+| custom allowlist path check over `git diff --name-only $(git merge-base HEAD origin/main)...HEAD` plus `git status --short --untracked-files=all` | PASS | No forbidden PR-diff or worktree paths changed. |
 | `git status --short` | PASS | Dirty state is limited to allowlisted paths. |
 
 ## Existing Tests Identified But Not Run

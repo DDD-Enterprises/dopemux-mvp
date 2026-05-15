@@ -2,8 +2,8 @@
 
 ## Repository
 
-- OBSERVED repo worktree path: `/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-rte-55pro-audit-assembly-001`
-- OBSERVED primary checkout path during preflight: `/Users/hue/code/dopemux-mvp`
+- OBSERVED repo worktree path: `~/code/dopemux-mvp/.worktrees/tp-dmx-rte-55pro-audit-assembly-001`
+- OBSERVED primary checkout path during preflight: `~/code/dopemux-mvp`
 - OBSERVED remotes: `origin` and `mvp` both point to `https://github.com/DDD-Enterprises/dopemux-mvp.git`
 - OBSERVED current branch: `codex/tp-dmx-rte-55pro-audit-assembly-001`
 - OBSERVED starting HEAD: `a4214ca5bf431e1b59791661e2b664a6cd24c1da`

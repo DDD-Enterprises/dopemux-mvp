@@ -4,7 +4,7 @@ Packet: `TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001`
 Branch: `codex/tp-dmx-rte-55pro-audit-assembly-001`
 Base: `main`
 Starting HEAD: `a4214ca5bf431e1b59791661e2b664a6cd24c1da`
-Worktree: `/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-rte-55pro-audit-assembly-001`
+Worktree: `~/code/dopemux-mvp/.worktrees/tp-dmx-rte-55pro-audit-assembly-001`
 
 ## Scope Executed
 
