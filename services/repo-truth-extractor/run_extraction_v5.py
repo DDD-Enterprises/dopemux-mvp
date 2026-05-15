@@ -6547,6 +6547,7 @@ def run_integrated_prescan_stage(
                     cfg,
                     root=root,
                     import_validation=validation_fields,
+                    router=router,
                 )
                 return router
             _write_prescan_receipt(
@@ -6611,6 +6612,7 @@ def run_integrated_prescan_stage(
                 cfg,
                 result=result,
                 root=root,
+                router=router,
             )
             return router
 
@@ -6652,6 +6654,239 @@ def _load_imported_prescan_router(
     return router, validation.to_receipt_fields()
 
 
+PRESCAN_INFLUENCE_CLASS_ORDER = (
+    "scope_reduction",
+    "partition_reorder",
+    "tier_override",
+    "context_brief",
+    "compression_hint",
+    "routing_model_hint",
+    "phase_hint",
+)
+
+
+def _ordered_prescan_influence_classes(classes: Iterable[str]) -> List[str]:
+    class_set = {str(class_name) for class_name in classes if str(class_name)}
+    return [
+        class_name
+        for class_name in PRESCAN_INFLUENCE_CLASS_ORDER
+        if class_name in class_set
+    ]
+
+
+def _paths_or_count(paths: Iterable[str], *, limit: int = 25) -> Dict[str, Any]:
+    ordered = sorted({str(path) for path in paths if str(path)})
+    return {"count": len(ordered), "paths": ordered[:limit]}
+
+
+def _router_available_influence_classes(router: Optional[Any]) -> List[str]:
+    if router is None:
+        return []
+    available = getattr(router, "available_influence_classes", None)
+    if callable(available):
+        try:
+            return _ordered_prescan_influence_classes(available())
+        except Exception:
+            return []
+    return []
+
+
+def _router_can_influence_execution(router: Optional[Any]) -> bool:
+    if router is None:
+        return False
+    can_influence = getattr(router, "can_influence_execution", None)
+    if callable(can_influence):
+        try:
+            return bool(can_influence())
+        except Exception:
+            return False
+    validation = getattr(router, "import_validation", None)
+    if validation is not None:
+        return bool(getattr(validation, "can_influence_execution", False))
+    return True
+
+
+def _prescan_influence_common_fields(
+    *,
+    router: Optional[Any] = None,
+    cfg: Optional[RunnerConfig] = None,
+    mode: Optional[str] = None,
+    verdict: Optional[str] = None,
+    can_influence_execution: Optional[bool] = None,
+    reason_codes: Optional[Iterable[str]] = None,
+    generated_at: Optional[str] = None,
+) -> Dict[str, Any]:
+    fields: Dict[str, Any] = {}
+    common = getattr(router, "influence_common_fields", None) if router else None
+    if callable(common):
+        try:
+            fields.update(common())
+        except Exception:
+            fields = {}
+
+    resolved_mode = str(mode or fields.get("prescan_mode") or "UNKNOWN")
+    can_influence = (
+        bool(can_influence_execution)
+        if can_influence_execution is not None
+        else bool(fields.get("can_influence_execution", _router_can_influence_execution(router)))
+    )
+    import_dir = None
+    if cfg is not None:
+        import_dir = getattr(cfg, "prescan_import_dir", None) or getattr(
+            cfg, "prescan_dir", None
+        )
+    if not import_dir:
+        import_dir = fields.get("prescan_import_dir_if_any")
+    resolved_reason_codes = list(reason_codes or fields.get("reason_codes") or [])
+
+    return {
+        "prescan_mode": resolved_mode,
+        "prescan_import_dir_if_any": import_dir,
+        "prescan_verdict": str(
+            verdict or fields.get("prescan_verdict") or _prescan_receipt_verdict(resolved_mode)
+        ),
+        "can_influence_execution": can_influence,
+        "advisory_only": bool(fields.get("advisory_only", not can_influence)),
+        "influence_applied": False,
+        "influence_classes": [],
+        "available_influence_classes": _router_available_influence_classes(router),
+        "reason_codes": resolved_reason_codes,
+        "generated_at": generated_at or now_iso(),
+    }
+
+
+def _init_prescan_influence_sink(
+    sink: Optional[Dict[str, Any]],
+    *,
+    phase: str,
+    router: Optional[Any],
+    cfg: Optional[RunnerConfig] = None,
+) -> Optional[Dict[str, Any]]:
+    if sink is None:
+        return None
+    if not sink:
+        sink.update(
+            _prescan_influence_common_fields(
+                router=router,
+                cfg=cfg,
+                can_influence_execution=_router_can_influence_execution(router),
+            )
+        )
+        sink["phase"] = phase
+        sink["labels"] = []
+        sink["not_applied_influence_classes"] = []
+    return sink
+
+
+def _prescan_influence_label(
+    router: Optional[Any],
+    class_name: str,
+    *,
+    applied: bool,
+    **fields: Any,
+) -> Dict[str, Any]:
+    common = _prescan_influence_common_fields(router=router)
+    label = {
+        "class": class_name,
+        "applied": bool(applied),
+        "source_prescan_mode": common["prescan_mode"],
+        "advisory_model_derived": True,
+    }
+    label.update(fields)
+    return label
+
+
+def _record_prescan_influence_label(
+    sink: Optional[Dict[str, Any]],
+    label: Dict[str, Any],
+) -> None:
+    if sink is None:
+        return
+    labels = sink.setdefault("labels", [])
+    labels.append(label)
+    applied_classes = {
+        str(item.get("class"))
+        for item in labels
+        if isinstance(item, dict) and item.get("applied")
+    }
+    not_applied_classes = {
+        str(item.get("class"))
+        for item in labels
+        if isinstance(item, dict) and not item.get("applied")
+    }
+    sink["influence_applied"] = bool(applied_classes)
+    sink["influence_classes"] = _ordered_prescan_influence_classes(applied_classes)
+    sink["not_applied_influence_classes"] = _ordered_prescan_influence_classes(
+        not_applied_classes - applied_classes
+    )
+
+
+def _partition_prescan_influence_summary(
+    router: Optional[Any],
+    labels: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    summary = _prescan_influence_common_fields(
+        router=router,
+        can_influence_execution=_router_can_influence_execution(router),
+    )
+    summary["labels"] = list(labels)
+    applied_classes = {
+        str(item.get("class"))
+        for item in labels
+        if isinstance(item, dict) and item.get("applied")
+    }
+    not_applied_classes = {
+        str(item.get("class"))
+        for item in labels
+        if isinstance(item, dict) and not item.get("applied")
+    }
+    summary["influence_applied"] = bool(applied_classes)
+    summary["influence_classes"] = _ordered_prescan_influence_classes(applied_classes)
+    summary["not_applied_influence_classes"] = _ordered_prescan_influence_classes(
+        not_applied_classes - applied_classes
+    )
+    return summary
+
+
+def _merge_prescan_influence_payloads(*payloads: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    valid = [payload for payload in payloads if isinstance(payload, dict)]
+    if not valid:
+        return None
+    merged = dict(valid[0])
+    labels: List[Dict[str, Any]] = []
+    available: Set[str] = set()
+    reasons: List[str] = []
+    for payload in valid:
+        labels.extend(
+            item
+            for item in payload.get("labels", [])
+            if isinstance(item, dict)
+        )
+        available.update(payload.get("available_influence_classes") or [])
+        for reason in payload.get("reason_codes") or []:
+            if reason not in reasons:
+                reasons.append(reason)
+    applied_classes = {
+        str(item.get("class"))
+        for item in labels
+        if isinstance(item, dict) and item.get("applied")
+    }
+    not_applied_classes = {
+        str(item.get("class"))
+        for item in labels
+        if isinstance(item, dict) and not item.get("applied")
+    }
+    merged["labels"] = labels
+    merged["available_influence_classes"] = _ordered_prescan_influence_classes(available)
+    merged["reason_codes"] = reasons
+    merged["influence_applied"] = bool(applied_classes)
+    merged["influence_classes"] = _ordered_prescan_influence_classes(applied_classes)
+    merged["not_applied_influence_classes"] = _ordered_prescan_influence_classes(
+        not_applied_classes - applied_classes
+    )
+    return merged
+
+
 def _write_prescan_receipt(
     output_dir: Path,
     mode: str,
@@ -6660,6 +6895,7 @@ def _write_prescan_receipt(
     *,
     root: Optional[Path] = None,
     import_validation: Optional[Dict[str, Any]] = None,
+    router: Optional[Any] = None,
 ) -> None:
     status = "success"
     if mode in {
@@ -6707,7 +6943,10 @@ def _write_prescan_receipt(
         "status": status,
         "online_authorized": bool(cfg.prescan_online or cfg.allow_online_llm),
         "artifacts_dir": str(output_dir.resolve()),
-        "scope_reduction_applied": bool(cfg.prescan_allow_scope_reduction and can_influence),
+        "scope_reduction_applied": False,
+        "scope_reduction_enabled_by_prescan_allow_scope_reduction": bool(
+            cfg.prescan_allow_scope_reduction and can_influence
+        ),
         "router_loaded": can_influence,
         "verdict": _prescan_receipt_verdict(mode),
     }
@@ -6722,10 +6961,22 @@ def _write_prescan_receipt(
             else "online_prescan_not_authorized"
         )
         receipt["artifacts_dir"] = str(output_dir.resolve())
-        receipt["scope_reduction_applied"] = bool(
+        receipt["scope_reduction_applied"] = False
+        receipt["scope_reduction_enabled_by_prescan_allow_scope_reduction"] = bool(
             cfg.prescan_allow_scope_reduction and receipt.get("can_influence_execution")
         )
         receipt["router_loaded"] = bool(receipt.get("can_influence_execution"))
+    receipt.update(
+        _prescan_influence_common_fields(
+            router=router,
+            cfg=cfg,
+            mode=mode,
+            verdict=str(receipt.get("verdict") or _prescan_receipt_verdict(mode)),
+            can_influence_execution=bool(receipt.get("can_influence_execution")),
+            reason_codes=receipt.get("reason_codes") or [],
+            generated_at=str(receipt.get("generated_at") or now_iso()),
+        )
+    )
     if result:
         receipt["duration_seconds"] = getattr(result, "duration_seconds", 0)
         receipt["file_count"] = getattr(result, "file_count", 0)
@@ -6745,6 +6996,48 @@ def _write_prescan_receipt(
             )
 
     write_json(output_dir / "prescan_stage_receipt.json", receipt)
+
+
+def _write_prescan_dir_receipt(
+    output_dir: Path,
+    cfg: RunnerConfig,
+    validation_fields: Optional[Dict[str, Any]],
+    router: Optional[Any],
+) -> None:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    fields = dict(validation_fields or {})
+    mode = str(fields.get("mode") or "imported_prescan_rejected_stale")
+    can_influence = bool(fields.get("can_influence_execution"))
+    receipt = {
+        "stage": "prescan_dir_late_load",
+        "status": "success" if can_influence and router is not None else "failed",
+        "artifacts_dir": str(output_dir.resolve()),
+        "prescan_dir": cfg.prescan_dir,
+        "online_authorized": bool(cfg.prescan_online or cfg.allow_online_llm),
+        "online_mode": (
+            "online_prescan_authorized"
+            if bool(cfg.prescan_online or cfg.allow_online_llm)
+            else "online_prescan_not_authorized"
+        ),
+        "router_loaded": bool(can_influence and router is not None),
+        "scope_reduction_applied": False,
+        "scope_reduction_enabled_by_prescan_allow_scope_reduction": bool(
+            cfg.prescan_allow_scope_reduction and can_influence and router is not None
+        ),
+        **fields,
+    }
+    receipt.update(
+        _prescan_influence_common_fields(
+            router=router,
+            cfg=cfg,
+            mode=mode,
+            verdict=str(fields.get("verdict") or _prescan_receipt_verdict(mode)),
+            can_influence_execution=bool(can_influence and router is not None),
+            reason_codes=fields.get("reason_codes") or [],
+            generated_at=now_iso(),
+        )
+    )
+    write_json(output_dir / "prescan_dir_receipt.json", receipt)
 
 
 def _prescan_receipt_reason_codes(mode: str) -> List[str]:
@@ -7350,12 +7643,21 @@ def build_partitions(
     max_chars: int,
     router: Optional[IntelligenceRouter] = None,  # DEPRECATED: use DC2 post-processing via _ACTIVE_INTELLIGENCE_ROUTER
     allow_prescan_scope_reduction: bool = False,
+    influence_sink: Optional[Dict[str, Any]] = None,
 ) -> List[Dict[str, Any]]:
     partitions: List[Dict[str, Any]] = []
     current_paths: List[str] = []
     current_chars = 0
     skipped_count = 0
     blocked_scope_reduction_count = 0
+    skipped_paths: List[str] = []
+    blocked_scope_reduction_paths: List[str] = []
+    active_router = router if _router_can_influence_execution(router) else None
+    _init_prescan_influence_sink(
+        influence_sink,
+        phase=phase,
+        router=router,
+    )
 
     def flush_partition() -> None:
         nonlocal current_paths, current_chars
@@ -7374,44 +7676,100 @@ def build_partitions(
         current_chars = 0
 
     # Sort inventory by priority if router is available
-    if router:
+    inventory_order_changed = False
+    if active_router:
+        original_order = [str(item.get("path") or "") for item in inventory]
         inventory = sorted(
-            inventory, 
-            key=lambda x: router.get_routing_priority(x["path"]), 
+            inventory,
+            key=lambda x: active_router.get_routing_priority(x["path"]),
             reverse=True
         )
+        sorted_order = [str(item.get("path") or "") for item in inventory]
+        inventory_order_changed = sorted_order != original_order
 
     for item in inventory:
         path = item["path"]
-        
+
         # Intelligence-based skipping
-        if router and router.should_skip(path):
+        if active_router and active_router.should_skip(path):
             if allow_prescan_scope_reduction:
                 skipped_count += 1
+                skipped_paths.append(str(path))
                 continue
             blocked_scope_reduction_count += 1
+            blocked_scope_reduction_paths.append(str(path))
 
         base_chars = int(item.get("char_count_estimate", 0))
         # Account for per-file headers in context payload construction.
         est_chars = base_chars + min(len(path) + 80, 2000)
         would_exceed_files = len(current_paths) >= max_files
         would_exceed_chars = current_paths and (current_chars + est_chars > max_chars)
-        
+
         if would_exceed_files or would_exceed_chars:
             flush_partition()
-        
+
         current_paths.append(path)
         current_chars += est_chars
 
     flush_partition()
-    
+
+    if inventory_order_changed:
+        _record_prescan_influence_label(
+            influence_sink,
+            _prescan_influence_label(
+                active_router,
+                "partition_reorder",
+                applied=True,
+                affected_partition_ids_or_count={
+                    "count": len(partitions),
+                    "partition_ids": [str(p.get("id")) for p in partitions],
+                },
+                reason_source="prescan.code_intelligence.topological_order",
+            ),
+        )
+
     if skipped_count > 0:
         logger.info(f"Phase {phase}: skipped {skipped_count} files based on prescan intelligence.")
+        reason_sources = sorted(
+            {
+                active_router.get_scope_reduction_source(path) or "prescan.skip_list"
+                for path in skipped_paths
+            }
+        ) if active_router else ["prescan.skip_list"]
+        _record_prescan_influence_label(
+            influence_sink,
+            _prescan_influence_label(
+                active_router,
+                "scope_reduction",
+                applied=True,
+                enabled_by_prescan_allow_scope_reduction=True,
+                paths_removed_or_count=_paths_or_count(skipped_paths),
+                reason_source=",".join(reason_sources),
+            ),
+        )
     if blocked_scope_reduction_count > 0:
         logger.warning(
             "Phase %s: ignored %s prescan skip candidates because scope reduction is disabled.",
             phase,
             blocked_scope_reduction_count,
+        )
+        reason_sources = sorted(
+            {
+                active_router.get_scope_reduction_source(path) or "prescan.skip_list"
+                for path in blocked_scope_reduction_paths
+            }
+        ) if active_router else ["prescan.skip_list"]
+        _record_prescan_influence_label(
+            influence_sink,
+            _prescan_influence_label(
+                active_router,
+                "scope_reduction",
+                applied=False,
+                enabled_by_prescan_allow_scope_reduction=False,
+                paths_removed_or_count=_paths_or_count([]),
+                blocked_paths_or_count=_paths_or_count(blocked_scope_reduction_paths),
+                reason_source=",".join(reason_sources),
+            ),
         )
 
     if not partitions:
@@ -7430,9 +7788,17 @@ def _apply_router_partition_hints(
     phase: str,
     partitions: List[Dict[str, Any]],
     router: Optional[Any] = None,
+    influence_sink: Optional[Dict[str, Any]] = None,
 ) -> List[Dict[str, Any]]:
     active_router = router or _ACTIVE_INTELLIGENCE_ROUTER
     if not active_router:
+        return partitions
+    _init_prescan_influence_sink(
+        influence_sink,
+        phase=phase,
+        router=active_router,
+    )
+    if not _router_can_influence_execution(active_router):
         return partitions
     try:
         from lib.prescan.partition_brief_generator import PartitionBriefGenerator
@@ -7442,28 +7808,118 @@ def _apply_router_partition_hints(
         brief_gen = None
     for partition in partitions:
         paths = list(partition["paths"])
-        partition["paths"] = active_router.reorder_partition(paths)
-        
+        labels_for_partition: List[Dict[str, Any]] = []
+        reordered_paths = active_router.reorder_partition(paths)
+        partition["paths"] = reordered_paths
+        if reordered_paths != paths:
+            label = _prescan_influence_label(
+                active_router,
+                "partition_reorder",
+                applied=True,
+                affected_partition_ids_or_count=[str(partition.get("id"))],
+                reason_source="prescan.code_intelligence_report.processing_order",
+            )
+            labels_for_partition.append(label)
+            _record_prescan_influence_label(influence_sink, label)
+
         # Inject dynamic tier overrides based on prescan intelligence
         highest_tier = None
+        tier_reason_sources: Set[str] = set()
+        routing_hint_values: Set[str] = set()
+        phase_hint_values: Set[str] = set()
         for path in paths:
             path_str = str(path)
             router_tier = active_router.get_model_tier(path_str)
+            tier_source = (
+                active_router.get_tier_override_source(path_str)
+                if hasattr(active_router, "get_tier_override_source")
+                else None
+            )
+            routing_hint_details = (
+                active_router.get_model_routing_hint_details(path_str)
+                if hasattr(active_router, "get_model_routing_hint_details")
+                else None
+            )
+            if routing_hint_details:
+                hinted = routing_hint_details.get("hinted_provider_or_model_if_present")
+                if hinted:
+                    routing_hint_values.add(str(hinted))
+            phase_hint = active_router.get_phase_routing_override(path_str)
+            if phase_hint:
+                phase_hint_values.add(str(phase_hint))
             if router_tier == "premium":
                 highest_tier = "synthesis"
-                break # Synthesis is highest reachable via dynamic upgrade
+                if tier_source:
+                    tier_reason_sources.add(str(tier_source))
+                continue
             elif router_tier == "standard" and highest_tier != "synthesis":
                 highest_tier = "extract"
+                if tier_source:
+                    tier_reason_sources.add(str(tier_source))
             elif router_tier == "economy" and highest_tier is None:
                 highest_tier = "bulk"
-        
+                if tier_source:
+                    tier_reason_sources.add(str(tier_source))
+
+        if routing_hint_values:
+            label = _prescan_influence_label(
+                active_router,
+                "routing_model_hint",
+                applied=True,
+                affected_phase_or_step_if_known=phase,
+                hinted_provider_or_model_if_present=sorted(routing_hint_values),
+                hint_source="prescan.grok_passes.optimize.model_routing_hints",
+                does_not_claim_executed_route=True,
+            )
+            labels_for_partition.append(label)
+            _record_prescan_influence_label(influence_sink, label)
+
+        if phase_hint_values:
+            label = _prescan_influence_label(
+                active_router,
+                "phase_hint",
+                applied=False,
+                affected_phase_if_known=sorted(phase_hint_values),
+                hint_source="prescan.grok_passes.optimize.phase_routing_overrides",
+                runtime_consumer="not_consumed_by_v5_partition_execution",
+            )
+            labels_for_partition.append(label)
+            _record_prescan_influence_label(influence_sink, label)
+
         if highest_tier:
+            previous_tier = partition.get("tier_override")
             partition["tier_override"] = highest_tier
-            
+            label = _prescan_influence_label(
+                active_router,
+                "tier_override",
+                applied=True,
+                affected_partition_ids_or_count=[str(partition.get("id"))],
+                old_tier_if_known=previous_tier,
+                new_tier=highest_tier,
+                reason_source=",".join(sorted(tier_reason_sources))
+                or "prescan.code_intelligence_report",
+            )
+            labels_for_partition.append(label)
+            _record_prescan_influence_label(influence_sink, label)
+
         if brief_gen:
             brief = brief_gen.generate_brief(phase, partition["paths"])
             if brief:
                 partition["context_brief"] = brief
+                label = _prescan_influence_label(
+                    active_router,
+                    "context_brief",
+                    applied=True,
+                    affected_partition_ids_or_count=[str(partition.get("id"))],
+                    brief_source="prescan.partition_brief_generator",
+                )
+                labels_for_partition.append(label)
+                _record_prescan_influence_label(influence_sink, label)
+        if labels_for_partition:
+            partition["prescan_influence"] = _partition_prescan_influence_summary(
+                active_router,
+                labels_for_partition,
+            )
     logger.info("Phase %s: router reordered %d partitions", phase, len(partitions))
     return partitions
 
@@ -10058,6 +10514,8 @@ def build_partition_context(
     skipped_files = 0
     context_bytes = 0
     compressed_files = 0
+    compression_labels: List[Dict[str, Any]] = []
+    active_router = router if _router_can_influence_execution(router) else None
 
     for path_str in partition_paths:
         if len(chunks) >= max_files:
@@ -10065,13 +10523,30 @@ def build_partition_context(
             continue
 
         path = Path(path_str)
-        
+
         # Check for compression hint
-        compression_hint = router.get_compression_hint(path_str) if router else None
-        
+        compression_hint = (
+            active_router.get_compression_hint(path_str) if active_router else None
+        )
+
         if compression_hint:
             content = f"[PRESCAN COMPRESSION] {compression_hint}"
             compressed_files += 1
+            hint_source = (
+                active_router.get_compression_hint_source(path_str)
+                if hasattr(active_router, "get_compression_hint_source")
+                else None
+            )
+            compression_labels.append(
+                _prescan_influence_label(
+                    active_router,
+                    "compression_hint",
+                    applied=True,
+                    affected_paths_or_count=_paths_or_count([path_str]),
+                    hint_source=hint_source
+                    or "prescan.extraction_hints.compress_candidates",
+                )
+            )
         else:
             content = safe_read(path)
             if phase == "H" and home_scan_mode == "safe":
@@ -10100,7 +10575,7 @@ def build_partition_context(
         context_bytes += chunk_bytes
 
     context = "\n".join(chunks)
-    stats = {
+    stats: Dict[str, Any] = {
         "files_total": len(partition_paths),
         "files_included": len(chunks),
         "files_skipped": skipped_files,
@@ -10108,6 +10583,11 @@ def build_partition_context(
         "redaction_hits": redaction_hits,
         "compressed_files": compressed_files,
     }
+    if compression_labels:
+        stats["prescan_influence"] = _partition_prescan_influence_summary(
+            active_router,
+            compression_labels,
+        )
     return context, stats
 
 
@@ -12358,7 +12838,7 @@ def execute_step_for_partitions(
         payload_bytes = 0
         user_prompt = ""
         context = ""
-        context_stats: Dict[str, int] = {}
+        context_stats: Dict[str, Any] = {}
         system_prompt_bytes = len(prompt_text.encode("utf-8"))
         partition_paths = [str(path) for path in partition["paths"]]
         if phase == "D":
@@ -12424,6 +12904,15 @@ def execute_step_for_partitions(
             if next_budget == current_budget:
                 next_budget = current_budget - 1
             current_budget = max(next_budget, 1024)
+
+        request_prescan_influence = _merge_prescan_influence_payloads(
+            partition.get("prescan_influence")
+            if isinstance(partition.get("prescan_influence"), dict)
+            else None,
+            context_stats.get("prescan_influence")
+            if isinstance(context_stats.get("prescan_influence"), dict)
+            else None,
+        )
 
         if payload_bytes > cfg.max_request_bytes:
             over_by = payload_bytes - cfg.max_request_bytes
@@ -12522,6 +13011,8 @@ def execute_step_for_partitions(
                 cfg.batch_provider if cfg.batch_mode else None
             )
             failure_meta["batch_job_id"] = None
+            if request_prescan_influence:
+                failure_meta["prescan_influence"] = request_prescan_influence
             _append_log(
                 logs,
                 "error",
@@ -12676,6 +13167,8 @@ else sdk_auth_present_flags(p_provider, True)
             dry_meta["execution_mode"] = "sync"
             dry_meta["batch_provider"] = None
             dry_meta["batch_job_id"] = None
+            if request_prescan_influence:
+                dry_meta["prescan_influence"] = request_prescan_influence
             _op_write_text(write_ops, out_trace, trace_text)
             _op_write_json(
                 write_ops,
@@ -14203,6 +14696,8 @@ else sdk_auth_present_flags(p_provider, True)
             request_meta["escalation_trigger"] = request_meta.get("escalation_trigger")
         request_meta["provider"] = request_meta.get("provider") or final_provider
         request_meta["model_id"] = request_meta.get("model_id") or final_model_id
+        if request_prescan_influence:
+            request_meta["prescan_influence"] = request_prescan_influence
 
         if json_managed_step:
             artifacts, request_meta, response_text = _apply_contract_pipeline(
@@ -15096,6 +15591,7 @@ def _run_phase_inner(
 
     inventory = build_inventory(context_items, cfg.file_truncate_chars)
     max_files = max_files_for_phase(phase, cfg)
+    prescan_influence: Dict[str, Any] = {}
     partitions = build_partitions(
         phase,
         inventory,
@@ -15105,9 +15601,15 @@ def _run_phase_inner(
         allow_prescan_scope_reduction=bool(
             getattr(cfg, "prescan_allow_scope_reduction", False)
         ),
+        influence_sink=prescan_influence,
     )
 
-    partitions = _apply_router_partition_hints(phase, partitions)
+    partitions = _apply_router_partition_hints(
+        phase,
+        partitions,
+        router=cfg.router,
+        influence_sink=prescan_influence,
+    )
 
     write_json(
         phase_dir / "inputs" / "INVENTORY.json",
@@ -15123,6 +15625,7 @@ def _run_phase_inner(
                 "max_chars": cfg.max_chars,
                 "file_truncate_chars": cfg.file_truncate_chars,
             },
+            "prescan_influence": prescan_influence,
             "partitions": partitions,
         },
     )
@@ -18030,6 +18533,7 @@ def run_phase_R_async_submit(
     context_items = to_items(deduped_inputs)
     inventory = build_inventory(context_items, cfg.file_truncate_chars)
     max_files = max_files_for_phase("R", cfg)
+    prescan_influence: Dict[str, Any] = {}
     partitions = build_partitions(
         "R",
         inventory,
@@ -18039,10 +18543,16 @@ def run_phase_R_async_submit(
         allow_prescan_scope_reduction=bool(
             getattr(cfg, "prescan_allow_scope_reduction", False)
         ),
+        influence_sink=prescan_influence,
     )
 
     # DC2 Phase 2: Router post-processing for Phase R (async path)
-    partitions = _apply_router_partition_hints("R", partitions)
+    partitions = _apply_router_partition_hints(
+        "R",
+        partitions,
+        router=cfg.router,
+        influence_sink=prescan_influence,
+    )
 
     prompts = get_phase_prompts("R")
     if not prompts:
@@ -19575,6 +20085,7 @@ def main() -> None:
             allow_online_llm=args.allow_online_llm,
             max_cost_usd=args.max_cost_usd,
             selected_execution_step=selected_execution_step,
+            prescan_dir=args.prescan_dir,
             prescan_skip=bool(args.skip_prescan),
             prescan_online=bool(args.prescan_online),
             prescan_import_dir=args.prescan_import_dir,
@@ -19880,6 +20391,7 @@ def main() -> None:
             if getattr(args, "compare_steps", None)
             else None
         ),
+        prescan_dir=args.prescan_dir,
         prescan_skip=bool(args.skip_prescan),
         prescan_online=bool(args.prescan_online),
         prescan_import_dir=args.prescan_import_dir,
@@ -20273,10 +20785,25 @@ def main() -> None:
     if cfg.prescan_dir and IntelligenceRouter is not None:
         _prescan_path = Path(cfg.prescan_dir)
         if _prescan_path.exists():
-            _ACTIVE_INTELLIGENCE_ROUTER = IntelligenceRouter.from_dir(_prescan_path)
-            if _ACTIVE_INTELLIGENCE_ROUTER:
+            prescan_dir_router, prescan_dir_validation = _load_imported_prescan_router(
+                _prescan_path,
+                root,
+            )
+            _write_prescan_dir_receipt(
+                dirs["root"] / "prescan",
+                cfg,
+                prescan_dir_validation,
+                prescan_dir_router,
+            )
+            if prescan_dir_router:
+                _ACTIVE_INTELLIGENCE_ROUTER = prescan_dir_router
+                cfg = replace(
+                    cfg,
+                    router=prescan_dir_router,
+                    prescan_import_validation=prescan_dir_validation,
+                )
                 logger.info("Loaded intelligence router from %s", _prescan_path)
-                
+
                 if cfg.max_cost_usd is not None:
                     cost_info = _ACTIVE_INTELLIGENCE_ROUTER.intel.get("cost_estimate", {})
                     net_estimates = cost_info.get("net_estimates", {})
@@ -20289,8 +20816,24 @@ def main() -> None:
                         )
                         sys.exit(1)
             else:
-                logger.warning("Prescan dir exists but router failed to load: %s", _prescan_path)
+                logger.warning(
+                    "Prescan dir is non-authoritative and will not influence execution: %s",
+                    _prescan_path,
+                )
         else:
+            _write_prescan_dir_receipt(
+                dirs["root"] / "prescan",
+                cfg,
+                {
+                    "advisory_only": True,
+                    "can_influence_execution": False,
+                    "mode": "imported_prescan_rejected_stale",
+                    "prescan_import_dir": str(_prescan_path),
+                    "reason_codes": ["prescan_dir_missing"],
+                    "verdict": "rejected_stale",
+                },
+                None,
+            )
             logger.warning("Prescan dir not found: %s", _prescan_path)
 
     reset_spend_tracker()

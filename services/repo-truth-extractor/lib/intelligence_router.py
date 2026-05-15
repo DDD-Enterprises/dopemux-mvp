@@ -17,6 +17,15 @@ REQUIRED_IMPORT_IDENTITY_FIELDS = (
     "prescan_artifact_version",
     "corpus_manifest_hash",
 )
+PRESCAN_INFLUENCE_CLASSES = (
+    "scope_reduction",
+    "partition_reorder",
+    "tier_override",
+    "context_brief",
+    "compression_hint",
+    "routing_model_hint",
+    "phase_hint",
+)
 
 
 def _normalize_path_value(value: Any) -> Optional[str]:
@@ -223,7 +232,8 @@ class IntelligenceRouter:
         self.import_validation: Optional[PrescanImportValidation] = None
 
         # Pre-processed lookups
-        self.skip_list = set(self.hints.get("skip_duplicates", []))
+        self._base_skip_list = set(self.hints.get("skip_duplicates", []))
+        self.skip_list = set(self._base_skip_list)
         self.compress_map = {c["chain_id"]: c for c in self.hints.get("compress_candidates", [])}
 
         # Load topological order if available
@@ -263,6 +273,202 @@ class IntelligenceRouter:
                 self.hints.setdefault("compress_candidates", []).extend(
                     optimize["compress_chains"]
                 )
+
+    def _identity_dict(self) -> Dict[str, Any]:
+        source_identity = self.intel.get("source_identity")
+        return source_identity if isinstance(source_identity, dict) else {}
+
+    def _source_roots(self) -> List[Path]:
+        roots: List[Path] = []
+        identity = self._identity_dict()
+        for value in (
+            identity.get("source_root"),
+            identity.get("repo_root"),
+            self.intel.get("source_root"),
+            self.intel.get("repo_root"),
+        ):
+            token = str(value or "").strip()
+            if not token:
+                continue
+            try:
+                root = Path(token).expanduser().resolve(strict=False)
+            except Exception:
+                continue
+            if root not in roots:
+                roots.append(root)
+        return roots
+
+    def _path_keys(self, rel_path: str) -> List[str]:
+        token = str(rel_path or "").strip()
+        if not token:
+            return []
+        keys: List[str] = []
+
+        def add(value: str) -> None:
+            clean = value.strip()
+            while clean.startswith("./"):
+                clean = clean[2:]
+            if clean and clean not in keys:
+                keys.append(clean)
+
+        add(token)
+        try:
+            path = Path(token)
+            add(path.as_posix())
+            if path.is_absolute():
+                resolved = path.expanduser().resolve(strict=False)
+                add(str(resolved))
+                for root in self._source_roots():
+                    try:
+                        add(resolved.relative_to(root).as_posix())
+                    except ValueError:
+                        continue
+        except Exception:
+            pass
+        return keys
+
+    def _first_matching_key(self, rel_path: str, candidates: Iterable[str]) -> Optional[str]:
+        candidate_set = {str(candidate) for candidate in candidates}
+        for key in self._path_keys(rel_path):
+            if key in candidate_set:
+                return key
+        return None
+
+    def influence_common_fields(self) -> Dict[str, Any]:
+        """Return non-secret common metadata for prescan influence proof labels."""
+        if self.import_validation is not None:
+            fields = self.import_validation.to_receipt_fields()
+            mode = str(fields.get("mode") or "imported_prescan_accepted")
+            return {
+                "advisory_only": bool(fields.get("advisory_only", True)),
+                "can_influence_execution": bool(
+                    fields.get("can_influence_execution", False)
+                ),
+                "generated_at": fields.get("generated_at_imported_if_present")
+                or self.intel.get("generated_at"),
+                "influence_applied": False,
+                "influence_classes": [],
+                "prescan_import_dir_if_any": fields.get("prescan_import_dir"),
+                "prescan_mode": mode,
+                "prescan_verdict": fields.get("verdict") or "UNKNOWN",
+                "reason_codes": list(fields.get("reason_codes") or []),
+            }
+
+        identity = self._identity_dict()
+        mode = str(
+            identity.get("prescan_mode")
+            or self.intel.get("prescan_mode")
+            or "local_prescan"
+        )
+        return {
+            "advisory_only": False,
+            "can_influence_execution": True,
+            "generated_at": self.intel.get("generated_at"),
+            "influence_applied": False,
+            "influence_classes": [],
+            "prescan_import_dir_if_any": None,
+            "prescan_mode": mode,
+            "prescan_verdict": "local_prescan" if mode == "local_prescan" else "accepted",
+            "reason_codes": ["local_prescan_loaded"],
+        }
+
+    def can_influence_execution(self) -> bool:
+        return bool(self.influence_common_fields().get("can_influence_execution"))
+
+    def available_influence_classes(self) -> List[str]:
+        classes: List[str] = []
+
+        def add(class_name: str, condition: bool) -> None:
+            if condition and class_name not in classes:
+                classes.append(class_name)
+
+        add("scope_reduction", bool(self.skip_list))
+        add(
+            "partition_reorder",
+            bool(self.topological_order or self.processing_order),
+        )
+        add("context_brief", bool(self.code_report))
+        add("compression_hint", bool(self.hints.get("compress_candidates")))
+        add(
+            "routing_model_hint",
+            bool(self._model_routing),
+        )
+        add(
+            "tier_override",
+            bool(
+                self._model_routing
+                or self.code_report.get("hotspots")
+                or self.code_report.get("pagerank_scores")
+            ),
+        )
+        add("phase_hint", bool(self._phase_routing))
+        return [
+            class_name
+            for class_name in PRESCAN_INFLUENCE_CLASSES
+            if class_name in classes
+        ]
+
+    def get_scope_reduction_source(self, rel_path: str) -> Optional[str]:
+        if self._first_matching_key(rel_path, self._grok_skip_list):
+            return "prescan.grok_passes.optimize.skip_list"
+        if self._first_matching_key(rel_path, self._base_skip_list):
+            return "prescan.extraction_hints.skip_duplicates"
+        if self._first_matching_key(rel_path, self.skip_list):
+            return "prescan.skip_list"
+        return None
+
+    def get_compression_hint_source(self, rel_path: str) -> Optional[str]:
+        path_keys = set(self._path_keys(rel_path))
+        for chain_id, members in self.intel.get("version_chains", {}).items():
+            paths = {str(m.get("path") or "") for m in members if isinstance(m, dict)}
+            if not path_keys.intersection(paths):
+                continue
+            for candidate in self.hints.get("compress_candidates", []):
+                if (
+                    candidate.get("chain_id") == chain_id
+                    and candidate.get("send_summary_instead")
+                ):
+                    return "prescan.extraction_hints.compress_candidates"
+        return None
+
+    def get_model_routing_hint_details(self, rel_path: str) -> Optional[Dict[str, Any]]:
+        import fnmatch as _fnmatch
+
+        path_keys = self._path_keys(rel_path)
+        for hint in self._model_routing:
+            pattern = str(hint.get("partition_pattern") or "")
+            if any(_fnmatch.fnmatch(path_key, pattern) for path_key in path_keys):
+                hinted = (
+                    hint.get("recommended_model")
+                    or hint.get("suggested_model")
+                    or hint.get("model_id")
+                    or hint.get("provider")
+                )
+                return {
+                    "hinted_provider_or_model_if_present": hinted,
+                    "hint_source": "prescan.grok_passes.optimize.model_routing_hints",
+                }
+        return None
+
+    def get_tier_override_source(self, rel_path: str) -> Optional[str]:
+        if self.get_model_routing_hint_details(rel_path):
+            return "prescan.grok_passes.optimize.model_routing_hints"
+        path_key = self._first_matching_key(
+            rel_path,
+            [
+                str(h.get("rel_path") or "")
+                for h in self.code_report.get("hotspots", [])
+                if isinstance(h, dict) and h.get("hotspot_score", 0) > 0.7
+            ],
+        )
+        if path_key:
+            return "prescan.code_intelligence_report.hotspots"
+        if self._first_matching_key(
+            rel_path,
+            self.code_report.get("pagerank_scores", {}).keys(),
+        ):
+            return "prescan.code_intelligence_report.pagerank_scores"
+        return None
 
     @classmethod
     def validate_import_dir(
@@ -470,13 +676,14 @@ class IntelligenceRouter:
 
     def should_skip(self, rel_path: str) -> bool:
         """Check if a file should be skipped based on prescan."""
-        return rel_path in self.skip_list
+        return self._first_matching_key(rel_path, self.skip_list) is not None
 
     def get_compression_hint(self, rel_path: str) -> Optional[str]:
         """Return a summary hint if this file is part of a compressed version chain."""
+        path_keys = set(self._path_keys(rel_path))
         for chain_id, members in self.intel.get("version_chains", {}).items():
-            paths = [m["path"] for m in members]
-            if rel_path in paths:
+            paths = {str(m.get("path") or "") for m in members if isinstance(m, dict)}
+            if path_keys.intersection(paths):
                 for cc in self.hints.get("compress_candidates", []):
                     if cc.get("chain_id") == chain_id and cc.get("send_summary_instead"):
                         return cc.get("summary_hint", "Superseded by newer version.")
@@ -485,13 +692,15 @@ class IntelligenceRouter:
     def get_routing_priority(self, rel_path: str) -> int:
         """Return priority score (higher = extract earlier/more detail)."""
         priority = 50
-        if rel_path in self.topo_index:
-            priority += (100 - min(self.topo_index[rel_path], 50))
+        key = self._first_matching_key(rel_path, self.topo_index.keys())
+        if key is not None:
+            priority += (100 - min(self.topo_index[key], 50))
         return priority
 
     def get_composite_priority(self, rel_path: str) -> float:
         """Returns composite priority score (0-1). Higher = extract first."""
-        return self.processing_order.get(rel_path, 0.5)
+        key = self._first_matching_key(rel_path, self.processing_order.keys())
+        return self.processing_order.get(key, 0.5) if key is not None else 0.5
 
     def should_skip_code(self, rel_path: str) -> bool:
         """Dead code deprioritization (advisory only, never auto-skip).
@@ -499,7 +708,7 @@ class IntelligenceRouter:
         Returns True if confidence >= 0.7 (unreachable + zero importers).
         Never returns True for entry points, test files, or config files.
         """
-        return rel_path in self.orphan_set
+        return self._first_matching_key(rel_path, self.orphan_set) is not None
 
     def get_model_tier(self, rel_path: str) -> str:
         """Route complex/important files to better models.
@@ -508,23 +717,28 @@ class IntelligenceRouter:
         """
         # Check grok optimize model routing hints
         import fnmatch as _fnmatch
+        path_keys = self._path_keys(rel_path)
         for hint in self._model_routing:
             pattern = hint.get("partition_pattern", "")
-            if _fnmatch.fnmatch(rel_path, pattern):
+            if any(_fnmatch.fnmatch(path_key, pattern) for path_key in path_keys):
                 return hint.get("recommended_model", "standard")
 
         # Check code intelligence
         if self.code_report:
             hotspots = self.code_report.get("hotspots", [])
             for h in hotspots[:10]:  # Top 10 hotspots
-                if h.get("rel_path") == rel_path and h.get("hotspot_score", 0) > 0.7:
+                if (
+                    self._first_matching_key(rel_path, [h.get("rel_path")])
+                    and h.get("hotspot_score", 0) > 0.7
+                ):
                     return "premium"
 
             pagerank = self.code_report.get("pagerank_scores", {})
             if pagerank:
                 scores = sorted(pagerank.values(), reverse=True)
                 top_10_pct = scores[max(0, len(scores) // 10)] if scores else 0
-                if pagerank.get(rel_path, 0) >= top_10_pct and top_10_pct > 0:
+                key = self._first_matching_key(rel_path, pagerank.keys())
+                if key and pagerank.get(key, 0) >= top_10_pct and top_10_pct > 0:
                     return "premium"
 
         return "standard"
@@ -538,27 +752,29 @@ class IntelligenceRouter:
 
     def get_phase_routing_override(self, rel_path: str) -> Optional[str]:
         """Return phase override from optimize pass, or None."""
-        return self._phase_routing.get(rel_path)
+        key = self._first_matching_key(rel_path, self._phase_routing.keys())
+        return self._phase_routing.get(key) if key is not None else None
 
     def get_model_routing_hint(self, rel_path: str) -> Optional[str]:
         """Return model routing hint from optimize pass, or None."""
-        import fnmatch as _fnmatch
-        for hint in self._model_routing:
-            if _fnmatch.fnmatch(rel_path, hint.get("partition_pattern", "")):
-                return hint.get("recommended_model")
-        return None
+        details = self.get_model_routing_hint_details(rel_path)
+        return (
+            str(details.get("hinted_provider_or_model_if_present"))
+            if details and details.get("hinted_provider_or_model_if_present")
+            else None
+        )
 
     def get_test_file(self, rel_path: str) -> Optional[str]:
         """Return mapped test file path, or None."""
         for mapping in self.code_report.get("test_mappings", []):
-            if mapping.get("source_path") == rel_path:
+            if self._first_matching_key(rel_path, [mapping.get("source_path")]):
                 return mapping.get("test_path")
         return None
 
     def get_bundling_group(self, rel_path: str) -> Optional[str]:
         """Suggest a bundling group (e.g. dependency cluster)."""
         for i, cluster in enumerate(self.code_intel.get("dependency_clusters", [])):
-            if rel_path in cluster:
+            if self._first_matching_key(rel_path, cluster):
                 return f"cluster_{i}"
         return None
 

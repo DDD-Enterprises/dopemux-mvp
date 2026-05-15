@@ -1,0 +1,88 @@
+{
+  "id": "RTE-PKT-04-PRESCAN-INFLUENCE",
+  "status": "READY_FOR_REVIEW",
+  "generated_at": "2026-05-15T07:09:49Z",
+  "branch": "codex/rte-pkt-04-prescan-influence",
+  "base_commit": "c8993795c59eff6f5a362eee46395e2598614670",
+  "worktree": "/Users/hue/.codex/worktrees/9586/dopemux-mvp",
+  "repo_root": "/Users/hue/.codex/worktrees/9586/dopemux-mvp",
+  "upstream_basis": {
+    "rte_pkt_03_branch": "codex/rte-pkt-03-prescan-stale",
+    "rte_pkt_03_commit": "c8993795c59eff6f5a362eee46395e2598614670",
+    "observed_rte_pkt_03_manifest": "out/rte-pkt-03-prescan-stale/RTE-PKT-03_MANIFEST.json"
+  },
+  "changed_files": [
+    {
+      "path": "services/repo-truth-extractor/lib/intelligence_router.py",
+      "purpose": "Expose prescan influence common fields, available influence classes, path-normalized hint lookup, and hint-source helpers."
+    },
+    {
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "purpose": "Record prescan influence labels in receipts, partition manifests, request metadata, context compression stats, and validated --prescan-dir late-load receipts."
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_prescan_influence_labels.py",
+      "purpose": "Targeted local tests for accepted local/imported influence labels, rejected stale guards, scope-reduction opt-in, compression redaction, and no-provider-call safety."
+    },
+    {
+      "path": "out/rte-pkt-04-prescan-influence/",
+      "purpose": "Packet proof artifacts only."
+    }
+  ],
+  "validation_summary": [
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_prescan_influence_labels.py -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "5 passed; pytest warned about unknown config option asyncio_mode."
+    },
+    {
+      "command": "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/lib/intelligence_router.py services/repo-truth-extractor/lib/prescan/engine.py",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_prescan_import_staleness.py services/repo-truth-extractor/tests/test_prescan_v5_integration.py services/repo-truth-extractor/tests/test_router_runtime_integration.py services/repo-truth-extractor/tests/test_prescan_consumers.py -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "18 passed; pytest warned about unknown config option asyncio_mode."
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests -k 'prescan and influence' -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "6 passed; pytest warned about unknown config option asyncio_mode."
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool out/rte-pkt-04-prescan-influence/RTE-PKT-04_MANIFEST.json >/tmp/rte-pkt-04-manifest.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "pre-commit run --files services/repo-truth-extractor/lib/intelligence_router.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_prescan_influence_labels.py out/rte-pkt-04-prescan-influence/RTE-PKT-04_MANIFEST.json out/rte-pkt-04-prescan-influence/RTE-PKT-04_PRESCAN_INFLUENCE_MATRIX.md out/rte-pkt-04-prescan-influence/RTE-PKT-04_ACCEPTED_INFLUENCE_EXAMPLES.md out/rte-pkt-04-prescan-influence/RTE-PKT-04_REJECTED_INFLUENCE_GUARDS.md out/rte-pkt-04-prescan-influence/RTE-PKT-04_TEST_REPORT.md out/rte-pkt-04-prescan-influence/RTE-PKT-04_NO_PROVIDER_CALLS_ATTESTATION.md out/rte-pkt-04-prescan-influence/RTE-PKT-04_DIFF_SUMMARY.md out/rte-pkt-04-prescan-influence/RTE-PKT-04_REMAINING_UNKNOWNS.md",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "Configured hooks passed or skipped for the changed file set."
+    }
+  ],
+  "no_provider_calls": true,
+  "live_validation_run": false,
+  "provider_batch_operations_run": false,
+  "prompt_or_model_route_files_changed": false,
+  "proof_outputs": [
+    "out/rte-pkt-04-prescan-influence/RTE-PKT-04_MANIFEST.json",
+    "out/rte-pkt-04-prescan-influence/RTE-PKT-04_PRESCAN_INFLUENCE_MATRIX.md",
+    "out/rte-pkt-04-prescan-influence/RTE-PKT-04_ACCEPTED_INFLUENCE_EXAMPLES.md",
+    "out/rte-pkt-04-prescan-influence/RTE-PKT-04_REJECTED_INFLUENCE_GUARDS.md",
+    "out/rte-pkt-04-prescan-influence/RTE-PKT-04_TEST_REPORT.md",
+    "out/rte-pkt-04-prescan-influence/RTE-PKT-04_NO_PROVIDER_CALLS_ATTESTATION.md",
+    "out/rte-pkt-04-prescan-influence/RTE-PKT-04_DIFF_SUMMARY.md",
+    "out/rte-pkt-04-prescan-influence/RTE-PKT-04_REMAINING_UNKNOWNS.md"
+  ],
+  "remaining_status": "READY_FOR_REVIEW"
+}
