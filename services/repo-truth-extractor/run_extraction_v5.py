@@ -427,6 +427,43 @@ except ModuleNotFoundError:
     strict_capability_reason = structured_contracts_module.strict_capability_reason
     resolve_contract_sidefill_enabled = structured_contracts_module.sidefill_enabled
 try:
+    from lib.artifact_provenance import (
+        ARTIFACT_PROVENANCE_REQUIRED_FIELDS,
+        FIELD_PROVENANCE_REQUIRED_FIELDS,
+        PROVENANCE_META_KEY,
+        PROVENANCE_SCHEMA_VERSION,
+        build_artifact_provenance_payload,
+        records_for_artifact_fields,
+        records_for_changed_fields,
+        validate_provenance_payload,
+    )
+except ModuleNotFoundError:
+    artifact_provenance_path = RUNNER_SERVICE_DIR / "lib" / "artifact_provenance.py"
+    artifact_provenance_spec = importlib.util.spec_from_file_location(
+        "repo_truth_artifact_provenance",
+        artifact_provenance_path,
+    )
+    if not artifact_provenance_spec or not artifact_provenance_spec.loader:
+        raise
+    artifact_provenance_module = importlib.util.module_from_spec(
+        artifact_provenance_spec
+    )
+    artifact_provenance_spec.loader.exec_module(artifact_provenance_module)
+    ARTIFACT_PROVENANCE_REQUIRED_FIELDS = (
+        artifact_provenance_module.ARTIFACT_PROVENANCE_REQUIRED_FIELDS
+    )
+    FIELD_PROVENANCE_REQUIRED_FIELDS = (
+        artifact_provenance_module.FIELD_PROVENANCE_REQUIRED_FIELDS
+    )
+    PROVENANCE_META_KEY = artifact_provenance_module.PROVENANCE_META_KEY
+    PROVENANCE_SCHEMA_VERSION = artifact_provenance_module.PROVENANCE_SCHEMA_VERSION
+    build_artifact_provenance_payload = (
+        artifact_provenance_module.build_artifact_provenance_payload
+    )
+    records_for_artifact_fields = artifact_provenance_module.records_for_artifact_fields
+    records_for_changed_fields = artifact_provenance_module.records_for_changed_fields
+    validate_provenance_payload = artifact_provenance_module.validate_provenance_payload
+try:
     from rich.console import Console
     from rich.panel import Panel
     from rich.progress import (
@@ -7644,6 +7681,9 @@ def normalize_step(
     unexpected_artifacts: Counter[str] = Counter()
     failure_stage_histogram: Counter[str] = Counter()
     artifact_blocked_by_failure_stage: Dict[str, List[str]] = {}
+    provenance_field_records: List[Dict[str, Any]] = []
+    provenance_artifact_records: List[Dict[str, Any]] = []
+    provenance_partitions: Set[str] = set()
 
     for partition_id in partition_ids:
         raw_file = raw_dir / f"{step_id}__{partition_id}.json"
@@ -7669,6 +7709,20 @@ def normalize_step(
                 if isinstance(payload.get("request_meta"), dict)
                 else {}
             )
+            artifact_provenance = request_meta.get(PROVENANCE_META_KEY)
+            if isinstance(artifact_provenance, dict):
+                field_records = artifact_provenance.get("field_records")
+                artifact_records = artifact_provenance.get("artifact_records")
+                if isinstance(field_records, list):
+                    provenance_field_records.extend(
+                        [row for row in field_records if isinstance(row, dict)]
+                    )
+                if isinstance(artifact_records, list):
+                    provenance_artifact_records.extend(
+                        [row for row in artifact_records if isinstance(row, dict)]
+                    )
+                if partition_id:
+                    provenance_partitions.add(partition_id)
             if not bool(request_meta.get("schema_gate_passed", True)):
                 continue
             artifacts = extract_artifacts_from_partition_payload(
@@ -7797,6 +7851,58 @@ def normalize_step(
         out_path.write_text(merged_text, encoding="utf-8")
         written_files.append(artifact_name)
 
+    provenance_rollup_path: Optional[Path] = None
+    provenance_summary = {
+        "schema_version": PROVENANCE_SCHEMA_VERSION,
+        "field_records_total": len(provenance_field_records),
+        "artifact_records_total": len(provenance_artifact_records),
+        "partitions_with_provenance": len(provenance_partitions),
+        "provenance_kinds": sorted(
+            {
+                str(row.get("provenance_kind"))
+                for row in provenance_field_records + provenance_artifact_records
+                if str(row.get("provenance_kind") or "").strip()
+            }
+        ),
+    }
+    if provenance_field_records or provenance_artifact_records:
+        provenance_field_records.sort(
+            key=lambda row: (
+                str(row.get("source_partition_id") or ""),
+                str(row.get("artifact_name") or ""),
+                str(row.get("field_path") or ""),
+                str(row.get("provenance_kind") or ""),
+                str(row.get("reason_code") or ""),
+            )
+        )
+        provenance_artifact_records.sort(
+            key=lambda row: (
+                str(row.get("source_partition_id") or ""),
+                str(row.get("artifact_name") or ""),
+                str(row.get("provenance_kind") or ""),
+                str(row.get("reason_code") or ""),
+            )
+        )
+        provenance_rollup_path = qa_dir / f"{step_id}_ARTIFACT_PROVENANCE.json"
+        write_json(
+            provenance_rollup_path,
+            {
+                "schema_version": PROVENANCE_SCHEMA_VERSION,
+                "phase": phase,
+                "step_id": step_id,
+                "generated_at": now_iso(),
+                "field_record_required_fields": list(
+                    FIELD_PROVENANCE_REQUIRED_FIELDS
+                ),
+                "artifact_record_required_fields": list(
+                    ARTIFACT_PROVENANCE_REQUIRED_FIELDS
+                ),
+                "field_records": provenance_field_records,
+                "artifact_records": provenance_artifact_records,
+                "summary": provenance_summary,
+            },
+        )
+
     qa_payload = {
         "phase": phase,
         "step_id": step_id,
@@ -7870,6 +7976,12 @@ def normalize_step(
             (step_exec_stats or {}).get("soft_gate_failed_partitions", 0)
         ),
         "final_contract_status": (step_exec_stats or {}).get("final_contract_status"),
+        "artifact_provenance": {
+            **provenance_summary,
+            "rollup_path": (
+                str(provenance_rollup_path) if provenance_rollup_path else None
+            ),
+        },
     }
 
     write_json(qa_dir / f"{step_id}_QA.json", qa_payload)
@@ -11434,6 +11546,81 @@ def _comparison_artifact_dir(phase_dir: Path, provider: str, model: str) -> Path
     return llm_runtime_comparison_artifact_dir(phase_dir, provider, model)
 
 
+def _attach_comparison_provenance_to_results(
+    *,
+    phase: str,
+    step_id: str,
+    phase_dir: Path,
+    provider: str,
+    model: str,
+    results: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    generated_at = now_iso()
+    comp_dir = _comparison_artifact_dir(phase_dir, provider, model)
+    comparison_ref = f"{provider}/{model}:{step_id}"
+    for result in results:
+        if not isinstance(result, dict):
+            continue
+        partition_id = str(result.get("partition_id") or "unknown")
+        artifact_path = comp_dir / f"{step_id}__{partition_id}.json"
+        payload: Dict[str, Any] = {}
+        if artifact_path.exists():
+            try:
+                loaded = json.loads(artifact_path.read_text(encoding="utf-8"))
+                if isinstance(loaded, dict):
+                    payload = loaded
+            except Exception:
+                payload = {}
+        artifacts = (
+            payload.get("artifacts")
+            if isinstance(payload.get("artifacts"), list)
+            else result.get("artifacts")
+        )
+        if not isinstance(artifacts, list) or not artifacts:
+            continue
+        request_meta = (
+            payload.get("request_meta")
+            if isinstance(payload.get("request_meta"), dict)
+            else result.get("request_meta")
+        )
+        if not isinstance(request_meta, dict):
+            request_meta = {}
+        raw_ref = f"raw/comparison/{provider.replace('/', '_')}__{model.replace('/', '_')}/{artifact_path.name}"
+        field_records = records_for_artifact_fields(
+            artifacts,
+            provenance_kind="comparison",
+            source_phase=phase,
+            source_step_id=step_id,
+            source_partition_id=partition_id,
+            reason_code="comparison_lane_non_authoritative",
+            generated_at=generated_at,
+            original_context_ref="comparison_lane",
+            repair_or_sidefill_provider_if_any=provider,
+            repair_or_sidefill_model_id_if_any=model,
+            request_meta_ref_if_any="request_meta.lane",
+        )
+        provenance = build_artifact_provenance_payload(
+            artifacts=artifacts,
+            field_records=field_records,
+            source_phase=phase,
+            source_step_id=step_id,
+            source_partition_id=partition_id,
+            generated_at=generated_at,
+            raw_artifact_refs=[raw_ref],
+            request_meta_refs=["request_meta.lane", "request_meta.authoritative"],
+            comparison_refs_if_any=[comparison_ref],
+        )
+        request_meta[PROVENANCE_META_KEY] = provenance
+        request_meta["artifact_provenance_validation_errors"] = (
+            validate_provenance_payload(provenance)
+        )
+        result["request_meta"] = request_meta
+        if payload:
+            payload["request_meta"] = request_meta
+            write_json(artifact_path, payload)
+    return results
+
+
 def run_comparison_lane(
     phase: str,
     step_id: str,
@@ -11449,7 +11636,7 @@ def run_comparison_lane(
     contract_lane: str = "comparison",
 ) -> "List[Dict[str, Any]]":
     del parse_json_from_response_fn, coerce_artifacts_from_response_fn
-    return llm_runtime_run_comparison_lane(
+    results = llm_runtime_run_comparison_lane(
         _llm_runtime_deps(),
         phase=phase,
         step_id=step_id,
@@ -11465,6 +11652,16 @@ def run_comparison_lane(
         finalize_response_parse_provenance=finalize_response_parse_provenance,
         log_response_parse_repair=log_response_parse_repair,
         contract_lane=contract_lane,
+    )
+    compare_provider = str(getattr(cfg, "compare_provider", None) or "xai")
+    compare_model = str(getattr(cfg, "compare_model", None) or "grok-4.20-beta")
+    return _attach_comparison_provenance_to_results(
+        phase=phase,
+        step_id=step_id,
+        phase_dir=phase_dir,
+        provider=compare_provider,
+        model=compare_model,
+        results=results,
     )
 
 
@@ -12938,6 +13135,74 @@ else sdk_auth_present_flags(p_provider, True)
             )
             request_meta_current = dict(request_meta_initial)
             response_text_current = str(response_text_initial or "")
+            provenance_generated_at = now_iso()
+            raw_artifact_refs = [f"raw/{out_json.name}"]
+            failed_sidecar_refs = [
+                f"raw/{path.name}"
+                for path in list_failed_sidecars(raw_dir, step_id, partition_id)
+            ]
+            field_provenance_records: List[Dict[str, Any]] = []
+
+            def _meta_provider(meta: Dict[str, Any]) -> Optional[str]:
+                token = str(meta.get("provider") or "").strip()
+                return token or None
+
+            def _meta_model(meta: Dict[str, Any]) -> Optional[str]:
+                token = str(meta.get("model_id") or "").strip()
+                return token or None
+
+            def _append_parse_repair_records(
+                artifacts: List[Dict[str, Any]],
+                meta: Dict[str, Any],
+                *,
+                reason_code: str,
+            ) -> None:
+                parse_provenance = (
+                    meta.get("response_parse_provenance")
+                    if isinstance(meta.get("response_parse_provenance"), dict)
+                    else {}
+                )
+                if not bool(parse_provenance.get("repair_applied")):
+                    return
+                field_provenance_records.extend(
+                    records_for_artifact_fields(
+                        artifacts,
+                        provenance_kind="deterministic_parse_repair",
+                        source_phase=phase,
+                        source_step_id=step_id,
+                        source_partition_id=partition_id,
+                        reason_code=reason_code,
+                        generated_at=provenance_generated_at,
+                        original_context_ref="request_meta.response_parse_provenance",
+                        request_meta_ref_if_any="request_meta.response_parse_provenance",
+                        failed_sidecar_ref_if_any=(
+                            failed_sidecar_refs[0] if failed_sidecar_refs else None
+                        ),
+                    )
+                )
+
+            field_provenance_records.extend(
+                records_for_changed_fields(
+                    artifacts_initial,
+                    artifacts_current,
+                    provenance_kind="deterministic_schema_repair",
+                    source_phase=phase,
+                    source_step_id=step_id,
+                    source_partition_id=partition_id,
+                    reason_code="initial_canonicalize_artifacts",
+                    generated_at=provenance_generated_at,
+                    original_context_ref="request_meta.schema_id_normalizations",
+                    request_meta_ref_if_any="request_meta.schema_id_normalizations",
+                    failed_sidecar_ref_if_any=(
+                        failed_sidecar_refs[0] if failed_sidecar_refs else None
+                    ),
+                )
+            )
+            _append_parse_repair_records(
+                artifacts_current,
+                request_meta_current,
+                reason_code="primary_response_parse_repair",
+            )
 
             repair_invocations = 0
             repair_successes = 0
@@ -13028,6 +13293,7 @@ else sdk_auth_present_flags(p_provider, True)
                 ("schema_missing_key:path", "schema_empty_key:path")
             ):
                 repair_invocations += 1
+                artifacts_before_repair = copy.deepcopy(artifacts_current)
                 repaired, did_repair, _repair_method = (
                     _attempt_schema_repair_path_items(
                         artifacts_current,
@@ -13040,6 +13306,26 @@ else sdk_auth_present_flags(p_provider, True)
                         repaired, step_contract
                     )
                     schema_id_normalizations.extend(new_norm)
+                    field_provenance_records.extend(
+                        records_for_changed_fields(
+                            artifacts_before_repair,
+                            artifacts_current,
+                            provenance_kind="deterministic_schema_repair",
+                            source_phase=phase,
+                            source_step_id=step_id,
+                            source_partition_id=partition_id,
+                            reason_code=(
+                                f"schema_path_repair:{_repair_method}:"
+                                f"{str(contract_reason or 'schema_gate_failure')}"
+                            ),
+                            generated_at=provenance_generated_at,
+                            original_context_ref="request_meta.schema_gate_context",
+                            request_meta_ref_if_any="request_meta.schema_gate_context",
+                            failed_sidecar_ref_if_any=(
+                                failed_sidecar_refs[0] if failed_sidecar_refs else None
+                            ),
+                        )
+                    )
                     contract_ok, contract_reason, contract_context = (
                         artifacts_pass_contract_gate(artifacts_current, step_contract)
                     )
@@ -13059,6 +13345,7 @@ else sdk_auth_present_flags(p_provider, True)
                         contract_reason,
                     )
                     sidefill_invocations += 1
+                    artifacts_before_sidefill = copy.deepcopy(artifacts_current)
                     (
                         sidefill_artifacts,
                         sidefill_meta,
@@ -13078,6 +13365,41 @@ else sdk_auth_present_flags(p_provider, True)
                     )
                     sidefill_dropped_rows += int(dropped_count)
                     if sidefill_artifacts:
+                        field_provenance_records.extend(
+                            records_for_artifact_fields(
+                                sidefill_artifacts,
+                                provenance_kind="sidefill",
+                                source_phase=phase,
+                                source_step_id=step_id,
+                                source_partition_id=partition_id,
+                                reason_code=(
+                                    f"missing_expected_artifact:{missing_artifact}:"
+                                    f"{str(contract_reason or 'missing_expected_artifacts')}"
+                                ),
+                                generated_at=provenance_generated_at,
+                                original_artifacts=artifacts_before_sidefill,
+                                original_context_ref="request_meta.schema_gate_context",
+                                repair_or_sidefill_provider_if_any=_meta_provider(
+                                    sidefill_meta
+                                ),
+                                repair_or_sidefill_model_id_if_any=_meta_model(
+                                    sidefill_meta
+                                ),
+                                request_meta_ref_if_any=(
+                                    "request_meta.sidefill_filled_artifacts"
+                                ),
+                                failed_sidecar_ref_if_any=(
+                                    failed_sidecar_refs[0]
+                                    if failed_sidecar_refs
+                                    else None
+                                ),
+                            )
+                        )
+                        _append_parse_repair_records(
+                            sidefill_artifacts,
+                            sidefill_meta,
+                            reason_code="sidefill_response_parse_repair",
+                        )
                         _merge_with_conflict_tracking(sidefill_artifacts)
                         if any(
                             str(row.get("artifact_name") or "") == missing_artifact
@@ -13122,6 +13444,7 @@ else sdk_auth_present_flags(p_provider, True)
                 else:
                     target_names = tuple(output_artifacts)
                 repair_invocations += 1
+                artifacts_before_provider_repair = copy.deepcopy(artifacts_current)
                 (
                     repaired_artifacts,
                     repaired_meta,
@@ -13137,6 +13460,37 @@ else sdk_auth_present_flags(p_provider, True)
                 )
                 strict_route_attestations.extend(strict_attest)
                 if repaired_artifacts:
+                    field_provenance_records.extend(
+                        records_for_artifact_fields(
+                            repaired_artifacts,
+                            provenance_kind="provider_repair",
+                            source_phase=phase,
+                            source_step_id=step_id,
+                            source_partition_id=partition_id,
+                            reason_code=(
+                                "provider_targeted_repair:"
+                                f"{str(contract_reason or 'contract_violation')}"
+                            ),
+                            generated_at=provenance_generated_at,
+                            original_artifacts=artifacts_before_provider_repair,
+                            original_context_ref="request_meta.schema_gate_context",
+                            repair_or_sidefill_provider_if_any=_meta_provider(
+                                repaired_meta
+                            ),
+                            repair_or_sidefill_model_id_if_any=_meta_model(
+                                repaired_meta
+                            ),
+                            request_meta_ref_if_any="request_meta.strict_route_attestations",
+                            failed_sidecar_ref_if_any=(
+                                failed_sidecar_refs[0] if failed_sidecar_refs else None
+                            ),
+                        )
+                    )
+                    _append_parse_repair_records(
+                        repaired_artifacts,
+                        repaired_meta,
+                        reason_code="provider_targeted_repair_response_parse_repair",
+                    )
                     _merge_with_conflict_tracking(repaired_artifacts)
                     artifacts_current, recanonical_norm = canonicalize_artifacts(
                         artifacts_current, step_contract
@@ -13164,6 +13518,7 @@ else sdk_auth_present_flags(p_provider, True)
                     contract_reason,
                 )
                 repair_invocations += 1
+                artifacts_before_envelope_repair = copy.deepcopy(artifacts_current)
                 (
                     repaired_artifacts,
                     repaired_meta,
@@ -13179,6 +13534,37 @@ else sdk_auth_present_flags(p_provider, True)
                 )
                 strict_route_attestations.extend(strict_attest)
                 if repaired_artifacts:
+                    field_provenance_records.extend(
+                        records_for_artifact_fields(
+                            repaired_artifacts,
+                            provenance_kind="provider_repair",
+                            source_phase=phase,
+                            source_step_id=step_id,
+                            source_partition_id=partition_id,
+                            reason_code=(
+                                "provider_envelope_repair:"
+                                f"{str(contract_reason or 'contract_violation')}"
+                            ),
+                            generated_at=provenance_generated_at,
+                            original_artifacts=artifacts_before_envelope_repair,
+                            original_context_ref="request_meta.schema_gate_context",
+                            repair_or_sidefill_provider_if_any=_meta_provider(
+                                repaired_meta
+                            ),
+                            repair_or_sidefill_model_id_if_any=_meta_model(
+                                repaired_meta
+                            ),
+                            request_meta_ref_if_any="request_meta.strict_route_attestations",
+                            failed_sidecar_ref_if_any=(
+                                failed_sidecar_refs[0] if failed_sidecar_refs else None
+                            ),
+                        )
+                    )
+                    _append_parse_repair_records(
+                        repaired_artifacts,
+                        repaired_meta,
+                        reason_code="provider_envelope_repair_response_parse_repair",
+                    )
                     _merge_with_conflict_tracking(repaired_artifacts)
                     artifacts_current, recanonical_norm = canonicalize_artifacts(
                         artifacts_current, step_contract
@@ -13213,14 +13599,34 @@ else sdk_auth_present_flags(p_provider, True)
                     else None
                 )
                 if fallback_artifact_name and isinstance(artifact_meta, dict):
-                    _merge_with_conflict_tracking(
-                        [
-                            {
-                                "artifact_name": fallback_artifact_name,
-                                "payload": empty_payload_for_artifact(artifact_meta),
-                            }
-                        ]
+                    artifacts_before_fallback = copy.deepcopy(artifacts_current)
+                    fallback_update = [
+                        {
+                            "artifact_name": fallback_artifact_name,
+                            "payload": empty_payload_for_artifact(artifact_meta),
+                        }
+                    ]
+                    field_provenance_records.extend(
+                        records_for_artifact_fields(
+                            fallback_update,
+                            provenance_kind="deterministic_schema_repair",
+                            source_phase=phase,
+                            source_step_id=step_id,
+                            source_partition_id=partition_id,
+                            reason_code=(
+                                "line_range_fail_closed_empty_payload:"
+                                f"{str(contract_reason or 'schema_invalid_line_range')}"
+                            ),
+                            generated_at=provenance_generated_at,
+                            original_artifacts=artifacts_before_fallback,
+                            original_context_ref="request_meta.schema_gate_context",
+                            request_meta_ref_if_any="request_meta.schema_gate_context",
+                            failed_sidecar_ref_if_any=(
+                                failed_sidecar_refs[0] if failed_sidecar_refs else None
+                            ),
+                        )
                     )
+                    _merge_with_conflict_tracking(fallback_update)
                     artifacts_current, recanonical_norm = canonicalize_artifacts(
                         artifacts_current, step_contract
                     )
@@ -13228,6 +13634,32 @@ else sdk_auth_present_flags(p_provider, True)
                     contract_ok, contract_reason, contract_context = (
                         artifacts_pass_contract_gate(artifacts_current, step_contract)
                     )
+
+            provenance_request_refs = []
+            if isinstance(
+                request_meta_current.get("response_parse_provenance"), dict
+            ):
+                provenance_request_refs.append("request_meta.response_parse_provenance")
+            if schema_id_normalizations:
+                provenance_request_refs.append("request_meta.schema_id_normalizations")
+            if strict_route_attestations:
+                provenance_request_refs.append("request_meta.strict_route_attestations")
+            if sidefill_filled_artifacts:
+                provenance_request_refs.append("request_meta.sidefill_filled_artifacts")
+            artifact_provenance = build_artifact_provenance_payload(
+                artifacts=artifacts_current,
+                field_records=field_provenance_records,
+                source_phase=phase,
+                source_step_id=step_id,
+                source_partition_id=partition_id,
+                generated_at=provenance_generated_at,
+                raw_artifact_refs=raw_artifact_refs,
+                failed_sidecar_refs=failed_sidecar_refs,
+                request_meta_refs=provenance_request_refs,
+            )
+            artifact_provenance_errors = validate_provenance_payload(
+                artifact_provenance
+            )
 
             request_meta_current.update(
                 {
@@ -13246,6 +13678,10 @@ else sdk_auth_present_flags(p_provider, True)
                     "schema_gate_context": contract_context,
                     "strict_route_attestations": strict_route_attestations,
                     "no_auto_transport_flips": True,
+                    PROVENANCE_META_KEY: artifact_provenance,
+                    "artifact_provenance_validation_errors": (
+                        artifact_provenance_errors
+                    ),
                 }
             )
             return artifacts_current, request_meta_current, response_text_current
