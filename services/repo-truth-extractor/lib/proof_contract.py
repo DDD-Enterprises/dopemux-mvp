@@ -127,12 +127,25 @@ _AUTHORITY_RANK = {
 }
 
 
-def _normalize_rel_path(path: str | Path) -> str:
-    text = str(path).replace("\\", "/")
-    marker = "/dopemux-mvp/"
-    if marker in text:
-        return text.split(marker, 1)[1]
-    return text.lstrip("./")
+_REPO_TOP_LEVEL_DIRS = frozenset(
+    {"services", "src", "out", "tests", "task-packets", "proof", "docs", "ui-dashboard"}
+)
+
+
+def _normalize_rel_path(path: str | Path, repo_root: Optional[Path] = None) -> str:
+    p = Path(str(path).replace("\\", "/"))
+    if repo_root is not None:
+        try:
+            return str(p.relative_to(repo_root))
+        except ValueError:
+            pass
+    if p.is_absolute():
+        # Walk up until we find a segment that is a known top-level directory.
+        parts = p.parts
+        for i, part in enumerate(parts):
+            if part.lower() in _REPO_TOP_LEVEL_DIRS:
+                return str(Path(*parts[i:]))
+    return str(p).lstrip("./")
 
 
 def _get_path(payload: Mapping[str, Any], dotted_path: str) -> tuple[bool, Any]:
@@ -161,7 +174,7 @@ def _walk_values(value: Any) -> Iterable[Any]:
         for key in sorted(value.keys(), key=str):
             yield from _walk_values(value[key])
         return
-    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+    if isinstance(value, (list, tuple)):
         for item in value:
             yield from _walk_values(item)
         return
@@ -279,7 +292,8 @@ def classify_artifact(
     name = Path(rel_path).name
     payload = payload or {}
 
-    if "/fixtures/" in f"/{rel_path}/" or "sample" in rel_path.lower():
+    rel_path_parts = {seg.lower() for seg in Path(rel_path).parts}
+    if "/fixtures/" in f"/{rel_path}/" or rel_path_parts & {"sample", "samples"}:
         classification = "sample_artifact_uncertain_lineage"
     elif rel_path == "services/repo-truth-extractor/run_extraction_v5.py":
         classification = "runtime_authority"
@@ -367,15 +381,11 @@ def _field_status(
             continue
         seen.append(alias)
         if _has_value(value, require_non_empty=require_non_empty):
-            status = (
-                "SATISFIED"
-                if alias == field or field != "source_version"
-                else "PARTIAL"
-            )
+            status = "SATISFIED" if alias == field else "PARTIAL"
             reason = (
                 "field present"
                 if status == "SATISFIED"
-                else "alias present but exact source_version absent"
+                else f"alias '{alias}' present but exact field '{field}' absent"
             )
             return {
                 "status": status,
