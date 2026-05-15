@@ -11,6 +11,21 @@ _SECRET_ASSIGN_RE = re.compile(
 )
 _BEARER_INLINE_RE = re.compile(r"(?i)(\bBearer\s+)([^\s,;]+)")
 _AUTH_HEADER_RE = re.compile(r"(?i)(\b(?:Authorization|x-goog-api-key)\b\s*[:=]\s*)([^\n\r]+)")
+_PRIVATE_KEY_BLOCK_RE = re.compile(
+    r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----.*?-----END [A-Z0-9 ]*PRIVATE KEY-----",
+    re.DOTALL,
+)
+_PROVIDER_TOKEN_RE = re.compile(
+    r"(?<![A-Za-z0-9_-])(?:"
+    r"sk-[A-Za-z0-9_-]{16,}|"
+    r"sk-proj-[A-Za-z0-9_-]{16,}|"
+    r"xai-[A-Za-z0-9_-]{16,}|"
+    r"gsk_[A-Za-z0-9_-]{16,}|"
+    r"ghp_[A-Za-z0-9_-]{16,}|"
+    r"github_pat_[A-Za-z0-9_-]{16,}|"
+    r"glpat-[A-Za-z0-9_-]{16,}"
+    r")(?![A-Za-z0-9_-])"
+)
 
 
 _SAFE_SENSITIVE_KEYS = {
@@ -62,11 +77,17 @@ def sanitize_text_for_output(text: str) -> str:
     if not text:
         return ""
     value = str(text)
+    value = _PRIVATE_KEY_BLOCK_RE.sub("[REDACTED PRIVATE KEY]", value)
     value = _SECRET_QUERY_RE.sub(r"\1REDACTED", value)
     value = _SECRET_ASSIGN_RE.sub(r"\1[REDACTED]", value)
     value = _AUTH_HEADER_RE.sub(r"\1[REDACTED]", value)
     value = _BEARER_INLINE_RE.sub(r"\1[REDACTED]", value)
+    value = _PROVIDER_TOKEN_RE.sub("[REDACTED]", value)
     return value
+
+
+def sanitize_failed_sidecar_text(text: str) -> str:
+    return sanitize_text_for_output(text)
 
 
 def sanitize_payload_for_output(payload: Any, *, field_name: str | None = None) -> Any:
