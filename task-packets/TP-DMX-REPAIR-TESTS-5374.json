@@ -1,0 +1,129 @@
+{
+  "id": "TP-DMX-REPAIR-TESTS-5374",
+  "project": "dopemux-mvp",
+  "target": "Repair pytest execution for the current worktree",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "repair-tests-5374",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/repair-tests-5374",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "test: repair pytest execution wiring",
+    "allowlist": [
+      "Makefile",
+      "src/dopemux/adhd/context_manager.py",
+      "src/dopemux/mcp/registry.yaml",
+      "tests/system_data/test_cli.py",
+      "tests/system_data/test_tools.py",
+      "tests/integration/test_claude_autoresponder_integration.py",
+      "tests/test_component6_phase1.py",
+      "tests/test_workspace_detection.py",
+      "tests/unit/test_extract_local_smoke.py",
+      "tests/unit/test_repo_truth_extractor_prompt_governance.py",
+      "tests/unit/test_wizard_interactivity.py",
+      "task-packets/TP-DMX-REPAIR-TESTS-5374.json"
+    ],
+    "verify": [
+      "uv run --frozen --extra test pytest tests/test_component6_phase1.py --maxfail=1 -q",
+      "make test-fast",
+      "uv run --frozen --extra test pytest tests --maxfail=10",
+      "git diff --check",
+      "pre-commit run --files Makefile src/dopemux/adhd/context_manager.py src/dopemux/mcp/registry.yaml tests/integration/test_claude_autoresponder_integration.py tests/system_data/test_cli.py tests/system_data/test_tools.py tests/test_component6_phase1.py tests/test_workspace_detection.py tests/unit/test_extract_local_smoke.py tests/unit/test_repo_truth_extractor_prompt_governance.py tests/unit/test_wizard_interactivity.py task-packets/TP-DMX-REPAIR-TESTS-5374.json"
+    ]
+  },
+  "pr": {
+    "title": "Repair pytest execution wiring",
+    "body": "Updates pytest invocation wiring, repairs registry and git-status parsing failures, and hardens brittle full-suite test imports against cross-test package collisions.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Ensure pytest commands install and execute from the project test environment instead of resolving a global pytest executable.",
+      "context_files": [
+        "Makefile",
+        "pyproject.toml",
+        "pytest.ini",
+        "uv.lock"
+      ],
+      "expected_files": [
+        "Makefile"
+      ],
+      "validation": [
+        "uv run --frozen --extra test pytest tests/embeddings/unit/test_integrations.py --maxfail=1 -q"
+      ]
+    },
+    {
+      "id": "step-2",
+      "task": "Isolate the Component 6 Phase 1 test imports from conflicting top-level intelligence packages during full-suite collection.",
+      "context_files": [
+        "tests/test_component6_phase1.py",
+        "services/task-orchestrator/intelligence/context_switch_recovery.py",
+        "services/task-orchestrator/observability/metrics_collector.py",
+        "services/serena/v2/intelligence/__init__.py"
+      ],
+      "expected_files": [
+        "tests/test_component6_phase1.py"
+      ],
+      "validation": [
+        "uv run --frozen --extra test pytest tests/test_component6_phase1.py --maxfail=1 -q",
+        "uv run --frozen --extra test pytest tests --maxfail=10"
+      ]
+    },
+    {
+      "id": "step-3",
+      "task": "Repair later full-suite failures with minimal changes to proven runtime bugs and stale test assertions.",
+      "context_files": [
+        "src/dopemux/mcp/registry.yaml",
+        "src/dopemux/adhd/context_manager.py",
+        "tests/system_data/test_cli.py",
+        "tests/system_data/test_tools.py",
+        "tests/integration/test_claude_autoresponder_integration.py",
+        "tests/test_workspace_detection.py",
+        "tests/unit/test_extract_local_smoke.py",
+        "tests/unit/test_repo_truth_extractor_prompt_governance.py",
+        "tests/unit/test_wizard_interactivity.py",
+        "scripts/mcp-wrappers/_lib.sh",
+        "scripts/mcp-wrappers/conport-wrapper.sh",
+        "scripts/mcp-wrappers/dope-context-wrapper.sh",
+        "scripts/mcp-wrappers/serena-wrapper.sh"
+      ],
+      "expected_files": [
+        "src/dopemux/mcp/registry.yaml",
+        "src/dopemux/adhd/context_manager.py",
+        "tests/system_data/test_cli.py",
+        "tests/system_data/test_tools.py",
+        "tests/integration/test_claude_autoresponder_integration.py",
+        "tests/test_workspace_detection.py",
+        "tests/unit/test_extract_local_smoke.py",
+        "tests/unit/test_repo_truth_extractor_prompt_governance.py",
+        "tests/unit/test_wizard_interactivity.py"
+      ],
+      "validation": [
+        "uv run --frozen --extra test pytest tests/system_data tests/test_config_manager.py::TestConfigManager::test_default_mcp_servers tests/test_session_commands.py::TestContextManagerEnhancements::test_generate_smart_description_from_git_changes tests/test_workspace_detection.py::TestMCPWrapperScripts tests/test_workspace_detection.py::TestPhase1Metrics::test_all_components_migrated tests/unit/test_extract_local_smoke.py::test_extract_pipeline_voyage_embeddings_are_mockable tests/unit/test_repo_truth_extractor_prompt_governance.py tests/unit/test_wizard_interactivity.py::test_require_questionary_raises_deterministic_message tests/integration/test_claude_autoresponder_integration.py::TestPerformanceIntegration::test_concurrent_operations --maxfail=1 -q",
+        "uv run --frozen --extra test pytest tests --maxfail=10"
+      ]
+    }
+  ]
+}

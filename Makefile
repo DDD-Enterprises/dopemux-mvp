@@ -59,40 +59,40 @@ install-dev:
 
 # Testing targets
 test:
-	uv run --frozen pytest tests
+	uv run --frozen --extra test pytest tests
 
 test-unit:
-	uv run --frozen pytest tests/unit --maxfail=1 --disable-warnings --no-cov
+	uv run --frozen --extra test pytest tests/unit --maxfail=1 --disable-warnings --no-cov
 
 test-integration:
 	uv sync --frozen --extra test --extra services
-	uv run --frozen pytest tests/integration --maxfail=1 --disable-warnings --no-cov
+	uv run --frozen --extra test --extra services pytest tests/integration --maxfail=1 --disable-warnings --no-cov
 
 test-coverage:
 	uv sync --frozen --extra test
-	uv run --frozen pytest --cov-report=term-missing --cov-report=html
+	uv run --frozen --extra test pytest --cov-report=term-missing --cov-report=html
 
 test-fast:
-	uv run --frozen pytest tests/unit --maxfail=1 --disable-warnings --no-cov
+	uv run --frozen --extra test pytest tests/unit --maxfail=1 --disable-warnings --no-cov
 
 test-verbose:
-	uv run --frozen pytest -v
+	uv run --frozen --extra test pytest -v
 
 ci-fast:
 	uv sync --frozen --extra test
-	uv run --frozen pytest tests/unit --maxfail=1 --disable-warnings --no-cov
+	uv run --frozen --extra test pytest tests/unit --maxfail=1 --disable-warnings --no-cov
 
 ci-extended:
 	uv sync --frozen --extra test --extra services
-	uv run --frozen pytest tests/integration --maxfail=1 --disable-warnings --no-cov
+	uv run --frozen --extra test --extra services pytest tests/integration --maxfail=1 --disable-warnings --no-cov
 	./test_installer_basic.sh
 	./scripts/check_coverage.sh
 
 test-extractor:
-	uv run --frozen pytest --no-cov services/repo-truth-extractor/tests
+	uv run --frozen --extra test pytest --no-cov services/repo-truth-extractor/tests
 
 test-extractor-smoke:
-	uv run --frozen pytest --no-cov tests/unit/test_run_extraction_v3_phase_m.py tests/unit/test_run_extraction_v3_pipeline_controls.py
+	uv run --frozen --extra test pytest --no-cov tests/unit/test_run_extraction_v3_phase_m.py tests/unit/test_run_extraction_v3_pipeline_controls.py
 
 # Quality targets
 lint:

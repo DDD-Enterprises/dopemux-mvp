@@ -18,40 +18,10 @@ servers:
         - context-portal-mcp
         - conport-mcp
 
-  dopemux-conport:
-    transport: http
-    default_enabled: false
-    required_for_auto: false
-    docker:
-      service: conport
-      compose_file: compose.yml
-      port: 3004
-      health_url: http://localhost:3004/health
-    local:
-      command: uvx
-      args:
-        - --from
-        - context-portal-mcp
-        - conport-mcp
-
   dopemux-serena:
     transport: http
     default_enabled: true
     required_for_auto: true
-    docker:
-      service: serena
-      compose_file: compose.yml
-      port: 3006
-      health_url: http://localhost:4006/health
-    local:
-      command: serena
-      args:
-        - start-mcp-server
-
-  dopemux-serena:
-    transport: http
-    default_enabled: false
-    required_for_auto: false
     docker:
       service: serena
       compose_file: compose.yml

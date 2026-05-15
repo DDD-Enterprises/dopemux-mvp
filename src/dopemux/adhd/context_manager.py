@@ -446,19 +446,27 @@ class ContextManager:
 
         # Check git status for recent changes
         if git_state.get("status"):
-            status_lines = git_state["status"].split("\n")
+            status_lines = str(git_state["status"]).replace("\\n", "\n").splitlines()
             modified_files = []
             added_files = []
             deleted_files = []
 
-            for line in status_lines:
-                line = line.strip()
-                if line.startswith("M "):
-                    modified_files.append(line[2:])
-                elif line.startswith("A "):
-                    added_files.append(line[2:])
-                elif line.startswith("D "):
-                    deleted_files.append(line[2:])
+            for raw_line in status_lines:
+                line = raw_line.rstrip()
+                if not line.strip():
+                    continue
+
+                status_code = line[:2]
+                path = line[3:].strip() if len(line) > 3 else line[2:].strip()
+                if not path:
+                    continue
+
+                if "A" in status_code:
+                    added_files.append(path)
+                elif "D" in status_code:
+                    deleted_files.append(path)
+                elif "M" in status_code:
+                    modified_files.append(path)
 
             # Generate description based on changes
             if added_files:
