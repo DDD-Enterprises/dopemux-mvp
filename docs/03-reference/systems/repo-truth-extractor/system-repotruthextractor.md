@@ -46,8 +46,8 @@ It is not the operator CLI control plane, not PM authority, not memory authority
 - Preserves v4 compatibility by wrapping v5 execution and rebuilding v4 outputs.
   Evidence: `services/repo-truth-extractor/run_extraction_v4.py` states it "keeps v5 execution intact" while loading v4 prompt/artifact manifests, executing v5 for supported phases, and rebuilding deterministic v4 normalized outputs under `extraction/repo-truth-extractor/v4/runs/<run_id>/`.
 
-- Exposes repo-truth-extractor entrypoints through dopemux command wiring, but does not let the legacy extractor CLI directly execute runs.
-  Evidence: `src/dopemux/commands/extractor_commands.py` resolves v3/v4/v5 runner paths, but the `dopemux extractor run` subcommand prints a safety notice and does not execute the runner. The same file marks `dopemux extractor` as legacy and instructs operators to use `dopemux upgrades`.
+- Exposes repo-truth-extractor entrypoints through dopemux command wiring, with `dopemux rte` as the canonical operator command family.
+  Evidence: `src/dopemux/cli.py` registers the `rte` group as the "Canonical operator entrypoint for Repo Truth Extractor", attaches `run`, `list`, `doctor`, `status`, `preflight`, `validate-live`, `trace`, `wizard`, and `promptset` subcommands to it, labels `dopemux upgrades` as a legacy compatibility alias, hides/blocks `dopemux extractor` through `LegacyReplacementCommand`, and makes `dopemux truth` raise a refusal pointing to `dopemux rte`.
 
 ## 3. Non-Responsibilities
 
@@ -81,9 +81,13 @@ It is not the operator CLI control plane, not PM authority, not memory authority
   - tests: `services/repo-truth-extractor/tests/`
 
 - CLI and invocation surfaces:
-  - canonical operator path described in `services/repo-truth-extractor/README.md`: `dopemux upgrades ...`
-  - legacy command group in `src/dopemux/commands/extractor_commands.py`
-  - direct runner invocation via `python services/repo-truth-extractor/run_extraction_v5.py ...`
+  - canonical operator command family in `src/dopemux/cli.py`: `dopemux rte ...`
+  - safe operator commands: `dopemux rte run`, `dopemux rte list`, `dopemux rte preflight`, `dopemux rte status`, `dopemux rte doctor`, `dopemux rte validate-live`, `dopemux rte promptset ...`, and `dopemux rte trace`
+  - legacy compatibility alias: `dopemux upgrades ...`
+  - deprecated/refusal surface: `dopemux extractor ...`
+  - legacy/refusal drift: `dopemux truth`
+  - gated legacy scan: `dopemux rte scan --allow-legacy-v3-scan`, which delegates to `run_repscan.py` and the legacy v3 chain
+  - advanced/debug direct runner invocation: `python services/repo-truth-extractor/run_extraction_v5.py ...`
 
 - Artifact/proof surfaces:
   - v5 root/constants in `run_extraction_v5.py`: `extraction/repo-truth-extractor/v5`
@@ -123,8 +127,9 @@ It is not the operator CLI control plane, not PM authority, not memory authority
   - v4 normalized outputs rebuilt by `run_extraction_v4.py`
 
 - Operational
-  - CLI invocation through `dopemux upgrades ...`
-  - direct Python runner execution
+  - canonical CLI invocation through `dopemux rte ...`
+  - legacy compatibility CLI invocation through `dopemux upgrades ...`
+  - advanced/debug direct Python runner execution
   - hygiene scanning/quarantine tools in `extraction_hygiene.py`
   - validator and doctor helper tooling
 
@@ -139,8 +144,8 @@ Rule: Repo Truth Extractor is authoritative for extraction execution and extract
 - Active engine vs artifact-tree messaging is inconsistent.
   Evidence: `run_extraction_v5.py` defines `V5_EXTRACTION_ROOT = extraction/repo-truth-extractor/v5`, while `services/repo-truth-extractor/README.md` also says the v5 runner is the active execution engine but "still writes run artifacts, doctor outputs, and telemetry under the `v3` extraction tree," and later separately lists v5 runtime artifacts/proofs. This is documented drift and should not be flattened into a single settled output-root claim without runtime confirmation.
 
-- The legacy `dopemux extractor` command group remains present but is explicitly deprecated.
-  Evidence: `src/dopemux/commands/extractor_commands.py` prints "`dopemux extractor` is legacy. Use `dopemux upgrades`." The `extractor run` subcommand also refuses direct execution and prints a safety notice instead.
+- Legacy command surfaces remain present but are explicitly deprecated, hidden, gated, or blocked.
+  Evidence: `src/dopemux/cli.py` labels `dopemux upgrades` as a legacy compatibility alias for `dopemux rte`, blocks `dopemux extractor` through `LegacyReplacementCommand`, makes `dopemux truth` raise a refusal, and gates `dopemux rte scan` with `--allow-legacy-v3-scan` before it delegates to `run_repscan.py`.
 
 - Version layering is real and should not be collapsed.
   Evidence: `run_extraction_v4.py` is not a separate clean-room engine; it preserves v4 contracts while executing through v5 for supported phases. `run_extraction_v3.py` still exists as a compatibility/fallback path.
@@ -159,7 +164,7 @@ Rule: Repo Truth Extractor is authoritative for extraction execution and extract
 
 - Do not treat extractor outputs as stronger than runtime code, config, and tests.
 
-- Prefer `dopemux upgrades ...` or direct runner invocation over the legacy `dopemux extractor run` path.
+- Prefer `dopemux rte ...` for operator workflows. Treat `dopemux upgrades ...` as a legacy compatibility alias, direct runner invocation as advanced/debug/manual, `dopemux rte scan` as a gated legacy v3 scan route, and `dopemux extractor` / `dopemux truth` as deprecated or refusal surfaces.
 
 - Preserve the documented output-root/version drift explicitly until runtime verification settles it.
 

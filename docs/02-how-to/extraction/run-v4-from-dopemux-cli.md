@@ -5,7 +5,7 @@ type: how-to
 owner: '@hu3mann'
 date: '2026-02-20'
 author: '@codex'
-prelude: Execute, resume, and troubleshoot Repo Truth Extractor v4 from canonical dopemux upgrades commands.
+prelude: Execute, resume, and troubleshoot Repo Truth Extractor v4 from canonical dopemux rte commands.
 last_review: '2026-02-21'
 next_review: '2026-05-21'
 graph_metadata:
@@ -17,8 +17,7 @@ graph_metadata:
 ---
 # Run v4 extraction from Dopemux CLI
 
-This guide uses `dopemux upgrades` as the canonical entrypoint for extraction v4.
-`dopemux extractor` is still supported as a legacy alias.
+This guide uses `dopemux rte` as the canonical operator entrypoint. The v4 runner is a compatibility wrapper for v4 prompt/artifact contracts and delegates supported execution to v5. `dopemux upgrades` is a legacy compatibility alias for `dopemux rte`; `dopemux extractor` is a hidden legacy/refusal surface.
 
 For broader operator workflows, see:
 
@@ -28,31 +27,31 @@ For broader operator workflows, see:
 ## 1) Promptset audit
 
 ```bash
-dopemux upgrades promptset audit --pipeline-version v4
+dopemux rte promptset audit --pipeline-version v4
 ```
 
 ## 2) Provider preflight
 
 ```bash
-dopemux upgrades preflight --pipeline-version v4 --auth-doctor
+dopemux rte preflight --pipeline-version v4 --auth-doctor
 ```
 
 ## 3) Run a phase
 
 ```bash
-dopemux upgrades run --pipeline-version v4 --phase A --run-id rte_v4_local_001 --dry-run --resume
+dopemux rte run --pipeline-version v4 --phase A --run-id rte_v4_local_001 --dry-run --resume
 ```
 
 ## 4) Run full pipeline
 
 ```bash
-dopemux upgrades run --pipeline-version v4 --phase ALL --run-id rte_v4_full_001 --execute --resume
+DPMX_LIVE_OK=1 dopemux rte run --pipeline-version v4 --phase ALL --run-id rte_v4_full_001 --execute --resume
 ```
 
 Cost-first routing with escalation controls:
 
 ```bash
-dopemux upgrades run \
+DPMX_LIVE_OK=1 dopemux rte run \
   --pipeline-version v4 \
   --phase C \
   --routing-policy cost \
@@ -63,7 +62,7 @@ dopemux upgrades run \
 Batch mode with rich terminal UI:
 
 ```bash
-dopemux upgrades run \
+DPMX_LIVE_OK=1 dopemux rte run \
   --pipeline-version v4 \
   --phase A \
   --routing-policy cost \
@@ -80,25 +79,25 @@ dopemux upgrades run \
 ## 5) Check status
 
 ```bash
-dopemux upgrades status --pipeline-version v4 --run-id rte_v4_full_001
+dopemux rte status --pipeline-version v4 --run-id rte_v4_full_001
 ```
 
 JSON status:
 
 ```bash
-dopemux upgrades status --pipeline-version v4 --run-id rte_v4_full_001 --json
+dopemux rte status --pipeline-version v4 --run-id rte_v4_full_001 --json
 ```
 
 ## 6) Doctor and reprocess plan
 
 ```bash
-dopemux upgrades doctor --pipeline-version v4 --run-id rte_v4_full_001
+dopemux rte doctor --pipeline-version v4 --run-id rte_v4_full_001
 ```
 
 With auto-reprocess:
 
 ```bash
-dopemux upgrades doctor \
+dopemux rte doctor \
   --pipeline-version v4 \
   --run-id rte_v4_full_001 \
   --auto-reprocess \
@@ -113,10 +112,10 @@ dopemux upgrades doctor \
 
 ## 8) Legacy fallback
 
-Use v3 fallback when needed:
+Use v3 only as a legacy gated fallback when needed. It requires explicit live consent and is not the canonical v5 path.
 
 ```bash
-dopemux upgrades run --pipeline-version v3 --phase ALL --run-id rte_v3_legacy_001 --execute
+DPMX_LIVE_OK=1 dopemux rte run --pipeline-version v3 --phase ALL --run-id rte_v3_legacy_001 --execute
 ```
 
 ## 9) Dope-context startup autoindex (current workspace)

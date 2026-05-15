@@ -42,7 +42,13 @@ RUNNER_SERVICE_DIR = Path(__file__).resolve().parent
 if str(RUNNER_SERVICE_DIR) not in sys.path:
     sys.path.insert(0, str(RUNNER_SERVICE_DIR))
 
-from output_safety import sanitize_payload_for_output, sanitize_text_for_output, sanitized_json_bytes, sanitized_json_text
+from output_safety import (
+    sanitize_failed_sidecar_text,
+    sanitize_payload_for_output,
+    sanitize_text_for_output,
+    sanitized_json_bytes,
+    sanitized_json_text,
+)
 from phases import (
     CODE_HEAVY_PHASES,
     LEGACY_PHASE_DIR_ALIASES,
@@ -364,6 +370,7 @@ try:
         repair_mode as resolve_contract_repair_mode,
         resolve_stage_route,
         route_entries_for_stage,
+        route_entry_by_identity,
         route_for_contract,
         strict_capability_reason,
         sidefill_enabled as resolve_contract_sidefill_enabled,
@@ -415,6 +422,7 @@ except ModuleNotFoundError:
     resolve_contract_repair_mode = structured_contracts_module.repair_mode
     resolve_stage_route = structured_contracts_module.resolve_stage_route
     route_entries_for_stage = structured_contracts_module.route_entries_for_stage
+    route_entry_by_identity = structured_contracts_module.route_entry_by_identity
     route_for_contract = structured_contracts_module.route_for_contract
     strict_capability_reason = structured_contracts_module.strict_capability_reason
     resolve_contract_sidefill_enabled = structured_contracts_module.sidefill_enabled
@@ -2679,6 +2687,15 @@ def write_json(path: Path, payload: Any) -> None:
     )
 
 
+def _is_failed_text_sidecar_path(path: Path) -> bool:
+    return path.name.endswith(".FAILED.txt")
+
+
+def write_failed_sidecar_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(sanitize_failed_sidecar_text(str(text)), encoding="utf-8")
+
+
 def build_pre_live_validator_command(
     *,
     target_policy: str,
@@ -4595,12 +4612,20 @@ def _resolve_explicit_route_override(
     if selected is None:
         return None
     provider, model_id, api_key_env = selected
+    contract_route_entry = _contract_route_entry_for_provider_model(
+        step_contract,
+        provider=str(provider),
+        model_id=str(model_id),
+    )
+    contract_strict_passthrough_verified = bool(
+        contract_route_entry.get("strict_passthrough_verified", False)
+    ) if isinstance(contract_route_entry, dict) else False
     route = {
         "provider": str(provider),
         "model_id": str(model_id),
         "api_key_env": str(api_key_env),
         "strict_json_schema": strict_required,
-        "strict_passthrough_verified": strict_required,
+        "strict_passthrough_verified": contract_strict_passthrough_verified,
     }
     transport = transport_for_provider(str(provider), cfg)
     strict_reason = strict_capability_reason(route, transport) if strict_required else None
@@ -4617,8 +4642,8 @@ def _resolve_explicit_route_override(
                 "model_id": str(model_id),
                 "transport": transport,
                 "strict_json_schema": True,
-                "strict_passthrough_verified": True,
-                "strict_capable": True,
+                "strict_passthrough_verified": contract_strict_passthrough_verified,
+                "strict_capable": strict_reason is None,
                 "reason": None,
                 "ownership_mode": "explicit_step_routes_v1",
                 "ownership_source": "explicit_step_routes_env",
@@ -4684,6 +4709,15 @@ def _resolve_benchmark_owned_stage_route(
             payload.get("strict_passthrough_verified", False)
         ),
     }
+    contract_route_entry = _contract_route_entry_for_provider_model(
+        step_contract,
+        provider=str(route["provider"]),
+        model_id=str(route["model_id"]),
+    )
+    if str(route["provider"]) == "openrouter":
+        route["strict_passthrough_verified"] = bool(
+            contract_route_entry.get("strict_passthrough_verified", False)
+        ) if isinstance(contract_route_entry, dict) else False
     transport = transport_for_provider(str(route["provider"]), cfg)
     reason = strict_capability_reason(route, transport)
     attempts = [
@@ -10520,6 +10554,441 @@ def build_batch_client(
     raise RuntimeError(f"Unsupported batch provider: {provider}")
 
 
+def _contract_route_entry_for_provider_model(
+    step_contract: Optional[Dict[str, Any]],
+    *,
+    provider: str,
+    model_id: str,
+) -> Optional[Dict[str, Any]]:
+    if not isinstance(step_contract, dict):
+        return None
+    for route_entry in route_entries_for_stage(step_contract, "primary"):
+        if not isinstance(route_entry, dict):
+            continue
+        if (
+            str(route_entry.get("provider") or "") == str(provider)
+            and str(route_entry.get("model_id") or "") == str(model_id)
+        ):
+            return dict(route_entry)
+    return None
+
+
+def _resolve_batch_route_override(
+    *,
+    fallback: Tuple[str, str, str],
+    batch_provider: str,
+    step_ladder: Sequence[Sequence[str]],
+    step_contract: Optional[Dict[str, Any]] = None,
+    prefer_contract_api_key_env: bool = False,
+) -> Tuple[str, str, str]:
+    def _resolved_route(
+        provider: str,
+        model_id: str,
+        api_key_env: str,
+        *,
+        allow_contract_api_key_env: bool,
+    ) -> Tuple[str, str, str]:
+        selected_api_key_env = str(api_key_env)
+        if allow_contract_api_key_env:
+            route_entry = _contract_route_entry_for_provider_model(
+                step_contract,
+                provider=provider,
+                model_id=model_id,
+            )
+            if route_entry is not None:
+                selected_api_key_env = str(
+                    route_entry.get("api_key_env") or selected_api_key_env
+                )
+        if not selected_api_key_env:
+            selected_api_key_env = PROVIDER_API_KEY_ENV.get(provider, "")
+        return (str(provider), str(model_id), str(selected_api_key_env))
+
+    fallback_provider = str(fallback[0]) if fallback else ""
+    if batch_provider == fallback_provider:
+        return _resolved_route(
+            str(fallback[0]),
+            str(fallback[1]),
+            str(fallback[2]),
+            allow_contract_api_key_env=bool(prefer_contract_api_key_env),
+        )
+    for candidate in step_ladder:
+        candidate_tuple = tuple(candidate)
+        if not candidate_tuple or str(candidate_tuple[0]) != batch_provider:
+            continue
+        candidate_provider = str(candidate_tuple[0])
+        candidate_model = (
+            str(candidate_tuple[1]) if len(candidate_tuple) > 1 else ""
+        )
+        if len(candidate_tuple) >= 3:
+            candidate_api_key_env = str(candidate_tuple[2])
+        else:
+            candidate_api_key_env = ""
+        return _resolved_route(
+            candidate_provider,
+            candidate_model,
+            candidate_api_key_env,
+            allow_contract_api_key_env=bool(
+                prefer_contract_api_key_env and not candidate_api_key_env
+            ),
+        )
+    return _resolved_route(
+        str(fallback[0]),
+        str(fallback[1]),
+        str(fallback[2]),
+        allow_contract_api_key_env=bool(prefer_contract_api_key_env),
+    )
+
+
+def _batch_route_entry_for_selected_route(
+    step_contract: Optional[Dict[str, Any]],
+    selected_route: Tuple[str, str, str],
+) -> Optional[Dict[str, Any]]:
+    if not isinstance(step_contract, dict):
+        return None
+    selected_provider, selected_model_id, selected_api_key_env = selected_route
+    routes = route_entries_for_stage(step_contract, "primary")
+    route_entry = route_entry_by_identity(
+        routes,
+        provider=str(selected_provider),
+        model_id=str(selected_model_id),
+        api_key_env=str(selected_api_key_env),
+    )
+    if route_entry is not None:
+        return route_entry
+    return _contract_route_entry_for_provider_model(
+        step_contract,
+        provider=str(selected_provider),
+        model_id=str(selected_model_id),
+    )
+
+
+def _validate_strict_batch_response_format(
+    response_format: Optional[Dict[str, Any]],
+    *,
+    phase: str,
+    step_id: str,
+) -> None:
+    if not isinstance(response_format, dict):
+        raise ValueError(
+            f"Strict batch request for {phase}/{step_id} requires response_format.type=json_schema"
+        )
+    json_schema = response_format.get("json_schema")
+    schema = json_schema.get("schema") if isinstance(json_schema, dict) else None
+    if (
+        response_format.get("type") != "json_schema"
+        or not isinstance(json_schema, dict)
+        or not isinstance(schema, dict)
+    ):
+        raise ValueError(
+            f"Strict batch request for {phase}/{step_id} requires response_format.type=json_schema"
+        )
+    if json_schema.get("strict") is not True:
+        raise ValueError(
+            f"Strict batch request for {phase}/{step_id} requires json_schema.strict=true"
+        )
+
+
+STRICT_PASSTHROUGH_RUNTIME_EVIDENCE_KEY = "strict_passthrough_runtime_evidence"
+STRICT_PASSTHROUGH_VERIFIED_STATES = {"VERIFIED"}
+STRICT_PASSTHROUGH_OBSERVED_EVIDENCE_SOURCES = {
+    "wire_payload",
+    "BatchRequest",
+    "constructed_request",
+}
+
+
+def _stable_schema_hash(payload: Any) -> Optional[str]:
+    if not isinstance(payload, dict):
+        return None
+    serialized = json.dumps(
+        payload,
+        ensure_ascii=True,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+
+def _strict_passthrough_evidence_from_response_format(
+    *,
+    response_format: Any,
+    evidence_source: str,
+    provider: str,
+    model_id: str,
+    transport: str,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    custom_id: Optional[str] = None,
+    request_id: Optional[str] = None,
+) -> Dict[str, Any]:
+    response_format_obj = response_format if isinstance(response_format, dict) else {}
+    json_schema = (
+        response_format_obj.get("json_schema")
+        if isinstance(response_format_obj.get("json_schema"), dict)
+        else {}
+    )
+    schema = json_schema.get("schema") if isinstance(json_schema, dict) else None
+    return {
+        "evidence_source": str(evidence_source or "unavailable"),
+        "provider": str(provider),
+        "model_id": str(model_id),
+        "transport": str(transport),
+        "phase": str(phase).strip().upper(),
+        "step_id": str(step_id).strip().upper(),
+        "partition_id": str(partition_id),
+        "custom_id": str(custom_id or partition_id or ""),
+        "request_id": str(request_id or custom_id or partition_id or ""),
+        "response_format_present": isinstance(response_format, dict),
+        "response_format_type": str(response_format_obj.get("type") or ""),
+        "json_schema_present": isinstance(json_schema, dict) and bool(json_schema),
+        "json_schema_strict": (
+            json_schema.get("strict") if isinstance(json_schema, dict) else None
+        ),
+        "schema_name": str(json_schema.get("name") or "")
+        if isinstance(json_schema, dict)
+        else "",
+        "schema_present": isinstance(schema, dict),
+        "schema_sha256": _stable_schema_hash(schema),
+    }
+
+
+def build_strict_passthrough_evidence_from_batch_request(
+    request: BatchRequest,
+    *,
+    provider: str,
+    transport: str,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    evidence_source: str = "BatchRequest",
+) -> Dict[str, Any]:
+    return _strict_passthrough_evidence_from_response_format(
+        response_format=request.response_format,
+        evidence_source=evidence_source,
+        provider=provider,
+        model_id=request.model_id,
+        transport=transport,
+        phase=phase,
+        step_id=step_id,
+        partition_id=partition_id,
+        custom_id=request.custom_id,
+        request_id=request.custom_id,
+    )
+
+
+def build_strict_passthrough_evidence_from_wire_payload(
+    payload_row: Dict[str, Any],
+    *,
+    provider: str,
+    model_id: str,
+    transport: str,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+) -> Dict[str, Any]:
+    body = payload_row.get("body") if isinstance(payload_row.get("body"), dict) else {}
+    custom_id = str(payload_row.get("custom_id") or partition_id)
+    return _strict_passthrough_evidence_from_response_format(
+        response_format=body.get("response_format"),
+        evidence_source="wire_payload",
+        provider=provider,
+        model_id=model_id,
+        transport=transport,
+        phase=phase,
+        step_id=step_id,
+        partition_id=partition_id,
+        custom_id=custom_id,
+        request_id=custom_id,
+    )
+
+
+def _append_strict_passthrough_evidence(
+    request_meta: Dict[str, Any],
+    evidence_rows: Sequence[Dict[str, Any]],
+) -> None:
+    rows = [
+        dict(row)
+        for row in evidence_rows
+        if isinstance(row, dict) and str(row.get("evidence_source") or "").strip()
+    ]
+    if not rows:
+        return
+    existing = request_meta.get(STRICT_PASSTHROUGH_RUNTIME_EVIDENCE_KEY)
+    if isinstance(existing, list):
+        request_meta[STRICT_PASSTHROUGH_RUNTIME_EVIDENCE_KEY] = [
+            row for row in existing if isinstance(row, dict)
+        ] + rows
+    else:
+        request_meta[STRICT_PASSTHROUGH_RUNTIME_EVIDENCE_KEY] = rows
+
+
+def _evidence_matches_strict_attestation(
+    evidence: Dict[str, Any],
+    *,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    provider: str,
+    model_id: str,
+) -> bool:
+    comparisons = {
+        "phase": phase,
+        "step_id": step_id,
+        "partition_id": partition_id,
+        "provider": provider,
+        "model_id": model_id,
+    }
+    for key, expected in comparisons.items():
+        observed = str(evidence.get(key) or "").strip()
+        wanted = str(expected or "").strip()
+        if observed and wanted and observed != wanted:
+            return False
+    return True
+
+
+def _select_strict_passthrough_evidence(
+    evidence_rows: Sequence[Dict[str, Any]],
+    *,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    provider: str,
+    model_id: str,
+) -> Optional[Dict[str, Any]]:
+    for row in evidence_rows:
+        if not isinstance(row, dict):
+            continue
+        if _evidence_matches_strict_attestation(
+            row,
+            phase=phase,
+            step_id=step_id,
+            partition_id=partition_id,
+            provider=provider,
+            model_id=model_id,
+        ):
+            return dict(row)
+    return None
+
+
+def _strict_passthrough_truth_state(
+    entry: Dict[str, Any],
+    evidence: Optional[Dict[str, Any]],
+) -> Tuple[str, str]:
+    if "strict_required" in entry:
+        strict_expected = bool(entry.get("strict_required"))
+    else:
+        strict_expected = bool(
+            entry.get("strict_json_schema")
+            or entry.get("strict_capable")
+            or entry.get("strict_passthrough_verified")
+            or entry.get("attempts")
+        )
+    if entry.get("selected") is False:
+        return "FAILED", "no_selected_strict_route"
+    if not strict_expected:
+        return "NOT_APPLICABLE", "strict_schema_not_required"
+    provider = str(entry.get("provider") or "").strip().lower()
+    if provider == "gemini":
+        return "FAILED", "provider_not_strict_capable:gemini"
+    if evidence is None:
+        return "UNVERIFIED", "runtime_or_wire_evidence_missing"
+    source = str(evidence.get("evidence_source") or "").strip()
+    if source not in STRICT_PASSTHROUGH_OBSERVED_EVIDENCE_SOURCES:
+        return "UNKNOWN", f"unsupported_evidence_source:{source or 'missing'}"
+    if not bool(evidence.get("response_format_present", False)):
+        return "FAILED", "response_format_missing"
+    if str(evidence.get("response_format_type") or "") != "json_schema":
+        return "FAILED", "response_format_not_json_schema"
+    if not bool(evidence.get("json_schema_present", False)):
+        return "FAILED", "json_schema_missing"
+    if evidence.get("json_schema_strict") is not True:
+        return "FAILED", "json_schema_strict_not_true"
+    if not bool(evidence.get("schema_present", False)) or not evidence.get(
+        "schema_sha256"
+    ):
+        return "FAILED", "json_schema_schema_missing"
+    return "VERIFIED", "observed_strict_json_schema"
+
+
+def build_v5_batch_request(
+    *,
+    custom_id: str,
+    model_id: str,
+    system_prompt: str,
+    user_content: str,
+    provider: str,
+    selected_route: Tuple[str, str, str],
+    selected_route_entry: Optional[Dict[str, Any]] = None,
+    transport: str,
+    strict_contract_required: bool,
+    step_contract: Optional[Dict[str, Any]],
+    artifact_names: Tuple[str, ...],
+    force_json_output: bool,
+    metadata: Dict[str, Any],
+    schema_name_suffix: str = "batch",
+) -> BatchRequest:
+    batch_metadata = {
+        str(key): str(value)
+        for key, value in dict(metadata or {}).items()
+        if str(key).strip()
+    }
+    response_format: Optional[Dict[str, Any]] = None
+    if strict_contract_required:
+        batch_metadata["strict"] = "true"
+        phase = str(batch_metadata.get("phase") or "")
+        step_id = str(batch_metadata.get("step_id") or "")
+        if not isinstance(step_contract, dict):
+            raise ValueError(
+                f"Strict batch request for {phase}/{step_id} requires a step contract"
+            )
+        if not artifact_names:
+            raise ValueError(
+                f"Strict batch request for {phase}/{step_id} requires at least one artifact schema"
+            )
+        route_entry = _batch_route_entry_for_selected_route(
+            step_contract, selected_route
+        )
+        if route_entry is None and isinstance(selected_route_entry, dict):
+            route_entry = dict(selected_route_entry)
+        if route_entry is None:
+            raise ValueError(
+                f"Strict batch request for {phase}/{step_id} requires a strict-capable route contract"
+            )
+        strict_reason = strict_capability_reason(route_entry, transport)
+        if strict_reason is not None:
+            raise ValueError(
+                f"Strict batch request for {phase}/{step_id} requires a strict-capable route contract: {strict_reason}"
+            )
+        response_format, response_meta = build_provider_step_contract_output(
+            route=route_entry,
+            transport=transport,
+            step_contract=step_contract,
+            artifact_names=artifact_names,
+            schema_name_suffix=schema_name_suffix,
+        )
+        _validate_strict_batch_response_format(
+            response_format,
+            phase=phase,
+            step_id=step_id,
+        )
+        response_artifacts = response_meta.get("artifact_names")
+        if not isinstance(response_artifacts, list) or not response_artifacts:
+            raise ValueError(
+                f"Strict batch request for {phase}/{step_id} requires at least one artifact schema"
+            )
+
+    return BatchRequest(
+        custom_id=custom_id,
+        model_id=model_id,
+        system_prompt=system_prompt,
+        user_content=user_content,
+        force_json_output=bool(force_json_output and not strict_contract_required),
+        metadata=batch_metadata,
+        response_format=response_format,
+    )
+
+
 def validate_success_partition_output(
     success_json_path: Path,
     phase: str,
@@ -11348,7 +11817,12 @@ def execute_step_for_partitions(
         logs.append((level, message))
 
     def _op_write_text(write_ops: List[Dict[str, Any]], path: Path, text: str) -> None:
-        write_ops.append({"kind": "write_text", "path": str(path), "text": text})
+        text_value = str(text)
+        if _is_failed_text_sidecar_path(path):
+            text_value = sanitize_failed_sidecar_text(text_value)
+        write_ops.append(
+            {"kind": "write_text", "path": str(path), "text": text_value}
+        )
 
     def _op_write_json(
         write_ops: List[Dict[str, Any]], path: Path, payload: Dict[str, Any]
@@ -11370,7 +11844,10 @@ def execute_step_for_partitions(
                     continue
 
                 if kind == "write_text":
-                    op_path.write_text(str(op["text"]), encoding="utf-8")
+                    if _is_failed_text_sidecar_path(op_path):
+                        write_failed_sidecar_text(op_path, str(op["text"]))
+                    else:
+                        op_path.write_text(str(op["text"]), encoding="utf-8")
                 elif kind == "write_json":
                     payload = op["payload"] if isinstance(op["payload"], dict) else {}
                     write_json(op_path, payload)
@@ -12797,19 +13274,111 @@ else sdk_auth_present_flags(p_provider, True)
                 projected_output_tokens = _project_output_tokens(
                     projected_input_tokens
                 )
-                if cfg.batch_mode and not strict_contract_required:
+                if cfg.batch_mode:
                     batch_provider = (
                         cfg.batch_provider
                         if cfg.batch_provider != "auto"
                         else route_provider
                     )
-                    selected_route = (route_provider, route_model_id, route_api_key_env)
-                    if batch_provider != route_provider:
-                        for candidate in step_ladder:
-                            if candidate[0] == batch_provider:
-                                selected_route = candidate
-                                break
+                    selected_route = _resolve_batch_route_override(
+                        fallback=(
+                            route_provider,
+                            route_model_id,
+                            route_api_key_env,
+                        ),
+                        batch_provider=batch_provider,
+                        step_ladder=step_ladder,
+                        step_contract=step_contract,
+                        prefer_contract_api_key_env=bool(
+                            strict_contract_required
+                            and not route_info.get("api_key_env")
+                        ),
+                    )
                     batch_provider, batch_model_id, batch_api_key_env = selected_route
+                    batch_transport = transport_for_provider(batch_provider, cfg)
+                    selected_route_entry = None
+                    if strict_contract_required and routing_reason in {
+                        "explicit_step_route_override",
+                        "explicit_phase_route_override",
+                        "benchmark_route_ownership_primary",
+                    }:
+                        contract_route_entry = _contract_route_entry_for_provider_model(
+                            step_contract,
+                            provider=batch_provider,
+                            model_id=batch_model_id,
+                        )
+                        selected_route_entry = {
+                            "provider": batch_provider,
+                            "model_id": batch_model_id,
+                            "api_key_env": batch_api_key_env,
+                            "structured_output_mode": "json_schema",
+                            "strict_json_schema": True,
+                            "strict_passthrough_verified": bool(
+                                contract_route_entry.get(
+                                    "strict_passthrough_verified", False
+                                )
+                            )
+                            if isinstance(contract_route_entry, dict)
+                            else False,
+                        }
+                    try:
+                        batch_requests = [
+                            build_v5_batch_request(
+                                custom_id=partition_id,
+                                model_id=batch_model_id,
+                                system_prompt=prompt_text,
+                                user_content=effective_user_prompt,
+                                provider=batch_provider,
+                                selected_route=selected_route,
+                                selected_route_entry=selected_route_entry,
+                                transport=batch_transport,
+                                strict_contract_required=strict_contract_required,
+                                step_contract=step_contract,
+                                artifact_names=tuple(output_artifacts),
+                                force_json_output=(batch_provider == "gemini"),
+                                metadata={
+                                    "phase": phase,
+                                    "step_id": step_id,
+                                    "partition_id": partition_id,
+                                },
+                            )
+                        ]
+                        strict_passthrough_evidence_rows = (
+                            [
+                                build_strict_passthrough_evidence_from_batch_request(
+                                    batch_requests[0],
+                                    provider=batch_provider,
+                                    transport=batch_transport,
+                                    phase=phase,
+                                    step_id=step_id,
+                                    partition_id=partition_id,
+                                )
+                            ]
+                            if strict_contract_required
+                            else []
+                        )
+                    except ValueError as exc:
+                        failed_meta = {
+                            "provider": batch_provider,
+                            "model_id": batch_model_id,
+                            "failure_type": "batch_request_invalid",
+                            "provider_error_reason": str(exc),
+                            "execution_mode": "batch",
+                            "batch_provider": batch_provider,
+                            "batch_job_id": None,
+                            "estimated_input_tokens": projected_input_tokens,
+                            "estimated_output_tokens": projected_output_tokens,
+                            "strict_schema_required": bool(strict_contract_required),
+                        }
+                        return "", enrich_request_meta(
+                            failed_meta,
+                            run_id=run_id,
+                            phase=phase,
+                            step_id=step_id,
+                            partition_id=partition_id,
+                            provider=batch_provider,
+                            model_id=batch_model_id,
+                        )
                     batch_api_key, _ = resolve_api_key(
                         batch_provider, batch_api_key_env
                     )
@@ -12825,6 +13394,10 @@ else sdk_auth_present_flags(p_provider, True)
                             "estimated_input_tokens": projected_input_tokens,
                             "estimated_output_tokens": projected_output_tokens,
                         }
+                        _append_strict_passthrough_evidence(
+                            failed_meta,
+                            strict_passthrough_evidence_rows,
+                        )
                         return "", enrich_request_meta(
                             failed_meta,
                             run_id=run_id,
@@ -12837,20 +13410,6 @@ else sdk_auth_present_flags(p_provider, True)
                     batch_client = build_batch_client(
                         batch_provider, batch_api_key, cfg
                     )
-                    batch_requests = [
-                        BatchRequest(
-                            custom_id=partition_id,
-                            model_id=batch_model_id,
-                            system_prompt=prompt_text,
-                            user_content=effective_user_prompt,
-                            force_json_output=(batch_provider == "gemini"),
-                            metadata={
-                                "phase": phase,
-                                "step_id": step_id,
-                                "partition_id": partition_id,
-                            },
-                        )
-                    ]
                     batch_request_rows.append(
                         {
                             "partition_id": partition_id,
@@ -12957,6 +13516,10 @@ else sdk_auth_present_flags(p_provider, True)
                             "estimated_output_tokens": projected_output_tokens,
                             **capture_exception_metadata(exc),
                         }
+                        _append_strict_passthrough_evidence(
+                            failed_meta,
+                            strict_passthrough_evidence_rows,
+                        )
                         return "", enrich_request_meta(
                             failed_meta,
                             run_id=run_id,
@@ -12997,6 +13560,10 @@ else sdk_auth_present_flags(p_provider, True)
                                 reserved_spend if "reserved_spend" in locals() else None
                             ),
                         }
+                        _append_strict_passthrough_evidence(
+                            meta,
+                            strict_passthrough_evidence_rows,
+                        )
                         return json.dumps(
                             submit_payload, ensure_ascii=True, sort_keys=True
                         ), enrich_request_meta(
@@ -13040,6 +13607,10 @@ else sdk_auth_present_flags(p_provider, True)
                                 "estimated_input_tokens": projected_input_tokens,
                                 "estimated_output_tokens": projected_output_tokens,
                             }
+                            _append_strict_passthrough_evidence(
+                                failed_meta,
+                                strict_passthrough_evidence_rows,
+                            )
                             return "", enrich_request_meta(
                                 failed_meta,
                                 run_id=run_id,
@@ -13099,6 +13670,10 @@ else sdk_auth_present_flags(p_provider, True)
                             "estimated_input_tokens": projected_input_tokens,
                             "estimated_output_tokens": projected_output_tokens,
                         }
+                        _append_strict_passthrough_evidence(
+                            failed_meta,
+                            strict_passthrough_evidence_rows,
+                        )
                         return "", enrich_request_meta(
                             failed_meta,
                             run_id=run_id,
@@ -13121,6 +13696,10 @@ else sdk_auth_present_flags(p_provider, True)
                         "estimated_input_tokens": projected_input_tokens,
                         "estimated_output_tokens": projected_output_tokens,
                     }
+                    _append_strict_passthrough_evidence(
+                        meta,
+                        strict_passthrough_evidence_rows,
+                    )
                     for job_row in batch_job_rows:
                         if (
                             str(job_row.get("partition_id")) == partition_id
@@ -13227,6 +13806,24 @@ else sdk_auth_present_flags(p_provider, True)
                     provider=route_provider,
                     model_id=route_model_id,
                 )
+                if strict_contract_required and isinstance(draft_response_format, dict):
+                    _append_strict_passthrough_evidence(
+                        request_meta_local,
+                        [
+                            _strict_passthrough_evidence_from_response_format(
+                                response_format=draft_response_format,
+                                evidence_source="constructed_request",
+                                provider=route_provider,
+                                model_id=route_model_id,
+                                transport=transport_for_provider(route_provider, cfg),
+                                phase=phase,
+                                step_id=step_id,
+                                partition_id=partition_id,
+                                custom_id=partition_id,
+                                request_id=partition_id,
+                            )
+                        ],
+                    )
                 if request_meta_local.get("response_received") or llm_result.get("ok"):
                     spend_record = _accumulate_runtime_spend(
                         cfg,
@@ -15638,6 +16235,7 @@ def write_strict_passthrough_attestations(
     rows: List[Dict[str, Any]] = []
     by_provider = Counter()
     by_stage = Counter()
+    by_status = Counter()
     strict_capable_rows = 0
     for phase in phases:
         phase_dir = dirs.get(phase)
@@ -15663,24 +16261,95 @@ def write_strict_passthrough_attestations(
             phase_id = str(payload.get("phase") or phase).strip().upper()
             step_id = str(payload.get("step_id") or "").strip().upper()
             partition_id = str(payload.get("partition_id") or "").strip()
+            evidence_rows = (
+                request_meta.get(STRICT_PASSTHROUGH_RUNTIME_EVIDENCE_KEY)
+                if isinstance(
+                    request_meta.get(STRICT_PASSTHROUGH_RUNTIME_EVIDENCE_KEY), list
+                )
+                else []
+            )
             for entry in attestations:
                 if not isinstance(entry, dict):
                     continue
+                provider = str(entry.get("provider") or "").strip()
+                model_id = str(entry.get("model_id") or "").strip()
+                entry_evidence = (
+                    entry.get(STRICT_PASSTHROUGH_RUNTIME_EVIDENCE_KEY)
+                    if isinstance(
+                        entry.get(STRICT_PASSTHROUGH_RUNTIME_EVIDENCE_KEY), dict
+                    )
+                    else None
+                )
+                evidence = entry_evidence or _select_strict_passthrough_evidence(
+                    evidence_rows,
+                    phase=phase_id,
+                    step_id=step_id,
+                    partition_id=partition_id,
+                    provider=provider,
+                    model_id=model_id,
+                )
+                attestation_status, attestation_reason = _strict_passthrough_truth_state(
+                    entry,
+                    evidence,
+                )
+                verified = attestation_status in STRICT_PASSTHROUGH_VERIFIED_STATES
                 row = {
                     "phase": phase_id,
                     "step_id": step_id,
                     "partition_id": partition_id,
                     "stage": str(entry.get("stage") or "").strip(),
                     "selected": bool(entry.get("selected", False)),
-                    "provider": str(entry.get("provider") or "").strip(),
-                    "model_id": str(entry.get("model_id") or "").strip(),
+                    "provider": provider,
+                    "model_id": model_id,
                     "api_key_env": str(entry.get("api_key_env") or "").strip(),
                     "transport": str(entry.get("transport") or "").strip(),
+                    "strict_required": bool(entry.get("strict_required", False)),
                     "strict_json_schema": bool(entry.get("strict_json_schema", False)),
-                    "strict_passthrough_verified": bool(
+                    "route_strict_passthrough_claim": bool(
                         entry.get("strict_passthrough_verified", False)
                     ),
-                    "strict_capable": bool(entry.get("strict_capable", False)),
+                    "route_strict_capable_claim": bool(
+                        entry.get("strict_capable", False)
+                    ),
+                    "strict_passthrough_verified": verified,
+                    "strict_capable": verified,
+                    "attestation_status": attestation_status,
+                    "attestation_reason": attestation_reason,
+                    "evidence_source": (
+                        str(evidence.get("evidence_source") or "")
+                        if isinstance(evidence, dict)
+                        else "unavailable"
+                    ),
+                    "response_format_present": (
+                        bool(evidence.get("response_format_present", False))
+                        if isinstance(evidence, dict)
+                        else False
+                    ),
+                    "response_format_type": (
+                        str(evidence.get("response_format_type") or "")
+                        if isinstance(evidence, dict)
+                        else ""
+                    ),
+                    "json_schema_present": (
+                        bool(evidence.get("json_schema_present", False))
+                        if isinstance(evidence, dict)
+                        else False
+                    ),
+                    "json_schema_strict": (
+                        evidence.get("json_schema_strict")
+                        if isinstance(evidence, dict)
+                        else None
+                    ),
+                    "schema_name": (
+                        str(evidence.get("schema_name") or "")
+                        if isinstance(evidence, dict)
+                        else ""
+                    ),
+                    "schema_sha256": (
+                        str(evidence.get("schema_sha256") or "")
+                        if isinstance(evidence, dict)
+                        else ""
+                    ),
                     "attempts": (
                         entry.get("attempts")
                         if isinstance(entry.get("attempts"), list)
@@ -15694,17 +16363,25 @@ def write_strict_passthrough_attestations(
                     by_stage[row["stage"]] += 1
                 if row["strict_capable"]:
                     strict_capable_rows += 1
+                if row["attestation_status"]:
+                    by_status[row["attestation_status"]] += 1
     payload = {
-        "version": "STRICT_PASSTHROUGH_ATTESTATIONS_V1",
+        "version": "STRICT_PASSTHROUGH_ATTESTATIONS_V2",
         "generated_at": now_iso(),
         "run_id": run_id,
-        "policy": {"no_auto_transport_flips": True},
+        "policy": {
+            "no_auto_transport_flips": True,
+            "verified_requires_observed_runtime_or_wire_evidence": True,
+            "intent_or_static_route_config_alone_verified": False,
+        },
         "rows": rows,
         "summary": {
             "row_count": len(rows),
             "strict_capable_rows": strict_capable_rows,
+            "verified_rows": by_status.get("VERIFIED", 0),
             "provider_histogram": dict(sorted(by_provider.items())),
             "stage_histogram": dict(sorted(by_stage.items())),
+            "attestation_status_histogram": dict(sorted(by_status.items())),
         },
     }
     write_json(dirs["root"] / STRICT_PASSTHROUGH_ATTESTATIONS_FILENAME, payload)
@@ -16460,8 +17137,9 @@ def run_batch_watch(
                 artifacts_missing = list(output_artifacts)
                 step_stats[step_id]["recomputed"] += 1
                 step_stats[step_id]["failed"] += 1
-                out_failed.write_text(
-                    "batch_missing_result_for_partition\n", encoding="utf-8"
+                write_failed_sidecar_text(
+                    out_failed,
+                    "batch_missing_result_for_partition\n",
                 )
                 write_json(
                     out_failed_json,
@@ -16505,9 +17183,9 @@ def run_batch_watch(
                     row["completed_at_utc"] = now_iso()
                     artifacts_missing = list(output_artifacts)
                     step_stats[step_id]["failed"] += 1
-                    out_failed.write_text(
+                    write_failed_sidecar_text(
+                        out_failed,
                         response_text or (result.error or "batch_parse_failure"),
-                        encoding="utf-8",
                     )
                     write_json(
                         out_failed_json,
@@ -16699,8 +17377,9 @@ def run_batch_watch(
                     },
                 },
             )
-            out_failed.write_text(
-                f"batch_terminal_state:{terminal_status}\n", encoding="utf-8"
+            write_failed_sidecar_text(
+                out_failed,
+                f"batch_terminal_state:{terminal_status}\n",
             )
 
         row["updated_at_utc"] = now_iso()

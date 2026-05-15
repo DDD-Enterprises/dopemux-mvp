@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import json
 import tempfile
 from dataclasses import dataclass, field
@@ -19,6 +20,7 @@ class BatchRequest:
     user_content: str
     force_json_output: bool = False
     metadata: Dict[str, str] = field(default_factory=dict)
+    response_format: Optional[Dict[str, Any]] = None
 
 
 @dataclass(frozen=True)
@@ -56,6 +58,32 @@ class BatchClient(Protocol):
         ...
 
 
+def _metadata_flag_enabled(metadata: Dict[str, str], key: str) -> bool:
+    return str(metadata.get(key) or "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _response_format_for_request(req: BatchRequest) -> Optional[Dict[str, Any]]:
+    strict_requested = _metadata_flag_enabled(req.metadata, "strict")
+    if isinstance(req.response_format, dict):
+        response_format = copy.deepcopy(req.response_format)
+        rf_type = str(response_format.get("type") or "").strip()
+        if strict_requested:
+            json_schema = response_format.get("json_schema")
+            schema = json_schema.get("schema") if isinstance(json_schema, dict) else None
+            if (
+                rf_type != "json_schema"
+                or not isinstance(json_schema, dict)
+                or not isinstance(schema, dict)
+            ):
+                raise ValueError("Strict batch request requires response_format.type=json_schema")
+        return response_format
+    if strict_requested:
+        raise ValueError("Strict batch request requires response_format.type=json_schema")
+    if req.force_json_output:
+        return {"type": "json_object"}
+    return None
+
+
 class OpenAIBatchClient:
     def __init__(self, api_key: str, base_url: Optional[str] = None) -> None:
         from openai import OpenAI
@@ -81,10 +109,9 @@ class OpenAIBatchClient:
                 ],
                 "temperature": 0.1,
             }
-            if req.force_json_output:
-                body["response_format"] = {"type": "json_object"}
-                if req.metadata.get("strict") == "true":
-                    pass
+            response_format = _response_format_for_request(req)
+            if response_format is not None:
+                body["response_format"] = response_format
             payload_rows.append(
                 {
                     "custom_id": req.custom_id,
@@ -94,7 +121,9 @@ class OpenAIBatchClient:
                 }
             )
 
-        with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".jsonl", delete=False) as handle:
+        with tempfile.NamedTemporaryFile(
+            "w", encoding="utf-8", suffix=".jsonl", delete=False
+        ) as handle:
             for row in payload_rows:
                 handle.write(json.dumps(row, ensure_ascii=False) + "\n")
             payload_path = Path(handle.name)
@@ -146,7 +175,11 @@ class OpenAIBatchClient:
             raw_text = str(content_obj.text)
         elif hasattr(content_obj, "read"):
             value = content_obj.read()
-            raw_text = value.decode("utf-8", errors="replace") if isinstance(value, (bytes, bytearray)) else str(value)
+            raw_text = (
+                value.decode("utf-8", errors="replace")
+                if isinstance(value, (bytes, bytearray))
+                else str(value)
+            )
         else:
             raw_text = str(content_obj)
 
@@ -156,7 +189,7 @@ class OpenAIBatchClient:
         results: List[BatchResult] = []
         total_lines = 0
         discarded_lines = 0
-        
+
         for line in raw_text.splitlines():
             line = line.strip()
             if not line:
@@ -166,11 +199,16 @@ class OpenAIBatchClient:
                 row = json.loads(line)
             except Exception as e:
                 discarded_lines += 1
-                logger.warning(f"Discarding invalid JSON line in batch result: {line[:200]}... Error: {e}")
+                logger.warning(
+                    "Discarding invalid JSON line in batch result: %s... Error: %s",
+                    line[:200],
+                    e,
+                )
                 continue
-
-        if total_lines > 0 and (discarded_lines / total_lines) > 0.05:
-            raise RuntimeError(f"BatchCorruptionError: {discarded_lines}/{total_lines} results discarded (>5%)")
+            if not isinstance(row, dict):
+                discarded_lines += 1
+                logger.warning("Discarding non-object JSON line in batch result: %s", line[:200])
+                continue
             custom_id = str(row.get("custom_id") or "")
             response = row.get("response") if isinstance(row.get("response"), dict) else {}
             body = response.get("body") if isinstance(response.get("body"), dict) else {}
@@ -184,10 +222,19 @@ class OpenAIBatchClient:
             error = None
             if isinstance(error_row, dict):
                 error = str(error_row.get("message") or error_row.get("code") or "batch_error")
-            results.append(BatchResult(custom_id=custom_id, output_text=output_text, error=error, meta=row))
+            results.append(
+                BatchResult(
+                    custom_id=custom_id,
+                    output_text=output_text,
+                    error=error,
+                    meta=row,
+                )
+            )
 
         if total_lines > 0 and (discarded_lines / total_lines) > 0.05:
-            raise RuntimeError(f"BatchCorruptionError: {discarded_lines}/{total_lines} results discarded (>5%)")
+            raise RuntimeError(
+                f"BatchCorruptionError: {discarded_lines}/{total_lines} results discarded (>5%)"
+            )
         return results
 
     def cancel(self, job_id: str) -> None:
