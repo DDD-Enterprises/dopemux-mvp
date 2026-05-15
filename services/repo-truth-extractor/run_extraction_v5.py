@@ -19388,6 +19388,8 @@ def main() -> None:
     if args.max_cost_usd is not None and args.max_cost_usd <= 0:
         parser.error("--max-cost-usd must be > 0 when provided.")
 
+    root = Path.cwd()
+
     # Initialize optional imported prescan router before RunnerConfig assembly.
     router = None
     prescan_import_validation = None
@@ -19493,7 +19495,6 @@ def main() -> None:
     if args.print_cost_preview and not (args.phase or args.preset):
         parser.error("--print-cost-preview requires --phase or --preset.")
 
-    root = Path.cwd()
     configure_output_layout(root, args.output_root)
     readonly_introspection = bool(
         args.status

@@ -6,7 +6,10 @@ import json
 import sys
 from dataclasses import replace
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
 SERVICE_ROOT = ROOT / "services" / "repo-truth-extractor"
@@ -257,6 +260,91 @@ def test_source_identity_walk_is_cached_per_process(tmp_path: Path) -> None:
 
     assert calls["count"] == 1
     assert first["corpus_manifest_hash"] == second["corpus_manifest_hash"]
+
+
+def test_source_identity_without_git_sha_is_not_cached(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    _write_file(repo_root, "src/app.py", "def app():\n    return 1\n")
+    calls = {"count": 0}
+
+    def fake_walk(_source_root: Path) -> list[dict[str, object]]:
+        calls["count"] += 1
+        return [
+            {
+                "content_hash": f"hash-{calls['count']}",
+                "exclude_reason": None,
+                "extension": ".py",
+                "include": True,
+                "rel_path": "src/app.py",
+                "size_bytes": 24,
+            }
+        ]
+
+    with patch.object(
+        intelligence_router, "_git_sha_for_root", return_value=None
+    ), patch.object(
+        intelligence_router,
+        "_walk_source_identity_entries",
+        fake_walk,
+    ):
+        first = build_prescan_source_identity(repo_root, repo_root)
+        second = build_prescan_source_identity(repo_root, repo_root)
+
+    assert calls["count"] == 2
+    assert first["corpus_manifest_hash"] != second["corpus_manifest_hash"]
+
+
+def test_main_resolves_root_before_prescan_import_validation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import_dir = tmp_path / "import"
+    import_dir.mkdir()
+    captured: dict[str, Path] = {}
+
+    def fake_load_imported_prescan_router(
+        prescan_dir: Path, root: Path
+    ) -> tuple[None, dict[str, object]]:
+        captured["prescan_dir"] = prescan_dir
+        captured["root"] = root
+        return None, {
+            "advisory_only": True,
+            "can_influence_execution": False,
+            "mode": "imported_prescan_rejected_stale",
+            "reason_codes": ["test_only"],
+            "verdict": "rejected_stale",
+        }
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "run_extraction_v5.py",
+            "--print-config",
+            "--prescan-import-dir",
+            str(import_dir),
+        ],
+    )
+    monkeypatch.setattr(runner, "IntelligenceRouter", object())
+    monkeypatch.setattr(
+        runner, "_load_imported_prescan_router", fake_load_imported_prescan_router
+    )
+    monkeypatch.setattr(
+        runner,
+        "resolve_run_context",
+        lambda *args, **kwargs: SimpleNamespace(run_id="test-run"),
+    )
+    monkeypatch.setattr(
+        runner, "get_run_dirs", lambda *args, **kwargs: {"root": tmp_path / "run"}
+    )
+    monkeypatch.setattr(runner, "print_config", lambda *args, **kwargs: None)
+
+    with pytest.raises(SystemExit) as exc:
+        runner.main()
+
+    assert exc.value.code == 0
+    assert captured["prescan_dir"] == import_dir
+    assert captured["root"] == tmp_path
 
 
 def test_accepted_import_receipt_records_identity_and_influence(tmp_path: Path) -> None:

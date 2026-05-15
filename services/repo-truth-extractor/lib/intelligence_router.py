@@ -113,11 +113,11 @@ def build_prescan_source_identity(
         else _git_sha_for_root(repo_root)
     )
     cache_key = None
-    if entries is None:
+    if entries is None and current_git_sha:
         cache_key = (
             str(repo_root.expanduser().resolve(strict=False)),
             str(current_source_root.expanduser().resolve(strict=False)),
-            current_git_sha or "",
+            current_git_sha,
             prescan_mode,
         )
         cached = _SOURCE_IDENTITY_CACHE.get(cache_key)
