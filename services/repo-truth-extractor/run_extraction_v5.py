@@ -227,6 +227,7 @@ from llm_runtime import (
     backoff_seconds as llm_runtime_backoff_seconds,
     call_llm as llm_runtime_call_llm,
     call_llm_with_ladder as llm_runtime_call_llm_with_ladder,
+    classify_route_identity as llm_runtime_classify_route_identity,
     coerce_artifacts_from_response as llm_runtime_coerce_artifacts_from_response,
     comparison_artifact_dir as llm_runtime_comparison_artifact_dir,
     compute_comparison_resume_decision as llm_runtime_compute_comparison_resume_decision,
@@ -9281,8 +9282,10 @@ def summarize_llm_response(
     prompt_tokens: Optional[int] = None
     completion_tokens: Optional[int] = None
     total_tokens: Optional[int] = None
+    returned_model_id: Optional[str] = None
 
     if provider == "gemini":
+        returned_model_id = str(getattr(response_obj, "model_version", "") or "") or None
         candidates = getattr(response_obj, "candidates", None) or []
         candidate_count = len(candidates)
         if candidates:
@@ -9297,6 +9300,7 @@ def summarize_llm_response(
         if isinstance(response_json, dict):
             choices = response_json.get("choices")
             response_id = str(response_json.get("id") or "") or None
+            returned_model_id = str(response_json.get("model") or "") or None
             usage = response_json.get("usage")
             if isinstance(usage, dict):
                 prompt_tokens = usage.get("prompt_tokens")
@@ -9305,6 +9309,7 @@ def summarize_llm_response(
         else:
             choices = getattr(response_obj, "choices", None)
             response_id = str(getattr(response_obj, "id", "") or "") or None
+            returned_model_id = str(getattr(response_obj, "model", "") or "") or None
             usage = getattr(response_obj, "usage", None)
             if usage is not None:
                 prompt_tokens = getattr(usage, "prompt_tokens", None)
@@ -9321,6 +9326,8 @@ def summarize_llm_response(
         summary["finish_reason"] = finish_reason
     if response_id:
         summary["response_id"] = response_id
+    if returned_model_id:
+        summary["returned_model_id"] = returned_model_id
     if prompt_tokens is not None:
         summary["prompt_tokens"] = int(prompt_tokens)
     if completion_tokens is not None:
@@ -10153,6 +10160,20 @@ def enrich_request_meta(
     enriched.setdefault("provider", provider)
     enriched.setdefault("model_id", model_id)
     enriched.setdefault("endpoint_base_url", endpoint_base)
+    requested_provider = str(
+        enriched.get("requested_provider") or enriched.get("provider") or provider
+    ).strip().lower()
+    requested_model_id = str(
+        enriched.get("requested_model_id") or enriched.get("model_id") or model_id
+    ).strip()
+    api_key_env = str(
+        enriched.get("api_key_env")
+        or enriched.get("api_key_env_resolved")
+        or enriched.get("api_key_env_requested")
+        or PROVIDER_API_KEY_ENV.get(requested_provider, "")
+    ).strip()
+    if not api_key_env or api_key_env.startswith("***"):
+        api_key_env = PROVIDER_API_KEY_ENV.get(requested_provider, "")
     if "provider_signature" not in enriched:
         enriched["provider_signature"] = provider_signature(
             provider,
@@ -10163,6 +10184,38 @@ def enrich_request_meta(
             ),
             auth_effective if provider == "gemini" else None,
         )
+    route_identity = llm_runtime_classify_route_identity(
+        provider=requested_provider,
+        model_id=requested_model_id,
+        api_key_env=api_key_env,
+        endpoint_base_url=str(enriched.get("endpoint_base_url") or endpoint_base),
+        endpoint_effective=(
+            str(enriched.get("endpoint_effective"))
+            if enriched.get("endpoint_effective") is not None
+            else None
+        ),
+        transport=(
+            str(enriched.get("transport"))
+            if enriched.get("transport") is not None
+            else None
+        ),
+        provider_signature=str(enriched.get("provider_signature") or ""),
+        structured_output=(
+            enriched.get("structured_output")
+            if isinstance(enriched.get("structured_output"), dict)
+            else None
+        ),
+    )
+    for key, value in route_identity.items():
+        enriched.setdefault(key, value)
+    response_summary = (
+        enriched.get("response_summary")
+        if isinstance(enriched.get("response_summary"), dict)
+        else {}
+    )
+    returned_model_id = str(response_summary.get("returned_model_id") or "").strip()
+    if returned_model_id:
+        enriched.setdefault("returned_model_id", returned_model_id)
     enriched["routing_signature"] = routing_signature(
         phase,
         step_id,

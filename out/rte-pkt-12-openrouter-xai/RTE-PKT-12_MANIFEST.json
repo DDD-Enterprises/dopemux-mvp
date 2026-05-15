@@ -1,0 +1,132 @@
+{
+  "packet_id": "RTE-PKT-12-OPENROUTER-XAI",
+  "generated_at_local": "2026-05-15",
+  "worktree": "/Users/hue/.codex/worktrees/4759/dopemux-mvp",
+  "branch": "codex/rte-pkt-12-openrouter-xai",
+  "base_head": "0179b17b03cf46518aa324bd8f50c805b627631d",
+  "remote": {
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "mvp": "https://github.com/DDD-Enterprises/dopemux-mvp.git"
+  },
+  "status": "STATIC_METADATA_IMPLEMENTED_TARGETED_VALIDATION_PASS",
+  "live_provider_calls": "NOT_RUN",
+  "provider_credentials_required": false,
+  "batch_provider_operations": "NOT_RUN",
+  "active_packet_schema_status": {
+    "status": "CONFLICTING",
+    "detail": "User-supplied packet controlled scope, but local dopetask-canonical-spec.json requires series/commit/pr/steps and no extra fields. No additional task packet was created because the packet non-goals forbid additional task packets."
+  },
+  "changed_code_files": [
+    "services/repo-truth-extractor/llm_runtime.py",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/lib/structured_output_contracts.py",
+    "services/repo-truth-extractor/lib/prescan/provider_catalog.py",
+    "services/repo-truth-extractor/tests/test_openrouter_xai_route_identity.py"
+  ],
+  "proof_outputs": [
+    "out/rte-pkt-12-openrouter-xai/RTE-PKT-12_MANIFEST.json",
+    "out/rte-pkt-12-openrouter-xai/RTE-PKT-12_ROUTE_IDENTITY_MATRIX.md",
+    "out/rte-pkt-12-openrouter-xai/RTE-PKT-12_STATIC_FIXTURE_EXAMPLES.md",
+    "out/rte-pkt-12-openrouter-xai/RTE-PKT-12_STRUCTURED_OUTPUT_VARIANT_MATRIX.md",
+    "out/rte-pkt-12-openrouter-xai/RTE-PKT-12_RISK_AND_AUTHORITY_LABELS.md",
+    "out/rte-pkt-12-openrouter-xai/RTE-PKT-12_TEST_REPORT.md",
+    "out/rte-pkt-12-openrouter-xai/RTE-PKT-12_NO_PROVIDER_CALLS_ATTESTATION.md",
+    "out/rte-pkt-12-openrouter-xai/RTE-PKT-12_DIFF_SUMMARY.md",
+    "out/rte-pkt-12-openrouter-xai/RTE-PKT-12_REMAINING_UNKNOWNS.md"
+  ],
+  "validation_summary": [
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_openrouter_xai_route_identity.py -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "6 passed"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_structured_output_provider_modes.py -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "3 passed"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_prescan_provider_catalog.py -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "36 passed"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_llm_runtime_seam.py services/repo-truth-extractor/tests/test_provider_payload_redaction.py -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "12 passed"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests -k 'openrouter and xai' -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "6 passed"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests -k 'xai and metadata' -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "2 passed"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests -k 'structured_output or provider_modes' -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "5 passed"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_pricing_catalog.py services/repo-truth-extractor/tests/test_pricing_coverage.py services/repo-truth-extractor/tests/test_profile_review_packets.py -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "5 passed"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests -k 'risk and dashboard' -q",
+      "exit_code": 5,
+      "result": "NOT_RUN_NO_TESTS_SELECTED",
+      "summary": "No matching tests or risk_dashboard helper in this checkout"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests -k 'proof_contract or artifact_authority' -q",
+      "exit_code": 5,
+      "result": "NOT_RUN_NO_TESTS_SELECTED",
+      "summary": "No matching proof_contract tests or helper in this checkout"
+    },
+    {
+      "command": "python -m py_compile services/repo-truth-extractor/llm_runtime.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/lib/structured_output_contracts.py services/repo-truth-extractor/lib/prescan/provider_catalog.py",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "Compilation passed"
+    },
+    {
+      "command": "python -m json.tool out/rte-pkt-12-openrouter-xai/RTE-PKT-12_MANIFEST.json >/dev/null",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "Manifest JSON parsed"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "No whitespace errors in tracked diff"
+    },
+    {
+      "command": "git status --short --branch",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "Only allowed code/test files and packet proof output root are changed"
+    }
+  ],
+  "no_provider_call_status": "PASS_TARGETED_STATIC_TESTS",
+  "remaining_unknowns": [
+    "OpenRouter live upstream returned model behavior",
+    "OpenRouter x-ai live schema acceptance",
+    "OpenRouter x-ai retention, ZDR, rate limit, and billing guarantees",
+    "Direct xAI live safety",
+    "RTE-PKT-11 risk_dashboard helper not present in this checkout",
+    "RTE-PKT-10 proof_contract helper not present in this checkout"
+  ]
+}
