@@ -9155,7 +9155,7 @@ def routing_signature(
     encoded = sanitized_json_bytes(
         canonical, ensure_ascii=True, sort_keys=True, separators=(",", ":")
     )
-    return hashlib.blake2b(encoded, digest_size=32).hexdigest()
+    return hashlib.sha256(encoded).hexdigest()
 
 
 def static_route_fingerprint_material(route_meta: Dict[str, Any]) -> Dict[str, Any]:
@@ -10593,8 +10593,8 @@ def enrich_request_meta(
     endpoint_sig = json.dumps(
         endpoint_sig_src, ensure_ascii=True, separators=(",", ":"), sort_keys=True
     )
-    enriched["endpoint_transport_signature"] = hashlib.blake2b(
-        endpoint_sig.encode("utf-8"), digest_size=32
+    enriched["endpoint_transport_signature"] = hashlib.sha256(
+        endpoint_sig.encode("utf-8")
     ).hexdigest()
     enriched.setdefault("routing_tier", None)
     enriched.setdefault("routing_policy", None)
