@@ -300,6 +300,7 @@ def build_artifact_provenance_payload(
     request_meta_refs: Optional[Sequence[str]] = None,
     prescan_influence_refs_if_any: Optional[Sequence[str]] = None,
     comparison_refs_if_any: Optional[Sequence[str]] = None,
+    truth_label_records: Optional[Sequence[Dict[str, Any]]] = None,
 ) -> Dict[str, Any]:
     final_maps = artifact_field_maps(artifacts)
     normalized_field_records = [
@@ -314,6 +315,18 @@ def build_artifact_provenance_payload(
             str(row.get("field_path") or ""),
             str(row.get("provenance_kind") or ""),
             str(row.get("reason_code") or ""),
+        )
+    )
+    normalized_truth_label_records = [
+        dict(record) for record in truth_label_records or [] if isinstance(record, dict)
+    ]
+    normalized_truth_label_records.sort(
+        key=lambda row: (
+            str(row.get("artifact_name") or ""),
+            str(row.get("field_path") or ""),
+            str(row.get("truth_label") or ""),
+            str(row.get("provenance_kind") or ""),
+            str(row.get("transition_action") or ""),
         )
     )
 
@@ -414,8 +427,25 @@ def build_artifact_provenance_payload(
         "provenance_kinds": sorted(
             {
                 str(record.get("provenance_kind"))
-                for record in normalized_field_records + artifact_records
+                for record in (
+                    normalized_field_records
+                    + artifact_records
+                    + normalized_truth_label_records
+                )
                 if str(record.get("provenance_kind") or "").strip()
+            }
+        ),
+        "truth_label_records_total": len(normalized_truth_label_records),
+        "protected_truth_label_records_total": sum(
+            1
+            for record in normalized_truth_label_records
+            if str(record.get("truth_label") or "") in {"UNKNOWN", "CONFLICTING"}
+        ),
+        "truth_labels": sorted(
+            {
+                str(record.get("truth_label"))
+                for record in normalized_truth_label_records
+                if str(record.get("truth_label") or "").strip()
             }
         ),
     }
@@ -424,6 +454,7 @@ def build_artifact_provenance_payload(
         "generated_at": str(generated_at),
         "field_records": normalized_field_records,
         "artifact_records": artifact_records,
+        "truth_label_records": normalized_truth_label_records,
         "summary": summary,
     }
 

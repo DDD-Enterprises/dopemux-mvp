@@ -464,6 +464,39 @@ except ModuleNotFoundError:
     records_for_changed_fields = artifact_provenance_module.records_for_changed_fields
     validate_provenance_payload = artifact_provenance_module.validate_provenance_payload
 try:
+    from lib.truth_labels import (
+        TRUTH_LABEL_META_KEY,
+        TRUTH_LABEL_RECORD_REQUIRED_FIELDS,
+        TRUTH_LABEL_SCHEMA_VERSION,
+        build_truth_label_preservation_payload,
+        build_truth_label_rollup_payload,
+        preserve_protected_truth_labels,
+        validate_truth_label_payload,
+    )
+except ModuleNotFoundError:
+    truth_labels_path = RUNNER_SERVICE_DIR / "lib" / "truth_labels.py"
+    truth_labels_spec = importlib.util.spec_from_file_location(
+        "repo_truth_truth_labels",
+        truth_labels_path,
+    )
+    if not truth_labels_spec or not truth_labels_spec.loader:
+        raise
+    truth_labels_module = importlib.util.module_from_spec(truth_labels_spec)
+    truth_labels_spec.loader.exec_module(truth_labels_module)
+    TRUTH_LABEL_META_KEY = truth_labels_module.TRUTH_LABEL_META_KEY
+    TRUTH_LABEL_RECORD_REQUIRED_FIELDS = (
+        truth_labels_module.TRUTH_LABEL_RECORD_REQUIRED_FIELDS
+    )
+    TRUTH_LABEL_SCHEMA_VERSION = truth_labels_module.TRUTH_LABEL_SCHEMA_VERSION
+    build_truth_label_preservation_payload = (
+        truth_labels_module.build_truth_label_preservation_payload
+    )
+    build_truth_label_rollup_payload = truth_labels_module.build_truth_label_rollup_payload
+    preserve_protected_truth_labels = (
+        truth_labels_module.preserve_protected_truth_labels
+    )
+    validate_truth_label_payload = truth_labels_module.validate_truth_label_payload
+try:
     from rich.console import Console
     from rich.panel import Panel
     from rich.progress import (
@@ -7683,7 +7716,9 @@ def normalize_step(
     artifact_blocked_by_failure_stage: Dict[str, List[str]] = {}
     provenance_field_records: List[Dict[str, Any]] = []
     provenance_artifact_records: List[Dict[str, Any]] = []
+    truth_label_records: List[Dict[str, Any]] = []
     provenance_partitions: Set[str] = set()
+    truth_label_partitions: Set[str] = set()
 
     for partition_id in partition_ids:
         raw_file = raw_dir / f"{step_id}__{partition_id}.json"
@@ -7710,9 +7745,13 @@ def normalize_step(
                 else {}
             )
             artifact_provenance = request_meta.get(PROVENANCE_META_KEY)
+            truth_label_payload = request_meta.get(TRUTH_LABEL_META_KEY)
             if isinstance(artifact_provenance, dict):
                 field_records = artifact_provenance.get("field_records")
                 artifact_records = artifact_provenance.get("artifact_records")
+                provenance_truth_label_records = artifact_provenance.get(
+                    "truth_label_records"
+                )
                 if isinstance(field_records, list):
                     provenance_field_records.extend(
                         [row for row in field_records if isinstance(row, dict)]
@@ -7721,8 +7760,31 @@ def normalize_step(
                     provenance_artifact_records.extend(
                         [row for row in artifact_records if isinstance(row, dict)]
                     )
+                if (
+                    isinstance(provenance_truth_label_records, list)
+                    and not isinstance(truth_label_payload, dict)
+                ):
+                    truth_label_records.extend(
+                        [
+                            row
+                            for row in provenance_truth_label_records
+                            if isinstance(row, dict)
+                        ]
+                    )
                 if partition_id:
                     provenance_partitions.add(partition_id)
+            if isinstance(truth_label_payload, dict):
+                request_truth_label_records = truth_label_payload.get("records")
+                if isinstance(request_truth_label_records, list):
+                    truth_label_records.extend(
+                        [
+                            row
+                            for row in request_truth_label_records
+                            if isinstance(row, dict)
+                        ]
+                    )
+                    if partition_id:
+                        truth_label_partitions.add(partition_id)
             if not bool(request_meta.get("schema_gate_passed", True)):
                 continue
             artifacts = extract_artifacts_from_partition_payload(
@@ -7903,6 +7965,18 @@ def normalize_step(
             },
         )
 
+    truth_label_rollup_path: Optional[Path] = None
+    truth_label_rollup_payload: Optional[Dict[str, Any]] = None
+    if truth_label_records:
+        truth_label_rollup_payload = build_truth_label_rollup_payload(
+            phase=phase,
+            step_id=step_id,
+            records=truth_label_records,
+            generated_at=now_iso(),
+        )
+        truth_label_rollup_path = qa_dir / f"{step_id}_TRUTH_LABEL_PRESERVATION.json"
+        write_json(truth_label_rollup_path, truth_label_rollup_payload)
+
     qa_payload = {
         "phase": phase,
         "step_id": step_id,
@@ -7980,6 +8054,27 @@ def normalize_step(
             **provenance_summary,
             "rollup_path": (
                 str(provenance_rollup_path) if provenance_rollup_path else None
+            ),
+        },
+        "truth_label_preservation": {
+            "schema_version": TRUTH_LABEL_SCHEMA_VERSION,
+            "records_total": (
+                int(truth_label_rollup_payload["summary"]["records_total"])
+                if truth_label_rollup_payload
+                else 0
+            ),
+            "protected_records_total": (
+                int(
+                    truth_label_rollup_payload["summary"][
+                        "protected_records_total"
+                    ]
+                )
+                if truth_label_rollup_payload
+                else 0
+            ),
+            "partitions_with_truth_labels": len(truth_label_partitions),
+            "rollup_path": (
+                str(truth_label_rollup_path) if truth_label_rollup_path else None
             ),
         },
     }
@@ -11599,6 +11694,17 @@ def _attach_comparison_provenance_to_results(
             repair_or_sidefill_model_id_if_any=model,
             request_meta_ref_if_any="request_meta.lane",
         )
+        truth_label_payload = build_truth_label_preservation_payload(
+            artifacts=artifacts,
+            field_records=field_records,
+            transition_records=[],
+            generated_at=generated_at,
+            default_provenance_kind="comparison",
+            default_source_lane="comparison",
+            label_source_default="comparison_lane",
+            label_reason_default="comparison_lane_non_authoritative",
+            authoritative=False,
+        )
         provenance = build_artifact_provenance_payload(
             artifacts=artifacts,
             field_records=field_records,
@@ -11609,6 +11715,13 @@ def _attach_comparison_provenance_to_results(
             raw_artifact_refs=[raw_ref],
             request_meta_refs=["request_meta.lane", "request_meta.authoritative"],
             comparison_refs_if_any=[comparison_ref],
+            truth_label_records=truth_label_payload["records"],
+        )
+        request_meta["lane"] = "comparison"
+        request_meta["authoritative"] = False
+        request_meta[TRUTH_LABEL_META_KEY] = truth_label_payload
+        request_meta["truth_label_preservation_validation_errors"] = (
+            validate_truth_label_payload(truth_label_payload)
         )
         request_meta[PROVENANCE_META_KEY] = provenance
         request_meta["artifact_provenance_validation_errors"] = (
@@ -13142,6 +13255,7 @@ else sdk_auth_present_flags(p_provider, True)
                 for path in list_failed_sidecars(raw_dir, step_id, partition_id)
             ]
             field_provenance_records: List[Dict[str, Any]] = []
+            truth_label_transition_records: List[Dict[str, Any]] = []
 
             def _meta_provider(meta: Dict[str, Any]) -> Optional[str]:
                 token = str(meta.get("provider") or "").strip()
@@ -13305,6 +13419,25 @@ else sdk_auth_present_flags(p_provider, True)
                     artifacts_current, new_norm = canonicalize_artifacts(
                         repaired, step_contract
                     )
+                    repair_reason_code = (
+                        f"schema_path_repair:{_repair_method}:"
+                        f"{str(contract_reason or 'schema_gate_failure')}"
+                    )
+                    (
+                        artifacts_current,
+                        protected_label_records,
+                    ) = preserve_protected_truth_labels(
+                        original_artifacts=artifacts_before_repair,
+                        candidate_artifacts=artifacts_current,
+                        provenance_kind="deterministic_schema_repair",
+                        source_lane="schema_repair",
+                        source_phase=phase,
+                        source_step_id=step_id,
+                        source_partition_id=partition_id,
+                        reason_code=repair_reason_code,
+                        generated_at=provenance_generated_at,
+                    )
+                    truth_label_transition_records.extend(protected_label_records)
                     schema_id_normalizations.extend(new_norm)
                     field_provenance_records.extend(
                         records_for_changed_fields(
@@ -13314,10 +13447,7 @@ else sdk_auth_present_flags(p_provider, True)
                             source_phase=phase,
                             source_step_id=step_id,
                             source_partition_id=partition_id,
-                            reason_code=(
-                                f"schema_path_repair:{_repair_method}:"
-                                f"{str(contract_reason or 'schema_gate_failure')}"
-                            ),
+                            reason_code=repair_reason_code,
                             generated_at=provenance_generated_at,
                             original_context_ref="request_meta.schema_gate_context",
                             request_meta_ref_if_any="request_meta.schema_gate_context",
@@ -13363,6 +13493,25 @@ else sdk_auth_present_flags(p_provider, True)
                     sidefill_artifacts, dropped_count = _grounded_sidefill_filter(
                         sidefill_artifacts
                     )
+                    sidefill_reason_code = (
+                        f"missing_expected_artifact:{missing_artifact}:"
+                        f"{str(contract_reason or 'missing_expected_artifacts')}"
+                    )
+                    (
+                        sidefill_artifacts,
+                        protected_label_records,
+                    ) = preserve_protected_truth_labels(
+                        original_artifacts=artifacts_before_sidefill,
+                        candidate_artifacts=sidefill_artifacts,
+                        provenance_kind="sidefill",
+                        source_lane="sidefill",
+                        source_phase=phase,
+                        source_step_id=step_id,
+                        source_partition_id=partition_id,
+                        reason_code=sidefill_reason_code,
+                        generated_at=provenance_generated_at,
+                    )
+                    truth_label_transition_records.extend(protected_label_records)
                     sidefill_dropped_rows += int(dropped_count)
                     if sidefill_artifacts:
                         field_provenance_records.extend(
@@ -13372,10 +13521,7 @@ else sdk_auth_present_flags(p_provider, True)
                                 source_phase=phase,
                                 source_step_id=step_id,
                                 source_partition_id=partition_id,
-                                reason_code=(
-                                    f"missing_expected_artifact:{missing_artifact}:"
-                                    f"{str(contract_reason or 'missing_expected_artifacts')}"
-                                ),
+                                reason_code=sidefill_reason_code,
                                 generated_at=provenance_generated_at,
                                 original_artifacts=artifacts_before_sidefill,
                                 original_context_ref="request_meta.schema_gate_context",
@@ -13460,6 +13606,25 @@ else sdk_auth_present_flags(p_provider, True)
                 )
                 strict_route_attestations.extend(strict_attest)
                 if repaired_artifacts:
+                    repair_reason_code = (
+                        "provider_targeted_repair:"
+                        f"{str(contract_reason or 'contract_violation')}"
+                    )
+                    (
+                        repaired_artifacts,
+                        protected_label_records,
+                    ) = preserve_protected_truth_labels(
+                        original_artifacts=artifacts_before_provider_repair,
+                        candidate_artifacts=repaired_artifacts,
+                        provenance_kind="provider_repair",
+                        source_lane="repair",
+                        source_phase=phase,
+                        source_step_id=step_id,
+                        source_partition_id=partition_id,
+                        reason_code=repair_reason_code,
+                        generated_at=provenance_generated_at,
+                    )
+                    truth_label_transition_records.extend(protected_label_records)
                     field_provenance_records.extend(
                         records_for_artifact_fields(
                             repaired_artifacts,
@@ -13467,10 +13632,7 @@ else sdk_auth_present_flags(p_provider, True)
                             source_phase=phase,
                             source_step_id=step_id,
                             source_partition_id=partition_id,
-                            reason_code=(
-                                "provider_targeted_repair:"
-                                f"{str(contract_reason or 'contract_violation')}"
-                            ),
+                            reason_code=repair_reason_code,
                             generated_at=provenance_generated_at,
                             original_artifacts=artifacts_before_provider_repair,
                             original_context_ref="request_meta.schema_gate_context",
@@ -13534,6 +13696,25 @@ else sdk_auth_present_flags(p_provider, True)
                 )
                 strict_route_attestations.extend(strict_attest)
                 if repaired_artifacts:
+                    repair_reason_code = (
+                        "provider_envelope_repair:"
+                        f"{str(contract_reason or 'contract_violation')}"
+                    )
+                    (
+                        repaired_artifacts,
+                        protected_label_records,
+                    ) = preserve_protected_truth_labels(
+                        original_artifacts=artifacts_before_envelope_repair,
+                        candidate_artifacts=repaired_artifacts,
+                        provenance_kind="provider_repair",
+                        source_lane="repair",
+                        source_phase=phase,
+                        source_step_id=step_id,
+                        source_partition_id=partition_id,
+                        reason_code=repair_reason_code,
+                        generated_at=provenance_generated_at,
+                    )
+                    truth_label_transition_records.extend(protected_label_records)
                     field_provenance_records.extend(
                         records_for_artifact_fields(
                             repaired_artifacts,
@@ -13541,10 +13722,7 @@ else sdk_auth_present_flags(p_provider, True)
                             source_phase=phase,
                             source_step_id=step_id,
                             source_partition_id=partition_id,
-                            reason_code=(
-                                "provider_envelope_repair:"
-                                f"{str(contract_reason or 'contract_violation')}"
-                            ),
+                            reason_code=repair_reason_code,
                             generated_at=provenance_generated_at,
                             original_artifacts=artifacts_before_envelope_repair,
                             original_context_ref="request_meta.schema_gate_context",
@@ -13606,6 +13784,25 @@ else sdk_auth_present_flags(p_provider, True)
                             "payload": empty_payload_for_artifact(artifact_meta),
                         }
                     ]
+                    fallback_reason_code = (
+                        "line_range_fail_closed_empty_payload:"
+                        f"{str(contract_reason or 'schema_invalid_line_range')}"
+                    )
+                    (
+                        fallback_update,
+                        protected_label_records,
+                    ) = preserve_protected_truth_labels(
+                        original_artifacts=artifacts_before_fallback,
+                        candidate_artifacts=fallback_update,
+                        provenance_kind="deterministic_schema_repair",
+                        source_lane="schema_repair",
+                        source_phase=phase,
+                        source_step_id=step_id,
+                        source_partition_id=partition_id,
+                        reason_code=fallback_reason_code,
+                        generated_at=provenance_generated_at,
+                    )
+                    truth_label_transition_records.extend(protected_label_records)
                     field_provenance_records.extend(
                         records_for_artifact_fields(
                             fallback_update,
@@ -13613,10 +13810,7 @@ else sdk_auth_present_flags(p_provider, True)
                             source_phase=phase,
                             source_step_id=step_id,
                             source_partition_id=partition_id,
-                            reason_code=(
-                                "line_range_fail_closed_empty_payload:"
-                                f"{str(contract_reason or 'schema_invalid_line_range')}"
-                            ),
+                            reason_code=fallback_reason_code,
                             generated_at=provenance_generated_at,
                             original_artifacts=artifacts_before_fallback,
                             original_context_ref="request_meta.schema_gate_context",
@@ -13646,6 +13840,19 @@ else sdk_auth_present_flags(p_provider, True)
                 provenance_request_refs.append("request_meta.strict_route_attestations")
             if sidefill_filled_artifacts:
                 provenance_request_refs.append("request_meta.sidefill_filled_artifacts")
+            truth_label_payload = build_truth_label_preservation_payload(
+                artifacts=artifacts_current,
+                field_records=field_provenance_records,
+                transition_records=truth_label_transition_records,
+                generated_at=provenance_generated_at,
+                default_provenance_kind="primary_observed",
+                default_source_lane="primary",
+                label_source_default="artifact_payload",
+                label_reason_default="truth_label_present",
+            )
+            truth_label_errors = validate_truth_label_payload(truth_label_payload)
+            if truth_label_payload.get("records"):
+                provenance_request_refs.append(f"request_meta.{TRUTH_LABEL_META_KEY}")
             artifact_provenance = build_artifact_provenance_payload(
                 artifacts=artifacts_current,
                 field_records=field_provenance_records,
@@ -13656,6 +13863,7 @@ else sdk_auth_present_flags(p_provider, True)
                 raw_artifact_refs=raw_artifact_refs,
                 failed_sidecar_refs=failed_sidecar_refs,
                 request_meta_refs=provenance_request_refs,
+                truth_label_records=truth_label_payload["records"],
             )
             artifact_provenance_errors = validate_provenance_payload(
                 artifact_provenance
@@ -13678,6 +13886,10 @@ else sdk_auth_present_flags(p_provider, True)
                     "schema_gate_context": contract_context,
                     "strict_route_attestations": strict_route_attestations,
                     "no_auto_transport_flips": True,
+                    TRUTH_LABEL_META_KEY: truth_label_payload,
+                    "truth_label_preservation_validation_errors": (
+                        truth_label_errors
+                    ),
                     PROVENANCE_META_KEY: artifact_provenance,
                     "artifact_provenance_validation_errors": (
                         artifact_provenance_errors
