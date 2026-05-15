@@ -65,8 +65,10 @@ test('App.tsx exposes metric card tooltips with focus indicators and labels', ()
 test('TaskSequencer.tsx has contextual aria-labels and current step indicator', () => {
   const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
   expect(content).toContain('aria-label={isTimerRunning ? `Pause task: ${currentTask.title}` : `Start task: ${currentTask.title}`}');
-  expect(content).toContain('aria-label={`Complete task: ${currentTask.title}`}');
-  expect(content).toMatch(/aria-label=\{\s*nextTask\s*\?\s*`Skip \$\{currentTask\.title\}, proceed to \$\{nextTask\.title\}`\s*:\s*`Skip task: \$\{currentTask\.title\}`\s*\}/);
+  expect(content).toContain('getCompletionTransitionTask(currentTaskId, tasks, optimizedTasks)');
+  expect(content).toContain('getSkipTransitionTask(currentTaskId, optimizedTasks)');
+  expect(content).toMatch(/aria-label=\{\s*nextTaskAfterCompletion\s*\?\s*`Complete \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterCompletion\.title\}`\s*:\s*`Complete \$\{currentTask\.title\}, finish ritual`\s*\}/);
+  expect(content).toMatch(/aria-label=\{\s*nextTaskAfterSkip\s*\?\s*`Skip \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterSkip\.title\}`\s*:\s*`Skip task: \$\{currentTask\.title\}`\s*\}/);
   expect(content).toContain('aria-label={`Start task: ${task.title}`}');
   // New LinearProgress for task progress
   expect(content).toContain('aria-label="Current task progress"');
