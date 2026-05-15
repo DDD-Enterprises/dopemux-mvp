@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import json
 import logging
 import subprocess
@@ -37,6 +38,18 @@ from ..intelligence_router import (
 )
 
 logger = logging.getLogger(__name__)
+
+PRESCAN_ARTIFACT_VERSION = "1.0"
+
+
+def _stable_json_hash(payload: Any) -> str:
+    encoded = json.dumps(
+        payload,
+        ensure_ascii=True,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
 
 
 class PrescanEngine:
@@ -685,6 +698,7 @@ class PrescanEngine:
     def _build_intelligence_base(self, entries: list[FileEntry], code_intel: list[dict[str, Any]] | None = None) -> dict[str, Any]:
         included = [entry for entry in entries if entry.include and not entry.is_ghost]
         ghosts = [entry for entry in entries if entry.is_ghost]
+        manifest = [entry.to_dict() for entry in entries]
         by_class: dict[str, int] = {}
         for entry in entries:
             by_class[entry.authority_class] = by_class.get(entry.authority_class, 0) + 1
@@ -696,8 +710,12 @@ class PrescanEngine:
         compression_potential_files = sum(1 for entry in entries if entry.is_duplicate or (entry.version_chain_id and not entry.is_latest_version))
         return {
             "version": "1.0",
+            "prescan_artifact_version": PRESCAN_ARTIFACT_VERSION,
             "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
-            "repo_root": str(self.config.repo_root),
+            "repo_root": str(self.config.repo_root.resolve()),
+            "source_root": str(self.config.repo_root.resolve()),
+            "git_sha": self._get_git_sha(),
+            "corpus_manifest_hash": _stable_json_hash(manifest),
             "corpus_summary": {
                 "total_files": len(entries),
                 "included_files": len(included),
