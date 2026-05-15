@@ -1233,8 +1233,8 @@ def run_comparison_lane(
                 provider=compare_provider,
                 model_id=compare_model,
                 api_key_env=deps.provider_api_key_env.get(compare_provider, ""),
-                system_prompt=prompt_text,
-                user_content=context_text,
+                system_prompt=safe_prompt_text,
+                user_content=safe_context_text,
                 cfg=cfg,
                 force_json_output=True,
             )

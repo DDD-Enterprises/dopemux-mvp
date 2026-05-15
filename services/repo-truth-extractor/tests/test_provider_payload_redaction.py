@@ -215,6 +215,7 @@ def test_grok_cache_path_uses_sanitized_payload_fingerprint(tmp_path: Path) -> N
     assert first_path == second_path
     assert values["password"] not in first_path.name
     assert first_path.name.startswith("dedup_")
+    assert len(first_path.stem.removeprefix("dedup_")) == 24
     assert first_path.suffix == ".json"
 
 
@@ -405,8 +406,9 @@ def test_comparison_lane_projects_cost_from_sanitized_provider_payload(
     tmp_path: Path,
 ) -> None:
     fixture_text, values = _secret_fixture_text()
-    token_projection_inputs: dict[str, str] = {}
     cost_gate_inputs: dict[str, int] = {}
+    token_projection_inputs: dict[str, str] = {}
+    call_llm_inputs: dict[str, Any] = {}
 
     def estimate_text_tokens(system: str, user: str) -> int:
         token_projection_inputs["system"] = system
@@ -490,7 +492,10 @@ def test_comparison_lane_projects_cost_from_sanitized_provider_payload(
         prompt_text=fixture_text,
         output_artifacts=("RESULT.json",),
         build_partition_context_fn=lambda **_kwargs: (fixture_text, {}),
-        call_llm_fn=lambda **_kwargs: {"text": '{"ok": true}', "meta": {"status_code": 200}},
+        call_llm_fn=lambda **kwargs: (
+            call_llm_inputs.update(kwargs)
+            or {"text": '{"ok": true}', "meta": {"status_code": 200}}
+        ),
         parse_json_from_response_fn=lambda text, metadata_out=None: json.loads(text),
         coerce_artifacts_from_response_fn=lambda parsed, _raw, _expected: [
             {"artifact_name": "RESULT.json", "payload": parsed}
@@ -502,6 +507,10 @@ def test_comparison_lane_projects_cost_from_sanitized_provider_payload(
     assert results[0]["success"] is True
     _assert_values_redacted(token_projection_inputs["system"], values)
     _assert_values_redacted(token_projection_inputs["user"], values)
+    _assert_values_redacted(call_llm_inputs["system_prompt"], values)
+    _assert_values_redacted(call_llm_inputs["user_content"], values)
+    assert call_llm_inputs["system_prompt"] == token_projection_inputs["system"]
+    assert call_llm_inputs["user_content"] == token_projection_inputs["user"]
     assert cost_gate_inputs["input_tokens"] == len(token_projection_inputs["system"]) + len(
         token_projection_inputs["user"]
     )

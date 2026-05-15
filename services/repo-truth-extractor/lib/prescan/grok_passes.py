@@ -15,7 +15,7 @@ from output_safety import (
 )
 
 logger = logging.getLogger(__name__)
-CACHE_KEY_VERSION = "dopemux-rte-prescan-cache-v2"
+CACHE_KEY_VERSION = "dopemux-rte-prescan-cache-v3"
 
 class RTEPrescanError(Exception):
     """Base error for prescan."""
@@ -243,7 +243,7 @@ class GrokPassRunner:
             f"{zlib.crc32(encoded) & 0xFFFFFFFF:08x}"
             f"{zlib.crc32(encoded[::-1]) & 0xFFFFFFFF:08x}"
         )
-        return self._cache_dir / f"{pass_id}_{digest[:16]}.json"
+        return self._cache_dir / f"{pass_id}_{digest}.json"
 
     def _load_cached_pass(self, pass_id: str, payload: dict) -> dict | None:
         """Load pass results from cache if valid."""
