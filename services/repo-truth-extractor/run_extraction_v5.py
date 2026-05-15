@@ -19497,6 +19497,8 @@ def main() -> None:
         logger.error("%s", exc)
         sys.exit(1)
     phase_sequence = resolve_phase_list(args.phase)
+    if not phase_sequence and preset_phase_sequence:
+        phase_sequence = list(preset_phase_sequence)
     if _active_profile:
         _enabled = _active_profile.get("phase_policy", {}).get("enabled_phases")
         if _enabled and phase_sequence:

@@ -322,3 +322,41 @@ def test_execute_with_live_ok_passes_consent_gate_without_provider_call(
     assert excinfo.value.code == 1
     assert len(gate_calls) == 1
     assert gate_calls[0]["phase_sequence"] == ["A"]
+
+
+def test_preset_phases_are_applied_before_live_consent_gate(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    runner = _load_runner_module()
+    monkeypatch.delenv(runner.DPMX_LIVE_OK_ENV, raising=False)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "run_extraction_v5.py",
+            "--preset",
+            runner.FIRST_LIVE_PRESET_NAME,
+            "--execute",
+        ],
+    )
+    monkeypatch.setattr(
+        runner,
+        "apply_first_live_preset",
+        lambda _args, _raw_argv: (["A"], {"selected_phases": []}),
+    )
+    monkeypatch.setattr(
+        runner,
+        "enforce_pre_live_validator_for_execution",
+        lambda **_kwargs: (_ for _ in ()).throw(
+            AssertionError("pre-live validator should not run before live consent")
+        ),
+    )
+
+    with pytest.raises(SystemExit) as excinfo:
+        runner.main()
+
+    assert excinfo.value.code == 2
+    stderr = capsys.readouterr().err
+    assert "sync phase execution" in stderr
+    assert "DPMX_LIVE_OK=1" in stderr
