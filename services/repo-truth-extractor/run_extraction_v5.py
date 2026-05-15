@@ -42,7 +42,13 @@ RUNNER_SERVICE_DIR = Path(__file__).resolve().parent
 if str(RUNNER_SERVICE_DIR) not in sys.path:
     sys.path.insert(0, str(RUNNER_SERVICE_DIR))
 
-from output_safety import sanitize_payload_for_output, sanitize_text_for_output, sanitized_json_bytes, sanitized_json_text
+from output_safety import (
+    sanitize_payload_for_output,
+    sanitize_text_for_output,
+    sanitize_text_for_provider_payload,
+    sanitized_json_bytes,
+    sanitized_json_text,
+)
 from phases import (
     CODE_HEAVY_PHASES,
     LEGACY_PHASE_DIR_ALIASES,
@@ -7907,11 +7913,13 @@ def build_chat_payload(
     max_completion_tokens: Optional[int] = None,
 ) -> Dict[str, Any]:
     temperature = resolve_temperature(provider, model_id, 0.1)
+    safe_system_prompt = sanitize_text_for_provider_payload(system_prompt)
+    safe_user_content = sanitize_text_for_provider_payload(user_content)
     payload: Dict[str, Any] = {
         "model": model_id,
         "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_content},
+            {"role": "system", "content": safe_system_prompt},
+            {"role": "user", "content": safe_user_content},
         ],
     }
     if temperature is not None:
@@ -10913,6 +10921,8 @@ def build_v5_batch_request(
     metadata: Dict[str, Any],
     schema_name_suffix: str = "batch",
 ) -> BatchRequest:
+    safe_system_prompt = sanitize_text_for_provider_payload(system_prompt)
+    safe_user_content = sanitize_text_for_provider_payload(user_content)
     batch_metadata = {
         str(key): str(value)
         for key, value in dict(metadata or {}).items()
@@ -10966,8 +10976,8 @@ def build_v5_batch_request(
     return BatchRequest(
         custom_id=custom_id,
         model_id=model_id,
-        system_prompt=system_prompt,
-        user_content=user_content,
+        system_prompt=safe_system_prompt,
+        user_content=safe_user_content,
         force_json_output=bool(force_json_output and not strict_contract_required),
         metadata=batch_metadata,
         response_format=response_format,
