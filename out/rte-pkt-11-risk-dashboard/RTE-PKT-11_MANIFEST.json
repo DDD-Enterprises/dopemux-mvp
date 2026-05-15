@@ -10,11 +10,11 @@
     "services/repo-truth-extractor/tests/test_risk_dashboard.py",
     "out/rte-pkt-11-risk-dashboard/"
   ],
-  "commit_state_at_manifest_generation": "not_committed; scoped files validated and ready to stage",
+  "commit_state_at_manifest_generation": "implementation commit observed at 1de11a13131c1bda2708b9baf9610ad7244af11b; manifest refreshed after targeted validation rerun",
   "current_branch_prior_packet_roots_before_output": [
     "/Users/hue/code/dopemux-mvp/.worktrees/rte-pkt-11-risk-dashboard/out/rte-pkt-11-risk-dashboard"
   ],
-  "generated_at": "2026-05-15T16:53:21Z",
+  "generated_at": "2026-05-15T16:58:28Z",
   "no_provider_calls": {
     "batch_provider_operations_performed": false,
     "external_research_performed": false,
@@ -51,7 +51,7 @@
   ],
   "repo": {
     "branch": "codex/rte-pkt-11-risk-dashboard",
-    "head": "a4214ca5bf431e1b59791661e2b664a6cd24c1da",
+    "head": "1de11a13131c1bda2708b9baf9610ad7244af11b",
     "remotes": [
       "mvp\thttps://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)",
       "mvp\thttps://github.com/DDD-Enterprises/dopemux-mvp.git (push)",
@@ -65,17 +65,12 @@
       "src/dopemux/cli.py": true
     },
     "status_at_manifest_generation": [
-      "## codex/rte-pkt-11-risk-dashboard",
-      " M services/repo-truth-extractor/run_extraction_v5.py",
-      "?? out/rte-pkt-11-risk-dashboard/",
-      "?? services/repo-truth-extractor/lib/proof_contract.py",
-      "?? services/repo-truth-extractor/lib/risk_dashboard.py",
-      "?? services/repo-truth-extractor/tests/test_proof_contract.py",
-      "?? services/repo-truth-extractor/tests/test_risk_dashboard.py"
+      "## codex/rte-pkt-11-risk-dashboard...origin/codex/rte-pkt-11-risk-dashboard"
     ],
     "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/rte-pkt-11-risk-dashboard"
   },
   "status": "VALIDATED_TARGETED_STATIC_READY_FOR_REVIEW",
+  "validation_rerun_at": "2026-05-15T16:58:28Z",
   "validations": [
     {
       "command": "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/lib/risk_dashboard.py services/repo-truth-extractor/lib/proof_contract.py",

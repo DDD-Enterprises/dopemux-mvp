@@ -1,5 +1,7 @@
 # RTE-PKT-11 Test Report
 
+Rerun timestamp: 2026-05-15T16:58:28Z
+
 ## PASS
 
 - `python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/lib/risk_dashboard.py services/repo-truth-extractor/lib/proof_contract.py` -> exit 0.
