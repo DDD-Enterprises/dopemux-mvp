@@ -84,8 +84,9 @@ def test_main_blocks_live_phase_when_validator_returns_no_go(
     monkeypatch.setattr(
         sys,
         "argv",
-        ["run_extraction_v5.py", "--phase", "A"],
+        ["run_extraction_v5.py", "--phase", "A", "--execute"],
     )
+    monkeypatch.setenv("DPMX_LIVE_OK", "1")
     monkeypatch.setattr(
         runner,
         "enforce_pre_live_validator_for_execution",
@@ -107,8 +108,9 @@ def test_main_allows_live_phase_when_validator_returns_go(
     monkeypatch.setattr(
         sys,
         "argv",
-        ["run_extraction_v5.py", "--phase", "A"],
+        ["run_extraction_v5.py", "--phase", "A", "--execute"],
     )
+    monkeypatch.setenv("DPMX_LIVE_OK", "1")
 
     def _fake_gate(**kwargs):
         calls.append(kwargs)
@@ -155,4 +157,3 @@ def test_main_skips_validator_for_dry_run(monkeypatch: pytest.MonkeyPatch) -> No
 
     assert excinfo.value.code == 1
     assert called["value"] is False
-

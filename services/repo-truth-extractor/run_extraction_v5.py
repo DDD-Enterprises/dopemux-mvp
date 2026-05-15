@@ -2764,6 +2764,125 @@ def should_enforce_pre_live_validator(
     return bool(_validator_phase_targets(args, phase_sequence))
 
 
+@dataclass(frozen=True)
+class LiveCapableOperation:
+    name: str
+    category: str
+    explicit_intent: str
+    requires_execute_flag: bool = False
+
+
+def classify_live_capable_operations(
+    args: argparse.Namespace,
+    phase_sequence: Sequence[str],
+) -> Tuple[LiveCapableOperation, ...]:
+    operations: List[LiveCapableOperation] = []
+
+    def add(
+        name: str,
+        category: str,
+        explicit_intent: str,
+        *,
+        requires_execute_flag: bool = False,
+    ) -> None:
+        operations.append(
+            LiveCapableOperation(
+                name=name,
+                category=category,
+                explicit_intent=explicit_intent,
+                requires_execute_flag=requires_execute_flag,
+            )
+        )
+
+    if bool(getattr(args, "preflight_providers", False)):
+        add("provider preflight", "provider-live", "--preflight-providers")
+    if bool(getattr(args, "doctor_auth", False)):
+        add("auth doctor", "provider-live", "--doctor-auth")
+    if bool(getattr(args, "doctor", False)):
+        add("full doctor provider probes", "provider-live", "--doctor")
+    if bool(getattr(args, "gemini_list_models", False)):
+        add("Gemini model listing", "provider-live", "--gemini-list-models")
+    if bool(getattr(args, "batch_watch", False)):
+        add("batch watch", "batch-provider-live", "--batch-watch")
+    if bool(getattr(args, "batch_retrieve", False)):
+        add("batch retrieve", "batch-provider-live", "--batch-retrieve")
+    if getattr(args, "async_provider", None) and not bool(getattr(args, "finalize", False)):
+        add("async Phase R submit", "async-provider-live", "--async-provider")
+
+    online_prescan_flags: List[str] = []
+    if bool(getattr(args, "prescan_online", False)):
+        online_prescan_flags.append("--prescan-online")
+    if bool(getattr(args, "allow_online_llm", False)):
+        online_prescan_flags.append("--allow-online-llm")
+    if online_prescan_flags and not bool(getattr(args, "skip_prescan", False)):
+        add(
+            "online prescan/Grok",
+            "provider-live",
+            ",".join(online_prescan_flags),
+        )
+
+    special_dispatch = bool(
+        getattr(args, "preflight_providers", False)
+        or getattr(args, "doctor_auth", False)
+        or getattr(args, "doctor", False)
+        or getattr(args, "gemini_list_models", False)
+        or getattr(args, "batch_watch", False)
+        or getattr(args, "batch_retrieve", False)
+        or getattr(args, "async_provider", None)
+        or getattr(args, "finalize", False)
+    )
+    live_phases = [
+        str(phase).strip().upper()
+        for phase in phase_sequence
+        if str(phase).strip().upper() in set(PHASES) | {"S_INT"}
+    ]
+    if (
+        live_phases
+        and not special_dispatch
+        and not bool(getattr(args, "dry_run", False))
+        and bool(getattr(args, "execute", False))
+    ):
+        add(
+            "sync phase execution",
+            "provider-live",
+            "--execute",
+            requires_execute_flag=True,
+        )
+
+    return tuple(operations)
+
+
+def enforce_live_operation_consent(
+    parser: argparse.ArgumentParser,
+    *,
+    args: argparse.Namespace,
+    phase_sequence: Sequence[str],
+    raw_argv: Sequence[str],
+) -> Tuple[LiveCapableOperation, ...]:
+    operations = classify_live_capable_operations(args, phase_sequence)
+    if not operations:
+        return operations
+
+    missing: List[str] = []
+    if any(operation.requires_execute_flag for operation in operations) and not _argv_has_flag(
+        raw_argv, "--execute"
+    ):
+        missing.append("--execute")
+    if not _env_is_truthy(DPMX_LIVE_OK_ENV):
+        missing.append(f"{DPMX_LIVE_OK_ENV}=1")
+    if missing:
+        operation_summary = ", ".join(
+            f"{operation.name} [{operation.category}]"
+            for operation in operations
+        )
+        parser.error(
+            "Live-capable operation refused before provider/network dispatch. "
+            f"Missing consent: {', '.join(missing)}. "
+            f"Operations: {operation_summary}."
+        )
+    return operations
+
+
 def enforce_pre_live_validator_for_execution(
     *,
     root: Path,
@@ -19239,6 +19358,7 @@ def main() -> None:
         or args.print_phase_prompts
         or args.promptgen_scan
         or args.gemini_list_models
+        or args.batch_retrieve
         or args.preset
     ):
         parser.error(
@@ -19247,7 +19367,7 @@ def main() -> None:
             "--status, --status-json, --print-promptpack, --list-phases, --print-run-order, "
             "--print-phase-routing, --print-routing-guide, --print-prescan-guide, "
             "--tail-run-log, --show-provider-usage, --print-phase-prompts, "
-            "--gemini-list-models, or --preset."
+            "--gemini-list-models, --batch-retrieve, or --preset."
         )
     if args.watch is not None and args.watch <= 0:
         parser.error("--watch must be > 0 when provided.")
@@ -19334,6 +19454,12 @@ def main() -> None:
             phase_sequence = [p for p in phase_sequence if p in _enabled]
         elif _enabled and not phase_sequence:
             phase_sequence = [p for p in PHASES if p in _enabled]
+    enforce_live_operation_consent(
+        parser,
+        args=args,
+        phase_sequence=phase_sequence,
+        raw_argv=raw_argv,
+    )
     if should_enforce_pre_live_validator(args, phase_sequence):
         try:
             enforce_pre_live_validator_for_execution(
