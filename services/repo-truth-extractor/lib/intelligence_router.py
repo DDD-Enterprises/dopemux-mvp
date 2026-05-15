@@ -1,15 +1,226 @@
+import hashlib
 import json
 import logging
+import subprocess
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 
 logger = logging.getLogger(__name__)
 
+
+PRESCAN_ARTIFACT_VERSION = "1.0"
+SUPPORTED_PRESCAN_ARTIFACT_VERSIONS = frozenset({PRESCAN_ARTIFACT_VERSION})
+REQUIRED_IMPORT_IDENTITY_FIELDS = (
+    "repo_root",
+    "source_root",
+    "prescan_artifact_version",
+    "corpus_manifest_hash",
+)
+
+
+def _normalize_path_value(value: Any) -> Optional[str]:
+    token = str(value or "").strip()
+    if not token:
+        return None
+    try:
+        return str(Path(token).expanduser().resolve(strict=False))
+    except Exception:
+        return token
+
+
+def _git_sha_for_root(root: Path) -> Optional[str]:
+    try:
+        value = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            cwd=root,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        ).strip()
+    except Exception:
+        return None
+    if not value or value.upper() == "UNKNOWN":
+        return None
+    return value
+
+
+def _entry_value(entry: Any, key: str) -> Any:
+    if isinstance(entry, dict):
+        return entry.get(key)
+    return getattr(entry, key, None)
+
+
+def corpus_manifest_identity_hash(entries: Iterable[Any]) -> str:
+    """Hash the deterministic source identity fields from a prescan manifest walk."""
+    rows: list[dict[str, Any]] = []
+    for entry in entries:
+        rel_path = _entry_value(entry, "rel_path") or _entry_value(entry, "path")
+        rows.append(
+            {
+                "content_hash": _entry_value(entry, "content_hash"),
+                "exclude_reason": _entry_value(entry, "exclude_reason"),
+                "extension": _entry_value(entry, "extension"),
+                "include": bool(_entry_value(entry, "include")),
+                "rel_path": str(rel_path or ""),
+                "size_bytes": int(_entry_value(entry, "size_bytes") or 0),
+            }
+        )
+    rows.sort(key=lambda item: item["rel_path"])
+    payload = {
+        "identity_schema": "prescan_corpus_manifest_identity_v1",
+        "entries": rows,
+    }
+    blob = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(blob).hexdigest()
+
+
+def _walk_source_identity_entries(source_root: Path) -> list[Any]:
+    try:
+        from .prescan.corpus_walker import CorpusWalker
+        from .prescan.models import DEFAULT_PRESCAN_EXCLUDE_GLOBS, PrescanConfig
+    except Exception:
+        from lib.prescan.corpus_walker import CorpusWalker  # type: ignore
+        from lib.prescan.models import DEFAULT_PRESCAN_EXCLUDE_GLOBS, PrescanConfig  # type: ignore
+
+    config = PrescanConfig(
+        repo_root=source_root,
+        output_dir=source_root,
+        enable_code_prescan=False,
+        enable_git_enrichment=False,
+        batch_mode=False,
+        exclude_globs=list(DEFAULT_PRESCAN_EXCLUDE_GLOBS),
+    )
+    return CorpusWalker(config).walk()
+
+
+def build_prescan_source_identity(
+    repo_root: Path,
+    source_root: Optional[Path] = None,
+    *,
+    git_sha: Optional[str] = None,
+    entries: Optional[Iterable[Any]] = None,
+    artifact_root: Optional[Path] = None,
+    prescan_mode: str = "local_prescan",
+) -> Dict[str, Any]:
+    """Build local-only identity metadata used to decide whether imports are fresh."""
+    current_source_root = source_root or repo_root
+    source_entries = (
+        list(entries)
+        if entries is not None
+        else _walk_source_identity_entries(current_source_root)
+    )
+    current_git_sha = (
+        git_sha
+        if git_sha and git_sha.upper() != "UNKNOWN"
+        else _git_sha_for_root(repo_root)
+    )
+    identity: Dict[str, Any] = {
+        "artifact_root": (
+            str(artifact_root.expanduser().resolve(strict=False))
+            if artifact_root is not None
+            else None
+        ),
+        "corpus_manifest_hash": corpus_manifest_identity_hash(source_entries),
+        "git_sha": current_git_sha,
+        "prescan_artifact_version": PRESCAN_ARTIFACT_VERSION,
+        "prescan_mode": prescan_mode,
+        "repo_root": str(repo_root.expanduser().resolve(strict=False)),
+        "source_root": str(current_source_root.expanduser().resolve(strict=False)),
+    }
+    return identity
+
+
+def _identity_field(data: Dict[str, Any], key: str) -> Any:
+    source_identity = data.get("source_identity")
+    if key in data:
+        return data.get(key)
+    if isinstance(source_identity, dict):
+        return source_identity.get(key)
+    return None
+
+
+def _imported_identity_from_intelligence(data: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "corpus_manifest_hash": _identity_field(data, "corpus_manifest_hash"),
+        "generated_at": _identity_field(data, "generated_at") or data.get("generated_at"),
+        "git_sha": _identity_field(data, "git_sha"),
+        "prescan_artifact_version": _identity_field(data, "prescan_artifact_version"),
+        "prescan_mode": _identity_field(data, "prescan_mode"),
+        "repo_root": _identity_field(data, "repo_root"),
+        "run_id": _identity_field(data, "run_id"),
+        "source_root": _identity_field(data, "source_root"),
+    }
+
+
+@dataclass
+class PrescanImportValidation:
+    mode: str
+    verdict: str
+    reason_codes: List[str] = field(default_factory=list)
+    prescan_import_dir: Optional[str] = None
+    repo_root_current: Optional[str] = None
+    repo_root_imported_if_present: Optional[str] = None
+    source_root_current: Optional[str] = None
+    source_root_imported_if_present: Optional[str] = None
+    git_sha_current_if_available: Optional[str] = None
+    git_sha_imported_if_present: Optional[str] = None
+    corpus_manifest_hash_current_if_available: Optional[str] = None
+    corpus_manifest_hash_imported_if_present: Optional[str] = None
+    prescan_artifact_version: Optional[str] = None
+    can_influence_execution: bool = False
+    advisory_only: bool = True
+    generated_at: Optional[str] = None
+
+    def to_receipt_fields(self) -> Dict[str, Any]:
+        return {
+            "advisory_only": self.advisory_only,
+            "can_influence_execution": self.can_influence_execution,
+            "corpus_manifest_hash_current_if_available": self.corpus_manifest_hash_current_if_available,
+            "corpus_manifest_hash_imported_if_present": self.corpus_manifest_hash_imported_if_present,
+            "generated_at_imported_if_present": self.generated_at,
+            "git_sha_current_if_available": self.git_sha_current_if_available,
+            "git_sha_imported_if_present": self.git_sha_imported_if_present,
+            "mode": self.mode,
+            "prescan_artifact_version": self.prescan_artifact_version,
+            "prescan_import_dir": self.prescan_import_dir,
+            "reason_codes": list(self.reason_codes),
+            "repo_root_current": self.repo_root_current,
+            "repo_root_imported_if_present": self.repo_root_imported_if_present,
+            "source_root_current": self.source_root_current,
+            "source_root_imported_if_present": self.source_root_imported_if_present,
+            "verdict": self.verdict,
+        }
+
+    def rejected(self, reason_code: str) -> "PrescanImportValidation":
+        codes = list(dict.fromkeys([*self.reason_codes, reason_code]))
+        return PrescanImportValidation(
+            advisory_only=True,
+            can_influence_execution=False,
+            corpus_manifest_hash_current_if_available=self.corpus_manifest_hash_current_if_available,
+            corpus_manifest_hash_imported_if_present=self.corpus_manifest_hash_imported_if_present,
+            generated_at=self.generated_at,
+            git_sha_current_if_available=self.git_sha_current_if_available,
+            git_sha_imported_if_present=self.git_sha_imported_if_present,
+            mode="imported_prescan_rejected_stale",
+            prescan_artifact_version=self.prescan_artifact_version,
+            prescan_import_dir=self.prescan_import_dir,
+            reason_codes=codes,
+            repo_root_current=self.repo_root_current,
+            repo_root_imported_if_present=self.repo_root_imported_if_present,
+            source_root_current=self.source_root_current,
+            source_root_imported_if_present=self.source_root_imported_if_present,
+            verdict="rejected_stale",
+        )
+
+
 class IntelligenceRouter:
+    ARTIFACT_VERSION = PRESCAN_ARTIFACT_VERSION
+
     def __init__(self, prescan_intelligence: Dict[str, Any]):
         self.intel = prescan_intelligence
         self.code_intel = prescan_intelligence.get("code_intelligence", {})
         self.hints = prescan_intelligence.get("extraction_hints", {})
+        self.import_validation: Optional[PrescanImportValidation] = None
 
         # Pre-processed lookups
         self.skip_list = set(self.hints.get("skip_duplicates", []))
@@ -54,20 +265,183 @@ class IntelligenceRouter:
                 )
 
     @classmethod
+    def validate_import_dir(
+        cls,
+        prescan_dir: Path,
+        *,
+        current_repo_root: Path,
+        current_source_root: Optional[Path] = None,
+        current_git_sha: Optional[str] = None,
+        current_corpus_manifest_hash: Optional[str] = None,
+    ) -> PrescanImportValidation:
+        import_dir = prescan_dir.expanduser().resolve(strict=False)
+        repo_current = _normalize_path_value(current_repo_root)
+        source_current = _normalize_path_value(current_source_root or current_repo_root)
+        git_current = (
+            current_git_sha
+            if current_git_sha and current_git_sha.upper() != "UNKNOWN"
+            else _git_sha_for_root(current_repo_root)
+        )
+        base = PrescanImportValidation(
+            mode="imported_prescan_rejected_stale",
+            verdict="rejected_stale",
+            prescan_import_dir=str(import_dir),
+            repo_root_current=repo_current,
+            source_root_current=source_current,
+            git_sha_current_if_available=git_current,
+        )
+
+        intel_path = import_dir / "prescan_intelligence.json"
+        if not intel_path.exists():
+            return base.rejected("missing_prescan_intelligence")
+
+        try:
+            with open(intel_path, encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            return base.rejected("prescan_intelligence_parse_failed")
+        if not isinstance(data, dict):
+            return base.rejected("prescan_intelligence_not_object")
+
+        imported_identity = _imported_identity_from_intelligence(data)
+        repo_imported = _normalize_path_value(imported_identity.get("repo_root"))
+        source_imported = _normalize_path_value(imported_identity.get("source_root"))
+        version = (
+            str(imported_identity.get("prescan_artifact_version")).strip()
+            if imported_identity.get("prescan_artifact_version") is not None
+            else None
+        )
+        corpus_hash_imported = (
+            str(imported_identity.get("corpus_manifest_hash")).strip()
+            if imported_identity.get("corpus_manifest_hash") is not None
+            else None
+        )
+        git_imported = (
+            str(imported_identity.get("git_sha")).strip()
+            if imported_identity.get("git_sha") is not None
+            else None
+        )
+        validation = PrescanImportValidation(
+            mode="imported_prescan_rejected_stale",
+            verdict="rejected_stale",
+            prescan_import_dir=str(import_dir),
+            repo_root_current=repo_current,
+            repo_root_imported_if_present=repo_imported,
+            source_root_current=source_current,
+            source_root_imported_if_present=source_imported,
+            git_sha_current_if_available=git_current,
+            git_sha_imported_if_present=git_imported,
+            corpus_manifest_hash_imported_if_present=corpus_hash_imported,
+            prescan_artifact_version=version,
+            generated_at=(
+                str(imported_identity.get("generated_at"))
+                if imported_identity.get("generated_at") is not None
+                else None
+            ),
+        )
+
+        missing = [
+            field
+            for field in REQUIRED_IMPORT_IDENTITY_FIELDS
+            if imported_identity.get(field) in (None, "")
+        ]
+        if missing:
+            validation.mode = "imported_prescan_missing_metadata"
+            validation.verdict = "missing_metadata"
+            validation.reason_codes = [f"missing_{field}" for field in missing]
+            validation.advisory_only = True
+            validation.can_influence_execution = False
+            return validation
+
+        if version not in SUPPORTED_PRESCAN_ARTIFACT_VERSIONS:
+            return validation.rejected("unsupported_prescan_artifact_version")
+
+        corpus_hash_current = current_corpus_manifest_hash
+        if not corpus_hash_current:
+            try:
+                current_identity = build_prescan_source_identity(
+                    current_repo_root,
+                    current_source_root or current_repo_root,
+                    git_sha=git_current,
+                )
+                corpus_hash_current = str(current_identity["corpus_manifest_hash"])
+            except Exception:
+                return validation.rejected("current_corpus_manifest_hash_unavailable")
+        validation.corpus_manifest_hash_current_if_available = str(corpus_hash_current)
+
+        if repo_imported != repo_current:
+            return validation.rejected("repo_root_mismatch")
+        if source_imported != source_current:
+            return validation.rejected("source_root_mismatch")
+        if corpus_hash_imported != str(corpus_hash_current):
+            return validation.rejected("corpus_manifest_hash_mismatch")
+        if git_current and git_imported and git_current != git_imported:
+            return validation.rejected("git_sha_mismatch")
+
+        reason_codes = ["identity_match"]
+        if not git_imported:
+            reason_codes.append("warn_missing_git_sha_imported")
+        if not git_current:
+            reason_codes.append("warn_missing_git_sha_current")
+        return PrescanImportValidation(
+            advisory_only=False,
+            can_influence_execution=True,
+            corpus_manifest_hash_current_if_available=str(corpus_hash_current),
+            corpus_manifest_hash_imported_if_present=corpus_hash_imported,
+            generated_at=validation.generated_at,
+            git_sha_current_if_available=git_current,
+            git_sha_imported_if_present=git_imported,
+            mode="imported_prescan_accepted",
+            prescan_artifact_version=version,
+            prescan_import_dir=str(import_dir),
+            reason_codes=reason_codes,
+            repo_root_current=repo_current,
+            repo_root_imported_if_present=repo_imported,
+            source_root_current=source_current,
+            source_root_imported_if_present=source_imported,
+            verdict="accepted",
+        )
+
+    @classmethod
+    def load_imported(
+        cls,
+        prescan_dir: Path,
+        *,
+        current_repo_root: Path,
+        current_source_root: Optional[Path] = None,
+        current_git_sha: Optional[str] = None,
+        current_corpus_manifest_hash: Optional[str] = None,
+    ) -> Tuple[Optional["IntelligenceRouter"], PrescanImportValidation]:
+        validation = cls.validate_import_dir(
+            prescan_dir,
+            current_repo_root=current_repo_root,
+            current_source_root=current_source_root,
+            current_git_sha=current_git_sha,
+            current_corpus_manifest_hash=current_corpus_manifest_hash,
+        )
+        if not validation.can_influence_execution:
+            return None, validation
+        router = cls.from_dir(prescan_dir)
+        if router is None:
+            return None, validation.rejected("router_load_failed_after_validation")
+        router.import_validation = validation
+        return router, validation
+
+    @classmethod
     def from_dir(cls, prescan_dir: Path) -> Optional["IntelligenceRouter"]:
         intel_path = prescan_dir / "prescan_intelligence.json"
         if not intel_path.exists():
             return None
 
         try:
-            with open(intel_path) as f:
+            with open(intel_path, encoding="utf-8") as f:
                 data = json.load(f)
             router = cls(data)
 
             # Load code intelligence report
             code_report_path = prescan_dir / "code_intelligence_report.json"
             if code_report_path.exists():
-                with open(code_report_path) as f:
+                with open(code_report_path, encoding="utf-8") as f:
                     router.code_report = json.load(f)
                 # Build processing order lookup
                 for entry in router.code_report.get("processing_order", []):
@@ -80,13 +454,13 @@ class IntelligenceRouter:
             # Load batch plan
             batch_plan_path = prescan_dir / "batch_plan.json"
             if batch_plan_path.exists():
-                with open(batch_plan_path) as f:
+                with open(batch_plan_path, encoding="utf-8") as f:
                     router.batch_plan = json.load(f)
 
             # Load archaeology report
             arch_path = prescan_dir / "archaeology_report.json"
             if arch_path.exists():
-                with open(arch_path) as f:
+                with open(arch_path, encoding="utf-8") as f:
                     router.archaeology_report = json.load(f)
 
             return router
