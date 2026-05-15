@@ -1,0 +1,151 @@
+{
+  "packet_id": "RTE-PKT-09-LIVE-VALIDATION-PLAN",
+  "packet_version": "1.0.0",
+  "generated_at_utc": "2026-05-15T15:53:11Z",
+  "status": "READY_FOR_REVIEW",
+  "classification": {
+    "packet_kind": "live_validation_plan_only",
+    "runtime_code_changes_allowed": false,
+    "test_code_changes_allowed": false,
+    "live_validation_allowed": false,
+    "provider_calls_allowed": false,
+    "batch_provider_operations_allowed": false,
+    "remote_file_operations_allowed": false
+  },
+  "repo": {
+    "name": "dopemux-mvp",
+    "worktree": "/Users/hue/.codex/worktrees/227d/dopemux-mvp",
+    "primary_checkout_observed": "/Users/hue/code/dopemux-mvp",
+    "branch": "codex/rte-pkt-09-live-validation-plan",
+    "base_branch_observed": "origin/main",
+    "before_sha": "0179b17b03cf46518aa324bd8f50c805b627631d",
+    "after_commit_sha": "REPORTED_IN_FINAL_RESPONSE_AFTER_COMMIT",
+    "remote": "origin and mvp point to https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker_check": {
+      "pyproject.toml": "PRESENT",
+      "src/dopemux/cli.py": "PRESENT",
+      "services/repo-truth-extractor/run_extraction_v5.py": "PRESENT",
+      "services/repo-truth-extractor/llm_runtime.py": "PRESENT",
+      "services/repo-truth-extractor/lib/batch_clients.py": "PRESENT",
+      "services/repo-truth-extractor/lib/batch_retriever.py": "PRESENT",
+      "services/repo-truth-extractor/tests": "PRESENT"
+    },
+    "initial_dirty_state": "clean before artifact generation",
+    "task_packet_creation": "SKIPPED_BY_ACTIVE_PACKET_SCOPE",
+    "task_packet_creation_conflict": "AGENTS.md default asks for a new Task Packet before implementation, but the active packet explicitly forbids additional Task Packets and allows only out/rte-pkt-09-live-validation-plan/."
+  },
+  "authority_used": [
+    "active operator packet RTE-PKT-09-LIVE-VALIDATION-PLAN",
+    "AGENTS.md",
+    "docs/governance/proof-contract.md",
+    "docs/governance/proof-directory-rules.md",
+    "docs/governance/retention-and-redaction-rules.md",
+    "docs/governance/chain-of-custody-rules.md",
+    "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/llm_runtime.py",
+    "services/repo-truth-extractor/lib/batch_clients.py",
+    "services/repo-truth-extractor/lib/batch_retriever.py",
+    "out/rte-pkt-01-live-gate/",
+    "out/rte-pkt-02-payload-redaction/",
+    "out/rte-pkt-03-prescan-stale/",
+    "out/rte-pkt-04-prescan-influence/",
+    "out/rte-pkt-05-provenance-fields/",
+    "out/rte-pkt-06-truth-labels/",
+    "out/rte-pkt-15-failed-sidecars/"
+  ],
+  "authority_gaps": [
+    {
+      "item": "RTE-PKT-07 local proof outputs",
+      "status": "MISSING_IN_CURRENT_CHECKOUT",
+      "impact": "Provider metadata acceptance is treated as CLAIMED by the active packet, not locally re-proven here."
+    },
+    {
+      "item": "RTE-PKT-08 local proof outputs",
+      "status": "MISSING_IN_CURRENT_CHECKOUT",
+      "impact": "Batch static acceptance is treated as CLAIMED by the active packet, not locally re-proven here."
+    }
+  ],
+  "static_trace_summary": {
+    "live_gate": "run_extraction_v5.py requires --execute plus DPMX_LIVE_OK for live operation paths.",
+    "provider_metadata": "llm_runtime.py records provider/model/status/transport/response summary metadata on sync provider attempts.",
+    "sync_payload_safety": "llm_runtime.py sanitizes system and user content before provider payload construction.",
+    "batch_submit_poll_cancel": "batch_clients.py implements OpenAI-compatible, xAI, and Gemini batch clients; OpenRouter batch submit is explicitly unsupported.",
+    "batch_retrieve": "batch_retriever.py supports openai, xai, and gemini helper retrieval, while run_extraction_v5.py CLI retrieve-provider currently exposes openai and gemini only.",
+    "downloaded_jsonl": "batch_retriever.py writes OpenAI-compatible completed output as *_output.jsonl and terminal error output as *_error.jsonl when file IDs are present."
+  },
+  "proof_outputs": [
+    "out/rte-pkt-09-live-validation-plan/RTE-PKT-09_MANIFEST.json",
+    "out/rte-pkt-09-live-validation-plan/RTE-PKT-09_LIVE_VALIDATION_PLAN.md",
+    "out/rte-pkt-09-live-validation-plan/RTE-PKT-09_AUTHORIZATION_MODEL.md",
+    "out/rte-pkt-09-live-validation-plan/RTE-PKT-09_PROVIDER_LANE_MATRIX.md",
+    "out/rte-pkt-09-live-validation-plan/RTE-PKT-09_BATCH_LIVE_PILOT_PLAN.md",
+    "out/rte-pkt-09-live-validation-plan/RTE-PKT-09_RETENTION_ZDR_EVIDENCE_PLAN.md",
+    "out/rte-pkt-09-live-validation-plan/RTE-PKT-09_PROOF_ARTIFACT_SCHEMA.md",
+    "out/rte-pkt-09-live-validation-plan/RTE-PKT-09_STOP_CONDITIONS.md",
+    "out/rte-pkt-09-live-validation-plan/RTE-PKT-09_NO_PROVIDER_CALLS_ATTESTATION.md",
+    "out/rte-pkt-09-live-validation-plan/RTE-PKT-09_REMAINING_UNKNOWNS.md",
+    "out/rte-pkt-09-live-validation-plan/RTE-PKT-09_DIFF_SUMMARY.md"
+  ],
+  "validation_status": {
+    "provider_calls_performed": false,
+    "live_extraction_performed": false,
+    "batch_provider_operations_performed": false,
+    "remote_file_operations_performed": false,
+    "provider_credentials_required": false,
+    "provider_credentials_inspected": false,
+    "external_research_performed": false,
+    "manifest_json_valid": "PASS",
+    "git_diff_check": "PASS",
+    "secret_scan": "PASS",
+    "pre_commit": "PASS",
+    "git_status_review": "PASS"
+  },
+  "validation_commands_observed": [
+    {
+      "command": "python -m json.tool out/rte-pkt-09-live-validation-plan/RTE-PKT-09_MANIFEST.json >/dev/null",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -c '<local secret-shaped scan over generated out/rte-pkt-09-live-validation-plan files>'",
+      "exit_code": 0,
+      "result": "PASS",
+      "observed": "secret scan passed: no configured secret-shaped patterns found"
+    },
+    {
+      "command": "pre-commit run --files <generated packet files>",
+      "exit_code": 0,
+      "result": "PASS",
+      "observed": "hooks passed or skipped according to configured file filters"
+    },
+    {
+      "command": "git status --short --branch",
+      "exit_code": 0,
+      "result": "PASS",
+      "observed": "only out/rte-pkt-09-live-validation-plan/ is untracked before final staging/commit decision"
+    }
+  ],
+  "chain_of_custody": {
+    "documented": true,
+    "source_basis": "active RTE-PKT-09 operator packet plus observed repo authority files and runtime source",
+    "parent_bundle_refs": [
+      "RTE-PKT-00-SOURCE-CLOSURE:CLAIMED_BY_ACTIVE_PACKET_NOT_LOCAL",
+      "RTE-PKT-01-LIVE-GATE:LOCAL_OUT_PRESENT",
+      "RTE-PKT-02-PAYLOAD-REDACTION:LOCAL_OUT_PRESENT",
+      "RTE-PKT-15-FAILED-SIDECARS:LOCAL_OUT_PRESENT",
+      "RTE-PKT-03-PRESCAN-STALE:LOCAL_OUT_PRESENT",
+      "RTE-PKT-04-PRESCAN-INFLUENCE:LOCAL_OUT_PRESENT",
+      "RTE-PKT-05-PROVENANCE-FIELDS:LOCAL_OUT_PRESENT",
+      "RTE-PKT-06-TRUTH-LABELS:LOCAL_OUT_PRESENT",
+      "RTE-PKT-07-XAI-METADATA:CLAIMED_BY_ACTIVE_PACKET_NOT_LOCAL",
+      "RTE-PKT-08-XAI-BATCH-STATIC:CLAIMED_BY_ACTIVE_PACKET_NOT_LOCAL"
+    ],
+    "review_order_hint": 9
+  }
+}
