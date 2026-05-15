@@ -1,0 +1,90 @@
+{
+  "packet_id": "RTE-PKT-02-PAYLOAD-REDACTION",
+  "generated_at_utc": "2026-05-15T03:11:05Z",
+  "status": "READY_FOR_REVIEW",
+  "worktree_path": "/Users/hue/code/dopemux-mvp-rte-pkt-02-payload-redaction",
+  "branch": "codex/rte-pkt-02-payload-redaction",
+  "base_branch_observed": "codex/rte-dr00-normalized-baseline",
+  "before_commit_sha": "a4214ca5bf431e1b59791661e2b664a6cd24c1da",
+  "after_commit_sha": null,
+  "repo_identity": {
+    "repository_name": "dopemux-mvp",
+    "remotes": [
+      "origin https://github.com/DDD-Enterprises/dopemux-mvp.git",
+      "mvp https://github.com/DDD-Enterprises/dopemux-mvp.git"
+    ],
+    "markers_verified": [
+      "pyproject.toml",
+      "src/dopemux/cli.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/llm_runtime.py",
+      "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+      "services/repo-truth-extractor/output_safety.py"
+    ]
+  },
+  "task_packet": {
+    "path": "out/rte-pkt-02-payload-redaction/RTE-PKT-02_TASK_PACKET.json",
+    "schema": "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+    "schema_validation": "PASS"
+  },
+  "source_files_changed": [
+    "services/repo-truth-extractor/output_safety.py",
+    "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/llm_runtime.py",
+    "services/repo-truth-extractor/tests/test_provider_payload_redaction.py"
+  ],
+  "proof_files": [
+    "out/rte-pkt-02-payload-redaction/RTE-PKT-02_TASK_PACKET.json",
+    "out/rte-pkt-02-payload-redaction/RTE-PKT-02_MANIFEST.json",
+    "out/rte-pkt-02-payload-redaction/RTE-PKT-02_PAYLOAD_REDACTION_MATRIX.md",
+    "out/rte-pkt-02-payload-redaction/RTE-PKT-02_TEST_REPORT.md",
+    "out/rte-pkt-02-payload-redaction/RTE-PKT-02_NO_PROVIDER_CALLS_ATTESTATION.md",
+    "out/rte-pkt-02-payload-redaction/RTE-PKT-02_SECRET_FIXTURE_REDACTION_PROOF.md",
+    "out/rte-pkt-02-payload-redaction/RTE-PKT-02_DIFF_SUMMARY.md",
+    "out/rte-pkt-02-payload-redaction/RTE-PKT-02_REMAINING_UNKNOWNS.md",
+    "out/rte-pkt-02-payload-redaction/implementation-notes.md"
+  ],
+  "validations": [
+    {
+      "command": "python - <<'PY' ... validate RTE-PKT-02_TASK_PACKET.json against dopetask-canonical-spec.json ... PY",
+      "result": "PASS",
+      "summary": "Task packet schema-valid."
+    },
+    {
+      "command": "python -m py_compile services/repo-truth-extractor/lib/prescan/grok_passes.py services/repo-truth-extractor/output_safety.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/llm_runtime.py",
+      "result": "PASS",
+      "summary": "No Python compile errors."
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_provider_payload_redaction.py services/repo-truth-extractor/tests/test_output_safety.py services/repo-truth-extractor/tests/test_grok_passes_validation.py -q",
+      "result": "PASS",
+      "summary": "17 passed; existing PytestConfigWarning for unknown asyncio_mode."
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py -q",
+      "result": "PASS",
+      "summary": "12 passed; existing PytestConfigWarning for unknown asyncio_mode."
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_prescan_v5_integration.py -k default_excludes -q",
+      "result": "PASS",
+      "summary": "1 passed; existing PytestConfigWarning for unknown asyncio_mode."
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS",
+      "summary": "No whitespace errors."
+    }
+  ],
+  "provider_calls": {
+    "live_provider_calls_run": false,
+    "batch_submit_poll_retrieve_cancel_run": false,
+    "provider_credentials_required": false
+  },
+  "remaining_unknowns": [
+    "Exact RTE-PKT-00/RTE-PKT-01 named proof files from the user packet were not present as tracked files in the worktree.",
+    "Direct construction of lib.batch_clients.BatchRequest outside the observed v5 builder was not changed because lib/batch_clients.py is outside the packet allowlist.",
+    "Legacy run_extraction_v3 provider payload paths were not changed because the packet target and allowlist are v5/RTE prescan focused."
+  ]
+}
