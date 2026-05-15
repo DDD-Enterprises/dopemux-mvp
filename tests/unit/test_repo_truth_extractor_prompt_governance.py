@@ -17,6 +17,18 @@ PRESCAN_ROOT = SERVICE_ROOT / "prompts" / "prescan"
 
 
 def _load_runner_module():
+    service_root = str(SERVICE_ROOT)
+    if service_root in sys.path:
+        sys.path.remove(service_root)
+    sys.path.insert(0, service_root)
+
+    for module_name, module in list(sys.modules.items()):
+        if module_name != "extractor" and not module_name.startswith("extractor."):
+            continue
+        module_file = getattr(module, "__file__", None)
+        if module_file is None or not Path(module_file).resolve().is_relative_to(SERVICE_ROOT):
+            sys.modules.pop(module_name, None)
+
     spec = importlib.util.spec_from_file_location(
         "run_extraction_v5_prompt_governance", RUNNER_PATH
     )

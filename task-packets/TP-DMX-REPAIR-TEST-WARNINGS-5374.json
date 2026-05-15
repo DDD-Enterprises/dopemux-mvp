@@ -1,0 +1,95 @@
+{
+  "id": "TP-DMX-REPAIR-TEST-WARNINGS-5374",
+  "project": "dopemux-mvp",
+  "target": "Clear residual test warning drift after pytest repair",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "repair-tests-5374",
+    "base_branch": "origin/main",
+    "parent_tp_id": "TP-DMX-REPAIR-TESTS-5374",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/repair-tests-5374",
+    "base_branch": "origin/main",
+    "stacked_because": "Follow-up cleanup for residual dirty state and warning output on PR 627"
+  },
+  "commit": {
+    "message": "test: clear residual warning drift",
+    "allowlist": [
+      "compose.yml",
+      "tests/regression/test_fnew9_matching_engine.py",
+      "task-packets/TP-DMX-REPAIR-TEST-WARNINGS-5374.json"
+    ],
+    "verify": [
+      "uv run --frozen --extra test python - <<'PY'\nimport json\nfrom pathlib import Path\nfrom jsonschema import Draft7Validator\nschema = json.loads(Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text(encoding='utf-8'))\nfor packet_path in [Path('task-packets/TP-DMX-REPAIR-TEST-WARNINGS-5374.json')]:\n    packet = json.loads(packet_path.read_text(encoding='utf-8'))\n    errors = sorted(Draft7Validator(schema).iter_errors(packet), key=lambda e: list(e.path))\n    if errors:\n        for error in errors:\n            loc = '.'.join(str(part) for part in error.path) or '<root>'\n            print(f'{packet_path}: {loc}: {error.message}')\n        raise SystemExit(1)\n    print(f'PASS {packet_path}')\nPY",
+      "uv run --frozen --extra test pytest tests/arch/test_registry_compose_alignment.py::TestRegistryComposeAlignment::test_no_hardcoded_ports_in_compose tests/regression/test_fnew9_matching_engine.py -W error::UserWarning -W error::pytest.PytestReturnNotNoneWarning -q",
+      "uv run --frozen --extra test pytest tests --maxfail=10",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "Clear residual test warning drift",
+    "body": "Cleans local .claude workspace drift outside the commit, converts hardcoded compose host ports to env-backed defaults, and removes non-None returns from F-NEW-9 regression tests.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Remove local .claude working-tree drift without committing machine-local workspace paths.",
+      "context_files": [
+        ".claude/agents/architect.md",
+        ".claude/agents/developer.md",
+        ".claude/agents/project-manager.md",
+        ".claude/agents/researcher.md",
+        ".claude/claude_config.json"
+      ],
+      "expected_files": [],
+      "validation": [
+        "git status --short --branch"
+      ]
+    },
+    {
+      "id": "step-2",
+      "task": "Replace hardcoded compose host ports reported by the registry/compose alignment warning with env-backed defaults.",
+      "context_files": [
+        "compose.yml",
+        "tests/arch/test_registry_compose_alignment.py"
+      ],
+      "expected_files": [
+        "compose.yml"
+      ],
+      "validation": [
+        "uv run --frozen --extra test pytest tests/arch/test_registry_compose_alignment.py::TestRegistryComposeAlignment::test_no_hardcoded_ports_in_compose -W error::UserWarning -q"
+      ]
+    },
+    {
+      "id": "step-3",
+      "task": "Convert F-NEW-9 regression tests from boolean returns to assertions so pytest emits no return-value warnings.",
+      "context_files": [
+        "tests/regression/test_fnew9_matching_engine.py"
+      ],
+      "expected_files": [
+        "tests/regression/test_fnew9_matching_engine.py"
+      ],
+      "validation": [
+        "uv run --frozen --extra test pytest tests/regression/test_fnew9_matching_engine.py -W error::pytest.PytestReturnNotNoneWarning -q"
+      ]
+    }
+  ]
+}

@@ -8,6 +8,11 @@ from types import SimpleNamespace
 
 import pytest
 
+import dopemux.ux.questionary_support as questionary_support
+import dopemux.ux.wizard.corpus as wizard_corpus
+import dopemux.ux.wizard.cost_profiles as wizard_cost_profiles
+import dopemux.ux.wizard.extraction as wizard_extraction
+import dopemux.ux.wizard.provider_overrides as wizard_provider_overrides
 from dopemux.ux.questionary_support import (
     MissingInteractiveDependencyError,
     QUESTIONARY_INSTALL_MESSAGE,
@@ -45,11 +50,15 @@ def test_require_questionary_raises_deterministic_message(
         return real_import_module(name, package)
 
     monkeypatch.setattr(
-        "dopemux.ux.questionary_support.importlib.import_module",
+        questionary_support.importlib,
+        "import_module",
         _fake_import_module,
     )
 
-    with pytest.raises(MissingInteractiveDependencyError, match="Interactive Dopemux UX requires `questionary`"):
+    with pytest.raises(
+        MissingInteractiveDependencyError,
+        match="Interactive Dopemux UX requires `questionary`",
+    ):
         require_questionary()
 
     assert "uv sync --frozen --extra test --extra services" in QUESTIONARY_INSTALL_MESSAGE
@@ -83,14 +92,17 @@ def test_run_extraction_uses_v5_upgrades_wrapper_with_resume_and_rich_ui(
             return None
 
     monkeypatch.setattr(
-        "dopemux.ux.wizard.extraction.require_questionary",
+        wizard_extraction,
+        "require_questionary",
         lambda: fake_questionary,
     )
-    monkeypatch.setattr("dopemux.ux.wizard.extraction.PHASES", ["A"])
+    monkeypatch.setattr(wizard_extraction, "PHASES", ["A"])
     monkeypatch.setenv("PYTHONPATH", "")
     monkeypatch.setattr(
-        "dopemux.ux.wizard.extraction.subprocess.Popen",
-        lambda cmd, **kwargs: recorded.update({"env": dict(kwargs.get("env") or {})}) or _Proc(cmd),
+        wizard_extraction.subprocess,
+        "Popen",
+        lambda cmd, **kwargs: recorded.update({"env": dict(kwargs.get("env") or {})})
+        or _Proc(cmd),
     )
 
     result = run_extraction(
@@ -222,11 +234,13 @@ def test_run_corpus_audit_uses_integrated_v5_prescan_outputs(
     router = object()
     rendered: dict[str, object] = {}
     monkeypatch.setattr(
-        "dopemux.ux.wizard.corpus._run_integrated_v5_prescan",
+        wizard_corpus,
+        "_run_integrated_v5_prescan",
         lambda state: (prescan_dir, router),
     )
     monkeypatch.setattr(
-        "dopemux.ux.wizard.corpus.render_prescan_hud",
+        wizard_corpus,
+        "render_prescan_hud",
         lambda stats, intelligence, artifacts: rendered.update(
             {"stats": stats, "intelligence": intelligence, "artifacts": artifacts}
         ),
@@ -276,7 +290,8 @@ def test_run_cost_selection_supports_profile_browsing(
     )
 
     monkeypatch.setattr(
-        "dopemux.ux.wizard.cost_profiles.require_questionary",
+        wizard_cost_profiles,
+        "require_questionary",
         lambda: fake_questionary,
     )
 
@@ -312,7 +327,8 @@ def test_run_provider_overrides_sets_session_key(
     )
 
     monkeypatch.setattr(
-        "dopemux.ux.wizard.provider_overrides.require_questionary",
+        wizard_provider_overrides,
+        "require_questionary",
         lambda: fake_questionary,
     )
 

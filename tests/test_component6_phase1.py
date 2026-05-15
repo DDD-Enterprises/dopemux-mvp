@@ -8,16 +8,43 @@ Purpose: Validate Phase 1 implementation before Phase 2 development
 """
 
 import asyncio
+import importlib.util
 import os
 import sys
 from datetime import datetime
 from pathlib import Path
 
-# Add services to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "services" / "task-orchestrator"))
+TASK_ORCHESTRATOR_ROOT = (
+    Path(__file__).parent.parent / "services" / "task-orchestrator"
+).resolve()
 
-from intelligence.context_switch_recovery import ContextSwitchRecovery, SwitchReason
-from observability.metrics_collector import MetricsCollector, get_metrics
+
+def _load_task_orchestrator_module(module_name: str, relative_path: str):
+    module_path = TASK_ORCHESTRATOR_ROOT / relative_path
+    spec = importlib.util.spec_from_file_location(module_name, module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Unable to load {module_name} from {module_path}")
+
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+_context_switch_recovery = _load_task_orchestrator_module(
+    "task_orchestrator_component6_context_switch_recovery",
+    "intelligence/context_switch_recovery.py",
+)
+_metrics_collector = _load_task_orchestrator_module(
+    "task_orchestrator_component6_metrics_collector",
+    "observability/metrics_collector.py",
+)
+
+ContextSwitch = _context_switch_recovery.ContextSwitch
+ContextSwitchRecovery = _context_switch_recovery.ContextSwitchRecovery
+SwitchReason = _context_switch_recovery.SwitchReason
+MetricsCollector = _metrics_collector.MetricsCollector
+get_metrics = _metrics_collector.get_metrics
 
 
 class MockConPortClient:
@@ -229,9 +256,6 @@ async def test_recovery_assistance():
         metrics_collector=get_metrics()
     )
 
-    # Create a mock context switch
-    from intelligence.context_switch_recovery import ContextSwitch
-
     switch = ContextSwitch(
         from_context={
             "task": {
@@ -380,9 +404,6 @@ async def test_recovery_statistics():
         conport_client=MockConPortClient(workspace_id),
         metrics_collector=get_metrics()
     )
-
-    # Create mock switches to populate history
-    from intelligence.context_switch_recovery import ContextSwitch
 
     for i in range(3):
         switch = ContextSwitch(

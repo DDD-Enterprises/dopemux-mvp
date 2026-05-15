@@ -1,5 +1,6 @@
 from click.testing import CliRunner
 
+import dopemux.system_data.cli as system_data_cli
 from dopemux.system_data.cli import system_data
 from dopemux.system_data.models import (
     EnvironmentSnapshot,
@@ -62,7 +63,7 @@ def test_doctor_missing_required_tool_exits_nonzero(monkeypatch):
                 statuses=(ToolStatus(name="dust", path=None, version=None, available=False),),
             )
 
-    monkeypatch.setattr("dopemux.system_data.cli.ToolRunner", DummyRunner)
+    monkeypatch.setattr(system_data_cli, "ToolRunner", DummyRunner)
 
     result = CliRunner().invoke(system_data, ["doctor"])
 
@@ -71,7 +72,7 @@ def test_doctor_missing_required_tool_exits_nonzero(monkeypatch):
 
 
 def test_scan_json_uses_scan_result(monkeypatch):
-    monkeypatch.setattr("dopemux.system_data.cli.scan", lambda home: _scan_result())
+    monkeypatch.setattr(system_data_cli, "scan", lambda home: _scan_result())
 
     result = CliRunner().invoke(system_data, ["scan", "--json", "--home", "/tmp"])
 
@@ -80,7 +81,7 @@ def test_scan_json_uses_scan_result(monkeypatch):
 
 
 def test_clean_execute_requires_yes(monkeypatch):
-    monkeypatch.setattr("dopemux.system_data.cli.scan", lambda home: _scan_result())
+    monkeypatch.setattr(system_data_cli, "scan", lambda home: _scan_result())
 
     result = CliRunner().invoke(system_data, ["clean", "--execute"])
 
@@ -89,7 +90,7 @@ def test_clean_execute_requires_yes(monkeypatch):
 
 
 def test_clean_execute_rejects_foreign_home(monkeypatch):
-    monkeypatch.setattr("dopemux.system_data.cli.scan", lambda home: _scan_result())
+    monkeypatch.setattr(system_data_cli, "scan", lambda home: _scan_result())
 
     result = CliRunner().invoke(system_data, ["clean", "--execute", "--yes", "--home", "/"])
 
@@ -98,7 +99,7 @@ def test_clean_execute_rejects_foreign_home(monkeypatch):
 
 
 def test_plan_accepts_no_dry_run(monkeypatch):
-    monkeypatch.setattr("dopemux.system_data.cli.scan", lambda home: _scan_result())
+    monkeypatch.setattr(system_data_cli, "scan", lambda home: _scan_result())
 
     result = CliRunner().invoke(system_data, ["plan", "--no-dry-run", "--home", "/tmp"])
 

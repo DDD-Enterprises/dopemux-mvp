@@ -1,5 +1,6 @@
 import json
 
+import dopemux.system_data.tools as system_data_tools
 from dopemux.system_data.tools import (
     ToolRunner,
     parse_dua_text,
@@ -11,7 +12,7 @@ from dopemux.system_data.tools import (
 
 
 def test_required_tool_preflight_reports_missing(monkeypatch):
-    monkeypatch.setattr("dopemux.system_data.tools.shutil.which", lambda name: None)
+    monkeypatch.setattr(system_data_tools.shutil, "which", lambda name: None)
 
     report = ToolRunner().check_required_tools()
 

@@ -82,7 +82,7 @@ services:
       - dopemux-network
 
     ports:
-      - "6379:6379"
+      - "${REDIS_EVENTS_PORT:-6379}:6379"
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
@@ -97,7 +97,7 @@ services:
     networks:
       - dopemux-network
     ports:
-      - "6380:6379"
+      - "${REDIS_PRIMARY_PORT:-6380}:6379"
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
@@ -162,7 +162,7 @@ services:
     networks:
       - dopemux-network
     ports:
-      - "8080:80"
+      - "${LEANTIME_PORT:-8080}:80"
     depends_on:
       mysql_leantime:
         condition: service_healthy
@@ -208,7 +208,7 @@ services:
     networks:
       - dopemux-network
     ports:
-      - "8081:5540"
+      - "${REDIS_UI_PORT:-8081}:5540"
     # Note: RedisInsight healthcheck disabled - app takes time to start and doesn't respond reliably to health checks
 
   # Qdrant (vector database for embeddings)
@@ -305,7 +305,7 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - DATABASE_URL=${LITELLM_DATABASE_URL:-postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/litellm}
     ports:
-      - "4000:4000"
+      - "${LITELLM_PORT:-4000}:4000"
     depends_on:
       - postgres
     healthcheck:
@@ -615,7 +615,7 @@ services:
     networks:
       - dopemux-network
     ports:
-      - "8790:8790"
+      - "${WEBHOOK_RECEIVER_HOST_PORT:-8790}:8790"
     environment:
       - WEBHOOK_RECEIVER_HOST=0.0.0.0
       - WEBHOOK_RECEIVER_PORT=8790
