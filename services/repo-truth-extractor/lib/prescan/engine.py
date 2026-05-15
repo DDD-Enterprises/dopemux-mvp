@@ -31,6 +31,10 @@ from .provider_catalog import (
     write_provider_readiness,
     write_routing_plan,
 )
+from ..intelligence_router import (
+    PRESCAN_ARTIFACT_VERSION,
+    build_prescan_source_identity,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -231,8 +235,9 @@ class PrescanEngine:
                 {entry.rel_path for entry in entries},
             )
             metadata["incremental"] = incremental_meta
+            current_git_sha = self._get_git_sha()
             self._log_progress("write_incremental_cache")
-            cache.write(entries, code_intel, self._get_git_sha())
+            cache.write(entries, code_intel, current_git_sha)
 
             self._log_progress("build_dependency_graph", files=len(code_intel))
             self.dep_graph = DependencyGraph()
@@ -240,6 +245,20 @@ class PrescanEngine:
 
             self._log_progress("build_intelligence")
             intelligence = self._build_intelligence_base(entries, code_intel)
+            source_identity = build_prescan_source_identity(
+                self.config.repo_root,
+                self.config.repo_root,
+                git_sha=current_git_sha,
+                entries=entries,
+                artifact_root=self.config.output_dir,
+                prescan_mode="local_prescan",
+            )
+            metadata["source_identity"] = source_identity
+            intelligence["prescan_artifact_version"] = PRESCAN_ARTIFACT_VERSION
+            intelligence["source_root"] = source_identity["source_root"]
+            intelligence["git_sha"] = source_identity["git_sha"]
+            intelligence["corpus_manifest_hash"] = source_identity["corpus_manifest_hash"]
+            intelligence["source_identity"] = source_identity
             intelligence["duplicate_groups"] = duplicates["groups"]
             intelligence["version_chains"] = duplicates["chains"]
             intelligence["version_chain_count"] = len(duplicates["chains"])

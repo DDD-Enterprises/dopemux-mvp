@@ -1,0 +1,80 @@
+{
+  "id": "RTE-PKT-03-PRESCAN-STALE",
+  "branch": "codex/rte-pkt-03-prescan-stale",
+  "base_commit": "a4214ca5bf431e1b59791661e2b664a6cd24c1da",
+  "worktree": "/Users/hue/.codex/worktrees/1cc0/dopemux-mvp",
+  "repo_root": "/Users/hue/.codex/worktrees/1cc0/dopemux-mvp",
+  "active_intelligence_router_path": "services/repo-truth-extractor/lib/intelligence_router.py",
+  "changed_files": [
+    "services/repo-truth-extractor/lib/intelligence_router.py",
+    "services/repo-truth-extractor/lib/prescan/engine.py",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/tests/test_prescan_import_staleness.py",
+    "services/repo-truth-extractor/tests/test_prescan_v5_integration.py",
+    "out/rte-pkt-03-prescan-stale/RTE-PKT-03_MANIFEST.json",
+    "out/rte-pkt-03-prescan-stale/RTE-PKT-03_PRESCAN_IMPORT_IDENTITY_MATRIX.md",
+    "out/rte-pkt-03-prescan-stale/RTE-PKT-03_PRESCAN_RECEIPT_EXAMPLES.md",
+    "out/rte-pkt-03-prescan-stale/RTE-PKT-03_INFLUENCE_GUARD_MATRIX.md",
+    "out/rte-pkt-03-prescan-stale/RTE-PKT-03_TEST_REPORT.md",
+    "out/rte-pkt-03-prescan-stale/RTE-PKT-03_NO_PROVIDER_CALLS_ATTESTATION.md",
+    "out/rte-pkt-03-prescan-stale/RTE-PKT-03_DIFF_SUMMARY.md",
+    "out/rte-pkt-03-prescan-stale/RTE-PKT-03_REMAINING_UNKNOWNS.md",
+    "out/rte-pkt-03-prescan-stale/implementation-notes.md"
+  ],
+  "validation_summary": [
+    {
+      "command": "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/lib/intelligence_router.py services/repo-truth-extractor/lib/prescan/engine.py",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_prescan_import_staleness.py services/repo-truth-extractor/tests/test_prescan_v5_integration.py -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "13 passed; pytest warned about unknown config option asyncio_mode."
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests -k 'prescan and stale' -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "8 passed; pytest warned about unknown config option asyncio_mode."
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests -k 'prescan and import' -q",
+      "exit_code": 1,
+      "result": "FAIL",
+      "summary": "Selector caught out-of-scope test_code_prescan_truthfulness.py::test_code_prescan_emits_dotted_relative_python_imports; KeyError: imports."
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests -k 'prescan and default_excludes' -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "1 passed; pytest warned about unknown config option asyncio_mode."
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py::test_code_prescan_emits_dotted_relative_python_imports -q",
+      "exit_code": 1,
+      "result": "FAIL",
+      "summary": "Out-of-scope existing CodePrescan import-field failure reproduced directly."
+    },
+    {
+      "command": "python -m json.tool out/rte-pkt-03-prescan-stale/RTE-PKT-03_MANIFEST.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "pre-commit run --files <changed files>",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "Configured hooks passed or skipped for the changed file set."
+    }
+  ],
+  "no_provider_calls": true,
+  "live_validation_run": false,
+  "status": "READY_FOR_REVIEW"
+}
