@@ -5,6 +5,7 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
+import dopemux.embeddings.storage.hybrid_store as hybrid_store
 from dopemux.cli import cli
 from dopemux.commands.extract_commands import extract
 
@@ -93,10 +94,7 @@ def test_extract_pipeline_voyage_embeddings_are_mockable(tmp_path: Path, monkeyp
             return [[0.1] * self.config.embedding_dimension for _ in texts]
 
     monkeypatch.setenv("VOYAGE_API_KEY", "test-key")
-    monkeypatch.setattr(
-        "dopemux.embeddings.storage.hybrid_store.VoyageAPIClient",
-        FakeVoyageClient,
-    )
+    monkeypatch.setattr(hybrid_store, "VoyageAPIClient", FakeVoyageClient)
 
     source_dir = tmp_path / "docs"
     output_dir = tmp_path / "out"

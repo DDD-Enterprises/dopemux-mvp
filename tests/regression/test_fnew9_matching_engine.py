@@ -53,7 +53,7 @@ def test_energy_complexity_matching():
             print(f"  ❌ {desc}: {score:.2f} (expected {expected_range})")
 
     print(f"  Result: {passed}/{len(test_cases)} cases passed\n")
-    return passed == len(test_cases)
+    assert passed == len(test_cases)
 
 
 def test_attention_task_matching():
@@ -103,7 +103,7 @@ def test_attention_task_matching():
             print(f"  ❌ {desc}: {score:.2f} (expected {expected_range})")
 
     print(f"  Result: {passed}/{len(test_cases)} cases passed\n")
-    return passed == len(test_cases)
+    assert passed == len(test_cases)
 
 
 def test_time_duration_matching():
@@ -129,7 +129,7 @@ def test_time_duration_matching():
             print(f"  ❌ {desc}: {score:.2f} (expected {expected_range})")
 
     print(f"  Result: {passed}/{len(test_cases)} cases passed\n")
-    return passed == len(test_cases)
+    assert passed == len(test_cases)
 
 
 def test_integrated_matching():
@@ -167,7 +167,7 @@ def test_integrated_matching():
         print(f"     #{i}: {sug.task.title} - Match: {sug.match_score:.2f}")
 
     print()
-    return result
+    assert result
 
 
 def test_mismatch_detection():
@@ -201,7 +201,7 @@ def test_mismatch_detection():
         result = False
 
     print()
-    return result
+    assert result
 
 
 def main():
@@ -213,11 +213,19 @@ def main():
     print()
 
     results = []
-    results.append(test_energy_complexity_matching())
-    results.append(test_attention_task_matching())
-    results.append(test_time_duration_matching())
-    results.append(test_integrated_matching())
-    results.append(test_mismatch_detection())
+    for test_func in [
+        test_energy_complexity_matching,
+        test_attention_task_matching,
+        test_time_duration_matching,
+        test_integrated_matching,
+        test_mismatch_detection,
+    ]:
+        try:
+            test_func()
+        except AssertionError:
+            results.append(False)
+        else:
+            results.append(True)
 
     print("=" * 70)
     print(f"Results: {sum(results)}/{len(results)} tests passed")

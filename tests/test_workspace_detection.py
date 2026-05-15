@@ -188,7 +188,8 @@ class TestMCPWrapperScripts:
         wrapper_path = project_root / "scripts" / "mcp-wrappers" / "conport-wrapper.sh"
         content = wrapper_path.read_text()
 
-        assert "detect_workspace()" in content
+        assert 'source "$(dirname "${BASH_SOURCE[0]}")/_lib.sh"' in content
+        assert 'workspace_id="$(detect_workspace)"' in content
         assert "DOPEMUX_WORKSPACE_ID" in content
         assert "docker exec" in content
 
@@ -197,7 +198,8 @@ class TestMCPWrapperScripts:
         wrapper_path = project_root / "scripts" / "mcp-wrappers" / "serena-wrapper.sh"
         content = wrapper_path.read_text()
 
-        assert "detect_workspace()" in content
+        assert 'source "$(dirname "${BASH_SOURCE[0]}")/_lib.sh"' in content
+        assert 'workspace_id="$(detect_workspace)"' in content
         assert "DOPEMUX_WORKSPACE_ID" in content
         assert "mcp_server.py" in content
 
@@ -206,7 +208,8 @@ class TestMCPWrapperScripts:
         wrapper_path = project_root / "scripts" / "mcp-wrappers" / "dope-context-wrapper.sh"
         content = wrapper_path.read_text()
 
-        assert "detect_workspace()" in content
+        assert 'source "$(dirname "${BASH_SOURCE[0]}")/_lib.sh"' in content
+        assert 'workspace_id="$(detect_workspace)"' in content
         assert "DOPEMUX_WORKSPACE_ID" in content
         assert "docker exec" in content
 
@@ -302,7 +305,9 @@ class TestPhase1Metrics:
 
         # 3. MCP wrappers
         conport_wrapper = project_root / "scripts" / "mcp-wrappers" / "conport-wrapper.sh"
-        assert "detect_workspace()" in conport_wrapper.read_text()
+        conport_content = conport_wrapper.read_text()
+        assert 'source "$(dirname "${BASH_SOURCE[0]}")/_lib.sh"' in conport_content
+        assert 'workspace_id="$(detect_workspace)"' in conport_content
 
     def test_worktree_bug_fixed(self):
         """CRITICAL: .git directory checks eliminated"""

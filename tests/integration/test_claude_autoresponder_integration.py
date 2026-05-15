@@ -473,9 +473,10 @@ class TestPerformanceIntegration:
 
         # Wait for completion
         for thread in threads:
-            thread.join(timeout=5)
+            thread.join(timeout=10)
 
         # All should succeed
+        assert not any(thread.is_alive() for thread in threads)
         assert len(results) == 5
         assert all("stopped" in str(result) for result in results)
 
