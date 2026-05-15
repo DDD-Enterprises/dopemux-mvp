@@ -9,6 +9,8 @@ from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 logger = logging.getLogger(__name__)
 
 
+# Bump this only for identity-shape changes that older import validators cannot
+# safely interpret. Add each compatible historical version to the supported set.
 PRESCAN_ARTIFACT_VERSION = "1.0"
 SUPPORTED_PRESCAN_ARTIFACT_VERSIONS = frozenset({PRESCAN_ARTIFACT_VERSION})
 REQUIRED_IMPORT_IDENTITY_FIELDS = (
@@ -17,6 +19,7 @@ REQUIRED_IMPORT_IDENTITY_FIELDS = (
     "prescan_artifact_version",
     "corpus_manifest_hash",
 )
+_SOURCE_IDENTITY_CACHE: Dict[Tuple[str, str, str, str], Dict[str, Any]] = {}
 
 
 def _normalize_path_value(value: Any) -> Optional[str]:
@@ -78,7 +81,7 @@ def _walk_source_identity_entries(source_root: Path) -> list[Any]:
     try:
         from .prescan.corpus_walker import CorpusWalker
         from .prescan.models import DEFAULT_PRESCAN_EXCLUDE_GLOBS, PrescanConfig
-    except Exception:
+    except ImportError:
         from lib.prescan.corpus_walker import CorpusWalker  # type: ignore
         from lib.prescan.models import DEFAULT_PRESCAN_EXCLUDE_GLOBS, PrescanConfig  # type: ignore
 
@@ -104,15 +107,32 @@ def build_prescan_source_identity(
 ) -> Dict[str, Any]:
     """Build local-only identity metadata used to decide whether imports are fresh."""
     current_source_root = source_root or repo_root
-    source_entries = (
-        list(entries)
-        if entries is not None
-        else _walk_source_identity_entries(current_source_root)
-    )
     current_git_sha = (
         git_sha
         if git_sha and git_sha.upper() != "UNKNOWN"
         else _git_sha_for_root(repo_root)
+    )
+    cache_key = None
+    if entries is None:
+        cache_key = (
+            str(repo_root.expanduser().resolve(strict=False)),
+            str(current_source_root.expanduser().resolve(strict=False)),
+            current_git_sha or "",
+            prescan_mode,
+        )
+        cached = _SOURCE_IDENTITY_CACHE.get(cache_key)
+        if cached is not None:
+            identity = dict(cached)
+            identity["artifact_root"] = (
+                str(artifact_root.expanduser().resolve(strict=False))
+                if artifact_root is not None
+                else None
+            )
+            return identity
+    source_entries = (
+        list(entries)
+        if entries is not None
+        else _walk_source_identity_entries(current_source_root)
     )
     identity: Dict[str, Any] = {
         "artifact_root": (
@@ -127,6 +147,10 @@ def build_prescan_source_identity(
         "repo_root": str(repo_root.expanduser().resolve(strict=False)),
         "source_root": str(current_source_root.expanduser().resolve(strict=False)),
     }
+    if cache_key is not None:
+        cached_identity = dict(identity)
+        cached_identity["artifact_root"] = None
+        _SOURCE_IDENTITY_CACHE[cache_key] = cached_identity
     return identity
 
 
@@ -341,14 +365,17 @@ class IntelligenceRouter:
         )
 
         missing = [
-            field
-            for field in REQUIRED_IMPORT_IDENTITY_FIELDS
-            if imported_identity.get(field) in (None, "")
+            identity_field_name
+            for identity_field_name in REQUIRED_IMPORT_IDENTITY_FIELDS
+            if imported_identity.get(identity_field_name) in (None, "")
         ]
         if missing:
             validation.mode = "imported_prescan_missing_metadata"
             validation.verdict = "missing_metadata"
-            validation.reason_codes = [f"missing_{field}" for field in missing]
+            validation.reason_codes = [
+                f"missing_{identity_field_name}"
+                for identity_field_name in missing
+            ]
             validation.advisory_only = True
             validation.can_influence_execution = False
             return validation

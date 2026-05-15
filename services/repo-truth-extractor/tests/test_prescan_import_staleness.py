@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sys
+from dataclasses import replace
 from pathlib import Path
 from unittest.mock import patch
 
@@ -18,6 +19,7 @@ from lib.intelligence_router import (
     IntelligenceRouter,
     build_prescan_source_identity,
 )
+from lib import intelligence_router
 
 
 def _write_file(root: Path, rel_path: str, text: str = "fixture\n") -> None:
@@ -208,6 +210,55 @@ def test_invalid_prescan_artifact_is_rejected(tmp_path: Path) -> None:
     assert validation.can_influence_execution is False
 
 
+def test_unsupported_prescan_artifact_version_is_rejected(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    _write_file(repo_root, "src/app.py", "def app():\n    return 1\n")
+    import_dir = tmp_path / "import"
+    _write_import(
+        import_dir,
+        repo_root,
+        overrides={"prescan_artifact_version": "2.0"},
+    )
+
+    validation = IntelligenceRouter.validate_import_dir(
+        import_dir,
+        current_repo_root=repo_root,
+        current_source_root=repo_root,
+        current_git_sha="git-current",
+    )
+
+    assert validation.verdict == "rejected_stale"
+    assert validation.prescan_artifact_version == "2.0"
+    assert "unsupported_prescan_artifact_version" in validation.reason_codes
+    assert validation.can_influence_execution is False
+
+
+def test_source_identity_walk_is_cached_per_process(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    _write_file(repo_root, "src/app.py", "def app():\n    return 1\n")
+    calls = {"count": 0}
+
+    def fake_walk(_source_root: Path) -> list[dict[str, object]]:
+        calls["count"] += 1
+        return [
+            {
+                "content_hash": "hash",
+                "exclude_reason": None,
+                "extension": ".py",
+                "include": True,
+                "rel_path": "src/app.py",
+                "size_bytes": 24,
+            }
+        ]
+
+    with patch.object(intelligence_router, "_walk_source_identity_entries", fake_walk):
+        first = build_prescan_source_identity(repo_root, repo_root, git_sha="git-current")
+        second = build_prescan_source_identity(repo_root, repo_root, git_sha="git-current")
+
+    assert calls["count"] == 1
+    assert first["corpus_manifest_hash"] == second["corpus_manifest_hash"]
+
+
 def test_accepted_import_receipt_records_identity_and_influence(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     run_root = tmp_path / "run"
@@ -253,6 +304,38 @@ def test_rejected_import_receipt_blocks_scope_reduction_and_router(tmp_path: Pat
     assert "corpus_manifest_hash_mismatch" in receipt["reason_codes"]
 
 
+def test_cached_rejected_import_validation_is_not_reloaded(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    run_root = tmp_path / "run"
+    import_dir = tmp_path / "import"
+    import_dir.mkdir(parents=True)
+    validation_fields = {
+        "advisory_only": True,
+        "can_influence_execution": False,
+        "mode": "imported_prescan_rejected_stale",
+        "prescan_import_dir": str(import_dir),
+        "reason_codes": ["corpus_manifest_hash_mismatch"],
+        "verdict": "rejected_stale",
+    }
+    cfg = replace(
+        _make_runner_config(import_dir),
+        prescan_import_validation=validation_fields,
+    )
+
+    with patch(
+        "run_extraction_v5._load_imported_prescan_router",
+        side_effect=AssertionError("cached rejected validation should be reused"),
+    ):
+        router_obj = runner.run_integrated_prescan_stage(repo_root, run_root, cfg)
+
+    receipt = json.loads((run_root / "prescan" / "prescan_stage_receipt.json").read_text())
+    assert router_obj is None
+    assert receipt["mode"] == "imported_prescan_rejected_stale"
+    assert receipt["can_influence_execution"] is False
+    assert receipt["router_loaded"] is False
+    assert receipt["status"] == "failed"
+
+
 def test_import_validation_is_local_only(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     run_root = tmp_path / "run"
@@ -268,4 +351,3 @@ def test_import_validation_is_local_only(tmp_path: Path) -> None:
         router_obj = runner.run_integrated_prescan_stage(repo_root, run_root, cfg)
 
     assert router_obj is not None
-

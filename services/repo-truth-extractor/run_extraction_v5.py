@@ -6535,7 +6535,10 @@ def run_integrated_prescan_stage(
         if IntelligenceRouter:
             validation_fields = cfg.prescan_import_validation
             router = cfg.router if validation_fields and validation_fields.get("can_influence_execution") else None
-            if router is None:
+            if router is None and (
+                not validation_fields
+                or bool(validation_fields.get("can_influence_execution"))
+            ):
                 router, validation_fields = _load_imported_prescan_router(
                     Path(cfg.prescan_import_dir),
                     root,
@@ -6661,18 +6664,6 @@ def _write_prescan_receipt(
     root: Optional[Path] = None,
     import_validation: Optional[Dict[str, Any]] = None,
 ) -> None:
-    status = "success"
-    if mode in {
-        "imported_prescan_rejected_stale",
-        "imported_prescan_missing_metadata",
-        "local_prescan_failed",
-    }:
-        status = "failed"
-    elif mode == "local_prescan_unavailable":
-        status = "unavailable"
-    elif mode == "skip_prescan":
-        status = "skipped"
-    can_influence = mode in {"imported_prescan_accepted", "local_prescan"}
     source_identity = (
         getattr(result, "metadata", {}).get("source_identity", {})
         if result is not None and isinstance(getattr(result, "metadata", None), dict)
@@ -6681,7 +6672,18 @@ def _write_prescan_receipt(
     validation_fields = dict(import_validation or {})
     if validation_fields:
         mode = str(validation_fields.get("mode") or mode)
-        can_influence = bool(validation_fields.get("can_influence_execution"))
+    status = _prescan_receipt_status(mode)
+    can_influence = (
+        bool(validation_fields.get("can_influence_execution"))
+        if validation_fields
+        else mode in {"imported_prescan_accepted", "local_prescan"}
+    )
+    online_authorized = bool(cfg.prescan_online or cfg.allow_online_llm)
+    online_mode = (
+        "online_prescan_authorized"
+        if online_authorized
+        else "online_prescan_not_authorized"
+    )
     receipt = {
         "advisory_only": not can_influence,
         "can_influence_execution": can_influence,
@@ -6691,11 +6693,7 @@ def _write_prescan_receipt(
         "git_sha_current_if_available": get_git_sha(root) if root is not None else source_identity.get("git_sha"),
         "git_sha_imported_if_present": None,
         "mode": mode,
-        "online_mode": (
-            "online_prescan_authorized"
-            if bool(cfg.prescan_online or cfg.allow_online_llm)
-            else "online_prescan_not_authorized"
-        ),
+        "online_mode": online_mode,
         "prescan_artifact_version": source_identity.get("prescan_artifact_version"),
         "prescan_import_dir": cfg.prescan_import_dir,
         "reason_codes": _prescan_receipt_reason_codes(mode),
@@ -6705,23 +6703,16 @@ def _write_prescan_receipt(
         "source_root_imported_if_present": None,
         "stage": "prescan",
         "status": status,
-        "online_authorized": bool(cfg.prescan_online or cfg.allow_online_llm),
+        "online_authorized": online_authorized,
         "artifacts_dir": str(output_dir.resolve()),
         "scope_reduction_applied": bool(cfg.prescan_allow_scope_reduction and can_influence),
         "router_loaded": can_influence,
         "verdict": _prescan_receipt_verdict(mode),
     }
     if validation_fields:
-        receipt.update(validation_fields)
-        receipt["stage"] = "prescan"
-        receipt["status"] = status
-        receipt["online_authorized"] = bool(cfg.prescan_online or cfg.allow_online_llm)
-        receipt["online_mode"] = (
-            "online_prescan_authorized"
-            if bool(cfg.prescan_online or cfg.allow_online_llm)
-            else "online_prescan_not_authorized"
-        )
-        receipt["artifacts_dir"] = str(output_dir.resolve())
+        for key in _PRESCAN_RECEIPT_VALIDATION_FIELD_KEYS:
+            if key in validation_fields:
+                receipt[key] = validation_fields[key]
         receipt["scope_reduction_applied"] = bool(
             cfg.prescan_allow_scope_reduction and receipt.get("can_influence_execution")
         )
@@ -6745,6 +6736,42 @@ def _write_prescan_receipt(
             )
 
     write_json(output_dir / "prescan_stage_receipt.json", receipt)
+
+
+_PRESCAN_RECEIPT_VALIDATION_FIELD_KEYS = frozenset(
+    {
+        "advisory_only",
+        "can_influence_execution",
+        "corpus_manifest_hash_current_if_available",
+        "corpus_manifest_hash_imported_if_present",
+        "generated_at_imported_if_present",
+        "git_sha_current_if_available",
+        "git_sha_imported_if_present",
+        "mode",
+        "prescan_artifact_version",
+        "prescan_import_dir",
+        "reason_codes",
+        "repo_root_current",
+        "repo_root_imported_if_present",
+        "source_root_current",
+        "source_root_imported_if_present",
+        "verdict",
+    }
+)
+
+
+def _prescan_receipt_status(mode: str) -> str:
+    if mode in {
+        "imported_prescan_rejected_stale",
+        "imported_prescan_missing_metadata",
+        "local_prescan_failed",
+    }:
+        return "failed"
+    if mode == "local_prescan_unavailable":
+        return "unavailable"
+    if mode == "skip_prescan":
+        return "skipped"
+    return "success"
 
 
 def _prescan_receipt_reason_codes(mode: str) -> List[str]:
