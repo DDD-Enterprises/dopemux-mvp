@@ -512,10 +512,35 @@ def provider_schema_variant(
     if normalized_provider == "openrouter":
         if normalized_model_id.startswith("x-ai/"):
             return "xai_relaxed"
-        if normalized_model_id.startswith("google/") or normalized_model_id.startswith("gemini"):
+        if normalized_model_id.startswith("google/") or normalized_model_id.startswith(
+            "gemini"
+        ):
             return "gemini_relaxed"
         return "canonical"
     return "canonical"
+
+
+def provider_schema_variant_label(
+    provider: str,
+    model_id: str,
+) -> str:
+    normalized_provider = str(provider or "").strip().lower()
+    normalized_model_id = str(model_id or "").strip().lower()
+    if normalized_provider == "xai":
+        return "xai_relaxed_direct"
+    if normalized_provider == "gemini":
+        return "gemini_relaxed_direct"
+    if normalized_provider == "openrouter":
+        if normalized_model_id.startswith("x-ai/"):
+            return "openrouter_proxy_xai_relaxed"
+        if normalized_model_id.startswith("google/") or normalized_model_id.startswith(
+            "gemini"
+        ):
+            return "openrouter_proxy_gemini_relaxed"
+        return "openrouter_proxy_canonical"
+    if normalized_provider == "openai":
+        return "canonical_direct"
+    return "unknown"
 
 
 def adapt_canonical_schema_for_variant(
@@ -559,6 +584,7 @@ def build_provider_structured_output(
     )
     provider = str((route or {}).get("provider") or "").strip().lower()
     model_id = str((route or {}).get("model_id") or "").strip()
+    variant_label = provider_schema_variant_label(provider, model_id)
     if effective_mode == STRUCTURED_OUTPUT_MODE_NONE:
         return None, {
             "enabled": False,
@@ -568,6 +594,7 @@ def build_provider_structured_output(
             "schema_name": None,
             "schema_version": None,
             "schema_variant": None,
+            "provider_schema_variant": variant_label,
             "strict": bool(strict),
             "contract_lane": contract_lane_name,
             "transport_mode": None,
@@ -581,6 +608,7 @@ def build_provider_structured_output(
             "schema_name": None,
             "schema_version": None,
             "schema_variant": None,
+            "provider_schema_variant": variant_label,
             "strict": False,
             "contract_lane": contract_lane_name,
             "transport_mode": (
@@ -612,6 +640,8 @@ def build_provider_structured_output(
             "structured_output_mode_requested": effective_mode,
             "structured_output_mode_effective": effective_mode,
             "schema_variant": variant,
+            "schema_variant_behavior": variant,
+            "provider_schema_variant": variant_label,
             "transport_mode": (
                 "response_json_schema"
                 if provider == "gemini" and str(transport or "").strip().lower() != "openai_compat_http"
