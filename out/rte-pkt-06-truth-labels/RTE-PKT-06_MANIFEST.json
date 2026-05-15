@@ -1,0 +1,54 @@
+{
+  "packet_id": "RTE-PKT-06-TRUTH-LABELS",
+  "packet_version": "1.0.0",
+  "generated_at": "2026-05-15T08:46:52Z",
+  "status": "READY_FOR_REVIEW",
+  "repo": {
+    "name": "dopemux-mvp",
+    "worktree": "/Users/hue/.codex/worktrees/b635/dopemux-mvp",
+    "branch": "codex/rte-pkt-06-truth-labels",
+    "base_branch": "codex/rte-pkt-05-provenance-fields",
+    "before_sha": "464763dbfaee21731c0b39379f9922c5591a52fc",
+    "after_commit_sha": null,
+    "remotes": [
+      "mvp\thttps://github.com/DDD-Enterprises/dopemux-mvp.git",
+      "origin\thttps://github.com/DDD-Enterprises/dopemux-mvp.git"
+    ],
+    "marker_check": "PASS",
+    "dirty_state_at_manifest_generation": "code, tests, and packet proof pending commit"
+  },
+  "changed_files_expected": [
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/lib/artifact_provenance.py",
+    "services/repo-truth-extractor/lib/truth_labels.py",
+    "services/repo-truth-extractor/tests/test_truth_label_preservation.py",
+    "out/rte-pkt-06-truth-labels/RTE-PKT-06_MANIFEST.json",
+    "out/rte-pkt-06-truth-labels/RTE-PKT-06_TRUTH_LABEL_SCHEMA.md",
+    "out/rte-pkt-06-truth-labels/RTE-PKT-06_LABEL_PRESERVATION_MATRIX.md",
+    "out/rte-pkt-06-truth-labels/RTE-PKT-06_TRANSITION_EXAMPLES.md",
+    "out/rte-pkt-06-truth-labels/RTE-PKT-06_TEST_REPORT.md",
+    "out/rte-pkt-06-truth-labels/RTE-PKT-06_NO_PROVIDER_CALLS_ATTESTATION.md",
+    "out/rte-pkt-06-truth-labels/RTE-PKT-06_DIFF_SUMMARY.md",
+    "out/rte-pkt-06-truth-labels/RTE-PKT-06_REMAINING_UNKNOWNS.md"
+  ],
+  "validation_status": {
+    "local_tests_passed": true,
+    "py_compile_passed": true,
+    "git_diff_check_passed": true,
+    "pre_commit_passed": true,
+    "provider_calls_performed": false,
+    "live_extraction_performed": false,
+    "batch_provider_operations_performed": false,
+    "external_research_performed": false
+  },
+  "proof_outputs": [
+    "RTE-PKT-06_MANIFEST.json",
+    "RTE-PKT-06_TRUTH_LABEL_SCHEMA.md",
+    "RTE-PKT-06_LABEL_PRESERVATION_MATRIX.md",
+    "RTE-PKT-06_TRANSITION_EXAMPLES.md",
+    "RTE-PKT-06_TEST_REPORT.md",
+    "RTE-PKT-06_NO_PROVIDER_CALLS_ATTESTATION.md",
+    "RTE-PKT-06_DIFF_SUMMARY.md",
+    "RTE-PKT-06_REMAINING_UNKNOWNS.md"
+  ]
+}
