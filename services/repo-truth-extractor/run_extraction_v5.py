@@ -2764,6 +2764,24 @@ def should_enforce_pre_live_validator(
     return bool(_validator_phase_targets(args, phase_sequence))
 
 
+def is_read_only_introspection_mode(args: argparse.Namespace) -> bool:
+    """Return True for CLI paths that report state without dispatching work."""
+    return bool(
+        getattr(args, "coverage_report", False)
+        or getattr(args, "status", False)
+        or getattr(args, "status_json", False)
+        or getattr(args, "tail_run_log", False)
+        or getattr(args, "show_provider_usage", False)
+        or getattr(args, "print_config", False)
+        or getattr(args, "print_run_order", False)
+        or getattr(args, "print_phase_routing", False)
+        or getattr(args, "print_phase_prompts", None) is not None
+        or getattr(args, "print_promptpack", False)
+        or getattr(args, "promptgen_scan", False)
+        or getattr(args, "verify_phase_output", None)
+    )
+
+
 @dataclass(frozen=True)
 class LiveCapableOperation:
     name: str
@@ -2777,6 +2795,7 @@ def classify_live_capable_operations(
     phase_sequence: Sequence[str],
 ) -> Tuple[LiveCapableOperation, ...]:
     operations: List[LiveCapableOperation] = []
+    read_only_introspection = is_read_only_introspection_mode(args)
 
     def add(
         name: str,
@@ -2814,7 +2833,11 @@ def classify_live_capable_operations(
         online_prescan_flags.append("--prescan-online")
     if bool(getattr(args, "allow_online_llm", False)):
         online_prescan_flags.append("--allow-online-llm")
-    if online_prescan_flags and not bool(getattr(args, "skip_prescan", False)):
+    if (
+        online_prescan_flags
+        and not bool(getattr(args, "skip_prescan", False))
+        and not read_only_introspection
+    ):
         add(
             "online prescan/Grok",
             "provider-live",
@@ -2839,6 +2862,7 @@ def classify_live_capable_operations(
     if (
         live_phases
         and not special_dispatch
+        and not read_only_introspection
         and not bool(getattr(args, "dry_run", False))
         and bool(getattr(args, "execute", False))
     ):

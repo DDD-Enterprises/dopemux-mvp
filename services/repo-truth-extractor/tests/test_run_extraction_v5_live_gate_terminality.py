@@ -118,6 +118,66 @@ def test_live_capable_operation_classifier(overrides, phases, expected_names) ->
     assert [operation.name for operation in observed] == expected_names
 
 
+@pytest.mark.parametrize(
+    "read_only_flag",
+    [
+        "coverage_report",
+        "status",
+        "status_json",
+        "tail_run_log",
+        "show_provider_usage",
+        "print_config",
+        "print_run_order",
+        "print_phase_routing",
+        "print_promptpack",
+        "promptgen_scan",
+    ],
+)
+def test_online_prescan_flags_do_not_gate_read_only_introspection(read_only_flag) -> None:
+    runner = _load_runner_module()
+
+    observed = runner.classify_live_capable_operations(
+        _make_args(
+            **{
+                read_only_flag: True,
+                "prescan_online": True,
+                "allow_online_llm": True,
+                "dry_run": True,
+                "execute": False,
+            }
+        ),
+        ["A"],
+    )
+
+    assert observed == ()
+
+
+@pytest.mark.parametrize(
+    ("flag_name", "flag_value"),
+    [
+        ("print_phase_prompts", "A"),
+        ("verify_phase_output", "A"),
+    ],
+)
+def test_value_read_only_flags_do_not_gate_online_prescan(flag_name, flag_value) -> None:
+    runner = _load_runner_module()
+
+    observed = runner.classify_live_capable_operations(
+        _make_args(
+            **{
+                flag_name: flag_value,
+                "prescan_online": True,
+                "allow_online_llm": True,
+                "dry_run": True,
+                "execute": False,
+            }
+        ),
+        ["A"],
+    )
+
+    assert observed == ()
+
+
 def test_sync_phase_requires_execute_flag_and_live_ok(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
