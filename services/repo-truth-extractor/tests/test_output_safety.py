@@ -70,6 +70,27 @@ def test_sanitize_payload_redacts_secret_fields_but_preserves_env_metadata() -> 
     assert sanitized["sha256"] == "abcdef1234567890"
 
 
+def test_failed_sidecar_text_redacts_provider_tokens_and_private_key_blocks() -> None:
+    output_safety = _load_output_safety_module()
+    provider_token = "sk-" + "RTEPKT15" + ("B" * 32)
+    private_key_body = "MII" + ("C" * 48)
+    text = (
+        f"provider_error_reason={provider_token}\n"
+        "-----BEGIN PRIVATE KEY-----\n"
+        f"{private_key_body}\n"
+        "-----END PRIVATE KEY-----\n"
+        "safe_sha256=abcdef1234567890\n"
+    )
+
+    sanitized = output_safety.sanitize_failed_sidecar_text(text)
+
+    assert provider_token not in sanitized
+    assert private_key_body not in sanitized
+    assert "[REDACTED]" in sanitized
+    assert "[REDACTED PRIVATE KEY]" in sanitized
+    assert "safe_sha256=abcdef1234567890" in sanitized
+
+
 def test_ui_events_redact_secret_like_fields(tmp_path: Path) -> None:
     runner = _load_runner_module()
     ui = runner.UI(
