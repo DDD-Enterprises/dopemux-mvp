@@ -109,8 +109,12 @@ def test_retrieve_batches_dispatches_openai_and_xai(monkeypatch, tmp_path: Path)
 
     assert openai_results["job-openai"]["provider"] == "openai"
     assert openai_results["job-openai"]["output_file"].endswith("job-openai_output.jsonl")
+    assert openai_results["job-openai"]["output_file_id"] == "file-1"
+    assert openai_results["job-openai"]["output_parse"]["not_live_validated"] is False
+    assert openai_results["job-openai"]["static_parser_marker_scope"] == "offline_fixture_tests_only"
     assert xai_results["job-xai"]["provider"] == "xai"
     assert xai_results["job-xai"]["output_file"].endswith("job-xai_output.jsonl")
+    assert xai_results["job-xai"]["output_file_id"] == "file-1"
 
 
 def test_retrieve_batches_dispatches_gemini(monkeypatch, tmp_path: Path) -> None:

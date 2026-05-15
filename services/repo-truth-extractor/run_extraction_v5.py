@@ -256,6 +256,7 @@ try:
         OpenAIBatchClient,
         OpenRouterBatchClient,
         XAIBatchClient,
+        classify_batch_terminal_status,
     )
 except ModuleNotFoundError:
     batch_clients_path = RUNNER_SERVICE_DIR / "lib" / "batch_clients.py"
@@ -274,6 +275,7 @@ except ModuleNotFoundError:
     OpenAIBatchClient = batch_clients_module.OpenAIBatchClient
     XAIBatchClient = batch_clients_module.XAIBatchClient
     OpenRouterBatchClient = batch_clients_module.OpenRouterBatchClient
+    classify_batch_terminal_status = batch_clients_module.classify_batch_terminal_status
 
 try:
     from lib.intelligence_router import IntelligenceRouter
@@ -18405,6 +18407,7 @@ def _batch_terminal_state(status: str) -> bool:
         "succeeded",
         "done",
         "failed",
+        "expired",
         "cancelled",
         "canceled",
         "timeout",
@@ -18616,6 +18619,7 @@ def run_batch_watch(
         event_detail = f"state={terminal_status}"
         row["state"] = terminal_status
         row["last_polled_at_utc"] = now_iso()
+        batch_status_meta = classify_batch_terminal_status(terminal_status)
 
         if terminal_status in {"completed", "succeeded", "done"}:
             results = batch_client.fetch_results(job_id)
@@ -18647,6 +18651,8 @@ def run_batch_watch(
                             "model_id": model_id,
                             "batch_provider": provider_id,
                             "batch_job_id": job_id,
+                            "batch_status": terminal_status,
+                            "batch_status_class": batch_status_meta.get("status_class"),
                         },
                     },
                 )
@@ -18693,6 +18699,8 @@ def run_batch_watch(
                                 "model_id": model_id,
                                 "batch_provider": provider_id,
                                 "batch_job_id": job_id,
+                                "batch_status": terminal_status,
+                                "batch_status_class": batch_status_meta.get("status_class"),
                                 "provider_error_reason": result.error,
                                 "schema_gate_reason": schema_reason,
                             },
@@ -18722,6 +18730,7 @@ def run_batch_watch(
                             "batch_job_id": job_id,
                             "response_summary": {
                                 "batch_status": terminal_status,
+                                "batch_status_class": batch_status_meta.get("status_class"),
                                 "watch_mode": True,
                             },
                         },
@@ -18864,6 +18873,8 @@ def run_batch_watch(
                         "model_id": model_id,
                         "batch_provider": provider_id,
                         "batch_job_id": job_id,
+                        "batch_status": terminal_status,
+                        "batch_status_class": batch_status_meta.get("status_class"),
                         "provider_error_reason": f"batch_terminal_state:{terminal_status}",
                     },
                 },
