@@ -1,11 +1,11 @@
 ---
 id: HOWTO-EXTRACTION-TRUTH-RUN
-title: Run v5 Extraction via dopemux extract truth-run
+title: Legacy dopemux extract truth-run compatibility note
 type: how-to
 owner: '@hu3mann'
 date: '2026-03-14'
 author: '@copilot'
-prelude: Orchestrate the full v5 extraction workflow — hygiene scan, optional cleanup, resume, and live-streaming extraction — from a single dopemux CLI command. Supports migrating v3 runs into v5 for resumption.
+prelude: Legacy compatibility note for the hidden and disabled dopemux extract truth-run surface. Current v5 operator workflows use dopemux rte.
 last_review: '2026-03-14'
 next_review: '2026-06-14'
 graph_metadata:
@@ -16,10 +16,19 @@ graph_metadata:
     - services/repo-truth-extractor/run_extraction_v5.py
     - services/repo-truth-extractor/extraction_hygiene.py
 ---
-# Run v5 extraction via `dopemux extract truth-run`
+# Legacy `dopemux extract truth-run` compatibility note
 
-`dopemux extract truth-run` is the canonical entrypoint for launching a v5
-repo-truth extraction run. It combines up to four phases into one command:
+`dopemux extract truth-run` is not the canonical entrypoint. Runtime code keeps it hidden and disabled as a legacy compatibility alias that raises a refusal directing operators to `dopemux rte run`.
+
+Current operator truth:
+
+- Canonical operator family: `dopemux rte`.
+- Strongest v5 runtime authority: `services/repo-truth-extractor/run_extraction_v5.py`.
+- Direct runner calls are advanced/debug/manual only.
+- Legacy v3 migration remains a compatibility concern, not the normal v5 path.
+- Proof packs and generated outputs are evidence artifacts, not source truth.
+
+Older versions of this document described a disabled wrapper that combined up to four phases:
 
 0. **(Optional) v3 → v5 migration** — copies a legacy v3 run into the v5 runs
    directory so it can be resumed in v5 (`--import-v3`)
@@ -34,32 +43,33 @@ repo-truth extraction run. It combines up to four phases into one command:
 
 ```bash
 # Minimal run (scan + extract, auto run ID)
-dopemux extract truth-run
+dopemux rte run --pipeline-version v5 --phase ALL --dry-run
 
 # Full control
-dopemux extract truth-run \
+dopemux rte run \
+  --pipeline-version v5 \
   --run-id MY_RUN_001 \
   --phase ALL \
-  --workers 10 \
-  --routing-policy balanced_openrouter
+  --partition-workers 10 \
+  --routing-policy balanced_openrouter \
+  --dry-run
 
 # Resume a previous v5 run (skip completed partitions)
-dopemux extract truth-run --run-id MY_RUN_001 --resume
+dopemux rte run --pipeline-version v5 --run-id MY_RUN_001 --resume --dry-run
 
-# Continue a v3 FULL_RUN in v5 (migrate + resume in one step)
-dopemux extract truth-run --import-v3 FULL_RUN --resume
+# Legacy v3 output migration is not a canonical operator path in the current CLI.
+# Use v3 only through explicitly gated compatibility flows.
 
-# Scan + apply cleanup + extract
-dopemux extract truth-run --apply-cleanup
+# Runner-level hygiene helpers are advanced/manual:
+python services/repo-truth-extractor/extraction_hygiene.py scan
 
-# Skip hygiene check (e.g. CI, already cleaned)
-dopemux extract truth-run --skip-hygiene --run-id CI_RUN_$(date +%Y%m%d)
-
-# Run even if hygiene errors are found
-dopemux extract truth-run --force
+# Live execution requires explicit consent:
+DPMX_LIVE_OK=1 dopemux rte run --pipeline-version v5 --phase A --execute
 ```
 
 ## Options reference
+
+The legacy wrapper exposed these options before it was disabled. They are preserved here only to aid migration:
 
 | Option | Default | Description |
 |--------|---------|-------------|
@@ -80,11 +90,11 @@ Use `--import-v3 <RUN_ID>` to continue a run that was started under the legacy
 v3 output path (`extraction/repo-truth-extractor/v3/runs/`) in v5.
 
 ```bash
-# One-step: migrate FULL_RUN from v3 → v5 then resume
-dopemux extract truth-run --import-v3 FULL_RUN --resume
+# The hidden legacy wrapper used to support one-step v3 migration.
+# It now refuses and directs operators to dopemux rte run.
 
-# If v5 copy already exists (e.g. second restart), skip --import-v3
-dopemux extract truth-run --run-id FULL_RUN --resume --skip-hygiene
+# Current v5 resume path:
+dopemux rte run --pipeline-version v5 --run-id FULL_RUN --resume --dry-run
 ```
 
 **What happens:**
@@ -113,10 +123,10 @@ after a partial run or a crash:
 
 ```bash
 # Resume a v5 run that was interrupted
-dopemux extract truth-run --run-id MY_RUN_001 --resume
+dopemux rte run --pipeline-version v5 --run-id MY_RUN_001 --resume --dry-run
 
 # Resume the latest run (uses v5/latest_run_id.txt)
-dopemux extract truth-run --resume --skip-hygiene
+dopemux rte run --pipeline-version v5 --resume --dry-run
 ```
 
 The `+resume` indicator appears in the banner when resume mode is active.
@@ -162,8 +172,7 @@ python services/repo-truth-extractor/extraction_hygiene.py apply --dry-run
 
 ## Phase 3: Live extraction
 
-The extractor is launched as a subprocess and its output streams directly to
-your terminal. The v5 UI provides:
+Use `dopemux rte run` for live extraction. Live provider execution is guarded by `--execute` plus `DPMX_LIVE_OK=1`; batch/provider operation remains proof- and policy-gated. The v5 UI provides:
 
 - **Per-partition LLM display**: each partition shows which provider/model
   it is using (color-coded: openai=green, anthropic=magenta, gemini=blue,

@@ -1,0 +1,181 @@
+{
+  "tp_id": "TP-RTE-BATCH-E2E-006",
+  "objective": "Wire strict structured-output response_format propagation into the real v5 batch request construction path without live provider calls.",
+  "starting_head": "9c30e9e869878e752782b9f95b6a1de262de974b",
+  "ending_head": null,
+  "ending_head_note": "Self-referential commit caveat: this proof is committed with the code, so the final commit SHA is reported in the closeout rather than embedded here before commit creation.",
+  "branch": "codex/tp-rte-batch-e2e-006",
+  "base_branch": "main",
+  "worktree_path": "/Users/hue/.codex/worktrees/tp-rte-batch-e2e-006",
+  "repo_identity": {
+    "repo_root": "/Users/hue/.codex/worktrees/tp-rte-batch-e2e-006",
+    "repo_marker": ".dopetaskroot",
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "head_at_start": "9c30e9e869878e752782b9f95b6a1de262de974b",
+    "dedicated_worktree_verified": true,
+    "primary_checkout_observed": "/Users/hue/code/dopemux-mvp"
+  },
+  "files_created": [
+    "services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py",
+    "task-packets/generated/TP-RTE-BATCH-E2E-006.json",
+    "proof/TP-RTE-BATCH-E2E-006/PROOF.json",
+    "proof/TP-RTE-BATCH-E2E-006/IMPLEMENTER_REPORT.md"
+  ],
+  "files_modified": [
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "task-packets/INDEX.md"
+  ],
+  "tests_added_or_modified": [
+    "services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py"
+  ],
+  "implementation_evidence": {
+    "pr_614_present": "main/origin-main at 9c30e9e869878e752782b9f95b6a1de262de974b has subject 'fix(rte): repair batch result and strict handling (#614)' and contains proof/TP-RTE-BATCH-005 plus task-packets/generated/TP-RTE-BATCH-005.json.",
+    "pre_change_runtime_gap": "run_extraction_v5.py batch path used 'if cfg.batch_mode and not strict_contract_required', so strict contract steps could not construct BatchRequest objects.",
+    "schema_source": "build_v5_batch_request uses route_entries_for_stage(...) and build_provider_step_contract_output(...) from structured_output_contracts.py to build the provider-specific json_schema response_format.",
+    "batch_path_wiring": "The real run_extraction_v5.py batch branch now calls build_v5_batch_request(...) before resolving API keys or constructing the batch client.",
+    "strict_fail_closed": "Strict batch request construction validates response_format.type=json_schema, json_schema.schema object presence, json_schema.strict=true, and non-empty artifact schema metadata before upload/submission.",
+    "non_strict_preservation": "Non-strict OpenAI-compatible batch request construction still returns response_format=None when force_json_output is false; existing batch client force_json_output behavior remains in batch_clients.py.",
+    "codex_p1_followup": "_resolve_batch_route_override widens strict route ladder 2-tuples to 3-tuples by deriving api_key_env from PROVIDER_API_KEY_ENV when a batch_provider override selects a strict ladder route.",
+    "codex_review_followup": "Strict batch route resolution now preserves contract-derived api_key_env values when strict ladders omit env names, reuses route_entry_by_identity for exact route matching before provider/model fallback, accepts already strict-resolved explicit/benchmark selected routes outside primary contract routes, and surfaces strict_capability_reason before response_format construction."
+  },
+  "validation_commands": [
+    {
+      "command": "python -m json.tool task-packets/generated/TP-RTE-BATCH-E2E-006.json",
+      "exit_code": 0,
+      "summary": "Task packet parses as JSON."
+    },
+    {
+      "command": "python -m json.tool proof/TP-RTE-BATCH-E2E-006/PROOF.json",
+      "exit_code": 0,
+      "summary": "Proof JSON parses."
+    },
+    {
+      "command": "python -c \"import json, pathlib; from jsonschema import Draft7Validator; schema=json.loads(pathlib.Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text()); doc=json.loads(pathlib.Path('task-packets/generated/TP-RTE-BATCH-E2E-006.json').read_text()); errs=sorted(Draft7Validator(schema).iter_errors(doc), key=lambda e: e.path); [print('/'.join(map(str,e.path)) + ': ' + e.message) for e in errs]; raise SystemExit(0 if not errs else 1)\"",
+      "exit_code": 0,
+      "summary": "Task packet validates against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json."
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py",
+      "exit_code": 1,
+      "summary": "Intermediate guard failure after first implementation: explicit json_object downgrade reported missing artifact schema. The guard order was corrected before final validation."
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py",
+      "exit_code": 0,
+      "summary": "Focused v5 batch response_format, strict route matching, selected route fallback, and strict 2-tuple ladder override regression tests passed: 7 passed."
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_batch_clients_integration.py",
+      "exit_code": 0,
+      "summary": "TP-RTE-BATCH-005 batch client boundary regressions passed: 7 passed."
+    },
+    {
+      "command": "python -m compileall -q services/repo-truth-extractor src/dopemux",
+      "exit_code": 0,
+      "summary": "Repo Truth Extractor and dopemux Python files compile."
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests -k \"batch or strict\"",
+      "exit_code": 0,
+      "summary": "Broader batch/strict selection passed: 51 passed."
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+      "exit_code": 0,
+      "summary": "Existing v5 operator safety preservation tests passed: 43 passed."
+    },
+    {
+      "command": "git diff --name-only | rg '(^services/repo-truth-extractor/promptsets/|model_map|routing|walker|prescan|cockpit|tui|package-lock|requirements|pyproject|docs/)'",
+      "exit_code": 1,
+      "summary": "Expected no-match result: diff does not include promptsets, model routing, walker/prescan, cockpit/TUI, dependency files, pyproject, or docs sweep paths."
+    },
+    {
+      "command": "rg -n \"cfg\\.batch_mode and not strict_contract_required|response_format=.*json_object|response_format\\]\\s*=\\s*\\{\\\"type\\\":\\s*\\\"json_object\\\"\\}\" services/repo-truth-extractor/run_extraction_v5.py",
+      "exit_code": 1,
+      "summary": "Expected no-match result: the strict-excluding batch gate was removed and no strict json_object downgrade pattern was introduced in run_extraction_v5.py."
+    },
+    {
+      "command": "git diff -- services/repo-truth-extractor/run_extraction_v5.py | rg -n \"STRICT_PASSTHROUGH_ATTESTATIONS|write_strict_passthrough|attestation|promptsets|model_map|prescan|walker\"",
+      "exit_code": 1,
+      "summary": "Expected no-match result: diff does not rewrite attestation writer or forbidden promptset/model-map/prescan/walker paths."
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "summary": "No whitespace errors found."
+    },
+    {
+      "command": "pre-commit run --files services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py task-packets/INDEX.md task-packets/generated/TP-RTE-BATCH-E2E-006.json proof/TP-RTE-BATCH-E2E-006/PROOF.json proof/TP-RTE-BATCH-E2E-006/IMPLEMENTER_REPORT.md",
+      "exit_code": 0,
+      "summary": "Configured pre-commit hooks passed for changed allowlist files."
+    }
+  ],
+  "safety_boundary_confirmation": {
+    "live_provider_calls_run": false,
+    "live_extraction_runs_run": false,
+    "external_batch_jobs_submitted": false,
+    "real_provider_files_retrieved": false,
+    "sync_path_changed": false,
+    "promptsets_touched": false,
+    "model_routing_touched": false,
+    "walker_prescan_touched": false,
+    "docs_sweep_included": false,
+    "dependency_files_changed": false,
+    "attestation_writer_rewrite": false
+  },
+  "live_provider_calls_run": false,
+  "live_extraction_runs_run": false,
+  "external_batch_jobs_submitted": false,
+  "v5_batch_response_format_propagated": {
+    "value": true,
+    "evidence": "test_v5_batch_request_construction_propagates_strict_response_format_to_wire_payload passed and inspected the BatchRequest plus fake OpenAI-compatible upload JSONL with response_format.type=json_schema and json_schema.strict=true."
+  },
+  "strict_two_tuple_ladder_override_supported": {
+    "value": true,
+    "evidence": "test_v5_resolve_batch_route_override_handles_strict_two_tuple_ladder passed and covered no-override passthrough, strict 2-tuple provider override widening through PROVIDER_API_KEY_ENV, contract-derived api_key_env preservation for omitted strict env names, and missing override fallback."
+  },
+  "strict_contract_api_key_env_preserved": {
+    "value": true,
+    "evidence": "test_v5_batch_request_matches_strict_route_when_api_key_env_was_omitted_from_ladder passed and proved strict response_format construction can match a provider/model contract route even when selected_route carries a fallback/default api_key_env from an env-redacted strict ladder."
+  },
+  "strict_selected_route_outside_primary_contract_supported": {
+    "value": true,
+    "evidence": "test_v5_batch_request_accepts_strict_selected_route_outside_primary_contract passed and proved build_v5_batch_request can use an already strict-capable selected_route_entry when explicit or benchmark route ownership selects a route outside lane.primary_routes."
+  },
+  "strict_missing_schema_fails_closed_before_submit": {
+    "value": true,
+    "evidence": "test_v5_strict_batch_request_missing_schema_fails_before_upload_or_submit passed and asserted fake files.uploads and fake batches.created stayed empty."
+  },
+  "non_strict_behavior_preserved": {
+    "value": true,
+    "evidence": "test_v5_non_strict_batch_request_preserves_omitted_openai_response_format passed and observed no response_format in the fake OpenAI-compatible JSONL body."
+  },
+  "batch_client_boundary_regression_passed": {
+    "value": true,
+    "evidence": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest -q services/repo-truth-extractor/tests/test_batch_clients_integration.py passed: 7 passed."
+  },
+  "attestation_writer_touched": {
+    "value": false,
+    "evidence": "git diff against run_extraction_v5.py had no matches for STRICT_PASSTHROUGH_ATTESTATIONS, write_strict_passthrough, or attestation."
+  },
+  "f3_high_2_status": {
+    "status": "narrowed_further",
+    "evidence": "Runtime v5 batch request construction now carries strict json_schema response_format to BatchRequest and the OpenAI-compatible wire payload in offline tests. The attestation writer remains untouched, so F3-HIGH-2 is not claimed closed."
+  },
+  "blockers": [],
+  "residual_risks": [
+    "STRICT_PASSTHROUGH_ATTESTATIONS writer is intentionally out of scope and remains for TP-RTE-STRICT-ATTESTATION-007.",
+    "No live provider batch job was submitted; validation uses fake OpenAI-compatible file/batch transport.",
+    "GeminiBatchClient still does not serialize response_format directly; strict-capable route logic currently excludes Gemini strict routes, and this TP verified the OpenAI-compatible wire path requested by the task.",
+    "task-packets/INDEX.md still lists TP-RTE-BATCH-005 as Active even though PR #614 is present on main; this TP only added the new active packet row."
+  ],
+  "codereview_status": {
+    "status": "passed",
+    "evidence": "Manual diff review found changes limited to run_extraction_v5.py batch request construction, one focused offline test, task packet/index, and proof/report files."
+  },
+  "precommit_status": {
+    "status": "passed",
+    "evidence": "pre-commit run --files completed with exit code 0 for changed allowlist files."
+  },
+  "final_git_status_before_commit": "## codex/tp-rte-batch-e2e-006...origin/codex/tp-rte-batch-e2e-006; modified: services/repo-truth-extractor/run_extraction_v5.py, services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py, proof/TP-RTE-BATCH-E2E-006/PROOF.json, proof/TP-RTE-BATCH-E2E-006/IMPLEMENTER_REPORT.md."
+}

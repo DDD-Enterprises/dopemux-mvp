@@ -13,7 +13,7 @@ prelude: Step-by-step guide to running prescan intelligence gathering on your co
 
 # How to Run Prescan
 
-Prescan is a pre-extraction intelligence engine that analyzes your codebase to identify redundancy, discover features, and optimize extraction strategy. Run prescan before extraction to get comprehensive context.
+Prescan is a pre-extraction intelligence engine that analyzes your codebase to identify redundancy, discover features, and optimize extraction strategy. In current RTE operator workflows, v5 integrated Stage 0 prescan is reached through `dopemux rte run`; standalone prescan scripts are advanced/debug support surfaces.
 
 ## Prerequisites
 
@@ -45,7 +45,7 @@ export GEMINI_API_KEY=your-gemini-api-key
 
 ## Quick Start
 
-### Run full prescan
+### Run full prescan as an advanced script
 ```bash
 python run_prescan.py \
   --repo-root /path/to/repo \
@@ -243,18 +243,13 @@ python run_prescan.py \
 
 ## Via dopemux CLI
 
-If you have dopemux installed:
+Use the canonical RTE operator family for current v5 prescan behavior:
 
 ```bash
-dopemux prescan /path/to/repo \
-  --output extraction/prescan_output \
-  --passes dedup,discover,feasibility,optimize
+dopemux rte run --pipeline-version v5 --phase A --dry-run
 ```
 
-For options:
-```bash
-dopemux prescan --help
-```
+`dopemux extractor prescan` is deprecated and disabled. `dopemux rte run` can skip integrated prescan with `--skip-prescan`, import precomputed prescan with `--prescan-import-dir`, and authorize online prescan work only when `--prescan-online` or `--allow-online-llm` is explicitly set. Scope reduction from prescan hints requires `--prescan-allow-scope-reduction`.
 
 ## Next Steps
 
@@ -266,13 +261,14 @@ After prescan completes:
 4. **Run extraction** — Use prescan output for extraction routing
    ```bash
    # Method A: Integrated Prescan (Automatic Stage 0)
-   python services/repo-truth-extractor/run_extraction_v5.py \
-     --repo-root /path/to/repo \
-     --phase A,B  # Runs local prescan automatically
+   dopemux rte run --pipeline-version v5 \
+     --phase A \
+     --dry-run  # Runs local prescan automatically
 
    # Method B: Import precomputed prescan
-   python services/repo-truth-extractor/run_extraction_v5.py \
-     --repo-root /path/to/repo \
+   dopemux rte run --pipeline-version v5 \
+     --phase A \
+     --dry-run \
      --prescan-import-dir extraction/prescan_output
    ```
 

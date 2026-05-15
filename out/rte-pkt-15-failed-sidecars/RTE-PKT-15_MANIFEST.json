@@ -1,0 +1,108 @@
+{
+  "packet_id": "RTE-PKT-15-FAILED-SIDECARS",
+  "generated_at_utc": "2026-05-15T03:37:44Z",
+  "repo_root": "/Users/hue/.codex/worktrees/a8da/dopemux-mvp",
+  "branch": "codex/rte-pkt-15-failed-sidecars",
+  "before_commit_sha": "a4214ca5bf431e1b59791661e2b664a6cd24c1da",
+  "after_commit_sha": "REPORTED_IN_FINAL_RESPONSE_AFTER_COMMIT",
+  "remote": "origin and mvp point to https://github.com/DDD-Enterprises/dopemux-mvp.git",
+  "validation_status": "READY_FOR_REVIEW_BASELINE_FAILURE_TRIAGED_PENDING_COMMIT",
+  "provider_calls_performed": false,
+  "batch_provider_operations_performed": false,
+  "live_extraction_performed": false,
+  "raw_secret_fixture_values_quoted_in_proof": false,
+  "changed_runtime_files": [
+    "services/repo-truth-extractor/output_safety.py",
+    "services/repo-truth-extractor/run_extraction_v5.py"
+  ],
+  "changed_test_files": [
+    "services/repo-truth-extractor/tests/test_failed_sidecar_redaction.py",
+    "services/repo-truth-extractor/tests/test_output_safety.py"
+  ],
+  "proof_files": [
+    "out/rte-pkt-15-failed-sidecars/RTE-PKT-15_MANIFEST.json",
+    "out/rte-pkt-15-failed-sidecars/RTE-PKT-15_FAILED_SIDECAR_MATRIX.md",
+    "out/rte-pkt-15-failed-sidecars/RTE-PKT-15_TEST_REPORT.md",
+    "out/rte-pkt-15-failed-sidecars/RTE-PKT-15_NO_PROVIDER_CALLS_ATTESTATION.md",
+    "out/rte-pkt-15-failed-sidecars/RTE-PKT-15_SECRET_FIXTURE_REDACTION_PROOF.md",
+    "out/rte-pkt-15-failed-sidecars/RTE-PKT-15_DIFF_SUMMARY.md",
+    "out/rte-pkt-15-failed-sidecars/RTE-PKT-15_REMAINING_UNKNOWNS.md",
+    "out/rte-pkt-15-failed-sidecars/RTE-PKT-15_REGRESSION_TRIAGE_CLOSEOUT.md",
+    "out/rte-pkt-15-failed-sidecars/RTE-PKT-15_FINAL_CLOSEOUT.md",
+    "out/rte-pkt-15-failed-sidecars/implementation-notes.md"
+  ],
+  "regression_triage": {
+    "id": "REG-001",
+    "classification": "BASELINE_FAILURE",
+    "implementation_command": "pytest services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py services/repo-truth-extractor/tests/test_run_extraction_v5_concurrency.py -q",
+    "implementation_result": "FAIL: 1 failed, 23 passed; test_current_partition_execution_preserves_provider_failure_semantics_before_parse_fallback observed escalation_trigger provider_failure",
+    "clean_base_worktree": "/Users/hue/.codex/worktrees/rte-pkt-15a-clean-base",
+    "clean_base_sha": "a4214ca5bf431e1b59791661e2b664a6cd24c1da",
+    "clean_base_result": "FAIL: 1 failed, 23 passed; same test, same assertion, same observed escalation_trigger provider_failure",
+    "acceptance_impact": "Does not block closeout commit under RTE-PKT-15A policy because the broader failure is baseline behavior."
+  },
+  "tests": [
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_failed_sidecar_redaction.py -q",
+      "result": "PASS",
+      "observed": "5 passed; PytestConfigWarning for unknown asyncio_mode"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_output_safety.py -q",
+      "result": "PASS",
+      "observed": "6 passed; PytestConfigWarning for unknown asyncio_mode"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests -k 'failed and redaction' -q",
+      "result": "PASS",
+      "observed": "5 passed; PytestConfigWarning for unknown asyncio_mode"
+    },
+    {
+      "command": "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/output_safety.py services/repo-truth-extractor/tests/test_failed_sidecar_redaction.py",
+      "result": "PASS",
+      "observed": "exit code 0"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_run_extraction_v5_concurrency.py -q",
+      "result": "PASS",
+      "observed": "2 passed; PytestConfigWarning for unknown asyncio_mode"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py::test_classify_request_failure_distinguishes_batch_terminal_and_parse_failures -q",
+      "result": "PASS",
+      "observed": "1 passed; PytestConfigWarning for unknown asyncio_mode"
+    },
+    {
+      "command": "pytest services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py services/repo-truth-extractor/tests/test_run_extraction_v5_concurrency.py -q",
+      "result": "FAIL",
+      "observed": "1 failed, 23 passed; failing assertion expected request_meta.escalation_trigger is None but observed provider_failure"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS",
+      "observed": "exit code 0"
+    },
+    {
+      "command": "pre-commit run --files services/repo-truth-extractor/output_safety.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_output_safety.py services/repo-truth-extractor/tests/test_failed_sidecar_redaction.py out/rte-pkt-15-failed-sidecars/RTE-PKT-15_MANIFEST.json out/rte-pkt-15-failed-sidecars/RTE-PKT-15_FAILED_SIDECAR_MATRIX.md out/rte-pkt-15-failed-sidecars/RTE-PKT-15_TEST_REPORT.md out/rte-pkt-15-failed-sidecars/RTE-PKT-15_NO_PROVIDER_CALLS_ATTESTATION.md out/rte-pkt-15-failed-sidecars/RTE-PKT-15_SECRET_FIXTURE_REDACTION_PROOF.md out/rte-pkt-15-failed-sidecars/RTE-PKT-15_DIFF_SUMMARY.md out/rte-pkt-15-failed-sidecars/RTE-PKT-15_REMAINING_UNKNOWNS.md out/rte-pkt-15-failed-sidecars/RTE-PKT-15_REGRESSION_TRIAGE_CLOSEOUT.md out/rte-pkt-15-failed-sidecars/RTE-PKT-15_FINAL_CLOSEOUT.md out/rte-pkt-15-failed-sidecars/implementation-notes.md",
+      "result": "PASS",
+      "observed": "exit code 0; docs/location/root-hygiene hooks passed or skipped where no files applied"
+    },
+    {
+      "command": "python -m json.tool out/rte-pkt-15-failed-sidecars/RTE-PKT-15_MANIFEST.json >/dev/null",
+      "result": "PASS",
+      "observed": "exit code 0"
+    },
+    {
+      "command": "python -c 'from pathlib import Path; pats=[\"RTE\"+\"PKT15\",\"s\"+\"k-\",\"A\"*4,\"B\"*4,\"C\"*4,\"PRIVATE \"+\"KEY-----\",\"Bearer \"+\"X\"]; text=\"\\n\".join(p.read_text(encoding=\"utf-8\") for p in Path(\"out/rte-pkt-15-failed-sidecars\").glob(\"**/*\") if p.is_file()); hits=[p for p in pats if p in text]; raise SystemExit(1 if hits else 0)'",
+      "result": "PASS",
+      "observed": "no matches"
+    }
+  ],
+  "missing_declared_regression_tests": [
+    "services/repo-truth-extractor/tests/test_provider_payload_redaction.py"
+  ],
+  "remaining_unknowns": [
+    "services/repo-truth-extractor/llm_runtime.py comparison-lane .FAILED.txt writer is outside packet allowlist and still writes failure_reason directly.",
+    "Legacy v3 failed sidecar fixtures were not modified by this packet."
+  ]
+}

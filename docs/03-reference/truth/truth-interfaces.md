@@ -25,11 +25,15 @@ Method:
   - `/Users/hue/code/dopemux-mvp/src/dopemux/cli.py`
 - Observed CLI surfaces relevant to this packet:
   - `dopemux kernel ...`
-  - `dopemux extractor ...`
+  - `dopemux rte ...`
   - `dopemux upgrades ...`
+  - `dopemux extractor ...`
   - `dopemux truth`
 - Important notes:
-  - `dopemux truth` is a legacy shortcut to `PipelineRunner`, not the same path used by `dopemux extractor` / `dopemux upgrades`.
+  - `dopemux rte` is the canonical Repo Truth Extractor operator command family in current CLI wiring.
+  - `dopemux upgrades` is a legacy compatibility alias for `dopemux rte`.
+  - `dopemux extractor` is hidden/blocked and points operators to `dopemux rte`.
+  - `dopemux truth` is a legacy/refusal surface, not the v5 path.
 
 ### `dopetask` wrapper
 
@@ -327,10 +331,14 @@ Method:
 
 ### Repo-truth / audit workflow
 
-- Observed canonical path:
-  - `dopemux extractor ...` or `dopemux upgrades ...` -> `/Users/hue/code/dopemux-mvp/src/dopemux/commands/extractor_commands.py`
+- Observed canonical operator path:
+  - `dopemux rte ...` -> `/Users/hue/code/dopemux-mvp/src/dopemux/cli.py`
   - runner resolution -> `run_extraction_v5.py`
   - subprocess execution in resolved repo root
-  - artifacts -> `/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs`
-- Observed legacy path:
-  - `dopemux truth` -> `/Users/hue/code/dopemux-mvp/src/dopemux/cli.py` -> `PipelineRunner` in `/Users/hue/code/dopemux-mvp/src/dopemux/extractor/runner.py`
+  - artifacts -> `/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v5/runs`
+- Observed legacy/compatibility paths:
+  - `dopemux upgrades ...` -> legacy compatibility alias for `dopemux rte ...`
+  - `dopemux extractor ...` -> hidden `LegacyReplacementCommand` refusal pointing to `dopemux rte`
+  - `dopemux truth` -> legacy/refusal surface, not the v5 RTE path
+  - `dopemux extract truth-run` -> hidden disabled compatibility alias that raises a refusal pointing to `dopemux rte run`
+  - direct `python services/repo-truth-extractor/run_extraction_v5.py ...` -> advanced/debug/manual runner-level invocation
