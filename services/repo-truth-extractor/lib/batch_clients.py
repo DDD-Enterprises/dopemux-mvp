@@ -2,10 +2,19 @@ from __future__ import annotations
 
 import copy
 import json
+import sys
 import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Protocol, Sequence
+from typing import Any, Dict, List, Optional, Protocol, Sequence, Tuple
+
+try:
+    from output_safety import sanitize_payload_for_output, sanitize_text_for_output
+except ModuleNotFoundError:  # pragma: no cover - supports direct importlib test loading
+    _service_dir = str(Path(__file__).resolve().parents[1])
+    if _service_dir not in sys.path:
+        sys.path.insert(0, _service_dir)
+    from output_safety import sanitize_payload_for_output, sanitize_text_for_output
 
 
 class UnsupportedBatchProvider(RuntimeError):
@@ -39,6 +48,24 @@ class BatchRoute:
     base_url: Optional[str] = None
 
 
+BATCH_STATIC_PROOF_MARKERS: Tuple[str, ...] = (
+    "STATIC_FIXTURE_VALIDATED",
+    "DOWNLOADED_JSONL_MISSING_IF_NOT_FOUND",
+    "NOT_LIVE_VALIDATED",
+    "LIVE_VALIDATION_REQUIRED",
+    "NO_PROVIDER_CALLS_PERFORMED",
+)
+
+OPENAI_COMPATIBLE_SUCCESS_STATUSES = frozenset({"completed", "succeeded", "done"})
+OPENAI_COMPATIBLE_FAILURE_STATUSES = frozenset(
+    {"failed", "expired", "cancelled", "canceled", "timeout"}
+)
+OPENAI_COMPATIBLE_TERMINAL_STATUSES = (
+    OPENAI_COMPATIBLE_SUCCESS_STATUSES | OPENAI_COMPATIBLE_FAILURE_STATUSES
+)
+BATCH_JSONL_CORRUPTION_THRESHOLD = 0.05
+
+
 class BatchClient(Protocol):
     def submit(
         self,
@@ -60,6 +87,362 @@ class BatchClient(Protocol):
 
 def _metadata_flag_enabled(metadata: Dict[str, str], key: str) -> bool:
     return str(metadata.get(key) or "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def classify_batch_terminal_status(status: str) -> Dict[str, Any]:
+    token = str(status or "").strip().lower()
+    if token in OPENAI_COMPATIBLE_SUCCESS_STATUSES:
+        status_class = "success"
+    elif token == "failed":
+        status_class = "failed"
+    elif token == "expired":
+        status_class = "expired"
+    elif token in {"cancelled", "canceled"}:
+        status_class = "cancelled"
+    elif token == "timeout":
+        status_class = "timeout"
+    elif token:
+        status_class = "non_terminal"
+    else:
+        status_class = "unknown"
+    return {
+        "status": token or "unknown",
+        "status_class": status_class,
+        "terminal": token in OPENAI_COMPATIBLE_TERMINAL_STATUSES,
+        "successful": token in OPENAI_COMPATIBLE_SUCCESS_STATUSES,
+        "failure_terminal": token in OPENAI_COMPATIBLE_FAILURE_STATUSES,
+    }
+
+
+def _safe_dict(value: Any) -> Dict[str, Any]:
+    return value if isinstance(value, dict) else {}
+
+
+def _safe_list(value: Any) -> List[Any]:
+    return value if isinstance(value, list) else []
+
+
+def _safe_int(value: Any) -> Optional[int]:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    try:
+        return int(str(value))
+    except Exception:
+        return None
+
+
+def _redaction_status(raw: str, redacted: str) -> str:
+    return "redacted" if raw != redacted else "clean"
+
+
+def _partition_id_from_custom_id(custom_id: str) -> str:
+    token = str(custom_id or "").strip()
+    return token if "_P" in token else ""
+
+
+def _phase_from_custom_id(custom_id: str) -> str:
+    token = str(custom_id or "").strip()
+    if "_P" not in token:
+        return ""
+    prefix = token.split("_P", 1)[0].strip()
+    return prefix if prefix else ""
+
+
+def build_batch_request_static_metadata(
+    request: BatchRequest,
+    route: Optional[BatchRoute] = None,
+    *,
+    wire_row: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Return proof-safe request-row metadata without raw prompt payload text."""
+
+    body = _safe_dict(_safe_dict(wire_row).get("body")) if isinstance(wire_row, dict) else {}
+    response_format = (
+        _safe_dict(body.get("response_format"))
+        if isinstance(body.get("response_format"), dict)
+        else _safe_dict(request.response_format)
+    )
+    metadata = dict(request.metadata or {})
+    custom_id = str(
+        (_safe_dict(wire_row).get("custom_id") if isinstance(wire_row, dict) else "")
+        or request.custom_id
+        or ""
+    )
+    provider = str(route.provider if route is not None else metadata.get("provider", "")).strip()
+    requested_model_id = str(
+        body.get("model")
+        or request.model_id
+        or (route.model_id if route is not None else "")
+        or ""
+    )
+    return {
+        "custom_id": custom_id,
+        "method": str(_safe_dict(wire_row).get("method") or "POST"),
+        "url": str(_safe_dict(wire_row).get("url") or "/v1/chat/completions"),
+        "body.model": requested_model_id,
+        "body.messages_present_boolean": bool(
+            isinstance(body.get("messages"), list)
+            if body
+            else request.system_prompt is not None and request.user_content is not None
+        ),
+        "body.response_format_type_if_present": str(response_format.get("type") or ""),
+        "provider": provider,
+        "requested_model_id": requested_model_id,
+        "structured_output_mode_if_present": str(
+            metadata.get("structured_output_mode")
+            or response_format.get("type")
+            or ""
+        ),
+        "partition_id_if_encoded": str(
+            metadata.get("partition_id") or _partition_id_from_custom_id(custom_id)
+        ),
+        "phase_if_encoded": str(metadata.get("phase") or _phase_from_custom_id(custom_id)),
+        "step_id_if_encoded": str(metadata.get("step_id") or ""),
+        "payload_text_included": False,
+        "redaction_status": "metadata_only_no_raw_payload",
+    }
+
+
+def _output_row_metadata(row: Dict[str, Any]) -> Dict[str, Any]:
+    response = _safe_dict(row.get("response"))
+    body = _safe_dict(response.get("body"))
+    choices = _safe_list(body.get("choices"))
+    first_choice = _safe_dict(choices[0]) if choices else {}
+    message = _safe_dict(first_choice.get("message"))
+    error = _safe_dict(row.get("error"))
+    status_code = _safe_int(response.get("status_code"))
+    failure_type = ""
+    if error:
+        failure_type = "provider_error"
+    elif status_code is not None and status_code >= 400:
+        failure_type = "provider_response_status"
+    elif not body:
+        failure_type = "response_body_missing"
+    return {
+        "custom_id": str(row.get("custom_id") or ""),
+        "response_status_code": status_code,
+        "response_body_present": bool(body),
+        "response_id_if_present": str(body.get("id") or response.get("request_id") or ""),
+        "returned_model_id_if_present": str(body.get("model") or ""),
+        "finish_reason_if_present": str(first_choice.get("finish_reason") or ""),
+        "usage_if_present": sanitize_payload_for_output(body.get("usage", {})),
+        "failure_type_if_any": failure_type,
+        "parse_status": "parsed",
+        "schema_status_if_any": "not_checked_static_fixture",
+        "redaction_status": "metadata_only_no_raw_payload",
+        "response_message_present": bool(message),
+    }
+
+
+def _error_row_metadata(row: Dict[str, Any]) -> Dict[str, Any]:
+    error = _safe_dict(row.get("error"))
+    response = _safe_dict(row.get("response"))
+    body = _safe_dict(response.get("body"))
+    body_error = _safe_dict(body.get("error"))
+    source_error = error or body_error
+    raw_message = str(
+        source_error.get("message")
+        or row.get("message")
+        or response.get("error")
+        or "batch_error"
+    )
+    redacted_message = sanitize_text_for_output(raw_message)
+    status_code = _safe_int(row.get("status_code"))
+    if status_code is None:
+        status_code = _safe_int(response.get("status_code"))
+    return {
+        "custom_id": str(row.get("custom_id") or ""),
+        "error_type": str(source_error.get("type") or row.get("type") or "batch_error"),
+        "error_code": str(source_error.get("code") or row.get("code") or ""),
+        "error_message_redacted": redacted_message,
+        "status_code_if_present": status_code,
+        "failure_type": "provider_error",
+        "redaction_status": _redaction_status(raw_message, redacted_message),
+    }
+
+
+_DISCARDED_LINES_SAMPLE_LIMIT = 50
+
+
+def _parse_jsonl_rows(raw_text: str) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    discarded_lines: List[Dict[str, Any]] = []
+    discarded_count = 0
+    total_lines = 0
+    blank_line_count = 0
+    for line_number, raw_line in enumerate(str(raw_text or "").splitlines(), start=1):
+        line = raw_line.strip()
+        if not line:
+            blank_line_count += 1
+            continue
+        total_lines += 1
+        try:
+            row = json.loads(line)
+        except Exception as exc:
+            discarded_count += 1
+            if len(discarded_lines) < _DISCARDED_LINES_SAMPLE_LIMIT:
+                discarded_lines.append(
+                    {
+                        "line_number": line_number,
+                        "reason": "invalid_json",
+                        "error_type": type(exc).__name__,
+                        "preview_redacted": sanitize_text_for_output(line[:200]),
+                    }
+                )
+            continue
+        if not isinstance(row, dict):
+            discarded_count += 1
+            if len(discarded_lines) < _DISCARDED_LINES_SAMPLE_LIMIT:
+                discarded_lines.append(
+                    {
+                        "line_number": line_number,
+                        "reason": "non_object_json",
+                        "preview_redacted": sanitize_text_for_output(line[:200]),
+                    }
+                )
+            continue
+        rows.append(row)
+    threshold_exceeded = (
+        total_lines > 0
+        and (discarded_count / total_lines) > BATCH_JSONL_CORRUPTION_THRESHOLD
+    )
+    report = {
+        "total_line_count": total_lines,
+        "blank_line_count": blank_line_count,
+        "valid_row_count": len(rows),
+        "discarded_line_count": discarded_count,
+        "corrupt_line_count": discarded_count,
+        "discarded_lines": discarded_lines,
+        "corruption_threshold": BATCH_JSONL_CORRUPTION_THRESHOLD,
+        "corruption_threshold_exceeded": threshold_exceeded,
+        "parse_status": (
+            "corrupt_threshold_exceeded"
+            if threshold_exceeded
+            else ("parsed_with_discards" if discarded_count else "parsed")
+        ),
+    }
+    return rows, report
+
+
+def parse_openai_compatible_batch_output_jsonl(
+    raw_text: str,
+    *,
+    raise_on_corruption: bool = False,
+    not_live_validated: bool = True,
+) -> Dict[str, Any]:
+    rows, report = _parse_jsonl_rows(raw_text)
+    metadata_rows = [_output_row_metadata(row) for row in rows]
+    report = dict(report)
+    report.update(
+        {
+            "artifact_class": "provider_output_jsonl_fixture",
+            "rows": metadata_rows,
+            "custom_ids": sorted(
+                str(row.get("custom_id") or "") for row in metadata_rows if row.get("custom_id")
+            ),
+            "markers": list(BATCH_STATIC_PROOF_MARKERS) if not_live_validated else [],
+            "not_live_validated": bool(not_live_validated),
+        }
+    )
+    if raise_on_corruption and report["corruption_threshold_exceeded"]:
+        raise RuntimeError(
+            "BatchCorruptionError: "
+            f"{report['discarded_line_count']}/{report['total_line_count']} "
+            "results discarded (>5%)"
+        )
+    return report
+
+
+def parse_openai_compatible_batch_error_jsonl(
+    raw_text: str,
+    *,
+    raise_on_corruption: bool = False,
+    not_live_validated: bool = True,
+) -> Dict[str, Any]:
+    rows, report = _parse_jsonl_rows(raw_text)
+    metadata_rows = [_error_row_metadata(row) for row in rows]
+    report = dict(report)
+    report.update(
+        {
+            "artifact_class": "provider_error_jsonl_fixture",
+            "rows": metadata_rows,
+            "custom_ids": sorted(
+                str(row.get("custom_id") or "") for row in metadata_rows if row.get("custom_id")
+            ),
+            "markers": list(BATCH_STATIC_PROOF_MARKERS) if not_live_validated else [],
+            "not_live_validated": bool(not_live_validated),
+        }
+    )
+    if raise_on_corruption and report["corruption_threshold_exceeded"]:
+        raise RuntimeError(
+            "BatchCorruptionError: "
+            f"{report['discarded_line_count']}/{report['total_line_count']} "
+            "error rows discarded (>5%)"
+        )
+    return report
+
+
+def build_openai_compatible_batch_static_proof(
+    *,
+    request_custom_ids: Sequence[str],
+    output_rows: Sequence[Dict[str, Any]],
+    error_rows: Sequence[Dict[str, Any]],
+    batch_info: Optional[Dict[str, Any]] = None,
+    provider: str = "",
+    requested_provider: str = "",
+    requested_model_id: str = "",
+) -> Dict[str, Any]:
+    info = dict(batch_info or {})
+    status = str(info.get("status") or "fixture_static").strip().lower()
+    terminal = classify_batch_terminal_status(status)
+    requested_ids = sorted({str(custom_id) for custom_id in request_custom_ids if str(custom_id)})
+    result_ids = sorted(
+        {
+            str(row.get("custom_id") or "")
+            for row in output_rows
+            if isinstance(row, dict) and str(row.get("custom_id") or "")
+        }
+    )
+    error_ids = sorted(
+        {
+            str(row.get("custom_id") or "")
+            for row in error_rows
+            if isinstance(row, dict) and str(row.get("custom_id") or "")
+        }
+    )
+    observed_ids = set(result_ids) | set(error_ids)
+    missing_ids = sorted(set(requested_ids) - observed_ids)
+    duplicate_ids = sorted(set(result_ids) & set(error_ids))
+    partial_failure = bool(error_ids or missing_ids or duplicate_ids)
+    return {
+        "batch_id": str(info.get("id") or info.get("batch_id") or ""),
+        "provider": provider or str(info.get("provider") or ""),
+        "requested_provider": requested_provider or provider or str(info.get("requested_provider") or ""),
+        "requested_model_id": requested_model_id or str(info.get("requested_model_id") or ""),
+        "status": status,
+        "status_class": terminal["status_class"],
+        "created_at": str(info.get("created_at") or ""),
+        "completed_at_if_present": str(info.get("completed_at") or ""),
+        "failed_at_if_present": str(info.get("failed_at") or ""),
+        "cancelled_at_if_present": str(info.get("cancelled_at") or info.get("canceled_at") or ""),
+        "expired_at_if_present": str(info.get("expired_at") or ""),
+        "output_file_id": str(info.get("output_file_id") or ""),
+        "error_file_id": str(info.get("error_file_id") or ""),
+        "request_count": len(requested_ids),
+        "result_count": len(result_ids),
+        "error_count": len(error_ids),
+        "missing_row_count": len(missing_ids),
+        "missing_custom_ids": missing_ids,
+        "duplicate_custom_ids_in_output_and_error": duplicate_ids,
+        "partial_failure": partial_failure,
+        "full_success": not partial_failure and bool(requested_ids),
+        "missing_rows_are_hard_failure": bool(missing_ids),
+        "not_live_validated": True,
+        "markers": list(BATCH_STATIC_PROOF_MARKERS),
+        "proof_scope": "local_static_fixture_only",
+    }
 
 
 def _response_format_for_request(req: BatchRequest) -> Optional[Dict[str, Any]]:
@@ -221,13 +604,23 @@ class OpenAIBatchClient:
             error_row = row.get("error")
             error = None
             if isinstance(error_row, dict):
-                error = str(error_row.get("message") or error_row.get("code") or "batch_error")
+                error = sanitize_text_for_output(
+                    str(error_row.get("message") or error_row.get("code") or "batch_error")
+                )
+            safe_meta = sanitize_payload_for_output(row)
+            if not isinstance(safe_meta, dict):
+                logger.warning(
+                    "sanitize_payload_for_output returned non-dict for custom_id=%s; "
+                    "dropping row metadata",
+                    custom_id,
+                )
+                safe_meta = {}
             results.append(
                 BatchResult(
                     custom_id=custom_id,
                     output_text=output_text,
                     error=error,
-                    meta=row,
+                    meta=safe_meta,
                 )
             )
 

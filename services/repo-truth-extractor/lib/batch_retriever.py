@@ -12,19 +12,27 @@ from typing import Any, Dict, List, Tuple
 
 try:
     from .batch_clients import (
+        BATCH_STATIC_PROOF_MARKERS,
         BatchResult,
         GeminiBatchClient,
         OpenAIBatchClient,
         UnsupportedBatchProvider,
         XAIBatchClient,
+        classify_batch_terminal_status,
+        parse_openai_compatible_batch_error_jsonl,
+        parse_openai_compatible_batch_output_jsonl,
     )
 except ImportError:
     from batch_clients import (  # type: ignore
+        BATCH_STATIC_PROOF_MARKERS,
         BatchResult,
         GeminiBatchClient,
         OpenAIBatchClient,
         UnsupportedBatchProvider,
         XAIBatchClient,
+        classify_batch_terminal_status,
+        parse_openai_compatible_batch_error_jsonl,
+        parse_openai_compatible_batch_output_jsonl,
     )
 
 logging.basicConfig(level=logging.INFO)
@@ -129,10 +137,18 @@ def retrieve_openai_compatible_batch(
         "batch_id": batch_id,
         "provider": provider_id,
         "status": "unknown",
+        "status_class": "unknown",
+        "terminal": False,
         "output_file": None,
         "error_file": None,
+        "output_file_id": None,
+        "error_file_id": None,
+        "output_parse": None,
+        "error_parse": None,
         "error": None,
         "results": [],
+        "static_parser_markers": list(BATCH_STATIC_PROOF_MARKERS),
+        "static_parser_marker_scope": "offline_fixture_tests_only",
     }
 
     try:
@@ -147,6 +163,11 @@ def retrieve_openai_compatible_batch(
 
         output_file_id = str(batch_info.get("output_file_id") or "")
         error_file_id = str(batch_info.get("error_file_id") or "")
+        result["output_file_id"] = output_file_id or None
+        result["error_file_id"] = error_file_id or None
+        status_meta = classify_batch_terminal_status(status)
+        result["status_class"] = status_meta["status_class"]
+        result["terminal"] = status_meta["terminal"]
 
         if status in {"completed", "succeeded", "done"}:
             results = client.fetch_results(batch_id)
@@ -166,6 +187,10 @@ def retrieve_openai_compatible_batch(
                     )
                 else:
                     result["output_file"] = str(output_path)
+                    result["output_parse"] = parse_openai_compatible_batch_output_jsonl(
+                        output_path.read_text(encoding="utf-8"),
+                        not_live_validated=False,
+                    )
         elif status in {"failed", "expired", "cancelled", "canceled", "timeout"} and error_file_id:
             error_path = output_dir / f"{batch_id}_error.jsonl"
             download_error = _download_openai_compatible_file(
@@ -181,6 +206,10 @@ def retrieve_openai_compatible_batch(
                 )
             else:
                 result["error_file"] = str(error_path)
+                result["error_parse"] = parse_openai_compatible_batch_error_jsonl(
+                    error_path.read_text(encoding="utf-8"),
+                    not_live_validated=False,
+                )
         return True, result
     except Exception as exc:
         result["error"] = f"Batch retrieval failed: {exc}"
