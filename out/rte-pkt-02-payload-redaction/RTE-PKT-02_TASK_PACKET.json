@@ -1,0 +1,168 @@
+{
+  "id": "RTE-PKT-02-PAYLOAD-REDACTION",
+  "project": "Dopemux RTE GPT-5.5 Pro Audit",
+  "target": "Repo Truth Extractor provider and Grok payload content redaction",
+  "invariants": [
+    "No live/provider/batch operations are allowed for this packet.",
+    "Provider-bound source/context payload text must be redacted before request construction.",
+    "Path-level secret-bearing file exclusions must remain enforced.",
+    "Promptsets, model maps, structured-output schemas, provider routing, compose files, config, and docs are out of scope."
+  ],
+  "depends_on": [
+    "RTE-PKT-00-SOURCE-CLOSURE",
+    "RTE-PKT-01-LIVE-GATE"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "services/repo-truth-extractor/run_extraction_v5.py",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-PKT",
+    "base_branch": "codex/rte-dr00-normalized-baseline",
+    "parent_tp_id": "RTE-PKT-01-LIVE-GATE",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-pkt-02-payload-redaction",
+    "base_branch": "codex/rte-dr00-normalized-baseline"
+  },
+  "commit": {
+    "message": "fix(rte): redact provider-bound payload content",
+    "allowlist": [
+      "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+      "services/repo-truth-extractor/output_safety.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/llm_runtime.py",
+      "services/repo-truth-extractor/tests/",
+      "out/rte-pkt-02-payload-redaction/"
+    ],
+    "verify": [
+      "python -m py_compile services/repo-truth-extractor/lib/prescan/grok_passes.py services/repo-truth-extractor/output_safety.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/llm_runtime.py",
+      "pytest services/repo-truth-extractor/tests/test_provider_payload_redaction.py services/repo-truth-extractor/tests/test_output_safety.py services/repo-truth-extractor/tests/test_grok_passes_validation.py -q",
+      "git diff --check",
+      "git status --short --branch"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): redact provider-bound payload content",
+    "body": "Implements RTE-PKT-02 provider/Grok payload redaction with local tests and proof artifacts. No live provider or batch operations are in scope.",
+    "base": "codex/rte-dr00-normalized-baseline"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "RTE-PKT-02-S1",
+      "task": "Inspect Grok and v5 provider payload construction boundaries and classify unresolved authority.",
+      "requirements": [
+        "Use observed runtime code as authority.",
+        "Record missing RTE-PKT-00/01 named proof files as UNKNOWN if absent."
+      ],
+      "commands": [
+        "rg -n \"_get_file_preview|build_chat_payload|call_llm|_call_grok\" services/repo-truth-extractor"
+      ],
+      "expected_files": [
+        "out/rte-pkt-02-payload-redaction/RTE-PKT-02_REMAINING_UNKNOWNS.md"
+      ],
+      "validation": [
+        "Observed source locations are included in proof matrix."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+        "services/repo-truth-extractor/output_safety.py",
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/llm_runtime.py"
+      ]
+    },
+    {
+      "id": "RTE-PKT-02-S2",
+      "task": "Implement deterministic provider-payload redaction before request construction.",
+      "requirements": [
+        "Preserve safe metadata such as paths, hashes, counts, provider/model metadata, and redaction markers.",
+        "Do not edit promptsets, model maps, schemas, provider routes, compose, config, or docs."
+      ],
+      "commands": [
+        "python -m py_compile services/repo-truth-extractor/lib/prescan/grok_passes.py services/repo-truth-extractor/output_safety.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/llm_runtime.py"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/output_safety.py",
+        "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/llm_runtime.py"
+      ],
+      "validation": [
+        "py_compile exits 0 for changed Python runtime files."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/tests/test_output_safety.py",
+        "services/repo-truth-extractor/tests/test_grok_passes_validation.py"
+      ]
+    },
+    {
+      "id": "RTE-PKT-02-S3",
+      "task": "Add targeted local tests for Grok previews, Grok payloads, central provider payloads, path exclusions, env templates, and no real provider calls.",
+      "requirements": [
+        "Tests must not require provider credentials.",
+        "Tests must not call live provider or batch APIs."
+      ],
+      "commands": [
+        "pytest services/repo-truth-extractor/tests/test_provider_payload_redaction.py services/repo-truth-extractor/tests/test_output_safety.py services/repo-truth-extractor/tests/test_grok_passes_validation.py -q"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/tests/test_provider_payload_redaction.py"
+      ],
+      "validation": [
+        "Targeted pytest command exits 0."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/lib/prescan/models.py",
+        "services/repo-truth-extractor/lib/prescan/corpus_walker.py"
+      ]
+    },
+    {
+      "id": "RTE-PKT-02-S4",
+      "task": "Generate packet proof artifacts under the allowed output root and perform final diff/status validation.",
+      "requirements": [
+        "Proof must not quote raw secret-shaped fixture values.",
+        "Remaining UNKNOWNs must be explicit."
+      ],
+      "commands": [
+        "git diff --check",
+        "git diff --stat",
+        "git status --short --branch"
+      ],
+      "expected_files": [
+        "out/rte-pkt-02-payload-redaction/RTE-PKT-02_MANIFEST.json",
+        "out/rte-pkt-02-payload-redaction/RTE-PKT-02_PAYLOAD_REDACTION_MATRIX.md",
+        "out/rte-pkt-02-payload-redaction/RTE-PKT-02_TEST_REPORT.md",
+        "out/rte-pkt-02-payload-redaction/RTE-PKT-02_NO_PROVIDER_CALLS_ATTESTATION.md",
+        "out/rte-pkt-02-payload-redaction/RTE-PKT-02_SECRET_FIXTURE_REDACTION_PROOF.md",
+        "out/rte-pkt-02-payload-redaction/RTE-PKT-02_DIFF_SUMMARY.md",
+        "out/rte-pkt-02-payload-redaction/RTE-PKT-02_REMAINING_UNKNOWNS.md"
+      ],
+      "validation": [
+        "git diff --check exits 0.",
+        "Changed files remain within allowlist."
+      ],
+      "context_files": [
+        "out/rte-pkt-02-payload-redaction/RTE-PKT-02_TASK_PACKET.json"
+      ]
+    }
+  ]
+}
