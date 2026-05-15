@@ -1209,7 +1209,12 @@ def run_comparison_lane(
                 router=cfg.router,
             )
             route_token = f"{compare_provider}/{compare_model}"
-            projected_input_tokens = deps.estimate_text_tokens(prompt_text, context_text)
+            safe_prompt_text = sanitize_text_for_provider_payload(prompt_text)
+            safe_context_text = sanitize_text_for_provider_payload(context_text)
+            projected_input_tokens = deps.estimate_text_tokens(
+                safe_prompt_text,
+                safe_context_text,
+            )
             projected_output_tokens = deps.project_output_tokens(projected_input_tokens)
             deps.check_projected_cost_limit(
                 cfg,

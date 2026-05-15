@@ -381,3 +381,109 @@ def test_llm_runtime_sanitizes_prompts_before_dependency_payload_build() -> None
     _assert_values_redacted(captured["user_content"], values)
     assert SAFE_HASH in captured["user_content"]
     assert SAFE_MODEL in captured["user_content"]
+
+
+def test_comparison_lane_projects_cost_from_sanitized_provider_payload(
+    tmp_path: Path,
+) -> None:
+    fixture_text, values = _secret_fixture_text()
+    token_projection_inputs: dict[str, str] = {}
+    cost_gate_inputs: dict[str, int] = {}
+
+    def estimate_text_tokens(system: str, user: str) -> int:
+        token_projection_inputs["system"] = system
+        token_projection_inputs["user"] = user
+        return len(system) + len(user)
+
+    def check_projected_cost_limit(_cfg: Any, **kwargs: Any) -> None:
+        cost_gate_inputs["input_tokens"] = int(kwargs["input_tokens"])
+
+    deps = llm_runtime.LLMRuntimeDeps(
+        live_llm_calls_blocked_for_tests=lambda: False,
+        live_llm_tests_env="RTE_TEST_LIVE_OK",
+        llm_base_url=lambda _provider, _cfg: "https://example.test/v1",
+        transport_for_provider=lambda _provider, _cfg: "openai_sdk",
+        resolve_api_key=lambda _provider, api_key_env: ("", api_key_env),
+        build_chat_payload=lambda *_args, **_kwargs: {},
+        serialize_payload_body=lambda payload: json.dumps(payload),
+        measure_payload_bytes_from_body=lambda body: len(body),
+        gemini_auth_mode_sequence=lambda _mode, _base_url: ["sdk_bearer"],
+        make_url=lambda _provider, base_url, _cfg, _api_key, _mode: base_url + "/chat/completions",
+        make_headers=lambda *_args: {},
+        sdk_auth_present_flags=lambda _provider, present: {"bearer": present},
+        build_auth_present_flags=lambda _headers, _query_key: {},
+        endpoint_effective=lambda url: url,
+        endpoint_fingerprint=lambda _url: {"endpoint_sha256": SAFE_HASH},
+        provider_signature=lambda provider, model_id, endpoint_url, _mode: f"{provider}:{model_id}:{endpoint_url}",
+        get_http_session=lambda: None,
+        get_gemini_client=lambda _api_key: None,
+        extract_text_from_gemini_response=lambda _response: "",
+        get_xai_client=lambda _api_key: None,
+        get_openrouter_client=lambda _api_key: None,
+        get_openai_client=lambda _unused, _api_key: None,
+        extract_text_from_chat_completion=lambda _response: "",
+        summarize_llm_response=lambda **_kwargs: {},
+        exception_status_code=lambda _exc: None,
+        exception_response_text=lambda _exc: "",
+        classify_failure_type=lambda _status, _body, _text: "unknown",
+        extract_provider_error_reason=lambda _body: None,
+        sanitize_error_text=lambda text: text,
+        capture_exception_metadata=lambda _exc: {},
+        new_trace_id=lambda: "trace-test",
+        new_span_id=lambda: "span-test",
+        cost_abort_failure_meta=lambda **kwargs: dict(kwargs),
+        should_retry=lambda _status, _failure, _exc, _policy: False,
+        backoff_seconds=lambda _attempt, _base, _max: 0.0,
+        is_spend_aborted=lambda: False,
+        sha256_text=lambda _path: SAFE_HASH,
+        runner_script=Path("run_extraction_v5.py"),
+        is_auth_classified_failure=lambda _failure: False,
+        classify_escalation_class=lambda **_kwargs: "none",
+        is_break_glass_opus_route=lambda _route: False,
+        provider_api_key_env={"xai": "XAI_API_KEY"},
+        max_files_for_phase=lambda _phase, _cfg: 1,
+        estimate_text_tokens=estimate_text_tokens,
+        project_output_tokens=lambda input_tokens: input_tokens,
+        check_projected_cost_limit=check_projected_cost_limit,
+        accumulate_runtime_spend=lambda **_kwargs: None,
+        cost_limit_exceeded_error=RuntimeError,
+        now_iso=lambda: "2026-05-15T00:00:00+00:00",
+        strip_outer_json_fence=lambda _text: None,
+        extract_first_fenced_json_block=lambda _text: None,
+        extract_first_json_object=lambda _text: None,
+        is_semantic_eof_eligible=lambda _exc, _text: False,
+        try_repair_json_truncation=lambda _text, _exc: None,
+    )
+
+    results = llm_runtime.run_comparison_lane(
+        deps,
+        phase="D",
+        step_id="D1",
+        partitions=[{"id": "P1", "paths": [SAFE_PATH]}],
+        phase_dir=tmp_path,
+        cfg=SimpleNamespace(
+            compare_provider="xai",
+            compare_model=SAFE_MODEL,
+            file_truncate_chars=1000,
+            home_scan_mode="safe",
+            max_chars=1000,
+            router=None,
+        ),
+        prompt_text=fixture_text,
+        output_artifacts=("RESULT.json",),
+        build_partition_context_fn=lambda **_kwargs: (fixture_text, {}),
+        call_llm_fn=lambda **_kwargs: {"text": '{"ok": true}', "meta": {"status_code": 200}},
+        parse_json_from_response_fn=lambda text, metadata_out=None: json.loads(text),
+        coerce_artifacts_from_response_fn=lambda parsed, _raw, _expected: [
+            {"artifact_name": "RESULT.json", "payload": parsed}
+        ],
+        finalize_response_parse_provenance=lambda provenance, **_kwargs: provenance,
+        log_response_parse_repair=lambda _provenance: None,
+    )
+
+    assert results[0]["success"] is True
+    _assert_values_redacted(token_projection_inputs["system"], values)
+    _assert_values_redacted(token_projection_inputs["user"], values)
+    assert cost_gate_inputs["input_tokens"] == len(token_projection_inputs["system"]) + len(
+        token_projection_inputs["user"]
+    )
