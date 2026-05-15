@@ -9,6 +9,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 import requests
 
+from output_safety import sanitize_text_for_provider_payload
 
 logger = logging.getLogger(__name__)
 
@@ -170,14 +171,16 @@ def call_llm(
             deps.live_llm_tests_env,
         )
         raise RuntimeError(message)
+    safe_system_prompt = sanitize_text_for_provider_payload(system_prompt)
+    safe_user_content = sanitize_text_for_provider_payload(user_content)
     base_url = deps.llm_base_url(provider, cfg)
     transport = deps.transport_for_provider(provider, cfg)
     api_key, resolved_api_key_env = deps.resolve_api_key(provider, api_key_env)
     payload = deps.build_chat_payload(
         provider,
         model_id,
-        system_prompt,
-        user_content,
+        safe_system_prompt,
+        safe_user_content,
         force_json_output=force_json_output,
         response_format_override=response_format_override,
         max_completion_tokens=max_completion_tokens_override,
@@ -451,7 +454,7 @@ def call_llm(
                 client = deps.get_gemini_client(api_key)
                 gemini_config: Dict[str, Any] = {
                     "temperature": 0.1,
-                    "system_instruction": system_prompt,
+                    "system_instruction": safe_system_prompt,
                 }
                 if using_structured_override:
                     rf_type = str(response_format_override.get("type") or "").strip().lower()
@@ -471,7 +474,7 @@ def call_llm(
                     gemini_config["response_mime_type"] = "application/json"
                 response = client.models.generate_content(
                     model=model_id,
-                    contents=user_content,
+                    contents=safe_user_content,
                     config=gemini_config,
                 )
                 status_code = 200
@@ -1206,7 +1209,12 @@ def run_comparison_lane(
                 router=cfg.router,
             )
             route_token = f"{compare_provider}/{compare_model}"
-            projected_input_tokens = deps.estimate_text_tokens(prompt_text, context_text)
+            safe_prompt_text = sanitize_text_for_provider_payload(prompt_text)
+            safe_context_text = sanitize_text_for_provider_payload(context_text)
+            projected_input_tokens = deps.estimate_text_tokens(
+                safe_prompt_text,
+                safe_context_text,
+            )
             projected_output_tokens = deps.project_output_tokens(projected_input_tokens)
             deps.check_projected_cost_limit(
                 cfg,
@@ -1225,8 +1233,8 @@ def run_comparison_lane(
                 provider=compare_provider,
                 model_id=compare_model,
                 api_key_env=deps.provider_api_key_env.get(compare_provider, ""),
-                system_prompt=prompt_text,
-                user_content=context_text,
+                system_prompt=safe_prompt_text,
+                user_content=safe_context_text,
                 cfg=cfg,
                 force_json_output=True,
             )
