@@ -260,6 +260,22 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     return `Finish at ${hh}:${mm}`;
   }, [totalRemainingMinutes]);
 
+  const taskFinishTimes = useMemo(() => {
+    let cumulative = 0;
+    return optimizedTasks.reduce((acc, task) => {
+      const isCurrent = task.id === currentTaskId;
+      const taskRemainingMinutes = isCurrent
+        ? Math.max(0, task.estimatedMinutes - taskTimer / 60)
+        : task.estimatedMinutes;
+      cumulative += taskRemainingMinutes;
+      const finishDate = new Date(Date.now() + cumulative * 60000);
+      const hh = finishDate.getHours().toString().padStart(2, '0');
+      const mm = finishDate.getMinutes().toString().padStart(2, '0');
+      acc[task.id] = `${hh}:${mm}`;
+      return acc;
+    }, {} as Record<string, string>);
+  }, [optimizedTasks, currentTaskId, taskTimer]);
+
   return (
     <Paper
       sx={{
@@ -746,6 +762,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
                       <Typography variant="caption">
                         {task.estimatedMinutes} min • {task.energyRequired} energy
+                        {!isCompleted && taskFinishTimes[task.id] && ` • Ends at ${taskFinishTimes[task.id]}`}
                       </Typography>
                       <Typography variant="caption">#{index + 1}</Typography>
                     </Box>
