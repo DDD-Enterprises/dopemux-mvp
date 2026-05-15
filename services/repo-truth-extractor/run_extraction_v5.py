@@ -42,7 +42,13 @@ RUNNER_SERVICE_DIR = Path(__file__).resolve().parent
 if str(RUNNER_SERVICE_DIR) not in sys.path:
     sys.path.insert(0, str(RUNNER_SERVICE_DIR))
 
-from output_safety import sanitize_payload_for_output, sanitize_text_for_output, sanitized_json_bytes, sanitized_json_text
+from output_safety import (
+    sanitize_failed_sidecar_text,
+    sanitize_payload_for_output,
+    sanitize_text_for_output,
+    sanitized_json_bytes,
+    sanitized_json_text,
+)
 from phases import (
     CODE_HEAVY_PHASES,
     LEGACY_PHASE_DIR_ALIASES,
@@ -2679,6 +2685,15 @@ def write_json(path: Path, payload: Any) -> None:
         + "\n",
         encoding="utf-8",
     )
+
+
+def _is_failed_text_sidecar_path(path: Path) -> bool:
+    return path.name.endswith(".FAILED.txt")
+
+
+def write_failed_sidecar_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(sanitize_failed_sidecar_text(str(text)), encoding="utf-8")
 
 
 def build_pre_live_validator_command(
@@ -11945,7 +11960,12 @@ def execute_step_for_partitions(
         logs.append((level, message))
 
     def _op_write_text(write_ops: List[Dict[str, Any]], path: Path, text: str) -> None:
-        write_ops.append({"kind": "write_text", "path": str(path), "text": text})
+        text_value = str(text)
+        if _is_failed_text_sidecar_path(path):
+            text_value = sanitize_failed_sidecar_text(text_value)
+        write_ops.append(
+            {"kind": "write_text", "path": str(path), "text": text_value}
+        )
 
     def _op_write_json(
         write_ops: List[Dict[str, Any]], path: Path, payload: Dict[str, Any]
@@ -11967,7 +11987,10 @@ def execute_step_for_partitions(
                     continue
 
                 if kind == "write_text":
-                    op_path.write_text(str(op["text"]), encoding="utf-8")
+                    if _is_failed_text_sidecar_path(op_path):
+                        write_failed_sidecar_text(op_path, str(op["text"]))
+                    else:
+                        op_path.write_text(str(op["text"]), encoding="utf-8")
                 elif kind == "write_json":
                     payload = op["payload"] if isinstance(op["payload"], dict) else {}
                     write_json(op_path, payload)
@@ -17257,8 +17280,9 @@ def run_batch_watch(
                 artifacts_missing = list(output_artifacts)
                 step_stats[step_id]["recomputed"] += 1
                 step_stats[step_id]["failed"] += 1
-                out_failed.write_text(
-                    "batch_missing_result_for_partition\n", encoding="utf-8"
+                write_failed_sidecar_text(
+                    out_failed,
+                    "batch_missing_result_for_partition\n",
                 )
                 write_json(
                     out_failed_json,
@@ -17302,9 +17326,9 @@ def run_batch_watch(
                     row["completed_at_utc"] = now_iso()
                     artifacts_missing = list(output_artifacts)
                     step_stats[step_id]["failed"] += 1
-                    out_failed.write_text(
+                    write_failed_sidecar_text(
+                        out_failed,
                         response_text or (result.error or "batch_parse_failure"),
-                        encoding="utf-8",
                     )
                     write_json(
                         out_failed_json,
@@ -17496,8 +17520,9 @@ def run_batch_watch(
                     },
                 },
             )
-            out_failed.write_text(
-                f"batch_terminal_state:{terminal_status}\n", encoding="utf-8"
+            write_failed_sidecar_text(
+                out_failed,
+                f"batch_terminal_state:{terminal_status}\n",
             )
 
         row["updated_at_utc"] = now_iso()
