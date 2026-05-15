@@ -1,0 +1,214 @@
+{
+  "accepted_risks": [
+    "BATCH_STATIC: accepted static proof with residual risk",
+    "FAILED_SIDECARS: accepted static proof with residual risk",
+    "GENERATED_ARTIFACT_AUTHORITY: accepted static proof with residual risk",
+    "PRESCAN_INFLUENCE: accepted static proof with residual risk",
+    "PRESCAN_STALENESS: accepted static proof with residual risk",
+    "PROOF_CONTRACT: accepted static proof with residual risk"
+  ],
+  "artifact_authority_status": "generated_artifacts_are_non_authoritative_evidence",
+  "batch_operation_status": "LIVE_VALIDATION_REQUIRED",
+  "blockers": [
+    "LIVE_VALIDATION_PLAN: live validation execution is not authorized"
+  ],
+  "generated_at": "2026-05-15T00:00:00Z",
+  "git_sha_if_available": "a4214ca5bf431e1b59791661e2b664a6cd24c1da",
+  "live_use_readiness": "READY_FOR_LIMITED_DRY_STATIC_USE",
+  "live_validation_status": "BLOCKED",
+  "next_recommended_actions": [
+    "Review RTE_RISK_DASHBOARD.md before treating static proof as live readiness.",
+    "Run a separately authorized live-validation packet before claiming provider behavior.",
+    "Keep downloaded batch JSONL as MISSING unless local artifacts are actually present.",
+    "Resolve proof-contract partial/missing fields before treating run proof as a full bundle proof."
+  ],
+  "overall_risk_level": "MEDIUM-HIGH",
+  "proof_contract_status": "partial",
+  "provider_call_status": "LIVE_VALIDATION_REQUIRED",
+  "repo_root_if_available": "/Users/hue/code/dopemux-mvp/.worktrees/rte-pkt-11-risk-dashboard",
+  "risk_items": [
+    {
+      "evidence_basis": "local runtime/proof inputs",
+      "id": "LIVE_GATE",
+      "live_use_boundary": "static proof only; production live readiness not claimed",
+      "live_validation_artifacts": [],
+      "live_validation_required_boolean": true,
+      "status": "STATIC_ONLY"
+    },
+    {
+      "coverage": "provider-bound payload/error summaries only; no raw provider payload text",
+      "evidence_basis": "static packet/runtime redaction proof when available",
+      "id": "PROVIDER_PAYLOAD_REDACTION",
+      "remaining_unknowns": [],
+      "status": "PASS_STATIC"
+    },
+    {
+      "comparison_lane_failed_txt_unknown_if_applicable": true,
+      "evidence_basis": "static failed-sidecar redaction proof when available",
+      "id": "FAILED_SIDECARS",
+      "remaining_unknowns": [
+        "comparison-lane .FAILED.txt behavior remains unknown unless separate proof is present"
+      ],
+      "status": "PASS_WITH_RISK"
+    },
+    {
+      "accepted_import_status": "accepted only when identity/freshness evidence is present",
+      "evidence_basis": "prescan receipt/static packet evidence when available",
+      "id": "PRESCAN_STALENESS",
+      "rejected_import_behavior": "stale or malformed imported prescan must be rejected or non-authoritative",
+      "status": "ACCEPTED_WITH_RISK"
+    },
+    {
+      "advisory_model_derived_status": "model-derived prescan signals remain advisory unless accepted by runtime guards",
+      "evidence_basis": "prescan influence labels/static packet evidence when available",
+      "id": "PRESCAN_INFLUENCE",
+      "influence_applied_or_not": "accepted influence must be explicitly labeled",
+      "status": "ACCEPTED_WITH_RISK"
+    },
+    {
+      "evidence_basis": "repair/sidefill provenance static packet evidence when available",
+      "id": "PROVENANCE_FIELDS",
+      "repaired_values_labeled": true,
+      "sidefilled_values_labeled": true,
+      "status": "PASS_STATIC"
+    },
+    {
+      "conflicting_preservation": true,
+      "evidence_basis": "truth-label preservation static packet evidence when available",
+      "id": "TRUTH_LABELS",
+      "status": "PASS_STATIC",
+      "unknown_preservation": true
+    },
+    {
+      "evidence_basis": "static fixture proof only unless live validation artifacts are present",
+      "id": "PROVIDER_METADATA",
+      "live_provider_shapes_required": true,
+      "provider_lanes": {
+        "direct_xai": "LIVE_VALIDATION_REQUIRED",
+        "gemini_compatible": "LIVE_VALIDATION_REQUIRED",
+        "openai_compatible": "LIVE_VALIDATION_REQUIRED",
+        "openrouter_xai": "LIVE_VALIDATION_REQUIRED"
+      },
+      "refusal_incomplete_static": true,
+      "requested_vs_returned_model": "static fixture proven; live provider edge behavior unknown",
+      "status": "LIVE_VALIDATION_REQUIRED"
+    },
+    {
+      "downloaded_jsonl_files": [],
+      "downloaded_jsonl_status": "MISSING",
+      "evidence_basis": "batch static fixture proof when available",
+      "id": "BATCH_STATIC",
+      "live_validation_required": true,
+      "not_live_validated": true,
+      "status": "PASS_WITH_RISK"
+    },
+    {
+      "evidence_basis": "local authorization/live-validation artifact inventory",
+      "execution_not_authorized": true,
+      "id": "LIVE_VALIDATION_PLAN",
+      "live_validation_artifacts": [],
+      "plan_exists": true,
+      "status": "BLOCKED"
+    },
+    {
+      "conformance_status": "partial",
+      "evidence_basis": "RTE-PKT-10 proof-contract helper",
+      "id": "PROOF_CONTRACT",
+      "missing_or_partial_fields": [
+        "artifact_hashes",
+        "authoritative_artifacts",
+        "blockers",
+        "bundle_id",
+        "chain_of_custody",
+        "external_advisory_artifacts",
+        "generated_evidence_artifacts",
+        "handoff_refs",
+        "parent_bundle_refs",
+        "proof_governance_artifacts",
+        "repo_root",
+        "review_order_hint",
+        "runtime_authority_artifacts",
+        "sample_or_uncertain_lineage_artifacts",
+        "source_version",
+        "status",
+        "supporting_artifacts",
+        "validation_state",
+        "warnings"
+      ],
+      "run_proof_vs_bundle_proof": "run_proof_or_packet_evidence_not_full_bundle",
+      "status": "PASS_WITH_RISK"
+    },
+    {
+      "evidence_basis": "proof-contract exact Pass 1 identity classifier",
+      "exact_identity_known_or_unknown": "unknown",
+      "id": "PASS1_IDENTITY",
+      "reason": "only part of run_id, artifact_hashes, and pass1_artifact_identity is present",
+      "status": "UNKNOWN"
+    },
+    {
+      "authority_order": [
+        {
+          "artifact_path": "services/repo-truth-extractor/run_extraction_v5.py",
+          "authority_boundary": "runtime source authority",
+          "authority_rank": 100,
+          "classification": "runtime_authority",
+          "is_generated_evidence": false,
+          "is_runtime_source_authority": true,
+          "live_validation_status": "UNKNOWN",
+          "provider_call_status": "UNKNOWN",
+          "static_only": false
+        },
+        {
+          "artifact_path": "out/rte-pkt-11-risk-dashboard/RTE-PKT-11_MANIFEST.json",
+          "authority_boundary": "runtime source authority outranks generated proof evidence",
+          "authority_rank": 60,
+          "classification": "proof_governance_artifact",
+          "is_generated_evidence": true,
+          "is_runtime_source_authority": false,
+          "live_validation_status": "UNKNOWN",
+          "provider_call_status": "UNKNOWN",
+          "static_only": false
+        },
+        {
+          "artifact_path": "telemetry/RUN_DASHBOARD.json",
+          "authority_boundary": "runtime source authority outranks generated proof evidence",
+          "authority_rank": 50,
+          "classification": "runtime_generated_evidence",
+          "is_generated_evidence": true,
+          "is_runtime_source_authority": false,
+          "live_validation_status": "UNKNOWN",
+          "provider_call_status": "UNKNOWN",
+          "static_only": false
+        },
+        {
+          "artifact_path": "telemetry/RTE_RISK_DASHBOARD.json",
+          "authority_boundary": "runtime source authority outranks generated proof evidence",
+          "authority_rank": 0,
+          "classification": "unknown",
+          "is_generated_evidence": false,
+          "is_runtime_source_authority": false,
+          "live_validation_status": "UNKNOWN",
+          "provider_call_status": "UNKNOWN",
+          "static_only": false
+        }
+      ],
+      "evidence_basis": "artifact authority classifier",
+      "id": "GENERATED_ARTIFACT_AUTHORITY",
+      "non_authority_label": "generated artifacts are evidence, not runtime source truth",
+      "status": "ACCEPTED_WITH_RISK"
+    }
+  ],
+  "run_id_if_available": "rte-pkt-11-static-fixture",
+  "static_audit_verdict": "PASS_WITH_RISK",
+  "unknowns": [
+    "PASS1_IDENTITY: UNKNOWN",
+    "PASS1_IDENTITY: exact Pass 1 artifact identity is UNKNOWN"
+  ],
+  "warnings": [
+    "BATCH_STATIC: PASS_WITH_RISK",
+    "BATCH_STATIC: downloaded JSONL inventory is MISSING",
+    "FAILED_SIDECARS: PASS_WITH_RISK",
+    "PROOF_CONTRACT: PASS_WITH_RISK",
+    "PROVIDER_METADATA: LIVE_VALIDATION_REQUIRED"
+  ]
+}

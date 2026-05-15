@@ -1,0 +1,114 @@
+{
+  "authority_conflicts": [
+    "AGENTS.md asks for a canonical Task Packet before implementation; active packet non_goals forbid creating additional Task Packets. No new Task Packet was created."
+  ],
+  "changed_files": [
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/lib/proof_contract.py",
+    "services/repo-truth-extractor/lib/risk_dashboard.py",
+    "services/repo-truth-extractor/tests/test_proof_contract.py",
+    "services/repo-truth-extractor/tests/test_risk_dashboard.py",
+    "out/rte-pkt-11-risk-dashboard/"
+  ],
+  "commit_state_at_manifest_generation": "implementation commit observed at 1de11a13131c1bda2708b9baf9610ad7244af11b; manifest refreshed after targeted validation rerun",
+  "current_branch_prior_packet_roots_before_output": [
+    "/Users/hue/code/dopemux-mvp/.worktrees/rte-pkt-11-risk-dashboard/out/rte-pkt-11-risk-dashboard"
+  ],
+  "generated_at": "2026-05-15T16:58:28Z",
+  "no_provider_calls": {
+    "batch_provider_operations_performed": false,
+    "external_research_performed": false,
+    "live_extraction_performed": false,
+    "provider_calls_performed": false,
+    "provider_credentials_inspected": false,
+    "provider_credentials_required": false
+  },
+  "packet_id": "RTE-PKT-11-RISK-DASHBOARD",
+  "prior_packet_evidence_roots_read": [
+    "/Users/hue/.codex/worktrees/rte-pkt-01-live-gate/out/rte-pkt-01-live-gate",
+    "/Users/hue/code/dopemux-mvp-rte-pkt-02-payload-redaction/out/rte-pkt-02-payload-redaction",
+    "/Users/hue/.codex/worktrees/73bf/dopemux-mvp/out/rte-pkt-03-prescan-stale",
+    "/Users/hue/.codex/worktrees/0bee/dopemux-mvp/out/rte-pkt-04-prescan-influence",
+    "/Users/hue/.codex/worktrees/0bee/dopemux-mvp/out/rte-pkt-05-provenance-fields",
+    "/Users/hue/.codex/worktrees/0bee/dopemux-mvp/out/rte-pkt-06-truth-labels",
+    "/Users/hue/.codex/worktrees/39a6/dopemux-mvp/out/rte-pkt-07-xai-metadata",
+    "/Users/hue/.codex/worktrees/d17a/dopemux-mvp/out/rte-pkt-08-xai-batch-static",
+    "/Users/hue/.codex/worktrees/227d/dopemux-mvp/out/rte-pkt-09-live-validation-plan",
+    "/Users/hue/.codex/worktrees/e3e0/dopemux-mvp/out/rte-pkt-10-proof-contract",
+    "/Users/hue/.codex/worktrees/0bee/dopemux-mvp/out/rte-pkt-15-failed-sidecars"
+  ],
+  "proof_outputs": [
+    "RTE-PKT-11_MANIFEST.json",
+    "RTE-PKT-11_RISK_DASHBOARD_SCHEMA.md",
+    "RTE-PKT-11_RISK_DASHBOARD_EXAMPLE.json",
+    "RTE-PKT-11_RISK_DASHBOARD_EXAMPLE.md",
+    "RTE-PKT-11_RISK_ITEM_MATRIX.md",
+    "RTE-PKT-11_TEST_REPORT.md",
+    "RTE-PKT-11_NO_PROVIDER_CALLS_ATTESTATION.md",
+    "RTE-PKT-11_DIFF_SUMMARY.md",
+    "RTE-PKT-11_REMAINING_UNKNOWNS.md",
+    "RTE-PKT-11_RESEARCH.md"
+  ],
+  "repo": {
+    "branch": "codex/rte-pkt-11-risk-dashboard",
+    "head": "1de11a13131c1bda2708b9baf9610ad7244af11b",
+    "remotes": [
+      "mvp\thttps://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)",
+      "mvp\thttps://github.com/DDD-Enterprises/dopemux-mvp.git (push)",
+      "origin\thttps://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)",
+      "origin\thttps://github.com/DDD-Enterprises/dopemux-mvp.git (push)"
+    ],
+    "required_markers": {
+      "pyproject.toml": true,
+      "services/repo-truth-extractor/run_extraction_v5.py": true,
+      "services/repo-truth-extractor/tests/": true,
+      "src/dopemux/cli.py": true
+    },
+    "status_at_manifest_generation": [
+      "## codex/rte-pkt-11-risk-dashboard...origin/codex/rte-pkt-11-risk-dashboard"
+    ],
+    "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/rte-pkt-11-risk-dashboard"
+  },
+  "status": "VALIDATED_TARGETED_STATIC_READY_FOR_REVIEW",
+  "validation_rerun_at": "2026-05-15T16:58:28Z",
+  "validations": [
+    {
+      "command": "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/lib/risk_dashboard.py services/repo-truth-extractor/lib/proof_contract.py",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest services/repo-truth-extractor/tests -k 'risk and dashboard' -q",
+      "exit_code": 0,
+      "status": "PASS",
+      "summary": "9 passed; pytest config warning about unknown asyncio_mode"
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest services/repo-truth-extractor/tests -k 'proof_contract or artifact_authority' -q",
+      "exit_code": 0,
+      "status": "PASS",
+      "summary": "10 passed; pytest config warning about unknown asyncio_mode"
+    },
+    {
+      "command": "python -m json.tool out/rte-pkt-11-risk-dashboard/RTE-PKT-11_MANIFEST.json >/dev/null",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m json.tool out/rte-pkt-11-risk-dashboard/RTE-PKT-11_RISK_DASHBOARD_EXAMPLE.json >/dev/null",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "pre-commit run --files <changed packet files>",
+      "exit_code": 0,
+      "status": "PASS",
+      "summary": "Repo pre-commit hooks passed on changed code, tests, and proof outputs."
+    }
+  ]
+}
