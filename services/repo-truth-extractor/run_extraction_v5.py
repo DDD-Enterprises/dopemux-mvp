@@ -9169,7 +9169,7 @@ def static_route_fingerprint_hash(material: Dict[str, Any]) -> str:
     encoded = sanitized_json_bytes(
         material, ensure_ascii=True, sort_keys=True, separators=(",", ":")
     )
-    return hashlib.blake2b(encoded, digest_size=32).hexdigest()
+    return hashlib.sha256(encoded).hexdigest()
 
 
 def build_static_route_fingerprint_metadata(
