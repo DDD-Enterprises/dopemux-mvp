@@ -20,6 +20,21 @@ try:
 except ImportError:  # pragma: no cover - fallback only when imported out of tree
     load_pricing_catalog = None
 
+try:
+    from lib.pricing_surface import pricing_surface_metadata
+except ImportError:  # pragma: no cover - direct file imports in legacy tests
+    import importlib.util
+
+    _pricing_surface_path = Path(__file__).with_name("pricing_surface.py")
+    _pricing_surface_spec = importlib.util.spec_from_file_location(
+        "repo_truth_pricing_surface", _pricing_surface_path
+    )
+    if _pricing_surface_spec is None or _pricing_surface_spec.loader is None:
+        raise
+    _pricing_surface_module = importlib.util.module_from_spec(_pricing_surface_spec)
+    _pricing_surface_spec.loader.exec_module(_pricing_surface_module)
+    pricing_surface_metadata = _pricing_surface_module.pricing_surface_metadata
+
 
 def _baseline_rate(pricing_source: str = "route_registry_baseline") -> Dict[str, Any]:
     return {
@@ -96,6 +111,21 @@ class ModelSpend:
     model_id: str
     pricing_key: str
     pricing_source: str
+    requested_provider: str = "unknown"
+    requested_model_id: str = ""
+    provider_route_kind: str = "unknown"
+    upstream_provider: str = "unknown"
+    economic_surface: str = "unknown"
+    api_key_env: str | None = None
+    endpoint_effective: str | None = None
+    transport: str | None = None
+    provider_signature: str | None = None
+    route_fingerprint_hash: str | None = None
+    pricing_authority: str = "unknown"
+    pricing_surface: str = "unknown"
+    pricing_surface_source: str = "static_request_route_metadata"
+    pricing_live_validation_status: str = "UNKNOWN"
+    direct_provider_billing_inherited: bool | None = None
     pricing_version: str = PRICING_VERSION
     unknown_model: bool = False
     usage_count: int = 0
@@ -142,6 +172,33 @@ def _safe_float(value: Any) -> float:
         return float(value or 0.0)
     except Exception:
         return 0.0
+
+
+MODEL_SURFACE_FIELDS = (
+    "requested_provider",
+    "requested_model_id",
+    "provider_route_kind",
+    "upstream_provider",
+    "economic_surface",
+    "api_key_env",
+    "endpoint_effective",
+    "transport",
+    "provider_signature",
+    "route_fingerprint_hash",
+    "pricing_authority",
+    "pricing_surface",
+    "pricing_surface_source",
+    "pricing_live_validation_status",
+    "direct_provider_billing_inherited",
+)
+
+
+def _model_surface_from_payload(model_data: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        key: model_data.get(key)
+        for key in MODEL_SURFACE_FIELDS
+        if key in model_data
+    }
 
 
 def _normalize_provider_model(
@@ -207,6 +264,11 @@ def get_model_cost_rate(
     route: Optional[str] = None,
 ) -> Dict[str, Any]:
     provider_token, model_token = _normalize_provider_model(provider, model_id, route)
+    surface = pricing_surface_metadata(
+        provider=provider_token,
+        model_id=model_token,
+        route=route,
+    )
     for index, candidate in enumerate(_pricing_candidates(provider_token, model_token)):
         if candidate in MODEL_COST_RATES:
             rate = MODEL_COST_RATES[candidate]
@@ -218,6 +280,7 @@ def get_model_cost_rate(
                 "pricing_source": str(
                     rate.get("pricing_source") or "route_registry_baseline"
                 ),
+                **surface,
                 "pricing_source_type": str(rate.get("pricing_source_type") or "legacy_baseline"),
                 "pricing_status": str(rate.get("pricing_status") or "PRICED_WITH_CAVEAT"),
                 "pricing_confidence": str(rate.get("pricing_confidence") or "LOW"),
@@ -247,6 +310,7 @@ def get_model_cost_rate(
         "pricing_key": fallback_key,
         "pricing_version": PRICING_VERSION,
         "pricing_source": str(fallback["pricing_source"]),
+        **surface,
         "pricing_source_type": "inferred_estimated_fallback",
         "pricing_status": "UNPRICED_UNKNOWN",
         "pricing_confidence": "UNKNOWN",
@@ -295,6 +359,7 @@ class SpendLedger:
                     model_id=str(model_data.get("model_id") or ""),
                     pricing_key=str(model_data.get("pricing_key") or model_key),
                     pricing_source=str(model_data.get("pricing_source") or "legacy_load"),
+                    **_model_surface_from_payload(model_data),
                     pricing_version=str(
                         model_data.get("pricing_version") or self.record.pricing_version
                     ),
@@ -336,6 +401,7 @@ class SpendLedger:
                 model_id=str(model_data.get("model_id") or ""),
                 pricing_key=str(model_data.get("pricing_key") or model_key),
                 pricing_source=str(model_data.get("pricing_source") or "legacy_load"),
+                **_model_surface_from_payload(model_data),
                 pricing_version=str(
                     model_data.get("pricing_version") or self.record.pricing_version
                 ),
@@ -464,6 +530,7 @@ class SpendLedger:
                     model_id=str(priced["model_id"]),
                     pricing_key=model_key,
                     pricing_source=str(priced["pricing_source"]),
+                    **_model_surface_from_payload(priced),
                     pricing_version=str(priced["pricing_version"]),
                     unknown_model=bool(priced["unknown_model"]),
                     input_cost_per_1m_usd=_safe_float(priced["input_cost_per_1m_usd"]),
@@ -492,6 +559,7 @@ class SpendLedger:
                     model_id=str(priced["model_id"]),
                     pricing_key=model_key,
                     pricing_source=str(priced["pricing_source"]),
+                    **_model_surface_from_payload(priced),
                     pricing_version=str(priced["pricing_version"]),
                     unknown_model=bool(priced["unknown_model"]),
                     input_cost_per_1m_usd=_safe_float(priced["input_cost_per_1m_usd"]),
