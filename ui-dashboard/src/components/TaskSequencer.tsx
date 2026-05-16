@@ -272,12 +272,8 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
 
   const taskFinishTimes = useMemo(() => {
     const nowMs = Date.now();
-    // Use a calendar-date key (yyyymmdd in local time) for prefix decisions so
-    // month/year rollovers and 2+-day spans are handled correctly. Using
-    // getDate() alone collides on same-day-of-month across months.
-    const localDateKey = (d: Date) =>
-      d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
-    const todayKey = localDateKey(new Date(nowMs));
+    const now = new Date(nowMs);
+    const todayKey = `${now.getFullYear()}${now.getMonth()}${now.getDate()}`;
 
     const activeTask = tasks.find((t) => t.id === currentTaskId);
     const activeTaskRemaining = activeTask
@@ -305,23 +301,20 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
       const finishDate = new Date(nowMs + cumulative * 60000);
       const hh = finishDate.getHours().toString().padStart(2, '0');
       const mm = finishDate.getMinutes().toString().padStart(2, '0');
-      const finishKey = localDateKey(finishDate);
-      const dayOffset = finishKey - todayKey;
+
+      const finishDateKey = `${finishDate.getFullYear()}${finishDate.getMonth()}${finishDate.getDate()}`;
       let dayPrefix = '';
-      if (dayOffset !== 0) {
-        // For tasks finishing more than a day out, fall back to a short date
-        // ("MMM D at HH:MM"). Same-day finishes get no prefix, next-day gets
-        // the friendlier "Tomorrow at" shorthand.
-        const oneDayMs = 24 * 60 * 60 * 1000;
-        const nextDayKey = localDateKey(new Date(nowMs + oneDayMs));
-        if (finishKey === nextDayKey) {
+
+      if (finishDateKey !== todayKey) {
+        const diffMs =
+          new Date(finishDate.getFullYear(), finishDate.getMonth(), finishDate.getDate()).getTime() -
+          new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 1) {
           dayPrefix = 'Tomorrow at ';
         } else {
-          const shortDate = finishDate.toLocaleDateString(undefined, {
-            month: 'short',
-            day: 'numeric',
-          });
-          dayPrefix = `${shortDate} at `;
+          dayPrefix = `${finishDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} at `;
         }
       }
 
