@@ -1,0 +1,183 @@
+{
+  "id": "RTE-PKT-15-ARTIFACT-CONSUMER-COMPATIBILITY-REGRESSION",
+  "project": "Dopemux RTE GPT-5.5 Pro Audit",
+  "target": "Repo Truth Extractor additive artifact consumer compatibility for route, fingerprint, economic, and pricing metadata",
+  "invariants": [
+    "No live extraction, provider preflight, provider calls, or batch operations are allowed for this packet.",
+    "Do not change promptsets, provider clients, route selection, model IDs, provider dispatch behavior, provider pricing rates, compose, config, or deployment files.",
+    "Generated proof artifacts are evidence only and do not outrank runtime code, checked-in tests, configs, or active entrypoints.",
+    "Missing live provider evidence remains UNKNOWN or LIVE_VALIDATION_REQUIRED."
+  ],
+  "depends_on": [
+    "RTE-PKT-12-OPENROUTER-XAI",
+    "RTE-PKT-13-ROUTE-FINGERPRINT-STATIC-PROOF",
+    "RTE-PKT-14-ECONOMIC-SURFACE-PRICING-VISIBILITY"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "services/repo-truth-extractor/run_extraction_v5.py",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-PKT",
+    "base_branch": "codex/rte-pkt-14-pricing-visibility",
+    "parent_tp_id": "RTE-PKT-14-ECONOMIC-SURFACE-PRICING-VISIBILITY",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-pkt-15-artifact-consumer-compat",
+    "base_branch": "codex/rte-pkt-14-pricing-visibility",
+    "stacked_because": "RTE-PKT-14 is present on codex/rte-pkt-14-pricing-visibility but not observed on main at execution start."
+  },
+  "commit": {
+    "message": "test(rte): cover enriched artifact consumer compatibility",
+    "allowlist": [
+      "services/repo-truth-extractor/tests/test_artifact_consumer_static_compatibility.py",
+      "out/rte-pkt-15-artifact-consumer-compat/"
+    ],
+    "verify": [
+      "pytest services/repo-truth-extractor/tests/test_artifact_consumer_static_compatibility.py -q",
+      "pytest services/repo-truth-extractor/tests/test_openrouter_xai_route_identity.py -q",
+      "pytest services/repo-truth-extractor/tests/test_route_fingerprint_static_identity.py -q",
+      "pytest services/repo-truth-extractor/tests/test_pricing_surface_static_identity.py -q",
+      "pytest services/repo-truth-extractor/tests/test_pricing_catalog.py services/repo-truth-extractor/tests/test_pricing_coverage.py services/repo-truth-extractor/tests/test_profile_review_packets.py -q",
+      "pytest services/repo-truth-extractor/tests -k \"proof_pack or proof or status\" -q",
+      "pytest services/repo-truth-extractor/tests -k \"routing_fingerprint or route_fingerprint or fingerprint\" -q",
+      "pytest services/repo-truth-extractor/tests -k \"pricing or spend or cost\" -q",
+      "pytest services/repo-truth-extractor/tests -k \"openrouter and xai\" -q",
+      "pytest services/repo-truth-extractor/tests -k \"xai and metadata\" -q",
+      "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/llm_runtime.py",
+      "python -m json.tool out/rte-pkt-15-artifact-consumer-compat/RTE-PKT-15_MANIFEST.json >/dev/null",
+      "git diff --check",
+      "git diff --cached --check",
+      "pre-commit run --files services/repo-truth-extractor/tests/test_artifact_consumer_static_compatibility.py out/rte-pkt-15-artifact-consumer-compat/RTE-PKT-15_TASK_PACKET.json out/rte-pkt-15-artifact-consumer-compat/RTE-PKT-15_MANIFEST.json out/rte-pkt-15-artifact-consumer-compat/RTE-PKT-15_DIFF_SUMMARY.md out/rte-pkt-15-artifact-consumer-compat/RTE-PKT-15_CONSUMER_COMPATIBILITY_MATRIX.md out/rte-pkt-15-artifact-consumer-compat/RTE-PKT-15_STATIC_FIXTURE_EXAMPLES.md out/rte-pkt-15-artifact-consumer-compat/RTE-PKT-15_TEST_REPORT.md out/rte-pkt-15-artifact-consumer-compat/RTE-PKT-15_NO_PROVIDER_CALLS_ATTESTATION.md out/rte-pkt-15-artifact-consumer-compat/RTE-PKT-15_REMAINING_UNKNOWNS.md"
+    ]
+  },
+  "pr": {
+    "title": "test(rte): cover enriched artifact consumer compatibility",
+    "body": "Implements RTE-PKT-15 as a stacked static compatibility regression over RTE-PKT-14. Adds targeted artifact consumer tests and proof artifacts. No live provider, preflight, extraction, or batch operations are in scope.",
+    "base": "codex/rte-pkt-14-pricing-visibility"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "RTE-PKT-15-S1",
+      "task": "Inventory artifact consumers for routing fingerprints, manifests, proof/status/dashboard outputs, pricing coverage, spend ledgers, and direct-model spend surfaces.",
+      "requirements": [
+        "Use runtime code and checked-in tests as authority.",
+        "Classify missing or untested downstream consumers as UNKNOWN."
+      ],
+      "commands": [
+        "rg -n \"RUN_ROUTING_FINGERPRINT|RUN_MANIFEST|PROOF_PACK|RUN_DASHBOARD|COVERAGE_ROLLUP|FAILURE_INDEX|spend_ledger|pricing_surface|pricing|spend\" services/repo-truth-extractor services/repo-truth-extractor/tests -S"
+      ],
+      "expected_files": [
+        "out/rte-pkt-15-artifact-consumer-compat/RTE-PKT-15_CONSUMER_COMPATIBILITY_MATRIX.md"
+      ],
+      "validation": [
+        "Consumer compatibility matrix includes observed consumers, tests, risks, and missing evidence."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/llm_runtime.py",
+        "services/repo-truth-extractor/lib/pricing_surface.py",
+        "services/repo-truth-extractor/lib/spend_ledger.py",
+        "services/repo-truth-extractor/benchmarking/pricing/coverage.py",
+        "services/repo-truth-extractor/benchmarking/direct_model/spend.py",
+        "services/repo-truth-extractor/tests/"
+      ]
+    },
+    {
+      "id": "RTE-PKT-15-S2",
+      "task": "Add targeted static compatibility tests for enriched route identity, route fingerprint, pricing surface, proof/status/dashboard, risk dashboard, pricing coverage, direct-model spend, and spend ledger payloads.",
+      "requirements": [
+        "Tests must not require provider credentials.",
+        "Provider client factories must be configured to raise in no-provider-call paths.",
+        "Tests must assert stable required fields plus controlled additive metadata instead of whole-JSON equality."
+      ],
+      "commands": [
+        "pytest services/repo-truth-extractor/tests/test_artifact_consumer_static_compatibility.py -q"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/tests/test_artifact_consumer_static_compatibility.py"
+      ],
+      "validation": [
+        "Targeted compatibility pytest exits 0."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/tests/test_openrouter_xai_route_identity.py",
+        "services/repo-truth-extractor/tests/test_route_fingerprint_static_identity.py",
+        "services/repo-truth-extractor/tests/test_pricing_surface_static_identity.py",
+        "services/repo-truth-extractor/tests/test_proof_contract.py",
+        "services/repo-truth-extractor/tests/test_risk_dashboard.py"
+      ]
+    },
+    {
+      "id": "RTE-PKT-15-S3",
+      "task": "Generate RTE-PKT-15 proof artifacts and validate manifest/schema/proof files.",
+      "requirements": [
+        "Proof must explicitly preserve remaining UNKNOWN and LIVE_VALIDATION_REQUIRED statuses.",
+        "Proof must attest no provider calls, preflight, live extraction, or batch operations were run."
+      ],
+      "commands": [
+        "python -m json.tool out/rte-pkt-15-artifact-consumer-compat/RTE-PKT-15_MANIFEST.json >/dev/null",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "out/rte-pkt-15-artifact-consumer-compat/RTE-PKT-15_MANIFEST.json",
+        "out/rte-pkt-15-artifact-consumer-compat/RTE-PKT-15_DIFF_SUMMARY.md",
+        "out/rte-pkt-15-artifact-consumer-compat/RTE-PKT-15_CONSUMER_COMPATIBILITY_MATRIX.md",
+        "out/rte-pkt-15-artifact-consumer-compat/RTE-PKT-15_STATIC_FIXTURE_EXAMPLES.md",
+        "out/rte-pkt-15-artifact-consumer-compat/RTE-PKT-15_TEST_REPORT.md",
+        "out/rte-pkt-15-artifact-consumer-compat/RTE-PKT-15_NO_PROVIDER_CALLS_ATTESTATION.md",
+        "out/rte-pkt-15-artifact-consumer-compat/RTE-PKT-15_REMAINING_UNKNOWNS.md"
+      ],
+      "validation": [
+        "Manifest parses with python -m json.tool.",
+        "Proof files exist under the packet output root."
+      ],
+      "context_files": [
+        "out/rte-pkt-15-artifact-consumer-compat/RTE-PKT-15_TASK_PACKET.json"
+      ]
+    },
+    {
+      "id": "RTE-PKT-15-S4",
+      "task": "Run required static validation, inspect diff scope, run pre-commit when safe, then commit and prepare PR.",
+      "requirements": [
+        "Changed files must remain within the task packet allowlist.",
+        "Report any NOT_RUN commands and residual risks truthfully."
+      ],
+      "commands": [
+        "git diff --stat",
+        "git diff --check",
+        "git diff --cached --check",
+        "git status --short --branch"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/tests/test_artifact_consumer_static_compatibility.py",
+        "out/rte-pkt-15-artifact-consumer-compat/"
+      ],
+      "validation": [
+        "Required validation commands are recorded in RTE-PKT-15_TEST_REPORT.md.",
+        "git status and diff scope are recorded before closeout."
+      ],
+      "context_files": [
+        ".pre-commit-config.yaml"
+      ]
+    }
+  ]
+}
