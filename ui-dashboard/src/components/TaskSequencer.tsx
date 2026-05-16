@@ -271,27 +271,47 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   }, [totalRemainingMinutes]);
 
   const taskFinishTimes = useMemo(() => {
+    const acc: Record<string, string> = {};
+    if (optimizedTasks.length === 0 && !currentTaskId) return acc;
+
+    // Anchor at wall-clock now; heartbeat + taskTimer are deps so the memo
+    // recomputes every second while the timer runs and every 30s while paused.
+    const nowMs = Date.now();
+    const today = new Date(nowMs).getDate();
+
+    // The active task may be filtered out of optimizedTasks (e.g. critical
+    // cognitive load excludes complexity > 0.5), but its remaining time still
+    // anchors every downstream task. Pull it from the raw task list.
+    const currentTaskObj = tasks.find(
+      (t) => t.id === currentTaskId && t.status !== 'completed'
+    );
+    const currentRemainingMinutes = currentTaskObj
+      ? Math.max(0, currentTaskObj.estimatedMinutes - taskTimer / 60)
+      : 0;
+
+    // Execution order: current task first, then the rest of optimizedTasks in
+    // their displayed order. This fixes accumulating against complexity-sorted
+    // index instead of execution order.
+    const orderedRest = optimizedTasks.filter((t) => t.id !== currentTaskId);
+    const executionOrder: Task[] = currentTaskObj
+      ? [currentTaskObj, ...orderedRest]
+      : orderedRest;
+
     let cumulative = 0;
-    const now = new Date(heartbeat);
-    const today = now.getDate();
-
-    return optimizedTasks.reduce((acc, task) => {
+    for (const task of executionOrder) {
       const isCurrent = task.id === currentTaskId;
-      const taskRemainingMinutes = isCurrent
-        ? Math.max(0, task.estimatedMinutes - taskTimer / 60)
-        : task.estimatedMinutes;
-      cumulative += taskRemainingMinutes;
+      cumulative += isCurrent ? currentRemainingMinutes : task.estimatedMinutes;
 
-      // Note: Date.now() / heartbeat is read here but driven by taskTimer/heartbeat deps
-      const finishDate = new Date(heartbeat + cumulative * 60000);
+      const finishDate = new Date(nowMs + cumulative * 60000);
       const hh = finishDate.getHours().toString().padStart(2, '0');
       const mm = finishDate.getMinutes().toString().padStart(2, '0');
       const dayPrefix = finishDate.getDate() !== today ? 'Tomorrow at ' : '';
 
       acc[task.id] = `${dayPrefix}${hh}:${mm}`;
-      return acc;
-    }, {} as Record<string, string>);
-  }, [optimizedTasks, currentTaskId, taskTimer, heartbeat]);
+    }
+
+    return acc;
+  }, [optimizedTasks, currentTaskId, taskTimer, heartbeat, tasks]);
 
   return (
     <Paper
@@ -779,7 +799,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
                       <Typography variant="caption">
                         {task.estimatedMinutes} min • {task.energyRequired} energy
-                        {!isCompleted && taskFinishTimes[task.id] && ` • Ends at ${taskFinishTimes[task.id]}`}
+                        {taskFinishTimes[task.id] && ` • Ends at ${taskFinishTimes[task.id]}`}
                       </Typography>
                       <Typography variant="caption">#{index + 1}</Typography>
                     </Box>

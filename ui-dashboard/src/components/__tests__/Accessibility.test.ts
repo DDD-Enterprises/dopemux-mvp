@@ -88,8 +88,9 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('ref={headerRef}');
   expect(content).toContain('tabIndex={-1}');
   expect(content).toContain('headerRef.current?.focus();');
-  // Predictive task finish times
-  expect(content).toMatch(/\{!isCompleted && taskFinishTimes\[task\.id\] && ` • Ends at \$\{taskFinishTimes\[task\.id\]\}`\}/);
+  // Predictive task finish times. The !isCompleted guard was dropped because
+  // optimizedTasks already filters completed tasks out of the render list.
+  expect(content).toMatch(/\{taskFinishTimes\[task\.id\] && ` • Ends at \$\{taskFinishTimes\[task\.id\]\}`\}/);
 });
 
 test('TaskSequencer.tsx implements overtime visual cues', () => {
