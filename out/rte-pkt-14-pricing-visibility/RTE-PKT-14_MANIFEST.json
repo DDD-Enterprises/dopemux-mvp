@@ -1,0 +1,63 @@
+{
+  "packet_id": "RTE-PKT-14-ECONOMIC-SURFACE-PRICING-VISIBILITY",
+  "generated_at_local": "2026-05-15T16:54:09-07:00",
+  "worktree": "/Users/hue/code/dopemux-mvp",
+  "worktree_note": "Dedicated worktree creation was attempted and blocked by sandbox .git ref lock permissions; edits were made in the primary checkout with scoped files only.",
+  "branch": "main",
+  "base_head": "655c4196ea4c51b7e0898224af9ed15b0451f53f",
+  "changed_code_files": [
+    "services/repo-truth-extractor/benchmarking/direct_model/spend.py",
+    "services/repo-truth-extractor/benchmarking/pricing/coverage.py",
+    "services/repo-truth-extractor/lib/pricing_surface.py",
+    "services/repo-truth-extractor/lib/spend_ledger.py",
+    "services/repo-truth-extractor/llm_runtime.py",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/tests/test_pricing_surface_static_identity.py"
+  ],
+  "proof_outputs": [
+    "out/rte-pkt-14-pricing-visibility/RTE-PKT-14_MANIFEST.json",
+    "out/rte-pkt-14-pricing-visibility/RTE-PKT-14_DIFF_SUMMARY.md",
+    "out/rte-pkt-14-pricing-visibility/RTE-PKT-14_PRICING_SURFACE_MATRIX.md",
+    "out/rte-pkt-14-pricing-visibility/RTE-PKT-14_STATIC_FIXTURE_EXAMPLES.md",
+    "out/rte-pkt-14-pricing-visibility/RTE-PKT-14_TEST_REPORT.md",
+    "out/rte-pkt-14-pricing-visibility/RTE-PKT-14_NO_PROVIDER_CALLS_ATTESTATION.md",
+    "out/rte-pkt-14-pricing-visibility/RTE-PKT-14_REMAINING_UNKNOWNS.md"
+  ],
+  "task_packet_path": "out/rte-pkt-14-pricing-visibility/RTE-PKT-14_TASK_PACKET.json",
+  "validation_summary": {
+    "pytest services/repo-truth-extractor/tests/test_pricing_surface_static_identity.py -q": "PASS exit=0 tests=6",
+    "pytest services/repo-truth-extractor/tests/test_openrouter_xai_route_identity.py -q": "PASS exit=0 tests=6",
+    "pytest services/repo-truth-extractor/tests/test_route_fingerprint_static_identity.py -q": "PASS exit=0 tests=5",
+    "pytest services/repo-truth-extractor/tests/test_pricing_catalog.py services/repo-truth-extractor/tests/test_pricing_coverage.py services/repo-truth-extractor/tests/test_profile_review_packets.py -q": "PASS exit=0 tests=5",
+    "pytest services/repo-truth-extractor/tests -k \"pricing or spend or cost\" -q": "PASS exit=0 tests=44 skipped=1",
+    "pytest services/repo-truth-extractor/tests -k \"openrouter and xai\" -q": "PASS exit=0 tests=11",
+    "pytest services/repo-truth-extractor/tests -k \"xai and metadata\" -q": "PASS exit=0 tests=10",
+    "pytest services/repo-truth-extractor/tests -k \"proof_pack or proof or status\" -q": "PASS exit=0 tests=43",
+    "pytest services/repo-truth-extractor/tests -k \"risk and dashboard\" -q": "PASS exit=0 tests=9",
+    "pytest services/repo-truth-extractor/tests -k \"proof_contract or artifact_authority\" -q": "PASS exit=0 tests=10",
+    "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/llm_runtime.py": "PASS exit=0",
+    "python -m json.tool out/rte-pkt-14-pricing-visibility/RTE-PKT-14_MANIFEST.json >/dev/null": "PASS exit=0",
+    "python -m json.tool out/rte-pkt-14-pricing-visibility/RTE-PKT-14_TASK_PACKET.json >/dev/null": "PASS exit=0",
+    "jsonschema validation for out/rte-pkt-14-pricing-visibility/RTE-PKT-14_TASK_PACKET.json": "PASS exit=0",
+    "git diff --check": "PASS exit=0",
+    "git diff --cached --check": "PASS exit=0 no staged files",
+    "pre-commit run --files <changed files>": "PASS exit=0"
+  },
+  "no_provider_call_status": "PASS_STATIC_ONLY_NO_PROVIDER_CALLS",
+  "remaining_unknowns": [
+    "OpenRouter x-ai live upstream metadata remains UNKNOWN.",
+    "OpenRouter x-ai returned-model behavior remains UNKNOWN without live evidence.",
+    "OpenRouter x-ai schema acceptance remains LIVE_VALIDATION_REQUIRED.",
+    "OpenRouter x-ai retention, ZDR, billing, and rate-limit equivalence remain UNKNOWN.",
+    "Direct xAI live safety remains LIVE_VALIDATION_REQUIRED.",
+    "Provider billing equivalence is not inferred from model prefixes."
+  ],
+  "predecessor_packets": [
+    "RTE-PKT-12-OPENROUTER-XAI",
+    "RTE-PKT-13-ROUTE-FINGERPRINT-STATIC-PROOF"
+  ],
+  "predecessor_verdicts": {
+    "RTE-PKT-12": "PASS_WITH_RISKS",
+    "RTE-PKT-13": "PASS_WITH_RISKS"
+  }
+}

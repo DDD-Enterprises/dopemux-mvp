@@ -229,6 +229,7 @@ from llm_runtime import (
     backoff_seconds as llm_runtime_backoff_seconds,
     call_llm as llm_runtime_call_llm,
     call_llm_with_ladder as llm_runtime_call_llm_with_ladder,
+    classify_route_identity as llm_runtime_classify_route_identity,
     coerce_artifacts_from_response as llm_runtime_coerce_artifacts_from_response,
     comparison_artifact_dir as llm_runtime_comparison_artifact_dir,
     classify_route_identity as llm_runtime_classify_route_identity,
@@ -241,6 +242,7 @@ from llm_runtime import (
     run_comparison_lane as llm_runtime_run_comparison_lane,
     should_retry as llm_runtime_should_retry,
 )
+from lib.pricing_surface import pricing_surface_metadata
 from lib.risk_dashboard import (
     build_rte_risk_dashboard,
     collect_rte_risk_dashboard_inputs,
@@ -3654,6 +3656,40 @@ def record_request_cost(
             pricing_registry=state.pricing_registry,
         )
         state.total_cost_usd = _quantize_usd(state.total_cost_usd + cost_usd)
+        pricing_meta = pricing_surface_metadata(
+            provider=provider,
+            model_id=model_id,
+            api_key_env=(
+                str(
+                    meta.get("api_key_env")
+                    or meta.get("api_key_env_resolved")
+                    or meta.get("api_key_env_requested")
+                    or ""
+                )
+                or None
+            ),
+            route_identity=meta,
+            endpoint_effective=(
+                str(meta.get("endpoint_effective"))
+                if meta.get("endpoint_effective") is not None
+                else None
+            ),
+            transport=(
+                str(meta.get("transport"))
+                if meta.get("transport") is not None
+                else None
+            ),
+            provider_signature=(
+                str(meta.get("provider_signature"))
+                if meta.get("provider_signature") is not None
+                else None
+            ),
+            route_fingerprint_hash=(
+                str(meta.get("route_fingerprint_hash"))
+                if meta.get("route_fingerprint_hash") is not None
+                else None
+            ),
+        )
         event = {
             "sequence": len(state.entries) + 1,
             "recorded_at": now_iso(),
@@ -3667,6 +3703,7 @@ def record_request_cost(
             "total_tokens": int(usage.get("total_tokens", 0) or 0),
             "cost_usd": float(cost_usd),
             "total_cost_usd_after_event": float(_quantize_usd(state.total_cost_usd)),
+            **pricing_meta,
         }
         state.entries.append(event)
         if state.total_cost_usd > state.max_cost_usd:
@@ -9210,6 +9247,15 @@ def build_static_route_fingerprint_metadata(
     material = static_route_fingerprint_material(route_meta)
     route_meta["route_fingerprint_material"] = material
     route_meta["route_fingerprint_hash"] = static_route_fingerprint_hash(material)
+    route_meta.update(
+        pricing_surface_metadata(
+            route_identity=route_meta,
+            endpoint_effective=route_meta.get("endpoint_effective"),
+            transport=route_meta.get("transport"),
+            provider_signature=route_meta.get("provider_signature"),
+            route_fingerprint_hash=route_meta.get("route_fingerprint_hash"),
+        )
+    )
     return route_meta
 
 
@@ -9875,9 +9921,28 @@ def _build_cost_abort_state(
         "cost_abort_recovery_rule": recovery_rule,
     }
     if isinstance(pricing, dict):
-        payload["pricing_key"] = pricing.get("pricing_key")
-        payload["pricing_source"] = pricing.get("pricing_source")
-        payload["pricing_version"] = pricing.get("pricing_version")
+        for key in (
+            "pricing_key",
+            "pricing_source",
+            "pricing_version",
+            "requested_provider",
+            "requested_model_id",
+            "provider_route_kind",
+            "upstream_provider",
+            "economic_surface",
+            "api_key_env",
+            "endpoint_effective",
+            "transport",
+            "provider_signature",
+            "route_fingerprint_hash",
+            "pricing_authority",
+            "pricing_surface",
+            "pricing_surface_source",
+            "pricing_live_validation_status",
+            "direct_provider_billing_inherited",
+        ):
+            if key in pricing:
+                payload[key] = pricing.get(key)
         payload["unknown_model"] = bool(pricing.get("unknown_model", False))
         payload["projected_additional_cost_usd"] = pricing.get("estimated_cost_usd")
         payload["input_tokens"] = pricing.get("input_tokens")
@@ -10560,6 +10625,10 @@ def enrich_request_meta(
         "provider_failure",
         failure_type in {"provider", "rate_limit", "quota_or_billing", "timeout"},
     )
+    if "endpoint_effective" not in enriched:
+        enriched["endpoint_effective"] = endpoint_effective(
+            f"{endpoint_base}/chat/completions"
+        )
     if "provider_signature" not in enriched:
         enriched["provider_signature"] = provider_signature(
             provider,
@@ -10570,6 +10639,52 @@ def enrich_request_meta(
             ),
             auth_effective if provider == "gemini" else None,
         )
+    route_identity = llm_runtime_classify_route_identity(
+        provider=str(enriched.get("provider") or provider),
+        model_id=str(enriched.get("model_id") or model_id),
+        api_key_env=str(enriched.get("api_key_env") or api_key_env or ""),
+        endpoint_base_url=str(enriched.get("endpoint_base_url") or endpoint_base),
+        endpoint_effective=str(enriched.get("endpoint_effective") or ""),
+        transport=(
+            str(enriched.get("transport"))
+            if enriched.get("transport") is not None
+            else None
+        ),
+        provider_signature=str(enriched.get("provider_signature") or ""),
+        structured_output=structured_output,
+    )
+    for key, value in route_identity.items():
+        enriched.setdefault(key, value)
+    enriched.setdefault("direct_provider_guarantees_inherited", None)
+    if "route_fingerprint_hash" not in enriched:
+        route_material = static_route_fingerprint_material(enriched)
+        enriched.setdefault("route_fingerprint_material", route_material)
+        enriched["route_fingerprint_hash"] = static_route_fingerprint_hash(route_material)
+    pricing_identity = pricing_surface_metadata(
+        route_identity=enriched,
+        endpoint_effective=(
+            str(enriched.get("endpoint_effective"))
+            if enriched.get("endpoint_effective") is not None
+            else None
+        ),
+        transport=(
+            str(enriched.get("transport"))
+            if enriched.get("transport") is not None
+            else None
+        ),
+        provider_signature=(
+            str(enriched.get("provider_signature"))
+            if enriched.get("provider_signature") is not None
+            else None
+        ),
+        route_fingerprint_hash=(
+            str(enriched.get("route_fingerprint_hash"))
+            if enriched.get("route_fingerprint_hash") is not None
+            else None
+        ),
+    )
+    for key, value in pricing_identity.items():
+        enriched.setdefault(key, value)
     enriched["routing_signature"] = routing_signature(
         phase,
         step_id,
@@ -17509,6 +17624,7 @@ def _pricing_preview_record(
         if provider and model_id
         else "unknown"
     )
+    pricing_meta = pricing_surface_metadata(provider=provider, model_id=model_id)
     estimated_cost_usd = (
         (max(0, int(input_tokens)) / 1_000_000.0) * BASELINE_INPUT_COST_PER_1M_USD
         + (max(0, int(output_tokens)) / 1_000_000.0) * BASELINE_OUTPUT_COST_PER_1M_USD
@@ -17520,6 +17636,7 @@ def _pricing_preview_record(
         "pricing_source": f"unknown_model:{UNKNOWN_MODEL_POLICY}",
         "pricing_version": PRICING_VERSION,
         "unknown_model": True,
+        **pricing_meta,
         "input_cost_per_1m_usd": BASELINE_INPUT_COST_PER_1M_USD,
         "output_cost_per_1m_usd": BASELINE_OUTPUT_COST_PER_1M_USD,
         "input_tokens": max(0, int(input_tokens)),

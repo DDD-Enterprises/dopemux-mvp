@@ -3,6 +3,8 @@ from __future__ import annotations
 from collections import Counter
 from typing import Any
 
+from lib.pricing_surface import normalize_provider_model, pricing_surface_metadata
+
 from .catalog import ACTIVE_BENCHMARK_UNIVERSE, PricingCatalog, load_pricing_catalog
 
 
@@ -29,6 +31,8 @@ def build_pricing_coverage_report(
 
     for model_key in universe:
         normalized_key = str(model_key).strip().lower()
+        provider, model_id = normalize_provider_model(None, normalized_key)
+        surface = pricing_surface_metadata(provider=provider, model_id=model_id)
         entry = active_catalog.models.get(normalized_key)
         if entry is None:
             row = {
@@ -42,6 +46,7 @@ def build_pricing_coverage_report(
                 "input_cost_per_m": None,
                 "output_cost_per_m": None,
                 "pricing_caveat": "No catalog entry present for active benchmark candidate.",
+                **surface,
             }
         else:
             row = {
@@ -59,6 +64,7 @@ def build_pricing_coverage_report(
                     None if entry["output_cost_per_m"] is None else float(entry["output_cost_per_m"])
                 ),
                 "pricing_caveat": str(entry.get("pricing_caveat") or ""),
+                **surface,
             }
         counts[row["coverage_class"]] += 1
         rows.append(row)

@@ -10,6 +10,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 import requests
 
+from lib.pricing_surface import classify_static_route_identity
 from output_safety import sanitize_text_for_provider_payload
 
 logger = logging.getLogger(__name__)
@@ -146,11 +147,11 @@ def _normalize_route_tuple(
 
 
 def _provider_route_kind(provider: str, model_id: str) -> str:
-    provider_token = str(provider or "").strip().lower()
-    model_token = str(model_id or "").strip().lower()
-    if provider_token == "openrouter" and model_token.startswith("x-ai/"):
-        return "openrouter_proxy_xai"
-    return "direct_provider"
+    return str(
+        classify_static_route_identity(provider=provider, model_id=model_id).get(
+            "provider_route_kind", "unknown"
+        )
+    )
 
 
 def _request_route_metadata(
@@ -158,12 +159,11 @@ def _request_route_metadata(
     model_id: str,
     api_key_env: str,
 ) -> Dict[str, Any]:
-    return {
-        "requested_provider": provider,
-        "requested_model_id": model_id,
-        "api_key_env": api_key_env,
-        "provider_route_kind": _provider_route_kind(provider, model_id),
-    }
+    return classify_static_route_identity(
+        provider=provider,
+        model_id=model_id,
+        api_key_env=api_key_env,
+    )
 
 
 def _structured_output_request_metadata(
@@ -309,60 +309,29 @@ def classify_route_identity(
 ) -> Dict[str, Any]:
     normalized_provider = str(provider or "").strip().lower()
     requested_model_id = str(model_id or "").strip()
-    normalized_model_id = requested_model_id.lower()
-    upstream_provider = normalized_provider if normalized_provider else "unknown"
-    provider_route_kind = "unknown"
-    economic_surface = "unknown"
-
-    if normalized_provider == "openrouter":
-        prefix, sep, _rest = normalized_model_id.partition("/")
-        normalized_prefix = {"x-ai": "xai"}.get(prefix, prefix)
-        economic_surface = "openrouter"
-        if sep and normalized_prefix == "xai":
-            provider_route_kind = "openrouter_proxy_xai"
-            upstream_provider = "xai"
-        elif sep and normalized_prefix in {"openai", "gemini", "anthropic"}:
-            provider_route_kind = "openrouter_proxy_other"
-            upstream_provider = normalized_prefix
-        else:
-            provider_route_kind = "openrouter_native_or_unknown"
-            upstream_provider = "unknown"
-    elif normalized_provider in {"xai", "openai", "gemini"}:
-        provider_route_kind = "direct_provider"
-        upstream_provider = normalized_provider
-        economic_surface = {
-            "xai": "xai_direct",
-            "openai": "openai_direct",
-            "gemini": "gemini_direct",
-        }[normalized_provider]
-
-    identity: Dict[str, Any] = {
-        "requested_provider": normalized_provider or "unknown",
-        "requested_model_id": requested_model_id,
-        "provider_route_kind": provider_route_kind,
-        "upstream_provider": upstream_provider or "unknown",
-        "economic_surface": economic_surface,
-        "api_key_env": str(api_key_env or "").strip() or None,
-        "endpoint_base_url": endpoint_base_url,
-        "endpoint_effective": endpoint_effective,
-        "transport": transport,
-        "provider_signature": provider_signature,
-        "structured_output_mode": _structured_output_mode_from_meta(structured_output),
-        "provider_schema_variant": provider_schema_variant_label(
-            normalized_provider,
-            requested_model_id,
-        ),
-        "live_validation_status": (
-            "LIVE_VALIDATION_REQUIRED"
-            if normalized_provider in {"xai", "openai", "gemini", "openrouter"}
-            else "UNKNOWN"
-        ),
-        "route_identity_authority": "static_request_route_metadata",
-        "direct_provider_guarantees_inherited": (
-            False if normalized_provider == "openrouter" else None
-        ),
-    }
+    identity: Dict[str, Any] = classify_static_route_identity(
+        provider=provider,
+        model_id=model_id,
+        api_key_env=api_key_env,
+    )
+    identity.update(
+        {
+            "endpoint_base_url": endpoint_base_url,
+            "endpoint_effective": endpoint_effective,
+            "transport": transport,
+            "provider_signature": provider_signature,
+            "structured_output_mode": _structured_output_mode_from_meta(
+                structured_output
+            ),
+            "provider_schema_variant": provider_schema_variant_label(
+                normalized_provider,
+                requested_model_id,
+            ),
+            "route_identity_authority": "static_request_route_metadata",
+        }
+    )
     return {key: value for key, value in identity.items() if value is not None}
+
 
 def call_llm(
     deps: LLMRuntimeDeps,
