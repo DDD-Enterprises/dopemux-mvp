@@ -85,6 +85,8 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   const [currentTaskId, setCurrentTaskId] = useState<string | null>('1');
   const [taskTimer, setTaskTimer] = useState<number>(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
+  // Heartbeat to keep "Ends at" times fresh even when taskTimer is paused
+  const [heartbeat, setHeartbeat] = useState<number>(Date.now());
   const [isResetConfirming, setIsResetConfirming] = useState(false);
   const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -97,6 +99,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     }
     return () => clearInterval(interval);
   }, [isTimerRunning]);
+
+  useEffect(() => {
+    // 30s heartbeat to ensure absolute time anchors stay relevant during pauses
+    const interval = setInterval(() => {
+      setHeartbeat(Date.now());
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     setTaskTimer(0);
@@ -262,19 +272,26 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
 
   const taskFinishTimes = useMemo(() => {
     let cumulative = 0;
+    const now = new Date(heartbeat);
+    const today = now.getDate();
+
     return optimizedTasks.reduce((acc, task) => {
       const isCurrent = task.id === currentTaskId;
       const taskRemainingMinutes = isCurrent
         ? Math.max(0, task.estimatedMinutes - taskTimer / 60)
         : task.estimatedMinutes;
       cumulative += taskRemainingMinutes;
-      const finishDate = new Date(Date.now() + cumulative * 60000);
+
+      // Note: Date.now() / heartbeat is read here but driven by taskTimer/heartbeat deps
+      const finishDate = new Date(heartbeat + cumulative * 60000);
       const hh = finishDate.getHours().toString().padStart(2, '0');
       const mm = finishDate.getMinutes().toString().padStart(2, '0');
-      acc[task.id] = `${hh}:${mm}`;
+      const dayPrefix = finishDate.getDate() !== today ? 'Tomorrow at ' : '';
+
+      acc[task.id] = `${dayPrefix}${hh}:${mm}`;
       return acc;
     }, {} as Record<string, string>);
-  }, [optimizedTasks, currentTaskId, taskTimer]);
+  }, [optimizedTasks, currentTaskId, taskTimer, heartbeat]);
 
   return (
     <Paper
