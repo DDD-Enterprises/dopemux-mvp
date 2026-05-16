@@ -31,6 +31,21 @@ class SpendEstimate:
     pricing_confidence: str
     pricing_currency: str
     surface_scope: str
+    requested_provider: str
+    requested_model_id: str
+    provider_route_kind: str
+    upstream_provider: str
+    economic_surface: str
+    api_key_env: str | None
+    endpoint_effective: str | None
+    transport: str | None
+    provider_signature: str | None
+    route_fingerprint_hash: str | None
+    pricing_authority: str
+    pricing_surface: str
+    pricing_surface_source: str
+    pricing_live_validation_status: str
+    direct_provider_billing_inherited: bool | None
     pricing_version: str
     pricing_match_type: str
     unknown_model: bool
@@ -52,6 +67,21 @@ class SpendEstimate:
             "pricing_confidence": self.pricing_confidence,
             "pricing_currency": self.pricing_currency,
             "surface_scope": self.surface_scope,
+            "requested_provider": self.requested_provider,
+            "requested_model_id": self.requested_model_id,
+            "provider_route_kind": self.provider_route_kind,
+            "upstream_provider": self.upstream_provider,
+            "economic_surface": self.economic_surface,
+            "api_key_env": self.api_key_env,
+            "endpoint_effective": self.endpoint_effective,
+            "transport": self.transport,
+            "provider_signature": self.provider_signature,
+            "route_fingerprint_hash": self.route_fingerprint_hash,
+            "pricing_authority": self.pricing_authority,
+            "pricing_surface": self.pricing_surface,
+            "pricing_surface_source": self.pricing_surface_source,
+            "pricing_live_validation_status": self.pricing_live_validation_status,
+            "direct_provider_billing_inherited": self.direct_provider_billing_inherited,
             "pricing_version": self.pricing_version,
             "pricing_match_type": self.pricing_match_type,
             "unknown_model": self.unknown_model,
@@ -98,6 +128,45 @@ class SpendGuard:
             pricing_confidence=str(rate.get("pricing_confidence") or "UNKNOWN"),
             pricing_currency=str(rate.get("pricing_currency") or "USD"),
             surface_scope=str(rate.get("surface_scope") or "unknown"),
+            requested_provider=str(rate.get("requested_provider") or provider),
+            requested_model_id=str(rate.get("requested_model_id") or model_id),
+            provider_route_kind=str(rate.get("provider_route_kind") or "unknown"),
+            upstream_provider=str(rate.get("upstream_provider") or "unknown"),
+            economic_surface=str(rate.get("economic_surface") or "unknown"),
+            api_key_env=(
+                str(rate.get("api_key_env"))
+                if rate.get("api_key_env") is not None
+                else None
+            ),
+            endpoint_effective=(
+                str(rate.get("endpoint_effective"))
+                if rate.get("endpoint_effective") is not None
+                else None
+            ),
+            transport=(
+                str(rate.get("transport")) if rate.get("transport") is not None else None
+            ),
+            provider_signature=(
+                str(rate.get("provider_signature"))
+                if rate.get("provider_signature") is not None
+                else None
+            ),
+            route_fingerprint_hash=(
+                str(rate.get("route_fingerprint_hash"))
+                if rate.get("route_fingerprint_hash") is not None
+                else None
+            ),
+            pricing_authority=str(rate.get("pricing_authority") or "unknown"),
+            pricing_surface=str(rate.get("pricing_surface") or "unknown"),
+            pricing_surface_source=str(
+                rate.get("pricing_surface_source") or "static_request_route_metadata"
+            ),
+            pricing_live_validation_status=str(
+                rate.get("pricing_live_validation_status") or "UNKNOWN"
+            ),
+            direct_provider_billing_inherited=rate.get(
+                "direct_provider_billing_inherited"
+            ),
             pricing_version=str(rate.get("pricing_version") or "unknown"),
             pricing_match_type=str(rate.get("match_type") or "unknown"),
             unknown_model=unknown_model,
