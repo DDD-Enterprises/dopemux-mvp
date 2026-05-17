@@ -13,6 +13,12 @@ prelude: System Boundaries (reference) for dopemux documentation and developer w
 
 This document is derived only from the tracked truth references in `docs/03-reference/truth/`: `truth-systems.md`, `truth-interfaces.md`, `truth-data-events.md`, `truth-canonicals.md`, and `truth-gaps.md`. It does not normalize contradictions. It preserves `UNKNOWN`, `ambiguous`, and `split` where the truth packet does not establish a single authority. No public APIs, interfaces, or types are introduced or changed here.
 
+Authority order note: active Task Packets control scoped execution and allowlists for the
+current work slice. Runtime code, config, compose wiring, tests, and active entrypoints
+govern behavior claims. This boundary document describes authority slices; it does not
+override runtime/source truth, and it does not make generated, advisory, extracted,
+exploratory, or external artifacts authoritative.
+
 ## Authority Model Overview
 
 The planes below are documentation planes, not services.
