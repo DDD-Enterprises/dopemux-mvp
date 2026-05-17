@@ -1,0 +1,431 @@
+{
+  "audit_id": "RTE-OPUS-UIUX-CLAUDE-DESIGN-AUDIT-001",
+  "head_sha": "a234f798947d51915b2adea3e0bc5a2917ac595b",
+  "branch": "claude/youthful-neumann-b94cc0",
+  "date": "2026-05-16",
+  "mode": "fresh-independent-pass",
+  "authority_order": [
+    "runtime_code_cli_tests_configs",
+    "rte_proof_status_runtime_writers",
+    "AGENTS_md_and_governance",
+    "TRUTH_and_SYSTEM_docs",
+    "rte_docs_design_claude_guidance",
+    "historical_generated_artifacts",
+    "external_assumptions_not_authority"
+  ],
+  "allowed_labels": ["OBSERVED", "INFERRED", "UNKNOWN", "CONFLICTING", "CLAIMED", "RECOMMENDED"],
+  "id_scheme": "F-OPUS-{SEV}-{N}",
+  "findings": [
+    {
+      "id": "F-OPUS-CRIT-1",
+      "severity": "CRIT",
+      "title": "CLI surface broadly violates brand-voice §2A 'no hype, no mascot, no visionary framing'",
+      "label": "OBSERVED",
+      "authority_tier": "runtime_plus_governance",
+      "evidence": [
+        "src/dopemux/cli.py:5075",
+        "src/dopemux/cli.py:5186",
+        "src/dopemux/cli.py:5219",
+        "src/dopemux/cli.py:5253",
+        "src/dopemux/cli.py:5418",
+        "src/dopemux/cli.py:4938",
+        ".claude/brand-voice-guidelines.md:55-62",
+        ".claude/brand-voice-guidelines.md:332-341",
+        ".claude/brand-voice-guidelines.md:347"
+      ],
+      "recommendation_ref": "R-OPUS-1"
+    },
+    {
+      "id": "F-OPUS-CRIT-2",
+      "severity": "CRIT",
+      "title": "Truth-order documents disagree on what wins",
+      "label": "CONFLICTING",
+      "authority_tier": "governance",
+      "evidence": [
+        "AGENTS.md:9-19",
+        "README.md:64-72",
+        ".claude/brand-voice-guidelines.md:372-381",
+        "audit_packet_authority_order (in this audit's own task packet)"
+      ],
+      "recommendation_ref": "R-OPUS-2"
+    },
+    {
+      "id": "F-OPUS-CRIT-3",
+      "severity": "CRIT",
+      "title": "No Claude/agent-facing file teaches Claude how to operate RTE safely",
+      "label": "OBSERVED",
+      "authority_tier": "claude_guidance",
+      "evidence": [
+        ".claude/CLAUDE.md (zero RTE-specific content)",
+        "services/.claude/CLAUDE.md:38-44 (Key Services table omits RTE)",
+        "src/.claude/CLAUDE.md (no RTE consent guidance)",
+        "CLAUDE_AUTOMATION_INSTRUCTIONS.md (prompt-rewrite harness, not operator guidance)",
+        "AGENTS.md:81 (scopes RTE outputs but does not teach RTE operation)"
+      ],
+      "recommendation_ref": "R-OPUS-3"
+    },
+    {
+      "id": "F-OPUS-HIGH-1",
+      "severity": "HIGH",
+      "title": "CLI emoji use exceeds the 6-emoji whitelist by ~4×",
+      "label": "OBSERVED",
+      "authority_tier": "runtime_plus_governance",
+      "evidence": [
+        ".claude/brand-voice-guidelines.md:268-270",
+        "docs/04-explanation/branding/cli-ux-design-spec.md:153-156",
+        "src/dopemux/cli.py:4874-4882 (📊 🆔 🧠 📦 ⚡ 🔬 📂 ⏪)",
+        "src/dopemux/cli.py:5022-5034 (🔄 ⏩ 📥 📡 🛡️ 💸)",
+        "src/dopemux/cli.py:5075 (🚀)",
+        "src/dopemux/cli.py:5169-5174 (🆔 🔧 🔬 📊)",
+        "src/dopemux/cli.py:5186 (🏥)",
+        "src/dopemux/cli.py:5253 (🛫)",
+        "src/dopemux/cli.py:5418 (⚖️)",
+        "src/dopemux/cli.py:5469 (🌊)",
+        "src/dopemux/cli.py:5491 (👁️)",
+        "src/dopemux/cli.py:5546 (🎭)",
+        "src/dopemux/commands/extractor_commands.py:155 (🗺️)",
+        "src/dopemux/commands/extractor_commands.py:163 (🔥)",
+        "src/dopemux/commands/extractor_commands.py:87 (💰)"
+      ],
+      "recommendation_ref": "R-OPUS-4"
+    },
+    {
+      "id": "F-OPUS-HIGH-2",
+      "severity": "HIGH",
+      "title": "Two UX style documents describe incompatible visual languages",
+      "label": "CONFLICTING",
+      "authority_tier": "docs",
+      "evidence": [
+        "docs/ux/ux-style-guide.md:22-29",
+        "docs/04-explanation/branding/cli-ux-design-spec.md:75-83",
+        "docs/04-explanation/branding/cli-ux-design-spec.md:161-164",
+        "docs/ux/ux-style-guide.md:14-15 (self-demotion line)"
+      ],
+      "recommendation_ref": "R-OPUS-5"
+    },
+    {
+      "id": "F-OPUS-HIGH-3",
+      "severity": "HIGH",
+      "title": "docs/ux/terminal-rendering-guide.md is an empty stub",
+      "label": "OBSERVED",
+      "authority_tier": "docs",
+      "evidence": [
+        "docs/ux/terminal-rendering-guide.md:1-13 (296 bytes, frontmatter only)",
+        ".claude/brand-voice-guidelines.md:318-319 (references render modes)",
+        "docs/04-explanation/branding/cli-ux-design-spec.md:196-207 (defines RICH/PLAIN/COMPACT/AUDIT)"
+      ],
+      "recommendation_ref": "R-OPUS-6"
+    },
+    {
+      "id": "F-OPUS-HIGH-4",
+      "severity": "HIGH",
+      "title": "dopemux rte promptset audit is v4-only despite v5 being canonical",
+      "label": "OBSERVED",
+      "authority_tier": "runtime",
+      "evidence": [
+        "src/dopemux/cli.py:5430-5437",
+        "src/dopemux/cli.py:5534",
+        "README.md:33",
+        "README.md:60",
+        "AGENTS.md:81",
+        "services/repo-truth-extractor/README.md:18",
+        "services/repo-truth-extractor/README.md:100-103"
+      ],
+      "recommendation_ref": "R-OPUS-7"
+    },
+    {
+      "id": "F-OPUS-HIGH-5",
+      "severity": "HIGH",
+      "title": "Pre-live validator NO_GO uses RuntimeError string, not error_panel(problem, why, fix)",
+      "label": "OBSERVED",
+      "authority_tier": "runtime_plus_governance",
+      "evidence": [
+        "services/repo-truth-extractor/run_extraction_v5.py:3067-3070",
+        ".claude/brand-voice-guidelines.md:295-300"
+      ],
+      "recommendation_ref": "R-OPUS-8"
+    },
+    {
+      "id": "F-OPUS-HIGH-6",
+      "severity": "HIGH",
+      "title": "dopemux rte run --help has 30+ options with no progressive disclosure",
+      "label": "OBSERVED",
+      "authority_tier": "runtime_plus_governance",
+      "evidence": [
+        "src/dopemux/cli.py:4968-5163",
+        "docs/04-explanation/branding/cli-ux-design-spec.md:182-183",
+        "docs/04-explanation/branding/cli-ux-design-spec.md:25"
+      ],
+      "recommendation_ref": "R-OPUS-9"
+    },
+    {
+      "id": "F-OPUS-MED-1",
+      "severity": "MED",
+      "title": "ARCHITECTURE.md §5.5 still presents dopemux upgrades as the operator path",
+      "label": "OBSERVED",
+      "authority_tier": "governance",
+      "evidence": ["ARCHITECTURE.md:150", "README.md:60-62"],
+      "recommendation_ref": "R-OPUS-10"
+    },
+    {
+      "id": "F-OPUS-MED-2",
+      "severity": "MED",
+      "title": "Canonical RTE commands are defined as @upgrades.command and aliased into rte",
+      "label": "OBSERVED",
+      "authority_tier": "runtime",
+      "evidence": [
+        "src/dopemux/cli.py:4934",
+        "src/dopemux/cli.py:4968",
+        "src/dopemux/cli.py:5167",
+        "src/dopemux/cli.py:5207",
+        "src/dopemux/cli.py:5234",
+        "src/dopemux/cli.py:5277",
+        "src/dopemux/cli.py:5401",
+        "src/dopemux/cli.py:5440",
+        "src/dopemux/cli.py:5509-5538"
+      ],
+      "recommendation_ref": "R-OPUS-11"
+    },
+    {
+      "id": "F-OPUS-MED-3",
+      "severity": "MED",
+      "title": "dopemux extractor status is a dual-mode surface with no operator hint",
+      "label": "OBSERVED",
+      "authority_tier": "runtime",
+      "evidence": ["src/dopemux/commands/extractor_commands.py:299-345"],
+      "recommendation_ref": "R-OPUS-12"
+    },
+    {
+      "id": "F-OPUS-MED-4",
+      "severity": "MED",
+      "title": "dopemux rte wizard is registered but undocumented",
+      "label": "OBSERVED",
+      "authority_tier": "runtime",
+      "evidence": [
+        "src/dopemux/cli.py:5516",
+        "README.md:54-62 (no wizard mention)",
+        "services/repo-truth-extractor/README.md (no wizard mention)"
+      ],
+      "recommendation_ref": "R-OPUS-13"
+    },
+    {
+      "id": "F-OPUS-MED-5",
+      "severity": "MED",
+      "title": "services/.claude/CLAUDE.md Key Services table omits repo-truth-extractor",
+      "label": "OBSERVED",
+      "authority_tier": "claude_guidance",
+      "evidence": ["services/.claude/CLAUDE.md:38-44"],
+      "recommendation_ref": "R-OPUS-14"
+    },
+    {
+      "id": "F-OPUS-MED-6",
+      "severity": "MED",
+      "title": "No --help text or epilog tells operators about DPMX_LIVE_OK=1",
+      "label": "OBSERVED",
+      "authority_tier": "runtime",
+      "evidence": [
+        "src/dopemux/cli.py:4968-5163",
+        "services/repo-truth-extractor/README.md:145",
+        "services/repo-truth-extractor/run_extraction_v5.py:3016-3019"
+      ],
+      "recommendation_ref": "R-OPUS-15"
+    },
+    {
+      "id": "F-OPUS-MED-7",
+      "severity": "MED",
+      "title": "Cockpit audit reports' 'do not implement' caveat is prose, not a structured flag",
+      "label": "OBSERVED",
+      "authority_tier": "docs",
+      "evidence": [
+        "docs/05-audit-reports/cockpit-pm-implementer-processing-pack-2026-04-24.md:17",
+        "rg returns zero matches for READY_FOR_CLAUDE_DESIGN or safe_for_claude_design repo-wide"
+      ],
+      "recommendation_ref": "R-OPUS-16"
+    },
+    {
+      "id": "F-OPUS-LOW-1",
+      "severity": "LOW",
+      "title": "validate-live stage caps shown without explicit USD unit in --help",
+      "label": "OBSERVED",
+      "authority_tier": "runtime",
+      "evidence": [
+        "src/dopemux/cli.py:5317",
+        "src/dopemux/cli.py:5321",
+        "src/dopemux/cli.py:5326",
+        "src/dopemux/cli.py:5328"
+      ],
+      "recommendation_ref": "R-OPUS-17"
+    },
+    {
+      "id": "F-OPUS-LOW-2",
+      "severity": "LOW",
+      "title": "Brand-voice required closer compliance in RTE error/status output is unverified",
+      "label": "UNKNOWN",
+      "authority_tier": "runtime_plus_governance",
+      "evidence": [
+        ".claude/brand-voice-guidelines.md:181-183",
+        "services/repo-truth-extractor/run_extraction_v5.py:3015-3019 (parser.error without explicit NEXT:)"
+      ],
+      "recommendation_ref": "R-OPUS-18"
+    },
+    {
+      "id": "F-OPUS-LOW-3",
+      "severity": "LOW",
+      "title": "cli.py truth-command deprecation message omits DPMX_LIVE_OK=1",
+      "label": "OBSERVED",
+      "authority_tier": "runtime",
+      "evidence": ["src/dopemux/cli.py:5495-5500"],
+      "recommendation_ref": "R-OPUS-19"
+    },
+    {
+      "id": "F-OPUS-OBS-1",
+      "severity": "OBS",
+      "title": "Phase 1 audit-survey produced fabricated string references",
+      "label": "OBSERVED",
+      "authority_tier": "audit_meta",
+      "evidence": ["repo-wide rg for READY_FOR_CLAUDE_DESIGN and safe_for_claude_design returns zero matches"],
+      "polarity": "neutral_meta"
+    },
+    {
+      "id": "F-OPUS-OBS-2",
+      "severity": "OBS",
+      "title": "Risk dashboard self-tags honestly with hard-coded static labels",
+      "label": "OBSERVED",
+      "authority_tier": "runtime",
+      "evidence": ["services/repo-truth-extractor/lib/risk_dashboard.py:446-460"],
+      "polarity": "positive"
+    },
+    {
+      "id": "F-OPUS-OBS-3",
+      "severity": "OBS",
+      "title": "Spend ledger is honest about pricing fallback",
+      "label": "OBSERVED",
+      "authority_tier": "runtime",
+      "evidence": [
+        "services/repo-truth-extractor/lib/spend_ledger.py:11-16",
+        "services/repo-truth-extractor/lib/spend_ledger.py:245-258"
+      ],
+      "polarity": "positive"
+    },
+    {
+      "id": "F-OPUS-OBS-4",
+      "severity": "OBS",
+      "title": "Consent gates are belt-and-suspenders",
+      "label": "OBSERVED",
+      "authority_tier": "runtime",
+      "evidence": [
+        "src/dopemux/cli.py:4909-4918",
+        "services/repo-truth-extractor/run_extraction_v5.py:2992-3020",
+        "services/repo-truth-extractor/run_extraction_v5.py:3023-3076"
+      ],
+      "polarity": "positive"
+    },
+    {
+      "id": "F-OPUS-OBS-5",
+      "severity": "OBS",
+      "title": "Output safety redaction is comprehensive and defense-in-depth",
+      "label": "OBSERVED",
+      "authority_tier": "runtime",
+      "evidence": [
+        "services/repo-truth-extractor/output_safety.py:7-37",
+        "services/repo-truth-extractor/output_safety.py:85-130",
+        "services/repo-truth-extractor/output_safety.py:40-63"
+      ],
+      "polarity": "positive"
+    },
+    {
+      "id": "F-OPUS-OBS-6",
+      "severity": "OBS",
+      "title": "README cost-incident anchor is exemplary operator UX",
+      "label": "OBSERVED",
+      "authority_tier": "docs",
+      "evidence": ["services/repo-truth-extractor/README.md:262-264"],
+      "polarity": "positive"
+    },
+    {
+      "id": "F-OPUS-OBS-7",
+      "severity": "OBS",
+      "title": "lib/proof_contract.py enforces a tight authority-rank model",
+      "label": "OBSERVED",
+      "authority_tier": "runtime",
+      "evidence": [
+        "services/repo-truth-extractor/lib/proof_contract.py:119-127",
+        "services/repo-truth-extractor/lib/proof_contract.py:286-358",
+        "services/repo-truth-extractor/lib/proof_contract.py:354"
+      ],
+      "polarity": "positive"
+    },
+    {
+      "id": "F-OPUS-OBS-8",
+      "severity": "OBS",
+      "title": "is_read_only_introspection_mode cleanly enumerates safe introspection paths",
+      "label": "OBSERVED",
+      "authority_tier": "runtime",
+      "evidence": [
+        "services/repo-truth-extractor/run_extraction_v5.py:2880-2895",
+        "services/repo-truth-extractor/run_extraction_v5.py:2849-2870"
+      ],
+      "polarity": "positive"
+    },
+    {
+      "id": "F-OPUS-OBS-9",
+      "severity": "OBS",
+      "title": "dopemux truth deprecation message redirects to canonical surface and dry-runs",
+      "label": "OBSERVED",
+      "authority_tier": "runtime",
+      "evidence": ["src/dopemux/cli.py:5495-5500"],
+      "polarity": "positive"
+    },
+    {
+      "id": "F-OPUS-OBS-10",
+      "severity": "OBS",
+      "title": "extractor group invocation prints a one-line redirect echo (mixed)",
+      "label": "OBSERVED",
+      "authority_tier": "runtime",
+      "evidence": ["src/dopemux/commands/extractor_commands.py:38-43"],
+      "polarity": "mixed"
+    },
+    {
+      "id": "F-OPUS-OBS-11",
+      "severity": "OBS",
+      "title": "RTE README first-live preset codifies conservative defaults",
+      "label": "OBSERVED",
+      "authority_tier": "docs",
+      "evidence": ["services/repo-truth-extractor/README.md:147-169"],
+      "polarity": "positive"
+    },
+    {
+      "id": "F-OPUS-OBS-12",
+      "severity": "OBS",
+      "title": "Comparison lane is explicitly non-blocking and uses separate output trees",
+      "label": "OBSERVED",
+      "authority_tier": "docs_plus_runtime",
+      "evidence": ["services/repo-truth-extractor/README.md:304-385"],
+      "polarity": "positive"
+    },
+    {
+      "id": "F-OPUS-OBS-13",
+      "severity": "OBS",
+      "title": "Six cockpit audit reports exist but none are RTE-specific",
+      "label": "OBSERVED",
+      "authority_tier": "docs",
+      "evidence": [
+        "docs/05-audit-reports/cockpit-pm-implementer-processing-pack-2026-04-24.md",
+        "docs/05-audit-reports/cockpit-design-input-merged-brief-2026-04-24.md",
+        "docs/05-audit-reports/cockpit-pm-implementer-callable-inventory-2026-04-24.md",
+        "docs/05-audit-reports/cockpit-pm-implementer-design-brief-2026-04-24.md",
+        "docs/05-audit-reports/cockpit-archive-intent-pack-2026-04-24.md",
+        "docs/05-audit-reports/cockpit-adhd-lifestyle-feature-map-2026-04-24.md"
+      ],
+      "polarity": "neutral_observation"
+    }
+  ],
+  "counts": {
+    "CRIT": 3,
+    "HIGH": 6,
+    "MED": 7,
+    "LOW": 3,
+    "OBS": 13,
+    "total": 32
+  }
+}

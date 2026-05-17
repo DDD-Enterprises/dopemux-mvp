@@ -10,6 +10,7 @@ canonical_roots:
   - 04-explanation
   - 05-audit-reports
   - 06-research
+  - audit
   - research
   - 90-adr
   - 91-rfc

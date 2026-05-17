@@ -1,0 +1,136 @@
+{
+  "packet_id": "TP-DMX-RTEOPUS-AUDIT-DOCS-001",
+  "generated_at_local": "2026-05-17T16:16:00-07:00",
+  "repo": {
+    "name": "dopemux-mvp",
+    "remote": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "worktree": "/Users/hue/.codex/worktrees/rte-opus-audit-docs/dopemux-mvp",
+    "branch": "codex/rte-opus-audit-docs",
+    "base_ref": "origin/main",
+    "base_sha": "3bdb146813ad34de44078d86900c3fdbb971ef25"
+  },
+  "source_bundle": {
+    "path": "/Users/hue/code/dopemux-mvp/.claude/worktrees/youthful-neumann-b94cc0/out/rte-opus-uiux-claude-design-audit",
+    "source_worktree_branch": "claude/youthful-neumann-b94cc0",
+    "source_worktree_head_sha": "a234f798947d51915b2adea3e0bc5a2917ac595b",
+    "source_worktree_status": "source bundle was untracked in the source Claude worktree",
+    "audit_id": "RTE-OPUS-UIUX-CLAUDE-DESIGN-AUDIT-001"
+  },
+  "destination_bundle": {
+    "path": "docs/audit/rte-opus-uiux-claude-design-audit",
+    "path_decision": "latest user instruction selected docs/audit; existing repo convention also contains docs/05-audit-reports, so the path choice is explicit rather than inferred"
+  },
+  "artifact_files": [
+    {
+      "source_file": "CLAUDE_DESIGN_COMPATIBILITY.md",
+      "destination_file": "claude-design-compatibility.md",
+      "source_sha256": "bd636a1296c367221f76f7d66f8f46c158db4865e19da92d972760dd66beee22",
+      "destination_sha256": "f23a67250713d083fcda57ed446b9cb1ee19155b8eab145d9bbacbaa2a92b723",
+      "hash_relation": "different_after_docs_frontmatter_filename_and_markdownlint_normalization"
+    },
+    {
+      "source_file": "FINDINGS_LEDGER.json",
+      "destination_file": "FINDINGS_LEDGER.json",
+      "source_sha256": "e48e833b1972b11af1aacfa10192c87479070924557cd33d890de91a1e67927e",
+      "destination_sha256": "e48e833b1972b11af1aacfa10192c87479070924557cd33d890de91a1e67927e",
+      "hash_relation": "identical"
+    },
+    {
+      "source_file": "FINDINGS_LEDGER.md",
+      "destination_file": "findings-ledger.md",
+      "source_sha256": "bc8bc4a7f9b8b01b73c15a2bb30558a6e60a7ffcbda055ce8162a268f3177df0",
+      "destination_sha256": "9217364bb8a51931e25fc6bf81b4b2d1fd532873c5a2bf2efb46048cf679418d",
+      "hash_relation": "different_after_docs_frontmatter_and_filename_normalization"
+    },
+    {
+      "source_file": "METHODOLOGY.md",
+      "destination_file": "methodology.md",
+      "source_sha256": "b1b260eaa8871f5094dfc38cce6d25c8fd3d046234a72cfdeb90f5f010884b14",
+      "destination_sha256": "dafa4c2d2885658299b261864f42b7230dac616d21202144d737f98c2a5901c3",
+      "hash_relation": "different_after_docs_frontmatter_and_filename_normalization"
+    },
+    {
+      "source_file": "RECOMMENDATIONS.md",
+      "destination_file": "recommendations.md",
+      "source_sha256": "0e07bd8a0c08c8697be264df77b38fd039077a8848a58cb0818f3bc49f74f47b",
+      "destination_sha256": "aae3030de8333befbc780e35384df9a8ee740a3d405c4fa1d94f1f60bb1de1af",
+      "hash_relation": "different_after_docs_frontmatter_and_filename_normalization"
+    },
+    {
+      "source_file": "REPORT.md",
+      "destination_file": "report.md",
+      "source_sha256": "6e4677b4abe1fb9eaee9acb4975f2d201ffc775d22a4a6455f6daf9e6c946ed3",
+      "destination_sha256": "943e1be2dfdccb620074609b83f3c927c9e8c0393116e79e17e03dcf4587e907",
+      "hash_relation": "different_after_docs_frontmatter_filename_and_link_normalization"
+    },
+    {
+      "source_file": "UX_RISK_LEDGER.md",
+      "destination_file": "ux-risk-ledger.md",
+      "source_sha256": "5538580455ec4a6275cef091abd9584e5642dde1aa3961ebea69a6399f9f9148",
+      "destination_sha256": "e58f00827f1dfa3f364f30a0ec14d29f89d2664f6a3692ef9c16b97a0e9da7c4",
+      "hash_relation": "different_after_docs_frontmatter_and_filename_normalization"
+    }
+  ],
+  "copy_verification": {
+    "status": "PASS_WITH_DOCS_NORMALIZATION",
+    "method": "source file hashes recorded, destination file hashes recorded, destination file count preserved, Markdown normalized for repo docs frontmatter and filename hygiene",
+    "file_count": 7,
+    "destination_files": [
+      "FINDINGS_LEDGER.json",
+      "claude-design-compatibility.md",
+      "findings-ledger.md",
+      "methodology.md",
+      "recommendations.md",
+      "report.md",
+      "ux-risk-ledger.md"
+    ]
+  },
+  "scope_attestation": {
+    "runtime_files_changed": false,
+    "service_files_changed": false,
+    "prompt_files_changed": false,
+    "schema_files_changed": false,
+    "provider_calls_run": false,
+    "live_extraction_run": false,
+    "repo_docs_hygiene_policy_changed": true,
+    "markdown_frontmatter_added": true,
+    "markdown_filenames_normalized": true,
+    "observed_findings_or_recommendations_rewritten": false
+  },
+  "validation_results": [
+    {
+      "command": "python -m json.tool task-packets/TP-DMX-RTEOPUS-AUDIT-DOCS-001.json",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "Task packet JSON parsed successfully before artifact copy."
+    },
+    {
+      "command": "python - <<'PY' ... dopetask-canonical-spec validation ... PY",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "Task packet validates against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json."
+    },
+    {
+      "command": "python - <<'PY' ... compare source and destination hashes ... PY",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "Source and destination file mappings were recorded; JSON remained byte-identical and Markdown destination hashes changed only after docs hygiene normalization."
+    },
+    {
+      "command": "git diff --check -- docs/audit/rte-opus-uiux-claude-design-audit config/docs_hygiene/docs_placement_policy.yaml proof/rte-opus-uiux-claude-design-audit-2026-05-17.proof.json task-packets/TP-DMX-RTEOPUS-AUDIT-DOCS-001.json task-packets/INDEX.md",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "No whitespace errors reported for the changed paths."
+    },
+    {
+      "command": "pre-commit run --files docs/audit/rte-opus-uiux-claude-design-audit/claude-design-compatibility.md docs/audit/rte-opus-uiux-claude-design-audit/FINDINGS_LEDGER.json docs/audit/rte-opus-uiux-claude-design-audit/findings-ledger.md docs/audit/rte-opus-uiux-claude-design-audit/methodology.md docs/audit/rte-opus-uiux-claude-design-audit/recommendations.md docs/audit/rte-opus-uiux-claude-design-audit/report.md docs/audit/rte-opus-uiux-claude-design-audit/ux-risk-ledger.md config/docs_hygiene/docs_placement_policy.yaml proof/rte-opus-uiux-claude-design-audit-2026-05-17.proof.json task-packets/TP-DMX-RTEOPUS-AUDIT-DOCS-001.json task-packets/INDEX.md",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "Docs frontmatter, docs graph validation, prohibited pattern check, prelude length, markdown location, docs placement hygiene, docs filename hygiene, full-tree docs filename audit, root hygiene, markdownlint, trailing whitespace, EOF fixer, and YAML checks passed."
+    }
+  ],
+  "remaining_unknowns": [
+    "The source bundle was untracked in the Claude worktree, so this PR preserves the recovered files and checksums but cannot prove prior Git history for the bundle.",
+    "The copied audit's internal findings remain evidence artifacts from source HEAD a234f798947d51915b2adea3e0bc5a2917ac595b, not claims about current runtime state."
+  ]
+}

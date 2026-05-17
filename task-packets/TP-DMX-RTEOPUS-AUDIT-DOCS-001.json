@@ -1,0 +1,175 @@
+{
+  "id": "TP-DMX-RTEOPUS-AUDIT-DOCS-001",
+  "project": "dopemux-mvp",
+  "target": "Add the recovered RTE Opus UI/UX Claude design audit bundle to the project under docs/audit for durable review and PR traceability, while updating docs hygiene policy to recognize that user-selected audit root.",
+  "invariants": [
+    "Do not modify runtime code, service code, prompt content, schemas, or production configuration.",
+    "Preserve the recovered audit evidence content while applying repo-required docs frontmatter and filename hygiene.",
+    "Keep the historical source audit claims as evidence artifacts, not runtime truth.",
+    "Record source and destination checksums so the copy is auditable.",
+    "Latest user instruction selects docs/audit even though existing repo docs commonly use docs/05-audit-reports; preserve that conflict explicitly instead of silently normalizing paths."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-RTE-AUDIT-SERIES-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-opus-audit-docs",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(rte): add opus uiux audit bundle",
+    "allowlist": [
+      "docs/audit/rte-opus-uiux-claude-design-audit/claude-design-compatibility.md",
+      "docs/audit/rte-opus-uiux-claude-design-audit/FINDINGS_LEDGER.json",
+      "docs/audit/rte-opus-uiux-claude-design-audit/findings-ledger.md",
+      "docs/audit/rte-opus-uiux-claude-design-audit/methodology.md",
+      "docs/audit/rte-opus-uiux-claude-design-audit/recommendations.md",
+      "docs/audit/rte-opus-uiux-claude-design-audit/report.md",
+      "docs/audit/rte-opus-uiux-claude-design-audit/ux-risk-ledger.md",
+      "config/docs_hygiene/docs_placement_policy.yaml",
+      "proof/rte-opus-uiux-claude-design-audit-2026-05-17.proof.json",
+      "task-packets/TP-DMX-RTEOPUS-AUDIT-DOCS-001.json",
+      "task-packets/INDEX.md"
+    ],
+    "verify": [
+      "git rev-parse --show-toplevel",
+      "test -f .dopetaskroot",
+      "git remote -v",
+      "git branch --show-current",
+      "git status --short --branch",
+      "python -m json.tool task-packets/TP-DMX-RTEOPUS-AUDIT-DOCS-001.json",
+      "python -m json.tool proof/rte-opus-uiux-claude-design-audit-2026-05-17.proof.json",
+      "python - <<'PY'\nimport json\nfrom pathlib import Path\nfrom jsonschema import Draft7Validator\nschema = json.loads(Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text())\npayload = json.loads(Path('task-packets/TP-DMX-RTEOPUS-AUDIT-DOCS-001.json').read_text())\nerrors = sorted(Draft7Validator(schema).iter_errors(payload), key=lambda e: list(e.path))\nif errors:\n    raise SystemExit('\\n'.join('%s: %s' % (('/'.join(map(str, e.path)) or '<root>'), e.message) for e in errors))\nprint('PASS task packet schema validation')\nPY",
+      "shasum -a 256 docs/audit/rte-opus-uiux-claude-design-audit/*",
+      "git diff --check -- docs/audit/rte-opus-uiux-claude-design-audit config/docs_hygiene/docs_placement_policy.yaml proof/rte-opus-uiux-claude-design-audit-2026-05-17.proof.json task-packets/TP-DMX-RTEOPUS-AUDIT-DOCS-001.json task-packets/INDEX.md"
+    ]
+  },
+  "pr": {
+    "title": "docs(rte): add opus uiux audit bundle",
+    "body": "## Summary\n- add the recovered RTE Opus UI/UX Claude design audit bundle under docs/audit/rte-opus-uiux-claude-design-audit\n- update docs placement policy so docs/audit is an explicit active docs root\n- add a task packet and proof JSON with source and destination checksum evidence\n- keep the bundle as audit evidence only; no runtime, prompt, schema, or service files change\n\n## Scope\n- documentation audit artifacts only\n- docs hygiene policy recognition for docs/audit\n- task packet and proof for repo traceability\n- no generated artifact rewrites outside repo-required docs normalization\n\n## Validation\n- task packet JSON parses and validates against dopetask-canonical-spec.json\n- proof JSON parses\n- source and destination SHA-256 hashes are recorded after docs normalization\n- git diff --check passes for the changed paths\n- pre-commit passes for the changed files",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Verify repo identity, source bundle identity, and the requested docs/audit destination before copying artifacts.",
+      "requirements": [
+        "Confirm worktree is a clean dedicated worktree on codex/rte-opus-audit-docs.",
+        "Confirm origin remote matches dopemux-mvp.",
+        "Confirm the recovered source bundle exists in the Claude worktree.",
+        "Confirm docs/audit is the latest user-selected destination even though existing repo audit reports commonly use docs/05-audit-reports.",
+        "Confirm docs/audit is represented in docs hygiene policy before final validation."
+      ],
+      "commands": [
+        "git rev-parse --show-toplevel",
+        "test -f .dopetaskroot",
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short --branch",
+        "find /Users/hue/code/dopemux-mvp/.claude/worktrees/youthful-neumann-b94cc0/out/rte-opus-uiux-claude-design-audit -type f -maxdepth 1 -print | sort"
+      ],
+      "expected_files": [
+        "task-packets/TP-DMX-RTEOPUS-AUDIT-DOCS-001.json"
+      ],
+      "validation": [
+        "Repo identity and source bundle identity are recorded before artifact copy.",
+        "Destination path decision is explicitly tied to the latest user instruction."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docs/INDEX.md",
+        "docs/docs_index.yaml",
+        "docs/03-reference/filesystem-guide.md",
+        "docs/03-reference/governance/manifest-and-index-rules.md",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Copy the seven recovered audit artifacts into docs/audit/rte-opus-uiux-claude-design-audit and normalize Markdown files to repo docs hygiene.",
+      "requirements": [
+        "Create docs/audit/rte-opus-uiux-claude-design-audit if absent.",
+        "Copy exactly the seven recovered files from the source bundle.",
+        "Allow repo docs hooks to add frontmatter and enforce kebab-case Markdown filenames.",
+        "Do not rewrite observed findings or recommendations beyond mechanical docs hygiene.",
+        "Generate checksum proof after copy and normalization."
+      ],
+      "commands": [
+        "shasum -a 256 /Users/hue/code/dopemux-mvp/.claude/worktrees/youthful-neumann-b94cc0/out/rte-opus-uiux-claude-design-audit/*",
+        "shasum -a 256 docs/audit/rte-opus-uiux-claude-design-audit/*"
+      ],
+      "expected_files": [
+        "docs/audit/rte-opus-uiux-claude-design-audit/claude-design-compatibility.md",
+        "docs/audit/rte-opus-uiux-claude-design-audit/FINDINGS_LEDGER.json",
+        "docs/audit/rte-opus-uiux-claude-design-audit/findings-ledger.md",
+        "docs/audit/rte-opus-uiux-claude-design-audit/methodology.md",
+        "docs/audit/rte-opus-uiux-claude-design-audit/recommendations.md",
+        "docs/audit/rte-opus-uiux-claude-design-audit/report.md",
+        "docs/audit/rte-opus-uiux-claude-design-audit/ux-risk-ledger.md",
+        "proof/rte-opus-uiux-claude-design-audit-2026-05-17.proof.json"
+      ],
+      "validation": [
+        "Destination file list matches source file list.",
+        "Source and destination SHA-256 hashes are recorded after docs normalization.",
+        "Copied files remain evidence artifacts only."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Validate, stage only allowlisted files, commit, push, and open a draft PR.",
+      "requirements": [
+        "Validate task packet schema.",
+        "Validate proof JSON.",
+        "Run git diff --check on changed paths.",
+        "Run configured pre-commit hooks for the changed files if safe.",
+        "Review diff scope before staging and before commit.",
+        "Open a draft PR against main."
+      ],
+      "commands": [
+        "python -m json.tool task-packets/TP-DMX-RTEOPUS-AUDIT-DOCS-001.json",
+        "python -m json.tool proof/rte-opus-uiux-claude-design-audit-2026-05-17.proof.json",
+        "python - <<'PY'\nimport json\nfrom pathlib import Path\nfrom jsonschema import Draft7Validator\nschema = json.loads(Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text())\npayload = json.loads(Path('task-packets/TP-DMX-RTEOPUS-AUDIT-DOCS-001.json').read_text())\nerrors = sorted(Draft7Validator(schema).iter_errors(payload), key=lambda e: list(e.path))\nif errors:\n    raise SystemExit('\\n'.join('%s: %s' % (('/'.join(map(str, e.path)) or '<root>'), e.message) for e in errors))\nprint('PASS task packet schema validation')\nPY",
+        "git diff --check -- docs/audit/rte-opus-uiux-claude-design-audit config/docs_hygiene/docs_placement_policy.yaml proof/rte-opus-uiux-claude-design-audit-2026-05-17.proof.json task-packets/TP-DMX-RTEOPUS-AUDIT-DOCS-001.json task-packets/INDEX.md",
+        "pre-commit run --files docs/audit/rte-opus-uiux-claude-design-audit/claude-design-compatibility.md docs/audit/rte-opus-uiux-claude-design-audit/FINDINGS_LEDGER.json docs/audit/rte-opus-uiux-claude-design-audit/findings-ledger.md docs/audit/rte-opus-uiux-claude-design-audit/methodology.md docs/audit/rte-opus-uiux-claude-design-audit/recommendations.md docs/audit/rte-opus-uiux-claude-design-audit/report.md docs/audit/rte-opus-uiux-claude-design-audit/ux-risk-ledger.md config/docs_hygiene/docs_placement_policy.yaml proof/rte-opus-uiux-claude-design-audit-2026-05-17.proof.json task-packets/TP-DMX-RTEOPUS-AUDIT-DOCS-001.json task-packets/INDEX.md"
+      ],
+      "expected_files": [
+        "docs/audit/rte-opus-uiux-claude-design-audit/claude-design-compatibility.md",
+        "docs/audit/rte-opus-uiux-claude-design-audit/FINDINGS_LEDGER.json",
+        "docs/audit/rte-opus-uiux-claude-design-audit/findings-ledger.md",
+        "docs/audit/rte-opus-uiux-claude-design-audit/methodology.md",
+        "docs/audit/rte-opus-uiux-claude-design-audit/recommendations.md",
+        "docs/audit/rte-opus-uiux-claude-design-audit/report.md",
+        "docs/audit/rte-opus-uiux-claude-design-audit/ux-risk-ledger.md",
+        "config/docs_hygiene/docs_placement_policy.yaml",
+        "proof/rte-opus-uiux-claude-design-audit-2026-05-17.proof.json",
+        "task-packets/TP-DMX-RTEOPUS-AUDIT-DOCS-001.json",
+        "task-packets/INDEX.md"
+      ],
+      "validation": [
+        "All changed files are allowlisted.",
+        "Validation commands pass or failures are reported with exact blocker.",
+        "PR is opened as draft unless explicitly requested otherwise."
+      ]
+    }
+  ]
+}
