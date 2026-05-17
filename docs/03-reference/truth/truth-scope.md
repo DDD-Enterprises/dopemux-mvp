@@ -19,6 +19,13 @@ Method:
 - Inference is labeled.
 - Unknown canonicality remains `UNKNOWN`.
 
+Authority order note:
+- Active Task Packets control scoped execution and allowlists for the current work slice.
+- Runtime code, config, compose wiring, tests, and active entrypoints govern behavior claims.
+- Truth-scope classifications describe repo truth as observed; they do not override runtime/source truth.
+- Generated, advisory, extracted, exploratory, or external artifacts do not become source truth by being cited here.
+- Unsupported or unresolved authority remains `UNKNOWN`.
+
 ## Classification Inventory
 
 | System | Repo path(s) | Classification | Why in scope or not | Key evidence | Nearby related systems excluded or deprioritized |
