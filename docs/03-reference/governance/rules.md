@@ -21,12 +21,17 @@ These rules are constraints on reasoning, implementation, validation, and comple
 
 When sources conflict, use this order:
 
-1. Runtime code, config, compose wiring, tests, and active entrypoints
-2. Standard workspace truth artifacts: root `TRUTH_*.md` files when present, otherwise tracked equivalents under `docs/03-reference/truth/`
-3. Canonical documentation: root `RULES.md`, `PROJECT.md`, `ARCHITECTURE.md`, `SYSTEM_BOUNDARIES.md`, `PM_PLANE.md`, `SERVICE_CATALOG.md`, and `SYSTEM_*.md` files when present, otherwise tracked equivalents under `docs/03-reference/`
-4. Historical, exploratory, generated, or design docs
+1. Active Task Packet for the current work slice, for execution control, allowlists, validation obligations, stop conditions, and repo-changing scope
+2. Runtime code, config, compose wiring, tests, and active entrypoints, for behavior claims and implemented system truth
+3. Standard workspace truth artifacts: root `TRUTH_*.md` files when present, otherwise tracked equivalents under `docs/03-reference/truth/`
+4. Canonical documentation: root `RULES.md`, `PROJECT.md`, `ARCHITECTURE.md`, `SYSTEM_BOUNDARIES.md`, `PM_PLANE.md`, `SERVICE_CATALOG.md`, and `SYSTEM_*.md` files when present, otherwise tracked equivalents under `docs/03-reference/`
+5. Historical, advisory, exploratory, generated, external, or design docs
 
-Historical or exploratory docs are treated as untrusted until runtime or truth artifacts support them.
+Active Task Packets control what the implementer may change and how the current slice is
+validated. They do not authorize unsupported claims about runtime behavior.
+
+Historical, advisory, exploratory, generated, external, or design docs are treated as
+untrusted until runtime or source truth supports them.
 
 Never let extracted artifacts outrank the runtime they describe.
 
@@ -126,6 +131,7 @@ Rules:
 - No undeclared fields.
 - Every step includes `task` and `validation`.
 - Every packet is repo-bound, series-bound, commit-sized, and verifiable.
+- Task Packets control scoped execution and allowlists; they do not make unsupported runtime behavior claims true.
 - If `execution.agent = "gemini"`, then `pal_chain.enabled = true` is required.
 - Codex work follows `analyze -> planner -> codereview -> precommit` unless the packet requires a stricter PAL chain.
 

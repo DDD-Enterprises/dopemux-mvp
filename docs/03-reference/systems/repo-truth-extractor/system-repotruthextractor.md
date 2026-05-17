@@ -23,6 +23,11 @@ Its canonical authority slice is narrow:
 
 It is not the operator CLI control plane, not PM authority, not memory authority, and not a source-of-truth replacement for the repository code it analyzes. It is the extraction/audit runtime for producing repo-truth artifacts about the repo.
 
+Authority order note: active Task Packets can scope RTE work, allowlists, validation, and
+stop conditions for a current slice. Runtime code, config, compose wiring, tests, and
+active entrypoints still govern behavior claims. Repo Truth Extractor outputs are evidence
+artifacts about the repository; they do not outrank the runtime/source truth they analyze.
+
 ## 2. Core Responsibilities
 
 - Runs the active extraction engine.
@@ -61,7 +66,7 @@ It is not the operator CLI control plane, not PM authority, not memory authority
   Evidence: PM, memory, and retrieval authorities are assigned in their respective system/plane docs. The extractor only emits analysis artifacts about those systems.
 
 - Repo Truth Extractor does not make extracted artifacts equal to live system truth.
-  Evidence: `docs/03-reference/governance/rules-2.md` puts runtime code/config/tests above truth artifacts in the truth hierarchy.
+  Evidence: `AGENTS.md` and `docs/03-reference/governance/rules.md` put runtime code/config/tests/active entrypoints above truth artifacts for behavior claims.
 
 ## 4. Key Surfaces
 
