@@ -1,0 +1,190 @@
+{
+  "packet_id": "RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001",
+  "branch": "codex/rte-authority-order-reconciliation",
+  "worktree_path": "/Users/hue/code/dopemux-mvp-rte-authority-order-reconciliation",
+  "head_before": "d64d5f15e46e68373e3bed1160fbc3df2807db59",
+  "head_after": "d64d5f15e46e68373e3bed1160fbc3df2807db59",
+  "repo_identity": {
+    "repo_root": "/Users/hue/code/dopemux-mvp-rte-authority-order-reconciliation",
+    "primary_checkout": "/Users/hue/code/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "repo_marker_present": true,
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "remote_observed": [
+      "mvp\thttps://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)",
+      "mvp\thttps://github.com/DDD-Enterprises/dopemux-mvp.git (push)",
+      "origin\thttps://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)",
+      "origin\thttps://github.com/DDD-Enterprises/dopemux-mvp.git (push)"
+    ],
+    "primary_dirty_status_observed": [
+      "## main...origin/main [ahead 1, behind 2]",
+      " M .mcp.json",
+      " M docs/02-how-to/manage-mcp-servers.md",
+      " M mcp_catalog.yaml",
+      "?? DR-01A-XAI-RTE-OPERATIONAL-BASELINE.md",
+      "?? out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/20_XAI_USAGE_ADDENDUM.md",
+      "?? out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/DR-00-RTE-EXTERNAL-BASELINE-NORMALIZED.md",
+      "?? out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/DR-00-RTE-EXTERNAL-BASELINE.md",
+      "?? out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/UPLOAD_ORDER.md",
+      "?? out/rte-55pro-audit-pack/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/sha256sums.txt",
+      "?? out/rte-55pro-source-addendum-pack-40/",
+      "?? out/rte-55pro-source-addendum-pack/",
+      "?? out/rte-pkt-14-pricing-visibility/RTE-PKT-14_TASK_PACKET.json",
+      "?? services/genetic_agent/",
+      "?? services/session-manager/uv.lock",
+      "?? services/task-orchestrator/dopemux-vscode/package-lock.json"
+    ]
+  },
+  "files_touched": [
+    ".claude/PROJECT_INSTRUCTIONS.md",
+    ".claude/brand-voice-guidelines.md",
+    "AGENTS.md",
+    "docs/03-reference/governance/rules.md",
+    "docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md",
+    "docs/03-reference/systems/system-boundaries.md",
+    "docs/03-reference/truth/truth-canonicals.md",
+    "docs/03-reference/truth/truth-scope.md",
+    "out/rte-ux-authority-order-reconciliation/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001_AUDIT_NOTE.md",
+    "proof/rte-ux/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001/PROOF.json",
+    "task-packets/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001.md"
+  ],
+  "authority_files_read": [
+    "AGENTS.md",
+    ".claude/PROJECT_INSTRUCTIONS.md",
+    ".claude/brand-voice-guidelines.md",
+    "docs/03-reference/governance/rules.md",
+    "docs/03-reference/truth/truth-canonicals.md",
+    "docs/03-reference/truth/truth-scope.md",
+    "docs/03-reference/systems/system-boundaries.md",
+    "docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md",
+    "PROJECT.md",
+    "ARCHITECTURE.md",
+    "PM_PLANE.md",
+    "SERVICE_CATALOG.md",
+    ".claude/workflows/QUICK_REFERENCE.md",
+    ".claude/workflows/WORKFLOW_AUTOMATION.md",
+    ".pre-commit-config.yaml",
+    "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_MANIFEST.json",
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_PACKET_SEQUENCE.md",
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_ACCEPTED_SCOPE.md",
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_VALUATION_MATRIX.md",
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_REMAINING_UNKNOWNS.md",
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_NO_RUNTIME_CHANGE_ATTESTATION.md"
+  ],
+  "source_audit_bundle_present": false,
+  "source_audit_bundle_path_checked": "out/rte-opus-uiux-claude-design-audit/",
+  "valuation_bundle_present": true,
+  "valuation_bundle_path_checked": "out/rte-ux-valuation-opus-audit/",
+  "primary_recommendation": "R-OPUS-2",
+  "primary_finding_label": {
+    "label": "CRIT-2",
+    "status": "valuation-derived",
+    "independent_ledger_recovery": "UNKNOWN"
+  },
+  "unknowns_preserved": [
+    "Exact Opus finding-ledger recovery is UNKNOWN because out/rte-opus-uiux-claude-design-audit/ is absent.",
+    "Exact Opus recommendation-to-finding crosswalk is UNKNOWN without the source audit bundle.",
+    "CRIT-2 is preserved as valuation-derived, not independently recovered from a local Opus findings ledger.",
+    "Broader repo-wide agent runtime authority remains UNKNOWN where no specific runtime path is verified."
+  ],
+  "runtime_files_changed": false,
+  "provider_calls_run": false,
+  "live_extraction_run": false,
+  "validation_commands": [
+    "python -m json.tool proof/rte-ux/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001/PROOF.json",
+    "python - <<'PY'\nimport json, re\nfrom pathlib import Path\nfrom jsonschema import Draft7Validator\npacket = Path('task-packets/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001.md').read_text()\nmatch = re.search(r'```json\\n(.*?)\\n```', packet, re.S)\nassert match, 'missing fenced json payload'\npayload = json.loads(match.group(1))\nschema = json.loads(Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text())\nerrors = sorted(Draft7Validator(schema).iter_errors(payload), key=lambda e: list(e.path))\nif errors:\n    raise SystemExit('\\n'.join('%s: %s' % (('/'.join(map(str, e.path)) or '<root>'), e.message) for e in errors))\nprint('PASS task packet payload schema validation')\nPY",
+    "git diff --check",
+    "git status --porcelain --untracked-files=all | rg '^( M|A |AM|MM|\\?\\?) (src/|services/)' || true",
+    "pre-commit run --files AGENTS.md .claude/PROJECT_INSTRUCTIONS.md .claude/brand-voice-guidelines.md docs/03-reference/governance/rules.md docs/03-reference/truth/truth-canonicals.md docs/03-reference/truth/truth-scope.md docs/03-reference/systems/system-boundaries.md docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md task-packets/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001.md out/rte-ux-authority-order-reconciliation/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001_AUDIT_NOTE.md proof/rte-ux/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001/PROOF.json",
+    "git status --short",
+    "git diff --name-only",
+    "git diff --cached --name-only"
+  ],
+  "validation_results": {
+    "status": "PASS",
+    "results": [
+      {
+        "command": "python -m json.tool proof/rte-ux/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001/PROOF.json",
+        "exit_code": 0,
+        "result": "PASS",
+        "evidence": "Proof JSON parsed successfully."
+      },
+      {
+        "command": "python - <<'PY' ... task packet payload schema validation ... PY",
+        "exit_code": 0,
+        "result": "PASS",
+        "evidence": "Embedded JSON payload in the Markdown task packet validates against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json."
+      },
+      {
+        "command": "git diff --check",
+        "exit_code": 0,
+        "result": "PASS",
+        "evidence": "No whitespace errors reported."
+      },
+      {
+        "command": "git status --porcelain --untracked-files=all | rg '^( M|A |AM|MM|\\?\\?) (src/|services/)' || true",
+        "exit_code": 0,
+        "result": "PASS",
+        "evidence": "No modified or untracked src/** or services/** paths were reported."
+      },
+      {
+        "command": "pre-commit run --files AGENTS.md .claude/PROJECT_INSTRUCTIONS.md .claude/brand-voice-guidelines.md docs/03-reference/governance/rules.md docs/03-reference/truth/truth-canonicals.md docs/03-reference/truth/truth-scope.md docs/03-reference/systems/system-boundaries.md docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md task-packets/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001.md out/rte-ux-authority-order-reconciliation/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001_AUDIT_NOTE.md proof/rte-ux/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001/PROOF.json",
+        "exit_code": 0,
+        "result": "PASS",
+        "evidence": "All configured hooks passed after moving the audit note to out/rte-ux-authority-order-reconciliation/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001_AUDIT_NOTE.md."
+      },
+      {
+        "command": "git status --short",
+        "exit_code": 0,
+        "result": "PASS",
+        "evidence": "Status reviewed before staging and before commit."
+      },
+      {
+        "command": "git diff --name-only",
+        "exit_code": 0,
+        "result": "PASS",
+        "evidence": "Diff scope reviewed before staging."
+      },
+      {
+        "command": "git diff --cached --name-only",
+        "exit_code": 0,
+        "result": "PASS",
+        "evidence": "Cached diff scope reviewed before commit after staging."
+      }
+    ]
+  },
+  "diff_summary": {
+    "status": "INSPECTED",
+    "summary": [
+      "Authority wording changed in AGENTS.md, .claude/PROJECT_INSTRUCTIONS.md, .claude/brand-voice-guidelines.md, docs/03-reference/governance/rules.md, docs/03-reference/truth/truth-canonicals.md, docs/03-reference/truth/truth-scope.md, docs/03-reference/systems/system-boundaries.md, and docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md.",
+      "Created task-packets/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001.md with a schema-valid embedded JSON payload.",
+      "Moved the audit note to out/rte-ux-authority-order-reconciliation/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001_AUDIT_NOTE.md after repo docs hooks rejected the original docs/audit path.",
+      "Created proof/rte-ux/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001/PROOF.json; proof/* is ignored by .gitignore and would require force-add if committing.",
+      "No src/** or services/** paths changed."
+    ]
+  },
+  "commit_plan": {
+    "status": "READY_AFTER_VALIDATION",
+    "message": "RTE UX authority order reconciliation",
+    "allowlist": [
+      ".claude/PROJECT_INSTRUCTIONS.md",
+      ".claude/brand-voice-guidelines.md",
+      "AGENTS.md",
+      "docs/03-reference/governance/rules.md",
+      "docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md",
+      "docs/03-reference/systems/system-boundaries.md",
+      "docs/03-reference/truth/truth-canonicals.md",
+      "docs/03-reference/truth/truth-scope.md",
+      "out/rte-ux-authority-order-reconciliation/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001_AUDIT_NOTE.md",
+      "proof/rte-ux/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001/PROOF.json",
+      "task-packets/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001.md"
+    ],
+    "proof_handling": "proof/* is ignored by .gitignore; force-add only proof/rte-ux/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001/PROOF.json."
+  },
+  "rollback_plan": [
+    "From /Users/hue/code/dopemux-mvp-rte-authority-order-reconciliation, revert this branch commit if committed: git revert <commit-sha>.",
+    "Before commit, remove the untracked task packet, audit, and proof files, then restore modified authority docs from HEAD.",
+    "Do not touch the primary checkout dirty files observed before this packet."
+  ]
+}

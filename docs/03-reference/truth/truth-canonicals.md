@@ -16,6 +16,13 @@ Method:
 - `Inference` means recommendation based on multiple observed signals.
 - Confidence reflects canonical recommendation, not general system importance.
 
+Authority order note:
+- Active Task Packets control scoped execution and allowlists for the current work slice.
+- Runtime code, config, compose wiring, tests, and active entrypoints govern behavior claims.
+- This truth artifact records evidence-backed canonical recommendations, but it does not outrank runtime/source truth.
+- Generated, advisory, extracted, exploratory, or external artifacts remain evidence only unless runtime/source truth supports them.
+- Preserve `UNKNOWN` where this artifact does not settle authority.
+
 ## Cluster: `src/dopemux` vs top-level `dopemux`
 
 - Candidates:

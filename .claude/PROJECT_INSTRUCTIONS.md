@@ -24,10 +24,14 @@ CI, lint, safety, and change-control authority
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 NON-NEGOTIABLES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1) Task Packets are law
-If a Task Packet exists for the current batch, follow it exactly.
-If anything conflicts:
-Task Packet wins.
+1) Task Packets are scoped execution law
+If a Task Packet exists for the current batch, follow it for the current work slice,
+allowlists, validation obligations, stop conditions, and repo-changing scope.
+If workflow instructions conflict about what to edit or how to execute:
+Task Packet wins for that scoped execution decision.
+If a Task Packet or document makes a behavior claim unsupported by runtime code, config,
+tests, compose wiring, or active entrypoints:
+Runtime/source truth wins, and the unsupported claim remains UNKNOWN until verified.
 Instructions and docs are amended later if required.
 2) No fabrication
 Never invent:
