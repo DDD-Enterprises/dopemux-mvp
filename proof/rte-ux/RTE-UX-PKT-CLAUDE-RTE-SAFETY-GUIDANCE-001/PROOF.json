@@ -1,0 +1,179 @@
+{
+  "packet_id": "RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001",
+  "base_branch": "origin/main",
+  "branch": "codex/rte-claude-safety-guidance",
+  "worktree_path": "/Users/hue/code/dopemux-mvp-rte-claude-safety-guidance",
+  "head_before": "3bdb146813ad34de44078d86900c3fdbb971ef25",
+  "head_after": "3bdb146813ad34de44078d86900c3fdbb971ef25",
+  "proof_capture_note": "Proof is captured before the local commit; head_before and head_after record the origin/main base used for implementation. The local commit SHA is reported in final closeout after commit creation.",
+  "origin_main_used_as_base": true,
+  "primary_checkout_path": "/Users/hue/code/dopemux-mvp",
+  "primary_checkout_modified": false,
+  "pr_640_state": "MERGED",
+  "pr_640_merged_at": "2026-05-17T11:01:15Z",
+  "pr_640_merge_commit": "3bdb146813ad34de44078d86900c3fdbb971ef25",
+  "pr_640_base_ref": "main",
+  "pr_640_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/640",
+  "pr_640_merge_gate_verified": true,
+  "source_audit_bundle_present": false,
+  "source_audit_bundle_path_checked": "out/rte-opus-uiux-claude-design-audit/",
+  "valuation_artifacts_read": [
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_ACCEPTED_SCOPE.md",
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_DEFERRED_ITEMS.md",
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_MANIFEST.json",
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_NO_RUNTIME_CHANGE_ATTESTATION.md",
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_PACKET_SEQUENCE.md",
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_REMAINING_UNKNOWNS.md",
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_VALUATION_MATRIX.md"
+  ],
+  "authority_files_read": [
+    "AGENTS.md",
+    ".claude/PROJECT_INSTRUCTIONS.md",
+    ".claude/brand-voice-guidelines.md",
+    "docs/03-reference/governance/rules.md",
+    "docs/03-reference/truth/truth-canonicals.md",
+    "docs/03-reference/truth/truth-scope.md",
+    "docs/03-reference/systems/system-boundaries.md",
+    "docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md",
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_MANIFEST.json",
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_PACKET_SEQUENCE.md",
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_ACCEPTED_SCOPE.md",
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_VALUATION_MATRIX.md",
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_REMAINING_UNKNOWNS.md",
+    "proof/rte-ux/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001/PROOF.json",
+    "out/rte-ux-authority-order-reconciliation/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001_AUDIT_NOTE.md",
+    "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+    ".pre-commit-config.yaml"
+  ],
+  "runtime_files_read_only": [
+    "src/dopemux/cli.py",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+    "services/repo-truth-extractor/llm_runtime.py",
+    "services/repo-truth-extractor/output_safety.py",
+    "services/repo-truth-extractor/README.md",
+    "docs/02-how-to/extraction/repo-truth-extractor-user-guide.md",
+    "docs/02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md"
+  ],
+  "files_touched": [
+    ".claude/PROJECT_INSTRUCTIONS.md",
+    "AGENTS.md",
+    "task-packets/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001.md",
+    "out/rte-ux-claude-rte-safety-guidance/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001_AUDIT_NOTE.md",
+    "proof/rte-ux/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001/PROOF.json"
+  ],
+  "forbidden_paths_touched": [],
+  "runtime_files_changed": false,
+  "provider_calls_run": false,
+  "live_extraction_run": false,
+  "live_preflight_run": false,
+  "network_provider_validation_run": false,
+  "promptsets_changed": false,
+  "schemas_changed": false,
+  "pricing_or_routing_changed": false,
+  "provider_clients_changed": false,
+  "runtime_dispatch_changed": false,
+  "future_packets_started": false,
+  "primary_recommendations": [
+    "R-OPUS-3",
+    "R-OPUS-14"
+  ],
+  "primary_finding_label": {
+    "label": "CRIT-3",
+    "status": "valuation-derived",
+    "independent_ledger_recovery": "UNKNOWN"
+  },
+  "unknowns_preserved": [
+    "Exact Opus finding-ledger recovery is UNKNOWN because out/rte-opus-uiux-claude-design-audit/ is absent.",
+    "Exact Opus recommendation-to-finding crosswalk is UNKNOWN without the source audit bundle.",
+    "CRIT-3 is preserved as valuation-derived, not independently recovered from a local Opus findings ledger.",
+    "The exact titles for deferred R-OPUS-12, R-OPUS-13, R-OPUS-16, R-OPUS-17, and R-OPUS-18 remain UNKNOWN in the local inputs.",
+    "Broader repo-wide agent runtime authority remains UNKNOWN where no specific runtime path is verified."
+  ],
+  "validation_commands": [
+    "python -m json.tool proof/rte-ux/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001/PROOF.json",
+    "python - <<'PY' ... task packet payload schema validation ... PY",
+    "git diff --check",
+    "git status --short",
+    "git diff --name-only",
+    "bad=$(git status --porcelain --untracked-files=all | rg '^( M|A |AM|MM|\\?\\?) (src/|services/)' || true); if test -n \"$bad\"; then printf '%s\\n' \"$bad\"; exit 1; fi; echo 'PASS no src/** or services/** changes'",
+    "bad=$(git status --porcelain --untracked-files=all | rg '^( M|A |AM|MM|\\?\\?) (promptsets/|schemas/|services/repo-truth-extractor/promptsets/)' || true); if test -n \"$bad\"; then printf '%s\\n' \"$bad\"; exit 1; fi; echo 'PASS no promptsets/** or schemas/** changes'",
+    "hits=$(rg -n 'RTE-UX-PKT-CLI-TONE-EMOJI-CLEANUP-001|RTE-UX-PKT-PRELIVE-VALIDATOR-ERROR-SHAPE-001|RTE-UX-PKT-RUN-HELP-PROGRESSIVE-DISCLOSURE-001' --glob '!out/rte-ux-valuation-opus-audit/**' --glob '!task-packets/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001.md' --glob '!out/rte-ux-claude-rte-safety-guidance/**' --glob '!proof/rte-ux/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001/**' . || true); if test -n \"$hits\"; then printf '%s\\n' \"$hits\"; exit 1; fi; echo 'PASS no follow-on packet ids outside excluded packet/proof/valuation contexts'",
+    "pre-commit run --files .claude/PROJECT_INSTRUCTIONS.md AGENTS.md task-packets/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001.md out/rte-ux-claude-rte-safety-guidance/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001_AUDIT_NOTE.md proof/rte-ux/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001/PROOF.json"
+  ],
+  "validation_results": {
+    "status": "PASS",
+    "results": [
+      {
+        "command": "python -m json.tool proof/rte-ux/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001/PROOF.json",
+        "exit_code": 0,
+        "result": "PASS",
+        "evidence": "Proof JSON parsed successfully."
+      },
+      {
+        "command": "python - <<'PY' ... task packet payload schema validation ... PY",
+        "exit_code": 0,
+        "result": "PASS",
+        "evidence": "Embedded JSON payload in the Markdown task packet validates against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json."
+      },
+      {
+        "command": "git diff --check",
+        "exit_code": 0,
+        "result": "PASS",
+        "evidence": "No whitespace errors reported."
+      },
+      {
+        "command": "git status --short",
+        "exit_code": 0,
+        "result": "PASS",
+        "evidence": "Status showed only .claude/PROJECT_INSTRUCTIONS.md, AGENTS.md, the new task packet, and the new audit note before proof force-add; proof path is ignored and listed separately with git status --ignored."
+      },
+      {
+        "command": "git diff --name-only && git ls-files --others --exclude-standard",
+        "exit_code": 0,
+        "result": "PASS",
+        "evidence": "Observed changed tracked files and untracked non-ignored artifacts matched the packet allowlist."
+      },
+      {
+        "command": "scope guard for src/** and services/**",
+        "exit_code": 0,
+        "result": "PASS",
+        "evidence": "No modified or untracked src/** or services/** paths were reported."
+      },
+      {
+        "command": "scope guard for promptsets/** and schemas/**",
+        "exit_code": 0,
+        "result": "PASS",
+        "evidence": "No modified or untracked promptsets/**, schemas/**, or services/repo-truth-extractor/promptsets/** paths were reported."
+      },
+      {
+        "command": "follow-on packet id grep guard",
+        "exit_code": 0,
+        "result": "PASS",
+        "evidence": "No follow-on packet ids appeared outside excluded valuation, current task-packet, audit, and proof contexts."
+      },
+      {
+        "command": "pre-commit run --files .claude/PROJECT_INSTRUCTIONS.md AGENTS.md task-packets/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001.md out/rte-ux-claude-rte-safety-guidance/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001_AUDIT_NOTE.md proof/rte-ux/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001/PROOF.json",
+        "exit_code": 0,
+        "result": "PASS",
+        "evidence": "All configured hooks passed."
+      }
+    ]
+  },
+  "commit_plan": {
+    "message": "RTE UX Claude safety guidance",
+    "allowlist": [
+      ".claude/PROJECT_INSTRUCTIONS.md",
+      "AGENTS.md",
+      "task-packets/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001.md",
+      "out/rte-ux-claude-rte-safety-guidance/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001_AUDIT_NOTE.md",
+      "proof/rte-ux/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001/PROOF.json"
+    ],
+    "push_or_pr": "NOT_REQUESTED"
+  },
+  "rollback_plan": [
+    "Before commit, remove the newly created task packet, audit note, and proof file, then restore AGENTS.md and .claude/PROJECT_INSTRUCTIONS.md from HEAD in the dedicated worktree.",
+    "After commit, revert the local commit from /Users/hue/code/dopemux-mvp-rte-claude-safety-guidance with git revert <commit-sha>.",
+    "Do not mutate the dirty primary checkout at /Users/hue/code/dopemux-mvp."
+  ]
+}
