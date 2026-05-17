@@ -28,7 +28,7 @@ The fenced JSON payload below is the canonical schema payload for validation aga
     "Do not change routing, pricing, provider, or runtime dispatch behavior.",
     "Do not run provider calls.",
     "Do not run live extraction.",
-    "Active task packets control scoped execution and allowlists only.",
+    "Active task packets control scoped execution, allowlists, validation obligations, and stop conditions only.",
     "Runtime code, config, tests, compose wiring, and active entrypoints govern behavior claims.",
     "Truth docs describe repo truth but do not outrank runtime behavior.",
     "Generated, advisory, extracted, exploratory, and external artifacts never outrank runtime/source truth.",

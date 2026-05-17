@@ -1,12 +1,13 @@
 {
   "packet_id": "RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001",
   "branch": "codex/rte-authority-order-reconciliation",
-  "worktree_path": "/Users/hue/code/dopemux-mvp-rte-authority-order-reconciliation",
+  "worktree_path": "[REDACTED_PATH]",
   "head_before": "d64d5f15e46e68373e3bed1160fbc3df2807db59",
   "head_after": "d64d5f15e46e68373e3bed1160fbc3df2807db59",
+  "proof_capture_note": "Proof was captured pre-commit; head_before and head_after both record the pre-commit base SHA. The implementation commit is recorded in the PR branch history (see git log on codex/rte-authority-order-reconciliation).",
   "repo_identity": {
-    "repo_root": "/Users/hue/code/dopemux-mvp-rte-authority-order-reconciliation",
-    "primary_checkout": "/Users/hue/code/dopemux-mvp",
+    "repo_root": "[REDACTED_PATH]",
+    "primary_checkout": "[REDACTED_PATH]",
     "repo_marker": ".dopetaskroot",
     "repo_marker_present": true,
     "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
@@ -183,7 +184,7 @@
     "proof_handling": "proof/* is ignored by .gitignore; force-add only proof/rte-ux/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001/PROOF.json."
   },
   "rollback_plan": [
-    "From /Users/hue/code/dopemux-mvp-rte-authority-order-reconciliation, revert this branch commit if committed: git revert <commit-sha>.",
+    "From the worktree at [REDACTED_PATH], revert this branch commit if committed: git revert <commit-sha>.",
     "Before commit, remove the untracked task packet, audit, and proof files, then restore modified authority docs from HEAD.",
     "Do not touch the primary checkout dirty files observed before this packet."
   ]

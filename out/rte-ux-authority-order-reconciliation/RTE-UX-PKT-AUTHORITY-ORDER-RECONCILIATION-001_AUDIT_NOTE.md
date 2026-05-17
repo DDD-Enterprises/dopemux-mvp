@@ -13,7 +13,7 @@ prelude: Audit note for the first accepted RTE UX authority-order reconciliation
 
 ## Observed
 
-- Worktree: `/Users/hue/code/dopemux-mvp-rte-authority-order-reconciliation`.
+- Worktree: `[REDACTED_PATH]`.
 - Branch: `codex/rte-authority-order-reconciliation`.
 - Base HEAD before edits: `d64d5f15e46e68373e3bed1160fbc3df2807db59`.
 - Remote: `https://github.com/DDD-Enterprises/dopemux-mvp.git`.
