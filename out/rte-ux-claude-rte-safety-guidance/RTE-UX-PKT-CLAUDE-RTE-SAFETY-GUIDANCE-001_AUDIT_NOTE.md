@@ -126,13 +126,12 @@ issues in the original artifacts. A proof-only follow-up on branch
 the following without changing runtime guidance:
 
 - `proof/rte-ux/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001/PROOF.json`
-  `validation_commands[1]` originally referenced an absent path
-  (`schemas/task-packet-payload.schema.json`) with `Draft202012Validator`. It
-  has been replaced with the canonical
-  `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json` path validated
-  by `Draft7Validator`, matching the embedded task-packet `verify[1]` form and
-  the schema's `$schema: draft-07/schema#`. The replay command now executes
-  successfully against the merged tree.
+  `validation_commands[1]` originally invoked the absent legacy schema
+  reference with `Draft202012Validator`. It has been replaced with the
+  canonical `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json`
+  path validated by `Draft7Validator`, matching the embedded task-packet
+  `verify[1]` form and the schema's `$schema: draft-07/schema#`. The replay
+  command now executes successfully against the merged tree.
 - `proof/rte-ux/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001/PROOF.json`
   `rollback_plan` originally contained a pre-merge `<commit-sha>` placeholder.
   It now records that PR #643 is merged as squash commit

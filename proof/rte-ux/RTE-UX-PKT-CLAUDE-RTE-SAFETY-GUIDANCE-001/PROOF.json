@@ -184,7 +184,7 @@
     "patches": [
       {
         "field": "validation_commands[1]",
-        "reason": "Original command referenced absent path schemas/task-packet-payload.schema.json with Draft202012Validator. Replaced with the canonical docs/03-reference/spec/dopetask/dopetask-canonical-spec.json path validated by Draft7Validator (matching the schema's $schema draft-07/schema# and the embedded task-packet verify[1] form). The replay command now executes successfully against the merged tree."
+        "reason": "Original command referenced the absent legacy schema reference with Draft202012Validator. Replaced with the canonical docs/03-reference/spec/dopetask/dopetask-canonical-spec.json path validated by Draft7Validator (matching the schema's $schema draft-07/schema# and the embedded task-packet verify[1] form). The replay command now executes successfully against the merged tree."
       },
       {
         "field": "rollback_plan",
