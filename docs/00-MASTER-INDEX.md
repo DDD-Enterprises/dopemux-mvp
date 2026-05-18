@@ -194,6 +194,9 @@ Status: [LOGGED] Topology Complete
 ### Governance
 - [Authority Map](03-reference/governance/authority-map.md)
 - [Conflict Ledger](03-reference/governance/conflict-ledger.md)
+- [Documentation Source Map](03-reference/governance/dopemux-documentation-source-map.md)
+- [Documentation Gap Register](03-reference/governance/documentation-gap-register.md)
+- [Documentation Trust Map](03-reference/governance/doc-trust-map.md)
 - Additional governance contracts are tracked in the active backlog and linked from the Authority Map.
 
 ### Technical Deep Dives
