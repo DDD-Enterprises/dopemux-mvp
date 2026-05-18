@@ -333,8 +333,12 @@ restored guidance files from `HEAD` in the dedicated packet worktree.
 
 Post-merge rollback (current state): PR #643 was squash-merged to main as
 `0083f50a58ffa5e9d34eb3c9c620bf28076541e5`. From a fresh worktree off
-`origin/main`, revert with `git revert
-0083f50a58ffa5e9d34eb3c9c620bf28076541e5` and open a follow-up PR.
+`origin/main`, run the following from the repo root, then open a follow-up
+PR:
+
+```sh
+git revert 0083f50a58ffa5e9d34eb3c9c620bf28076541e5
+```
 
 Do not mutate the dirty primary checkout at `/Users/hue/code/dopemux-mvp`.
 

@@ -195,6 +195,24 @@
     "no_provider_calls_run": true,
     "no_live_extraction_run": true,
     "forbidden_paths_touched": [],
-    "scope": "proof and audit replayability cleanup only"
+    "scope": "proof and audit replayability cleanup only",
+    "replay_validation_results": {
+      "status": "PASS",
+      "note": "The historical validation_results.results array is preserved unchanged because it records what was actually executed during the original packet. This block records that the patched validation_commands[1] (canonical Draft7 form) was executed against the merged tree during proof-only cleanup and returned PASS.",
+      "results": [
+        {
+          "command": "python -m json.tool proof/rte-ux/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001/PROOF.json",
+          "exit_code": 0,
+          "result": "PASS",
+          "evidence": "Patched PROOF.json parses as JSON."
+        },
+        {
+          "command": "validation_commands[1] (Draft7Validator + docs/03-reference/spec/dopetask/dopetask-canonical-spec.json) extracted from PROOF.json and executed inline",
+          "exit_code": 0,
+          "result": "PASS",
+          "evidence": "Heredoc body printed 'PASS task packet payload schema validation' against the merged tree."
+        }
+      ]
+    }
   }
 }
