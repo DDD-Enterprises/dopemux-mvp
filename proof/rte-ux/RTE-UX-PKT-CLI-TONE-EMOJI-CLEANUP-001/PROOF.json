@@ -1,0 +1,265 @@
+{
+  "packet_id": "RTE-UX-PKT-CLI-TONE-EMOJI-CLEANUP-001",
+  "base_branch": "main",
+  "base_ref": "origin/main",
+  "branch": "codex/rte-cli-tone-emoji-cleanup-after-pr644",
+  "worktree_path": "/Users/hue/code/dopemux-mvp-rte-cli-tone-emoji-cleanup-after-pr644",
+  "primary_checkout_path": "/Users/hue/code/dopemux-mvp",
+  "primary_checkout_modified": false,
+  "primary_checkout_modification_note": "The required git fetch updated remote tracking state only. Existing dirty files in the primary checkout were observed before this packet and were not edited, staged, reset, stashed, cleaned, rebased, pulled, or otherwise resolved by this packet.",
+  "head_before": "de69cfd120c43916ee89caf9f9c0f5ceacfcf8c6",
+  "proof_commit_capture_note": "The final commit SHA is reported in closeout because this proof file is committed inside that final commit.",
+  "pr_640_merge_gate_verified": true,
+  "pr_643_merge_gate_verified": true,
+  "pr_644_merge_gate_verified": true,
+  "pr_640_state": {
+    "state": "MERGED",
+    "isDraft": false,
+    "mergedAt": "2026-05-17T11:01:15Z",
+    "mergeCommit": "3bdb146813ad34de44078d86900c3fdbb971ef25",
+    "baseRefName": "main",
+    "headRefName": "codex/rte-authority-order-reconciliation",
+    "headRefOid": "3123627c81f90218fed793220ac7b9e797337305",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/640",
+    "origin_main_contains_merge_commit": true
+  },
+  "pr_643_state": {
+    "state": "MERGED",
+    "isDraft": false,
+    "mergedAt": "2026-05-18T01:13:19Z",
+    "mergeCommit": "0083f50a58ffa5e9d34eb3c9c620bf28076541e5",
+    "baseRefName": "main",
+    "headRefName": "codex/rte-claude-safety-guidance",
+    "headRefOid": "b565f4a98356753185d42291d50daf69f38a60b7",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/643",
+    "origin_main_contains_merge_commit": true
+  },
+  "pr_644_state": "MERGED",
+  "pr_644_is_draft": false,
+  "pr_644_merged_at": "2026-05-18T03:52:54Z",
+  "pr_644_merge_commit": "de69cfd120c43916ee89caf9f9c0f5ceacfcf8c6",
+  "pr_644_base_ref_name": "main",
+  "pr_644_head_ref_name": "codex/rte-claude-safety-proof-replay-cleanup",
+  "pr_644_head_ref_oid": "9277360d85a979cd7ac5083d436df9d3e4165878",
+  "pr_644_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/644",
+  "origin_main_head_verified": "de69cfd120c43916ee89caf9f9c0f5ceacfcf8c6",
+  "origin_main_contains_pr_644_merge_commit": true,
+  "required_gate_artifacts_verified_on_origin_main": [
+    "proof/rte-ux/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001/PROOF.json",
+    "out/rte-ux-claude-rte-safety-guidance/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001_AUDIT_NOTE.md",
+    "task-packets/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001.md",
+    "proof/rte-ux/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001/PROOF.json",
+    "out/rte-ux-authority-order-reconciliation/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001_AUDIT_NOTE.md",
+    "out/rte-ux-valuation-opus-audit"
+  ],
+  "source_audit_bundle_present": false,
+  "source_audit_bundle_path": "out/rte-opus-uiux-claude-design-audit/",
+  "valuation_artifacts_read": [
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_ACCEPTED_SCOPE.md",
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_DEFERRED_ITEMS.md",
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_MANIFEST.json",
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_NO_RUNTIME_CHANGE_ATTESTATION.md",
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_PACKET_SEQUENCE.md",
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_REMAINING_UNKNOWNS.md",
+    "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_VALUATION_MATRIX.md"
+  ],
+  "authority_files_read": [
+    "AGENTS.md",
+    ".claude/PROJECT_INSTRUCTIONS.md",
+    ".claude/brand-voice-guidelines.md",
+    "docs/03-reference/governance/rules.md",
+    "docs/03-reference/truth/truth-canonicals.md",
+    "docs/03-reference/truth/truth-scope.md",
+    "docs/03-reference/systems/system-boundaries.md",
+    "docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md",
+    "proof/rte-ux/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001/PROOF.json",
+    "proof/rte-ux/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001/PROOF.json",
+    "out/rte-ux-authority-order-reconciliation/RTE-UX-PKT-AUTHORITY-ORDER-RECONCILIATION-001_AUDIT_NOTE.md",
+    "out/rte-ux-claude-rte-safety-guidance/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001_AUDIT_NOTE.md"
+  ],
+  "runtime_operator_files_inspected": [
+    "src/dopemux/cli.py",
+    "src/dopemux/commands/extractor_commands.py",
+    "src/dopemux/commands/upgrades_commands.py",
+    "tests/unit/test_cli_upgrades_commands.py",
+    "tests/unit/test_cli_repscan_passthrough.py",
+    "tests/unit/test_extractor_command_authority.py",
+    "tests/unit/test_cli_audit_remediations.py"
+  ],
+  "files_touched": [
+    "src/dopemux/cli.py",
+    "tests/unit/test_cli_upgrades_commands.py",
+    "task-packets/RTE-UX-PKT-CLI-TONE-EMOJI-CLEANUP-001.md",
+    "out/rte-ux-cli-tone-emoji-cleanup/RTE-UX-PKT-CLI-TONE-EMOJI-CLEANUP-001_AUDIT_NOTE.md",
+    "proof/rte-ux/RTE-UX-PKT-CLI-TONE-EMOJI-CLEANUP-001/PROOF.json"
+  ],
+  "cli_strings_changed": [
+    {
+      "surface": "legacy repscan/rte scan option help",
+      "summary": "Removed decorative emoji and ritual phrasing from legacy scan option help for phase, run-id, prompt generation, prompt package, prompt root, profile directory, and legacy runner path."
+    },
+    {
+      "surface": "legacy repscan docstring",
+      "summary": "Replaced decorative repository-audit phrasing with explicit disabled-command replacement guidance."
+    },
+    {
+      "surface": "rte scan blocked message",
+      "summary": "Changed the legacy v3 scan gate to lead with Blocked and separate live-execution requirements."
+    },
+    {
+      "surface": "rte list help",
+      "summary": "Replaced ritual phase catalog language with procedural phase/order wording."
+    },
+    {
+      "surface": "rte run provider/routing/spend option help",
+      "summary": "Made routing policy, batch provider, online prescan, and online spend help terse and provider-boundary clear."
+    },
+    {
+      "surface": "rte run docstring",
+      "summary": "Replaced ignition/ritual wording with direct extraction execution wording."
+    },
+    {
+      "surface": "rte doctor help",
+      "summary": "Replaced apothecary/ritual diagnostics wording with run diagnostics and re-process planning wording."
+    },
+    {
+      "surface": "rte status help",
+      "summary": "Replaced ritual status/cockpit telemetry wording with direct extraction status wording."
+    },
+    {
+      "surface": "rte preflight help",
+      "summary": "Replaced pre-ignition/sensor ritual wording with promptset and provider readiness wording."
+    },
+    {
+      "surface": "rte promptset audit help",
+      "summary": "Replaced ritual/deep-tissue audit wording with direct contract compliance wording."
+    },
+    {
+      "surface": "truth command help and refusal",
+      "summary": "Replaced decorative legacy truth help and refusal copy with a procedural Blocked/Next shape."
+    },
+    {
+      "surface": "tests/unit/test_cli_upgrades_commands.py",
+      "summary": "Updated exact expected text for the new truth refusal copy only."
+    }
+  ],
+  "before_after_inventory_location": "out/rte-ux-cli-tone-emoji-cleanup/RTE-UX-PKT-CLI-TONE-EMOJI-CLEANUP-001_AUDIT_NOTE.md#beforeafter-inventory",
+  "codereview_status": {
+    "result": "PASS",
+    "evidence": "Manual diff review found copy-only changes in src/dopemux/cli.py and exact expected-text updates in tests/unit/test_cli_upgrades_commands.py. No command behavior, dispatch, option semantics, runner calls, provider behavior, validation logic, live gate, promptset, schema, routing, or pricing changes were observed."
+  },
+  "precommit_status": {
+    "result": "PASS",
+    "command": "pre-commit run --files src/dopemux/cli.py tests/unit/test_cli_upgrades_commands.py task-packets/RTE-UX-PKT-CLI-TONE-EMOJI-CLEANUP-001.md out/rte-ux-cli-tone-emoji-cleanup/RTE-UX-PKT-CLI-TONE-EMOJI-CLEANUP-001_AUDIT_NOTE.md proof/rte-ux/RTE-UX-PKT-CLI-TONE-EMOJI-CLEANUP-001/PROOF.json"
+  },
+  "tests_updated_for_text_only": [
+    "tests/unit/test_cli_upgrades_commands.py"
+  ],
+  "forbidden_paths_touched": [],
+  "runtime_behavior_changed": false,
+  "provider_calls_run": false,
+  "live_extraction_run": false,
+  "live_preflight_run": false,
+  "promptsets_changed": false,
+  "schemas_changed": false,
+  "pricing_or_routing_changed": false,
+  "validator_error_shape_changed": false,
+  "help_progressive_disclosure_changed": false,
+  "future_packets_started": false,
+  "unknowns_preserved": [
+    "Exact Opus finding-ledger recovery is UNKNOWN because out/rte-opus-uiux-claude-design-audit/ is absent.",
+    "Exact Opus recommendation-to-finding crosswalk is UNKNOWN without the source audit bundle.",
+    "CRIT-1 is preserved as valuation-derived, not independently recovered from a local Opus findings ledger.",
+    "Broader repo-wide agent runtime authority remains UNKNOWN where no specific runtime path is verified."
+  ],
+  "validation_commands": [
+    "python -m json.tool proof/rte-ux/RTE-UX-PKT-CLI-TONE-EMOJI-CLEANUP-001/PROOF.json",
+    "python - <<'PY' ... task packet payload schema validation ... PY",
+    "git diff --check",
+    "git status --short",
+    "git diff --name-only",
+    "git diff --name-only | rg '^services/' && exit 1 || true",
+    "git diff --name-only | rg '^(promptsets/|schemas/|services/repo-truth-extractor/promptsets/)' && exit 1 || true",
+    "git diff --name-only | rg '(^|/)(routing|pricing|provider).*\\.(py|yaml|yml|json)$|src/dopemux/(routing_config|litellm_proxy|profile_models|claude_config)\\.py' && exit 1 || true",
+    "git -C /Users/hue/code/dopemux-mvp status --short --branch",
+    "hits=$(rg -n 'RTE-UX-PKT-PRELIVE-VALIDATOR-ERROR-SHAPE-001|RTE-UX-PKT-RUN-HELP-PROGRESSIVE-DISCLOSURE-001' --glob '!out/rte-ux-valuation-opus-audit/**' --glob '!task-packets/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001.md' --glob '!out/rte-ux-claude-rte-safety-guidance/**' --glob '!proof/rte-ux/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001/**' . || true); if test -n \"$hits\"; then printf '%s\\n' \"$hits\"; exit 1; fi; echo 'PASS no follow-on packet ids outside excluded valuation/packet/proof contexts'",
+    "python -m compileall -q src tests",
+    "uv run --frozen --extra test python -m pytest -q tests/unit/test_cli_upgrades_commands.py tests/unit/test_cli_repscan_passthrough.py tests/unit/test_extractor_command_authority.py",
+    "pre-commit run --files src/dopemux/cli.py tests/unit/test_cli_upgrades_commands.py task-packets/RTE-UX-PKT-CLI-TONE-EMOJI-CLEANUP-001.md out/rte-ux-cli-tone-emoji-cleanup/RTE-UX-PKT-CLI-TONE-EMOJI-CLEANUP-001_AUDIT_NOTE.md proof/rte-ux/RTE-UX-PKT-CLI-TONE-EMOJI-CLEANUP-001/PROOF.json"
+  ],
+  "validation_results": [
+    {
+      "command": "python - <<'PY' ... task packet payload schema validation ... PY",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "Embedded task-packet JSON payload validates against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json."
+    },
+    {
+      "command": "python -m compileall -q src tests",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "Compileall completed without syntax errors."
+    },
+    {
+      "command": "uv run --frozen --extra test python -m pytest -q tests/unit/test_cli_upgrades_commands.py tests/unit/test_cli_repscan_passthrough.py tests/unit/test_extractor_command_authority.py",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "30 focused CLI tests passed."
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "No whitespace errors reported."
+    },
+    {
+      "command": "python -m json.tool proof/rte-ux/RTE-UX-PKT-CLI-TONE-EMOJI-CLEANUP-001/PROOF.json",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "Proof JSON parsed successfully."
+    },
+    {
+      "command": "scope guards",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "Changed tracked and untracked non-ignored paths were restricted to src/dopemux/cli.py, tests/unit/test_cli_upgrades_commands.py, the task packet, and the audit note. No services/**, promptsets/**, schemas/**, or routing/pricing/provider config paths were reported."
+    },
+    {
+      "command": "follow-on packet id grep guard",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "No follow-on packet ids appeared outside excluded valuation, previous packet, audit, and proof contexts."
+    },
+    {
+      "command": "git -C /Users/hue/code/dopemux-mvp status --short --branch",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "Primary checkout status was reviewed after implementation. Existing dirty files remained present and were not modified by this packet."
+    },
+    {
+      "command": "pre-commit run --files ...",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "All configured hooks passed on src/dopemux/cli.py, tests/unit/test_cli_upgrades_commands.py, the task packet, audit note, and proof JSON."
+    }
+  ],
+  "commit_plan": {
+    "message": "RTE UX CLI tone emoji cleanup",
+    "stage_only": [
+      "src/dopemux/cli.py",
+      "tests/unit/test_cli_upgrades_commands.py",
+      "task-packets/RTE-UX-PKT-CLI-TONE-EMOJI-CLEANUP-001.md",
+      "out/rte-ux-cli-tone-emoji-cleanup/RTE-UX-PKT-CLI-TONE-EMOJI-CLEANUP-001_AUDIT_NOTE.md",
+      "proof/rte-ux/RTE-UX-PKT-CLI-TONE-EMOJI-CLEANUP-001/PROOF.json"
+    ],
+    "push": false,
+    "open_pr": false
+  },
+  "rollback_plan": "Before commit, revert only this packet's scoped files in the dedicated worktree. After commit, run git revert <commit-sha> on codex/rte-cli-tone-emoji-cleanup-after-pr644. Do not touch the dirty primary checkout.",
+  "ignored_validation_artifacts_not_staged": [
+    ".venv/",
+    ".pytest_cache/",
+    "__pycache__/",
+    "src/dopemux.egg-info/"
+  ]
+}
