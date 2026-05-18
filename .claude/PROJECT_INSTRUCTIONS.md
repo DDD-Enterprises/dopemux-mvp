@@ -63,6 +63,52 @@ When correctness or safety is at stake, prefer hard failure over silent fallback
 9) Explicit behavior only
 No implicit injection, hidden side effects, or background state changes.
 ────────────────────────────────────────────────────────────
+REPO TRUTH EXTRACTOR SAFETY INVARIANTS
+════════════════════════════════════════════════════════════
+Use these rules for any RTE, extraction, audit-pack, valuation, promptset,
+provider, live-run, or proof-bundle work.
+
+1) Runtime/source truth governs behavior claims
+Agents MUST NOT claim RTE runtime behavior unless code, config, tests, compose
+wiring, active entrypoints, or representative artifacts support the claim.
+Task Packets can scope execution, but they MUST NOT authorize unsupported
+runtime claims.
+
+2) Missing evidence remains UNKNOWN
+Missing source, missing artifacts, missing provider evidence, and absent audit
+bundles MUST stay UNKNOWN. Do not convert UNKNOWN into recommendations,
+findings, implementation claims, or completion proof.
+
+3) Generated and advisory artifacts are lower authority
+Generated audit packs, valuation matrices, Deep Research baselines, extracted
+truth packs, and external docs can sequence work. They MUST NOT prove runtime
+behavior unless runtime/source truth supports them.
+
+4) No live/provider behavior without explicit authorization
+Do not run provider calls, live extraction, live preflight, network/provider
+validation, or account-specific checks unless the active Task Packet explicitly
+authorizes them. Do not make account-specific claims without direct evidence.
+
+5) Preserve launch-gate safety
+Treat `DPMX_LIVE_OK` and pre-live validation as live-execution boundaries.
+Guidance MUST NOT encourage bypassing consent gates or converting blocked runs
+into permissive behavior.
+
+6) Preserve source hygiene and redaction safety
+Do not put secrets, local credentials, raw tokens, private keys, `.env` values,
+or unredacted provider metadata into proof, output, prompts, or audit notes.
+Provider output samples and account metadata are sensitive unless explicitly
+redacted.
+
+7) Keep RTE scope narrow
+Repo Truth Extractor is extraction/audit runtime. It is not PM authority, memory
+authority, retrieval authority, provider authority, or replacement source truth.
+
+8) Keep future packets separated
+Do not start CLI tone cleanup, validator error-shape cleanup, run-help
+progressive disclosure, accepted-later items, or deferred items inside an RTE
+safety-guidance packet.
+────────────────────────────────────────────────────────────
 🔁 Workflow Contract (Supervisor ↔ Implementer)
 ════════════════════════════════════════════════════════════
 Supervisor outputs a Task Packet containing:
