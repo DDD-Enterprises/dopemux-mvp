@@ -1,0 +1,142 @@
+{
+  "id": "TP-DMX-MCP-REPO-SCOPED-TASK-ORCHESTRATOR-001",
+  "project": "dopemux-mvp",
+  "target": "repo-scoped Task Orchestrator MCP launch for Codex and dopemux",
+  "invariants": [
+    "Task Orchestrator MCP state must be keyed by git repository identity, not by linked worktree path.",
+    "ConPort and dope-memory must remain worktree-scoped.",
+    "The upstream stdio MCP Task Orchestrator must stay distinct from the in-repo FastAPI task-orchestrator service.",
+    "Existing Task Orchestrator SQLite folders must not be deleted or silently merged."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MCP-REPO-SCOPED-TASK-ORCHESTRATOR",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/repo-scoped-task-orchestrator",
+    "base_branch": "origin/main",
+    "stacked_because": "Primary checkout was dirty and main was ahead/behind origin/main."
+  },
+  "commit": {
+    "message": "fix(mcp): scope task orchestrator state by repo",
+    "allowlist": [
+      ".mcp.json",
+      "MANIFEST.in",
+      "mcp_catalog.yaml",
+      "docs/02-how-to/manage-mcp-servers.md",
+      "docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md",
+      "src/dopemux/commands/mcp_commands.py",
+      "src/dopemux/mcp/default_catalog.yaml",
+      "src/dopemux/mcp/project_identity.py",
+      "task-packets/TP-DMX-MCP-REPO-SCOPED-TASK-ORCHESTRATOR-001.json",
+      "task-packets/TP-DMX-MCP-REPO-SCOPED-TASK-ORCHESTRATOR-001-implementation-notes.md",
+      "tests/unit/test_mcp_commands_catalog.py",
+      "/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-MCP-REPO-SCOPED-TASK-ORCHESTRATOR-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "uv run --extra test pytest tests/unit/test_mcp_commands_catalog.py tests/unit/test_cli_audit_remediations.py",
+      "/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh --print-resolution",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(mcp): scope Task Orchestrator MCP state by repo",
+    "body": "## Summary\n- key upstream stdio Task Orchestrator state by git repo identity\n- make dopemux mcp usable from repos without local mcp_catalog.yaml via bundled defaults\n- document Codex and dopemux launch surfaces separately\n\n## Validation\n- python -m jsonschema -i task-packets/TP-DMX-MCP-REPO-SCOPED-TASK-ORCHESTRATOR-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- uv run --extra test pytest tests/unit/test_mcp_commands_catalog.py tests/unit/test_cli_audit_remediations.py\n- /Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh --print-resolution\n- git diff --check",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect",
+      "task": "Inspect current Codex plugin script, dopemux MCP catalog rendering, packaging, docs, and tests.",
+      "requirements": [
+        "Preserve distinction between upstream stdio MCP Task Orchestrator and in-repo FastAPI task-orchestrator service."
+      ],
+      "commands": [
+        "sed -n '1,160p' /Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh",
+        "sed -n '276,880p' src/dopemux/commands/mcp_commands.py",
+        "sed -n '1,220p' tests/unit/test_mcp_commands_catalog.py"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Runtime launch and catalog behavior identified before edits."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "mcp_catalog.yaml",
+        "src/dopemux/commands/mcp_commands.py",
+        "/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Implement repo-scoped Task Orchestrator MCP identity, portable catalog fallback, docs, and targeted tests.",
+      "requirements": [
+        "Add repo identity resolution without changing ConPort or dope-memory worktree scoping.",
+        "Add validation-only script mode that does not start Docker.",
+        "Avoid deleting or merging existing Task Orchestrator SQLite folders."
+      ],
+      "commands": [
+        "apply_patch"
+      ],
+      "expected_files": [
+        "src/dopemux/mcp/project_identity.py",
+        "src/dopemux/commands/mcp_commands.py",
+        "src/dopemux/mcp/default_catalog.yaml",
+        "mcp_catalog.yaml",
+        ".mcp.json",
+        "MANIFEST.in",
+        "docs/02-how-to/manage-mcp-servers.md",
+        "docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md",
+        "tests/unit/test_mcp_commands_catalog.py",
+        "/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh"
+      ],
+      "validation": [
+        "Targeted tests pass and script inspect mode reports repo-scoped state."
+      ],
+      "context_files": [
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "validate",
+      "task": "Run schema validation, targeted tests, script inspect mode, diff checks, and precommit where safe.",
+      "requirements": [
+        "Report every NOT_RUN command with reason.",
+        "Inspect git status and diff scope before final summary."
+      ],
+      "commands": [
+        "python -m jsonschema -i task-packets/TP-DMX-MCP-REPO-SCOPED-TASK-ORCHESTRATOR-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "uv run --extra test pytest tests/unit/test_mcp_commands_catalog.py tests/unit/test_cli_audit_remediations.py",
+        "/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh --print-resolution",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "task-packets/TP-DMX-MCP-REPO-SCOPED-TASK-ORCHESTRATOR-001-implementation-notes.md"
+      ],
+      "validation": [
+        "Validation outputs recorded truthfully in final response and implementation notes."
+      ],
+      "context_files": []
+    }
+  ]
+}

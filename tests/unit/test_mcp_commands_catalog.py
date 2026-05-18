@@ -1,10 +1,17 @@
 import json
+import subprocess
+from types import SimpleNamespace
 
 import click
 import pytest
 from click.testing import CliRunner
 
 from dopemux.commands import mcp_commands
+from dopemux.mcp.project_identity import resolve_project_identity
+
+
+def _identity(path):
+    return SimpleNamespace(project_root=path)
 
 
 def _catalog():
@@ -36,12 +43,15 @@ def test_mcp_init_keeps_matching_committed_template_and_writes_envrc(tmp_path, m
 
     monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(tmp_path))
     monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "resolve_project_identity", lambda **_: _identity(tmp_path))
 
     result = CliRunner().invoke(mcp_commands.mcp_init_cmd, [])
 
     assert result.exit_code == 0, result.output
     assert json.loads(mcp_path.read_text()) == template
     envrc = (tmp_path / mcp_commands.ENVRC_FILENAME).read_text()
+    assert f"export DOPEMUX_PROJECT_ROOT={tmp_path}" in envrc
+    assert f"export TASK_ORCHESTRATOR_PROJECT_ROOT={tmp_path}" in envrc
     assert "export CONPORT_MCP_PORT=" in envrc
     assert "export CONPORT_HTTP_PORT=" in envrc
     assert "export CONPORT_INFO_PORT=" in envrc
@@ -53,11 +63,13 @@ def test_mcp_add_appends_primary_and_extra_catalog_ports(tmp_path, monkeypatch):
 
     monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(tmp_path))
     monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "resolve_project_identity", lambda **_: _identity(tmp_path))
 
     result = CliRunner().invoke(mcp_commands.mcp_add_cmd, ["conport"])
 
     assert result.exit_code == 0, result.output
     envrc = (tmp_path / mcp_commands.ENVRC_FILENAME).read_text()
+    assert "export TASK_ORCHESTRATOR_PROJECT_ROOT=" in envrc
     assert envrc.count("export CONPORT_MCP_PORT=") == 1
     assert envrc.count("export CONPORT_HTTP_PORT=") == 1
     assert envrc.count("export CONPORT_INFO_PORT=") == 1
@@ -114,6 +126,62 @@ def test_allocate_ports_raises_on_cross_server_collision():
     assert "Internal port collision" in msg
     assert "alpha" in msg
     assert "beta" in msg
+
+
+def test_project_identity_is_shared_across_linked_worktrees(tmp_path):
+    repo = tmp_path / "repo"
+    linked = tmp_path / "repo-linked"
+    repo.mkdir()
+    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True)
+    (repo / "README.md").write_text("test\n")
+    subprocess.run(["git", "add", "README.md"], cwd=repo, check=True)
+    subprocess.run(
+        [
+            "git",
+            "-c",
+            "user.name=Test User",
+            "-c",
+            "user.email=test@example.invalid",
+            "commit",
+            "-m",
+            "init",
+        ],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(["git", "worktree", "add", str(linked)], cwd=repo, check=True, capture_output=True)
+
+    main_identity = resolve_project_identity(cwd=repo, env={})
+    linked_identity = resolve_project_identity(cwd=linked, env={})
+
+    assert main_identity.project_root == repo.resolve()
+    assert linked_identity.project_root == repo.resolve()
+    assert main_identity.project_id == linked_identity.project_id
+    assert linked_identity.worktree_root == linked.resolve()
+
+
+def test_project_identity_allows_explicit_project_root_outside_git(tmp_path):
+    identity = resolve_project_identity(
+        cwd=tmp_path,
+        env={"TASK_ORCHESTRATOR_PROJECT_ROOT": str(tmp_path)},
+    )
+
+    assert identity.project_root == tmp_path.resolve()
+    assert identity.worktree_root == tmp_path.resolve()
+    assert identity.git_common_dir is None
+
+
+def test_load_catalog_falls_back_to_bundled_default(tmp_path, monkeypatch):
+    monkeypatch.delenv(mcp_commands.CATALOG_ENV_VAR, raising=False)
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(tmp_path))
+
+    catalog = mcp_commands._load_catalog()
+
+    task_orchestrator = catalog["servers"]["task-orchestrator"]
+    assert task_orchestrator["transport"] == "stdio"
+    assert task_orchestrator["state_scope"] == "per-repo"
+    assert task_orchestrator["doctor_args"] == ["--print-resolution"]
 
 
 def test_sync_globals_dry_run_reports_additions_without_writing(tmp_path, monkeypatch):
@@ -236,6 +304,7 @@ def test_doctor_aggregates_problems_and_exits_nonzero(tmp_path, monkeypatch):
 
     monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(tmp_path))
     monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "resolve_project_identity", lambda **_: _identity(tmp_path))
     # Ensure required env is unset and port appears unreachable.
     monkeypatch.delenv("DOPEMUX_WORKSPACE_ID", raising=False)
     monkeypatch.delenv("CONPORT_MCP_PORT", raising=False)
@@ -251,3 +320,39 @@ def test_doctor_aggregates_problems_and_exits_nonzero(tmp_path, monkeypatch):
     assert "ghost" in result.output
     assert "DOPEMUX_WORKSPACE_ID" in result.output
     assert "CONPORT_MCP_PORT" in result.output
+
+
+def test_doctor_runs_stdio_resolution_without_port_check(tmp_path, monkeypatch):
+    doctor_script = tmp_path / "doctor.sh"
+    doctor_script.write_text("#!/usr/bin/env bash\nprintf 'state_id=test-state\\n'\n")
+    doctor_script.chmod(0o755)
+    (tmp_path / mcp_commands.PROJECT_MCP_FILENAME).write_text(json.dumps({
+        "mcpServers": {
+            "task-orchestrator": {"type": "stdio", "command": str(doctor_script), "args": []},
+        }
+    }, indent=2) + "\n")
+    (tmp_path / mcp_commands.ENVRC_FILENAME).write_text("")
+    catalog = {
+        "version": 1,
+        "servers": {
+            "task-orchestrator": {
+                "scope": "per-worktree",
+                "state_scope": "per-repo",
+                "transport": "stdio",
+                "command": str(doctor_script),
+                "doctor_args": ["--print-resolution"],
+                "requires_env": ["TASK_ORCHESTRATOR_PROJECT_ROOT"],
+            },
+        },
+    }
+
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(tmp_path))
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "resolve_project_identity", lambda **_: _identity(tmp_path))
+    monkeypatch.delenv("TASK_ORCHESTRATOR_PROJECT_ROOT", raising=False)
+
+    result = CliRunner().invoke(mcp_commands.mcp_doctor_cmd, [])
+
+    assert result.exit_code == 0, result.output
+    assert "state_id=test-state" in result.output
+    assert "nothing listening" not in result.output

@@ -16,6 +16,8 @@ prelude: System Taskorchestrator (reference) for dopemux documentation and devel
 
 Task Orchestrator is the workflow-coordination service surface for dopemux. In the inspected runtime code it exposes HTTP, WebSocket, and MCP surfaces for workflow idea/epic operations, project workflow views, PM-plane write routing, and cross-plane coordination.
 
+This service must not be confused with the upstream 13-tool stdio MCP Task Orchestrator container used by Codex and `dopemux mcp` local configs. The upstream stdio MCP runtime is launched through `/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh` and stores repo-scoped SQLite state under the operator's local data directory. The in-repo service described here is the Dopemux FastAPI workflow service.
+
 Its canonical authority slice is narrow:
 - workflow-significant API behavior and transition routing exposed by `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/main.py`, `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/api/project_workflow.py`, and `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/api/pm_tools.py`
 - workflow service logic for ideas, epics, and promotions in `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/services/workflow_service.py`
@@ -56,6 +58,7 @@ It does not own durable PM entity truth, chronicle truth, or structured retrieva
 
 - Canonical runtime code: `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/main.py`
 - Canonical stdio MCP wrapper: `/Users/hue/code/dopemux-mvp/services/task-orchestrator/mcp_stdio.py`
+- Upstream 13-tool stdio MCP launcher for Codex/local MCP clients: `/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh`
 - Unsupported runtime variant: `/Users/hue/code/dopemux-mvp/services/task-orchestrator/task_orchestrator/app.py`
   This file exits immediately and says to use `app/main.py`.
 - Container/runtime packaging surface: `/Users/hue/code/dopemux-mvp/services/task-orchestrator/Dockerfile`
@@ -79,6 +82,7 @@ Primary APIs and transports:
 Storage surfaces:
 - No local Task Orchestrator database was observed in the inspected workflow path.
 - Workflow persistence writes through DopeconBridge custom-data categories `workflow_ideas`, `workflow_epics`, and `workflow_audit` in `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/services/workflow_store.py`.
+- The upstream 13-tool stdio MCP Task Orchestrator uses a separate local SQLite database keyed by local git repository identity. That database is not the storage authority for the in-repo FastAPI workflow service.
 
 ## 5. System Boundaries
 
@@ -121,15 +125,16 @@ Storage surfaces:
 - Operational
   `/Users/hue/code/dopemux-mvp/compose.yml`, `/Users/hue/code/dopemux-mvp/docker/compose.core.yml`, and `/Users/hue/code/dopemux-mvp/services/registry.yaml` for current exposed port `8000`.
   `/Users/hue/code/dopemux-mvp/services/task-orchestrator/mcp_stdio.py` for stdio MCP launch.
+  `/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh` for the upstream 13-tool stdio MCP runtime used by Codex/local MCP config.
 
 - Unknown
-  The actually correct container startup path is unresolved because `/Users/hue/code/dopemux-mvp/services/task-orchestrator/Dockerfile` launches `uvicorn task_orchestrator.app:app --port 8000`, while `/Users/hue/code/dopemux-mvp/services/task-orchestrator/task_orchestrator/app.py` hard-fails and says not to use that module.
+  The repo-wide relationship between the in-repo FastAPI workflow service and the upstream 13-tool stdio MCP Task Orchestrator remains a boundary, not a unified runtime contract.
   Repo-wide agent authority remains `UNKNOWN`; the Task Orchestrator agent package is only one competing family.
 
 ## 7. Known Drift / Issues
 
-- Runtime entrypoint conflict:
-  `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/main.py` is the active runtime code, but `/Users/hue/code/dopemux-mvp/services/task-orchestrator/Dockerfile` launches `task_orchestrator.app:app`, and `/Users/hue/code/dopemux-mvp/services/task-orchestrator/task_orchestrator/app.py` immediately exits.
+- Runtime entrypoint drift:
+  `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/main.py` is the active runtime code, and the current Dockerfile launches `app.main:app` on port `8000`. Older docs and local MCP config may still point at `task_orchestrator.app`, which is an unsupported hard-failing entrypoint.
 - Port drift:
   `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/main.py` defaults to `3014`, while `/Users/hue/code/dopemux-mvp/services/task-orchestrator/Dockerfile`, `/Users/hue/code/dopemux-mvp/compose.yml`, `/Users/hue/code/dopemux-mvp/docker/compose.core.yml`, and `/Users/hue/code/dopemux-mvp/services/registry.yaml` all use `8000`.
 - Bridge-backed persistence means local storage ownership is absent:
