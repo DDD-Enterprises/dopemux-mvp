@@ -3326,6 +3326,129 @@ def enforce_home_scan_full_consent_for_cli(
         parser.error(str(exc))
 
 
+def format_pre_live_validator_block(
+    *,
+    verdict: str,
+    reason_codes: Optional[Sequence[str]] = None,
+    output_dir: Optional[str] = None,
+    stderr_text: Optional[str] = None,
+    parse_error: bool = False,
+    artifact_path: Optional[str] = None,
+    next_step_hint: Optional[str] = None,
+) -> str:
+    """Format a multi-line, operator-facing pre-live validator block message.
+
+    The block is intentionally plain text (no emoji, no decorative framing) so it
+    can be safely emitted to stderr ahead of a short exception or argparse error.
+    Callers are responsible for sanitization; ``stderr_text`` is consumed verbatim
+    and should already be passed through ``sanitize_text_for_output``.
+    """
+
+    lines: List[str] = ["Pre-live validator blocked live execution."]
+    final_verdict = (verdict or "").strip().upper() or "NO_GO"
+    lines.append(f"  verdict: {final_verdict}")
+    if parse_error:
+        lines.append(
+            "  parse_status: validator stdout was not parseable as JSON; "
+            "treating as block (fail-closed)."
+        )
+    if reason_codes:
+        code_text = ", ".join(str(code).strip() for code in reason_codes if str(code).strip())
+        if not code_text:
+            code_text = "none reported"
+    else:
+        code_text = "none reported"
+    lines.append(f"  reason_codes: {code_text}")
+    lines.append(f"  output_dir: {output_dir or '<unknown>'}")
+    if artifact_path:
+        lines.append(f"  artifact: {artifact_path}")
+    cleaned_stderr = (stderr_text or "").strip()
+    if cleaned_stderr:
+        lines.append("  stderr:")
+        for stderr_line in cleaned_stderr.splitlines():
+            lines.append(f"    {stderr_line}")
+    lines.append(
+        "  next_step: "
+        + (
+            next_step_hint
+            or "review the validator output above, fix the reported pre-live issues, and rerun."
+        )
+    )
+    return "\n".join(lines)
+
+
+def _emit_pre_live_validator_block(text: str) -> None:
+    """Write a pre-built validator block to stderr verbatim and flush.
+
+    Kept narrow on purpose so tests can monkeypatch ``sys.stderr`` or capture
+    output via ``capsys`` without going through the logging configuration.
+    """
+
+    sys.stderr.write(text + "\n")
+    try:
+        sys.stderr.flush()
+    except Exception:
+        pass
+
+
+def _normalize_reason_codes(value: Any) -> Optional[List[str]]:
+    if isinstance(value, (list, tuple)):
+        codes = [str(code).strip() for code in value if str(code).strip()]
+        return codes or None
+    if isinstance(value, str) and value.strip():
+        return [value.strip()]
+    return None
+
+
+def _emit_validator_first_preset_block(
+    validator_payload: Dict[str, Any],
+    run_root: Path,
+) -> None:
+    """Emit a structured pre-live validator block for the validator-first preset flow.
+
+    The validator-first preset uses ``run_pre_live_validator`` (rte_ops_surfaces),
+    which returns a tuple-shaped payload with raw ``stdout`` / ``stderr`` text.
+    This helper parses the validator stdout for verdict / reason_codes /
+    output_dir, surfaces the persisted ``PRELIVE_VALIDATOR_RESULT.json`` artifact
+    path, sanitizes stderr, and writes the structured block to stderr. It does
+    not raise and does not influence the gate decision; callers are responsible
+    for terminating the run (e.g., ``parser.error``).
+    """
+
+    parsed_payload: Dict[str, Any] = {}
+    parse_error = False
+    raw_stdout = str(validator_payload.get("stdout") or "").strip()
+    if raw_stdout:
+        try:
+            parsed_payload = json.loads(raw_stdout)
+        except Exception:
+            parsed_payload = {}
+            parse_error = True
+    block_verdict = (
+        str(parsed_payload.get("verdict") or "NO_GO").strip().upper() or "NO_GO"
+    )
+    reason_codes_list = _normalize_reason_codes(parsed_payload.get("reason_codes"))
+    output_dir_value = str(parsed_payload.get("output_dir") or "").strip() or None
+    raw_stderr = str(validator_payload.get("stderr") or "").strip()
+    sanitized_stderr = sanitize_text_for_output(raw_stderr) if raw_stderr else ""
+    artifact_path = str(run_root / "PRELIVE_VALIDATOR_RESULT.json")
+    block_text = format_pre_live_validator_block(
+        verdict=block_verdict,
+        reason_codes=reason_codes_list,
+        output_dir=output_dir_value,
+        stderr_text=sanitized_stderr,
+        parse_error=parse_error,
+        artifact_path=artifact_path,
+        next_step_hint=(
+            "review the validator output above and the persisted artifact, "
+            "fix the reported pre-live issues, then rerun. "
+            "Use --skip-pre-live-validator only after a separate review of the gate output."
+        ),
+    )
+    _emit_pre_live_validator_block(block_text)
+
+
+
 def enforce_pre_live_validator_for_execution(
     *,
     root: Path,
@@ -3353,26 +3476,36 @@ def enforce_pre_live_validator_for_execution(
     stdout = (proc.stdout or "").strip()
     stderr = (proc.stderr or "").strip()
     payload: Dict[str, Any] = {}
+    parse_error = False
     if stdout:
         try:
             payload = json.loads(stdout)
         except Exception:
             payload = {}
-    verdict = str(
-        payload.get("verdict") or ("GO" if proc.returncode == 0 else "NO_GO")
-    ).upper()
-    if proc.returncode != 0 or verdict == "NO_GO":
-        reason_codes = payload.get("reason_codes")
-        detail = (
-            ",".join(str(code) for code in reason_codes)
-            if isinstance(reason_codes, list) and reason_codes
-            else "none"
+            parse_error = True
+    explicit_verdict = str(payload.get("verdict") or "").strip().upper()
+    if explicit_verdict:
+        verdict = explicit_verdict
+    elif proc.returncode == 0 and not parse_error:
+        verdict = "GO"
+    else:
+        verdict = "NO_GO"
+    if proc.returncode != 0 or verdict == "NO_GO" or parse_error:
+        reason_codes_list = _normalize_reason_codes(payload.get("reason_codes"))
+        output_dir_value = str(payload.get("output_dir") or "").strip() or None
+        sanitized_stderr = sanitize_text_for_output(stderr) if stderr else ""
+        block_verdict = verdict if not parse_error else "NO_GO"
+        block_text = format_pre_live_validator_block(
+            verdict=block_verdict,
+            reason_codes=reason_codes_list,
+            output_dir=output_dir_value,
+            stderr_text=sanitized_stderr,
+            parse_error=parse_error,
         )
-        output_dir = str(payload.get("output_dir") or "").strip() or "<unknown>"
-        stderr_suffix = f" stderr={stderr}" if stderr else ""
+        _emit_pre_live_validator_block(block_text)
         raise RuntimeError(
-            "Pre-live validator blocked live execution: "
-            f"verdict={verdict} reason_codes={detail} output_dir={output_dir}.{stderr_suffix}"
+            f"Pre-live validator blocked live execution (verdict={block_verdict}). "
+            "See structured block above for details."
         )
     return {
         "command": cmd,
@@ -22721,10 +22854,10 @@ def main() -> None:
             validator_payload=validator_payload,
         )
         if not validator_ok:
+            _emit_validator_first_preset_block(validator_payload, dirs["root"])
             parser.error(
                 "Validator-first preset flow blocked live execution. "
-                "Run the validator, fix the reported pre-live issues, and retry. "
-                "Use --skip-pre-live-validator only if you have separately reviewed the gate output."
+                "See structured block above for details."
             )
         logger.info(
             "PRELIVE_VALIDATOR_OK exit_code=%s validator=%s",
