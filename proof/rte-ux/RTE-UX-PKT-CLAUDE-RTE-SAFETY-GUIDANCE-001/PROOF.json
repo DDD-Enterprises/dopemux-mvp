@@ -111,7 +111,7 @@
         "evidence": "Proof JSON parsed successfully."
       },
       {
-        "command": "python - <<'PY' ... task packet payload schema validation ... PY",
+        "command": "python - <<'PY'\nimport json\nfrom jsonschema import Draft202012Validator\nfrom pathlib import Path\n\npacket = Path('task-packets/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001.md').read_text()\nschema = json.loads(Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text())\nstart = packet.index('```json') + len('```json')\nend = packet.index('```', start)\npayload = json.loads(packet[start:end].strip())\nDraft202012Validator(schema).validate(payload)\nprint('task packet payload schema validation: PASS')\nPY",
         "exit_code": 0,
         "result": "PASS",
         "evidence": "Embedded JSON payload in the Markdown task packet validates against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json."
