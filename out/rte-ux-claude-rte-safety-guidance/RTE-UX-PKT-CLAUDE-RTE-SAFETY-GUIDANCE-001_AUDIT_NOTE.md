@@ -116,3 +116,40 @@ account, or validation behavior.
 - PASS: no follow-on packet ids found outside excluded valuation, current
   task-packet, audit, and proof contexts
 - PASS: `pre-commit run --files ...` on all touched files
+
+## Proof Replay Cleanup (post-merge patch)
+
+After PR #643 was squash-merged to `main` as
+`0083f50a58ffa5e9d34eb3c9c620bf28076541e5`, an audit identified two replayability
+issues in the original artifacts. A proof-only follow-up on branch
+`codex/rte-claude-safety-proof-replay-cleanup` (from `origin/main`) patched
+the following without changing runtime guidance:
+
+- `proof/rte-ux/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001/PROOF.json`
+  `validation_commands[1]` originally invoked the absent legacy schema
+  reference with `Draft202012Validator`. It has been replaced with the
+  canonical `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json`
+  path validated by `Draft7Validator`, matching the embedded task-packet
+  `verify[1]` form and the schema's `$schema: draft-07/schema#`. The replay
+  command now executes successfully against the merged tree.
+- `proof/rte-ux/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001/PROOF.json`
+  `rollback_plan` originally contained a pre-merge `<commit-sha>` placeholder.
+  It now records that PR #643 is merged as squash commit
+  `0083f50a58ffa5e9d34eb3c9c620bf28076541e5` and documents the concrete
+  post-merge revert command.
+- `task-packets/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001.md` Rollback Plan
+  prose was updated to the same post-merge phrasing. The embedded task-packet
+  JSON payload was not touched and still validates against the canonical
+  schema.
+- A `proof_replay_cleanup` block was added to `PROOF.json` recording the
+  cleanup branch, the merged SHA, the patches applied, and the no-runtime,
+  no-provider, no-live-extraction attestations.
+
+A pre-squash local-branch HEAD referenced in external review notes is not
+present in this proof, audit, or packet artifact text. No other artifact
+rollback text required correction.
+
+This cleanup was proof and audit only. It did not change runtime, dispatch,
+provider, promptset, schema, routing, pricing, live-extraction, validator,
+or guidance semantics. No provider calls, live extraction, live preflight, or
+network/provider validation were run.

@@ -327,10 +327,20 @@ Do not push or open a PR unless explicitly requested after local commit closeout
 
 ## Rollback Plan
 
-Before commit, remove the newly created task packet, audit note, and proof file,
-then restore guidance files from `HEAD`. After commit, run
-`git revert <commit-sha>` from the dedicated packet worktree. Do not mutate the
-dirty primary checkout.
+Pre-commit local rollback (no longer reachable; packet is merged): would have
+removed the newly created task packet, audit note, and proof file, then
+restored guidance files from `HEAD` in the dedicated packet worktree.
+
+Post-merge rollback (current state): PR #643 was squash-merged to main as
+`0083f50a58ffa5e9d34eb3c9c620bf28076541e5`. From a fresh worktree off
+`origin/main`, run the following from the repo root, then open a follow-up
+PR:
+
+```sh
+git revert 0083f50a58ffa5e9d34eb3c9c620bf28076541e5
+```
+
+Do not mutate the dirty primary checkout at `/Users/hue/code/dopemux-mvp`.
 
 ## No Runtime Behavior Statement
 
