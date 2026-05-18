@@ -92,7 +92,7 @@
   ],
   "validation_commands": [
     "python -m json.tool proof/rte-ux/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001/PROOF.json",
-    "python - <<'PY' ... task packet payload schema validation ... PY",
+    "python - <<'PY'\nimport json\nfrom pathlib import Path\n\nfrom jsonschema import Draft202012Validator\n\npacket_text = Path('task-packets/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001.md').read_text()\nschema = json.loads(Path('schemas/task-packet-payload.schema.json').read_text())\npayload = json.loads(packet_text.split('```json', 1)[1].split('```', 1)[0])\nDraft202012Validator(schema).validate(payload)\nprint('PASS task packet payload schema validation')\nPY",
     "git diff --check",
     "git status --short",
     "git diff --name-only",
