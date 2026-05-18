@@ -92,7 +92,7 @@
   ],
   "validation_commands": [
     "python -m json.tool proof/rte-ux/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001/PROOF.json",
-    "python - <<'PY'\nimport json\nfrom pathlib import Path\n\nfrom jsonschema import Draft202012Validator\n\npacket_text = Path('task-packets/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001.md').read_text()\nschema = json.loads(Path('schemas/task-packet-payload.schema.json').read_text())\npayload = json.loads(packet_text.split('```json', 1)[1].split('```', 1)[0])\nDraft202012Validator(schema).validate(payload)\nprint('PASS task packet payload schema validation')\nPY",
+    "python - <<'PY'\nimport json, re\nfrom pathlib import Path\nfrom jsonschema import Draft7Validator\npacket = Path('task-packets/RTE-UX-PKT-CLAUDE-RTE-SAFETY-GUIDANCE-001.md').read_text()\nmatch = re.search(r'```json\\n(.*?)\\n```', packet, re.S)\nassert match, 'missing fenced json payload'\npayload = json.loads(match.group(1))\nschema = json.loads(Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text())\nerrors = sorted(Draft7Validator(schema).iter_errors(payload), key=lambda e: list(e.path))\nif errors:\n    raise SystemExit('\\n'.join('%s: %s' % (('/'.join(map(str, e.path)) or '<root>'), e.message) for e in errors))\nprint('PASS task packet payload schema validation')\nPY",
     "git diff --check",
     "git status --short",
     "git diff --name-only",
@@ -172,8 +172,29 @@
     "push_or_pr": "NOT_REQUESTED"
   },
   "rollback_plan": [
-    "Before commit, remove the newly created task packet, audit note, and proof file, then restore AGENTS.md and .claude/PROJECT_INSTRUCTIONS.md from HEAD in the dedicated worktree.",
-    "After commit, revert the local commit from /Users/hue/code/dopemux-mvp-rte-claude-safety-guidance with git revert <commit-sha>.",
+    "Pre-commit local rollback (no longer reachable; packet is merged): would have removed the newly created task packet, audit note, and proof file, then restored AGENTS.md and .claude/PROJECT_INSTRUCTIONS.md from HEAD in the dedicated worktree.",
+    "Post-merge rollback (current state): PR #643 was squash-merged to main as 0083f50a58ffa5e9d34eb3c9c620bf28076541e5. From a fresh worktree off origin/main, revert with `git revert 0083f50a58ffa5e9d34eb3c9c620bf28076541e5` and open a follow-up PR.",
     "Do not mutate the dirty primary checkout at /Users/hue/code/dopemux-mvp."
-  ]
+  ],
+  "proof_replay_cleanup": {
+    "cleanup_packet": "proof-only cleanup applied on branch codex/rte-claude-safety-proof-replay-cleanup from origin/main",
+    "pr_643_state": "MERGED",
+    "pr_643_merge_commit": "0083f50a58ffa5e9d34eb3c9c620bf28076541e5",
+    "pr_643_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/643",
+    "patches": [
+      {
+        "field": "validation_commands[1]",
+        "reason": "Original command referenced absent path schemas/task-packet-payload.schema.json with Draft202012Validator. Replaced with the canonical docs/03-reference/spec/dopetask/dopetask-canonical-spec.json path validated by Draft7Validator (matching the schema's $schema draft-07/schema# and the embedded task-packet verify[1] form). The replay command now executes successfully against the merged tree."
+      },
+      {
+        "field": "rollback_plan",
+        "reason": "Original entry used a pre-merge `<commit-sha>` placeholder. Updated to record that PR #643 is now merged as squash commit 0083f50a58ffa5e9d34eb3c9c620bf28076541e5 and to document the concrete post-merge revert command. The earlier local-branch HEAD aa3f205072fb3ee5b935a0da72d83a56ffd8a56a (pre-squash) is not present anywhere in this proof, audit, or packet artifact text."
+      }
+    ],
+    "no_runtime_changes": true,
+    "no_provider_calls_run": true,
+    "no_live_extraction_run": true,
+    "forbidden_paths_touched": [],
+    "scope": "proof and audit replayability cleanup only"
+  }
 }
