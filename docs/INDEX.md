@@ -40,6 +40,9 @@ Use this file as the root pointer for active documentation navigation and mainte
 - [Internal Workflow Kit Reference](03-reference/internal-workflow-kit.md)
 - [Workflow Kit Architecture](04-explanation/workflow-kit-architecture.md)
 - [Workflow Kit Transfer RFC](91-rfc/workflow-kit-pickle-mechanics-transfer.md)
+- [Dopemux Documentation Source Map](03-reference/governance/dopemux-documentation-source-map.md)
+- [Documentation Gap Register](03-reference/governance/documentation-gap-register.md)
+- [Documentation Trust Map](03-reference/governance/doc-trust-map.md)
 
 ## Skill Templates for Documentation Sync
 

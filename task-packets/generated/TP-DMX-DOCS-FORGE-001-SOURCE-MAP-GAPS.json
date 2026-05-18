@@ -1,0 +1,159 @@
+{
+  "id": "TP-DMX-DOCS-FORGE-001-SOURCE-MAP-GAPS",
+  "project": "dopemux-mvp",
+  "target": "documentation/source-inventory-gap-register",
+  "invariants": [
+    "Documentation-only work: do not edit runtime code, service code, Docker files, dependency files, tests, or generated extraction outputs unless explicitly allowed by this packet.",
+    "Preserve Dopemux split-authority architecture: dopemux controls operator routing/startup, dopetask executes after handoff, task-orchestrator owns workflow transitions, Leantime owns PM metadata, ConPort owns structured decisions/progress/context, dope-memory owns chronicle receipts, dope-context owns retrieval, dopecon-bridge remains proxy/event transport only, ADHD Engine remains operator support only, Repo Truth Extractor produces evidence artifacts only.",
+    "Every claim in new docs must be grounded in inspected repo files or marked UNKNOWN, INFERRED, or NEEDS_REPO_VERIFICATION.",
+    "Do not normalize known drift into a cleaner story; preserve contradictions and unresolved canonicality explicitly.",
+    "Each step must leave commit/proof evidence: changed files, validation output, exit codes, residual risks, and exact follow-up if blocked."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "pyproject.toml",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DOCS-FORGE-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "docs/dmx-docs-forge-001-source-map"
+  },
+  "commit": {
+    "message": "docs: add documentation forge source map and gap register",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-DOCS-FORGE-001-SOURCE-MAP-GAPS.json",
+      "docs/03-reference/governance/dopemux-documentation-source-map.md",
+      "docs/03-reference/governance/documentation-gap-register.md",
+      "docs/INDEX.md",
+      "docs/00-MASTER-INDEX.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-DOCS-FORGE-001-SOURCE-MAP-GAPS.json >/dev/null",
+      "bash scripts/lint-docs.sh",
+      "python scripts/docs_validator.py",
+      "python scripts/docs_frontmatter_guard.py",
+      "python scripts/check_root_hygiene.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs: add documentation source map and gap register",
+    "body": "Create a repo-grounded source map and documentation gap register for the Dopemux documentation forge. Documentation-only change.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "implement",
+      "docgen",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1-preflight-authority-inventory",
+      "task": "Create the task packet file first, verify repo identity, inspect source authorities, and record the docs source map. Commit-plan note: this step contributes only source-map/gap-register docs and packet metadata to the single docs commit for this TP.",
+      "requirements": [
+        "Inspect README.md, PROJECT.md, ARCHITECTURE.md, PM_PLANE.md, SERVICE_CATALOG.md, docs/03-reference/systems/system-boundaries.md, docs/03-reference/truth/*.md, docs/03-reference/systems/*/system-*.md, docs/INDEX.md, config/docs_hygiene/docs_placement_policy.yaml, RULES.md if present, AGENTS.md if present.",
+        "Classify each source as runtime, truth/reference, system doc, proof/generated, historical, or UNKNOWN.",
+        "Do not edit runtime files."
+      ],
+      "commands": [
+        "pwd && git remote -v && git status --short && git branch --show-current && git rev-parse --show-toplevel && git rev-parse HEAD",
+        "mkdir -p task-packets/generated docs/03-reference/governance",
+        "find . -maxdepth 2 -type f | sort | sed -n '1,220p'",
+        "find docs/03-reference/truth docs/03-reference/systems -maxdepth 3 -type f | sort | sed -n '1,260p'"
+      ],
+      "expected_files": [
+        "task-packets/generated/TP-DMX-DOCS-FORGE-001-SOURCE-MAP-GAPS.json",
+        "docs/03-reference/governance/dopemux-documentation-source-map.md"
+      ],
+      "validation": [
+        "test -f task-packets/generated/TP-DMX-DOCS-FORGE-001-SOURCE-MAP-GAPS.json",
+        "test -f docs/03-reference/governance/dopemux-documentation-source-map.md"
+      ],
+      "context_files": [
+        "README.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "docs/03-reference/truth/truth-scope.md",
+        "docs/03-reference/truth/truth-canonicals.md",
+        "docs/03-reference/truth/truth-gaps.md",
+        "docs/INDEX.md",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-2-gap-register",
+      "task": "Write a documentation gap register that captures missing onboarding, quickstart drift, service-port drift, architecture/handoff gaps, marketing gaps, and unresolved runtime/documentation contradictions. Commit-plan note: include this register in the same TP commit and update docs indexes only if required.",
+      "requirements": [
+        "Every gap must include impact, missing evidence, recommended fix, priority, and whether it belongs in this series or a later runtime verification packet.",
+        "Preserve UNKNOWN and NEEDS_REPO_VERIFICATION markers."
+      ],
+      "commands": [
+        "cat > docs/03-reference/governance/documentation-gap-register.md <<'EOF'\n# Documentation Gap Register\n\nTODO: fill from inspected repo evidence.\nEOF"
+      ],
+      "expected_files": [
+        "docs/03-reference/governance/documentation-gap-register.md"
+      ],
+      "validation": [
+        "test -s docs/03-reference/governance/documentation-gap-register.md",
+        "rg -n \"UNKNOWN|NEEDS_REPO_VERIFICATION|Task Orchestrator|ConPort|quickstart|port\" docs/03-reference/governance/documentation-gap-register.md"
+      ],
+      "context_files": [
+        "docs/03-reference/truth/truth-gaps.md",
+        "docs/03-reference/truth/truth-data-events.md",
+        "docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md",
+        "docs/01-tutorials/quickstart.md",
+        "compose.yml"
+      ]
+    },
+    {
+      "id": "step-3-index-and-validate",
+      "task": "Update docs indexes if the new governance docs are not discoverable, then run documentation validators and emit proof. Commit-plan note: stage only packet/source-map/gap-register/index files allowed by this TP.",
+      "requirements": [
+        "Update docs/INDEX.md and docs/00-MASTER-INDEX.md only if present and necessary for discoverability.",
+        "Proof output must summarize validators, exit codes, files changed, residual risks, and next TP readiness."
+      ],
+      "commands": [
+        "bash scripts/lint-docs.sh",
+        "python scripts/docs_validator.py",
+        "python scripts/docs_frontmatter_guard.py",
+        "python scripts/check_root_hygiene.py",
+        "git diff --check",
+        "git diff --stat",
+        "git status --short"
+      ],
+      "expected_files": [
+        "docs/03-reference/governance/dopemux-documentation-source-map.md",
+        "docs/03-reference/governance/documentation-gap-register.md"
+      ],
+      "validation": [
+        "git diff --check",
+        "test -s docs/03-reference/governance/dopemux-documentation-source-map.md",
+        "test -s docs/03-reference/governance/documentation-gap-register.md"
+      ],
+      "context_files": [
+        "docs/INDEX.md",
+        "docs/00-MASTER-INDEX.md",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    }
+  ]
+}
