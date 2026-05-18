@@ -4734,15 +4734,15 @@ extract.add_command(extract_chatlog_group, "chatlog")
     type=click.Choice(
         ["ALL", "A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z"]
     ),
-    help="📊 Target Phase: Phase code or ALL for the repo scan ritual.",
+    help="Phase code or ALL for the legacy repo scan.",
 )
-@click.option("--run-id", type=str, help="🆔 Ritual Session: Unique identifier for the scan run.")
-@click.option("--promptgen", type=click.Choice(["off", "v1", "v2", "auto"]), help="🧠 Prompt Synthesis: Mode for automated prompt generation.")
-@click.option("--promptpack", type=str, help="📦 Prompt Package: Specific promptpack to use for the ritual.")
-@click.option("--promptgen-only", is_flag=True, help="⚡ Synthesis Only: Execute only the prompt generation phase.")
-@click.option("--prompt-root", type=str, help="🔬 Prompt Source: Root directory for ritual prompts.")
-@click.option("--profiles-dir", type=str, help="📂 Profile Registry: Path to the ritual profiles directory.")
-@click.option("--legacy-runner", type=str, help="⏪ Legacy Engine: Path to the legacy v3 runner.")
+@click.option("--run-id", type=str, help="Scan run identifier.")
+@click.option("--promptgen", type=click.Choice(["off", "v1", "v2", "auto"]), help="Prompt generation mode.")
+@click.option("--promptpack", type=str, help="Prompt package to use.")
+@click.option("--promptgen-only", is_flag=True, help="Run only the prompt generation phase.")
+@click.option("--prompt-root", type=str, help="Root directory for prompts.")
+@click.option("--profiles-dir", type=str, help="Prompt profile directory.")
+@click.option("--legacy-runner", type=str, help="Path to the legacy v3 runner.")
 @click.argument("args", nargs=-1, type=click.UNPROCESSED)
 def repscan_passthrough(
     phase: Optional[str],
@@ -4756,10 +4756,9 @@ def repscan_passthrough(
     args: tuple[str, ...],
 ) -> None:
     """
-    🔬 Repository Audit: Run deterministic repo scan and prompt synthesis
+    Run the legacy deterministic repo scan and prompt synthesis path.
 
-    Engages the deterministic repository scanner to audit the codebase and 
-    synthesize high-fidelity prompts for extraction rituals.
+    This legacy command is disabled. Use `dopemux rte scan` instead.
     """
     raise click.ClickException(
         "Legacy command disabled. Use `dopemux rte scan` instead."
@@ -4871,15 +4870,15 @@ def rte():
     type=click.Choice(
         ["ALL", "A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z"]
     ),
-    help="📊 Target Phase: Phase code or ALL for the repo scan ritual.",
+    help="Phase code or ALL for the legacy repo scan.",
 )
-@click.option("--run-id", type=str, help="🆔 Ritual Session: Unique identifier for the scan run.")
-@click.option("--promptgen", type=click.Choice(["off", "v1", "v2", "auto"]), help="🧠 Prompt Synthesis: Mode for automated prompt generation.")
-@click.option("--promptpack", type=str, help="📦 Prompt Package: Specific promptpack to use for the ritual.")
-@click.option("--promptgen-only", is_flag=True, help="⚡ Synthesis Only: Execute only the prompt generation phase.")
-@click.option("--prompt-root", type=str, help="🔬 Prompt Source: Root directory for ritual prompts.")
-@click.option("--profiles-dir", type=str, help="📂 Profile Registry: Path to the ritual profiles directory.")
-@click.option("--legacy-runner", type=str, help="⏪ Legacy Engine: Path to the legacy v3 runner.")
+@click.option("--run-id", type=str, help="Scan run identifier.")
+@click.option("--promptgen", type=click.Choice(["off", "v1", "v2", "auto"]), help="Prompt generation mode.")
+@click.option("--promptpack", type=str, help="Prompt package to use.")
+@click.option("--promptgen-only", is_flag=True, help="Run only the prompt generation phase.")
+@click.option("--prompt-root", type=str, help="Root directory for prompts.")
+@click.option("--profiles-dir", type=str, help="Prompt profile directory.")
+@click.option("--legacy-runner", type=str, help="Path to the legacy v3 runner.")
 @click.option(
     "--allow-legacy-v3-scan",
     is_flag=True,
@@ -4908,10 +4907,10 @@ def rte_scan(
     """
     if not allow_legacy_v3_scan:
         raise click.ClickException(
-            "`dopemux rte scan` delegates to the legacy v3 extraction chain and is "
-            "disabled by default. Pass --allow-legacy-v3-scan only after accepting "
-            "the v3 consent posture; live delegated execution still requires v3 "
-            "--execute and DPMX_LIVE_OK=1."
+            "Blocked: `dopemux rte scan` delegates to the legacy v3 extraction "
+            "chain and is disabled by default. Pass --allow-legacy-v3-scan only "
+            "after accepting the v3 consent posture. Live delegated execution "
+            "still requires v3 --execute and DPMX_LIVE_OK=1."
         )
     # Defense in depth: run_repscan.py independently requires --allow-legacy-v3-scan
     # so direct invocation cannot bypass the consent gate. Forward the flag here so
@@ -4936,10 +4935,9 @@ def rte_scan(
 @click.pass_context
 def extractor_list(ctx, pipeline_version: str, engine_version_legacy: Optional[str]):
     """
-    📋 Catalog Phases: List ritual phases and effective pipeline order
+    List extraction phases and effective pipeline order.
 
-    Displays the full sequence of extraction phases, detailing the 
-    prescribed order of operations for the active ritual pipeline.
+    Displays the full sequence of extraction phases for the selected pipeline.
     """
     effective_version = _resolved_pipeline_version(
         pipeline_version, engine_version_legacy
@@ -4991,7 +4989,7 @@ def extractor_list(ctx, pipeline_version: str, engine_version_legacy: Optional[s
     type=click.Choice(_ROUTING_POLICY_CHOICES),
     default=None,
     show_default=False,
-    help="🧠 Cognitive Routing: LLM policy for extraction (default: model-map balanced).",
+    help="LLM routing policy for extraction. Defaults to the model-map policy.",
 )
 @click.option("--disable-escalation", is_flag=True, default=False, show_default=True)
 @click.option("--escalation-max-hops", type=int, default=2, show_default=True)
@@ -5005,7 +5003,7 @@ def extractor_list(ctx, pipeline_version: str, engine_version_legacy: Optional[s
     type=click.Choice(["auto", "openai", "gemini", "xai"]),
     default="auto",
     show_default=True,
-    help="🧪 Batch Alchemist: Specific provider for asynchronous processing (default: auto).",
+    help="Provider for asynchronous batch processing.",
 )
 @click.option(
     "--retrieve-provider",
@@ -5025,13 +5023,13 @@ def extractor_list(ctx, pipeline_version: str, engine_version_legacy: Optional[s
     "--sync/--no-sync",
     default=True,
     show_default=True,
-    help="🔄 State Sync: Sync local artifacts before ignition (v4 only).",
+    help="Sync local artifacts before the run (v4 only).",
 )
-@click.option("--skip-prescan", is_flag=True, help="⏩ Skip integrated Stage 0 prescan.")
-@click.option("--prescan-import-dir", type=click.Path(exists=True, file_okay=False), help="📥 Import external prescan artifacts.")
-@click.option("--prescan-online", is_flag=True, help="📡 Authorize online LLM passes in prescan.")
-@click.option("--prescan-allow-scope-reduction", is_flag=True, help="⚖️  Allow scope reduction.")
-@click.option("--allow-online-llm", is_flag=True, help="💸 Authorize online LLM spend for whole run.")
+@click.option("--skip-prescan", is_flag=True, help="Skip integrated Stage 0 prescan.")
+@click.option("--prescan-import-dir", type=click.Path(exists=True, file_okay=False), help="Import external prescan artifacts.")
+@click.option("--prescan-online", is_flag=True, help="Authorize online LLM passes in prescan.")
+@click.option("--prescan-allow-scope-reduction", is_flag=True, help="Allow scope reduction.")
+@click.option("--allow-online-llm", is_flag=True, help="Authorize online LLM spend for the run.")
 @click.pass_context
 def extractor_run(
     ctx,
@@ -5072,10 +5070,9 @@ def extractor_run(
     allow_online_llm: bool,
 ):
     """
-    🚀 Ignite Pipeline: Run the Repo Truth Extractor (resumable)
+    Run the Repo Truth Extractor.
 
-    Engages the high-fidelity extraction engines to process the codebase 
-    according to the active ritual promptset and routing policies.
+    Executes the selected extraction pipeline with the provided run controls.
     """
     effective_version = _resolved_pipeline_version(
         pipeline_version, engine_version_legacy
@@ -5166,12 +5163,12 @@ def extractor_run(
 
 @upgrades.command("doctor")
 @_pipeline_version_options
-@click.option("--run-id", default=None, help="🆔 Ritual Session: Unique identifier for the extraction run to diagnose.")
-@click.option("--auto-reprocess/--no-auto-reprocess", default=False, show_default=True, help="🔧 Auto-Remediation: Automatically re-process failed partitions identified during the audit.")
+@click.option("--run-id", default=None, help="Extraction run identifier to diagnose.")
+@click.option("--auto-reprocess/--no-auto-reprocess", default=False, show_default=True, help="Automatically re-process failed partitions identified during the audit.")
 @click.option(
-    "--reprocess-dry-run/--no-reprocess-dry-run", default=False, show_default=True, help="🔬 Ritual Preview: Simulate the re-processing sequence without committing to disk."
+    "--reprocess-dry-run/--no-reprocess-dry-run", default=False, show_default=True, help="Simulate re-processing without writing changes."
 )
-@click.option("--reprocess-phases", default="", help="📊 Targeted Phases: Comma-separated list of extraction phases to audit.")
+@click.option("--reprocess-phases", default="", help="Comma-separated list of extraction phases to audit.")
 @click.pass_context
 def extractor_doctor(
     ctx,
@@ -5183,11 +5180,10 @@ def extractor_doctor(
     reprocess_phases: str,
 ):
     """
-    🏥 Extraction Apothecary: Run diagnostics and deterministic re-process planning
+    Run extraction diagnostics and deterministic re-process planning.
 
-    Performs a high-fidelity audit of an extraction session, identifying 
-    structural hazards and proposing a deterministic re-synchronization plan 
-    for failed partitions.
+    Inspects an extraction run and prepares a deterministic plan for failed
+    partitions.
     """
     effective_version = _resolved_pipeline_version(
         pipeline_version, engine_version_legacy
@@ -5206,8 +5202,8 @@ def extractor_doctor(
 
 @upgrades.command("status")
 @_pipeline_version_options
-@click.option("--run-id", default=None, help="🆔 Ritual Session: Unique identifier for the extraction run to query.")
-@click.option("--json", "status_json", is_flag=True, help="📊 Emit JSON: Output the ritual status as raw machine-readable data.")
+@click.option("--run-id", default=None, help="Extraction run identifier to query.")
+@click.option("--json", "status_json", is_flag=True, help="Emit status as machine-readable JSON.")
 @click.pass_context
 def extractor_status(
     ctx,
@@ -5217,10 +5213,9 @@ def extractor_status(
     status_json: bool,
 ):
     """
-    📊 Ritual Status: Show status of an extraction run
+    Show extraction run status.
 
-    Retrieves current cockpit telemetry for a specific extraction session, 
-    detailing phase progression and partition status.
+    Reports phase progression and partition status for an extraction run.
     """
     effective_version = _resolved_pipeline_version(
         pipeline_version, engine_version_legacy
@@ -5251,10 +5246,9 @@ def extractor_preflight(
     auth_doctor: bool,
 ):
     """
-    🛫 Pre-Ignition Check: Run pre-flight diagnostics for an extraction run
+    Run preflight diagnostics for an extraction run.
 
-    Executes a comprehensive sensor audit before starting an extraction 
-    ritual, ensuring all directories are mounted and providers are synchronized.
+    Verifies promptset and provider readiness before extraction.
     """
     effective_version = _resolved_pipeline_version(
         pipeline_version, engine_version_legacy
@@ -5406,7 +5400,7 @@ def upgrades_promptset_group():
 
 @upgrades_promptset_group.command("audit")
 @_pipeline_version_options
-@click.option("--strict/--no-strict", default=True, show_default=True, help="🛡️  Enforce Constraints: Perform a strict structural audit of the promptset artifacts.")
+@click.option("--strict/--no-strict", default=True, show_default=True, help="Perform a strict structural audit of promptset artifacts.")
 @click.pass_context
 def extractor_promptset_audit(
     ctx,
@@ -5415,10 +5409,9 @@ def extractor_promptset_audit(
     strict: bool,
 ):
     """
-    ⚖️ Ritual Integrity: Audit promptset contract compliance
+    Audit promptset contract compliance.
 
-    Performs a deep-tissue audit of the promptset to ensure compliance with 
-    ritual contracts, including required sections, schemas, and determinism.
+    Verifies required promptset sections, schemas, and determinism.
 
     \b
     Example:
@@ -5462,21 +5455,21 @@ def extractor_trace(ctx, dry_run: bool, execute: bool, phase: Optional[str]):
 
 @cli.command("truth")
 @click.option(
-    "--dry-run", is_flag=True, default=True, help="🔬 Ritual Preview: Simulate execution without committing to disk (default)."
+    "--dry-run", is_flag=True, default=True, help="Simulate execution without writing changes (default)."
 )
-@click.option("--execute", is_flag=True, help="⚡ Ignite Ritual: Actually call LLM providers for extraction.")
+@click.option("--execute", is_flag=True, help="Call configured LLM providers for extraction.")
 @click.option(
-    "--deep", is_flag=True, help="🌊 Deep Harvest: Compatibility flag only; canonical v5 does not support legacy deep mode."
+    "--deep", is_flag=True, help="Compatibility flag only; canonical v5 does not support legacy deep mode."
 )
-@click.option("--resume", is_flag=True, help="⏯️  Resume Sequence: Resume a previously suspended extraction run.")
+@click.option("--resume", is_flag=True, help="Resume a previously suspended extraction run.")
 @click.option(
-    "--workers", type=int, default=1, help="⚡ Ritual Workers: Number of parallel extraction workers (default: 1)."
+    "--workers", type=int, default=1, help="Number of parallel extraction workers (default: 1)."
 )
 @click.option(
     "--routing-policy",
     type=click.Choice(["cost", "balanced", "quality", "optimal"]),
     default="cost",
-    help="🧠 Cognitive Routing: Intelligence routing policy (default: cost).",
+    help="Routing policy for extraction (default: cost).",
 )
 @click.pass_context
 def truth_command(
@@ -5489,12 +5482,12 @@ def truth_command(
     routing_policy: str,
 ):
     """
-    👁️  Truth Extraction: deprecated legacy surface
+    Deprecated Repo Truth Extractor entrypoint.
     """
     del ctx, dry_run, execute, deep, resume, workers, routing_policy
     raise click.ClickException(
-        "`dopemux truth` is no longer a supported operator entrypoint for Repo Truth Extractor.\n\n"
-        "Use the canonical `dopemux rte` family instead:\n"
+        "Blocked: `dopemux truth` is not a supported Repo Truth Extractor entrypoint.\n\n"
+        "Next: use `dopemux rte`:\n"
         "  dopemux rte run --pipeline-version v5 --phase ALL --dry-run\n"
         "  dopemux rte preflight --pipeline-version v5 --promptset-root /abs/path/to/generated/promptset\n"
         "  dopemux rte validate-live --promptset-root /abs/path/to/generated/promptset"
