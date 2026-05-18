@@ -145,9 +145,9 @@ the following without changing runtime guidance:
   cleanup branch, the merged SHA, the patches applied, and the no-runtime,
   no-provider, no-live-extraction attestations.
 
-The pre-squash local-branch HEAD `aa3f205072fb3ee5b935a0da72d83a56ffd8a56a`
-referenced in some external notes is not present in this proof, audit, or
-packet artifact text. No other artifact rollback text required correction.
+A pre-squash local-branch HEAD referenced in external review notes is not
+present in this proof, audit, or packet artifact text. No other artifact
+rollback text required correction.
 
 This cleanup was proof and audit only. It did not change runtime, dispatch,
 provider, promptset, schema, routing, pricing, live-extraction, validator,
