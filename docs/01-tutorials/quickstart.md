@@ -5,119 +5,152 @@ type: tutorial
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-04-20'
-last_review: '2026-04-20'
-next_review: '2026-07-19'
-prelude: Shortest credible path to running the Dopemux multi-system stack locally.
+last_review: '2026-05-18'
+next_review: '2026-08-16'
+prelude: Shortest repo-grounded path to install and smoke-check the Dopemux multi-system stack locally.
 ---
-
-# ━━━◆ Ø ◆━━━
-
-Status: [LIVE] Quick Start Ready
-
 # Dopemux MVP Quick Start
 
-This guide provides the shortest credible path to running the Dopemux multi-system stack locally.
+This guide is the shortest repo-grounded path to install Dopemux, start the
+compose-backed services, and run first checks. It describes the observed
+defaults in `compose.yml` and `services/registry.yaml`; local `.env` overrides
+can change ports.
 
-Because Dopemux is a composed workspace and not a single monolithic application, starting the stack involves spinning up a set of interacting services.
+Dopemux is a composed workspace, not a monolithic application. The operator
+entrypoint, execution handoff, PM metadata, workflow transitions, structured
+context, chronicle memory, retrieval, bridge/proxy routing, and operator support
+are split across different systems.
 
 ## Prerequisites
 
-- Python 3.11+
-- Node 18+ (for UI dashboards)
-- Docker with `docker compose` (20.10+)
-- `uv` (for fast Python dependency management)
+- Python 3.11 or newer.
+- `uv` for Python dependency management.
+- Docker with `docker compose`.
+- Node.js only if you are working on UI packages.
+- Access to any provider API keys required by services you choose to run.
 
-## 1. Install and Initialize
-
-Clone the repository and install core dependencies.
+## 1. Clone And Install
 
 ```bash
 git clone https://github.com/DDD-Enterprises/dopemux-mvp
 cd dopemux-mvp
-
-# Install CLI and dev dependencies
 uv sync --frozen --extra dev
 ```
 
-Generate workspace configurations:
+Optional workspace config render:
 
 ```bash
 python scripts/render_workspace_configs.py --set-default
 source "$(python scripts/workspace_env_path.py)"
 ```
 
-## 2. Start the Core Stack
+## 2. Prepare The Compose Network
 
-Dopemux coordinates several background services (Postgres, Redis, ConPort, task-orchestrator, dopecon-bridge, adhd-engine, etc.). Start them using Docker Compose:
+`compose.yml` declares `dopemux-network` as an external Docker network. Create
+it before manual compose startup when it does not already exist:
+
+```bash
+docker network inspect dopemux-network >/dev/null 2>&1 \
+  || docker network create dopemux-network
+```
+
+This packet did not run a live full-stack startup. If another operator profile
+creates this network automatically, that behavior remains
+`NEEDS_REPO_VERIFICATION` here.
+
+## 3. Start The Compose Stack
 
 ```bash
 docker compose -f compose.yml up -d --build
 ```
-*(If testing the ADHD-specific MVP inner loop, use `docker compose -f compose.adhd-stack.yml up -d --build`)*
 
-**Verify Service Health:**
-
-Ensure the core routing and authority services are reachable:
+Check container state:
 
 ```bash
-python tools/ports_health_audit.py --mode runtime --services conport,task-orchestrator,dopecon-bridge
+docker compose -f compose.yml ps
 ```
 
-## 3. Start the Control CLI
+Stop the stack when finished:
 
-With the background systems running, use the `dopemux` CLI to engage with the workspace.
+```bash
+docker compose -f compose.yml down
+```
+
+## 4. Run The Operator CLI
 
 ```bash
 dopemux start
 ```
 
-This command prepares your terminal context, aligns MCP server configurations (like Serena, Dope-Context), and updates your local `.claude.json` or `.dopemux/config.yaml` to route correctly.
+The inspected CLI entrypoint starts the operator cockpit path and handles
+routing, MCP/server coordination, workspace context, and launch behavior. It is
+not documented here as a complete replacement for explicit compose startup,
+because this packet did not validate every runtime profile.
 
-## 4. Run the Dashboard UI (Optional)
+## 5. First Health Checks
 
-The frontend UI is maintained separately from the core Python stack.
+Use compose-backed default ports unless your `.env` overrides them:
+
+| Service | Default host port | Health path |
+| --- | ---: | --- |
+| dopecon-bridge | `3016` | `/health` |
+| ConPort HTTP | `3004` | `/health` |
+| dope-context | `3010` | `/health` |
+| dope-memory | `3020` | `/health` |
+| task-orchestrator | `8000` | `/health` |
+| ADHD Engine | `3025` | `/health` |
 
 ```bash
-cd ui-dashboard
-npm install
-npm run dev
+curl -fsS http://localhost:3016/health
+curl -fsS http://localhost:3004/health
+curl -fsS http://localhost:3010/health
+curl -fsS http://localhost:3020/health
+curl -fsS http://localhost:8000/health
+curl -fsS http://localhost:3025/health
 ```
-Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-## 5. First Successful Checks
+If a check fails, inspect the service directly:
 
-Verify that the PM and Memory planes are operating correctly.
-
-**Check Bridge Routing (Requires dev token if auth is enabled):**
 ```bash
-curl -i http://localhost:3316/health
+docker compose -f compose.yml logs --tail=100 dopecon-bridge
+docker compose -f compose.yml logs --tail=100 conport
+docker compose -f compose.yml logs --tail=100 task-orchestrator
 ```
 
-**Check ConPort Semantic Retrieval Node:**
-```bash
-curl -i http://localhost:3304/health
-```
+## 6. Authority Notes For Operators
 
-**Emit a Workspace Switch Event (to test transport):**
-```bash
-docker compose exec workspace-watcher \
-  python main.py \
-  --emit-switch \
-  --redis-url redis://redis:6379 \
-  --from-app Terminal \
-  --to-app "Claude Code" \
-  --from-workspace /tmp/fake --to-workspace $(pwd)
-```
-You can verify the event flow by reading from the Redis stream `dopemux:events`.
+- `dopemux` controls operator startup, routing, and coordination.
+- `dopetask` owns execution after `dopemux` hands off through
+  `scripts/dopetask`.
+- Leantime owns passive PM metadata and project/ticket snapshots.
+- task-orchestrator owns workflow-significant transitions, queue state, and
+  blockers.
+- ConPort owns structured decision, progress, project context, and custom-data
+  context.
+- dope-memory owns historical chronicle receipts.
+- dope-context owns derived code/docs retrieval.
+- dopecon-bridge is only bridge/proxy/event transport.
+- ADHD Engine is operator support only.
+- Repo Truth Extractor produces evidence artifacts; runtime truth still wins.
 
 ## Common Failures
 
-- **Ports already in use (e.g., 55432, 8000, 3316):** Ensure no other Postgres, task-orchestrator, or bridge instances are running locally.
-- **"Task not routed" / 503 from Bridge:** The backend service (Leantime, ConPort, or task-orchestrator) is not healthy. Check `docker compose logs dopecon-bridge`.
-- **ConPort Disconnected (`📴` in statusline):** Ensure `context_portal/context.db` exists and `mcp-conport` is running. Initialize it via: `mcp__conport__get_active_context --workspace_id $(pwd)`.
+- Missing external network: create `dopemux-network`, then rerun compose.
+- Port already in use: inspect your `.env`, existing containers, and local
+  processes before changing docs or code.
+- Bridge route unavailable: check upstream service health; the bridge is not
+  source truth.
+- ConPort confusion: use the HTTP health port for HTTP checks and preserve
+  separate MCP/SSE surfaces in architecture docs.
+- Runtime drift: do not mark drift closed unless a live validation actually
+  proves it.
 
-## Where To Go Next
+## Next Reading
 
-- Review `ARCHITECTURE.md` to understand how authority is split across these services.
-- Read `SERVICE_CATALOG.md` for a full inventory of the services running in the stack.
-- Check `PM_PLANE.md` to understand where your project management data actually lives.
+- [Root Quick Start](../../QUICK_START.md)
+- [README](../../README.md)
+- [Developer Onboarding](../02-how-to/developer-onboarding.md)
+- [Architecture](../../ARCHITECTURE.md)
+- [PM Plane](../../PM_PLANE.md)
+- [System Boundaries](../03-reference/systems/system-boundaries.md)
+- [Documentation Gap Register](../03-reference/governance/documentation-gap-register.md)

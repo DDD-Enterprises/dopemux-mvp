@@ -1,0 +1,201 @@
+{
+  "id": "TP-DMX-DOCS-FORGE-003-ARCH-GOV-OPS-HANDOFF",
+  "project": "dopemux-mvp",
+  "target": "documentation/architecture-governance-operations-handoff",
+  "invariants": [
+    "Documentation-only work: do not edit runtime code, service code, Docker files, dependency files, tests, or generated extraction outputs unless explicitly allowed by this packet.",
+    "Preserve Dopemux split-authority architecture: dopemux controls operator routing/startup, dopetask executes after handoff, task-orchestrator owns workflow transitions, Leantime owns PM metadata, ConPort owns structured decisions/progress/context, dope-memory owns chronicle receipts, dope-context owns retrieval, dopecon-bridge remains proxy/event transport only, ADHD Engine remains operator support only, Repo Truth Extractor produces evidence artifacts only.",
+    "Every claim in new docs must be grounded in inspected repo files or marked UNKNOWN, INFERRED, or NEEDS_REPO_VERIFICATION.",
+    "Do not normalize known drift into a cleaner story; preserve contradictions and unresolved canonicality explicitly.",
+    "Each step must leave commit/proof evidence: changed files, validation output, exit codes, residual risks, and exact follow-up if blocked."
+  ],
+  "depends_on": [
+    "TP-DMX-DOCS-FORGE-002-README-QUICKSTART"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "pyproject.toml",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DOCS-FORGE-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-DOCS-FORGE-002-README-QUICKSTART",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "docs/dmx-docs-forge-003-arch-gov-ops"
+  },
+  "commit": {
+    "message": "docs: add architecture governance operations handoff docs",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-DOCS-FORGE-003-ARCH-GOV-OPS-HANDOFF.json",
+      "docs/04-explanation/overview/project-overview.md",
+      "docs/04-explanation/overview/problem-statement.md",
+      "docs/04-explanation/overview/system-map.md",
+      "docs/04-explanation/architecture/dopemux-architecture.md",
+      "docs/04-explanation/architecture/data-and-control-flow.md",
+      "docs/03-reference/governance/authority-boundaries.md",
+      "docs/03-reference/governance/governance-model.md",
+      "docs/03-reference/systems/component-catalog.md",
+      "docs/02-how-to/operator-workflows.md",
+      "docs/03-reference/instructions/ai-agent-handoff-guide.md",
+      "docs/INDEX.md",
+      "docs/00-MASTER-INDEX.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-DOCS-FORGE-003-ARCH-GOV-OPS-HANDOFF.json >/dev/null",
+      "bash scripts/lint-docs.sh",
+      "python scripts/docs_validator.py",
+      "python scripts/docs_frontmatter_guard.py",
+      "python scripts/check_root_hygiene.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs: add architecture governance operations handoff docs",
+    "body": "Add repo-grounded overview, architecture, authority, operations, governance, and AI handoff docs using existing docs hygiene roots. Documentation-only change.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "implement",
+      "docgen",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1-overview-system-map",
+      "task": "Create overview docs under existing docs policy roots instead of inventing unregistered top-level docs roots. Commit-plan note: overview/system-map is slice 1.",
+      "requirements": [
+        "Use docs/04-explanation/overview/ unless docs policy proves a better canonical path.",
+        "Include Mermaid map only if it reflects inspected system boundaries."
+      ],
+      "commands": [
+        "mkdir -p docs/04-explanation/overview",
+        "cat > docs/04-explanation/overview/project-overview.md <<'EOF'\n# Project Overview\n\nTODO: fill from repo evidence.\nEOF",
+        "cat > docs/04-explanation/overview/problem-statement.md <<'EOF'\n# Problem Statement\n\nTODO: fill from repo evidence.\nEOF",
+        "cat > docs/04-explanation/overview/system-map.md <<'EOF'\n# System Map\n\nTODO: fill from repo evidence.\nEOF"
+      ],
+      "expected_files": [
+        "docs/04-explanation/overview/project-overview.md",
+        "docs/04-explanation/overview/problem-statement.md",
+        "docs/04-explanation/overview/system-map.md"
+      ],
+      "validation": [
+        "test -s docs/04-explanation/overview/project-overview.md",
+        "test -s docs/04-explanation/overview/system-map.md",
+        "rg -n \"dopemux|dopetask|task-orchestrator|ConPort|dope-memory|dope-context|dopecon-bridge|ADHD Engine|Repo Truth Extractor\" docs/04-explanation/overview/*.md"
+      ],
+      "context_files": [
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "SERVICE_CATALOG.md"
+      ]
+    },
+    {
+      "id": "step-2-architecture-authority-flow-component-docs",
+      "task": "Create architecture, authority boundaries, data/control flow, and component catalog docs. Commit-plan note: architecture/reference docs are slice 2 and must preserve known drift.",
+      "requirements": [
+        "Authority boundaries must explicitly state dopecon-bridge is not canonical authority and retrieval outputs are derived.",
+        "Data/control flow must include dopemux startup, dopetask handoff, PM writes, dope-memory chronicle, dope-context retrieval, bridge proxy, and RTE flow."
+      ],
+      "commands": [
+        "mkdir -p docs/04-explanation/architecture docs/03-reference/governance docs/03-reference/systems",
+        "touch docs/04-explanation/architecture/dopemux-architecture.md docs/04-explanation/architecture/data-and-control-flow.md docs/03-reference/governance/authority-boundaries.md docs/03-reference/systems/component-catalog.md"
+      ],
+      "expected_files": [
+        "docs/04-explanation/architecture/dopemux-architecture.md",
+        "docs/04-explanation/architecture/data-and-control-flow.md",
+        "docs/03-reference/governance/authority-boundaries.md",
+        "docs/03-reference/systems/component-catalog.md"
+      ],
+      "validation": [
+        "rg -n \"Must Not Own|dopecon-bridge|derived|UNKNOWN|Task Orchestrator|ConPort|dope-memory|dope-context\" docs/04-explanation/architecture/*.md docs/03-reference/governance/authority-boundaries.md docs/03-reference/systems/component-catalog.md"
+      ],
+      "context_files": [
+        "ARCHITECTURE.md",
+        "PM_PLANE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "docs/03-reference/truth/truth-data-events.md",
+        "docs/03-reference/truth/truth-canonicals.md",
+        "docs/03-reference/truth/truth-gaps.md",
+        "docs/03-reference/systems/*/system-*.md"
+      ]
+    },
+    {
+      "id": "step-3-operations-governance-agent-handoff",
+      "task": "Create operator workflows, governance model, and AI agent handoff guide. Commit-plan note: operations/governance/handoff docs are slice 3 and must be indexed.",
+      "requirements": [
+        "Operator workflows must classify PM writes by canonical writer.",
+        "Governance model must include truth order, completion language, proof rules, docs validation gates, and task packet requirements.",
+        "AI handoff guide must instruct agents not to expose hidden chain-of-thought and not to invent repo facts."
+      ],
+      "commands": [
+        "mkdir -p docs/02-how-to docs/03-reference/governance docs/03-reference/instructions",
+        "touch docs/02-how-to/operator-workflows.md docs/03-reference/governance/governance-model.md docs/03-reference/instructions/ai-agent-handoff-guide.md"
+      ],
+      "expected_files": [
+        "docs/02-how-to/operator-workflows.md",
+        "docs/03-reference/governance/governance-model.md",
+        "docs/03-reference/instructions/ai-agent-handoff-guide.md"
+      ],
+      "validation": [
+        "rg -n \"truth hierarchy|proof|Task Packet|worktree|hidden chain-of-thought|Do not invent|Leantime|task-orchestrator|ConPort|dope-memory\" docs/02-how-to/operator-workflows.md docs/03-reference/governance/governance-model.md docs/03-reference/instructions/ai-agent-handoff-guide.md"
+      ],
+      "context_files": [
+        "RULES.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "PAL_PACKET_TEMPLATE.md",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md"
+      ]
+    },
+    {
+      "id": "step-4-index-validate-proof",
+      "task": "Update docs indexes and run validators. Commit-plan note: stage only architecture/operations/governance/handoff docs, packet, and index files allowed by this TP.",
+      "requirements": [
+        "Proof must include docs paths chosen, docs policy compliance, validation output, and residual drift."
+      ],
+      "commands": [
+        "bash scripts/lint-docs.sh",
+        "python scripts/docs_validator.py",
+        "python scripts/docs_frontmatter_guard.py",
+        "python scripts/check_root_hygiene.py",
+        "git diff --check",
+        "git diff --stat",
+        "git status --short"
+      ],
+      "expected_files": [
+        "docs/04-explanation/overview/project-overview.md",
+        "docs/04-explanation/architecture/dopemux-architecture.md",
+        "docs/03-reference/governance/authority-boundaries.md",
+        "docs/02-how-to/operator-workflows.md",
+        "docs/03-reference/instructions/ai-agent-handoff-guide.md"
+      ],
+      "validation": [
+        "git diff --check",
+        "test -s docs/03-reference/governance/governance-model.md",
+        "test -s docs/03-reference/instructions/ai-agent-handoff-guide.md"
+      ],
+      "context_files": [
+        "docs/INDEX.md",
+        "docs/00-MASTER-INDEX.md",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    }
+  ]
+}
