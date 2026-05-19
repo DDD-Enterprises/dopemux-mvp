@@ -23,6 +23,8 @@ Status: [LOGGED] Topology Complete
 
 ### New to Dopemux?
 - **[Quick Start Guide](../QUICK_START.md)** - Get up and running in 5 minutes
+- **[Dopemux Quickstart Tutorial](01-tutorials/quickstart.md)** - Compose-backed startup and first checks
+- **[Developer Onboarding](02-how-to/developer-onboarding.md)** - Contributor setup, Task Packet discipline, and docs validation
 - **[Installation](01-tutorials/start-here.md)** - Comprehensive setup guide
 - **[README](../README.md)** - Project overview and features
 
@@ -163,6 +165,7 @@ Status: [LOGGED] Topology Complete
 ### Documentation Automation
 - [Documentation Root Index](INDEX.md)
 - [Documentation Catalog](03-reference/documentation-catalog.md)
+- [Developer Onboarding](02-how-to/developer-onboarding.md)
 - PR Docgen Sync skill templates:
   - `templates/skills/pr-docgen-sync/`
   - `templates/skills/pr-docgen-sync-gemini/`
