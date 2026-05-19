@@ -26,6 +26,7 @@ import {
   Swords,
   RotateCcw,
   AlertTriangle,
+  Zap,
 } from 'lucide-react';
 import { brandTokens, statusStyles } from '../theme';
 import { getCompletionTransitionTask, getSkipTransitionTask } from './taskSequencerTransitions';
@@ -234,6 +235,12 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     return brandTokens.colors.serumMint;
   };
 
+  const energyColor = (energy: string) => {
+    if (energy === 'high') return brandTokens.colors.gremlinPink;
+    if (energy === 'medium') return brandTokens.colors.giltEdge;
+    return brandTokens.colors.serumMint;
+  };
+
   const totalRemainingMinutes = useMemo(() => {
     const incompleteTasks = tasks.filter((t) => t.status !== 'completed');
     const otherTasksTotal = incompleteTasks
@@ -355,11 +362,11 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         '@keyframes active-border-glow': {
           '0%, 100%': {
             borderColor: brandTokens.borders.cyan,
-            boxShadow: `0 0 0px ${alpha(brandTokens.colors.ritualCyan, 0)}`,
+            boxShadow: `0 0 8px ${alpha(brandTokens.colors.ritualCyan, 0.2)}`,
           },
           '50%': {
             borderColor: brandTokens.colors.serumMint,
-            boxShadow: `0 0 12px ${alpha(brandTokens.colors.ritualCyan, 0.3)}`,
+            boxShadow: `0 0 16px ${alpha(brandTokens.colors.serumMint, 0.4)}`,
           },
         },
       }}
@@ -768,10 +775,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                     : `1px solid ${brandTokens.borders.subtle}`,
                   mb: 0.5,
                   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                  ...(isCurrent &&
-                    isTimerRunning && {
-                      animation: 'active-border-glow 3s infinite ease-in-out',
-                    }),
+                  animation: (isCurrent && isTimerRunning) ? 'active-border-glow 2s infinite ease-in-out' : 'none',
                   '&:hover, &:focus-within': {
                     bgcolor: isCurrent
                       ? alpha(brandTokens.colors.ritualCyan, 0.12)
@@ -821,11 +825,30 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                     </Box>
                   }
                   secondary={
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
-                      <Typography variant="caption">
-                        {task.estimatedMinutes} min • {task.energyRequired} energy
-                        {taskFinishTimes[task.id] && ` • Ends at ${taskFinishTimes[task.id]}`}
-                      </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 0.5 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Tooltip title={`Estimated duration: ${task.estimatedMinutes} minutes`} arrow>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <Clock size={12} color={brandTokens.colors.ritualCyan} aria-hidden="true" />
+                            <Typography variant="caption">{task.estimatedMinutes}m</Typography>
+                          </Box>
+                        </Tooltip>
+                        <Tooltip title={`Energy requirement: ${task.energyRequired}`} arrow>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <Zap size={12} color={energyColor(task.energyRequired)} aria-hidden="true" />
+                            <Typography variant="caption" sx={{ color: energyColor(task.energyRequired) }}>
+                              {task.energyRequired}
+                            </Typography>
+                          </Box>
+                        </Tooltip>
+                        {taskFinishTimes[task.id] && (
+                          <Tooltip title="Estimated wall-clock finish time" arrow>
+                            <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                              • Ends at {taskFinishTimes[task.id]}
+                            </Typography>
+                          </Tooltip>
+                        )}
+                      </Box>
                       <Typography variant="caption">#{index + 1}</Typography>
                     </Box>
                   }
