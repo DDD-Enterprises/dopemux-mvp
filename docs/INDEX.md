@@ -67,6 +67,15 @@ Use this file as the root pointer for active documentation navigation and mainte
 - [Operator Workflows](02-how-to/operator-workflows.md)
 - [AI Agent Handoff Guide](03-reference/instructions/ai-agent-handoff-guide.md)
 
+## Public Front Door Surface
+
+- [AI-Readable Map](../llms.txt)
+- [Public Docs Surface](03-reference/governance/public-docs-surface.md)
+- [Public Copy Variants](04-explanation/product/public-copy-variants.md)
+- [Homepage Copy](04-explanation/product/homepage-copy.md)
+- [Product Positioning](04-explanation/product/positioning.md)
+- [Product FAQ](04-explanation/product/faq.md)
+
 ## Skill Templates for Documentation Sync
 
 - Core skill: `templates/skills/pr-docgen-sync/`

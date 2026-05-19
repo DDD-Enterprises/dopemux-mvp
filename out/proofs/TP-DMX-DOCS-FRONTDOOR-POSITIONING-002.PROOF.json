@@ -1,0 +1,156 @@
+{
+  "packet_id": "TP-DMX-DOCS-FRONTDOOR-POSITIONING-002",
+  "branch": "docs/frontdoor-positioning-002",
+  "base_ref": "origin/main@f87816b2a906bcf6a174ba384c401be16f542213",
+  "head_ref": "docs/frontdoor-positioning-002 rebased onto origin/main; final commit SHA reported in PR/final response",
+  "files_changed": [
+    "README.md",
+    "docs/INDEX.md",
+    "docs/docs_index.yaml",
+    "docs/04-explanation/product/homepage-copy.md",
+    "docs/04-explanation/product/positioning.md",
+    "docs/04-explanation/product/elevator-pitches.md",
+    "docs/04-explanation/product/features-and-benefits.md",
+    "docs/04-explanation/product/faq.md",
+    "docs/03-reference/governance/documentation-gap-register.md",
+    "task-packets/generated/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.json",
+    "out/proofs/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.PROOF.json"
+  ],
+  "runtime_files_touched": false,
+  "forbidden_paths_touched": false,
+  "docs_index_yaml_status": "PASS: docs/docs_index.yaml parses with yaml.safe_load; updated within existing explanation mapping shape",
+  "validations": [
+    {
+      "command": "git status --short",
+      "exit_code": 0,
+      "result": "PASS",
+      "notes": "Only packet allowlist files changed or added."
+    },
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool out/proofs/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.PROOF.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python - <<'PY' ... yaml.safe_load(Path('docs/docs_index.yaml').read_text()) ... PY",
+      "exit_code": 0,
+      "result": "PASS",
+      "notes": "Printed: docs/docs_index.yaml parses"
+    },
+    {
+      "command": "targeted relative link check over README.md, docs/INDEX.md, product docs, and documentation-gap-register.md",
+      "exit_code": 0,
+      "result": "PASS",
+      "notes": "Printed: targeted relative link check passed"
+    },
+    {
+      "command": "claim guardrail scan over README.md and product docs",
+      "exit_code": 1,
+      "result": "FAIL_FIXED",
+      "notes": "Initial scan found exact forbidden literals used in negative examples; copy was revised and the scan was rerun."
+    },
+    {
+      "command": "claim guardrail scan over README.md and product docs",
+      "exit_code": 0,
+      "result": "PASS",
+      "notes": "Printed: claim guardrail scan passed"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "bash scripts/lint-docs.sh",
+      "exit_code": 0,
+      "result": "PASS",
+      "notes": "All 5 checks passed."
+    },
+    {
+      "command": "python scripts/docs_frontmatter_guard.py",
+      "exit_code": 0,
+      "result": "PASS",
+      "notes": "Printed: All docs have valid frontmatter."
+    },
+    {
+      "command": "python scripts/check_root_hygiene.py",
+      "exit_code": 0,
+      "result": "PASS",
+      "notes": "Printed: root-hygiene: OK (9 paths checked)"
+    },
+    {
+      "command": "python scripts/docs_validator.py README.md docs/INDEX.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/faq.md docs/03-reference/governance/documentation-gap-register.md",
+      "exit_code": 1,
+      "result": "FAIL_NOT_PACKET_GATE",
+      "notes": "README.md has no YAML frontmatter. Root README frontmatter was not added because it would change the public first screen and this validator is not part of the required packet gate."
+    },
+    {
+      "command": "python scripts/docs_validator.py docs/INDEX.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/faq.md docs/03-reference/governance/documentation-gap-register.md",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python - <<'PY' ... jsonschema.validate(packet, schema) ... PY",
+      "exit_code": 0,
+      "result": "PASS",
+      "notes": "Printed: task packet schema validation passed"
+    },
+    {
+      "command": "pre-commit run --files README.md docs/INDEX.md docs/docs_index.yaml docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/faq.md docs/03-reference/governance/documentation-gap-register.md task-packets/generated/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.json out/proofs/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.PROOF.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "allowlist check over tracked and untracked changed files",
+      "exit_code": 0,
+      "result": "PASS",
+      "notes": "Printed: allowlist check passed"
+    },
+    {
+      "command": "git rebase origin/main",
+      "exit_code": 0,
+      "result": "PASS",
+      "notes": "Rebased branch from 82be43006d860113c74b2a67bd1e6ab0266cd7a7 to 74fd8ce1c2499d667ff3057a6e2812b731a46a52 before proof amend; no conflicts."
+    },
+    {
+      "command": "post-rebase validation suite",
+      "exit_code": 0,
+      "result": "PASS",
+      "notes": "Required retarget validation suite passed after rebasing onto origin/main."
+    },
+    {
+      "command": "python scripts/docs_validator.py",
+      "exit_code": 0,
+      "result": "PASS_WITH_WARNINGS",
+      "notes": "Optional full docs validator reported 67 pre-existing warnings in ADR/RFC files outside this packet."
+    }
+  ],
+  "link_checks": [
+    {
+      "command": "targeted relative link check",
+      "exit_code": 0,
+      "result": "PASS"
+    }
+  ],
+  "claim_guardrails_checked": true,
+  "known_risks": [
+    "PR #660 changed from OPEN to MERGED during the original implementation preflight; retarget to main was explicitly authorized after PR #660 merged.",
+    "The normal remote branch origin/docs/public-ai-rte-baseline was not advertised after PR #660 merged; it was not recreated.",
+    "Runtime startup, provider behavior, local/private/offline guarantees, and production readiness were not validated by this documentation packet.",
+    "This proof file cannot contain the SHA of the exact commit that contains it without changing that commit SHA; final commit SHA is reported in the PR and final response."
+  ],
+  "not_run": [
+    "Live Docker startup",
+    "Live provider calls",
+    "Live RTE extraction",
+    "Runtime/service health checks",
+    "Production-readiness validation",
+    "Local-only/private-only/offline-default validation"
+  ],
+  "commit": "SELF_REFERENCE_NOT_AVAILABLE_FINAL_SHA_REPORTED_IN_PR_AND_FINAL_RESPONSE"
+}
