@@ -73,22 +73,49 @@ def test_sanitize_payload_redacts_secret_fields_but_preserves_env_metadata() -> 
 def test_failed_sidecar_text_redacts_provider_tokens_and_private_key_blocks() -> None:
     output_safety = _load_output_safety_module()
     provider_token = "sk-" + "RTEPKT15" + ("B" * 32)
+    opaque_token = "RtE" + ("aB3" * 14)
     private_key_body = "MII" + ("C" * 48)
+    safe_digest = "a" * 64
     text = (
         f"provider_error_reason={provider_token}\n"
+        f"opaque failure marker {opaque_token}\n"
         "-----BEGIN PRIVATE KEY-----\n"
         f"{private_key_body}\n"
         "-----END PRIVATE KEY-----\n"
-        "safe_sha256=abcdef1234567890\n"
+        f"safe_sha256={safe_digest}\n"
     )
 
     sanitized = output_safety.sanitize_failed_sidecar_text(text)
 
     assert provider_token not in sanitized
+    assert opaque_token not in sanitized
     assert private_key_body not in sanitized
     assert "[REDACTED]" in sanitized
     assert "[REDACTED PRIVATE KEY]" in sanitized
-    assert "safe_sha256=abcdef1234567890" in sanitized
+    assert f"safe_sha256={safe_digest}" in sanitized
+
+
+def test_failed_sidecar_payload_redacts_generic_secret_shapes_but_preserves_env_metadata() -> None:
+    output_safety = _load_output_safety_module()
+    opaque_token = "RtE" + ("cD4" * 14)
+    safe_digest = "b" * 64
+
+    sanitized = output_safety.sanitize_payload_for_failed_sidecar(
+        {
+            "failure_type": "provider",
+            "api_key_env": "OPENAI_API_KEY",
+            "request_meta": {
+                "provider_error_reason": f"opaque failure marker {opaque_token}",
+                "sha256": safe_digest,
+            },
+        }
+    )
+
+    rendered = json.dumps(sanitized, sort_keys=True)
+    assert opaque_token not in rendered
+    assert "[REDACTED]" in rendered
+    assert sanitized["api_key_env"] == "OPENAI_API_KEY"
+    assert sanitized["request_meta"]["sha256"] == safe_digest
 
 
 def test_ui_events_redact_secret_like_fields(tmp_path: Path) -> None:
