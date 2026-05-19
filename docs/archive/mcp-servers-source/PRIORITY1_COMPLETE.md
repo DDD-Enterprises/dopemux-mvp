@@ -1,3 +1,15 @@
+---
+id: PRIORITY1_COMPLETE
+title: Priority1 Complete
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-19'
+last_review: '2026-05-19'
+next_review: '2026-08-17'
+prelude: Priority1 Complete (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Priority 1 Complete - Server Fixes Summary
 **Date**: 2026-02-05
 **Status**: ✅ Substantially Complete
