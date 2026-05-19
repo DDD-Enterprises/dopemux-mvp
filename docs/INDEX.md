@@ -32,6 +32,11 @@ Use this file as the root pointer for active documentation navigation and mainte
 - [Root Quick Start](../QUICK_START.md)
 - [Dopemux Quickstart](01-tutorials/quickstart.md)
 - [Developer Onboarding](02-how-to/developer-onboarding.md)
+- [Project Overview](04-explanation/overview/project-overview.md)
+- [Problem Statement](04-explanation/overview/problem-statement.md)
+- [System Map](04-explanation/overview/system-map.md)
+- [Dopemux Architecture](04-explanation/architecture/dopemux-architecture.md)
+- [Data and Control Flow](04-explanation/architecture/data-and-control-flow.md)
 - [Repo Truth Extractor v5 First Live Run](02-how-to/extraction/repo-truth-extractor-v5-first-live-run.md)
 - [Extraction Pipeline Reliability](03-reference/extraction/pipeline-reliability.md)
 - [V5 Extraction Pipeline Upgrade Design](04-explanation/architecture/v5-extraction-pipeline-upgrade-design.md)
@@ -46,6 +51,11 @@ Use this file as the root pointer for active documentation navigation and mainte
 - [Dopemux Documentation Source Map](03-reference/governance/dopemux-documentation-source-map.md)
 - [Documentation Gap Register](03-reference/governance/documentation-gap-register.md)
 - [Documentation Trust Map](03-reference/governance/doc-trust-map.md)
+- [Authority Boundaries](03-reference/governance/authority-boundaries.md)
+- [Governance Model](03-reference/governance/governance-model.md)
+- [Component Catalog](03-reference/systems/component-catalog.md)
+- [Operator Workflows](02-how-to/operator-workflows.md)
+- [AI Agent Handoff Guide](03-reference/instructions/ai-agent-handoff-guide.md)
 
 ## Skill Templates for Documentation Sync
 
