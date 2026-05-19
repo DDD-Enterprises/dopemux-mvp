@@ -1,44 +1,13 @@
-# MCP Server Catalog
-#
-# Registry of MCP servers known to the `dopemux mcp` CLI subcommands.
-# Single source of truth for what `dopemux mcp init`, `dopemux mcp add`,
-# `dopemux mcp sync-globals`, and `dopemux mcp doctor` understand.
-#
-# Scope semantics:
-#   singleton    — one shared instance, declared in ~/.claude.json `mcpServers`.
-#                  Stateless, or routes by per-call workspace_path / cwd auto-detection.
-#                  Does NOT need per-worktree isolation.
-#   per-worktree — declared in each worktree's .mcp.json. Most entries in this
-#                  scope use worktree-isolated ports/volumes; entries may set
-#                  state_scope: per-repo when the MCP process is launched from
-#                  each worktree but stores one DB per local git repository.
-#
-# Transport:
-#   http  — Streamable HTTP (Claude Code "type": "http")
-#   sse   — Server-Sent Events  (Claude Code "type": "sse")
-#   stdio — Local process (Claude Code "type": "stdio") with command + args
-#
-# Env-var conventions for per-worktree servers:
-#   DOPEMUX_PORT_<NAME>      — host port allocated by `dopemux mcp init`
-#   DOPEMUX_WORKSPACE_ID     — worktree absolute path (used as logical workspace key)
-#   DOPEMUX_INSTANCE_ID      — short hash of worktree path (4 hex chars)
-#
-# `dopemux mcp init` will write these into a per-worktree `.envrc` (or `.env.mcp`)
-# and substitute them into `.mcp.json` at session start (Claude Code expands ${VAR}).
-
+# Bundled default MCP catalog used when a project does not define mcp_catalog.yaml.
 version: 1
 
 defaults:
-  # What `dopemux mcp init` scaffolds into a fresh worktree's .mcp.json by default.
   per_worktree:
     - conport
     - dope-memory
     - task-orchestrator
 
 servers:
-
-  # ---------- Singletons (live in ~/.claude.json) ----------
-
   pal:
     scope: singleton
     transport: http
@@ -91,21 +60,15 @@ servers:
     transport: stdio
     command: docker
     args: ["mcp", "gateway", "run"]
-    description: "Docker MCP gateway — surfaces containerized MCPs from Docker MCP Toolkit"
-
-  # ---------- Per-worktree (live in <worktree>/.mcp.json) ----------
+    description: "Docker MCP gateway - surfaces containerized MCPs from Docker MCP Toolkit"
 
   conport:
     scope: per-worktree
     transport: sse
-    # Port var names match compose.yml conventions so `init` writes env that
-    # `docker compose up` reads directly.
     url_template: "http://localhost:${CONPORT_MCP_PORT}/mcp"
     port_var: CONPORT_MCP_PORT
     default_port_base: 3005
     extra_port_vars:
-      # Conport exposes three host ports (HTTP/health, MCP, info). Per-worktree
-      # isolation requires all three to be unique; same hash offset is reused.
       - var: CONPORT_HTTP_PORT
         base: 3004
       - var: CONPORT_INFO_PORT

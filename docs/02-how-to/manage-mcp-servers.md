@@ -1,23 +1,35 @@
 ---
 id: manage-mcp-servers
-title: Manage MCP Servers (Global Singletons + Per-Worktree Instances)
+title: Manage MCP Servers (Global Singletons + Project/Worktree Instances)
 type: how-to
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-05-06'
 last_review: '2026-05-06'
 next_review: '2026-08-06'
-prelude: How to declare MCP servers once globally, scaffold per-worktree configs in seconds via `dopemux mcp init`, and keep `~/.claude.json` and `.mcp.json` in sync with the catalog.
+prelude: How to declare MCP servers once globally, scaffold worktree configs in seconds via `dopemux mcp init`, and keep global and local MCP launch surfaces in sync with the catalog.
 ---
 
 # Manage MCP Servers
 
-Dopemux MCP servers split into two categories:
+Dopemux MCP servers split into three operational categories:
 
 - **Singletons** — stateless, workspace-independent. One running instance is shared across every project and every worktree. Declared in `~/.claude.json` `mcpServers`. Examples: `pal`, `serena`, `dope-context`, `desktop-commander`, `exa`, `gpt-researcher`, `MCP_DOCKER`.
-- **Per-worktree** — stateful or workspace-scoped. Each worktree gets its own instance with its own port, container, and storage volume. Declared in `<worktree>/.mcp.json` with env-var-driven port allocation. Examples: `conport`, `dope-memory`, `task-orchestrator`.
+- **Per-worktree** — stateful or workspace-scoped. Each worktree gets its own instance with its own port, container, and storage volume. Declared in `<worktree>/.mcp.json` with env-var-driven port allocation. Examples: `conport`, `dope-memory`.
+- **Repo-scoped stdio** — launched from each worktree or Codex session, but backed by one durable state directory per local git repository. `task-orchestrator` uses this model.
 
-The single source of truth for which server is which is `mcp_catalog.yaml` at the repo root. The `dopemux mcp` CLI reads it.
+The preferred source of truth is `mcp_catalog.yaml` at the repo root. If a repo does not have that file, `dopemux mcp` falls back to the bundled default catalog. Set `DOPEMUX_MCP_CATALOG=/path/to/mcp_catalog.yaml` to use an explicit catalog.
+
+## Codex local availability
+
+Codex does not read `~/.claude.json`, `~/.gemini/settings.json`, or Dopemux `.mcp.json` as active MCP configuration. For Codex, the local recovery surface is:
+
+- `/Users/hue/plugins/dopemux-mission-control` - home-local Codex plugin with the PAL and Task Orchestrator MCP definitions.
+- `~/.codex/config.toml` - direct `mcp_servers.pal` and `mcp_servers.task-orchestrator` entries so the tools are available even before plugin marketplace reload.
+
+The validated Task Orchestrator MCP runtime for Codex is the current 13-tool upstream container launched by `/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh`. That script resolves the current local git repository and stores state under `~/.local/share/dopemux-mission-control/task-orchestrator/<repo-id>/current-tasks.db`.
+
+Do not point Codex or generated config at `services/task-orchestrator/task_orchestrator/app.py`; that entrypoint is an unsupported runtime variant.
 
 ## Bootstrap a fresh worktree
 
@@ -29,8 +41,8 @@ dopemux mcp init
 
 `init` writes:
 
-- `.mcp.json` — Claude Code reads this at session start; declares the per-worktree servers from the catalog defaults (`conport`, `dope-memory`, `task-orchestrator`).
-- `.envrc.dopemux-mcp` — exports `DOPEMUX_WORKSPACE_ID`, `DOPEMUX_INSTANCE_ID`, and `DOPEMUX_PORT_*` for each per-worktree server.
+- `.mcp.json` — Claude Code reads this at session start; declares the local servers from the catalog defaults (`conport`, `dope-memory`, `task-orchestrator`).
+- `.envrc.dopemux-mcp` — exports `DOPEMUX_WORKSPACE_ROOT`, `DOPEMUX_PROJECT_ROOT`, `TASK_ORCHESTRATOR_PROJECT_ROOT`, `DOPEMUX_INSTANCE_ID`, and `DOPEMUX_PORT_*` for worktree-scoped servers.
 
 Source the env file (one of):
 
@@ -49,7 +61,7 @@ dopemux mcp up
 dopemux mcp doctor
 ```
 
-Open Claude Code in this directory; `/mcp` should list the singletons (from `~/.claude.json`) plus the per-worktree servers (from `.mcp.json`).
+Open Claude Code in this directory; `/mcp` should list the singletons (from `~/.claude.json`) plus the local servers (from `.mcp.json`).
 
 ## Add or remove servers in a worktree
 
@@ -98,6 +110,8 @@ port = default_port_base + (sha1(worktree_abspath)[:4]_hex % 100)
 
 So the same worktree always gets the same port across reboots, and two different worktrees get different offsets within a 100-port window per service. `init` checks ports against `lsof` and reports `(free)` or `(in use)`.
 
+`task-orchestrator` is different: it is stdio and does not allocate a port. Its durable SQLite state key is derived from the local git repository common directory, so linked worktrees for one repository share one Task Orchestrator DB.
+
 If you ever hit a real collision (vanishingly rare in practice), bump `default_port_base` for the conflicting service in `mcp_catalog.yaml` by 100 and re-run `dopemux mcp init --force`.
 
 ## Compose-side requirement
@@ -143,14 +157,25 @@ If `compose.yml` still has hardcoded port mappings, only one worktree can run th
 - `.mcp.json` and `.envrc.dopemux-mcp` exist.
 - Required env vars for each declared per-worktree server are set in the current shell.
 - Allocated ports have something listening (i.e., the container is up).
+- Stdio Task Orchestrator can resolve its repo-scoped state directory with `--print-resolution`.
 - Locally-declared servers are still present in the catalog (no orphaned entries).
 
 If `doctor` reports an env var unset, you forgot to source `.envrc.dopemux-mcp` (or direnv hasn't reloaded).
 
 If `doctor` reports `nothing listening on :PORT`, the container isn't running for this worktree. Check `dopemux mcp status`, then `dopemux mcp up`. If multiple worktrees both expect the same port (you'll see the conflict in `lsof -i :PORT`), the compose-side env-var mapping is missing — see the *Compose-side requirement* section.
 
+If `doctor` reports a Task Orchestrator resolution failure, confirm the command exists and run:
+
+```bash
+/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh --print-resolution
+```
+
+That command does not start Docker; it only prints the resolved worktree root, project root, state id, data directory, and database path.
+
 ## What's NOT touched
 
 The `mcp-proxy-config.json` / `mcp-proxy-config.yaml` files at the repo root are **not** Claude Code config — they're a separate ingress registry for the Dopemux MCP proxy/gateway service. The `dopemux mcp` CLI does not read or write them.
 
 PR #575's runtime fixes for `desktop-commander` (pinned `fastmcp==2.14.7`) and `gpt-researcher` (pinned `gpt-researcher==0.14.8`) live in the Dockerfiles under `docker/mcp-servers-source/` and are independent of this CLI.
+
+The Compose service named `task-orchestrator` is the Dopemux FastAPI workflow service on port `8000`. It is not the same runtime as the upstream 13-tool stdio MCP Task Orchestrator launched for Codex and local MCP clients.
