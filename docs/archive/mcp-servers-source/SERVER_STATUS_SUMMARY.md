@@ -1,3 +1,15 @@
+---
+id: SERVER_STATUS_SUMMARY
+title: Server Status Summary
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-19'
+last_review: '2026-05-19'
+next_review: '2026-08-17'
+prelude: Server Status Summary (explanation) for dopemux documentation and developer
+  workflows.
+---
 # MCP Server Status Summary
 **Last Updated**: 2026-02-06
 **Overall Health**: 14/17 servers running (82%)
