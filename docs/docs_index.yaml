@@ -1,5 +1,5 @@
 version: '1.0'
-last_updated: '2026-04-12'
+last_updated: '2026-05-19'
 description: Machine-readable index of dopemux-mvp documentation for AI/tool consumption
 entry_points:
   quickstart: docs/01-tutorials/quickstart.md

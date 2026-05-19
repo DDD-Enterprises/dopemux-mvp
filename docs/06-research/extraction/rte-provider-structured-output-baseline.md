@@ -13,9 +13,10 @@ prelude: External provider baseline for Repo Truth Extractor structured output, 
 
 This document imports an external research baseline for Repo Truth Extractor provider behavior.
 
-Source report:
+Source report identity:
 
-- `/Users/hue/Downloads/deep-research-report 12.md`
+- `DR-00-RTE-EXTERNAL-BASELINE.md`, an operator-provided Deep Research report imported on 2026-05-19.
+- The original local report file is not a durable repo artifact. Treat this committed document, plus the selected source ledger below, as the durable baseline.
 
 Status:
 
