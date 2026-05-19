@@ -1,0 +1,123 @@
+{
+  "id": "RTE-PKT-15-FAILED-SIDECARS",
+  "project": "dopemux-rte",
+  "target": "Repo Truth Extractor failed sidecar redaction",
+  "invariants": [
+    "No live extraction.",
+    "No provider calls.",
+    "No batch submit, poll, retrieve, or cancel.",
+    "No promptset edits.",
+    "No schema edits.",
+    "No model-map edits.",
+    "No route-policy edits.",
+    "No retry-logic changes.",
+    "No repair-semantics changes.",
+    "No artifact schema redesign.",
+    "Runtime-generated artifacts remain evidence surfaces, not source truth.",
+    "Secrets and secret-shaped values must not be quoted in proof outputs.",
+    "Preserve deterministic ordering and existing failure classification semantics."
+  ],
+  "depends_on": [
+    "RTE-PKT-00-SOURCE-CLOSURE",
+    "RTE-PKT-01-LIVE-GATE",
+    "RTE-PKT-02-PAYLOAD-REDACTION"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "pyproject.toml",
+    "require_identity_match": true,
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git"
+  },
+  "series": {
+    "id": "RTE-REMEDIATION-SERIES",
+    "base_branch": "main",
+    "parent_tp_id": "RTE-PKT-02-PAYLOAD-REDACTION",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-pkt-15-failed-sidecars-clean"
+  },
+  "commit": {
+    "message": "fix(rte): redact failed sidecar outputs",
+    "allowlist": [
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/output_safety.py",
+      "services/repo-truth-extractor/tests/test_failed_sidecar_redaction.py",
+      "services/repo-truth-extractor/tests/test_output_safety.py",
+      "services/repo-truth-extractor/tests/fixtures/**",
+      "out/rte-pkt-15-failed-sidecars/**"
+    ],
+    "verify": [
+      "git diff --check",
+      "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/output_safety.py",
+      "pytest services/repo-truth-extractor/tests/test_failed_sidecar_redaction.py -q",
+      "pytest services/repo-truth-extractor/tests/test_output_safety.py -q"
+    ]
+  },
+  "pr": {
+    "title": "RTE-PKT-15: redact failed sidecar outputs",
+    "body": "Implements RTE-PKT-15-FAILED-SIDECARS. Scope is limited to failed sidecar redaction and tests. No provider calls, live extraction, batch provider operations, promptset edits, schema edits, model-map edits, route-policy edits, retry-semantics changes, or repair-semantics changes are authorized.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "01-preflight-and-baseline",
+      "task": "Verify repo identity, branch/worktree safety, dependencies, and prior packet evidence before editing.",
+      "validation": [
+        "Repo identity and branch deviation are recorded in PREFLIGHT.md."
+      ]
+    },
+    {
+      "id": "02-map-failed-sidecar-writers",
+      "task": "Map current failed sidecar writer paths and classify scope.",
+      "validation": [
+        "Failed sidecar writer ledger lists in-scope and out-of-scope writers."
+      ]
+    },
+    {
+      "id": "03-apply-sidecar-redaction",
+      "task": "Apply output-safety redaction to failed text and JSON sidecars.",
+      "validation": [
+        "Failed text and JSON sidecars use failed-sidecar sanitizer coverage."
+      ]
+    },
+    {
+      "id": "04-add-redaction-tests",
+      "task": "Add targeted failed sidecar redaction tests.",
+      "validation": [
+        "Focused output safety and failed sidecar tests pass."
+      ]
+    },
+    {
+      "id": "05-regression-guard-existing-surfaces",
+      "task": "Run packet-adjacent local regression tests.",
+      "validation": [
+        "Adjacent local regressions pass or substitutions are recorded."
+      ]
+    },
+    {
+      "id": "06-proof-and-secret-scan",
+      "task": "Generate proof artifacts and run secret-shape scan.",
+      "validation": [
+        "Proof artifacts avoid quoting secret-shaped fixture contents."
+      ]
+    },
+    {
+      "id": "07-review-and-closeout",
+      "task": "Inspect final diff, validate scope, and prepare commit/PR closeout.",
+      "validation": [
+        "Final diff remains within allowlist."
+      ]
+    }
+  ]
+}

@@ -2,23 +2,29 @@
 
 Packet: `RTE-PKT-15-FAILED-SIDECARS`
 
-Worktree: `/Users/hue/.codex/worktrees/a8da/dopemux-mvp`
+Worktree: `/Users/hue/.codex/worktrees/f89f/dopemux-mvp`
 
-Branch: `codex/rte-pkt-15-failed-sidecars`
+Branch: `codex/rte-pkt-15-failed-sidecars-clean`
 
-Base SHA: `a4214ca5bf431e1b59791661e2b664a6cd24c1da`
+Original local base SHA: `d64d5f15e46e68373e3bed1160fbc3df2807db59`
+
+Rebased PR base: `origin/main@027465e31`
 
 ## Implemented
 
-- Added explicit failed-sidecar text sanitization in `output_safety.py`.
-- Routed in-scope v5 `.FAILED.txt` persistence through `write_failed_sidecar_text`.
-- Kept `.FAILED.json` artifacts on `write_json`, preserving existing structured payload redaction.
-- Added targeted local tests for failed sidecar redaction and lineage preservation.
+- Strengthened failed sidecar text redaction by using the secret-shape sanitizer path.
+- Added structured failed sidecar payload sanitization for `.FAILED.json` writes.
+- Kept filenames, failure classes, status-code fields, and metadata shape intact.
+- Added targeted regression tests for generic secret-shaped content in failed text and JSON sidecars.
 
 ## Validation
 
-Targeted packet tests passed. Compile and diff checks passed. One broader prelive hardening command failed on existing provider-failure escalation semantics outside this packet's edit scope.
+Focused packet tests passed. Packet-adjacent local regression tests passed with two filename substitutions recorded in `RTE-PKT-15_TEST_REPORT.md`.
+
+## PR Scope Cleanup
+
+`out/rte-ux-valuation-opus-audit/**` was removed from the PR diff by rebasing onto current `origin/main` and dropping the unrelated UX proof-pack commit from PR ancestry.
 
 ## Status
 
-Implementation is ready for review with the documented out-of-scope comparison-lane unknown and broader validation drift.
+Ready for review pending final push.
