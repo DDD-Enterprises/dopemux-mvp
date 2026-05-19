@@ -36,7 +36,7 @@
           "id": "legacy_truth_command_drift",
           "markers": [
             {
-              "contains": "no longer a supported operator entrypoint for Repo Truth Extractor",
+              "contains": "is not a supported Repo Truth Extractor entrypoint",
               "path": "src/dopemux/cli.py"
             }
           ],
