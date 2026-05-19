@@ -1,0 +1,184 @@
+{
+  "id": "TP-DMX-DOCS-FORGE-002-README-QUICKSTART",
+  "project": "dopemux-mvp",
+  "target": "documentation/readme-quickstart",
+  "invariants": [
+    "Documentation-only work: do not edit runtime code, service code, Docker files, dependency files, tests, or generated extraction outputs unless explicitly allowed by this packet.",
+    "Preserve Dopemux split-authority architecture: dopemux controls operator routing/startup, dopetask executes after handoff, task-orchestrator owns workflow transitions, Leantime owns PM metadata, ConPort owns structured decisions/progress/context, dope-memory owns chronicle receipts, dope-context owns retrieval, dopecon-bridge remains proxy/event transport only, ADHD Engine remains operator support only, Repo Truth Extractor produces evidence artifacts only.",
+    "Every claim in new docs must be grounded in inspected repo files or marked UNKNOWN, INFERRED, or NEEDS_REPO_VERIFICATION.",
+    "Do not normalize known drift into a cleaner story; preserve contradictions and unresolved canonicality explicitly.",
+    "Each step must leave commit/proof evidence: changed files, validation output, exit codes, residual risks, and exact follow-up if blocked."
+  ],
+  "depends_on": [
+    "TP-DMX-DOCS-FORGE-001-SOURCE-MAP-GAPS"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "pyproject.toml",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DOCS-FORGE-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-DOCS-FORGE-001-SOURCE-MAP-GAPS",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "docs/dmx-docs-forge-002-readme-quickstart"
+  },
+  "commit": {
+    "message": "docs: refresh README and quickstart operator path",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-DOCS-FORGE-002-README-QUICKSTART.json",
+      "README.md",
+      "QUICK_START.md",
+      "docs/01-tutorials/quickstart.md",
+      "docs/02-how-to/developer-onboarding.md",
+      "docs/03-reference/governance/documentation-gap-register.md",
+      "docs/INDEX.md",
+      "docs/00-MASTER-INDEX.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-DOCS-FORGE-002-README-QUICKSTART.json >/dev/null",
+      "bash scripts/lint-docs.sh",
+      "python scripts/docs_validator.py",
+      "python scripts/docs_frontmatter_guard.py",
+      "python scripts/check_root_hygiene.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs: refresh README and quickstart operator path",
+    "body": "Update README and quickstart/onboarding docs with repo-grounded architecture, install, startup, health checks, and known limitations. Documentation-only change.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "implement",
+      "docgen",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1-readme-replacement",
+      "task": "Replace README.md with a comprehensive repo-grounded overview. Commit-plan note: README is slice 1 and must be validated before quickstart edits continue.",
+      "requirements": [
+        "README must include project identity, what Dopemux is/is not, core architecture, components, quickstart, workflows, repo structure, validation, docs map, governance/proof model, limitations, contributor notes, and license/status notes.",
+        "Do not claim production readiness or unified PM/memory/agent authority."
+      ],
+      "commands": [
+        "cp README.md /tmp/dopemux-readme.before.md",
+        "python - <<'PY'\nfrom pathlib import Path\np=Path('README.md')\ntext=p.read_text()\nassert 'Dopemux' in text\nPY"
+      ],
+      "expected_files": [
+        "README.md"
+      ],
+      "validation": [
+        "rg -n \"split-authority|not a monolithic|dopecon-bridge|dope-context|dope-memory|Repo Truth Extractor|UNKNOWN|NEEDS_REPO_VERIFICATION\" README.md"
+      ],
+      "context_files": [
+        "README.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "PM_PLANE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "docs/03-reference/systems/dopemux/system-dopemux.md"
+      ]
+    },
+    {
+      "id": "step-2-root-quickstart-and-existing-quickstart-repair",
+      "task": "Create QUICK_START.md and repair docs/01-tutorials/quickstart.md where it conflicts with compose-backed ports or current authority language. Commit-plan note: quickstart docs are slice 2; do not proceed if commands cannot be marked verified or NEEDS_REPO_VERIFICATION.",
+      "requirements": [
+        "Use compose.yml defaults unless runtime evidence proves overrides.",
+        "Mark live Docker startup as optional unless actually executed.",
+        "Do not invent dashboard path if UI location is ambiguous."
+      ],
+      "commands": [
+        "test -f compose.yml",
+        "rg -n \"3016|3004|3010|3020|8000|3025|3316|3304\" compose.yml docs/01-tutorials/quickstart.md || true"
+      ],
+      "expected_files": [
+        "QUICK_START.md",
+        "docs/01-tutorials/quickstart.md"
+      ],
+      "validation": [
+        "test -s QUICK_START.md",
+        "rg -n \"3016|3004|3010|3020|8000|3025\" QUICK_START.md",
+        "! rg -n \"3316|3304\" QUICK_START.md docs/01-tutorials/quickstart.md"
+      ],
+      "context_files": [
+        "docs/01-tutorials/quickstart.md",
+        "compose.yml",
+        "pyproject.toml",
+        "package.json"
+      ]
+    },
+    {
+      "id": "step-3-developer-onboarding",
+      "task": "Create developer onboarding doc focused on clone/install, source authority, docs validation, task packet discipline, and common traps. Commit-plan note: onboarding doc joins README/quickstart in one docs-only commit.",
+      "requirements": [
+        "Include source authority order, required preflight commands, docs validation commands, and no-runtime-code warning.",
+        "Mention task packet discipline and worktree requirement."
+      ],
+      "commands": [
+        "mkdir -p docs/02-how-to",
+        "cat > docs/02-how-to/developer-onboarding.md <<'EOF'\n# Developer Onboarding\n\nTODO: fill from repo evidence.\nEOF"
+      ],
+      "expected_files": [
+        "docs/02-how-to/developer-onboarding.md"
+      ],
+      "validation": [
+        "test -s docs/02-how-to/developer-onboarding.md",
+        "rg -n \"uv sync|docker compose|Task Packet|worktree|docs_validator|check_root_hygiene\" docs/02-how-to/developer-onboarding.md"
+      ],
+      "context_files": [
+        "RULES.md",
+        "AGENTS.md",
+        "docs/INDEX.md",
+        "config/docs_hygiene/docs_placement_policy.yaml",
+        "docs/03-reference/governance/documentation-gap-register.md"
+      ]
+    },
+    {
+      "id": "step-4-index-proof-and-commit-readiness",
+      "task": "Update docs index entries, run validators, inspect diff, and emit proof. Commit-plan note: commit only README, quickstart/onboarding, packet, gap-register update, and index files allowed by this TP.",
+      "requirements": [
+        "Proof must include validator exit codes, drift repaired, remaining UNKNOWNs, and whether TP-003 may proceed."
+      ],
+      "commands": [
+        "bash scripts/lint-docs.sh",
+        "python scripts/docs_validator.py",
+        "python scripts/docs_frontmatter_guard.py",
+        "python scripts/check_root_hygiene.py",
+        "git diff --check",
+        "git diff --stat",
+        "git status --short"
+      ],
+      "expected_files": [
+        "README.md",
+        "QUICK_START.md",
+        "docs/01-tutorials/quickstart.md",
+        "docs/02-how-to/developer-onboarding.md"
+      ],
+      "validation": [
+        "git diff --check",
+        "test -s README.md",
+        "test -s QUICK_START.md",
+        "test -s docs/02-how-to/developer-onboarding.md"
+      ],
+      "context_files": [
+        "docs/INDEX.md",
+        "docs/00-MASTER-INDEX.md"
+      ]
+    }
+  ]
+}
