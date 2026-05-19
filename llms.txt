@@ -1,0 +1,57 @@
+# Dopemux MVP
+
+> Curated entrypoint for understanding Dopemux as an operator-facing, split-authority development workspace.
+
+This file is intentionally small. It points humans and AI tools to maintained documents that explain what Dopemux is, what it is not, how authority boundaries work, and where public-facing copy should come from.
+
+## Start Here
+
+- [README](README.md): Project identity, quick start, authority model, and documentation map.
+- [Quick Start](QUICK_START.md): Short operator path for local setup and first checks.
+- [Documentation Index](docs/INDEX.md): Canonical navigation for active docs.
+- [Master Documentation Index](docs/00-MASTER-INDEX.md): Broader documentation topology.
+
+## Architecture And Overview
+
+- [Project Overview](docs/04-explanation/overview/project-overview.md): Repo-grounded project shape.
+- [Problem Statement](docs/04-explanation/overview/problem-statement.md): Operator problem and split-authority rationale.
+- [System Map](docs/04-explanation/overview/system-map.md): High-level map of systems and relationships.
+- [Dopemux Architecture](docs/04-explanation/architecture/dopemux-architecture.md): Split-authority architecture explanation.
+- [Data And Control Flow](docs/04-explanation/architecture/data-and-control-flow.md): Operator, PM, bridge, retrieval, memory, and extraction flows.
+- [System Boundaries](docs/03-reference/systems/system-boundaries.md): System ownership and non-authority warnings.
+
+## Product And Public Copy
+
+- [Positioning](docs/04-explanation/product/positioning.md): Repo-faithful category framing and claim boundaries.
+- [Homepage Copy](docs/04-explanation/product/homepage-copy.md): Homepage copy source with implemented, drift, and limitation labels.
+- [Public Copy Variants](docs/04-explanation/product/public-copy-variants.md): Reusable technical, founder, product, and sharp copy variants.
+- [Audience Personas](docs/04-explanation/product/audience-personas.md): Public audience definitions.
+- [Elevator Pitches](docs/04-explanation/product/elevator-pitches.md): Short narrative variants.
+- [Features And Benefits](docs/04-explanation/product/features-and-benefits.md): Feature-to-benefit mapping with guardrails.
+- [FAQ](docs/04-explanation/product/faq.md): Safe public answers to common questions.
+
+## Governance
+
+- [Public Docs Surface](docs/03-reference/governance/public-docs-surface.md): Maintenance rules for public-facing docs and this file.
+- [Documentation Source Map](docs/03-reference/governance/dopemux-documentation-source-map.md): Source hierarchy for documentation claims.
+- [Documentation Gap Register](docs/03-reference/governance/documentation-gap-register.md): Known documentation gaps, drift, and unresolved verification.
+- [Documentation Trust Map](docs/03-reference/governance/doc-trust-map.md): Trust labels for documentation sources.
+- [Authority Boundaries](docs/03-reference/governance/authority-boundaries.md): Writer and non-writer rules by system.
+- [Governance Model](docs/03-reference/governance/governance-model.md): Proof, completion, and validation model.
+- [AI Agent Handoff Guide](docs/03-reference/instructions/ai-agent-handoff-guide.md): Safe handoff rules for implementation agents.
+
+## Extraction And Research
+
+- [Repo Truth Extractor Pipeline Reliability](docs/03-reference/extraction/pipeline-reliability.md): Extraction reliability reference.
+- [Repo Truth Extractor v5 Upgrade Design](docs/04-explanation/architecture/v5-extraction-pipeline-upgrade-design.md): Design context for extraction behavior.
+- [RTE Provider Structured Output Baseline](docs/06-research/extraction/rte-provider-structured-output-baseline.md): External provider audit baseline. It is advisory research, not repo truth.
+
+## Optional Supporting Context
+
+- [Brand System](BRAND_SYSTEM.md): Operator voice, naming, and anti-hype rules.
+- [Agents Guide](AGENTS.md): Repo workflow constraints, truth order, and boundary rules.
+- [PM Plane](PM_PLANE.md): PM authority split across metadata, workflow, decisions/progress/context, and historical receipts.
+
+## Rule
+
+Use this file as a map. Do not treat it as source truth over runtime code, configs, tests, active entrypoints, or stronger governance docs.
