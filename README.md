@@ -143,6 +143,7 @@ git diff --check
 
 - [Documentation Index](docs/INDEX.md)
 - [Master Documentation Index](docs/00-MASTER-INDEX.md)
+- [AI-Readable Map](llms.txt)
 - [Quick Start](QUICK_START.md)
 - [Tutorial Quickstart](docs/01-tutorials/quickstart.md)
 - [Developer Onboarding](docs/02-how-to/developer-onboarding.md)
@@ -153,6 +154,9 @@ git diff --check
 - [Documentation Source Map](docs/03-reference/governance/dopemux-documentation-source-map.md)
 - [Documentation Gap Register](docs/03-reference/governance/documentation-gap-register.md)
 - [Documentation Trust Map](docs/03-reference/governance/doc-trust-map.md)
+- [Public Docs Surface](docs/03-reference/governance/public-docs-surface.md)
+- [Public Copy Variants](docs/04-explanation/product/public-copy-variants.md)
+- [RTE Provider Structured Output Baseline](docs/06-research/extraction/rte-provider-structured-output-baseline.md)
 
 ## Known Drift And Limits
 
