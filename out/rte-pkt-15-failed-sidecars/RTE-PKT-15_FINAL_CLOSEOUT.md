@@ -1,34 +1,35 @@
 # RTE-PKT-15 Final Closeout
 
-## Status
+Status before push: `READY_FOR_REVIEW_SCOPE_CLEAN_PENDING_PUSH`
 
-`READY_FOR_REVIEW_CLEAN_PENDING_COMMIT`
+PR: `https://github.com/DDD-Enterprises/dopemux-mvp/pull/654`
 
-## Closeout result
+## Completed Slices
 
-RTE-PKT-15 failed-sidecar redaction changes are review-ready. REG-001 was triaged against a detached clean-base worktree and classified `BASELINE_FAILURE`.
+- Preflight and authority inspection.
+- Failed sidecar writer mapping.
+- Minimal runtime hardening for failed text and failed JSON sidecar sanitization.
+- Targeted test additions for generic secret-shaped failed sidecar values.
+- Packet-adjacent local regression validation.
+- Proof artifact refresh without quoting legacy failed sidecar fixture contents.
+- PR scope cleanup: rebased onto current `origin/main` and removed `out/rte-ux-valuation-opus-audit/**` from the PR diff.
 
-## Validation summary
+## Residual Risks
 
-- PASS: `pytest services/repo-truth-extractor/tests/test_failed_sidecar_redaction.py -q`
-- PASS: `pytest services/repo-truth-extractor/tests/test_output_safety.py -q`
-- PASS: `pytest services/repo-truth-extractor/tests -k 'failed and redaction' -q`
-- PASS: `python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/output_safety.py services/repo-truth-extractor/tests/test_failed_sidecar_redaction.py`
-- PASS: `pytest services/repo-truth-extractor/tests/test_run_extraction_v5_concurrency.py -q`
-- PASS: `pytest services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py::test_classify_request_failure_distinguishes_batch_terminal_and_parse_failures -q`
-- PASS: `git diff --check`
-- BASELINE_FAILURE: broader prelive hardening plus concurrency command failed identically on implementation branch and clean base.
+- Packet 00 proof root is absent from this checkout.
+- Comparison-lane `.FAILED.txt` writer in `llm_runtime.py` remains outside the packet allowlist.
+- Legacy v3 failed sidecar fixtures remain evidence surfaces and were not modified.
+- Requested branch name was occupied by broad unrelated local drift; clean branch used instead.
+- `after_commit_sha` cannot be embedded with its final value in the same commit; final SHA is reported in the Codex closeout response.
 
-## Commit status
+## Final Changed Files Against `origin/main`
 
-Commit was pending when this proof file was written. The final response records the commit SHA after commit creation because embedding a commit's own SHA inside the same committed file would change the commit identity.
+- `services/repo-truth-extractor/output_safety.py`
+- `services/repo-truth-extractor/run_extraction_v5.py`
+- `services/repo-truth-extractor/tests/test_output_safety.py`
+- `services/repo-truth-extractor/tests/test_failed_sidecar_redaction.py`
+- `out/rte-pkt-15-failed-sidecars/**`
 
-## Residual risks
+## Closeout Gate
 
-- `services/repo-truth-extractor/llm_runtime.py:1342` comparison-lane `.FAILED.txt` direct writer remains `UNKNOWN` and out of scope.
-- Legacy v3 failed sidecar fixtures remain out of scope.
-- Sanitizer coverage is pattern-based and should be expanded if new credential formats are discovered.
-
-## Provider boundary
-
-No provider calls, live extraction, provider batch submit, provider batch poll, provider batch retrieve, or provider batch cancel operation occurred during closeout.
+Final commit SHA, pushed branch status, and final git status are reported in the final Codex response.

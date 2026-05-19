@@ -96,7 +96,7 @@ def sanitize_text_for_output(text: str) -> str:
 
 
 def sanitize_failed_sidecar_text(text: str) -> str:
-    return sanitize_text_for_output(text)
+    return sanitize_text_for_provider_payload(text)
 
 
 def _looks_like_hex_digest(value: str) -> bool:
@@ -168,6 +168,27 @@ def sanitize_payload_for_provider(payload: Any, *, field_name: str | None = None
         }
     if isinstance(payload, Sequence) and not isinstance(payload, (str, bytes, bytearray)):
         return [sanitize_payload_for_provider(item) for item in payload]
+    return payload
+
+
+def sanitize_payload_for_failed_sidecar(payload: Any, *, field_name: str | None = None) -> Any:
+    if isinstance(payload, Path):
+        return sanitize_failed_sidecar_text(str(payload))
+    if field_name is not None and _is_sensitive_key(field_name):
+        if payload is None or isinstance(payload, bool):
+            return payload
+        if isinstance(payload, (int, float)):
+            return payload
+        return "[REDACTED]"
+    if isinstance(payload, str):
+        return sanitize_failed_sidecar_text(payload)
+    if isinstance(payload, Mapping):
+        return {
+            str(key): sanitize_payload_for_failed_sidecar(value, field_name=str(key))
+            for key, value in payload.items()
+        }
+    if isinstance(payload, Sequence) and not isinstance(payload, (str, bytes, bytearray)):
+        return [sanitize_payload_for_failed_sidecar(item) for item in payload]
     return payload
 
 
