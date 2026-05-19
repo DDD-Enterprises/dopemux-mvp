@@ -1,0 +1,179 @@
+{
+  "id": "TP-DMX-DOCS-FORGE-004-MARKETING-FINAL-INDEX",
+  "project": "dopemux-mvp",
+  "target": "documentation/marketing-positioning-final-index",
+  "invariants": [
+    "Documentation-only work: do not edit runtime code, service code, Docker files, dependency files, tests, or generated extraction outputs unless explicitly allowed by this packet.",
+    "Preserve Dopemux split-authority architecture: dopemux controls operator routing/startup, dopetask executes after handoff, task-orchestrator owns workflow transitions, Leantime owns PM metadata, ConPort owns structured decisions/progress/context, dope-memory owns chronicle receipts, dope-context owns retrieval, dopecon-bridge remains proxy/event transport only, ADHD Engine remains operator support only, Repo Truth Extractor produces evidence artifacts only.",
+    "Every claim in new docs must be grounded in inspected repo files or marked UNKNOWN, INFERRED, or NEEDS_REPO_VERIFICATION.",
+    "Do not normalize known drift into a cleaner story; preserve contradictions and unresolved canonicality explicitly.",
+    "Each step must leave commit/proof evidence: changed files, validation output, exit codes, residual risks, and exact follow-up if blocked."
+  ],
+  "depends_on": [
+    "TP-DMX-DOCS-FORGE-003-ARCH-GOV-OPS-HANDOFF"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "pyproject.toml",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DOCS-FORGE-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-DOCS-FORGE-003-ARCH-GOV-OPS-HANDOFF",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "docs/dmx-docs-forge-004-marketing-final"
+  },
+  "commit": {
+    "message": "docs: add repo-faithful positioning docs and final index proof",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-DOCS-FORGE-004-MARKETING-FINAL-INDEX.json",
+      "docs/04-explanation/product/positioning.md",
+      "docs/04-explanation/product/audience-personas.md",
+      "docs/04-explanation/product/homepage-copy.md",
+      "docs/04-explanation/product/elevator-pitches.md",
+      "docs/04-explanation/product/features-and-benefits.md",
+      "docs/04-explanation/product/faq.md",
+      "docs/03-reference/governance/documentation-gap-register.md",
+      "docs/INDEX.md",
+      "docs/00-MASTER-INDEX.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-DOCS-FORGE-004-MARKETING-FINAL-INDEX.json >/dev/null",
+      "bash scripts/lint-docs.sh",
+      "python scripts/docs_validator.py",
+      "python scripts/docs_frontmatter_guard.py",
+      "python scripts/check_root_hygiene.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs: add repo-faithful positioning docs and final index proof",
+    "body": "Add truthful marketing/positioning docs and close the documentation forge series with final docs validation and residual gap updates. Documentation-only change.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "implement",
+      "docgen",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1-positioning-personas",
+      "task": "Create positioning and audience persona docs that separate implemented, experimental/drifted, vision, and UNKNOWN claims. Commit-plan note: product docs slice 1.",
+      "requirements": [
+        "Marketing must not invent features.",
+        "Do not claim production readiness, autonomous learning, unified memory, unified PM, or unified agent runtime.",
+        "Use sharp product language only when grounded in repo evidence."
+      ],
+      "commands": [
+        "mkdir -p docs/04-explanation/product",
+        "touch docs/04-explanation/product/positioning.md docs/04-explanation/product/audience-personas.md"
+      ],
+      "expected_files": [
+        "docs/04-explanation/product/positioning.md",
+        "docs/04-explanation/product/audience-personas.md"
+      ],
+      "validation": [
+        "rg -n \"Implemented|Experimental|Vision|UNKNOWN|not a monolithic|split-authority|control plane\" docs/04-explanation/product/positioning.md docs/04-explanation/product/audience-personas.md"
+      ],
+      "context_files": [
+        "README.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/04-explanation/overview/project-overview.md",
+        "docs/04-explanation/overview/problem-statement.md"
+      ]
+    },
+    {
+      "id": "step-2-homepage-pitches-features-faq",
+      "task": "Create homepage copy, elevator pitches, features/benefits, and FAQ docs. Commit-plan note: product docs slice 2.",
+      "requirements": [
+        "Every product claim must be traceable to README, PROJECT, ARCHITECTURE, compose, or system docs.",
+        "FAQ must include limitations and known drift."
+      ],
+      "commands": [
+        "touch docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/faq.md"
+      ],
+      "expected_files": [
+        "docs/04-explanation/product/homepage-copy.md",
+        "docs/04-explanation/product/elevator-pitches.md",
+        "docs/04-explanation/product/features-and-benefits.md",
+        "docs/04-explanation/product/faq.md"
+      ],
+      "validation": [
+        "rg -n \"Implemented|Experimental|Drift|FAQ|dopecon-bridge|dope-context|dope-memory|task-orchestrator|ConPort|Repo Truth Extractor\" docs/04-explanation/product/*.md"
+      ],
+      "context_files": [
+        "SERVICE_CATALOG.md",
+        "docs/03-reference/systems/*/system-*.md",
+        "docs/03-reference/truth/truth-gaps.md"
+      ]
+    },
+    {
+      "id": "step-3-final-gap-register-and-index",
+      "task": "Update documentation gap register with completed gaps, remaining gaps, and follow-up packets for runtime verification. Update docs index and master index if present. Commit-plan note: index/gap update slice 3.",
+      "requirements": [
+        "Gap register must identify what this series closed and what remains.",
+        "Do not mark runtime drift closed unless runtime validation was actually performed."
+      ],
+      "commands": [
+        "test -f docs/03-reference/governance/documentation-gap-register.md",
+        "test -f docs/INDEX.md"
+      ],
+      "expected_files": [
+        "docs/03-reference/governance/documentation-gap-register.md",
+        "docs/INDEX.md"
+      ],
+      "validation": [
+        "rg -n \"closed|remaining|runtime verification|UNKNOWN|NEEDS_REPO_VERIFICATION\" docs/03-reference/governance/documentation-gap-register.md"
+      ],
+      "context_files": [
+        "docs/03-reference/governance/documentation-gap-register.md",
+        "docs/INDEX.md",
+        "docs/00-MASTER-INDEX.md"
+      ]
+    },
+    {
+      "id": "step-4-final-validation-proof",
+      "task": "Run final docs validation and prepare closeout proof for the entire series. Commit-plan note: final commit includes only packet, marketing docs, index, and gap-register updates allowed by this TP.",
+      "requirements": [
+        "Proof must summarize all four TPs, files changed, validators, exit codes, residual gaps, PR readiness, and no-runtime-code assurance."
+      ],
+      "commands": [
+        "bash scripts/lint-docs.sh",
+        "python scripts/docs_validator.py",
+        "python scripts/docs_frontmatter_guard.py",
+        "python scripts/check_root_hygiene.py",
+        "git diff --check",
+        "git diff --stat",
+        "git status --short"
+      ],
+      "expected_files": [
+        "docs/04-explanation/product/positioning.md",
+        "docs/04-explanation/product/faq.md"
+      ],
+      "validation": [
+        "git diff --check",
+        "test -s docs/04-explanation/product/positioning.md",
+        "test -s docs/04-explanation/product/faq.md"
+      ],
+      "context_files": [
+        "docs/INDEX.md",
+        "docs/03-reference/governance/documentation-gap-register.md"
+      ]
+    }
+  ]
+}
