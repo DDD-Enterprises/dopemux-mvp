@@ -22,15 +22,14 @@
     },
     "task-orchestrator": {
       "type": "stdio",
-      "command": "python3",
-      "args": [
-        "${DOPEMUX_WORKSPACE_ROOT}/services/task-orchestrator/task_orchestrator/app.py"
-      ],
+      "command": "/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh",
+      "args": [],
       "env": {
-        "WORKSPACE_ID": "${DOPEMUX_WORKSPACE_ID}",
-        "PYTHONPATH": "${DOPEMUX_WORKSPACE_ROOT}/services/task-orchestrator"
+        "TASK_ORCHESTRATOR_PROJECT_ROOT": "${TASK_ORCHESTRATOR_PROJECT_ROOT:-}",
+        "DOPEMUX_PROJECT_ROOT": "${DOPEMUX_PROJECT_ROOT:-}",
+        "DOPEMUX_WORKSPACE_ROOT": "${DOPEMUX_WORKSPACE_ROOT:-}"
       },
-      "description": "Task orchestration & dependency management (project-local Python service)"
+      "description": "Current 13-tool MCP Task Orchestrator with repo-scoped SQLite state"
     }
   }
 }
