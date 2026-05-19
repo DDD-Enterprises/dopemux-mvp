@@ -1,3 +1,14 @@
+---
+id: MCP_HEALTH_REPORT
+title: Mcp Health Report
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-19'
+last_review: '2026-05-19'
+next_review: '2026-08-17'
+prelude: Mcp Health Report (explanation) for dopemux documentation and developer workflows.
+---
 # MCP Server Health Assessment
 **Generated**: 2026-02-06
 **Purpose**: Comprehensive status of all MCP servers for improvement work
