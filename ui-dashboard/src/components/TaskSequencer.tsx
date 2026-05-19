@@ -352,6 +352,16 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           },
           '100%': { transform: 'scale(1)' },
         },
+        '@keyframes active-border-glow': {
+          '0%, 100%': {
+            borderColor: brandTokens.borders.cyan,
+            boxShadow: `0 0 0px ${alpha(brandTokens.colors.ritualCyan, 0)}`,
+          },
+          '50%': {
+            borderColor: brandTokens.colors.serumMint,
+            boxShadow: `0 0 12px ${alpha(brandTokens.colors.ritualCyan, 0.3)}`,
+          },
+        },
       }}
       className="dopemux-panel"
     >
@@ -758,6 +768,10 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                     : `1px solid ${brandTokens.borders.subtle}`,
                   mb: 0.5,
                   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  ...(isCurrent &&
+                    isTimerRunning && {
+                      animation: 'active-border-glow 3s infinite ease-in-out',
+                    }),
                   '&:hover, &:focus-within': {
                     bgcolor: isCurrent
                       ? alpha(brandTokens.colors.ritualCyan, 0.12)

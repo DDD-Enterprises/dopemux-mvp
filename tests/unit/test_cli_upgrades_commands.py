@@ -377,7 +377,7 @@ def test_truth_command_is_deprecated() -> None:
     runner = CliRunner()
     result = runner.invoke(cli, ["truth"])
     assert result.exit_code != 0
-    assert "`dopemux truth` is no longer a supported operator entrypoint" in result.output
+    assert "`dopemux truth` is not a supported Repo Truth Extractor entrypoint" in result.output
 
 
 def test_truth_command_rejects_legacy_deep_mode() -> None:
@@ -386,7 +386,7 @@ def test_truth_command_rejects_legacy_deep_mode() -> None:
     result = runner.invoke(cli, ["truth", "--deep"])
 
     assert result.exit_code != 0
-    assert "`dopemux truth` is no longer a supported operator entrypoint" in result.output
+    assert "`dopemux truth` is not a supported Repo Truth Extractor entrypoint" in result.output
 
 
 def test_upgrades_promptset_audit_routes_to_v4_runner() -> None:
