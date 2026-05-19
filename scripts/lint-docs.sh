@@ -33,37 +33,19 @@ else
   for f in "${loose_files[@]}"; do echo "    $f"; done
 fi
 
-# ── 2. No -2/-3 suffix filenames ────────────────────────────────────
-log_check "No -2/-3 suffix filenames"
+# ── 2. Filename hygiene (delegated to canonical policy) ─────────────
+# scripts/check_docs_filename_hygiene.py is the authoritative checker.
+# It consumes config/docs_hygiene/docs_placement_policy.yaml exemptions
+# (research/mcp-customization/**, Dopemux Cockpit TUI Design System/*,
+# docs/archive/*, history/sourceFiles/*, etc.). lint-docs.sh historically
+# used a naive `find` with only an archive/ exclusion and produced
+# thousands of false-positives for content explicitly exempted by policy.
+log_check "Filename hygiene (policy-aware)"
 CHECKS=$((CHECKS + 1))
-suffix_count=$(find "$DOCS_DIR" -type f -name "*-[23].md" -not -path "*/archive/*" | wc -l | tr -d ' ')
-if [ "$suffix_count" -eq 0 ]; then
-  log_pass "No -2/-3 suffixed files in active docs"
+if python3 scripts/check_docs_filename_hygiene.py --check --all-files >/dev/null 2>&1; then
+  log_pass "Filename hygiene policy passes"
 else
-  log_fail "$suffix_count files with -2/-3 suffixes in active docs"
-  find "$DOCS_DIR" -type f -name "*-[23].md" -not -path "*/archive/*" | head -10
-fi
-
-# ── 3. No UPPERCASE filenames (except allowed) ──────────────────────
-log_check "No UPPERCASE filenames"
-CHECKS=$((CHECKS + 1))
-allowed_upper="INDEX.md  00-MASTER-INDEX.md"
-upper_count=0
-while IFS= read -r f; do
-  base=$(basename "$f")
-  # Skip if in allowed list
-  if echo "$allowed_upper" | grep -qw "$base"; then continue; fi
-  # Check if filename has uppercase letters
-  if echo "$base" | grep -q '[A-Z]'; then
-    if [ $upper_count -lt 10 ]; then echo "    $f"; fi
-    upper_count=$((upper_count + 1))
-  fi
-done < <(find "$DOCS_DIR" -type f -name "*.md" -not -path "*/archive/*" 2>/dev/null)
-
-if [ "$upper_count" -eq 0 ]; then
-  log_pass "No UPPERCASE filenames in active docs"
-else
-  log_fail "$upper_count files with UPPERCASE names"
+  log_fail "Filename hygiene violations (run: python3 scripts/check_docs_filename_hygiene.py --check --all-files)"
 fi
 
 # ── 4. No .bak files ────────────────────────────────────────────────
@@ -76,7 +58,7 @@ else
   log_fail "$bak_count .bak files found"
 fi
 
-# ── 5. No directories exceeding 200 files ───────────────────────────
+# ── 5. No directories exceeding 200 files (excluding quarantine) ────
 log_check "No directories over 200 files"
 CHECKS=$((CHECKS + 1))
 over_limit=0
@@ -86,7 +68,7 @@ while IFS= read -r d; do
     log_fail "$d has $count files (max 200)"
     over_limit=$((over_limit + 1))
   fi
-done < <(find "$DOCS_DIR" -type d -not -path "*/archive/*" 2>/dev/null)
+done < <(find "$DOCS_DIR" -type d -not -path "*/archive/*" -not -path "*/history/sourceFiles*" 2>/dev/null)
 
 if [ "$over_limit" -eq 0 ]; then
   log_pass "All directories within 200-file limit"
@@ -104,7 +86,7 @@ while IFS= read -r f; do
     if [ $no_fm -lt 5 ]; then echo "    Missing frontmatter: $f"; fi
     no_fm=$((no_fm + 1))
   fi
-done < <(find "$DOCS_DIR" -type f -name "*.md" -not -path "*/archive/*" -not -name "00-MASTER-INDEX.md" -not -name "INDEX.md" -not -name "" 2>/dev/null)
+done < <(find "$DOCS_DIR" -type f -name "*.md" -not -path "*/archive/*" -not -path "*/history/sourceFiles/*" -not -name "00-MASTER-INDEX.md" -not -name "INDEX.md" -not -name "" 2>/dev/null)
 
 if [ "$no_fm" -eq 0 ]; then
   log_pass "All $total_checked active docs have frontmatter"
