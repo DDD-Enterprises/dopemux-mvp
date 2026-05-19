@@ -143,6 +143,7 @@
     "ADHD-DASHBOARD-SESSION-SUMMARY.md",
     "run_all_multi_workspace_tests.sh",
     "QUICK_START.md",
+    "llms.txt",
     "start-mcp-servers.sh",
     "mcp_server_health_report.sh",
     "FINAL-COMPLETE-SESSION-SUMMARY.md",
