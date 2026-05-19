@@ -1,5 +1,5 @@
 version: '1.0'
-last_updated: '2026-04-12'
+last_updated: '2026-05-19'
 description: Machine-readable index of dopemux-mvp documentation for AI/tool consumption
 entry_points:
   quickstart: docs/01-tutorials/quickstart.md
@@ -8,6 +8,7 @@ entry_points:
   changelog: CHANGELOG.md
   master_index: docs/00-MASTER-INDEX.md
   docs_root_index: docs/INDEX.md
+  llms: llms.txt
 systems:
   conport:
     overview: docs/03-reference/systems/conport/conport-kg-status.md
@@ -111,6 +112,7 @@ reference:
   memory_capture_cli: docs/03-reference/memory-capture-cli.md
   repo_truth_extractor_pipeline_phases: docs/03-reference/extraction/pipeline-phases.md
   repo_truth_extractor_pipeline_reliability: docs/03-reference/extraction/pipeline-reliability.md
+  public_docs_surface: docs/03-reference/governance/public-docs-surface.md
   repo_truth_extractor_doctor_reprocess: docs/03-reference/extraction/doctor-reprocess.md
   repo_truth_extractor_prompt_contract: docs/03-reference/extraction/prompt-contract-v4.md
   repo_truth_extractor_fl_int_postprocess: docs/03-reference/extraction/fl-int-postprocess.md
@@ -128,6 +130,7 @@ explanation:
   workflow_kit_architecture: docs/04-explanation/workflow-kit-architecture.md
   pr_merge_queue_orchestration: docs/04-explanation/pr-merge-queue-orchestration.md
   repo_truth_extractor_v5_upgrade_design: docs/04-explanation/architecture/v5-extraction-pipeline-upgrade-design.md
+  product_public_copy_variants: docs/04-explanation/product/public-copy-variants.md
   pm_plane_write_adjudication: docs/planes/pm/pm-plane-write-adjudication-model.md
   pm_plane_normalized_tool_surface: docs/planes/pm/pm-plane-normalized-tool-surface.md
   pm_runtime_truth_task_orchestrator: docs/planes/pm/_evidence/task-orchestrator-runtime-truth/executive-summary.md
@@ -138,6 +141,8 @@ supervisor_packets:
   pm_evidence_packet: docs/05-audit-reports/supervisor-pm-evidence-packet-2026-03-27.md
   pm_authority_reconciliation: docs/05-audit-reports/supervisor-memory-pm-authority-reconciliation-2026-03-27.md
   pm_authority_enforcement: docs/05-audit-reports/supervisor-pm-memory-authority-enforcement-packet-2026-04-01.md
+research:
+  rte_provider_structured_output_baseline: docs/06-research/extraction/rte-provider-structured-output-baseline.md
 archive:
   completed_projects: docs/archive/completed-projects/
   session_notes: docs/archive/session-notes/
