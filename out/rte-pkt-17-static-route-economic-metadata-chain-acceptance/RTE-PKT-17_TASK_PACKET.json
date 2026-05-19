@@ -1,0 +1,167 @@
+{
+  "id": "RTE-PKT-17-STATIC-ROUTE-ECONOMIC-METADATA-CHAIN-ACCEPTANCE",
+  "project": "Dopemux RTE GPT-5.5 Pro Audit",
+  "target": "Record the landed acceptance of RTE-PKT-12 through RTE-PKT-15, preserve the remaining UNKNOWNs, and hand off to the Opus-audit UI/UX cleanup series without rewriting history.",
+  "invariants": [
+    "Do not modify runtime code, provider routing, prompt content, compose, config, or deployment files.",
+    "Do not force-push, rebase, retarget, or rewrite branch history.",
+    "Do not merge, close, or reopen PRs from this packet.",
+    "Preserve user-supplied acceptance authority and distinguish it from directly observed git refs.",
+    "Preserve all remaining UNKNOWNs instead of normalizing them away.",
+    "Do not perform live provider calls, batch operations, or client-visible sends.",
+    "No GitHub issues or additional governance packets unless explicitly authorized."
+  ],
+  "depends_on": [
+    "RTE-PKT-12-OPENROUTER-XAI",
+    "RTE-PKT-13-ROUTE-FINGERPRINT-STATIC-PROOF",
+    "RTE-PKT-14-ECONOMIC-SURFACE-PRICING-VISIBILITY",
+    "RTE-PKT-15-ARTIFACT-CONSUMER-COMPATIBILITY-REGRESSION"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-PKT",
+    "base_branch": "main",
+    "parent_tp_id": "RTE-PKT-15-ARTIFACT-CONSUMER-COMPATIBILITY-REGRESSION",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-pkt-17-static-route-economic-metadata-chain-acceptance",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(rte): record static route chain acceptance",
+    "allowlist": [
+      "out/rte-pkt-17-static-route-economic-metadata-chain-acceptance/"
+    ],
+    "verify": [
+      "git fetch --prune",
+      "git rev-parse --show-toplevel",
+      "git remote -v",
+      "git branch --show-current",
+      "git status --short --branch",
+      "git rev-parse HEAD",
+      "git rev-parse main",
+      "git rev-parse origin/main",
+      "git branch -a --contains a234f798947d51915b2adea3e0bc5a2917ac595b",
+      "git branch -a --contains 9bd089a7158af098fe5aadef3aa54b1bee31a526",
+      "python -m json.tool out/rte-pkt-17-static-route-economic-metadata-chain-acceptance/RTE-PKT-17_TASK_PACKET.json >/dev/null",
+      "python -m json.tool out/rte-pkt-17-static-route-economic-metadata-chain-acceptance/RTE-PKT-17_MANIFEST.json >/dev/null",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(rte): record static route chain acceptance",
+    "body": "## Summary\n- record the landed/accepted state of RTE-PKT-12 through RTE-PKT-15\n- preserve the remaining UNKNOWNs and the local-vs-remote ref divergence\n- hand off cleanly to the Opus-audit UI/UX cleanup series without rewriting history\n\n## Scope\n- packet, manifest, closeout, and UNKNOWNs only\n- no runtime code or PR history changes\n- no force-push\n\n## Validation\n- repo identity and current refs verified\n- packet JSON and manifest JSON parse cleanly\n- diff scope stays inside the out bundle\n\n## Follow-up\nBegin the Opus-audit UI/UX cleanup series from the accepted chain baseline.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "RTE-PKT-17-S1",
+      "task": "Reconfirm repo identity and the current landed chain state from local git refs and the user-supplied merge decision.",
+      "requirements": [
+        "Verify the dedicated worktree root, branch, remote, and HEAD.",
+        "Compare local main and origin/main without rewriting any refs.",
+        "Distinguish observed refs from user-supplied acceptance authority."
+      ],
+      "commands": [
+        "git fetch --prune",
+        "pwd",
+        "git rev-parse --show-toplevel",
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short --branch",
+        "git rev-parse HEAD",
+        "git rev-parse main",
+        "git rev-parse origin/main",
+        "git branch -a --contains a234f798947d51915b2adea3e0bc5a2917ac595b",
+        "git branch -a --contains 9bd089a7158af098fe5aadef3aa54b1bee31a526"
+      ],
+      "validation": [
+        "The closeout records observed local branch state separately from the user-supplied landed-chain decision.",
+        "No attempt is made to force remote truth by history rewrite."
+      ],
+      "context_files": [
+        "out/rte-pkt-15-failed-sidecars/RTE-PKT-15_FINAL_CLOSEOUT.md",
+        "out/rte-pkt-15-failed-sidecars/RTE-PKT-15_REMAINING_UNKNOWNS.md",
+        "task-packets/README.md"
+      ]
+    },
+    {
+      "id": "RTE-PKT-17-S2",
+      "task": "Write the acceptance closeout bundle for the landed RTE chain and preserve all residual UNKNOWNs.",
+      "requirements": [
+        "Create the packet JSON, manifest, final closeout, and remaining-unknowns files under the allowlisted out directory.",
+        "The closeout must say what is accepted, what is only user-supplied, and what remains UNKNOWN.",
+        "The closeout must hand off to the Opus-audit UI/UX cleanup series without claiming that series is already packetized."
+      ],
+      "expected_files": [
+        "out/rte-pkt-17-static-route-economic-metadata-chain-acceptance/RTE-PKT-17_TASK_PACKET.json",
+        "out/rte-pkt-17-static-route-economic-metadata-chain-acceptance/RTE-PKT-17_MANIFEST.json",
+        "out/rte-pkt-17-static-route-economic-metadata-chain-acceptance/RTE-PKT-17_FINAL_CLOSEOUT.md",
+        "out/rte-pkt-17-static-route-economic-metadata-chain-acceptance/RTE-PKT-17_REMAINING_UNKNOWNS.md"
+      ],
+      "validation": [
+        "The bundle records the RTE-PKT-12 through RTE-PKT-15 lineage without erasing the unknowns carried by the earlier packets.",
+        "The closeout text explicitly preserves the local-vs-remote ref divergence as unresolved in this checkout."
+      ],
+      "context_files": [
+        "out/rte-pkt-02-payload-redaction/RTE-PKT-02_TASK_PACKET.json",
+        "out/rte-pkt-15-failed-sidecars/RTE-PKT-15_MANIFEST.json",
+        "out/rte-pkt-15-failed-sidecars/RTE-PKT-15_FINAL_CLOSEOUT.md",
+        "out/rte-pkt-15-failed-sidecars/RTE-PKT-15_REMAINING_UNKNOWNS.md"
+      ]
+    },
+    {
+      "id": "RTE-PKT-17-S3",
+      "task": "Validate the packet bundle, inspect the diff, and keep the scope inside the out bundle.",
+      "requirements": [
+        "Parse both JSON files.",
+        "Run git diff --check.",
+        "Keep the diff restricted to the allowlisted out directory."
+      ],
+      "commands": [
+        "python -m json.tool out/rte-pkt-17-static-route-economic-metadata-chain-acceptance/RTE-PKT-17_TASK_PACKET.json >/dev/null",
+        "python -m json.tool out/rte-pkt-17-static-route-economic-metadata-chain-acceptance/RTE-PKT-17_MANIFEST.json >/dev/null",
+        "git diff --check"
+      ],
+      "validation": [
+        "Packet JSON and manifest JSON are syntactically valid.",
+        "Whitespace and patch formatting checks pass."
+      ]
+    },
+    {
+      "id": "RTE-PKT-17-S4",
+      "task": "Commit, push, and open the follow-up PR if the packet is accepted.",
+      "requirements": [
+        "Commit only allowlisted out-bundle files.",
+        "Push the branch without rewriting history.",
+        "Open a PR against main if the packet is accepted."
+      ],
+      "commands": [
+        "git add out/rte-pkt-17-static-route-economic-metadata-chain-acceptance/",
+        "git commit -m \"docs(rte): record static route chain acceptance\"",
+        "git push -u origin codex/rte-pkt-17-static-route-economic-metadata-chain-acceptance",
+        "gh pr create --base main --head codex/rte-pkt-17-static-route-economic-metadata-chain-acceptance --title \"docs(rte): record static route chain acceptance\" --body \"Record the landed/accepted state of RTE-PKT-12 through RTE-PKT-15, preserve the remaining UNKNOWNs, and hand off to the Opus-audit UI/UX cleanup series without rewriting history.\""
+      ],
+      "validation": [
+        "Commit SHA, push status, and PR URL or exact blocker are recorded.",
+        "No force-push is used at any point."
+      ]
+    }
+  ]
+}

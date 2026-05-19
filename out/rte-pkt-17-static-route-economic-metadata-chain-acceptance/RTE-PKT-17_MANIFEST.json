@@ -1,0 +1,71 @@
+{
+  "packet_id": "RTE-PKT-17-STATIC-ROUTE-ECONOMIC-METADATA-CHAIN-ACCEPTANCE",
+  "generated_at_utc": "2026-05-16T11:56:55Z",
+  "status": "ACCEPTED_WITH_PRESERVED_UNKNOWNS",
+  "worktree_path": "/Users/hue/code/dopemux-mvp-rte-pkt-17-static-route-economic-metadata-chain-acceptance",
+  "branch": "codex/rte-pkt-17-static-route-economic-metadata-chain-acceptance",
+  "base_branch_observed": "main",
+  "before_commit_sha": "a234f798947d51915b2adea3e0bc5a2917ac595b",
+  "after_commit_sha": null,
+  "decision_authority": "user-supplied acceptance plus local git observation",
+  "repo_identity": {
+    "repository_name": "dopemux-mvp",
+    "remotes": [
+      "origin https://github.com/DDD-Enterprises/dopemux-mvp.git",
+      "mvp https://github.com/DDD-Enterprises/dopemux-mvp.git"
+    ],
+    "markers_verified": [
+      ".dopetaskroot",
+      "task-packets/README.md",
+      "out/rte-pkt-15-failed-sidecars/RTE-PKT-15_FINAL_CLOSEOUT.md"
+    ]
+  },
+  "accepted_lineage": [
+    {
+      "packet_id": "RTE-PKT-12-OPENROUTER-XAI",
+      "status": "ACCEPTED_WITH_RISKS",
+      "evidence": "Recorded chain provenance from prior packet history"
+    },
+    {
+      "packet_id": "RTE-PKT-13-ROUTE-FINGERPRINT-STATIC-PROOF",
+      "status": "ACCEPTED_WITH_RISKS",
+      "evidence": "Recorded chain provenance from prior packet history"
+    },
+    {
+      "packet_id": "RTE-PKT-14-ECONOMIC-SURFACE-PRICING-VISIBILITY",
+      "status": "OBSERVED_ON_LOCAL_MAIN",
+      "merge_commit": "a234f798947d51915b2adea3e0bc5a2917ac595b"
+    },
+    {
+      "packet_id": "RTE-PKT-15-ARTIFACT-CONSUMER-COMPATIBILITY-REGRESSION",
+      "status": "USER_SUPPLIED_MERGED",
+      "user_supplied_merge_commit": "9bd089a7158af098fe5aadef3aa54b1bee31a526",
+      "observed_in_this_clone": "reachable from codex/rte-pkt-15-artifact-consumer-compat, not from local main"
+    }
+  ],
+  "proof_outputs": [
+    "out/rte-pkt-17-static-route-economic-metadata-chain-acceptance/RTE-PKT-17_TASK_PACKET.json",
+    "out/rte-pkt-17-static-route-economic-metadata-chain-acceptance/RTE-PKT-17_MANIFEST.json",
+    "out/rte-pkt-17-static-route-economic-metadata-chain-acceptance/RTE-PKT-17_FINAL_CLOSEOUT.md",
+    "out/rte-pkt-17-static-route-economic-metadata-chain-acceptance/RTE-PKT-17_REMAINING_UNKNOWNS.md"
+  ],
+  "validation_summary": {
+    "git fetch --prune": "PASS exit=0",
+    "git rev-parse HEAD": "PASS exit=0 a234f798947d51915b2adea3e0bc5a2917ac595b",
+    "git rev-parse main": "PASS exit=0 a234f798947d51915b2adea3e0bc5a2917ac595b",
+    "git rev-parse origin/main": "PASS exit=0 ac78f2184a2827ed5871d078f4763695a561241b",
+    "git branch -a --contains a234f798947d51915b2adea3e0bc5a2917ac595b": "PASS exit=0 includes main, current branch, and remotes/origin/main",
+    "git branch -a --contains 9bd089a7158af098fe5aadef3aa54b1bee31a526": "PASS exit=0 includes codex/rte-pkt-15-artifact-consumer-compat and remotes/origin/main",
+    "python -m json.tool out/rte-pkt-17-static-route-economic-metadata-chain-acceptance/RTE-PKT-17_TASK_PACKET.json >/dev/null": "PASS exit=0",
+    "python -m json.tool out/rte-pkt-17-static-route-economic-metadata-chain-acceptance/RTE-PKT-17_MANIFEST.json >/dev/null": "PASS exit=0",
+    "git diff --check": "PASS exit=0",
+    "git status --short --branch": "PASS exit=0 ## codex/rte-pkt-17-static-route-economic-metadata-chain-acceptance; untracked out bundle only"
+  },
+  "remaining_unknowns": [
+    "origin/main in this checkout still resolves to ac78f2184a2827ed5871d078f4763695a561241b, so the user-supplied merged state of PR #638 is not re-proven from local refs here.",
+    "PR #638 is reachable from codex/rte-pkt-15-artifact-consumer-compat in this clone, but not from local main.",
+    "OpenRouter x-ai live upstream metadata, returned-model behavior, schema acceptance, retention/ZDR/billing/rate-limit equivalence, and direct xAI live safety remain the preserved UNKNOWNs from the earlier chain packets.",
+    "Historical generated artifacts outside the checked test/runtime selectors were not exhaustively proven by this packet.",
+    "The Opus-audit UI/UX cleanup series has not yet been packetized in this repository."
+  ]
+}
