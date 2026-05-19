@@ -2,63 +2,32 @@
 
 ## PASS
 
-- `pytest services/repo-truth-extractor/tests/test_failed_sidecar_redaction.py -q`
-  - Result: PASS, 5 passed.
-  - Warning: `PytestConfigWarning` for unknown `asyncio_mode`.
-- `pytest services/repo-truth-extractor/tests/test_output_safety.py -q`
-  - Result: PASS, 6 passed.
-  - Warning: `PytestConfigWarning` for unknown `asyncio_mode`.
-- `pytest services/repo-truth-extractor/tests -k 'failed and redaction' -q`
-  - Result: PASS, 5 passed.
-  - Warning: `PytestConfigWarning` for unknown `asyncio_mode`.
-- `python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/output_safety.py services/repo-truth-extractor/tests/test_failed_sidecar_redaction.py`
-  - Result: PASS, exit code 0.
-- `pytest services/repo-truth-extractor/tests/test_run_extraction_v5_concurrency.py -q`
-  - Result: PASS, 2 passed.
-  - Warning: `PytestConfigWarning` for unknown `asyncio_mode`.
-- `pytest services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py::test_classify_request_failure_distinguishes_batch_terminal_and_parse_failures -q`
-  - Result: PASS, 1 passed.
-  - Warning: `PytestConfigWarning` for unknown `asyncio_mode`.
-- `git diff --check`
-  - Result: PASS, exit code 0.
-- `pre-commit run --files ...`
-  - Result: PASS, exit code 0.
-  - Observed: docs/location/root-hygiene hooks passed or skipped where no files applied.
-- `python -m json.tool out/rte-pkt-15-failed-sidecars/RTE-PKT-15_MANIFEST.json >/dev/null`
-  - Result: PASS, exit code 0.
-- `python -c 'from pathlib import Path; pats=["RTE"+"PKT15","s"+"k-","A"*4,"B"*4,"C"*4,"PRIVATE "+"KEY-----","Bearer "+"X"]; text="\n".join(p.read_text(encoding="utf-8") for p in Path("out/rte-pkt-15-failed-sidecars").glob("**/*") if p.is_file()); hits=[p for p in pats if p in text]; raise SystemExit(1 if hits else 0)'`
-  - Result: PASS, no matches.
+| Command | Result |
+| --- | --- |
+| `python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/output_safety.py` | PASS, exit code 0 |
+| `pytest services/repo-truth-extractor/tests/test_output_safety.py -q` | PASS, 7 passed; warning for unknown `asyncio_mode` |
+| `pytest services/repo-truth-extractor/tests/test_failed_sidecar_redaction.py -q` | PASS, 6 passed; warning for unknown `asyncio_mode` |
+| `pytest services/repo-truth-extractor/tests/test_provider_payload_redaction.py -q` | PASS, 4 passed; warning for unknown `asyncio_mode` |
+| `pytest services/repo-truth-extractor/tests/test_run_extraction_v5_live_gate_terminality.py -q` | PASS, 39 passed; warning for unknown `asyncio_mode` |
+| `pytest services/repo-truth-extractor/tests/test_batch_clients_integration.py -q` | PASS, 7 passed; warning for unknown `asyncio_mode` |
+| `pytest services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py -q` | PASS, 5 passed; warning for unknown `asyncio_mode` |
+| `git diff --check` | PASS, exit code 0 |
+| `git diff --name-only origin/main...HEAD` allowlist check | PASS, only RTE-PKT-15 allowlisted files remain |
+| `pre-commit run --files ...` | PASS, exit code 0; configured hooks passed or skipped where not applicable |
 
-## FAIL
+## NOT_RUN / Substituted
 
-- `pytest services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py services/repo-truth-extractor/tests/test_run_extraction_v5_concurrency.py -q`
-  - Result: FAIL, 1 failed and 23 passed.
-  - Failing assertion: `test_current_partition_execution_preserves_provider_failure_semantics_before_parse_fallback` expected `request_meta["escalation_trigger"] is None`; observed `provider_failure`.
-  - Scope assessment: the changed lines do not modify provider-failure escalation semantics. This packet did not broaden into that failure.
+| Packet command | Observed status | Substitution |
+| --- | --- | --- |
+| `pytest services/repo-truth-extractor/tests/test_batch_clients.py -q` | File absent; direct command returned pytest exit code 4. | `pytest services/repo-truth-extractor/tests/test_batch_clients_integration.py -q` passed. |
+| `pytest services/repo-truth-extractor/tests/test_strict_passthrough.py -q` | File absent; direct command returned pytest exit code 4. | `pytest services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py -q` passed. |
+| Live extraction / provider calls / provider batch operations | Forbidden by packet. | Not run. |
 
-## REGRESSION TRIAGE
+## Secret-Shape Scan
 
-- Implementation branch command:
-  - `pytest services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py services/repo-truth-extractor/tests/test_run_extraction_v5_concurrency.py -q`
-  - Result: FAIL, 1 failed and 23 passed.
-  - Failing test: `test_current_partition_execution_preserves_provider_failure_semantics_before_parse_fallback`.
-  - Observed value: `provider_failure`.
-- Clean base worktree:
-  - Path: `/Users/hue/.codex/worktrees/rte-pkt-15a-clean-base`
-  - SHA: `a4214ca5bf431e1b59791661e2b664a6cd24c1da`
-  - Result: FAIL, 1 failed and 23 passed.
-  - Failing test: `test_current_partition_execution_preserves_provider_failure_semantics_before_parse_fallback`.
-  - Observed value: `provider_failure`.
-- Classification: `BASELINE_FAILURE`.
-- Acceptance impact: not a new regression from RTE-PKT-15 sidecar redaction.
+- Literal packet grep over the broad RTE test tree reports expected positives in sanitizer literals, synthetic test literals, and legacy fixture paths. Matched contents were not copied into proof.
+- Safe path/count scan over touched files found no matches in `run_extraction_v5.py` or `test_failed_sidecar_redaction.py`; `output_safety.py` and `test_output_safety.py` each contain one deliberate private-key-pattern literal used by the sanitizer/test.
 
-## NOT_RUN
-
-- `pytest services/repo-truth-extractor/tests/test_provider_payload_redaction.py -q`
-  - Reason: file is not present in this checkout.
-- Live/provider/batch network validation.
-  - Reason: forbidden by packet.
-
-## Provider boundary
+## Provider Boundary
 
 No validation command used provider credentials, submitted provider batch jobs, polled provider batch jobs, retrieved provider batch jobs, cancelled provider batch jobs, or ran live extraction.
