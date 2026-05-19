@@ -1,0 +1,210 @@
+{
+  "schema_version": "dopemux.codex_refresh.proof.v1",
+  "packet_id": "TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX",
+  "project": "dopemux-mvp",
+  "generated_at_utc": "2026-05-19T23:35:00Z",
+  "worktree_path": "/Users/hue/.codex/worktrees/4274/dopemux-mvp",
+  "branch": "codex/dmx-codex-refresh-001-authority-matrix",
+  "base": "origin/main",
+  "repo_identity": {
+    "status": "PASS",
+    "marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "observed_remotes": [
+      "mvp https://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)",
+      "mvp https://github.com/DDD-Enterprises/dopemux-mvp.git (push)",
+      "origin https://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)",
+      "origin https://github.com/DDD-Enterprises/dopemux-mvp.git (push)"
+    ]
+  },
+  "authority_used": [
+    "AGENTS.md",
+    "docs/03-reference/governance/rules.md",
+    "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+    "PROJECT.md",
+    "ARCHITECTURE.md",
+    "runtime/config evidence paths cited in docs/03-reference/governance/codex-authority-refresh.md"
+  ],
+  "analysis_performed": [
+    "Read live AGENTS.md on the packet branch after switching from detached HEAD.",
+    "Verified repo remote, branch, clean status, .dopetaskroot marker, and live task packet schema presence.",
+    "Inspected runtime/config evidence for dopemux CLI entrypoint, scripts/taskx, scripts/dopetask, compose.yml, task-orchestrator runtime paths, PM read/write routing, dopecon-bridge routing, dope-memory, dope-context, ADHD Engine, Repo Truth Extractor, agents, and Cockpit.",
+    "Preserved CONFLICTING and UNKNOWN labels where runtime/config/docs did not collapse authority."
+  ],
+  "slices_completed": [
+    {
+      "slice": "S1",
+      "status": "PASS",
+      "summary": "Preflight repo identity, branch, marker, schema, and authority files."
+    },
+    {
+      "slice": "S2",
+      "status": "PASS",
+      "summary": "Generated task packet JSON and validated it against the live schema."
+    },
+    {
+      "slice": "S3",
+      "status": "PASS",
+      "summary": "Authored Codex-facing authority matrix with OBSERVED, CONFLICTING, UNKNOWN, and RECOMMENDED labels."
+    },
+    {
+      "slice": "S4",
+      "status": "PASS",
+      "summary": "Authored gap register preserving root/docs path drift, TaskX/dopetask naming drift, task-orchestrator drift, agent UNKNOWN, bridge authority risk, and proof/CI insufficiency risk."
+    },
+    {
+      "slice": "S5",
+      "status": "PASS",
+      "summary": "Created proof JSON with commands, exit codes, changed files, NOT_RUN items, residual risks, and UNKNOWNs."
+    }
+  ],
+  "changed_files": [
+    "docs/03-reference/governance/codex-authority-refresh.md",
+    "docs/03-reference/governance/codex-refresh-gap-register.md",
+    "task-packets/generated/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json",
+    "proof/codex-refresh/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX/PROOF.json"
+  ],
+  "command_results": [
+    {
+      "command": "git switch -c codex/dmx-codex-refresh-001-authority-matrix origin/main",
+      "exit_code": 0,
+      "stdout": "Previous HEAD position was d64d5f15e Add RTE UX valuation proof pack\nSwitched to a new branch 'codex/dmx-codex-refresh-001-authority-matrix'\nbranch 'codex/dmx-codex-refresh-001-authority-matrix' set up to track 'origin/main'.",
+      "stderr": ""
+    },
+    {
+      "command": "git remote -v",
+      "exit_code": 0,
+      "stdout": "mvp\thttps://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)\nmvp\thttps://github.com/DDD-Enterprises/dopemux-mvp.git (push)\norigin\thttps://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)\norigin\thttps://github.com/DDD-Enterprises/dopemux-mvp.git (push)",
+      "stderr": ""
+    },
+    {
+      "command": "git branch --show-current",
+      "exit_code": 0,
+      "stdout": "codex/dmx-codex-refresh-001-authority-matrix",
+      "stderr": ""
+    },
+    {
+      "command": "git status --short",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "test -f AGENTS.md",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "test -f docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "test -f .dopetaskroot",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m jsonschema -i task-packets/generated/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "stdout": "/Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/jsonschema/__main__.py:4: DeprecationWarning: The jsonschema CLI is deprecated and will be removed in a future version. Please use check-jsonschema instead, which can be installed from https://pypi.org/project/check-jsonschema/\n  from jsonschema.cli import main",
+      "stderr": ""
+    },
+    {
+      "command": "rg -n \"OBSERVED|CONFLICTING|UNKNOWN|RECOMMENDED\" docs/03-reference/governance/codex-authority-refresh.md",
+      "exit_code": 0,
+      "stdout": "Matched authority labels in docs/03-reference/governance/codex-authority-refresh.md.",
+      "stderr": ""
+    },
+    {
+      "command": "rg -n \"docs/03-reference/spec/dopetask/dopetask-canonical-spec.json|AGENTS.md|dopecon-bridge|scripts/dopetask|Task Orchestrator|ConPort|dope-memory|dope-context\" docs/03-reference/governance/codex-authority-refresh.md",
+      "exit_code": 0,
+      "stdout": "Matched live schema path, AGENTS.md, scripts/dopetask, Task Orchestrator, ConPort, dope-memory, dope-context, and dopecon-bridge references.",
+      "stderr": ""
+    },
+    {
+      "command": "rg -n \"TaskX|dopetask|agent authority|UNKNOWN|dopecon-bridge|task-orchestrator|CI\" docs/03-reference/governance/codex-refresh-gap-register.md",
+      "exit_code": 0,
+      "stdout": "Matched TaskX, dopetask, agent authority, UNKNOWN, dopecon-bridge, task-orchestrator, and CI references.",
+      "stderr": ""
+    },
+    {
+      "command": "python scripts/docs_validator.py docs/03-reference/governance/codex-authority-refresh.md docs/03-reference/governance/codex-refresh-gap-register.md",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python scripts/docs_frontmatter_guard.py docs/03-reference/governance/codex-authority-refresh.md docs/03-reference/governance/codex-refresh-gap-register.md",
+      "exit_code": 0,
+      "stdout": "All docs have valid frontmatter.",
+      "stderr": ""
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "codereview": {
+    "status": "PASS",
+    "commands": [
+      {
+        "command": "git diff --cached --name-status",
+        "exit_code": 0,
+        "summary": "Only the four allowlisted files were staged."
+      },
+      {
+        "command": "git diff --cached --stat",
+        "exit_code": 0,
+        "summary": "4 files changed, 442 insertions(+)."
+      },
+      {
+        "command": "git diff --cached --check",
+        "exit_code": 0,
+        "summary": "No cached whitespace errors."
+      }
+    ]
+  },
+  "precommit": {
+    "status": "PASS",
+    "command": "pre-commit run --files docs/03-reference/governance/codex-authority-refresh.md docs/03-reference/governance/codex-refresh-gap-register.md task-packets/generated/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json proof/codex-refresh/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX/PROOF.json",
+    "exit_code": 0,
+    "summary": "Docs frontmatter, docs graph validator, prohibited patterns, prelude token count, markdown location, docs placement, docs filename, root hygiene, markdownlint, trailing whitespace, EOF, and YAML hooks passed; UPGRADES and YAML hooks skipped where no files applied."
+  },
+  "NOT_RUN": [
+    "Live provider calls",
+    "Live extraction",
+    "Live preflight",
+    "Docker startup",
+    "Runtime service health checks",
+    "Account-specific checks",
+    "Secret inspection"
+  ],
+  "residual_risks": [
+    "Static inspection does not prove runtime service health.",
+    "dopeUI remains UNKNOWN because the focused source/docs search did not observe a current named authority path.",
+    "task-orchestrator runtime/package drift remains CONFLICTING across canonical app/main.py, Docker wiring, and unsupported legacy task_orchestrator/app.py.",
+    "ConPort access contracts remain path-specific and partially CONFLICTING.",
+    "GitHub/CI delivery evidence remains insufficient as semantic runtime proof."
+  ],
+  "unknowns": [
+    "UNKNOWN repo-wide agent runtime authority across services/agents, src/dopemux/agent_orchestrator.py, and services/task-orchestrator/task_orchestrator/agents.",
+    "UNKNOWN dopeUI authority path in current focused source/docs search.",
+    "UNKNOWN live runtime health because Docker startup and service health checks were not authorized.",
+    "UNKNOWN live provider/extraction behavior because live calls and extraction were not authorized."
+  ],
+  "cleanup_status": "PENDING: dedicated Codex worktree remains in place until push/PR outcome is known.",
+  "commit_sha": "POST_COMMIT_REPORTED_IN_FINAL_RESPONSE",
+  "pr_url": "POST_PR_REPORTED_IN_FINAL_RESPONSE"
+}
