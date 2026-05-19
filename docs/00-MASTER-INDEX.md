@@ -27,6 +27,8 @@ Status: [LOGGED] Topology Complete
 - **[Developer Onboarding](02-how-to/developer-onboarding.md)** - Contributor setup, Task Packet discipline, and docs validation
 - **[Project Overview](04-explanation/overview/project-overview.md)** - Repo-grounded project shape and authority split
 - **[System Map](04-explanation/overview/system-map.md)** - High-level map of systems and non-authority links
+- **[Product Positioning](04-explanation/product/positioning.md)** - Repo-faithful positioning without monolithic assistant claims
+- **[Product FAQ](04-explanation/product/faq.md)** - Public-facing limitations, drift, and authority answers
 - **[Installation](01-tutorials/start-here.md)** - Comprehensive setup guide
 - **[README](../README.md)** - Project overview and features
 
@@ -109,6 +111,10 @@ Status: [LOGGED] Topology Complete
 - [Dopemux Architecture](04-explanation/architecture/dopemux-architecture.md) - Split-authority architecture explanation grounded in current repo evidence
 - [Data and Control Flow](04-explanation/architecture/data-and-control-flow.md) - Operator, PM, bridge, retrieval, memory, and extraction flows
 - [Problem Statement](04-explanation/overview/problem-statement.md) - Documentation and operator-control problem framing
+- [Audience Personas](04-explanation/product/audience-personas.md) - Repo-grounded operator, maintainer, workflow, audit, and support audiences
+- [Homepage Copy](04-explanation/product/homepage-copy.md) - Positioning copy with implemented, Drift, and limitation labels
+- [Elevator Pitches](04-explanation/product/elevator-pitches.md) - Short Dopemux pitches with claim guardrails
+- [Features and Benefits](04-explanation/product/features-and-benefits.md) - Feature benefits tied to repo evidence and limitations
 - [Full Codebase Explainer](04-explanation/architecture/dopemux-mvp-full-codebase-explainer.md) - Repo-truth explainer for the active Dopemux control surfaces, service boundaries, and authority split
 - [System Bible](04-explanation/architecture/system-bible.md) - Consolidated knowledge base
 - [Three-Layer Integration](90-adr/adr-207-architecture-3-0-three-layer-integration.md)
