@@ -137,3 +137,23 @@ No proof means incomplete.
 - Agent responsibilities are duplicated across multiple families, and agent authority is `UNKNOWN`.
 - `scripts/dopetask` is the observed runtime, but operator naming still drifts through TaskX language.
 - MCP and proxy config surfaces are inconsistent in places, including stale port assumptions and missing launch targets.
+
+## 10. Claude-Code Doctrine Alignment
+
+This file is the Codex-facing authority. The Claude-Code-facing companion is `.claude/CLAUDE.md`, which embeds a brief governance section and links to the full canonical module at `.claude/modules/shared/governance-principles.md`.
+
+The canonical module elaborates the same Truth Order (§2), proof-and-finality regime (§8), and architecture-boundary discipline (§6) for Claude-Code sessions. It additionally covers:
+
+- inspect-before-edit, minimal correct change, deterministic-systems-first
+- canonical writer rules and contract-sensitive surfaces specific to this repo
+- validation policy with explicit `PASS / FAIL / NOT_RUN` buckets
+- confidence states and communication style
+- required final response structure for every substantial response
+
+PAL workflow chain rules remain owned by §5 of this file. The canonical module references §5 — it does not duplicate the chains. If chain rules change, update §5 only; the module link will continue to resolve.
+
+When updating doctrine, keep these three files in sync:
+
+- `AGENTS.md` (this file) — Codex authority, Task Packet rules, PAL chains, proof bundle requirements
+- `.claude/CLAUDE.md` — Claude-Code-facing summary + non-negotiables checklist
+- `.claude/modules/shared/governance-principles.md` — full canonical doctrine, referenced by both
