@@ -1,20 +1,14 @@
 # RTE-PKT-15 Secret Fixture Redaction Proof
 
-Generated tests construct secret-shaped values at runtime and assert absence from persisted `.FAILED.txt` and `.FAILED.json` outputs.
+Tests construct synthetic secret-shaped values at runtime. No real Packet 00 failed sidecar fixture content was copied into tests, logs, comments, or proof.
 
-The raw generated fixture values are not quoted in this proof.
+Validated surfaces:
 
-Covered assertions:
+- Worker exception text is absent from persisted failed sidecars while worker failure context remains.
+- Parse failure response text is absent from persisted failed sidecars while parse failure context remains.
+- Schema failure response text is absent from persisted failed sidecars while schema gate context remains.
+- Batch provider error text is absent from persisted failed sidecars while provider, model, and batch id context remains.
+- Batch terminal text sidecar output preserves the terminal failure label.
+- Failed JSON direct writer redacts generic long secret-shaped values in non-sensitive failure fields while preserving safe metadata.
 
-- Worker exception text: generated secret-shaped exception content is absent from `.FAILED.txt` and paired `.FAILED.json`; redaction markers remain.
-- Parse failure response text: generated secret-shaped model response content is absent from `.FAILED.txt` and paired `.FAILED.json`; `failure_type`, `status_code`, phase, step, and partition remain.
-- Schema failure response text: generated secret-shaped response content is absent from `.FAILED.txt` and paired `.FAILED.json`; schema context remains visible.
-- Batch provider error text: generated secret-shaped provider error content is absent from `.FAILED.txt` and paired `.FAILED.json`; provider, model, and batch ID remain.
-- Batch terminal text helper: generated secret-shaped terminal text is absent from `.FAILED.txt`; terminal failure class text remains.
-- Output safety helper: provider-token-shaped text and private-key-block-shaped text are removed; safe SHA text remains.
-
-Observed redaction markers:
-
-- `[REDACTED]`
-- `[REDACTED PRIVATE KEY]`
-- `REDACTED` for query parameter values
+Legacy v3 failed sidecar fixtures remain unmodified evidence surfaces and are not quoted here.
