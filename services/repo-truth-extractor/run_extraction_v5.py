@@ -44,6 +44,7 @@ if str(RUNNER_SERVICE_DIR) not in sys.path:
 
 from output_safety import (
     sanitize_failed_sidecar_text,
+    sanitize_payload_for_failed_sidecar,
     sanitize_payload_for_output,
     sanitize_text_for_output,
     sanitize_text_for_provider_payload,
@@ -2770,8 +2771,15 @@ def get_run_dirs(root: Path, run_id: str, readonly: bool = False) -> Dict[str, P
     )
 
 
+def _is_failed_json_sidecar_path(path: Path) -> bool:
+    return path.name.endswith(".FAILED.json")
+
+
 def write_json(path: Path, payload: Any) -> None:
-    sanitized_payload = sanitize_payload_for_output(payload)
+    if _is_failed_json_sidecar_path(path):
+        sanitized_payload = sanitize_payload_for_failed_sidecar(payload)
+    else:
+        sanitized_payload = sanitize_payload_for_output(payload)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         json.dumps(
