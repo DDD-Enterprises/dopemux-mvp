@@ -7,7 +7,7 @@
     "branch": "codex/tp-dmx-mobile-tui-spec-001",
     "base_branch": "main",
     "start_head": "f87816b2a906bcf6a174ba384c401be16f542213",
-    "end_head": "f87816b2a906bcf6a174ba384c401be16f542213",
+    "end_head": "5c4977f26bc1a6830f5839968755dd6a5d1780c6",
     "origin_head": "refs/remotes/origin/main"
   },
   "primary_checkout_preflight": {
