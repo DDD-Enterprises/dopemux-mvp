@@ -559,6 +559,7 @@ function App() {
                     <Chip
                       label={`${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`}
                       variant="outlined"
+                      tabIndex={0}
                       sx={{
                         maxWidth: '100%',
                         borderColor: alpha(severityColor, 0.6),

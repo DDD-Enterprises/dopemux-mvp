@@ -792,14 +792,18 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                   {isCompleted ? (
                     <CheckCircle color={brandTokens.colors.serumMint} size={20} aria-hidden="true" />
                   ) : isCurrent ? (
-                    <Play
-                      color={brandTokens.colors.ritualCyan}
-                      size={20}
-                      aria-hidden="true"
-                      style={{
-                        animation: isTimerRunning ? 'timer-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none'
-                      }}
-                    />
+                    isTimerRunning ? (
+                      <Play
+                        color={brandTokens.colors.ritualCyan}
+                        size={20}
+                        aria-hidden="true"
+                        style={{
+                          animation: 'timer-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        }}
+                      />
+                    ) : (
+                      <Pause color={brandTokens.colors.saintGold} size={20} aria-hidden="true" />
+                    )
                   ) : (
                     <Circle color={alpha(brandTokens.text.primary, 0.3)} size={18} aria-hidden="true" />
                   )}
@@ -815,6 +819,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                           size="small"
                           label={`${Math.round(task.complexity * 100)}% complex`}
                           tabIndex={0}
+                          aria-label={`Complexity: ${Math.round(task.complexity * 100)}%`}
                           sx={{
                             bgcolor: brandTokens.surfaces.chip,
                             color: complexityColor(task.complexity),
@@ -828,13 +833,41 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 0.5 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                         <Tooltip title={`Estimated duration: ${task.estimatedMinutes} minutes`} arrow>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Box
+                            tabIndex={0}
+                            aria-label={`Estimated duration: ${task.estimatedMinutes} minutes`}
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 0.5,
+                              cursor: 'help',
+                              outline: 'none',
+                              borderRadius: 1,
+                              '&:focus-visible': {
+                                boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}`,
+                              },
+                            }}
+                          >
                             <Clock size={12} color={brandTokens.colors.ritualCyan} aria-hidden="true" />
                             <Typography variant="caption">{task.estimatedMinutes}m</Typography>
                           </Box>
                         </Tooltip>
                         <Tooltip title={`Energy requirement: ${task.energyRequired}`} arrow>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Box
+                            tabIndex={0}
+                            aria-label={`Energy requirement: ${task.energyRequired}`}
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 0.5,
+                              cursor: 'help',
+                              outline: 'none',
+                              borderRadius: 1,
+                              '&:focus-visible': {
+                                boxShadow: `0 0 0 2px ${energyColor(task.energyRequired)}`,
+                              },
+                            }}
+                          >
                             <Zap size={12} color={energyColor(task.energyRequired)} aria-hidden="true" />
                             <Typography variant="caption" sx={{ color: energyColor(task.energyRequired) }}>
                               {task.energyRequired}
@@ -843,7 +876,21 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                         </Tooltip>
                         {taskFinishTimes[task.id] && (
                           <Tooltip title="Estimated wall-clock finish time" arrow>
-                            <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                            <Typography
+                              variant="caption"
+                              tabIndex={0}
+                              aria-label={`Estimated finish time: ${taskFinishTimes[task.id]}`}
+                              sx={{
+                                opacity: 0.8,
+                                cursor: 'help',
+                                outline: 'none',
+                                borderRadius: 1,
+                                px: 0.5,
+                                '&:focus-visible': {
+                                  boxShadow: `0 0 0 2px ${alpha(brandTokens.text.primary, 0.4)}`,
+                                },
+                              }}
+                            >
                               • Ends at {taskFinishTimes[task.id]}
                             </Typography>
                           </Tooltip>

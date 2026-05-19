@@ -91,6 +91,15 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   // Predictive task finish times
   expect(content).toMatch(/\{taskFinishTimes\[task\.id\] && \(/);
   expect(content).toContain('• Ends at {taskFinishTimes[task.id]}');
+
+  // Verify task metadata is focusable and has correct aria-labels
+  expect(content).toContain('tabIndex={0}');
+  expect(content).toContain('aria-label={`Complexity: ${Math.round(task.complexity * 100)}%`}');
+  expect(content).toContain('aria-label={`Estimated duration: ${task.estimatedMinutes} minutes`}');
+  expect(content).toContain('aria-label={`Energy requirement: ${task.energyRequired}`}');
+  expect(content).toContain('aria-label={`Estimated finish time: ${taskFinishTimes[task.id]}`}');
+  expect(content).toContain('cursor: \'help\'');
+  expect(content).toContain('&:focus-visible');
 });
 
 test('TaskSequencer.tsx implements overtime visual cues', () => {
@@ -148,4 +157,7 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(themeContent).toContain('&:focus-visible');
   expect(appContent).toContain('ref={feedHeadingRef}');
   expect(appContent).toContain('tabIndex={-1}');
+
+  // Verify notification chips are focusable
+  expect(appContent).toContain('tabIndex={0}');
 });
