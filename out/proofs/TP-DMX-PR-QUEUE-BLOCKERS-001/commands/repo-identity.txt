@@ -1,12 +1,12 @@
-timestamp_utc=2026-05-20T08:24:45Z
+timestamp_utc=2026-05-20T08:36:46Z
 cwd=/Users/hue/.codex/worktrees/tp-dmx-pr-queue-blockers-001
 git_top=/Users/hue/.codex/worktrees/tp-dmx-pr-queue-blockers-001
 branch=codex/tp-dmx-pr-queue-blockers-001
-head=8e7a2283f56a49abfb41c2ac791cbf18dd0ae500
+head=402871ecb30597c14d18773c66adbc99ab35ff28
 origin_url=https://github.com/DDD-Enterprises/dopemux-mvp.git
 github_repo={"defaultBranchRef":{"name":"main"},"nameWithOwner":"DDD-Enterprises/dopemux-mvp","url":"https://github.com/DDD-Enterprises/dopemux-mvp"}
 repo_marker=AGENTS.md PRESENT
 THREAD00_CURRENT_OPERATING_LEDGER.md=ABSENT
 status_short_start:
-?? out/proofs/
-?? task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json
+ M out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/post-blocker-comments-env.txt
+ M out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/repo-identity.txt
