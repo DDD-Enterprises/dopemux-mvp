@@ -1,0 +1,6 @@
+Codereview posture: PASS_FOR_SCOPE
+Scope reviewed: Task Packet plus proof artifacts only.
+Observed write paths are allowlisted: task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json and out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/**.
+No runtime/source/config/test/dependency/schema edits observed in git status.
+Residual risk: live GitHub state can change after capture.
+exit=0

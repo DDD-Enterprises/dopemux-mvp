@@ -1,0 +1,13 @@
+{
+  "record": {
+    "action_id": "A0012",
+    "action_type": "review_required",
+    "bytes_reclaimed": 0,
+    "dry_run": false,
+    "error": "operator review required",
+    "manifest_path": "proof/TP-OPS-MAC-SCRUBBER-001/A0012-manifest.json",
+    "path": "/Users/hue/Library/Messages/Attachments",
+    "status": "skipped"
+  },
+  "timestamp_utc": "2026-05-23T13:29:25+00:00"
+}

@@ -1,0 +1,13 @@
+{
+  "record": {
+    "action_id": "A0001",
+    "action_type": "clear_safe_path",
+    "bytes_reclaimed": 196440064,
+    "dry_run": false,
+    "error": null,
+    "manifest_path": "proof/TP-OPS-MAC-SCRUBBER-001/A0001-manifest.json",
+    "path": "/Users/hue/.npm",
+    "status": "executed"
+  },
+  "timestamp_utc": "2026-05-23T13:34:47+00:00"
+}
