@@ -1,0 +1,69 @@
+label	exit_code	stdout_path	stderr_path	command
+pwd	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-pwd.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-pwd.txt.stderr	pwd
+repo root	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-root.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-root.txt.stderr	git rev-parse --show-toplevel
+branch	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-branch.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-branch.txt.stderr	git branch --show-current
+remote	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-remote.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-remote.txt.stderr	git remote -v
+status	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-status.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-status.txt.stderr	git status -sb
+marker	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-marker.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-marker.txt.stderr	test -f .dopetaskroot
+gh auth	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-auth.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-auth.txt.stderr	gh auth status
+repo identity	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-repo.json	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-repo.json.stderr	gh repo view DDD-Enterprises/dopemux-mvp --json nameWithOwner,defaultBranchRef,url
+schema validation	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/schema-validation.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/schema-validation.txt.stderr	python - <<'PY2'
+import json
+from pathlib import Path
+from jsonschema import Draft7Validator
+schema = json.loads(Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text())
+packet = json.loads(Path('task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json').read_text())
+errors = sorted(Draft7Validator(schema).iter_errors(packet), key=lambda e: list(e.path))
+assert not errors, '\n'.join(f'{list(e.path)}: {e.message}' for e in errors)
+print('PASS')
+PY2
+pr 659 view	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.view.json	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.view.json.stderr	gh pr view 659 --repo DDD-Enterprises/dopemux-mvp --json number,state,title,url,headRefName,headRefOid,baseRefName,baseRefOid,mergeStateStatus,mergeable,changedFiles,files,author,updatedAt,body,reviewDecision,reviews,comments,statusCheckRollup
+pr 659 files	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.files.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.files.txt.stderr	gh pr diff 659 --repo DDD-Enterprises/dopemux-mvp --name-only
+pr 659 review threads	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.reviewThreads.json	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.reviewThreads.json.stderr	gh api graphql -f owner=DDD-Enterprises -f repo=dopemux-mvp -F number=659 -f query='query($owner:String!, $repo:String!, $number:Int!) { repository(owner:$owner, name:$repo) { pullRequest(number:$number) { number url state reviewThreads(first:100) { nodes { isResolved isOutdated path line comments(first:20) { nodes { author { login } body createdAt url } } } } } } }'
+pr 664 view	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.view.json	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.view.json.stderr	gh pr view 664 --repo DDD-Enterprises/dopemux-mvp --json number,state,title,url,headRefName,headRefOid,baseRefName,baseRefOid,mergeStateStatus,mergeable,changedFiles,files,author,updatedAt,body,reviewDecision,reviews,comments,statusCheckRollup
+pr 664 files	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.files.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.files.txt.stderr	gh pr diff 664 --repo DDD-Enterprises/dopemux-mvp --name-only
+pr 664 review threads	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.reviewThreads.json	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.reviewThreads.json.stderr	gh api graphql -f owner=DDD-Enterprises -f repo=dopemux-mvp -F number=664 -f query='query($owner:String!, $repo:String!, $number:Int!) { repository(owner:$owner, name:$repo) { pullRequest(number:$number) { number url state reviewThreads(first:100) { nodes { isResolved isOutdated path line comments(first:20) { nodes { author { login } body createdAt url } } } } } } }'
+pr 659 head object exists	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-head-object-exists.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-head-object-exists.txt.stderr	git cat-file -e 4b74f7992fd7041689064f04ef9e0eaa83239bc4^{commit}
+pr 664 head object exists	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-object-exists.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-object-exists.txt.stderr	git cat-file -e e98c2676c5d88f3a3c6cbd126ac8eb1277114517^{commit}
+pr 664 extract head task-packets/generated/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json.stderr	git show e98c2676c5d88f3a3c6cbd126ac8eb1277114517:task-packets/generated/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json
+pr 664 extract head task-packets/generated/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json.stderr	git show e98c2676c5d88f3a3c6cbd126ac8eb1277114517:task-packets/generated/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json
+pr 664 extract head task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json.stderr	git show e98c2676c5d88f3a3c6cbd126ac8eb1277114517:task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json
+pr 664 extract head task-packets/generated/TP-DMX-MOBILE-TUI-SPEC-001.json	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-MOBILE-TUI-SPEC-001.json	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-MOBILE-TUI-SPEC-001.json.stderr	git show e98c2676c5d88f3a3c6cbd126ac8eb1277114517:task-packets/generated/TP-DMX-MOBILE-TUI-SPEC-001.json
+pr 664 extract head out/proof/TP-DMX-MOBILE-TUI-SPEC-001/PROOF.json	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-out_proof_TP-DMX-MOBILE-TUI-SPEC-001_PROOF.json	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-out_proof_TP-DMX-MOBILE-TUI-SPEC-001_PROOF.json.stderr	git show e98c2676c5d88f3a3c6cbd126ac8eb1277114517:out/proof/TP-DMX-MOBILE-TUI-SPEC-001/PROOF.json
+pr 664 extract head proof/codex-refresh/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX/PROOF.json	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX_PROOF.json	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX_PROOF.json.stderr	git show e98c2676c5d88f3a3c6cbd126ac8eb1277114517:proof/codex-refresh/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX/PROOF.json
+pr 664 extract head proof/codex-refresh/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK/PROOF.json	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK_PROOF.json	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK_PROOF.json.stderr	git show e98c2676c5d88f3a3c6cbd126ac8eb1277114517:proof/codex-refresh/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK/PROOF.json
+pr 664 extract head proof/codex-refresh/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES/PROOF.json	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES_PROOF.json	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES_PROOF.json.stderr	git show e98c2676c5d88f3a3c6cbd126ac8eb1277114517:proof/codex-refresh/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES/PROOF.json
+pr 659 post blocker comment gated	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-comment-post-status.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-comment-post-status.txt.stderr	if test "${POST_BLOCKER_COMMENTS:-0}" = "1"; then gh pr comment 659 --repo DDD-Enterprises/dopemux-mvp --body-file out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-blocker-comment.md; else echo NOT_POSTED_POST_BLOCKER_COMMENTS_NOT_SET; fi
+pr 664 post blocker comment gated	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-comment-post-status.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-comment-post-status.txt.stderr	if test "${POST_BLOCKER_COMMENTS:-0}" = "1"; then gh pr comment 664 --repo DDD-Enterprises/dopemux-mvp --body-file out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-blocker-comment.md; else echo NOT_POSTED_POST_BLOCKER_COMMENTS_NOT_SET; fi
+thread00 ledger file lookup	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/thread00-ledger-lookup.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/thread00-ledger-lookup.txt.stderr	find . -maxdepth 4 -name 'THREAD00_CURRENT_OPERATING_LEDGER.md' -o -name '*THREAD00*' | sort
+proof json parse	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-proof-json-tool.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-proof-json-tool.txt.stderr	python -m json.tool out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PROOF.json >/dev/null
+packet schema validation final	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-packet-schema-final.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-packet-schema-final.txt.stderr	python - <<'PY2'
+import json
+from pathlib import Path
+from jsonschema import Draft7Validator
+schema = json.loads(Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text())
+packet = json.loads(Path('task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json').read_text())
+errors = sorted(Draft7Validator(schema).iter_errors(packet), key=lambda e: list(e.path))
+assert not errors, '\n'.join(f'{list(e.path)}: {e.message}' for e in errors)
+print('PASS')
+PY2
+git diff check pre-stage	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-check-prestage.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-check-prestage.txt.stderr	git diff --check
+git diff cached check pre-stage	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-cached-check-prestage.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-cached-check-prestage.txt.stderr	git diff --cached --check
+changed files status pre-stage	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage.txt.stderr	git status --short
+changed files status pre-stage expanded	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage-expanded.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage-expanded.txt.stderr	git status --short --untracked-files=all
+allowlist check pre-stage expanded	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/allowlist-check-prestage-expanded.json		computed from git status --short --untracked-files=all
+final proof json parse	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.txt.stderr	python -m json.tool out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PROOF.json >/dev/null
+final packet schema validation	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-packet-schema.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-packet-schema.txt.stderr	python - <<'PY2'
+import json
+from pathlib import Path
+from jsonschema import Draft7Validator
+schema = json.loads(Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text())
+packet = json.loads(Path('task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json').read_text())
+errors = sorted(Draft7Validator(schema).iter_errors(packet), key=lambda e: list(e.path))
+assert not errors, '\n'.join(f'{list(e.path)}: {e.message}' for e in errors)
+print('PASS')
+PY2
+final git diff check	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.txt.stderr	git diff --check
+final git diff cached check	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.txt.stderr	git diff --cached --check
+final pre-commit	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit.txt.stderr	pre-commit run --files $(git diff --cached --name-only)
+final git status	0	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.txt	out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.txt.stderr	git status -sb

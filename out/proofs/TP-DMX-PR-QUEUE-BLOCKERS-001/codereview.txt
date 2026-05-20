@@ -1,0 +1,11 @@
+codereview: PASS
+allowlist_violations: []
+runtime_source_edit_count: 0
+comments_posted: NO
+runtime_validation: NOT_RUN
+pr_659_classification: BLOCKED / CONFLICTING
+pr_664_classification: BLOCKED / UPDATED_BY_LIVE_EVIDENCE
+notes:
+- #659 remains blocked/conflicting by live changed-file, missing packet/proof, and unresolved review-thread evidence.
+- #664 no longer supports MISSING_PROOF on live evidence; it remains blocked by unresolved review thread plus UI/source/test scope proof disposition.
+- No PR comments posted because POST_BLOCKER_COMMENTS was not set to 1.

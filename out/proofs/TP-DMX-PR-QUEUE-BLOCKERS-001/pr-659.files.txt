@@ -1,0 +1,10 @@
+.claude/claude.md
+.claude/modules/shared/governance-principles.md
+AGENTS.md
+out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_ACCEPTED_SCOPE.md
+out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_DEFERRED_ITEMS.md
+out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_MANIFEST.json
+out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_NO_RUNTIME_CHANGE_ATTESTATION.md
+out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_PACKET_SEQUENCE.md
+out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_REMAINING_UNKNOWNS.md
+out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_VALUATION_MATRIX.md

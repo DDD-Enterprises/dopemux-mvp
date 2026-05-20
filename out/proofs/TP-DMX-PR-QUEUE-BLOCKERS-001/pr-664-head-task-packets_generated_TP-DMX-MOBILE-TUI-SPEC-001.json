@@ -1,0 +1,99 @@
+{
+  "id": "TP-DMX-MOBILE-TUI-SPEC-001",
+  "project": "dopemux-mvp",
+  "target": "Dopemux mobile-first tmux Cockpit UX specification",
+  "invariants": [
+    "No runtime/source/config behavior changes.",
+    "Dopemux remains the operator control surface only.",
+    "dopetask remains the external execution runtime.",
+    "PM authority remains split across Leantime, task-orchestrator, ConPort, and dope-memory mirror receipts.",
+    "dopecon-bridge remains proxy/routing/event transport only, not canonical truth.",
+    "dope-context retrieval output remains derived and never source truth.",
+    "Confirmation is not proof.",
+    "Every proposed write/action must name the canonical writer or mark writer UNKNOWN."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".git",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MOBILE-TMUX-TUI",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-mobile-tui-spec-001"
+  },
+  "commit": {
+    "message": "docs: install mobile tmux cockpit UX spec",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-MOBILE-TUI-SPEC-001.json",
+      "task-packets/INDEX.md",
+      "docs/06-research/mobile-tmux-tui/",
+      "docs/03-reference/systems/dopemux/",
+      "docs/03-reference/systems/dashboard/",
+      "out/proof/TP-DMX-MOBILE-TUI-SPEC-001/"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-MOBILE-TUI-SPEC-001.json",
+      "python -m json.tool out/proof/TP-DMX-MOBILE-TUI-SPEC-001/PROOF.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "Docs: install mobile-first tmux Cockpit UX spec",
+    "body": "Installs the mobile-first tmux Cockpit UX specification from Deep Research inputs, preserving Dopemux authority boundaries and proof requirements. Runtime behavior is unchanged.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Inventory repo truth, existing Cockpit/TUI docs, and Downloads research files.",
+      "validation": [
+        "Record inspected files, research filenames, hashes, and authority notes in proof."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create stable research docs under docs/06-research/mobile-tmux-tui/.",
+      "validation": [
+        "Docs exist, preserve source provenance, and label OBSERVED, INFERRED, UNKNOWN, and CONFLICTING where needed."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Install a mobile-first Cockpit UX spec addendum under the Dopemux docs path.",
+      "validation": [
+        "Spec preserves authority boundaries, mobile/SSH constraints, Safe Action Gate rules, and proof/receipt display contract."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Update task packet index/governance references if the repo convention requires it.",
+      "validation": [
+        "Index update is minimal and traceable to TP-DMX-MOBILE-TUI-SPEC-001."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Create proof JSON and run validation.",
+      "validation": [
+        "Proof JSON parses, packet JSON parses, git diff is scoped, and git diff --check passes."
+      ]
+    }
+  ]
+}
