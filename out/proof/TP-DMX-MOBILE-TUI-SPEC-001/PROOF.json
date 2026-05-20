@@ -8,7 +8,16 @@
     "base_branch": "main",
     "start_head": "f87816b2a906bcf6a174ba384c401be16f542213",
     "end_head": "5c4977f26bc1a6830f5839968755dd6a5d1780c6",
+    "end_head_semantics": "Original docs/spec packet execution commit before proof-only review repair and branch-update commits. This field is not the live self-referential PR head; use Git/GitHub PR metadata for the current branch head.",
     "origin_head": "refs/remotes/origin/main"
+  },
+  "revision_chain": {
+    "self_reference_note": "A committed proof file cannot embed the hash of the commit that contains it without a follow-up commit changing that hash. Current PR head evidence is therefore authoritative in Git/GitHub metadata, while this JSON records the packet evidence chain.",
+    "packet_base_head": "f87816b2a906bcf6a174ba384c401be16f542213",
+    "initial_packet_commit": "5c4977f26bc1a6830f5839968755dd6a5d1780c6",
+    "proof_head_repair_commit": "ce12e1b5ba785d58152316af72729ef96b98cb9b",
+    "branch_update_merge_commit": "a26ac2a8e0ae74d2c55d44a0a530e59965908c4f",
+    "current_pr_head_source": "Verify with gh pr view 665 --json headRefOid and git rev-parse HEAD after fetching the PR branch."
   },
   "primary_checkout_preflight": {
     "root": "/Users/hue/.codex/worktrees/7e70/dopemux-mvp",
