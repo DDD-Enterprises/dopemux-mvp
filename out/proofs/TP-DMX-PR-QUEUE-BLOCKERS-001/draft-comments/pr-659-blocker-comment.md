@@ -1,4 +1,4 @@
-Blocker audit for TP-DMX-PR-QUEUE-BLOCKERS-001 at 2026-05-20T08:27:31Z UTC.
+Blocker audit for TP-DMX-PR-QUEUE-BLOCKERS-001 at 2026-05-20T08:37:48Z UTC.
 
 OBSERVED:
 - PR state: OPEN; draft: False; head: `4b74f7992fd7041689064f04ef9e0eaa83239bc4`; base: `main`.
@@ -21,4 +21,4 @@ RECOMMENDED:
 UNKNOWN / NOT_RUN:
 - Runtime validation was NOT_RUN by packet instruction.
 - No approval was observed in the captured review data.
-- This dry-run did not post comments because POST_BLOCKER_COMMENTS was `0`.
+- This comment was posted because POST_BLOCKER_COMMENTS was `1`.

@@ -1,0 +1,4 @@
+POST_BLOCKER_COMMENTS=1
+PR659_URL=https://github.com/DDD-Enterprises/dopemux-mvp/pull/659#issuecomment-4496311077
+PR664_URL=https://github.com/DDD-Enterprises/dopemux-mvp/pull/664#issuecomment-4496311218
+exit=0
