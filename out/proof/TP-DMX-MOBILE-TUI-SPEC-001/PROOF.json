@@ -1,0 +1,283 @@
+{
+  "tp_id": "TP-DMX-MOBILE-TUI-SPEC-001",
+  "status": "PASS_WITH_RISKS",
+  "repo": {
+    "root": "/Users/hue/.codex/worktrees/tp-dmx-mobile-tui-spec-001",
+    "remote": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "branch": "codex/tp-dmx-mobile-tui-spec-001",
+    "base_branch": "main",
+    "start_head": "f87816b2a906bcf6a174ba384c401be16f542213",
+    "end_head": "5c4977f26bc1a6830f5839968755dd6a5d1780c6",
+    "end_head_semantics": "Original docs/spec packet execution commit before proof-only review repair and branch-update commits. This field is not the live self-referential PR head; use Git/GitHub PR metadata for the current branch head.",
+    "origin_head": "refs/remotes/origin/main"
+  },
+  "revision_chain": {
+    "self_reference_note": "A committed proof file cannot embed the hash of the commit that contains it without a follow-up commit changing that hash. Current PR head evidence is therefore authoritative in Git/GitHub metadata, while this JSON records the packet evidence chain.",
+    "packet_base_head": "f87816b2a906bcf6a174ba384c401be16f542213",
+    "initial_packet_commit": "5c4977f26bc1a6830f5839968755dd6a5d1780c6",
+    "proof_head_repair_commit": "ce12e1b5ba785d58152316af72729ef96b98cb9b",
+    "branch_update_merge_commit": "a26ac2a8e0ae74d2c55d44a0a530e59965908c4f",
+    "current_pr_head_source": "Verify with gh pr view 665 --json headRefOid and git rev-parse HEAD after fetching the PR branch."
+  },
+  "primary_checkout_preflight": {
+    "root": "/Users/hue/.codex/worktrees/7e70/dopemux-mvp",
+    "start_head": "d64d5f15e46e68373e3bed1160fbc3df2807db59",
+    "branch": "HEAD detached",
+    "remote_match": true,
+    "markers_observed": [
+      ".git",
+      ".dopetaskroot",
+      ".dopemux",
+      "pyproject.toml"
+    ],
+    "post_correction_status": "clean"
+  },
+  "research_sources": [
+    {
+      "path": "/Users/hue/Downloads/deep-research-report 15.md",
+      "sha256": "15ebfbe00f8a6a968a64d2c8de5a53af9e4289b7bab2250ad25e82dc66a30432",
+      "size_bytes": 22568,
+      "classification": "research_input",
+      "content_classification": "mobile_blink_ssh_constraints",
+      "ingested_as": "docs/06-research/mobile-tmux-tui/01-mobile-blink-ssh-constraints.md",
+      "external_citations_present": true,
+      "conversion_method": "Markdown source summarized and normalized to repo-neutral ASCII",
+      "redaction_or_conversion_warning": "No credential-pattern findings in selected source; source citation placeholders were summarized rather than copied verbatim."
+    },
+    {
+      "path": "/Users/hue/Downloads/deep-research-report 14.md",
+      "sha256": "5757d34173f9931aeda6e33db8c3d0f89a984fca3f77c123bebed7843105dc6d",
+      "size_bytes": 22735,
+      "classification": "research_input",
+      "content_classification": "tui_framework_architecture",
+      "ingested_as": "docs/06-research/mobile-tmux-tui/02-tui-framework-architecture.md",
+      "external_citations_present": true,
+      "conversion_method": "Markdown source summarized and normalized to repo-neutral ASCII",
+      "redaction_or_conversion_warning": "No credential-pattern findings in selected source; source citation placeholders were summarized rather than copied verbatim."
+    },
+    {
+      "path": "/Users/hue/Downloads/deep-research-report 13.md",
+      "sha256": "e7550446b250eef4995dc605432342dc1c3c6a9010164479823e7e6105c809f2",
+      "size_bytes": 37037,
+      "classification": "research_input",
+      "content_classification": "dopemux_cockpit_ux_spec",
+      "ingested_as": "docs/06-research/mobile-tmux-tui/03-dopemux-cockpit-ux-spec.md",
+      "external_citations_present": true,
+      "conversion_method": "Markdown source summarized and reconciled against repo truth",
+      "redaction_or_conversion_warning": "No credential-pattern findings in selected source; source citation placeholders were summarized rather than copied verbatim."
+    }
+  ],
+  "repo_sources_inspected": [
+    "AGENTS.md",
+    "PROJECT.md",
+    "ARCHITECTURE.md",
+    "PM_PLANE.md",
+    "SERVICE_CATALOG.md",
+    "task-packets/INDEX.md",
+    "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+    "docs/03-reference/systems/system-boundaries.md",
+    "docs/03-reference/systems/dopemux/system-dopemux.md",
+    "docs/03-reference/systems/dopetask/system-dopetask.md",
+    "docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md",
+    "docs/03-reference/systems/dopecon-bridge/system-dopeconbridge.md",
+    "docs/03-reference/systems/dope-context/system-dopecontext.md",
+    "docs/03-reference/systems/dopemux/tui-spec-v2-0a.md",
+    "docs/03-reference/Dopemux Cockpit TUI Design System/ARCHITECTURE_SAFETY_OVERLAY.md",
+    "docs/03-reference/Dopemux Cockpit TUI Design System/PM_IMPLEMENTER_COCKPIT_REDIRECTION.md",
+    "docs/03-reference/Dopemux Cockpit TUI Design System/acceptance.md",
+    "docs/03-reference/python-tmux-research.md",
+    "docs/03-reference/systems/dashboard/tmux-dashboard-design.md",
+    "config/mobile/tmux.mobile.conf",
+    ".tmux.conf",
+    "src/dopemux/ui/cockpit/render.py",
+    "src/dopemux/ui/cockpit/app.py",
+    "src/dopemux/ui/cockpit/runtime_contract.py",
+    "src/dopemux/commands/cockpit_commands.py",
+    "tests/unit/dopemux/ui/cockpit/test_cockpit_render.py",
+    "tests/unit/dopemux/ui/cockpit/test_cockpit_command.py",
+    "scripts/dopetask",
+    "scripts/taskx",
+    ".pre-commit-config.yaml",
+    "config/docs_hygiene/docs_placement_policy.yaml"
+  ],
+  "existing_cockpit_tui_surfaces_observed": [
+    "src/dopemux/ui/cockpit/",
+    "src/dopemux/commands/cockpit_commands.py",
+    "tests/unit/dopemux/ui/cockpit/",
+    "docs/03-reference/systems/dopemux/tui-spec-v2-0a.md",
+    "docs/03-reference/Dopemux Cockpit TUI Design System/",
+    "docs/03-reference/python-tmux-research.md",
+    "docs/03-reference/systems/dashboard/tmux-dashboard-design.md",
+    "config/mobile/tmux.mobile.conf",
+    ".tmux.conf"
+  ],
+  "files_changed": [
+    "task-packets/generated/TP-DMX-MOBILE-TUI-SPEC-001.json",
+    "task-packets/INDEX.md",
+    "docs/06-research/mobile-tmux-tui/source-manifest.md",
+    "docs/06-research/mobile-tmux-tui/01-mobile-blink-ssh-constraints.md",
+    "docs/06-research/mobile-tmux-tui/02-tui-framework-architecture.md",
+    "docs/06-research/mobile-tmux-tui/03-dopemux-cockpit-ux-spec.md",
+    "docs/03-reference/systems/dopemux/mobile-tmux-cockpit-ux-spec.md",
+    "out/proof/TP-DMX-MOBILE-TUI-SPEC-001/PROOF.json"
+  ],
+  "validations": [
+    {
+      "command": "pwd && git rev-parse --show-toplevel && git remote -v && git status --short --branch && git branch --show-current && git rev-parse HEAD && (git symbolic-ref refs/remotes/origin/HEAD || true)",
+      "exit_code": 0,
+      "result": "PASS",
+      "notes": "Primary checkout and dedicated worktree identity commands ran; remote matched DDD-Enterprises/dopemux-mvp."
+    },
+    {
+      "command": "find \"$HOME/Downloads\" -maxdepth 1 -type f (...) -print0 | xargs -0 ls -lh",
+      "exit_code": 0,
+      "result": "PASS",
+      "notes": "Downloads inventory completed; selected three matching May 19 Markdown reports by content."
+    },
+    {
+      "command": "shasum -a 256 \"$HOME/Downloads/deep-research-report 13.md\" \"$HOME/Downloads/deep-research-report 14.md\" \"$HOME/Downloads/deep-research-report 15.md\"",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "rg -n -i \"(api[_ -]?key|token|password|secret|credential|BEGIN .*PRIVATE|sk-[A-Za-z0-9]|ghp_[A-Za-z0-9]|xox[baprs]-|AKIA[0-9A-Z]{16})\" selected research files || true",
+      "exit_code": 0,
+      "result": "PASS",
+      "notes": "No credential-bearing findings in selected source files; ordinary prose hits only."
+    },
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-MOBILE-TUI-SPEC-001.json >/dev/null",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python - <<'PY' ... jsonschema.validate(packet, schema) ... PY",
+      "exit_code": 0,
+      "result": "PASS",
+      "notes": "Validated against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json."
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "git status --short",
+      "exit_code": 0,
+      "result": "PASS",
+      "notes": "Dedicated worktree showed only packet allowlist files changed before proof was added."
+    },
+    {
+      "command": "git status --short",
+      "exit_code": 0,
+      "result": "PASS",
+      "notes": "Initial checkout /Users/hue/.codex/worktrees/7e70/dopemux-mvp is clean after corrective cleanup."
+    },
+    {
+      "command": "pre-commit run --files docs/03-reference/systems/dopemux/mobile-tmux-cockpit-ux-spec.md docs/06-research/mobile-tmux-tui/01-mobile-blink-ssh-constraints.md docs/06-research/mobile-tmux-tui/02-tui-framework-architecture.md docs/06-research/mobile-tmux-tui/03-dopemux-cockpit-ux-spec.md docs/06-research/mobile-tmux-tui/SOURCE_MANIFEST.md out/proof/TP-DMX-MOBILE-TUI-SPEC-001/PROOF.json task-packets/INDEX.md task-packets/generated/TP-DMX-MOBILE-TUI-SPEC-001.json",
+      "exit_code": 1,
+      "result": "FAIL",
+      "notes": "docs-frontmatter-guard modified four markdown files and docs-filename-hygiene rejected SOURCE_MANIFEST.md, requiring kebab-case source-manifest.md."
+    },
+    {
+      "command": "pre-commit run --files docs/03-reference/systems/dopemux/mobile-tmux-cockpit-ux-spec.md docs/06-research/mobile-tmux-tui/01-mobile-blink-ssh-constraints.md docs/06-research/mobile-tmux-tui/02-tui-framework-architecture.md docs/06-research/mobile-tmux-tui/03-dopemux-cockpit-ux-spec.md docs/06-research/mobile-tmux-tui/source-manifest.md out/proof/TP-DMX-MOBILE-TUI-SPEC-001/PROOF.json task-packets/INDEX.md task-packets/generated/TP-DMX-MOBILE-TUI-SPEC-001.json",
+      "exit_code": 0,
+      "result": "PASS",
+      "notes": "All configured hooks passed after accepting frontmatter guard changes and kebab-case manifest filename."
+    },
+    {
+      "command": "python -m json.tool out/proof/TP-DMX-MOBILE-TUI-SPEC-001/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --cached --check",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --cached --name-only",
+      "exit_code": 0,
+      "result": "PASS",
+      "notes": "Cached diff contains only the packet allowlist docs/spec/proof/index paths."
+    },
+    {
+      "command": "git diff --cached --stat",
+      "exit_code": 0,
+      "result": "PASS",
+      "notes": "Cached diff is documentation/spec/proof only."
+    },
+    {
+      "command": "git diff --cached -- task-packets/generated/TP-DMX-MOBILE-TUI-SPEC-001.json docs/06-research/mobile-tmux-tui/ docs/03-reference/systems/dopemux/ docs/03-reference/systems/dashboard/ task-packets/INDEX.md out/proof/TP-DMX-MOBILE-TUI-SPEC-001/",
+      "exit_code": 0,
+      "result": "PASS",
+      "notes": "Scoped cached diff was inspected; it contained only the intended packet files."
+    }
+  ],
+  "not_run": [
+    {
+      "command": "./scripts/dopetask --help",
+      "result": "NOT_RUN",
+      "reason": "scripts/dopetask creates .dopetask_venv and installs pinned dopetask when venv is absent; packet forbids dependency installation."
+    },
+    {
+      "command": "./scripts/dopetask tp --help",
+      "result": "NOT_RUN",
+      "reason": "Same dependency-install side effect as ./scripts/dopetask --help."
+    },
+    {
+      "command": "broad runtime or unit test suites",
+      "result": "NOT_RUN",
+      "reason": "Docs/spec/proof-only packet did not modify runtime/source/test files."
+    }
+  ],
+  "authority_findings": {
+    "preserved_boundaries": true,
+    "unknowns": [
+      "Whether under-70-column mobile fallback should replace or coexist with the current below-80x24 blocker.",
+      "Exact runtime mapping between T0_READ_ONLY style tier names and current runtime_contract.py tier constants.",
+      "Canonical writers for future Cockpit actions not represented in the current runtime action catalog.",
+      "Terminal capability probes for Blink plus tmux plus SSH plus Mosh.",
+      "Reliability of mobile tmux mouse, OSC 52, extended keys, glyphs, and true color across supported clients.",
+      "Proof schema for future mobile UI action receipts.",
+      "Repo-wide relationship between in-repo task-orchestrator service and upstream local 13-tool MCP Task Orchestrator remains a boundary, not a unified runtime."
+    ],
+    "conflicts": [
+      "Existing Cockpit runtime and design-system acceptance block below 80x24; mobile research recommends an under-70-column single-column fallback.",
+      "Existing config/mobile/tmux.mobile.conf enables mouse, OSC 52, bottom status, and prefixless F-key jumps; mobile research recommends these as optional conveniences rather than primary requirements.",
+      "Prompt requested SOURCE_MANIFEST.md, but active docs filename hygiene requires kebab-case for non-exempt docs files; committed manifest path is docs/06-research/mobile-tmux-tui/source-manifest.md."
+    ],
+    "risks": [
+      "Docs-only spec may be misread as implemented runtime unless readers honor the status and non-goals sections.",
+      "Prompt requested SOURCE_MANIFEST.md, but repo hook policy required source-manifest.md; the filename was adjusted to pass pre-commit without changing config.",
+      "Current runtime still blocks below 80x24; mobile fallback is only a future prototype acceptance contract."
+    ]
+  },
+  "scope_check": {
+    "runtime_changed": false,
+    "source_changed": false,
+    "config_changed": false,
+    "tmux_config_changed": false,
+    "dependency_changed": false,
+    "docs_only": true
+  },
+  "corrective_actions": [
+    {
+      "issue": "Initial apply_patch landed in the initial checkout instead of the dedicated worktree.",
+      "action": "Removed only the added files and index line created by this packet from /Users/hue/.codex/worktrees/7e70/dopemux-mvp, removed the empty created directory, verified git status clean, and reapplied the same changes to the dedicated worktree with absolute paths.",
+      "result": "Initial checkout restored to clean status before continuing."
+    }
+  ],
+  "codereview": {
+    "status": "PASS_WITH_RISKS",
+    "notes": "Manual diff and cached diff review found only docs/spec/proof/index changes. Residual risk is limited to docs being misread as runtime implementation and the recorded manifest filename adjustment."
+  },
+  "precommit": {
+    "status": "PASS",
+    "notes": "pre-commit is installed and configured; initial run failed on prompt-requested SOURCE_MANIFEST.md filename and docs-frontmatter-guard modified four markdown files. Manifest was renamed to source-manifest.md to honor active docs filename hygiene without changing config; rerun passed."
+  },
+  "next_recommended_packet": {
+    "id": "TP-DMX-MOBILE-TUI-PROTOTYPE-002",
+    "purpose": "Prototype read-only mobile-first Cockpit shell using existing deterministic renderer and no write actions."
+  }
+}
