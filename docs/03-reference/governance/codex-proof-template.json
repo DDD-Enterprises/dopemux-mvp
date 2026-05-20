@@ -19,12 +19,12 @@
   "slices_completed": [],
   "changed_files": [],
   "command_results": [],
-  "status_taxonomy": {
-    "PASS": [],
-    "FAIL": [],
-    "NOT_RUN": [],
-    "BLOCKED": []
-  },
+  "status_labels": [
+    "PASS",
+    "FAIL",
+    "NOT_RUN",
+    "BLOCKED"
+  ],
   "command_result_template": {
     "command": null,
     "exit_code": null,

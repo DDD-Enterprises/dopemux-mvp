@@ -47,7 +47,7 @@
     "Queried PR #667 review threads and found one Codex suggestion against docs/03-reference/governance/codex-pr-body-blueprint.md: the Scope section was hard-coded to docs-only text instead of a reusable placeholder.",
     "Implemented the suggestion by replacing the hard-coded Scope line with an explicit placeholder plus an In scope list.",
     "Queried PR #667 review threads again and found two Copilot suggestions against docs/03-reference/governance/codex-proof-template.json: align identifiers with committed proof artifacts and mirror command_results, NOT_RUN, residual_risks, and lowercase unknowns.",
-    "Updated the proof template to use packet_id, task_packet_path, command_results, status_taxonomy, and lowercase unknowns.",
+    "Updated the proof template to use packet_id, task_packet_path, command_results, status_labels, and lowercase unknowns.",
     "A third Copilot suggestion requested .gitignore allowlisting or proof relocation. Because .gitignore and proof relocation are outside the active packet allowlist, the same-packet fix documented deterministic exact-path proof staging with git add -f in the macro-packet blueprint."
   ],
   "slices_completed": [
@@ -69,7 +69,7 @@
     {
       "slice": "S4",
       "status": "PASS_AFTER_REVIEW_FIX",
-      "summary": "Authored the reusable proof JSON template aligned to the committed proof artifact shape: packet_id, task_packet_path, command_results, status_taxonomy, NOT_RUN, residual_risks, lowercase unknowns, codereview, precommit, PR, and cleanup fields."
+      "summary": "Authored the reusable proof JSON template aligned to the committed proof artifact shape: packet_id, task_packet_path, command_results, status_labels, NOT_RUN, residual_risks, lowercase unknowns, codereview, precommit, PR, and cleanup fields."
     },
     {
       "slice": "S5",
