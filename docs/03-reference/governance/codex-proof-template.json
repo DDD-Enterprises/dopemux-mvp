@@ -1,0 +1,56 @@
+{
+  "schema_version": "dopemux.codex_refresh.proof.v1",
+  "packet_id": null,
+  "task_packet_path": null,
+  "project": "dopemux-mvp",
+  "generated_at_utc": null,
+  "worktree_path": null,
+  "branch": null,
+  "base": null,
+  "repo_identity": {
+    "status": null,
+    "marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "observed_remotes": [],
+    "identity_match": null
+  },
+  "authority_used": [],
+  "analysis_performed": [],
+  "slices_completed": [],
+  "changed_files": [],
+  "command_results": [],
+  "status_labels": [
+    "PASS",
+    "FAIL",
+    "NOT_RUN",
+    "BLOCKED"
+  ],
+  "command_result_template": {
+    "command": null,
+    "exit_code": null,
+    "stdout": null,
+    "stderr": null,
+    "notes": null
+  },
+  "codereview": {
+    "status": null,
+    "commands": [],
+    "findings": []
+  },
+  "precommit": {
+    "status": null,
+    "command": null,
+    "exit_code": null,
+    "stdout": null,
+    "stderr": null,
+    "summary": null
+  },
+  "diff_stat": null,
+  "commit_sha": null,
+  "pr_url": null,
+  "pr_blocker": null,
+  "residual_risks": [],
+  "unknowns": [],
+  "cleanup_status": null,
+  "rollback_plan": null
+}
