@@ -1,0 +1,4 @@
+mvp	https://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)
+mvp	https://github.com/DDD-Enterprises/dopemux-mvp.git (push)
+origin	https://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)
+origin	https://github.com/DDD-Enterprises/dopemux-mvp.git (push)

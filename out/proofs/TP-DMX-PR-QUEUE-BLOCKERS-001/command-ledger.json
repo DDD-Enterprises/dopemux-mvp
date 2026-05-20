@@ -1,0 +1,371 @@
+[
+  {
+    "command": "pwd",
+    "ended_at_utc": "2026-05-20T11:06:26.524691+00:00",
+    "exit_code": 0,
+    "label": "pwd",
+    "started_at_utc": "2026-05-20T11:06:26.520174+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-pwd.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-pwd.txt"
+  },
+  {
+    "command": "git rev-parse --show-toplevel",
+    "ended_at_utc": "2026-05-20T11:06:26.533825+00:00",
+    "exit_code": 0,
+    "label": "repo root",
+    "started_at_utc": "2026-05-20T11:06:26.524711+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-root.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-root.txt"
+  },
+  {
+    "command": "git branch --show-current",
+    "ended_at_utc": "2026-05-20T11:06:26.542005+00:00",
+    "exit_code": 0,
+    "label": "branch",
+    "started_at_utc": "2026-05-20T11:06:26.533848+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-branch.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-branch.txt"
+  },
+  {
+    "command": "git remote -v",
+    "ended_at_utc": "2026-05-20T11:06:26.550688+00:00",
+    "exit_code": 0,
+    "label": "remote",
+    "started_at_utc": "2026-05-20T11:06:26.542030+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-remote.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-remote.txt"
+  },
+  {
+    "command": "git status -sb",
+    "ended_at_utc": "2026-05-20T11:06:26.607415+00:00",
+    "exit_code": 0,
+    "label": "status",
+    "started_at_utc": "2026-05-20T11:06:26.550717+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-status.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-status.txt"
+  },
+  {
+    "command": "test -f .dopetaskroot",
+    "ended_at_utc": "2026-05-20T11:06:26.611634+00:00",
+    "exit_code": 0,
+    "label": "marker",
+    "started_at_utc": "2026-05-20T11:06:26.607439+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-marker.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-marker.txt"
+  },
+  {
+    "command": "gh auth status",
+    "ended_at_utc": "2026-05-20T11:06:27.033995+00:00",
+    "exit_code": 0,
+    "label": "gh auth",
+    "started_at_utc": "2026-05-20T11:06:26.611664+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-auth.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-auth.txt"
+  },
+  {
+    "command": "gh repo view DDD-Enterprises/dopemux-mvp --json nameWithOwner,defaultBranchRef,url",
+    "ended_at_utc": "2026-05-20T11:06:27.477433+00:00",
+    "exit_code": 0,
+    "label": "repo identity",
+    "started_at_utc": "2026-05-20T11:06:27.034020+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-repo.json.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-repo.json"
+  },
+  {
+    "command": "python - <<'PY2'\nimport json\nfrom pathlib import Path\nfrom jsonschema import Draft7Validator\nschema = json.loads(Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text())\npacket = json.loads(Path('task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json').read_text())\nerrors = sorted(Draft7Validator(schema).iter_errors(packet), key=lambda e: list(e.path))\nassert not errors, '\\n'.join(f'{list(e.path)}: {e.message}' for e in errors)\nprint('PASS')\nPY2",
+    "ended_at_utc": "2026-05-20T11:06:27.542468+00:00",
+    "exit_code": 0,
+    "label": "schema validation",
+    "started_at_utc": "2026-05-20T11:06:27.477476+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/schema-validation.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/schema-validation.txt"
+  },
+  {
+    "command": "gh pr view 659 --repo DDD-Enterprises/dopemux-mvp --json number,state,title,url,headRefName,headRefOid,baseRefName,baseRefOid,mergeStateStatus,mergeable,changedFiles,files,author,updatedAt,body,reviewDecision,reviews,comments,statusCheckRollup",
+    "ended_at_utc": "2026-05-20T11:06:28.705977+00:00",
+    "exit_code": 0,
+    "label": "pr 659 view",
+    "started_at_utc": "2026-05-20T11:06:27.542500+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.view.json.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.view.json"
+  },
+  {
+    "command": "gh pr diff 659 --repo DDD-Enterprises/dopemux-mvp --name-only",
+    "ended_at_utc": "2026-05-20T11:06:29.266849+00:00",
+    "exit_code": 0,
+    "label": "pr 659 files",
+    "started_at_utc": "2026-05-20T11:06:28.706000+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.files.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.files.txt"
+  },
+  {
+    "command": "gh api graphql -f owner=DDD-Enterprises -f repo=dopemux-mvp -F number=659 -f query='query($owner:String!, $repo:String!, $number:Int!) { repository(owner:$owner, name:$repo) { pullRequest(number:$number) { number url state reviewThreads(first:100) { nodes { isResolved isOutdated path line comments(first:20) { nodes { author { login } body createdAt url } } } } } } }'",
+    "ended_at_utc": "2026-05-20T11:06:29.768398+00:00",
+    "exit_code": 0,
+    "label": "pr 659 review threads",
+    "started_at_utc": "2026-05-20T11:06:29.266897+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.reviewThreads.json.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.reviewThreads.json"
+  },
+  {
+    "command": "gh pr view 664 --repo DDD-Enterprises/dopemux-mvp --json number,state,title,url,headRefName,headRefOid,baseRefName,baseRefOid,mergeStateStatus,mergeable,changedFiles,files,author,updatedAt,body,reviewDecision,reviews,comments,statusCheckRollup",
+    "ended_at_utc": "2026-05-20T11:06:30.733072+00:00",
+    "exit_code": 0,
+    "label": "pr 664 view",
+    "started_at_utc": "2026-05-20T11:06:29.768447+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.view.json.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.view.json"
+  },
+  {
+    "command": "gh pr diff 664 --repo DDD-Enterprises/dopemux-mvp --name-only",
+    "ended_at_utc": "2026-05-20T11:06:31.511810+00:00",
+    "exit_code": 0,
+    "label": "pr 664 files",
+    "started_at_utc": "2026-05-20T11:06:30.733103+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.files.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.files.txt"
+  },
+  {
+    "command": "gh api graphql -f owner=DDD-Enterprises -f repo=dopemux-mvp -F number=664 -f query='query($owner:String!, $repo:String!, $number:Int!) { repository(owner:$owner, name:$repo) { pullRequest(number:$number) { number url state reviewThreads(first:100) { nodes { isResolved isOutdated path line comments(first:20) { nodes { author { login } body createdAt url } } } } } } }'",
+    "ended_at_utc": "2026-05-20T11:06:31.977623+00:00",
+    "exit_code": 0,
+    "label": "pr 664 review threads",
+    "started_at_utc": "2026-05-20T11:06:31.511867+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.reviewThreads.json.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.reviewThreads.json"
+  },
+  {
+    "command": "git cat-file -e 4b74f7992fd7041689064f04ef9e0eaa83239bc4^{commit}",
+    "ended_at_utc": "2026-05-20T11:07:49.489396+00:00",
+    "exit_code": 0,
+    "label": "pr 659 head object exists",
+    "started_at_utc": "2026-05-20T11:07:49.466168+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-head-object-exists.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-head-object-exists.txt"
+  },
+  {
+    "command": "git cat-file -e e98c2676c5d88f3a3c6cbd126ac8eb1277114517^{commit}",
+    "ended_at_utc": "2026-05-20T11:07:49.500607+00:00",
+    "exit_code": 0,
+    "label": "pr 664 head object exists",
+    "started_at_utc": "2026-05-20T11:07:49.489427+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-object-exists.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-object-exists.txt"
+  },
+  {
+    "command": "git show e98c2676c5d88f3a3c6cbd126ac8eb1277114517:task-packets/generated/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json",
+    "ended_at_utc": "2026-05-20T11:07:49.513792+00:00",
+    "exit_code": 0,
+    "label": "pr 664 extract head task-packets/generated/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json",
+    "started_at_utc": "2026-05-20T11:07:49.501244+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json"
+  },
+  {
+    "command": "git show e98c2676c5d88f3a3c6cbd126ac8eb1277114517:task-packets/generated/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json",
+    "ended_at_utc": "2026-05-20T11:07:49.524615+00:00",
+    "exit_code": 0,
+    "label": "pr 664 extract head task-packets/generated/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json",
+    "started_at_utc": "2026-05-20T11:07:49.514444+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json"
+  },
+  {
+    "command": "git show e98c2676c5d88f3a3c6cbd126ac8eb1277114517:task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json",
+    "ended_at_utc": "2026-05-20T11:07:49.535463+00:00",
+    "exit_code": 0,
+    "label": "pr 664 extract head task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json",
+    "started_at_utc": "2026-05-20T11:07:49.525080+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json"
+  },
+  {
+    "command": "git show e98c2676c5d88f3a3c6cbd126ac8eb1277114517:task-packets/generated/TP-DMX-MOBILE-TUI-SPEC-001.json",
+    "ended_at_utc": "2026-05-20T11:07:49.546246+00:00",
+    "exit_code": 0,
+    "label": "pr 664 extract head task-packets/generated/TP-DMX-MOBILE-TUI-SPEC-001.json",
+    "started_at_utc": "2026-05-20T11:07:49.535938+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-MOBILE-TUI-SPEC-001.json.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-MOBILE-TUI-SPEC-001.json"
+  },
+  {
+    "command": "git show e98c2676c5d88f3a3c6cbd126ac8eb1277114517:out/proof/TP-DMX-MOBILE-TUI-SPEC-001/PROOF.json",
+    "ended_at_utc": "2026-05-20T11:07:49.557606+00:00",
+    "exit_code": 0,
+    "label": "pr 664 extract head out/proof/TP-DMX-MOBILE-TUI-SPEC-001/PROOF.json",
+    "started_at_utc": "2026-05-20T11:07:49.546623+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-out_proof_TP-DMX-MOBILE-TUI-SPEC-001_PROOF.json.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-out_proof_TP-DMX-MOBILE-TUI-SPEC-001_PROOF.json"
+  },
+  {
+    "command": "git show e98c2676c5d88f3a3c6cbd126ac8eb1277114517:proof/codex-refresh/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX/PROOF.json",
+    "ended_at_utc": "2026-05-20T11:07:49.569335+00:00",
+    "exit_code": 0,
+    "label": "pr 664 extract head proof/codex-refresh/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX/PROOF.json",
+    "started_at_utc": "2026-05-20T11:07:49.557716+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX_PROOF.json.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX_PROOF.json"
+  },
+  {
+    "command": "git show e98c2676c5d88f3a3c6cbd126ac8eb1277114517:proof/codex-refresh/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK/PROOF.json",
+    "ended_at_utc": "2026-05-20T11:07:49.580957+00:00",
+    "exit_code": 0,
+    "label": "pr 664 extract head proof/codex-refresh/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK/PROOF.json",
+    "started_at_utc": "2026-05-20T11:07:49.569459+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK_PROOF.json.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK_PROOF.json"
+  },
+  {
+    "command": "git show e98c2676c5d88f3a3c6cbd126ac8eb1277114517:proof/codex-refresh/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES/PROOF.json",
+    "ended_at_utc": "2026-05-20T11:07:49.592357+00:00",
+    "exit_code": 0,
+    "label": "pr 664 extract head proof/codex-refresh/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES/PROOF.json",
+    "started_at_utc": "2026-05-20T11:07:49.581122+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES_PROOF.json.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES_PROOF.json"
+  },
+  {
+    "command": "if test \"${POST_BLOCKER_COMMENTS:-0}\" = \"1\"; then gh pr comment 659 --repo DDD-Enterprises/dopemux-mvp --body-file out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-blocker-comment.md; else echo NOT_POSTED_POST_BLOCKER_COMMENTS_NOT_SET; fi",
+    "ended_at_utc": "2026-05-20T11:08:01.931393+00:00",
+    "exit_code": 0,
+    "label": "pr 659 post blocker comment gated",
+    "started_at_utc": "2026-05-20T11:08:01.926946+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-comment-post-status.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-comment-post-status.txt"
+  },
+  {
+    "command": "if test \"${POST_BLOCKER_COMMENTS:-0}\" = \"1\"; then gh pr comment 664 --repo DDD-Enterprises/dopemux-mvp --body-file out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-blocker-comment.md; else echo NOT_POSTED_POST_BLOCKER_COMMENTS_NOT_SET; fi",
+    "ended_at_utc": "2026-05-20T11:08:01.935404+00:00",
+    "exit_code": 0,
+    "label": "pr 664 post blocker comment gated",
+    "started_at_utc": "2026-05-20T11:08:01.931417+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-comment-post-status.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-comment-post-status.txt"
+  },
+  {
+    "command": "find . -maxdepth 4 -name 'THREAD00_CURRENT_OPERATING_LEDGER.md' -o -name '*THREAD00*' | sort",
+    "ended_at_utc": "2026-05-20T11:08:19.274509+00:00",
+    "exit_code": 0,
+    "label": "thread00 ledger file lookup",
+    "started_at_utc": "2026-05-20T11:08:19.230903+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/thread00-ledger-lookup.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/thread00-ledger-lookup.txt"
+  },
+  {
+    "command": "python -m json.tool out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PROOF.json >/dev/null",
+    "ended_at_utc": "2026-05-20T11:10:20.751330+00:00",
+    "exit_code": 0,
+    "label": "proof json parse",
+    "started_at_utc": "2026-05-20T11:10:20.725733+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-proof-json-tool.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-proof-json-tool.txt"
+  },
+  {
+    "command": "python - <<'PY2'\nimport json\nfrom pathlib import Path\nfrom jsonschema import Draft7Validator\nschema = json.loads(Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text())\npacket = json.loads(Path('task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json').read_text())\nerrors = sorted(Draft7Validator(schema).iter_errors(packet), key=lambda e: list(e.path))\nassert not errors, '\\n'.join(f'{list(e.path)}: {e.message}' for e in errors)\nprint('PASS')\nPY2",
+    "ended_at_utc": "2026-05-20T11:10:20.821324+00:00",
+    "exit_code": 0,
+    "label": "packet schema validation final",
+    "started_at_utc": "2026-05-20T11:10:20.751355+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-packet-schema-final.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-packet-schema-final.txt"
+  },
+  {
+    "command": "git diff --check",
+    "ended_at_utc": "2026-05-20T11:10:20.844994+00:00",
+    "exit_code": 0,
+    "label": "git diff check pre-stage",
+    "started_at_utc": "2026-05-20T11:10:20.821358+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-check-prestage.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-check-prestage.txt"
+  },
+  {
+    "command": "git diff --cached --check",
+    "ended_at_utc": "2026-05-20T11:10:20.856213+00:00",
+    "exit_code": 0,
+    "label": "git diff cached check pre-stage",
+    "started_at_utc": "2026-05-20T11:10:20.845019+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-cached-check-prestage.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-cached-check-prestage.txt"
+  },
+  {
+    "command": "git status --short",
+    "ended_at_utc": "2026-05-20T11:10:20.906796+00:00",
+    "exit_code": 0,
+    "label": "changed files status pre-stage",
+    "started_at_utc": "2026-05-20T11:10:20.856237+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage.txt"
+  },
+  {
+    "command": "git status --short --untracked-files=all",
+    "ended_at_utc": "2026-05-20T11:10:39.794285+00:00",
+    "exit_code": 0,
+    "label": "changed files status pre-stage expanded",
+    "started_at_utc": "2026-05-20T11:10:39.744164+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage-expanded.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage-expanded.txt"
+  },
+  {
+    "command": "computed from git status --short --untracked-files=all",
+    "ended_at_utc": "2026-05-20T11:10:39.794499+00:00",
+    "exit_code": 0,
+    "label": "allowlist check pre-stage expanded",
+    "started_at_utc": "2026-05-20T11:10:39.794496+00:00",
+    "stderr_path": "",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/allowlist-check-prestage-expanded.json"
+  },
+  {
+    "command": "python -m json.tool out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PROOF.json >/dev/null",
+    "ended_at_utc": "2026-05-20T11:11:55.361272+00:00",
+    "exit_code": 0,
+    "label": "final proof json parse",
+    "started_at_utc": "2026-05-20T11:11:55.333108+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.txt"
+  },
+  {
+    "command": "python - <<'PY2'\nimport json\nfrom pathlib import Path\nfrom jsonschema import Draft7Validator\nschema = json.loads(Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text())\npacket = json.loads(Path('task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json').read_text())\nerrors = sorted(Draft7Validator(schema).iter_errors(packet), key=lambda e: list(e.path))\nassert not errors, '\\n'.join(f'{list(e.path)}: {e.message}' for e in errors)\nprint('PASS')\nPY2",
+    "ended_at_utc": "2026-05-20T11:11:55.432372+00:00",
+    "exit_code": 0,
+    "label": "final packet schema validation",
+    "started_at_utc": "2026-05-20T11:11:55.361304+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-packet-schema.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-packet-schema.txt"
+  },
+  {
+    "command": "git diff --check",
+    "ended_at_utc": "2026-05-20T11:11:55.460431+00:00",
+    "exit_code": 0,
+    "label": "final git diff check",
+    "started_at_utc": "2026-05-20T11:11:55.432400+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.txt"
+  },
+  {
+    "command": "git diff --cached --check",
+    "ended_at_utc": "2026-05-20T11:11:55.479060+00:00",
+    "exit_code": 0,
+    "label": "final git diff cached check",
+    "started_at_utc": "2026-05-20T11:11:55.460453+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.txt"
+  },
+  {
+    "command": "pre-commit run --files $(git diff --cached --name-only)",
+    "ended_at_utc": "2026-05-20T11:11:56.073717+00:00",
+    "exit_code": 0,
+    "label": "final pre-commit",
+    "started_at_utc": "2026-05-20T11:11:55.479085+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit.txt"
+  },
+  {
+    "command": "git status -sb",
+    "ended_at_utc": "2026-05-20T11:11:56.133741+00:00",
+    "exit_code": 0,
+    "label": "final git status",
+    "started_at_utc": "2026-05-20T11:11:56.073739+00:00",
+    "stderr_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.txt.stderr",
+    "stdout_path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.txt"
+  }
+]

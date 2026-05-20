@@ -1,0 +1,175 @@
+{
+  "id": "TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES",
+  "project": "dopemux-mvp",
+  "target": "Install Codex-refresh packet and proof templates that make future macro-packets schema-valid, proof-bound, and easy for the operator to run with minimal actions.",
+  "invariants": [
+    "Do not modify runtime code, service code, tests, compose files, dependency files, or provider configuration.",
+    "Do not change the canonical dopeTask schema.",
+    "Do not add new execution.agent enum values.",
+    "Do not weaken existing proof requirements.",
+    "Do not imply Codex PR review alone proves correctness."
+  ],
+  "depends_on": [
+    "TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX",
+    "TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-CODEX-REFRESH-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-codex-refresh-003-proof-packet-templates",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(governance): add Codex packet and proof templates",
+    "allowlist": [
+      "docs/03-reference/governance/codex-macro-packet-blueprint.md",
+      "docs/03-reference/governance/codex-proof-template.json",
+      "docs/03-reference/governance/codex-pr-body-blueprint.md",
+      "task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json",
+      "proof/codex-refresh/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES/PROOF.json"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m json.tool docs/03-reference/governance/codex-proof-template.json >/dev/null",
+      "python -m json.tool proof/codex-refresh/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES/PROOF.json >/dev/null",
+      "python scripts/docs_validator.py docs/03-reference/governance/codex-macro-packet-blueprint.md docs/03-reference/governance/codex-pr-body-blueprint.md",
+      "python scripts/docs_frontmatter_guard.py docs/03-reference/governance/codex-macro-packet-blueprint.md docs/03-reference/governance/codex-pr-body-blueprint.md",
+      "git diff --check",
+      "git diff --cached --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(governance): add Codex packet and proof templates",
+    "body": "## Summary\n- Adds a reusable Codex macro-packet template.\n- Adds a reusable Codex proof JSON template.\n- Adds a PR body template for Codex-governed macro-packets.\n\n## Scope\nGovernance docs/templates, generated task packet, and proof only.\n\n## Validation\nInclude exact command outputs and exit codes.\n\n## NOT_RUN\n- Runtime/service validation\n- Docker startup\n- Live provider calls\n- Live extraction\n\n## Residual Risks / UNKNOWNs\nList any unresolved schema/template gaps.\n\n@codex review",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight TP 001 and TP 002 artifacts, current branch, and schema.",
+      "context_files": [
+        "AGENTS.md",
+        "docs/03-reference/governance/codex-authority-refresh.md",
+        "docs/02-how-to/codex-operator-runbook.md",
+        "docs/03-reference/governance/codex-prompt-pack.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ],
+      "commands": [
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short",
+        "test -f docs/03-reference/governance/codex-authority-refresh.md",
+        "test -f docs/02-how-to/codex-operator-runbook.md",
+        "test -f docs/03-reference/governance/codex-prompt-pack.md"
+      ],
+      "validation": [
+        "TP 001 and TP 002 artifacts must exist on the working base or this packet must stop and report missing dependency."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create this packet JSON at task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json.",
+      "expected_files": [
+        "task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json"
+      ],
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json >/dev/null",
+        "python -m jsonschema -i task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Author docs/03-reference/governance/codex-macro-packet-blueprint.md.",
+      "requirements": [
+        "Template must use the live dopeTask schema fields.",
+        "Template must include repo_binding, series, commit, pr, and steps.",
+        "Template must warn that execution.agent currently supports gemini, codex, vibe, and shell only.",
+        "Template must include macro-packet sizing rules.",
+        "Template must include same-packet fix rules.",
+        "Template must include validation-bound and proof-bound acceptance rules."
+      ],
+      "expected_files": [
+        "docs/03-reference/governance/codex-macro-packet-blueprint.md"
+      ],
+      "validation": [
+        "rg -n \"repo_binding|series|commit|pr|steps|execution.agent|same-packet|macro-packet|proof\" docs/03-reference/governance/codex-macro-packet-blueprint.md"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Create docs/03-reference/governance/codex-proof-template.json as a reusable proof template.",
+      "requirements": [
+        "Must be valid JSON.",
+        "Must include TP ID/path, repo identity, branch, changed files, validations with exit codes, codereview status, precommit status, commit SHA, PR URL or blocker, residual risks, UNKNOWNs, and cleanup status.",
+        "Must include PASS, FAIL, NOT_RUN, BLOCKED fields or arrays.",
+        "Must not contain fake command outputs."
+      ],
+      "expected_files": [
+        "docs/03-reference/governance/codex-proof-template.json"
+      ],
+      "validation": [
+        "python -m json.tool docs/03-reference/governance/codex-proof-template.json >/dev/null",
+        "rg -n \"packet_id|task_packet_path|repo_identity|command_results|exit_code|codereview|precommit|commit_sha|pr_url|unknowns|NOT_RUN\" docs/03-reference/governance/codex-proof-template.json"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Author docs/03-reference/governance/codex-pr-body-blueprint.md.",
+      "requirements": [
+        "Include Summary, Scope, Validation, NOT_RUN, Residual Risks / UNKNOWNs, Review Routing.",
+        "Include warning that @codex review is a review pass, not proof of completion.",
+        "Include a standard same-packet fix section."
+      ],
+      "expected_files": [
+        "docs/03-reference/governance/codex-pr-body-blueprint.md"
+      ],
+      "validation": [
+        "rg -n \"Summary|Scope|Validation|NOT_RUN|Residual Risks|UNKNOWN|@codex review|same-packet\" docs/03-reference/governance/codex-pr-body-blueprint.md"
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Create proof JSON with exact commands, exit codes, changed files, NOT_RUN items, residual risks, and UNKNOWNs.",
+      "expected_files": [
+        "proof/codex-refresh/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES/PROOF.json"
+      ],
+      "validation": [
+        "python -m json.tool proof/codex-refresh/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES/PROOF.json >/dev/null"
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Run final validation, inspect diff, commit, push, and open PR.",
+      "validation": [
+        "python scripts/docs_validator.py docs/03-reference/governance/codex-macro-packet-blueprint.md docs/03-reference/governance/codex-pr-body-blueprint.md",
+        "python scripts/docs_frontmatter_guard.py docs/03-reference/governance/codex-macro-packet-blueprint.md docs/03-reference/governance/codex-pr-body-blueprint.md",
+        "python -m json.tool docs/03-reference/governance/codex-proof-template.json >/dev/null",
+        "git diff --check",
+        "git diff --cached --check",
+        "git diff --stat",
+        "git status --short"
+      ]
+    }
+  ]
+}

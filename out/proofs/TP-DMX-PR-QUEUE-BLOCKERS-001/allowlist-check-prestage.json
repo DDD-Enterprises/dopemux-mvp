@@ -1,0 +1,9 @@
+{
+  "status_files": [
+    "out/proofs/",
+    "task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json"
+  ],
+  "violations": [
+    "out/proofs/"
+  ]
+}
