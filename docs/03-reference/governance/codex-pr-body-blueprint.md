@@ -19,7 +19,10 @@ Use this body for Codex-governed macro-packet PRs. Replace every placeholder wit
 - <Changed outcome 2.>
 
 ## Scope
-Governance docs/templates, generated task packet, and proof only.
+<Describe the exact packet scope. Replace this line before opening the PR.>
+
+In scope:
+- `<changed surface or artifact>`
 
 Allowlist:
 - `<allowlisted path>`

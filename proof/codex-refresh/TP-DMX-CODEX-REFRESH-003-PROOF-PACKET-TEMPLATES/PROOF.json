@@ -2,7 +2,7 @@
   "schema_version": "dopemux.codex_refresh.proof.v1",
   "packet_id": "TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES",
   "project": "dopemux-mvp",
-  "generated_at_utc": "2026-05-20T01:11:17Z",
+  "generated_at_utc": "2026-05-20T01:19:28Z",
   "worktree_path": "/Users/hue/.codex/worktrees/2013/dopemux-mvp",
   "branch": "codex/dmx-codex-refresh-003-proof-packet-templates",
   "base": "origin/main",
@@ -21,6 +21,7 @@
   "authority_used": [
     "AGENTS.md",
     "latest operator instruction: hook compliant",
+    "latest operator instruction: implement suggestions, fix ci, merge",
     "task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json",
     "docs/03-reference/governance/codex-authority-refresh.md",
     "docs/02-how-to/codex-operator-runbook.md",
@@ -42,7 +43,9 @@
     "Inspected the live dopeTask Task Packet schema and docs validators.",
     "Planned a single allowlist-only docs/proof/template slice and challenged schema, allowlist, fake-output, and validation-order hazards before editing.",
     "Precommit initially failed because docs-prohibited-patterns rejects markdown basenames containing temp; the operator then authorized hook-compliant filenames.",
-    "Renamed the markdown template docs to blueprint filenames and updated the generated packet/proof references. The JSON proof template path was left unchanged because the failing markdown hook does not apply to JSON."
+    "Renamed the markdown template docs to blueprint filenames and updated the generated packet/proof references. The JSON proof template path was left unchanged because the failing markdown hook does not apply to JSON.",
+    "Queried PR #667 review threads and found one Codex suggestion against docs/03-reference/governance/codex-pr-body-blueprint.md: the Scope section was hard-coded to docs-only text instead of a reusable placeholder.",
+    "Implemented the suggestion by replacing the hard-coded Scope line with an explicit placeholder plus an In scope list."
   ],
   "slices_completed": [
     {
@@ -68,7 +71,7 @@
     {
       "slice": "S5",
       "status": "PASS_AFTER_SAME_PACKET_FIX",
-      "summary": "Authored the PR body blueprint with Summary, Scope, Validation, NOT_RUN, Residual Risks / UNKNOWNs, Review Routing, and same-packet fix sections."
+      "summary": "Authored the PR body blueprint with Summary, Scope, Validation, NOT_RUN, Residual Risks / UNKNOWNs, Review Routing, same-packet fix sections, and a reusable Scope placeholder after Codex review."
     },
     {
       "slice": "S6",
@@ -244,6 +247,36 @@
       "exit_code": 0,
       "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude <=100 tokens for efficient embeddings.....................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped",
       "stderr": ""
+    },
+    {
+      "command": "gh api graphql <PR #667 reviewThreads query>",
+      "exit_code": 0,
+      "stdout": "Found one unresolved, not-outdated Codex review thread on docs/03-reference/governance/codex-pr-body-blueprint.md line 22 requesting that the Scope line be a placeholder for non-doc packets.",
+      "stderr": ""
+    },
+    {
+      "command": "python scripts/docs_validator.py docs/03-reference/governance/codex-pr-body-blueprint.md",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python scripts/docs_frontmatter_guard.py docs/03-reference/governance/codex-pr-body-blueprint.md",
+      "exit_code": 0,
+      "stdout": "All docs have valid frontmatter.",
+      "stderr": ""
+    },
+    {
+      "command": "rg -n \"Summary|Scope|In scope|Allowlist|Validation|NOT_RUN|Residual Risks|UNKNOWN|@codex review|same-packet\" docs/03-reference/governance/codex-pr-body-blueprint.md",
+      "exit_code": 0,
+      "stdout": "Matched required PR body blueprint terms, including the new In scope placeholder section.",
+      "stderr": ""
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
     }
   ],
   "codereview": {
@@ -272,7 +305,8 @@
     ],
     "findings": [
       "Initial precommit failure was caused by the repo docs-prohibited-patterns hook rejecting markdown basenames containing temp.",
-      "Same-packet fix renamed only the markdown docs to hook-compliant blueprint names and updated the generated packet/proof references."
+      "Same-packet fix renamed only the markdown docs to hook-compliant blueprint names and updated the generated packet/proof references.",
+      "Codex review suggestion was implemented by replacing the PR body blueprint's hard-coded docs-only Scope line with a reusable placeholder and In scope list."
     ]
   },
   "precommit": {
