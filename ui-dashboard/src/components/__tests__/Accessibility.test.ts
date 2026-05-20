@@ -135,9 +135,9 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('href="#main-dashboard"');
   expect(appContent).toContain('aria-label={`System is actively monitoring ritual state: ${connectionLabel} DØPEMÜX Ritual Daemon`}');
   expect(appContent).toContain('<Tooltip title="Current cognitive status and load percentage" arrow>');
-  expect(appContent).toContain('<Tooltip title="AI-generated recommendation based on current load" arrow>');
+  expect(appContent).toMatch(/<Tooltip title=\{isCopied \? 'Copied!' : 'AI recommendation \(click to copy\)'\} arrow>/);
   expect(appContent).toMatch(/<Tooltip title="Current cognitive status and load percentage" arrow>[\s\S]*tabIndex=\{0\}/);
-  expect(appContent).toMatch(/<Tooltip title="AI-generated recommendation based on current load" arrow>[\s\S]*tabIndex=\{0\}/);
+  expect(appContent).toMatch(/<Tooltip title=\{isCopied \? 'Copied!' : 'AI recommendation \(click to copy\)'\} arrow>[\s\S]*tabIndex=\{0\}/);
   expect(appContent).toContain('aria-label={`System is actively monitoring ritual state: ${connectionLabel} DØPEMÜX Ritual Daemon`}');
   expect(appContent).toContain('aria-label={isConfirmingClear ? \'Confirm clear all notifications\' : \'Clear all notifications\'}');
   expect(appContent).toMatch(/<Tooltip title=\{isConfirmingClear \? 'Confirm to clear all notifications' : 'Clear all notifications to reduce visual noise'\} arrow>/);

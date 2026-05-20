@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Box,
@@ -19,7 +19,7 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { AlertTriangle, Bell, Brain, Droplet, Eye, Trash2, TrendingUp, Zap } from 'lucide-react';
+import { AlertTriangle, Bell, Brain, Check, Copy, Droplet, Eye, Trash2, TrendingUp, Zap } from 'lucide-react';
 
 import { dashboardApiHeaders, dashboardApiUrl, dashboardWsUrl } from './config';
 import CognitiveLoadGauge from './components/CognitiveLoadGauge';
@@ -142,6 +142,22 @@ function App() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isConfirmingClear, setIsConfirmingClear] = useState(false);
   const clearConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isCopied, setIsCopied] = useState(false);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleCopyRecommendation = useCallback(() => {
+    void navigator.clipboard.writeText(cognitiveState.recommendation);
+    setIsCopied(true);
+
+    if (copyTimeoutRef.current) {
+      clearTimeout(copyTimeoutRef.current);
+    }
+
+    copyTimeoutRef.current = setTimeout(() => {
+      setIsCopied(false);
+      copyTimeoutRef.current = null;
+    }, 2000);
+  }, [cognitiveState.recommendation]);
 
   useEffect(() => {
     let isMounted = true;
@@ -226,6 +242,10 @@ function App() {
       if (clearConfirmTimeoutRef.current) {
         clearTimeout(clearConfirmTimeoutRef.current);
         clearConfirmTimeoutRef.current = null;
+      }
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+        copyTimeoutRef.current = null;
       }
     };
   }, []);
@@ -396,15 +416,42 @@ function App() {
                 }}
               />
             </Tooltip>
-            <Tooltip title="AI-generated recommendation based on current load" arrow>
+            <Tooltip title={isCopied ? 'Copied!' : 'AI recommendation (click to copy)'} arrow>
               <Chip
+                icon={
+                  isCopied ? (
+                    <Check size={14} color={brandTokens.colors.serumMint} aria-hidden="true" />
+                  ) : (
+                    <Copy size={14} color={brandTokens.colors.serumMint} aria-hidden="true" />
+                  )
+                }
                 label={`Recommendation: ${cognitiveState.recommendation}`}
-                aria-label={`AI Recommendation: ${cognitiveState.recommendation}`}
+                aria-label={isCopied ? 'Recommendation copied to clipboard' : `AI Recommendation: ${cognitiveState.recommendation}. Click to copy.`}
+                onClick={handleCopyRecommendation}
                 tabIndex={0}
                 sx={{
                   backgroundColor: alpha(brandTokens.colors.voidNavy, 0.65),
                   color: brandTokens.colors.serumMint,
                   border: `1px solid ${brandTokens.borders.mint}`,
+                  cursor: 'copy',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    backgroundColor: alpha(brandTokens.colors.voidNavy, 0.85),
+                    transform: 'translateY(-1px)',
+                    borderColor: brandTokens.colors.ritualCyan,
+                    boxShadow: `0 0 12px ${alpha(brandTokens.colors.ritualCyan, 0.3)}`,
+                  },
+                  '&:active': {
+                    transform: 'translateY(0)',
+                  },
+                  ...(isCopied && {
+                    animation: 'copy-success 0.4s ease-out',
+                    '@keyframes copy-success': {
+                      '0%': { transform: 'scale(1)' },
+                      '50%': { transform: 'scale(1.05)', boxShadow: `0 0 20px ${alpha(brandTokens.colors.serumMint, 0.4)}` },
+                      '100%': { transform: 'scale(1)' },
+                    }
+                  }),
                 }}
               />
             </Tooltip>

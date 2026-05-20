@@ -101,3 +101,7 @@
 ## 2025-05-22 - [Predictive Action Labels for ADHD Grounding]
 **Learning:** For users with ADHD, ambiguity about what happens after a current task can increase cognitive friction. Providing "Predictive Labels" (e.g., "Complete task and proceed to [Next Task Name]") directly in tooltips and ARIA labels provides immediate temporal grounding and reduces the anxiety of transitioning between ritual steps.
 **Action:** Use `useMemo` to calculate the next step in a sequence and incorporate its identity into the primary action button's feedback (Tooltips and ARIA labels).
+
+## 2025-05-23 - [Interactive Utility for Insight Chips]
+**Learning:** Informational chips (like AI recommendations) in high-density dashboards can be transformed from static content into active utility tools by adding "Copy to Clipboard" functionality. This reduces friction for users who need to act on or share insights elsewhere. A clear, time-limited success state (icon swap + tactile animation) is essential to provide positive reinforcement and confirm the action.
+**Action:** Implement "Copy to Clipboard" micro-interactions for critical text-based insights or recommendations, ensuring they include clear visual feedback and updated ARIA labels during the success state.
