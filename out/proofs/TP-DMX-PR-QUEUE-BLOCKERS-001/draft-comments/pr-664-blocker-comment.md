@@ -1,4 +1,4 @@
-Blocker audit for TP-DMX-PR-QUEUE-BLOCKERS-001 at 2026-05-20T08:27:31Z UTC.
+Blocker audit for TP-DMX-PR-QUEUE-BLOCKERS-001 at 2026-05-20T08:37:48Z UTC.
 
 OBSERVED:
 - PR state: OPEN; draft: False; head: `7443cdeb8d4caa9a3acfd5501691b44e114401d9`; base: `main`.
@@ -17,4 +17,4 @@ UNKNOWN / NOT_RUN:
 - Runtime validation was NOT_RUN by packet instruction.
 - No approval was observed in the captured review data.
 - Queue policy for merging a BEHIND but MERGEABLE branch is UNKNOWN from the captured GitHub metadata alone.
-- This dry-run did not post comments because POST_BLOCKER_COMMENTS was `0`.
+- This comment was posted because POST_BLOCKER_COMMENTS was `1`.

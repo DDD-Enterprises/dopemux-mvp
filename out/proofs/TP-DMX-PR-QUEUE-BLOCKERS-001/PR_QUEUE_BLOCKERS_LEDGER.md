@@ -1,9 +1,9 @@
 # TP-DMX-PR-QUEUE-BLOCKERS-001 PR Queue Blockers Ledger
 
-Generated: 2026-05-20T08:27:31Z UTC
+Generated: 2026-05-20T08:37:48Z UTC
 Mode: Audit / metadata-only / proof-hygiene
-Comment mode: POST_BLOCKER_COMMENTS=0
-Comment post status: NOT_POSTED_POST_BLOCKER_COMMENTS_NOT_SET
+Comment mode: POST_BLOCKER_COMMENTS=1
+Comment post status: POSTED
 Runtime validation: NOT_RUN
 
 ## Authority Used
@@ -37,7 +37,7 @@ Verdict: BLOCKED_RECOMMEND_CHANGES
 - Review decision: `UNKNOWN_EMPTY`.
 - Changed files: 10; additions: 679; deletions: 0.
 - Files: `.claude/claude.md`, `.claude/modules/shared/governance-principles.md`, `AGENTS.md`, `out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_ACCEPTED_SCOPE.md`, `out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_DEFERRED_ITEMS.md`, `out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_MANIFEST.json`, `out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_NO_RUNTIME_CHANGE_ATTESTATION.md`, `out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_PACKET_SEQUENCE.md`, `out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_REMAINING_UNKNOWNS.md`, `out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_VALUATION_MATRIX.md`.
-- Review threads: 2 total; 2 unresolved; 0 resolved.
+- Review threads: 2 total; 2 unresolved.
 - Check buckets: {"pass": 16, "skipping": 3}.
 
 ### CONFLICTING / STALE
@@ -71,7 +71,7 @@ Verdict: NO_BLOCKING_REVIEW_THREAD_OBSERVED_POLICY_REVIEW_RECOMMENDED
 - Review decision: `UNKNOWN_EMPTY`.
 - Changed files: 3; additions: 71; deletions: 11.
 - Files: `ui-dashboard/src/App.tsx`, `ui-dashboard/src/components/TaskSequencer.tsx`, `ui-dashboard/src/components/__tests__/Accessibility.test.ts`.
-- Review threads: 0 total; 0 unresolved; 0 resolved.
+- Review threads: 0 total; 0 unresolved.
 - Check buckets: {"pass": 16, "skipping": 3}.
 
 ### RECOMMENDED
@@ -87,5 +87,5 @@ Verdict: NO_BLOCKING_REVIEW_THREAD_OBSERVED_POLICY_REVIEW_RECOMMENDED
 
 ## GitHub Comments
 
-- PR #659: NOT_POSTED_POST_BLOCKER_COMMENTS_NOT_SET. Draft at `draft-comments/pr-659-blocker-comment.md`.
-- PR #664: NOT_POSTED_POST_BLOCKER_COMMENTS_NOT_SET. Draft at `draft-comments/pr-664-blocker-comment.md`.
+- PR #659: POSTED. URL: https://github.com/DDD-Enterprises/dopemux-mvp/pull/659#issuecomment-4496311077. Draft at `draft-comments/pr-659-blocker-comment.md`.
+- PR #664: POSTED. URL: https://github.com/DDD-Enterprises/dopemux-mvp/pull/664#issuecomment-4496311218. Draft at `draft-comments/pr-664-blocker-comment.md`.

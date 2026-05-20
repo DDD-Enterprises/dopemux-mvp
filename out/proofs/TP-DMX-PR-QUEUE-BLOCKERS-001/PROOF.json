@@ -27,36 +27,18 @@
     "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PR_QUEUE_BLOCKERS_LEDGER.md",
     "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files.txt",
     "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/classification-summary.json",
-    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/codereview.txt",
-    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/final-git-status.txt",
-    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/git-diff-cached-check.txt",
-    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/git-diff-check.txt",
+    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/json-validation-all.txt",
     "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/post-blocker-comments-env.txt",
-    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/proof-json-validation.txt",
-    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/raw-json-validation.txt",
+    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/post-comments.txt",
     "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/repo-identity.txt",
-    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/runtime-validation.txt",
-    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/task-packet-schema-validation.txt",
     "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/draft-comments/pr-659-blocker-comment.md",
     "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/draft-comments/pr-664-blocker-comment.md",
-    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw-files.txt",
-    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-checks.json",
+    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/posted-comments/pr-659-posted-comment.json",
+    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/posted-comments/pr-664-posted-comment.json",
     "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-comments.json",
-    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-files.json",
-    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-review-comments.json",
-    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-review-threads.json",
-    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-reviews.json",
-    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659.json",
-    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-checks.json",
-    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-comments.json",
-    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-files.json",
-    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-review-comments.json",
-    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-review-threads.json",
-    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-reviews.json",
-    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664.json",
-    "task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json"
+    "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-comments.json"
   ],
-  "cleanup_status": "Dedicated worktree retained with proof artifacts for operator review.",
+  "cleanup_status": "Dedicated worktree retained with posted-comment proof artifacts for operator review.",
   "commit": {
     "sha": null,
     "status": "NOT_COMMITTED_AT_PROOF_GENERATION"
@@ -68,7 +50,9 @@
       "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/final-git-status.txt",
       "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/git-diff-cached-check.txt",
       "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/git-diff-check.txt",
+      "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/json-validation-all.txt",
       "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/post-blocker-comments-env.txt",
+      "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/post-comments.txt",
       "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/pre-commit.txt",
       "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/proof-json-validation.txt",
       "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/raw-json-validation.txt",
@@ -77,6 +61,10 @@
       "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/task-packet-schema-validation.txt"
     ],
     "ledger": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PR_QUEUE_BLOCKERS_LEDGER.md",
+    "posted_comments": [
+      "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/posted-comments/pr-659-posted-comment.json",
+      "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/posted-comments/pr-664-posted-comment.json"
+    ],
     "raw_json": [
       "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-checks.json",
       "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-comments.json",
@@ -94,50 +82,39 @@
       "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664.json"
     ]
   },
-  "generated_at_utc": "2026-05-20T08:31:05Z",
+  "generated_at_utc": "2026-05-20T08:39:59Z",
   "git_status_at_generation": [
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PROOF.json",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PR_QUEUE_BLOCKERS_LEDGER.md",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files.txt",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/classification-summary.json",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/codereview.txt",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/final-git-status.txt",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/git-diff-cached-check.txt",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/git-diff-check.txt",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/post-blocker-comments-env.txt",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/pre-commit.txt",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/proof-json-validation.txt",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/raw-json-validation.txt",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/repo-identity.txt",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/runtime-validation.txt",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/task-packet-schema-validation.txt",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/draft-comments/pr-659-blocker-comment.md",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/draft-comments/pr-664-blocker-comment.md",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw-files.txt",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-checks.json",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-comments.json",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-files.json",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-review-comments.json",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-review-threads.json",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-reviews.json",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659.json",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-checks.json",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-comments.json",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-files.json",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-review-comments.json",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-review-threads.json",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-reviews.json",
-    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664.json",
-    "A  task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json"
+    "M  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PROOF.json",
+    "M  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PR_QUEUE_BLOCKERS_LEDGER.md",
+    "MM out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files.txt",
+    "M  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/classification-summary.json",
+    " M out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/final-git-status.txt",
+    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/json-validation-all.txt",
+    "M  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/post-blocker-comments-env.txt",
+    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/post-comments.txt",
+    "M  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/repo-identity.txt",
+    "M  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/draft-comments/pr-659-blocker-comment.md",
+    "M  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/draft-comments/pr-664-blocker-comment.md",
+    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/posted-comments/pr-659-posted-comment.json",
+    "A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/posted-comments/pr-664-posted-comment.json",
+    "M  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-comments.json",
+    "M  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-comments.json"
   ],
   "github_comments": {
     "drafts": {
       "659": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/draft-comments/pr-659-blocker-comment.md",
       "664": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/draft-comments/pr-664-blocker-comment.md"
     },
-    "post_blocker_comments": "0",
-    "posted_urls": [],
-    "status": "NOT_POSTED_POST_BLOCKER_COMMENTS_NOT_SET"
+    "post_blocker_comments": "1",
+    "posted_url_by_pr": {
+      "659": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/659#issuecomment-4496311077",
+      "664": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/664#issuecomment-4496311218"
+    },
+    "posted_urls": [
+      "https://github.com/DDD-Enterprises/dopemux-mvp/pull/659#issuecomment-4496311077",
+      "https://github.com/DDD-Enterprises/dopemux-mvp/pull/664#issuecomment-4496311218"
+    ],
+    "status": "POSTED"
   },
   "id": "TP-DMX-PR-QUEUE-BLOCKERS-001",
   "mode": "Audit / metadata-only / proof-hygiene",
@@ -237,7 +214,7 @@
   "repo": {
     "branch": "codex/tp-dmx-pr-queue-blockers-001",
     "expected": "DDD-Enterprises/dopemux-mvp",
-    "head": "8e7a2283f56a49abfb41c2ac791cbf18dd0ae500",
+    "head": "402871ecb30597c14d18773c66adbc99ab35ff28",
     "origin_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
     "repo_marker": "AGENTS.md",
     "repo_marker_status": "PRESENT",
@@ -245,7 +222,7 @@
     "worktree_path": "/Users/hue/.codex/worktrees/tp-dmx-pr-queue-blockers-001"
   },
   "residual_risks": [
-    "Live GitHub state can change after evidence capture.",
+    "Live GitHub state can change after evidence capture and comment posting.",
     "Runtime/source behavior of PR #659 and PR #664 was not exercised by instruction.",
     "Queue policy for BEHIND but MERGEABLE PRs was not resolved from GitHub metadata alone."
   ],

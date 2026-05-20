@@ -1,7 +1,11 @@
 {
-  "comment_post_status": "NOT_POSTED_POST_BLOCKER_COMMENTS_NOT_SET",
-  "generated_at_utc": "2026-05-20T08:27:31Z",
-  "post_blocker_comments": "0",
+  "comment_post_status": "POSTED",
+  "generated_at_utc": "2026-05-20T08:38:31Z",
+  "post_blocker_comments": "1",
+  "posted_urls": {
+    "659": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/659#issuecomment-4496311077",
+    "664": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/664#issuecomment-4496311218"
+  },
   "pr_659_unresolved_threads": 2,
   "pr_659_verdict": "BLOCKED_RECOMMEND_CHANGES",
   "pr_664_unresolved_threads": 0,
