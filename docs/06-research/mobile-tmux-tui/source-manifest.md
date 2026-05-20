@@ -36,11 +36,10 @@ the requested categories directly:
 - TUI framework and architecture
 - Dopemux Cockpit UX specification
 
-Files such as `/Users/hue/Downloads/ssh.pub` and
-`/Users/hue/Downloads/zilliz-cloud-Dopemux-username-password.txt` appeared in
-the broad filename inventory but were not inspected or ingested as research
-inputs because they are not relevant to this packet and may contain credential
-or key material.
+The broad filename inventory also surfaced credential-like or key-material
+filenames. Those files were not inspected, named in detail, or ingested as
+research inputs because they are not relevant to this packet and may contain
+sensitive material.
 
 ## Repo Authority Inputs
 
