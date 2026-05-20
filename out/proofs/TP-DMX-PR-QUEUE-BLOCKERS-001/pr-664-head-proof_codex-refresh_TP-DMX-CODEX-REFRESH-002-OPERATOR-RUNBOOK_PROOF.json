@@ -1,0 +1,277 @@
+{
+  "schema_version": "dopemux.codex_refresh.proof.v1",
+  "packet_id": "TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK",
+  "project": "dopemux-mvp",
+  "generated_at_utc": "2026-05-20T00:37:29Z",
+  "worktree_path": "/Users/hue/.codex/worktrees/0b56/dopemux-mvp",
+  "branch": "codex/dmx-codex-refresh-002-operator-runbook",
+  "base": "origin/main",
+  "repo_identity": {
+    "status": "PASS",
+    "marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "observed_remotes": [
+      "mvp https://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)",
+      "mvp https://github.com/DDD-Enterprises/dopemux-mvp.git (push)",
+      "origin https://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)",
+      "origin https://github.com/DDD-Enterprises/dopemux-mvp.git (push)"
+    ]
+  },
+  "authority_used": [
+    "AGENTS.md",
+    "task-packets/generated/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json",
+    "docs/03-reference/governance/codex-authority-refresh.md",
+    "docs/03-reference/governance/codex-refresh-gap-register.md",
+    "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+    "scripts/docs_validator.py",
+    "scripts/docs_frontmatter_guard.py",
+    "Official OpenAI Codex Help Center and developer pages for product-boundary checks only"
+  ],
+  "analysis_performed": [
+    "Read AGENTS.md before implementation.",
+    "Confirmed the current checkout is /Users/hue/.codex/worktrees/0b56/dopemux-mvp, not primary checkout /Users/hue/code/dopemux-mvp.",
+    "Confirmed origin and mvp remotes point to DDD-Enterprises/dopemux-mvp.",
+    "Confirmed .dopetaskroot exists.",
+    "Fetched origin/main through git pull attempt; pull did not update detached HEAD because histories diverged and Git required an explicit reconcile strategy.",
+    "Verified TP 001 dependency files exist on origin/main.",
+    "Switched the clean dedicated worktree to codex/dmx-codex-refresh-002-operator-runbook from origin/main.",
+    "Inspected TP 001 authority refresh and gap register before authoring TP 002 docs.",
+    "Inspected the live dopetask Task Packet schema and docs validators.",
+    "Inspected nearby operator workflow, agent workflow, TP 001 packet, and TP 001 proof conventions.",
+    "Checked official OpenAI Codex docs/search results to avoid inventing Codex product behavior."
+  ],
+  "slices_completed": [
+    {
+      "slice": "S1",
+      "status": "PASS",
+      "summary": "Preflight passed after origin/main refresh and dedicated branch switch."
+    },
+    {
+      "slice": "S2",
+      "status": "PASS",
+      "summary": "Generated task packet JSON at the allowlisted path."
+    },
+    {
+      "slice": "S3",
+      "status": "PASS",
+      "summary": "Authored Codex operator runbook with setup checklist, minimal workflow, branch/PR/proof gates, same-packet repair, stop conditions, and live-action prohibitions."
+    },
+    {
+      "slice": "S4",
+      "status": "PASS",
+      "summary": "Authored reusable Codex prompt pack with packet execution, PR review, same-packet fix, proof-return, stop conditions, independent-review triggers, and bounded-authority language."
+    },
+    {
+      "slice": "S5",
+      "status": "PASS",
+      "summary": "Created proof JSON draft for validation and final refresh."
+    },
+    {
+      "slice": "S6",
+      "status": "PASS_THROUGH_PRECOMMIT",
+      "summary": "Final validation, codereview, and precommit passed; commit, push, and PR are reported in the final response because the commit SHA and PR URL cannot be known before committing the proof artifact."
+    }
+  ],
+  "changed_files": [
+    "docs/02-how-to/codex-operator-runbook.md",
+    "docs/03-reference/governance/codex-prompt-pack.md",
+    "task-packets/generated/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json",
+    "proof/codex-refresh/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK/PROOF.json"
+  ],
+  "command_results": [
+    {
+      "command": "git pull origin main",
+      "exit_code": 128,
+      "stdout": "From https://github.com/DDD-Enterprises/dopemux-mvp\n * branch                main       -> FETCH_HEAD\n   df6c967d7..f94b07d4e  main       -> origin/main",
+      "stderr": "hint: You have divergent branches and need to specify how to reconcile them.\nfatal: Need to specify how to reconcile divergent branches."
+    },
+    {
+      "command": "git cat-file -e origin/main:docs/03-reference/governance/codex-authority-refresh.md",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "git cat-file -e origin/main:docs/03-reference/governance/codex-refresh-gap-register.md",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "git switch -c codex/dmx-codex-refresh-002-operator-runbook origin/main",
+      "exit_code": 0,
+      "stdout": "Previous HEAD position was d64d5f15e Add RTE UX valuation proof pack\nSwitched to a new branch 'codex/dmx-codex-refresh-002-operator-runbook'\nbranch 'codex/dmx-codex-refresh-002-operator-runbook' set up to track 'origin/main'.",
+      "stderr": ""
+    },
+    {
+      "command": "git remote -v",
+      "exit_code": 0,
+      "stdout": "mvp https://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)\nmvp https://github.com/DDD-Enterprises/dopemux-mvp.git (push)\norigin https://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)\norigin https://github.com/DDD-Enterprises/dopemux-mvp.git (push)",
+      "stderr": ""
+    },
+    {
+      "command": "git branch --show-current",
+      "exit_code": 0,
+      "stdout": "codex/dmx-codex-refresh-002-operator-runbook",
+      "stderr": ""
+    },
+    {
+      "command": "test -f .dopetaskroot",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "test -f docs/03-reference/governance/codex-authority-refresh.md",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "test -f docs/03-reference/governance/codex-refresh-gap-register.md",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "test -f docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m jsonschema -i task-packets/generated/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "stdout": "/Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/jsonschema/__main__.py:4: DeprecationWarning: The jsonschema CLI is deprecated and will be removed in a future version. Please use check-jsonschema instead, which can be installed from https://pypi.org/project/check-jsonschema/\n  from jsonschema.cli import main",
+      "stderr": ""
+    },
+    {
+      "command": "python -m json.tool proof/codex-refresh/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "rg -n \"Codex cloud|AGENTS.md|proof|Task Packet|same-packet|UNKNOWN|no secrets|live extraction\" docs/02-how-to/codex-operator-runbook.md",
+      "exit_code": 0,
+      "stdout": "14:This runbook controls how to use Codex for Dopemux macro-packet development. It does not replace `AGENTS.md`, active Task Packets, runtime code, config, tests, compose wiring, schemas, or active entrypoints. If this guide conflicts with repo truth, stop and use the stronger authority.\n26:| `UNKNOWN` | Repo evidence does not prove the claim. |\n31:Use this checklist before assigning a Task Packet in a Codex cloud environment:\n35:3. Ensure the environment can read `AGENTS.md`, `.dopetaskroot`, `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json`, and the active Task Packet.\n36:4. Keep no secrets in prompts, setup scripts, checked-in files, proof artifacts, logs, or PR text.\n38:6. Keep internet off during the agent phase unless the Task Packet explicitly authorizes network access and names the reason.\n40:8. Confirm the packet branch, proof path, and commit allowlist before starting.\n54:1. Assign one active Task Packet to Codex.\n55:2. Include the packet JSON or a link to the tracked packet, plus the hard rules from `AGENTS.md`.\n56:3. Wait for the PR and proof return. Do not start a follow-on cleanup packet while the same packet can absorb corrections.\n57:4. Paste Codex proof to the supervisor/reviewer exactly enough to preserve commands, exit codes, changed files, diff stat, commit SHA, PR URL or blocker, residual risks, and `UNKNOWN`s.\n58:5. Request same-packet fixes only when review finds gaps inside the existing packet scope.\n65:- work from a dedicated branch named by the Task Packet\n68:- validate the generated Task Packet against `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json`\n75:- return proof with exact commands, exit codes, changed files, diff stat, commit SHA, PR URL or exact blocker, residual risks, `UNKNOWN`s, and cleanup status\n84:- live extraction\n93:Review comments, missing proof, validator failures, and documentation gaps stay in the same packet when the requested correction is inside the packet target and allowlist. Open a new packet only when the requested work changes the outcome, touches a new authority surface, or requires files outside the current allowlist.\n95:Same-packet fixes must refresh the proof artifact and PR evidence. Do not hide the earlier failure; record it as a failed command or resolved review finding.\n102:- the Task Packet is missing, malformed, or fails schema validation\n106:- proof cannot be produced truthfully\n108:- a fix would require live provider calls, live extraction, Docker startup, or account-specific checks not authorized by the packet\n112:Codex may prepare a PR and request review. Codex must not treat its own proof as acceptance, and must not merge unless a human operator explicitly authorizes that merge after reviewing proof and residual risk.",
+      "stderr": ""
+    },
+    {
+      "command": "rg -n \"@codex review|same-packet|proof-return|STOP|bounded implementer|authority\" docs/03-reference/governance/codex-prompt-pack.md",
+      "exit_code": 0,
+      "stdout": "16:Codex is a bounded implementer/reviewer. Codex is not PM authority, memory authority, retrieval authority, bridge authority, repo-wide agent authority, or runtime authority.\n42:If any preflight check fails, STOP and report evidence. Do not improvise.\n53:@codex review\n81:STOP if the fix requires files outside commit.allowlist, runtime/provider/live extraction/Docker/account-specific checks not authorized by the packet, or a new outcome.\n87:proof-return\n163:## STOP Conditions\n165:Codex must STOP when:\n185:- runtime authority, canonical writers, PM truth, memory truth, retrieval truth, bridge authority, or agent authority\n187:- broad docs canon changes that could weaken `AGENTS.md` or active Task Packet authority\n188:- same-packet fixes after a failed validation whose cause was not obvious\n190:Docs-only packets can still require independent review when they change authority language or proof gates.",
+      "stderr": ""
+    },
+    {
+      "command": "python scripts/docs_validator.py docs/02-how-to/codex-operator-runbook.md docs/03-reference/governance/codex-prompt-pack.md",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python scripts/docs_frontmatter_guard.py docs/02-how-to/codex-operator-runbook.md docs/03-reference/governance/codex-prompt-pack.md",
+      "exit_code": 0,
+      "stdout": "All docs have valid frontmatter.",
+      "stderr": ""
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "git check-ignore -v proof/codex-refresh/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK/PROOF.json",
+      "exit_code": 0,
+      "stdout": ".gitignore:358:proof/*\tproof/codex-refresh/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK/PROOF.json",
+      "stderr": ""
+    }
+  ],
+  "codereview": {
+    "status": "PASS_AFTER_SAME_PACKET_FIX",
+    "commands": [
+      {
+        "command": "git diff --cached --name-status",
+        "exit_code": 0,
+        "stdout": "A\tdocs/02-how-to/codex-operator-runbook.md\nA\tdocs/03-reference/governance/codex-prompt-pack.md\nA\tproof/codex-refresh/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK/PROOF.json\nA\ttask-packets/generated/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json",
+        "stderr": ""
+      },
+      {
+        "command": "git diff --cached --stat",
+        "exit_code": 0,
+        "stdout": " docs/02-how-to/codex-operator-runbook.md           | 112 ++++++++++\n docs/03-reference/governance/codex-prompt-pack.md  | 194 +++++++++++++++++\n .../PROOF.json                                     | 232 +++++++++++++++++++++\n .../TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json | 156 ++++++++++++++\n 4 files changed, 694 insertions(+)",
+        "stderr": ""
+      },
+      {
+        "command": "git diff --cached --check",
+        "exit_code": 2,
+        "stdout": "docs/03-reference/governance/codex-prompt-pack.md:100: trailing whitespace.\n+- \ndocs/03-reference/governance/codex-prompt-pack.md:109: trailing whitespace.\n+- \ndocs/03-reference/governance/codex-prompt-pack.md:131: trailing whitespace.\n+- \ndocs/03-reference/governance/codex-prompt-pack.md:154: trailing whitespace.\n+- \ndocs/03-reference/governance/codex-prompt-pack.md:157: trailing whitespace.\n+- \ndocs/03-reference/governance/codex-prompt-pack.md:160: trailing whitespace.\n+- ",
+        "stderr": ""
+      },
+      {
+        "command": "git diff --check",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "command": "python scripts/docs_validator.py docs/02-how-to/codex-operator-runbook.md docs/03-reference/governance/codex-prompt-pack.md",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "command": "python scripts/docs_frontmatter_guard.py docs/02-how-to/codex-operator-runbook.md docs/03-reference/governance/codex-prompt-pack.md",
+        "exit_code": 0,
+        "stdout": "All docs have valid frontmatter.",
+        "stderr": ""
+      },
+      {
+        "command": "git diff --cached --check",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  },
+  "precommit": {
+    "status": "PASS",
+    "command": "pre-commit run --files docs/02-how-to/codex-operator-runbook.md docs/03-reference/governance/codex-prompt-pack.md task-packets/generated/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json proof/codex-refresh/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK/PROOF.json",
+    "exit_code": 0,
+    "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude ≤100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped",
+    "stderr": "",
+    "summary": "Precommit hooks passed on the four allowlisted files."
+  },
+  "NOT_RUN": [
+    "Runtime/service validation",
+    "Docker startup",
+    "Live provider calls",
+    "Live extraction",
+    "Live preflight",
+    "Account-specific checks",
+    "Secret inspection"
+  ],
+  "residual_risks": [
+    "Static documentation validation does not prove runtime service health.",
+    "Codex product UI and environment controls can drift after this runbook; current official product docs remain the product authority.",
+    "Repo-wide agent runtime authority remains UNKNOWN per TP 001.",
+    "Task-orchestrator and several memory/authority surfaces remain CONFLICTING per TP 001."
+  ],
+  "unknowns": [
+    "UNKNOWN live runtime health because Docker startup and service validation are not authorized.",
+    "UNKNOWN live provider and extraction behavior because live calls and extraction are not authorized.",
+    "UNKNOWN account-specific Codex environment settings because account-specific checks are not authorized.",
+    "UNKNOWN repo-wide agent runtime authority across observed duplicated agent surfaces."
+  ],
+  "diff_stat": "docs/02-how-to/codex-operator-runbook.md           | 112 ++++++++++\ndocs/03-reference/governance/codex-prompt-pack.md  | 194 +++++++++++++++++\n.../PROOF.json                                     | 232 +++++++++++++++++++++\n.../TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json | 156 ++++++++++++++\n4 files changed, 694 insertions(+)",
+  "cleanup_status": "PENDING: dedicated Codex worktree remains in place until push/PR outcome is known.",
+  "commit_sha": "POST_COMMIT_REPORTED_IN_FINAL_RESPONSE",
+  "pr_url": "POST_PR_REPORTED_IN_FINAL_RESPONSE"
+}

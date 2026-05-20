@@ -1,0 +1,81 @@
+{
+  "659": {
+    "artifact_checks": [],
+    "changed_packet_files": [],
+    "changed_proof_json_files": [],
+    "headRefOid": "4b74f7992fd7041689064f04ef9e0eaa83239bc4"
+  },
+  "664": {
+    "artifact_checks": [
+      {
+        "errors": [],
+        "extract_exit_code": 0,
+        "json_parse_ok": true,
+        "path": "task-packets/generated/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json",
+        "task_packet_schema_ok": true
+      },
+      {
+        "errors": [],
+        "extract_exit_code": 0,
+        "json_parse_ok": true,
+        "path": "task-packets/generated/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json",
+        "task_packet_schema_ok": true
+      },
+      {
+        "errors": [],
+        "extract_exit_code": 0,
+        "json_parse_ok": true,
+        "path": "task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json",
+        "task_packet_schema_ok": true
+      },
+      {
+        "errors": [],
+        "extract_exit_code": 0,
+        "json_parse_ok": true,
+        "path": "task-packets/generated/TP-DMX-MOBILE-TUI-SPEC-001.json",
+        "task_packet_schema_ok": true
+      },
+      {
+        "errors": [],
+        "extract_exit_code": 0,
+        "json_parse_ok": true,
+        "path": "out/proof/TP-DMX-MOBILE-TUI-SPEC-001/PROOF.json",
+        "task_packet_schema_ok": null
+      },
+      {
+        "errors": [],
+        "extract_exit_code": 0,
+        "json_parse_ok": true,
+        "path": "proof/codex-refresh/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX/PROOF.json",
+        "task_packet_schema_ok": null
+      },
+      {
+        "errors": [],
+        "extract_exit_code": 0,
+        "json_parse_ok": true,
+        "path": "proof/codex-refresh/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK/PROOF.json",
+        "task_packet_schema_ok": null
+      },
+      {
+        "errors": [],
+        "extract_exit_code": 0,
+        "json_parse_ok": true,
+        "path": "proof/codex-refresh/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES/PROOF.json",
+        "task_packet_schema_ok": null
+      }
+    ],
+    "changed_packet_files": [
+      "task-packets/generated/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json",
+      "task-packets/generated/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json",
+      "task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json",
+      "task-packets/generated/TP-DMX-MOBILE-TUI-SPEC-001.json"
+    ],
+    "changed_proof_json_files": [
+      "out/proof/TP-DMX-MOBILE-TUI-SPEC-001/PROOF.json",
+      "proof/codex-refresh/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX/PROOF.json",
+      "proof/codex-refresh/TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK/PROOF.json",
+      "proof/codex-refresh/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES/PROOF.json"
+    ],
+    "headRefOid": "e98c2676c5d88f3a3c6cbd126ac8eb1277114517"
+  }
+}
