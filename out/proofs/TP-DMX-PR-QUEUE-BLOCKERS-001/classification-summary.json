@@ -1,0 +1,9 @@
+{
+  "comment_post_status": "NOT_POSTED_POST_BLOCKER_COMMENTS_NOT_SET",
+  "generated_at_utc": "2026-05-20T08:27:31Z",
+  "post_blocker_comments": "0",
+  "pr_659_unresolved_threads": 2,
+  "pr_659_verdict": "BLOCKED_RECOMMEND_CHANGES",
+  "pr_664_unresolved_threads": 0,
+  "pr_664_verdict": "NO_BLOCKING_REVIEW_THREAD_OBSERVED_POLICY_REVIEW_RECOMMENDED"
+}

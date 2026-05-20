@@ -1,0 +1,2 @@
+PASS json.tool PROOF.json
+exit=0

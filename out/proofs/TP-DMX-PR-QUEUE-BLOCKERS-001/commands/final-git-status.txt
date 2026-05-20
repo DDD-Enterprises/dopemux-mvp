@@ -1,0 +1,34 @@
+Final git status at proof precommit capture:
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PROOF.json
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PR_QUEUE_BLOCKERS_LEDGER.md
+AM out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files.txt
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/classification-summary.json
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/codereview.txt
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/git-diff-cached-check.txt
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/git-diff-check.txt
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/post-blocker-comments-env.txt
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/proof-json-validation.txt
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/raw-json-validation.txt
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/repo-identity.txt
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/runtime-validation.txt
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/task-packet-schema-validation.txt
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/draft-comments/pr-659-blocker-comment.md
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/draft-comments/pr-664-blocker-comment.md
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw-files.txt
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-checks.json
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-comments.json
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-files.json
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-review-comments.json
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-review-threads.json
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-reviews.json
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659.json
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-checks.json
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-comments.json
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-files.json
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-review-comments.json
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-review-threads.json
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-reviews.json
+A  out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664.json
+A  task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json
+?? out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/final-git-status.txt
+exit=0

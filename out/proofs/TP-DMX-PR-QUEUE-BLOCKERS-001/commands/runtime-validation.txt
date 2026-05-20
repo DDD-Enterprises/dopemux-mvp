@@ -1,0 +1,3 @@
+Runtime/source/test validation: NOT_RUN
+Reason: packet mode is Audit / metadata-only / proof-hygiene and explicitly requires runtime validation to be NOT_RUN.
+exit=0

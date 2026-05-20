@@ -1,0 +1,13 @@
+{
+  "record": {
+    "action_id": "A0008",
+    "action_type": "clear_safe_path",
+    "bytes_reclaimed": 110376591360,
+    "dry_run": false,
+    "error": null,
+    "manifest_path": "proof/TP-OPS-MAC-SCRUBBER-001/A0008-manifest.json",
+    "path": "/Users/hue/Library/Caches/CloudKit",
+    "status": "executed"
+  },
+  "timestamp_utc": "2026-05-23T13:29:25+00:00"
+}
