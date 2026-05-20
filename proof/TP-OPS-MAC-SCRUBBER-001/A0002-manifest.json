@@ -1,0 +1,13 @@
+{
+  "record": {
+    "action_id": "A0002",
+    "action_type": "clear_safe_path",
+    "bytes_reclaimed": 0,
+    "dry_run": false,
+    "error": "[Errno 13] Permission denied: PosixPath('/Users/hue/Library/Caches')",
+    "manifest_path": "proof/TP-OPS-MAC-SCRUBBER-001/A0002-manifest.json",
+    "path": "/Users/hue/Library/Caches",
+    "status": "failed"
+  },
+  "timestamp_utc": "2026-05-23T13:34:47+00:00"
+}

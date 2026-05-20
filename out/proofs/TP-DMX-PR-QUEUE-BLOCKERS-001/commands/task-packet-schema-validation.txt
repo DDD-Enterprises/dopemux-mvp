@@ -1,0 +1,4 @@
+PASS schema validation
+packet=task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json
+schema=docs/03-reference/spec/dopetask/dopetask-canonical-spec.json
+exit=0

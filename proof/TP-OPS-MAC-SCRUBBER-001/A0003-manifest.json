@@ -1,0 +1,13 @@
+{
+  "record": {
+    "action_id": "A0003",
+    "action_type": "docker_prune",
+    "bytes_reclaimed": 22548578304,
+    "dry_run": false,
+    "error": null,
+    "manifest_path": "proof/TP-OPS-MAC-SCRUBBER-001/A0003-manifest.json",
+    "path": "/Users/hue/Library/Containers/com.docker.docker",
+    "status": "executed"
+  },
+  "timestamp_utc": "2026-05-23T13:34:47+00:00"
+}

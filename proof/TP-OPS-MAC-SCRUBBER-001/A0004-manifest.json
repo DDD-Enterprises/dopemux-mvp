@@ -1,0 +1,13 @@
+{
+  "record": {
+    "action_id": "A0004",
+    "action_type": "simctl_delete_unavailable",
+    "bytes_reclaimed": 0,
+    "dry_run": false,
+    "error": "xcrun: error: unable to find utility \"simctl\", not a developer tool or in PATH",
+    "manifest_path": "proof/TP-OPS-MAC-SCRUBBER-001/A0004-manifest.json",
+    "path": "/Users/hue/Library/Developer/CoreSimulator",
+    "status": "failed"
+  },
+  "timestamp_utc": "2026-05-23T13:34:47+00:00"
+}
