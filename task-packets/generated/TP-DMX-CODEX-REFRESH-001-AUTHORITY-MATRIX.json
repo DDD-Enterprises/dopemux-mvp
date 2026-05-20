@@ -1,0 +1,158 @@
+{
+  "id": "TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX",
+  "project": "dopemux-mvp",
+  "target": "Refresh the Codex-facing repo authority matrix so future Codex work uses live AGENTS.md, live task packet schema, current authority paths, and explicit UNKNOWN/CONFLICTING evidence.",
+  "invariants": [
+    "Do not modify runtime code, service code, tests, compose files, dependency files, or provider configuration.",
+    "Do not claim missing files exist.",
+    "Do not normalize uploaded/root authority docs and live docs into one cleaner story.",
+    "Preserve Dopemux split authority boundaries.",
+    "No live provider calls, live extraction, live preflight, Docker startup, or account-specific checks."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-CODEX-REFRESH-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-codex-refresh-001-authority-matrix",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(governance): refresh Codex authority matrix",
+    "allowlist": [
+      "docs/03-reference/governance/codex-authority-refresh.md",
+      "docs/03-reference/governance/codex-refresh-gap-register.md",
+      "task-packets/generated/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json",
+      "proof/codex-refresh/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX/PROOF.json"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m json.tool proof/codex-refresh/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX/PROOF.json >/dev/null",
+      "python scripts/docs_validator.py docs/03-reference/governance/codex-authority-refresh.md docs/03-reference/governance/codex-refresh-gap-register.md",
+      "python scripts/docs_frontmatter_guard.py docs/03-reference/governance/codex-authority-refresh.md docs/03-reference/governance/codex-refresh-gap-register.md",
+      "git diff --check",
+      "git diff --cached --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(governance): refresh Codex authority matrix",
+    "body": "## Summary\n- Adds a Codex-facing authority refresh matrix grounded in live repo paths.\n- Adds a Codex refresh gap register preserving UNKNOWN and CONFLICTING authority/path evidence.\n- Adds packet/proof artifacts for this refresh slice.\n\n## Scope\nDocs/governance, task packet, and proof only. No runtime, tests, compose, dependencies, provider config, live extraction, or Docker startup.\n\n## Validation\nInclude exact command outputs and exit codes.\n\n## NOT_RUN\n- Live provider calls\n- Live extraction\n- Live preflight\n- Docker startup\n- Runtime service health checks\n\n## Residual Risks / UNKNOWNs\nList unresolved authority/path conflicts.\n\n@codex review",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repo identity, current branch/base, clean status, and required authority files.",
+      "context_files": [
+        "AGENTS.md",
+        "docs/03-reference/governance/rules.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "PROJECT.md",
+        "ARCHITECTURE.md"
+      ],
+      "commands": [
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short",
+        "test -f AGENTS.md",
+        "test -f docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ],
+      "validation": [
+        "Repo remote must identify DDD-Enterprises/dopemux-mvp.",
+        "Base branch must be main or a branch created from main.",
+        "Required authority files must be present or explicitly marked UNKNOWN."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create the task packet JSON at the generated task-packet path using this exact packet content, adjusted only for formatting if needed.",
+      "expected_files": [
+        "task-packets/generated/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json"
+      ],
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json >/dev/null",
+        "python -m jsonschema -i task-packets/generated/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Author docs/03-reference/governance/codex-authority-refresh.md with a concise live authority matrix for Codex work.",
+      "requirements": [
+        "Include OBSERVED, CONFLICTING, UNKNOWN labels.",
+        "Include live task schema path.",
+        "Include current AGENTS.md role.",
+        "Include authority boundaries for dopemux, dopetask, task-orchestrator, Leantime, ConPort, dope-memory, dope-context, dopecon-bridge, ADHD Engine, Repo Truth Extractor, agents, and Cockpit/dopeUI.",
+        "State that Codex should not treat GitHub/CI alone as semantic proof.",
+        "State that Codex work must return proof and PR evidence."
+      ],
+      "expected_files": [
+        "docs/03-reference/governance/codex-authority-refresh.md"
+      ],
+      "validation": [
+        "rg -n \"OBSERVED|CONFLICTING|UNKNOWN|RECOMMENDED\" docs/03-reference/governance/codex-authority-refresh.md",
+        "rg -n \"docs/03-reference/spec/dopetask/dopetask-canonical-spec.json|AGENTS.md|dopecon-bridge|scripts/dopetask|Task Orchestrator|ConPort|dope-memory|dope-context\" docs/03-reference/governance/codex-authority-refresh.md"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Author docs/03-reference/governance/codex-refresh-gap-register.md listing the Codex-refresh gaps that must remain unresolved until proved by runtime/code/config/tests.",
+      "requirements": [
+        "Include root-vs-docs authority path drift.",
+        "Include TaskX vs dopetask naming drift.",
+        "Include task-orchestrator runtime/package drift.",
+        "Include agent authority UNKNOWN.",
+        "Include bridge authority confusion risk.",
+        "Include proof/CI insufficiency risk."
+      ],
+      "expected_files": [
+        "docs/03-reference/governance/codex-refresh-gap-register.md"
+      ],
+      "validation": [
+        "rg -n \"TaskX|dopetask|agent authority|UNKNOWN|dopecon-bridge|task-orchestrator|CI\" docs/03-reference/governance/codex-refresh-gap-register.md"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Create proof JSON with exact commands, exit codes, changed files, NOT_RUN items, residual risks, and UNKNOWNs.",
+      "expected_files": [
+        "proof/codex-refresh/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX/PROOF.json"
+      ],
+      "validation": [
+        "python -m json.tool proof/codex-refresh/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX/PROOF.json >/dev/null",
+        "rg -n \"NOT_RUN|UNKNOWN|residual\" proof/codex-refresh/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX/PROOF.json"
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Run final docs/proof validation, inspect diff, commit, push, and open PR.",
+      "validation": [
+        "python scripts/docs_validator.py docs/03-reference/governance/codex-authority-refresh.md docs/03-reference/governance/codex-refresh-gap-register.md",
+        "python scripts/docs_frontmatter_guard.py docs/03-reference/governance/codex-authority-refresh.md docs/03-reference/governance/codex-refresh-gap-register.md",
+        "git diff --check",
+        "git diff --cached --check",
+        "git diff --stat",
+        "git status --short"
+      ]
+    }
+  ]
+}
