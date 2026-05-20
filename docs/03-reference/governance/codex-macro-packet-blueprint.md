@@ -31,6 +31,7 @@ The live dopeTask schema controls packet shape. Runtime code, config, tests, com
 
 - Validation-bound acceptance requires every declared validation either to pass with an exact exit code or to be labeled `NOT_RUN` or `BLOCKED` with a reason.
 - Proof-bound acceptance requires exact command evidence, changed files, diff scope, codereview status, precommit status, commit SHA, PR URL or exact blocker, residual risks, `UNKNOWN`s, and cleanup status.
+- If the proof path is under `proof/`, confirm `.gitignore` behavior before commit and stage the exact proof path explicitly, using `git add -f <proof path>` when the active packet intentionally commits an ignored proof artifact.
 - `@codex review`, CI, and GitHub checks are review or delivery signals. They are not proof of correctness by themselves.
 - Human acceptance remains separate from Codex proof and PR creation.
 

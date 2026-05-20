@@ -1,7 +1,7 @@
 {
   "schema_version": "dopemux.codex_refresh.proof.v1",
-  "tp_id": null,
-  "tp_path": null,
+  "packet_id": null,
+  "task_packet_path": null,
   "project": "dopemux-mvp",
   "generated_at_utc": null,
   "worktree_path": null,
@@ -18,7 +18,8 @@
   "analysis_performed": [],
   "slices_completed": [],
   "changed_files": [],
-  "validations": {
+  "command_results": [],
+  "status_taxonomy": {
     "PASS": [],
     "FAIL": [],
     "NOT_RUN": [],
@@ -49,7 +50,7 @@
   "pr_url": null,
   "pr_blocker": null,
   "residual_risks": [],
-  "UNKNOWN": [],
+  "unknowns": [],
   "cleanup_status": null,
   "rollback_plan": null
 }

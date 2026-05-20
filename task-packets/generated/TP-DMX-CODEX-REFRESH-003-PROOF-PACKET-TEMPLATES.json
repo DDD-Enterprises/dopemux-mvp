@@ -130,7 +130,7 @@
       ],
       "validation": [
         "python -m json.tool docs/03-reference/governance/codex-proof-template.json >/dev/null",
-        "rg -n \"tp_id|repo_identity|validations|exit_code|codereview|precommit|commit_sha|pr_url|UNKNOWN|NOT_RUN\" docs/03-reference/governance/codex-proof-template.json"
+        "rg -n \"packet_id|task_packet_path|repo_identity|command_results|exit_code|codereview|precommit|commit_sha|pr_url|unknowns|NOT_RUN\" docs/03-reference/governance/codex-proof-template.json"
       ]
     },
     {
