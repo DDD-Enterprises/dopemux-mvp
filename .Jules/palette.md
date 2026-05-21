@@ -101,3 +101,7 @@
 ## 2025-05-22 - [Predictive Action Labels for ADHD Grounding]
 **Learning:** For users with ADHD, ambiguity about what happens after a current task can increase cognitive friction. Providing "Predictive Labels" (e.g., "Complete task and proceed to [Next Task Name]") directly in tooltips and ARIA labels provides immediate temporal grounding and reduces the anxiety of transitioning between ritual steps.
 **Action:** Use `useMemo` to calculate the next step in a sequence and incorporate its identity into the primary action button's feedback (Tooltips and ARIA labels).
+
+## 2026-05-22 - [Tactile Confirmation for Information Copying]
+**Learning:** For AI-generated content (like recommendations), providing a simple "Copy" icon isn't enough. A multi-stage feedback loop—swapping icons (Copy -> Check), updating Tooltips ("Copy" -> "Copied!"), and adding a brief scale-and-glow animation (`copy-success`)—provides the tactile reinforcement users need to feel confident the action succeeded without checking another app.
+**Action:** Implement three-tier feedback (Icon swap, Tooltip update, and Pulse animation) for all "Copy to Clipboard" micro-interactions.
