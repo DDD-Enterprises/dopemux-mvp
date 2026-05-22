@@ -9,9 +9,7 @@
     "Fresh GitHub/runtime inspection outranks downloaded recon.",
     "Do not claim completion without validation proof."
   ],
-  "depends_on": [
-    "TP-DMX-FDOS-002-IMPLEMENTER-PROMPTS"
-  ],
+  "depends_on": [],
   "repo_binding": {
     "project_id": "dopemux-mvp",
     "repo_marker": ".dopetaskroot",
@@ -21,7 +19,7 @@
   "series": {
     "id": "DMX-FDOS",
     "base_branch": "main",
-    "parent_tp_id": "TP-DMX-FDOS-002-IMPLEMENTER-PROMPTS",
+    "parent_tp_id": null,
     "final_packet": false
   },
   "execution": {
