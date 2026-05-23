@@ -1358,6 +1358,11 @@ REPO_SCAN_EXCLUDES = [
 ]
 RTE_DISABLE_LIVE_LLM_IN_TESTS_ENV = "RTE_DISABLE_LIVE_LLM_IN_TESTS"
 RTE_ALLOW_LIVE_LLM_IN_TESTS_ENV = "RTE_ALLOW_LIVE_LLM_IN_TESTS"
+DPMX_HOME_SCAN_FULL_OK_ENV = "DPMX_HOME_SCAN_FULL_OK"
+FULL_HOME_SCAN_CONSENT_MESSAGE = (
+    f"--home-scan-mode full refused. Set {DPMX_HOME_SCAN_FULL_OK_ENV}=1 "
+    "to allow full home scan."
+)
 STEP_TYPE_MODEL_ENV_VARS: Dict[str, str] = {
     "inventory": DPMX_MODEL_INVENTORY_ENV,
     "extract": DPMX_MODEL_EXTRACT_ENV,
@@ -3027,6 +3032,28 @@ def enforce_live_operation_consent(
             f"Operations: {operation_summary}."
         )
     return operations
+
+
+def enforce_home_scan_full_consent(home_scan_mode: str) -> None:
+    if str(home_scan_mode or "").strip().lower() != "full":
+        return
+    if _env_is_truthy(DPMX_HOME_SCAN_FULL_OK_ENV):
+        return
+    raise RuntimeError(FULL_HOME_SCAN_CONSENT_MESSAGE)
+
+
+def enforce_home_scan_full_consent_for_cli(
+    parser: argparse.ArgumentParser,
+    *,
+    home_scan_mode: str,
+    phase_sequence: Sequence[str],
+) -> None:
+    if "H" not in {str(phase).strip().upper() for phase in phase_sequence}:
+        return
+    try:
+        enforce_home_scan_full_consent(home_scan_mode)
+    except RuntimeError as exc:
+        parser.error(str(exc))
 
 
 def enforce_pre_live_validator_for_execution(
@@ -19588,6 +19615,7 @@ def run_phase_A(
 def run_phase_H(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
+    enforce_home_scan_full_consent(cfg.home_scan_mode)
     plan = _plan_home_phase_impl(
         home=Path.home(),
         collector_factory=Collector,
@@ -21436,6 +21464,12 @@ def main() -> None:
         phase_sequence=phase_sequence,
         raw_argv=raw_argv,
     )
+    if not readonly_introspection:
+        enforce_home_scan_full_consent_for_cli(
+            parser,
+            home_scan_mode=args.home_scan_mode,
+            phase_sequence=phase_sequence,
+        )
     if should_enforce_pre_live_validator(args, phase_sequence):
         try:
             enforce_pre_live_validator_for_execution(
