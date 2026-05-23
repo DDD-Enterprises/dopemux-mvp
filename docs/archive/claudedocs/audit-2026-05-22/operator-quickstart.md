@@ -63,9 +63,9 @@ python /path/to/dopemux/services/repo-truth-extractor/run_extraction_v5.py \
   --output-root /path/to/extraction-output
 ```
 
-**Optional spend cap** (recommended): `--max-cost-usd 0.50`. NOTE: cost cap requires a `--pricing-manifest` file with rows covering every model the lane uses. If you hit `Pricing config missing route coverage for ...`, either add the rows or run without `--max-cost-usd` on a known-small corpus.
+**Optional spend cap** (recommended): `--max-cost-usd 0.50`. NOTE: cost cap uses the fixed `config/pricing.yaml` pricing config. If you hit `Pricing config missing route coverage for ...`, either add the missing model rows to `config/pricing.yaml` before running or run without `--max-cost-usd` on a known-small corpus.
 
-**Forced serial execution**: `--partition-workers 1` is enforced automatically when `--max-cost-usd` is set, and recommended even without (avoids spend-ledger race per audit FA-5-MED-1).
+**Forced serial execution**: `--partition-workers 1` is required when `--max-cost-usd` is set; otherwise the run aborts during cost-cap setup. It is recommended even without a spend cap (avoids spend-ledger race per audit FA-5-MED-1).
 
 ### Step 3 — Inspect the outputs
 

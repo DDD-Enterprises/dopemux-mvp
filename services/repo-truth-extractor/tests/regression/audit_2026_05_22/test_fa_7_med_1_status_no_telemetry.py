@@ -40,10 +40,11 @@ def test_status_json_is_fully_readonly(tmp_path: Path) -> None:
     """Positive regression: --status-json with typo'd run-id creates ZERO files."""
     output_root = tmp_path / "out"
     output_root.mkdir()
-    _run_v5(
+    result = _run_v5(
         ["--status-json", "--run-id", "this_is_a_typo_xyz_status_json"],
         output_root=output_root,
     )
+    assert result.returncode == 0, result.stderr
     created = list(output_root.rglob("*"))
     # Allow the output_root itself, but nothing inside
     assert not any(p.is_file() for p in created), (
@@ -61,10 +62,11 @@ def test_status_text_should_be_fully_readonly(tmp_path: Path) -> None:
     """xfail until --status (text) wraps telemetry writer in readonly_introspection."""
     output_root = tmp_path / "out"
     output_root.mkdir()
-    _run_v5(
+    result = _run_v5(
         ["--status", "--run-id", "this_is_a_typo_xyz_status_text"],
         output_root=output_root,
     )
+    assert result.returncode == 0, result.stderr
     runs_dir = output_root / "runs"
     if not runs_dir.exists():
         return  # passes
