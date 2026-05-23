@@ -14,6 +14,7 @@ Documented in:
 The test asserts the BROKEN behavior currently exists (xfail), so when
 the regex is fixed, the test passes automatically.
 """
+
 from __future__ import annotations
 
 import sys
@@ -65,6 +66,10 @@ SURROUNDED_LEAKS = [
     "DATABASE_PASSWORD=hunter2-prod-secret-xyz",
     "INTERNAL_TOKEN=abcdefghij1234567890",
     "CUSTOMER_SECRET_KEY=leaked-value-here",
+    "apikey=leaked-value-here",
+    "api-key=leaked-value-here",
+    '"api-key": "leaked-value-here"',
+    "TOKEN=[leaked-value-here]",
 ]
 
 
