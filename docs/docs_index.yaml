@@ -181,3 +181,18 @@ skills:
   workflow_plan_reviewer: templates/skills/plan-reviewer/SKILL.md
   workflow_code_implementer: templates/skills/code-implementer/SKILL.md
   workflow_quality_refactorer: templates/skills/quality-refactorer/SKILL.md
+fast_dev_os:
+  readme: docs/03-reference/fast-dev-os/readme.md
+  project_constitution: docs/03-reference/fast-dev-os/project-constitution.md
+  thread00_current_operating_ledger: docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md
+  unknown_conflicting_stale: docs/03-reference/fast-dev-os/unknown-conflicting-stale.md
+  pr_ledger: docs/03-reference/fast-dev-os/pr-ledger.md
+  packet_ledger: docs/03-reference/fast-dev-os/packet-ledger.md
+  proof_ledger: docs/03-reference/fast-dev-os/proof-ledger.md
+  evidence_notes: docs/03-reference/fast-dev-os/evidence-notes.md
+  relationship_to_governance: docs/03-reference/governance/codex-authority-refresh.md
+  series_id: DMX-FDOS
+  packets:
+  - TP-DMX-FDOS-004-AUTHORITY-REFRESH
+  - TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK (planned)
+  - TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES (planned)
