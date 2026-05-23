@@ -5,3 +5,4 @@ REPO_ROOT="$(git rev-parse --show-toplevel)"
 if [[ -x "$REPO_ROOT/scripts/repo_preflight.sh" ]]; then
   ALLOW_DIRTY=1 "$REPO_ROOT/scripts/repo_preflight.sh" "dopemux-mvp" >/dev/null
 fi
+PREFLIGHT_SKIP_GIT_CLEAN=1 RUN_MODE=enforce "$REPO_ROOT/scripts/preflight.sh"
