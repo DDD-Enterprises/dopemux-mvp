@@ -81,6 +81,37 @@ def test_dry_run_writes_prompt_and_metadata_without_provider(tmp_path: Path, mon
     assert "tvly-secret-value" not in json.dumps(metadata)
 
 
+def test_env_snapshot_treats_empty_string_as_set(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("EMPTY_PROVIDER_KEY", "")
+
+    snapshot = MODULE.build_env_snapshot(["EMPTY_PROVIDER_KEY", "MISSING_PROVIDER_KEY"])
+
+    assert snapshot == {
+        "EMPTY_PROVIDER_KEY": "<set>",
+        "MISSING_PROVIDER_KEY": "<unset>",
+    }
+
+
+def test_metadata_redacts_secret_like_query(tmp_path: Path) -> None:
+    output_dir = tmp_path / "out"
+
+    exit_code = MODULE.main(
+        [
+            "--query",
+            "compare GPT Researcher with token sk-proj-abcdefghijklmnopqrstuvwxyz1234567890",
+            "--output-dir",
+            str(output_dir),
+            "--dry-run",
+        ]
+    )
+
+    metadata_text = (output_dir / "run.json").read_text(encoding="utf-8")
+    metadata = json.loads(metadata_text)
+    assert exit_code == 0
+    assert metadata["query"] == "compare GPT Researcher with token <redacted>"
+    assert "sk-proj-" not in metadata_text
+
+
 def test_read_evidence_truncates_and_redacts_secret_patterns(tmp_path: Path) -> None:
     evidence = tmp_path / "secretish.md"
     evidence.write_text(
@@ -94,6 +125,30 @@ def test_read_evidence_truncates_and_redacts_secret_patterns(tmp_path: Path) -> 
     assert "OPENAI_API_KEY=<redacted>" in body
     assert "sk-proj-" not in body
     assert "safe line" in body
+
+
+def test_prompt_setup_failure_writes_redacted_failure_metadata(tmp_path: Path) -> None:
+    output_dir = tmp_path / "out"
+
+    exit_code = MODULE.main(
+        [
+            "--query",
+            "AI-assisted development governance workflows",
+            "--evidence-file",
+            str(tmp_path / "missing-tvly-secret-value-that-must-not-appear.md"),
+            "--output-dir",
+            str(output_dir),
+            "--dry-run",
+        ]
+    )
+
+    metadata_text = (output_dir / "run.json").read_text(encoding="utf-8")
+    metadata = json.loads(metadata_text)
+    assert exit_code == 1
+    assert metadata["status"] == "fail"
+    assert metadata["error_type"] == "FileNotFoundError"
+    assert "tvly-secret-value" not in metadata_text
+    assert "<redacted>" in metadata_text
 
 
 def test_failure_metadata_redacts_exception_text(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

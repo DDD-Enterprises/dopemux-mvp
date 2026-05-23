@@ -103,7 +103,7 @@ def read_evidence_file(path: Path | str, *, max_bytes: int = DEFAULT_MAX_EVIDENC
 
 
 def build_env_snapshot(names: Iterable[str]) -> dict[str, str]:
-    return {name: "<set>" if os.environ.get(name) else "<unset>" for name in names}
+    return {name: "<set>" if name in os.environ else "<unset>" for name in names}
 
 
 def build_report_prompt(args: argparse.Namespace) -> str:
@@ -163,10 +163,10 @@ def build_metadata(
 ) -> dict[str, object]:
     return {
         "status": status,
-        "query": args.query.strip(),
+        "query": redact_secret_text(args.query.strip()),
         "report_type": args.report_type,
         "report_source": args.report_source,
-        "evidence_files": [str(Path(path)) for path in args.evidence_file],
+        "evidence_files": [redact_secret_text(str(Path(path))) for path in args.evidence_file],
         "env": build_env_snapshot(args.include_env_key),
         "output_dir": str(output_dir),
         "created_at": datetime.now(timezone.utc).isoformat(),
@@ -182,8 +182,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
 
     output_dir = Path(args.output_dir) if args.output_dir else default_output_dir()
-    prompt = build_report_prompt(args)
-    write_text(output_dir / "report_prompt.md", prompt)
+    try:
+        prompt = build_report_prompt(args)
+        write_text(output_dir / "report_prompt.md", prompt)
+    except Exception as exc:
+        redacted_error = redact_secret_text(str(exc))
+        write_json(
+            output_dir / "run.json",
+            {
+                **build_metadata(args, output_dir=output_dir, status="fail"),
+                "error_type": type(exc).__name__,
+                "error": redacted_error,
+            },
+        )
+        print(f"ERROR: {type(exc).__name__}: {redacted_error}", file=sys.stderr)
+        return 1
 
     if args.dry_run:
         write_json(output_dir / "run.json", build_metadata(args, output_dir=output_dir, status="dry_run"))
