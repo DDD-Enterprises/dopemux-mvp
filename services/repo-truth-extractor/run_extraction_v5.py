@@ -21464,6 +21464,12 @@ def main() -> None:
         phase_sequence=phase_sequence,
         raw_argv=raw_argv,
     )
+    if not readonly_introspection:
+        enforce_home_scan_full_consent_for_cli(
+            parser,
+            home_scan_mode=args.home_scan_mode,
+            phase_sequence=phase_sequence,
+        )
     if should_enforce_pre_live_validator(args, phase_sequence):
         try:
             enforce_pre_live_validator_for_execution(
@@ -22223,11 +22229,6 @@ def main() -> None:
 
     if not phase_sequence:
         parser.error("--phase is required when running extraction phases.")
-    enforce_home_scan_full_consent_for_cli(
-        parser,
-        home_scan_mode=cfg.home_scan_mode,
-        phase_sequence=phase_sequence,
-    )
     phases = phase_sequence
     # Load intelligence router from prescan output (if available)
     if cfg.prescan_dir and IntelligenceRouter is not None:
