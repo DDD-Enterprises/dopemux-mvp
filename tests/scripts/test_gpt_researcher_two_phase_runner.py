@@ -127,6 +127,17 @@ def test_read_evidence_truncates_and_redacts_secret_patterns(tmp_path: Path) -> 
     assert "safe line" in body
 
 
+def test_read_evidence_redacts_secret_prefix_at_truncation_boundary(tmp_path: Path) -> None:
+    evidence = tmp_path / "truncated-secret.md"
+    evidence.write_text("prefix tvly-secret-value-that-gets-cut\n", encoding="utf-8")
+
+    body = MODULE.read_evidence_file(evidence, max_bytes=18)
+
+    assert "tvly-" not in body
+    assert "<redacted>" in body
+    assert "[TRUNCATED after 18 bytes]" in body
+
+
 def test_prompt_setup_failure_writes_redacted_failure_metadata(tmp_path: Path) -> None:
     output_dir = tmp_path / "out"
 

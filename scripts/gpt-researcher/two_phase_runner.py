@@ -19,7 +19,7 @@ SECRET_ASSIGNMENT_RE = re.compile(
     r"(?i)\b([A-Z0-9_]*(?:API_KEY|TOKEN|SECRET|PASSWORD|PRIVATE_KEY|CREDENTIAL)[A-Z0-9_]*)\s*=\s*([^\s]+)"
 )
 SECRET_VALUE_RE = re.compile(
-    r"(sk-proj-[A-Za-z0-9_-]{20,}|sk-[A-Za-z0-9_-]{32,}|tvly-[A-Za-z0-9_-]{16,}|ghp_[A-Za-z0-9_]{30,}|github_pat_[A-Za-z0-9_]{30,}|-----BEGIN (?:RSA |OPENSSH |EC |DSA )?PRIVATE KEY-----)"
+    r"(sk-proj-[A-Za-z0-9_-]*|sk-[A-Za-z0-9_-]*|tvly-[A-Za-z0-9_-]*|ghp_[A-Za-z0-9_]*|github_pat_[A-Za-z0-9_]*|-----BEGIN (?:RSA |OPENSSH |EC |DSA )?PRIVATE KEY-----)"
 )
 
 
@@ -93,7 +93,8 @@ def redact_secret_text(text: str) -> str:
 
 def read_evidence_file(path: Path | str, *, max_bytes: int = DEFAULT_MAX_EVIDENCE_BYTES) -> str:
     evidence_path = Path(path)
-    raw = evidence_path.read_bytes()[:max_bytes]
+    with evidence_path.open("rb") as handle:
+        raw = handle.read(max_bytes)
     body = raw.decode("utf-8", errors="replace")
     redacted = redact_secret_text(body)
     header = f"## Evidence: {evidence_path}\n\n"
