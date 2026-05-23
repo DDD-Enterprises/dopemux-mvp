@@ -35,13 +35,13 @@ if str(_SERVICE_ROOT) not in sys.path:
 
 
 @pytest.mark.skipif(
-    not (os.environ.get("OPENROUTER_API_KEY") and os.environ.get("XAI_API_KEY")),
-    reason="Requires real OPENROUTER_API_KEY + XAI_API_KEY in env (audit-only test)",
+    not os.environ.get("OPENROUTER_API_KEY"),
+    reason="Requires real OPENROUTER_API_KEY in env (audit-only test)",
 )
 @pytest.mark.xfail(
     reason="FA-8-HIGH-1: run_provider_doctor_probe returns failure_type=unknown / AMBIGUOUS_PROVIDER_BLOCK even with valid keys + live providers (direct curl succeeds). Root cause likely in call_llm payload construction (max_tokens? response_format?)."
 )
-def test_preflight_probe_succeeds_with_valid_keys(monkeypatch, tmp_path: Path) -> None:
+def test_preflight_probe_succeeds_with_valid_keys() -> None:
     """xfail until the preflight probe bug is fixed."""
     import importlib.util
 
