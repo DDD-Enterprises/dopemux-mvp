@@ -110,7 +110,7 @@ Your branch is based on 'main'.
 nothing to commit, working tree clean   (before F0a manifest commit)
 ```
 
-After this manifest commits: 1 file change in `claudedocs/audit-2026-05-22/`.
+After this manifest commits: 1 file change in `docs/archive/claudedocs/audit-2026-05-22/`.
 
 ---
 
