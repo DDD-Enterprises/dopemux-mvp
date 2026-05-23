@@ -205,5 +205,69 @@
     "During same-package refresh, live GitHub showed six open PRs and all six BEHIND.",
     "Same-packet hygiene fix normalized trailing spaces in generated intake notes after cached diff check failure."
   ],
-  "worktree_path": "/Users/hue/code/dopemux-mvp-dmx-fdos-003-upload-set-threads-repo-map"
+  "worktree_path": "/Users/hue/code/dopemux-mvp-dmx-fdos-003-upload-set-threads-repo-map",
+  "refresh_log": [
+    {
+      "event": "PR_668_REFRESH",
+      "timestamp_utc": "2026-05-23T02:26:51Z",
+      "actor": "claude-opus-4.7",
+      "rationale": "Pre-step refresh per plan executive-verdict-flickering-blanket.md before opening TP-DMX-FDOS-004/005/006.",
+      "tp_002_disposition": {
+        "verdict": "NEVER-EXISTED",
+        "evidence": [
+          "git log --all --source --remotes -- task-packets/**/TP-DMX-FDOS-002-* returned 0 commits",
+          "git log --all --source --remotes --grep \"FDOS-002\" returned 0 commits",
+          "find /Users/hue/code/dopemux-mvp* -name \"TP-DMX-FDOS-002*\" returned 0 files",
+          "gh pr list --state all --search \"TP-DMX-FDOS-002\" returned []",
+          "proof/ has no TP-DMX-FDOS-002 artifacts"
+        ],
+        "resolution": "Patched depends_on: [] and series.parent_tp_id: null in TP-DMX-FDOS-003 JSON"
+      },
+      "commits_added": [
+        {
+          "sha": "d4c93ddf1",
+          "message_first_line": "docs(packet): clear phantom dependency on TP-DMX-FDOS-002",
+          "note": "rebased onto origin/main; new SHA post-rebase: 66b05840d"
+        }
+      ],
+      "rebase": {
+        "base_before": "21c3235437 (1 ahead, 1 behind origin/main 8e7a2283f)",
+        "base_after": "66b05840d (2 ahead, 0 behind origin/main 8e7a2283f)",
+        "force_push": "--force-with-lease",
+        "force_push_result": "forced update successful",
+        "linear_history": true
+      },
+      "ci_re_run": {
+        "total_checks": 19,
+        "success": 16,
+        "skipped": 3,
+        "failure": 0,
+        "all_required_status_checks_pass": true,
+        "required_checks": [
+          "Security Review",
+          "Documentation Check",
+          "identity-check",
+          "Unit Tests",
+          "Analyze (python)",
+          "Analyze (javascript-typescript)",
+          "Analyze (ruby)"
+        ]
+      },
+      "reviewer_feedback": {
+        "copilot": "auto-comment: \"Copilot was not able to review any files\"",
+        "chatgpt_codex_connector": "auto-comment: generic \"I can review\" notice; no substantive feedback",
+        "human_reviewers": "none required (required_approving_review_count: 0)"
+      },
+      "merge_state_at_refresh_completion": {
+        "mergeable": "MERGEABLE",
+        "mergeStateStatus": "BLOCKED",
+        "note": "BLOCKED likely a transient state from GitHub re-evaluation; all required checks pass, history is linear, no review block."
+      },
+      "forbidden_during_refresh": [
+        "No files added outside original PR #668 allowlist",
+        "No TPs modified other than TP-DMX-FDOS-003",
+        "No fast-dev-os scaffolding introduced (that scope belongs to TP-004/005/006)"
+      ]
+    }
+  ]
 }
