@@ -23,12 +23,12 @@ The governance layer defines the *what* (authority boundaries, label vocabulary,
 
 | File | Purpose | Class |
 |------|---------|-------|
-| [`PROJECT_CONSTITUTION.md`](PROJECT_CONSTITUTION.md) | Mission, scope, non-goals, vocabulary, boundaries vs governance | doctrine |
-| [`THREAD00_CURRENT_OPERATING_LEDGER.md`](THREAD00_CURRENT_OPERATING_LEDGER.md) | Snapshot of current branch / PRs / packets / blockers at HEAD `<SHA>` | snapshot |
-| [`UNKNOWN_CONFLICTING_STALE.md`](UNKNOWN_CONFLICTING_STALE.md) | UNRESOLVED authority/path drift; carries forward AGENTS.md §10 known dangers | register |
-| [`PR_LEDGER.md`](PR_LEDGER.md) | Snapshot of `gh pr list --state open` cross-referenced with chat-context-v2 PR map | snapshot |
-| [`PACKET_LEDGER.md`](PACKET_LEDGER.md) | Snapshot derived from `task-packets/INDEX.md` + v2 corpus TP citation graph | snapshot |
-| [`PROOF_LEDGER.md`](PROOF_LEDGER.md) | Index of `proof/**/PROOF.json` with verdict and commit SHA columns | snapshot |
+| [`project-constitution.md`](project-constitution.md) | Mission, scope, non-goals, vocabulary, boundaries vs governance | doctrine |
+| [`thread00-current-operating-ledger.md`](thread00-current-operating-ledger.md) | Snapshot of current branch / PRs / packets / blockers at HEAD `<SHA>` | snapshot |
+| [`unknown-conflicting-stale.md`](unknown-conflicting-stale.md) | UNRESOLVED authority/path drift; carries forward AGENTS.md §10 known dangers | register |
+| [`pr-ledger.md`](pr-ledger.md) | Snapshot of `gh pr list --state open` cross-referenced with chat-context-v2 PR map | snapshot |
+| [`packet-ledger.md`](packet-ledger.md) | Snapshot derived from `task-packets/INDEX.md` + v2 corpus TP citation graph | snapshot |
+| [`proof-ledger.md`](proof-ledger.md) | Index of `proof/**/PROOF.json` with verdict and commit SHA columns | snapshot |
 | [`evidence-notes.md`](evidence-notes.md) | Provenance of chat-context-v2 corpus citations (external evidence base) | reference |
 
 ## Subsequent packets in this series

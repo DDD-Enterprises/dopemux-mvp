@@ -59,13 +59,13 @@
     }
   ],
   "files_created": [
-    "docs/03-reference/fast-dev-os/README.md",
-    "docs/03-reference/fast-dev-os/PROJECT_CONSTITUTION.md",
-    "docs/03-reference/fast-dev-os/THREAD00_CURRENT_OPERATING_LEDGER.md",
-    "docs/03-reference/fast-dev-os/UNKNOWN_CONFLICTING_STALE.md",
-    "docs/03-reference/fast-dev-os/PR_LEDGER.md",
-    "docs/03-reference/fast-dev-os/PACKET_LEDGER.md",
-    "docs/03-reference/fast-dev-os/PROOF_LEDGER.md",
+    "docs/03-reference/fast-dev-os/readme.md",
+    "docs/03-reference/fast-dev-os/project-constitution.md",
+    "docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md",
+    "docs/03-reference/fast-dev-os/unknown-conflicting-stale.md",
+    "docs/03-reference/fast-dev-os/pr-ledger.md",
+    "docs/03-reference/fast-dev-os/packet-ledger.md",
+    "docs/03-reference/fast-dev-os/proof-ledger.md",
     "docs/03-reference/fast-dev-os/evidence-notes.md",
     "task-packets/generated/TP-DMX-FDOS-004-AUTHORITY-REFRESH.json",
     "proof/fast-dev-os/TP-DMX-FDOS-004-AUTHORITY-REFRESH/PROOF.json"
@@ -97,7 +97,7 @@
     },
     {
       "name": "docs_validator (8 fast-dev-os files)",
-      "command": "python scripts/docs_validator.py docs/03-reference/fast-dev-os/README.md docs/03-reference/fast-dev-os/PROJECT_CONSTITUTION.md docs/03-reference/fast-dev-os/THREAD00_CURRENT_OPERATING_LEDGER.md docs/03-reference/fast-dev-os/UNKNOWN_CONFLICTING_STALE.md docs/03-reference/fast-dev-os/PR_LEDGER.md docs/03-reference/fast-dev-os/PACKET_LEDGER.md docs/03-reference/fast-dev-os/PROOF_LEDGER.md docs/03-reference/fast-dev-os/evidence-notes.md",
+      "command": "python scripts/docs_validator.py docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/evidence-notes.md",
       "exit_code": 0,
       "status": "PASS"
     },
@@ -214,5 +214,30 @@
       "/Users/hue/Downloads/dopemux-chat-context-v2/ (advisory chat extracts \u2014 provenance in evidence-notes.md)"
     ],
     "implementer": "Claude Opus 4.7 (1M context) via Codex CLI shell (execution.agent='codex' for schema compliance)"
-  }
+  },
+  "remediation_log": [
+    {
+      "remediation_id": "R1-FILENAME-HYGIENE",
+      "trigger": "PR #675 CI failed on docs-filename-hygiene pre-commit hook at https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/26321625736 (7 violations: PROJECT_CONSTITUTION.md, THREAD00_CURRENT_OPERATING_LEDGER.md, README.md, PR_LEDGER.md, PACKET_LEDGER.md, PROOF_LEDGER.md, UNKNOWN_CONFLICTING_STALE.md require kebab-case)",
+      "root_cause": "Authored files in SCREAMING_SNAKE_CASE following the chat-context-v2 corpus naming convention; repo's docs-filename-hygiene policy (config/docs_hygiene/docs_placement_policy.yaml + scripts/check_docs_filename_hygiene.py) requires kebab-case for active docs.",
+      "fix_applied": [
+        "Ran 'python3 scripts/check_docs_filename_hygiene.py --apply' on the 8 fast-dev-os files; script renamed 7 files (evidence-notes.md was already kebab-case), updated 7 markdown link references, 1 docs_index.yaml entry, and 2 plain references in TP/PROOF JSONs.",
+        "Manually renamed 'readme-2.md' -> 'readme.md' (script suffixed -2 due to case-insensitive macOS filesystem collision with original README.md; no actual readme.md exists at this path) and updated 4 references back to readme.md.",
+        "Manually updated inline-code display labels in 6 doc files to match new kebab-case filenames (cosmetic consistency: `[PROJECT_CONSTITUTION.md]` -> `[project-constitution.md]` etc.).",
+        "Reverted 'reports/docs-hygiene/filename_audit.json' (out-of-scope side effect: --apply truncated full-tree audit to just 8 files; allowlist enforces only fast-dev-os scope).",
+        "Re-validated: docs-filename-hygiene OK (0 violations), docs_validator PASS (silent), docs_frontmatter_guard PASS, jsonschema TP PASS, json.tool TP+PROOF PASS."
+      ],
+      "files_renamed": {
+        "docs/03-reference/fast-dev-os/PROJECT_CONSTITUTION.md": "docs/03-reference/fast-dev-os/project-constitution.md",
+        "docs/03-reference/fast-dev-os/THREAD00_CURRENT_OPERATING_LEDGER.md": "docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md",
+        "docs/03-reference/fast-dev-os/README.md": "docs/03-reference/fast-dev-os/readme.md",
+        "docs/03-reference/fast-dev-os/PR_LEDGER.md": "docs/03-reference/fast-dev-os/pr-ledger.md",
+        "docs/03-reference/fast-dev-os/PACKET_LEDGER.md": "docs/03-reference/fast-dev-os/packet-ledger.md",
+        "docs/03-reference/fast-dev-os/PROOF_LEDGER.md": "docs/03-reference/fast-dev-os/proof-ledger.md",
+        "docs/03-reference/fast-dev-os/UNKNOWN_CONFLICTING_STALE.md": "docs/03-reference/fast-dev-os/unknown-conflicting-stale.md"
+      },
+      "remediated_at_utc": "2026-05-23T03:05:00Z",
+      "remediated_by": "Claude Opus 4.7 (1M context) via Codex CLI shell"
+    }
+  ]
 }

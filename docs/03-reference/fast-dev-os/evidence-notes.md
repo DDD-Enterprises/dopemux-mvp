@@ -17,7 +17,7 @@ This document **operationalizes** the governance layer at [`docs/03-reference/go
 
 ## Why this file exists
 
-Several Fast Dev OS ledgers ([`UNKNOWN_CONFLICTING_STALE.md`](UNKNOWN_CONFLICTING_STALE.md), [`PR_LEDGER.md`](PR_LEDGER.md), [`PACKET_LEDGER.md`](PACKET_LEDGER.md), [`PROOF_LEDGER.md`](PROOF_LEDGER.md)) reference the **chat-context-v2 corpus** as advisory evidence. That corpus is an **out-of-repo** artifact at `/Users/hue/Downloads/dopemux-chat-context-v2/`. Reviewers and future maintainers won't have it. This file documents what it is, where it came from, and the boundaries on its use.
+Several Fast Dev OS ledgers ([`unknown-conflicting-stale.md`](unknown-conflicting-stale.md), [`pr-ledger.md`](pr-ledger.md), [`packet-ledger.md`](packet-ledger.md), [`proof-ledger.md`](proof-ledger.md)) reference the **chat-context-v2 corpus** as advisory evidence. That corpus is an **out-of-repo** artifact at `/Users/hue/Downloads/dopemux-chat-context-v2/`. Reviewers and future maintainers won't have it. This file documents what it is, where it came from, and the boundaries on its use.
 
 ## The chat-context-v2 corpus
 
@@ -44,8 +44,8 @@ Per `INGESTION_STATE.json`:
 - `quality_audited: true`
 
 ### What the corpus is good for (advisory uses)
-- **Cross-session UNKNOWNs** — claims independently flagged by multiple chat sessions are stronger signal than single-source flags. Cited in [`UNKNOWN_CONFLICTING_STALE.md §4`](UNKNOWN_CONFLICTING_STALE.md).
-- **Cross-packet PR/TP conflicts** — chat sessions across different times claimed different statuses for the same artifact. Helps surface true contradictions vs timeline progressions. Cited in [`UNKNOWN_CONFLICTING_STALE.md §2`](UNKNOWN_CONFLICTING_STALE.md), [`PR_LEDGER.md`](PR_LEDGER.md), [`PACKET_LEDGER.md`](PACKET_LEDGER.md).
+- **Cross-session UNKNOWNs** — claims independently flagged by multiple chat sessions are stronger signal than single-source flags. Cited in [`unknown-conflicting-stale.md §4`](unknown-conflicting-stale.md).
+- **Cross-packet PR/TP conflicts** — chat sessions across different times claimed different statuses for the same artifact. Helps surface true contradictions vs timeline progressions. Cited in [`unknown-conflicting-stale.md §2`](unknown-conflicting-stale.md), [`pr-ledger.md`](pr-ledger.md), [`packet-ledger.md`](packet-ledger.md).
 - **PR/TP citation frequency** — which artifacts get talked about most across sessions, useful for prioritizing live validation.
 - **Reusable prompts and templates extracted verbatim** from sessions — many V2 packets preserve durable prompts in their section 8 that may inform `TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK`.
 

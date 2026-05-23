@@ -39,7 +39,7 @@ snapshot:
 
 ## PR queue summary (at snapshot time)
 
-13 open PRs across the repo. See [`PR_LEDGER.md`](PR_LEDGER.md) for per-PR detail.
+13 open PRs across the repo. See [`pr-ledger.md`](pr-ledger.md) for per-PR detail.
 
 | PR | Title | Status |
 |----|-------|--------|
@@ -71,7 +71,7 @@ snapshot:
 
 ## Active Task Packets (subsystem snapshot)
 
-See [`PACKET_LEDGER.md`](PACKET_LEDGER.md) for full inventory. Highlights:
+See [`packet-ledger.md`](packet-ledger.md) for full inventory. Highlights:
 
 - **Fast Dev OS series** (`DMX-FDOS`): `TP-DMX-FDOS-003` (in PR #668, queued), `TP-DMX-FDOS-004` (this packet, in worktree), `TP-DMX-FDOS-005` and `TP-DMX-FDOS-006` (planned, not yet authored).
 - **Codex Refresh series** (`DMX-CODEX-REFRESH`): `001` and `002` MERGED (PRs #662, #666). `003` (templates) merged as PR #667 at `8e7a2283f`.
@@ -87,7 +87,7 @@ See [`PACKET_LEDGER.md`](PACKET_LEDGER.md) for full inventory. Highlights:
 
 ## Open blockers (NON-BLOCKING but visible)
 
-1. **AGENTS.md §10 known dangers** — bridge surfaces look authoritative but aren't; task-orchestrator runtime split across multiple paths; memory surfaces overlap; agent authority UNKNOWN; dopetask/TaskX naming drift; MCP/proxy config drift. See [`UNKNOWN_CONFLICTING_STALE.md`](UNKNOWN_CONFLICTING_STALE.md) for the full register.
+1. **AGENTS.md §10 known dangers** — bridge surfaces look authoritative but aren't; task-orchestrator runtime split across multiple paths; memory surfaces overlap; agent authority UNKNOWN; dopetask/TaskX naming drift; MCP/proxy config drift. See [`unknown-conflicting-stale.md`](unknown-conflicting-stale.md) for the full register.
 2. **GitHub Dependabot warnings** — 31 vulnerabilities reported on main (2 critical, 12 high, 17 moderate). Out of scope for the doctrine layer; handled in dependency-update PRs (#661, #669).
 
 ## Next action queue (this session)

@@ -182,17 +182,17 @@ skills:
   workflow_code_implementer: templates/skills/code-implementer/SKILL.md
   workflow_quality_refactorer: templates/skills/quality-refactorer/SKILL.md
 fast_dev_os:
-  readme: docs/03-reference/fast-dev-os/README.md
-  project_constitution: docs/03-reference/fast-dev-os/PROJECT_CONSTITUTION.md
-  thread00_current_operating_ledger: docs/03-reference/fast-dev-os/THREAD00_CURRENT_OPERATING_LEDGER.md
-  unknown_conflicting_stale: docs/03-reference/fast-dev-os/UNKNOWN_CONFLICTING_STALE.md
-  pr_ledger: docs/03-reference/fast-dev-os/PR_LEDGER.md
-  packet_ledger: docs/03-reference/fast-dev-os/PACKET_LEDGER.md
-  proof_ledger: docs/03-reference/fast-dev-os/PROOF_LEDGER.md
+  readme: docs/03-reference/fast-dev-os/readme.md
+  project_constitution: docs/03-reference/fast-dev-os/project-constitution.md
+  thread00_current_operating_ledger: docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md
+  unknown_conflicting_stale: docs/03-reference/fast-dev-os/unknown-conflicting-stale.md
+  pr_ledger: docs/03-reference/fast-dev-os/pr-ledger.md
+  packet_ledger: docs/03-reference/fast-dev-os/packet-ledger.md
+  proof_ledger: docs/03-reference/fast-dev-os/proof-ledger.md
   evidence_notes: docs/03-reference/fast-dev-os/evidence-notes.md
   relationship_to_governance: docs/03-reference/governance/codex-authority-refresh.md
   series_id: DMX-FDOS
   packets:
-    - TP-DMX-FDOS-004-AUTHORITY-REFRESH
-    - TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK (planned)
-    - TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES (planned)
+  - TP-DMX-FDOS-004-AUTHORITY-REFRESH
+  - TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK (planned)
+  - TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES (planned)

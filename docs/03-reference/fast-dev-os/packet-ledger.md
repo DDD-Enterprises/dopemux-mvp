@@ -95,7 +95,7 @@ snapshot:
 
 ## Cross-reference: chat-context-v2 TP conflicts
 
-8 TPs have status conflicts in the chat-context-v2 corpus. See [`UNKNOWN_CONFLICTING_STALE.md §2`](UNKNOWN_CONFLICTING_STALE.md). Three are TRUE_CONTRADICTION_OR_REGRESSION requiring live validation: `TP-DMX-COCKPIT-RUNTIME-RENDER-001`, `TP-DT-CLAUDE-RUNNER-ASSEMBLY-0001`, `TP-DT-CLAUDE-PREFLIGHT-0001`.
+8 TPs have status conflicts in the chat-context-v2 corpus. See [`unknown-conflicting-stale.md §2`](unknown-conflicting-stale.md). Three are TRUE_CONTRADICTION_OR_REGRESSION requiring live validation: `TP-DMX-COCKPIT-RUNTIME-RENDER-001`, `TP-DT-CLAUDE-RUNNER-ASSEMBLY-0001`, `TP-DT-CLAUDE-PREFLIGHT-0001`.
 
 ## Phantom-dependency cleanup
 

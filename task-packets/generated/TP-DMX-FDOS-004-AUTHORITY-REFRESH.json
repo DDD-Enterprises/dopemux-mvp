@@ -32,13 +32,13 @@
   "commit": {
     "message": "docs(fast-dev-os): install operational doctrine layer (authority refresh)",
     "allowlist": [
-      "docs/03-reference/fast-dev-os/README.md",
-      "docs/03-reference/fast-dev-os/PROJECT_CONSTITUTION.md",
-      "docs/03-reference/fast-dev-os/THREAD00_CURRENT_OPERATING_LEDGER.md",
-      "docs/03-reference/fast-dev-os/UNKNOWN_CONFLICTING_STALE.md",
-      "docs/03-reference/fast-dev-os/PR_LEDGER.md",
-      "docs/03-reference/fast-dev-os/PACKET_LEDGER.md",
-      "docs/03-reference/fast-dev-os/PROOF_LEDGER.md",
+      "docs/03-reference/fast-dev-os/readme.md",
+      "docs/03-reference/fast-dev-os/project-constitution.md",
+      "docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md",
+      "docs/03-reference/fast-dev-os/unknown-conflicting-stale.md",
+      "docs/03-reference/fast-dev-os/pr-ledger.md",
+      "docs/03-reference/fast-dev-os/packet-ledger.md",
+      "docs/03-reference/fast-dev-os/proof-ledger.md",
       "docs/03-reference/fast-dev-os/evidence-notes.md",
       "docs/INDEX.md",
       "docs/docs_index.yaml",
@@ -50,10 +50,10 @@
       "python -m json.tool task-packets/generated/TP-DMX-FDOS-004-AUTHORITY-REFRESH.json >/dev/null",
       "python -m jsonschema -i task-packets/generated/TP-DMX-FDOS-004-AUTHORITY-REFRESH.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
       "python -m json.tool proof/fast-dev-os/TP-DMX-FDOS-004-AUTHORITY-REFRESH/PROOF.json >/dev/null",
-      "python scripts/docs_validator.py docs/03-reference/fast-dev-os/README.md docs/03-reference/fast-dev-os/PROJECT_CONSTITUTION.md docs/03-reference/fast-dev-os/THREAD00_CURRENT_OPERATING_LEDGER.md docs/03-reference/fast-dev-os/UNKNOWN_CONFLICTING_STALE.md docs/03-reference/fast-dev-os/PR_LEDGER.md docs/03-reference/fast-dev-os/PACKET_LEDGER.md docs/03-reference/fast-dev-os/PROOF_LEDGER.md docs/03-reference/fast-dev-os/evidence-notes.md",
-      "python scripts/docs_frontmatter_guard.py docs/03-reference/fast-dev-os/README.md docs/03-reference/fast-dev-os/PROJECT_CONSTITUTION.md docs/03-reference/fast-dev-os/THREAD00_CURRENT_OPERATING_LEDGER.md docs/03-reference/fast-dev-os/UNKNOWN_CONFLICTING_STALE.md docs/03-reference/fast-dev-os/PR_LEDGER.md docs/03-reference/fast-dev-os/PACKET_LEDGER.md docs/03-reference/fast-dev-os/PROOF_LEDGER.md docs/03-reference/fast-dev-os/evidence-notes.md",
+      "python scripts/docs_validator.py docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/evidence-notes.md",
+      "python scripts/docs_frontmatter_guard.py docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/evidence-notes.md",
       "grep -l 'Relationship to governance' docs/03-reference/fast-dev-os/*.md",
-      "grep -l 'snapshot:' docs/03-reference/fast-dev-os/THREAD00_CURRENT_OPERATING_LEDGER.md docs/03-reference/fast-dev-os/PR_LEDGER.md docs/03-reference/fast-dev-os/PACKET_LEDGER.md docs/03-reference/fast-dev-os/PROOF_LEDGER.md",
+      "grep -l 'snapshot:' docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/proof-ledger.md",
       "git diff --check",
       "git diff --cached --check"
     ]
@@ -116,7 +116,7 @@
     },
     {
       "id": "S3",
-      "task": "Author docs/03-reference/fast-dev-os/PROJECT_CONSTITUTION.md and README.md as the doctrine entry-point.",
+      "task": "Author docs/03-reference/fast-dev-os/project-constitution.md and README.md as the doctrine entry-point.",
       "requirements": [
         "PROJECT_CONSTITUTION.md defines: mission, scope, non-goals, vocabulary, boundaries vs the existing governance layer.",
         "README.md is the discoverability landing page linking each ledger.",
@@ -124,12 +124,12 @@
         "Frontmatter follows Diataxis convention with id/title/type/owner/date/last_review/next_review/prelude fields."
       ],
       "expected_files": [
-        "docs/03-reference/fast-dev-os/PROJECT_CONSTITUTION.md",
-        "docs/03-reference/fast-dev-os/README.md"
+        "docs/03-reference/fast-dev-os/project-constitution.md",
+        "docs/03-reference/fast-dev-os/readme.md"
       ],
       "validation": [
-        "grep -l 'Relationship to governance' docs/03-reference/fast-dev-os/PROJECT_CONSTITUTION.md docs/03-reference/fast-dev-os/README.md",
-        "grep -l 'codex-authority-refresh' docs/03-reference/fast-dev-os/PROJECT_CONSTITUTION.md docs/03-reference/fast-dev-os/README.md"
+        "grep -l 'Relationship to governance' docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/readme.md",
+        "grep -l 'codex-authority-refresh' docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/readme.md"
       ]
     },
     {
@@ -144,15 +144,15 @@
         "Each doc includes a \"Relationship to governance\" section."
       ],
       "expected_files": [
-        "docs/03-reference/fast-dev-os/THREAD00_CURRENT_OPERATING_LEDGER.md",
-        "docs/03-reference/fast-dev-os/PR_LEDGER.md",
-        "docs/03-reference/fast-dev-os/PACKET_LEDGER.md",
-        "docs/03-reference/fast-dev-os/PROOF_LEDGER.md"
+        "docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md",
+        "docs/03-reference/fast-dev-os/pr-ledger.md",
+        "docs/03-reference/fast-dev-os/packet-ledger.md",
+        "docs/03-reference/fast-dev-os/proof-ledger.md"
       ],
       "validation": [
-        "grep -l 'snapshot:' docs/03-reference/fast-dev-os/THREAD00_CURRENT_OPERATING_LEDGER.md docs/03-reference/fast-dev-os/PR_LEDGER.md docs/03-reference/fast-dev-os/PACKET_LEDGER.md docs/03-reference/fast-dev-os/PROOF_LEDGER.md",
-        "grep -l 'Relationship to governance' docs/03-reference/fast-dev-os/THREAD00_CURRENT_OPERATING_LEDGER.md docs/03-reference/fast-dev-os/PR_LEDGER.md docs/03-reference/fast-dev-os/PACKET_LEDGER.md docs/03-reference/fast-dev-os/PROOF_LEDGER.md",
-        "grep -l 'refresh_policy: manual-per-session' docs/03-reference/fast-dev-os/THREAD00_CURRENT_OPERATING_LEDGER.md"
+        "grep -l 'snapshot:' docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/proof-ledger.md",
+        "grep -l 'Relationship to governance' docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/proof-ledger.md",
+        "grep -l 'refresh_policy: manual-per-session' docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md"
       ]
     },
     {
@@ -164,13 +164,13 @@
         "evidence-notes.md documents chat-context-v2 provenance (root path, retrieval date, selection criteria, why citations are external)."
       ],
       "expected_files": [
-        "docs/03-reference/fast-dev-os/UNKNOWN_CONFLICTING_STALE.md",
+        "docs/03-reference/fast-dev-os/unknown-conflicting-stale.md",
         "docs/03-reference/fast-dev-os/evidence-notes.md"
       ],
       "validation": [
-        "grep -l 'AGENTS.md' docs/03-reference/fast-dev-os/UNKNOWN_CONFLICTING_STALE.md",
-        "grep -l 'chat-context-v2' docs/03-reference/fast-dev-os/UNKNOWN_CONFLICTING_STALE.md docs/03-reference/fast-dev-os/evidence-notes.md",
-        "grep -l 'Relationship to governance' docs/03-reference/fast-dev-os/UNKNOWN_CONFLICTING_STALE.md docs/03-reference/fast-dev-os/evidence-notes.md"
+        "grep -l 'AGENTS.md' docs/03-reference/fast-dev-os/unknown-conflicting-stale.md",
+        "grep -l 'chat-context-v2' docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/evidence-notes.md",
+        "grep -l 'Relationship to governance' docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/evidence-notes.md"
       ]
     },
     {
@@ -200,8 +200,8 @@
       "id": "S8",
       "task": "Run final docs/proof validation, inspect diff scope, codereview, precommit, commit, push, and open PR.",
       "validation": [
-        "python scripts/docs_validator.py docs/03-reference/fast-dev-os/README.md docs/03-reference/fast-dev-os/PROJECT_CONSTITUTION.md docs/03-reference/fast-dev-os/THREAD00_CURRENT_OPERATING_LEDGER.md docs/03-reference/fast-dev-os/UNKNOWN_CONFLICTING_STALE.md docs/03-reference/fast-dev-os/PR_LEDGER.md docs/03-reference/fast-dev-os/PACKET_LEDGER.md docs/03-reference/fast-dev-os/PROOF_LEDGER.md docs/03-reference/fast-dev-os/evidence-notes.md",
-        "python scripts/docs_frontmatter_guard.py docs/03-reference/fast-dev-os/README.md docs/03-reference/fast-dev-os/PROJECT_CONSTITUTION.md docs/03-reference/fast-dev-os/THREAD00_CURRENT_OPERATING_LEDGER.md docs/03-reference/fast-dev-os/UNKNOWN_CONFLICTING_STALE.md docs/03-reference/fast-dev-os/PR_LEDGER.md docs/03-reference/fast-dev-os/PACKET_LEDGER.md docs/03-reference/fast-dev-os/PROOF_LEDGER.md docs/03-reference/fast-dev-os/evidence-notes.md",
+        "python scripts/docs_validator.py docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/evidence-notes.md",
+        "python scripts/docs_frontmatter_guard.py docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/evidence-notes.md",
         "git diff --check",
         "git diff --cached --check",
         "git diff --stat",

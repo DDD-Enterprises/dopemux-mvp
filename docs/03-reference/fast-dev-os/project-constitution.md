@@ -42,7 +42,7 @@ In scope for the Fast Dev OS layer:
 - **Not** a runtime code change of any kind. The doctrine layer is docs-only.
 - **Not** GitHub PR / CI enforcement (Phase 3 of the executive verdict; deferred).
 - **Not** a Cockpit display layer (Phase 4 of the executive verdict; deferred). Cockpit is a display + gate + proof surface only — never PM, memory, execution, retrieval, or bridge authority.
-- **Not** a schema extension to `dopetask-canonical-spec.json` (see RISK-SCHEMA in [`UNKNOWN_CONFLICTING_STALE.md`](UNKNOWN_CONFLICTING_STALE.md); deferred).
+- **Not** a schema extension to `dopetask-canonical-spec.json` (see RISK-SCHEMA in [`unknown-conflicting-stale.md`](unknown-conflicting-stale.md); deferred).
 - **Not** a parallel-workstream launch (Phase 5 of the executive verdict; deferred).
 
 ## Vocabulary
