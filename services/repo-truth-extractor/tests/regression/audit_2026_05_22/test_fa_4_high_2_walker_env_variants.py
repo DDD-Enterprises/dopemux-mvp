@@ -67,10 +67,7 @@ def test_dot_suffix_env_variants_excluded(filename: str, tmp_path: Path) -> None
     )
 
 
-# --- xfail regression: hyphen/underscore variants — should ALSO be excluded ---
-@pytest.mark.xfail(
-    reason="FA-4-HIGH-2: DEFAULT_SECRET_BEARING_EXCLUDE_GLOBS does NOT cover .env-* / .env_* hyphenated/underscored variants. Add .env-* and .env_* patterns to close."
-)
+# --- FA-4-HIGH-2 regression: hyphen/underscore variants should also be excluded ---
 @pytest.mark.parametrize(
     "filename",
     [
@@ -84,7 +81,7 @@ def test_dot_suffix_env_variants_excluded(filename: str, tmp_path: Path) -> None
 def test_hyphen_underscore_env_variants_should_be_excluded(
     filename: str, tmp_path: Path
 ) -> None:
-    """xfail until FA-4-HIGH-2 adds hyphen/underscore .env variants."""
+    """Hyphen/underscore .env variants must be excluded."""
     (tmp_path / filename).write_text(
         "STAGING_SECRET=fake-staging-secret-xyz\n", encoding="utf-8"
     )
