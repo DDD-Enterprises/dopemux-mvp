@@ -57,7 +57,7 @@ snapshot:
 
 ## Cross-reference: chat-context-v2 PR conflicts
 
-The chat-context-v2 reconciled corpus at [`/Users/hue/Downloads/dopemux-chat-context-v2/04_reconciled/PR_PACKET_PROOF_MAP.md`](../../../../Downloads/dopemux-chat-context-v2/04_reconciled/PR_PACKET_PROOF_MAP.md) detected 6 PRs with status conflicts across chat sessions. See [`unknown-conflicting-stale.md §2`](unknown-conflicting-stale.md) for the full conflict register and resolution recommendations.
+The chat-context-v2 reconciled corpus at `$HOME/Downloads/dopemux-chat-context-v2/04_reconciled/PR_PACKET_PROOF_MAP.md` detected 6 PRs with status conflicts across chat sessions. See [`unknown-conflicting-stale.md §2`](unknown-conflicting-stale.md) for the full conflict register and resolution recommendations.
 
 ## Recently merged (top 10, for context)
 

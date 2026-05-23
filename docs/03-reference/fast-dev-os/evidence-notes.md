@@ -17,12 +17,12 @@ This document **operationalizes** the governance layer at [`docs/03-reference/go
 
 ## Why this file exists
 
-Several Fast Dev OS ledgers ([`unknown-conflicting-stale.md`](unknown-conflicting-stale.md), [`pr-ledger.md`](pr-ledger.md), [`packet-ledger.md`](packet-ledger.md), [`proof-ledger.md`](proof-ledger.md)) reference the **chat-context-v2 corpus** as advisory evidence. That corpus is an **out-of-repo** artifact at `/Users/hue/Downloads/dopemux-chat-context-v2/`. Reviewers and future maintainers won't have it. This file documents what it is, where it came from, and the boundaries on its use.
+Several Fast Dev OS ledgers ([`unknown-conflicting-stale.md`](unknown-conflicting-stale.md), [`pr-ledger.md`](pr-ledger.md), [`packet-ledger.md`](packet-ledger.md), [`proof-ledger.md`](proof-ledger.md)) reference the **chat-context-v2 corpus** as advisory evidence. That corpus is an **out-of-repo** artifact at `$HOME/Downloads/dopemux-chat-context-v2/`. Reviewers and future maintainers won't have it. This file documents what it is, where it came from, and the boundaries on its use.
 
 ## The chat-context-v2 corpus
 
 ### Root path
-`/Users/hue/Downloads/dopemux-chat-context-v2/`
+`$HOME/Downloads/dopemux-chat-context-v2/`
 
 ### Retrieval date
 Built incrementally; final reconciliation timestamp recorded in `04_reconciled/RECONCILIATION_INDEX.json` `generated_at_utc`.
@@ -59,7 +59,7 @@ Per `INGESTION_STATE.json`:
 
 Where Fast Dev OS ledgers cite the corpus, they use this pattern:
 
-> Source: `[/Users/hue/Downloads/dopemux-chat-context-v2/<subpath>](relative-path-or-external-link)` (external evidence base; see `evidence-notes.md`).
+> Source: `$HOME/Downloads/dopemux-chat-context-v2/<subpath>` (external evidence base; see `evidence-notes.md`). Do NOT use a markdown link target for external paths — they will break on GitHub.
 
 Cited corpus files include:
 - `04_reconciled/RECONCILED_MASTER_LEDGER.md`
