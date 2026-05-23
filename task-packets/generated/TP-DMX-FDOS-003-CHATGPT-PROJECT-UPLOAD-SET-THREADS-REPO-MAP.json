@@ -1,0 +1,129 @@
+{
+  "id": "TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP",
+  "project": "dopemux-mvp",
+  "target": "Assemble ChatGPT Project upload set, thread primers, GPT-5.5 investigation intake, and repo map intake",
+  "invariants": [
+    "Docs/package assembly only.",
+    "Do not modify runtime code, service code, tests, CI, dependencies, compose files, package files, source files, runtime config, or schemas.",
+    "Generated upload bundles are copies, not new authority.",
+    "Fresh GitHub/runtime inspection outranks downloaded recon.",
+    "Do not claim completion without validation proof."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-FDOS",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fdos-003-upload-set-threads-repo-map",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs: assemble ChatGPT Project upload set, thread primers, and repo map intake",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP.json",
+      "out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/**",
+      "out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP.zip"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m json.tool out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES_MANIFEST.json >/dev/null",
+      "python -m json.tool out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/PROOF.json >/dev/null",
+      "test \"$(find out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES -type f | wc -l | tr -d ' ')\" = \"40\"",
+      "python - <<'PY'\nfrom pathlib import Path\np = Path(\"out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/PROJECT_INSTRUCTIONS_UNDER_8000.txt\")\nn = len(p.read_text(encoding=\"utf-8\"))\nprint(n)\nraise SystemExit(0 if n < 8000 else 1)\nPY",
+      "zip -r out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP.zip out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP",
+      "cp out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP.zip /Users/hue/Downloads/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP.zip",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs: assemble ChatGPT Project upload set, thread primers, and repo map intake",
+    "body": "## Summary\n- Assemble a 40-file ChatGPT Project upload bundle for Dopemux Fast Dev OS.\n- Add GPT-5.5 investigation intake handling.\n- Add repo map/current workstream recon intake and digest.\n- Add updated project setup, Thread 00 intake starter, and seven thread priming prompts.\n- Add schema-valid Task Packet and proof metadata.\n\n## Scope\nDocs/package assembly only.\nNo runtime/source/config/test/dependency/CI changes.\n\n## Validation\nPASS, FAIL, and NOT_RUN evidence must be copied from the final proof.\n\n## Intake Artifacts\n- GPT-5.5 investigation: report observed status.\n- Repo map/current recon: report observed status.\n\n## Residual Risks / UNKNOWNs\nList unresolved intake ambiguity and live GitHub/recon drift.\n\n## Operator Notes\n- Upload files from `UPLOAD_FILES/`.\n- Attach `GPT55_INVESTIGATION_INTAKE.md`, `REPO_MAP_CURRENT_RECON.md`, and `REPO_MAP_DIGEST.md` to `00 Intake / Supervisor Ledger`.\n- Use `OPERATOR_START_HERE.md` first.\n\n@codex review\n@gemini\n@copilot",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repo identity, branch, status, marker, live authority files, schema, task packet index, Downloads candidates, and live GitHub PR posture.",
+      "context_files": [
+        "AGENTS.md",
+        "docs/03-reference/governance/rules.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "PM_PLANE.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ],
+      "validation": [
+        "Repo identity must match DDD-Enterprises/dopemux-mvp and .dopetaskroot must exist.",
+        "Any missing or conflicting authority must be recorded as UNKNOWN or CONFLICTING."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create this schema-valid Task Packet before package assembly.",
+      "expected_files": [
+        "task-packets/generated/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP.json"
+      ],
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP.json >/dev/null",
+        "python -m jsonschema -i task-packets/generated/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Assemble the upload set, manifests, drift reports, intake files, repo-map digest, project setup, seven thread prompts, operator start file, and proof under the allowed out directory.",
+      "expected_files": [
+        "out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/",
+        "out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES_MANIFEST.json",
+        "out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/PROOF.json"
+      ],
+      "validation": [
+        "UPLOAD_FILES must contain exactly 40 copied files.",
+        "Manifest must preserve source path, authority class, status, note, and sha256 for every upload file.",
+        "GPT-5.5 and repo-map intake statuses must be explicit."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Create the zip archive and copy it to /Users/hue/Downloads when possible.",
+      "expected_files": [
+        "out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP.zip"
+      ],
+      "validation": [
+        "Repo-local zip exists.",
+        "Downloads copy status is COPIED, FAILED, or NOT_RUN in PROOF.json."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run final validation, inspect diff scope, codereview, precommit, commit, push, and open PR if authenticated.",
+      "validation": [
+        "Packet and generated JSON files parse.",
+        "Packet validates against dopetask-canonical-spec.json.",
+        "Project instructions are under 8000 characters.",
+        "git diff --check exits 0.",
+        "Changed files are within commit.allowlist.",
+        "PR URL or exact blocker is reported."
+      ]
+    }
+  ]
+}
