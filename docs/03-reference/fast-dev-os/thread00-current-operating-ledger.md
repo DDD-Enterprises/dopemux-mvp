@@ -19,7 +19,7 @@ This snapshot **operationalizes** the governance layer at [`docs/03-reference/go
 
 ## Snapshot metadata
 
-```yaml
+``yaml
 snapshot:
   taken_at: '2026-05-23T02:35:00Z'
   repo_head: 8e7a2283f56a49abfb41c2ac791cbf18dd0ae500
@@ -28,13 +28,13 @@ snapshot:
   refresh_policy: manual-per-session
   next_review_trigger: any new merge to main OR session boundary
   taken_by: 'TP-DMX-FDOS-004-AUTHORITY-REFRESH (initial authoring)'
-```
+``
 
 ## Active branches and worktrees (at snapshot time)
 
-- **Primary checkout**: `/Users/hue/code/dopemux-mvp` on `main` at `ab22df5a2` (1 commit behind `origin/main`, needs `git pull`).
-- **Active worktree for this packet**: `/Users/hue/code/dopemux-mvp-fdos-004-authority-refresh` on `codex/dmx-fdos-004-authority-refresh` at `8e7a2283f` (= `origin/main`).
-- **In-flight refresh worktree**: `/Users/hue/code/dopemux-mvp-dmx-fdos-003-upload-set-threads-repo-map` on `codex/dmx-fdos-003-upload-set-threads-repo-map` at `cd13e071e` (PR #668, OPEN, auto-merge queued).
+- **Primary checkout**: `$HOME/code/dopemux-mvp` on `main` at `ab22df5a2` (1 commit behind `origin/main`, needs `git pull`).
+- **Active worktree for this packet**: `$HOME/code/dopemux-mvp`-fdos-004-authority-refresh` on `codex/dmx-fdos-004-authority-refresh` at `8e7a2283f` (= `origin/main`).
+- **In-flight refresh worktree**: `$HOME/code/dopemux-mvp`-dmx-fdos-003-upload-set-threads-repo-map` on `codex/dmx-fdos-003-upload-set-threads-repo-map` at `cd13e071e` (PR #668, OPEN, auto-merge queued).
 - **Other open RTE worktrees**: see `git worktree list` for live state.
 
 ## PR queue summary (at snapshot time)

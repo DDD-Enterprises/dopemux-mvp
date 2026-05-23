@@ -31,6 +31,7 @@ Use this file as the root pointer for active documentation navigation and mainte
 - [Explanation Overview](04-explanation/overview.md)
 - [Documentation Catalog](03-reference/documentation-catalog.md)
 - [Fast Dev OS — Operational Doctrine Layer](03-reference/fast-dev-os/readme.md)
+- [Fast Dev OS — Executor Prompt Pack](03-reference/fast-dev-os/prompts/readme.md)
 - [Root Quick Start](../QUICK_START.md)
 - [Dopemux Quickstart](01-tutorials/quickstart.md)
 - [Developer Onboarding](02-how-to/developer-onboarding.md)

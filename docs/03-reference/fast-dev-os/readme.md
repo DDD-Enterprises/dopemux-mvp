@@ -24,12 +24,18 @@ The governance layer defines the *what* (authority boundaries, label vocabulary,
 | File | Purpose | Class |
 |------|---------|-------|
 | [`project-constitution.md`](project-constitution.md) | Mission, scope, non-goals, vocabulary, boundaries vs governance | doctrine |
-| [`thread00-current-operating-ledger.md`](thread00-current-operating-ledger.md) | Snapshot of current branch / PRs / packets / blockers at HEAD `<SHA>` | snapshot |
+| [`thread00-current-operating-ledger.md`](thread00-current-operating-ledger.md) | Snapshot of current branch / PRs / packets / blockers (HEAD SHA recorded in the file's `snapshot:` frontmatter block) | snapshot |
 | [`unknown-conflicting-stale.md`](unknown-conflicting-stale.md) | UNRESOLVED authority/path drift; carries forward AGENTS.md §10 known dangers | register |
 | [`pr-ledger.md`](pr-ledger.md) | Snapshot of `gh pr list --state open` cross-referenced with chat-context-v2 PR map | snapshot |
 | [`packet-ledger.md`](packet-ledger.md) | Snapshot derived from `task-packets/INDEX.md` + v2 corpus TP citation graph | snapshot |
 | [`proof-ledger.md`](proof-ledger.md) | Index of `proof/**/PROOF.json` with verdict and commit SHA columns | snapshot |
 | [`evidence-notes.md`](evidence-notes.md) | Provenance of chat-context-v2 corpus citations (external evidence base) | reference |
+
+## Subdirectories
+
+| Directory | Purpose |
+|-----------|---------|
+| [`prompts/`](prompts/readme.md) | Reusable executor prompt pack for multi-implementer routing (Codex / Claude Code / Gemini / Grok / Jules / Copilot) plus operator-side templates (report / audit / acceptance decision). See [`prompts/readme.md`](prompts/readme.md). |
 
 ## Subsequent packets in this series
 
