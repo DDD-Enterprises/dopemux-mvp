@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 RouteTuple = Tuple[str, str, str]
 RouteLike = Sequence[str]
+ROUTE_REQUEST_OPTION_KEYS = ("service_tier", "reasoning_effort")
 
 
 @dataclass(frozen=True)
@@ -349,6 +350,7 @@ def call_llm(
     timeout_seconds: Optional[int] = None,
     trace_context: Optional[Dict[str, Any]] = None,
     lifecycle_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
+    request_options_override: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     if deps.live_llm_calls_blocked_for_tests():
         message = (
@@ -373,6 +375,7 @@ def call_llm(
         force_json_output=force_json_output,
         response_format_override=response_format_override,
         max_completion_tokens=max_completion_tokens_override,
+        request_options=request_options_override,
     )
     body = deps.serialize_payload_body(payload)
     request_payload_bytes = deps.measure_payload_bytes_from_body(body)
@@ -714,6 +717,9 @@ def call_llm(
                     chat_kwargs["temperature"] = payload["temperature"]
                 if "response_format" in payload:
                     chat_kwargs["response_format"] = payload["response_format"]
+                for option_key in ROUTE_REQUEST_OPTION_KEYS:
+                    if option_key in payload:
+                        chat_kwargs[option_key] = payload[option_key]
                 response = client.chat.completions.create(**chat_kwargs)
                 status_code = 200
                 response_text = deps.extract_text_from_chat_completion(response)

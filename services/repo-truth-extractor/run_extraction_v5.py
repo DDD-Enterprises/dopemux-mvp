@@ -591,6 +591,7 @@ DEFAULT_GEMINI_BULK_MODEL = "gemini-3.1-flash-lite-preview"
 DEFAULT_GEMINI_EXTRACT_MODEL = "gemini-3-flash-preview"
 DEFAULT_GEMINI_SYNTH_MODEL = "gemini-3.1-pro-preview"
 STEP_TIERS = ("bulk", "extract", "synthesis", "qa")
+ROUTE_REQUEST_OPTION_KEYS = ("service_tier", "reasoning_effort")
 
 MAGIC_SUBTYPE_ORDER = {
     "instructions": 0,
@@ -612,7 +613,7 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "extract": [
-            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
             ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
@@ -623,7 +624,7 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
         ],
         "qa": [
             ("openai", "gpt-5-nano", "OPENAI_API_KEY"),
-            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
             ("openai", "gpt-5.2", "OPENAI_API_KEY"),
         ],
     },
@@ -631,10 +632,10 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
         "bulk": [
             ("openai", "gpt-5-nano", "OPENAI_API_KEY"),
             ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
-            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
         ],
         "extract": [
-            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
             ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
@@ -644,7 +645,7 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "qa": [
-            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
             ("openai", "gpt-5-nano", "OPENAI_API_KEY"),
             ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
         ],
@@ -653,10 +654,10 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
         "bulk": [
             ("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY"),
             ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
-            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+            ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
         ],
         "extract": [
-            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+            ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
             ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
@@ -666,7 +667,7 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "qa": [
-            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+            ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
             ("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY"),
             ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
         ],
@@ -674,25 +675,25 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
     "balanced_grok_openrouter": {
         "bulk": [
             ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
-            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+            ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
         ],
         "extract": [
             ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
-            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+            ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
         ],
         "synthesis": [
-            ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-            ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+            ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.5", "OPENAI_API_KEY"),
             ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
         ],
         "qa": [
             ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
-            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+            ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
         ],
     },
     "quality": {
         "bulk": [
-            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
             ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
@@ -707,7 +708,7 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "qa": [
-            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
             ("openai", "gpt-5.2", "OPENAI_API_KEY"),
             ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
         ],
@@ -721,9 +722,9 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
         ],
         "extract": [
             ("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY"),
-            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+            ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
             ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
-            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
         ],
         "synthesis": [
             ("openrouter", "openai/gpt-5.2-pro", "OPENROUTER_API_KEY"),
@@ -741,39 +742,39 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
     "gemini_primary": {
         "bulk": [
             ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
-            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+            ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
         ],
         "extract": [
             ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
-            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+            ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
         ],
         "synthesis": [
             ("gemini", "gemini-3.1-pro-preview", "GEMINI_API_KEY"),
-            ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
-            ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+            ("openai", "gpt-5.5", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
         ],
         "qa": [
             ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
-            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+            ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
         ],
     },
     "optimal": {
         "bulk": [
             ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
-            ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
+            ("xai", "grok-4.3", "XAI_API_KEY"),
         ],
         "extract": [
-            ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
-            ("xai", "grok-4.20-beta-0309-reasoning", "XAI_API_KEY"),
+            ("xai", "grok-4.3", "XAI_API_KEY"),
+            ("xai", "grok-4.3", "XAI_API_KEY"),
         ],
         "synthesis": [
-            ("xai", "grok-4.20-beta-0309-reasoning", "XAI_API_KEY"),
-            ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+            ("xai", "grok-4.3", "XAI_API_KEY"),
+            ("openai", "gpt-5.5", "OPENAI_API_KEY"),
             ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
         ],
         "qa": [
-            ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
-            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+            ("xai", "grok-4.3", "XAI_API_KEY"),
+            ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
         ],
     },
 }
@@ -890,32 +891,32 @@ DOCS_GOVERNANCE_PHASES: Set[str] = {"A", "H", "D", "W", "B", "G"}
 PREMIUM_SYNTHESIS_PHASES: Set[str] = {"R", "X", "T", "Z", "S", "SP", "M"}
 BALANCED_GROK_OPENROUTER_DOCS_LADDER: List[Tuple[str, str, str]] = [
     ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
-    ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+    ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
 ]
 BALANCED_GROK_OPENROUTER_D_STRICT_STEPS: Set[str] = {"D0", "D1"}
 BALANCED_GROK_OPENROUTER_DOCS_STRICT_LADDER: List[Tuple[str, str, str]] = [
-    ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-    ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+    ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
+    ("openai", "gpt-5.5", "OPENAI_API_KEY"),
 ]
 BALANCED_GROK_OPENROUTER_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
     "bulk": [
         ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
-        ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+        ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
     ],
     "extract": [
         ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
         ("openrouter", "openai/gpt-5.1-codex-mini", "OPENROUTER_API_KEY"),
-        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+        ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
     ],
     "qa": [
         ("openrouter", "openai/gpt-5.1-codex-mini", "OPENROUTER_API_KEY"),
-        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-        ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+        ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
+        ("openai", "gpt-5.5", "OPENAI_API_KEY"),
     ],
 }
 BALANCED_GROK_OPENROUTER_SYNTHESIS_LADDER: List[Tuple[str, str, str]] = [
-    ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-    ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+    ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
+    ("openai", "gpt-5.5", "OPENAI_API_KEY"),
     ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
 ]
 BALANCED_GROK_OPENROUTER_OPUS_ROUTE: Tuple[str, str, str] = (
@@ -933,56 +934,56 @@ HARD_RECONCILIATION_MARKERS: Tuple[str, ...] = (
 GEMINI_PRIMARY_NO_CODE_PHASES: Set[str] = {"A", "C", "E", "H", "W", "B", "G"}
 GEMINI_PRIMARY_DOCS_LADDER: List[Tuple[str, str, str]] = [
     ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
-    ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+    ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
 ]
 GEMINI_PRIMARY_SYNTHESIS_LADDER: List[Tuple[str, str, str]] = [
     ("gemini", "gemini-3.1-pro-preview", "GEMINI_API_KEY"),
-    ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-    ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+    ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
+    ("openai", "gpt-5.5", "OPENAI_API_KEY"),
     ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
 ]
 GEMINI_PRIMARY_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
     "bulk": [
         ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
-        ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+        ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
     ],
     "extract": [
         ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
         ("openrouter", "openai/gpt-5.1-codex-mini", "OPENROUTER_API_KEY"),
-        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+        ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
     ],
     "qa": [
         ("openrouter", "openai/gpt-5.1-codex-mini", "OPENROUTER_API_KEY"),
-        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-        ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+        ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
+        ("openai", "gpt-5.5", "OPENAI_API_KEY"),
     ],
 }
 
 OPTIMAL_NO_CODE_PHASES: Set[str] = {"D", "Q", "R", "S", "SP", "T", "X", "Z", "M"}
 OPTIMAL_DOCS_LADDER: List[Tuple[str, str, str]] = [
     ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
-    ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
-    ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+    ("xai", "grok-4.3", "XAI_API_KEY"),
+    ("openai", "gpt-5.5", "OPENAI_API_KEY"),
 ]
 OPTIMAL_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
     "bulk": [
         ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
-        ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+        ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
     ],
     "extract": [
         ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
-        ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
-        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+        ("xai", "grok-4.3", "XAI_API_KEY"),
+        ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
     ],
     "qa": [
-        ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
-        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-        ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+        ("xai", "grok-4.3", "XAI_API_KEY"),
+        ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
+        ("openai", "gpt-5.5", "OPENAI_API_KEY"),
     ],
 }
 OPTIMAL_SYNTHESIS_LADDER: List[Tuple[str, str, str]] = [
-    ("xai", "grok-4.20-beta-0309-reasoning", "XAI_API_KEY"),
-    ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+    ("xai", "grok-4.3", "XAI_API_KEY"),
+    ("openai", "gpt-5.5", "OPENAI_API_KEY"),
     ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
 ]
 
@@ -4717,7 +4718,7 @@ def _parse_provider_model_env(value: str, env_name: str) -> Tuple[str, str, str]
         )
     if "/" not in raw:
         raise RuntimeError(
-            f"{env_name} must be provider/model (example: openai/gpt-5-nano or openrouter/openai/gpt-5-mini). Got: {raw}"
+            f"{env_name} must be provider/model (example: openai/gpt-5-nano or openai/gpt-5.4-mini). Got: {raw}"
         )
     provider_raw, model_raw = raw.split("/", 1)
     provider = provider_raw.strip().lower()
@@ -5242,7 +5243,7 @@ def resolve_effective_step_route(
             tier_override=tier_override,
         )
         if not step_ladder:
-            step_ladder = [("openai", "gpt-5-mini", "OPENAI_API_KEY")]
+            step_ladder = [("openai", "gpt-5.4-mini", "OPENAI_API_KEY")]
         provider, model_id, api_key_env = step_ladder[0]
     return {
         "step_tier": step_tier,
@@ -5713,7 +5714,7 @@ def _refresh_phase_default_model_routing(
         step_id = _representative_step_id_for_phase(phase)
         candidates = _resolve_step_ladder_compat(policy, phase, step_id)
         if not candidates:
-            phase_routes[phase] = ("openai", "gpt-5-mini", "OPENAI_API_KEY")
+            phase_routes[phase] = ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")
             continue
         phase_routes[phase] = tuple(candidates[0])
     return phase_routes
@@ -6297,7 +6298,7 @@ def write_run_routing_fingerprint(
                 tier_override=prompt.tier_override,
             )
             provider, model_id, api_key_env = (
-                ladder[0] if ladder else ("openai", "gpt-5-mini", "OPENAI_API_KEY")
+                ladder[0] if ladder else ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")
             )
             endpoint_base = llm_base_url(provider, cfg)
             default_sequence = (
@@ -9097,6 +9098,7 @@ def build_chat_payload(
     force_json_output: bool = False,
     response_format_override: Optional[Dict[str, Any]] = None,
     max_completion_tokens: Optional[int] = None,
+    request_options: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     temperature = resolve_temperature(provider, model_id, 0.1)
     safe_system_prompt = sanitize_text_for_provider_payload(system_prompt)
@@ -9119,7 +9121,19 @@ def build_chat_payload(
             payload["response_format"] = {"type": "json_object"}
         elif provider in {"openai", "xai"}:
             payload["response_format"] = {"type": "json_object"}
+    payload.update(normalized_route_request_options(request_options))
     return payload
+
+
+def normalized_route_request_options(value: Optional[Dict[str, Any]]) -> Dict[str, str]:
+    if not isinstance(value, dict):
+        return {}
+    out: Dict[str, str] = {}
+    for option_key in ROUTE_REQUEST_OPTION_KEYS:
+        option_value = str(value.get(option_key) or "").strip()
+        if option_value:
+            out[option_key] = option_value
+    return out
 
 
 def serialize_payload_body(payload: Dict[str, Any]) -> bytes:
@@ -10536,6 +10550,7 @@ def call_llm(
     timeout_seconds: Optional[int] = None,
     trace_context: Optional[Dict[str, Any]] = None,
     lifecycle_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
+    request_options_override: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     return llm_runtime_call_llm(
         _llm_runtime_deps(),
@@ -10553,6 +10568,7 @@ def call_llm(
         timeout_seconds=timeout_seconds,
         trace_context=trace_context,
         lifecycle_callback=lifecycle_callback,
+        request_options_override=request_options_override,
     )
 
 
@@ -12518,6 +12534,7 @@ def build_v5_batch_request(
         if str(key).strip()
     }
     response_format: Optional[Dict[str, Any]] = None
+    request_options = normalized_route_request_options(selected_route_entry)
     if strict_contract_required:
         batch_metadata["strict"] = "true"
         phase = str(batch_metadata.get("phase") or "")
@@ -12570,6 +12587,7 @@ def build_v5_batch_request(
         force_json_output=bool(force_json_output and not strict_contract_required),
         metadata=batch_metadata,
         response_format=response_format,
+        request_options=request_options,
     )
 
 
@@ -15293,6 +15311,8 @@ else sdk_auth_present_flags(p_provider, True)
         ) -> Dict[str, Any]:
             route_provider, route_model_id, route_api_key_env = route
             route_force_json = route_provider == "gemini"
+            route_entry = _batch_route_entry_for_selected_route(step_contract, route)
+            route_request_options = normalized_route_request_options(route_entry)
 
             def _execute_llm_call(
                 parse_retry_reason_override: Optional[str] = None,
@@ -15334,7 +15354,9 @@ else sdk_auth_present_flags(p_provider, True)
                     )
                     batch_provider, batch_model_id, batch_api_key_env = selected_route
                     batch_transport = transport_for_provider(batch_provider, cfg)
-                    selected_route_entry = None
+                    selected_route_entry = _batch_route_entry_for_selected_route(
+                        step_contract, selected_route
+                    )
                     if strict_contract_required and routing_reason in {
                         "explicit_step_route_override",
                         "explicit_phase_route_override",
@@ -15359,6 +15381,9 @@ else sdk_auth_present_flags(p_provider, True)
                             if isinstance(contract_route_entry, dict)
                             else False,
                         }
+                        selected_route_entry.update(
+                            normalized_route_request_options(contract_route_entry)
+                        )
                     try:
                         batch_requests = [
                             build_v5_batch_request(
@@ -15833,6 +15858,7 @@ else sdk_auth_present_flags(p_provider, True)
                         if ui is not None
                         else None
                     ),
+                    request_options_override=route_request_options,
                 )
                 response_text_local = str(llm_result.get("text", ""))
                 request_meta_local = enrich_request_meta(
@@ -17096,7 +17122,7 @@ def _run_phase_inner(
         model_id = str(first_route["model_id"])
     else:
         provider, model_id, _ = MODEL_ROUTING.get(
-            phase, ("openai", "gpt-5-mini", "OPENAI_API_KEY")
+            phase, ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")
         )
     ui_flags = (
         f"resume:{cfg.resume},dry_run:{cfg.dry_run},debug_phase_inputs:{cfg.debug_phase_inputs},"

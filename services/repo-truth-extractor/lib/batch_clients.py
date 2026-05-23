@@ -30,6 +30,7 @@ class BatchRequest:
     force_json_output: bool = False
     metadata: Dict[str, str] = field(default_factory=dict)
     response_format: Optional[Dict[str, Any]] = None
+    request_options: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -64,6 +65,7 @@ OPENAI_COMPATIBLE_TERMINAL_STATUSES = (
     OPENAI_COMPATIBLE_SUCCESS_STATUSES | OPENAI_COMPATIBLE_FAILURE_STATUSES
 )
 BATCH_JSONL_CORRUPTION_THRESHOLD = 0.05
+ROUTE_REQUEST_OPTION_KEYS = ("service_tier", "reasoning_effort")
 
 
 class BatchClient(Protocol):
@@ -87,6 +89,17 @@ class BatchClient(Protocol):
 
 def _metadata_flag_enabled(metadata: Dict[str, str], key: str) -> bool:
     return str(metadata.get(key) or "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _request_options_for_body(value: Any) -> Dict[str, str]:
+    if not isinstance(value, dict):
+        return {}
+    out: Dict[str, str] = {}
+    for option_key in ROUTE_REQUEST_OPTION_KEYS:
+        option_value = str(value.get(option_key) or "").strip()
+        if option_value:
+            out[option_key] = option_value
+    return out
 
 
 def classify_batch_terminal_status(status: str) -> Dict[str, Any]:
@@ -495,6 +508,7 @@ class OpenAIBatchClient:
             response_format = _response_format_for_request(req)
             if response_format is not None:
                 body["response_format"] = response_format
+            body.update(_request_options_for_body(req.request_options))
             payload_rows.append(
                 {
                     "custom_id": req.custom_id,

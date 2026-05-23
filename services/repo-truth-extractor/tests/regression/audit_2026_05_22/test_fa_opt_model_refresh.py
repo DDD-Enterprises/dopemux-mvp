@@ -58,6 +58,9 @@ def _route_rows(data: Any) -> list[dict[str, Any]]:
                         "route_index": index,
                         "provider": route.get("provider"),
                         "model_id": route.get("model_id"),
+                        "api_key_env": route.get("api_key_env"),
+                        "service_tier": route.get("service_tier"),
+                        "reasoning_effort": route.get("reasoning_effort"),
                         "lane_class": spec.get("lane_class"),
                     }
                 )
@@ -112,3 +115,71 @@ def test_unsupported_structured_field_migrations_are_deferred_in_proof() -> None
     assert "DEFERRED_STRUCTURED_FIELD_UNSUPPORTED" in reasons
     assert "reasoning_effort" in reasons
     assert "service_tier" in reasons
+
+
+def test_openai_routes_use_direct_latest_models_with_request_options() -> None:
+    routes = _model_map_routes()
+
+    assert not [
+        row
+        for row in routes
+        if row["provider"] == "openrouter"
+        and row["model_id"]
+        in {"openai/gpt-5.4", "openai/gpt-5-mini", "openai/gpt-5.3-codex"}
+    ]
+
+    flex_routes = [
+        row
+        for row in routes
+        if row["provider"] == "openai" and row["model_id"] == "gpt-5.5"
+    ]
+    assert len(flex_routes) == 171
+    assert {row["api_key_env"] for row in flex_routes} == {"OPENAI_API_KEY"}
+    assert {row["service_tier"] for row in flex_routes} == {"flex"}
+    assert {row["reasoning_effort"] for row in flex_routes} == {None}
+
+    codex_routes = [
+        row
+        for row in routes
+        if row["provider"] == "openai" and row["model_id"] == "gpt-5.3-codex"
+    ]
+    assert len(codex_routes) == 50
+    assert {row["api_key_env"] for row in codex_routes} == {"OPENAI_API_KEY"}
+    assert {row["service_tier"] for row in codex_routes} == {None}
+    assert {row["reasoning_effort"] for row in codex_routes} == {None}
+
+    mini_routes = [
+        row
+        for row in routes
+        if row["provider"] == "openai" and row["model_id"] == "gpt-5.4-mini"
+    ]
+    assert len(mini_routes) == 7
+    assert {row["api_key_env"] for row in mini_routes} == {"OPENAI_API_KEY"}
+    assert {row["service_tier"] for row in mini_routes} == {None}
+    assert {row["reasoning_effort"] for row in mini_routes} == {None}
+
+
+def test_grok_420_aliases_use_grok_43_with_explicit_reasoning_effort() -> None:
+    routes = _model_map_routes()
+
+    assert not [
+        row
+        for row in routes
+        if row["provider"] == "xai"
+        and row["model_id"]
+        in {
+            "grok-4.20-beta-0309-reasoning",
+            "grok-4.20-beta-0309-non-reasoning",
+        }
+    ]
+
+    grok_43 = [
+        row
+        for row in routes
+        if row["provider"] == "xai" and row["model_id"] == "grok-4.3"
+    ]
+    assert len(grok_43) == 260
+    assert {
+        effort: len([row for row in grok_43 if row["reasoning_effort"] == effort])
+        for effort in {"low", "none"}
+    } == {"low": 121, "none": 139}
