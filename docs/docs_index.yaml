@@ -194,9 +194,7 @@ fast_dev_os:
   series_id: DMX-FDOS
   packets:
   - TP-DMX-FDOS-004-AUTHORITY-REFRESH
-  planned_packets:
   - TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK
-  - TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES
   - TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES
   prompts:
     readme: docs/03-reference/fast-dev-os/prompts/readme.md

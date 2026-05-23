@@ -157,8 +157,8 @@
         "docs/docs_index.yaml"
       ],
       "validation": [
-        "grep -l 'task-packet-template' docs/03-reference/fast-dev-os/readme.md",
-        "grep -l 'fast-dev-os/task-packet-template\\|fast-dev-os/pr-body-template' docs/INDEX.md",
+        "grep -l 'template-task-packet' docs/03-reference/fast-dev-os/readme.md",
+        "grep -l 'fast-dev-os/template-task-packet\\|fast-dev-os/template-pr-body' docs/INDEX.md",
         "grep -l 'templates:' docs/docs_index.yaml"
       ]
     },
