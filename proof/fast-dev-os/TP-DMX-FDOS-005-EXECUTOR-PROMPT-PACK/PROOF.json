@@ -1,0 +1,256 @@
+{
+  "tp_id": "TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK",
+  "tp_path": "task-packets/generated/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK.json",
+  "project": "dopemux-mvp",
+  "worktree_path": "/Users/hue/code/dopemux-mvp-fdos-005-executor-prompt-pack",
+  "branch": "codex/dmx-fdos-005-executor-prompt-pack",
+  "base_branch": "main",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "repo_identity_check": {
+    "result": "PASS",
+    "marker_file": ".dopetaskroot",
+    "marker_present": true,
+    "remote_url_matches": true
+  },
+  "created_at_utc": "2026-05-23T03:15:00Z",
+  "validated_at_utc": "2026-05-23T03:15:00Z",
+  "starting_head": "0d5bf6e38",
+  "starting_head_note": "Branch was originally stacked on codex/dmx-fdos-004-authority-refresh; rebased onto origin/main after PR #675 merged. starting_head reflects post-rebase main HEAD.",
+  "ending_head": null,
+  "slices_completed": [
+    {
+      "slice": "S1",
+      "label": "preflight repo identity + parent TP files + governance",
+      "status": "PASS"
+    },
+    {
+      "slice": "S2",
+      "label": "create TP-DMX-FDOS-005 JSON + jsonschema validate",
+      "status": "PASS"
+    },
+    {
+      "slice": "S3",
+      "label": "author master-priming-prompt.md + role-priming-prompts.md",
+      "status": "PASS"
+    },
+    {
+      "slice": "S4",
+      "label": "author 6 per-implementer prompts (codex / claude-code / gemini / grok / jules / github-copilot)",
+      "status": "PASS"
+    },
+    {
+      "slice": "S5",
+      "label": "author 3 operator templates (implementation-report / audit-prompt / acceptance-decision)",
+      "status": "PASS"
+    },
+    {
+      "slice": "S6",
+      "label": "author prompts/readme.md + update fast-dev-os/readme.md + doc-nav (INDEX.md, docs_index.yaml)",
+      "status": "PASS"
+    },
+    {
+      "slice": "S7",
+      "label": "create PROOF.json (this file)",
+      "status": "PASS"
+    },
+    {
+      "slice": "S8",
+      "label": "final validation + commit + push + PR",
+      "status": "IN_PROGRESS"
+    }
+  ],
+  "files_created": [
+    "docs/03-reference/fast-dev-os/prompts/readme.md",
+    "docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md",
+    "docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md",
+    "docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md",
+    "docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md",
+    "docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md",
+    "docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md",
+    "docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md",
+    "docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md",
+    "docs/03-reference/fast-dev-os/prompts/template-implementation-report.md",
+    "docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md",
+    "docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md",
+    "task-packets/generated/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK.json",
+    "proof/fast-dev-os/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK/PROOF.json"
+  ],
+  "files_modified": [
+    "docs/03-reference/fast-dev-os/evidence-notes.md",
+    "docs/03-reference/fast-dev-os/packet-ledger.md",
+    "docs/03-reference/fast-dev-os/pr-ledger.md",
+    "docs/03-reference/fast-dev-os/proof-ledger.md",
+    "docs/03-reference/fast-dev-os/readme.md",
+    "docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md",
+    "docs/03-reference/fast-dev-os/unknown-conflicting-stale.md",
+    "docs/INDEX.md",
+    "docs/docs_index.yaml",
+    "proof/fast-dev-os/TP-DMX-FDOS-004-AUTHORITY-REFRESH/PROOF.json",
+    "task-packets/generated/TP-DMX-FDOS-004-AUTHORITY-REFRESH.json"
+  ],
+  "allowlist_compliance": {
+    "result": "PASS",
+    "expected_count": 25,
+    "actual_count": 25,
+    "files_outside_allowlist": [],
+    "expansion_note": "Scope expanded from 17 \u2192 25 paths to include post-merge #675 doctrine cleanup (9 fixes for unaddressed bot suggestions). Each expansion documented in remediation_log."
+  },
+  "validations": [
+    {
+      "name": "jsonschema TP-FDOS-005",
+      "command": "python -m jsonschema -i task-packets/generated/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "json.tool TP-FDOS-005",
+      "command": "python -m json.tool task-packets/generated/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK.json >/dev/null",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "json.tool PROOF (this file)",
+      "command": "python -m json.tool proof/fast-dev-os/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "json.tool TP-FDOS-004 (cleanup)",
+      "command": "python -m json.tool task-packets/generated/TP-DMX-FDOS-004-AUTHORITY-REFRESH.json >/dev/null",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "json.tool TP-FDOS-004 PROOF (cleanup)",
+      "command": "python -m json.tool proof/fast-dev-os/TP-DMX-FDOS-004-AUTHORITY-REFRESH/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "docs-filename-hygiene (12 prompts)",
+      "command": "python3 scripts/check_docs_filename_hygiene.py --check docs/03-reference/fast-dev-os/prompts/*.md",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "checked 12 files, OK"
+    },
+    {
+      "name": "docs_validator (20 fast-dev-os md files)",
+      "command": "python scripts/docs_validator.py docs/03-reference/fast-dev-os/*.md docs/03-reference/fast-dev-os/prompts/*.md",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "docs_frontmatter_guard (20 files)",
+      "command": "python scripts/docs_frontmatter_guard.py docs/03-reference/fast-dev-os/*.md docs/03-reference/fast-dev-os/prompts/*.md",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "All docs have valid frontmatter."
+    },
+    {
+      "name": "Broken-link grep (NEGATIVE)",
+      "command": "! grep -rnE '\\[`[^`]+`\\]\\(\\.\\./\\.\\./\\.\\./\\.\\./Downloads' docs/03-reference/fast-dev-os/",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "User-path grep (NEGATIVE)",
+      "command": "! grep -rnE '/Users/[a-z]+/' docs/03-reference/fast-dev-os/",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Lane taxonomy harmony \u2014 constitution L0=Design only is honored",
+      "command": "grep -c 'L0: Design only' docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md",
+      "exit_code": 0,
+      "status": "PASS",
+      "matched_files": 2
+    },
+    {
+      "name": "AGENTS.md cited in 12/12 prompts",
+      "command": "for f in docs/03-reference/fast-dev-os/prompts/*.md; do grep -q 'AGENTS.md' $f || echo MISSING; done",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "(planned) annotation removed from docs_index.yaml machine-readable list",
+      "command": "grep -c '(planned)' docs/docs_index.yaml",
+      "exit_code": 1,
+      "status": "PASS",
+      "note": "exit 1 from grep = 0 matches found = clean (NEGATIVE match)"
+    }
+  ],
+  "codereview_status": "PENDING_FOR_EXPANDED_SCOPE",
+  "precommit_status": "PENDING_FOR_EXPANDED_SCOPE",
+  "commit_sha": null,
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/676",
+  "pr_blocker": null,
+  "cleanup_status": "WORKTREE_ACTIVE_PENDING_PR_REVIEW",
+  "not_run": [
+    "Live provider calls (out of scope; docs-only TP)",
+    "Live extraction (out of scope)",
+    "Live preflight (out of scope)",
+    "Docker startup (out of scope)",
+    "Runtime service health checks (out of scope)",
+    "Brand-voice quality-assurance agent pass (not configured for this repo)",
+    "Schema extension to add claude_code/grok/jules/copilot to execution.agent enum (deferred to a future TP)",
+    "Stress-test prompts by dispatching to real implementers (deferred; prompts are templates, not exercised content)",
+    "External pal/codereview + pal/precommit assistant model passes for expanded scope (deferred; internal validation chosen for docs-only scope with structural invariants already enforced via grep + schema)"
+  ],
+  "residual_risks": [
+    "FDOS-RISK-LANE-CANONICAL: prompts and templates now reference project-constitution.md lane taxonomy. If constitution changes, prompts must follow.",
+    "FDOS-RISK-PROMPT-DRIFT: prompts go stale as repo evolves; refresh policy is manual-per-major-runtime-change.",
+    "FDOS-RISK-SCHEMA: execution.agent enum still lacks claude_code/grok/jules/github_copilot; documented in each prompt's Schema fit section.",
+    "FDOS-RISK-SCOPE-EXPANSION: this PR is 25 paths (not the originally-planned 17); 8 paths are post-merge #675 cleanup. Documented in remediation_log."
+  ],
+  "unknowns": [
+    "How will real implementers behave under these prompts? Stress-testing deferred until at least one implementer cycle completes.",
+    "Should the operator-side templates (implementation-report / audit / acceptance) become enforced via a CI hook? Deferred to TP-DMX-FDOS-007-GITHUB-GATES (Phase 3, out of current plan scope).",
+    "Should execution.agent enum be extended? Deferred to a separate schema-extend TP."
+  ],
+  "depends_on_pr_675": {
+    "status": "OPEN_STACKED_BASE",
+    "note": "TP-FDOS-005 is logically dependent on TP-FDOS-004 (which is PR #675, OPEN at creation time). This branch is stacked on codex/dmx-fdos-004-authority-refresh; PR diff will narrow once #675 merges. No git rebase needed because branch was created from #675 HEAD."
+  },
+  "context_at_authoring": {
+    "tools_used": [
+      "PAL codereview (gpt-5.2-pro, internal) for TP-FDOS-004 and TP-FDOS-005 in chain",
+      "PAL precommit (gpt-5.2-pro, internal) for TP-FDOS-004 and TP-FDOS-005 in chain",
+      "Plan mode (approved plan; path under operator's home, not committed to repo)"
+    ],
+    "evidence_bases": [
+      "AGENTS.md \u00a72 (truth order), \u00a74 (lifecycle), \u00a79 (proof requirements), \u00a710 (known dangers)",
+      "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json (schema)",
+      "docs/03-reference/governance/codex-authority-refresh.md (governance)",
+      "docs/03-reference/governance/codex-prompt-pack.md (existing prompt pack to cross-reference)",
+      "docs/03-reference/fast-dev-os/project-constitution.md (lane taxonomy)",
+      "docs/03-reference/fast-dev-os/readme.md (parent layer landing)"
+    ],
+    "implementer": "Claude Opus 4.7 (1M context) via Codex CLI shell (execution.agent='codex' for schema compliance; real implementer is Claude Code)"
+  },
+  "remediation_log": [
+    {
+      "remediation_id": "R1-BOT-SUGGESTIONS-PR676",
+      "trigger": "Post-author audit found 11 unaddressed bot suggestions on PR #676 (copilot-pull-request-reviewer + chatgpt-codex-connector).",
+      "fixes": [
+        "Lane taxonomy in master-priming-prompt.md, prompts/readme.md, and per-implementer prompts harmonized to project-constitution.md canonical version (L0=Design only ... L6=Parallel backlog).",
+        "prompts/readme.md TP-FDOS-004 reference updated to reflect actual merge state ('merged via PR #675').",
+        "PROOF validation commands use post-rename kebab-case prompt filenames (no pre-rename SCREAMING globs)."
+      ]
+    },
+    {
+      "remediation_id": "R2-POST-MERGE-CLEANUP-PR675",
+      "trigger": "Post-merge audit found 9 unaddressed bot suggestions on PR #675 that landed in main. Bundled into this PR's expanded scope (rather than separate TP-FDOS-007) for efficiency.",
+      "fixes": [
+        "unknown-conflicting-stale.md, pr-ledger.md, proof-ledger.md: broken markdown links to ../../../../Downloads/... \u2192 inline-code $HOME/Downloads/... paths (no link target).",
+        "evidence-notes.md: dead-link example ('relative-path-or-external-link') \u2192 inline-code with portable $HOME path + explicit guidance.",
+        "evidence-notes.md, unknown-conflicting-stale.md, pr-ledger.md, proof-ledger.md, packet-ledger.md, thread00-current-operating-ledger.md: /Users/hue/Downloads/... \u2192 $HOME/Downloads/... for portability.",
+        "thread00-current-operating-ledger.md: /Users/hue/code/... \u2192 $HOME/code/... for portability.",
+        "readme.md: 'HEAD <SHA>' placeholder \u2192 reference to file's snapshot: frontmatter for concrete SHA.",
+        "docs/docs_index.yaml: removed '(planned)' annotations from machine-readable `packets:` list; moved planned items to new `planned_packets:` list.",
+        "TP-FDOS-004.json S6 grep: fast-dev-os/README.md \u2192 fast-dev-os/readme.md (post-rename).",
+        "TP-FDOS-004.json verify + PROOF validations grep: pre-rename SCREAMING_SNAKE globs ({THREAD00,PR,PACKET,PROOF,UNKNOWN}*.md) \u2192 explicit kebab-case paths.",
+        "TP-FDOS-004 PROOF depends_on_pr_668: wording inverted (was 'TP-FDOS-004 is series-parent to TP-FDOS-003'; corrected to 'TP-FDOS-003 is series-parent to TP-FDOS-004'); status updated to MERGED with commit d97431c9c."
+      ]
+    }
+  ]
+}

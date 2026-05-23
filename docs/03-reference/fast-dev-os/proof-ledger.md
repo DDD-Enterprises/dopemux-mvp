@@ -89,7 +89,7 @@ Many existing PROOF.json files lack a normalized top-level `status` / `verdict` 
 
 ## Cross-reference: chat-context-v2
 
-The chat-context-v2 corpus at [`/Users/hue/Downloads/dopemux-chat-context-v2/04_reconciled/PR_PACKET_PROOF_MAP.md`](../../../../Downloads/dopemux-chat-context-v2/04_reconciled/PR_PACKET_PROOF_MAP.md) cross-references PROOF citations with the PR/TP graph. See [`evidence-notes.md`](evidence-notes.md) for provenance.
+The chat-context-v2 corpus at `$HOME/Downloads/dopemux-chat-context-v2/04_reconciled/PR_PACKET_PROOF_MAP.md` cross-references PROOF citations with the PR/TP graph. See [`evidence-notes.md`](evidence-notes.md) for provenance.
 
 ## Truth posture
 
