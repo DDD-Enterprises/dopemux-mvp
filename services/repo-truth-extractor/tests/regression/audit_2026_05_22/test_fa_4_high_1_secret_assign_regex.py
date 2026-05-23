@@ -57,10 +57,8 @@ def test_known_secret_patterns_are_redacted(label: str, raw: str) -> None:
     assert "REDACTED" in out, f"{label}: expected REDACTED in {out!r}"
 
 
-# --- Patterns that are CURRENTLY MISSED (FA-4-HIGH-1) ---
-# These are env-var-style names where the keyword is surrounded by underscores,
-# so \b doesn't trigger. We mark these xfail; they flip to pass when the
-# regex is fixed.
+# --- Patterns fixed by FA-4-HIGH-1 ---
+# These are env-var-style names where the keyword is surrounded by underscores.
 SURROUNDED_LEAKS = [
     "AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
     "aws_secret_access_key=abc-leak-value",
@@ -70,12 +68,9 @@ SURROUNDED_LEAKS = [
 ]
 
 
-@pytest.mark.xfail(
-    reason="FA-4-HIGH-1: _SECRET_ASSIGN_RE \\b boundary fails when keyword is surrounded by underscores. Fix the regex (replace \\b with [^A-Za-z0-9] grouping) and this test passes."
-)
 @pytest.mark.parametrize("raw", SURROUNDED_LEAKS)
 def test_underscored_env_names_should_be_redacted(raw: str) -> None:
-    """xfail until FA-4-HIGH-1 fixes the \\b boundary issue."""
+    """FA-4-HIGH-1 regression: underscored env-name secrets must redact."""
     out = sanitize_text_for_output(raw)
     assert "REDACTED" in out, (
         f"Expected redaction of underscored env-name secret: input={raw!r} output={out!r}"

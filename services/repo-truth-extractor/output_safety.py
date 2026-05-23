@@ -7,7 +7,7 @@ from typing import Any, Mapping, Sequence
 
 _SECRET_QUERY_RE = re.compile(r"([?&](?:key|api[_-]?key|token|access[_-]?token|secret)=)[^&\s]+", re.IGNORECASE)
 _SECRET_ASSIGN_RE = re.compile(
-    r"(?i)((?:[\"']?\b(?:api[_-]?key|bearer|token|secret|password|private[_-]?key|webhook[_-]?secret)\b[\"']?\s*[:=]\s*)[\"']?)([^\"',\s\]}]+)([\"']?)"
+    r"(?i)((?:[\"']?([A-Za-z_][A-Za-z0-9_-]*)[\"']?\s*[:=]\s*)[\"']?)([^\"',\s\]\}\[]+)([\"']?)"
 )
 _BEARER_INLINE_RE = re.compile(r"(?i)(\bBearer\s+)([^\s,;]+)")
 _AUTH_HEADER_RE = re.compile(
@@ -89,10 +89,16 @@ def sanitize_text_for_output(text: str) -> str:
     value = _PRIVATE_KEY_BLOCK_RE.sub("[REDACTED PRIVATE KEY]", value)
     value = _SECRET_QUERY_RE.sub(r"\1REDACTED", value)
     value = _AUTH_HEADER_RE.sub(r"\1[REDACTED]\3", value)
-    value = _SECRET_ASSIGN_RE.sub(r"\1[REDACTED]\3", value)
+    value = _SECRET_ASSIGN_RE.sub(_redact_secret_assignment, value)
     value = _BEARER_INLINE_RE.sub(r"\1[REDACTED]", value)
     value = _PROVIDER_TOKEN_RE.sub("[REDACTED]", value)
     return value
+
+
+def _redact_secret_assignment(match: re.Match[str]) -> str:
+    if not _is_sensitive_key(match.group(2)):
+        return match.group(0)
+    return f"{match.group(1)}[REDACTED]{match.group(4)}"
 
 
 def sanitize_failed_sidecar_text(text: str) -> str:
