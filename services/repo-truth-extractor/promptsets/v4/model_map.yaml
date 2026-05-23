@@ -611,7 +611,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-code-fast-1
+    model_id: grok-build-0.1
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -727,7 +727,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-code-fast-1
+    model_id: grok-build-0.1
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -756,7 +756,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-code-fast-1
+    model_id: grok-build-0.1
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -785,7 +785,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-code-fast-1
+    model_id: grok-build-0.1
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -867,7 +867,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-code-fast-1
+    model_id: grok-build-0.1
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -896,7 +896,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-code-fast-1
+    model_id: grok-build-0.1
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
