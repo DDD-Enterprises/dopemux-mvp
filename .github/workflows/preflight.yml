@@ -1,0 +1,31 @@
+name: preflight
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Run preflight
+        run: |
+          chmod +x ./scripts/preflight.sh
+          RUN_MODE=enforce \
+          TP_ID=CI-PREFLIGHT \
+          ./scripts/preflight.sh
