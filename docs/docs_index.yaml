@@ -197,6 +197,7 @@ fast_dev_os:
   planned_packets:
   - TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK
   - TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES
+  - TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES
   prompts:
     readme: docs/03-reference/fast-dev-os/prompts/readme.md
     master_priming_prompt: docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md
@@ -210,3 +211,11 @@ fast_dev_os:
     template_implementation_report: docs/03-reference/fast-dev-os/prompts/template-implementation-report.md
     template_audit_prompt: docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md
     template_acceptance_decision: docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md
+  templates:
+    task_packet_template_md: docs/03-reference/fast-dev-os/template-task-packet.md
+    task_packet_template_json: docs/03-reference/fast-dev-os/task-packet-template.json
+    pr_body_template: docs/03-reference/fast-dev-os/template-pr-body.md
+    validation_command_library: docs/03-reference/fast-dev-os/validation-command-library.md
+    runtime_dependency_cones: docs/03-reference/fast-dev-os/runtime-dependency-cones.md
+    proof_bundle_template: docs/03-reference/fast-dev-os/templates-proof/proof-bundle-template.json
+    templates_proof_readme: docs/03-reference/fast-dev-os/templates-proof/readme.md

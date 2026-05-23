@@ -1,0 +1,189 @@
+{
+  "id": "TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES",
+  "project": "dopemux-mvp",
+  "target": "Install the Fast Dev OS canonical templates layer at docs/03-reference/fast-dev-os/ providing reusable Task Packet skeleton (.md + .json), PROOF bundle skeleton (.json), PR body template, validation command library, and runtime dependency cones. These templates are the schema-of-record for all subsequent Fast Dev OS packets and are designed to reduce per-packet authoring overhead while enforcing AGENTS.md \u00a79 and dopetask-canonical-spec.json compliance.",
+  "invariants": [
+    "Do not modify runtime code, service code, tests, compose files, dependency files, or provider configuration.",
+    "Do not modify or override docs/03-reference/governance/* (governance layer remains authoritative).",
+    "Do not modify files in docs/03-reference/fast-dev-os/ outside of (a) new template files at the layer root, (b) new templates/proof/ subdirectory, and (c) a single-line link addition in fast-dev-os/readme.md.",
+    "task-packet-template.json MUST validate against dopetask-canonical-spec.json (the template is itself schema-valid).",
+    "proof-bundle-template.json MUST contain every AGENTS.md \u00a79 required field as a top-level key.",
+    "template-pr-body.md MUST include a 'Forbidden phrases' section listing 'done', 'complete', 'no issues' as words the PR body must justify with evidence.",
+    "runtime-dependency-cones.md MUST declare which workstreams cannot parallelize (collision matrix).",
+    "validation-command-library.md MUST include reusable validation snippets for: jsonschema, json.tool, docs_validator, docs_frontmatter_guard, docs-filename-hygiene, git diff --check, grep patterns for boundary discipline.",
+    "No live provider calls, live extraction, live preflight, Docker startup, or account-specific checks.",
+    "Filenames must be kebab-case per scripts/check_docs_filename_hygiene.py policy."
+  ],
+  "depends_on": [
+    "TP-DMX-FDOS-004-AUTHORITY-REFRESH",
+    "TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-FDOS",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fdos-006-packet-proof-templates",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(fast-dev-os): install packet+proof templates (final doctrine packet)",
+    "allowlist": [
+      "docs/03-reference/fast-dev-os/template-task-packet.md",
+      "docs/03-reference/fast-dev-os/task-packet-template.json",
+      "docs/03-reference/fast-dev-os/template-pr-body.md",
+      "docs/03-reference/fast-dev-os/validation-command-library.md",
+      "docs/03-reference/fast-dev-os/runtime-dependency-cones.md",
+      "docs/03-reference/fast-dev-os/templates-proof/proof-bundle-template.json",
+      "docs/03-reference/fast-dev-os/templates-proof/readme.md",
+      "docs/03-reference/fast-dev-os/readme.md",
+      "docs/INDEX.md",
+      "docs/docs_index.yaml",
+      "task-packets/generated/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES.json",
+      "proof/fast-dev-os/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES/PROOF.json"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m json.tool proof/fast-dev-os/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES/PROOF.json >/dev/null",
+      "python -m json.tool docs/03-reference/fast-dev-os/task-packet-template.json >/dev/null",
+      "python -m jsonschema -i docs/03-reference/fast-dev-os/task-packet-template.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m json.tool docs/03-reference/fast-dev-os/templates-proof/proof-bundle-template.json >/dev/null",
+      "python scripts/docs_validator.py docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/templates-proof/readme.md",
+      "python scripts/docs_frontmatter_guard.py docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/templates-proof/readme.md",
+      "python3 scripts/check_docs_filename_hygiene.py --check docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/templates-proof/readme.md",
+      "grep -l 'Forbidden phrases' docs/03-reference/fast-dev-os/template-pr-body.md",
+      "grep -lE 'done|complete|no issues' docs/03-reference/fast-dev-os/template-pr-body.md",
+      "grep -l 'AGENTS.md' docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md",
+      "git diff --check",
+      "git diff --cached --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(fast-dev-os): install packet+proof templates (final doctrine packet)",
+    "body": "## Summary\n- Installs 5 root-level template files at `docs/03-reference/fast-dev-os/` and 2 files in a new `templates-proof/` subdirectory.\n- These templates are the schema-of-record for all subsequent Fast Dev OS packets.\n- Closes the Phase 0\u20132 doctrine layer (TP-DMX-FDOS-004 + 005 + 006).\n\n## Scope\nDocs only. 12-path allowlist. No runtime / service / test / compose / dependency changes.\n\n## Boundary discipline\n- `task-packet-template.json` validates against `dopetask-canonical-spec.json` (the template is itself schema-valid).\n- `proof-bundle-template.json` contains every AGENTS.md \u00a79 required field as a top-level key.\n- `template-pr-body.md` includes a Forbidden Phrases section enforcing the truth-posture statement.\n- `runtime-dependency-cones.md` declares cross-workstream collision constraints.\n- `validation-command-library.md` consolidates the reusable validation snippets used across all Fast Dev OS packets.\n\n## Templates subdirectory naming\nThe plan originally called for a `proof/` subdirectory under `fast-dev-os/`. To avoid name-collision confusion with the repo-root `proof/` directory (which holds actual PROOF.json files), this packet uses `templates-proof/` instead. Documented in `templates-proof/readme.md`.\n\n## Task Packet\n- ID: `TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES`\n- Path: `task-packets/generated/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES.json`\n- Series: `DMX-FDOS` (parent: `TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK`; **final_packet: true**)\n- Schema: validates against `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json` (PASS)\n- Allowlist: 12 paths\n\n## Proof\n- Bundle: `proof/fast-dev-os/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES/PROOF.json`\n- All AGENTS.md \u00a79 required fields populated.\n\n## Stacked PR note\nThis branch is stacked on `codex/dmx-fdos-005-executor-prompt-pack` (PR #676, OPEN). The diff vs main temporarily includes TP-FDOS-004 + 005 + 006 (~46 files cumulative); after PRs #675 and #676 merge, this PR's diff narrows to only the 12 paths added by TP-FDOS-006.\n\n## Validation (exit code 0 unless noted)\n- jsonschema TP \u2014 PASS\n- jsonschema task-packet-template.json against same spec \u2014 PASS (the template is itself schema-valid; strongest single check for this packet)\n- json.tool TP + PROOF + task-packet-template.json + proof-bundle-template.json \u2014 PASS\n- docs_validator + docs_frontmatter_guard (5 markdown files) \u2014 PASS\n- docs-filename-hygiene (5 files) \u2014 OK\n- grep 'Forbidden phrases' in template-pr-body.md \u2014 present\n- grep AGENTS.md in 4 markdown templates \u2014 present\n- git diff --check / --cached --check \u2014 clean\n- pal/codereview (gpt-5.2-pro, internal) \u2014 see PROOF.json\n- pal/precommit (gpt-5.2-pro, internal) \u2014 see PROOF.json\n\n## NOT_RUN\n- Live provider calls\n- Live extraction\n- Docker startup\n- Runtime service health checks\n- Generator script to materialize templates into new packets (deferred to a future TP)\n- CI enforcement of template-pr-body.md sections (deferred to TP-DMX-FDOS-007-GITHUB-GATES, out of current plan scope)\n\n## Residual Risks / UNKNOWNs\n- RISK-TEMPLATE-DRIFT: templates go stale as dopetask-canonical-spec.json evolves; refresh policy is manual-per-schema-change.\n- RISK-PROOF-NORMALIZATION: existing PROOF.json files in proof/**/ use heterogeneous shapes (per `proof-ledger.md`); this template defines the new canonical shape but does NOT retroactively normalize existing files (out of scope).\n- RISK-PR-BODY-ENFORCEMENT: template-pr-body.md is advisory until TP-FDOS-007 lands (CI hook to enforce required sections).\n\n@codex review\n\n\ud83e\udd16 Generated with [Claude Code](https://claude.com/claude-code)",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repo identity + parent TPs + governance + schema authority.",
+      "commands": [
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short",
+        "git rev-parse HEAD",
+        "test -f docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "test -f docs/03-reference/fast-dev-os/project-constitution.md",
+        "test -d docs/03-reference/fast-dev-os/prompts",
+        "test -f AGENTS.md"
+      ],
+      "validation": [
+        "Repo remote identifies DDD-Enterprises/dopemux-mvp.",
+        "Parent TP-FDOS-004 + 005 outputs present.",
+        "Schema and authority files present."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create this TP JSON; validate against dopetask-canonical-spec.json.",
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES.json >/dev/null",
+        "python -m jsonschema -i task-packets/generated/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Author template-task-packet.md (annotated) + task-packet-template.json (schema-valid skeleton).",
+      "expected_files": [
+        "docs/03-reference/fast-dev-os/template-task-packet.md",
+        "docs/03-reference/fast-dev-os/task-packet-template.json"
+      ],
+      "validation": [
+        "python -m json.tool docs/03-reference/fast-dev-os/task-packet-template.json >/dev/null",
+        "python -m jsonschema -i docs/03-reference/fast-dev-os/task-packet-template.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Author proof-bundle-template.json (with AGENTS.md \u00a79 required fields) + templates-proof/readme.md.",
+      "expected_files": [
+        "docs/03-reference/fast-dev-os/templates-proof/proof-bundle-template.json",
+        "docs/03-reference/fast-dev-os/templates-proof/readme.md"
+      ],
+      "validation": [
+        "python -m json.tool docs/03-reference/fast-dev-os/templates-proof/proof-bundle-template.json >/dev/null",
+        "grep -l 'tp_path\\|tp_id\\|worktree_path\\|branch\\|repo_identity_check\\|slices_completed\\|files_created\\|validations\\|codereview_status\\|precommit_status\\|commit_sha\\|pr_url\\|residual_risks\\|unknowns\\|cleanup_status' docs/03-reference/fast-dev-os/templates-proof/proof-bundle-template.json"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Author template-pr-body.md (with Forbidden Phrases section) + validation-command-library.md + runtime-dependency-cones.md.",
+      "expected_files": [
+        "docs/03-reference/fast-dev-os/template-pr-body.md",
+        "docs/03-reference/fast-dev-os/validation-command-library.md",
+        "docs/03-reference/fast-dev-os/runtime-dependency-cones.md"
+      ],
+      "validation": [
+        "grep -l 'Forbidden phrases' docs/03-reference/fast-dev-os/template-pr-body.md",
+        "grep -l 'AGENTS.md' docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md",
+        "grep -l 'jsonschema\\|docs_validator\\|docs_frontmatter_guard\\|docs-filename-hygiene' docs/03-reference/fast-dev-os/validation-command-library.md"
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Update fast-dev-os/readme.md to link new templates; update docs/INDEX.md and docs/docs_index.yaml.",
+      "expected_files": [
+        "docs/03-reference/fast-dev-os/readme.md",
+        "docs/INDEX.md",
+        "docs/docs_index.yaml"
+      ],
+      "validation": [
+        "grep -l 'task-packet-template' docs/03-reference/fast-dev-os/readme.md",
+        "grep -l 'fast-dev-os/task-packet-template\\|fast-dev-os/pr-body-template' docs/INDEX.md",
+        "grep -l 'templates:' docs/docs_index.yaml"
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Create proof JSON with exact commands, exit codes, NOT_RUN items, residual risks, UNKNOWNs.",
+      "expected_files": [
+        "proof/fast-dev-os/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES/PROOF.json"
+      ],
+      "validation": [
+        "python -m json.tool proof/fast-dev-os/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES/PROOF.json >/dev/null",
+        "grep -l 'NOT_RUN' proof/fast-dev-os/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES/PROOF.json"
+      ]
+    },
+    {
+      "id": "S8",
+      "task": "Final validation, codereview, precommit, commit, push, open PR.",
+      "validation": [
+        "python3 scripts/check_docs_filename_hygiene.py --check docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/templates-proof/readme.md",
+        "git diff --check",
+        "git diff --cached --check",
+        "git diff --stat",
+        "git status --short",
+        "Changed files must be within commit.allowlist (12 paths)."
+      ]
+    }
+  ]
+}
