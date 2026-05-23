@@ -1,0 +1,193 @@
+{
+  "tp_id": "TP-DMX-FDOS-004-AUTHORITY-REFRESH",
+  "tp_path": "task-packets/generated/TP-DMX-FDOS-004-AUTHORITY-REFRESH.json",
+  "project": "dopemux-mvp",
+  "worktree_path": "/Users/hue/code/dopemux-mvp-fdos-004-authority-refresh",
+  "branch": "codex/dmx-fdos-004-authority-refresh",
+  "base_branch": "main",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "repo_identity_check": {
+    "result": "PASS",
+    "marker_file": ".dopetaskroot",
+    "marker_present": true,
+    "remote_url_matches": true
+  },
+  "created_at_utc": "2026-05-23T02:46:01Z",
+  "validated_at_utc": "2026-05-23T02:46:01Z",
+  "starting_head": "8e7a2283f56a49abfb41c2ac791cbf18dd0ae500",
+  "ending_head": null,
+  "slices_completed": [
+    {
+      "slice": "S1",
+      "label": "preflight repo identity + authority files",
+      "status": "PASS"
+    },
+    {
+      "slice": "S2",
+      "label": "create TP-DMX-FDOS-004 JSON",
+      "status": "PASS"
+    },
+    {
+      "slice": "S3",
+      "label": "author PROJECT_CONSTITUTION.md + README.md",
+      "status": "PASS"
+    },
+    {
+      "slice": "S4",
+      "label": "author 4 snapshot ledgers (THREAD00 / PR / PACKET / PROOF)",
+      "status": "PASS"
+    },
+    {
+      "slice": "S5",
+      "label": "author UNKNOWN_CONFLICTING_STALE.md + evidence-notes.md",
+      "status": "PASS"
+    },
+    {
+      "slice": "S6",
+      "label": "register discoverability (docs/INDEX.md + docs/docs_index.yaml)",
+      "status": "PASS"
+    },
+    {
+      "slice": "S7",
+      "label": "create PROOF.json (this file)",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "slice": "S8",
+      "label": "final validation + commit + push + PR",
+      "status": "NOT_RUN"
+    }
+  ],
+  "files_created": [
+    "docs/03-reference/fast-dev-os/README.md",
+    "docs/03-reference/fast-dev-os/PROJECT_CONSTITUTION.md",
+    "docs/03-reference/fast-dev-os/THREAD00_CURRENT_OPERATING_LEDGER.md",
+    "docs/03-reference/fast-dev-os/UNKNOWN_CONFLICTING_STALE.md",
+    "docs/03-reference/fast-dev-os/PR_LEDGER.md",
+    "docs/03-reference/fast-dev-os/PACKET_LEDGER.md",
+    "docs/03-reference/fast-dev-os/PROOF_LEDGER.md",
+    "docs/03-reference/fast-dev-os/evidence-notes.md",
+    "task-packets/generated/TP-DMX-FDOS-004-AUTHORITY-REFRESH.json",
+    "proof/fast-dev-os/TP-DMX-FDOS-004-AUTHORITY-REFRESH/PROOF.json"
+  ],
+  "files_modified": [
+    "docs/INDEX.md",
+    "docs/docs_index.yaml"
+  ],
+  "allowlist_compliance": {
+    "result": "PASS",
+    "expected_count": 12,
+    "actual_count": 12,
+    "files_outside_allowlist": []
+  },
+  "validations": [
+    {
+      "name": "python -m json.tool TP-DMX-FDOS-004",
+      "command": "python -m json.tool task-packets/generated/TP-DMX-FDOS-004-AUTHORITY-REFRESH.json >/dev/null",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "jsonschema TP-DMX-FDOS-004 against dopetask-canonical-spec",
+      "command": "python -m jsonschema -i task-packets/generated/TP-DMX-FDOS-004-AUTHORITY-REFRESH.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "docs_validator (8 fast-dev-os files)",
+      "command": "python scripts/docs_validator.py docs/03-reference/fast-dev-os/README.md docs/03-reference/fast-dev-os/PROJECT_CONSTITUTION.md docs/03-reference/fast-dev-os/THREAD00_CURRENT_OPERATING_LEDGER.md docs/03-reference/fast-dev-os/UNKNOWN_CONFLICTING_STALE.md docs/03-reference/fast-dev-os/PR_LEDGER.md docs/03-reference/fast-dev-os/PACKET_LEDGER.md docs/03-reference/fast-dev-os/PROOF_LEDGER.md docs/03-reference/fast-dev-os/evidence-notes.md",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "docs_frontmatter_guard (8 fast-dev-os files)",
+      "command": "python scripts/docs_frontmatter_guard.py docs/03-reference/fast-dev-os/*.md",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "All docs have valid frontmatter."
+    },
+    {
+      "name": "grep Relationship to governance",
+      "command": "grep -l 'Relationship to governance' docs/03-reference/fast-dev-os/*.md",
+      "exit_code": 0,
+      "status": "PASS",
+      "matched_files": 8,
+      "expected": 8
+    },
+    {
+      "name": "grep snapshot: metadata",
+      "command": "grep -l 'snapshot:' docs/03-reference/fast-dev-os/{THREAD00,PR,PACKET,PROOF,UNKNOWN}*.md",
+      "exit_code": 0,
+      "status": "PASS",
+      "matched_files": 5,
+      "expected": 5
+    },
+    {
+      "name": "grep docs/INDEX.md for fast-dev-os/README.md entry",
+      "command": "grep -c 'fast-dev-os/README.md' docs/INDEX.md",
+      "exit_code": 0,
+      "status": "PASS",
+      "matched_count": 1
+    },
+    {
+      "name": "grep docs/docs_index.yaml for fast_dev_os: key",
+      "command": "grep -c 'fast_dev_os:' docs/docs_index.yaml",
+      "exit_code": 0,
+      "status": "PASS",
+      "matched_count": 1
+    },
+    {
+      "name": "git diff --check",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ],
+  "codereview_status": "NOT_RUN_YET",
+  "precommit_status": "NOT_RUN_YET",
+  "commit_sha": null,
+  "pr_url": null,
+  "pr_blocker": null,
+  "cleanup_status": "NOT_DONE",
+  "not_run": [
+    "Live provider calls (out of scope; docs-only TP)",
+    "Live extraction (out of scope)",
+    "Live preflight (out of scope)",
+    "Docker startup (out of scope)",
+    "Runtime service health checks (out of scope)",
+    "docs/00-MASTER-INDEX.md update (deferred \u2014 intrusive; future TP)",
+    "Generator script for snapshot ledgers (deferred \u2014 future TP)",
+    "Schema extension for execution.agent enum (deferred \u2014 future TP)"
+  ],
+  "residual_risks": [
+    "FDOS-RISK-SCHEMA: execution.agent=codex used for schema compliance; Claude Code is the actual implementer (no schema enum value yet for claude_code).",
+    "FDOS-RISK-SNAPSHOT-STALENESS: 4 snapshot ledgers go stale on next merge; mitigated by explicit snapshot: metadata.",
+    "FDOS-RISK-EXTERNAL-EVIDENCE: chat-context-v2 corpus is outside repo; evidence-notes.md documents provenance.",
+    "FDOS-RISK-DOC-NAV: docs/00-MASTER-INDEX.md not updated (deferred); discoverability via docs/INDEX.md + docs/docs_index.yaml + new README only."
+  ],
+  "unknowns": [
+    "AGENTS.md \u00a710 known dangers all UNRESOLVED (preserved in UNKNOWN_CONFLICTING_STALE.md \u00a71 \u2014 must NOT be silently smoothed).",
+    "3 chat-context-v2 TP true contradictions (TP-DMX-COCKPIT-RUNTIME-RENDER-001, TP-DT-CLAUDE-RUNNER-ASSEMBLY-0001, TP-DT-CLAUDE-PREFLIGHT-0001) \u2014 require live validation.",
+    "1 chat-context-v2 PR true contradiction (#606) \u2014 requires live validation.",
+    "Many existing PROOF.json files lack normalized status/verdict field \u2014 resolution deferred to TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES."
+  ],
+  "depends_on_pr_668": {
+    "status": "AUTO_MERGE_QUEUED",
+    "note": "TP-FDOS-004 is series-parent to TP-FDOS-003 (PR #668). Once #668 merges to main, this packet's branch will be rebased on the new origin/main before pushing."
+  },
+  "context_at_authoring": {
+    "tools_used": [
+      "PAL thinkdeep (gpt-5.2-pro, thinking_mode=high)",
+      "PAL challenge",
+      "Plan mode (approved plan at /Users/hue/.claude/plans/executive-verdict-flickering-blanket.md)"
+    ],
+    "evidence_bases": [
+      "AGENTS.md \u00a72 (truth order), \u00a76 (architecture boundaries), \u00a79 (proof requirements), \u00a710 (known dangers)",
+      "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json (schema)",
+      "docs/03-reference/governance/codex-authority-refresh.md (governance layer)",
+      "task-packets/generated/TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json (precedent TP)",
+      "/Users/hue/Downloads/dopemux-chat-context-v2/ (advisory chat extracts \u2014 provenance in evidence-notes.md)"
+    ],
+    "implementer": "Claude Opus 4.7 (1M context) via Codex CLI shell (execution.agent='codex' for schema compliance)"
+  }
+}
