@@ -75,7 +75,6 @@ def test_home_phase_sensitive_paths_are_excluded_from_collector_targets(
         ".SSH/id_rsa",
         ".aws/credentials",
         ".AWS/credentials",
-        ".config/mcp/settings.json",
         ".local/share/token.txt",
         ".gnupg/private-keys-v1.d/key",
         ".kube/config",
@@ -154,5 +153,67 @@ def test_home_phase_sensitive_paths_are_excluded_from_collector_targets(
     assert safe_rel_path in collected
     assert not collected.intersection(sensitive_rel_paths)
     assert ".ssh/*" in captured_excludes
-    assert ".config/*" in captured_excludes
+    assert ".config" in captured_excludes
     assert "Library/Keychains/*" in captured_excludes
+
+
+def test_home_phase_keeps_allowlisted_config_roots_scannable(
+    tmp_path: Path,
+) -> None:
+    home = tmp_path / "home"
+    allowed_rel_paths = [
+        ".config/dopemux/config.yaml",
+        ".config/taskx/settings.json",
+        ".config/litellm/config.toml",
+        ".config/mcp/server.json",
+    ]
+    for rel_path in allowed_rel_paths:
+        target = home / rel_path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text("fixture\n", encoding="utf-8")
+
+    captured_excludes: List[str] = []
+
+    class FakeCollector:
+        def __init__(self, root: Path, excludes: List[str]) -> None:
+            self.root = root
+            self.excludes = excludes
+            captured_excludes.extend(excludes)
+
+        def _is_excluded(self, path: Path) -> bool:
+            name = path.name
+            rel = str(path.relative_to(self.root))
+            return any(
+                fnmatch.fnmatch(name, pat) or fnmatch.fnmatch(rel, pat)
+                for pat in self.excludes
+            )
+
+        def collect(self, subdirs: List[str]) -> List[Dict[str, Any]]:
+            items: List[Dict[str, Any]] = []
+            for subdir in subdirs:
+                root = self.root / subdir
+                for path in sorted(root.rglob("*")):
+                    if path.is_file() and not self._is_excluded(path):
+                        items.append({"path": str(path)})
+            return items
+
+    plan = plan_home_phase(
+        home=home,
+        collector_factory=FakeCollector,
+        home_safe_roots=[
+            ".config/dopemux",
+            ".config/taskx",
+            ".config/litellm",
+            ".config/mcp",
+        ],
+        home_scan_mode="full",
+        home_safe_filter=lambda items, _home: items,
+    )
+
+    collected = {
+        str(Path(item["path"]).relative_to(home))
+        for item in plan.precollected_items or []
+    }
+    assert collected == set(allowed_rel_paths)
+    assert ".config" in captured_excludes
+    assert ".config/*" not in captured_excludes
