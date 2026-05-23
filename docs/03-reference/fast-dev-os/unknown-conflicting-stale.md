@@ -45,7 +45,7 @@ Cited verbatim from `AGENTS.md §10`. These are repo-level dangers that Codex/ag
 
 ## §2 — Cross-packet PR/TP conflicts (advisory; from chat-context-v2 corpus)
 
-Source: [`/Users/hue/Downloads/dopemux-chat-context-v2/04_reconciled/CROSS_PACKET_CONFLICTS.md`](../../../../Downloads/dopemux-chat-context-v2/04_reconciled/CROSS_PACKET_CONFLICTS.md) (external evidence base; see [`evidence-notes.md`](evidence-notes.md)).
+Source: `$HOME/Downloads/dopemux-chat-context-v2/04_reconciled/CROSS_PACKET_CONFLICTS.md` (external evidence base; see [`evidence-notes.md`](evidence-notes.md)).
 
 The chat-context-v2 reconciliation pass detected 6 PR conflicts and 8 TP conflicts where multiple chat sessions gave different normalized status claims for the same artifact. Most were classified as TIMELINE_PROGRESSION (auto-resolvable by trusting the latest packet); a few are true contradictions requiring live validation.
 
@@ -76,7 +76,7 @@ Recorded during this packet's authoring.
 |----|-------|-------------|--------------------------|
 | FDOS-RISK-SCHEMA | UNKNOWN | `dopetask-canonical-spec.json` `execution.agent` enum is `{gemini, codex, vibe, shell}` — does not include `claude_code` or `jules`. | Plan uses `execution.agent: "codex"` for schema compliance; operator may run via Claude Code in practice. Future TP-DMX-FDOS-SCHEMA-EXTEND deferred. |
 | FDOS-RISK-OVERLAP | UNKNOWN | `docs/03-reference/governance/codex-authority-refresh.md` already exists. Risk of duplicating its content here. | Every fast-dev-os doc includes "Relationship to governance" section pointing back and stating "operationalizes, not overrides." |
-| FDOS-RISK-EXTERNAL-EVIDENCE | UNKNOWN | `/Users/hue/Downloads/dopemux-chat-context-v2/` is outside the repo; reviewers won't have it. | `evidence-notes.md` documents provenance + selection criteria; critical excerpts inlined where needed. |
+| FDOS-RISK-EXTERNAL-EVIDENCE | UNKNOWN | `$HOME/Downloads/dopemux-chat-context-v2/` is outside the repo; reviewers won't have it. | `evidence-notes.md` documents provenance + selection criteria; critical excerpts inlined where needed. |
 | FDOS-RISK-FDOS-002 | RESOLVED | TP-DMX-FDOS-002-IMPLEMENTER-PROMPTS declared as `depends_on` of TP-FDOS-003 but never existed. | PR #668 cleanup patch (`66b05840d`) cleared the phantom dependency. Disposition: NEVER-EXISTED (full evidence in TP-FDOS-003 PROOF.json `refresh_log`). |
 | FDOS-RISK-SNAPSHOT-STALENESS | STALE-RISK | PR/PACKET/PROOF ledgers are static markdown snapshots; they go stale on next merge. | Every snapshot ledger carries explicit `snapshot:` metadata block. Generator script enhancement deferred. |
 | FDOS-RISK-PR-668-CREEP | RESOLVED | PR #668 refresh must not include fast-dev-os scaffolding. | Refresh respected: only TP-003 JSON depends_on patch + PROOF.json refresh_log added; zero fast-dev-os scaffolding leaked in. |
@@ -84,7 +84,7 @@ Recorded during this packet's authoring.
 
 ## §4 — Cross-packet open questions (multi-packet UNKNOWNs from v2 corpus)
 
-Source: [`/Users/hue/Downloads/dopemux-chat-context-v2/04_reconciled/RECONCILED_MASTER_LEDGER.md`](../../../../Downloads/dopemux-chat-context-v2/04_reconciled/RECONCILED_MASTER_LEDGER.md) §5.
+Source: `$HOME/Downloads/dopemux-chat-context-v2/04_reconciled/RECONCILED_MASTER_LEDGER.md` §5.
 
 The chat-context-v2 reconciliation found multi-packet UNKNOWNs (questions multiple chat sessions independently flagged). These are **priority resolution targets** — independent recurrence is signal.
 

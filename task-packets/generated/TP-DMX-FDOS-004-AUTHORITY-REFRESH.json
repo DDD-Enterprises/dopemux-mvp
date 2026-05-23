@@ -181,7 +181,7 @@
         "docs/docs_index.yaml"
       ],
       "validation": [
-        "grep -l 'fast-dev-os/README.md' docs/INDEX.md",
+        "grep -l 'fast-dev-os/readme.md' docs/INDEX.md",
         "grep -l 'fast-dev-os:' docs/docs_index.yaml"
       ]
     },

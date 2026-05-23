@@ -118,7 +118,7 @@
     },
     {
       "name": "grep snapshot: metadata",
-      "command": "grep -l 'snapshot:' docs/03-reference/fast-dev-os/{THREAD00,PR,PACKET,PROOF,UNKNOWN}*.md",
+      "command": "grep -l 'snapshot:' docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md",
       "exit_code": 0,
       "status": "PASS",
       "matched_files": 5,
@@ -126,7 +126,7 @@
     },
     {
       "name": "grep docs/INDEX.md for fast-dev-os/README.md entry",
-      "command": "grep -c 'fast-dev-os/README.md' docs/INDEX.md",
+      "command": "grep -c 'fast-dev-os/readme.md' docs/INDEX.md",
       "exit_code": 0,
       "status": "PASS",
       "matched_count": 1
@@ -158,7 +158,7 @@
       "medium": 0,
       "low": 1
     },
-    "verdict": "LGTM for commit — no blockers; 1 informational observation: .gitignore expansion auditably reflected in TP allowlist expansion 12 → 13 paths and TP step S8 verify-text updated.",
+    "verdict": "LGTM for commit \u2014 no blockers; 1 informational observation: .gitignore expansion auditably reflected in TP allowlist expansion 12 \u2192 13 paths and TP step S8 verify-text updated.",
     "continuation_id": "ec2df9eb-efc3-48ce-8336-595320e35914"
   },
   "precommit_status": {
@@ -197,8 +197,8 @@
     "Many existing PROOF.json files lack normalized status/verdict field \u2014 resolution deferred to TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES."
   ],
   "depends_on_pr_668": {
-    "status": "AUTO_MERGE_QUEUED",
-    "note": "TP-FDOS-004 is series-parent to TP-FDOS-003 (PR #668). Once #668 merges to main, this packet's branch will be rebased on the new origin/main before pushing."
+    "status": "MERGED",
+    "note": "TP-FDOS-003 (PR #668) is the series-parent of TP-FDOS-004 (this packet); this packet's series.parent_tp_id correctly points to TP-FDOS-003. PR #668 merged 2026-05-23T13:49:10Z (commit d97431c9c) before this packet's branch was rebased."
   },
   "context_at_authoring": {
     "tools_used": [
@@ -238,6 +238,18 @@
       },
       "remediated_at_utc": "2026-05-23T03:05:00Z",
       "remediated_by": "Claude Opus 4.7 (1M context) via Codex CLI shell"
+    },
+    {
+      "remediation_id": "R2-POST-MERGE-CLEANUP",
+      "trigger": "Bot reviewers (copilot-pull-request-reviewer + chatgpt-codex-connector) flagged 9 issues on PR #675 PROOF.json + TP.json that were not addressed before merge.",
+      "fixes": [
+        "TP S6 grep updated: fast-dev-os/README.md \u2192 fast-dev-os/readme.md.",
+        "TP/PROOF validation commands updated: pre-rename {THREAD00,PR,PACKET,PROOF,UNKNOWN}*.md globs \u2192 explicit kebab-case paths.",
+        "depends_on_pr_668 wording corrected: TP-FDOS-003 (PR #668) is the parent; TP-FDOS-004 is the child.",
+        "depends_on_pr_668 status updated to MERGED with commit reference."
+      ],
+      "remediated_at_utc": "2026-05-23T14:30:00Z",
+      "remediated_in_pr": "follow-up bundled into PR #676 (TP-FDOS-005 expanded scope)"
     }
   ]
 }
