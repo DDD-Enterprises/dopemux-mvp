@@ -8,7 +8,7 @@ import os
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple
 
 import requests
 
@@ -1090,6 +1090,9 @@ def call_llm(
             if not deps.should_retry(status_code, failure_type, exc, cfg.retry_policy):
                 break
 
+            if attempt >= effective_max_attempts:
+                break
+
             delay_seconds = deps.backoff_seconds(
                 attempt + 1, cfg.retry_base_seconds, cfg.retry_max_seconds
             )
@@ -1143,29 +1146,38 @@ def call_llm_with_ladder(
         str(provider).strip().lower()
         for provider in getattr(cfg, "disabled_providers", ()) or ()
     }
-    ladder = [
+    normalized_ladder = [
         _normalize_route_tuple(route, deps.provider_api_key_env)
         for route in ladder
     ]
-    ladder = [
-        route for route in ladder
-        if str(route[0]).strip().lower() not in denylist
-        and str(route[0]).strip().lower() not in disabled
-    ]
+    removed_by_denylist: Set[str] = set()
+    removed_by_disabled: Set[str] = set()
+    ladder = []
+    for route in normalized_ladder:
+        provider_key = str(route[0]).strip().lower()
+        denied = provider_key in denylist
+        disabled_by_operator = provider_key in disabled
+        if denied:
+            removed_by_denylist.add(provider_key)
+        if disabled_by_operator:
+            removed_by_disabled.add(provider_key)
+        if denied or disabled_by_operator:
+            continue
+        ladder.append(route)
     if not ladder:
         # Distinguish exhaustion source so PROOF logs / operators can tell the
         # preflight-derived denylist from an explicit CLI kill-switch.
-        if denylist and not disabled:
+        if removed_by_denylist and not removed_by_disabled:
             trigger = "routing_all_routes_preflight_denylisted"
-            reason = f"provider_denylist:{','.join(sorted(denylist))}"
-        elif disabled and not denylist:
+            reason = f"provider_denylist:{','.join(sorted(removed_by_denylist))}"
+        elif removed_by_disabled and not removed_by_denylist:
             trigger = "routing_all_routes_operator_disabled"
-            reason = f"disabled_providers:{','.join(sorted(disabled))}"
-        elif denylist and disabled:
+            reason = f"disabled_providers:{','.join(sorted(removed_by_disabled))}"
+        elif removed_by_denylist and removed_by_disabled:
             trigger = "routing_all_routes_unusable_combined"
             reason = (
-                f"provider_denylist:{','.join(sorted(denylist))};"
-                f"disabled_providers:{','.join(sorted(disabled))}"
+                f"provider_denylist:{','.join(sorted(removed_by_denylist))};"
+                f"disabled_providers:{','.join(sorted(removed_by_disabled))}"
             )
         else:
             trigger = "routing_empty_ladder"
