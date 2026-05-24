@@ -242,25 +242,22 @@ def apply_tag_routing_delta(
                                           not match.
     * ``filter_supports_json_schema_strict`` → drop routes where
                                           ``strict_json_schema`` is false.
-    * ``filter_route_context_window_min`` → no-op at this layer (route
+    * ``filter_route_context_window_min`` → ignored at this layer (route
                                           context windows are not encoded
-                                          in the per-step routes); recorded
-                                          for downstream filters.
+                                          in the per-step routes).
     * ``temperature_override``         → no-op at the route-list layer;
                                           downstream callers consume the
                                           tag via the step_contract.
     * ``route_allowlist`` (sequence)   → keep only routes whose
+                                          provider-qualified identity or
                                           ``model_id`` matches one of the
                                           glob-like patterns (``*`` only).
 
     Critical-safety invariants for structural/security_sensitive steps:
       (1) If the pre-state has at least one strict-capable route, no delta
           may filter all of them out (the delta is skipped if it would).
-      (2) If the pre-state has ZERO strict-capable routes, the function
-          refuses to apply any deltas and returns the prior list. This is
-          a config-drift condition (the step contract is missing the
-          strict-capable route it needs); the audit harness via
-          ``audit_model_map_v3`` should surface this independently.
+      (2) If a hard filter produces zero candidates, return the empty list
+          rather than silently keeping routes that violate the tag.
     """
     if not routes:
         return list(routes)
@@ -281,13 +278,6 @@ def apply_tag_routing_delta(
     def _retains_strict_capable(candidate: List[Dict[str, Any]]) -> bool:
         return any(bool(r.get("strict_json_schema")) for r in candidate)
 
-    # Critical-safety pre-flight: a structural/security_sensitive step
-    # whose pre-state has no strict-capable routes is in a degraded
-    # configuration. Skip all delta application — the routes are unsafe to
-    # narrow further; the audit harness surfaces the underlying gap.
-    if critical and not _retains_strict_capable(routes):
-        return list(routes)
-
     out: List[Dict[str, Any]] = list(routes)
     for delta in deltas:
         filtered = list(out)
@@ -300,16 +290,33 @@ def apply_tag_routing_delta(
         if isinstance(allowlist, list) and allowlist:
             filtered = [
                 r for r in filtered
-                if any(_route_matches_pattern(str(r.get("model_id", "")), pat) for pat in allowlist if isinstance(pat, str))
+                if any(
+                    _route_matches_pattern(candidate, pat)
+                    for candidate in _route_allowlist_candidates(r)
+                    for pat in allowlist
+                    if isinstance(pat, str)
+                )
             ]
         # Critical-safety: if the candidate would drop all strict-capable
         # routes AND the step is structural/security_sensitive, refuse the
-        # delta application (keep prior state).
-        if critical and not _retains_strict_capable(filtered) and _retains_strict_capable(out):
+        # delta application (keep prior state). Empty filtered lists are
+        # different: hard filters must fail closed rather than preserving
+        # routes that violate tag intent.
+        if filtered and critical and not _retains_strict_capable(filtered) and _retains_strict_capable(out):
             continue
-        if filtered:
-            out = filtered
+        out = filtered
     return out
+
+
+def _route_allowlist_candidates(route: Dict[str, Any]) -> List[str]:
+    model_id = str(route.get("model_id", "")).strip()
+    provider = str(route.get("provider", "")).strip()
+    candidates = []
+    if model_id:
+        candidates.append(model_id)
+    if provider and model_id:
+        candidates.append(f"{provider}/{model_id}")
+    return candidates
 
 
 def _route_matches_pattern(model_id: str, pattern: str) -> bool:
