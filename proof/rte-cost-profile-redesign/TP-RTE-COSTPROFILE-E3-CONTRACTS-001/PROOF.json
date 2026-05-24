@@ -20,6 +20,105 @@
   "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/687",
   "pr_base": "claude/goofy-haibt-fc568e",
   "pr_title": "feat(rte): structured_output_contracts service_tier + cache directives + anthropic_tool_use variant (E3)",
+  "review_remediation": {
+    "requested_scope": "PR #687 unresolved review comments and CI recheck under existing TP-RTE-COSTPROFILE-E3-CONTRACTS-001 packet",
+    "worktree_path": "/Users/hue/.codex/worktrees/pr687-e3-remediation/dopemux-mvp",
+    "branch": "codex/rte-costprofile-e3-contracts-001",
+    "base_pr_head_before_remediation": "54f8382f4f2d3f48fc1da60a680e9283452c8299",
+    "code_commit_sha": "95beaec7c0d40713f7112dc8a3e83aae93429ee9",
+    "status": "PASS_LOCAL_PENDING_PUSH_AND_CI_RECHECK",
+    "comments_addressed": [
+      {
+        "comment": "Anthropic tool_use payload must not be returned to current response_format callers",
+        "resolution": "build_provider_structured_output now raises by default for anthropic_tool_use unless allow_anthropic_tool_use_payload=True; route capability also fails closed with anthropic_tool_use_transport_unwired."
+      },
+      {
+        "comment": "Copilot requested making Anthropic capable",
+        "resolution": "Literal enablement intentionally rejected in E3; direct Anthropic and OpenRouter anthropic/* JSON-schema routes now return anthropic_tool_use_transport_unwired until runtime top-level tools/tool_choice support exists."
+      },
+      {
+        "comment": "schema_name docstring claimed a missing-name default that runtime did not implement",
+        "resolution": "Docstring now states missing or blank schema_name raises ValueError; emit_canonical remains only a sanitization fallback after a non-empty name is supplied."
+      },
+      {
+        "comment": "Anthropic opt-in metadata hard-coded strict=True",
+        "resolution": "Opt-in Anthropic tool_use metadata now stores strict as bool(strict), with strict=False regression coverage."
+      }
+    ],
+    "validations": [
+      {
+        "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_structured_output_contracts_anthropic_tool_use.py -q",
+        "status": "PASS",
+        "exit_code": 0,
+        "tests_collected": 21,
+        "tests_passed": 21,
+        "note": "Initial TDD red run failed before implementation on the planned missing behaviors; post-implementation run passed."
+      },
+      {
+        "command": "python -m json.tool task-packets/generated/TP-RTE-COSTPROFILE-E3-CONTRACTS-001.json >/dev/null",
+        "status": "PASS",
+        "exit_code": 0
+      },
+      {
+        "command": "python -m compileall -q services/repo-truth-extractor/lib/structured_output_contracts.py",
+        "status": "PASS",
+        "exit_code": 0
+      },
+      {
+        "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest test_structured_output_contracts_service_tier.py test_structured_output_contracts_cache_directives.py test_structured_output_contracts_anthropic_tool_use.py -v",
+        "status": "PASS",
+        "exit_code": 0,
+        "tests_collected": 46,
+        "tests_passed": 46
+      },
+      {
+        "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest test_structured_output_provider_modes.py test_structured_output_schema_strictness.py -v",
+        "status": "PASS",
+        "exit_code": 0,
+        "tests_collected": 4,
+        "tests_passed": 4
+      },
+      {
+        "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest test_run_extraction_v3_model_routing.py test_strict_passthrough_attestations.py -v",
+        "status": "PASS",
+        "exit_code": 0,
+        "tests_collected": 13,
+        "tests_passed": 13
+      },
+      {
+        "command": "git diff --check && git diff --cached --check",
+        "status": "PASS",
+        "exit_code": 0
+      },
+      {
+        "command": "git commit -m 'fix(rte): gate anthropic tool-use output'",
+        "status": "PASS",
+        "exit_code": 0,
+        "hook_evidence": "Repo preflight smoke checks passed: 6 tests passed, syntax-ok files=675, manifest .runs/run-20260524-050119.manifest.json."
+      }
+    ],
+    "pal": {
+      "codereview": {
+        "status": "PASS_WITH_TOOL_LIMITATION",
+        "tool": "mcp__pal__.codereview",
+        "model": "gpt-5-codex",
+        "issues_found": 0,
+        "note": "Structured PAL codereview completed with no issues; model-backed file-attachment follow-up could not inspect files directly and Gemini CLI bridge was unavailable."
+      },
+      "precommit": {
+        "status": "PASS",
+        "tool": "mcp__pal__.precommit",
+        "model": "gpt-5-codex",
+        "issues_found": 0,
+        "continuation_id": "aff696b1-ef26-4949-980a-7b648e245b4c"
+      }
+    },
+    "pending_after_local_commit": [
+      "push codex/rte-costprofile-e3-contracts-001",
+      "reply to unresolved PR #687 review threads",
+      "recheck GitHub PR checks after push"
+    ]
+  },
   "slices_completed": [
     {
       "id": "S1",
@@ -165,8 +264,8 @@
     {
       "id": "RR-1",
       "severity": "medium",
-      "description": "Anthropic tool_use payload shape ({tools, tool_choice}) requires E4 to teach llm_runtime to detect transport_mode='anthropic_tool_use' and route accordingly. Until E4 lands, no Anthropic routes are in any cell, so the new code path is unreachable in production.",
-      "mitigation": "Explicit docstring on build_provider_structured_output documents the divergence; E4 will close this gap."
+      "description": "Anthropic tool_use payload shape ({tools, tool_choice}) still requires runtime callers to put those fields at the request top level instead of under response_format. E3 now fails closed for Anthropic JSON-schema routes and for default builder payload emission until that runtime support exists.",
+      "mitigation": "A later runtime packet must wire top-level tools/tool_choice transport before passing allow_anthropic_tool_use_payload=True or advertising Anthropic routes as strict/schema capable."
     },
     {
       "id": "RR-2",
