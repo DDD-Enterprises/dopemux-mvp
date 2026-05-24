@@ -239,3 +239,102 @@ def test_openai_batch_jsonl_serializes_request_options(tmp_path: Path) -> None:
     body = json.loads(jsonl)
     assert body["body"]["service_tier"] == "flex"
     assert body["body"]["reasoning_effort"] == "low"
+
+
+def test_ladder_hop_route_entry_uses_index_to_disambiguate_request_options() -> None:
+    runner = _load_module(
+        "run_extraction_v5_route_entry_hop_options",
+        "run_extraction_v5.py",
+    )
+    step_contract = {
+        "lane": {
+            "primary_routes": [
+                {
+                    "provider": "xai",
+                    "model_id": "grok-4.3",
+                    "api_key_env": "XAI_API_KEY",
+                    "reasoning_effort": "low",
+                },
+                {
+                    "provider": "xai",
+                    "model_id": "grok-4.3",
+                    "api_key_env": "XAI_API_KEY",
+                    "reasoning_effort": "none",
+                },
+            ]
+        }
+    }
+    ladder_entries = step_contract["lane"]["primary_routes"]
+
+    first = runner._route_entry_for_ladder_hop(
+        step_contract,
+        ("xai", "grok-4.3", "XAI_API_KEY"),
+        0,
+        ladder_entries,
+    )
+    second = runner._route_entry_for_ladder_hop(
+        step_contract,
+        ("xai", "grok-4.3", "XAI_API_KEY"),
+        1,
+        ladder_entries,
+    )
+
+    assert first["reasoning_effort"] == "low"
+    assert second["reasoning_effort"] == "none"
+
+
+def test_strict_batch_request_uses_resolved_route_request_options() -> None:
+    runner = _load_module(
+        "run_extraction_v5_strict_batch_options",
+        "run_extraction_v5.py",
+    )
+    artifact_name = "STRICT_OPTIONS.json"
+    step_contract = {
+        "phase": "A",
+        "step_id": "A1",
+        "scope": {"json_managed": True},
+        "expected_artifacts": [artifact_name],
+        "artifact_order": [artifact_name],
+        "lane": {
+            "lane_class": "BULK_DOCS_STRICT",
+            "strict_schema_required": True,
+            "strict_schema_required_primary": True,
+            "primary_routes": [
+                {
+                    "provider": "openai",
+                    "model_id": "gpt-5.5",
+                    "api_key_env": "OPENAI_API_KEY",
+                    "structured_output_mode": "json_schema",
+                    "strict_json_schema": True,
+                    "strict_passthrough_verified": True,
+                    "service_tier": "flex",
+                }
+            ],
+        },
+        "artifacts": {
+            artifact_name: {
+                "canonical_schema_id": "STRICT_OPTIONS@v1",
+                "required_fields": ["id", "path", "line_range"],
+                "prompt_required_item_fields": [],
+                "allow_empty_array_fields": [],
+            }
+        },
+    }
+
+    request = runner.build_v5_batch_request(
+        custom_id="A_P0001",
+        model_id="gpt-5.5",
+        system_prompt="Return JSON.",
+        user_content="Extract the fixture.",
+        provider="openai",
+        selected_route=("openai", "gpt-5.5", "OPENAI_API_KEY"),
+        selected_route_entry=None,
+        transport="openai_sdk",
+        strict_contract_required=True,
+        step_contract=step_contract,
+        artifact_names=(artifact_name,),
+        force_json_output=False,
+        metadata={"phase": "A", "step_id": "A1", "partition_id": "A_P0001"},
+    )
+
+    assert request.request_options == {"service_tier": "flex"}

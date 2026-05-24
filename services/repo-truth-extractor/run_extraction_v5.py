@@ -5140,6 +5140,7 @@ def resolve_effective_step_route(
                 "step_tier": step_tier,
                 "step_type": step_type,
                 "ladder": [(provider, model_id, api_key_env)],
+                "ladder_route_entries": [dict(benchmark_owned_route)],
                 "provider": provider,
                 "model_id": model_id,
                 "api_key_env": api_key_env,
@@ -5159,6 +5160,7 @@ def resolve_effective_step_route(
             # strict_ladder to avoid persisting authentication-related environment identifiers
             # (such as api_key_env names) in any logged or serialized strict-route metadata.
             strict_ladder: List[Tuple[str, str]] = []
+            strict_ladder_route_entries: List[Dict[str, Any]] = []
             strict_attempts: List[Dict[str, Any]] = []
             for route in primary_routes:
                 selected_route, attempts = resolve_stage_route(
@@ -5179,6 +5181,7 @@ def resolve_effective_step_route(
                             str(selected_route["model_id"]),
                         )
                     )
+                    strict_ladder_route_entries.append(dict(selected_route))
             if not strict_ladder:
                 attempt_json = json.dumps(
                     strict_attempts, ensure_ascii=True, sort_keys=True
@@ -5199,6 +5202,7 @@ def resolve_effective_step_route(
                 "step_tier": step_tier,
                 "step_type": step_type,
                 "ladder": strict_ladder,
+                "ladder_route_entries": strict_ladder_route_entries,
                 "provider": provider,
                 "model_id": model_id,
                 # Intentionally omit api_key_env from the returned strict metadata; callers
@@ -5222,6 +5226,7 @@ def resolve_effective_step_route(
             "step_tier": step_tier,
             "step_type": step_type,
             "ladder": contract_ladder,
+            "ladder_route_entries": [dict(route) for route in primary_routes],
             "provider": provider,
             "model_id": model_id,
             "api_key_env": api_key_env,
@@ -12260,6 +12265,50 @@ def _batch_route_entry_for_selected_route(
     )
 
 
+def _route_entry_matches_route(
+    route_entry: Dict[str, Any],
+    selected_route: Sequence[str],
+) -> bool:
+    if len(selected_route) < 2:
+        return False
+    if str(route_entry.get("provider") or "") != str(selected_route[0]):
+        return False
+    if str(route_entry.get("model_id") or "") != str(selected_route[1]):
+        return False
+    if len(selected_route) >= 3:
+        api_key_env = str(route_entry.get("api_key_env") or "")
+        if api_key_env and api_key_env != str(selected_route[2]):
+            return False
+    return True
+
+
+def _route_entry_for_ladder_hop(
+    step_contract: Optional[Dict[str, Any]],
+    selected_route: Sequence[str],
+    hop_index: int,
+    ladder_route_entries: Optional[Sequence[Dict[str, Any]]] = None,
+) -> Optional[Dict[str, Any]]:
+    if (
+        isinstance(ladder_route_entries, (list, tuple))
+        and 0 <= hop_index < len(ladder_route_entries)
+    ):
+        route_entry = ladder_route_entries[hop_index]
+        if isinstance(route_entry, dict) and _route_entry_matches_route(
+            route_entry, selected_route
+        ):
+            return dict(route_entry)
+    if len(selected_route) >= 3:
+        return _batch_route_entry_for_selected_route(
+            step_contract,
+            (str(selected_route[0]), str(selected_route[1]), str(selected_route[2])),
+        )
+    return _contract_route_entry_for_provider_model(
+        step_contract,
+        provider=str(selected_route[0]) if len(selected_route) > 0 else "",
+        model_id=str(selected_route[1]) if len(selected_route) > 1 else "",
+    )
+
+
 def _validate_strict_batch_response_format(
     response_format: Optional[Dict[str, Any]],
     *,
@@ -12534,7 +12583,9 @@ def build_v5_batch_request(
         if str(key).strip()
     }
     response_format: Optional[Dict[str, Any]] = None
-    request_options = normalized_route_request_options(selected_route_entry)
+    request_options: Dict[str, str] = normalized_route_request_options(
+        selected_route_entry
+    )
     if strict_contract_required:
         batch_metadata["strict"] = "true"
         phase = str(batch_metadata.get("phase") or "")
@@ -12556,6 +12607,7 @@ def build_v5_batch_request(
             raise ValueError(
                 f"Strict batch request for {phase}/{step_id} requires a strict-capable route contract"
             )
+        request_options = normalized_route_request_options(route_entry)
         strict_reason = strict_capability_reason(route_entry, transport)
         if strict_reason is not None:
             raise ValueError(
@@ -13375,6 +13427,11 @@ def execute_step_for_partitions(
     step_tier = str(route_info["step_tier"])
     step_type = str(route_info["step_type"])
     step_ladder = [tuple(route) for route in route_info["ladder"]]
+    step_ladder_route_entries = [
+        dict(route)
+        for route in route_info.get("ladder_route_entries", [])
+        if isinstance(route, dict)
+    ]
     initial_provider = str(route_info["provider"])
     initial_model_id = str(route_info["model_id"])
     initial_api_key_env = str(
@@ -13394,17 +13451,11 @@ def execute_step_for_partitions(
     draft_response_format: Optional[Dict[str, Any]] = None
     draft_structured_output_meta: Dict[str, Any] = {}
     if strict_contract_required and isinstance(step_contract, dict):
-        primary_routes = route_entries_for_stage(step_contract, "primary")
-        route_entry = next(
-            (
-                candidate
-                for candidate in primary_routes
-                if isinstance(candidate, dict)
-                and candidate.get("provider") == initial_provider
-                and candidate.get("model_id") == initial_model_id
-                and candidate.get("api_key_env") == initial_api_key_env
-            ),
-            None,
+        route_entry = _route_entry_for_ladder_hop(
+            step_contract,
+            (initial_provider, initial_model_id, initial_api_key_env),
+            0,
+            step_ladder_route_entries,
         )
         if route_entry is None:
             route_entry = {
@@ -13846,6 +13897,7 @@ def execute_step_for_partitions(
         p_endpoint_base = endpoint_base
         p_response_format = draft_response_format
         p_structured_meta = draft_structured_output_meta
+        p_ladder_route_entries = step_ladder_route_entries
 
         if partition_tier_override and partition_tier_override != step_tier:
             p_route_info = resolve_effective_step_route(
@@ -13864,19 +13916,18 @@ def execute_step_for_partitions(
             p_transport = transport_for_provider(p_provider, cfg)
             p_endpoint_base = llm_base_url(p_provider, cfg)
             p_force_json = p_provider == "gemini"
+            p_ladder_route_entries = [
+                dict(route)
+                for route in p_route_info.get("ladder_route_entries", [])
+                if isinstance(route, dict)
+            ]
             
             if strict_contract_required and isinstance(step_contract, dict):
-                p_primary_routes = route_entries_for_stage(step_contract, "primary")
-                p_route_entry = next(
-                    (
-                        candidate
-                        for candidate in p_primary_routes
-                        if isinstance(candidate, dict)
-                        and candidate.get("provider") == p_provider
-                        and candidate.get("model_id") == p_model_id
-                        and candidate.get("api_key_env") == p_api_key_env
-                    ),
-                    None,
+                p_route_entry = _route_entry_for_ladder_hop(
+                    step_contract,
+                    (p_provider, p_model_id, p_api_key_env),
+                    0,
+                    p_ladder_route_entries,
                 )
                 if p_route_entry is None:
                     p_route_entry = {
@@ -15311,7 +15362,12 @@ else sdk_auth_present_flags(p_provider, True)
         ) -> Dict[str, Any]:
             route_provider, route_model_id, route_api_key_env = route
             route_force_json = route_provider == "gemini"
-            route_entry = _batch_route_entry_for_selected_route(step_contract, route)
+            route_entry = _route_entry_for_ladder_hop(
+                step_contract,
+                route,
+                hop_index,
+                p_ladder_route_entries,
+            )
             route_request_options = normalized_route_request_options(route_entry)
 
             def _execute_llm_call(
@@ -15354,8 +15410,11 @@ else sdk_auth_present_flags(p_provider, True)
                     )
                     batch_provider, batch_model_id, batch_api_key_env = selected_route
                     batch_transport = transport_for_provider(batch_provider, cfg)
-                    selected_route_entry = _batch_route_entry_for_selected_route(
-                        step_contract, selected_route
+                    selected_route_entry = _route_entry_for_ladder_hop(
+                        step_contract,
+                        selected_route,
+                        hop_index,
+                        p_ladder_route_entries,
                     )
                     if strict_contract_required and routing_reason in {
                         "explicit_step_route_override",
@@ -16440,7 +16499,9 @@ else sdk_auth_present_flags(p_provider, True)
                         fallback_route=f"{fallback_tuple[0]}/{fallback_tuple[1]}",
                     )
                 original_step_ladder = list(step_ladder)
+                original_step_ladder_route_entries = list(step_ladder_route_entries)
                 step_ladder = [fallback_tuple]
+                step_ladder_route_entries = [dict(soft_gate_route)]
                 failed_set = set(failed_partition_ids)
                 for partition in ordered_partitions:
                     partition_id = str(partition["id"])
@@ -16456,6 +16517,7 @@ else sdk_auth_present_flags(p_provider, True)
                     }
                     results_by_partition[partition_id] = rerun_result
                 step_ladder = original_step_ladder
+                step_ladder_route_entries = original_step_ladder_route_entries
                 remaining_failed = sum(
                     1
                     for partition_id in failed_set
