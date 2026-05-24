@@ -1,16 +1,24 @@
 ---
 id: adr-rte-cost-profiles
-title: "RTE cost profiles + service_tier / cached / batch optimizer wiring"
+title: RTE cost profiles + service_tier / cached / batch optimizer wiring
 type: adr
 status: accepted
 owner: rte-routing
 date: 2026-05-23
 supersedes:
-  - "implicit-routing-policy-design-v1 (8 hardcoded policies, no optimizer wiring)"
+- implicit-routing-policy-design-v1 (8 hardcoded policies, no optimizer wiring)
 adhd_complexity: 0.6
 adhd_energy: high
+author: '@hu3mann'
+last_review: '2026-05-24'
+next_review: '2026-08-22'
+prelude: RTE cost profiles + service_tier / cached / batch optimizer wiring (adr)
+  for dopemux documentation and developer workflows.
+graph_metadata:
+  node_type: ADR
+  impact: medium
+  relates_to: []
 ---
-
 # ADR: RTE cost profiles + service_tier / cached / batch optimizer wiring
 
 ## Status
@@ -102,7 +110,7 @@ Per Phase B.5 step-complexity analysis (136 v4 prompts classified along 7 dimens
 
 | File | Change |
 |---|---|
-| [config/pricing.yaml](config/pricing.yaml) | 40+ models + optimizer fields (service_tier multipliers, cache_*_multiplier, prompt_cache_min_tokens, tiered_*_above_cost_per_m, data_residency_us_multiplier, supports_json_schema_strict, supports_reasoning_toggle) |
+| [config/pricing.yaml](config/pricing.yaml) | 40+ models + optimizer fields: `service_tier` multipliers, `cache_*_multiplier`, `prompt_cache_min_tokens`, `tiered_*_above_cost_per_m`, `data_residency_us_multiplier`, `supports_json_schema_strict`, `supports_reasoning_toggle` |
 | [services/repo-truth-extractor/benchmarking/pricing/normalization.py](services/repo-truth-extractor/benchmarking/pricing/normalization.py) | Normalize all new optimizer fields from yaml |
 | [services/repo-truth-extractor/lib/spend_ledger.py](services/repo-truth-extractor/lib/spend_ledger.py) | `compute_optimized_cost()` (service_tier × batch × cache × tiered × residency math); `make_projected_cost_check()`; `_OPTIMIZER_PASSTHROUGH_KEYS` |
 | [services/repo-truth-extractor/llm_runtime.py](services/repo-truth-extractor/llm_runtime.py) | `call_llm()` accepts `service_tier`/`prompt_cache_directives`/`disabled_providers`; injects `service_tier` into OpenAI/OR SDK calls; captures `cached_tokens` from response usage |
@@ -113,10 +121,10 @@ Per Phase B.5 step-complexity analysis (136 v4 prompts classified along 7 dimens
 
 ## Research artifacts
 
-- [claudedocs/research/verified-model-inventory-2026-05.md](/Users/hue/code/dopemux-mvp/claudedocs/research/verified-model-inventory-2026-05.md) — Phase B model inventory (4 providers, 40+ models, conflict resolution rules)
-- [claudedocs/research/step-complexity-analysis-2026-05.md](/Users/hue/code/dopemux-mvp/claudedocs/research/step-complexity-analysis-2026-05.md) — Phase B.5 step classification (136 prompts; 46 outliers; matrix decision)
-- [claudedocs/research/routing-design-2026-05.md](/Users/hue/code/dopemux-mvp/claudedocs/research/routing-design-2026-05.md) — Phase C `pal/planner` design (4 profiles × 10 cells)
-- [claudedocs/research/routing-consensus-2026-05.md](/Users/hue/code/dopemux-mvp/claudedocs/research/routing-consensus-2026-05.md) — Phase D `pal/consensus` (3 models: gpt-5.2 neutral, claude-opus-4.5 against, gpt-5.2-pro neutral)
+- [verified-model-inventory-2026-05.md](../06-research/extraction/rte-cost-profile-redesign/verified-model-inventory-2026-05.md) — Phase B model inventory (4 providers, 40+ models, conflict resolution rules)
+- [step-complexity-analysis-2026-05.md](../06-research/extraction/rte-cost-profile-redesign/step-complexity-analysis-2026-05.md) — Phase B.5 step classification (136 prompts; 46 outliers; matrix decision)
+- [routing-design-2026-05.md](../06-research/extraction/rte-cost-profile-redesign/routing-design-2026-05.md) — Phase C `pal/planner` design (4 profiles × 10 cells)
+- [routing-consensus-2026-05.md](../06-research/extraction/rte-cost-profile-redesign/routing-consensus-2026-05.md) — Phase D `pal/consensus` (3 models: gpt-5.2 neutral, claude-opus-4.5 against, gpt-5.2-pro neutral)
 
 ## Pending implementation (for follow-up sessions)
 
