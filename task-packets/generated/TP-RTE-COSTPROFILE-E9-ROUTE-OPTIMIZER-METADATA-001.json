@@ -1,0 +1,99 @@
+{
+  "id": "TP-RTE-COSTPROFILE-E9-ROUTE-OPTIMIZER-METADATA-001",
+  "project": "dopemux-mvp",
+  "target": "Repair the E9-blocking route optimizer metadata gap: run_extraction_v5 must propagate model_map v3 route service_tier and cache_strategy metadata into llm_runtime.call_llm, projected/reserved spend accounting, and batch request metadata.",
+  "invariants": [
+    "Keep the change limited to route optimizer metadata propagation and focused regression tests.",
+    "Do not change cost-profile selection semantics or model_map.yaml v3 contents in this packet.",
+    "Do not run live provider calls; all pytest validation must run with RTE_DISABLE_LIVE_LLM_IN_TESTS=1.",
+    "Preserve existing SpendLedger pricing formulas; pass existing route metadata into the already-wired spend accounting paths.",
+    "E9 remains test-only and must resume after this prerequisite fix lands."
+  ],
+  "depends_on": [
+    "TP-RTE-COSTPROFILE-E8-YAML-V3-001",
+    "TP-RTE-COSTPROFILE-E9-RUNTIME-SPEND-OPTIMIZERS-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "rte-cost-profile-redesign",
+    "base_branch": "claude/goofy-haibt-fc568e",
+    "parent_tp_id": "TP-RTE-COSTPROFILE-E9-RUNTIME-SPEND-OPTIMIZERS-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-costprofile-e9-route-optimizer-metadata-fix-001",
+    "base_branch": "claude/goofy-haibt-fc568e"
+  },
+  "commit": {
+    "message": "fix(rte): propagate route optimizer metadata through v5 runtime",
+    "allowlist": [
+      "services/repo-truth-extractor/lib/structured_output_contracts.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_route_optimizer_metadata.py",
+      "task-packets/generated/TP-RTE-COSTPROFILE-E9-ROUTE-OPTIMIZER-METADATA-001.json",
+      "task-packets/INDEX.md",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E9-ROUTE-OPTIMIZER-METADATA-001/PROOF.json",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E9-ROUTE-OPTIMIZER-METADATA-001/sha256sums.txt"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-RTE-COSTPROFILE-E9-ROUTE-OPTIMIZER-METADATA-001.json >/dev/null",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_route_optimizer_metadata.py -v",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_route_optimizer_metadata.py services/repo-truth-extractor/tests/test_runtime_spend_optimizer_metadata.py services/repo-truth-extractor/tests/test_llm_runtime_service_tier_passthrough.py services/repo-truth-extractor/tests/test_structured_output_contracts_cache_directives.py services/repo-truth-extractor/tests/test_structured_output_contracts_service_tier.py -v",
+      "python -m compileall -q services/repo-truth-extractor/lib/structured_output_contracts.py services/repo-truth-extractor/run_extraction_v5.py",
+      "python -m json.tool proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E9-ROUTE-OPTIMIZER-METADATA-001/PROOF.json >/dev/null",
+      "cd proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E9-ROUTE-OPTIMIZER-METADATA-001 && shasum -a 256 -c sha256sums.txt",
+      "git diff --check",
+      "git diff --cached --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): propagate route optimizer metadata through v5 runtime",
+    "body": "## Summary\n- Wires model_map v3 route service_tier/cache_strategy metadata through run_extraction_v5 into llm_runtime.call_llm.\n- Applies the same route service_tier to projected/reserved/runtime spend accounting and batch request metadata.\n- Adds focused regression coverage for the E9 blocker found before writing E9's test-only packet.\n\n## Scope\nRoute optimizer metadata propagation only. No model-map, profile registry, or pricing formula changes.\n\n## Validation\nFocused pytest, compileall, proof parse/checksum, and diff whitespace checks.\n\n## NOT_RUN\n- Live provider calls.\n- E9 test-only packet.\n- F verification packet.\n\n## Residual Risks / UNKNOWNs\n- Provider-side cache/service-tier behavior remains mocked locally; F verification must still cover bounded runtime behavior after E9.\n\n@codex review",
+    "base": "claude/goofy-haibt-fc568e"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Add focused failing regression tests proving run_extraction_v5 drops route service_tier/cache_strategy before llm_runtime, spend accounting, and batch metadata.",
+      "validation": [
+        "New tests fail on the current base for missing route optimizer metadata propagation."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Propagate normalized route service_tier and cache_strategy from structured_output_contracts into run_extraction_v5 route execution.",
+      "validation": [
+        "call_llm wrapper forwards service_tier, prompt_cache_directives, and disabled_providers to llm_runtime.call_llm."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Apply route service_tier to projected/reserved/runtime spend accounting and batch request metadata without changing SpendLedger formulas.",
+      "validation": [
+        "Focused regression tests pass and existing optimizer-spend tests remain green."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run focused validation, produce proof, commit, push, and open a prerequisite PR before resuming E9.",
+      "validation": [
+        "Validation commands pass and PR is opened against claude/goofy-haibt-fc568e."
+      ]
+    }
+  ]
+}

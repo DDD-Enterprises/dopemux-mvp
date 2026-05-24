@@ -383,6 +383,7 @@ try:
         merge_artifacts_by_name,
         normalize_required_array_fields,
         plural_expected_json_artifacts,
+        prompt_caching_directives_for_provider,
         repair_mode as resolve_contract_repair_mode,
         resolve_stage_route,
         route_entries_for_stage,
@@ -434,6 +435,9 @@ except ModuleNotFoundError:
     )
     plural_expected_json_artifacts = (
         structured_contracts_module.plural_expected_json_artifacts
+    )
+    prompt_caching_directives_for_provider = (
+        structured_contracts_module.prompt_caching_directives_for_provider
     )
     resolve_contract_repair_mode = structured_contracts_module.repair_mode
     resolve_stage_route = structured_contracts_module.resolve_stage_route
@@ -10444,6 +10448,7 @@ def _pricing_preview(
     output_tokens: int,
     execution_mode: str = "",
     route: Optional[str] = None,
+    service_tier: Optional[str] = None,
 ) -> Optional[Dict[str, Any]]:
     if not cfg.ledger:
         return None
@@ -10453,7 +10458,10 @@ def _pricing_preview(
         provider=provider,
         model_id=model_id,
         route=route,
-        service_tier=_runtime_service_tier_for_spend(cfg),
+        service_tier=_runtime_service_tier_for_spend(
+            cfg,
+            service_tier=service_tier,
+        ),
         is_batch=_runtime_is_batch_execution_mode(execution_mode),
     )
 
@@ -10670,6 +10678,7 @@ def _check_projected_cost_limit(
     output_tokens: int,
     execution_mode: str,
     route: Optional[str] = None,
+    service_tier: Optional[str] = None,
 ) -> None:
     pricing = _pricing_preview(
         cfg,
@@ -10679,6 +10688,7 @@ def _check_projected_cost_limit(
         output_tokens=output_tokens,
         execution_mode=execution_mode,
         route=route,
+        service_tier=service_tier,
     )
     if pricing is None:
         return
@@ -10776,18 +10786,100 @@ def _runtime_service_tier_for_spend(
     cfg: RunnerConfig,
     response_summary: Optional[Dict[str, Any]] = None,
     payload: Optional[Dict[str, Any]] = None,
+    *,
+    service_tier: Optional[str] = None,
 ) -> Optional[str]:
     usage = _runtime_usage_payload(response_summary, payload)
     if usage is not None:
         observed = str(usage.get("service_tier") or "").strip().lower()
         if observed:
             return observed
+    requested = str(service_tier or "").strip().lower()
+    if requested:
+        return requested
     configured = str(getattr(cfg, "default_service_tier", "") or "").strip().lower()
     return configured or None
 
 
 def _runtime_is_batch_execution_mode(execution_mode: str) -> bool:
     return str(execution_mode or "").strip().lower().startswith("batch")
+
+
+_ROUTE_SERVICE_TIERS = {"default", "flex", "priority", "auto"}
+_ROUTE_CACHE_STRATEGIES = {"auto", "cache_control_explicit", "none"}
+
+
+def _route_service_tier_for_execution(
+    route_entry: Optional[Dict[str, Any]],
+    cfg: RunnerConfig,
+) -> Optional[str]:
+    raw_route_tier = (
+        route_entry.get("service_tier") if isinstance(route_entry, dict) else None
+    )
+    route_tier = str(raw_route_tier or "").strip().lower()
+    if route_tier in _ROUTE_SERVICE_TIERS:
+        return route_tier
+    return _runtime_service_tier_for_spend(cfg)
+
+
+def _route_cache_strategy_for_execution(
+    route_entry: Optional[Dict[str, Any]],
+) -> str:
+    raw_strategy = (
+        route_entry.get("cache_strategy") if isinstance(route_entry, dict) else None
+    )
+    strategy = str(raw_strategy or "").strip().lower()
+    if strategy in _ROUTE_CACHE_STRATEGIES:
+        return strategy
+    return "auto"
+
+
+def _route_prompt_cache_directives_for_execution(
+    route_entry: Optional[Dict[str, Any]],
+    cfg: RunnerConfig,
+    *,
+    system_prompt: str,
+    user_content: str,
+) -> Optional[Dict[str, Any]]:
+    if not isinstance(route_entry, dict):
+        return None
+    provider = str(route_entry.get("provider") or "").strip().lower()
+    model_id = str(route_entry.get("model_id") or "").strip()
+    if not provider or not model_id:
+        return None
+    return prompt_caching_directives_for_provider(
+        provider,
+        model_id,
+        prompt_text_lengths=(len(system_prompt or ""), len(user_content or "")),
+        cache_strategy=_route_cache_strategy_for_execution(route_entry),
+        auto_cache_enabled=bool(getattr(cfg, "enable_cached_input", False)),
+    )
+
+
+def _route_optimizer_batch_metadata(
+    route_entry: Optional[Dict[str, Any]],
+    cfg: RunnerConfig,
+    *,
+    system_prompt: str,
+    user_content: str,
+) -> Dict[str, str]:
+    metadata: Dict[str, str] = {}
+    service_tier = _route_service_tier_for_execution(route_entry, cfg)
+    if service_tier:
+        metadata["service_tier"] = service_tier
+    directives = _route_prompt_cache_directives_for_execution(
+        route_entry,
+        cfg,
+        system_prompt=system_prompt,
+        user_content=user_content,
+    )
+    if isinstance(directives, dict):
+        strategy = str(directives.get("strategy") or "none").strip().lower()
+        metadata["cache_strategy"] = strategy or "none"
+        metadata["cache_strategy_applied"] = (
+            "true" if bool(directives.get("applied")) else "false"
+        )
+    return metadata
 
 
 def _accumulate_runtime_spend(
@@ -10805,6 +10897,7 @@ def _accumulate_runtime_spend(
     fallback_output_tokens: Optional[int] = None,
     payload: Optional[Dict[str, Any]] = None,
     route: Optional[str] = None,
+    service_tier: Optional[str] = None,
     raise_on_limit: bool = True,
 ) -> Optional[Dict[str, Any]]:
     if not cfg.ledger:
@@ -10828,7 +10921,12 @@ def _accumulate_runtime_spend(
             response_summary,
             payload,
         ),
-        service_tier=_runtime_service_tier_for_spend(cfg, response_summary, payload),
+        service_tier=_runtime_service_tier_for_spend(
+            cfg,
+            response_summary,
+            payload,
+            service_tier=service_tier,
+        ),
         is_batch=_runtime_is_batch_execution_mode(execution_mode),
     )
     combined = {
@@ -10877,6 +10975,7 @@ def _reserve_projected_spend(
     output_tokens: int,
     execution_mode: str,
     route: Optional[str] = None,
+    service_tier: Optional[str] = None,
 ) -> Optional[Dict[str, Any]]:
     if not cfg.ledger:
         return None
@@ -10891,6 +10990,7 @@ def _reserve_projected_spend(
         output_tokens=output_tokens,
         execution_mode=execution_mode,
         route=route,
+        service_tier=service_tier,
     )
     reserved = cfg.ledger.accumulate(
         phase,
@@ -10899,7 +10999,10 @@ def _reserve_projected_spend(
         provider=provider,
         model_id=model_id,
         route=route,
-        service_tier=_runtime_service_tier_for_spend(cfg),
+        service_tier=_runtime_service_tier_for_spend(
+            cfg,
+            service_tier=service_tier,
+        ),
         is_batch=_runtime_is_batch_execution_mode(execution_mode),
     )
     combined = {
@@ -11158,6 +11261,9 @@ def call_llm(
     trace_context: Optional[Dict[str, Any]] = None,
     lifecycle_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
     *,
+    service_tier: Optional[str] = None,
+    prompt_cache_directives: Optional[Dict[str, Any]] = None,
+    disabled_providers: Optional[set] = None,
     retry_attempts_override: Optional[int] = None,
 ) -> Dict[str, Any]:
     return llm_runtime_call_llm(
@@ -11176,6 +11282,9 @@ def call_llm(
         timeout_seconds=timeout_seconds,
         trace_context=trace_context,
         lifecycle_callback=lifecycle_callback,
+        service_tier=service_tier,
+        prompt_cache_directives=prompt_cache_directives,
+        disabled_providers=disabled_providers,
         retry_attempts_override=retry_attempts_override,
     )
 
@@ -15931,7 +16040,8 @@ else sdk_auth_present_flags(p_provider, True)
             route_force_json = route_provider == "gemini"
             route_response_format = p_response_format
             route_structured_meta = p_structured_meta
-            if strict_contract_required and isinstance(step_contract, dict):
+            route_entry = None
+            if isinstance(step_contract, dict):
                 route_entry = route_entry_by_identity(
                     route_entries_for_stage(step_contract, "primary"),
                     provider=route_provider,
@@ -15944,6 +16054,8 @@ else sdk_auth_present_flags(p_provider, True)
                         provider=route_provider,
                         model_id=route_model_id,
                     )
+            route_service_tier = _route_service_tier_for_execution(route_entry, cfg)
+            if strict_contract_required and isinstance(step_contract, dict):
                 if route_entry is None:
                     route_entry = {
                         "provider": route_provider,
@@ -15952,6 +16064,8 @@ else sdk_auth_present_flags(p_provider, True)
                         "structured_output_mode": "json_schema",
                         "strict_json_schema": False,
                         "strict_passthrough_verified": False,
+                        "service_tier": route_service_tier,
+                        "cache_strategy": None,
                     }
                 route_response_format, route_response_meta = build_provider_step_contract_output(
                     route=route_entry,
@@ -15980,6 +16094,14 @@ else sdk_auth_present_flags(p_provider, True)
                         "Do not include markdown, code fences, commentary, or explanations.\n"
                         "The response must start with { or [ and end with } or ].\n"
                     )
+                route_prompt_cache_directives = (
+                    _route_prompt_cache_directives_for_execution(
+                        route_entry,
+                        cfg,
+                        system_prompt=prompt_text,
+                        user_content=effective_user_prompt,
+                    )
+                )
                 projected_input_tokens = _estimate_text_tokens(
                     prompt_text, effective_user_prompt
                 )
@@ -16008,12 +16130,15 @@ else sdk_auth_present_flags(p_provider, True)
                     )
                     batch_provider, batch_model_id, batch_api_key_env = selected_route
                     batch_transport = transport_for_provider(batch_provider, cfg)
-                    selected_route_entry = None
+                    selected_route_entry = _batch_route_entry_for_selected_route(
+                        step_contract,
+                        selected_route,
+                    )
                     if strict_contract_required and routing_reason in {
                         "explicit_step_route_override",
                         "explicit_phase_route_override",
                         "benchmark_route_ownership_primary",
-                    }:
+                    } and selected_route_entry is None:
                         contract_route_entry = _contract_route_entry_for_provider_model(
                             step_contract,
                             provider=batch_provider,
@@ -16033,6 +16158,16 @@ else sdk_auth_present_flags(p_provider, True)
                             if isinstance(contract_route_entry, dict)
                             else False,
                         }
+                    batch_service_tier = _route_service_tier_for_execution(
+                        selected_route_entry,
+                        cfg,
+                    )
+                    batch_optimizer_metadata = _route_optimizer_batch_metadata(
+                        selected_route_entry,
+                        cfg,
+                        system_prompt=prompt_text,
+                        user_content=effective_user_prompt,
+                    )
                     try:
                         batch_requests = [
                             build_v5_batch_request(
@@ -16052,6 +16187,7 @@ else sdk_auth_present_flags(p_provider, True)
                                     "phase": phase,
                                     "step_id": step_id,
                                     "partition_id": partition_id,
+                                    **batch_optimizer_metadata,
                                 },
                             )
                         ]
@@ -16131,6 +16267,8 @@ else sdk_auth_present_flags(p_provider, True)
                             "routing_tier": step_tier,
                             "estimated_input_tokens": projected_input_tokens,
                             "estimated_output_tokens": projected_output_tokens,
+                            "service_tier": batch_service_tier,
+                            **batch_optimizer_metadata,
                         }
                     )
                     step_context = {
@@ -16159,6 +16297,7 @@ else sdk_auth_present_flags(p_provider, True)
                             output_tokens=projected_output_tokens,
                             execution_mode="batch_submit",
                             route=f"{batch_provider}/{batch_model_id}",
+                            service_tier=batch_service_tier,
                         )
                         batch_job_id = batch_client.submit(
                             batch_requests, BatchRoute(*selected_route), step_context
@@ -16174,6 +16313,7 @@ else sdk_auth_present_flags(p_provider, True)
                             output_tokens=projected_output_tokens,
                             execution_mode="batch_submit",
                             route=f"{batch_provider}/{batch_model_id}",
+                            service_tier=batch_service_tier,
                         )
                         if reserved_spend is not None and ui is not None:
                             batch_trace = ui.make_trace_context(
@@ -16454,6 +16594,7 @@ else sdk_auth_present_flags(p_provider, True)
                     output_tokens=projected_output_tokens,
                     execution_mode="sync",
                     route=route_token,
+                    service_tier=route_service_tier,
                 )
                 llm_result = call_llm(
                     provider=route_provider,
@@ -16507,6 +16648,9 @@ else sdk_auth_present_flags(p_provider, True)
                         if ui is not None
                         else None
                     ),
+                    service_tier=route_service_tier,
+                    prompt_cache_directives=route_prompt_cache_directives,
+                    disabled_providers=set(getattr(cfg, "disabled_providers", ()) or ()),
                     retry_attempts_override=retry_attempts_override,
                 )
                 response_text_local = str(llm_result.get("text", ""))
@@ -16557,8 +16701,9 @@ else sdk_auth_present_flags(p_provider, True)
                         ),
                         fallback_output_tokens=projected_output_tokens,
                         route=route_token,
+                        service_tier=route_service_tier,
                         raise_on_limit=False,
-                )
+                    )
                     if spend_record is not None:
                         request_meta_local["spend_usage"] = spend_record
                         if "cost_abort_state" in spend_record:
