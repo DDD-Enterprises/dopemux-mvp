@@ -5,7 +5,7 @@ generated_note: |
   Schema v2 + additive optimizer fields (May 2026): service_tier multipliers,
   prompt-cache write/read multipliers, tiered pricing thresholds, data residency.
   All new fields are optional; legacy v2 loaders ignore them safely.
-  Verified inventory: claudedocs/research/verified-model-inventory-2026-05.md
+  Verified inventory: docs/06-research/extraction/rte-cost-profile-redesign/verified-model-inventory-2026-05.md
 optimizer_field_legend:
   service_tier_flex_multiplier: 'Multiplier applied to base input+output rates when service_tier=flex. OpenAI typically 0.5.'
   service_tier_priority_multiplier: 'Multiplier when service_tier=priority. OpenAI typically 2.5.'

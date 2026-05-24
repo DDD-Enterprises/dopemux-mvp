@@ -7,7 +7,7 @@
     "Do not modify pricing.yaml, spend_ledger.py, llm_runtime.py, batch_clients.py — yaml-only + structured_output_contracts loader changes.",
     "Preserve every step_id from v2 in v3. If a step is removed entirely, raise during migration — do not silently drop.",
     "Every step entry in v3 MUST declare `impact_class` (routine | important | structural | security_sensitive). Migration assigns default `routine` unless the step is named in the Phase D consensus reclassification list: R0/S0/T0 → structural; R11 → security_sensitive; R7/S2/Z2 → important.",
-    "Every step entry MUST declare `capability_tier` (low | medium | high | critical). Migration derives this from the Phase B.5 step-complexity classification (claudedocs/research/step-complexity-analysis-2026-05.md), with the rule: impact_class ∈ {structural, security_sensitive} → capability_tier=critical (enforced by audit gate).",
+    "Every step entry MUST declare `capability_tier` (low | medium | high | critical). Migration derives this from the Phase B.5 step-complexity classification (docs/06-research/extraction/rte-cost-profile-redesign/step-complexity-analysis-2026-05.md), with the rule: impact_class ∈ {structural, security_sensitive} → capability_tier=critical (enforced by audit gate).",
     "Tag enum is fixed at exactly 8 values: low_temp, long_context, schema_critical, tooling_heavy, control_plane, security_sensitive, eval_canary, direct_openai_required. Adding a 9th requires a new TP that explicitly authorizes the change.",
     "Every step that declares a tag MUST also declare `tag_rationale` (free-form one-line metric or incident link). Audit gate fails closed on missing rationale.",
     "Preserve audit fixes; do not regress F2-HIGH-1 (R/S synthesis routing) — the matrix is precisely the structural fix for that finding.",
@@ -86,14 +86,14 @@
   "steps": [
     {
       "id": "S1",
-      "task": "Preflight: verify TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001 is merged (cell-aliased ladders are needed by the v3 lane_defaults block). Verify worktree clean. Verify reference inputs exist: claudedocs/research/routing-design-2026-05.md, claudedocs/research/routing-consensus-2026-05.md, claudedocs/research/step-complexity-analysis-2026-05.md.",
+      "task": "Preflight: verify TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001 is merged (cell-aliased ladders are needed by the v3 lane_defaults block). Verify worktree clean. Verify reference inputs exist: docs/06-research/extraction/rte-cost-profile-redesign/routing-design-2026-05.md, docs/06-research/extraction/rte-cost-profile-redesign/routing-consensus-2026-05.md, docs/06-research/extraction/rte-cost-profile-redesign/step-complexity-analysis-2026-05.md.",
       "commands": [
         "git remote -v",
         "git branch --show-current",
         "git status --short",
-        "test -f claudedocs/research/routing-design-2026-05.md",
-        "test -f claudedocs/research/routing-consensus-2026-05.md",
-        "test -f claudedocs/research/step-complexity-analysis-2026-05.md",
+        "test -f docs/06-research/extraction/rte-cost-profile-redesign/routing-design-2026-05.md",
+        "test -f docs/06-research/extraction/rte-cost-profile-redesign/routing-consensus-2026-05.md",
+        "test -f docs/06-research/extraction/rte-cost-profile-redesign/step-complexity-analysis-2026-05.md",
         "git log --oneline | grep E7-LADDERS | head -2"
       ],
       "validation": [
