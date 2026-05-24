@@ -5,6 +5,11 @@ import json
 import re
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple
 
+from lib.route_options import (
+    ROUTE_REQUEST_OPTION_KEYS,
+    normalize_route_request_options,
+)
+
 
 GENERIC_ITEM_VALUE_SCHEMA: Dict[str, Any] = {
     "anyOf": [
@@ -162,19 +167,19 @@ def route_entries_for_stage(
         api_key_env = str(row.get("api_key_env") or "").strip()
         if not (provider and model_id and api_key_env):
             continue
-        out.append(
-            {
-                "provider": provider,
-                "model_id": model_id,
-                "api_key_env": api_key_env,
-                "structured_output_mode": route_structured_output_mode(
-                    row,
-                    step_contract=step_contract,
-                ),
-                "strict_json_schema": bool(row.get("strict_json_schema", False)),
-                "strict_passthrough_verified": bool(row.get("strict_passthrough_verified", False)),
-            }
-        )
+        parsed = {
+            "provider": provider,
+            "model_id": model_id,
+            "api_key_env": api_key_env,
+            "structured_output_mode": route_structured_output_mode(
+                row,
+                step_contract=step_contract,
+            ),
+            "strict_json_schema": bool(row.get("strict_json_schema", False)),
+            "strict_passthrough_verified": bool(row.get("strict_passthrough_verified", False)),
+        }
+        parsed.update(normalize_route_request_options(row))
+        out.append(parsed)
     return out
 
 
