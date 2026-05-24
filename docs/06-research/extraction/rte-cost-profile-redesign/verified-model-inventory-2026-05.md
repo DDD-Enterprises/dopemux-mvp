@@ -1,3 +1,15 @@
+---
+id: verified-model-inventory-2026-05
+title: Verified Model Inventory 2026 05
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-24'
+last_review: '2026-05-24'
+next_review: '2026-08-22'
+prelude: Verified Model Inventory 2026 05 (reference) for dopemux documentation and
+  developer workflows.
+---
 # Verified Provider Model Inventory — May 2026
 
 **Source:** Phase A research (WebSearch + WebFetch against provider docs) + PAL `listmodels` + RTE `model_map.yaml` + RTE `config/pricing.yaml`.

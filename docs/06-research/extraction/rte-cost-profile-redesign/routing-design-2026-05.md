@@ -1,3 +1,15 @@
+---
+id: routing-design-2026-05
+title: Routing Design 2026 05
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-24'
+last_review: '2026-05-24'
+next_review: '2026-08-22'
+prelude: Routing Design 2026 05 (reference) for dopemux documentation and developer
+  workflows.
+---
 # RTE Cost Profile & Routing Design — May 2026
 
 **Phase C output** from `mcp__pal__planner` session `54de1277-e31b-460c-adff-5f63d6b22f15` (model: gemini-3-pro-preview).
