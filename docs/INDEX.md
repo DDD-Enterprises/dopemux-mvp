@@ -30,6 +30,13 @@ Use this file as the root pointer for active documentation navigation and mainte
 - [Reference Overview](03-reference/overview.md)
 - [Explanation Overview](04-explanation/overview.md)
 - [Documentation Catalog](03-reference/documentation-catalog.md)
+- [Fast Dev OS — Operational Doctrine Layer](03-reference/fast-dev-os/readme.md)
+- [Fast Dev OS — Executor Prompt Pack](03-reference/fast-dev-os/prompts/readme.md)
+- [Fast Dev OS — Task Packet Template (annotated)](03-reference/fast-dev-os/template-task-packet.md)
+- [Fast Dev OS — PR Body Template](03-reference/fast-dev-os/template-pr-body.md)
+- [Fast Dev OS — Validation Command Library](03-reference/fast-dev-os/validation-command-library.md)
+- [Fast Dev OS — Runtime Dependency Cones](03-reference/fast-dev-os/runtime-dependency-cones.md)
+- [Fast Dev OS — PROOF Bundle Template (templates-proof/)](03-reference/fast-dev-os/templates-proof/readme.md)
 - [Root Quick Start](../QUICK_START.md)
 - [Dopemux Quickstart](01-tutorials/quickstart.md)
 - [Developer Onboarding](02-how-to/developer-onboarding.md)
@@ -66,6 +73,15 @@ Use this file as the root pointer for active documentation navigation and mainte
 - [Component Catalog](03-reference/systems/component-catalog.md)
 - [Operator Workflows](02-how-to/operator-workflows.md)
 - [AI Agent Handoff Guide](03-reference/instructions/ai-agent-handoff-guide.md)
+
+## Public Front Door Surface
+
+- [AI-Readable Map](../llms.txt)
+- [Public Docs Surface](03-reference/governance/public-docs-surface.md)
+- [Public Copy Variants](04-explanation/product/public-copy-variants.md)
+- [Homepage Copy](04-explanation/product/homepage-copy.md)
+- [Product Positioning](04-explanation/product/positioning.md)
+- [Product FAQ](04-explanation/product/faq.md)
 
 ## Skill Templates for Documentation Sync
 

@@ -5,6 +5,24 @@
 **Mode**: PLAN/ACT-aware with modular authority boundaries
 **Workspace**: `<workspace_root>`
 
+## 🎯 Governance Principles
+
+**Doctrine**: truth over fluency, inspect before editing, minimal correct change, deterministic systems first, fail closed when evidence is missing. This module elaborates the same Truth Order / proof-and-finality regime that [AGENTS.md](../AGENTS.md) mandates for Codex — keep both files in sync.
+
+**Default workflow**: `inspect → analyze → trace → plan → challenge → implement minimally → validate → precommit → summarize truthfully`.
+
+**Non-negotiables**:
+- **Authority order**: latest user instruction → [AGENTS.md](../AGENTS.md) / Task Packet → runtime code → schemas → tests → config → docs → assumptions. Runtime outranks docs. Mark unresolved authority as `UNKNOWN`.
+- **PAL chains**: governed by [AGENTS.md §5](../AGENTS.md) — Codex minimum (`analyze → planner → codereview → precommit`) and risky/architecture variant. Do not restate the chain elsewhere.
+- **Confidence states**: `exploring / low / medium / high / certain`. `certain` requires direct evidence; final confidence for repo-changing work must be `VERIFIED` per [AGENTS.md §8](../AGENTS.md).
+- **Validation buckets**: report **PASS / FAIL / NOT_RUN** — never collapse `NOT_RUN` into `PASS`.
+- **Contract-sensitive surfaces** (schemas, migrations, event payloads, MCP manifests, hooks, proof bundles) require canonical-writer inspection before editing.
+- **Security**: least privilege, fail-closed, never expose secrets, strict tool isolation in MCP/agent flows.
+
+**Required final response shape**: Change Summary · Authority Used · Analysis Performed · Validation Performed (PASS/FAIL/NOT_RUN) · Remaining Uncertainty · Files Touched · Git State · Rollback Plan · Requested Next Step. For repo-changing work, also produce the proof bundle from [AGENTS.md §8](../AGENTS.md).
+
+**Full doctrine**: [.claude/modules/shared/governance-principles.md](modules/shared/governance-principles.md).
+
 ## 🧠 Core ADHD Principles
 
 - **Context Preservation**: Auto-save every 30 seconds, maintain awareness across interruptions
@@ -109,6 +127,7 @@ Hooks run outside the model's turn — they're how the project automates auto-sa
 
 When you need comprehensive details, refer to:
 
+**Governance Principles**: `.claude/modules/shared/governance-principles.md` (Truth Order, PAL workflow rules, canonical writers, contract-sensitive surfaces, validation policy, required response structure)
 **SuperClaude Workflows**: `.claude/modules/shared/superclaude-workflows.md` (integration patterns, command selection, ADHD sessions)
 **Task Management**: `.claude/modules/superclaude-integration.md`, `.claude/modules/custom-commands.md`
 **Cognitive Plane**: `.claude/modules/cognitive-plane/` (serena-lsp.md, conport-memory.md)

@@ -1,0 +1,117 @@
+{
+  "$schema_note": "This file is a TEMPLATE for AGENTS.md §9-compliant PROOF.json bundles. Copy this skeleton into proof/<series>/<TP-ID>/PROOF.json and fill each slot. All listed top-level keys are REQUIRED per AGENTS.md §9 (or operationalized by this template). Do not omit any required key; if a value is genuinely unknown, use null and document why in the unknowns array.",
+  "tp_id": "TP-DMX-EXAMPLE-001-SHORT-DESCRIPTION",
+  "tp_path": "task-packets/generated/TP-DMX-EXAMPLE-001-SHORT-DESCRIPTION.json",
+  "project": "dopemux-mvp",
+  "worktree_path": "/Users/<operator>/code/dopemux-mvp-<series>-<NNN>-<slug>",
+  "branch": "codex/dmx-<series>-<NNN>-<slug>",
+  "base_branch": "main",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "repo_identity_check": {
+    "result": "PASS",
+    "marker_file": ".dopetaskroot",
+    "marker_present": true,
+    "remote_url_matches": true
+  },
+  "created_at_utc": "<ISO8601 timestamp>",
+  "validated_at_utc": "<ISO8601 timestamp>",
+  "starting_head": "<40-char SHA of origin/main at branch creation>",
+  "ending_head": "<40-char SHA of final commit on the packet branch>",
+  "slices_completed": [
+    {
+      "slice": "S1",
+      "label": "preflight repo identity + authority files",
+      "status": "PASS"
+    },
+    {
+      "slice": "S2",
+      "label": "create TP JSON + jsonschema validate",
+      "status": "PASS"
+    }
+  ],
+  "files_created": [
+    "<path>",
+    "task-packets/generated/TP-DMX-EXAMPLE-001-SHORT-DESCRIPTION.json",
+    "proof/<series>/TP-DMX-EXAMPLE-001-SHORT-DESCRIPTION/PROOF.json"
+  ],
+  "files_modified": [
+    "<path>"
+  ],
+  "allowlist_compliance": {
+    "result": "PASS",
+    "expected_count": 0,
+    "actual_count": 0,
+    "files_outside_allowlist": []
+  },
+  "validations": [
+    {
+      "name": "python -m json.tool <TP>",
+      "command": "python -m json.tool task-packets/generated/TP-DMX-EXAMPLE-001-SHORT-DESCRIPTION.json >/dev/null",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "jsonschema <TP> against dopetask-canonical-spec",
+      "command": "python -m jsonschema -i task-packets/generated/TP-DMX-EXAMPLE-001-SHORT-DESCRIPTION.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "<packet-specific check>",
+      "command": "<command>",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ],
+  "codereview_status": {
+    "result": "PASS",
+    "tool": "pal/codereview",
+    "model": "gpt-5.2-pro",
+    "validation_type": "internal",
+    "review_type": "full",
+    "issues_found": 0,
+    "issues_by_severity": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    },
+    "verdict": "<LGTM | PARTIAL | FAIL>",
+    "continuation_id": "<for audit traceability>"
+  },
+  "precommit_status": {
+    "result": "PASS",
+    "tool": "pal/precommit",
+    "model": "gpt-5.2-pro",
+    "validation_type": "internal",
+    "issues_found": 0,
+    "verdict": "<SAFE TO COMMIT | NEEDS_REWORK>",
+    "continuation_id": "<for audit traceability>"
+  },
+  "commit_sha": "<40-char SHA of the work commit>",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/<NNN>",
+  "pr_blocker": null,
+  "cleanup_status": "WORKTREE_REMOVED",
+  "not_run": [
+    "<NOT_RUN item 1> (reason: <out of scope / deferred to TP-X / etc>)",
+    "<NOT_RUN item 2> (reason)"
+  ],
+  "residual_risks": [
+    "<RISK-ID>: <description>. <mitigation or deferral>."
+  ],
+  "unknowns": [
+    "<question or contradiction still unresolved>"
+  ],
+  "context_at_authoring": {
+    "tools_used": [
+      "PAL codereview (gpt-5.2-pro, internal)",
+      "PAL precommit (gpt-5.2-pro, internal)"
+    ],
+    "evidence_bases": [
+      "AGENTS.md §2 (truth order), §4 (lifecycle), §9 (proof requirements), §10 (known dangers)",
+      "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json (schema)",
+      "docs/03-reference/governance/codex-authority-refresh.md (governance)"
+    ],
+    "implementer": "<Claude Code | Codex CLI | Gemini | Grok | Jules | GitHub Copilot> (<version>)"
+  }
+}

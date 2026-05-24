@@ -11,66 +11,99 @@ prelude: Repo-faithful homepage copy drafts for Dopemux product positioning.
 ---
 # Homepage Copy
 
-This is copy source, not a published homepage and not runtime proof. It must
-stay aligned with repo evidence and known Drift.
+## Purpose
 
-## Hero
+This is copy source, not a published homepage and not runtime proof. It keeps
+public-facing language aligned with repo evidence, split-authority boundaries,
+and known drift.
+
+The homepage should make the operator value legible before it lists systems.
+
+## Primary Hero
 
 ### Headline
 
-Dopemux
+Operator control plane for split-authority development workflows
 
 ### Subheadline
 
-An operator-control workspace for coordinating execution, PM workflow,
-structured context, chronicle memory, retrieval, bridge routing, ADHD support,
-and repo-truth audit without collapsing them into one authority.
+Coordinate complex development work without losing the source of truth.
+Dopemux gives operators a repo-grounded control surface for routing work across
+multiple authority lanes while keeping proof, drift, and ownership visible.
 
 ### Primary Value
 
-Keep complex development-control work moving while preserving which system owns
-which truth.
+Move faster through the stack without flattening PM, memory, retrieval, bridge,
+execution, and audit into one false owner.
 
-## Above-The-Fold Bullets
+## Proof Strip
 
-- Route operator work through `dopemux` without making it the owner of every
-  downstream domain.
-- Use `dopetask` after handoff while preserving the wrapper boundary.
-- Keep PM metadata, workflow transitions, decisions, progress, and historical
-  receipts in their own authority lanes.
-- Treat dope-context retrieval and Repo Truth Extractor output as evidence, not
-  source truth.
-
-## Implemented Value Props
-
-| Value prop | Grounded copy | Limitation |
+| Proof point | Grounded copy | Boundary |
 | --- | --- | --- |
-| Operator control | `dopemux` gives operators a CLI control surface for startup, routing, MCP/server coordination, and downstream delegation. | It is not a single source of PM, memory, or retrieval truth. |
-| Execution handoff | Local wrappers hand execution to the pinned external `dopetask` runtime. | The external runtime implementation is outside this repo. |
-| Split PM authority | Leantime, task-orchestrator, ConPort, and dope-memory each own different PM-adjacent slices. | There is no single PM backend proven by the repo. |
-| Retrieval with boundaries | dope-context and ConPort help find code, docs, and structured context. | Retrieved output is derived and must be checked against source. |
-| Evidence-first audit | Repo Truth Extractor produces repo evidence artifacts. | Artifacts are not higher authority than runtime. |
+| Operator entrypoint | `dopemux` is the operator control surface for startup, routing, MCP/server coordination, and downstream delegation. | It does not own every downstream truth domain. |
+| Execution boundary | Local wrappers hand execution to the pinned external `dopetask` runtime. | The external runtime implementation is outside this repo. |
+| Split PM authority | PM metadata, workflow transitions, decisions, progress, and historical receipts stay in separate authority lanes. | The repo does not prove one PM backend. |
+| Derived retrieval | dope-context and ConPort help find source, docs, and structured context. | Retrieval output must be checked against source truth. |
+| Evidence-first audit | Repo Truth Extractor produces evidence artifacts. | Artifacts do not outrank runtime code, config, tests, or active entrypoints. |
 
-## System Strip Copy
+## What Dopemux Solves
 
-- `dopemux`: operator control.
-- `dopetask`: execution after handoff.
-- Leantime: PM metadata.
-- task-orchestrator: workflow transitions.
-- ConPort: decisions, progress, context.
-- dope-memory: chronicle receipts.
-- dope-context: derived code/docs retrieval.
-- dopecon-bridge: proxy, adapter, event transport.
-- ADHD Engine: operator support.
-- Repo Truth Extractor: evidence artifacts.
+Development-control work spans more than one system. Operators need to start
+services, route execution, inspect PM state, preserve decisions, retrieve
+context, keep history, and generate proof. The failure mode is not only slow
+work; it is losing track of which system owns the claim.
 
-## Limitation Banner
+Dopemux solves for current-state coordination with explicit authority
+boundaries. It helps an operator move through the workflow while keeping the
+source of truth visible.
 
-Dopemux is intentionally documented as a split-authority system. Known runtime
-Drift, UNKNOWN ownership, and NEEDS_REPO_VERIFICATION areas are part of the
-operator contract, not details to hide.
+## What Dopemux Is Not
 
-## Closing Copy
+Dopemux coordinates work across authority lanes. It does not collapse those
+lanes into one owner.
 
-Use Dopemux when the risk is not just getting work done, but getting it done
-through the correct authority with proof that survives handoff.
+It is not:
+
+- one AI assistant
+- one PM platform
+- one memory system
+- an unsupervised development system
+- a guarantee of production readiness
+- proof that all runtime drift is closed
+- proof of fully local, private, or offline operation by default
+
+## Section Blocks
+
+### Keep Authority Visible
+
+Route work through a single operator control surface while preserving separate
+truth lanes for execution, PM metadata, workflow transitions, decisions,
+progress, chronicle receipts, retrieval, bridge transport, operator support,
+and repo audit.
+
+### Treat Retrieval As Evidence
+
+Use derived retrieval to find relevant source and documentation, then verify
+claims against the runtime files, configs, tests, active entrypoints, and
+stronger governance docs.
+
+### Preserve Proof And Drift
+
+Carry `UNKNOWN`, `NEEDS_REPO_VERIFICATION`, validation output, and residual
+risk through handoff instead of turning unresolved runtime state into polished
+certainty.
+
+## Audience Snapshot
+
+Dopemux is for operators and maintainers coordinating complex development work
+across multiple repo-backed systems. It is especially useful when correctness
+depends on choosing the right authority lane, preserving an audit trail, and
+keeping current-state evidence separate from advisory or derived context.
+
+## Messaging Rule
+
+Public copy may simplify the route into Dopemux, but it must not simplify the
+authority model. If a claim needs more than a short homepage section, link to
+`README.md`, `PROJECT.md`, `ARCHITECTURE.md`,
+`docs/03-reference/systems/system-boundaries.md`, and
+`docs/04-explanation/product/faq.md`.

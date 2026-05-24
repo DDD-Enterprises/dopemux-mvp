@@ -3,6 +3,11 @@ from __future__ import annotations
 import json
 import re
 import sys
+
+from lib.route_options import (
+    ROUTE_REQUEST_OPTION_KEYS,
+    normalize_route_request_options,
+)
 from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
@@ -119,13 +124,15 @@ def _artifact_rules_by_key() -> Dict[Tuple[str, str], Dict[str, Any]]:
 
 
 def _normalize_route(route: Dict[str, Any]) -> Dict[str, Any]:
-    return {
+    parsed = {
         "provider": str(route.get("provider") or "").strip().lower(),
         "model_id": str(route.get("model_id") or "").strip(),
         "api_key_env": str(route.get("api_key_env") or "").strip(),
         "strict_json_schema": bool(route.get("strict_json_schema", False)),
         "strict_passthrough_verified": bool(route.get("strict_passthrough_verified", False)),
     }
+    parsed.update(normalize_route_request_options(route))
+    return parsed
 
 
 def _normalize_routes(value: Any) -> List[Dict[str, Any]]:
