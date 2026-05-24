@@ -1,16 +1,20 @@
 ---
 id: how-to-rte-cost-profiles
-title: "RTE cost profiles: pick the right --cost-profile and tune optimizers"
+title: 'RTE cost profiles: pick the right --cost-profile and tune optimizers'
 type: how-to
 owner: rte-routing
 date: 2026-05-23
 adhd_complexity: 0.4
 adhd_energy: medium
 relates_to:
-  - "docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md"
-  - "claudedocs/research/routing-design-2026-05.md"
+- docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md
+- docs/06-research/extraction/rte-cost-profile-redesign/routing-design-2026-05.md
+author: '@hu3mann'
+last_review: '2026-05-24'
+next_review: '2026-08-22'
+prelude: 'RTE cost profiles: pick the right --cost-profile and tune optimizers (how-to)
+  for dopemux documentation and developer workflows.'
 ---
-
 # RTE cost profiles
 
 The Repo Truth Extractor exposes 4 cost profiles via the `--cost-profile` CLI flag. Each profile selects model tiers, service_tier defaults, cached-input behavior, batch usage, escalation depth, and a default cost cap.
@@ -40,7 +44,7 @@ dopemux rte run --phase A --execute --cost-profile experimental
 | `quality` | premium (`gpt-5.5`, `claude-opus-4.6`) | `priority` (2.5× faster, 2.5× cost) | on | off | ~50% more expensive |
 | `experimental` | frontier (`gpt-5.5-pro`, `claude-opus-4.7`, `gemini-3.5-flash`) | `default` | on | off | ~25% cheaper than prior default |
 
-Cost vs prior default is estimated; actual cost depends on cache hit rate and repair rate. See [`claudedocs/research/routing-design-2026-05.md`](/Users/hue/code/dopemux-mvp/claudedocs/research/routing-design-2026-05.md) for the assumptions.
+Cost vs prior default is estimated; actual cost depends on cache hit rate and repair rate. See [routing-design-2026-05.md](../../06-research/extraction/rte-cost-profile-redesign/routing-design-2026-05.md) for the assumptions.
 
 ## When to pick each profile
 
@@ -149,7 +153,7 @@ The `value-default` and `quality` profiles have NO default cap because the cost 
 
 ## Why `value-default` is the new default
 
-Per the [Phase D consensus](/Users/hue/code/dopemux-mvp/claudedocs/research/routing-consensus-2026-05.md):
+Per the [Phase D consensus](../../06-research/extraction/rte-cost-profile-redesign/routing-consensus-2026-05.md):
 
 1. The prior `balanced_openrouter` policy was chosen pre-audit, before frontier models (gpt-5.5, claude-opus-4.6, gemini-3.5-flash) were available.
 2. `balanced_openrouter` routed R/S synthesis phases to bulk-tier models — the F2-HIGH-1 audit finding. `value-default` routes them to `claude-sonnet-4.6` / `claude-opus-4.6`.
@@ -170,7 +174,7 @@ Both commands are introspection-only — they do NOT run prescan, LLMs, or write
 
 ## See also
 
-- [ADR: RTE cost profiles + optimizer wiring](/Users/hue/code/dopemux-mvp/docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md)
-- [Verified model inventory (May 2026)](/Users/hue/code/dopemux-mvp/claudedocs/research/verified-model-inventory-2026-05.md)
-- [Routing design (Phase C)](/Users/hue/code/dopemux-mvp/claudedocs/research/routing-design-2026-05.md)
-- [Routing consensus (Phase D)](/Users/hue/code/dopemux-mvp/claudedocs/research/routing-consensus-2026-05.md)
+- [ADR: RTE cost profiles + optimizer wiring](../../90-adr/rte-cost-profiles-and-optimizer-wiring.md)
+- [Verified model inventory (May 2026)](../../06-research/extraction/rte-cost-profile-redesign/verified-model-inventory-2026-05.md)
+- [Routing design (Phase C)](../../06-research/extraction/rte-cost-profile-redesign/routing-design-2026-05.md)
+- [Routing consensus (Phase D)](../../06-research/extraction/rte-cost-profile-redesign/routing-consensus-2026-05.md)

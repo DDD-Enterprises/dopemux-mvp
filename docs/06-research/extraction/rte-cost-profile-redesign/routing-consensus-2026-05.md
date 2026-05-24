@@ -4,7 +4,7 @@
 - Session 1 (`09b2be1a-c258-41ef-95ef-70eb58efc141`): `gpt-5.2` (neutral, 8/10 confidence). `gemini-3-pro-preview` failed on free-tier quota.
 - Session 2 (`5a0eb765-219b-4a78-9d0d-a2647c662881`): `anthropic/claude-opus-4.5` (against, 7/10) + `gpt-5.2-pro` (neutral, 8/10).
 
-**Reviewed design**: `claudedocs/research/routing-design-2026-05.md`.
+**Reviewed design**: `routing-design-2026-05.md`.
 
 ---
 
