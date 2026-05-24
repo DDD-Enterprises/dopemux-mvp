@@ -69,6 +69,7 @@ A packet is superseded by another packet
 | TP-RTE-COSTPROFILE-F-VERIFY-001 | Repo Truth Extractor | Series-final verification gate: full test run + promptset v3 audit + bounded-lane dry-run + pal/codereview + pal/precommit | Ready | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
 | TP-RTE-COSTPROFILE-OUTPUT-VALIDATORS-001 | Repo Truth Extractor | Post-step output validators (control_plane_truth_check + security_claim_verification) for structural / security_sensitive impact_class | Ready | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
 | TP-RTE-COSTPROFILE-XAI-BATCH-VERIFY-001 | Repo Truth Extractor | Live probe to determine xAI /v1/batches support; updates spend_ledger + batch_clients + cost profile based on verdict | Ready | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
+| TP-RTE-COSTPROFILE-SYNTH-OPS-FLAGS-001 | Repo Truth Extractor | Decide flip-or-keep for F2-HIGH-1 synthesis-family sidefill_enabled / repair_mode flags carried over from v2 (PR #691 deferred-decision follow-up) | Ready | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
 | TP-DMX-AGENTS-CODEX-ENDTOEND-0001 | Agent Guidance | Make Codex execute TP lifecycle end-to-end by default | Ready | N/A |
 | TP-DMX-COMPOSE-RESTORE-001 | Infra | Restore canonical Docker Compose authority | Ready | N/A |
 | DMX-COCKPIT-STATIC-002 | UI Cockpit | Expose deterministic static cockpit renderer through guarded CLI wrapper | Merged (PR #528) | N/A |
