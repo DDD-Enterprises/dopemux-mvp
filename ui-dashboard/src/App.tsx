@@ -145,18 +145,27 @@ function App() {
   const [isCopied, setIsCopied] = useState(false);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleCopyRecommendation = useCallback(() => {
-    void navigator.clipboard.writeText(cognitiveState.recommendation);
-    setIsCopied(true);
-
-    if (copyTimeoutRef.current) {
-      clearTimeout(copyTimeoutRef.current);
+  const handleCopyRecommendation = useCallback(async () => {
+    if (!navigator.clipboard?.writeText) {
+      setErrorMessage('Clipboard API is not supported in this browser or context.');
+      return;
     }
+    try {
+      await navigator.clipboard.writeText(cognitiveState.recommendation);
+      setIsCopied(true);
 
-    copyTimeoutRef.current = setTimeout(() => {
-      setIsCopied(false);
-      copyTimeoutRef.current = null;
-    }, 2000);
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+
+      copyTimeoutRef.current = setTimeout(() => {
+        setIsCopied(false);
+        copyTimeoutRef.current = null;
+      }, 2000);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      setErrorMessage(`Failed to copy to clipboard: ${errorMsg}`);
+    }
   }, [cognitiveState.recommendation]);
 
   useEffect(() => {
