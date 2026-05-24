@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_compl
 import copy
 from decimal import Decimal, ROUND_HALF_UP
 import fnmatch
+import functools
 import hashlib
 import hmac
 import json
@@ -25,6 +26,7 @@ import textwrap
 import importlib.util
 import random
 import uuid
+import warnings
 from collections import Counter, defaultdict
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
@@ -767,6 +769,185 @@ def resolve_cell_alias(
     return alias_or_model  # unresolved — return placeholder for visibility
 
 
+# ---------------------------------------------------------------------------
+# E7: provider inference + cell-aliased ladder derivation
+# ---------------------------------------------------------------------------
+# The cost-profile registry stores models as bare IDs (e.g. "openai/gpt-5.4",
+# "gemini-3-flash-preview"). Legacy ladder tuples carry an explicit
+# (provider, model_id, api_key_env). To derive ladders from cell_aliases we
+# need a deterministic prefix → (provider, api_key_env) mapping. The rule is
+# documented and exhaustive: slash-prefixed IDs route through OpenRouter; bare
+# model families (gemini-*, grok-*) route to their direct provider. Unknown
+# prefixes fail closed with ValueError — the caller can react explicitly
+# rather than silently selecting the wrong route.
+_PROVIDER_INFERENCE_MAP: Tuple[Tuple[str, Tuple[str, str]], ...] = (
+    # Slash-prefixed → OpenRouter (consistent with all legacy ladder entries).
+    ("openai/", ("openrouter", "OPENROUTER_API_KEY")),
+    ("anthropic/", ("openrouter", "OPENROUTER_API_KEY")),
+    ("google/", ("openrouter", "OPENROUTER_API_KEY")),
+    ("meta/", ("openrouter", "OPENROUTER_API_KEY")),
+    ("x-ai/", ("openrouter", "OPENROUTER_API_KEY")),
+    ("mistralai/", ("openrouter", "OPENROUTER_API_KEY")),
+    # Non-slash families → direct provider.
+    ("gemini-", ("gemini", "GEMINI_API_KEY")),
+    ("grok-", ("xai", "XAI_API_KEY")),
+)
+
+
+def infer_route_for_model(model_id: str) -> Tuple[str, str, str]:
+    """Infer ``(provider, model_id, api_key_env)`` from a bare model ID.
+
+    The mapping is prefix-based and intentionally narrow: see
+    ``_PROVIDER_INFERENCE_MAP``. Raises ``ValueError`` if no prefix matches —
+    callers are expected to react (log + skip, or supply an explicit route)
+    rather than silently selecting an arbitrary provider.
+    """
+    if not isinstance(model_id, str) or not model_id.strip():
+        raise ValueError(f"infer_route_for_model: empty/non-string model_id {model_id!r}")
+    text = model_id.strip()
+    for prefix, (provider, env) in _PROVIDER_INFERENCE_MAP:
+        if text.startswith(prefix):
+            return (provider, text, env)
+    raise ValueError(
+        f"infer_route_for_model: no provider prefix matched model_id={text!r}; "
+        f"extend _PROVIDER_INFERENCE_MAP or supply an explicit route."
+    )
+
+
+def _normalize_profile_segment(name: str) -> str:
+    """Normalize a profile/lane/tier token for alias-key construction.
+
+    ``value-default`` → ``VALUE_DEFAULT``; ``SYNTH`` → ``SYNTH``. Strips
+    whitespace and uppercases. Used to build cell_alias keys deterministically.
+    """
+    return str(name).strip().upper().replace("-", "_")
+
+
+def _build_cell_alias_key(cost_profile: str, lane_class: str, capability_tier: str) -> str:
+    """Compose the cell_aliases lookup key for a (profile, lane, tier) cell.
+
+    Convention: ``{PROFILE}_{LANE}_{TIER}_MODEL``. E.g.
+    ``VALUE_DEFAULT_SYNTH_CRITICAL_MODEL``. Matches existing keys in
+    ``COST_PROFILES[*].cell_aliases``.
+    """
+    return (
+        f"{_normalize_profile_segment(cost_profile)}_"
+        f"{_normalize_profile_segment(lane_class)}_"
+        f"{_normalize_profile_segment(capability_tier)}_MODEL"
+    )
+
+
+def derive_ladder_for_cell(
+    cost_profile: str,
+    lane_class: str,
+    capability_tier: str,
+    stage: str = "primary",
+    *,
+    cli_overrides: Optional[Dict[str, str]] = None,
+    disabled_providers: Iterable[str] = (),
+) -> List[Tuple[str, str, str]]:
+    """Derive a single-cell ladder by looking up the (lane_class, capability_tier)
+    model in ``COST_PROFILES[cost_profile].cell_aliases`` and inferring the
+    matching ``(provider, model_id, api_key_env)`` route.
+
+    For E7 this returns a length-1 list (the primary route for the cell). E8
+    extends the function to compose multi-cell escalation chains via the
+    ``stage`` parameter; currently only ``stage='primary'`` is implemented.
+
+    Routes whose provider matches any entry in ``disabled_providers``
+    (case-insensitive) are filtered out. If the resulting list is empty the
+    function returns ``[]`` so callers can decide whether to raise or fall
+    through to a different ladder.
+
+    Raises ``NotImplementedError`` for unsupported ``stage`` values and
+    ``ValueError`` for unresolvable aliases / unknown model prefixes — both
+    are operator-actionable failures and should not be silently swallowed.
+    """
+    if stage != "primary":
+        raise NotImplementedError(
+            f"derive_ladder_for_cell: stage={stage!r} is reserved for E8+; "
+            f"only 'primary' is supported in E7."
+        )
+    cli_items: Tuple[Tuple[str, str], ...] = tuple(
+        sorted((cli_overrides or {}).items())
+    )
+    disabled_lower: Tuple[str, ...] = tuple(
+        sorted({str(p).strip().lower() for p in disabled_providers if str(p).strip()})
+    )
+    profile_norm = _normalize_profile_segment(cost_profile)
+    lane_norm = _normalize_profile_segment(lane_class)
+    tier_norm = _normalize_profile_segment(capability_tier)
+    alias_key = f"{profile_norm}_{lane_norm}_{tier_norm}_MODEL"
+    # Snapshot the env var that matters for THIS cell into the cache key so a
+    # later environment change correctly invalidates the cached entry. We do
+    # NOT snapshot all of os.environ to keep keys bounded.
+    env_snapshot = os.environ.get(alias_key)
+    return list(
+        _derive_ladder_for_cell_cached(
+            profile_norm,
+            lane_norm,
+            tier_norm,
+            stage,
+            cli_items,
+            disabled_lower,
+            env_snapshot,
+        )
+    )
+
+
+@functools.lru_cache(maxsize=256)
+def _derive_ladder_for_cell_cached(
+    cost_profile_norm: str,
+    lane_class_norm: str,
+    capability_tier_norm: str,
+    stage: str,
+    cli_overrides_items: Tuple[Tuple[str, str], ...],
+    disabled_providers_lower: Tuple[str, ...],
+    env_alias_value: Optional[str],
+) -> Tuple[Tuple[str, str, str], ...]:
+    """LRU-cached core of ``derive_ladder_for_cell``. Inputs are all hashable
+    so the cache key is stable across calls with semantically equal arguments.
+
+    ``env_alias_value`` is the snapshotted value of the matching environment
+    variable at the moment of the public call; it participates in the cache
+    key so a later env change correctly invalidates the cached entry.
+    """
+    canonical_profile = cost_profile_norm.lower().replace("_", "-")
+    if canonical_profile not in COST_PROFILES:
+        # Fall back to the lower-cased segment (handles single-token profile
+        # names like ``economy`` where there is no dash form).
+        canonical_profile = cost_profile_norm.lower()
+    if canonical_profile not in COST_PROFILES:
+        canonical_profile = DEFAULT_COST_PROFILE
+    alias_key = (
+        f"{cost_profile_norm}_{lane_class_norm}_{capability_tier_norm}_MODEL"
+    )
+    cli_overrides = dict(cli_overrides_items)
+    # Build a precedence-aware env mapping: only include the snapshotted alias
+    # value so the cache key controls visibility. If the operator changes other
+    # env vars they are irrelevant to this cell.
+    env_for_resolve: Dict[str, str] = (
+        {alias_key: env_alias_value} if env_alias_value is not None else {}
+    )
+    resolved = resolve_cell_alias(
+        f"${{{alias_key}}}",
+        cost_profile=canonical_profile,
+        cli_overrides=cli_overrides,
+        env=env_for_resolve,
+    )
+    if isinstance(resolved, str) and resolved.startswith("${") and resolved.endswith("}"):
+        raise ValueError(
+            f"derive_ladder_for_cell: alias {alias_key!r} unresolved in profile "
+            f"{canonical_profile!r}; add it to COST_PROFILES[{canonical_profile!r}].cell_aliases "
+            f"or pass via --model-alias / env var."
+        )
+    route = infer_route_for_model(resolved)
+    provider, _model, _env = route
+    if provider.strip().lower() in disabled_providers_lower:
+        return ()
+    return (route,)
+
+
 DEFAULT_GEMINI_MODEL_ID = "gemini-3-flash-preview"
 DEFAULT_GEMINI_BULK_MODEL = "gemini-3.1-flash-lite-preview"
 DEFAULT_GEMINI_EXTRACT_MODEL = "gemini-3-flash-preview"
@@ -1069,16 +1250,16 @@ ROUTING_POLICY_GUIDE: Dict[str, Dict[str, Any]] = {
 ACTIVE_OUTPUT_LAYOUT: Optional["OutputLayout"] = None
 DOCS_GOVERNANCE_PHASES: Set[str] = {"A", "H", "D", "W", "B", "G"}
 PREMIUM_SYNTHESIS_PHASES: Set[str] = {"R", "X", "T", "Z", "S", "SP", "M"}
-BALANCED_GROK_OPENROUTER_DOCS_LADDER: List[Tuple[str, str, str]] = [
+_LADDER_BALANCED_GROK_OPENROUTER_DOCS: List[Tuple[str, str, str]] = [
     ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
     ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
 ]
 BALANCED_GROK_OPENROUTER_D_STRICT_STEPS: Set[str] = {"D0", "D1"}
-BALANCED_GROK_OPENROUTER_DOCS_STRICT_LADDER: List[Tuple[str, str, str]] = [
+_LADDER_BALANCED_GROK_OPENROUTER_DOCS_STRICT: List[Tuple[str, str, str]] = [
     ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
     ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
 ]
-BALANCED_GROK_OPENROUTER_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
+_LADDER_BALANCED_GROK_OPENROUTER_CODE: Dict[str, List[Tuple[str, str, str]]] = {
     "bulk": [
         ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
         ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
@@ -1094,12 +1275,12 @@ BALANCED_GROK_OPENROUTER_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
         ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
     ],
 }
-BALANCED_GROK_OPENROUTER_SYNTHESIS_LADDER: List[Tuple[str, str, str]] = [
+_LADDER_BALANCED_GROK_OPENROUTER_SYNTHESIS: List[Tuple[str, str, str]] = [
     ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
     ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
     ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
 ]
-BALANCED_GROK_OPENROUTER_OPUS_ROUTE: Tuple[str, str, str] = (
+_LADDER_BALANCED_GROK_OPENROUTER_OPUS: Tuple[str, str, str] = (
     "openrouter",
     "anthropic/claude-opus-4-6",
     "OPENROUTER_API_KEY",
@@ -1112,17 +1293,17 @@ HARD_RECONCILIATION_MARKERS: Tuple[str, ...] = (
 )
 # --- Gemini-primary routing ladders (non-code phases use Gemini 3, code phases stay GPT/Grok) ---
 GEMINI_PRIMARY_NO_CODE_PHASES: Set[str] = {"A", "C", "E", "H", "W", "B", "G"}
-GEMINI_PRIMARY_DOCS_LADDER: List[Tuple[str, str, str]] = [
+_LADDER_GEMINI_PRIMARY_DOCS: List[Tuple[str, str, str]] = [
     ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
     ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
 ]
-GEMINI_PRIMARY_SYNTHESIS_LADDER: List[Tuple[str, str, str]] = [
+_LADDER_GEMINI_PRIMARY_SYNTHESIS: List[Tuple[str, str, str]] = [
     ("gemini", "gemini-3.1-pro-preview", "GEMINI_API_KEY"),
     ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
     ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
     ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
 ]
-GEMINI_PRIMARY_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
+_LADDER_GEMINI_PRIMARY_CODE: Dict[str, List[Tuple[str, str, str]]] = {
     "bulk": [
         ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
         ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
@@ -1140,12 +1321,12 @@ GEMINI_PRIMARY_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
 }
 
 OPTIMAL_NO_CODE_PHASES: Set[str] = {"D", "Q", "R", "S", "SP", "T", "X", "Z", "M"}
-OPTIMAL_DOCS_LADDER: List[Tuple[str, str, str]] = [
+_LADDER_OPTIMAL_DOCS: List[Tuple[str, str, str]] = [
     ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
     ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
     ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
 ]
-OPTIMAL_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
+_LADDER_OPTIMAL_CODE: Dict[str, List[Tuple[str, str, str]]] = {
     "bulk": [
         ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
         ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
@@ -1161,11 +1342,62 @@ OPTIMAL_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
         ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
     ],
 }
-OPTIMAL_SYNTHESIS_LADDER: List[Tuple[str, str, str]] = [
+_LADDER_OPTIMAL_SYNTHESIS: List[Tuple[str, str, str]] = [
     ("xai", "grok-4.20-beta-0309-reasoning", "XAI_API_KEY"),
     ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
     ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY"),
 ]
+
+
+# ---------------------------------------------------------------------------
+# E7: deprecation proxy for legacy ladder constants
+# ---------------------------------------------------------------------------
+# The 11 ladder constants above were renamed to underscore-prefixed names so
+# the public surface area shrinks to the new ``derive_ladder_for_cell`` API.
+# For one release, external importers of the old names still work — they get
+# a single DeprecationWarning per name on first access and a value identical
+# to the corresponding ``_LADDER_*`` binding.
+#
+# PEP 562 module ``__getattr__`` only fires for names absent from the module
+# ``__dict__``, so internal callers that already use the underscore names
+# never trigger this proxy. Tests rely on it firing for external access via
+# ``getattr(run_extraction_v5, '<OLD_NAME>')`` or
+# ``from run_extraction_v5 import <OLD_NAME>``.
+_LEGACY_LADDER_RENAME_MAP: Dict[str, str] = {
+    "BALANCED_GROK_OPENROUTER_DOCS_LADDER": "_LADDER_BALANCED_GROK_OPENROUTER_DOCS",
+    "BALANCED_GROK_OPENROUTER_DOCS_STRICT_LADDER": "_LADDER_BALANCED_GROK_OPENROUTER_DOCS_STRICT",
+    "BALANCED_GROK_OPENROUTER_CODE_LADDERS": "_LADDER_BALANCED_GROK_OPENROUTER_CODE",
+    "BALANCED_GROK_OPENROUTER_SYNTHESIS_LADDER": "_LADDER_BALANCED_GROK_OPENROUTER_SYNTHESIS",
+    "BALANCED_GROK_OPENROUTER_OPUS_ROUTE": "_LADDER_BALANCED_GROK_OPENROUTER_OPUS",
+    "GEMINI_PRIMARY_DOCS_LADDER": "_LADDER_GEMINI_PRIMARY_DOCS",
+    "GEMINI_PRIMARY_SYNTHESIS_LADDER": "_LADDER_GEMINI_PRIMARY_SYNTHESIS",
+    "GEMINI_PRIMARY_CODE_LADDERS": "_LADDER_GEMINI_PRIMARY_CODE",
+    "OPTIMAL_DOCS_LADDER": "_LADDER_OPTIMAL_DOCS",
+    "OPTIMAL_CODE_LADDERS": "_LADDER_OPTIMAL_CODE",
+    "OPTIMAL_SYNTHESIS_LADDER": "_LADDER_OPTIMAL_SYNTHESIS",
+}
+_LEGACY_LADDER_WARNED: Set[str] = set()
+
+
+def __getattr__(name: str) -> Any:
+    target = _LEGACY_LADDER_RENAME_MAP.get(name)
+    if target is None:
+        raise AttributeError(
+            f"module {__name__!r} has no attribute {name!r}"
+        )
+    if name not in _LEGACY_LADDER_WARNED:
+        _LEGACY_LADDER_WARNED.add(name)
+        warnings.warn(
+            (
+                f"Legacy ladder constant {name!r} is deprecated and will be "
+                f"removed after the E8 release; use "
+                f"derive_ladder_for_cell(cost_profile, lane_class, "
+                f"capability_tier) or the internal binding {target!r}."
+            ),
+            DeprecationWarning,
+            stacklevel=2,
+        )
+    return globals()[target]
 
 
 def _safe_key_fingerprint(value: str) -> str:
@@ -5812,15 +6044,15 @@ def _balanced_grok_openrouter_routes(
         "balanced_grok_openrouter", phase_code, step_id
     )
     if phase_code in PREMIUM_SYNTHESIS_PHASES:
-        return list(BALANCED_GROK_OPENROUTER_SYNTHESIS_LADDER)
+        return list(_LADDER_BALANCED_GROK_OPENROUTER_SYNTHESIS)
     if phase_code in DOCS_GOVERNANCE_PHASES:
         if phase_code == "D" and step_code in BALANCED_GROK_OPENROUTER_D_STRICT_STEPS:
-            return list(BALANCED_GROK_OPENROUTER_DOCS_STRICT_LADDER)
-        return list(BALANCED_GROK_OPENROUTER_DOCS_LADDER)
+            return list(_LADDER_BALANCED_GROK_OPENROUTER_DOCS_STRICT)
+        return list(_LADDER_BALANCED_GROK_OPENROUTER_DOCS)
     if phase_code in CODE_HEAVY_PHASES:
-        routes = BALANCED_GROK_OPENROUTER_CODE_LADDERS.get(
+        routes = _LADDER_BALANCED_GROK_OPENROUTER_CODE.get(
             effective_tier,
-            BALANCED_GROK_OPENROUTER_CODE_LADDERS.get("extract", []),
+            _LADDER_BALANCED_GROK_OPENROUTER_CODE.get("extract", []),
         )
         return [tuple(route) for route in routes]
     return None
@@ -5835,14 +6067,14 @@ def _gemini_primary_routes(
         effective_tier = resolve_effective_step_tier(
             "gemini_primary", phase_code, step_id
         )
-        routes = GEMINI_PRIMARY_CODE_LADDERS.get(
+        routes = _LADDER_GEMINI_PRIMARY_CODE.get(
             effective_tier,
-            GEMINI_PRIMARY_CODE_LADDERS.get("extract", []),
+            _LADDER_GEMINI_PRIMARY_CODE.get("extract", []),
         )
         return [tuple(route) for route in routes]
     if phase_code in PREMIUM_SYNTHESIS_PHASES:
-        return list(GEMINI_PRIMARY_SYNTHESIS_LADDER)
-    return list(GEMINI_PRIMARY_DOCS_LADDER)
+        return list(_LADDER_GEMINI_PRIMARY_SYNTHESIS)
+    return list(_LADDER_GEMINI_PRIMARY_DOCS)
 
 
 def _optimal_routes(
@@ -5850,21 +6082,21 @@ def _optimal_routes(
 ) -> Optional[List[Tuple[str, str, str]]]:
     """Optimal cost/quality routing: Gemini free → Grok 4.20 mid → GPT-5.4 premium.
 
-    Non-code (doc/synthesis) phases use OPTIMAL_DOCS_LADDER as base, synthesis
-    phases escalate to OPTIMAL_SYNTHESIS_LADDER.  Code-heavy phases use
-    OPTIMAL_CODE_LADDERS keyed by effective tier.
+    Non-code (doc/synthesis) phases use _LADDER_OPTIMAL_DOCS as base, synthesis
+    phases escalate to _LADDER_OPTIMAL_SYNTHESIS.  Code-heavy phases use
+    _LADDER_OPTIMAL_CODE keyed by effective tier.
     """
     phase_code = str(phase or "").upper()
     if phase_code in PREMIUM_SYNTHESIS_PHASES:
-        return list(OPTIMAL_SYNTHESIS_LADDER)
+        return list(_LADDER_OPTIMAL_SYNTHESIS)
     if phase_code in CODE_HEAVY_PHASES:
         effective_tier = resolve_effective_step_tier("optimal", phase_code, step_id)
-        routes = OPTIMAL_CODE_LADDERS.get(
+        routes = _LADDER_OPTIMAL_CODE.get(
             effective_tier,
-            OPTIMAL_CODE_LADDERS.get("extract", []),
+            _LADDER_OPTIMAL_CODE.get("extract", []),
         )
         return [tuple(route) for route in routes]
-    return list(OPTIMAL_DOCS_LADDER)
+    return list(_LADDER_OPTIMAL_DOCS)
 
 
 def resolve_effective_step_tier(
@@ -10726,6 +10958,8 @@ def call_llm(
     timeout_seconds: Optional[int] = None,
     trace_context: Optional[Dict[str, Any]] = None,
     lifecycle_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
+    *,
+    retry_attempts_override: Optional[int] = None,
 ) -> Dict[str, Any]:
     return llm_runtime_call_llm(
         _llm_runtime_deps(),
@@ -10743,6 +10977,7 @@ def call_llm(
         timeout_seconds=timeout_seconds,
         trace_context=trace_context,
         lifecycle_callback=lifecycle_callback,
+        retry_attempts_override=retry_attempts_override,
     )
 
 
@@ -10965,7 +11200,7 @@ def call_llm_with_ladder(
     routing_tier: str,
     ladder: Sequence[Sequence[str]],
     cfg: RunnerConfig,
-    execute_attempt: Callable[[Tuple[str, str, str], int], Dict[str, Any]],
+    execute_attempt: Callable[..., Dict[str, Any]],
     ui: Optional[UI] = None,
 ) -> Dict[str, Any]:
     return llm_runtime_call_llm_with_ladder(
@@ -12305,7 +12540,7 @@ def build_first_failure_context(
 
 
 def is_break_glass_opus_route(route: Tuple[str, str, str]) -> bool:
-    return tuple(route) == BALANCED_GROK_OPENROUTER_OPUS_ROUTE
+    return tuple(route) == _LADDER_BALANCED_GROK_OPENROUTER_OPUS
 
 
 def build_batch_client(
@@ -15479,7 +15714,10 @@ else sdk_auth_present_flags(p_provider, True)
             return artifacts_current, request_meta_current, response_text_current
 
         def _route_attempt(
-            route: Tuple[str, str, str], hop_index: int
+            route: Tuple[str, str, str],
+            hop_index: int,
+            *,
+            retry_attempts_override: Optional[int] = None,
         ) -> Dict[str, Any]:
             route_provider, route_model_id, route_api_key_env = route
             route_force_json = route_provider == "gemini"
@@ -16023,6 +16261,7 @@ else sdk_auth_present_flags(p_provider, True)
                         if ui is not None
                         else None
                     ),
+                    retry_attempts_override=retry_attempts_override,
                 )
                 response_text_local = str(llm_result.get("text", ""))
                 request_meta_local = enrich_request_meta(
@@ -21861,7 +22100,12 @@ def main() -> None:
         def _prompt_executor(step, rendered_prompt, schema, _prior_outputs):  # type: ignore[no-untyped-def]
             ladder = ladder_for_step(step)
 
-            def _execute_attempt(route, _hop_index):  # type: ignore[no-untyped-def]
+            def _execute_attempt(  # type: ignore[no-untyped-def]
+                route,
+                _hop_index,
+                *,
+                retry_attempts_override=None,
+            ):
                 provider, model_id, api_key_env = route
                 route_token = f"{provider}/{model_id}"
                 projected_input_tokens = _estimate_text_tokens(
@@ -21890,6 +22134,7 @@ def main() -> None:
                     system_prompt="Return JSON only.",
                     user_content=rendered_prompt,
                     cfg=cfg,
+                    retry_attempts_override=retry_attempts_override,
                 )
 
                 meta = dict(result.get("meta") or {})

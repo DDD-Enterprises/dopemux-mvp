@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import inspect
 import json
 import logging
 import os
@@ -127,6 +128,35 @@ def is_auth_classified_failure(failure_type: Optional[str]) -> bool:
         "quota_or_billing",
         "auth_rejected",
     }
+
+
+def _callable_accepts_kwarg(fn: Callable[..., Any], name: str) -> bool:
+    """True iff ``fn`` accepts a keyword argument named ``name``.
+
+    Returns True when the signature has an explicit parameter with this name
+    OR a ``**kwargs`` catch-all. Used by ``call_llm_with_ladder`` to detect
+    whether an ``execute_attempt`` closure supports the post-E7
+    ``retry_attempts_override`` kwarg.
+
+    Falls back to True if introspection fails (built-in callables, C
+    extensions) — in that case the caller passes the kwarg and any genuine
+    incompatibility surfaces as a TypeError at call time, propagating to the
+    operator rather than being silently swallowed. This is intentional: the
+    pre-E7 broad-except behaviour masked unrelated bugs in executor closures.
+    """
+    try:
+        sig = inspect.signature(fn)
+    except (TypeError, ValueError):
+        return True
+    for param in sig.parameters.values():
+        if param.kind is inspect.Parameter.VAR_KEYWORD:
+            return True
+        if param.name == name and param.kind in (
+            inspect.Parameter.KEYWORD_ONLY,
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+        ):
+            return True
+    return False
 
 
 def _normalize_route_tuple(
@@ -368,6 +398,7 @@ def call_llm(
     service_tier: Optional[str] = None,
     prompt_cache_directives: Optional[Dict[str, Any]] = None,
     disabled_providers: Optional[set] = None,
+    retry_attempts_override: Optional[int] = None,
 ) -> Dict[str, Any]:
     # Manual kill-switch (--disable-provider CLI). Per Phase D consensus this
     # replaces the rejected circuit-breaker design: operators flip a flag
@@ -715,7 +746,17 @@ def call_llm(
         return max(1, int(overall_timeout_seconds - elapsed))
 
     attempt = 0
-    while attempt < cfg.retry_max_attempts:
+    # E7: per-request failover passes retry_attempts_override=1 for non-final
+    # ladder hops so an intermediate provider that returns 5xx/timeout/429
+    # advances to the next route immediately instead of burning the full retry
+    # budget on a known-failing service. The final hop uses cfg.retry_max_attempts
+    # (operator's configured backoff policy) since there is no fallback left.
+    effective_max_attempts = (
+        int(retry_attempts_override)
+        if retry_attempts_override is not None and retry_attempts_override > 0
+        else int(cfg.retry_max_attempts)
+    )
+    while attempt < effective_max_attempts:
         attempt += 1
         status_code: Optional[int] = None
         response_body = ""
@@ -1012,7 +1053,7 @@ def call_llm(
                 logger.warning(
                     "LLM call failed attempt %s/%s status=%s failure_type=%s provider_error_reason=%s exception_type=%s response_body_redacted=%s",
                     attempt,
-                    cfg.retry_max_attempts,
+                    effective_max_attempts,
                     status_code,
                     failure_type,
                     provider_error_reason,
@@ -1023,7 +1064,7 @@ def call_llm(
                 logger.warning(
                     "LLM call failed attempt %s/%s status=%s failure_type=%s provider_error_reason=%s exception_type=%s",
                     attempt,
-                    cfg.retry_max_attempts,
+                    effective_max_attempts,
                     status_code,
                     failure_type,
                     provider_error_reason,
@@ -1085,47 +1126,111 @@ def call_llm_with_ladder(
     routing_tier: str,
     ladder: Sequence[RouteLike],
     cfg: Any,
-    execute_attempt: Callable[[RouteTuple, int], Dict[str, Any]],
+    execute_attempt: Callable[..., Dict[str, Any]],
     ui: Optional[Any] = None,
 ) -> Dict[str, Any]:
-    denylist = {str(provider).strip().lower() for provider in cfg.provider_denylist}
+    # E7: filter the ladder against BOTH the runtime-derived provider_denylist
+    # (populated by preflight probes) AND the operator-explicit disabled_providers
+    # (populated by --disable-provider CLI). Previously only provider_denylist
+    # was honored, making the CLI kill-switch a no-op for ladder iteration.
+    # Both attributes are accessed via getattr so a minimal/test cfg missing
+    # either field defaults to "no filter" rather than raising AttributeError.
+    denylist = {
+        str(provider).strip().lower()
+        for provider in getattr(cfg, "provider_denylist", ()) or ()
+    }
+    disabled = {
+        str(provider).strip().lower()
+        for provider in getattr(cfg, "disabled_providers", ()) or ()
+    }
     ladder = [
         _normalize_route_tuple(route, deps.provider_api_key_env)
         for route in ladder
     ]
-    if denylist:
-        ladder = [
-            route for route in ladder if str(route[0]).strip().lower() not in denylist
-        ]
+    ladder = [
+        route for route in ladder
+        if str(route[0]).strip().lower() not in denylist
+        and str(route[0]).strip().lower() not in disabled
+    ]
     if not ladder:
+        # Distinguish exhaustion source so PROOF logs / operators can tell the
+        # preflight-derived denylist from an explicit CLI kill-switch.
+        if denylist and not disabled:
+            trigger = "routing_all_routes_preflight_denylisted"
+            reason = f"provider_denylist:{','.join(sorted(denylist))}"
+        elif disabled and not denylist:
+            trigger = "routing_all_routes_operator_disabled"
+            reason = f"disabled_providers:{','.join(sorted(disabled))}"
+        elif denylist and disabled:
+            trigger = "routing_all_routes_unusable_combined"
+            reason = (
+                f"provider_denylist:{','.join(sorted(denylist))};"
+                f"disabled_providers:{','.join(sorted(disabled))}"
+            )
+        else:
+            trigger = "routing_empty_ladder"
+            reason = "No routes configured for tier."
         return {
             "response_text": "",
             "request_meta": {
                 "failure_type": "routing_empty_ladder",
-                "provider_error_reason": (
-                    f"provider_denylist:{','.join(sorted(denylist))}"
-                    if denylist
-                    else "No routes configured for tier."
-                ),
+                "provider_error_reason": reason,
             },
             "artifacts": [],
             "route": ("", "", ""),
-            "escalation_trigger": (
-                "routing_all_routes_denylisted" if denylist else "routing_empty_ladder"
-            ),
+            "escalation_trigger": trigger,
             "route_attempts": [],
         }
 
     max_hops = 1 if cfg.disable_escalation else max(1, int(cfg.escalation_max_hops) + 1)
     max_hops = min(max_hops, len(ladder))
+    # E7: bound visibility. effective_max_attempts = (max_hops - 1) fast-failover
+    # attempts (each capped at 1 try) + retry_max_attempts on the final hop. This
+    # is the worst-case API call count per call_llm_with_ladder invocation, and
+    # we log it so an operator running with absurdly high knobs can see the cost.
+    effective_max_attempts = (max(0, max_hops - 1)) + max(1, int(getattr(cfg, "retry_max_attempts", 1) or 1))
+    if effective_max_attempts > 30:
+        logger.warning(
+            "call_llm_with_ladder: effective_max_attempts=%d exceeds soft cap (30); "
+            "ladder=%d max_hops=%d retry_max_attempts=%s. Check escalation_max_hops "
+            "and retry_max_attempts for misconfiguration.",
+            effective_max_attempts,
+            len(ladder),
+            max_hops,
+            getattr(cfg, "retry_max_attempts", "?"),
+        )
     attempts: List[Dict[str, Any]] = []
     final_payload: Optional[Dict[str, Any]] = None
     opus_eligible: Optional[bool] = None
     opus_block_reason: Optional[str] = None
+    # E7: detect whether execute_attempt supports retry_attempts_override via
+    # signature inspection. Doing it once before the loop avoids catching
+    # unrelated TypeErrors raised by the executor (which would mask real bugs)
+    # and is cheaper than try/except per hop.
+    executor_accepts_override = _callable_accepts_kwarg(
+        execute_attempt, "retry_attempts_override"
+    )
     for hop_index in range(max_hops):
         route = _normalize_route_tuple(ladder[hop_index], deps.provider_api_key_env)
         provider, model_id, api_key_env = route
-        payload = execute_attempt(route, hop_index)
+        # E7: non-final hops use fast-failover retry policy (retry_attempts=1)
+        # so a provider 5xx/timeout/429 advances to the next route immediately
+        # rather than burning the full retry budget on a known-broken service.
+        # The final hop uses cfg.retry_max_attempts because there is no fallback
+        # left and the operator's configured backoff is the right policy.
+        is_final_hop = (hop_index + 1) >= max_hops
+        hop_retry_override: Optional[int] = None if is_final_hop else 1
+        if executor_accepts_override:
+            payload = execute_attempt(
+                route,
+                hop_index,
+                retry_attempts_override=hop_retry_override,
+            )
+        else:
+            # Backward-compat for pre-E7 execute_attempt callables. They preserve
+            # the legacy behavior (per-route retries run to exhaustion). Bugs
+            # inside the executor that raise TypeError still propagate normally.
+            payload = execute_attempt(route, hop_index)
         request_meta = (
             payload.get("request_meta")
             if isinstance(payload.get("request_meta"), dict)
