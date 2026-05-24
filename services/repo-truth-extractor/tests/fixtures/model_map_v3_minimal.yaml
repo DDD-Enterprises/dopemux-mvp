@@ -1,0 +1,161 @@
+# Fixture docstring header:
+# Minimal model_map.yaml v3 sample for E9 cost-profile integration tests.
+# Covers four profile/lane cells, service_tier, cache_strategy, impact_class,
+# and a long_context tag delta without mutating the real promptset map.
+version: '3.0'
+policy:
+  no_auto_transport_flips: true
+  scope: json_managed_only
+  strict_required_behavior: fail_closed
+lane_defaults:
+  economy:
+    CE:
+      medium:
+        primary_routes:
+          - provider: openai
+            model_id: gpt-5.1-codex-mini
+            api_key_env: OPENAI_API_KEY
+            service_tier: flex
+            strict_json_schema: true
+            strict_passthrough_verified: false
+            cache_strategy: auto
+  value-default:
+    CE:
+      medium:
+        primary_routes:
+          - provider: openrouter
+            model_id: openai/gpt-5.3-codex
+            api_key_env: OPENROUTER_API_KEY
+            service_tier: default
+            strict_json_schema: true
+            strict_passthrough_verified: true
+            cache_strategy: none
+    EXTRACT:
+      bulk:
+        primary_routes:
+          - provider: openai
+            model_id: gpt-5.4-mini
+            api_key_env: OPENAI_API_KEY
+            service_tier: flex
+            strict_json_schema: false
+            strict_passthrough_verified: false
+            cache_strategy: auto
+  quality:
+    SYNTH:
+      critical:
+        primary_routes:
+          - provider: openrouter
+            model_id: anthropic/claude-opus-4.6
+            api_key_env: OPENROUTER_API_KEY
+            service_tier: priority
+            strict_json_schema: false
+            strict_passthrough_verified: false
+            cache_strategy: cache_control_explicit
+  experimental:
+    EXTRACT:
+      high:
+        primary_routes:
+          - provider: openai
+            model_id: gpt-5.5-pro
+            api_key_env: OPENAI_API_KEY
+            service_tier: default
+            strict_json_schema: true
+            strict_passthrough_verified: false
+            cache_strategy: auto
+          - provider: gemini
+            model_id: gemini-3.5-flash
+            api_key_env: GEMINI_API_KEY
+            strict_json_schema: false
+            strict_passthrough_verified: false
+            cache_strategy: auto
+tag_definitions:
+  long_context:
+    description: Require a route with at least one million context tokens.
+    routing_delta:
+      filter_route_context_window_min: 1000000
+      fallback_routes:
+        - provider: gemini
+          model_id: gemini-3.5-flash
+          api_key_env: GEMINI_API_KEY
+          strict_json_schema: false
+          strict_passthrough_verified: false
+          cache_strategy: auto
+          context_window: 1000000
+steps:
+  - phase: A
+    step_id: A0
+    lane_class: CE
+    impact_class: structural
+    capability_tier: medium
+    tags: []
+    tag_definitions: {}
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.3-codex
+        api_key_env: OPENROUTER_API_KEY
+        service_tier: default
+        strict_json_schema: true
+        strict_passthrough_verified: true
+        cache_strategy: none
+  - phase: A
+    step_id: A2
+    lane_class: EXTRACT
+    impact_class: advisory
+    capability_tier: bulk
+    tags: []
+    tag_definitions: {}
+    primary_routes:
+      - provider: openai
+        model_id: gpt-5.4-mini
+        api_key_env: OPENAI_API_KEY
+        service_tier: flex
+        strict_json_schema: false
+        strict_passthrough_verified: false
+        cache_strategy: auto
+  - phase: S
+    step_id: S1
+    lane_class: SYNTH
+    impact_class: security_sensitive
+    capability_tier: critical
+    tags:
+      - long_context
+    tag_definitions:
+      long_context:
+        routing_delta:
+          filter_route_context_window_min: 1000000
+          fallback_routes:
+            - provider: gemini
+              model_id: gemini-3.5-flash
+              api_key_env: GEMINI_API_KEY
+              strict_json_schema: false
+              strict_passthrough_verified: false
+              cache_strategy: auto
+              context_window: 1000000
+    primary_routes:
+      - provider: openrouter
+        model_id: anthropic/claude-opus-4.6
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+        cache_strategy: cache_control_explicit
+  - phase: X
+    step_id: X1
+    lane_class: EXTRACT
+    impact_class: advisory
+    capability_tier: high
+    tags: []
+    tag_definitions: {}
+    primary_routes:
+      - provider: openai
+        model_id: gpt-5.5-pro
+        api_key_env: OPENAI_API_KEY
+        service_tier: default
+        strict_json_schema: true
+        strict_passthrough_verified: false
+        cache_strategy: auto
+      - provider: gemini
+        model_id: gemini-3.5-flash
+        api_key_env: GEMINI_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+        cache_strategy: auto

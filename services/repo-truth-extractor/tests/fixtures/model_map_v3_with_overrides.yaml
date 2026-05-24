@@ -1,0 +1,108 @@
+# Fixture docstring header:
+# model_map.yaml v3 override sample for E9. The six steps mirror the accepted
+# override cap from E8: C10, S12, T0, T1, T3, and Z0.
+version: '3.0'
+schema_provenance:
+  override_steps:
+    - C10
+    - S12
+    - T0
+    - T1
+    - T3
+    - Z0
+lane_defaults:
+  value-default:
+    CE:
+      high:
+        primary_routes:
+          - provider: openrouter
+            model_id: openai/gpt-5.4
+            api_key_env: OPENROUTER_API_KEY
+            strict_json_schema: true
+            strict_passthrough_verified: true
+            cache_strategy: none
+steps:
+  - phase: C
+    step_id: C10
+    override_reason: phase_c_consensus_override
+    lane_class: SYNTH
+    impact_class: structural
+    capability_tier: critical
+    tags: [consensus]
+    primary_routes:
+      - provider: openrouter
+        model_id: anthropic/claude-opus-4.6
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+        cache_strategy: cache_control_explicit
+  - phase: S
+    step_id: S12
+    override_reason: phase_s_terminal_synthesis_override
+    lane_class: SYNTH
+    impact_class: security_sensitive
+    capability_tier: critical
+    tags: [security_sensitive]
+    primary_routes:
+      - provider: openrouter
+        model_id: anthropic/claude-opus-4.6
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+        cache_strategy: cache_control_explicit
+  - phase: T
+    step_id: T0
+    override_reason: phase_t_bootstrap_override
+    lane_class: CE
+    impact_class: structural
+    capability_tier: high
+    tags: [bootstrap]
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.4
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+        cache_strategy: none
+  - phase: T
+    step_id: T1
+    override_reason: phase_t_router_override
+    lane_class: CE
+    impact_class: structural
+    capability_tier: high
+    tags: [router]
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.4
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+        cache_strategy: none
+  - phase: T
+    step_id: T3
+    override_reason: phase_t_security_override
+    lane_class: SYNTH
+    impact_class: security_sensitive
+    capability_tier: critical
+    tags: [security_sensitive]
+    primary_routes:
+      - provider: openrouter
+        model_id: anthropic/claude-opus-4.6
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: false
+        strict_passthrough_verified: false
+        cache_strategy: cache_control_explicit
+  - phase: Z
+    step_id: Z0
+    override_reason: phase_z_final_override
+    lane_class: CE
+    impact_class: structural
+    capability_tier: high
+    tags: [final_gate]
+    primary_routes:
+      - provider: openrouter
+        model_id: openai/gpt-5.4
+        api_key_env: OPENROUTER_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: true
+        cache_strategy: none
