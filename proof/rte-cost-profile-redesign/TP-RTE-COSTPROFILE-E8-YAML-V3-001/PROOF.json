@@ -2,7 +2,7 @@
   "schema": "dopemux.proof.v1",
   "packet_id": "TP-RTE-COSTPROFILE-E8-YAML-V3-001",
   "project": "Repo Truth Extractor",
-  "generated_at_utc": "2026-05-24T14:23:05Z",
+  "generated_at_utc": "2026-05-24T14:24:39Z",
   "worktree": "/Users/hue/.codex/worktrees/pr692-e8-runtime-tag-fix",
   "branch": "codex/rte-costprofile-e8-runtime-tag-fix-002",
   "base_branch": "claude/goofy-haibt-fc568e",
@@ -27,7 +27,7 @@
       "runtime_tag_fix_branch": "codex/rte-costprofile-e8-runtime-tag-fix-002",
       "base": "claude/goofy-haibt-fc568e",
       "code_commit_sha": "e2e80c2d72decb4f713af00981a7a5021c6c9473",
-      "runtime_tag_fix_commit_sha": "SELF_REFERENTIAL_RUNTIME_TAG_FIX_COMMIT_SEE_GIT_HISTORY",
+      "runtime_tag_fix_commit_sha": "67bc94b1c81862e893b270fd6d32f4878534ae2c",
       "commit_sha": "SELF_REFERENTIAL_REMEDIATION_COMMIT_SEE_GIT_HISTORY",
       "followup_pr": {
         "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/692",
@@ -40,12 +40,12 @@
         "merge_commit_sha": "0bbfa58831af0e98fd12515b5e40633010acc467"
       },
       "runtime_tag_fix_pr": {
-        "url": "PENDING_AFTER_PUSH",
-        "number": "PENDING_AFTER_PUSH",
+        "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/694",
+        "number": 694,
         "base": "claude/goofy-haibt-fc568e",
         "head": "codex/rte-costprofile-e8-runtime-tag-fix-002",
-        "head_sha_at_creation": "PENDING_AFTER_PUSH",
-        "ci_status_at_creation": "PENDING_AFTER_PUSH"
+        "head_sha_at_creation": "67bc94b1c81862e893b270fd6d32f4878534ae2c",
+        "ci_status_at_creation": "PENDING"
       },
       "threads_addressed": [
         3294245404,
