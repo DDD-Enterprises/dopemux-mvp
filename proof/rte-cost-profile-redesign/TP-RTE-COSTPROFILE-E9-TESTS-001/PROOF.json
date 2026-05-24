@@ -1,0 +1,148 @@
+{
+  "schema": "dopemux.proof.v1",
+  "packet_id": "TP-RTE-COSTPROFILE-E9-TESTS-001",
+  "project": "Repo Truth Extractor",
+  "generated_at_utc": "2026-05-24T18:45:00Z",
+  "worktree": "/Users/hue/.codex/worktrees/rte-costprofile-e9-tests-002",
+  "branch": "codex/rte-costprofile-e9-tests-004",
+  "base_branch": "claude/goofy-haibt-fc568e",
+  "base_head_sha": "4cbebce6dcf5675aa8e381263ece1cfe8bf6eafb",
+  "implementation_commit_sha": "818832e4e164a562b6bb7acf8a0718d31eec8e63",
+  "repo_identity": {
+    "root": "/Users/hue/.codex/worktrees/rte-costprofile-e9-tests-002",
+    "remote_origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker": ".dopetaskroot"
+  },
+  "scope": {
+    "type": "test_only",
+    "production_code_changed": false,
+    "depends_on": [
+      "TP-RTE-COSTPROFILE-E8-YAML-V3-001",
+      "TP-RTE-COSTPROFILE-E9-RUNTIME-SPEND-OPTIMIZERS-001",
+      "TP-RTE-COSTPROFILE-E9-ROUTE-OPTIMIZER-METADATA-001"
+    ],
+    "prerequisite_prs": [
+      {
+        "pr": 694,
+        "status": "merged",
+        "merge_commit": "e236cde12c4d0848431da62fdbd0b0f93d511e8b",
+        "purpose": "E8 YAML v3 completion"
+      },
+      {
+        "pr": 695,
+        "status": "merged",
+        "merge_commit": "c36515fdfd36b858219b097a45c4d81fbcbe1a69",
+        "purpose": "runtime spend optimizer metadata prerequisite"
+      },
+      {
+        "pr": 696,
+        "status": "merged",
+        "merge_commit": "4cbebce6dcf5675aa8e381263ece1cfe8bf6eafb",
+        "purpose": "route service_tier/cache_strategy propagation prerequisite"
+      }
+    ]
+  },
+  "files_changed": [
+    "services/repo-truth-extractor/tests/test_cost_profile_e2e_value_default.py",
+    "services/repo-truth-extractor/tests/test_cost_profile_e2e_economy.py",
+    "services/repo-truth-extractor/tests/test_cost_profile_e2e_quality.py",
+    "services/repo-truth-extractor/tests/test_cost_profile_e2e_experimental.py",
+    "services/repo-truth-extractor/tests/test_legacy_routing_policy_deprecation_e2e.py",
+    "services/repo-truth-extractor/tests/test_cost_profile_spend_ledger_integration.py",
+    "services/repo-truth-extractor/tests/test_cost_profile_anthropic_cache_e2e.py",
+    "services/repo-truth-extractor/tests/test_cost_profile_batch_discount_e2e.py",
+    "services/repo-truth-extractor/tests/fixtures/model_map_v3_minimal.yaml",
+    "services/repo-truth-extractor/tests/fixtures/model_map_v3_with_overrides.yaml",
+    "services/repo-truth-extractor/tests/fixtures/pricing_minimal.yaml",
+    "task-packets/generated/TP-RTE-COSTPROFILE-E9-TESTS-001.json",
+    "task-packets/INDEX.md",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E9-TESTS-001/PROOF.json",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E9-TESTS-001/sha256sums.txt"
+  ],
+  "coverage_added": [
+    "value-default profile CLI/cfg/cell-alias/route-metadata/call_llm/spend-ledger path",
+    "economy profile flex-tier, cheap model aliases, one-hop escalation, and default cap behavior",
+    "quality profile priority tier, opus 4.6 default, opus 4.7 override, and batch-disabled behavior",
+    "experimental profile frontier notes, warning, v3 fixture routes for gpt-5.5-pro and gemini-3.5-flash",
+    "legacy --routing-policy deprecation mapping and --cost-profile precedence",
+    "SpendLedger optimizer math for cached input, service tier, batch discount, stacked optimizers, caps, and persisted totals",
+    "Anthropic/OpenRouter cache_control directives, cache write/read pricing, and runtime cached-token parsing",
+    "batch reserved/runtime spend discount, optimizer metadata, OpenRouter unsupported batch guard, and static xAI proof warning"
+  ],
+  "validation": {
+    "pass": [
+      {
+        "command": "python -m json.tool task-packets/generated/TP-RTE-COSTPROFILE-E9-TESTS-001.json >/dev/null",
+        "exit_code": 0,
+        "observed": "packet JSON parsed"
+      },
+      {
+        "command": "python - <<'PY' ... yaml.safe_load(fixtures) ... PY",
+        "exit_code": 0,
+        "observed": "model_map_v3_minimal.yaml, model_map_v3_with_overrides.yaml, and pricing_minimal.yaml parsed to mappings"
+      },
+      {
+        "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_cost_profile_e2e_value_default.py services/repo-truth-extractor/tests/test_cost_profile_e2e_economy.py services/repo-truth-extractor/tests/test_cost_profile_e2e_quality.py services/repo-truth-extractor/tests/test_cost_profile_e2e_experimental.py services/repo-truth-extractor/tests/test_legacy_routing_policy_deprecation_e2e.py services/repo-truth-extractor/tests/test_cost_profile_spend_ledger_integration.py services/repo-truth-extractor/tests/test_cost_profile_anthropic_cache_e2e.py services/repo-truth-extractor/tests/test_cost_profile_batch_discount_e2e.py -v",
+        "exit_code": 0,
+        "observed": "72 passed, 1 PytestConfigWarning for unknown asyncio_mode"
+      },
+      {
+        "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_cost_profiles.py services/repo-truth-extractor/tests/test_spend_ledger_optimizers.py services/repo-truth-extractor/tests/test_pricing_catalog.py services/repo-truth-extractor/tests/test_spend_ledger.py -v",
+        "exit_code": 0,
+        "observed": "36 passed, 1 PytestConfigWarning for unknown asyncio_mode"
+      },
+      {
+        "command": "python -m compileall -q services/repo-truth-extractor/tests/test_cost_profile_e2e_value_default.py services/repo-truth-extractor/tests/test_cost_profile_e2e_economy.py services/repo-truth-extractor/tests/test_cost_profile_e2e_quality.py services/repo-truth-extractor/tests/test_cost_profile_e2e_experimental.py services/repo-truth-extractor/tests/test_legacy_routing_policy_deprecation_e2e.py services/repo-truth-extractor/tests/test_cost_profile_spend_ledger_integration.py services/repo-truth-extractor/tests/test_cost_profile_anthropic_cache_e2e.py services/repo-truth-extractor/tests/test_cost_profile_batch_discount_e2e.py",
+        "exit_code": 0,
+        "observed": "compileall passed for new Python test files"
+      },
+      {
+        "command": "git diff --check",
+        "exit_code": 0,
+        "observed": "unstaged diff whitespace clean before implementation commit"
+      },
+      {
+        "command": "git diff --cached --check",
+        "exit_code": 0,
+        "observed": "staged implementation diff whitespace clean"
+      },
+      {
+        "command": "pre-commit run --files $(git diff --cached --name-only)",
+        "exit_code": 0,
+        "observed": "configured hooks passed on staged implementation files"
+      },
+      {
+        "command": "git commit -m \"test(rte): cost-profile redesign integration coverage (E9)\"",
+        "exit_code": 0,
+        "observed": "commit hook repo preflight and 6 smoke tests passed; implementation commit 818832e4e164a562b6bb7acf8a0718d31eec8e63 created"
+      }
+    ],
+    "not_run": [
+      "Live LLM/provider calls",
+      "Full RTE suite",
+      "F verification packet",
+      "GitHub PR CI before PR creation"
+    ]
+  },
+  "pal": {
+    "codereview": {
+      "status": "PASS_LOCAL_INTERNAL",
+      "continuation_id": "db4a82da-344d-4c7d-ab85-9a840facbe54",
+      "issues_found": 0
+    },
+    "precommit": {
+      "status": "PASS_LOCAL_INTERNAL",
+      "continuation_id": "10b115ed-7ac2-49c3-8694-895d4af818a5",
+      "issues_found": 0
+    }
+  },
+  "residual_risks": [
+    "Mock-based integration tests cannot prove provider-side acceptance of service_tier, cache_control, or batch behavior.",
+    "Full RTE suite and F verification were not run in E9.",
+    "The proof bundle is committed separately from the implementation commit so the proof can name the implementation SHA."
+  ],
+  "rollback_plan": [
+    "Before merge: close the E9 PR or revert implementation commit 818832e4e164a562b6bb7acf8a0718d31eec8e63 plus its proof commit.",
+    "After merge: revert the E9 PR before starting or merging F verification if CI or review finds an E9 blocker."
+  ]
+}
