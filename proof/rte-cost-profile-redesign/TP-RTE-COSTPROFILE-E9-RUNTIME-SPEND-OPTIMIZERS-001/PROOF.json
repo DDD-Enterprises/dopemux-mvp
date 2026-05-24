@@ -8,14 +8,19 @@
   "base_branch": "claude/goofy-haibt-fc568e",
   "base_head_sha": "e236cde12c4d0848431da62fdbd0b0f93d511e8b",
   "implementation_commit_sha": "4d87908c1cc647e990b5e50e96be3746d6634d9e",
-  "proof_pr_commit_sha": "SELF_REFERENTIAL_COMMIT_SHA_NOT_AVAILABLE_BEFORE_COMMIT",
+  "proof_pr_commit_sha": "4a78774ce27eb33e05be9c101ef847eccb390ad1",
+  "review_fix_commit_sha": "SELF_REFERENTIAL_COMMIT_SHA_NOT_AVAILABLE_BEFORE_COMMIT",
   "pr": {
     "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/695",
     "number": 695,
     "base": "claude/goofy-haibt-fc568e",
     "head": "codex/rte-costprofile-e9-runtime-spend-optimizer-fix-001",
     "head_sha_at_creation": "4d87908c1cc647e990b5e50e96be3746d6634d9e",
-    "ci_status_at_creation": "PENDING"
+    "ci_status_at_creation": "PENDING",
+    "ci_status_after_proof_push": "SUCCESS",
+    "review_threads_addressed": [
+      3294958308
+    ]
   },
   "repo_identity": {
     "root": "/Users/hue/.codex/worktrees/rte-costprofile-e9-tests-002",
@@ -76,6 +81,16 @@
         "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_runtime_spend_optimizer_metadata.py services/repo-truth-extractor/tests/test_spend_ledger_optimizers.py services/repo-truth-extractor/tests/test_spend_ledger.py -v",
         "exit_code": 0,
         "observed": "23 passed, 1 PytestConfigWarning for unknown asyncio_mode"
+      },
+      {
+        "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_runtime_spend_optimizer_metadata.py -v",
+        "exit_code": 0,
+        "observed": "Review-fix rerun after payload-fallback coverage: 6 passed, 1 PytestConfigWarning for unknown asyncio_mode"
+      },
+      {
+        "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_runtime_spend_optimizer_metadata.py services/repo-truth-extractor/tests/test_spend_ledger_optimizers.py services/repo-truth-extractor/tests/test_spend_ledger.py -v",
+        "exit_code": 0,
+        "observed": "Review-fix focused subset: 24 passed, 1 PytestConfigWarning for unknown asyncio_mode"
       },
       {
         "command": "git diff --check",
