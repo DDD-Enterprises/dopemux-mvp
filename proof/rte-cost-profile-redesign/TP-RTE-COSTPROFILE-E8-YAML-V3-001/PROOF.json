@@ -1,0 +1,174 @@
+{
+  "schema": "dopemux.proof.v1",
+  "packet_id": "TP-RTE-COSTPROFILE-E8-YAML-V3-001",
+  "project": "Repo Truth Extractor",
+  "generated_at_utc": "2026-05-24T10:03:08Z",
+  "worktree": "/Users/hue/code/dopemux-mvp/.claude/worktrees/goofy-haibt-fc568e",
+  "branch": "codex/rte-costprofile-e8-yaml-v3-001",
+  "base_branch": "codex/rte-costprofile-e7-ladders-failover-001",
+  "base_head_sha": "c8b3a67c5352f023dc112ed3c58a22556d273ea8",
+  "implementation_commit_sha": "5704f501e8fed2409a8185fcf657bc3b1fb007c2",
+  "proof_commit_sha": "PENDING_PROOF_COMMIT",
+  "pr": {
+    "url": "PENDING_PR_CREATION",
+    "number": null,
+    "base": "codex/rte-costprofile-e7-ladders-failover-001",
+    "head": "codex/rte-costprofile-e8-yaml-v3-001",
+    "ci_status": "PENDING_PR_CREATION",
+    "review_thread_status": "PENDING_PR_CREATION"
+  },
+  "repo_identity": {
+    "root": "/Users/hue/code/dopemux-mvp/.claude/worktrees/goofy-haibt-fc568e",
+    "remote_origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "remote_mvp": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker": ".dopetaskroot"
+  },
+  "stack_topology": {
+    "observed": [
+      "E8 was originally committed on an older E7 head.",
+      "E8 was rebased onto current E7 head c8b3a67c5352f023dc112ed3c58a22556d273ea8 before proof and PR publication.",
+      "git merge-base --is-ancestor codex/rte-costprofile-e7-ladders-failover-001 HEAD exited 0 after rebase.",
+      "git diff --stat codex/rte-costprofile-e7-ladders-failover-001...HEAD shows only the 15 E8 implementation files."
+    ],
+    "external_blockers_not_owned_by_e8": [
+      "#688 has unresolved review comments on lifecycle payload compatibility outside E8 scope.",
+      "#689 has unresolved review comments on cost-profile wiring/spend accounting outside E8 scope."
+    ]
+  },
+  "scope_decisions": [
+    {
+      "decision": "services/repo-truth-extractor/tests/test_phase_d_contract_map.py is valid E8 scope",
+      "reason": "The changed expectations follow the v3 lane taxonomy and Phase D routing semantics."
+    },
+    {
+      "decision": "services/repo-truth-extractor/tests/test_phase_interaction.py is valid E8 scope",
+      "reason": "The changed expectations follow the v3 lane taxonomy and direct-openrouter primary semantics inherited by the promptset regression surface."
+    },
+    {
+      "decision": "Do not address #688/#689 review comments in E8",
+      "reason": "Those comments target prerequisite production wiring and lifecycle payload compatibility outside the E8 allowlist."
+    }
+  ],
+  "files_changed": [
+    "services/repo-truth-extractor/lib/structured_output_contracts.py",
+    "services/repo-truth-extractor/promptsets/v4/model_map.v2.yaml.bak",
+    "services/repo-truth-extractor/promptsets/v4/model_map.yaml",
+    "services/repo-truth-extractor/promptsets/v4/scripts/README.md",
+    "services/repo-truth-extractor/promptsets/v4/scripts/migrate_model_map_v2_to_v3.py",
+    "services/repo-truth-extractor/rte_promptset.py",
+    "services/repo-truth-extractor/tests/test_migrate_model_map_v2_to_v3.py",
+    "services/repo-truth-extractor/tests/test_model_map_v3_impact_class_enforcement.py",
+    "services/repo-truth-extractor/tests/test_model_map_v3_loader.py",
+    "services/repo-truth-extractor/tests/test_model_map_v3_per_step_overrides.py",
+    "services/repo-truth-extractor/tests/test_model_map_v3_tag_routing_deltas.py",
+    "services/repo-truth-extractor/tests/test_phase_d_contract_map.py",
+    "services/repo-truth-extractor/tests/test_phase_interaction.py",
+    "task-packets/INDEX.md",
+    "task-packets/generated/TP-RTE-COSTPROFILE-E8-YAML-V3-001.json"
+  ],
+  "proof_files": [
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E8-YAML-V3-001/PROOF.json",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E8-YAML-V3-001/sha256sums.txt"
+  ],
+  "validation": {
+    "pass": [
+      {
+        "command": "python -m json.tool task-packets/generated/TP-RTE-COSTPROFILE-E8-YAML-V3-001.json >/dev/null",
+        "exit_code": 0,
+        "observed": "packet JSON parsed"
+      },
+      {
+        "command": "python -c \"import yaml; doc = yaml.safe_load(open('services/repo-truth-extractor/promptsets/v4/model_map.yaml')); assert doc.get('version') == '3.0'; assert isinstance(doc.get('lane_defaults'), dict); assert isinstance(doc.get('tag_definitions'), dict) and len(doc['tag_definitions']) == 8; assert isinstance(doc.get('steps'), list) and len(doc['steps']) == 136; print('yaml v3 schema OK')\"",
+        "exit_code": 0,
+        "observed": "yaml v3 schema OK"
+      },
+      {
+        "command": "python -c \"import yaml; doc = yaml.safe_load(open('services/repo-truth-extractor/promptsets/v4/model_map.v2.yaml.bak')); assert doc.get('version') == '2.0'; print('v2 backup preserved')\"",
+        "exit_code": 0,
+        "observed": "v2 backup preserved"
+      },
+      {
+        "command": "python services/repo-truth-extractor/promptsets/v4/scripts/migrate_model_map_v2_to_v3.py --dry-run --diff 2>&1 | tail -20",
+        "exit_code": 0,
+        "observed": "migrate: input=model_map.v2.yaml.bak steps_in=136 steps_out=136 overrides=6 lane_defaults_cells=160"
+      },
+      {
+        "command": "python -m compileall -q services/repo-truth-extractor/lib/structured_output_contracts.py services/repo-truth-extractor/rte_promptset.py services/repo-truth-extractor/promptsets/v4/scripts/migrate_model_map_v2_to_v3.py",
+        "exit_code": 0,
+        "observed": "compileall passed"
+      },
+      {
+        "command": "focused python audit of model_map.yaml via rte_promptset.audit_model_map_v3",
+        "exit_code": 0,
+        "observed": "focused audit OK: steps=136 tags=8 override_steps=6 audit_failures=0"
+      },
+      {
+        "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_model_map_v3_loader.py services/repo-truth-extractor/tests/test_model_map_v3_impact_class_enforcement.py services/repo-truth-extractor/tests/test_model_map_v3_tag_routing_deltas.py services/repo-truth-extractor/tests/test_model_map_v3_per_step_overrides.py services/repo-truth-extractor/tests/test_migrate_model_map_v2_to_v3.py -v",
+        "exit_code": 0,
+        "observed": "72 passed, 1 PytestConfigWarning for unknown asyncio_mode"
+      },
+      {
+        "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_promptset_v4_lint.py services/repo-truth-extractor/tests/test_promptset_rules_injection.py services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py services/repo-truth-extractor/tests/test_phase_d_contract_map.py services/repo-truth-extractor/tests/test_phase_interaction.py -v",
+        "exit_code": 0,
+        "observed": "64 passed, 1 PytestConfigWarning for unknown asyncio_mode"
+      },
+      {
+        "command": "git diff --check codex/rte-costprofile-e7-ladders-failover-001...HEAD",
+        "exit_code": 0,
+        "observed": "three-dot E8 diff whitespace clean"
+      },
+      {
+        "command": "pre-commit run --files $(git diff --cached --name-only)",
+        "exit_code": 0,
+        "observed": "configured hooks passed on the staged implementation slice before commit"
+      },
+      {
+        "command": "commit hook during implementation commit",
+        "exit_code": 0,
+        "observed": "repo_preflight passed, 6 smoke tests passed, syntax-ok files=675"
+      }
+    ],
+    "fail_corrected": [
+      {
+        "command": "first focused audit attempt",
+        "exit_code": 1,
+        "observed": "failed because the ad hoc audit imported the wrong module path; corrected command passed"
+      },
+      {
+        "command": "second focused audit attempt",
+        "exit_code": 1,
+        "observed": "failed because the ad hoc audit counted materialized route keys as override steps; corrected command used schema_provenance.override_steps and passed"
+      }
+    ],
+    "not_run": [
+      "Full RTE suite",
+      "Live LLM/provider calls",
+      "E9 tests",
+      "F verification packet",
+      "External PAL expert codereview completion"
+    ]
+  },
+  "pal": {
+    "codereview": {
+      "status": "PASS_LOCAL_INTERNAL",
+      "continuation_id": "d4fc0a91-7a52-4bf1-bf26-3dc791499cb8",
+      "issues_found": 0,
+      "note": "External expert path requested complete line-numbered file contents after failing to embed files; not counted as an external expert pass."
+    },
+    "precommit": {
+      "status": "PASS_LOCAL_INTERNAL",
+      "continuation_id": "52bb0085-4106-475a-800d-1778357af187",
+      "issues_found": 0
+    }
+  },
+  "residual_risks": [
+    "This is a stacked review surface. Final series merge still requires normalization after #689 or an explicit replacement integration path if #689 remains blocked.",
+    "#688 and #689 unresolved review comments may block normalized series merge even if E8 itself is green.",
+    "E8 intentionally does not exercise full RTE suite or live provider paths.",
+    "External PAL expert codereview did not complete; GitHub review remains the external review surface."
+  ],
+  "cleanup_status": {
+    "worktree_retained": true,
+    "reason": "Retained for PR publication, CI polling, and review comment handling."
+  }
+}
