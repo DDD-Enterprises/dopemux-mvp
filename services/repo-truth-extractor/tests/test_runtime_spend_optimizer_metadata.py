@@ -92,6 +92,36 @@ def test_accumulate_runtime_spend_uses_cfg_service_tier_when_provider_does_not_e
     assert priced["cost_breakdown"]["cached_input_tokens"] == 500_000
 
 
+def test_accumulate_runtime_spend_reads_optimizer_metadata_from_payload_fallback(
+    tmp_path: Path,
+) -> None:
+    cfg = _cfg(tmp_path)
+
+    priced = runner._accumulate_runtime_spend(
+        cfg,
+        phase="A",
+        step_id="A1",
+        partition_id="A_P0001",
+        provider="openai",
+        model_id="gpt-5.4",
+        execution_mode="sync",
+        response_summary=None,
+        response_text="{}",
+        payload={
+            "input_tokens": 1_000_000,
+            "output_tokens": 100_000,
+            "cached_tokens": 500_000,
+            "service_tier": "flex",
+        },
+        route="openai/gpt-5.4",
+    )
+
+    assert priced is not None
+    assert priced["estimated_cost_usd"] == pytest.approx(1.4375)
+    assert priced["cost_breakdown"]["service_tier"] == "flex"
+    assert priced["cost_breakdown"]["cached_input_tokens"] == 500_000
+
+
 def test_accumulate_runtime_spend_preserves_default_sync_cost_without_optimizers(
     tmp_path: Path,
 ) -> None:

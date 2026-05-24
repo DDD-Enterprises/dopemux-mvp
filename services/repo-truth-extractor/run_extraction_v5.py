@@ -10732,15 +10732,20 @@ def _resolve_runtime_usage(
 
 def _runtime_usage_payload(
     response_summary: Optional[Dict[str, Any]],
+    payload: Optional[Dict[str, Any]] = None,
 ) -> Optional[Dict[str, Any]]:
-    if not isinstance(response_summary, dict):
-        return None
-    usage = response_summary.get("usage")
-    return usage if isinstance(usage, dict) else None
+    if isinstance(response_summary, dict):
+        usage = response_summary.get("usage")
+        if isinstance(usage, dict):
+            return usage
+    return payload if isinstance(payload, dict) else None
 
 
-def _runtime_cached_input_tokens(response_summary: Optional[Dict[str, Any]]) -> int:
-    usage = _runtime_usage_payload(response_summary)
+def _runtime_cached_input_tokens(
+    response_summary: Optional[Dict[str, Any]],
+    payload: Optional[Dict[str, Any]] = None,
+) -> int:
+    usage = _runtime_usage_payload(response_summary, payload)
     if usage is None:
         return 0
     cached_tokens = _read_usage_field(
@@ -10759,8 +10764,9 @@ def _runtime_cached_input_tokens(response_summary: Optional[Dict[str, Any]]) -> 
 
 def _runtime_cache_write_input_tokens(
     response_summary: Optional[Dict[str, Any]],
+    payload: Optional[Dict[str, Any]] = None,
 ) -> int:
-    usage = _runtime_usage_payload(response_summary)
+    usage = _runtime_usage_payload(response_summary, payload)
     if usage is None:
         return 0
     return int(_read_usage_field(usage, "cache_creation_input_tokens") or 0)
@@ -10769,8 +10775,9 @@ def _runtime_cache_write_input_tokens(
 def _runtime_service_tier_for_spend(
     cfg: RunnerConfig,
     response_summary: Optional[Dict[str, Any]] = None,
+    payload: Optional[Dict[str, Any]] = None,
 ) -> Optional[str]:
-    usage = _runtime_usage_payload(response_summary)
+    usage = _runtime_usage_payload(response_summary, payload)
     if usage is not None:
         observed = str(usage.get("service_tier") or "").strip().lower()
         if observed:
@@ -10816,9 +10823,12 @@ def _accumulate_runtime_spend(
         provider=provider,
         model_id=model_id,
         route=route,
-        cached_input_tokens=_runtime_cached_input_tokens(response_summary),
-        cache_write_input_tokens=_runtime_cache_write_input_tokens(response_summary),
-        service_tier=_runtime_service_tier_for_spend(cfg, response_summary),
+        cached_input_tokens=_runtime_cached_input_tokens(response_summary, payload),
+        cache_write_input_tokens=_runtime_cache_write_input_tokens(
+            response_summary,
+            payload,
+        ),
+        service_tier=_runtime_service_tier_for_spend(cfg, response_summary, payload),
         is_batch=_runtime_is_batch_execution_mode(execution_mode),
     )
     combined = {
