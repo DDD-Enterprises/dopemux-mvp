@@ -1,0 +1,164 @@
+{
+  "id": "TP-DMX-DOCS-PUBLIC-AI-RTE-BASELINE-001",
+  "project": "dopemux-mvp",
+  "target": "documentation/public-ai-rte-external-baseline",
+  "invariants": [
+    "Documentation-only work: do not edit runtime code, service code, Docker files, compose files, dependency files, tests, or generated extraction outputs.",
+    "Preserve Dopemux split-authority architecture and do not promote bridges, retrieval output, mirrors, or audit artifacts into source truth.",
+    "Treat llms.txt as a curated public and AI-readable map, not as a second README or architecture replacement.",
+    "Treat the RTE provider structured-output baseline as external research/audit context only, not as repo truth or live provider verification.",
+    "Do not paste opaque Deep Research turn citations as durable repo citations.",
+    "Live Docker startup, live provider calls, and live RTE extraction remain NOT_RUN unless explicitly executed."
+  ],
+  "depends_on": [
+    "TP-DMX-DOCS-FORGE-004-MARKETING-FINAL-INDEX"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "pyproject.toml",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DOCS-PUBLIC-AI-RTE-BASELINE-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "docs/public-ai-rte-baseline",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs: add public ai docs surface and rte external baseline",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-DOCS-PUBLIC-AI-RTE-BASELINE-001.json",
+      "llms.txt",
+      "README.md",
+      "docs/INDEX.md",
+      "docs/00-MASTER-INDEX.md",
+      "docs/docs_index.yaml",
+      "docs/04-explanation/product/public-copy-variants.md",
+      "docs/03-reference/governance/public-docs-surface.md",
+      "docs/03-reference/governance/documentation-gap-register.md",
+      "docs/06-research/extraction/rte-provider-structured-output-baseline.md",
+      "config/repo_hygiene/root_hygiene_policy.json"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-DOCS-PUBLIC-AI-RTE-BASELINE-001.json >/dev/null",
+      "python scripts/docs_validator.py docs/04-explanation/product/public-copy-variants.md docs/03-reference/governance/public-docs-surface.md docs/06-research/extraction/rte-provider-structured-output-baseline.md docs/03-reference/governance/documentation-gap-register.md",
+      "bash scripts/lint-docs.sh",
+      "python scripts/docs_frontmatter_guard.py",
+      "python scripts/check_root_hygiene.py",
+      "pre-commit run --files README.md docs/INDEX.md docs/00-MASTER-INDEX.md docs/docs_index.yaml docs/03-reference/governance/documentation-gap-register.md docs/03-reference/governance/public-docs-surface.md docs/04-explanation/product/public-copy-variants.md docs/06-research/extraction/rte-provider-structured-output-baseline.md llms.txt task-packets/generated/TP-DMX-DOCS-PUBLIC-AI-RTE-BASELINE-001.json config/repo_hygiene/root_hygiene_policy.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs: add public AI docs surface and RTE external baseline",
+    "body": "Add a curated llms.txt entrypoint, public docs governance, reusable public copy variants, and an external RTE provider structured-output baseline. Documentation-only change; no live Docker, provider, or RTE runtime verification.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1-public-ai-entrypoint",
+      "task": "Create llms.txt as a curated public and AI-readable map and add discoverability links without rewriting the README.",
+      "requirements": [
+        "llms.txt must stay small and repo-relative.",
+        "README changes must be small discoverability additions only.",
+        "Links must resolve."
+      ],
+      "expected_files": [
+        "llms.txt",
+        "README.md"
+      ],
+      "validation": [
+        "test -s llms.txt",
+        "rg -n \"llms.txt|Public Docs Surface|Public Copy Variants\" README.md llms.txt"
+      ],
+      "context_files": [
+        "README.md",
+        "docs/INDEX.md",
+        "docs/00-MASTER-INDEX.md"
+      ]
+    },
+    {
+      "id": "step-2-public-surface-and-copy",
+      "task": "Create public docs surface governance and reusable public copy variants aligned with existing product docs.",
+      "requirements": [
+        "Public copy must preserve split authority and avoid unsupported production, autonomy, unified PM, unified memory, or unified control claims.",
+        "Public docs surface must define maintained public-facing files and claim guardrails."
+      ],
+      "expected_files": [
+        "docs/04-explanation/product/public-copy-variants.md",
+        "docs/03-reference/governance/public-docs-surface.md"
+      ],
+      "validation": [
+        "rg -n \"split-authority|authority|Anti-Claims|llms.txt\" docs/04-explanation/product/public-copy-variants.md docs/03-reference/governance/public-docs-surface.md"
+      ],
+      "context_files": [
+        "docs/04-explanation/product/positioning.md",
+        "docs/04-explanation/product/homepage-copy.md",
+        "docs/04-explanation/product/faq.md",
+        "docs/03-reference/governance/documentation-gap-register.md"
+      ]
+    },
+    {
+      "id": "step-3-rte-external-baseline",
+      "task": "Import the Deep Research RTE provider structured-output report as external research/audit context.",
+      "requirements": [
+        "Do not treat external provider claims as repo truth.",
+        "Do not claim live provider behavior was reverified.",
+        "Do not paste opaque turn citations."
+      ],
+      "expected_files": [
+        "docs/06-research/extraction/rte-provider-structured-output-baseline.md"
+      ],
+      "validation": [
+        "rg -n \"external research|NOT_RUN|shape control|truth control|untrusted evidence\" docs/06-research/extraction/rte-provider-structured-output-baseline.md"
+      ],
+      "context_files": [
+        "operator-provided Deep Research report DR-00-RTE-EXTERNAL-BASELINE.md imported on 2026-05-19",
+        "docs/03-reference/extraction/pipeline-reliability.md",
+        "docs/04-explanation/architecture/v5-extraction-pipeline-upgrade-design.md"
+      ]
+    },
+    {
+      "id": "step-4-index-gap-validation",
+      "task": "Update docs indexes and the gap register narrowly, then run packet validation.",
+      "requirements": [
+        "Machine-readable docs index updates must preserve YAML parseability.",
+        "Gap register must close only documentation-surface gaps and keep provider/runtime verification open."
+      ],
+      "expected_files": [
+        "docs/INDEX.md",
+        "docs/00-MASTER-INDEX.md",
+        "docs/docs_index.yaml",
+        "docs/03-reference/governance/documentation-gap-register.md"
+      ],
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-DMX-DOCS-PUBLIC-AI-RTE-BASELINE-001.json >/dev/null",
+        "python scripts/docs_validator.py docs/04-explanation/product/public-copy-variants.md docs/03-reference/governance/public-docs-surface.md docs/06-research/extraction/rte-provider-structured-output-baseline.md docs/03-reference/governance/documentation-gap-register.md",
+        "git diff --check"
+      ],
+      "context_files": [
+        "docs/INDEX.md",
+        "docs/00-MASTER-INDEX.md",
+        "docs/docs_index.yaml",
+        "docs/03-reference/governance/documentation-gap-register.md"
+      ]
+    }
+  ]
+}

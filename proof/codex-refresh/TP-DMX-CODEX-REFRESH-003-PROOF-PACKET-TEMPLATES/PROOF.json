@@ -1,0 +1,381 @@
+{
+  "schema_version": "dopemux.codex_refresh.proof.v1",
+  "packet_id": "TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES",
+  "project": "dopemux-mvp",
+  "generated_at_utc": "2026-05-20T01:19:28Z",
+  "worktree_path": "/Users/hue/.codex/worktrees/2013/dopemux-mvp",
+  "branch": "codex/dmx-codex-refresh-003-proof-packet-templates",
+  "base": "origin/main",
+  "repo_identity": {
+    "status": "PASS",
+    "marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "observed_remotes": [
+      "mvp https://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)",
+      "mvp https://github.com/DDD-Enterprises/dopemux-mvp.git (push)",
+      "origin https://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)",
+      "origin https://github.com/DDD-Enterprises/dopemux-mvp.git (push)"
+    ],
+    "identity_match": true
+  },
+  "authority_used": [
+    "AGENTS.md",
+    "latest operator instruction: hook compliant",
+    "latest operator instruction: implement suggestions, fix ci, merge",
+    "task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json",
+    "docs/03-reference/governance/codex-authority-refresh.md",
+    "docs/02-how-to/codex-operator-runbook.md",
+    "docs/03-reference/governance/codex-prompt-pack.md",
+    "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+    ".pre-commit-config.yaml",
+    "scripts/docs_validator.py",
+    "scripts/docs_frontmatter_guard.py"
+  ],
+  "analysis_performed": [
+    "Read AGENTS.md before implementation.",
+    "Confirmed the checkout is /Users/hue/.codex/worktrees/2013/dopemux-mvp, not primary checkout /Users/hue/code/dopemux-mvp.",
+    "Confirmed origin and mvp remotes point to DDD-Enterprises/dopemux-mvp.",
+    "Confirmed .dopetaskroot exists.",
+    "Fetched origin/main and confirmed it resolves to ab22df5a23432f0573ce01b2ec7ef0d1bea2420f.",
+    "Confirmed TP 001 and TP 002 dependency artifacts exist on the working base.",
+    "Switched the clean dedicated worktree to codex/dmx-codex-refresh-003-proof-packet-templates from origin/main.",
+    "Inspected TP 001 and TP 002 generated packets and proof artifacts for local packet/proof conventions.",
+    "Inspected the live dopeTask Task Packet schema and docs validators.",
+    "Planned a single allowlist-only docs/proof/template slice and challenged schema, allowlist, fake-output, and validation-order hazards before editing.",
+    "Precommit initially failed because docs-prohibited-patterns rejects markdown basenames containing temp; the operator then authorized hook-compliant filenames.",
+    "Renamed the markdown template docs to blueprint filenames and updated the generated packet/proof references. The JSON proof template path was left unchanged because the failing markdown hook does not apply to JSON.",
+    "Queried PR #667 review threads and found one Codex suggestion against docs/03-reference/governance/codex-pr-body-blueprint.md: the Scope section was hard-coded to docs-only text instead of a reusable placeholder.",
+    "Implemented the suggestion by replacing the hard-coded Scope line with an explicit placeholder plus an In scope list.",
+    "Queried PR #667 review threads again and found two Copilot suggestions against docs/03-reference/governance/codex-proof-template.json: align identifiers with committed proof artifacts and mirror command_results, NOT_RUN, residual_risks, and lowercase unknowns.",
+    "Updated the proof template to use packet_id, task_packet_path, command_results, status_labels, and lowercase unknowns.",
+    "A third Copilot suggestion requested .gitignore allowlisting or proof relocation. Because .gitignore and proof relocation are outside the active packet allowlist, the same-packet fix documented deterministic exact-path proof staging with git add -f in the macro-packet blueprint."
+  ],
+  "slices_completed": [
+    {
+      "slice": "S1",
+      "status": "PASS",
+      "summary": "Preflight passed for repo identity, dedicated worktree, branch, marker, dependency artifacts, and schema."
+    },
+    {
+      "slice": "S2",
+      "status": "PASS",
+      "summary": "Generated the TP 003 task packet JSON and validated it against the canonical schema."
+    },
+    {
+      "slice": "S3",
+      "status": "PASS_AFTER_SAME_PACKET_FIX",
+      "summary": "Authored the Codex macro-packet blueprint with schema fields, agent enum warning, sizing rules, same-packet rules, and proof-bound acceptance rules."
+    },
+    {
+      "slice": "S4",
+      "status": "PASS_AFTER_REVIEW_FIX",
+      "summary": "Authored the reusable proof JSON template aligned to the committed proof artifact shape: packet_id, task_packet_path, command_results, status_labels, NOT_RUN, residual_risks, lowercase unknowns, codereview, precommit, PR, and cleanup fields."
+    },
+    {
+      "slice": "S5",
+      "status": "PASS_AFTER_SAME_PACKET_FIX",
+      "summary": "Authored the PR body blueprint with Summary, Scope, Validation, NOT_RUN, Residual Risks / UNKNOWNs, Review Routing, same-packet fix sections, and a reusable Scope placeholder after Codex review."
+    },
+    {
+      "slice": "S6",
+      "status": "PASS",
+      "summary": "Created proof JSON with exact command statuses, changed files, NOT_RUN items, residual risks, UNKNOWNs, and same-packet fix evidence."
+    },
+    {
+      "slice": "S7",
+      "status": "PASS_THROUGH_PRECOMMIT",
+      "summary": "Final validation, codereview, and precommit passed after the hook-compliant same-packet filename fix; commit, push, and PR are reported after creation."
+    }
+  ],
+  "changed_files": [
+    "docs/03-reference/governance/codex-macro-packet-blueprint.md",
+    "docs/03-reference/governance/codex-proof-template.json",
+    "docs/03-reference/governance/codex-pr-body-blueprint.md",
+    "task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json",
+    "proof/codex-refresh/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES/PROOF.json"
+  ],
+  "command_results": [
+    {
+      "command": "sed -n '1,240p' AGENTS.md",
+      "exit_code": 0,
+      "stdout": "AGENTS.md read before repo-changing work.",
+      "stderr": ""
+    },
+    {
+      "command": "git remote -v",
+      "exit_code": 0,
+      "stdout": "mvp https://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)\nmvp https://github.com/DDD-Enterprises/dopemux-mvp.git (push)\norigin https://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)\norigin https://github.com/DDD-Enterprises/dopemux-mvp.git (push)",
+      "stderr": ""
+    },
+    {
+      "command": "git branch --show-current",
+      "exit_code": 0,
+      "stdout": "codex/dmx-codex-refresh-003-proof-packet-templates",
+      "stderr": ""
+    },
+    {
+      "command": "git status --short",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "test -f .dopetaskroot",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "test -f docs/03-reference/governance/codex-authority-refresh.md",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "test -f docs/02-how-to/codex-operator-runbook.md",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "test -f docs/03-reference/governance/codex-prompt-pack.md",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "test -f docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "git fetch origin main",
+      "exit_code": 0,
+      "stdout": "From https://github.com/DDD-Enterprises/dopemux-mvp\n * branch                main       -> FETCH_HEAD",
+      "stderr": ""
+    },
+    {
+      "command": "git switch -c codex/dmx-codex-refresh-003-proof-packet-templates origin/main",
+      "exit_code": 0,
+      "stdout": "Switched to a new branch 'codex/dmx-codex-refresh-003-proof-packet-templates'\nbranch 'codex/dmx-codex-refresh-003-proof-packet-templates' set up to track 'origin/main'.",
+      "stderr": ""
+    },
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m jsonschema -i task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "stdout": "/Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/jsonschema/__main__.py:4: DeprecationWarning: The jsonschema CLI is deprecated and will be removed in a future version. Please use check-jsonschema instead, which can be installed from https://pypi.org/project/check-jsonschema/\n  from jsonschema.cli import main",
+      "stderr": ""
+    },
+    {
+      "command": "python -m json.tool docs/03-reference/governance/codex-proof-template.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m json.tool proof/codex-refresh/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python scripts/docs_validator.py docs/03-reference/governance/codex-macro-packet-blueprint.md docs/03-reference/governance/codex-pr-body-blueprint.md",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python scripts/docs_frontmatter_guard.py docs/03-reference/governance/codex-macro-packet-blueprint.md docs/03-reference/governance/codex-pr-body-blueprint.md",
+      "exit_code": 0,
+      "stdout": "All docs have valid frontmatter.",
+      "stderr": ""
+    },
+    {
+      "command": "rg -n \"repo_binding|series|commit|pr|steps|execution.agent|same-packet|macro-packet|proof\" docs/03-reference/governance/codex-macro-packet-blueprint.md",
+      "exit_code": 0,
+      "stdout": "Matched required macro-packet blueprint terms including repo_binding, series, commit, pr, steps, execution.agent, same-packet, macro-packet, and proof.",
+      "stderr": ""
+    },
+    {
+      "command": "rg -n \"packet_id|task_packet_path|repo_identity|command_results|exit_code|codereview|precommit|commit_sha|pr_url|unknowns|NOT_RUN\" docs/03-reference/governance/codex-proof-template.json",
+      "exit_code": 0,
+      "stdout": "Matched required proof template terms including packet_id, task_packet_path, repo_identity, command_results, exit_code, codereview, precommit, commit_sha, pr_url, unknowns, and NOT_RUN.",
+      "stderr": ""
+    },
+    {
+      "command": "rg -n \"Summary|Scope|Validation|NOT_RUN|Residual Risks|UNKNOWN|@codex review|same-packet\" docs/03-reference/governance/codex-pr-body-blueprint.md",
+      "exit_code": 0,
+      "stdout": "Matched required PR body blueprint terms including Summary, Scope, Validation, NOT_RUN, Residual Risks, UNKNOWN, @codex review, and same-packet.",
+      "stderr": ""
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "git diff --cached --check",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "git diff --cached --name-status",
+      "exit_code": 0,
+      "stdout": "A docs/03-reference/governance/codex-macro-packet-blueprint.md\nA docs/03-reference/governance/codex-pr-body-blueprint.md\nA docs/03-reference/governance/codex-proof-template.json\nA proof/codex-refresh/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES/PROOF.json\nA task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json",
+      "stderr": ""
+    },
+    {
+      "command": "git diff --cached --stat",
+      "exit_code": 0,
+      "stdout": ".../governance/codex-macro-packet-blueprint.md     | 152 ++++++++++\n.../governance/codex-pr-body-blueprint.md          |  72 +++++\n.../governance/codex-proof-template.json           |  55 ++++\n.../PROOF.json                                     | 312 +++++++++++++++++++++\n...X-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json | 175 ++++++++++++\n5 files changed, 765 insertions(+)",
+      "stderr": ""
+    },
+    {
+      "command": "pre-commit run --files docs/03-reference/governance/codex-macro-packet-template.md docs/03-reference/governance/codex-proof-template.json docs/03-reference/governance/codex-pr-body-template.md task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json proof/codex-refresh/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES/PROOF.json",
+      "exit_code": 1,
+      "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Failed\n- hook id: docs-prohibited-patterns\n- exit code: 1\n\nFound prohibited file pattern in changed file:\n  docs/03-reference/governance/codex-macro-packet-template.md\nFound prohibited file pattern in changed file:\n  docs/03-reference/governance/codex-pr-body-template.md\nUse structured workflow: RFC->ADR->arc42 for documentation\n\nValidate prelude <=100 tokens for efficient embeddings.....................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped",
+      "stderr": ""
+    },
+    {
+      "command": "pre-commit run --files docs/03-reference/governance/codex-macro-packet-blueprint.md docs/03-reference/governance/codex-proof-template.json docs/03-reference/governance/codex-pr-body-blueprint.md task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json proof/codex-refresh/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES/PROOF.json",
+      "exit_code": 0,
+      "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude <=100 tokens for efficient embeddings.....................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped",
+      "stderr": ""
+    },
+    {
+      "command": "gh api graphql <PR #667 reviewThreads query>",
+      "exit_code": 0,
+      "stdout": "Found one unresolved, not-outdated Codex review thread on docs/03-reference/governance/codex-pr-body-blueprint.md line 22 requesting that the Scope line be a placeholder for non-doc packets.",
+      "stderr": ""
+    },
+    {
+      "command": "python scripts/docs_validator.py docs/03-reference/governance/codex-pr-body-blueprint.md",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python scripts/docs_frontmatter_guard.py docs/03-reference/governance/codex-pr-body-blueprint.md",
+      "exit_code": 0,
+      "stdout": "All docs have valid frontmatter.",
+      "stderr": ""
+    },
+    {
+      "command": "rg -n \"Summary|Scope|In scope|Allowlist|Validation|NOT_RUN|Residual Risks|UNKNOWN|@codex review|same-packet\" docs/03-reference/governance/codex-pr-body-blueprint.md",
+      "exit_code": 0,
+      "stdout": "Matched required PR body blueprint terms, including the new In scope placeholder section.",
+      "stderr": ""
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m json.tool docs/03-reference/governance/codex-proof-template.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m jsonschema -i task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "stdout": "/Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/jsonschema/__main__.py:4: DeprecationWarning: The jsonschema CLI is deprecated and will be removed in a future version. Please use check-jsonschema instead, which can be installed from https://pypi.org/project/check-jsonschema/\n  from jsonschema.cli import main",
+      "stderr": ""
+    },
+    {
+      "command": "rg -n \"packet_id|task_packet_path|repo_identity|command_results|exit_code|codereview|precommit|commit_sha|pr_url|unknowns|NOT_RUN\" docs/03-reference/governance/codex-proof-template.json",
+      "exit_code": 0,
+      "stdout": "Matched updated proof template terms including packet_id, task_packet_path, command_results, lowercase unknowns, and NOT_RUN.",
+      "stderr": ""
+    },
+    {
+      "command": "rg -n \"repo_binding|series|commit|pr|steps|execution.agent|same-packet|macro-packet|proof|git add -f\" docs/03-reference/governance/codex-macro-packet-blueprint.md",
+      "exit_code": 0,
+      "stdout": "Matched macro-packet blueprint terms including proof and git add -f proof-staging guidance.",
+      "stderr": ""
+    }
+  ],
+  "codereview": {
+    "status": "PASS_AFTER_SAME_PACKET_FIX",
+    "commands": [
+      {
+        "command": "git diff --cached --name-status",
+        "exit_code": 0,
+        "summary": "Only the five allowlisted/same-packet-updated files were staged."
+      },
+      {
+        "command": "git diff --cached --stat",
+        "exit_code": 0,
+        "summary": "5 files changed, 765 insertions(+)."
+      },
+      {
+        "command": "git diff --cached --check",
+        "exit_code": 0,
+        "summary": "No cached whitespace errors."
+      },
+      {
+        "command": "git diff --cached -- allowlisted paths",
+        "exit_code": 0,
+        "summary": "Reviewed staged diff; no runtime code, tests, compose, dependency, or provider config edits observed."
+      }
+    ],
+    "findings": [
+      "Initial precommit failure was caused by the repo docs-prohibited-patterns hook rejecting markdown basenames containing temp.",
+      "Same-packet fix renamed only the markdown docs to hook-compliant blueprint names and updated the generated packet/proof references.",
+      "Codex review suggestion was implemented by replacing the PR body blueprint's hard-coded docs-only Scope line with a reusable placeholder and In scope list.",
+      "Copilot proof-template suggestions were implemented by aligning field names with committed proof artifacts.",
+      "Copilot proof-path determinism suggestion was addressed within packet scope by documenting exact forced staging for intentionally committed ignored proof paths; .gitignore was not edited because it is outside the active packet allowlist."
+    ]
+  },
+  "precommit": {
+    "status": "PASS_AFTER_SAME_PACKET_FIX",
+    "command": "pre-commit run --files docs/03-reference/governance/codex-macro-packet-blueprint.md docs/03-reference/governance/codex-proof-template.json docs/03-reference/governance/codex-pr-body-blueprint.md task-packets/generated/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json proof/codex-refresh/TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES/PROOF.json",
+    "exit_code": 0,
+    "summary": "Precommit hooks passed after markdown filenames were made hook compliant.",
+    "stdout": "See command_results for exact hook output.",
+    "stderr": ""
+  },
+  "NOT_RUN": [
+    "Runtime/service validation",
+    "Docker startup",
+    "Live provider calls",
+    "Live extraction",
+    "Live preflight",
+    "Account-specific checks",
+    "Secret inspection"
+  ],
+  "residual_risks": [
+    "Static documentation and JSON validation do not prove runtime service health.",
+    "The two markdown artifacts use blueprint filenames to satisfy the current hook while still documenting packet/PR templates in content.",
+    ".gitignore still ignores proof/* generally; the macro-packet blueprint now requires explicit exact-path forced staging for intentionally committed proof artifacts under proof/.",
+    "The proof JSON cannot record the final commit SHA or PR URL until after commit and PR creation; those are reported in the final response."
+  ],
+  "unknowns": [
+    "UNKNOWN live runtime health because runtime/service validation, Docker startup, and live preflight are not authorized.",
+    "UNKNOWN live provider and extraction behavior because live calls and extraction are not authorized.",
+    "UNKNOWN account-specific environment state because account-specific checks are not authorized."
+  ],
+  "diff_stat": "5 files changed, 765 insertions(+)",
+  "cleanup_status": "PENDING: dedicated Codex worktree remains in place until push/PR outcome is known.",
+  "commit_sha": "POST_COMMIT_REPORTED_IN_FINAL_RESPONSE",
+  "pr_url": "POST_PR_REPORTED_IN_FINAL_RESPONSE",
+  "pr_blocker": null,
+  "rollback_plan": "Revert the commit or remove the five changed files from this branch; no runtime, service, test, compose, dependency, or provider files were edited."
+}

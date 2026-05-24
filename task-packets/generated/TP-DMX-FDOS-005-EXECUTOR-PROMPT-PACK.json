@@ -1,0 +1,229 @@
+{
+  "id": "TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK",
+  "project": "dopemux-mvp",
+  "target": "Install the Fast Dev OS executor prompt pack at docs/03-reference/fast-dev-os/prompts/ (12 reusable prompts for multi-implementer routing \u2014 Codex / Claude Code / Gemini / Grok / Jules / Copilot \u2014 plus operator-side templates for implementation report, audit, acceptance decision); harmonize lane taxonomy to project-constitution.md canonical version; AND apply 9 post-merge cleanup fixes for PR #675 doctrine issues (broken markdown links \u2192 inline-code paths, user-specific paths \u2192 $HOME placeholders, machine-readable list cleanup, stale validation commands in TP/PROOF). Strict docs scope, no runtime changes.",
+  "invariants": [
+    "Do not modify runtime code, service code, tests, compose files, dependency files, or provider configuration.",
+    "Do not modify or override docs/03-reference/governance/* (the governance layer remains authoritative; this layer implements it).",
+    "Lane taxonomy in all prompts and templates MUST use the canonical version from project-constitution.md (L0=Design only, L1=Docs/prompt/packet, L2=Bounded implementation, L3=Runtime spine, L4=Boundary-sensitive, L5=Security/provider/secrets, L6=Parallel backlog).",
+    "Every prompt cites authority order from AGENTS.md \u00a72 by reference; never inlines secrets/credentials/env values; never claims execution.agent values outside the dopetask-canonical-spec.json enum (gemini, codex, vibe, shell).",
+    "Every implementer prompt includes the truth-posture statement: 'Never invent paths, commands, branches, PRs, tests, capabilities, or tool behavior. Never say done/complete/no issues without evidence.'",
+    "External corpus paths use $HOME/Downloads/... (portable) NOT /Users/<operator>/... (operator-specific).",
+    "Markdown link targets MUST resolve in the repo or on GitHub; external paths use inline-code (no link target).",
+    "Filenames must be kebab-case per scripts/check_docs_filename_hygiene.py policy.",
+    "No live provider calls, live extraction, live preflight, Docker startup, or account-specific checks."
+  ],
+  "depends_on": [
+    "TP-DMX-FDOS-004-AUTHORITY-REFRESH"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-FDOS",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-FDOS-004-AUTHORITY-REFRESH",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fdos-005-executor-prompt-pack",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(fast-dev-os): install executor prompt pack + post-#675 doctrine cleanup (lane taxonomy harmonization + broken links + portable paths)",
+    "allowlist": [
+      "docs/03-reference/fast-dev-os/prompts/readme.md",
+      "docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md",
+      "docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md",
+      "docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md",
+      "docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md",
+      "docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md",
+      "docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md",
+      "docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md",
+      "docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md",
+      "docs/03-reference/fast-dev-os/prompts/template-implementation-report.md",
+      "docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md",
+      "docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md",
+      "docs/INDEX.md",
+      "docs/docs_index.yaml",
+      "task-packets/generated/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK.json",
+      "proof/fast-dev-os/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK/PROOF.json",
+      "docs/03-reference/fast-dev-os/readme.md",
+      "docs/03-reference/fast-dev-os/evidence-notes.md",
+      "docs/03-reference/fast-dev-os/unknown-conflicting-stale.md",
+      "docs/03-reference/fast-dev-os/pr-ledger.md",
+      "docs/03-reference/fast-dev-os/proof-ledger.md",
+      "docs/03-reference/fast-dev-os/packet-ledger.md",
+      "docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md",
+      "task-packets/generated/TP-DMX-FDOS-004-AUTHORITY-REFRESH.json",
+      "proof/fast-dev-os/TP-DMX-FDOS-004-AUTHORITY-REFRESH/PROOF.json"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m json.tool proof/fast-dev-os/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK/PROOF.json >/dev/null",
+      "python scripts/docs_validator.py docs/03-reference/fast-dev-os/prompts/*.md",
+      "python scripts/docs_frontmatter_guard.py docs/03-reference/fast-dev-os/prompts/*.md",
+      "python3 scripts/check_docs_filename_hygiene.py --check docs/03-reference/fast-dev-os/prompts/*.md",
+      "grep -lE 'AGENTS\\.md \u00a72|AGENTS\\.md.*truth order' docs/03-reference/fast-dev-os/prompts/*.md",
+      "grep -l 'Lane' docs/03-reference/fast-dev-os/prompts/*.md",
+      "grep -l 'Never invent paths' docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md",
+      "! grep -nE '(api[_-]?key|secret|token|password|bearer|/Users/[a-z]+/' docs/03-reference/fast-dev-os/prompts/*.md",
+      "grep -l 'prompts/readme.md' docs/03-reference/fast-dev-os/readme.md",
+      "git diff --check",
+      "git diff --cached --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(fast-dev-os): install executor prompt pack + post-#675 doctrine cleanup",
+    "body": "## Summary\n- Installs `docs/03-reference/fast-dev-os/prompts/` (12 files) providing reusable, brand-safe prompts for multi-implementer routing (Codex, Claude Code, Gemini, Grok, Jules, GitHub Copilot) plus operator-side templates (master priming, role priming, implementation report, audit, acceptance decision).\n- Adds a single-line link from `docs/03-reference/fast-dev-os/readme.md` to the new `prompts/readme.md` so the doctrine layer surfaces the prompt pack.\n- Updates `docs/INDEX.md` and `docs/docs_index.yaml` for discoverability.\n\n## Scope\nDocs only. No runtime, service, test, compose, dependency, provider, or live extraction changes. Strict allowlist (17 paths).\n\n## Boundary discipline\n- Every prompt cites AGENTS.md \u00a72 truth order by reference.\n- Every implementer prompt includes the truth-posture statement: \"Never invent paths, commands, branches, PRs, tests, capabilities, or tool behavior. Never say done/complete/no issues without evidence.\"\n- Every prompt includes a \"Lane\" line referencing the L0\u2013L6 risk taxonomy from `project-constitution.md`.\n- No prompt embeds secrets, credentials, tokens, or user-specific paths.\n- No prompt claims an `execution.agent` value outside the dopetask-canonical-spec.json enum (`gemini|codex|vibe|shell`). Claude Code / Grok / Jules / Copilot prompts route via the operator, not via schema fields.\n\n## Validation\nInclude exact command outputs and exit codes for: jsonschema TP, docs_validator, docs_frontmatter_guard, docs-filename-hygiene check, grep for required textual invariants, anti-secret pattern grep (negative match), git diff --check.\n\n## NOT_RUN\n- Live provider calls\n- Live extraction\n- Docker startup\n- Runtime service health checks\n- Brand-voice quality-assurance agent pass (deferred; not configured for this repo)\n- Schema extension to add claude_code/grok/jules/copilot to execution.agent enum (deferred to a future schema-extend TP)\n\n## Residual Risks / UNKNOWNs\n- RISK-PROMPT-DRIFT: prompts go stale as repo evolves; refresh policy is manual-per-major-runtime-change.\n- RISK-SCHEMA: execution.agent enum doesn't include claude_code/grok/jules/copilot; prompts route those tools via operator narrative, not schema.\n- RISK-LANE-DEFINITION: L0\u2013L6 lanes are defined in project-constitution.md (this packet's parent TP-FDOS-004); if reviewer reads TP-FDOS-005 PR before TP-FDOS-004 merges, lane refs may look ungrounded.\n\n@codex review\n\n## Stacked PR note\nThis branch is stacked on `codex/dmx-fdos-004-authority-refresh` (PR #675). The diff below includes both packets until PR #675 merges to main; after merge, this PR's diff narrows to only the prompts/ additions.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repo identity, branch state, parent TP availability, and authority files.",
+      "context_files": [
+        "AGENTS.md",
+        "docs/03-reference/governance/codex-authority-refresh.md",
+        "docs/03-reference/governance/codex-prompt-pack.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "docs/03-reference/fast-dev-os/project-constitution.md",
+        "docs/03-reference/fast-dev-os/readme.md"
+      ],
+      "commands": [
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short",
+        "git rev-parse HEAD",
+        "git rev-parse origin/main",
+        "test -f docs/03-reference/fast-dev-os/project-constitution.md",
+        "test -f docs/03-reference/fast-dev-os/readme.md",
+        "test -f docs/03-reference/governance/codex-prompt-pack.md"
+      ],
+      "validation": [
+        "Repo remote identifies DDD-Enterprises/dopemux-mvp.",
+        "Base branch is main or branch created from main (this branch is stacked on TP-FDOS-004; see PR body).",
+        "Parent TP-FDOS-004 files present (project-constitution.md, readme.md).",
+        "Governance prompt pack reference present for cross-link."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create this TP JSON; validate against dopetask-canonical-spec.json.",
+      "expected_files": [
+        "task-packets/generated/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK.json"
+      ],
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK.json >/dev/null",
+        "python -m jsonschema -i task-packets/generated/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Author prompts/master-priming-prompt.md and prompts/role-priming-prompts.md (operator-side priming).",
+      "requirements": [
+        "Master priming establishes truth order, authority hierarchy, lane selection rules, lane-to-implementer routing matrix.",
+        "Role priming covers: supervisor, implementer, reviewer, auditor, operator briefs."
+      ],
+      "expected_files": [
+        "docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md",
+        "docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md"
+      ],
+      "validation": [
+        "grep -l 'AGENTS.md' docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md",
+        "grep -l 'Lane' docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Author 6 per-implementer prompts (codex / claude-code / gemini / grok / jules / github-copilot).",
+      "requirements": [
+        "Each implementer prompt includes truth-posture statement, AGENTS.md \u00a72 reference, lane line, packet/proof discipline.",
+        "Codex prompt is a single-run template aligned with dopetask-canonical-spec.json execution.agent='codex'.",
+        "Gemini prompt is auditor-oriented; aligned with execution.agent='gemini' and pal_chain.enabled=true.",
+        "Claude Code prompt routes via operator (no schema slot); cites operator instructions and Codex CLI alignment.",
+        "Grok, Jules, Copilot prompts route via operator; cite the lane taxonomy and per-tool capability constraints."
+      ],
+      "expected_files": [
+        "docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md",
+        "docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md",
+        "docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md",
+        "docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md",
+        "docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md",
+        "docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md"
+      ],
+      "validation": [
+        "grep -l 'Never invent paths' docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md",
+        "grep -l 'Lane' docs/03-reference/fast-dev-os/prompts/*.md",
+        "! grep -nE '(api[_-]?key|secret|token|password|bearer)' docs/03-reference/fast-dev-os/prompts/*.md"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Author 3 operator templates (template-implementation-report, template-audit-prompt, template-acceptance-decision).",
+      "expected_files": [
+        "docs/03-reference/fast-dev-os/prompts/template-implementation-report.md",
+        "docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md",
+        "docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md"
+      ],
+      "validation": [
+        "grep -l 'AGENTS.md' docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md",
+        "grep -l 'PROOF' docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md"
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Author prompts/readme.md and update fast-dev-os/readme.md to link to prompts/; update docs/INDEX.md and docs/docs_index.yaml for discoverability.",
+      "expected_files": [
+        "docs/03-reference/fast-dev-os/prompts/readme.md",
+        "docs/03-reference/fast-dev-os/readme.md",
+        "docs/INDEX.md",
+        "docs/docs_index.yaml"
+      ],
+      "validation": [
+        "grep -l 'prompts/readme.md' docs/03-reference/fast-dev-os/readme.md",
+        "grep -l 'fast-dev-os/prompts' docs/INDEX.md",
+        "grep -l 'prompts:' docs/docs_index.yaml"
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Create proof JSON with exact commands, exit codes, changed files, NOT_RUN items, residual risks, and UNKNOWNs.",
+      "expected_files": [
+        "proof/fast-dev-os/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK/PROOF.json"
+      ],
+      "validation": [
+        "python -m json.tool proof/fast-dev-os/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK/PROOF.json >/dev/null",
+        "grep -l 'NOT_RUN' proof/fast-dev-os/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK/PROOF.json"
+      ]
+    },
+    {
+      "id": "S8",
+      "task": "Run final validation, inspect diff scope, codereview, precommit, commit, push, and open PR.",
+      "validation": [
+        "python scripts/docs_validator.py docs/03-reference/fast-dev-os/prompts/*.md",
+        "python scripts/docs_frontmatter_guard.py docs/03-reference/fast-dev-os/prompts/*.md",
+        "python3 scripts/check_docs_filename_hygiene.py --check docs/03-reference/fast-dev-os/prompts/*.md",
+        "git diff --check",
+        "git diff --cached --check",
+        "git diff --stat",
+        "git status --short",
+        "Changed files must be within commit.allowlist (17 paths: 12 prompts files + parent readme + 2 doc-nav + TP + PROOF)."
+      ]
+    }
+  ]
+}

@@ -218,6 +218,9 @@ backup/
 processing_inputs/
 
 # ===================================================================
+
+# Local preflight run manifests
+.runs/
 # Dopemux: Multi-Project Documentation Architecture
 # ===================================================================
 
@@ -370,6 +373,8 @@ proof/*
 !proof/TP-OPS-MAC-SCRUBBER-001/**
 !proof/cockpit-main-state-recon/
 !proof/cockpit-main-state-recon/**
+!proof/fast-dev-os/
+!proof/fast-dev-os/**
 
 # Extraction and Research artifacts
 _audit_out/

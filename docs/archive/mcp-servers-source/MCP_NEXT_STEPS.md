@@ -1,3 +1,14 @@
+---
+id: MCP_NEXT_STEPS
+title: Mcp Next Steps
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-19'
+last_review: '2026-05-19'
+next_review: '2026-08-17'
+prelude: Mcp Next Steps (explanation) for dopemux documentation and developer workflows.
+---
 # MCP Server Improvement - Next Steps Plan
 
 **Current Progress**: 40% complete (2 of 5 major tasks done)

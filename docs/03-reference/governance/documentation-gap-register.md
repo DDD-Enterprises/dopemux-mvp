@@ -39,6 +39,7 @@ entrypoints remain stronger than this register.
 - Packet 002 addresses onboarding, README, quickstart, and developer setup gaps in docs. Runtime proof remains separate where marked.
 - Packet 003 addressed architecture, governance, operations, and AI handoff gaps.
 - Packet 004 addressed repo-faithful product and marketing docs and final index proof.
+- Packet `TP-DMX-DOCS-PUBLIC-AI-RTE-BASELINE-001` addresses the remaining public and AI-readable docs surface plus an external RTE provider baseline import.
 
 ## Series Closeout View
 
@@ -52,6 +53,9 @@ entrypoints remain stronger than this register.
 - `closed`: Product positioning, personas, homepage copy, pitches,
   features/benefits, FAQ, and final product index links were created in packet
   004.
+- `closed`: Public AI entrypoint `llms.txt` was added.
+- `closed`: Public docs surface governance was defined.
+- `closed`: Reusable public copy variants were added.
 
 ### Remaining After This Series
 
@@ -62,6 +66,10 @@ entrypoints remain stronger than this register.
 - `remaining`: agent authority remains `UNKNOWN`.
 - `remaining`: some historical truth docs can preserve stale or contradictory
   claims until a dedicated truth-refresh packet supersedes them.
+- `remaining`: external provider baseline remains advisory until durable source
+  recrawl or a repo implementation packet verifies RTE provider behavior.
+- `remaining`: runtime/provider behavior was not revalidated live by the public
+  AI/RTE baseline packet.
 
 ## Current Unknowns
 
@@ -103,3 +111,19 @@ entrypoints remain stronger than this register.
 - No docs hygiene remap was required for packet 004 paths.
 - Runtime validation remains `NOT_RUN`; this packet does not close runtime
   verification gaps.
+
+## Proof Notes For Public AI / RTE Baseline Packet
+
+- `llms.txt` is a curated map, not a source of truth over runtime code, config,
+  tests, active entrypoints, or stronger governance docs.
+- `docs/03-reference/governance/public-docs-surface.md` defines the maintained
+  public-facing and AI-readable docs surface and claim guardrails.
+- `docs/04-explanation/product/public-copy-variants.md` provides reusable public
+  copy variants while preserving split-authority language and anti-claims.
+- `docs/06-research/extraction/rte-provider-structured-output-baseline.md`
+  imports an external provider baseline as advisory research only.
+- `config/repo_hygiene/root_hygiene_policy.json` allowlists root `llms.txt`
+  because root hygiene requires intentional root files to be explicit.
+- Live Docker startup remains `NOT_RUN`.
+- Live provider calls remain `NOT_RUN`.
+- Live RTE extraction remains `NOT_RUN`.
