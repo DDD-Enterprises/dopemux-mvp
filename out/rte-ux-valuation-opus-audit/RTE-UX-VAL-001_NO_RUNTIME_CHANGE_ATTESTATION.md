@@ -7,7 +7,6 @@ I attest that this packet did not change runtime behavior.
 - No files under `src/` were edited.
 - No files under `services/` were edited.
 - No files under `docs/` were edited.
-- No files under `.claude/` were edited.
 - No provider calls were made.
 - No live extraction was run.
 - No promptset, schema, pricing, or routing behavior was changed.

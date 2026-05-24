@@ -140,7 +140,7 @@ No proof means incomplete.
 
 ## 10. Claude-Code Doctrine Alignment
 
-This file is the Codex-facing authority. The Claude-Code-facing companion is `.claude/CLAUDE.md`, which embeds a brief governance section and links to the full canonical module at `.claude/modules/shared/governance-principles.md`.
+This file is the Codex-facing authority. The Claude-Code-facing companion is `.claude/claude.md`, which embeds a brief governance section and links to the full canonical module at `.claude/modules/shared/governance-principles.md`.
 
 The canonical module elaborates the same Truth Order (§2), proof-and-finality regime (§8), and architecture-boundary discipline (§6) for Claude-Code sessions. It additionally covers:
 
@@ -155,5 +155,5 @@ PAL workflow chain rules remain owned by §5 of this file. The canonical module 
 When updating doctrine, keep these three files in sync:
 
 - `AGENTS.md` (this file) — Codex authority, Task Packet rules, PAL chains, proof bundle requirements
-- `.claude/CLAUDE.md` — Claude-Code-facing summary + non-negotiables checklist
+- `.claude/claude.md` — Claude-Code-facing summary + non-negotiables checklist
 - `.claude/modules/shared/governance-principles.md` — full canonical doctrine, referenced by both
