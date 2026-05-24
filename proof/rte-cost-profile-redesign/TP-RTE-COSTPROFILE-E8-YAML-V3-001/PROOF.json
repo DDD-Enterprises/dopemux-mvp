@@ -45,7 +45,8 @@
         "base": "claude/goofy-haibt-fc568e",
         "head": "codex/rte-costprofile-e8-runtime-tag-fix-002",
         "head_sha_at_creation": "67bc94b1c81862e893b270fd6d32f4878534ae2c",
-        "ci_status_at_creation": "PENDING"
+        "ci_status_at_creation": "PENDING",
+        "ci_status_after_push": "SUCCESS"
       },
       "threads_addressed": [
         3294245404,

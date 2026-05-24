@@ -254,10 +254,12 @@ def apply_tag_routing_delta(
                                           glob-like patterns (``*`` only).
 
     Critical-safety invariants for structural/security_sensitive steps:
-      (1) If the pre-state has at least one strict-capable route, no delta
-          may filter all of them out (the delta is skipped if it would).
-      (2) If a hard filter produces zero candidates, return the empty list
-          rather than silently keeping routes that violate the tag.
+      (1) If a non-empty candidate list would drop every strict-capable
+          route while the pre-state had one, skip that delta.
+      (2) If a hard filter produces zero candidates, fail closed with the
+          empty list rather than silently keeping routes that violate the tag
+          unless an explicit context-window fallback route satisfies the
+          active filter.
     """
     if not routes:
         return list(routes)
