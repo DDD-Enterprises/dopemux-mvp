@@ -12,6 +12,9 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 import requests
 
 from lib.pricing_surface import classify_static_route_identity
+from lib.structured_output_contracts import (
+    provider_schema_variant_label as _contracts_provider_schema_variant_label,
+)
 from output_safety import sanitize_text_for_provider_payload
 
 logger = logging.getLogger(__name__)
@@ -273,24 +276,14 @@ def _retry_attempted(retry_trace: Sequence[Dict[str, Any]]) -> bool:
 
 
 
-def provider_schema_variant_label(provider: str, model_id: str) -> str:
-    normalized_provider = str(provider or "").strip().lower()
-    normalized_model_id = str(model_id or "").strip().lower()
-    if normalized_provider == "xai":
-        return "xai_relaxed_direct"
-    if normalized_provider == "gemini":
-        return "gemini_relaxed_direct"
-    if normalized_provider == "openrouter":
-        if normalized_model_id.startswith("x-ai/"):
-            return "openrouter_proxy_xai_relaxed"
-        if normalized_model_id.startswith("google/") or normalized_model_id.startswith(
-            "gemini"
-        ):
-            return "openrouter_proxy_gemini_relaxed"
-        return "openrouter_proxy_canonical"
-    if normalized_provider == "openai":
-        return "canonical_direct"
-    return "unknown"
+# NOTE: `provider_schema_variant_label` used to be duplicated here. As of E4
+# we re-export the authoritative implementation from
+# `lib.structured_output_contracts` so the label stays in sync with
+# `provider_schema_variant` (especially the new `anthropic_tool_use` /
+# `anthropic_tool_use_direct` / `openrouter_proxy_anthropic_tool_use` cases
+# added in E3). The module-level alias preserves the public symbol name for
+# any external callers that imported `llm_runtime.provider_schema_variant_label`.
+provider_schema_variant_label = _contracts_provider_schema_variant_label
 
 
 def _structured_output_mode_from_meta(
@@ -632,6 +625,8 @@ def call_llm(
             {
                 **_request_route_metadata(provider, model_id, resolved_api_key_env or api_key_env),
                 **_structured_output_request_metadata(structured_output),
+                "model_id_requested": model_id_requested,
+                "_resolved_from_alias": _resolved_from_alias,
                 "retry_attempted": False,
                 "auth_failure": False,
                 "quota_or_billing": False,
@@ -872,6 +867,7 @@ def call_llm(
                 cached_tokens=observed_cached_tokens,
                 cache_write_tokens=observed_cache_write_tokens,
                 service_tier_requested=service_tier,
+                cache_strategy_applied=cache_strategy_applied,
             )
             return {
                 "ok": True,
