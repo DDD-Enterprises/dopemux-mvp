@@ -224,9 +224,18 @@ def route_entry_by_identity(
 
 _CACHE_STRATEGIES: Set[str] = {"auto", "cache_control_explicit", "none"}
 _ANTHROPIC_CACHE_MARKER_LIMIT: int = 4
+ANTHROPIC_TOOL_USE_UNWIRED_REASON = "anthropic_tool_use_transport_unwired"
 
 
 def _is_anthropic_cache_target(provider: str, model_id: str) -> bool:
+    if provider == "anthropic":
+        return True
+    if provider == "openrouter" and model_id.startswith("anthropic/"):
+        return True
+    return False
+
+
+def _is_anthropic_tool_use_target(provider: str, model_id: str) -> bool:
     if provider == "anthropic":
         return True
     if provider == "openrouter" and model_id.startswith("anthropic/"):
@@ -375,9 +384,15 @@ def strict_capability_reason(
     if not bool(route.get("strict_json_schema", False)):
         return "strict_json_schema_disabled"
     provider = str(route.get("provider") or "").strip().lower()
+    model_id = str(route.get("model_id") or "").strip().lower()
     transport_mode = str(transport or "").strip().lower()
     if provider == "openrouter" and not bool(route.get("strict_passthrough_verified", False)):
         return "openrouter_strict_passthrough_unverified"
+    if (
+        route_structured_output_mode(route) == STRUCTURED_OUTPUT_MODE_JSON_SCHEMA
+        and _is_anthropic_tool_use_target(provider, model_id)
+    ):
+        return ANTHROPIC_TOOL_USE_UNWIRED_REASON
     if provider in {"openai", "openrouter", "xai"}:
         if transport_mode in {"openai_sdk", "openai_compat_http"}:
             return None
@@ -399,6 +414,7 @@ def schema_capability_reason(
     if mode == STRUCTURED_OUTPUT_MODE_NONE:
         return "structured_output_disabled"
     provider = str(route.get("provider") or "").strip().lower()
+    model_id = str(route.get("model_id") or "").strip().lower()
     transport_mode = str(transport or "").strip().lower()
     if mode == STRUCTURED_OUTPUT_MODE_JSON_OBJECT:
         if provider == "gemini":
@@ -409,6 +425,8 @@ def schema_capability_reason(
         }:
             return None
         return f"provider_not_json_object_capable:{provider or 'unknown'}"
+    if _is_anthropic_tool_use_target(provider, model_id):
+        return ANTHROPIC_TOOL_USE_UNWIRED_REASON
     if provider == "gemini":
         return None
     if provider == "openrouter":
@@ -729,9 +747,10 @@ def adapt_canonical_schema_for_variant(
     For `anthropic_tool_use` the return shape is an Anthropic tool definition
     dict: `{name, description, input_schema}`. Callers must therefore inspect
     the returned shape based on variant (the top-level keys differ).
-    `schema_name` is required when `variant == 'anthropic_tool_use'`; absent a
-    name, a stable default of `'emit_canonical'` is used. The function never
-    mutates `schema`.
+    `schema_name` is required when `variant == 'anthropic_tool_use'`; missing
+    or blank names raise `ValueError`. A stable fallback name of
+    `'emit_canonical'` is used only if sanitizing a non-empty schema_name strips
+    every character. The function never mutates `schema`.
     """
     canonical = copy.deepcopy(schema)
     if variant == "canonical":
@@ -811,6 +830,7 @@ def build_provider_structured_output(
     schema_ids: Optional[Iterable[str]] = None,
     artifact_names: Optional[Iterable[str]] = None,
     mode: Optional[str] = None,
+    allow_anthropic_tool_use_payload: bool = False,
 ) -> Tuple[Optional[Dict[str, Any]], Dict[str, Any]]:
     """Build a provider-appropriate structured-output payload + meta.
 
@@ -818,14 +838,11 @@ def build_provider_structured_output(
     standard OpenAI-style `response_format` dict (`{"type": "json_schema", ...}`
     or `{"type": "json_object"}`) or `None` when structured output is disabled.
 
-    For Anthropic / OpenRouter+anthropic routes (`schema_variant ==
-    'anthropic_tool_use'`) the first tuple element is **not** a `response_format`
-    — it is `{"tools": [tool_def], "tool_choice": {"type": "tool", "name": "..."}}`
-    because Anthropic's Messages API does not honor `response_format` and uses
-    `tools` + `tool_choice` for structured output. Callers MUST inspect
-    `meta["transport_mode"]` (`"anthropic_tool_use"` for this case) to decide
-    how to apply the payload to the wire request. The Anthropic payload is
-    also mirrored at `meta["anthropic_tool_use_payload"]` for convenience.
+    Anthropic / OpenRouter+anthropic routes use a non-response_format payload
+    shape (`tools` + `tool_choice`). E3 keeps that branch default-off because
+    current runtime callers still serialize the first tuple element under
+    `response_format`. Only callers that already know how to put those fields
+    at the wire-request top level may pass `allow_anthropic_tool_use_payload=True`.
     """
     effective_mode = (
         normalize_structured_output_mode(mode)
@@ -872,11 +889,14 @@ def build_provider_structured_output(
     variant = provider_schema_variant(provider, model_id)
 
     if variant == "anthropic_tool_use":
+        if not allow_anthropic_tool_use_payload:
+            raise ValueError(
+                "anthropic_tool_use payload not wired for current response_format callers"
+            )
         # Anthropic tool_use doesn't use OpenAI/Gemini's `response_format` field.
         # Instead the request carries `tools=[...]` + `tool_choice={"type":"tool","name":...}`.
-        # Return that shape as the first tuple element and tag the meta so the
-        # downstream runtime (llm_runtime in E4) routes it correctly. We still
-        # mark strict=True because Anthropic enforces the tool input_schema.
+        # Return that shape only after an explicit caller opt-in and tag the meta
+        # so a wired runtime can route it correctly.
         tool_def = adapt_canonical_schema_for_variant(
             schema,
             variant=variant,
@@ -894,7 +914,7 @@ def build_provider_structured_output(
             "schema": str(schema_name),
             "schema_name": str(schema_name),
             "schema_version": "v1",
-            "strict": True,
+            "strict": bool(strict),
             "contract_lane": contract_lane_name,
             "schema_ids": list(schema_ids or []),
             "artifact_names": list(artifact_names or []),
