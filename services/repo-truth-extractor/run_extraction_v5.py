@@ -10442,6 +10442,7 @@ def _pricing_preview(
     model_id: str,
     input_tokens: int,
     output_tokens: int,
+    execution_mode: str = "",
     route: Optional[str] = None,
 ) -> Optional[Dict[str, Any]]:
     if not cfg.ledger:
@@ -10452,6 +10453,8 @@ def _pricing_preview(
         provider=provider,
         model_id=model_id,
         route=route,
+        service_tier=_runtime_service_tier_for_spend(cfg),
+        is_batch=_runtime_is_batch_execution_mode(execution_mode),
     )
 
 
@@ -10674,6 +10677,7 @@ def _check_projected_cost_limit(
         model_id=model_id,
         input_tokens=input_tokens,
         output_tokens=output_tokens,
+        execution_mode=execution_mode,
         route=route,
     )
     if pricing is None:
@@ -10726,6 +10730,59 @@ def _resolve_runtime_usage(
     }
 
 
+def _runtime_usage_payload(
+    response_summary: Optional[Dict[str, Any]],
+) -> Optional[Dict[str, Any]]:
+    if not isinstance(response_summary, dict):
+        return None
+    usage = response_summary.get("usage")
+    return usage if isinstance(usage, dict) else None
+
+
+def _runtime_cached_input_tokens(response_summary: Optional[Dict[str, Any]]) -> int:
+    usage = _runtime_usage_payload(response_summary)
+    if usage is None:
+        return 0
+    cached_tokens = _read_usage_field(
+        usage,
+        "cached_tokens",
+        "cache_read_input_tokens",
+        "cached_content_token_count",
+    )
+    if cached_tokens is None:
+        cached_tokens = _read_usage_field(
+            usage.get("prompt_tokens_details"),
+            "cached_tokens",
+        )
+    return int(cached_tokens or 0)
+
+
+def _runtime_cache_write_input_tokens(
+    response_summary: Optional[Dict[str, Any]],
+) -> int:
+    usage = _runtime_usage_payload(response_summary)
+    if usage is None:
+        return 0
+    return int(_read_usage_field(usage, "cache_creation_input_tokens") or 0)
+
+
+def _runtime_service_tier_for_spend(
+    cfg: RunnerConfig,
+    response_summary: Optional[Dict[str, Any]] = None,
+) -> Optional[str]:
+    usage = _runtime_usage_payload(response_summary)
+    if usage is not None:
+        observed = str(usage.get("service_tier") or "").strip().lower()
+        if observed:
+            return observed
+    configured = str(getattr(cfg, "default_service_tier", "") or "").strip().lower()
+    return configured or None
+
+
+def _runtime_is_batch_execution_mode(execution_mode: str) -> bool:
+    return str(execution_mode or "").strip().lower().startswith("batch")
+
+
 def _accumulate_runtime_spend(
     cfg: RunnerConfig,
     *,
@@ -10759,6 +10816,10 @@ def _accumulate_runtime_spend(
         provider=provider,
         model_id=model_id,
         route=route,
+        cached_input_tokens=_runtime_cached_input_tokens(response_summary),
+        cache_write_input_tokens=_runtime_cache_write_input_tokens(response_summary),
+        service_tier=_runtime_service_tier_for_spend(cfg, response_summary),
+        is_batch=_runtime_is_batch_execution_mode(execution_mode),
     )
     combined = {
         **usage,
@@ -10828,6 +10889,8 @@ def _reserve_projected_spend(
         provider=provider,
         model_id=model_id,
         route=route,
+        service_tier=_runtime_service_tier_for_spend(cfg),
+        is_batch=_runtime_is_batch_execution_mode(execution_mode),
     )
     combined = {
         **reserved,

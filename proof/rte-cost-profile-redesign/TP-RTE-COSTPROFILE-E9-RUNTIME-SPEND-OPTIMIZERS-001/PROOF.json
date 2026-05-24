@@ -1,0 +1,123 @@
+{
+  "schema": "dopemux.proof.v1",
+  "packet_id": "TP-RTE-COSTPROFILE-E9-RUNTIME-SPEND-OPTIMIZERS-001",
+  "project": "Repo Truth Extractor",
+  "generated_at_utc": "2026-05-24T16:18:59Z",
+  "worktree": "/Users/hue/.codex/worktrees/rte-costprofile-e9-tests-002",
+  "branch": "codex/rte-costprofile-e9-runtime-spend-optimizer-fix-001",
+  "base_branch": "claude/goofy-haibt-fc568e",
+  "base_head_sha": "e236cde12c4d0848431da62fdbd0b0f93d511e8b",
+  "implementation_commit_sha": "SELF_REFERENTIAL_COMMIT_SHA_NOT_AVAILABLE_BEFORE_COMMIT",
+  "pr": {
+    "url": "TO_BE_FILLED_AFTER_PR_CREATION",
+    "base": "claude/goofy-haibt-fc568e",
+    "head": "codex/rte-costprofile-e9-runtime-spend-optimizer-fix-001",
+    "ci_status_at_proof_creation": "NOT_CREATED"
+  },
+  "repo_identity": {
+    "root": "/Users/hue/.codex/worktrees/rte-costprofile-e9-tests-002",
+    "remote_origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker": ".dopetaskroot"
+  },
+  "why_this_packet_exists": [
+    "E9 is test-only and must not patch production code.",
+    "Before writing E9 tests, an audit probe showed run_extraction_v5._accumulate_runtime_spend recorded $4.00 headline cost for a call that should price to $1.4375 with flex tier plus cached-input read.",
+    "The same path ignored Anthropic cache_creation_input_tokens and batch_submit discount metadata.",
+    "This prerequisite packet repairs the production accounting gap, allowing E9 to remain test-only."
+  ],
+  "files_changed": [
+    "services/repo-truth-extractor/lib/spend_ledger.py",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/tests/test_runtime_spend_optimizer_metadata.py",
+    "task-packets/generated/TP-RTE-COSTPROFILE-E9-RUNTIME-SPEND-OPTIMIZERS-001.json",
+    "task-packets/INDEX.md",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E9-RUNTIME-SPEND-OPTIMIZERS-001/PROOF.json",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E9-RUNTIME-SPEND-OPTIMIZERS-001/sha256sums.txt"
+  ],
+  "behavior_changes": [
+    "SpendLedger.compute_optimized_cost now models cache-write input tokens separately from cache-read and uncached input tokens.",
+    "SpendLedger.price_usage and SpendLedger.accumulate accept cache_write_input_tokens and cache_write_ttl while preserving prior defaults.",
+    "run_extraction_v5._accumulate_runtime_spend forwards cached read tokens, cache write tokens, service tier, and batch mode to SpendLedger.",
+    "run_extraction_v5._reserve_projected_spend and _check_projected_cost_limit account for batch execution mode in projected/reserved spend."
+  ],
+  "validation": {
+    "red_observed": [
+      {
+        "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_runtime_spend_optimizer_metadata.py -v",
+        "exit_code": 1,
+        "observed": "Initial 4-test RED run: 3 failed and 1 passed. Runtime accounting returned $4.00 instead of $1.4375 for flex+cache and $4.00 instead of $2.00 for batch."
+      },
+      {
+        "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_runtime_spend_optimizer_metadata.py -v",
+        "exit_code": 1,
+        "observed": "After adding cache-write coverage, 5-test RED run: 4 failed and 1 passed. Anthropic cache write priced at $5.00 instead of $6.25."
+      }
+    ],
+    "pass": [
+      {
+        "command": "python -m json.tool task-packets/generated/TP-RTE-COSTPROFILE-E9-RUNTIME-SPEND-OPTIMIZERS-001.json >/dev/null",
+        "exit_code": 0,
+        "observed": "packet JSON parsed"
+      },
+      {
+        "command": "python -m compileall -q services/repo-truth-extractor/lib/spend_ledger.py services/repo-truth-extractor/run_extraction_v5.py",
+        "exit_code": 0,
+        "observed": "compileall passed"
+      },
+      {
+        "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_runtime_spend_optimizer_metadata.py -v",
+        "exit_code": 0,
+        "observed": "5 passed, 1 PytestConfigWarning for unknown asyncio_mode"
+      },
+      {
+        "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_runtime_spend_optimizer_metadata.py services/repo-truth-extractor/tests/test_spend_ledger_optimizers.py services/repo-truth-extractor/tests/test_spend_ledger.py -v",
+        "exit_code": 0,
+        "observed": "23 passed, 1 PytestConfigWarning for unknown asyncio_mode"
+      },
+      {
+        "command": "git diff --check",
+        "exit_code": 0,
+        "observed": "unstaged diff whitespace clean before proof"
+      },
+      {
+        "command": "git diff --cached --check",
+        "exit_code": 0,
+        "observed": "staged diff whitespace clean"
+      },
+      {
+        "command": "pre-commit run --files $(git diff --cached --name-only)",
+        "exit_code": 0,
+        "observed": "configured hooks passed on staged allowlist files"
+      }
+    ],
+    "not_run": [
+      "Live LLM/provider calls",
+      "Full RTE suite",
+      "E9 test-only packet",
+      "F verification packet",
+      "GitHub PR CI before PR creation"
+    ]
+  },
+  "pal": {
+    "codereview": {
+      "status": "PASS_LOCAL_WITH_EXTERNAL_CONTEXT_CAVEAT",
+      "continuation_id": "046fd8da-3fef-4c58-8694-f10b83832ee2",
+      "issues_found": 0,
+      "caveat": "PAL codereview local workflow found no issues, but the external expert-analysis portion reported file content was missing and could not independently review the files."
+    },
+    "precommit": {
+      "status": "PASS_LOCAL_INTERNAL",
+      "continuation_id": "02b965b0-2200-4e00-99dd-fd1eed00ff7e",
+      "issues_found": 0
+    }
+  },
+  "residual_risks": [
+    "Provider-side billing semantics for stacking batch and service_tier remain modeled by existing local SpendLedger multiplication behavior and were not live-verified.",
+    "Route-specific service_tier passthrough from model_map.yaml v3 to call_llm remains an E9 verification surface; this packet repairs spend accounting once metadata is present.",
+    "Full RTE suite and final F verification were not run in this prerequisite packet."
+  ],
+  "rollback_plan": [
+    "Before merge: close the prerequisite PR or revert the single commit.",
+    "After merge: revert the prerequisite PR commit before resuming E9 if CI or review finds a blocker."
+  ]
+}
