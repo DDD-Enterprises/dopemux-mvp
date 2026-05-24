@@ -1,0 +1,307 @@
+{
+  "artifact": "proof",
+  "attestations": {
+    "live_extraction": "NOT_RUN",
+    "live_provider_calls": "NOT_RUN",
+    "secrets_included": false
+  },
+  "base_refresh": "merged origin/main into existing PR branch without conflicts before implementation",
+  "branch": "codex/rte-final-audit-model-refresh-004",
+  "deferred_changes": [],
+  "implemented_changes": [
+    {
+      "api_key_env": "OPENAI_API_KEY",
+      "count": 171,
+      "decision": "IMPLEMENT",
+      "new_model_id": "gpt-5.5",
+      "new_provider": "openai",
+      "old_model_id": "openai/gpt-5.4",
+      "old_provider": "openrouter",
+      "reason": "Move OpenAI Flex routes from OpenRouter to direct OpenAI with service_tier=flex.",
+      "request_options": {
+        "service_tier": "flex"
+      }
+    },
+    {
+      "api_key_env": "OPENAI_API_KEY",
+      "count": 7,
+      "decision": "IMPLEMENT",
+      "new_model_id": "gpt-5.4-mini",
+      "new_provider": "openai",
+      "old_model_id": "openai/gpt-5-mini",
+      "old_provider": "openrouter",
+      "reason": "Move mini routes to direct latest mini model.",
+      "request_options": {}
+    },
+    {
+      "api_key_env": "OPENAI_API_KEY",
+      "count": 50,
+      "decision": "IMPLEMENT",
+      "new_model_id": "gpt-5.3-codex",
+      "new_provider": "openai",
+      "old_model_id": "openai/gpt-5.3-codex",
+      "old_provider": "openrouter",
+      "reason": "Keep Codex model identity while moving from OpenRouter to direct OpenAI.",
+      "request_options": {}
+    },
+    {
+      "api_key_env": "XAI_API_KEY",
+      "count": 121,
+      "decision": "IMPLEMENT",
+      "new_model_id": "grok-4.3",
+      "new_provider": "xai",
+      "old_model_id": "grok-4.20-beta-0309-reasoning",
+      "old_provider": "xai",
+      "reason": "Replace reasoning alias with Grok 4.3 and explicit reasoning effort.",
+      "request_options": {
+        "reasoning_effort": "low"
+      }
+    },
+    {
+      "api_key_env": "XAI_API_KEY",
+      "count": 139,
+      "decision": "IMPLEMENT",
+      "new_model_id": "grok-4.3",
+      "new_provider": "xai",
+      "old_model_id": "grok-4.20-beta-0309-non-reasoning",
+      "old_provider": "xai",
+      "reason": "Replace non-reasoning alias with Grok 4.3 and explicit disabled reasoning effort.",
+      "request_options": {
+        "reasoning_effort": "none"
+      }
+    }
+  ],
+  "pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/685",
+  "project": "dopemux-mvp",
+  "request_option_counts": {
+    "openai/gpt-5.5 service_tier=flex": 171,
+    "xai/grok-4.3 reasoning_effort=low": 121,
+    "xai/grok-4.3 reasoning_effort=none": 139
+  },
+  "residual_risks": [
+    "No live provider call was run; model acceptance, account availability, and organization entitlements remain unverified.",
+    "Hardcoded v5 tuple ladders (ROUTING_LADDERS, OPTIMAL_*_LADDER, BALANCED_GROK_OPENROUTER_*_LADDER, GEMINI_PRIMARY_*_LADDER in run_extraction_v5.py) carry only (provider, model_id, api_key_env) and cannot attach service_tier/reasoning_effort. When phase resolution lands on a tuple-ladder dispatch with step_contract=None, gpt-5.5 calls omit service_tier=flex and grok-4.3 calls omit reasoning_effort=low. Mitigation: model_map/phase contract paths cover all step_id-bound phases; the legacy ladders only fire on no-contract fallback.",
+    "Runtime does not gate reasoning_effort/service_tier by provider+model capability; misconfigured routes (e.g. reasoning_effort on a non-reasoning model) will fail at the wire. Mitigation: round-2 regression test pins exact route counts (171 flex / 50 codex / 7 mini / 260 grok-4.3) in tests/regression/audit_2026_05_22/test_fa_opt_model_refresh.py."
+  ],
+  "route_inventory_after_special_counts": {
+    "openai/gpt-5.3-codex": 50,
+    "openai/gpt-5.4-mini": 7,
+    "openai/gpt-5.5": 171,
+    "openrouter/openai/gpt-5-mini": 0,
+    "openrouter/openai/gpt-5.3-codex": 0,
+    "openrouter/openai/gpt-5.4": 0,
+    "xai/grok-4.20-beta-0309-non-reasoning": 0,
+    "xai/grok-4.20-beta-0309-reasoning": 0,
+    "xai/grok-4.3": 260
+  },
+  "runtime_structured_field_support": {
+    "reasoning_effort": {
+      "status": "PRESENT",
+      "surfaces": [
+        "run_extraction_v5.build_chat_payload",
+        "llm_runtime.call_llm SDK kwargs",
+        "OpenAI-compatible HTTP payload body",
+        "OpenAIBatchClient JSONL body",
+        "phase_contract_map",
+        "structured_output_contracts"
+      ]
+    },
+    "service_tier": {
+      "status": "PRESENT",
+      "surfaces": [
+        "run_extraction_v5.build_chat_payload",
+        "llm_runtime.call_llm SDK kwargs",
+        "OpenAI-compatible HTTP payload body",
+        "OpenAIBatchClient JSONL body",
+        "phase_contract_map",
+        "structured_output_contracts"
+      ]
+    }
+  },
+  "source_ledger": [
+    {
+      "confidence": "HIGH",
+      "fact_verified": "GPT-5.5 and GPT-5.4-mini model IDs and prices are listed in current official model docs.",
+      "provider": "OpenAI",
+      "source_url": "https://developers.openai.com/api/docs/models",
+      "verification_mode": "LIVE_OFFICIAL_DOCS"
+    },
+    {
+      "confidence": "HIGH",
+      "fact_verified": "gpt-5.3-codex is documented as the most capable agentic coding model and supports Chat Completions and Batch.",
+      "provider": "OpenAI",
+      "source_url": "https://developers.openai.com/api/docs/models/gpt-5.3-codex",
+      "verification_mode": "LIVE_OFFICIAL_DOCS"
+    },
+    {
+      "confidence": "HIGH",
+      "fact_verified": "Flex processing uses service_tier=flex and supports Chat Completions examples.",
+      "provider": "OpenAI",
+      "source_url": "https://developers.openai.com/api/docs/guides/flex-processing",
+      "verification_mode": "LIVE_OFFICIAL_DOCS"
+    },
+    {
+      "confidence": "HIGH",
+      "fact_verified": "Chat Completions reference exposes service_tier and reasoning_effort request fields.",
+      "provider": "OpenAI",
+      "source_url": "https://developers.openai.com/api/docs/api-reference/chat/create",
+      "verification_mode": "LIVE_OFFICIAL_DOCS_AND_LOCAL_SDK_SIGNATURE"
+    },
+    {
+      "confidence": "HIGH",
+      "fact_verified": "Grok 4.x reasoning and non-reasoning retirement targets use grok-4.3 with low or none reasoning effort, and grok-code-fast-1 targets grok-build-0.1.",
+      "provider": "xAI",
+      "source_url": "https://docs.x.ai/developers/migration/may-15-retirement",
+      "verification_mode": "LIVE_OFFICIAL_DOCS"
+    },
+    {
+      "confidence": "HIGH",
+      "fact_verified": "Grok 4.3 model and pricing are listed in current official model docs.",
+      "provider": "xAI",
+      "source_url": "https://docs.x.ai/developers/models",
+      "verification_mode": "LIVE_OFFICIAL_DOCS"
+    }
+  ],
+  "post_fix_validation": {
+    "review_round": 2,
+    "review_source": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/685#issuecomment-claude-code-review",
+    "findings_addressed": [
+      {
+        "id": "H1",
+        "severity": "HIGH",
+        "title": "optimal.extract ladder had duplicate fallback tuple",
+        "fix_commit": "903022fc5",
+        "status": "RESOLVED"
+      },
+      {
+        "id": "H2-Mode-B",
+        "severity": "HIGH",
+        "title": "_contract_route_entry_for_provider_model only searched primary_routes; repair/sidefill selections lost request_options",
+        "fix_commit": "8f62616d6",
+        "status": "RESOLVED",
+        "note": "Resolved by _route_entry_for_ladder_hop threading inline route entries through each ladder hop, bypassing the primary-only fallback for the happy path."
+      },
+      {
+        "id": "M1",
+        "severity": "MEDIUM",
+        "title": "reasoning_effort: \"none\" was forwarded literally to xAI; documented enum is low|high",
+        "fix_commit": "903022fc5",
+        "status": "RESOLVED",
+        "note": "normalize_route_request_options now drops case+whitespace-insensitive \"none\". 139 grok-4.3 YAML rows continue to declare reasoning_effort: none for documentation; the runtime treats the literal as absence of the field."
+      },
+      {
+        "id": "M2",
+        "severity": "MEDIUM",
+        "title": "ROUTE_REQUEST_OPTION_KEYS duplicated across 5 files; 2 near-duplicate normalize helpers",
+        "fix_commit": "903022fc5",
+        "status": "RESOLVED",
+        "note": "Constant + helper extracted to lib/route_options.py. 5 callsites now import; runner and batch helpers alias the shared function. test_route_options_constant_lives_in_shared_module_and_is_reused includes a source-file scan that fails on any future reintroduction."
+      },
+      {
+        "id": "L1",
+        "severity": "LOW",
+        "title": "No provider/model capability gate for reasoning_effort/service_tier",
+        "fix_commit": null,
+        "status": "DEFERRED_AS_RESIDUAL",
+        "note": "Captured in residual_risks[2]. Follow-up TP recommended; mitigation today is pinned route counts."
+      },
+      {
+        "id": "L2",
+        "severity": "LOW",
+        "title": "test_llm_runtime_forwards_request_options_to_sdk_chat_completion stubbed build_chat_payload",
+        "fix_commit": "1cefa6fdc",
+        "status": "RESOLVED",
+        "note": "test_full_chain_build_chat_payload_to_sdk_kwargs invokes the real build_chat_payload + call_llm chain and asserts both the happy path forwards options and the literal \"none\" never reaches the SDK."
+      }
+    ],
+    "test_pass_count_before_round_2": 12,
+    "test_pass_count_after_round_2": 18,
+    "tests_added": [
+      "test_route_request_options.py::test_normalize_route_request_options_drops_literal_none_case_insensitive",
+      "test_route_request_options.py::test_route_options_constant_lives_in_shared_module_and_is_reused",
+      "test_route_request_options.py::test_optimal_extract_ladder_has_distinct_fallback_entries",
+      "test_route_request_options.py::test_grok_4_3_routes_with_reasoning_effort_none_normalize_to_empty",
+      "test_route_request_options.py::test_full_chain_build_chat_payload_to_sdk_kwargs",
+      "tests/regression/audit_2026_05_22/test_fa_opt_model_refresh.py::test_grok_4_3_none_routes_normalize_to_empty_request_options"
+    ],
+    "files_touched": [
+      "services/repo-truth-extractor/lib/route_options.py",
+      "services/repo-truth-extractor/llm_runtime.py",
+      "services/repo-truth-extractor/lib/batch_clients.py",
+      "services/repo-truth-extractor/lib/phase_contract_map.py",
+      "services/repo-truth-extractor/lib/structured_output_contracts.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/test_route_request_options.py",
+      "services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_opt_model_refresh.py",
+      "proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROOF.json"
+    ],
+    "code_commit_shas": [
+      "1cefa6fdc",
+      "903022fc5",
+      "f07c980ba"
+    ],
+    "proof_only_commit_shas": [
+      "fdb6e6ac4"
+    ],
+    "proof_bundle_commit_note": "code_commit_shas lists commits that introduced code or test changes. proof_only_commit_shas lists commits whose payload was purely this proof bundle (and therefore cannot record their own SHA at write-time). Any further amendments are tracked via `git log -- proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROOF.json`."
+  },
+  "task_packet_id": "TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005",
+  "validation": [
+    {
+      "command": "python -m json.tool task-packets/generated/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROOF.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROPOSED_CHANGES.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_ROUTE_INVENTORY_BEFORE.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_ROUTE_INVENTORY_AFTER.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python jsonschema validation against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "PYTHONPATH=services/repo-truth-extractor python -m pytest -q -p no:cacheprovider services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_opt_model_refresh.py services/repo-truth-extractor/tests/test_route_request_options.py services/repo-truth-extractor/tests/test_batch_clients_integration.py services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py",
+      "exit_code": 0,
+      "result": "PASS: 24 passed, 1 warning"
+    },
+    {
+      "command": "PYTHONPATH=services/repo-truth-extractor python -m pytest -q -p no:cacheprovider services/repo-truth-extractor/tests/test_llm_runtime_seam.py services/repo-truth-extractor/tests/test_structured_output_provider_modes.py services/repo-truth-extractor/tests/test_structured_output_schema_strictness.py services/repo-truth-extractor/tests/test_spend_ledger.py services/repo-truth-extractor/tests/test_direct_model_spend_guard.py services/repo-truth-extractor/tests/test_pricing_catalog.py services/repo-truth-extractor/tests/test_pricing_coverage.py",
+      "exit_code": 0,
+      "result": "PASS: 17 passed, 1 warning"
+    },
+    {
+      "command": "python -m compileall -q touched RTE Python files",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "pre-commit run --files <touched files>",
+      "exit_code": 0,
+      "result": "PASS"
+    }
+  ],
+  "worktree": "/Users/hue/.codex/worktrees/rte-final-audit-model-refresh-004"
+}

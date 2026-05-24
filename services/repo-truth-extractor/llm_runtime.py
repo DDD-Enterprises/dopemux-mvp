@@ -11,6 +11,14 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 import requests
 
 from lib.pricing_surface import classify_static_route_identity
+
+# ROUTE_REQUEST_OPTION_KEYS is re-exported (no longer used inside this module
+# after defensive normalize replaced the manual loop) so consumers and tests
+# can introspect the canonical option list via llm_runtime.ROUTE_REQUEST_OPTION_KEYS.
+from lib.route_options import (  # noqa: F401
+    ROUTE_REQUEST_OPTION_KEYS,
+    normalize_route_request_options,
+)
 from output_safety import sanitize_text_for_provider_payload
 
 logger = logging.getLogger(__name__)
@@ -349,6 +357,7 @@ def call_llm(
     timeout_seconds: Optional[int] = None,
     trace_context: Optional[Dict[str, Any]] = None,
     lifecycle_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
+    request_options_override: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     if deps.live_llm_calls_blocked_for_tests():
         message = (
@@ -373,6 +382,7 @@ def call_llm(
         force_json_output=force_json_output,
         response_format_override=response_format_override,
         max_completion_tokens=max_completion_tokens_override,
+        request_options=request_options_override,
     )
     body = deps.serialize_payload_body(payload)
     request_payload_bytes = deps.measure_payload_bytes_from_body(body)
@@ -714,6 +724,13 @@ def call_llm(
                     chat_kwargs["temperature"] = payload["temperature"]
                 if "response_format" in payload:
                     chat_kwargs["response_format"] = payload["response_format"]
+                # build_chat_payload normalizes route request options at
+                # construction time, but we re-normalize here as defense in
+                # depth: any future alternate payload builder must not be
+                # able to reintroduce the literal "none" or a non-string
+                # scalar into chat kwargs forwarded to the provider SDK.
+                for option_key, option_value in normalize_route_request_options(payload).items():
+                    chat_kwargs[option_key] = option_value
                 response = client.chat.completions.create(**chat_kwargs)
                 status_code = 200
                 response_text = deps.extract_text_from_chat_completion(response)
