@@ -7,12 +7,15 @@
   "branch": "codex/rte-costprofile-e9-runtime-spend-optimizer-fix-001",
   "base_branch": "claude/goofy-haibt-fc568e",
   "base_head_sha": "e236cde12c4d0848431da62fdbd0b0f93d511e8b",
-  "implementation_commit_sha": "SELF_REFERENTIAL_COMMIT_SHA_NOT_AVAILABLE_BEFORE_COMMIT",
+  "implementation_commit_sha": "4d87908c1cc647e990b5e50e96be3746d6634d9e",
+  "proof_pr_commit_sha": "SELF_REFERENTIAL_COMMIT_SHA_NOT_AVAILABLE_BEFORE_COMMIT",
   "pr": {
-    "url": "TO_BE_FILLED_AFTER_PR_CREATION",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/695",
+    "number": 695,
     "base": "claude/goofy-haibt-fc568e",
     "head": "codex/rte-costprofile-e9-runtime-spend-optimizer-fix-001",
-    "ci_status_at_proof_creation": "NOT_CREATED"
+    "head_sha_at_creation": "4d87908c1cc647e990b5e50e96be3746d6634d9e",
+    "ci_status_at_creation": "PENDING"
   },
   "repo_identity": {
     "root": "/Users/hue/.codex/worktrees/rte-costprofile-e9-tests-002",
