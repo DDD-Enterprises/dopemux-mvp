@@ -1,253 +1,182 @@
 {
   "tp_id": "TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001",
   "tp_path": "task-packets/generated/TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001.json",
-  "series": {
-    "id": "rte-cost-profile-redesign",
-    "position": "E7",
-    "parent_tp_id": "TP-RTE-COSTPROFILE-E4-FINISH-001",
-    "base_branch": "codex/rte-costprofile-e4-finish-001",
-    "stacked_pr_pattern": "operator_authorized"
-  },
-  "worktree_path": "/Users/hue/code/dopemux-mvp/.claude/worktrees/goofy-haibt-fc568e",
+  "proof_kind": "pr_690_remediation",
+  "generated_at_utc": "2026-05-24T08:44:00Z",
+  "worktree_path": "/Users/hue/.codex/worktrees/pr690-e7-remediation",
   "branch": "codex/rte-costprofile-e7-ladders-failover-001",
-  "commit_sha": "3b49dea369c98866ecbdacba856c5d337f2994b3",
-  "parent_commit_sha": "667f61057",
-  "generated_at": "2026-05-24T07:50:00+00:00",
-  "files_changed": {
-    "modified": [
-      {
-        "path": "services/repo-truth-extractor/run_extraction_v5.py",
-        "delta_lines": "+307 / -29",
-        "intent": "Add infer_route_for_model + derive_ladder_for_cell + LRU cache; rename 11 ladder constants to underscore-prefixed; add __getattr__ deprecation proxy; thread retry_attempts_override kwarg through call_llm wrapper + 2 execute_attempt closures."
-      },
-      {
-        "path": "services/repo-truth-extractor/llm_runtime.py",
-        "delta_lines": "+131 / -20",
-        "intent": "Add retry_attempts_override param to call_llm; per-hop dispatch in call_llm_with_ladder with fast-failover on non-final hops + cfg default on final; filter ladder by BOTH provider_denylist AND disabled_providers; distinct escalation_trigger reasons by exhaustion source; effective_max_attempts soft-cap warning; _callable_accepts_kwarg signature introspection.",
-        "packet_allowlist_status": "DEVIATION_NOT_IN_ALLOWLIST",
-        "deviation_note": "llm_runtime.py was NOT in the packet's commit allowlist but IS essential to E7. The per-request failover loop lives in llm_runtime.call_llm_with_ladder; moving the change to v5.py would have meant duplicating the loop or building a parallel orchestrator. Surface for operator review on PR."
-      }
-    ],
-    "added": [
-      "services/repo-truth-extractor/tests/test_per_request_failover.py",
-      "services/repo-truth-extractor/tests/test_cell_aliased_ladders.py",
-      "services/repo-truth-extractor/tests/test_disable_provider_kill_switch.py",
-      "services/repo-truth-extractor/tests/test_legacy_ladder_deprecation_warning.py"
-    ],
-    "deleted": [],
-    "total_diff": "+1356 / -49 across 6 files in this commit"
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/690",
+  "pr_base": "codex/rte-costprofile-e4-finish-001",
+  "base_commit_sha": "667f610571304e744966a598ea0f6bb7999f2aca",
+  "head_before_remediation_sha": "23c312142c9124a61801c2910e2a4fa2460b0429",
+  "remediation_commit_sha": "PENDING_COMMIT_SHA_RECORDED_IN_FINAL_RESPONSE",
+  "authority_used": [
+    "latest user instruction to implement the PR #690 remediation plan",
+    "AGENTS.md and TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001",
+    "live GitHub PR #690 state and unresolved review threads",
+    "run_extraction_v5.py runtime routing path",
+    "llm_runtime.py retry and ladder failover path",
+    "existing E7 targeted tests and cost-profile regression tests"
+  ],
+  "authority_conflicts": [
+    {
+      "conflict": "The original E7 task-packet commit.allowlist omits services/repo-truth-extractor/llm_runtime.py, but the approved PR #690 remediation plan explicitly requires fixes in llm_runtime.py.",
+      "resolution": "Modified llm_runtime.py only for the two review-thread/runtime issues: terminal-attempt retry sleep suppression and effective empty-ladder trigger classification."
+    }
+  ],
+  "changes": [
+    {
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "summary": "Production non-JSON routing now derives a cost-profile cell alias primary and preserves the deduped legacy ladder tail as the transitional E7 failover ladder until E8 model_map v3. JSON-managed/model_map routes remain contract-owned."
+    },
+    {
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "summary": "Cell alias key construction now uses _build_cell_alias_key through both public and cached derivation paths, and empty env alias values are treated as unset."
+    },
+    {
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "summary": "execute_step_for_partitions now passes the full effective step ladder to call_llm_with_ladder and passes the partition override ladder when a partition tier override is present."
+    },
+    {
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "summary": "_route_attempt now builds strict structured-output response metadata for the attempted route, rather than reusing the initial route metadata across failover attempts."
+    },
+    {
+      "path": "services/repo-truth-extractor/llm_runtime.py",
+      "summary": "call_llm skips retry callback, backoff, and sleep when the current attempt is already the effective terminal attempt."
+    },
+    {
+      "path": "services/repo-truth-extractor/llm_runtime.py",
+      "summary": "call_llm_with_ladder empty-ladder escalation trigger classification now uses providers actually removed by denylist/disabled filtering."
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_cell_aliased_ladders.py",
+      "summary": "Added coverage for cost-profile primary production routing, model_alias_overrides, empty env alias fallback, JSON-managed route preservation, _build_cell_alias_key usage, full runtime ladder handoff, and partition override ladder handoff."
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_per_request_failover.py",
+      "summary": "Added coverage that retry_attempts_override=1 performs no terminal-attempt backoff, sleep, or retry callback."
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_disable_provider_kill_switch.py",
+      "summary": "Added coverage that unrelated disabled providers do not change denylist-only empty-ladder exhaustion into a combined trigger."
+    }
+  ],
+  "transitional_route_semantics": {
+    "status": "INTENTIONAL",
+    "reason": "E7 makes production non-JSON routes use cost-profile cell aliases without narrowing failover breadth.",
+    "behavior": "Non-JSON route ladders are alias_primary plus deduped legacy_ladder_tail. This is transitional until E8 owns model_map.yaml v3.",
+    "json_managed_routes": "Unchanged and contract-owned."
   },
   "validations": {
     "PASS": [
       {
-        "check": "python -m json.tool task-packets/generated/TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001.json",
+        "command": "python -m json.tool task-packets/generated/TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001.json >/dev/null",
         "result": "valid JSON"
       },
       {
-        "check": "python -m compileall -q services/repo-truth-extractor/run_extraction_v5.py",
+        "command": "python -m compileall -q services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/llm_runtime.py",
         "result": "no errors"
       },
       {
-        "check": "python -m compileall -q services/repo-truth-extractor/llm_runtime.py",
-        "result": "no errors"
+        "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_cell_aliased_ladders.py services/repo-truth-extractor/tests/test_disable_provider_kill_switch.py services/repo-truth-extractor/tests/test_per_request_failover.py -q",
+        "result": "41 passed, 1 pytest config warning"
       },
       {
-        "check": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest test_per_request_failover.py test_cell_aliased_ladders.py test_disable_provider_kill_switch.py test_legacy_ladder_deprecation_warning.py",
-        "result": "39 passed (11+14+6+8)"
+        "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_per_request_failover.py services/repo-truth-extractor/tests/test_cell_aliased_ladders.py services/repo-truth-extractor/tests/test_disable_provider_kill_switch.py services/repo-truth-extractor/tests/test_legacy_ladder_deprecation_warning.py -v",
+        "result": "49 passed, 1 pytest config warning"
       },
       {
-        "check": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 pytest test_cost_profiles.py test_run_extraction_v5_cost_cap.py test_run_extraction_v5_promptset_truth.py",
-        "result": "30 passed (cost-profile regressions)"
+        "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_cost_profiles.py services/repo-truth-extractor/tests/test_run_extraction_v5_cost_cap.py services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py -v",
+        "result": "30 passed, 1 pytest config warning"
       },
       {
-        "check": "python run_extraction_v5.py --phase A --dry-run --cost-profile value-default --print-phase-routing | head -50",
-        "result": "valid JSON with resolved model IDs"
+        "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_benchmark_route_ownership.py services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py -v",
+        "result": "13 passed, 1 pytest config warning"
       },
       {
-        "check": "DeprecationWarning under simplefilter('error') raises on legacy ladder access",
-        "result": "DeprecationWarning raised with expected message"
-      },
-      {
-        "check": "git diff --check (whitespace + conflict markers)",
+        "command": "git diff --check",
         "result": "clean"
       },
       {
-        "check": "git diff --cached --check",
-        "result": "clean"
+        "command": "PAL testgen (gpt-5-pro, thinking=max) on final remediation tests",
+        "result": "completed with no textual actionable missing-test finding returned"
       },
       {
-        "check": "pal/thinkdeep external (gpt-5.2) on failover design",
-        "result": "design validated: shared hop budget, fast-failover intermediate + normal final, prefix-based provider inference, internal-callers approach, implicit cap via existing knobs"
+        "command": "PAL codereview (gpt-5-pro, thinking=max) on final diff",
+        "result": "completed; tool output returned aggregate issue counters but no itemized textual actionable finding to remediate"
       },
       {
-        "check": "pal/challenge external on design choices D1-D5",
-        "result": "all 5 design choices reconciled with documented tradeoffs"
+        "command": "PAL challenge on codereview output ambiguity",
+        "result": "completed; ambiguity recorded and handled as non-blocking absent itemized actionable evidence"
       },
       {
-        "check": "pal/codereview external 2-step (gpt-5.2)",
-        "result": "2 MED + 4 LOW findings; F-LOW-1, F-MED-1, F-OBS-4 addressed in this commit; F-MED-2, F-OBS-1, F-OBS-2 documented as residual risks"
-      },
-      {
-        "check": "pal/precommit external 3-step (gpt-5.2)",
-        "result": "1 MED finding (cfg.provider_denylist getattr) addressed; 2 spurious CRITICAL findings verified as false positives via direct file inspection + 69 passing tests + compileall (see notes below)"
+        "command": "PAL precommit (gpt-5-pro, thinking=max) with /tmp/zen_precommit.pr690.changeset",
+        "result": "completed; tool output returned aggregate issue counters but no itemized textual actionable finding to remediate"
       }
     ],
     "FAIL": [],
     "NOT_RUN": [
       {
-        "check": "Live provider calls",
-        "reason": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1; no live API keys in this session; operator deferred live testing.",
-        "residual_risk": "Real OpenRouter/XAI/Gemini 5xx behavior not exercised end-to-end. Risk is bounded — failover loop logic is mocked exhaustively (11 tests) and the path through call_llm is unchanged except for the retry_attempts_override threading which is a kw-only addition."
+        "check": "live provider calls",
+        "reason": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 and no live-provider authorization was part of this remediation.",
+        "residual_risk": "Real provider 5xx/timeout/429 behavior remains mocked."
       },
       {
         "check": "model_map.yaml v3 integration",
-        "reason": "E8 packet owns model_map.yaml; out of scope per packet invariant #1.",
-        "residual_risk": "Cell aliases only cover a few CE/SYNTH/BULK cells. Legacy ladders that use non-aliased model IDs continue to use their literal values via the deprecation proxy. E8 expands cell_aliases coverage."
+        "reason": "E8 owns model_map.yaml; PR #690 plan explicitly says do not touch model_map.yaml.",
+        "residual_risk": "The legacy-tail transition remains until E8."
       },
       {
-        "check": "End-to-end extraction with all 4 cost profiles in production",
-        "reason": "No production live env available in this session.",
-        "residual_risk": "derive_ladder_for_cell exercises only the 5 cell aliases that exist today (across 4 profiles). Adding new cells in E8 will require extending _PROVIDER_INFERENCE_MAP if they include new model prefixes."
+        "check": "GitHub CI after push",
+        "reason": "Not yet run at proof refresh time; must be checked after pushing this remediation commit.",
+        "residual_risk": "Any new failing check is a stop condition."
       }
     ]
   },
-  "pal_chain_summary": {
-    "thinkdeep": {
-      "status": "PASS",
-      "model": "gpt-5.2",
-      "validation_type": "external",
-      "key_findings": [
-        "Shared hop budget interpretation confirmed (T1)",
-        "Fast-failover intermediate + normal final hop strategy validated (T2 refinement)",
-        "Centralized prefix-based provider inference with fail-closed on ambiguity (T3)",
-        "Update internal callers + __getattr__ proxy for external safety net (T4)",
-        "Implicit cap via existing knobs preferred over new hard_cap knob (T5)",
-        "frozenset(items()) cache keys for dict inputs (T6)"
-      ]
+  "review_threads_addressed": [
+    {
+      "thread": "retry_attempts_override terminal sleep/backoff",
+      "status": "implemented_locally_not_yet_replied"
     },
-    "challenge": {
-      "status": "PASS",
-      "key_findings": [
-        "D1 fail-fast on intermediates: 80% right, 429/Retry-After nuance documented as future work",
-        "D2 no new hard_cap knob: implicit cap from existing knobs sufficient",
-        "D3 prefix table with explicit fail-closed on truly unknown prefixes (heuristic disambiguates ambiguity)",
-        "D4 distinct escalation triggers for diagnostic clarity (preflight vs operator vs combined)",
-        "D5 update 3 dispatcher functions, NOT 17 callers (surgical minimum)"
-      ]
+    {
+      "thread": "empty env alias should be unset",
+      "status": "implemented_locally_not_yet_replied"
     },
-    "codereview": {
-      "status": "PASS",
-      "model": "gpt-5.2",
-      "validation_type": "external_2step",
-      "issues_found": {
-        "medium": 2,
-        "low": 4
-      },
-      "addressed_in_this_commit": [
-        "F-LOW-1: dead vars raw_ladder_len/skipped_by_*lists removed",
-        "F-MED-1: broad TypeError fallback replaced with _callable_accepts_kwarg signature introspection",
-        "F-OBS-4: explicit test_from_import_path_triggers_deprecation_proxy added"
-      ],
-      "documented_as_residual": [
-        "F-MED-2: env snapshot covers only specific alias_key (not chained refs); out of scope for E7",
-        "F-OBS-1: legacy 'claude-opus-4-6' (dash) vs cell_alias 'claude-opus-4.6' (dot) spelling preserved; E8 reconciles",
-        "F-OBS-2: _PROVIDER_INFERENCE_MAP narrow (matches existing ladders); future cell_aliases additions must extend"
-      ]
+    {
+      "thread": "_build_cell_alias_key should be used",
+      "status": "implemented_locally_not_yet_replied"
     },
-    "precommit": {
-      "status": "PASS",
-      "model": "gpt-5.2",
-      "validation_type": "external_3step",
-      "issues_found": {
-        "critical_FLAGGED_BY_PAL_FALSE_POSITIVE": 2,
-        "medium": 1,
-        "low": 5
-      },
-      "false_positive_critical_findings": [
-        {
-          "finding": "Return contract regression in call_llm_with_ladder (response_text/request_meta vs text/meta)",
-          "verification": "Direct file inspection confirms the empty-ladder early return uses 'response_text' / 'request_meta' both before and after E7 — shape preserved. Grep of all downstream consumers (services/repo-truth-extractor/run_fl_int.py, run_extraction_v5.py, run_extraction_v3.py) shows ALL use 'response_text' / 'request_meta' keys — none use 'text' / 'meta' on ladder results. PAL hallucinated this regression.",
-          "evidence": "69 tests pass including test_disable_provider_kill_switch.py which asserts directly on result['escalation_trigger'] and result['request_meta']['provider_error_reason']"
-        },
-        {
-          "finding": "v5.call_llm wrapper has duplicate * (SyntaxError) and calls undefined llm_runtime_call_llm (NameError)",
-          "verification": "Direct file inspection confirms v5.call_llm at L10946 has SINGLE * separator placed correctly to make retry_attempts_override kw-only. The pre-E7 signature had no * — adding one is correct syntax. llm_runtime_call_llm IS defined as aliased import at L233: 'from llm_runtime import call_llm as llm_runtime_call_llm'. PAL hallucinated both issues.",
-          "evidence": "compileall passes; 69 tests pass; dry-run --print-phase-routing executes successfully"
-        }
-      ],
-      "addressed_in_this_commit": [
-        "MED: cfg.provider_denylist now accessed via getattr(..., ()) to match disabled_providers pattern — prevents AttributeError on minimal cfg"
-      ]
+    {
+      "thread": "empty-ladder trigger should use effective filtering",
+      "status": "implemented_locally_not_yet_replied"
     }
-  },
-  "packet_invariants_verification": {
-    "I1_no_model_map_yaml_changes": "PASS — diff shows zero touches to *.yaml files",
-    "I2_no_circuit_breaker": "PASS — per-request failover + --disable-provider kill-switch; no breaker logic added",
-    "I3_old_constants_importable_for_one_release": "PASS — __getattr__ proxy returns identical data with DeprecationWarning",
-    "I4_failover_counts_against_escalation_max_hops": "PASS — max_hops = min(escalation_max_hops+1, len(ladder)) is the shared bound",
-    "I5_disabled_providers_honored_in_failover": "PASS — call_llm_with_ladder filters by both provider_denylist AND disabled_providers; tested via test_disable_provider_kill_switch.py",
-    "I6_audit_F2_CRIT_1_and_F2_CRIT_3_preserved": "PASS — no edits to batch fetch_results or strict batch payload code",
-    "I7_dopemux_split_authority_boundaries": "PASS — runtime + tests only, no cross-plane changes"
-  },
+  ],
   "residual_risks": [
     {
       "id": "RR-1",
       "severity": "medium",
-      "summary": "Live LLM verification not run — failover loop tested only in mocked scenarios",
-      "mitigation": "Mock coverage is exhaustive (11 failover tests + 14 cell-alias + 6 disable-provider). Live testing in E9 / F-VERIFY after consolidation."
+      "summary": "Live provider behavior was not exercised.",
+      "mitigation": "Targeted tests cover the deterministic retry/failover paths; live validation remains deferred."
     },
     {
       "id": "RR-2",
       "severity": "low",
-      "summary": "Legacy ladder model ID spelling preserved (anthropic/claude-opus-4-6 dash form) while cell_aliases use new spelling (anthropic/claude-opus-4.6 dot). Downstream code that hard-codes either form behaves differently depending on which API it uses.",
-      "mitigation": "E8 will reconcile when expanding cell_aliases coverage. spend_ledger baseline rates already use the dash form so legacy ladder users are correctly costed."
+      "summary": "Non-JSON production routes intentionally retain the deduped legacy ladder tail.",
+      "mitigation": "Recorded as transitional E7 behavior until E8 model_map v3."
     },
     {
       "id": "RR-3",
       "severity": "low",
-      "summary": "_PROVIDER_INFERENCE_MAP is intentionally narrow (6 slash + 2 direct prefixes). Future cell_aliases adding models with new prefixes (deepseek/, qwen/, etc.) will fail closed.",
-      "mitigation": "ValueError is operator-actionable. E8 will extend the map as cell_aliases grow."
-    },
-    {
-      "id": "RR-4",
-      "severity": "low",
-      "summary": "_derive_ladder_for_cell_cached env snapshot covers only the specific alias_key. Chained env references (e.g., a CLI override that points to another env var) are not snapshotted in the cache key.",
-      "mitigation": "For E7 scope, cli_overrides are concrete model_id strings, not chained placeholders. Documented in derive_ladder_for_cell docstring."
-    },
-    {
-      "id": "RR-5",
-      "severity": "low",
-      "summary": "Packet allowlist deviation: llm_runtime.py modified but NOT in packet's commit allowlist. Failover loop architecturally belongs there; moving it would have meant duplicating logic or building a parallel orchestrator.",
-      "mitigation": "Surface for operator review on PR. Operator-bless of expanded allowlist requested."
-    },
-    {
-      "id": "RR-6",
-      "severity": "informational",
-      "summary": "Pre-existing test failures in test_code_prescan_truthfulness.py (KeyError on 'imports' / 'symbols' keys). Unrelated to E7 — appears on E4 HEAD pre-E7 and earlier.",
-      "mitigation": "Different module (CodePrescan); separate cleanup needed. Not blocking E7."
+      "summary": "llm_runtime.py is outside the original TP allowlist.",
+      "mitigation": "Latest user-approved remediation plan explicitly required the two llm_runtime fixes; no unrelated runtime edits were made."
     }
   ],
   "unknowns": [],
   "cleanup_status": {
-    "worktree": "clean (no leftover artifacts)",
-    "branches": "E7 branch ready for push; E4 branch unmodified",
-    "temp_files": "/tmp/pal_precommit.changeset created for PAL precommit (transient, can delete)"
+    "dedicated_worktree": "active",
+    "unrelated_dirty_files": "none observed in /Users/hue/.codex/worktrees/pr690-e7-remediation",
+    "wrong_e8_worktree": "not used"
   },
-  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/690",
-  "pr_base": "codex/rte-costprofile-e4-finish-001",
-  "next_actions": {
-    "remaining_packet_steps": [
-      "S13 complete — PROOF emitted, branch pushed, PR opened"
-    ],
-    "remaining_series_packets": [
-      "E8 (TP-RTE-COSTPROFILE-E8-...) — model_map.yaml v3 integration; deps_on E7",
-      "E9 — sequential after E8",
-      "F-VERIFY — final consolidation, requires all prior E* + OUTPUT-VALIDATORS",
-      "OUTPUT-VALIDATORS — branches off E8 once E8 lands (parallel)",
-      "XAI-BATCH — blocked on operator providing XAI_API_KEY + DPMX_LIVE_OK=1"
-    ]
-  },
-  "confidence": "VERIFIED",
-  "verified_at": "2026-05-24T07:50:00+00:00",
-  "verified_by": "claude-opus-4-7[1m] with pal/thinkdeep + pal/challenge + pal/codereview + pal/precommit external chain (gpt-5.2)"
+  "confidence": "HIGH_TARGETED_LOCAL_VALIDATION"
 }
