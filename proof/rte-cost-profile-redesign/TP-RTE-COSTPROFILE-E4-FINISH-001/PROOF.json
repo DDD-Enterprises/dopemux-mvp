@@ -1,0 +1,242 @@
+{
+  "tp_id": "TP-RTE-COSTPROFILE-E4-FINISH-001",
+  "tp_path": "task-packets/generated/TP-RTE-COSTPROFILE-E4-FINISH-001.json",
+  "series": "rte-cost-profile-redesign",
+  "agent": "claude-opus-4.7",
+  "agent_note": "Packet metadata declares execution.agent=codex; operator authorized Claude as implementer for this session (stacked-PR 'Claude direct in main turn' mode).",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.claude/worktrees/goofy-haibt-fc568e",
+  "branch": "codex/rte-costprofile-e4-finish-001",
+  "base_branch_actual": "codex/rte-costprofile-e3-contracts-001",
+  "base_branch_packet_spec": "main",
+  "base_branch_deviation_authorization": "Operator-authorized stacked-PR pattern: E4 branch cut off E3 branch (which is itself stacked on goofy). E3 PR #687 is in review (not yet merged) but its commits are in E4's ancestry. Per packet S1, this satisfies 'E3 packet commits visible in ancestry'. F-VERIFY series-final gate will reconcile the chain when goofy → main consolidation PR opens.",
+  "repo_identity": {
+    "origin_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "origin_url_expected": "DDD-Enterprises/dopemux-mvp",
+    "match": true,
+    "dopetaskroot_present": true,
+    "e3_commits_in_ancestry": ["718732e1e", "54f8382f4"],
+    "foundation_commit_in_ancestry": "9085d8a1d"
+  },
+  "commits": [
+    {
+      "sha": "af174ff1b",
+      "message": "feat(rte): llm_runtime meta exposure + cell alias resolution (E4 finish)",
+      "files_changed": 5,
+      "insertions": 882,
+      "deletions": 2,
+      "role": "primary E4 feat commit"
+    },
+    {
+      "sha": "717d8ef95",
+      "message": "fix(rte): pal/precommit-driven follow-ups on E4 llm_runtime (E4 fixup)",
+      "files_changed": 1,
+      "insertions": 14,
+      "deletions": 18,
+      "role": "pal/precommit-driven follow-up fixes (3 findings)"
+    }
+  ],
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/688",
+  "pr_base": "codex/rte-costprofile-e3-contracts-001",
+  "pr_title": "feat(rte): llm_runtime meta exposure + cell alias resolution (E4 finish)",
+  "slices_completed": [
+    {
+      "id": "S1",
+      "task": "Preflight (worktree, branch, clean state, E3 commits in ancestry)",
+      "status": "PASS",
+      "evidence": "repo_identity above; clean before commit; E3 commits 718732e1e + 54f8382f4 in ancestry."
+    },
+    {
+      "id": "S2",
+      "task": "Locate alias-resolution insertion point in call_llm",
+      "status": "PASS",
+      "evidence": "Insertion at L396-440 (post-codereview/precommit-fix renumbering): AFTER `if deps.live_llm_calls_blocked_for_tests(): raise` (L395) and AFTER `if disabled_providers ...` (L381-385) per packet ordering requirement. Order: live-LLM block → disabled_providers check → alias resolution → payload construction."
+    },
+    {
+      "id": "S3",
+      "task": "Insert alias resolution at top of call_llm",
+      "status": "PASS",
+      "evidence": "Lazy gating: only triggers when model_id.startswith('${') and endswith('}'); lazy import of resolve_cell_alias avoids module load cycle; cycle protection raises ValueError when resolved is any ${...} placeholder (catches self-loop AND chain cycle). Tests: test_alias_resolved_via_cli_overrides_takes_precedence, test_alias_resolved_via_env_when_no_cli_override, test_unresolved_alias_raises_value_error, test_alias_resolution_runs_after_disabled_providers_gate, test_alias_resolution_skipped_when_no_placeholder, test_alias_resolution_with_dict_cli_overrides, test_chain_cycle_resolution_raises_value_error (8 tests)."
+    },
+    {
+      "id": "S4",
+      "task": "Add new meta fields to success-path return",
+      "status": "PASS",
+      "evidence": "Added 5 new fields: model_id_requested, _resolved_from_alias, service_tier_requested, service_tier_observed (sourced from response_summary['usage']['service_tier']), cache_strategy_applied (normalized via .strip().lower()). Existing meta fields unchanged. Tests in test_llm_runtime_service_tier_passthrough.py (8 tests) and test_llm_runtime_cached_tokens_meta.py (8 tests)."
+    },
+    {
+      "id": "S5",
+      "task": "Plumb cached_tokens / cache_write_tokens / service_tier_requested through lifecycle_callback",
+      "status": "PASS",
+      "evidence": "_emit_lifecycle('completed') now receives cached_tokens, cache_write_tokens, service_tier_requested, AND cache_strategy_applied (added in fixup commit per pal/precommit MEDIUM finding). _emit_lifecycle filters None values so existing consumers unaffected. Lifecycle payload also includes model_id_requested + _resolved_from_alias so per-attempt traces show the alias trail."
+    },
+    {
+      "id": "S6",
+      "task": "Write test_llm_runtime_service_tier_passthrough.py (5+ tests)",
+      "status": "PASS",
+      "evidence": "8 tests cover: pass-through to chat_kwargs for openai/openrouter, omission for xai (no documented kwarg), None handling, invalid value retained in meta but not forwarded, service_tier_observed surfaces from response usage, observed None when not echoed, cache_strategy_applied across applied/not-applied/no-directives modes."
+    },
+    {
+      "id": "S7",
+      "task": "Write test_llm_runtime_cell_alias_resolution.py (6+ tests)",
+      "status": "PASS",
+      "evidence": "8 tests cover: non-placeholder passthrough, CLI override precedence over env, env precedence over profile, unresolved alias raises, chain cycle ${X}→${Y} raises, dict cli_overrides accepted, disabled_providers gate runs BEFORE alias resolution, no-placeholder bypass."
+    },
+    {
+      "id": "S8",
+      "task": "Write test_llm_runtime_cached_tokens_meta.py (6+ tests)",
+      "status": "PASS",
+      "evidence": "8 tests cover: OpenAI prompt_tokens_details.cached_tokens, OpenAI top-level cached_tokens preferred, Anthropic cache_read_input_tokens + cache_creation_input_tokens, Gemini cached_content_token_count, missing usage block, partial usage fields, Anthropic first-time cache fill (write-only), non-dict input."
+    },
+    {
+      "id": "S9",
+      "task": "Run pal/codereview on the diff",
+      "status": "PASS",
+      "evidence": "External codereview by gpt-5.2 (2-step). Surfaced 1 CRITICAL (lifecycle missing alias fields) + 2 HIGH (alias ValueError vs ok=False meta; cache_strategy normalization) + 3 MEDIUM (last_failure_meta template missing alias; per-attempt vs overall latency; logger.warning on invalid overrides). Applied: lifecycle alias fields, cache_strategy .strip().lower(), last_failure_meta template alias fields. Deferred with rationale: ValueError-vs-meta (packet S3 mandates raise), per-attempt latency (pre-existing, out of scope), logger.warning (packet pattern silent-coerces)."
+    },
+    {
+      "id": "S10",
+      "task": "Run pal/precommit",
+      "status": "PASS",
+      "evidence": "External precommit by gpt-5.2 (3-step with changeset). Surfaced 1 HIGH (duplicate provider_schema_variant_label in llm_runtime.py — missing Anthropic branches; bug introduced when E3 extended only the lib version) + 2 MEDIUM (lifecycle missing cache_strategy_applied; spend-abort meta missing alias trail) + 2 LOW. Applied all 3 actionable findings in fixup commit 717d8ef95: deleted local duplicate and re-exported via module alias from lib.structured_output_contracts; added cache_strategy_applied to lifecycle 'completed' emission; added model_id_requested + _resolved_from_alias to spend-abort cost_meta. Re-validated all paths: 52 tests pass."
+    },
+    {
+      "id": "S11",
+      "task": "Stage allowlisted files, commit, push, open PR",
+      "status": "PASS",
+      "evidence": "Two commits on branch (feat + fixup), both pushed. PR #688 opened against codex/rte-costprofile-e3-contracts-001 (stacked PR base; documented in PR body)."
+    },
+    {
+      "id": "S12",
+      "task": "Emit PROOF.json + sha256sums.txt",
+      "status": "PASS",
+      "evidence": "This file. sha256sums.txt covers 6 referenced files (llm_runtime.py + 3 tests + INDEX + packet JSON)."
+    }
+  ],
+  "files_changed": [
+    "services/repo-truth-extractor/llm_runtime.py",
+    "services/repo-truth-extractor/tests/test_llm_runtime_service_tier_passthrough.py",
+    "services/repo-truth-extractor/tests/test_llm_runtime_cell_alias_resolution.py",
+    "services/repo-truth-extractor/tests/test_llm_runtime_cached_tokens_meta.py",
+    "task-packets/INDEX.md"
+  ],
+  "files_changed_in_proof_commit": [
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E4-FINISH-001/PROOF.json",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E4-FINISH-001/sha256sums.txt"
+  ],
+  "validations": [
+    {
+      "command": "python -m json.tool task-packets/generated/TP-RTE-COSTPROFILE-E4-FINISH-001.json",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "command": "python -m compileall -q services/repo-truth-extractor/llm_runtime.py",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest <3 new test files> -v",
+      "status": "PASS",
+      "exit_code": 0,
+      "tests_collected": 24,
+      "tests_passed": 24
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest test_run_extraction_v5_cost_cap.py test_phase_d_sidefill.py test_repair_counters_thread_safety.py -v",
+      "status": "PASS",
+      "exit_code": 0,
+      "tests_collected": 9,
+      "tests_passed": 9,
+      "evidence": "Packet-required regression suite (cost_cap + sidefill + repair_counters) green."
+    },
+    {
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest test_openrouter_xai_route_identity.py test_route_fingerprint_static_identity.py test_rte_pkt_07_xai_metadata.py -v",
+      "status": "PASS",
+      "exit_code": 0,
+      "tests_collected": 19,
+      "tests_passed": 19,
+      "evidence": "Extended regression suite covering provider_schema_variant_label callers (the function whose duplicate was removed in fixup commit) — all label assertions still pass for non-Anthropic providers, confirming byte-equality preservation."
+    },
+    {
+      "command": "git diff --check && git diff --cached --check",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "command": "Repo preflight hook (run-mode, jq-present, ledger-present, ledger-json, diff-whitespace, smoke-tests)",
+      "status": "PASS",
+      "exit_code": 0,
+      "evidence": "Manifests .runs/run-20260524-044516.manifest.json (feat) + .runs/run-20260524-070153.manifest.json (fixup)."
+    }
+  ],
+  "codereview_status": {
+    "tool": "pal/codereview",
+    "model": "gpt-5.2",
+    "mode": "external",
+    "verdict": "addressed",
+    "issues_surfaced": {"critical": 1, "high": 2, "medium": 3},
+    "issues_resolved": "All 3 applicable findings applied (1 CRITICAL + 1 HIGH + 1 MEDIUM); 3 deferred-with-rationale documented (1 HIGH on ValueError contract — packet S3 mandates raise; 2 MEDIUM on pre-existing behaviors out of scope)."
+  },
+  "precommit_status": {
+    "tool": "pal/precommit",
+    "model": "gpt-5.2",
+    "mode": "external",
+    "verdict": "addressed",
+    "issues_surfaced": {"high": 1, "medium": 2, "low": 2},
+    "issues_resolved": "All 3 actionable findings applied in fixup commit 717d8ef95. 2 LOW deferred (extra blank line — closed by HIGH fix; sys.path manipulation in tests — repo-wide pattern, out of scope)."
+  },
+  "residual_risks": [
+    {
+      "id": "RR-1",
+      "severity": "medium",
+      "description": "Alias resolution failure raises ValueError per packet S3 mandate, rather than returning the ok=False structured failure that every other failure path uses. Upstream callers (run_extraction_v5.py orchestrator + ladder retry loops) must catch ValueError explicitly to surface this as a route failure rather than crashing.",
+      "mitigation": "Document in F-VERIFY operator quickstart that alias misconfig is a fatal/configuration error, not a route retry case. Consider follow-up TP to wrap into structured failure if operators report friction."
+    },
+    {
+      "id": "RR-2",
+      "severity": "low",
+      "description": "`requested_model_id` (existing field from _request_route_metadata) reflects the RESOLVED model_id (because we overwrite `model_id` before calling the helper); new `model_id_requested` field carries the ORIGINAL pre-resolution value. Slightly confusing naming but additive. Documentation consumers should reference `model_id_requested` for alias debugging."
+    },
+    {
+      "id": "RR-3",
+      "severity": "low",
+      "description": "OpenRouter passthrough of `service_tier` not verified — OpenAI honors it directly; OpenRouter pass-through behavior unverified. service_tier_observed will be None on OpenRouter routes until provider echoes it back."
+    },
+    {
+      "id": "RR-4",
+      "severity": "medium",
+      "description": "Doctrinal stacking deviation: E4 branch base = codex/rte-costprofile-e3-contracts-001 (E3 PR #687, not yet merged). F-VERIFY series-final gate must reconcile by ensuring goofy → main consolidation PR captures the full chain. If E3 PR review requires changes, E4 will need rebase."
+    },
+    {
+      "id": "RR-5",
+      "severity": "low",
+      "description": "Per-attempt vs overall latency_ms semantics in lifecycle events: latency_ms reflects total time since started_monotonic at top of call_llm, not per-attempt. Pre-existing behavior; flagged by codereview but out of scope for E4 fix."
+    }
+  ],
+  "unknowns": [
+    {
+      "id": "UNK-1",
+      "description": "Whether OpenRouter strips/preserves service_tier kwarg in passthrough to backing OpenAI providers. Service_tier_observed will be None on OpenRouter routes until tested live.",
+      "investigation_needed_in": "F-VERIFY bounded-lane dry run + first live run on OpenRouter route."
+    },
+    {
+      "id": "UNK-2",
+      "description": "Whether Anthropic models accept the tools+tool_choice payload constructed by build_provider_structured_output (E3) when called via llm_runtime (E4 wiring still pending end-to-end test through full Anthropic route in this packet — only mock-tested).",
+      "investigation_needed_in": "E9 integration tests + F-VERIFY."
+    }
+  ],
+  "cleanup_status": {
+    "tmp_changeset_file": "/tmp/pal_precommit_e4.changeset (transient — delete after PR review)",
+    "worktree_state": "Active; remains through E7-F chain. Final cleanup after F-VERIFY consolidation PR merges to main."
+  },
+  "confidence": "VERIFIED",
+  "verification_metadata": {
+    "tests_passed": "52/52 (24 new + 28 regression including provider_schema_variant_label callers)",
+    "test_command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest <files> -v",
+    "preflight_manifests": [
+      ".runs/run-20260524-044516.manifest.json (feat commit af174ff1b)",
+      ".runs/run-20260524-070153.manifest.json (fixup commit 717d8ef95)"
+    ],
+    "pal_chain_log": "analyze (read) → planner (implementation plan) → codereview external 2-step → precommit external 3-step → fixup commit → ready for PROOF"
+  }
+}
