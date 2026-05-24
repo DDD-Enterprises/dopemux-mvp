@@ -164,7 +164,7 @@ function App() {
       }, 2000);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : String(err);
-      setErrorMessage(`Failed to copy to clipboard: ${errorMsg}`);
+      setErrorMessage(`Failed to copy recommendation: ${errorMsg}`);
     }
   }, [cognitiveState.recommendation]);
 
@@ -258,6 +258,14 @@ function App() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    setIsCopied(false);
+    if (copyTimeoutRef.current) {
+      clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = null;
+    }
+  }, [cognitiveState.recommendation]);
 
   const layout =
     cognitiveState.status === 'critical'
@@ -425,7 +433,7 @@ function App() {
                 }}
               />
             </Tooltip>
-            <Tooltip title={isCopied ? 'Copied!' : 'AI recommendation (click to copy)'} arrow>
+            <Tooltip title={isCopied ? 'Recommendation copied!' : 'Copy recommendation to clipboard'} arrow>
               <Chip
                 icon={
                   isCopied ? (
@@ -463,7 +471,7 @@ function App() {
                   }),
                 }}
               />
-            </Tooltip>
+            </Tooltip>oltip>
           </Box>
         </Box>
 
