@@ -235,10 +235,11 @@
       "services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_opt_model_refresh.py",
       "proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROOF.json"
     ],
-    "commit_shas": [
+    "code_commit_shas": [
       "1cefa6fdc",
       "903022fc5"
-    ]
+    ],
+    "proof_bundle_commit_note": "The proof commit itself (which writes this section) cannot reference its own SHA; track via `git log -- proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROOF.json`. Any further amendments are recorded via subsequent commits in that path."
   },
   "task_packet_id": "TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005",
   "validation": [

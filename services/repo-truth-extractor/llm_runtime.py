@@ -11,7 +11,11 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 import requests
 
 from lib.pricing_surface import classify_static_route_identity
-from lib.route_options import (
+
+# ROUTE_REQUEST_OPTION_KEYS is re-exported (no longer used inside this module
+# after defensive normalize replaced the manual loop) so consumers and tests
+# can introspect the canonical option list via llm_runtime.ROUTE_REQUEST_OPTION_KEYS.
+from lib.route_options import (  # noqa: F401
     ROUTE_REQUEST_OPTION_KEYS,
     normalize_route_request_options,
 )
@@ -720,9 +724,13 @@ def call_llm(
                     chat_kwargs["temperature"] = payload["temperature"]
                 if "response_format" in payload:
                     chat_kwargs["response_format"] = payload["response_format"]
-                for option_key in ROUTE_REQUEST_OPTION_KEYS:
-                    if option_key in payload:
-                        chat_kwargs[option_key] = payload[option_key]
+                # build_chat_payload normalizes route request options at
+                # construction time, but we re-normalize here as defense in
+                # depth: any future alternate payload builder must not be
+                # able to reintroduce the literal "none" or a non-string
+                # scalar into chat kwargs forwarded to the provider SDK.
+                for option_key, option_value in normalize_route_request_options(payload).items():
+                    chat_kwargs[option_key] = option_value
                 response = client.chat.completions.create(**chat_kwargs)
                 status_code = 200
                 response_text = deps.extract_text_from_chat_completion(response)

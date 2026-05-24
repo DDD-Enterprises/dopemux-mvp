@@ -236,7 +236,11 @@ def test_openai_batch_jsonl_serializes_request_options(tmp_path: Path) -> None:
 
     assert job_id == "batch_123"
     jsonl = fake.files.uploads[0]
-    body = json.loads(jsonl)
+    # JSONL is one JSON object per line; parse the first line specifically so
+    # the test stays robust if a future change submits multiple requests in
+    # one batch upload or appends a trailing newline.
+    first_line = next(line for line in jsonl.splitlines() if line.strip())
+    body = json.loads(first_line)
     assert body["body"]["service_tier"] == "flex"
     assert body["body"]["reasoning_effort"] == "low"
 
@@ -369,6 +373,31 @@ def test_normalize_route_request_options_drops_literal_none_case_insensitive() -
         {"service_tier": "none", "reasoning_effort": "NONE"}
     )
     assert only_none == {}
+
+
+def test_normalize_route_request_options_rejects_non_string_scalars() -> None:
+    """YAML footgun: ``service_tier: true`` would otherwise stringify to
+    ``"True"`` and be forwarded to the provider. Booleans, numbers, and
+    ``None`` are rejected — only string values pass the allowlist.
+    """
+    route_options = _load_module(
+        "lib_route_options_non_string_reject",
+        "lib/route_options.py",
+    )
+
+    for bad in (True, False, 1, 0, 3.14, None, ["flex"], {"nested": "flex"}):
+        assert route_options.normalize_route_request_options(
+            {"service_tier": bad, "reasoning_effort": "low"}
+        ) == {"reasoning_effort": "low"}, (
+            f"service_tier={bad!r} should be rejected, reasoning_effort kept"
+        )
+
+    assert (
+        route_options.normalize_route_request_options(
+            {"service_tier": True, "reasoning_effort": False}
+        )
+        == {}
+    )
 
 
 def test_route_options_constant_lives_in_shared_module_and_is_reused() -> None:

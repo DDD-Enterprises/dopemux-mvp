@@ -39,12 +39,20 @@ def normalize_route_request_options(value: Optional[Any]) -> Dict[str, str]:
         A new dict with the allowlisted keys only, stripped to ``str``. Any
         value that strips/lowercases to ``""`` or ``"none"`` is dropped — the
         runtime must treat the literal ``"none"`` as the absence of the field.
+
+    Only string values are accepted. Booleans, numbers, and other non-string
+    scalars are rejected (a common YAML footgun where ``service_tier: true``
+    would otherwise stringify to ``"True"`` and be forwarded). ``None`` is
+    treated as absence and dropped.
     """
     if not isinstance(value, dict):
         return {}
     out: Dict[str, str] = {}
     for option_key in ROUTE_REQUEST_OPTION_KEYS:
-        option_value = str(value.get(option_key) or "").strip()
+        raw = value.get(option_key)
+        if raw is None or not isinstance(raw, str):
+            continue
+        option_value = raw.strip()
         if option_value.lower() in _DROP_VALUES:
             continue
         out[option_key] = option_value
