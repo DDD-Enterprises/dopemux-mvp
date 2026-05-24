@@ -1,0 +1,170 @@
+{
+  "id": "TP-RTE-COSTPROFILE-E3-CONTRACTS-001",
+  "project": "dopemux-mvp",
+  "target": "Extend lib/structured_output_contracts.py to plumb service_tier metadata through route_entries_for_stage(), add a prompt_caching_directives_for_provider() helper that emits provider-appropriate cache markers (Anthropic cache_control / OpenAI prompt_cache_key / Gemini cachedContent), and add a fourth schema variant 'anthropic_tool_use' so Claude routes serving CE/strict cells get a tool_use-shaped schema instead of being treated as generic 'canonical'.",
+  "invariants": [
+    "Do not modify pricing.yaml, spend_ledger.py, llm_runtime.py, batch_clients.py, run_extraction_v5.py, model_map.yaml v2 step entries, or any test outside the tests/ allowlist below — those are owned by other packets in the cost-profile redesign series.",
+    "Do not change the legacy three schema variants ('canonical', 'xai_relaxed', 'gemini_relaxed') except to add the fourth 'anthropic_tool_use'; existing variant resolution for non-Anthropic providers must remain byte-identical.",
+    "All new fields added to route entries must be optional with None defaults so existing callers that don't pass service_tier or cache directives continue to behave identically.",
+    "Do not invent provider behavior. If a provider's cache mechanism is unknown for a model in the catalog, return an empty directive set (None) rather than guess.",
+    "Preserve the audit-confirmed F2-CRIT-3 fix: strict json_schema enforcement on OpenAI/OpenRouter routes must NOT regress.",
+    "Preserve Dopemux split authority boundaries per AGENTS.md §6.",
+    "Do not modify docs/03-reference/governance/* (governance layer is authoritative)."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "rte-cost-profile-redesign",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-costprofile-e3-contracts-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(rte): structured_output_contracts service_tier + cache directives + anthropic_tool_use variant (E3)",
+    "allowlist": [
+      "services/repo-truth-extractor/lib/structured_output_contracts.py",
+      "services/repo-truth-extractor/tests/test_structured_output_contracts_service_tier.py",
+      "services/repo-truth-extractor/tests/test_structured_output_contracts_cache_directives.py",
+      "services/repo-truth-extractor/tests/test_structured_output_contracts_anthropic_tool_use.py",
+      "task-packets/generated/TP-RTE-COSTPROFILE-E3-CONTRACTS-001.json",
+      "task-packets/INDEX.md",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E3-CONTRACTS-001/PROOF.json",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E3-CONTRACTS-001/sha256sums.txt"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-RTE-COSTPROFILE-E3-CONTRACTS-001.json >/dev/null",
+      "python -m compileall -q services/repo-truth-extractor/lib/structured_output_contracts.py",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_structured_output_contracts_service_tier.py services/repo-truth-extractor/tests/test_structured_output_contracts_cache_directives.py services/repo-truth-extractor/tests/test_structured_output_contracts_anthropic_tool_use.py -v",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_structured_output_provider_modes.py services/repo-truth-extractor/tests/test_structured_output_schema_strictness.py -v",
+      "python -m json.tool proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E3-CONTRACTS-001/PROOF.json >/dev/null",
+      "cd proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E3-CONTRACTS-001 && shasum -a 256 -c sha256sums.txt",
+      "git diff --check",
+      "git diff --cached --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(rte): structured_output_contracts service_tier + cache directives + anthropic_tool_use variant (E3)",
+    "body": "## Summary\n- Extends `route_entries_for_stage()` to surface `service_tier` from per-route metadata so the LLM call path can pass it through to OpenAI/OpenRouter.\n- Adds `prompt_caching_directives_for_provider(provider, model_id, prompt_text_lengths)` returning provider-appropriate cache markers: Anthropic `cache_control` annotations, OpenAI `prompt_cache_key`, Gemini cached-content references.\n- Adds a fourth schema variant `anthropic_tool_use` to `provider_schema_variant()` so Claude routes serving CE/strict cells receive a tool_use-shaped schema rather than being treated as 'canonical' (which Anthropic doesn't honor as strict).\n\n## Scope\nLimited to `lib/structured_output_contracts.py` and three new unit-test files. No changes to pricing.yaml, spend_ledger, llm_runtime, batch_clients, run_extraction_v5, or model_map.yaml.\n\n## Validation\nNew tests cover: service_tier pass-through, cache-directive generation per provider, anthropic_tool_use variant selection, and verification that the three existing variants (canonical / xai_relaxed / gemini_relaxed) are byte-identical for non-Anthropic providers. Existing strictness + provider-modes tests remain green.\n\n## NOT_RUN\n- Live LLM calls (RTE_DISABLE_LIVE_LLM_IN_TESTS=1 enforced).\n- Cross-packet integration (covered by F verification packet).\n\n## Residual Risks / UNKNOWNs\n- Anthropic tool_use schema shape requires real Claude response validation; first live run with the new variant should compare outputs against the pre-variant baseline.\n\n@codex review",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: verify worktree identity, branch, clean state, and that the cost-profile foundation commit (9085d8a1d) is in the base branch's ancestry.",
+      "commands": [
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short",
+        "git rev-parse HEAD",
+        "test -f .dopetaskroot",
+        "git merge-base --is-ancestor 9085d8a1d HEAD || echo 'WARNING: cost-profile foundation commit not in ancestry'"
+      ],
+      "validation": [
+        "Repo remote identifies DDD-Enterprises/dopemux-mvp.",
+        "Working tree is clean.",
+        "Cost-profile foundation commit is reachable; otherwise STOP and rebase."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Read `lib/structured_output_contracts.py` to map the current contract: route_entries_for_stage() (L139-178), resolve_stage_route() (L264-301), build_openai_response_format() (L391-449), provider_schema_variant() (L502-520), adapt_canonical_schema_for_variant() (L546-565). Catalog all callers of provider_schema_variant() so the new 'anthropic_tool_use' variant doesn't blindside them.",
+      "validation": [
+        "Caller inventory captured in working notes. Any caller that does `if variant in {'canonical', 'xai_relaxed', 'gemini_relaxed'}` is flagged for update."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Extend `route_entries_for_stage()` to copy `service_tier` from each route entry's raw dict into the returned BatchRoute-like row. Default is None when absent. Update the function signature docstring to list service_tier in the returned fields.",
+      "validation": [
+        "py_compile succeeds on the edited file.",
+        "Existing route entries without service_tier in their yaml still pass through unchanged (service_tier=None in result)."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Add `prompt_caching_directives_for_provider(provider, model_id, prompt_text_lengths=None, *, cache_strategy='auto')` returning a dict like `{'cache_control_markers': [...], 'prompt_cache_key': '...', 'cached_content_name': '...', 'applied': True|False, 'strategy': 'auto'|'cache_control_explicit'|'none'}`. Anthropic gets cache_control on the last ~3 message blocks per Anthropic best practice (long stable prefix + small mutable tail); OpenAI gets prompt_cache_key derived from a stable hash of the system+message prefix; Gemini gets cached_content_name only if explicitly enabled (None otherwise — implicit cache is automatic).",
+      "validation": [
+        "Helper returns deterministic output for fixed inputs.",
+        "Anthropic markers respect the 4-block cache_control limit per the Anthropic docs.",
+        "Returns `applied: False, strategy: 'none'` for providers/models with auto_cache_enabled=None or False."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Extend `provider_schema_variant()` to return 'anthropic_tool_use' when provider is 'openrouter' AND model_id starts with 'anthropic/', OR provider is 'anthropic' directly. Existing return values for openai/xai/gemini paths must be byte-identical (regression test enforces this).",
+      "validation": [
+        "Existing test_structured_output_provider_modes.py passes unchanged.",
+        "New variant returned correctly for `openrouter/anthropic/claude-opus-4.6`, `openrouter/anthropic/claude-sonnet-4.6`, `openrouter/anthropic/claude-haiku-4.5`."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Add `adapt_canonical_schema_for_variant(..., variant='anthropic_tool_use')` branch that converts a canonical JSON Schema into Anthropic tool_use input_schema shape: wraps the schema as `{name: 'emit_<schema_name>', description: '...', input_schema: {...schema...}}` and ensures top-level type='object'. Returns the tool definition rather than a response_format dict.",
+      "validation": [
+        "Output passes Anthropic SDK schema validation (mock).",
+        "Round-trips: canonical → anthropic_tool_use does not lose required-field declarations or enum constraints."
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Write three new test files under services/repo-truth-extractor/tests/: test_structured_output_contracts_service_tier.py (5+ tests covering pass-through, None default, override precedence), test_structured_output_contracts_cache_directives.py (8+ tests covering Anthropic/OpenAI/Gemini markers, strategy=auto vs explicit, applied=False fallback, max-marker enforcement), test_structured_output_contracts_anthropic_tool_use.py (6+ tests covering variant selection, tool_use schema shape, round-trip preservation, existing variant byte-equality regression).",
+      "validation": [
+        "All three test files collect and pass under RTE_DISABLE_LIVE_LLM_IN_TESTS=1.",
+        "Each test file has a module docstring referencing this TP."
+      ]
+    },
+    {
+      "id": "S8",
+      "task": "Run pal/codereview on the diff before precommit. Address any findings or document in PROOF.json as accepted-with-rationale.",
+      "validation": [
+        "pal/codereview reports no critical issues, or all critical issues are addressed in subsequent commits within this TP scope."
+      ]
+    },
+    {
+      "id": "S9",
+      "task": "Run pal/precommit. Verify SAFE TO COMMIT.",
+      "validation": [
+        "pal/precommit returns clean or only-info-level findings."
+      ]
+    },
+    {
+      "id": "S10",
+      "task": "Stage allowlisted files; commit; push; open PR.",
+      "validation": [
+        "git diff after commit is empty.",
+        "PR URL captured for PROOF."
+      ]
+    },
+    {
+      "id": "S11",
+      "task": "Emit PROOF.json under proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E3-CONTRACTS-001/ with all AGENTS.md §9 required fields: TP id, worktree path, branch, files changed, validation exit codes per command, pal/codereview status, pal/precommit status, commit SHA, PR URL, residual risks, UNKNOWNs, cleanup status. Generate sha256sums.txt.",
+      "expected_files": [
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E3-CONTRACTS-001/PROOF.json",
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E3-CONTRACTS-001/sha256sums.txt"
+      ],
+      "validation": [
+        "PROOF.json parses.",
+        "shasum -a 256 -c sha256sums.txt succeeds."
+      ]
+    }
+  ]
+}

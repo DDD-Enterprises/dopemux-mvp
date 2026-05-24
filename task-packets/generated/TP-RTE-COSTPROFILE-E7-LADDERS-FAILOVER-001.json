@@ -1,0 +1,188 @@
+{
+  "id": "TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001",
+  "project": "dopemux-mvp",
+  "target": "Rewrite the 11 hardcoded *_LADDER and *_ROUTE Python constants in run_extraction_v5.py (L891-987) to be cell-aliased lookups against the cost-profile registry, and add per-request failover semantics to `_route_ladder_for_phase()` and the call_llm wrapper so a route returning 5xx/timeout/429 immediately tries the next route in the ladder before standard backoff retries. Keep old constant names as deprecated module attributes for one release so external imports don't break.",
+  "invariants": [
+    "Do not modify model_map.yaml v2 step entries here — those are owned by E8.",
+    "Do not introduce a circuit breaker. The Phase D consensus (gpt-5.2 + claude-opus-4.5 + gpt-5.2-pro) explicitly rejected app-level breakers; per-request failover + --disable-provider kill-switch is the agreed alternative.",
+    "Old ladder constants (BALANCED_GROK_OPENROUTER_*, GEMINI_PRIMARY_*, OPTIMAL_*) must remain importable from run_extraction_v5 for one release with a DeprecationWarning emitted on first access. Removal scheduled for the release after E8 lands.",
+    "Per-request failover counts toward escalation_max_hops; it does NOT bypass the operator's cap. A ladder of length N can be tried up to N times in a single LLM call before failing.",
+    "disabled_providers (--disable-provider CLI) must be honored by per-request failover: a route whose provider is disabled is skipped without attempting the call.",
+    "Preserve audit-confirmed fixes F2-CRIT-1 (batch fetch_results) and F2-CRIT-3 (strict batch payload).",
+    "Preserve Dopemux split authority boundaries per AGENTS.md §6."
+  ],
+  "depends_on": [
+    "TP-RTE-COSTPROFILE-E4-FINISH-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "rte-cost-profile-redesign",
+    "base_branch": "main",
+    "parent_tp_id": "TP-RTE-COSTPROFILE-E4-FINISH-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-costprofile-e7-ladders-failover-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(rte): cell-aliased ladders + per-request failover (E7)",
+    "allowlist": [
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/test_per_request_failover.py",
+      "services/repo-truth-extractor/tests/test_cell_aliased_ladders.py",
+      "services/repo-truth-extractor/tests/test_disable_provider_kill_switch.py",
+      "services/repo-truth-extractor/tests/test_legacy_ladder_deprecation_warning.py",
+      "task-packets/generated/TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001.json",
+      "task-packets/INDEX.md",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001/PROOF.json",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001/sha256sums.txt"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001.json >/dev/null",
+      "python -m compileall -q services/repo-truth-extractor/run_extraction_v5.py",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_per_request_failover.py services/repo-truth-extractor/tests/test_cell_aliased_ladders.py services/repo-truth-extractor/tests/test_disable_provider_kill_switch.py services/repo-truth-extractor/tests/test_legacy_ladder_deprecation_warning.py -v",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_cost_profiles.py services/repo-truth-extractor/tests/test_run_extraction_v5_cost_cap.py services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py -v",
+      "python services/repo-truth-extractor/run_extraction_v5.py --phase A --dry-run --cost-profile value-default --print-phase-routing 2>&1 | head -50",
+      "python -c \"import warnings, sys; sys.path.insert(0, 'services/repo-truth-extractor'); import run_extraction_v5; warnings.simplefilter('error'); run_extraction_v5.BALANCED_GROK_OPENROUTER_SYNTHESIS_LADDER\" 2>&1 | grep -i deprecat || echo 'OK: deprecation warning raised'",
+      "python -m json.tool proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001/PROOF.json >/dev/null",
+      "cd proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001 && shasum -a 256 -c sha256sums.txt",
+      "git diff --check",
+      "git diff --cached --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(rte): cell-aliased ladders + per-request failover (E7)",
+    "body": "## Summary\n- Rewrites 11 hardcoded ladder/route constants in run_extraction_v5.py (L891-987) to derive their routes from `COST_PROFILES[<profile>].cell_aliases` so a model swap requires only an env var or `--model-alias` override, not a code change.\n- Adds per-request failover to `_route_ladder_for_phase()` / `call_llm` wrapper: a route returning 5xx / timeout / 429 immediately tries the next route in the ladder before standard backoff retries kick in. Counts toward `escalation_max_hops`.\n- Honors `--disable-provider` kill-switch (already wired in cfg by 9085d8a1d): routes whose provider is in the disabled set are skipped during failover.\n- Keeps old constant names as importable module attributes with `DeprecationWarning` on access for one release.\n\n## Scope\nLimited to run_extraction_v5.py and four new test files. No changes to model_map.yaml v2 (E8 owns that).\n\n## Validation\nNew tests: failover triggers on 5xx, honors disabled_providers, respects escalation_max_hops, alias resolution works for ladder routes, legacy constants raise DeprecationWarning. Existing cost cap + promptset truth + cost profile tests remain green. Dry-run --print-phase-routing produces valid output with resolved model IDs.\n\n## NOT_RUN\n- Live provider calls (RTE_DISABLE_LIVE_LLM_IN_TESTS=1).\n- model_map.yaml v3 integration (E8 packet covers).\n\n## Residual Risks / UNKNOWNs\n- Per-request failover plus existing retry logic could cumulatively try the same provider many times in one call if multiple ladder rungs share a provider. Cap-honoring needs review.\n- DeprecationWarning timing: if any test suite imports run_extraction_v5 with `-W error`, the bare-attribute access in tests will fail. We surface this in a known-issues note.\n\n@codex review",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: verify TP-RTE-COSTPROFILE-E4-FINISH-001 is merged (alias resolution is wired into call_llm). Verify worktree clean.",
+      "commands": [
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short",
+        "git log --oneline | grep -E 'E4-FINISH|alias resolution' | head -3"
+      ],
+      "validation": [
+        "Working tree clean.",
+        "E4-FINISH commits visible in ancestry; otherwise STOP."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Catalog every existing ladder constant and every importer. Run grep for `BALANCED_GROK_OPENROUTER_`, `GEMINI_PRIMARY_`, `OPTIMAL_`, `BALANCED_OPENROUTER_` across the repo. Record each importer for the deprecation-warning rollout decision.",
+      "commands": [
+        "grep -rn 'BALANCED_GROK_OPENROUTER_\\|GEMINI_PRIMARY_\\|OPTIMAL_DOCS_LADDER\\|OPTIMAL_CODE_LADDERS\\|OPTIMAL_SYNTHESIS_LADDER' --include='*.py' services/repo-truth-extractor src tests"
+      ],
+      "validation": [
+        "Importer inventory captured. Each importer is either updated to read from COST_PROFILES or kept on the deprecated alias path."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Design the new ladder-derivation function: `derive_ladder_for_cell(cost_profile, lane_class, capability_tier, stage='primary')` that returns the list of `(provider, model_id, api_key_env)` tuples by reading `COST_PROFILES[cost_profile].cell_aliases` and applying `resolve_cell_alias()` to each placeholder. Wraps with a thin cache keyed on (cost_profile, lane_class, capability_tier, stage, frozenset(cli_alias_overrides), frozenset(disabled_providers)).",
+      "validation": [
+        "Function signature locked.",
+        "Cache key correctly invalidates when CLI overrides or disabled providers change between runs."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Replace each ladder constant with a property-like getattr proxy. Module-level `__getattr__(name)` intercepts access to the deprecated names, emits `warnings.warn('Legacy ladder constant {name} is deprecated; use derive_ladder_for_cell()...', DeprecationWarning, stacklevel=2)`, then returns the equivalent ladder derived from COST_PROFILES + the model strings the old constant held. Map the old constants to their canonical (cost_profile, lane_class, capability_tier) cells so the proxy returns the right list.",
+      "validation": [
+        "Each of the 11 old constants resolves to the right cell.",
+        "Bare-import access raises DeprecationWarning."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Implement per-request failover in `_route_ladder_for_phase()`. The current call_llm caller iterates the ladder via escalation_max_hops; extend so that within a single attempt, on 5xx/timeout/429, the next route is tried immediately (decrementing failover budget, not hop budget). Failover budget = len(ladder) - current_index. Hop budget remains escalation_max_hops.",
+      "validation": [
+        "Logic distinguishes failover (provider error) from escalation (contract failure).",
+        "Both budgets enforced independently."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Honor cfg.disabled_providers in failover: when iterating the failover candidates, skip any whose `provider` is in cfg.disabled_providers. If all candidates are disabled, raise RuntimeError with a clear message naming the disabled providers.",
+      "validation": [
+        "Skipped routes are logged with reason 'provider_disabled'.",
+        "All-disabled case raises with operator-actionable message."
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Write test_per_request_failover.py (8+ tests): single 500 triggers failover; two consecutive 500s exhaust failover; 200 after failover succeeds; timeout treated like 500; 429 treated like 500; 4xx (non-429) NOT failover (real client error → raise); failover counts against hop budget; ladder of length 1 = no failover possible.",
+      "validation": [
+        "Tests pass."
+      ]
+    },
+    {
+      "id": "S8",
+      "task": "Write test_cell_aliased_ladders.py (6+ tests): derive_ladder_for_cell returns expected list per profile/cell; CLI alias overrides propagate; env vars propagate; cache invalidation on override change; alias cycle raises ValueError; unresolved placeholder returns verbatim.",
+      "validation": [
+        "Tests pass."
+      ]
+    },
+    {
+      "id": "S9",
+      "task": "Write test_disable_provider_kill_switch.py (5+ tests): --disable-provider openai removes openai routes from failover; all-disabled raises; multiple disabled providers honored; case-insensitive matching; invalid provider name logs warning + does not affect resolution.",
+      "validation": [
+        "Tests pass."
+      ]
+    },
+    {
+      "id": "S10",
+      "task": "Write test_legacy_ladder_deprecation_warning.py (4+ tests): access `run_extraction_v5.BALANCED_GROK_OPENROUTER_SYNTHESIS_LADDER` raises DeprecationWarning; warning text names the new derive_ladder_for_cell helper; ladder value still resolves correctly during the deprecation window; warnings.simplefilter('error') makes the access raise as test expects.",
+      "validation": [
+        "Tests pass."
+      ]
+    },
+    {
+      "id": "S11",
+      "task": "Run pal/thinkdeep + pal/challenge on the failover design — specifically: does failover stack with retry backoff dangerously? Could a misconfigured ladder + retry policy cause >100 calls per single LLM request?",
+      "validation": [
+        "Findings either addressed in code or documented as accepted in PROOF.json."
+      ]
+    },
+    {
+      "id": "S12",
+      "task": "Run pal/codereview + pal/precommit. Commit allowlisted files; push; open PR.",
+      "validation": [
+        "All verify commands pass.",
+        "PR body includes Summary / Scope / Validation / NOT_RUN / Residual Risks."
+      ]
+    },
+    {
+      "id": "S13",
+      "task": "Emit PROOF.json + sha256sums.txt.",
+      "expected_files": [
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001/PROOF.json",
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001/sha256sums.txt"
+      ],
+      "validation": [
+        "PROOF.json parses; sha256sums.txt verifies."
+      ]
+    }
+  ]
+}
