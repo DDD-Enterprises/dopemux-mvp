@@ -1384,6 +1384,22 @@ tag_definitions:
     rationale: Step prompt + inputs exceed 100K tokens routinely; route must support 1M context.
     routing_delta:
       filter_route_context_window_min: 1000000
+      fallback_routes:
+      - provider: openai
+        model_id: gpt-5.5
+        api_key_env: OPENAI_API_KEY
+        service_tier: default
+        strict_json_schema: true
+        strict_passthrough_verified: false
+        cache_strategy: auto
+        context_window: 1050000
+      - provider: gemini
+        model_id: gemini-3.5-flash
+        api_key_env: GEMINI_API_KEY
+        strict_json_schema: true
+        strict_passthrough_verified: false
+        cache_strategy: auto
+        context_window: 1000000
   schema_critical:
     rationale: Strict json_schema must be enforced; routes must be verified strict-capable.
     routing_delta:
