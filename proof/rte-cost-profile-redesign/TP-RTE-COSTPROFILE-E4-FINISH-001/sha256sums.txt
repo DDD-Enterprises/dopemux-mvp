@@ -1,0 +1,6 @@
+5f24e93d3b14c410401f555295851df28febecd3ba1a5617a78ae71341f1169c  ../../../services/repo-truth-extractor/llm_runtime.py
+c1da794acc819e28aebf12587cee19547484eb2bafc40cdac18328dbfafbd209  ../../../services/repo-truth-extractor/tests/test_llm_runtime_service_tier_passthrough.py
+211badc2f0743e6336781c46e1219dcfc3d450dd37c3966b58b8baecdaa53412  ../../../services/repo-truth-extractor/tests/test_llm_runtime_cell_alias_resolution.py
+4342fd6552193ce20ec49003bd70cfe62d8fbb738ec872c704ac78543c86c321  ../../../services/repo-truth-extractor/tests/test_llm_runtime_cached_tokens_meta.py
+61c5de6636b44c04df11012ec1d6affa6a55dd7f3ef6b741673d73aea33179ff  ../../../task-packets/INDEX.md
+cfcdccf472ec90918dd221a609c0e696b470bde1da312e49d99892341c12255b  ../../../task-packets/generated/TP-RTE-COSTPROFILE-E4-FINISH-001.json
