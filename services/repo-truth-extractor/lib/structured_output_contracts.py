@@ -144,12 +144,12 @@ def route_entries_for_stage(
     """Return normalized route rows for the given stage.
 
     Each row contains: provider, model_id, api_key_env, structured_output_mode,
-    strict_json_schema, strict_passthrough_verified, service_tier, and optional
-    context_window.
+    strict_json_schema, strict_passthrough_verified, service_tier,
+    cache_strategy, and optional context_window.
 
-    service_tier is copied through from the raw row when present (string token
-    like "default" / "flex" / "priority" / "auto") and defaults to None when
-    absent. Callers that don't consume service_tier are unaffected.
+    service_tier and cache_strategy are copied through from the raw row when
+    present and default to None when absent. Callers that don't consume these
+    optimizer fields are unaffected.
 
     E8 (v3 awareness): if the step_contract carries v3-only fields under
     ``lane.tags`` (and optionally ``lane.tag_definitions``), the function
@@ -181,6 +181,13 @@ def route_entries_for_stage(
         if not (provider and model_id and api_key_env):
             continue
         raw_service_tier = row.get("service_tier")
+        raw_cache_strategy = row.get("cache_strategy")
+        cache_strategy = (
+            str(raw_cache_strategy).strip().lower()
+            if isinstance(raw_cache_strategy, str)
+            and str(raw_cache_strategy).strip().lower() in _CACHE_STRATEGIES
+            else None
+        )
         service_tier = (
             str(raw_service_tier).strip()
             if isinstance(raw_service_tier, str) and str(raw_service_tier).strip()
@@ -197,6 +204,7 @@ def route_entries_for_stage(
             "strict_json_schema": bool(row.get("strict_json_schema", False)),
             "strict_passthrough_verified": bool(row.get("strict_passthrough_verified", False)),
             "service_tier": service_tier,
+            "cache_strategy": cache_strategy,
         }
         context_window = _route_context_window(row)
         if context_window is not None:
@@ -357,6 +365,13 @@ def _normalized_fallback_routes(value: Any) -> List[Dict[str, Any]]:
         if raw_mode == STRUCTURED_OUTPUT_MODE_NONE and strict_json_schema:
             structured_output_mode = STRUCTURED_OUTPUT_MODE_JSON_SCHEMA
         raw_service_tier = row.get("service_tier")
+        raw_cache_strategy = row.get("cache_strategy")
+        cache_strategy = (
+            str(raw_cache_strategy).strip().lower()
+            if isinstance(raw_cache_strategy, str)
+            and str(raw_cache_strategy).strip().lower() in _CACHE_STRATEGIES
+            else None
+        )
         normalized = {
             "provider": provider,
             "model_id": model_id,
@@ -369,6 +384,7 @@ def _normalized_fallback_routes(value: Any) -> List[Dict[str, Any]]:
                 if isinstance(raw_service_tier, str) and str(raw_service_tier).strip()
                 else None
             ),
+            "cache_strategy": cache_strategy,
         }
         context_window = _route_context_window(row)
         if context_window is not None:
