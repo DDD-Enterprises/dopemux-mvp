@@ -1,0 +1,169 @@
+{
+  "id": "TP-RTE-COSTPROFILE-XAI-BATCH-VERIFY-001",
+  "project": "dopemux-mvp",
+  "target": "Verify whether xAI supports a batch API equivalent. Phase D consensus flagged xAI batch as undocumented — the RTE XAIBatchClient inherits from OpenAIBatchClient with base_url=https://api.x.ai/v1 but the xAI endpoint may not honor /v1/batches or accept the same JSONL format. This packet runs a single dry probe against xAI (with explicit operator consent + minimum-cost dummy request) to determine batch support, then updates the cost profile registry + spend ledger to either honor or refuse xAI batch with a clear error.",
+  "invariants": [
+    "Live xAI API call required for the probe. Operator must set DPMX_LIVE_OK=1 AND XAI_API_KEY before this packet runs. Probe spend bounded to ≤$0.10 via --max-cost-usd.",
+    "Probe uses the cheapest xAI model (grok-code-fast-1 at $0.10/$0.40 per M) and the smallest possible payload (~100 tokens) to keep the live-test cost under $0.0001.",
+    "If the probe shows xAI batch is unsupported: XAIBatchClient.submit() raises UnsupportedBatchProvider matching the OpenRouterBatchClient pattern; COST_PROFILES are updated to drop is_batch=True flags from any xai route.",
+    "If the probe shows xAI batch IS supported: capture the exact response format + endpoint paths in a separate proof artifact; XAIBatchClient.fetch_results() is verified against that shape.",
+    "Do not modify pricing.yaml or model_map.yaml v3 — xAI batch discount field stays null until this packet resolves the support question authoritatively.",
+    "Preserve Dopemux split authority boundaries per AGENTS.md §6."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "rte-cost-profile-redesign",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-costprofile-xai-batch-verify-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "verify(rte): xAI batch API support probe + spend ledger / batch_clients update",
+    "allowlist": [
+      "services/repo-truth-extractor/lib/batch_clients.py",
+      "services/repo-truth-extractor/lib/spend_ledger.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "scripts/verify_xai_batch_support.py",
+      "services/repo-truth-extractor/tests/test_xai_batch_support_resolution.py",
+      "task-packets/generated/TP-RTE-COSTPROFILE-XAI-BATCH-VERIFY-001.json",
+      "task-packets/INDEX.md",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-XAI-BATCH-VERIFY-001/PROOF.json",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-XAI-BATCH-VERIFY-001/sha256sums.txt",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-XAI-BATCH-VERIFY-001/XAI_BATCH_PROBE_TRANSCRIPT.md",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-XAI-BATCH-VERIFY-001/XAI_BATCH_VERDICT.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-RTE-COSTPROFILE-XAI-BATCH-VERIFY-001.json >/dev/null",
+      "python -m compileall -q services/repo-truth-extractor/lib/batch_clients.py services/repo-truth-extractor/lib/spend_ledger.py services/repo-truth-extractor/run_extraction_v5.py",
+      "test -f proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-XAI-BATCH-VERIFY-001/XAI_BATCH_PROBE_TRANSCRIPT.md",
+      "test -f proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-XAI-BATCH-VERIFY-001/XAI_BATCH_VERDICT.md",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_xai_batch_support_resolution.py -v",
+      "python -m json.tool proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-XAI-BATCH-VERIFY-001/PROOF.json >/dev/null",
+      "cd proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-XAI-BATCH-VERIFY-001 && shasum -a 256 -c sha256sums.txt",
+      "git diff --check",
+      "git diff --cached --check"
+    ]
+  },
+  "pr": {
+    "title": "verify(rte): xAI batch API support probe + spend ledger / batch_clients update",
+    "body": "## Summary\n- Runs a minimum-cost (~$0.0001) live probe against xAI to determine if /v1/batches accepts requests in OpenAI-compatible JSONL format.\n- Updates `batch_clients.XAIBatchClient` based on the probe result: if unsupported, raise UnsupportedBatchProvider; if supported, document the verified response shape in a separate XAI_BATCH_VERDICT.md proof artifact.\n- Updates `spend_ledger` and `run_extraction_v5` COST_PROFILES to either allow or disallow `is_batch=True` for xAI routes.\n- Captures the probe transcript and verdict as durable proof.\n\n## Scope\nLimited to batch_clients (XAIBatchClient class behavior), spend_ledger (xAI batch_discount field), run_extraction_v5 (cost profile batch toggle for xAI), one verification script, one test file.\n\n## Validation\nProbe runs with DPMX_LIVE_OK=1 + XAI_API_KEY + --max-cost-usd $0.10. Probe transcript captured. Verdict authored. Tests verify the runtime now behaves consistently with the verdict (raise or honor).\n\n## NOT_RUN\n- The probe runs ONCE under operator supervision. CI does NOT re-run the probe — the verdict is stable until xAI changes their API.\n\n## Residual Risks / UNKNOWNs\n- xAI could add batch support in the future; verdict needs re-validation if a future audit flags xAI batch as desirable. Capture the probe-date in the verdict so re-validation cadence is visible.\n- Probe spend should be ≤$0.0001 but operator must confirm before greenlight.\n\n@codex review",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: verify worktree clean. Verify operator has set DPMX_LIVE_OK=1 and XAI_API_KEY. Verify `--max-cost-usd 0.10` will be passed to the probe.",
+      "commands": [
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short",
+        "test -n \"$XAI_API_KEY\" || echo 'STOP: XAI_API_KEY not set'",
+        "test \"$DPMX_LIVE_OK\" = \"1\" || echo 'STOP: DPMX_LIVE_OK not set to 1'"
+      ],
+      "validation": [
+        "All preflight checks pass; otherwise STOP and request operator to set required env vars."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Author `scripts/verify_xai_batch_support.py`. Script does three things in sequence: (1) POST a single-request batch payload to `https://api.x.ai/v1/batches` using the OpenAI batch JSONL format (custom_id + model + messages); (2) capture HTTP status, response body, error message; (3) if accepted, POST a poll request to `/v1/batches/{id}`; (4) emit a transcript JSON with all four request/response pairs.",
+      "validation": [
+        "Script handles all common failure modes (404 endpoint missing, 405 method not allowed, 401 auth, 400 schema mismatch) and records each in the transcript.",
+        "Script honors --max-cost-usd via early-exit if pre-call cost estimate exceeds the cap."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Run the probe with operator authorization. Capture stdout/stderr to XAI_BATCH_PROBE_TRANSCRIPT.md.",
+      "commands": [
+        "python scripts/verify_xai_batch_support.py --max-cost-usd 0.10 --model grok-code-fast-1 --transcript proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-XAI-BATCH-VERIFY-001/XAI_BATCH_PROBE_TRANSCRIPT.md"
+      ],
+      "validation": [
+        "Transcript captured.",
+        "Probe spend recorded; total ≤$0.0001 sanity check."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Author XAI_BATCH_VERDICT.md based on the transcript. Verdict is one of: SUPPORTED (with response-shape documentation), UNSUPPORTED (with the specific failure mode that proves it), or UNCERTAIN (if the probe was inconclusive — e.g., xAI returned 503 indicating temporary issue; retry recommended).",
+      "expected_files": [
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-XAI-BATCH-VERIFY-001/XAI_BATCH_VERDICT.md"
+      ],
+      "validation": [
+        "Verdict file contains: probe date, xAI API response, verdict (SUPPORTED/UNSUPPORTED/UNCERTAIN), next-action recommendation."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Update XAIBatchClient in batch_clients.py based on verdict. If UNSUPPORTED: change `class XAIBatchClient(OpenAIBatchClient)` to raise UnsupportedBatchProvider in its `submit()` (matching OpenRouterBatchClient pattern). If SUPPORTED: verify the existing inheritance pattern works against the documented response shape; add an xAI-specific response parser if needed. If UNCERTAIN: leave the existing inheritance in place but raise a more informative error message recommending operator opt-in via env var.",
+      "validation": [
+        "XAIBatchClient behavior matches verdict.",
+        "Existing batch tests still pass."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Update spend_ledger pricing rows for xAI models: set batch_discount based on verdict. If SUPPORTED: confirm the discount (likely 0.5 like other providers); if UNSUPPORTED: leave at null. Update via pricing.yaml only — do not edit the spend_ledger code path.",
+      "validation": [
+        "pricing.yaml xAI entries match verdict.",
+        "Tests pass."
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Update run_extraction_v5.py COST_PROFILES based on verdict: if UNSUPPORTED, ensure no xAI route has is_batch=True attribute set; if SUPPORTED, allow opt-in via metadata on individual routes.",
+      "validation": [
+        "All cost profile xAI routes consistent with verdict."
+      ]
+    },
+    {
+      "id": "S8",
+      "task": "Write test_xai_batch_support_resolution.py (5+ tests): if UNSUPPORTED — XAIBatchClient.submit raises UnsupportedBatchProvider; spend_ledger refuses to apply batch_discount to xai routes; if SUPPORTED — XAIBatchClient round-trip works on mocked response; spend_ledger applies batch_discount when is_batch=True on an xai route.",
+      "validation": [
+        "Tests pass.",
+        "Tests are conditional on the verdict (read XAI_BATCH_VERDICT.md at test collect time)."
+      ]
+    },
+    {
+      "id": "S9",
+      "task": "Run pal/codereview + pal/precommit. Commit allowlisted files; push; open PR.",
+      "validation": [
+        "All verify commands pass.",
+        "PR body links the XAI_BATCH_VERDICT.md and notes the probe date."
+      ]
+    },
+    {
+      "id": "S10",
+      "task": "Emit PROOF.json + sha256sums.txt referencing the transcript and verdict.",
+      "expected_files": [
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-XAI-BATCH-VERIFY-001/PROOF.json",
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-XAI-BATCH-VERIFY-001/sha256sums.txt"
+      ],
+      "validation": [
+        "PROOF.json includes the verdict, probe spend, and re-validation cadence recommendation.",
+        "sha256sums.txt verifies."
+      ]
+    }
+  ]
+}

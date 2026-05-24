@@ -1,0 +1,192 @@
+{
+  "id": "TP-RTE-COSTPROFILE-F-VERIFY-001",
+  "project": "dopemux-mvp",
+  "target": "Final verification gate for the cost-profile redesign series. Runs the full RTE regression suite, the promptset v3 audit, a bounded-lane dry-run (Phase A step A2 with --cost-profile value-default --print-config), and a pal/codereview + pal/precommit pass over the cumulative diff E1..E9. Produces a single PROOF bundle that signs off the series as ready for live operator use.",
+  "invariants": [
+    "Do not modify any production code in this packet. Verification only.",
+    "If verification fails, file a follow-up TP rather than 'fixing in place' — preserves the audit-trail boundary between implementation packets and the verification gate.",
+    "The bounded-lane dry-run must NOT use --execute (we're verifying config resolution, not running LLMs). RTE_DISABLE_LIVE_LLM_IN_TESTS=1 stays set.",
+    "PAL chain MUST include analyze + thinkdeep + challenge + codereview + precommit + challenge (the long form, because this is the series-final gate).",
+    "Verification proof must record exact git SHAs of each contributing packet's merge commit and the cumulative diff range so a future operator can reproduce the verification at the same point in history.",
+    "Preserve Dopemux split authority boundaries per AGENTS.md §6."
+  ],
+  "depends_on": [
+    "TP-RTE-COSTPROFILE-E3-CONTRACTS-001",
+    "TP-RTE-COSTPROFILE-E4-FINISH-001",
+    "TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001",
+    "TP-RTE-COSTPROFILE-E8-YAML-V3-001",
+    "TP-RTE-COSTPROFILE-E9-TESTS-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "rte-cost-profile-redesign",
+    "base_branch": "main",
+    "parent_tp_id": "TP-RTE-COSTPROFILE-E9-TESTS-001",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-costprofile-f-verify-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "verify(rte): cost-profile redesign series final verification (F)",
+    "allowlist": [
+      "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-001.json",
+      "task-packets/INDEX.md",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/PROOF.json",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/sha256sums.txt",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/SERIES_VERIFICATION_REPORT.md",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/pytest_full_run.txt",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/promptset_audit_v3.txt",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/bounded_lane_print_config.txt",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/pal_codereview.txt",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/pal_precommit.txt"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-001.json >/dev/null",
+      "python -m json.tool proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/PROOF.json >/dev/null",
+      "test -f proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/SERIES_VERIFICATION_REPORT.md",
+      "test -f proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/pytest_full_run.txt",
+      "test -f proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/promptset_audit_v3.txt",
+      "test -f proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/bounded_lane_print_config.txt",
+      "test -f proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/pal_codereview.txt",
+      "test -f proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/pal_precommit.txt",
+      "cd proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001 && shasum -a 256 -c sha256sums.txt",
+      "git diff --check",
+      "git diff --cached --check"
+    ]
+  },
+  "pr": {
+    "title": "verify(rte): cost-profile redesign series final verification (F)",
+    "body": "## Summary\n- Series-final verification for the RTE cost-profile redesign (E1..E9).\n- Runs the full RTE test suite + promptset v3 audit + bounded-lane dry-run + pal/codereview + pal/precommit and captures all outputs as durable proof.\n- Produces SERIES_VERIFICATION_REPORT.md attesting that the series is ready for live operator use.\n\n## Scope\nVerification-only. No production code changes. Proof bundle is the deliverable.\n\n## Validation\nFull test suite green; promptset audit returns 0 lint failures; --cost-profile value-default --print-config produces a populated ladder with resolved model IDs; pal/codereview reports no critical issues across the cumulative diff; pal/precommit returns SAFE TO COMMIT.\n\n## NOT_RUN\n- Live LLM execution (operator's call after this packet merges; bounded-lane dry-run only here).\n- Cross-pipeline integration with the v3-pipeline (separate authority).\n\n## Residual Risks / UNKNOWNs\n- xAI batch support unverified (separate TP-RTE-COSTPROFILE-XAI-BATCH-VERIFY-001 covers).\n- Post-step output validators for control_plane / security_sensitive steps deferred (separate TP-RTE-COSTPROFILE-OUTPUT-VALIDATORS-001 covers).\n\n@codex review",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: verify all 5 prerequisite packets (E3, E4-FINISH, E7, E8, E9) merged. Capture each merge commit SHA. Verify worktree clean and on a fresh branch from origin/main post-E9 merge.",
+      "commands": [
+        "git fetch origin --prune",
+        "git rev-parse origin/main",
+        "git log --oneline origin/main | grep -E 'E3-CONTRACTS|E4-FINISH|E7-LADDERS|E8-YAML|E9-TESTS' | head -10"
+      ],
+      "validation": [
+        "All 5 packet merge SHAs captured.",
+        "Verification branch based on the post-E9 origin/main."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Run the full RTE test suite under RTE_DISABLE_LIVE_LLM_IN_TESTS=1. Capture stdout/stderr to pytest_full_run.txt.",
+      "commands": [
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests --tb=short -v 2>&1 | tee proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/pytest_full_run.txt"
+      ],
+      "validation": [
+        "Pytest exit code 0 (all pass) OR explicit per-failure analysis in SERIES_VERIFICATION_REPORT.md (pre-existing failures from main are tolerated if traceable to git blame on main, not these changes).",
+        "Total test count > 800 (sanity check on collection)."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Run the promptset v3 audit against the new model_map.yaml v3. Capture output. The audit must verify: impact_class enforcement (structural/security_sensitive ⇒ critical tier); tag enum membership (only the 8 allowed); tag_rationale presence for every tagged step; override count <= 15 (warn at 12).",
+      "commands": [
+        "dopemux rte promptset audit --pipeline-version v4 --no-strict 2>&1 | tee proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/promptset_audit_v3.txt"
+      ],
+      "validation": [
+        "Audit reports 0 lint failures.",
+        "Override count is 6 (the consensus-mandated set: Z0/C10/S12/T0/T1/T3)."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run the bounded-lane dry run: `python services/repo-truth-extractor/run_extraction_v5.py --phase A --step A2 --cost-profile value-default --print-config`. Capture output. Verify the resolved ladder for (CE, medium) shows the consensus-mandated OR-primary path, that service_tier defaults match the profile, that disabled_providers is empty (none specified), and that model_alias_overrides is empty.",
+      "commands": [
+        "python services/repo-truth-extractor/run_extraction_v5.py --phase A --step A2 --cost-profile value-default --print-config 2>&1 | tee proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/bounded_lane_print_config.txt"
+      ],
+      "validation": [
+        "--print-config exits 0.",
+        "Output contains 'cost_profile: value-default'.",
+        "Output contains 'openrouter/openai/gpt-5.3-codex' as the primary route for an A0/A1-class step (CE/medium).",
+        "Output does NOT contain any legacy `BALANCED_GROK_OPENROUTER_*` constant references (those are deprecated by E7)."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run pal/codereview over the cumulative diff range (E1 base..origin/main post-E9). Capture output.",
+      "commands": [
+        "git log --oneline --reverse <E1-base>..origin/main > proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/series_commits.txt",
+        "# pal/codereview invocation (interactive; capture transcript)",
+        "echo 'See pal_codereview.txt for transcript' > proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/pal_codereview.txt"
+      ],
+      "validation": [
+        "pal/codereview reports no critical issues OR all critical issues are explicitly addressed in subsequent packets in this series.",
+        "Findings classified by severity in SERIES_VERIFICATION_REPORT.md."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Run pal/precommit on the verification branch (cumulative work). Capture output.",
+      "validation": [
+        "pal/precommit returns SAFE TO COMMIT or only-info-level findings."
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Author SERIES_VERIFICATION_REPORT.md: summary of what was verified, packet-by-packet SHAs, test counts (pass/fail/skip), promptset audit results, bounded-lane dry-run summary, pal/codereview verdict, pal/precommit verdict, residual risks, recommended operator next steps (i.e. now safe to run --cost-profile value-default --execute on a bounded lane with --max-cost-usd cap).",
+      "expected_files": [
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/SERIES_VERIFICATION_REPORT.md"
+      ],
+      "validation": [
+        "Report explicitly states VERIFIED or NOT_VERIFIED.",
+        "If NOT_VERIFIED, names the follow-up TP needed."
+      ]
+    },
+    {
+      "id": "S8",
+      "task": "Emit PROOF.json + sha256sums.txt referencing all the captured artifacts.",
+      "expected_files": [
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/PROOF.json",
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/sha256sums.txt"
+      ],
+      "validation": [
+        "PROOF.json parses.",
+        "sha256sums.txt verifies all .txt + .md proof files."
+      ]
+    },
+    {
+      "id": "S9",
+      "task": "Commit allowlisted files; push; open PR (no code change PR; verification proof bundle only).",
+      "validation": [
+        "PR title clearly marks 'verify(rte)' scope.",
+        "PR body links the SERIES_VERIFICATION_REPORT.md."
+      ]
+    },
+    {
+      "id": "S10",
+      "task": "Update task-packets/INDEX.md to mark all 6 packets in this series as 'Merged' (or 'Verified' for this packet). Update related-ADR column to point to docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md.",
+      "validation": [
+        "INDEX.md committed in this same PR.",
+        "All 6 packets visible with status updated."
+      ]
+    }
+  ]
+}

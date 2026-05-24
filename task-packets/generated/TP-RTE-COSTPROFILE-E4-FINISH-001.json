@@ -1,0 +1,173 @@
+{
+  "id": "TP-RTE-COSTPROFILE-E4-FINISH-001",
+  "project": "dopemux-mvp",
+  "target": "Finish E4 wiring in llm_runtime.py: expose service_tier / cached_tokens / cache_write_tokens / prompt_cache_directives in the call_llm result meta dict so the orchestrator can pass them to the spend ledger, and resolve cell-aliased model IDs (${ALIAS_NAME}) at the call_llm boundary via the cost_profile name and operator overrides.",
+  "invariants": [
+    "Do not modify pricing.yaml, spend_ledger.py, structured_output_contracts.py, batch_clients.py, run_extraction_v5.py outside of the specific call_llm caller sites that need the resolved meta — those are owned by other packets.",
+    "Do not change the existing call_llm public signature except by extending it with new keyword-only params (already done in 9085d8a1d for service_tier / disabled_providers / prompt_cache_directives). New params here are also keyword-only with safe defaults.",
+    "Cell alias resolution must happen via run_extraction_v5.resolve_cell_alias() — do not duplicate alias logic in llm_runtime. The contract is: caller passes model_id which may already be resolved OR may be a ${ALIAS} placeholder; llm_runtime resolves it once at the top of call_llm() before any payload construction.",
+    "Existing meta-dict fields must not be renamed or have their types changed. New fields are additive: meta['service_tier_requested'], meta['service_tier_observed'], meta['cached_tokens'], meta['cache_write_tokens'], meta['cache_strategy_applied'].",
+    "Preserve the audit-confirmed F2-CRIT-1 fix (real fetch_results extraction) and F2-CRIT-3 fix (strict batch payload).",
+    "Preserve Dopemux split authority boundaries per AGENTS.md §6."
+  ],
+  "depends_on": [
+    "TP-RTE-COSTPROFILE-E3-CONTRACTS-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "rte-cost-profile-redesign",
+    "base_branch": "main",
+    "parent_tp_id": "TP-RTE-COSTPROFILE-E3-CONTRACTS-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-costprofile-e4-finish-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(rte): llm_runtime meta exposure + cell alias resolution (E4 finish)",
+    "allowlist": [
+      "services/repo-truth-extractor/llm_runtime.py",
+      "services/repo-truth-extractor/tests/test_llm_runtime_service_tier_passthrough.py",
+      "services/repo-truth-extractor/tests/test_llm_runtime_cell_alias_resolution.py",
+      "services/repo-truth-extractor/tests/test_llm_runtime_cached_tokens_meta.py",
+      "task-packets/generated/TP-RTE-COSTPROFILE-E4-FINISH-001.json",
+      "task-packets/INDEX.md",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E4-FINISH-001/PROOF.json",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E4-FINISH-001/sha256sums.txt"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-RTE-COSTPROFILE-E4-FINISH-001.json >/dev/null",
+      "python -m compileall -q services/repo-truth-extractor/llm_runtime.py",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_llm_runtime_service_tier_passthrough.py services/repo-truth-extractor/tests/test_llm_runtime_cell_alias_resolution.py services/repo-truth-extractor/tests/test_llm_runtime_cached_tokens_meta.py -v",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_cost_cap.py services/repo-truth-extractor/tests/test_phase_d_sidefill.py services/repo-truth-extractor/tests/test_repair_counters_thread_safety.py -v",
+      "python -m json.tool proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E4-FINISH-001/PROOF.json >/dev/null",
+      "cd proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E4-FINISH-001 && shasum -a 256 -c sha256sums.txt",
+      "git diff --check",
+      "git diff --cached --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(rte): llm_runtime meta exposure + cell alias resolution (E4 finish)",
+    "body": "## Summary\n- Resolves `${ALIAS_NAME}` placeholders in `call_llm(model_id=...)` at the entry point via `run_extraction_v5.resolve_cell_alias()` so cells in model_map.yaml v3 can use aliases without leaking to the wire request.\n- Surfaces `service_tier_requested` / `service_tier_observed` (from response usage), `cached_tokens` / `cache_write_tokens` (already captured in `_response_summary_metadata`), and `cache_strategy_applied` in the call_llm result meta dict so the orchestrator can pass them to spend_ledger.accumulate().\n- Adds tests covering passthrough, override precedence (CLI > env > profile default), and meta exposure across OpenAI / OpenRouter / Anthropic-via-OR / Gemini / xAI response shapes.\n\n## Scope\nLimited to llm_runtime.py and three new test files. No changes to pricing.yaml, spend_ledger, batch_clients, structured_output_contracts, run_extraction_v5 cfg construction.\n\n## Validation\nNew tests verify alias resolution and meta exposure. Existing cost cap + sidefill + repair counter tests remain green. RTE_DISABLE_LIVE_LLM_IN_TESTS=1 enforced.\n\n## NOT_RUN\n- Real provider calls.\n- End-to-end orchestrator integration (covered by E7 packet).\n\n## Residual Risks / UNKNOWNs\n- service_tier_observed depends on providers honestly echoing the tier in response usage; OpenAI does, but OpenRouter passthrough behavior for tier echoes is unverified.\n- Cell alias resolution happens at every call_llm entry, so each alias lookup costs one dict access per call (negligible).\n\n@codex review",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: verify worktree, branch, clean state, and that TP-RTE-COSTPROFILE-E3-CONTRACTS-001 has merged (its changes are needed for cache_directives plumb-through).",
+      "commands": [
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short",
+        "git log --oneline | grep -E 'E3-CONTRACTS|service_tier passthrough' | head -3"
+      ],
+      "validation": [
+        "Working tree clean.",
+        "E3 packet commits visible in ancestry; otherwise STOP and rebase onto E3 merge."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Locate alias-resolution insertion point in `call_llm()`. Verify the early-exit code path (live-LLM blocked, disabled_providers check) executes BEFORE alias resolution so blocked routes don't trigger alias lookups.",
+      "validation": [
+        "Insertion point identified by line number.",
+        "Order is: live-LLM block → disabled_providers check → alias resolution → payload construction."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Insert alias resolution at the top of call_llm() after the disabled_providers gate: `if model_id.startswith('${') and model_id.endswith('}'): from run_extraction_v5 import resolve_cell_alias; model_id = resolve_cell_alias(model_id, cost_profile=getattr(cfg, 'cost_profile', 'value-default'), cli_overrides=dict(getattr(cfg, 'model_alias_overrides', ())), env=os.environ)`. Add `_resolved_from_alias: bool` field to meta to surface that resolution happened.",
+      "validation": [
+        "Resolution is lazy (only triggered when placeholder is detected).",
+        "Original model_id is preserved in meta as `model_id_requested` for debugging.",
+        "Cycle protection: if resolve_cell_alias returns another `${...}` placeholder, raise ValueError rather than recurse."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Add the new meta fields. In the result-construction site at end of call_llm, ensure meta includes: `service_tier_requested` (from kwarg), `service_tier_observed` (from response_summary.usage.service_tier when present, else None), `cached_tokens` (already captured by _response_summary_metadata), `cache_write_tokens` (already captured), `cache_strategy_applied` (from prompt_cache_directives['strategy'] if applied else 'none'), `model_id_requested`, `_resolved_from_alias`.",
+      "validation": [
+        "Meta dict has the 7 new fields after a successful call.",
+        "Existing meta fields are untouched (no rename, no type change)."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Plumb cached_tokens / cache_write_tokens / service_tier_requested through to the lifecycle_callback emissions so per-attempt telemetry includes them.",
+      "validation": [
+        "Lifecycle callback receives `cached_tokens`, `cache_write_tokens`, `service_tier_requested` keys when present.",
+        "Existing lifecycle consumers don't break when these keys are absent (e.g., during legacy provider calls)."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Write test_llm_runtime_service_tier_passthrough.py: mock OpenAI client; verify chat_kwargs receives service_tier when set; verify it's omitted for xAI provider even if set; verify meta['service_tier_requested'] = what caller passed; verify meta['service_tier_observed'] surfaces from mocked response.",
+      "validation": [
+        "5+ tests pass under RTE_DISABLE_LIVE_LLM_IN_TESTS=1."
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Write test_llm_runtime_cell_alias_resolution.py: pass `model_id='${QUALITY_SYNTH_CRITICAL_MODEL}'`, mock cfg.cost_profile='quality'; verify resolved model_id passed to provider client; verify meta['_resolved_from_alias']=True and meta['model_id_requested']='${QUALITY_SYNTH_CRITICAL_MODEL}'; verify CLI override precedence; verify cycle detection raises.",
+      "validation": [
+        "6+ tests pass."
+      ]
+    },
+    {
+      "id": "S8",
+      "task": "Write test_llm_runtime_cached_tokens_meta.py: feed simulated OpenAI / Anthropic / Gemini response usage shapes through `_response_summary_metadata`; assert cached_tokens is normalized correctly from each provider's native field name (OpenAI prompt_tokens_details.cached_tokens, Anthropic cache_read_input_tokens, Gemini cached_content_token_count); assert cache_write_tokens captured from Anthropic only.",
+      "validation": [
+        "6+ tests pass; provider-specific edge cases (missing usage block, partial fields) covered."
+      ]
+    },
+    {
+      "id": "S9",
+      "task": "Run pal/codereview on the diff.",
+      "validation": [
+        "pal/codereview reports no critical issues."
+      ]
+    },
+    {
+      "id": "S10",
+      "task": "Run pal/precommit.",
+      "validation": [
+        "pal/precommit returns SAFE TO COMMIT."
+      ]
+    },
+    {
+      "id": "S11",
+      "task": "Commit allowlisted files; push; open PR.",
+      "validation": [
+        "Commit message follows conventional-commits.",
+        "PR body includes Summary / Scope / Validation / NOT_RUN / Residual Risks."
+      ]
+    },
+    {
+      "id": "S12",
+      "task": "Emit PROOF.json + sha256sums.txt under proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E4-FINISH-001/.",
+      "expected_files": [
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E4-FINISH-001/PROOF.json",
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E4-FINISH-001/sha256sums.txt"
+      ],
+      "validation": [
+        "PROOF.json parses; sha256sums.txt verifies."
+      ]
+    }
+  ]
+}
