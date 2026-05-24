@@ -237,9 +237,13 @@
     ],
     "code_commit_shas": [
       "1cefa6fdc",
-      "903022fc5"
+      "903022fc5",
+      "f07c980ba"
     ],
-    "proof_bundle_commit_note": "The proof commit itself (which writes this section) cannot reference its own SHA; track via `git log -- proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROOF.json`. Any further amendments are recorded via subsequent commits in that path."
+    "proof_only_commit_shas": [
+      "fdb6e6ac4"
+    ],
+    "proof_bundle_commit_note": "code_commit_shas lists commits that introduced code or test changes. proof_only_commit_shas lists commits whose payload was purely this proof bundle (and therefore cannot record their own SHA at write-time). Any further amendments are tracked via `git log -- proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROOF.json`."
   },
   "task_packet_id": "TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005",
   "validation": [
