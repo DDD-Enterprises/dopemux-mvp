@@ -2,39 +2,58 @@
   "schema": "dopemux.proof.v1",
   "packet_id": "TP-RTE-COSTPROFILE-E8-YAML-V3-001",
   "project": "Repo Truth Extractor",
-  "generated_at_utc": "2026-05-24T10:07:24Z",
-  "worktree": "/Users/hue/code/dopemux-mvp/.claude/worktrees/goofy-haibt-fc568e",
-  "branch": "codex/rte-costprofile-e8-yaml-v3-001",
-  "base_branch": "codex/rte-costprofile-e7-ladders-failover-001",
-  "base_head_sha": "c8b3a67c5352f023dc112ed3c58a22556d273ea8",
+  "generated_at_utc": "2026-05-24T13:51:20Z",
+  "worktree": "/Users/hue/.codex/worktrees/pr691-e8-review",
+  "branch": "codex/rte-costprofile-e8-review-fix-001",
+  "base_branch": "claude/goofy-haibt-fc568e",
+  "base_head_sha": "53a2ef10edf73d8cbca0271ef1afaee53d93ef9e",
   "implementation_commit_sha": "5704f501e8fed2409a8185fcf657bc3b1fb007c2",
   "initial_proof_commit_sha": "93c6a673926b7aed825b53aa27c7643cd076a604",
-  "proof_commit_sha": "SELF_REFERENTIAL_SEE_GIT_HISTORY",
+  "proof_commit_sha": "SELF_REFERENTIAL_COMMIT_SHA_NOT_AVAILABLE_BEFORE_COMMIT",
   "pr": {
     "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/691",
     "number": 691,
-    "base": "codex/rte-costprofile-e7-ladders-failover-001",
+    "base": "codex/rte-costprofile-e4-finish-001",
     "head": "codex/rte-costprofile-e8-yaml-v3-001",
     "head_sha_at_pr_creation": "93c6a673926b7aed825b53aa27c7643cd076a604",
+    "head_sha_at_merge": "aa9630e22d56a57db5cce82386816f3744e395fe",
+    "merged_at_utc": "2026-05-24T13:32:07Z",
+    "merge_commit_sha": "db8ae61fe73f234d30e994c1fa0de9010704f7a8",
     "ci_status_at_pr_creation": "PENDING",
-    "review_thread_status_at_pr_creation": "NO_REVIEW_THREADS_OBSERVED"
+    "review_thread_status_at_pr_creation": "NO_REVIEW_THREADS_OBSERVED",
+    "review_remediation": {
+      "worktree": "/Users/hue/.codex/worktrees/pr691-e8-review",
+      "branch": "codex/rte-costprofile-e8-review-fix-001",
+      "base": "claude/goofy-haibt-fc568e",
+      "commit_sha": "SELF_REFERENTIAL_REMEDIATION_COMMIT_SEE_GIT_HISTORY",
+      "followup_pr": "PENDING_CREATION",
+      "threads_addressed": [
+        3294245404,
+        3294245409,
+        3294245413,
+        3294245428,
+        3294246951,
+        3294246952
+      ]
+    }
   },
   "repo_identity": {
-    "root": "/Users/hue/code/dopemux-mvp/.claude/worktrees/goofy-haibt-fc568e",
+    "root": "/Users/hue/.codex/worktrees/pr691-e8-review",
     "remote_origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
     "remote_mvp": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
     "marker": ".dopetaskroot"
   },
   "stack_topology": {
     "observed": [
-      "E8 was originally committed on an older E7 head.",
-      "E8 was rebased onto current E7 head c8b3a67c5352f023dc112ed3c58a22556d273ea8 before proof and PR publication.",
-      "git merge-base --is-ancestor codex/rte-costprofile-e7-ladders-failover-001 HEAD exited 0 after rebase.",
-      "git diff --stat codex/rte-costprofile-e7-ladders-failover-001...HEAD shows only the 15 E8 implementation files."
+      "E8 PR #691 merged at aa9630e22d56a57db5cce82386816f3744e395fe before this review-remediation commit was published.",
+      "The former E4/E7 stack branch names are no longer advertised by origin; claude/goofy-haibt-fc568e is the observed live stacked integration base.",
+      "origin/claude/goofy-haibt-fc568e has the same tree as the merged #691 head before remediation.",
+      "The review-fix branch was created from origin/claude/goofy-haibt-fc568e and cherry-picked only the E8 review-remediation delta.",
+      "git diff --stat origin/claude/goofy-haibt-fc568e..HEAD shows only the six E8 review-remediation files."
     ],
     "external_blockers_not_owned_by_e8": [
-      "#688 has unresolved review comments on lifecycle payload compatibility outside E8 scope.",
-      "#689 has unresolved review comments on cost-profile wiring/spend accounting outside E8 scope."
+      "#688 was merged into claude/goofy-haibt-fc568e and remains outside this E8 review-remediation scope.",
+      "#689 review comments were resolved and PR #689 was merged to main at 11bbc38b789317fb21a127e57a259a4d7927f734."
     ]
   },
   "scope_decisions": [
@@ -92,7 +111,7 @@
       {
         "command": "python services/repo-truth-extractor/promptsets/v4/scripts/migrate_model_map_v2_to_v3.py --dry-run --diff 2>&1 | tail -20",
         "exit_code": 0,
-        "observed": "migrate: input=model_map.v2.yaml.bak steps_in=136 steps_out=136 overrides=6 lane_defaults_cells=160"
+        "observed": "migrate: input=model_map.v2.yaml.bak steps_in=136 steps_out=136 overrides=6 lane_defaults_cells=40"
       },
       {
         "command": "python -m compileall -q services/repo-truth-extractor/lib/structured_output_contracts.py services/repo-truth-extractor/rte_promptset.py services/repo-truth-extractor/promptsets/v4/scripts/migrate_model_map_v2_to_v3.py",
@@ -107,7 +126,7 @@
       {
         "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_model_map_v3_loader.py services/repo-truth-extractor/tests/test_model_map_v3_impact_class_enforcement.py services/repo-truth-extractor/tests/test_model_map_v3_tag_routing_deltas.py services/repo-truth-extractor/tests/test_model_map_v3_per_step_overrides.py services/repo-truth-extractor/tests/test_migrate_model_map_v2_to_v3.py -v",
         "exit_code": 0,
-        "observed": "72 passed, 1 PytestConfigWarning for unknown asyncio_mode"
+        "observed": "review-remediated E8 v3 subset passed; quiet pytest reached 100%; 1 PytestConfigWarning for unknown asyncio_mode"
       },
       {
         "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_promptset_v4_lint.py services/repo-truth-extractor/tests/test_promptset_rules_injection.py services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py services/repo-truth-extractor/tests/test_phase_d_contract_map.py services/repo-truth-extractor/tests/test_phase_interaction.py -v",
@@ -118,6 +137,11 @@
         "command": "git diff --check codex/rte-costprofile-e7-ladders-failover-001...HEAD",
         "exit_code": 0,
         "observed": "three-dot E8 diff whitespace clean"
+      },
+      {
+        "command": "git diff --check origin/claude/goofy-haibt-fc568e..HEAD",
+        "exit_code": 0,
+        "observed": "review-remediation diff whitespace clean"
       },
       {
         "command": "pre-commit run --files $(git diff --cached --name-only)",
@@ -153,19 +177,19 @@
   "pal": {
     "codereview": {
       "status": "PASS_LOCAL_INTERNAL",
-      "continuation_id": "d4fc0a91-7a52-4bf1-bf26-3dc791499cb8",
+      "continuation_id": "9007e135-ad39-4b60-8d9e-787004d26402",
       "issues_found": 0,
-      "note": "External expert path requested complete line-numbered file contents after failing to embed files; not counted as an external expert pass."
+      "note": "Review-remediation PAL codereview found no E8-scope issues."
     },
     "precommit": {
       "status": "PASS_LOCAL_INTERNAL",
-      "continuation_id": "52bb0085-4106-475a-800d-1778357af187",
+      "continuation_id": "242cffcf-6e9b-48f8-9939-665f3241d539",
       "issues_found": 0
     }
   },
   "residual_risks": [
-    "This is a stacked review surface. Final series merge still requires normalization after #689 or an explicit replacement integration path if #689 remains blocked.",
-    "#688 and #689 unresolved review comments may block normalized series merge even if E8 itself is green.",
+    "This is a stacked review surface. Final series merge to main still requires stack normalization.",
+    "#691 was merged before review remediation; the follow-up PR carries the E8 review-fix delta.",
     "E8 intentionally does not exercise full RTE suite or live provider paths.",
     "External PAL expert codereview did not complete; GitHub review remains the external review surface."
   ],
