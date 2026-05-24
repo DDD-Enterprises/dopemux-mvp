@@ -417,6 +417,20 @@ def call_llm(
         max_completion_tokens=max_completion_tokens_override,
         request_options=request_options_override,
     )
+    service_tier_requested: Optional[str] = service_tier
+    if (
+        isinstance(payload, dict)
+        and service_tier
+        and provider in ("openai", "openrouter")
+        and str(service_tier).lower() in ("default", "flex", "priority", "auto")
+        and "service_tier" not in normalize_route_request_options(payload)
+    ):
+        payload["service_tier"] = str(service_tier).lower()
+        service_tier_requested = payload["service_tier"]
+    else:
+        service_tier_requested = normalize_route_request_options(payload).get(
+            "service_tier", service_tier
+        )
     body = deps.serialize_payload_body(payload)
     request_payload_bytes = deps.measure_payload_bytes_from_body(body)
     request_payload_bytes_mode = (
@@ -772,8 +786,10 @@ def call_llm(
                     service_tier
                     and provider in ("openai", "openrouter")
                     and str(service_tier).lower() in ("default", "flex", "priority", "auto")
+                    and "service_tier" not in chat_kwargs
                 ):
                     chat_kwargs["service_tier"] = str(service_tier).lower()
+                service_tier_requested = chat_kwargs.get("service_tier", service_tier)
                 response = client.chat.completions.create(**chat_kwargs)
                 status_code = 200
                 response_text = deps.extract_text_from_chat_completion(response)
@@ -785,6 +801,25 @@ def call_llm(
                 response_json=response_json,
                 response_text=response_text,
             )
+            response_summary_meta = _response_summary_metadata(response_summary)
+            usage_for_tier = (
+                response_summary.get("usage") if isinstance(response_summary, dict) else None
+            )
+            service_tier_observed = (
+                usage_for_tier.get("service_tier")
+                if isinstance(usage_for_tier, dict)
+                else None
+            )
+            if (
+                isinstance(prompt_cache_directives, dict)
+                and prompt_cache_directives.get("applied")
+            ):
+                raw_strategy = prompt_cache_directives.get("strategy")
+                cache_strategy_applied = (
+                    str(raw_strategy).strip().lower() if raw_strategy else "none"
+                )
+            else:
+                cache_strategy_applied = "none"
             retry_trace.append(
                 {
                     "attempt": attempt,
@@ -810,6 +845,10 @@ def call_llm(
                 completion_tokens=response_summary.get("completion_tokens"),
                 upstream_request_id=response_summary.get("response_id"),
                 request_payload_bytes=request_payload_bytes,
+                cached_tokens=response_summary_meta.get("cached_tokens"),
+                cache_write_tokens=response_summary_meta.get("cache_write_tokens"),
+                service_tier_requested=service_tier_requested,
+                cache_strategy_applied=cache_strategy_applied,
             )
             return {
                 "ok": True,
@@ -821,7 +860,7 @@ def call_llm(
                     "endpoint_effective": deps.endpoint_effective(endpoint_url),
                     **deps.endpoint_fingerprint(endpoint_url),
                     **_request_route_metadata(provider, model_id, resolved_api_key_env or api_key_env),
-                    **_response_summary_metadata(response_summary),
+                    **response_summary_meta,
                     **_structured_output_request_metadata(structured_output),
                     "status_code": status_code,
                     "failure_type": None,
@@ -859,6 +898,9 @@ def call_llm(
                     "retry_trace": retry_trace,
                     "response_received": True,
                     "structured_output": structured_output,
+                    "service_tier_requested": service_tier_requested,
+                    "service_tier_observed": service_tier_observed,
+                    "cache_strategy_applied": cache_strategy_applied,
                 },
             }
         except Exception as exc:
@@ -1023,7 +1065,14 @@ def call_llm_with_ladder(
     execute_attempt: Callable[[RouteTuple, int], Dict[str, Any]],
     ui: Optional[Any] = None,
 ) -> Dict[str, Any]:
-    denylist = {str(provider).strip().lower() for provider in cfg.provider_denylist}
+    denylist = {
+        str(provider).strip().lower()
+        for provider in (
+            tuple(getattr(cfg, "provider_denylist", ()) or ())
+            + tuple(getattr(cfg, "disabled_providers", ()) or ())
+        )
+        if str(provider).strip()
+    }
     ladder = [
         _normalize_route_tuple(route, deps.provider_api_key_env)
         for route in ladder

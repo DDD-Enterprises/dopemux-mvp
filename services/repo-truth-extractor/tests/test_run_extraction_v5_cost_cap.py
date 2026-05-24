@@ -161,6 +161,10 @@ def test_initialize_spend_tracker_honors_selected_execution_step_for_route_cover
         "load_pricing_registry",
         lambda path=runner.PRICING_CONFIG_PATH: (
             {
+                "xai/grok-4.3": {
+                    "input_cost_per_m": Decimal("2.00"),
+                    "output_cost_per_m": Decimal("8.00"),
+                },
                 "xai/grok-4.20-beta-0309-reasoning": {
                     "input_cost_per_m": Decimal("3.00"),
                     "output_cost_per_m": Decimal("15.00"),

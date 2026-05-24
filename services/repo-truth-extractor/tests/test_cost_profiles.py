@@ -23,6 +23,35 @@ if str(SERVICE_ROOT) not in sys.path:
 import run_extraction_v5 as runner  # noqa: E402
 
 
+def _make_cfg(**overrides):
+    payload = {
+        "dry_run": False,
+        "max_files_docs": 35,
+        "max_files_code": 20,
+        "max_chars": 650000,
+        "max_request_bytes": 200000,
+        "file_truncate_chars": 70000,
+        "home_scan_mode": "safe",
+        "resume": False,
+        "fail_fast_auth": True,
+        "gemini_auth_mode": "auto",
+        "gemini_transport": "sdk",
+        "openai_transport": "openai_sdk",
+        "xai_transport": "openai_sdk",
+        "retry_policy": "default",
+        "retry_max_attempts": 1,
+        "retry_base_seconds": 0.0,
+        "retry_max_seconds": 0.0,
+        "phase_auth_fail_threshold": 1,
+        "partition_workers": 1,
+        "debug_phase_inputs": False,
+        "fail_fast_missing_inputs": False,
+        "routing_policy": "balanced_openrouter",
+    }
+    payload.update(overrides)
+    return runner.RunnerConfig(**payload)
+
+
 def test_cost_profiles_dict_has_four_canonical_profiles() -> None:
     assert set(runner.COST_PROFILES.keys()) == {
         "economy",
@@ -130,6 +159,111 @@ def test_resolve_cell_alias_returns_placeholder_when_unresolved() -> None:
     # visible in logs rather than silently dropping to None.
     result = runner.resolve_cell_alias("${UNKNOWN_ALIAS_KEY}", "quality")
     assert result == "${UNKNOWN_ALIAS_KEY}"
+
+
+def test_resolve_effective_step_route_applies_model_alias_before_dispatch() -> None:
+    cfg = _make_cfg(
+        cost_profile="quality",
+        model_alias_overrides=(
+            ("QUALITY_SYNTH_CRITICAL_MODEL", "anthropic/claude-opus-4.7"),
+        ),
+    )
+    step_contract = {
+        "scope": {"json_managed": True},
+        "expected_artifacts": ["SYNTH_REPORT.json"],
+        "lane": {
+            "primary_routes": [
+                {
+                    "provider": "openrouter",
+                    "model_id": "${QUALITY_SYNTH_CRITICAL_MODEL}",
+                    "api_key_env": "OPENROUTER_API_KEY",
+                    "strict_json_schema": False,
+                    "strict_passthrough_verified": False,
+                    "service_tier": "priority",
+                }
+            ]
+        },
+    }
+
+    route = runner.resolve_effective_step_route(
+        "R", "R7", cfg, step_contract=step_contract
+    )
+
+    assert route["provider"] == "openrouter"
+    assert route["model_id"] == "anthropic/claude-opus-4.7"
+    assert route["ladder"] == [
+        ("openrouter", "anthropic/claude-opus-4.7", "OPENROUTER_API_KEY")
+    ]
+    assert route["ladder_route_entries"][0]["model_id"] == "anthropic/claude-opus-4.7"
+    assert route["ladder_route_entries"][0]["service_tier"] == "priority"
+
+
+def test_call_llm_forwards_cost_profile_runtime_controls(monkeypatch) -> None:
+    captured = {}
+
+    def fake_call_llm(_deps, provider, model_id, api_key_env, *_args, **kwargs):
+        captured.update(
+            {
+                "provider": provider,
+                "model_id": model_id,
+                "api_key_env": api_key_env,
+                "service_tier": kwargs.get("service_tier"),
+                "disabled_providers": kwargs.get("disabled_providers"),
+            }
+        )
+        return {"ok": True, "text": "{}", "meta": {}}
+
+    monkeypatch.setattr(runner, "llm_runtime_call_llm", fake_call_llm)
+    cfg = _make_cfg(
+        default_service_tier="priority",
+        disabled_providers=("openai",),
+    )
+
+    runner.call_llm(
+        provider="openrouter",
+        model_id="anthropic/claude-opus-4.6",
+        api_key_env="OPENROUTER_API_KEY",
+        system_prompt="Return JSON.",
+        user_content="{}",
+        cfg=cfg,
+    )
+
+    assert captured["provider"] == "openrouter"
+    assert captured["model_id"] == "anthropic/claude-opus-4.6"
+    assert captured["service_tier"] == "priority"
+    assert captured["disabled_providers"] == {"openai"}
+
+
+def test_ladder_runtime_filters_disabled_providers_before_attempt() -> None:
+    cfg = _make_cfg(disabled_providers=("openai",), escalation_max_hops=2)
+    attempts = []
+
+    def execute_attempt(route, hop_index):
+        attempts.append((route, hop_index))
+        return {
+            "response_text": "{}",
+            "request_meta": {},
+            "artifacts": [{}],
+            "route": route,
+            "artifacts_ok": True,
+        }
+
+    result = runner.call_llm_with_ladder(
+        phase="A",
+        step_id="A0",
+        partition_id="A_P0001",
+        routing_policy=cfg.routing_policy,
+        routing_tier="bulk",
+        ladder=[
+            ("openai", "gpt-5.4", "OPENAI_API_KEY"),
+            ("xai", "grok-4.3", "XAI_API_KEY"),
+        ],
+        cfg=cfg,
+        execute_attempt=execute_attempt,
+    )
+
+    assert attempts == [(("xai", "grok-4.3", "XAI_API_KEY"), 0)]
+    assert result["request_meta"]["provider"] == "xai"
 
 
 def test_quality_profile_uses_opus_4_6_not_4_7() -> None:
