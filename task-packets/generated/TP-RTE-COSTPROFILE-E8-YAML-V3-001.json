@@ -32,7 +32,7 @@
   "execution": {
     "agent": "codex",
     "branch": "codex/rte-costprofile-e8-yaml-v3-001",
-    "base_branch": "main"
+    "base_branch": "codex/rte-costprofile-e7-ladders-failover-001"
   },
   "commit": {
     "message": "feat(rte): model_map.yaml v3 (lane_defaults + tag_definitions + impact_class + 6 overrides) (E8)",
@@ -48,6 +48,8 @@
       "services/repo-truth-extractor/tests/test_model_map_v3_tag_routing_deltas.py",
       "services/repo-truth-extractor/tests/test_model_map_v3_per_step_overrides.py",
       "services/repo-truth-extractor/tests/test_migrate_model_map_v2_to_v3.py",
+      "services/repo-truth-extractor/tests/test_phase_d_contract_map.py",
+      "services/repo-truth-extractor/tests/test_phase_interaction.py",
       "task-packets/generated/TP-RTE-COSTPROFILE-E8-YAML-V3-001.json",
       "task-packets/INDEX.md",
       "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E8-YAML-V3-001/PROOF.json",
@@ -59,7 +61,7 @@
       "python -c \"import yaml; doc = yaml.safe_load(open('services/repo-truth-extractor/promptsets/v4/model_map.v2.yaml.bak')); assert doc.get('version') == '2.0'; print('v2 backup preserved')\"",
       "python services/repo-truth-extractor/promptsets/v4/scripts/migrate_model_map_v2_to_v3.py --dry-run --diff 2>&1 | tail -20",
       "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_model_map_v3_loader.py services/repo-truth-extractor/tests/test_model_map_v3_impact_class_enforcement.py services/repo-truth-extractor/tests/test_model_map_v3_tag_routing_deltas.py services/repo-truth-extractor/tests/test_model_map_v3_per_step_overrides.py services/repo-truth-extractor/tests/test_migrate_model_map_v2_to_v3.py -v",
-      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_promptset_v4_lint.py services/repo-truth-extractor/tests/test_promptset_rules_injection.py services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py -v",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_promptset_v4_lint.py services/repo-truth-extractor/tests/test_promptset_rules_injection.py services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py services/repo-truth-extractor/tests/test_phase_d_contract_map.py services/repo-truth-extractor/tests/test_phase_interaction.py -v",
       "python -m json.tool proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E8-YAML-V3-001/PROOF.json >/dev/null",
       "cd proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E8-YAML-V3-001 && shasum -a 256 -c sha256sums.txt",
       "git diff --check",
@@ -68,8 +70,8 @@
   },
   "pr": {
     "title": "feat(rte): model_map.yaml v3 (lane_defaults + tag_definitions + impact_class + 6 overrides) (E8)",
-    "body": "## Summary\n- Restructures promptsets/v4/model_map.yaml from v2.0 (per-step routes, 136 entries × ~30 lines) to v3.0 (top-level `lane_defaults` matrix + `tag_definitions` enum + per-step `impact_class` + `capability_tier` + 6 per-step overrides).\n- Adds an idempotent migration script (`scripts/migrate_model_map_v2_to_v3.py`) that takes v2 + Phase C cell map + Phase D consensus reclassifications as inputs and emits v3.\n- Preserves v2 as `model_map.v2.yaml.bak`.\n- Updates `rte_promptset.py` and `lib/structured_output_contracts.py` loaders to honor the new structure with documented fall-through order: (1) per-step *_routes override → (2) lane_defaults[cost_profile][lane_class][capability_tier] → (3) tag-driven delta → (4) cost-profile cell_alias defaults.\n- Adds promptset audit rule: steps with impact_class ∈ {structural, security_sensitive} MUST be capability_tier=critical; missing tag_rationale on tagged steps fails closed.\n\n## Scope\nLimited to model_map.yaml (rewrite), v2 backup, migration script + script README, structured_output_contracts.py loader, rte_promptset.py loader, and five new test files.\n\n## Validation\nv2 backup preserved; v3 schema validates (version=3.0, lane_defaults present, tag_definitions has exactly 8 entries, 136 step entries preserved). Existing promptset lint + truth tests pass. Migration script is idempotent (re-run produces zero diff) and has its own test suite.\n\n## NOT_RUN\n- Live LLM calls.\n- F verification packet (covers bounded-lane dry run + pal/codereview).\n\n## Residual Risks / UNKNOWNs\n- Operators with custom forks of model_map.yaml v2 will need to re-apply their edits via the migration script. The script's --diff mode shows the planned transformation before commit.\n- The 6 per-step overrides (Z0/C10/S12/T0/T1/T3) are the floor; future promptset evolution may add more. The cap is 15 (warn at 12) enforced by promptset audit.\n\n@codex review",
-    "base": "main"
+    "body": "## Summary\n- Restructures promptsets/v4/model_map.yaml from v2.0 (per-step routes, 136 entries × ~30 lines) to v3.0 (top-level `lane_defaults` matrix + `tag_definitions` enum + per-step `impact_class` + `capability_tier` + 6 per-step overrides).\n- Adds an idempotent migration script (`scripts/migrate_model_map_v2_to_v3.py`) that takes v2 + Phase C cell map + Phase D consensus reclassifications as inputs and emits v3.\n- Preserves v2 as `model_map.v2.yaml.bak`.\n- Updates `rte_promptset.py` and `lib/structured_output_contracts.py` loaders to honor the new structure with documented fall-through order: (1) per-step *_routes override → (2) lane_defaults[cost_profile][lane_class][capability_tier] → (3) tag-driven delta → (4) cost-profile cell_alias defaults.\n- Adds promptset audit rules for impact_class/capability_tier/tag invariants and updates promptset regression expectations for the v3 lane taxonomy.\n\n## Scope\nStacked review PR against `codex/rte-costprofile-e7-ladders-failover-001`. Limited to model_map.yaml (rewrite), v2 backup, migration script + script README, structured_output_contracts.py loader, rte_promptset.py loader/audit gate, five new v3 test files, and two existing promptset regression tests whose expected values changed because of the v3 lane taxonomy.\n\n## Validation\nv2 backup preserved; v3 schema validates (version=3.0, lane_defaults present, tag_definitions has exactly 8 entries, 136 step entries preserved). Existing promptset lint, truth, phase contract-map, and phase-interaction tests pass. Migration script is idempotent (re-run produces zero diff) and has its own test suite.\n\n## NOT_RUN\n- Live LLM calls.\n- E9 integration tests.\n- F verification packet (covers bounded-lane dry run + pal/codereview).\n\n## Residual Risks / UNKNOWNs\n- This is a stacked review surface. Final merge still requires normalizing the cost-profile stack after #689, or an explicit replacement integration path if #689 remains blocked.\n- Operators with custom forks of model_map.yaml v2 will need to re-apply their edits via the migration script. The script's --diff mode shows the planned transformation before commit.\n- The 6 per-step overrides (Z0/C10/S12/T0/T1/T3) are the floor; future promptset evolution may add more. The cap is 15 (warn at 12) enforced by promptset audit.\n- #688 and #689 still have unresolved review comments outside this E8 packet scope.\n\n@codex review",
+    "base": "codex/rte-costprofile-e7-ladders-failover-001"
   },
   "pal_chain": {
     "enabled": true,
@@ -86,7 +88,7 @@
   "steps": [
     {
       "id": "S1",
-      "task": "Preflight: verify TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001 is merged (cell-aliased ladders are needed by the v3 lane_defaults block). Verify worktree clean. Verify reference inputs exist: claudedocs/research/routing-design-2026-05.md, claudedocs/research/routing-consensus-2026-05.md, claudedocs/research/step-complexity-analysis-2026-05.md.",
+      "task": "Preflight: verify TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001 is visible in ancestry for this stacked PR (cell-aliased ladders are needed by the v3 lane_defaults block). Verify worktree clean. Verify reference inputs exist: claudedocs/research/routing-design-2026-05.md, claudedocs/research/routing-consensus-2026-05.md, claudedocs/research/step-complexity-analysis-2026-05.md.",
       "commands": [
         "git remote -v",
         "git branch --show-current",
