@@ -615,6 +615,7 @@ def test_full_chain_build_chat_payload_to_sdk_kwargs() -> None:
         system_prompt="system",
         user_content="user",
         cfg=cfg,
+        service_tier="priority",
         request_options_override={
             "service_tier": "flex",
             "reasoning_effort": "low",

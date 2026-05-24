@@ -771,6 +771,82 @@ def resolve_cell_alias(
     return alias_or_model  # unresolved — return placeholder for visibility
 
 
+def _model_alias_overrides_dict(raw: Any) -> Dict[str, str]:
+    if isinstance(raw, dict):
+        items = raw.items()
+    else:
+        items = raw or ()
+    result: Dict[str, str] = {}
+    for item in items:
+        try:
+            key, value = item
+        except Exception:
+            continue
+        key_text = str(key).strip()
+        value_text = str(value).strip()
+        if key_text and value_text:
+            result[key_text] = value_text
+    return result
+
+
+def _route_model_id_from_alias_value(provider: str, model_id: str) -> str:
+    """Return the provider-local model id for direct-provider aliases.
+
+    Profile aliases are documented as provider/model strings so they can also
+    be used on OpenRouter routes. Direct provider clients expect the local model
+    id, e.g. ``gpt-5.5`` instead of ``openai/gpt-5.5``.
+    """
+    provider_token = str(provider or "").strip().lower()
+    model_text = str(model_id or "").strip()
+    if provider_token and provider_token != "openrouter" and "/" in model_text:
+        prefix, _, suffix = model_text.partition("/")
+        if prefix.strip().lower() == provider_token and suffix.strip():
+            return suffix.strip()
+    return model_text
+
+
+def _resolve_route_model_alias(provider: str, model_id: str, cfg: "RunnerConfig") -> str:
+    resolved = resolve_cell_alias(
+        str(model_id),
+        str(getattr(cfg, "cost_profile", DEFAULT_COST_PROFILE) or DEFAULT_COST_PROFILE),
+        cli_overrides=_model_alias_overrides_dict(
+            getattr(cfg, "model_alias_overrides", ())
+        ),
+        env=os.environ,
+    )
+    if isinstance(resolved, str) and resolved.startswith("${") and resolved.endswith("}"):
+        raise ValueError(
+            f"Cell alias unresolved for provider route: {model_id!r} -> {resolved!r}"
+        )
+    return _route_model_id_from_alias_value(provider, str(resolved))
+
+
+def _resolve_route_tuple_alias(
+    route: Sequence[str],
+    cfg: "RunnerConfig",
+) -> Tuple[str, str, str]:
+    route_tuple = tuple(str(part) for part in tuple(route)[:3])
+    if len(route_tuple) < 3:
+        raise ValueError(f"Route must contain provider, model_id, api_key_env: {route!r}")
+    provider, model_id, api_key_env = route_tuple
+    return (
+        provider,
+        _resolve_route_model_alias(provider, model_id, cfg),
+        api_key_env,
+    )
+
+
+def _resolve_route_entry_alias(
+    route: Dict[str, Any],
+    cfg: "RunnerConfig",
+) -> Dict[str, Any]:
+    resolved = dict(route)
+    provider = str(resolved.get("provider") or "")
+    model_id = str(resolved.get("model_id") or "")
+    resolved["model_id"] = _resolve_route_model_alias(provider, model_id, cfg)
+    return resolved
+
+
 DEFAULT_GEMINI_MODEL_ID = "gemini-3-flash-preview"
 DEFAULT_GEMINI_BULK_MODEL = "gemini-3.1-flash-lite-preview"
 DEFAULT_GEMINI_EXTRACT_MODEL = "gemini-3-flash-preview"
@@ -5117,7 +5193,7 @@ def _resolve_explicit_route_override(
         selected = phases[phase]
     if selected is None:
         return None
-    provider, model_id, api_key_env = selected
+    provider, model_id, api_key_env = _resolve_route_tuple_alias(selected, cfg)
     contract_route_entry = _contract_route_entry_for_provider_model(
         step_contract,
         provider=str(provider),
@@ -5127,9 +5203,9 @@ def _resolve_explicit_route_override(
         contract_route_entry.get("strict_passthrough_verified", False)
     ) if isinstance(contract_route_entry, dict) else False
     route = {
-        "provider": str(provider),
-        "model_id": str(model_id),
-        "api_key_env": str(api_key_env),
+        "provider": provider,
+        "model_id": model_id,
+        "api_key_env": api_key_env,
         "strict_json_schema": strict_required,
         "strict_passthrough_verified": contract_strict_passthrough_verified,
     }
@@ -5144,8 +5220,8 @@ def _resolve_explicit_route_override(
     if strict_required:
         strict_attempts.append(
             {
-                "provider": str(provider),
-                "model_id": str(model_id),
+                "provider": provider,
+                "model_id": model_id,
                 "transport": transport,
                 "strict_json_schema": True,
                 "strict_passthrough_verified": contract_strict_passthrough_verified,
@@ -5161,10 +5237,10 @@ def _resolve_explicit_route_override(
     return {
         "step_tier": step_tier,
         "step_type": step_type,
-        "ladder": [(str(provider), str(model_id), str(api_key_env))],
-        "provider": str(provider),
-        "model_id": str(model_id),
-        "api_key_env": str(api_key_env),
+        "ladder": [(provider, model_id, api_key_env)],
+        "provider": provider,
+        "model_id": model_id,
+        "api_key_env": api_key_env,
         "reason": (
             "explicit_step_route_override"
             if source == "step"
@@ -5215,6 +5291,7 @@ def _resolve_benchmark_owned_stage_route(
             payload.get("strict_passthrough_verified", False)
         ),
     }
+    route = _resolve_route_entry_alias(route, cfg)
     contract_route_entry = _contract_route_entry_for_provider_model(
         step_contract,
         provider=str(route["provider"]),
@@ -5326,6 +5403,9 @@ def resolve_effective_step_route(
             )
         )
         if benchmark_owned_route is not None:
+            benchmark_owned_route = _resolve_route_entry_alias(
+                dict(benchmark_owned_route), cfg
+            )
             provider = str(benchmark_owned_route["provider"])
             model_id = str(benchmark_owned_route["model_id"])
             api_key_env = str(benchmark_owned_route["api_key_env"])
@@ -5343,7 +5423,10 @@ def resolve_effective_step_route(
                 "strict_route_attempts": benchmark_attempts,
                 "route_ownership": benchmark_meta,
             }
-        primary_routes = route_entries_for_stage(contract, "primary")
+        primary_routes = [
+            _resolve_route_entry_alias(route, cfg)
+            for route in route_entries_for_stage(contract, "primary")
+        ]
         if not primary_routes:
             raise RuntimeError(
                 f"JSON-managed step {phase}:{step_id} missing primary_routes in model_map.yaml."
@@ -5434,12 +5517,15 @@ def resolve_effective_step_route(
         provider, model_id, api_key_env, step_type, reason = chosen
         step_ladder: List[Tuple[str, str, str]] = [(provider, model_id, api_key_env)]
     else:
-        step_ladder = _resolve_step_ladder_compat(
-            cfg.routing_policy,
-            phase,
-            step_id,
-            tier_override=tier_override,
-        )
+        step_ladder = [
+            _resolve_route_tuple_alias(route, cfg)
+            for route in _resolve_step_ladder_compat(
+                cfg.routing_policy,
+                phase,
+                step_id,
+                tier_override=tier_override,
+            )
+        ]
         if not step_ladder:
             step_ladder = [("openai", "gpt-5.4-mini", "OPENAI_API_KEY")]
         provider, model_id, api_key_env = step_ladder[0]
@@ -9982,6 +10068,17 @@ def _read_usage_field(payload: Any, *keys: str) -> Optional[int]:
     return None
 
 
+def _read_nested_usage_field(payload: Any, key: str, *nested_keys: str) -> Optional[int]:
+    nested: Any = None
+    if isinstance(payload, dict):
+        nested = payload.get(key)
+    else:
+        nested = getattr(payload, key, None)
+    if nested is None:
+        return None
+    return _read_usage_field(nested, *nested_keys)
+
+
 def _normalized_usage_from_payload(payload: Any) -> Optional[Dict[str, int]]:
     if payload is None:
         return None
@@ -10009,15 +10106,40 @@ def _normalized_usage_from_payload(payload: Any) -> Optional[Dict[str, int]]:
         "total_token_count",
         "totalTokenCount",
     )
+    cached_tokens = _read_usage_field(
+        payload,
+        "cached_tokens",
+        "cache_read_input_tokens",
+        "cacheReadInputTokens",
+        "cached_content_token_count",
+        "cachedContentTokenCount",
+    )
+    if cached_tokens is None:
+        cached_tokens = _read_nested_usage_field(
+            payload,
+            "prompt_tokens_details",
+            "cached_tokens",
+            "cachedTokens",
+        )
+    cache_write_tokens = _read_usage_field(
+        payload,
+        "cache_creation_input_tokens",
+        "cacheCreationInputTokens",
+    )
     if total_tokens is None and input_tokens is not None and output_tokens is not None:
         total_tokens = input_tokens + output_tokens
     if input_tokens is None and output_tokens is None and total_tokens is None:
         return None
-    return {
+    usage = {
         "input_tokens": int(input_tokens or 0),
         "output_tokens": int(output_tokens or 0),
         "total_tokens": int(total_tokens or ((input_tokens or 0) + (output_tokens or 0))),
     }
+    if cached_tokens is not None:
+        usage["cached_tokens"] = int(cached_tokens)
+    if cache_write_tokens is not None:
+        usage["cache_write_tokens"] = int(cache_write_tokens)
+    return usage
 
 
 def _estimate_text_tokens(*chunks: Any) -> int:
@@ -10101,6 +10223,8 @@ def _pricing_preview(
     input_tokens: int,
     output_tokens: int,
     route: Optional[str] = None,
+    execution_mode: Optional[str] = None,
+    cached_input_tokens: int = 0,
 ) -> Optional[Dict[str, Any]]:
     if not cfg.ledger:
         return None
@@ -10110,7 +10234,46 @@ def _pricing_preview(
         provider=provider,
         model_id=model_id,
         route=route,
+        **_optimizer_pricing_kwargs(
+            cfg,
+            execution_mode=execution_mode,
+            input_tokens=input_tokens,
+            cached_input_tokens=cached_input_tokens,
+        ),
     )
+
+
+def _normalized_service_tier_for_pricing(cfg: RunnerConfig) -> Optional[str]:
+    tier = str(getattr(cfg, "default_service_tier", "") or "").strip().lower()
+    if tier in {"default", "flex", "priority", "auto"}:
+        return tier
+    return None
+
+
+def _execution_mode_is_batch(execution_mode: Optional[str]) -> bool:
+    token = str(execution_mode or "").strip().lower()
+    return token.startswith("batch")
+
+
+def _optimizer_pricing_kwargs(
+    cfg: RunnerConfig,
+    *,
+    execution_mode: Optional[str],
+    input_tokens: int,
+    cached_input_tokens: int = 0,
+) -> Dict[str, Any]:
+    cached_tokens = max(0, int(cached_input_tokens or 0))
+    if not bool(getattr(cfg, "enable_cached_input", True)):
+        cached_tokens = 0
+    return {
+        "cached_input_tokens": cached_tokens,
+        "service_tier": _normalized_service_tier_for_pricing(cfg),
+        "is_batch": bool(
+            getattr(cfg, "enable_batch_when_supported", True)
+            and _execution_mode_is_batch(execution_mode)
+        ),
+        "prompt_token_count": max(0, int(input_tokens or 0)),
+    }
 
 
 class CostLimitExceededError(RuntimeError):
@@ -10333,6 +10496,7 @@ def _check_projected_cost_limit(
         input_tokens=input_tokens,
         output_tokens=output_tokens,
         route=route,
+        execution_mode=execution_mode,
     )
     if pricing is None:
         return
@@ -10417,6 +10581,12 @@ def _accumulate_runtime_spend(
         provider=provider,
         model_id=model_id,
         route=route,
+        **_optimizer_pricing_kwargs(
+            cfg,
+            execution_mode=execution_mode,
+            input_tokens=int(usage["input_tokens"]),
+            cached_input_tokens=int(usage.get("cached_tokens", 0) or 0),
+        ),
     )
     combined = {
         **usage,
@@ -10486,6 +10656,11 @@ def _reserve_projected_spend(
         provider=provider,
         model_id=model_id,
         route=route,
+        **_optimizer_pricing_kwargs(
+            cfg,
+            execution_mode=execution_mode,
+            input_tokens=input_tokens,
+        ),
     )
     combined = {
         **reserved,
@@ -10744,10 +10919,12 @@ def call_llm(
     lifecycle_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
     request_options_override: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    return llm_runtime_call_llm(
+    requested_model_id = str(model_id)
+    resolved_model_id = _resolve_route_model_alias(provider, requested_model_id, cfg)
+    result = llm_runtime_call_llm(
         _llm_runtime_deps(),
         provider,
-        model_id,
+        resolved_model_id,
         api_key_env,
         system_prompt,
         user_content,
@@ -10761,7 +10938,20 @@ def call_llm(
         trace_context=trace_context,
         lifecycle_callback=lifecycle_callback,
         request_options_override=request_options_override,
+        service_tier=_normalized_service_tier_for_pricing(cfg),
+        disabled_providers={
+            str(provider_name).strip().lower()
+            for provider_name in getattr(cfg, "disabled_providers", ()) or ()
+            if str(provider_name).strip()
+        },
     )
+    if resolved_model_id != requested_model_id:
+        meta = dict(result.get("meta") or {})
+        meta.setdefault("model_id_requested", requested_model_id)
+        meta.setdefault("_resolved_from_alias", True)
+        meta.setdefault("model_id", resolved_model_id)
+        result = {**result, "meta": meta}
+    return result
 
 
 def is_auth_classified_failure(failure_type: Optional[str]) -> bool:

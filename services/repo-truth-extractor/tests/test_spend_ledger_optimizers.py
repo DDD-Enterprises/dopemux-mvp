@@ -21,10 +21,41 @@ if str(SERVICE_ROOT) not in sys.path:
     sys.path.insert(0, str(SERVICE_ROOT))
 
 from lib.spend_ledger import (
+    SpendLedger,
     compute_optimized_cost,
     get_model_cost_rate,
     make_projected_cost_check,
 )
+import run_extraction_v5 as runner  # noqa: E402
+
+
+def _make_cfg(**overrides):
+    payload = {
+        "dry_run": False,
+        "max_files_docs": 35,
+        "max_files_code": 20,
+        "max_chars": 650000,
+        "max_request_bytes": 200000,
+        "file_truncate_chars": 70000,
+        "home_scan_mode": "safe",
+        "resume": False,
+        "fail_fast_auth": True,
+        "gemini_auth_mode": "auto",
+        "gemini_transport": "sdk",
+        "openai_transport": "openai_sdk",
+        "xai_transport": "openai_sdk",
+        "retry_policy": "default",
+        "retry_max_attempts": 1,
+        "retry_base_seconds": 0.0,
+        "retry_max_seconds": 0.0,
+        "phase_auth_fail_threshold": 1,
+        "partition_workers": 1,
+        "debug_phase_inputs": False,
+        "fail_fast_missing_inputs": False,
+        "routing_policy": "balanced_openrouter",
+    }
+    payload.update(overrides)
+    return runner.RunnerConfig(**payload)
 
 
 def test_default_tier_no_optimizers_matches_legacy_math() -> None:
@@ -90,6 +121,37 @@ def test_cached_input_priced_at_cached_rate() -> None:
     assert abs(out["cache_discount_usd"] - 1.125) < 0.001
 
 
+def test_runtime_spend_accounting_uses_cached_tokens(tmp_path: Path) -> None:
+    cfg = _make_cfg(enable_cached_input=True)
+    ledger = SpendLedger(tmp_path, "run_cached")
+    object.__setattr__(cfg, "ledger", ledger)
+
+    record = runner._accumulate_runtime_spend(
+        cfg,
+        phase="R",
+        step_id="R7",
+        partition_id="R_P0001",
+        provider="openrouter",
+        model_id="anthropic/claude-opus-4.6",
+        execution_mode="sync",
+        response_summary={
+            "usage": {
+                "input_tokens": 1_000_000,
+                "output_tokens": 0,
+                "cached_tokens": 1_000_000,
+            }
+        },
+        response_text="{}",
+        fallback_input_tokens=1,
+        fallback_output_tokens=1,
+    )
+
+    assert record is not None
+    assert record["cached_tokens"] == 1_000_000
+    assert record["cost_breakdown"]["cached_input_tokens"] == 1_000_000
+    assert record["cost_breakdown"]["cache_discount_usd"] > 0
+
+
 def test_batch_discount_applied_when_is_batch_true() -> None:
     rate = get_model_cost_rate(provider="openai", model_id="gpt-5.4")
     out = compute_optimized_cost(
@@ -102,6 +164,26 @@ def test_batch_discount_applied_when_is_batch_true() -> None:
     assert abs(out["final_cost_usd"] - 2.00) < 0.001
     assert out["batch_multiplier"] == 0.5
     assert out["is_batch"] is True
+
+
+def test_pricing_preview_marks_batch_submit_for_optimizer_discount(tmp_path: Path) -> None:
+    cfg = _make_cfg(enable_batch_when_supported=True)
+    ledger = SpendLedger(tmp_path, "run_batch_preview")
+    object.__setattr__(cfg, "ledger", ledger)
+
+    preview = runner._pricing_preview(
+        cfg,
+        provider="openai",
+        model_id="gpt-5.4",
+        input_tokens=1_000_000,
+        output_tokens=100_000,
+        execution_mode="batch_submit",
+        route="openai/gpt-5.4",
+    )
+
+    assert preview is not None
+    assert preview["cost_breakdown"]["is_batch"] is True
+    assert preview["cost_breakdown"]["batch_multiplier"] == 0.5
 
 
 def test_combined_flex_and_cache_stack() -> None:
