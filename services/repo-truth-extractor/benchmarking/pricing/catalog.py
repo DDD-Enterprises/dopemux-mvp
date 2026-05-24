@@ -15,11 +15,14 @@ REPO_ROOT = SERVICE_ROOT.parents[1]
 PRICING_CONFIG_PATH = REPO_ROOT / "config" / "pricing.yaml"
 ACTIVE_BENCHMARK_UNIVERSE = (
     "openrouter/openai/gpt-5.4",
+    "openai/gpt-5.5",
     "xai/grok-4.20",
+    "xai/grok-4.3",
     "openrouter/x-ai/grok-4.1-fast",
     "openai/gpt-5.4",
     "openai/gpt-5.4-mini",
     "openrouter/openai/gpt-5.3-codex",
+    "openai/gpt-5.3-codex",
     "xai/grok-4.20-beta-0309-reasoning",
     "gemini/gemini-3.1-pro-preview",
     "local/benchmark-fixture",
