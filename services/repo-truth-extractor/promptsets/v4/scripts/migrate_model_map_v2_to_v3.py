@@ -172,6 +172,28 @@ TAG_ENUM_ORDER: Tuple[str, ...] = (
     "direct_openai_required",
 )
 
+LONG_CONTEXT_FALLBACK_ROUTES: List[Dict[str, Any]] = [
+    {
+        "provider": "openai",
+        "model_id": "gpt-5.5",
+        "api_key_env": "OPENAI_API_KEY",
+        "service_tier": "default",
+        "strict_json_schema": True,
+        "strict_passthrough_verified": False,
+        "cache_strategy": "auto",
+        "context_window": 1_050_000,
+    },
+    {
+        "provider": "gemini",
+        "model_id": "gemini-3.5-flash",
+        "api_key_env": "GEMINI_API_KEY",
+        "strict_json_schema": True,
+        "strict_passthrough_verified": False,
+        "cache_strategy": "auto",
+        "context_window": 1_000_000,
+    },
+]
+
 # Tag definitions (rationale + routing_delta). Each tag deterministically
 # maps to a small delta applied to the route ladder at runtime.
 TAG_DEFINITIONS: Dict[str, Dict[str, Any]] = {
@@ -187,7 +209,10 @@ TAG_DEFINITIONS: Dict[str, Dict[str, Any]] = {
             "Step prompt + inputs exceed 100K tokens routinely; route must "
             "support 1M context."
         ),
-        "routing_delta": {"filter_route_context_window_min": 1_000_000},
+        "routing_delta": {
+            "filter_route_context_window_min": 1_000_000,
+            "fallback_routes": LONG_CONTEXT_FALLBACK_ROUTES,
+        },
     },
     "schema_critical": {
         "rationale": (

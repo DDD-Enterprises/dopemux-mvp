@@ -4,6 +4,7 @@ Covers packet S12 invariants:
   - 8-tag enum is exact + bounded.
   - schema_critical filters to strict-capable routes.
   - direct_openai_required selects direct OpenAI route.
+  - long_context filters to routes with >=1M context.
   - tag_rationale required for tagged steps.
   - Unknown tag rejected by audit.
   - Critical-safety: tag deltas cannot drop the last strict-capable route
@@ -151,6 +152,52 @@ def test_hard_filter_returns_empty_when_no_route_matches():
     assert out == []
 
 
+def test_filter_route_context_window_min_drops_short_and_unknown_routes():
+    soc = _load_structured_output_contracts()
+    routes = [
+        {"provider": "openai", "model_id": "short", "context_window": 400000},
+        {"provider": "gemini", "model_id": "long", "context_window": 1000000},
+        {"provider": "xai", "model_id": "unknown"},
+    ]
+    tag_definitions = {
+        "long_context": {"routing_delta": {"filter_route_context_window_min": 1000000}}
+    }
+
+    out = soc.apply_tag_routing_delta(routes, tags=["long_context"], tag_definitions=tag_definitions)
+
+    assert [r["model_id"] for r in out] == ["long"]
+
+
+def test_filter_route_context_window_min_uses_explicit_fallback_when_empty():
+    soc = _load_structured_output_contracts()
+    routes = [
+        {"provider": "openai", "model_id": "short", "context_window": 400000},
+        {"provider": "xai", "model_id": "unknown"},
+    ]
+    tag_definitions = {
+        "long_context": {
+            "routing_delta": {
+                "filter_route_context_window_min": 1000000,
+                "fallback_routes": [
+                    {
+                        "provider": "openai",
+                        "model_id": "gpt-5.5",
+                        "api_key_env": "OPENAI_API_KEY",
+                        "strict_json_schema": True,
+                        "context_window": 1050000,
+                    }
+                ],
+            }
+        }
+    }
+
+    out = soc.apply_tag_routing_delta(routes, tags=["long_context"], tag_definitions=tag_definitions)
+
+    assert [(r["provider"], r["model_id"], r["context_window"]) for r in out] == [
+        ("openai", "gpt-5.5", 1050000)
+    ]
+
+
 def test_critical_safety_preserves_last_strict_capable_route():
     """For structural impact_class, tag delta must not drop the last strict-capable route."""
     soc = _load_structured_output_contracts()
@@ -230,6 +277,46 @@ def test_route_entries_for_stage_applies_tag_delta_when_tags_present():
     assert len(out) == 1
 
 
+def test_route_entries_for_stage_applies_long_context_delta_when_tags_present():
+    soc = _load_structured_output_contracts()
+    step_contract = {
+        "lane": {
+            "lane_class": "CE",
+            "impact_class": "routine",
+            "tags": ["long_context"],
+            "tag_definitions": {
+                "long_context": {
+                    "routing_delta": {"filter_route_context_window_min": 1000000}
+                }
+            },
+            "primary_routes": [
+                {
+                    "provider": "openai",
+                    "model_id": "short",
+                    "api_key_env": "OPENAI_API_KEY",
+                    "strict_json_schema": True,
+                    "context_window": 400000,
+                },
+                {
+                    "provider": "gemini",
+                    "model_id": "long",
+                    "api_key_env": "GEMINI_API_KEY",
+                    "strict_json_schema": True,
+                    "context_window": 1000000,
+                },
+            ],
+            "repair_routes": [],
+            "sidefill_routes": [],
+        }
+    }
+
+    out = soc.route_entries_for_stage(step_contract, "primary")
+
+    assert [(r["provider"], r["model_id"], r["context_window"]) for r in out] == [
+        ("gemini", "long", 1000000)
+    ]
+
+
 def test_committed_v3_tag_definitions_have_routing_delta(v3_doc):
     """Every tag in the enum must have a routing_delta (even if no-op)."""
     rte_promptset = _load_rte_promptset()
@@ -237,3 +324,18 @@ def test_committed_v3_tag_definitions_have_routing_delta(v3_doc):
         entry = v3_doc["tag_definitions"][tag]
         assert "routing_delta" in entry, f"tag {tag} missing routing_delta"
         assert isinstance(entry["routing_delta"], dict)
+
+
+def test_committed_long_context_tag_has_explicit_fallback_routes(v3_doc):
+    delta = v3_doc["tag_definitions"]["long_context"]["routing_delta"]
+    assert delta["filter_route_context_window_min"] == 1000000
+
+    routes = delta["fallback_routes"]
+    observed = {
+        (row["provider"], row["model_id"], row["context_window"])
+        for row in routes
+    }
+    assert observed == {
+        ("openai", "gpt-5.5", 1050000),
+        ("gemini", "gemini-3.5-flash", 1000000),
+    }
