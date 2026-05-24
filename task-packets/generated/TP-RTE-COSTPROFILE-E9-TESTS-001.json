@@ -10,7 +10,9 @@
     "Preserve Dopemux split authority boundaries per AGENTS.md §6."
   ],
   "depends_on": [
-    "TP-RTE-COSTPROFILE-E8-YAML-V3-001"
+    "TP-RTE-COSTPROFILE-E8-YAML-V3-001",
+    "TP-RTE-COSTPROFILE-E9-RUNTIME-SPEND-OPTIMIZERS-001",
+    "TP-RTE-COSTPROFILE-E9-ROUTE-OPTIMIZER-METADATA-001"
   ],
   "repo_binding": {
     "project_id": "dopemux-mvp",
@@ -20,14 +22,14 @@
   },
   "series": {
     "id": "rte-cost-profile-redesign",
-    "base_branch": "main",
-    "parent_tp_id": "TP-RTE-COSTPROFILE-E8-YAML-V3-001",
+    "base_branch": "claude/goofy-haibt-fc568e",
+    "parent_tp_id": "TP-RTE-COSTPROFILE-E9-ROUTE-OPTIMIZER-METADATA-001",
     "final_packet": false
   },
   "execution": {
     "agent": "codex",
-    "branch": "codex/rte-costprofile-e9-tests-001",
-    "base_branch": "main"
+    "branch": "codex/rte-costprofile-e9-tests-004",
+    "base_branch": "claude/goofy-haibt-fc568e"
   },
   "commit": {
     "message": "test(rte): cost-profile redesign integration coverage (E9)",
@@ -61,7 +63,7 @@
   "pr": {
     "title": "test(rte): cost-profile redesign integration coverage (E9)",
     "body": "## Summary\n- Adds 8 integration test files covering end-to-end flow per cost profile (value-default / economy / quality / experimental).\n- Covers spend-ledger integration (effective cost matches expected after service_tier × cache × batch math), Anthropic cache_control passthrough via OR, batch-discount accounting, and legacy --routing-policy deprecation path.\n- Adds three test fixtures (minimal v3 yaml, v3 yaml with all 6 overrides, minimal pricing yaml) so tests don't depend on the real promptsets/v4/model_map.yaml.\n\n## Scope\nTest-only. No production code changes. If a test reveals a bug, a follow-up TP fixes it.\n\n## Validation\nAll 8 new integration test files pass under RTE_DISABLE_LIVE_LLM_IN_TESTS=1. Existing cost_profiles + spend_ledger_optimizers + pricing_catalog + spend_ledger suites remain green.\n\n## NOT_RUN\n- Live provider calls.\n- F verification packet (post-merge bounded-lane dry run).\n\n## Residual Risks / UNKNOWNs\n- Mock-based integration testing can't catch provider-side behavior drift (e.g., OpenAI silently ignoring service_tier on a model that doesn't support it). F packet's bounded-lane dry run partially covers.\n\n@codex review",
-    "base": "main"
+    "base": "claude/goofy-haibt-fc568e"
   },
   "pal_chain": {
     "enabled": true,
