@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import logging
 import sys
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -399,3 +400,72 @@ def test_effective_max_attempts_no_warning_under_threshold(caplog):
         )
     warning_msgs = [r.message for r in caplog.records if "effective_max_attempts" in r.message]
     assert not warning_msgs, "no warning expected at default-ish settings"
+
+
+def test_retry_override_one_does_not_sleep_after_terminal_attempt(monkeypatch):
+    class _FailingSession:
+        def post(self, *_args, **_kwargs):
+            raise llm_runtime.requests.exceptions.Timeout("synthetic timeout")
+
+    backoff_calls: list = []
+    sleep_calls: list = []
+    retry_events: list = []
+    deps = replace(
+        _deps(),
+        live_llm_calls_blocked_for_tests=lambda: False,
+        llm_base_url=lambda _provider, _cfg: "https://example.invalid",
+        transport_for_provider=lambda _provider, _cfg: "openai_compat_http",
+        resolve_api_key=lambda _provider, env: ("test-key", env),
+        build_chat_payload=lambda *_args, **_kwargs: {"messages": []},
+        serialize_payload_body=lambda _payload: "{}",
+        measure_payload_bytes_from_body=lambda body: len(body),
+        make_url=lambda *_args: "https://example.invalid/chat/completions",
+        make_headers=lambda *_args: {"Authorization": "Bearer test"},
+        sdk_auth_present_flags=lambda *_args: {},
+        build_auth_present_flags=lambda *_args: {},
+        endpoint_effective=lambda url: url,
+        endpoint_fingerprint=lambda _url: {},
+        provider_signature=lambda *_args: "sig",
+        get_http_session=lambda: _FailingSession(),
+        exception_status_code=lambda _exc: 503,
+        exception_response_text=lambda _exc: "provider unavailable",
+        classify_failure_type=lambda _status, _body, _text: "provider",
+        extract_provider_error_reason=lambda _body: "provider_unavailable",
+        capture_exception_metadata=lambda exc: {"exception_type": type(exc).__name__},
+        new_trace_id=lambda: "trace-test",
+        new_span_id=lambda: "span-test",
+        should_retry=lambda *_args: True,
+        backoff_seconds=lambda attempt, *_args: backoff_calls.append(attempt) or 2.0,
+        is_spend_aborted=lambda: False,
+        is_auth_classified_failure=lambda _failure: False,
+    )
+    cfg = SimpleNamespace(
+        retry_policy="default",
+        retry_max_attempts=3,
+        retry_base_seconds=1.0,
+        retry_max_seconds=5.0,
+        gemini_auth_mode="auto",
+    )
+    monkeypatch.setattr(
+        llm_runtime.time,
+        "sleep",
+        lambda seconds: sleep_calls.append(seconds),
+    )
+
+    result = llm_runtime.call_llm(
+        deps,
+        provider="openrouter",
+        model_id="openai/gpt-5-mini",
+        api_key_env="OPENROUTER_API_KEY",
+        system_prompt="system",
+        user_content="user",
+        cfg=cfg,
+        retry_attempts_override=1,
+        retry_callback=lambda *args: retry_events.append(args),
+    )
+
+    assert result["ok"] is False
+    assert result["meta"]["failure_type"] == "provider"
+    assert backoff_calls == []
+    assert sleep_calls == []
+    assert retry_events == []
