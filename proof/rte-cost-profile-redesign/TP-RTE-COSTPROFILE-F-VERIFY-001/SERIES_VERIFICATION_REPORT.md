@@ -11,7 +11,7 @@ Status: NOT_VERIFIED
 - Base branch: `origin/claude/goofy-haibt-fc568e`
 - Base SHA: `6ecb72de3c089867bcd64dd8302fb68ba8d10980`
 - Merge base for cumulative series diff against `origin/main`: `21b48ee10f9b3db69162fa84c32c5532a29d64b3`
-- Cumulative verification range: `21b48ee10f9b3db69162fa84c32c5532a29d64b3..origin/claude/goofy-haibt-fc568e`
+- Cumulative verification range: `21b48ee10f9b3db69162fa84c32c5532a29d64b3..6ecb72de3c089867bcd64dd8302fb68ba8d10980`
 - Cumulative range commit count: 31
 - F scope: verification/proof only; no production code edits.
 
