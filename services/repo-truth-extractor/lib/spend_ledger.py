@@ -3,7 +3,7 @@ import logging
 import threading
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +69,24 @@ MODEL_COST_RATES: Dict[str, Dict[str, Any]] = {
 }
 
 
+def _opt_float(value: Any) -> Optional[float]:
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _opt_int(value: Any) -> Optional[int]:
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def _catalog_rates() -> Dict[str, Dict[str, Any]]:
     if load_pricing_catalog is None:
         return {}
@@ -92,6 +110,26 @@ def _catalog_rates() -> Dict[str, Dict[str, Any]]:
             "pricing_confidence": str(row.get("pricing_confidence") or "UNKNOWN"),
             "pricing_currency": str(row.get("pricing_currency") or "USD"),
             "surface_scope": str(row.get("surface_scope") or "unknown"),
+            # Optimizer fields (May 2026 schema extension; all optional).
+            "cached_input_cost_per_1m_usd": _opt_float(row.get("cached_input_cost")),
+            "batch_discount": _opt_float(row.get("batch_discount")),
+            "service_tier_flex_multiplier": _opt_float(row.get("service_tier_flex_multiplier")),
+            "service_tier_priority_multiplier": _opt_float(row.get("service_tier_priority_multiplier")),
+            "cache_read_multiplier": _opt_float(row.get("cache_read_multiplier")),
+            "cache_write_5m_multiplier": _opt_float(row.get("cache_write_5m_multiplier")),
+            "cache_write_1h_multiplier": _opt_float(row.get("cache_write_1h_multiplier")),
+            "prompt_cache_min_tokens": _opt_int(row.get("prompt_cache_min_tokens")),
+            "auto_cache_enabled": bool(row["auto_cache_enabled"]) if row.get("auto_cache_enabled") is not None else None,
+            "tiered_input_threshold_tokens": _opt_int(row.get("tiered_input_threshold_tokens")),
+            "tiered_input_above_cost_per_1m_usd": _opt_float(row.get("tiered_input_above_cost_per_m")),
+            "tiered_output_above_cost_per_1m_usd": _opt_float(row.get("tiered_output_above_cost_per_m")),
+            "tiered_cached_input_above_cost_per_1m_usd": _opt_float(row.get("tiered_cached_input_above_cost_per_m")),
+            "data_residency_us_multiplier": _opt_float(row.get("data_residency_us_multiplier")),
+            "context_window": _opt_int(row.get("context_window")),
+            "supports_json_schema_strict": bool(row["supports_json_schema_strict"]) if row.get("supports_json_schema_strict") is not None else None,
+            "supports_reasoning_toggle": bool(row["supports_reasoning_toggle"]) if row.get("supports_reasoning_toggle") is not None else None,
+            "alias_of": str(row["alias_of"]) if row.get("alias_of") else None,
+            "specialization": str(row["specialization"]) if row.get("specialization") else None,
         }
     return rates
 
@@ -261,6 +299,38 @@ def _fallback_cost_rate() -> Dict[str, Any]:
     }
 
 
+_OPTIMIZER_PASSTHROUGH_KEYS = (
+    "cached_input_cost_per_1m_usd",
+    "batch_discount",
+    "service_tier_flex_multiplier",
+    "service_tier_priority_multiplier",
+    "cache_read_multiplier",
+    "cache_write_5m_multiplier",
+    "cache_write_1h_multiplier",
+    "prompt_cache_min_tokens",
+    "auto_cache_enabled",
+    "tiered_input_threshold_tokens",
+    "tiered_input_above_cost_per_1m_usd",
+    "tiered_output_above_cost_per_1m_usd",
+    "tiered_cached_input_above_cost_per_1m_usd",
+    "data_residency_us_multiplier",
+    "context_window",
+    "supports_json_schema_strict",
+    "supports_reasoning_toggle",
+    "alias_of",
+    "specialization",
+)
+
+
+def _optimizer_fields(rate: Dict[str, Any]) -> Dict[str, Any]:
+    """Extract optimizer fields from a registry rate row.
+
+    Missing fields are surfaced as None so callers can fall back to provider
+    defaults cleanly.
+    """
+    return {key: rate.get(key) for key in _OPTIMIZER_PASSTHROUGH_KEYS}
+
+
 def get_model_cost_rate(
     provider: Optional[str] = None,
     model_id: Optional[str] = None,
@@ -299,6 +369,7 @@ def get_model_cost_rate(
                         "output_cost_per_1m_usd", BASELINE_OUTPUT_COST_PER_1M_USD
                     )
                 ),
+                **_optimizer_fields(rate),
             }
 
     fallback = _fallback_cost_rate()
@@ -323,7 +394,226 @@ def get_model_cost_rate(
         "unknown_model": True,
         "input_cost_per_1m_usd": _safe_float(fallback["input_cost_per_1m_usd"]),
         "output_cost_per_1m_usd": _safe_float(fallback["output_cost_per_1m_usd"]),
+        **{key: None for key in _OPTIMIZER_PASSTHROUGH_KEYS},
     }
+
+
+# ---------------------------------------------------------------------------
+# Optimizer-aware pricing helpers (May 2026 schema extension).
+#
+# These functions take a resolved rate (from get_model_cost_rate) plus optional
+# request-time inputs (service_tier, cached_tokens, is_batch, prompt_token_count)
+# and return a breakdown:
+#
+#   {
+#     base_input_cost_usd, base_output_cost_usd, base_cost_usd,
+#     tier_multiplier, tier_adjusted_cost_usd,
+#     cached_input_cost_usd, cache_discount_usd,
+#     batch_discount_usd,
+#     final_cost_usd,
+#     applied_optimizers: [...],
+#   }
+#
+# Missing optimizer fields fall back to defaults (multiplier 1.0, no discount).
+# ---------------------------------------------------------------------------
+
+
+_VALID_SERVICE_TIERS = ("default", "flex", "priority", "auto", None)
+
+
+def _resolve_per_token_input_rate(
+    rate: Dict[str, Any], prompt_token_count: Optional[int]
+) -> float:
+    """Pick base input rate; honor tiered_input_above_cost_per_1m_usd if prompt
+    crosses the model's tier threshold (Gemini Pro >200K, grok-4-fast >128K)."""
+    base = _safe_float(rate.get("input_cost_per_1m_usd", BASELINE_INPUT_COST_PER_1M_USD))
+    threshold = rate.get("tiered_input_threshold_tokens")
+    if (
+        prompt_token_count is not None
+        and threshold is not None
+        and prompt_token_count > int(threshold)
+    ):
+        above = rate.get("tiered_input_above_cost_per_1m_usd")
+        if above is not None:
+            return float(above)
+    return base
+
+
+def _resolve_per_token_output_rate(
+    rate: Dict[str, Any], prompt_token_count: Optional[int]
+) -> float:
+    base = _safe_float(rate.get("output_cost_per_1m_usd", BASELINE_OUTPUT_COST_PER_1M_USD))
+    threshold = rate.get("tiered_input_threshold_tokens")
+    if (
+        prompt_token_count is not None
+        and threshold is not None
+        and prompt_token_count > int(threshold)
+    ):
+        above = rate.get("tiered_output_above_cost_per_1m_usd")
+        if above is not None:
+            return float(above)
+    return base
+
+
+def _resolve_cached_input_rate(rate: Dict[str, Any]) -> float:
+    """Cached input rate per million tokens.
+
+    Resolution order:
+      1. Explicit cached_input_cost_per_1m_usd from catalog.
+      2. cache_read_multiplier × input_cost_per_1m_usd.
+      3. 0.10 × input_cost_per_1m_usd (industry-standard 90% discount fallback).
+    """
+    explicit = rate.get("cached_input_cost_per_1m_usd")
+    if explicit is not None:
+        return float(explicit)
+    input_rate = _safe_float(rate.get("input_cost_per_1m_usd", BASELINE_INPUT_COST_PER_1M_USD))
+    multiplier = rate.get("cache_read_multiplier")
+    if multiplier is not None:
+        return input_rate * float(multiplier)
+    return input_rate * 0.10
+
+
+def _tier_multiplier(rate: Dict[str, Any], service_tier: Optional[str]) -> Tuple[float, str]:
+    if service_tier is None or service_tier in ("default", "auto"):
+        return 1.0, service_tier or "default"
+    if service_tier == "flex":
+        m = rate.get("service_tier_flex_multiplier")
+        return (float(m) if m is not None else 1.0), "flex"
+    if service_tier == "priority":
+        m = rate.get("service_tier_priority_multiplier")
+        return (float(m) if m is not None else 1.0), "priority"
+    return 1.0, service_tier or "default"
+
+
+def _batch_multiplier(rate: Dict[str, Any], is_batch: bool) -> float:
+    if not is_batch:
+        return 1.0
+    discount = rate.get("batch_discount")
+    if discount is None:
+        return 1.0
+    # Catalog stores discount as a multiplier (0.5 = 50% off → pay 0.5x).
+    return float(discount)
+
+
+def compute_optimized_cost(
+    rate: Dict[str, Any],
+    *,
+    input_tokens: int,
+    output_tokens: int,
+    cached_input_tokens: int = 0,
+    service_tier: Optional[str] = None,
+    is_batch: bool = False,
+    prompt_token_count: Optional[int] = None,
+    data_residency: str = "global",
+) -> Dict[str, Any]:
+    """Compute cost breakdown with optimizer multipliers.
+
+    `cached_input_tokens` should be the count of input tokens that hit the
+    provider's cache (from response usage.cached_tokens). The remaining
+    `input_tokens - cached_input_tokens` are billed at full input rate.
+    """
+    input_tokens = _safe_int(input_tokens)
+    output_tokens = _safe_int(output_tokens)
+    cached_input_tokens = max(0, min(_safe_int(cached_input_tokens), input_tokens))
+    uncached_input_tokens = input_tokens - cached_input_tokens
+
+    input_rate = _resolve_per_token_input_rate(rate, prompt_token_count)
+    output_rate = _resolve_per_token_output_rate(rate, prompt_token_count)
+    cached_rate = _resolve_cached_input_rate(rate)
+
+    base_input_cost = (uncached_input_tokens / 1_000_000.0) * input_rate
+    cached_input_cost = (cached_input_tokens / 1_000_000.0) * cached_rate
+    base_output_cost = (output_tokens / 1_000_000.0) * output_rate
+    base_cost = base_input_cost + cached_input_cost + base_output_cost
+    # What the cost would have been without caching (for cache_discount accounting)
+    no_cache_input_cost = (input_tokens / 1_000_000.0) * input_rate
+    cache_discount = max(0.0, no_cache_input_cost - (base_input_cost + cached_input_cost))
+
+    tier_mult, tier_label = _tier_multiplier(rate, service_tier)
+    batch_mult = _batch_multiplier(rate, is_batch)
+
+    residency_mult = 1.0
+    if data_residency == "us":
+        rd = rate.get("data_residency_us_multiplier")
+        if rd is not None:
+            residency_mult = float(rd)
+
+    combined_mult = tier_mult * batch_mult * residency_mult
+    final_cost = base_cost * combined_mult
+
+    applied: list = []
+    if tier_label != "default":
+        applied.append(f"service_tier:{tier_label}({tier_mult:.2f}x)")
+    if is_batch and batch_mult != 1.0:
+        applied.append(f"batch({batch_mult:.2f}x)")
+    if cached_input_tokens > 0:
+        applied.append(f"cache({cached_input_tokens}/{input_tokens}tok)")
+    if residency_mult != 1.0:
+        applied.append(f"residency:us({residency_mult:.2f}x)")
+
+    return {
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "cached_input_tokens": cached_input_tokens,
+        "uncached_input_tokens": uncached_input_tokens,
+        "input_rate_per_1m_usd": input_rate,
+        "output_rate_per_1m_usd": output_rate,
+        "cached_input_rate_per_1m_usd": cached_rate,
+        "base_input_cost_usd": base_input_cost,
+        "cached_input_cost_usd": cached_input_cost,
+        "base_output_cost_usd": base_output_cost,
+        "base_cost_usd": base_cost,
+        "no_cache_input_cost_usd": no_cache_input_cost,
+        "cache_discount_usd": cache_discount,
+        "service_tier": tier_label,
+        "tier_multiplier": tier_mult,
+        "is_batch": bool(is_batch),
+        "batch_multiplier": batch_mult,
+        "data_residency": data_residency,
+        "data_residency_multiplier": residency_mult,
+        "combined_multiplier": combined_mult,
+        "final_cost_usd": final_cost,
+        "applied_optimizers": applied,
+    }
+
+
+def make_projected_cost_check(
+    *,
+    rate: Dict[str, Any],
+    current_total_cost_usd: float,
+    max_cost_usd: Optional[float],
+) -> Callable[..., bool]:
+    """Return a callable that previews whether one more LLM call would breach
+    the spend cap, BEFORE the call is made. This is the preventive-cap helper
+    that closes audit finding F2-MED-1 (post-hoc check)."""
+    if max_cost_usd is None:
+        def _always_ok(**_kwargs: Any) -> bool:
+            return True
+        return _always_ok
+
+    def _check(
+        *,
+        input_tokens: int,
+        output_tokens: int,
+        cached_input_tokens: int = 0,
+        service_tier: Optional[str] = None,
+        is_batch: bool = False,
+        prompt_token_count: Optional[int] = None,
+        data_residency: str = "global",
+    ) -> bool:
+        priced = compute_optimized_cost(
+            rate,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            cached_input_tokens=cached_input_tokens,
+            service_tier=service_tier,
+            is_batch=is_batch,
+            prompt_token_count=prompt_token_count,
+            data_residency=data_residency,
+        )
+        return current_total_cost_usd + priced["final_cost_usd"] <= max_cost_usd
+
+    return _check
 
 
 class SpendLedger:
@@ -486,19 +776,41 @@ class SpendLedger:
         provider: Optional[str] = None,
         model_id: Optional[str] = None,
         route: Optional[str] = None,
+        cached_input_tokens: int = 0,
+        service_tier: Optional[str] = None,
+        is_batch: bool = False,
+        prompt_token_count: Optional[int] = None,
+        data_residency: str = "global",
     ) -> Dict[str, Any]:
+        """Price a single LLM call.
+
+        Backwards-compatible: callers that omit cached_input_tokens / service_tier
+        / is_batch / prompt_token_count get the same flat pricing as before
+        (just based on input/output rates).
+
+        New: when these optimizer params are supplied, the returned dict
+        includes the full `compute_optimized_cost` breakdown alongside the
+        legacy `estimated_cost_usd` field. The legacy field becomes the
+        optimizer-adjusted final cost so existing callers (accumulate, etc.)
+        record the *effective* price they paid, not the headline rate.
+        """
         resolved = get_model_cost_rate(provider=provider, model_id=model_id, route=route)
-        input_tokens = _safe_int(input_tokens)
-        output_tokens = _safe_int(output_tokens)
-        estimated_cost_usd = (
-            (input_tokens / 1_000_000.0) * resolved["input_cost_per_1m_usd"]
-            + (output_tokens / 1_000_000.0) * resolved["output_cost_per_1m_usd"]
+        breakdown = compute_optimized_cost(
+            resolved,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            cached_input_tokens=cached_input_tokens,
+            service_tier=service_tier,
+            is_batch=is_batch,
+            prompt_token_count=prompt_token_count,
+            data_residency=data_residency,
         )
         return {
             **resolved,
-            "input_tokens": input_tokens,
-            "output_tokens": output_tokens,
-            "estimated_cost_usd": estimated_cost_usd,
+            "input_tokens": breakdown["input_tokens"],
+            "output_tokens": breakdown["output_tokens"],
+            "estimated_cost_usd": breakdown["final_cost_usd"],
+            "cost_breakdown": breakdown,
         }
 
     def accumulate(
@@ -509,6 +821,12 @@ class SpendLedger:
         provider: Optional[str] = None,
         model_id: Optional[str] = None,
         route: Optional[str] = None,
+        *,
+        cached_input_tokens: int = 0,
+        service_tier: Optional[str] = None,
+        is_batch: bool = False,
+        prompt_token_count: Optional[int] = None,
+        data_residency: str = "global",
     ) -> Dict[str, Any]:
         with self._lock:
             priced = self.price_usage(
@@ -517,6 +835,11 @@ class SpendLedger:
                 provider=provider,
                 model_id=model_id,
                 route=route,
+                cached_input_tokens=cached_input_tokens,
+                service_tier=service_tier,
+                is_batch=is_batch,
+                prompt_token_count=prompt_token_count,
+                data_residency=data_residency,
             )
             if phase not in self.record.phases:
                 self.record.phases[phase] = PhaseSpend(phase=phase)
