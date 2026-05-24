@@ -1,0 +1,228 @@
+{
+  "id": "TP-RTE-COSTPROFILE-E8-YAML-V3-001",
+  "project": "dopemux-mvp",
+  "target": "Restructure promptsets/v4/model_map.yaml from per-step routes (v2.0, 136 entries × ~30 lines each ≈ 4000 lines) to v3.0 schema with a top-level `lane_defaults` block keyed by {cost_profile}.{lane_class}.{capability_tier}, top-level `tag_definitions` block with 8 bounded routing-intent tags, per-step `impact_class` and `capability_tier` fields, and per-step `*_routes` overrides retained ONLY for the ~6 outlier steps (Z0, C10, S12, T0, T1, T3). Add a one-shot migration script that takes v2 yaml + Phase C cell map + Phase D consensus overrides and emits v3. Preserve v2 as `model_map.v2.yaml.bak` for rollback.",
+  "invariants": [
+    "Do not modify run_extraction_v5.py ladder constants here — those are owned by E7. The yaml loader is updated in this packet but only on the side that consumes lane_defaults.",
+    "Do not modify pricing.yaml, spend_ledger.py, llm_runtime.py, batch_clients.py — yaml-only + structured_output_contracts loader changes.",
+    "Preserve every step_id from v2 in v3. If a step is removed entirely, raise during migration — do not silently drop.",
+    "Every step entry in v3 MUST declare `impact_class` (routine | important | structural | security_sensitive). Migration assigns default `routine` unless the step is named in the Phase D consensus reclassification list: R0/S0/T0 → structural; R11 → security_sensitive; R7/S2/Z2 → important.",
+    "Every step entry MUST declare `capability_tier` (low | medium | high | critical). Migration derives this from the Phase B.5 step-complexity classification (claudedocs/research/step-complexity-analysis-2026-05.md), with the rule: impact_class ∈ {structural, security_sensitive} → capability_tier=critical (enforced by audit gate).",
+    "Tag enum is fixed at exactly 8 values: low_temp, long_context, schema_critical, tooling_heavy, control_plane, security_sensitive, eval_canary, direct_openai_required. Adding a 9th requires a new TP that explicitly authorizes the change.",
+    "Every step that declares a tag MUST also declare `tag_rationale` (free-form one-line metric or incident link). Audit gate fails closed on missing rationale.",
+    "Preserve audit fixes; do not regress F2-HIGH-1 (R/S synthesis routing) — the matrix is precisely the structural fix for that finding.",
+    "Preserve Dopemux split authority boundaries per AGENTS.md §6.",
+    "Do not modify docs/03-reference/governance/*."
+  ],
+  "depends_on": [
+    "TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "rte-cost-profile-redesign",
+    "base_branch": "main",
+    "parent_tp_id": "TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-costprofile-e8-yaml-v3-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(rte): model_map.yaml v3 (lane_defaults + tag_definitions + impact_class + 6 overrides) (E8)",
+    "allowlist": [
+      "services/repo-truth-extractor/promptsets/v4/model_map.yaml",
+      "services/repo-truth-extractor/promptsets/v4/model_map.v2.yaml.bak",
+      "services/repo-truth-extractor/promptsets/v4/scripts/migrate_model_map_v2_to_v3.py",
+      "services/repo-truth-extractor/promptsets/v4/scripts/README.md",
+      "services/repo-truth-extractor/lib/structured_output_contracts.py",
+      "services/repo-truth-extractor/rte_promptset.py",
+      "services/repo-truth-extractor/tests/test_model_map_v3_loader.py",
+      "services/repo-truth-extractor/tests/test_model_map_v3_impact_class_enforcement.py",
+      "services/repo-truth-extractor/tests/test_model_map_v3_tag_routing_deltas.py",
+      "services/repo-truth-extractor/tests/test_model_map_v3_per_step_overrides.py",
+      "services/repo-truth-extractor/tests/test_migrate_model_map_v2_to_v3.py",
+      "task-packets/generated/TP-RTE-COSTPROFILE-E8-YAML-V3-001.json",
+      "task-packets/INDEX.md",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E8-YAML-V3-001/PROOF.json",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E8-YAML-V3-001/sha256sums.txt"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-RTE-COSTPROFILE-E8-YAML-V3-001.json >/dev/null",
+      "python -c \"import yaml; doc = yaml.safe_load(open('services/repo-truth-extractor/promptsets/v4/model_map.yaml')); assert doc.get('version') == '3.0', f'version={doc.get(\\\"version\\\")}'; assert 'lane_defaults' in doc; assert 'tag_definitions' in doc; assert len(doc.get('tag_definitions', {})) == 8; assert 'steps' in doc and len(doc['steps']) == 136; print('yaml v3 schema OK')\"",
+      "python -c \"import yaml; doc = yaml.safe_load(open('services/repo-truth-extractor/promptsets/v4/model_map.v2.yaml.bak')); assert doc.get('version') == '2.0'; print('v2 backup preserved')\"",
+      "python services/repo-truth-extractor/promptsets/v4/scripts/migrate_model_map_v2_to_v3.py --dry-run --diff 2>&1 | tail -20",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_model_map_v3_loader.py services/repo-truth-extractor/tests/test_model_map_v3_impact_class_enforcement.py services/repo-truth-extractor/tests/test_model_map_v3_tag_routing_deltas.py services/repo-truth-extractor/tests/test_model_map_v3_per_step_overrides.py services/repo-truth-extractor/tests/test_migrate_model_map_v2_to_v3.py -v",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_promptset_v4_lint.py services/repo-truth-extractor/tests/test_promptset_rules_injection.py services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py -v",
+      "python -m json.tool proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E8-YAML-V3-001/PROOF.json >/dev/null",
+      "cd proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E8-YAML-V3-001 && shasum -a 256 -c sha256sums.txt",
+      "git diff --check",
+      "git diff --cached --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(rte): model_map.yaml v3 (lane_defaults + tag_definitions + impact_class + 6 overrides) (E8)",
+    "body": "## Summary\n- Restructures promptsets/v4/model_map.yaml from v2.0 (per-step routes, 136 entries × ~30 lines) to v3.0 (top-level `lane_defaults` matrix + `tag_definitions` enum + per-step `impact_class` + `capability_tier` + 6 per-step overrides).\n- Adds an idempotent migration script (`scripts/migrate_model_map_v2_to_v3.py`) that takes v2 + Phase C cell map + Phase D consensus reclassifications as inputs and emits v3.\n- Preserves v2 as `model_map.v2.yaml.bak`.\n- Updates `rte_promptset.py` and `lib/structured_output_contracts.py` loaders to honor the new structure with documented fall-through order: (1) per-step *_routes override → (2) lane_defaults[cost_profile][lane_class][capability_tier] → (3) tag-driven delta → (4) cost-profile cell_alias defaults.\n- Adds promptset audit rule: steps with impact_class ∈ {structural, security_sensitive} MUST be capability_tier=critical; missing tag_rationale on tagged steps fails closed.\n\n## Scope\nLimited to model_map.yaml (rewrite), v2 backup, migration script + script README, structured_output_contracts.py loader, rte_promptset.py loader, and five new test files.\n\n## Validation\nv2 backup preserved; v3 schema validates (version=3.0, lane_defaults present, tag_definitions has exactly 8 entries, 136 step entries preserved). Existing promptset lint + truth tests pass. Migration script is idempotent (re-run produces zero diff) and has its own test suite.\n\n## NOT_RUN\n- Live LLM calls.\n- F verification packet (covers bounded-lane dry run + pal/codereview).\n\n## Residual Risks / UNKNOWNs\n- Operators with custom forks of model_map.yaml v2 will need to re-apply their edits via the migration script. The script's --diff mode shows the planned transformation before commit.\n- The 6 per-step overrides (Z0/C10/S12/T0/T1/T3) are the floor; future promptset evolution may add more. The cap is 15 (warn at 12) enforced by promptset audit.\n\n@codex review",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: verify TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001 is merged (cell-aliased ladders are needed by the v3 lane_defaults block). Verify worktree clean. Verify reference inputs exist: claudedocs/research/routing-design-2026-05.md, claudedocs/research/routing-consensus-2026-05.md, claudedocs/research/step-complexity-analysis-2026-05.md.",
+      "commands": [
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short",
+        "test -f claudedocs/research/routing-design-2026-05.md",
+        "test -f claudedocs/research/routing-consensus-2026-05.md",
+        "test -f claudedocs/research/step-complexity-analysis-2026-05.md",
+        "git log --oneline | grep E7-LADDERS | head -2"
+      ],
+      "validation": [
+        "All three research inputs exist.",
+        "E7 packet visible in ancestry."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Back up current v2 yaml: `cp promptsets/v4/model_map.yaml promptsets/v4/model_map.v2.yaml.bak`. Confirm via diff that the backup is byte-identical.",
+      "validation": [
+        "model_map.v2.yaml.bak created.",
+        "diff bak yaml returns empty."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Author the v3 schema by hand at the top of model_map.yaml (header + lane_defaults block + tag_definitions block). Use the Phase C `routing-design-2026-05.md` cell ladders for each (cost_profile × lane_class × capability_tier) cell. Use the Phase D `routing-consensus-2026-05.md` adjustments for value-default CE/medium and CE/high cells (OR-primary). Define the 8-tag enum exactly as listed in routing-consensus-2026-05.md Section 'Change 4'.",
+      "validation": [
+        "lane_defaults block has entries for the 10 populated cells × 4 cost profiles (some cells may share ladders across profiles; redundancy is allowed for clarity).",
+        "tag_definitions has exactly 8 entries; each has rationale + routing_delta keys."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Write the migration script `scripts/migrate_model_map_v2_to_v3.py`. Inputs: v2 yaml + Phase C cell map (hardcoded inside the script for reproducibility) + Phase D reclassification list. Output: rewritten v3 yaml (in place, with --dry-run flag for preview). For each v2 step entry: derive (lane_class, capability_tier) from the v2 lane_class + the Phase B.5 reasoning_depth; emit impact_class (default routine, overridden by Phase D reclassification); preserve per-step *_routes ONLY if the step is in the override set {Z0, C10, S12, T0, T1, T3}; otherwise drop the routes block and let lane_defaults resolve at load time.",
+      "validation": [
+        "Script runs end-to-end on v2 backup and produces a valid v3 yaml.",
+        "Re-running the script on the v3 output is idempotent (zero diff)."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run the migration script in --dry-run --diff mode and review the diff before letting it write. Confirm: (a) all 136 step IDs preserved, (b) ~130 lose per-step routes (the 6 overrides keep them), (c) impact_class added to every step, (d) capability_tier added to every step, (e) tags added only where Phase D consensus called for them (control_plane / security_sensitive on R0/S0/T0/R11; long_context on steps where partition_input_size_class=large).",
+      "validation": [
+        "Dry-run output matches the manually-authored v3 from S3 within reasonable diff bounds (yaml ordering may vary).",
+        "Any unexpected step changes are investigated before committing."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Apply the migration: write the v3 yaml. Diff against the backup to confirm the structural transformation. Verify v3 still loads via yaml.safe_load and that the loader honors the new structure.",
+      "validation": [
+        "v3 yaml parses.",
+        "Loader returns expected route ladder for sample (cost_profile, lane_class, capability_tier) inputs."
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Update `lib/structured_output_contracts.py` `route_entries_for_stage()` to honor the new fall-through order: (1) per-step *_routes override → (2) lane_defaults[cost_profile][lane_class][capability_tier] (looked up via step's impact_class + capability_tier fields) → (3) tag-driven delta (e.g., long_context filters to 1M-ctx models) → (4) cost-profile cell_alias defaults from COST_PROFILES.",
+      "validation": [
+        "Loader returns the same route list as the hand-authored v3 expects for {Z0, C10, S12, T0, T1, T3, R0, R11, A2, S0} representative cases."
+      ]
+    },
+    {
+      "id": "S8",
+      "task": "Update `rte_promptset.py` to recognize version='3.0' alongside '2.0'. Loading v3 returns the same canonical step shape after fall-through resolution. Add explicit version-mismatch error if a v2 yaml is found alongside a v3 expectation.",
+      "validation": [
+        "Loader works on v2 backup (regression) and v3 (new path)."
+      ]
+    },
+    {
+      "id": "S9",
+      "task": "Add promptset audit rule (in `rte_promptset.py` or its companion validator): for every step, if `impact_class ∈ {structural, security_sensitive}` and `capability_tier != 'critical'`, fail audit. For every step that lists tags, require non-empty `tag_rationale`. For the tag list, enforce membership in the 8-tag enum.",
+      "validation": [
+        "Audit fails closed on intentionally-broken sample (test fixture).",
+        "Audit passes on the committed v3 yaml."
+      ]
+    },
+    {
+      "id": "S10",
+      "task": "Write test_model_map_v3_loader.py (8+ tests covering: version=3.0 recognized; lane_defaults parsed; fall-through to lane_defaults when step has no override; per-step override wins; tag delta filters routes; cost_profile mismatch yields default profile).",
+      "validation": [
+        "Tests pass."
+      ]
+    },
+    {
+      "id": "S11",
+      "task": "Write test_model_map_v3_impact_class_enforcement.py (5+ tests covering: structural without critical fails; security_sensitive without critical fails; routine + any tier passes; impact_class missing fails; reclassified Phase D steps {R0, S0, T0, R11} have correct values in v3 yaml).",
+      "validation": [
+        "Tests pass."
+      ]
+    },
+    {
+      "id": "S12",
+      "task": "Write test_model_map_v3_tag_routing_deltas.py (8+ tests covering: long_context filters to >=1M ctx; schema_critical filters to strict-capable; control_plane forces critical tier; security_sensitive applies allowlist; eval_canary triggers dual-run flag; direct_openai_required selects direct OpenAI route; tag_rationale required; unknown tag rejected).",
+      "validation": [
+        "Tests pass."
+      ]
+    },
+    {
+      "id": "S13",
+      "task": "Write test_model_map_v3_per_step_overrides.py (6+ tests covering: each of the 6 known override steps {Z0, C10, S12, T0, T1, T3} has a per-step *_routes block in v3; loader returns the override not the cell default; override is valid).",
+      "validation": [
+        "Tests pass."
+      ]
+    },
+    {
+      "id": "S14",
+      "task": "Write test_migrate_model_map_v2_to_v3.py (5+ tests covering: migration on v2 backup produces v3; idempotent re-run is zero-diff; --dry-run does not write; --diff outputs valid diff; missing step in v2 raises).",
+      "validation": [
+        "Tests pass."
+      ]
+    },
+    {
+      "id": "S15",
+      "task": "Run pal/thinkdeep on the migration script — risk of silently dropping step entries, risk of capability_tier mis-derivation. Run pal/challenge on the structural decisions.",
+      "validation": [
+        "Findings addressed or documented in PROOF."
+      ]
+    },
+    {
+      "id": "S16",
+      "task": "Run pal/codereview + pal/precommit. Commit allowlisted files; push; open PR.",
+      "validation": [
+        "All verify commands pass.",
+        "PR body includes Summary / Scope / Validation / NOT_RUN / Residual Risks."
+      ]
+    },
+    {
+      "id": "S17",
+      "task": "Emit PROOF.json + sha256sums.txt.",
+      "expected_files": [
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E8-YAML-V3-001/PROOF.json",
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E8-YAML-V3-001/sha256sums.txt"
+      ],
+      "validation": [
+        "PROOF.json parses; sha256sums.txt verifies."
+      ]
+    }
+  ]
+}

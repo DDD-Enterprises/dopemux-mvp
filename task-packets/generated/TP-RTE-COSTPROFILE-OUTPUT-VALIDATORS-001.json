@@ -1,0 +1,190 @@
+{
+  "id": "TP-RTE-COSTPROFILE-OUTPUT-VALIDATORS-001",
+  "project": "dopemux-mvp",
+  "target": "Add post-step output validators for steps with impact_class ∈ {structural, security_sensitive}. Routing alone cannot save the operator from model hallucination on control-plane truth maps or security risk synthesis — these step categories need a second-pass content-shape check (truth-map integrity, security-claim verification) before the artifact is treated as authoritative. Adds the validator framework + 2 initial validators (control_plane_truth_check, security_claim_verification) + integration with the contract-pipeline post-success path.",
+  "invariants": [
+    "Validators run AFTER the contract pipeline succeeds, on the canonical merged artifact. A validator failure marks the artifact for soft-gate review but does not block the run unless the operator passes --strict-output-validators.",
+    "Validators are pure functions of (artifact, step_contract, step_metadata) — no side effects, no provider calls, no disk writes.",
+    "Default behavior is opt-in: validators run only when the step's impact_class is in {structural, security_sensitive}. Operators can globally enable with --validate-all-outputs.",
+    "Validator results surface in PROOF_PACK under a new `output_validator_results` section so the operator sees pass/fail per (step_id, validator_name).",
+    "Do not modify routing, cost profiles, pricing, or the contract pipeline core. Validators hook in via a new post-success callback (one-line addition to _apply_contract_pipeline).",
+    "Preserve Dopemux split authority boundaries per AGENTS.md §6.",
+    "Validators are versioned (e.g., control_plane_truth_check_v1); changing a validator's logic requires a new version + migration TP, not in-place edit."
+  ],
+  "depends_on": [
+    "TP-RTE-COSTPROFILE-E8-YAML-V3-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "rte-cost-profile-redesign",
+    "base_branch": "main",
+    "parent_tp_id": "TP-RTE-COSTPROFILE-E8-YAML-V3-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-costprofile-output-validators-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(rte): post-step output validators for structural / security_sensitive impact_class",
+    "allowlist": [
+      "services/repo-truth-extractor/lib/output_validators/__init__.py",
+      "services/repo-truth-extractor/lib/output_validators/control_plane_truth_check.py",
+      "services/repo-truth-extractor/lib/output_validators/security_claim_verification.py",
+      "services/repo-truth-extractor/lib/output_validators/registry.py",
+      "services/repo-truth-extractor/lib/output_validators/base.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/test_output_validator_registry.py",
+      "services/repo-truth-extractor/tests/test_control_plane_truth_check.py",
+      "services/repo-truth-extractor/tests/test_security_claim_verification.py",
+      "services/repo-truth-extractor/tests/test_output_validators_integration.py",
+      "task-packets/generated/TP-RTE-COSTPROFILE-OUTPUT-VALIDATORS-001.json",
+      "task-packets/INDEX.md",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-OUTPUT-VALIDATORS-001/PROOF.json",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-OUTPUT-VALIDATORS-001/sha256sums.txt"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-RTE-COSTPROFILE-OUTPUT-VALIDATORS-001.json >/dev/null",
+      "python -m compileall -q services/repo-truth-extractor/lib/output_validators services/repo-truth-extractor/run_extraction_v5.py",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_output_validator_registry.py services/repo-truth-extractor/tests/test_control_plane_truth_check.py services/repo-truth-extractor/tests/test_security_claim_verification.py services/repo-truth-extractor/tests/test_output_validators_integration.py -v",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator_repair_provenance.py -v",
+      "python -m json.tool proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-OUTPUT-VALIDATORS-001/PROOF.json >/dev/null",
+      "cd proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-OUTPUT-VALIDATORS-001 && shasum -a 256 -c sha256sums.txt",
+      "git diff --check",
+      "git diff --cached --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(rte): post-step output validators for structural / security_sensitive impact_class",
+    "body": "## Summary\n- Adds the output-validator framework: pluggable validators run on canonical artifacts after contract pipeline success.\n- Adds two initial validators: `control_plane_truth_check_v1` (verifies truth-map integrity — every claimed component has a code-evidence reference) and `security_claim_verification_v1` (verifies security-risk claims have severity + evidence + path/line citation).\n- Wires the framework into `_apply_contract_pipeline` as a post-success callback (single-line addition).\n- Validator results surface in PROOF_PACK under `output_validator_results`. Default mode is non-blocking (soft-gate); operator can `--strict-output-validators` to fail-fast on validator failure.\n\n## Scope\nLimited to new `lib/output_validators/` package, one-line addition to `run_extraction_v5._apply_contract_pipeline`, four new test files.\n\n## Validation\nFramework tests cover: validator registry; pass/fail surfacing; soft-gate vs strict mode; integration with sample artifacts. Existing promptset truth + validator repair provenance tests remain green.\n\n## NOT_RUN\n- Live LLM calls (validators don't call providers).\n- Cross-packet F verification (separate F packet covers).\n\n## Residual Risks / UNKNOWNs\n- Initial validators are conservative (shape + presence checks, not semantic verification). Semantic validation would require a second LLM call which is out of scope here.\n- Validator versioning is by name suffix (_v1). Future validator-v2 work needs a separate migration TP.\n\n@codex review",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: verify TP-RTE-COSTPROFILE-E8-YAML-V3-001 is merged (impact_class field is needed). Worktree clean.",
+      "commands": [
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short",
+        "git log --oneline | grep E8-YAML | head -3"
+      ],
+      "validation": [
+        "Working tree clean.",
+        "E8 packet in ancestry."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Design the validator base interface in `lib/output_validators/base.py`. ABC with `name: str`, `version: int`, `applies_to_impact_classes: set[str]`, `validate(artifact, step_contract, step_metadata) -> ValidatorResult` where ValidatorResult is a dataclass with status (pass/fail/skip), reason, finding_details.",
+      "validation": [
+        "Base class instantiation forbidden (it's ABC).",
+        "Sample concrete subclass passes type checks."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement the registry in `lib/output_validators/registry.py`. `register(validator)` decorator; `validators_for_impact_class(impact_class)` returns the relevant validators in deterministic order; `run_validators_for_step(step_id, step_contract, step_metadata, artifact)` returns a list of ValidatorResult.",
+      "validation": [
+        "Registry is module-level, idempotent (re-registering same name+version raises).",
+        "Lookup is O(1)."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Implement `control_plane_truth_check_v1`. Validates: every claimed component (service / module / class) in the truth-map artifact has an associated code-evidence reference (path + line_range OR file SHA). Conservative — only flags missing references, not semantic mismatch. Applies to: impact_class=structural.",
+      "validation": [
+        "On a sample R0 control-plane artifact with one missing evidence ref: validator returns fail with finding_details naming the affected component.",
+        "On a complete artifact: returns pass."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Implement `security_claim_verification_v1`. Validates: every security-risk claim has (severity ∈ {low,medium,high,critical}); (evidence list non-empty); (path + line citation present). Conservative — does not verify the claim's truthfulness, only its shape. Applies to: impact_class=security_sensitive.",
+      "validation": [
+        "On a sample R11 security artifact with one finding missing severity: validator returns fail.",
+        "On a complete artifact: returns pass."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Wire the framework into `_apply_contract_pipeline` in run_extraction_v5.py. After successful merge (existing code path), if the step's impact_class triggers validators, call `run_validators_for_step` and attach results to `request_meta['output_validator_results']`. If `cfg.strict_output_validators` AND any result is fail, raise OutputValidatorFailure (handled by the existing error path).",
+      "validation": [
+        "Hook is a single-call addition (≤5 lines).",
+        "Existing contract pipeline tests remain green.",
+        "Validator results surface in spend ledger / PROOF_PACK pipeline as designed."
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Add `--strict-output-validators` CLI flag (default False = soft-gate). Update RunnerConfig accordingly.",
+      "validation": [
+        "--help shows new flag.",
+        "When set, cfg.strict_output_validators=True."
+      ]
+    },
+    {
+      "id": "S8",
+      "task": "Write test_output_validator_registry.py (6+ tests): register / lookup / duplicate-version raise / ordering deterministic / lookup by impact_class / unknown impact_class returns empty.",
+      "validation": [
+        "Tests pass."
+      ]
+    },
+    {
+      "id": "S9",
+      "task": "Write test_control_plane_truth_check.py (5+ tests): pass on complete artifact; fail on missing path; fail on missing line_range; pass on file SHA reference (alt evidence form); applies-to filter works (skipped for impact_class=routine).",
+      "validation": [
+        "Tests pass."
+      ]
+    },
+    {
+      "id": "S10",
+      "task": "Write test_security_claim_verification.py (5+ tests): pass on complete claim; fail on missing severity; fail on invalid severity; fail on empty evidence; fail on missing path/line citation.",
+      "validation": [
+        "Tests pass."
+      ]
+    },
+    {
+      "id": "S11",
+      "task": "Write test_output_validators_integration.py (5+ tests): _apply_contract_pipeline hooks invoke validators; results surface in request_meta; --strict mode raises on validator fail; soft-gate mode does not raise; PROOF_PACK output_validator_results section is populated.",
+      "validation": [
+        "Tests pass."
+      ]
+    },
+    {
+      "id": "S12",
+      "task": "Run pal/codereview + pal/precommit. Commit allowlisted files; push; open PR.",
+      "validation": [
+        "All verify commands pass.",
+        "PR body includes Summary / Scope / Validation / NOT_RUN / Residual Risks."
+      ]
+    },
+    {
+      "id": "S13",
+      "task": "Emit PROOF.json + sha256sums.txt.",
+      "expected_files": [
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-OUTPUT-VALIDATORS-001/PROOF.json",
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-OUTPUT-VALIDATORS-001/sha256sums.txt"
+      ],
+      "validation": [
+        "PROOF.json parses; sha256sums.txt verifies."
+      ]
+    }
+  ]
+}
