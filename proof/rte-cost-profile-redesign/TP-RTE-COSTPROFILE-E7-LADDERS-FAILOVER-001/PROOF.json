@@ -9,7 +9,7 @@
   "pr_base": "codex/rte-costprofile-e4-finish-001",
   "base_commit_sha": "667f610571304e744966a598ea0f6bb7999f2aca",
   "head_before_remediation_sha": "23c312142c9124a61801c2910e2a4fa2460b0429",
-  "remediation_commit_sha": "PENDING_COMMIT_SHA_RECORDED_IN_FINAL_RESPONSE",
+  "remediation_commit_sha": "5a01bf5752e2c13b941adb79ecf38a13c5e51e7b",
   "authority_used": [
     "latest user instruction to implement the PR #690 remediation plan",
     "AGENTS.md and TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001",
