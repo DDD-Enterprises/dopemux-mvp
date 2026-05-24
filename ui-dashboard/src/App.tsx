@@ -236,7 +236,19 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    setIsCopied(false);
+    if (copyTimeoutRef.current) {
+      clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = null;
+    }
+  }, [cognitiveState.recommendation]);
+
   const handleCopyRecommendation = async () => {
+    if (!navigator.clipboard?.writeText) {
+      setErrorMessage('Clipboard API is not supported in this browser or context.');
+      return;
+    }
     try {
       await navigator.clipboard.writeText(cognitiveState.recommendation);
       setIsCopied(true);
@@ -246,7 +258,8 @@ function App() {
         copyTimeoutRef.current = null;
       }, 2000);
     } catch (err) {
-      console.error('Failed to copy recommendation:', err);
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      setErrorMessage(`Failed to copy recommendation: ${errorMsg}`);
     }
   };
 
