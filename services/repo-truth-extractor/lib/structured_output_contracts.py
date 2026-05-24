@@ -149,6 +149,15 @@ def route_entries_for_stage(
     service_tier is copied through from the raw row when present (string token
     like "default" / "flex" / "priority" / "auto") and defaults to None when
     absent. Callers that don't consume service_tier are unaffected.
+
+    E8 (v3 awareness): if the step_contract carries v3-only fields under
+    ``lane.tags`` (and optionally ``lane.tag_definitions``), the function
+    applies tag-driven routing deltas defensively after the v2-shape route
+    list is materialized — preserving the critical-safety invariant when
+    ``lane.impact_class`` is structural or security_sensitive. Callers that
+    do not propagate these fields (the v5 runtime as of E8, since
+    ``phase_contract_map.py`` is off the E8 allowlist) see unchanged
+    behavior. The hook is forward-compatible for E9+ runtime upgrades.
     """
     if not isinstance(step_contract, dict):
         return []
@@ -192,7 +201,137 @@ def route_entries_for_stage(
                 "service_tier": service_tier,
             }
         )
+
+    # E8 v3 tag-delta hook: activates ONLY when the caller has propagated
+    # BOTH `lane.tags` (non-empty list) AND `lane.tag_definitions` (mapping)
+    # into the step_contract. The v5 runtime (as of E8) does not propagate
+    # these — `phase_contract_map.py` only copies the v2-shape route blocks
+    # — so this branch is dead until a v3-aware loader wires them up
+    # (planned for E9+ / F-VERIFY). Tags in the v3 yaml are audit-only
+    # metadata in the meantime. Requiring both fields makes activation
+    # explicit and prevents silent partial behavior.
+    tags = lane.get("tags")
+    tag_definitions = lane.get("tag_definitions")
+    if (
+        isinstance(tags, list) and tags
+        and isinstance(tag_definitions, dict) and tag_definitions
+    ):
+        impact_class = lane.get("impact_class")
+        out = apply_tag_routing_delta(
+            out,
+            tags=tags,
+            tag_definitions=tag_definitions,
+            impact_class=str(impact_class).strip().lower() if isinstance(impact_class, str) else None,
+        )
     return out
+
+
+def apply_tag_routing_delta(
+    routes: List[Dict[str, Any]],
+    *,
+    tags: List[str],
+    tag_definitions: Optional[Dict[str, Any]] = None,
+    impact_class: Optional[str] = None,
+) -> List[Dict[str, Any]]:
+    """Apply v3 tag-driven routing deltas to a route list.
+
+    Each tag's ``routing_delta`` (as authored in v3 ``tag_definitions``) is
+    interpreted defensively:
+
+    * ``filter_provider``               → drop routes whose provider does
+                                          not match.
+    * ``filter_supports_json_schema_strict`` → drop routes where
+                                          ``strict_json_schema`` is false.
+    * ``filter_route_context_window_min`` → no-op at this layer (route
+                                          context windows are not encoded
+                                          in the per-step routes); recorded
+                                          for downstream filters.
+    * ``temperature_override``         → no-op at the route-list layer;
+                                          downstream callers consume the
+                                          tag via the step_contract.
+    * ``route_allowlist`` (sequence)   → keep only routes whose
+                                          ``model_id`` matches one of the
+                                          glob-like patterns (``*`` only).
+
+    Critical-safety invariants for structural/security_sensitive steps:
+      (1) If the pre-state has at least one strict-capable route, no delta
+          may filter all of them out (the delta is skipped if it would).
+      (2) If the pre-state has ZERO strict-capable routes, the function
+          refuses to apply any deltas and returns the prior list. This is
+          a config-drift condition (the step contract is missing the
+          strict-capable route it needs); the audit harness via
+          ``audit_model_map_v3`` should surface this independently.
+    """
+    if not routes:
+        return list(routes)
+    deltas: List[Dict[str, Any]] = []
+    if isinstance(tag_definitions, dict):
+        for tag in tags:
+            entry = tag_definitions.get(tag)
+            if not isinstance(entry, dict):
+                continue
+            delta = entry.get("routing_delta")
+            if isinstance(delta, dict):
+                deltas.append(delta)
+    if not deltas:
+        return list(routes)
+
+    critical = impact_class in ("structural", "security_sensitive")
+
+    def _retains_strict_capable(candidate: List[Dict[str, Any]]) -> bool:
+        return any(bool(r.get("strict_json_schema")) for r in candidate)
+
+    # Critical-safety pre-flight: a structural/security_sensitive step
+    # whose pre-state has no strict-capable routes is in a degraded
+    # configuration. Skip all delta application — the routes are unsafe to
+    # narrow further; the audit harness surfaces the underlying gap.
+    if critical and not _retains_strict_capable(routes):
+        return list(routes)
+
+    out: List[Dict[str, Any]] = list(routes)
+    for delta in deltas:
+        filtered = list(out)
+        prov = delta.get("filter_provider")
+        if isinstance(prov, str) and prov:
+            filtered = [r for r in filtered if str(r.get("provider", "")).lower() == prov.lower()]
+        if delta.get("filter_supports_json_schema_strict") is True:
+            filtered = [r for r in filtered if bool(r.get("strict_json_schema"))]
+        allowlist = delta.get("route_allowlist")
+        if isinstance(allowlist, list) and allowlist:
+            filtered = [
+                r for r in filtered
+                if any(_route_matches_pattern(str(r.get("model_id", "")), pat) for pat in allowlist if isinstance(pat, str))
+            ]
+        # Critical-safety: if the candidate would drop all strict-capable
+        # routes AND the step is structural/security_sensitive, refuse the
+        # delta application (keep prior state).
+        if critical and not _retains_strict_capable(filtered) and _retains_strict_capable(out):
+            continue
+        if filtered:
+            out = filtered
+    return out
+
+
+def _route_matches_pattern(model_id: str, pattern: str) -> bool:
+    """Match a model_id against an allowlist glob (only ``*`` wildcard)."""
+    if not pattern:
+        return False
+    if "*" not in pattern:
+        return model_id == pattern
+    parts = pattern.split("*")
+    cursor = 0
+    if not pattern.startswith("*") and not model_id.startswith(parts[0]):
+        return False
+    if not pattern.endswith("*") and not model_id.endswith(parts[-1]):
+        return False
+    for part in parts:
+        if not part:
+            continue
+        idx = model_id.find(part, cursor)
+        if idx < 0:
+            return False
+        cursor = idx + len(part)
+    return True
 
 
 def route_for_contract(step_contract: Optional[Dict[str, Any]]) -> Optional[Tuple[str, str, str]]:

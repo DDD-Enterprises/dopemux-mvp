@@ -5,6 +5,272 @@ import re
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
+# ---------------------------------------------------------------------------
+# E8: model_map.yaml version recognition + v3 audit gate
+# ---------------------------------------------------------------------------
+
+MODEL_MAP_SUPPORTED_VERSIONS: Tuple[str, ...] = ("2.0", "3.0")
+
+# Bounded routing-intent tag enum (Phase D Change 4). Adding a 9th value
+# requires a new task packet that explicitly authorizes the change.
+MODEL_MAP_V3_TAG_ENUM: Tuple[str, ...] = (
+    "low_temp",
+    "long_context",
+    "schema_critical",
+    "tooling_heavy",
+    "control_plane",
+    "security_sensitive",
+    "eval_canary",
+    "direct_openai_required",
+)
+
+# Cell coverage requirement: every cost_profile MUST populate these
+# (lane_class, capability_tier) cells in lane_defaults. Cells not listed
+# are allowed to be absent (e.g. (AGG, high) is not populated in Phase C).
+MODEL_MAP_V3_REQUIRED_CELLS: Tuple[Tuple[str, str], ...] = (
+    ("CE", "low"),
+    ("CE", "medium"),
+    ("CE", "high"),
+    ("EXTRACT", "low"),
+    ("EXTRACT", "medium"),
+    ("EXTRACT", "high"),
+    ("SYNTH", "high"),
+    ("SYNTH", "critical"),
+    ("AGG", "low"),
+    ("AGG", "medium"),
+)
+
+MODEL_MAP_V3_COST_PROFILES: Tuple[str, ...] = (
+    "economy",
+    "value-default",
+    "quality",
+    "experimental",
+)
+
+# Domain-value enums enforced by audit_model_map_v3. Keeping these as
+# module constants makes the audit gate testable and the contract explicit.
+MODEL_MAP_V3_IMPACT_CLASS_ENUM: Tuple[str, ...] = (
+    "routine", "important", "structural", "security_sensitive",
+)
+MODEL_MAP_V3_CAPABILITY_TIER_ENUM: Tuple[str, ...] = (
+    "low", "medium", "high", "critical",
+)
+MODEL_MAP_V3_LANE_CLASS_ENUM: Tuple[str, ...] = (
+    "CE", "EXTRACT", "SYNTH", "AGG",
+)
+MODEL_MAP_V3_REQUIRED_STAGES: Tuple[str, ...] = (
+    "primary_routes", "repair_routes", "sidefill_routes",
+)
+
+
+def validate_model_map_version(payload: Any) -> str:
+    """Return the model_map.yaml version string after schema validation.
+
+    Recognizes the two supported versions ('2.0' legacy, '3.0' current).
+    Raises ``ValueError`` on any other version, missing/unsupported version
+    field, or non-mapping payload. Callers that need to branch on schema
+    shape should call this once at the top of their load path.
+    """
+    if not isinstance(payload, dict):
+        raise ValueError(
+            "model_map.yaml must decode to a mapping; got "
+            f"{type(payload).__name__}."
+        )
+    version = str(payload.get("version") or "").strip()
+    if not version:
+        raise ValueError("model_map.yaml is missing a top-level `version` key.")
+    if version not in MODEL_MAP_SUPPORTED_VERSIONS:
+        raise ValueError(
+            f"Unsupported model_map.yaml version {version!r}; expected one "
+            f"of {MODEL_MAP_SUPPORTED_VERSIONS}."
+        )
+    return version
+
+
+def audit_model_map_v3(payload: Dict[str, Any]) -> List[str]:
+    """Validate v3 invariants on a parsed model_map.yaml payload.
+
+    Returns a list of audit failure messages. Empty list means the payload
+    passes. The function NEVER raises on audit content — it is a pure data
+    inspector. The migration script and CI tests turn failures into errors.
+
+    Invariants enforced (per packet S9 + E8 design):
+      - impact_class ∈ {structural, security_sensitive} ⇒
+        capability_tier == 'critical'.
+      - Every tagged step has a non-empty `tag_rationale`.
+      - Every tag is a member of the 8-tag enum.
+      - Every cost_profile in lane_defaults populates the required cells.
+      - Every step entry has phase + step_id + lane_class + capability_tier
+        + impact_class fields.
+    """
+    failures: List[str] = []
+
+    if not isinstance(payload, dict):
+        return ["payload is not a mapping"]
+
+    version = str(payload.get("version") or "").strip()
+    if version != "3.0":
+        failures.append(
+            f"audit_model_map_v3 expects version='3.0'; got {version!r}"
+        )
+        # Don't continue — schema shape is different.
+        return failures
+
+    steps = payload.get("steps")
+    if not isinstance(steps, list):
+        failures.append("payload missing list-valued `steps`")
+        return failures
+
+    seen_step_ids: Set[str] = set()
+    for row in steps:
+        if not isinstance(row, dict):
+            failures.append(f"non-mapping step entry: {row!r}")
+            continue
+        step_id = str(row.get("step_id") or "").strip().upper()
+        phase = str(row.get("phase") or "").strip().upper()
+        if not step_id or not phase:
+            failures.append(f"step entry missing phase/step_id: {row!r}")
+            continue
+        if step_id in seen_step_ids:
+            failures.append(f"duplicate step_id {step_id}")
+        seen_step_ids.add(step_id)
+
+        impact = str(row.get("impact_class") or "").strip().lower()
+        tier = str(row.get("capability_tier") or "").strip().lower()
+        lane = str(row.get("lane_class") or "").strip().upper()
+        if not impact:
+            failures.append(f"{step_id}: missing impact_class")
+        elif impact not in MODEL_MAP_V3_IMPACT_CLASS_ENUM:
+            failures.append(
+                f"{step_id}: impact_class {impact!r} not in enum "
+                f"{MODEL_MAP_V3_IMPACT_CLASS_ENUM}"
+            )
+        if not tier:
+            failures.append(f"{step_id}: missing capability_tier")
+        elif tier not in MODEL_MAP_V3_CAPABILITY_TIER_ENUM:
+            failures.append(
+                f"{step_id}: capability_tier {tier!r} not in enum "
+                f"{MODEL_MAP_V3_CAPABILITY_TIER_ENUM}"
+            )
+        if not lane:
+            failures.append(f"{step_id}: missing lane_class")
+        elif lane not in MODEL_MAP_V3_LANE_CLASS_ENUM:
+            failures.append(
+                f"{step_id}: lane_class {lane!r} not in enum "
+                f"{MODEL_MAP_V3_LANE_CLASS_ENUM}"
+            )
+        if impact in ("structural", "security_sensitive") and tier != "critical":
+            failures.append(
+                f"{step_id}: impact_class={impact} requires "
+                f"capability_tier=critical (got {tier!r})"
+            )
+
+        tags = row.get("tags") or []
+        if not isinstance(tags, list):
+            failures.append(f"{step_id}: tags must be a list; got {type(tags).__name__}")
+            tags = []
+        for tag in tags:
+            if not isinstance(tag, str) or tag not in MODEL_MAP_V3_TAG_ENUM:
+                failures.append(
+                    f"{step_id}: tag {tag!r} is not in the 8-tag enum "
+                    f"{MODEL_MAP_V3_TAG_ENUM}"
+                )
+        if tags and not str(row.get("tag_rationale") or "").strip():
+            failures.append(f"{step_id}: tagged step requires tag_rationale")
+
+        # Per-step route ladders: every step must have all three stage keys
+        # present and list-typed (primary_routes non-empty for Option B
+        # backwards-compat — phase_contract_map.py reads these directly).
+        for stage in MODEL_MAP_V3_REQUIRED_STAGES:
+            routes = row.get(stage)
+            if not isinstance(routes, list):
+                failures.append(
+                    f"{step_id}.{stage} must be a list; got {type(routes).__name__}"
+                )
+                continue
+            if stage == "primary_routes" and not routes:
+                failures.append(
+                    f"{step_id}.primary_routes must be non-empty"
+                )
+
+    lane_defaults = payload.get("lane_defaults")
+    if not isinstance(lane_defaults, dict):
+        failures.append("payload missing `lane_defaults` mapping")
+    else:
+        for profile in MODEL_MAP_V3_COST_PROFILES:
+            profile_block = lane_defaults.get(profile)
+            if not isinstance(profile_block, dict):
+                failures.append(f"lane_defaults missing profile {profile!r}")
+                continue
+            for lane, tier in MODEL_MAP_V3_REQUIRED_CELLS:
+                lane_block = profile_block.get(lane)
+                if not isinstance(lane_block, dict):
+                    failures.append(
+                        f"lane_defaults[{profile!r}] missing lane {lane!r}"
+                    )
+                    continue
+                cell = lane_block.get(tier)
+                if not isinstance(cell, dict):
+                    failures.append(
+                        f"lane_defaults[{profile!r}][{lane!r}] missing "
+                        f"capability_tier {tier!r}"
+                    )
+                    continue
+                primary = cell.get("primary_routes")
+                if not isinstance(primary, list) or not primary:
+                    failures.append(
+                        f"lane_defaults[{profile!r}][{lane!r}][{tier!r}] "
+                        f"primary_routes must be a non-empty list"
+                    )
+
+    tag_definitions = payload.get("tag_definitions")
+    if not isinstance(tag_definitions, dict):
+        failures.append("payload missing `tag_definitions` mapping")
+    else:
+        if set(tag_definitions.keys()) != set(MODEL_MAP_V3_TAG_ENUM):
+            failures.append(
+                f"tag_definitions keys must equal the 8-tag enum; got "
+                f"{sorted(tag_definitions.keys())}"
+            )
+        for tag in MODEL_MAP_V3_TAG_ENUM:
+            entry = tag_definitions.get(tag)
+            if not isinstance(entry, dict):
+                failures.append(f"tag_definitions[{tag!r}] must be a mapping")
+                continue
+            if not str(entry.get("rationale") or "").strip():
+                failures.append(f"tag_definitions[{tag!r}] missing rationale")
+            if not isinstance(entry.get("routing_delta"), dict):
+                failures.append(f"tag_definitions[{tag!r}] missing routing_delta")
+
+    return failures
+
+
+def lane_defaults_cell(
+    payload: Dict[str, Any],
+    *,
+    cost_profile: str,
+    lane_class: str,
+    capability_tier: str,
+) -> Optional[Dict[str, List[Dict[str, Any]]]]:
+    """Return the ladder dict for one (profile, lane, tier) cell or None.
+
+    Used by the migration script + tests to assert lane_defaults coverage
+    without invoking the migration's internal builder.
+    """
+    if not isinstance(payload, dict):
+        return None
+    lane_defaults = payload.get("lane_defaults")
+    if not isinstance(lane_defaults, dict):
+        return None
+    profile_block = lane_defaults.get(str(cost_profile or "").strip())
+    if not isinstance(profile_block, dict):
+        return None
+    lane_block = profile_block.get(str(lane_class or "").strip().upper())
+    if not isinstance(lane_block, dict):
+        return None
+    cell = lane_block.get(str(capability_tier or "").strip().lower())
+    return cell if isinstance(cell, dict) else None
+
 
 def prompt_root(
     *,
