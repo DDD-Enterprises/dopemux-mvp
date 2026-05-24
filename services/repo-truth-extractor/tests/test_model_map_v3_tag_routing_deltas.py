@@ -117,6 +117,40 @@ def test_route_allowlist_glob_match():
     assert [r["model_id"] for r in out] == ["anthropic/claude-opus-4.6"]
 
 
+def test_route_allowlist_matches_provider_qualified_direct_routes():
+    soc = _load_structured_output_contracts()
+    routes = [
+        {"provider": "openai", "model_id": "gpt-5.5", "strict_json_schema": True},
+        {"provider": "openai", "model_id": "gpt-5.4-mini", "strict_json_schema": True},
+        {"provider": "openrouter", "model_id": "anthropic/claude-opus-4.6", "strict_json_schema": True},
+    ]
+    tag_definitions = {
+        "security_sensitive": {
+            "routing_delta": {
+                "route_allowlist": ["openai/gpt-5.5*"],
+            }
+        }
+    }
+
+    out = soc.apply_tag_routing_delta(routes, tags=["security_sensitive"], tag_definitions=tag_definitions)
+
+    assert [(r["provider"], r["model_id"]) for r in out] == [("openai", "gpt-5.5")]
+
+
+def test_hard_filter_returns_empty_when_no_route_matches():
+    soc = _load_structured_output_contracts()
+    routes = [
+        {"provider": "openrouter", "model_id": "openai/gpt-5.4", "strict_json_schema": False},
+    ]
+    tag_definitions = {
+        "direct_openai_required": {"routing_delta": {"filter_provider": "openai"}}
+    }
+
+    out = soc.apply_tag_routing_delta(routes, tags=["direct_openai_required"], tag_definitions=tag_definitions)
+
+    assert out == []
+
+
 def test_critical_safety_preserves_last_strict_capable_route():
     """For structural impact_class, tag delta must not drop the last strict-capable route."""
     soc = _load_structured_output_contracts()

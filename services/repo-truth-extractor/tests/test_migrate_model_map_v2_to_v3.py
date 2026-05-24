@@ -138,6 +138,25 @@ def test_cli_dry_run_does_not_write(tmp_path):
     assert fake_output.read_text(encoding="utf-8") == "untouched"
 
 
+def test_cli_dry_run_reports_lane_defaults_cell_count(tmp_path):
+    fake_output = tmp_path / "model_map.yaml"
+    fake_output.write_text("untouched", encoding="utf-8")
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(_MIGRATE_SCRIPT),
+            "--input", str(_V2_BACKUP),
+            "--output", str(fake_output),
+            "--dry-run",
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "lane_defaults_cells=40" in result.stderr
+
+
 def test_cli_dry_run_diff_outputs_diff(tmp_path):
     """--dry-run --diff prints a unified diff against the existing output."""
     fake_output = tmp_path / "model_map.yaml"

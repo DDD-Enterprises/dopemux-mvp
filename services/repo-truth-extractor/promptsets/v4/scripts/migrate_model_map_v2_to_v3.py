@@ -1292,6 +1292,20 @@ def _parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def lane_defaults_cell_count(v3_payload: Dict[str, Any]) -> int:
+    lane_defaults = v3_payload.get("lane_defaults")
+    if not isinstance(lane_defaults, dict):
+        return 0
+    total = 0
+    for lanes in lane_defaults.values():
+        if not isinstance(lanes, dict):
+            continue
+        for tiers in lanes.values():
+            if isinstance(tiers, dict):
+                total += len(tiers)
+    return total
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     args = _parse_args(argv)
     if not args.input.exists():
@@ -1316,7 +1330,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         f"steps_in={len(payload.get('steps', []))} "
         f"steps_out={len(v3_payload['steps'])} "
         f"overrides={len(OVERRIDE_STEPS)} "
-        f"lane_defaults_cells={sum(len(v) * len(vv) for v in v3_payload['lane_defaults'].values() for vv in v.values())}",
+        f"lane_defaults_cells={lane_defaults_cell_count(v3_payload)}",
         file=sys.stderr,
     )
 
