@@ -218,6 +218,33 @@ def test_combined_denylist_and_disabled_emits_combined_trigger():
     assert "disabled_providers" in reason
 
 
+def test_unrelated_disabled_provider_does_not_make_denylist_trigger_combined():
+    cfg = _minimal_cfg(
+        disabled_providers=("xai",),
+        provider_denylist=("openrouter",),
+    )
+    ladder = [
+        ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+    ]
+    routes_seen: list = []
+    result = llm_runtime.call_llm_with_ladder(
+        _deps(),
+        phase="A",
+        step_id="A0",
+        partition_id="A_P0001",
+        routing_policy="value-default",
+        routing_tier="extract",
+        ladder=ladder,
+        cfg=cfg,
+        execute_attempt=_success_executor(routes_seen),
+    )
+    assert routes_seen == []
+    assert result["escalation_trigger"] == "routing_all_routes_preflight_denylisted"
+    reason = result["request_meta"]["provider_error_reason"]
+    assert "provider_denylist:openrouter" in reason
+    assert "disabled_providers" not in reason
+
+
 def test_derive_ladder_for_cell_accepts_set_input():
     runner._derive_ladder_for_cell_cached.cache_clear()
     routes = runner.derive_ladder_for_cell(
