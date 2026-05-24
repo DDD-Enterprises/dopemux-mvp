@@ -6,6 +6,8 @@ Status: NOT_VERIFIED
 
 - Worktree: `/Users/hue/.codex/worktrees/rte-costprofile-e9-tests-002`
 - Branch: `codex/rte-costprofile-f-verify-001`
+- PR: https://github.com/DDD-Enterprises/dopemux-mvp/pull/698
+- First proof commit: `67749b94d5084c9a667501cb16f60ee2ffcbe882`
 - Base branch: `origin/claude/goofy-haibt-fc568e`
 - Base SHA: `6ecb72de3c089867bcd64dd8302fb68ba8d10980`
 - Merge base for cumulative series diff against `origin/main`: `21b48ee10f9b3db69162fa84c32c5532a29d64b3`
