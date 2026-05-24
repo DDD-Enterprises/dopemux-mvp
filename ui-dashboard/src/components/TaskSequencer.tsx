@@ -875,7 +875,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                           </Box>
                         </Tooltip>
                         {taskFinishTimes[task.id] && (
-                          <Tooltip title="Estimated wall-clock finish time" arrow>
+                          <Tooltip title="Estimated wall-clock finish time" arrow describeChild>
                             <Typography
                               variant="caption"
                               tabIndex={0}
