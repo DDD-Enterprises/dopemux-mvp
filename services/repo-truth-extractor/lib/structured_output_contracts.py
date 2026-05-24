@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import re
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple
@@ -140,6 +141,15 @@ def route_entries_for_stage(
     step_contract: Optional[Dict[str, Any]],
     stage: str,
 ) -> List[Dict[str, Any]]:
+    """Return normalized route rows for the given stage.
+
+    Each row contains: provider, model_id, api_key_env, structured_output_mode,
+    strict_json_schema, strict_passthrough_verified, service_tier.
+
+    service_tier is copied through from the raw row when present (string token
+    like "default" / "flex" / "priority" / "auto") and defaults to None when
+    absent. Callers that don't consume service_tier are unaffected.
+    """
     if not isinstance(step_contract, dict):
         return []
     lane = step_contract.get("lane") if isinstance(step_contract.get("lane"), dict) else {}
@@ -162,6 +172,12 @@ def route_entries_for_stage(
         api_key_env = str(row.get("api_key_env") or "").strip()
         if not (provider and model_id and api_key_env):
             continue
+        raw_service_tier = row.get("service_tier")
+        service_tier = (
+            str(raw_service_tier).strip()
+            if isinstance(raw_service_tier, str) and str(raw_service_tier).strip()
+            else None
+        )
         out.append(
             {
                 "provider": provider,
@@ -173,6 +189,7 @@ def route_entries_for_stage(
                 ),
                 "strict_json_schema": bool(row.get("strict_json_schema", False)),
                 "strict_passthrough_verified": bool(row.get("strict_passthrough_verified", False)),
+                "service_tier": service_tier,
             }
         )
     return out
@@ -203,6 +220,150 @@ def route_entry_by_identity(
         ):
             return dict(row)
     return None
+
+
+_CACHE_STRATEGIES: Set[str] = {"auto", "cache_control_explicit", "none"}
+_ANTHROPIC_CACHE_MARKER_LIMIT: int = 4
+
+
+def _is_anthropic_cache_target(provider: str, model_id: str) -> bool:
+    if provider == "anthropic":
+        return True
+    if provider == "openrouter" and model_id.startswith("anthropic/"):
+        return True
+    return False
+
+
+def _is_openai_cache_target(provider: str, model_id: str) -> bool:
+    if provider == "openai":
+        return True
+    # OpenRouter routes that are NOT anthropic/gemini/xai pass through to OpenAI-compatible providers.
+    if provider == "openrouter" and not (
+        model_id.startswith("anthropic/")
+        or model_id.startswith("google/")
+        or model_id.startswith("gemini")
+        or model_id.startswith("x-ai/")
+    ):
+        return True
+    return False
+
+
+def prompt_caching_directives_for_provider(
+    provider: str,
+    model_id: str,
+    *,
+    prompt_text_lengths: Optional[Iterable[int]] = None,
+    cache_strategy: str = "auto",
+    auto_cache_enabled: Optional[bool] = None,
+) -> Dict[str, Any]:
+    """Return provider-appropriate prompt-cache directives.
+
+    Anthropic (direct or via OpenRouter `anthropic/*`) gets `cache_control_markers`
+    capped at 4 (Anthropic API limit). OpenAI-compatible routes get a stable
+    `prompt_cache_key` derived from a deterministic hash of provider + model +
+    prefix-length structure. Gemini gets a `cached_content_name` only under
+    explicit opt-in (`cache_strategy='cache_control_explicit'`); under the default
+    `'auto'` strategy Gemini relies on its implicit cache and no directive is
+    emitted.
+
+    Behavior matrix:
+      * `cache_strategy='none'`            → always applied=False, strategy='none'
+      * `cache_strategy='auto'` + `auto_cache_enabled` falsy → applied=False
+      * `cache_strategy='auto'` + `auto_cache_enabled=True`  → emit per provider
+      * `cache_strategy='cache_control_explicit'`             → emit per provider
+        (Gemini honors this; other providers treat it like enabled-auto.)
+
+    The returned dict shape is stable: every key is always present. The function
+    is pure (no IO, no provider calls) and deterministic for fixed inputs.
+    """
+    normalized_provider = str(provider or "").strip().lower()
+    normalized_model = str(model_id or "").strip().lower()
+    none_result: Dict[str, Any] = {
+        "cache_control_markers": [],
+        "prompt_cache_key": None,
+        "cached_content_name": None,
+        "applied": False,
+        "strategy": "none",
+    }
+    strategy = str(cache_strategy or "").strip().lower()
+    if strategy not in _CACHE_STRATEGIES:
+        return dict(none_result)
+    if strategy == "none":
+        return dict(none_result)
+    if strategy == "auto" and not bool(auto_cache_enabled):
+        return dict(none_result)
+
+    lengths_list: List[int] = []
+    if prompt_text_lengths is not None:
+        for raw_len in prompt_text_lengths:
+            try:
+                parsed = int(raw_len)
+            except (TypeError, ValueError):
+                continue
+            if parsed <= 0:
+                continue
+            lengths_list.append(parsed)
+
+    if _is_anthropic_cache_target(normalized_provider, normalized_model):
+        if lengths_list:
+            # Anthropic best practice (per packet S4): cache_control on the LAST
+            # ~K message blocks of the stable prefix — i.e. the blocks closest
+            # to the mutable tail (typically the final user query). Markers act
+            # as cache breakpoints meaning "everything up to and including this
+            # block is cacheable"; placing them at the end of the stable prefix
+            # maximizes the cache hit rate. Cap at the Anthropic API limit of 4.
+            count = min(_ANTHROPIC_CACHE_MARKER_LIMIT, max(1, len(lengths_list) - 1))
+            # Index window: [start, start+count) where start leaves the final
+            # block (the mutable tail) unmarked when there's more than one block.
+            start = max(0, len(lengths_list) - 1 - count)
+        else:
+            # No prefix structure provided: mark a single ephemeral checkpoint
+            # at block_index 0 so callers still benefit from the system prefix
+            # being cached.
+            count = 1
+            start = 0
+        markers = [
+            {"type": "ephemeral", "block_index": start + offset}
+            for offset in range(count)
+        ]
+        return {
+            "cache_control_markers": markers,
+            "prompt_cache_key": None,
+            "cached_content_name": None,
+            "applied": True,
+            "strategy": strategy,
+        }
+
+    if _is_openai_cache_target(normalized_provider, normalized_model):
+        seed_parts = [normalized_provider, normalized_model]
+        if lengths_list:
+            seed_parts.append(",".join(str(length) for length in lengths_list))
+        cache_key = hashlib.sha256(":".join(seed_parts).encode("utf-8")).hexdigest()[:32]
+        return {
+            "cache_control_markers": [],
+            "prompt_cache_key": cache_key,
+            "cached_content_name": None,
+            "applied": True,
+            "strategy": strategy,
+        }
+
+    if normalized_provider == "gemini" or (
+        normalized_provider == "openrouter"
+        and (normalized_model.startswith("google/") or normalized_model.startswith("gemini"))
+    ):
+        if strategy != "cache_control_explicit":
+            # Implicit cache is automatic; no per-request directive is needed.
+            return dict(none_result)
+        return {
+            "cache_control_markers": [],
+            "prompt_cache_key": None,
+            "cached_content_name": f"cached/{normalized_model}/explicit",
+            "applied": True,
+            "strategy": strategy,
+        }
+
+    # Unknown provider — fail closed: emit no directive rather than guess.
+    return dict(none_result)
 
 
 def strict_capability_reason(
@@ -509,6 +670,8 @@ def provider_schema_variant(
         return "xai_relaxed"
     if normalized_provider == "gemini":
         return "gemini_relaxed"
+    if normalized_provider == "anthropic":
+        return "anthropic_tool_use"
     if normalized_provider == "openrouter":
         if normalized_model_id.startswith("x-ai/"):
             return "xai_relaxed"
@@ -516,6 +679,8 @@ def provider_schema_variant(
             "gemini"
         ):
             return "gemini_relaxed"
+        if normalized_model_id.startswith("anthropic/"):
+            return "anthropic_tool_use"
         return "canonical"
     return "canonical"
 
@@ -530,6 +695,8 @@ def provider_schema_variant_label(
         return "xai_relaxed_direct"
     if normalized_provider == "gemini":
         return "gemini_relaxed_direct"
+    if normalized_provider == "anthropic":
+        return "anthropic_tool_use_direct"
     if normalized_provider == "openrouter":
         if normalized_model_id.startswith("x-ai/"):
             return "openrouter_proxy_xai_relaxed"
@@ -537,6 +704,8 @@ def provider_schema_variant_label(
             "gemini"
         ):
             return "openrouter_proxy_gemini_relaxed"
+        if normalized_model_id.startswith("anthropic/"):
+            return "openrouter_proxy_anthropic_tool_use"
         return "openrouter_proxy_canonical"
     if normalized_provider == "openai":
         return "canonical_direct"
@@ -548,7 +717,22 @@ def adapt_canonical_schema_for_variant(
     *,
     variant: str,
     model_id: Optional[str] = None,
+    schema_name: Optional[str] = None,
+    description: Optional[str] = None,
 ) -> Dict[str, Any]:
+    """Adapt a canonical JSON Schema for a specific provider variant.
+
+    For the legacy three variants (`canonical`, `xai_relaxed`, `gemini_relaxed`)
+    the return shape is the JSON Schema dict (possibly with provider-specific
+    keyword rewrites or stripping).
+
+    For `anthropic_tool_use` the return shape is an Anthropic tool definition
+    dict: `{name, description, input_schema}`. Callers must therefore inspect
+    the returned shape based on variant (the top-level keys differ).
+    `schema_name` is required when `variant == 'anthropic_tool_use'`; absent a
+    name, a stable default of `'emit_canonical'` is used. The function never
+    mutates `schema`.
+    """
     canonical = copy.deepcopy(schema)
     if variant == "canonical":
         return canonical
@@ -562,6 +746,57 @@ def adapt_canonical_schema_for_variant(
             if isinstance(properties, dict) and properties and "propertyOrdering" not in adapted:
                 adapted["propertyOrdering"] = list(properties.keys())
         return adapted
+    if variant == "anthropic_tool_use":
+        # schema_name is required for tool_use: the tool definition must be
+        # named so the model knows which tool to invoke. Fail closed rather
+        # than silently substituting a default that risks tool-choice collisions
+        # across schemas.
+        if not str(schema_name or "").strip():
+            raise ValueError(
+                "anthropic_tool_use variant requires non-empty schema_name"
+            )
+        # Anthropic tool_use input_schema must be a top-level object schema.
+        # The canonical schemas this module produces are already top-level
+        # `{"type": "object", ...}` so the input_schema is canonical verbatim;
+        # we only defensively coerce when an external caller supplies something
+        # else (e.g. an `anyOf` root) by wrapping it under `properties._root_`.
+        if isinstance(canonical, dict) and canonical.get("type") == "object":
+            input_schema = canonical
+        else:
+            # Guard against non-dict canonical (type hints say dict but be defensive):
+            # the `_root_` property must itself be a valid JSON Schema dict.
+            root_schema = canonical if isinstance(canonical, dict) else {"type": "string"}
+            input_schema = {
+                "type": "object",
+                "properties": {"_root_": root_schema},
+                "required": ["_root_"],
+                "additionalProperties": False,
+            }
+        raw_name = str(schema_name).strip()
+        # Anthropic tool names must match ^[a-zA-Z0-9_-]{1,64}$. Strip disallowed
+        # chars then cap to 60 so we have room for an 'emit_' prefix.
+        safe_name = re.sub(r"[^A-Za-z0-9_-]", "_", raw_name)[:60] or "emit_canonical"
+        # Prefix check is case-insensitive so callers that pass 'EMIT_X' or
+        # 'Emit_x' don't get double-prefixed to 'emit_EMIT_X'.
+        tool_name = (
+            safe_name if safe_name.lower().startswith("emit_") else f"emit_{safe_name}"
+        )
+        tool_name = tool_name[:64]
+        # Description goes into the model's tool definition. Collapse whitespace
+        # and truncate to keep the description single-line and bounded — defense
+        # against accidentally embedding multi-line config noise or unbounded names.
+        if isinstance(description, str) and str(description).strip():
+            tool_description = re.sub(r"\s+", " ", str(description).strip())[:240]
+        else:
+            safe_raw_name_for_desc = re.sub(r"\s+", " ", raw_name)[:120]
+            tool_description = (
+                f"Emit the {safe_raw_name_for_desc} structured artifact."
+            )
+        return {
+            "name": tool_name,
+            "description": tool_description,
+            "input_schema": input_schema,
+        }
     return canonical
 
 
@@ -577,6 +812,21 @@ def build_provider_structured_output(
     artifact_names: Optional[Iterable[str]] = None,
     mode: Optional[str] = None,
 ) -> Tuple[Optional[Dict[str, Any]], Dict[str, Any]]:
+    """Build a provider-appropriate structured-output payload + meta.
+
+    For OpenAI / OpenRouter / xAI / Gemini routes the first tuple element is a
+    standard OpenAI-style `response_format` dict (`{"type": "json_schema", ...}`
+    or `{"type": "json_object"}`) or `None` when structured output is disabled.
+
+    For Anthropic / OpenRouter+anthropic routes (`schema_variant ==
+    'anthropic_tool_use'`) the first tuple element is **not** a `response_format`
+    — it is `{"tools": [tool_def], "tool_choice": {"type": "tool", "name": "..."}}`
+    because Anthropic's Messages API does not honor `response_format` and uses
+    `tools` + `tool_choice` for structured output. Callers MUST inspect
+    `meta["transport_mode"]` (`"anthropic_tool_use"` for this case) to decide
+    how to apply the payload to the wire request. The Anthropic payload is
+    also mirrored at `meta["anthropic_tool_use_payload"]` for convenience.
+    """
     effective_mode = (
         normalize_structured_output_mode(mode)
         if mode is not None
@@ -620,6 +870,42 @@ def build_provider_structured_output(
     if not isinstance(schema, dict) or not str(schema_name or "").strip():
         raise ValueError("json_schema mode requires schema and schema_name")
     variant = provider_schema_variant(provider, model_id)
+
+    if variant == "anthropic_tool_use":
+        # Anthropic tool_use doesn't use OpenAI/Gemini's `response_format` field.
+        # Instead the request carries `tools=[...]` + `tool_choice={"type":"tool","name":...}`.
+        # Return that shape as the first tuple element and tag the meta so the
+        # downstream runtime (llm_runtime in E4) routes it correctly. We still
+        # mark strict=True because Anthropic enforces the tool input_schema.
+        tool_def = adapt_canonical_schema_for_variant(
+            schema,
+            variant=variant,
+            model_id=model_id,
+            schema_name=str(schema_name),
+        )
+        anthropic_payload = {
+            "tools": [tool_def],
+            "tool_choice": {"type": "tool", "name": tool_def["name"]},
+        }
+        meta = {
+            "enabled": True,
+            "structured_output_mode_requested": effective_mode,
+            "structured_output_mode_effective": effective_mode,
+            "schema": str(schema_name),
+            "schema_name": str(schema_name),
+            "schema_version": "v1",
+            "strict": True,
+            "contract_lane": contract_lane_name,
+            "schema_ids": list(schema_ids or []),
+            "artifact_names": list(artifact_names or []),
+            "schema_variant": variant,
+            "schema_variant_behavior": variant,
+            "provider_schema_variant": variant_label,
+            "transport_mode": "anthropic_tool_use",
+            "anthropic_tool_use_payload": anthropic_payload,
+        }
+        return anthropic_payload, meta
+
     effective_schema = adapt_canonical_schema_for_variant(
         schema,
         variant=variant,
