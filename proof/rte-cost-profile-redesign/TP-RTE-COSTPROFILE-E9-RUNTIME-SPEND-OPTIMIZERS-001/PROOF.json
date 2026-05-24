@@ -9,7 +9,7 @@
   "base_head_sha": "e236cde12c4d0848431da62fdbd0b0f93d511e8b",
   "implementation_commit_sha": "4d87908c1cc647e990b5e50e96be3746d6634d9e",
   "proof_pr_commit_sha": "4a78774ce27eb33e05be9c101ef847eccb390ad1",
-  "review_fix_commit_sha": "SELF_REFERENTIAL_COMMIT_SHA_NOT_AVAILABLE_BEFORE_COMMIT",
+  "review_fix_commit_sha": "087f10c6a9156450affff496bef89eba500d6c12",
   "pr": {
     "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/695",
     "number": 695,
@@ -19,8 +19,11 @@
     "ci_status_at_creation": "PENDING",
     "ci_status_after_proof_push": "SUCCESS",
     "review_threads_addressed": [
-      3294958308
-    ]
+      3294958308,
+      3294960332,
+      3294960343
+    ],
+    "proof_self_reference_note": "This proof file records the code and review-fix commits that existed before the proof-only placeholder cleanup. The final proof-only commit is recoverable from PR #695 history and cannot be embedded without changing its own SHA."
   },
   "repo_identity": {
     "root": "/Users/hue/.codex/worktrees/rte-costprofile-e9-tests-002",
