@@ -144,7 +144,8 @@ def route_entries_for_stage(
     """Return normalized route rows for the given stage.
 
     Each row contains: provider, model_id, api_key_env, structured_output_mode,
-    strict_json_schema, strict_passthrough_verified, service_tier.
+    strict_json_schema, strict_passthrough_verified, service_tier, and optional
+    context_window.
 
     service_tier is copied through from the raw row when present (string token
     like "default" / "flex" / "priority" / "auto") and defaults to None when
@@ -155,9 +156,7 @@ def route_entries_for_stage(
     applies tag-driven routing deltas defensively after the v2-shape route
     list is materialized — preserving the critical-safety invariant when
     ``lane.impact_class`` is structural or security_sensitive. Callers that
-    do not propagate these fields (the v5 runtime as of E8, since
-    ``phase_contract_map.py`` is off the E8 allowlist) see unchanged
-    behavior. The hook is forward-compatible for E9+ runtime upgrades.
+    do not propagate these fields see unchanged behavior.
     """
     if not isinstance(step_contract, dict):
         return []
@@ -187,29 +186,27 @@ def route_entries_for_stage(
             if isinstance(raw_service_tier, str) and str(raw_service_tier).strip()
             else None
         )
-        out.append(
-            {
-                "provider": provider,
-                "model_id": model_id,
-                "api_key_env": api_key_env,
-                "structured_output_mode": route_structured_output_mode(
-                    row,
-                    step_contract=step_contract,
-                ),
-                "strict_json_schema": bool(row.get("strict_json_schema", False)),
-                "strict_passthrough_verified": bool(row.get("strict_passthrough_verified", False)),
-                "service_tier": service_tier,
-            }
-        )
+        normalized = {
+            "provider": provider,
+            "model_id": model_id,
+            "api_key_env": api_key_env,
+            "structured_output_mode": route_structured_output_mode(
+                row,
+                step_contract=step_contract,
+            ),
+            "strict_json_schema": bool(row.get("strict_json_schema", False)),
+            "strict_passthrough_verified": bool(row.get("strict_passthrough_verified", False)),
+            "service_tier": service_tier,
+        }
+        context_window = _route_context_window(row)
+        if context_window is not None:
+            normalized["context_window"] = context_window
+        out.append(normalized)
 
     # E8 v3 tag-delta hook: activates ONLY when the caller has propagated
     # BOTH `lane.tags` (non-empty list) AND `lane.tag_definitions` (mapping)
-    # into the step_contract. The v5 runtime (as of E8) does not propagate
-    # these — `phase_contract_map.py` only copies the v2-shape route blocks
-    # — so this branch is dead until a v3-aware loader wires them up
-    # (planned for E9+ / F-VERIFY). Tags in the v3 yaml are audit-only
-    # metadata in the meantime. Requiring both fields makes activation
-    # explicit and prevents silent partial behavior.
+    # into the step_contract. Requiring both fields makes activation explicit
+    # and prevents silent partial behavior.
     tags = lane.get("tags")
     tag_definitions = lane.get("tag_definitions")
     if (
@@ -242,9 +239,12 @@ def apply_tag_routing_delta(
                                           not match.
     * ``filter_supports_json_schema_strict`` → drop routes where
                                           ``strict_json_schema`` is false.
-    * ``filter_route_context_window_min`` → ignored at this layer (route
-                                          context windows are not encoded
-                                          in the per-step routes).
+    * ``filter_route_context_window_min`` → drop routes whose context_window
+                                          is absent or below the minimum.
+                                          Optional ``fallback_routes`` are
+                                          explicit replacement candidates
+                                          used only when the current route
+                                          list has no satisfying route.
     * ``temperature_override``         → no-op at the route-list layer;
                                           downstream callers consume the
                                           tag via the step_contract.
@@ -286,6 +286,19 @@ def apply_tag_routing_delta(
             filtered = [r for r in filtered if str(r.get("provider", "")).lower() == prov.lower()]
         if delta.get("filter_supports_json_schema_strict") is True:
             filtered = [r for r in filtered if bool(r.get("strict_json_schema"))]
+        context_window_min = _positive_int(delta.get("filter_route_context_window_min"))
+        if context_window_min is not None:
+            filtered = [
+                r
+                for r in filtered
+                if (_route_context_window(r) or 0) >= context_window_min
+            ]
+            if not filtered:
+                filtered = [
+                    r
+                    for r in _normalized_fallback_routes(delta.get("fallback_routes"))
+                    if (_route_context_window(r) or 0) >= context_window_min
+                ]
         allowlist = delta.get("route_allowlist")
         if isinstance(allowlist, list) and allowlist:
             filtered = [
@@ -306,6 +319,60 @@ def apply_tag_routing_delta(
             continue
         out = filtered
     return out
+
+
+def _positive_int(value: Any) -> Optional[int]:
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return None
+    return parsed if parsed > 0 else None
+
+
+def _route_context_window(route: Dict[str, Any]) -> Optional[int]:
+    for key in ("context_window", "context_window_tokens"):
+        parsed = _positive_int(route.get(key))
+        if parsed is not None:
+            return parsed
+    return None
+
+
+def _normalized_fallback_routes(value: Any) -> List[Dict[str, Any]]:
+    if not isinstance(value, list):
+        return []
+    rows: List[Dict[str, Any]] = []
+    for row in value:
+        if not isinstance(row, dict):
+            continue
+        provider = str(row.get("provider") or "").strip().lower()
+        model_id = str(row.get("model_id") or "").strip()
+        api_key_env = str(row.get("api_key_env") or "").strip()
+        if not (provider and model_id and api_key_env):
+            continue
+        strict_json_schema = bool(row.get("strict_json_schema", False))
+        raw_mode = normalize_structured_output_mode(row.get("structured_output_mode"))
+        structured_output_mode = raw_mode
+        if raw_mode == STRUCTURED_OUTPUT_MODE_NONE and strict_json_schema:
+            structured_output_mode = STRUCTURED_OUTPUT_MODE_JSON_SCHEMA
+        raw_service_tier = row.get("service_tier")
+        normalized = {
+            "provider": provider,
+            "model_id": model_id,
+            "api_key_env": api_key_env,
+            "structured_output_mode": structured_output_mode,
+            "strict_json_schema": strict_json_schema,
+            "strict_passthrough_verified": bool(row.get("strict_passthrough_verified", False)),
+            "service_tier": (
+                str(raw_service_tier).strip()
+                if isinstance(raw_service_tier, str) and str(raw_service_tier).strip()
+                else None
+            ),
+        }
+        context_window = _route_context_window(row)
+        if context_window is not None:
+            normalized["context_window"] = context_window
+        rows.append(normalized)
+    return rows
 
 
 def _route_allowlist_candidates(route: Dict[str, Any]) -> List[str]:

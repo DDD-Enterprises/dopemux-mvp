@@ -18,6 +18,19 @@ def _load_contract_module():
     return module
 
 
+def _load_structured_output_contracts_module():
+    root = Path(__file__).resolve().parents[3]
+    module_path = (
+        root / "services" / "repo-truth-extractor" / "lib" / "structured_output_contracts.py"
+    )
+    spec = importlib.util.spec_from_file_location("structured_output_contracts", module_path)
+    assert spec is not None
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
 def test_compile_phase_contract_map_includes_d0_d1_lane_and_artifacts() -> None:
     module = _load_contract_module()
     payload = module.compile_phase_contract_map()
@@ -167,3 +180,27 @@ def test_mixed_steps_keep_json_contract_and_markdown_bypass_metadata() -> None:
         assert row["scope"]["json_managed"] is True
         assert row["scope"]["mixed_step"] is True
         assert row["scope"]["markdown_bypassed"] is True
+
+
+def test_contract_map_propagates_v3_tag_metadata_for_runtime_filtering() -> None:
+    module = _load_contract_module()
+    structured_contracts = _load_structured_output_contracts_module()
+
+    payload = module.compile_phase_contract_map()
+    q0 = payload["steps"]["Q:Q0"]
+    lane = q0["lane"]
+
+    assert "long_context" in lane["tags"]
+    assert lane["impact_class"] == "routine"
+    assert lane["capability_tier"] == "medium"
+
+    long_context_delta = lane["tag_definitions"]["long_context"]["routing_delta"]
+    assert long_context_delta["filter_route_context_window_min"] == 1000000
+    assert long_context_delta["fallback_routes"]
+    assert any(route.get("context_window") for route in lane["primary_routes"])
+
+    filtered = structured_contracts.route_entries_for_stage(q0, "primary")
+
+    assert filtered
+    assert len(filtered) == 2
+    assert all(route["context_window"] >= 1000000 for route in filtered)

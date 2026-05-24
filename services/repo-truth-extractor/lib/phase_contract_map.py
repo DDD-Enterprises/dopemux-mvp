@@ -15,6 +15,7 @@ REPO_ROOT = SERVICE_DIR.parents[1]
 PROMPTSET_PATH = SERVICE_DIR / "promptsets" / "v4" / "promptset.yaml"
 ARTIFACTS_PATH = SERVICE_DIR / "promptsets" / "v4" / "artifacts.yaml"
 MODEL_MAP_PATH = SERVICE_DIR / "promptsets" / "v4" / "model_map.yaml"
+PRICING_PATH = REPO_ROOT / "config" / "pricing.yaml"
 REPO_TRUTH_MAP_PATH = REPO_ROOT / "reports" / "repo_truth_map.json"
 
 CONTRACT_MAP_FILENAME = "PHASE_CONTRACT_MAP.json"
@@ -119,13 +120,57 @@ def _artifact_rules_by_key() -> Dict[Tuple[str, str], Dict[str, Any]]:
 
 
 def _normalize_route(route: Dict[str, Any]) -> Dict[str, Any]:
-    return {
+    parsed = {
         "provider": str(route.get("provider") or "").strip().lower(),
         "model_id": str(route.get("model_id") or "").strip(),
         "api_key_env": str(route.get("api_key_env") or "").strip(),
         "strict_json_schema": bool(route.get("strict_json_schema", False)),
         "strict_passthrough_verified": bool(route.get("strict_passthrough_verified", False)),
     }
+    context_window = _context_window_for_route(parsed)
+    if context_window is not None:
+        parsed["context_window"] = context_window
+    return parsed
+
+
+@lru_cache(maxsize=1)
+def _pricing_context_windows_by_key() -> Dict[str, int]:
+    payload = _read_yaml(PRICING_PATH)
+    models = payload.get("models")
+    if not isinstance(models, dict):
+        return {}
+    out: Dict[str, int] = {}
+    for key, row in models.items():
+        if not isinstance(row, dict):
+            continue
+        raw_window = row.get("context_window")
+        try:
+            context_window = int(raw_window)
+        except (TypeError, ValueError):
+            continue
+        if context_window > 0:
+            out[str(key).strip()] = context_window
+    return out
+
+
+def _pricing_keys_for_route(route: Dict[str, Any]) -> List[str]:
+    provider = str(route.get("provider") or "").strip().lower()
+    model_id = str(route.get("model_id") or "").strip()
+    if not provider or not model_id:
+        return []
+    keys = [f"{provider}/{model_id}"]
+    if "/" in model_id:
+        keys.append(model_id)
+    return keys
+
+
+def _context_window_for_route(route: Dict[str, Any]) -> Optional[int]:
+    context_windows = _pricing_context_windows_by_key()
+    for key in _pricing_keys_for_route(route):
+        context_window = context_windows.get(key)
+        if context_window is not None:
+            return context_window
+    return None
 
 
 def _normalize_routes(value: Any) -> List[Dict[str, Any]]:
@@ -151,6 +196,8 @@ def _model_map_payload() -> Dict[str, Any]:
 
 def _model_map_by_key() -> Dict[Tuple[str, str], Dict[str, Any]]:
     payload = _model_map_payload()
+    tag_definitions = payload.get("tag_definitions")
+    normalized_tag_definitions = tag_definitions if isinstance(tag_definitions, dict) else {}
     mapping: Dict[Tuple[str, str], Dict[str, Any]] = {}
     for row in payload.get("steps", []):
         if not isinstance(row, dict):
@@ -163,6 +210,15 @@ def _model_map_by_key() -> Dict[Tuple[str, str], Dict[str, Any]]:
             "phase": phase,
             "step_id": step_id,
             "lane_class": str(row.get("lane_class") or "").strip().upper(),
+            "impact_class": str(row.get("impact_class") or "").strip().lower(),
+            "capability_tier": str(row.get("capability_tier") or "").strip().lower(),
+            "tags": [
+                str(value).strip()
+                for value in (row.get("tags") if isinstance(row.get("tags"), list) else [])
+                if str(value).strip()
+            ],
+            "tag_rationale": str(row.get("tag_rationale") or "").strip(),
+            "tag_definitions": normalized_tag_definitions,
             "strict_schema_required_primary": bool(row.get("strict_schema_required_primary", False)),
             "sidefill_enabled": bool(row.get("sidefill_enabled", False)),
             "repair_mode": str(row.get("repair_mode") or "").strip(),
@@ -352,6 +408,11 @@ def _compile_phase_contract_map_cached(emit_warnings: bool) -> Dict[str, Any]:
             "lane": {
                 "lane": str(lane.get("lane_class") or ""),
                 "lane_class": str(lane.get("lane_class") or ""),
+                "impact_class": str(lane.get("impact_class") or ""),
+                "capability_tier": str(lane.get("capability_tier") or ""),
+                "tags": list(lane.get("tags") or []),
+                "tag_rationale": str(lane.get("tag_rationale") or ""),
+                "tag_definitions": dict(lane.get("tag_definitions") or {}),
                 "strict_schema_required": bool(lane.get("strict_schema_required_primary", False)),
                 "strict_schema_required_primary": bool(lane.get("strict_schema_required_primary", False)),
                 "sidefill_enabled": bool(lane.get("sidefill_enabled", False)),
