@@ -233,9 +233,11 @@
     "branches": "E7 branch ready for push; E4 branch unmodified",
     "temp_files": "/tmp/pal_precommit.changeset created for PAL precommit (transient, can delete)"
   },
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/690",
+  "pr_base": "codex/rte-costprofile-e4-finish-001",
   "next_actions": {
     "remaining_packet_steps": [
-      "S13: emit sha256sums.txt for this PROOF + push branch + open PR with base=codex/rte-costprofile-e4-finish-001"
+      "S13 complete — PROOF emitted, branch pushed, PR opened"
     ],
     "remaining_series_packets": [
       "E8 (TP-RTE-COSTPROFILE-E8-...) — model_map.yaml v3 integration; deps_on E7",
