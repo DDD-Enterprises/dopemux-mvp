@@ -1,14 +1,18 @@
 ---
 id: step-complexity-analysis-2026-05
-title: "RTE v4 Promptset Step Complexity Analysis"
-type: research
+title: RTE v4 Promptset Step Complexity Analysis
+type: reference
 owner: rte-routing
 date: 2026-05-23
 adhd_complexity: 0.7
 adhd_energy: high
 status: draft
+author: '@hu3mann'
+last_review: '2026-05-24'
+next_review: '2026-08-22'
+prelude: RTE v4 Promptset Step Complexity Analysis (reference) for dopemux documentation
+  and developer workflows.
 ---
-
 # RTE v4 Promptset Step Complexity Analysis
 
 **Date**: 2026-05-23
