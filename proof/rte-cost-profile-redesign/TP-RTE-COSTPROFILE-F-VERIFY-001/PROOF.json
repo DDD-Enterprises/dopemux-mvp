@@ -8,7 +8,7 @@
   "base_branch": "claude/goofy-haibt-fc568e",
   "base_sha": "6ecb72de3c089867bcd64dd8302fb68ba8d10980",
   "merge_base_with_origin_main": "21b48ee10f9b3db69162fa84c32c5532a29d64b3",
-  "cumulative_diff_range": "21b48ee10f9b3db69162fa84c32c5532a29d64b3..origin/claude/goofy-haibt-fc568e",
+  "cumulative_diff_range": "21b48ee10f9b3db69162fa84c32c5532a29d64b3..6ecb72de3c089867bcd64dd8302fb68ba8d10980",
   "proof_commit_sha": "67749b94d5084c9a667501cb16f60ee2ffcbe882",
   "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/698",
   "scope": "verification-proof-only",
