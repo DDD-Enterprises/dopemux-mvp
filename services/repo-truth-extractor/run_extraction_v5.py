@@ -590,6 +590,187 @@ R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
 
 ROUTING_POLICY_VERSION = "RTE_ROUTING_V1"
 DEFAULT_ROUTING_POLICY = "balanced_openrouter"
+DEFAULT_COST_PROFILE = "value-default"
+
+# ---------------------------------------------------------------------------
+# Cost profiles (May 2026 redesign, Phase E6).
+#
+# Cost profile = operator-facing routing intent. Each profile maps to one of
+# the existing ROUTING_LADDERS policies for backward compatibility AND
+# specifies global optimizer knobs (service_tier default, cached-input toggle,
+# batch toggle, escalation cap, cost cap default).
+#
+# See:
+# - claudedocs/research/routing-design-2026-05.md
+# - claudedocs/research/routing-consensus-2026-05.md
+#
+# The cost_profile axis is orthogonal to lane_class/capability_tier (which
+# are step attributes from promptsets/v4/model_map.yaml v3). The resolution
+# order at LLM-call time is:
+#   1. step's per-step *_routes block (override; rare)
+#   2. lane_defaults[cost_profile][lane_class][capability_tier] from
+#      model_map.yaml v3 (the matrix)
+#   3. ROUTING_LADDERS[mapped_routing_policy] (the v1 ladders; legacy path)
+#
+# tag_definitions can mutate cell selection (e.g., long_context forces a
+# 1M-context model). See promptsets/v4/model_map.yaml v3 tag_definitions.
+# ---------------------------------------------------------------------------
+
+COST_PROFILES: Dict[str, Dict[str, Any]] = {
+    "economy": {
+        "routing_policy": "cost",
+        "default_service_tier": "flex",
+        "enable_cached_input": True,
+        "enable_batch_when_supported": True,
+        "escalation_max_hops": 1,
+        "max_cost_usd_default": 5.00,
+        "cost_cap_mode": "preventive",
+        "notes": (
+            "Minimum spend; aggressive flex tier + cheapest capable models. "
+            "Quality degraded on SYNTH-critical cells; review PROOF_PACK before "
+            "relying on outputs."
+        ),
+        # Cell aliases: ${ALIAS_NAME} references in cell route ladders resolve
+        # from this dict. Operator overrides via --model-alias K=V or env var.
+        "cell_aliases": {
+            "ECONOMY_CE_MEDIUM_MODEL": "openai/gpt-5.1-codex-mini",
+            "ECONOMY_SYNTH_HIGH_MODEL": "anthropic/claude-haiku-4.5",
+            "ECONOMY_SYNTH_CRITICAL_MODEL": "anthropic/claude-sonnet-4.5",
+            "ECONOMY_BULK_EXTRACT_MODEL": "openai/gpt-5.4-mini",
+        },
+    },
+    "value-default": {
+        "routing_policy": "balanced_openrouter",
+        "default_service_tier": "default",
+        "enable_cached_input": True,
+        "enable_batch_when_supported": True,
+        "escalation_max_hops": 2,
+        "max_cost_usd_default": None,
+        "cost_cap_mode": "preventive",
+        "notes": (
+            "Best cost/quality ratio. Flex tier on EXTRACT/AGG bulk lanes; "
+            "standard for CE/SYNTH. Cached input on globally. Batch enabled "
+            "for non-CE/SYNTH cells. NEW DEFAULT replacing balanced_openrouter."
+        ),
+        "cell_aliases": {
+            "VALUE_DEFAULT_CE_MEDIUM_MODEL": "openai/gpt-5.3-codex",
+            "VALUE_DEFAULT_CE_HIGH_MODEL": "openai/gpt-5.4",
+            "VALUE_DEFAULT_SYNTH_HIGH_MODEL": "anthropic/claude-sonnet-4.6",
+            "VALUE_DEFAULT_SYNTH_CRITICAL_MODEL": "anthropic/claude-opus-4.6",
+            "VALUE_DEFAULT_BULK_EXTRACT_MODEL": "openai/gpt-5.4-mini",
+        },
+    },
+    "quality": {
+        "routing_policy": "quality",
+        "default_service_tier": "priority",
+        "enable_cached_input": True,
+        "enable_batch_when_supported": False,
+        "escalation_max_hops": 3,
+        "max_cost_usd_default": None,
+        "cost_cap_mode": "preventive",
+        "notes": (
+            "Premium models with priority service tier where available. "
+            "Estimated 3-5x cost of value-default. Use for production go/no-go."
+        ),
+        # Cell aliases per Phase D consensus: opus 4.6 default for SYNTH/critical
+        # (not 4.7 — avoid the ~1.35x tokenization tax). Swap centrally via env
+        # var when 4.7 proves better on canary steps.
+        "cell_aliases": {
+            "QUALITY_CE_MEDIUM_MODEL": "openai/gpt-5.5",
+            "QUALITY_CE_HIGH_MODEL": "openai/gpt-5.5",
+            "QUALITY_SYNTH_HIGH_MODEL": "anthropic/claude-opus-4.6",
+            "QUALITY_SYNTH_CRITICAL_MODEL": "anthropic/claude-opus-4.6",
+            "QUALITY_SYNTH_CRITICAL_FALLBACK_MODEL": "openai/gpt-5.5-pro",
+        },
+    },
+    "experimental": {
+        "routing_policy": "optimal",
+        "default_service_tier": "default",
+        "enable_cached_input": True,
+        "enable_batch_when_supported": False,
+        "escalation_max_hops": 2,
+        "max_cost_usd_default": 25.00,
+        "cost_cap_mode": "preventive",
+        "notes": (
+            "Bleed-edge frontier models (gpt-5.5-pro, claude-opus-4.7, "
+            "gemini-3.5-flash). May have higher tokenization (opus 4.7 = ~35% "
+            "more tokens for same text). Bypasses some validators; operator "
+            "must inspect PROOF_PACK."
+        ),
+        "warning": (
+            "Models in this profile may be in preview/beta and exhibit "
+            "unexpected behavior. Not for production."
+        ),
+        "cell_aliases": {
+            "EXPERIMENTAL_CE_MEDIUM_MODEL": "openai/gpt-5.5",
+            "EXPERIMENTAL_SYNTH_HIGH_MODEL": "anthropic/claude-opus-4.7",
+            "EXPERIMENTAL_SYNTH_CRITICAL_MODEL": "anthropic/claude-opus-4.7",
+        },
+    },
+}
+
+# Legacy --routing-policy → cost_profile mapping. Honored for one release with
+# a deprecation warning emitted at CLI parse time.
+LEGACY_ROUTING_POLICY_TO_COST_PROFILE: Dict[str, str] = {
+    "cost": "economy",
+    "balanced": "value-default",
+    "balanced_openrouter": "value-default",
+    "balanced_grok_openrouter": "value-default",
+    "openrouter": "value-default",
+    "gemini_primary": "value-default",
+    "quality": "quality",
+    "optimal": "quality",
+}
+
+
+def resolve_cost_profile(name: Optional[str]) -> Tuple[str, Dict[str, Any]]:
+    """Return (canonical_profile_name, profile_dict).
+
+    Accepts: a cost profile name (economy/value-default/quality/experimental),
+    a legacy routing-policy name (mapped via LEGACY_ROUTING_POLICY_TO_COST_PROFILE),
+    or None (returns DEFAULT_COST_PROFILE).
+    """
+    if not name:
+        return DEFAULT_COST_PROFILE, COST_PROFILES[DEFAULT_COST_PROFILE]
+    token = str(name).strip().lower()
+    if token in COST_PROFILES:
+        return token, COST_PROFILES[token]
+    if token in LEGACY_ROUTING_POLICY_TO_COST_PROFILE:
+        mapped = LEGACY_ROUTING_POLICY_TO_COST_PROFILE[token]
+        return mapped, COST_PROFILES[mapped]
+    return DEFAULT_COST_PROFILE, COST_PROFILES[DEFAULT_COST_PROFILE]
+
+
+def resolve_cell_alias(
+    alias_or_model: str,
+    cost_profile: str,
+    *,
+    cli_overrides: Optional[Dict[str, str]] = None,
+    env: Optional[Dict[str, str]] = None,
+) -> str:
+    """If the input looks like ``${ALIAS_NAME}``, resolve from
+    (cli_overrides | env | profile.cell_aliases). Otherwise return as-is.
+
+    CLI overrides take precedence (operator passed --model-alias K=V), then
+    env vars, then profile defaults. Returns the raw alias if unresolved.
+    """
+    if not isinstance(alias_or_model, str):
+        return alias_or_model
+    text = alias_or_model.strip()
+    if not (text.startswith("${") and text.endswith("}")):
+        return alias_or_model
+    key = text[2:-1].strip()
+    if cli_overrides and key in cli_overrides:
+        return cli_overrides[key]
+    if env is not None and key in env:
+        return env[key]
+    profile = COST_PROFILES.get(cost_profile) or COST_PROFILES[DEFAULT_COST_PROFILE]
+    aliases = profile.get("cell_aliases", {}) if isinstance(profile, dict) else {}
+    if key in aliases:
+        return aliases[key]
+    return alias_or_model  # unresolved — return placeholder for visibility
+
+
 DEFAULT_GEMINI_MODEL_ID = "gemini-3-flash-preview"
 DEFAULT_GEMINI_BULK_MODEL = "gemini-3.1-flash-lite-preview"
 DEFAULT_GEMINI_EXTRACT_MODEL = "gemini-3-flash-preview"
@@ -1492,6 +1673,15 @@ class RunnerConfig:
     ledger: Optional[Any] = None
     fl_int_provider_timeout_seconds: int = 180
     fl_int_f0_batch_timeout_seconds: int = 210
+    # Cost-profile + optimizer fields (May 2026 Phase E6).
+    cost_profile: str = DEFAULT_COST_PROFILE
+    default_service_tier: str = "default"  # default | flex | priority | auto
+    enable_cached_input: bool = True
+    enable_batch_when_supported: bool = True
+    cost_cap_mode: str = "preventive"  # preventive | post_hoc (legacy)
+    disabled_providers: Tuple[str, ...] = ()
+    model_alias_overrides: Tuple[Tuple[str, str], ...] = ()
+    cost_profile_notes: str = ""
 
 
 @dataclass(frozen=True)
@@ -21049,7 +21239,46 @@ def main() -> None:
             "gemini_primary",
             "optimal",
         ],
-        default=DEFAULT_ROUTING_POLICY,
+        default=None,
+        help=(
+            "DEPRECATED: legacy routing policy. Prefer --cost-profile. "
+            "When set, this value is mapped to a cost profile via "
+            "LEGACY_ROUTING_POLICY_TO_COST_PROFILE and a deprecation warning is emitted."
+        ),
+    )
+    parser.add_argument(
+        "--cost-profile",
+        choices=sorted(COST_PROFILES.keys()),
+        default=None,
+        help=(
+            f"Cost profile selecting model tier + service_tier + cached-input + "
+            f"batch behavior. Default: {DEFAULT_COST_PROFILE}. "
+            f"Replaces --routing-policy. See claudedocs/research/routing-design-2026-05.md."
+        ),
+    )
+    parser.add_argument(
+        "--disable-provider",
+        action="append",
+        default=[],
+        metavar="PROVIDER",
+        help=(
+            "Manual kill-switch: disable a provider for this run (skips any route "
+            "with this provider). Repeatable. Valid values: openai, anthropic, "
+            "gemini, xai, openrouter. Per Phase D consensus this replaces the "
+            "rejected app-level circuit breaker."
+        ),
+    )
+    parser.add_argument(
+        "--model-alias",
+        action="append",
+        default=[],
+        metavar="ALIAS=MODEL_ID",
+        help=(
+            "Override a cell-level model alias (e.g., "
+            "--model-alias QUALITY_SYNTH_CRITICAL_MODEL=anthropic/claude-opus-4.7). "
+            "Repeatable. See COST_PROFILES[<profile>].cell_aliases for available "
+            "alias keys per profile."
+        ),
     )
     parser.add_argument(
         "--s-prompts",
@@ -21566,6 +21795,90 @@ def main() -> None:
             logger.error("%s", exc)
             sys.exit(1)
 
+    # ------------------------------------------------------------------
+    # Cost-profile resolution (May 2026 Phase E6).
+    #
+    # Operator can pass:
+    #   --cost-profile {economy|value-default|quality|experimental}  (preferred)
+    #   --routing-policy {cost|balanced|...}                         (legacy alias)
+    #
+    # If --cost-profile is unset:
+    #   - if --routing-policy IS set: map via LEGACY_ROUTING_POLICY_TO_COST_PROFILE
+    #     and emit a deprecation warning.
+    #   - if neither set: fall back to DEFAULT_COST_PROFILE.
+    # If both set: --cost-profile wins; routing-policy is ignored with a warning.
+    # ------------------------------------------------------------------
+    requested_cost_profile = getattr(args, "cost_profile", None)
+    requested_routing_policy = getattr(args, "routing_policy", None)
+    if requested_cost_profile and requested_routing_policy:
+        logger.warning(
+            "Both --cost-profile=%s and --routing-policy=%s provided; "
+            "preferring --cost-profile and ignoring --routing-policy.",
+            requested_cost_profile,
+            requested_routing_policy,
+        )
+        cost_profile_name, cost_profile_cfg = resolve_cost_profile(requested_cost_profile)
+    elif requested_cost_profile:
+        cost_profile_name, cost_profile_cfg = resolve_cost_profile(requested_cost_profile)
+    elif requested_routing_policy:
+        cost_profile_name, cost_profile_cfg = resolve_cost_profile(requested_routing_policy)
+        logger.warning(
+            "DEPRECATION: --routing-policy=%s is deprecated. Migrate to "
+            "--cost-profile=%s. The legacy flag will be removed in a future release. "
+            "See claudedocs/research/routing-design-2026-05.md.",
+            requested_routing_policy,
+            cost_profile_name,
+        )
+    else:
+        cost_profile_name, cost_profile_cfg = resolve_cost_profile(None)
+    # Backfill args.routing_policy from the resolved profile so all
+    # downstream code (which still reads args.routing_policy) continues to work.
+    args.routing_policy = cost_profile_cfg.get("routing_policy", DEFAULT_ROUTING_POLICY)
+    args.cost_profile = cost_profile_name
+    # Parse --model-alias K=V pairs into a tuple of (key, value).
+    _model_alias_overrides: List[Tuple[str, str]] = []
+    for raw in getattr(args, "model_alias", []) or []:
+        if "=" not in raw:
+            logger.warning(
+                "Ignoring --model-alias %r: expected KEY=VALUE format.", raw
+            )
+            continue
+        key, _, value = raw.partition("=")
+        key = key.strip()
+        value = value.strip()
+        if not key or not value:
+            logger.warning(
+                "Ignoring --model-alias %r: empty key or value.", raw
+            )
+            continue
+        _model_alias_overrides.append((key, value))
+    args._resolved_model_alias_overrides = tuple(_model_alias_overrides)
+    # Validate --disable-provider values; normalize to lowercase.
+    _disabled_providers: List[str] = []
+    _valid_providers = {"openai", "anthropic", "gemini", "xai", "openrouter"}
+    for raw in getattr(args, "disable_provider", []) or []:
+        token = str(raw).strip().lower()
+        if token not in _valid_providers:
+            logger.warning(
+                "Ignoring --disable-provider %r: must be one of %s.",
+                raw,
+                ", ".join(sorted(_valid_providers)),
+            )
+            continue
+        _disabled_providers.append(token)
+    args._resolved_disabled_providers = tuple(sorted(set(_disabled_providers)))
+    # If operator didn't set --max-cost-usd but the cost profile has a default,
+    # apply it now so the spend ledger respects the profile's intent.
+    if getattr(args, "max_cost_usd", None) is None:
+        profile_default = cost_profile_cfg.get("max_cost_usd_default")
+        if profile_default is not None:
+            args.max_cost_usd = float(profile_default)
+            logger.info(
+                "Applied cost-profile default --max-cost-usd=%.2f for profile=%s.",
+                args.max_cost_usd,
+                cost_profile_name,
+            )
+
     if args.phase == "S_INT":
         from s_int.models import ladder_for_step
         from s_int.run_s_int import run_s_int
@@ -21935,6 +22248,34 @@ def main() -> None:
         ),
         allow_online_llm=bool(args.allow_online_llm),
         router=router,
+        # Cost-profile + optimizer fields (May 2026 Phase E6).
+        cost_profile=getattr(args, "cost_profile", DEFAULT_COST_PROFILE),
+        default_service_tier=str(
+            (COST_PROFILES.get(getattr(args, "cost_profile", DEFAULT_COST_PROFILE))
+             or COST_PROFILES[DEFAULT_COST_PROFILE]).get("default_service_tier", "default")
+        ),
+        enable_cached_input=bool(
+            (COST_PROFILES.get(getattr(args, "cost_profile", DEFAULT_COST_PROFILE))
+             or COST_PROFILES[DEFAULT_COST_PROFILE]).get("enable_cached_input", True)
+        ),
+        enable_batch_when_supported=bool(
+            (COST_PROFILES.get(getattr(args, "cost_profile", DEFAULT_COST_PROFILE))
+             or COST_PROFILES[DEFAULT_COST_PROFILE]).get("enable_batch_when_supported", True)
+        ),
+        cost_cap_mode=str(
+            (COST_PROFILES.get(getattr(args, "cost_profile", DEFAULT_COST_PROFILE))
+             or COST_PROFILES[DEFAULT_COST_PROFILE]).get("cost_cap_mode", "preventive")
+        ),
+        disabled_providers=tuple(
+            getattr(args, "_resolved_disabled_providers", ()) or ()
+        ),
+        model_alias_overrides=tuple(
+            getattr(args, "_resolved_model_alias_overrides", ()) or ()
+        ),
+        cost_profile_notes=str(
+            (COST_PROFILES.get(getattr(args, "cost_profile", DEFAULT_COST_PROFILE))
+             or COST_PROFILES[DEFAULT_COST_PROFILE]).get("notes", "")
+        ),
     )
 
     if not phase_sequence and preset_phase_sequence:
