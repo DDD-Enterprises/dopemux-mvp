@@ -1,0 +1,87 @@
+{
+  "packet_id": "RTE-MACRO-PKT-REMAINING-PARALLEL-001",
+  "generated_at_utc": "2026-05-19T13:51:06Z",
+  "status": "GATE0_AND_COLLISION_ANALYSIS_COMPLETE",
+  "base_mode": "MAIN_AFTER_MERGE",
+  "repo": {
+    "name": "dopemux-mvp",
+    "worktree": "/Users/hue/.codex/worktrees/rte-macro-pkt-remaining-parallel-001/dopemux-mvp",
+    "branch": "codex/rte-macro-pkt-remaining-parallel-001",
+    "base_ref": "origin/main",
+    "base_sha": "fbf1b5df333e815db718ec05b4bc324ebf7d9af6",
+    "remote": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "markers": {
+      "pyproject.toml": true,
+      "services/repo-truth-extractor/run_extraction_v5.py": true,
+      "src/dopemux/cli.py": true
+    }
+  },
+  "gate_0": {
+    "status": "PASS_WITH_CORRECTION",
+    "correction": "The prompt said PR #654 is open; GitHub reports PR #654 is MERGED.",
+    "source_head": "d64d5f15e46e68373e3bed1160fbc3df2807db59",
+    "macro_head": "fbf1b5df333e815db718ec05b4bc324ebf7d9af6",
+    "pr_654": {
+      "number": 654,
+      "state": "MERGED",
+      "is_draft": false,
+      "mergeable": "UNKNOWN",
+      "head_ref": "codex/rte-pkt-15-failed-sidecars-clean",
+      "head_oid": "eb351aab7cbc009ab73ca397062eed03a5edb80d",
+      "base_ref": "main",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/654",
+      "changed_file_count": 19,
+      "scope_check": "PASS_RTE_PKT_15_ONLY",
+      "out_rte_ux_valuation_opus_audit_present": false
+    }
+  },
+  "accepted_prerequisites": [
+    "RTE-PKT-00-SOURCE-CLOSURE",
+    "RTE-PKT-01-LIVE-GATE",
+    "RTE-PKT-02-PAYLOAD-REDACTION",
+    "RTE-PKT-15-FAILED-SIDECARS"
+  ],
+  "subpacket_worktrees_created": [],
+  "subpacket_branches_created": [],
+  "subpacket_prs_created": [],
+  "subpackets_generated": [],
+  "subpackets_executed": [],
+  "subpackets_blocked": [
+    {
+      "packet": "RTE-PKT-15B-COMPARISON-SIDECAR",
+      "reason": "Operator did not explicitly enable optional micro-packet."
+    },
+    {
+      "packet": "RTE-PKT-16-CLI-LEGACY-UX",
+      "reason": "No local source packet/proof found; plan-only until exact write scope is resolved."
+    }
+  ],
+  "macro_artifacts": [
+    "out/rte-macro-pkt-remaining-parallel-001/MACRO_MANIFEST.json",
+    "out/rte-macro-pkt-remaining-parallel-001/WAVE_PLAN.md",
+    "out/rte-macro-pkt-remaining-parallel-001/SUBPACKET_INDEX.md",
+    "out/rte-macro-pkt-remaining-parallel-001/DEPENDENCY_GRAPH.md",
+    "out/rte-macro-pkt-remaining-parallel-001/WRITE_SCOPE_COLLISION_MATRIX.md",
+    "out/rte-macro-pkt-remaining-parallel-001/PARALLEL_SAFETY_MATRIX.md",
+    "out/rte-macro-pkt-remaining-parallel-001/NO_LIVE_PROVIDER_ATTESTATION.md",
+    "out/rte-macro-pkt-remaining-parallel-001/CLOSEOUT.md"
+  ],
+  "hard_rule_attestation": {
+    "live_validation_performed": false,
+    "provider_calls_performed": false,
+    "batch_submit_poll_retrieve_cancel_performed": false,
+    "live_extraction_performed": false,
+    "promptsets_modified": false,
+    "schemas_modified": false,
+    "model_maps_modified": false,
+    "route_policies_modified": false,
+    "retry_semantics_modified": false,
+    "repair_semantics_modified": false
+  },
+  "validation": {
+    "python_json_tool_macro_manifest": "PASS exit=0",
+    "git_diff_check": "PASS exit=0",
+    "git_status_short_branch": "PASS exit=0, only out/rte-macro-pkt-remaining-parallel-001/ untracked before staging",
+    "pre_commit": "PASS exit=0"
+  }
+}

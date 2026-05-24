@@ -23,6 +23,15 @@ Status: [LOGGED] Topology Complete
 
 ### New to Dopemux?
 - **[Quick Start Guide](../QUICK_START.md)** - Get up and running in 5 minutes
+- **[AI-Readable Map](../llms.txt)** - Curated public entrypoint for humans and AI tools
+- **[Dopemux Quickstart Tutorial](01-tutorials/quickstart.md)** - Compose-backed startup and first checks
+- **[Developer Onboarding](02-how-to/developer-onboarding.md)** - Contributor setup, Task Packet discipline, and docs validation
+- **[Project Overview](04-explanation/overview/project-overview.md)** - Repo-grounded project shape and authority split
+- **[System Map](04-explanation/overview/system-map.md)** - High-level map of systems and non-authority links
+- **[Product Positioning](04-explanation/product/positioning.md)** - Repo-faithful positioning without monolithic assistant claims
+- **[Public Copy Variants](04-explanation/product/public-copy-variants.md)** - Reusable public copy variants with claim guardrails
+- **[Product FAQ](04-explanation/product/faq.md)** - Public-facing limitations, drift, and authority answers
+- **[Public Docs Surface](03-reference/governance/public-docs-surface.md)** - Maintained public-facing and AI-readable docs surface
 - **[Installation](01-tutorials/start-here.md)** - Comprehensive setup guide
 - **[README](../README.md)** - Project overview and features
 
@@ -54,6 +63,7 @@ Status: [LOGGED] Topology Complete
 - [PR Merge Flight Dashboard Quickstart](02-how-to/pr-merge-flight-dashboard.md)
 - [CI Remediation Specialist Reference](03-reference/ci-remediation-specialist.md)
 - [Internal Workflow Kit](02-how-to/internal-workflow-kit.md)
+- [Operator Workflows](02-how-to/operator-workflows.md)
 - [Workflow Idea to Epic Lifecycle](02-how-to/operations/workflow-idea-epic-lifecycle.md)
 - [Serena V2 Deployment](02-how-to/serena-v2-production-deployment.md)
 - [Repo Truth Extractor CLI Runbook](02-how-to/extraction/run-v4-from-dopemux-cli.md) - canonical command namespace: `dopemux rte ...` (`upgrades` is a legacy compatibility alias; `extractor` is a hidden legacy/refusal surface)
@@ -64,6 +74,7 @@ Status: [LOGGED] Topology Complete
 - [Repo Truth Extractor Reference](03-reference/extraction/pipeline-reliability.md)
 - [Repo Truth Extractor Phase Map](03-reference/extraction/pipeline-phases.md)
 - [Repo Truth Extractor v5 Upgrade Design](04-explanation/architecture/v5-extraction-pipeline-upgrade-design.md)
+- [RTE Provider Structured Output Baseline](06-research/extraction/rte-provider-structured-output-baseline.md) - External provider audit baseline for structured output and provider-state risks
 - [Dope-Context User Guide](02-how-to/dope-context/dope-context-user-guide.md)
 - [PR Merge Flight Dashboard](02-how-to/pr-merge-flight-dashboard.md) - Canonical operator quickstart for `dopemux pr-merge flight` and `dopemux-pr-merge flight`
 
@@ -76,7 +87,7 @@ Status: [LOGGED] Topology Complete
 - [Executive Summary](03-reference/systems/conport/conport-kg-status.md) - Current ConPort status and quick overview
 - [Systems Analysis](04-explanation/technical-deep-dives/conport-technical-deep-dive.md) - Technical deep dive
 - [Integration Quickstart](02-how-to/mcp-service-discovery-guide.md)
-- [Comparison Matrix](05-audit-reports/service-maturity-gap-analysis.md)
+- [Supervisor PM and Memory MCP Server Matrix](05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md)
 - [Full Documentation](03-reference/systems/conport/conport-kg-status.md)
 - [Callable Surface Inventory](systems/conport/callable-surface-inventory.md)
 - [Surface Equivalence and Drift](systems/conport/surface-equivalence-and-drift.md)
@@ -101,6 +112,14 @@ Status: [LOGGED] Topology Complete
 
 ### Core Architecture
 - [Architecture Overview](04-explanation/architecture/dopemux-architecture-overview.md) - Complete system architecture
+- [Dopemux Architecture](04-explanation/architecture/dopemux-architecture.md) - Split-authority architecture explanation grounded in current repo evidence
+- [Data and Control Flow](04-explanation/architecture/data-and-control-flow.md) - Operator, PM, bridge, retrieval, memory, and extraction flows
+- [Problem Statement](04-explanation/overview/problem-statement.md) - Documentation and operator-control problem framing
+- [Audience Personas](04-explanation/product/audience-personas.md) - Repo-grounded operator, maintainer, workflow, audit, and support audiences
+- [Homepage Copy](04-explanation/product/homepage-copy.md) - Positioning copy with implemented, Drift, and limitation labels
+- [Public Copy Variants](04-explanation/product/public-copy-variants.md) - Public copy variants with anti-claim guardrails
+- [Elevator Pitches](04-explanation/product/elevator-pitches.md) - Short Dopemux pitches with claim guardrails
+- [Features and Benefits](04-explanation/product/features-and-benefits.md) - Feature benefits tied to repo evidence and limitations
 - [Full Codebase Explainer](04-explanation/architecture/dopemux-mvp-full-codebase-explainer.md) - Repo-truth explainer for the active Dopemux control surfaces, service boundaries, and authority split
 - [System Bible](04-explanation/architecture/system-bible.md) - Consolidated knowledge base
 - [Three-Layer Integration](90-adr/adr-207-architecture-3-0-three-layer-integration.md)
@@ -163,6 +182,7 @@ Status: [LOGGED] Topology Complete
 ### Documentation Automation
 - [Documentation Root Index](INDEX.md)
 - [Documentation Catalog](03-reference/documentation-catalog.md)
+- [Developer Onboarding](02-how-to/developer-onboarding.md)
 - PR Docgen Sync skill templates:
   - `templates/skills/pr-docgen-sync/`
   - `templates/skills/pr-docgen-sync-gemini/`
@@ -193,7 +213,15 @@ Status: [LOGGED] Topology Complete
 
 ### Governance
 - [Authority Map](03-reference/governance/authority-map.md)
+- [Authority Boundaries](03-reference/governance/authority-boundaries.md)
+- [Governance Model](03-reference/governance/governance-model.md)
 - [Conflict Ledger](03-reference/governance/conflict-ledger.md)
+- [Documentation Source Map](03-reference/governance/dopemux-documentation-source-map.md)
+- [Documentation Gap Register](03-reference/governance/documentation-gap-register.md)
+- [Documentation Trust Map](03-reference/governance/doc-trust-map.md)
+- [Public Docs Surface](03-reference/governance/public-docs-surface.md)
+- [AI Agent Handoff Guide](03-reference/instructions/ai-agent-handoff-guide.md)
+- [Component Catalog](03-reference/systems/component-catalog.md)
 - Additional governance contracts are tracked in the active backlog and linked from the Authority Map.
 
 ### Technical Deep Dives

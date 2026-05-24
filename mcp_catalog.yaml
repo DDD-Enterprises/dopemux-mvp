@@ -8,9 +8,10 @@
 #   singleton    — one shared instance, declared in ~/.claude.json `mcpServers`.
 #                  Stateless, or routes by per-call workspace_path / cwd auto-detection.
 #                  Does NOT need per-worktree isolation.
-#   per-worktree — needs isolated state per git worktree (own port, own container,
-#                  own DB volume). Declared in each worktree's .mcp.json with
-#                  env-var-driven port allocation.
+#   per-worktree — declared in each worktree's .mcp.json. Most entries in this
+#                  scope use worktree-isolated ports/volumes; entries may set
+#                  state_scope: per-repo when the MCP process is launched from
+#                  each worktree but stores one DB per local git repository.
 #
 # Transport:
 #   http  — Streamable HTTP (Claude Code "type": "http")
@@ -126,11 +127,14 @@ servers:
 
   task-orchestrator:
     scope: per-worktree
+    state_scope: per-repo
     transport: stdio
-    command: python3
-    args_template:
-      - "${DOPEMUX_WORKSPACE_ROOT}/services/task-orchestrator/task_orchestrator/app.py"
+    command: /Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh
+    args: []
+    doctor_args: ["--print-resolution"]
+    requires_env: ["TASK_ORCHESTRATOR_PROJECT_ROOT"]
     env_template:
-      WORKSPACE_ID: "${DOPEMUX_WORKSPACE_ID}"
-      PYTHONPATH: "${DOPEMUX_WORKSPACE_ROOT}/services/task-orchestrator"
-    description: "Task orchestration & dependency management (project-local Python service)"
+      DOPEMUX_WORKSPACE_ROOT: "${DOPEMUX_WORKSPACE_ROOT:-}"
+      DOPEMUX_PROJECT_ROOT: "${DOPEMUX_PROJECT_ROOT:-}"
+      TASK_ORCHESTRATOR_PROJECT_ROOT: "${TASK_ORCHESTRATOR_PROJECT_ROOT:-}"
+    description: "Current 13-tool MCP Task Orchestrator with repo-scoped SQLite state"

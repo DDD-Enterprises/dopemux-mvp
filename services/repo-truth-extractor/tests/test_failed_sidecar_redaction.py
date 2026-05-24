@@ -90,6 +90,10 @@ def _secret_value() -> str:
     return "sk-" + "RTEPKT15" + ("A" * 32)
 
 
+def _opaque_secret_value() -> str:
+    return "RtE" + ("dE5" * 14)
+
+
 def _prompt_spec(runner: types.ModuleType, tmp_path: Path, *, step_id: str = "A0") -> Any:
     prompt_path = tmp_path / f"PROMPT_{step_id}_TEST.md"
     prompt_path.write_text("Return OUT.json\n", encoding="utf-8")
@@ -354,3 +358,30 @@ def test_failed_sidecar_text_writer_redacts_batch_terminal_text(tmp_path: Path) 
     failed_text = failed_path.read_text(encoding="utf-8")
     _assert_secret_redacted(failed_text, secret)
     assert "batch_terminal_state:failed" in failed_text
+
+
+def test_failed_sidecar_json_writer_redacts_generic_secret_shape(tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    secret = _opaque_secret_value()
+    safe_digest = "c" * 64
+    failed_json_path = tmp_path / "raw" / "A0__A_P0001.FAILED.json"
+
+    runner.write_json(
+        failed_json_path,
+        {
+            "failure_type": "provider",
+            "api_key_env": "OPENAI_API_KEY",
+            "request_meta": {
+                "provider_error_reason": f"opaque failure marker {secret}",
+                "sha256": safe_digest,
+            },
+        },
+    )
+
+    failed_json = json.loads(failed_json_path.read_text(encoding="utf-8"))
+    rendered = json.dumps(failed_json, sort_keys=True)
+    assert secret not in rendered
+    assert "[REDACTED]" in rendered
+    assert failed_json["failure_type"] == "provider"
+    assert failed_json["api_key_env"] == "OPENAI_API_KEY"
+    assert failed_json["request_meta"]["sha256"] == safe_digest

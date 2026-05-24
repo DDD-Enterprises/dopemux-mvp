@@ -1,3 +1,15 @@
+---
+id: SERVER_AUDIT_2026-02-05
+title: Server Audit 2026 02 05
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-19'
+last_review: '2026-05-19'
+next_review: '2026-08-17'
+prelude: Server Audit 2026 02 05 (explanation) for dopemux documentation and developer
+  workflows.
+---
 # MCP Server Audit Report
 **Date**: 2026-02-05
 **Auditor**: Claude (Learning Mode)

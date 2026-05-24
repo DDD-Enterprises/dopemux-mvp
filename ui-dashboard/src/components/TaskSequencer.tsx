@@ -26,6 +26,7 @@ import {
   Swords,
   RotateCcw,
   AlertTriangle,
+  Zap,
 } from 'lucide-react';
 import { brandTokens, statusStyles } from '../theme';
 import { getCompletionTransitionTask, getSkipTransitionTask } from './taskSequencerTransitions';
@@ -85,6 +86,8 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   const [currentTaskId, setCurrentTaskId] = useState<string | null>('1');
   const [taskTimer, setTaskTimer] = useState<number>(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
+  // Heartbeat to keep "Ends at" times fresh even when taskTimer is paused
+  const [heartbeat, setHeartbeat] = useState<number>(Date.now());
   const [isResetConfirming, setIsResetConfirming] = useState(false);
   const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -97,6 +100,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     }
     return () => clearInterval(interval);
   }, [isTimerRunning]);
+
+  useEffect(() => {
+    // 30s heartbeat to ensure absolute time anchors stay relevant during pauses
+    const interval = setInterval(() => {
+      setHeartbeat(Date.now());
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     setTaskTimer(0);
@@ -224,6 +235,12 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     return brandTokens.colors.serumMint;
   };
 
+  const energyColor = (energy: string) => {
+    if (energy === 'high') return brandTokens.colors.gremlinPink;
+    if (energy === 'medium') return brandTokens.colors.giltEdge;
+    return brandTokens.colors.serumMint;
+  };
+
   const totalRemainingMinutes = useMemo(() => {
     const incompleteTasks = tasks.filter((t) => t.status !== 'completed');
     const otherTasksTotal = incompleteTasks
@@ -260,6 +277,60 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     return `Finish at ${hh}:${mm}`;
   }, [totalRemainingMinutes]);
 
+  const taskFinishTimes = useMemo(() => {
+    const nowMs = Date.now();
+    const now = new Date(nowMs);
+    const todayKey = `${now.getFullYear()}${now.getMonth()}${now.getDate()}`;
+
+    const activeTask = tasks.find((t) => t.id === currentTaskId);
+    const activeTaskRemaining = activeTask
+      ? Math.max(0, activeTask.estimatedMinutes - taskTimer / 60)
+      : 0;
+
+    const result: Record<string, string> = {};
+    let cumulative = activeTaskRemaining;
+
+    // Sequence: current task first, then others in optimized order.
+    // We source activeTask from raw tasks to ensure it anchors downstream math
+    // even if filtered out of the visible list (e.g. by cognitive load threshold).
+    const sequence: Task[] = activeTask ? [activeTask] : [];
+    optimizedTasks.forEach((t) => {
+      if (t.id !== currentTaskId) sequence.push(t);
+    });
+
+    sequence.forEach((task) => {
+      const isCurrent = task.id === currentTaskId;
+      if (!isCurrent) {
+        cumulative += task.estimatedMinutes;
+      }
+
+      // Note: Date.now() is read fresh but driven by heartbeat/taskTimer deps
+      const finishDate = new Date(nowMs + cumulative * 60000);
+      const hh = finishDate.getHours().toString().padStart(2, '0');
+      const mm = finishDate.getMinutes().toString().padStart(2, '0');
+
+      const finishDateKey = `${finishDate.getFullYear()}${finishDate.getMonth()}${finishDate.getDate()}`;
+      let dayPrefix = '';
+
+      if (finishDateKey !== todayKey) {
+        const diffMs =
+          new Date(finishDate.getFullYear(), finishDate.getMonth(), finishDate.getDate()).getTime() -
+          new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 1) {
+          dayPrefix = 'Tomorrow at ';
+        } else {
+          dayPrefix = `${finishDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} at `;
+        }
+      }
+
+      result[task.id] = `${dayPrefix}${hh}:${mm}`;
+    });
+
+    return result;
+  }, [tasks, optimizedTasks, currentTaskId, taskTimer, heartbeat]);
+
   return (
     <Paper
       sx={{
@@ -287,6 +358,16 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             boxShadow: `0 0 12px ${alpha(brandTokens.colors.saintGold, 0.3)}`,
           },
           '100%': { transform: 'scale(1)' },
+        },
+        '@keyframes active-border-glow': {
+          '0%, 100%': {
+            borderColor: brandTokens.borders.cyan,
+            boxShadow: `0 0 8px ${alpha(brandTokens.colors.ritualCyan, 0.2)}`,
+          },
+          '50%': {
+            borderColor: brandTokens.colors.serumMint,
+            boxShadow: `0 0 16px ${alpha(brandTokens.colors.serumMint, 0.4)}`,
+          },
         },
       }}
       className="dopemux-panel"
@@ -694,6 +775,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                     : `1px solid ${brandTokens.borders.subtle}`,
                   mb: 0.5,
                   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  animation: (isCurrent && isTimerRunning) ? 'active-border-glow 2s infinite ease-in-out' : 'none',
                   '&:hover, &:focus-within': {
                     bgcolor: isCurrent
                       ? alpha(brandTokens.colors.ritualCyan, 0.12)
@@ -743,10 +825,30 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                     </Box>
                   }
                   secondary={
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
-                      <Typography variant="caption">
-                        {task.estimatedMinutes} min • {task.energyRequired} energy
-                      </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 0.5 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Tooltip title={`Estimated duration: ${task.estimatedMinutes} minutes`} arrow>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <Clock size={12} color={brandTokens.colors.ritualCyan} aria-hidden="true" />
+                            <Typography variant="caption">{task.estimatedMinutes}m</Typography>
+                          </Box>
+                        </Tooltip>
+                        <Tooltip title={`Energy requirement: ${task.energyRequired}`} arrow>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <Zap size={12} color={energyColor(task.energyRequired)} aria-hidden="true" />
+                            <Typography variant="caption" sx={{ color: energyColor(task.energyRequired) }}>
+                              {task.energyRequired}
+                            </Typography>
+                          </Box>
+                        </Tooltip>
+                        {taskFinishTimes[task.id] && (
+                          <Tooltip title="Estimated wall-clock finish time" arrow>
+                            <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                              • Ends at {taskFinishTimes[task.id]}
+                            </Typography>
+                          </Tooltip>
+                        )}
+                      </Box>
                       <Typography variant="caption">#{index + 1}</Typography>
                     </Box>
                   }

@@ -4,19 +4,24 @@
 
 This is durable operator-control guidance for Codex and agent-style work in this repository. Act from repo truth, preserve architecture boundaries, execute scoped repo-changing work end-to-end, and never hide `UNKNOWN`.
 
-Repo truth beats docs.
+Repo truth beats docs. Here, repo truth means observed runtime and source truth: runtime code,
+config, compose wiring, tests, and active entrypoints. Active Task Packets control the
+current execution slice, allowlists, validation obligations, and stop conditions; they do
+not make unsupported runtime behavior claims true.
 
 ## 2. Truth Order
 
 When sources conflict, use this order:
 
-1. Active Task Packet for the current work slice, for execution control and repo-changing scope.
-2. Runtime code, config, compose wiring, tests, and active entrypoints.
+1. Active Task Packet for the current work slice, for execution control, allowlists, validation obligations, and repo-changing scope.
+2. Runtime code, config, compose wiring, tests, and active entrypoints, for behavior claims and implemented system truth.
 3. `TRUTH_*.md` if present, otherwise the tracked `docs/03-reference/truth/*` equivalents.
 4. `RULES.md`, `PROJECT.md`, `ARCHITECTURE.md`, `SYSTEM_BOUNDARIES.md`, `PM_PLANE.md`, `SERVICE_CATALOG.md`, and `SYSTEM_*.md` if present, plus tracked equivalents under `docs/03-reference/`.
-5. Historical, generated, exploratory, uploaded, assembled, or design docs.
+5. Historical, generated, advisory, exploratory, uploaded, assembled, external, or design docs.
 
 Never let extracted artifacts outrank the runtime they describe. Mark absent or unresolved authority as `UNKNOWN`.
+Never let a Task Packet authorize a runtime claim that code, config, tests, compose wiring,
+or active entrypoints do not support.
 
 ## 3. Default Behavior
 
@@ -82,14 +87,27 @@ Rules:
 
 Agents do not own PM truth. Repo-wide agent runtime authority remains `UNKNOWN` across `services/agents`, `src/dopemux/agent_orchestrator.py`, and `services/task-orchestrator/task_orchestrator/agents` unless a specific runtime path is verified.
 
-## 7. Local Instruction Surfaces
+## 7. RTE Safety Invariants
+
+For Repo Truth Extractor work, agents must preserve the merged authority-order model and these safety rules:
+
+- Runtime/source truth governs behavior claims. Do not claim RTE behavior unless code, config, tests, compose wiring, active entrypoints, or representative artifacts support it. Task Packets scope execution; they do not authorize unsupported runtime claims.
+- Missing source, missing artifacts, missing provider evidence, and absent audit bundles remain `UNKNOWN`. Do not convert `UNKNOWN` into recommendations, findings, implementation claims, or proof.
+- Generated audit packs, valuation matrices, Deep Research baselines, extracted truth packs, and external docs are advisory unless runtime/source truth supports them.
+- Do not run provider calls, live extraction, live preflight, network/provider validation, or account-specific checks without explicit Task Packet authorization and direct evidence.
+- Treat `DPMX_LIVE_OK` and pre-live validation as live-execution boundaries. Do not bypass consent gates or turn blocked runs into permissive behavior.
+- Do not include secrets, local credentials, raw tokens, private keys, `.env` values, unredacted provider metadata, or sensitive provider output samples in proof or output.
+- Repo Truth Extractor is extraction/audit runtime only. It is not PM authority, memory authority, retrieval authority, provider authority, or replacement source truth.
+- Keep follow-on RTE UX packets separated: CLI tone cleanup, validator error-shape cleanup, run-help progressive disclosure, accepted-later work, and deferred items are separate work.
+
+## 8. Local Instruction Surfaces
 
 - `AGENTS.md` is the durable repo guidance for Codex and agent-style repo work.
 - `config/instructions/agents.instructions.md` is observed as GitHub Copilot custom-agent file authoring guidance with `applyTo: '**/*.agent.md'`; this file is not proven to govern Codex runtime behavior.
 - `.github/copilot-instructions.md` is Copilot-specific guidance and should not be treated as Codex runtime authority without separate evidence.
 - `.claude/personas/*.agent.md` files are persona or agent definitions, not proof of a single repo-wide agent runtime authority.
 
-## 8. Proof and Finality
+## 9. Proof and Finality
 
 Never say complete or done without evidence. Final confidence must be `VERIFIED`.
 
@@ -111,7 +129,7 @@ Proof for repo-changing work must include:
 
 No proof means incomplete.
 
-## 9. Known Dangers
+## 10. Known Dangers
 
 - `dopecon-bridge` exposes broad surfaces that can look authoritative, but it is only bridge/proxy/event transport.
 - Task-orchestrator runtime authority is conflicted across `app/main.py`, `task_orchestrator/app.py`, and Docker wiring.

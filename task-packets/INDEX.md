@@ -52,6 +52,7 @@ A packet is superseded by another packet
 | TP-DMX-REPOHYG-008 | Repo Hygiene | Remove Genetic Agent and Taskmaster active surfaces | Ready | N/A |
 | TP-DMX-RTEAUDIT-001 | Repo Truth Extractor | Assemble pre-live audit pack for GPT-5.4 Pro | Ready | N/A |
 | TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001 | Repo Truth Extractor | Assemble GPT-5.5 Pro multi-pass audit pack | Active | N/A |
+| TP-DMX-RTEOPUS-AUDIT-DOCS-001 | Repo Truth Extractor | Add recovered Opus UI/UX Claude design audit bundle to docs/audit | Active | N/A |
 | TP-DMX-RTEINT-001 | Repo Truth Extractor | Integrate current RTE branch deltas into staging audit branch | Ready | N/A |
 | TP-DMX-RTECANON-001 | Repo Truth Extractor | Establish `dopemux rte` as the canonical operator entrypoint | Ready | N/A |
 | TP-RTE-V3-CONSENT-004 | Repo Truth Extractor | Gate legacy v3 execution and fail closed on unknown pipeline versions | Active | N/A |
@@ -70,6 +71,7 @@ A packet is superseded by another packet
 | TP-DMX-COCKPIT-INVENTORY-REGEN-001 | UI Cockpit | Regenerate current-head Cockpit command/surface inventory artifacts | Active | N/A |
 | TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001 | UI Cockpit | Repair Cockpit runtime contract-fidelity gaps | Active | N/A |
 | TP-DMX-COCKPIT-DESIGN-PICKUP-001 | UI Cockpit | Create current-state Cockpit design pickup brief after pack-to-main consolidation | Active | N/A |
+| TP-DMX-MOBILE-TUI-SPEC-001 | UI Cockpit | Install mobile-first tmux Cockpit UX specification without runtime changes | Active | N/A |
 | PACKET_031 | Memory | Dual Capture Adapters, Single Ledger | Executing | ADR-213 |
 | PACKET_032 | Memory | Chronicle Promotion Guards | Pending Audit | ADR-214 |
 | DMX-COCKPIT-PMIMPL-PACK-001 | Cockpit / PM Plane | PM/Implementer cockpit processing pack | Ready | N/A |

@@ -5,9 +5,11 @@ import re
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-_SECRET_QUERY_RE = re.compile(r"([?&](?:key|api[_-]?key|token|access[_-]?token|secret)=)[^&\s]+", re.IGNORECASE)
+_SECRET_QUERY_RE = re.compile(
+    r"([?&](?:key|api[_-]?key|token|access[_-]?token|secret)=)[^&\s]+", re.IGNORECASE
+)
 _SECRET_ASSIGN_RE = re.compile(
-    r"(?i)((?:[\"']?\b(?:api[_-]?key|bearer|token|secret|password|private[_-]?key|webhook[_-]?secret)\b[\"']?\s*[:=]\s*)[\"']?)([^\"',\s\]}]+)([\"']?)"
+    r"(?i)((?:[\"']?([A-Za-z_][A-Za-z0-9_-]*)[\"']?\s*[:=]\s*)[\"']?)([^\"',\s\]\}]+)([\"']?)"
 )
 _BEARER_INLINE_RE = re.compile(r"(?i)(\bBearer\s+)([^\s,;]+)")
 _AUTH_HEADER_RE = re.compile(
@@ -64,18 +66,51 @@ _SAFE_SENSITIVE_KEYS = {
 
 
 def _is_sensitive_key(key: Any) -> bool:
-    token = str(key or "").strip().lower()
+    token = str(key or "").strip().lower().replace("-", "_")
     if not token or token in _SAFE_SENSITIVE_KEYS:
         return False
-    if token.endswith(("_env", "_envs", "_env_name", "_env_requested", "_env_resolved", "_present", "_set", "_sha256", "_signature", "_bytes", "_count", "_counts", "_seconds", "_ms", "_tokens", "_token_limit")):
+    if token.endswith(
+        (
+            "_env",
+            "_envs",
+            "_env_name",
+            "_env_requested",
+            "_env_resolved",
+            "_present",
+            "_set",
+            "_sha256",
+            "_signature",
+            "_bytes",
+            "_count",
+            "_counts",
+            "_seconds",
+            "_ms",
+            "_tokens",
+            "_token_limit",
+        )
+    ):
         return False
-    if token.startswith(("missing_", "required_", "configured_", "fallback_")) and "api_key" in token:
+    if (
+        token.startswith(("missing_", "required_", "configured_", "fallback_"))
+        and "api_key" in token
+    ):
         return False
-    if any(fragment in token for fragment in ("authorization", "bearer", "secret", "password", "private_key", "private-key", "webhook_secret")):
+    if any(
+        fragment in token
+        for fragment in (
+            "authorization",
+            "bearer",
+            "secret",
+            "password",
+            "private_key",
+            "private-key",
+            "webhook_secret",
+        )
+    ):
         return True
     if token == "key":
         return True
-    if "api_key" in token and "env" not in token:
+    if (token == "apikey" or "api_key" in token) and "env" not in token:
         return True
     if "token" in token and "tokens" not in token and "token_limit" not in token:
         return True
@@ -89,14 +124,22 @@ def sanitize_text_for_output(text: str) -> str:
     value = _PRIVATE_KEY_BLOCK_RE.sub("[REDACTED PRIVATE KEY]", value)
     value = _SECRET_QUERY_RE.sub(r"\1REDACTED", value)
     value = _AUTH_HEADER_RE.sub(r"\1[REDACTED]\3", value)
-    value = _SECRET_ASSIGN_RE.sub(r"\1[REDACTED]\3", value)
+    value = _SECRET_ASSIGN_RE.sub(_redact_secret_assignment, value)
     value = _BEARER_INLINE_RE.sub(r"\1[REDACTED]", value)
     value = _PROVIDER_TOKEN_RE.sub("[REDACTED]", value)
     return value
 
 
+def _redact_secret_assignment(match: re.Match[str]) -> str:
+    if not _is_sensitive_key(match.group(2)):
+        return match.group(0)
+    if match.group(3).startswith("[REDACTED"):
+        return match.group(0)
+    return f"{match.group(1)}[REDACTED]{match.group(4)}"
+
+
 def sanitize_failed_sidecar_text(text: str) -> str:
-    return sanitize_text_for_output(text)
+    return sanitize_text_for_provider_payload(text)
 
 
 def _looks_like_hex_digest(value: str) -> bool:
@@ -145,12 +188,16 @@ def sanitize_payload_for_output(payload: Any, *, field_name: str | None = None) 
             str(key): sanitize_payload_for_output(value, field_name=str(key))
             for key, value in payload.items()
         }
-    if isinstance(payload, Sequence) and not isinstance(payload, (str, bytes, bytearray)):
+    if isinstance(payload, Sequence) and not isinstance(
+        payload, (str, bytes, bytearray)
+    ):
         return [sanitize_payload_for_output(item) for item in payload]
     return payload
 
 
-def sanitize_payload_for_provider(payload: Any, *, field_name: str | None = None) -> Any:
+def sanitize_payload_for_provider(
+    payload: Any, *, field_name: str | None = None
+) -> Any:
     if isinstance(payload, Path):
         return sanitize_text_for_provider_payload(str(payload))
     if field_name is not None and _is_sensitive_key(field_name):
@@ -166,8 +213,35 @@ def sanitize_payload_for_provider(payload: Any, *, field_name: str | None = None
             str(key): sanitize_payload_for_provider(value, field_name=str(key))
             for key, value in payload.items()
         }
-    if isinstance(payload, Sequence) and not isinstance(payload, (str, bytes, bytearray)):
+    if isinstance(payload, Sequence) and not isinstance(
+        payload, (str, bytes, bytearray)
+    ):
         return [sanitize_payload_for_provider(item) for item in payload]
+    return payload
+
+
+def sanitize_payload_for_failed_sidecar(
+    payload: Any, *, field_name: str | None = None
+) -> Any:
+    if isinstance(payload, Path):
+        return sanitize_failed_sidecar_text(str(payload))
+    if field_name is not None and _is_sensitive_key(field_name):
+        if payload is None or isinstance(payload, bool):
+            return payload
+        if isinstance(payload, (int, float)):
+            return payload
+        return "[REDACTED]"
+    if isinstance(payload, str):
+        return sanitize_failed_sidecar_text(payload)
+    if isinstance(payload, Mapping):
+        return {
+            str(key): sanitize_payload_for_failed_sidecar(value, field_name=str(key))
+            for key, value in payload.items()
+        }
+    if isinstance(payload, Sequence) and not isinstance(
+        payload, (str, bytes, bytearray)
+    ):
+        return [sanitize_payload_for_failed_sidecar(item) for item in payload]
     return payload
 
 
