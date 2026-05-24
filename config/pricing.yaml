@@ -1,7 +1,70 @@
 version: RTE_PRICING_V2
 source: config/pricing.yaml
-generated_note: Active benchmark pricing truth catalog. Unknown or stale entries remain explicit.
+generated_note: |
+  Active benchmark pricing truth catalog. Unknown or stale entries remain explicit.
+  Schema v2 + additive optimizer fields (May 2026): service_tier multipliers,
+  prompt-cache write/read multipliers, tiered pricing thresholds, data residency.
+  All new fields are optional; legacy v2 loaders ignore them safely.
+  Verified inventory: claudedocs/research/verified-model-inventory-2026-05.md
+optimizer_field_legend:
+  service_tier_flex_multiplier: 'Multiplier applied to base input+output rates when service_tier=flex. OpenAI typically 0.5.'
+  service_tier_priority_multiplier: 'Multiplier when service_tier=priority. OpenAI typically 2.5.'
+  cache_write_5m_multiplier: 'Anthropic 5-minute cache write multiplier on input rate (1.25 means +25 percent).'
+  cache_write_1h_multiplier: 'Anthropic 1-hour cache write multiplier on input rate (2.0 means +100 percent).'
+  cache_read_multiplier: 'Multiplier on input rate when reading from cache. 0.1 equals 90 percent discount.'
+  prompt_cache_min_tokens: 'Minimum prompt size at which auto-caching activates. OpenAI threshold is 1024.'
+  auto_cache_enabled: 'True if provider auto-caches (OpenAI/Gemini). False if explicit cache_control required (Anthropic).'
+  tiered_input_threshold_tokens: 'Above this prompt-token count, tiered_input_above_cost_per_m applies (Gemini Pro above 200K).'
+  data_residency_us_multiplier: 'Multiplier when inference_geo equals us. Anthropic Sonnet/Opus 4.5+ uses 1.1.'
 models:
+  # ===========================================================================
+  # OpenAI (direct provider)
+  # ===========================================================================
+  openai/gpt-5.5:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://openai.com/api/pricing/
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 5.00
+    output_unit_cost: 30.00
+    cached_input_cost: 0.50
+    batch_discount: 0.50
+    surface_scope: direct_provider
+    effective_start_date: "2026-04-15"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 5.00
+    output_cost_per_m: 30.00
+    context_window: 1050000
+    max_output_tokens: 128000
+    supports_json_schema_strict: true
+    service_tier_flex_multiplier: 0.50
+    service_tier_priority_multiplier: 2.50
+    cache_read_multiplier: 0.10
+    prompt_cache_min_tokens: 1024
+    auto_cache_enabled: true
+  openai/gpt-5.5-pro:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://openai.com/api/pricing/
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 30.00
+    output_unit_cost: 180.00
+    cached_input_cost: null
+    batch_discount: 0.50
+    surface_scope: direct_provider
+    effective_start_date: "2026-04-15"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 30.00
+    output_cost_per_m: 180.00
+    context_window: 1050000
+    max_output_tokens: 128000
+    supports_json_schema_strict: true
+    service_tier_flex_multiplier: 0.50
+    service_tier_priority_multiplier: 2.50
+    prompt_cache_min_tokens: 1024
+    auto_cache_enabled: true
   openai/gpt-5.4:
     pricing_source_type: first_party_provider_pricing
     pricing_source_ref: https://openai.com/api/pricing/
@@ -17,6 +80,14 @@ models:
     pricing_status: PRICED_CONFIRMED
     input_cost_per_m: 2.50
     output_cost_per_m: 15.00
+    context_window: 400000
+    max_output_tokens: 128000
+    supports_json_schema_strict: true
+    service_tier_flex_multiplier: 0.50
+    service_tier_priority_multiplier: 2.50
+    cache_read_multiplier: 0.10
+    prompt_cache_min_tokens: 1024
+    auto_cache_enabled: true
   openai/gpt-5.4-mini:
     pricing_source_type: first_party_provider_pricing
     pricing_source_ref: https://openai.com/api/pricing/
@@ -32,101 +103,108 @@ models:
     pricing_status: PRICED_CONFIRMED
     input_cost_per_m: 0.75
     output_cost_per_m: 4.50
-  openrouter/openai/gpt-5.4:
-    pricing_source_type: aggregator_pricing
-    pricing_source_ref: https://openrouter.ai/openai/gpt-5.4
+    context_window: 400000
+    max_output_tokens: 128000
+    supports_json_schema_strict: true
+    service_tier_flex_multiplier: 0.50
+    service_tier_priority_multiplier: 2.50
+    cache_read_multiplier: 0.10
+    prompt_cache_min_tokens: 1024
+    auto_cache_enabled: true
+  openai/gpt-5.4-nano:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://openai.com/api/pricing/
     pricing_confidence: HIGH
     pricing_currency: USD
-    input_unit_cost: 2.50
-    output_unit_cost: 15.00
-    cached_input_cost: null
-    batch_discount: null
-    surface_scope: aggregator_route
+    input_unit_cost: 0.20
+    output_unit_cost: 1.25
+    cached_input_cost: 0.02
+    batch_discount: 0.50
+    surface_scope: direct_provider
     effective_start_date: "2026-03-05"
     effective_end_date: null
     pricing_status: PRICED_CONFIRMED
-    input_cost_per_m: 2.50
-    output_cost_per_m: 15.00
-  openrouter/openai/gpt-5.3-codex:
-    pricing_source_type: aggregator_pricing
-    pricing_source_ref: https://openrouter.ai/openai/gpt-5.3-codex
+    input_cost_per_m: 0.20
+    output_cost_per_m: 1.25
+    context_window: 400000
+    max_output_tokens: 128000
+    supports_json_schema_strict: true
+    service_tier_flex_multiplier: 0.50
+    cache_read_multiplier: 0.10
+    prompt_cache_min_tokens: 1024
+    auto_cache_enabled: true
+  openai/gpt-5.4-pro:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://openai.com/api/pricing/
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 30.00
+    output_unit_cost: 180.00
+    cached_input_cost: null
+    batch_discount: 0.50
+    surface_scope: direct_provider
+    effective_start_date: "2026-03-05"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 30.00
+    output_cost_per_m: 180.00
+    context_window: 400000
+    max_output_tokens: 272000
+    supports_json_schema_strict: true
+    service_tier_priority_multiplier: 2.50
+    prompt_cache_min_tokens: 1024
+    auto_cache_enabled: true
+  openai/gpt-5.3-codex:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://openai.com/api/pricing/
     pricing_confidence: HIGH
     pricing_currency: USD
     input_unit_cost: 1.75
     output_unit_cost: 14.00
-    cached_input_cost: null
-    batch_discount: null
-    surface_scope: aggregator_route
+    cached_input_cost: 0.175
+    batch_discount: 0.50
+    surface_scope: direct_provider
     effective_start_date: "2026-02-24"
     effective_end_date: null
     pricing_status: PRICED_CONFIRMED
     input_cost_per_m: 1.75
     output_cost_per_m: 14.00
-  openrouter/x-ai/grok-4.1-fast:
-    pricing_source_type: aggregator_pricing
-    pricing_source_ref: https://openrouter.ai/x-ai/grok-4.1-fast
+    context_window: 400000
+    max_output_tokens: 128000
+    supports_json_schema_strict: true
+    service_tier_flex_multiplier: 0.50
+    service_tier_priority_multiplier: 2.50
+    cache_read_multiplier: 0.10
+    prompt_cache_min_tokens: 1024
+    auto_cache_enabled: true
+    specialization: code
+  openai/gpt-5.2:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://openai.com/api/pricing/
     pricing_confidence: MEDIUM
     pricing_currency: USD
-    input_unit_cost: 0.20
-    output_unit_cost: 0.50
-    cached_input_cost: null
-    batch_discount: null
-    surface_scope: aggregator_route
-    effective_start_date: "2026-04-10"
+    input_unit_cost: 2.50
+    output_unit_cost: 15.00
+    cached_input_cost: 0.25
+    batch_discount: 0.50
+    surface_scope: direct_provider
+    effective_start_date: "2025-12-01"
     effective_end_date: null
     pricing_status: PRICED_WITH_CAVEAT
-    input_cost_per_m: 0.20
-    output_cost_per_m: 0.50
-  xai/grok-4.20:
-    pricing_source_type: first_party_provider_pricing
-    pricing_source_ref: https://docs.x.ai/developers/models
-    pricing_confidence: UNKNOWN
-    pricing_currency: USD
-    input_unit_cost: null
-    output_unit_cost: null
-    cached_input_cost: null
-    reasoning_cost: null
-    batch_discount: null
-    surface_scope: direct_provider
-    effective_start_date: null
-    effective_end_date: null
-    pricing_status: UNPRICED_UNKNOWN
-    input_cost_per_m: null
-    output_cost_per_m: null
-  xai/grok-4.20-beta-0309-reasoning:
-    pricing_source_type: manual_benchmark_research
-    pricing_source_ref: docs/03-reference/extraction-wizard.md
-    pricing_confidence: LOW
-    pricing_currency: USD
-    input_unit_cost: 3.00
-    output_unit_cost: 15.00
-    cached_input_cost: null
-    reasoning_cost: null
-    batch_discount: null
-    surface_scope: direct_provider
-    effective_start_date: "2026-03-09"
-    effective_end_date: null
-    pricing_status: STALE_NEEDS_REFRESH
-    input_cost_per_m: 3.00
+    pricing_caveat: Assumed pricing parity with gpt-5.4; verify against OpenAI dashboard for current rates.
+    input_cost_per_m: 2.50
     output_cost_per_m: 15.00
-  xai/grok-code-fast-1:
-    pricing_source_type: manual_benchmark_research
-    pricing_source_ref: docs/03-reference/extraction-wizard.md
-    pricing_confidence: LOW
-    pricing_currency: USD
-    input_unit_cost: 0.10
-    output_unit_cost: 0.40
-    cached_input_cost: null
-    batch_discount: null
-    surface_scope: direct_provider
-    effective_start_date: null
-    effective_end_date: null
-    pricing_status: STALE_NEEDS_REFRESH
-    input_cost_per_m: 0.10
-    output_cost_per_m: 0.40
-  gemini/gemini-3.1-pro-preview:
+    context_window: 400000
+    max_output_tokens: 128000
+    supports_json_schema_strict: true
+    service_tier_flex_multiplier: 0.50
+    service_tier_priority_multiplier: 2.50
+    cache_read_multiplier: 0.10
+    prompt_cache_min_tokens: 1024
+    auto_cache_enabled: true
+  openai/gpt-5.1-codex:
     pricing_source_type: first_party_provider_pricing
-    pricing_source_ref: https://ai.google.dev/gemini-api/docs/pricing?hl=zh-CN
+    pricing_source_ref: https://openai.com/api/pricing/
     pricing_confidence: MEDIUM
     pricing_currency: USD
     input_unit_cost: 2.00
@@ -134,72 +212,113 @@ models:
     cached_input_cost: 0.20
     batch_discount: 0.50
     surface_scope: direct_provider
-    effective_start_date: null
+    effective_start_date: "2025-11-15"
     effective_end_date: null
     pricing_status: PRICED_WITH_CAVEAT
-    pricing_caveat: Pricing is context-sensitive on the first-party page and the repo runtime model identifier is still preview-scoped.
+    pricing_caveat: Assumed mid-tier between gpt-5-codex and gpt-5.3-codex; verify in OpenAI dashboard.
     input_cost_per_m: 2.00
     output_cost_per_m: 12.00
-  anthropic/claude-3-5-sonnet-20241022:
+    context_window: 400000
+    max_output_tokens: 128000
+    supports_json_schema_strict: true
+    service_tier_flex_multiplier: 0.50
+    service_tier_priority_multiplier: 2.50
+    cache_read_multiplier: 0.10
+    prompt_cache_min_tokens: 1024
+    auto_cache_enabled: true
+    specialization: code
+  openai/gpt-5.1-codex-mini:
     pricing_source_type: first_party_provider_pricing
-    pricing_source_ref: https://www.anthropic.com/pricing
-    pricing_confidence: HIGH
+    pricing_source_ref: https://openai.com/api/pricing/
+    pricing_confidence: MEDIUM
     pricing_currency: USD
-    input_unit_cost: 3.00
-    output_unit_cost: 15.00
-    cached_input_cost: 0.30
+    input_unit_cost: 0.50
+    output_unit_cost: 3.00
+    cached_input_cost: 0.05
     batch_discount: 0.50
     surface_scope: direct_provider
-    effective_start_date: "2024-10-22"
+    effective_start_date: "2025-11-15"
     effective_end_date: null
-    pricing_status: PRICED_CONFIRMED
-    input_cost_per_m: 3.00
-    output_cost_per_m: 15.00
-  anthropic/claude-3-5-haiku-20241022:
+    pricing_status: PRICED_WITH_CAVEAT
+    pricing_caveat: Assumed parity with gpt-5-mini code variant; verify before relying on for cost cap math.
+    input_cost_per_m: 0.50
+    output_cost_per_m: 3.00
+    context_window: 400000
+    max_output_tokens: 128000
+    supports_json_schema_strict: true
+    service_tier_flex_multiplier: 0.50
+    cache_read_multiplier: 0.10
+    prompt_cache_min_tokens: 1024
+    auto_cache_enabled: true
+    specialization: code
+  openai/gpt-5-mini:
     pricing_source_type: first_party_provider_pricing
-    pricing_source_ref: https://www.anthropic.com/pricing
+    pricing_source_ref: https://openai.com/api/pricing/
     pricing_confidence: HIGH
     pricing_currency: USD
-    input_unit_cost: 1.00
-    output_unit_cost: 5.00
-    cached_input_cost: 0.10
+    input_unit_cost: 0.15
+    output_unit_cost: 0.60
+    cached_input_cost: 0.075
     batch_discount: 0.50
     surface_scope: direct_provider
-    effective_start_date: "2024-10-22"
+    effective_start_date: "2025-08-01"
     effective_end_date: null
     pricing_status: PRICED_CONFIRMED
-    input_cost_per_m: 1.00
-    output_cost_per_m: 5.00
-  gemini/gemini-1.5-pro-002:
+    input_cost_per_m: 0.15
+    output_cost_per_m: 0.60
+    context_window: 400000
+    max_output_tokens: 128000
+    supports_json_schema_strict: true
+    service_tier_flex_multiplier: 0.50
+    service_tier_priority_multiplier: 2.50
+    cache_read_multiplier: 0.50
+    prompt_cache_min_tokens: 1024
+    auto_cache_enabled: true
+  openai/gpt-5-nano:
     pricing_source_type: first_party_provider_pricing
-    pricing_source_ref: https://ai.google.dev/pricing
+    pricing_source_ref: https://openai.com/api/pricing/
     pricing_confidence: HIGH
     pricing_currency: USD
-    input_unit_cost: 1.25
-    output_unit_cost: 5.00
-    cached_input_cost: 0.3125
-    batch_discount: null
+    input_unit_cost: 0.05
+    output_unit_cost: 0.20
+    cached_input_cost: 0.025
+    batch_discount: 0.50
     surface_scope: direct_provider
-    effective_start_date: "2024-09-24"
+    effective_start_date: "2025-08-01"
     effective_end_date: null
     pricing_status: PRICED_CONFIRMED
-    input_cost_per_m: 1.25
-    output_cost_per_m: 5.00
-  gemini/gemini-1.5-flash-002:
+    input_cost_per_m: 0.05
+    output_cost_per_m: 0.20
+    context_window: 400000
+    max_output_tokens: 128000
+    supports_json_schema_strict: true
+    service_tier_flex_multiplier: 0.50
+    cache_read_multiplier: 0.50
+    prompt_cache_min_tokens: 1024
+    auto_cache_enabled: true
+  openai/gpt-5.4-mini:
     pricing_source_type: first_party_provider_pricing
-    pricing_source_ref: https://ai.google.dev/pricing
+    pricing_source_ref: https://openai.com/api/pricing/
     pricing_confidence: HIGH
     pricing_currency: USD
-    input_unit_cost: 0.075
-    output_unit_cost: 0.30
-    cached_input_cost: 0.01875
-    batch_discount: null
+    input_unit_cost: 0.75
+    output_unit_cost: 4.50
+    cached_input_cost: 0.075
+    batch_discount: 0.50
     surface_scope: direct_provider
-    effective_start_date: "2024-09-24"
+    effective_start_date: "2026-03-05"
     effective_end_date: null
     pricing_status: PRICED_CONFIRMED
-    input_cost_per_m: 0.075
-    output_cost_per_m: 0.30
+    input_cost_per_m: 0.75
+    output_cost_per_m: 4.50
+    context_window: 400000
+    max_output_tokens: 128000
+    supports_json_schema_strict: true
+    service_tier_flex_multiplier: 0.50
+    service_tier_priority_multiplier: 2.50
+    cache_read_multiplier: 0.10
+    prompt_cache_min_tokens: 1024
+    auto_cache_enabled: true
   openai/gpt-4o:
     pricing_source_type: first_party_provider_pricing
     pricing_source_ref: https://openai.com/api/pricing/
@@ -215,6 +334,9 @@ models:
     pricing_status: PRICED_CONFIRMED
     input_cost_per_m: 2.50
     output_cost_per_m: 10.00
+    context_window: 128000
+    auto_cache_enabled: true
+    cache_read_multiplier: 0.50
   openai/gpt-4o-mini:
     pricing_source_type: first_party_provider_pricing
     pricing_source_ref: https://openai.com/api/pricing/
@@ -230,6 +352,918 @@ models:
     pricing_status: PRICED_CONFIRMED
     input_cost_per_m: 0.15
     output_cost_per_m: 0.60
+    context_window: 128000
+    auto_cache_enabled: true
+    cache_read_multiplier: 0.50
+  # ===========================================================================
+  # OpenAI (OpenRouter aggregator routes)
+  # NOTE: OpenRouter does NOT pass through OpenAI batch/flex/priority tiers.
+  # Cache pricing through OR is generally not honored.
+  # ===========================================================================
+  openrouter/openai/gpt-5.5:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://openrouter.ai/openai/gpt-5.5
+    pricing_confidence: MEDIUM
+    pricing_currency: USD
+    input_unit_cost: 5.00
+    output_unit_cost: 30.00
+    cached_input_cost: null
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-04-15"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 5.00
+    output_cost_per_m: 30.00
+    context_window: 1050000
+    supports_json_schema_strict: true
+    service_tier_flex_multiplier: null
+    service_tier_priority_multiplier: null
+    auto_cache_enabled: false
+  openrouter/openai/gpt-5.4:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://openrouter.ai/openai/gpt-5.4
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 2.50
+    output_unit_cost: 15.00
+    cached_input_cost: null
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-03-05"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 2.50
+    output_cost_per_m: 15.00
+    context_window: 400000
+    supports_json_schema_strict: true
+    auto_cache_enabled: false
+  openrouter/openai/gpt-5.4-mini:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://openrouter.ai/openai/gpt-5.4-mini
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 0.75
+    output_unit_cost: 4.50
+    cached_input_cost: null
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-03-05"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 0.75
+    output_cost_per_m: 4.50
+    context_window: 400000
+    supports_json_schema_strict: true
+    auto_cache_enabled: false
+  openrouter/openai/gpt-5.3-codex:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://openrouter.ai/openai/gpt-5.3-codex
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 1.75
+    output_unit_cost: 14.00
+    cached_input_cost: null
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-02-24"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 1.75
+    output_cost_per_m: 14.00
+    context_window: 400000
+    supports_json_schema_strict: true
+    auto_cache_enabled: false
+    specialization: code
+  openrouter/openai/gpt-5.1-codex:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://openrouter.ai/openai/gpt-5.1-codex
+    pricing_confidence: MEDIUM
+    pricing_currency: USD
+    input_unit_cost: 2.00
+    output_unit_cost: 12.00
+    cached_input_cost: null
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2025-11-15"
+    effective_end_date: null
+    pricing_status: PRICED_WITH_CAVEAT
+    pricing_caveat: Verify against OR live pricing page.
+    input_cost_per_m: 2.00
+    output_cost_per_m: 12.00
+    context_window: 400000
+    supports_json_schema_strict: true
+    auto_cache_enabled: false
+    specialization: code
+  openrouter/openai/gpt-5.1-codex-mini:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://openrouter.ai/openai/gpt-5.1-codex-mini
+    pricing_confidence: MEDIUM
+    pricing_currency: USD
+    input_unit_cost: 0.50
+    output_unit_cost: 3.00
+    cached_input_cost: null
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2025-11-15"
+    effective_end_date: null
+    pricing_status: PRICED_WITH_CAVEAT
+    pricing_caveat: Aggregator-priced; verify on OR page.
+    input_cost_per_m: 0.50
+    output_cost_per_m: 3.00
+    context_window: 400000
+    supports_json_schema_strict: true
+    auto_cache_enabled: false
+    specialization: code
+  openrouter/openai/gpt-5-mini:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://openrouter.ai/openai/gpt-5-mini
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 0.15
+    output_unit_cost: 0.60
+    cached_input_cost: null
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2025-08-01"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 0.15
+    output_cost_per_m: 0.60
+    context_window: 400000
+    supports_json_schema_strict: true
+    auto_cache_enabled: false
+  openrouter/openai/gpt-5-nano:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://openrouter.ai/openai/gpt-5-nano
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 0.05
+    output_unit_cost: 0.20
+    cached_input_cost: null
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2025-08-01"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 0.05
+    output_cost_per_m: 0.20
+    context_window: 400000
+    supports_json_schema_strict: true
+    auto_cache_enabled: false
+  # ===========================================================================
+  # Anthropic Claude (via OpenRouter — primary distribution surface for RTE)
+  # NOTE: cache_control markers pass through OR. Batch does not.
+  # ===========================================================================
+  openrouter/anthropic/claude-opus-4.7:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://openrouter.ai/anthropic/claude-opus-4.7
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 5.00
+    output_unit_cost: 25.00
+    cached_input_cost: 0.50
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-05-01"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 5.00
+    output_cost_per_m: 25.00
+    context_window: 1000000
+    supports_json_schema_strict: false
+    cache_write_5m_multiplier: 1.25
+    cache_write_1h_multiplier: 2.00
+    cache_read_multiplier: 0.10
+    auto_cache_enabled: false
+    note: "Uses new tokenizer; ~35% more tokens for same text vs Opus 4.5/4.6."
+  openrouter/anthropic/claude-opus-4.6:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://openrouter.ai/anthropic/claude-opus-4.6
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 5.00
+    output_unit_cost: 25.00
+    cached_input_cost: 0.50
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-04-01"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 5.00
+    output_cost_per_m: 25.00
+    context_window: 1000000
+    supports_json_schema_strict: false
+    cache_write_5m_multiplier: 1.25
+    cache_write_1h_multiplier: 2.00
+    cache_read_multiplier: 0.10
+    auto_cache_enabled: false
+  openrouter/anthropic/claude-opus-4.5:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://openrouter.ai/anthropic/claude-opus-4.5
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 5.00
+    output_unit_cost: 25.00
+    cached_input_cost: 0.50
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-03-15"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 5.00
+    output_cost_per_m: 25.00
+    context_window: 200000
+    supports_json_schema_strict: false
+    cache_write_5m_multiplier: 1.25
+    cache_write_1h_multiplier: 2.00
+    cache_read_multiplier: 0.10
+    auto_cache_enabled: false
+  openrouter/anthropic/claude-opus-4.1:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://openrouter.ai/anthropic/claude-opus-4.1
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 15.00
+    output_unit_cost: 75.00
+    cached_input_cost: 1.50
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2025-08-01"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 15.00
+    output_cost_per_m: 75.00
+    context_window: 200000
+    supports_json_schema_strict: false
+    cache_write_5m_multiplier: 1.25
+    cache_write_1h_multiplier: 2.00
+    cache_read_multiplier: 0.10
+    auto_cache_enabled: false
+    note: "Legacy. ~3x more expensive than Opus 4.5+ for same headline performance. Avoid for new ladders."
+  openrouter/anthropic/claude-opus-4-6:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://openrouter.ai/anthropic/claude-opus-4.6
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 5.00
+    output_unit_cost: 25.00
+    cached_input_cost: 0.50
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-04-01"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 5.00
+    output_cost_per_m: 25.00
+    context_window: 1000000
+    supports_json_schema_strict: false
+    cache_write_5m_multiplier: 1.25
+    cache_write_1h_multiplier: 2.00
+    cache_read_multiplier: 0.10
+    auto_cache_enabled: false
+    alias_of: openrouter/anthropic/claude-opus-4.6
+    note: "Legacy alias used by RTE config; canonical is claude-opus-4.6."
+  openrouter/anthropic/claude-sonnet-4.6:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://openrouter.ai/anthropic/claude-sonnet-4.6
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 3.00
+    output_unit_cost: 15.00
+    cached_input_cost: 0.30
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-04-01"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 3.00
+    output_cost_per_m: 15.00
+    context_window: 1000000
+    supports_json_schema_strict: false
+    cache_write_5m_multiplier: 1.25
+    cache_write_1h_multiplier: 2.00
+    cache_read_multiplier: 0.10
+    auto_cache_enabled: false
+  openrouter/anthropic/claude-sonnet-4.5:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://openrouter.ai/anthropic/claude-sonnet-4.5
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 3.00
+    output_unit_cost: 15.00
+    cached_input_cost: 0.30
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-02-15"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 3.00
+    output_cost_per_m: 15.00
+    context_window: 200000
+    supports_json_schema_strict: false
+    cache_write_5m_multiplier: 1.25
+    cache_write_1h_multiplier: 2.00
+    cache_read_multiplier: 0.10
+    auto_cache_enabled: false
+  openrouter/anthropic/claude-haiku-4.5:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://openrouter.ai/anthropic/claude-haiku-4.5
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 1.00
+    output_unit_cost: 5.00
+    cached_input_cost: 0.10
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2025-10-22"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 1.00
+    output_cost_per_m: 5.00
+    context_window: 200000
+    supports_json_schema_strict: false
+    cache_write_5m_multiplier: 1.25
+    cache_write_1h_multiplier: 2.00
+    cache_read_multiplier: 0.10
+    auto_cache_enabled: false
+    note: "Up to 90% savings achievable with prompt caching."
+  openrouter/anthropic/claude-opus-4-6.legacy:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://openrouter.ai/anthropic/claude-opus-4.6
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 5.00
+    output_unit_cost: 25.00
+    cached_input_cost: 0.50
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-04-01"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 5.00
+    output_cost_per_m: 25.00
+    context_window: 1000000
+    supports_json_schema_strict: false
+    cache_write_5m_multiplier: 1.25
+    cache_write_1h_multiplier: 2.00
+    cache_read_multiplier: 0.10
+    auto_cache_enabled: false
+    deprecation_note: "Use openrouter/anthropic/claude-opus-4.6 going forward; old hyphen form retained for backward-compat alias."
+  # Legacy direct Anthropic entries (kept for historical pricing reference)
+  anthropic/claude-3-5-sonnet-20241022:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://www.anthropic.com/pricing
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 3.00
+    output_unit_cost: 15.00
+    cached_input_cost: 0.30
+    batch_discount: 0.50
+    surface_scope: direct_provider
+    effective_start_date: "2024-10-22"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 3.00
+    output_cost_per_m: 15.00
+    cache_write_5m_multiplier: 1.25
+    cache_write_1h_multiplier: 2.00
+    cache_read_multiplier: 0.10
+  anthropic/claude-3-5-haiku-20241022:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://www.anthropic.com/pricing
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 1.00
+    output_unit_cost: 5.00
+    cached_input_cost: 0.10
+    batch_discount: 0.50
+    surface_scope: direct_provider
+    effective_start_date: "2024-10-22"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 1.00
+    output_cost_per_m: 5.00
+    cache_write_5m_multiplier: 1.25
+    cache_write_1h_multiplier: 2.00
+    cache_read_multiplier: 0.10
+  # ===========================================================================
+  # Google Gemini (direct provider)
+  # ===========================================================================
+  gemini/gemini-3.5-flash:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://ai.google.dev/gemini-api/docs/pricing
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 1.50
+    output_unit_cost: 9.00
+    cached_input_cost: 0.15
+    batch_discount: 0.50
+    surface_scope: direct_provider
+    effective_start_date: "2026-04-01"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 1.50
+    output_cost_per_m: 9.00
+    context_window: 1000000
+    supports_json_schema_strict: true
+    cache_read_multiplier: 0.10
+    cache_storage_per_hour_per_m: 1.00
+    auto_cache_enabled: true
+  gemini/gemini-3.1-pro-preview:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://ai.google.dev/gemini-api/docs/pricing
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 2.00
+    output_unit_cost: 12.00
+    cached_input_cost: 0.20
+    batch_discount: 0.50
+    surface_scope: direct_provider
+    effective_start_date: "2026-02-01"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    pricing_caveat: "Tiered: input $4 / output $18 for prompts >200K tokens."
+    input_cost_per_m: 2.00
+    output_cost_per_m: 12.00
+    context_window: 1000000
+    supports_json_schema_strict: true
+    tiered_input_threshold_tokens: 200000
+    tiered_input_above_cost_per_m: 4.00
+    tiered_output_above_cost_per_m: 18.00
+    tiered_cached_input_above_cost_per_m: 0.40
+    cache_read_multiplier: 0.10
+    cache_storage_per_hour_per_m: 4.50
+    auto_cache_enabled: true
+  gemini/gemini-3.1-flash-lite:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://ai.google.dev/gemini-api/docs/pricing
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 0.25
+    output_unit_cost: 1.50
+    cached_input_cost: 0.025
+    batch_discount: 0.50
+    surface_scope: direct_provider
+    effective_start_date: "2026-02-01"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 0.25
+    output_cost_per_m: 1.50
+    context_window: 1000000
+    supports_json_schema_strict: true
+    cache_read_multiplier: 0.10
+    cache_storage_per_hour_per_m: 1.00
+    auto_cache_enabled: true
+  gemini/gemini-3-flash-preview:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://ai.google.dev/gemini-api/docs/pricing
+    pricing_confidence: LOW
+    pricing_currency: USD
+    input_unit_cost: 1.50
+    output_unit_cost: 9.00
+    cached_input_cost: 0.15
+    batch_discount: 0.50
+    surface_scope: direct_provider
+    effective_start_date: null
+    effective_end_date: null
+    pricing_status: PRICED_WITH_CAVEAT
+    pricing_caveat: "RTE legacy alias; verify against current Gemini 3 family pricing — likely maps to gemini-3.5-flash or gemini-3-flash."
+    input_cost_per_m: 1.50
+    output_cost_per_m: 9.00
+    context_window: 1000000
+    supports_json_schema_strict: true
+    cache_read_multiplier: 0.10
+    auto_cache_enabled: true
+    alias_of: gemini/gemini-3.5-flash
+  gemini/gemini-3.1-pro-preview-legacy:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://ai.google.dev/gemini-api/docs/pricing
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 2.00
+    output_unit_cost: 12.00
+    cached_input_cost: 0.20
+    batch_discount: 0.50
+    surface_scope: direct_provider
+    effective_start_date: "2026-02-01"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 2.00
+    output_cost_per_m: 12.00
+    context_window: 1000000
+    supports_json_schema_strict: true
+    tiered_input_threshold_tokens: 200000
+    tiered_input_above_cost_per_m: 4.00
+    tiered_output_above_cost_per_m: 18.00
+    cache_read_multiplier: 0.10
+    auto_cache_enabled: true
+    alias_of: gemini/gemini-3.1-pro-preview
+  gemini/gemini-2.5-pro:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://ai.google.dev/gemini-api/docs/pricing
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 1.25
+    output_unit_cost: 10.00
+    cached_input_cost: 0.125
+    batch_discount: 0.50
+    surface_scope: direct_provider
+    effective_start_date: "2025-06-01"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    pricing_caveat: "Tiered: input $2.50 / output $15 for prompts >200K tokens."
+    input_cost_per_m: 1.25
+    output_cost_per_m: 10.00
+    context_window: 1000000
+    supports_json_schema_strict: true
+    tiered_input_threshold_tokens: 200000
+    tiered_input_above_cost_per_m: 2.50
+    tiered_output_above_cost_per_m: 15.00
+    cache_read_multiplier: 0.10
+    auto_cache_enabled: true
+  gemini/gemini-2.5-flash:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://ai.google.dev/gemini-api/docs/pricing
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 0.30
+    output_unit_cost: 2.50
+    cached_input_cost: 0.03
+    batch_discount: 0.50
+    surface_scope: direct_provider
+    effective_start_date: "2025-06-01"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 0.30
+    output_cost_per_m: 2.50
+    context_window: 1000000
+    supports_json_schema_strict: true
+    cache_read_multiplier: 0.10
+    auto_cache_enabled: true
+  gemini/gemini-2.5-flash-lite:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://ai.google.dev/gemini-api/docs/pricing
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 0.10
+    output_unit_cost: 0.40
+    cached_input_cost: 0.01
+    batch_discount: 0.50
+    surface_scope: direct_provider
+    effective_start_date: "2025-06-01"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 0.10
+    output_cost_per_m: 0.40
+    context_window: 1000000
+    supports_json_schema_strict: true
+    cache_read_multiplier: 0.10
+    auto_cache_enabled: true
+  gemini/gemini-1.5-pro-002:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://ai.google.dev/pricing
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 1.25
+    output_unit_cost: 5.00
+    cached_input_cost: 0.3125
+    batch_discount: null
+    surface_scope: direct_provider
+    effective_start_date: "2024-09-24"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 1.25
+    output_cost_per_m: 5.00
+    auto_cache_enabled: false
+  gemini/gemini-1.5-flash-002:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://ai.google.dev/pricing
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 0.075
+    output_unit_cost: 0.30
+    cached_input_cost: 0.01875
+    batch_discount: null
+    surface_scope: direct_provider
+    effective_start_date: "2024-09-24"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 0.075
+    output_cost_per_m: 0.30
+    auto_cache_enabled: false
+  # ===========================================================================
+  # xAI Grok (direct provider)
+  # NOTE: xAI does not document batch API or service tiers (May 2026).
+  # RTE's XAIBatchClient may not function against the xAI endpoint.
+  # ===========================================================================
+  xai/grok-4.3:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://docs.x.ai/developers/models/grok-4.3
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 1.25
+    output_unit_cost: 2.50
+    cached_input_cost: 0.20
+    batch_discount: null
+    surface_scope: direct_provider
+    effective_start_date: "2026-04-01"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 1.25
+    output_cost_per_m: 2.50
+    context_window: 1000000
+    supports_json_schema_strict: false
+    supports_reasoning_toggle: true
+    auto_cache_enabled: true
+    note: "Flagship. Reasoning levels: none / low / medium / high. Function calling."
+  xai/grok-4.20-0309-reasoning:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://docs.x.ai/developers/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 1.25
+    output_unit_cost: 2.50
+    cached_input_cost: null
+    batch_discount: null
+    surface_scope: direct_provider
+    effective_start_date: "2026-03-09"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 1.25
+    output_cost_per_m: 2.50
+    context_window: 1000000
+    supports_json_schema_strict: false
+    supports_reasoning_toggle: true
+    auto_cache_enabled: false
+  xai/grok-4.20-0309-non-reasoning:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://docs.x.ai/developers/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 1.25
+    output_unit_cost: 2.50
+    cached_input_cost: null
+    batch_discount: null
+    surface_scope: direct_provider
+    effective_start_date: "2026-03-09"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 1.25
+    output_cost_per_m: 2.50
+    context_window: 1000000
+    supports_json_schema_strict: false
+    supports_reasoning_toggle: false
+    auto_cache_enabled: false
+  xai/grok-4.20-beta-0309-reasoning:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://docs.x.ai/developers/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 1.25
+    output_unit_cost: 2.50
+    cached_input_cost: null
+    reasoning_cost: null
+    batch_discount: null
+    surface_scope: direct_provider
+    effective_start_date: "2026-03-09"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    pricing_caveat: "Was previously STALE_NEEDS_REFRESH at $3/$15; verified May 2026 at $1.25/$2.50. Legacy RTE alias for grok-4.20-0309-reasoning."
+    input_cost_per_m: 1.25
+    output_cost_per_m: 2.50
+    context_window: 1000000
+    supports_json_schema_strict: false
+    supports_reasoning_toggle: true
+    auto_cache_enabled: false
+    alias_of: xai/grok-4.20-0309-reasoning
+  xai/grok-4.20-beta-0309-non-reasoning:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://docs.x.ai/developers/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 1.25
+    output_unit_cost: 2.50
+    cached_input_cost: null
+    batch_discount: null
+    surface_scope: direct_provider
+    effective_start_date: "2026-03-09"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 1.25
+    output_cost_per_m: 2.50
+    context_window: 1000000
+    supports_json_schema_strict: false
+    supports_reasoning_toggle: false
+    auto_cache_enabled: false
+    alias_of: xai/grok-4.20-0309-non-reasoning
+  xai/grok-4-fast:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://x.ai/news/grok-4-fast
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 0.20
+    output_unit_cost: 0.50
+    cached_input_cost: null
+    batch_discount: null
+    surface_scope: direct_provider
+    effective_start_date: "2025-12-01"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    pricing_caveat: "Rates double over 128K context: $0.40 input / $1.00 output."
+    input_cost_per_m: 0.20
+    output_cost_per_m: 0.50
+    context_window: 2000000
+    supports_json_schema_strict: false
+    supports_reasoning_toggle: false
+    tiered_input_threshold_tokens: 128000
+    tiered_input_above_cost_per_m: 0.40
+    tiered_output_above_cost_per_m: 1.00
+    auto_cache_enabled: false
+  xai/grok-4-1-fast-reasoning:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://x.ai/news/grok-4-1-fast
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 1.25
+    output_unit_cost: 2.50
+    cached_input_cost: null
+    batch_discount: null
+    surface_scope: direct_provider
+    effective_start_date: "2026-01-15"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 1.25
+    output_cost_per_m: 2.50
+    context_window: 2000000
+    supports_json_schema_strict: false
+    supports_reasoning_toggle: true
+    auto_cache_enabled: false
+  xai/grok-4-1-fast-non-reasoning:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://x.ai/news/grok-4-1-fast
+    pricing_confidence: MEDIUM
+    pricing_currency: USD
+    input_unit_cost: 0.20
+    output_unit_cost: 0.50
+    cached_input_cost: null
+    batch_discount: null
+    surface_scope: direct_provider
+    effective_start_date: "2026-01-15"
+    effective_end_date: null
+    pricing_status: PRICED_WITH_CAVEAT
+    pricing_caveat: "RTE alias; xAI docs primarily list grok-4-1-fast-reasoning. Non-reasoning variant priced at grok-4-fast rates."
+    input_cost_per_m: 0.20
+    output_cost_per_m: 0.50
+    context_window: 2000000
+    supports_json_schema_strict: false
+    supports_reasoning_toggle: false
+    auto_cache_enabled: false
+    alias_of: xai/grok-4-fast
+  xai/grok-code-fast-1:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://docs.x.ai/developers/models
+    pricing_confidence: MEDIUM
+    pricing_currency: USD
+    input_unit_cost: 0.10
+    output_unit_cost: 0.40
+    cached_input_cost: null
+    batch_discount: null
+    surface_scope: direct_provider
+    effective_start_date: "2025-09-01"
+    effective_end_date: null
+    pricing_status: PRICED_WITH_CAVEAT
+    pricing_caveat: "RTE-used. xAI docs do not list this exact ID — may be aliased to grok-4-fast or grok-build-0.1. Verify before relying on for cost cap math."
+    input_cost_per_m: 0.10
+    output_cost_per_m: 0.40
+    supports_json_schema_strict: false
+    supports_reasoning_toggle: false
+    auto_cache_enabled: false
+    specialization: code
+  xai/grok-4.20:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://docs.x.ai/developers/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 1.25
+    output_unit_cost: 2.50
+    cached_input_cost: null
+    reasoning_cost: null
+    batch_discount: null
+    surface_scope: direct_provider
+    effective_start_date: "2026-03-09"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    pricing_caveat: "Was previously UNPRICED_UNKNOWN; verified May 2026."
+    input_cost_per_m: 1.25
+    output_cost_per_m: 2.50
+    context_window: 1000000
+    supports_json_schema_strict: false
+    auto_cache_enabled: false
+  xai/grok-build-0.1:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://docs.x.ai/developers/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 1.00
+    output_unit_cost: 2.00
+    cached_input_cost: null
+    batch_discount: null
+    surface_scope: direct_provider
+    effective_start_date: "2026-03-09"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 1.00
+    output_cost_per_m: 2.00
+    context_window: 256000
+    supports_json_schema_strict: false
+    auto_cache_enabled: false
+    note: "Build agent variant."
+  # ===========================================================================
+  # OpenRouter routes — xAI passthrough
+  # ===========================================================================
+  openrouter/x-ai/grok-4.1-fast:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://openrouter.ai/x-ai/grok-4.1-fast
+    pricing_confidence: MEDIUM
+    pricing_currency: USD
+    input_unit_cost: 0.20
+    output_unit_cost: 0.50
+    cached_input_cost: null
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-04-10"
+    effective_end_date: null
+    pricing_status: PRICED_WITH_CAVEAT
+    pricing_caveat: "OR-priced; xAI direct now $1.25/$2.50 for grok-4.1-fast reasoning. Confirm OR variant maps to non-reasoning."
+    input_cost_per_m: 0.20
+    output_cost_per_m: 0.50
+    context_window: 2000000
+    supports_json_schema_strict: false
+    auto_cache_enabled: false
+  openrouter/x-ai/grok-4.3:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://openrouter.ai/x-ai/grok-4.3
+    pricing_confidence: MEDIUM
+    pricing_currency: USD
+    input_unit_cost: 1.25
+    output_unit_cost: 2.50
+    cached_input_cost: null
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-04-01"
+    effective_end_date: null
+    pricing_status: PRICED_WITH_CAVEAT
+    pricing_caveat: "Aggregator-priced; verify on OR page."
+    input_cost_per_m: 1.25
+    output_cost_per_m: 2.50
+    context_window: 1000000
+    supports_json_schema_strict: false
+    auto_cache_enabled: false
+  # ===========================================================================
+  # OpenRouter routes — Gemini passthrough
+  # ===========================================================================
+  openrouter/google/gemini-3.5-flash:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://openrouter.ai/google/gemini-3.5-flash
+    pricing_confidence: MEDIUM
+    pricing_currency: USD
+    input_unit_cost: 1.50
+    output_unit_cost: 9.00
+    cached_input_cost: null
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-04-01"
+    effective_end_date: null
+    pricing_status: PRICED_WITH_CAVEAT
+    pricing_caveat: "OR passthrough; verify rate parity with Google direct on OR page."
+    input_cost_per_m: 1.50
+    output_cost_per_m: 9.00
+    context_window: 1000000
+    supports_json_schema_strict: true
+    auto_cache_enabled: false
+  openrouter/google/gemini-3-pro-preview:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://openrouter.ai/google/gemini-3-pro-preview
+    pricing_confidence: MEDIUM
+    pricing_currency: USD
+    input_unit_cost: 2.00
+    output_unit_cost: 12.00
+    cached_input_cost: null
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-02-01"
+    effective_end_date: null
+    pricing_status: PRICED_WITH_CAVEAT
+    pricing_caveat: "OR passthrough; tiered pricing > 200K may not be exposed."
+    input_cost_per_m: 2.00
+    output_cost_per_m: 12.00
+    context_window: 1000000
+    supports_json_schema_strict: true
+    auto_cache_enabled: false
+  # ===========================================================================
+  # Local / fixture (kept for test harness)
+  # ===========================================================================
   local/benchmark-fixture:
     pricing_source_type: not_applicable
     pricing_source_ref: local_fixture

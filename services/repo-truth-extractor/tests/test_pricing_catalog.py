@@ -18,11 +18,15 @@ def test_active_direct_model_candidates_have_catalog_entries() -> None:
     assert "openrouter/openai/gpt-5.4" in catalog.models
     assert "xai/grok-4.20" in catalog.models
     assert "openrouter/x-ai/grok-4.1-fast" in catalog.models
+    assert "local/benchmark-fixture" in catalog.models
 
 
 def test_rate_registry_skips_unknown_price_rows() -> None:
     registry, raw_text = load_rate_registry()
 
     assert "openrouter/openai/gpt-5.4" in registry
-    assert "xai/grok-4.20" not in registry
+    # local/benchmark-fixture has null prices and must be skipped from the
+    # rate registry (load_rate_registry filters rows where either
+    # input_cost_per_m or output_cost_per_m is None).
+    assert "local/benchmark-fixture" not in registry
     assert "RTE_PRICING_V2" in raw_text
