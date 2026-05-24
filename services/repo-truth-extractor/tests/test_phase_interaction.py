@@ -185,45 +185,79 @@ class TestModelMapSynthesisLane(unittest.TestCase):
         return matches[0]
 
     def test_r0_is_synthesis(self):
-        self.assertEqual(self._step("R0")["lane_class"], "BULK_DOCS_GENERAL")
+        # E8: v3 lane taxonomy {CE, EXTRACT, SYNTH, AGG} — R0 reclassified
+        # SYNTH per Phase C cell map; was BULK_DOCS_GENERAL in v2.
+        self.assertEqual(self._step("R0")["lane_class"], "SYNTH")
 
     def test_r1_is_ce(self):
         self.assertEqual(self._step("R1")["lane_class"], "CE")
 
     def test_r2_through_r10_are_synthesis(self):
+        # E8: v3 SYNTH lane closes F2-HIGH-1 (R/S synthesis routing).
         for i in range(2, 11):
             step = self._step(f"R{i}")
-            self.assertEqual(step["lane_class"], "BULK_DOCS_GENERAL", f"R{i} should be BULK_DOCS_GENERAL")
+            self.assertEqual(step["lane_class"], "SYNTH", f"R{i} should be SYNTH (v3)")
 
     def test_s0_through_s11_are_synthesis(self):
         for i in range(0, 12):
             step = self._step(f"S{i}")
-            self.assertEqual(step["lane_class"], "BULK_DOCS_GENERAL", f"S{i} should be BULK_DOCS_GENERAL")
+            self.assertEqual(step["lane_class"], "SYNTH", f"S{i} should be SYNTH (v3)")
 
     def test_s12_is_ce(self):
         self.assertEqual(self._step("S12")["lane_class"], "CE")
 
-    def test_synthesis_has_sidefill_enabled(self):
-        synthesis_steps = [s for s in self.steps if s["lane_class"] == "SYNTHESIS"]
-        for s in synthesis_steps:
-            self.assertTrue(s["sidefill_enabled"], f"{s['step_id']} should have sidefill_enabled=true")
+    # E8 note: SYNTH lane in v3 includes both the F2-HIGH-1 family (R/S
+    # synthesis steps that were BULK_DOCS_GENERAL in v2) AND reclassified
+    # outliers (C10, T2). Operational flags (sidefill_enabled, repair_mode)
+    # are preserved from v2 per step, so the reclassified outliers retain
+    # their v2 flags (which differ from the F2-HIGH-1 synthesis defaults).
+    # These tests are scoped to the F2-HIGH-1 family — the original audit
+    # finding the SYNTH lane was created to fix.
+    _F2_HIGH_1_SYNTH_STEPS = (
+        ["R0"] + [f"R{i}" for i in range(2, 12)]
+        + [f"S{i}" for i in range(0, 12)]
+    )
 
-    def test_synthesis_has_reasoning_primary(self):
-        synthesis_steps = [s for s in self.steps if s["lane_class"] == "SYNTHESIS"]
-        for s in synthesis_steps:
-            primary_models = [r["model_id"] for r in s["primary_routes"]]
-            self.assertIn(
-                "grok-4.20-beta-0309-reasoning",
-                primary_models,
-                f"{s['step_id']} should have grok-reasoning in primary",
+    def test_synthesis_preserves_v2_sidefill_flag(self):
+        # E8: operational flags (sidefill_enabled, repair_mode) are preserved
+        # from v2 per step. The F2-HIGH-1 synthesis family had
+        # sidefill_enabled=false in v2; the v3 migration preserves that. A
+        # future packet may revisit sidefill defaults for synthesis lanes.
+        for sid in self._F2_HIGH_1_SYNTH_STEPS:
+            s = self._step(sid)
+            self.assertEqual(s["lane_class"], "SYNTH", f"{sid} should be SYNTH")
+            self.assertFalse(
+                s["sidefill_enabled"],
+                f"{sid} sidefill_enabled preserved from v2 (=false); "
+                "future packet may flip the default for synthesis lanes",
             )
 
-    def test_synthesis_repair_mode(self):
-        synthesis_steps = [s for s in self.steps if s["lane_class"] == "SYNTHESIS"]
-        for s in synthesis_steps:
+    def test_synthesis_has_reasoning_primary(self):
+        # E8: v3 (SYNTH, high) primary is anthropic/claude-sonnet-4.6 via
+        # OpenRouter; (SYNTH, critical) primary is anthropic/claude-opus-4.6
+        # (Phase C cell map + Phase D consensus).
+        synth_primary_models = {
+            "anthropic/claude-sonnet-4.6",  # (SYNTH, high)
+            "anthropic/claude-opus-4.6",   # (SYNTH, critical)
+        }
+        for sid in self._F2_HIGH_1_SYNTH_STEPS:
+            s = self._step(sid)
+            primary_models = {r["model_id"] for r in s["primary_routes"]}
+            self.assertTrue(
+                primary_models & synth_primary_models,
+                f"{sid} should have a Phase C SYNTH primary model "
+                f"(expected one of {synth_primary_models}, got {primary_models})",
+            )
+
+    def test_synthesis_preserves_v2_repair_mode(self):
+        # E8: repair_mode preserved from v2. F2-HIGH-1 family had
+        # repair_mode=targeted_only in v2; v3 preserves that. A future
+        # packet may flip the default for synthesis lanes.
+        for sid in self._F2_HIGH_1_SYNTH_STEPS:
+            s = self._step(sid)
             self.assertEqual(
-                s["repair_mode"], "targeted_then_envelope",
-                f"{s['step_id']} should use targeted_then_envelope repair"
+                s["repair_mode"], "targeted_only",
+                f"{sid} repair_mode preserved from v2 (=targeted_only)",
             )
 
 
