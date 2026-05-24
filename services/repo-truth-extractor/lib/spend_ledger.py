@@ -470,6 +470,21 @@ def _resolve_cached_input_rate(rate: Dict[str, Any]) -> float:
     return input_rate * 0.10
 
 
+def _resolve_cache_write_input_rate(rate: Dict[str, Any], cache_write_ttl: str) -> float:
+    """Cache-write rate per million tokens for provider prompt-cache creation."""
+    input_rate = _safe_float(rate.get("input_cost_per_1m_usd", BASELINE_INPUT_COST_PER_1M_USD))
+    ttl = str(cache_write_ttl or "5m").strip().lower()
+    multiplier_key = (
+        "cache_write_1h_multiplier"
+        if ttl in {"1h", "hour", "60m"}
+        else "cache_write_5m_multiplier"
+    )
+    multiplier = rate.get(multiplier_key)
+    if multiplier is not None:
+        return input_rate * float(multiplier)
+    return input_rate
+
+
 def _tier_multiplier(rate: Dict[str, Any], service_tier: Optional[str]) -> Tuple[float, str]:
     if service_tier is None or service_tier in ("default", "auto"):
         return 1.0, service_tier or "default"
@@ -498,6 +513,8 @@ def compute_optimized_cost(
     input_tokens: int,
     output_tokens: int,
     cached_input_tokens: int = 0,
+    cache_write_input_tokens: int = 0,
+    cache_write_ttl: str = "5m",
     service_tier: Optional[str] = None,
     is_batch: bool = False,
     prompt_token_count: Optional[int] = None,
@@ -512,19 +529,29 @@ def compute_optimized_cost(
     input_tokens = _safe_int(input_tokens)
     output_tokens = _safe_int(output_tokens)
     cached_input_tokens = max(0, min(_safe_int(cached_input_tokens), input_tokens))
-    uncached_input_tokens = input_tokens - cached_input_tokens
+    cache_write_input_tokens = max(
+        0,
+        min(_safe_int(cache_write_input_tokens), input_tokens - cached_input_tokens),
+    )
+    uncached_input_tokens = input_tokens - cached_input_tokens - cache_write_input_tokens
 
     input_rate = _resolve_per_token_input_rate(rate, prompt_token_count)
     output_rate = _resolve_per_token_output_rate(rate, prompt_token_count)
     cached_rate = _resolve_cached_input_rate(rate)
+    cache_write_rate = _resolve_cache_write_input_rate(rate, cache_write_ttl)
 
     base_input_cost = (uncached_input_tokens / 1_000_000.0) * input_rate
     cached_input_cost = (cached_input_tokens / 1_000_000.0) * cached_rate
+    cache_write_input_cost = (cache_write_input_tokens / 1_000_000.0) * cache_write_rate
     base_output_cost = (output_tokens / 1_000_000.0) * output_rate
-    base_cost = base_input_cost + cached_input_cost + base_output_cost
+    base_cost = base_input_cost + cached_input_cost + cache_write_input_cost + base_output_cost
     # What the cost would have been without caching (for cache_discount accounting)
     no_cache_input_cost = (input_tokens / 1_000_000.0) * input_rate
-    cache_discount = max(0.0, no_cache_input_cost - (base_input_cost + cached_input_cost))
+    cache_discount = max(
+        0.0,
+        no_cache_input_cost
+        - (base_input_cost + cached_input_cost + cache_write_input_cost),
+    )
 
     tier_mult, tier_label = _tier_multiplier(rate, service_tier)
     batch_mult = _batch_multiplier(rate, is_batch)
@@ -545,6 +572,8 @@ def compute_optimized_cost(
         applied.append(f"batch({batch_mult:.2f}x)")
     if cached_input_tokens > 0:
         applied.append(f"cache({cached_input_tokens}/{input_tokens}tok)")
+    if cache_write_input_tokens > 0:
+        applied.append(f"cache_write({cache_write_input_tokens}tok,{cache_write_ttl})")
     if residency_mult != 1.0:
         applied.append(f"residency:us({residency_mult:.2f}x)")
 
@@ -552,16 +581,20 @@ def compute_optimized_cost(
         "input_tokens": input_tokens,
         "output_tokens": output_tokens,
         "cached_input_tokens": cached_input_tokens,
+        "cache_write_input_tokens": cache_write_input_tokens,
         "uncached_input_tokens": uncached_input_tokens,
         "input_rate_per_1m_usd": input_rate,
         "output_rate_per_1m_usd": output_rate,
         "cached_input_rate_per_1m_usd": cached_rate,
+        "cache_write_input_rate_per_1m_usd": cache_write_rate,
         "base_input_cost_usd": base_input_cost,
         "cached_input_cost_usd": cached_input_cost,
+        "cache_write_input_cost_usd": cache_write_input_cost,
         "base_output_cost_usd": base_output_cost,
         "base_cost_usd": base_cost,
         "no_cache_input_cost_usd": no_cache_input_cost,
         "cache_discount_usd": cache_discount,
+        "cache_write_ttl": cache_write_ttl,
         "service_tier": tier_label,
         "tier_multiplier": tier_mult,
         "is_batch": bool(is_batch),
@@ -593,6 +626,8 @@ def make_projected_cost_check(
         input_tokens: int,
         output_tokens: int,
         cached_input_tokens: int = 0,
+        cache_write_input_tokens: int = 0,
+        cache_write_ttl: str = "5m",
         service_tier: Optional[str] = None,
         is_batch: bool = False,
         prompt_token_count: Optional[int] = None,
@@ -603,6 +638,8 @@ def make_projected_cost_check(
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             cached_input_tokens=cached_input_tokens,
+            cache_write_input_tokens=cache_write_input_tokens,
+            cache_write_ttl=cache_write_ttl,
             service_tier=service_tier,
             is_batch=is_batch,
             prompt_token_count=prompt_token_count,
@@ -774,6 +811,8 @@ class SpendLedger:
         model_id: Optional[str] = None,
         route: Optional[str] = None,
         cached_input_tokens: int = 0,
+        cache_write_input_tokens: int = 0,
+        cache_write_ttl: str = "5m",
         service_tier: Optional[str] = None,
         is_batch: bool = False,
         prompt_token_count: Optional[int] = None,
@@ -797,6 +836,8 @@ class SpendLedger:
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             cached_input_tokens=cached_input_tokens,
+            cache_write_input_tokens=cache_write_input_tokens,
+            cache_write_ttl=cache_write_ttl,
             service_tier=service_tier,
             is_batch=is_batch,
             prompt_token_count=prompt_token_count,
@@ -820,6 +861,8 @@ class SpendLedger:
         route: Optional[str] = None,
         *,
         cached_input_tokens: int = 0,
+        cache_write_input_tokens: int = 0,
+        cache_write_ttl: str = "5m",
         service_tier: Optional[str] = None,
         is_batch: bool = False,
         prompt_token_count: Optional[int] = None,
@@ -833,6 +876,8 @@ class SpendLedger:
                 model_id=model_id,
                 route=route,
                 cached_input_tokens=cached_input_tokens,
+                cache_write_input_tokens=cache_write_input_tokens,
+                cache_write_ttl=cache_write_ttl,
                 service_tier=service_tier,
                 is_batch=is_batch,
                 prompt_token_count=prompt_token_count,
