@@ -53,6 +53,57 @@ def normalize_pricing_entry(model_key: str, row: dict[str, Any]) -> dict[str, An
         "pricing_caveat": str(row.get("pricing_caveat") or ""),
         "input_cost_per_m": _decimal_or_none(row.get("input_cost_per_m")),
         "output_cost_per_m": _decimal_or_none(row.get("output_cost_per_m")),
+        # Optimizer fields (additive — May 2026 schema extension).
+        # All None-able; consumers fall back to provider defaults.
+        "service_tier_flex_multiplier": _decimal_or_none(row.get("service_tier_flex_multiplier")),
+        "service_tier_priority_multiplier": _decimal_or_none(row.get("service_tier_priority_multiplier")),
+        "cache_read_multiplier": _decimal_or_none(row.get("cache_read_multiplier")),
+        "cache_write_5m_multiplier": _decimal_or_none(row.get("cache_write_5m_multiplier")),
+        "cache_write_1h_multiplier": _decimal_or_none(row.get("cache_write_1h_multiplier")),
+        "prompt_cache_min_tokens": (
+            int(row["prompt_cache_min_tokens"])
+            if row.get("prompt_cache_min_tokens") is not None
+            else None
+        ),
+        "auto_cache_enabled": (
+            bool(row["auto_cache_enabled"])
+            if row.get("auto_cache_enabled") is not None
+            else None
+        ),
+        "tiered_input_threshold_tokens": (
+            int(row["tiered_input_threshold_tokens"])
+            if row.get("tiered_input_threshold_tokens") is not None
+            else None
+        ),
+        "tiered_input_above_cost_per_m": _decimal_or_none(
+            row.get("tiered_input_above_cost_per_m")
+        ),
+        "tiered_output_above_cost_per_m": _decimal_or_none(
+            row.get("tiered_output_above_cost_per_m")
+        ),
+        "tiered_cached_input_above_cost_per_m": _decimal_or_none(
+            row.get("tiered_cached_input_above_cost_per_m")
+        ),
+        "data_residency_us_multiplier": _decimal_or_none(
+            row.get("data_residency_us_multiplier")
+        ),
+        "context_window": (
+            int(row["context_window"])
+            if row.get("context_window") is not None
+            else None
+        ),
+        "supports_json_schema_strict": (
+            bool(row["supports_json_schema_strict"])
+            if row.get("supports_json_schema_strict") is not None
+            else None
+        ),
+        "supports_reasoning_toggle": (
+            bool(row["supports_reasoning_toggle"])
+            if row.get("supports_reasoning_toggle") is not None
+            else None
+        ),
+        "alias_of": str(row["alias_of"]).strip().lower() if row.get("alias_of") else None,
+        "specialization": str(row["specialization"]).strip().lower() if row.get("specialization") else None,
     }
 
     if status in {"PRICED_CONFIRMED", "PRICED_WITH_CAVEAT", "STALE_NEEDS_REFRESH"}:

@@ -89,6 +89,18 @@ def _metadata_flag_enabled(metadata: Dict[str, str], key: str) -> bool:
     return str(metadata.get(key) or "").strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _metadata_field(metadata: Dict[str, str], key: str) -> Optional[str]:
+    """Phase E5: read a metadata string field (e.g. service_tier) with
+    lower-case normalization. Returns None if absent or empty."""
+    if not isinstance(metadata, dict):
+        return None
+    value = metadata.get(key)
+    if value is None:
+        return None
+    token = str(value).strip().lower()
+    return token or None
+
+
 def classify_batch_terminal_status(status: str) -> Dict[str, Any]:
     token = str(status or "").strip().lower()
     if token in OPENAI_COMPATIBLE_SUCCESS_STATUSES:
@@ -495,6 +507,15 @@ class OpenAIBatchClient:
             response_format = _response_format_for_request(req)
             if response_format is not None:
                 body["response_format"] = response_format
+            # Phase E5: pass service_tier through batch payload if the request
+            # carries it via metadata. Batch API itself is already a 50%
+            # discount; service_tier in batch is honored by OpenAI but doesn't
+            # stack further (batch IS flex-equivalent). We still emit it so
+            # the request is honest about intent and the spend ledger can
+            # reason about the actual tier path.
+            requested_tier = _metadata_field(req.metadata, "service_tier")
+            if requested_tier and requested_tier in ("default", "flex", "priority", "auto"):
+                body["service_tier"] = requested_tier
             payload_rows.append(
                 {
                     "custom_id": req.custom_id,
