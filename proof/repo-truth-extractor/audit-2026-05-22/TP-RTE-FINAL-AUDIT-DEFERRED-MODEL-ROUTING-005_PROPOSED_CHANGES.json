@@ -1,0 +1,70 @@
+{
+  "artifact": "proposed_changes",
+  "changes": [
+    {
+      "api_key_env": "OPENAI_API_KEY",
+      "count": 171,
+      "decision": "IMPLEMENT",
+      "new_model_id": "gpt-5.5",
+      "new_provider": "openai",
+      "old_model_id": "openai/gpt-5.4",
+      "old_provider": "openrouter",
+      "reason": "Move OpenAI Flex routes from OpenRouter to direct OpenAI with service_tier=flex.",
+      "request_options": {
+        "service_tier": "flex"
+      }
+    },
+    {
+      "api_key_env": "OPENAI_API_KEY",
+      "count": 7,
+      "decision": "IMPLEMENT",
+      "new_model_id": "gpt-5.4-mini",
+      "new_provider": "openai",
+      "old_model_id": "openai/gpt-5-mini",
+      "old_provider": "openrouter",
+      "reason": "Move mini routes to direct latest mini model.",
+      "request_options": {}
+    },
+    {
+      "api_key_env": "OPENAI_API_KEY",
+      "count": 50,
+      "decision": "IMPLEMENT",
+      "new_model_id": "gpt-5.3-codex",
+      "new_provider": "openai",
+      "old_model_id": "openai/gpt-5.3-codex",
+      "old_provider": "openrouter",
+      "reason": "Keep Codex model identity while moving from OpenRouter to direct OpenAI.",
+      "request_options": {}
+    },
+    {
+      "api_key_env": "XAI_API_KEY",
+      "count": 121,
+      "decision": "IMPLEMENT",
+      "new_model_id": "grok-4.3",
+      "new_provider": "xai",
+      "old_model_id": "grok-4.20-beta-0309-reasoning",
+      "old_provider": "xai",
+      "reason": "Replace reasoning alias with Grok 4.3 and explicit reasoning effort.",
+      "request_options": {
+        "reasoning_effort": "low"
+      }
+    },
+    {
+      "api_key_env": "XAI_API_KEY",
+      "count": 139,
+      "decision": "IMPLEMENT",
+      "new_model_id": "grok-4.3",
+      "new_provider": "xai",
+      "old_model_id": "grok-4.20-beta-0309-non-reasoning",
+      "old_provider": "xai",
+      "reason": "Replace non-reasoning alias with Grok 4.3 and explicit disabled reasoning effort.",
+      "request_options": {
+        "reasoning_effort": "none"
+      }
+    }
+  ],
+  "no_live_extraction": true,
+  "no_live_provider_calls": true,
+  "scope_decision": "ROUTE_RUNTIME_BOUNDED",
+  "task_packet_id": "TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005"
+}

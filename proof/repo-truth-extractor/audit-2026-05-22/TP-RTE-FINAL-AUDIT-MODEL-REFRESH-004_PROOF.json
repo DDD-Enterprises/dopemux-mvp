@@ -1,0 +1,271 @@
+{
+  "base_branch": "main",
+  "base_sha": "0d5bf6e38761d98159eed49c4bb78783bcd7766b",
+  "branch": "codex/rte-final-audit-model-refresh-004",
+  "created_at_utc": "2026-05-23T15:37:01Z",
+  "deferred_changes": [
+    {
+      "decision": "DEFER",
+      "new_model_id": "grok-4.3",
+      "new_provider": "xai",
+      "official_source": "https://docs.x.ai/developers/migration/may-15-retirement",
+      "old_model_id": "grok-4.20-beta-0309-reasoning",
+      "old_provider": "xai",
+      "reason": "DEFERRED_STRUCTURED_FIELD_UNSUPPORTED: migration requires explicit reasoning_effort and the runtime does not support that route field.",
+      "required_runtime_fields": [
+        "reasoning_effort"
+      ],
+      "route_index": -1,
+      "route_role": "primary",
+      "runtime_fields_supported": false,
+      "step_id": "__grok_4_20_reasoning_aliases__"
+    },
+    {
+      "decision": "DEFER",
+      "new_model_id": "grok-4.3",
+      "new_provider": "xai",
+      "official_source": "https://docs.x.ai/developers/migration/may-15-retirement",
+      "old_model_id": "grok-4.20-beta-0309-non-reasoning",
+      "old_provider": "xai",
+      "reason": "DEFERRED_STRUCTURED_FIELD_UNSUPPORTED: migration requires explicit reasoning_effort none and the runtime does not support that route field.",
+      "required_runtime_fields": [
+        "reasoning_effort"
+      ],
+      "route_index": -1,
+      "route_role": "primary",
+      "runtime_fields_supported": false,
+      "step_id": "__grok_4_20_non_reasoning_aliases__"
+    },
+    {
+      "decision": "DEFER",
+      "new_model_id": "openai/*",
+      "new_provider": "openrouter",
+      "official_source": "https://developers.openai.com/api/docs/guides/flex-processing",
+      "old_model_id": "openai/*",
+      "old_provider": "openrouter",
+      "reason": "DEFERRED_STRUCTURED_FIELD_UNSUPPORTED: Flex requires service_tier=flex and the runtime does not support that route field.",
+      "required_runtime_fields": [
+        "service_tier"
+      ],
+      "route_index": -1,
+      "route_role": "primary",
+      "runtime_fields_supported": false,
+      "step_id": "__openai_flex_service_tier__"
+    }
+  ],
+  "implemented_changes": [
+    {
+      "decision": "IMPLEMENT",
+      "new_model_id": "grok-build-0.1",
+      "new_provider": "xai",
+      "official_source": "https://docs.x.ai/developers/migration/may-15-retirement",
+      "old_model_id": "grok-code-fast-1",
+      "old_provider": "xai",
+      "reason": "Route is a phase C BULK_CODE_HEAVY primary route; xAI recommends grok-build-0.1 for grok-code-fast-1 code workloads.",
+      "required_runtime_fields": [],
+      "route_index": 0,
+      "route_role": "primary",
+      "runtime_fields_supported": true,
+      "step_id": "C1"
+    },
+    {
+      "decision": "IMPLEMENT",
+      "new_model_id": "grok-build-0.1",
+      "new_provider": "xai",
+      "official_source": "https://docs.x.ai/developers/migration/may-15-retirement",
+      "old_model_id": "grok-code-fast-1",
+      "old_provider": "xai",
+      "reason": "Route is a phase C BULK_CODE_HEAVY primary route; xAI recommends grok-build-0.1 for grok-code-fast-1 code workloads.",
+      "required_runtime_fields": [],
+      "route_index": 0,
+      "route_role": "primary",
+      "runtime_fields_supported": true,
+      "step_id": "C5"
+    },
+    {
+      "decision": "IMPLEMENT",
+      "new_model_id": "grok-build-0.1",
+      "new_provider": "xai",
+      "official_source": "https://docs.x.ai/developers/migration/may-15-retirement",
+      "old_model_id": "grok-code-fast-1",
+      "old_provider": "xai",
+      "reason": "Route is a phase C BULK_CODE_HEAVY primary route; xAI recommends grok-build-0.1 for grok-code-fast-1 code workloads.",
+      "required_runtime_fields": [],
+      "route_index": 0,
+      "route_role": "primary",
+      "runtime_fields_supported": true,
+      "step_id": "C6"
+    },
+    {
+      "decision": "IMPLEMENT",
+      "new_model_id": "grok-build-0.1",
+      "new_provider": "xai",
+      "official_source": "https://docs.x.ai/developers/migration/may-15-retirement",
+      "old_model_id": "grok-code-fast-1",
+      "old_provider": "xai",
+      "reason": "Route is a phase C BULK_CODE_HEAVY primary route; xAI recommends grok-build-0.1 for grok-code-fast-1 code workloads.",
+      "required_runtime_fields": [],
+      "route_index": 0,
+      "route_role": "primary",
+      "runtime_fields_supported": true,
+      "step_id": "C7"
+    },
+    {
+      "decision": "IMPLEMENT",
+      "new_model_id": "grok-build-0.1",
+      "new_provider": "xai",
+      "official_source": "https://docs.x.ai/developers/migration/may-15-retirement",
+      "old_model_id": "grok-code-fast-1",
+      "old_provider": "xai",
+      "reason": "Route is a phase C BULK_CODE_HEAVY primary route; xAI recommends grok-build-0.1 for grok-code-fast-1 code workloads.",
+      "required_runtime_fields": [],
+      "route_index": 0,
+      "route_role": "primary",
+      "runtime_fields_supported": true,
+      "step_id": "C10"
+    },
+    {
+      "decision": "IMPLEMENT",
+      "new_model_id": "grok-build-0.1",
+      "new_provider": "xai",
+      "official_source": "https://docs.x.ai/developers/migration/may-15-retirement",
+      "old_model_id": "grok-code-fast-1",
+      "old_provider": "xai",
+      "reason": "Route is a phase C BULK_CODE_HEAVY primary route; xAI recommends grok-build-0.1 for grok-code-fast-1 code workloads.",
+      "required_runtime_fields": [],
+      "route_index": 0,
+      "route_role": "primary",
+      "runtime_fields_supported": true,
+      "step_id": "C11"
+    }
+  ],
+  "packet_id": "TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "residual_risks": [
+    "No live provider calls were run.",
+    "No live extraction was run.",
+    "OpenAI Flex/service_tier is deferred because route/runtime support is absent.",
+    "Grok 4.3 reasoning_effort migrations are deferred because runtime support is absent.",
+    "run_extraction_v3.py and run_extraction_v5.py contain hardcoded legacy ROUTING_LADDERS outside this packet allowlist; this TP updates structured model_map routing only."
+  ],
+  "runtime_field_support": {
+    "authoritative": "PARTIAL",
+    "notes": [
+      "llm_runtime.py forwards model, messages, timeout, optional temperature, and optional response_format to chat completions; no service_tier or reasoning_effort forwarding was observed.",
+      "run_extraction_v5.py consumes strict_json_schema and strict_passthrough_verified from route payloads and contract routes.",
+      "authoritative appears in request/comparison metadata but was not observed as a model_map route metadata field.",
+      "temperature is runtime-supported in payloads but route-level model_map temperature support was not proven in this packet."
+    ],
+    "reasoning_effort": "ABSENT",
+    "service_tier": "ABSENT",
+    "strict_json_schema": "PRESENT",
+    "strict_passthrough_verified": "PRESENT",
+    "temperature": "PARTIAL"
+  },
+  "source_verification": {
+    "sources": [
+      {
+        "confidence": "HIGH",
+        "facts": [
+          "grok-code-fast-1 is retired effective May 15, 2026 and recommended to migrate to grok-build-0.1.",
+          "retired reasoning Grok fast slugs route to grok-4.3 with low reasoning effort.",
+          "retired non-reasoning Grok fast slugs route to grok-4.3 with none reasoning effort."
+        ],
+        "provider": "xAI",
+        "url": "https://docs.x.ai/developers/migration/may-15-retirement"
+      },
+      {
+        "confidence": "HIGH",
+        "facts": [
+          "Grok 4.3 is the current general model.",
+          "The models page lists Coding as Grok Build 0.1."
+        ],
+        "provider": "xAI",
+        "url": "https://docs.x.ai/developers/models"
+      },
+      {
+        "confidence": "HIGH",
+        "facts": [
+          "The release notes identify grok-build-0.1 as the model slug for Grok Build 0.1."
+        ],
+        "provider": "xAI",
+        "url": "https://docs.x.ai/developers/release-notes"
+      },
+      {
+        "confidence": "HIGH",
+        "facts": [
+          "Flex processing is requested with service_tier=flex for Responses and Chat Completions.",
+          "Flex processing is variable-latency and can return resource unavailable errors."
+        ],
+        "provider": "OpenAI",
+        "url": "https://developers.openai.com/api/docs/guides/flex-processing"
+      },
+      {
+        "confidence": "HIGH",
+        "facts": [
+          "Chat Completions supports service_tier values including auto, default, flex, scale, and priority.",
+          "Responses include the actual service_tier used when the parameter is set."
+        ],
+        "provider": "OpenAI",
+        "url": "https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create/"
+      }
+    ],
+    "verification_mode": "LIVE_OFFICIAL_DOCS",
+    "verified_at_utc": "2026-05-23T15:37:01Z"
+  },
+  "status": "PARTIAL_DEFERRED",
+  "structured_artifacts": {
+    "proposed_changes": "TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_PROPOSED_CHANGES.json",
+    "route_inventory_after": "TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_ROUTE_INVENTORY_AFTER.json",
+    "route_inventory_before": "TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_ROUTE_INVENTORY_BEFORE.json"
+  },
+  "validation": {
+    "commands": [
+      {
+        "command": "python -m json.tool proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_PROOF.json >/tmp/tp-rte-model-proof-json-ok.txt",
+        "exit_code": 0,
+        "summary": "proof JSON parsed successfully"
+      },
+      {
+        "command": "python -m json.tool proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_ROUTE_INVENTORY_BEFORE.json >/tmp/tp-rte-model-before-json-ok.txt",
+        "exit_code": 0,
+        "summary": "before inventory JSON parsed successfully"
+      },
+      {
+        "command": "python -m json.tool proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_PROPOSED_CHANGES.json >/tmp/tp-rte-model-changes-json-ok.txt",
+        "exit_code": 0,
+        "summary": "proposed changes JSON parsed successfully"
+      },
+      {
+        "command": "python -m json.tool proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_ROUTE_INVENTORY_AFTER.json >/tmp/tp-rte-model-after-json-ok.txt",
+        "exit_code": 0,
+        "summary": "after inventory JSON parsed successfully"
+      },
+      {
+        "command": "PYTHONPATH=services/repo-truth-extractor python -m pytest -q -p no:cacheprovider services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_opt_model_refresh.py",
+        "exit_code": 0,
+        "summary": "4 passed, 1 pytest config warning"
+      },
+      {
+        "command": "test -f services/repo-truth-extractor/tests/test_model_map_routing.py && PYTHONPATH=services/repo-truth-extractor python -m pytest -q -p no:cacheprovider services/repo-truth-extractor/tests/test_model_map_routing.py || true",
+        "exit_code": 0,
+        "summary": "adjacent test file absent; command completed through guarded true branch"
+      },
+      {
+        "command": "test -f services/repo-truth-extractor/tests/test_llm_runtime_service_tier.py && PYTHONPATH=services/repo-truth-extractor python -m pytest -q -p no:cacheprovider services/repo-truth-extractor/tests/test_llm_runtime_service_tier.py || true",
+        "exit_code": 0,
+        "summary": "adjacent test file absent; command completed through guarded true branch"
+      },
+      {
+        "command": "test -f services/repo-truth-extractor/tests/test_batch_clients.py && PYTHONPATH=services/repo-truth-extractor python -m pytest -q -p no:cacheprovider services/repo-truth-extractor/tests/test_batch_clients.py || true",
+        "exit_code": 0,
+        "summary": "adjacent test file absent; command completed through guarded true branch"
+      },
+      {
+        "command": "git diff --check",
+        "exit_code": 0,
+        "summary": "no whitespace errors"
+      }
+    ]
+  }
+}
