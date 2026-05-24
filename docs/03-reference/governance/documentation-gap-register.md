@@ -40,6 +40,7 @@ entrypoints remain stronger than this register.
 - Packet 003 addressed architecture, governance, operations, and AI handoff gaps.
 - Packet 004 addressed repo-faithful product and marketing docs and final index proof.
 - Packet `TP-DMX-DOCS-PUBLIC-AI-RTE-BASELINE-001` addresses the remaining public and AI-readable docs surface plus an external RTE provider baseline import.
+- Packet `TP-DMX-DOCS-FRONTDOOR-POSITIONING-002` refreshes the README front door, homepage copy, product terminology, public claim guardrails, and docs index synchronization on top of the public AI/RTE baseline.
 
 ## Series Closeout View
 
@@ -56,6 +57,18 @@ entrypoints remain stronger than this register.
 - `closed`: Public AI entrypoint `llms.txt` was added.
 - `closed`: Public docs surface governance was defined.
 - `closed`: Reusable public copy variants were added.
+- `closed`: README first-screen public entrypoint was refreshed with what
+  Dopemux is, what it is not, why it exists, and where humans and AI tools
+  should start.
+- `closed`: Homepage copy was restructured around operator value,
+  split-authority development workflows, proof boundaries, audience, and
+  messaging rules.
+- `closed`: Product positioning, elevator pitches, features/benefits, and FAQ
+  terminology were aligned around operator control surface, source of truth,
+  authority boundaries, derived retrieval, audit trail, repo-grounded, and
+  current-state language.
+- `closed`: Docs index and `docs/docs_index.yaml` were synchronized for the
+  public front-door/product docs within the existing YAML shape.
 
 ### Remaining After This Series
 
@@ -70,6 +83,8 @@ entrypoints remain stronger than this register.
   recrawl or a repo implementation packet verifies RTE provider behavior.
 - `remaining`: runtime/provider behavior was not revalidated live by the public
   AI/RTE baseline packet.
+- `remaining`: this front-door packet did not verify runtime startup,
+  provider behavior, local/private/offline guarantees, or production readiness.
 
 ## Current Unknowns
 
@@ -127,3 +142,22 @@ entrypoints remain stronger than this register.
 - Live Docker startup remains `NOT_RUN`.
 - Live provider calls remain `NOT_RUN`.
 - Live RTE extraction remains `NOT_RUN`.
+
+## Proof Notes For Front Door Positioning Packet
+
+- `README.md` now opens with the public front door: what Dopemux is, what it is
+  not, why it exists, where humans should start, and where AI tools should
+  start.
+- `docs/04-explanation/product/homepage-copy.md` now uses the required
+  homepage-copy structure and leads with operator value before subsystem proof.
+- Product docs include explicit claim-boundary guardrails for one-assistant,
+  PM-platform, memory-system, production-readiness, and local/private/offline
+  claims.
+- `docs/INDEX.md` includes a public front door surface grouping, and
+  `docs/docs_index.yaml` adds product docs under the existing `explanation`
+  schema shape.
+- Runtime startup remains `NOT_RUN`.
+- Live provider calls remain `NOT_RUN`.
+- Live RTE extraction remains `NOT_RUN`.
+- Local-only, private-only, and offline-default behavior remains
+  `NEEDS_REPO_VERIFICATION`.

@@ -15,14 +15,17 @@ This document separates implemented repo evidence from product benefit
 language. Benefits are product interpretation; authority and limitations remain
 grounded in the repo.
 
+Dopemux coordinates work across authority lanes. It does not collapse those
+lanes into one owner.
+
 | Feature area | Implemented evidence | Benefit | Limitation |
 | --- | --- | --- | --- |
-| Operator CLI | `dopemux` entrypoint and command family | Gives the operator a control surface for workspace coordination | Does not own every domain it can reach |
+| Operator CLI | `dopemux` entrypoint and command family | Gives the operator a control surface for repo-grounded workspace coordination | Does not own every domain it can reach |
 | Execution handoff | `scripts/taskx`, `scripts/dopetask`, `.dopetask-pin` | Keeps execution behind an explicit handoff boundary | External `dopetask` runtime is not implemented in this repo |
 | PM metadata | Leantime adapters and PM docs | Keeps passive PM facts in the PM application lane | Does not prove workflow legality |
 | Workflow transitions | task-orchestrator service and Task Orchestrator workflow | Centralizes queue, blocker, and transition handling | Does not own all PM state |
 | Structured decisions and progress | ConPort PM routes and system docs | Keeps decisions and progress queryable as structured context | Does not replace Leantime metadata or dope-memory chronology |
-| Chronicle receipts | dope-memory runtime and chronicle docs | Preserves historical receipts and evidence trails | dope-memory is not all memory |
+| Chronicle receipts | dope-memory runtime and chronicle docs | Preserves historical receipts and audit trail evidence | dope-memory is not all memory |
 | Code/docs retrieval | dope-context indexing and retrieval surfaces | Helps operators find relevant source/docs quickly | Retrieval output is derived, not source truth |
 | Bridge/proxy routing | dopecon-bridge routes and policy checks | Connects systems through compatibility and event surfaces | dopecon-bridge is not PM, workflow, decision, progress, memory, or retrieval authority |
 | Operator support | ADHD Engine service family | Supports workload, cognitive-state, and recommendations | It does not own PM or memory truth |
@@ -31,11 +34,12 @@ grounded in the repo.
 
 ## Implemented
 
-- A repo-grounded operator-control surface exists through `dopemux`.
+- A repo-grounded operator control surface exists through `dopemux`.
 - The execution handoff boundary is explicit.
 - The PM plane is documented and implemented as split by concern.
 - dopecon-bridge has a clear proxy/adapter role.
-- dope-context and ConPort provide retrieval/context surfaces.
+- dope-context and ConPort provide derived retrieval and structured context
+  surfaces.
 - dope-memory provides chronicle receipt authority.
 - Repo Truth Extractor provides evidence artifacts.
 
@@ -50,4 +54,5 @@ grounded in the repo.
 
 The product direction is a smoother operator experience over the split system,
 not a hidden unification of authority. Any future claim that a drift area is
-closed needs runtime verification.
+closed, production-ready, local-only/private-only/offline, or unsupervised
+needs targeted runtime verification.

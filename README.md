@@ -1,43 +1,56 @@
 # Dopemux MVP
 
-Dopemux is an operator-facing control surface and composed multi-system
-workspace for development workflows. It coordinates local startup, routing,
-workspace context, execution handoff, PM workflow, structured context,
-chronicle memory, retrieval, and repo-truth extraction across several distinct
-systems.
+Dopemux is an operator-facing control surface for split-authority development
+workflows.
 
-Dopemux is not a monolithic assistant and not a single PM, memory, retrieval,
-or agent brain. Its current architecture is explicitly split-authority:
-different systems own different slices of truth, and adapter or retrieval
-layers do not become source truth by exposing a route.
+It exists for work that crosses local startup, execution handoff, PM workflow,
+structured context, chronicle history, derived retrieval, bridge routing,
+operator support, and repo audit without pretending one system owns every
+truth lane.
 
-This README is repo-grounded as of 2026-05-18. Runtime code, config, compose
+## What Dopemux Is
+
+Dopemux is a repo-grounded operator workspace. It helps an operator coordinate
+development work across multiple systems while keeping the source of truth
+visible for each action.
+
+## What Dopemux Is Not
+
+Dopemux is not one AI assistant, one PM platform, one memory system, or one
+autonomous development brain. It coordinates work across authority lanes. It
+does not collapse those lanes into one owner.
+
+## Why It Exists
+
+The repository contains real operational systems, but the authority model is
+split. PM metadata, workflow transitions, decisions, progress, chronicle
+receipts, retrieval, bridge transport, operator support, and repo-truth audit
+have different boundaries. Dopemux keeps those boundaries visible so operators
+can move work without turning derived views, mirrors, or proxy routes into
+source truth.
+
+This README is repo-grounded as of 2026-05-19. Runtime code, config, compose
 wiring, tests, and active entrypoints remain stronger than this document. Where
 the repository does not prove a claim, the claim is marked `UNKNOWN` or
 `NEEDS_REPO_VERIFICATION`.
 
-## What Is In This Repository
+## Where Humans Should Start
 
-- `src/dopemux/`: the `dopemux` CLI package and operator control surface.
-- `scripts/taskx` and `scripts/dopetask`: local execution handoff wrappers;
-  `taskx` is a compatibility shim and `dopetask` installs/runs the pinned
-  external `dopetask` CLI from `.dopetask-pin`.
-- `services/task-orchestrator/`: workflow coordination and workflow transition
-  service surfaces.
-- `services/dopecon-bridge/`: bridge, proxy, compatibility, and event-transport
-  surfaces. It is not PM, workflow, decision, progress, memory, or retrieval
-  authority.
-- `services/dope-context/`: code/docs indexing and retrieval. Retrieval output
-  is derived and does not outrank source files.
-- `services/working-memory-assistant/`: dope-memory chronicle runtime and
-  adjacent working-memory support code.
-- `services/adhd_engine/`: operator-support and cognitive-state service.
-- `services/repo-truth-extractor/`: Repo Truth Extractor audit and extraction
-  runtime. Its artifacts are evidence, not higher authority than runtime.
-- `compose.yml` and `services/registry.yaml`: current local service wiring,
-  service names, default ports, and health paths.
-- `docs/`: active documentation, reference material, governance docs, truth
-  extracts, historical docs, and archives.
+- [Quick Start](QUICK_START.md) for the shortest local setup path.
+- [Documentation Index](docs/INDEX.md) for maintained docs navigation.
+- [Project Description](PROJECT.md) for the repo-grounded project shape.
+- [Architecture](ARCHITECTURE.md) for the split-authority architecture.
+- [System Boundaries](docs/03-reference/systems/system-boundaries.md) for
+  authority lanes and non-owner warnings.
+
+## Where AI Tools Should Start
+
+- [AI-Readable Map](llms.txt) for the curated public map.
+- [Documentation Index](docs/INDEX.md) for active docs.
+- [Project Description](PROJECT.md) and [Architecture](ARCHITECTURE.md) before
+  making product or architecture claims.
+- [System Boundaries](docs/03-reference/systems/system-boundaries.md) before
+  summarizing PM, memory, retrieval, bridge, or agent authority.
 
 ## Authority Model
 
