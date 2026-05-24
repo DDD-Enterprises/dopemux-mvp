@@ -1,0 +1,140 @@
+{
+  "id": "TP-RTE-COSTPROFILE-SYNTH-OPS-FLAGS-001",
+  "project": "dopemux-mvp",
+  "target": "Evaluate flipping the per-step operational flags `sidefill_enabled` and `repair_mode` for the F2-HIGH-1 synthesis family (R0, R2-R11, S0-S11) in promptsets/v4/model_map.yaml. E8 migrated the lane taxonomy from v2 `BULK_DOCS_GENERAL` to v3 `SYNTH` for these steps but preserved their v2 operational flags verbatim (`sidefill_enabled=false`, `repair_mode=targeted_only`), which is the opposite of the v2 test expectation (`sidefill_enabled=true`, `repair_mode=targeted_then_envelope`). PR #691 codified the preserved-from-v2 values in test_phase_interaction.py (test_synthesis_preserves_v2_sidefill_flag, test_synthesis_preserves_v2_repair_mode) with a deferred-decision comment. This packet either (a) flips the defaults to match the v2 test intent and updates the regression tests, or (b) explicitly accepts the v2-preserved defaults with a routing-design ADR entry and removes the 'future packet may flip' caveats from the test comments. Decision: data-driven from a representative dry-run sample comparing artifact quality at the two settings.",
+  "invariants": [
+    "Do not modify model_map.yaml v3 schema, lane_defaults, tag_definitions, or impact_class derivations. This packet is operational-flag scoped only.",
+    "Decision (flip vs. keep) must be backed by a dry-run sample: at minimum 3 R-phase + 3 S-phase steps run at both flag settings on the same input, with side-by-side artifact comparison.",
+    "If flipping: update the materialized step rows that fall into the F2-HIGH-1 family via the migration script (do not hand-edit yaml). Re-run migration and confirm byte-equal idempotency.",
+    "If keeping: update test_phase_interaction.py to drop the 'future packet may flip' comment and document the rationale in docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md.",
+    "Do not regress the F2-HIGH-1 routing fix (R/S synthesis at SYNTH lane via Phase C cell map).",
+    "Preserve Dopemux split authority boundaries per AGENTS.md §6."
+  ],
+  "depends_on": [
+    "TP-RTE-COSTPROFILE-E8-YAML-V3-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "rte-cost-profile-redesign",
+    "base_branch": "main",
+    "parent_tp_id": "TP-RTE-COSTPROFILE-E8-YAML-V3-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-costprofile-synth-ops-flags-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "decide(rte): synthesis sidefill_enabled / repair_mode defaults for F2-HIGH-1 family",
+    "allowlist": [
+      "services/repo-truth-extractor/promptsets/v4/model_map.yaml",
+      "services/repo-truth-extractor/promptsets/v4/scripts/migrate_model_map_v2_to_v3.py",
+      "services/repo-truth-extractor/tests/test_phase_interaction.py",
+      "docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md",
+      "claudedocs/research/synth-ops-flags-dry-run-2026-XX.md",
+      "task-packets/generated/TP-RTE-COSTPROFILE-SYNTH-OPS-FLAGS-001.json",
+      "task-packets/INDEX.md",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-SYNTH-OPS-FLAGS-001/PROOF.json",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-SYNTH-OPS-FLAGS-001/sha256sums.txt"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-RTE-COSTPROFILE-SYNTH-OPS-FLAGS-001.json >/dev/null",
+      "python -c \"import yaml; doc = yaml.safe_load(open('services/repo-truth-extractor/promptsets/v4/model_map.yaml')); assert doc.get('version') == '3.0'; print('yaml v3 schema preserved')\"",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_phase_interaction.py services/repo-truth-extractor/tests/test_phase_d_contract_map.py services/repo-truth-extractor/tests/test_migrate_model_map_v2_to_v3.py services/repo-truth-extractor/tests/test_model_map_v3_loader.py -v",
+      "python services/repo-truth-extractor/promptsets/v4/scripts/migrate_model_map_v2_to_v3.py --dry-run --diff",
+      "python -m json.tool proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-SYNTH-OPS-FLAGS-001/PROOF.json >/dev/null",
+      "cd proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-SYNTH-OPS-FLAGS-001 && shasum -a 256 -c sha256sums.txt",
+      "git diff --check",
+      "git diff --cached --check"
+    ]
+  },
+  "pr": {
+    "title": "decide(rte): synthesis sidefill_enabled / repair_mode defaults for F2-HIGH-1 family",
+    "body": "## Summary\n- Closes the deferred-decision flagged in PR #691 review: v3 migration preserved v2 `sidefill_enabled=false` + `repair_mode=targeted_only` for the F2-HIGH-1 synthesis family (R0, R2-R11, S0-S11), which is the opposite of the v2 test expectation removed in PR #691 (`test_synthesis_has_sidefill_enabled` → `test_synthesis_preserves_v2_sidefill_flag`).\n- Decision recorded with dry-run evidence at `claudedocs/research/synth-ops-flags-dry-run-2026-XX.md`.\n- Outcome A (flip): updates `migrate_model_map_v2_to_v3.py` to override these two flags for the F2-HIGH-1 family at materialization time, re-runs migration, updates the regression tests to assert the flipped values.\n- Outcome B (keep): leaves yaml unchanged; updates test comments to drop the 'future packet may flip' caveat; records rationale in the cost-profiles ADR.\n\n## Scope\nOperational-flag scoped: no changes to v3 schema, lane_defaults, tag_definitions, or impact_class derivations. Either the migration script + yaml + tests change (outcome A), or only test comments + ADR change (outcome B).\n\n## Validation\nFull RTE promptset / phase contract-map / migration / loader suite + dry-run diff of the migration script must be clean.\n\n## NOT_RUN\n- Live LLM calls (decision uses pre-recorded dry-run artifacts).\n- E9 integration tests (separate packet).\n\n## Residual Risks / UNKNOWNs\n- Dry-run sample size is bounded; full-corpus regression visible only after E9 + F-VERIFY.\n- Outcome A increases sidefill spend on synthesis lanes; cost-profile owners should review the spend implication before merge.\n\n@codex review",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "consensus",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: confirm worktree clean, branch off main, E8 packet present in ancestry. Snapshot the two flag values for the F2-HIGH-1 family from the committed v3 yaml.",
+      "commands": [
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short",
+        "git log --oneline | grep E8-YAML | head -3",
+        "python -c \"import yaml; doc = yaml.safe_load(open('services/repo-truth-extractor/promptsets/v4/model_map.yaml')); fam = ['R0'] + [f'R{i}' for i in range(2, 12)] + [f'S{i}' for i in range(0, 12)]; print({s['step_id']: (s['sidefill_enabled'], s['repair_mode']) for s in doc['steps'] if s['step_id'] in fam})\""
+      ],
+      "validation": [
+        "Working tree clean.",
+        "E8 packet in ancestry.",
+        "Snapshot prints the (sidefill_enabled, repair_mode) tuple for every F2-HIGH-1 step."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Run a representative dry-run sample (no live LLMs) across 3 R-phase + 3 S-phase steps with each of the two flag combinations. Record artifact byte-diff + provider-call count per combination in `claudedocs/research/synth-ops-flags-dry-run-2026-XX.md`. Use the cost-profile dry-run harness; LLM calls are mocked / stubbed.",
+      "validation": [
+        "Markdown record at `claudedocs/research/synth-ops-flags-dry-run-2026-XX.md` exists.",
+        "Record includes provider-call count delta per (step, flag-combo).",
+        "Record includes a recommendation: FLIP, KEEP, or INCONCLUSIVE."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Decide based on S2 evidence + pal/consensus. If FLIP: implement Outcome A. If KEEP: implement Outcome B. If INCONCLUSIVE: surface the inconclusive verdict in the PR description and exit without code changes.",
+      "validation": [
+        "PR description names the chosen outcome and links the S2 markdown record."
+      ]
+    },
+    {
+      "id": "S4-OutcomeA",
+      "task": "(If FLIP) Update `migrate_model_map_v2_to_v3.py` to override `sidefill_enabled` and `repair_mode` per-step for steps in the F2-HIGH-1 family. The override is applied in `migrate()` after reading the input row but before constructing the canonical step. Re-run the migration on the v2 backup; confirm idempotency on the new v3 output.",
+      "validation": [
+        "Migration script's --dry-run --diff shows the flag changes for exactly the F2-HIGH-1 family and no other steps.",
+        "Re-running migration on the new v3 yaml produces byte-equal output."
+      ]
+    },
+    {
+      "id": "S5-OutcomeA",
+      "task": "(If FLIP) Update `test_phase_interaction.py`: rename `test_synthesis_preserves_v2_sidefill_flag` → `test_synthesis_has_sidefill_enabled` (re-asserting True); rename `test_synthesis_preserves_v2_repair_mode` → `test_synthesis_has_targeted_then_envelope_repair_mode`. Drop the 'future packet may flip' comments.",
+      "validation": [
+        "Test file no longer references 'preserved from v2' for these two flags.",
+        "Tests pass against the regenerated v3 yaml."
+      ]
+    },
+    {
+      "id": "S4-OutcomeB",
+      "task": "(If KEEP) Update `test_phase_interaction.py` to drop the 'future packet may flip' comment lines. Update `docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md` with a new section: 'Synthesis lane operational flags — v2 defaults retained' documenting the dry-run evidence and rationale.",
+      "validation": [
+        "Test file no longer carries the 'future packet may flip' caveat.",
+        "ADR section exists and links the S2 markdown record."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Verify all promptset + phase + migration + loader tests still pass. Run pre-commit. Generate PROOF.json + sha256sums.txt per Codex governance.",
+      "validation": [
+        "All pytest selectors in the `verify` allowlist pass.",
+        "PROOF.json validates against dopemux.proof.v1.",
+        "sha256sums.txt checksum verifies."
+      ]
+    }
+  ],
+  "notes": "Filed as a review-fixup follow-up to PR #691 (E8 model_map.yaml v3). PR #691's first two 🟡 review findings (silent delta drop + non-commutative tag ordering) were already addressed by upstream commit e6aa1f138 (fail-closed semantics for apply_tag_routing_delta, which makes the composition commutative by construction). This packet captures the third deferred-decision item that upstream did NOT address: the F2-HIGH-1 synthesis-family operational flags (sidefill_enabled, repair_mode). The packet exists to make the deferred decision visible and addressable; it does not preempt the outcome. Either resolution closes the 'future packet may flip' comments in test_phase_interaction.py and removes the implicit drift between the lane reclassification (BULK_DOCS_GENERAL → SYNTH) and the operational flag set."
+}
