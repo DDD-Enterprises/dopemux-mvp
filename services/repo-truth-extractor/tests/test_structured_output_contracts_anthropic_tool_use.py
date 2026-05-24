@@ -8,16 +8,17 @@ Covers TP-RTE-COSTPROFILE-E3-CONTRACTS-001 S5/S6/S7:
 * `adapt_canonical_schema_for_variant(..., variant='anthropic_tool_use')`
   returns an Anthropic tool definition dict — `{name, description, input_schema}`
   — while preserving required field declarations and enum constraints.
-* `build_provider_structured_output()` for an Anthropic route returns the
-  `{tools: [...], tool_choice: {...}}` payload + `transport_mode='anthropic_tool_use'`
-  meta so the runtime can route the request as Anthropic tool_use rather than
-  OpenAI `response_format`.
+* `build_provider_structured_output()` for an Anthropic route fails closed by
+  default and returns `{tools: [...], tool_choice: {...}}` only after explicit
+  caller opt-in.
 """
 
 from __future__ import annotations
 
 import sys
 from pathlib import Path
+
+import pytest
 
 
 def _ensure_service_root_on_path() -> None:
@@ -34,6 +35,9 @@ from lib.structured_output_contracts import (  # noqa: E402
     build_provider_structured_output,
     provider_schema_variant,
     provider_schema_variant_label,
+    resolve_stage_route,
+    schema_capability_reason,
+    strict_capability_reason,
 )
 
 
@@ -89,6 +93,79 @@ def test_variant_label_for_anthropic() -> None:
         provider_schema_variant_label("openrouter", "anthropic/claude-opus-4.6")
         == "openrouter_proxy_anthropic_tool_use"
     )
+
+
+def _strict_route(provider: str, model_id: str, **overrides: object) -> dict:
+    route = {
+        "provider": provider,
+        "model_id": model_id,
+        "api_key_env": "TEST_API_KEY",
+        "structured_output_mode": STRUCTURED_OUTPUT_MODE_JSON_SCHEMA,
+        "strict_json_schema": True,
+        "strict_passthrough_verified": True,
+    }
+    route.update(overrides)
+    return route
+
+
+def test_anthropic_tool_use_routes_are_not_strict_or_schema_capable_until_runtime_wired() -> None:
+    """E3 must not advertise tool_use routes until callers stop using response_format."""
+    cases = (
+        (_strict_route("anthropic", "claude-opus-4.6"), "anthropic_messages_http"),
+        (
+            _strict_route("openrouter", "anthropic/claude-opus-4.6"),
+            "openai_compat_http",
+        ),
+    )
+
+    for route, transport in cases:
+        assert (
+            strict_capability_reason(route, transport)
+            == "anthropic_tool_use_transport_unwired"
+        )
+        assert (
+            schema_capability_reason(route, transport)
+            == "anthropic_tool_use_transport_unwired"
+        )
+
+
+def test_openrouter_anthropic_strict_passthrough_unverified_precedence_is_preserved() -> None:
+    route = _strict_route(
+        "openrouter",
+        "anthropic/claude-opus-4.6",
+        strict_passthrough_verified=False,
+    )
+
+    assert (
+        strict_capability_reason(route, "openai_compat_http")
+        == "openrouter_strict_passthrough_unverified"
+    )
+
+
+def test_strict_route_resolution_skips_anthropic_tool_use_until_runtime_wired() -> None:
+    route, attempts = resolve_stage_route(
+        step_contract={
+            "lane": {
+                "primary_routes": [
+                    _strict_route("openrouter", "anthropic/claude-opus-4.6"),
+                    _strict_route("openai", "gpt-5"),
+                ]
+            }
+        },
+        stage="primary",
+        transport_for_provider=lambda provider: (
+            "openai_compat_http" if provider == "openrouter" else "openai_sdk"
+        ),
+        strict_required=True,
+    )
+
+    assert route is not None
+    assert route["provider"] == "openai"
+    assert attempts[0]["strict_capable"] is False
+    assert attempts[0]["schema_capable"] is False
+    assert attempts[0]["reason"] == "anthropic_tool_use_transport_unwired"
+    assert attempts[0]["schema_reason"] == "anthropic_tool_use_transport_unwired"
+    assert attempts[1]["strict_capable"] is True
 
 
 # --------------------------------------------------------- adapter shape test
@@ -227,8 +304,6 @@ def test_adapter_raises_value_error_when_schema_name_missing() -> None:
     """Per docstring contract: schema_name is required for anthropic_tool_use.
     Fail closed rather than silently substituting a default that risks
     tool-choice collisions."""
-    import pytest
-
     for missing in (None, "", "   "):
         with pytest.raises(ValueError, match="schema_name"):
             adapt_canonical_schema_for_variant(
@@ -241,7 +316,21 @@ def test_adapter_raises_value_error_when_schema_name_missing() -> None:
 # ----------------------------- build_provider_structured_output anthropic path
 
 
-def test_build_provider_structured_output_anthropic_returns_tool_use_payload() -> None:
+def test_build_provider_structured_output_anthropic_default_gate_fails_closed() -> None:
+    schema = _sample_canonical_schema()
+    with pytest.raises(ValueError, match="anthropic_tool_use.*not wired"):
+        build_provider_structured_output(
+            route={"provider": "anthropic", "model_id": "claude-opus-4.6"},
+            transport="anthropic_messages_http",
+            schema=schema,
+            schema_name="audit_finding_draft",
+            strict=True,
+            contract_lane_name="ce_critical",
+            mode=STRUCTURED_OUTPUT_MODE_JSON_SCHEMA,
+        )
+
+
+def test_build_provider_structured_output_anthropic_opt_in_returns_tool_use_payload() -> None:
     schema = _sample_canonical_schema()
     response_format, meta = build_provider_structured_output(
         route={"provider": "anthropic", "model_id": "claude-opus-4.6"},
@@ -251,6 +340,7 @@ def test_build_provider_structured_output_anthropic_returns_tool_use_payload() -
         strict=True,
         contract_lane_name="ce_critical",
         mode=STRUCTURED_OUTPUT_MODE_JSON_SCHEMA,
+        allow_anthropic_tool_use_payload=True,
     )
     assert isinstance(response_format, dict)
     assert set(response_format.keys()) == {"tools", "tool_choice"}
@@ -266,7 +356,24 @@ def test_build_provider_structured_output_anthropic_returns_tool_use_payload() -
     assert meta["anthropic_tool_use_payload"] == response_format
 
 
-def test_build_provider_structured_output_openrouter_anthropic_uses_tool_use() -> None:
+def test_build_provider_structured_output_anthropic_opt_in_preserves_strict_flag() -> None:
+    schema = _sample_canonical_schema()
+    _, meta = build_provider_structured_output(
+        route={"provider": "anthropic", "model_id": "claude-opus-4.6"},
+        transport="anthropic_messages_http",
+        schema=schema,
+        schema_name="audit_finding_draft",
+        strict=False,
+        contract_lane_name="ce_critical",
+        mode=STRUCTURED_OUTPUT_MODE_JSON_SCHEMA,
+        allow_anthropic_tool_use_payload=True,
+    )
+
+    assert meta["schema_variant"] == "anthropic_tool_use"
+    assert meta["strict"] is False
+
+
+def test_build_provider_structured_output_openrouter_anthropic_opt_in_uses_tool_use() -> None:
     schema = _sample_canonical_schema()
     response_format, meta = build_provider_structured_output(
         route={"provider": "openrouter", "model_id": "anthropic/claude-sonnet-4.6"},
@@ -276,6 +383,7 @@ def test_build_provider_structured_output_openrouter_anthropic_uses_tool_use() -
         strict=True,
         contract_lane_name="ce_critical",
         mode=STRUCTURED_OUTPUT_MODE_JSON_SCHEMA,
+        allow_anthropic_tool_use_payload=True,
     )
     assert "tools" in response_format
     assert meta["schema_variant"] == "anthropic_tool_use"
