@@ -181,3 +181,39 @@ skills:
   workflow_plan_reviewer: templates/skills/plan-reviewer/SKILL.md
   workflow_code_implementer: templates/skills/code-implementer/SKILL.md
   workflow_quality_refactorer: templates/skills/quality-refactorer/SKILL.md
+fast_dev_os:
+  readme: docs/03-reference/fast-dev-os/readme.md
+  project_constitution: docs/03-reference/fast-dev-os/project-constitution.md
+  thread00_current_operating_ledger: docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md
+  unknown_conflicting_stale: docs/03-reference/fast-dev-os/unknown-conflicting-stale.md
+  pr_ledger: docs/03-reference/fast-dev-os/pr-ledger.md
+  packet_ledger: docs/03-reference/fast-dev-os/packet-ledger.md
+  proof_ledger: docs/03-reference/fast-dev-os/proof-ledger.md
+  evidence_notes: docs/03-reference/fast-dev-os/evidence-notes.md
+  relationship_to_governance: docs/03-reference/governance/codex-authority-refresh.md
+  series_id: DMX-FDOS
+  packets:
+  - TP-DMX-FDOS-004-AUTHORITY-REFRESH
+  - TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK
+  - TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES
+  prompts:
+    readme: docs/03-reference/fast-dev-os/prompts/readme.md
+    master_priming_prompt: docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md
+    role_priming_prompts: docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md
+    template_codex_single_run_prompt: docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md
+    claude_code_implementer_prompt: docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md
+    gemini_auditor_prompt: docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md
+    grok_build_bounded_prompt: docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md
+    jules_bounded_github_prompt: docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md
+    github_copilot_agent_prompt: docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md
+    template_implementation_report: docs/03-reference/fast-dev-os/prompts/template-implementation-report.md
+    template_audit_prompt: docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md
+    template_acceptance_decision: docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md
+  templates:
+    task_packet_template_md: docs/03-reference/fast-dev-os/template-task-packet.md
+    task_packet_template_json: docs/03-reference/fast-dev-os/task-packet-template.json
+    pr_body_template: docs/03-reference/fast-dev-os/template-pr-body.md
+    validation_command_library: docs/03-reference/fast-dev-os/validation-command-library.md
+    runtime_dependency_cones: docs/03-reference/fast-dev-os/runtime-dependency-cones.md
+    proof_bundle_template: docs/03-reference/fast-dev-os/templates-proof/proof-bundle-template.json
+    templates_proof_readme: docs/03-reference/fast-dev-os/templates-proof/readme.md

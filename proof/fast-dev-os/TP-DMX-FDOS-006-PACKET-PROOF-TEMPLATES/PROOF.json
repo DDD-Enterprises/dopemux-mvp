@@ -1,0 +1,232 @@
+{
+  "tp_id": "TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES",
+  "tp_path": "task-packets/generated/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES.json",
+  "project": "dopemux-mvp",
+  "worktree_path": "/Users/hue/code/dopemux-mvp-fdos-006-packet-proof-templates",
+  "branch": "codex/dmx-fdos-006-packet-proof-templates",
+  "base_branch": "main",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "repo_identity_check": {
+    "result": "PASS",
+    "marker_file": ".dopetaskroot",
+    "marker_present": true,
+    "remote_url_matches": true
+  },
+  "created_at_utc": "2026-05-23T03:35:00Z",
+  "validated_at_utc": "2026-05-23T03:35:00Z",
+  "starting_head": "a2a46704a0f56446a0e25a2b093c1ff8b599d092",
+  "starting_head_note": "Branch stacked on codex/dmx-fdos-005-executor-prompt-pack (PR #676 expanded scope); rebased onto origin/main HEAD captured here. Final packet in DMX-FDOS doctrine series (final_packet=true).",
+  "ending_head": null,
+  "slices_completed": [
+    {
+      "slice": "S1",
+      "label": "preflight repo identity + parent TPs + governance + schema",
+      "status": "PASS"
+    },
+    {
+      "slice": "S2",
+      "label": "create TP-DMX-FDOS-006 JSON + jsonschema validate",
+      "status": "PASS"
+    },
+    {
+      "slice": "S3",
+      "label": "author template-task-packet.md + task-packet-template.json (skeleton itself validates against canonical spec)",
+      "status": "PASS"
+    },
+    {
+      "slice": "S4",
+      "label": "author templates-proof/proof-bundle-template.json + templates-proof/readme.md",
+      "status": "PASS"
+    },
+    {
+      "slice": "S5",
+      "label": "author template-pr-body.md + validation-command-library.md + runtime-dependency-cones.md",
+      "status": "PASS"
+    },
+    {
+      "slice": "S6",
+      "label": "update fast-dev-os/readme.md + docs/INDEX.md + docs/docs_index.yaml",
+      "status": "PASS"
+    },
+    {
+      "slice": "S7",
+      "label": "create PROOF.json (this file)",
+      "status": "PASS"
+    },
+    {
+      "slice": "S8",
+      "label": "final validation + commit + push + PR",
+      "status": "IN_PROGRESS"
+    }
+  ],
+  "files_created": [
+    "docs/03-reference/fast-dev-os/template-task-packet.md",
+    "docs/03-reference/fast-dev-os/task-packet-template.json",
+    "docs/03-reference/fast-dev-os/template-pr-body.md",
+    "docs/03-reference/fast-dev-os/validation-command-library.md",
+    "docs/03-reference/fast-dev-os/runtime-dependency-cones.md",
+    "docs/03-reference/fast-dev-os/templates-proof/proof-bundle-template.json",
+    "docs/03-reference/fast-dev-os/templates-proof/readme.md",
+    "task-packets/generated/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES.json",
+    "proof/fast-dev-os/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES/PROOF.json"
+  ],
+  "files_modified": [
+    "docs/03-reference/fast-dev-os/readme.md",
+    "docs/INDEX.md",
+    "docs/docs_index.yaml"
+  ],
+  "allowlist_compliance": {
+    "result": "PASS",
+    "expected_count": 12,
+    "actual_count": 12,
+    "files_outside_allowlist": []
+  },
+  "validations": [
+    {
+      "name": "python -m json.tool TP-DMX-FDOS-006",
+      "command": "python -m json.tool task-packets/generated/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES.json >/dev/null",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "jsonschema TP-DMX-FDOS-006 against dopetask-canonical-spec",
+      "command": "python -m jsonschema -i task-packets/generated/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "STRONGEST CHECK: task-packet-template.json IS schema-valid (template is itself schema-compliant)",
+      "command": "python -m jsonschema -i docs/03-reference/fast-dev-os/task-packet-template.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "proof-bundle-template.json parses",
+      "command": "python -m json.tool docs/03-reference/fast-dev-os/templates-proof/proof-bundle-template.json >/dev/null",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "docs-filename-hygiene (5 md templates)",
+      "command": "python3 scripts/check_docs_filename_hygiene.py --check docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/templates-proof/readme.md",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "docs-filename-hygiene: checked 5 files, OK"
+    },
+    {
+      "name": "docs_validator (5 md templates)",
+      "command": "python scripts/docs_validator.py docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/templates-proof/readme.md",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "docs_frontmatter_guard (5 md templates)",
+      "command": "python scripts/docs_frontmatter_guard.py docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/templates-proof/readme.md",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "All docs have valid frontmatter."
+    },
+    {
+      "name": "Forbidden Phrases section present in template-pr-body.md",
+      "command": "grep -c 'Forbidden phrases' docs/03-reference/fast-dev-os/template-pr-body.md",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "AGENTS.md cited in all 5 markdown templates",
+      "command": "for f in docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/templates-proof/readme.md; do grep -q 'AGENTS.md' \"$f\" || echo MISSING; done",
+      "exit_code": 0,
+      "status": "PASS",
+      "matched_files": 5,
+      "expected": 5
+    },
+    {
+      "name": "fast-dev-os/readme.md links to task-packet-template",
+      "command": "grep -l 'template-task-packet' docs/03-reference/fast-dev-os/readme.md",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "docs/INDEX.md adds 5 template entries",
+      "command": "grep -c 'fast-dev-os/template-task-packet\\|fast-dev-os/template-pr-body\\|fast-dev-os/validation-command-library\\|fast-dev-os/runtime-dependency-cones\\|fast-dev-os/templates-proof' docs/INDEX.md",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "docs/docs_index.yaml has templates: key under fast_dev_os",
+      "command": "grep -E '^  templates:' docs/docs_index.yaml",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ],
+  "codereview_status": "PENDING_FOR_REWRITE",
+  "precommit_status": "PENDING_FOR_REWRITE",
+  "commit_sha": null,
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/678",
+  "pr_blocker": null,
+  "cleanup_status": "WORKTREE_ACTIVE_PENDING_PR_REVIEW",
+  "not_run": [
+    "Live provider calls (out of scope; docs-only TP)",
+    "Live extraction (out of scope)",
+    "Docker startup (out of scope)",
+    "Runtime service health checks (out of scope)",
+    "Generator script to materialize templates into new packets (deferred to a future TP)",
+    "CI enforcement of template-pr-body.md required sections (deferred to TP-DMX-FDOS-007-GITHUB-GATES, out of current plan scope)",
+    "Retroactive normalization of existing PROOF.json shapes to match proof-bundle-template.json (out of scope; existing files keep their heterogeneous shapes per proof-ledger.md observation)",
+    "Stress-test templates by materializing a new packet from them (deferred; templates are reference content)"
+  ],
+  "residual_risks": [
+    "FDOS-RISK-TEMPLATE-DRIFT: templates go stale as dopetask-canonical-spec.json evolves; refresh policy is manual-per-schema-change.",
+    "FDOS-RISK-PROOF-NORMALIZATION: existing PROOF.json files in proof/**/ use heterogeneous shapes; this template defines the new canonical shape but does NOT retroactively normalize existing files.",
+    "FDOS-RISK-PR-BODY-ENFORCEMENT: template-pr-body.md is advisory until TP-FDOS-007 lands (CI hook to enforce required sections).",
+    "FDOS-RISK-STACKED-PR: this branch is stacked on codex/dmx-fdos-005-executor-prompt-pack; PR diff vs main includes all three packets until parents merge."
+  ],
+  "unknowns": [
+    "Should a generator script be added to materialize templates into new packets (deferred to a future TP)?",
+    "Should template-pr-body.md sections be CI-enforced (deferred to TP-DMX-FDOS-007-GITHUB-GATES)?",
+    "Should existing PROOF.json files in proof/**/ be retroactively normalized to the new canonical shape? Recommendation: leave as-is; introduce the canonical shape going forward only."
+  ],
+  "depends_on_pr_chain": {
+    "TP-DMX-FDOS-004-AUTHORITY-REFRESH": {
+      "pr": 675,
+      "status": "OPEN_CI_GREEN"
+    },
+    "TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK": {
+      "pr": 676,
+      "status": "OPEN_STACKED_ON_675"
+    },
+    "note": "This branch (TP-FDOS-006) is stacked on TP-FDOS-005. Once #675 and #676 merge to main, this PR's diff narrows to the 12 paths added here."
+  },
+  "context_at_authoring": {
+    "tools_used": [
+      "PAL codereview (gpt-5.2-pro, internal) for TP-FDOS-004 and TP-FDOS-005 in chain",
+      "PAL precommit (gpt-5.2-pro, internal) for TP-FDOS-004 and TP-FDOS-005 in chain",
+      "Plan mode (approved plan at /Users/hue/.claude/plans/executive-verdict-flickering-blanket.md)"
+    ],
+    "evidence_bases": [
+      "AGENTS.md \u00a72 (truth order), \u00a74 (lifecycle), \u00a76 (architecture boundaries), \u00a79 (proof requirements), \u00a710 (known dangers)",
+      "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json (canonical schema)",
+      "docs/03-reference/governance/codex-authority-refresh.md (governance)",
+      "docs/03-reference/fast-dev-os/project-constitution.md (lane taxonomy)",
+      "docs/03-reference/fast-dev-os/prompts/ (TP-FDOS-005 prompt pack)"
+    ],
+    "implementer": "Claude Opus 4.7 (1M context) via Codex CLI shell (execution.agent='codex' for schema compliance; real implementer is Claude Code)"
+  },
+  "remediation_log": [
+    {
+      "remediation_id": "R1-BOT-SUGGESTIONS-PR678",
+      "trigger": "Post-author audit found 18 unaddressed bot suggestions on PR #678 (10 copilot + 8 chatgpt-codex). Bundled into rebase onto refreshed PR #676.",
+      "fixes": [
+        "runtime-dependency-cones.md: Lane taxonomy harmonized to project-constitution.md canonical version (L0=Design only ... L6=Parallel backlog); replaced earlier draft taxonomy.",
+        "fast-dev-os/readme.md: 'templates under proof/' \u2192 'templates under templates-proof/' (matches actual location); added Canonical templates section and templates-proof/ subdir entry.",
+        "PROOF.json validation commands: replaced all '<5 md template paths>' placeholders with explicit paths (5 paths spelled out).",
+        "PROOF.json regex: 'pr-body-template' \u2192 'template-pr-body' (post-rename).",
+        "PROOF.json: 'task-packet-template' grep target \u2192 'template-task-packet' (post-rename).",
+        "PROOF.json: 'grep -A1 fast_dev_os: ... | grep templates:' \u2192 'grep -E ^  templates:' (the -A1 only finds one line, templates: is many lines below).",
+        "PROOF.json starting_head: truncated SHA replaced with full SHA from current origin/main.",
+        "TP-FDOS-006 commit_sha + pr_url + cleanup_status: PENDING_FOR_REWRITE until next push (will be filled in finalization commit)."
+      ],
+      "scope_note": "This packet bundles 18 PR #678 fixes plus inherits ALL fixes from PR #676 (which itself bundles 11 PR #676 fixes + 9 post-merge PR #675 cleanups). Total: 38 bot suggestions addressed across the doctrine series."
+    }
+  ]
+}
