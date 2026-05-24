@@ -183,3 +183,41 @@ def test_grok_420_aliases_use_grok_43_with_explicit_reasoning_effort() -> None:
         effort: len([row for row in grok_43 if row["reasoning_effort"] == effort])
         for effort in {"low", "none"}
     } == {"low": 121, "none": 139}
+
+
+def test_grok_4_3_none_routes_normalize_to_empty_request_options() -> None:
+    """Post-fix invariant: the YAML may declare ``reasoning_effort: none`` for
+    document-mode Grok routes (139 rows), but the runtime must treat that as
+    the absence of the field. xAI's documented reasoning_effort enum is
+    ``low|high`` — forwarding the literal ``"none"`` would 4xx.
+    """
+    import importlib.util
+    import sys
+
+    spec = importlib.util.spec_from_file_location(
+        "lib_route_options_regression",
+        REPO_ROOT
+        / "services"
+        / "repo-truth-extractor"
+        / "lib"
+        / "route_options.py",
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["lib_route_options_regression"] = module
+    spec.loader.exec_module(module)
+
+    rows = _model_map_routes()
+    grok_43_none = [
+        row
+        for row in rows
+        if row["provider"] == "xai"
+        and row["model_id"] == "grok-4.3"
+        and row["reasoning_effort"] == "none"
+    ]
+    assert len(grok_43_none) == 139
+    for row in grok_43_none:
+        normalized = module.normalize_route_request_options(row)
+        assert "reasoning_effort" not in normalized, (
+            f"YAML row {row!r} must normalize without reasoning_effort"
+        )
