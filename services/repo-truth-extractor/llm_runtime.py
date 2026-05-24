@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import json
 import logging
+import os
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -393,6 +394,48 @@ def call_llm(
             deps.live_llm_tests_env,
         )
         raise RuntimeError(message)
+    # Cell alias resolution. model_id may arrive as a placeholder like
+    # ${QUALITY_SYNTH_CRITICAL_MODEL}; resolve it once at the top of call_llm
+    # via run_extraction_v5.resolve_cell_alias so the wire request carries the
+    # real provider model ID and meta records both the placeholder ('requested')
+    # and the resolved value. Resolution is lazy (placeholder-gated) and runs
+    # AFTER disabled_providers + live-LLM gates so blocked routes never trigger
+    # alias lookups. Local import avoids a circular dependency between
+    # llm_runtime.py and run_extraction_v5.py at module load.
+    model_id_requested: str = model_id
+    _resolved_from_alias: bool = False
+    if (
+        isinstance(model_id, str)
+        and model_id.startswith("${")
+        and model_id.endswith("}")
+    ):
+        from run_extraction_v5 import resolve_cell_alias  # local import: avoid cycle
+        cost_profile = getattr(cfg, "cost_profile", None) or "value-default"
+        cli_overrides_raw = getattr(cfg, "model_alias_overrides", ())
+        try:
+            cli_overrides = dict(cli_overrides_raw or ())
+        except (TypeError, ValueError):
+            cli_overrides = {}
+        resolved = resolve_cell_alias(
+            model_id,
+            cost_profile=cost_profile,
+            cli_overrides=cli_overrides,
+            env=os.environ,
+        )
+        if (
+            isinstance(resolved, str)
+            and resolved.startswith("${")
+            and resolved.endswith("}")
+        ):
+            # Cycle / unresolved: resolve_cell_alias returns the placeholder
+            # when no mapping exists. Fail fast rather than send the literal
+            # placeholder to the provider client.
+            raise ValueError(
+                f"Cell alias unresolved or cycle detected: "
+                f"{model_id_requested!r} -> {resolved!r}"
+            )
+        model_id = str(resolved)
+        _resolved_from_alias = True
     safe_system_prompt = sanitize_text_for_provider_payload(system_prompt)
     safe_user_content = sanitize_text_for_provider_payload(user_content)
     base_url = deps.llm_base_url(provider, cfg)
@@ -526,6 +569,8 @@ def call_llm(
             "meta": {
                 "provider": provider,
                 "model_id": model_id,
+                "model_id_requested": model_id_requested,
+                "_resolved_from_alias": _resolved_from_alias,
                 "endpoint_base_url": base_url,
                 "endpoint_effective": deps.endpoint_effective(endpoint_url),
                 **deps.endpoint_fingerprint(endpoint_url),
@@ -603,6 +648,8 @@ def call_llm(
     last_failure_meta: Dict[str, Any] = {
         "provider": provider,
         "model_id": model_id,
+        "model_id_requested": model_id_requested,
+        "_resolved_from_alias": _resolved_from_alias,
         "endpoint_base_url": base_url,
         "endpoint_effective": deps.endpoint_effective(endpoint_url),
         **deps.endpoint_fingerprint(endpoint_url),
@@ -656,6 +703,10 @@ def call_llm(
             "parent_span_id": request_parent_span_id,
             "provider": provider,
             "model_id": model_id,
+            # Surface the requested-vs-resolved alias trail so downstream tracing
+            # can disambiguate "asked for ${ALIAS}" vs "called real-model-id".
+            "model_id_requested": model_id_requested,
+            "_resolved_from_alias": _resolved_from_alias,
             "route": base_trace_context.get("route"),
             "routing_policy": base_trace_context.get("routing_policy"),
             "hop": base_trace_context.get("hop"),
@@ -782,6 +833,31 @@ def call_llm(
                     "response_summary": response_summary,
                 }
             )
+            # Cost-profile telemetry fields surfaced from the upstream response
+            # so spend_ledger + per-attempt lifecycle callers can record what
+            # actually happened (vs. what was requested). service_tier_observed
+            # is best-effort: providers that don't echo the tier leave it None.
+            usage_for_tier = response_summary.get("usage") if isinstance(
+                response_summary, dict
+            ) else None
+            service_tier_observed = (
+                usage_for_tier.get("service_tier")
+                if isinstance(usage_for_tier, dict)
+                else None
+            )
+            response_summary_meta = _response_summary_metadata(response_summary)
+            observed_cached_tokens = response_summary_meta.get("cached_tokens")
+            observed_cache_write_tokens = response_summary_meta.get("cache_write_tokens")
+            if (
+                isinstance(prompt_cache_directives, dict)
+                and prompt_cache_directives.get("applied")
+            ):
+                raw_strategy = prompt_cache_directives.get("strategy")
+                cache_strategy_applied = (
+                    str(raw_strategy).strip().lower() if raw_strategy else "none"
+                )
+            else:
+                cache_strategy_applied = "none"
             _emit_lifecycle(
                 "completed",
                 span_id=attempt_span_id,
@@ -793,6 +869,9 @@ def call_llm(
                 completion_tokens=response_summary.get("completion_tokens"),
                 upstream_request_id=response_summary.get("response_id"),
                 request_payload_bytes=request_payload_bytes,
+                cached_tokens=observed_cached_tokens,
+                cache_write_tokens=observed_cache_write_tokens,
+                service_tier_requested=service_tier,
             )
             return {
                 "ok": True,
@@ -800,11 +879,13 @@ def call_llm(
                 "meta": {
                     "provider": provider,
                     "model_id": model_id,
+                    "model_id_requested": model_id_requested,
+                    "_resolved_from_alias": _resolved_from_alias,
                     "endpoint_base_url": base_url,
                     "endpoint_effective": deps.endpoint_effective(endpoint_url),
                     **deps.endpoint_fingerprint(endpoint_url),
                     **_request_route_metadata(provider, model_id, resolved_api_key_env or api_key_env),
-                    **_response_summary_metadata(response_summary),
+                    **response_summary_meta,
                     **_structured_output_request_metadata(structured_output),
                     "status_code": status_code,
                     "failure_type": None,
@@ -842,6 +923,9 @@ def call_llm(
                     "retry_trace": retry_trace,
                     "response_received": True,
                     "structured_output": structured_output,
+                    "service_tier_requested": service_tier,
+                    "service_tier_observed": service_tier_observed,
+                    "cache_strategy_applied": cache_strategy_applied,
                 },
             }
         except Exception as exc:
@@ -869,6 +953,8 @@ def call_llm(
             last_failure_meta = {
                 "provider": provider,
                 "model_id": model_id,
+                "model_id_requested": model_id_requested,
+                "_resolved_from_alias": _resolved_from_alias,
                 "endpoint_base_url": base_url,
                 "endpoint_effective": deps.endpoint_effective(endpoint_url),
                 **deps.endpoint_fingerprint(endpoint_url),
