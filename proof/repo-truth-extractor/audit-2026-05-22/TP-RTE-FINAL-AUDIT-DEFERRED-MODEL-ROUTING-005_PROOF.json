@@ -80,7 +80,8 @@
   },
   "residual_risks": [
     "No live provider call was run; model acceptance, account availability, and organization entitlements remain unverified.",
-    "Hardcoded v5 tuple ladders can select new direct models but cannot attach service_tier/reasoning_effort unless the route comes from model_map/phase contracts."
+    "Hardcoded v5 tuple ladders (ROUTING_LADDERS, OPTIMAL_*_LADDER, BALANCED_GROK_OPENROUTER_*_LADDER, GEMINI_PRIMARY_*_LADDER in run_extraction_v5.py) carry only (provider, model_id, api_key_env) and cannot attach service_tier/reasoning_effort. When phase resolution lands on a tuple-ladder dispatch with step_contract=None, gpt-5.5 calls omit service_tier=flex and grok-4.3 calls omit reasoning_effort=low. Mitigation: model_map/phase contract paths cover all step_id-bound phases; the legacy ladders only fire on no-contract fallback.",
+    "Runtime does not gate reasoning_effort/service_tier by provider+model capability; misconfigured routes (e.g. reasoning_effort on a non-reasoning model) will fail at the wire. Mitigation: round-2 regression test pins exact route counts (171 flex / 50 codex / 7 mini / 260 grok-4.3) in tests/regression/audit_2026_05_22/test_fa_opt_model_refresh.py."
   ],
   "route_inventory_after_special_counts": {
     "openai/gpt-5.3-codex": 50,
@@ -161,6 +162,84 @@
       "verification_mode": "LIVE_OFFICIAL_DOCS"
     }
   ],
+  "post_fix_validation": {
+    "review_round": 2,
+    "review_source": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/685#issuecomment-claude-code-review",
+    "findings_addressed": [
+      {
+        "id": "H1",
+        "severity": "HIGH",
+        "title": "optimal.extract ladder had duplicate fallback tuple",
+        "fix_commit": "903022fc5",
+        "status": "RESOLVED"
+      },
+      {
+        "id": "H2-Mode-B",
+        "severity": "HIGH",
+        "title": "_contract_route_entry_for_provider_model only searched primary_routes; repair/sidefill selections lost request_options",
+        "fix_commit": "8f62616d6",
+        "status": "RESOLVED",
+        "note": "Resolved by _route_entry_for_ladder_hop threading inline route entries through each ladder hop, bypassing the primary-only fallback for the happy path."
+      },
+      {
+        "id": "M1",
+        "severity": "MEDIUM",
+        "title": "reasoning_effort: \"none\" was forwarded literally to xAI; documented enum is low|high",
+        "fix_commit": "903022fc5",
+        "status": "RESOLVED",
+        "note": "normalize_route_request_options now drops case+whitespace-insensitive \"none\". 139 grok-4.3 YAML rows continue to declare reasoning_effort: none for documentation; the runtime treats the literal as absence of the field."
+      },
+      {
+        "id": "M2",
+        "severity": "MEDIUM",
+        "title": "ROUTE_REQUEST_OPTION_KEYS duplicated across 5 files; 2 near-duplicate normalize helpers",
+        "fix_commit": "903022fc5",
+        "status": "RESOLVED",
+        "note": "Constant + helper extracted to lib/route_options.py. 5 callsites now import; runner and batch helpers alias the shared function. test_route_options_constant_lives_in_shared_module_and_is_reused includes a source-file scan that fails on any future reintroduction."
+      },
+      {
+        "id": "L1",
+        "severity": "LOW",
+        "title": "No provider/model capability gate for reasoning_effort/service_tier",
+        "fix_commit": null,
+        "status": "DEFERRED_AS_RESIDUAL",
+        "note": "Captured in residual_risks[2]. Follow-up TP recommended; mitigation today is pinned route counts."
+      },
+      {
+        "id": "L2",
+        "severity": "LOW",
+        "title": "test_llm_runtime_forwards_request_options_to_sdk_chat_completion stubbed build_chat_payload",
+        "fix_commit": "1cefa6fdc",
+        "status": "RESOLVED",
+        "note": "test_full_chain_build_chat_payload_to_sdk_kwargs invokes the real build_chat_payload + call_llm chain and asserts both the happy path forwards options and the literal \"none\" never reaches the SDK."
+      }
+    ],
+    "test_pass_count_before_round_2": 12,
+    "test_pass_count_after_round_2": 18,
+    "tests_added": [
+      "test_route_request_options.py::test_normalize_route_request_options_drops_literal_none_case_insensitive",
+      "test_route_request_options.py::test_route_options_constant_lives_in_shared_module_and_is_reused",
+      "test_route_request_options.py::test_optimal_extract_ladder_has_distinct_fallback_entries",
+      "test_route_request_options.py::test_grok_4_3_routes_with_reasoning_effort_none_normalize_to_empty",
+      "test_route_request_options.py::test_full_chain_build_chat_payload_to_sdk_kwargs",
+      "tests/regression/audit_2026_05_22/test_fa_opt_model_refresh.py::test_grok_4_3_none_routes_normalize_to_empty_request_options"
+    ],
+    "files_touched": [
+      "services/repo-truth-extractor/lib/route_options.py",
+      "services/repo-truth-extractor/llm_runtime.py",
+      "services/repo-truth-extractor/lib/batch_clients.py",
+      "services/repo-truth-extractor/lib/phase_contract_map.py",
+      "services/repo-truth-extractor/lib/structured_output_contracts.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/test_route_request_options.py",
+      "services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_opt_model_refresh.py",
+      "proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROOF.json"
+    ],
+    "commit_shas": [
+      "1cefa6fdc",
+      "903022fc5"
+    ]
+  },
   "task_packet_id": "TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005",
   "validation": [
     {
