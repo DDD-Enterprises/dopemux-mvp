@@ -2,6 +2,21 @@ version: RTE_PRICING_V2
 source: config/pricing.yaml
 generated_note: Active benchmark pricing truth catalog. Unknown or stale entries remain explicit.
 models:
+  openai/gpt-5.5:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://developers.openai.com/api/docs/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 5.00
+    output_unit_cost: 30.00
+    cached_input_cost: null
+    batch_discount: 0.50
+    surface_scope: direct_provider
+    effective_start_date: "2026-05-23"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 5.00
+    output_cost_per_m: 30.00
   openai/gpt-5.4:
     pricing_source_type: first_party_provider_pricing
     pricing_source_ref: https://openai.com/api/pricing/
@@ -32,6 +47,21 @@ models:
     pricing_status: PRICED_CONFIRMED
     input_cost_per_m: 0.75
     output_cost_per_m: 4.50
+  openai/gpt-5.3-codex:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://developers.openai.com/api/docs/models/gpt-5.3-codex
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 1.75
+    output_unit_cost: 14.00
+    cached_input_cost: 0.175
+    batch_discount: 0.50
+    surface_scope: direct_provider
+    effective_start_date: "2026-02-24"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 1.75
+    output_cost_per_m: 14.00
   openrouter/openai/gpt-5.4:
     pricing_source_type: aggregator_pricing
     pricing_source_ref: https://openrouter.ai/openai/gpt-5.4
@@ -93,6 +123,22 @@ models:
     pricing_status: UNPRICED_UNKNOWN
     input_cost_per_m: null
     output_cost_per_m: null
+  xai/grok-4.3:
+    pricing_source_type: first_party_provider_pricing
+    pricing_source_ref: https://docs.x.ai/developers/models/grok-4.3
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 1.25
+    output_unit_cost: 2.50
+    cached_input_cost: 0.20
+    reasoning_cost: null
+    batch_discount: null
+    surface_scope: direct_provider
+    effective_start_date: "2026-05-23"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 1.25
+    output_cost_per_m: 2.50
   xai/grok-4.20-beta-0309-reasoning:
     pricing_source_type: manual_benchmark_research
     pricing_source_ref: docs/03-reference/extraction-wizard.md
