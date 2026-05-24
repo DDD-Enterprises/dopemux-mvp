@@ -1,0 +1,186 @@
+{
+  "id": "TP-RTE-COSTPROFILE-E9-TESTS-001",
+  "project": "dopemux-mvp",
+  "target": "Add the remaining integration and edge-case test coverage for the cost-profile + optimizer redesign: end-to-end (cost_profile + cell_alias + tag delta + impact_class + service_tier + cached_input + batch discount) all flowing correctly from CLI → cfg → model_map.yaml v3 → call_llm → spend_ledger. Catches integration gaps the earlier packet-scoped tests can't see.",
+  "invariants": [
+    "Do not modify production code in this packet. If a test reveals a bug, file a follow-up TP rather than fixing inline (preserves the test-only commit boundary).",
+    "All tests must run under RTE_DISABLE_LIVE_LLM_IN_TESTS=1.",
+    "Use the existing mocking patterns from test_structured_output_provider_modes.py — do not introduce new mocking frameworks.",
+    "Test fixture model_map.yaml v3 files live under tests/fixtures/ rather than mutating the real promptsets/v4/model_map.yaml.",
+    "Preserve Dopemux split authority boundaries per AGENTS.md §6."
+  ],
+  "depends_on": [
+    "TP-RTE-COSTPROFILE-E8-YAML-V3-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "rte-cost-profile-redesign",
+    "base_branch": "main",
+    "parent_tp_id": "TP-RTE-COSTPROFILE-E8-YAML-V3-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-costprofile-e9-tests-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "test(rte): cost-profile redesign integration coverage (E9)",
+    "allowlist": [
+      "services/repo-truth-extractor/tests/test_cost_profile_e2e_value_default.py",
+      "services/repo-truth-extractor/tests/test_cost_profile_e2e_economy.py",
+      "services/repo-truth-extractor/tests/test_cost_profile_e2e_quality.py",
+      "services/repo-truth-extractor/tests/test_cost_profile_e2e_experimental.py",
+      "services/repo-truth-extractor/tests/test_legacy_routing_policy_deprecation_e2e.py",
+      "services/repo-truth-extractor/tests/test_cost_profile_spend_ledger_integration.py",
+      "services/repo-truth-extractor/tests/test_cost_profile_anthropic_cache_e2e.py",
+      "services/repo-truth-extractor/tests/test_cost_profile_batch_discount_e2e.py",
+      "services/repo-truth-extractor/tests/fixtures/model_map_v3_minimal.yaml",
+      "services/repo-truth-extractor/tests/fixtures/model_map_v3_with_overrides.yaml",
+      "services/repo-truth-extractor/tests/fixtures/pricing_minimal.yaml",
+      "task-packets/generated/TP-RTE-COSTPROFILE-E9-TESTS-001.json",
+      "task-packets/INDEX.md",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E9-TESTS-001/PROOF.json",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E9-TESTS-001/sha256sums.txt"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-RTE-COSTPROFILE-E9-TESTS-001.json >/dev/null",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_cost_profile_e2e_value_default.py services/repo-truth-extractor/tests/test_cost_profile_e2e_economy.py services/repo-truth-extractor/tests/test_cost_profile_e2e_quality.py services/repo-truth-extractor/tests/test_cost_profile_e2e_experimental.py services/repo-truth-extractor/tests/test_legacy_routing_policy_deprecation_e2e.py services/repo-truth-extractor/tests/test_cost_profile_spend_ledger_integration.py services/repo-truth-extractor/tests/test_cost_profile_anthropic_cache_e2e.py services/repo-truth-extractor/tests/test_cost_profile_batch_discount_e2e.py -v",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_cost_profiles.py services/repo-truth-extractor/tests/test_spend_ledger_optimizers.py services/repo-truth-extractor/tests/test_pricing_catalog.py services/repo-truth-extractor/tests/test_spend_ledger.py -v",
+      "python -m json.tool proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E9-TESTS-001/PROOF.json >/dev/null",
+      "cd proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E9-TESTS-001 && shasum -a 256 -c sha256sums.txt",
+      "git diff --check",
+      "git diff --cached --check"
+    ]
+  },
+  "pr": {
+    "title": "test(rte): cost-profile redesign integration coverage (E9)",
+    "body": "## Summary\n- Adds 8 integration test files covering end-to-end flow per cost profile (value-default / economy / quality / experimental).\n- Covers spend-ledger integration (effective cost matches expected after service_tier × cache × batch math), Anthropic cache_control passthrough via OR, batch-discount accounting, and legacy --routing-policy deprecation path.\n- Adds three test fixtures (minimal v3 yaml, v3 yaml with all 6 overrides, minimal pricing yaml) so tests don't depend on the real promptsets/v4/model_map.yaml.\n\n## Scope\nTest-only. No production code changes. If a test reveals a bug, a follow-up TP fixes it.\n\n## Validation\nAll 8 new integration test files pass under RTE_DISABLE_LIVE_LLM_IN_TESTS=1. Existing cost_profiles + spend_ledger_optimizers + pricing_catalog + spend_ledger suites remain green.\n\n## NOT_RUN\n- Live provider calls.\n- F verification packet (post-merge bounded-lane dry run).\n\n## Residual Risks / UNKNOWNs\n- Mock-based integration testing can't catch provider-side behavior drift (e.g., OpenAI silently ignoring service_tier on a model that doesn't support it). F packet's bounded-lane dry run partially covers.\n\n@codex review",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: verify E3, E4-FINISH, E7, E8 packets all merged. Verify worktree clean.",
+      "commands": [
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short",
+        "git log --oneline | grep -E 'E3-CONTRACTS|E4-FINISH|E7-LADDERS|E8-YAML' | head -10"
+      ],
+      "validation": [
+        "Working tree clean.",
+        "All four preceding packets visible in ancestry."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write the three test fixtures under tests/fixtures/: minimal v3 yaml (4 cells, 4 step IDs across 4 profiles), v3 with all 6 overrides (covers Z0/C10/S12/T0/T1/T3 patterns), minimal pricing yaml (5 models with full optimizer fields).",
+      "validation": [
+        "Fixtures parse via yaml.safe_load.",
+        "Each fixture has its own docstring header explaining what test scenarios it covers."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Write test_cost_profile_e2e_value_default.py (10+ tests): full path CLI → cfg → call_llm → spend_ledger for value-default. Covers: cell resolution returns OR-routed primary for CE/medium and CE/high (Phase D consensus); cached_input pricing applied; flex tier on EXTRACT bulk lanes; standard tier on SYNTH; spend ledger total matches computed expected cost; PROOF_PACK records cost_profile.",
+      "validation": [
+        "Tests pass.",
+        "Each test asserts on an effective dollar amount (not just shape) to catch silent pricing drift."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Write test_cost_profile_e2e_economy.py (8+ tests): economy = flex everywhere supported, cheap models, escalation_max_hops=1, max_cost_usd_default=$5.00; verify gpt-5.1-codex-mini on CE/medium primary; haiku 4.5 on SYNTH/high; sonnet 4.5 on SYNTH/critical; default cost cap applies if --max-cost-usd omitted.",
+      "validation": [
+        "Tests pass."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Write test_cost_profile_e2e_quality.py (8+ tests): quality = priority tier on OpenAI, opus 4.6 primary on SYNTH/critical (not 4.7 — per Phase D consensus), escalation_max_hops=3, batch disabled, opus 4.7 only via cell_alias override; verify --model-alias QUALITY_SYNTH_CRITICAL_MODEL=anthropic/claude-opus-4.7 propagates.",
+      "validation": [
+        "Tests pass."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Write test_cost_profile_e2e_experimental.py (6+ tests): experimental = bleed-edge frontier (gpt-5.5-pro, claude-opus-4.7, gemini-3.5-flash), max_cost_usd_default=$25.00, warning surfaced in cfg.cost_profile_notes.",
+      "validation": [
+        "Tests pass.",
+        "Warning string is asserted on so docs / cfg drift is caught."
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Write test_legacy_routing_policy_deprecation_e2e.py (8+ tests covering: every legacy policy name resolves to expected new cost profile per LEGACY_ROUTING_POLICY_TO_COST_PROFILE; deprecation warning emitted on use; --cost-profile wins when both set; warning message names the recommended new flag).",
+      "validation": [
+        "Tests pass.",
+        "Warning capture uses caplog fixture."
+      ]
+    },
+    {
+      "id": "S8",
+      "task": "Write test_cost_profile_spend_ledger_integration.py (10+ tests covering: accumulate() with cached_input_tokens reduces final cost; service_tier=flex on accumulate applies multiplier; is_batch=True on accumulate applies discount; tier × cache stacking math matches compute_optimized_cost; preventive cap (make_projected_cost_check) blocks before the call; per-cell cache_hit_rate surfaces in spend_ledger.json).",
+      "validation": [
+        "Tests pass.",
+        "Effective $ values asserted to 4 decimal places."
+      ]
+    },
+    {
+      "id": "S9",
+      "task": "Write test_cost_profile_anthropic_cache_e2e.py (6+ tests): Anthropic via OR with cache_control markers — first call writes cache (priced at 1.25x or 2.0x input rate); subsequent call within 5min reads cache (priced at 0.1x input rate); cache discount surfaces in spend ledger; mocked Anthropic usage response with cache_read_input_tokens parsed correctly into cached_tokens meta field.",
+      "validation": [
+        "Tests pass.",
+        "First-call vs subsequent-call cost difference matches expected ratio (~10x reduction)."
+      ]
+    },
+    {
+      "id": "S10",
+      "task": "Write test_cost_profile_batch_discount_e2e.py (5+ tests): batch route metadata triggers is_batch=True in spend_ledger; final cost 50% of standard; batch_multiplier surfaces in cost_breakdown; OpenRouter batch raises UnsupportedBatchProvider (regression of audit-confirmed behavior); xAI batch unverified flag warns operator.",
+      "validation": [
+        "Tests pass."
+      ]
+    },
+    {
+      "id": "S11",
+      "task": "Run pal/codereview + pal/precommit.",
+      "validation": [
+        "Clean or info-level only."
+      ]
+    },
+    {
+      "id": "S12",
+      "task": "Commit allowlisted files; push; open PR.",
+      "validation": [
+        "git diff after commit empty.",
+        "PR body includes Summary / Scope / Validation / NOT_RUN / Residual Risks."
+      ]
+    },
+    {
+      "id": "S13",
+      "task": "Emit PROOF.json + sha256sums.txt.",
+      "expected_files": [
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E9-TESTS-001/PROOF.json",
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E9-TESTS-001/sha256sums.txt"
+      ],
+      "validation": [
+        "PROOF.json parses; sha256sums.txt verifies."
+      ]
+    }
+  ]
+}
