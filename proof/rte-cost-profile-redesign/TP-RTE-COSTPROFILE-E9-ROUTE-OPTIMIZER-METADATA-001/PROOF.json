@@ -1,0 +1,127 @@
+{
+  "schema": "dopemux.proof.v1",
+  "packet_id": "TP-RTE-COSTPROFILE-E9-ROUTE-OPTIMIZER-METADATA-001",
+  "project": "Repo Truth Extractor",
+  "generated_at_utc": "2026-05-24T18:19:34Z",
+  "worktree": "/Users/hue/.codex/worktrees/rte-costprofile-e9-tests-002",
+  "branch": "codex/rte-costprofile-e9-route-optimizer-metadata-fix-001",
+  "base_branch": "claude/goofy-haibt-fc568e",
+  "base_head_sha": "c36515fdfd36b858219b097a45c4d81fbcbe1a69",
+  "implementation_commit_sha": "4713253a2b0263a44fbaffaa92791d86336ab9cc",
+  "repo_identity": {
+    "root": "/Users/hue/.codex/worktrees/rte-costprofile-e9-tests-002",
+    "remote_origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker": ".dopetaskroot"
+  },
+  "why_this_packet_exists": [
+    "E9 is explicitly test-only and cannot modify production code.",
+    "Pre-E9 tracing showed run_extraction_v5.call_llm did not accept or forward service_tier, prompt_cache_directives, or disabled_providers to llm_runtime.call_llm.",
+    "The selected model_map v3 route row carried service_tier and cache_strategy, but run_extraction_v5 only consumed strict-output fields from the route entry.",
+    "Projected, reserved, and runtime spend accounting used cfg.default_service_tier unless a provider echoed service_tier, so route-specific service_tier was not priced before E9 integration coverage."
+  ],
+  "files_changed": [
+    "services/repo-truth-extractor/lib/structured_output_contracts.py",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/tests/test_run_extraction_v5_route_optimizer_metadata.py",
+    "task-packets/generated/TP-RTE-COSTPROFILE-E9-ROUTE-OPTIMIZER-METADATA-001.json",
+    "task-packets/INDEX.md",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E9-ROUTE-OPTIMIZER-METADATA-001/PROOF.json",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E9-ROUTE-OPTIMIZER-METADATA-001/sha256sums.txt"
+  ],
+  "behavior_changes": [
+    "structured_output_contracts.route_entries_for_stage now normalizes cache_strategy alongside service_tier.",
+    "run_extraction_v5.call_llm now forwards service_tier, prompt_cache_directives, and disabled_providers to llm_runtime.call_llm.",
+    "run_extraction_v5._route_attempt now resolves the selected route entry for both strict and non-strict paths, derives route service_tier/cache directives, and passes them into sync LLM calls.",
+    "run_extraction_v5 projected, reserved, and runtime spend accounting accepts route service_tier so route metadata is priced when providers do not echo the tier.",
+    "Batch request metadata now includes route service_tier/cache_strategy/cache_strategy_applied so the existing batch client can put supported service_tier into the wire body and proofs retain the optimizer intent."
+  ],
+  "validation": {
+    "red_observed": [
+      {
+        "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_route_optimizer_metadata.py -v",
+        "exit_code": 1,
+        "observed": "Initial RED run: 7 failed. Failures covered missing cache_strategy in route rows, call_llm unexpected service_tier kwarg, missing route optimizer helpers, and spend preview/runtime accounting rejecting route service_tier."
+      }
+    ],
+    "pass": [
+      {
+        "command": "python -m json.tool task-packets/generated/TP-RTE-COSTPROFILE-E9-ROUTE-OPTIMIZER-METADATA-001.json >/dev/null",
+        "exit_code": 0,
+        "observed": "packet JSON parsed"
+      },
+      {
+        "command": "python - <<'PY' ... Draft7Validator(dopetask-canonical-spec.json) ... PY",
+        "exit_code": 0,
+        "observed": "packet validated against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      },
+      {
+        "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_route_optimizer_metadata.py -v",
+        "exit_code": 0,
+        "observed": "7 passed, 1 PytestConfigWarning for unknown asyncio_mode"
+      },
+      {
+        "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_route_optimizer_metadata.py services/repo-truth-extractor/tests/test_runtime_spend_optimizer_metadata.py services/repo-truth-extractor/tests/test_llm_runtime_service_tier_passthrough.py services/repo-truth-extractor/tests/test_structured_output_contracts_cache_directives.py services/repo-truth-extractor/tests/test_structured_output_contracts_service_tier.py -v",
+        "exit_code": 0,
+        "observed": "46 passed, 1 PytestConfigWarning for unknown asyncio_mode"
+      },
+      {
+        "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_model_map_v3_tag_routing_deltas.py services/repo-truth-extractor/tests/test_phase_d_contract_map.py services/repo-truth-extractor/tests/test_phase_interaction.py services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py -v",
+        "exit_code": 0,
+        "observed": "67 passed, 1 PytestConfigWarning for unknown asyncio_mode"
+      },
+      {
+        "command": "python -m compileall -q services/repo-truth-extractor/lib/structured_output_contracts.py services/repo-truth-extractor/run_extraction_v5.py",
+        "exit_code": 0,
+        "observed": "compileall passed"
+      },
+      {
+        "command": "git diff --check",
+        "exit_code": 0,
+        "observed": "unstaged diff whitespace clean before staging implementation"
+      },
+      {
+        "command": "git diff --cached --check",
+        "exit_code": 0,
+        "observed": "staged implementation diff whitespace clean"
+      },
+      {
+        "command": "pre-commit run --files $(git diff --cached --name-only)",
+        "exit_code": 0,
+        "observed": "configured hooks passed on staged implementation files"
+      },
+      {
+        "command": "python -m json.tool proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E9-ROUTE-OPTIMIZER-METADATA-001/PROOF.json >/dev/null",
+        "exit_code": 0,
+        "observed": "proof JSON parsed"
+      }
+    ],
+    "not_run": [
+      "Live LLM/provider calls",
+      "Full RTE suite",
+      "E9 test-only packet",
+      "F verification packet",
+      "GitHub PR CI before PR creation"
+    ]
+  },
+  "pal": {
+    "codereview": {
+      "status": "PASS_LOCAL_INTERNAL",
+      "continuation_id": "2c166f67-25b3-40f6-8fe6-16d1f0970c3f",
+      "issues_found": 0
+    },
+    "precommit": {
+      "status": "PASS_LOCAL_INTERNAL",
+      "continuation_id": "4b76c0b5-7589-40ad-ae12-906d5731137b",
+      "issues_found": 0
+    }
+  },
+  "residual_risks": [
+    "Provider-side service_tier and cache behavior was not live-verified in this packet.",
+    "Prompt cache directives are locally derived and passed to llm_runtime observability; provider-specific wire semantics remain an E9/F verification surface.",
+    "Full RTE suite and final F verification were not run in this prerequisite packet."
+  ],
+  "rollback_plan": [
+    "Before merge: close the prerequisite PR or revert commit 4713253a2b0263a44fbaffaa92791d86336ab9cc plus its proof commit.",
+    "After merge: revert the prerequisite PR before resuming E9 if CI or review finds a blocker."
+  ]
+}
