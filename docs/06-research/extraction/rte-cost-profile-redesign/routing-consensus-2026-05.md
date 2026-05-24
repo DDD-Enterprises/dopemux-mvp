@@ -1,3 +1,15 @@
+---
+id: routing-consensus-2026-05
+title: Routing Consensus 2026 05
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-24'
+last_review: '2026-05-24'
+next_review: '2026-08-22'
+prelude: Routing Consensus 2026 05 (reference) for dopemux documentation and developer
+  workflows.
+---
 # Routing Design Consensus — May 2026 (Final)
 
 **Phase D output** — two consensus sessions:
