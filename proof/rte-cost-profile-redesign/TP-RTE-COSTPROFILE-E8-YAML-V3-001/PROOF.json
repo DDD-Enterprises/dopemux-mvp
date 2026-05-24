@@ -2,20 +2,22 @@
   "schema": "dopemux.proof.v1",
   "packet_id": "TP-RTE-COSTPROFILE-E8-YAML-V3-001",
   "project": "Repo Truth Extractor",
-  "generated_at_utc": "2026-05-24T10:03:08Z",
+  "generated_at_utc": "2026-05-24T10:07:24Z",
   "worktree": "/Users/hue/code/dopemux-mvp/.claude/worktrees/goofy-haibt-fc568e",
   "branch": "codex/rte-costprofile-e8-yaml-v3-001",
   "base_branch": "codex/rte-costprofile-e7-ladders-failover-001",
   "base_head_sha": "c8b3a67c5352f023dc112ed3c58a22556d273ea8",
   "implementation_commit_sha": "5704f501e8fed2409a8185fcf657bc3b1fb007c2",
-  "proof_commit_sha": "PENDING_PROOF_COMMIT",
+  "initial_proof_commit_sha": "93c6a673926b7aed825b53aa27c7643cd076a604",
+  "proof_commit_sha": "SELF_REFERENTIAL_SEE_GIT_HISTORY",
   "pr": {
-    "url": "PENDING_PR_CREATION",
-    "number": null,
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/691",
+    "number": 691,
     "base": "codex/rte-costprofile-e7-ladders-failover-001",
     "head": "codex/rte-costprofile-e8-yaml-v3-001",
-    "ci_status": "PENDING_PR_CREATION",
-    "review_thread_status": "PENDING_PR_CREATION"
+    "head_sha_at_pr_creation": "93c6a673926b7aed825b53aa27c7643cd076a604",
+    "ci_status_at_pr_creation": "PENDING",
+    "review_thread_status_at_pr_creation": "NO_REVIEW_THREADS_OBSERVED"
   },
   "repo_identity": {
     "root": "/Users/hue/code/dopemux-mvp/.claude/worktrees/goofy-haibt-fc568e",
