@@ -140,7 +140,7 @@ def _refresh_client_state(client: GitHubClient, pr_id: int) -> None:
 def _gemini_ci_remediation_command(prompt: str) -> List[str]:
     # Gemini CLI no longer accepts --skill in headless mode, so the runbook
     # must live in the prompt and the invocation stays prompt-only.
-    return ["gemini", "--prompt", prompt, "--yolo"]
+    return ["gemini", "--skip-trust", "--prompt", prompt, "--yolo"]
 
 
 _GEMINI_AUTH_ENV_ALLOWLIST = (
@@ -153,6 +153,7 @@ _GEMINI_AUTH_ENV_ALLOWLIST = (
     "GOOGLE_CLOUD_LOCATION",
     "GEMINI_MODEL",
     "GEMINI_DEBUG",
+    "GEMINI_CLI_TRUST_WORKSPACE",
 )
 
 
