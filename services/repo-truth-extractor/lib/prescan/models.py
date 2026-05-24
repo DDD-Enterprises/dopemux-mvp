@@ -80,8 +80,12 @@ DEFAULT_OPERATOR_LOCAL_EXCLUDE_GLOBS = (
 DEFAULT_SECRET_BEARING_EXCLUDE_GLOBS = (
     ".env",
     ".env.*",
+    ".env-*",
+    ".env_*",
     "**/.env",
     "**/.env.*",
+    "**/.env-*",
+    "**/.env_*",
     "*.pem",
     "**/*.pem",
     "*.key",

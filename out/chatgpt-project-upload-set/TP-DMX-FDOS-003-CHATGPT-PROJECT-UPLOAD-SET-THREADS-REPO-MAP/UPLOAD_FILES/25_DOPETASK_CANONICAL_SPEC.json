@@ -1,0 +1,271 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "dopeTask TaskPacket - strict repo policy",
+  "description": "Stricter Task Packet contract for repo-bound, series-driven execution with mandatory repo identity binding and Gemini PAL chaining.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "project": {
+      "type": "string"
+    },
+    "target": {
+      "type": "string"
+    },
+    "invariants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "depends_on": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "repo_binding": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        },
+        "repo_marker": {
+          "type": "string"
+        },
+        "origin_hint": {
+          "type": "string"
+        },
+        "require_identity_match": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "project_id",
+        "repo_marker",
+        "require_identity_match"
+      ],
+      "additionalProperties": false
+    },
+    "series": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "base_branch": {
+          "type": "string"
+        },
+        "parent_tp_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "final_packet": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "base_branch",
+        "parent_tp_id",
+        "final_packet"
+      ],
+      "additionalProperties": false
+    },
+    "execution": {
+      "type": "object",
+      "properties": {
+        "agent": {
+          "type": "string",
+          "enum": [
+            "gemini",
+            "codex",
+            "vibe",
+            "shell"
+          ]
+        },
+        "branch": {
+          "type": "string"
+        },
+        "base_branch": {
+          "type": "string"
+        },
+        "stacked_because": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "agent"
+      ],
+      "additionalProperties": false
+    },
+    "commit": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "allowlist": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "verify": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "message",
+        "allowlist"
+      ],
+      "additionalProperties": false
+    },
+    "pr": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "base": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "body",
+        "base"
+      ],
+      "additionalProperties": false
+    },
+    "pal_chain": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "enabled",
+        "steps"
+      ],
+      "additionalProperties": false
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "task": {
+            "type": "string"
+          },
+          "requirements": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "commands": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "expected_files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "validation": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "context_files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "task",
+          "validation"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "id",
+    "project",
+    "target",
+    "repo_binding",
+    "series",
+    "commit",
+    "pr",
+    "steps"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "execution": {
+            "properties": {
+              "agent": {
+                "const": "gemini"
+              }
+            },
+            "required": [
+              "agent"
+            ]
+          }
+        },
+        "required": [
+          "execution"
+        ]
+      },
+      "then": {
+        "required": [
+          "pal_chain"
+        ],
+        "properties": {
+          "pal_chain": {
+            "properties": {
+              "enabled": {
+                "const": true
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

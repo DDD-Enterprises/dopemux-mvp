@@ -1,0 +1,127 @@
+{
+  "id": "TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor deferred model routing refresh",
+  "invariants": [
+    "Preserve RTE source/runtime truth over generated audit artifacts.",
+    "Do not run live provider calls or live extraction.",
+    "Preserve direct request options as explicit route metadata only for allowlisted fields.",
+    "Keep the existing PR #685 branch and do not create a duplicate PR."
+  ],
+  "depends_on": [
+    "TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-FINAL-AUDIT-MODEL-REFRESH",
+    "base_branch": "main",
+    "parent_tp_id": "TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-final-audit-model-refresh-004",
+    "base_branch": "main",
+    "stacked_because": "Update existing draft PR #685 after origin/main advanced."
+  },
+  "commit": {
+    "message": "fix(rte): resolve deferred model routing",
+    "allowlist": [
+      "config/pricing.yaml",
+      "proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROOF.json",
+      "proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROPOSED_CHANGES.json",
+      "proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_ROUTE_INVENTORY_AFTER.json",
+      "proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_ROUTE_INVENTORY_BEFORE.json",
+      "services/repo-truth-extractor/benchmarking/pricing/catalog.py",
+      "services/repo-truth-extractor/lib/batch_clients.py",
+      "services/repo-truth-extractor/lib/phase_contract_map.py",
+      "services/repo-truth-extractor/lib/spend_ledger.py",
+      "services/repo-truth-extractor/lib/structured_output_contracts.py",
+      "services/repo-truth-extractor/llm_runtime.py",
+      "services/repo-truth-extractor/promptsets/v4/model_map.yaml",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_opt_model_refresh.py",
+      "services/repo-truth-extractor/tests/test_route_request_options.py",
+      "task-packets/generated/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005.json"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005.json",
+      "python -m json.tool proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROOF.json",
+      "schema validation against dopetask-canonical-spec.json",
+      "focused RTE route/runtime tests",
+      "git diff --check",
+      "pre-commit on touched files if safe"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): resolve deferred model routing",
+    "body": "## Summary\n- resolve deferred RTE service_tier and reasoning_effort route fields\n- move selected OpenAI routes from OpenRouter to direct OpenAI and update current model choices\n- replace Grok 4.20 beta aliases with Grok 4.3 plus explicit reasoning effort\n- add focused route/runtime forwarding tests and proof artifacts\n\n## Validation\n- no live provider calls or live extraction\n- targeted route inventory and request-option tests\n- task packet/proof JSON validation and schema validation\n- git diff whitespace and pre-commit on touched files",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "tracer",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight existing PR worktree and refresh branch from origin/main.",
+      "validation": [
+        "Worktree path, branch, remote, clean state, and merge from origin/main are recorded."
+      ],
+      "context_files": [
+        "AGENTS.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Preserve service_tier and reasoning_effort through route contracts and runtime request construction.",
+      "validation": [
+        "Focused unit tests prove payload, SDK, HTTP, batch JSONL, and phase contract preservation."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/llm_runtime.py",
+        "services/repo-truth-extractor/lib/batch_clients.py",
+        "services/repo-truth-extractor/lib/phase_contract_map.py",
+        "services/repo-truth-extractor/lib/structured_output_contracts.py"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Update model_map routes and mirrored v5 hardcoded ladders for the deferred model migrations.",
+      "validation": [
+        "Route inventory tests prove removed aliases, direct OpenAI counts, Flex service_tier count, and Grok reasoning_effort counts."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/promptsets/v4/model_map.yaml",
+        "services/repo-truth-extractor/run_extraction_v5.py"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Update proof, pricing adjacency, and targeted regression coverage.",
+      "validation": [
+        "Proof JSON files parse, task packet validates against schema, pricing config parses through catalog, and targeted pytest commands pass."
+      ],
+      "context_files": [
+        "config/pricing.yaml",
+        "services/repo-truth-extractor/benchmarking/pricing/catalog.py",
+        "services/repo-truth-extractor/lib/spend_ledger.py"
+      ]
+    }
+  ]
+}
