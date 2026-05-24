@@ -249,6 +249,27 @@ def _response_summary_metadata(
             result["output_tokens"] = usage.get("output_tokens")
         if "total_tokens" not in result and usage.get("total_tokens") is not None:
             result["total_tokens"] = usage.get("total_tokens")
+        # Capture cached_tokens for downstream spend ledger optimizer math.
+        # Providers report this differently:
+        #   - OpenAI: usage.prompt_tokens_details.cached_tokens
+        #   - Anthropic: usage.cache_read_input_tokens + cache_creation_input_tokens
+        #   - Gemini: usage.cached_content_token_count
+        # Normalize to a single `cached_tokens` field. Cache write tokens
+        # (Anthropic) are surfaced separately as `cache_write_tokens`.
+        cached_tokens = usage.get("cached_tokens")
+        if cached_tokens is None:
+            details = usage.get("prompt_tokens_details")
+            if isinstance(details, dict):
+                cached_tokens = details.get("cached_tokens")
+        if cached_tokens is None:
+            cached_tokens = usage.get("cache_read_input_tokens")  # Anthropic
+        if cached_tokens is None:
+            cached_tokens = usage.get("cached_content_token_count")  # Gemini
+        if cached_tokens is not None:
+            result["cached_tokens"] = cached_tokens
+        cache_write = usage.get("cache_creation_input_tokens")  # Anthropic
+        if cache_write is not None:
+            result["cache_write_tokens"] = cache_write
     return result
 
 
@@ -358,7 +379,19 @@ def call_llm(
     trace_context: Optional[Dict[str, Any]] = None,
     lifecycle_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
     request_options_override: Optional[Dict[str, Any]] = None,
+    *,
+    service_tier: Optional[str] = None,
+    prompt_cache_directives: Optional[Dict[str, Any]] = None,
+    disabled_providers: Optional[set] = None,
 ) -> Dict[str, Any]:
+    # Manual kill-switch (--disable-provider CLI). Per Phase D consensus this
+    # replaces the rejected circuit-breaker design: operators flip a flag
+    # rather than the runtime detecting outages itself.
+    if disabled_providers and str(provider).strip().lower() in disabled_providers:
+        raise RuntimeError(
+            f"Provider {provider!r} is administratively disabled via --disable-provider; "
+            f"caller must select a different route."
+        )
     if deps.live_llm_calls_blocked_for_tests():
         message = (
             f"Live LLM call blocked in test context provider={provider} model={model_id}. "
@@ -731,6 +764,16 @@ def call_llm(
                 # scalar into chat kwargs forwarded to the provider SDK.
                 for option_key, option_value in normalize_route_request_options(payload).items():
                     chat_kwargs[option_key] = option_value
+                # Inject service_tier for OpenAI (and OpenRouter passthrough where
+                # supported). xAI does not document a service_tier parameter
+                # so we skip it there. Accepted values: "default" | "flex" |
+                # "priority" | "auto". None means use provider default.
+                if (
+                    service_tier
+                    and provider in ("openai", "openrouter")
+                    and str(service_tier).lower() in ("default", "flex", "priority", "auto")
+                ):
+                    chat_kwargs["service_tier"] = str(service_tier).lower()
                 response = client.chat.completions.create(**chat_kwargs)
                 status_code = 200
                 response_text = deps.extract_text_from_chat_completion(response)
