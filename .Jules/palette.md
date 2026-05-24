@@ -105,3 +105,7 @@
 ## 2026-05-22 - [Tactile Confirmation for Information Copying]
 **Learning:** For AI-generated content (like recommendations), providing a simple "Copy" icon isn't enough. A multi-stage feedback loop—swapping icons (Copy -> Check), updating Tooltips ("Copy" -> "Copied!"), and adding a brief scale-and-glow animation (`copy-success`)—provides the tactile reinforcement users need to feel confident the action succeeded without checking another app.
 **Action:** Implement three-tier feedback (Icon swap, Tooltip update, and Pulse animation) for all "Copy to Clipboard" micro-interactions.
+
+## 2025-05-23 - [Interactive Utility for Insight Chips]
+**Learning:** Informational chips (like AI recommendations) in high-density dashboards can be transformed from static content into active utility tools by adding "Copy to Clipboard" functionality. This reduces friction for users who need to act on or share insights elsewhere. A clear, time-limited success state (icon swap + tactile animation) is essential to provide positive reinforcement and confirm the action.
+**Action:** Implement "Copy to Clipboard" micro-interactions for critical text-based insights or recommendations, ensuring they include clear visual feedback and updated ARIA labels during the success state.

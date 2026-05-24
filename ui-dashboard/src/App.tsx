@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Box,
@@ -145,6 +145,29 @@ function App() {
   const [isCopied, setIsCopied] = useState(false);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const handleCopyRecommendation = useCallback(async () => {
+    if (!navigator.clipboard?.writeText) {
+      setErrorMessage('Clipboard API is not supported in this browser or context.');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(cognitiveState.recommendation);
+      setIsCopied(true);
+
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+
+      copyTimeoutRef.current = setTimeout(() => {
+        setIsCopied(false);
+        copyTimeoutRef.current = null;
+      }, 2000);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      setErrorMessage(`Failed to copy recommendation: ${errorMsg}`);
+    }
+  }, [cognitiveState.recommendation]);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -243,25 +266,6 @@ function App() {
       copyTimeoutRef.current = null;
     }
   }, [cognitiveState.recommendation]);
-
-  const handleCopyRecommendation = async () => {
-    if (!navigator.clipboard?.writeText) {
-      setErrorMessage('Clipboard API is not supported in this browser or context.');
-      return;
-    }
-    try {
-      await navigator.clipboard.writeText(cognitiveState.recommendation);
-      setIsCopied(true);
-      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
-      copyTimeoutRef.current = setTimeout(() => {
-        setIsCopied(false);
-        copyTimeoutRef.current = null;
-      }, 2000);
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err);
-      setErrorMessage(`Failed to copy recommendation: ${errorMsg}`);
-    }
-  };
 
   const layout =
     cognitiveState.status === 'critical'
@@ -433,43 +437,41 @@ function App() {
               <Chip
                 icon={
                   isCopied ? (
-                    <Check size={16} color={brandTokens.colors.serumMint} aria-hidden="true" />
+                    <Check size={14} color={brandTokens.colors.serumMint} aria-hidden="true" />
                   ) : (
-                    <Copy size={16} color={brandTokens.colors.serumMint} aria-hidden="true" />
+                    <Copy size={14} color={brandTokens.colors.serumMint} aria-hidden="true" />
                   )
                 }
                 label={`Recommendation: ${cognitiveState.recommendation}`}
+                aria-label={isCopied ? 'Recommendation copied to clipboard' : `AI Recommendation: ${cognitiveState.recommendation}. Click to copy.`}
                 onClick={handleCopyRecommendation}
-                aria-label={
-                  isCopied
-                    ? `AI Recommendation: ${cognitiveState.recommendation} (Copied)`
-                    : `AI Recommendation: ${cognitiveState.recommendation}`
-                }
                 tabIndex={0}
                 sx={{
                   backgroundColor: alpha(brandTokens.colors.voidNavy, 0.65),
                   color: brandTokens.colors.serumMint,
                   border: `1px solid ${brandTokens.borders.mint}`,
-                  cursor: 'pointer',
+                  cursor: 'copy',
                   transition: 'all 0.2s ease',
                   '&:hover': {
                     backgroundColor: alpha(brandTokens.colors.voidNavy, 0.85),
+                    transform: 'translateY(-1px)',
                     borderColor: brandTokens.colors.ritualCyan,
+                    boxShadow: `0 0 12px ${alpha(brandTokens.colors.ritualCyan, 0.3)}`,
+                  },
+                  '&:active': {
+                    transform: 'translateY(0)',
                   },
                   ...(isCopied && {
                     animation: 'copy-success 0.4s ease-out',
                     '@keyframes copy-success': {
                       '0%': { transform: 'scale(1)' },
-                      '50%': {
-                        transform: 'scale(1.05)',
-                        boxShadow: `0 0 12px ${alpha(brandTokens.colors.serumMint, 0.4)}`,
-                      },
+                      '50%': { transform: 'scale(1.05)', boxShadow: `0 0 20px ${alpha(brandTokens.colors.serumMint, 0.4)}` },
                       '100%': { transform: 'scale(1)' },
-                    },
+                    }
                   }),
                 }}
               />
-            </Tooltip>
+            </Tooltip>oltip>
           </Box>
         </Box>
 

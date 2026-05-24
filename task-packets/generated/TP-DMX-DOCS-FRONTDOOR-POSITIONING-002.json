@@ -1,0 +1,152 @@
+{
+  "id": "TP-DMX-DOCS-FRONTDOOR-POSITIONING-002",
+  "project": "dopemux-mvp",
+  "target": "documentation/frontdoor-positioning-public-docs-layer",
+  "invariants": [
+    "Documentation-only work: do not edit runtime code, service code, Docker files, compose files, dependency files, tests, generated extraction outputs, or GitHub workflow files.",
+    "Build on TP-DMX-DOCS-PUBLIC-AI-RTE-BASELINE-001 without duplicating its files or claiming PR #660 runtime/provider behavior was reverified.",
+    "Preserve Dopemux split-authority architecture and do not promote bridges, retrieval output, mirrors, generated summaries, or audit artifacts into source truth.",
+    "Do not claim Dopemux is a unified control plane, monolithic AI assistant, one AI brain, unified PM platform, unified memory system, fully autonomous, production-ready, fully local/private/offline by default, self-healing, or guaranteed never to fail.",
+    "External research is advisory only and cannot override runtime code, config, compose wiring, tests, active entrypoints, or stronger governance docs.",
+    "Live Docker startup, live provider calls, live RTE extraction, production readiness, and local/private/offline guarantees remain NOT_RUN unless explicitly executed."
+  ],
+  "depends_on": [
+    "TP-DMX-DOCS-PUBLIC-AI-RTE-BASELINE-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "pyproject.toml",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DOCS-FRONTDOOR-POSITIONING-002",
+    "base_branch": "docs/public-ai-rte-baseline",
+    "parent_tp_id": "TP-DMX-DOCS-PUBLIC-AI-RTE-BASELINE-001",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "docs/frontdoor-positioning-002",
+    "base_branch": "docs/public-ai-rte-baseline",
+    "stacked_because": "Operator authorized continuation on top of PR #660 baseline branch."
+  },
+  "commit": {
+    "message": "docs: align public front door and positioning docs",
+    "allowlist": [
+      "README.md",
+      "docs/INDEX.md",
+      "docs/docs_index.yaml",
+      "docs/04-explanation/product/homepage-copy.md",
+      "docs/04-explanation/product/positioning.md",
+      "docs/04-explanation/product/elevator-pitches.md",
+      "docs/04-explanation/product/features-and-benefits.md",
+      "docs/04-explanation/product/faq.md",
+      "docs/03-reference/governance/documentation-gap-register.md",
+      "task-packets/generated/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.json",
+      "out/proofs/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.PROOF.json"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.json",
+      "python -m json.tool out/proofs/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.PROOF.json",
+      "python - <<'PY'\\nfrom pathlib import Path\\nimport yaml\\np = Path('docs/docs_index.yaml')\\nyaml.safe_load(p.read_text(encoding='utf-8'))\\nprint('docs/docs_index.yaml parses')\\nPY",
+      "test -f scripts/lint-docs.sh && bash scripts/lint-docs.sh || echo \"scripts/lint-docs.sh not present; skipped\"",
+      "test -f scripts/docs_frontmatter_guard.py && python scripts/docs_frontmatter_guard.py || echo \"docs_frontmatter_guard not present; skipped\"",
+      "test -f scripts/check_root_hygiene.py && python scripts/check_root_hygiene.py || echo \"check_root_hygiene not present; skipped\"",
+      "targeted relative link check over README, docs index, product docs, and gap register",
+      "claim guardrail scan over README and product docs",
+      "git diff --check",
+      "pre-commit run --files README.md docs/INDEX.md docs/docs_index.yaml docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/faq.md docs/03-reference/governance/documentation-gap-register.md task-packets/generated/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.json out/proofs/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.PROOF.json"
+    ]
+  },
+  "pr": {
+    "title": "TP-DMX-DOCS-002: align public front door and positioning docs",
+    "body": "Stacked on PR #660. Refresh README first-screen public entrypoint, align homepage and product docs with split-authority positioning, synchronize docs index and docs_index.yaml where schema allowed, update docs gap register, and add task-packet plus proof JSON. Documentation-only change.",
+    "base": "docs/public-ai-rte-baseline"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1-readme-frontdoor",
+      "task": "Rewrite the README first screen so the public entrypoint answers what Dopemux is, what it is not, why it exists, where humans should start, and where AI tools should start.",
+      "requirements": [
+        "Use the framing that Dopemux is an operator-facing control surface for split-authority development workflows.",
+        "Keep README as a front door, not a full architecture manual.",
+        "Include links to llms.txt, docs/INDEX.md, PROJECT.md, ARCHITECTURE.md, and docs/03-reference/systems/system-boundaries.md."
+      ],
+      "expected_files": [
+        "README.md"
+      ],
+      "validation": [
+        "rg -n \"operator-facing control surface|What Dopemux Is|What Dopemux Is Not|Where AI Tools Should Start|llms.txt|docs/INDEX.md|PROJECT.md|ARCHITECTURE.md|system-boundaries.md\" README.md"
+      ],
+      "context_files": [
+        "README.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "llms.txt"
+      ]
+    },
+    {
+      "id": "step-2-homepage-product-guardrails",
+      "task": "Restructure homepage copy and align product docs with split-authority public positioning and claim-boundary guardrails.",
+      "requirements": [
+        "Homepage copy must include Purpose, Primary Hero, Proof Strip, What Dopemux Solves, What Dopemux Is Not, Section Blocks, Audience Snapshot, and Messaging Rule.",
+        "Product docs must use operator control surface, split-authority development workflows, source of truth, authority boundaries, derived retrieval, audit trail, repo-grounded, and current-state language where appropriate.",
+        "FAQ must answer one-assistant, PM-platform, memory-system, production-readiness, and local/private/offline questions safely."
+      ],
+      "expected_files": [
+        "docs/04-explanation/product/homepage-copy.md",
+        "docs/04-explanation/product/positioning.md",
+        "docs/04-explanation/product/elevator-pitches.md",
+        "docs/04-explanation/product/features-and-benefits.md",
+        "docs/04-explanation/product/faq.md"
+      ],
+      "validation": [
+        "rg -n \"Dopemux coordinates work across authority lanes|operator control surface|split-authority development workflows|derived retrieval|NEEDS_REPO_VERIFICATION\" docs/04-explanation/product/*.md"
+      ],
+      "context_files": [
+        "docs/04-explanation/overview/problem-statement.md",
+        "docs/04-explanation/product/public-copy-variants.md",
+        "docs/03-reference/governance/public-docs-surface.md"
+      ]
+    },
+    {
+      "id": "step-3-index-gap-proof",
+      "task": "Synchronize docs indexes and gap register, then generate proof JSON for this packet.",
+      "requirements": [
+        "docs_index.yaml updates must preserve existing schema shape.",
+        "Gap register must mark only documentation work closed and leave runtime/provider verification open.",
+        "Proof must record real branch/base/head/file/validation data and any stacked PR creation blocker."
+      ],
+      "expected_files": [
+        "docs/INDEX.md",
+        "docs/docs_index.yaml",
+        "docs/03-reference/governance/documentation-gap-register.md",
+        "out/proofs/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.PROOF.json"
+      ],
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.json",
+        "python -m json.tool out/proofs/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.PROOF.json",
+        "python - <<'PY'\\nfrom pathlib import Path\\nimport yaml\\nyaml.safe_load(Path('docs/docs_index.yaml').read_text(encoding='utf-8'))\\nprint('docs/docs_index.yaml parses')\\nPY",
+        "git diff --check"
+      ],
+      "context_files": [
+        "docs/INDEX.md",
+        "docs/docs_index.yaml",
+        "docs/03-reference/governance/documentation-gap-register.md"
+      ]
+    }
+  ]
+}

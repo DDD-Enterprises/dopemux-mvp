@@ -131,6 +131,11 @@ explanation:
   pr_merge_queue_orchestration: docs/04-explanation/pr-merge-queue-orchestration.md
   repo_truth_extractor_v5_upgrade_design: docs/04-explanation/architecture/v5-extraction-pipeline-upgrade-design.md
   product_public_copy_variants: docs/04-explanation/product/public-copy-variants.md
+  product_homepage_copy: docs/04-explanation/product/homepage-copy.md
+  product_positioning: docs/04-explanation/product/positioning.md
+  product_elevator_pitches: docs/04-explanation/product/elevator-pitches.md
+  product_features_and_benefits: docs/04-explanation/product/features-and-benefits.md
+  product_faq: docs/04-explanation/product/faq.md
   pm_plane_write_adjudication: docs/planes/pm/pm-plane-write-adjudication-model.md
   pm_plane_normalized_tool_surface: docs/planes/pm/pm-plane-normalized-tool-surface.md
   pm_runtime_truth_task_orchestrator: docs/planes/pm/_evidence/task-orchestrator-runtime-truth/executive-summary.md
