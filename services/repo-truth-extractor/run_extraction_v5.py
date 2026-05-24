@@ -837,6 +837,12 @@ def _build_cell_alias_key(cost_profile: str, lane_class: str, capability_tier: s
     )
 
 
+def _cell_alias_key_from_normalized(
+    cost_profile_norm: str, lane_class_norm: str, capability_tier_norm: str
+) -> str:
+    return _build_cell_alias_key(cost_profile_norm, lane_class_norm, capability_tier_norm)
+
+
 def derive_ladder_for_cell(
     cost_profile: str,
     lane_class: str,
@@ -877,11 +883,11 @@ def derive_ladder_for_cell(
     profile_norm = _normalize_profile_segment(cost_profile)
     lane_norm = _normalize_profile_segment(lane_class)
     tier_norm = _normalize_profile_segment(capability_tier)
-    alias_key = f"{profile_norm}_{lane_norm}_{tier_norm}_MODEL"
+    alias_key = _cell_alias_key_from_normalized(profile_norm, lane_norm, tier_norm)
     # Snapshot the env var that matters for THIS cell into the cache key so a
     # later environment change correctly invalidates the cached entry. We do
     # NOT snapshot all of os.environ to keep keys bounded.
-    env_snapshot = os.environ.get(alias_key)
+    env_snapshot = os.environ.get(alias_key) or None
     return list(
         _derive_ladder_for_cell_cached(
             profile_norm,
@@ -919,8 +925,8 @@ def _derive_ladder_for_cell_cached(
         canonical_profile = cost_profile_norm.lower()
     if canonical_profile not in COST_PROFILES:
         canonical_profile = DEFAULT_COST_PROFILE
-    alias_key = (
-        f"{cost_profile_norm}_{lane_class_norm}_{capability_tier_norm}_MODEL"
+    alias_key = _cell_alias_key_from_normalized(
+        cost_profile_norm, lane_class_norm, capability_tier_norm
     )
     cli_overrides = dict(cli_overrides_items)
     # Build a precedence-aware env mapping: only include the snapshotted alias
@@ -5511,6 +5517,114 @@ def choose_model_for_step(
     return (provider, model_id, api_key_env, step_type, "env_step_type_override")
 
 
+def _model_alias_overrides_dict(raw: Any) -> Dict[str, str]:
+    if isinstance(raw, dict):
+        items = raw.items()
+    else:
+        items = raw or ()
+    result: Dict[str, str] = {}
+    for item in items:
+        try:
+            key, value = item
+        except Exception:
+            continue
+        key_text = str(key).strip()
+        value_text = str(value).strip()
+        if key_text and value_text:
+            result[key_text] = value_text
+    return result
+
+
+def _cost_profile_cell_candidates(
+    phase: str,
+    *,
+    step_type: str,
+    step_tier: str,
+) -> Tuple[Tuple[str, str], ...]:
+    phase_code = str(phase or "").upper()
+    type_token = str(step_type or "").strip().lower()
+    tier_token = str(step_tier or "").strip().lower()
+    if type_token == "synthesis" or tier_token == "synthesis":
+        capability = "CRITICAL" if phase_code in PREMIUM_SYNTHESIS_PHASES else "HIGH"
+        return (("SYNTH", capability),)
+    if type_token == "inventory" or tier_token == "bulk":
+        return (("BULK", "EXTRACT"), ("CE", "MEDIUM"))
+    if type_token in {"extract", "qa"} or tier_token in {"extract", "qa"}:
+        return (("CE", "MEDIUM"),)
+    return (("CE", "MEDIUM"),)
+
+
+def _dedupe_route_ladder(
+    routes: Iterable[Sequence[str]],
+) -> List[Tuple[str, str, str]]:
+    deduped: List[Tuple[str, str, str]] = []
+    seen: Set[Tuple[str, str, str]] = set()
+    for route in routes:
+        route_tuple = tuple(str(part) for part in tuple(route)[:3])
+        if len(route_tuple) < 3:
+            continue
+        normalized = (
+            str(route_tuple[0]),
+            str(route_tuple[1]),
+            str(route_tuple[2]),
+        )
+        if normalized in seen:
+            continue
+        seen.add(normalized)
+        deduped.append(normalized)
+    return deduped
+
+
+def _cost_profile_alias_primary_ladder(
+    *,
+    phase: str,
+    step_type: str,
+    step_tier: str,
+    cfg: RunnerConfig,
+    legacy_ladder: Sequence[Sequence[str]],
+) -> Tuple[List[Tuple[str, str, str]], Dict[str, Any]]:
+    cost_profile_name, _profile = resolve_cost_profile(
+        getattr(cfg, "cost_profile", DEFAULT_COST_PROFILE)
+    )
+    cli_overrides = _model_alias_overrides_dict(
+        getattr(cfg, "model_alias_overrides", ())
+    )
+    disabled_providers = tuple(getattr(cfg, "disabled_providers", ()) or ())
+    failures: List[str] = []
+    for lane_class, capability_tier in _cost_profile_cell_candidates(
+        phase, step_type=step_type, step_tier=step_tier
+    ):
+        alias_key = _build_cell_alias_key(cost_profile_name, lane_class, capability_tier)
+        try:
+            alias_routes = derive_ladder_for_cell(
+                cost_profile_name,
+                lane_class,
+                capability_tier,
+                cli_overrides=cli_overrides,
+                disabled_providers=disabled_providers,
+            )
+        except ValueError as exc:
+            failures.append(f"{alias_key}:{exc}")
+            continue
+        if not alias_routes:
+            failures.append(f"{alias_key}:no_enabled_route")
+            continue
+        ladder = _dedupe_route_ladder([*alias_routes, *legacy_ladder])
+        return ladder, {
+            "reason": "cost_profile_cell_alias_primary_legacy_tail",
+            "cost_profile": cost_profile_name,
+            "cell_alias_key": alias_key,
+            "cell_lane_class": lane_class,
+            "cell_capability_tier": capability_tier,
+            "legacy_tail_count": max(0, len(ladder) - len(alias_routes)),
+        }
+    return _dedupe_route_ladder(legacy_ladder), {
+        "reason": "policy_ladder_default_legacy_cell_alias_unavailable",
+        "cost_profile": cost_profile_name,
+        "cell_alias_failures": failures,
+    }
+
+
 def resolve_effective_step_route(
     phase: str,
     step_id: str,
@@ -5656,17 +5770,27 @@ def resolve_effective_step_route(
     if chosen is not None:
         provider, model_id, api_key_env, step_type, reason = chosen
         step_ladder: List[Tuple[str, str, str]] = [(provider, model_id, api_key_env)]
+        route_meta: Dict[str, Any] = {}
     else:
-        step_ladder = _resolve_step_ladder_compat(
+        legacy_ladder = _resolve_step_ladder_compat(
             cfg.routing_policy,
             phase,
             step_id,
             tier_override=tier_override,
         )
+        step_ladder, route_meta = _cost_profile_alias_primary_ladder(
+            phase=phase,
+            step_type=step_type,
+            step_tier=step_tier,
+            cfg=cfg,
+            legacy_ladder=legacy_ladder,
+        )
+        reason = str(route_meta.get("reason") or reason)
         if not step_ladder:
             step_ladder = [("openai", "gpt-5-mini", "OPENAI_API_KEY")]
+            reason = "policy_ladder_default_legacy_cell_alias_unavailable"
         provider, model_id, api_key_env = step_ladder[0]
-    return {
+    payload = {
         "step_tier": step_tier,
         "step_type": step_type,
         "ladder": [tuple(route) for route in step_ladder],
@@ -5675,6 +5799,8 @@ def resolve_effective_step_route(
         "api_key_env": api_key_env,
         "reason": reason,
     }
+    payload.update(route_meta)
+    return payload
 
 
 def write_phase_routing_log(
@@ -11217,6 +11343,13 @@ def call_llm_with_ladder(
     )
 
 
+def _route_ladder_from_route_info(route_info: Dict[str, Any]) -> List[Tuple[Any, ...]]:
+    routes = route_info.get("ladder") if isinstance(route_info, dict) else []
+    if not isinstance(routes, list):
+        return []
+    return [tuple(route) for route in routes]
+
+
 def run_gemini_auth_probe(
     run_id: str,
     phase: str,
@@ -13781,7 +13914,7 @@ def execute_step_for_partitions(
     )
     step_tier = str(route_info["step_tier"])
     step_type = str(route_info["step_type"])
-    step_ladder = [tuple(route) for route in route_info["ladder"]]
+    step_ladder = _route_ladder_from_route_info(route_info)
     initial_provider = str(route_info["provider"])
     initial_model_id = str(route_info["model_id"])
     initial_api_key_env = str(
@@ -14253,6 +14386,7 @@ def execute_step_for_partitions(
         p_endpoint_base = endpoint_base
         p_response_format = draft_response_format
         p_structured_meta = draft_structured_output_meta
+        p_step_ladder = list(step_ladder)
 
         if partition_tier_override and partition_tier_override != step_tier:
             p_route_info = resolve_effective_step_route(
@@ -14271,7 +14405,8 @@ def execute_step_for_partitions(
             p_transport = transport_for_provider(p_provider, cfg)
             p_endpoint_base = llm_base_url(p_provider, cfg)
             p_force_json = p_provider == "gemini"
-            
+            p_step_ladder = _route_ladder_from_route_info(p_route_info)
+
             if strict_contract_required and isinstance(step_contract, dict):
                 p_primary_routes = route_entries_for_stage(step_contract, "primary")
                 p_route_entry = next(
@@ -15721,6 +15856,44 @@ else sdk_auth_present_flags(p_provider, True)
         ) -> Dict[str, Any]:
             route_provider, route_model_id, route_api_key_env = route
             route_force_json = route_provider == "gemini"
+            route_response_format = p_response_format
+            route_structured_meta = p_structured_meta
+            if strict_contract_required and isinstance(step_contract, dict):
+                route_entry = route_entry_by_identity(
+                    route_entries_for_stage(step_contract, "primary"),
+                    provider=route_provider,
+                    model_id=route_model_id,
+                    api_key_env=route_api_key_env,
+                )
+                if route_entry is None:
+                    route_entry = _contract_route_entry_for_provider_model(
+                        step_contract,
+                        provider=route_provider,
+                        model_id=route_model_id,
+                    )
+                if route_entry is None:
+                    route_entry = {
+                        "provider": route_provider,
+                        "model_id": route_model_id,
+                        "api_key_env": route_api_key_env,
+                        "structured_output_mode": "json_schema",
+                        "strict_json_schema": False,
+                        "strict_passthrough_verified": False,
+                    }
+                route_response_format, route_response_meta = build_provider_step_contract_output(
+                    route=route_entry,
+                    transport=transport_for_provider(route_provider, cfg),
+                    step_contract=step_contract,
+                    artifact_names=output_artifacts,
+                    schema_name_suffix="draft",
+                )
+                route_structured_meta = dict(route_response_meta)
+                if (
+                    route_response_meta.get("enabled")
+                    and route_provider == "gemini"
+                    and transport_for_provider(route_provider, cfg) != "openai_compat_http"
+                ):
+                    route_force_json = True
 
             def _execute_llm_call(
                 parse_retry_reason_override: Optional[str] = None,
@@ -15753,7 +15926,7 @@ else sdk_auth_present_flags(p_provider, True)
                             route_api_key_env,
                         ),
                         batch_provider=batch_provider,
-                        step_ladder=step_ladder,
+                        step_ladder=p_step_ladder,
                         step_contract=step_contract,
                         prefer_contract_api_key_env=bool(
                             strict_contract_required
@@ -16218,10 +16391,10 @@ else sdk_auth_present_flags(p_provider, True)
                     cfg=cfg,
                     force_json_output=route_force_json,
                     response_format_override=(
-                        draft_response_format if strict_contract_required else None
+                        route_response_format if strict_contract_required else None
                     ),
                     structured_output_override=(
-                        dict(draft_structured_output_meta)
+                        dict(route_structured_meta)
                         if strict_contract_required
                         else None
                     ),
@@ -16273,12 +16446,12 @@ else sdk_auth_present_flags(p_provider, True)
                     provider=route_provider,
                     model_id=route_model_id,
                 )
-                if strict_contract_required and isinstance(draft_response_format, dict):
+                if strict_contract_required and isinstance(route_response_format, dict):
                     _append_strict_passthrough_evidence(
                         request_meta_local,
                         [
                             _strict_passthrough_evidence_from_response_format(
-                                response_format=draft_response_format,
+                                response_format=route_response_format,
                                 evidence_source="constructed_request",
                                 provider=route_provider,
                                 model_id=route_model_id,
@@ -16462,7 +16635,7 @@ else sdk_auth_present_flags(p_provider, True)
             partition_id=partition_id,
             routing_policy=cfg.routing_policy,
             routing_tier=partition_tier_override or step_tier,
-            ladder=[(p_provider, p_model_id, p_api_key_env)],
+            ladder=p_step_ladder,
             cfg=cfg,
             execute_attempt=_route_attempt,
             ui=ui,
