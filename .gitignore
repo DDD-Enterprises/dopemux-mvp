@@ -375,6 +375,8 @@ proof/*
 !proof/cockpit-main-state-recon/**
 !proof/fast-dev-os/
 !proof/fast-dev-os/**
+!proof/rte-cost-profile-redesign/
+!proof/rte-cost-profile-redesign/**
 
 # Extraction and Research artifacts
 _audit_out/
