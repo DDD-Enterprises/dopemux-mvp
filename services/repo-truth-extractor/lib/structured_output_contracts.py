@@ -5,6 +5,11 @@ import json
 import re
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple
 
+from lib.route_options import (
+    ROUTE_REQUEST_OPTION_KEYS,
+    normalize_route_request_options,
+)
+
 
 GENERIC_ITEM_VALUE_SCHEMA: Dict[str, Any] = {
     "anyOf": [
@@ -36,7 +41,6 @@ STRUCTURED_OUTPUT_MODES = {
     STRUCTURED_OUTPUT_MODE_JSON_OBJECT,
     STRUCTURED_OUTPUT_MODE_JSON_SCHEMA,
 }
-ROUTE_REQUEST_OPTION_KEYS = ("service_tier", "reasoning_effort")
 
 _XAI_STRIP_KEYWORDS: Set[str] = {
     "allOf",
@@ -174,10 +178,7 @@ def route_entries_for_stage(
             "strict_json_schema": bool(row.get("strict_json_schema", False)),
             "strict_passthrough_verified": bool(row.get("strict_passthrough_verified", False)),
         }
-        for option_key in ROUTE_REQUEST_OPTION_KEYS:
-            option_value = str(row.get(option_key) or "").strip()
-            if option_value:
-                parsed[option_key] = option_value
+        parsed.update(normalize_route_request_options(row))
         out.append(parsed)
     return out
 

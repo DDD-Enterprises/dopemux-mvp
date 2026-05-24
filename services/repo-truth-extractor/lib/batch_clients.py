@@ -16,6 +16,11 @@ except ModuleNotFoundError:  # pragma: no cover - supports direct importlib test
         sys.path.insert(0, _service_dir)
     from output_safety import sanitize_payload_for_output, sanitize_text_for_output
 
+from lib.route_options import (
+    ROUTE_REQUEST_OPTION_KEYS,
+    normalize_route_request_options,
+)
+
 
 class UnsupportedBatchProvider(RuntimeError):
     """Raised when a provider is not supported for live batch execution."""
@@ -65,7 +70,6 @@ OPENAI_COMPATIBLE_TERMINAL_STATUSES = (
     OPENAI_COMPATIBLE_SUCCESS_STATUSES | OPENAI_COMPATIBLE_FAILURE_STATUSES
 )
 BATCH_JSONL_CORRUPTION_THRESHOLD = 0.05
-ROUTE_REQUEST_OPTION_KEYS = ("service_tier", "reasoning_effort")
 
 
 class BatchClient(Protocol):
@@ -92,14 +96,8 @@ def _metadata_flag_enabled(metadata: Dict[str, str], key: str) -> bool:
 
 
 def _request_options_for_body(value: Any) -> Dict[str, str]:
-    if not isinstance(value, dict):
-        return {}
-    out: Dict[str, str] = {}
-    for option_key in ROUTE_REQUEST_OPTION_KEYS:
-        option_value = str(value.get(option_key) or "").strip()
-        if option_value:
-            out[option_key] = option_value
-    return out
+    """Backwards-compatible alias for :func:`normalize_route_request_options`."""
+    return normalize_route_request_options(value)
 
 
 def classify_batch_terminal_status(status: str) -> Dict[str, Any]:

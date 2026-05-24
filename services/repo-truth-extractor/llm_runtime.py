@@ -11,13 +11,16 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 import requests
 
 from lib.pricing_surface import classify_static_route_identity
+from lib.route_options import (
+    ROUTE_REQUEST_OPTION_KEYS,
+    normalize_route_request_options,
+)
 from output_safety import sanitize_text_for_provider_payload
 
 logger = logging.getLogger(__name__)
 
 RouteTuple = Tuple[str, str, str]
 RouteLike = Sequence[str]
-ROUTE_REQUEST_OPTION_KEYS = ("service_tier", "reasoning_effort")
 
 
 @dataclass(frozen=True)

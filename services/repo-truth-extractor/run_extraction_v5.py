@@ -249,6 +249,10 @@ from lib.risk_dashboard import (
     collect_rte_risk_dashboard_inputs,
     write_rte_risk_dashboard_artifacts,
 )
+from lib.route_options import (
+    ROUTE_REQUEST_OPTION_KEYS,
+    normalize_route_request_options as _shared_normalize_route_request_options,
+)
 
 # Backward-compatible reporting seam aliases used by targeted tests.
 reporting_write_run_manifest = rte_write_run_manifest
@@ -591,7 +595,6 @@ DEFAULT_GEMINI_BULK_MODEL = "gemini-3.1-flash-lite-preview"
 DEFAULT_GEMINI_EXTRACT_MODEL = "gemini-3-flash-preview"
 DEFAULT_GEMINI_SYNTH_MODEL = "gemini-3.1-pro-preview"
 STEP_TIERS = ("bulk", "extract", "synthesis", "qa")
-ROUTE_REQUEST_OPTION_KEYS = ("service_tier", "reasoning_effort")
 
 MAGIC_SUBTYPE_ORDER = {
     "instructions": 0,
@@ -765,7 +768,7 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
         ],
         "extract": [
             ("xai", "grok-4.3", "XAI_API_KEY"),
-            ("xai", "grok-4.3", "XAI_API_KEY"),
+            ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
         ],
         "synthesis": [
             ("xai", "grok-4.3", "XAI_API_KEY"),
@@ -9131,14 +9134,8 @@ def build_chat_payload(
 
 
 def normalized_route_request_options(value: Optional[Dict[str, Any]]) -> Dict[str, str]:
-    if not isinstance(value, dict):
-        return {}
-    out: Dict[str, str] = {}
-    for option_key in ROUTE_REQUEST_OPTION_KEYS:
-        option_value = str(value.get(option_key) or "").strip()
-        if option_value:
-            out[option_key] = option_value
-    return out
+    """Backwards-compatible alias for :func:`normalize_route_request_options`."""
+    return _shared_normalize_route_request_options(value)
 
 
 def serialize_payload_body(payload: Dict[str, Any]) -> bytes:

@@ -372,6 +372,14 @@ def test_normalize_route_request_options_drops_literal_none_case_insensitive() -
 
 
 def test_route_options_constant_lives_in_shared_module_and_is_reused() -> None:
+    """M2 — ROUTE_REQUEST_OPTION_KEYS must be sourced from lib/route_options.py.
+
+    Asserted two ways: (a) the shared constant has the expected value, and
+    (b) no consuming source file still hand-rolls the tuple. Identity (``is``)
+    cannot be used here because every importlib.util.spec_from_file_location
+    call produces a fresh module with a fresh tuple object — equality with a
+    grep against the source files is the durable check.
+    """
     route_options = _load_module(
         "lib_route_options_shared_constant",
         "lib/route_options.py",
@@ -409,9 +417,24 @@ def test_route_options_constant_lives_in_shared_module_and_is_reused() -> None:
         phase_contract_map,
         structured_output_contracts,
     ):
-        assert module.ROUTE_REQUEST_OPTION_KEYS is route_options.ROUTE_REQUEST_OPTION_KEYS, (
-            f"{module.__name__} must reuse the shared ROUTE_REQUEST_OPTION_KEYS, "
-            "not redefine it as a local tuple"
+        assert (
+            module.ROUTE_REQUEST_OPTION_KEYS == route_options.ROUTE_REQUEST_OPTION_KEYS
+        ), f"{module.__name__} must expose the same ROUTE_REQUEST_OPTION_KEYS tuple"
+
+    # Belt-and-suspenders: scan each source file directly so any future
+    # contributor who reintroduces a local definition fails this test.
+    consumer_paths = (
+        "run_extraction_v5.py",
+        "llm_runtime.py",
+        "lib/batch_clients.py",
+        "lib/phase_contract_map.py",
+        "lib/structured_output_contracts.py",
+    )
+    for relative in consumer_paths:
+        text = (SERVICE_ROOT / relative).read_text(encoding="utf-8")
+        assert "ROUTE_REQUEST_OPTION_KEYS = (" not in text, (
+            f"{relative} must import ROUTE_REQUEST_OPTION_KEYS from "
+            "lib.route_options, not redefine it locally"
         )
 
 

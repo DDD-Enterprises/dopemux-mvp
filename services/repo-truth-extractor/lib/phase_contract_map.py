@@ -3,6 +3,11 @@ from __future__ import annotations
 import json
 import re
 import sys
+
+from lib.route_options import (
+    ROUTE_REQUEST_OPTION_KEYS,
+    normalize_route_request_options,
+)
 from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
@@ -19,7 +24,6 @@ REPO_TRUTH_MAP_PATH = REPO_ROOT / "reports" / "repo_truth_map.json"
 
 CONTRACT_MAP_FILENAME = "PHASE_CONTRACT_MAP.json"
 RUNNER_MINIMUM_REQUIRED_KEYS = ("id", "path", "line_range")
-ROUTE_REQUEST_OPTION_KEYS = ("service_tier", "reasoning_effort")
 
 _ARTIFACT_NAME_RE = re.compile(r"`([A-Z][A-Z0-9_]+(?:\.partX)?\.(?:json|md))`")
 _REQUIRED_FIELDS_RE = re.compile(r"`required_item_fields`:\s*`([^`]+)`")
@@ -127,10 +131,7 @@ def _normalize_route(route: Dict[str, Any]) -> Dict[str, Any]:
         "strict_json_schema": bool(route.get("strict_json_schema", False)),
         "strict_passthrough_verified": bool(route.get("strict_passthrough_verified", False)),
     }
-    for option_key in ROUTE_REQUEST_OPTION_KEYS:
-        option_value = str(route.get(option_key) or "").strip()
-        if option_value:
-            parsed[option_key] = option_value
+    parsed.update(normalize_route_request_options(route))
     return parsed
 
 
