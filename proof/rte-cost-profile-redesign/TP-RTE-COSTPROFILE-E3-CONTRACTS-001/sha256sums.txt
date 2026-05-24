@@ -1,6 +1,6 @@
-8d70ce019a9bcf85323a58eaf3334de69ad450d2be41f0ab0805a233c9b3d313  ../../../services/repo-truth-extractor/lib/structured_output_contracts.py
+764c9aecad5af2c82fff98ed6557cf0f1b25051e252c03d6ed3b9ecd585653b3  ../../../services/repo-truth-extractor/lib/structured_output_contracts.py
 185e5c9d970be973b1128a58f5885efa00bf6fcb4afe6bd7d7655f4d58a43886  ../../../services/repo-truth-extractor/tests/test_structured_output_contracts_service_tier.py
 135726ade8f62f84eccdcaba1fcdbf753eeb76c58a151cb5cfa686737997cd87  ../../../services/repo-truth-extractor/tests/test_structured_output_contracts_cache_directives.py
-e42dbf4a22ddfcd425b7b206ee91135da57b0e84a13475d4fafca8256fa0a9ba  ../../../services/repo-truth-extractor/tests/test_structured_output_contracts_anthropic_tool_use.py
+030c2533cbfb0d56b4f5f0305bcc34216dc60de8082794eb8592de7a412a14cd  ../../../services/repo-truth-extractor/tests/test_structured_output_contracts_anthropic_tool_use.py
 bd01e0c88c5defada52262c5bf12b197d93363199cd4bca3cf63d5457783491a  ../../../task-packets/INDEX.md
 966d119d1aeb28e77c7329bfae5eb0eddc5dcc2cc0e3ac5e793a84a8c14964c5  ../../../task-packets/generated/TP-RTE-COSTPROFILE-E3-CONTRACTS-001.json
