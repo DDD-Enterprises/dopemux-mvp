@@ -6,6 +6,66 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 
+HOME_PHASE_BASE_EXCLUDES = [
+    "Downloads",
+    "Library",
+    "Documents",
+    "Pictures",
+    "Music",
+    "Public",
+    "Desktop",
+    ".cache",
+    ".npm",
+    ".pip",
+]
+
+HOME_PHASE_SENSITIVE_EXCLUDES = [
+    ".ssh",
+    ".ssh/*",
+    ".SSH",
+    ".SSH/*",
+    ".aws",
+    ".aws/*",
+    ".AWS",
+    ".AWS/*",
+    ".config",
+    ".CONFIG",
+    ".local",
+    ".local/*",
+    ".LOCAL",
+    ".LOCAL/*",
+    ".gnupg",
+    ".gnupg/*",
+    ".GNUPG",
+    ".GNUPG/*",
+    ".kube",
+    ".kube/*",
+    ".KUBE",
+    ".KUBE/*",
+    ".kube/config",
+    ".KUBE/config",
+    ".KUBE/CONFIG",
+    "Containers",
+    "Containers/*",
+    "containers",
+    "containers/*",
+    "CONTAINERS",
+    "CONTAINERS/*",
+    ".netrc",
+    ".NETRC",
+    ".aws_credentials",
+    ".AWS_CREDENTIALS",
+    "Library/Keychains",
+    "Library/Keychains/*",
+    "Library/keychains",
+    "Library/keychains/*",
+    "library/Keychains",
+    "library/Keychains/*",
+    "library/keychains",
+    "library/keychains/*",
+]
+
+
 @dataclass(frozen=True)
 class PhaseWrapperPlan:
     collector: Any
@@ -21,18 +81,7 @@ def plan_home_phase(
     home_scan_mode: str,
     home_safe_filter: Callable[[List[Dict[str, Any]], Path], List[Dict[str, Any]]],
 ) -> PhaseWrapperPlan:
-    excludes = [
-        "Downloads",
-        "Library",
-        "Documents",
-        "Pictures",
-        "Music",
-        "Public",
-        "Desktop",
-        ".cache",
-        ".npm",
-        ".pip",
-    ]
+    excludes = list(HOME_PHASE_BASE_EXCLUDES) + list(HOME_PHASE_SENSITIVE_EXCLUDES)
     collector = collector_factory(home, excludes)
     items = collector.collect(subdirs=list(home_safe_roots))
     if home_scan_mode == "safe":

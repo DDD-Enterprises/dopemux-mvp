@@ -1,0 +1,122 @@
+{
+  "id": "TP-DMX-EXAMPLE-001-SHORT-DESCRIPTION",
+  "project": "dopemux-mvp",
+  "target": "Single-sentence description of what this packet installs, modifies, or removes. Keep it concrete and grep-able.",
+  "invariants": [
+    "Do not modify runtime code, service code, tests, compose files, dependency files, or provider configuration unless this packet explicitly authorizes it.",
+    "Do not modify or override docs/03-reference/governance/* (the governance layer remains authoritative).",
+    "Preserve Dopemux split authority boundaries per AGENTS.md §6.",
+    "Add packet-specific invariants here (one per line, imperative voice)."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-EXAMPLE",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-example-001-short-description",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "type(scope): short imperative description",
+    "allowlist": [
+      "path/to/file/within/repo.md",
+      "another/path/to/file.json",
+      "task-packets/generated/TP-DMX-EXAMPLE-001-SHORT-DESCRIPTION.json",
+      "proof/<series>/TP-DMX-EXAMPLE-001-SHORT-DESCRIPTION/PROOF.json"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-EXAMPLE-001-SHORT-DESCRIPTION.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-EXAMPLE-001-SHORT-DESCRIPTION.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check",
+      "git diff --cached --check"
+    ]
+  },
+  "pr": {
+    "title": "type(scope): short imperative description",
+    "body": "## Summary\n- Bullet 1\n- Bullet 2\n\n## Scope\n<single paragraph>\n\n## Validation\n<exit codes and command summary>\n\n## NOT_RUN\n<list with reason for each>\n\n## Residual Risks / UNKNOWNs\n<list>\n\n@codex review",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: repo identity, branch state, authority files.",
+      "commands": [
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short",
+        "git rev-parse HEAD",
+        "test -f AGENTS.md"
+      ],
+      "validation": [
+        "Repo remote identifies DDD-Enterprises/dopemux-mvp.",
+        "Required authority files present."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create this TP JSON; validate against dopetask-canonical-spec.json.",
+      "validation": [
+        "python -m jsonschema -i task-packets/generated/TP-DMX-EXAMPLE-001-SHORT-DESCRIPTION.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement the change within commit.allowlist.",
+      "validation": [
+        "Files outside allowlist forbidden."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run codereview before precommit.",
+      "validation": [
+        "pal/codereview run; issues addressed or documented in PROOF."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run precommit; ensure SAFE TO COMMIT.",
+      "validation": [
+        "pal/precommit run; no critical issues."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Commit allowed files; push; open PR.",
+      "validation": [
+        "Commit message follows conventional-commits format.",
+        "PR body includes Summary, Scope, Validation, NOT_RUN, Residual Risks."
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Emit PROOF.json with all AGENTS.md §9 required fields.",
+      "expected_files": [
+        "proof/<series>/TP-DMX-EXAMPLE-001-SHORT-DESCRIPTION/PROOF.json"
+      ],
+      "validation": [
+        "python -m json.tool proof/<series>/TP-DMX-EXAMPLE-001-SHORT-DESCRIPTION/PROOF.json >/dev/null",
+        "All AGENTS.md §9 required fields present."
+      ]
+    }
+  ]
+}

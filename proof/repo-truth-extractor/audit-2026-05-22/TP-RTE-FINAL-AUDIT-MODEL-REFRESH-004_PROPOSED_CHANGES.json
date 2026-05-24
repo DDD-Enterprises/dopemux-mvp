@@ -1,0 +1,134 @@
+[
+  {
+    "decision": "IMPLEMENT",
+    "new_model_id": "grok-build-0.1",
+    "new_provider": "xai",
+    "official_source": "https://docs.x.ai/developers/migration/may-15-retirement",
+    "old_model_id": "grok-code-fast-1",
+    "old_provider": "xai",
+    "reason": "Route is a phase C BULK_CODE_HEAVY primary route; xAI recommends grok-build-0.1 for grok-code-fast-1 code workloads.",
+    "required_runtime_fields": [],
+    "route_index": 0,
+    "route_role": "primary",
+    "runtime_fields_supported": true,
+    "step_id": "C1"
+  },
+  {
+    "decision": "IMPLEMENT",
+    "new_model_id": "grok-build-0.1",
+    "new_provider": "xai",
+    "official_source": "https://docs.x.ai/developers/migration/may-15-retirement",
+    "old_model_id": "grok-code-fast-1",
+    "old_provider": "xai",
+    "reason": "Route is a phase C BULK_CODE_HEAVY primary route; xAI recommends grok-build-0.1 for grok-code-fast-1 code workloads.",
+    "required_runtime_fields": [],
+    "route_index": 0,
+    "route_role": "primary",
+    "runtime_fields_supported": true,
+    "step_id": "C5"
+  },
+  {
+    "decision": "IMPLEMENT",
+    "new_model_id": "grok-build-0.1",
+    "new_provider": "xai",
+    "official_source": "https://docs.x.ai/developers/migration/may-15-retirement",
+    "old_model_id": "grok-code-fast-1",
+    "old_provider": "xai",
+    "reason": "Route is a phase C BULK_CODE_HEAVY primary route; xAI recommends grok-build-0.1 for grok-code-fast-1 code workloads.",
+    "required_runtime_fields": [],
+    "route_index": 0,
+    "route_role": "primary",
+    "runtime_fields_supported": true,
+    "step_id": "C6"
+  },
+  {
+    "decision": "IMPLEMENT",
+    "new_model_id": "grok-build-0.1",
+    "new_provider": "xai",
+    "official_source": "https://docs.x.ai/developers/migration/may-15-retirement",
+    "old_model_id": "grok-code-fast-1",
+    "old_provider": "xai",
+    "reason": "Route is a phase C BULK_CODE_HEAVY primary route; xAI recommends grok-build-0.1 for grok-code-fast-1 code workloads.",
+    "required_runtime_fields": [],
+    "route_index": 0,
+    "route_role": "primary",
+    "runtime_fields_supported": true,
+    "step_id": "C7"
+  },
+  {
+    "decision": "IMPLEMENT",
+    "new_model_id": "grok-build-0.1",
+    "new_provider": "xai",
+    "official_source": "https://docs.x.ai/developers/migration/may-15-retirement",
+    "old_model_id": "grok-code-fast-1",
+    "old_provider": "xai",
+    "reason": "Route is a phase C BULK_CODE_HEAVY primary route; xAI recommends grok-build-0.1 for grok-code-fast-1 code workloads.",
+    "required_runtime_fields": [],
+    "route_index": 0,
+    "route_role": "primary",
+    "runtime_fields_supported": true,
+    "step_id": "C10"
+  },
+  {
+    "decision": "IMPLEMENT",
+    "new_model_id": "grok-build-0.1",
+    "new_provider": "xai",
+    "official_source": "https://docs.x.ai/developers/migration/may-15-retirement",
+    "old_model_id": "grok-code-fast-1",
+    "old_provider": "xai",
+    "reason": "Route is a phase C BULK_CODE_HEAVY primary route; xAI recommends grok-build-0.1 for grok-code-fast-1 code workloads.",
+    "required_runtime_fields": [],
+    "route_index": 0,
+    "route_role": "primary",
+    "runtime_fields_supported": true,
+    "step_id": "C11"
+  },
+  {
+    "decision": "DEFER",
+    "new_model_id": "grok-4.3",
+    "new_provider": "xai",
+    "official_source": "https://docs.x.ai/developers/migration/may-15-retirement",
+    "old_model_id": "grok-4.20-beta-0309-reasoning",
+    "old_provider": "xai",
+    "reason": "DEFERRED_STRUCTURED_FIELD_UNSUPPORTED: migration requires explicit reasoning_effort and the runtime does not support that route field.",
+    "required_runtime_fields": [
+      "reasoning_effort"
+    ],
+    "route_index": -1,
+    "route_role": "primary",
+    "runtime_fields_supported": false,
+    "step_id": "__grok_4_20_reasoning_aliases__"
+  },
+  {
+    "decision": "DEFER",
+    "new_model_id": "grok-4.3",
+    "new_provider": "xai",
+    "official_source": "https://docs.x.ai/developers/migration/may-15-retirement",
+    "old_model_id": "grok-4.20-beta-0309-non-reasoning",
+    "old_provider": "xai",
+    "reason": "DEFERRED_STRUCTURED_FIELD_UNSUPPORTED: migration requires explicit reasoning_effort none and the runtime does not support that route field.",
+    "required_runtime_fields": [
+      "reasoning_effort"
+    ],
+    "route_index": -1,
+    "route_role": "primary",
+    "runtime_fields_supported": false,
+    "step_id": "__grok_4_20_non_reasoning_aliases__"
+  },
+  {
+    "decision": "DEFER",
+    "new_model_id": "openai/*",
+    "new_provider": "openrouter",
+    "official_source": "https://developers.openai.com/api/docs/guides/flex-processing",
+    "old_model_id": "openai/*",
+    "old_provider": "openrouter",
+    "reason": "DEFERRED_STRUCTURED_FIELD_UNSUPPORTED: Flex requires service_tier=flex and the runtime does not support that route field.",
+    "required_runtime_fields": [
+      "service_tier"
+    ],
+    "route_index": -1,
+    "route_role": "primary",
+    "runtime_fields_supported": false,
+    "step_id": "__openai_flex_service_tier__"
+  }
+]

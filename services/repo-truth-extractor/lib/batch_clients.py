@@ -16,6 +16,11 @@ except ModuleNotFoundError:  # pragma: no cover - supports direct importlib test
         sys.path.insert(0, _service_dir)
     from output_safety import sanitize_payload_for_output, sanitize_text_for_output
 
+from lib.route_options import (
+    ROUTE_REQUEST_OPTION_KEYS,
+    normalize_route_request_options,
+)
+
 
 class UnsupportedBatchProvider(RuntimeError):
     """Raised when a provider is not supported for live batch execution."""
@@ -30,6 +35,7 @@ class BatchRequest:
     force_json_output: bool = False
     metadata: Dict[str, str] = field(default_factory=dict)
     response_format: Optional[Dict[str, Any]] = None
+    request_options: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -87,6 +93,11 @@ class BatchClient(Protocol):
 
 def _metadata_flag_enabled(metadata: Dict[str, str], key: str) -> bool:
     return str(metadata.get(key) or "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _request_options_for_body(value: Any) -> Dict[str, str]:
+    """Backwards-compatible alias for :func:`normalize_route_request_options`."""
+    return normalize_route_request_options(value)
 
 
 def classify_batch_terminal_status(status: str) -> Dict[str, Any]:
@@ -495,6 +506,7 @@ class OpenAIBatchClient:
             response_format = _response_format_for_request(req)
             if response_format is not None:
                 body["response_format"] = response_format
+            body.update(_request_options_for_body(req.request_options))
             payload_rows.append(
                 {
                     "custom_id": req.custom_id,

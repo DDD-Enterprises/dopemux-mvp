@@ -1,0 +1,213 @@
+{
+  "id": "TP-DMX-FDOS-004-AUTHORITY-REFRESH",
+  "project": "dopemux-mvp",
+  "target": "Install the Fast Dev OS operational doctrine layer at docs/03-reference/fast-dev-os/ that operationalizes the existing governance authority refresh: project constitution, current operating ledger snapshot, UNKNOWN/CONFLICTING/STALE register, PR/PACKET/PROOF snapshot ledgers, evidence-notes provenance, and discoverability nav updates.",
+  "invariants": [
+    "Do not modify runtime code, service code, tests, compose files, dependency files, or provider configuration.",
+    "Do not modify or override docs/03-reference/governance/* (the governance layer remains authoritative; this layer implements it).",
+    "Do not claim missing files exist; mark unresolved authority as UNKNOWN.",
+    "Do not normalize the chat-context-v2 corpus into repo truth; it is advisory evidence only.",
+    "Preserve Dopemux split authority boundaries per AGENTS.md §6.",
+    "No live provider calls, live extraction, live preflight, Docker startup, or account-specific checks.",
+    "Snapshot ledgers (THREAD00, PR_LEDGER, PACKET_LEDGER, PROOF_LEDGER) must include explicit snapshot metadata (taken_at, repo_head, refresh_policy) to prevent stale-data-as-truth confusion."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-FDOS",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fdos-004-authority-refresh",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(fast-dev-os): install operational doctrine layer (authority refresh)",
+    "allowlist": [
+      "docs/03-reference/fast-dev-os/readme.md",
+      "docs/03-reference/fast-dev-os/project-constitution.md",
+      "docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md",
+      "docs/03-reference/fast-dev-os/unknown-conflicting-stale.md",
+      "docs/03-reference/fast-dev-os/pr-ledger.md",
+      "docs/03-reference/fast-dev-os/packet-ledger.md",
+      "docs/03-reference/fast-dev-os/proof-ledger.md",
+      "docs/03-reference/fast-dev-os/evidence-notes.md",
+      "docs/INDEX.md",
+      "docs/docs_index.yaml",
+      "task-packets/generated/TP-DMX-FDOS-004-AUTHORITY-REFRESH.json",
+      "proof/fast-dev-os/TP-DMX-FDOS-004-AUTHORITY-REFRESH/PROOF.json",
+      ".gitignore"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-FDOS-004-AUTHORITY-REFRESH.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-FDOS-004-AUTHORITY-REFRESH.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m json.tool proof/fast-dev-os/TP-DMX-FDOS-004-AUTHORITY-REFRESH/PROOF.json >/dev/null",
+      "python scripts/docs_validator.py docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/evidence-notes.md",
+      "python scripts/docs_frontmatter_guard.py docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/evidence-notes.md",
+      "grep -l 'Relationship to governance' docs/03-reference/fast-dev-os/*.md",
+      "grep -l 'snapshot:' docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/proof-ledger.md",
+      "git diff --check",
+      "git diff --cached --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(fast-dev-os): install operational doctrine layer (authority refresh)",
+    "body": "## Summary\n- Installs `docs/03-reference/fast-dev-os/` as the operational doctrine layer that implements (does NOT override) the existing governance authority refresh at `docs/03-reference/governance/codex-authority-refresh.md`.\n- Adds 6 operational ledgers (THREAD00 current operating, UNKNOWN/CONFLICTING/STALE register, PR snapshot, PACKET snapshot, PROOF snapshot) plus PROJECT_CONSTITUTION, README, and evidence-notes.\n- Registers discoverability via single-line additions to `docs/INDEX.md` and `docs/docs_index.yaml`.\n- Snapshot ledgers carry explicit `snapshot:` metadata (taken_at, repo_head, refresh_policy) to prevent stale-data-as-truth confusion.\n\n## Scope\nDocs/governance, doc-nav, task packet, and proof only. No runtime, service, test, compose, dependency, provider, or live extraction changes.\n\n## Boundary discipline\n- Every fast-dev-os doc includes a \"Relationship to governance\" section pointing back to `docs/03-reference/governance/codex-authority-refresh.md`.\n- AGENTS.md §10 known dangers are carried forward as UNRESOLVED in UNKNOWN_CONFLICTING_STALE.md — not silently smoothed.\n- chat-context-v2 corpus at `/Users/hue/Downloads/dopemux-chat-context-v2/` cited as advisory evidence only; provenance in evidence-notes.md.\n\n## Validation\nInclude exact command outputs and exit codes for: jsonschema, docs_validator, docs_frontmatter_guard, grep for \"Relationship to governance\" and \"snapshot:\", git diff --check.\n\n## NOT_RUN\n- Live provider calls\n- Live extraction\n- Docker startup\n- Runtime service health checks\n- docs/00-MASTER-INDEX.md update (intrusive; deferred to a future TP)\n\n## Residual Risks / UNKNOWNs\n- RISK-SCHEMA: dopetask-canonical-spec.json execution.agent enum lacks claude_code; \"codex\" used for schema compliance.\n- RISK-SNAPSHOT-STALENESS: PR/PACKET/PROOF ledgers go stale on next merge; mitigated by explicit snapshot metadata; generator-script enhancement deferred.\n- RISK-EXTERNAL-EVIDENCE: chat-context-v2 corpus is outside repo; cited as advisory only.\n\n@codex review",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repo identity, current branch/base, clean status, required authority files, and external evidence base availability.",
+      "context_files": [
+        "AGENTS.md",
+        "docs/03-reference/governance/rules.md",
+        "docs/03-reference/governance/codex-authority-refresh.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "PM_PLANE.md"
+      ],
+      "commands": [
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short",
+        "git rev-parse HEAD",
+        "git rev-parse origin/main",
+        "test -f AGENTS.md",
+        "test -f docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "test -f docs/03-reference/governance/codex-authority-refresh.md",
+        "test -d /Users/hue/Downloads/dopemux-chat-context-v2 || echo 'chat-context-v2 corpus absent; evidence-notes will mark as UNAVAILABLE'"
+      ],
+      "validation": [
+        "Repo remote must identify DDD-Enterprises/dopemux-mvp.",
+        "Base branch must be main or branch created from main.",
+        "Required authority files must be present.",
+        "External chat-context-v2 evidence base availability must be recorded (PRESENT or UNAVAILABLE) for evidence-notes."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create this task packet JSON at the generated task-packet path; validate against dopetask-canonical-spec.json.",
+      "expected_files": [
+        "task-packets/generated/TP-DMX-FDOS-004-AUTHORITY-REFRESH.json"
+      ],
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-DMX-FDOS-004-AUTHORITY-REFRESH.json >/dev/null",
+        "python -m jsonschema -i task-packets/generated/TP-DMX-FDOS-004-AUTHORITY-REFRESH.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Author docs/03-reference/fast-dev-os/project-constitution.md and README.md as the doctrine entry-point.",
+      "requirements": [
+        "PROJECT_CONSTITUTION.md defines: mission, scope, non-goals, vocabulary, boundaries vs the existing governance layer.",
+        "README.md is the discoverability landing page linking each ledger.",
+        "Every doc includes a \"Relationship to governance\" section pointing to docs/03-reference/governance/codex-authority-refresh.md.",
+        "Frontmatter follows Diataxis convention with id/title/type/owner/date/last_review/next_review/prelude fields."
+      ],
+      "expected_files": [
+        "docs/03-reference/fast-dev-os/project-constitution.md",
+        "docs/03-reference/fast-dev-os/readme.md"
+      ],
+      "validation": [
+        "grep -l 'Relationship to governance' docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/readme.md",
+        "grep -l 'codex-authority-refresh' docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/readme.md"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Author the four snapshot ledger files: THREAD00_CURRENT_OPERATING_LEDGER.md, PR_LEDGER.md, PACKET_LEDGER.md, PROOF_LEDGER.md.",
+      "requirements": [
+        "Each contains an explicit `snapshot:` metadata block with taken_at, repo_head, origin_main_head, ledger_class=snapshot, refresh_policy=manual-per-session, next_review_trigger.",
+        "THREAD00 contains current branch, PR queue summary, active TP, recent merges, open blockers.",
+        "PR_LEDGER snapshot includes all open PRs from `gh pr list --state open` at snapshot time.",
+        "PACKET_LEDGER derives from task-packets/INDEX.md + task-packets/ inventory.",
+        "PROOF_LEDGER indexes proof/**/PROOF.json with verdict and commit SHA columns.",
+        "Each doc includes a \"Relationship to governance\" section."
+      ],
+      "expected_files": [
+        "docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md",
+        "docs/03-reference/fast-dev-os/pr-ledger.md",
+        "docs/03-reference/fast-dev-os/packet-ledger.md",
+        "docs/03-reference/fast-dev-os/proof-ledger.md"
+      ],
+      "validation": [
+        "grep -l 'snapshot:' docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/proof-ledger.md",
+        "grep -l 'Relationship to governance' docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/proof-ledger.md",
+        "grep -l 'refresh_policy: manual-per-session' docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Author UNKNOWN_CONFLICTING_STALE.md and evidence-notes.md.",
+      "requirements": [
+        "UNKNOWN_CONFLICTING_STALE.md carries forward AGENTS.md §10 known dangers as UNRESOLVED.",
+        "UNKNOWN_CONFLICTING_STALE.md cites the chat-context-v2 corpus CROSS_PACKET_CONFLICTS.md and RECONCILED_MASTER_LEDGER.md as advisory evidence sources.",
+        "evidence-notes.md documents chat-context-v2 provenance (root path, retrieval date, selection criteria, why citations are external)."
+      ],
+      "expected_files": [
+        "docs/03-reference/fast-dev-os/unknown-conflicting-stale.md",
+        "docs/03-reference/fast-dev-os/evidence-notes.md"
+      ],
+      "validation": [
+        "grep -l 'AGENTS.md' docs/03-reference/fast-dev-os/unknown-conflicting-stale.md",
+        "grep -l 'chat-context-v2' docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/evidence-notes.md",
+        "grep -l 'Relationship to governance' docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/evidence-notes.md"
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Register discoverability: add a single line to docs/INDEX.md under Canonical Indexes and Lists, and a fast-dev-os key to docs/docs_index.yaml.",
+      "expected_files": [
+        "docs/INDEX.md",
+        "docs/docs_index.yaml"
+      ],
+      "validation": [
+        "grep -l 'fast-dev-os/readme.md' docs/INDEX.md",
+        "grep -l 'fast-dev-os:' docs/docs_index.yaml"
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Create proof JSON with exact commands, exit codes, changed files, NOT_RUN items, residual risks, and UNKNOWNs.",
+      "expected_files": [
+        "proof/fast-dev-os/TP-DMX-FDOS-004-AUTHORITY-REFRESH/PROOF.json"
+      ],
+      "validation": [
+        "python -m json.tool proof/fast-dev-os/TP-DMX-FDOS-004-AUTHORITY-REFRESH/PROOF.json >/dev/null",
+        "grep -l 'NOT_RUN' proof/fast-dev-os/TP-DMX-FDOS-004-AUTHORITY-REFRESH/PROOF.json"
+      ]
+    },
+    {
+      "id": "S8",
+      "task": "Run final docs/proof validation, inspect diff scope, codereview, precommit, commit, push, and open PR.",
+      "validation": [
+        "python scripts/docs_validator.py docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/evidence-notes.md",
+        "python scripts/docs_frontmatter_guard.py docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/evidence-notes.md",
+        "git diff --check",
+        "git diff --cached --check",
+        "git diff --stat",
+        "git status --short",
+        "Changed files must be within commit.allowlist (13 paths: 8 fast-dev-os docs + 2 doc-nav files + TP JSON + PROOF JSON + .gitignore negation for proof/fast-dev-os/)."
+      ]
+    }
+  ]
+}
