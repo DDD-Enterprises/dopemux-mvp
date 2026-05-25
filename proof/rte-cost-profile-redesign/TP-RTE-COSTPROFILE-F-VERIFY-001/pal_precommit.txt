@@ -1,0 +1,34 @@
+PAL precommit transcript summary for TP-RTE-COSTPROFILE-F-VERIFY-001
+
+Mode: mcp__pal__.precommit
+Model parameter: gpt-5-codex
+Precommit validation type: internal
+Compare-to: origin/claude/goofy-haibt-fc568e
+Continuation: df5feac2-273c-4997-9feb-b582b9cc4ae9
+
+Step 1:
+- Planned validation of F proof-only diff.
+- Initial scope check: packet JSON, task-packets/INDEX.md, and F proof artifacts.
+- Finding: series readiness is blocked by the full-suite failure, but that is the evidence this packet records.
+
+Step 2:
+- Ran git status and diff inspection.
+- Observed modified files: task-packets/INDEX.md and task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-001.json.
+- Observed untracked proof directory: proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/.
+- No nested git repositories found in the worktree scan.
+- Diff intent: proof-only failed verification evidence.
+
+Step 3:
+- Final PAL/precommit analysis: SAFE TO COMMIT only as failed verification evidence after final proof/checksum validations pass.
+- Not safe to mark VERIFIED.
+- Not safe to merge as a live-readiness sign-off.
+- Not safe to run provider/live execution from this result.
+
+Issues found:
+- CRITICAL: release/readiness blocked because full RTE suite failed 26 tests.
+- HIGH: bounded print_config omits the cost_profile field.
+- MEDIUM: final PROOF.json and sha256sums.txt must parse/verify before commit.
+
+Disposition:
+- Proceed with proof-only commit if local validations pass.
+- Keep F status NOT_VERIFIED.
