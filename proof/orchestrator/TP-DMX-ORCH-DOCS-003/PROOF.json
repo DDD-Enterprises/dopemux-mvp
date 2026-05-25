@@ -8,7 +8,7 @@
   "repo": "DDD-Enterprises/dopemux-mvp",
   "created_at_utc": "2026-05-25T15:58:30Z",
   "starting_head": "7037c5f29df11ca3fec55f991a4805e86e997e1e",
-  "ending_head": "UNCOMMITTED",
+  "ending_head": "98d95f4fcf04e99aa638c55f7b78909c9929e27f",
   "repo_identity_check": {
     "result": "PASS",
     "remote_url_matches": true,
@@ -190,7 +190,8 @@
   ],
   "codereview_status": "PASS",
   "precommit_status": "PASS",
-  "commit_sha": null,
-  "pr_url": null,
-  "cleanup_status": "WORKTREE_ACTIVE"
+  "commit_sha": "98d95f4fcf04e99aa638c55f7b78909c9929e27f",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/702",
+  "proof_closeout_note": "This proof artifact was updated after PR creation to record the implementation commit and PR URL. The final branch head is reported in the final response.",
+  "cleanup_status": "WORKTREE_ACTIVE_PENDING_PR_MERGE"
 }
