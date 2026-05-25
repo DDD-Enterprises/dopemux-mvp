@@ -1,0 +1,582 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.0.3, pluggy-1.6.0
+rootdir: /Users/hue/.codex/worktrees/rte-costprofile-e9-tests-002
+configfile: pytest.ini (WARNING: ignoring pytest config in pyproject.toml!)
+plugins: cov-7.1.0, anyio-4.13.0
+collected 1354 items
+
+services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_2d_high_1_home_scan_consent.py . [  0%]
+...                                                                      [  0%]
+services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_3_high_1_prompt_input_separator.py x [  0%]
+                                                                         [  0%]
+services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_4_high_1_secret_assign_regex.py . [  0%]
+....................                                                     [  1%]
+services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_4_high_2_walker_env_variants.py . [  1%]
+..........                                                               [  2%]
+services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_7_med_1_status_no_telemetry.py . [  2%]
+x                                                                        [  2%]
+services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_8_high_1_preflight_probe.py x [  2%]
+                                                                         [  2%]
+services/repo-truth-extractor/tests/test_artifact_consumer_static_compatibility.py . [  3%]
+....                                                                     [  3%]
+services/repo-truth-extractor/tests/test_artifact_provenance_fields.py . [  3%]
+....                                                                     [  3%]
+services/repo-truth-extractor/tests/test_attempt_execution_smoke.py ..   [  3%]
+services/repo-truth-extractor/tests/test_attempt_persistence_smoke.py .. [  3%]
+                                                                         [  3%]
+services/repo-truth-extractor/tests/test_audit_tp008_drift.py ...        [  4%]
+services/repo-truth-extractor/tests/test_batch_clients_integration.py .. [  4%]
+.....                                                                    [  4%]
+services/repo-truth-extractor/tests/test_batch_retriever.py ....         [  5%]
+services/repo-truth-extractor/tests/test_benchmark_attempt_executor.py . [  5%]
+                                                                         [  5%]
+services/repo-truth-extractor/tests/test_benchmark_campaign_runner.py .. [  5%]
+                                                                         [  5%]
+services/repo-truth-extractor/tests/test_benchmark_lane_split.py ..      [  5%]
+services/repo-truth-extractor/tests/test_benchmark_live_route_readiness_smoke.py . [  5%]
+.                                                                        [  5%]
+services/repo-truth-extractor/tests/test_blocked_lane_propagation.py .   [  5%]
+services/repo-truth-extractor/tests/test_bundle_writer.py ..             [  5%]
+services/repo-truth-extractor/tests/test_campaign_admissibility.py ..... [  6%]
+                                                                         [  6%]
+services/repo-truth-extractor/tests/test_campaign_selection.py ...       [  6%]
+services/repo-truth-extractor/tests/test_case_registry.py .              [  6%]
+services/repo-truth-extractor/tests/test_case_set_registry.py ..         [  6%]
+services/repo-truth-extractor/tests/test_cell_aliased_ladders.py ....... [  7%]
+...............                                                          [  8%]
+services/repo-truth-extractor/tests/test_change_summaries.py .           [  8%]
+services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py F. [  8%]
+FF.                                                                      [  8%]
+services/repo-truth-extractor/tests/test_comparison_lane.py .........    [  9%]
+services/repo-truth-extractor/tests/test_comparison_summary.py ....      [  9%]
+services/repo-truth-extractor/tests/test_contract_gate.py ..             [  9%]
+services/repo-truth-extractor/tests/test_control_deltas.py ..            [  9%]
+services/repo-truth-extractor/tests/test_cost_profile_anthropic_cache_e2e.py . [  9%]
+......                                                                   [ 10%]
+services/repo-truth-extractor/tests/test_cost_profile_batch_discount_e2e.py . [ 10%]
+.....                                                                    [ 10%]
+services/repo-truth-extractor/tests/test_cost_profile_e2e_economy.py ... [ 11%]
+......                                                                   [ 11%]
+services/repo-truth-extractor/tests/test_cost_profile_e2e_experimental.py . [ 11%]
+......                                                                   [ 12%]
+services/repo-truth-extractor/tests/test_cost_profile_e2e_quality.py ... [ 12%]
+......                                                                   [ 12%]
+services/repo-truth-extractor/tests/test_cost_profile_e2e_value_default.py . [ 12%]
+..........                                                               [ 13%]
+services/repo-truth-extractor/tests/test_cost_profile_spend_ledger_integration.py . [ 13%]
+.........                                                                [ 14%]
+services/repo-truth-extractor/tests/test_cost_profiles.py .............. [ 15%]
+..                                                                       [ 15%]
+services/repo-truth-extractor/tests/test_direct_model_adapters.py ..     [ 15%]
+services/repo-truth-extractor/tests/test_direct_model_runner.py ..       [ 15%]
+services/repo-truth-extractor/tests/test_direct_model_spend_guard.py ..  [ 15%]
+services/repo-truth-extractor/tests/test_disable_provider_kill_switch.py . [ 15%]
+......                                                                   [ 16%]
+services/repo-truth-extractor/tests/test_executor_adapters.py ..         [ 16%]
+services/repo-truth-extractor/tests/test_explainability_chain.py .       [ 16%]
+services/repo-truth-extractor/tests/test_failed_sidecar_redaction.py ... [ 16%]
+...                                                                      [ 17%]
+services/repo-truth-extractor/tests/test_fl_int_collect_input.py ..      [ 17%]
+services/repo-truth-extractor/tests/test_fl_int_model_governance.py ...  [ 17%]
+services/repo-truth-extractor/tests/test_fl_int_prompt_contracts.py ..   [ 17%]
+services/repo-truth-extractor/tests/test_fl_int_reduce_input.py .....    [ 17%]
+services/repo-truth-extractor/tests/test_fl_int_runner.py .......        [ 18%]
+services/repo-truth-extractor/tests/test_fl_int_standalone_runner.py .   [ 18%]
+services/repo-truth-extractor/tests/test_freshness_and_blockers.py ..    [ 18%]
+services/repo-truth-extractor/tests/test_governance_decision_log.py .    [ 18%]
+services/repo-truth-extractor/tests/test_governance_history_views.py .   [ 18%]
+services/repo-truth-extractor/tests/test_governance_packets.py .         [ 18%]
+services/repo-truth-extractor/tests/test_grok_passes_validation.py ....  [ 19%]
+services/repo-truth-extractor/tests/test_hardening_smoke.py .            [ 19%]
+services/repo-truth-extractor/tests/test_hygiene_authority.py .......... [ 20%]
+...................................                                      [ 22%]
+services/repo-truth-extractor/tests/test_hygiene_dry_run_safety.py ..... [ 22%]
+.                                                                        [ 23%]
+services/repo-truth-extractor/tests/test_hygiene_noise_detection.py .... [ 23%]
+..........                                                               [ 24%]
+services/repo-truth-extractor/tests/test_hygiene_nondestructive.py ..... [ 24%]
+                                                                         [ 24%]
+services/repo-truth-extractor/tests/test_hygiene_quarantine.py ......... [ 25%]
+..                                                                       [ 25%]
+services/repo-truth-extractor/tests/test_hygiene_resume_state.py ....... [ 25%]
+                                                                         [ 25%]
+services/repo-truth-extractor/tests/test_hygiene_version_path.py ......  [ 26%]
+services/repo-truth-extractor/tests/test_intelligence_routing_integration.py F [ 26%]
+                                                                         [ 26%]
+services/repo-truth-extractor/tests/test_legacy_ladder_deprecation_warning.py . [ 26%]
+.......                                                                  [ 26%]
+services/repo-truth-extractor/tests/test_legacy_routing_policy_deprecation_e2e.py . [ 26%]
+............                                                             [ 27%]
+services/repo-truth-extractor/tests/test_live_llm_guard.py ......        [ 28%]
+services/repo-truth-extractor/tests/test_llm_runtime_cached_tokens_meta.py . [ 28%]
+.......                                                                  [ 28%]
+services/repo-truth-extractor/tests/test_llm_runtime_cell_alias_resolution.py . [ 28%]
+.......                                                                  [ 29%]
+services/repo-truth-extractor/tests/test_llm_runtime_seam.py ..          [ 29%]
+services/repo-truth-extractor/tests/test_llm_runtime_service_tier_passthrough.py . [ 29%]
+.......                                                                  [ 30%]
+services/repo-truth-extractor/tests/test_migrate_model_map_v2_to_v3.py . [ 30%]
+...........                                                              [ 31%]
+services/repo-truth-extractor/tests/test_model_map_v3_impact_class_enforcement.py . [ 31%]
+...........                                                              [ 31%]
+services/repo-truth-extractor/tests/test_model_map_v3_loader.py ........ [ 32%]
+......                                                                   [ 33%]
+services/repo-truth-extractor/tests/test_model_map_v3_per_step_overrides.py . [ 33%]
+.......................                                                  [ 34%]
+services/repo-truth-extractor/tests/test_model_map_v3_tag_routing_deltas.py . [ 34%]
+................                                                         [ 36%]
+services/repo-truth-extractor/tests/test_openrouter_xai_route_identity.py . [ 36%]
+.....                                                                    [ 36%]
+services/repo-truth-extractor/tests/test_output_safety.py ........       [ 37%]
+services/repo-truth-extractor/tests/test_per_request_failover.py ....... [ 37%]
+.....                                                                    [ 37%]
+services/repo-truth-extractor/tests/test_phase_d_contract_hardening.py . [ 38%]
+..F...                                                                   [ 38%]
+services/repo-truth-extractor/tests/test_phase_d_contract_map.py ....... [ 38%]
+.                                                                        [ 39%]
+services/repo-truth-extractor/tests/test_phase_d_json_salvage.py ....    [ 39%]
+services/repo-truth-extractor/tests/test_phase_d_line_range.py ....      [ 39%]
+services/repo-truth-extractor/tests/test_phase_d_pressure_caps.py .....  [ 40%]
+services/repo-truth-extractor/tests/test_phase_d_sidefill.py ..          [ 40%]
+services/repo-truth-extractor/tests/test_phase_execution_step_filter.py . [ 40%]
+...                                                                      [ 40%]
+services/repo-truth-extractor/tests/test_phase_interaction.py .......... [ 41%]
+.........................                                                [ 43%]
+services/repo-truth-extractor/tests/test_phase_runner_seam.py .....      [ 43%]
+services/repo-truth-extractor/tests/test_phase_s_posttail_prompts.py .   [ 43%]
+services/repo-truth-extractor/tests/test_phase_s_prompt_registry.py .... [ 43%]
+..                                                                       [ 43%]
+services/repo-truth-extractor/tests/test_phase_s_step_selection.py ..... [ 44%]
+.....                                                                    [ 44%]
+services/repo-truth-extractor/tests/test_phases_seam.py ..               [ 44%]
+services/repo-truth-extractor/tests/test_policy_packs.py .               [ 44%]
+services/repo-truth-extractor/tests/test_pre_live_gate_v25.py F.....     [ 45%]
+services/repo-truth-extractor/tests/test_prescan_batch_planner.py ..     [ 45%]
+services/repo-truth-extractor/tests/test_prescan_consumers.py ..         [ 45%]
+services/repo-truth-extractor/tests/test_prescan_contracts.py .F.....    [ 46%]
+services/repo-truth-extractor/tests/test_prescan_core_pipeline.py ...... [ 46%]
+.......                                                                  [ 47%]
+services/repo-truth-extractor/tests/test_prescan_e2e_smoke.py F..        [ 47%]
+services/repo-truth-extractor/tests/test_prescan_governance.py ....      [ 47%]
+services/repo-truth-extractor/tests/test_prescan_hardening.py ........   [ 48%]
+services/repo-truth-extractor/tests/test_prescan_import_staleness.py ... [ 48%]
+..........                                                               [ 49%]
+services/repo-truth-extractor/tests/test_prescan_incremental.py ........ [ 49%]
+...F                                                                     [ 50%]
+services/repo-truth-extractor/tests/test_prescan_influence_labels.py ... [ 50%]
+...                                                                      [ 50%]
+services/repo-truth-extractor/tests/test_prescan_live_lane.py ..         [ 50%]
+services/repo-truth-extractor/tests/test_prescan_provider_catalog.py ... [ 50%]
+.................................                                        [ 53%]
+services/repo-truth-extractor/tests/test_prescan_v5_integration.py ..... [ 53%]
+                                                                         [ 53%]
+services/repo-truth-extractor/tests/test_pricing_catalog.py ..           [ 53%]
+services/repo-truth-extractor/tests/test_pricing_coverage.py F.          [ 53%]
+services/repo-truth-extractor/tests/test_pricing_surface_static_identity.py . [ 54%]
+.....                                                                    [ 54%]
+services/repo-truth-extractor/tests/test_profile_review_packets.py .     [ 54%]
+services/repo-truth-extractor/tests/test_profile_synth.py .              [ 54%]
+services/repo-truth-extractor/tests/test_promptgen_profiles.py ..        [ 54%]
+services/repo-truth-extractor/tests/test_promptpack_v1_v2.py ..F         [ 54%]
+services/repo-truth-extractor/tests/test_promptset_rules_injection.py .. [ 55%]
+..                                                                       [ 55%]
+services/repo-truth-extractor/tests/test_promptset_v4_lint.py .......... [ 55%]
+                                                                         [ 55%]
+services/repo-truth-extractor/tests/test_proof_contract.py .........     [ 56%]
+services/repo-truth-extractor/tests/test_provider_payload_redaction.py . [ 56%]
+.........                                                                [ 57%]
+services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py . [ 57%]
+.                                                                        [ 57%]
+services/repo-truth-extractor/tests/test_recommendation_states.py ...    [ 57%]
+services/repo-truth-extractor/tests/test_registry_unified_contracts.py . [ 57%]
+.....                                                                    [ 58%]
+services/repo-truth-extractor/tests/test_repair_counters_thread_safety.py . [ 58%]
+                                                                         [ 58%]
+services/repo-truth-extractor/tests/test_reporting_seam.py FF            [ 58%]
+services/repo-truth-extractor/tests/test_reporting_views.py .            [ 58%]
+services/repo-truth-extractor/tests/test_reprocess_failed_partitions.py . [ 58%]
+                                                                         [ 58%]
+services/repo-truth-extractor/tests/test_reprocess_policy_matrix.py .... [ 58%]
+...                                                                      [ 59%]
+services/repo-truth-extractor/tests/test_reqmeta_classification.py ....  [ 59%]
+services/repo-truth-extractor/tests/test_risk_dashboard.py .........     [ 60%]
+services/repo-truth-extractor/tests/test_rollups.py .                    [ 60%]
+services/repo-truth-extractor/tests/test_route_fingerprint_static_identity.py . [ 60%]
+....                                                                     [ 60%]
+services/repo-truth-extractor/tests/test_route_identity.py ...           [ 60%]
+services/repo-truth-extractor/tests/test_route_separation.py ....        [ 61%]
+services/repo-truth-extractor/tests/test_router_runtime_integration.py . [ 61%]
+..                                                                       [ 61%]
+services/repo-truth-extractor/tests/test_rte_config_seam.py ..           [ 61%]
+services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py . [ 61%]
+.........                                                                [ 62%]
+services/repo-truth-extractor/tests/test_rte_pkt_07_xai_metadata.py .... [ 62%]
+....                                                                     [ 62%]
+services/repo-truth-extractor/tests/test_rte_pkt_08_batch_static_proof.py . [ 62%]
+......                                                                   [ 63%]
+services/repo-truth-extractor/tests/test_rte_v5_characterization.py .FF. [ 63%]
+.....                                                                    [ 63%]
+services/repo-truth-extractor/tests/test_run_extraction_v3_artifact_parsing.py . [ 63%]
+.............                                                            [ 64%]
+services/repo-truth-extractor/tests/test_run_extraction_v3_batch_mode.py . [ 64%]
+........                                                                 [ 65%]
+services/repo-truth-extractor/tests/test_run_extraction_v3_consent.py .. [ 65%]
+.......                                                                  [ 66%]
+services/repo-truth-extractor/tests/test_run_extraction_v3_eof_gate.py . [ 66%]
+.......                                                                  [ 66%]
+services/repo-truth-extractor/tests/test_run_extraction_v3_escalation.py . [ 66%]
+......                                                                   [ 67%]
+services/repo-truth-extractor/tests/test_run_extraction_v3_model_routing.py . [ 67%]
+FF..F..                                                                  [ 67%]
+services/repo-truth-extractor/tests/test_run_extraction_v3_parse_retry.py . [ 68%]
+...                                                                      [ 68%]
+services/repo-truth-extractor/tests/test_run_extraction_v3_partition_concurrency.py . [ 68%]
+....                                                                     [ 68%]
+services/repo-truth-extractor/tests/test_run_extraction_v3_prune_on_success.py . [ 68%]
+.                                                                        [ 68%]
+services/repo-truth-extractor/tests/test_run_extraction_v3_request_meta_index.py . [ 68%]
+.                                                                        [ 68%]
+services/repo-truth-extractor/tests/test_run_extraction_v3_resume_semantics.py . [ 68%]
+......                                                                   [ 69%]
+services/repo-truth-extractor/tests/test_run_extraction_v3_retry.py ...  [ 69%]
+services/repo-truth-extractor/tests/test_run_extraction_v3_retry_decisions.py . [ 69%]
+.                                                                        [ 69%]
+services/repo-truth-extractor/tests/test_run_extraction_v3_shrink_policy.py . [ 69%]
+..                                                                       [ 70%]
+services/repo-truth-extractor/tests/test_run_extraction_v3_typer_cli.py . [ 70%]
+......                                                                   [ 70%]
+services/repo-truth-extractor/tests/test_run_extraction_v4_core.py ..... [ 70%]
+.....                                                                    [ 71%]
+services/repo-truth-extractor/tests/test_run_extraction_v5_batch_response_format.py . [ 71%]
+......                                                                   [ 71%]
+services/repo-truth-extractor/tests/test_run_extraction_v5_benchmark_route_ownership.py . [ 71%]
+....FF.                                                                  [ 72%]
+services/repo-truth-extractor/tests/test_run_extraction_v5_concurrency.py . [ 72%]
+.                                                                        [ 72%]
+services/repo-truth-extractor/tests/test_run_extraction_v5_cost_cap.py . [ 72%]
+.F...                                                                    [ 72%]
+services/repo-truth-extractor/tests/test_run_extraction_v5_live_gate_terminality.py . [ 73%]
+......................................                                   [ 75%]
+services/repo-truth-extractor/tests/test_run_extraction_v5_live_readiness.py . [ 75%]
+F                                                                        [ 75%]
+services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py . [ 76%]
+.............F.................FFF........                               [ 79%]
+services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py . [ 79%]
+.....................                                                    [ 80%]
+services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py . [ 80%]
+.......                                                                  [ 81%]
+services/repo-truth-extractor/tests/test_run_extraction_v5_rollup_reports.py . [ 81%]
+..                                                                       [ 81%]
+services/repo-truth-extractor/tests/test_run_extraction_v5_route_optimizer_metadata.py . [ 81%]
+......                                                                   [ 82%]
+services/repo-truth-extractor/tests/test_run_extraction_v5_soft_gate_logging.py . [ 82%]
+.                                                                        [ 82%]
+services/repo-truth-extractor/tests/test_run_extraction_v5_ui_events.py . [ 82%]
+                                                                         [ 82%]
+services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py . [ 82%]
+...                                                                      [ 82%]
+services/repo-truth-extractor/tests/test_run_extraction_v5_validator_repair_provenance.py . [ 82%]
+........                                                                 [ 83%]
+services/repo-truth-extractor/tests/test_run_repscan.py ...              [ 83%]
+services/repo-truth-extractor/tests/test_runtime_spend_optimizer_metadata.py . [ 83%]
+.....                                                                    [ 83%]
+services/repo-truth-extractor/tests/test_s_int_collect_input.py ..       [ 84%]
+services/repo-truth-extractor/tests/test_s_int_prompt_contracts.py .     [ 84%]
+services/repo-truth-extractor/tests/test_s_int_runner.py ..              [ 84%]
+services/repo-truth-extractor/tests/test_snapshot_capture.py ..          [ 84%]
+services/repo-truth-extractor/tests/test_sp_render.py .........          [ 85%]
+services/repo-truth-extractor/tests/test_spend_ledger.py .....           [ 85%]
+services/repo-truth-extractor/tests/test_spend_ledger_optimizers.py .... [ 85%]
+.........                                                                [ 86%]
+services/repo-truth-extractor/tests/test_spend_truth.py ..               [ 86%]
+services/repo-truth-extractor/tests/test_sqlite_bootstrap.py ...         [ 86%]
+services/repo-truth-extractor/tests/test_strict_passthrough_attestations.py . [ 86%]
+....                                                                     [ 87%]
+services/repo-truth-extractor/tests/test_structured_output_contracts_anthropic_tool_use.py . [ 87%]
+....................                                                     [ 88%]
+services/repo-truth-extractor/tests/test_structured_output_contracts_cache_directives.py . [ 88%]
+..................                                                       [ 90%]
+services/repo-truth-extractor/tests/test_structured_output_contracts_service_tier.py . [ 90%]
+.....                                                                    [ 90%]
+services/repo-truth-extractor/tests/test_structured_output_provider_modes.py . [ 90%]
+..                                                                       [ 90%]
+services/repo-truth-extractor/tests/test_structured_output_schema_strictness.py . [ 90%]
+                                                                         [ 90%]
+services/repo-truth-extractor/tests/test_task_scoring.py ..              [ 91%]
+services/repo-truth-extractor/tests/test_tp_rtx_v5_phase_recovery_hardening.py . [ 91%]
+......................                                                   [ 92%]
+services/repo-truth-extractor/tests/test_truth_label_preservation.py ... [ 92%]
+...                                                                      [ 93%]
+services/repo-truth-extractor/tests/test_truth_run_cli.py ss............ [ 94%]
+...........                                                              [ 95%]
+services/repo-truth-extractor/tests/test_universal_extractor.py ........ [ 95%]
+.................................................                        [ 99%]
+services/repo-truth-extractor/tests/test_v5_golden_fixture_smoke.py .    [ 99%]
+services/repo-truth-extractor/tests/test_v5_observability_improvements.py . [ 99%]
+..                                                                       [ 99%]
+services/repo-truth-extractor/tests/test_v5_resume_smoke.py ..           [ 99%]
+services/repo-truth-extractor/tests/test_v5_verify_phase_output_smoke.py . [ 99%]
+.                                                                        [ 99%]
+services/repo-truth-extractor/tests/test_validator_wrappers.py ..        [100%]
+
+=================================== FAILURES ===================================
+____________ test_code_prescan_emits_dotted_relative_python_imports ____________
+services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py:45: in test_code_prescan_emits_dotted_relative_python_imports
+    assert set(result["imports"]) == {".models", "..core", "pkg.sub", "os"}
+               ^^^^^^^^^^^^^^^^^
+E   KeyError: 'imports'
+___ test_code_prescan_api_surface_detection_avoids_substring_false_positives ___
+services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py:101: in test_code_prescan_api_surface_detection_avoids_substring_false_positives
+    assert prescan.analyze_file(comment_entry, tmp_path)["api_surfaces"] == []
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'api_surfaces'
+______ test_code_prescan_arrow_function_signatures_match_symbol_coverage _______
+services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py:126: in test_code_prescan_arrow_function_signatures_match_symbol_coverage
+    symbol_names = {symbol["name"] for symbol in analyzed["symbols"]}
+                                                 ^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'symbols'
+___________________ test_intelligence_driven_routing_upgrade ___________________
+services/repo-truth-extractor/tests/test_intelligence_routing_integration.py:134: in test_intelligence_driven_routing_upgrade
+    assert req_meta.get("model_id") == "gpt-4o"
+E   AssertionError: assert 'gpt-5.4-mini' == 'gpt-4o'
+E
+E     - gpt-4o
+E     + gpt-5.4-mini
+____ test_balanced_grok_openrouter_routes_use_contract_lane_map_for_d_steps ____
+services/repo-truth-extractor/tests/test_phase_d_contract_hardening.py:111: in test_balanced_grok_openrouter_routes_use_contract_lane_map_for_d_steps
+    assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D0") == [
+E   AssertionError: assert [('openrouter...NAI_API_KEY')] == [('gemini', '...TER_API_KEY')]
+E
+E     At index 0 diff: ('openrouter', 'openai/gpt-5.3-codex', 'OPENROUTER_API_KEY') != ('gemini', 'gemini-3.1-pro-preview', 'GEMINI_API_KEY')
+E     Use -v to get more diff
+______________ test_default_policy_requires_direct_gemini_and_xai ______________
+services/repo-truth-extractor/tests/test_pre_live_gate_v25.py:23: in test_default_policy_requires_direct_gemini_and_xai
+    assert gate.DEFAULT_TARGET_POLICY == "balanced_openrouter"
+E   AssertionError: assert 'cost' == 'balanced_openrouter'
+E
+E     - balanced_openrouter
+E     + cost
+_____________ test_optimize_payload_includes_prior_pass_summaries ______________
+services/repo-truth-extractor/tests/test_prescan_contracts.py:163: in test_optimize_payload_includes_prior_pass_summaries
+    assert "duplicate_assessments" in payload
+E   AssertionError: assert 'duplicate_assessments' in {'corpus_summary': {'included_files': 4}, 'cost_estimate': {}, 'dedup_results': {'duplicate_assessments': [{'canonical...md']}]}, 'discovery_results': {'hidden_features': [{'feature_name': 'Hidden Feature', 'path': 'docs/hidden.md'}]}, ...}
+______________ test_prescan_real_repo_full_and_incremental_smoke _______________
+services/repo-truth-extractor/tests/test_prescan_e2e_smoke.py:88: in test_prescan_real_repo_full_and_incremental_smoke
+    assert warm_result.metadata["incremental"]["cached_code_analysis_reused"] == 2
+E   assert 0 == 2
+----------------------------- Captured stderr call -----------------------------
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: will change to "main" in Git 3.0. To configure the initial branch name
+hint: to use in all of your new repositories, which will suppress this warning,
+hint: call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+------------------------------ Captured log call -------------------------------
+WARNING  lib.prescan.code_intelligence_report:code_intelligence_report.py:105 Fewer than 5 graph nodes or no entry points — skipping dead code analysis
+WARNING  lib.prescan.code_intelligence_report:code_intelligence_report.py:105 Fewer than 5 graph nodes or no entry points — skipping dead code analysis
+_____________ test_incremental_outputs_match_full_run_semantically _____________
+services/repo-truth-extractor/tests/test_prescan_incremental.py:510: in test_incremental_outputs_match_full_run_semantically
+    assert _normalized_outputs(engine.config.output_dir) == _normalized_outputs(full_engine.config.output_dir)
+E   AssertionError: assert {'graph': {'e...es': {}, ...}} == {'graph': {'e...es': {}, ...}}
+E
+E     Omitting 3 identical items, use -vv to show
+E     Differing items:
+E     {'intelligence': {'code_intelligence': {'analyzed_files': 2, 'files': [{'api_surfaces': [], 'imports': [], 'language':...': {'by_class': {'canonical': 2}, 'by_extension': {'.py': 2}, 'corpus_health_score': 100, 'ghost_files': 0, ...}, ...}} != {'intelligence': {'code_intelligence': {'analyzed_files': 2, 'files': [{'api_surfaces': [], 'imports': [], 'language':...': {'by_class': {'canonical': 2}, 'by_extension': {'.py': 2}, 'corpus_health_score': 100, 'ghost_files': 0, ...}, ...}}
+E     Use -v to get more diff
+_____ test_coverage_report_distinguishes_priced_partial_unknown_and_stale ______
+services/repo-truth-extractor/tests/test_pricing_coverage.py:21: in test_coverage_report_distinguishes_priced_partial_unknown_and_stale
+    assert row_by_key["xai/grok-4.20"]["coverage_class"] == "unknown"
+E   AssertionError: assert 'priced' == 'unknown'
+E
+E     - unknown
+E     + priced
+____________ test_promptpack_v1_carries_contract_metadata_for_d0_d1 ____________
+services/repo-truth-extractor/tests/test_promptpack_v1_v2.py:151: in test_promptpack_v1_carries_contract_metadata_for_d0_d1
+    assert contract_metadata["lane"]["provider"] == "gemini"
+E   AssertionError: assert 'openrouter' == 'gemini'
+E
+E     - gemini
+E     + openrouter
+_________ test_write_step_metrics_snapshot_delegates_to_reporting_impl _________
+services/repo-truth-extractor/tests/test_reporting_seam.py:25: in test_write_step_metrics_snapshot_delegates_to_reporting_impl
+    result = runner.write_step_metrics_snapshot(
+services/repo-truth-extractor/run_extraction_v5.py:4204: in write_step_metrics_snapshot
+    return rte_write_step_metrics_snapshot(
+services/repo-truth-extractor/rte_reports.py:33: in write_step_metrics_snapshot
+    return _write_step_metrics_snapshot_impl(deps, run_root, phase, step_id, metrics)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+services/repo-truth-extractor/reporting.py:81: in write_step_metrics_snapshot
+    target = deps.telemetry_path(run_root, STEP_METRICS_FILENAME)
+             ^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'str' object has no attribute 'telemetry_path'
+_____________ test_write_run_manifest_delegates_to_reporting_impl ______________
+services/repo-truth-extractor/tests/test_reporting_seam.py:64: in test_write_run_manifest_delegates_to_reporting_impl
+    result = runner.write_run_manifest(
+services/repo-truth-extractor/run_extraction_v5.py:6468: in write_run_manifest
+    return rte_write_run_manifest(
+services/repo-truth-extractor/rte_reports.py:89: in write_run_manifest
+    return _write_run_manifest_impl(deps, root, dirs, run_id, args, run_context, phases)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+services/repo-truth-extractor/reporting.py:479: in write_run_manifest
+    prompt_report = deps.promptset_fingerprint(phases)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'str' object has no attribute 'promptset_fingerprint'
+___________________ test_truth_run_finds_v5_runner_directly ____________________
+services/repo-truth-extractor/tests/test_rte_v5_characterization.py:61: in test_truth_run_finds_v5_runner_directly
+    from dopemux.commands import extract_commands
+src/dopemux/commands/extract_commands.py:26: in <module>
+    from ..mobile.hooks import mobile_task_notification
+src/dopemux/mobile/__init__.py:3: in <module>
+    from .cli import mobile
+src/dopemux/mobile/cli.py:14: in <module>
+    from .runtime import (
+src/dopemux/mobile/runtime.py:17: in <module>
+    from ..tmux.common import PaneInfo, TmuxError
+src/dopemux/tmux/__init__.py:3: in <module>
+    from .cli import tmux
+src/dopemux/tmux/cli.py:33: in <module>
+    from ..litellm_proxy import (
+src/dopemux/litellm_proxy.py:20: in <module>
+    import litellm  # type: ignore
+    ^^^^^^^^^^^^^^
+E   ModuleNotFoundError: No module named 'litellm'
+____________________ test_truth_cli_shows_deprecation_error ____________________
+services/repo-truth-extractor/tests/test_rte_v5_characterization.py:73: in test_truth_cli_shows_deprecation_error
+    from dopemux.cli import cli
+src/dopemux/cli.py:42: in <module>
+    from .claude_tools.cli import register_commands
+src/dopemux/claude_tools/cli.py:23: in <module>
+    from .integration import get_global_integration
+src/dopemux/claude_tools/integration.py:18: in <module>
+    from .session_manager import SessionManager
+src/dopemux/claude_tools/session_manager.py:31: in <module>
+    from ..tmux.cli import list_sessions
+src/dopemux/tmux/__init__.py:3: in <module>
+    from .cli import tmux
+src/dopemux/tmux/cli.py:33: in <module>
+    from ..litellm_proxy import (
+src/dopemux/litellm_proxy.py:20: in <module>
+    import litellm  # type: ignore
+    ^^^^^^^^^^^^^^
+E   ModuleNotFoundError: No module named 'litellm'
+_______ test_contract_lane_routes_override_policy_for_json_managed_steps _______
+services/repo-truth-extractor/tests/test_run_extraction_v3_model_routing.py:157: in test_contract_lane_routes_override_policy_for_json_managed_steps
+    assert runner.resolve_step_ladder("cost", "D", "D0") == expected_d0
+E   AssertionError: assert [('openrouter...NAI_API_KEY')] == [('gemini', '...TER_API_KEY')]
+E
+E     At index 0 diff: ('openrouter', 'openai/gpt-5.3-codex', 'OPENROUTER_API_KEY') != ('gemini', 'gemini-3.1-pro-preview', 'GEMINI_API_KEY')
+E     Use -v to get more diff
+____ test_resolve_effective_step_route_marks_strict_required_contract_lane _____
+services/repo-truth-extractor/tests/test_run_extraction_v3_model_routing.py:188: in test_resolve_effective_step_route_marks_strict_required_contract_lane
+    assert attempts[0]["strict_capable"] is False
+E   assert True is False
+________________ test_no_auto_transport_flip_across_retry_hops _________________
+services/repo-truth-extractor/tests/test_run_extraction_v3_model_routing.py:305: in test_no_auto_transport_flip_across_retry_hops
+    assert all(row["provider"] == "openrouter" for row in attempts)
+E   assert False
+E    +  where False = all(<generator object test_no_auto_transport_flip_across_retry_hops.<locals>.<genexpr> at 0x1110aa740>)
+_ test_resolve_effective_step_route_honors_explicit_step_override_for_later_phase _
+services/repo-truth-extractor/tests/test_run_extraction_v5_benchmark_route_ownership.py:223: in test_resolve_effective_step_route_honors_explicit_step_override_for_later_phase
+    route = runner.resolve_effective_step_route("H", "H3", cfg)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+services/repo-truth-extractor/run_extraction_v5.py:5652: in resolve_effective_step_route
+    explicit_override = _resolve_explicit_route_override(
+services/repo-truth-extractor/run_extraction_v5.py:5377: in _resolve_explicit_route_override
+    raise RuntimeError(
+E   RuntimeError: explicit route override selected a non-strict-capable route for a strict step: H:H3 provider=openrouter model=openai/gpt-5.4 reason=openrouter_strict_passthrough_unverified
+_ test_resolve_effective_step_route_prefers_step_override_over_phase_override __
+services/repo-truth-extractor/tests/test_run_extraction_v5_benchmark_route_ownership.py:244: in test_resolve_effective_step_route_prefers_step_override_over_phase_override
+    route = runner.resolve_effective_step_route("H", "H3", cfg)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+services/repo-truth-extractor/run_extraction_v5.py:5652: in resolve_effective_step_route
+    explicit_override = _resolve_explicit_route_override(
+services/repo-truth-extractor/run_extraction_v5.py:5377: in _resolve_explicit_route_override
+    raise RuntimeError(
+E   RuntimeError: explicit route override selected a non-strict-capable route for a strict step: H:H3 provider=openrouter model=openai/gpt-5.4 reason=openrouter_strict_passthrough_unverified
+_ test_initialize_spend_tracker_honors_selected_execution_step_for_route_coverage _
+services/repo-truth-extractor/tests/test_run_extraction_v5_cost_cap.py:177: in test_initialize_spend_tracker_honors_selected_execution_step_for_route_coverage
+    snapshot = runner.initialize_spend_tracker(
+services/repo-truth-extractor/run_extraction_v5.py:3991: in initialize_spend_tracker
+    raise RuntimeError(
+E   RuntimeError: Pricing config missing route coverage for active target: gemini/gemini-3.5-flash, openai/gpt-5.4-mini, xai/grok-4-fast
+___________ test_route_readiness_summary_honors_benchmark_owned_lane ___________
+services/repo-truth-extractor/tests/test_run_extraction_v5_live_readiness.py:131: in test_route_readiness_summary_honors_benchmark_owned_lane
+    assert {row["provider"] for row in required_routes} == {"openai"}
+E   AssertionError: assert {'gemini', 'openai', 'xai'} == {'openai'}
+E
+E     Extra items in the left set:
+E     'gemini'
+E     'xai'
+E     Use -v to get more diff
+_ test_doctor_preflight_and_auth_doctor_do_not_run_prescan_or_create_run_artifacts _
+services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py:399: in test_doctor_preflight_and_auth_doctor_do_not_run_prescan_or_create_run_artifacts
+    assert code == 0
+E   assert 2 == 0
+_ test_route_readiness_summary_distinguishes_required_fallback_and_configured __
+services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py:1102: in test_route_readiness_summary_distinguishes_required_fallback_and_configured
+    assert "GEMINI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
+E   AssertionError: assert 'GEMINI_API_KEY' in ['OPENAI_API_KEY', 'OPENROUTER_API_KEY']
+___________ test_route_readiness_summary_honors_explicit_step_routes ___________
+services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py:1132: in test_route_readiness_summary_honors_explicit_step_routes
+    summary = runner.derive_route_readiness_summary(["H"], "cost")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+services/repo-truth-extractor/run_extraction_v5.py:7222: in derive_route_readiness_summary
+    return _derive_route_readiness_summary_impl(
+services/repo-truth-extractor/rte_ops_surfaces.py:499: in derive_route_readiness_summary
+    route_info = resolve_effective_step_route(
+services/repo-truth-extractor/run_extraction_v5.py:5652: in resolve_effective_step_route
+    explicit_override = _resolve_explicit_route_override(
+services/repo-truth-extractor/run_extraction_v5.py:5377: in _resolve_explicit_route_override
+    raise RuntimeError(
+E   RuntimeError: explicit route override selected a non-strict-capable route for a strict step: H:H0 provider=openrouter model=openai/gpt-5.4 reason=openrouter_strict_passthrough_unverified
+______________ test_print_config_includes_route_readiness_summary ______________
+services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py:1166: in test_print_config_includes_route_readiness_summary
+    assert "XAI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
+E   AssertionError: assert 'XAI_API_KEY' in ['OPENAI_API_KEY', 'OPENROUTER_API_KEY']
+=============================== warnings summary ===============================
+../../../.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/_pytest/config/__init__.py:1434
+  /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/_pytest/config/__init__.py:1434: PytestConfigWarning: Unknown config option: asyncio_mode
+
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] services/repo-truth-extractor/tests/test_truth_run_cli.py:95: dopemux.cli not importable in this test context
+SKIPPED [1] services/repo-truth-extractor/tests/test_truth_run_cli.py:123: dopemux.cli not importable in this test context
+XFAIL services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_3_high_1_prompt_input_separator.py::test_at_least_one_prompt_has_input_delimiter - FA-3-HIGH-1: Zero of 138 prompts have an INPUT/INSTRUCTION delimiter. Add e.g. <repo_content>...</repo_content> tags in the prompt templates so the model can be trained to treat untrusted content.
+XFAIL services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_7_med_1_status_no_telemetry.py::test_status_text_should_be_fully_readonly - FA-7-MED-1: --status (text) writes telemetry/TERMINAL_TIMELINE.jsonl under typo'd run-id. PR #603 fixed phase dirs but missed the telemetry sidecar.
+XFAIL services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_8_high_1_preflight_probe.py::test_preflight_probe_succeeds_with_valid_keys - FA-8-HIGH-1: run_provider_doctor_probe returns failure_type=unknown / AMBIGUOUS_PROVIDER_BLOCK even with valid keys + live providers (direct curl succeeds). Root cause likely in call_llm payload construction (max_tokens? response_format?).
+FAILED services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py::test_code_prescan_emits_dotted_relative_python_imports
+FAILED services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py::test_code_prescan_api_surface_detection_avoids_substring_false_positives
+FAILED services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py::test_code_prescan_arrow_function_signatures_match_symbol_coverage
+FAILED services/repo-truth-extractor/tests/test_intelligence_routing_integration.py::test_intelligence_driven_routing_upgrade
+FAILED services/repo-truth-extractor/tests/test_phase_d_contract_hardening.py::test_balanced_grok_openrouter_routes_use_contract_lane_map_for_d_steps
+FAILED services/repo-truth-extractor/tests/test_pre_live_gate_v25.py::test_default_policy_requires_direct_gemini_and_xai
+FAILED services/repo-truth-extractor/tests/test_prescan_contracts.py::test_optimize_payload_includes_prior_pass_summaries
+FAILED services/repo-truth-extractor/tests/test_prescan_e2e_smoke.py::test_prescan_real_repo_full_and_incremental_smoke
+FAILED services/repo-truth-extractor/tests/test_prescan_incremental.py::test_incremental_outputs_match_full_run_semantically
+FAILED services/repo-truth-extractor/tests/test_pricing_coverage.py::test_coverage_report_distinguishes_priced_partial_unknown_and_stale
+FAILED services/repo-truth-extractor/tests/test_promptpack_v1_v2.py::test_promptpack_v1_carries_contract_metadata_for_d0_d1
+FAILED services/repo-truth-extractor/tests/test_reporting_seam.py::test_write_step_metrics_snapshot_delegates_to_reporting_impl
+FAILED services/repo-truth-extractor/tests/test_reporting_seam.py::test_write_run_manifest_delegates_to_reporting_impl
+FAILED services/repo-truth-extractor/tests/test_rte_v5_characterization.py::test_truth_run_finds_v5_runner_directly
+FAILED services/repo-truth-extractor/tests/test_rte_v5_characterization.py::test_truth_cli_shows_deprecation_error
+FAILED services/repo-truth-extractor/tests/test_run_extraction_v3_model_routing.py::test_contract_lane_routes_override_policy_for_json_managed_steps
+FAILED services/repo-truth-extractor/tests/test_run_extraction_v3_model_routing.py::test_resolve_effective_step_route_marks_strict_required_contract_lane
+FAILED services/repo-truth-extractor/tests/test_run_extraction_v3_model_routing.py::test_no_auto_transport_flip_across_retry_hops
+FAILED services/repo-truth-extractor/tests/test_run_extraction_v5_benchmark_route_ownership.py::test_resolve_effective_step_route_honors_explicit_step_override_for_later_phase
+FAILED services/repo-truth-extractor/tests/test_run_extraction_v5_benchmark_route_ownership.py::test_resolve_effective_step_route_prefers_step_override_over_phase_override
+FAILED services/repo-truth-extractor/tests/test_run_extraction_v5_cost_cap.py::test_initialize_spend_tracker_honors_selected_execution_step_for_route_coverage
+FAILED services/repo-truth-extractor/tests/test_run_extraction_v5_live_readiness.py::test_route_readiness_summary_honors_benchmark_owned_lane
+FAILED services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py::test_doctor_preflight_and_auth_doctor_do_not_run_prescan_or_create_run_artifacts
+FAILED services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py::test_route_readiness_summary_distinguishes_required_fallback_and_configured
+FAILED services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py::test_route_readiness_summary_honors_explicit_step_routes
+FAILED services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py::test_print_config_includes_route_readiness_summary
+= 26 failed, 1323 passed, 2 skipped, 3 xfailed, 1 warning in 223.60s (0:03:43) =
