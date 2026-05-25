@@ -1,0 +1,10 @@
+model_map=/Users/hue/.codex/worktrees/rte-costprofile-e9-tests-002/services/repo-truth-extractor/promptsets/v4/model_map.yaml
+version=3.0
+steps=136
+tags=['control_plane', 'long_context', 'security_sensitive']
+tag_count=3
+override_count=6
+override_steps=['C10', 'S12', 'T0', 'T1', 'T3', 'Z0']
+structural_or_security_count=4
+structural_or_security_critical_count=4
+failure_count=0
