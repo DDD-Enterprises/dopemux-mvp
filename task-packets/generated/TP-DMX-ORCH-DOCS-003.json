@@ -9,7 +9,7 @@
     "Do not treat dopecon-bridge as canonical task, workflow, PM, decision, progress, memory, chronicle, retrieval, or proof authority.",
     "Do not treat the upstream 13-tool MCP Task Orchestrator and the in-repo FastAPI task-orchestrator service as one unified runtime contract.",
     "Preserve UNKNOWN where current repo evidence does not establish a canonical writer, proof envelope, consumer chain, schema winner, or agent authority.",
-    "No workflow transitions, GitHub mutations, memory writes, index writes, destructive actions, live provider calls, live extraction, Docker startup, or runtime health probes."
+    "No workflow transitions, GitHub mutations, memory writes, index writes, destructive actions, live provider calls, live extraction, Docker startup, or in-repo runtime service health probes."
   ],
   "depends_on": [],
   "repo_binding": {
@@ -51,7 +51,7 @@
   },
   "pr": {
     "title": "docs(orchestrator): define read-only integration authority",
-    "body": "## Summary\n- Adds an authority document for task-orchestrator operator integration readiness.\n- Establishes read-only status, queue, blocker, and daily summary surfaces as the first safe integration lane.\n- Defers workflow mutation, event consumers, GitHub automation, memory writes, and destructive/index actions until explicit proof and approval gates exist.\n\n## Scope\nDocs, packet index, task packet, proof allowlist, and proof only. No runtime, tests, compose, dependencies, provider config, MCP launcher, or live service changes.\n\n## Validation\nInclude exact command outputs and exit codes for JSON syntax, task-packet schema validation, docs validator, docs frontmatter guard, proof JSON syntax, authority-grep checks, and git diff checks.\n\n## NOT_RUN\n- Runtime service health checks\n- Docker startup\n- Live provider calls\n- Live extraction\n- Workflow transitions or MCP write calls\n- GitHub comments/labels/merge\n- ConPort, dope-memory, or dope-context writes\n\n## Residual Risks / UNKNOWNs\nList unresolved event-consumer, proof-envelope, schema, agent-authority, and Python/FastAPI-vs-upstream-MCP boundary risks.\n\n@codex review",
+    "body": "## Summary\n- Adds an authority document for task-orchestrator operator integration readiness.\n- Establishes read-only status, queue, blocker, and daily summary surfaces as the first safe integration lane.\n- Defers workflow mutation, event consumers, GitHub automation, memory writes, and destructive/index actions until explicit proof and approval gates exist.\n\n## Scope\nDocs, packet index, task packet, proof allowlist, and proof only. No runtime, tests, compose, dependencies, provider config, MCP launcher, or live service changes.\n\n## Validation\nInclude exact command outputs and exit codes for JSON syntax, task-packet schema validation, docs validator, docs frontmatter guard, proof JSON syntax, authority-grep checks, and git diff checks.\n\n## NOT_RUN\n- In-repo runtime service health checks\n- Docker startup\n- Live provider calls\n- Live extraction\n- Workflow transitions or MCP write calls\n- GitHub comments/labels/merge\n- ConPort, dope-memory, or dope-context writes\n\n## Residual Risks / UNKNOWNs\nList unresolved event-consumer, proof-envelope, schema, agent-authority, and Python/FastAPI-vs-upstream-MCP boundary risks.\n\n@codex review",
     "base": "main"
   },
   "pal_chain": {
@@ -91,7 +91,7 @@
         "git remote -v",
         "git rev-parse HEAD",
         "test -f .dopetaskroot",
-        "mcp task-orchestrator get_context health check"
+        "mcp task-orchestrator get_context work-state read"
       ],
       "validation": [
         "Repo remote identifies DDD-Enterprises/dopemux-mvp.",
