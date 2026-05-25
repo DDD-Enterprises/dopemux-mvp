@@ -19,7 +19,7 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { AlertTriangle, Bell, Brain, Check, Copy, Droplet, Eye, Trash2, TrendingUp, Zap } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Bell, Brain, Check, CheckCircle, Copy, Droplet, Eye, Info, PauseCircle, Trash2, TrendingUp, Zap } from 'lucide-react';
 
 import { dashboardApiHeaders, dashboardApiUrl, dashboardWsUrl } from './config';
 import CognitiveLoadGauge from './components/CognitiveLoadGauge';
@@ -124,6 +124,28 @@ const formatTimestamp = (dateStr: string) => {
   const mm = date.getMinutes().toString().padStart(2, '0');
   const ss = date.getSeconds().toString().padStart(2, '0');
   return `[${hh}:${mm}:${ss}]`;
+};
+
+const getNotificationIcon = (type: string, color: string) => {
+  const size = 14;
+  switch (type) {
+    case 'decision':
+      return <CheckCircle size={size} color={color} aria-hidden="true" />;
+    case 'progress':
+      return <TrendingUp size={size} color={color} aria-hidden="true" />;
+    case 'break':
+      return <PauseCircle size={size} color={color} aria-hidden="true" />;
+    case 'session':
+      return <Zap size={size} color={color} aria-hidden="true" />;
+    case 'hyperfocus':
+      return <Brain size={size} color={color} aria-hidden="true" />;
+    case 'warning':
+      return <AlertTriangle size={size} color={color} aria-hidden="true" />;
+    case 'error':
+      return <AlertCircle size={size} color={color} aria-hidden="true" />;
+    default:
+      return <Info size={size} color={color} aria-hidden="true" />;
+  }
 };
 
 function App() {
@@ -442,8 +464,8 @@ function App() {
                     <Copy size={14} color={brandTokens.colors.serumMint} aria-hidden="true" />
                   )
                 }
-                label={`Recommendation: ${cognitiveState.recommendation}`}
-                aria-label={isCopied ? 'Recommendation copied to clipboard' : `AI Recommendation: ${cognitiveState.recommendation}. Click to copy.`}
+                label={`AI Recommendation: ${cognitiveState.recommendation}${isCopied ? ' (Copied)' : ''}`}
+                aria-label={isCopied ? `AI Recommendation: ${cognitiveState.recommendation} (Copied)` : `AI Recommendation: ${cognitiveState.recommendation}`}
                 onClick={handleCopyRecommendation}
                 tabIndex={0}
                 sx={{
@@ -621,6 +643,7 @@ function App() {
                 return (
                   <Fade in={true} key={`${notification.timestamp}-${notification.message}`}>
                     <Chip
+                      icon={getNotificationIcon(notification.notificationType, severityColor)}
                       label={`${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`}
                       variant="outlined"
                       tabIndex={0}
@@ -629,6 +652,7 @@ function App() {
                         borderColor: alpha(severityColor, 0.6),
                         color: severityColor,
                         backgroundColor: alpha(severityColor, 0.08),
+                        '& .MuiChip-icon': { ml: 1 },
                       }}
                     />
                   </Fade>
