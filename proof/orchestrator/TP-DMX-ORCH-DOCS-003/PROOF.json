@@ -1,0 +1,196 @@
+{
+  "tp_id": "TP-DMX-ORCH-DOCS-003",
+  "tp_path": "task-packets/generated/TP-DMX-ORCH-DOCS-003.json",
+  "project": "dopemux-mvp",
+  "worktree_path": "/Users/hue/.codex/worktrees/2bb3/dopemux-mvp",
+  "branch": "codex/dmx-orch-docs-003",
+  "base_branch": "main",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "created_at_utc": "2026-05-25T15:58:30Z",
+  "starting_head": "7037c5f29df11ca3fec55f991a4805e86e997e1e",
+  "ending_head": "UNCOMMITTED",
+  "repo_identity_check": {
+    "result": "PASS",
+    "remote_url_matches": true,
+    "marker_file": ".dopetaskroot",
+    "marker_present": true,
+    "branch_state_at_start": "detached HEAD at origin/main, then switched to codex/dmx-orch-docs-003",
+    "mcp_task_orchestrator_health": {
+      "result": "PASS",
+      "activeItems": 0,
+      "blockedItems": 0,
+      "stalledItems": 0
+    }
+  },
+  "slices_completed": [
+    {
+      "slice": "S1",
+      "label": "preflight repo identity and authority inspection",
+      "status": "PASS"
+    },
+    {
+      "slice": "S2",
+      "label": "create TP-DMX-ORCH-DOCS-003 and index entry",
+      "status": "PASS"
+    },
+    {
+      "slice": "S3",
+      "label": "author task-orchestrator authority document",
+      "status": "PASS"
+    },
+    {
+      "slice": "S4",
+      "label": "create proof JSON",
+      "status": "PASS"
+    }
+  ],
+  "files_created": [
+    "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+    "task-packets/generated/TP-DMX-ORCH-DOCS-003.json",
+    "proof/orchestrator/TP-DMX-ORCH-DOCS-003/PROOF.json"
+  ],
+  "files_modified": [
+    ".gitignore",
+    "task-packets/INDEX.md"
+  ],
+  "allowlist_compliance": {
+    "result": "PASS",
+    "allowlist": [
+      ".gitignore",
+      "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+      "task-packets/INDEX.md",
+      "task-packets/generated/TP-DMX-ORCH-DOCS-003.json",
+      "proof/orchestrator/TP-DMX-ORCH-DOCS-003/PROOF.json"
+    ],
+    "files_outside_allowlist": []
+  },
+  "validations": [
+    {
+      "name": "Task Packet JSON syntax",
+      "command": "python -m json.tool task-packets/generated/TP-DMX-ORCH-DOCS-003.json >/dev/null",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Task Packet schema validation",
+      "command": "python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-DOCS-003.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "stderr_note": "jsonschema CLI emitted a deprecation warning; schema validation still exited 0."
+    },
+    {
+      "name": "Authority doc validator",
+      "command": "python scripts/docs_validator.py docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Authority doc frontmatter guard",
+      "command": "python scripts/docs_frontmatter_guard.py docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "All docs have valid frontmatter."
+    },
+    {
+      "name": "Authority phrase checks",
+      "command": "rg -n \"Read-only operator integration is allowed|Mutation remains deferred|Do not centralize authority|Relationship To dopeTask|This is a task-orchestrator system authority document\" docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+      "exit_code": 0,
+      "status": "PASS",
+      "matched_lines": [
+        "24:## Relationship To dopeTask",
+        "26:This is a task-orchestrator system authority document.",
+        "44:Read-only operator integration is allowed.",
+        "52:Mutation remains deferred until all of the following are true:",
+        "61:Do not centralize authority in task-orchestrator. Its correct role is workflow"
+      ]
+    },
+    {
+      "name": "Proof JSON syntax",
+      "command": "python -m json.tool proof/orchestrator/TP-DMX-ORCH-DOCS-003/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Proof required-status grep",
+      "command": "rg -n \"NOT_RUN|UNKNOWN|rollback\" proof/orchestrator/TP-DMX-ORCH-DOCS-003/PROOF.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Diff whitespace check",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS",
+      "note": "New files were intent-added before diff check so untracked docs/proof whitespace was included."
+    }
+  ],
+  "pal_chain": {
+    "challenge": {
+      "status": "PASS",
+      "note": "User challenged dopeTask-vs-task-orchestrator framing; doc was moved into task-orchestrator system docs."
+    },
+    "thinkdeep": {
+      "status": "PASS",
+      "model": "gpt-5-mini",
+      "continuation_id": "35682111-61f4-4fab-b5da-96bb51437ba9",
+      "note": "Confirmed corrected split: task-orchestrator owns the subject authority; dopeTask owns only the repo packet wrapper. An initial malformed thinkdeep call failed input validation and was rerun successfully."
+    },
+    "planner": {
+      "status": "PASS",
+      "model": "gpt-5-mini",
+      "continuation_id": "4b147110-9393-4812-a9c4-78007ca550a3",
+      "note": "Confirmed remaining docs-only plan and validation sequence."
+    },
+    "codereview": {
+      "status": "PASS",
+      "model": "gpt-5-mini",
+      "continuation_id": "f1af98ef-e426-4529-8352-9f8b5b7c8478",
+      "issues_found": 0,
+      "note": "Internal PAL codereview found no issues and confirmed docs-only scope."
+    },
+    "precommit": {
+      "status": "PASS",
+      "model": "gpt-5-mini",
+      "continuation_id": "aac8bff4-62f2-4d5b-935c-1d5fb076dc29",
+      "issues_found": 0,
+      "note": "PAL precommit completed three-step internal validation and found no issues."
+    }
+  },
+  "not_run_label": "NOT_RUN",
+  "not_run": [
+    "Runtime service health checks: out of scope for docs-only authority packet.",
+    "Docker startup: out of scope.",
+    "Live provider calls: out of scope.",
+    "Live extraction: out of scope.",
+    "Workflow transitions or MCP write calls: forbidden by packet invariants.",
+    "GitHub comments, labels, merges, or pushes: not requested and out of scope.",
+    "ConPort, dope-memory, or dope-context writes: forbidden by packet invariants.",
+    "dope-context clear_index or broad index refresh: forbidden by packet invariants."
+  ],
+  "residual_risks": [
+    "No runtime CLI implementation was added; TP-DMX-ORCH-STATUS-001 remains proposed future work.",
+    "EventCoordinator to ConPort to dope-memory to proof correlation remains unverified and requires a separate audit packet.",
+    "Proof schema winner remains unresolved for future merge-readiness automation.",
+    "The upstream 13-tool MCP Task Orchestrator and in-repo FastAPI task-orchestrator service remain distinct surfaces without a unified proof envelope.",
+    "Agent authority remains UNKNOWN."
+  ],
+  "unknowns": [
+    "Whether dopeTask canonical schema and any external task_packet.schema.json are identical.",
+    "Whether local external dopeTask runtime version matches all repo expectations.",
+    "Who signs final acceptance authority when proof exists.",
+    "Whether services/mcp-integration-bridge is dead, orphaned, or still reachable.",
+    "Which proof template/schema wins for automation."
+  ],
+  "rollback_plan": [
+    "Remove docs/03-reference/systems/task-orchestrator/operator-integration-authority.md.",
+    "Remove task-packets/generated/TP-DMX-ORCH-DOCS-003.json.",
+    "Remove proof/orchestrator/TP-DMX-ORCH-DOCS-003/PROOF.json.",
+    "Remove the TP-DMX-ORCH-DOCS-003 row from task-packets/INDEX.md.",
+    "Remove .gitignore proof/orchestrator negation lines if no future orchestrator proof bundle is needed."
+  ],
+  "codereview_status": "PASS",
+  "precommit_status": "PASS",
+  "commit_sha": null,
+  "pr_url": null,
+  "cleanup_status": "WORKTREE_ACTIVE"
+}
