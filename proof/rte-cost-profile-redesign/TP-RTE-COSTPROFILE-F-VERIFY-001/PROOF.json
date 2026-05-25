@@ -1,0 +1,162 @@
+{
+  "tp_id": "TP-RTE-COSTPROFILE-F-VERIFY-001",
+  "tp_path": "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-001.json",
+  "status": "NOT_VERIFIED",
+  "project": "dopemux-mvp",
+  "worktree": "/Users/hue/.codex/worktrees/rte-costprofile-e9-tests-002",
+  "branch": "codex/rte-costprofile-f-verify-001",
+  "base_branch": "claude/goofy-haibt-fc568e",
+  "base_sha": "6ecb72de3c089867bcd64dd8302fb68ba8d10980",
+  "merge_base_with_origin_main": "21b48ee10f9b3db69162fa84c32c5532a29d64b3",
+  "cumulative_diff_range": "21b48ee10f9b3db69162fa84c32c5532a29d64b3..6ecb72de3c089867bcd64dd8302fb68ba8d10980",
+  "proof_commit_sha": "67749b94d5084c9a667501cb16f60ee2ffcbe882",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/698",
+  "scope": "verification-proof-only",
+  "production_code_modified": false,
+  "authority_used": [
+    "AGENTS.md",
+    "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-001.json",
+    "runtime code: services/repo-truth-extractor/run_extraction_v5.py",
+    "runtime code: services/repo-truth-extractor/rte_promptset.py",
+    "live GitHub PR metadata for #687, #688, #690, #694, #695, #696, #697"
+  ],
+  "contributing_packets": [
+    {
+      "tp_id": "TP-RTE-COSTPROFILE-E3-CONTRACTS-001",
+      "pr": 687,
+      "merge_commit": "fbaebabe41dda37e57f462ae5193b4ac8d637f0c",
+      "ancestor_of_f_base": true
+    },
+    {
+      "tp_id": "TP-RTE-COSTPROFILE-E4-FINISH-001",
+      "pr": 688,
+      "merge_commit": "53a2ef10edf73d8cbca0271ef1afaee53d93ef9e",
+      "ancestor_of_f_base": true
+    },
+    {
+      "tp_id": "TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001",
+      "pr": 690,
+      "merge_commit": "d7c4c31d7123cfc433df50512b0bffb2c538adee",
+      "ancestor_of_f_base": false,
+      "normalized_equivalent_commits": [
+        "b1f87ff17",
+        "f23520728",
+        "bd1ee85ba",
+        "36bb2dc62",
+        "9333d6b11"
+      ]
+    },
+    {
+      "tp_id": "TP-RTE-COSTPROFILE-E8-YAML-V3-001",
+      "pr": 694,
+      "merge_commit": "e236cde12c4d0848431da62fdbd0b0f93d511e8b",
+      "ancestor_of_f_base": true
+    },
+    {
+      "tp_id": "TP-RTE-COSTPROFILE-E9-RUNTIME-SPEND-OPTIMIZERS-001",
+      "pr": 695,
+      "merge_commit": "c36515fdfd36b858219b097a45c4d81fbcbe1a69",
+      "ancestor_of_f_base": true
+    },
+    {
+      "tp_id": "TP-RTE-COSTPROFILE-E9-ROUTE-OPTIMIZER-METADATA-001",
+      "pr": 696,
+      "merge_commit": "4cbebce6dcf5675aa8e381263ece1cfe8bf6eafb",
+      "ancestor_of_f_base": true
+    },
+    {
+      "tp_id": "TP-RTE-COSTPROFILE-E9-TESTS-001",
+      "pr": 697,
+      "merge_commit": "6ecb72de3c089867bcd64dd8302fb68ba8d10980",
+      "ancestor_of_f_base": true
+    }
+  ],
+  "validations": [
+    {
+      "name": "full_rte_pytest",
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests --tb=short -v",
+      "exit_code": 1,
+      "result": "FAIL",
+      "artifact": "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/pytest_full_run.txt",
+      "summary": {
+        "failed": 26,
+        "passed": 1323,
+        "skipped": 2,
+        "xfailed": 3,
+        "warnings": 1,
+        "duration_seconds": 223.60
+      }
+    },
+    {
+      "name": "promptset_v3_audit",
+      "command": "inline Python rte_promptset.audit_model_map_v3 against services/repo-truth-extractor/promptsets/v4/model_map.yaml",
+      "exit_code": 0,
+      "result": "PASS",
+      "artifact": "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/promptset_audit_v3.txt",
+      "summary": {
+        "version": "3.0",
+        "steps": 136,
+        "override_count": 6,
+        "failure_count": 0
+      }
+    },
+    {
+      "name": "bounded_lane_print_config",
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python services/repo-truth-extractor/run_extraction_v5.py --phase A --step A2 --run-id f_verify_print_config --output-root /tmp/rte-f-verify-print-config --cost-profile value-default --print-config",
+      "exit_code": 0,
+      "result": "PASS_WITH_FINDING",
+      "artifact": "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/bounded_lane_print_config.txt",
+      "summary": {
+        "execute_used": false,
+        "target_policy": "balanced_openrouter",
+        "cost_profile_field_emitted": false
+      }
+    }
+  ],
+  "pal": {
+    "analyze": "NOT_VERIFIED is the only supportable status from observed evidence.",
+    "thinkdeep": "Failed verification proof plus follow-up packet routing preserves the F audit boundary.",
+    "challenge": "Challenged NOT_VERIFIED disposition and PR publication; proof-only PR remains supported by packet S9 and AGENTS.md.",
+    "codereview": "Critical full-suite blocker; high print_config cost_profile blocker; medium normalized-stack ancestry caveat.",
+    "precommit": "Safe to commit only as failed verification evidence after proof/checksum validations; not safe as live-readiness sign-off."
+  },
+  "proof_artifacts": [
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/SERIES_VERIFICATION_REPORT.md",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/pytest_full_run.txt",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/promptset_audit_v3.txt",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/bounded_lane_print_config.txt",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/pal_codereview.txt",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/pal_precommit.txt",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/PROOF.json",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/sha256sums.txt"
+  ],
+  "files_changed": [
+    "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-001.json",
+    "task-packets/INDEX.md",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/SERIES_VERIFICATION_REPORT.md",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/pytest_full_run.txt",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/promptset_audit_v3.txt",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/bounded_lane_print_config.txt",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/pal_codereview.txt",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/pal_precommit.txt",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/PROOF.json",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/sha256sums.txt"
+  ],
+  "follow_up_packet_needed": "TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001",
+  "not_run": [
+    "Live LLM/provider calls",
+    "Bounded lane --execute",
+    "Provider/account authentication",
+    "Production fixes in F"
+  ],
+  "residual_risks": [
+    "Full-suite failure set was not individually git-blamed to originating packets.",
+    "PR #690 GitHub merge commit is not a direct ancestor of the normalized F base.",
+    "origin/main has advanced independently from the stacked verification base."
+  ],
+  "rollback_plan": [
+    "Before merge: close the proof-only PR or revert the F proof commit(s).",
+    "No production code was changed by this packet.",
+    "Follow-up repair work should be implemented in a separate packet."
+  ]
+}
