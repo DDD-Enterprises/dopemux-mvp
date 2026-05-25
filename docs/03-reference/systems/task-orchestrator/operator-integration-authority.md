@@ -95,8 +95,8 @@ authority, bridge owner, or agent sovereign.
 | Packet/proof validation is the next safe surface after status reads. | PROPOSED | Governance and proof requirements in `AGENTS.md` and proof docs. | MEDIUM |
 | EventCoordinator/event paths do not yet prove end-to-end event to ConPort to dope-memory to proof receipt correlation. | RISK | Event emission and adapters exist, but this packet did not validate a full consumer/proof chain. | MEDIUM |
 | Upstream 13-tool MCP task-orchestrator is active in local MCP config. | OBSERVED | `src/dopemux/mcp/default_catalog.yaml`, current tool surface. | HIGH |
-| Kotlin task-orchestrator implementation is a current proven runtime dependency. | UNKNOWN/RISK | `services/task-orchestrator/server.py` claims Kotlin/37 tools, but current docs/catalog distinguish the upstream 13-tool MCP runtime and in-repo FastAPI service. | MEDIUM |
-| Agent authority remains unresolved. | UNKNOWN/RISK | `AGENTS.md`, `PROJECT.md`, `ARCHITECTURE.md`. | HIGH |
+| Kotlin task-orchestrator implementation as a current proven runtime dependency remains unresolved and risky for proof-envelope design. | UNKNOWN | `services/task-orchestrator/server.py` claims Kotlin/37 tools, but current docs/catalog distinguish the upstream 13-tool MCP runtime and in-repo FastAPI service. | MEDIUM |
+| Agent authority remains unresolved and should be treated as a workflow risk until a specific runtime path is verified. | UNKNOWN | `AGENTS.md`, `PROJECT.md`, `ARCHITECTURE.md`. | HIGH |
 
 ## System Role Table
 

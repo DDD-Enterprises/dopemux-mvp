@@ -8,7 +8,8 @@
   "repo": "DDD-Enterprises/dopemux-mvp",
   "created_at_utc": "2026-05-25T15:58:30Z",
   "starting_head": "7037c5f29df11ca3fec55f991a4805e86e997e1e",
-  "ending_head": "98d95f4fcf04e99aa638c55f7b78909c9929e27f",
+  "ending_head": "SEE_GITHUB_PR_HEAD",
+  "ending_head_policy": "A committed proof file cannot self-reference the commit SHA that contains its final contents. The authoritative final branch head is the GitHub PR headRefOid at merge time; this proof records the implementation commit and PR URL, and the final head is reported by Git/GitHub during merge closeout.",
   "repo_identity_check": {
     "result": "PASS",
     "remote_url_matches": true,
@@ -158,12 +159,12 @@
   },
   "not_run_label": "NOT_RUN",
   "not_run": [
-    "Runtime service health checks: out of scope for docs-only authority packet.",
+    "In-repo task-orchestrator HTTP service startup checks: out of scope for docs-only authority packet.",
     "Docker startup: out of scope.",
     "Live provider calls: out of scope.",
     "Live extraction: out of scope.",
     "Workflow transitions or MCP write calls: forbidden by packet invariants.",
-    "GitHub comments, labels, merges, or pushes: not requested and out of scope.",
+    "GitHub labels or workflow-changing comments: out of scope.",
     "ConPort, dope-memory, or dope-context writes: forbidden by packet invariants.",
     "dope-context clear_index or broad index refresh: forbidden by packet invariants."
   ],
@@ -190,8 +191,9 @@
   ],
   "codereview_status": "PASS",
   "precommit_status": "PASS",
-  "commit_sha": "98d95f4fcf04e99aa638c55f7b78909c9929e27f",
+  "commit_sha": "f4f90d964f5c53f5eaeb4a1b4dfbd91c3bb89db2",
+  "proof_closeout_commit_sha": "5b8930f3675a8727d4734dcaf46fe6472f2cf876",
   "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/702",
-  "proof_closeout_note": "This proof artifact was updated after PR creation to record the implementation commit and PR URL. The final branch head is reported in the final response.",
+  "proof_closeout_note": "This proof artifact was updated after PR creation to record the rebased implementation commit, PR URL, and explicit ending_head policy. The final branch head is reported by Git/GitHub during merge closeout.",
   "cleanup_status": "WORKTREE_ACTIVE_PENDING_PR_MERGE"
 }
