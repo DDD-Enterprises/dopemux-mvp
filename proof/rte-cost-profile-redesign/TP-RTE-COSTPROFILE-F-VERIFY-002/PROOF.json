@@ -30,15 +30,31 @@
     "status": "VERIFIED",
     "status_scope": "repair_gate_only_not_series_gate",
     "lists_f_verify_002_as_followup": true,
-    "live_provider_calls": "NOT_RUN",
-    "live_extraction": "NOT_RUN"
+    "no_live_assertions": {
+      "root_live_fields_present": false,
+      "source_artifact": "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/PROOF.json",
+      "live_provider_calls": {
+        "derived_status": "NOT_RUN",
+        "evidence_paths": [
+          "review_thread_fix.live_provider_calls",
+          "validation_buckets.NOT_RUN[command='live LLM/provider calls']"
+        ]
+      },
+      "live_extraction": {
+        "derived_status": "NOT_RUN",
+        "evidence_paths": [
+          "review_thread_fix.live_extraction",
+          "validation_buckets.NOT_RUN[command='--execute bounded lane']"
+        ]
+      }
+    }
   },
   "gates": [
     {
       "gate": "G1",
       "name": "repair_proof_intake",
       "status": "PASS",
-      "evidence": "Repair PROOF.json (PR #709) declares status_scope=repair_gate_only_not_series_gate, lists TP-RTE-COSTPROFILE-F-VERIFY-002 in follow_up_packets, and records live_provider_calls=NOT_RUN and live_extraction=NOT_RUN. REPAIR_DECISIONS.md present on origin/main."
+      "evidence": "Repair PROOF.json (PR #709) declares status_scope=repair_gate_only_not_series_gate and lists TP-RTE-COSTPROFILE-F-VERIFY-002 in follow_up_packets. No-live status is derived from repair proof nested fields review_thread_fix.live_provider_calls=NOT_RUN, review_thread_fix.live_extraction=NOT_RUN, and validation_buckets.NOT_RUN entries for live LLM/provider calls and --execute bounded lane; root-level live fields are absent and not claimed. REPAIR_DECISIONS.md present on captured base SHA."
     },
     {
       "gate": "G2",
@@ -163,6 +179,7 @@
       "Post-review governance: packet worktree creation now uses captured base SHA from /tmp/F_VERIFY_002_BASE_SHA.txt and verifies worktree HEAD equals that SHA.",
       "Post-review governance: packet S1 now fails closed on tracked dirty state before verification setup and after fresh worktree creation while intentionally ignoring untracked artifacts.",
       "Post-review governance: packet S1 now fails closed unless PR #709 and PR #710 are MERGED and their head SHAs plus merge commits are ancestors of the captured base SHA.",
+      "Post-review governance: Gate 1 no-live assertions are derived from repair proof nested fields and NOT_RUN bucket, not hardcoded as root repair-proof fields.",
       "Supplemental PAL planner: RUN with gpt-5-codex and recorded in pal_codereview.txt.",
       "G1 repair proof intake: all four required assertions pass.",
       "G2 full RTE suite: exit 0 with 1114 passed / 8 xfailed / 1 skipped / 0 failed / 0 xpassed (deferred-state total xfailed + skipped = 9 matches repair gate).",
