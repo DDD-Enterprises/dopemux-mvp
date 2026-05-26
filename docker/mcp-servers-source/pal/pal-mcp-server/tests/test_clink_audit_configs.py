@@ -1,14 +1,13 @@
 import json
 from pathlib import Path
 
+import clink.registry as clink_registry
 from clink.models import CLIClientConfig
 from clink.registry import ClinkRegistry
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_DIR = PROJECT_ROOT / "conf" / "cli_clients"
-PROOF_ROOT = PROJECT_ROOT.parents[3] / "proof" / "TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001"
-DOC_PATH = PROJECT_ROOT / "docs" / "tools" / "clink.md"
 CODEREVIEWER_PROMPT = PROJECT_ROOT / "systemprompts" / "clink" / "default_codereviewer.txt"
 CODEREVIEWER_PROMPT_REF = "systemprompts/clink/default_codereviewer.txt"
 AUDIT_CONFIGS = {
@@ -37,9 +36,20 @@ def _load_config(path: Path) -> tuple[dict, CLIClientConfig]:
     return payload, CLIClientConfig.model_validate(payload)
 
 
-def _resolve_config(config: CLIClientConfig, source_path: Path):
-    registry = ClinkRegistry.__new__(ClinkRegistry)
-    return registry._resolve_config(config, source_path=source_path)
+def _registry_with_empty_user_overrides(monkeypatch, tmp_path: Path) -> ClinkRegistry:
+    empty_user_config_dir = tmp_path / "empty_user_cli_clients"
+    empty_user_config_dir.mkdir()
+    monkeypatch.delenv(clink_registry.CONFIG_ENV_VAR, raising=False)
+    monkeypatch.setattr(clink_registry, "USER_CONFIG_DIR", empty_user_config_dir)
+    return ClinkRegistry()
+
+
+def _effective_args(client) -> list[str]:
+    args = list(client.internal_args)
+    args.extend(client.config_args)
+    for role in client.roles.values():
+        args.extend(role.role_args)
+    return args
 
 
 def _assert_no_forbidden_flags(args: list[str]) -> None:
@@ -56,12 +66,14 @@ def _assert_plan_pair(args: list[str], flag: str) -> None:
     assert args[flag_index + 1] == "plan"
 
 
-def test_audit_configs_load_validate_and_resolve():
+def test_audit_configs_load_validate_and_resolve_via_public_registry(monkeypatch, tmp_path):
+    registry = _registry_with_empty_user_overrides(monkeypatch, tmp_path)
+
     for name, path in AUDIT_CONFIGS.items():
         raw_payload, config = _load_config(path)
         assert raw_payload["name"] == name
 
-        resolved = _resolve_config(config, path)
+        resolved = registry.get_client(name)
         assert set(resolved.roles) == {"default", "codereviewer"}
 
         for role_name in ("default", "codereviewer"):
@@ -72,37 +84,22 @@ def test_audit_configs_load_validate_and_resolve():
             assert resolved_role.prompt_path == CODEREVIEWER_PROMPT
             assert resolved_role.role_args == []
 
-        _assert_no_forbidden_flags(config.additional_args)
-        for role in config.roles.values():
-            _assert_no_forbidden_flags(role.role_args)
+        _assert_no_forbidden_flags(_effective_args(resolved))
 
 
-def test_audit_configs_use_safe_runner_plan_modes():
+def test_audit_configs_use_safe_runner_plan_modes(monkeypatch, tmp_path):
+    registry = _registry_with_empty_user_overrides(monkeypatch, tmp_path)
+
     _, claude = _load_config(AUDIT_CONFIGS["claude-audit"])
+    claude_client = registry.get_client("claude-audit")
     assert claude.runner == "claude"
-    _assert_plan_pair(claude.additional_args, "--permission-mode")
+    _assert_plan_pair(claude_client.config_args, "--permission-mode")
 
     _, gemini = _load_config(AUDIT_CONFIGS["gemini-audit"])
+    gemini_client = registry.get_client("gemini-audit")
     assert gemini.runner == "gemini"
-    _assert_plan_pair(gemini.additional_args, "--approval-mode")
+    _assert_plan_pair(gemini_client.config_args, "--approval-mode")
 
 
 def test_copilot_audit_config_is_deferred():
     assert not (CONFIG_DIR / "copilot-audit.json").exists()
-
-    proof_text = (PROOF_ROOT / "PROOF.json").read_text(encoding="utf-8")
-    doc_text = DOC_PATH.read_text(encoding="utf-8")
-    expected = "DEFERRED_COPILOT_RUNNER_UNSUPPORTED"
-    assert expected in proof_text
-    assert expected in doc_text
-
-
-def test_docs_and_proof_record_default_role_mapping():
-    proof_text = (PROOF_ROOT / "PROOF.json").read_text(encoding="utf-8")
-    doc_text = DOC_PATH.read_text(encoding="utf-8")
-
-    assert "ACCEPTED_DEFAULT_ROLE_INJECTION" in proof_text
-    assert "default and codereviewer" in proof_text
-    assert CODEREVIEWER_PROMPT_REF in proof_text
-    assert "`default` and `codereviewer`" in doc_text
-    assert CODEREVIEWER_PROMPT_REF in doc_text

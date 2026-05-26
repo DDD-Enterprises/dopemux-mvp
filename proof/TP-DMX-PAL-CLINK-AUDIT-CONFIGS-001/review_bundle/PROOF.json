@@ -7,5 +7,10 @@
     "required": false,
     "status": "SKIPPED",
     "skip_reason": "Supervisor-approved bootstrap exception for audit-safe config prep packet. This packet creates audit-enabling configs only and does not claim PR merge readiness without supervisor review."
+  },
+  "commit": {
+    "status": "COMMITTED",
+    "sha": "c1f34ff1362ccbaf46caaa30414808508e20d677",
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/711"
   }
 }

@@ -74,7 +74,7 @@
       {
         "command": "cd docker/mcp-servers-source/pal/pal-mcp-server && source .venv/bin/activate && python -m pytest -q tests/test_clink_audit_configs.py",
         "exit_code": 0,
-        "result": "PASS: 4 passed in 0.07s after installing PAL requirements-dev.txt into local .venv"
+        "result": "PASS: 3 passed in 0.08s after installing PAL requirements-dev.txt into local .venv"
       },
       {
         "command": "python -m compileall -q docker/mcp-servers-source/pal/pal-mcp-server",
@@ -107,7 +107,7 @@
         "result": "PASS: help output includes --approval-mode choices including plan"
       },
       {
-        "command": "pre-commit run --files <REV2 changed files>",
+        "command": "pre-commit run --files $(cat proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/CHANGED_FILES.txt)",
         "exit_code": 0,
         "result": "PASS: repository hygiene hooks passed or skipped as not applicable"
       }
@@ -120,7 +120,7 @@
   },
   "precommit": {
     "status": "PASS",
-    "command": "pre-commit run --files <REV2 changed files>",
+    "command": "pre-commit run --files $(cat proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/CHANGED_FILES.txt)",
     "exit_code": 0
   },
   "warnings": [
@@ -135,7 +135,8 @@
     "Future auditor-router discovery behavior is not exercised in this packet."
   ],
   "commit": {
-    "status": "PENDING_COMMIT",
-    "sha": null
+    "status": "COMMITTED",
+    "sha": "c1f34ff1362ccbaf46caaa30414808508e20d677",
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/711"
   }
 }
