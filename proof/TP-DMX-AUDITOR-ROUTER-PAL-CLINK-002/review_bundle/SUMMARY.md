@@ -14,10 +14,14 @@ The packet assumed `TP-DMX-AUDITOR-ROUTER-001` runtime already existed on `main`
 
 ## Blockers / Not Complete
 
-- `scripts/auditor-preflight` is not created because this packet's allowlist does not permit it.
 - PAL clink execution is not performed by the router.
 - `PAL_CLINK_AUDIT_OUTPUT` is not captured.
 - Route selection is not an audit verdict.
+- GitHub workflow dispatch for PR Steward returned HTTP 500.
+
+## Resolved By Follow-Up
+
+- `WRAPPER_BLOCKED_BY_ALLOWLIST` is resolved by `TP-DMX-AUDITOR-ROUTER-WRAPPER-003`.
 
 ## P1 Review Fixes
 

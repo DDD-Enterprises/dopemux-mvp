@@ -4,8 +4,11 @@
   "verdict": "PASS_TARGETED_TESTS_WITH_SCOPE_CONFLICT",
   "blockers": [
     "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
-    "WRAPPER_BLOCKED_BY_ALLOWLIST",
-    "PAL_CLINK_AUDIT_OUTPUT_MISSING"
+    "PAL_CLINK_AUDIT_OUTPUT_MISSING",
+    "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500"
+  ],
+  "resolved_by_follow_up": [
+    "WRAPPER_BLOCKED_BY_ALLOWLIST"
   ],
   "nonblocking_results": [
     "Targeted auditor-router tests passed: 33 passed",
