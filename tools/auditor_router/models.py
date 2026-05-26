@@ -7,6 +7,7 @@ from typing import Any
 
 AVAILABLE_STATUSES = {"AVAILABLE", "AVAILABLE_WITH_RISKS"}
 PAL_CLINK_TOOL = "pal-mcp-clink"
+PAL_CLINK_SCHEMA_SAFE_CLIS = {"claude", "gemini"}
 
 
 @dataclass
@@ -51,7 +52,7 @@ def pal_clink_route_from_inspection(
         "status": inspection.status,
         "risk": inspection.risk,
         "reason": inspection.reason,
-        "underlying_cli": inspection.underlying_cli,
+        "underlying_cli": _schema_safe_underlying_cli(inspection.underlying_cli),
         "clink_client_name": inspection.client_name,
         "clink_role": "codereviewer" if inspection.client_name else None,
         "clink_config_path": str(inspection.path) if inspection.path else None,
@@ -60,6 +61,12 @@ def pal_clink_route_from_inspection(
         "requires_operator_approval": True,
         "invocation_template": invocation_template,
     }
+
+
+def _schema_safe_underlying_cli(value: str | None) -> str | None:
+    if value in PAL_CLINK_SCHEMA_SAFE_CLIS:
+        return value
+    return None
 
 
 def needs_supervisor_route(reason: str) -> dict[str, Any]:

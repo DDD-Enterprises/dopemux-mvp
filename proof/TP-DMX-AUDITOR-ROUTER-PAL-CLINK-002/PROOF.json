@@ -39,19 +39,19 @@
     "route_is_audit_verdict": false
   },
   "review_fixes": {
-    "status": "P1_REVIEW_THREADS_ADDRESSED_IN_FOLLOW_UP_COMMIT",
-    "source": "PR #713 Codex review threads",
     "fixes": [
-      "Prompt path safety now requires canonical relative systemprompts/clink/default_codereviewer.txt and rejects basename-only path traversal.",
-      "Mutation detection now handles unsafe equals-form args such as --permission-mode=bypassPermissions, --approval-mode=yolo, --mode=autopilot, and --allow-all=true."
+      "Allowed Copilot FALLBACK_ONLY selection now returns exit 0 when --allow-fallback is provided.",
+      "PAL clink audit finding normalization preserves explicit blocking=true markers before verdict classification.",
+      "Unsafe or mismatched PAL clink audit configs emit schema-safe underlying_cli=null instead of invalid CLI strings.",
+      "Non-object PAL clink JSON config payloads are classified TOOLING_UNSAFE instead of crashing."
     ],
+    "source": "PR #713 unresolved Codex review threads",
+    "status": "LOCAL_REVIEW_THREADS_PATCHED_WITH_BLOCKERS_REMAINING",
     "tests_added": [
-      "test_roles_reject_same_basename_outside_trusted_prompt_root",
-      "test_roles_accept_canonical_codereviewer_prompt_path",
-      "test_reject_permission_mode_equals_mutation_flag",
-      "test_reject_approval_mode_equals_yolo_mutation_flag",
-      "test_reject_mode_equals_autopilot_mutation_flag",
-      "test_reject_allow_all_equals_true_mutation_flag"
+      "test_preflight_allow_fallback_returns_success_for_fallback_only",
+      "test_normalize_pal_clink_preserves_blocking_marker",
+      "test_mismatched_runner_route_remains_schema_safe",
+      "test_reject_non_object_config_payload"
     ]
   },
   "follow_up_resolution": {
@@ -72,14 +72,13 @@
     "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500"
   ],
   "nonblocking_results": [
-    "Targeted auditor-router tests passed: 33 passed",
-    "P1 PAL clink review safety regressions passed: 29 test_pal_clink tests",
     "PAL clink bridge-tier classification implemented as pure config inspection",
     "auditor_route schema accepts pal-mcp-clink route evidence",
-    "embedded_audit schema accepts pal-mcp-clink as auditor_tool"
+    "embedded_audit schema accepts pal-mcp-clink as auditor_tool",
+    "Targeted auditor-router tests passed after local review fixes: 37 passed",
+    "PAL clink review regressions passed after local review fixes: 33 test_pal_clink tests"
   ],
   "validation": {
-    "status": "PASS_TARGETED_TESTS_WITH_SCOPE_CONFLICT",
     "commands": [
       {
         "command": "python -m json.tool task-packets/generated/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002.json",
@@ -100,21 +99,6 @@
         "command": "python -m jsonschema -i task-packets/generated/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
         "exit_code": 0,
         "result": "PASS with jsonschema CLI deprecation warning"
-      },
-      {
-        "command": "python -m compileall -q tools tests",
-        "exit_code": 0,
-        "result": "PASS"
-      },
-      {
-        "command": "pytest -q tests/auditor_router/test_pal_clink.py",
-        "exit_code": 0,
-        "result": "PASS: 29 passed"
-      },
-      {
-        "command": "pytest -q tests/auditor_router",
-        "exit_code": 0,
-        "result": "PASS: 33 passed"
       },
       {
         "command": "python -m tools.auditor_router.preflight --help",
@@ -170,8 +154,29 @@
         "command": "pre-commit run --files $(cat proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/CHANGED_FILES.txt)",
         "exit_code": 0,
         "result": "PASS"
+      },
+      {
+        "command": "python -m compileall -q tools tests",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "pytest -q tests/auditor_router/test_pal_clink.py",
+        "exit_code": 0,
+        "result": "PASS: 33 passed"
+      },
+      {
+        "command": "pytest -q tests/auditor_router",
+        "exit_code": 0,
+        "result": "PASS: 37 passed"
+      },
+      {
+        "command": "python -m tools.auditor_router.preflight --fixture-dir tests/fixtures/auditor_router/pal_clink_no_configs_found --out /private/tmp/auditor-route-pr713-fallback --packet-id TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002 --allow-fallback",
+        "exit_code": 0,
+        "result": "PASS: selected copilot-cli FALLBACK_ONLY and returned success with --allow-fallback"
       }
-    ]
+    ],
+    "status": "PASS_TARGETED_TESTS_WITH_SCOPE_CONFLICT_WRAPPER_AND_REVIEW_FIXES"
   },
   "embedded_audit": {
     "required": true,
@@ -197,8 +202,8 @@
     "skip_reason": null
   },
   "codereview": {
-    "status": "P1_REVIEW_THREADS_PATCHED_WITH_BLOCKERS_REMAINING",
-    "result": "Prompt-path and equals-form mutation detection review findings were patched with regression tests. Packet-level blockers are preserved instead of hidden."
+    "status": "REVIEW_THREADS_PATCHED_WITH_BLOCKERS_REMAINING",
+    "result": "Prompt path, equals-form mutation detection, fallback exit handling, blocking finding preservation, schema-safe unsafe routes, and non-object config handling are patched with regression tests. Packet-level blockers remain preserved."
   },
   "precommit": {
     "status": "PASS",
@@ -208,13 +213,15 @@
     ]
   },
   "commit": {
-    "status": "FOLLOW_UP_COMMIT_PENDING",
-    "previous_pr_head_sha": "cee2d45e234554ec628cbdf8ff25e4770d430d02",
-    "message": "fix(governance): harden pal clink route safety checks",
-    "note": "Final follow-up commit SHA is reported in the closing response because a commit cannot contain its own final SHA."
+    "status": "LOCAL_FOLLOW_UP_COMMIT_PENDING",
+    "previous_pr_head_sha": "6b10eed65c6256733900de06163ce312f8b99bdc",
+    "message": "fix(governance): address pal clink review blockers",
+    "note": "Final commit SHA is reported after commit because a commit cannot contain its own final SHA."
   },
   "recommended_follow_ups": [
     "TP-DMX-AUDITOR-ROUTER-WRAPPER-003",
     "TP-DMX-AUDITOR-ROUTER-PAL-CLINK-AUDIT-HANDOFF-004"
-  ]
+  ],
+  "head_sha_before_local_review_fixes": "6b10eed65c6256733900de06163ce312f8b99bdc",
+  "updated_at": "2026-05-26T12:05:09.690204Z"
 }
