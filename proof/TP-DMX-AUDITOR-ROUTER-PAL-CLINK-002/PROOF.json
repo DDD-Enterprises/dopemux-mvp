@@ -1,6 +1,6 @@
 {
   "task_packet_id": "TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002",
-  "status": "PASS_WITH_BLOCKERS",
+  "status": "PASS_WITH_RISKS",
   "verdict": "PASS_TARGETED_TESTS_WITH_SCOPE_CONFLICT",
   "repo": {
     "path": "/Users/hue/.codex/worktrees/693f/dopemux-mvp",
@@ -74,17 +74,16 @@
     ],
     "remaining_blockers": [
       "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
-      "PAL_CLINK_AUDIT_SANDBOX_BLOCKED",
       "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500"
     ],
-    "note": "The wrapper blocker was historical for PAL-CLINK-002 and is closed by the follow-up wrapper packet. PAL MCP clink was executed host-side; clink session sandbox blocked all evidence file reads. Audit output captured but verdict is NEEDS_SUPERVISOR."
+    "note": "The wrapper blocker was historical for PAL-CLINK-002 and is closed by the follow-up wrapper packet. The bundle-local PAL MCP clink rerun completed host-side, read 12 evidence files, and returned PASS_WITH_RISKS."
   },
   "blockers": [
     "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
-    "PAL_CLINK_AUDIT_SANDBOX_BLOCKED",
     "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500"
   ],
   "nonblocking_results": [
+    "Bundle-local PAL clink audit completed host-side and returned PASS_WITH_RISKS after reading 12 evidence files.",
     "PAL clink bridge-tier classification implemented as pure config inspection",
     "auditor_route schema accepts pal-mcp-clink route evidence",
     "embedded_audit schema accepts pal-mcp-clink as auditor_tool",
@@ -207,32 +206,30 @@
         "command": "PAL MCP clink cli_name=codex role=codereviewer",
         "exit_code": 1,
         "result": "BLOCKED: Executable 'codex' not found in PATH for CLI 'codex'."
+      },
+      {
+        "command": "PAL MCP clink cli_name=claude role=codereviewer (bundle-local evidence bundle)",
+        "exit_code": 0,
+        "result": "PASS: bundle-local audit returned PASS_WITH_RISKS after 12 evidence files read"
       }
     ],
-    "status": "PASS_TARGETED_TESTS_WITH_SCOPE_CONFLICT_WRAPPER_AND_REVIEW_FIXES"
+    "status": "PASS_WITH_RISKS"
   },
   "embedded_audit": {
     "required": true,
     "audit_output_captured": true,
-    "status": "NEEDS_SUPERVISOR",
+    "status": "PASS_WITH_RISKS",
     "auditor_tool": "pal-mcp-clink",
     "auditor_model": "unknown",
-    "invocation": "PAL MCP clink attempts: claude/codereviewer, gemini/codereviewer, codex/codereviewer",
-    "exit_code": 1,
+    "invocation": "PAL MCP clink cli_name=claude role=codereviewer",
+    "exit_code": 0,
     "report_path": "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/AUDITOR_REPORT.md",
-    "findings": [
-      {
-        "id": "PAL_CLINK_AUDIT_SANDBOX_BLOCKED",
-        "severity": "BLOCKING",
-        "title": "PAL clink audit sandbox blocked - all evidence reads denied",
-        "status": "OPEN",
-        "body": "PAL MCP clink was invoked host-side (cli_name=claude, role=codereviewer). The clink session sandbox is confined to /Users/hue/.zen-mcp-server; all 6 evidence file reads to the worktree path were denied. All 14 audit criteria remain unverified. Remediation: re-run in a session where the worktree path is in allowed directories or mcp__pal__clink permission is granted."
-      }
-    ],
+    "findings": [],
     "fixes_applied": [],
     "remaining_risks": [
-      "All 14 audit criteria remain unverified. Clink session could not read pal_clink.py, test_pal_clink.py, auditor_route.schema.json, embedded_audit.schema.json, PAL_CLINK_AUDIT_INPUT.md, or AUDITOR_ROUTE.json.",
-      "Re-run required with accessible evidence bundle or allowed worktree path."
+      "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN: origin/main lacks tools/auditor_router/**, tests/auditor_router/**, and scripts/auditor-preflight; this branch is a partial bootstrap, not a pure PAL clink extension.",
+      "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500: GitHub workflow dispatch returns HTTP 500; PR merge gate is unavailable and the branch cannot be merged via CI.",
+      "scripts/auditor-preflight wrapper is not allowlisted in this packet; validation command exited 127. Resolution is tracked in TP-DMX-AUDITOR-ROUTER-WRAPPER-003."
     ],
     "skip_reason": null
   },
@@ -258,7 +255,7 @@
     "TP-DMX-AUDITOR-ROUTER-PAL-CLINK-AUDIT-HANDOFF-004"
   ],
   "head_sha_before_local_review_fixes": "6b10eed65c6256733900de06163ce312f8b99bdc",
-  "updated_at": "2026-05-26T23:00:00Z",
+  "updated_at": "2026-05-26T23:16:55Z",
   "head_sha_before_clink_attempt": "282257216002b0635fee696a06e8ef123a31f150",
   "head_sha_before_command_override_fixes": "e3246aee05a30951bc0a6f7aba910341fca02151",
   "head_sha_before_shape_validation_fixes": "92ca508aad3d419f8e23b015428f7b5415622581"
