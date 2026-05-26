@@ -1,0 +1,174 @@
+{
+  "bundle_id": "TP-DMX-ORCH-006-PROOF",
+  "run_id": "tp-dmx-orch-006-local",
+  "skill": "codex",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED",
+  "created_at": "2026-05-26T14:42:08Z",
+  "validated_at": "2026-05-26T14:45:48Z",
+  "manifest": {
+    "bundle_id": "TP-DMX-ORCH-006-PROOF",
+    "packet_id": "TP-DMX-ORCH-006",
+    "generated_artifacts": [
+      "task-packets/generated/TP-DMX-ORCH-006.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-006/PROOF.json"
+    ]
+  },
+  "authoritative_artifacts": [
+    "task-packets/generated/TP-DMX-ORCH-006.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-006/PROOF.json",
+    "src/dopemux/orchestrator/workflow_dsl.py",
+    "src/dopemux/commands/orchestrator_commands.py"
+  ],
+  "supporting_artifacts": [
+    "tests/unit/orchestrator/test_workflow_dsl.py",
+    "tests/unit/test_cli_orchestrator_validation_commands.py",
+    "config/orchestrator/approval_policy.yaml",
+    "src/dopemux/orchestrator/policy.py",
+    "src/dopemux/orchestrator/validation/report.py",
+    "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+    "src/dopemux/workflow/models.py",
+    "src/dopemux/workflow/service.py",
+    "docs/03-reference/planes/pm/pm-plane.md",
+    "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md"
+  ],
+  "chain_of_custody": {
+    "documented": true,
+    "source_version": "TP-DMX-ORCH-006",
+    "created_at": "2026-05-26T14:42:08Z",
+    "parent_bundle_ids": [
+      "TP-DMX-ORCH-004"
+    ]
+  },
+  "repo_identity_check": {
+    "result": "PASS",
+    "marker_file": ".dopetaskroot",
+    "marker_present": true,
+    "remote_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "starting_head": "8bf1431fd",
+    "branch": "codex/tp-dmx-orch-006-workflow-dsl"
+  },
+  "task_orchestrator": {
+    "root_id": "32df1792-40e3-4ad3-9aa6-fd323f0cacb7",
+    "item_id": "UNKNOWN",
+    "transition": "NOT_RUN",
+    "status": "UNKNOWN",
+    "note": "Task Orchestrator state mutation was not attempted for this slice after the TP005 transition attempt was rejected by tool approval review because the session hit a usage limit."
+  },
+  "validations": [
+    {
+      "name": "TDD red run",
+      "command": "uv run pytest -q tests/unit/orchestrator/test_workflow_dsl.py tests/unit/test_cli_orchestrator_validation_commands.py",
+      "exit_code": 2,
+      "status": "PASS",
+      "note": "Expected red state: dopemux.orchestrator.workflow_dsl module was missing."
+    },
+    {
+      "name": "Focused workflow DSL tests",
+      "command": "uv run pytest -q tests/unit/orchestrator/test_workflow_dsl.py tests/unit/test_cli_orchestrator_validation_commands.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": ".................... [100%]"
+    },
+    {
+      "name": "Expanded orchestrator validation tests",
+      "command": "uv run pytest -q tests/unit/orchestrator/test_workflow_dsl.py tests/unit/orchestrator/test_mcp_wrappers.py tests/unit/test_task_orchestrator_mcp_wrappers.py tests/unit/orchestrator/test_policy.py tests/unit/orchestrator/test_validation.py tests/unit/test_cli_orchestrator_validation_commands.py tests/unit/test_cli_orchestrator_commands.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": ".............................................. [100%]"
+    },
+    {
+      "name": "Compile source tree",
+      "command": ".venv/bin/python -m compileall -q src",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Task Packet JSON syntax",
+      "command": ".venv/bin/python -m json.tool task-packets/generated/TP-DMX-ORCH-006.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Proof JSON syntax",
+      "command": ".venv/bin/python -m json.tool proof/dmx-orch-integration/TP-DMX-ORCH-006/PROOF.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Task Packet schema validation",
+      "command": ".venv/bin/python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-006.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "stderr_note": "jsonschema CLI emitted a deprecation warning; schema validation exited 0."
+    },
+    {
+      "name": "Task Packet validator command",
+      "command": ".venv/bin/python -m dopemux.cli orchestrator packet validate task-packets/generated/TP-DMX-ORCH-006.json --json-output",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_note": "JSON report status PASS; unrelated LiteLLM import warnings were emitted before the JSON payload by the root CLI import path."
+    },
+    {
+      "name": "Proof validator command",
+      "command": ".venv/bin/python -m dopemux.cli orchestrator proof validate proof/dmx-orch-integration/TP-DMX-ORCH-006/PROOF.json --json-output",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_note": "JSON report status PASS; unrelated LiteLLM import warnings were emitted before the JSON payload by the root CLI import path."
+    },
+    {
+      "name": "Diff whitespace check",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Pre-commit hooks for packet files",
+      "command": "pre-commit run --files src/dopemux/orchestrator/workflow_dsl.py src/dopemux/commands/orchestrator_commands.py tests/unit/orchestrator/test_workflow_dsl.py tests/unit/test_cli_orchestrator_validation_commands.py task-packets/generated/TP-DMX-ORCH-006.json proof/dmx-orch-integration/TP-DMX-ORCH-006/PROOF.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "note": "Repo hygiene hooks passed; documentation-only hooks skipped where no matching files were provided."
+    }
+  ],
+  "codereview_status": {
+    "result": "PASS",
+    "tool": "pal/codereview",
+    "model": "gpt-5-codex",
+    "validation_type": "internal",
+    "review_type": "full",
+    "issues_found": 0,
+    "continuation_id": "579efa0d-dbc9-4c2a-be22-92c9e7977c13"
+  },
+  "precommit_status": {
+    "result": "PASS",
+    "tool": "pal/precommit",
+    "model": "gpt-5-codex",
+    "validation_type": "internal",
+    "issues_found": 0,
+    "continuation_id": "d8448209-c2c0-49f0-ae23-f43696cfa093",
+    "post_proof_update_note": "Proof metadata was updated with PAL status after PAL precommit; proof validator, git diff --check, and pre-commit hooks were rerun after this update."
+  },
+  "warnings": [],
+  "blockers": [],
+  "not_run": [
+    "Task Orchestrator item transition: not attempted because the prior TP005 state write was rejected by tool approval review after the session hit a usage limit.",
+    "Full repository test suite: not run in this local implementation slice.",
+    "Push and PR creation: not run in this local implementation slice."
+  ],
+  "residual_risks": [
+    "The DSL validator checks local file shape and policy references only; it does not prove live Task Orchestrator transition semantics.",
+    "No canonical workflow DSL schema existed before TP-DMX-ORCH-006; this packet introduces the first local governance shape."
+  ],
+  "rollback_plan": [
+    "Remove src/dopemux/orchestrator/workflow_dsl.py.",
+    "Remove the workflow validate CLI group from src/dopemux/commands/orchestrator_commands.py.",
+    "Remove tests/unit/orchestrator/test_workflow_dsl.py.",
+    "Revert workflow CLI assertions in tests/unit/test_cli_orchestrator_validation_commands.py.",
+    "Remove task-packets/generated/TP-DMX-ORCH-006.json.",
+    "Remove proof/dmx-orch-integration/TP-DMX-ORCH-006/PROOF.json."
+  ],
+  "commit_sha": null,
+  "commit_sha_policy": "A committed proof file cannot self-reference the commit SHA that contains its final contents. The authoritative local commit SHA is reported by git after commit creation and in the session closeout.",
+  "pr_url": null,
+  "cleanup_status": "WORKTREE_ACTIVE"
+}
