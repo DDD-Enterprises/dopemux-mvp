@@ -85,7 +85,7 @@
   "steps": [
     {
       "id": "S1",
-      "task": "Preflight (post-#709, post-#710 series-gate ancestry). Codex MUST verify, on origin/main as of execution time, that ALL of the following hold before branching: (1) PR #709 (F-FULLSUITE-REPAIR) is merged and its merge commit is an ancestor of origin/main; (2) PR #710 (INDEX status correction) is merged and its merge commit is an ancestor of origin/main; (3) proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/PROOF.json is present on origin/main, parses as JSON, declares `status_scope: repair_gate_only_not_series_gate`, references `TP-RTE-COSTPROFILE-F-VERIFY-002` as a follow-up packet, and records `live_provider_calls: NOT_RUN` plus `live_extraction: NOT_RUN`; (4) proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/REPAIR_DECISIONS.md is present on origin/main; (5) task-packets/INDEX.md on origin/main contains a TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001 row marked `Merged (PR #709)` (or repo-equivalent merged status); (6) the captured immutable origin/main SHA is recorded and reused as the explicit branch base (do NOT branch from a local stale main or a later moving origin/main ref). STOP CONDITIONS — abort execution and surface to operator if ANY of: (a) origin/main cannot be fetched; (b) PR #709 is not merged; (c) PR #710 is not merged; (d) repair packet row is missing the `Merged (PR #709)` marker; (e) repair PROOF.json is missing or invalid; (f) repair PROOF.json claims series-verified status (status_scope ≠ repair_gate_only_not_series_gate); (g) local checkout is dirty with tracked changes; (h) origin/main changes after capture and before worktree creation unless the operator explicitly accepts the newer base.",
+      "task": "Preflight (post-#709, post-#710 series-gate ancestry). Codex MUST verify, on origin/main as of execution time, that ALL of the following hold before branching: (1) PR #709 (F-FULLSUITE-REPAIR) is merged and both its head SHA and merge commit are ancestors of the captured base SHA; (2) PR #710 (INDEX status correction) is merged and both its head SHA and merge commit are ancestors of the captured base SHA; (3) proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/PROOF.json is present on the captured base SHA, parses as JSON, declares `status_scope: repair_gate_only_not_series_gate`, references `TP-RTE-COSTPROFILE-F-VERIFY-002` as a follow-up packet, and records `live_provider_calls: NOT_RUN` plus `live_extraction: NOT_RUN`; (4) proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/REPAIR_DECISIONS.md is present on the captured base SHA; (5) task-packets/INDEX.md on the captured base SHA contains a TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001 row marked `Merged (PR #709)` (or repo-equivalent merged status); (6) the captured immutable origin/main SHA is recorded and reused as the explicit branch base (do NOT branch from a local stale main or a later moving origin/main ref). STOP CONDITIONS — abort execution and surface to operator if ANY of: (a) origin/main cannot be fetched; (b) PR #709 is not merged; (c) PR #710 is not merged; (d) gh cannot return required PR state, head SHA, or merge commit fields; (e) PR #709/#710 head SHA is not an ancestor of the captured base SHA; (f) PR #709/#710 merge commit is not an ancestor of the captured base SHA; (g) repair packet row is missing the `Merged (PR #709)` marker; (h) repair PROOF.json is missing or invalid; (i) repair PROOF.json claims series-verified status (status_scope ≠ repair_gate_only_not_series_gate); (j) local checkout is dirty with tracked changes; (k) origin/main changes after capture and before worktree creation unless the operator explicitly accepts the newer base.",
       "commands": [
         "git fetch origin --prune",
         "BASE_SHA=\"$(git rev-parse origin/main)\" && printf '%s\\n' \"$BASE_SHA\" > /tmp/F_VERIFY_002_BASE_SHA.txt",
@@ -96,18 +96,24 @@
         "git diff --cached --quiet",
         "gh pr view 709 --json number,title,state,url,mergedAt,mergeCommit,headRefOid,baseRefName | tee /tmp/F_VERIFY_002_PR709.json",
         "gh pr view 710 --json number,title,state,url,mergedAt,mergeCommit,headRefOid,baseRefName | tee /tmp/F_VERIFY_002_PR710.json",
-        "git show origin/main:task-packets/INDEX.md > /tmp/F_VERIFY_002_INDEX.md && grep -nE 'TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001' /tmp/F_VERIFY_002_INDEX.md | grep -F 'Merged (PR #709)' > /tmp/F_VERIFY_002_INDEX_MATCH.txt",
-        "git show origin/main:proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/PROOF.json > /tmp/F_REPAIR_PROOF.json && python -m json.tool /tmp/F_REPAIR_PROOF.json > /tmp/F_REPAIR_PROOF_JSON_OK.txt",
-        "git show origin/main:proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/REPAIR_DECISIONS.md > /tmp/F_REPAIR_DECISIONS.md"
+        "test \"$(gh pr view 709 --json state -q .state)\" = \"MERGED\"",
+        "test \"$(gh pr view 710 --json state -q .state)\" = \"MERGED\"",
+        "BASE_SHA=\"$(cat /tmp/F_VERIFY_002_BASE_SHA.txt)\" && PR709_HEAD=\"$(gh pr view 709 --json headRefOid -q .headRefOid)\" && test -n \"$PR709_HEAD\" && git merge-base --is-ancestor \"$PR709_HEAD\" \"$BASE_SHA\"",
+        "BASE_SHA=\"$(cat /tmp/F_VERIFY_002_BASE_SHA.txt)\" && PR710_HEAD=\"$(gh pr view 710 --json headRefOid -q .headRefOid)\" && test -n \"$PR710_HEAD\" && git merge-base --is-ancestor \"$PR710_HEAD\" \"$BASE_SHA\"",
+        "BASE_SHA=\"$(cat /tmp/F_VERIFY_002_BASE_SHA.txt)\" && PR709_MERGE=\"$(gh pr view 709 --json mergeCommit -q .mergeCommit.oid)\" && test -n \"$PR709_MERGE\" && git merge-base --is-ancestor \"$PR709_MERGE\" \"$BASE_SHA\"",
+        "BASE_SHA=\"$(cat /tmp/F_VERIFY_002_BASE_SHA.txt)\" && PR710_MERGE=\"$(gh pr view 710 --json mergeCommit -q .mergeCommit.oid)\" && test -n \"$PR710_MERGE\" && git merge-base --is-ancestor \"$PR710_MERGE\" \"$BASE_SHA\"",
+        "BASE_SHA=\"$(cat /tmp/F_VERIFY_002_BASE_SHA.txt)\" && git show \"$BASE_SHA\":task-packets/INDEX.md > /tmp/F_VERIFY_002_INDEX.md && grep -nE 'TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001' /tmp/F_VERIFY_002_INDEX.md | grep -F 'Merged (PR #709)' > /tmp/F_VERIFY_002_INDEX_MATCH.txt",
+        "BASE_SHA=\"$(cat /tmp/F_VERIFY_002_BASE_SHA.txt)\" && git show \"$BASE_SHA\":proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/PROOF.json > /tmp/F_REPAIR_PROOF.json && python -m json.tool /tmp/F_REPAIR_PROOF.json > /tmp/F_REPAIR_PROOF_JSON_OK.txt",
+        "BASE_SHA=\"$(cat /tmp/F_VERIFY_002_BASE_SHA.txt)\" && git show \"$BASE_SHA\":proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/REPAIR_DECISIONS.md > /tmp/F_REPAIR_DECISIONS.md"
       ],
       "validation": [
         "Captured base SHA persisted to /tmp/F_VERIFY_002_BASE_SHA.txt.",
         "Tracked dirty state check is fail-closed: /tmp/F_VERIFY_002_TRACKED_STATUS_BEFORE.txt must be empty, `git diff --quiet` must pass, and `git diff --cached --quiet` must pass. Untracked artifacts are intentionally ignored.",
-        "PR #709 state == MERGED.",
-        "PR #710 state == MERGED.",
-        "INDEX row for F-FULLSUITE-REPAIR-001 contains `Merged (PR #709)` (or repo-equivalent).",
-        "Repair PROOF.json parses, status_scope == `repair_gate_only_not_series_gate`, lists `TP-RTE-COSTPROFILE-F-VERIFY-002` in follow-up packets, records live calls + extraction as NOT_RUN.",
-        "REPAIR_DECISIONS.md readable on origin/main.",
+        "PR #709 state == MERGED and both headRefOid + mergeCommit.oid are ancestors of the captured base SHA.",
+        "PR #710 state == MERGED and both headRefOid + mergeCommit.oid are ancestors of the captured base SHA.",
+        "INDEX row for F-FULLSUITE-REPAIR-001 is read from the captured base SHA and contains `Merged (PR #709)` (or repo-equivalent).",
+        "Repair PROOF.json is read from the captured base SHA and parses, status_scope == `repair_gate_only_not_series_gate`, lists `TP-RTE-COSTPROFILE-F-VERIFY-002` in follow-up packets, records live calls + extraction as NOT_RUN.",
+        "REPAIR_DECISIONS.md readable from the captured base SHA.",
         "Local checkout has no dirty tracked changes."
       ]
     },

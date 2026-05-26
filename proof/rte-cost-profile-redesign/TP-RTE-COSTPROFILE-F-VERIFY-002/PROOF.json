@@ -162,6 +162,7 @@
       "Post-review governance: packet PAL chain includes planner in the Codex minimum sequence analyze -> planner -> codereview -> precommit.",
       "Post-review governance: packet worktree creation now uses captured base SHA from /tmp/F_VERIFY_002_BASE_SHA.txt and verifies worktree HEAD equals that SHA.",
       "Post-review governance: packet S1 now fails closed on tracked dirty state before verification setup and after fresh worktree creation while intentionally ignoring untracked artifacts.",
+      "Post-review governance: packet S1 now fails closed unless PR #709 and PR #710 are MERGED and their head SHAs plus merge commits are ancestors of the captured base SHA.",
       "Supplemental PAL planner: RUN with gpt-5-codex and recorded in pal_codereview.txt.",
       "G1 repair proof intake: all four required assertions pass.",
       "G2 full RTE suite: exit 0 with 1114 passed / 8 xfailed / 1 skipped / 0 failed / 0 xpassed (deferred-state total xfailed + skipped = 9 matches repair gate).",
@@ -207,6 +208,12 @@
       "old_behavior": "S1 declared a stop condition for dirty tracked state but the command list only observed repository status.",
       "new_behavior": "S1 writes tracked status to /tmp/F_VERIFY_002_TRACKED_STATUS_BEFORE.txt, exits 1 if non-empty, and runs git diff --quiet plus git diff --cached --quiet. S2 writes the fresh worktree tracked status to /tmp/F_VERIFY_002_WORKTREE_TRACKED_STATUS.txt and exits 1 if non-empty.",
       "untracked_artifacts": "Ignored intentionally via --untracked-files=no; this gate is only for tracked dirty state."
+    },
+    "ancestor_gate_fix": {
+      "old_behavior": "S1 captured PR #709/#710 metadata but did not fail closed on prerequisite ancestry against the verification base.",
+      "new_behavior": "S1 now tests PR #709 and PR #710 state == MERGED, fetches headRefOid and mergeCommit.oid via gh, requires each value to be non-empty, and runs git merge-base --is-ancestor for each SHA against BASE_SHA from /tmp/F_VERIFY_002_BASE_SHA.txt.",
+      "captured_base_sha_used": true,
+      "moving_origin_main_after_capture": "Avoided for ancestry and prerequisite artifact reads; commands use BASE_SHA read from /tmp/F_VERIFY_002_BASE_SHA.txt."
     }
   },
   "pal_planner": {
