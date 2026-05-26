@@ -159,6 +159,9 @@
       "Preflight: INDEX.md row for F-FULLSUITE-REPAIR-001 shows 'Merged (PR #709)'.",
       "Preflight: REPAIR_DECISIONS.md readable on origin/main.",
       "Worktree: branch=codex/rte-costprofile-f-verify-002, HEAD=a9dd0659..., status clean before edits.",
+      "Post-review governance: packet PAL chain includes planner in the Codex minimum sequence analyze -> planner -> codereview -> precommit.",
+      "Post-review governance: packet worktree creation now uses captured base SHA from /tmp/F_VERIFY_002_BASE_SHA.txt and verifies worktree HEAD equals that SHA.",
+      "Supplemental PAL planner: RUN with gpt-5-codex and recorded in pal_codereview.txt.",
       "G1 repair proof intake: all four required assertions pass.",
       "G2 full RTE suite: exit 0 with 1114 passed / 8 xfailed / 1 skipped / 0 failed / 0 xpassed (deferred-state total xfailed + skipped = 9 matches repair gate).",
       "G3 bounded print-config: exit 0; top-level cost_profile=value-default emitted; legacy routing_policy=balanced_openrouter preserved.",
@@ -172,12 +175,46 @@
       "Live LLM/provider calls (RTE_DISABLE_LIVE_LLM_IN_TESTS=1 set; no --execute invocation).",
       "Live extraction via --execute (NOT in scope for this verification packet).",
       "Cluster D / TP-RTE-WALKER-006 prescan repair (still deferred via strict xfail markers).",
+      "Full F-VERIFY-002 gate rerun after packet governance patch (not required; this was a proof/packet governance correction only).",
       "Cross-pipeline integration with the v3-pipeline (separate authority).",
       "Operator's first bounded --execute run (operator decision, gated by --max-cost-usd cap)."
     ]
   },
   "live_provider_calls": "NOT_RUN",
   "live_extraction": "NOT_RUN",
+  "packet_governance_review_fixes": {
+    "status": "PASS",
+    "applied_after_initial_gate_execution": true,
+    "runtime_code_changed": false,
+    "tests_changed": false,
+    "f_verify_002_rerun": "NOT_RUN",
+    "pal_chain_fix": {
+      "required_chain": "analyze -> planner -> codereview -> precommit",
+      "packet_chain_after_fix": ["analyze", "planner", "codereview", "precommit"],
+      "planner_status": "RUN",
+      "proof_location": "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/pal_codereview.txt"
+    },
+    "base_pinning_fix": {
+      "old_behavior": "S2 worktree creation used moving origin/main directly.",
+      "new_behavior": "S1 captures BASE_SHA with git rev-parse origin/main into /tmp/F_VERIFY_002_BASE_SHA.txt; S2 verifies origin/main still equals BASE_SHA, creates the worktree from BASE_SHA, then tests git rev-parse HEAD equals BASE_SHA.",
+      "stop_conditions_added": [
+        "Stop if origin/main changes after capture and before worktree creation unless the operator explicitly accepts the newer base.",
+        "Stop if worktree HEAD does not equal the captured base SHA."
+      ]
+    }
+  },
+  "pal_planner": {
+    "status": "RUN",
+    "model": "gpt-5-codex",
+    "provider": "unknown",
+    "tool": "pal/planner",
+    "transcript_path": "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/pal_codereview.txt",
+    "continuation_id": "8f1dc15f-c01c-44fd-be40-ce9747128143",
+    "step_number": 1,
+    "total_steps": 1,
+    "planning_complete": true,
+    "notes": "Supplemental planner run for the post-review packet governance fix. Scope was proof/packet-only: add planner to the chain, pin worktree creation to captured base SHA, update proof/report wording, regenerate checksums, and validate without runtime code or test changes."
+  },
   "pal_codereview": {
     "status": "PASS",
     "model": "gpt-5.2",

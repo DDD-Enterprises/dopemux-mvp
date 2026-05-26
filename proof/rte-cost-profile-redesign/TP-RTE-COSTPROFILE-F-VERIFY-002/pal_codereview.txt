@@ -76,3 +76,44 @@ Independent Claude review confirms additional points the expert did not raise bu
 **0 CRITICAL, 0 HIGH** — no blocking findings. Proof bundle is internally consistent and matches the evidence files. Verdict of **VERIFIED** is supported by the captured gates.
 
 **Recommendation**: Proceed to `pal/precommit`.
+
+---
+
+## Supplemental PAL Planner
+
+**Tool**: `pal/planner`
+**Model**: `gpt-5-codex` (OpenAI selectable model; provider reported by tool as `unknown`)
+**Continuation ID**: `8f1dc15f-c01c-44fd-be40-ce9747128143`
+**Status**: RUN
+**Planning complete**: true
+
+### Scope
+
+Post-review packet governance repair for PR #712 / `TP-RTE-COSTPROFILE-F-VERIFY-002`.
+
+### Plan Recorded
+
+1. Keep scope restricted to packet/proof artifacts.
+2. Add `planner` to the Codex PAL chain without claiming it ran during the original gate execution.
+3. Record this supplemental planner run as RUN.
+4. Replace worktree creation from moving `origin/main` with captured immutable `BASE_SHA` flow.
+5. Verify worktree HEAD equals the captured base SHA.
+6. Update `PROOF.json` and `SERIES_VERIFICATION_REPORT.md` honestly.
+7. Regenerate `sha256sums.txt`.
+
+### Explicit Non-Scope
+
+- No runtime code changes.
+- No test changes.
+- No live provider calls.
+- No live extraction.
+- No F-VERIFY-002 gate rerun.
+- No merge, approval, or force-push.
+
+### Validation Plan
+
+- Parse the packet JSON and `PROOF.json`.
+- Re-check `sha256sums.txt`.
+- Grep for `planner`, captured base SHA flow, `F_VERIFY_002_BASE_SHA`, no-live residuals, and `TP-RTE-WALKER-006`.
+- Run `git diff --check`.
+- Verify changed file names stay inside the allowed proof/packet list.
