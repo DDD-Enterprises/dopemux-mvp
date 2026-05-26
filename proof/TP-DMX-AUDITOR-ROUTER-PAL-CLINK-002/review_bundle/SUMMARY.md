@@ -15,7 +15,8 @@ The packet assumed `TP-DMX-AUDITOR-ROUTER-001` runtime already existed on `main`
 ## Blockers / Not Complete
 
 - PAL clink execution is not performed by the router.
-- `PAL_CLINK_AUDIT_OUTPUT` is not captured.
+- `PAL_CLINK_AUDIT_OUTPUT` now captures failed PAL MCP `clink` attempts, but no completed external CLI audit verdict exists.
+- `PAL_CLINK_CLI_EXECUTABLES_MISSING`: `claude`, `gemini`, and `codex` were not found in PATH by PAL MCP `clink`.
 - Route selection is not an audit verdict.
 - GitHub workflow dispatch for PR Steward returned HTTP 500.
 
@@ -40,8 +41,14 @@ Generated: 2026-05-26T12:01:41.823532Z
 
 Patched four active PR #713 review blockers locally: fallback exit semantics, explicit blocking finding preservation, schema-safe unsafe-config routes, and non-object config payload handling. Packet blockers remain: wrapper allowlist, missing host-side PAL clink audit output, and draft PR state.
 
-## Schema-Compatible Finding Fix Update
+## PAL MCP Clink Attempt Update
 
-Generated: 2026-05-26T22:06:50Z
+Generated: 2026-05-26T22:10:30Z
 
-Patched the active PR #713 review blocker where normalized PAL clink findings emitted a schema-incompatible `blocking` property. Raw `blocking=true` input still drives FAIL classification, but emitted embedded-audit findings now stay within `schemas/proof/embedded_audit.schema.json`.
+PAL MCP `clink` was callable, but all attempted configured clients failed before audit:
+
+- `claude`: executable not found in PATH.
+- `gemini`: executable not found in PATH.
+- `codex`: executable not found in PATH.
+
+Verdict remains `NEEDS_SUPERVISOR`.
