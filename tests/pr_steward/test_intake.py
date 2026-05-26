@@ -291,6 +291,88 @@ def test_trusted_author_association_is_nonblocking() -> None:
     assert ledger["items"][0]["blocking"] is False
 
 
+def test_trusted_p1_review_body_blocks_readiness() -> None:
+    harvest = base_ready_harvest()
+    harvest["reviews"] = [
+        {
+            "id": "R_P1",
+            "author": {"login": "hu3mann"},
+            "state": "COMMENTED",
+            "body": "P1: fix this before merge.",
+        }
+    ]
+
+    artifacts = build_artifacts(
+        harvest,
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=704,
+        strict=True,
+        allow_closed=False,
+    )
+
+    readiness = artifacts["MERGE_READINESS.json"]
+    assert isinstance(readiness, dict)
+    ledger = artifacts["REVIEW_ITEM_LEDGER.json"]
+    assert isinstance(ledger, dict)
+    assert readiness["readiness"] == "NEEDS_IMPLEMENTER"
+    assert "REVIEW_ITEM_MUST_FIX" in readiness["blockers"]
+    assert ledger["items"][0]["disposition"] == "MUST_FIX"
+    assert ledger["items"][0]["blocking"] is True
+
+
+def test_needs_supervisor_comment_body_blocks_readiness() -> None:
+    harvest = base_ready_harvest()
+    harvest["issue_comments"] = [
+        {
+            "id": "IC_SUPERVISOR",
+            "author": {"login": "hu3mann"},
+            "body": "Needs supervisor before merge.",
+        }
+    ]
+
+    artifacts = build_artifacts(
+        harvest,
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=704,
+        strict=True,
+        allow_closed=False,
+    )
+
+    readiness = artifacts["MERGE_READINESS.json"]
+    assert isinstance(readiness, dict)
+    assert readiness["readiness"] == "NEEDS_SUPERVISOR"
+    assert "REVIEW_ITEM_NEEDS_SUPERVISOR" in readiness["blockers"]
+
+
+def test_required_skipped_check_is_successful_nonblocking() -> None:
+    harvest = base_ready_harvest()
+    harvest["checks"] = [
+        {
+            "name": "required-skipped",
+            "status": "COMPLETED",
+            "conclusion": "SKIPPED",
+            "required": True,
+        }
+    ]
+
+    artifacts = build_artifacts(
+        harvest,
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=704,
+        strict=True,
+        allow_closed=False,
+    )
+
+    readiness = artifacts["MERGE_READINESS.json"]
+    assert isinstance(readiness, dict)
+    ci_triage = artifacts["CI_TRIAGE.json"]
+    assert isinstance(ci_triage, dict)
+    assert readiness["readiness"] == "READY"
+    assert "FAILED_CHECK" not in readiness["blockers"]
+    assert ci_triage["required_check_count"] == 1
+    assert ci_triage["failed_required_count"] == 0
+
+
 def base_ready_harvest() -> dict:
     head_sha = "head000000000000000000000000000000000000"
     return {
