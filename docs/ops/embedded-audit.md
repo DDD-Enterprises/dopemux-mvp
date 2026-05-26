@@ -24,6 +24,8 @@ Governance, process, schema, prompt, proof, and authority-boundary packets requi
 
 Do not hardcode flags. Do not infer a model from branding. If model or invocation cannot be proven, use the next route or record `SKIPPED`.
 
+Packet-specific supervisor-approved fallback auditors may be used only when the packet records the approval, bounded input, no-secret constraints, exact invocation, and resulting verdict in proof.
+
 ## Required Proof Object
 
 The proof object must conform to `schemas/proof/embedded_audit.schema.json` and record:
@@ -39,6 +41,12 @@ The proof object must conform to `schemas/proof/embedded_audit.schema.json` and 
 - fixes applied
 - remaining risks
 - skip reason when skipped
+
+## Review Bundle
+
+Every non-trivial implementer run must create `proof/<PACKET_ID>/review_bundle/` as the single upload/review unit. If it is not present, proof is incomplete.
+
+Loose `/tmp` artifacts must be copied into the review bundle or explicitly listed as excluded with a reason. The review bundle must not include secrets, tokens, credentials, private keys, raw auth headers, or local machine-sensitive files.
 
 ## Verdict Rules
 

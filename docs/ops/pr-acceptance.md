@@ -19,6 +19,7 @@ A PR is eligible for normal closeout only when all of these are true:
 - task packet is schema-valid or manual schema gap is explicitly recorded
 - changed files are within the packet allowlist
 - proof is current to the PR head SHA
+- `proof/<PACKET_ID>/review_bundle/` exists as the single upload/review unit
 - embedded audit is `PASS` or non-blocking `PASS_WITH_RISKS`
 - PR Steward check-only intake is `READY`
 - every review item, issue comment, review comment, review thread, and CI check is classified
@@ -33,6 +34,8 @@ Skip the second GPT-5.5 Pro supervisor review only when both gates are READY:
 2. PR Steward merge readiness is `READY`
 
 If either gate is missing, skipped, stale, failed, or unknown, the PR requires supervisor review or human escalation.
+
+No second GPT-5.5 Pro prompt can be skipped unless PR Steward emits `READY` and embedded audit is `PASS` or nonblocking `PASS_WITH_RISKS`. Unknown reviewers or bots and unresolved review threads both block `READY`.
 
 ## Non-Automation Boundary
 

@@ -1,0 +1,411 @@
+{
+  "bundle_id": "TP-DMX-PR-STEWARD-001",
+  "run_id": "2026-05-26T05:45:55Z",
+  "skill": "pr-steward-check-only-runtime",
+  "status": "PASS_WITH_RISKS",
+  "validation_state": {
+    "overall": "PASS_WITH_RISKS",
+    "reason": "Supervisor-approved Copilot CLI Claude Sonnet 4.6 fallback returned PASS_WITH_RISKS with no blocking findings.",
+    "passed": [
+      "task packet JSON parse",
+      "task packet canonical schema validation",
+      "PR Steward schemas JSON parse",
+      "compileall tools/tests",
+      "pytest tests/pr_steward",
+      "CLI help",
+      "script help",
+      "ready fixture smoke",
+      "ready fixture JSON artifact parse",
+      "git diff --check",
+      "pre-commit changed-file hooks",
+      "embedded audit PASS_WITH_RISKS"
+    ],
+    "not_run": [
+      "commit",
+      "push",
+      "PR creation"
+    ],
+    "failed_or_blocked": []
+  },
+  "created_at": "2026-05-26T05:45:55Z",
+  "authoritative_artifacts": [
+    "task-packets/generated/TP-DMX-PR-STEWARD-001.json",
+    "docs/ops/embedded-audit.md",
+    "docs/ops/pr-steward.md",
+    "docs/ops/pr-acceptance.md",
+    "schemas/pr_steward/merge_readiness.schema.json",
+    "schemas/pr_steward/review_item_ledger.schema.json",
+    "schemas/pr_steward/thread_dispositions.schema.json",
+    "schemas/pr_steward/ci_triage.schema.json",
+    "schemas/pr_steward/pr_state_snapshot.schema.json",
+    "schemas/proof/embedded_audit.schema.json"
+  ],
+  "supporting_artifacts": [
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/MANIFEST.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/SUMMARY.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/PROOF.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/AUDITOR_REPORT.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/VALIDATION_OUTPUT.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/GIT_STATE.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/DIFF_STAT.txt",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/CHANGED_FILES.txt",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/ARTIFACT_INDEX.md",
+    "proof/TP-DMX-PR-STEWARD-001/COPILOT_AUDIT_INPUT.md",
+    "proof/TP-DMX-PR-STEWARD-001/COPILOT_AUDIT_OUTPUT.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/COPILOT_AUDIT_INPUT.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/COPILOT_AUDIT_OUTPUT.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/MERGE_READINESS.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/REVIEW_ITEM_LEDGER.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/THREAD_DISPOSITIONS.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/CI_TRIAGE.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/PR_STATE_SNAPSHOT.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/PR_STEWARD_SUMMARY.md",
+    "/tmp/pr-steward-live-704/MERGE_READINESS.json"
+  ],
+  "handoff_refs": [
+    "docs/ops/pr-steward.md",
+    "docs/ops/pr-acceptance.md",
+    "docs/ops/health-check-matrix.md",
+    "docs/ops/tool-routing-matrix.md"
+  ],
+  "parent_bundle_refs": [
+    "proof/MP-DMX-DEVOPS-AUTOPR-001/PROOF.json"
+  ],
+  "review_bundle": {
+    "path": "proof/TP-DMX-PR-STEWARD-001/review_bundle",
+    "manifest": "proof/TP-DMX-PR-STEWARD-001/review_bundle/MANIFEST.json",
+    "upload_unit": "proof/TP-DMX-PR-STEWARD-001/review_bundle",
+    "contains_all_review_required_artifacts": true
+  },
+  "review_order_hint": [
+    "Verify embedded audit authorization and rerun external auditor.",
+    "Review no-mutation boundary in tools/pr_steward and .github/workflows/pr-steward.yml.",
+    "Review fixture coverage and schema compatibility."
+  ],
+  "chain_of_custody": [
+    {
+      "step": "preflight",
+      "evidence": "Fetched origin/main and checked out codex/tp-dmx-pr-steward-001 from 66958b61088b8e02396612e9ccce58578f0b748b."
+    },
+    {
+      "step": "implementation",
+      "evidence": "Added check-only runtime, offline fixtures, schemas, advisory workflow, and docs within the active packet allowlist as updated for repo lowercase docs conventions."
+    },
+    {
+      "step": "validation",
+      "evidence": "Focused validations passed; see command_outputs."
+    },
+    {
+      "step": "audit",
+        "evidence": "Initial external auditor CLIs were unavailable or blocked; supervisor-approved Copilot CLI fallback completed with PASS_WITH_RISKS."
+      }
+  ],
+  "repo_identity": {
+    "path": "/Users/hue/.codex/worktrees/43f0/dopemux-mvp",
+    "remote": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "branch": "codex/tp-dmx-pr-steward-001",
+    "repo_marker": ".dopetaskroot",
+    "identity_match": true
+  },
+  "branch": "codex/tp-dmx-pr-steward-001",
+  "base_sha": "66958b61088b8e02396612e9ccce58578f0b748b",
+  "head_sha": "66958b61088b8e02396612e9ccce58578f0b748b",
+  "git_status_before": "",
+  "git_status_after": "A .github/workflows/pr-steward.yml; M docs/ops/embedded-audit.md; M docs/ops/health-check-matrix.md; M docs/ops/pr-acceptance.md; M docs/ops/pr-steward.md; M docs/ops/tool-routing-matrix.md; A proof/TP-DMX-PR-STEWARD-001/AUDITOR_REPORT.md; A proof/TP-DMX-PR-STEWARD-001/PROOF.json; A proof/TP-DMX-PR-STEWARD-001/review_bundle/*; M schemas/pr_steward/ci_triage.schema.json; M schemas/pr_steward/merge_readiness.schema.json; A schemas/pr_steward/pr_state_snapshot.schema.json; A scripts/pr-steward; M task-packets/generated/TP-DMX-PR-STEWARD-001.json; A tests/fixtures/pr_steward/*; A tests/pr_steward/test_intake.py; A tools/pr_steward/*",
+  "files_changed": [
+    ".github/workflows/pr-steward.yml",
+    "docs/ops/embedded-audit.md",
+    "docs/ops/health-check-matrix.md",
+    "docs/ops/pr-acceptance.md",
+    "docs/ops/pr-steward.md",
+    "docs/ops/tool-routing-matrix.md",
+    "proof/TP-DMX-PR-STEWARD-001/AUDITOR_REPORT.md",
+    "proof/TP-DMX-PR-STEWARD-001/PROOF.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/MANIFEST.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/SUMMARY.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/PROOF.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/AUDITOR_REPORT.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/VALIDATION_OUTPUT.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/GIT_STATE.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/DIFF_STAT.txt",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/CHANGED_FILES.txt",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/ARTIFACT_INDEX.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/PR_STATE_SNAPSHOT.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/REVIEW_ITEM_LEDGER.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/THREAD_DISPOSITIONS.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/CI_TRIAGE.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/MERGE_READINESS.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/PR_STEWARD_SUMMARY.md",
+    "schemas/pr_steward/ci_triage.schema.json",
+    "schemas/pr_steward/merge_readiness.schema.json",
+    "schemas/pr_steward/pr_state_snapshot.schema.json",
+    "scripts/pr-steward",
+    "task-packets/generated/TP-DMX-PR-STEWARD-001.json",
+    "tests/fixtures/pr_steward/draft_pr_blocks/harvest.json",
+    "tests/fixtures/pr_steward/failed_check_blocks/harvest.json",
+    "tests/fixtures/pr_steward/missing_auth_or_harvest_blocks/harvest.json",
+    "tests/fixtures/pr_steward/pending_check_not_ready/harvest.json",
+    "tests/fixtures/pr_steward/ready_all_green/harvest.json",
+    "tests/fixtures/pr_steward/ready_with_resolved_outdated_threads/harvest.json",
+    "tests/fixtures/pr_steward/skipped_required_audit_blocks/harvest.json",
+    "tests/fixtures/pr_steward/unknown_reviewer_blocks/harvest.json",
+    "tests/fixtures/pr_steward/unresolved_thread_blocks/harvest.json",
+    "tests/pr_steward/test_intake.py",
+    "tools/pr_steward/__init__.py",
+    "tools/pr_steward/classifier.py",
+    "tools/pr_steward/collector.py",
+    "tools/pr_steward/intake.py",
+    "tools/pr_steward/known_reviewers.json"
+  ],
+  "command_outputs": [
+    {
+      "command": "git fetch origin",
+      "exit_code": 0,
+      "output": "origin/main updated to 66958b61088b8e02396612e9ccce58578f0b748b"
+    },
+    {
+      "command": "git checkout -B codex/tp-dmx-pr-steward-001 origin/main",
+      "exit_code": 0,
+      "output": "Switched to branch codex/tp-dmx-pr-steward-001 tracking origin/main"
+    },
+    {
+      "command": "gh auth status",
+      "exit_code": 1,
+      "output": "token for hu3mann is invalid"
+    },
+    {
+      "command": "gh pr view 704 --repo DDD-Enterprises/dopemux-mvp --json number,url,state,mergedAt,headRefOid,statusCheckRollup",
+      "exit_code": 0,
+      "output": "PR 704 state MERGED, mergedAt 2026-05-26T05:24:00Z, headRefOid 60313747f72d89a6bdcaa8c135d43698f979bdee"
+    },
+    {
+      "command": "claude auth status",
+      "exit_code": 1,
+      "output": "loggedIn false, authMethod none, apiProvider firstParty"
+    },
+    {
+      "command": "claude --print \"Auth availability check only. Respond OK.\" --model opus --permission-mode plan --tools \"\" --no-session-persistence",
+      "exit_code": 1,
+      "output": "Not logged in; please run /login"
+    },
+    {
+        "command": "gemini --prompt \"Auth availability check only. Respond OK.\" --approval-mode plan --skip-trust --output-format text",
+        "exit_code": 0,
+        "output": "Opened interactive authentication prompt; prompt was declined/cancelled, Gemini reported FatalCancellationError exitCode 130. No repo context was sent."
+      },
+      {
+        "command": "copilot --model claude-sonnet-4.6 --no-custom-instructions --disable-builtin-mcps --stream off --available-tools \"\" -p \"$(cat proof/TP-DMX-PR-STEWARD-001/COPILOT_AUDIT_INPUT.md)\"",
+        "exit_code": 0,
+        "output": "Non-authoritative fallback attempt: returned PASS_WITH_RISKS but exposed read-only tools despite the empty available-tools filter."
+      },
+      {
+        "command": "copilot --model claude-sonnet-4.6 --no-custom-instructions --disable-builtin-mcps --stream off --available-tools=__none__ -p \"$(cat proof/TP-DMX-PR-STEWARD-001/COPILOT_AUDIT_INPUT.md)\"",
+        "exit_code": 0,
+        "output": "Authoritative fallback audit: tools disabled, no tool execution output, verdict PASS_WITH_RISKS, commit readiness READY after audit-status bookkeeping."
+      }
+  ],
+  "tests": [
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-PR-STEWARD-001.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool schemas/pr_steward/merge_readiness.schema.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool schemas/pr_steward/review_item_ledger.schema.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool schemas/pr_steward/thread_dispositions.schema.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool schemas/pr_steward/ci_triage.schema.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool schemas/pr_steward/pr_state_snapshot.schema.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool schemas/proof/embedded_audit.schema.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool proof/TP-DMX-PR-STEWARD-001/PROOF.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "validate proof embedded_audit object against schemas/proof/embedded_audit.schema.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool proof/TP-DMX-PR-STEWARD-001/review_bundle/MANIFEST.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool proof/TP-DMX-PR-STEWARD-001/review_bundle/PROOF.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "find proof/TP-DMX-PR-STEWARD-001/review_bundle -maxdepth 3 -type f | sort",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "task packet validation against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m compileall -q tools tests",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "pytest -q tests/pr_steward",
+      "exit_code": 0,
+      "result": "PASS",
+      "output": "5 passed"
+    },
+    {
+      "command": "python -m tools.pr_steward.intake --help",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "scripts/pr-steward --help",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m tools.pr_steward.intake --fixture-dir tests/fixtures/pr_steward/ready_all_green --repo DDD-Enterprises/dopemux-mvp --pr 704 --out /tmp/pr-steward-ready --strict",
+      "exit_code": 0,
+      "result": "PASS",
+      "output": "MERGE_READINESS readiness READY"
+    },
+    {
+      "command": "python -m json.tool /tmp/pr-steward-ready/MERGE_READINESS.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool /tmp/pr-steward-ready/REVIEW_ITEM_LEDGER.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool /tmp/pr-steward-ready/THREAD_DISPOSITIONS.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool /tmp/pr-steward-ready/CI_TRIAGE.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool /tmp/pr-steward-ready/PR_STATE_SNAPSHOT.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "test -f /tmp/pr-steward-ready/PR_STEWARD_SUMMARY.md",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m tools.pr_steward.intake --repo DDD-Enterprises/dopemux-mvp --pr 704 --out /tmp/pr-steward-live-704 --allow-closed || true",
+      "exit_code": 0,
+      "result": "PASS_WITH_RISKS",
+      "output": "Live smoke emitted BLOCKED due invalid gh auth; command was intentionally nonblocking."
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "pre-commit run --files $(git diff --name-only) || true",
+      "exit_code": 0,
+      "result": "PASS",
+      "output": "Changed-file hooks passed; some hooks skipped by file pattern."
+    }
+  ],
+  "schema_validations": [
+    "schemas/pr_steward/merge_readiness.schema.json",
+    "schemas/pr_steward/review_item_ledger.schema.json",
+    "schemas/pr_steward/thread_dispositions.schema.json",
+    "schemas/pr_steward/ci_triage.schema.json",
+    "schemas/pr_steward/pr_state_snapshot.schema.json",
+    "schemas/proof/embedded_audit.schema.json"
+  ],
+  "artifact_paths": [
+    "PR_STATE_SNAPSHOT.json",
+    "REVIEW_ITEM_LEDGER.json",
+    "THREAD_DISPOSITIONS.json",
+    "CI_TRIAGE.json",
+    "MERGE_READINESS.json",
+    "PR_STEWARD_SUMMARY.md"
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "copilot-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "copilot --model claude-sonnet-4.6 --no-custom-instructions --disable-builtin-mcps --stream off --available-tools=__none__ -p \"$(cat proof/TP-DMX-PR-STEWARD-001/COPILOT_AUDIT_INPUT.md)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR-STEWARD-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "AUDIT-001",
+        "severity": "INFO",
+        "title": "Required external embedded audit completed via approved fallback",
+        "status": "RESOLVED",
+        "body": "GitHub Copilot CLI with Claude Sonnet 4.6 returned PASS_WITH_RISKS using the supervisor-approved no-tools fallback invocation."
+      },
+      {
+        "id": "AUDIT-RISK-001",
+        "severity": "LOW",
+        "title": "Live GitHub harvest not proven locally",
+        "status": "ACCEPTED_RISK",
+        "body": "Local gh auth remains invalid, so live PR harvest emits BLOCKED. This is fail-closed and does not affect offline fixture validation."
+      },
+      {
+        "id": "AUDIT-RISK-002",
+        "severity": "LOW",
+        "title": "No-tools fallback audit used bounded summarized evidence",
+        "status": "ACCEPTED_RISK",
+        "body": "The authoritative Copilot fallback used bounded prompt material rather than unrestricted repo inspection because tools were disabled by requirement."
+      }
+    ],
+    "fixes_applied": [
+      "Created COPILOT_AUDIT_INPUT.md with bounded audit material.",
+      "Ran supervisor-approved Copilot CLI Claude Sonnet 4.6 no-tools fallback audit.",
+      "Updated AUDITOR_REPORT.md with PASS_WITH_RISKS verdict."
+    ],
+    "remaining_risks": [
+      "Live GitHub harvest cannot complete until gh auth is repaired.",
+      "Copilot no-tools audit was bounded to supplied evidence rather than unrestricted repository inspection."
+    ],
+    "skip_reason": null
+  },
+  "known_unknowns_blockers": [
+    "gh auth status reports an invalid token for hu3mann, so live PR harvest emits BLOCKED.",
+    "No commit SHA exists for this implementation yet because commit has not been created.",
+    "PR URL is NOT_RUN until push and gh pr create are attempted."
+  ]
+}

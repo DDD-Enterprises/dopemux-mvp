@@ -1,0 +1,23 @@
+{
+  "checks": [
+    {
+      "blocking": false,
+      "conclusion": "success",
+      "head_sha": "head000000000000000000000000000000000000",
+      "name": "unit",
+      "rationale": "Check is nonblocking or successful.",
+      "required": true,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/1"
+    }
+  ],
+  "failed_required_count": 0,
+  "generated_at": "2026-05-26T06:21:34.494390Z",
+  "head_sha": "head000000000000000000000000000000000000",
+  "mutation_performed": false,
+  "pending_required_count": 0,
+  "pr_number": 704,
+  "required_check_count": 1,
+  "schema_version": "1.0.0",
+  "unknown_required_count": 0
+}
