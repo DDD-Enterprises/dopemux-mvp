@@ -38,11 +38,9 @@
     "requires_operator_approval": true,
     "route_is_audit_verdict": false,
     "pal_clink_attempted_clients": [
-      "claude",
-      "gemini",
-      "codex"
+      "claude"
     ],
-    "pal_clink_attempt_result": "CLI_EXECUTABLES_MISSING"
+    "pal_clink_attempt_result": "SANDBOX_BLOCKED"
   },
   "review_fixes": {
     "fixes": [
@@ -76,16 +74,15 @@
     ],
     "remaining_blockers": [
       "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
-      "PAL_CLINK_AUDIT_OUTPUT_MISSING",
+      "PAL_CLINK_AUDIT_SANDBOX_BLOCKED",
       "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500"
     ],
-    "note": "The wrapper blocker was historical for PAL-CLINK-002 and is closed by the follow-up wrapper packet. PAL execution and audit output remain out of scope."
+    "note": "The wrapper blocker was historical for PAL-CLINK-002 and is closed by the follow-up wrapper packet. PAL MCP clink was executed host-side; clink session sandbox blocked all evidence file reads. Audit output captured but verdict is NEEDS_SUPERVISOR."
   },
   "blockers": [
     "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
-    "PAL_CLINK_AUDIT_OUTPUT_MISSING",
-    "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500",
-    "PAL_CLINK_CLI_EXECUTABLES_MISSING"
+    "PAL_CLINK_AUDIT_SANDBOX_BLOCKED",
+    "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500"
   ],
   "nonblocking_results": [
     "PAL clink bridge-tier classification implemented as pure config inspection",
@@ -93,7 +90,7 @@
     "embedded_audit schema accepts pal-mcp-clink as auditor_tool",
     "Targeted auditor-router tests passed after local review fixes: 37 passed",
     "PAL clink review regressions passed after local review fixes: 33 test_pal_clink tests",
-    "PAL MCP clink was callable, but claude, gemini, and codex bridge executables were missing from PATH.",
+    "PAL MCP clink was callable host-side, but the clink session sandbox blocked all evidence reads.",
     "PAL clink command and override-order review fixes passed targeted tests: 35 test_pal_clink tests",
     "Auditor-router test suite passed after command and override fixes: 39 passed",
     "PAL clink explicit name/runner and roles-shape review fixes passed targeted tests: 38 test_pal_clink tests",
@@ -216,6 +213,7 @@
   },
   "embedded_audit": {
     "required": true,
+    "audit_output_captured": true,
     "status": "NEEDS_SUPERVISOR",
     "auditor_tool": "pal-mcp-clink",
     "auditor_model": "unknown",
@@ -224,17 +222,17 @@
     "report_path": "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/AUDITOR_REPORT.md",
     "findings": [
       {
-        "id": "PAL-CLINK-CLI-EXECUTABLES-MISSING",
+        "id": "PAL_CLINK_AUDIT_SANDBOX_BLOCKED",
         "severity": "BLOCKING",
-        "title": "Configured PAL clink CLI executables are unavailable",
+        "title": "PAL clink audit sandbox blocked - all evidence reads denied",
         "status": "OPEN",
-        "body": "PAL MCP clink returned executable-not-found errors for claude, gemini, and codex before any external audit could run."
+        "body": "PAL MCP clink was invoked host-side (cli_name=claude, role=codereviewer). The clink session sandbox is confined to /Users/hue/.zen-mcp-server; all 6 evidence file reads to the worktree path were denied. All 14 audit criteria remain unverified. Remediation: re-run in a session where the worktree path is in allowed directories or mcp__pal__clink permission is granted."
       }
     ],
     "fixes_applied": [],
     "remaining_risks": [
-      "No external CLI agent reviewed the diff.",
-      "A completed PAL clink audit verdict of PASS or PASS_WITH_RISKS is still required before READY."
+      "All 14 audit criteria remain unverified. Clink session could not read pal_clink.py, test_pal_clink.py, auditor_route.schema.json, embedded_audit.schema.json, PAL_CLINK_AUDIT_INPUT.md, or AUDITOR_ROUTE.json.",
+      "Re-run required with accessible evidence bundle or allowed worktree path."
     ],
     "skip_reason": null
   },
@@ -260,7 +258,7 @@
     "TP-DMX-AUDITOR-ROUTER-PAL-CLINK-AUDIT-HANDOFF-004"
   ],
   "head_sha_before_local_review_fixes": "6b10eed65c6256733900de06163ce312f8b99bdc",
-  "updated_at": "2026-05-26T22:32:00Z",
+  "updated_at": "2026-05-26T23:00:00Z",
   "head_sha_before_clink_attempt": "282257216002b0635fee696a06e8ef123a31f150",
   "head_sha_before_command_override_fixes": "e3246aee05a30951bc0a6f7aba910341fca02151",
   "head_sha_before_shape_validation_fixes": "92ca508aad3d419f8e23b015428f7b5415622581"
