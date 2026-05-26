@@ -22,6 +22,7 @@ import warnings
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence
+from contextlib import contextmanager
 
 import click
 
@@ -39,7 +40,6 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.text import Text
 
 from . import __version__
-from .claude_tools.cli import register_commands
 from .console import console
 from .ui.output import emit
 from .ui.theme import (
@@ -98,6 +98,17 @@ class LegacyReplacementCommand(click.Command):
             f"Legacy command disabled. Use `{replacement}` instead."
         )
 
+
+def _unavailable_group(message: str) -> click.Group:
+    @click.group()
+    def _group() -> None:
+        raise click.ClickException(message)
+
+    return _group
+
+
+_LITELLM_IMPORT_ERROR: Optional[BaseException] = None
+
 from .pm.writes import PMWriteConfig
 from .adhd import AttentionMonitor, ContextManager, TaskDecomposer
 from .claude import ClaudeConfigurator, ClaudeLauncher, InstructionManager
@@ -108,29 +119,84 @@ from .dope_brainz_router import (
     DopeBrainzRouterError,
     DopeBrainzRouterManager,
 )
-from .health import HealthChecker
+try:
+    from .health import HealthChecker
+except ModuleNotFoundError as exc:
+    if exc.name != "psutil":
+        raise
+
+    class HealthChecker:  # type: ignore[no-redef]
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
+            raise click.ClickException(
+                "Health checks are unavailable because the psutil package is "
+                "not importable. Install project dependencies before invoking "
+                "health commands."
+            )
 from .instance_manager import (
     InstanceManager,
     detect_instances_sync,
     detect_orphaned_instances_sync,
 )
-from .litellm_proxy import (
-    ALTP_PROVIDER,
-    CODEX_PROVIDER,
-    DEFAULT_LITELLM_CONFIG,
-    GROK_PROVIDER,
-    LiteLLMProxyError,
-    LiteLLMProxyManager,
-    ensure_master_key,
-    generate_multi_target_config,
-    generate_single_target_config,
-    start_simple_proxy,
-    sync_litellm_database,
-)
-from .mobile import mobile as mobile_commands
-from .mobile.hooks import mobile_task_notification
-from .mobile.main import main as mobile_env_commands
-from .mobile.runtime import update_tmux_mobile_indicator
+try:
+    from .litellm_proxy import (
+        ALTP_PROVIDER,
+        CODEX_PROVIDER,
+        DEFAULT_LITELLM_CONFIG,
+        GROK_PROVIDER,
+        LiteLLMProxyError,
+        LiteLLMProxyManager,
+        ensure_master_key,
+        generate_multi_target_config,
+        generate_single_target_config,
+        start_simple_proxy,
+        sync_litellm_database,
+    )
+except ModuleNotFoundError as exc:
+    if exc.name != "litellm":
+        raise
+    _LITELLM_IMPORT_ERROR = exc
+
+    class LiteLLMProxyError(RuntimeError):
+        """Raised when LiteLLM proxy helpers are unavailable."""
+
+    def _raise_litellm_unavailable(*args: Any, **kwargs: Any) -> Any:
+        raise LiteLLMProxyError(
+            "LiteLLM proxy support is unavailable because the litellm package "
+            "is not importable. Install project dependencies before invoking "
+            "LiteLLM-backed commands."
+        ) from _LITELLM_IMPORT_ERROR
+
+    ALTP_PROVIDER = {"required_keys": (), "targets": ()}
+    CODEX_PROVIDER = {}
+    DEFAULT_LITELLM_CONFIG = ""
+    GROK_PROVIDER = {}
+    LiteLLMProxyManager = _raise_litellm_unavailable
+    ensure_master_key = _raise_litellm_unavailable
+    generate_multi_target_config = _raise_litellm_unavailable
+    generate_single_target_config = _raise_litellm_unavailable
+    start_simple_proxy = _raise_litellm_unavailable
+    sync_litellm_database = _raise_litellm_unavailable
+try:
+    from .mobile import mobile as mobile_commands
+    from .mobile.hooks import mobile_task_notification
+    from .mobile.main import main as mobile_env_commands
+    from .mobile.runtime import update_tmux_mobile_indicator
+except ModuleNotFoundError as exc:
+    if exc.name != "litellm":
+        raise
+    _mobile_unavailable_message = (
+        "Mobile commands are unavailable because the LiteLLM-backed tmux "
+        "command stack is not importable in this environment."
+    )
+    mobile_commands = _unavailable_group(_mobile_unavailable_message)
+    mobile_env_commands = _unavailable_group(_mobile_unavailable_message)
+
+    @contextmanager
+    def mobile_task_notification(*args: Any, **kwargs: Any) -> Any:
+        yield
+
+    def update_tmux_mobile_indicator(*args: Any, **kwargs: Any) -> None:
+        return None
 from .profile_manager import ProfileManager
 from .profile_models import ProfileValidationError
 from .profile_parser import ProfileParser
@@ -139,7 +205,14 @@ from .protection_interceptor import (
     check_and_protect_main,
     consume_last_created_worktree,
 )
-from .tmux import tmux as tmux_commands
+try:
+    from .tmux import tmux as tmux_commands
+except ModuleNotFoundError as exc:
+    if exc.name != "litellm":
+        raise
+    tmux_commands = _unavailable_group(
+        "Tmux commands are unavailable because the litellm package is not importable."
+    )
 
 from .memory.capture_client import CaptureError, emit_capture_event
 from .roles.catalog import (
@@ -3001,7 +3074,14 @@ from .commands.autoresponder_commands import autoresponder
 cli.add_command(autoresponder)
 
 
-from .commands.extract_commands import extract
+try:
+    from .commands.extract_commands import extract
+except ModuleNotFoundError as exc:
+    if exc.name != "litellm":
+        raise
+    extract = _unavailable_group(
+        "Extract commands are unavailable because the litellm package is not importable."
+    )
 
 cli.add_command(extract, "extract")
 
@@ -3036,9 +3116,13 @@ cli.add_command(tmux_commands, "tmux")
 from .commands.system_data_commands import system_data
 
 cli.add_command(system_data, "system-data")
-from .claude_tools.cli import register_commands
-
-register_commands(cli)
+try:
+    from .claude_tools.cli import register_commands as _register_claude_tools_commands
+except ModuleNotFoundError as exc:
+    if exc.name != "litellm":
+        raise
+else:
+    _register_claude_tools_commands(cli)
 
 
 from .commands.memory_commands import memory

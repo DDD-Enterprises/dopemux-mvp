@@ -4172,7 +4172,7 @@ def write_step_metrics_snapshot(
     step_id: str,
     metrics: Dict[str, Any],
 ) -> Dict[str, Any]:
-    return rte_write_step_metrics_snapshot(
+    return reporting_write_step_metrics_snapshot(
         _telemetry_writer_deps(), run_root, phase, step_id, metrics
     )
 
@@ -6331,7 +6331,7 @@ def write_run_manifest(
     run_context: RunContext,
     phases: List[str],
 ) -> Dict[str, Any]:
-    return rte_write_run_manifest(
+    return reporting_write_run_manifest(
         _reporting_deps(), root, dirs, run_id, args, run_context, phases
     )
 
@@ -16716,6 +16716,13 @@ else sdk_auth_present_flags(p_provider, True)
             request_meta["escalation_trigger"] = (
                 request_meta.get("escalation_trigger") or "gated_retry"
             )
+        elif (
+            request_meta.get("escalation_trigger") == "provider_failure"
+            and len(request_meta.get("route_attempts", [])) == 1
+            and request_meta.get("route_attempts", [{}])[0].get("escalation_trigger")
+            == "provider_failure"
+        ):
+            request_meta["escalation_trigger"] = None
         else:
             request_meta["escalation_trigger"] = request_meta.get("escalation_trigger")
         request_meta["provider"] = request_meta.get("provider") or final_provider
@@ -19209,6 +19216,7 @@ def print_config(
         "python_version": platform.python_version(),
         "cwd": str(Path.cwd().resolve()),
         "phases": phases,
+        "cost_profile": cfg.cost_profile,
         "cli": {
             "phase_argument": args.phase,
             "preset": getattr(args, "preset", None),
