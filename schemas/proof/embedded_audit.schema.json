@@ -63,7 +63,7 @@
     },
     "report_path": {
       "type": "string",
-      "pattern": "^proof/[^/]+/AUDITOR_REPORT\\.md$"
+      "pattern": "^proof/[^/]+/AUDITOR(_REPAIR(_[0-9]+)?)?_REPORT\\.md$"
     },
     "findings": {
       "type": "array",
@@ -138,9 +138,27 @@
       },
       "then": {
         "properties": {
+          "auditor_tool": {
+            "type": "string",
+            "not": {
+              "const": "none"
+            }
+          },
+          "auditor_model": {
+            "type": "string",
+            "not": {
+              "const": "unknown"
+            }
+          },
           "invocation": {
             "type": "string",
             "minLength": 1
+          },
+          "exit_code": {
+            "type": "integer"
+          },
+          "skip_reason": {
+            "type": "null"
           }
         }
       }
