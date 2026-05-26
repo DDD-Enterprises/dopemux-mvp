@@ -395,7 +395,7 @@ def _classify_checks(
 
     for index, check in enumerate(checks):
         name = str(check.get("name") or check.get("context") or f"check-{index}")
-        required = bool(check.get("isRequired", check.get("required", True)))
+        required = bool(check.get("isRequired") is True or check.get("required") is True)
         if required:
             required_count += 1
         status = _normalize_status(check.get("status") or check.get("state"))
@@ -408,7 +408,7 @@ def _classify_checks(
         if required and conclusion in FAILED_CHECK_CONCLUSIONS:
             blocking = True
             failed_count += 1
-            rationale = "Required or observed check did not succeed."
+            rationale = "Required check did not succeed."
             _append_once(blockers, "FAILED_CHECK")
         elif required and strict and status in PENDING_CHECK_STATUSES:
             blocking = True

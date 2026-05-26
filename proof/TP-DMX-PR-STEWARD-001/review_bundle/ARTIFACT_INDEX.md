@@ -1,31 +1,23 @@
 # Artifact Index
 
-## Core Review Files
+Generated: `2026-05-26T06:56:15Z`
 
-| Path | Purpose |
-| --- | --- |
-| `MANIFEST.json` | Machine-readable review bundle manifest. |
-| `SUMMARY.md` | Human supervisor summary. |
-| `PROOF.json` | Review-ready copy of packet proof. |
-| `AUDITOR_REPORT.md` | Embedded audit attempt report. |
-| `VALIDATION_OUTPUT.md` | Validation command summary. |
-| `GIT_STATE.md` | Repo, branch, and status evidence. |
-| `DIFF_STAT.txt` | Diff size summary. |
-| `CHANGED_FILES.txt` | Changed-file inventory. |
-| `artifacts/COPILOT_AUDIT_INPUT.md` | Bounded Copilot fallback audit prompt. |
-| `artifacts/COPILOT_AUDIT_OUTPUT.md` | Copilot fallback audit output summary. |
+## Files
 
-## PR Steward Artifacts
-
-| Path | Source | Purpose |
-| --- | --- | --- |
-| `artifacts/PR_STATE_SNAPSHOT.json` | `/tmp/pr-steward-ready/PR_STATE_SNAPSHOT.json` | Fixture-smoke harvested PR state snapshot. |
-| `artifacts/REVIEW_ITEM_LEDGER.json` | `/tmp/pr-steward-ready/REVIEW_ITEM_LEDGER.json` | Fixture-smoke review item classifications. |
-| `artifacts/THREAD_DISPOSITIONS.json` | `/tmp/pr-steward-ready/THREAD_DISPOSITIONS.json` | Fixture-smoke review-thread dispositions. |
-| `artifacts/CI_TRIAGE.json` | `/tmp/pr-steward-ready/CI_TRIAGE.json` | Fixture-smoke check/CI triage. |
-| `artifacts/MERGE_READINESS.json` | `/tmp/pr-steward-ready/MERGE_READINESS.json` | Fixture-smoke readiness verdict. |
-| `artifacts/PR_STEWARD_SUMMARY.md` | `/tmp/pr-steward-ready/PR_STEWARD_SUMMARY.md` | Fixture-smoke markdown summary. |
-
-## Exclusions
-
-See `MANIFEST.json` for excluded paths and reasons.
+- `ARTIFACT_INDEX.md`
+- `AUDITOR_REPORT.md`
+- `CHANGED_FILES.txt`
+- `DIFF_STAT.txt`
+- `GIT_STATE.md`
+- `MANIFEST.json`
+- `PROOF.json`
+- `SUMMARY.md`
+- `VALIDATION_OUTPUT.md`
+- `artifacts/CI_TRIAGE.json`
+- `artifacts/COPILOT_AUDIT_INPUT.md`
+- `artifacts/COPILOT_AUDIT_OUTPUT.md`
+- `artifacts/MERGE_READINESS.json`
+- `artifacts/PR_STATE_SNAPSHOT.json`
+- `artifacts/PR_STEWARD_SUMMARY.md`
+- `artifacts/REVIEW_ITEM_LEDGER.json`
+- `artifacts/THREAD_DISPOSITIONS.json`

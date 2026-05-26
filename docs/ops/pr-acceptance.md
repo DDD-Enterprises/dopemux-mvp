@@ -23,7 +23,7 @@ A PR is eligible for normal closeout only when all of these are true:
 - embedded audit is `PASS` or non-blocking `PASS_WITH_RISKS`
 - PR Steward check-only intake is `READY`
 - every review item, issue comment, review comment, review thread, and CI check is classified
-- no unknown reviewer or bot remains unclassified
+- no unknown or untrusted reviewer or bot remains unclassified
 - no blocking thread, failed required check, stale proof, or unresolved audit finding remains
 
 ## Skip-Second-GPT-5.5 Rule
@@ -35,7 +35,9 @@ Skip the second GPT-5.5 Pro supervisor review only when both gates are READY:
 
 If either gate is missing, skipped, stale, failed, or unknown, the PR requires supervisor review or human escalation.
 
-No second GPT-5.5 Pro prompt can be skipped unless PR Steward emits `READY` and embedded audit is `PASS` or nonblocking `PASS_WITH_RISKS`. Unknown reviewers or bots and unresolved review threads both block `READY`.
+No second GPT-5.5 Pro prompt can be skipped unless PR Steward emits `READY` and embedded audit is `PASS` or nonblocking `PASS_WITH_RISKS`. Unknown or untrusted reviewers and bots and unresolved review threads both block `READY`.
+
+Explicit known reviewer logins are trusted. GitHub `authorAssociation` values `OWNER`, `MEMBER`, and `COLLABORATOR` are trusted unless a future policy overrides this rule. External unknown actors and unclassified bots block `READY`.
 
 ## Non-Automation Boundary
 

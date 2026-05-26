@@ -29,6 +29,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Offline fixture directory containing harvest.json.",
     )
     parser.add_argument(
+        "--proof-path",
+        type=Path,
+        help="Proof JSON path used in live mode to verify audit status and PR head SHA.",
+    )
+    parser.add_argument(
         "--allow-closed",
         action="store_true",
         help="Allow closed or merged PRs to be reported without PR_CLOSED blocker.",
@@ -50,7 +55,7 @@ def main(argv: list[str] | None = None) -> int:
         harvest = (
             load_fixture(args.fixture_dir)
             if args.fixture_dir
-            else collect_from_github(args.repo, args.pr)
+            else collect_from_github(args.repo, args.pr, proof_path=args.proof_path)
         )
         artifacts = build_artifacts(
             harvest,

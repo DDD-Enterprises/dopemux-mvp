@@ -67,16 +67,20 @@ Return `NOT_READY` or `NEEDS_SUPERVISOR` when:
 - GitHub auth or API state cannot be proven
 - any requested action would mutate GitHub state
 
-Return `BLOCKED` when the harvest is incomplete, the PR is draft, or the PR is closed without explicit `--allow-closed`. Return `NEEDS_IMPLEMENTER` when concrete implementation work is required, such as unresolved threads or failed checks. Unknown reviewers or bots always block `READY`.
+Return `BLOCKED` when the harvest is incomplete, the PR is draft, or the PR is closed without explicit `--allow-closed`. Return `NEEDS_IMPLEMENTER` when concrete implementation work is required, such as unresolved threads or failed checks. Unknown or untrusted reviewers and bots always block `READY`.
+
+Explicit known reviewer logins are trusted. GitHub `authorAssociation` values `OWNER`, `MEMBER`, and `COLLABORATOR` are also trusted unless a future policy overrides that rule. External unknown actors and unclassified bots block `READY`.
 
 ## CLI
 
 Repo-local invocation:
 
 ```bash
-python -m tools.pr_steward.intake --repo DDD-Enterprises/dopemux-mvp --pr 704 --out /tmp/pr-steward-704 --strict
-scripts/pr-steward --repo DDD-Enterprises/dopemux-mvp --pr 704 --out /tmp/pr-steward-704 --strict
+python -m tools.pr_steward.intake --repo DDD-Enterprises/dopemux-mvp --pr 704 --out /tmp/pr-steward-704 --strict --proof-path proof/TP-DMX-PR-STEWARD-001/PROOF.json
+scripts/pr-steward --repo DDD-Enterprises/dopemux-mvp --pr 704 --out /tmp/pr-steward-704 --strict --proof-path proof/TP-DMX-PR-STEWARD-001/PROOF.json
 ```
+
+Live mode fails closed when `--proof-path` is absent, unreadable, unparseable, or stale relative to the PR head SHA. Fixture mode may include proof state directly in `harvest.json`.
 
 Fixture mode is the offline validation lane and must not require live GitHub:
 
