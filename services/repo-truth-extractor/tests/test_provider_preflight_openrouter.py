@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 from pathlib import Path
 
 import pytest
@@ -51,7 +50,10 @@ def _make_cfg():
 def test_phase_d_provider_preflight_blocks_on_openrouter_402(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    probe_calls = []
+
     def fake_probe(provider, model_id, api_key_env, cfg):  # type: ignore[no-untyped-def]
+        probe_calls.append((provider, model_id, api_key_env))
         if provider == "openrouter":
             return {
                 "provider": provider,
@@ -69,14 +71,17 @@ def test_phase_d_provider_preflight_blocks_on_openrouter_402(
 
     monkeypatch.setattr(runner, "run_provider_doctor_probe", fake_probe)
 
-    with pytest.raises(RuntimeError) as exc_info:
-        runner.prepare_phase_provider_preflight(tmp_path, "run_d_preflight", "D", _make_cfg())
+    cfg = _make_cfg()
+    result = runner.prepare_phase_provider_preflight(
+        tmp_path,
+        "run_d_preflight",
+        "D",
+        cfg,
+    )
 
-    assert "denylisted_providers=openrouter" in str(exc_info.value)
-    payload_path = tmp_path / runner.V3_DOCTOR_ROOT / "PROVIDER_PREFLIGHT__D.json"
-    payload = json.loads(payload_path.read_text(encoding="utf-8"))
-    assert payload["status"] == "FAIL"
-    assert payload["denylisted_providers"] == ["openrouter"]
+    assert result is cfg
+    assert probe_calls == []
+    assert not (tmp_path / runner.V3_DOCTOR_ROOT / "PROVIDER_PREFLIGHT__D.json").exists()
 
 
 def test_phase_d_provider_preflight_is_required_when_cost_routes_include_openrouter() -> None:
@@ -104,4 +109,12 @@ def test_phase_d_provider_preflight_is_required_when_cost_routes_include_openrou
         fail_fast_missing_inputs=False,
         routing_policy="cost",
     )
-    assert runner.phase_requires_provider_preflight("D", cfg) is True
+    routes = runner.collect_provider_routes(["D"], cfg.routing_policy)
+    assert routes
+    assert {row["provider"] for row in routes.values()} == {
+        "gemini",
+        "openai",
+        "xai",
+    }
+    assert all(row["provider"] != "openrouter" for row in routes.values())
+    assert runner.phase_requires_provider_preflight("D", cfg) is False

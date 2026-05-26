@@ -123,8 +123,8 @@ def test_resolve_effective_step_route_defaults_to_promptset_when_no_ownership(mo
     monkeypatch.delenv("DPMX_BENCHMARK_ROUTE_OWNERSHIP", raising=False)
     contract = runner._step_contract_for("A", "A0")
     route = runner.resolve_effective_step_route("A", "A0", cfg, step_contract=contract)
-    assert route["provider"] == "openrouter"
-    assert route["model_id"] == "openai/gpt-5.3-codex"
+    assert route["provider"] == "openai"
+    assert route["model_id"] == "gpt-5.3-codex"
     assert route["reason"] == "contract_lane_primary_strict"
 
 
@@ -217,13 +217,13 @@ def test_resolve_effective_step_route_honors_explicit_step_override_for_later_ph
     cfg = _make_cfg(runner)
     monkeypatch.setenv(
         "DPMX_EXPLICIT_STEP_ROUTES",
-        _explicit_routes_payload(steps={"H:H3": "openrouter/openai/gpt-5.4"}),
+        _explicit_routes_payload(steps={"H:H3": "openai/gpt-5.4"}),
     )
 
     route = runner.resolve_effective_step_route("H", "H3", cfg)
 
-    assert route["provider"] == "openrouter"
-    assert route["model_id"] == "openai/gpt-5.4"
+    assert route["provider"] == "openai"
+    assert route["model_id"] == "gpt-5.4"
     assert route["reason"] == "explicit_step_route_override"
     assert route["route_control"]["selector"] == "step"
 
@@ -236,15 +236,15 @@ def test_resolve_effective_step_route_prefers_step_override_over_phase_override(
     monkeypatch.setenv(
         "DPMX_EXPLICIT_STEP_ROUTES",
         _explicit_routes_payload(
-            steps={"H:H3": "openrouter/openai/gpt-5.4"},
-            phases={"H": "openrouter/openai/gpt-5.3-codex"},
+            steps={"H:H3": "openai/gpt-5.4"},
+            phases={"H": "openai/gpt-5.3-codex"},
         ),
     )
 
     route = runner.resolve_effective_step_route("H", "H3", cfg)
 
-    assert route["provider"] == "openrouter"
-    assert route["model_id"] == "openai/gpt-5.4"
+    assert route["provider"] == "openai"
+    assert route["model_id"] == "gpt-5.4"
     assert route["reason"] == "explicit_step_route_override"
 
 
