@@ -7,6 +7,9 @@ from pathlib import Path
 
 from jsonschema import Draft7Validator
 
+from tools.pr_steward import collector
+from tools.pr_steward.classifier import build_artifacts
+
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURES = ROOT / "tests" / "fixtures" / "pr_steward"
@@ -142,6 +145,7 @@ def test_script_wrapper_help() -> None:
     )
     assert result.returncode == 0
     assert "--fixture-dir" in result.stdout
+    assert "--proof-path" in result.stdout
     assert "--strict" in result.stdout
 
 
@@ -173,3 +177,180 @@ def test_blocking_fixtures_fail_closed(tmp_path: Path) -> None:
         assert expected_blocker in readiness["blockers"]
         assert readiness["mutation_performed"] is False
         assert ledger["unclassified_count"] == 0
+
+
+def test_optional_checks_without_required_metadata_do_not_block_ready() -> None:
+    harvest = base_ready_harvest()
+    harvest["checks"] = [
+        {"name": "optional-skipped", "status": "COMPLETED", "conclusion": "SKIPPED"},
+        {"name": "optional-failed", "status": "COMPLETED", "conclusion": "FAILURE"},
+        {"name": "optional-pending", "status": "IN_PROGRESS", "conclusion": None},
+    ]
+
+    artifacts = build_artifacts(
+        harvest,
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=704,
+        strict=True,
+        allow_closed=False,
+    )
+
+    readiness = artifacts["MERGE_READINESS.json"]
+    assert isinstance(readiness, dict)
+    ci_triage = artifacts["CI_TRIAGE.json"]
+    assert isinstance(ci_triage, dict)
+    assert readiness["readiness"] == "READY"
+    assert readiness["blockers"] == []
+    assert ci_triage["required_check_count"] == 0
+    assert ci_triage["failed_required_count"] == 0
+    assert ci_triage["pending_required_count"] == 0
+    assert all(check["required"] is False for check in ci_triage["checks"])
+
+
+def test_live_collection_uses_proof_path_for_ready_state(
+    tmp_path: Path, monkeypatch
+) -> None:
+    pr_head = "a" * 40
+    proof_path = tmp_path / "PROOF.json"
+    proof_path.write_text(
+        json.dumps(
+            {
+                "head_sha": pr_head,
+                "embedded_audit": {
+                    "status": "PASS_WITH_RISKS",
+                    "report_path": "proof/TP-DMX-PR-STEWARD-001/AUDITOR_REPORT.md",
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    def fake_run(args: list[str]) -> subprocess.CompletedProcess[str]:
+        if args[:3] == ["gh", "auth", "status"]:
+            return subprocess.CompletedProcess(args, 0, "", "")
+        if args[:3] == ["gh", "pr", "view"]:
+            return subprocess.CompletedProcess(
+                args,
+                0,
+                json.dumps(base_pr_payload(head_sha=pr_head)),
+                "",
+            )
+        raise AssertionError(f"unexpected gh command: {args}")
+
+    monkeypatch.setattr(collector, "_run", fake_run)
+    monkeypatch.setattr(collector, "_fetch_review_threads", lambda **_: ([], []))
+
+    harvest = collector.collect_from_github(
+        "DDD-Enterprises/dopemux-mvp",
+        704,
+        proof_path=proof_path,
+    )
+    artifacts = build_artifacts(
+        harvest,
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=704,
+        strict=True,
+        allow_closed=False,
+    )
+
+    readiness = artifacts["MERGE_READINESS.json"]
+    assert isinstance(readiness, dict)
+    assert readiness["readiness"] == "READY"
+    assert readiness["embedded_audit"]["status"] == "PASS_WITH_RISKS"
+    assert readiness["proof"]["proof_head_sha"] == pr_head
+    assert readiness["proof"]["matches_pr_head"] is True
+
+
+def test_trusted_author_association_is_nonblocking() -> None:
+    harvest = base_ready_harvest()
+    harvest["reviews"] = [
+        {
+            "id": "R_MEMBER",
+            "author": {"login": "new-team-member"},
+            "authorAssociation": "MEMBER",
+            "state": "APPROVED",
+            "body": "Looks fine.",
+        }
+    ]
+
+    artifacts = build_artifacts(
+        harvest,
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=704,
+        strict=True,
+        allow_closed=False,
+    )
+
+    readiness = artifacts["MERGE_READINESS.json"]
+    assert isinstance(readiness, dict)
+    ledger = artifacts["REVIEW_ITEM_LEDGER.json"]
+    assert isinstance(ledger, dict)
+    assert readiness["readiness"] == "READY"
+    assert "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION" not in readiness["blockers"]
+    assert ledger["items"][0]["author"] == "new-team-member"
+    assert ledger["items"][0]["blocking"] is False
+
+
+def base_ready_harvest() -> dict:
+    head_sha = "head000000000000000000000000000000000000"
+    return {
+        "harvest_complete": True,
+        "harvest_errors": [],
+        "pr": base_pr_payload(head_sha=head_sha),
+        "changed_files": [{"path": "tools/pr_steward/intake.py", "additions": 1}],
+        "commits": [{"oid": head_sha, "messageHeadline": "test"}],
+        "reviews": [],
+        "review_comments": [],
+        "review_threads": [],
+        "issue_comments": [],
+        "checks": [
+            {
+                "name": "unit",
+                "status": "COMPLETED",
+                "conclusion": "SUCCESS",
+                "required": True,
+                "headSha": head_sha,
+            }
+        ],
+        "embedded_audit": {
+            "status": "PASS",
+            "report_path": "proof/TP-DMX-PR-STEWARD-001/AUDITOR_REPORT.md",
+        },
+        "proof": {
+            "proof_path": "proof/TP-DMX-PR-STEWARD-001/PROOF.json",
+            "proof_head_sha": head_sha,
+            "matches_pr_head": True,
+        },
+    }
+
+
+def base_pr_payload(*, head_sha: str) -> dict:
+    return {
+        "number": 704,
+        "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/704",
+        "state": "OPEN",
+        "isDraft": False,
+        "mergeable": "MERGEABLE",
+        "mergeStateStatus": "CLEAN",
+        "reviewDecision": "APPROVED",
+        "baseRefName": "main",
+        "baseRefOid": "base000000000000000000000000000000000000",
+        "headRefName": "codex/tp-dmx-pr-steward-001",
+        "headRefOid": head_sha,
+        "author": {"login": "hu3mann"},
+        "createdAt": "2026-05-26T01:00:00Z",
+        "updatedAt": "2026-05-26T02:00:00Z",
+        "files": [{"path": "tools/pr_steward/intake.py", "additions": 1}],
+        "commits": [{"oid": head_sha, "messageHeadline": "test"}],
+        "reviews": [],
+        "comments": [],
+        "statusCheckRollup": [
+            {
+                "name": "unit",
+                "status": "COMPLETED",
+                "conclusion": "SUCCESS",
+                "required": True,
+                "headSha": head_sha,
+            }
+        ],
+    }
