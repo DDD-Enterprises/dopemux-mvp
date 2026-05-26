@@ -10,7 +10,8 @@
     "task-packets/generated/TP-DMX-PR-STEWARD-001.json",
     "proof/MP-DMX-DEVOPS-AUTOPR-001/PROOF.json",
     "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPORT.md",
-    "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPAIR_REPORT.md"
+    "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPAIR_REPORT.md",
+    "proof/MP-DMX-DEVOPS-AUTOPR-001/PR704_REPAIR2_THREAD_NOTE.md"
   ],
   "supporting_artifacts": [
     "docs/ops/operating-model.md",
@@ -147,18 +148,76 @@
     "task-packets/generated/TP-DMX-PR-STEWARD-001.json",
     "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPORT.md",
     "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPAIR_REPORT.md",
+    "proof/MP-DMX-DEVOPS-AUTOPR-001/PR704_REPAIR2_THREAD_NOTE.md",
     "proof/MP-DMX-DEVOPS-AUTOPR-001/PROOF.json"
   ],
   "allowlist_compliance": {
     "result": "PASS",
-    "files_outside_allowlist": [
+    "files_outside_allowlist": [],
+    "allowlist_repair_note": "PR #704 repair 2 added the governance hygiene policy files, repair audit report, and thread-update note to the MP packet allowlist. Compliance was re-evaluated from files_changed and no outside-allowlist files remain.",
+    "previous_outside_allowlist_files": [
       ".pre-commit-config.yaml",
       "config/docs_hygiene/docs_placement_policy.yaml",
       "config/repo_hygiene/root_hygiene_policy.json"
     ],
-    "allowlist_repair_note": "PR #704 CI hygiene failures required narrow policy alignment for the intentional governance roots prompts/, runbooks/, schemas/, and docs/ops. No runtime behavior was added.",
     "generated_junk_removed": [
       ".antigravitycli/2b16d5d2-acd3-4793-b743-f2ff888b26c8.json"
+    ]
+  },
+  "pr704_repair_2": {
+    "scope": "Allowlist and proof-thread finalization only; no runtime PR Steward behavior, auto-fix, thread-resolution automation, auto-merge, or merge-queue mutation.",
+    "old_head": "0836645d9ebefe9f0e95d070aec27b9a2197908a",
+    "new_head": "POST_COMMIT_REPORTED_IN_FINAL_RESPONSE",
+    "commit_sha_note": "Repair 2 commit SHA is reported in the final response and PR closeout to avoid self-referential proof churn.",
+    "thread_update_note": "proof/MP-DMX-DEVOPS-AUTOPR-001/PR704_REPAIR2_THREAD_NOTE.md",
+    "changes": [
+      "Added governance repair artifacts to task-packets/generated/MP-DMX-DEVOPS-AUTOPR-001.json commit.allowlist.",
+      "Updated allowlist_compliance to PASS with an empty files_outside_allowlist.",
+      "Preserved prior CI triage enum and SKIPPED embedded-audit schema repairs."
+    ],
+    "validations": [
+      {
+        "command": "python -m json.tool task-packets/generated/MP-DMX-DEVOPS-AUTOPR-001.json",
+        "exit_code": 0,
+        "status": "PASS"
+      },
+      {
+        "command": "python -m json.tool proof/MP-DMX-DEVOPS-AUTOPR-001/PROOF.json",
+        "exit_code": 0,
+        "status": "PASS"
+      },
+      {
+        "command": "python -m json.tool schemas/pr_steward/ci_triage.schema.json",
+        "exit_code": 0,
+        "status": "PASS"
+      },
+      {
+        "command": "python -m json.tool schemas/proof/embedded_audit.schema.json",
+        "exit_code": 0,
+        "status": "PASS"
+      },
+      {
+        "command": "python -m jsonschema -i task-packets/generated/MP-DMX-DEVOPS-AUTOPR-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "exit_code": 0,
+        "status": "PASS",
+        "stderr": "DeprecationWarning only from jsonschema CLI."
+      },
+      {
+        "command": "python -c 'validate PROOF files_changed is a subset of MP commit.allowlist and files_outside_allowlist is empty'",
+        "exit_code": 0,
+        "status": "PASS",
+        "stdout": "allowlist-ok"
+      },
+      {
+        "command": "git diff --check",
+        "exit_code": 0,
+        "status": "PASS"
+      },
+      {
+        "command": "pre-commit run --files <repair-2 file set>",
+        "exit_code": 0,
+        "status": "PASS"
+      }
     ]
   },
   "slices_completed": [
