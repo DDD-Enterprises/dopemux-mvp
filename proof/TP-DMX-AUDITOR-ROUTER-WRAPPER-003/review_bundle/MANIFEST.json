@@ -1,27 +1,25 @@
 {
-  "packet_id": "TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002",
+  "packet_id": "TP-DMX-AUDITOR-ROUTER-WRAPPER-003",
   "status": "PASS_WITH_BLOCKERS",
-  "verdict": "PASS_TARGETED_TESTS_WITH_SCOPE_CONFLICT",
   "created_by": "codex",
   "artifacts": [
     "SUMMARY.md",
     "PROOF.json",
-    "AUDITOR_REPORT.md",
     "VALIDATION_OUTPUT.md",
     "GIT_STATE.md",
     "DIFF_STAT.txt",
     "CHANGED_FILES.txt",
     "ARTIFACT_INDEX.md",
-    "artifacts/AUDITOR_ROUTE.json",
-    "artifacts/ROUTE_PROBE_OUTPUTS.json"
+    "artifacts/AUDITOR_ROUTE_WRAPPER_PAL.json",
+    "artifacts/ROUTE_PROBE_OUTPUTS_WRAPPER_PAL.json",
+    "artifacts/AUDITOR_ROUTE_WRAPPER_DIRECT.json"
   ],
-  "blockers": [
+  "resolved_blockers": [
+    "WRAPPER_BLOCKED_BY_ALLOWLIST"
+  ],
+  "remaining_blockers": [
     "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
     "PAL_CLINK_AUDIT_OUTPUT_MISSING",
     "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500"
-  ],
-  "resolved_by_follow_up": [
-    "WRAPPER_BLOCKED_BY_ALLOWLIST"
-  ],
-  "route_is_audit_verdict": false
+  ]
 }

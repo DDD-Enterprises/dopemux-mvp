@@ -54,10 +54,22 @@
       "test_reject_allow_all_equals_true_mutation_flag"
     ]
   },
+  "follow_up_resolution": {
+    "packet_id": "TP-DMX-AUDITOR-ROUTER-WRAPPER-003",
+    "resolved_blockers": [
+      "WRAPPER_BLOCKED_BY_ALLOWLIST"
+    ],
+    "remaining_blockers": [
+      "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
+      "PAL_CLINK_AUDIT_OUTPUT_MISSING",
+      "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500"
+    ],
+    "note": "The wrapper blocker was historical for PAL-CLINK-002 and is closed by the follow-up wrapper packet. PAL execution and audit output remain out of scope."
+  },
   "blockers": [
     "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
-    "WRAPPER_BLOCKED_BY_ALLOWLIST",
-    "PAL_CLINK_AUDIT_OUTPUT_MISSING"
+    "PAL_CLINK_AUDIT_OUTPUT_MISSING",
+    "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500"
   ],
   "nonblocking_results": [
     "Targeted auditor-router tests passed: 33 passed",
@@ -180,7 +192,6 @@
     ],
     "fixes_applied": [],
     "remaining_risks": [
-      "Full scripts/auditor-preflight wrapper contract is not implemented.",
       "Host-side PAL clink execution handoff remains unproven."
     ],
     "skip_reason": null
