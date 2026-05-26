@@ -25,74 +25,87 @@ from dopemux.orchestrator.validation.report import (
 
 WORKFLOW_DSL_AUTHORITY = "workflow-dsl-governance"
 SUPPORTED_SCHEMA_VERSION = "1"
+REQUIRED_ROOT_FIELDS = [
+    "schema_version",
+    "id",
+    "title",
+    "owner",
+    "authority",
+    "automation_tier",
+    "triggers",
+    "inputs",
+    "steps",
+    "outputs",
+    "approval",
+]
+REQUIRED_STEP_FIELDS = ["id", "tool", "mode", "validation", "on_failure"]
+VALID_STEP_MODES = {"read", "analysis", "draft", "write", "destructive"}
 WRITE_TIERS = {"T4", "T5", "T6"}
+REFUSAL_TIERS = {"TX", "TU"}
+FORBIDDEN_TRUE_FIELDS = {
+    "auto_approve": "WORKFLOW_DSL_FORBIDDEN_AUTO_APPROVE",
+    "bridge_as_authority": "WORKFLOW_DSL_FORBIDDEN_BRIDGE_AUTHORITY",
+    "destructive": "WORKFLOW_DSL_FORBIDDEN_DESTRUCTIVE",
+    "god_mode": "WORKFLOW_DSL_FORBIDDEN_GOD_MODE",
+    "silent_write": "WORKFLOW_DSL_FORBIDDEN_SILENT_WRITE",
+}
 
 
 @dataclass(frozen=True)
-class WorkflowDslState:
-    state_id: str
-    title: str = ""
-    terminal: bool = False
-    metadata: Dict[str, Any] = field(default_factory=dict)
-
-    @classmethod
-    def from_mapping(cls, payload: Mapping[str, Any]) -> "WorkflowDslState":
-        return cls(
-            state_id=str(payload["id"]),
-            title=str(payload.get("title") or payload["id"]),
-            terminal=bool(payload.get("terminal", False)),
-            metadata=dict(payload.get("metadata") or {}),
-        )
-
-    def to_dict(self) -> Dict[str, Any]:
-        data: Dict[str, Any] = {
-            "id": self.state_id,
-            "title": self.title,
-            "terminal": self.terminal,
-        }
-        if self.metadata:
-            data["metadata"] = dict(self.metadata)
-        return data
-
-
-@dataclass(frozen=True)
-class WorkflowDslTransition:
-    transition_id: str
-    from_state: str
-    to_state: str
-    capability: str
+class WorkflowDslStep:
+    step_id: str
+    tool: str
+    mode: str
+    validation: List[str]
+    on_failure: str
+    canonical_writer: str = ""
+    upstream_canonical_writer: str = ""
+    bridge_mediated: bool = False
+    schema_path: str = ""
     approval_required: bool = False
     receipt_required: bool = False
-    automatic: bool = False
-    guards: List[str] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     @classmethod
-    def from_mapping(cls, payload: Mapping[str, Any]) -> "WorkflowDslTransition":
+    def from_mapping(cls, payload: Mapping[str, Any]) -> "WorkflowDslStep":
         return cls(
-            transition_id=str(payload["id"]),
-            from_state=str(payload["from"]),
-            to_state=str(payload["to"]),
-            capability=str(payload["capability"]),
+            step_id=str(payload["id"]),
+            tool=str(payload["tool"]),
+            mode=str(payload["mode"]),
+            validation=[str(item) for item in payload.get("validation", [])],
+            on_failure=str(payload["on_failure"]),
+            canonical_writer=str(payload.get("canonical_writer") or ""),
+            upstream_canonical_writer=str(
+                payload.get("upstream_canonical_writer") or ""
+            ),
+            bridge_mediated=bool(payload.get("bridge_mediated", False)),
+            schema_path=str(payload.get("schema_path") or ""),
             approval_required=bool(payload.get("approval_required", False)),
             receipt_required=bool(payload.get("receipt_required", False)),
-            automatic=bool(payload.get("automatic", False)),
-            guards=[str(item) for item in payload.get("guards", [])],
             metadata=dict(payload.get("metadata") or {}),
         )
 
     def to_dict(self) -> Dict[str, Any]:
         data: Dict[str, Any] = {
-            "id": self.transition_id,
-            "from": self.from_state,
-            "to": self.to_state,
-            "capability": self.capability,
-            "approval_required": self.approval_required,
-            "receipt_required": self.receipt_required,
-            "automatic": self.automatic,
+            "id": self.step_id,
+            "tool": self.tool,
+            "mode": self.mode,
+            "validation": list(self.validation),
+            "on_failure": self.on_failure,
         }
-        if self.guards:
-            data["guards"] = list(self.guards)
+        for key, value in (
+            ("canonical_writer", self.canonical_writer),
+            ("upstream_canonical_writer", self.upstream_canonical_writer),
+            ("schema_path", self.schema_path),
+        ):
+            if value:
+                data[key] = value
+        if self.bridge_mediated:
+            data["bridge_mediated"] = True
+        if self.approval_required:
+            data["approval_required"] = True
+        if self.receipt_required:
+            data["receipt_required"] = True
         if self.metadata:
             data["metadata"] = dict(self.metadata)
         return data
@@ -103,26 +116,37 @@ class WorkflowDsl:
     schema_version: str
     workflow_id: str
     title: str
-    initial_state: str
-    states: List[WorkflowDslState]
-    transitions: List[WorkflowDslTransition]
+    owner: str
+    authority_primary_owner: str
+    automation_tier: str
+    triggers: List[str]
+    inputs: List[str]
+    steps: List[WorkflowDslStep]
+    outputs: List[str]
+    approval_required: bool
+    decision: str = ""
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def from_mapping(cls, payload: Mapping[str, Any]) -> "WorkflowDsl":
+        authority = payload.get("authority") or {}
+        approval = payload.get("approval") or {}
         return cls(
             schema_version=str(payload["schema_version"]),
             workflow_id=str(payload["id"]),
-            title=str(payload.get("title") or payload["id"]),
-            initial_state=str(payload["initial_state"]),
-            states=[
-                WorkflowDslState.from_mapping(item)
-                for item in payload.get("states", [])
+            title=str(payload["title"]),
+            owner=str(payload["owner"]),
+            authority_primary_owner=str(authority["primary_owner"]),
+            automation_tier=str(payload["automation_tier"]),
+            triggers=[str(item) for item in payload.get("triggers", [])],
+            inputs=[str(item) for item in payload.get("inputs", [])],
+            steps=[
+                WorkflowDslStep.from_mapping(item)
+                for item in payload.get("steps", [])
             ],
-            transitions=[
-                WorkflowDslTransition.from_mapping(item)
-                for item in payload.get("transitions", [])
-            ],
+            outputs=[str(item) for item in payload.get("outputs", [])],
+            approval_required=bool(approval.get("required", False)),
+            decision=str(payload.get("decision") or ""),
             metadata=dict(payload.get("metadata") or {}),
         )
 
@@ -131,12 +155,17 @@ class WorkflowDsl:
             "schema_version": self.schema_version,
             "id": self.workflow_id,
             "title": self.title,
-            "initial_state": self.initial_state,
-            "states": [state.to_dict() for state in self.states],
-            "transitions": [
-                transition.to_dict() for transition in self.transitions
-            ],
+            "owner": self.owner,
+            "authority": {"primary_owner": self.authority_primary_owner},
+            "automation_tier": self.automation_tier,
+            "triggers": list(self.triggers),
+            "inputs": list(self.inputs),
+            "steps": [step.to_dict() for step in self.steps],
+            "outputs": list(self.outputs),
+            "approval": {"required": self.approval_required},
         }
+        if self.decision:
+            data["decision"] = self.decision
         if self.metadata:
             data["metadata"] = dict(self.metadata)
         return data
@@ -161,19 +190,17 @@ def validate_workflow_dsl_file(path: str | Path) -> ValidationReport:
     details: Dict[str, Any] = {
         "authority_boundary": "read_only_workflow_dsl_validation_only",
         "schema_version": SUPPORTED_SCHEMA_VERSION,
+        "required_root_fields": REQUIRED_ROOT_FIELDS,
     }
 
     if payload is not None:
         errors.extend(_validate_payload(payload))
-        states = payload.get("states") if isinstance(payload, Mapping) else []
-        transitions = payload.get("transitions") if isinstance(payload, Mapping) else []
+        steps = payload.get("steps") if isinstance(payload, Mapping) else []
         details.update(
             {
                 "workflow_id": payload.get("id"),
-                "state_count": len(states) if isinstance(states, list) else 0,
-                "transition_count": (
-                    len(transitions) if isinstance(transitions, list) else 0
-                ),
+                "automation_tier": payload.get("automation_tier"),
+                "step_count": len(steps) if isinstance(steps, list) else 0,
             }
         )
 
@@ -202,10 +229,11 @@ def _load_mapping(path: Path) -> tuple[Dict[str, Any] | None, List[ValidationIss
 
     try:
         raw_text = path.read_text(encoding="utf-8")
-        if path.suffix.lower() == ".json":
-            payload = json.loads(raw_text)
-        else:
-            payload = yaml.safe_load(raw_text)
+        payload = (
+            json.loads(raw_text)
+            if path.suffix.lower() == ".json"
+            else yaml.safe_load(raw_text)
+        )
     except (OSError, json.JSONDecodeError, yaml.YAMLError) as exc:
         return None, [
             issue("WORKFLOW_DSL_PARSE_ERROR", f"Workflow DSL parse failed: {exc}")
@@ -223,29 +251,29 @@ def _load_mapping(path: Path) -> tuple[Dict[str, Any] | None, List[ValidationIss
 
 def _validate_payload(payload: Mapping[str, Any]) -> Iterable[ValidationIssue]:
     errors: List[ValidationIssue] = []
-    _validate_header(errors, payload)
-
-    states = payload.get("states")
-    transitions = payload.get("transitions")
-    state_ids, terminal_states = _validate_states(errors, states)
-    _validate_transitions(errors, transitions, state_ids, terminal_states)
-
-    initial_state = payload.get("initial_state")
-    if _non_empty_string(initial_state) and str(initial_state) not in state_ids:
-        errors.append(
-            issue(
-                "WORKFLOW_DSL_INITIAL_STATE_UNKNOWN",
-                f"Initial state is not declared: {initial_state}",
-                path="/initial_state",
-            )
-        )
+    _validate_required_root_fields(errors, payload)
+    _validate_forbidden_semantics(errors, payload)
+    _validate_tier_and_approval(errors, payload)
+    _validate_authority(errors, payload)
+    _validate_io_lists(errors, payload)
+    _validate_steps(errors, payload.get("steps"))
     return errors
 
 
-def _validate_header(
+def _validate_required_root_fields(
     errors: List[ValidationIssue],
     payload: Mapping[str, Any],
 ) -> None:
+    for field_name in REQUIRED_ROOT_FIELDS:
+        if field_name not in payload:
+            errors.append(
+                issue(
+                    "WORKFLOW_DSL_ROOT_FIELD_MISSING",
+                    f"Workflow DSL must include {field_name}.",
+                    path=f"/{field_name}",
+                )
+            )
+
     if str(payload.get("schema_version") or "") != SUPPORTED_SCHEMA_VERSION:
         errors.append(
             issue(
@@ -254,237 +282,306 @@ def _validate_header(
                 path="/schema_version",
             )
         )
-    if not _non_empty_string(payload.get("id")):
-        errors.append(
-            issue(
-                "WORKFLOW_DSL_ID_MISSING",
-                "Workflow DSL must include a non-empty id.",
-                path="/id",
+    for field_name in ("id", "title", "owner"):
+        if not _non_empty_string(payload.get(field_name)):
+            errors.append(
+                issue(
+                    "WORKFLOW_DSL_TEXT_FIELD_MISSING",
+                    f"Workflow DSL must include non-empty {field_name}.",
+                    path=f"/{field_name}",
+                )
             )
-        )
-    if not _non_empty_string(payload.get("initial_state")):
-        errors.append(
-            issue(
-                "WORKFLOW_DSL_INITIAL_STATE_MISSING",
-                "Workflow DSL must include a non-empty initial_state.",
-                path="/initial_state",
-            )
-        )
 
 
-def _validate_states(
+def _validate_forbidden_semantics(
     errors: List[ValidationIssue],
-    states: Any,
-) -> tuple[set[str], set[str]]:
-    if not isinstance(states, list) or not states:
-        errors.append(
-            issue(
-                "WORKFLOW_DSL_STATES_MISSING",
-                "Workflow DSL must include a non-empty states list.",
-                path="/states",
-            )
-        )
-        return set(), set()
-
-    seen: set[str] = set()
-    terminal: set[str] = set()
-    for index, state_payload in enumerate(states):
-        path = f"/states/{index}"
-        if not isinstance(state_payload, Mapping):
-            errors.append(
-                issue(
-                    "WORKFLOW_DSL_STATE_INVALID",
-                    "State entry must be a mapping.",
-                    path=path,
-                )
-            )
-            continue
-        state_id = state_payload.get("id")
-        if not _non_empty_string(state_id):
-            errors.append(
-                issue(
-                    "WORKFLOW_DSL_STATE_ID_MISSING",
-                    "State entry must include a non-empty id.",
-                    path=f"{path}/id",
-                )
-            )
-            continue
-        state_id_text = str(state_id)
-        if state_id_text in seen:
-            errors.append(
-                issue(
-                    "WORKFLOW_DSL_DUPLICATE_STATE",
-                    f"Duplicate state id: {state_id_text}",
-                    path=f"{path}/id",
-                )
-            )
-        seen.add(state_id_text)
-        if bool(state_payload.get("terminal", False)):
-            terminal.add(state_id_text)
-    return seen, terminal
-
-
-def _validate_transitions(
-    errors: List[ValidationIssue],
-    transitions: Any,
-    state_ids: set[str],
-    terminal_states: set[str],
+    payload: Mapping[str, Any],
 ) -> None:
-    if not isinstance(transitions, list) or not transitions:
+    for field_name, code in FORBIDDEN_TRUE_FIELDS.items():
+        if payload.get(field_name) is True:
+            errors.append(
+                issue(
+                    code,
+                    f"{field_name}: true is forbidden in workflow DSL.",
+                    path=f"/{field_name}",
+                )
+            )
+    if payload.get("canonical_writer") == "task-orchestrator":
         errors.append(
             issue(
-                "WORKFLOW_DSL_TRANSITIONS_MISSING",
-                "Workflow DSL must include a non-empty transitions list.",
-                path="/transitions",
+                "WORKFLOW_DSL_ROOT_CANONICAL_WRITER_FORBIDDEN",
+                "Root canonical_writer must not make task-orchestrator general authority.",
+                path="/canonical_writer",
+            )
+        )
+
+
+def _validate_tier_and_approval(
+    errors: List[ValidationIssue],
+    payload: Mapping[str, Any],
+) -> None:
+    tier = str(payload.get("automation_tier") or "")
+    approval = payload.get("approval")
+    approval_required = (
+        isinstance(approval, Mapping) and approval.get("required") is True
+    )
+
+    if tier not in REQUIRED_TIERS:
+        errors.append(
+            issue(
+                "WORKFLOW_DSL_UNKNOWN_TIER",
+                f"automation_tier must be one of {', '.join(REQUIRED_TIERS)}.",
+                path="/automation_tier",
+            )
+        )
+    if tier in WRITE_TIERS and not approval_required:
+        errors.append(
+            issue(
+                "WORKFLOW_DSL_T4_APPROVAL_REQUIRED",
+                "T4 and higher workflows must require approval.",
+                path="/approval/required",
+            )
+        )
+    if tier in REFUSAL_TIERS and payload.get("decision") != "refuse":
+        errors.append(
+            issue(
+                "WORKFLOW_DSL_UNRESOLVED_REFUSE_REQUIRED",
+                "TX/TU workflows must refuse by default.",
+                path="/decision",
+            )
+        )
+    if not isinstance(approval, Mapping) or not isinstance(
+        approval.get("required"), bool
+    ):
+        errors.append(
+            issue(
+                "WORKFLOW_DSL_APPROVAL_REQUIRED_INVALID",
+                "approval.required must be a boolean.",
+                path="/approval/required",
+            )
+        )
+
+
+def _validate_authority(
+    errors: List[ValidationIssue],
+    payload: Mapping[str, Any],
+) -> None:
+    authority = payload.get("authority")
+    if not isinstance(authority, Mapping):
+        errors.append(
+            issue(
+                "WORKFLOW_DSL_AUTHORITY_INVALID",
+                "authority must be a mapping.",
+                path="/authority",
+            )
+        )
+        return
+    if not _non_empty_string(authority.get("primary_owner")):
+        errors.append(
+            issue(
+                "WORKFLOW_DSL_AUTHORITY_OWNER_MISSING",
+                "authority.primary_owner must be non-empty.",
+                path="/authority/primary_owner",
+            )
+        )
+
+
+def _validate_io_lists(
+    errors: List[ValidationIssue],
+    payload: Mapping[str, Any],
+) -> None:
+    for field_name in ("triggers", "inputs", "outputs"):
+        value = payload.get(field_name)
+        if not _string_list(value):
+            errors.append(
+                issue(
+                    "WORKFLOW_DSL_LIST_FIELD_INVALID",
+                    f"{field_name} must be a non-empty list of strings.",
+                    path=f"/{field_name}",
+                )
+            )
+    outputs = payload.get("outputs")
+    if isinstance(outputs, list) and "items" in outputs:
+        missing = {"more_count", "next_token"} - set(outputs)
+        if missing:
+            errors.append(
+                issue(
+                    "WORKFLOW_DSL_PAGING_OUTPUTS_INCOMPLETE",
+                    "Paged outputs with items must include more_count and next_token.",
+                    path="/outputs",
+                )
+            )
+
+
+def _validate_steps(errors: List[ValidationIssue], steps: Any) -> None:
+    if not isinstance(steps, list) or not steps:
+        errors.append(
+            issue(
+                "WORKFLOW_DSL_STEPS_MISSING",
+                "Workflow DSL must include a non-empty steps list.",
+                path="/steps",
             )
         )
         return
 
     policy = load_approval_policy()
     seen: set[str] = set()
-    for index, transition_payload in enumerate(transitions):
-        path = f"/transitions/{index}"
-        if not isinstance(transition_payload, Mapping):
+    for index, step in enumerate(steps):
+        path = f"/steps/{index}"
+        if not isinstance(step, Mapping):
             errors.append(
                 issue(
-                    "WORKFLOW_DSL_TRANSITION_INVALID",
-                    "Transition entry must be a mapping.",
+                    "WORKFLOW_DSL_STEP_INVALID",
+                    "Step entry must be a mapping.",
                     path=path,
                 )
             )
             continue
+        _validate_step_required_fields(errors, path, step)
+        step_id = str(step.get("id") or "")
+        if step_id:
+            if step_id in seen:
+                errors.append(
+                    issue(
+                        "WORKFLOW_DSL_DUPLICATE_STEP",
+                        f"Duplicate step id: {step_id}",
+                        path=f"{path}/id",
+                    )
+                )
+            seen.add(step_id)
+        _validate_step_mode(errors, path, step)
+        _validate_step_tool(errors, path, step, policy)
 
-        transition_id = _text_value(transition_payload.get("id"))
-        from_state = _text_value(transition_payload.get("from"))
-        to_state = _text_value(transition_payload.get("to"))
-        capability_id = _text_value(transition_payload.get("capability"))
-        _validate_transition_required_fields(
-            errors,
-            path,
-            transition_id,
-            from_state,
-            to_state,
-            capability_id,
+
+def _validate_step_required_fields(
+    errors: List[ValidationIssue],
+    path: str,
+    step: Mapping[str, Any],
+) -> None:
+    for field_name in REQUIRED_STEP_FIELDS:
+        if field_name not in step:
+            errors.append(
+                issue(
+                    "WORKFLOW_DSL_STEP_FIELD_MISSING",
+                    f"Step must include {field_name}.",
+                    path=f"{path}/{field_name}",
+                )
+            )
+    for field_name in ("id", "tool", "mode", "on_failure"):
+        if not _non_empty_string(step.get(field_name)):
+            errors.append(
+                issue(
+                    "WORKFLOW_DSL_STEP_TEXT_FIELD_MISSING",
+                    f"Step must include non-empty {field_name}.",
+                    path=f"{path}/{field_name}",
+                )
+            )
+    if not _string_list(step.get("validation")):
+        errors.append(
+            issue(
+                "WORKFLOW_DSL_STEP_VALIDATION_INVALID",
+                "Step validation must be a non-empty list of strings.",
+                path=f"{path}/validation",
+            )
         )
-        if not transition_id or not from_state or not to_state or not capability_id:
-            continue
-
-        if transition_id in seen:
-            errors.append(
-                issue(
-                    "WORKFLOW_DSL_DUPLICATE_TRANSITION",
-                    f"Duplicate transition id: {transition_id}",
-                    path=f"{path}/id",
-                )
-            )
-        seen.add(transition_id)
-
-        if from_state not in state_ids:
-            errors.append(
-                issue(
-                    "WORKFLOW_DSL_UNKNOWN_FROM_STATE",
-                    f"Transition source state is not declared: {from_state}",
-                    path=f"{path}/from",
-                )
-            )
-        elif from_state in terminal_states:
-            errors.append(
-                issue(
-                    "WORKFLOW_DSL_TERMINAL_SOURCE",
-                    f"Transition source state is terminal: {from_state}",
-                    path=f"{path}/from",
-                )
-            )
-
-        if to_state not in state_ids:
-            errors.append(
-                issue(
-                    "WORKFLOW_DSL_UNKNOWN_TO_STATE",
-                    f"Transition target state is not declared: {to_state}",
-                    path=f"{path}/to",
-                )
-            )
-
-        capability = policy.capabilities.get(capability_id)
-        if capability is None or capability.tier not in REQUIRED_TIERS:
-            errors.append(
-                issue(
-                    "WORKFLOW_DSL_UNKNOWN_CAPABILITY",
-                    f"Transition capability is not registered: {capability_id}",
-                    path=f"{path}/capability",
-                )
-            )
-            continue
-        _validate_capability_gates(errors, path, transition_payload, capability)
 
 
-def _validate_transition_required_fields(
+def _validate_step_mode(
     errors: List[ValidationIssue],
     path: str,
-    transition_id: str,
-    from_state: str,
-    to_state: str,
-    capability_id: str,
+    step: Mapping[str, Any],
 ) -> None:
-    required = {
-        "id": transition_id,
-        "from": from_state,
-        "to": to_state,
-        "capability": capability_id,
-    }
-    for key, value in required.items():
-        if not value:
+    mode = str(step.get("mode") or "")
+    if mode not in VALID_STEP_MODES:
+        errors.append(
+            issue(
+                "WORKFLOW_DSL_STEP_MODE_INVALID",
+                f"Step mode must be one of {', '.join(sorted(VALID_STEP_MODES))}.",
+                path=f"{path}/mode",
+            )
+        )
+        return
+
+    if mode in WRITE_MODES:
+        if not _non_empty_string(step.get("canonical_writer")):
             errors.append(
                 issue(
-                    "WORKFLOW_DSL_TRANSITION_FIELD_MISSING",
-                    f"Transition must include non-empty {key}.",
-                    path=f"{path}/{key}",
+                    "WORKFLOW_DSL_WRITE_CANONICAL_WRITER_REQUIRED",
+                    "Any write/destructive step must name canonical_writer.",
+                    path=f"{path}/canonical_writer",
+                )
+            )
+        if step.get("bridge_mediated") is True and not _non_empty_string(
+            step.get("upstream_canonical_writer")
+        ):
+            errors.append(
+                issue(
+                    "WORKFLOW_DSL_BRIDGE_UPSTREAM_WRITER_REQUIRED",
+                    "Bridge-mediated writes must name upstream_canonical_writer.",
+                    path=f"{path}/upstream_canonical_writer",
                 )
             )
 
 
-def _validate_capability_gates(
+def _validate_step_tool(
     errors: List[ValidationIssue],
     path: str,
-    transition_payload: Mapping[str, Any],
-    capability: Any,
+    step: Mapping[str, Any],
+    policy: Any,
 ) -> None:
-    write_like = capability.mode in WRITE_MODES or capability.tier in WRITE_TIERS
-    if write_like:
-        if transition_payload.get("approval_required") is not True:
+    tool = str(step.get("tool") or "")
+    capability = (
+        policy.capabilities.get(tool) if tool.startswith("orchestrator.") else None
+    )
+    if tool.startswith("orchestrator.") and capability is None:
+        errors.append(
+            issue(
+                "WORKFLOW_DSL_UNKNOWN_CAPABILITY",
+                f"Step tool is not registered in approval policy: {tool}",
+                path=f"{path}/tool",
+            )
+        )
+    if capability and capability.mode in WRITE_MODES:
+        if step.get("approval_required") is not True:
             errors.append(
                 issue(
                     "WORKFLOW_DSL_WRITE_APPROVAL_REQUIRED",
-                    "Write/destructive capabilities must require approval.",
+                    "Write/destructive policy capabilities must require approval.",
                     path=f"{path}/approval_required",
                 )
             )
-        if transition_payload.get("receipt_required") is not True:
+        if step.get("receipt_required") is not True:
             errors.append(
                 issue(
                     "WORKFLOW_DSL_WRITE_RECEIPT_REQUIRED",
-                    "Write/destructive capabilities must require receipts.",
+                    "Write/destructive policy capabilities must require receipts.",
                     path=f"{path}/receipt_required",
                 )
             )
-
-    if transition_payload.get("automatic") is True and not (
-        capability.automatic_allowed
-        and capability.tier in {"T0", "T1"}
-        and not capability.approval_required
-    ):
+    if _requires_schema_path(tool) and not _non_empty_string(step.get("schema_path")):
         errors.append(
             issue(
-                "WORKFLOW_DSL_AUTOMATIC_CAPABILITY_FORBIDDEN",
-                "Only automatic T0/T1 capabilities may be marked automatic.",
-                path=f"{path}/automatic",
+                "WORKFLOW_DSL_SCHEMA_PATH_REQUIRED",
+                "Proof and packet workflow steps must reference a schema_path.",
+                path=f"{path}/schema_path",
             )
         )
+
+
+def _requires_schema_path(tool: str) -> bool:
+    return (
+        ".proof." in tool
+        or ".packet." in tool
+        or "proof" in tool
+        or "packet" in tool
+    )
 
 
 def _non_empty_string(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
 
-def _text_value(value: Any) -> str:
-    return str(value).strip() if _non_empty_string(value) else ""
+def _string_list(value: Any) -> bool:
+    return isinstance(value, list) and bool(value) and all(
+        _non_empty_string(item) for item in value
+    )

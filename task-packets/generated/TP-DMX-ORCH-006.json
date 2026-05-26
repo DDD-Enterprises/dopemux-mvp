@@ -5,10 +5,12 @@
   "invariants": [
     "Workflow DSL validation is read-only and does not apply transitions",
     "Workflow DSL validation does not write PM state, ConPort state, dope-memory state, dope-context indexes, GitHub state, or repository files",
-    "Workflow transition capabilities must be registered in the TP004 approval policy registry",
+    "Orchestrator step capabilities must be registered in the TP004 approval policy registry",
     "Unknown capabilities fail closed",
-    "Write/destructive capabilities in a DSL must require approval and receipts",
-    "Automatic transitions are limited to automatic T0/T1 policy capabilities"
+    "Write/destructive workflow steps must name canonical writers",
+    "Bridge-mediated writes must name upstream canonical writers",
+    "T4 and higher workflow DSLs must require approval",
+    "TX/TU workflow DSLs must refuse by default"
   ],
   "depends_on": [
     "TP-DMX-ORCH-004"
@@ -85,15 +87,18 @@
     },
     {
       "id": "dsl_parser_validator",
-      "task": "Add a read-only YAML/JSON workflow DSL parser and validator for states, transitions, initial state, terminal edges, and capability gates.",
+      "task": "Add a read-only YAML/JSON workflow DSL parser and validator for the documented owner, authority, tier, trigger, input, step, output, and approval contract.",
       "validation": [
         "Valid YAML and JSON workflows pass",
-        "Duplicate states fail closed",
-        "Missing transition targets fail closed",
-        "Transitions from terminal states fail closed",
+        "Missing authority owner fails closed",
+        "Unknown automation tiers fail closed",
+        "Forbidden semantics fail closed",
         "Unknown capabilities fail closed",
-        "Write capabilities require approval and receipts",
-        "Automatic write capabilities fail closed"
+        "Write steps require canonical writers",
+        "Bridge-mediated writes require upstream canonical writers",
+        "Proof and packet steps require schema paths",
+        "T4 and higher workflow DSLs require approval",
+        "TX/TU workflow DSLs require refusal"
       ],
       "expected_files": [
         "src/dopemux/orchestrator/workflow_dsl.py",
