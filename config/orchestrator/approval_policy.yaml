@@ -285,6 +285,78 @@ capabilities:
     approval_required: false
     receipt_required: true
     decision: allow
+  orchestrator.context.status:
+    title: Read context freshness status
+    tier: T0
+    mode: read
+    canonical_writer: dope-context
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: false
+    decision: allow
+  orchestrator.packet.forge_draft:
+    title: Draft Task Packet payload without writing
+    tier: T2
+    mode: draft
+    canonical_writer: dopemux
+    automatic_allowed: false
+    approval_required: true
+    receipt_required: true
+    decision: draft_only
+  orchestrator.audit.red_team:
+    title: Red-team packet and proof locally
+    tier: T1
+    mode: analysis
+    canonical_writer: dopemux
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    decision: allow
+  orchestrator.transition.proof.validate:
+    title: Validate transition proof envelope
+    tier: T1
+    mode: analysis
+    canonical_writer: task-orchestrator
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    decision: allow
+  orchestrator.dashboard.snapshot:
+    title: Build read-only daily dashboard snapshot
+    tier: T0
+    mode: read
+    canonical_writer: dopemux
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: false
+    decision: allow
+  orchestrator.automation.pilot:
+    title: Classify limited T0/T1 automation pilot capability
+    tier: T1
+    mode: analysis
+    canonical_writer: dopemux
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    decision: allow
+  orchestrator.final.readiness:
+    title: Check final local proof readiness
+    tier: T1
+    mode: analysis
+    canonical_writer: proof-bundle-governance
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    decision: allow
+  orchestrator.dangerous.check:
+    title: Check dangerous or unresolved capability gates
+    tier: T1
+    mode: analysis
+    canonical_writer: dopemux
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    decision: allow
   orchestrator.route.pm:
     title: Direct bridge PM route
     tier: TX
