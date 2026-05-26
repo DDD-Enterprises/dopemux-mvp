@@ -1,0 +1,33 @@
+{
+  "bundle_id": "TP-DMX-ORCH-014A-PROOF",
+  "run_id": "tp-dmx-orch-014a-local",
+  "skill": "codex",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED",
+  "manifest": {
+    "bundle_id": "TP-DMX-ORCH-014A-PROOF",
+    "packet_id": "TP-DMX-ORCH-014A",
+    "generated_artifacts": [
+      "task-packets/generated/TP-DMX-ORCH-014A.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-014A/PROOF.json"
+    ]
+  },
+  "authoritative_artifacts": [
+    "task-packets/generated/TP-DMX-ORCH-014A.json",
+    "src/dopemux/orchestrator/operator_workflows.py"
+  ],
+  "supporting_artifacts": [
+    "tests/unit/orchestrator/test_operator_workflows.py",
+    "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md"
+  ],
+  "chain_of_custody": {
+    "documented": true,
+    "source_version": "TP-DMX-ORCH-014A",
+    "created_at": "2026-05-26T15:30:00Z",
+    "parent_bundle_ids": [
+      "TP-DMX-ORCH-013"
+    ]
+  },
+  "warnings": [],
+  "blockers": []
+}

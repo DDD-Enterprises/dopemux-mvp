@@ -1,0 +1,37 @@
+{
+  "bundle_id": "TP-DMX-ORCH-010-PROOF",
+  "run_id": "tp-dmx-orch-010-local",
+  "skill": "codex",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED",
+  "manifest": {
+    "bundle_id": "TP-DMX-ORCH-010-PROOF",
+    "packet_id": "TP-DMX-ORCH-010",
+    "generated_artifacts": [
+      "task-packets/generated/TP-DMX-ORCH-010.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-010/PROOF.json"
+    ]
+  },
+  "authoritative_artifacts": [
+    "task-packets/generated/TP-DMX-ORCH-010.json",
+    "src/dopemux/orchestrator/operator_workflows.py",
+    "src/dopemux/commands/orchestrator_commands.py"
+  ],
+  "supporting_artifacts": [
+    "tests/unit/orchestrator/test_operator_workflows.py",
+    "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+  ],
+  "chain_of_custody": {
+    "documented": true,
+    "source_version": "TP-DMX-ORCH-010",
+    "created_at": "2026-05-26T15:30:00Z",
+    "parent_bundle_ids": [
+      "TP-DMX-ORCH-003",
+      "TP-DMX-ORCH-006",
+      "TP-DMX-ORCH-008",
+      "TP-DMX-ORCH-009"
+    ]
+  },
+  "warnings": [],
+  "blockers": []
+}

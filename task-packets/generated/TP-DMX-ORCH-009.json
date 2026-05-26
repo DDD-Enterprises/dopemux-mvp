@@ -1,0 +1,82 @@
+{
+  "id": "TP-DMX-ORCH-009",
+  "project": "dopemux-mvp",
+  "target": "Add canonical memory write routing receipts for ConPort and dope-memory",
+  "invariants": [
+    "Task Orchestrator never becomes the memory writer",
+    "ConPort remains the canonical writer for decisions and progress",
+    "dope-memory is a mirror for progress receipts only"
+  ],
+  "depends_on": [
+    "TP-DMX-ORCH-003",
+    "TP-DMX-ORCH-004",
+    "TP-DMX-ORCH-007"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ORCH-INTEGRATION",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-ORCH-008",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-orch-007-plugin-hooks",
+    "base_branch": "codex/tp-dmx-orch-007-plugin-hooks",
+    "stacked_because": "The remaining DMX-ORCH packets were implemented as bounded fail-closed local workflow surfaces after TP-DMX-ORCH-007."
+  },
+  "commit": {
+    "message": "feat(orchestrator): add remaining operator workflows",
+    "allowlist": [
+      "config/orchestrator/approval_policy.yaml",
+      "src/dopemux/orchestrator/operator_workflows.py",
+      "src/dopemux/commands/orchestrator_commands.py",
+      "tests/unit/orchestrator/test_operator_workflows.py",
+      "task-packets/generated/TP-DMX-ORCH-009.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-009/PROOF.json"
+    ],
+    "verify": [
+      ".venv/bin/python -m pytest -q tests/unit/orchestrator/test_operator_workflows.py",
+      ".venv/bin/python -m dopemux.cli orchestrator memory route --kind progress --content proof --proof-id proof-1 --json-output"
+    ]
+  },
+  "pr": {
+    "title": "feat(orchestrator): add memory routing receipts",
+    "body": "Adds canonical memory routing receipts without writing ConPort or dope-memory.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "memory_route_receipts",
+      "task": "Implement memory routing receipts that preserve ConPort and dope-memory writer boundaries.",
+      "validation": [
+        "Progress receipts name ConPort as canonical writer",
+        "Progress receipts name dope-memory as mirror writer",
+        "Task Orchestrator role remains observe_route_only",
+        "will_write remains false"
+      ],
+      "expected_files": [
+        "src/dopemux/orchestrator/operator_workflows.py",
+        "src/dopemux/commands/orchestrator_commands.py",
+        "tests/unit/orchestrator/test_operator_workflows.py"
+      ]
+    }
+  ]
+}
