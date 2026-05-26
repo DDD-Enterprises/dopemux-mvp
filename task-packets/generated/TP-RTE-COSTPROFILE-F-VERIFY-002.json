@@ -104,7 +104,7 @@
         "BASE_SHA=\"$(cat /tmp/F_VERIFY_002_BASE_SHA.txt)\" && PR710_MERGE=\"$(gh pr view 710 --json mergeCommit -q .mergeCommit.oid)\" && test -n \"$PR710_MERGE\" && git merge-base --is-ancestor \"$PR710_MERGE\" \"$BASE_SHA\"",
         "BASE_SHA=\"$(cat /tmp/F_VERIFY_002_BASE_SHA.txt)\" && git show \"$BASE_SHA\":task-packets/INDEX.md > /tmp/F_VERIFY_002_INDEX.md && grep -nE 'TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001' /tmp/F_VERIFY_002_INDEX.md | grep -F 'Merged (PR #709)' > /tmp/F_VERIFY_002_INDEX_MATCH.txt",
         "BASE_SHA=\"$(cat /tmp/F_VERIFY_002_BASE_SHA.txt)\" && git show \"$BASE_SHA\":proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/PROOF.json > /tmp/F_REPAIR_PROOF.json && python -m json.tool /tmp/F_REPAIR_PROOF.json > /tmp/F_REPAIR_PROOF_JSON_OK.txt",
-        "jq -e '.review_thread_fix.live_provider_calls == \"NOT_RUN\" and .review_thread_fix.live_extraction == \"NOT_RUN\" and any(.validation_buckets.NOT_RUN[]?; .command == \"live LLM/provider calls\") and any(.validation_buckets.NOT_RUN[]?; .command == \"--execute bounded lane\")' /tmp/F_REPAIR_PROOF.json > /tmp/F_REPAIR_NO_LIVE_ASSERTIONS_OK.txt",
+        "jq -e '.status == \"VERIFIED\" and .status_scope == \"repair_gate_only_not_series_gate\" and any(.follow_up_packets[]?; . == \"TP-RTE-COSTPROFILE-F-VERIFY-002\") and .review_thread_fix.live_provider_calls == \"NOT_RUN\" and .review_thread_fix.live_extraction == \"NOT_RUN\" and any(.validation_buckets.NOT_RUN[]?; .command == \"live LLM/provider calls\") and any(.validation_buckets.NOT_RUN[]?; .command == \"--execute bounded lane\")' /tmp/F_REPAIR_PROOF.json > /tmp/F_REPAIR_NO_LIVE_ASSERTIONS_OK.txt",
         "BASE_SHA=\"$(cat /tmp/F_VERIFY_002_BASE_SHA.txt)\" && git show \"$BASE_SHA\":proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/REPAIR_DECISIONS.md > /tmp/F_REPAIR_DECISIONS.md"
       ],
       "validation": [
@@ -113,7 +113,7 @@
         "PR #709 state == MERGED and both headRefOid + mergeCommit.oid are ancestors of the captured base SHA.",
         "PR #710 state == MERGED and both headRefOid + mergeCommit.oid are ancestors of the captured base SHA.",
         "INDEX row for F-FULLSUITE-REPAIR-001 is read from the captured base SHA and contains `Merged (PR #709)` (or repo-equivalent).",
-        "Repair PROOF.json is read from the captured base SHA and parses, status_scope == `repair_gate_only_not_series_gate`, lists `TP-RTE-COSTPROFILE-F-VERIFY-002` in follow-up packets, and proves no-live status via `review_thread_fix.live_provider_calls`, `review_thread_fix.live_extraction`, and `validation_buckets.NOT_RUN`.",
+        "Repair PROOF.json is read from the captured base SHA and parses, status_scope == `repair_gate_only_not_series_gate`, status == VERIFIED, lists `TP-RTE-COSTPROFILE-F-VERIFY-002` in follow-up packets, and proves no-live status via `review_thread_fix.live_provider_calls`, `review_thread_fix.live_extraction`, and `validation_buckets.NOT_RUN`.",
         "REPAIR_DECISIONS.md readable from the captured base SHA.",
         "Local checkout has no dirty tracked changes."
       ]
@@ -142,7 +142,7 @@
       "task": "Gate 1 — Repair proof intake (formal). Parse PR #709 PROOF.json fetched in S1 and assert the contract: status == VERIFIED, status_scope == repair_gate_only_not_series_gate, follow_up_packets contains TP-RTE-COSTPROFILE-F-VERIFY-002, and no-live status is derivable from repair-proof nested fields (`review_thread_fix.live_provider_calls`, `review_thread_fix.live_extraction`) plus `validation_buckets.NOT_RUN` entries for live LLM/provider calls and --execute bounded lane.",
       "validation": [
         "All four assertions pass against /tmp/F_REPAIR_PROOF.json.",
-        "Repair proof's nested `review_thread_fix` fields record live_provider_calls=NOT_RUN and live_extraction=NOT_RUN, and its NOT_RUN bucket includes live LLM/provider calls plus --execute bounded lane."
+        "Repair proof's nested `review_thread_fix` fields record live_provider_calls=NOT_RUN and live_extraction=NOT_RUN, its status is VERIFIED, its status_scope is repair_gate_only_not_series_gate, its follow_up_packets include TP-RTE-COSTPROFILE-F-VERIFY-002, and its NOT_RUN bucket includes live LLM/provider calls plus --execute bounded lane."
       ]
     },
     {
@@ -188,12 +188,12 @@
     },
     {
       "id": "S7",
-      "task": "Gate 5 — CLI import probe. Verify `dopemux.cli` imports cleanly under `PYTHONPATH=src` in a fresh shell (this repo uses an `src/` layout; the package is not installed at execution time, so a bare `python -c \"import dopemux.cli\"` without PYTHONPATH is invalid as a gate).",
+      "task": "Gate 5 — CLI import probe. Verify `dopemux.cli` imports cleanly under `RTE_DISABLE_LIVE_LLM_IN_TESTS=1 PYTHONPATH=src` in a fresh shell (this repo uses an `src/` layout; the package is not installed at execution time, so a bare `python -c \"import dopemux.cli\"` without PYTHONPATH is invalid as a gate).",
       "commands": [
-        "PYTHONPATH=src python -c 'import dopemux.cli' && echo 'OK: dopemux.cli imports cleanly under PYTHONPATH=src'"
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 PYTHONPATH=src python -c 'import dopemux.cli' && echo 'OK: dopemux.cli imports cleanly under PYTHONPATH=src with RTE_DISABLE_LIVE_LLM_IN_TESTS=1'"
       ],
       "validation": [
-        "Import succeeds with exit 0."
+        "Import succeeds with exit 0 under RTE_DISABLE_LIVE_LLM_IN_TESTS=1."
       ]
     },
     {
