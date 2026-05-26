@@ -79,7 +79,11 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(route, indent=2, sort_keys=True))
     else:
         print(f"{route['tool']} {route['status']}: {route['reason']}")
-    return 0 if route.get("status") in {"AVAILABLE", "AVAILABLE_WITH_RISKS"} else 2
+    if route.get("status") in {"AVAILABLE", "AVAILABLE_WITH_RISKS"}:
+        return 0
+    if args.allow_fallback and route.get("status") == "FALLBACK_ONLY":
+        return 0
+    return 2
 
 
 def build_route_artifacts(

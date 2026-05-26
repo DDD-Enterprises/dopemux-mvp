@@ -71,6 +71,31 @@ def test_reject_default_mutation_configs() -> None:
     assert "--dangerously-skip-permissions" in route["clink_mutation_flags_detected"]
 
 
+def test_reject_non_object_config_payload(tmp_path: Path) -> None:
+    path = tmp_path / "claude-audit.json"
+    path.write_text(json.dumps(["not", "an", "object"]), encoding="utf-8")
+
+    inspection = inspect_clink_client_config(path)
+
+    assert inspection.status == "TOOLING_UNSAFE"
+    assert inspection.reason == "Config payload must be a JSON object."
+
+
+def test_mismatched_runner_route_remains_schema_safe(tmp_path: Path) -> None:
+    config = safe_claude_config()
+    config["runner"] = "qwen"
+    path = tmp_path / "claude-audit.json"
+    path.write_text(json.dumps(config), encoding="utf-8")
+
+    inspection = inspect_clink_client_config(path)
+    route = classify_pal_clink_route(config_roots=[tmp_path])
+
+    assert inspection.status == "TOOLING_UNSAFE"
+    assert route["status"] == "TOOLING_UNSAFE"
+    assert route["underlying_cli"] is None
+    assert_schema_valid(route, ROOT / "schemas" / "proof" / "auditor_route.schema.json")
+
+
 def test_reject_copilot_audit_until_runner_supported(tmp_path: Path) -> None:
     config_dir = tmp_path / "clink_configs"
     config_dir.mkdir()
@@ -452,6 +477,34 @@ def test_normalize_pal_clink_fail() -> None:
     assert audit["findings"][0]["status"] == "OPEN"
 
 
+def test_normalize_pal_clink_preserves_blocking_marker() -> None:
+    route = classify_pal_clink_route(
+        config_roots=[fixture_config_dir("pal_clink_audit_safe_claude_available")]
+    )
+
+    audit = normalize_pal_clink_audit_output(
+        {
+            "status": "success",
+            "verdict": "PASS",
+            "findings": [
+                {
+                    "id": "F-2",
+                    "severity": "MEDIUM",
+                    "title": "Explicitly blocking finding",
+                    "body": "The external audit marked this as blocking.",
+                    "blocking": True,
+                }
+            ],
+            "risks": [],
+        },
+        route=route,
+        report_path="proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/AUDITOR_REPORT.md",
+    )
+
+    assert audit["status"] == "FAIL"
+    assert audit["findings"][0]["blocking"] is True
+
+
 def test_normalize_pal_clink_no_verdict_needs_supervisor() -> None:
     route = classify_pal_clink_route(
         config_roots=[fixture_config_dir("pal_clink_audit_safe_claude_available")]
@@ -508,3 +561,31 @@ def test_preflight_fixture_writes_route_artifacts(tmp_path: Path) -> None:
     assert route["repo_context_sent"] is False
     assert probes["pal_mcp_called"] is False
     assert probes["external_cli_called_for_pal_clink"] is False
+
+
+def test_preflight_allow_fallback_returns_success_for_fallback_only(
+    tmp_path: Path,
+) -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "tools.auditor_router.preflight",
+            "--fixture-dir",
+            str(FIXTURES / "pal_clink_no_configs_found"),
+            "--out",
+            str(tmp_path),
+            "--packet-id",
+            "TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002",
+            "--allow-fallback",
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    route = load_json(tmp_path / "AUDITOR_ROUTE.json")
+    assert route["tool"] == "copilot-cli"
+    assert route["status"] == "FALLBACK_ONLY"
