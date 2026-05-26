@@ -1,0 +1,22 @@
+{
+  "name": "gemini-audit",
+  "runner": "gemini",
+  "command": "gemini",
+  "additional_args": [
+    "--telemetry",
+    "false",
+    "--approval-mode",
+    "plan"
+  ],
+  "env": {},
+  "roles": {
+    "default": {
+      "prompt_path": "systemprompts/clink/default_codereviewer.txt",
+      "role_args": []
+    },
+    "codereviewer": {
+      "prompt_path": "systemprompts/clink/default_codereviewer.txt",
+      "role_args": []
+    }
+  }
+}
