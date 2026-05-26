@@ -8,8 +8,13 @@
     "PAL_CLINK_AUDIT_OUTPUT_MISSING"
   ],
   "nonblocking_results": [
-    "Targeted auditor-router tests passed: 27 passed",
+    "Targeted auditor-router tests passed: 33 passed",
+    "P1 PAL clink review safety regressions passed: 29 test_pal_clink tests",
     "PAL clink bridge-tier classification implemented as pure config inspection"
+  ],
+  "review_fixes": [
+    "Canonical PAL clink prompt path validation rejects basename-only path traversal.",
+    "Equals-form unsafe mutation flags are detected."
   ],
   "route_is_audit_verdict": false,
   "pal_mcp_called": false,

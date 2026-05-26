@@ -22,6 +22,7 @@ from tools.auditor_router.policy import select_preferred_route
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURES = ROOT / "tests" / "fixtures" / "auditor_router"
+CANONICAL_CLINK_PROMPT = "systemprompts/clink/default_codereviewer.txt"
 
 
 def load_json(path: Path) -> dict:
@@ -40,6 +41,12 @@ def assert_schema_valid(payload: dict, schema_path: Path) -> None:
 
 def fixture_config_dir(name: str) -> Path:
     return FIXTURES / name / "clink_configs"
+
+
+def safe_claude_config() -> dict:
+    return load_json(
+        fixture_config_dir("pal_clink_audit_safe_claude_available") / "claude-audit.json"
+    )
 
 
 def test_discover_repo_local_audit_configs() -> None:
@@ -118,9 +125,7 @@ def test_accept_gemini_audit_config() -> None:
 def test_reject_mutation_flag_in_config_args(tmp_path: Path) -> None:
     config_dir = tmp_path / "clink_configs"
     config_dir.mkdir()
-    config = load_json(
-        fixture_config_dir("pal_clink_audit_safe_claude_available") / "claude-audit.json"
-    )
+    config = safe_claude_config()
     config["additional_args"] = ["--permission-mode", "bypassPermissions"]
     path = config_dir / "claude-audit.json"
     path.write_text(json.dumps(config), encoding="utf-8")
@@ -129,6 +134,54 @@ def test_reject_mutation_flag_in_config_args(tmp_path: Path) -> None:
 
     assert inspection.status == "TOOLING_UNSAFE"
     assert "--permission-mode bypassPermissions" in inspection.mutation_flags
+
+
+def test_reject_permission_mode_equals_mutation_flag(tmp_path: Path) -> None:
+    config = safe_claude_config()
+    config["additional_args"] = ["--permission-mode=bypassPermissions"]
+    path = tmp_path / "claude-audit.json"
+    path.write_text(json.dumps(config), encoding="utf-8")
+
+    inspection = inspect_clink_client_config(path)
+
+    assert inspection.status == "TOOLING_UNSAFE"
+    assert "--permission-mode=bypassPermissions" in inspection.mutation_flags
+
+
+def test_reject_approval_mode_equals_yolo_mutation_flag(tmp_path: Path) -> None:
+    config = safe_claude_config()
+    config["additional_args"] = ["--approval-mode=yolo"]
+    path = tmp_path / "claude-audit.json"
+    path.write_text(json.dumps(config), encoding="utf-8")
+
+    inspection = inspect_clink_client_config(path)
+
+    assert inspection.status == "TOOLING_UNSAFE"
+    assert "--approval-mode=yolo" in inspection.mutation_flags
+
+
+def test_reject_mode_equals_autopilot_mutation_flag(tmp_path: Path) -> None:
+    config = safe_claude_config()
+    config["additional_args"] = ["--mode=autopilot"]
+    path = tmp_path / "claude-audit.json"
+    path.write_text(json.dumps(config), encoding="utf-8")
+
+    inspection = inspect_clink_client_config(path)
+
+    assert inspection.status == "TOOLING_UNSAFE"
+    assert "--mode=autopilot" in inspection.mutation_flags
+
+
+def test_reject_allow_all_equals_true_mutation_flag(tmp_path: Path) -> None:
+    config = safe_claude_config()
+    config["additional_args"] = ["--allow-all=true"]
+    path = tmp_path / "claude-audit.json"
+    path.write_text(json.dumps(config), encoding="utf-8")
+
+    inspection = inspect_clink_client_config(path)
+
+    assert inspection.status == "TOOLING_UNSAFE"
+    assert "--allow-all=true" in inspection.mutation_flags
 
 
 def test_reject_mutation_flag_in_role_args() -> None:
@@ -158,9 +211,7 @@ def test_scan_effective_args_includes_internal_args() -> None:
 
 
 def test_roles_must_be_default_and_codereviewer(tmp_path: Path) -> None:
-    config = load_json(
-        fixture_config_dir("pal_clink_audit_safe_claude_available") / "claude-audit.json"
-    )
+    config = safe_claude_config()
     config["roles"]["planner"] = {
         "prompt_path": "systemprompts/clink/default_planner.txt",
         "role_args": [],
@@ -175,9 +226,7 @@ def test_roles_must_be_default_and_codereviewer(tmp_path: Path) -> None:
 
 
 def test_roles_must_share_codereviewer_prompt(tmp_path: Path) -> None:
-    config = load_json(
-        fixture_config_dir("pal_clink_audit_safe_claude_available") / "claude-audit.json"
-    )
+    config = safe_claude_config()
     config["roles"]["default"]["prompt_path"] = "systemprompts/clink/default.txt"
     path = tmp_path / "claude-audit.json"
     path.write_text(json.dumps(config), encoding="utf-8")
@@ -186,6 +235,33 @@ def test_roles_must_share_codereviewer_prompt(tmp_path: Path) -> None:
 
     assert inspection.status == "TOOLING_UNSAFE"
     assert "default_codereviewer.txt" in inspection.reason
+
+
+def test_roles_reject_same_basename_outside_trusted_prompt_root(
+    tmp_path: Path,
+) -> None:
+    config = safe_claude_config()
+    config["roles"]["default"]["prompt_path"] = "../../evil/default_codereviewer.txt"
+    path = tmp_path / "claude-audit.json"
+    path.write_text(json.dumps(config), encoding="utf-8")
+
+    inspection = inspect_clink_client_config(path)
+
+    assert inspection.status == "TOOLING_UNSAFE"
+    assert CANONICAL_CLINK_PROMPT in inspection.reason
+
+
+def test_roles_accept_canonical_codereviewer_prompt_path(tmp_path: Path) -> None:
+    config = safe_claude_config()
+    config["roles"]["default"]["prompt_path"] = CANONICAL_CLINK_PROMPT
+    config["roles"]["codereviewer"]["prompt_path"] = CANONICAL_CLINK_PROMPT
+    path = tmp_path / "claude-audit.json"
+    path.write_text(json.dumps(config), encoding="utf-8")
+
+    inspection = inspect_clink_client_config(path)
+
+    assert inspection.status == "AVAILABLE"
+    assert inspection.audit_safe_config_proven is True
 
 
 def test_classify_no_configs_as_tooling_unsafe() -> None:

@@ -38,13 +38,30 @@
     "requires_operator_approval": true,
     "route_is_audit_verdict": false
   },
+  "review_fixes": {
+    "status": "P1_REVIEW_THREADS_ADDRESSED_IN_FOLLOW_UP_COMMIT",
+    "source": "PR #713 Codex review threads",
+    "fixes": [
+      "Prompt path safety now requires canonical relative systemprompts/clink/default_codereviewer.txt and rejects basename-only path traversal.",
+      "Mutation detection now handles unsafe equals-form args such as --permission-mode=bypassPermissions, --approval-mode=yolo, --mode=autopilot, and --allow-all=true."
+    ],
+    "tests_added": [
+      "test_roles_reject_same_basename_outside_trusted_prompt_root",
+      "test_roles_accept_canonical_codereviewer_prompt_path",
+      "test_reject_permission_mode_equals_mutation_flag",
+      "test_reject_approval_mode_equals_yolo_mutation_flag",
+      "test_reject_mode_equals_autopilot_mutation_flag",
+      "test_reject_allow_all_equals_true_mutation_flag"
+    ]
+  },
   "blockers": [
     "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
     "WRAPPER_BLOCKED_BY_ALLOWLIST",
     "PAL_CLINK_AUDIT_OUTPUT_MISSING"
   ],
   "nonblocking_results": [
-    "Targeted auditor-router tests passed: 27 passed",
+    "Targeted auditor-router tests passed: 33 passed",
+    "P1 PAL clink review safety regressions passed: 29 test_pal_clink tests",
     "PAL clink bridge-tier classification implemented as pure config inspection",
     "auditor_route schema accepts pal-mcp-clink route evidence",
     "embedded_audit schema accepts pal-mcp-clink as auditor_tool"
@@ -78,9 +95,14 @@
         "result": "PASS"
       },
       {
+        "command": "pytest -q tests/auditor_router/test_pal_clink.py",
+        "exit_code": 0,
+        "result": "PASS: 29 passed"
+      },
+      {
         "command": "pytest -q tests/auditor_router",
         "exit_code": 0,
-        "result": "PASS: 27 passed"
+        "result": "PASS: 33 passed"
       },
       {
         "command": "python -m tools.auditor_router.preflight --help",
@@ -164,8 +186,8 @@
     "skip_reason": null
   },
   "codereview": {
-    "status": "MANUAL_REVIEW_WITH_BLOCKERS",
-    "result": "Diff remains within packet allowlist; blocker labels are preserved instead of hidden."
+    "status": "P1_REVIEW_THREADS_PATCHED_WITH_BLOCKERS_REMAINING",
+    "result": "Prompt-path and equals-form mutation detection review findings were patched with regression tests. Packet-level blockers are preserved instead of hidden."
   },
   "precommit": {
     "status": "PASS",
@@ -175,10 +197,10 @@
     ]
   },
   "commit": {
-    "status": "COMMITTED_BEFORE_PROOF_REFRESH",
-    "sha_observed_before_amend": "90118b486d221859c4cf22a0275258867b618ec1",
-    "message": "feat(governance): bootstrap auditor router pal clink classification",
-    "note": "Final post-amend commit SHA is reported in the closing response because a commit cannot contain its own final SHA."
+    "status": "FOLLOW_UP_COMMIT_PENDING",
+    "previous_pr_head_sha": "cee2d45e234554ec628cbdf8ff25e4770d430d02",
+    "message": "fix(governance): harden pal clink route safety checks",
+    "note": "Final follow-up commit SHA is reported in the closing response because a commit cannot contain its own final SHA."
   },
   "recommended_follow_ups": [
     "TP-DMX-AUDITOR-ROUTER-WRAPPER-003",
