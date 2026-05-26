@@ -548,6 +548,13 @@ The first implementation packet should be exactly this shape:
 9. Is `services/mcp-integration-bridge` dead, orphaned, or still reachable?
 10. Which proof schema wins for merge-readiness automation?
 
+TP-DMX-ORCH-001 reconciliation note: the repo-local validator added by
+TP-DMX-ORCH-003 validates this repository's
+`dopetask-canonical-spec.json` and a local proof-governance shape only. It does
+not prove equivalence with an external dopeTask-owned schema, installed
+dopeTask runtime version, Supervisor Ledger acceptance contract, or final
+merge-readiness proof schema. Those remain `UNKNOWN` until separately verified.
+
 ## Bottom Line
 
 Build read-only daily/status integration first. Then build packet/proof

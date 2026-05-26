@@ -1,0 +1,126 @@
+{
+  "id": "TP-DMX-ORCH-001",
+  "project": "dopemux-mvp",
+  "target": "Reconcile task-orchestrator naming, dopetask schema/version drift, ports, and proof-contract references",
+  "invariants": [
+    "Static reconciliation only",
+    "No runtime mutation",
+    "No workflow transition calls",
+    "No PM writes",
+    "No ConPort writes",
+    "No dope-memory writes",
+    "No dope-context index mutation",
+    "No GitHub mutation",
+    "Do not claim external dopeTask schema/version equivalence without evidence",
+    "Do not claim final proof schema authority without Supervisor Ledger or dopetask proof authority evidence",
+    "task-orchestrator must not become PM, memory, retrieval, execution, proof, bridge, agent, or governance authority",
+    "dopecon-bridge remains adapter/proxy/event transport only and must not be treated as source truth",
+    "dopetask remains Task Packet execution/proof runtime after handoff"
+  ],
+  "depends_on": [
+    "TP-DMX-ORCH-003"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ORCH-INTEGRATION",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-ORCH-003",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-orch-001-boundary-drift",
+    "base_branch": "codex/tp-dmx-orch-003-validators",
+    "stacked_because": "TP-DMX-ORCH-001 depends on TP-DMX-ORCH-003 packet/proof validators."
+  },
+  "commit": {
+    "message": "docs(orchestrator): reconcile boundary drift references",
+    "allowlist": [
+      "PM_PLANE.md",
+      "docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md",
+      "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+      "services/task-orchestrator/query_server.py",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-001/**",
+      "task-packets/generated/TP-DMX-ORCH-001.json"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m dopemux.cli orchestrator packet validate task-packets/generated/TP-DMX-ORCH-001.json --json-output",
+      "python -m dopemux.cli orchestrator proof validate proof/dmx-orch-integration/TP-DMX-ORCH-001/PROOF.json --json-output",
+      "test -z \"$(rg 'localhost:3014|Port 3014|defaults to `3014`|defaults to `http://localhost:3014`' PM_PLANE.md docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md services/task-orchestrator/query_server.py)\""
+    ]
+  },
+  "pr": {
+    "title": "docs(orchestrator): reconcile boundary drift references",
+    "body": "Reconcile stale task-orchestrator port and proof/schema boundary references without runtime mutation.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect_boundaries",
+      "task": "Inspect runtime/config/docs authority for task-orchestrator ports, dopetask schema/version drift, and proof-contract references.",
+      "validation": [
+        "Evidence names current runtime/config authority and remaining UNKNOWN boundaries."
+      ],
+      "context_files": [
+        "src/dopemux/pm/adapters/orchestrator.py",
+        "services/task-orchestrator/app/main.py",
+        "services/task-orchestrator/task_orchestrator/app.py",
+        "services/task-orchestrator/query_server.py",
+        "PM_PLANE.md",
+        "docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md",
+        "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md"
+      ]
+    },
+    {
+      "id": "reconcile_ports",
+      "task": "Replace stale current-runtime 3014 claims in scoped static references with observed 8000 runtime/config truth.",
+      "validation": [
+        "No edited scoped surface claims localhost:3014 or Port 3014 as current task-orchestrator runtime truth."
+      ],
+      "expected_files": [
+        "PM_PLANE.md",
+        "docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md",
+        "services/task-orchestrator/query_server.py"
+      ]
+    },
+    {
+      "id": "preserve_unknowns",
+      "task": "Preserve UNKNOWN for external dopeTask schema/version equivalence and final proof-schema authority.",
+      "validation": [
+        "Operator authority doc states repo-local validators do not prove external dopeTask or final proof authority."
+      ],
+      "expected_files": [
+        "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md"
+      ]
+    },
+    {
+      "id": "proof",
+      "task": "Create this packet's generated Task Packet and proof artifact.",
+      "validation": [
+        "Generated Task Packet validates against dopetask-canonical-spec.json",
+        "Proof artifact validates with dopemux orchestrator proof validate",
+        "git diff --check passes"
+      ],
+      "expected_files": [
+        "task-packets/generated/TP-DMX-ORCH-001.json",
+        "proof/dmx-orch-integration/TP-DMX-ORCH-001/PROOF.json"
+      ]
+    }
+  ]
+}
