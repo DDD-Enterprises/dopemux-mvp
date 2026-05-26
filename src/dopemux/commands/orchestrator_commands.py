@@ -4,9 +4,14 @@ from __future__ import annotations
 
 import asyncio
 import json
+from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
 import click
+
+from dopemux.orchestrator.validation.packets import validate_packet_file
+from dopemux.orchestrator.validation.proof import validate_proof_file
+from dopemux.orchestrator.validation.report import ValidationReport
 
 
 DEFAULT_PROJECT_ID = "dopemux-mvp"
@@ -97,9 +102,76 @@ def _run(awaitable):
     return asyncio.run(awaitable)
 
 
+def _emit_validation_report(report: ValidationReport, *, title: str, json_output: bool):
+    if json_output:
+        click.echo(json.dumps(report.to_dict(), indent=2, sort_keys=True))
+    else:
+        lines = [
+            title,
+            f"path: {report.path}",
+            f"authority: {report.authority}",
+            f"status: {report.status}",
+        ]
+        for error in report.errors:
+            suffix = f" {error['path']}" if error.get("path") else ""
+            lines.append(f"{error['code']}{suffix}: {error['message']}")
+        if not report.errors:
+            lines.append("errors: none")
+        _emit_lines(lines)
+
+    if report.exit_code:
+        raise click.exceptions.Exit(report.exit_code)
+
+
 @click.group("orchestrator")
 def orchestrator_group():
     """Read-only Task Orchestrator status and daily planning views."""
+
+
+@orchestrator_group.group("packet")
+def orchestrator_packet():
+    """Read-only Task Packet validation helpers."""
+
+
+@orchestrator_packet.command("validate")
+@click.argument("packet_path", type=click.Path(dir_okay=False, path_type=Path))
+@click.option(
+    "--schema",
+    "schema_path",
+    type=click.Path(dir_okay=False, path_type=Path),
+    default=None,
+)
+@click.option("--json-output", is_flag=True)
+def orchestrator_packet_validate(
+    packet_path: Path,
+    schema_path: Optional[Path],
+    json_output: bool,
+):
+    """Validate a Task Packet against the canonical repo schema."""
+    report = validate_packet_file(packet_path, schema_path=schema_path)
+    _emit_validation_report(
+        report,
+        title="Task Orchestrator Packet Validation",
+        json_output=json_output,
+    )
+
+
+@orchestrator_group.group("proof")
+def orchestrator_proof():
+    """Read-only proof bundle validation helpers."""
+
+
+@orchestrator_proof.command("validate")
+@click.argument("proof_path", type=click.Path(dir_okay=False, path_type=Path))
+@click.option("--json-output", is_flag=True)
+def orchestrator_proof_validate(proof_path: Path, json_output: bool):
+    """Validate proof bundle shape without writing proof artifacts."""
+    report = validate_proof_file(proof_path)
+    _emit_validation_report(
+        report,
+        title="Task Orchestrator Proof Validation",
+        json_output=json_output,
+    )
 
 
 @orchestrator_group.command("queue")
