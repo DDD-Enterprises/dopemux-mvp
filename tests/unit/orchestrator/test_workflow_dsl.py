@@ -19,28 +19,30 @@ def _workflow_payload() -> dict:
         "schema_version": "1",
         "id": "daily-operator",
         "title": "Daily operator workflow",
-        "initial_state": "queued",
-        "states": [
-            {"id": "queued", "title": "Queued"},
-            {"id": "active", "title": "Active"},
-            {"id": "done", "title": "Done", "terminal": True},
-        ],
-        "transitions": [
+        "owner": "dopemux",
+        "authority": {"primary_owner": "task-orchestrator"},
+        "automation_tier": "T1",
+        "triggers": ["manual"],
+        "inputs": ["project_id"],
+        "steps": [
             {
-                "id": "preview_start",
-                "from": "queued",
-                "to": "active",
-                "capability": "orchestrator.transition.preview",
-                "receipt_required": True,
+                "id": "queue",
+                "tool": "orchestrator.status.queue",
+                "mode": "read",
+                "validation": ["queue report returned"],
+                "on_failure": "degrade",
             },
             {
-                "id": "preview_finish",
-                "from": "active",
-                "to": "done",
-                "capability": "orchestrator.transition.preview",
-                "receipt_required": True,
+                "id": "proof_check",
+                "tool": "orchestrator.proof.validate",
+                "mode": "analysis",
+                "schema_path": "src/dopemux/orchestrator/validation/proof.py",
+                "validation": ["proof report returned"],
+                "on_failure": "fail_closed",
             },
         ],
+        "outputs": ["items", "more_count", "next_token"],
+        "approval": {"required": False},
     }
 
 
@@ -50,15 +52,11 @@ def test_workflow_dsl_loader_returns_stable_model(tmp_path: Path) -> None:
     workflow = load_workflow_dsl_file(path)
 
     assert workflow.workflow_id == "daily-operator"
-    assert workflow.initial_state == "queued"
-    assert [state.state_id for state in workflow.states] == [
-        "queued",
-        "active",
-        "done",
-    ]
-    assert workflow.to_dict()["transitions"][0]["capability"] == (
-        "orchestrator.transition.preview"
-    )
+    assert workflow.owner == "dopemux"
+    assert workflow.authority_primary_owner == "task-orchestrator"
+    assert workflow.automation_tier == "T1"
+    assert [step.step_id for step in workflow.steps] == ["queue", "proof_check"]
+    assert workflow.to_dict()["steps"][0]["tool"] == "orchestrator.status.queue"
 
 
 def test_workflow_dsl_validator_accepts_policy_registered_workflow(
@@ -71,8 +69,7 @@ def test_workflow_dsl_validator_accepts_policy_registered_workflow(
     assert report.valid is True
     assert report.status == "PASS"
     assert report.errors == []
-    assert report.details["state_count"] == 3
-    assert report.details["transition_count"] == 2
+    assert report.details["step_count"] == 2
 
 
 def test_workflow_dsl_validator_accepts_json_input(tmp_path: Path) -> None:
@@ -85,40 +82,71 @@ def test_workflow_dsl_validator_accepts_json_input(tmp_path: Path) -> None:
     assert report.status == "PASS"
 
 
-def test_workflow_dsl_validator_rejects_duplicate_states(tmp_path: Path) -> None:
+def test_workflow_dsl_validator_rejects_missing_authority_owner(
+    tmp_path: Path,
+) -> None:
     payload = _workflow_payload()
-    payload["states"].append({"id": "queued", "title": "Duplicate"})
+    payload["authority"] = {}
     path = _write_yaml(tmp_path / "workflow.yaml", payload)
 
     report = validate_workflow_dsl_file(path)
 
     assert report.valid is False
-    assert any(error["code"] == "WORKFLOW_DSL_DUPLICATE_STATE" for error in report.errors)
+    assert any(
+        error["code"] == "WORKFLOW_DSL_AUTHORITY_OWNER_MISSING"
+        for error in report.errors
+    )
 
 
-def test_workflow_dsl_validator_rejects_missing_transition_target(
-    tmp_path: Path,
-) -> None:
+def test_workflow_dsl_validator_rejects_unknown_tier(tmp_path: Path) -> None:
     payload = _workflow_payload()
-    payload["transitions"][0]["to"] = "missing"
+    payload["automation_tier"] = "T9000"
     path = _write_yaml(tmp_path / "workflow.yaml", payload)
 
     report = validate_workflow_dsl_file(path)
 
     assert report.valid is False
-    assert any(error["code"] == "WORKFLOW_DSL_UNKNOWN_TO_STATE" for error in report.errors)
+    assert any(error["code"] == "WORKFLOW_DSL_UNKNOWN_TIER" for error in report.errors)
 
 
-def test_workflow_dsl_validator_rejects_transition_from_terminal_state(
+def test_workflow_dsl_validator_rejects_forbidden_semantics(
     tmp_path: Path,
 ) -> None:
     payload = _workflow_payload()
-    payload["transitions"].append(
+    payload.update(
         {
-            "id": "bad_terminal_edge",
-            "from": "done",
-            "to": "active",
-            "capability": "orchestrator.transition.preview",
+            "auto_approve": True,
+            "bridge_as_authority": True,
+            "destructive": True,
+            "god_mode": True,
+            "silent_write": True,
+        }
+    )
+    path = _write_yaml(tmp_path / "workflow.yaml", payload)
+
+    report = validate_workflow_dsl_file(path)
+
+    assert report.valid is False
+    assert {
+        error["code"] for error in report.errors
+    } >= {
+        "WORKFLOW_DSL_FORBIDDEN_AUTO_APPROVE",
+        "WORKFLOW_DSL_FORBIDDEN_BRIDGE_AUTHORITY",
+        "WORKFLOW_DSL_FORBIDDEN_DESTRUCTIVE",
+        "WORKFLOW_DSL_FORBIDDEN_GOD_MODE",
+        "WORKFLOW_DSL_FORBIDDEN_SILENT_WRITE",
+    }
+
+
+def test_workflow_dsl_validator_requires_canonical_writer_for_write_steps(
+    tmp_path: Path,
+) -> None:
+    payload = _workflow_payload()
+    payload["steps"][0].update(
+        {
+            "tool": "orchestrator.transition.apply",
+            "mode": "write",
+            "approval_required": True,
             "receipt_required": True,
         }
     )
@@ -128,14 +156,88 @@ def test_workflow_dsl_validator_rejects_transition_from_terminal_state(
 
     assert report.valid is False
     assert any(
-        error["code"] == "WORKFLOW_DSL_TERMINAL_SOURCE"
+        error["code"] == "WORKFLOW_DSL_WRITE_CANONICAL_WRITER_REQUIRED"
         for error in report.errors
     )
 
 
-def test_workflow_dsl_validator_rejects_unknown_capability(tmp_path: Path) -> None:
+def test_workflow_dsl_validator_requires_upstream_writer_for_bridge_writes(
+    tmp_path: Path,
+) -> None:
     payload = _workflow_payload()
-    payload["transitions"][0]["capability"] = "orchestrator.future.unknown"
+    payload["steps"][0].update(
+        {
+            "tool": "orchestrator.transition.apply",
+            "mode": "write",
+            "canonical_writer": "dopecon-bridge",
+            "bridge_mediated": True,
+            "approval_required": True,
+            "receipt_required": True,
+        }
+    )
+    path = _write_yaml(tmp_path / "workflow.yaml", payload)
+
+    report = validate_workflow_dsl_file(path)
+
+    assert report.valid is False
+    assert any(
+        error["code"] == "WORKFLOW_DSL_BRIDGE_UPSTREAM_WRITER_REQUIRED"
+        for error in report.errors
+    )
+
+
+def test_workflow_dsl_validator_requires_schema_path_for_packet_or_proof_steps(
+    tmp_path: Path,
+) -> None:
+    payload = _workflow_payload()
+    payload["steps"][1].pop("schema_path")
+    path = _write_yaml(tmp_path / "workflow.yaml", payload)
+
+    report = validate_workflow_dsl_file(path)
+
+    assert report.valid is False
+    assert any(
+        error["code"] == "WORKFLOW_DSL_SCHEMA_PATH_REQUIRED"
+        for error in report.errors
+    )
+
+
+def test_workflow_dsl_validator_requires_approval_for_t4_plus_workflows(
+    tmp_path: Path,
+) -> None:
+    payload = _workflow_payload()
+    payload["automation_tier"] = "T4"
+    payload["approval"] = {"required": False}
+    path = _write_yaml(tmp_path / "workflow.yaml", payload)
+
+    report = validate_workflow_dsl_file(path)
+
+    assert report.valid is False
+    assert any(
+        error["code"] == "WORKFLOW_DSL_T4_APPROVAL_REQUIRED"
+        for error in report.errors
+    )
+
+
+def test_workflow_dsl_validator_requires_tx_tu_refusal(tmp_path: Path) -> None:
+    payload = _workflow_payload()
+    payload["automation_tier"] = "TU"
+    path = _write_yaml(tmp_path / "workflow.yaml", payload)
+
+    report = validate_workflow_dsl_file(path)
+
+    assert report.valid is False
+    assert any(
+        error["code"] == "WORKFLOW_DSL_UNRESOLVED_REFUSE_REQUIRED"
+        for error in report.errors
+    )
+
+
+def test_workflow_dsl_validator_rejects_unknown_orchestrator_tool(
+    tmp_path: Path,
+) -> None:
+    payload = _workflow_payload()
+    payload["steps"][0]["tool"] = "orchestrator.future.unknown"
     path = _write_yaml(tmp_path / "workflow.yaml", payload)
 
     report = validate_workflow_dsl_file(path)
@@ -143,54 +245,5 @@ def test_workflow_dsl_validator_rejects_unknown_capability(tmp_path: Path) -> No
     assert report.valid is False
     assert any(
         error["code"] == "WORKFLOW_DSL_UNKNOWN_CAPABILITY"
-        for error in report.errors
-    )
-
-
-def test_workflow_dsl_validator_requires_gates_for_write_capabilities(
-    tmp_path: Path,
-) -> None:
-    payload = _workflow_payload()
-    payload["transitions"][0].update(
-        {
-            "capability": "orchestrator.transition.apply",
-            "approval_required": False,
-            "receipt_required": False,
-        }
-    )
-    path = _write_yaml(tmp_path / "workflow.yaml", payload)
-
-    report = validate_workflow_dsl_file(path)
-
-    assert report.valid is False
-    assert any(
-        error["code"] == "WORKFLOW_DSL_WRITE_APPROVAL_REQUIRED"
-        for error in report.errors
-    )
-    assert any(
-        error["code"] == "WORKFLOW_DSL_WRITE_RECEIPT_REQUIRED"
-        for error in report.errors
-    )
-
-
-def test_workflow_dsl_validator_rejects_automatic_write_capability(
-    tmp_path: Path,
-) -> None:
-    payload = _workflow_payload()
-    payload["transitions"][0].update(
-        {
-            "capability": "orchestrator.transition.apply",
-            "approval_required": True,
-            "receipt_required": True,
-            "automatic": True,
-        }
-    )
-    path = _write_yaml(tmp_path / "workflow.yaml", payload)
-
-    report = validate_workflow_dsl_file(path)
-
-    assert report.valid is False
-    assert any(
-        error["code"] == "WORKFLOW_DSL_AUTOMATIC_CAPABILITY_FORBIDDEN"
         for error in report.errors
     )

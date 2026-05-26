@@ -262,26 +262,27 @@ def test_orchestrator_workflow_validate_outputs_json_report(tmp_path: Path) -> N
                 'schema_version: "1"',
                 "id: daily-operator",
                 "title: Daily operator workflow",
-                "initial_state: queued",
-                "states:",
-                "  - id: queued",
-                "    title: Queued",
-                "  - id: active",
-                "    title: Active",
-                "  - id: done",
-                "    title: Done",
-                "    terminal: true",
-                "transitions:",
-                "  - id: preview_start",
-                "    from: queued",
-                "    to: active",
-                "    capability: orchestrator.transition.preview",
-                "    receipt_required: true",
-                "  - id: preview_finish",
-                "    from: active",
-                "    to: done",
-                "    capability: orchestrator.transition.preview",
-                "    receipt_required: true",
+                "owner: dopemux",
+                "authority:",
+                "  primary_owner: task-orchestrator",
+                "automation_tier: T1",
+                "triggers:",
+                "  - manual",
+                "inputs:",
+                "  - project_id",
+                "steps:",
+                "  - id: queue",
+                "    tool: orchestrator.status.queue",
+                "    mode: read",
+                "    validation:",
+                "      - queue report returned",
+                "    on_failure: degrade",
+                "outputs:",
+                "  - items",
+                "  - more_count",
+                "  - next_token",
+                "approval:",
+                "  required: false",
             ]
         ),
         encoding="utf-8",
@@ -303,7 +304,7 @@ def test_orchestrator_workflow_validate_outputs_json_report(tmp_path: Path) -> N
     assert payload["kind"] == "workflow_dsl"
     assert payload["status"] == "PASS"
     assert payload["valid"] is True
-    assert payload["details"]["state_count"] == 3
+    assert payload["details"]["step_count"] == 1
 
 
 def test_orchestrator_workflow_validate_exits_nonzero_for_invalid_workflow(
@@ -315,14 +316,27 @@ def test_orchestrator_workflow_validate_exits_nonzero_for_invalid_workflow(
             [
                 'schema_version: "1"',
                 "id: daily-operator",
-                "initial_state: missing",
-                "states:",
-                "  - id: queued",
-                "transitions:",
-                "  - id: bad",
-                "    from: queued",
-                "    to: missing",
-                "    capability: orchestrator.transition.preview",
+                "title: Daily operator workflow",
+                "owner: dopemux",
+                "authority: {}",
+                "automation_tier: T1",
+                "triggers:",
+                "  - manual",
+                "inputs:",
+                "  - project_id",
+                "steps:",
+                "  - id: queue",
+                "    tool: orchestrator.status.queue",
+                "    mode: read",
+                "    validation:",
+                "      - queue report returned",
+                "    on_failure: degrade",
+                "outputs:",
+                "  - items",
+                "  - more_count",
+                "  - next_token",
+                "approval:",
+                "  required: false",
             ]
         ),
         encoding="utf-8",
@@ -335,4 +349,4 @@ def test_orchestrator_workflow_validate_exits_nonzero_for_invalid_workflow(
 
     assert result.exit_code != 0
     assert "status: FAIL" in result.output
-    assert "WORKFLOW_DSL_INITIAL_STATE_UNKNOWN" in result.output
+    assert "WORKFLOW_DSL_AUTHORITY_OWNER_MISSING" in result.output
