@@ -1,0 +1,298 @@
+{
+  "id": "TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001",
+  "project": "dopemux-mvp",
+  "target": "Repair the 26 RTE-suite failures uncovered by TP-RTE-COSTPROFILE-F-VERIFY-001 so the cost-profile redesign series (E1..E9) can pass a clean F-VERIFY-002 gate. Reconcile cost-profile route expectations across v3/v5 contract tests, pre-live gate defaults, route readiness summaries, pricing coverage, and promptpack D-step contract metadata. Add `cost_profile` to the `--print-config` emitted JSON (or deliberately update the operator contract + tests if a different visibility surface is intended). Repair the non-cost-profile failures separately: prescan truthfulness/incremental semantics, reporting seam dependency contract, and `litellm` import/test-environment dependency. Do NOT re-issue the series verification gate from this packet; that is the role of a follow-up F-VERIFY-002 packet which branches off the merge of this repair.",
+  "invariants": [
+    "F-VERIFY-001 remains NOT_VERIFIED. This packet does not modify F-VERIFY-001's proof bundle or re-issue the F gate verdict. F-VERIFY-001 stays in the ledger as `NOT_VERIFIED_ACCEPTED_AS_EVIDENCE`.",
+    "Do NOT run `--execute` or any live-LLM path. RTE_DISABLE_LIVE_LLM_IN_TESTS=1 stays set for every test/probe step.",
+    "For each of the 26 failures, classify the root cause as one of: (a) test has stale expectation against post-E7/E8/E9 design — repair the test; (b) production code drifted from the consensus design — repair the code; (c) genuine ambiguity in the spec — escalate via pal/consensus before choosing direction. Record the classification per cluster in the PROOF bundle's REPAIR_DECISIONS.md.",
+    "Preserve the E3 contracts, E4 alias resolution, E7 cell-aliased ladders + per-request failover, E8 model_map v3, and E9 spend-optimizer/route-optimizer-metadata invariants. Test repairs must not re-anchor on legacy ladder constants or pre-E8 model strings.",
+    "Preserve audit-confirmed fixes F2-CRIT-1 (batch fetch_results), F2-CRIT-2 (source-truth poisoning), and F2-CRIT-3 (strict batch payload).",
+    "Preserve Dopemux split authority boundaries per AGENTS.md §6. No PM-plane authority creep into the cognitive plane.",
+    "PAL chain MUST be the long form because this packet spans 6 independent failure clusters with potentially conflicting authoritative sources: analyze → thinkdeep → challenge → planner → challenge → codereview → precommit → challenge.",
+    "If a non-cost-profile failure cluster cannot be repaired within this packet's blast radius (e.g., it requires a schema migration), explicitly defer it to a named follow-up packet rather than 'fixing in place' with a workaround. Document the deferral in REPAIR_DECISIONS.md.",
+    "The `--print-config` JSON contract change is operator-visible. Any addition to its schema must be recorded in docs/03-reference/repo-truth-extractor.md (or the equivalent operator-facing reference doc) within this packet's commit, not in a separate trailing PR.",
+    "Test-environment fixes (Cluster F / litellm) must repair the import boundary, not silently `pytest.importorskip` the affected tests. If skipping is the right call, it must be a documented, deferred decision with a follow-up TP.",
+    "STOP CONDITIONS — Codex must abort and surface to the operator if ANY of: (1) S1 F-VERIFY-001 ancestry/proof/ledger gate fails on origin/main; (2) SERIES_VERIFICATION_REPORT.md or TP-RTE-COSTPROFILE-F-VERIFY-001/PROOF.json is missing on origin/main, or PROOF.json fails to parse; (3) NOT_VERIFIED_ACCEPTED_AS_EVIDENCE is missing from the F-VERIFY-001 row of task-packets/INDEX.md on origin/main; (4) the S8 clean-checkout import probe fails under `PYTHONPATH=src` (the package uses an `src/` layout and is not installed at execution time, so a bare `python -c \"import dopemux.cli\"` is invalid as a gate); (5) any required verification pipeline in this packet fails when wrapped under `bash -o pipefail` (pytest|tee and run_extraction_v5.py|tee gates must surface upstream non-zero exits — masking is prohibited); (6) S2 selects a target_policy treatment (option ii or iii) that would break existing downstream consumers of `--print-config` without explicit operator approval recorded in REPAIR_DECISIONS.md. These STOP conditions are fail-closed; no `|| true` is permitted on any required verification gate (advisory diagnostics, if any, must be explicitly labeled as non-blocking in their step's task text)."
+  ],
+  "depends_on": [
+    "TP-RTE-COSTPROFILE-E3-CONTRACTS-001",
+    "TP-RTE-COSTPROFILE-E4-FINISH-001",
+    "TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001",
+    "TP-RTE-COSTPROFILE-E8-YAML-V3-001",
+    "TP-RTE-COSTPROFILE-E9-TESTS-001",
+    "TP-RTE-COSTPROFILE-F-VERIFY-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "rte-cost-profile-redesign",
+    "base_branch": "main",
+    "parent_tp_id": "TP-RTE-COSTPROFILE-F-VERIFY-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-costprofile-f-fullsuite-repair-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(rte): cost-profile series full-suite repair (F-FULLSUITE-REPAIR)",
+    "allowlist": [
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/lib/pricing_surface.py",
+      "services/repo-truth-extractor/benchmarking/reporting/pricing_coverage.py",
+      "services/repo-truth-extractor/promptsets/v4/model_map.yaml",
+      "services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py",
+      "services/repo-truth-extractor/tests/test_intelligence_routing_integration.py",
+      "services/repo-truth-extractor/tests/test_phase_d_contract_hardening.py",
+      "services/repo-truth-extractor/tests/test_pre_live_gate_v25.py",
+      "services/repo-truth-extractor/tests/test_prescan_contracts.py",
+      "services/repo-truth-extractor/tests/test_prescan_e2e_smoke.py",
+      "services/repo-truth-extractor/tests/test_prescan_incremental.py",
+      "services/repo-truth-extractor/tests/test_pricing_coverage.py",
+      "services/repo-truth-extractor/tests/test_promptpack_v1_v2.py",
+      "services/repo-truth-extractor/tests/test_reporting_seam.py",
+      "services/repo-truth-extractor/tests/test_rte_v5_characterization.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v3_model_routing.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_benchmark_route_ownership.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_cost_cap.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_live_readiness.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+      "src/dopemux/cli.py",
+      "pyproject.toml",
+      "docs/03-reference/repo-truth-extractor.md",
+      "task-packets/generated/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001.json",
+      "task-packets/INDEX.md",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/PROOF.json",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/sha256sums.txt",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/REPAIR_DECISIONS.md",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/pytest_full_run_post_repair.txt",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/bounded_lane_print_config_post_repair.txt",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/pal_codereview.txt",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/pal_precommit.txt"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001.json >/dev/null",
+      "python -m compileall -q services/repo-truth-extractor/run_extraction_v5.py",
+      "bash -o pipefail -c 'RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests --tb=short -v 2>&1 | tee proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/pytest_full_run_post_repair.txt'",
+      "bash -o pipefail -c 'RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python services/repo-truth-extractor/run_extraction_v5.py --phase A --step A2 --run-id f_repair_print_config --output-root /tmp/rte-f-repair-print-config --cost-profile value-default --print-config 2>&1 | tee proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/bounded_lane_print_config_post_repair.txt'",
+      "grep -q 'cost_profile' proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/bounded_lane_print_config_post_repair.txt",
+      "python -m json.tool proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/PROOF.json >/dev/null",
+      "test -f proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/REPAIR_DECISIONS.md",
+      "cd proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001 && shasum -a 256 -c sha256sums.txt",
+      "git diff --check",
+      "git diff --cached --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): cost-profile series full-suite repair (F-FULLSUITE-REPAIR)",
+    "body": "## Summary\n- Repairs the 26 RTE-suite failures observed under TP-RTE-COSTPROFILE-F-VERIFY-001 (status: NOT_VERIFIED_ACCEPTED_AS_EVIDENCE).\n- Reconciles cost-profile route expectations across v3/v5 routing tests, pre-live gate defaults, route readiness summaries, pricing coverage, and promptpack D-step contract metadata.\n- Adds `cost_profile` to the `--print-config` emitted JSON so the operator can see the resolved profile in the config surface (or, if the operator contract is changed to a different visibility surface, that change is recorded in docs/03-reference/repo-truth-extractor.md as part of this PR).\n- Repairs non-cost-profile failures: prescan truthfulness/incremental semantics, reporting seam dependency contract, and `litellm` test-environment import.\n\n## Scope\nRepair-only against the failure inventory captured in F-VERIFY-001/SERIES_VERIFICATION_REPORT.md. No new features. No live LLM execution. No re-issue of the F verification gate (a follow-up F-VERIFY-002 packet handles that).\n\n## Failure Clusters Addressed\n- **Cluster A — Cost-profile routing drift (8 files):** test_intelligence_routing_integration.py, test_phase_d_contract_hardening.py, test_pre_live_gate_v25.py, test_promptpack_v1_v2.py, test_run_extraction_v3_model_routing.py, test_run_extraction_v5_benchmark_route_ownership.py, test_run_extraction_v5_live_readiness.py, test_run_extraction_v5_operator_safety.py.\n- **Cluster B — Pricing coverage drift (2 files):** test_pricing_coverage.py, test_run_extraction_v5_cost_cap.py.\n- **Cluster C — `--print-config` cost_profile emission (operator contract):** run_extraction_v5.py print_config builder + docs/03-reference/repo-truth-extractor.md.\n- **Cluster D — Prescan truthfulness/incremental (4 files):** test_code_prescan_truthfulness.py, test_prescan_contracts.py, test_prescan_e2e_smoke.py, test_prescan_incremental.py.\n- **Cluster E — Reporting seam deps contract (1 file):** test_reporting_seam.py.\n- **Cluster F — litellm test-env import (1 file):** test_rte_v5_characterization.py + src/dopemux/cli.py.\n\n## Validation\nFull RTE suite under RTE_DISABLE_LIVE_LLM_IN_TESTS=1 returns exit 0 (or any residual non-zero is itemized per-failure in REPAIR_DECISIONS.md with traceability to an explicitly-deferred follow-up packet). `--print-config` JSON contains a `cost_profile` field. pal/codereview reports no critical findings on the repair diff. pal/precommit returns SAFE TO COMMIT.\n\n## NOT_RUN\n- Live LLM/provider calls.\n- `--execute` bounded lane.\n- F-VERIFY-002 series verification gate (separate packet).\n- Cross-pipeline integration with v3-pipeline (separate authority).\n\n## Residual Risks / UNKNOWNs\n- Some failure clusters may turn out to span multiple authoritative sources (e.g., pre-live gate default could be a docs-vs-code conflict). pal/consensus is invoked in S2 to resolve ambiguity before any code/test edits, but a wrong call would land hidden behavior drift. REPAIR_DECISIONS.md captures every choice for audit.\n- The `--print-config` schema change is operator-visible. Tools that parse this output (e.g., CI scrapers, dashboard probes) may need a coordinated bump. Documented in docs change.\n- litellm test-env repair direction (defensive import vs. test-fixture install vs. requirements-tightening) is decided at S8; the wrong direction risks masking a real production import gap.\n\n@codex review",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight (F-VERIFY-001 mainline-ancestry / proof-ledger gate). The F-VERIFY-001 proof-only landing was completed by replacement PR #701 (merge commit 9b98b3c47c986f3dc6037cfa9cac663690a50cbf), recorded in the ledger as NOT_VERIFIED_ACCEPTED_AS_EVIDENCE. Codex MUST verify, on origin/main as of execution time, that ALL of the following hold before branching: (1) the F-VERIFY-001 proof/ledger merge commit (PR #701, 9b98b3c47c986f3dc6037cfa9cac663690a50cbf) is an ancestor of origin/main; (2) proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/SERIES_VERIFICATION_REPORT.md is present on origin/main; (3) proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/PROOF.json is present on origin/main and parses as JSON; (4) task-packets/INDEX.md on origin/main contains both 'TP-RTE-COSTPROFILE-F-VERIFY-001' AND 'NOT_VERIFIED_ACCEPTED_AS_EVIDENCE' on the same row; (5) the captured origin/main SHA is recorded and reused as the explicit branch base (do NOT branch from a local stale main). Also capture the stacked-ancestry caveat (E3/E4/E7/E8/E9) for reproducibility. STOP CONDITIONS — abort execution and surface to operator if ANY of: (a) F-VERIFY-001 proof/ledger ancestry check fails; (b) SERIES_VERIFICATION_REPORT.md or TP-RTE-COSTPROFILE-F-VERIFY-001/PROOF.json is absent on origin/main; (c) PROOF.json fails to parse; (d) NOT_VERIFIED_ACCEPTED_AS_EVIDENCE is missing from the INDEX row; (e) any required-pipeline check anywhere in this packet fails (these are now wrapped with `bash -o pipefail` so upstream failures are no longer masked by tee); (f) the clean-checkout import probe in S8 fails under `PYTHONPATH=src` (the package uses an `src/` layout, so a bare `python -c \"import dopemux.cli\"` is not a valid gate). Do NOT depend on any specific PR number other than F-VERIFY-001's actual proof/ledger merge commit — PR #701 is the current canonical replacement; the originally-numbered draft PR is no longer the gating artifact.",
+      "commands": [
+        "git fetch origin --prune",
+        "git rev-parse origin/main | tee /tmp/F_REPAIR_ORIGIN_MAIN_SHA.txt",
+        "git merge-base --is-ancestor 9b98b3c47c986f3dc6037cfa9cac663690a50cbf origin/main && echo 'F_VERIFY_PR701_ANCESTOR=YES' || (echo 'F_VERIFY_PR701_ANCESTOR=NO — STOP: F-VERIFY-001 proof/ledger merge commit (PR #701, 9b98b3c47c986f3dc6037cfa9cac663690a50cbf) is not an ancestor of origin/main' && exit 1)",
+        "git show origin/main:proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/SERIES_VERIFICATION_REPORT.md > /tmp/F_VERIFY_SERIES_VERIFICATION_REPORT.md && echo 'F_VERIFY_SERIES_REPORT_PRESENT=YES'",
+        "git show origin/main:proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/PROOF.json > /tmp/F_VERIFY_PROOF.json && python -m json.tool /tmp/F_VERIFY_PROOF.json > /tmp/F_VERIFY_PROOF.json.ok && echo 'F_VERIFY_PROOF_JSON_PARSES=YES'",
+        "git show origin/main:task-packets/INDEX.md > /tmp/F_VERIFY_INDEX.md && grep -nE 'TP-RTE-COSTPROFILE-F-VERIFY-001' /tmp/F_VERIFY_INDEX.md | grep -F 'NOT_VERIFIED_ACCEPTED_AS_EVIDENCE' > /tmp/F_VERIFY_INDEX_MATCH.txt && echo 'F_VERIFY_INDEX_STATUS_OK=YES'",
+        "git log --oneline origin/main | grep -E 'E3-CONTRACTS|E4-FINISH|E7-LADDERS|E8-YAML|E9-' | head -12 > /tmp/F_REPAIR_E_SERIES_ANCESTRY.txt",
+        "git checkout -B codex/rte-costprofile-f-fullsuite-repair-001 \"$(cat /tmp/F_REPAIR_ORIGIN_MAIN_SHA.txt)\"",
+        "git rev-parse HEAD > /tmp/F_REPAIR_BRANCH_BASE_SHA.txt",
+        "git status --short"
+      ],
+      "validation": [
+        "Working tree clean on the repair branch.",
+        "origin/main SHA persisted to /tmp/F_REPAIR_ORIGIN_MAIN_SHA.txt (bare SHA, no shell-variable prefix) and reread from that file at branch-creation time so the value survives across separate command invocations (NO reliance on an in-process shell variable like $ORIGIN_MAIN_SHA — the executor may run each command in a fresh shell).",
+        "F_VERIFY_PR701_ANCESTOR=YES: PR #701 merge commit 9b98b3c47c986f3dc6037cfa9cac663690a50cbf is an ancestor of origin/main.",
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/SERIES_VERIFICATION_REPORT.md is readable from origin/main.",
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/PROOF.json is readable from origin/main AND parses as JSON.",
+        "task-packets/INDEX.md on origin/main contains a TP-RTE-COSTPROFILE-F-VERIFY-001 row marked NOT_VERIFIED_ACCEPTED_AS_EVIDENCE.",
+        "Stacked-ancestry caveat (E3/E4/E7/E8/E9 merges) captured to /tmp/F_REPAIR_E_SERIES_ANCESTRY.txt and referenced in PROOF.json.",
+        "All five E-series merge SHAs present in ancestry OR the normalized-stack caveat documented per F-VERIFY-001's evidence.",
+        "If ANY of the above fail, STOP and surface to operator — do not proceed to S2."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Root-cause classification with PAL analyze + thinkdeep + consensus. For each of the 26 observed failures (inventory frozen from F-VERIFY-001's SERIES_VERIFICATION_REPORT.md), classify as: (a) test has stale expectation — repair the test; (b) code drifted from consensus design — repair the code; (c) ambiguous — pal/consensus before deciding. Output REPAIR_DECISIONS.md with the classification table, the authoritative source cited for each (E-series packet text / model_map v3 / consensus record), and the planned repair direction. Do NOT edit any code or tests in this step. EXPLICIT DECISION REQUIRED: how do `target_policy` (legacy routing-policy field; F-VERIFY-001 observed it emitting `balanced_openrouter`) and the new `cost_profile` field coexist in `--print-config`? Pick one of: (i) both fields emitted, `target_policy` deprecated with a notice; (ii) `cost_profile` supersedes `target_policy`, removing the latter (operator-breaking — requires migration note); (iii) `target_policy` removed in favor of `cost_profile` only. Record the decision + rationale in REPAIR_DECISIONS.md and propagate to S5.",
+      "validation": [
+        "REPAIR_DECISIONS.md exists with all 26 failures classified.",
+        "Each classification names an authoritative source (E-series packet ID, file path, or consensus decision ID).",
+        "Any (c) ambiguity entry has a recorded pal/consensus outcome before S3+ proceed."
+      ],
+      "expected_files": [
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/REPAIR_DECISIONS.md"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Cluster A — Cost-profile routing reconciliation. Apply the S2-classified repair direction across the 8 failing files: test_intelligence_routing_integration.py (gpt-4o vs gpt-5.4-mini), test_phase_d_contract_hardening.py (D-step Gemini vs OpenRouter), test_pre_live_gate_v25.py (balanced_openrouter vs cost), test_promptpack_v1_v2.py (D0/D1 Gemini vs OpenRouter), test_run_extraction_v3_model_routing.py (3 route contract/strict/fallback expectations), test_run_extraction_v5_benchmark_route_ownership.py (H3 OpenRouter strict override), test_run_extraction_v5_live_readiness.py (benchmark-owned route readiness scope), test_run_extraction_v5_operator_safety.py (doctor/preflight exit 2 + route readiness + strict override). Edit either the test or the production routing code (NEVER both for the same failure without explicit pal/consensus justification recorded in REPAIR_DECISIONS.md).",
+      "commands": [
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_intelligence_routing_integration.py services/repo-truth-extractor/tests/test_phase_d_contract_hardening.py services/repo-truth-extractor/tests/test_pre_live_gate_v25.py services/repo-truth-extractor/tests/test_promptpack_v1_v2.py services/repo-truth-extractor/tests/test_run_extraction_v3_model_routing.py services/repo-truth-extractor/tests/test_run_extraction_v5_benchmark_route_ownership.py services/repo-truth-extractor/tests/test_run_extraction_v5_live_readiness.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py --tb=short -v"
+      ],
+      "validation": [
+        "All Cluster A tests pass under RTE_DISABLE_LIVE_LLM_IN_TESTS=1.",
+        "REPAIR_DECISIONS.md row for each test names the authoritative source and repair direction (test vs. code).",
+        "No regression in the previously-passing route_request_options / route_separation / route_identity / route_fingerprint_static_identity tests."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Cluster B — Pricing coverage reconciliation. Repair test_pricing_coverage.py (xai/grok-4.20 expected unknown, observed priced) and test_run_extraction_v5_cost_cap.py (missing pricing for gemini/gemini-3.5-flash, openai/gpt-5.4-mini, xai/grok-4-fast). Decide whether the canonical pricing surface in lib/pricing_surface.py + benchmarking/reporting/pricing_coverage.py should add the missing entries or whether the tests' active-target lists are stale post-E8/E9.",
+      "commands": [
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_pricing_coverage.py services/repo-truth-extractor/tests/test_run_extraction_v5_cost_cap.py --tb=short -v"
+      ],
+      "validation": [
+        "Both Cluster B tests pass.",
+        "If lib/pricing_surface.py was extended, the additions match real provider catalogs (sourced from existing pricing catalog tests).",
+        "No regression in test_pricing_catalog.py or test_pricing_surface_static_identity.py."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Cluster C — Add `cost_profile` to `--print-config` emitted JSON, honoring the S2 decision on coexistence with `target_policy`. Locate the print_config builder in services/repo-truth-extractor/run_extraction_v5.py (around L19160-L19207). Add a top-level `cost_profile` key whose value is the resolved profile string. Apply the S2-decided treatment of `target_policy` (keep + deprecate / remove / replace). If the consensus during S2 was to expose this via a different visibility surface (e.g., a dedicated --print-cost-profile subcommand), implement that surface instead and update tests + docs accordingly. Either way: docs/03-reference/repo-truth-extractor.md must record the operator-visible contract within THIS commit, not a trailing PR.",
+      "commands": [
+        "bash -o pipefail -c 'RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python services/repo-truth-extractor/run_extraction_v5.py --phase A --step A2 --run-id f_repair_print_config_dryrun --output-root /tmp/rte-f-repair-dryrun --cost-profile value-default --print-config 2>&1 | tee /tmp/rte-f-repair-printconfig-dryrun.txt'",
+        "grep -q '\"cost_profile\"' /tmp/rte-f-repair-printconfig-dryrun.txt || (echo 'FAIL: cost_profile not in print-config output' && exit 1)"
+      ],
+      "validation": [
+        "`--print-config` emits a `cost_profile` field whose value matches `--cost-profile` input.",
+        "docs/03-reference/repo-truth-extractor.md updated with the new schema entry in the same commit.",
+        "If an alternative visibility surface was chosen, its existence + invocation is documented and at least one test exercises it."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Cluster D — Prescan truthfulness/incremental repair. Investigate test_code_prescan_truthfulness.py (3 KeyError for missing imports/api_surfaces/symbols), test_prescan_contracts.py (top-level duplicate_assessments), test_prescan_e2e_smoke.py (incremental cache reuse expected 2 observed 0), and test_prescan_incremental.py (incremental/full semantic output mismatch). These are unlikely to be cost-profile-related; the most probable causes are prescan-schema evolution unrelated to the cost-profile series. If any failure traces to a packet OUTSIDE this series (TP-RTE-WALKER-006 area, for example), explicitly defer it to a named follow-up TP rather than fixing in this packet.",
+      "commands": [
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py services/repo-truth-extractor/tests/test_prescan_contracts.py services/repo-truth-extractor/tests/test_prescan_e2e_smoke.py services/repo-truth-extractor/tests/test_prescan_incremental.py --tb=short -v"
+      ],
+      "validation": [
+        "All Cluster D tests pass, OR each non-passing test has a documented deferral in REPAIR_DECISIONS.md naming a specific follow-up TP and the exact reason it's out of scope here."
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Cluster E — Reporting seam deps contract repair. test_reporting_seam.py has two wrapper failures because a `str` deps object lacks the expected reporting-dependency methods. Either fix the production reporting wrapper to accept the broader deps shape, or fix the test fixture to construct a proper deps object. Decision made in S2 governs.",
+      "commands": [
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_reporting_seam.py services/repo-truth-extractor/tests/test_reporting_views.py --tb=short -v"
+      ],
+      "validation": [
+        "Both Cluster E failures resolved.",
+        "test_reporting_views.py (previously passing) does not regress."
+      ]
+    },
+    {
+      "id": "S8",
+      "task": "Cluster F — `litellm` test-env import. `litellm>=1.83.7` is a HARD dependency in pyproject.toml, so the two test_rte_v5_characterization.py failures importing `dopemux.cli` are NOT a missing-package problem — they're a test-isolation / import-order / lazy-import problem. Investigate: does the test fixture mock `sys.modules` in a way that breaks litellm's import chain? Is the litellm import in src/dopemux/cli.py at module-load time when it should be lazy? Repair at the right layer (this repo uses an `src/` layout with a single-file CLI at `src/dopemux/cli.py` — there is no `src/dopemux/cli/` package, so do not look for `__init__.py` and do not assume a sub-package). Do NOT add `pytest.importorskip('litellm')` as a band-aid; that masks a real production-side fragility.",
+      "commands": [
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_rte_v5_characterization.py --tb=long -v",
+        "PYTHONPATH=src python -c \"import dopemux.cli\" && echo 'OK: dopemux.cli imports cleanly under PYTHONPATH=src'"
+      ],
+      "validation": [
+        "Both test_rte_v5_characterization.py failures pass.",
+        "`PYTHONPATH=src python -c \"import dopemux.cli\"` succeeds in a clean shell (this repo uses an `src/` layout; the package is not installed at execution time, so a bare `python -c` is not a valid probe) with no pre-imported sys.modules manipulation.",
+        "REPAIR_DECISIONS.md records the layer where the repair was applied (lazy import / fixture / requirements) and why."
+      ]
+    },
+    {
+      "id": "S9",
+      "task": "Full-suite re-run validation. Run the complete RTE test suite under RTE_DISABLE_LIVE_LLM_IN_TESTS=1 and capture stdout/stderr to pytest_full_run_post_repair.txt. Target: 0 failed, ≥1349 passed (the 1323 prior + the 26 newly-passing), 2 skipped, ≥3 xfailed (the 3 prior plus any test explicitly deferred to a follow-up TP — see below). DEFERRED-TEST PROTOCOL (so this step's `bash -o pipefail` gate AND the documented deferral path are both reachable, instead of pipefail dead-ending the deferral branch): when REPAIR_DECISIONS.md defers a cluster to a follow-up TP, the corresponding tests MUST be marked `@pytest.mark.xfail(strict=False, reason='deferred to <TP-ID>: <one-line rationale>')` or `@pytest.mark.skip(reason='deferred to <TP-ID>: <one-line rationale>')` BEFORE this step runs. The xfail/skip marker IS the executable manifestation of the deferral — without it, the pipefail-wrapped re-run will exit non-zero and abort under the packet-wide STOP conditions, never reaching the deferral path. Forbidden patterns: `pytest.importorskip(...)` on production-side imports (masks real fragility); unconditional `skip` without a TP-ID reference (silent suppression). Allowed scope: only tests already in the F-VERIFY-001 26-failure inventory may receive a deferral marker; previously-passing tests must not be xfailed/skipped in this packet. Reverting the marker is the first step of the follow-up TP.",
+      "commands": [
+        "bash -o pipefail -c 'RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests --tb=short -v 2>&1 | tee proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/pytest_full_run_post_repair.txt'"
+      ],
+      "validation": [
+        "pytest exit code 0 (preserved under `bash -o pipefail` — the tee pipeline no longer masks a non-zero pytest exit). The `OR-deferred` branch is concretely realized via the xfail/skip protocol in this step's task: deferred tests are marked `@pytest.mark.xfail(strict=False, reason='deferred to <TP-ID>: ...')` or `@pytest.mark.skip(reason='deferred to <TP-ID>: ...')` BEFORE the pytest re-run, so the suite still exits 0 with those tests counted in xfailed/skipped instead of failed. Without the protocol the pipefail wrap WOULD make the deferral path unreachable; with it, both fail-closed semantics and the documented deferral outcome coexist.",
+        "Total test count ≥ (1323 + repaired_count), where repaired_count = 26 minus the number of deferred-cluster tests recorded in REPAIR_DECISIONS.md. Deferred test count must equal the number of deferral rows in REPAIR_DECISIONS.md AND the number of newly-added xfail/skip markers whose `reason=` strings reference a follow-up TP-ID — no silent skips, no markers without TP traceability.",
+        "No previously-passing or previously-xpassing test now xfails or skips without a documented deferral row (the deferred set must be a subset of the F-VERIFY-001 26-failure inventory; covering up new regressions is forbidden)."
+      ]
+    },
+    {
+      "id": "S10",
+      "task": "Bounded-lane re-probe of `--print-config`. Re-run the same probe F-VERIFY-001 used, capture output, and verify it now contains the `cost_profile` field. This is the operator-visible contract validation.",
+      "commands": [
+        "bash -o pipefail -c 'RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python services/repo-truth-extractor/run_extraction_v5.py --phase A --step A2 --run-id f_repair_print_config --output-root /tmp/rte-f-repair-print-config --cost-profile value-default --print-config 2>&1 | tee proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/bounded_lane_print_config_post_repair.txt'",
+        "grep -q 'cost_profile' proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/bounded_lane_print_config_post_repair.txt"
+      ],
+      "validation": [
+        "--print-config exits 0 (preserved under `bash -o pipefail` — a non-zero exit from run_extraction_v5.py is no longer masked by tee).",
+        "Emitted output contains `cost_profile` (string match anywhere is sufficient for the gate; semantic correctness is verified in S5).",
+        "No --execute invocation.",
+        "No legacy `BALANCED_GROK_OPENROUTER_*` constant references in output."
+      ]
+    },
+    {
+      "id": "S11",
+      "task": "Run pal/codereview on the repair diff (this packet's commit range only — NOT cumulative E1..F-VERIFY range; that's F-VERIFY-002's role). Capture transcript. Resolve every CRITICAL and HIGH finding before proceeding to S12.",
+      "validation": [
+        "pal/codereview transcript captured to pal_codereview.txt.",
+        "0 CRITICAL findings remain.",
+        "All HIGH findings either resolved in this packet or explicitly deferred with named follow-up TP."
+      ]
+    },
+    {
+      "id": "S12",
+      "task": "Run pal/precommit on the repair branch. Capture transcript. Must return SAFE TO COMMIT or only-info-level findings.",
+      "validation": [
+        "pal/precommit transcript captured to pal_precommit.txt.",
+        "Verdict is SAFE TO COMMIT.",
+        "No FAIL_CLOSED items remain."
+      ]
+    },
+    {
+      "id": "S13",
+      "task": "Emit PROOF.json + sha256sums.txt referencing all captured artifacts. PROOF.json fields: packet_id, status (`VERIFIED` for the repair gate, NOT for the series gate), base_sha, repair_branch, files_touched, validation buckets (PASS/FAIL/NOT_RUN), residual_risks, follow_up_packets (must list `TP-RTE-COSTPROFILE-F-VERIFY-002` as the next gate).",
+      "expected_files": [
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/PROOF.json",
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/sha256sums.txt"
+      ],
+      "validation": [
+        "PROOF.json parses.",
+        "sha256sums.txt verifies all .txt + .md proof files.",
+        "PROOF.json explicitly lists `TP-RTE-COSTPROFILE-F-VERIFY-002` as the required follow-up gate so the series cannot be claimed verified from this packet alone."
+      ]
+    },
+    {
+      "id": "S14",
+      "task": "Commit allowlisted files, push, open PR. Update task-packets/INDEX.md to mark F-FULLSUITE-REPAIR-001 as Active/Ready (whichever convention the index uses for in-flight packets) and to record F-VERIFY-001's ledger status as `NOT_VERIFIED_ACCEPTED_AS_EVIDENCE` if not already done.",
+      "validation": [
+        "PR title clearly marks `fix(rte)` scope.",
+        "PR body links REPAIR_DECISIONS.md and the pytest_full_run_post_repair.txt artifact.",
+        "INDEX.md committed in the same PR.",
+        "F-VERIFY-001 row in INDEX.md correctly reflects NOT_VERIFIED_ACCEPTED_AS_EVIDENCE status."
+      ]
+    },
+    {
+      "id": "S15",
+      "task": "Final pal/challenge pass on the closed PR: are there hidden behavior drifts a future operator might miss? Any test that was repaired by relaxing an assertion should be challenged. Any code that was repaired without an updated test should be flagged. Any deferred cluster should be re-examined to confirm the deferral is principled, not a workaround. The transcript MUST be appended to pal_codereview.txt (the allowlist does not include a separate pal_challenge.txt file; do not create one).",
+      "validation": [
+        "pal/challenge transcript appended to pal_codereview.txt (single allowlisted artifact).",
+        "Every relaxed-assertion repair has a recorded justification.",
+        "Every code-only repair has at least one test exercising the new behavior."
+      ]
+    }
+  ]
+}
