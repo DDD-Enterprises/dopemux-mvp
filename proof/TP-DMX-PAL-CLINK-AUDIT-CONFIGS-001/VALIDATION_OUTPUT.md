@@ -11,14 +11,14 @@ Status: PASS_WITH_ENV_NOTE
 - `python -m jsonschema -i task-packets/generated/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json` exited 0.
 - `python -m json.tool docker/mcp-servers-source/pal/pal-mcp-server/conf/cli_clients/claude-audit.json` exited 0.
 - `python -m json.tool docker/mcp-servers-source/pal/pal-mcp-server/conf/cli_clients/gemini-audit.json` exited 0.
-- `cd docker/mcp-servers-source/pal/pal-mcp-server && source .venv/bin/activate && python -m pytest -q tests/test_clink_audit_configs.py` exited 0: `4 passed in 0.07s`.
+- `cd docker/mcp-servers-source/pal/pal-mcp-server && source .venv/bin/activate && python -m pytest -q tests/test_clink_audit_configs.py` exited 0: `3 passed in 0.08s`.
 - `python -m compileall -q docker/mcp-servers-source/pal/pal-mcp-server` exited 0.
 - `python -m json.tool proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/PROOF.json` exited 0 after proof update.
 - `python -m json.tool proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/review_bundle/MANIFEST.json` exited 0.
 - `git diff --check` exited 0 after proof update.
 - `claude --help` exited 0 and listed `--permission-mode` with `plan`.
 - `gemini --help` exited 0 and listed `--approval-mode` with `plan`.
-- `pre-commit run --files <REV2 changed files>` exited 0.
+- `pre-commit run --files $(cat proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/CHANGED_FILES.txt)` exited 0.
 
 ## FAIL
 
