@@ -1,0 +1,430 @@
+{
+  "bundle_id": "TP-DMX-PR-STEWARD-001",
+  "run_id": "2026-05-26T05:45:55Z",
+  "skill": "pr-steward-check-only-runtime",
+  "status": "PASS_WITH_RISKS",
+  "validation_state": {
+    "overall": "PASS_WITH_RISKS",
+    "reason": "PR #708 review repairs validated locally and embedded Copilot fallback audit returned PASS_WITH_RISKS; final repair commit SHA remains self-referentially unavailable inside committed proof.",
+    "passed": [
+      "task packet JSON parse",
+      "task packet canonical schema validation",
+      "PR Steward schemas JSON parse",
+      "compileall tools/tests",
+      "pytest tests/pr_steward",
+      "CLI help",
+      "script help",
+      "ready fixture smoke",
+      "ready fixture JSON artifact parse",
+      "git diff --check",
+      "pre-commit changed-file hooks",
+      "embedded audit PASS_WITH_RISKS",
+      "pytest tests/pr_steward after review repairs",
+      "requiredness default repaired",
+      "proof-path live mode support added",
+      "trusted association docs aligned",
+      "compileall tools/tests after review repairs",
+      "pytest tests/pr_steward after review repairs, 8 passed",
+      "optional missing-requiredness checks are nonblocking",
+      "proof-path live mode test passes",
+      "trusted author association test passes",
+      "python json.tool schema/proof checks after review repairs",
+      "fixture smoke ready_all_green emitted READY",
+      "git diff --check after review repairs",
+      "pre-commit changed-file hooks after review repairs",
+      "repair embedded audit PASS_WITH_RISKS"
+    ],
+    "not_run": [
+      "repair commit",
+      "repair push",
+      "post-push PR checks"
+    ],
+    "failed_or_blocked": []
+  },
+  "created_at": "2026-05-26T05:45:55Z",
+  "authoritative_artifacts": [
+    "task-packets/generated/TP-DMX-PR-STEWARD-001.json",
+    "docs/ops/embedded-audit.md",
+    "docs/ops/pr-steward.md",
+    "docs/ops/pr-acceptance.md",
+    "schemas/pr_steward/merge_readiness.schema.json",
+    "schemas/pr_steward/review_item_ledger.schema.json",
+    "schemas/pr_steward/thread_dispositions.schema.json",
+    "schemas/pr_steward/ci_triage.schema.json",
+    "schemas/pr_steward/pr_state_snapshot.schema.json",
+    "schemas/proof/embedded_audit.schema.json"
+  ],
+  "supporting_artifacts": [
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/MANIFEST.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/SUMMARY.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/PROOF.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/AUDITOR_REPORT.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/VALIDATION_OUTPUT.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/GIT_STATE.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/DIFF_STAT.txt",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/CHANGED_FILES.txt",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/ARTIFACT_INDEX.md",
+    "proof/TP-DMX-PR-STEWARD-001/COPILOT_AUDIT_INPUT.md",
+    "proof/TP-DMX-PR-STEWARD-001/COPILOT_AUDIT_OUTPUT.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/COPILOT_AUDIT_INPUT.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/COPILOT_AUDIT_OUTPUT.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/MERGE_READINESS.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/REVIEW_ITEM_LEDGER.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/THREAD_DISPOSITIONS.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/CI_TRIAGE.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/PR_STATE_SNAPSHOT.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/PR_STEWARD_SUMMARY.md"
+  ],
+  "handoff_refs": [
+    "docs/ops/pr-steward.md",
+    "docs/ops/pr-acceptance.md",
+    "docs/ops/health-check-matrix.md",
+    "docs/ops/tool-routing-matrix.md"
+  ],
+  "parent_bundle_refs": [
+    "proof/MP-DMX-DEVOPS-AUTOPR-001/PROOF.json"
+  ],
+  "review_bundle": {
+    "path": "proof/TP-DMX-PR-STEWARD-001/review_bundle",
+    "manifest": "proof/TP-DMX-PR-STEWARD-001/review_bundle/MANIFEST.json",
+    "upload_unit": "proof/TP-DMX-PR-STEWARD-001/review_bundle",
+    "contains_all_review_required_artifacts": true
+  },
+  "review_order_hint": [
+    "Verify embedded audit authorization and rerun external auditor.",
+    "Review no-mutation boundary in tools/pr_steward and .github/workflows/pr-steward.yml.",
+    "Review fixture coverage and schema compatibility."
+  ],
+  "chain_of_custody": [
+    {
+      "step": "preflight",
+      "evidence": "Fetched origin/main and checked out codex/tp-dmx-pr-steward-001 from 66958b61088b8e02396612e9ccce58578f0b748b."
+    },
+    {
+      "step": "implementation",
+      "evidence": "Added check-only runtime, offline fixtures, schemas, advisory workflow, and docs within the active packet allowlist as updated for repo lowercase docs conventions."
+    },
+    {
+      "step": "validation",
+      "evidence": "Focused validations passed; see command_outputs."
+    },
+    {
+      "step": "audit",
+      "evidence": "Initial external auditor CLIs were unavailable or blocked; supervisor-approved Copilot CLI fallback completed with PASS_WITH_RISKS."
+    }
+  ],
+  "repo_identity": {
+    "path": "/Users/hue/.codex/worktrees/43f0/dopemux-mvp",
+    "remote": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "branch": "codex/tp-dmx-pr-steward-001",
+    "repo_marker": ".dopetaskroot",
+    "identity_match": true
+  },
+  "branch": "codex/tp-dmx-pr-steward-001",
+  "base_sha": "66958b61088b8e02396612e9ccce58578f0b748b",
+  "head_sha": "7f510eed9354d4ed811ae4cc62883c88e17e8024",
+  "git_status_before": "",
+  "git_status_after": "M docs/ops/pr-acceptance.md\n M docs/ops/pr-steward.md\n M proof/TP-DMX-PR-STEWARD-001/AUDITOR_REPORT.md\n M proof/TP-DMX-PR-STEWARD-001/COPILOT_AUDIT_INPUT.md\n M proof/TP-DMX-PR-STEWARD-001/COPILOT_AUDIT_OUTPUT.md\n M proof/TP-DMX-PR-STEWARD-001/PROOF.json\n M proof/TP-DMX-PR-STEWARD-001/review_bundle/ARTIFACT_INDEX.md\n M proof/TP-DMX-PR-STEWARD-001/review_bundle/AUDITOR_REPORT.md\n M proof/TP-DMX-PR-STEWARD-001/review_bundle/CHANGED_FILES.txt\n M proof/TP-DMX-PR-STEWARD-001/review_bundle/DIFF_STAT.txt\n M proof/TP-DMX-PR-STEWARD-001/review_bundle/GIT_STATE.md\n M proof/TP-DMX-PR-STEWARD-001/review_bundle/MANIFEST.json\n M proof/TP-DMX-PR-STEWARD-001/review_bundle/PROOF.json\n M proof/TP-DMX-PR-STEWARD-001/review_bundle/SUMMARY.md\n M proof/TP-DMX-PR-STEWARD-001/review_bundle/VALIDATION_OUTPUT.md\n M proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/CI_TRIAGE.json\n M proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/COPILOT_AUDIT_INPUT.md\n M proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/COPILOT_AUDIT_OUTPUT.md\n M proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/MERGE_READINESS.json\n M proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/PR_STATE_SNAPSHOT.json\n M proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/REVIEW_ITEM_LEDGER.json\n M proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/THREAD_DISPOSITIONS.json\n M tests/pr_steward/test_intake.py\n M tools/pr_steward/classifier.py\n M tools/pr_steward/collector.py\n M tools/pr_steward/intake.py",
+  "files_changed": [
+    "docs/ops/pr-acceptance.md",
+    "docs/ops/pr-steward.md",
+    "proof/TP-DMX-PR-STEWARD-001/AUDITOR_REPORT.md",
+    "proof/TP-DMX-PR-STEWARD-001/COPILOT_AUDIT_INPUT.md",
+    "proof/TP-DMX-PR-STEWARD-001/COPILOT_AUDIT_OUTPUT.md",
+    "proof/TP-DMX-PR-STEWARD-001/PROOF.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/ARTIFACT_INDEX.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/AUDITOR_REPORT.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/CHANGED_FILES.txt",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/DIFF_STAT.txt",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/GIT_STATE.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/MANIFEST.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/PROOF.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/SUMMARY.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/VALIDATION_OUTPUT.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/CI_TRIAGE.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/COPILOT_AUDIT_INPUT.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/COPILOT_AUDIT_OUTPUT.md",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/MERGE_READINESS.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/PR_STATE_SNAPSHOT.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/REVIEW_ITEM_LEDGER.json",
+    "proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/THREAD_DISPOSITIONS.json",
+    "tests/pr_steward/test_intake.py",
+    "tools/pr_steward/classifier.py",
+    "tools/pr_steward/collector.py",
+    "tools/pr_steward/intake.py"
+  ],
+  "command_outputs": [
+    {
+      "command": "git fetch origin",
+      "exit_code": 0,
+      "output": "origin/main updated to 66958b61088b8e02396612e9ccce58578f0b748b"
+    },
+    {
+      "command": "git checkout -B codex/tp-dmx-pr-steward-001 origin/main",
+      "exit_code": 0,
+      "output": "Switched to branch codex/tp-dmx-pr-steward-001 tracking origin/main"
+    },
+    {
+      "command": "gh auth status",
+      "exit_code": 1,
+      "output": "token for hu3mann is invalid"
+    },
+    {
+      "command": "gh pr view 704 --repo DDD-Enterprises/dopemux-mvp --json number,url,state,mergedAt,headRefOid,statusCheckRollup",
+      "exit_code": 0,
+      "output": "PR 704 state MERGED, mergedAt 2026-05-26T05:24:00Z, headRefOid 60313747f72d89a6bdcaa8c135d43698f979bdee"
+    },
+    {
+      "command": "claude auth status",
+      "exit_code": 1,
+      "output": "loggedIn false, authMethod none, apiProvider firstParty"
+    },
+    {
+      "command": "claude --print \"Auth availability check only. Respond OK.\" --model opus --permission-mode plan --tools \"\" --no-session-persistence",
+      "exit_code": 1,
+      "output": "Not logged in; please run /login"
+    },
+    {
+      "command": "gemini --prompt \"Auth availability check only. Respond OK.\" --approval-mode plan --skip-trust --output-format text",
+      "exit_code": 0,
+      "output": "Opened interactive authentication prompt; prompt was declined/cancelled, Gemini reported FatalCancellationError exitCode 130. No repo context was sent."
+    },
+    {
+      "command": "copilot --model claude-sonnet-4.6 --no-custom-instructions --disable-builtin-mcps --stream off --available-tools \"\" -p \"$(cat proof/TP-DMX-PR-STEWARD-001/COPILOT_AUDIT_INPUT.md)\"",
+      "exit_code": 0,
+      "output": "Non-authoritative fallback attempt: returned PASS_WITH_RISKS but exposed read-only tools despite the empty available-tools filter."
+    },
+    {
+      "command": "copilot --model claude-sonnet-4.6 --no-custom-instructions --disable-builtin-mcps --stream off --available-tools=__none__ -p \"$(cat proof/TP-DMX-PR-STEWARD-001/COPILOT_AUDIT_INPUT.md)\"",
+      "exit_code": 0,
+      "output": "Authoritative fallback audit: tools disabled, no tool execution output, verdict PASS_WITH_RISKS, commit readiness READY after audit-status bookkeeping."
+    },
+    {
+      "command": "gh pr view 708 --json number,url,headRefName,headRefOid,reviewDecision,statusCheckRollup,mergeStateStatus || true",
+      "exit_code": 0,
+      "output": "PR #708 open on codex/tp-dmx-pr-steward-001 at 7f510eed9354d4ed811ae4cc62883c88e17e8024; mergeStateStatus BEHIND; checks mostly passing with optional skips."
+    },
+    {
+      "command": "gh api graphql reviewThreads for PR #708",
+      "exit_code": 0,
+      "output": "Five active unresolved review threads harvested: requiredness default, live proof loading, docs reviewer association alignment in two docs, and proof freshness."
+    },
+    {
+      "command": "python -m compileall -q tools tests",
+      "exit_code": 0,
+      "output": "Repair validation exit 0."
+    },
+    {
+      "command": "pytest -q tests/pr_steward",
+      "exit_code": 0,
+      "output": "Repair validation exit 0; 8 passed."
+    },
+    {
+      "command": "copilot ... --available-tools=__none__",
+      "exit_code": 0,
+      "output": "Repair audit verdict PASS_WITH_RISKS; raw transcript saved to COPILOT_AUDIT_OUTPUT.md."
+    },
+    {
+      "command": "pytest -q tests/pr_steward",
+      "exit_code": 0,
+      "output": "8 passed after PR #708 review repairs."
+    },
+    {
+      "command": "pre-commit run --files $(git diff --name-only) || true",
+      "exit_code": 0,
+      "output": "Changed-file hooks passed."
+    }
+  ],
+  "tests": [
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-PR-STEWARD-001.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool schemas/pr_steward/merge_readiness.schema.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool schemas/pr_steward/review_item_ledger.schema.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool schemas/pr_steward/thread_dispositions.schema.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool schemas/pr_steward/ci_triage.schema.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool schemas/pr_steward/pr_state_snapshot.schema.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool schemas/proof/embedded_audit.schema.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool proof/TP-DMX-PR-STEWARD-001/PROOF.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m compileall -q tools tests",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "pytest -q tests/pr_steward",
+      "exit_code": 0,
+      "result": "PASS, 8 passed"
+    },
+    {
+      "command": "python -m tools.pr_steward.intake --help",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "scripts/pr-steward --help",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m tools.pr_steward.intake --fixture-dir tests/fixtures/pr_steward/ready_all_green --repo DDD-Enterprises/dopemux-mvp --pr 704 --out /tmp/pr-steward-ready --strict",
+      "exit_code": 0,
+      "result": "PASS, emitted READY"
+    },
+    {
+      "command": "python -m json.tool /tmp/pr-steward-ready/MERGE_READINESS.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool /tmp/pr-steward-ready/REVIEW_ITEM_LEDGER.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool /tmp/pr-steward-ready/THREAD_DISPOSITIONS.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool /tmp/pr-steward-ready/CI_TRIAGE.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool /tmp/pr-steward-ready/PR_STATE_SNAPSHOT.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "test -f /tmp/pr-steward-ready/PR_STEWARD_SUMMARY.md",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "copilot --model claude-sonnet-4.6 --no-custom-instructions --disable-builtin-mcps --stream off --available-tools=__none__ -p \"$(cat proof/TP-DMX-PR-STEWARD-001/COPILOT_AUDIT_INPUT.md)\"",
+      "exit_code": 0,
+      "result": "PASS_WITH_RISKS"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "pre-commit run --files $(git diff --name-only) || true",
+      "exit_code": 0,
+      "result": "PASS"
+    }
+  ],
+  "schema_validations": [
+    "schemas/pr_steward/merge_readiness.schema.json",
+    "schemas/pr_steward/review_item_ledger.schema.json",
+    "schemas/pr_steward/thread_dispositions.schema.json",
+    "schemas/pr_steward/ci_triage.schema.json",
+    "schemas/pr_steward/pr_state_snapshot.schema.json",
+    "schemas/proof/embedded_audit.schema.json"
+  ],
+  "artifact_paths": [
+    "PR_STATE_SNAPSHOT.json",
+    "REVIEW_ITEM_LEDGER.json",
+    "THREAD_DISPOSITIONS.json",
+    "CI_TRIAGE.json",
+    "MERGE_READINESS.json",
+    "PR_STEWARD_SUMMARY.md"
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "copilot-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "copilot --model claude-sonnet-4.6 --no-custom-instructions --disable-builtin-mcps --stream off --available-tools=__none__ -p \"$(cat proof/TP-DMX-PR-STEWARD-001/COPILOT_AUDIT_INPUT.md)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR-STEWARD-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "AUDIT-REPAIR-001",
+        "severity": "INFO",
+        "title": "PR #708 repair audit completed via approved fallback",
+        "status": "RESOLVED",
+        "body": "GitHub Copilot CLI with Claude Sonnet 4.6 returned PASS_WITH_RISKS and Commit Readiness READY for the bounded PR #708 repair prompt."
+      },
+      {
+        "id": "AUDIT-REPAIR-RISK-001",
+        "severity": "MEDIUM",
+        "title": "Final repair commit SHA is self-referential",
+        "status": "ACCEPTED_RISK",
+        "body": "The proof records the pre-repair PR head and self_referential_commit_sha_unavailable=true because embedding the final repair commit SHA would change that commit."
+      },
+      {
+        "id": "AUDIT-REPAIR-RISK-002",
+        "severity": "LOW",
+        "title": "No-tools audit transcript includes inert generated tool-call text",
+        "status": "ACCEPTED_RISK",
+        "body": "The raw Copilot transcript contains tool-call shaped text and model-generated snippets that were not executed. Local validation and repository files remain authoritative."
+      }
+    ],
+    "fixes_applied": [
+      "Changed missing check requiredness metadata to default optional.",
+      "Added --proof-path live proof loading and PR-head comparison.",
+      "Preserved fail-closed behavior for missing, unreadable, unparseable, or stale proof.",
+      "Aligned reviewer docs with trusted author association behavior.",
+      "Added tests for optional checks, proof-path live readiness, and trusted associations.",
+      "Refreshed PR #708 proof and review bundle artifacts.",
+      "Reran supervisor-approved Copilot CLI Claude Sonnet 4.6 no-tools fallback audit."
+    ],
+    "remaining_risks": [
+      "Final repair commit SHA cannot be embedded in committed proof without self-referential SHA churn.",
+      "Copilot no-tools audit was bounded to supplied evidence rather than unrestricted repository inspection.",
+      "Raw audit transcript includes hallucinated/inert tool-call text; local validation is authoritative for actual repo state.",
+      "Live GitHub checks require escalated network access in this sandbox."
+    ],
+    "skip_reason": null
+  },
+  "known_unknowns_blockers": [
+    "Final repair commit SHA is not embedded in proof because the proof is committed as part of that SHA.",
+    "Live GitHub commands require escalated network access in this sandbox; normal sandbox cannot reach api.github.com.",
+    "PR #708 was BEHIND before repair and had five active unresolved review threads before the repair diff."
+  ],
+  "updated_at": "2026-05-26T06:56:15Z",
+  "pr": {
+    "number": 708,
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/708",
+    "branch": "codex/tp-dmx-pr-steward-001",
+    "prior_head_before_repair": "7f510eed9354d4ed811ae4cc62883c88e17e8024",
+    "current_repair_commit_sha": null,
+    "proof_current_to_pr_head": false,
+    "self_referential_commit_sha_unavailable": true,
+    "self_referential_note": "This proof is updated before the repair commit is created, so it cannot embed the final repair commit SHA without changing that SHA."
+  }
+}

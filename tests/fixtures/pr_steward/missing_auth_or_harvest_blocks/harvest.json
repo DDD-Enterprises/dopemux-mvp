@@ -1,0 +1,38 @@
+{
+  "harvest_complete": false,
+  "harvest_errors": [
+    "gh auth status failed for github.com"
+  ],
+  "pr": {
+    "number": 704,
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/704",
+    "state": "UNKNOWN",
+    "isDraft": false,
+    "mergeable": "UNKNOWN",
+    "mergeStateStatus": "UNKNOWN",
+    "reviewDecision": null,
+    "baseRefName": "main",
+    "baseRefOid": "",
+    "headRefName": "codex/tp-dmx-pr-steward-001",
+    "headRefOid": "head000000000000000000000000000000000000",
+    "author": {"login": "unknown"},
+    "createdAt": null,
+    "updatedAt": null
+  },
+  "changed_files": [],
+  "commits": [],
+  "reviews": [],
+  "review_comments": [],
+  "review_threads": [],
+  "issue_comments": [],
+  "checks": [],
+  "embedded_audit": {
+    "status": "SKIPPED",
+    "report_path": "proof/TP-DMX-PR-STEWARD-001/AUDITOR_REPORT.md"
+  },
+  "proof": {
+    "proof_path": "proof/TP-DMX-PR-STEWARD-001/PROOF.json",
+    "proof_head_sha": null,
+    "matches_pr_head": false
+  }
+}

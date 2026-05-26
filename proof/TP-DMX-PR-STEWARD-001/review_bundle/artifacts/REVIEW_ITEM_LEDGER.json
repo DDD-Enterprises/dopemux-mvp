@@ -1,0 +1,19 @@
+{
+  "generated_at": "2026-05-26T06:55:38.848646Z",
+  "items": [
+    {
+      "author": "chatgpt-codex-connector",
+      "author_association": "MEMBER",
+      "blocking": false,
+      "body_excerpt": "Approved.",
+      "disposition": "OPTIONAL_DEFERRED",
+      "id": "R_READY",
+      "rationale": "Known author comment is classified nonblocking.",
+      "source": "review"
+    }
+  ],
+  "mutation_performed": false,
+  "pr_number": 704,
+  "schema_version": "1.0.0",
+  "unclassified_count": 0
+}

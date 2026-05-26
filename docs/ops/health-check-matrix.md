@@ -39,3 +39,5 @@ PR Steward v1 must harvest, without mutation:
 - proof freshness and embedded-audit status
 
 Any missing or unauthenticated harvest result is a blocking readiness failure.
+
+The PR Steward workflow is advisory in v1. Pending checks can make the emitted readiness `NOT_READY`, but the workflow job records the result in uploaded artifacts and the job summary without becoming a required branch-protection gate.

@@ -21,6 +21,8 @@ prelude: Tool and model routing matrix for macro-packet, implementation, embedde
 | PR review intake | PR Steward check-only workflow | human PR steward | Harvested PR metadata, review item ledger, thread dispositions, CI triage, merge readiness. |
 | Second supervisor review | skipped when gates are READY | GPT-5.5 Pro acceptance reviewer | Gate evidence or escalation rationale. |
 
+PR Steward v1 has no route for GitHub mutation. Posting PR comments, resolving review threads, approval, merge queue changes, and auto-merge remain outside the tool route.
+
 ## Local Help Constraints
 
 OBSERVED during this packet:
