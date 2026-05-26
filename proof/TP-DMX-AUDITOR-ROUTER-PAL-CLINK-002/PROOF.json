@@ -32,16 +32,22 @@
       "gemini-audit"
     ],
     "copilot_status": "DEFERRED_COPILOT_RUNNER_UNSUPPORTED",
-    "pal_mcp_called": false,
+    "pal_mcp_called": true,
     "external_cli_called_for_pal_clink": false,
     "repo_context_sent": false,
     "requires_operator_approval": true,
-    "route_is_audit_verdict": false
+    "route_is_audit_verdict": false,
+    "pal_clink_attempted_clients": [
+      "claude",
+      "gemini",
+      "codex"
+    ],
+    "pal_clink_attempt_result": "CLI_EXECUTABLES_MISSING"
   },
   "review_fixes": {
     "fixes": [
       "Allowed Copilot FALLBACK_ONLY selection now returns exit 0 when --allow-fallback is provided.",
-      "PAL clink audit finding normalization preserves explicit blocking=true markers before verdict classification without emitting schema-incompatible finding properties.",
+      "PAL clink audit finding normalization preserves explicit blocking=true markers before verdict classification.",
       "Unsafe or mismatched PAL clink audit configs emit schema-safe underlying_cli=null instead of invalid CLI strings.",
       "Non-object PAL clink JSON config payloads are classified TOOLING_UNSAFE instead of crashing."
     ],
@@ -69,15 +75,16 @@
   "blockers": [
     "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
     "PAL_CLINK_AUDIT_OUTPUT_MISSING",
-    "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500"
+    "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500",
+    "PAL_CLINK_CLI_EXECUTABLES_MISSING"
   ],
   "nonblocking_results": [
     "PAL clink bridge-tier classification implemented as pure config inspection",
     "auditor_route schema accepts pal-mcp-clink route evidence",
     "embedded_audit schema accepts pal-mcp-clink as auditor_tool",
-    "PAL clink normalized findings remain compatible with embedded_audit finding schema after the blocking marker review fix",
     "Targeted auditor-router tests passed after local review fixes: 37 passed",
-    "PAL clink review regressions passed after local review fixes: 33 test_pal_clink tests"
+    "PAL clink review regressions passed after local review fixes: 33 test_pal_clink tests",
+    "PAL MCP clink was callable, but claude, gemini, and codex bridge executables were missing from PATH."
   ],
   "validation": {
     "commands": [
@@ -172,14 +179,24 @@
         "result": "PASS: 37 passed"
       },
       {
-        "command": "python -m json.tool schemas/proof/embedded_audit.schema.json",
-        "exit_code": 0,
-        "result": "PASS"
-      },
-      {
         "command": "python -m tools.auditor_router.preflight --fixture-dir tests/fixtures/auditor_router/pal_clink_no_configs_found --out /private/tmp/auditor-route-pr713-fallback --packet-id TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002 --allow-fallback",
         "exit_code": 0,
         "result": "PASS: selected copilot-cli FALLBACK_ONLY and returned success with --allow-fallback"
+      },
+      {
+        "command": "PAL MCP clink cli_name=claude role=codereviewer",
+        "exit_code": 1,
+        "result": "BLOCKED: Executable 'claude' not found in PATH for CLI 'claude'."
+      },
+      {
+        "command": "PAL MCP clink cli_name=gemini role=codereviewer",
+        "exit_code": 1,
+        "result": "BLOCKED: Executable 'gemini' not found in PATH for CLI 'gemini'."
+      },
+      {
+        "command": "PAL MCP clink cli_name=codex role=codereviewer",
+        "exit_code": 1,
+        "result": "BLOCKED: Executable 'codex' not found in PATH for CLI 'codex'."
       }
     ],
     "status": "PASS_TARGETED_TESTS_WITH_SCOPE_CONFLICT_WRAPPER_AND_REVIEW_FIXES"
@@ -188,28 +205,29 @@
     "required": true,
     "status": "NEEDS_SUPERVISOR",
     "auditor_tool": "pal-mcp-clink",
-    "auditor_model": "sonnet",
-    "invocation": "pal-clink --client claude-audit --role codereviewer --input PAL_CLINK_AUDIT_INPUT.md --output PAL_CLINK_AUDIT_OUTPUT.json",
+    "auditor_model": "unknown",
+    "invocation": "PAL MCP clink attempts: claude/codereviewer, gemini/codereviewer, codex/codereviewer",
     "exit_code": 1,
     "report_path": "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/AUDITOR_REPORT.md",
     "findings": [
       {
-        "id": "PAL-CLINK-AUDIT-OUTPUT-MISSING",
+        "id": "PAL-CLINK-CLI-EXECUTABLES-MISSING",
         "severity": "BLOCKING",
-        "title": "PAL clink audit output missing",
+        "title": "Configured PAL clink CLI executables are unavailable",
         "status": "OPEN",
-        "body": "Route selection is not an audit verdict. Host-side PAL clink output was not captured for this packet."
+        "body": "PAL MCP clink returned executable-not-found errors for claude, gemini, and codex before any external audit could run."
       }
     ],
     "fixes_applied": [],
     "remaining_risks": [
-      "Host-side PAL clink execution handoff remains unproven."
+      "No external CLI agent reviewed the diff.",
+      "A completed PAL clink audit verdict of PASS or PASS_WITH_RISKS is still required before READY."
     ],
     "skip_reason": null
   },
   "codereview": {
-    "status": "REVIEW_THREADS_PATCHED_WITH_BLOCKERS_REMAINING",
-    "result": "Prompt path, equals-form mutation detection, fallback exit handling, blocking finding preservation, schema-compatible normalized findings, schema-safe unsafe routes, and non-object config handling are patched with regression tests. Packet-level blockers remain preserved."
+    "status": "REVIEW_THREADS_PATCHED_WITH_CLINK_EXECUTION_BLOCKED",
+    "result": "Prompt path, equals-form mutation detection, fallback exit handling, blocking finding preservation, schema-safe unsafe routes, and non-object config handling are patched with regression tests. Packet-level blockers remain preserved."
   },
   "precommit": {
     "status": "PASS",
@@ -220,8 +238,8 @@
   },
   "commit": {
     "status": "LOCAL_FOLLOW_UP_COMMIT_PENDING",
-    "previous_pr_head_sha": "6b10eed65c6256733900de06163ce312f8b99bdc",
-    "message": "fix(governance): address pal clink review blockers",
+    "previous_pr_head_sha": "282257216002b0635fee696a06e8ef123a31f150",
+    "message": "docs(proof): record failed pal clink audit attempt",
     "note": "Final commit SHA is reported after commit because a commit cannot contain its own final SHA."
   },
   "recommended_follow_ups": [
@@ -229,5 +247,6 @@
     "TP-DMX-AUDITOR-ROUTER-PAL-CLINK-AUDIT-HANDOFF-004"
   ],
   "head_sha_before_local_review_fixes": "6b10eed65c6256733900de06163ce312f8b99bdc",
-  "updated_at": "2026-05-26T22:06:50Z"
+  "updated_at": "2026-05-26T22:10:30Z",
+  "head_sha_before_clink_attempt": "282257216002b0635fee696a06e8ef123a31f150"
 }

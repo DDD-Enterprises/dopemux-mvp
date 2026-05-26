@@ -55,9 +55,9 @@ PR #713 review identified two PAL clink safety gaps:
 
 ## NOT_RUN
 
-- Real PAL MCP clink execution: `PAL_CLINK_AUDIT_OUTPUT.json` was not captured. Blocker: `PAL_CLINK_AUDIT_OUTPUT_MISSING`.
+- Completed PAL MCP clink audit: `PAL_CLINK_AUDIT_OUTPUT.json` now records failed clink bridge attempts. Blocker: `PAL_CLINK_CLI_EXECUTABLES_MISSING`.
 - PR Steward live integration: out of scope.
-- Host-side authenticated CLI/PAL execution: out of scope for router preflight.
+- Host-side authenticated CLI/PAL execution: attempted through PAL MCP `clink`, but `claude`, `gemini`, and `codex` executables were not found in PATH.
 
 ## Status Terms
 
@@ -74,19 +74,14 @@ pytest -q tests/auditor_router -> exit 0, 37 passed
 python -m tools.auditor_router.preflight --fixture-dir tests/fixtures/auditor_router/pal_clink_no_configs_found --out /private/tmp/auditor-route-pr713-fallback --packet-id TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002 --allow-fallback -> exit 0
 ```
 
-## Local PR #713 Schema-Compatible Finding Fix Validation
+## PAL MCP Clink Audit Attempt
 
-Generated: 2026-05-26T22:06:50Z
-
-Patched the active PR #713 review blocker where normalized PAL clink findings emitted a `blocking` property not allowed by `schemas/proof/embedded_audit.schema.json`. The router now preserves the raw `blocking=true` signal for FAIL classification but omits it from emitted embedded-audit findings.
+Generated: 2026-05-26T22:10:30Z
 
 ```text
-pytest -q tests/auditor_router/test_pal_clink.py -> exit 0, 33 passed
-python -m compileall -q tools tests -> exit 0
-pytest -q tests/auditor_router -> exit 0, 37 passed
-python -m json.tool schemas/proof/embedded_audit.schema.json -> exit 0
-python -m json.tool proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json -> exit 0
-python -m json.tool proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/PROOF.json -> exit 0
-git diff --check -> exit 0
-pre-commit run --files $(git diff --name-only) -> exit 0
+PAL MCP clink cli_name=claude role=codereviewer -> exit 1, Executable 'claude' not found in PATH
+PAL MCP clink cli_name=gemini role=codereviewer -> exit 1, Executable 'gemini' not found in PATH
+PAL MCP clink cli_name=codex role=codereviewer -> exit 1, Executable 'codex' not found in PATH
 ```
+
+Result: `NEEDS_SUPERVISOR`. No external CLI audit verdict was produced.

@@ -9,3 +9,4 @@
 - `CHANGED_FILES.txt`: files included in the packet diff.
 - `artifacts/AUDITOR_ROUTE.json`: fixture-selected PAL clink route.
 - `artifacts/ROUTE_PROBE_OUTPUTS.json`: fixture route probe evidence.
+- `artifacts/PAL_CLINK_AUDIT_OUTPUT.json`: failed PAL MCP clink bridge attempts.

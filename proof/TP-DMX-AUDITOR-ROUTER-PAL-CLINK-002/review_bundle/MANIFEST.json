@@ -9,25 +9,28 @@
     "CHANGED_FILES.txt",
     "ARTIFACT_INDEX.md",
     "artifacts/AUDITOR_ROUTE.json",
-    "artifacts/ROUTE_PROBE_OUTPUTS.json"
+    "artifacts/ROUTE_PROBE_OUTPUTS.json",
+    "artifacts/PAL_CLINK_AUDIT_OUTPUT.json"
   ],
   "blockers": [
     "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
     "PAL_CLINK_AUDIT_OUTPUT_MISSING",
+    "PAL_CLINK_CLI_EXECUTABLES_MISSING",
     "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500"
   ],
   "created_by": "codex",
   "hashes": {
-    "ARTIFACT_INDEX.md": "cd8af897639230a129e4b7be8a51f87df8dd0aa2f1a0bf7b23338350a0cd95ea",
-    "AUDITOR_REPORT.md": "a78d754286208106f3fc6bbf7cba3223fa1bb8d7f66b9f2e8bd8150a30310395",
-    "CHANGED_FILES.txt": "4acb367ee3c6910019984e8359b38ebf0beea1fe1dcbbedc4bcf6f1b93ed067a",
-    "DIFF_STAT.txt": "d7e0335bab40df37d12a36ba4feba655f9325a41451ee096731c71ebc328e2fe",
+    "ARTIFACT_INDEX.md": "875f6d4056775ef4576b7e21be9878b642d300b4a7394f8a1dfbda439a799a91",
+    "AUDITOR_REPORT.md": "491c30aeae605137275266673dd6a8df03b87d08b71b3f5a776e45ff3b7e46db",
+    "CHANGED_FILES.txt": "de5c1e295ed226f02484d39d2615a3c018e852c8d1fdeebad4a2822018a6bda2",
+    "DIFF_STAT.txt": "c8cb7134370c87a11c4a9f8cbe6689cf9289b8266ced56aa4e98db9b9f3a91c4",
     "GIT_STATE.md": "2ed1d0c1d886eb899cb122f3b23ce0a1106203fd10603c83a8d50fcfe5d7fbb3",
-    "PROOF.json": "7edc7fd66cf3cc4531a8ba440065d6871df22130783ade4faae3aa59449a65bd",
-    "SUMMARY.md": "9c35675363a8e1a012a2d6c9d6d396ede41674b7b52a5b2d2eebb8caa9bb1a1e",
-    "VALIDATION_OUTPUT.md": "d7f00dc9896aca100c8ea9d0c7d6b3801e1063e003bfac11640c1d140bcb5861",
+    "PROOF.json": "2f5a3aae8e3473d15b9c9148f0c5e1f9d2b94b201a3760bfb9ef729248ba763a",
+    "SUMMARY.md": "df93e19a7ce6690dba2eded0bac69a12e592a058ccbd5a3da3ff7918dd5819ed",
+    "VALIDATION_OUTPUT.md": "d0dc853ad8e8f56d4d447ac769c090a4062e846146089b0e019441758e8f5886",
     "artifacts/AUDITOR_ROUTE.json": "07f4b1affae31b6691bf7bdad008b28d20ff3511240c34e698e17e82e4c77d9d",
-    "artifacts/ROUTE_PROBE_OUTPUTS.json": "fc986cdc44c4bfa8c641adf272cc50cdce0c355419ff7a540e2b3f4a0597beb7"
+    "artifacts/ROUTE_PROBE_OUTPUTS.json": "fc986cdc44c4bfa8c641adf272cc50cdce0c355419ff7a540e2b3f4a0597beb7",
+    "artifacts/PAL_CLINK_AUDIT_OUTPUT.json": "92ad9c12dd35f89dc22865a71edbf36ff8c2e31770c597055065bd0dd0e30e0b"
   },
   "packet_id": "TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002",
   "resolved_by_follow_up": [
@@ -35,6 +38,6 @@
   ],
   "route_is_audit_verdict": false,
   "status": "PASS_WITH_BLOCKERS",
-  "updated_at": "2026-05-26T12:05:27.962532Z",
+  "updated_at": "2026-05-26T22:10:30Z",
   "verdict": "PASS_TARGETED_TESTS_WITH_SCOPE_CONFLICT"
 }
