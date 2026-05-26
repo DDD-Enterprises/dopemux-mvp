@@ -67,7 +67,9 @@
       "proof/MP-DMX-DEVOPS-AUTOPR-001/PROOF.json",
       "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPORT.md",
       "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPAIR_REPORT.md",
-      "proof/MP-DMX-DEVOPS-AUTOPR-001/PR704_REPAIR2_THREAD_NOTE.md"
+      "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPAIR_3_REPORT.md",
+      "proof/MP-DMX-DEVOPS-AUTOPR-001/PR704_REPAIR2_THREAD_NOTE.md",
+      "proof/MP-DMX-DEVOPS-AUTOPR-001/PR704_REPAIR3_THREAD_NOTE.md"
     ],
     "verify": [
       "python -m json.tool task-packets/generated/MP-DMX-DEVOPS-AUTOPR-001.json",
@@ -226,7 +228,9 @@
         "proof/MP-DMX-DEVOPS-AUTOPR-001/PROOF.json",
         "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPORT.md",
         "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPAIR_REPORT.md",
-        "proof/MP-DMX-DEVOPS-AUTOPR-001/PR704_REPAIR2_THREAD_NOTE.md"
+        "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPAIR_3_REPORT.md",
+        "proof/MP-DMX-DEVOPS-AUTOPR-001/PR704_REPAIR2_THREAD_NOTE.md",
+        "proof/MP-DMX-DEVOPS-AUTOPR-001/PR704_REPAIR3_THREAD_NOTE.md"
       ],
       "validation": [
         "Embedded audit is PASS or non-blocking PASS_WITH_RISKS before READY can be claimed.",
