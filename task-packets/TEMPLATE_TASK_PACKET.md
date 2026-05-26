@@ -85,6 +85,66 @@ Implementer must return:
 
 ────────────────────────────────────────────────────────────
 
+## Embedded Audit
+
+Required when the packet touches governance, process, schema, prompt, proof, security, authority-boundary, or high-risk runtime surfaces.
+
+Record:
+
+* auditor tool and model
+* exact invocation
+* exit code
+* report path
+* findings
+* fixes applied
+* remaining risks
+* skip reason when skipped
+
+If no supported auditor executable is available or invocation cannot be proven from local help output, record `SKIPPED` and escalate instead of claiming READY.
+
+────────────────────────────────────────────────────────────
+
+## PR Steward Readiness
+
+If a PR is opened, PR Steward must be the check-only review-intake gate.
+
+Record:
+
+* PR metadata, changed files, commits, and head SHA
+* reviews, review comments, review threads, and issue comments
+* check/CI state
+* review item ledger
+* thread dispositions
+* `MERGE_READINESS` verdict
+
+Stop if reviewers, bots, review items, threads, or checks cannot be classified. Do not mutate GitHub state from this packet template.
+
+────────────────────────────────────────────────────────────
+
+## Proof Bundle Expectations
+
+Proof must include:
+
+* repo identity and branch
+* git status before and after
+* files changed
+* command outputs and exit codes
+* validation results
+* embedded audit object when required
+* PR Steward readiness when a PR exists
+* UNKNOWNs, blockers, and NOT_RUN items
+* rollback plan
+
+────────────────────────────────────────────────────────────
+
+## Supervisor Review Skip Rule
+
+Skip the second GPT-5.5 supervisor review only when embedded audit is `PASS` or non-blocking `PASS_WITH_RISKS` and PR Steward readiness is `READY`.
+
+Any `FAIL`, `NEEDS_SUPERVISOR`, `SKIPPED`, missing proof, unknown reviewer/bot, unclassified review item, unresolved blocking thread, failed required check, or stale proof requires escalation.
+
+────────────────────────────────────────────────────────────
+
 ## Acceptance Criteria
 
 * <Criterion 1>
