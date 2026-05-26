@@ -219,11 +219,10 @@ def normalize_pal_clink_audit_output(
     route: dict[str, Any],
     report_path: str,
 ) -> dict[str, Any]:
-    findings = [_normalize_finding(item) for item in payload.get("findings") or []]
+    raw_findings = list(payload.get("findings") or [])
+    findings = [_normalize_finding(item) for item in raw_findings]
     blocking_findings = [
-        item
-        for item in findings
-        if item["severity"] == "BLOCKING" or bool(item.get("blocking"))
+        item for item in raw_findings if _raw_finding_is_blocking(item)
     ]
     risks = [str(item) for item in payload.get("risks") or []]
 
@@ -363,8 +362,15 @@ def _normalize_finding(item: Any) -> dict[str, Any]:
         "title": str(item.get("title") or "PAL clink finding"),
         "status": str(item.get("status") or "OPEN"),
         "body": str(item.get("body") or ""),
-        "blocking": bool(item.get("blocking", False)),
     }
+
+
+def _raw_finding_is_blocking(item: Any) -> bool:
+    if not isinstance(item, dict):
+        return False
+    return str(item.get("severity") or "INFO") == "BLOCKING" or bool(
+        item.get("blocking", False)
+    )
 
 
 def _embedded_audit_model(route: dict[str, Any]) -> str:
