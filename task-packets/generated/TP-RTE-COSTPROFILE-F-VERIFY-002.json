@@ -44,6 +44,7 @@
   "commit": {
     "message": "test(rte): verify costprofile f repair",
     "allowlist": [
+      ".gitignore",
       "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json",
       "task-packets/INDEX.md",
       "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/PROOF.json",
