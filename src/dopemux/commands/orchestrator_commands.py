@@ -12,6 +12,11 @@ import click
 from dopemux.orchestrator.validation.packets import validate_packet_file
 from dopemux.orchestrator.validation.proof import validate_proof_file
 from dopemux.orchestrator.validation.report import ValidationReport
+from dopemux.orchestrator.policy import (
+    classify_capability,
+    load_approval_policy,
+    validate_policy_file,
+)
 
 
 DEFAULT_PROJECT_ID = "dopemux-mvp"
@@ -171,6 +176,109 @@ def orchestrator_proof_validate(proof_path: Path, json_output: bool):
         report,
         title="Task Orchestrator Proof Validation",
         json_output=json_output,
+    )
+
+
+@orchestrator_group.group("policy")
+def orchestrator_policy():
+    """Read-only approval policy registry helpers."""
+
+
+@orchestrator_policy.command("validate")
+@click.option(
+    "--policy",
+    "policy_path",
+    type=click.Path(dir_okay=False, path_type=Path),
+    default=None,
+)
+@click.option("--json-output", is_flag=True)
+def orchestrator_policy_validate(policy_path: Optional[Path], json_output: bool):
+    """Validate the automation tier and approval policy registry."""
+    report = validate_policy_file(policy_path)
+    _emit_validation_report(
+        report,
+        title="Task Orchestrator Approval Policy Validation",
+        json_output=json_output,
+    )
+
+
+@orchestrator_policy.command("tiers")
+@click.option("--json-output", is_flag=True)
+def orchestrator_policy_tiers(json_output: bool):
+    """Show registered automation safety tiers."""
+    policy = load_approval_policy()
+    tiers = {key: tier.to_dict() for key, tier in policy.tiers.items()}
+    if json_output:
+        click.echo(json.dumps({"tiers": tiers}, indent=2, sort_keys=True))
+        return
+
+    lines = ["Task Orchestrator Automation Tiers", f"path: {policy.source_path}"]
+    for tier_id, tier in policy.tiers.items():
+        lines.append(
+            (
+                f"{tier_id}: auto={tier.automatic_allowed} "
+                f"approval={tier.approval_required} "
+                f"receipt={tier.receipt_required} decision={tier.decision}"
+            )
+        )
+    _emit_lines(lines)
+
+
+@orchestrator_policy.command("capabilities")
+@click.option("--json-output", is_flag=True)
+def orchestrator_policy_capabilities(json_output: bool):
+    """Show registered orchestrator policy capabilities."""
+    policy = load_approval_policy()
+    capabilities = {
+        key: capability.to_dict()
+        for key, capability in policy.capabilities.items()
+    }
+    if json_output:
+        click.echo(
+            json.dumps(
+                {"capabilities": capabilities},
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return
+
+    lines = [
+        "Task Orchestrator Policy Capabilities",
+        f"path: {policy.source_path}",
+    ]
+    for capability_id, capability in policy.capabilities.items():
+        lines.append(
+            (
+                f"{capability_id}: tier={capability.tier} "
+                f"mode={capability.mode} decision={capability.decision}"
+            )
+        )
+    _emit_lines(lines)
+
+
+@orchestrator_policy.command("classify")
+@click.argument("capability_id")
+@click.option("--json-output", is_flag=True)
+def orchestrator_policy_classify(capability_id: str, json_output: bool):
+    """Classify one capability against the approval policy registry."""
+    decision = classify_capability(capability_id)
+    if json_output:
+        click.echo(json.dumps(decision.to_dict(), indent=2, sort_keys=True))
+        return
+
+    _emit_lines(
+        [
+            "Task Orchestrator Capability Classification",
+            f"capability: {decision.capability_id}",
+            f"tier: {decision.tier}",
+            f"mode: {decision.mode}",
+            f"allowed: {decision.allowed}",
+            f"decision: {decision.decision}",
+            f"approval_required: {decision.approval_required}",
+            f"receipt_required: {decision.receipt_required}",
+            f"reason: {decision.reason}",
+        ]
     )
 
 
