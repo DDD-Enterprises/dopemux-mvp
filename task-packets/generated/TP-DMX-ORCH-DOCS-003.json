@@ -1,0 +1,150 @@
+{
+  "id": "TP-DMX-ORCH-DOCS-003",
+  "project": "dopemux-mvp",
+  "target": "Install an authority document for read-only task-orchestrator operator integration readiness and mutation boundaries.",
+  "invariants": [
+    "Do not modify runtime code, service code, tests, compose files, dependency files, provider configuration, or MCP launcher code.",
+    "Preserve Dopemux split authority boundaries: dopemux operator control, task-orchestrator workflow views/transitions, dopetask execution/proof, ConPort decisions/progress/context, dope-memory chronicle, dope-context retrieval, dopecon-bridge transport only.",
+    "Do not claim autonomous workflow mutation is ready.",
+    "Do not treat dopecon-bridge as canonical task, workflow, PM, decision, progress, memory, chronicle, retrieval, or proof authority.",
+    "Do not treat the upstream 13-tool MCP Task Orchestrator and the in-repo FastAPI task-orchestrator service as one unified runtime contract.",
+    "Preserve UNKNOWN where current repo evidence does not establish a canonical writer, proof envelope, consumer chain, schema winner, or agent authority.",
+    "No workflow transitions, GitHub mutations, memory writes, index writes, destructive actions, live provider calls, live extraction, Docker startup, or in-repo runtime service health probes."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ORCH-INTEGRATION",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-orch-docs-003",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(orchestrator): define read-only integration authority",
+    "allowlist": [
+      ".gitignore",
+      "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+      "task-packets/INDEX.md",
+      "task-packets/generated/TP-DMX-ORCH-DOCS-003.json",
+      "proof/orchestrator/TP-DMX-ORCH-DOCS-003/PROOF.json"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-ORCH-DOCS-003.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-DOCS-003.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python scripts/docs_validator.py docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+      "python scripts/docs_frontmatter_guard.py docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+      "python -m json.tool proof/orchestrator/TP-DMX-ORCH-DOCS-003/PROOF.json >/dev/null",
+      "rg -n \"Read-only operator integration is allowed|Mutation remains deferred|Do not centralize authority\" docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+      "rg -n \"Relationship To dopeTask|This is a task-orchestrator system authority document\" docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(orchestrator): define read-only integration authority",
+    "body": "## Summary\n- Adds an authority document for task-orchestrator operator integration readiness.\n- Establishes read-only status, queue, blocker, and daily summary surfaces as the first safe integration lane.\n- Defers workflow mutation, event consumers, GitHub automation, memory writes, and destructive/index actions until explicit proof and approval gates exist.\n\n## Scope\nDocs, packet index, task packet, proof allowlist, and proof only. No runtime, tests, compose, dependencies, provider config, MCP launcher, or live service changes.\n\n## Validation\nInclude exact command outputs and exit codes for JSON syntax, task-packet schema validation, docs validator, docs frontmatter guard, proof JSON syntax, authority-grep checks, and git diff checks.\n\n## NOT_RUN\n- In-repo runtime service health checks\n- Docker startup\n- Live provider calls\n- Live extraction\n- Workflow transitions or MCP write calls\n- GitHub comments/labels/merge\n- ConPort, dope-memory, or dope-context writes\n\n## Residual Risks / UNKNOWNs\nList unresolved event-consumer, proof-envelope, schema, agent-authority, and Python/FastAPI-vs-upstream-MCP boundary risks.\n\n@codex review",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repo identity, branch, marker, clean status, active MCP work state, and required authority files.",
+      "context_files": [
+        "AGENTS.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md",
+        "docs/03-reference/governance/authority-boundaries.md",
+        "src/dopemux/pm/reads.py",
+        "src/dopemux/pm/adapters/orchestrator.py",
+        "services/task-orchestrator/app/api/project_workflow.py",
+        "src/dopemux/mcp/default_catalog.yaml"
+      ],
+      "commands": [
+        "pwd",
+        "git rev-parse --show-toplevel",
+        "git status --short --branch",
+        "git remote -v",
+        "git rev-parse HEAD",
+        "test -f .dopetaskroot",
+        "mcp task-orchestrator get_context work-state read"
+      ],
+      "validation": [
+        "Repo remote identifies DDD-Enterprises/dopemux-mvp.",
+        "Worktree is isolated from the primary checkout.",
+        "Required authority files are present or missing authority is marked UNKNOWN.",
+        "MCP Task Orchestrator active, blocked, and stalled item state is recorded."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create and validate this Task Packet, then register it in task-packets/INDEX.md.",
+      "expected_files": [
+        "task-packets/generated/TP-DMX-ORCH-DOCS-003.json",
+        "task-packets/INDEX.md"
+      ],
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-DMX-ORCH-DOCS-003.json >/dev/null",
+        "python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-DOCS-003.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "rg -n \"TP-DMX-ORCH-DOCS-003\" task-packets/INDEX.md"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Author the authority document as docs/03-reference/systems/task-orchestrator/operator-integration-authority.md.",
+      "requirements": [
+        "Convert the supplied draft into a formal authority document with OBSERVED, RISK, PROPOSED, and UNKNOWN labels.",
+        "Preserve the verdict: read-only/operator-status integration is allowed first; mutation-heavy orchestration is not ready.",
+        "Document system roles, authority boundaries, automation tiers, proposed CLI/MCP surfaces, memory write policy, staged rollout, and open questions.",
+        "Correct unsupported claims instead of repeating them as fact; especially distinguish the in-repo FastAPI service from the upstream 13-tool MCP runtime.",
+        "Use ASCII-only formal authority language; omit jokes, emoji, and non-authority metaphors."
+      ],
+      "expected_files": [
+        "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md"
+      ],
+      "validation": [
+        "python scripts/docs_validator.py docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+        "python scripts/docs_frontmatter_guard.py docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+        "rg -n \"Read-only operator integration is allowed|Mutation remains deferred|Do not centralize authority\" docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+        "rg -n \"Relationship To dopeTask|This is a task-orchestrator system authority document\" docs/03-reference/systems/task-orchestrator/operator-integration-authority.md"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Create proof JSON with exact commands, exit codes, files changed, NOT_RUN items, residual risks, UNKNOWNs, codereview/precommit status, and rollback plan.",
+      "expected_files": [
+        "proof/orchestrator/TP-DMX-ORCH-DOCS-003/PROOF.json"
+      ],
+      "validation": [
+        "python -m json.tool proof/orchestrator/TP-DMX-ORCH-DOCS-003/PROOF.json >/dev/null",
+        "rg -n \"NOT_RUN|UNKNOWN|rollback\" proof/orchestrator/TP-DMX-ORCH-DOCS-003/PROOF.json",
+        "git diff --check",
+        "git status --short"
+      ]
+    }
+  ]
+}
