@@ -1,0 +1,176 @@
+{
+  "bundle_id": "TP-DMX-ORCH-005-PROOF",
+  "run_id": "tp-dmx-orch-005-local",
+  "skill": "codex",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED",
+  "created_at": "2026-05-26T14:36:53Z",
+  "validated_at": "2026-05-26T14:36:53Z",
+  "manifest": {
+    "bundle_id": "TP-DMX-ORCH-005-PROOF",
+    "packet_id": "TP-DMX-ORCH-005",
+    "generated_artifacts": [
+      "task-packets/generated/TP-DMX-ORCH-005.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-005/PROOF.json"
+    ]
+  },
+  "authoritative_artifacts": [
+    "task-packets/generated/TP-DMX-ORCH-005.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-005/PROOF.json",
+    "src/dopemux/orchestrator/mcp_wrappers.py",
+    "services/task-orchestrator/task_orchestrator/mcp/__init__.py"
+  ],
+  "supporting_artifacts": [
+    "tests/unit/orchestrator/test_mcp_wrappers.py",
+    "tests/unit/test_task_orchestrator_mcp_wrappers.py",
+    "config/orchestrator/approval_policy.yaml",
+    "src/dopemux/orchestrator/policy.py",
+    "src/dopemux/pm/reads.py",
+    "src/dopemux/orchestrator/validation/packets.py",
+    "src/dopemux/orchestrator/validation/proof.py",
+    "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+    "services/task-orchestrator/app/main.py",
+    "services/task-orchestrator/mcp_stdio.py"
+  ],
+  "chain_of_custody": {
+    "documented": true,
+    "source_version": "TP-DMX-ORCH-005",
+    "created_at": "2026-05-26T14:36:53Z",
+    "parent_bundle_ids": [
+      "TP-DMX-ORCH-004"
+    ]
+  },
+  "repo_identity_check": {
+    "result": "PASS",
+    "marker_file": ".dopetaskroot",
+    "marker_present": true,
+    "remote_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "starting_head": "6a1b71ecc",
+    "branch": "codex/tp-dmx-orch-005-readonly-mcp"
+  },
+  "task_orchestrator": {
+    "root_id": "32df1792-40e3-4ad3-9aa6-fd323f0cacb7",
+    "item_id": "f025275f-16e3-45a9-8a97-2ee98c75230e",
+    "transition": "NOT_RUN",
+    "status": "UNKNOWN",
+    "note": "Attempted queue-to-work transition was rejected by tool approval review because the session hit a usage limit. The user approved continuing code work; Task Orchestrator state was not mutated for this slice."
+  },
+  "validations": [
+    {
+      "name": "TDD red run",
+      "command": "uv run pytest -q tests/unit/orchestrator/test_mcp_wrappers.py tests/unit/test_task_orchestrator_mcp_wrappers.py",
+      "exit_code": 1,
+      "status": "PASS",
+      "note": "Expected red state: dopemux.orchestrator.mcp_wrappers module was missing and the local service MCP shim did not register wrapper tools."
+    },
+    {
+      "name": "Focused wrapper tests",
+      "command": "uv run pytest -q tests/unit/orchestrator/test_mcp_wrappers.py tests/unit/test_task_orchestrator_mcp_wrappers.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "....... [100%]"
+    },
+    {
+      "name": "Expanded orchestrator validation tests",
+      "command": "uv run pytest -q tests/unit/orchestrator/test_mcp_wrappers.py tests/unit/test_task_orchestrator_mcp_wrappers.py tests/unit/orchestrator/test_policy.py tests/unit/orchestrator/test_validation.py tests/unit/test_cli_orchestrator_validation_commands.py tests/unit/test_cli_orchestrator_commands.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "................................... [100%]"
+    },
+    {
+      "name": "Compile source and local service package",
+      "command": ".venv/bin/python -m compileall -q src services/task-orchestrator/task_orchestrator",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Task Packet JSON syntax",
+      "command": ".venv/bin/python -m json.tool task-packets/generated/TP-DMX-ORCH-005.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Proof JSON syntax",
+      "command": ".venv/bin/python -m json.tool proof/dmx-orch-integration/TP-DMX-ORCH-005/PROOF.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Task Packet schema validation",
+      "command": ".venv/bin/python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-005.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "stderr_note": "jsonschema CLI emitted a deprecation warning; schema validation exited 0."
+    },
+    {
+      "name": "Task Packet validator command",
+      "command": ".venv/bin/python -m dopemux.cli orchestrator packet validate task-packets/generated/TP-DMX-ORCH-005.json --json-output",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_note": "JSON report status PASS; unrelated LiteLLM import warnings were emitted before the JSON payload by the root CLI import path."
+    },
+    {
+      "name": "Proof validator command",
+      "command": ".venv/bin/python -m dopemux.cli orchestrator proof validate proof/dmx-orch-integration/TP-DMX-ORCH-005/PROOF.json --json-output",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_note": "JSON report status PASS; unrelated LiteLLM import warnings were emitted before the JSON payload by the root CLI import path."
+    },
+    {
+      "name": "Diff whitespace check",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Pre-commit hooks for packet files",
+      "command": "pre-commit run --files src/dopemux/orchestrator/mcp_wrappers.py services/task-orchestrator/task_orchestrator/mcp/__init__.py tests/unit/orchestrator/test_mcp_wrappers.py tests/unit/test_task_orchestrator_mcp_wrappers.py task-packets/generated/TP-DMX-ORCH-005.json proof/dmx-orch-integration/TP-DMX-ORCH-005/PROOF.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "note": "Repo hygiene hooks passed; documentation-only hooks skipped where no matching files were provided."
+    }
+  ],
+  "codereview_status": {
+    "result": "PASS",
+    "tool": "pal/codereview",
+    "model": "gpt-5-codex",
+    "validation_type": "internal",
+    "review_type": "full",
+    "issues_found": 0,
+    "continuation_id": "34a8a1cb-0270-4ffb-b979-7e5545e064d8"
+  },
+  "precommit_status": {
+    "result": "PASS",
+    "tool": "pal/precommit",
+    "model": "gpt-5-codex",
+    "validation_type": "internal",
+    "issues_found": 0,
+    "continuation_id": "258993e8-017d-4bb0-af05-c34192fac9f3",
+    "post_proof_update_note": "Proof metadata was updated with PAL status after PAL precommit; proof validator, git diff --check, and pre-commit hooks were rerun after this update."
+  },
+  "warnings": [
+    "The current Codex Task Orchestrator launcher uses an external 13-tool stdio service; this packet changes the in-repo local task-orchestrator service MCP shim only."
+  ],
+  "blockers": [],
+  "not_run": [
+    "Task Orchestrator item transition: rejected by tool approval review after the session hit a usage limit.",
+    "Full repository test suite: not run in this local implementation slice.",
+    "Push and PR creation: not run in this local implementation slice."
+  ],
+  "residual_risks": [
+    "Wrapper tools are registered in the in-repo task-orchestrator service shim and are not proven available through the external current Task Orchestrator launcher.",
+    "The wrappers classify policy for their own capability IDs, but they do not retrofit approval enforcement onto legacy MCP tools in the same service module."
+  ],
+  "rollback_plan": [
+    "Remove src/dopemux/orchestrator/mcp_wrappers.py.",
+    "Remove wrapper imports, MCP_TOOLS append, and wrapper dispatch from services/task-orchestrator/task_orchestrator/mcp/__init__.py.",
+    "Remove tests/unit/orchestrator/test_mcp_wrappers.py.",
+    "Remove tests/unit/test_task_orchestrator_mcp_wrappers.py.",
+    "Remove task-packets/generated/TP-DMX-ORCH-005.json.",
+    "Remove proof/dmx-orch-integration/TP-DMX-ORCH-005/PROOF.json."
+  ],
+  "commit_sha": null,
+  "commit_sha_policy": "A committed proof file cannot self-reference the commit SHA that contains its final contents. The authoritative local commit SHA is reported by git after commit creation and in the session closeout.",
+  "pr_url": null,
+  "cleanup_status": "WORKTREE_ACTIVE"
+}
