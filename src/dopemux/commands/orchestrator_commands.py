@@ -12,6 +12,7 @@ import click
 from dopemux.orchestrator.validation.packets import validate_packet_file
 from dopemux.orchestrator.validation.proof import validate_proof_file
 from dopemux.orchestrator.validation.report import ValidationReport
+from dopemux.orchestrator.workflow_dsl import validate_workflow_dsl_file
 from dopemux.orchestrator.policy import (
     classify_capability,
     load_approval_policy,
@@ -175,6 +176,24 @@ def orchestrator_proof_validate(proof_path: Path, json_output: bool):
     _emit_validation_report(
         report,
         title="Task Orchestrator Proof Validation",
+        json_output=json_output,
+    )
+
+
+@orchestrator_group.group("workflow")
+def orchestrator_workflow():
+    """Read-only workflow DSL validation helpers."""
+
+
+@orchestrator_workflow.command("validate")
+@click.argument("workflow_path", type=click.Path(dir_okay=False, path_type=Path))
+@click.option("--json-output", is_flag=True)
+def orchestrator_workflow_validate(workflow_path: Path, json_output: bool):
+    """Validate a workflow DSL file without applying transitions."""
+    report = validate_workflow_dsl_file(workflow_path)
+    _emit_validation_report(
+        report,
+        title="Task Orchestrator Workflow DSL Validation",
         json_output=json_output,
     )
 

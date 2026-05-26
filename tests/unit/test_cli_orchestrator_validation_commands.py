@@ -88,6 +88,7 @@ def test_orchestrator_validation_help_lists_packet_and_proof_commands() -> None:
     assert "packet" in result.output
     assert "proof" in result.output
     assert "policy" in result.output
+    assert "workflow" in result.output
 
 
 def test_orchestrator_packet_validate_outputs_json_report(tmp_path: Path) -> None:
@@ -251,3 +252,87 @@ def test_orchestrator_policy_classify_unknown_refuses() -> None:
     assert payload["tier"] == "TU"
     assert payload["allowed"] is False
     assert payload["decision"] == "refuse"
+
+
+def test_orchestrator_workflow_validate_outputs_json_report(tmp_path: Path) -> None:
+    workflow_path = tmp_path / "workflow.yaml"
+    workflow_path.write_text(
+        "\n".join(
+            [
+                'schema_version: "1"',
+                "id: daily-operator",
+                "title: Daily operator workflow",
+                "initial_state: queued",
+                "states:",
+                "  - id: queued",
+                "    title: Queued",
+                "  - id: active",
+                "    title: Active",
+                "  - id: done",
+                "    title: Done",
+                "    terminal: true",
+                "transitions:",
+                "  - id: preview_start",
+                "    from: queued",
+                "    to: active",
+                "    capability: orchestrator.transition.preview",
+                "    receipt_required: true",
+                "  - id: preview_finish",
+                "    from: active",
+                "    to: done",
+                "    capability: orchestrator.transition.preview",
+                "    receipt_required: true",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        cli,
+        [
+            "orchestrator",
+            "workflow",
+            "validate",
+            str(workflow_path),
+            "--json-output",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["kind"] == "workflow_dsl"
+    assert payload["status"] == "PASS"
+    assert payload["valid"] is True
+    assert payload["details"]["state_count"] == 3
+
+
+def test_orchestrator_workflow_validate_exits_nonzero_for_invalid_workflow(
+    tmp_path: Path,
+) -> None:
+    workflow_path = tmp_path / "workflow.yaml"
+    workflow_path.write_text(
+        "\n".join(
+            [
+                'schema_version: "1"',
+                "id: daily-operator",
+                "initial_state: missing",
+                "states:",
+                "  - id: queued",
+                "transitions:",
+                "  - id: bad",
+                "    from: queued",
+                "    to: missing",
+                "    capability: orchestrator.transition.preview",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        cli,
+        ["orchestrator", "workflow", "validate", str(workflow_path)],
+    )
+
+    assert result.exit_code != 0
+    assert "status: FAIL" in result.output
+    assert "WORKFLOW_DSL_INITIAL_STATE_UNKNOWN" in result.output
