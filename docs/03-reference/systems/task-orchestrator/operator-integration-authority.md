@@ -411,6 +411,13 @@ Build only after the first read-only/status packet proves stable.
    inspect EventCoordinator consumers and map missing ConPort/dope-memory/proof
    chain before implementing any event-to-memory automation.
 
+Local implementation note (2026-05-26): `src/dopemux/orchestrator/operator_workflows.py`
+implements the remaining integration surfaces as fail-closed local plans,
+receipts, previews, validators, and read-only snapshots. The module does not
+write context indexes, ConPort, dope-memory, workflow state, GitHub state, or
+acceptance records; T4/T5 paths only report readiness for the named canonical
+writer after exact typed approval.
+
 ## Advanced Integration Deferred
 
 | Capability | Why Deferred |

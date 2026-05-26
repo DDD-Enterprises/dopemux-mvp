@@ -14,6 +14,23 @@ from dopemux.orchestrator.hooks import (
     hook_registry_list_payload,
     validate_hook_registry_file,
 )
+from dopemux.orchestrator.operator_workflows import (
+    automation_pilot_decision,
+    build_dashboard_snapshot,
+    build_packet_draft,
+    build_pr_queue,
+    context_refresh_plan,
+    context_status,
+    dangerous_check,
+    final_readiness_report,
+    intake_report,
+    memory_route_receipt,
+    pr_comment_plan,
+    red_team_audit,
+    transition_apply_plan,
+    transition_preview,
+    validate_transition_proof_envelope_file,
+)
 from dopemux.orchestrator.policy import (
     classify_capability,
     load_approval_policy,
@@ -132,6 +149,41 @@ def _emit_validation_report(report: ValidationReport, *, title: str, json_output
 
     if report.exit_code:
         raise click.exceptions.Exit(report.exit_code)
+
+
+def _emit_payload(payload: Dict[str, Any], *, json_output: bool) -> None:
+    if json_output:
+        click.echo(json.dumps(payload, indent=2, sort_keys=True))
+        return
+    _emit_lines(_render_mapping(payload))
+
+
+def _render_mapping(payload: Dict[str, Any], *, prefix: str = "") -> List[str]:
+    lines: List[str] = []
+    for key, value in payload.items():
+        token = f"{prefix}{key}"
+        if isinstance(value, dict):
+            lines.append(f"{token}:")
+            lines.extend(_render_mapping(value, prefix=f"{token}."))
+        elif isinstance(value, list):
+            lines.append(f"{token}: {len(value)} item(s)")
+        else:
+            lines.append(f"{token}: {value}")
+    return lines
+
+
+def _parse_pr_items(entries: Iterable[str]) -> List[Dict[str, Any]]:
+    items: List[Dict[str, Any]] = []
+    for entry in entries:
+        number, checks, proof = (entry.split(":") + ["unknown", "missing"])[:3]
+        items.append(
+            {
+                "number": int(number),
+                "checks": checks,
+                "proof": proof,
+            }
+        )
+    return items
 
 
 @click.group("orchestrator")
@@ -378,6 +430,308 @@ def orchestrator_policy_classify(capability_id: str, json_output: bool):
             f"reason: {decision.reason}",
         ]
     )
+
+
+@orchestrator_group.group("context")
+def orchestrator_context():
+    """Context freshness status and gated refresh planning."""
+
+
+@orchestrator_context.command("status")
+@click.option(
+    "--changed-file",
+    "changed_files",
+    multiple=True,
+    help="Changed file to include in the freshness report.",
+)
+@click.option(
+    "--stale-source",
+    "stale_sources",
+    multiple=True,
+    help="Context source to mark stale.",
+)
+@click.option("--json-output", is_flag=True)
+def orchestrator_context_status(
+    changed_files: tuple[str, ...],
+    stale_sources: tuple[str, ...],
+    json_output: bool,
+):
+    """Assess context freshness without refreshing indexes."""
+    payload = context_status(
+        changed_files=list(changed_files),
+        stale_sources=list(stale_sources),
+    )
+    _emit_payload(payload, json_output=json_output)
+
+
+@orchestrator_context.command("refresh")
+@click.option("--scope", required=True)
+@click.option("--proof-id", required=True)
+@click.option("--approval-phrase", default="")
+@click.option("--json-output", is_flag=True)
+def orchestrator_context_refresh(
+    scope: str,
+    proof_id: str,
+    approval_phrase: str,
+    json_output: bool,
+):
+    """Plan a scoped context refresh without writing indexes."""
+    payload = context_refresh_plan(
+        scope=scope,
+        proof_id=proof_id,
+        approval_phrase=approval_phrase,
+    )
+    _emit_payload(payload, json_output=json_output)
+
+
+@orchestrator_group.group("memory")
+def orchestrator_memory():
+    """Canonical memory write routing receipts."""
+
+
+@orchestrator_memory.command("route")
+@click.option("--kind", required=True)
+@click.option("--content", required=True)
+@click.option("--proof-id", required=True)
+@click.option("--json-output", is_flag=True)
+def orchestrator_memory_route(
+    kind: str,
+    content: str,
+    proof_id: str,
+    json_output: bool,
+):
+    """Build a memory routing receipt without writing memory."""
+    payload = memory_route_receipt(
+        kind=kind,
+        content=content,
+        proof_id=proof_id,
+    )
+    _emit_payload(payload, json_output=json_output)
+
+
+@orchestrator_group.group("forge")
+def orchestrator_forge():
+    """Draft-only packet forge helpers."""
+
+
+@orchestrator_forge.command("packet")
+@click.option("--packet-id", required=True)
+@click.option("--target", required=True)
+@click.option("--json-output", is_flag=True)
+def orchestrator_forge_packet(packet_id: str, target: str, json_output: bool):
+    """Build a draft Task Packet payload without writing it."""
+    payload = build_packet_draft(packet_id=packet_id, target=target)
+    _emit_payload(payload, json_output=json_output)
+
+
+@orchestrator_group.command("intake")
+@click.option(
+    "--packet",
+    "packet_path",
+    type=click.Path(dir_okay=False, path_type=Path),
+    required=True,
+)
+@click.option(
+    "--proof",
+    "proof_path",
+    type=click.Path(dir_okay=False, path_type=Path),
+    required=True,
+)
+@click.option("--json-output", is_flag=True)
+def orchestrator_intake(packet_path: Path, proof_path: Path, json_output: bool):
+    """Intake implementation output against packet and proof."""
+    payload = intake_report(packet_path, proof_path)
+    _emit_payload(payload, json_output=json_output)
+
+
+@orchestrator_group.command("audit")
+@click.option(
+    "--packet",
+    "packet_path",
+    type=click.Path(dir_okay=False, path_type=Path),
+    required=True,
+)
+@click.option(
+    "--proof",
+    "proof_path",
+    type=click.Path(dir_okay=False, path_type=Path),
+    required=True,
+)
+@click.option("--json-output", is_flag=True)
+def orchestrator_audit(packet_path: Path, proof_path: Path, json_output: bool):
+    """Run read-only red-team audit over packet and proof."""
+    payload = red_team_audit(packet_path, proof_path)
+    _emit_payload(payload, json_output=json_output)
+
+
+@orchestrator_group.group("transition")
+def orchestrator_transition():
+    """Workflow transition preview, apply planning, and proof validation."""
+
+
+@orchestrator_transition.command("preview")
+@click.option("--workflow-id", required=True)
+@click.option("--transition-name", required=True)
+@click.option("--proof-id", required=True)
+@click.option("--json-output", is_flag=True)
+def orchestrator_transition_preview(
+    workflow_id: str,
+    transition_name: str,
+    proof_id: str,
+    json_output: bool,
+):
+    """Preview a workflow transition without applying it."""
+    payload = transition_preview(
+        workflow_id=workflow_id,
+        transition=transition_name,
+        proof_id=proof_id,
+    )
+    _emit_payload(payload, json_output=json_output)
+
+
+@orchestrator_transition.command("apply")
+@click.option("--workflow-id", required=True)
+@click.option("--transition-name", required=True)
+@click.option("--idempotency-key", required=True)
+@click.option("--proof-id", required=True)
+@click.option("--approval-phrase", default="")
+@click.option("--json-output", is_flag=True)
+def orchestrator_transition_apply(
+    workflow_id: str,
+    transition_name: str,
+    idempotency_key: str,
+    proof_id: str,
+    approval_phrase: str,
+    json_output: bool,
+):
+    """Plan an approved workflow transition without mutating state."""
+    payload = transition_apply_plan(
+        workflow_id=workflow_id,
+        transition=transition_name,
+        idempotency_key=idempotency_key,
+        proof_id=proof_id,
+        approval_phrase=approval_phrase,
+    )
+    _emit_payload(payload, json_output=json_output)
+
+
+@orchestrator_transition.group("proof")
+def orchestrator_transition_proof():
+    """Transition proof envelope helpers."""
+
+
+@orchestrator_transition_proof.command("validate")
+@click.argument("envelope_path", type=click.Path(dir_okay=False, path_type=Path))
+@click.option("--json-output", is_flag=True)
+def orchestrator_transition_proof_validate(envelope_path: Path, json_output: bool):
+    """Validate a transition proof envelope."""
+    report = validate_transition_proof_envelope_file(envelope_path)
+    _emit_validation_report(
+        report,
+        title="Task Orchestrator Transition Proof Validation",
+        json_output=json_output,
+    )
+
+
+@orchestrator_group.group("pr")
+def orchestrator_pr():
+    """PR readiness and approval-gated comment planning."""
+
+
+@orchestrator_pr.command("queue")
+@click.option(
+    "--pr",
+    "entries",
+    multiple=True,
+    help="PR entry as number:checks:proof, for example 123:passing:present.",
+)
+@click.option("--json-output", is_flag=True)
+def orchestrator_pr_queue(entries: tuple[str, ...], json_output: bool):
+    """Classify PR readiness from provided read-only status rows."""
+    payload = build_pr_queue(_parse_pr_items(entries))
+    _emit_payload(payload, json_output=json_output)
+
+
+@orchestrator_pr.command("comment")
+@click.option("--pr-number", type=int, required=True)
+@click.option("--body", required=True)
+@click.option("--proof-id", required=True)
+@click.option("--approval-phrase", default="")
+@click.option("--json-output", is_flag=True)
+def orchestrator_pr_comment(
+    pr_number: int,
+    body: str,
+    proof_id: str,
+    approval_phrase: str,
+    json_output: bool,
+):
+    """Plan a PR comment without calling GitHub."""
+    payload = pr_comment_plan(
+        pr_number=pr_number,
+        body=body,
+        proof_id=proof_id,
+        approval_phrase=approval_phrase,
+    )
+    _emit_payload(payload, json_output=json_output)
+
+
+@orchestrator_group.group("dashboard")
+def orchestrator_dashboard():
+    """Read-first operator dashboard snapshots."""
+
+
+@orchestrator_dashboard.command("snapshot")
+@click.option("--json-output", is_flag=True)
+def orchestrator_dashboard_snapshot(json_output: bool):
+    """Build a read-only daily dashboard panel snapshot."""
+    payload = build_dashboard_snapshot()
+    _emit_payload(payload, json_output=json_output)
+
+
+@orchestrator_group.group("automation")
+def orchestrator_automation():
+    """Limited T0/T1 automation pilot helpers."""
+
+
+@orchestrator_automation.command("pilot")
+@click.argument("capability_id")
+@click.option("--json-output", is_flag=True)
+def orchestrator_automation_pilot(capability_id: str, json_output: bool):
+    """Classify whether a capability is allowed in the pilot."""
+    payload = automation_pilot_decision(capability_id)
+    _emit_payload(payload, json_output=json_output)
+
+
+@orchestrator_group.group("dangerous")
+def orchestrator_dangerous():
+    """Fail-closed guard status for dangerous capabilities."""
+
+
+@orchestrator_dangerous.command("check")
+@click.option("--json-output", is_flag=True)
+def orchestrator_dangerous_check(json_output: bool):
+    """Show gated or refused dangerous capabilities."""
+    payload = dangerous_check()
+    _emit_payload(payload, json_output=json_output)
+
+
+@orchestrator_group.group("final")
+def orchestrator_final():
+    """Final proof readiness checks."""
+
+
+@orchestrator_final.command("proof")
+@click.option(
+    "--proof",
+    "proof_path",
+    type=click.Path(dir_okay=False, path_type=Path),
+    required=True,
+)
+@click.option("--json-output", is_flag=True)
+def orchestrator_final_proof(proof_path: Path, json_output: bool):
+    """Check final proof readiness without asserting acceptance."""
+    payload = final_readiness_report(proof_path)
+    _emit_payload(payload, json_output=json_output)
 
 
 @orchestrator_group.command("queue")
