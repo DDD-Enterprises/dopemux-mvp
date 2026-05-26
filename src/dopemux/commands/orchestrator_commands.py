@@ -9,15 +9,20 @@ from typing import Any, Dict, Iterable, List, Optional
 
 import click
 
-from dopemux.orchestrator.validation.packets import validate_packet_file
-from dopemux.orchestrator.validation.proof import validate_proof_file
-from dopemux.orchestrator.validation.report import ValidationReport
-from dopemux.orchestrator.workflow_dsl import validate_workflow_dsl_file
+from dopemux.orchestrator.hooks import (
+    audit_hook_registry_file,
+    hook_registry_list_payload,
+    validate_hook_registry_file,
+)
 from dopemux.orchestrator.policy import (
     classify_capability,
     load_approval_policy,
     validate_policy_file,
 )
+from dopemux.orchestrator.validation.packets import validate_packet_file
+from dopemux.orchestrator.validation.proof import validate_proof_file
+from dopemux.orchestrator.validation.report import ValidationReport
+from dopemux.orchestrator.workflow_dsl import validate_workflow_dsl_file
 
 
 DEFAULT_PROJECT_ID = "dopemux-mvp"
@@ -194,6 +199,80 @@ def orchestrator_workflow_validate(workflow_path: Path, json_output: bool):
     _emit_validation_report(
         report,
         title="Task Orchestrator Workflow DSL Validation",
+        json_output=json_output,
+    )
+
+
+@orchestrator_group.group("hooks")
+def orchestrator_hooks():
+    """Read-only declarative hook registry helpers."""
+
+
+@orchestrator_hooks.command("list")
+@click.option(
+    "--registry",
+    "registry_path",
+    type=click.Path(dir_okay=False, path_type=Path),
+    default=None,
+)
+@click.option("--json-output", is_flag=True)
+def orchestrator_hooks_list(registry_path: Optional[Path], json_output: bool):
+    """List declarative orchestrator hooks without executing them."""
+    payload = hook_registry_list_payload(registry_path)
+    if json_output:
+        click.echo(json.dumps(payload, indent=2, sort_keys=True))
+        return
+
+    lines = [
+        "Task Orchestrator Hooks",
+        f"path: {payload['path']}",
+        f"authority: {payload['authority']}",
+        f"hook_count: {payload['hook_count']}",
+    ]
+    for hook in payload["hooks"]:
+        lines.append(
+            f"{hook['id']}: tier={hook['tier']} trigger={hook['trigger']}"
+        )
+    _emit_lines(lines)
+
+
+@orchestrator_hooks.command("validate")
+@click.option(
+    "--registry",
+    "registry_path",
+    type=click.Path(dir_okay=False, path_type=Path),
+    default=None,
+)
+@click.option("--json-output", is_flag=True)
+def orchestrator_hooks_validate(registry_path: Optional[Path], json_output: bool):
+    """Validate the declarative hook registry without executing hooks."""
+    report = validate_hook_registry_file(registry_path)
+    _emit_validation_report(
+        report,
+        title="Task Orchestrator Hook Registry Validation",
+        json_output=json_output,
+    )
+
+
+@orchestrator_group.group("plugins")
+def orchestrator_plugins():
+    """Read-only orchestrator plugin safety helpers."""
+
+
+@orchestrator_plugins.command("doctor")
+@click.option(
+    "--registry",
+    "registry_path",
+    type=click.Path(dir_okay=False, path_type=Path),
+    default=None,
+)
+@click.option("--json-output", is_flag=True)
+def orchestrator_plugins_doctor(registry_path: Optional[Path], json_output: bool):
+    """Audit declarative plugin hook safety without loading plugins."""
+    report = audit_hook_registry_file(registry_path)
+    _emit_validation_report(
+        report,
+        title="Task Orchestrator Plugin Hook Doctor",
         json_output=json_output,
     )
 

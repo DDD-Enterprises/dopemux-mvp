@@ -1,0 +1,156 @@
+{
+  "id": "TP-DMX-ORCH-007",
+  "project": "dopemux-mvp",
+  "target": "Add orchestrator plugin and hook registry with audit doctor",
+  "invariants": [
+    "The plugin and hook registry is declarative and read-only",
+    "Registry validation and doctor commands do not load plugins or execute hooks",
+    "Registry validation does not write PM state, Task Orchestrator state, ConPort state, dope-memory state, dope-context indexes, GitHub state, or repository files",
+    "All authority hooks from operator-integration-authority.md must be present in deterministic order",
+    "Unknown orchestrator capabilities fail closed",
+    "Write/destructive hook capabilities require approval and receipts and cannot be automatic",
+    "Existing executable hook managers remain out of scope"
+  ],
+  "depends_on": [
+    "TP-DMX-ORCH-004",
+    "TP-DMX-ORCH-006"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ORCH-INTEGRATION",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-ORCH-006",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-orch-007-plugin-hooks",
+    "base_branch": "codex/tp-dmx-orch-006-workflow-dsl",
+    "stacked_because": "TP-DMX-ORCH-007 depends on TP-DMX-ORCH-004 and TP-DMX-ORCH-006 and is stacked after the workflow DSL validator."
+  },
+  "commit": {
+    "message": "feat(orchestrator): add plugin hook registry",
+    "allowlist": [
+      "config/orchestrator/plugin_hooks.yaml",
+      "config/orchestrator/approval_policy.yaml",
+      "src/dopemux/orchestrator/hooks.py",
+      "src/dopemux/commands/orchestrator_commands.py",
+      "tests/unit/orchestrator/test_hooks.py",
+      "tests/unit/orchestrator/test_policy.py",
+      "tests/unit/test_cli_orchestrator_validation_commands.py",
+      "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+      "task-packets/generated/TP-DMX-ORCH-007.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-007/PROOF.json"
+    ],
+    "verify": [
+      "uv run pytest -q tests/unit/orchestrator/test_hooks.py tests/unit/orchestrator/test_policy.py tests/unit/test_cli_orchestrator_validation_commands.py",
+      ".venv/bin/python -m compileall -q src",
+      ".venv/bin/python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-007.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      ".venv/bin/python -m dopemux.cli orchestrator hooks validate --json-output",
+      ".venv/bin/python -m dopemux.cli orchestrator plugins doctor --json-output",
+      ".venv/bin/python -m dopemux.cli orchestrator policy validate --json-output",
+      ".venv/bin/python -m dopemux.cli orchestrator packet validate task-packets/generated/TP-DMX-ORCH-007.json --json-output",
+      ".venv/bin/python -m dopemux.cli orchestrator proof validate proof/dmx-orch-integration/TP-DMX-ORCH-007/PROOF.json --json-output",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(orchestrator): add plugin hook registry",
+    "body": "Adds a declarative read-only orchestrator plugin hook registry with validation, hook listing, and plugin doctor commands.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect_hook_authority",
+      "task": "Inspect operator hook authority, approval policy registry, workflow DSL validator, CLI patterns, and existing executable hook managers.",
+      "validation": [
+        "Evidence distinguishes declarative registry validation from hook execution",
+        "Existing runtime hook managers remain out of scope"
+      ],
+      "context_files": [
+        "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+        "config/orchestrator/approval_policy.yaml",
+        "src/dopemux/orchestrator/policy.py",
+        "src/dopemux/orchestrator/workflow_dsl.py",
+        "src/dopemux/hooks/hook_manager.py",
+        "src/dopemux/mcp/hooks.py"
+      ]
+    },
+    {
+      "id": "registry_config",
+      "task": "Add a machine-readable read-only plugin and hook registry for the authority hook table.",
+      "validation": [
+        "All required authority hooks are present in deterministic order",
+        "Registry plugin capabilities are read-only or analysis",
+        "Registry mode remains read_only_registry"
+      ],
+      "expected_files": [
+        "config/orchestrator/plugin_hooks.yaml",
+        "config/orchestrator/approval_policy.yaml",
+        "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md"
+      ]
+    },
+    {
+      "id": "registry_loader_doctor",
+      "task": "Implement a pure-read registry loader, validator, and plugin hook doctor.",
+      "validation": [
+        "Default registry validates PASS",
+        "Doctor reports PASS with read_only true",
+        "Missing required hooks fail closed",
+        "Unknown tiers fail closed",
+        "Allowed/forbidden action conflicts fail closed",
+        "Unknown orchestrator actions fail closed",
+        "Write/destructive capabilities require approval and receipts",
+        "Runtime hook managers are not imported"
+      ],
+      "expected_files": [
+        "src/dopemux/orchestrator/hooks.py",
+        "tests/unit/orchestrator/test_hooks.py"
+      ]
+    },
+    {
+      "id": "cli_hooks_doctor",
+      "task": "Expose hook list, hook registry validation, and plugin doctor through read-only orchestrator CLI commands.",
+      "validation": [
+        "Hook list JSON output is deterministic",
+        "Hook validate JSON output returns a plugin_hook_registry report",
+        "Invalid registry exits nonzero",
+        "Plugin doctor JSON output returns a plugin_hook_doctor report"
+      ],
+      "expected_files": [
+        "src/dopemux/commands/orchestrator_commands.py",
+        "tests/unit/test_cli_orchestrator_validation_commands.py"
+      ]
+    },
+    {
+      "id": "proof",
+      "task": "Create this packet's generated Task Packet and proof artifact.",
+      "validation": [
+        "Generated Task Packet validates against dopetask-canonical-spec.json",
+        "Proof artifact validates with dopemux orchestrator proof validate",
+        "git diff --check passes"
+      ],
+      "expected_files": [
+        "task-packets/generated/TP-DMX-ORCH-007.json",
+        "proof/dmx-orch-integration/TP-DMX-ORCH-007/PROOF.json"
+      ]
+    }
+  ]
+}
