@@ -1,6 +1,6 @@
 {
   "task_packet_id": "TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002",
-  "status": "PASS_WITH_BLOCKERS",
+  "status": "PASS_WITH_RISKS",
   "verdict": "PASS_TARGETED_TESTS_WITH_SCOPE_CONFLICT",
   "repo": {
     "path": "/Users/hue/.codex/worktrees/693f/dopemux-mvp",
@@ -81,7 +81,6 @@
   },
   "blockers": [
     "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
-    "PAL_CLINK_AUDIT_SANDBOX_BLOCKED",
     "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500"
   ],
   "nonblocking_results": [
@@ -258,8 +257,12 @@
     "TP-DMX-AUDITOR-ROUTER-PAL-CLINK-AUDIT-HANDOFF-004"
   ],
   "head_sha_before_local_review_fixes": "6b10eed65c6256733900de06163ce312f8b99bdc",
-  "updated_at": "2026-05-26T23:00:00Z",
+  "updated_at": "2026-05-26T23:16:55Z",
   "head_sha_before_clink_attempt": "282257216002b0635fee696a06e8ef123a31f150",
   "head_sha_before_command_override_fixes": "e3246aee05a30951bc0a6f7aba910341fca02151",
-  "head_sha_before_shape_validation_fixes": "92ca508aad3d419f8e23b015428f7b5415622581"
+  "head_sha_before_shape_validation_fixes": "92ca508aad3d419f8e23b015428f7b5415622581",
+  "resolved_by_follow_up": [
+    "WRAPPER_BLOCKED_BY_ALLOWLIST"
+  ],
+  "hashes": {}
 }

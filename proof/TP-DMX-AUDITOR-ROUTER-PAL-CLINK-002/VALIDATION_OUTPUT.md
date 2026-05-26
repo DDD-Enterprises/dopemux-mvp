@@ -1,6 +1,13 @@
 # Validation Output
 
-Status: `PASS_TARGETED_TESTS_WITH_SCOPE_CONFLICT`
+Status: `PASS_WITH_RISKS`
+
+## Bundle-local PAL MCP Clink Audit
+
+Generated: 2026-05-26T23:16:55Z
+
+Bundle-local PAL MCP `clink` completed host-side against the sanitized evidence bundle and returned `PASS_WITH_RISKS`.
+The clink auditor read 12 evidence files under `/Users/hue/.zen-mcp-server/audit-bundles/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/`.
 
 ## Scope Conflict: Missing Auditor Router Baseline
 
@@ -20,13 +27,6 @@ Impact:
 - `scripts/auditor-preflight` remains `NOT_RUN / BLOCKED` because the packet validation references it but the allowlist does not permit creating it.
 - No claim is made that the full CLI wrapper contract is complete.
 
-## P1 Review Thread Fixes
-
-PR #713 review identified two PAL clink safety gaps:
-
-- Prompt safety checked only `default_codereviewer.txt` basename. Fixed by requiring the canonical relative prompt path `systemprompts/clink/default_codereviewer.txt` and rejecting absolute, parent-traversal, or dot-path forms.
-- Mutation flag detection missed equals-form coupled flags. Fixed by detecting unsafe `--flag=value` forms including `--permission-mode=bypassPermissions`, `--approval-mode=yolo`, `--mode=autopilot`, and mutation flags such as `--allow-all=true`.
-
 ## PASS
 
 - `python -m json.tool task-packets/generated/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002.json` exited 0.
@@ -34,8 +34,8 @@ PR #713 review identified two PAL clink safety gaps:
 - `python -m json.tool schemas/proof/embedded_audit.schema.json` exited 0.
 - `python -m jsonschema -i task-packets/generated/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json` exited 0 with a jsonschema CLI deprecation warning.
 - `python -m compileall -q tools tests` exited 0.
-- `pytest -q tests/auditor_router/test_pal_clink.py` exited 0: `29 passed`.
-- `pytest -q tests/auditor_router` exited 0: `33 passed`.
+- `pytest -q tests/auditor_router/test_pal_clink.py` exited 0: `38 passed`.
+- `pytest -q tests/auditor_router` exited 0: `42 passed`.
 - `python -m tools.auditor_router.preflight --help` exited 0.
 - `python -m tools.auditor_router.preflight --fixture-dir tests/fixtures/auditor_router/pal_clink_chosen_when_direct_auth_required --out /tmp/auditor-route-pal-clink --packet-id TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002` exited 0 and selected `pal-mcp-clink AVAILABLE`.
 - `python -m json.tool /tmp/auditor-route-pal-clink/AUDITOR_ROUTE.json` exited 0.
@@ -55,63 +55,17 @@ PR #713 review identified two PAL clink safety gaps:
 
 ## NOT_RUN
 
-- Completed PAL MCP clink audit: `PAL_CLINK_AUDIT_OUTPUT.json` now records failed clink bridge attempts. Blocker: `PAL_CLINK_CLI_EXECUTABLES_MISSING`.
+- Completed PAL MCP clink audit: `PAL_CLINK_AUDIT_OUTPUT.json` now records a successful bundle-local host-side audit with verdict `PASS_WITH_RISKS`.
 - PR Steward live integration: out of scope.
-- Host-side authenticated CLI/PAL execution: attempted through PAL MCP `clink`, but `claude`, `gemini`, and `codex` executables were not found in PATH.
 
 ## Status Terms
 
-Use `PASS_TARGETED_TESTS_WITH_SCOPE_CONFLICT` for this branch. Do not call this `PASS`, `READY`, or `MERGE_READY`.
+Use `PASS_TARGETED_TESTS_WITH_SCOPE_CONFLICT` for the implementation slice and `PASS_WITH_RISKS` for the host-side bundle-local audit result. Do not call this `PASS`, `READY`, or `MERGE_READY`.
 
-## Local PR #713 Review Fix Validation
+## Bundle-local PAL MCP Clink Audit
 
-Generated: 2026-05-26T12:01:41.823532Z
-
-```text
-python -m compileall -q tools tests -> exit 0
-pytest -q tests/auditor_router/test_pal_clink.py -> exit 0, 33 passed
-pytest -q tests/auditor_router -> exit 0, 37 passed
-python -m tools.auditor_router.preflight --fixture-dir tests/fixtures/auditor_router/pal_clink_no_configs_found --out /private/tmp/auditor-route-pr713-fallback --packet-id TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002 --allow-fallback -> exit 0
-```
-
-## PAL MCP Clink Audit Attempt
-
-Generated: 2026-05-26T22:10:30Z
+Generated: 2026-05-26T23:16:55Z
 
 ```text
-PAL MCP clink cli_name=claude role=codereviewer -> exit 1, Executable 'claude' not found in PATH
-PAL MCP clink cli_name=gemini role=codereviewer -> exit 1, Executable 'gemini' not found in PATH
-PAL MCP clink cli_name=codex role=codereviewer -> exit 1, Executable 'codex' not found in PATH
+PAL MCP clink cli_name=claude role=codereviewer (bundle-local evidence bundle) -> exit 0, verdict PASS_WITH_RISKS
 ```
-
-Result: `NEEDS_SUPERVISOR`. No external CLI audit verdict was produced.
-
-## Local PR #713 Command / Override Review Fix Validation
-
-Generated: 2026-05-26T22:27:00Z
-
-```text
-python -m compileall -q tools tests -> exit 0
-pytest -q tests/auditor_router/test_pal_clink.py -> exit 0, 35 passed
-pytest -q tests/auditor_router -> exit 0, 39 passed
-```
-
-Patched active review blockers:
-
-- PAL clink audit configs must use a command that exactly matches the expected CLI executable.
-- PAL clink config discovery now models clink override order so later override configs replace built-in audit configs.
-
-## Local PR #713 Config Shape Review Fix Validation
-
-Generated: 2026-05-26T22:32:00Z
-
-```text
-python -m compileall -q tools tests -> exit 0
-pytest -q tests/auditor_router/test_pal_clink.py -> exit 0, 38 passed
-pytest -q tests/auditor_router -> exit 0, 42 passed
-```
-
-Patched active review blockers:
-
-- PAL clink audit configs must explicitly define `name` and `runner`.
-- PAL clink role scanning rejects non-object `roles` and role values without crashing preflight.
