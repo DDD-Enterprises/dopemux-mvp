@@ -31,6 +31,9 @@
   "commit": {
     "message": "feat(governance): add devops autopr operating model",
     "allowlist": [
+      ".pre-commit-config.yaml",
+      "config/docs_hygiene/docs_placement_policy.yaml",
+      "config/repo_hygiene/root_hygiene_policy.json",
       "docs/ops/operating-model.md",
       "docs/ops/authority-ledger.md",
       "docs/ops/tool-routing-matrix.md",
@@ -62,7 +65,9 @@
       "task-packets/generated/TP-DMX-PR-STEWARD-001.json",
       "task-packets/TEMPLATE_TASK_PACKET.md",
       "proof/MP-DMX-DEVOPS-AUTOPR-001/PROOF.json",
-      "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPORT.md"
+      "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPORT.md",
+      "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPAIR_REPORT.md",
+      "proof/MP-DMX-DEVOPS-AUTOPR-001/PR704_REPAIR2_THREAD_NOTE.md"
     ],
     "verify": [
       "python -m json.tool task-packets/generated/MP-DMX-DEVOPS-AUTOPR-001.json",
@@ -219,7 +224,9 @@
       "task": "Run embedded audit, write proof, run final validation, inspect diff scope, and commit only if gates pass.",
       "expected_files": [
         "proof/MP-DMX-DEVOPS-AUTOPR-001/PROOF.json",
-        "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPORT.md"
+        "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPORT.md",
+        "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPAIR_REPORT.md",
+        "proof/MP-DMX-DEVOPS-AUTOPR-001/PR704_REPAIR2_THREAD_NOTE.md"
       ],
       "validation": [
         "Embedded audit is PASS or non-blocking PASS_WITH_RISKS before READY can be claimed.",
