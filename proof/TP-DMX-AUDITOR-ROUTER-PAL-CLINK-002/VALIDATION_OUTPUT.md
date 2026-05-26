@@ -49,12 +49,13 @@ PR #713 review identified two PAL clink safety gaps:
 
 ## FAIL / BLOCKED
 
-- `scripts/auditor-preflight --help` exited 127: `scripts/auditor-preflight` is referenced by validation but is not present. It is intentionally not created because the packet allowlist does not permit it. Blocker: `WRAPPER_BLOCKED_BY_ALLOWLIST`.
+- Historical PAL-CLINK-002 result: `scripts/auditor-preflight --help` exited 127 because the wrapper was not allowlisted in that packet.
+- Follow-up resolution: `TP-DMX-AUDITOR-ROUTER-WRAPPER-003` adds `scripts/auditor-preflight` and validates wrapper help plus fixture smokes. Resolved blocker: `WRAPPER_BLOCKED_BY_ALLOWLIST`.
+- External blocker recorded after PR #713 review work: `BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500`.
 
 ## NOT_RUN
 
 - Real PAL MCP clink execution: `PAL_CLINK_AUDIT_OUTPUT.json` was not captured. Blocker: `PAL_CLINK_AUDIT_OUTPUT_MISSING`.
-- Full wrapper smoke through `scripts/auditor-preflight`: blocked by allowlist.
 - PR Steward live integration: out of scope.
 - Host-side authenticated CLI/PAL execution: out of scope for router preflight.
 

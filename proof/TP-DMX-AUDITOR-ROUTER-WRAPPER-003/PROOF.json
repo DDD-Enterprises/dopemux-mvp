@@ -1,0 +1,134 @@
+{
+  "task_packet_id": "TP-DMX-AUDITOR-ROUTER-WRAPPER-003",
+  "status": "PASS_WITH_BLOCKERS",
+  "verdict": "PASS_TARGETED_TESTS_WITH_REMAINING_BLOCKERS",
+  "repo": {
+    "path": "/Users/hue/.codex/worktrees/693f/dopemux-mvp",
+    "remote": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "branch": "codex/tp-dmx-auditor-router-pal-clink-002",
+    "starting_head": "428fd7398f341ba429f39b216ac92733c6296d9c",
+    "repo_marker": ".dopetaskroot"
+  },
+  "objective": "Add scripts/auditor-preflight as a repo wrapper delegating to python -m tools.auditor_router.preflight.",
+  "implementation": {
+    "wrapper_path": "scripts/auditor-preflight",
+    "delegates_to": "python -m tools.auditor_router.preflight \"$@\"",
+    "executable": true,
+    "router_logic_changed": false,
+    "pal_mcp_called": false,
+    "pal_clink_audit_output_captured": false
+  },
+  "resolved_blockers": [
+    "WRAPPER_BLOCKED_BY_ALLOWLIST"
+  ],
+  "remaining_blockers": [
+    "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
+    "PAL_CLINK_AUDIT_OUTPUT_MISSING",
+    "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500"
+  ],
+  "github_workflow_dispatch": {
+    "status": "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500",
+    "evidence": [
+      "gh workflow run pr-steward.yml -f pr_number=713 returned HTTP 500.",
+      "gh workflow run pr-steward.yml --ref main -f pr_number=713 returned HTTP 500.",
+      "Direct REST dispatch to actions/workflows/pr-steward.yml/dispatches returned HTTP 500."
+    ],
+    "scope": "External GitHub Actions API dispatch failure; not remediated by this wrapper packet."
+  },
+  "proof_gitignore_handling": {
+    "status": "FORCE_ADDED",
+    "reason": "proof/* is ignored; packet explicitly requires proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003."
+  },
+  "validation": {
+    "status": "PASS_WITH_BLOCKERS",
+    "commands": [
+      {
+        "command": "pwd",
+        "exit_code": 0,
+        "result": "/Users/hue/.codex/worktrees/693f/dopemux-mvp"
+      },
+      {
+        "command": "git status --short --branch",
+        "exit_code": 0,
+        "result": "branch codex/tp-dmx-auditor-router-pal-clink-002; untracked wrapper packet files before proof creation"
+      },
+      {
+        "command": "git rev-parse HEAD",
+        "exit_code": 0,
+        "result": "428fd7398f341ba429f39b216ac92733c6296d9c"
+      },
+      {
+        "command": "python -m json.tool task-packets/generated/TP-DMX-AUDITOR-ROUTER-WRAPPER-003.json",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python -m compileall -q tools tests",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "pytest -q tests/auditor_router",
+        "exit_code": 0,
+        "result": "PASS: 33 passed"
+      },
+      {
+        "command": "python -m tools.auditor_router.preflight --help",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "scripts/auditor-preflight --help",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "scripts/auditor-preflight --fixture-dir tests/fixtures/auditor_router/pal_clink_chosen_when_direct_auth_required --out /tmp/auditor-route-wrapper-pal --packet-id TP-DMX-AUDITOR-ROUTER-WRAPPER-003",
+        "exit_code": 0,
+        "result": "PASS: selected pal-mcp-clink AVAILABLE"
+      },
+      {
+        "command": "python -m json.tool /tmp/auditor-route-wrapper-pal/AUDITOR_ROUTE.json",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python -m json.tool /tmp/auditor-route-wrapper-pal/ROUTE_PROBE_OUTPUTS.json",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "scripts/auditor-preflight --fixture-dir tests/fixtures/auditor_router/pal_clink_not_chosen_when_direct_available --out /tmp/auditor-route-wrapper-direct --packet-id TP-DMX-AUDITOR-ROUTER-WRAPPER-003",
+        "exit_code": 0,
+        "result": "PASS: selected claude-code-cli AVAILABLE"
+      },
+      {
+        "command": "python -m json.tool /tmp/auditor-route-wrapper-direct/AUDITOR_ROUTE.json",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "git diff --check",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "pre-commit run --files $(git diff --cached --name-only)",
+        "exit_code": 0,
+        "result": "PASS"
+      }
+    ]
+  },
+  "commit": {
+    "status": "PENDING",
+    "message": "feat(governance): add auditor preflight wrapper",
+    "note": "Final commit SHA is reported in the closing response because a commit cannot contain its own SHA."
+  },
+  "pr": {
+    "number": 713,
+    "state": "OPEN",
+    "draft_expected": true,
+    "ready_for_merge": false
+  },
+  "recommended_follow_up": "TP-DMX-AUDITOR-ROUTER-PAL-CLINK-AUDIT-HANDOFF-004"
+}
