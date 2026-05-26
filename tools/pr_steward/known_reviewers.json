@@ -1,0 +1,14 @@
+{
+  "known_reviewers": [
+    "chatgpt-codex-connector",
+    "copilot-pull-request-reviewer",
+    "github-actions[bot]",
+    "dependabot[bot]",
+    "hu3mann"
+  ],
+  "trusted_author_associations": [
+    "OWNER",
+    "MEMBER",
+    "COLLABORATOR"
+  ]
+}
