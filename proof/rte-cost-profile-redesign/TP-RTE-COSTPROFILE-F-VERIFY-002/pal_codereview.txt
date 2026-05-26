@@ -1,0 +1,78 @@
+# PAL codereview transcript — TP-RTE-COSTPROFILE-F-VERIFY-002
+
+**Tool**: `pal/codereview`
+**Model**: `gpt-5.2` (OpenAI)
+**Provider**: openai
+**Continuation ID**: `1ed31731-ff3a-40e2-a284-6685bbe2864d`
+**Review type**: `full`
+**Severity filter**: `all`
+
+---
+
+## Files reviewed
+
+1. `task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json` — the verification packet JSON
+2. `proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/PROOF.json` — the proof bundle
+3. `proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/SERIES_VERIFICATION_REPORT.md` — the verification report
+4. `task-packets/INDEX.md` — the 1-line F-VERIFY-002 row addition
+5. `proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/pytest_full_run.txt` — Gate 2 evidence
+6. `proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/bounded_lane_print_config.txt` — Gate 3 evidence
+7. `proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/route_readiness_probe.txt` — Gate 4 evidence
+
+All 7 files fully embedded for expert analysis (`type: fully_embedded`).
+
+---
+
+## Focus areas requested
+
+- Verdict correctness given the gate results (all 5 PASS; 1114 passed / 8 xfailed / 1 skipped / 0 failed / 0 xpassed-strict; top-level `cost_profile=value-default` emitted; OpenRouter probe 2/2; CLI import clean)
+- `status_scope` correctness (must be `series_gate`, NOT the repair packet's `repair_gate_only_not_series_gate`)
+- Honest treatment of the xfail-vs-skip env divergence (one audit-only test moved XFAIL → SKIPPED because the verify env lacks `OPENROUTER_API_KEY`; deferred-state total is still 9 in both runs)
+- Cluster D xfail-strict treatment (all 6 remained XFAIL, 0 XPASS-strict — confirms strict markers held)
+- NOT_RUN ledger completeness (live provider calls + live extraction must be explicitly NOT_RUN)
+- Stale claims, mismatched evidence vs prose, missing residual risks, PR-body-vs-PROOF inconsistencies, allowlist drift
+
+---
+
+## Expert analysis
+
+> Test counts are a floor, not equality... Required: ≥1114 passed, deferred-state (xfailed+skipped) ≥9, 0 failed, 0 xpassed-strict. Report actual numbers and explain any xfail↔skip classification drift (e.g., OPENROUTER_API_KEY).
+
+---
+
+## Findings summary
+
+- **Critical**: 0
+- **High**: 0
+- **Medium**: 0
+- **Low**: 0
+- **Info / advisory**: 1 (reinforce that test counts are a floor and that any xfail↔skip drift must be explained — both already addressed in the proof bundle).
+
+## Synthesis (Claude review of expert output)
+
+Cross-referencing the expert advisory against the actual proof bundle:
+
+| Expert ask | Proof bundle satisfaction |
+| --- | --- |
+| `≥1114 passed` | PROOF.json `full_suite.passed = 1114`. SERIES_VERIFICATION_REPORT.md restates as `1114 passed`. **MET** as floor. |
+| deferred-state `(xfailed+skipped) ≥9` | PROOF.json `full_suite.xfailed = 8`, `full_suite.skipped = 1`; deferred-state total = 9. **MET** as floor. |
+| `0 failed` | PROOF.json `full_suite.failed = 0`. **MET**. |
+| `0 xpassed-strict` | PROOF.json `full_suite.xpassed_strict = 0` plus `full_suite.xpass_discriminator.matches = 0`. **MET**. |
+| Report actual numbers | PROOF.json + report both include actual counts, durations, exit codes. **MET**. |
+| Explain xfail↔skip classification drift | PROOF.json `full_suite.env_classification_note` and SERIES_VERIFICATION_REPORT.md Section "Environment-driven divergence" explain the OPENROUTER_API_KEY skipif at module:37 of `test_fa_8_high_1_preflight_probe.py`. **MET**. |
+
+Independent Claude review confirms additional points the expert did not raise but are worth recording:
+
+- `status_scope` is correctly `series_gate` in PROOF.json — not the repair packet's `repair_gate_only_not_series_gate`. Distinction is preserved.
+- All 6 Cluster D strict xfails (Walker-006) appear in `pytest_full_run.txt` short summary and remained XFAIL; the 0 XPASS discriminator is explicitly documented.
+- INDEX.md addition does not modify the F-VERIFY-001 (`NOT_VERIFIED_ACCEPTED_AS_EVIDENCE`) or F-FULLSUITE-REPAIR-001 (`Merged (PR #709)`) rows.
+- Allowlist in packet JSON exactly matches the 10 paths specified by the packet spec; no drift.
+- PR body / SERIES_VERIFICATION_REPORT.md / PROOF.json all converge on the same verdict (VERIFIED, series_gate, live calls NOT_RUN, live extraction NOT_RUN).
+
+---
+
+## Verdict
+
+**0 CRITICAL, 0 HIGH** — no blocking findings. Proof bundle is internally consistent and matches the evidence files. Verdict of **VERIFIED** is supported by the captured gates.
+
+**Recommendation**: Proceed to `pal/precommit`.
