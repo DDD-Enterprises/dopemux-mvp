@@ -1,0 +1,80 @@
+# PAL Precommit Transcript
+
+Packet: TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001
+Branch: codex/rte-costprofile-f-fullsuite-repair-001
+Base SHA: c4f0c17b29f67dd949b15953f7c5e6b01ac5cbdf
+
+## Operator Constraint Update
+
+Superseding operator instruction: do not use Gemini; redo all PAL with working
+models.
+
+Active PAL precommit model: gpt-5-codex.
+
+## Historical Superseded Attempt
+
+An earlier PAL precommit attempt used `gemini-2.5-pro` before the operator
+updated the constraint. That continuation is abandoned and is not used as the
+current S12 proof basis.
+
+## S12 Redo
+
+Tool: mcp__pal__.precommit
+Model: gpt-5-codex
+Provider: openai
+Validation type: internal
+Status: validation_complete_ready_for_commit
+Continuation ID: 11a68124-0e8e-4bf8-bab8-4f71e6e7b17a
+
+### Step 1
+
+Status: pause_for_validation
+
+Validation strategy:
+
+- Verify git status, staged diff, unstaged diff, and untracked files.
+- Check packet allowlist plus the operator-authorized residual file
+  `services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py`.
+- Confirm validation artifacts and proof state.
+- Keep actual git commit blocked until S13 proof artifacts and final packet
+  verify commands pass.
+
+### Step 2
+
+Status: pause_for_validation
+
+Observed git state:
+
+- Repo root: `/private/tmp/dopemux-pr706-clean-001`.
+- One git repository found under the checked root.
+- No staged changes.
+- Dirty tracked repair files are bounded to the expected RTE/runtime/test
+  surfaces and `src/dopemux/cli.py`.
+- Untracked `docs/03-reference/repo-truth-extractor.md` is allowlisted.
+- Proof files are ignored by default and must be staged with `git add -f`.
+
+### Step 3
+
+Status: validation_complete_ready_for_commit
+
+Verdict:
+
+SAFE TO COMMIT for the S12 precommit gate, subject to completing packet-required
+S13 proof artifacts and final verification commands before the actual commit.
+
+Findings:
+
+- CRITICAL findings: 0
+- HIGH findings: 0
+- FAIL_CLOSED items: 0
+- LOW/INFO findings:
+  - Proof files are ignored and must be explicitly force-added when staging.
+  - S13 `PROOF.json` and `sha256sums.txt` remain required before actual commit.
+
+Validation evidence referenced:
+
+- Full S9 suite passed: `1114 passed, 9 xfailed, 1 warning`.
+- Bounded S10 `--print-config` probe passed and emitted `cost_profile`.
+- Non-Gemini PAL codereview completed with no CRITICAL/HIGH findings.
+- `git diff --check` exited 0 during precommit investigation.
+- No live provider calls or `--execute` invocations were run.

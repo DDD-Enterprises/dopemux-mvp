@@ -1,0 +1,206 @@
+{
+  "allowlist_expansions": [
+    {
+      "authorized_by_operator": true,
+      "decision": "stale CostProfile/OpenRouter preflight expectations updated using runtime route evidence",
+      "file": "services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py",
+      "scope": [
+        "test_phase_d_provider_preflight_blocks_on_openrouter_402",
+        "test_phase_d_provider_preflight_is_required_when_cost_routes_include_openrouter"
+      ]
+    }
+  ],
+  "base_sha": "c4f0c17b29f67dd949b15953f7c5e6b01ac5cbdf",
+  "files_touched": [
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py",
+    "services/repo-truth-extractor/tests/test_intelligence_routing_integration.py",
+    "services/repo-truth-extractor/tests/test_phase_d_contract_hardening.py",
+    "services/repo-truth-extractor/tests/test_pre_live_gate_v25.py",
+    "services/repo-truth-extractor/tests/test_prescan_contracts.py",
+    "services/repo-truth-extractor/tests/test_prescan_e2e_smoke.py",
+    "services/repo-truth-extractor/tests/test_prescan_incremental.py",
+    "services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py",
+    "services/repo-truth-extractor/tests/test_rte_v5_characterization.py",
+    "services/repo-truth-extractor/tests/test_run_extraction_v3_model_routing.py",
+    "services/repo-truth-extractor/tests/test_run_extraction_v5_benchmark_route_ownership.py",
+    "services/repo-truth-extractor/tests/test_run_extraction_v5_live_readiness.py",
+    "services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+    "src/dopemux/cli.py",
+    "docs/03-reference/repo-truth-extractor.md",
+    "task-packets/INDEX.md",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/REPAIR_DECISIONS.md",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/pytest_full_run_post_repair.txt",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/bounded_lane_print_config_post_repair.txt",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/pal_codereview.txt",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/pal_precommit.txt",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/PROOF.json",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/sha256sums.txt"
+  ],
+  "follow_up_packets": [
+    "TP-RTE-COSTPROFILE-F-VERIFY-002",
+    "TP-RTE-WALKER-006"
+  ],
+  "generated_at_utc": "2026-05-26T07:50:21+00:00",
+  "packet_id": "TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001",
+  "pal_constraint": {
+    "active": "do not use Gemini; use working non-Gemini models where selectable",
+    "superseded": "initial recovery constraint blocked non-Gemini retry after Gemini failure"
+  },
+  "proof_artifacts": [
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/REPAIR_DECISIONS.md",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/pytest_full_run_post_repair.txt",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/bounded_lane_print_config_post_repair.txt",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/pal_codereview.txt",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/pal_precommit.txt",
+    "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/sha256sums.txt"
+  ],
+  "repair_branch": "codex/rte-costprofile-f-fullsuite-repair-001",
+  "residual_risks": [
+    "Repair status is VERIFIED for this packet gate only; CostProfile F series remains unverified until TP-RTE-COSTPROFILE-F-VERIFY-002 runs after this PR lands.",
+    "Cluster D prescan failures are executable xfail deferrals to TP-RTE-WALKER-006 and remain real deferred work.",
+    "Legacy routing fields remain as compatibility metadata and need future deprecation tracking.",
+    "External PAL codereview assistant-model handoff did not independently inspect files; internal non-Gemini PAL review completed and records this caveat.",
+    "Exact pal/challenge tool was skipped because it has no model selector under the operator-updated no-Gemini constraint; local challenge review was recorded only as local evidence."
+  ],
+  "status": "VERIFIED",
+  "status_scope": "repair_gate_only_not_series_gate",
+  "validation_buckets": {
+    "FAIL": [],
+    "NOT_RUN": [
+      {
+        "command": "live LLM/provider calls",
+        "reason": "not authorized by packet and no consent/budget gate used"
+      },
+      {
+        "command": "--execute bounded lane",
+        "reason": "packet required print-config probe only"
+      },
+      {
+        "command": "F-VERIFY-002 series verification",
+        "reason": "explicit follow-up after repair PR lands"
+      },
+      {
+        "command": "mcp__pal__.challenge exact tool",
+        "reason": "tool has no model selector and current operator constraint forbids Gemini; no way to guarantee non-Gemini"
+      },
+      {
+        "command": "model-selected PAL chat final challenge with files",
+        "reason": "tool rejected as unacceptable data-export risk; local challenge review recorded without claiming stronger PAL result"
+      },
+      {
+        "command": "non-Gemini external codereview assistant model final review",
+        "reason": "gpt-5-codex external handoff requested embedded files; internal PAL codereview completed instead and caveat recorded"
+      }
+    ],
+    "PASS": [
+      {
+        "command": "python -m json.tool task-packets/generated/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001.json >/tmp/tp-costprofile-repair-json-ok.txt",
+        "exit_code": 0
+      },
+      {
+        "command": "packet intake required-field and step-validation probe",
+        "exit_code": 0
+      },
+      {
+        "command": "S3 Cluster A focused pytest suite",
+        "exit_code": 0,
+        "result": "78 passed, 1 warning"
+      },
+      {
+        "command": "S3 no-regression route tests",
+        "exit_code": 0,
+        "result": "42 passed"
+      },
+      {
+        "command": "S4 pricing focused tests",
+        "exit_code": 0,
+        "result": "8 passed"
+      },
+      {
+        "command": "S4 pricing no-regression tests",
+        "exit_code": 0,
+        "result": "8 passed"
+      },
+      {
+        "command": "S5 bounded --print-config probe and grep",
+        "exit_code": 0,
+        "result": "cost_profile emitted"
+      },
+      {
+        "command": "S6 Cluster D focused tests with executable xfail deferrals",
+        "exit_code": 0,
+        "result": "21 passed, 6 xfailed"
+      },
+      {
+        "command": "S7 reporting seam tests",
+        "exit_code": 0,
+        "result": "3 passed"
+      },
+      {
+        "command": "S8 RTE characterization tests",
+        "exit_code": 0,
+        "result": "9 passed"
+      },
+      {
+        "command": "PYTHONPATH=src python -c \"import dopemux.cli\" && echo OK",
+        "exit_code": 0
+      },
+      {
+        "command": "S9 residual provider-preflight tests",
+        "exit_code": 0,
+        "result": "2 passed, 1 warning"
+      },
+      {
+        "command": "bash -o pipefail -c RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests --tb=short -v | tee pytest_full_run_post_repair.txt",
+        "exit_code": 0,
+        "result": "1114 passed, 9 xfailed, 1 warning"
+      },
+      {
+        "command": "bash -o pipefail -c RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python services/repo-truth-extractor/run_extraction_v5.py --phase A --step A2 --run-id f_repair_print_config --output-root /tmp/rte-f-repair-print-config --cost-profile value-default --print-config | tee bounded_lane_print_config_post_repair.txt",
+        "exit_code": 0
+      },
+      {
+        "command": "grep -q cost_profile proof/.../bounded_lane_print_config_post_repair.txt",
+        "exit_code": 0
+      },
+      {
+        "command": "mcp__pal__.analyze redo with gpt-5-codex",
+        "exit_code": 0,
+        "result": "local_work_complete"
+      },
+      {
+        "command": "mcp__pal__.thinkdeep redo with gpt-5-codex",
+        "exit_code": 0,
+        "result": "deep_thinking_complete_ready_for_implementation"
+      },
+      {
+        "command": "mcp__pal__.consensus redo with gpt-5-codex and gpt-5",
+        "exit_code": 0,
+        "result": "consensus_workflow_complete"
+      },
+      {
+        "command": "mcp__pal__.codereview internal redo with gpt-5-codex",
+        "exit_code": 0,
+        "result": "0 critical/high findings"
+      },
+      {
+        "command": "mcp__pal__.precommit redo with gpt-5-codex",
+        "exit_code": 0,
+        "result": "validation_complete_ready_for_commit; 0 fail-closed"
+      },
+      {
+        "command": "task-packets/INDEX.md F-VERIFY-001 row contains NOT_VERIFIED_ACCEPTED_AS_EVIDENCE",
+        "exit_code": 0
+      },
+      {
+        "command": "task-packets/INDEX.md contains TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001 Active row",
+        "exit_code": 0
+      },
+      {
+        "command": "git diff --check",
+        "exit_code": 0
+      }
+    ]
+  }
+}
