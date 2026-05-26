@@ -31,6 +31,7 @@ DASHBOARD_PANELS = [
 ]
 DEFAULT_CONTEXT_SOURCES = ("dope-context", "ConPort", "dope-memory")
 TRANSITION_PROOF_AUTHORITY = "task-orchestrator-transition-proof-envelope"
+SUPPORTED_TRANSITION_PROOF_SCHEMA_VERSION = "1"
 
 
 def approve_phrase(
@@ -464,6 +465,22 @@ def _validate_transition_proof_envelope(
                     path=f"/{key}",
                 )
             )
+    schema_version = payload.get("schema_version")
+    if (
+        _non_empty_string(schema_version)
+        and schema_version != SUPPORTED_TRANSITION_PROOF_SCHEMA_VERSION
+    ):
+        errors.append(
+            issue(
+                "TRANSITION_PROOF_SCHEMA_VERSION_UNSUPPORTED",
+                (
+                    f"Transition proof schema_version must be "
+                    f"{SUPPORTED_TRANSITION_PROOF_SCHEMA_VERSION}; "
+                    f"got {schema_version!r}."
+                ),
+                path="/schema_version",
+            )
+        )
     if payload.get("canonical_writer") not in {None, "task-orchestrator"}:
         errors.append(
             issue(

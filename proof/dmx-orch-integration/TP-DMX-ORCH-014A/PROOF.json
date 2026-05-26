@@ -2,8 +2,10 @@
   "bundle_id": "TP-DMX-ORCH-014A-PROOF",
   "run_id": "tp-dmx-orch-014a-local",
   "skill": "codex",
-  "status": "READY_FOR_REVIEW",
-  "validation_state": "PASSED",
+  "status": "BLOCKED",
+  "validation_state": "PARTIAL",
+  "created_at": "2026-05-26T15:30:00Z",
+  "validated_at": "2026-05-26T17:00:00Z",
   "manifest": {
     "bundle_id": "TP-DMX-ORCH-014A-PROOF",
     "packet_id": "TP-DMX-ORCH-014A",
@@ -13,12 +15,10 @@
     ]
   },
   "authoritative_artifacts": [
-    "task-packets/generated/TP-DMX-ORCH-014A.json",
-    "src/dopemux/orchestrator/operator_workflows.py"
+    "task-packets/generated/TP-DMX-ORCH-014A.json"
   ],
   "supporting_artifacts": [
-    "tests/unit/orchestrator/test_operator_workflows.py",
-    "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md"
+    "proof/dmx-orch-integration/TP-DMX-ORCH-014A/PROOF.json"
   ],
   "chain_of_custody": {
     "documented": true,
@@ -28,6 +28,81 @@
       "TP-DMX-ORCH-013"
     ]
   },
+  "repo_identity_check": {
+    "result": "PASS",
+    "marker_file": ".dopetaskroot",
+    "marker_present": true,
+    "remote_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "starting_head": "e6f115de0480d02534e1c345492e7ff1c2b8b3af",
+    "branch": "codex/tp-dmx-orch-007-plugin-hooks"
+  },
+  "validations": [
+    {
+      "name": "Task Packet JSON syntax",
+      "command": ".venv/bin/python -m json.tool task-packets/generated/TP-DMX-ORCH-014A.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Proof JSON syntax",
+      "command": ".venv/bin/python -m json.tool proof/dmx-orch-integration/TP-DMX-ORCH-014A/PROOF.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Task Packet schema validation",
+      "command": ".venv/bin/python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-014A.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "note": "The packet draft itself is well-formed; the work it describes is in a different repo (jpicklyk/task-orchestrator)."
+    },
+    {
+      "name": "Task Packet validator command",
+      "command": ".venv/bin/python -m dopemux.cli orchestrator packet validate task-packets/generated/TP-DMX-ORCH-014A.json --json-output",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Proof validator command",
+      "command": ".venv/bin/python -m dopemux.cli orchestrator proof validate proof/dmx-orch-integration/TP-DMX-ORCH-014A/PROOF.json --json-output",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ],
+  "codereview_status": {
+    "result": "NOT_RUN",
+    "reason": "Cross-repo packet draft only; codereview cannot run against an upstream PR that has not yet been opened."
+  },
+  "precommit_status": {
+    "result": "NOT_RUN",
+    "reason": "Cross-repo packet draft only; pre-commit applies to dopemux-mvp file edits, none of which are the upstream Kotlin proof envelope."
+  },
   "warnings": [],
-  "blockers": []
+  "blockers": [
+    {
+      "code": "TP_014A_UPSTREAM_PR_NOT_OPENED",
+      "message": "External cross-repo PR against jpicklyk/task-orchestrator has not been opened. This packet remains a draft in dopemux-mvp and cannot complete until the upstream PR exists.",
+      "artifact": "task-packets/generated/TP-DMX-ORCH-014A.json",
+      "evidence_path": "task-packets/generated/TP-DMX-ORCH-014A.json"
+    }
+  ],
+  "not_run": [
+    "Kotlin gradle test (./gradlew test) in the upstream repo: not run; upstream PR not opened.",
+    "advance_item / complete_tree response schema migration in upstream Kotlin task-orchestrator: not implemented.",
+    "Integration test of dopemux consumer (TP-014B) against a live Kotlin envelope: depends on this packet landing upstream."
+  ],
+  "residual_risks": [
+    "This packet's draft can drift from upstream Kotlin reality if the upstream maintainer chooses a different envelope shape.",
+    "Dopemux consumer (TP-014B) is shape-locked to the envelope this draft specifies; an upstream divergence will require a TP-014B revision."
+  ],
+  "rollback_plan": [
+    "git revert <commit-sha> in dopemux-mvp.",
+    "Remove proof/dmx-orch-integration/TP-DMX-ORCH-014A/PROOF.json.",
+    "Remove task-packets/generated/TP-DMX-ORCH-014A.json.",
+    "Once the upstream PR exists, retire this draft in favor of a tracked TP-DMX-ORCH-014A run that exits 0 with PASS."
+  ],
+  "commit_sha": null,
+  "commit_sha_policy": "A committed proof file cannot self-reference the commit SHA that contains its final contents. The authoritative local commit SHA is reported by git after commit creation and in the session closeout.",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/714",
+  "cleanup_status": "WORKTREE_ACTIVE"
 }

@@ -419,3 +419,44 @@ def test_remaining_operator_workflow_cli_surfaces(tmp_path: Path) -> None:
         assert result.exit_code == 0, result.output
         payload = json.loads(result.output)
         assert payload[key] == expected
+
+
+def _envelope_payload() -> dict:
+    return {
+        "schema_version": "1",
+        "workflow_id": "wf-1",
+        "transition": "queue->work",
+        "idempotency_key": "k-1",
+        "actor": "operator",
+        "canonical_writer": "task-orchestrator",
+        "receipt": {
+            "proof_id": "p-1",
+            "operation": "advance_item",
+            "status": "OK",
+        },
+    }
+
+
+def test_transition_proof_envelope_accepts_supported_schema_version(tmp_path):
+    envelope_path = tmp_path / "envelope.json"
+    envelope_path.write_text(json.dumps(_envelope_payload()), encoding="utf-8")
+
+    report = validate_transition_proof_envelope_file(envelope_path)
+
+    assert report.status == "PASS", report.errors
+    assert report.valid is True
+    assert report.errors == []
+
+
+def test_transition_proof_envelope_rejects_unsupported_schema_version(tmp_path):
+    envelope = _envelope_payload()
+    envelope["schema_version"] = "999"
+    envelope_path = tmp_path / "envelope.json"
+    envelope_path.write_text(json.dumps(envelope), encoding="utf-8")
+
+    report = validate_transition_proof_envelope_file(envelope_path)
+
+    assert report.status == "FAIL"
+    assert report.valid is False
+    codes = {error["code"] for error in report.errors}
+    assert "TRANSITION_PROOF_SCHEMA_VERSION_UNSUPPORTED" in codes
