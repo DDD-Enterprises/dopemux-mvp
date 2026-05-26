@@ -87,6 +87,7 @@ def test_orchestrator_validation_help_lists_packet_and_proof_commands() -> None:
     assert result.exit_code == 0, result.output
     assert "packet" in result.output
     assert "proof" in result.output
+    assert "policy" in result.output
 
 
 def test_orchestrator_packet_validate_outputs_json_report(tmp_path: Path) -> None:
@@ -203,3 +204,50 @@ def test_orchestrator_validation_commands_do_not_execute_or_write() -> None:
                 called.add(func.attr)
 
     assert called.isdisjoint(forbidden)
+
+
+def test_orchestrator_policy_validate_outputs_json_report() -> None:
+    result = CliRunner().invoke(
+        cli,
+        ["orchestrator", "policy", "validate", "--json-output"],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["kind"] == "approval_policy"
+    assert payload["status"] == "PASS"
+    assert payload["valid"] is True
+    assert payload["details"]["tier_count"] == 9
+
+
+def test_orchestrator_policy_tiers_outputs_t4_gate() -> None:
+    result = CliRunner().invoke(
+        cli,
+        ["orchestrator", "policy", "tiers", "--json-output"],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["tiers"]["T4"]["approval_required"] is True
+    assert payload["tiers"]["T4"]["receipt_required"] is True
+    assert payload["tiers"]["TX"]["decision"] == "refuse"
+
+
+def test_orchestrator_policy_classify_unknown_refuses() -> None:
+    result = CliRunner().invoke(
+        cli,
+        [
+            "orchestrator",
+            "policy",
+            "classify",
+            "orchestrator.future.unlisted",
+            "--json-output",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["capability_id"] == "orchestrator.future.unlisted"
+    assert payload["tier"] == "TU"
+    assert payload["allowed"] is False
+    assert payload["decision"] == "refuse"
