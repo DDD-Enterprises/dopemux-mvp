@@ -502,7 +502,8 @@ def test_normalize_pal_clink_preserves_blocking_marker() -> None:
     )
 
     assert audit["status"] == "FAIL"
-    assert audit["findings"][0]["blocking"] is True
+    assert "blocking" not in audit["findings"][0]
+    assert_schema_valid(audit, ROOT / "schemas" / "proof" / "embedded_audit.schema.json")
 
 
 def test_normalize_pal_clink_no_verdict_needs_supervisor() -> None:
