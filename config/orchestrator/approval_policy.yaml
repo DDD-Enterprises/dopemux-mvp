@@ -1,0 +1,280 @@
+schema_version: "1"
+id: task-orchestrator-approval-policy
+authority: docs/03-reference/systems/task-orchestrator/operator-integration-authority.md
+updated: "2026-05-26"
+defaults:
+  unknown_capability_tier: TU
+  unregistered_decision: refuse
+  auto_invocation_tiers:
+    - T0
+    - T1
+
+tiers:
+  T0:
+    name: Read-only status
+    mode: read
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: false
+    decision: allow
+    description: Queue, blockers, git status, PR status, and other read-only status views.
+  T1:
+    name: Local analysis
+    mode: analysis
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    decision: allow
+    description: Packet validation, proof validation, diff inspection, and decision-affecting local analysis.
+  T2:
+    name: Draft artifact
+    mode: draft
+    automatic_allowed: false
+    approval_required: true
+    receipt_required: true
+    decision: draft_only
+    description: Draft plans, draft proof, temporary markdown, and other non-authoritative draft artifacts.
+  T3:
+    name: Repo-local docs edit
+    mode: write
+    automatic_allowed: false
+    approval_required: true
+    receipt_required: true
+    decision: gated
+    description: Documentation updates and command documentation under an active Task Packet.
+  T4:
+    name: Source, config, or runtime state
+    mode: write
+    automatic_allowed: false
+    approval_required: true
+    receipt_required: true
+    decision: gated
+    description: Code edits, config edits, ConPort writes, workflow transitions, and index sync.
+  T5:
+    name: GitHub mutation
+    mode: write
+    automatic_allowed: false
+    approval_required: true
+    receipt_required: true
+    decision: gated
+    description: PR comments, labels, merges, pushes, and related GitHub mutations.
+  T6:
+    name: Destructive, deploy, or release
+    mode: destructive
+    automatic_allowed: false
+    approval_required: true
+    receipt_required: true
+    typed_confirmation_required: true
+    decision: gated
+    description: Index clearing, deploys, force pushes, delete records, and release operations.
+  TX:
+    name: Unknown
+    mode: unknown
+    automatic_allowed: false
+    approval_required: false
+    receipt_required: true
+    decision: refuse
+    description: Opaque or externally unresolved tools that cannot be approved safely.
+  TU:
+    name: Unclassified
+    mode: unknown
+    automatic_allowed: false
+    approval_required: false
+    receipt_required: true
+    decision: refuse
+    description: Unenumerated tools or capabilities that must fail closed until classified.
+
+capabilities:
+  orchestrator.status.queue:
+    title: Read workflow queue
+    tier: T0
+    mode: read
+    canonical_writer: task-orchestrator
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: false
+    decision: allow
+  orchestrator.status.blockers:
+    title: Read workflow blockers
+    tier: T0
+    mode: read
+    canonical_writer: task-orchestrator
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: false
+    decision: allow
+  orchestrator.status.state:
+    title: Read workflow state
+    tier: T0
+    mode: read
+    canonical_writer: task-orchestrator
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: false
+    decision: allow
+  orchestrator.daily.summary:
+    title: Build daily command-center view
+    tier: T1
+    mode: analysis
+    canonical_writer: dopemux
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    decision: allow
+  orchestrator.packet.validate:
+    title: Validate Task Packet schema
+    tier: T1
+    mode: analysis
+    canonical_writer: dopetask-schema
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    decision: allow
+  orchestrator.packet.inspect:
+    title: Inspect packet authority boundaries
+    tier: T1
+    mode: analysis
+    canonical_writer: dopemux
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    decision: allow
+  orchestrator.proof.validate:
+    title: Validate proof bundle shape
+    tier: T1
+    mode: analysis
+    canonical_writer: proof-bundle-governance
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    decision: allow
+  orchestrator.review.intake:
+    title: Intake implementation output against packet and proof
+    tier: T1
+    mode: analysis
+    canonical_writer: dopemux
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    decision: allow
+  orchestrator.transition.preview:
+    title: Preview workflow transition
+    tier: T1
+    mode: read
+    canonical_writer: task-orchestrator
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    decision: allow
+  orchestrator.transition.apply:
+    title: Apply canonical workflow transition
+    tier: T4
+    mode: write
+    canonical_writer: task-orchestrator
+    automatic_allowed: false
+    approval_required: true
+    receipt_required: true
+    decision: gated
+  orchestrator.plan.decompose_preview:
+    title: Draft work decomposition without writes
+    tier: T2
+    mode: draft
+    canonical_writer: dopemux
+    automatic_allowed: false
+    approval_required: true
+    receipt_required: true
+    decision: draft_only
+  orchestrator.plan.decompose_apply:
+    title: Create or advance workflow items
+    tier: T4
+    mode: write
+    canonical_writer: task-orchestrator
+    automatic_allowed: false
+    approval_required: true
+    receipt_required: true
+    decision: gated
+  orchestrator.memory.record_decision:
+    title: Route structured decision to ConPort
+    tier: T4
+    mode: write
+    canonical_writer: ConPort
+    automatic_allowed: false
+    approval_required: true
+    receipt_required: true
+    decision: gated
+  orchestrator.memory.record_progress:
+    title: Route progress to ConPort with dope-memory mirror
+    tier: T4
+    mode: write
+    canonical_writer: ConPort
+    mirror_writer: dope-memory
+    automatic_allowed: false
+    approval_required: true
+    receipt_required: true
+    decision: gated
+  orchestrator.github.pr_readiness:
+    title: Classify PR readiness
+    tier: T1
+    mode: analysis
+    canonical_writer: GitHub
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    decision: allow
+  orchestrator.github.comment:
+    title: Comment on PR
+    tier: T5
+    mode: write
+    canonical_writer: GitHub
+    automatic_allowed: false
+    approval_required: true
+    receipt_required: true
+    decision: gated
+  orchestrator.github.merge:
+    title: Merge PR
+    tier: T5
+    mode: write
+    canonical_writer: GitHub
+    automatic_allowed: false
+    approval_required: true
+    receipt_required: true
+    typed_confirmation_required: true
+    decision: gated
+  orchestrator.context.refresh_status:
+    title: Assess context freshness
+    tier: T1
+    mode: read
+    canonical_writer: dope-context
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    decision: allow
+  orchestrator.context.refresh_index:
+    title: Trigger scoped dope-context sync or index
+    tier: T4
+    mode: write
+    canonical_writer: dope-context
+    automatic_allowed: false
+    approval_required: true
+    receipt_required: true
+    decision: gated
+  orchestrator.route.pm:
+    title: Direct bridge PM route
+    tier: TX
+    mode: unknown
+    canonical_writer: ""
+    automatic_allowed: false
+    approval_required: false
+    receipt_required: true
+    bridge_mediated: true
+    decision: refuse
+  orchestrator.destructive.clear_index:
+    title: Delete dope-context index
+    tier: T6
+    mode: destructive
+    canonical_writer: dope-context
+    automatic_allowed: false
+    approval_required: true
+    receipt_required: true
+    typed_confirmation_required: true
+    decision: block

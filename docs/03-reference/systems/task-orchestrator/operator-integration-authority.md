@@ -284,6 +284,14 @@ Validation rules:
 | TX Unknown | opaque or externally unresolved tool | No | Cannot approve safely | Violation receipt |
 | TU Unclassified | unenumerated tools | No | Cannot approve safely | Violation receipt |
 
+The machine-readable registry for these tiers and the proposed
+operator-facing capabilities is
+`config/orchestrator/approval_policy.yaml`. The registry is a classification
+and validation source only. It does not grant approval, apply workflow
+transitions, write receipts, mutate GitHub, write memory, or override a
+canonical writer. Unregistered capabilities classify as `TU` and refuse by
+default.
+
 Typed confirmation pattern:
 
 ```text
