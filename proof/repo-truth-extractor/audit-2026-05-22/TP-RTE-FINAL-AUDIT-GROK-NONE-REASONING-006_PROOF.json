@@ -4,8 +4,13 @@
   "branch": "codex/rte-grok-none-reasoning-006",
   "base_branch": "main",
   "base_sha": "811f50c846239101a97fb1e40d405eb0a0c07620",
-  "head_sha": "5f0b37ec8637e3620f74667f83052b41ea7ef512",
-  "rename_commit_sha": "PENDING_COMMIT_FOR_PROOF_RENAME",
+  "head_sha": "b8ffbb32bdce92d7f55c9a61c8fb22d5f10f298d",
+  "code_commit_sha": "5f0b37ec8637e3620f74667f83052b41ea7ef512",
+  "proof_only_commit_shas": [
+    "b8ffbb32bdce92d7f55c9a61c8fb22d5f10f298d",
+    "FINALIZE_PROOF_SHA_SET_AFTER_THIS_COMMIT_LANDS"
+  ],
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/705",
   "created_at_utc": "2026-05-25T00:00:00Z",
   "scope": {
     "allowed_files": [
@@ -220,7 +225,18 @@
     "branch": "codex/rte-grok-none-reasoning-006",
     "base_branch": "main",
     "base_sha": "811f50c846239101a97fb1e40d405eb0a0c07620",
-    "commit_status": "PENDING (commit + push performed at end of session)"
+    "commit_status": "COMMITTED_PUSHED_PR_OPEN",
+    "code_commit_sha": "5f0b37ec8637e3620f74667f83052b41ea7ef512",
+    "code_commit_message_headline": "fix(rte): preserve reasoning_effort=\"none\" for xAI grok-4.3",
+    "proof_rename_commit_sha": "b8ffbb32bdce92d7f55c9a61c8fb22d5f10f298d",
+    "proof_rename_commit_message_headline": "proof: rename TP-RTE-GROK-NONE-REASONING-006 -> TP-RTE-FINAL-AUDIT-GROK-NONE-REASONING-006",
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/705",
+    "pr_number": 705,
+    "pr_title": "fix(rte): preserve grok none reasoning effort",
+    "pr_base": "main",
+    "pr_head": "codex/rte-grok-none-reasoning-006",
+    "push_remote": "origin",
+    "proof_finalization_note": "This commit message will appear in the proof_only_commit_shas placeholder; per the precedent in TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROOF.json, the proof commit that finalizes the SHA set cannot reference its own SHA (chicken-and-egg). The authoritative history of proof amendments for this packet is `git log -- proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-GROK-NONE-REASONING-006_PROOF.json` against `origin/codex/rte-grok-none-reasoning-006`."
   },
   "authority_used": [
     "current user prompt (xAI grok-4.3 source facts)",
