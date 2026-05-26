@@ -201,6 +201,12 @@ explicit operator approval and receipts.
 | `on_memory_write_requested` | Decision/progress receipt | Route to canonical writer | Write through task-orchestrator as owner | Fail closed. |
 | `on_authority_violation` | Duplicate writer/proxy authority | Block and warn | Continue | Hard stop. |
 
+The machine-readable registry for these hooks is
+`config/orchestrator/plugin_hooks.yaml`. The registry is read-only
+classification and audit input only. It does not load plugins, execute hooks,
+grant approvals, apply transitions, write memory, mutate GitHub, or replace a
+canonical writer.
+
 ## Memory Write Policy
 
 Write receipts, not guesses.
