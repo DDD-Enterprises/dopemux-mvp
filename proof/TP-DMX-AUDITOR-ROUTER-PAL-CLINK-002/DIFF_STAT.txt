@@ -1,16 +1,8 @@
- .../AUDITOR_REPORT.md                              | 27 ++++++---
- .../CHANGED_FILES.txt                              |  8 ++-
- .../DIFF_STAT.txt                                  | 25 ++++----
- .../PAL_CLINK_AUDIT_OUTPUT.json                    | 70 ++++++++++++++++++++--
- .../TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json | 63 ++++++++++++-------
- .../VALIDATION_OUTPUT.md                           | 23 +++----
- .../review_bundle/ARTIFACT_INDEX.md                |  1 +
- .../review_bundle/AUDITOR_REPORT.md                | 32 ++++++++--
- .../review_bundle/CHANGED_FILES.txt                |  8 ++-
- .../review_bundle/DIFF_STAT.txt                    | 25 ++++----
- .../review_bundle/MANIFEST.json                    | 23 +++----
- .../review_bundle/PROOF.json                       | 63 ++++++++++++-------
- .../review_bundle/SUMMARY.md                       | 15 +++--
- .../review_bundle/VALIDATION_OUTPUT.md             | 19 +++---
- .../artifacts/PAL_CLINK_AUDIT_OUTPUT.json          | 68 +++++++++++++++++++++
- 15 files changed, 341 insertions(+), 129 deletions(-)
+ .../TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json | 27 +++++++----
+ .../VALIDATION_OUTPUT.md                           | 15 ++++++
+ .../review_bundle/PROOF.json                       | 27 +++++++----
+ .../review_bundle/SUMMARY.md                       | 14 ++++++
+ .../review_bundle/VALIDATION_OUTPUT.md             | 15 ++++++
+ tests/auditor_router/test_pal_clink.py             | 36 ++++++++++++++
+ tools/auditor_router/pal_clink.py                  | 55 +++++++++++++++++-----
+ 7 files changed, 158 insertions(+), 31 deletions(-)

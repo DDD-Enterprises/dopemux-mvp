@@ -85,3 +85,18 @@ PAL MCP clink cli_name=codex role=codereviewer -> exit 1, Executable 'codex' not
 ```
 
 Result: `NEEDS_SUPERVISOR`. No external CLI audit verdict was produced.
+
+## Local PR #713 Command / Override Review Fix Validation
+
+Generated: 2026-05-26T22:27:00Z
+
+```text
+python -m compileall -q tools tests -> exit 0
+pytest -q tests/auditor_router/test_pal_clink.py -> exit 0, 35 passed
+pytest -q tests/auditor_router -> exit 0, 39 passed
+```
+
+Patched active review blockers:
+
+- PAL clink audit configs must use a command that exactly matches the expected CLI executable.
+- PAL clink config discovery now models clink override order so later override configs replace built-in audit configs.

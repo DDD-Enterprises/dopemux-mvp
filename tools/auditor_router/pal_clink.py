@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import os
+import shlex
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable
 
@@ -10,6 +12,8 @@ from .models import ClinkConfigInspection, pal_clink_route_from_inspection
 REPO_CLINK_CONFIG_RELATIVE = Path(
     "docker/mcp-servers-source/pal/pal-mcp-server/conf/cli_clients"
 )
+CLI_CLIENTS_CONFIG_ENV_VAR = "CLI_CLIENTS_CONFIG_PATH"
+USER_CLINK_CONFIG_RELATIVE = Path(".zen/cli_clients")
 SUPPORTED_AUDIT_CLIENTS = {
     "claude-audit": "claude",
     "gemini-audit": "gemini",
@@ -48,19 +52,13 @@ def discover_clink_config_paths(
     repo_root: Path | None = None,
     config_roots: Iterable[Path] | None = None,
 ) -> list[Path]:
-    roots = list(config_roots) if config_roots is not None else []
-    if not roots:
-        root = repo_root or Path.cwd()
-        roots = [root / REPO_CLINK_CONFIG_RELATIVE]
-
-    paths: list[Path] = []
+    roots = _default_config_roots(repo_root) if config_roots is None else list(config_roots)
+    paths_by_client: dict[str, Path] = {}
     for root in roots:
-        if not root.is_dir():
-            continue
-        for path in sorted(root.glob("*-audit.json"), key=_candidate_sort_key):
+        for path in _iter_config_root_paths(root):
             if path.stem in SUPPORTED_AUDIT_CLIENTS:
-                paths.append(path)
-    return paths
+                paths_by_client[path.stem] = path
+    return sorted(paths_by_client.values(), key=_candidate_sort_key)
 
 
 def load_clink_client_config(path: Path) -> dict[str, Any]:
@@ -147,6 +145,10 @@ def inspect_clink_client_config(
             "Audit config name and runner must match the supported audit client.",
             config=config,
         )
+
+    command_error = _command_contract_error(config, expected_cli)
+    if command_error:
+        return _unsafe(path, client_name, underlying_cli, command_error, config=config)
 
     mutation_flags = detect_mutation_flags(
         effective_args_for_config(config, internal_args=internal_args)
@@ -301,6 +303,37 @@ def _role_contract_error(config: dict[str, Any]) -> str | None:
         if list(role.get("role_args") or []) != []:
             return f"Role {role_name} must have empty role_args."
     return None
+
+
+def _command_contract_error(config: dict[str, Any], expected_cli: str) -> str | None:
+    command = str(config.get("command") or "").strip()
+    if not command:
+        return f"Audit config command must be exactly {expected_cli}."
+    try:
+        parts = shlex.split(command)
+    except ValueError:
+        return "Audit config command could not be parsed safely."
+    if parts != [expected_cli]:
+        return f"Audit config command must be exactly {expected_cli}."
+    return None
+
+
+def _default_config_roots(repo_root: Path | None) -> list[Path]:
+    root = repo_root or Path.cwd()
+    roots = [root / REPO_CLINK_CONFIG_RELATIVE]
+    env_path_raw = os.environ.get(CLI_CLIENTS_CONFIG_ENV_VAR)
+    if env_path_raw:
+        roots.append(Path(env_path_raw).expanduser())
+    roots.append(Path.home() / USER_CLINK_CONFIG_RELATIVE)
+    return roots
+
+
+def _iter_config_root_paths(root: Path) -> list[Path]:
+    if root.is_file() and root.suffix.lower() == ".json":
+        return [root]
+    if root.is_dir():
+        return sorted(root.glob("*-audit.json"), key=_candidate_sort_key)
+    return []
 
 
 def _canonical_role_prompt_path(value: Any) -> PurePosixPath | None:

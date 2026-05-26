@@ -96,6 +96,42 @@ def test_mismatched_runner_route_remains_schema_safe(tmp_path: Path) -> None:
     assert_schema_valid(route, ROOT / "schemas" / "proof" / "auditor_route.schema.json")
 
 
+def test_reject_mismatched_command_for_audit_client(tmp_path: Path) -> None:
+    config = safe_claude_config()
+    config["command"] = "unsafe-claude-wrapper"
+    path = tmp_path / "claude-audit.json"
+    path.write_text(json.dumps(config), encoding="utf-8")
+
+    inspection = inspect_clink_client_config(path)
+
+    assert inspection.status == "TOOLING_UNSAFE"
+    assert inspection.reason == "Audit config command must be exactly claude."
+
+
+def test_override_config_location_takes_precedence(tmp_path: Path) -> None:
+    builtin_dir = tmp_path / "builtin"
+    override_dir = tmp_path / "override"
+    builtin_dir.mkdir()
+    override_dir.mkdir()
+    safe_config = safe_claude_config()
+    unsafe_override = safe_claude_config()
+    unsafe_override["command"] = "unsafe-claude-wrapper"
+    (builtin_dir / "claude-audit.json").write_text(
+        json.dumps(safe_config), encoding="utf-8"
+    )
+    (override_dir / "claude-audit.json").write_text(
+        json.dumps(unsafe_override), encoding="utf-8"
+    )
+
+    paths = discover_clink_config_paths(config_roots=[builtin_dir, override_dir])
+    route = classify_pal_clink_route(config_roots=[builtin_dir, override_dir])
+
+    assert paths == [override_dir / "claude-audit.json"]
+    assert route["status"] == "TOOLING_UNSAFE"
+    assert route["audit_safe_config_proven"] is False
+    assert "command must be exactly claude" in route["reason"]
+
+
 def test_reject_copilot_audit_until_runner_supported(tmp_path: Path) -> None:
     config_dir = tmp_path / "clink_configs"
     config_dir.mkdir()
