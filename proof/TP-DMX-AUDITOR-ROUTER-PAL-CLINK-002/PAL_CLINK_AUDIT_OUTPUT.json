@@ -1,0 +1,6 @@
+{
+  "status": "missing",
+  "verdict": null,
+  "blocker": "PAL_CLINK_AUDIT_OUTPUT_MISSING",
+  "reason": "Host-side PAL MCP clink execution was not performed in this packet. This sentinel is not a ToolOutput audit verdict."
+}

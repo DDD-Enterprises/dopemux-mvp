@@ -1,0 +1,24 @@
+{
+  "packet_id": "TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002",
+  "status": "PASS_WITH_BLOCKERS",
+  "verdict": "PASS_TARGETED_TESTS_WITH_SCOPE_CONFLICT",
+  "created_by": "codex",
+  "artifacts": [
+    "SUMMARY.md",
+    "PROOF.json",
+    "AUDITOR_REPORT.md",
+    "VALIDATION_OUTPUT.md",
+    "GIT_STATE.md",
+    "DIFF_STAT.txt",
+    "CHANGED_FILES.txt",
+    "ARTIFACT_INDEX.md",
+    "artifacts/AUDITOR_ROUTE.json",
+    "artifacts/ROUTE_PROBE_OUTPUTS.json"
+  ],
+  "blockers": [
+    "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
+    "WRAPPER_BLOCKED_BY_ALLOWLIST",
+    "PAL_CLINK_AUDIT_OUTPUT_MISSING"
+  ],
+  "route_is_audit_verdict": false
+}
