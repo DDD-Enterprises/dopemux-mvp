@@ -489,7 +489,7 @@ def test_incremental_corrupted_cache_warns_and_recomputes_fully(tmp_path: Path, 
 
 @pytest.mark.xfail(
     reason="Deferred to TP-RTE-WALKER-006: prescan incremental/full semantic parity is outside CostProfile F repair scope.",
-    strict=False,
+    strict=True,
 )
 def test_incremental_outputs_match_full_run_semantically(tmp_path: Path, monkeypatch) -> None:
     _patch_code_report_builder(monkeypatch)

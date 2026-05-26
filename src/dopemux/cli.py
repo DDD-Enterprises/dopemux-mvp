@@ -1233,6 +1233,12 @@ def start(
             raise click.ClickException(
                 "Cannot combine provider flags with --alt-routing."
             )
+        if _LITELLM_IMPORT_ERROR is not None:
+            raise click.ClickException(
+                "LiteLLM-backed provider routing is unavailable because the "
+                "litellm package is not importable. Install project dependencies "
+                "before invoking --grok, --codex, or --altp."
+            )
 
         if use_grok or use_codex:
             # ── Single-target routing ───────────────────────────────────

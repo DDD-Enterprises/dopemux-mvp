@@ -128,7 +128,7 @@ def test_engine_intelligence_base_exposes_downstream_contract_fields(tmp_path: P
 
 @pytest.mark.xfail(
     reason="Deferred to TP-RTE-WALKER-006: prescan summary payload schema drift is outside CostProfile F repair scope.",
-    strict=False,
+    strict=True,
 )
 def test_optimize_payload_includes_prior_pass_summaries(tmp_path: Path) -> None:
     runner = GrokPassRunner(_make_config(tmp_path))

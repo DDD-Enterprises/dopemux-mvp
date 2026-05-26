@@ -68,7 +68,7 @@ def _load_json(path: Path) -> dict:
 
 @pytest.mark.xfail(
     reason="Deferred to TP-RTE-WALKER-006: prescan incremental cache semantics are outside CostProfile F repair scope.",
-    strict=False,
+    strict=True,
 )
 def test_prescan_real_repo_full_and_incremental_smoke(tmp_path: Path) -> None:
     repo = _make_repo(tmp_path)

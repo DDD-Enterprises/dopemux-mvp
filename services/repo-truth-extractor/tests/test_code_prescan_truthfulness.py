@@ -28,7 +28,7 @@ def _make_config(tmp_path: Path) -> PrescanConfig:
 
 @pytest.mark.xfail(
     reason="Deferred to TP-RTE-WALKER-006: prescan schema/runtime drift is outside CostProfile F repair scope.",
-    strict=False,
+    strict=True,
 )
 def test_code_prescan_emits_dotted_relative_python_imports(tmp_path: Path) -> None:
     pkg = tmp_path / "pkg"
@@ -70,7 +70,7 @@ def test_dependency_graph_uses_emitted_relative_python_imports(tmp_path: Path) -
 
 @pytest.mark.xfail(
     reason="Deferred to TP-RTE-WALKER-006: prescan schema/runtime drift is outside CostProfile F repair scope.",
-    strict=False,
+    strict=True,
 )
 def test_code_prescan_api_surface_detection_avoids_substring_false_positives(tmp_path: Path) -> None:
     comment_only = tmp_path / "comment_only.py"
@@ -118,7 +118,7 @@ def test_code_prescan_api_surface_detection_avoids_substring_false_positives(tmp
 
 @pytest.mark.xfail(
     reason="Deferred to TP-RTE-WALKER-006: prescan schema/runtime drift is outside CostProfile F repair scope.",
-    strict=False,
+    strict=True,
 )
 def test_code_prescan_arrow_function_signatures_match_symbol_coverage(tmp_path: Path) -> None:
     handlers = tmp_path / "handlers.ts"
