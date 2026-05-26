@@ -1,10 +1,11 @@
 {
-  "task_packet_id": "TP-RTE-GROK-NONE-REASONING-006",
+  "task_packet_id": "TP-RTE-FINAL-AUDIT-GROK-NONE-REASONING-006",
   "summary": "Restore xAI grok-4.3 reasoning_effort=none preservation that PR #685's global drop incorrectly stripped at the payload boundary.",
   "branch": "codex/rte-grok-none-reasoning-006",
   "base_branch": "main",
   "base_sha": "811f50c846239101a97fb1e40d405eb0a0c07620",
-  "head_sha": "PENDING_COMMIT",
+  "head_sha": "5f0b37ec8637e3620f74667f83052b41ea7ef512",
+  "rename_commit_sha": "PENDING_COMMIT_FOR_PROOF_RENAME",
   "created_at_utc": "2026-05-25T00:00:00Z",
   "scope": {
     "allowed_files": [
@@ -13,7 +14,7 @@
       "services/repo-truth-extractor/run_extraction_v5.py",
       "services/repo-truth-extractor/tests/test_route_request_options.py",
       "services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_opt_model_refresh.py",
-      "proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-GROK-NONE-REASONING-006_PROOF.json"
+      "proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-GROK-NONE-REASONING-006_PROOF.json"
     ],
     "out_of_scope": [
       "model_map.yaml (forbidden — the 139 grok-4.3 reasoning_effort=none rows are the documented intent and must not be edited)",
