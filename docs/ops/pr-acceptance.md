@@ -42,3 +42,7 @@ Explicit known reviewer logins are trusted. GitHub `authorAssociation` values `O
 ## Non-Automation Boundary
 
 This acceptance policy does not implement auto-fix, thread resolution, auto-merge, merge queue mutation, or active GitHub mutation. It defines gate evidence only.
+
+PAL MCP clink route evidence is not an embedded audit verdict. A PR using the PAL clink bridge must include captured `PAL_CLINK_AUDIT_OUTPUT.json` and normalized `AUDITOR_REPORT.md` before it can satisfy the embedded audit gate. A route-only `pal-mcp-clink` selection, missing wrapper, or missing host-side output blocks `READY`.
+
+Copilot clink support remains deferred. PR Steward remains check-only and must not call PAL MCP clink or mutate GitHub state.
