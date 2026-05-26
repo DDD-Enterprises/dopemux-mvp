@@ -17,6 +17,19 @@ All 5 verification gates now have evidence under `RTE_DISABLE_LIVE_LLM_IN_TESTS=
 
 The series is ready for live operator use. Suggested next step: invoke `--cost-profile value-default --execute` on a bounded lane with `--max-cost-usd` cap before any wider rollout.
 
+Post-review packet governance correction: the verification packet now records the Codex PAL chain as `analyze -> planner -> codereview -> precommit`, with a supplemental PAL planner run recorded in `pal_codereview.txt`. The packet worktree creation command was also changed from moving `origin/main` to a captured base SHA flow using `/tmp/F_VERIFY_002_BASE_SHA.txt`, followed by a `git rev-parse HEAD` equality check. This correction did not change runtime code, did not change tests, did not rerun F-VERIFY-002, did not run live provider calls, and did not run live extraction.
+
+---
+
+## Packet Governance Follow-Up
+
+| Review concern | Correction | Evidence |
+| --- | --- | --- |
+| Missing `planner` in Codex PAL chain | Packet chain now includes `planner` between `analyze` and `codereview`; supplemental planner status is RUN | `task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json`, `pal_codereview.txt`, `PROOF.json` |
+| Worktree command used moving `origin/main` | Packet now captures `BASE_SHA="$(git rev-parse origin/main)"`, writes `/tmp/F_VERIFY_002_BASE_SHA.txt`, creates the worktree from that SHA, and tests worktree HEAD equality | `task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json`, `PROOF.json` |
+
+The existing gate evidence remains the original F-VERIFY-002 evidence. This follow-up updates governance/proof consistency only.
+
 ---
 
 ## Source Artifacts Consumed as Evidence
