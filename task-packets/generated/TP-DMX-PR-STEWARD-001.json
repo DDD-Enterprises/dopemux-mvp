@@ -1,0 +1,148 @@
+{
+  "id": "TP-DMX-PR-STEWARD-001",
+  "project": "dopemux-mvp",
+  "target": "Implement a check-only PR Steward v1 intake that harvests pull request metadata, changed files, commits/head SHA, reviews, review comments, review threads, issue comments, and check/CI state; classifies every review item; emits MERGE_READINESS.json and companion ledgers; and fails closed on unknown reviewers/bots, unclassified items, unresolved blocking threads, failed checks, or stale proof.",
+  "invariants": [
+    "Do not mutate GitHub state.",
+    "Do not auto-apply fixes.",
+    "Do not resolve review threads.",
+    "Do not approve PRs.",
+    "Do not auto-merge or mutate merge queues.",
+    "Do not store secrets.",
+    "Fail closed when reviewers, bots, threads, checks, or proof freshness cannot be proven.",
+    "Treat AUTO_APPLIED as a disposition value only unless a future packet explicitly authorizes edit behavior."
+  ],
+  "depends_on": [
+    "MP-DMX-DEVOPS-AUTOPR-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-PR-STEWARD",
+    "base_branch": "main",
+    "parent_tp_id": "MP-DMX-DEVOPS-AUTOPR-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-pr-steward-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(pr-steward): add check-only review intake",
+    "allowlist": [
+      "tools/pr_steward/__init__.py",
+      "tools/pr_steward/collector.py",
+      "tools/pr_steward/render_merge_readiness.py",
+      "tests/tools/test_pr_steward_collector.py",
+      "schemas/pr_steward/merge_readiness.schema.json",
+      "schemas/pr_steward/review_item_ledger.schema.json",
+      "schemas/pr_steward/thread_dispositions.schema.json",
+      "schemas/pr_steward/ci_triage.schema.json",
+      "task-packets/generated/TP-DMX-PR-STEWARD-001.json",
+      "proof/TP-DMX-PR-STEWARD-001/PROOF.json"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-PR-STEWARD-001.json",
+      "python -m json.tool schemas/pr_steward/merge_readiness.schema.json",
+      "python -m json.tool schemas/pr_steward/review_item_ledger.schema.json",
+      "python -m json.tool schemas/pr_steward/thread_dispositions.schema.json",
+      "python -m json.tool schemas/pr_steward/ci_triage.schema.json",
+      "python -m compileall -q tools tests",
+      "pytest -q tests/tools/test_pr_steward_collector.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(pr-steward): add check-only review intake",
+    "body": "## Summary\n- Implements PR Steward v1 as a check-only intake over GitHub PR metadata, reviews, review comments, review threads, issue comments, and CI state.\n- Emits MERGE_READINESS.json plus review item, thread disposition, and CI triage ledgers.\n- Fails closed on unknown reviewers/bots, unclassified review items, unresolved blocking threads, failed required checks, stale proof, or GitHub auth/API uncertainty.\n\n## Scope\nCheck-only read and classification flow. No active GitHub mutation, auto-fix, thread resolution, auto-merge, merge queue mutation, or secret storage.\n\n## Validation\nRun JSON parse checks, focused unit tests, compileall for tools/tests, git diff --check, and proof freshness checks against PR head SHA.\n\n## NOT_RUN\nNo live PR mutation and no merge queue mutation by design.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repo identity, branch, GitHub auth, schema files, and PR Steward governance docs.",
+      "context_files": [
+        "AGENTS.md",
+        "docs/ops/PR_STEWARD.md",
+        "docs/ops/PR_ACCEPTANCE.md",
+        "schemas/pr_steward/merge_readiness.schema.json",
+        "schemas/pr_steward/review_item_ledger.schema.json",
+        "schemas/pr_steward/thread_dispositions.schema.json",
+        "schemas/pr_steward/ci_triage.schema.json"
+      ],
+      "commands": [
+        "pwd",
+        "git remote -v",
+        "git status --short",
+        "git branch --show-current",
+        "gh --version",
+        "gh auth status"
+      ],
+      "validation": [
+        "Repo identity is DDD-Enterprises/dopemux-mvp.",
+        "GitHub auth is available or packet stops before live harvest.",
+        "Schema and governance docs are present."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Harvest PR metadata, changed files, commits/head SHA, reviews, review comments, review threads, issue comments, and check/CI state without mutation.",
+      "requirements": [
+        "Use GitHub read-only commands/API calls.",
+        "Do not post comments, apply suggestions, resolve threads, approve, merge, or enqueue.",
+        "Record command outputs and exit codes."
+      ],
+      "validation": [
+        "Every required PR surface has either harvested data or an explicit UNKNOWN blocker.",
+        "No GitHub mutation command is present in the implementation."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Classify every harvested review item and thread into allowed dispositions.",
+      "validation": [
+        "No item remains unclassified.",
+        "Unknown reviewer or bot produces UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION and blocks readiness.",
+        "AUTO_APPLIED is emitted only when a human-applied or pre-existing fix is observed; the tool does not apply it."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Emit MERGE_READINESS.json, REVIEW_ITEM_LEDGER.json, THREAD_DISPOSITIONS.json, and CI_TRIAGE.json.",
+      "validation": [
+        "Outputs conform to schemas/pr_steward/*.schema.json.",
+        "mutation_performed is false in every output.",
+        "Readiness is NOT_READY or NEEDS_SUPERVISOR when any blocker is present."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Validate focused implementation and proof.",
+      "validation": [
+        "python -m compileall -q tools tests",
+        "pytest -q tests/tools/test_pr_steward_collector.py",
+        "git diff --check",
+        "Proof records exact commands, outputs, exit codes, and PR head SHA."
+      ]
+    }
+  ]
+}

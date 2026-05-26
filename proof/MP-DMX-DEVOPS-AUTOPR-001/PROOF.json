@@ -1,0 +1,411 @@
+{
+  "bundle_id": "MP-DMX-DEVOPS-AUTOPR-001",
+  "run_id": "mp-dmx-devops-autopr-001-20260526T024124Z",
+  "skill": "codex",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED_WITH_RISKS",
+  "created_at": "2026-05-26T02:41:24Z",
+  "authoritative_artifacts": [
+    "task-packets/generated/MP-DMX-DEVOPS-AUTOPR-001.json",
+    "task-packets/generated/TP-DMX-PR-STEWARD-001.json",
+    "proof/MP-DMX-DEVOPS-AUTOPR-001/PROOF.json",
+    "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPORT.md"
+  ],
+  "supporting_artifacts": [
+    "docs/ops/OPERATING_MODEL.md",
+    "docs/ops/AUTHORITY_LEDGER.md",
+    "docs/ops/TOOL_ROUTING_MATRIX.md",
+    "docs/ops/CONFIG_REGISTRY.md",
+    "docs/ops/HEALTH_CHECK_MATRIX.md",
+    "docs/ops/DRIFT_LOG.md",
+    "docs/ops/PR_ACCEPTANCE.md",
+    "docs/ops/PR_STEWARD.md",
+    "docs/ops/EMBEDDED_AUDIT.md",
+    "docs/ops/RESEARCH_LEDGER.md",
+    "runbooks/BOOTSTRAP.md",
+    "runbooks/DAILY_OPS.md",
+    "runbooks/PR_CLOSEOUT.md",
+    "prompts/gpt55-project-instructions.md",
+    "prompts/gpt55-packet-forge.md",
+    "prompts/gpt55-acceptance-reviewer.md",
+    "prompts/codex-implementer.md",
+    "prompts/claude-code-implementer.md",
+    "prompts/agy-sonnet-auditor.md",
+    "prompts/claude-cli-auditor.md",
+    "prompts/gemini-cli-auditor.md",
+    "prompts/pr-steward-summary.md",
+    "schemas/proof/embedded_audit.schema.json",
+    "schemas/pr_steward/merge_readiness.schema.json",
+    "schemas/pr_steward/review_item_ledger.schema.json",
+    "schemas/pr_steward/thread_dispositions.schema.json",
+    "schemas/pr_steward/ci_triage.schema.json",
+    "task-packets/TEMPLATE_TASK_PACKET.md"
+  ],
+  "handoff_refs": [
+    "task-packets/generated/TP-DMX-PR-STEWARD-001.json"
+  ],
+  "parent_bundle_refs": [],
+  "review_order_hint": 1,
+  "chain_of_custody": {
+    "documented": true,
+    "source_version": "AGENTS.md plus MP-DMX-DEVOPS-AUTOPR-001 user packet",
+    "created_by": "Codex",
+    "worktree_path": "/Users/hue/.codex/worktrees/8859/dopemux-mvp"
+  },
+  "tp_id": "MP-DMX-DEVOPS-AUTOPR-001",
+  "tp_path": "task-packets/generated/MP-DMX-DEVOPS-AUTOPR-001.json",
+  "project": "dopemux-mvp",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "worktree_path": "/Users/hue/.codex/worktrees/8859/dopemux-mvp",
+  "branch": "codex/mp-dmx-devops-autopr-001",
+  "base_branch": "main",
+  "starting_head": "34f4a28b0880090898994f2cb4bfc785a643f53e",
+  "ending_head": null,
+  "commit_sha": null,
+  "commit_sha_note": "Commit SHA is recorded in final response after commit creation; proof cannot embed its own final commit SHA without a self-referential amend loop.",
+  "repo_identity": {
+    "pwd": {
+      "command": "pwd",
+      "exit_code": 0,
+      "stdout": "/Users/hue/.codex/worktrees/8859/dopemux-mvp"
+    },
+    "remote": {
+      "command": "git remote -v",
+      "exit_code": 0,
+      "stdout": "mvp https://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)\nmvp https://github.com/DDD-Enterprises/dopemux-mvp.git (push)\norigin https://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)\norigin https://github.com/DDD-Enterprises/dopemux-mvp.git (push)"
+    },
+    "repo_marker": {
+      "command": "test -f .dopetaskroot",
+      "exit_code": 0,
+      "stdout": ""
+    },
+    "schema_marker_requested_by_packet": {
+      "command": "test -f dopetask-cannonical-spec.json",
+      "exit_code": 1,
+      "stdout": "",
+      "note": "Misspelled root schema path is absent; observed canonical schema is docs/03-reference/spec/dopetask/dopetask-canonical-spec.json."
+    },
+    "branch_initial": {
+      "command": "git branch --show-current",
+      "exit_code": 0,
+      "stdout": "",
+      "note": "Initial checkout was detached at 34f4a28b0; branch codex/mp-dmx-devops-autopr-001 was created before edits."
+    },
+    "branch_after": {
+      "command": "git branch --show-current",
+      "exit_code": 0,
+      "stdout": "codex/mp-dmx-devops-autopr-001"
+    }
+  },
+  "git_status_before": {
+    "command": "git status --short",
+    "exit_code": 0,
+    "stdout": ""
+  },
+  "git_status_after": {
+    "command": "git status --short",
+    "exit_code": 0,
+    "stdout_summary": "Intent-to-add entries for all new allowlisted files, proof artifacts, and modified task-packets/TEMPLATE_TASK_PACKET.md."
+  },
+  "files_changed": [
+    "docs/ops/AUTHORITY_LEDGER.md",
+    "docs/ops/CONFIG_REGISTRY.md",
+    "docs/ops/DRIFT_LOG.md",
+    "docs/ops/EMBEDDED_AUDIT.md",
+    "docs/ops/HEALTH_CHECK_MATRIX.md",
+    "docs/ops/OPERATING_MODEL.md",
+    "docs/ops/PR_ACCEPTANCE.md",
+    "docs/ops/PR_STEWARD.md",
+    "docs/ops/RESEARCH_LEDGER.md",
+    "docs/ops/TOOL_ROUTING_MATRIX.md",
+    "prompts/agy-sonnet-auditor.md",
+    "prompts/claude-cli-auditor.md",
+    "prompts/claude-code-implementer.md",
+    "prompts/codex-implementer.md",
+    "prompts/gemini-cli-auditor.md",
+    "prompts/gpt55-acceptance-reviewer.md",
+    "prompts/gpt55-packet-forge.md",
+    "prompts/gpt55-project-instructions.md",
+    "prompts/pr-steward-summary.md",
+    "runbooks/BOOTSTRAP.md",
+    "runbooks/DAILY_OPS.md",
+    "runbooks/PR_CLOSEOUT.md",
+    "schemas/pr_steward/ci_triage.schema.json",
+    "schemas/pr_steward/merge_readiness.schema.json",
+    "schemas/pr_steward/review_item_ledger.schema.json",
+    "schemas/pr_steward/thread_dispositions.schema.json",
+    "schemas/proof/embedded_audit.schema.json",
+    "task-packets/TEMPLATE_TASK_PACKET.md",
+    "task-packets/generated/MP-DMX-DEVOPS-AUTOPR-001.json",
+    "task-packets/generated/TP-DMX-PR-STEWARD-001.json",
+    "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPORT.md",
+    "proof/MP-DMX-DEVOPS-AUTOPR-001/PROOF.json"
+  ],
+  "allowlist_compliance": {
+    "result": "PASS",
+    "files_outside_allowlist": [],
+    "generated_junk_removed": [
+      ".antigravitycli/2b16d5d2-acd3-4793-b743-f2ff888b26c8.json"
+    ]
+  },
+  "slices_completed": [
+    {
+      "slice": "S1",
+      "label": "preflight repo identity, authority files, conventions, and local tool availability",
+      "status": "PASS_WITH_RISKS"
+    },
+    {
+      "slice": "S2",
+      "label": "create operating model docs and runbooks",
+      "status": "PASS"
+    },
+    {
+      "slice": "S3",
+      "label": "create prompt pack",
+      "status": "PASS"
+    },
+    {
+      "slice": "S4",
+      "label": "create embedded audit and PR Steward schemas",
+      "status": "PASS"
+    },
+    {
+      "slice": "S5",
+      "label": "create generated packet records and additive template update",
+      "status": "PASS"
+    },
+    {
+      "slice": "S6",
+      "label": "embedded audit, proof, final validation, and commit",
+      "status": "PASS_WITH_RISKS"
+    }
+  ],
+  "validations": [
+    {
+      "command": "python -m json.tool task-packets/generated/MP-DMX-DEVOPS-AUTOPR-001.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_summary": "Formatted JSON emitted."
+    },
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-PR-STEWARD-001.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_summary": "Formatted JSON emitted."
+    },
+    {
+      "command": "python -m json.tool schemas/proof/embedded_audit.schema.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_summary": "Formatted JSON emitted."
+    },
+    {
+      "command": "python -m json.tool schemas/pr_steward/merge_readiness.schema.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_summary": "Formatted JSON emitted."
+    },
+    {
+      "command": "python -m json.tool schemas/pr_steward/review_item_ledger.schema.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_summary": "Formatted JSON emitted."
+    },
+    {
+      "command": "python -m json.tool schemas/pr_steward/thread_dispositions.schema.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_summary": "Formatted JSON emitted."
+    },
+    {
+      "command": "python -m json.tool schemas/pr_steward/ci_triage.schema.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_summary": "Formatted JSON emitted."
+    },
+    {
+      "command": "python -m jsonschema -i task-packets/generated/MP-DMX-DEVOPS-AUTOPR-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "stderr": "DeprecationWarning: The jsonschema CLI is deprecated and will be removed in a future version."
+    },
+    {
+      "command": "python -m jsonschema -i task-packets/generated/TP-DMX-PR-STEWARD-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "stderr": "DeprecationWarning: The jsonschema CLI is deprecated and will be removed in a future version."
+    },
+    {
+      "command": "python scripts/docs_validator.py <docs/ops runbooks prompts files>",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": ""
+    },
+    {
+      "command": "python scripts/docs_frontmatter_guard.py <docs/ops runbooks prompts files>",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "All docs have valid frontmatter."
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": ""
+    },
+    {
+      "command": "rg -n \"Embedded Audit|PR Steward|MERGE_READINESS|AGY|Antigravity|Gemini CLI|Claude Code|GPT-5.5|NEEDS_SUPERVISOR|UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION\" docs prompts schemas task-packets runbooks proof -S",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_summary": "Required terms were found. Output also included historical/archive matches under docs/ because the command intentionally searches the full docs tree."
+    },
+    {
+      "command": "git diff --stat",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "32 files changed, 2333 insertions(+)"
+    },
+    {
+      "command": "git status --short",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_summary": "32 allowlisted changed files before final staging: 31 added, 1 modified."
+    }
+  ],
+  "tool_availability": {
+    "gh_version": {
+      "command": "gh --version || true",
+      "exit_code": 0,
+      "stdout": "gh version 2.92.0 (2026-04-28)\nhttps://github.com/cli/cli/releases/tag/v2.92.0"
+    },
+    "gh_auth_status": {
+      "command": "gh auth status || true",
+      "exit_code": 0,
+      "stdout": "github.com\n  X Failed to log in to github.com account hu3mann (default)\n  - Active account: true\n  - The token in default is invalid.\n  - To re-authenticate, run: gh auth login -h github.com\n  - To forget about this account, run: gh auth logout -h github.com -u hu3mann"
+    },
+    "codex_version": {
+      "command": "codex --version || true",
+      "exit_code": 0,
+      "stdout": "WARNING: proceeding, even though we could not update PATH: Operation not permitted (os error 1)\ncodex-cli 0.130.0"
+    },
+    "claude_version": {
+      "command": "claude --version || true",
+      "exit_code": 0,
+      "stdout": "2.1.140 (Claude Code)"
+    },
+    "gemini_version": {
+      "command": "gemini --version || true",
+      "exit_code": 0,
+      "stdout": "0.41.2"
+    },
+    "agy_help": {
+      "command": "agy --help | head -160 || antigravity --help | head -160 || true",
+      "exit_code": 0,
+      "stdout_summary": "Help proves --print, --prompt, and --print-timeout; no model-selection flag observed in captured help."
+    },
+    "claude_help": {
+      "command": "claude --help | head -120 || true",
+      "exit_code": 0,
+      "stdout_summary": "Help proves -p/--print and --model <model> aliases including sonnet and opus."
+    },
+    "gemini_help": {
+      "command": "gemini --help | head -120 || true",
+      "exit_code": 0,
+      "stdout_summary": "Help proves -p/--prompt and --model."
+    }
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --print-timeout 2m --print \"Read-only embedded audit for Dopemux packet MP-DMX-DEVOPS-AUTOPR-001. Inspect the current git diff in this repo. Do not edit files. Evaluate governance/process/schema/prompt/proof scaffolding only. Check: task-packet schema compatibility, docs overclaims, authority-boundary preservation, PR Steward check-only boundary, absence of auto-fix/thread-resolution/auto-merge/merge-queue mutation behavior, embedded audit schema alignment, and whether second GPT-5.5 review may be skipped. Return Markdown with verdict PASS, PASS_WITH_RISKS, FAIL, or NEEDS_SUPERVISOR; blocking findings; non-blocking risks; files reviewed; and remaining uncertainty.\"",
+    "exit_code": 0,
+    "report_path": "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "Removed AGY-generated .antigravitycli sidecar file created during the audit run because it was outside the packet allowlist."
+    ],
+    "remaining_risks": [
+      "DRIFT-SCHEMA-PATH: user-specified preflight checks a misspelled root schema path that is absent; canonical schema path is recorded.",
+      "DRIFT-AGY-MODEL: AGY help did not prove Sonnet model selection; auditor output self-identified as Gemini 3.5 Flash.",
+      "TP-DMX-PR-STEWARD-001 remains a generated packet/design scaffold; check-only runtime implementation is deferred."
+    ],
+    "skip_reason": null
+  },
+  "auditor_attempts": [
+    {
+      "tool": "claude-code-cli",
+      "model": "sonnet",
+      "invocation": "claude --model sonnet -p <audit prompt> --permission-mode plan --no-session-persistence --max-budget-usd 1",
+      "exit_code": 1,
+      "result": "NOT_RUN",
+      "stdout": "Not logged in · Please run /login"
+    },
+    {
+      "tool": "gemini-cli",
+      "model": "gemini",
+      "invocation": "gemini -m gemini -p <audit prompt> --approval-mode plan",
+      "exit_code": null,
+      "result": "BLOCKED",
+      "stdout": "Opening authentication page in your browser. Do you want to continue? [Y/n]:",
+      "note": "Process was terminated after interactive browser-auth prompt."
+    },
+    {
+      "tool": "agy",
+      "model": "unknown",
+      "invocation": "agy --print-timeout 2m --print <audit prompt>",
+      "exit_code": 1,
+      "result": "SANDBOX_BLOCKED",
+      "stdout_summary": "Failed to create log file and bind local language server under sandbox restrictions."
+    },
+    {
+      "tool": "agy",
+      "model": "gemini",
+      "invocation": "agy --print-timeout 2m --print <audit prompt>",
+      "exit_code": 0,
+      "result": "PASS_WITH_RISKS",
+      "stdout_summary": "Embedded audit completed after escalation allowed local log/language-server behavior."
+    }
+  ],
+  "codereview_status": {
+    "result": "PASS_WITH_RISKS",
+    "tool": "agy",
+    "report_path": "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPORT.md"
+  },
+  "precommit_status": {
+    "result": "PASS",
+    "validated_commands": [
+      "python -m json.tool proof/MP-DMX-DEVOPS-AUTOPR-001/PROOF.json",
+      "git diff --check",
+      "rg -n \"Embedded Audit|PR Steward|MERGE_READINESS|AGY|Antigravity|Gemini CLI|Claude Code|GPT-5.5|NEEDS_SUPERVISOR|UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION\" docs prompts schemas task-packets runbooks proof -S",
+      "git status --short",
+      "git diff --stat"
+    ]
+  },
+  "unknowns": [
+    "Live PR Steward readiness was not run because no PR was opened in this local execution.",
+    "GitHub CLI auth is invalid locally, so PR creation and live PR harvest are blocked until re-authentication.",
+    "AGY help did not prove Sonnet model selection; completed audit used AGY with auditor-reported Gemini model.",
+    "The full initial rg convention scan produced very large output and was truncated by the tool display; focused follow-up inspections were used for implementation."
+  ],
+  "blockers": [
+    "PR URL cannot be created with current local gh authentication state."
+  ],
+  "not_run": [
+    "python -m compileall -q tools tests src services (not relevant because this packet only creates docs, schemas, prompts, task-packet records, and proof)",
+    "pytest -q (not relevant because no runtime code or tests were touched)",
+    "PR Steward live readiness (no PR opened and gh auth invalid)",
+    "Second GPT-5.5 supervisor skip (not eligible because PR Steward readiness is unavailable)"
+  ],
+  "can_proceed_to_tp_dmx_pr_steward_001": true,
+  "can_proceed_note": "The governance scaffolding and generated TP-DMX-PR-STEWARD-001 packet are present and validation/audit passed with non-blocking risks; actual PR Steward readiness is deferred until a PR exists and GitHub auth is valid.",
+  "rollback_plan": [
+    "Revert the single governance commit if created.",
+    "If uncommitted, remove the allowlisted files added by this packet and restore task-packets/TEMPLATE_TASK_PACKET.md from HEAD.",
+    "No runtime state, provider secret, GitHub PR state, review thread, auto-merge, or merge queue mutation was performed."
+  ],
+  "pr_url": null,
+  "pr_blocker": "gh auth status reports an invalid token for hu3mann.",
+  "cleanup_status": "WORKTREE_ACTIVE"
+}

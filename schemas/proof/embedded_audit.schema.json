@@ -1,0 +1,163 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Embedded Audit Proof Object",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "required",
+    "status",
+    "auditor_tool",
+    "auditor_model",
+    "invocation",
+    "exit_code",
+    "report_path",
+    "findings",
+    "fixes_applied",
+    "remaining_risks",
+    "skip_reason"
+  ],
+  "properties": {
+    "required": {
+      "type": "boolean"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "PASS_WITH_RISKS",
+        "FAIL",
+        "NEEDS_SUPERVISOR",
+        "SKIPPED"
+      ]
+    },
+    "auditor_tool": {
+      "type": "string",
+      "enum": [
+        "agy",
+        "antigravity",
+        "claude-code-cli",
+        "gemini-cli",
+        "none"
+      ]
+    },
+    "auditor_model": {
+      "type": "string",
+      "enum": [
+        "sonnet",
+        "opus",
+        "gemini",
+        "unknown"
+      ]
+    },
+    "invocation": {
+      "type": "string",
+      "minLength": 1
+    },
+    "exit_code": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "report_path": {
+      "type": "string",
+      "pattern": "^proof/[^/]+/AUDITOR_REPORT\\.md$"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/finding"
+      }
+    },
+    "fixes_applied": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "remaining_risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "skip_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "SKIPPED"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "auditor_tool": {
+            "const": "none"
+          },
+          "auditor_model": {
+            "const": "unknown"
+          },
+          "skip_reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "severity",
+        "title",
+        "status",
+        "body"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "BLOCKING",
+            "HIGH",
+            "MEDIUM",
+            "LOW",
+            "INFO"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "OPEN",
+            "RESOLVED",
+            "ACCEPTED_RISK"
+          ]
+        },
+        "body": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
