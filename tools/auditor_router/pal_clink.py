@@ -73,9 +73,17 @@ def effective_args_for_config(
     args = [str(item) for item in (internal_args or [])]
     for key in ("additional_args", "config_args", "args"):
         args.extend(str(item) for item in config.get(key) or [])
-    roles = config.get("roles") or {}
+    roles = config.get("roles")
+    if roles is None:
+        roles = {}
+    if not isinstance(roles, dict):
+        return args
     for role_name in sorted(roles):
-        role = roles.get(role_name) or {}
+        role = roles.get(role_name)
+        if role is None:
+            role = {}
+        if not isinstance(role, dict):
+            continue
         args.extend(str(item) for item in role.get("role_args") or [])
     return args
 
@@ -126,8 +134,10 @@ def inspect_clink_client_config(
             "Config payload must be a JSON object.",
         )
 
-    client_name = str(config.get("name") or path.stem)
-    underlying_cli = str(config.get("runner") or "").strip() or client_name.split("-")[0]
+    raw_client_name = config.get("name")
+    raw_underlying_cli = config.get("runner")
+    client_name = str(raw_client_name or "").strip()
+    underlying_cli = str(raw_underlying_cli or "").strip()
     expected_cli = SUPPORTED_AUDIT_CLIENTS.get(path.stem)
     if expected_cli is None:
         return _unsafe(
@@ -135,6 +145,14 @@ def inspect_clink_client_config(
             client_name,
             underlying_cli,
             "Only claude-audit and gemini-audit configs are supported.",
+            config=config,
+        )
+    if not client_name or not underlying_cli:
+        return _unsafe(
+            path,
+            client_name or None,
+            underlying_cli or None,
+            "Audit config must explicitly define name and runner.",
             config=config,
         )
     if client_name != path.stem or underlying_cli != expected_cli:
@@ -292,11 +310,19 @@ def build_pal_clink_embedded_audit_object(
 
 
 def _role_contract_error(config: dict[str, Any]) -> str | None:
-    roles = config.get("roles") or {}
+    roles = config.get("roles")
+    if roles is None:
+        roles = {}
+    if not isinstance(roles, dict):
+        return "Audit roles must be an object with default,codereviewer entries."
     if set(roles) != AUDIT_ROLE_NAMES:
         return "Audit roles must be exactly default,codereviewer."
     for role_name in sorted(AUDIT_ROLE_NAMES):
-        role = roles.get(role_name) or {}
+        role = roles.get(role_name)
+        if role is None:
+            role = {}
+        if not isinstance(role, dict):
+            return f"Role {role_name} must be an object."
         prompt_path = _canonical_role_prompt_path(role.get("prompt_path"))
         if prompt_path != AUDIT_PROMPT_PATH:
             return f"Role {role_name} must use {AUDIT_PROMPT_PATH}."
