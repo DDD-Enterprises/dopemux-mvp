@@ -54,7 +54,7 @@
       "gate": "G1",
       "name": "repair_proof_intake",
       "status": "PASS",
-      "evidence": "Repair PROOF.json (PR #709) declares status_scope=repair_gate_only_not_series_gate and lists TP-RTE-COSTPROFILE-F-VERIFY-002 in follow_up_packets. No-live status is derived from repair proof nested fields review_thread_fix.live_provider_calls=NOT_RUN, review_thread_fix.live_extraction=NOT_RUN, and validation_buckets.NOT_RUN entries for live LLM/provider calls and --execute bounded lane; root-level live fields are absent and not claimed. REPAIR_DECISIONS.md present on captured base SHA."
+      "evidence": "Repair PROOF.json (PR #709) declares status=VERIFIED, status_scope=repair_gate_only_not_series_gate, and lists TP-RTE-COSTPROFILE-F-VERIFY-002 in follow_up_packets. No-live status is derived from repair proof nested fields review_thread_fix.live_provider_calls=NOT_RUN, review_thread_fix.live_extraction=NOT_RUN, and validation_buckets.NOT_RUN entries for live LLM/provider calls and --execute bounded lane; root-level live fields are absent and not claimed. REPAIR_DECISIONS.md present on captured base SHA."
     },
     {
       "gate": "G2",
@@ -97,7 +97,7 @@
       "gate": "G5",
       "name": "cli_import_probe",
       "status": "PASS",
-      "command": "PYTHONPATH=src python -c 'import dopemux.cli'",
+      "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 PYTHONPATH=src python -c 'import dopemux.cli'",
       "exit_code": 0,
       "evidence": "OK: dopemux.cli imports cleanly under PYTHONPATH=src"
     }
@@ -158,8 +158,8 @@
   },
   "cli_import_summary": {
     "exit_code": 0,
-    "command": "PYTHONPATH=src python -c 'import dopemux.cli'",
-    "result": "import succeeded; module loaded cleanly"
+    "command": "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 PYTHONPATH=src python -c 'import dopemux.cli'",
+      "result": "import succeeded under RTE_DISABLE_LIVE_LLM_IN_TESTS=1; module loaded cleanly"
   },
   "cluster_d_status": {
     "scope": "Cluster D / TP-RTE-WALKER-006 prescan failures",
@@ -171,7 +171,7 @@
   },
   "validation_buckets": {
     "PASS": [
-      "Preflight: PR #709 MERGED, PR #710 MERGED, repair PROOF.json status_scope=repair_gate_only_not_series_gate, repair PROOF.json lists TP-RTE-COSTPROFILE-F-VERIFY-002 as follow-up.",
+      "Preflight: PR #709 MERGED, PR #710 MERGED, repair PROOF.json status=VERIFIED and status_scope=repair_gate_only_not_series_gate, repair PROOF.json lists TP-RTE-COSTPROFILE-F-VERIFY-002 as follow-up.",
       "Preflight: INDEX.md row for F-FULLSUITE-REPAIR-001 shows 'Merged (PR #709)'.",
       "Preflight: REPAIR_DECISIONS.md readable on origin/main.",
       "Worktree: branch=codex/rte-costprofile-f-verify-002, HEAD=a9dd0659..., status clean before edits.",
@@ -179,13 +179,13 @@
       "Post-review governance: packet worktree creation now uses captured base SHA from /tmp/F_VERIFY_002_BASE_SHA.txt and verifies worktree HEAD equals that SHA.",
       "Post-review governance: packet S1 now fails closed on tracked dirty state before verification setup and after fresh worktree creation while intentionally ignoring untracked artifacts.",
       "Post-review governance: packet S1 now fails closed unless PR #709 and PR #710 are MERGED and their head SHAs plus merge commits are ancestors of the captured base SHA.",
-      "Post-review governance: Gate 1 no-live assertions are derived from repair proof nested fields and NOT_RUN bucket, not hardcoded as root repair-proof fields.",
+      "Post-review governance: Gate 1 asserts the repair proof contract (status=VERIFIED, status_scope=repair_gate_only_not_series_gate, follow_up_packets includes TP-RTE-COSTPROFILE-F-VERIFY-002) and derives no-live status from repair proof nested fields and NOT_RUN bucket.",
       "Supplemental PAL planner: RUN with gpt-5-codex and recorded in pal_codereview.txt.",
       "G1 repair proof intake: all four required assertions pass.",
       "G2 full RTE suite: exit 0 with 1114 passed / 8 xfailed / 1 skipped / 0 failed / 0 xpassed (deferred-state total xfailed + skipped = 9 matches repair gate).",
       "G3 bounded print-config: exit 0; top-level cost_profile=value-default emitted; legacy routing_policy=balanced_openrouter preserved.",
       "G4 route-readiness OpenRouter probe: 2 passed under RTE_DISABLE_LIVE_LLM_IN_TESTS=1.",
-      "G5 CLI import: PYTHONPATH=src import succeeds.",
+      "G5 CLI import: RTE_DISABLE_LIVE_LLM_IN_TESTS=1 + PYTHONPATH=src import succeeds.",
       "Packet JSON parses (python -m json.tool).",
       "PROOF.json parses (python -m json.tool)."
     ],
