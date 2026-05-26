@@ -2,7 +2,7 @@
   "packet_id": "TP-RTE-COSTPROFILE-F-VERIFY-002",
   "status": "VERIFIED",
   "status_scope": "series_gate",
-  "verdict_summary": "CostProfile F series VERIFIED at HEAD a9dd0659270575deafe269b145da7aea52a4a23f. All 5 verification gates passed under RTE_DISABLE_LIVE_LLM_IN_TESTS=1 with no live provider calls and no live extraction. Cluster D prescan failures remain deferred via strict xfail markers per TP-RTE-WALKER-006.",
+  "verdict_summary": "CostProfile F series VERIFIED at HEAD a9dd0659270575deafe269b145da7aea52a4a23f. All 5 verification gates passed under RTE_DISABLE_LIVE_LLM_IN_TESTS=1 with no live provider calls and no live extraction. Full-suite result was 1114 passed, 8 xfailed, 1 skipped, 0 failed, and 0 xpassed; deferred-state total xfailed + skipped = 9. Cluster D prescan failures remain deferred via strict xfail markers per TP-RTE-WALKER-006.",
   "base_sha": "a9dd0659270575deafe269b145da7aea52a4a23f",
   "branch": "codex/rte-costprofile-f-verify-002",
   "worktree_path": "/private/tmp/dopemux-f-verify-002",
@@ -68,11 +68,14 @@
       "gate": "G4",
       "name": "route_readiness_openrouter_probe",
       "status": "PASS",
-      "command": "bash -o pipefail -c 'PYTHONPATH=services/repo-truth-extractor python -m pytest -v -p no:cacheprovider services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py::test_phase_d_provider_preflight_blocks_on_openrouter_402 services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py::test_phase_d_provider_preflight_is_required_when_cost_routes_include_openrouter 2>&1 | tee proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/route_readiness_probe.txt'",
+      "command": "bash -o pipefail -c 'RTE_DISABLE_LIVE_LLM_IN_TESTS=1 PYTHONPATH=services/repo-truth-extractor python -m pytest -q -vv -p no:cacheprovider services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py::test_phase_d_provider_preflight_blocks_on_openrouter_402 services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py::test_phase_d_provider_preflight_is_required_when_cost_routes_include_openrouter | tee proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/route_readiness_probe.txt'",
       "exit_code": 0,
       "evidence": "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/route_readiness_probe.txt",
       "tests_passed": 2,
-      "tests_failed": 0
+      "tests_failed": 0,
+      "ran_with_live_llm_disabled": true,
+      "live_provider_calls": "NOT_RUN",
+      "live_extraction": "NOT_RUN"
     },
     {
       "gate": "G5",
@@ -87,12 +90,14 @@
     "passed": 1114,
     "xfailed": 8,
     "skipped": 1,
+    "deferred_state_total": 9,
     "failed": 0,
+    "xpassed": 0,
     "xpassed_strict": 0,
     "exit_code": 0,
     "duration_seconds": 143.36,
     "total_collected": 1123,
-    "env_classification_note": "test_fa_8_high_1_preflight_probe.py moved XFAIL (repair env, bab75c949) -> SKIPPED (verify env, a9dd0659) due to absent OPENROUTER_API_KEY; audit-only skipif at module:37. Underlying test behavior unchanged. Total deferred-state count (xfail+skip) = 9 in both runs.",
+    "env_classification_note": "test_fa_8_high_1_preflight_probe.py moved XFAIL (repair env, bab75c949) -> SKIPPED (verify env, a9dd0659) due to absent OPENROUTER_API_KEY; audit-only skipif at module:37. Underlying test behavior unchanged. Total deferred-state count (xfailed + skipped) = 9 in both runs.",
     "xfail_inventory": [
       "regression/audit_2026_05_22/test_fa_3_high_1_prompt_input_separator.py::test_at_least_one_prompt_has_input_delimiter",
       "regression/audit_2026_05_22/test_fa_7_med_1_status_no_telemetry.py::test_status_text_should_be_fully_readonly",
@@ -126,10 +131,14 @@
   },
   "route_readiness_summary": {
     "exit_code": 0,
+    "command": "bash -o pipefail -c 'RTE_DISABLE_LIVE_LLM_IN_TESTS=1 PYTHONPATH=services/repo-truth-extractor python -m pytest -q -vv -p no:cacheprovider services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py::test_phase_d_provider_preflight_blocks_on_openrouter_402 services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py::test_phase_d_provider_preflight_is_required_when_cost_routes_include_openrouter | tee proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/route_readiness_probe.txt'",
+    "ran_with_live_llm_disabled": true,
     "tests_executed": 2,
     "tests_passed": 2,
     "tests_failed": 0,
-    "duration_seconds": 0.38
+    "duration_seconds": 0.44,
+    "live_provider_calls": "NOT_RUN",
+    "live_extraction": "NOT_RUN"
   },
   "cli_import_summary": {
     "exit_code": 0,
@@ -151,9 +160,9 @@
       "Preflight: REPAIR_DECISIONS.md readable on origin/main.",
       "Worktree: branch=codex/rte-costprofile-f-verify-002, HEAD=a9dd0659..., status clean before edits.",
       "G1 repair proof intake: all four required assertions pass.",
-      "G2 full RTE suite: exit 0 with 1114 passed / 8 xfailed / 1 skipped / 0 failed / 0 xpassed-strict (deferred-state total 9 matches repair gate).",
+      "G2 full RTE suite: exit 0 with 1114 passed / 8 xfailed / 1 skipped / 0 failed / 0 xpassed (deferred-state total xfailed + skipped = 9 matches repair gate).",
       "G3 bounded print-config: exit 0; top-level cost_profile=value-default emitted; legacy routing_policy=balanced_openrouter preserved.",
-      "G4 route-readiness OpenRouter probe: 2 passed.",
+      "G4 route-readiness OpenRouter probe: 2 passed under RTE_DISABLE_LIVE_LLM_IN_TESTS=1.",
       "G5 CLI import: PYTHONPATH=src import succeeds.",
       "Packet JSON parses (python -m json.tool).",
       "PROOF.json parses (python -m json.tool)."

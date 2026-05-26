@@ -13,7 +13,7 @@
 
 **VERIFIED** — The CostProfile F series is series-gate verified at HEAD `a9dd0659270575deafe269b145da7aea52a4a23f` following the F-FULLSUITE-REPAIR (PR #709) and INDEX-status correction (PR #710).
 
-All 5 verification gates passed under `RTE_DISABLE_LIVE_LLM_IN_TESTS=1` with no live provider calls and no live extraction. Cluster D prescan failures remain deferred via strict xfail markers per `TP-RTE-WALKER-006`; no Walker-006 deferred test silently passed (zero XPASS).
+All 5 verification gates now have evidence under `RTE_DISABLE_LIVE_LLM_IN_TESTS=1` with no live provider calls and no live extraction. The full suite passed with `1114 passed, 8 xfailed, 1 skipped, 0 failed, 0 xpassed`; deferred-state total remained `8 xfailed + 1 skipped = 9`. Gate 4 was rerun under the no-live flag. Cluster D prescan failures remain deferred via strict xfail markers per `TP-RTE-WALKER-006`.
 
 The series is ready for live operator use. Suggested next step: invoke `--cost-profile value-default --execute` on a bounded lane with `--max-cost-usd` cap before any wider rollout.
 
@@ -36,9 +36,9 @@ The series is ready for live operator use. Suggested next step: invoke `--cost-p
 | Gate | Name | Verdict | Evidence |
 | --- | --- | --- | --- |
 | G1 | repair_proof_intake | **PASS** | Repair PROOF.json asserts `status_scope=repair_gate_only_not_series_gate`, lists `TP-RTE-COSTPROFILE-F-VERIFY-002` as follow-up, records live calls + extraction as NOT_RUN. |
-| G2 | full_rte_suite | **PASS** | `pytest_full_run.txt`: exit 0, 1114 passed, 8 xfailed, 1 skipped, 0 failed, 0 xpassed-strict. |
+| G2 | full_rte_suite | **PASS** | `pytest_full_run.txt`: exit 0, 1114 passed, 8 xfailed, 1 skipped, 0 failed, 0 xpassed. |
 | G3 | bounded_print_config_probe | **PASS** | `bounded_lane_print_config.txt`: exit 0; top-level `"cost_profile": "value-default"`; legacy `routing_policy: "balanced_openrouter"` preserved; no live execution. |
-| G4 | route_readiness_openrouter_probe | **PASS** | `route_readiness_probe.txt`: 2 tests passed (`test_phase_d_provider_preflight_blocks_on_openrouter_402`, `test_phase_d_provider_preflight_is_required_when_cost_routes_include_openrouter`). |
+| G4 | route_readiness_openrouter_probe | **PASS** | `route_readiness_probe.txt`: rerun under `RTE_DISABLE_LIVE_LLM_IN_TESTS=1`; 2 tests passed (`test_phase_d_provider_preflight_blocks_on_openrouter_402`, `test_phase_d_provider_preflight_is_required_when_cost_routes_include_openrouter`). |
 | G5 | cli_import_probe | **PASS** | `PYTHONPATH=src python -c 'import dopemux.cli'` exits 0. |
 
 ---
@@ -55,7 +55,7 @@ The series is ready for live operator use. Suggested next step: invoke `--cost-p
 - `regression/audit_2026_05_22/test_fa_8_high_1_preflight_probe.py` carries a `pytest.skip()` at module:37 gated on `OPENROUTER_API_KEY`.
 - Repair env (`bab75c949`) had the key set → the test ran and hit the `@pytest.mark.xfail` assertion → XFAIL.
 - Verify env (`a9dd0659`) does not have the key set → the test bails at the module-level `skip()` before reaching the xfail marker → SKIPPED.
-- Underlying test behavior is unchanged; the marker classification simply shifted because of an environment variable. **Total deferred-state count (xfail + skip) = 9 in both runs.** No regression, no XPASS-strict.
+- Underlying test behavior is unchanged; the marker classification simply shifted because of an environment variable. **Total deferred-state count (xfailed + skipped) = 9 in both runs.** No regression, no XPASS.
 
 **XPASS discriminator**: `grep -E '^XPASS|, [0-9]+ xpass' pytest_full_run.txt` → zero matches. Cluster D strict xfails all remained expected; no Walker-006 deferred test silently passed.
 
@@ -98,11 +98,11 @@ The series is ready for live operator use. Suggested next step: invoke `--cost-p
 
 ## Route-Readiness Result (Detail)
 
-**Command**: `bash -o pipefail -c 'PYTHONPATH=services/repo-truth-extractor python -m pytest -v -p no:cacheprovider services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py::test_phase_d_provider_preflight_blocks_on_openrouter_402 services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py::test_phase_d_provider_preflight_is_required_when_cost_routes_include_openrouter 2>&1 | tee proof/.../route_readiness_probe.txt'`
+**Command**: `bash -o pipefail -c 'RTE_DISABLE_LIVE_LLM_IN_TESTS=1 PYTHONPATH=services/repo-truth-extractor python -m pytest -q -vv -p no:cacheprovider services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py::test_phase_d_provider_preflight_blocks_on_openrouter_402 services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py::test_phase_d_provider_preflight_is_required_when_cost_routes_include_openrouter | tee proof/.../route_readiness_probe.txt'`
 
-**Result**: `2 passed, 1 warning in 0.38s` — `exit_code=0`
+**Result**: `2 passed, 1 warning in 0.44s` — `exit_code=0`
 
-The Phase D provider-preflight residuals around OpenRouter 402 behavior and required-when-cost-routes-include-openrouter both hold at HEAD `a9dd0659`.
+The Phase D provider-preflight residuals around OpenRouter 402 behavior and required-when-cost-routes-include-openrouter both hold at HEAD `a9dd0659` under `RTE_DISABLE_LIVE_LLM_IN_TESTS=1`.
 
 ---
 
@@ -165,7 +165,7 @@ Walker-006 remains the next follow-up packet to retire Cluster D xfails, but it 
 | Live extraction | NOT_RUN |
 | Worktree HEAD | `a9dd0659270575deafe269b145da7aea52a4a23f` |
 | Pytest exit | 0 |
-| Pytest counts | 1114 passed / 8 xfailed / 1 skipped / 0 failed / 0 xpassed-strict |
+| Pytest counts | 1114 passed / 8 xfailed / 1 skipped / 0 failed / 0 xpassed |
 | Repair PR | #709 (MERGED 2026-05-26T09:31:35Z, merge `bab75c949`) |
 | INDEX PR | #710 (MERGED 2026-05-26T09:54:13Z, merge `a9dd0659`) |
 | Follow-up | TP-RTE-WALKER-006 (Cluster D deferred work) |
