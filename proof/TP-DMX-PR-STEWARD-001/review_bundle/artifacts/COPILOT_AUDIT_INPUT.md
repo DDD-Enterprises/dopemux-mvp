@@ -1,10 +1,26 @@
-# TP-DMX-PR-STEWARD-001 Copilot Embedded Audit Input
+# TP-DMX-PR-STEWARD-001 Repair Copilot Embedded Audit Input
 
 ## Packet Objective
 
-Implement PR Steward v1, a check-only PR review intake runtime for `DDD-Enterprises/dopemux-mvp`.
+Repair PR Steward v1 in PR #708 without expanding scope. PR Steward remains a check-only PR review intake runtime for `DDD-Enterprises/dopemux-mvp`.
 
 The runtime harvests GitHub PR metadata, changed files, commits/head SHA, reviews, review comments, review threads, issue comments, and CI/check state, then emits machine-readable readiness artifacts.
+
+## Repair Context
+
+PR: https://github.com/DDD-Enterprises/dopemux-mvp/pull/708
+Branch: `codex/tp-dmx-pr-steward-001`
+Prior PR head before this repair: `7f510eed9354d4ed811ae4cc62883c88e17e8024`
+Current local HEAD before repair commit: `7f510eed9354d4ed811ae4cc62883c88e17e8024`
+Generated at: `2026-05-26T06:43:15Z`
+
+Supervisor-provided review intake found five active unresolved threads before repair:
+
+1. `tools/pr_steward/classifier.py`: missing `isRequired` / `required` defaulted to required.
+2. `tools/pr_steward/collector.py`: live mode hardcoded embedded audit `SKIPPED` and stale proof.
+3. `tools/pr_steward/classifier.py`: optional skipped/pending/failing checks could block when requiredness metadata was omitted.
+4. `docs/ops/pr-steward.md`: docs needed alignment with trusted author association behavior.
+5. `docs/ops/pr-acceptance.md`: docs needed the same trusted association alignment.
 
 ## Scope Boundaries
 
@@ -24,101 +40,67 @@ Forbidden behavior:
 
 Do not treat this audit input as permission to run tools or inspect unrelated repository content.
 
-## Current Diff Stat
+## Repair Summary
+
+- Requiredness default changed to required only when `isRequired is True` or `required is True`; missing metadata now defaults to optional.
+- Optional failed, skipped, pending, or in-progress checks are still recorded in `CI_TRIAGE.json` but do not block `READY` by themselves.
+- Live GitHub collection now accepts `--proof-path` and loads proof/audit status from the supplied proof JSON.
+- Live proof loading compares proof head candidates (`head_sha`, `commit`, `commit_sha`, `implementation_commit_sha`, `pr.head_sha`, `target.head_sha`) to the PR head SHA.
+- Missing, unreadable, or unparseable proof fails closed with `proof_missing`, `proof_unreadable`, or `proof_unparseable` harvest errors.
+- Reviewer docs now say unknown or untrusted reviewers/bots block `READY`; explicit known logins and GitHub `OWNER`, `MEMBER`, or `COLLABORATOR` author associations are trusted.
+- Tests were added for optional checks without requiredness metadata, proof-path live readiness, and trusted author association behavior.
+- Proof and review bundle were refreshed for PR #708 with honest self-referential commit-SHA semantics.
+
+## Current Repair Diff Stat
 
 ```text
- .github/workflows/pr-steward.yml                   |  78 +++
- docs/ops/embedded-audit.md                         |   6 +
- docs/ops/health-check-matrix.md                    |   2 +
- docs/ops/pr-acceptance.md                          |   3 +
- docs/ops/pr-steward.md                             |  24 +
- docs/ops/tool-routing-matrix.md                    |   2 +
- proof/TP-DMX-PR-STEWARD-001/AUDITOR_REPORT.md      |  32 +
- proof/TP-DMX-PR-STEWARD-001/PROOF.json             | 381 ++++++++++++
- .../review_bundle/ARTIFACT_INDEX.md                |  29 +
- .../review_bundle/AUDITOR_REPORT.md                |  32 +
- .../review_bundle/CHANGED_FILES.txt                |  43 ++
- .../review_bundle/DIFF_STAT.txt                    |  44 ++
- .../review_bundle/GIT_STATE.md                     |  58 ++
- .../review_bundle/MANIFEST.json                    | 113 ++++
- .../TP-DMX-PR-STEWARD-001/review_bundle/PROOF.json | 381 ++++++++++++
- .../TP-DMX-PR-STEWARD-001/review_bundle/SUMMARY.md |  35 ++
- .../review_bundle/VALIDATION_OUTPUT.md             |  32 +
- .../review_bundle/artifacts/CI_TRIAGE.json         |  23 +
- .../review_bundle/artifacts/MERGE_READINESS.json   |  33 +
- .../review_bundle/artifacts/PR_STATE_SNAPSHOT.json |  75 +++
- .../review_bundle/artifacts/PR_STEWARD_SUMMARY.md  |  13 +
- .../artifacts/REVIEW_ITEM_LEDGER.json              |  19 +
- .../artifacts/THREAD_DISPOSITIONS.json             |   8 +
- schemas/pr_steward/ci_triage.schema.json           |   4 +
- schemas/pr_steward/merge_readiness.schema.json     |   4 +-
- schemas/pr_steward/pr_state_snapshot.schema.json   | 343 +++++++++++
- scripts/pr-steward                                 |   4 +
- task-packets/generated/TP-DMX-PR-STEWARD-001.json  |  61 +-
- .../pr_steward/draft_pr_blocks/harvest.json        |  49 ++
- .../pr_steward/failed_check_blocks/harvest.json    |  49 ++
- .../missing_auth_or_harvest_blocks/harvest.json    |  38 ++
- .../pending_check_not_ready/harvest.json           |  49 ++
- .../pr_steward/ready_all_green/harvest.json        |  58 ++
- .../harvest.json                                   |  78 +++
- .../skipped_required_audit_blocks/harvest.json     |  49 ++
- .../unknown_reviewer_blocks/harvest.json           |  58 ++
- .../unresolved_thread_blocks/harvest.json          |  69 +++
- tests/pr_steward/test_intake.py                    | 175 ++++++
- tools/pr_steward/__init__.py                       |   3 +
- tools/pr_steward/classifier.py                     | 685 +++++++++++++++++++++
- tools/pr_steward/collector.py                      | 251 ++++++++
- tools/pr_steward/intake.py                         |  94 +++
- tools/pr_steward/known_reviewers.json              |  14 +
- 43 files changed, 3593 insertions(+), 8 deletions(-)
+docs/ops/pr-acceptance.md                          |   6 +-
+ docs/ops/pr-steward.md                             |  10 +-
+ proof/TP-DMX-PR-STEWARD-001/COPILOT_AUDIT_INPUT.md | 275 ++++++++-------------
+ proof/TP-DMX-PR-STEWARD-001/PROOF.json             | 115 ++++++---
+ .../review_bundle/MANIFEST.json                    |  85 +++----
+ .../TP-DMX-PR-STEWARD-001/review_bundle/PROOF.json | 115 ++++++---
+ .../TP-DMX-PR-STEWARD-001/review_bundle/SUMMARY.md |  46 ++--
+ .../review_bundle/artifacts/COPILOT_AUDIT_INPUT.md | 275 ++++++++-------------
+ tests/pr_steward/test_intake.py                    | 181 ++++++++++++++
+ tools/pr_steward/classifier.py                     |   4 +-
+ tools/pr_steward/collector.py                      | 107 ++++++--
+ tools/pr_steward/intake.py                         |   7 +-
+ 12 files changed, 739 insertions(+), 487 deletions(-)
 ```
 
-## Changed File List
+## Current Repair Changed Files
 
 ```text
-.github/workflows/pr-steward.yml
-docs/ops/embedded-audit.md
-docs/ops/health-check-matrix.md
 docs/ops/pr-acceptance.md
 docs/ops/pr-steward.md
-docs/ops/tool-routing-matrix.md
-proof/TP-DMX-PR-STEWARD-001/AUDITOR_REPORT.md
+proof/TP-DMX-PR-STEWARD-001/COPILOT_AUDIT_INPUT.md
 proof/TP-DMX-PR-STEWARD-001/PROOF.json
-proof/TP-DMX-PR-STEWARD-001/review_bundle/ARTIFACT_INDEX.md
-proof/TP-DMX-PR-STEWARD-001/review_bundle/AUDITOR_REPORT.md
-proof/TP-DMX-PR-STEWARD-001/review_bundle/CHANGED_FILES.txt
-proof/TP-DMX-PR-STEWARD-001/review_bundle/DIFF_STAT.txt
-proof/TP-DMX-PR-STEWARD-001/review_bundle/GIT_STATE.md
 proof/TP-DMX-PR-STEWARD-001/review_bundle/MANIFEST.json
 proof/TP-DMX-PR-STEWARD-001/review_bundle/PROOF.json
 proof/TP-DMX-PR-STEWARD-001/review_bundle/SUMMARY.md
-proof/TP-DMX-PR-STEWARD-001/review_bundle/VALIDATION_OUTPUT.md
-proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/CI_TRIAGE.json
-proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/MERGE_READINESS.json
-proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/PR_STATE_SNAPSHOT.json
-proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/PR_STEWARD_SUMMARY.md
-proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/REVIEW_ITEM_LEDGER.json
-proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/THREAD_DISPOSITIONS.json
-schemas/pr_steward/ci_triage.schema.json
-schemas/pr_steward/merge_readiness.schema.json
-schemas/pr_steward/pr_state_snapshot.schema.json
-scripts/pr-steward
-task-packets/generated/TP-DMX-PR-STEWARD-001.json
-tests/fixtures/pr_steward/draft_pr_blocks/harvest.json
-tests/fixtures/pr_steward/failed_check_blocks/harvest.json
-tests/fixtures/pr_steward/missing_auth_or_harvest_blocks/harvest.json
-tests/fixtures/pr_steward/pending_check_not_ready/harvest.json
-tests/fixtures/pr_steward/ready_all_green/harvest.json
-tests/fixtures/pr_steward/ready_with_resolved_outdated_threads/harvest.json
-tests/fixtures/pr_steward/skipped_required_audit_blocks/harvest.json
-tests/fixtures/pr_steward/unknown_reviewer_blocks/harvest.json
-tests/fixtures/pr_steward/unresolved_thread_blocks/harvest.json
+proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/COPILOT_AUDIT_INPUT.md
 tests/pr_steward/test_intake.py
-tools/pr_steward/__init__.py
 tools/pr_steward/classifier.py
 tools/pr_steward/collector.py
 tools/pr_steward/intake.py
-tools/pr_steward/known_reviewers.json
+```
+
+## Current Git Status
+
+```text
+M docs/ops/pr-acceptance.md
+ M docs/ops/pr-steward.md
+ M proof/TP-DMX-PR-STEWARD-001/COPILOT_AUDIT_INPUT.md
+ M proof/TP-DMX-PR-STEWARD-001/PROOF.json
+ M proof/TP-DMX-PR-STEWARD-001/review_bundle/MANIFEST.json
+ M proof/TP-DMX-PR-STEWARD-001/review_bundle/PROOF.json
+ M proof/TP-DMX-PR-STEWARD-001/review_bundle/SUMMARY.md
+ M proof/TP-DMX-PR-STEWARD-001/review_bundle/artifacts/COPILOT_AUDIT_INPUT.md
+ M tests/pr_steward/test_intake.py
+ M tools/pr_steward/classifier.py
+ M tools/pr_steward/collector.py
+ M tools/pr_steward/intake.py
 ```
 
 ## Review Bundle Manifest Summary
@@ -129,7 +111,22 @@ Upload unit:
 proof/TP-DMX-PR-STEWARD-001/review_bundle
 ```
 
-Review bundle files:
+Manifest fields:
+
+- `packet_id`: `TP-DMX-PR-STEWARD-001`
+- `repo`: `DDD-Enterprises/dopemux-mvp`
+- `branch`: `codex/tp-dmx-pr-steward-001`
+- `base_sha`: `66958b61088b8e02396612e9ccce58578f0b748b`
+- `head_sha`: `7f510eed9354d4ed811ae4cc62883c88e17e8024`
+- `embedded_audit.status`: `PASS_WITH_RISKS`
+- `upload_unit`: `proof/TP-DMX-PR-STEWARD-001/review_bundle`
+- `pr.number`: `708`
+- `pr.url`: `https://github.com/DDD-Enterprises/dopemux-mvp/pull/708`
+- `pr.prior_head_before_repair`: `7f510eed9354d4ed811ae4cc62883c88e17e8024`
+- `pr.proof_current_to_pr_head`: `False`
+- `pr.self_referential_commit_sha_unavailable`: `True`
+
+Review bundle files include:
 
 - `MANIFEST.json`
 - `SUMMARY.md`
@@ -146,108 +143,74 @@ Review bundle files:
 - `artifacts/CI_TRIAGE.json`
 - `artifacts/MERGE_READINESS.json`
 - `artifacts/PR_STEWARD_SUMMARY.md`
-
-Manifest status before this fallback audit:
-
-- `embedded_audit.status`: `SKIPPED`
-- `known_unknowns_blockers`: required embedded audit skipped; `gh auth` invalid for live harvest; no commit SHA; no PR URL.
-- `/tmp/pr-steward-ready` artifacts were copied into `review_bundle/artifacts/`.
-- `/tmp/pr-steward-live-704` is excluded because live smoke emitted `BLOCKED` due invalid `gh` auth.
-- Local CLI auth/log files are excluded to avoid secrets, credentials, auth headers, and machine-sensitive files.
+- `artifacts/COPILOT_AUDIT_INPUT.md`
+- `artifacts/COPILOT_AUDIT_OUTPUT.md`
 
 ## Proof Validation Summary
 
-Passed validations recorded in proof and rerun locally:
+Current proof status before this repair audit:
 
-- `python -m json.tool task-packets/generated/TP-DMX-PR-STEWARD-001.json`
-- `python -m json.tool schemas/pr_steward/merge_readiness.schema.json`
-- `python -m json.tool schemas/pr_steward/review_item_ledger.schema.json`
-- `python -m json.tool schemas/pr_steward/thread_dispositions.schema.json`
-- `python -m json.tool schemas/pr_steward/ci_triage.schema.json`
-- `python -m json.tool schemas/pr_steward/pr_state_snapshot.schema.json`
-- `python -m json.tool schemas/proof/embedded_audit.schema.json`
-- `python -m json.tool proof/TP-DMX-PR-STEWARD-001/PROOF.json`
-- `python -m json.tool proof/TP-DMX-PR-STEWARD-001/review_bundle/MANIFEST.json`
-- `python -m json.tool proof/TP-DMX-PR-STEWARD-001/review_bundle/PROOF.json`
-- embedded audit object validates against `schemas/proof/embedded_audit.schema.json`
-- `python -m compileall -q tools tests`
-- `pytest -q tests/pr_steward` returned `5 passed`
-- `python -m tools.pr_steward.intake --help`
-- `scripts/pr-steward --help`
-- fixture smoke `ready_all_green` emitted `READY`
-- review bundle artifact JSON parses
-- `git diff --check`
-- `pre-commit run --files $(git diff --name-only) || true`
+- `status`: `PASS_WITH_RISKS`
+- `validation_state.overall`: `PASS_WITH_RISKS`
+- `embedded_audit.status`: `PASS_WITH_RISKS`
+- `pr.number`: `708`
+- `pr.url`: `https://github.com/DDD-Enterprises/dopemux-mvp/pull/708`
+- `pr.prior_head_before_repair`: `7f510eed9354d4ed811ae4cc62883c88e17e8024`
+- `pr.proof_current_to_pr_head`: `False`
+- `pr.self_referential_commit_sha_unavailable`: `True`
 
-The only current packet blocker is embedded external audit status `SKIPPED / NEEDS_SUPERVISOR`.
+Recent local validation already run after the repair edits:
+
+- `python -m compileall -q tools tests`: exit 0
+- `pytest -q tests/pr_steward`: exit 0, 8 passed
+
+Additional full validation will be rerun after this audit and recorded in `VALIDATION_OUTPUT.md` and `PROOF.json`.
 
 ## No-Mutation Boundary Evidence
 
-Static search over runtime/workflow/tests for mutation-oriented commands and forbidden args returned only:
+The repair changes do not add any mutation path. PR Steward runtime remains limited to read-only GitHub CLI operations:
 
-- workflow summary line `mutation_performed: false`
-- tests asserting `mutation_performed is False`
-- tests asserting forbidden args are absent or hard-fail
-- runtime artifact fields setting `mutation_performed` to `False`
-- no `gh pr comment`, `gh pr review`, `gh pr merge`, `gh pr edit`, `gh pr ready`, `gh api --method POST/PATCH/PUT/DELETE`, auto-fix, thread-resolution, approval, auto-merge, or merge-queue command path was found in PR Steward runtime/workflow/tests.
+- `gh auth status`
+- `gh pr view ... --json ...`
+- `gh api graphql` bounded review thread read
 
-The advisory workflow uses read-only permissions:
+The CLI still has no supported mutation options:
 
-- `contents: read`
-- `pull-requests: read`
-- `checks: read`
-- `statuses: read`
-- `actions: read`
-- `issues: read`
+- no `--post-comment`
+- no `--resolve-thread`
+- no `--auto-merge`
+- no `--enqueue`
+- no `--apply-fixes`
 
-It captures the PR Steward exit code, uploads artifacts, writes the job summary, and exits `0` to avoid turning pending-check `NOT_READY` states into a branch-protection race.
+The workflow remains advisory/read-only and exits `0` after uploading artifacts and writing the job summary to avoid a permanent branch-protection race while other checks are pending.
 
-## Key Files Changed
+## Key Files For This Repair
 
-- `tools/pr_steward/collector.py`: GitHub CLI read-only harvest transport and fixture loader.
-- `tools/pr_steward/classifier.py`: deterministic classification and readiness model.
-- `tools/pr_steward/intake.py`: CLI entrypoint and artifact writer.
-- `tools/pr_steward/known_reviewers.json`: known reviewer/bot allowlist.
-- `scripts/pr-steward`: thin module wrapper.
-- `.github/workflows/pr-steward.yml`: advisory read-only workflow.
-- `tests/pr_steward/test_intake.py`: fixture, schema, CLI, and forbidden mutation arg tests.
-- `tests/fixtures/pr_steward/*/harvest.json`: offline fixture scenarios.
-- `schemas/pr_steward/*.schema.json`: artifact contract updates/addition.
-- `docs/ops/pr-steward.md`, `docs/ops/pr-acceptance.md`, `docs/ops/embedded-audit.md`: runtime and proof-bundle docs.
-- `proof/TP-DMX-PR-STEWARD-001/review_bundle/*`: single supervisor upload unit.
-
-## Fixture Coverage Summary
-
-Fixture directories:
-
-- `ready_all_green`
-- `unknown_reviewer_blocks`
-- `unresolved_thread_blocks`
-- `failed_check_blocks`
-- `pending_check_not_ready`
-- `draft_pr_blocks`
-- `missing_auth_or_harvest_blocks`
-- `skipped_required_audit_blocks`
-- `ready_with_resolved_outdated_threads`
-
-Test coverage includes classification logic, thread disposition logic, CI triage logic, readiness decisions, artifact writing, schema validation, CLI fixture mode, and forbidden mutation args.
+- `tools/pr_steward/classifier.py`
+- `tools/pr_steward/collector.py`
+- `tools/pr_steward/intake.py`
+- `tests/pr_steward/test_intake.py`
+- `docs/ops/pr-steward.md`
+- `docs/ops/pr-acceptance.md`
+- `proof/TP-DMX-PR-STEWARD-001/PROOF.json`
+- `proof/TP-DMX-PR-STEWARD-001/review_bundle/*`
 
 ## Audit Questions
-
-Please audit this bounded evidence for TP-DMX-PR-STEWARD-001 and answer exactly in the output format below.
 
 1. Does PR Steward v1 remain check-only?
 2. Is there any GitHub mutation path?
 3. Are auto-fix, thread resolution, approval, auto-merge, and merge queue mutation absent?
-4. Do unknown reviewers/bots block READY?
-5. Do unresolved review threads block READY?
-6. Do failed/pending checks prevent READY under strict mode?
-7. Is the advisory workflow non-blocking and read-only?
-8. Do fixture tests cover the expected readiness blockers?
-9. Are output artifacts and schemas aligned?
-10. Is the review bundle complete enough for supervisor upload?
-11. Is proof complete enough after updating the audit status?
-12. Can this packet proceed to commit/push/PR?
+4. Does missing `isRequired` / `required` now default to optional, while explicitly required failed/pending checks still block readiness?
+5. Does proof-path live mode remove the hardcoded `SKIPPED` / stale-proof behavior while still failing closed when proof is missing or stale?
+6. Are unknown or untrusted reviewers/bots blocked while explicit known logins and trusted `OWNER` / `MEMBER` / `COLLABORATOR` associations are accepted?
+7. Do unresolved review threads block `READY`?
+8. Do failed/pending required checks prevent `READY` under strict mode?
+9. Is the advisory workflow non-blocking and read-only?
+10. Do fixture/unit tests cover the expected readiness blockers plus the new repair cases?
+11. Are output artifacts and schemas aligned?
+12. Is the review bundle complete enough for supervisor upload?
+13. Is proof complete enough after updating the audit status, while honestly recording the self-referential final commit SHA limitation?
+14. Can this packet proceed to commit/push/PR update?
 
 Return exactly:
 

@@ -3,7 +3,7 @@
   "repo": "DDD-Enterprises/dopemux-mvp",
   "branch": "codex/tp-dmx-pr-steward-001",
   "base_sha": "66958b61088b8e02396612e9ccce58578f0b748b",
-  "head_sha": "66958b61088b8e02396612e9ccce58578f0b748b",
+  "head_sha": "7f510eed9354d4ed811ae4cc62883c88e17e8024",
   "created_at": "2026-05-26T05:53:37Z",
   "upload_unit": "proof/TP-DMX-PR-STEWARD-001/review_bundle",
   "authoritative_artifacts": [
@@ -30,7 +30,42 @@
   ],
   "validation_outputs": [
     {
-      "command": "pytest -q tests/pr_steward",
+      "command": "python -m json.tool task-packets/generated/TP-DMX-PR-STEWARD-001.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool schemas/pr_steward/merge_readiness.schema.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool schemas/pr_steward/review_item_ledger.schema.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool schemas/pr_steward/thread_dispositions.schema.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool schemas/pr_steward/ci_triage.schema.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool schemas/pr_steward/pr_state_snapshot.schema.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool schemas/proof/embedded_audit.schema.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool proof/TP-DMX-PR-STEWARD-001/PROOF.json",
       "exit_code": 0,
       "result": "PASS"
     },
@@ -40,9 +75,59 @@
       "result": "PASS"
     },
     {
-      "command": "python -m tools.pr_steward.intake --fixture-dir tests/fixtures/pr_steward/ready_all_green --repo DDD-Enterprises/dopemux-mvp --pr 704 --out /tmp/pr-steward-ready --strict",
+      "command": "pytest -q tests/pr_steward",
+      "exit_code": 0,
+      "result": "PASS, 8 passed"
+    },
+    {
+      "command": "python -m tools.pr_steward.intake --help",
       "exit_code": 0,
       "result": "PASS"
+    },
+    {
+      "command": "scripts/pr-steward --help",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m tools.pr_steward.intake --fixture-dir tests/fixtures/pr_steward/ready_all_green --repo DDD-Enterprises/dopemux-mvp --pr 704 --out /tmp/pr-steward-ready --strict",
+      "exit_code": 0,
+      "result": "PASS, emitted READY"
+    },
+    {
+      "command": "python -m json.tool /tmp/pr-steward-ready/MERGE_READINESS.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool /tmp/pr-steward-ready/REVIEW_ITEM_LEDGER.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool /tmp/pr-steward-ready/THREAD_DISPOSITIONS.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool /tmp/pr-steward-ready/CI_TRIAGE.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python -m json.tool /tmp/pr-steward-ready/PR_STATE_SNAPSHOT.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "test -f /tmp/pr-steward-ready/PR_STEWARD_SUMMARY.md",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "copilot --model claude-sonnet-4.6 --no-custom-instructions --disable-builtin-mcps --stream off --available-tools=__none__ -p \"$(cat proof/TP-DMX-PR-STEWARD-001/COPILOT_AUDIT_INPUT.md)\"",
+      "exit_code": 0,
+      "result": "PASS_WITH_RISKS"
     },
     {
       "command": "git diff --check",
@@ -53,26 +138,6 @@
       "command": "pre-commit run --files $(git diff --name-only) || true",
       "exit_code": 0,
       "result": "PASS"
-    },
-    {
-      "command": "claude auth status",
-      "exit_code": 1,
-      "result": "BLOCKED_NOT_LOGGED_IN"
-    },
-    {
-      "command": "claude --print ... --model opus --permission-mode plan --tools \"\" --no-session-persistence",
-      "exit_code": 1,
-      "result": "BLOCKED_NOT_LOGGED_IN"
-    },
-    {
-      "command": "gemini --prompt \"Auth availability check only. Respond OK.\" --approval-mode plan --skip-trust --output-format text",
-      "exit_code": 0,
-      "result": "BLOCKED_BROWSER_AUTH_REQUIRED"
-    },
-    {
-      "command": "copilot --model claude-sonnet-4.6 --no-custom-instructions --disable-builtin-mcps --stream off --available-tools=__none__ -p \"$(cat proof/TP-DMX-PR-STEWARD-001/COPILOT_AUDIT_INPUT.md)\"",
-      "exit_code": 0,
-      "result": "PASS_WITH_RISKS"
     }
   ],
   "embedded_audit": {
@@ -85,48 +150,72 @@
     "report_path": "proof/TP-DMX-PR-STEWARD-001/AUDITOR_REPORT.md",
     "findings": [
       {
-        "id": "AUDIT-001",
+        "id": "AUDIT-REPAIR-001",
         "severity": "INFO",
-        "title": "Required external embedded audit completed via approved fallback",
+        "title": "PR #708 repair audit completed via approved fallback",
         "status": "RESOLVED",
-        "body": "GitHub Copilot CLI with Claude Sonnet 4.6 returned PASS_WITH_RISKS using the supervisor-approved no-tools fallback invocation."
+        "body": "GitHub Copilot CLI with Claude Sonnet 4.6 returned PASS_WITH_RISKS and Commit Readiness READY for the bounded PR #708 repair prompt."
       },
       {
-        "id": "AUDIT-RISK-001",
-        "severity": "LOW",
-        "title": "Live GitHub harvest not proven locally",
+        "id": "AUDIT-REPAIR-RISK-001",
+        "severity": "MEDIUM",
+        "title": "Final repair commit SHA is self-referential",
         "status": "ACCEPTED_RISK",
-        "body": "Local gh auth remains invalid, so live PR harvest emits BLOCKED. This is fail-closed and does not affect offline fixture validation."
+        "body": "The proof records the pre-repair PR head and self_referential_commit_sha_unavailable=true because embedding the final repair commit SHA would change that commit."
+      },
+      {
+        "id": "AUDIT-REPAIR-RISK-002",
+        "severity": "LOW",
+        "title": "No-tools audit transcript includes inert generated tool-call text",
+        "status": "ACCEPTED_RISK",
+        "body": "The raw Copilot transcript contains tool-call shaped text and model-generated snippets that were not executed. Local validation and repository files remain authoritative."
       }
     ],
     "fixes_applied": [
-      "Created COPILOT_AUDIT_INPUT.md with bounded audit material.",
-      "Ran supervisor-approved Copilot CLI Claude Sonnet 4.6 no-tools fallback audit.",
-      "Updated AUDITOR_REPORT.md with PASS_WITH_RISKS verdict."
+      "Changed missing check requiredness metadata to default optional.",
+      "Added --proof-path live proof loading and PR-head comparison.",
+      "Preserved fail-closed behavior for missing, unreadable, unparseable, or stale proof.",
+      "Aligned reviewer docs with trusted author association behavior.",
+      "Added tests for optional checks, proof-path live readiness, and trusted associations.",
+      "Refreshed PR #708 proof and review bundle artifacts.",
+      "Reran supervisor-approved Copilot CLI Claude Sonnet 4.6 no-tools fallback audit."
     ],
     "remaining_risks": [
-      "Live GitHub harvest cannot complete until gh auth is repaired.",
-      "Copilot no-tools audit was bounded to supplied evidence rather than unrestricted repository inspection."
+      "Final repair commit SHA cannot be embedded in committed proof without self-referential SHA churn.",
+      "Copilot no-tools audit was bounded to supplied evidence rather than unrestricted repository inspection.",
+      "Raw audit transcript includes hallucinated/inert tool-call text; local validation is authoritative for actual repo state.",
+      "Live GitHub checks require escalated network access in this sandbox."
     ],
     "skip_reason": null
   },
   "known_unknowns_blockers": [
-    "gh auth status reports an invalid token for hu3mann, so live PR harvest emits BLOCKED.",
-    "No commit SHA exists for this implementation yet because commit has not been created.",
-    "PR URL is NOT_RUN until push and gh pr create are attempted."
+    "Final repair commit SHA is not embedded in proof because the proof is committed as part of that SHA.",
+    "Live GitHub commands require escalated network access in this sandbox; normal sandbox cannot reach api.github.com.",
+    "PR #708 was BEHIND before repair and had five active unresolved review threads before the repair diff."
   ],
   "excluded_artifacts_or_paths": [
     {
       "path": "/tmp/pr-steward-ready",
-      "reason": "Copied required fixture-smoke artifacts into review_bundle/artifacts."
+      "reason": "Required fixture-smoke artifacts are copied into review_bundle/artifacts."
     },
     {
-      "path": "/tmp/pr-steward-live-704",
-      "reason": "Live smoke emitted BLOCKED due invalid gh auth; not required for supervisor upload."
+      "path": "/tmp/pr-steward-live-*",
+      "reason": "Live smoke output is not the supervisor upload unit; live auth/network limitations are recorded in proof."
     },
     {
       "path": "local CLI auth/log files",
       "reason": "Excluded to avoid secrets, credentials, auth headers, and local machine-sensitive files."
     }
-  ]
+  ],
+  "updated_at": "2026-05-26T06:56:15Z",
+  "pr": {
+    "number": 708,
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/708",
+    "branch": "codex/tp-dmx-pr-steward-001",
+    "prior_head_before_repair": "7f510eed9354d4ed811ae4cc62883c88e17e8024",
+    "current_repair_commit_sha": null,
+    "proof_current_to_pr_head": false,
+    "self_referential_commit_sha_unavailable": true,
+    "self_referential_note": "This proof is updated before the repair commit is created, so it cannot embed the final repair commit SHA without changing that SHA."
+  }
 }

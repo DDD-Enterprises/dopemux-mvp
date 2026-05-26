@@ -41,14 +41,21 @@ def load_fixture(fixture_dir: Path) -> dict[str, Any]:
     return payload
 
 
-def collect_from_github(repo: str, pr_number: int) -> dict[str, Any]:
+def collect_from_github(
+    repo: str, pr_number: int, *, proof_path: Path | None = None
+) -> dict[str, Any]:
     errors: list[str] = []
+    proof_state, initial_proof_errors = _proof_state(
+        proof_path=proof_path,
+        pr_head_sha=None,
+    )
     auth = _run(["gh", "auth", "status"])
     if auth.returncode != 0:
         return _incomplete_harvest(
             repo=repo,
             pr_number=pr_number,
-            errors=["gh auth status failed for github.com"],
+            errors=initial_proof_errors + ["gh auth status failed for github.com"],
+            proof_state=proof_state,
         )
 
     view = _run(
@@ -67,7 +74,9 @@ def collect_from_github(repo: str, pr_number: int) -> dict[str, Any]:
         return _incomplete_harvest(
             repo=repo,
             pr_number=pr_number,
-            errors=[f"gh pr view failed: {view.stderr.strip()}"],
+            errors=initial_proof_errors
+            + [f"gh pr view failed: {view.stderr.strip()}"],
+            proof_state=proof_state,
         )
 
     try:
@@ -76,15 +85,23 @@ def collect_from_github(repo: str, pr_number: int) -> dict[str, Any]:
         return _incomplete_harvest(
             repo=repo,
             pr_number=pr_number,
-            errors=[f"gh pr view returned invalid JSON: {exc}"],
+            errors=initial_proof_errors
+            + [f"gh pr view returned invalid JSON: {exc}"],
+            proof_state=proof_state,
         )
 
+    proof_state, proof_errors = _proof_state(
+        proof_path=proof_path,
+        pr_head_sha=str(pr_payload.get("headRefOid") or ""),
+    )
+    errors.extend(proof_errors)
     threads, thread_errors = _fetch_review_threads(repo=repo, pr_number=pr_number)
     errors.extend(thread_errors)
     return normalize_gh_payload(
         pr_payload,
         review_threads=threads,
         harvest_errors=errors,
+        proof_state=proof_state,
     )
 
 
@@ -93,11 +110,13 @@ def normalize_gh_payload(
     *,
     review_threads: list[dict[str, Any]],
     harvest_errors: list[str],
+    proof_state: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     review_comments = []
     for thread in review_threads:
         review_comments.extend(thread.get("comments") or [])
 
+    proof = proof_state or _missing_proof_state(None)
     return {
         "harvest_complete": not harvest_errors,
         "harvest_errors": harvest_errors,
@@ -109,15 +128,8 @@ def normalize_gh_payload(
         "review_threads": review_threads,
         "issue_comments": pr_payload.get("comments") or [],
         "checks": pr_payload.get("statusCheckRollup") or [],
-        "embedded_audit": {
-            "status": "SKIPPED",
-            "report_path": "proof/TP-DMX-PR-STEWARD-001/AUDITOR_REPORT.md",
-        },
-        "proof": {
-            "proof_path": "proof/TP-DMX-PR-STEWARD-001/PROOF.json",
-            "proof_head_sha": None,
-            "matches_pr_head": False,
-        },
+        "embedded_audit": proof["embedded_audit"],
+        "proof": proof["proof"],
     }
 
 
@@ -202,8 +214,13 @@ def _fetch_review_threads(
 
 
 def _incomplete_harvest(
-    *, repo: str, pr_number: int, errors: list[str]
+    *,
+    repo: str,
+    pr_number: int,
+    errors: list[str],
+    proof_state: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    proof = proof_state or _missing_proof_state(None)
     return {
         "harvest_complete": False,
         "harvest_errors": errors,
@@ -230,16 +247,76 @@ def _incomplete_harvest(
         "review_threads": [],
         "issue_comments": [],
         "checks": [],
+        "embedded_audit": proof["embedded_audit"],
+        "proof": proof["proof"],
+    }
+
+
+def _proof_state(
+    *, proof_path: Path | None, pr_head_sha: str | None
+) -> tuple[dict[str, Any], list[str]]:
+    if proof_path is None:
+        return _missing_proof_state(None), ["proof_missing: --proof-path not provided"]
+    try:
+        payload = json.loads(proof_path.read_text(encoding="utf-8"))
+    except OSError as exc:
+        return _missing_proof_state(proof_path), [f"proof_unreadable: {exc}"]
+    except json.JSONDecodeError as exc:
+        return _missing_proof_state(proof_path), [f"proof_unparseable: {exc}"]
+    if not isinstance(payload, dict):
+        return _missing_proof_state(proof_path), ["proof_unparseable: root is not an object"]
+
+    embedded = payload.get("embedded_audit") or {}
+    if not isinstance(embedded, dict):
+        embedded = {}
+    proof_head_sha = _proof_head_sha(payload)
+    return {
+        "embedded_audit": {
+            "status": str(embedded.get("status") or "SKIPPED"),
+            "report_path": str(
+                embedded.get("report_path")
+                or f"{proof_path.parent.as_posix()}/AUDITOR_REPORT.md"
+            ),
+        },
+        "proof": {
+            "proof_path": proof_path.as_posix(),
+            "proof_head_sha": proof_head_sha,
+            "matches_pr_head": bool(
+                proof_head_sha and pr_head_sha and proof_head_sha == pr_head_sha
+            ),
+        },
+    }, []
+
+
+def _missing_proof_state(proof_path: Path | None) -> dict[str, Any]:
+    return {
         "embedded_audit": {
             "status": "SKIPPED",
             "report_path": "proof/TP-DMX-PR-STEWARD-001/AUDITOR_REPORT.md",
         },
         "proof": {
-            "proof_path": "proof/TP-DMX-PR-STEWARD-001/PROOF.json",
+            "proof_path": proof_path.as_posix() if proof_path else "",
             "proof_head_sha": None,
             "matches_pr_head": False,
         },
     }
+
+
+def _proof_head_sha(payload: dict[str, Any]) -> str | None:
+    for key in (
+        "head_sha",
+        "commit",
+        "commit_sha",
+        "implementation_commit_sha",
+    ):
+        value = payload.get(key)
+        if value:
+            return str(value)
+    for parent_key in ("pr", "target"):
+        nested = payload.get(parent_key)
+        if isinstance(nested, dict) and nested.get("head_sha"):
+            return str(nested["head_sha"])
+    return None
 
 
 def _run(args: list[str]) -> subprocess.CompletedProcess[str]:
