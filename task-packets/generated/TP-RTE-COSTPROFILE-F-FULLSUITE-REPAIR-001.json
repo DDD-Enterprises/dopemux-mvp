@@ -12,7 +12,8 @@
     "PAL chain MUST be the long form because this packet spans 6 independent failure clusters with potentially conflicting authoritative sources: analyze → thinkdeep → challenge → planner → challenge → codereview → precommit → challenge.",
     "If a non-cost-profile failure cluster cannot be repaired within this packet's blast radius (e.g., it requires a schema migration), explicitly defer it to a named follow-up packet rather than 'fixing in place' with a workaround. Document the deferral in REPAIR_DECISIONS.md.",
     "The `--print-config` JSON contract change is operator-visible. Any addition to its schema must be recorded in docs/03-reference/repo-truth-extractor.md (or the equivalent operator-facing reference doc) within this packet's commit, not in a separate trailing PR.",
-    "Test-environment fixes (Cluster F / litellm) must repair the import boundary, not silently `pytest.importorskip` the affected tests. If skipping is the right call, it must be a documented, deferred decision with a follow-up TP."
+    "Test-environment fixes (Cluster F / litellm) must repair the import boundary, not silently `pytest.importorskip` the affected tests. If skipping is the right call, it must be a documented, deferred decision with a follow-up TP.",
+    "STOP CONDITIONS — Codex must abort and surface to the operator if ANY of: (1) S1 F-VERIFY-001 ancestry/proof/ledger gate fails on origin/main; (2) SERIES_VERIFICATION_REPORT.md or TP-RTE-COSTPROFILE-F-VERIFY-001/PROOF.json is missing on origin/main, or PROOF.json fails to parse; (3) NOT_VERIFIED_ACCEPTED_AS_EVIDENCE is missing from the F-VERIFY-001 row of task-packets/INDEX.md on origin/main; (4) the S8 clean-checkout import probe fails under `PYTHONPATH=src` (the package uses an `src/` layout and is not installed at execution time, so a bare `python -c \"import dopemux.cli\"` is invalid as a gate); (5) any required verification pipeline in this packet fails when wrapped under `bash -o pipefail` (pytest|tee and run_extraction_v5.py|tee gates must surface upstream non-zero exits — masking is prohibited); (6) S2 selects a target_policy treatment (option ii or iii) that would break existing downstream consumers of `--print-config` without explicit operator approval recorded in REPAIR_DECISIONS.md. These STOP conditions are fail-closed; no `|| true` is permitted on any required verification gate (advisory diagnostics, if any, must be explicitly labeled as non-blocking in their step's task text)."
   ],
   "depends_on": [
     "TP-RTE-COSTPROFILE-E3-CONTRACTS-001",
@@ -78,8 +79,8 @@
     "verify": [
       "python -m json.tool task-packets/generated/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001.json >/dev/null",
       "python -m compileall -q services/repo-truth-extractor/run_extraction_v5.py",
-      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests --tb=short -v 2>&1 | tee proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/pytest_full_run_post_repair.txt",
-      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python services/repo-truth-extractor/run_extraction_v5.py --phase A --step A2 --run-id f_repair_print_config --output-root /tmp/rte-f-repair-print-config --cost-profile value-default --print-config 2>&1 | tee proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/bounded_lane_print_config_post_repair.txt",
+      "bash -o pipefail -c 'RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests --tb=short -v 2>&1 | tee proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/pytest_full_run_post_repair.txt'",
+      "bash -o pipefail -c 'RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python services/repo-truth-extractor/run_extraction_v5.py --phase A --step A2 --run-id f_repair_print_config --output-root /tmp/rte-f-repair-print-config --cost-profile value-default --print-config 2>&1 | tee proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/bounded_lane_print_config_post_repair.txt'",
       "grep -q 'cost_profile' proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/bounded_lane_print_config_post_repair.txt",
       "python -m json.tool proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/PROOF.json >/dev/null",
       "test -f proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/REPAIR_DECISIONS.md",
@@ -109,17 +110,29 @@
   "steps": [
     {
       "id": "S1",
-      "task": "Preflight (ordering assumption: F-VERIFY-001's proof-only PR has merged with ledger status NOT_VERIFIED_ACCEPTED_AS_EVIDENCE BEFORE this packet branches; this is required so F-VERIFY-001's artifacts and INDEX.md status are present on the repair base). Verify F-VERIFY-001 merged. Verify the repair branch is based on a main SHA that includes the full E3/E4/E7/E8/E9 stacked work (#687, #688, #690 or its normalized-stack equivalent, #694, #695, #696, #697). Capture the base SHA and the stacked-ancestry caveat from F-VERIFY-001 in PROOF.json so reviewers can verify reproducibility. If F-VERIFY-001 has NOT yet merged at execution time, STOP and request the operator land it first — do not branch from a base where F-VERIFY-001's evidence is absent.",
+      "task": "Preflight (F-VERIFY-001 mainline-ancestry / proof-ledger gate). The F-VERIFY-001 proof-only landing was completed by replacement PR #701 (merge commit 9b98b3c47c986f3dc6037cfa9cac663690a50cbf), recorded in the ledger as NOT_VERIFIED_ACCEPTED_AS_EVIDENCE. Codex MUST verify, on origin/main as of execution time, that ALL of the following hold before branching: (1) the F-VERIFY-001 proof/ledger merge commit (PR #701, 9b98b3c47c986f3dc6037cfa9cac663690a50cbf) is an ancestor of origin/main; (2) proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/SERIES_VERIFICATION_REPORT.md is present on origin/main; (3) proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/PROOF.json is present on origin/main and parses as JSON; (4) task-packets/INDEX.md on origin/main contains both 'TP-RTE-COSTPROFILE-F-VERIFY-001' AND 'NOT_VERIFIED_ACCEPTED_AS_EVIDENCE' on the same row; (5) the captured origin/main SHA is recorded and reused as the explicit branch base (do NOT branch from a local stale main). Also capture the stacked-ancestry caveat (E3/E4/E7/E8/E9) for reproducibility. STOP CONDITIONS — abort execution and surface to operator if ANY of: (a) F-VERIFY-001 proof/ledger ancestry check fails; (b) SERIES_VERIFICATION_REPORT.md or TP-RTE-COSTPROFILE-F-VERIFY-001/PROOF.json is absent on origin/main; (c) PROOF.json fails to parse; (d) NOT_VERIFIED_ACCEPTED_AS_EVIDENCE is missing from the INDEX row; (e) any required-pipeline check anywhere in this packet fails (these are now wrapped with `bash -o pipefail` so upstream failures are no longer masked by tee); (f) the clean-checkout import probe in S8 fails under `PYTHONPATH=src` (the package uses an `src/` layout, so a bare `python -c \"import dopemux.cli\"` is not a valid gate). Do NOT depend on any specific PR number other than F-VERIFY-001's actual proof/ledger merge commit — PR #701 is the current canonical replacement; the originally-numbered draft PR is no longer the gating artifact.",
       "commands": [
         "git fetch origin --prune",
-        "git rev-parse origin/main",
-        "git log --oneline origin/main | grep -E 'E3-CONTRACTS|E4-FINISH|E7-LADDERS|E8-YAML|E9-' | head -12",
+        "ORIGIN_MAIN_SHA=\"$(git rev-parse origin/main)\" && echo \"ORIGIN_MAIN_SHA=$ORIGIN_MAIN_SHA\" | tee /tmp/F_REPAIR_ORIGIN_MAIN_SHA.txt",
+        "git merge-base --is-ancestor 9b98b3c47c986f3dc6037cfa9cac663690a50cbf origin/main && echo 'F_VERIFY_PR701_ANCESTOR=YES' || (echo 'F_VERIFY_PR701_ANCESTOR=NO — STOP: F-VERIFY-001 proof/ledger merge commit (PR #701, 9b98b3c47c986f3dc6037cfa9cac663690a50cbf) is not an ancestor of origin/main' && exit 1)",
+        "git show origin/main:proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/SERIES_VERIFICATION_REPORT.md > /tmp/F_VERIFY_SERIES_VERIFICATION_REPORT.md && echo 'F_VERIFY_SERIES_REPORT_PRESENT=YES'",
+        "git show origin/main:proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/PROOF.json > /tmp/F_VERIFY_PROOF.json && python -m json.tool /tmp/F_VERIFY_PROOF.json > /tmp/F_VERIFY_PROOF.json.ok && echo 'F_VERIFY_PROOF_JSON_PARSES=YES'",
+        "git show origin/main:task-packets/INDEX.md > /tmp/F_VERIFY_INDEX.md && grep -nE 'TP-RTE-COSTPROFILE-F-VERIFY-001' /tmp/F_VERIFY_INDEX.md | grep -F 'NOT_VERIFIED_ACCEPTED_AS_EVIDENCE' > /tmp/F_VERIFY_INDEX_MATCH.txt && echo 'F_VERIFY_INDEX_STATUS_OK=YES'",
+        "git log --oneline origin/main | grep -E 'E3-CONTRACTS|E4-FINISH|E7-LADDERS|E8-YAML|E9-' | head -12 > /tmp/F_REPAIR_E_SERIES_ANCESTRY.txt",
+        "git checkout -B codex/rte-costprofile-f-fullsuite-repair-001 \"$ORIGIN_MAIN_SHA\"",
+        "git rev-parse HEAD > /tmp/F_REPAIR_BRANCH_BASE_SHA.txt",
         "git status --short"
       ],
       "validation": [
         "Working tree clean on the repair branch.",
-        "Base SHA captured.",
-        "All five E-series merge SHAs present in ancestry OR the normalized-stack caveat documented per F-VERIFY-001's evidence."
+        "origin/main SHA captured to /tmp/F_REPAIR_ORIGIN_MAIN_SHA.txt and reused as the explicit branch base (no stale local main).",
+        "F_VERIFY_PR701_ANCESTOR=YES: PR #701 merge commit 9b98b3c47c986f3dc6037cfa9cac663690a50cbf is an ancestor of origin/main.",
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/SERIES_VERIFICATION_REPORT.md is readable from origin/main.",
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/PROOF.json is readable from origin/main AND parses as JSON.",
+        "task-packets/INDEX.md on origin/main contains a TP-RTE-COSTPROFILE-F-VERIFY-001 row marked NOT_VERIFIED_ACCEPTED_AS_EVIDENCE.",
+        "Stacked-ancestry caveat (E3/E4/E7/E8/E9 merges) captured to /tmp/F_REPAIR_E_SERIES_ANCESTRY.txt and referenced in PROOF.json.",
+        "All five E-series merge SHAs present in ancestry OR the normalized-stack caveat documented per F-VERIFY-001's evidence.",
+        "If ANY of the above fail, STOP and surface to operator — do not proceed to S2."
       ]
     },
     {
@@ -162,7 +175,7 @@
       "id": "S5",
       "task": "Cluster C — Add `cost_profile` to `--print-config` emitted JSON, honoring the S2 decision on coexistence with `target_policy`. Locate the print_config builder in services/repo-truth-extractor/run_extraction_v5.py (around L19160-L19207). Add a top-level `cost_profile` key whose value is the resolved profile string. Apply the S2-decided treatment of `target_policy` (keep + deprecate / remove / replace). If the consensus during S2 was to expose this via a different visibility surface (e.g., a dedicated --print-cost-profile subcommand), implement that surface instead and update tests + docs accordingly. Either way: docs/03-reference/repo-truth-extractor.md must record the operator-visible contract within THIS commit, not a trailing PR.",
       "commands": [
-        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python services/repo-truth-extractor/run_extraction_v5.py --phase A --step A2 --run-id f_repair_print_config_dryrun --output-root /tmp/rte-f-repair-dryrun --cost-profile value-default --print-config | tee /tmp/rte-f-repair-printconfig-dryrun.txt",
+        "bash -o pipefail -c 'RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python services/repo-truth-extractor/run_extraction_v5.py --phase A --step A2 --run-id f_repair_print_config_dryrun --output-root /tmp/rte-f-repair-dryrun --cost-profile value-default --print-config 2>&1 | tee /tmp/rte-f-repair-printconfig-dryrun.txt'",
         "grep -q '\"cost_profile\"' /tmp/rte-f-repair-printconfig-dryrun.txt || (echo 'FAIL: cost_profile not in print-config output' && exit 1)"
       ],
       "validation": [
@@ -197,11 +210,11 @@
       "task": "Cluster F — `litellm` test-env import. `litellm>=1.83.7` is a HARD dependency in pyproject.toml, so the two test_rte_v5_characterization.py failures importing `dopemux.cli` are NOT a missing-package problem — they're a test-isolation / import-order / lazy-import problem. Investigate: does the test fixture mock `sys.modules` in a way that breaks litellm's import chain? Is the litellm import in src/dopemux/cli/__init__.py at module-load time when it should be lazy? Repair at the right layer. Do NOT add `pytest.importorskip('litellm')` as a band-aid; that masks a real production-side fragility.",
       "commands": [
         "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests/test_rte_v5_characterization.py --tb=long -v",
-        "python -c \"import dopemux.cli\" && echo 'OK: dopemux.cli imports cleanly'"
+        "PYTHONPATH=src python -c \"import dopemux.cli\" && echo 'OK: dopemux.cli imports cleanly under PYTHONPATH=src'"
       ],
       "validation": [
         "Both test_rte_v5_characterization.py failures pass.",
-        "`python -c \"import dopemux.cli\"` succeeds in a clean shell with no pre-imported sys.modules manipulation.",
+        "`PYTHONPATH=src python -c \"import dopemux.cli\"` succeeds in a clean shell (this repo uses an `src/` layout; the package is not installed at execution time, so a bare `python -c` is not a valid probe) with no pre-imported sys.modules manipulation.",
         "REPAIR_DECISIONS.md records the layer where the repair was applied (lazy import / fixture / requirements) and why."
       ]
     },
@@ -209,10 +222,10 @@
       "id": "S9",
       "task": "Full-suite re-run validation. Run the complete RTE test suite under RTE_DISABLE_LIVE_LLM_IN_TESTS=1 and capture stdout/stderr to pytest_full_run_post_repair.txt. Target: 0 failed, ≥1349 passed (the 1323 prior + the 26 newly-passing), 2 skipped, 3 xfailed unchanged.",
       "commands": [
-        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests --tb=short -v 2>&1 | tee proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/pytest_full_run_post_repair.txt"
+        "bash -o pipefail -c 'RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python -m pytest services/repo-truth-extractor/tests --tb=short -v 2>&1 | tee proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/pytest_full_run_post_repair.txt'"
       ],
       "validation": [
-        "pytest exit code 0 OR any residual failure is documented in REPAIR_DECISIONS.md with a named follow-up TP and explicit pal/consensus deferral rationale.",
+        "pytest exit code 0 (preserved under `bash -o pipefail` — the tee pipeline no longer masks a non-zero pytest exit) OR any residual failure is documented in REPAIR_DECISIONS.md with a named follow-up TP and explicit pal/consensus deferral rationale.",
         "Total test count ≥ (1323 + repaired_count), where repaired_count = 26 minus the number of deferred-cluster tests recorded in REPAIR_DECISIONS.md. Deferred test count must equal the number of deferral rows in REPAIR_DECISIONS.md (no silent skips).",
         "No previously-xpassing test now xfails (no hidden regression masking)."
       ]
@@ -221,11 +234,11 @@
       "id": "S10",
       "task": "Bounded-lane re-probe of `--print-config`. Re-run the same probe F-VERIFY-001 used, capture output, and verify it now contains the `cost_profile` field. This is the operator-visible contract validation.",
       "commands": [
-        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python services/repo-truth-extractor/run_extraction_v5.py --phase A --step A2 --run-id f_repair_print_config --output-root /tmp/rte-f-repair-print-config --cost-profile value-default --print-config 2>&1 | tee proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/bounded_lane_print_config_post_repair.txt",
+        "bash -o pipefail -c 'RTE_DISABLE_LIVE_LLM_IN_TESTS=1 python services/repo-truth-extractor/run_extraction_v5.py --phase A --step A2 --run-id f_repair_print_config --output-root /tmp/rte-f-repair-print-config --cost-profile value-default --print-config 2>&1 | tee proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/bounded_lane_print_config_post_repair.txt'",
         "grep -q 'cost_profile' proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/bounded_lane_print_config_post_repair.txt"
       ],
       "validation": [
-        "--print-config exits 0.",
+        "--print-config exits 0 (preserved under `bash -o pipefail` — a non-zero exit from run_extraction_v5.py is no longer masked by tee).",
         "Emitted output contains `cost_profile` (string match anywhere is sufficient for the gate; semantic correctness is verified in S5).",
         "No --execute invocation.",
         "No legacy `BALANCED_GROK_OPENROUTER_*` constant references in output."
