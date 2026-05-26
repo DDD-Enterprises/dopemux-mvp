@@ -21,6 +21,10 @@ prelude: Drift and unresolved authority notes for MP-DMX-DEVOPS-AUTOPR-001.
 | DRIFT-TASK-ORCH | OBSERVED | Task-orchestrator authority and packaging drift are documented in repo truth files. | Do not let PR Steward or bridge docs claim workflow authority beyond observed surfaces. |
 | DRIFT-AGENT-AUTHORITY | UNKNOWN | Repo-wide agent runtime authority remains unresolved across multiple code families. | Treat agents as helpers unless a runtime path proves stronger authority. |
 
+## Resolution Notes
+
+- 2026-05-26: PR #704 repair updated `task-packets/generated/MP-DMX-DEVOPS-AUTOPR-001.json` S1 to check `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json` directly. The original user packet still contains the misspelled first-action probe as historical input, but generated packet execution no longer depends on the absent root alias.
+
 ## Update Rule
 
 Append drift rather than rewriting it away. If a future runtime implementation resolves an item, add a dated resolution note with evidence path, validation command, and commit/PR reference.

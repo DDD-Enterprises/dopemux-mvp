@@ -50,8 +50,10 @@
       ]
     },
     "invocation": {
-      "type": "string",
-      "minLength": 1
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "exit_code": {
       "type": [
@@ -108,7 +110,35 @@
           "auditor_model": {
             "const": "unknown"
           },
+          "invocation": {
+            "type": "null"
+          },
+          "exit_code": {
+            "type": "null"
+          },
           "skip_reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "not": {
+          "properties": {
+            "status": {
+              "const": "SKIPPED"
+            }
+          },
+          "required": [
+            "status"
+          ]
+        }
+      },
+      "then": {
+        "properties": {
+          "invocation": {
             "type": "string",
             "minLength": 1
           }

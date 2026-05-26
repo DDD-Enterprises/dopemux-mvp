@@ -33,7 +33,7 @@ Auditor self-identification: `Antigravity (Gemini 3.5 Flash)`
    - Prompts require repo, branch, and boundary preflight and restrict implementations to allowlisted files.
 
 4. PR Steward check-only boundary: `PASS`
-   - `docs/ops/PR_STEWARD.md` and the PR Steward schemas constrain the steward to checking and classification.
+   - `docs/ops/pr-steward.md` and the PR Steward schemas constrain the steward to checking and classification.
    - PR Steward output schemas require `mutation_performed` to be `false`.
 
 5. Absence of auto-fix / thread-resolution / auto-merge / merge-queue mutation: `PASS`
@@ -56,7 +56,7 @@ None.
 
 1. Misspelled schema filename in preflight (`DRIFT-SCHEMA-PATH`):
    - The packet's required first-action command includes `test -f dopetask-cannonical-spec.json`; the observed canonical schema is `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json`.
-   - This drift is explicitly recorded in `docs/ops/DRIFT_LOG.md`.
+   - This drift is explicitly recorded in `docs/ops/drift-log.md`.
 
 2. AGY / Antigravity model selection verification (`DRIFT-AGY-MODEL`):
    - `agy --help` proves non-interactive print invocation but not a Sonnet model-selection flag.
@@ -71,16 +71,16 @@ None.
 - `task-packets/generated/MP-DMX-DEVOPS-AUTOPR-001.json`
 - `task-packets/generated/TP-DMX-PR-STEWARD-001.json`
 - `task-packets/TEMPLATE_TASK_PACKET.md`
-- `docs/ops/OPERATING_MODEL.md`
-- `docs/ops/AUTHORITY_LEDGER.md`
-- `docs/ops/PR_ACCEPTANCE.md`
-- `docs/ops/PR_STEWARD.md`
-- `docs/ops/EMBEDDED_AUDIT.md`
-- `docs/ops/CONFIG_REGISTRY.md`
-- `docs/ops/HEALTH_CHECK_MATRIX.md`
-- `docs/ops/DRIFT_LOG.md`
-- `docs/ops/RESEARCH_LEDGER.md`
-- `docs/ops/TOOL_ROUTING_MATRIX.md`
+- `docs/ops/operating-model.md`
+- `docs/ops/authority-ledger.md`
+- `docs/ops/pr-acceptance.md`
+- `docs/ops/pr-steward.md`
+- `docs/ops/embedded-audit.md`
+- `docs/ops/config-registry.md`
+- `docs/ops/health-check-matrix.md`
+- `docs/ops/drift-log.md`
+- `docs/ops/research-ledger.md`
+- `docs/ops/tool-routing-matrix.md`
 - `prompts/gemini-cli-auditor.md`
 - `prompts/agy-sonnet-auditor.md`
 - `prompts/gpt55-acceptance-reviewer.md`
