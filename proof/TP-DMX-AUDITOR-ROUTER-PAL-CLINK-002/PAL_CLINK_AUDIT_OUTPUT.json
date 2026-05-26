@@ -1,68 +1,31 @@
 {
-  "status": "error",
+  "status": "continuation_available",
+  "content_type": "text",
+  "is_error": false,
   "verdict": "NEEDS_SUPERVISOR",
-  "auditor_tool": "pal-mcp-clink",
-  "created_at": "2026-05-26T22:10:30Z",
-  "repo_context_sent": false,
-  "route_is_audit_verdict": false,
-  "summary": "PAL MCP clink was callable, but all attempted configured CLI bridges failed before audit because their executables were not found in PATH.",
-  "attempts": [
-    {
-      "cli_name": "claude",
-      "role": "codereviewer",
-      "status": "error",
-      "return_code": null,
-      "content_type": "text",
-      "content": "CLI 'claude' execution failed: Executable 'claude' not found in PATH for CLI 'claude'. Ensure the command is installed and accessible."
-    },
-    {
-      "cli_name": "gemini",
-      "role": "codereviewer",
-      "status": "error",
-      "return_code": null,
-      "content_type": "text",
-      "content": "CLI 'gemini' execution failed: Executable 'gemini' not found in PATH for CLI 'gemini'. Ensure the command is installed and accessible."
-    },
-    {
-      "cli_name": "codex",
-      "role": "codereviewer",
-      "status": "error",
-      "return_code": null,
-      "content_type": "text",
-      "content": "CLI 'codex' execution failed: Executable 'codex' not found in PATH for CLI 'codex'. Ensure the command is installed and accessible."
-    }
-  ],
-  "evidence_reviewed": [
-    "PAL MCP clink tool invocation metadata returned by the current MCP session",
-    "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PAL_CLINK_AUDIT_INPUT.md",
-    "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json",
-    "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/AUDITOR_REPORT.md",
-    "tools/auditor_router/pal_clink.py",
-    "tools/auditor_router/preflight.py",
-    "tools/auditor_router/models.py",
-    "tests/auditor_router/test_pal_clink.py",
-    "tests/auditor_router/test_preflight.py"
-  ],
+  "content": "PAL MCP clink executed host-side (cli_name=claude, role=codereviewer). The clink session sandbox is confined to /Users/hue/.zen-mcp-server; all 6 evidence file reads to the worktree path were denied. Audit output captured, but all 14 audit criteria remain unverified. Route selection is not an audit verdict.",
   "blocking_findings": [
     {
-      "id": "PAL-CLINK-CLI-EXECUTABLES-MISSING",
+      "id": "PAL_CLINK_AUDIT_SANDBOX_BLOCKED",
       "severity": "BLOCKING",
-      "title": "Configured PAL clink CLI executables are unavailable",
+      "title": "PAL clink audit sandbox blocked - all evidence reads denied",
       "status": "OPEN",
-      "body": "The PAL MCP clink bridge returned errors for claude, gemini, and codex before any audit could run because each executable was not found in PATH."
+      "body": "PAL MCP clink was invoked host-side (cli_name=claude, role=codereviewer). The clink session sandbox is confined to /Users/hue/.zen-mcp-server; all 6 evidence file reads to the worktree path were denied. All 14 audit criteria remain unverified."
     }
   ],
-  "nonblocking_risks": [
-    "Review-thread fixes are locally validated, but this output is not an independent embedded audit verdict.",
-    "The PR remains draft and proof freshness remains self-referential until a later governance-safe proof refresh path exists."
+  "remaining_risks": [
+    "All 14 audit criteria remain unverified.",
+    "Re-run required with accessible evidence bundle or allowed worktree path."
   ],
-  "required_fixes": [
-    "Run PAL MCP clink from a persistent environment where an audit-safe external CLI executable is installed and authenticated.",
-    "Capture a completed PAL clink audit verdict of PASS or PASS_WITH_RISKS before marking the PR ready."
-  ],
-  "limitations": [
-    "No external CLI agent reviewed the diff.",
-    "No model/provider identity was available beyond the failed cli_name metadata.",
-    "No mutating commands were requested or performed."
-  ]
+  "metadata": {
+    "cli_name": "claude",
+    "role": "codereviewer",
+    "provider_used": "claude",
+    "model_used": "claude-haiku-4-5-20251001",
+    "return_code": 0
+  },
+  "type": "result",
+  "subtype": "success",
+  "session_id": "33fced6a-c3e0-4a54-bf16-f6b0a2c4f1e8",
+  "uuid": "bff49b82-1e83-4309-868d-d9a2eeed47a4"
 }
