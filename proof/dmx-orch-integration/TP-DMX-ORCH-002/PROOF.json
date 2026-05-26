@@ -1,0 +1,183 @@
+{
+  "tp_id": "TP-DMX-ORCH-002",
+  "tp_path": "task-packets/generated/TP-DMX-ORCH-002.json",
+  "project": "dopemux-mvp",
+  "worktree_path": "/Users/hue/.codex/worktrees/ef1c/dopemux-mvp",
+  "branch": "codex/tp-dmx-orch-002-readonly-cli",
+  "base_branch": "main",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "created_at_utc": "2026-05-26T13:31:29Z",
+  "validated_at_utc": "2026-05-26T13:35:20Z",
+  "starting_head": "898310bd01cf48b2703a166b429d4b330ec9f84e",
+  "ending_head": "UNCOMMITTED",
+  "repo_identity_check": {
+    "result": "PASS",
+    "marker_file": ".dopetaskroot",
+    "marker_present": true,
+    "remote_url_matches": true,
+    "remote_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git"
+  },
+  "task_orchestrator": {
+    "root_id": "32df1792-40e3-4ad3-9aa6-fd323f0cacb7",
+    "item_id": "0d6c6799-7802-4d36-aa49-9b060336d88f",
+    "transition": "queue -> work",
+    "status": "IN_PROGRESS"
+  },
+  "slices_completed": [
+    {
+      "slice": "S1",
+      "label": "preflight repo identity, branch, HEAD, marker, and dirty state",
+      "status": "PASS"
+    },
+    {
+      "slice": "S2",
+      "label": "inspect CLI registration and PM read helpers",
+      "status": "PASS"
+    },
+    {
+      "slice": "S3",
+      "label": "write failing CLI tests for orchestrator command surface",
+      "status": "PASS"
+    },
+    {
+      "slice": "S4",
+      "label": "implement read-only orchestrator status, daily, queue, and blockers commands",
+      "status": "PASS"
+    },
+    {
+      "slice": "S5",
+      "label": "create generated packet and proof bundle",
+      "status": "PASS"
+    }
+  ],
+  "files_created": [
+    "src/dopemux/commands/orchestrator_commands.py",
+    "tests/unit/test_cli_orchestrator_commands.py",
+    "task-packets/generated/TP-DMX-ORCH-002.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-002/PROOF.json"
+  ],
+  "files_modified": [
+    "src/dopemux/cli.py"
+  ],
+  "allowlist_compliance": {
+    "result": "PASS",
+    "allowlist": [
+      "src/dopemux/cli.py",
+      "src/dopemux/commands/orchestrator_commands.py",
+      "tests/unit/test_cli_orchestrator_commands.py",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-002/**",
+      "task-packets/generated/TP-DMX-ORCH-002.json"
+    ],
+    "files_outside_allowlist": []
+  },
+  "validations": [
+    {
+      "name": "TDD red run",
+      "command": "uv run pytest -q tests/unit/test_cli_orchestrator_commands.py",
+      "exit_code": 1,
+      "status": "PASS",
+      "note": "Expected red state after test creation: orchestrator command group and src/dopemux/commands/orchestrator_commands.py were missing."
+    },
+    {
+      "name": "Targeted CLI tests",
+      "command": "uv run pytest -q tests/unit/test_cli_orchestrator_commands.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "..... [100%]"
+    },
+    {
+      "name": "Task Packet JSON syntax",
+      "command": ".venv/bin/python -m json.tool task-packets/generated/TP-DMX-ORCH-002.json >/dev/null",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Task Packet schema validation",
+      "command": ".venv/bin/python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-002.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "stderr_note": "jsonschema CLI emitted a deprecation warning; schema validation exited 0."
+    },
+    {
+      "name": "Compile source tree",
+      "command": ".venv/bin/python -m compileall -q src",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Proof JSON syntax",
+      "command": ".venv/bin/python -m json.tool proof/dmx-orch-integration/TP-DMX-ORCH-002/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Diff whitespace check",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS",
+      "note": "New files were intent-added before diff check so untracked proof, packet, test, and command files were included."
+    },
+    {
+      "name": "Pre-commit hooks for packet files",
+      "command": "pre-commit run --files src/dopemux/cli.py src/dopemux/commands/orchestrator_commands.py tests/unit/test_cli_orchestrator_commands.py task-packets/generated/TP-DMX-ORCH-002.json proof/dmx-orch-integration/TP-DMX-ORCH-002/PROOF.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "note": "Docs-only hooks skipped where no docs files applied; root hygiene hooks passed."
+    }
+  ],
+  "read_only_evidence": {
+    "pm_read_helpers_used": [
+      "pm_get_priority_queue",
+      "pm_get_blockers",
+      "pm_get_workflow_state"
+    ],
+    "forbidden_helper_call_test": "tests/unit/test_cli_orchestrator_commands.py::test_orchestrator_commands_do_not_call_write_capable_helpers",
+    "lazy_import_reason": "The command module imports PM read helpers lazily to avoid adding an eager optional dependency failure to dopemux CLI startup."
+  },
+  "not_run_label": "NOT_RUN",
+  "not_run": [
+    "Workflow transitions or Task Orchestrator write calls: forbidden by TP-DMX-ORCH-002 invariants.",
+    "PM writes, ConPort writes, dope-memory writes, dope-context index mutation, and GitHub mutation: forbidden by TP-DMX-ORCH-002 invariants.",
+    "Task Orchestrator runtime service startup or live HTTP probing: out of scope for this read-only CLI packet.",
+    "Downstream packets TP-DMX-ORCH-003 through TP-DMX-ORCH-017: blocked until this packet reaches terminal in Task Orchestrator.",
+    "Push and PR creation: not run yet in this local implementation slice."
+  ],
+  "residual_risks": [
+    "The commands rely on existing PM read helpers; runtime backend availability was not exercised with a live task-orchestrator HTTP service.",
+    "The existing PM reads module imports optional ConPort client dependencies; the new command module avoids making that import eager, but actual command execution still requires the existing PM read environment to be available.",
+    "The output is intentionally concise and text-first; future packets may refine output shape after validator and safety-tier work lands."
+  ],
+  "unknowns": [
+    "Whether every downstream packet draft is schema-valid against the active dopetask schema remains unverified.",
+    "Whether final acceptance proof should live only under proof/dmx-orch-integration or also be mirrored under an orchestrator-specific proof path remains unresolved by this packet."
+  ],
+  "rollback_plan": [
+    "Remove src/dopemux/commands/orchestrator_commands.py.",
+    "Remove the orchestrator command registration from src/dopemux/cli.py.",
+    "Remove tests/unit/test_cli_orchestrator_commands.py.",
+    "Remove task-packets/generated/TP-DMX-ORCH-002.json.",
+    "Remove proof/dmx-orch-integration/TP-DMX-ORCH-002/PROOF.json."
+  ],
+  "codereview_status": {
+    "result": "PASS",
+    "tool": "pal/codereview",
+    "model": "gpt-5-mini",
+    "validation_type": "internal",
+    "review_type": "full",
+    "issues_found": 0,
+    "continuation_id": "7f92ef5d-1201-4c85-b41b-86022376cf01"
+  },
+  "precommit_status": {
+    "result": "PASS",
+    "tool": "pal/precommit",
+    "model": "gpt-5-mini",
+    "validation_type": "internal",
+    "issues_found": 0,
+    "continuation_id": "36cee066-4169-4ff1-af3f-1a1a2a46203b"
+  },
+  "commit_sha": null,
+  "commit_sha_policy": "A committed proof file cannot self-reference the commit SHA that contains its final contents. The authoritative local commit SHA is reported by git after commit creation and in the session closeout.",
+  "pr_url": null,
+  "pr_blocker": "NOT_RUN",
+  "cleanup_status": "WORKTREE_ACTIVE"
+}
