@@ -39,3 +39,9 @@ The packet assumed `TP-DMX-AUDITOR-ROUTER-001` runtime already existed on `main`
 Generated: 2026-05-26T12:01:41.823532Z
 
 Patched four active PR #713 review blockers locally: fallback exit semantics, explicit blocking finding preservation, schema-safe unsafe-config routes, and non-object config payload handling. Packet blockers remain: wrapper allowlist, missing host-side PAL clink audit output, and draft PR state.
+
+## Schema-Compatible Finding Fix Update
+
+Generated: 2026-05-26T22:06:50Z
+
+Patched the active PR #713 review blocker where normalized PAL clink findings emitted a schema-incompatible `blocking` property. Raw `blocking=true` input still drives FAIL classification, but emitted embedded-audit findings now stay within `schemas/proof/embedded_audit.schema.json`.
