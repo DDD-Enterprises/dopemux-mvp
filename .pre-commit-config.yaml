@@ -113,6 +113,7 @@ repos:
 
               # Canonical docs locations
               if [[ "$normalized" =~ ^\./(docs/) ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(prompts/|runbooks/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(llm-plans/|dopemux_voice_branding_bundle/|config/instructions/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(task-packets/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(reports/|quarantine/|UPGRADES/|out/|_audit_out/|extraction/|proof/) ]]; then continue; fi

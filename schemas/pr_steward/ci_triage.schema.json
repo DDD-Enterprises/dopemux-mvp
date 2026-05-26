@@ -83,6 +83,9 @@
             "queued",
             "in_progress",
             "completed",
+            "requested",
+            "waiting",
+            "pending",
             "unknown"
           ]
         },
@@ -98,6 +101,8 @@
             "skipped",
             "timed_out",
             "action_required",
+            "stale",
+            "startup_failure",
             "neutral",
             null
           ]

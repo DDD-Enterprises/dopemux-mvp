@@ -82,8 +82,8 @@
       "task": "Preflight repo identity, branch, GitHub auth, schema files, and PR Steward governance docs.",
       "context_files": [
         "AGENTS.md",
-        "docs/ops/PR_STEWARD.md",
-        "docs/ops/PR_ACCEPTANCE.md",
+        "docs/ops/pr-steward.md",
+        "docs/ops/pr-acceptance.md",
         "schemas/pr_steward/merge_readiness.schema.json",
         "schemas/pr_steward/review_item_ledger.schema.json",
         "schemas/pr_steward/thread_dispositions.schema.json",
