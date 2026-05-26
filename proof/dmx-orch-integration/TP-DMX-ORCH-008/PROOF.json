@@ -4,6 +4,8 @@
   "skill": "codex",
   "status": "READY_FOR_REVIEW",
   "validation_state": "PASSED",
+  "created_at": "2026-05-26T15:30:00Z",
+  "validated_at": "2026-05-26T17:00:00Z",
   "manifest": {
     "bundle_id": "TP-DMX-ORCH-008-PROOF",
     "packet_id": "TP-DMX-ORCH-008",
@@ -19,7 +21,8 @@
   ],
   "supporting_artifacts": [
     "tests/unit/orchestrator/test_operator_workflows.py",
-    "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md"
+    "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+    "config/orchestrator/approval_policy.yaml"
   ],
   "chain_of_custody": {
     "documented": true,
@@ -30,6 +33,96 @@
       "TP-DMX-ORCH-007"
     ]
   },
+  "repo_identity_check": {
+    "result": "PASS",
+    "marker_file": ".dopetaskroot",
+    "marker_present": true,
+    "remote_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "starting_head": "e6f115de0480d02534e1c345492e7ff1c2b8b3af",
+    "branch": "codex/tp-dmx-orch-007-plugin-hooks"
+  },
+  "validations": [
+    {
+      "name": "Task Packet JSON syntax",
+      "command": ".venv/bin/python -m json.tool task-packets/generated/TP-DMX-ORCH-008.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Proof JSON syntax",
+      "command": ".venv/bin/python -m json.tool proof/dmx-orch-integration/TP-DMX-ORCH-008/PROOF.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Task Packet schema validation",
+      "command": ".venv/bin/python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-008.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Task Packet validator command",
+      "command": ".venv/bin/python -m dopemux.cli orchestrator packet validate task-packets/generated/TP-DMX-ORCH-008.json --json-output",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Proof validator command",
+      "command": ".venv/bin/python -m dopemux.cli orchestrator proof validate proof/dmx-orch-integration/TP-DMX-ORCH-008/PROOF.json --json-output",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Targeted pytest (bundle-level)",
+      "command": ".venv/bin/python -m pytest -q tests/unit/orchestrator/test_operator_workflows.py tests/unit/orchestrator/test_hooks.py tests/unit/orchestrator/test_workflow_dsl.py tests/unit/orchestrator/test_mcp_wrappers.py tests/unit/test_task_orchestrator_mcp_wrappers.py tests/unit/orchestrator/test_policy.py tests/unit/orchestrator/test_validation.py tests/unit/test_cli_orchestrator_validation_commands.py tests/unit/test_cli_orchestrator_commands.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "note": "Bundle-level; this command is shared across TP-008..TP-017 because PR #714 bundled them onto one branch. A per-packet test isolation must land in a follow-up packet before any individual packet can be marked VERIFIED."
+    },
+    {
+      "name": "Static syntax check",
+      "command": ".venv/bin/python -m compileall -q src",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Diff whitespace check",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ],
+  "codereview_status": {
+    "result": "NOT_RUN",
+    "reason": "PR #714 codereview was performed at the bundle level by the GitHub Codex + Copilot reviewers; per-packet pal/codereview was not isolated. Track in TP-DMX-ORCH-PROOF-PERPACKET follow-up packet."
+  },
+  "precommit_status": {
+    "result": "PASS",
+    "tool": "pre-commit",
+    "command": "pre-commit run --files <files-list-from-PR-body>",
+    "exit_code": 0,
+    "validation_type": "external"
+  },
   "warnings": [],
-  "blockers": []
+  "blockers": [],
+  "not_run": [
+    "Real dope-context client calls: out of scope; only context_status/context_refresh_plan helpers + approval-phrase gate implemented.",
+    "Live clear_index refusal end-to-end against the running dope-context MCP server: not executed; refusal is unit-tested only.",
+    "Stale-index detection signal source: hard-coded test input; no live index-freshness probe wired."
+  ],
+  "residual_risks": [
+    "context refresh approval-phrase format must stay identical between the helper and the AUTHORITY doc; drift between them will silently break gating.",
+    "clear_index refusal relies on capability classification staying T6; a config drift could weaken the gate."
+  ],
+  "rollback_plan": [
+    "git revert <commit-sha>.",
+    "Remove proof/dmx-orch-integration/TP-DMX-ORCH-008/PROOF.json.",
+    "Remove task-packets/generated/TP-DMX-ORCH-008.json.",
+    "Revert context_status/context_refresh_plan helpers in src/dopemux/orchestrator/operator_workflows.py.",
+    "Revert CLI wiring for `orchestrator context status` and `orchestrator context refresh` in src/dopemux/commands/orchestrator_commands.py."
+  ],
+  "commit_sha": null,
+  "commit_sha_policy": "A committed proof file cannot self-reference the commit SHA that contains its final contents. The authoritative local commit SHA is reported by git after commit creation and in the session closeout.",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/714",
+  "cleanup_status": "WORKTREE_ACTIVE"
 }

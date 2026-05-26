@@ -4,6 +4,8 @@
   "skill": "codex",
   "status": "READY_FOR_REVIEW",
   "validation_state": "PASSED",
+  "created_at": "2026-05-26T15:30:00Z",
+  "validated_at": "2026-05-26T17:00:00Z",
   "manifest": {
     "bundle_id": "TP-DMX-ORCH-009-PROOF",
     "packet_id": "TP-DMX-ORCH-009",
@@ -31,6 +33,97 @@
       "TP-DMX-ORCH-007"
     ]
   },
+  "repo_identity_check": {
+    "result": "PASS",
+    "marker_file": ".dopetaskroot",
+    "marker_present": true,
+    "remote_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "starting_head": "e6f115de0480d02534e1c345492e7ff1c2b8b3af",
+    "branch": "codex/tp-dmx-orch-007-plugin-hooks"
+  },
+  "validations": [
+    {
+      "name": "Task Packet JSON syntax",
+      "command": ".venv/bin/python -m json.tool task-packets/generated/TP-DMX-ORCH-009.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Proof JSON syntax",
+      "command": ".venv/bin/python -m json.tool proof/dmx-orch-integration/TP-DMX-ORCH-009/PROOF.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Task Packet schema validation",
+      "command": ".venv/bin/python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-009.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Task Packet validator command",
+      "command": ".venv/bin/python -m dopemux.cli orchestrator packet validate task-packets/generated/TP-DMX-ORCH-009.json --json-output",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Proof validator command",
+      "command": ".venv/bin/python -m dopemux.cli orchestrator proof validate proof/dmx-orch-integration/TP-DMX-ORCH-009/PROOF.json --json-output",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Targeted pytest (bundle-level)",
+      "command": ".venv/bin/python -m pytest -q tests/unit/orchestrator/test_operator_workflows.py tests/unit/orchestrator/test_hooks.py tests/unit/orchestrator/test_workflow_dsl.py tests/unit/orchestrator/test_mcp_wrappers.py tests/unit/test_task_orchestrator_mcp_wrappers.py tests/unit/orchestrator/test_policy.py tests/unit/orchestrator/test_validation.py tests/unit/test_cli_orchestrator_validation_commands.py tests/unit/test_cli_orchestrator_commands.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "note": "Bundle-level; this command is shared across TP-008..TP-017 because PR #714 bundled them onto one branch. A per-packet test isolation must land in a follow-up packet before any individual packet can be marked VERIFIED."
+    },
+    {
+      "name": "Static syntax check",
+      "command": ".venv/bin/python -m compileall -q src",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Diff whitespace check",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ],
+  "codereview_status": {
+    "result": "NOT_RUN",
+    "reason": "PR #714 codereview was performed at the bundle level by the GitHub Codex + Copilot reviewers; per-packet pal/codereview was not isolated. Track in TP-DMX-ORCH-PROOF-PERPACKET follow-up packet."
+  },
+  "precommit_status": {
+    "result": "PASS",
+    "tool": "pre-commit",
+    "command": "pre-commit run --files <files-list-from-PR-body>",
+    "exit_code": 0,
+    "validation_type": "external"
+  },
   "warnings": [],
-  "blockers": []
+  "blockers": [],
+  "not_run": [
+    "Live ConPort writes (decision/progress): out of scope; only receipt shape + approval-phrase gate implemented.",
+    "Live dope-memory mirror writes: out of scope; only mirror-receipt shape implemented.",
+    "Failure-mode coverage where ConPort write succeeds but dope-memory mirror fails: covered in unit tests as shape-only; no live partial-failure observed."
+  ],
+  "residual_risks": [
+    "task-orchestrator must never become the memory authority; the routing wrapper is the only safe shape — a future packet adding a non-routed write would violate authority boundaries.",
+    "ConPort schema/port drift (5455 vs alternative) is not covered; receipt shape assumes the canonical schema.",
+    "Audit trail relies on receipts being mirrored to dope-memory; if mirror routinely fails, the chronicle becomes unreliable."
+  ],
+  "rollback_plan": [
+    "git revert <commit-sha>.",
+    "Remove proof/dmx-orch-integration/TP-DMX-ORCH-009/PROOF.json.",
+    "Remove task-packets/generated/TP-DMX-ORCH-009.json.",
+    "Revert memory write routing helpers in src/dopemux/orchestrator/operator_workflows.py.",
+    "Revert CLI wiring for `orchestrator memory record_decision` / `record_progress` previews in src/dopemux/commands/orchestrator_commands.py."
+  ],
+  "commit_sha": null,
+  "commit_sha_policy": "A committed proof file cannot self-reference the commit SHA that contains its final contents. The authoritative local commit SHA is reported by git after commit creation and in the session closeout.",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/714",
+  "cleanup_status": "WORKTREE_ACTIVE"
 }

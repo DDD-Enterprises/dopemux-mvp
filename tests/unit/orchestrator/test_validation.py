@@ -204,3 +204,18 @@ def test_proof_validator_requires_artifact_backing_for_warnings(tmp_path: Path) 
         error["code"] == "PROOF_WARNING_OR_BLOCKER_ARTIFACT_MISSING"
         for error in report.errors
     )
+
+
+def test_proof_validator_rejects_empty_string_supporting_artifacts(tmp_path: Path) -> None:
+    proof = _proof_payload()
+    proof["warnings"] = ["static validation only"]
+    proof["supporting_artifacts"] = [""]
+    proof_path = _write_json(tmp_path / "proof.json", proof)
+
+    report = validate_proof_file(proof_path)
+
+    assert report.valid is False
+    assert any(
+        error["code"] == "PROOF_SUPPORTING_ARTIFACTS_INVALID"
+        for error in report.errors
+    )

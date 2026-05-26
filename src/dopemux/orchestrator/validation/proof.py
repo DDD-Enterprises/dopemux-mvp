@@ -206,12 +206,12 @@ def _validate_artifacts(payload: Mapping[str, Any]) -> List[ValidationIssue]:
 
     supporting = payload.get("supporting_artifacts", [])
     if not isinstance(supporting, list) or not all(
-        isinstance(item, str) for item in supporting
+        _non_empty_string(item) for item in supporting
     ):
         errors.append(
             issue(
                 "PROOF_SUPPORTING_ARTIFACTS_INVALID",
-                "supporting_artifacts must be a list of strings when present.",
+                "supporting_artifacts must be a list of non-empty strings when present.",
                 path="/supporting_artifacts",
             )
         )

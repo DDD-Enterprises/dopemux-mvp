@@ -187,3 +187,19 @@ def test_orchestrator_commands_do_not_call_write_capable_helpers():
                 called.add(func.attr)
 
     assert called.isdisjoint(forbidden)
+
+
+def test_pr_queue_rejects_non_numeric_pr_entry():
+    result = CliRunner().invoke(cli, ["orchestrator", "pr", "queue", "--pr", "abc"])
+
+    assert result.exit_code != 0
+    assert "positive integer" in result.output
+
+
+def test_pr_queue_rejects_non_positive_pr_entry():
+    result = CliRunner().invoke(
+        cli, ["orchestrator", "pr", "queue", "--pr", "0:passing:present"]
+    )
+
+    assert result.exit_code != 0
+    assert "> 0" in result.output
