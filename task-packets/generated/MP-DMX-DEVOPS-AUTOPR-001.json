@@ -1,0 +1,231 @@
+{
+  "id": "MP-DMX-DEVOPS-AUTOPR-001",
+  "project": "dopemux-mvp",
+  "target": "Install the first governance slice for optimized Dopemux development workflow: one GPT-5.5 macro-packet, one implementer, required embedded audit for governance/process/schema/prompt/proof packets, PR Steward as check-only review-intake gate, and a skip-second-GPT-5.5 rule when embedded audit and PR Steward are READY.",
+  "invariants": [
+    "Do not implement active GitHub mutation, auto-fix, automatic review-thread resolution, auto-merge, merge queue mutation, secret storage, or dependency changes.",
+    "Preserve authority boundaries across dopemux, dopetask, task-orchestrator, Leantime, ConPort, dope-memory, dope-context, dopecon-bridge, ADHD Engine, Repo Truth Extractor, and agents.",
+    "Use claim labels where evidence matters: OBSERVED, INFERRED, PROPOSED, UNKNOWN, CONFLICTING, CLAIMED.",
+    "Do not claim runtime behavior from governance docs, prompts, schemas, or generated packet records.",
+    "Embedded audit is required for this governance/process/schema/prompt packet.",
+    "PR Steward v1 is check-only in this packet; AUTO_APPLIED is only a disposition value."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DEVOPS-AUTOPR",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/mp-dmx-devops-autopr-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(governance): add devops autopr operating model",
+    "allowlist": [
+      "docs/ops/OPERATING_MODEL.md",
+      "docs/ops/AUTHORITY_LEDGER.md",
+      "docs/ops/TOOL_ROUTING_MATRIX.md",
+      "docs/ops/CONFIG_REGISTRY.md",
+      "docs/ops/HEALTH_CHECK_MATRIX.md",
+      "docs/ops/DRIFT_LOG.md",
+      "docs/ops/PR_ACCEPTANCE.md",
+      "docs/ops/PR_STEWARD.md",
+      "docs/ops/EMBEDDED_AUDIT.md",
+      "docs/ops/RESEARCH_LEDGER.md",
+      "runbooks/BOOTSTRAP.md",
+      "runbooks/DAILY_OPS.md",
+      "runbooks/PR_CLOSEOUT.md",
+      "prompts/gpt55-project-instructions.md",
+      "prompts/gpt55-packet-forge.md",
+      "prompts/gpt55-acceptance-reviewer.md",
+      "prompts/codex-implementer.md",
+      "prompts/claude-code-implementer.md",
+      "prompts/agy-sonnet-auditor.md",
+      "prompts/claude-cli-auditor.md",
+      "prompts/gemini-cli-auditor.md",
+      "prompts/pr-steward-summary.md",
+      "schemas/proof/embedded_audit.schema.json",
+      "schemas/pr_steward/merge_readiness.schema.json",
+      "schemas/pr_steward/review_item_ledger.schema.json",
+      "schemas/pr_steward/thread_dispositions.schema.json",
+      "schemas/pr_steward/ci_triage.schema.json",
+      "task-packets/generated/MP-DMX-DEVOPS-AUTOPR-001.json",
+      "task-packets/generated/TP-DMX-PR-STEWARD-001.json",
+      "task-packets/TEMPLATE_TASK_PACKET.md",
+      "proof/MP-DMX-DEVOPS-AUTOPR-001/PROOF.json",
+      "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPORT.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/MP-DMX-DEVOPS-AUTOPR-001.json",
+      "python -m json.tool task-packets/generated/TP-DMX-PR-STEWARD-001.json",
+      "python -m json.tool schemas/proof/embedded_audit.schema.json",
+      "python -m json.tool schemas/pr_steward/merge_readiness.schema.json",
+      "python -m json.tool schemas/pr_steward/review_item_ledger.schema.json",
+      "python -m json.tool schemas/pr_steward/thread_dispositions.schema.json",
+      "python -m json.tool schemas/pr_steward/ci_triage.schema.json",
+      "python -m json.tool proof/MP-DMX-DEVOPS-AUTOPR-001/PROOF.json",
+      "python -m jsonschema -i task-packets/generated/MP-DMX-DEVOPS-AUTOPR-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-PR-STEWARD-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check",
+      "rg -n \"Embedded Audit|PR Steward|MERGE_READINESS|AGY|Antigravity|Gemini CLI|Claude Code|GPT-5.5|NEEDS_SUPERVISOR|UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION\" docs prompts schemas task-packets runbooks proof -S",
+      "git status --short",
+      "git diff --stat"
+    ]
+  },
+  "pr": {
+    "title": "feat(governance): add devops autopr operating model",
+    "body": "## Summary\n- Adds the governance-first AutoPR operating model, authority ledger, tool routing, health matrix, PR acceptance rules, PR Steward v1 design scaffold, embedded audit policy, and research/drift ledgers.\n- Adds runbooks and prompts for GPT-5.5 supervisor/packet forge/acceptance reviewer, Codex and Claude Code implementers, AGY/Claude/Gemini auditors, and PR Steward summaries.\n- Adds JSON schemas for embedded audit and PR Steward check-only outputs.\n- Adds generated packet records for this governance slice and the next PR Steward implementation slice.\n\n## Scope\nGovernance/docs/schemas/prompts/task-packet/proof only. No runtime GitHub mutation, auto-fix, review-thread resolution, auto-merge, merge queue mutation, secret storage, or dependency changes.\n\n## Validation\nRun JSON parse checks, task-packet schema checks, git diff --check, required grep coverage, git status, and diff stat. Embedded audit is required.\n\n## NOT_RUN\nRuntime PR Steward implementation, live GitHub PR mutation, auto-fix, auto-merge, merge queue mutation, and broad test suite unless runtime code is touched.\n\n## Residual Risks\nAGY model selection must not be guessed if local help does not prove it. PR Steward remains design/schema/task-packet scaffolding until TP-DMX-PR-STEWARD-001 is executed.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repo identity, branch identity, schema path, authority files, local workflow conventions, and local tool availability.",
+      "commands": [
+        "pwd",
+        "git remote -v",
+        "git status --short",
+        "git branch --show-current",
+        "test -f dopetask-cannonical-spec.json",
+        "test -f RULES.md || true",
+        "test -f PROJECT.md || true",
+        "test -f ARCHITECTURE.md || true",
+        "test -f task-packets/TEMPLATE_TASK_PACKET.md || true",
+        "ls .github/workflows || true",
+        "find docs task-packets prompts schemas proof tools scripts tests runbooks -maxdepth 3 -type f 2>/dev/null | sort | head -300",
+        "rg -n \"Task Packet|PROOF|proof bundle|MERGE_READINESS|PR Steward|embedded audit|handoff|codex|claude|gemini|agy|antigravity\" -S . || true",
+        "gh --version || true",
+        "gh auth status || true",
+        "codex --version || true",
+        "claude --version || true",
+        "claude --help | head -120 || true",
+        "gemini --version || true",
+        "gemini --help | head -120 || true",
+        "agy --help | head -160 || antigravity --help | head -160 || true"
+      ],
+      "expected_files": [
+        "task-packets/generated/MP-DMX-DEVOPS-AUTOPR-001.json"
+      ],
+      "validation": [
+        "Repo remote identifies DDD-Enterprises/dopemux-mvp.",
+        "Branch identity is explicit before edits.",
+        "Canonical task-packet schema path is observed or missing schema is reported.",
+        "Local auditor flags are not guessed."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "task-packets/TEMPLATE_TASK_PACKET.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create operating model docs and runbooks for the one-supervisor, one-implementer, one-embedded-auditor flow and PR Steward review-intake gate.",
+      "expected_files": [
+        "docs/ops/OPERATING_MODEL.md",
+        "docs/ops/AUTHORITY_LEDGER.md",
+        "docs/ops/TOOL_ROUTING_MATRIX.md",
+        "docs/ops/CONFIG_REGISTRY.md",
+        "docs/ops/HEALTH_CHECK_MATRIX.md",
+        "docs/ops/DRIFT_LOG.md",
+        "docs/ops/PR_ACCEPTANCE.md",
+        "docs/ops/PR_STEWARD.md",
+        "docs/ops/EMBEDDED_AUDIT.md",
+        "docs/ops/RESEARCH_LEDGER.md",
+        "runbooks/BOOTSTRAP.md",
+        "runbooks/DAILY_OPS.md",
+        "runbooks/PR_CLOSEOUT.md"
+      ],
+      "validation": [
+        "Docs preserve authority boundaries and do not claim runtime PR Steward behavior.",
+        "Docs include skip-second-GPT-5.5 and escalation rules."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Create prompt pack for supervisor, implementers, auditors, and PR Steward summary.",
+      "expected_files": [
+        "prompts/gpt55-project-instructions.md",
+        "prompts/gpt55-packet-forge.md",
+        "prompts/gpt55-acceptance-reviewer.md",
+        "prompts/codex-implementer.md",
+        "prompts/claude-code-implementer.md",
+        "prompts/agy-sonnet-auditor.md",
+        "prompts/claude-cli-auditor.md",
+        "prompts/gemini-cli-auditor.md",
+        "prompts/pr-steward-summary.md"
+      ],
+      "validation": [
+        "Prompts require repo identity checks, diff/stat capture, command outputs, exit codes, embedded audit when required, PR Steward readiness if a PR exists, and no second GPT-5.5 review when gates are READY."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Create JSON schemas for embedded audit and PR Steward check-only outputs.",
+      "expected_files": [
+        "schemas/proof/embedded_audit.schema.json",
+        "schemas/pr_steward/merge_readiness.schema.json",
+        "schemas/pr_steward/review_item_ledger.schema.json",
+        "schemas/pr_steward/thread_dispositions.schema.json",
+        "schemas/pr_steward/ci_triage.schema.json"
+      ],
+      "validation": [
+        "All schemas parse with python -m json.tool.",
+        "PR Steward schemas include all required dispositions and mutation_performed=false."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Create generated packet records and additive task-packet template sections.",
+      "expected_files": [
+        "task-packets/generated/MP-DMX-DEVOPS-AUTOPR-001.json",
+        "task-packets/generated/TP-DMX-PR-STEWARD-001.json",
+        "task-packets/TEMPLATE_TASK_PACKET.md"
+      ],
+      "validation": [
+        "Generated packet records parse as JSON and validate against the canonical dopetask schema.",
+        "Template update is additive only."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Run embedded audit, write proof, run final validation, inspect diff scope, and commit only if gates pass.",
+      "expected_files": [
+        "proof/MP-DMX-DEVOPS-AUTOPR-001/PROOF.json",
+        "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "Embedded audit is PASS or non-blocking PASS_WITH_RISKS before READY can be claimed.",
+        "PROOF.json parses and records command outputs, exit codes, git state, validation state, embedded audit, UNKNOWNs, and blockers.",
+        "git diff --check passes and diff remains inside allowlist."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,156 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PR Steward Merge Readiness",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "pr",
+    "readiness",
+    "review_item_ledger_path",
+    "thread_dispositions_path",
+    "ci_triage_path",
+    "embedded_audit",
+    "proof",
+    "blockers",
+    "unknowns",
+    "mutation_performed"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "pr": {
+      "$ref": "#/definitions/pr"
+    },
+    "readiness": {
+      "type": "string",
+      "enum": [
+        "READY",
+        "NOT_READY",
+        "NEEDS_SUPERVISOR"
+      ]
+    },
+    "review_item_ledger_path": {
+      "type": "string"
+    },
+    "thread_dispositions_path": {
+      "type": "string"
+    },
+    "ci_triage_path": {
+      "type": "string"
+    },
+    "embedded_audit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "report_path"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "PASS",
+            "PASS_WITH_RISKS",
+            "FAIL",
+            "NEEDS_SUPERVISOR",
+            "SKIPPED"
+          ]
+        },
+        "report_path": {
+          "type": "string"
+        }
+      }
+    },
+    "proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "proof_path",
+        "proof_head_sha",
+        "matches_pr_head"
+      ],
+      "properties": {
+        "proof_path": {
+          "type": "string"
+        },
+        "proof_head_sha": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "matches_pr_head": {
+          "type": "boolean"
+        }
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "mutation_performed": {
+      "type": "boolean",
+      "const": false
+    }
+  },
+  "definitions": {
+    "pr": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "number",
+        "url",
+        "base_ref",
+        "head_ref",
+        "head_sha",
+        "changed_files",
+        "commits"
+      ],
+      "properties": {
+        "number": {
+          "type": "integer"
+        },
+        "url": {
+          "type": "string"
+        },
+        "base_ref": {
+          "type": "string"
+        },
+        "head_ref": {
+          "type": "string"
+        },
+        "head_sha": {
+          "type": "string"
+        },
+        "changed_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "commits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

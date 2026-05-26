@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PR Steward Review Item Ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "pr_number",
+    "items",
+    "unclassified_count",
+    "mutation_performed"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "pr_number": {
+      "type": "integer"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/review_item"
+      }
+    },
+    "unclassified_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "mutation_performed": {
+      "type": "boolean",
+      "const": false
+    }
+  },
+  "definitions": {
+    "review_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "source",
+        "author",
+        "author_association",
+        "body_excerpt",
+        "disposition",
+        "blocking",
+        "rationale"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "review",
+            "review_comment",
+            "review_thread",
+            "issue_comment",
+            "ci_annotation"
+          ]
+        },
+        "author": {
+          "type": "string"
+        },
+        "author_association": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "body_excerpt": {
+          "type": "string"
+        },
+        "disposition": {
+          "$ref": "#/definitions/disposition"
+        },
+        "blocking": {
+          "type": "boolean"
+        },
+        "rationale": {
+          "type": "string"
+        }
+      }
+    },
+    "disposition": {
+      "type": "string",
+      "enum": [
+        "AUTO_APPLIED",
+        "MUST_FIX",
+        "OPTIONAL_DEFERRED",
+        "OUT_OF_SCOPE_FOLLOWUP",
+        "REJECTED_WITH_REASON",
+        "NEEDS_SUPERVISOR",
+        "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION"
+      ]
+    }
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PR Steward CI Triage",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "pr_number",
+    "head_sha",
+    "checks",
+    "required_check_count",
+    "failed_required_count",
+    "pending_required_count",
+    "unknown_required_count",
+    "mutation_performed"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "pr_number": {
+      "type": "integer"
+    },
+    "head_sha": {
+      "type": "string"
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/check"
+      }
+    },
+    "required_check_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "failed_required_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "pending_required_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "unknown_required_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "mutation_performed": {
+      "type": "boolean",
+      "const": false
+    }
+  },
+  "definitions": {
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "required",
+        "status",
+        "conclusion",
+        "url",
+        "blocking",
+        "rationale"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "queued",
+            "in_progress",
+            "completed",
+            "unknown"
+          ]
+        },
+        "conclusion": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "success",
+            "failure",
+            "cancelled",
+            "skipped",
+            "timed_out",
+            "action_required",
+            "neutral",
+            null
+          ]
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "blocking": {
+          "type": "boolean"
+        },
+        "rationale": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

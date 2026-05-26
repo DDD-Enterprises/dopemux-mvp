@@ -1,0 +1,88 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PR Steward Thread Dispositions",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "pr_number",
+    "threads",
+    "unresolved_blocking_count",
+    "mutation_performed"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "pr_number": {
+      "type": "integer"
+    },
+    "threads": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/thread"
+      }
+    },
+    "unresolved_blocking_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "mutation_performed": {
+      "type": "boolean",
+      "const": false
+    }
+  },
+  "definitions": {
+    "thread": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "thread_id",
+        "is_resolved",
+        "review_item_ids",
+        "disposition",
+        "blocking",
+        "rationale"
+      ],
+      "properties": {
+        "thread_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "is_resolved": {
+          "type": "boolean"
+        },
+        "review_item_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "disposition": {
+          "type": "string",
+          "enum": [
+            "AUTO_APPLIED",
+            "MUST_FIX",
+            "OPTIONAL_DEFERRED",
+            "OUT_OF_SCOPE_FOLLOWUP",
+            "REJECTED_WITH_REASON",
+            "NEEDS_SUPERVISOR",
+            "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION"
+          ]
+        },
+        "blocking": {
+          "type": "boolean"
+        },
+        "rationale": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
