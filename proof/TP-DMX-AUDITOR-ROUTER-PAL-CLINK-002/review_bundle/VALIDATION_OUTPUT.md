@@ -2,7 +2,9 @@
 
 See `../VALIDATION_OUTPUT.md` for the full validation log.
 
-Key result: `pytest -q tests/auditor_router` exited 0 with `27 passed`.
+Key result: `pytest -q tests/auditor_router/test_pal_clink.py` exited 0 with `29 passed`.
+
+Key result: `pytest -q tests/auditor_router` exited 0 with `33 passed`.
 
 Blocked result: `scripts/auditor-preflight --help` exited 127 because the wrapper is not present and is not allowlisted in this packet.
 

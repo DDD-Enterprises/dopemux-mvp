@@ -19,7 +19,13 @@ The packet assumed `TP-DMX-AUDITOR-ROUTER-001` runtime already existed on `main`
 - `PAL_CLINK_AUDIT_OUTPUT` is not captured.
 - Route selection is not an audit verdict.
 
+## P1 Review Fixes
+
+- Hardened PAL clink role prompt validation to require `systemprompts/clink/default_codereviewer.txt`, not only the basename.
+- Hardened mutation detection for unsafe equals-form args including `--permission-mode=bypassPermissions`, `--approval-mode=yolo`, `--mode=autopilot`, and `--allow-all=true`.
+
 ## Validation
 
-- `pytest -q tests/auditor_router`: `27 passed`
+- `pytest -q tests/auditor_router/test_pal_clink.py`: `29 passed`
+- `pytest -q tests/auditor_router`: `33 passed`
 - JSON/schema/doc/proof validation is recorded in `VALIDATION_OUTPUT.md`.
