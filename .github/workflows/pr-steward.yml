@@ -1,0 +1,78 @@
+name: PR Steward
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number to inspect
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: read
+  statuses: read
+  actions: read
+  issues: read
+
+jobs:
+  pr-steward:
+    name: advisory check-only intake
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set PR number
+        id: pr
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+          INPUT_PR_NUMBER: ${{ inputs.pr_number }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            printf 'number=%s\n' "$EVENT_PR_NUMBER" >> "$GITHUB_OUTPUT"
+          else
+            printf 'number=%s\n' "$INPUT_PR_NUMBER" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run PR Steward
+        id: steward
+        continue-on-error: true
+        run: |
+          set +e
+          python -m tools.pr_steward.intake \
+            --repo "$GITHUB_REPOSITORY" \
+            --pr "${{ steps.pr.outputs.number }}" \
+            --out pr-steward-artifacts \
+            --strict \
+            --format text
+          status=$?
+          printf 'exit_code=%s\n' "$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Write job summary
+        if: always()
+        run: |
+          {
+            printf '## PR Steward advisory result\n\n'
+            printf -- '- exit_code: %s\n' '${{ steps.steward.outputs.exit_code }}'
+            printf -- '- mutation_performed: false\n\n'
+            if [ -f pr-steward-artifacts/PR_STEWARD_SUMMARY.md ]; then
+              cat pr-steward-artifacts/PR_STEWARD_SUMMARY.md
+            else
+              printf 'PR Steward did not emit a summary artifact.\n'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload PR Steward artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-steward-${{ steps.pr.outputs.number }}
+          path: pr-steward-artifacts/
+          if-no-files-found: warn

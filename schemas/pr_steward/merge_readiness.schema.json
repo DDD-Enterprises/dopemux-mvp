@@ -34,7 +34,9 @@
       "enum": [
         "READY",
         "NOT_READY",
-        "NEEDS_SUPERVISOR"
+        "NEEDS_SUPERVISOR",
+        "NEEDS_IMPLEMENTER",
+        "BLOCKED"
       ]
     },
     "review_item_ledger_path": {

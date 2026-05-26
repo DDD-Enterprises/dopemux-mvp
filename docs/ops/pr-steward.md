@@ -15,6 +15,8 @@ prelude: Check-only PR review intake design scaffold for PR Steward v1.
 
 PR Steward v1 is a check-only review-intake gate. It does not mutate GitHub, apply fixes, resolve threads, enqueue merges, approve PRs, or merge PRs.
 
+The v1 GitHub Actions workflow is advisory. It may emit `NOT_READY`, `NEEDS_IMPLEMENTER`, `NEEDS_SUPERVISOR`, or `BLOCKED` while other checks are still running, but it does not fail the workflow job for those readiness states and must not be configured as a required branch-protection check until the pending-check race is solved.
+
 ## Inputs
 
 PR Steward must harvest:
@@ -37,6 +39,7 @@ PR Steward must harvest:
 | `REVIEW_ITEM_LEDGER.json` | `schemas/pr_steward/review_item_ledger.schema.json` |
 | `THREAD_DISPOSITIONS.json` | `schemas/pr_steward/thread_dispositions.schema.json` |
 | `CI_TRIAGE.json` | `schemas/pr_steward/ci_triage.schema.json` |
+| `PR_STATE_SNAPSHOT.json` | `schemas/pr_steward/pr_state_snapshot.schema.json` |
 
 ## Dispositions
 
@@ -63,3 +66,24 @@ Return `NOT_READY` or `NEEDS_SUPERVISOR` when:
 - embedded audit is absent, skipped, failed, or stale
 - GitHub auth or API state cannot be proven
 - any requested action would mutate GitHub state
+
+Return `BLOCKED` when the harvest is incomplete, the PR is draft, or the PR is closed without explicit `--allow-closed`. Return `NEEDS_IMPLEMENTER` when concrete implementation work is required, such as unresolved threads or failed checks. Unknown reviewers or bots always block `READY`.
+
+## CLI
+
+Repo-local invocation:
+
+```bash
+python -m tools.pr_steward.intake --repo DDD-Enterprises/dopemux-mvp --pr 704 --out /tmp/pr-steward-704 --strict
+scripts/pr-steward --repo DDD-Enterprises/dopemux-mvp --pr 704 --out /tmp/pr-steward-704 --strict
+```
+
+Fixture mode is the offline validation lane and must not require live GitHub:
+
+```bash
+python -m tools.pr_steward.intake --fixture-dir tests/fixtures/pr_steward/ready_all_green --repo DDD-Enterprises/dopemux-mvp --pr 704 --out /tmp/pr-steward-ready --strict
+```
+
+## Review Bundle
+
+For PR Steward packets, `proof/<PACKET_ID>/review_bundle/` is the single supervisor upload unit. The generated PR Steward outputs from fixture or live smoke runs must be copied into `review_bundle/artifacts/`, or listed in `review_bundle/MANIFEST.json` as excluded with a reason.
