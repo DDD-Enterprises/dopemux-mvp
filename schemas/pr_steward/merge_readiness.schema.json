@@ -109,6 +109,58 @@
       "const": false
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "readiness": {
+            "const": "READY"
+          }
+        },
+        "required": [
+          "readiness"
+        ]
+      },
+      "then": {
+        "properties": {
+          "embedded_audit": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "PASS",
+                  "PASS_WITH_RISKS"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "proof": {
+            "properties": {
+              "proof_head_sha": {
+                "type": "string",
+                "minLength": 1
+              },
+              "matches_pr_head": {
+                "const": true
+              }
+            },
+            "required": [
+              "proof_head_sha",
+              "matches_pr_head"
+            ]
+          },
+          "blockers": {
+            "maxItems": 0
+          },
+          "unknowns": {
+            "maxItems": 0
+          }
+        }
+      }
+    }
+  ],
   "definitions": {
     "pr": {
       "type": "object",

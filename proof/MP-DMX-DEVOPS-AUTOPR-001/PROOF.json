@@ -12,8 +12,10 @@
     "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPORT.md",
     "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPAIR_REPORT.md",
     "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPAIR_3_REPORT.md",
+    "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPAIR_4_REPORT.md",
     "proof/MP-DMX-DEVOPS-AUTOPR-001/PR704_REPAIR2_THREAD_NOTE.md",
-    "proof/MP-DMX-DEVOPS-AUTOPR-001/PR704_REPAIR3_THREAD_NOTE.md"
+    "proof/MP-DMX-DEVOPS-AUTOPR-001/PR704_REPAIR3_THREAD_NOTE.md",
+    "proof/MP-DMX-DEVOPS-AUTOPR-001/PR704_REPAIR4_THREAD_NOTE.md"
   ],
   "supporting_artifacts": [
     "docs/ops/operating-model.md",
@@ -153,12 +155,14 @@
     "proof/MP-DMX-DEVOPS-AUTOPR-001/PR704_REPAIR2_THREAD_NOTE.md",
     "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPAIR_3_REPORT.md",
     "proof/MP-DMX-DEVOPS-AUTOPR-001/PR704_REPAIR3_THREAD_NOTE.md",
+    "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPAIR_4_REPORT.md",
+    "proof/MP-DMX-DEVOPS-AUTOPR-001/PR704_REPAIR4_THREAD_NOTE.md",
     "proof/MP-DMX-DEVOPS-AUTOPR-001/PROOF.json"
   ],
   "allowlist_compliance": {
     "result": "PASS",
     "files_outside_allowlist": [],
-    "allowlist_repair_note": "PR #704 repairs 2 and 3 added governance hygiene policy files, repair audit reports, and thread-update notes to the MP packet allowlist. Compliance was re-evaluated from files_changed and no outside-allowlist files remain.",
+    "allowlist_repair_note": "PR #704 repairs 2 through 4 added governance hygiene policy files, repair audit reports, and thread-update notes to the MP packet allowlist. Compliance was re-evaluated from files_changed and no outside-allowlist files remain.",
     "previous_outside_allowlist_files": [
       ".pre-commit-config.yaml",
       "config/docs_hygiene/docs_placement_policy.yaml",
@@ -298,6 +302,76 @@
       "remaining_risks": [
         "AGY Repair 3 audit report did not self-identify an auditor model.",
         "Final Repair 3 commit SHA is reported in final response/PR state instead of embedded in PROOF.json to avoid self-referential proof churn."
+      ]
+    }
+  },
+  "pr704_repair_4": {
+    "scope": "Final review-thread closeout prep for generated packet preflight robustness and merge readiness schema fail-closed invariants only; no runtime PR Steward behavior, auto-fix, thread-resolution automation, auto-merge, or merge-queue mutation.",
+    "old_head": "c44218f8de26aed35921e273740ac52d1342d221",
+    "new_head": "POST_COMMIT_REPORTED_IN_FINAL_RESPONSE",
+    "commit_sha_note": "Repair 4 commit SHA is reported in the final response and PR closeout to avoid self-referential proof churn.",
+    "thread_update_note": "proof/MP-DMX-DEVOPS-AUTOPR-001/PR704_REPAIR4_THREAD_NOTE.md",
+    "audit_report": "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPAIR_4_REPORT.md",
+    "changes": [
+      "Guarded the S1 inventory-only find command with || true so missing generated directories do not fail packet replay.",
+      "Added READY-state fail-closed constraints to schemas/pr_steward/merge_readiness.schema.json.",
+      "Required READY merge readiness payloads to have empty blockers and unknowns arrays, embedded audit status PASS or PASS_WITH_RISKS, a non-empty proof head SHA, and matches_pr_head true.",
+      "Added Repair 4 proof/thread note artifacts to the MP packet allowlist."
+    ],
+    "validations": [
+      {
+        "command": "python -m json.tool schemas/pr_steward/merge_readiness.schema.json",
+        "exit_code": 0,
+        "status": "PASS"
+      },
+      {
+        "command": "python -m json.tool task-packets/generated/MP-DMX-DEVOPS-AUTOPR-001.json",
+        "exit_code": 0,
+        "status": "PASS"
+      },
+      {
+        "command": "python -m json.tool proof/MP-DMX-DEVOPS-AUTOPR-001/PROOF.json",
+        "exit_code": 0,
+        "status": "PASS"
+      },
+      {
+        "command": "merge readiness fail-closed schema probe",
+        "exit_code": 0,
+        "status": "PASS",
+        "stdout": "merge-readiness-fail-closed-ok"
+      },
+      {
+        "command": "python -m jsonschema -i task-packets/generated/MP-DMX-DEVOPS-AUTOPR-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "exit_code": 0,
+        "status": "PASS",
+        "stderr": "DeprecationWarning only from jsonschema CLI."
+      },
+      {
+        "command": "git diff --check",
+        "exit_code": 0,
+        "status": "PASS"
+      },
+      {
+        "command": "pre-commit run --files <repair-4 file set>",
+        "exit_code": 0,
+        "status": "PASS"
+      }
+    ],
+    "runtime_mutation_added": false,
+    "github_thread_mutation_added": false,
+    "merge_mutation_added": false,
+    "embedded_repair_4_audit": {
+      "required": true,
+      "status": "PASS",
+      "auditor_tool": "agy",
+      "auditor_model": "unknown",
+      "invocation": "agy --add-dir /private/tmp/dopemux-pr704-repair4-audit --sandbox --print-timeout 5m --print <repair 4 audit prompt>",
+      "exit_code": 0,
+      "report_path": "proof/MP-DMX-DEVOPS-AUTOPR-001/AUDITOR_REPAIR_4_REPORT.md",
+      "blocking_findings": [],
+      "remaining_risks": [
+        "AGY Repair 4 audit report did not self-identify an auditor model.",
+        "Final Repair 4 commit SHA is reported in final response/PR state instead of embedded in PROOF.json to avoid self-referential proof churn."
       ]
     }
   },
