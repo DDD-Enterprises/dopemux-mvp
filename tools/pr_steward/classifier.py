@@ -17,7 +17,6 @@ FAILED_CHECK_CONCLUSIONS = {
     "action_required",
     "stale",
     "startup_failure",
-    "skipped",
 }
 PENDING_CHECK_STATUSES = {"queued", "in_progress", "requested", "waiting", "pending"}
 
@@ -242,6 +241,8 @@ def _classify_reviews(
             _append_once(blockers, "REQUEST_CHANGES")
         else:
             disposition, blocking, rationale = _body_disposition(body)
+            if blocking:
+                _append_disposition_blocker(blockers, disposition)
         items.append(
             _review_item(
                 item_id=review_id,
@@ -280,6 +281,8 @@ def _classify_comments(
             _append_once(unknowns, f"Unknown {source} author: {author}")
         else:
             disposition, blocking, rationale = _body_disposition(body)
+            if blocking:
+                _append_disposition_blocker(blockers, disposition)
         items.append(
             _review_item(
                 item_id=item_id,
@@ -470,9 +473,15 @@ def _readiness(blockers: list[str]) -> str:
         "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION",
         "PROOF_STALE_OR_MISSING",
         "UNKNOWN_CHECK",
+        "REVIEW_ITEM_NEEDS_SUPERVISOR",
     }:
         return "NEEDS_SUPERVISOR"
-    if blocker_set & {"UNRESOLVED_REVIEW_THREAD", "FAILED_CHECK", "REQUEST_CHANGES"}:
+    if blocker_set & {
+        "UNRESOLVED_REVIEW_THREAD",
+        "FAILED_CHECK",
+        "REQUEST_CHANGES",
+        "REVIEW_ITEM_MUST_FIX",
+    }:
         return "NEEDS_IMPLEMENTER"
     if blocker_set & {"PENDING_CHECK"}:
         return "NOT_READY"
@@ -573,6 +582,13 @@ def _body_disposition(body: str) -> tuple[str, bool, str]:
     if "rejected" in lowered and "reason" in lowered:
         return "REJECTED_WITH_REASON", False, "Comment records a rejected item."
     return "OPTIONAL_DEFERRED", False, "Known author comment is classified nonblocking."
+
+
+def _append_disposition_blocker(blockers: list[str], disposition: str) -> None:
+    if disposition == "NEEDS_SUPERVISOR":
+        _append_once(blockers, "REVIEW_ITEM_NEEDS_SUPERVISOR")
+    elif disposition == "MUST_FIX":
+        _append_once(blockers, "REVIEW_ITEM_MUST_FIX")
 
 
 def _review_item(
