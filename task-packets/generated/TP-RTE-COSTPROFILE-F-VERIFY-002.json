@@ -1,0 +1,239 @@
+{
+  "id": "TP-RTE-COSTPROFILE-F-VERIFY-002",
+  "project": "dopemux-mvp",
+  "target": "Series verification gate for the CostProfile F series after the F-FULLSUITE-REPAIR (PR #709) and INDEX-status correction (PR #710) landed on origin/main. Re-runs the full RTE test suite, the bounded-lane `--print-config` probe (Phase A step A2, --cost-profile value-default), a focused OpenRouter route-readiness probe, and a clean-shell CLI import probe under `PYTHONPATH=src`. Produces a single PROOF bundle that signs off the CostProfile F series as VERIFIED, NOT_VERIFIED, or BLOCKED. This is the series-final gate referenced by the F-FULLSUITE-REPAIR proof bundle's `follow_up_packets` list.",
+  "invariants": [
+    "Verification only. Do not modify any runtime code, tests, model routing, model_map, or test fixtures in this packet.",
+    "Do NOT re-issue or re-execute the F-FULLSUITE-REPAIR repair work. This packet consumes the repair as evidence and answers the series-verification question.",
+    "Do NOT touch Cluster D / TP-RTE-WALKER-006 work. Cluster D prescan failures remain deferred via strict xfail markers per the repair packet; XPASS-strict on those markers counts as a series-gate FAILURE, not a deferral.",
+    "Do NOT run live provider calls. Do NOT run live extraction (`--execute`). RTE_DISABLE_LIVE_LLM_IN_TESTS=1 stays set for every test/probe step.",
+    "All required verification pipelines (pytest|tee, run_extraction_v5.py|tee) MUST be wrapped with `bash -o pipefail` so upstream non-zero exits surface. Masking is prohibited; no `|| true` is permitted on a required gate.",
+    "PROOF.json `status_scope` MUST be `series_gate` — not the repair packet's `repair_gate_only_not_series_gate`. This packet IS the series gate; mislabeling it strips the verdict of meaning.",
+    "Test counts are a floor, not equality. Repair gate reported 1114 passed / 9 xfailed at `bab75c949`; PR #710 was docs-only so the suite should be unchanged. Required: ≥1114 passed, deferred-state (xfailed + skipped) ≥9, 0 failed, 0 xpassed-strict. The deferred-state floor accommodates env-driven XFAIL ↔ SKIPPED transitions (e.g., audit-only tests with module-level `pytest.skip()` gated on absent provider API keys). Report actual xfailed and skipped counts separately in PROOF.json, document any env-driven classification drift, and verify the deferred-state total against the repair-gate baseline.",
+    "Verdict discriminator: all 5 gates PASS + counts ≥ floor + 0 XPASS-strict + status_scope=series_gate → VERIFIED. Any gate FAIL (test failure, xpass-strict, import error, missing top-level `cost_profile` in print-config, OpenRouter probe failure) → NOT_VERIFIED (still create the PR with the negative result for audit). Environmental block (worktree creation fails, pytest hangs past timeout, etc.) → BLOCKED (no PR).",
+    "If verification fails, file a follow-up TP rather than 'fixing in place' — preserves the audit-trail boundary between repair packets and the verification gate.",
+    "PAL codereview + precommit MUST run on the staged diff. If specific PAL calls fail (model availability, sandbox limitations), record SKIPPED-with-reason in PROOF and omit the missing file from `sha256sums.txt` (do not fabricate transcripts).",
+    "Preserve Dopemux split authority boundaries per AGENTS.md §6."
+  ],
+  "depends_on": [
+    "TP-RTE-COSTPROFILE-E3-CONTRACTS-001",
+    "TP-RTE-COSTPROFILE-E4-FINISH-001",
+    "TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001",
+    "TP-RTE-COSTPROFILE-E8-YAML-V3-001",
+    "TP-RTE-COSTPROFILE-E9-TESTS-001",
+    "TP-RTE-COSTPROFILE-F-VERIFY-001",
+    "TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "rte-cost-profile-redesign",
+    "base_branch": "main",
+    "parent_tp_id": "TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-costprofile-f-verify-002",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "test(rte): verify costprofile f repair",
+    "allowlist": [
+      "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json",
+      "task-packets/INDEX.md",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/PROOF.json",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/SERIES_VERIFICATION_REPORT.md",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/pytest_full_run.txt",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/bounded_lane_print_config.txt",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/route_readiness_probe.txt",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/pal_codereview.txt",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/pal_precommit.txt",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/sha256sums.txt"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json >/dev/null",
+      "python -m json.tool proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/PROOF.json >/dev/null",
+      "test -f proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/SERIES_VERIFICATION_REPORT.md",
+      "test -f proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/pytest_full_run.txt",
+      "test -f proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/bounded_lane_print_config.txt",
+      "test -f proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/route_readiness_probe.txt",
+      "cd proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002 && shasum -a 256 -c sha256sums.txt",
+      "git diff --check",
+      "git diff --cached --check"
+    ]
+  },
+  "pr": {
+    "title": "test(rte): verify costprofile f repair",
+    "body": "## Summary\n- Series-final verification gate for the RTE CostProfile F series after PR #709 (F-FULLSUITE-REPAIR) and PR #710 (INDEX status correction).\n- Re-runs the full RTE test suite + bounded-lane `--print-config` probe + focused OpenRouter route-readiness probe + clean-shell CLI import probe, all under RTE_DISABLE_LIVE_LLM_IN_TESTS=1.\n- Captures pal/codereview + pal/precommit transcripts (or SKIPPED-with-reason markers) on the staged diff.\n- Produces SERIES_VERIFICATION_REPORT.md and PROOF.json attesting the series verdict (VERIFIED / NOT_VERIFIED / BLOCKED).\n\n## Scope\nVerification-only. No runtime, test, model-routing, or model_map changes. No live provider calls. No live extraction. No Cluster D / TP-RTE-WALKER-006 work. The PROOF bundle is the deliverable.\n\n## Validation\nFull RTE suite returns exit 0 with ≥1114 passed / ≥9 xfailed / 0 failed / 0 xpassed-strict; `--print-config` emits a top-level `cost_profile` field; OpenRouter route-readiness probe passes; `PYTHONPATH=src python -c \"import dopemux.cli\"` succeeds; pal/codereview reports no CRITICAL findings on the verification diff; pal/precommit returns SAFE TO COMMIT or only-info-level findings.\n\n## NOT_RUN\n- Live LLM/provider calls.\n- `--execute` bounded lane.\n- Cluster D / TP-RTE-WALKER-006 prescan repair (still deferred via strict xfail markers).\n- Cross-pipeline integration with the v3-pipeline (separate authority).\n\n## Residual Risks / UNKNOWNs\n- The bounded-lane probe verifies `--print-config` resolves the profile but does not exercise live provider routing. Operator must still gate the first `--execute` run with `--max-cost-usd`.\n- PAL transcripts depend on PAL model availability at execution time; SKIPPED-with-reason is acceptable and recorded in PROOF.\n- Cluster D xfail markers carry strict=True; a future code change that incidentally fixes a Walker-006 case will surface as XPASS-strict and require an explicit follow-up.\n\n@codex review",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight (post-#709, post-#710 series-gate ancestry). Codex MUST verify, on origin/main as of execution time, that ALL of the following hold before branching: (1) PR #709 (F-FULLSUITE-REPAIR) is merged and its merge commit is an ancestor of origin/main; (2) PR #710 (INDEX status correction) is merged and its merge commit is an ancestor of origin/main; (3) proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/PROOF.json is present on origin/main, parses as JSON, declares `status_scope: repair_gate_only_not_series_gate`, references `TP-RTE-COSTPROFILE-F-VERIFY-002` as a follow-up packet, and records `live_provider_calls: NOT_RUN` plus `live_extraction: NOT_RUN`; (4) proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/REPAIR_DECISIONS.md is present on origin/main; (5) task-packets/INDEX.md on origin/main contains a TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001 row marked `Merged (PR #709)` (or repo-equivalent merged status); (6) the captured origin/main SHA is recorded and reused as the explicit branch base (do NOT branch from a local stale main). STOP CONDITIONS — abort execution and surface to operator if ANY of: (a) origin/main cannot be fetched; (b) PR #709 is not merged; (c) PR #710 is not merged; (d) repair packet row is missing the `Merged (PR #709)` marker; (e) repair PROOF.json is missing or invalid; (f) repair PROOF.json claims series-verified status (status_scope ≠ repair_gate_only_not_series_gate); (g) local checkout is dirty with tracked changes.",
+      "commands": [
+        "git fetch origin --prune",
+        "git rev-parse origin/main | tee /tmp/F_VERIFY_002_ORIGIN_MAIN_SHA.txt",
+        "gh pr view 709 --json number,title,state,url,mergedAt,mergeCommit,headRefOid,baseRefName | tee /tmp/F_VERIFY_002_PR709.json",
+        "gh pr view 710 --json number,title,state,url,mergedAt,mergeCommit,headRefOid,baseRefName | tee /tmp/F_VERIFY_002_PR710.json",
+        "git show origin/main:task-packets/INDEX.md > /tmp/F_VERIFY_002_INDEX.md && grep -nE 'TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001' /tmp/F_VERIFY_002_INDEX.md | grep -F 'Merged (PR #709)' > /tmp/F_VERIFY_002_INDEX_MATCH.txt",
+        "git show origin/main:proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/PROOF.json > /tmp/F_REPAIR_PROOF.json && python -m json.tool /tmp/F_REPAIR_PROOF.json > /tmp/F_REPAIR_PROOF_JSON_OK.txt",
+        "git show origin/main:proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/REPAIR_DECISIONS.md > /tmp/F_REPAIR_DECISIONS.md"
+      ],
+      "validation": [
+        "origin/main SHA persisted to /tmp/F_VERIFY_002_ORIGIN_MAIN_SHA.txt.",
+        "PR #709 state == MERGED.",
+        "PR #710 state == MERGED.",
+        "INDEX row for F-FULLSUITE-REPAIR-001 contains `Merged (PR #709)` (or repo-equivalent).",
+        "Repair PROOF.json parses, status_scope == `repair_gate_only_not_series_gate`, lists `TP-RTE-COSTPROFILE-F-VERIFY-002` in follow-up packets, records live calls + extraction as NOT_RUN.",
+        "REPAIR_DECISIONS.md readable on origin/main.",
+        "Local checkout has no dirty tracked changes."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create fresh worktree at /private/tmp/dopemux-f-verify-002 on a new branch `codex/rte-costprofile-f-verify-002` rooted at the captured origin/main SHA. Do not reuse an existing random worktree.",
+      "commands": [
+        "rm -rf /private/tmp/dopemux-f-verify-002",
+        "git worktree add -b codex/rte-costprofile-f-verify-002 /private/tmp/dopemux-f-verify-002 origin/main",
+        "cd /private/tmp/dopemux-f-verify-002 && git branch --show-current && git rev-parse HEAD && git status --short"
+      ],
+      "validation": [
+        "Worktree branch == `codex/rte-costprofile-f-verify-002`.",
+        "Worktree HEAD == current origin/main SHA captured in S1.",
+        "Worktree tracked status is clean before edits."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Gate 1 — Repair proof intake (formal). Parse PR #709 PROOF.json fetched in S1 and assert the contract: status == VERIFIED, status_scope == repair_gate_only_not_series_gate, follow_up_packets contains TP-RTE-COSTPROFILE-F-VERIFY-002, and the NOT_RUN ledger explicitly lists live_provider_calls and live_extraction.",
+      "validation": [
+        "All four assertions pass against /tmp/F_REPAIR_PROOF.json.",
+        "Repair proof's NOT_RUN bucket includes both live_provider_calls and live_extraction."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Gate 2 — Full RTE suite. Run the full RTE test suite under the same safe/local constraints used by the repair proof (RTE_DISABLE_LIVE_LLM_IN_TESTS=1, PYTHONPATH=services/repo-truth-extractor). Capture stdout/stderr to pytest_full_run.txt via `bash -o pipefail` so a non-zero pytest exit surfaces past the tee pipeline.",
+      "commands": [
+        "mkdir -p proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002",
+        "bash -o pipefail -c 'RTE_DISABLE_LIVE_LLM_IN_TESTS=1 PYTHONPATH=services/repo-truth-extractor python -m pytest services/repo-truth-extractor/tests --tb=short -v 2>&1 | tee proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/pytest_full_run.txt'"
+      ],
+      "validation": [
+        "pytest exit code 0 (preserved under bash -o pipefail).",
+        "No failed tests.",
+        "No XPASS-strict (Cluster D strict xfails must remain expected; an unintended pass is a series-gate FAILURE).",
+        "Totals: ≥1114 passed, ≥9 xfailed, 0 failed, 0 xpassed-strict. Report actual numbers in PROOF.json regardless."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Gate 3 — Bounded print-config probe. Run `run_extraction_v5.py --phase A --step A2 --cost-profile value-default --print-config` (no `--execute`). Capture output via `bash -o pipefail` so a non-zero exit surfaces past the tee pipeline. Verify the resolved config includes a top-level `cost_profile` field, retains legacy routing fields for compatibility, and that no live provider call or live extraction took place.",
+      "commands": [
+        "bash -o pipefail -c 'RTE_DISABLE_LIVE_LLM_IN_TESTS=1 PYTHONPATH=services/repo-truth-extractor python services/repo-truth-extractor/run_extraction_v5.py --phase A --step A2 --run-id f_verify_002_print_config --output-root /tmp/rte-f-verify-002-print-config --cost-profile value-default --print-config 2>&1 | tee proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/bounded_lane_print_config.txt'",
+        "grep -q 'cost_profile' proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/bounded_lane_print_config.txt"
+      ],
+      "validation": [
+        "Probe exits 0.",
+        "Output contains a top-level `cost_profile` field.",
+        "Legacy routing fields remain present for compatibility.",
+        "No live provider call ran (verified by RTE_DISABLE_LIVE_LLM_IN_TESTS=1 + absence of --execute).",
+        "No live extraction ran."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Gate 4 — Route readiness / OpenRouter residual probe. Run the focused residual tests that exercise Phase D provider preflight on OpenRouter 402 and provider-preflight-required-when-cost-routes-include-openrouter. Capture output via `bash -o pipefail` so a non-zero exit surfaces past the tee pipeline.",
+      "commands": [
+        "bash -o pipefail -c 'PYTHONPATH=services/repo-truth-extractor python -m pytest -q -p no:cacheprovider services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py::test_phase_d_provider_preflight_blocks_on_openrouter_402 services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py::test_phase_d_provider_preflight_is_required_when_cost_routes_include_openrouter 2>&1 | tee proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/route_readiness_probe.txt'"
+      ],
+      "validation": [
+        "Both focused tests pass.",
+        "Probe exits 0 under bash -o pipefail."
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Gate 5 — CLI import probe. Verify `dopemux.cli` imports cleanly under `PYTHONPATH=src` in a fresh shell (this repo uses an `src/` layout; the package is not installed at execution time, so a bare `python -c \"import dopemux.cli\"` without PYTHONPATH is invalid as a gate).",
+      "commands": [
+        "PYTHONPATH=src python -c 'import dopemux.cli' && echo 'OK: dopemux.cli imports cleanly under PYTHONPATH=src'"
+      ],
+      "validation": [
+        "Import succeeds with exit 0."
+      ]
+    },
+    {
+      "id": "S8",
+      "task": "Run pal/codereview on the staged verification diff (this packet's changes only — proof bundle + INDEX update + packet JSON). Capture transcript. Resolve every CRITICAL finding before proceeding to S9.",
+      "validation": [
+        "pal/codereview transcript captured to pal_codereview.txt, OR a SKIPPED-with-reason marker captured to the same file naming the missing model/sandbox limitation.",
+        "0 CRITICAL findings remain (or SKIPPED documented)."
+      ]
+    },
+    {
+      "id": "S9",
+      "task": "Run pal/precommit on the verification branch. Capture transcript. Must return SAFE TO COMMIT or only-info-level findings.",
+      "validation": [
+        "pal/precommit transcript captured to pal_precommit.txt, OR a SKIPPED-with-reason marker captured to the same file.",
+        "Verdict is SAFE TO COMMIT (or SKIPPED documented)."
+      ]
+    },
+    {
+      "id": "S10",
+      "task": "Author SERIES_VERIFICATION_REPORT.md: executive verdict (VERIFIED / NOT_VERIFIED / BLOCKED), source artifacts used (PR #709, PR #710, repair PROOF.json, REPAIR_DECISIONS.md), full-suite result (actual totals), print-config result, route-readiness result, CLI-import result, remaining xfails and follow-up packets (TP-RTE-WALKER-006 for Cluster D), and — if NOT_VERIFIED — exact blockers.",
+      "expected_files": [
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/SERIES_VERIFICATION_REPORT.md"
+      ],
+      "validation": [
+        "Report explicitly states VERIFIED, NOT_VERIFIED, or BLOCKED.",
+        "If NOT_VERIFIED, names the follow-up TP(s) needed.",
+        "Lists residual deferred work (TP-RTE-WALKER-006 for Cluster D)."
+      ]
+    },
+    {
+      "id": "S11",
+      "task": "Emit PROOF.json + sha256sums.txt referencing all captured artifacts. PROOF.json fields: packet_id, status (VERIFIED/NOT_VERIFIED/BLOCKED), status_scope=`series_gate` (NOT `repair_gate_only_not_series_gate`), base_sha, branch, source_repair_pr (#709), source_index_pr (#710), validation_buckets (PASS/FAIL/NOT_RUN), full-suite summary (actual counts), print-config summary, route-readiness summary, CLI-import summary, Cluster D status, live_provider_calls=NOT_RUN, live_extraction=NOT_RUN, final conclusion. sha256sums.txt must cover every present file in the proof directory; omit any PAL file that was SKIPPED and note the omission in PROOF.json.",
+      "expected_files": [
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/PROOF.json",
+        "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/sha256sums.txt"
+      ],
+      "validation": [
+        "PROOF.json parses.",
+        "PROOF.json status_scope == `series_gate`.",
+        "sha256sums.txt verifies all present proof artifacts."
+      ]
+    },
+    {
+      "id": "S12",
+      "task": "Update task-packets/INDEX.md to add a TP-RTE-COSTPROFILE-F-VERIFY-002 row reflecting the verification verdict. Do NOT overwrite F-VERIFY-001 (`NOT_VERIFIED_ACCEPTED_AS_EVIDENCE`) or F-FULLSUITE-REPAIR-001 (`Merged (PR #709)`) history.",
+      "validation": [
+        "F-VERIFY-002 row added with status reflecting the verdict (VERIFIED / NOT_VERIFIED / BLOCKED — or the repo's equivalent status vocabulary).",
+        "F-VERIFY-001 row unchanged.",
+        "F-FULLSUITE-REPAIR-001 row unchanged."
+      ]
+    },
+    {
+      "id": "S13",
+      "task": "Commit allowlisted files, push, open PR against main (do not merge). Run `git diff --cached --name-only` and verify every staged path is in the allowlist before committing — unstage anything that leaked.",
+      "validation": [
+        "Every staged file is in the allowlist.",
+        "Commit message == `test(rte): verify costprofile f repair`.",
+        "PR base == main, head == codex/rte-costprofile-f-verify-002.",
+        "PR is OPEN (not merged)."
+      ]
+    }
+  ]
+}
