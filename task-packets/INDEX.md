@@ -61,6 +61,7 @@ A packet is superseded by another packet
 | TP-RTE-BATCH-E2E-006 | Repo Truth Extractor | Wire strict batch response_format through v5 request construction | Merged (PR #615) | N/A |
 | TP-RTE-STRICT-ATTESTATION-007 | Repo Truth Extractor | Ground strict passthrough attestations in runtime evidence | Merged (PR #616) | N/A |
 | TP-RTE-DOCS-CANON-008 | Repo Truth Extractor | Canonicalize RTE operator docs around `dopemux rte` | Active | N/A |
+| TP-RTE-FINAL-AUDIT-GROK-NONE-REASONING-006 | Repo Truth Extractor | Preserve xAI Grok 4.3 reasoning_effort=none | Merged (PR #705) | proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-GROK-NONE-REASONING-006_PROOF.json |
 | TP-RTE-COSTPROFILE-E3-CONTRACTS-001 | Repo Truth Extractor | Extend structured_output_contracts.py: service_tier passthrough, prompt_caching_directives helper, anthropic_tool_use schema variant | Ready | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
 | TP-RTE-COSTPROFILE-E4-FINISH-001 | Repo Truth Extractor | Finish llm_runtime wiring: meta-dict exposure of service_tier / cached_tokens; cell alias resolution at call_llm entry | Ready | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
 | TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001 | Repo Truth Extractor | Rewrite 11 hardcoded ladder constants to cell-aliased lookups; add per-request failover + --disable-provider kill-switch | Ready | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
