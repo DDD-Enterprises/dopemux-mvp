@@ -377,6 +377,8 @@ proof/*
 !proof/fast-dev-os/**
 !proof/orchestrator/
 !proof/orchestrator/**
+!proof/rte-cost-profile-redesign/
+!proof/rte-cost-profile-redesign/**
 
 # Extraction and Research artifacts
 _audit_out/
