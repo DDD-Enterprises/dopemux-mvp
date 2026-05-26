@@ -52,3 +52,17 @@ PAL MCP `clink` was callable, but all attempted configured clients failed before
 - `codex`: executable not found in PATH.
 
 Verdict remains `NEEDS_SUPERVISOR`.
+
+## Command / Override Review Fix Update
+
+Generated: 2026-05-26T22:27:00Z
+
+Patched two additional active PR #713 review blockers:
+
+- Audit config `command` must exactly match the expected CLI executable.
+- Config discovery now models clink override order so later override configs replace built-ins.
+
+Validation:
+
+- `pytest -q tests/auditor_router/test_pal_clink.py`: `35 passed`
+- `pytest -q tests/auditor_router`: `39 passed`
