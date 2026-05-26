@@ -90,6 +90,10 @@
         "git fetch origin --prune",
         "BASE_SHA=\"$(git rev-parse origin/main)\" && printf '%s\\n' \"$BASE_SHA\" > /tmp/F_VERIFY_002_BASE_SHA.txt",
         "test -s /tmp/F_VERIFY_002_BASE_SHA.txt",
+        "git status --porcelain=v1 --untracked-files=no > /tmp/F_VERIFY_002_TRACKED_STATUS_BEFORE.txt",
+        "if [ -s /tmp/F_VERIFY_002_TRACKED_STATUS_BEFORE.txt ]; then cat /tmp/F_VERIFY_002_TRACKED_STATUS_BEFORE.txt; exit 1; fi",
+        "git diff --quiet",
+        "git diff --cached --quiet",
         "gh pr view 709 --json number,title,state,url,mergedAt,mergeCommit,headRefOid,baseRefName | tee /tmp/F_VERIFY_002_PR709.json",
         "gh pr view 710 --json number,title,state,url,mergedAt,mergeCommit,headRefOid,baseRefName | tee /tmp/F_VERIFY_002_PR710.json",
         "git show origin/main:task-packets/INDEX.md > /tmp/F_VERIFY_002_INDEX.md && grep -nE 'TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001' /tmp/F_VERIFY_002_INDEX.md | grep -F 'Merged (PR #709)' > /tmp/F_VERIFY_002_INDEX_MATCH.txt",
@@ -98,6 +102,7 @@
       ],
       "validation": [
         "Captured base SHA persisted to /tmp/F_VERIFY_002_BASE_SHA.txt.",
+        "Tracked dirty state check is fail-closed: /tmp/F_VERIFY_002_TRACKED_STATUS_BEFORE.txt must be empty, `git diff --quiet` must pass, and `git diff --cached --quiet` must pass. Untracked artifacts are intentionally ignored.",
         "PR #709 state == MERGED.",
         "PR #710 state == MERGED.",
         "INDEX row for F-FULLSUITE-REPAIR-001 contains `Merged (PR #709)` (or repo-equivalent).",
@@ -113,12 +118,15 @@
         "rm -rf /private/tmp/dopemux-f-verify-002",
         "BASE_SHA=\"$(cat /tmp/F_VERIFY_002_BASE_SHA.txt)\" && CURRENT_SHA=\"$(git rev-parse origin/main)\" && test \"$CURRENT_SHA\" = \"$BASE_SHA\"",
         "BASE_SHA=\"$(cat /tmp/F_VERIFY_002_BASE_SHA.txt)\" && git worktree add -b codex/rte-costprofile-f-verify-002 /private/tmp/dopemux-f-verify-002 \"$BASE_SHA\"",
+        "cd /private/tmp/dopemux-f-verify-002 && git status --porcelain=v1 --untracked-files=no > /tmp/F_VERIFY_002_WORKTREE_TRACKED_STATUS.txt",
+        "cd /private/tmp/dopemux-f-verify-002 && if [ -s /tmp/F_VERIFY_002_WORKTREE_TRACKED_STATUS.txt ]; then cat /tmp/F_VERIFY_002_WORKTREE_TRACKED_STATUS.txt; exit 1; fi",
         "cd /private/tmp/dopemux-f-verify-002 && BASE_SHA=\"$(cat /tmp/F_VERIFY_002_BASE_SHA.txt)\" && test \"$(git rev-parse HEAD)\" = \"$BASE_SHA\" && git branch --show-current && git rev-parse HEAD && git status --short"
       ],
       "validation": [
         "Worktree branch == `codex/rte-costprofile-f-verify-002`.",
         "Worktree HEAD == captured base SHA from /tmp/F_VERIFY_002_BASE_SHA.txt.",
         "origin/main did not change between base capture and worktree creation, unless the operator explicitly accepted a newer base.",
+        "Fresh worktree tracked dirty state check is fail-closed: /tmp/F_VERIFY_002_WORKTREE_TRACKED_STATUS.txt must be empty. Untracked artifacts are intentionally ignored.",
         "Worktree tracked status is clean before edits."
       ]
     },

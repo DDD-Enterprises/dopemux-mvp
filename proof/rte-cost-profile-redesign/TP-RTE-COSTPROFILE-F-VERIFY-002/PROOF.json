@@ -161,6 +161,7 @@
       "Worktree: branch=codex/rte-costprofile-f-verify-002, HEAD=a9dd0659..., status clean before edits.",
       "Post-review governance: packet PAL chain includes planner in the Codex minimum sequence analyze -> planner -> codereview -> precommit.",
       "Post-review governance: packet worktree creation now uses captured base SHA from /tmp/F_VERIFY_002_BASE_SHA.txt and verifies worktree HEAD equals that SHA.",
+      "Post-review governance: packet S1 now fails closed on tracked dirty state before verification setup and after fresh worktree creation while intentionally ignoring untracked artifacts.",
       "Supplemental PAL planner: RUN with gpt-5-codex and recorded in pal_codereview.txt.",
       "G1 repair proof intake: all four required assertions pass.",
       "G2 full RTE suite: exit 0 with 1114 passed / 8 xfailed / 1 skipped / 0 failed / 0 xpassed (deferred-state total xfailed + skipped = 9 matches repair gate).",
@@ -201,6 +202,11 @@
         "Stop if origin/main changes after capture and before worktree creation unless the operator explicitly accepts the newer base.",
         "Stop if worktree HEAD does not equal the captured base SHA."
       ]
+    },
+    "dirty_state_gate_fix": {
+      "old_behavior": "S1 declared a stop condition for dirty tracked state but the command list only observed repository status.",
+      "new_behavior": "S1 writes tracked status to /tmp/F_VERIFY_002_TRACKED_STATUS_BEFORE.txt, exits 1 if non-empty, and runs git diff --quiet plus git diff --cached --quiet. S2 writes the fresh worktree tracked status to /tmp/F_VERIFY_002_WORKTREE_TRACKED_STATUS.txt and exits 1 if non-empty.",
+      "untracked_artifacts": "Ignored intentionally via --untracked-files=no; this gate is only for tracked dirty state."
     }
   },
   "pal_planner": {
