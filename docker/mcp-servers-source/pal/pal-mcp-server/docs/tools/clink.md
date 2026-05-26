@@ -153,6 +153,23 @@ Each preset points to role-specific prompts in `systemprompts/clink/`. Duplicate
 
 > **Why `--yolo` for Gemini?** The Gemini CLI currently requires automatic approvals to execute its own tools (for example `run_shell_command`). Without the flag it errors with `Tool "run_shell_command" not found in registry`. See [issue #5382](https://github.com/google-gemini/gemini-cli/issues/5382) for more details.
 
+## Audit-safe client configs
+
+PAL MCP clink includes dedicated audit-safe configs for proof-only embedded audit workflows:
+
+- `claude-audit`
+- `gemini-audit`
+
+These configs expose only review semantics.
+
+Because clink registry injects or defaults a `default` role, audit-safe configs intentionally define both `default` and `codereviewer`. Both roles point to `systemprompts/clink/default_codereviewer.txt`, and both have empty `role_args`.
+
+The default `claude`, `gemini`, and `codex` configs may be mutation-capable and must not be used as proof-only audit routes unless a separate safe sandbox and no-mutation boundary is recorded.
+
+Copilot audit config is currently deferred because clink does not yet provide a Copilot runner/parser/internal default. This is tracked as `DEFERRED_COPILOT_RUNNER_UNSUPPORTED`.
+
+Audit-safe configs do not themselves produce an audit verdict. The actual PAL MCP clink output must still be captured and normalized into proof by a later auditor-router packet.
+
 **Adding new CLIs**: Drop a JSON config into `conf/cli_clients/`, create role prompts in `systemprompts/clink/`, and register a parser/agent if the CLI outputs a new format.
 
 ## When to Use Clink vs Other Tools
