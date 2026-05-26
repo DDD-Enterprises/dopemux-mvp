@@ -185,11 +185,21 @@ def test_grok_420_aliases_use_grok_43_with_explicit_reasoning_effort() -> None:
     } == {"low": 121, "none": 139}
 
 
-def test_grok_4_3_none_routes_normalize_to_empty_request_options() -> None:
-    """Post-fix invariant: the YAML may declare ``reasoning_effort: none`` for
-    document-mode Grok routes (139 rows), but the runtime must treat that as
-    the absence of the field. xAI's documented reasoning_effort enum is
-    ``low|high`` — forwarding the literal ``"none"`` would 4xx.
+def test_grok_4_3_none_routes_preserve_reasoning_effort_none() -> None:
+    """Post-PR-685 fix invariant: the 139 YAML rows declaring
+    ``reasoning_effort: none`` for xAI ``grok-4.3`` MUST forward
+    ``reasoning_effort="none"`` to the xAI chat completions API.
+
+    Per xAI's documented ``reasoning_effort`` enum
+    (``none|low|medium|high``), ``"none"`` is the migration-recommended
+    setting for non-reasoning workloads. The previous PR-685 fix used a
+    global drop based on different source facts; this test now pins the
+    corrected provider/model-aware preservation.
+
+    The normalizer infers ``(provider, model_id)`` from the route dict itself
+    when explicit kwargs are absent, so YAML rows that already carry
+    ``provider: xai`` and ``model_id: grok-4.3`` trigger the allowlist match
+    automatically.
     """
     import importlib.util
     import sys
@@ -218,6 +228,8 @@ def test_grok_4_3_none_routes_normalize_to_empty_request_options() -> None:
     assert len(grok_43_none) == 139
     for row in grok_43_none:
         normalized = module.normalize_route_request_options(row)
-        assert "reasoning_effort" not in normalized, (
-            f"YAML row {row!r} must normalize without reasoning_effort"
+        assert normalized.get("reasoning_effort") == "none", (
+            f"YAML row {row!r} must preserve reasoning_effort=none via "
+            "dict-self-inference (xai/grok-4.3 is on the documented-enum "
+            "allowlist)"
         )
