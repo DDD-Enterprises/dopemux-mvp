@@ -49,3 +49,18 @@ Patched active review blockers:
 
 - PAL clink audit configs must use a command that exactly matches the expected CLI executable.
 - PAL clink config discovery now models clink override order so later override configs replace built-in audit configs.
+
+## Local PR #713 Config Shape Review Fix Validation
+
+Generated: 2026-05-26T22:32:00Z
+
+```text
+python -m compileall -q tools tests -> exit 0
+pytest -q tests/auditor_router/test_pal_clink.py -> exit 0, 38 passed
+pytest -q tests/auditor_router -> exit 0, 42 passed
+```
+
+Patched active review blockers:
+
+- PAL clink audit configs must explicitly define `name` and `runner`.
+- PAL clink role scanning rejects non-object `roles` and role values without crashing preflight.

@@ -66,3 +66,17 @@ Validation:
 
 - `pytest -q tests/auditor_router/test_pal_clink.py`: `35 passed`
 - `pytest -q tests/auditor_router`: `39 passed`
+
+## Config Shape Review Fix Update
+
+Generated: 2026-05-26T22:32:00Z
+
+Patched two additional active PR #713 review blockers:
+
+- Audit configs must explicitly define `name` and `runner`.
+- Non-object `roles` and role values are quarantined as `TOOLING_UNSAFE` instead of crashing preflight.
+
+Validation:
+
+- `pytest -q tests/auditor_router/test_pal_clink.py`: `38 passed`
+- `pytest -q tests/auditor_router`: `42 passed`

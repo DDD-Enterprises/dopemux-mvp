@@ -108,6 +108,45 @@ def test_reject_mismatched_command_for_audit_client(tmp_path: Path) -> None:
     assert inspection.reason == "Audit config command must be exactly claude."
 
 
+def test_reject_missing_name_or_runner(tmp_path: Path) -> None:
+    config = safe_claude_config()
+    config.pop("name")
+    config.pop("runner")
+    path = tmp_path / "claude-audit.json"
+    path.write_text(json.dumps(config), encoding="utf-8")
+
+    inspection = inspect_clink_client_config(path)
+
+    assert inspection.status == "TOOLING_UNSAFE"
+    assert inspection.reason == "Audit config must explicitly define name and runner."
+
+
+def test_reject_non_object_roles_without_crashing(tmp_path: Path) -> None:
+    config = safe_claude_config()
+    config["roles"] = []
+    path = tmp_path / "claude-audit.json"
+    path.write_text(json.dumps(config), encoding="utf-8")
+
+    inspection = inspect_clink_client_config(path)
+    route = classify_pal_clink_route(config_roots=[tmp_path])
+
+    assert inspection.status == "TOOLING_UNSAFE"
+    assert "roles must be an object" in inspection.reason
+    assert route["status"] == "TOOLING_UNSAFE"
+
+
+def test_reject_non_object_role_value_without_crashing(tmp_path: Path) -> None:
+    config = safe_claude_config()
+    config["roles"]["codereviewer"] = []
+    path = tmp_path / "claude-audit.json"
+    path.write_text(json.dumps(config), encoding="utf-8")
+
+    inspection = inspect_clink_client_config(path)
+
+    assert inspection.status == "TOOLING_UNSAFE"
+    assert inspection.reason == "Role codereviewer must be an object."
+
+
 def test_override_config_location_takes_precedence(tmp_path: Path) -> None:
     builtin_dir = tmp_path / "builtin"
     override_dir = tmp_path / "override"

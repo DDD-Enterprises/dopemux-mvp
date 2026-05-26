@@ -1,8 +1,8 @@
- .../TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json | 27 +++++++----
- .../VALIDATION_OUTPUT.md                           | 15 ++++++
- .../review_bundle/PROOF.json                       | 27 +++++++----
- .../review_bundle/SUMMARY.md                       | 14 ++++++
- .../review_bundle/VALIDATION_OUTPUT.md             | 15 ++++++
- tests/auditor_router/test_pal_clink.py             | 36 ++++++++++++++
- tools/auditor_router/pal_clink.py                  | 55 +++++++++++++++++-----
- 7 files changed, 158 insertions(+), 31 deletions(-)
+ .../TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json | 26 ++++++++++-----
+ .../VALIDATION_OUTPUT.md                           | 15 +++++++++
+ .../review_bundle/PROOF.json                       | 26 ++++++++++-----
+ .../review_bundle/SUMMARY.md                       | 14 ++++++++
+ .../review_bundle/VALIDATION_OUTPUT.md             | 15 +++++++++
+ tests/auditor_router/test_pal_clink.py             | 39 ++++++++++++++++++++++
+ tools/auditor_router/pal_clink.py                  | 38 +++++++++++++++++----
+ 7 files changed, 149 insertions(+), 24 deletions(-)
