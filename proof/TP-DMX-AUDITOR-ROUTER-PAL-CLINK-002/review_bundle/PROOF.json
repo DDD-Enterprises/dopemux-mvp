@@ -1,0 +1,18 @@
+{
+  "packet_id": "TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002",
+  "status": "PASS_WITH_BLOCKERS",
+  "verdict": "PASS_TARGETED_TESTS_WITH_SCOPE_CONFLICT",
+  "blockers": [
+    "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
+    "WRAPPER_BLOCKED_BY_ALLOWLIST",
+    "PAL_CLINK_AUDIT_OUTPUT_MISSING"
+  ],
+  "nonblocking_results": [
+    "Targeted auditor-router tests passed: 27 passed",
+    "PAL clink bridge-tier classification implemented as pure config inspection"
+  ],
+  "route_is_audit_verdict": false,
+  "pal_mcp_called": false,
+  "external_cli_called_for_pal_clink": false,
+  "repo_context_sent": false
+}
