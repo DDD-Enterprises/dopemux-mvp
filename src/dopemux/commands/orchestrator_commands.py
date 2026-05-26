@@ -176,9 +176,21 @@ def _parse_pr_items(entries: Iterable[str]) -> List[Dict[str, Any]]:
     items: List[Dict[str, Any]] = []
     for entry in entries:
         number, checks, proof = (entry.split(":") + ["unknown", "missing"])[:3]
+        try:
+            pr_number = int(number)
+        except (TypeError, ValueError) as exc:
+            raise click.BadParameter(
+                f"Invalid --pr entry {entry!r}: PR number must be a positive integer.",
+                param_hint="--pr",
+            ) from exc
+        if pr_number <= 0:
+            raise click.BadParameter(
+                f"Invalid --pr entry {entry!r}: PR number must be > 0.",
+                param_hint="--pr",
+            )
         items.append(
             {
-                "number": int(number),
+                "number": pr_number,
                 "checks": checks,
                 "proof": proof,
             }

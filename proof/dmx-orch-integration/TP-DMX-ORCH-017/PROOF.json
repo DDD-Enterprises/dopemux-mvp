@@ -4,6 +4,8 @@
   "skill": "codex",
   "status": "READY_FOR_REVIEW",
   "validation_state": "PASSED",
+  "created_at": "2026-05-26T15:30:00Z",
+  "validated_at": "2026-05-26T17:00:00Z",
   "manifest": {
     "bundle_id": "TP-DMX-ORCH-017-PROOF",
     "packet_id": "TP-DMX-ORCH-017",
@@ -21,7 +23,8 @@
   "supporting_artifacts": [
     "tests/unit/orchestrator/test_operator_workflows.py",
     "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
-    "config/orchestrator/approval_policy.yaml"
+    "config/orchestrator/approval_policy.yaml",
+    "config/orchestrator/plugin_hooks.yaml"
   ],
   "chain_of_custody": {
     "documented": true,
@@ -32,6 +35,104 @@
       "TP-DMX-ORCH-016"
     ]
   },
+  "repo_identity_check": {
+    "result": "PASS",
+    "marker_file": ".dopetaskroot",
+    "marker_present": true,
+    "remote_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "starting_head": "e6f115de0480d02534e1c345492e7ff1c2b8b3af",
+    "branch": "codex/tp-dmx-orch-007-plugin-hooks"
+  },
+  "validations": [
+    {
+      "name": "Task Packet JSON syntax",
+      "command": ".venv/bin/python -m json.tool task-packets/generated/TP-DMX-ORCH-017.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Proof JSON syntax",
+      "command": ".venv/bin/python -m json.tool proof/dmx-orch-integration/TP-DMX-ORCH-017/PROOF.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Task Packet schema validation",
+      "command": ".venv/bin/python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-017.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Task Packet validator command",
+      "command": ".venv/bin/python -m dopemux.cli orchestrator packet validate task-packets/generated/TP-DMX-ORCH-017.json --json-output",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Proof validator command",
+      "command": ".venv/bin/python -m dopemux.cli orchestrator proof validate proof/dmx-orch-integration/TP-DMX-ORCH-017/PROOF.json --json-output",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Final acceptance command",
+      "command": ".venv/bin/python -m dopemux.cli orchestrator final proof --proof proof/dmx-orch-integration/TP-DMX-ORCH-017/PROOF.json --json-output",
+      "exit_code": 0,
+      "status": "PASS",
+      "note": "Final-acceptance command reports ready_for_merge=false because Supervisor Ledger acceptance is external to this local proof check; that is the correct fail-closed posture."
+    },
+    {
+      "name": "Targeted pytest (bundle-level)",
+      "command": ".venv/bin/python -m pytest -q tests/unit/orchestrator/test_operator_workflows.py tests/unit/orchestrator/test_hooks.py tests/unit/orchestrator/test_workflow_dsl.py tests/unit/orchestrator/test_mcp_wrappers.py tests/unit/test_task_orchestrator_mcp_wrappers.py tests/unit/orchestrator/test_policy.py tests/unit/orchestrator/test_validation.py tests/unit/test_cli_orchestrator_validation_commands.py tests/unit/test_cli_orchestrator_commands.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "note": "Bundle-level; this command is shared across TP-008..TP-017 because PR #714 bundled them onto one branch."
+    },
+    {
+      "name": "Static syntax check",
+      "command": ".venv/bin/python -m compileall -q src",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Diff whitespace check",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ],
+  "codereview_status": {
+    "result": "NOT_RUN",
+    "reason": "PR #714 codereview was performed at the bundle level by the GitHub Codex + Copilot reviewers; per-packet pal/codereview was not isolated. Track in TP-DMX-ORCH-PROOF-PERPACKET follow-up packet."
+  },
+  "precommit_status": {
+    "result": "PASS",
+    "tool": "pre-commit",
+    "command": "pre-commit run --files <files-list-from-PR-body>",
+    "exit_code": 0,
+    "validation_type": "external"
+  },
   "warnings": [],
-  "blockers": []
+  "blockers": [],
+  "not_run": [
+    "Final end-to-end acceptance matrix across live writes/transitions/comments: out of scope until TP-009/012/013/014A/B/015/016 land their real wires. The TP-017 acceptance is a shape-and-policy assertion only.",
+    "Safety matrix run against running services (TX/TU/T6 refusal under live conditions): not exercised.",
+    "Authority-audit cross-check against runtime services: not performed.",
+    "Supervisor Ledger acceptance: external to this local proof; ready_for_merge correctly stays false."
+  ],
+  "residual_risks": [
+    "This packet MUST NOT be marked VERIFIED while items in 'not_run' remain open. Doing so would falsely claim end-to-end acceptance.",
+    "Spec deviation: PR #714 bundles TP-008..TP-017 onto one branch (codex/tp-dmx-orch-007-plugin-hooks). The spec required one branch per TP. This proof acknowledges the bundling and notes that each packet must be revalidated individually before it can advance to VERIFIED."
+  ],
+  "rollback_plan": [
+    "git revert <commit-sha>.",
+    "Remove proof/dmx-orch-integration/TP-DMX-ORCH-017/PROOF.json.",
+    "Remove task-packets/generated/TP-DMX-ORCH-017.json.",
+    "Revert final-acceptance helpers in src/dopemux/orchestrator/operator_workflows.py.",
+    "Revert CLI wiring for `orchestrator final proof` in src/dopemux/commands/orchestrator_commands.py."
+  ],
+  "commit_sha": null,
+  "commit_sha_policy": "A committed proof file cannot self-reference the commit SHA that contains its final contents. The authoritative local commit SHA is reported by git after commit creation and in the session closeout.",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/714",
+  "cleanup_status": "WORKTREE_ACTIVE"
 }
