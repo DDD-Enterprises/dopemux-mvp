@@ -36,6 +36,7 @@
         "agy",
         "antigravity",
         "claude-code-cli",
+        "copilot-cli",
         "gemini-cli",
         "none"
       ]
@@ -44,6 +45,7 @@
       "type": "string",
       "enum": [
         "sonnet",
+        "claude-sonnet-4.6",
         "opus",
         "gemini",
         "unknown"

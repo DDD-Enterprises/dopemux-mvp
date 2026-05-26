@@ -67,6 +67,7 @@
         "status",
         "conclusion",
         "url",
+        "head_sha",
         "blocking",
         "rationale"
       ],
@@ -112,6 +113,9 @@
             "string",
             "null"
           ]
+        },
+        "head_sha": {
+          "type": "string"
         },
         "blocking": {
           "type": "boolean"
