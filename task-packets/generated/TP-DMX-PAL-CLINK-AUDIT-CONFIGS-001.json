@@ -1,0 +1,156 @@
+{
+  "id": "TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001",
+  "project": "dopemux-mvp",
+  "target": "Create audit-safe PAL MCP clink configs for supported claude and gemini runners, with Copilot and no-default-role behavior explicitly deferred.",
+  "invariants": [
+    "Audit configs must be proof-only.",
+    "Audit configs may expose exactly default and codereviewer.",
+    "The default and codereviewer roles must both use systemprompts/clink/default_codereviewer.txt.",
+    "The default and codereviewer roles must both have empty role_args.",
+    "No other role may be exposed.",
+    "Do not use mutation or auto-approval flags.",
+    "Do not require authenticated CLI calls in tests.",
+    "Do not read, store, or emit secrets.",
+    "Do not modify auditor-router.",
+    "Do not imply these configs alone satisfy embedded audit.",
+    "Record Copilot as DEFERRED_COPILOT_RUNNER_UNSUPPORTED.",
+    "Record default role injection as ACCEPTED_DEFAULT_ROLE_INJECTION.",
+    "Copilot runner support, auditor-router integration, and no-default-role registry behavior are out of scope."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-PAL-CLINK-AUDIT",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-AUDITOR-ROUTER-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/pal-clink-audit-configs-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(governance): add audit-safe pal clink configs",
+    "allowlist": [
+      "docker/mcp-servers-source/pal/pal-mcp-server/conf/cli_clients/claude-audit.json",
+      "docker/mcp-servers-source/pal/pal-mcp-server/conf/cli_clients/gemini-audit.json",
+      "docker/mcp-servers-source/pal/pal-mcp-server/tests/test_clink_audit_configs.py",
+      "docker/mcp-servers-source/pal/pal-mcp-server/docs/tools/clink.md",
+      "task-packets/generated/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001.json",
+      "proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001.json",
+      "python -m json.tool docker/mcp-servers-source/pal/pal-mcp-server/conf/cli_clients/claude-audit.json",
+      "python -m json.tool docker/mcp-servers-source/pal/pal-mcp-server/conf/cli_clients/gemini-audit.json",
+      "cd docker/mcp-servers-source/pal/pal-mcp-server && python -m pytest -q tests/test_clink_audit_configs.py",
+      "python -m compileall -q docker/mcp-servers-source/pal/pal-mcp-server",
+      "python -m json.tool proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/PROOF.json",
+      "python -m json.tool proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/review_bundle/MANIFEST.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(governance): add audit-safe pal clink configs",
+    "body": "## Summary\n- Adds claude-audit and gemini-audit PAL MCP clink client configs for proof-only audit prep.\n- Maps both default and codereviewer roles to systemprompts/clink/default_codereviewer.txt because clink registry injects/defaults default.\n- Records Copilot audit config as DEFERRED_COPILOT_RUNNER_UNSUPPORTED; no Copilot runner support or auditor-router integration is included.\n\n## Scope\nConfig, focused tests, clink docs, task packet, and proof only. No clink runtime internals, auditor-router code, schemas, scripts, docs/ops, or GitHub workflow changes.\n\n## Validation\nRun the REV2 JSON, pytest, compileall, proof JSON, diff, and status commands before review.\n\n## NOT_RUN\n- Authenticated CLI prompts\n- Auditor-router integration\n- Embedded audit verdict capture\n- Copilot runner/parser implementation\n\n@codex review\n@gemini\n@copilot",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repo identity, branch, marker, existing clink runtime support, prompt path, and active MCP work state.",
+      "context_files": [
+        "AGENTS.md",
+        "docker/mcp-servers-source/pal/pal-mcp-server/AGENTS.md",
+        "docker/mcp-servers-source/pal/pal-mcp-server/clink/constants.py",
+        "docker/mcp-servers-source/pal/pal-mcp-server/clink/registry.py",
+        "docker/mcp-servers-source/pal/pal-mcp-server/tools/clink.py",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ],
+      "commands": [
+        "pwd",
+        "git status --short --branch",
+        "git rev-parse HEAD",
+        "test -f .dopetaskroot",
+        "test -f docker/mcp-servers-source/pal/pal-mcp-server/systemprompts/clink/default_codereviewer.txt"
+      ],
+      "validation": [
+        "Repo root and branch are recorded.",
+        "Task Orchestrator has no conflicting active item or any active item is recorded.",
+        "clink runtime support is limited to existing runners and no runtime internals are changed.",
+        "default-role injection rationale is recorded."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create audit-safe claude and gemini clink configs only.",
+      "expected_files": [
+        "docker/mcp-servers-source/pal/pal-mcp-server/conf/cli_clients/claude-audit.json",
+        "docker/mcp-servers-source/pal/pal-mcp-server/conf/cli_clients/gemini-audit.json"
+      ],
+      "validation": [
+        "Both configs parse as JSON.",
+        "Both configs validate with CLIClientConfig.model_validate.",
+        "Resolved roles are exactly default and codereviewer.",
+        "Both roles resolve to systemprompts/clink/default_codereviewer.txt with empty role_args.",
+        "No forbidden mutation flags appear.",
+        "No copilot-audit.json exists."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Add focused tests and clink docs for audit-safe configs, Copilot deferral, and default-role mapping.",
+      "expected_files": [
+        "docker/mcp-servers-source/pal/pal-mcp-server/tests/test_clink_audit_configs.py",
+        "docker/mcp-servers-source/pal/pal-mcp-server/docs/tools/clink.md"
+      ],
+      "validation": [
+        "python -m pytest -q tests/test_clink_audit_configs.py passes from the PAL MCP server directory.",
+        "Docs record DEFERRED_COPILOT_RUNNER_UNSUPPORTED.",
+        "Docs record default and codereviewer role equivalence for audit configs."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Create proof bundle with command outputs, exit codes, changed files, warnings, blockers, known unknowns, and explicit embedded audit skip rationale.",
+      "expected_files": [
+        "proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/PROOF.json",
+        "proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/VALIDATION_OUTPUT.md",
+        "proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/GIT_STATE.md",
+        "proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/DIFF_STAT.txt",
+        "proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/CHANGED_FILES.txt",
+        "proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/review_bundle/MANIFEST.json",
+        "proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/review_bundle/SUMMARY.md",
+        "proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/review_bundle/PROOF.json",
+        "proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/review_bundle/VALIDATION_OUTPUT.md",
+        "proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/review_bundle/GIT_STATE.md",
+        "proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/review_bundle/DIFF_STAT.txt",
+        "proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/review_bundle/CHANGED_FILES.txt",
+        "proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/review_bundle/ARTIFACT_INDEX.md"
+      ],
+      "validation": [
+        "python -m json.tool proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/PROOF.json passes.",
+        "python -m json.tool proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/review_bundle/MANIFEST.json passes.",
+        "Proof records DEFERRED_COPILOT_RUNNER_UNSUPPORTED.",
+        "Proof records ACCEPTED_DEFAULT_ROLE_INJECTION.",
+        "git diff --check passes.",
+        "git status --short is recorded."
+      ]
+    }
+  ]
+}
