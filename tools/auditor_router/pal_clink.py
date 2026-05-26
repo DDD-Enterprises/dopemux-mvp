@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any, Iterable
 
 from .models import ClinkConfigInspection, pal_clink_route_from_inspection
@@ -15,7 +15,7 @@ SUPPORTED_AUDIT_CLIENTS = {
     "gemini-audit": "gemini",
 }
 AUDIT_ROLE_NAMES = {"default", "codereviewer"}
-AUDIT_PROMPT_NAME = "default_codereviewer.txt"
+AUDIT_PROMPT_PATH = PurePosixPath("systemprompts/clink/default_codereviewer.txt")
 
 MUTATION_TOKENS = {
     "--yolo",
@@ -88,6 +88,14 @@ def detect_mutation_flags(args: Iterable[str]) -> list[str]:
     for token in tokens:
         if token in MUTATION_TOKENS:
             _append_once(found, token)
+            continue
+        if "=" in token:
+            flag, value = token.split("=", 1)
+            if (
+                flag in MUTATION_TOKENS
+                or (flag, value) in VALUE_COUPLED_MUTATION_PATTERNS
+            ):
+                _append_once(found, token)
     for index, token in enumerate(tokens[:-1]):
         pair = (token, tokens[index + 1])
         if pair in VALUE_COUPLED_MUTATION_PATTERNS:
@@ -281,12 +289,24 @@ def _role_contract_error(config: dict[str, Any]) -> str | None:
         return "Audit roles must be exactly default,codereviewer."
     for role_name in sorted(AUDIT_ROLE_NAMES):
         role = roles.get(role_name) or {}
-        prompt_name = Path(str(role.get("prompt_path") or "")).name
-        if prompt_name != AUDIT_PROMPT_NAME:
-            return f"Role {role_name} must use {AUDIT_PROMPT_NAME}."
+        prompt_path = _canonical_role_prompt_path(role.get("prompt_path"))
+        if prompt_path != AUDIT_PROMPT_PATH:
+            return f"Role {role_name} must use {AUDIT_PROMPT_PATH}."
         if list(role.get("role_args") or []) != []:
             return f"Role {role_name} must have empty role_args."
     return None
+
+
+def _canonical_role_prompt_path(value: Any) -> PurePosixPath | None:
+    raw_path = str(value or "")
+    raw_parts = raw_path.split("/")
+    prompt_path = PurePosixPath(raw_path)
+    if (
+        prompt_path.is_absolute()
+        or any(part in {"", ".", ".."} for part in raw_parts)
+    ):
+        return None
+    return prompt_path
 
 
 def _candidate_sort_key(path: Path) -> tuple[int, str]:

@@ -2,52 +2,52 @@
  docs/ops/health-check-matrix.md                    |   3 +
  docs/ops/pr-acceptance.md                          |   4 +
  docs/ops/tool-routing-matrix.md                    |  10 +-
- .../AUDITOR_REPORT.md                              |  22 ++
+ .../AUDITOR_REPORT.md                              |  22 +
  .../CHANGED_FILES.txt                              |  52 +++
  .../DIFF_STAT.txt                                  |  53 +++
- .../GIT_STATE.md                                   |  23 ++
+ .../GIT_STATE.md                                   |  32 ++
  .../PAL_CLINK_AUDIT_INPUT.md                       |  17 +
  .../PAL_CLINK_AUDIT_OUTPUT.json                    |   6 +
- .../TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json | 185 +++++++++
- .../VALIDATION_OUTPUT.md                           |  55 +++
+ .../TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json | 209 +++++++++
+ .../VALIDATION_OUTPUT.md                           |  63 +++
  .../review_bundle/ARTIFACT_INDEX.md                |  11 +
  .../review_bundle/AUDITOR_REPORT.md                |  11 +
  .../review_bundle/CHANGED_FILES.txt                |   1 +
  .../review_bundle/DIFF_STAT.txt                    |   1 +
- .../review_bundle/GIT_STATE.md                     |   7 +
- .../review_bundle/MANIFEST.json                    |  24 ++
- .../review_bundle/PROOF.json                       |  18 +
- .../review_bundle/SUMMARY.md                       |  25 ++
- .../review_bundle/VALIDATION_OUTPUT.md             |   9 +
+ .../review_bundle/GIT_STATE.md                     |  11 +
+ .../review_bundle/MANIFEST.json                    |  24 +
+ .../review_bundle/PROOF.json                       |  23 +
+ .../review_bundle/SUMMARY.md                       |  31 ++
+ .../review_bundle/VALIDATION_OUTPUT.md             |  11 +
  .../review_bundle/artifacts/AUDITOR_ROUTE.json     |  26 ++
  .../artifacts/ROUTE_PROBE_OUTPUTS.json             |  57 +++
- schemas/proof/auditor_route.schema.json            | 195 +++++++++
+ schemas/proof/auditor_route.schema.json            | 195 ++++++++
  schemas/proof/embedded_audit.schema.json           |   1 +
- .../TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002.json       | 172 ++++++++
- tests/auditor_router/test_pal_clink.py             | 434 +++++++++++++++++++++
- tests/auditor_router/test_preflight.py             | 109 ++++++
- .../clink_configs/claude-audit.json                |  22 ++
+ .../TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002.json       | 172 +++++++
+ tests/auditor_router/test_pal_clink.py             | 510 +++++++++++++++++++++
+ tests/auditor_router/test_preflight.py             | 109 +++++
+ .../clink_configs/claude-audit.json                |  22 +
  .../probes.json                                    |   3 +
- .../clink_configs/gemini-audit.json                |  22 ++
+ .../clink_configs/gemini-audit.json                |  22 +
  .../probes.json                                    |   3 +
- .../clink_configs/claude-audit.json                |  22 ++
- .../probes.json                                    |  22 ++
- .../clink_configs/claude-audit.json                |  24 ++
+ .../clink_configs/claude-audit.json                |  22 +
+ .../probes.json                                    |  22 +
+ .../clink_configs/claude-audit.json                |  24 +
  .../probes.json                                    |   3 +
  .../clink_configs/.gitkeep                         |   1 +
- .../pal_clink_no_configs_found/probes.json         |  24 ++
+ .../pal_clink_no_configs_found/probes.json         |  24 +
  .../PAL_CLINK_AUDIT_OUTPUT.json                    |   4 +
- .../clink_configs/claude-audit.json                |  22 ++
+ .../clink_configs/claude-audit.json                |  22 +
  .../probes.json                                    |   3 +
- .../clink_configs/claude-audit.json                |  22 ++
+ .../clink_configs/claude-audit.json                |  22 +
  .../probes.json                                    |  10 +
  .../clink_configs/claude-audit.json                |  19 +
  .../pal_clink_only_mutating_configs/probes.json    |   3 +
- .../clink_configs/gemini-audit.json                |  22 ++
- .../probes.json                                    |  22 ++
+ .../clink_configs/gemini-audit.json                |  22 +
+ .../probes.json                                    |  22 +
  tools/auditor_router/fixtures.py                   |  20 +
- tools/auditor_router/models.py                     | 113 ++++++
- tools/auditor_router/pal_clink.py                  | 347 ++++++++++++++++
+ tools/auditor_router/models.py                     | 113 +++++
+ tools/auditor_router/pal_clink.py                  | 367 +++++++++++++++
  tools/auditor_router/policy.py                     |  33 ++
- tools/auditor_router/preflight.py                  | 141 +++++++
- 52 files changed, 2477 insertions(+), 1 deletion(-)
+ tools/auditor_router/preflight.py                  | 141 ++++++
+ 52 files changed, 2625 insertions(+), 1 deletion(-)

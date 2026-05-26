@@ -7,8 +7,8 @@
 - PR #711: merged at `2026-05-26T10:34:55Z`, merge commit `898310bd01cf48b2703a166b429d4b330ec9f84e`
 - Repo marker: `.dopetaskroot` observed
 - Task Orchestrator context: no active, blocked, or stalled items observed
-- Commit before proof refresh: `90118b486d221859c4cf22a0275258867b618ec1`
-- Final post-amend commit SHA is reported in the closing response because a commit cannot contain its own final SHA.
+- PR #713 head before P1 review fix: `cee2d45e234554ec628cbdf8ff25e4770d430d02`
+- Follow-up commit SHA for the P1 review fix is reported in the closing response because a commit cannot contain its own final SHA.
 
 ## Scope Conflict
 
@@ -19,6 +19,13 @@
 - `scripts/auditor-preflight`
 
 This branch bootstraps the minimal auditor-router baseline required for PAL clink fixture tests. `scripts/auditor-preflight` remains absent because it is not allowlisted for this packet.
+
+## P1 Review Fix
+
+The follow-up patch addresses two unresolved PR #713 review threads:
+
+- canonical PAL clink prompt-path validation
+- equals-form mutation flag detection
 
 ## Working Tree Notes
 
