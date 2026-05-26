@@ -120,6 +120,13 @@ def inspect_clink_client_config(
         config = load_clink_client_config(path)
     except Exception as exc:
         return _unsafe(path, None, None, f"Config could not be parsed: {exc}")
+    if not isinstance(config, dict):
+        return _unsafe(
+            path,
+            None,
+            None,
+            "Config payload must be a JSON object.",
+        )
 
     client_name = str(config.get("name") or path.stem)
     underlying_cli = str(config.get("runner") or "").strip() or client_name.split("-")[0]
@@ -356,6 +363,7 @@ def _normalize_finding(item: Any) -> dict[str, Any]:
         "title": str(item.get("title") or "PAL clink finding"),
         "status": str(item.get("status") or "OPEN"),
         "body": str(item.get("body") or ""),
+        "blocking": bool(item.get("blocking", False)),
     }
 
 

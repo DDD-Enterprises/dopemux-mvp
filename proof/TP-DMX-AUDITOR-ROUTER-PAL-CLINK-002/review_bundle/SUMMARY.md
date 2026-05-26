@@ -33,3 +33,9 @@ The packet assumed `TP-DMX-AUDITOR-ROUTER-001` runtime already existed on `main`
 - `pytest -q tests/auditor_router/test_pal_clink.py`: `29 passed`
 - `pytest -q tests/auditor_router`: `33 passed`
 - JSON/schema/doc/proof validation is recorded in `VALIDATION_OUTPUT.md`.
+
+## Local Review Fix Update
+
+Generated: 2026-05-26T12:01:41.823532Z
+
+Patched four active PR #713 review blockers locally: fallback exit semantics, explicit blocking finding preservation, schema-safe unsafe-config routes, and non-object config payload handling. Packet blockers remain: wrapper allowlist, missing host-side PAL clink audit output, and draft PR state.
