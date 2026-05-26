@@ -51,7 +51,9 @@
       "Unsafe or mismatched PAL clink audit configs emit schema-safe underlying_cli=null instead of invalid CLI strings.",
       "Non-object PAL clink JSON config payloads are classified TOOLING_UNSAFE instead of crashing.",
       "PAL clink audit configs now require command to match the expected CLI exactly.",
-      "PAL clink config discovery now models clink override order so later override configs replace built-in audit configs."
+      "PAL clink config discovery now models clink override order so later override configs replace built-in audit configs.",
+      "PAL clink audit configs now require explicit name and runner fields before availability.",
+      "PAL clink role scanning now rejects non-object roles and role values without crashing preflight."
     ],
     "source": "PR #713 unresolved Codex review threads",
     "status": "LOCAL_REVIEW_THREADS_PATCHED_WITH_CLINK_EXECUTION_BLOCKED",
@@ -61,7 +63,10 @@
       "test_mismatched_runner_route_remains_schema_safe",
       "test_reject_non_object_config_payload",
       "test_reject_mismatched_command_for_audit_client",
-      "test_override_config_location_takes_precedence"
+      "test_override_config_location_takes_precedence",
+      "test_reject_missing_name_or_runner",
+      "test_reject_non_object_roles_without_crashing",
+      "test_reject_non_object_role_value_without_crashing"
     ]
   },
   "follow_up_resolution": {
@@ -90,7 +95,9 @@
     "PAL clink review regressions passed after local review fixes: 33 test_pal_clink tests",
     "PAL MCP clink was callable, but claude, gemini, and codex bridge executables were missing from PATH.",
     "PAL clink command and override-order review fixes passed targeted tests: 35 test_pal_clink tests",
-    "Auditor-router test suite passed after command and override fixes: 39 passed"
+    "Auditor-router test suite passed after command and override fixes: 39 passed",
+    "PAL clink explicit name/runner and roles-shape review fixes passed targeted tests: 38 test_pal_clink tests",
+    "Auditor-router test suite passed after explicit field and roles-shape fixes: 42 passed"
   ],
   "validation": {
     "commands": [
@@ -177,12 +184,12 @@
       {
         "command": "pytest -q tests/auditor_router/test_pal_clink.py",
         "exit_code": 0,
-        "result": "PASS: 35 passed"
+        "result": "PASS: 38 passed"
       },
       {
         "command": "pytest -q tests/auditor_router",
         "exit_code": 0,
-        "result": "PASS: 39 passed"
+        "result": "PASS: 42 passed"
       },
       {
         "command": "python -m tools.auditor_router.preflight --fixture-dir tests/fixtures/auditor_router/pal_clink_no_configs_found --out /private/tmp/auditor-route-pr713-fallback --packet-id TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002 --allow-fallback",
@@ -244,8 +251,8 @@
   },
   "commit": {
     "status": "LOCAL_FOLLOW_UP_COMMIT_PENDING",
-    "previous_pr_head_sha": "e3246aee05a30951bc0a6f7aba910341fca02151",
-    "message": "fix(governance): validate pal clink command and overrides",
+    "previous_pr_head_sha": "92ca508aad3d419f8e23b015428f7b5415622581",
+    "message": "fix(governance): harden pal clink config shape validation",
     "note": "Final commit SHA is reported after commit because a commit cannot contain its own final SHA."
   },
   "recommended_follow_ups": [
@@ -253,7 +260,8 @@
     "TP-DMX-AUDITOR-ROUTER-PAL-CLINK-AUDIT-HANDOFF-004"
   ],
   "head_sha_before_local_review_fixes": "6b10eed65c6256733900de06163ce312f8b99bdc",
-  "updated_at": "2026-05-26T22:27:00Z",
+  "updated_at": "2026-05-26T22:32:00Z",
   "head_sha_before_clink_attempt": "282257216002b0635fee696a06e8ef123a31f150",
-  "head_sha_before_command_override_fixes": "e3246aee05a30951bc0a6f7aba910341fca02151"
+  "head_sha_before_command_override_fixes": "e3246aee05a30951bc0a6f7aba910341fca02151",
+  "head_sha_before_shape_validation_fixes": "92ca508aad3d419f8e23b015428f7b5415622581"
 }
