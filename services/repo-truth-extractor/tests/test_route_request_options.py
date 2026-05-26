@@ -341,7 +341,16 @@ def test_strict_batch_request_uses_resolved_route_request_options() -> None:
         metadata={"phase": "A", "step_id": "A1", "partition_id": "A_P0001"},
     )
 
-    assert request.request_options == {"service_tier": "flex"}
+    # build_v5_batch_request carries provider/model_id forward in
+    # request_options so batch_clients' defense-in-depth re-normalize at the
+    # SDK seam can gate ``reasoning_effort="none"`` via dict-self-inference.
+    # The allowlist filter in normalize_route_request_options strips these
+    # routing-context keys from the actual SDK body.
+    assert request.request_options == {
+        "service_tier": "flex",
+        "provider": "openai",
+        "model_id": "gpt-5.5",
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -349,7 +358,17 @@ def test_strict_batch_request_uses_resolved_route_request_options() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_normalize_route_request_options_drops_literal_none_case_insensitive() -> None:
+def test_normalize_route_request_options_drops_none_when_route_context_absent() -> None:
+    """Legacy callers (no ``provider``/``model_id`` kwargs and no
+    ``provider``/``model_id`` keys in the input dict) default to dropping
+    ``reasoning_effort="none"`` — the safe fallback so a route whose identity
+    can't be inferred doesn't accidentally forward an enum value the SDK
+    might reject. Route-aware preservation (xAI grok-4.3) is exercised by the
+    ``test_normalize_xai_grok_4_3_preserves_reasoning_effort_none_*`` tests.
+
+    ``service_tier="none"`` is dropped regardless of route — no provider
+    documents ``"none"`` as a valid ``service_tier`` value.
+    """
     route_options = _load_module(
         "lib_route_options_drops_none",
         "lib/route_options.py",
@@ -481,12 +500,16 @@ def test_optimal_extract_ladder_has_distinct_fallback_entries() -> None:
     )
 
 
-def test_grok_4_3_routes_with_reasoning_effort_none_normalize_to_empty() -> None:
-    """Regression: 139 YAML rows declare ``reasoning_effort: none``.
+def test_grok_4_3_routes_with_reasoning_effort_none_preserve_via_dict_self_inference() -> None:
+    """Regression: 139 YAML rows declare ``reasoning_effort: none`` for xAI
+    grok-4.3.
 
-    The runtime must treat the literal as the absence of the field so we never
-    forward ``reasoning_effort="none"`` to xAI's chat completions API (the
-    documented enum is ``low|high``).
+    Per xAI's documented ``reasoning_effort`` enum (``none|low|medium|high``),
+    ``"none"`` is the migration-recommended value for non-reasoning workloads
+    and MUST be forwarded to the xAI chat completions API. The normalizer
+    infers ``(provider, model_id)`` from the route dict itself when explicit
+    kwargs are absent, so route-dict callers (phase contract parsers, batch
+    request builders) preserve ``"none"`` automatically for grok-4.3.
     """
     route_options = _load_module(
         "lib_route_options_grok_none",
@@ -503,7 +526,15 @@ def test_grok_4_3_routes_with_reasoning_effort_none_normalize_to_empty() -> None
     ]
     for row in rows:
         normalized = route_options.normalize_route_request_options(row)
-        assert "reasoning_effort" not in normalized
+        assert normalized.get("reasoning_effort") == "none", (
+            f"xAI grok-4.3 row {row!r} must preserve reasoning_effort=none "
+            "via dict-self-inference"
+        )
+        # Routing context keys must not leak into the SDK-bound options
+        # (the allowlist is service_tier + reasoning_effort).
+        assert "provider" not in normalized
+        assert "model_id" not in normalized
+        assert "api_key_env" not in normalized
 
 
 def test_full_chain_build_chat_payload_to_sdk_kwargs() -> None:
@@ -625,7 +656,11 @@ def test_full_chain_build_chat_payload_to_sdk_kwargs() -> None:
     assert result["ok"] is True
     assert captured["service_tier"] == "flex"
     assert captured["reasoning_effort"] == "low"
-    # The literal "none" must be dropped end-to-end, never reaching the SDK.
+    # xAI grok-4.3 documents ``reasoning_effort="none"`` as the migration
+    # target for non-reasoning workloads — it MUST reach the SDK kwargs
+    # unchanged for this route. The runtime's defense-in-depth re-normalize at
+    # the chat.completions.create boundary now threads provider/model context
+    # so route-aware gating is honored end-to-end.
     captured.clear()
     result_none = llm_runtime.call_llm(
         deps=deps,
@@ -638,4 +673,490 @@ def test_full_chain_build_chat_payload_to_sdk_kwargs() -> None:
         request_options_override={"reasoning_effort": "none"},
     )
     assert result_none["ok"] is True
-    assert "reasoning_effort" not in captured
+    assert captured.get("reasoning_effort") == "none", (
+        "xAI grok-4.3 must forward reasoning_effort=none to the SDK; the route "
+        "is on the documented-enum allowlist for this value"
+    )
+
+    # Counter-example: an OpenAI route is NOT on the allowlist for
+    # reasoning_effort="none". The defense-in-depth normalize must still drop
+    # the literal there so the call falls back to OpenAI's provider default
+    # rather than 4xx-ing on an unrecognized enum value.
+    captured.clear()
+    result_openai_none = llm_runtime.call_llm(
+        deps=deps,
+        provider="openai",
+        model_id="gpt-5.5",
+        api_key_env="OPENAI_API_KEY",
+        system_prompt="system",
+        user_content="user",
+        cfg=cfg,
+        request_options_override={"reasoning_effort": "none"},
+    )
+    assert result_openai_none["ok"] is True
+    assert "reasoning_effort" not in captured, (
+        "openai gpt-5.5 does not document reasoning_effort=none and the "
+        "normalize must drop it at the SDK boundary"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Route-aware reasoning_effort="none" preservation (post-PR-685 fix)
+# ---------------------------------------------------------------------------
+
+
+def test_normalize_xai_grok_4_3_preserves_reasoning_effort_none_via_kwargs() -> None:
+    """Explicit ``provider``/``model_id`` kwargs unlock preservation of
+    ``reasoning_effort="none"`` for routes that document it (xAI grok-4.3)."""
+    route_options = _load_module(
+        "lib_route_options_kwargs_grok_none",
+        "lib/route_options.py",
+    )
+    normalized = route_options.normalize_route_request_options(
+        {"reasoning_effort": "none"},
+        provider="xai",
+        model_id="grok-4.3",
+    )
+    assert normalized == {"reasoning_effort": "none"}
+
+    # Case + whitespace insensitive matching: ``"None"``, ``"NONE"``, ``" none "``
+    # all canonicalize to lowercase ``"none"`` and are preserved.
+    for sentinel in ("NONE", " None ", "  noNE  "):
+        result = route_options.normalize_route_request_options(
+            {"reasoning_effort": sentinel},
+            provider="xai",
+            model_id="grok-4.3",
+        )
+        assert result == {"reasoning_effort": "none"}, (
+            f"sentinel {sentinel!r} should canonicalize and preserve for grok-4.3"
+        )
+
+
+def test_normalize_xai_grok_4_3_preserves_reasoning_effort_low_via_kwargs() -> None:
+    """Sanity: non-``"none"`` reasoning_effort values pass through unchanged
+    when route context is provided."""
+    route_options = _load_module(
+        "lib_route_options_kwargs_grok_low",
+        "lib/route_options.py",
+    )
+    normalized = route_options.normalize_route_request_options(
+        {"reasoning_effort": "low"},
+        provider="xai",
+        model_id="grok-4.3",
+    )
+    assert normalized == {"reasoning_effort": "low"}
+
+
+def test_normalize_openai_drops_reasoning_effort_none_with_route_context() -> None:
+    """OpenAI reasoning models accept ``minimal|low|medium|high`` — not
+    ``"none"``. The normalizer must drop ``"none"`` for OpenAI routes so the
+    call falls back to OpenAI's provider default rather than 4xx-ing."""
+    route_options = _load_module(
+        "lib_route_options_kwargs_openai_none",
+        "lib/route_options.py",
+    )
+    for model_id in ("gpt-5.5", "gpt-5.4-mini", "gpt-5-pro", "o3-mini"):
+        normalized = route_options.normalize_route_request_options(
+            {"reasoning_effort": "none", "service_tier": "flex"},
+            provider="openai",
+            model_id=model_id,
+        )
+        assert normalized == {"service_tier": "flex"}, (
+            f"openai/{model_id} must drop reasoning_effort=none; got {normalized!r}"
+        )
+
+
+def test_normalize_xai_non_grok_4_3_drops_reasoning_effort_none() -> None:
+    """xAI models that are NOT grok-4.3 (e.g. grok-code-fast-1, grok-4-1-fast)
+    are not on the documented-``none``-enum allowlist. Drop ``"none"`` so the
+    call falls back to the provider default."""
+    route_options = _load_module(
+        "lib_route_options_kwargs_xai_other",
+        "lib/route_options.py",
+    )
+    for model_id in (
+        "grok-code-fast-1",
+        "grok-4-1-fast-non-reasoning",
+        "grok-4",
+        "grok-3-mini",
+    ):
+        normalized = route_options.normalize_route_request_options(
+            {"reasoning_effort": "none"},
+            provider="xai",
+            model_id=model_id,
+        )
+        assert normalized == {}, (
+            f"xai/{model_id} is not on the grok-4.3 allowlist; "
+            f"reasoning_effort=none must be dropped, got {normalized!r}"
+        )
+
+
+def test_normalize_grok_4_3_dict_self_inference_preserves_none() -> None:
+    """Route dicts (the input shape used by phase contract parsers) carry
+    ``provider``/``model_id`` keys; the normalizer infers route context from
+    them when explicit kwargs are absent."""
+    route_options = _load_module(
+        "lib_route_options_self_inference_grok",
+        "lib/route_options.py",
+    )
+    normalized = route_options.normalize_route_request_options(
+        {
+            "provider": "xai",
+            "model_id": "grok-4.3",
+            "api_key_env": "XAI_API_KEY",
+            "reasoning_effort": "none",
+            "service_tier": "flex",
+        }
+    )
+    assert normalized == {
+        "reasoning_effort": "none",
+        "service_tier": "flex",
+    }
+
+
+def test_normalize_openai_dict_self_inference_drops_none() -> None:
+    """Same dict-self-inference, opposite route: an OpenAI route dict drops
+    ``reasoning_effort="none"`` without needing explicit kwargs."""
+    route_options = _load_module(
+        "lib_route_options_self_inference_openai",
+        "lib/route_options.py",
+    )
+    normalized = route_options.normalize_route_request_options(
+        {
+            "provider": "openai",
+            "model_id": "gpt-5.5",
+            "api_key_env": "OPENAI_API_KEY",
+            "reasoning_effort": "none",
+            "service_tier": "flex",
+        }
+    )
+    assert normalized == {"service_tier": "flex"}
+
+
+def test_normalize_explicit_kwargs_win_over_dict_self_inference() -> None:
+    """When both explicit kwargs and dict-self-inference are available, the
+    explicit kwargs are authoritative — they reflect the SDK boundary's view
+    of the route, which may differ from a stale or generic dict's keys."""
+    route_options = _load_module(
+        "lib_route_options_kwargs_win",
+        "lib/route_options.py",
+    )
+    # Dict says openai/gpt-5.5; kwargs say xai/grok-4.3. Kwargs win, "none" is
+    # preserved.
+    preserved = route_options.normalize_route_request_options(
+        {
+            "provider": "openai",
+            "model_id": "gpt-5.5",
+            "reasoning_effort": "none",
+        },
+        provider="xai",
+        model_id="grok-4.3",
+    )
+    assert preserved == {"reasoning_effort": "none"}
+
+    # Inverse: dict says xai/grok-4.3; kwargs say openai/gpt-5.5. Kwargs win,
+    # "none" is dropped.
+    dropped = route_options.normalize_route_request_options(
+        {
+            "provider": "xai",
+            "model_id": "grok-4.3",
+            "reasoning_effort": "none",
+        },
+        provider="openai",
+        model_id="gpt-5.5",
+    )
+    assert dropped == {}
+
+
+def test_normalize_service_tier_none_dropped_even_for_grok_4_3() -> None:
+    """The route-aware ``"none"`` preservation is scoped to
+    ``reasoning_effort``. ``service_tier="none"`` is dropped for every route
+    because no provider documents ``"none"`` as a valid ``service_tier``
+    value."""
+    route_options = _load_module(
+        "lib_route_options_service_tier_none",
+        "lib/route_options.py",
+    )
+    normalized = route_options.normalize_route_request_options(
+        {
+            "service_tier": "none",
+            "reasoning_effort": "none",
+        },
+        provider="xai",
+        model_id="grok-4.3",
+    )
+    # service_tier="none" dropped; reasoning_effort="none" preserved.
+    assert normalized == {"reasoning_effort": "none"}
+
+
+def test_normalize_non_allowlisted_metadata_still_dropped_for_grok_4_3() -> None:
+    """The allowlist remains ``(service_tier, reasoning_effort)`` regardless
+    of route. Routing-context keys (``provider``, ``model_id``,
+    ``api_key_env``) and unknown keys must never leak to the SDK body."""
+    route_options = _load_module(
+        "lib_route_options_allowlist_grok",
+        "lib/route_options.py",
+    )
+    normalized = route_options.normalize_route_request_options(
+        {
+            "provider": "xai",
+            "model_id": "grok-4.3",
+            "api_key_env": "XAI_API_KEY",
+            "reasoning_effort": "none",
+            "unknown_metadata": "leak-me",
+            "max_tokens": "999",
+        }
+    )
+    assert normalized == {"reasoning_effort": "none"}
+    assert "provider" not in normalized
+    assert "model_id" not in normalized
+    assert "api_key_env" not in normalized
+    assert "unknown_metadata" not in normalized
+    assert "max_tokens" not in normalized
+
+
+def test_normalize_non_string_still_dropped_with_route_context() -> None:
+    """Non-string scalars are rejected regardless of route — a YAML footgun
+    where ``reasoning_effort: false`` would otherwise stringify to ``"False"``
+    and be forwarded."""
+    route_options = _load_module(
+        "lib_route_options_non_string_grok",
+        "lib/route_options.py",
+    )
+    for bad in (True, False, 1, 0, 3.14, None, ["none"], {"nested": "none"}):
+        normalized = route_options.normalize_route_request_options(
+            {"reasoning_effort": bad, "service_tier": "flex"},
+            provider="xai",
+            model_id="grok-4.3",
+        )
+        assert normalized == {"service_tier": "flex"}, (
+            f"reasoning_effort={bad!r} must be rejected; got {normalized!r}"
+        )
+
+
+def test_normalize_empty_string_still_dropped_with_route_context() -> None:
+    """Empty / whitespace-only strings are dropped regardless of route."""
+    route_options = _load_module(
+        "lib_route_options_empty_grok",
+        "lib/route_options.py",
+    )
+    for empty in ("", " ", "\t", "   \n  "):
+        normalized = route_options.normalize_route_request_options(
+            {"reasoning_effort": empty},
+            provider="xai",
+            model_id="grok-4.3",
+        )
+        assert normalized == {}, (
+            f"empty reasoning_effort={empty!r} must be dropped; got {normalized!r}"
+        )
+
+
+def test_normalize_direct_openai_service_tier_flex_preserved() -> None:
+    """Direct OpenAI ``service_tier="flex"`` survives unchanged — the fix
+    does not regress the ``service_tier`` path."""
+    route_options = _load_module(
+        "lib_route_options_openai_flex",
+        "lib/route_options.py",
+    )
+    for model_id in ("gpt-5.4-mini", "gpt-5.5", "gpt-5-nano"):
+        normalized = route_options.normalize_route_request_options(
+            {"service_tier": "flex"},
+            provider="openai",
+            model_id=model_id,
+        )
+        assert normalized == {"service_tier": "flex"}
+
+
+def test_normalize_legacy_tuple_route_dict_still_normalizes() -> None:
+    """Legacy tuple-shaped route entries are still accepted as dicts (the
+    runtime layer that materializes a tuple into a route dict is unchanged).
+    A bare ``{"provider": ..., "model_id": ...}`` with no ``reasoning_effort``
+    or ``service_tier`` produces an empty options dict — no allowlisted keys
+    to forward."""
+    route_options = _load_module(
+        "lib_route_options_legacy_tuple",
+        "lib/route_options.py",
+    )
+    bare = route_options.normalize_route_request_options(
+        {
+            "provider": "openai",
+            "model_id": "gpt-5.4-mini",
+            "api_key_env": "OPENAI_API_KEY",
+        }
+    )
+    assert bare == {}
+
+
+def test_build_chat_payload_xai_grok_4_3_preserves_reasoning_effort_none_end_to_end() -> None:
+    """Real ``build_chat_payload`` (run_extraction_v5) threads provider/model
+    into the construction-time normalize so xAI grok-4.3 ``"none"`` survives
+    into the payload that flows to the SDK kwargs forwarding seam."""
+    runner = _load_module(
+        "run_extraction_v5_build_chat_payload_grok_none",
+        "run_extraction_v5.py",
+    )
+    payload = runner.build_chat_payload(
+        provider="xai",
+        model_id="grok-4.3",
+        system_prompt="system",
+        user_content="user",
+        request_options={"reasoning_effort": "none"},
+    )
+    assert payload.get("reasoning_effort") == "none"
+
+
+def test_build_chat_payload_openai_drops_reasoning_effort_none_end_to_end() -> None:
+    """Real ``build_chat_payload`` drops ``"none"`` for an OpenAI route — the
+    counter-example of the route-aware gating."""
+    runner = _load_module(
+        "run_extraction_v5_build_chat_payload_openai_none",
+        "run_extraction_v5.py",
+    )
+    payload = runner.build_chat_payload(
+        provider="openai",
+        model_id="gpt-5.5",
+        system_prompt="system",
+        user_content="user",
+        request_options={"reasoning_effort": "none"},
+    )
+    assert "reasoning_effort" not in payload
+
+
+def test_build_v5_batch_request_xai_grok_4_3_carries_route_context_for_batch_seam() -> None:
+    """The BatchRequest's ``request_options`` carries ``provider`` /
+    ``model_id`` (non-allowlisted keys) so batch_clients' defense-in-depth
+    re-normalize at the SDK seam can gate ``reasoning_effort="none"``
+    correctly via dict-self-inference. Without this, an xAI grok-4.3 batch
+    would silently lose ``"none"`` at line ~521 of batch_clients.py."""
+    runner = _load_module(
+        "run_extraction_v5_build_batch_request_grok_none",
+        "run_extraction_v5.py",
+    )
+    request = runner.build_v5_batch_request(
+        custom_id="A1:0",
+        model_id="grok-4.3",
+        system_prompt="system",
+        user_content="user",
+        provider="xai",
+        selected_route=("xai", "grok-4.3", "XAI_API_KEY"),
+        selected_route_entry={
+            "provider": "xai",
+            "model_id": "grok-4.3",
+            "api_key_env": "XAI_API_KEY",
+            "reasoning_effort": "none",
+        },
+        transport="openai_compat_http",
+        strict_contract_required=False,
+        step_contract=None,
+        artifact_names=(),
+        force_json_output=False,
+        metadata={"phase": "A", "step_id": "A1", "partition_id": "A_P0001"},
+    )
+
+    # request_options carries the normalized "none" plus route-context keys
+    # that the batch seam uses to re-gate.
+    assert request.request_options.get("reasoning_effort") == "none"
+    assert request.request_options.get("provider") == "xai"
+    assert request.request_options.get("model_id") == "grok-4.3"
+
+
+def test_build_v5_batch_request_openai_drops_reasoning_effort_none_at_construction() -> None:
+    """Counter-example: an OpenAI batch request drops ``"none"`` at the
+    construction-time normalize (dict-self-inference from the selected route
+    entry), so the batch seam never sees the literal."""
+    runner = _load_module(
+        "run_extraction_v5_build_batch_request_openai_none",
+        "run_extraction_v5.py",
+    )
+    request = runner.build_v5_batch_request(
+        custom_id="A1:0",
+        model_id="gpt-5.5",
+        system_prompt="system",
+        user_content="user",
+        provider="openai",
+        selected_route=("openai", "gpt-5.5", "OPENAI_API_KEY"),
+        selected_route_entry={
+            "provider": "openai",
+            "model_id": "gpt-5.5",
+            "api_key_env": "OPENAI_API_KEY",
+            "reasoning_effort": "none",
+        },
+        transport="openai_sdk",
+        strict_contract_required=False,
+        step_contract=None,
+        artifact_names=(),
+        force_json_output=False,
+        metadata={"phase": "A", "step_id": "A1", "partition_id": "A_P0001"},
+    )
+    assert "reasoning_effort" not in request.request_options
+    # Route-context keys are still carried for the batch seam (so if a future
+    # value did survive upstream, dict-self-inference would still gate).
+    assert request.request_options.get("provider") == "openai"
+    assert request.request_options.get("model_id") == "gpt-5.5"
+
+
+def test_batch_clients_re_normalize_at_sdk_seam_preserves_none_for_grok_4_3() -> None:
+    """End-to-end batch path: ``OpenAIBatchClient.submit`` re-normalizes
+    ``req.request_options`` at the JSONL body construction site (line ~521
+    of batch_clients.py). When the request_options carry route-context keys
+    (``provider``, ``model_id``), the dict-self-inference preserves
+    ``reasoning_effort="none"`` for xAI grok-4.3 routes."""
+    batch_clients = _load_module(
+        "batch_clients_re_normalize_grok_none",
+        "lib/batch_clients.py",
+    )
+
+    class _Files:
+        def __init__(self) -> None:
+            self.uploads: list[str] = []
+
+        def create(self, *, file: Any, purpose: str) -> Any:
+            assert purpose == "batch"
+            payload = file.read()
+            self.uploads.append(
+                payload.decode("utf-8")
+                if isinstance(payload, (bytes, bytearray))
+                else str(payload)
+            )
+            return type("FileResult", (), {"id": "file_grok"})()
+
+    class _Batches:
+        def create(self, **kwargs: Any) -> Any:
+            return type("BatchResult", (), {"id": "batch_grok"})()
+
+    class _Client:
+        def __init__(self) -> None:
+            self.files = _Files()
+            self.batches = _Batches()
+
+    client = object.__new__(batch_clients.XAIBatchClient)
+    fake = _Client()
+    client._client = fake
+    request = batch_clients.BatchRequest(
+        custom_id="A1:0",
+        model_id="grok-4.3",
+        system_prompt="system",
+        user_content="user",
+        request_options={
+            "reasoning_effort": "none",
+            "provider": "xai",
+            "model_id": "grok-4.3",
+        },
+    )
+    job_id = client.submit(
+        [request],
+        batch_clients.BatchRoute("xai", "grok-4.3", "XAI_API_KEY"),
+        {"phase": "A", "step_id": "A1"},
+    )
+    assert job_id == "batch_grok"
+    jsonl = fake.files.uploads[0]
+    first_line = next(line for line in jsonl.splitlines() if line.strip())
+    body = json.loads(first_line)
+    assert body["body"].get("reasoning_effort") == "none", (
+        "xAI grok-4.3 batch body must carry reasoning_effort=none; the "
+        "defense-in-depth re-normalize at line ~521 must preserve it via "
+        "dict-self-inference from request_options' provider/model_id keys"
+    )
+    # The non-allowlisted route-context keys must NOT leak into the SDK body.
+    assert "provider" not in body["body"]
+    assert "model_id" not in body["body"]
