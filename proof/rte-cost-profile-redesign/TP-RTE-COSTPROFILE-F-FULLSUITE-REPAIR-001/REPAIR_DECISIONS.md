@@ -164,6 +164,14 @@ required. The second test now proves the current Phase D/cost route provider set
 and the resulting `phase_requires_provider_preflight(...) is False` decision.
 No runtime code was changed for this residual.
 
+## PR #709 Review Thread Fix
+
+- `src/dopemux/cli.py` fallback wrappers now fail closed without `KeyError`.
+- Cluster D executable xfail deferrals now use `strict=True` so unexpected pass becomes a visible XPASS failure.
+- No Walker/prescan runtime repair was performed.
+- No live provider calls or live extraction were run.
+- No CLI-specific test file was changed for this review thread because the authorized allowlist did not include a clean CLI fallback test surface; validation relies on the import probe and existing characterization tests.
+
 ## Implementation Guardrails
 
 - Do not mark any Cluster D failure as deferred unless the test receives an executable `xfail` or `skip` marker with a follow-up TP ID before the full-suite run.

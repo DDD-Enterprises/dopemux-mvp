@@ -41,7 +41,7 @@
     "TP-RTE-COSTPROFILE-F-VERIFY-002",
     "TP-RTE-WALKER-006"
   ],
-  "generated_at_utc": "2026-05-26T07:50:21+00:00",
+  "generated_at_utc": "2026-05-26T08:36:20+00:00",
   "packet_id": "TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001",
   "pal_constraint": {
     "active": "do not use Gemini; use working non-Gemini models where selectable",
@@ -58,11 +58,29 @@
   "repair_branch": "codex/rte-costprofile-f-fullsuite-repair-001",
   "residual_risks": [
     "Repair status is VERIFIED for this packet gate only; CostProfile F series remains unverified until TP-RTE-COSTPROFILE-F-VERIFY-002 runs after this PR lands.",
-    "Cluster D prescan failures are executable xfail deferrals to TP-RTE-WALKER-006 and remain real deferred work.",
+    "Cluster D prescan failures are strict executable xfail deferrals to TP-RTE-WALKER-006 and remain real deferred work.",
     "Legacy routing fields remain as compatibility metadata and need future deprecation tracking.",
     "External PAL codereview assistant-model handoff did not independently inspect files; internal non-Gemini PAL review completed and records this caveat.",
     "Exact pal/challenge tool was skipped because it has no model selector under the operator-updated no-Gemini constraint; local challenge review was recorded only as local evidence."
   ],
+  "review_thread_fix": {
+    "f_verify_002": "NOT_RUN",
+    "live_extraction": "NOT_RUN",
+    "live_provider_calls": "NOT_RUN",
+    "pr": 709,
+    "status": "validated_precommit",
+    "threads": [
+      {
+        "decision": "provider flag fallback path now fails closed with ClickException before fallback provider dict indexing when litellm is unavailable",
+        "file": "src/dopemux/cli.py"
+      },
+      {
+        "decision": "Cluster D TP-RTE-WALKER-006 xfail deferrals now use strict=True so XPASS fails visibly",
+        "file": "services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py"
+      }
+    ],
+    "walker_prescan_runtime_repair": "NOT_RUN"
+  },
   "status": "VERIFIED",
   "status_scope": "repair_gate_only_not_series_gate",
   "validation_buckets": {
@@ -200,6 +218,25 @@
       {
         "command": "git diff --check",
         "exit_code": 0
+      },
+      {
+        "command": "PR #709 review fix: PYTHONPATH=src python -c \"import dopemux.cli\"",
+        "exit_code": 0
+      },
+      {
+        "command": "PR #709 review fix: Cluster D deferral test files",
+        "exit_code": 0,
+        "result": "strict TP-RTE-WALKER-006 xfails remained expected; no XPASS"
+      },
+      {
+        "command": "PR #709 review fix: RTE characterization tests",
+        "exit_code": 0,
+        "result": "9 passed"
+      },
+      {
+        "command": "PR #709 review fix: S9 residual OpenRouter tests",
+        "exit_code": 0,
+        "result": "2 passed, 1 warning"
       }
     ]
   }
