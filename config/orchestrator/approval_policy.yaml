@@ -258,6 +258,33 @@ capabilities:
     approval_required: true
     receipt_required: true
     decision: gated
+  orchestrator.hooks.list:
+    title: List declarative orchestrator hooks
+    tier: T0
+    mode: read
+    canonical_writer: dopemux
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: false
+    decision: allow
+  orchestrator.hooks.validate:
+    title: Validate declarative orchestrator hook registry
+    tier: T1
+    mode: analysis
+    canonical_writer: dopemux
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    decision: allow
+  orchestrator.plugins.doctor:
+    title: Audit declarative orchestrator plugin hook safety
+    tier: T1
+    mode: analysis
+    canonical_writer: dopemux
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    decision: allow
   orchestrator.route.pm:
     title: Direct bridge PM route
     tier: TX

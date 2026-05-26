@@ -89,6 +89,8 @@ def test_orchestrator_validation_help_lists_packet_and_proof_commands() -> None:
     assert "proof" in result.output
     assert "policy" in result.output
     assert "workflow" in result.output
+    assert "hooks" in result.output
+    assert "plugins" in result.output
 
 
 def test_orchestrator_packet_validate_outputs_json_report(tmp_path: Path) -> None:
@@ -350,3 +352,81 @@ def test_orchestrator_workflow_validate_exits_nonzero_for_invalid_workflow(
     assert result.exit_code != 0
     assert "status: FAIL" in result.output
     assert "WORKFLOW_DSL_AUTHORITY_OWNER_MISSING" in result.output
+
+
+def test_orchestrator_hooks_list_outputs_authority_hooks() -> None:
+    result = CliRunner().invoke(
+        cli,
+        ["orchestrator", "hooks", "list", "--json-output"],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["hook_count"] == 15
+    assert payload["hooks"][0]["id"] == "on_startup"
+    assert payload["hooks"][0]["tier"] == "T0"
+
+
+def test_orchestrator_hooks_validate_outputs_json_report() -> None:
+    result = CliRunner().invoke(
+        cli,
+        ["orchestrator", "hooks", "validate", "--json-output"],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["kind"] == "plugin_hook_registry"
+    assert payload["status"] == "PASS"
+    assert payload["details"]["hook_count"] == 15
+
+
+def test_orchestrator_hooks_validate_exits_nonzero_for_invalid_registry(
+    tmp_path: Path,
+) -> None:
+    registry_path = tmp_path / "plugin_hooks.yaml"
+    registry_path.write_text(
+        "\n".join(
+            [
+                'schema_version: "1"',
+                "id: task-orchestrator-plugin-hooks",
+                "authority: docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+                "plugins: {}",
+                "hooks:",
+                "  - id: on_startup",
+                "    trigger: startup",
+                "    tier: T9000",
+                "    automatic_allowed: true",
+                "    approval_required: false",
+                "    receipt_required: false",
+                "    allowed_actions:",
+                "      - orchestrator.status.queue",
+                "    forbidden_actions:",
+                "      - writes",
+                "    failure_behavior: Degrade partial.",
+                "    plugins: []",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        cli,
+        ["orchestrator", "hooks", "validate", "--registry", str(registry_path)],
+    )
+
+    assert result.exit_code != 0
+    assert "status: FAIL" in result.output
+    assert "HOOK_REGISTRY_UNKNOWN_TIER" in result.output
+
+
+def test_orchestrator_plugins_doctor_outputs_json_report() -> None:
+    result = CliRunner().invoke(
+        cli,
+        ["orchestrator", "plugins", "doctor", "--json-output"],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["kind"] == "plugin_hook_doctor"
+    assert payload["status"] == "PASS"
+    assert payload["details"]["read_only"] is True

@@ -59,6 +59,22 @@ def test_transition_apply_requires_t4_approval_and_receipt() -> None:
     assert decision.allowed is False
 
 
+def test_hook_registry_capabilities_are_read_only_or_analysis() -> None:
+    hooks_list = classify_capability("orchestrator.hooks.list")
+    hooks_validate = classify_capability("orchestrator.hooks.validate")
+    plugins_doctor = classify_capability("orchestrator.plugins.doctor")
+
+    assert hooks_list.tier == "T0"
+    assert hooks_list.mode == "read"
+    assert hooks_list.allowed is True
+    assert hooks_validate.tier == "T1"
+    assert hooks_validate.mode == "analysis"
+    assert hooks_validate.allowed is True
+    assert plugins_doctor.tier == "T1"
+    assert plugins_doctor.mode == "analysis"
+    assert plugins_doctor.allowed is True
+
+
 def test_policy_validator_rejects_t4_without_receipt(tmp_path: Path) -> None:
     policy = load_approval_policy().to_dict()
     invalid = copy.deepcopy(policy)
