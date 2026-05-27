@@ -6,7 +6,7 @@
   "branch": "claude/upbeat-thompson-35f2e8",
   "base_branch": "main",
   "head_before": "21f04e21c987304ffc3caf2073503d733d07b0c8",
-  "head_after": "TBD",
+  "head_after": "d89b5aa3a",
   "mutation_performed": false,
   "github_mutation_performed": false,
   "secret_values_recorded": false,
@@ -138,8 +138,8 @@
   },
   "embedded_audit_status": "PASS_WITH_RISKS",
   "commit": {
-    "performed": false,
-    "sha": null,
+    "performed": true,
+    "sha": "d89b5aa3a",
     "message": "feat(audit): normalize embedded audit proof artifacts"
   },
   "governance": {
