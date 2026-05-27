@@ -77,7 +77,8 @@
       "required": [
         "proof_path",
         "proof_head_sha",
-        "matches_pr_head"
+        "matches_pr_head",
+        "proof_freshness"
       ],
       "properties": {
         "proof_path": {
@@ -91,6 +92,10 @@
         },
         "matches_pr_head": {
           "type": "boolean"
+        },
+        "proof_freshness": {
+          "type": "string",
+          "enum": ["FRESH", "STALE", "MISSING"]
         }
       }
     },
@@ -146,11 +151,15 @@
               },
               "matches_pr_head": {
                 "const": true
+              },
+              "proof_freshness": {
+                "const": "FRESH"
               }
             },
             "required": [
               "proof_head_sha",
-              "matches_pr_head"
+              "matches_pr_head",
+              "proof_freshness"
             ]
           },
           "blockers": {

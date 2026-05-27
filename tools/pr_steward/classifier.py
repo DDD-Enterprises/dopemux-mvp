@@ -114,6 +114,9 @@ def build_artifacts(
 
     review_items.extend(checks["review_items"])
 
+    if _detect_mixed_sha_checks(harvest.get("checks") or [], pr_head_sha=pr["head_sha"]):
+        _append_once(blockers, "MIXED_SHA_ARTIFACT_SET")
+
     embedded_audit = _embedded_audit(harvest)
     audit_status = embedded_audit["status"]
     if audit_status in BLOCKING_AUDITS:
@@ -123,7 +126,7 @@ def build_artifacts(
         _append_once(unknowns, f"Unknown embedded audit status: {audit_status}")
 
     proof = _proof(harvest)
-    if not proof["matches_pr_head"]:
+    if proof["proof_freshness"] in ("STALE", "MISSING"):
         _append_once(blockers, "PROOF_STALE_OR_MISSING")
     if not proof["proof_head_sha"]:
         _append_once(unknowns, "Proof head SHA missing")
@@ -464,7 +467,7 @@ def _classify_checks(
 
 def _readiness(blockers: list[str]) -> str:
     blocker_set = set(blockers)
-    if blocker_set & {"HARVEST_INCOMPLETE", "PR_IS_DRAFT", "PR_CLOSED"}:
+    if blocker_set & {"HARVEST_INCOMPLETE", "PR_IS_DRAFT", "PR_CLOSED", "MIXED_SHA_ARTIFACT_SET"}:
         return "BLOCKED"
     if any(
         item.startswith("EMBEDDED_AUDIT_")
@@ -556,12 +559,31 @@ def _embedded_audit(harvest: dict[str, Any]) -> dict[str, str]:
     }
 
 
+def _detect_mixed_sha_checks(checks: list[Any], *, pr_head_sha: str) -> bool:
+    for check in checks:
+        raw_sha = check.get("headSha") or check.get("head_sha")
+        sha = (raw_sha or "").strip() if isinstance(raw_sha, str) else ""
+        if sha and sha != pr_head_sha:
+            return True
+    return False
+
+
 def _proof(harvest: dict[str, Any]) -> dict[str, Any]:
     raw = harvest.get("proof") or {}
+    proof_head_sha = raw.get("proof_head_sha")
+    proof_path = str(raw.get("proof_path") or "")
+    matches = bool(raw.get("matches_pr_head", False))
+    if not proof_head_sha and not proof_path:
+        freshness = "MISSING"
+    elif proof_head_sha and matches:
+        freshness = "FRESH"
+    else:
+        freshness = "STALE"
     return {
-        "proof_path": str(raw.get("proof_path") or ""),
-        "proof_head_sha": raw.get("proof_head_sha"),
-        "matches_pr_head": bool(raw.get("matches_pr_head", False)),
+        "proof_path": proof_path,
+        "proof_head_sha": proof_head_sha,
+        "matches_pr_head": matches,
+        "proof_freshness": freshness,
     }
 
 
