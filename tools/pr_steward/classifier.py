@@ -657,7 +657,11 @@ def _proof_is_current(proof: dict[str, Any], pr_head_sha: str) -> bool:
     status = str(freshness.get("status") or "UNKNOWN")
     proof_head_sha = proof.get("proof_head_sha")
     if status == "CURRENT":
-        return bool(proof_head_sha) and bool(freshness.get("matches_pr_head", False))
+        if not proof_head_sha or str(proof_head_sha) != pr_head_sha:
+            return False
+        if not freshness.get("matches_pr_head", False):
+            return False
+        return True
     if status != "CURRENT_WITH_SELF_REFERENCE_EXCEPTION":
         return False
     if not proof_head_sha:
