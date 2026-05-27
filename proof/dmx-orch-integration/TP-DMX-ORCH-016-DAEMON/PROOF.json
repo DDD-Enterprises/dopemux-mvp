@@ -1,0 +1,54 @@
+{
+  "bundle_id": "TP-DMX-ORCH-016-DAEMON-PROOF",
+  "run_id": "tp-dmx-orch-016-daemon-plan",
+  "skill": "codex",
+  "status": "PLAN_ONLY",
+  "validation_state": "NOT_STARTED",
+  "created_at": "2026-05-26T17:30:00Z",
+  "manifest": {
+    "bundle_id": "TP-DMX-ORCH-016-DAEMON-PROOF",
+    "packet_id": "TP-DMX-ORCH-016-DAEMON",
+    "generated_artifacts": [
+      "task-packets/generated/TP-DMX-ORCH-016-DAEMON.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-016-DAEMON/PROOF.json"
+    ]
+  },
+  "authoritative_artifacts": [
+    "task-packets/generated/TP-DMX-ORCH-016-DAEMON.json"
+  ],
+  "supporting_artifacts": [
+    "proof/dmx-orch-integration/TP-DMX-ORCH-016-DAEMON/PROOF.json"
+  ],
+  "chain_of_custody": {
+    "documented": true,
+    "source_version": "TP-DMX-ORCH-016-DAEMON",
+    "created_at": "2026-05-26T17:30:00Z",
+    "parent_bundle_ids": [
+      "TP-DMX-ORCH-016",
+      "TP-DMX-ORCH-013-LIVE"
+    ]
+  },
+  "warnings": [],
+  "blockers": [],
+  "not_run": [
+    "Implementation: config schema, kill switch, scheduler, daemon runtime, receipts, CLI, refusal matrix — work has not started.",
+    "Live daemon run under operator session: deferred until implementation + secaudit.",
+    "Multi-host coordination: out of scope; documented as not_run for clarity."
+  ],
+  "residual_risks": [
+    "The kill switch is the only defense against config-drift creep into T2+ automation; tests must ensure it cannot be bypassed by config alone.",
+    "Receipt verbosity must be high enough that an operator scanning the chronicle can detect anomalous scheduling.",
+    "Daemon startup ordering relative to dopemux startup is not specified; the implementation must pick one and document it."
+  ],
+  "rollback_plan": [
+    "Remove src/dopemux/orchestrator/automation/ in its entirety.",
+    "Revert the new `orchestrator automation daemon` CLI subcommands.",
+    "Remove config/orchestrator/automation.yaml.example.",
+    "Remove tests/unit/orchestrator/test_automation_daemon.py and test_automation_scheduler.py.",
+    "Remove task-packets/generated/TP-DMX-ORCH-016-DAEMON.json and its proof bundle."
+  ],
+  "commit_sha": null,
+  "commit_sha_policy": "PLAN_ONLY bundles are committed before implementation; commit_sha is populated by the implementation packet's own proof at the time of execution.",
+  "pr_url": null,
+  "cleanup_status": "PLAN_ONLY"
+}

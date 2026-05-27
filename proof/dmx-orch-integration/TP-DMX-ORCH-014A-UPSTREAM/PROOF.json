@@ -1,0 +1,58 @@
+{
+  "bundle_id": "TP-DMX-ORCH-014A-UPSTREAM-PROOF",
+  "run_id": "tp-dmx-orch-014a-upstream-plan",
+  "skill": "codex",
+  "status": "PLAN_ONLY",
+  "validation_state": "NOT_STARTED",
+  "created_at": "2026-05-26T17:30:00Z",
+  "manifest": {
+    "bundle_id": "TP-DMX-ORCH-014A-UPSTREAM-PROOF",
+    "packet_id": "TP-DMX-ORCH-014A-UPSTREAM",
+    "generated_artifacts": [
+      "task-packets/generated/TP-DMX-ORCH-014A-UPSTREAM.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-014A-UPSTREAM/PROOF.json"
+    ]
+  },
+  "authoritative_artifacts": [
+    "task-packets/generated/TP-DMX-ORCH-014A-UPSTREAM.json"
+  ],
+  "supporting_artifacts": [
+    "proof/dmx-orch-integration/TP-DMX-ORCH-014A-UPSTREAM/PROOF.json"
+  ],
+  "chain_of_custody": {
+    "documented": true,
+    "source_version": "TP-DMX-ORCH-014A-UPSTREAM",
+    "created_at": "2026-05-26T17:30:00Z",
+    "parent_bundle_ids": [
+      "TP-DMX-ORCH-014A"
+    ]
+  },
+  "warnings": [],
+  "blockers": [
+    {
+      "code": "TP_014A_UPSTREAM_CROSS_REPO",
+      "message": "Implementation must occur in the jpicklyk/task-orchestrator repository, not in dopemux-mvp. This packet records the cross-repo contract; the actual gradle test + PR live upstream.",
+      "artifact": "task-packets/generated/TP-DMX-ORCH-014A-UPSTREAM.json",
+      "evidence_path": "task-packets/generated/TP-DMX-ORCH-014A-UPSTREAM.json"
+    }
+  ],
+  "not_run": [
+    "Kotlin gradle test (./gradlew :current:test) in jpicklyk/task-orchestrator: cannot run from dopemux-mvp.",
+    "detekt static analysis on the new handler changes: cannot run from dopemux-mvp.",
+    "Live envelope round-trip against the dopemux-mvp consumer: depends on TP-DMX-ORCH-012-LIVE landing and the upstream PR merging.",
+    "Backward-compatibility snapshot diff: produced upstream once the PR is opened."
+  ],
+  "residual_risks": [
+    "Upstream maintainer may choose a slightly different envelope shape; the dopemux-mvp consumer (and SUPPORTED_TRANSITION_PROOF_SCHEMA_VERSION) must be updated in lockstep if so.",
+    "Cross-repo coordination cost: this packet exists only to document the contract; the actual work is governed by the upstream repo's review process."
+  ],
+  "rollback_plan": [
+    "Withdraw the upstream PR if it has not yet merged.",
+    "Once merged: revert the upstream commit; the dopemux-mvp consumer will fail closed on absent envelope and is safe.",
+    "Remove task-packets/generated/TP-DMX-ORCH-014A-UPSTREAM.json and its proof bundle."
+  ],
+  "commit_sha": null,
+  "commit_sha_policy": "PLAN_ONLY bundles are committed before implementation; cross-repo implementation commit_sha will be recorded by the upstream PR's own proof bundle (proof/TP-DMX-ORCH-014A-UPSTREAM/PROOF.json in the upstream repo).",
+  "pr_url": null,
+  "cleanup_status": "PLAN_ONLY"
+}

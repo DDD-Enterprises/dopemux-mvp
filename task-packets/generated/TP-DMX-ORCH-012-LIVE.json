@@ -1,0 +1,133 @@
+{
+  "id": "TP-DMX-ORCH-012-LIVE",
+  "project": "dopemux-mvp",
+  "target": "Wire the orchestrator `transition apply` command to the canonical task-orchestrator transition endpoint with idempotency-key enforcement and the existing approval-phrase gate",
+  "invariants": [
+    "task-orchestrator is the only canonical workflow transition writer",
+    "Preview remains T1 read; apply remains T4 write",
+    "Apply requires typed approval phrase + idempotency key; duplicates are rejected",
+    "Receipt includes the upstream transition envelope and is validated against SUPPORTED_TRANSITION_PROOF_SCHEMA_VERSION (currently '1')",
+    "Apply refuses if the upstream envelope fails validation",
+    "No Leantime metadata writes; metadata stays Leantime authority",
+    "Decisions/progress remain ConPort authority (use TP-DMX-ORCH-009-LIVE writers, not this packet)"
+  ],
+  "depends_on": [
+    "TP-DMX-ORCH-009-LIVE"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ORCH-INTEGRATION-FOLLOWUP",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-ORCH-012",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "claude/tp-dmx-orch-012-live",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(orchestrator): live transition apply with idempotency + envelope validation",
+    "allowlist": [
+      "src/dopemux/orchestrator/transitions.py",
+      "src/dopemux/orchestrator/operator_workflows.py",
+      "src/dopemux/commands/orchestrator_commands.py",
+      "src/dopemux/orchestrator/idempotency.py",
+      "tests/unit/orchestrator/test_transitions.py",
+      "tests/unit/orchestrator/test_idempotency.py",
+      "tests/unit/orchestrator/test_operator_workflows.py",
+      "tests/integration/orchestrator/test_transitions_integration.py",
+      "docs/03-reference/orchestrator-integration/transitions/_index.md",
+      "task-packets/generated/TP-DMX-ORCH-012-LIVE.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-012-LIVE/PROOF.json"
+    ],
+    "verify": [
+      ".venv/bin/python -m compileall -q src",
+      ".venv/bin/python -m pytest -q tests/unit/orchestrator/test_transitions.py tests/unit/orchestrator/test_idempotency.py tests/unit/orchestrator/test_operator_workflows.py tests/integration/orchestrator/test_transitions_integration.py",
+      ".venv/bin/python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-012-LIVE.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      ".venv/bin/python -m dopemux.cli orchestrator packet validate task-packets/generated/TP-DMX-ORCH-012-LIVE.json --json-output",
+      ".venv/bin/python -m dopemux.cli orchestrator proof validate proof/dmx-orch-integration/TP-DMX-ORCH-012-LIVE/PROOF.json --json-output"
+    ]
+  },
+  "pr": {
+    "title": "feat(orchestrator): live transition apply with idempotency + envelope validation",
+    "body": "Implements the real task-orchestrator transition apply against the canonical Python coordination API (port 8000). Apply requires typed approval + idempotency key; duplicates are rejected by a local replay cache. Upstream transition envelope is validated against SUPPORTED_TRANSITION_PROOF_SCHEMA_VERSION. Preview remains pure read. Cross-repo Kotlin envelope (TP-DMX-ORCH-014A-UPSTREAM) is consumed via the validator from TP-DMX-ORCH-014B.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": ["analyze", "tracer", "thinkdeep", "challenge", "planner", "challenge", "secaudit", "codereview", "precommit", "challenge"]
+  },
+  "steps": [
+    {
+      "id": "trace_existing_transition_path",
+      "task": "Trace the existing transition call path from src/dopemux/pm/ through TaskOrchestratorAdapter to the canonical Python coordination API on port 8000.",
+      "validation": [
+        "Tracer artifact names the canonical writer, exact client method, request shape, and response shape.",
+        "Tracer flags any duplicate-writer or bridge-as-writer hazards on the transition path."
+      ]
+    },
+    {
+      "id": "idempotency_store",
+      "task": "Implement src/dopemux/orchestrator/idempotency.py with a local replay-cache keyed by (operation, resource, idempotency_key) and a configurable TTL.",
+      "validation": [
+        "Tests cover first-call success, duplicate-key rejection within TTL, expired-key re-acceptance, and concurrent calls.",
+        "Cache is process-local; persistent shared cache is out of scope and recorded in not_run."
+      ]
+    },
+    {
+      "id": "transition_apply_writer",
+      "task": "Implement src/dopemux/orchestrator/transitions.py::apply_transition that POSTs to the canonical transition endpoint and validates the response envelope via validate_transition_proof_envelope_file().",
+      "validation": [
+        "Tests mock the upstream endpoint; tests cover 200 success, 4xx refusal, 5xx retry, and timeout.",
+        "Envelope-validation failure rejects the apply and emits a FAIL receipt.",
+        "Missing or invalid approval phrase refuses with a deterministic error code."
+      ]
+    },
+    {
+      "id": "preview_purity",
+      "task": "Audit transition_preview to confirm it makes no POST/apply call; add a guard test.",
+      "validation": [
+        "Static guard test (AST or import check) asserts preview path does not import the apply writer.",
+        "Runtime test asserts no mocked upstream POST is invoked on preview."
+      ]
+    },
+    {
+      "id": "cli_command",
+      "task": "Wire `orchestrator transition apply` to the new writer with --approval-phrase and --idempotency-key; emit JSON receipts.",
+      "validation": [
+        "CLI tests reject missing/invalid approval and missing/duplicate idempotency key.",
+        "Successful apply produces a receipt validated by validate_transition_proof_envelope_file()."
+      ]
+    },
+    {
+      "id": "integration_tests",
+      "task": "Add tests/integration/orchestrator/test_transitions_integration.py exercising apply against an in-process FastAPI mock of the coordination API.",
+      "validation": [
+        "Integration tests pass without external network calls.",
+        "Fixtures cover envelope mismatch, duplicate idempotency, and successful apply."
+      ]
+    },
+    {
+      "id": "secaudit",
+      "task": "Run pal/secaudit on the transition apply path; ensure no secret leakage in receipts, no SSRF on the configurable endpoint URL, and replay-cache isolation per workspace.",
+      "validation": [
+        "secaudit report attached with no high-severity findings open.",
+        "Endpoint URL is constrained to a per-repo allowlist (mirrors github_allowlist.yaml pattern)."
+      ]
+    },
+    {
+      "id": "proof_bundle",
+      "task": "Emit proof bundle at proof/dmx-orch-integration/TP-DMX-ORCH-012-LIVE/PROOF.json with the full validations array, codereview/precommit status, secaudit reference, not_run (live coordination API integration in CI), residual_risks, and rollback_plan.",
+      "validation": [
+        "dopemux orchestrator proof validate exits 0.",
+        "Proof status is READY_FOR_REVIEW only after the integration matrix and secaudit pass."
+      ]
+    }
+  ]
+}

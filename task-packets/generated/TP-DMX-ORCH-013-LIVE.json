@@ -1,0 +1,115 @@
+{
+  "id": "TP-DMX-ORCH-013-LIVE",
+  "project": "dopemux-mvp",
+  "target": "Wire a real gh-backed GitHub adapter for the orchestrator PR queue/readiness commands and the approval-gated `pr comment` mutation",
+  "invariants": [
+    "PR list/queue/readiness reads are T0/T1 — no GitHub mutations on the read paths",
+    "`pr comment` is T5 — requires typed approval phrase + receipt; refusal must be deterministic",
+    "No auto-merge logic is added in this packet",
+    "No branch push automation is added in this packet",
+    "Adapter must fail closed when `gh` CLI is unavailable or unauthenticated",
+    "Adapter must respect a per-repo allowlist (defaults to the current repo only)"
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ORCH-INTEGRATION-FOLLOWUP",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-ORCH-013",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "claude/tp-dmx-orch-013-live",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(orchestrator): live gh-backed PR readiness adapter",
+    "allowlist": [
+      "src/dopemux/orchestrator/github_adapter.py",
+      "src/dopemux/orchestrator/operator_workflows.py",
+      "src/dopemux/commands/orchestrator_commands.py",
+      "tests/unit/orchestrator/test_github_adapter.py",
+      "tests/unit/orchestrator/test_operator_workflows.py",
+      "tests/unit/test_cli_orchestrator_commands.py",
+      "config/orchestrator/github_allowlist.yaml",
+      "docs/03-reference/orchestrator-integration/github/_index.md",
+      "task-packets/generated/TP-DMX-ORCH-013-LIVE.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-013-LIVE/PROOF.json"
+    ],
+    "verify": [
+      ".venv/bin/python -m compileall -q src",
+      ".venv/bin/python -m pytest -q tests/unit/orchestrator/test_github_adapter.py tests/unit/orchestrator/test_operator_workflows.py tests/unit/test_cli_orchestrator_commands.py",
+      ".venv/bin/python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-013-LIVE.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      ".venv/bin/python -m dopemux.cli orchestrator packet validate task-packets/generated/TP-DMX-ORCH-013-LIVE.json --json-output",
+      ".venv/bin/python -m dopemux.cli orchestrator proof validate proof/dmx-orch-integration/TP-DMX-ORCH-013-LIVE/PROOF.json --json-output"
+    ]
+  },
+  "pr": {
+    "title": "feat(orchestrator): live gh-backed PR readiness adapter",
+    "body": "Replaces the caller-supplied `--pr <number>:<checks>:<proof>` string parser with a real gh-backed adapter for orchestrator pr queue/readiness/comment. Reads stay T0/T1. The `pr comment` mutation stays gated behind the existing typed approval phrase. Refuses cleanly when gh is missing/unauthenticated.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": ["analyze", "thinkdeep", "challenge", "planner", "challenge", "secaudit", "codereview", "precommit", "challenge"]
+  },
+  "steps": [
+    {
+      "id": "design_adapter_interface",
+      "task": "Design GithubAdapter interface: list_prs(repo, filters), get_pr(repo, number), get_checks(repo, number), get_reviews(repo, number), get_branch_age(repo, number), find_proof_path(repo, number), comment(repo, number, body, approval_id).",
+      "validation": [
+        "Interface is read/write-split: list_prs..find_proof_path are pure read; comment is the only mutation surface.",
+        "Each method declares required `gh` scopes."
+      ]
+    },
+    {
+      "id": "implement_gh_subprocess_backend",
+      "task": "Implement the adapter via `gh api` and `gh pr` subprocess calls (no direct httpx to GitHub).",
+      "validation": [
+        "Subprocess invocations are deterministic and shell-escaped.",
+        "Adapter fails closed with a typed error when `gh` is absent or not authenticated.",
+        "Per-repo allowlist (config/orchestrator/github_allowlist.yaml) is enforced before any call."
+      ]
+    },
+    {
+      "id": "readiness_classifier",
+      "task": "Replace the caller-supplied `--pr` parser in build_pr_queue() with a classifier that consumes the adapter's read output and emits MERGEABLE/BLOCKED/STALE/REDUNDANT/DANGEROUS/NEEDS_MORE_EVIDENCE.",
+      "validation": [
+        "Classification matrix tests cover every state using mocked adapter responses.",
+        "Missing proof path -> BLOCKED.",
+        "Branch age > policy threshold -> STALE."
+      ]
+    },
+    {
+      "id": "comment_gate",
+      "task": "Route `pr comment` writes through the existing typed-approval phrase + approval-policy check; emit a receipt on success.",
+      "validation": [
+        "Tests reject missing/invalid approval.",
+        "Tests assert that the read commands NEVER call adapter.comment().",
+        "Successful comment writes emit a receipt with canonical_writer = github-api."
+      ]
+    },
+    {
+      "id": "cli_wiring",
+      "task": "Update `orchestrator pr queue`, `pr readiness`, and `pr comment` to use the adapter; the legacy `--pr <n>:<checks>:<proof>` flag stays as a fallback for offline use and is documented as deprecated.",
+      "validation": [
+        "CLI tests cover online (mocked) and offline (--pr fallback) paths.",
+        "Deprecation warning is emitted on legacy --pr usage."
+      ]
+    },
+    {
+      "id": "proof_bundle",
+      "task": "Emit proof bundle at proof/dmx-orch-integration/TP-DMX-ORCH-013-LIVE/PROOF.json with the full validations array, not_run (live GitHub calls in CI), residual_risks, and rollback_plan.",
+      "validation": [
+        "dopemux orchestrator proof validate exits 0.",
+        "Proof status is READY_FOR_REVIEW only after the full PR-readiness classification matrix passes."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "bundle_id": "TP-DMX-ORCH-DOCS-001-PROOF",
+  "run_id": "tp-dmx-orch-docs-001-plan",
+  "skill": "codex",
+  "status": "PLAN_ONLY",
+  "validation_state": "NOT_STARTED",
+  "created_at": "2026-05-26T17:30:00Z",
+  "manifest": {
+    "bundle_id": "TP-DMX-ORCH-DOCS-001-PROOF",
+    "packet_id": "TP-DMX-ORCH-DOCS-001",
+    "generated_artifacts": [
+      "task-packets/generated/TP-DMX-ORCH-DOCS-001.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-DOCS-001/PROOF.json"
+    ]
+  },
+  "authoritative_artifacts": [
+    "task-packets/generated/TP-DMX-ORCH-DOCS-001.json"
+  ],
+  "supporting_artifacts": [
+    "proof/dmx-orch-integration/TP-DMX-ORCH-DOCS-001/PROOF.json"
+  ],
+  "chain_of_custody": {
+    "documented": true,
+    "source_version": "TP-DMX-ORCH-DOCS-001",
+    "created_at": "2026-05-26T17:30:00Z",
+    "parent_bundle_ids": []
+  },
+  "warnings": [],
+  "blockers": [],
+  "not_run": [
+    "Implementation: all 17 skeleton pages — work has not started; this is a planning-only bundle.",
+    "Lint, link audit, and pre-commit validation: not run until implementation."
+  ],
+  "residual_risks": [
+    "Skeletons must label OBSERVED/UNKNOWN/PROPOSED accurately; a future page that mislabels speculation as observed truth would violate the governance doctrine.",
+    "Cross-link rot: future packet renames may break the page->packet links unless a link-audit hook is added."
+  ],
+  "rollback_plan": [
+    "Remove the 17 skeleton pages under docs/03-reference/orchestrator-integration/.",
+    "Remove task-packets/generated/TP-DMX-ORCH-DOCS-001.json.",
+    "Remove proof/dmx-orch-integration/TP-DMX-ORCH-DOCS-001/PROOF.json."
+  ],
+  "commit_sha": null,
+  "commit_sha_policy": "PLAN_ONLY bundles are committed before implementation; commit_sha is populated by the implementation packet's own proof at the time of execution.",
+  "pr_url": null,
+  "cleanup_status": "PLAN_ONLY"
+}

@@ -1,0 +1,118 @@
+{
+  "id": "TP-DMX-ORCH-DOCS-001",
+  "project": "dopemux-mvp",
+  "target": "Create the docs/03-reference/orchestrator-integration/ skeletons referenced in TP-DMX-ORCH-002..017 allowlists",
+  "invariants": [
+    "Docs only — no runtime, no test changes",
+    "Every skeleton page links to its corresponding Task Packet and proof bundle",
+    "Skeletons describe OBSERVED behavior only; speculative content must be labelled UNKNOWN or PROPOSED",
+    "All pages pass repo markdownlint and the YAML-frontmatter validator",
+    "No bridge surface is described as an authority"
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ORCH-INTEGRATION-FOLLOWUP",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "claude/tp-dmx-orch-docs-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(orchestrator): seed orchestrator-integration reference skeletons",
+    "allowlist": [
+      "docs/03-reference/orchestrator-integration/_index.md",
+      "docs/03-reference/orchestrator-integration/cli.md",
+      "docs/03-reference/orchestrator-integration/mcp-wrappers.md",
+      "docs/03-reference/orchestrator-integration/workflows/_index.md",
+      "docs/03-reference/orchestrator-integration/workflows/morning-startup.md",
+      "docs/03-reference/orchestrator-integration/workflows/packet-forge.md",
+      "docs/03-reference/orchestrator-integration/workflows/intake-audit.md",
+      "docs/03-reference/orchestrator-integration/workflows/pr-readiness.md",
+      "docs/03-reference/orchestrator-integration/workflows/context-refresh.md",
+      "docs/03-reference/orchestrator-integration/plugins/_index.md",
+      "docs/03-reference/orchestrator-integration/memory/_index.md",
+      "docs/03-reference/orchestrator-integration/transitions/_index.md",
+      "docs/03-reference/orchestrator-integration/github/_index.md",
+      "docs/03-reference/orchestrator-integration/ui/_index.md",
+      "docs/03-reference/orchestrator-integration/automation/_index.md",
+      "docs/03-reference/orchestrator-integration/audit/_index.md",
+      "docs/03-reference/orchestrator-integration/forge/_index.md",
+      "task-packets/generated/TP-DMX-ORCH-DOCS-001.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-DOCS-001/PROOF.json"
+    ],
+    "verify": [
+      ".venv/bin/python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-DOCS-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      ".venv/bin/python -m dopemux.cli orchestrator packet validate task-packets/generated/TP-DMX-ORCH-DOCS-001.json --json-output",
+      ".venv/bin/python -m dopemux.cli orchestrator proof validate proof/dmx-orch-integration/TP-DMX-ORCH-DOCS-001/PROOF.json --json-output",
+      "pre-commit run --files docs/03-reference/orchestrator-integration/_index.md docs/03-reference/orchestrator-integration/cli.md docs/03-reference/orchestrator-integration/mcp-wrappers.md docs/03-reference/orchestrator-integration/workflows/_index.md docs/03-reference/orchestrator-integration/workflows/morning-startup.md docs/03-reference/orchestrator-integration/workflows/packet-forge.md docs/03-reference/orchestrator-integration/workflows/intake-audit.md docs/03-reference/orchestrator-integration/workflows/pr-readiness.md docs/03-reference/orchestrator-integration/workflows/context-refresh.md docs/03-reference/orchestrator-integration/plugins/_index.md docs/03-reference/orchestrator-integration/memory/_index.md docs/03-reference/orchestrator-integration/transitions/_index.md docs/03-reference/orchestrator-integration/github/_index.md docs/03-reference/orchestrator-integration/ui/_index.md docs/03-reference/orchestrator-integration/automation/_index.md docs/03-reference/orchestrator-integration/audit/_index.md docs/03-reference/orchestrator-integration/forge/_index.md"
+    ]
+  },
+  "pr": {
+    "title": "docs(orchestrator): seed orchestrator-integration reference skeletons",
+    "body": "Adds the docs/03-reference/orchestrator-integration/** reference skeletons that the TP-DMX-ORCH-002..017 allowlists name but do not yet populate. Each skeleton links to its Task Packet + proof bundle and labels its content OBSERVED / UNKNOWN / PROPOSED per the governance doctrine.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": ["analyze", "planner", "codereview", "precommit"]
+  },
+  "steps": [
+    {
+      "id": "inventory_referenced_paths",
+      "task": "Inventory every docs/03-reference/orchestrator-integration/** path referenced by the TP-DMX-ORCH-{002..017} commit.allowlist arrays and the operator-integration-authority.md cross-references.",
+      "validation": [
+        "Inventory enumerates each path with its referencing packet IDs.",
+        "Any path referenced by an allowlist but absent from the repo is flagged for skeleton creation."
+      ],
+      "expected_files": [
+        "task-packets/generated/TP-DMX-ORCH-002.json",
+        "task-packets/generated/TP-DMX-ORCH-008.json",
+        "task-packets/generated/TP-DMX-ORCH-012.json",
+        "task-packets/generated/TP-DMX-ORCH-013.json"
+      ]
+    },
+    {
+      "id": "skeleton_template",
+      "task": "Define a single skeleton template (Diataxis: reference) with YAML frontmatter (id, title, type, owner, date, related_packets, related_proof_bundles).",
+      "validation": [
+        "Template renders cleanly through the repo YAML-frontmatter validator.",
+        "Template includes OBSERVED/UNKNOWN/PROPOSED label legend."
+      ]
+    },
+    {
+      "id": "write_skeletons",
+      "task": "Write the 17 listed _index.md and topic pages, each populated from the template with content scoped to OBSERVED facts from this repo plus links to the relevant packets and proof bundles.",
+      "validation": [
+        "Every page has frontmatter, owner, date.",
+        "Every page links to at least one packet and one proof bundle.",
+        "No page describes dopecon-bridge or dope-context as a canonical writer."
+      ]
+    },
+    {
+      "id": "cross_link_audit",
+      "task": "Audit cross-links: each packet/proof bundle listed in a page's frontmatter must actually exist in the repo.",
+      "validation": [
+        "rg-based audit shows zero broken refs.",
+        "Each new page is reachable from docs/03-reference/orchestrator-integration/_index.md."
+      ]
+    },
+    {
+      "id": "proof_bundle",
+      "task": "Emit proof bundle at proof/dmx-orch-integration/TP-DMX-ORCH-DOCS-001/PROOF.json with the full validations array, repo_identity_check, codereview/precommit status, not_run, residual_risks, and rollback_plan.",
+      "validation": [
+        "dopemux orchestrator proof validate exits 0.",
+        "Proof status is READY_FOR_REVIEW only after every page passes lint and link audit."
+      ]
+    }
+  ]
+}
