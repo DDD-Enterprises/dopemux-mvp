@@ -30,9 +30,7 @@ import {
   Copy,
   Droplet,
   Eye,
-  Info,
   PauseCircle,
-  PlayCircle,
   Trash2,
   TrendingUp,
   Zap,
@@ -143,8 +141,8 @@ const formatTimestamp = (dateStr: string) => {
   return `[${hh}:${mm}:${ss}]`;
 };
 
-const getNotificationIcon = (type: string, color: string) => {
-  const iconProps = { size: 14, color: color, 'aria-hidden': 'true' as const };
+const getNotificationIcon = (type: string) => {
+  const iconProps = { size: 14, 'aria-hidden': 'true' as const };
   switch (type) {
     case 'decision':
       return <CheckCircle {...iconProps} />;
@@ -154,14 +152,12 @@ const getNotificationIcon = (type: string, color: string) => {
       return <PauseCircle {...iconProps} />;
     case 'session':
       return <Clock {...iconProps} />;
-    case 'info':
-      return <Info {...iconProps} />;
-    case 'hyperfocus':
-      return <Zap {...iconProps} />;
     case 'warning':
       return <AlertTriangle {...iconProps} />;
     case 'error':
       return <AlertCircle {...iconProps} />;
+    case 'hyperfocus':
+      return <Zap {...iconProps} />;
     default:
       return <Bell {...iconProps} />;
   }
@@ -483,7 +479,7 @@ function App() {
                     <Copy size={14} color={brandTokens.colors.serumMint} aria-hidden="true" />
                   )
                 }
-                label={`Recommendation: ${cognitiveState.recommendation}${isCopied ? ' (Copied)' : ''}`}
+                label={`Recommendation: ${cognitiveState.recommendation}`}
                 aria-label={isCopied ? `AI Recommendation: ${cognitiveState.recommendation} (Copied)` : `AI Recommendation: ${cognitiveState.recommendation}`}
                 onClick={handleCopyRecommendation}
                 tabIndex={0}
@@ -663,7 +659,7 @@ function App() {
                 return (
                   <Fade in={true} key={`${notification.timestamp}-${notification.message}`}>
                     <Chip
-                      icon={getNotificationIcon(notification.notificationType, severityColor)}
+                      icon={getNotificationIcon(notification.notificationType)}
                       label={`${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`}
                       variant="outlined"
                       tabIndex={0}
@@ -672,7 +668,6 @@ function App() {
                         borderColor: alpha(severityColor, 0.6),
                         color: severityColor,
                         backgroundColor: alpha(severityColor, 0.08),
-                        '& .MuiChip-icon': { ml: 1 },
                       }}
                     />
                   </Fade>
