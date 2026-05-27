@@ -126,12 +126,13 @@ def build_artifacts(
         _append_once(blockers, "MIXED_SHA_ARTIFACT_SET")
 
     embedded_audit = _embedded_audit(harvest)
+    raw_status = embedded_audit.pop("_raw_status", "")
     audit_status = embedded_audit["status"]
     if audit_status in BLOCKING_AUDITS:
         _append_once(blockers, f"EMBEDDED_AUDIT_{audit_status}")
-    elif audit_status not in PASSING_AUDITS:
+    if raw_status:
         _append_once(blockers, "EMBEDDED_AUDIT_UNKNOWN")
-        _append_once(unknowns, f"Unknown embedded audit status: {audit_status}")
+        _append_once(unknowns, f"Unknown embedded audit status: {raw_status}")
 
     proof = _proof(harvest)
     if proof["proof_freshness"] == "STALE":
@@ -578,11 +579,19 @@ def _commits(commits: list[Any]) -> list[dict[str, Any]]:
 
 def _embedded_audit(harvest: dict[str, Any]) -> dict[str, str]:
     raw = harvest.get("embedded_audit") or {}
+    raw_status = str(raw.get("status") or "").upper()
+    if raw_status in PASSING_AUDITS | BLOCKING_AUDITS:
+        normalized = raw_status
+        was_unknown = False
+    else:
+        normalized = "SKIPPED"
+        was_unknown = bool(raw_status)  # only "unknown" if upstream supplied a non-empty bad value
     return {
-        "status": str(raw.get("status") or "SKIPPED"),
-        "report_path": str(
-            raw.get("report_path") or "proof/TP-DMX-PR-STEWARD-001/AUDITOR_REPORT.md"
-        ),
+        "status": normalized,
+        "report_path": str(raw.get("report_path") or ""),
+        # `_raw_status` is internal; the caller uses it to add the
+        # EMBEDDED_AUDIT_UNKNOWN blocker, then strips it before serializing.
+        "_raw_status": raw_status if was_unknown else "",
     }
 
 
