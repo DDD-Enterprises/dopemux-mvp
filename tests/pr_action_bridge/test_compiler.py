@@ -195,9 +195,14 @@ class TestCompileNeedsSupervisor:
         assert plan["actions"][0]["target_role"] == "supervisor"
 
     def test_proof_stale_produces_supervisor_action(self) -> None:
-        mr = _readiness_with_blockers(["PROOF_STALE_OR_MISSING"], "NEEDS_SUPERVISOR")
+        mr = _readiness_with_blockers(["PROOF_STALE"], "NEEDS_SUPERVISOR")
         plan, _ = compile(mr, _EMPTY_LEDGER, _EMPTY_THREADS, _EMPTY_CI, generated_at=FIXED_TS)
         assert plan["actions"][0]["category"] == "proof-stale"
+
+    def test_proof_missing_produces_supervisor_action(self) -> None:
+        mr = _readiness_with_blockers(["PROOF_MISSING"], "NEEDS_SUPERVISOR")
+        plan, _ = compile(mr, _EMPTY_LEDGER, _EMPTY_THREADS, _EMPTY_CI, generated_at=FIXED_TS)
+        assert plan["actions"][0]["category"] == "proof-missing"
 
     def test_unknown_check_produces_supervisor_action(self) -> None:
         mr = _readiness_with_blockers(["UNKNOWN_CHECK"], "NEEDS_SUPERVISOR")
@@ -220,8 +225,24 @@ class TestCompileNeedsSupervisor:
         plan, _ = compile(mr, _EMPTY_LEDGER, _EMPTY_THREADS, _EMPTY_CI, generated_at=FIXED_TS)
         assert plan["actions"][0]["category"] == "embedded-audit-failed"
 
+    def test_unknown_pr_author_produces_supervisor_action(self) -> None:
+        mr = _readiness_with_blockers(["UNKNOWN_PR_AUTHOR"], "NEEDS_SUPERVISOR")
+        plan, _ = compile(mr, _EMPTY_LEDGER, _EMPTY_THREADS, _EMPTY_CI, generated_at=FIXED_TS)
+        assert plan["actions"][0]["category"] == "unknown-pr-author"
+        assert plan["actions"][0]["target_role"] == "supervisor"
+
     def test_needs_supervisor_validates_against_schema(self) -> None:
-        mr = _readiness_with_blockers(["PROOF_STALE_OR_MISSING"], "NEEDS_SUPERVISOR")
+        mr = _readiness_with_blockers(["PROOF_STALE"], "NEEDS_SUPERVISOR")
+        plan, _ = compile(mr, _EMPTY_LEDGER, _EMPTY_THREADS, _EMPTY_CI, generated_at=FIXED_TS)
+        jsonschema.validate(plan, _schema())
+
+    def test_proof_missing_validates_against_schema(self) -> None:
+        mr = _readiness_with_blockers(["PROOF_MISSING"], "NEEDS_SUPERVISOR")
+        plan, _ = compile(mr, _EMPTY_LEDGER, _EMPTY_THREADS, _EMPTY_CI, generated_at=FIXED_TS)
+        jsonschema.validate(plan, _schema())
+
+    def test_unknown_pr_author_validates_against_schema(self) -> None:
+        mr = _readiness_with_blockers(["UNKNOWN_PR_AUTHOR"], "NEEDS_SUPERVISOR")
         plan, _ = compile(mr, _EMPTY_LEDGER, _EMPTY_THREADS, _EMPTY_CI, generated_at=FIXED_TS)
         jsonschema.validate(plan, _schema())
 
@@ -335,7 +356,7 @@ class TestRepairPacketRender:
 
     def test_repair_packet_groups_by_role_supervisor_first(self) -> None:
         mr = _readiness_with_blockers(
-            ["UNRESOLVED_REVIEW_THREAD", "PROOF_STALE_OR_MISSING"],
+            ["UNRESOLVED_REVIEW_THREAD", "PROOF_STALE"],
             "NEEDS_SUPERVISOR",
         )
         _, repair = compile(mr, _EMPTY_LEDGER, _EMPTY_THREADS, _EMPTY_CI, generated_at=FIXED_TS)
@@ -390,7 +411,7 @@ class TestRepairPacketRender:
 class TestMultipleBlockers:
     def test_multiple_blockers_produce_multiple_actions(self) -> None:
         mr = _readiness_with_blockers(
-            ["PR_IS_DRAFT", "PROOF_STALE_OR_MISSING"], "BLOCKED"
+            ["PR_IS_DRAFT", "PROOF_STALE"], "BLOCKED"
         )
         plan, _ = compile(mr, _EMPTY_LEDGER, _EMPTY_THREADS, _EMPTY_CI, generated_at=FIXED_TS)
         assert len(plan["actions"]) == 2

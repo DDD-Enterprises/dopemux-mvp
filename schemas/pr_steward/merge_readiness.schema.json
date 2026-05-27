@@ -8,6 +8,7 @@
     "generated_at",
     "pr",
     "readiness",
+    "risk_tier",
     "review_item_ledger_path",
     "thread_dispositions_path",
     "ci_triage_path",
@@ -20,7 +21,7 @@
   "properties": {
     "schema_version": {
       "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "generated_at": {
       "type": "string",
@@ -37,6 +38,16 @@
         "NEEDS_SUPERVISOR",
         "NEEDS_IMPLEMENTER",
         "BLOCKED"
+      ]
+    },
+    "risk_tier": {
+      "type": "string",
+      "enum": [
+        "CRITICAL",
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "CLEAR"
       ]
     },
     "review_item_ledger_path": {
@@ -161,6 +172,9 @@
               "matches_pr_head",
               "proof_freshness"
             ]
+          },
+          "risk_tier": {
+            "const": "CLEAR"
           },
           "blockers": {
             "maxItems": 0

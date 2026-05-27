@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 
-SCHEMA_VERSION = "1.0.0"
+SCHEMA_VERSION = "1.1.0"
 PASSING_AUDITS = {"PASS", "PASS_WITH_RISKS"}
 BLOCKING_AUDITS = {"FAIL", "NEEDS_SUPERVISOR", "SKIPPED"}
 FAILED_CHECK_CONCLUSIONS = {
@@ -49,6 +49,7 @@ def build_artifacts(
     known_reviewers, trusted_associations = load_known_reviewers(known_path)
 
     pr = _pr_payload(harvest, pr_number=pr_number)
+    pr_raw = harvest.get("pr") or {}
     review_items: list[dict[str, Any]] = []
     thread_dispositions: list[dict[str, Any]] = []
     checks = _classify_checks(
@@ -66,6 +67,13 @@ def build_artifacts(
         _append_once(blockers, "HARVEST_INCOMPLETE")
         for error in harvest.get("harvest_errors") or []:
             _append_once(unknowns, str(error))
+
+    pr_assoc = _association(pr_raw)
+    if pr_assoc is None and isinstance(pr_raw.get("author"), dict):
+        pr_assoc = _association(pr_raw["author"])
+    if not _known_author(pr["author"], pr_assoc, known_reviewers, trusted_associations):
+        _append_once(blockers, "UNKNOWN_PR_AUTHOR")
+        _append_once(unknowns, f"Unknown PR author: {pr['author']}")
 
     if pr["draft"]:
         _append_once(blockers, "PR_IS_DRAFT")
@@ -126,12 +134,15 @@ def build_artifacts(
         _append_once(unknowns, f"Unknown embedded audit status: {audit_status}")
 
     proof = _proof(harvest)
-    if proof["proof_freshness"] in ("STALE", "MISSING"):
-        _append_once(blockers, "PROOF_STALE_OR_MISSING")
+    if proof["proof_freshness"] == "STALE":
+        _append_once(blockers, "PROOF_STALE")
+    elif proof["proof_freshness"] == "MISSING":
+        _append_once(blockers, "PROOF_MISSING")
     if not proof["proof_head_sha"]:
         _append_once(unknowns, "Proof head SHA missing")
 
     readiness = _readiness(blockers)
+    tier = _risk_tier(readiness)
     review_item_ledger = {
         "schema_version": SCHEMA_VERSION,
         "generated_at": generated,
@@ -194,6 +205,7 @@ def build_artifacts(
             "commits": [item["sha"] for item in snapshot["commits"]],
         },
         "readiness": readiness,
+        "risk_tier": tier,
         "review_item_ledger_path": "REVIEW_ITEM_LEDGER.json",
         "thread_dispositions_path": "THREAD_DISPOSITIONS.json",
         "ci_triage_path": "CI_TRIAGE.json",
@@ -465,6 +477,15 @@ def _classify_checks(
     }
 
 
+_READINESS_TO_RISK: dict[str, str] = {
+    "BLOCKED": "CRITICAL",
+    "NEEDS_SUPERVISOR": "HIGH",
+    "NEEDS_IMPLEMENTER": "MEDIUM",
+    "NOT_READY": "LOW",
+    "READY": "CLEAR",
+}
+
+
 def _readiness(blockers: list[str]) -> str:
     blocker_set = set(blockers)
     if blocker_set & {"HARVEST_INCOMPLETE", "PR_IS_DRAFT", "PR_CLOSED", "MIXED_SHA_ARTIFACT_SET"}:
@@ -474,7 +495,9 @@ def _readiness(blockers: list[str]) -> str:
         for item in blocker_set
     ) or blocker_set & {
         "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION",
-        "PROOF_STALE_OR_MISSING",
+        "PROOF_STALE",
+        "PROOF_MISSING",
+        "UNKNOWN_PR_AUTHOR",
         "UNKNOWN_CHECK",
         "REVIEW_ITEM_NEEDS_SUPERVISOR",
     }:
@@ -489,6 +512,10 @@ def _readiness(blockers: list[str]) -> str:
     if blocker_set & {"PENDING_CHECK"}:
         return "NOT_READY"
     return "READY"
+
+
+def _risk_tier(readiness: str) -> str:
+    return _READINESS_TO_RISK.get(readiness, "CRITICAL")
 
 
 def _pr_payload(harvest: dict[str, Any], *, pr_number: int) -> dict[str, Any]:
@@ -715,6 +742,7 @@ def _summary(readiness: dict[str, Any]) -> str:
         "# PR Steward Summary\n\n"
         f"- PR: {readiness['pr']['number']}\n"
         f"- readiness: {readiness['readiness']}\n"
+        f"- risk_tier: {readiness['risk_tier']}\n"
         "- mutation_performed: false\n\n"
         "## Blockers\n\n"
         f"{blocker_lines}\n\n"

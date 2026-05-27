@@ -91,6 +91,8 @@
             "mixed-sha",
             "unknown-reviewer",
             "proof-stale",
+            "proof-missing",
+            "unknown-pr-author",
             "unknown-check",
             "needs-supervisor",
             "embedded-audit-failed",
