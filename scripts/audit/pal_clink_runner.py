@@ -115,7 +115,7 @@ def run_audit(
     # Defense-in-depth: AuditRoute.__post_init__ already rejects forbidden
     # cli_names, but guard both cli_name and command here in case of
     # serialization or duck-type bypass (e.g. cli_name="safe", command="codex").
-    if route.cli_name in FORBIDDEN_CLI_NAMES or route.command == "codex":
+    if route.cli_name in FORBIDDEN_CLI_NAMES or route.command in {"codex", "codex-audit"}:
         raise ValueError(
             f"Forbidden CLI in runner: cli_name={route.cli_name!r} command={route.command!r}"
         )

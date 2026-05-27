@@ -602,6 +602,9 @@ def _proof(harvest: dict[str, Any]) -> dict[str, Any]:
     matches = bool(raw.get("matches_pr_head", False))
     if not proof_head_sha and not proof_path:
         freshness = "MISSING"
+    elif not proof_head_sha:
+        # proof_path present but no verifiable SHA — cannot confirm freshness, treat as MISSING.
+        freshness = "MISSING"
     elif proof_head_sha and matches:
         freshness = "FRESH"
     else:

@@ -44,10 +44,10 @@ These are the only categories that appear in a `CopilotRepairPacket`:
 | `must-fix` | `REVIEW_ITEM_MUST_FIX` | Resolve the must-fix review item |
 
 Supervisor-role categories (`harvest-incomplete`, `pr-is-draft`, `pr-closed`,
-`mixed-sha`, `unknown-reviewer`, `proof-stale`, `unknown-check`,
-`needs-supervisor`, `embedded-audit-failed`) and CI-role categories
-(`pending-check`) are **intentionally excluded**. They require human operator
-attention.
+`mixed-sha`, `unknown-reviewer`, `proof-stale`, `proof-missing`,
+`unknown-pr-author`, `unknown-check`, `needs-supervisor`, `embedded-audit-failed`)
+and CI-role categories (`pending-check`) are **intentionally excluded**. They
+require human operator attention.
 
 ---
 
