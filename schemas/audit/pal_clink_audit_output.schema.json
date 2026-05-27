@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PAL Clink Audit Output",
+  "description": "Normalized output from a single PAL clink audit invocation (claude-audit or gemini-audit).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "cli_name",
+    "exit_code",
+    "stdout",
+    "stderr",
+    "timed_out",
+    "error",
+    "duration_seconds"
+  ],
+  "properties": {
+    "cli_name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Logical name of the CLI that ran (e.g. 'claude-audit')."
+    },
+    "exit_code": {
+      "type": ["integer", "null"],
+      "description": "Process exit code, or null when timed_out is true or pre-flight failed."
+    },
+    "stdout": {
+      "type": "string",
+      "description": "Captured standard output (UTF-8)."
+    },
+    "stderr": {
+      "type": "string",
+      "description": "Captured standard error (UTF-8)."
+    },
+    "timed_out": {
+      "type": "boolean",
+      "description": "True when the subprocess was killed after the configured timeout."
+    },
+    "error": {
+      "type": ["string", "null"],
+      "description": "Human-readable error string for pre-flight failures or timeout; null on clean invocation."
+    },
+    "duration_seconds": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "description": "Wall-clock seconds from subprocess start to completion or timeout; null when pre-flight failed."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"timed_out": {"const": true}},
+        "required": ["timed_out"]
+      },
+      "then": {
+        "properties": {
+          "exit_code": {"type": "null"},
+          "error": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"exit_code": {"type": "null"}},
+        "required": ["exit_code"]
+      },
+      "then": {
+        "properties": {
+          "error": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  ]
+}
