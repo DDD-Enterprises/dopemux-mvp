@@ -81,12 +81,14 @@ def build_artifacts(
             unknowns=unknowns,
         )
     )
+    thread_lookup = _thread_comment_lookup(harvest.get("review_threads") or [])
     review_items.extend(
         _classify_comments(
             harvest.get("review_comments") or [],
             source="review_comment",
             known_reviewers=known_reviewers,
             trusted_associations=trusted_associations,
+            thread_lookup=thread_lookup,
             blockers=blockers,
             unknowns=unknowns,
         )
@@ -97,6 +99,7 @@ def build_artifacts(
             source="issue_comment",
             known_reviewers=known_reviewers,
             trusted_associations=trusted_associations,
+            thread_lookup=None,
             blockers=blockers,
             unknowns=unknowns,
         )
@@ -123,7 +126,7 @@ def build_artifacts(
         _append_once(unknowns, f"Unknown embedded audit status: {audit_status}")
 
     proof = _proof(harvest)
-    if not proof["matches_pr_head"]:
+    if not _proof_is_current(proof, pr["head_sha"]):
         _append_once(blockers, "PROOF_STALE_OR_MISSING")
     if not proof["proof_head_sha"]:
         _append_once(unknowns, "Proof head SHA missing")
@@ -264,6 +267,7 @@ def _classify_comments(
     source: str,
     known_reviewers: set[str],
     trusted_associations: set[str],
+    thread_lookup: dict[str, dict[str, Any]] | None,
     blockers: list[str],
     unknowns: list[str],
 ) -> list[dict[str, Any]]:
@@ -273,12 +277,26 @@ def _classify_comments(
         association = _association(comment)
         body = str(comment.get("body") or "")
         item_id = str(comment.get("id") or f"{source}-{index}")
+        thread = (thread_lookup or {}).get(item_id)
         if not _known_author(author, association, known_reviewers, trusted_associations):
             disposition = "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION"
             blocking = True
             rationale = "Comment author is not in known reviewer config."
             _append_once(blockers, "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION")
             _append_once(unknowns, f"Unknown {source} author: {author}")
+        elif thread and thread.get("is_resolved"):
+            disposition = "AUTO_APPLIED"
+            blocking = False
+            rationale = "Resolved review thread clears original raw review comment blocker."
+        elif thread and thread.get("is_outdated"):
+            disposition = "AUTO_APPLIED"
+            blocking = False
+            rationale = "Outdated review thread is historical evidence only."
+        elif thread and not thread.get("is_resolved"):
+            disposition = "MUST_FIX"
+            blocking = True
+            rationale = "Linked unresolved review thread blocks readiness."
+            _append_once(blockers, "UNRESOLVED_REVIEW_THREAD")
         else:
             disposition, blocking, rationale = _body_disposition(body)
             if blocking:
@@ -558,11 +576,151 @@ def _embedded_audit(harvest: dict[str, Any]) -> dict[str, str]:
 
 def _proof(harvest: dict[str, Any]) -> dict[str, Any]:
     raw = harvest.get("proof") or {}
+    proof_head_sha = raw.get("proof_head_sha")
+    pr_head_sha = _harvest_pr_head_sha(harvest.get("pr") or {})
+    freshness = _proof_freshness(raw, proof_head_sha, pr_head_sha)
+    raw_matches = raw.get("matches_pr_head")
     return {
         "proof_path": str(raw.get("proof_path") or ""),
-        "proof_head_sha": raw.get("proof_head_sha"),
-        "matches_pr_head": bool(raw.get("matches_pr_head", False)),
+        "proof_head_sha": proof_head_sha,
+        "matches_pr_head": bool(
+            freshness["matches_pr_head"] if raw_matches is None else raw_matches
+        ),
+        "proof_freshness": freshness,
     }
+
+
+def _harvest_pr_head_sha(pr: dict[str, Any]) -> str:
+    for key in ("head_sha", "headRefOid", "head_ref_oid"):
+        value = pr.get(key)
+        if value:
+            return str(value)
+    return ""
+
+
+def _proof_freshness(
+    raw: dict[str, Any], proof_head_sha: Any, pr_head_sha: str
+) -> dict[str, Any]:
+    proof_freshness = raw.get("proof_freshness")
+    if isinstance(proof_freshness, dict):
+        status = str(proof_freshness.get("status") or "UNKNOWN")
+        freshness = {
+            "status": status,
+            "matches_pr_head": bool(
+                proof_freshness.get("matches_pr_head", bool(proof_head_sha and pr_head_sha and str(proof_head_sha) == pr_head_sha))
+            ),
+            "reason": str(proof_freshness.get("reason") or ""),
+            "proof_recorded_sha": _maybe_string(proof_freshness.get("proof_recorded_sha"))
+            or _maybe_string(proof_head_sha),
+            "pr_head_sha": _maybe_string(
+                proof_freshness.get("pr_head_sha")
+            )
+            or (pr_head_sha or None),
+            "self_reference_exception": proof_freshness.get(
+                "self_reference_exception"
+            )
+            if isinstance(proof_freshness.get("self_reference_exception"), dict)
+            else None,
+        }
+        return freshness
+
+    if not proof_head_sha:
+        return {
+            "status": "MISSING",
+            "matches_pr_head": False,
+            "reason": "Proof head SHA missing.",
+            "proof_recorded_sha": None,
+            "pr_head_sha": pr_head_sha or None,
+            "self_reference_exception": None,
+        }
+    if pr_head_sha and str(proof_head_sha) == pr_head_sha:
+        return {
+            "status": "CURRENT",
+            "matches_pr_head": True,
+            "reason": "Proof head SHA matches PR head SHA.",
+            "proof_recorded_sha": str(proof_head_sha),
+            "pr_head_sha": pr_head_sha,
+            "self_reference_exception": None,
+        }
+    return {
+        "status": "STALE",
+        "matches_pr_head": False,
+        "reason": "Proof head SHA does not match PR head SHA.",
+        "proof_recorded_sha": str(proof_head_sha),
+        "pr_head_sha": pr_head_sha or None,
+        "self_reference_exception": None,
+    }
+
+
+def _proof_is_current(proof: dict[str, Any], pr_head_sha: str) -> bool:
+    freshness = proof.get("proof_freshness") or {}
+    status = str(freshness.get("status") or "UNKNOWN")
+    proof_head_sha = proof.get("proof_head_sha")
+    if status == "CURRENT":
+        return bool(proof_head_sha) and bool(freshness.get("matches_pr_head", False))
+    if status != "CURRENT_WITH_SELF_REFERENCE_EXCEPTION":
+        return False
+    if not proof_head_sha:
+        return False
+    if str(freshness.get("pr_head_sha") or "") != pr_head_sha:
+        return False
+    exception = freshness.get("self_reference_exception") or {}
+    if not isinstance(exception, dict):
+        return False
+    if exception.get("supervisor_accepted") is not True:
+        return False
+    allowed_when = {
+        str(item)
+        for item in exception.get("allowed_when") or []
+        if str(item).strip()
+    }
+    required = {
+        "proof-only final commit",
+        "no runtime/source/test/schema changes after validated head",
+        "embedded audit is PASS or PASS_WITH_RISKS",
+        "supervisor acceptance recorded",
+    }
+    if not required.issubset(allowed_when):
+        return False
+    changed_files = exception.get("changed_files") or []
+    if not isinstance(changed_files, list) or not changed_files:
+        return False
+    for path in changed_files:
+        path_str = str(path or "").strip()
+        if not path_str.startswith("proof/"):
+            return False
+    return True
+
+
+def _maybe_string(value: Any) -> str | None:
+    if value is None:
+        return None
+    value = str(value)
+    return value if value else None
+
+
+def _thread_comment_lookup(threads: list[Any]) -> dict[str, dict[str, Any]]:
+    lookup: dict[str, dict[str, Any]] = {}
+    for thread_index, thread in enumerate(threads):
+        thread_id = str(thread.get("id") or f"thread-{thread_index}")
+        is_resolved = bool(thread.get("isResolved", False))
+        is_outdated = bool(thread.get("isOutdated", False))
+        path = str(thread.get("path") or "")
+        line = thread.get("line")
+        start_line = thread.get("startLine")
+        for comment_index, comment in enumerate(thread.get("comments") or []):
+            comment_id = str(
+                comment.get("id") or f"{thread_id}-comment-{comment_index}"
+            )
+            lookup[comment_id] = {
+                "thread_id": thread_id,
+                "is_resolved": is_resolved,
+                "is_outdated": is_outdated,
+                "path": path,
+                "line": line,
+                "start_line": start_line,
+            }
+    return lookup
 
 
 def _body_disposition(body: str) -> tuple[str, bool, str]:

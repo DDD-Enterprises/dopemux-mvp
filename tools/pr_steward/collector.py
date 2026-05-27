@@ -270,6 +270,7 @@ def _proof_state(
     if not isinstance(embedded, dict):
         embedded = {}
     proof_head_sha = _proof_head_sha(payload)
+    proof_freshness = _proof_freshness(payload, proof_head_sha, pr_head_sha)
     return {
         "embedded_audit": {
             "status": str(embedded.get("status") or "SKIPPED"),
@@ -284,6 +285,7 @@ def _proof_state(
             "matches_pr_head": bool(
                 proof_head_sha and pr_head_sha and proof_head_sha == pr_head_sha
             ),
+            "proof_freshness": proof_freshness,
         },
     }, []
 
@@ -298,7 +300,66 @@ def _missing_proof_state(proof_path: Path | None) -> dict[str, Any]:
             "proof_path": proof_path.as_posix() if proof_path else "",
             "proof_head_sha": None,
             "matches_pr_head": False,
+            "proof_freshness": {
+                "status": "MISSING",
+                "matches_pr_head": False,
+                "reason": "Proof file was not provided.",
+                "proof_recorded_sha": None,
+                "pr_head_sha": None,
+                "self_reference_exception": None,
+            },
         },
+    }
+
+
+def _proof_freshness(
+    payload: dict[str, Any], proof_head_sha: str | None, pr_head_sha: str | None
+) -> dict[str, Any]:
+    raw = payload.get("proof_freshness")
+    if isinstance(raw, dict):
+        exception = raw.get("self_reference_exception")
+        return {
+            "status": str(raw.get("status") or "UNKNOWN"),
+            "matches_pr_head": bool(
+                raw.get("matches_pr_head", bool(proof_head_sha and pr_head_sha and proof_head_sha == pr_head_sha))
+            ),
+            "reason": str(raw.get("reason") or ""),
+            "proof_recorded_sha": str(raw.get("proof_recorded_sha") or proof_head_sha)
+            if proof_head_sha
+            else None,
+            "pr_head_sha": str(raw.get("pr_head_sha") or pr_head_sha)
+            if (raw.get("pr_head_sha") or pr_head_sha)
+            else None,
+            "self_reference_exception": exception
+            if isinstance(exception, dict)
+            else None,
+        }
+
+    if not proof_head_sha:
+        return {
+            "status": "MISSING",
+            "matches_pr_head": False,
+            "reason": "Proof head SHA missing.",
+            "proof_recorded_sha": None,
+            "pr_head_sha": pr_head_sha,
+            "self_reference_exception": None,
+        }
+    if pr_head_sha and proof_head_sha == pr_head_sha:
+        return {
+            "status": "CURRENT",
+            "matches_pr_head": True,
+            "reason": "Proof head SHA matches PR head SHA.",
+            "proof_recorded_sha": proof_head_sha,
+            "pr_head_sha": pr_head_sha,
+            "self_reference_exception": None,
+        }
+    return {
+        "status": "STALE",
+        "matches_pr_head": False,
+        "reason": "Proof head SHA does not match PR head SHA.",
+        "proof_recorded_sha": proof_head_sha,
+        "pr_head_sha": pr_head_sha,
+        "self_reference_exception": None,
     }
 
 

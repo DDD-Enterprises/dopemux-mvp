@@ -1,0 +1,186 @@
+{
+  "commit": {
+    "allowlist": [
+      "tools/pr_steward/collector.py",
+      "tools/pr_steward/classifier.py",
+      "tests/pr_steward/test_intake.py",
+      "tests/fixtures/pr_steward/resolved_thread_clears_review_item/harvest.json",
+      "tests/fixtures/pr_steward/outdated_resolved_thread_nonblocking/harvest.json",
+      "tests/fixtures/pr_steward/raw_review_comment_without_thread_still_blocks/harvest.json",
+      "tests/fixtures/pr_steward/unresolved_thread_still_blocks/harvest.json",
+      "tests/fixtures/pr_steward/proof_current_exact_head_ready/harvest.json",
+      "tests/fixtures/pr_steward/proof_self_reference_exception_ready_or_needs_supervisor/harvest.json",
+      "tests/fixtures/pr_steward/proof_self_reference_exception_rejects_runtime_changes/harvest.json",
+      "tests/fixtures/pr_steward/embedded_audit_pass_with_risks_nonblocking/harvest.json",
+      "tests/fixtures/pr_steward/pr713_like_resolved_threads_with_pass_with_risks_audit/harvest.json",
+      "schemas/pr_steward/merge_readiness.schema.json",
+      "schemas/pr_steward/pr_state_snapshot.schema.json",
+      "docs/ops/pr-steward.md",
+      "docs/ops/pr-acceptance.md",
+      "docs/ops/embedded-audit.md",
+      "task-packets/generated/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001.json"
+    ],
+    "message": "fix(governance): handle resolved threads and proof freshness",
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001.json",
+      "python -m json.tool schemas/pr_steward/merge_readiness.schema.json",
+      "python -m json.tool schemas/pr_steward/pr_state_snapshot.schema.json",
+      "python -m compileall -q tools tests",
+      "pytest -q tests/pr_steward",
+      "python -m tools.pr_steward.intake --fixture-dir tests/fixtures/pr_steward/resolved_thread_clears_review_item --repo DDD-Enterprises/dopemux-mvp --pr 704 --out /tmp/pr-steward-resolved-thread --strict",
+      "python -m tools.pr_steward.intake --fixture-dir tests/fixtures/pr_steward/proof_self_reference_exception_ready_or_needs_supervisor --repo DDD-Enterprises/dopemux-mvp --pr 704 --out /tmp/pr-steward-proof-exception --strict",
+      "python -m json.tool /tmp/pr-steward-resolved-thread/MERGE_READINESS.json",
+      "python -m json.tool /tmp/pr-steward-proof-exception/MERGE_READINESS.json",
+      "git diff --check"
+    ]
+  },
+  "depends_on": [
+    "TP-DMX-PR-STEWARD-001"
+  ],
+  "embedded_audit": {
+    "auditor_model": "claude-sonnet-4-6",
+    "auditor_tool": "claude-code-direct",
+    "evidence_bundle": "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001",
+    "final_recommendation": "ACCEPT_WITH_RISKS",
+    "notes": [
+      "Local authenticated Claude Code direct audit completed successfully.",
+      "One medium nonblocking divergence remains untested for unresolved-outdated threads."
+    ],
+    "output_path": "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/AUDITOR_OUTPUT.json",
+    "report_path": "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/AUDITOR_REPORT.md",
+    "verdict": "PASS_WITH_RISKS"
+  },
+  "execution": {
+    "agent": "codex",
+    "base_branch": "main",
+    "branch": "codex/pr-steward-resolved-thread-proof-semantics-001"
+  },
+  "id": "TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001",
+  "invariants": [
+    "Do not mutate GitHub state.",
+    "Do not resolve review threads.",
+    "Do not approve PRs.",
+    "Do not auto-merge or mutate merge queues.",
+    "Do not store secrets.",
+    "Fail closed when reviewers, threads, checks, or proof freshness cannot be proven.",
+    "Treat AUTO_APPLIED as a disposition value only unless a future packet explicitly authorizes edit behavior."
+  ],
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "pr": {
+    "base": "main",
+    "body": "## Summary\n- Repairs PR Steward semantics so review comments tied to resolved or outdated review threads stop blocking readiness.\n- Adds explicit proof freshness support for exact-head and supervisor-accepted self-reference exception semantics.\n- Keeps PR Steward check-only and fail-closed on unresolved current threads, stale proof, or unknown reviewers.\n\n## Scope\nCheck-only review-intake semantics only. No GitHub mutation, no thread resolution, no merge queue mutation, and no changes to PR #713 runtime code.\n\n## Validation\nRun schema parsing, focused PR Steward tests, fixture smoke tests, compileall, and git diff --check.\n\n## NOT_RUN\nNo live GitHub mutation and no merge operations by design.",
+    "title": "fix(governance): handle resolved threads and proof freshness"
+  },
+  "project": "dopemux-mvp",
+  "proof_bundle": {
+    "commit_policy": "Commit only after validation passes and proof bundle is complete.",
+    "path": "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001",
+    "pr_policy": "PR creation or update only after commit and validation pass.",
+    "required_artifacts": [
+      "AUDITOR_REPORT.md",
+      "AUDITOR_OUTPUT.json",
+      "PROOF.json",
+      "VALIDATION_OUTPUT.md",
+      "GIT_STATE.md",
+      "DIFF_STAT.txt",
+      "CHANGED_FILES.txt",
+      "review_bundle/MANIFEST.json",
+      "review_bundle/SUMMARY.md",
+      "review_bundle/PROOF.json",
+      "review_bundle/AUDITOR_REPORT.md",
+      "review_bundle/VALIDATION_OUTPUT.md",
+      "review_bundle/GIT_STATE.md",
+      "review_bundle/DIFF_STAT.txt",
+      "review_bundle/CHANGED_FILES.txt",
+      "review_bundle/ARTIFACT_INDEX.md",
+      "review_bundle/artifacts/AUDITOR_OUTPUT.json",
+      "review_bundle/artifacts/CI_TRIAGE.json",
+      "review_bundle/artifacts/MERGE_READINESS.json",
+      "review_bundle/artifacts/PR_STATE_SNAPSHOT.json",
+      "review_bundle/artifacts/REVIEW_ITEM_LEDGER.json",
+      "review_bundle/artifacts/THREAD_DISPOSITIONS.json",
+      "review_bundle/artifacts/PR_STEWARD_SUMMARY.md"
+    ],
+    "review_bundle": "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle"
+  },
+  "repo_binding": {
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "require_identity_match": true
+  },
+  "series": {
+    "base_branch": "main",
+    "final_packet": false,
+    "id": "DMX-PR-STEWARD",
+    "parent_tp_id": "TP-DMX-PR-STEWARD-001"
+  },
+  "status": "PASS_WITH_RISKS",
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Inspect PR Steward runtime, schemas, fixtures, and docs to determine where resolved-thread and proof freshness semantics are enforced.",
+      "validation": [
+        "Identify the canonical collector/classifier flow.",
+        "Identify the proof freshness and thread disposition surfaces.",
+        "Preserve check-only boundaries."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Implement deterministic resolved-thread linkage and proof freshness classification without GitHub mutation.",
+      "validation": [
+        "Resolved and outdated threads clear corresponding raw review-comment blockers.",
+        "Proof freshness supports exact-head and explicit self-reference exception semantics.",
+        "Current unresolved threads still block readiness."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Update fixtures, schemas, and docs to match runtime semantics.",
+      "validation": [
+        "Fixture scenarios cover resolved-thread, unresolved-thread, and proof freshness cases.",
+        "Schema validation stays additive.",
+        "Docs state the new semantics plainly."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run focused validation and build proof artifacts.",
+      "validation": [
+        "python -m compileall -q tools tests",
+        "pytest -q tests/pr_steward",
+        "python -m json.tool task-packets/generated/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001.json",
+        "git diff --check"
+      ]
+    }
+  ],
+  "target": "Repair PR Steward readiness semantics so resolved and outdated review threads clear corresponding raw review-comment blockers, and proof freshness supports exact-head or supervisor-accepted self-reference exception semantics without mutating GitHub state.",
+  "validation": {
+    "audit_lane": "local authenticated Claude Code direct audit",
+    "audit_risk": "Unresolved-outdated thread state is conservative but audit-trail inconsistent and not fixture-covered.",
+    "audit_verdict": "PASS_WITH_RISKS",
+    "commands": [
+      "python -m json.tool task-packets/generated/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001.json",
+      "python -m json.tool schemas/pr_steward/merge_readiness.schema.json",
+      "python -m json.tool schemas/pr_steward/pr_state_snapshot.schema.json",
+      "python -m compileall -q tools tests",
+      "pytest -q tests/pr_steward",
+      "python -m tools.pr_steward.intake --fixture-dir tests/fixtures/pr_steward/pr713_like_resolved_threads_with_pass_with_risks_audit --repo DDD-Enterprises/dopemux-mvp --pr 704 --out /tmp/pr-steward-pr713-like --strict",
+      "git diff --check"
+    ]
+  }
+}
