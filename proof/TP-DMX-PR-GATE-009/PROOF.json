@@ -35,18 +35,66 @@
   "validation": {
     "status": "PASS",
     "details": [
-      {"check": "pytest_17_ci_gate_tests", "status": "PASS", "detail": "17 new tests in test_pr_gate.py all pass: ci-summary structure (exists, if:always, needs all 9 jobs, 1 step), gate logic (gate step exists, 3 required checks, exit 1, per-job success comparison, extractor-full.result absent, UNKNOWN caveat, advisory mention, BLOCKED/CLEAR messages), no trailing whitespace"},
-      {"check": "pytest_200_prior_tests_preserved", "status": "PASS", "detail": "All 200 prior tests (64 copilot_repair + 52 pr_action_bridge + 84 audit) continue to pass without modification"},
-      {"check": "gate_logic_correct", "status": "PASS", "detail": "code-quality, tests, extractor-smoke blocked via != 'success'; needs.*.result captured into named vars with || 'missing' fallback; extractor-full.result absent from gate; exit 1 on failure"},
-      {"check": "extractor_full_advisory_carve_out", "status": "PASS", "detail": "extractor-full blocked via outputs.suite_status for informational display only; .result not in gate section"},
-      {"check": "pr_skipped_advisory_carve_out", "status": "PASS", "detail": "installer-smoke, scoped-coverage, integration skip on PRs (if: github.event_name != 'pull_request'); documented in comments and runbook"},
-      {"check": "branch_protection_not_mutated", "status": "PASS", "detail": "No branch protection changes; UNKNOWN status documented in code comments and runbook"},
-      {"check": "no_pull_request_target_introduced", "status": "PASS", "detail": "No pull_request_target trigger added"},
-      {"check": "no_new_secrets_or_permissions", "status": "PASS", "detail": "No new secrets referenced, no permissions elevated"},
-      {"check": "gate_uses_success_comparison", "status": "PASS", "detail": "All three required jobs use != 'success' (blocks on skipped/cancelled as well as failure)"},
-      {"check": "gate_has_missing_fallback", "status": "PASS", "detail": "needs.*.result || 'missing' fallback prevents empty string comparisons on workflow cancellation edge cases"},
-      {"check": "docs_no_trailing_whitespace", "status": "PASS", "detail": "pre-commit hook check passed on docs/ops/pr-gate-runbook.md"},
-      {"check": "mypy", "status": "NOT_RUN", "reason": "tests/ci/ contains only structural YAML-parsing tests; no typed Python source files added"}
+      {
+        "check": "pytest_17_ci_gate_tests",
+        "status": "PASS",
+        "detail": "17 new tests in test_pr_gate.py all pass: ci-summary structure (exists, if:always, needs all 9 jobs, 1 step), gate logic (gate step exists, 3 required checks, exit 1, per-job success comparison, extractor-full.result absent, UNKNOWN caveat, advisory mention, BLOCKED/CLEAR messages), no trailing whitespace"
+      },
+      {
+        "check": "pytest_200_prior_tests_preserved",
+        "status": "PASS",
+        "detail": "All 200 prior tests (64 copilot_repair + 52 pr_action_bridge + 84 audit) continue to pass without modification"
+      },
+      {
+        "check": "gate_logic_correct",
+        "status": "PASS",
+        "detail": "code-quality, tests, extractor-smoke blocked via != 'success'; needs.*.result captured into named vars with || 'missing' fallback; extractor-full.result absent from gate; exit 1 on failure"
+      },
+      {
+        "check": "extractor_full_advisory_carve_out",
+        "status": "PASS",
+        "detail": "extractor-full blocked via outputs.suite_status for informational display only; .result not in gate section"
+      },
+      {
+        "check": "pr_skipped_advisory_carve_out",
+        "status": "PASS",
+        "detail": "installer-smoke, scoped-coverage, integration skip on PRs (if: github.event_name != 'pull_request'); documented in comments and runbook"
+      },
+      {
+        "check": "branch_protection_not_mutated",
+        "status": "PASS",
+        "detail": "No branch protection changes; UNKNOWN status documented in code comments and runbook"
+      },
+      {
+        "check": "no_pull_request_target_introduced",
+        "status": "PASS",
+        "detail": "No pull_request_target trigger added"
+      },
+      {
+        "check": "no_new_secrets_or_permissions",
+        "status": "PASS",
+        "detail": "No new secrets referenced, no permissions elevated"
+      },
+      {
+        "check": "gate_uses_success_comparison",
+        "status": "PASS",
+        "detail": "All three required jobs use != 'success' (blocks on skipped/cancelled as well as failure)"
+      },
+      {
+        "check": "gate_has_missing_fallback",
+        "status": "PASS",
+        "detail": "needs.*.result || 'missing' fallback prevents empty string comparisons on workflow cancellation edge cases"
+      },
+      {
+        "check": "docs_no_trailing_whitespace",
+        "status": "PASS",
+        "detail": "pre-commit hook check passed on docs/ops/pr-gate-runbook.md"
+      },
+      {
+        "check": "mypy",
+        "status": "NOT_RUN",
+        "reason": "tests/ci/ contains only structural YAML-parsing tests; no typed Python source files added"
+      }
     ]
   },
   "embedded_audit": {
@@ -62,20 +110,20 @@
         "id": "F-009-HIGH-EXT-1",
         "severity": "HIGH",
         "title": "code-quality job summary uses $? from echo (pre-existing, out of TP scope)",
-        "status": "OUT_OF_SCOPE",
-        "body": "Expert identified that the code-quality job's ADHD-friendly summary step uses $? which reflects the preceding echo's exit code, not pre-commit's. This is a pre-existing issue in the code-quality job (not ci-summary). It does not affect gate correctness: ci-summary reads needs.code-quality.result (the job's overall exit status), not $? from within the job. Spawned as separate follow-up task."
+        "status": "ACCEPTED_RISK",
+        "body": "Expert identified that the code-quality job's ADHD-friendly summary step uses $? which reflects the preceding echo's exit code, not pre-commit's. This is a pre-existing issue in the code-quality job (not ci-summary). It does not affect gate correctness: ci-summary reads needs.code-quality.result (the job's overall exit status), not $? from within the job. Spawned as separate follow-up task. Status normalized from OUT_OF_SCOPE to ACCEPTED_RISK (OUT_OF_SCOPE not in schema enum)."
       },
       {
         "id": "F-009-MED-1",
         "severity": "MEDIUM",
-        "title": "needs.*.result not defaulted — empty string on edge-case workflow cancellation",
+        "title": "needs.*.result not defaulted \u2014 empty string on edge-case workflow cancellation",
         "status": "RESOLVED",
         "body": "Captured needs.X.result into named variables with || 'missing' fallback: code_quality, gate_tests, extractor_smoke. Gate comparisons now use variable names, removing _gate_ok prefix and improving style consistency."
       },
       {
         "id": "F-009-MED-2",
         "severity": "MEDIUM",
-        "title": "test_gate_checks_success_not_non_failure used re.search — passed on first match only",
+        "title": "test_gate_checks_success_not_non_failure used re.search \u2014 passed on first match only",
         "status": "RESOLVED",
         "body": "Replaced with test_gate_checks_each_required_job_uses_success_comparison: asserts each required job's needs.X.result is referenced, and that >= 3 '!= success' comparisons exist."
       },
@@ -109,8 +157,8 @@
     ],
     "remaining_risks": [
       "code-quality job summary $? issue is pre-existing and out of TP-009 scope; spawned as separate follow-up",
-      "branch protection truth remains UNKNOWN — operator must verify ci-summary is a required status check",
-      "mypy not run — no typed Python source files in TP-009 scope"
+      "branch protection truth remains UNKNOWN \u2014 operator must verify ci-summary is a required status check",
+      "mypy not run \u2014 no typed Python source files in TP-009 scope"
     ],
     "skip_reason": null
   },
@@ -130,9 +178,9 @@
   },
   "stop_conditions_hit": [],
   "remaining_risks": [
-    "Branch protection truth UNKNOWN — operator must verify ci-summary registered as required status check in main branch protection",
+    "Branch protection truth UNKNOWN \u2014 operator must verify ci-summary registered as required status check in main branch protection",
     "code-quality job $? summary issue is pre-existing and out of scope for this TP",
-    "mypy not run — no typed Python source files in TP-009 scope"
+    "mypy not run \u2014 no typed Python source files in TP-009 scope"
   ],
   "next_recommended_action": "Opus audit this proof + diff. On PASS, operator commits with 'ci: stabilize required pr-gate job'. Then execute next TP in series."
 }
