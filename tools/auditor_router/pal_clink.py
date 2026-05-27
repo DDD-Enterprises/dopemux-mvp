@@ -56,13 +56,31 @@ def discover_clink_config_paths(
     paths_by_client: dict[str, Path] = {}
     for root in roots:
         for path in _iter_config_root_paths(root):
-            if path.stem in SUPPORTED_AUDIT_CLIENTS:
-                paths_by_client[path.stem] = path
+            try:
+                config = json.loads(path.read_text(encoding="utf-8"))
+                client = config.get("client")
+                if client in SUPPORTED_AUDIT_CLIENTS:
+                    paths_by_client[client] = path
+                elif path.stem in SUPPORTED_AUDIT_CLIENTS:
+                    paths_by_client[path.stem] = path
+            except Exception:
+                if path.stem in SUPPORTED_AUDIT_CLIENTS:
+                    paths_by_client[path.stem] = path
     return sorted(paths_by_client.values(), key=_candidate_sort_key)
 
 
 def load_clink_client_config(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _as_args(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return [str(item) for item in value]
+    if isinstance(value, str):
+        return [value]
+    raise ValueError("Arguments field must be a list or a string.")
 
 
 def effective_args_for_config(
@@ -72,7 +90,9 @@ def effective_args_for_config(
 ) -> list[str]:
     args = [str(item) for item in (internal_args or [])]
     for key in ("additional_args", "config_args", "args"):
-        args.extend(str(item) for item in config.get(key) or [])
+        val = config.get(key)
+        if val is not None:
+            args.extend(_as_args(val))
     roles = config.get("roles")
     if roles is None:
         roles = {}
@@ -84,7 +104,9 @@ def effective_args_for_config(
             role = {}
         if not isinstance(role, dict):
             continue
-        args.extend(str(item) for item in role.get("role_args") or [])
+        role_args_val = role.get("role_args")
+        if role_args_val is not None:
+            args.extend(_as_args(role_args_val))
     return args
 
 
@@ -138,7 +160,8 @@ def inspect_clink_client_config(
     raw_underlying_cli = config.get("runner")
     client_name = str(raw_client_name or "").strip()
     underlying_cli = str(raw_underlying_cli or "").strip()
-    expected_cli = SUPPORTED_AUDIT_CLIENTS.get(path.stem)
+    declared_client = config.get("client") or path.stem
+    expected_cli = SUPPORTED_AUDIT_CLIENTS.get(declared_client)
     if expected_cli is None:
         return _unsafe(
             path,
@@ -155,7 +178,7 @@ def inspect_clink_client_config(
             "Audit config must explicitly define name and runner.",
             config=config,
         )
-    if client_name != path.stem or underlying_cli != expected_cli:
+    if client_name != declared_client or underlying_cli != expected_cli:
         return _unsafe(
             path,
             client_name,
@@ -168,9 +191,14 @@ def inspect_clink_client_config(
     if command_error:
         return _unsafe(path, client_name, underlying_cli, command_error, config=config)
 
-    mutation_flags = detect_mutation_flags(
-        effective_args_for_config(config, internal_args=internal_args)
-    )
+    try:
+        effective_args = effective_args_for_config(config, internal_args=internal_args)
+    except ValueError as err:
+        inspection = _unsafe(path, client_name, underlying_cli, str(err), config=config)
+        inspection.status = "INVALID"
+        return inspection
+
+    mutation_flags = detect_mutation_flags(effective_args)
     if mutation_flags:
         return _unsafe(
             path,
@@ -183,7 +211,10 @@ def inspect_clink_client_config(
 
     role_error = _role_contract_error(config)
     if role_error:
-        return _unsafe(path, client_name, underlying_cli, role_error, config=config)
+        inspection = _unsafe(path, client_name, underlying_cli, role_error, config=config)
+        if "invalid role_args" in role_error:
+            inspection.status = "INVALID"
+        return inspection
 
     return ClinkConfigInspection(
         path=path,
@@ -239,6 +270,16 @@ def normalize_pal_clink_audit_output(
     route: dict[str, Any],
     report_path: str,
 ) -> dict[str, Any]:
+    from collections.abc import Mapping
+    if not isinstance(payload, Mapping):
+        return build_pal_clink_embedded_audit_object(
+            status="NEEDS_SUPERVISOR",
+            route=route,
+            report_path=report_path,
+            findings=[],
+            remaining_risks=["PAL clink payload was not a valid mapping."],
+            exit_code=1,
+        )
     raw_findings = list(payload.get("findings") or [])
     findings = [_normalize_finding(item) for item in raw_findings]
     blocking_findings = [
@@ -326,8 +367,16 @@ def _role_contract_error(config: dict[str, Any]) -> str | None:
         prompt_path = _canonical_role_prompt_path(role.get("prompt_path"))
         if prompt_path != AUDIT_PROMPT_PATH:
             return f"Role {role_name} must use {AUDIT_PROMPT_PATH}."
-        if list(role.get("role_args") or []) != []:
-            return f"Role {role_name} must have empty role_args."
+        role_args_val = role.get("role_args")
+        if role_args_val is not None:
+            if not isinstance(role_args_val, list):
+                return f"Role {role_name} has invalid role_args: must be a list"
+            try:
+                role_args = _as_args(role_args_val)
+            except ValueError as err:
+                return f"Role {role_name} has invalid role_args: {err}"
+            if role_args != []:
+                return f"Role {role_name} must have empty role_args."
     return None
 
 
