@@ -1,3 +1,14 @@
+---
+id: PR_REPAIR_PACKET
+title: Pr Repair Packet
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-27'
+last_review: '2026-05-27'
+next_review: '2026-08-25'
+prelude: Pr Repair Packet (explanation) for dopemux documentation and developer workflows.
+---
 <!--
 GOVERNANCE — READ BEFORE USE
 

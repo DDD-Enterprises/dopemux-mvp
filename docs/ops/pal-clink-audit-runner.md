@@ -1,3 +1,15 @@
+---
+id: pal-clink-audit-runner
+title: Pal Clink Audit Runner
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-27'
+last_review: '2026-05-27'
+next_review: '2026-08-25'
+prelude: Pal Clink Audit Runner (explanation) for dopemux documentation and developer
+  workflows.
+---
 # PAL Clink Audit Runner
 
 **Module**: `scripts/audit/pal_clink_runner.py`

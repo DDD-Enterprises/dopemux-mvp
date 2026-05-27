@@ -4,8 +4,12 @@ title: Evidence Bundle Builder Runbook
 type: how-to
 owner: '@hu3mann'
 date: '2026-05-26'
+author: '@hu3mann'
+last_review: '2026-05-27'
+next_review: '2026-08-25'
+prelude: Evidence Bundle Builder Runbook (explanation) for dopemux documentation and
+  developer workflows.
 ---
-
 # Evidence Bundle Builder Runbook
 
 ## What It Does (TP-DMX-AUDIT-BUNDLE-001)

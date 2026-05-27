@@ -254,12 +254,19 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901 (acceptable comple
     # Apply scope manifest if present
     scope = load_scope(DEFAULT_SCOPE_PATH)
     if scope is not None and args.scan_root is not None:
-        # Scope only applies to --all recursive scans, not explicit single-file args
-        proof_paths, skipped = apply_scope(proof_paths, scope, _REPO_ROOT)
-        for path, reason in skipped:
-            rel = _rel_path(path)
-            if not args.quiet:
-                print(f"SKIP  {rel}  ({reason})")
+        try:
+            Path(args.scan_root).resolve().relative_to(_REPO_ROOT)
+            is_under_repo = True
+        except ValueError:
+            is_under_repo = False
+
+        if is_under_repo:
+            # Scope only applies to --all recursive scans under the repo root
+            proof_paths, skipped = apply_scope(proof_paths, scope, _REPO_ROOT)
+            for path, reason in skipped:
+                rel = _rel_path(path)
+                if not args.quiet:
+                    print(f"SKIP  {rel}  ({reason})")
 
     if not proof_paths:
         print("No PROOF.json files found.", file=sys.stderr)

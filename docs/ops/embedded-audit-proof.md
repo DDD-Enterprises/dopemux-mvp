@@ -4,8 +4,12 @@ title: Embedded Audit Proof Format
 type: reference
 owner: governance
 date: 2026-05-27
+author: '@hu3mann'
+last_review: '2026-05-27'
+next_review: '2026-08-25'
+prelude: Embedded Audit Proof Format (explanation) for dopemux documentation and developer
+  workflows.
 ---
-
 # Embedded Audit Proof Format
 
 Every PROOF.json bundle for this series must contain an `embedded_audit` sub-object.

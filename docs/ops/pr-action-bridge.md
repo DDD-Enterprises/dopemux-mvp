@@ -1,3 +1,14 @@
+---
+id: pr-action-bridge
+title: Pr Action Bridge
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-27'
+last_review: '2026-05-27'
+next_review: '2026-08-25'
+prelude: Pr Action Bridge (explanation) for dopemux documentation and developer workflows.
+---
 # PR Action Bridge
 
 **Module**: `tools/pr_action_bridge/compiler.py`
