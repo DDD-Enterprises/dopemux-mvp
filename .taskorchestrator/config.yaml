@@ -243,7 +243,7 @@ work_item_schemas:
   # an explicit `type` field.
   task-packet:
     lifecycle: AUTO  # Parent auto-cascades to terminal when all children terminal
-    traits:
+    default_traits:
       - pal-chain-codex
       - proof-bundle
       - implementation-evidence
@@ -252,7 +252,7 @@ work_item_schemas:
   # Multi-TP feature container.
   feature-implementation:
     lifecycle: MANUAL  # Don't auto-cascade — feature ship is an explicit decision
-    traits:
+    default_traits:
       - pal-chain-codex
       - proof-bundle
       - implementation-evidence
@@ -276,7 +276,7 @@ work_item_schemas:
   # Bug fix variant: emphasizes repro + root cause + regression test.
   bug-fix:
     lifecycle: AUTO
-    traits:
+    default_traits:
       - pal-chain-codex
       - proof-bundle
       - implementation-evidence
@@ -308,7 +308,7 @@ work_item_schemas:
   # RFC proposal (consensus-building doc).
   rfc-proposal:
     lifecycle: MANUAL  # RFC consensus + decision is explicit
-    traits:
+    default_traits:
       - implementation-evidence  # Track the doc file change
     notes:
       - key: problem-statement
@@ -342,7 +342,7 @@ work_item_schemas:
   # Audit pack (RTE-style phased audit work).
   audit-pack:
     lifecycle: AUTO_REOPEN  # Audit phases can re-issue against new HEAD
-    traits:
+    default_traits:
       - implementation-evidence
     notes:
       - key: audit-prompt
@@ -367,7 +367,7 @@ work_item_schemas:
   # Sprint goal (top-level container; never auto-terminates).
   sprint-goal:
     lifecycle: PERMANENT  # Sprint goals don't auto-cascade or auto-terminate
-    traits: []
+    default_traits: []
     notes:
       - key: goal-definition
         role: queue
@@ -383,7 +383,7 @@ work_item_schemas:
   # Retrospective work item (Phase 6 / TP-CS-120).
   retrospective:
     lifecycle: AUTO
-    traits:
+    default_traits:
       - retrospective-actions
     notes:
       - key: scope
@@ -426,7 +426,7 @@ work_item_schemas:
   # Workflow guide §3: items without a type/tag match fall through to this.
   default:
     lifecycle: AUTO
-    traits:
+    default_traits:
       - proof-bundle  # Even unmatched items still need proof if they ship changes
     notes: []
 
