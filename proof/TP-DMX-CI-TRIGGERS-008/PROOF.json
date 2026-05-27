@@ -35,12 +35,12 @@
     {
       "cmd": "actionlint",
       "exit_code": null,
-      "result": "TOOL_UNAVAILABLE — actionlint not installed on this host"
+      "result": "TOOL_UNAVAILABLE \u2014 actionlint not installed on this host"
     },
     {
       "cmd": "yamllint",
       "exit_code": null,
-      "result": "TOOL_UNAVAILABLE — yamllint not installed on this host"
+      "result": "TOOL_UNAVAILABLE \u2014 yamllint not installed on this host"
     },
     {
       "cmd": "rg pull_request_target .github/workflows/ci-complete.yml .github/workflows/pr-steward.yml .github/workflows/preflight.yml",
@@ -56,30 +56,62 @@
   "validation": {
     "status": "PASS",
     "details": [
-      {"check": "yaml_parse", "status": "PASS", "tool": "python3 yaml.safe_load"},
-      {"check": "actionlint", "status": "NOT_RUN", "reason": "tool not installed on this host"},
-      {"check": "yamllint", "status": "NOT_RUN", "reason": "tool not installed on this host"},
-      {"check": "no_pull_request_target", "status": "PASS"},
-      {"check": "diff_scope", "status": "PASS", "detail": "3 workflow files + runbook, all in allowlist"},
-      {"check": "required_check_names_unchanged", "status": "PASS"},
-      {"check": "merge_group_preserved", "status": "PASS"},
-      {"check": "pr_steward_readonly_preserved", "status": "PASS"},
-      {"check": "workflow_dispatch_inputs_preserved", "status": "PASS"}
+      {
+        "check": "yaml_parse",
+        "status": "PASS",
+        "tool": "python3 yaml.safe_load"
+      },
+      {
+        "check": "actionlint",
+        "status": "NOT_RUN",
+        "reason": "tool not installed on this host"
+      },
+      {
+        "check": "yamllint",
+        "status": "NOT_RUN",
+        "reason": "tool not installed on this host"
+      },
+      {
+        "check": "no_pull_request_target",
+        "status": "PASS"
+      },
+      {
+        "check": "diff_scope",
+        "status": "PASS",
+        "detail": "3 workflow files + runbook, all in allowlist"
+      },
+      {
+        "check": "required_check_names_unchanged",
+        "status": "PASS"
+      },
+      {
+        "check": "merge_group_preserved",
+        "status": "PASS"
+      },
+      {
+        "check": "pr_steward_readonly_preserved",
+        "status": "PASS"
+      },
+      {
+        "check": "workflow_dispatch_inputs_preserved",
+        "status": "PASS"
+      }
     ]
   },
   "embedded_audit": {
     "required": true,
     "status": "PASS",
-    "auditor_tool": "PAL MCP codereview (mcp__pal__codereview)",
-    "auditor_model": "gemini-2.5-pro",
-    "fallback_used": false,
-    "fallback_reason": null,
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "gemini",
     "invocation": "PAL codereview 2-step, continuation_id c73944b8-0673-48ae-bf14-68a2790df0b6",
-    "exit_code": "code_review_complete: true",
-    "auditor_verdict": "PASS",
-    "auditor_findings": "None. Zero issues found. All governance invariants satisfied.",
-    "fixes_applied_from_audit": "None required.",
-    "remaining_risks": "actionlint and yamllint unavailable on host — syntax verified via python yaml.safe_load only. CI will provide the final actionlint gate if configured."
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-CI-TRIGGERS-008/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "actionlint and yamllint unavailable on host \u2014 syntax verified via python yaml.safe_load only. CI will provide the final actionlint gate if configured."
+    ],
+    "skip_reason": null
   },
   "governance": {
     "branch_protection_changed": false,
@@ -91,9 +123,9 @@
   },
   "stop_conditions_hit": [],
   "remaining_risks": [
-    "actionlint not run locally (tool unavailable) — syntax verified via Python yaml.safe_load only",
+    "actionlint not run locally (tool unavailable) \u2014 syntax verified via Python yaml.safe_load only",
     "Branch protection/ruleset truth remains UNKNOWN (TP-DMX-BRANCH-POLICY-AUDIT-012 required)",
-    "workflow_dispatch HTTP 500 status on GitHub unknown — smoke test not performed (no feature branch + PR number available in this session)"
+    "workflow_dispatch HTTP 500 status on GitHub unknown \u2014 smoke test not performed (no feature branch + PR number available in this session)"
   ],
   "next_recommended_action": "Commit with 'fix(ci): add explicit PR trigger coverage'. Then run TP-DMX-AUDIT-BUNDLE-001 and TP-DMX-PR-STEWARD-FRESHNESS-005 in parallel (both depend-on: [])."
 }
