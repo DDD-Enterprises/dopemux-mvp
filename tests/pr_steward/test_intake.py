@@ -161,6 +161,9 @@ BLOCKING_CASES = [
     ("draft_pr_blocks", "BLOCKED", "PR_IS_DRAFT"),
     ("missing_auth_or_harvest_blocks", "BLOCKED", "HARVEST_INCOMPLETE"),
     ("skipped_required_audit_blocks", "NEEDS_SUPERVISOR", "EMBEDDED_AUDIT_SKIPPED"),
+    ("proof_stale_blocks", "NEEDS_SUPERVISOR", "PROOF_STALE"),
+    ("proof_missing_blocks", "NEEDS_SUPERVISOR", "PROOF_MISSING"),
+    ("unknown_pr_author_blocks", "NEEDS_SUPERVISOR", "UNKNOWN_PR_AUTHOR"),
 ]
 
 
