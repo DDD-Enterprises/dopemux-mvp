@@ -1,0 +1,160 @@
+{
+  "schema_version": "1.0.0",
+  "tp_id": "TP-DMX-AUDIT-PROOF-004",
+  "series_id": "DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "claude/upbeat-thompson-35f2e8",
+  "base_branch": "main",
+  "head_before": "21f04e21c987304ffc3caf2073503d733d07b0c8",
+  "head_after": "TBD",
+  "mutation_performed": false,
+  "github_mutation_performed": false,
+  "secret_values_recorded": false,
+  "operator_authorization_used": [],
+  "forbidden_surfaces_touched": false,
+  "files_changed": [
+    "scripts/audit/validate_audit_proof.py",
+    "tests/audit/test_audit_proof.py",
+    "docs/ops/embedded-audit-proof.md",
+    "proof/TP-DMX-AUDIT-PROOF-004/PROOF.json",
+    "proof/TP-DMX-AUDIT-PROOF-004/AUDITOR_REPORT.md"
+  ],
+  "commands": [
+    {
+      "cmd": "python -m pytest tests/audit/test_audit_proof.py -v",
+      "exit_code": 0,
+      "result": "38 passed in 2.26s"
+    },
+    {
+      "cmd": "python -m pytest tests/copilot_repair/ tests/pr_action_bridge/ tests/audit/ tests/ci/ tests/pr_steward/",
+      "exit_code": 0,
+      "result": "342 passed in 2.85s (prior 304 + 38 new)"
+    },
+    {
+      "cmd": "python scripts/audit/validate_audit_proof.py proof/TP-DMX-PR-FIXTURES-011/PROOF.json proof/TP-DMX-CI-TRIGGERS-008/PROOF.json proof/TP-DMX-BRANCH-POLICY-AUDIT-012/PROOF.json",
+      "exit_code": 1,
+      "result": "1/3 PASS — TP-011 PASS, CI-008 FAIL (7 errors), BRANCH-012 FAIL (10 errors)"
+    }
+  ],
+  "validation": {
+    "status": "PASS",
+    "details": [
+      {"check": "pytest_38_audit_tests", "status": "PASS", "detail": "38 tests in test_audit_proof.py all pass; covers valid PASS/PASS_WITH_RISKS/SKIPPED, all enum violations, SKIPPED/non-SKIPPED conditional constraints, missing/extra fields, file errors, --all scan, --quiet, dedup, report_path regex variants"},
+      {"check": "pytest_342_full_suite", "status": "PASS", "detail": "All 342 tests pass; 304 prior preserved + 38 new"},
+      {"check": "schema_unchanged", "status": "PASS", "detail": "schemas/proof/embedded_audit.schema.json not modified (stop condition preserved)"},
+      {"check": "no_enum_additions", "status": "PASS", "detail": "No new auditor_tool or auditor_model enum values added"},
+      {"check": "validator_identifies_011_pass", "status": "PASS", "detail": "TP-DMX-PR-FIXTURES-011 PROOF.json correctly validates as PASS"},
+      {"check": "validator_identifies_008_fail", "status": "PASS", "detail": "TP-DMX-CI-TRIGGERS-008 PROOF.json correctly identified as FAIL with 7 specific errors"},
+      {"check": "validator_identifies_012_fail", "status": "PASS", "detail": "TP-DMX-BRANCH-POLICY-AUDIT-012 PROOF.json correctly identified as FAIL with 10 specific errors"},
+      {"check": "no_forbidden_imports", "status": "PASS", "detail": "tools.pr_merge not imported in any changed file"},
+      {"check": "no_github_mutation", "status": "PASS", "detail": "mutation_performed=false; no GitHub API writes"},
+      {"check": "no_trailing_whitespace", "status": "PASS", "detail": "No trailing whitespace in new/modified files"},
+      {"check": "files_within_allowlist", "status": "PASS", "detail": "All files in scripts/audit/validate_audit_proof.py, tests/audit/test_audit_proof.py, docs/ops/embedded-audit-proof.md, proof/TP-DMX-AUDIT-PROOF-004/**"},
+      {"check": "mypy", "status": "NOT_RUN", "reason": "Script and test files only; not in src/ package"}
+    ]
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "mcp__pal__codereview expert_model=gpt-5.2 review_type=full",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-AUDIT-PROOF-004/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-004-HIGH-1",
+        "severity": "HIGH",
+        "title": "SchemaError unhandled when --schema points to invalid schema",
+        "status": "RESOLVED",
+        "body": "Wrapped Draft7Validator.check_schema() in try/except SchemaError; returns exit code 2 with clear error message."
+      },
+      {
+        "id": "F-004-HIGH-2",
+        "severity": "HIGH",
+        "title": "Path.is_relative_to availability on Python < 3.9",
+        "status": "RESOLVED",
+        "body": "Replaced is_relative_to() guard with try/except ValueError around relative_to() in dedicated _rel_path() helper."
+      },
+      {
+        "id": "F-004-MED-1",
+        "severity": "MEDIUM",
+        "title": "embedded_audit type not checked before schema iteration",
+        "status": "RESOLVED",
+        "body": "Added isinstance(embedded, dict) pre-check; returns clean error message for non-object embedded_audit values."
+      },
+      {
+        "id": "F-004-MED-2",
+        "severity": "MEDIUM",
+        "title": "Error sort key list(e.path) unstable for mixed-type paths",
+        "status": "RESOLVED",
+        "body": "Changed sort key to '.'.join(map(str, e.path)) for deterministic string comparison."
+      },
+      {
+        "id": "F-004-LOW-1",
+        "severity": "LOW",
+        "title": "collect_proof_paths no dedup when --all + positional overlap",
+        "status": "RESOLVED",
+        "body": "Deduplicates via {p.resolve(): None} dict. Added test_dedup_when_all_and_positional_overlap."
+      },
+      {
+        "id": "F-004-LOW-2",
+        "severity": "LOW",
+        "title": "load_schema raises JSONDecodeError not caught in main()",
+        "status": "RESOLVED",
+        "body": "load_schema now wraps JSONDecodeError as ValueError; main() catches (FileNotFoundError, ValueError)."
+      },
+      {
+        "id": "F-004-LOW-3",
+        "severity": "LOW",
+        "title": "Subprocess calls in tests had no timeout",
+        "status": "RESOLVED",
+        "body": "Added timeout=10 to all subprocess.run() calls in _run() helper."
+      },
+      {
+        "id": "F-004-LOW-4",
+        "severity": "LOW",
+        "title": "No test for AUDITOR_REPAIR_REPORT.md report_path variants",
+        "status": "RESOLVED",
+        "body": "Added TestReportPathVariants class with 3 tests covering AUDITOR_REPAIR_REPORT.md, AUDITOR_REPAIR_1_REPORT.md, and a negative test."
+      }
+    ],
+    "fixes_applied": [
+      "Wrapped check_schema() in try/except SchemaError → exit 2 (F-004-HIGH-1)",
+      "Replaced Path.is_relative_to with try/except ValueError in _rel_path() (F-004-HIGH-2)",
+      "Added isinstance(embedded, dict) pre-check in validate_proof_file() (F-004-MED-1)",
+      "Changed error sort key to '.'.join(map(str, e.path)) (F-004-MED-2)",
+      "Deduplicated proof paths in collect_proof_paths() via resolved-path dict (F-004-LOW-1)",
+      "load_schema now raises ValueError wrapping JSONDecodeError; caught in main() (F-004-LOW-2)",
+      "Added timeout=10 to subprocess.run() in test helper _run() (F-004-LOW-3)",
+      "Added TestReportPathVariants with 3 tests for report_path regex variants (F-004-LOW-4)"
+    ],
+    "remaining_risks": [
+      "mypy not run — script/test files only, not in src/ package",
+      "TP-DMX-CI-TRIGGERS-008 embedded_audit remains non-compliant (not in TP-004 allowlist)",
+      "TP-DMX-BRANCH-POLICY-AUDIT-012 embedded_audit remains non-compliant (not in TP-004 allowlist)"
+    ],
+    "skip_reason": null
+  },
+  "embedded_audit_status": "PASS_WITH_RISKS",
+  "commit": {
+    "performed": false,
+    "sha": null,
+    "message": "feat(audit): normalize embedded audit proof artifacts"
+  },
+  "governance": {
+    "branch_protection_changed": false,
+    "required_checks_changed": false,
+    "pull_request_target_introduced": false,
+    "secrets_touched": false,
+    "codeowners_changed": false,
+    "mutation_surfaces_added": false
+  },
+  "stop_conditions_hit": [],
+  "remaining_risks": [
+    "mypy not run — script/test files only, not src/ package members",
+    "TP-DMX-CI-TRIGGERS-008 PROOF.json non-compliant — pre-existing, not in TP-004 allowlist; requires dedicated remediation TP",
+    "TP-DMX-BRANCH-POLICY-AUDIT-012 PROOF.json non-compliant — pre-existing, not in TP-004 allowlist; requires dedicated remediation TP"
+  ],
+  "next_recommended_action": "Operator: review diff, commit with 'feat(audit): normalize embedded audit proof artifacts', then continue to next TP in series."
+}
