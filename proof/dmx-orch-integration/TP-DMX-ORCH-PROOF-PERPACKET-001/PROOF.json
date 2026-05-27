@@ -1,0 +1,49 @@
+{
+  "bundle_id": "TP-DMX-ORCH-PROOF-PERPACKET-001-PROOF",
+  "run_id": "tp-dmx-orch-proof-perpacket-001-plan",
+  "skill": "codex",
+  "status": "PLAN_ONLY",
+  "validation_state": "NOT_STARTED",
+  "created_at": "2026-05-26T17:30:00Z",
+  "manifest": {
+    "bundle_id": "TP-DMX-ORCH-PROOF-PERPACKET-001-PROOF",
+    "packet_id": "TP-DMX-ORCH-PROOF-PERPACKET-001",
+    "generated_artifacts": [
+      "task-packets/generated/TP-DMX-ORCH-PROOF-PERPACKET-001.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-PROOF-PERPACKET-001/PROOF.json"
+    ]
+  },
+  "authoritative_artifacts": [
+    "task-packets/generated/TP-DMX-ORCH-PROOF-PERPACKET-001.json"
+  ],
+  "supporting_artifacts": [
+    "proof/dmx-orch-integration/TP-DMX-ORCH-PROOF-PERPACKET-001/PROOF.json"
+  ],
+  "chain_of_custody": {
+    "documented": true,
+    "source_version": "TP-DMX-ORCH-PROOF-PERPACKET-001",
+    "created_at": "2026-05-26T17:30:00Z",
+    "parent_bundle_ids": []
+  },
+  "warnings": [],
+  "blockers": [],
+  "not_run": [
+    "Implementation: per-packet test map, runner, CLI, and codereview helper — work has not started.",
+    "Live pal/codereview snapshot for any existing TP-DMX-ORCH-XXX: deferred until this packet implements the helper."
+  ],
+  "residual_risks": [
+    "The helper may produce a misleading snippet if the targeted test map drifts from the actual test layout; map drift will fail loudly only after the runner is wired.",
+    "pal/codereview availability in CI is required; absent that, the helper must remain a local operator tool."
+  ],
+  "rollback_plan": [
+    "Remove src/dopemux/orchestrator/perpacket.py.",
+    "Remove the new CLI subcommand wiring in src/dopemux/commands/orchestrator_commands.py.",
+    "Remove scripts/orchestrator/perpacket_codereview.py.",
+    "Remove config/orchestrator/perpacket_test_map.yaml.",
+    "Remove task-packets/generated/TP-DMX-ORCH-PROOF-PERPACKET-001.json and its proof bundle."
+  ],
+  "commit_sha": null,
+  "commit_sha_policy": "PLAN_ONLY bundles are committed before implementation; commit_sha is populated by the implementation packet's own proof at the time of execution.",
+  "pr_url": null,
+  "cleanup_status": "PLAN_ONLY"
+}

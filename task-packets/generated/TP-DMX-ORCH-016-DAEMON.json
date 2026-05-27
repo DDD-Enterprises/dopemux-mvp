@@ -1,0 +1,133 @@
+{
+  "id": "TP-DMX-ORCH-016-DAEMON",
+  "project": "dopemux-mvp",
+  "target": "Add a config-driven, opt-in automation daemon for the orchestrator pilot — T0/T1 actions only, with a global disable flag and visible per-action receipts",
+  "invariants": [
+    "Daemon may only run T0/T1 actions; T2+ refuses",
+    "Default state is disabled; explicit operator opt-in is required to enable",
+    "Global env var disable switch (DOPEMUX_ORCHESTRATOR_AUTOMATION_DISABLE=1) must always win",
+    "Every automatic action emits a receipt that names tier, source, action, outcome, and (false) mutation flag",
+    "TX/TU/T6 always refuse, regardless of config",
+    "Daemon must not invoke any of TP-DMX-ORCH-009-LIVE / 012-LIVE write paths directly; it may only schedule read-only commands and approval-phrase-required commands that the operator pre-approved via config",
+    "Daemon is a single process; multi-host scheduling is out of scope"
+  ],
+  "depends_on": [
+    "TP-DMX-ORCH-013-LIVE"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ORCH-INTEGRATION-FOLLOWUP",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-ORCH-016",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "claude/tp-dmx-orch-016-daemon",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(orchestrator): config-driven T0/T1 automation daemon with global disable",
+    "allowlist": [
+      "src/dopemux/orchestrator/automation/__init__.py",
+      "src/dopemux/orchestrator/automation/daemon.py",
+      "src/dopemux/orchestrator/automation/scheduler.py",
+      "src/dopemux/orchestrator/automation/receipt.py",
+      "src/dopemux/commands/orchestrator_commands.py",
+      "config/orchestrator/automation.yaml.example",
+      "tests/unit/orchestrator/test_automation_daemon.py",
+      "tests/unit/orchestrator/test_automation_scheduler.py",
+      "tests/unit/orchestrator/test_operator_workflows.py",
+      "docs/03-reference/orchestrator-integration/automation/_index.md",
+      "task-packets/generated/TP-DMX-ORCH-016-DAEMON.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-016-DAEMON/PROOF.json"
+    ],
+    "verify": [
+      ".venv/bin/python -m compileall -q src",
+      ".venv/bin/python -m pytest -q tests/unit/orchestrator/test_automation_daemon.py tests/unit/orchestrator/test_automation_scheduler.py tests/unit/orchestrator/test_operator_workflows.py",
+      ".venv/bin/python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-016-DAEMON.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      ".venv/bin/python -m dopemux.cli orchestrator packet validate task-packets/generated/TP-DMX-ORCH-016-DAEMON.json --json-output",
+      ".venv/bin/python -m dopemux.cli orchestrator proof validate proof/dmx-orch-integration/TP-DMX-ORCH-016-DAEMON/PROOF.json --json-output"
+    ]
+  },
+  "pr": {
+    "title": "feat(orchestrator): config-driven T0/T1 automation daemon with global disable",
+    "body": "Implements the long-deferred automation pilot. Daemon is opt-in via config (default disabled). Honors a hard global kill switch via DOPEMUX_ORCHESTRATOR_AUTOMATION_DISABLE=1. Only T0/T1 actions are eligible for automatic invocation. Every run emits a receipt that records tier, source, action, outcome, and (false) mutation flag. TX/TU/T6 actions always refuse.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": ["analyze", "thinkdeep", "challenge", "planner", "challenge", "secaudit", "codereview", "precommit", "challenge"]
+  },
+  "steps": [
+    {
+      "id": "config_schema",
+      "task": "Define the YAML config schema at config/orchestrator/automation.yaml.example: enabled (default false), actions (each with tier_max, command, schedule, on_failure), global disable doc.",
+      "validation": [
+        "Schema rejects tier_max >= T2.",
+        "Schema rejects commands that map to T6/TX/TU capabilities from the approval policy."
+      ]
+    },
+    {
+      "id": "kill_switch",
+      "task": "Implement the DOPEMUX_ORCHESTRATOR_AUTOMATION_DISABLE env-var kill switch that short-circuits every scheduling decision before any policy check.",
+      "validation": [
+        "Tests assert that setting the var to '1', 'true', or 'yes' refuses every action regardless of config.",
+        "Kill switch overrides even if config.enabled is true and approval phrase is supplied."
+      ]
+    },
+    {
+      "id": "scheduler",
+      "task": "Implement src/dopemux/orchestrator/automation/scheduler.py with a deterministic cron-like scheduler (no APScheduler — keep dependencies thin).",
+      "validation": [
+        "Tests cover one-shot, periodic, and 'on-event' triggers.",
+        "Tests assert deterministic ordering of concurrent triggers in the same tick."
+      ]
+    },
+    {
+      "id": "daemon_runtime",
+      "task": "Implement src/dopemux/orchestrator/automation/daemon.py as the long-running runtime; ensure clean shutdown on SIGTERM/SIGINT and idempotent re-entry.",
+      "validation": [
+        "Daemon tests run in-process and exit cleanly on signal.",
+        "Re-entry tests confirm no duplicate scheduling of the same action across restarts."
+      ]
+    },
+    {
+      "id": "receipts",
+      "task": "Implement automation receipts that mirror the existing receipt model: tier, source, action, outcome, mutation=false, scheduled_at, ran_at, exit_code.",
+      "validation": [
+        "Receipt fixtures round-trip via the chosen schema.",
+        "Receipts are emitted whether the action succeeds, fails, or refuses."
+      ]
+    },
+    {
+      "id": "cli_command",
+      "task": "Add `orchestrator automation daemon start/stop/status` CLI subcommands.",
+      "validation": [
+        "CLI tests cover disabled config (refuse start), kill switch active (refuse start), and successful start in dry-run mode.",
+        "Status subcommand reports last N receipts."
+      ]
+    },
+    {
+      "id": "refusal_matrix",
+      "task": "Add a refusal-matrix test that asserts the daemon refuses every T2/T4/T5/T6/TX/TU capability under every config permutation.",
+      "validation": [
+        "Matrix is generated from the approval policy capability registry — adding a new T4 capability automatically adds a refusal test case.",
+        "Matrix passes with zero false positives."
+      ]
+    },
+    {
+      "id": "proof_bundle",
+      "task": "Emit proof bundle at proof/dmx-orch-integration/TP-DMX-ORCH-016-DAEMON/PROOF.json.",
+      "validation": [
+        "dopemux orchestrator proof validate exits 0.",
+        "Proof status is READY_FOR_REVIEW only after the refusal matrix and secaudit pass."
+      ]
+    }
+  ]
+}

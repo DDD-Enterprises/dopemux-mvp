@@ -1,0 +1,54 @@
+{
+  "bundle_id": "TP-DMX-ORCH-012-LIVE-PROOF",
+  "run_id": "tp-dmx-orch-012-live-plan",
+  "skill": "codex",
+  "status": "PLAN_ONLY",
+  "validation_state": "NOT_STARTED",
+  "created_at": "2026-05-26T17:30:00Z",
+  "manifest": {
+    "bundle_id": "TP-DMX-ORCH-012-LIVE-PROOF",
+    "packet_id": "TP-DMX-ORCH-012-LIVE",
+    "generated_artifacts": [
+      "task-packets/generated/TP-DMX-ORCH-012-LIVE.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-012-LIVE/PROOF.json"
+    ]
+  },
+  "authoritative_artifacts": [
+    "task-packets/generated/TP-DMX-ORCH-012-LIVE.json"
+  ],
+  "supporting_artifacts": [
+    "proof/dmx-orch-integration/TP-DMX-ORCH-012-LIVE/PROOF.json"
+  ],
+  "chain_of_custody": {
+    "documented": true,
+    "source_version": "TP-DMX-ORCH-012-LIVE",
+    "created_at": "2026-05-26T17:30:00Z",
+    "parent_bundle_ids": [
+      "TP-DMX-ORCH-012",
+      "TP-DMX-ORCH-009-LIVE"
+    ]
+  },
+  "warnings": [],
+  "blockers": [],
+  "not_run": [
+    "Implementation: live transition POST, idempotency replay-cache, and envelope validation wiring — work has not started.",
+    "pal/tracer + pal/secaudit on the apply path: deferred until implementation.",
+    "Live integration against the running Python coordination API (port 8000) and the Kotlin task-orchestrator MCP: deferred until implementation."
+  ],
+  "residual_risks": [
+    "High-risk T4 mutation surface; tracer is mandatory per the architecture-sensitive PAL chain.",
+    "Local replay cache is process-local; a multi-process operator session could double-apply if cache state is not persisted (out of scope for this packet but recorded here).",
+    "Envelope schema drift from upstream Kotlin task-orchestrator (TP-DMX-ORCH-014A-UPSTREAM) will cause apply to refuse; this is intentional fail-closed behavior but operators must be aware."
+  ],
+  "rollback_plan": [
+    "Remove src/dopemux/orchestrator/transitions.py and idempotency.py.",
+    "Revert transition_apply_plan in src/dopemux/orchestrator/operator_workflows.py to the preview-only stub.",
+    "Revert `orchestrator transition apply` CLI to its previous approval-phrase-only output.",
+    "Remove integration tests under tests/integration/orchestrator/test_transitions_integration.py.",
+    "Remove task-packets/generated/TP-DMX-ORCH-012-LIVE.json and its proof bundle."
+  ],
+  "commit_sha": null,
+  "commit_sha_policy": "PLAN_ONLY bundles are committed before implementation; commit_sha is populated by the implementation packet's own proof at the time of execution.",
+  "pr_url": null,
+  "cleanup_status": "PLAN_ONLY"
+}

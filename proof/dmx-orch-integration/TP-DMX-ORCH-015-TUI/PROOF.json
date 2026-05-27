@@ -1,0 +1,51 @@
+{
+  "bundle_id": "TP-DMX-ORCH-015-TUI-PROOF",
+  "run_id": "tp-dmx-orch-015-tui-plan",
+  "skill": "codex",
+  "status": "PLAN_ONLY",
+  "validation_state": "NOT_STARTED",
+  "created_at": "2026-05-26T17:30:00Z",
+  "manifest": {
+    "bundle_id": "TP-DMX-ORCH-015-TUI-PROOF",
+    "packet_id": "TP-DMX-ORCH-015-TUI",
+    "generated_artifacts": [
+      "task-packets/generated/TP-DMX-ORCH-015-TUI.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-015-TUI/PROOF.json"
+    ]
+  },
+  "authoritative_artifacts": [
+    "task-packets/generated/TP-DMX-ORCH-015-TUI.json"
+  ],
+  "supporting_artifacts": [
+    "proof/dmx-orch-integration/TP-DMX-ORCH-015-TUI/PROOF.json"
+  ],
+  "chain_of_custody": {
+    "documented": true,
+    "source_version": "TP-DMX-ORCH-015-TUI",
+    "created_at": "2026-05-26T17:30:00Z",
+    "parent_bundle_ids": [
+      "TP-DMX-ORCH-015"
+    ]
+  },
+  "warnings": [],
+  "blockers": [],
+  "not_run": [
+    "Implementation: Textual app shell, 8 widgets, data-source adapters, and snapshot tests — work has not started.",
+    "Cross-platform snapshot determinism (Linux vs macOS) confirmation: deferred until snapshot tests are added.",
+    "Operator usability evaluation: out of scope; a future packet may add interactive operator review."
+  ],
+  "residual_risks": [
+    "Textual snapshot stability across CI environments can be brittle; the implementation must pin Textual version and use deterministic terminal-size fixtures.",
+    "Action buttons that surface but do not perform a mutation can mislead operators if approval-prompt UX drifts from the CLI behavior — a single approval-phrase source of truth must back both."
+  ],
+  "rollback_plan": [
+    "Remove src/dopemux/tui/ and src/dopemux/orchestrator/ui/ in their entirety.",
+    "Revert the `orchestrator tui` CLI subcommand in src/dopemux/commands/orchestrator_commands.py.",
+    "Remove tests/unit/tui/ and tests/snapshots/tui/.",
+    "Remove task-packets/generated/TP-DMX-ORCH-015-TUI.json and its proof bundle."
+  ],
+  "commit_sha": null,
+  "commit_sha_policy": "PLAN_ONLY bundles are committed before implementation; commit_sha is populated by the implementation packet's own proof at the time of execution.",
+  "pr_url": null,
+  "cleanup_status": "PLAN_ONLY"
+}

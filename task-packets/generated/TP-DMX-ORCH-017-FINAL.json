@@ -1,0 +1,121 @@
+{
+  "id": "TP-DMX-ORCH-017-FINAL",
+  "project": "dopemux-mvp",
+  "target": "Run the real end-to-end acceptance matrix for the DMX-ORCH-INTEGRATION series after every live follow-up packet has landed, and emit the final VERIFIED proof bundle for the series",
+  "invariants": [
+    "Final acceptance must NOT be claimed without real end-to-end evidence — bundle-level shape checks are insufficient",
+    "All TP-DMX-ORCH-{008..017} packets must advance from NOT_RUN to PASS per-packet codereview before this packet emits its proof",
+    "Live runs against ConPort, dope-memory, dope-context, the Python coordination API, the Kotlin task-orchestrator, and GitHub MUST occur in a controlled environment with explicit operator approval",
+    "Safety matrix (TX/TU/T6 refusal under live conditions) must produce zero false negatives",
+    "Authority audit must confirm no canonical-writer drift: no bridge surface acts as authority, no read surface mutates state",
+    "Supervisor Ledger acceptance remains external to this proof; ready_for_merge stays false until the ledger entry is recorded"
+  ],
+  "depends_on": [
+    "TP-DMX-ORCH-DOCS-001",
+    "TP-DMX-ORCH-PROOF-PERPACKET-001",
+    "TP-DMX-ORCH-009-LIVE",
+    "TP-DMX-ORCH-012-LIVE",
+    "TP-DMX-ORCH-013-LIVE",
+    "TP-DMX-ORCH-014A-UPSTREAM",
+    "TP-DMX-ORCH-015-TUI",
+    "TP-DMX-ORCH-016-DAEMON"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ORCH-INTEGRATION-FOLLOWUP",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-ORCH-017",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "gemini",
+    "branch": "claude/tp-dmx-orch-017-final",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "test(orchestrator): final DMX-ORCH integration acceptance proof",
+    "allowlist": [
+      "tests/integration/orchestrator/test_e2e_acceptance.py",
+      "tests/integration/orchestrator/test_safety_matrix.py",
+      "tests/integration/orchestrator/test_authority_audit.py",
+      "scripts/orchestrator/run_final_acceptance.py",
+      "docs/03-reference/orchestrator-integration/_index.md",
+      "docs/03-reference/orchestrator-integration/final-acceptance.md",
+      "task-packets/generated/TP-DMX-ORCH-017-FINAL.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-017-FINAL/PROOF.json"
+    ],
+    "verify": [
+      ".venv/bin/python -m compileall -q src scripts",
+      ".venv/bin/python -m pytest -q tests/integration/orchestrator",
+      ".venv/bin/python scripts/orchestrator/run_final_acceptance.py --report proof/dmx-orch-integration/TP-DMX-ORCH-017-FINAL/PROOF.json",
+      ".venv/bin/python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-017-FINAL.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      ".venv/bin/python -m dopemux.cli orchestrator packet validate task-packets/generated/TP-DMX-ORCH-017-FINAL.json --json-output",
+      ".venv/bin/python -m dopemux.cli orchestrator proof validate proof/dmx-orch-integration/TP-DMX-ORCH-017-FINAL/PROOF.json --json-output"
+    ]
+  },
+  "pr": {
+    "title": "test(orchestrator): final DMX-ORCH integration acceptance proof",
+    "body": "Runs the full end-to-end acceptance matrix for the DMX-ORCH-INTEGRATION series. Depends on every live follow-up packet landing first. Emits the final READY_FOR_REVIEW proof bundle; final VERIFIED status is awarded only when the Supervisor Ledger records its acceptance entry. Gemini-led to keep implementation-author and acceptance-author separate.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": ["analyze", "thinkdeep", "challenge", "planner", "challenge", "tracer", "secaudit", "codereview", "precommit", "challenge"]
+  },
+  "steps": [
+    {
+      "id": "preflight_check_dependencies",
+      "task": "Verify every dependency packet (DOCS-001, PROOF-PERPACKET-001, 009-LIVE, 012-LIVE, 013-LIVE, 014A-UPSTREAM, 014B equivalent inside 012-LIVE, 015-TUI, 016-DAEMON) is merged on main and has a PASS codereview_status in its proof bundle.",
+      "validation": [
+        "Preflight artifact lists each dependency packet, its merge SHA, and its codereview_status.result.",
+        "If any dependency is missing or not PASS, this packet refuses to advance to step 2."
+      ]
+    },
+    {
+      "id": "e2e_acceptance_matrix",
+      "task": "Implement tests/integration/orchestrator/test_e2e_acceptance.py that walks the full operator workflow: morning startup -> context refresh -> packet forge -> intake -> audit -> transition preview -> transition apply -> PR readiness -> PR comment. Each step exercises live (but controlled) services.",
+      "validation": [
+        "Every step produces a deterministic JSON receipt.",
+        "Receipts are collected into a single matrix artifact for review."
+      ]
+    },
+    {
+      "id": "safety_matrix",
+      "task": "Implement tests/integration/orchestrator/test_safety_matrix.py that confirms every TX/TU/T6 capability refuses under live conditions, including dope-context.clear_index, force-push, and unknown external v3 tools.",
+      "validation": [
+        "Matrix asserts deterministic refusal with non-empty error messages.",
+        "Zero false negatives (no TX/TU/T6 capability silently accepted)."
+      ]
+    },
+    {
+      "id": "authority_audit",
+      "task": "Implement tests/integration/orchestrator/test_authority_audit.py that programmatically confirms: ConPort is the only writer of structured decisions/progress, dope-memory is the only writer of chronicle receipts, dopetask is the only execution runtime, task-orchestrator is the only workflow-transition writer, dopecon-bridge is never the canonical writer, dope-context never mutates source truth.",
+      "validation": [
+        "Audit ingests live receipts and emits a canonical_writer count per data class.",
+        "Audit fails with named offenders if any capability surface drifts."
+      ]
+    },
+    {
+      "id": "operator_runbook",
+      "task": "Write docs/03-reference/orchestrator-integration/final-acceptance.md documenting the final operator runbook, the acceptance gates, and the Supervisor Ledger handoff.",
+      "validation": [
+        "Doc links to every dependency packet's proof bundle and PR.",
+        "Doc captures known UNKNOWNs that must persist after VERIFIED is recorded."
+      ]
+    },
+    {
+      "id": "final_proof_bundle",
+      "task": "Run scripts/orchestrator/run_final_acceptance.py to assemble the final proof bundle at proof/dmx-orch-integration/TP-DMX-ORCH-017-FINAL/PROOF.json with the full validations array (live exit codes), codereview/precommit status, e2e matrix snapshot, safety matrix snapshot, authority audit, residual_risks, and rollback_plan.",
+      "validation": [
+        "dopemux orchestrator proof validate exits 0.",
+        "Proof status is READY_FOR_REVIEW (not VERIFIED — Supervisor Ledger holds that authority).",
+        "ready_for_merge remains false; the Supervisor Ledger entry is the only path to VERIFIED."
+      ]
+    }
+  ]
+}
