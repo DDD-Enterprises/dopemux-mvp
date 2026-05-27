@@ -15,7 +15,7 @@ import jsonschema
 import pytest
 
 _SCHEMA_PATH = pathlib.Path(__file__).parents[2] / "schemas" / "copilot" / "repair_packet.schema.json"
-_TEMPLATE_PATH = pathlib.Path(__file__).parents[2] / "docs" / "templates" / "copilot" / "PR_REPAIR_PACKET.md"
+_TEMPLATE_PATH = pathlib.Path(__file__).parents[2] / "docs" / "03-reference" / "templates" / "copilot" / "pr-repair-packet.md"
 
 _SCHEMA = json.loads(_SCHEMA_PATH.read_text())
 

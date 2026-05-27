@@ -1,3 +1,15 @@
+---
+id: branch-policy-audit
+title: Branch Policy Audit
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-27'
+last_review: '2026-05-27'
+next_review: '2026-08-25'
+prelude: Branch Policy Audit (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Branch Protection Policy Audit
 
 > **Status**: Evidence captured 2026-05-27 via admin-accessible `gh api`.

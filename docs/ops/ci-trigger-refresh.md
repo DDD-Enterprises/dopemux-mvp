@@ -4,8 +4,12 @@ title: CI Trigger Refresh Runbook
 type: how-to
 owner: '@hu3mann'
 date: '2026-05-26'
+author: '@hu3mann'
+last_review: '2026-05-27'
+next_review: '2026-08-25'
+prelude: CI Trigger Refresh Runbook (explanation) for dopemux documentation and developer
+  workflows.
 ---
-
 # CI Trigger Refresh Runbook
 
 ## What Changed (TP-DMX-CI-TRIGGERS-008)

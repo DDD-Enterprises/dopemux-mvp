@@ -1,3 +1,14 @@
+---
+id: pr-fixtures
+title: Pr Fixtures
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-27'
+last_review: '2026-05-27'
+next_review: '2026-08-25'
+prelude: Pr Fixtures (explanation) for dopemux documentation and developer workflows.
+---
 # PR Steward and Action Bridge Fixtures
 
 **TP**: TP-DMX-PR-FIXTURES-011

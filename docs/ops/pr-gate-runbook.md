@@ -1,3 +1,14 @@
+---
+id: pr-gate-runbook
+title: Pr Gate Runbook
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-27'
+last_review: '2026-05-27'
+next_review: '2026-08-25'
+prelude: Pr Gate Runbook (explanation) for dopemux documentation and developer workflows.
+---
 # PR Gate Runbook
 
 > **Status**: Active — `ci-summary` job in `.github/workflows/ci-complete.yml`

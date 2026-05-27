@@ -203,7 +203,7 @@
       "proof_path": "proof/TP-DMX-COPILOT-REPAIR-007/PROOF.json",
       "files_allowed": [
         "docs/ops/copilot-pr-repair-lane.md",
-        "docs/templates/copilot/PR_REPAIR_PACKET.md",
+        "docs/03-reference/templates/copilot/pr-repair-packet.md",
         "schemas/copilot/repair_packet.schema.json",
         "tests/copilot_repair/**",
         "proof/TP-DMX-COPILOT-REPAIR-007/**"
