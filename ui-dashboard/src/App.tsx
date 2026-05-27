@@ -19,7 +19,22 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { AlertTriangle, Bell, Brain, Check, Copy, Droplet, Eye, Trash2, TrendingUp, Zap } from 'lucide-react';
+import {
+  AlertCircle,
+  AlertTriangle,
+  Bell,
+  Brain,
+  Check,
+  CheckCircle,
+  Clock,
+  Copy,
+  Droplet,
+  Eye,
+  PauseCircle,
+  Trash2,
+  TrendingUp,
+  Zap,
+} from 'lucide-react';
 
 import { dashboardApiHeaders, dashboardApiUrl, dashboardWsUrl } from './config';
 import CognitiveLoadGauge from './components/CognitiveLoadGauge';
@@ -124,6 +139,28 @@ const formatTimestamp = (dateStr: string) => {
   const mm = date.getMinutes().toString().padStart(2, '0');
   const ss = date.getSeconds().toString().padStart(2, '0');
   return `[${hh}:${mm}:${ss}]`;
+};
+
+const getNotificationIcon = (type: string) => {
+  const iconSize = 14;
+  switch (type) {
+    case 'decision':
+      return <CheckCircle size={iconSize} aria-hidden="true" />;
+    case 'progress':
+      return <TrendingUp size={iconSize} aria-hidden="true" />;
+    case 'break':
+      return <PauseCircle size={iconSize} aria-hidden="true" />;
+    case 'session':
+      return <Clock size={iconSize} aria-hidden="true" />;
+    case 'warning':
+      return <AlertTriangle size={iconSize} aria-hidden="true" />;
+    case 'error':
+      return <AlertCircle size={iconSize} aria-hidden="true" />;
+    case 'hyperfocus':
+      return <Zap size={iconSize} aria-hidden="true" />;
+    default:
+      return <Bell size={iconSize} aria-hidden="true" />;
+  }
 };
 
 function App() {
@@ -443,7 +480,7 @@ function App() {
                   )
                 }
                 label={`Recommendation: ${cognitiveState.recommendation}`}
-                aria-label={isCopied ? 'Recommendation copied to clipboard' : `AI Recommendation: ${cognitiveState.recommendation}. Click to copy.`}
+                aria-label={isCopied ? `AI Recommendation: ${cognitiveState.recommendation} (Copied)` : `AI Recommendation: ${cognitiveState.recommendation}`}
                 onClick={handleCopyRecommendation}
                 tabIndex={0}
                 sx={{
@@ -471,7 +508,7 @@ function App() {
                   }),
                 }}
               />
-            </Tooltip>oltip>
+            </Tooltip>
           </Box>
         </Box>
 
@@ -621,6 +658,7 @@ function App() {
                 return (
                   <Fade in={true} key={`${notification.timestamp}-${notification.message}`}>
                     <Chip
+                      icon={getNotificationIcon(notification.notificationType)}
                       label={`${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`}
                       variant="outlined"
                       tabIndex={0}
