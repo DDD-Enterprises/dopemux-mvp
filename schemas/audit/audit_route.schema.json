@@ -16,7 +16,7 @@
       "type": "string",
       "minLength": 1,
       "description": "Executable to probe for on PATH (e.g. claude, gemini). Must not be codex.",
-      "not": {"enum": ["codex"]}
+      "not": {"enum": ["codex", "codex-audit"]}
     },
     "priority": {
       "type": "integer",

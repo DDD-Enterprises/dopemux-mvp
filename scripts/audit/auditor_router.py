@@ -14,6 +14,7 @@ Usage:
 from __future__ import annotations
 
 import json
+import os
 import shutil
 from collections.abc import Callable
 from pathlib import Path
@@ -22,7 +23,9 @@ from typing import Optional
 from scripts.audit.route_schema import AuditRoute
 
 # Path to the PAL clink client config directory — used by default_routes().
-_CLINK_CONF_DIR = (
+_CLINK_CONF_DIR = Path(
+    os.environ.get("DOPEMUX_CLINK_CONF_DIR", "")
+) if os.environ.get("DOPEMUX_CLINK_CONF_DIR") else (
     Path(__file__).resolve().parents[2]
     / "docker/mcp-servers-source/pal/pal-mcp-server/conf/cli_clients"
 )

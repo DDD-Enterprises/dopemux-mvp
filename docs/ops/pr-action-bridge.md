@@ -27,9 +27,9 @@ The compiler is a **pure function** — no filesystem I/O, no GitHub mutation, n
 ## Usage
 
 ```python
-from tools.pr_action_bridge.compiler import compile
+from tools.pr_action_bridge.compiler import compile_action_plan
 
-action_plan, repair_packet_md = compile(
+action_plan, repair_packet_md = compile_action_plan(
     merge_readiness=merge_readiness_json,
     review_ledger=review_ledger_json,
     thread_dispositions=thread_dispositions_json,
@@ -84,7 +84,9 @@ Actions are locked to the blocker taxonomy from `classifier._readiness()`:
 | `PR_CLOSED` | `pr-closed` | supervisor |
 | `MIXED_SHA_ARTIFACT_SET` | `mixed-sha` | supervisor |
 | `UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION` | `unknown-reviewer` | supervisor |
-| `PROOF_STALE_OR_MISSING` | `proof-stale` | supervisor |
+| `PROOF_STALE` | `proof-stale` | supervisor |
+| `PROOF_MISSING` | `proof-missing` | supervisor |
+| `UNKNOWN_PR_AUTHOR` | `unknown-pr-author` | supervisor |
 | `UNKNOWN_CHECK` | `unknown-check` | supervisor |
 | `REVIEW_ITEM_NEEDS_SUPERVISOR` | `needs-supervisor` | supervisor |
 | `EMBEDDED_AUDIT_*` (prefix) | `embedded-audit-failed` | supervisor |

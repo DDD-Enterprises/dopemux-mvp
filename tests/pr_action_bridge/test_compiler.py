@@ -27,9 +27,15 @@ def _schema() -> dict:
 
 def _ready_readiness(pr_number: int = 42, repo: str = "owner/repo") -> dict:
     return {
-        "schema_version": "1.0.0",
-        "pr_number": pr_number,
-        "repo": repo,
+        "pr": {
+            "number": pr_number,
+            "url": f"https://github.com/{repo}/pull/{pr_number}",
+            "base_ref": "main",
+            "head_ref": "test-branch",
+            "head_sha": "abc1234",
+            "changed_files": [],
+            "commits": [],
+        },
         "readiness": "READY",
         "blockers": [],
     }
@@ -37,9 +43,15 @@ def _ready_readiness(pr_number: int = 42, repo: str = "owner/repo") -> dict:
 
 def _readiness_with_blockers(blockers: list[str], tier: str = "BLOCKED") -> dict:
     return {
-        "schema_version": "1.0.0",
-        "pr_number": 99,
-        "repo": "owner/repo",
+        "pr": {
+            "number": 99,
+            "url": "https://github.com/owner/repo/pull/99",
+            "base_ref": "main",
+            "head_ref": "test-branch",
+            "head_sha": "abc1234",
+            "changed_files": [],
+            "commits": [],
+        },
         "readiness": tier,
         "blockers": blockers,
     }
@@ -490,13 +502,15 @@ class TestUnknownBlockerAndSequentialIds:
 
 class TestInputValidation:
     def test_missing_pr_number_raises(self) -> None:
-        mr = {"repo": "owner/repo", "readiness": "READY", "blockers": []}
-        with pytest.raises(KeyError, match="pr_number"):
+        # Neither nested 'pr' nor flat 'pr_number'/'repo' present — should raise KeyError
+        mr = {"readiness": "READY", "blockers": []}
+        with pytest.raises(KeyError, match="pr.*nested classifier shape.*flat shape"):
             compile(mr, _EMPTY_LEDGER, _EMPTY_THREADS, _EMPTY_CI)
 
     def test_missing_repo_raises(self) -> None:
+        # Neither nested 'pr' nor both flat keys present — should raise KeyError
         mr = {"pr_number": 1, "readiness": "READY", "blockers": []}
-        with pytest.raises(KeyError, match="repo"):
+        with pytest.raises(KeyError, match="pr.*nested classifier shape.*flat shape"):
             compile(mr, _EMPTY_LEDGER, _EMPTY_THREADS, _EMPTY_CI)
 
     def test_missing_readiness_raises(self) -> None:

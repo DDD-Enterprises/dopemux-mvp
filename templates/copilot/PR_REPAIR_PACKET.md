@@ -11,7 +11,8 @@ items to GitHub Copilot. The following operations are PROHIBITED:
   5. Copilot MUST NOT import or invoke tools/pr_merge.
   6. Copilot MUST NOT act on supervisor-role items (harvest-incomplete,
      pr-is-draft, pr-closed, mixed-sha, unknown-reviewer, proof-stale,
-     unknown-check, needs-supervisor, embedded-audit-failed).
+     proof-missing, unknown-pr-author, unknown-check, needs-supervisor,
+     embedded-audit-failed).
   7. Copilot MUST NOT act on ci-role items (pending-check).
 
 Copilot authority: implementer-only (L1-L2 code changes only).

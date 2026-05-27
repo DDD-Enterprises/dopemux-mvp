@@ -128,13 +128,28 @@ def compile_action_plan(
 
     Returns (action_plan_dict, repair_packet_md).
     """
-    for required in ("pr_number", "repo", "readiness"):
-        if required not in merge_readiness:
-            raise KeyError(f"merge_readiness.{required} is required")
+    if "readiness" not in merge_readiness:
+        raise KeyError("merge_readiness.readiness is required")
 
     generated = generated_at or _utc_now()
-    pr_number = int(merge_readiness["pr_number"])
-    repo = str(merge_readiness["repo"])
+
+    # Support both the nested classifier shape (merge_readiness["pr"]["number"]) and
+    # the legacy flat shape (merge_readiness["pr_number"] / merge_readiness["repo"]).
+    if "pr" in merge_readiness:
+        pr_obj = merge_readiness["pr"]
+        pr_number = int(pr_obj["number"])
+        # Extract owner/repo from GitHub PR URL: https://github.com/owner/repo/pull/N
+        url_parts = str(pr_obj.get("url", "")).rstrip("/").split("/")
+        repo = f"{url_parts[-4]}/{url_parts[-3]}" if len(url_parts) >= 5 else "unknown/unknown"
+    elif "pr_number" in merge_readiness and "repo" in merge_readiness:
+        pr_number = int(merge_readiness["pr_number"])
+        repo = str(merge_readiness["repo"])
+    else:
+        raise KeyError(
+            "merge_readiness must contain 'pr' (nested classifier shape) "
+            "or both 'pr_number' and 'repo' (flat shape)"
+        )
+
     readiness = str(merge_readiness["readiness"])
     blockers: list[str] = list(merge_readiness.get("blockers") or [])
 
@@ -200,7 +215,8 @@ def _render_repair_packet(action_plan: dict[str, Any]) -> str:
         if role in by_role:
             by_role[role].append(action)
         else:
-            by_role.setdefault(role, []).append(action)
+            # Unknown role: fail closed to supervisor so the action is never silently dropped.
+            by_role["supervisor"].append(action)
 
     role_headings = {
         "supervisor": "## Supervisor Actions",

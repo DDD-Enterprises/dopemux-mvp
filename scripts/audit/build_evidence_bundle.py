@@ -131,8 +131,12 @@ def build_bundle(
     if bundle_id is None:
         bundle_id = tp_id or created_at
 
-    # relative source_root — do NOT embed resolved host paths
-    source_root_str = str(allowed_root)
+    # Stable, non-host-path source_root: relativize from cwd when possible,
+    # otherwise fall back to the directory name only.
+    try:
+        source_root_str = str(allowed_root.relative_to(Path.cwd()))
+    except ValueError:
+        source_root_str = allowed_root.name
 
     included: list[FileRecord] = []
     rejected_list: list[FileRecord] = []

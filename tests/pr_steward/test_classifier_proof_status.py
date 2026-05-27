@@ -80,13 +80,14 @@ class TestProofFreshnessSubstates:
         result = _proof({})
         assert result["proof_freshness"] == "MISSING"
 
-    def test_path_set_but_no_sha_is_stale(self) -> None:
+    def test_path_set_but_no_sha_is_missing(self) -> None:
+        # proof_path present but no verifiable SHA — cannot confirm freshness, treat as MISSING.
         result = _proof({"proof": {
             "proof_path": "proof/PROOF.json",
             "proof_head_sha": None,
             "matches_pr_head": False,
         }})
-        assert result["proof_freshness"] == "STALE"
+        assert result["proof_freshness"] == "MISSING"
 
     def test_proof_freshness_field_present_in_returned_dict(self) -> None:
         result = _proof({"proof": {
