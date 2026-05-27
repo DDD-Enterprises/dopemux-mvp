@@ -6,7 +6,7 @@
   "branch": "claude/upbeat-thompson-35f2e8",
   "base_branch": "main",
   "head_before": "f422f8d04",
-  "head_after": "PENDING_COMMIT",
+  "head_after": "3b9b06fe5",
   "mutation_performed": false,
   "github_mutation_performed": false,
   "secret_values_recorded": false,
@@ -120,8 +120,8 @@
   },
   "embedded_audit_status": "PASS_WITH_RISKS",
   "commit": {
-    "performed": false,
-    "sha": null,
+    "performed": true,
+    "sha": "3b9b06fe5",
     "message": "fix(pr-steward): harden readiness risk classification"
   },
   "governance": {
