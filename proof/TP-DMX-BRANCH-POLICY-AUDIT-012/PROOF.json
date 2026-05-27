@@ -20,34 +20,70 @@
     {
       "cmd": "gh api repos/DDD-Enterprises/dopemux-mvp/branches/main/protection",
       "exit_code": 0,
-      "result": "HTTP 200 — full branch protection JSON returned (admin access confirmed)"
+      "result": "HTTP 200 \u2014 full branch protection JSON returned (admin access confirmed)"
     },
     {
       "cmd": "gh api repos/DDD-Enterprises/dopemux-mvp/rulesets",
       "exit_code": 0,
-      "result": "HTTP 200 — 1 ruleset (id: 13063360)"
+      "result": "HTTP 200 \u2014 1 ruleset (id: 13063360)"
     },
     {
       "cmd": "gh api repos/DDD-Enterprises/dopemux-mvp/rulesets/13063360",
       "exit_code": 0,
-      "result": "HTTP 200 — ruleset detail: deletion, non_fast_forward, pull_request, copilot_code_review rules; no required_status_checks rule"
+      "result": "HTTP 200 \u2014 ruleset detail: deletion, non_fast_forward, pull_request, copilot_code_review rules; no required_status_checks rule"
     }
   ],
   "validation": {
     "status": "PASS",
     "details": [
-      {"check": "admin_api_access", "status": "PASS", "detail": "gh api returned HTTP 200 for all three calls; admin access confirmed"},
-      {"check": "classic_protection_captured", "status": "PASS", "detail": "7 required checks: Security Review, Documentation Check, identity-check, Unit Tests, Analyze python/js-ts/ruby; strict:true"},
-      {"check": "ruleset_captured", "status": "PASS", "detail": "Ruleset 13063360 active on ~DEFAULT_BRANCH; 4 rules: deletion, non_fast_forward, pull_request, copilot_code_review; no required_status_checks rule"},
-      {"check": "ci_summary_absent_confirmed", "status": "PASS", "detail": "ci-summary / 📊 CI Pipeline Summary confirmed ABSENT from required status checks. TP-009 gap is real. Operator action documented."},
-      {"check": "no_branch_protection_mutated", "status": "PASS", "detail": "Read-only audit only; zero writes to GitHub API"},
-      {"check": "force_push_protected", "status": "PASS", "detail": "allow_force_pushes:false (classic) + non_fast_forward rule (ruleset)"},
-      {"check": "copilot_cloud_agent_off", "status": "PASS", "detail": "copilot_code_review.review_on_push:false and review_draft_pull_requests:false — Copilot cloud-agent not enabled"}
+      {
+        "check": "admin_api_access",
+        "status": "PASS",
+        "detail": "gh api returned HTTP 200 for all three calls; admin access confirmed"
+      },
+      {
+        "check": "classic_protection_captured",
+        "status": "PASS",
+        "detail": "7 required checks: Security Review, Documentation Check, identity-check, Unit Tests, Analyze python/js-ts/ruby; strict:true"
+      },
+      {
+        "check": "ruleset_captured",
+        "status": "PASS",
+        "detail": "Ruleset 13063360 active on ~DEFAULT_BRANCH; 4 rules: deletion, non_fast_forward, pull_request, copilot_code_review; no required_status_checks rule"
+      },
+      {
+        "check": "ci_summary_absent_confirmed",
+        "status": "PASS",
+        "detail": "ci-summary / \ud83d\udcca CI Pipeline Summary confirmed ABSENT from required status checks. TP-009 gap is real. Operator action documented."
+      },
+      {
+        "check": "no_branch_protection_mutated",
+        "status": "PASS",
+        "detail": "Read-only audit only; zero writes to GitHub API"
+      },
+      {
+        "check": "force_push_protected",
+        "status": "PASS",
+        "detail": "allow_force_pushes:false (classic) + non_fast_forward rule (ruleset)"
+      },
+      {
+        "check": "copilot_cloud_agent_off",
+        "status": "PASS",
+        "detail": "copilot_code_review.review_on_push:false and review_draft_pull_requests:false \u2014 Copilot cloud-agent not enabled"
+      }
     ]
   },
   "embedded_audit": {
     "required": false,
-    "status": "NOT_RUN",
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-BRANCH-POLICY-AUDIT-012/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
     "skip_reason": "Read-only evidence capture TP with no code changes; no executable logic to review. PAL codereview not applicable to API evidence docs."
   },
   "embedded_audit_status": "NOT_RUN",
@@ -58,13 +94,13 @@
         "id": "F-012-HIGH-1",
         "title": "ci-summary absent from required status checks",
         "status": "OPEN_OPERATOR_ACTION_REQUIRED",
-        "body": "ci-summary / 📊 CI Pipeline Summary is not listed in required_status_checks.contexts. The gate added by TP-009 exits 1 when required jobs fail but GitHub will not block merge until this check is registered. Operator must add via Settings → Branches → main → Required status checks."
+        "body": "ci-summary / \ud83d\udcca CI Pipeline Summary is not listed in required_status_checks.contexts. The gate added by TP-009 exits 1 when required jobs fail but GitHub will not block merge until this check is registered. Operator must add via Settings \u2192 Branches \u2192 main \u2192 Required status checks."
       }
     ],
     "medium": [
       {
         "id": "F-012-MED-1",
-        "title": "enforce_admins: false — admins bypass all protections",
+        "title": "enforce_admins: false \u2014 admins bypass all protections",
         "status": "ACCEPTED_RISK",
         "body": "Classic protection has enforce_admins:false; ruleset bypass_mode:always for admin roles. Admins can merge without passing required checks. This is a known operational posture; accepted for developer velocity."
       }
@@ -99,7 +135,7 @@
   },
   "stop_conditions_hit": [],
   "remaining_risks": [
-    "F-012-HIGH-1: ci-summary not yet a required check — operator must add before TP-009 gate is enforced at merge",
+    "F-012-HIGH-1: ci-summary not yet a required check \u2014 operator must add before TP-009 gate is enforced at merge",
     "enforce_admins:false means admin merges bypass all required checks",
     "Evidence captured 2026-05-27; re-run gh api calls to verify current state before relying on this audit"
   ],
