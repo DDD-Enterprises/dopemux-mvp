@@ -164,7 +164,7 @@
       "task": "Gate 3 — Bounded print-config probe. Run `run_extraction_v5.py --phase A --step A2 --cost-profile value-default --print-config` (no `--execute`). Capture output via `bash -o pipefail` so a non-zero exit surfaces past the tee pipeline. Verify the resolved config includes a top-level `cost_profile` field, retains legacy routing fields for compatibility, and that no live provider call or live extraction took place.",
       "commands": [
         "bash -o pipefail -c 'RTE_DISABLE_LIVE_LLM_IN_TESTS=1 PYTHONPATH=services/repo-truth-extractor python services/repo-truth-extractor/run_extraction_v5.py --phase A --step A2 --run-id f_verify_002_print_config --output-root /tmp/rte-f-verify-002-print-config --cost-profile value-default --print-config 2>&1 | tee proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/bounded_lane_print_config.txt'",
-        "grep -q 'cost_profile' proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/bounded_lane_print_config.txt"
+        "python -c \"import json; content=open('proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/bounded_lane_print_config.txt').read(); idx=content.find('{'); d=json.loads(content[idx:]); assert 'cost_profile' in d, 'no top-level cost_profile'\""
       ],
       "validation": [
         "Probe exits 0.",
