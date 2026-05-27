@@ -251,9 +251,13 @@ def classify_capability(
             reason=f"Capability {capability_id} is not registered; fail closed.",
         )
 
+    automatic_allowed = capability.automatic_allowed
+    if capability.tier in {"T0", "T1"} and capability.mode in {"write", "destructive"}:
+        automatic_allowed = False
+
     allowed = (
         capability.decision == "allow"
-        and capability.automatic_allowed
+        and automatic_allowed
         and not capability.approval_required
         and capability.tier in {"T0", "T1"}
     )
@@ -267,7 +271,7 @@ def classify_capability(
         tier=capability.tier,
         mode=capability.mode,
         canonical_writer=capability.canonical_writer,
-        automatic_allowed=capability.automatic_allowed,
+        automatic_allowed=automatic_allowed,
         approval_required=capability.approval_required,
         receipt_required=capability.receipt_required,
         typed_confirmation_required=capability.typed_confirmation_required,

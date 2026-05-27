@@ -132,6 +132,7 @@
     "Revert CLI wiring for `orchestrator final proof` in src/dopemux/commands/orchestrator_commands.py."
   ],
   "commit_sha": null,
+  "blocker": "Active PR branch — commit SHA will be updated by the merge steward after review approval",
   "commit_sha_policy": "A committed proof file cannot self-reference the commit SHA that contains its final contents. The authoritative local commit SHA is reported by git after commit creation and in the session closeout.",
   "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/714",
   "cleanup_status": "WORKTREE_ACTIVE"
