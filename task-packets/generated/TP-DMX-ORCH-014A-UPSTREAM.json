@@ -7,7 +7,7 @@
     "Phase-gate enforcement MUST NOT weaken",
     "The envelope is additive metadata only — existing response consumers must continue to parse responses",
     "The Kotlin task-orchestrator does not gain execution authority or proof authority beyond workflow transition receipts",
-    "Envelope fields match the dopemux-mvp consumer in TP-DMX-ORCH-014B / SUPPORTED_TRANSITION_PROOF_SCHEMA_VERSION = '1'",
+    "Envelope fields match the dopemux-mvp consumer in TP-DMX-ORCH-017-FINAL / SUPPORTED_TRANSITION_PROOF_SCHEMA_VERSION = '1'",
     "Required envelope fields: schema_version, workflow_id, transition, idempotency_key, actor, canonical_writer (= 'task-orchestrator'), receipt { proof_id, operation, status }",
     "No new MCP write tools are added; this packet only mutates response payloads"
   ],
@@ -52,7 +52,7 @@
   },
   "pr": {
     "title": "feat(workflow): add Dopemux transition proof envelope to advance_item / complete_tree responses",
-    "body": "Adds an additive `dopemux_proof_envelope` field to advance_item and complete_tree responses so the Dopemux consumer (dopemux-mvp / TP-DMX-ORCH-014B) can validate workflow-transition receipts. Schema version is '1'. The envelope is metadata-only; existing parsers continue to read existing fields unchanged. No workflow semantics change. See docs/dopemux-integration.md for the full envelope contract.",
+    "body": "Adds an additive `dopemux_proof_envelope` field to advance_item and complete_tree responses so the Dopemux consumer (dopemux-mvp / TP-DMX-ORCH-017-FINAL) can validate workflow-transition receipts. Schema version is '1'. The envelope is metadata-only; existing parsers continue to read existing fields unchanged. No workflow semantics change. See docs/dopemux-integration.md for the full envelope contract.",
     "base": "main"
   },
   "pal_chain": {
@@ -91,7 +91,7 @@
       "task": "Snapshot the existing advance_item and complete_tree response JSON, then add the envelope and confirm the original fields are byte-for-byte unchanged.",
       "validation": [
         "Snapshot diff shows only the additive envelope; no existing keys renamed, removed, or reordered.",
-        "Consumer-side: the dopemux-mvp existing transition-handling unit tests continue to pass against an envelope-bearing response (verified separately in TP-DMX-ORCH-014B follow-up)."
+        "Consumer-side: the dopemux-mvp existing transition-handling unit tests continue to pass against an envelope-bearing response (verified separately in TP-DMX-ORCH-017-FINAL follow-up)."
       ]
     },
     {
@@ -107,12 +107,12 @@
       "task": "Write docs/dopemux-integration.md describing the envelope contract, the Dopemux consumer side, and the explicit note that this Kotlin server is NOT execution authority or proof authority — only a workflow-transition receipt.",
       "validation": [
         "Doc compiles into the existing site without lint failures.",
-        "Doc links back to the dopemux-mvp TP-DMX-ORCH-014B consumer."
+        "Doc links back to the dopemux-mvp TP-DMX-ORCH-017-FINAL consumer."
       ]
     },
     {
       "id": "proof_bundle",
-      "task": "Emit proof bundle at proof/TP-DMX-ORCH-014A-UPSTREAM/PROOF.json describing the gradle test runs, codereview/precommit status (detekt), not_run (live dopemux-mvp consumer round-trip — that's TP-DMX-ORCH-014B), residual_risks, and rollback_plan.",
+      "task": "Emit proof bundle at proof/TP-DMX-ORCH-014A-UPSTREAM/PROOF.json describing the gradle test runs, codereview/precommit status (detekt), not_run (live dopemux-mvp consumer round-trip — that's TP-DMX-ORCH-017-FINAL), residual_risks, and rollback_plan.",
       "validation": [
         "Proof JSON is well-formed.",
         "Proof status is READY_FOR_REVIEW only after `./gradlew :current:test` exits 0 with the new envelope tests included."

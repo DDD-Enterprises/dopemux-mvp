@@ -43,5 +43,6 @@
   "commit_sha": null,
   "commit_sha_policy": "PLAN_ONLY bundles are committed before implementation; commit_sha is populated by the implementation packet's own proof at the time of execution.",
   "pr_url": null,
+  "blocker": "PLAN_ONLY packet — no commit or PR until execution packet runs",
   "cleanup_status": "PLAN_ONLY"
 }
