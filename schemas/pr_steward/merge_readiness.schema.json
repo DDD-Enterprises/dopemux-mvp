@@ -91,6 +91,78 @@
         },
         "matches_pr_head": {
           "type": "boolean"
+        },
+        "proof_freshness": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "matches_pr_head",
+            "reason",
+            "proof_recorded_sha",
+            "pr_head_sha",
+            "self_reference_exception"
+          ],
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "CURRENT",
+                "CURRENT_WITH_SELF_REFERENCE_EXCEPTION",
+                "STALE",
+                "MISSING",
+                "UNKNOWN"
+              ]
+            },
+            "matches_pr_head": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "proof_recorded_sha": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "pr_head_sha": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "self_reference_exception": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "supervisor_accepted": {
+                  "type": "boolean"
+                },
+                "allowed_when": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "changed_files": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "note": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -138,21 +210,51 @@
               "status"
             ]
           },
-          "proof": {
-            "properties": {
-              "proof_head_sha": {
-                "type": "string",
-                "minLength": 1
-              },
-              "matches_pr_head": {
-                "const": true
-              }
-            },
-            "required": [
-              "proof_head_sha",
-              "matches_pr_head"
-            ]
-          },
+                    "proof": {
+                        "anyOf": [
+                            {
+                                "properties": {
+                                    "proof_head_sha": {
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "matches_pr_head": {
+                                        "const": true
+                                    }
+                                },
+                                "required": [
+                                    "proof_head_sha",
+                                    "matches_pr_head"
+                                ]
+                            },
+                            {
+                                "properties": {
+                                    "proof_head_sha": {
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "matches_pr_head": {
+                                        "const": false
+                                    },
+                                    "proof_freshness": {
+                                        "properties": {
+                                            "status": {
+                                                "const": "CURRENT_WITH_SELF_REFERENCE_EXCEPTION"
+                                            }
+                                        },
+                                        "required": [
+                                            "status"
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "proof_head_sha",
+                                    "matches_pr_head",
+                                    "proof_freshness"
+                                ]
+                            }
+                        ]
+                    },
           "blockers": {
             "maxItems": 0
           },

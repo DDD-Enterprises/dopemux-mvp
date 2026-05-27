@@ -1,0 +1,21 @@
+{
+  "artifacts": [
+    "review_bundle/AUDITOR_REPORT.md",
+    "review_bundle/VALIDATION_OUTPUT.md",
+    "review_bundle/GIT_STATE.md",
+    "review_bundle/DIFF_STAT.txt",
+    "review_bundle/CHANGED_FILES.txt",
+    "review_bundle/PROOF.json",
+    "review_bundle/artifacts/AUDITOR_OUTPUT.json",
+    "review_bundle/artifacts/CI_TRIAGE.json",
+    "review_bundle/artifacts/MERGE_READINESS.json",
+    "review_bundle/artifacts/PR_STATE_SNAPSHOT.json",
+    "review_bundle/artifacts/REVIEW_ITEM_LEDGER.json",
+    "review_bundle/artifacts/THREAD_DISPOSITIONS.json",
+    "review_bundle/artifacts/PR_STEWARD_SUMMARY.md"
+  ],
+  "bundle_id": "TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001",
+  "created_at": "2026-05-27T00:55:19.209497Z",
+  "review_bundle": "/Users/hue/.codex/worktrees/693f/dopemux-mvp/proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle",
+  "summary": "Proof bundle for PR Steward resolved-thread and proof-freshness semantics repair."
+}
