@@ -109,9 +109,11 @@ class TestProofFreshnessInArtifacts:
         )
         readiness = artifacts["MERGE_READINESS.json"]
         assert isinstance(readiness, dict)
-        assert "PROOF_STALE_OR_MISSING" not in readiness["blockers"]
+        assert "PROOF_STALE" not in readiness["blockers"]
+        assert "PROOF_MISSING" not in readiness["blockers"]
         assert readiness["proof"]["proof_freshness"] == "FRESH"
         assert readiness["readiness"] == "READY"
+        assert readiness["risk_tier"] == "CLEAR"
 
     def test_stale_proof_adds_proof_stale_or_missing_blocker(self) -> None:
         harvest = _base_harvest()
@@ -128,8 +130,10 @@ class TestProofFreshnessInArtifacts:
             allow_closed=False,
         )
         readiness = artifacts["MERGE_READINESS.json"]
-        assert "PROOF_STALE_OR_MISSING" in readiness["blockers"]
+        assert "PROOF_STALE" in readiness["blockers"]
+        assert "PROOF_MISSING" not in readiness["blockers"]
         assert readiness["proof"]["proof_freshness"] == "STALE"
+        assert readiness["risk_tier"] == "HIGH"
 
     def test_missing_proof_adds_proof_stale_or_missing_blocker(self) -> None:
         harvest = _base_harvest()
@@ -142,9 +146,11 @@ class TestProofFreshnessInArtifacts:
             allow_closed=False,
         )
         readiness = artifacts["MERGE_READINESS.json"]
-        assert "PROOF_STALE_OR_MISSING" in readiness["blockers"]
+        assert "PROOF_MISSING" in readiness["blockers"]
+        assert "PROOF_STALE" not in readiness["blockers"]
         assert readiness["proof"]["proof_freshness"] == "MISSING"
         assert "Proof head SHA missing" in readiness["unknowns"]
+        assert readiness["risk_tier"] == "HIGH"
 
     def test_proof_freshness_propagates_to_snapshot(self) -> None:
         artifacts = build_artifacts(
