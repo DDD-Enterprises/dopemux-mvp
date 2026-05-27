@@ -28,7 +28,7 @@ The compiler is a **pure function** — no filesystem I/O, no GitHub mutation, n
 
 | Decision | Choice | Reason |
 |---|---|---|
-| Pure function | `compile(merge_readiness, review_ledger, thread_dispositions, ci_triage)` | Testable without I/O; caller owns persistence |
+| Pure function | `compile_action_plan(merge_readiness, review_ledger, thread_dispositions, ci_triage)` | Testable without I/O; caller owns persistence |
 | No GitHub mutation | `mutation_performed: false` hardcoded | PR Steward v1 is check-only; action bridge is compiler/planner only |
 | Action taxonomy | Locked to `classifier._readiness()` blocker taxonomy | Single source of truth for valid categories |
 | EMBEDDED_AUDIT_* prefix | Maps to `embedded-audit-failed` / supervisor | All embedded audit failures require supervisor review |
