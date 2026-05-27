@@ -6,7 +6,7 @@
   "branch": "claude/upbeat-thompson-35f2e8",
   "base_branch": "main",
   "head_before": "eafadd02a",
-  "head_after": "PENDING_COMMIT",
+  "head_after": "5e5671197",
   "mutation_performed": false,
   "github_mutation_performed": false,
   "secret_values_recorded": false,
@@ -116,8 +116,8 @@
   },
   "embedded_audit_status": "PASS_WITH_RISKS",
   "commit": {
-    "performed": false,
-    "sha": null,
+    "performed": true,
+    "sha": "5e5671197",
     "message": "ci: stabilize required pr-gate job"
   },
   "governance": {
