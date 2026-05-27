@@ -81,6 +81,62 @@ def collect_proof_paths(paths: list[str], scan_root: str | None) -> list[Path]:
     return sorted(seen.keys())
 
 
+DEFAULT_SCOPE_PATH = _REPO_ROOT / "proof" / ".validator_scope.json"
+
+
+def load_scope(scope_path: Path) -> dict | None:
+    """Load the validator scope manifest; None if missing (= unbounded)."""
+    if not scope_path.exists():
+        return None
+    return json.loads(scope_path.read_text(encoding="utf-8"))
+
+
+def apply_scope(
+    paths: list[Path], scope: dict, repo_root: Path
+) -> tuple[list[Path], list[tuple[Path, str]]]:
+    """Filter paths by scope manifest.
+
+    Returns (in_scope_paths, [(skipped_path, reason)...]).
+    """
+    import fnmatch
+
+    include_patterns = scope.get("include_patterns", [])
+    exclude_records = scope.get("exclude_patterns", [])
+    default = scope.get("default_when_unmatched", "skip_with_warning")
+
+    in_scope: list[Path] = []
+    skipped: list[tuple[Path, str]] = []
+
+    for p in paths:
+        try:
+            rel = p.resolve().relative_to(repo_root).as_posix()
+        except ValueError:
+            rel = p.as_posix()
+
+        # First check excludes
+        excluded_reason = None
+        for record in exclude_records:
+            if fnmatch.fnmatchcase(rel, record["pattern"]):
+                excluded_reason = record["reason"]
+                break
+        if excluded_reason:
+            skipped.append((p, f"excluded: {excluded_reason}"))
+            continue
+
+        # Then check includes
+        matched_include = any(
+            fnmatch.fnmatchcase(rel, pat) for pat in include_patterns
+        )
+        if matched_include:
+            in_scope.append(p)
+        elif default == "skip_with_warning":
+            skipped.append((p, "not in include_patterns"))
+        else:
+            in_scope.append(p)  # default = enforce
+
+    return in_scope, skipped
+
+
 def _rel_path(proof_path: Path) -> Path:
     """Return path relative to repo root when possible, else absolute."""
     try:
@@ -194,6 +250,16 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901 (acceptable comple
     except (FileNotFoundError, ValueError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
+
+    # Apply scope manifest if present
+    scope = load_scope(DEFAULT_SCOPE_PATH)
+    if scope is not None and args.scan_root is not None:
+        # Scope only applies to --all recursive scans, not explicit single-file args
+        proof_paths, skipped = apply_scope(proof_paths, scope, _REPO_ROOT)
+        for path, reason in skipped:
+            rel = _rel_path(path)
+            if not args.quiet:
+                print(f"SKIP  {rel}  ({reason})")
 
     if not proof_paths:
         print("No PROOF.json files found.", file=sys.stderr)
