@@ -55,3 +55,5 @@ Loose `/tmp` artifacts must be copied into the review bundle or explicitly liste
 - `FAIL`: blocking issue found.
 - `NEEDS_SUPERVISOR`: unresolved authority, security, schema, or process issue needs higher review.
 - `SKIPPED`: no supported auditor executable or invocation could be proven; final packet status cannot be READY.
+
+`PASS_WITH_RISKS` is acceptable to downstream gates when the risks are recorded and no blocking findings remain. It is advisory, not a license to ignore unresolved implementation blockers elsewhere.
