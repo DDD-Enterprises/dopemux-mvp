@@ -469,10 +469,12 @@ class TestGeneratedAt:
 
 
 class TestUnknownBlockerAndSequentialIds:
-    def test_unknown_blocker_is_silently_skipped(self) -> None:
+    def test_unknown_blocker_emits_supervisor_action(self) -> None:
         mr = _readiness_with_blockers(["COMPLETELY_UNKNOWN_BLOCKER"], "BLOCKED")
         plan, _ = compile(mr, _EMPTY_LEDGER, _EMPTY_THREADS, _EMPTY_CI, generated_at=FIXED_TS)
-        assert plan["actions"] == []
+        assert len(plan["actions"]) == 1
+        assert plan["actions"][0]["category"] == "unknown-blocker"
+        assert plan["actions"][0]["target_role"] == "supervisor"
 
     def test_ids_stay_sequential_when_unknown_blocker_between_known(self) -> None:
         mr = _readiness_with_blockers(
@@ -480,9 +482,11 @@ class TestUnknownBlockerAndSequentialIds:
             "BLOCKED",
         )
         plan, _ = compile(mr, _EMPTY_LEDGER, _EMPTY_THREADS, _EMPTY_CI, generated_at=FIXED_TS)
-        assert len(plan["actions"]) == 2
+        assert len(plan["actions"]) == 3
         assert plan["actions"][0]["id"] == "action-0001"
         assert plan["actions"][1]["id"] == "action-0002"
+        assert plan["actions"][1]["category"] == "unknown-blocker"
+        assert plan["actions"][2]["id"] == "action-0003"
 
     def test_empty_string_item_id_collapses_to_none(self) -> None:
         mr = _readiness_with_blockers(["REVIEW_ITEM_MUST_FIX"], "NEEDS_IMPLEMENTER")

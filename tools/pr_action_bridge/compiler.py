@@ -158,13 +158,13 @@ def compile_action_plan(
     if readiness != "READY":
         action_num = 0
         for blocker in blockers:
-            mapping = _blocker_to_action(blocker)
-            if mapping is None:
-                # Unknown blocker: silently skipped for forward compatibility.
-                # Callers that need all blockers should inspect merge_readiness directly.
-                continue
             action_num += 1
-            category, target_role = mapping
+            mapping = _blocker_to_action(blocker)
+            if mapping:
+                category, target_role = mapping
+            else:
+                # Unknown blocker: fail-closed to supervisor
+                category, target_role = ("unknown-blocker", "supervisor")
             source_item_id = _find_source_item_id(
                 blocker, review_ledger, thread_dispositions, ci_triage
             )
