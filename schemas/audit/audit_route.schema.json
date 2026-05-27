@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Audit Route",
+  "description": "A single auditor CLI route entry in the route registry. Codex is forbidden as an auditor_tool; it is not present in embedded_audit.schema.json auditor_tool enum.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["cli_name", "command", "priority"],
+  "properties": {
+    "cli_name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Logical name matching the PAL clink config (e.g. claude-audit).",
+      "not": {"enum": ["codex", "codex-audit"]}
+    },
+    "command": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Executable to probe for on PATH (e.g. claude, gemini). Must not be codex.",
+      "not": {"enum": ["codex"]}
+    },
+    "priority": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Selection priority; lower value means higher preference."
+    },
+    "additional_args": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Extra CLI arguments passed verbatim to the auditor."
+    },
+    "env": {
+      "type": "object",
+      "additionalProperties": {"type": "string"},
+      "description": "Extra environment variables for the invocation."
+    },
+    "role": {
+      "type": "string",
+      "minLength": 1,
+      "description": "PAL clink role name to activate (default: codereviewer)."
+    }
+  }
+}
