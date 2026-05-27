@@ -1,0 +1,156 @@
+{
+  "schema_version": "1.0.0",
+  "tp_id": "TP-DMX-COPILOT-REPAIR-007",
+  "series_id": "DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "claude/upbeat-thompson-35f2e8",
+  "base_branch": "main",
+  "head_before": "9f18ce2f6",
+  "head_after": "PENDING_COMMIT",
+  "mutation_performed": false,
+  "github_mutation_performed": false,
+  "secret_values_recorded": false,
+  "operator_authorization_used": [],
+  "forbidden_surfaces_touched": false,
+  "files_changed": [
+    "schemas/copilot/repair_packet.schema.json",
+    "templates/copilot/PR_REPAIR_PACKET.md",
+    "tests/copilot_repair/__init__.py",
+    "tests/copilot_repair/test_repair_packet.py",
+    "docs/ops/copilot-pr-repair-lane.md",
+    "proof/TP-DMX-COPILOT-REPAIR-007/PROOF.json",
+    "proof/TP-DMX-COPILOT-REPAIR-007/AUDITOR_REPORT.md"
+  ],
+  "commands": [
+    {
+      "cmd": "python -m pytest tests/copilot_repair/ -v",
+      "exit_code": 0,
+      "result": "64 passed in 0.07s"
+    },
+    {
+      "cmd": "python -m pytest tests/pr_action_bridge/ tests/audit/ -q",
+      "exit_code": 0,
+      "result": "136 passed in 0.11s (prior tests preserved)"
+    }
+  ],
+  "validation": {
+    "status": "PASS",
+    "details": [
+      {"check": "pytest_64_copilot_repair_tests", "status": "PASS", "detail": "64 new tests in test_repair_packet.py all pass: schema file integrity, governance pins, template prohibition checks (7 individual assertions), positive packet validation, negative validation (supervisor/CI categories rejected, wrong id prefix, extra fields, missing required fields, non-ISO generated_at, no-slash repo, empty-string source_action_plan_id, empty-string source_item_id)"},
+      {"check": "pytest_136_prior_tests_preserved", "status": "PASS", "detail": "All 136 prior tests (52 compiler + 84 audit) continue to pass without modification"},
+      {"check": "copilot_authority_const_pin", "status": "PASS", "detail": "copilot_authority: {const: 'implementer-only'} — schema-level governance pin, test_copilot_authority_const confirms"},
+      {"check": "mutation_performed_const_pin", "status": "PASS", "detail": "mutation_performed: {const: false} — schema-level governance pin, test_mutation_performed_const_false confirms"},
+      {"check": "category_enum_restricted", "status": "PASS", "detail": "10 individual tests confirm all supervisor-role and CI-role categories are excluded from enum"},
+      {"check": "id_pattern_repair_prefix", "status": "PASS", "detail": "id pattern ^repair-[0-9]{4}$ locks repair item IDs to distinct namespace from action-XXXX"},
+      {"check": "additionalProperties_false_everywhere", "status": "PASS", "detail": "Top-level and RepairItem both have additionalProperties:false; extra field tests confirm"},
+      {"check": "generated_at_iso_zulu_pattern", "status": "PASS", "detail": "Pattern ^[0-9]{4}-...-[0-9]{2}Z$ added; 3 negative tests confirm non-ISO, date-only, and offset forms rejected"},
+      {"check": "repo_owner_slash_repo_pattern", "status": "PASS", "detail": "Pattern ^[^/]+/[^/]+$ added; no-slash and empty forms rejected in tests"},
+      {"check": "source_action_plan_id_minlength", "status": "PASS", "detail": "minLength:1 added; empty-string test confirms rejection"},
+      {"check": "source_item_id_minlength", "status": "PASS", "detail": "minLength:1 added to RepairItem.source_item_id; empty-string test confirms rejection"},
+      {"check": "template_prohibitions_7_individual", "status": "PASS", "detail": "7 prohibition assertions each testing a distinct phrase: must not post, must not approve, must not merge, readiness, tools/pr_merge, supervisor-role, ci-role"},
+      {"check": "template_no_trailing_whitespace", "status": "PASS", "detail": "test_no_trailing_whitespace verifies every line"},
+      {"check": "docs_no_trailing_whitespace", "status": "PASS", "detail": "pre-commit hook check passed on docs/ops/copilot-pr-repair-lane.md"},
+      {"check": "no_tools_pr_merge_import", "status": "PASS", "detail": "No import of tools.pr_merge in any new file"},
+      {"check": "no_github_mutation_calls", "status": "PASS", "detail": "No gh pr merge/approve/ready/comment calls in any new file"},
+      {"check": "mypy", "status": "NOT_RUN", "reason": "mypy not configured in CI for schemas/templates/tests/; type annotations not applicable to JSON/Markdown files"},
+      {"check": "jinja2_render_test", "status": "NOT_RUN", "reason": "Jinja2 not installed in test environment; template renderer deferred as separate concern"}
+    ]
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "mcp__pal__codereview expert_model=gpt-5.2 review_type=full",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-COPILOT-REPAIR-007/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-007-HIGH-1",
+        "severity": "HIGH",
+        "title": "generated_at accepts arbitrary strings",
+        "status": "RESOLVED",
+        "body": "generated_at was type:string only, no format or pattern. Fixed: added pattern ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$. Three negative tests added."
+      },
+      {
+        "id": "F-007-MED-1",
+        "severity": "MEDIUM",
+        "title": "repo accepts any non-empty string",
+        "status": "RESOLVED",
+        "body": "repo was minLength:1 only. Fixed: added pattern ^[^/]+/[^/]+$ (owner/repo shape). Two negative tests added."
+      },
+      {
+        "id": "F-007-MED-2",
+        "severity": "MEDIUM",
+        "title": "source_action_plan_id unconstrained when string",
+        "status": "RESOLVED",
+        "body": "source_action_plan_id allowed empty string. Fixed: added minLength:1. Negative test added."
+      },
+      {
+        "id": "F-007-MED-3",
+        "severity": "MEDIUM",
+        "title": "Jinja2 template render not validated in tests",
+        "status": "ACCEPTED_RISK",
+        "body": "Jinja2 not installed. Renderer is deferred as a separate concern. Template governance prohibitions validated as static text only."
+      },
+      {
+        "id": "F-007-LOW-1",
+        "severity": "LOW",
+        "title": "source_item_id in RepairItem allows empty string",
+        "status": "RESOLVED",
+        "body": "source_item_id was ['string','null'] with no length constraint. Fixed: added minLength:1. Negative test added."
+      },
+      {
+        "id": "F-007-LOW-2",
+        "severity": "LOW",
+        "title": "No explicit schema_version const pin test",
+        "status": "RESOLVED",
+        "body": "Added test_schema_version_const_is_pinned."
+      },
+      {
+        "id": "F-007-LOW-3",
+        "severity": "LOW",
+        "title": "No generated_at / repo pattern pin tests",
+        "status": "RESOLVED",
+        "body": "Added test_generated_at_has_pattern and test_repo_has_pattern."
+      }
+    ],
+    "fixes_applied": [
+      "Added ISO Zulu pattern to generated_at",
+      "Added owner/repo pattern to repo",
+      "Added minLength:1 to source_action_plan_id",
+      "Added minLength:1 to source_item_id in RepairItem",
+      "Added schema_version const pin test",
+      "Added generated_at pattern pin test",
+      "Added repo pattern pin test",
+      "Added 8 negative validation tests for new constraints"
+    ],
+    "remaining_risks": [
+      "Jinja2 render-path governance test not added — renderer deferred",
+      "generated_at pattern does not accept fractional seconds — accepted: callers emit second-precision UTC",
+      "mypy not run — no Python source files in this TP"
+    ],
+    "skip_reason": null
+  },
+  "embedded_audit_status": "PASS_WITH_RISKS",
+  "commit": {
+    "performed": false,
+    "sha": null,
+    "message": "docs(copilot): add bounded PR repair scaffold"
+  },
+  "governance": {
+    "branch_protection_changed": false,
+    "required_checks_changed": false,
+    "pull_request_target_introduced": false,
+    "secrets_touched": false,
+    "codeowners_changed": false,
+    "mutation_surfaces_added": false
+  },
+  "stop_conditions_hit": [],
+  "remaining_risks": [
+    "Jinja2 render-path governance test not added — Jinja2 not installed, renderer deferred as separate concern",
+    "generated_at pattern rejects fractional seconds — accepted: callers expected to emit second-precision UTC",
+    "mypy not run — no Python source files in TP-007 scope"
+  ],
+  "next_recommended_action": "Opus audit this proof + diff. On PASS, operator commits with 'docs(copilot): add bounded PR repair scaffold'. Then execute next TP in series."
+}

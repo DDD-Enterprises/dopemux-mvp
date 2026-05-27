@@ -6,7 +6,7 @@
   "branch": "claude/upbeat-thompson-35f2e8",
   "base_branch": "main",
   "head_before": "1c820b516",
-  "head_after": null,
+  "head_after": "9f18ce2f6",
   "mutation_performed": false,
   "github_mutation_performed": false,
   "secret_values_recorded": false,
@@ -123,8 +123,8 @@
   },
   "embedded_audit_status": "PASS_WITH_RISKS",
   "commit": {
-    "performed": false,
-    "sha": null,
+    "performed": true,
+    "sha": "9f18ce2f6",
     "message": "feat(pr): add read-only action bridge compiler"
   },
   "governance": {
