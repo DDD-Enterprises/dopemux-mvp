@@ -466,3 +466,28 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
           echo "*Powered by Dopemux ADHD-optimized CI/CD*" >> $GITHUB_STEP_SUMMARY
+
+          # ── PR Gate ────────────────────────────────────────────────────────
+          # Required blocking jobs (always run on PRs, never structurally skipped):
+          #   code-quality, tests, extractor-smoke
+          # Advisory jobs (skipped on PRs via `if: github.event_name != 'pull_request'`
+          #   or structurally always-exit-0): security, docs, extractor-full,
+          #   installer-smoke, scoped-coverage, integration
+          # NOTE: extractor-full always exits 0 (set +e; exit 0 trap) — gate uses
+          #   outputs.suite_status for informational display only, not for blocking.
+          # NOTE: branch protection truth is UNKNOWN; operator must verify that
+          #   "ci-summary" is registered as a required status check in branch protection.
+          code_quality="${{ needs.code-quality.result || 'missing' }}"
+          gate_tests="${{ needs.tests.result || 'missing' }}"
+          extractor_smoke="${{ needs.extractor-smoke.result || 'missing' }}"
+          gate_ok=true
+          [ "$code_quality"    != "success" ] && gate_ok=false
+          [ "$gate_tests"      != "success" ] && gate_ok=false
+          [ "$extractor_smoke" != "success" ] && gate_ok=false
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "$gate_ok" = "false" ]; then
+            echo "### ❌ PR Gate: BLOCKED" >> $GITHUB_STEP_SUMMARY
+            echo "Required checks failed: code-quality=$code_quality tests=$gate_tests extractor-smoke=$extractor_smoke" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          echo "### ✅ PR Gate: CLEAR" >> $GITHUB_STEP_SUMMARY
