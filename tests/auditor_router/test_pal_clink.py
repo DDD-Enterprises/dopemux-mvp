@@ -665,3 +665,99 @@ def test_preflight_allow_fallback_returns_success_for_fallback_only(
     route = load_json(tmp_path / "AUDITOR_ROUTE.json")
     assert route["tool"] == "copilot-cli"
     assert route["status"] == "FALLBACK_ONLY"
+
+
+def test_string_arg_field_coerced_to_list() -> None:
+    config = {
+        "name": "claude-audit",
+        "runner": "claude",
+        "command": "claude",
+        "args": "--mode=plan",
+        "roles": {
+            "default": {
+                "prompt_path": "systemprompts/clink/default_codereviewer.txt",
+                "role_args": []
+            },
+            "codereviewer": {
+                "prompt_path": "systemprompts/clink/default_codereviewer.txt",
+                "role_args": []
+            }
+        }
+    }
+    args = effective_args_for_config(config)
+    assert args == ["--mode=plan"]
+
+
+def test_dict_arg_field_invalid(tmp_path: Path) -> None:
+    config = {
+        "name": "claude-audit",
+        "runner": "claude",
+        "command": "claude",
+        "args": {"invalid": "dict"},
+        "roles": {
+            "default": {
+                "prompt_path": "systemprompts/clink/default_codereviewer.txt",
+                "role_args": []
+            },
+            "codereviewer": {
+                "prompt_path": "systemprompts/clink/default_codereviewer.txt",
+                "role_args": []
+            }
+        }
+    }
+    path = tmp_path / "claude-audit.json"
+    path.write_text(json.dumps(config), encoding="utf-8")
+    inspection = inspect_clink_client_config(path)
+    assert inspection.status == "INVALID"
+
+
+def test_payload_type_non_dict_never_raises() -> None:
+    route = {"clink_mutation_flags_detected": [], "audit_safe_config_proven": True}
+    res = normalize_pal_clink_audit_output("not a dict", route=route, report_path="some_path")
+    assert res["status"] == "NEEDS_SUPERVISOR"
+    assert "PAL clink payload was not a valid mapping." in res["remaining_risks"]
+
+
+def test_filename_stem_mismatch_correct_client_field(tmp_path: Path) -> None:
+    config = {
+        "name": "claude-audit",
+        "client": "claude-audit",
+        "runner": "claude",
+        "command": "claude",
+        "roles": {
+            "default": {
+                "prompt_path": "systemprompts/clink/default_codereviewer.txt",
+                "role_args": []
+            },
+            "codereviewer": {
+                "prompt_path": "systemprompts/clink/default_codereviewer.txt",
+                "role_args": []
+            }
+        }
+    }
+    path = tmp_path / "zzz.json"
+    path.write_text(json.dumps(config), encoding="utf-8")
+    inspection = inspect_clink_client_config(path)
+    assert inspection.status == "AVAILABLE"
+
+
+def test_falsey_role_args_invalid(tmp_path: Path) -> None:
+    config = {
+        "name": "claude-audit",
+        "runner": "claude",
+        "command": "claude",
+        "roles": {
+            "default": {
+                "prompt_path": "systemprompts/clink/default_codereviewer.txt",
+                "role_args": ""
+            },
+            "codereviewer": {
+                "prompt_path": "systemprompts/clink/default_codereviewer.txt",
+                "role_args": []
+            }
+        }
+    }
+    path = tmp_path / "claude-audit.json"
+    path.write_text(json.dumps(config), encoding="utf-8")
+    inspection = inspect_clink_client_config(path)
+    assert inspection.status == "INVALID"
