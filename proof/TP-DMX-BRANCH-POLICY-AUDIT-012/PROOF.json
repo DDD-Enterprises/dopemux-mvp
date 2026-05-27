@@ -1,0 +1,107 @@
+{
+  "schema_version": "1.0.0",
+  "tp_id": "TP-DMX-BRANCH-POLICY-AUDIT-012",
+  "series_id": "DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "claude/upbeat-thompson-35f2e8",
+  "base_branch": "main",
+  "head_before": "c1c6b1cf0",
+  "head_after": "PENDING_COMMIT",
+  "mutation_performed": false,
+  "github_mutation_performed": false,
+  "secret_values_recorded": false,
+  "operator_authorization_used": [],
+  "forbidden_surfaces_touched": false,
+  "files_changed": [
+    "docs/ops/branch-policy-audit.md",
+    "proof/TP-DMX-BRANCH-POLICY-AUDIT-012/PROOF.json"
+  ],
+  "commands": [
+    {
+      "cmd": "gh api repos/DDD-Enterprises/dopemux-mvp/branches/main/protection",
+      "exit_code": 0,
+      "result": "HTTP 200 — full branch protection JSON returned (admin access confirmed)"
+    },
+    {
+      "cmd": "gh api repos/DDD-Enterprises/dopemux-mvp/rulesets",
+      "exit_code": 0,
+      "result": "HTTP 200 — 1 ruleset (id: 13063360)"
+    },
+    {
+      "cmd": "gh api repos/DDD-Enterprises/dopemux-mvp/rulesets/13063360",
+      "exit_code": 0,
+      "result": "HTTP 200 — ruleset detail: deletion, non_fast_forward, pull_request, copilot_code_review rules; no required_status_checks rule"
+    }
+  ],
+  "validation": {
+    "status": "PASS",
+    "details": [
+      {"check": "admin_api_access", "status": "PASS", "detail": "gh api returned HTTP 200 for all three calls; admin access confirmed"},
+      {"check": "classic_protection_captured", "status": "PASS", "detail": "7 required checks: Security Review, Documentation Check, identity-check, Unit Tests, Analyze python/js-ts/ruby; strict:true"},
+      {"check": "ruleset_captured", "status": "PASS", "detail": "Ruleset 13063360 active on ~DEFAULT_BRANCH; 4 rules: deletion, non_fast_forward, pull_request, copilot_code_review; no required_status_checks rule"},
+      {"check": "ci_summary_absent_confirmed", "status": "PASS", "detail": "ci-summary / 📊 CI Pipeline Summary confirmed ABSENT from required status checks. TP-009 gap is real. Operator action documented."},
+      {"check": "no_branch_protection_mutated", "status": "PASS", "detail": "Read-only audit only; zero writes to GitHub API"},
+      {"check": "force_push_protected", "status": "PASS", "detail": "allow_force_pushes:false (classic) + non_fast_forward rule (ruleset)"},
+      {"check": "copilot_cloud_agent_off", "status": "PASS", "detail": "copilot_code_review.review_on_push:false and review_draft_pull_requests:false — Copilot cloud-agent not enabled"}
+    ]
+  },
+  "embedded_audit": {
+    "required": false,
+    "status": "NOT_RUN",
+    "skip_reason": "Read-only evidence capture TP with no code changes; no executable logic to review. PAL codereview not applicable to API evidence docs."
+  },
+  "embedded_audit_status": "NOT_RUN",
+  "findings": {
+    "critical": [],
+    "high": [
+      {
+        "id": "F-012-HIGH-1",
+        "title": "ci-summary absent from required status checks",
+        "status": "OPEN_OPERATOR_ACTION_REQUIRED",
+        "body": "ci-summary / 📊 CI Pipeline Summary is not listed in required_status_checks.contexts. The gate added by TP-009 exits 1 when required jobs fail but GitHub will not block merge until this check is registered. Operator must add via Settings → Branches → main → Required status checks."
+      }
+    ],
+    "medium": [
+      {
+        "id": "F-012-MED-1",
+        "title": "enforce_admins: false — admins bypass all protections",
+        "status": "ACCEPTED_RISK",
+        "body": "Classic protection has enforce_admins:false; ruleset bypass_mode:always for admin roles. Admins can merge without passing required checks. This is a known operational posture; accepted for developer velocity."
+      }
+    ],
+    "low": [
+      {
+        "id": "F-012-LOW-1",
+        "title": "Ruleset has no required_status_checks rule",
+        "status": "INFORMATIONAL",
+        "body": "All required check enforcement is via classic branch protection. The ruleset covers deletion, force-push, and PR policy only. This is consistent and not a gap."
+      },
+      {
+        "id": "F-012-LOW-2",
+        "title": "0 approvals required",
+        "status": "ACCEPTED_RISK",
+        "body": "required_approving_review_count:0. No human review required before merge. Compensating controls: required checks, conversation thread resolution, required linear history."
+      }
+    ]
+  },
+  "commit": {
+    "performed": false,
+    "sha": null,
+    "message": "docs(ci): branch protection policy audit evidence"
+  },
+  "governance": {
+    "branch_protection_changed": false,
+    "required_checks_changed": false,
+    "pull_request_target_introduced": false,
+    "secrets_touched": false,
+    "codeowners_changed": false,
+    "mutation_surfaces_added": false
+  },
+  "stop_conditions_hit": [],
+  "remaining_risks": [
+    "F-012-HIGH-1: ci-summary not yet a required check — operator must add before TP-009 gate is enforced at merge",
+    "enforce_admins:false means admin merges bypass all required checks",
+    "Evidence captured 2026-05-27; re-run gh api calls to verify current state before relying on this audit"
+  ],
+  "next_recommended_action": "Operator: add ci-summary to required status checks (see docs/ops/branch-policy-audit.md). This unblocks TP-DMX-PR-STEWARD-HARDEN-010."
+}
