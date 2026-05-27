@@ -1,0 +1,99 @@
+{
+  "schema_version": "1.0.0",
+  "tp_id": "TP-DMX-CI-TRIGGERS-008",
+  "series_id": "DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "claude/upbeat-thompson-35f2e8",
+  "base_branch": "main",
+  "head_before": "898310bd01cf48b2703a166b429d4b330ec9f84e",
+  "head_after": "5b5dc07d4ba8c122f3ef3eb082d833203dc0fb58",
+  "live_task_orchestrator_load": "NOT_PERFORMED",
+  "offline_load_artifact": "CREATED",
+  "offline_load_artifact_path": "artifacts/task-orchestrator/DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED/load_plan.json",
+  "mutation_performed": false,
+  "files_changed": [
+    ".github/workflows/ci-complete.yml",
+    ".github/workflows/pr-steward.yml",
+    ".github/workflows/preflight.yml",
+    "docs/ops/ci-trigger-refresh.md"
+  ],
+  "operator_authorization_used": [],
+  "forbidden_surfaces_touched": false,
+  "github_mutation_performed": false,
+  "secret_values_recorded": false,
+  "commands": [
+    {
+      "cmd": "rg -n 'pull_request|workflow_dispatch|ready_for_review|merge_group|pull_request_target' .github/workflows/ci-complete.yml .github/workflows/pr-steward.yml .github/workflows/preflight.yml",
+      "exit_code": 0,
+      "result": "pre-change: ci-complete had types:[opened,synchronize,reopened], no workflow_dispatch; pr-steward and preflight had bare pull_request:"
+    },
+    {
+      "cmd": "python3 yaml parse validation",
+      "exit_code": 0,
+      "result": "YAML_OK .github/workflows/ci-complete.yml | YAML_OK .github/workflows/pr-steward.yml | YAML_OK .github/workflows/preflight.yml"
+    },
+    {
+      "cmd": "actionlint",
+      "exit_code": null,
+      "result": "TOOL_UNAVAILABLE — actionlint not installed on this host"
+    },
+    {
+      "cmd": "yamllint",
+      "exit_code": null,
+      "result": "TOOL_UNAVAILABLE — yamllint not installed on this host"
+    },
+    {
+      "cmd": "rg pull_request_target .github/workflows/ci-complete.yml .github/workflows/pr-steward.yml .github/workflows/preflight.yml",
+      "exit_code": 1,
+      "result": "NO_pull_request_target: PASS (exit 1 = no matches found)"
+    },
+    {
+      "cmd": "git diff --stat .github/workflows/ci-complete.yml .github/workflows/pr-steward.yml .github/workflows/preflight.yml",
+      "exit_code": 0,
+      "result": "3 files changed, 4 insertions(+), 1 deletion(-)"
+    }
+  ],
+  "validation": {
+    "status": "PASS",
+    "details": [
+      {"check": "yaml_parse", "status": "PASS", "tool": "python3 yaml.safe_load"},
+      {"check": "actionlint", "status": "NOT_RUN", "reason": "tool not installed on this host"},
+      {"check": "yamllint", "status": "NOT_RUN", "reason": "tool not installed on this host"},
+      {"check": "no_pull_request_target", "status": "PASS"},
+      {"check": "diff_scope", "status": "PASS", "detail": "3 workflow files + runbook, all in allowlist"},
+      {"check": "required_check_names_unchanged", "status": "PASS"},
+      {"check": "merge_group_preserved", "status": "PASS"},
+      {"check": "pr_steward_readonly_preserved", "status": "PASS"},
+      {"check": "workflow_dispatch_inputs_preserved", "status": "PASS"}
+    ]
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "PAL MCP codereview (mcp__pal__codereview)",
+    "auditor_model": "gemini-2.5-pro",
+    "fallback_used": false,
+    "fallback_reason": null,
+    "invocation": "PAL codereview 2-step, continuation_id c73944b8-0673-48ae-bf14-68a2790df0b6",
+    "exit_code": "code_review_complete: true",
+    "auditor_verdict": "PASS",
+    "auditor_findings": "None. Zero issues found. All governance invariants satisfied.",
+    "fixes_applied_from_audit": "None required.",
+    "remaining_risks": "actionlint and yamllint unavailable on host — syntax verified via python yaml.safe_load only. CI will provide the final actionlint gate if configured."
+  },
+  "governance": {
+    "branch_protection_changed": false,
+    "required_checks_changed": false,
+    "pull_request_target_introduced": false,
+    "secrets_touched": false,
+    "codeowners_changed": false,
+    "mutation_surfaces_added": false
+  },
+  "stop_conditions_hit": [],
+  "remaining_risks": [
+    "actionlint not run locally (tool unavailable) — syntax verified via Python yaml.safe_load only",
+    "Branch protection/ruleset truth remains UNKNOWN (TP-DMX-BRANCH-POLICY-AUDIT-012 required)",
+    "workflow_dispatch HTTP 500 status on GitHub unknown — smoke test not performed (no feature branch + PR number available in this session)"
+  ],
+  "next_recommended_action": "Commit with 'fix(ci): add explicit PR trigger coverage'. Then run TP-DMX-AUDIT-BUNDLE-001 and TP-DMX-PR-STEWARD-FRESHNESS-005 in parallel (both depend-on: [])."
+}
