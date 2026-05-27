@@ -1,0 +1,330 @@
+{
+  "schema_version": "1.0.0",
+  "series_id": "DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED",
+  "title": "Dopemux Embedded Audit + PR Cleanup Reconciled TP Series",
+  "description": "Delta reconciliation of embedded audit and PR cleanup infrastructure. Not greenfield architecture — docs/ops/operating-model.md and docs/ops/tool-routing-matrix.md already exist. This series hardens CI triggers, evidence bundling, PR Steward freshness, auditor routing, PAL clink runner, Action Bridge, Copilot scaffold, PR gate, branch policy audit, Steward hardening, fixtures, and proof normalization.",
+  "authority": "Reconciled synthesis from GPT-5.5 Pro + Opus audit (May 27, 2026). Runtime repo truth outranks this document. Verify paths before edit.",
+  "live_task_orchestrator_load": "NOT_PERFORMED",
+  "offline_artifact": "CREATED",
+  "load_mechanism_classified_as": "OBSERVED_DOPETASK_SERIES_ONLY",
+  "load_mechanism_evidence": "Repo has task-packets/ directory with JSON/MD packets following dopetask-canonical-spec.json. MCP task-orchestrator tools available but live load not explicitly authorized by operator for this session.",
+  "executor_defaults": {
+    "primary": "claude-code-sonnet",
+    "auditor": "claude-code-opus",
+    "fallback_auditor": "gemini-cli"
+  },
+  "forbidden_surfaces": [
+    "tools/pr_merge/**",
+    "dopemux_pr_merge_specialist/**",
+    "gh pr merge / approve / ready / comment",
+    "branch protection mutation",
+    "CODEOWNERS changes without supervisor",
+    "pull_request_target",
+    "Codex as formal auditor (schema excludes it)",
+    "AGY Tier 0 without invocation proof",
+    "empty commits as CI prods",
+    "PAL claude-audit remapped to claude",
+    "schemas/proof/embedded_audit.schema.json enum changes without supervisor"
+  ],
+  "red_lane_supervisor_items": [
+    "MERGE_READINESS schema bump (additionalProperties: false)",
+    "embedded_audit.schema.json enum change for Codex",
+    "Branch protection / ruleset changes",
+    "CODEOWNERS changes",
+    "Copilot cloud-agent enablement",
+    "tools/pr_merge reuse in PR Steward/Action Bridge",
+    "AGY Tier 0 elevation",
+    "pull_request_target for PR-controlled code",
+    "Secret-bearing workflow changes",
+    "RTE consent gate bypass"
+  ],
+  "first_executable_node": "TP-DMX-CI-TRIGGERS-008",
+  "nodes": [
+    {
+      "id": "TP-DMX-CI-TRIGGERS-008",
+      "title": "CI trigger repair",
+      "objective": "Add explicit ready_for_review handling and workflow_dispatch coverage to ci-complete.yml, pr-steward.yml, and preflight.yml.",
+      "depends_on": [],
+      "blocks": ["TP-DMX-PR-GATE-009", "TP-DMX-BRANCH-POLICY-AUDIT-012"],
+      "can_run_parallel_with": ["TP-DMX-AUDIT-BUNDLE-001", "initial read-only branch-policy prep"],
+      "executor": "claude-code-sonnet",
+      "auditor": "claude-code-opus",
+      "status": "READY",
+      "risk": "MEDIUM",
+      "proof_required": true,
+      "proof_path": "proof/TP-DMX-CI-TRIGGERS-008/PROOF.json",
+      "files_allowed": [
+        ".github/workflows/ci-complete.yml",
+        ".github/workflows/pr-steward.yml",
+        ".github/workflows/preflight.yml",
+        "docs/ops/ci-trigger-refresh.md"
+      ],
+      "commit": "fix(ci): add explicit PR trigger coverage",
+      "stop_conditions": [
+        "Any workflow requires new secrets or elevated permissions",
+        "Any required check name changes",
+        "actionlint reveals real workflow syntax failure (if available)",
+        "Any pull_request_target introduced",
+        "Any file outside allowlist must be changed"
+      ]
+    },
+    {
+      "id": "TP-DMX-AUDIT-BUNDLE-001",
+      "title": "Evidence bundle builder",
+      "objective": "Build deterministic, secret-safe evidence bundle builder for embedded audit and PAL clink reuse.",
+      "depends_on": [],
+      "blocks": ["TP-DMX-AUDIT-ROUTER-002", "TP-DMX-PAL-CLINK-RUNNER-003", "TP-DMX-PR-ACTION-BRIDGE-006", "TP-DMX-AUDIT-PROOF-004"],
+      "can_run_parallel_with": ["TP-DMX-CI-TRIGGERS-008", "TP-DMX-PR-STEWARD-FRESHNESS-005"],
+      "executor": "claude-code-sonnet",
+      "auditor": "claude-code-opus",
+      "status": "READY",
+      "risk": "MEDIUM",
+      "proof_required": true,
+      "proof_path": "proof/TP-DMX-AUDIT-BUNDLE-001/PROOF.json",
+      "files_allowed": [
+        "scripts/audit/build_evidence_bundle.py",
+        "scripts/audit/__init__.py",
+        "tests/audit/test_evidence_bundle.py",
+        "tests/audit/fixtures/**",
+        "docs/ops/audit-bundles.md",
+        "schemas/audit/bundle_manifest.schema.json",
+        "proof/TP-DMX-AUDIT-BUNDLE-001/**"
+      ],
+      "commit": "feat(audit): add deterministic evidence bundle builder"
+    },
+    {
+      "id": "TP-DMX-PR-STEWARD-FRESHNESS-005",
+      "title": "Mixed-SHA hard fail and proof freshness substates",
+      "objective": "Add cross-artifact mixed-SHA hard fail and nuanced proof freshness substates to PR Steward without rewriting classifier.",
+      "depends_on": [],
+      "blocks": ["TP-DMX-PR-ACTION-BRIDGE-006", "TP-DMX-PR-GATE-009", "TP-DMX-PR-STEWARD-HARDEN-010", "TP-DMX-PR-FIXTURES-011"],
+      "can_run_parallel_with": ["TP-DMX-AUDIT-BUNDLE-001"],
+      "executor": "claude-code-sonnet",
+      "auditor": "claude-code-opus",
+      "status": "READY",
+      "risk": "HIGH",
+      "proof_required": true,
+      "proof_path": "proof/TP-DMX-PR-STEWARD-FRESHNESS-005/PROOF.json",
+      "files_allowed": [
+        "tools/pr_steward/classifier.py",
+        "tools/pr_steward/__init__.py",
+        "schemas/pr_steward/merge_readiness.schema.json",
+        "tests/pr_steward/test_classifier_mixed_sha.py",
+        "tests/pr_steward/test_classifier_proof_status.py",
+        "tests/pr_steward/fixtures/**",
+        "proof/TP-DMX-PR-STEWARD-FRESHNESS-005/**"
+      ],
+      "stop_conditions": [
+        "Existing fixture validation breaks and cannot be fixed inside scope",
+        "Schema compatibility requires broader downstream changes",
+        "Any stale or mixed-SHA proof can classify READY",
+        "Any GitHub mutation appears necessary",
+        "MERGE_READINESS schema additionalProperties constraint cannot accommodate new fields without versioning",
+        "schemas/proof/embedded_audit.schema.json must change"
+      ],
+      "commit": "fix(pr-steward): fail closed on mixed-sha artifact sets"
+    },
+    {
+      "id": "TP-DMX-AUDIT-ROUTER-002",
+      "title": "Auditor route registry and capability probes",
+      "objective": "Implement host-side auditor route registry and capability probe layer. Default claude-code-cli primary, gemini-cli fallback. No Codex formal auditor.",
+      "depends_on": ["TP-DMX-AUDIT-BUNDLE-001"],
+      "blocks": ["TP-DMX-PAL-CLINK-RUNNER-003", "TP-DMX-AUDIT-PROOF-004"],
+      "executor": "claude-code-sonnet",
+      "auditor": "claude-code-opus",
+      "status": "READY_AFTER_DEPENDENCY",
+      "risk": "HIGH",
+      "proof_required": true,
+      "proof_path": "proof/TP-DMX-AUDIT-ROUTER-002/PROOF.json",
+      "files_allowed": [
+        "scripts/audit/auditor_router.py",
+        "scripts/audit/route_schema.py",
+        "tests/audit/test_auditor_router.py",
+        "schemas/audit/audit_route.schema.json",
+        "docs/ops/auditor-routing.md",
+        "proof/TP-DMX-AUDIT-ROUTER-002/**"
+      ],
+      "commit": "feat(audit): add host auditor route registry"
+    },
+    {
+      "id": "TP-DMX-PAL-CLINK-RUNNER-003",
+      "title": "PAL clink audit runner and normalizer",
+      "objective": "Build PAL clink runner reusing existing claude-audit/gemini-audit configs. Perform preflight, capture raw output, normalize. No config creation.",
+      "depends_on": ["TP-DMX-AUDIT-BUNDLE-001", "TP-DMX-AUDIT-ROUTER-002"],
+      "blocks": ["TP-DMX-AUDIT-PROOF-004"],
+      "executor": "claude-code-sonnet",
+      "auditor": "claude-code-opus",
+      "status": "READY_AFTER_DEPENDENCY",
+      "risk": "HIGH",
+      "proof_required": true,
+      "proof_path": "proof/TP-DMX-PAL-CLINK-RUNNER-003/PROOF.json",
+      "notes": "Existing PAL configs at docker/mcp-servers-source/pal/pal-mcp-server/conf/cli_clients/ must be treated as runtime evidence. Use cli_name=claude-audit and cli_name=gemini-audit directly.",
+      "files_allowed": [
+        "scripts/audit/pal_clink_runner.py",
+        "tests/audit/test_pal_clink_runner.py",
+        "schemas/audit/pal_clink_audit_output.schema.json",
+        "docs/ops/pal-clink-audit-runner.md",
+        "proof/TP-DMX-PAL-CLINK-RUNNER-003/**"
+      ],
+      "commit": "feat(audit): add PAL clink audit runner"
+    },
+    {
+      "id": "TP-DMX-PR-ACTION-BRIDGE-006",
+      "title": "Read-only PR Action Bridge compiler",
+      "objective": "Compile PR Steward artifacts into ACTION_PLAN.json and REPAIR_PACKET.md without mutating GitHub. Emit ACTION_PLAN.json (not PR_STEWARD_ACTION_PLAN.json unless downstream consumer requires alias).",
+      "depends_on": ["TP-DMX-AUDIT-BUNDLE-001", "TP-DMX-PR-STEWARD-FRESHNESS-005"],
+      "blocks": ["TP-DMX-COPILOT-REPAIR-007", "TP-DMX-PR-FIXTURES-011"],
+      "executor": "claude-code-sonnet",
+      "auditor": "claude-code-opus",
+      "status": "READY_AFTER_DEPENDENCY",
+      "risk": "HIGH",
+      "proof_required": true,
+      "proof_path": "proof/TP-DMX-PR-ACTION-BRIDGE-006/PROOF.json",
+      "files_allowed": [
+        "tools/pr_action_bridge/**",
+        "schemas/pr_action_bridge/action_plan.schema.json",
+        "tests/pr_action_bridge/**",
+        "docs/ops/pr-action-bridge.md",
+        "proof/TP-DMX-PR-ACTION-BRIDGE-006/**"
+      ],
+      "commit": "feat(pr): add read-only action bridge compiler"
+    },
+    {
+      "id": "TP-DMX-COPILOT-REPAIR-007",
+      "title": "Bounded Copilot PR repair scaffold",
+      "objective": "Add Copilot repair packet/comment scaffold treating Copilot only as bounded implementer. No automatic posting, no readiness/merge authority.",
+      "depends_on": ["TP-DMX-PR-ACTION-BRIDGE-006"],
+      "blocks": ["TP-DMX-PR-FIXTURES-011"],
+      "executor": "claude-code-sonnet",
+      "auditor": "claude-code-opus",
+      "status": "READY_AFTER_DEPENDENCY",
+      "risk": "HIGH",
+      "proof_required": true,
+      "proof_path": "proof/TP-DMX-COPILOT-REPAIR-007/PROOF.json",
+      "files_allowed": [
+        "docs/ops/copilot-pr-repair-lane.md",
+        "templates/copilot/PR_REPAIR_PACKET.md",
+        "schemas/copilot/repair_packet.schema.json",
+        "tests/copilot_repair/**",
+        "proof/TP-DMX-COPILOT-REPAIR-007/**"
+      ],
+      "commit": "docs(copilot): add bounded PR repair scaffold"
+    },
+    {
+      "id": "TP-DMX-PR-GATE-009",
+      "title": "Required pr-gate stabilization",
+      "objective": "Introduce or stabilize one required pr-gate check. Keep PR Steward advisory. Current ci-summary job is candidate. No branch protection mutation.",
+      "depends_on": ["TP-DMX-CI-TRIGGERS-008", "TP-DMX-PR-STEWARD-FRESHNESS-005"],
+      "blocks": ["TP-DMX-PR-STEWARD-HARDEN-010", "TP-DMX-BRANCH-POLICY-AUDIT-012"],
+      "executor": "claude-code-sonnet",
+      "auditor": "claude-code-opus",
+      "status": "READY_AFTER_DEPENDENCY",
+      "risk": "HIGH",
+      "proof_required": true,
+      "proof_path": "proof/TP-DMX-PR-GATE-009/PROOF.json",
+      "files_allowed": [
+        ".github/workflows/ci-complete.yml",
+        "docs/ops/pr-gate-runbook.md",
+        "tests/ci/**",
+        "proof/TP-DMX-PR-GATE-009/**"
+      ],
+      "commit": "ci: stabilize required pr-gate job"
+    },
+    {
+      "id": "TP-DMX-BRANCH-POLICY-AUDIT-012",
+      "title": "Branch protection and ruleset evidence audit",
+      "objective": "Capture actual branch protection/ruleset truth read-only. Mark UNKNOWN if admin access unavailable.",
+      "depends_on": ["TP-DMX-CI-TRIGGERS-008"],
+      "blocks": ["TP-DMX-PR-STEWARD-HARDEN-010"],
+      "executor": "claude-code-sonnet-readonly",
+      "auditor": "supervisor-review-gemini-fallback",
+      "status": "READY_AFTER_DEPENDENCY_AND_ADMIN_EVIDENCE",
+      "risk": "HIGH",
+      "proof_required": true,
+      "proof_path": "proof/TP-DMX-BRANCH-POLICY-AUDIT-012/PROOF.json",
+      "files_allowed": [
+        "proof/TP-DMX-BRANCH-POLICY-AUDIT-012/**",
+        "docs/ops/branch-policy-audit.md"
+      ],
+      "notes": "Branch protection truth remains UNKNOWN. Admin-visible gh api calls required. Mark UNKNOWN if access denied."
+    },
+    {
+      "id": "TP-DMX-PR-STEWARD-HARDEN-010",
+      "title": "PR Steward readiness hardening",
+      "objective": "Harden readiness semantics for unknown actors, blocking risks, required/advisory checks, proof/audit risk classification.",
+      "depends_on": ["TP-DMX-PR-STEWARD-FRESHNESS-005", "TP-DMX-PR-GATE-009", "TP-DMX-BRANCH-POLICY-AUDIT-012"],
+      "blocks": ["TP-DMX-PR-FIXTURES-011", "TP-DMX-AUDIT-PROOF-004"],
+      "executor": "claude-code-sonnet",
+      "auditor": "claude-code-opus",
+      "status": "READY_AFTER_DEPENDENCY",
+      "risk": "HIGH",
+      "proof_required": true,
+      "proof_path": "proof/TP-DMX-PR-STEWARD-HARDEN-010/PROOF.json",
+      "files_allowed": [
+        "tools/pr_steward/classifier.py",
+        "schemas/pr_steward/merge_readiness.schema.json",
+        "tests/pr_steward/**",
+        "docs/ops/pr-steward-readiness.md",
+        "proof/TP-DMX-PR-STEWARD-HARDEN-010/**"
+      ],
+      "commit": "fix(pr-steward): harden readiness risk classification"
+    },
+    {
+      "id": "TP-DMX-PR-FIXTURES-011",
+      "title": "PR Steward and Action Bridge fixture suite",
+      "objective": "Create durable fixtures for green no-op and repair cases. Offline and deterministic. No live GitHub calls.",
+      "depends_on": ["TP-DMX-PR-STEWARD-FRESHNESS-005", "TP-DMX-PR-ACTION-BRIDGE-006", "TP-DMX-PR-STEWARD-HARDEN-010"],
+      "blocks": ["TP-DMX-AUDIT-PROOF-004"],
+      "executor": "claude-code-sonnet",
+      "auditor": "claude-code-opus",
+      "status": "READY_AFTER_DEPENDENCY",
+      "risk": "MEDIUM",
+      "proof_required": true,
+      "proof_path": "proof/TP-DMX-PR-FIXTURES-011/PROOF.json",
+      "files_allowed": [
+        "tests/fixtures/pr_steward/**",
+        "tests/fixtures/pr_action_bridge/**",
+        "tests/pr_steward/**",
+        "tests/pr_action_bridge/**",
+        "docs/ops/pr-fixtures.md",
+        "proof/TP-DMX-PR-FIXTURES-011/**"
+      ],
+      "commit": "test(pr): add steward and action bridge fixtures"
+    },
+    {
+      "id": "TP-DMX-AUDIT-PROOF-004",
+      "title": "Audit proof normalization",
+      "objective": "Normalize PROOF.json, AUDITOR_REPORT.md, EVIDENCE_MANIFEST.json, ROUTE_TRACE.json after route/PAL/steward/fixture behavior is concrete.",
+      "depends_on": ["TP-DMX-AUDIT-BUNDLE-001", "TP-DMX-AUDIT-ROUTER-002", "TP-DMX-PAL-CLINK-RUNNER-003", "TP-DMX-PR-STEWARD-FRESHNESS-005", "TP-DMX-PR-FIXTURES-011"],
+      "blocks": [],
+      "executor": "claude-code-sonnet",
+      "auditor": "claude-code-opus",
+      "status": "READY_AFTER_DEPENDENCY",
+      "risk": "MEDIUM",
+      "proof_required": true,
+      "proof_path": "proof/TP-DMX-AUDIT-PROOF-004/PROOF.json",
+      "files_allowed": [
+        "schemas/proof/**",
+        "scripts/audit/validate_audit_proof.py",
+        "tests/audit/test_audit_proof.py",
+        "docs/ops/embedded-audit-proof.md",
+        "proof/TP-DMX-AUDIT-PROOF-004/**"
+      ],
+      "stop_conditions": [
+        "Codex enum addition required",
+        "Existing proof fixtures break unexpectedly",
+        "schemas/proof/embedded_audit.schema.json enum change needed (supervisor required)"
+      ],
+      "commit": "feat(audit): normalize embedded audit proof artifacts"
+    }
+  ],
+  "blocked_nodes": [],
+  "unknowns": [
+    "Exact GitHub branch protection/ruleset truth (needs admin-visible gh api)",
+    "Current live PR Steward artifact shape beyond PR 704 evidence",
+    "Whether workflow_dispatch still returns HTTP 500 in current GitHub state",
+    "AGY invocation, read-only posture, model-selection capability",
+    "Mutation surface inventory of tools/pr_merge and dopemux_pr_merge_specialist",
+    "Whether any downstream consumer requires PR_STEWARD_ACTION_PLAN.json vs ACTION_PLAN.json"
+  ]
+}
