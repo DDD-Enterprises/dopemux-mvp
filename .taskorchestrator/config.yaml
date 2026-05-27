@@ -234,28 +234,107 @@ traits:
       description: "Cross-agent instruction surface changes that touch multiple files."
 
 # ─── Work item schemas (workflow guide §3) ─────────────────────────────
-# Each schema composes from one or more traits. The schema's own `notes:`
-# list adds schema-specific notes ON TOP OF trait notes.
+# Each schema enumerates its expected notes EXPLICITLY in `notes:`. The
+# top-level `traits:` registry above is informational only — v3.8.0 does
+# not auto-compose trait notes into schemas, so we inline them per schema.
+# Comment lines below each schema name list the equivalent trait
+# composition for traceability.
+#
+# Schema selection:
+#   1. Type-first: item.type matched directly against work_item_schemas keys.
+#      Set type="task-packet" on items for reliable selection.
+#   2. Tag-fallback: per upstream manage-schemas docs, tag-fallback only
+#      hits `note_schemas:` (legacy format). For work_item_schemas matching
+#      via tag-fallback, set the item's `type` field explicitly.
+#   3. Default: items with no type/tag match fall through to the `default`
+#      schema below.
 
 work_item_schemas:
+  # ── task-packet ──────────────────────────────────────────────────────
   # Atomic repo-changing work unit (AGENTS.md §4 Task Packet).
-  # Tag substring `task-packet` matches via tag-fallback for items without
-  # an explicit `type` field.
+  # Trait equivalent: pal-chain-codex + proof-bundle + implementation-evidence
   task-packet:
     lifecycle: AUTO  # Parent auto-cascades to terminal when all children terminal
-    default_traits:
-      - pal-chain-codex
-      - proof-bundle
-      - implementation-evidence
-    # No schema-specific notes; everything comes from traits.
+    notes:
+      # === pal-chain-codex (AGENTS.md §5 Codex minimum) ===
+      - key: analyze
+        role: queue
+        required: false
+        description: "Output of pal/analyze — runtime flow, invariants, canonical writers identified."
+        guidance: |
+          Run mcp__pal__analyze (or read its output). State concretely:
+          - Runtime path inspected
+          - Invariants the change must preserve
+          - Canonical writer for each touched surface
+          - Hidden coupling identified
+          - What is still UNKNOWN
+        skill: pal:analyze
 
+      - key: planner
+        role: queue
+        required: false
+        description: "Output of pal/planner — phased plan, blast radius, contract surfaces, validation strategy, rollback path."
+        guidance: |
+          Run mcp__pal__planner. Capture:
+          - Phases (commit-sized slices)
+          - Blast radius per phase
+          - Contract surfaces touched (schemas, manifests, event payloads, MCP tools)
+          - Validation strategy per phase (which tests, which checks)
+          - Rollback path (specific command(s))
+        skill: pal:planner
+
+      - key: codereview
+        role: review
+        required: false
+        description: "Output of pal/codereview — issues with severity, recommendations."
+        guidance: |
+          Run mcp__pal__codereview on the slice's diff. Capture:
+          - Issues with severity (critical/high/medium/low)
+          - Recommended fixes per issue
+          - Files reviewed (absolute paths)
+        skill: pal:codereview
+
+      - key: precommit
+        role: review
+        required: false
+        description: "Output of pal/precommit — diff scope, schema drift, generated junk, rollback feasibility."
+        guidance: |
+          Run mcp__pal__precommit. Capture:
+          - Diff scope confirmation
+          - Schema drift detection
+          - Generated artifacts present
+          - Rollback feasibility check
+        skill: pal:precommit
+
+      # === implementation-evidence ===
+      - key: implementation-evidence
+        role: work
+        required: false
+        description: "Files changed, slices completed, validation exit codes — running notes."
+        guidance: "Capture concretely: files touched, commit SHAs per slice, exit codes of validation runs."
+
+      # === proof-bundle (THE COMPLETE-GATE) ===
+      - key: proof-bundle
+        role: review
+        required: true
+        description: "Full AGENTS.md §9 proof bundle. THE COMPLETE-GATE."
+        guidance: |
+          REQUIRED. Populate ALL fields:
+          - TP path/ID
+          - worktree path, branch, repo identity
+          - slices completed, files changed (with line counts)
+          - validations with exit codes — PASS / FAIL / NOT_RUN buckets
+          - codereview status, precommit status
+          - commit SHA(s), PR URL or exact blocker
+          - residual risks, UNKNOWNs, cleanup status
+          Per AGENTS.md §9: no proof means incomplete.
+        skill: verify
+
+  # ── feature-implementation ──────────────────────────────────────────
   # Multi-TP feature container.
+  # Trait equivalent: pal-chain-codex + proof-bundle + implementation-evidence
   feature-implementation:
     lifecycle: MANUAL  # Don't auto-cascade — feature ship is an explicit decision
-    default_traits:
-      - pal-chain-codex
-      - proof-bundle
-      - implementation-evidence
     notes:
       - key: feature-brief
         role: queue
@@ -273,20 +352,49 @@ work_item_schemas:
         description: "Phase breakdown into child TPs."
         guidance: "List child TPs, their order, and which can ship in parallel."
 
+      # PAL chain notes (same as task-packet)
+      - key: analyze
+        role: queue
+        required: false
+        description: "Output of pal/analyze — runtime flow, invariants, canonical writers."
+        skill: pal:analyze
+      - key: planner
+        role: queue
+        required: false
+        description: "Output of pal/planner — phased plan, blast radius, validation, rollback."
+        skill: pal:planner
+      - key: implementation-evidence
+        role: work
+        required: false
+        description: "Files changed, slices completed, validation exit codes — running notes."
+      - key: codereview
+        role: review
+        required: false
+        description: "Output of pal/codereview — issues with severity, recommendations."
+        skill: pal:codereview
+      - key: precommit
+        role: review
+        required: false
+        description: "Output of pal/precommit."
+        skill: pal:precommit
+      - key: proof-bundle
+        role: review
+        required: true
+        description: "Full AGENTS.md §9 proof bundle. THE COMPLETE-GATE."
+        skill: verify
+
+  # ── bug-fix ─────────────────────────────────────────────────────────
   # Bug fix variant: emphasizes repro + root cause + regression test.
+  # Trait equivalent: pal-chain-codex + proof-bundle + implementation-evidence
   bug-fix:
     lifecycle: AUTO
-    default_traits:
-      - pal-chain-codex
-      - proof-bundle
-      - implementation-evidence
     notes:
       - key: repro
         role: queue
         required: false
         description: "How to reproduce — failing test or manual steps."
         guidance: |
-          Provide a minimal repro. Include:
+          Minimal repro. Include:
           - Stack trace if applicable
           - Commit SHA where bug was observed
           - Environment / config that triggers it
@@ -295,9 +403,7 @@ work_item_schemas:
         role: work
         required: false
         description: "The ACTUAL cause, not just the fix."
-        guidance: |
-          Output of mcp__pal__debug. State the underlying cause, not just the
-          symptom that disappeared. Include why the bug went undetected.
+        guidance: "Output of mcp__pal__debug. Underlying cause, not the symptom that disappeared. Include why the bug went undetected."
         skill: pal:debug
 
       - key: regression-test
@@ -305,11 +411,42 @@ work_item_schemas:
         required: false
         description: "New test that would have caught this bug. File path + assertion."
 
+      # PAL chain notes
+      - key: analyze
+        role: queue
+        required: false
+        description: "Output of pal/analyze."
+        skill: pal:analyze
+      - key: planner
+        role: queue
+        required: false
+        description: "Output of pal/planner."
+        skill: pal:planner
+      - key: implementation-evidence
+        role: work
+        required: false
+        description: "Files changed, slices completed, validation exit codes."
+      - key: codereview
+        role: review
+        required: false
+        description: "Output of pal/codereview."
+        skill: pal:codereview
+      - key: precommit
+        role: review
+        required: false
+        description: "Output of pal/precommit."
+        skill: pal:precommit
+      - key: proof-bundle
+        role: review
+        required: true
+        description: "Full AGENTS.md §9 proof bundle. THE COMPLETE-GATE."
+        skill: verify
+
+  # ── rfc-proposal ────────────────────────────────────────────────────
   # RFC proposal (consensus-building doc).
+  # Trait equivalent: implementation-evidence (doc file change tracking)
   rfc-proposal:
     lifecycle: MANUAL  # RFC consensus + decision is explicit
-    default_traits:
-      - implementation-evidence  # Track the doc file change
     notes:
       - key: problem-statement
         role: queue
@@ -329,6 +466,11 @@ work_item_schemas:
         description: "Output of pal/consensus or documented human consensus process."
         skill: pal:consensus
 
+      - key: implementation-evidence
+        role: work
+        required: false
+        description: "Doc file created/edited — path + commit SHA."
+
       - key: chosen-approach
         role: review
         required: true
@@ -339,11 +481,11 @@ work_item_schemas:
         required: true
         description: "Path to the resulting ADR file in docs/90-adr/ (and ConPort decision ID if logged)."
 
+  # ── audit-pack ──────────────────────────────────────────────────────
   # Audit pack (RTE-style phased audit work).
+  # Trait equivalent: implementation-evidence
   audit-pack:
     lifecycle: AUTO_REOPEN  # Audit phases can re-issue against new HEAD
-    default_traits:
-      - implementation-evidence
     notes:
       - key: audit-prompt
         role: queue
@@ -358,16 +500,21 @@ work_item_schemas:
           Each finding: ID (e.g. F1-CRIT-1), severity, summary, evidence (file:line),
           recommended action. Group by severity. Mark RESOLVED on rerun.
 
+      - key: implementation-evidence
+        role: work
+        required: false
+        description: "Audit artifacts produced — claudedocs/ paths, evidence files."
+
       - key: verdict
         role: review
         required: true
         description: "Final verdict (READY / NOT_READY / RUNNABLE-BOUNDED / etc.)"
         guidance: "Include CRIT counts, what blocks shipping, recommended next phase."
 
+  # ── sprint-goal ─────────────────────────────────────────────────────
   # Sprint goal (top-level container; never auto-terminates).
   sprint-goal:
     lifecycle: PERMANENT  # Sprint goals don't auto-cascade or auto-terminate
-    default_traits: []
     notes:
       - key: goal-definition
         role: queue
@@ -380,29 +527,27 @@ work_item_schemas:
         required: false
         description: "Running progress notes for the sprint (weekly updates)."
 
+  # ── retrospective ───────────────────────────────────────────────────
   # Retrospective work item (Phase 6 / TP-CS-120).
+  # Trait equivalent: retrospective-actions
   retrospective:
     lifecycle: AUTO
-    default_traits:
-      - retrospective-actions
     notes:
       - key: scope
         role: queue
         required: true
         description: "What window, items, theme is this retro covering?"
-        guidance: "Time window (e.g. 30 days), items in scope (e.g. all DMX-ORCH-CLAUDE-SURFACE TPs), thematic focus if any."
+        guidance: "Time window (e.g. 30 days), items in scope, thematic focus if any."
 
       - key: triggering-event
         role: queue
         required: false
         description: "What fired this retro — schedule, anti-pattern signal, manual operator request."
-        guidance: "Reference TP-CS-128 anti-pattern report ID if metric-triggered. Note operator name if manual."
 
       - key: metrics-snapshot
         role: queue
         required: false
         description: "Output of scripts/orchestrator/collect_metrics.py at retro creation time."
-        guidance: "Paste the metric report or reference its claudedocs/ path."
 
       - key: observations
         role: work
@@ -414,21 +559,53 @@ work_item_schemas:
         role: work
         required: true
         description: "Patterns extracted from observations."
-        guidance: "Each finding: pattern statement, evidence (which observations support it), severity / leverage."
+        guidance: "Each finding: pattern statement, evidence, severity / leverage."
+
+      # === retrospective-actions trait inlined ===
+      - key: schema-updates-proposed
+        role: review
+        required: false
+        description: "Schema/trait changes proposed by this retro."
+        guidance: "Each item becomes a child TP via the action-feedback convention (Plan §9.12 TP-CS-125)."
+
+      - key: commands-updates-proposed
+        role: review
+        required: false
+        description: "Slash command changes proposed."
+
+      - key: agent-updates-proposed
+        role: review
+        required: false
+        description: "Agent doc changes proposed."
+        guidance: "Files in scope: .claude/agents/*, AGENTS.md, .github/copilot-instructions.md, config/instructions/agents.instructions.md, .claude/personas/*.agent.md."
+
+      - key: hook-updates-proposed
+        role: review
+        required: false
+        description: "Hook changes proposed (.claude/hooks/* and .claude/settings.json)."
+
+      - key: instructions-updates-proposed
+        role: review
+        required: false
+        description: "Cross-agent instruction surface changes that touch multiple files."
 
       - key: next-retro-conditions
         role: review
         required: false
         description: "When should the NEXT retro fire?"
-        guidance: "Schedule (e.g. monthly), metric threshold (e.g. proof-bundle-compliance < 50%), or anti-pattern signal."
+        guidance: "Schedule, metric threshold, or anti-pattern signal."
 
+  # ── default ─────────────────────────────────────────────────────────
   # Fallback for items not matching any type or tag (M10 fix).
-  # Workflow guide §3: items without a type/tag match fall through to this.
+  # Trait equivalent: proof-bundle (items that ship changes still need proof)
   default:
     lifecycle: AUTO
-    default_traits:
-      - proof-bundle  # Even unmatched items still need proof if they ship changes
-    notes: []
+    notes:
+      - key: proof-bundle
+        role: review
+        required: true
+        description: "Full AGENTS.md §9 proof bundle for any change-producing work."
+        skill: verify
 
 # ─── Status labels (workflow guide §6) ─────────────────────────────────
 # Maps role transitions to human-readable status strings.
