@@ -30,6 +30,7 @@ import {
   Copy,
   Droplet,
   Eye,
+  Info,
   PauseCircle,
   Trash2,
   TrendingUp,
@@ -142,24 +143,26 @@ const formatTimestamp = (dateStr: string) => {
 };
 
 const getNotificationIcon = (type: string) => {
-  const iconProps = { size: 14, 'aria-hidden': 'true' as const };
+  const iconSize = 14;
   switch (type) {
     case 'decision':
-      return <CheckCircle {...iconProps} />;
+      return <CheckCircle size={iconSize} aria-hidden="true" />;
     case 'progress':
-      return <TrendingUp {...iconProps} />;
+      return <TrendingUp size={iconSize} aria-hidden="true" />;
     case 'break':
-      return <PauseCircle {...iconProps} />;
+      return <PauseCircle size={iconSize} aria-hidden="true" />;
     case 'session':
-      return <Clock {...iconProps} />;
+      return <Clock size={iconSize} aria-hidden="true" />;
     case 'warning':
-      return <AlertTriangle {...iconProps} />;
+      return <AlertTriangle size={iconSize} aria-hidden="true" />;
     case 'error':
-      return <AlertCircle {...iconProps} />;
+      return <AlertCircle size={iconSize} aria-hidden="true" />;
     case 'hyperfocus':
-      return <Zap {...iconProps} />;
+      return <Zap size={iconSize} aria-hidden="true" />;
+    case 'info':
+      return <Info size={iconSize} aria-hidden="true" />;
     default:
-      return <Bell {...iconProps} />;
+      return <Bell size={iconSize} aria-hidden="true" />;
   }
 };
 
@@ -480,7 +483,7 @@ function App() {
                   )
                 }
                 label={`Recommendation: ${cognitiveState.recommendation}`}
-                aria-label={isCopied ? `AI Recommendation: ${cognitiveState.recommendation} (Copied)` : `AI Recommendation: ${cognitiveState.recommendation}`}
+                aria-label={isCopied ? `AI Recommendation: ${cognitiveState.recommendation} (Copied)` : `Copy AI Recommendation: ${cognitiveState.recommendation}`}
                 onClick={handleCopyRecommendation}
                 tabIndex={0}
                 sx={{
@@ -515,7 +518,6 @@ function App() {
         <Collapse in={Boolean(errorMessage)}>
           <Alert
             severity="error"
-            icon={<AlertTriangle size={20} />}
             onClose={() => setErrorMessage(null)}
             sx={{
               mb: 3,
