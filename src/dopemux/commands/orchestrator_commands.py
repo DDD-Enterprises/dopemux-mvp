@@ -752,6 +752,9 @@ def orchestrator_transition_preview(
 @click.option("--idempotency-key", required=True)
 @click.option("--proof-id", required=True)
 @click.option("--approval-phrase", default="")
+@click.option("--expected-version", type=int, default=None)
+@click.option("--reason", default=None)
+@click.option("--base-url", default=None)
 @click.option("--json-output", is_flag=True)
 def orchestrator_transition_apply(
     workflow_id: str,
@@ -759,17 +762,31 @@ def orchestrator_transition_apply(
     idempotency_key: str,
     proof_id: str,
     approval_phrase: str,
+    expected_version: Optional[int],
+    reason: Optional[str],
+    base_url: Optional[str],
     json_output: bool,
 ):
-    """Plan an approved workflow transition without mutating state."""
-    payload = transition_apply_plan(
+    """Execute a workflow transition behind approval phrase and idempotency locks."""
+    from dopemux.orchestrator.transitions import apply_transition
+    res = apply_transition(
         workflow_id=workflow_id,
-        transition=transition_name,
+        transition_name=transition_name,
         idempotency_key=idempotency_key,
         proof_id=proof_id,
         approval_phrase=approval_phrase,
+        expected_version=expected_version,
+        reason=reason,
+        base_url=base_url,
     )
-    _emit_payload(payload, json_output=json_output)
+    if res.status == "REFUSED":
+        _emit_payload(res.model_dump(), json_output=json_output)
+        raise click.ClickException("Workflow transition refused: invalid or missing approval phrase.")
+    if res.status == "FAILED":
+        _emit_payload(res.model_dump(), json_output=json_output)
+        raise click.ClickException(f"Workflow transition failed: {res.error}")
+
+    _emit_payload(res.model_dump(), json_output=json_output)
 
 
 @orchestrator_transition.group("proof")
@@ -807,7 +824,8 @@ def orchestrator_pr():
 def orchestrator_pr_queue(entries: tuple[str, ...], repo: str, json_output: bool):
     """Classify PR readiness from live GitHub feed or offline fallback."""
     if entries:
-        click.echo("WARNING: --pr flag is deprecated. Use live mode (no --pr) instead.", err=True)
+        if not json_output:
+            click.echo("WARNING: --pr flag is deprecated. Use live mode (no --pr) instead.", err=True)
         payload = build_pr_queue(_parse_pr_items(entries))
     else:
         payload = build_pr_queue(repo=repo)
