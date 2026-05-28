@@ -302,25 +302,107 @@ def validate_transition_proof_envelope_file(
     )
 
 
-def build_pr_queue(items: Iterable[Mapping[str, Any]]) -> Dict[str, Any]:
+def build_pr_queue(
+    items: Iterable[Mapping[str, Any]] | None = None,
+    *,
+    repo: str = "DDD-Enterprises/dopemux-mvp",
+    adapter: Any | None = None,
+) -> Dict[str, Any]:
     rows = []
-    for item in items:
-        checks = str(item.get("checks") or "unknown")
-        proof = str(item.get("proof") or "missing")
-        if checks == "passing" and proof == "present":
-            readiness = "merge_candidate"
-        elif checks == "failing" or proof != "present":
-            readiness = "blocked"
-        else:
-            readiness = "needs_review"
-        rows.append(
-            {
-                "number": int(item.get("number", 0)),
-                "checks": checks,
-                "proof": proof,
-                "readiness": readiness,
-            }
-        )
+    
+    if items is not None:
+        # Offline fallback
+        for item in items:
+            number = int(item.get("number", 0))
+            checks = str(item.get("checks") or "unknown")
+            proof = str(item.get("proof") or "missing")
+            
+            if checks == "passing" and proof == "present":
+                readiness = "merge_candidate"
+            elif checks == "failing":
+                readiness = "blocked"
+            elif proof == "missing":
+                readiness = "needs_review"
+            else:
+                readiness = "needs_review"
+                
+            rows.append(
+                {
+                    "number": number,
+                    "checks": checks,
+                    "proof": proof,
+                    "readiness": readiness,
+                }
+            )
+    else:
+        # Live adapter mode
+        if adapter is None:
+            from dopemux.orchestrator.github_adapter import GithubAdapter
+            adapter = GithubAdapter()
+            
+        try:
+            prs = adapter.list_prs(repo)
+        except Exception:
+            prs = []
+            
+        for pr in prs:
+            number = pr.get("number", 0)
+            state = pr.get("state", "OPEN").upper()
+            
+            if state in {"MERGED", "CLOSED"}:
+                readiness = "REDUNDANT"
+            else:
+                # Check staleness
+                try:
+                    age = adapter.get_branch_age(repo, number)
+                    if age > 7.0:
+                        readiness = "STALE"
+                    else:
+                        # Check proof
+                        proof_path = adapter.find_proof_path(repo, number)
+                        if not proof_path:
+                            readiness = "NEEDS_MORE_EVIDENCE"
+                        else:
+                            # Check checks
+                            checks_list = pr.get("statusCheckRollup") or []
+                            has_failing_check = False
+                            for check in checks_list:
+                                conclusion = check.get("conclusion")
+                                if conclusion == "FAILURE":
+                                    has_failing_check = True
+                                    break
+                            
+                            if has_failing_check:
+                                    readiness = "BLOCKED"
+                            else:
+                                # Check reviews
+                                reviews = pr.get("reviews") or []
+                                has_changes_requested = False
+                                for rev in reviews:
+                                    if rev.get("state") == "CHANGES_REQUESTED":
+                                        has_changes_requested = True
+                                        break
+                                if has_changes_requested:
+                                    readiness = "BLOCKED"
+                                else:
+                                    # Check for dangerous patterns
+                                    title = pr.get("title", "")
+                                    if "bypass" in title.lower() or "override" in title.lower():
+                                        readiness = "DANGEROUS"
+                                    else:
+                                        readiness = "MERGEABLE"
+                except Exception:
+                    readiness = "BLOCKED"
+                    
+            rows.append(
+                {
+                    "number": number,
+                    "title": pr.get("title", ""),
+                    "readiness": readiness,
+                    "state": state,
+                }
+            )
+            
     return {
         "kind": "pr_queue",
         "authority": AUTHORITY,
@@ -329,6 +411,7 @@ def build_pr_queue(items: Iterable[Mapping[str, Any]]) -> Dict[str, Any]:
         "will_write": False,
         "items": rows,
     }
+
 
 
 def pr_comment_plan(

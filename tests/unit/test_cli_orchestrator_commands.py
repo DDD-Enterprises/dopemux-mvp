@@ -203,3 +203,83 @@ def test_pr_queue_rejects_non_positive_pr_entry():
 
     assert result.exit_code != 0
     assert "> 0" in result.output
+
+
+def test_pr_queue_deprecated_warning():
+    result = CliRunner().invoke(
+        cli, ["orchestrator", "pr", "queue", "--pr", "123:passing:present"]
+    )
+    assert result.exit_code == 0
+    assert "WARNING" in result.output or "warning" in result.output or "deprecated" in result.output
+
+
+def test_pr_queue_live_cli(monkeypatch):
+    from unittest.mock import MagicMock
+    mock_adapter = MagicMock()
+    mock_adapter.list_prs.return_value = [
+        {"number": 456, "title": "Cool PR", "state": "OPEN"}
+    ]
+    mock_adapter.get_branch_age.return_value = 1.0
+    mock_adapter.find_proof_path.return_value = "proof/PROOF.json"
+    
+    # Patch GithubAdapter inside commands.orchestrator_commands
+    monkeypatch.setattr(
+        "dopemux.orchestrator.github_adapter.GithubAdapter",
+        lambda *args, **kwargs: mock_adapter
+    )
+    
+    result = CliRunner().invoke(
+        cli, ["orchestrator", "pr", "queue", "--json-output"]
+    )
+    assert result.exit_code == 0
+    assert "456" in result.output
+    assert "MERGEABLE" in result.output
+
+
+def test_pr_comment_cli(monkeypatch):
+    from unittest.mock import MagicMock
+    mock_adapter = MagicMock()
+    mock_adapter.comment.return_value = {
+        "success": True,
+        "pr_number": 123,
+        "comment_body_length": 5,
+        "approval_id": "p-123",
+        "canonical_writer": "github-api"
+    }
+    
+    monkeypatch.setattr(
+        "dopemux.orchestrator.github_adapter.GithubAdapter",
+        lambda *args, **kwargs: mock_adapter
+    )
+    
+    # 1. Without execute, planning only
+    result = CliRunner().invoke(
+        cli, [
+            "orchestrator", "pr", "comment",
+            "--pr-number", "123",
+            "--body", "hello",
+            "--proof-id", "p-123",
+            "--approval-phrase", "I AUTHORIZE github pr comment 123 ON dopemux-mvp USING GitHub WITH PROOF p-123",
+            "--json-output"
+        ]
+    )
+    assert result.exit_code == 0
+    assert "ready_for_canonical_writer" in result.output
+    assert "executed" not in result.output
+    
+    # 2. With execute
+    result_exec = CliRunner().invoke(
+        cli, [
+            "orchestrator", "pr", "comment",
+            "--pr-number", "123",
+            "--body", "hello",
+            "--proof-id", "p-123",
+            "--approval-phrase", "I AUTHORIZE github pr comment 123 ON dopemux-mvp USING GitHub WITH PROOF p-123",
+            "--execute",
+            "--json-output"
+        ]
+    )
+    assert result_exec.exit_code == 0
+    assert "executed" in result_exec.output
+    assert "github-api" in result_exec.output
+

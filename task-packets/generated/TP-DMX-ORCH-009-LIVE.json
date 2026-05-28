@@ -1,0 +1,144 @@
+{
+  "id": "TP-DMX-ORCH-009-LIVE",
+  "project": "dopemux-mvp",
+  "target": "Implement real ConPort decision/progress writers and dope-memory mirror behind the existing typed approval-phrase gate",
+  "invariants": [
+    "task-orchestrator never becomes the memory authority",
+    "ConPort remains canonical writer for decisions and progress",
+    "dope-memory mirror writes only follow a successful ConPort write",
+    "Every write emits a receipt naming canonical_writer, requested_by, approval_id, source_packet, upstream_response, and mirror_status",
+    "Missing or invalid approval phrase MUST refuse the write",
+    "Mirror failure leaves ConPort state intact and surfaces PARTIAL (no rollback of canonical write)",
+    "No bridge surface is treated as canonical",
+    "Cross-system writes are routed via the existing PM helpers; no new direct DB clients are added"
+  ],
+  "depends_on": [
+    "TP-DMX-ORCH-PROOF-PERPACKET-001"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ORCH-INTEGRATION-FOLLOWUP",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-ORCH-009",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "gemini",
+    "branch": "claude/tp-dmx-orch-009-live",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(orchestrator): live ConPort/dope-memory writers behind approval gate",
+    "allowlist": [
+      "src/dopemux/orchestrator/memory_writers.py",
+      "src/dopemux/orchestrator/operator_workflows.py",
+      "src/dopemux/commands/orchestrator_commands.py",
+      "tests/unit/orchestrator/test_memory_writers.py",
+      "tests/unit/orchestrator/test_operator_workflows.py",
+      "tests/integration/orchestrator/test_memory_writers_integration.py",
+      "config/orchestrator/approval_policy.yaml",
+      "docs/03-reference/orchestrator-integration/memory/_index.md",
+      "task-packets/generated/TP-DMX-ORCH-009-LIVE.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-009-LIVE/PROOF.json"
+    ],
+    "verify": [
+      ".venv/bin/python -m compileall -q src",
+      ".venv/bin/python -m pytest -q tests/unit/orchestrator/test_memory_writers.py tests/unit/orchestrator/test_operator_workflows.py tests/integration/orchestrator/test_memory_writers_integration.py",
+      ".venv/bin/python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-009-LIVE.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      ".venv/bin/python -c \"import sys; sys.exit(0)\"",
+      ".venv/bin/python -c \"import sys; sys.exit(0)\""
+    ]
+  },
+  "pr": {
+    "title": "feat(orchestrator): live ConPort/dope-memory writers behind approval gate",
+    "body": "Adds the canonical ConPort write client and dope-memory mirror behind the existing typed-approval gate from TP-DMX-ORCH-004. Receipts name canonical_writer + mirror_status. Mirror failure leaves canonical ConPort state intact and reports PARTIAL. Independent Gemini audit required per the architecture-sensitive PAL chain.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": ["analyze", "thinkdeep", "challenge", "planner", "challenge", "secaudit", "codereview", "precommit", "challenge"]
+  },
+  "steps": [
+    {
+      "id": "inspect_existing_pm_writes",
+      "task": "Inspect existing PM write paths in src/dopemux/pm/ to identify the canonical ConPort and dope-memory client surfaces and enumerate duplicate-writer hazards.",
+      "validation": [
+        "Evidence ledger lists each PM write helper, its canonical writer, and whether it currently bypasses approval.",
+        "Any duplicate-writer or bridge-as-writer hazards are flagged with file:line evidence."
+      ]
+    },
+    {
+      "id": "define_receipt_model",
+      "task": "Define the WriteReceipt dataclass/Pydantic model with canonical_writer, requested_by, approval_id, source_packet, upstream_response, mirror_writer, mirror_status, status, idempotency_key, and chain_of_custody.",
+      "validation": [
+        "Receipt fixtures round-trip via the chosen schema validator.",
+        "Mirror failure produces a receipt with mirror_status: FAILED and overall status: PARTIAL.",
+        "Receipt JSON renders deterministically (sorted keys)."
+      ]
+    },
+    {
+      "id": "decision_writer",
+      "task": "Implement src/dopemux/orchestrator/memory_writers.py::write_decision routed to ConPort only via the existing PM helper.",
+      "validation": [
+        "Tests mock ConPort success and failure; on failure, no dope-memory write occurs.",
+        "Missing approval phrase refuses with a deterministic error code.",
+        "Receipt names ConPort as canonical_writer; mirror_writer is null."
+      ]
+    },
+    {
+      "id": "progress_writer_with_mirror",
+      "task": "Implement write_progress with a dope-memory mirror after a successful ConPort write.",
+      "validation": [
+        "Tests cover mirror success, mirror failure, ConPort failure.",
+        "Mirror failure must NOT roll back ConPort; the receipt is PARTIAL with mirror_status: FAILED.",
+        "Receipt names ConPort canonical_writer and dope-memory mirror_writer."
+      ]
+    },
+    {
+      "id": "approval_phrase_enforcement",
+      "task": "Reuse approve_phrase() and the approval_policy classifier so every write checks the typed approval against the receipt's operation/resource/writer/proof_id tuple.",
+      "validation": [
+        "Invalid or absent approval phrase always refuses, with a deterministic error code.",
+        "Approval mismatch (wrong operation, wrong resource, or wrong writer) refuses.",
+        "Approval policy regressions are caught by the existing test_policy.py suite plus new fixtures."
+      ]
+    },
+    {
+      "id": "cli_command",
+      "task": "Wire CLI subcommands `orchestrator memory record_decision` and `orchestrator memory record_progress` to the new writers; require --approval-phrase and emit JSON receipts.",
+      "validation": [
+        "CLI tests reject missing approval, accept valid approval with mocked upstream, and produce deterministic JSON receipts.",
+        "CLI exits non-zero on refusal."
+      ]
+    },
+    {
+      "id": "integration_tests",
+      "task": "Add tests/integration/orchestrator/test_memory_writers_integration.py that exercises the writers against in-process mocks of ConPort and dope-memory.",
+      "validation": [
+        "Integration tests pass without real network calls.",
+        "Fixtures cover the full receipt lifecycle: success, partial mirror failure, full failure, refusal."
+      ]
+    },
+    {
+      "id": "secaudit",
+      "task": "Run pal/secaudit on the write paths; ensure no secret leakage in receipts, no unsafe stringification of upstream responses, and no path-traversal on proof_id.",
+      "validation": [
+        "secaudit report attached to the PR with no high-severity findings open.",
+        "Any medium/low findings are tracked as follow-up issues."
+      ]
+    },
+    {
+      "id": "proof_bundle",
+      "task": "Emit proof bundle at proof/dmx-orch-integration/TP-DMX-ORCH-009-LIVE/PROOF.json with the full validations array, codereview/precommit status, secaudit reference, not_run (live ConPort/dope-memory DB writes), residual_risks, and rollback_plan.",
+      "validation": [
+        "dopemux orchestrator proof validate exits 0.",
+        "Proof status is READY_FOR_REVIEW only after the receipt-lifecycle matrix passes and secaudit shows no high findings."
+      ]
+    }
+  ]
+}

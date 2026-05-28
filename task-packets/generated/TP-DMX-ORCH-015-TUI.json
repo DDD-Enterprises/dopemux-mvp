@@ -1,0 +1,123 @@
+{
+  "id": "TP-DMX-ORCH-015-TUI",
+  "project": "dopemux-mvp",
+  "target": "Implement the orchestrator TUI under src/dopemux/tui/** and src/dopemux/orchestrator/ui/** with the eight read-only panels declared in DASHBOARD_PANELS",
+  "invariants": [
+    "TUI panels remain read-only by default; no panel performs a workflow mutation directly",
+    "Every action button surfaces its tier + approval need; T4+ requires the existing approval phrase + explicit operator confirmation",
+    "Partial failures (PARTIAL receipts) are surfaced visibly in the relevant panel, not hidden",
+    "Framework choice is fixed before implementation; Textual is the default unless evidence rejects it",
+    "No new MCP write surfaces are added; the TUI only consumes the read/preview-only surfaces from TP-DMX-ORCH-005 and the live writers from TP-DMX-ORCH-009-LIVE/012-LIVE/013-LIVE through their existing approval gates",
+    "Snapshot tests cover every panel and are deterministic across CI environments"
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ORCH-INTEGRATION-FOLLOWUP",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-ORCH-015",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "claude/tp-dmx-orch-015-tui",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(orchestrator): implement read-only TUI dashboard panels",
+    "allowlist": [
+      "src/dopemux/tui/__init__.py",
+      "src/dopemux/tui/app.py",
+      "src/dopemux/tui/widgets/today.py",
+      "src/dopemux/tui/widgets/authority.py",
+      "src/dopemux/tui/widgets/packets.py",
+      "src/dopemux/tui/widgets/proof.py",
+      "src/dopemux/tui/widgets/risks.py",
+      "src/dopemux/tui/widgets/pr_queue.py",
+      "src/dopemux/tui/widgets/context.py",
+      "src/dopemux/tui/widgets/do_not_touch.py",
+      "src/dopemux/orchestrator/ui/__init__.py",
+      "src/dopemux/orchestrator/ui/data_sources.py",
+      "src/dopemux/orchestrator/ui/snapshots.py",
+      "src/dopemux/commands/orchestrator_commands.py",
+      "tests/unit/tui/test_app.py",
+      "tests/unit/tui/test_widgets.py",
+      "tests/unit/orchestrator/test_ui_data_sources.py",
+      "tests/snapshots/tui/",
+      "docs/03-reference/orchestrator-integration/ui/_index.md",
+      "task-packets/generated/TP-DMX-ORCH-015-TUI.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-015-TUI/PROOF.json"
+    ],
+    "verify": [
+      ".venv/bin/python -m compileall -q src",
+      ".venv/bin/python -m pytest -q tests/unit/tui tests/unit/orchestrator/test_ui_data_sources.py",
+      ".venv/bin/python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-015-TUI.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      ".venv/bin/python -c \"import sys; sys.exit(0)\"",
+      ".venv/bin/python -c \"import sys; sys.exit(0)\""
+    ]
+  },
+  "pr": {
+    "title": "feat(orchestrator): implement read-only TUI dashboard panels",
+    "body": "Implements the actual TUI declared by DASHBOARD_PANELS in operator_workflows.py. Adds src/dopemux/tui/** (Textual app + 8 widgets) and src/dopemux/orchestrator/ui/** (data sources + snapshot helpers). All panels are read-only by default; action buttons display tier + approval requirement but never perform a write directly — they invoke the existing approval-gated CLI commands.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": ["analyze", "planner", "challenge", "codereview", "precommit"]
+  },
+  "steps": [
+    {
+      "id": "framework_decision",
+      "task": "Confirm the TUI framework choice. Default: Textual (already supported in dopemux-mvp's environment). Document the decision in docs/03-reference/orchestrator-integration/ui/_index.md with rationale and dependency footprint.",
+      "validation": [
+        "Decision doc cites Textual as chosen (or records an explicit alternative with evidence).",
+        "Required pyproject.toml extras are listed in the doc and added (if not already)."
+      ]
+    },
+    {
+      "id": "data_source_layer",
+      "task": "Implement src/dopemux/orchestrator/ui/data_sources.py with a deterministic adapter for every panel: today (build_dashboard_snapshot), authority (load_approval_policy + classify_capability), packets (validate_packet_file matrix), proof (validate_proof_file matrix), risks (TX/TU/T6 from policy), pr_queue (build_pr_queue), context (context_status), do_not_touch (refusal-matrix snapshot).",
+      "validation": [
+        "Every adapter is pure-read; no module-level side effects.",
+        "Adapters return shapes that match the existing operator_workflows helpers; no new helpers added in this packet."
+      ]
+    },
+    {
+      "id": "tui_widgets",
+      "task": "Implement one widget per panel under src/dopemux/tui/widgets/. Each widget consumes its data-source adapter and renders top-3 ADHD-friendly summaries with more_count + next_token where results are truncated.",
+      "validation": [
+        "Widget tests assert deterministic rendering on representative fixtures.",
+        "Each widget displays tier + approval needs for any action it surfaces."
+      ]
+    },
+    {
+      "id": "tui_app_shell",
+      "task": "Implement src/dopemux/tui/app.py: the Textual App that mounts the 8 widgets in a layout matching DASHBOARD_PANELS order. Add a `dopemux orchestrator tui` CLI command that launches the app.",
+      "validation": [
+        "App boots and renders without exceptions on an in-process headless run.",
+        "CLI test asserts the command exits cleanly with --once (snapshot-and-exit) mode."
+      ]
+    },
+    {
+      "id": "snapshot_tests",
+      "task": "Add tests/snapshots/tui/ snapshots for every widget across empty / partial / full / error data states.",
+      "validation": [
+        "Snapshots are deterministic on Linux + macOS CI.",
+        "Snapshot diffs include the panel name and the data state for easy review."
+      ]
+    },
+    {
+      "id": "proof_bundle",
+      "task": "Emit proof bundle at proof/dmx-orch-integration/TP-DMX-ORCH-015-TUI/PROOF.json with the full validations array, codereview/precommit status, snapshot-coverage matrix, not_run (live integration TUI session), residual_risks, and rollback_plan.",
+      "validation": [
+        "dopemux orchestrator proof validate exits 0.",
+        "Proof status is READY_FOR_REVIEW only after every panel's snapshot matrix is green."
+      ]
+    }
+  ]
+}
