@@ -1,0 +1,143 @@
+{
+  "id": "TP-DMX-ORCH-004",
+  "project": "dopemux-mvp",
+  "target": "Add automation tier and approval policy registry",
+  "invariants": [
+    "The registry classifies capabilities only and does not grant approval",
+    "Unregistered capabilities fail closed as TU/refuse",
+    "TX/TU capabilities refuse by default",
+    "T4 and higher capabilities require approval and receipt",
+    "Write and destructive capabilities must name the canonical writer",
+    "Bridge-mediated writes must name the upstream canonical writer before they can be valid",
+    "Auto-invocation remains limited to T0/T1",
+    "No workflow transitions are applied",
+    "No PM writes, ConPort writes, dope-memory writes, dope-context index writes, or GitHub mutations are performed"
+  ],
+  "depends_on": [
+    "TP-DMX-ORCH-001",
+    "TP-DMX-ORCH-003"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ORCH-INTEGRATION",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-ORCH-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-orch-004-safety-tiers",
+    "base_branch": "codex/tp-dmx-orch-001-boundary-drift",
+    "stacked_because": "TP-DMX-ORCH-004 depends on TP-DMX-ORCH-001 and TP-DMX-ORCH-003 and reuses the validator/report primitives added by TP-DMX-ORCH-003."
+  },
+  "commit": {
+    "message": "feat(orchestrator): add approval policy registry",
+    "allowlist": [
+      "config/orchestrator/approval_policy.yaml",
+      "src/dopemux/orchestrator/policy.py",
+      "src/dopemux/commands/orchestrator_commands.py",
+      "tests/unit/orchestrator/test_policy.py",
+      "tests/unit/test_cli_orchestrator_validation_commands.py",
+      "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+      "task-packets/generated/TP-DMX-ORCH-004.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-004/PROOF.json"
+    ],
+    "verify": [
+      "python -m pytest -q tests/unit/orchestrator/test_policy.py tests/unit/test_cli_orchestrator_validation_commands.py",
+      "python -m compileall -q src",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-004.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m dopemux.cli orchestrator policy validate --json-output",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(orchestrator): add approval policy registry",
+    "body": "Adds a machine-readable Task Orchestrator automation tier and approval policy registry with read-only validation and inspection helpers.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect_policy_authority",
+      "task": "Inspect the operator integration authority tiers, current safety profiles, and existing orchestrator CLI/validator patterns.",
+      "validation": [
+        "Evidence distinguishes the automation tier registry from extraction authority tiers and dangerous mode profiles."
+      ],
+      "context_files": [
+        "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+        "config/extraction_hygiene/authority_tiers.yaml",
+        "config/profiles/dangerous.yaml",
+        "src/dopemux/commands/orchestrator_commands.py"
+      ]
+    },
+    {
+      "id": "policy_registry",
+      "task": "Add a machine-readable approval policy registry for T0/T1/T2/T3/T4/T5/T6/TX/TU and the proposed orchestrator capabilities.",
+      "validation": [
+        "All required tiers are present in deterministic order",
+        "T4 and higher entries require approval and receipts",
+        "TX/TU entries refuse by default",
+        "Unregistered capabilities classify as TU/refuse"
+      ],
+      "expected_files": [
+        "config/orchestrator/approval_policy.yaml"
+      ]
+    },
+    {
+      "id": "policy_loader",
+      "task": "Implement a pure-read policy loader, validator, and capability classifier.",
+      "validation": [
+        "Default policy validates PASS",
+        "Invalid T4 receipt configuration fails closed",
+        "Write capability without canonical writer fails closed",
+        "No command execution or approval application is implemented"
+      ],
+      "expected_files": [
+        "src/dopemux/orchestrator/policy.py",
+        "tests/unit/orchestrator/test_policy.py"
+      ]
+    },
+    {
+      "id": "cli_policy_inspector",
+      "task": "Expose read-only CLI helpers for policy validation, tier listing, capability listing, and capability classification.",
+      "validation": [
+        "CLI JSON outputs are deterministic",
+        "Unknown capability classification returns TU/refuse",
+        "AST guard confirms no execute/write/transition calls in orchestrator command module"
+      ],
+      "expected_files": [
+        "src/dopemux/commands/orchestrator_commands.py",
+        "tests/unit/test_cli_orchestrator_validation_commands.py"
+      ]
+    },
+    {
+      "id": "proof",
+      "task": "Create this packet's generated Task Packet and proof artifact.",
+      "validation": [
+        "Generated Task Packet validates against dopetask-canonical-spec.json",
+        "Proof artifact validates with dopemux orchestrator proof validate",
+        "git diff --check passes"
+      ],
+      "expected_files": [
+        "task-packets/generated/TP-DMX-ORCH-004.json",
+        "proof/dmx-orch-integration/TP-DMX-ORCH-004/PROOF.json"
+      ]
+    }
+  ]
+}

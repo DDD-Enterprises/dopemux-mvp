@@ -1,0 +1,22 @@
+{
+  "direct_routes": [
+    {
+      "tool": "agy",
+      "status": "NOT_INSTALLED",
+      "risk": "MEDIUM",
+      "reason": "Fixture AGY is absent."
+    },
+    {
+      "tool": "claude-code-cli",
+      "status": "NOT_INSTALLED",
+      "risk": "MEDIUM",
+      "reason": "Fixture Claude CLI is absent."
+    },
+    {
+      "tool": "gemini-cli",
+      "status": "NOT_INSTALLED",
+      "risk": "MEDIUM",
+      "reason": "Fixture Gemini CLI is absent."
+    }
+  ]
+}
