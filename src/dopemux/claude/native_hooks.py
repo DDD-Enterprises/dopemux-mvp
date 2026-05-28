@@ -35,8 +35,8 @@ except ImportError:
     _ORCH_HOOKS_AVAILABLE = False
     def emit_session_context(_root): return None  # type: ignore[misc]
     def write_context_cache(_root, _resp): pass  # type: ignore[misc]
-    def on_edit_tool(_root): return None  # type: ignore[misc]
-    def reset_edit_counter(_root): pass  # type: ignore[misc]
+    def on_edit_tool(_root, _sid=None): return None  # type: ignore[misc]
+    def reset_edit_counter(_root, _sid=None): pass  # type: ignore[misc]
 
 from dopemux.workflow import WorkflowStatus, contains_completion_token, parse_workflow_checkpoint  # noqa: E402
 from dopemux.workflow.service import WorkflowKernel  # noqa: E402
@@ -103,6 +103,7 @@ class NativeHookAdapter:
     def __init__(self, project_root: Optional[Path] = None):
         self.project_root = (project_root or Path.cwd()).resolve()
         self.instance_id = os.environ.get("DOPEMUX_INSTANCE_ID") or "A"
+        self.session_id: Optional[str] = None
         self.kernel = WorkflowKernel(self.project_root)
 
     def _emit(self, payload: Dict[str, Any], exit_code: int = EXIT_SUCCESS) -> Tuple[int, Dict[str, Any]]:
@@ -163,6 +164,7 @@ class NativeHookAdapter:
     def handle_event(self, event_data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
         """Main entry point for hook execution."""
         event_name = str(event_data.get("hook_event_name", ""))
+        self.session_id = event_data.get("session_id") or None
         try:
             if event_name == "SessionStart":
                 return self._on_session_start()
@@ -187,7 +189,7 @@ class NativeHookAdapter:
         return self._allow()
 
     def _on_session_start(self) -> Tuple[int, Dict[str, Any]]:
-        reset_edit_counter(self.project_root)
+        reset_edit_counter(self.project_root, self.session_id)
         orch_ctx = emit_session_context(self.project_root)
         state = self._active_state()
         if not state:
@@ -286,7 +288,7 @@ class NativeHookAdapter:
         # Nudge to file implementation-evidence notes after N file edits.
         nudge: Optional[str] = None
         if tool_name in {"Edit", "Write"}:
-            nudge = on_edit_tool(self.project_root)
+            nudge = on_edit_tool(self.project_root, self.session_id)
 
         state = self._active_state()
         if not state:
