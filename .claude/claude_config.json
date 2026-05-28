@@ -10,15 +10,15 @@
         "DOPEMUX_INSTANCE_ID",
         "-e",
         "DOPEMUX_WORKSPACE_ID",
-        "mcp-conport_codex/rte-v5-prelive-stack-pr-20260402",
+        "mcp-conport_claude/tp-dmx-orch-followup-packets",
         "uvx",
         "--from",
         "context-portal-mcp",
         "conport-mcp"
       ],
       "env": {
-        "DOPEMUX_INSTANCE_ID": "codex/rte-v5-prelive-stack-pr-20260402",
-        "DOPEMUX_WORKSPACE_ID": "/private/tmp/dopemux-rte-v5-prelive-stack-pr-20260402"
+        "DOPEMUX_INSTANCE_ID": "claude/tp-dmx-orch-followup-packets",
+        "DOPEMUX_WORKSPACE_ID": "/Users/hue/code/dopemux-mvp"
       }
     },
     "gpt-researcher_wrapped": {

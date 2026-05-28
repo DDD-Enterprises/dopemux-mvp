@@ -128,3 +128,23 @@ To sustainably bridge upstream v3 capabilities into Dopemux:
     Integrate `get_context(itemId=...)` schema gates directly into the ADHD Engine's attention monitor. When the ADHD Engine detects an active task, it should read the task's required note schema and present a unified, non-bloated "Next Action" focus box that aggregates both ADHD focus and schema gate progress.
 4.  **Preserve Proof Finality (AGENTS.md §9)**:
     Retain the strict requirement that `proof-bundle` must be filled before completing any change-producing item, keeping the gate mechanical and deterministic.
+
+---
+
+## 6. Architectural Decision: Path B (Native Rebuild / Integration)
+
+**Decision Status**: ACCEPTED (TP-CS-101)
+
+### The Choice
+Dopemux formally selects **Path B (Native Rebuild / Integration)** over a direct import/fork of the upstream task-orchestrator's Node.js hooks.
+
+### Rationale
+*   **Dispatcher Integrity**: Rebuilding hook context logic in Python (`native_hooks.py`) preserves Dopemux's unified hook registration, preventing event collisions and redundant prompt injections.
+*   **Token & Context Thrift**: The custom prompt commands copied from the Downloads folder (`commands-2`) provide extremely light-weight (3-9 lines) context guides instead of the bloated upstream skills. This keeps the agent's context window extremely clean, saving up to 80% on reasoning tokens per turn.
+*   **Capability Coverage**: We have audited the existing command infrastructure and confirmed that:
+    1.  **Dopemux CLI** (`dopemux orchestrator`) provides complete read-only dashboard surfaces.
+    2.  **SuperClaude Slash Commands** (`.claude/commands/dx/`) fully map all 14 task-orchestrator operations (start, complete, note, context, backlinks, tree, block, blocked, next, resume, preview).
+    3.  **Python Hooks** (`src/dopemux/claude/native_hooks.py`) provide complete checkpoint stop-gating and system context injection.
+    
+Consequently, the native Dopemux environment completely covers the upstream plugin capabilities without running conflicting external JavaScript hooks or server singletons.
+

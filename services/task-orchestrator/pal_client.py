@@ -5,7 +5,12 @@ import logging
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+resolved_path = Path(__file__).resolve()
+if len(resolved_path.parents) > 2:
+    REPO_ROOT = resolved_path.parents[2]
+else:
+    REPO_ROOT = resolved_path.parent
+
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 from services.shared.mcp.pal_client import PALClient as BasePALClient
