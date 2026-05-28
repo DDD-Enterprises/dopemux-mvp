@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemas/copilot/repair_packet.schema.json",
+  "title": "CopilotRepairPacket",
+  "description": "Read-only scaffold presenting implementer-role repair items to Copilot. Copilot authority is bounded: no posting, approval, or merge operations permitted.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "pr_number",
+    "repo",
+    "copilot_authority",
+    "mutation_performed",
+    "items"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "generated_at": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+      "description": "ISO 8601 UTC timestamp in Zulu form, e.g. 2026-05-26T12:00:00Z."
+    },
+    "pr_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "repo": {
+      "type": "string",
+      "pattern": "^[^/]+/[^/]+$",
+      "description": "owner/repo format."
+    },
+    "copilot_authority": {
+      "type": "string",
+      "const": "implementer-only",
+      "description": "Governance pin: Copilot operates only as a bounded L1-L2 implementer. It must not post comments, approve PRs, merge PRs, enqueue merge queues, or alter readiness state."
+    },
+    "mutation_performed": {
+      "type": "boolean",
+      "const": false,
+      "description": "Governance pin: this scaffold performs no GitHub mutations."
+    },
+    "source_action_plan_id": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "Optional reference to the ACTION_PLAN that produced these items."
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/RepairItem"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "RepairItem": {
+      "type": "object",
+      "required": ["id", "category", "source_blocker", "rationale", "suggested_action"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^repair-[0-9]{4}$",
+          "description": "Sequential repair item ID, e.g. repair-0001."
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "unresolved-thread",
+            "failed-check",
+            "request-changes",
+            "must-fix"
+          ],
+          "$comment": "Restricted to implementer-role categories only. Source taxonomy: classifier._readiness() in tools/pr_action_bridge/compiler.py _BLOCKER_MAP. Supervisor-role categories (harvest-incomplete, pr-is-draft, pr-closed, mixed-sha, unknown-reviewer, proof-stale, unknown-check, needs-supervisor, embedded-audit-failed) and CI-role categories (pending-check) are intentionally excluded."
+        },
+        "source_blocker": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The raw blocker string from merge_readiness that produced this item."
+        },
+        "source_item_id": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "description": "Optional ID of the review item, thread, or check that is the source of this blocker."
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable explanation of why this item is a blocker."
+        },
+        "suggested_action": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Concrete implementer action to resolve this item."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

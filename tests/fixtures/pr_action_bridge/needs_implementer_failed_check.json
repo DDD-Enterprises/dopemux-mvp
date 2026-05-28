@@ -1,0 +1,28 @@
+{
+  "merge_readiness": {
+    "schema_version": "1.1.0",
+    "pr_number": 704,
+    "repo": "DDD-Enterprises/dopemux-mvp",
+    "readiness": "NEEDS_IMPLEMENTER",
+    "risk_tier": "MEDIUM",
+    "blockers": ["FAILED_CHECK"],
+    "unknowns": [],
+    "mutation_performed": false
+  },
+  "review_ledger": {"items": []},
+  "thread_dispositions": {"threads": [], "unresolved_blocking_count": 0},
+  "ci_triage": {
+    "checks": [
+      {
+        "name": "unit",
+        "status": "COMPLETED",
+        "conclusion": "FAILURE",
+        "required": true,
+        "blockers": ["FAILED_CHECK"]
+      }
+    ],
+    "required_check_count": 1,
+    "failed_required_count": 1,
+    "pending_required_count": 0
+  }
+}

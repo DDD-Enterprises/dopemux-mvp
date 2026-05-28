@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/audit/bundle_manifest.schema.json",
+  "title": "AuditBundleManifest",
+  "description": "Schema for evidence bundle manifest.json produced by build_evidence_bundle.py",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "bundle_id",
+    "tp_id",
+    "created_at",
+    "source_root",
+    "files",
+    "rejected",
+    "redactions_path",
+    "checksums_path",
+    "request_path"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Bundle manifest schema version"
+    },
+    "bundle_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for this bundle"
+    },
+    "tp_id": {
+      "type": ["string", "null"],
+      "description": "Task Packet identifier (e.g. TP-DMX-AUDIT-BUNDLE-001)"
+    },
+    "created_at": {
+      "type": "string",
+      "description": "ISO-8601 creation timestamp"
+    },
+    "source_root": {
+      "type": "string",
+      "description": "Root directory from which source files were collected"
+    },
+    "files": {
+      "type": "array",
+      "description": "Records for files that were processed (included, redacted, or excluded)",
+      "items": { "$ref": "#/definitions/file_record" }
+    },
+    "rejected": {
+      "type": "array",
+      "description": "Records for files that were rejected before inclusion",
+      "items": { "$ref": "#/definitions/file_record" }
+    },
+    "redactions_path": {
+      "type": "string",
+      "const": "redactions.json",
+      "description": "Relative path to redactions log within the bundle"
+    },
+    "checksums_path": {
+      "type": "string",
+      "const": "checksums.sha256",
+      "description": "Relative path to checksums file within the bundle"
+    },
+    "request_path": {
+      "type": "string",
+      "const": "request.json",
+      "description": "Relative path to request (file contents) within the bundle"
+    }
+  },
+  "definitions": {
+    "file_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "size_bytes",
+        "kind",
+        "redaction_reason",
+        "exclusion_reason"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Path relative to source_root, forward-slash separated"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^([0-9a-f]{64}|)$",
+          "description": "SHA-256 hex digest; empty string when file was not hashed"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "File size in bytes; 0 when file was not read"
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["included", "redacted", "excluded"],
+          "description": "Disposition of this file in the bundle"
+        },
+        "redaction_reason": {
+          "type": ["string", "null"],
+          "description": "Reason for redaction (e.g. 'secret_pattern:github_token_ghp'); null if not redacted"
+        },
+        "exclusion_reason": {
+          "type": ["string", "null"],
+          "description": "Reason for exclusion (e.g. 'symlink', 'path_escape', 'file_not_found', 'secret_pattern:...''); null if not excluded"
+        }
+      }
+    }
+  }
+}
