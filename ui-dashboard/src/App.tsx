@@ -30,6 +30,7 @@ import {
   Copy,
   Droplet,
   Eye,
+  Info,
   PauseCircle,
   Trash2,
   TrendingUp,
@@ -158,6 +159,8 @@ const getNotificationIcon = (type: string) => {
       return <AlertCircle size={iconSize} aria-hidden="true" />;
     case 'hyperfocus':
       return <Zap size={iconSize} aria-hidden="true" />;
+    case 'info':
+      return <Info size={iconSize} aria-hidden="true" />;
     default:
       return <Bell size={iconSize} aria-hidden="true" />;
   }
@@ -480,7 +483,7 @@ function App() {
                   )
                 }
                 label={`Recommendation: ${cognitiveState.recommendation}`}
-                aria-label={isCopied ? `AI Recommendation: ${cognitiveState.recommendation} (Copied)` : `AI Recommendation: ${cognitiveState.recommendation}`}
+                aria-label={isCopied ? `AI Recommendation: ${cognitiveState.recommendation} (Copied)` : `Copy AI Recommendation: ${cognitiveState.recommendation}`}
                 onClick={handleCopyRecommendation}
                 tabIndex={0}
                 sx={{
