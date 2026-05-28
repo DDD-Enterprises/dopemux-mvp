@@ -71,7 +71,7 @@ def _find_source_item_id(
 
     if blocker == "UNRESOLVED_REVIEW_THREAD":
         for thread in thread_dispositions.get("threads", []):
-            if not thread.get("resolved", True):
+            if not thread.get("is_resolved", True):
                 result = _item_id(thread, "id", "thread_id")
                 if result:
                     return result
@@ -164,7 +164,7 @@ def compile_action_plan(
                 category, target_role = mapping
             else:
                 # Unknown blocker: fail-closed to supervisor
-                category, target_role = ("unknown-blocker", "supervisor")
+                category, target_role = ("needs-supervisor", "supervisor")
             source_item_id = _find_source_item_id(
                 blocker, review_ledger, thread_dispositions, ci_triage
             )
