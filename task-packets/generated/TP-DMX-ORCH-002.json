@@ -1,0 +1,113 @@
+{
+  "id": "TP-DMX-ORCH-002",
+  "project": "dopemux-mvp",
+  "target": "Add read-only task-orchestrator daily/status CLI commands",
+  "invariants": [
+    "Commands are read-only T0/T1 only",
+    "No workflow transition calls",
+    "No PM writes",
+    "No ConPort writes",
+    "No dope-memory writes",
+    "No dope-context index mutation",
+    "No GitHub mutation",
+    "No dopetask pin changes",
+    "No proof writer implementation",
+    "No safety-tier implementation",
+    "No 3014 cleanup",
+    "Use existing PM read helpers only",
+    "Target task-orchestrator runtime on port 8000 through existing adapter configuration",
+    "task-orchestrator must not become PM, memory, retrieval, execution, proof, bridge, agent, or governance authority",
+    "dopecon-bridge remains adapter/proxy/event transport only and must not be treated as source truth",
+    "dopetask remains Task Packet execution/proof runtime after handoff"
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ORCH-INTEGRATION",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-orch-002-readonly-cli"
+  },
+  "commit": {
+    "message": "feat(orchestrator): add read-only daily status CLI",
+    "allowlist": [
+      "src/dopemux/cli.py",
+      "src/dopemux/commands/orchestrator_commands.py",
+      "tests/unit/test_cli_orchestrator_commands.py",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-002/**",
+      "task-packets/generated/TP-DMX-ORCH-002.json"
+    ],
+    "verify": [
+      "python -m compileall -q src",
+      "python -m pytest -q tests/unit/test_cli_orchestrator_commands.py",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-002.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+    ]
+  },
+  "pr": {
+    "title": "feat(orchestrator): add read-only daily status CLI",
+    "body": "Add read-only task-orchestrator daily/status CLI commands",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "preflight",
+      "task": "Verify repo identity, branch, HEAD, marker file, and clean/known dirty state.",
+      "validation": [
+        "Capture pwd, git root, branch, HEAD, status, and .dopetaskroot check."
+      ]
+    },
+    {
+      "id": "inspect_cli_convention",
+      "task": "Inspect current dopemux CLI command-registration convention.",
+      "validation": [
+        "Evidence names registration point and new/extended command module path."
+      ]
+    },
+    {
+      "id": "inspect_existing_pm_reads",
+      "task": "Use existing PM/task-orchestrator read helpers only; do not create a new mutation client.",
+      "validation": [
+        "Evidence names exact read helpers or marks UNKNOWN and blocks unsafe route."
+      ]
+    },
+    {
+      "id": "implement_readonly_commands",
+      "task": "Implement dopemux orchestrator status, daily, queue, and blockers commands.",
+      "validation": [
+        "Commands do not call transition/update/write/record/post/patch/put/delete/GitHub/index/memory paths."
+      ]
+    },
+    {
+      "id": "format_operator_output",
+      "task": "Render concise operator output with provenance, partial-failure visibility, top-3 items, more_count, and next_token.",
+      "validation": [
+        "Snapshot tests cover success, empty, timeout, and partial failure."
+      ]
+    },
+    {
+      "id": "test_and_proof",
+      "task": "Add targeted unit tests and proof bundle.",
+      "validation": [
+        "compileall and targeted pytest pass; proof includes command outputs and no-write evidence."
+      ]
+    }
+  ]
+}

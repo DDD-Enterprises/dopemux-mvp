@@ -1,0 +1,79 @@
+{
+  "id": "TP-DMX-ORCH-014B",
+  "project": "dopemux-mvp",
+  "target": "Consume and validate Kotlin task-orchestrator transition proof envelopes in dopemux",
+  "invariants": [
+    "Dopemux consumes transition proof envelopes through read-only validation",
+    "Invalid envelopes fail closed",
+    "Proof validation does not imply transition acceptance"
+  ],
+  "depends_on": [
+    "TP-DMX-ORCH-014A"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ORCH-INTEGRATION",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-ORCH-014A",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-orch-007-plugin-hooks",
+    "base_branch": "codex/tp-dmx-orch-007-plugin-hooks",
+    "stacked_because": "The remaining DMX-ORCH packets were implemented as bounded fail-closed local workflow surfaces after TP-DMX-ORCH-007."
+  },
+  "commit": {
+    "message": "feat(orchestrator): add remaining operator workflows",
+    "allowlist": [
+      "config/orchestrator/approval_policy.yaml",
+      "src/dopemux/orchestrator/operator_workflows.py",
+      "src/dopemux/commands/orchestrator_commands.py",
+      "tests/unit/orchestrator/test_operator_workflows.py",
+      "task-packets/generated/TP-DMX-ORCH-014B.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-014B/PROOF.json"
+    ],
+    "verify": [
+      ".venv/bin/python -m pytest -q tests/unit/orchestrator/test_operator_workflows.py",
+      ".venv/bin/python -m dopemux.cli orchestrator policy classify orchestrator.transition.proof.validate --json-output"
+    ]
+  },
+  "pr": {
+    "title": "feat(orchestrator): validate transition proof envelopes",
+    "body": "Adds CLI consumption and validation for task-orchestrator transition proof envelopes.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "consume_transition_proof",
+      "task": "Expose transition proof envelope validation through Dopemux CLI.",
+      "validation": [
+        "Valid envelope produces PASS",
+        "Envelope missing receipt produces TRANSITION_PROOF_RECEIPT_MISSING",
+        "Validation is read-only"
+      ],
+      "expected_files": [
+        "src/dopemux/orchestrator/operator_workflows.py",
+        "src/dopemux/commands/orchestrator_commands.py",
+        "tests/unit/orchestrator/test_operator_workflows.py"
+      ]
+    }
+  ]
+}

@@ -3151,6 +3151,10 @@ from .commands.workflow_group_commands import workflow_group
 
 cli.add_command(workflow_group, "workflow")
 
+from .commands.orchestrator_commands import orchestrator_group
+
+cli.add_command(orchestrator_group, "orchestrator")
+
 
 from .commands.upgrades_commands import upgrades
 upgrades.help = "Legacy compatibility alias for `dopemux rte`. Use `dopemux rte` for Repo Truth Extractor operations."
