@@ -231,6 +231,41 @@ def orchestrator_packet_validate(
     )
 
 
+@orchestrator_group.group("perpacket")
+def orchestrator_perpacket():
+    """Read-only per-packet isolation validation helpers."""
+
+
+@orchestrator_perpacket.command("validate")
+@click.argument("packet_id")
+@click.option("--json-output", is_flag=True)
+def orchestrator_perpacket_validate(packet_id: str, json_output: bool):
+    """Validate a single task packet in isolation."""
+    from dopemux.orchestrator.perpacket import run_perpacket_validation
+
+    try:
+        result = run_perpacket_validation(packet_id)
+    except Exception as exc:
+        if json_output:
+            click.echo(json.dumps({"error": str(exc), "valid": False, "validations": []}))
+        else:
+            click.echo(f"ERROR: {exc}", err=True)
+        raise click.exceptions.Exit(2)
+
+    if json_output:
+        click.echo(json.dumps(result["validations"], indent=2, sort_keys=True))
+    else:
+        click.echo(f"Task Packet Isolated Validation: {packet_id}")
+        click.echo(f"Valid: {result['valid']}")
+        click.echo("Validations:")
+        for validation in result["validations"]:
+            click.echo(f"  - {validation['name']}: {validation['status']} (exit={validation['exit_code']})")
+
+    if not result["valid"]:
+        raise click.exceptions.Exit(2)
+
+
+
 @orchestrator_group.group("proof")
 def orchestrator_proof():
     """Read-only proof bundle validation helpers."""
