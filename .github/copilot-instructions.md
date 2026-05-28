@@ -357,3 +357,48 @@ Each service has its own README: `services/[service-name]/README.md`
 3. Check `docs/90-adr/` for relevant architectural decisions
 4. Check existing tests in `tests/` for patterns
 5. Check `.pre-commit-config.yaml` for validation rules
+
+## 13) Task-Orchestrator integration
+
+> **Authority caveat** (per `AGENTS.md §8 Local Instruction Surfaces`): this file is GitHub Copilot-specific guidance. It is NOT Codex runtime authority. Codex authority is `AGENTS.md` itself; the canonical Codex Orchestrator Operations spec lives in `AGENTS.md §12`. Treat this section as a Copilot-flavored pointer, not a separate decision.
+
+### What it is
+
+Task-orchestrator is the canonical workflow authority for the Dopemux PM plane, per:
+
+- ADR: [`docs/90-adr/adr-task-orchestrator-as-workflow-authority.md`](../docs/90-adr/adr-task-orchestrator-as-workflow-authority.md) — accepted
+- ADR: [`docs/90-adr/adr-task-orchestrator-claude-surface-integration.md`](../docs/90-adr/adr-task-orchestrator-claude-surface-integration.md) — proposed
+- `AGENTS.md §6` (Architecture Boundaries): "Workflow transitions: task-orchestrator"
+
+The orchestrator MCP exposes 14 tools (`manage_items`, `query_items`, `manage_notes`, `query_notes`, `manage_dependencies`, `query_dependencies`, `advance_item`, `claim_item`, `get_next_status`, `get_next_item`, `get_blocked_items`, `complete_tree`, `create_work_tree`, `get_context`) wrapped at `/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh`.
+
+### What Copilot needs to know
+
+GitHub Copilot typically does not have direct MCP access in browser/IDE contexts. When Copilot is asked about task management, workflow transitions, or work-item lifecycle:
+
+- Defer to the orchestrator. Don't invent local task state or shadow it in markdown.
+- Point the user at the canonical reference: [`docs/03-reference/orchestrator-note-filling-protocol.md`](../docs/03-reference/orchestrator-note-filling-protocol.md) — the cross-agent protocol document.
+- Don't recommend ConPort `progress_entry` for task storage. ConPort remains canonical for decisions, progress receipts, and structured durable context — but workflow state belongs to the orchestrator.
+
+When Copilot generates code that interacts with task-orchestrator (e.g. helper scripts, wrappers, hooks):
+
+- Schema config is at [`.taskorchestrator/config.yaml`](../.taskorchestrator/config.yaml). This is a contract-sensitive surface per `AGENTS.md §6` — do not modify it without an ADR and operator authorization.
+- MCP wrapper script is external (lives in `/Users/hue/plugins/dopemux-mission-control/`). Snapshots committed to [`scripts/external-references/`](../scripts/external-references/) for traceability. Do not propose changes to the external wrapper from Copilot context — that's outside the repo's authority boundary.
+- The 8 work-item schemas (`task-packet`, `feature-implementation`, `bug-fix`, `rfc-proposal`, `audit-pack`, `sprint-goal`, `retrospective`, `default`) plus their note structures are defined in the protocol document above. When generating code, set `type` on items at creation for reliable schema activation — tag-only matching falls through to the `default` schema (proof-bundle gate only).
+
+### The complete-gate
+
+Per `AGENTS.md §9` (Proof and Finality) — and now mechanically enforced by the orchestrator schemas:
+
+`advance_item(trigger="complete")` on any change-producing item FAILS without a `proof-bundle` note filled in the review phase. Copilot should never recommend bypassing this gate via `cancel` or by skipping note upserts.
+
+### PAL chain integration
+
+The PAL chain (`analyze → planner → codereview → precommit`) per `AGENTS.md §5` maps to note keys of the same name. Each chain stage produces output that goes into a note via `manage_notes(operation="upsert")`. Copilot should refer users to the protocol doc for the full stage-by-stage mapping rather than re-spec it inline.
+
+### Companion files
+
+- For Codex: `AGENTS.md §12 Orchestrator Operations` (the runtime authority)
+- For Claude Code: `.claude/CLAUDE.md` Orchestrator Operations section (Phase 3 work, not yet shipped at the time of this commit — depends on TP-CS-020)
+- For Copilot custom-agent files (`*.agent.md`): `config/instructions/agents.instructions.md` — task-orchestrator guidance per TP-CS-028
+- Shared protocol (this is where the real spec lives): `docs/03-reference/orchestrator-note-filling-protocol.md`

@@ -138,11 +138,11 @@ No proof means incomplete.
 - `scripts/dopetask` is the observed runtime, but operator naming still drifts through TaskX language.
 - MCP and proxy config surfaces are inconsistent in places, including stale port assumptions and missing launch targets.
 
-## 10. Claude-Code Doctrine Alignment
+## 11. Claude-Code Doctrine Alignment
 
 This file is the Codex-facing authority. The Claude-Code-facing companion is `.claude/claude.md`, which embeds a brief governance section and links to the full canonical module at `.claude/modules/shared/governance-principles.md`.
 
-The canonical module elaborates the same Truth Order (§2), proof-and-finality regime (§8), and architecture-boundary discipline (§6) for Claude-Code sessions. It additionally covers:
+The canonical module elaborates the same Truth Order (§2), proof-and-finality regime (§9), and architecture-boundary discipline (§6) for Claude-Code sessions. It additionally covers:
 
 - inspect-before-edit, minimal correct change, deterministic-systems-first
 - canonical writer rules and contract-sensitive surfaces specific to this repo
@@ -157,3 +157,35 @@ When updating doctrine, keep these three files in sync:
 - `AGENTS.md` (this file) — Codex authority, Task Packet rules, PAL chains, proof bundle requirements
 - `.claude/claude.md` — Claude-Code-facing summary + non-negotiables checklist
 - `.claude/modules/shared/governance-principles.md` — full canonical doctrine, referenced by both
+
+## 12. Orchestrator Operations
+
+Task-orchestrator is the canonical workflow authority per §6 and [`docs/90-adr/adr-task-orchestrator-as-workflow-authority.md`](docs/90-adr/adr-task-orchestrator-as-workflow-authority.md) (accepted). Codex agents drive it through the same MCP surface as Claude Code: 14 tools exposed via the stdio wrapper at `/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh`.
+
+**Single source of operational truth**: [`docs/03-reference/orchestrator-note-filling-protocol.md`](docs/03-reference/orchestrator-note-filling-protocol.md). This document is the cross-agent protocol — Codex, Claude Code, Copilot, and persona surfaces all inherit from it. Read it before invoking orchestrator MCP tools.
+
+**Codex floor** (what every Codex session must know without reading further docs):
+
+1. The 14 orchestrator MCP tools: `manage_items`, `query_items`, `manage_notes`, `query_notes`, `manage_dependencies`, `query_dependencies`, `advance_item`, `claim_item`, `get_next_status`, `get_next_item`, `get_blocked_items`, `complete_tree`, `create_work_tree`, `get_context`.
+2. Every repo-changing TP follows §4 (Codex E2E Default) AND attaches PAL chain artifacts as orchestrator notes per §5.
+3. The PAL chain stages (`analyze`, `planner`, `codereview`, `precommit`) map to note keys of the same name. Upsert via `manage_notes(operation="upsert")` as each stage produces output.
+4. **The complete-gate is mechanical**: `advance_item(trigger="complete")` on a `type="task-packet"` (or any change-producing schema) FAILS without a `proof-bundle` note filled in the review phase. Per §9 — no proof means incomplete.
+5. Set `type` on items at creation (e.g. `type: "task-packet"`) for schema activation. Tag-only items fall through to the `default` schema (proof-bundle gate only).
+6. Use the standard note-filling loop: `get_context` → read `guidancePointer` → invoke `skillPointer`'s tool if set → `manage_notes(upsert)` → repeat until `gateStatus.canAdvance: true` → `advance_item`. Full protocol in the reference doc above.
+
+**Authority caveats**:
+
+- Schema config lives at [`.taskorchestrator/config.yaml`](.taskorchestrator/config.yaml). This is a contract-sensitive surface per §6 — Codex must not edit it without explicit Task Packet authorization and a linked ADR.
+- The orchestrator MCP wrapper is external (lives outside this repo in `/Users/hue/plugins/dopemux-mission-control/`). Snapshots of the wrapper are committed to [`scripts/external-references/`](scripts/external-references/) for traceability per §6 + §10. Editing the wrapper is not authorized by the repo-bound `AGENTS.md`; treat external-plugin changes as out-of-scope unless the active Task Packet explicitly says otherwise.
+- Multi-spawn safety: the wrapper enforces one container per workspace (`--name task-orchestrator-<workspace_id>`). Opening a second Codex (or Claude Code) session on the same project disconnects the first session's MCP. Acceptable for single-operator-per-project use; documented at [`scripts/external-references/README.md`](scripts/external-references/README.md).
+
+**Discovery sequence for a fresh Codex session**:
+
+```
+1. get_context()                                    # health-check: what's active, blocked, stalled?
+2. get_next_item(includeAncestors=true, limit=3)    # what should I work on?
+3. get_context(itemId=<chosen>)                     # full state: schema, gate, missing notes, guidance
+4. (work according to the protocol document)
+```
+
+Standalone Task Packet emission is not the final deliverable per §3 — Codex must execute work end-to-end through this orchestrator surface and emit the proof bundle (§9) on completion.
