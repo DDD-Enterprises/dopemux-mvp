@@ -142,22 +142,6 @@ This is the project doctrine layer over [AGENTS.md §2 (Truth Order)](../../../A
 * Risky or architecture-sensitive chain: `analyze → thinkdeep → challenge → planner → challenge → implement → codereview → precommit → challenge`
 * If `execution.agent = "gemini"`: `pal_chain.enabled = true`
 
-### Chain output → orchestrator notes (mechanical mapping)
-
-Per [AGENTS.md §12 Orchestrator Operations](../../../AGENTS.md) and the schema config at [`.taskorchestrator/config.yaml`](../../../.taskorchestrator/config.yaml), each PAL chain stage's output goes into a note key of the same name on the work-item. Codex minimum chain → 4 note keys:
-
-| Stage | Note key | Role | PAL tool / skill |
-|---|---|---|---|
-| analyze | `analyze` | queue | `mcp__pal__analyze` (skill: `pal:analyze`) |
-| planner | `planner` | queue | `mcp__pal__planner` (skill: `pal:planner`) |
-| codereview | `codereview` | review | `mcp__pal__codereview` (skill: `pal:codereview`) |
-| precommit | `precommit` | review | `mcp__pal__precommit` (skill: `pal:precommit`) |
-| (proof) | **`proof-bundle`** | review | `verify` (required-true: the complete-gate) |
-
-Risky chain adds optional notes `thinkdeep`, `challenge-pre-plan`, `challenge-post-plan`, `challenge-post-implement`, `challenge-post-review` per [`docs/03-reference/orchestrator-note-filling-protocol.md`](../../../docs/03-reference/orchestrator-note-filling-protocol.md). Activate by tagging the item `risky` or `architecture-sensitive`.
-
-File chain outputs via `mcp__task-orchestrator__manage_notes(operation="upsert", notes=[{itemId, key, role, body}])`. The orchestrator's `proof-bundle` complete-gate is mechanical — it fails closed without a filled bundle, per AGENTS.md §9.
-
 What this means for Claude Code sessions in this repo:
 
 ### analyze
@@ -282,20 +266,18 @@ Do not silently fork contracts downstream. Preserve separation between:
 Treat as high-risk in this repo:
 
 * `dopetask-canonical-spec.json` and Task Packet contracts
-* **`.taskorchestrator/config.yaml`** — work-item schemas, traits, status_labels, schemas_metadata. Schema/trait changes propagate across all in-flight items via the orchestrator's gate enforcement; require ADR linkage + `schemas_metadata.retro_id` for genealogy
 * ConPort schemas (decisions, progress, custom_data, links)
 * `*.yml`/`*.yaml` MCP server manifests
 * MCP tool payloads and result shapes
 * docker/compose service wiring and port assignments
 * Migration scripts under `migrations/`, `services/*/migrations/`
 * Event payloads on Redis Streams / EventBus
-* Proof bundles and replay/checkpoint artifacts (per [AGENTS.md §9](../../../AGENTS.md), bundles live as `proof-bundle` notes on orchestrator work-items)
+* Proof bundles and replay/checkpoint artifacts
 * Queue payloads (dopetask, task-orchestrator)
 * `dopecon-bridge` route/transport definitions
 * Repo Truth Extractor proof artifacts
 * SuperClaude command files under `.claude/commands/`
 * Hook dispatcher (`src/dopemux/claude/native_hooks.py`) and `.claude/hooks/`
-* External MCP wrapper script at `/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh` (outside the repo; snapshots committed to `scripts/external-references/`)
 
 Before modifying any of these:
 
@@ -412,7 +394,7 @@ Rules:
 * `medium` means unresolved uncertainty
 * `low` means assumptions dominate
 
-Never present low-confidence reasoning as settled fact. Final confidence for repo-changing work must be `VERIFIED` per [AGENTS.md §9](../../../AGENTS.md).
+Never present low-confidence reasoning as settled fact. Final confidence for repo-changing work must be `VERIFIED` per [AGENTS.md §8](../../../AGENTS.md).
 
 ---
 
@@ -462,6 +444,4 @@ Every substantial response must contain:
 
 Do not omit uncertainty for aesthetics.
 
-For repo-changing work, also produce the full proof bundle per [AGENTS.md §9](../../../AGENTS.md): TP path/ID, worktree path, branch, repo identity result, slices completed, files changed, validations with exit codes, codereview status, precommit status, commit SHA, PR URL or exact blocker, residual risks, `UNKNOWN`s, cleanup status. No proof means incomplete.
-
-**Mechanical enforcement**: per [AGENTS.md §12 Orchestrator Operations](../../../AGENTS.md), the proof bundle is the **`proof-bundle` note** on the work-item completing via `advance_item(trigger="complete")`. The orchestrator's `task-packet` (and other change-producing) schema marks `proof-bundle` as `required: true` in the review phase, so `complete` fails closed without a filled bundle. The protocol for filling notes (including which PAL chain output goes into which note key) is the canonical cross-agent reference at [`docs/03-reference/orchestrator-note-filling-protocol.md`](../../../docs/03-reference/orchestrator-note-filling-protocol.md).
+For repo-changing work, also produce the full proof bundle per [AGENTS.md §8](../../../AGENTS.md): TP path/ID, worktree path, branch, repo identity result, slices completed, files changed, validations with exit codes, codereview status, precommit status, commit SHA, PR URL or exact blocker, residual risks, `UNKNOWN`s, cleanup status. No proof means incomplete.

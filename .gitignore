@@ -150,6 +150,7 @@ logs/
 .claude/settings.local.json
 .claude/session-*
 .claude/temp-*
+.claude/.orchestrator-*.json
 
 # macOS
 .DS_Store
@@ -403,3 +404,4 @@ LIVE_LOG*.txt
 .antigravitycli/
 .claude/.orchestrator-context-cache.json
 .claude/.orchestrator-edit-nudge.json
+.antigravitycli/

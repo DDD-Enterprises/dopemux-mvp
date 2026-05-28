@@ -1,0 +1,121 @@
+{
+  "schema_version": "1.0.0",
+  "tp_id": "TP-DMX-AUDIT-ROUTER-002",
+  "series_id": "DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "claude/upbeat-thompson-35f2e8",
+  "base_branch": "main",
+  "head_before": "05ddbe3667ad3035ba7737dee465894608225ede",
+  "head_after": null,
+  "mutation_performed": false,
+  "github_mutation_performed": false,
+  "secret_values_recorded": false,
+  "operator_authorization_used": [],
+  "forbidden_surfaces_touched": false,
+  "files_changed": [
+    "scripts/audit/auditor_router.py",
+    "scripts/audit/route_schema.py",
+    "tests/audit/test_auditor_router.py",
+    "schemas/audit/audit_route.schema.json",
+    "proof/TP-DMX-AUDIT-ROUTER-002/PROOF.json",
+    "proof/TP-DMX-AUDIT-ROUTER-002/AUDITOR_REPORT.md"
+  ],
+  "commands": [
+    {
+      "cmd": "python -m pytest tests/audit/ -v",
+      "exit_code": 0,
+      "result": "49 passed in 0.08s"
+    }
+  ],
+  "validation": {
+    "status": "PASS",
+    "details": [
+      {"check": "pytest_27_router_tests", "status": "PASS", "detail": "27 new tests in test_auditor_router.py all pass (26 original + test_load_route_raises_when_role_not_in_config): AuditRoute validation, forbidden CLI rejection, clink config loading with role validation, capability probing, route selection, default_routes ordering"},
+      {"check": "pytest_22_bundle_tests_preserved", "status": "PASS", "detail": "All 22 tests in test_evidence_bundle.py continue to pass without modification"},
+      {"check": "codex_forbidden_enforced", "status": "PASS", "detail": "AuditRoute.__post_init__ raises ValueError for cli_name in {codex, codex-audit}; test_load_codex_config_raises confirms codex.json load is rejected"},
+      {"check": "schema_additionalProperties_false", "status": "PASS", "detail": "schemas/audit/audit_route.schema.json enforces additionalProperties:false; codex/codex-audit rejected via not:enum constraint"},
+      {"check": "default_routes_ordering", "status": "PASS", "detail": "claude-audit priority=0, gemini-audit priority=1; select_route returns primary when both available, falls back to gemini when claude unavailable"},
+      {"check": "capability_probe_injectable", "status": "PASS", "detail": "probe_capability and select_route accept which_fn parameter; no live shutil.which calls in tests"},
+      {"check": "real_clink_configs_loaded", "status": "PASS", "detail": "test_load_claude_audit and test_load_gemini_audit load real files from docker/mcp-servers-source/pal/pal-mcp-server/conf/cli_clients/"},
+      {"check": "actionlint", "status": "NOT_RUN", "reason": "no workflow files changed in this TP"},
+      {"check": "mypy", "status": "NOT_RUN", "reason": "mypy not configured in CI for scripts/; type annotations present for reviewer inspection"},
+      {"check": "docs_file", "status": "NOT_RUN", "reason": "docs/ops/auditor-routing.md deferred — TP scope is code/schema/tests; doc is in allowlist but not required for correctness"}
+    ]
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "mcp__pal__codereview expert_model=gpt-5.2 review_type=full",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-AUDIT-ROUTER-002/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-002-HIGH-1",
+        "severity": "HIGH",
+        "title": "Unused import: FORBIDDEN_CLI_NAMES in auditor_router.py",
+        "status": "RESOLVED",
+        "body": "auditor_router.py imported FORBIDDEN_CLI_NAMES but never used it directly; enforcement is correctly delegated to AuditRoute.__post_init__. Removed from import line."
+      },
+      {
+        "id": "F-002-MED-1",
+        "severity": "MEDIUM",
+        "title": "Missing encoding in path.read_text()",
+        "status": "RESOLVED",
+        "body": "load_route_from_clink_config called path.read_text() without encoding='utf-8', risking misreads on non-UTF-8 locales. Fixed by adding explicit encoding parameter."
+      },
+      {
+        "id": "F-002-MED-2",
+        "severity": "MEDIUM",
+        "title": "No role validation against clink config roles block",
+        "status": "RESOLVED",
+        "body": "load_route_from_clink_config did not verify the requested role exists in the config's roles block. Added KeyError with helpful message listing available roles. Updated test fixture and added test_load_route_raises_when_role_not_in_config."
+      },
+      {
+        "id": "F-002-MED-3",
+        "severity": "MEDIUM",
+        "title": "Schema allows 'codex' as command value",
+        "status": "RESOLVED",
+        "body": "audit_route.schema.json blocked codex/codex-audit in cli_name but not in command. Added not:{enum:[codex]} constraint to command property."
+      }
+    ],
+    "fixes_applied": [
+      "Removed FORBIDDEN_CLI_NAMES from import in auditor_router.py",
+      "Added encoding='utf-8' to path.read_text() in load_route_from_clink_config",
+      "Added role validation (KeyError if role not in config roles block)",
+      "Added not:{enum:[codex]} constraint to command field in audit_route.schema.json",
+      "Updated test_partial_conf_dir_returns_available_routes fixture to include codereviewer role",
+      "Added test_load_route_raises_when_role_not_in_config"
+    ],
+    "remaining_risks": [
+      "mypy not run — type annotations present but not statically checked",
+      "docs/ops/auditor-routing.md not written — deferred as non-blocking",
+      "probe_capability uses shutil.which only; PATH at invocation time may differ from probe time",
+      "default_routes does not auto-discover configs beyond hardcoded _DEFAULT_ROUTE_NAMES"
+    ],
+    "skip_reason": null
+  },
+  "embedded_audit_status": "PASS_WITH_RISKS",
+  "commit": {
+    "performed": false,
+    "sha": null,
+    "message": "feat(audit): add host auditor route registry"
+  },
+  "governance": {
+    "branch_protection_changed": false,
+    "required_checks_changed": false,
+    "pull_request_target_introduced": false,
+    "secrets_touched": false,
+    "codeowners_changed": false,
+    "mutation_surfaces_added": false
+  },
+  "stop_conditions_hit": [],
+  "remaining_risks": [
+    "mypy not run — type annotations present but not statically checked",
+    "docs/ops/auditor-routing.md not written — deferred as non-blocking for correctness",
+    "probe_capability uses shutil.which only; PATH environment at audit invocation time may differ from probe time",
+    "Additional clink config names (beyond claude-audit, gemini-audit) ignored by default_routes — if new configs are added, router does not auto-discover them"
+  ],
+  "next_recommended_action": "Opus audit this proof + diff. On PASS, operator commits with 'feat(audit): add host auditor route registry'. Then execute TP-DMX-PAL-CLINK-RUNNER-003 (depends_on: [TP-001, TP-002]) and TP-DMX-PR-ACTION-BRIDGE-006 (depends_on: [TP-001, TP-005]) in parallel."
+}

@@ -62,7 +62,7 @@ Return `NOT_READY` or `NEEDS_SUPERVISOR` when:
 - any reviewer, bot, review item, or check cannot be classified
 - any blocking review thread is unresolved
 - required CI failed, was cancelled, or is missing
-- proof does not match PR head SHA
+- proof is stale, missing, or lacks a valid supervisor-accepted self-reference exception
 - embedded audit is absent, skipped, failed, or stale
 - GitHub auth or API state cannot be proven
 - any requested action would mutate GitHub state
@@ -70,6 +70,10 @@ Return `NOT_READY` or `NEEDS_SUPERVISOR` when:
 Return `BLOCKED` when the harvest is incomplete, the PR is draft, or the PR is closed without explicit `--allow-closed`. Return `NEEDS_IMPLEMENTER` when concrete implementation work is required, such as unresolved threads or failed checks. Unknown or untrusted reviewers and bots always block `READY`.
 
 Explicit known reviewer logins are trusted. GitHub `authorAssociation` values `OWNER`, `MEMBER`, and `COLLABORATOR` are also trusted unless a future policy overrides that rule. External unknown actors and unclassified bots block `READY`.
+
+Resolved and outdated review threads are historical evidence, not active blockers. When a raw review comment is linked to a resolved or outdated thread, PR Steward clears the stale `MUST_FIX` classification instead of keeping a false active blocker behind.
+
+Proof freshness is fail-closed by default. A proof may be treated as current either by exact PR head match or by an explicit `CURRENT_WITH_SELF_REFERENCE_EXCEPTION` record that includes supervisor acceptance and proof-only changed-file evidence under `proof/`.
 
 ## CLI
 

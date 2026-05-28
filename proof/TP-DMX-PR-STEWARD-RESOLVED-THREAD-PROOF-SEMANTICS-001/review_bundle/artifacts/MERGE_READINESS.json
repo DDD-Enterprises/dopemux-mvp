@@ -1,0 +1,41 @@
+{
+  "blockers": [],
+  "ci_triage_path": "CI_TRIAGE.json",
+  "embedded_audit": {
+    "report_path": "proof/TP-DMX-PR-STEWARD-001/AUDITOR_REPORT.md",
+    "status": "PASS_WITH_RISKS"
+  },
+  "generated_at": "2026-05-27T00:53:35.445208Z",
+  "mutation_performed": false,
+  "pr": {
+    "base_ref": "main",
+    "changed_files": [
+      "tools/pr_steward/intake.py"
+    ],
+    "commits": [
+      "f67888696de4e9d0082fe320eef3e6f995ef17ba"
+    ],
+    "head_ref": "codex/tp-dmx-auditor-router-pal-clink-002",
+    "head_sha": "f67888696de4e9d0082fe320eef3e6f995ef17ba",
+    "number": 713,
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/713"
+  },
+  "proof": {
+    "matches_pr_head": true,
+    "proof_freshness": {
+      "matches_pr_head": true,
+      "pr_head_sha": "f67888696de4e9d0082fe320eef3e6f995ef17ba",
+      "proof_recorded_sha": "f67888696de4e9d0082fe320eef3e6f995ef17ba",
+      "reason": "Proof head SHA matches PR head SHA.",
+      "self_reference_exception": null,
+      "status": "CURRENT"
+    },
+    "proof_head_sha": "f67888696de4e9d0082fe320eef3e6f995ef17ba",
+    "proof_path": "proof/TP-DMX-PR-STEWARD-001/PROOF.json"
+  },
+  "readiness": "READY",
+  "review_item_ledger_path": "REVIEW_ITEM_LEDGER.json",
+  "schema_version": "1.0.0",
+  "thread_dispositions_path": "THREAD_DISPOSITIONS.json",
+  "unknowns": []
+}
