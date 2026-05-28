@@ -35,7 +35,11 @@ def _non_empty_string(value: Any) -> bool:
 
 
 def _string_list(value: Any) -> bool:
-    return isinstance(value, list) and all(_non_empty_string(item) for item in value)
+    return (
+        isinstance(value, list)
+        and bool(value)
+        and all(_non_empty_string(item) for item in value)
+    )
 
 
 def _entry_has_artifact(entry: Any) -> bool:

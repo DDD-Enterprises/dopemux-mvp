@@ -1,0 +1,122 @@
+{
+  "id": "TP-DMX-ORCH-014A-UPSTREAM",
+  "project": "task-orchestrator",
+  "target": "Add the Dopemux transition proof envelope (schema_version=1) to the Kotlin task-orchestrator advance_item and complete_tree responses, backward-compatibly",
+  "invariants": [
+    "Workflow state-machine semantics MUST NOT change",
+    "Phase-gate enforcement MUST NOT weaken",
+    "The envelope is additive metadata only — existing response consumers must continue to parse responses",
+    "The Kotlin task-orchestrator does not gain execution authority or proof authority beyond workflow transition receipts",
+    "Envelope fields match the dopemux-mvp consumer in TP-DMX-ORCH-017-FINAL / SUPPORTED_TRANSITION_PROOF_SCHEMA_VERSION = '1'",
+    "Required envelope fields: schema_version, workflow_id, transition, idempotency_key, actor, canonical_writer (= 'task-orchestrator'), receipt { proof_id, operation, status }",
+    "No new MCP write tools are added; this packet only mutates response payloads"
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "jpicklyk/task-orchestrator",
+    "repo_marker": "settings.gradle.kts",
+    "origin_hint": "https://github.com/jpicklyk/task-orchestrator.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ORCH-INTEGRATION-FOLLOWUP",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-ORCH-014A",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "feat/dopemux-transition-proof-envelope",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(workflow): add dopemux transition proof envelope to transition responses",
+    "allowlist": [
+      "current/src/main/kotlin/com/jpicklyk/taskorchestrator/mcp/transitions/AdvanceItemHandler.kt",
+      "current/src/main/kotlin/com/jpicklyk/taskorchestrator/mcp/transitions/CompleteTreeHandler.kt",
+      "current/src/main/kotlin/com/jpicklyk/taskorchestrator/mcp/responses/DopemuxProofEnvelope.kt",
+      "current/src/test/kotlin/com/jpicklyk/taskorchestrator/mcp/transitions/AdvanceItemHandlerTest.kt",
+      "current/src/test/kotlin/com/jpicklyk/taskorchestrator/mcp/transitions/CompleteTreeHandlerTest.kt",
+      "current/src/test/kotlin/com/jpicklyk/taskorchestrator/mcp/responses/DopemuxProofEnvelopeTest.kt",
+      "artifacts/repo-truth-pack/MCP_TOOL_SCHEMAS/advance_item.schema.json",
+      "artifacts/repo-truth-pack/MCP_TOOL_SCHEMAS/complete_tree.schema.json",
+      "docs/dopemux-integration.md",
+      "CHANGELOG.md",
+      "proof/TP-DMX-ORCH-014A-UPSTREAM/PROOF.json"
+    ],
+    "verify": [
+      "./gradlew :current:compileKotlin",
+      "./gradlew :current:test",
+      "./gradlew detekt"
+    ]
+  },
+  "pr": {
+    "title": "feat(workflow): add Dopemux transition proof envelope to advance_item / complete_tree responses",
+    "body": "Adds an additive `dopemux_proof_envelope` field to advance_item and complete_tree responses so the Dopemux consumer (dopemux-mvp / TP-DMX-ORCH-017-FINAL) can validate workflow-transition receipts. Schema version is '1'. The envelope is metadata-only; existing parsers continue to read existing fields unchanged. No workflow semantics change. See docs/dopemux-integration.md for the full envelope contract.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": ["analyze", "tracer", "thinkdeep", "challenge", "planner", "challenge", "codereview", "precommit", "challenge"]
+  },
+  "steps": [
+    {
+      "id": "schema_design",
+      "task": "Define data class DopemuxProofEnvelope with schema_version (= '1'), workflow_id, transition, idempotency_key, actor, canonical_writer (= 'task-orchestrator'), receipt { proof_id, operation, status }.",
+      "validation": [
+        "Kotlin data class compiles and round-trips through Jackson/kotlinx.serialization without loss.",
+        "Schema fields exactly match dopemux-mvp's _validate_transition_proof_envelope() required set.",
+        "Receipt status enum mirrors the consumer's allowed receipt statuses."
+      ]
+    },
+    {
+      "id": "attach_to_advance_item",
+      "task": "Modify AdvanceItemHandler to attach the envelope to its response.",
+      "validation": [
+        "Existing AdvanceItemHandlerTest cases continue to pass without modification of non-envelope assertions.",
+        "New tests assert envelope presence + correctness for queue->work, work->review, review->terminal transitions.",
+        "Idempotency-key plumbing exists end-to-end (caller supplies key, response echoes the same key)."
+      ]
+    },
+    {
+      "id": "attach_to_complete_tree",
+      "task": "Modify CompleteTreeHandler analogously.",
+      "validation": [
+        "Existing CompleteTreeHandlerTest passes without non-envelope-assertion changes.",
+        "New tests assert envelope is present on partial and full completion responses."
+      ]
+    },
+    {
+      "id": "backward_compat_check",
+      "task": "Snapshot the existing advance_item and complete_tree response JSON, then add the envelope and confirm the original fields are byte-for-byte unchanged.",
+      "validation": [
+        "Snapshot diff shows only the additive envelope; no existing keys renamed, removed, or reordered.",
+        "Consumer-side: the dopemux-mvp existing transition-handling unit tests continue to pass against an envelope-bearing response (verified separately in TP-DMX-ORCH-017-FINAL follow-up)."
+      ]
+    },
+    {
+      "id": "mcp_schema_artifacts",
+      "task": "Regenerate the MCP tool schemas in artifacts/repo-truth-pack/MCP_TOOL_SCHEMAS/ for advance_item and complete_tree to include the new envelope field.",
+      "validation": [
+        "Schema files validate as valid JSON Schema draft-07.",
+        "Schema diff reviewer-friendly (alphabetical keys, stable indentation)."
+      ]
+    },
+    {
+      "id": "integration_documentation",
+      "task": "Write docs/dopemux-integration.md describing the envelope contract, the Dopemux consumer side, and the explicit note that this Kotlin server is NOT execution authority or proof authority — only a workflow-transition receipt.",
+      "validation": [
+        "Doc compiles into the existing site without lint failures.",
+        "Doc links back to the dopemux-mvp TP-DMX-ORCH-017-FINAL consumer."
+      ]
+    },
+    {
+      "id": "proof_bundle",
+      "task": "Emit proof bundle at proof/TP-DMX-ORCH-014A-UPSTREAM/PROOF.json describing the gradle test runs, codereview/precommit status (detekt), not_run (live dopemux-mvp consumer round-trip — that's TP-DMX-ORCH-017-FINAL), residual_risks, and rollback_plan.",
+      "validation": [
+        "Proof JSON is well-formed.",
+        "Proof status is READY_FOR_REVIEW only after `./gradlew :current:test` exits 0 with the new envelope tests included."
+      ]
+    }
+  ]
+}

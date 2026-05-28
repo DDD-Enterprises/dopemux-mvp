@@ -209,6 +209,39 @@ def test_pr_comment_plan_is_t5_and_gated() -> None:
     assert queue["items"][0]["readiness"] == "merge_candidate"
 
 
+def test_build_pr_queue_live_adapter() -> None:
+    from unittest.mock import MagicMock
+    mock_adapter = MagicMock()
+    
+    # Mock list_prs returning 6 PRs to cover all 6 readiness states
+    mock_adapter.list_prs.return_value = [
+        {"number": 1, "title": "Normal PR", "state": "OPEN", "statusCheckRollup": [], "reviews": []},
+        {"number": 2, "title": "Bypass PR", "state": "OPEN", "statusCheckRollup": [], "reviews": []},
+        {"number": 3, "title": "Failing checks PR", "state": "OPEN", "statusCheckRollup": [{"conclusion": "FAILURE"}], "reviews": []},
+        {"number": 4, "title": "Closed PR", "state": "CLOSED", "statusCheckRollup": [], "reviews": []},
+        {"number": 5, "title": "Stale PR", "state": "OPEN", "statusCheckRollup": [], "reviews": []},
+        {"number": 6, "title": "No Proof PR", "state": "OPEN", "statusCheckRollup": [], "reviews": []},
+    ]
+    
+    # Mock branch ages
+    mock_adapter.get_branch_age.side_effect = lambda repo, num: 10.0 if num == 5 else 1.0
+    
+    # Mock find_proof_path
+    mock_adapter.find_proof_path.side_effect = lambda repo, num: None if num == 6 else "proof/PROOF.json"
+    
+    res = build_pr_queue(repo="DDD-Enterprises/dopemux-mvp", adapter=mock_adapter)
+    
+    items = {item["number"]: item["readiness"] for item in res["items"]}
+    
+    assert items[1] == "MERGEABLE"
+    assert items[2] == "DANGEROUS"   # Title has "bypass"
+    assert items[3] == "BLOCKED"     # Failing checks
+    assert items[4] == "REDUNDANT"   # CLOSED state
+    assert items[5] == "STALE"       # Age > 7 days
+    assert items[6] == "NEEDS_MORE_EVIDENCE" # No proof path
+
+
+
 def test_dashboard_and_automation_pilot_are_read_first() -> None:
     dashboard = build_dashboard_snapshot()
     t1 = automation_pilot_decision("orchestrator.hooks.validate")

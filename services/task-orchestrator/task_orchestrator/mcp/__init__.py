@@ -117,6 +117,10 @@ async def handle_tool_call(tool_name: str, arguments: Dict[str, Any]) -> Dict[st
     """Handle MCP tool call and return result."""
     try:
         if tool_name in ORCHESTRATOR_MCP_TOOL_NAMES:
+            from dopemux.orchestrator.policy import default_policy_path
+            policy_path = default_policy_path()
+            if not policy_path.exists():
+                raise ValueError("orchestrator policy missing")
             return await handle_orchestrator_tool_call(tool_name, arguments)
 
         if tool_name == "analyze_dependencies":

@@ -1,0 +1,77 @@
+{
+  "tp_id": "TP-DMX-ORCH-012-LIVE",
+  "objective": "Wire the orchestrator transition apply command to the canonical task-orchestrator transition endpoint with idempotency-key enforcement and the existing approval-phrase gate",
+  "starting_head": "a4227982fde16b99799882506265f29ec0de303d",
+  "ending_head": "SELF_REFERENTIAL_COMMIT_SHA_REPORTED_IN_CLOSEOUT",
+  "branch": "claude/tp-dmx-orch-followup-packets",
+  "base_branch": "main",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED",
+  "created_at": "2026-05-28T17:30:00Z",
+  "manifest": {
+    "bundle_id": "TP-DMX-ORCH-012-LIVE-PROOF",
+    "packet_id": "TP-DMX-ORCH-012-LIVE",
+    "generated_artifacts": [
+      "src/dopemux/orchestrator/transitions.py",
+      "tests/unit/orchestrator/test_transitions.py",
+      "tests/integration/orchestrator/test_transitions_integration.py",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-012-LIVE/PROOF.json"
+    ]
+  },
+  "authoritative_artifacts": [
+    "task-packets/generated/TP-DMX-ORCH-012-LIVE.json"
+  ],
+  "supporting_artifacts": [
+    "proof/dmx-orch-integration/TP-DMX-ORCH-012-LIVE/PROOF.json"
+  ],
+  "chain_of_custody": {
+    "documented": true,
+    "source_version": "TP-DMX-ORCH-012-LIVE",
+    "created_at": "2026-05-28T17:30:00Z",
+    "parent_bundle_ids": [
+      "TP-DMX-ORCH-012",
+      "TP-DMX-ORCH-009-LIVE"
+    ]
+  },
+  "validation_commands": [
+    {
+      "command": ".venv/bin/pytest tests/unit/orchestrator/test_transitions.py",
+      "exit_code": 0,
+      "summary": "PASS: unit tests verifying approval gate phrase checks, idempotency replay caching, envelope validation failures, and transition purity AST walk assertion."
+    },
+    {
+      "command": ".venv/bin/pytest tests/integration/orchestrator/test_transitions_integration.py",
+      "exit_code": 0,
+      "summary": "PASS: integration tests verifying CLI behavior against mock API, covering refusal, success, and envelope failure modes."
+    },
+    {
+      "command": ".venv/bin/pytest tests/unit/orchestrator/test_operator_workflows.py",
+      "exit_code": 0,
+      "summary": "PASS: operator workflows CLI surfaces verification passes after fixing the deprecated --pr flag warning pollution."
+    },
+    {
+      "command": ".venv/bin/python -m dopemux.cli orchestrator perpacket validate TP-DMX-ORCH-012-LIVE",
+      "exit_code": 0,
+      "summary": "PASS: isolated per-packet schema and proof verification returns Valid: True."
+    }
+  ],
+  "warnings": [],
+  "blockers": [],
+  "not_run": [],
+  "residual_risks": [
+    "High-risk T4 mutation surface; tracer is mandatory per the architecture-sensitive PAL chain.",
+    "Local replay cache is process-local; a multi-process operator session could double-apply if cache state is not persisted (out of scope for this packet but recorded here).",
+    "Envelope schema drift from upstream Kotlin task-orchestrator will cause apply to refuse; this is intentional fail-closed behavior but operators must be aware."
+  ],
+  "rollback_plan": [
+    "Remove src/dopemux/orchestrator/transitions.py and idempotency.py.",
+    "Revert transition_apply_plan in src/dopemux/orchestrator/operator_workflows.py to the preview-only stub.",
+    "Revert `orchestrator transition apply` CLI to its previous approval-phrase-only output.",
+    "Remove integration tests under tests/integration/orchestrator/test_transitions_integration.py.",
+    "Remove task-packets/generated/TP-DMX-ORCH-012-LIVE.json and its proof bundle."
+  ],
+  "commit_sha": null,
+  "commit_sha_policy": "Populated by merging PR or reported in CLI final closeout",
+  "pr_url": null,
+  "cleanup_status": "CLEAN"
+}
