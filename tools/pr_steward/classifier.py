@@ -348,19 +348,19 @@ def _classify_threads(
                 rationale = "Thread author is not in known reviewer config."
                 _append_once(blockers, "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION")
                 _append_once(unknowns, f"Unknown review_thread author: {author}")
-            elif not is_resolved:
+            elif is_resolved or is_outdated:
+                disposition = "AUTO_APPLIED"
+                blocking = False
+                rationale = (
+                    "Resolved review thread clears blocker."
+                    if is_resolved
+                    else "Outdated review thread is historical evidence only."
+                )
+            else:
                 disposition = "MUST_FIX"
                 blocking = True
                 rationale = "Active unresolved review thread blocks readiness."
                 _append_once(blockers, "UNRESOLVED_REVIEW_THREAD")
-            elif is_outdated:
-                disposition = "AUTO_APPLIED"
-                blocking = False
-                rationale = "Resolved outdated thread is historical evidence only."
-            else:
-                disposition = "OPTIONAL_DEFERRED"
-                blocking = False
-                rationale = "Resolved thread has no active blocker."
             items.append(
                 _review_item(
                     item_id=item_id,
