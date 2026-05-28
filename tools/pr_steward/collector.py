@@ -21,6 +21,7 @@ PR_VIEW_FIELDS = ",".join(
         "headRefName",
         "headRefOid",
         "author",
+        "authorAssociation",
         "createdAt",
         "updatedAt",
         "files",
