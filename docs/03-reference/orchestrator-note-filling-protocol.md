@@ -6,13 +6,20 @@ owner: '@hu3mann'
 last_review: '2026-05-27'
 next_review: '2026-08-25'
 status: active
-applies_to: [codex, claude-code, copilot, custom-personas]
+applies_to:
+- codex
+- claude-code
+- copilot
+- custom-personas
 related:
-  - adr-task-orchestrator-as-workflow-authority
-  - adr-task-orchestrator-claude-surface-integration
-  - AGENTS.md §5 (PAL chains), §9 (Proof and Finality)
+- adr-task-orchestrator-as-workflow-authority
+- adr-task-orchestrator-claude-surface-integration
+- "AGENTS.md \xA75 (PAL chains), \xA79 (Proof and Finality)"
+author: '@hu3mann'
+date: '2026-05-27'
+prelude: Orchestrator Note-Filling Protocol (Cross-Agent Reference) (reference) for
+  dopemux documentation and developer workflows.
 ---
-
 # Orchestrator Note-Filling Protocol
 
 **Status**: canonical. Linked from `AGENTS.md` (Codex), `.claude/CLAUDE.md` (Claude Code), `.github/copilot-instructions.md` (Copilot), `config/instructions/agents.instructions.md` (custom-agent), and `.claude/personas/*.agent.md` (personas) — all four agent surfaces inherit this protocol.
