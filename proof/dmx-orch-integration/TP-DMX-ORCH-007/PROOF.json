@@ -1,0 +1,330 @@
+{
+  "bundle_id": "TP-DMX-ORCH-007-PROOF",
+  "run_id": "tp-dmx-orch-007-local",
+  "skill": "codex",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED",
+  "created_at": "2026-05-26T15:08:36Z",
+  "validated_at": "2026-05-26T15:14:35Z",
+  "manifest": {
+    "bundle_id": "TP-DMX-ORCH-007-PROOF",
+    "packet_id": "TP-DMX-ORCH-007",
+    "generated_artifacts": [
+      "task-packets/generated/TP-DMX-ORCH-007.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-007/PROOF.json"
+    ]
+  },
+  "authoritative_artifacts": [
+    "task-packets/generated/TP-DMX-ORCH-007.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-007/PROOF.json",
+    "config/orchestrator/plugin_hooks.yaml",
+    "src/dopemux/orchestrator/hooks.py",
+    "src/dopemux/commands/orchestrator_commands.py"
+  ],
+  "supporting_artifacts": [
+    "config/orchestrator/approval_policy.yaml",
+    "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+    "tests/unit/orchestrator/test_hooks.py",
+    "tests/unit/orchestrator/test_policy.py",
+    "tests/unit/test_cli_orchestrator_validation_commands.py",
+    "src/dopemux/orchestrator/policy.py",
+    "src/dopemux/orchestrator/workflow_dsl.py",
+    "src/dopemux/orchestrator/validation/report.py",
+    "src/dopemux/hooks/hook_manager.py",
+    "src/dopemux/mcp/hooks.py",
+    "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+  ],
+  "chain_of_custody": {
+    "documented": true,
+    "source_version": "TP-DMX-ORCH-007",
+    "created_at": "2026-05-26T15:08:36Z",
+    "parent_bundle_ids": [
+      "TP-DMX-ORCH-004",
+      "TP-DMX-ORCH-006"
+    ]
+  },
+  "repo_identity_check": {
+    "result": "PASS",
+    "marker_file": ".dopetaskroot",
+    "marker_present": true,
+    "remote_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "starting_head": "b772f477f",
+    "branch": "codex/tp-dmx-orch-007-plugin-hooks"
+  },
+  "task_orchestrator": {
+    "root_id": "32df1792-40e3-4ad3-9aa6-fd323f0cacb7",
+    "item_id": "UNKNOWN",
+    "transition": "NOT_RUN",
+    "status": "UNKNOWN",
+    "note": "Task Orchestrator state mutation was not attempted for this slice after the TP005 transition attempt was rejected by tool approval review because the session hit a usage limit."
+  },
+  "validations": [
+    {
+      "name": "TDD red run",
+      "command": "uv run pytest -q tests/unit/orchestrator/test_hooks.py tests/unit/orchestrator/test_policy.py tests/unit/test_cli_orchestrator_validation_commands.py",
+      "exit_code": 2,
+      "status": "PASS",
+      "note": "Expected red state: dopemux.orchestrator.hooks module was missing."
+    },
+    {
+      "name": "Focused hook registry tests",
+      "command": "uv run pytest -q tests/unit/orchestrator/test_hooks.py tests/unit/orchestrator/test_policy.py tests/unit/test_cli_orchestrator_validation_commands.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "............................... [100%]"
+    },
+    {
+      "name": "Expanded orchestrator validation tests",
+      "command": "uv run pytest -q tests/unit/orchestrator/test_hooks.py tests/unit/orchestrator/test_workflow_dsl.py tests/unit/orchestrator/test_mcp_wrappers.py tests/unit/test_task_orchestrator_mcp_wrappers.py tests/unit/orchestrator/test_policy.py tests/unit/orchestrator/test_validation.py tests/unit/test_cli_orchestrator_validation_commands.py tests/unit/test_cli_orchestrator_commands.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "............................................................... [100%]"
+    },
+    {
+      "name": "Compile source tree",
+      "command": ".venv/bin/python -m compileall -q src",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Task Packet JSON syntax",
+      "command": ".venv/bin/python -m json.tool task-packets/generated/TP-DMX-ORCH-007.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Task Packet schema validation",
+      "command": ".venv/bin/python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-007.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "stderr_note": "jsonschema CLI emitted a deprecation warning; schema validation exited 0."
+    },
+    {
+      "name": "Hook registry validator command",
+      "command": ".venv/bin/python -m dopemux.cli orchestrator hooks validate --json-output",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_note": "JSON report status PASS with hook_count 15 and missing_hooks []; unrelated LiteLLM import warnings were emitted before the JSON payload by the root CLI import path."
+    },
+    {
+      "name": "Plugin doctor command",
+      "command": ".venv/bin/python -m dopemux.cli orchestrator plugins doctor --json-output",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_note": "JSON report status PASS with read_only true; unrelated LiteLLM import warnings were emitted before the JSON payload by the root CLI import path."
+    },
+    {
+      "name": "Approval policy validator command",
+      "command": ".venv/bin/python -m dopemux.cli orchestrator policy validate --json-output",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_note": "JSON report status PASS with capability_count 24; unrelated LiteLLM import warnings were emitted before the JSON payload by the root CLI import path."
+    },
+    {
+      "name": "Task Packet validator command",
+      "command": ".venv/bin/python -m dopemux.cli orchestrator packet validate task-packets/generated/TP-DMX-ORCH-007.json --json-output",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_note": "JSON report status PASS; unrelated LiteLLM import warnings were emitted before the JSON payload by the root CLI import path."
+    },
+    {
+      "name": "Diff whitespace check",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Proof JSON syntax",
+      "command": ".venv/bin/python -m json.tool proof/dmx-orch-integration/TP-DMX-ORCH-007/PROOF.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Proof validator command",
+      "command": ".venv/bin/python -m dopemux.cli orchestrator proof validate proof/dmx-orch-integration/TP-DMX-ORCH-007/PROOF.json --json-output",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_note": "JSON report status PASS; unrelated LiteLLM import warnings were emitted before the JSON payload by the root CLI import path."
+    },
+    {
+      "name": "Pre-commit hooks for packet files",
+      "command": "pre-commit run --files config/orchestrator/plugin_hooks.yaml config/orchestrator/approval_policy.yaml src/dopemux/orchestrator/hooks.py src/dopemux/commands/orchestrator_commands.py tests/unit/orchestrator/test_hooks.py tests/unit/orchestrator/test_policy.py tests/unit/test_cli_orchestrator_validation_commands.py docs/03-reference/systems/task-orchestrator/operator-integration-authority.md task-packets/generated/TP-DMX-ORCH-007.json proof/dmx-orch-integration/TP-DMX-ORCH-007/PROOF.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "note": "Repo hygiene hooks passed for YAML, Markdown, JSON, Python, packet, and proof files."
+    }
+  ],
+  "pal_status": {
+    "analyze": {
+      "result": "PASS",
+      "continuation_id": "7fca90bd-57f6-4a3b-87d9-0ce7d8c15f63"
+    },
+    "thinkdeep": {
+      "result": "PASS",
+      "continuation_id": "a572f9e6-9a19-4623-ac7f-ddf79c79f33e"
+    },
+    "planner": {
+      "result": "PASS",
+      "continuation_id": "4b47e5f9-b1bd-4204-8d4b-87af1bf8db8d"
+    },
+    "challenge": {
+      "result": "PASS",
+      "note": "Challenge confirmed the registry must not imply runtime hook execution or dynamic plugin loading."
+    }
+  },
+  "codereview_status": {
+    "result": "PASS",
+    "tool": "pal/codereview",
+    "model": "gpt-5-codex",
+    "validation_type": "internal",
+    "review_type": "full",
+    "issues_found": 0,
+    "continuation_id": "2b593bac-8505-4954-8a48-899c15ac8982"
+  },
+  "precommit_status": {
+    "result": "PASS",
+    "tool": "pal/precommit",
+    "model": "gpt-5-codex",
+    "validation_type": "internal",
+    "issues_found": 0,
+    "continuation_id": "95c9adb3-e0e4-4509-8f4a-7910b2556823",
+    "post_proof_update_note": "Proof metadata was updated with PAL precommit status after PAL precommit; proof validator, git diff --check, and pre-commit hooks were rerun after this update."
+  },
+  "warnings": [],
+  "blockers": [],
+  "not_run": [
+    "Task Orchestrator item transition: not attempted because the prior TP005 state write was rejected by tool approval review after the session hit a usage limit.",
+    "Full repository test suite: not run in this local implementation slice.",
+    "Push and PR creation: not run in this local implementation slice."
+  ],
+  "residual_risks": [
+    "The registry and doctor validate declarative hook safety only; they do not prove live runtime hook behavior.",
+    "Existing runtime hook managers remain separate and may still have side effects outside this registry.",
+    "Direct CLI --json-output commands emit unrelated LiteLLM warnings before JSON because of the root CLI import path."
+  ],
+  "rollback_plan": [
+    "Remove config/orchestrator/plugin_hooks.yaml.",
+    "Remove src/dopemux/orchestrator/hooks.py.",
+    "Remove the hooks and plugins CLI groups from src/dopemux/commands/orchestrator_commands.py.",
+    "Remove the three hook/plugin capabilities from config/orchestrator/approval_policy.yaml.",
+    "Remove hook registry tests from tests/unit/orchestrator/test_hooks.py.",
+    "Revert hook capability assertions in tests/unit/orchestrator/test_policy.py.",
+    "Revert hook/plugin CLI assertions in tests/unit/test_cli_orchestrator_validation_commands.py.",
+    "Remove the plugin_hooks.yaml note from docs/03-reference/systems/task-orchestrator/operator-integration-authority.md.",
+    "Remove task-packets/generated/TP-DMX-ORCH-007.json.",
+    "Remove proof/dmx-orch-integration/TP-DMX-ORCH-007/PROOF.json."
+  ],
+  "commit_sha": null,
+  "commit_sha_policy": "A committed proof file cannot self-reference the commit SHA that contains its final contents. The authoritative local commit SHA is reported by git after commit creation and in the session closeout.",
+  "pr_url": null,
+  "cleanup_status": "WORKTREE_ACTIVE",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/dmx-714-orch",
+  "slices_completed": [
+    "TP-DMX-ORCH-007"
+  ],
+  "files_changed": [
+    ".claude/claude.md",
+    ".claude/commands/dx/backlinks.md",
+    ".claude/commands/dx/block.md",
+    ".claude/commands/dx/blocked.md",
+    ".claude/commands/dx/cancel.md",
+    ".claude/commands/dx/complete-tree.md",
+    ".claude/commands/dx/complete.md",
+    ".claude/commands/dx/context.md",
+    ".claude/commands/dx/depends.md",
+    ".claude/commands/dx/implement.md",
+    ".claude/commands/dx/next.md",
+    ".claude/commands/dx/note.md",
+    ".claude/commands/dx/notes.md",
+    ".claude/commands/dx/preview.md",
+    ".claude/commands/dx/reopen.md",
+    ".claude/commands/dx/resume.md",
+    ".claude/commands/dx/search.md",
+    ".claude/commands/dx/start.md",
+    ".claude/commands/dx/tree.md",
+    ".claude/modules/coordination/authority-matrix.md",
+    ".claude/modules/coordination/integration-bridge.md",
+    ".claude/modules/shared/event-patterns.md",
+    ".claude/modules/shared/governance-principles.md",
+    ".claude/modules/shared/sprint.md",
+    ".claude/modules/shared/superclaude-workflows.md",
+    ".claude/personas/PERSONA_INDEX.md",
+    ".github/copilot-instructions.md",
+    ".taskorchestrator/config.yaml",
+    "AGENTS.md",
+    "PM_PLANE.md",
+    "config/instructions/agents.instructions.md",
+    "config/orchestrator/approval_policy.yaml",
+    "config/orchestrator/plugin_hooks.yaml",
+    "config/repo_hygiene/root_hygiene_policy.json",
+    "docs/03-reference/dx-command-authoring.md",
+    "docs/03-reference/orchestrator-note-filling-protocol.md",
+    "docs/03-reference/systems/component-catalog.md",
+    "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+    "docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md",
+    "docs/90-adr/adr-task-orchestrator-as-workflow-authority.md",
+    "docs/90-adr/adr-task-orchestrator-claude-surface-integration.md",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-001/PROOF.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-002/PROOF.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-003/PROOF.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-004/PROOF.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-005/PROOF.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-006/PROOF.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-007/PROOF.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-008/PROOF.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-009/PROOF.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-010/PROOF.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-011/PROOF.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-012/PROOF.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-013/PROOF.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-014A/PROOF.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-014B/PROOF.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-015/PROOF.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-016/PROOF.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-017/PROOF.json",
+    "scripts/external-references/README.md",
+    "scripts/external-references/task-orchestrator-current-stdio.sh.snapshot-2026-05-27",
+    "scripts/external-references/task-orchestrator-current-stdio.sh.snapshot-2026-05-27-v3.8.0",
+    "services/task-orchestrator/query_server.py",
+    "services/task-orchestrator/task_orchestrator/mcp/__init__.py",
+    "src/dopemux/cli.py",
+    "src/dopemux/commands/orchestrator_commands.py",
+    "src/dopemux/orchestrator/hooks.py",
+    "src/dopemux/orchestrator/mcp_wrappers.py",
+    "src/dopemux/orchestrator/operator_workflows.py",
+    "src/dopemux/orchestrator/policy.py",
+    "src/dopemux/orchestrator/validation/__init__.py",
+    "src/dopemux/orchestrator/validation/json_io.py",
+    "src/dopemux/orchestrator/validation/packets.py",
+    "src/dopemux/orchestrator/validation/proof.py",
+    "src/dopemux/orchestrator/validation/report.py",
+    "src/dopemux/orchestrator/workflow_dsl.py",
+    "task-packets/generated/TP-DMX-ORCH-001.json",
+    "task-packets/generated/TP-DMX-ORCH-002.json",
+    "task-packets/generated/TP-DMX-ORCH-003.json",
+    "task-packets/generated/TP-DMX-ORCH-004.json",
+    "task-packets/generated/TP-DMX-ORCH-005.json",
+    "task-packets/generated/TP-DMX-ORCH-006.json",
+    "task-packets/generated/TP-DMX-ORCH-007.json",
+    "task-packets/generated/TP-DMX-ORCH-008.json",
+    "task-packets/generated/TP-DMX-ORCH-009.json",
+    "task-packets/generated/TP-DMX-ORCH-010.json",
+    "task-packets/generated/TP-DMX-ORCH-011.json",
+    "task-packets/generated/TP-DMX-ORCH-012.json",
+    "task-packets/generated/TP-DMX-ORCH-013.json",
+    "task-packets/generated/TP-DMX-ORCH-014A.json",
+    "task-packets/generated/TP-DMX-ORCH-014B.json",
+    "task-packets/generated/TP-DMX-ORCH-015.json",
+    "task-packets/generated/TP-DMX-ORCH-016.json",
+    "task-packets/generated/TP-DMX-ORCH-017.json",
+    "tests/unit/orchestrator/test_hooks.py",
+    "tests/unit/orchestrator/test_mcp_wrappers.py",
+    "tests/unit/orchestrator/test_operator_workflows.py",
+    "tests/unit/orchestrator/test_policy.py",
+    "tests/unit/orchestrator/test_validation.py",
+    "tests/unit/orchestrator/test_workflow_dsl.py",
+    "tests/unit/test_cli_orchestrator_commands.py",
+    "tests/unit/test_cli_orchestrator_validation_commands.py",
+    "tests/unit/test_task_orchestrator_mcp_wrappers.py"
+  ]
+}

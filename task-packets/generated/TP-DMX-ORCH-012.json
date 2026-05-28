@@ -1,0 +1,80 @@
+{
+  "id": "TP-DMX-ORCH-012",
+  "project": "dopemux-mvp",
+  "target": "Add workflow transition preview and approval-gated apply",
+  "invariants": [
+    "Transition preview is read-only",
+    "Transition apply planning requires idempotency key, proof id, and exact typed approval",
+    "Local implementation does not mutate workflow state"
+  ],
+  "depends_on": [
+    "TP-DMX-ORCH-004",
+    "TP-DMX-ORCH-011"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ORCH-INTEGRATION",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-ORCH-011",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-orch-007-plugin-hooks",
+    "base_branch": "codex/tp-dmx-orch-007-plugin-hooks",
+    "stacked_because": "The remaining DMX-ORCH packets were implemented as bounded fail-closed local workflow surfaces after TP-DMX-ORCH-007."
+  },
+  "commit": {
+    "message": "feat(orchestrator): add remaining operator workflows",
+    "allowlist": [
+      "config/orchestrator/approval_policy.yaml",
+      "src/dopemux/orchestrator/operator_workflows.py",
+      "src/dopemux/commands/orchestrator_commands.py",
+      "tests/unit/orchestrator/test_operator_workflows.py",
+      "task-packets/generated/TP-DMX-ORCH-012.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-012/PROOF.json"
+    ],
+    "verify": [
+      ".venv/bin/python -m pytest -q tests/unit/orchestrator/test_operator_workflows.py",
+      ".venv/bin/python -m dopemux.cli orchestrator transition preview --workflow-id wf-1 --transition-name start --proof-id proof-1 --json-output"
+    ]
+  },
+  "pr": {
+    "title": "feat(orchestrator): add transition preview planning",
+    "body": "Adds read-only transition preview and approval-gated apply planning.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "transition_preview_apply_plan",
+      "task": "Implement transition preview and apply planning without live workflow mutation.",
+      "validation": [
+        "Preview reports T1 and read_only true",
+        "Apply without typed approval is blocked",
+        "Apply planning reports task-orchestrator as canonical writer and will_write false"
+      ],
+      "expected_files": [
+        "src/dopemux/orchestrator/operator_workflows.py",
+        "src/dopemux/commands/orchestrator_commands.py",
+        "tests/unit/orchestrator/test_operator_workflows.py"
+      ]
+    }
+  ]
+}
