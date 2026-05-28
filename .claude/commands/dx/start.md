@@ -37,7 +37,8 @@ If no id is given, stop and ask for one (do not guess).
 **2a — Preflight read.** Call `get_context(itemId="<id>")`. Capture: `role`, `statusLabel`, `canAdvance`, missing required notes, `noteProgress`, `guidancePointer`.
 
 **2b — Gate check.** 
-- If `role == "terminal"` → stop: "Already terminal; nothing to start. Use `/dx:reopen` to send it back to queue (when that wrapper ships) or `advance_item(trigger=reopen)`."
+- If `role == "terminal"` → stop: "Already terminal; nothing to start. Use `/dx:reopen <id>` to send it back to queue."
+- If `role == "blocked"` → stop: "Item is blocked; `start` is not valid from blocked. Resume it with `/dx:resume <id>`."
 - If `canAdvance == false` → **do not transition.** Show the missing required notes and stop:
   ```
   ⚠️ Cannot start <title> — gate not satisfied.
