@@ -32,7 +32,105 @@ SuperClaude → Python ADHD Engine → ConPort → Integration Bridge → Dashbo
 
 ## Event Schemas
 
-### Task Lifecycle Events
+### Workflow Events (canonical source: task-orchestrator)
+
+Per AGENTS.md §6 and the accepted workflow-authority ADR, task-orchestrator emits the canonical workflow events. These supersede the historical `task-master`/`leantime`/`ConPort`-sourced workflow events documented in subsequent subsections (kept for reference but **deprecated**).
+
+#### Item Started Event
+```json
+{
+  "event_type": "item-started",
+  "event_id": "uuid",
+  "timestamp": "2026-05-27T23:45:00Z",
+  "source_system": "task-orchestrator",
+  "target_systems": ["integration-bridge", "dashboard", "adhd-engine", "conport"],
+  "priority": "medium",
+  "data": {
+    "item_id": "uuid",
+    "title": "TP-CS-024: Update governance-principles.md ...",
+    "previous_role": "queue",
+    "new_role": "work",
+    "trigger": "start",
+    "actor": {"id": "worktree-dopemux-mvp-feature-x", "kind": "subagent", "parent": "<session-id>"},
+    "status_label": "in-progress",
+    "schema_match": "task-packet",
+    "ancestor_breadcrumb": "DMX-ORCH-CLAUDE-SURFACE > TP-CS-024"
+  },
+  "routing": {
+    "broadcast": true,
+    "requires_ack": false
+  }
+}
+```
+
+#### Item Completed Event (gate-passed)
+```json
+{
+  "event_type": "item-completed",
+  "event_id": "uuid",
+  "timestamp": "2026-05-27T23:55:00Z",
+  "source_system": "task-orchestrator",
+  "target_systems": ["integration-bridge", "dashboard", "conport", "adhd-engine"],
+  "priority": "high",
+  "data": {
+    "item_id": "uuid",
+    "title": "...",
+    "trigger": "complete",
+    "actor": {"id": "...", "kind": "subagent"},
+    "status_label": "done",
+    "proof_bundle_note_id": "<uuid of the proof-bundle note that gated this complete>",
+    "unblocked_items": [{"itemId": "uuid", "title": "downstream item now eligible"}]
+  },
+  "routing": {
+    "broadcast": true,
+    "conport_decision_recommended": true
+  }
+}
+```
+
+#### Item Blocked Event
+```json
+{
+  "event_type": "item-blocked",
+  "event_id": "uuid",
+  "timestamp": "2026-05-27T23:50:00Z",
+  "source_system": "task-orchestrator",
+  "target_systems": ["integration-bridge", "dashboard"],
+  "priority": "high",
+  "data": {
+    "item_id": "uuid",
+    "previous_role": "work",
+    "trigger": "block",
+    "blockers": [{"fromItemId": "uuid", "currentRole": "work", "requiredRole": "terminal"}],
+    "reason": "explicit hold | dependency unsatisfied | gate failure"
+  }
+}
+```
+
+#### Dependency Satisfied Event
+```json
+{
+  "event_type": "dependency-satisfied",
+  "event_id": "uuid",
+  "timestamp": "2026-05-27T23:55:00Z",
+  "source_system": "task-orchestrator",
+  "target_systems": ["integration-bridge", "adhd-engine"],
+  "priority": "medium",
+  "data": {
+    "blocker_item_id": "uuid (the item that reached the unblockAt threshold)",
+    "now_eligible_items": [{"itemId": "uuid", "title": "downstream item"}],
+    "blocker_new_role": "review | terminal"
+  }
+}
+```
+
+Additional orchestrator event types per `.claude/modules/coordination/integration-bridge.md#event-types`: `item-created`, `item-resumed`, `item-cancelled`, `item-reopened`, `claim-acquired`, `claim-released`, `claim-expired`.
+
+---
+
+### Task Lifecycle Events (DEPRECATED — historical reference)
+
+The events below are kept for reference but **superseded** by the orchestrator events above. Workflow state changes flow through task-orchestrator now; the `task-master`/`leantime`/`ConPort`-sourced events documented here predate the workflow-authority ADR.
 
 #### Task Created Event
 ```json

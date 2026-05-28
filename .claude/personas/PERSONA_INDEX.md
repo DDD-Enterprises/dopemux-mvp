@@ -63,3 +63,16 @@ Flagged here, **not** deleted — leave consolidation for a deliberate review pa
 ## Agents directory (curated active set)
 
 The companion `agents/` directory contains a smaller curated set used directly by `/dx:` and `/sc:` flows: `architect`, `developer`, `project-manager`, `researcher`. See `agents/_index.md` for those. **personas/** is the full library; **agents/** is the curated active set.
+
+## Task-Orchestrator awareness
+
+Personas that interact with task management — `task-planner.agent.md`, `task-researcher.agent.md`, `workflow-manager.agent.md`, `workflow-executor.agent.md`, `implementation-plan.agent.md`, `plan.agent.md`, `prd.agent.md`, `specification.agent.md`, `adr-generator.agent.md`, `se-product-manager-advisor.agent.md`, `meta-agentic-project-scaffold.agent.md` — operate against the canonical **task-orchestrator** workflow authority (per `AGENTS.md §6` and `§12 Orchestrator Operations`).
+
+When a persona is activated for task-management work, it inherits the cross-agent protocol at [`docs/03-reference/orchestrator-note-filling-protocol.md`](../../docs/03-reference/orchestrator-note-filling-protocol.md). Personas should:
+
+- **Defer to the orchestrator MCP** for work-item state (`get_context`, `get_next_item`, `advance_item`, `manage_notes`). Don't shadow workflow state in persona-local markdown.
+- **Set `type` on items at creation** to activate the matching schema (e.g. `type: "task-packet"` for repo-changing slices, `type: "rfc-proposal"` for decision-building work).
+- **Honor the complete-gate** per `AGENTS.md §9` — `advance_item(trigger="complete")` requires a filled `proof-bundle` note. Personas that ship code MUST author the bundle.
+- **Reference the protocol doc** rather than re-spec it inline. Persona files stay focused on their domain expertise; protocol details live in the canonical reference.
+
+For personas that DO NOT touch task management (e.g. `gilfoyle.agent.md`, `socratic-mentor-dopemux.md`, `technical-writer-dopemux.md`, `python-expert-dopemux.md` for pure code work) — no orchestrator interaction expected. They can ignore this section.
