@@ -94,6 +94,29 @@
   "run_id": "2026-05-27T00:55:19.209497Z",
   "skill": "pr-steward-check-only-runtime",
   "status": "PASS_WITH_RISKS",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "local authenticated Claude Code audit",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "STW-001",
+        "severity": "MEDIUM",
+        "title": "Divergence between thread and comment classifiers",
+        "status": "ACCEPTED_RISK",
+        "body": "One medium nonblocking divergence remains untested but is conservative."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "coverage gaps: two low coverage gaps identified in local audit"
+    ],
+    "skip_reason": null
+  },
   "supporting_artifacts": [
     "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/MANIFEST.json",
     "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/SUMMARY.md",

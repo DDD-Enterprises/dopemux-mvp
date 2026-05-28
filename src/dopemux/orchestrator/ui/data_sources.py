@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Optional
 from filelock import FileLock, Timeout
 
 from dopemux.orchestrator.operator_workflows import (
+    DASHBOARD_PANELS,
     build_dashboard_snapshot,
     build_pr_queue,
     context_status,
@@ -164,100 +165,58 @@ def get_do_not_touch_data() -> Dict[str, Any]:
 
 
 def get_panel_data(panel_id: str) -> Dict[str, Any]:
-    """Compatibility adapter for legacy panel callers.
-
-    New TUI widgets call the typed ``get_*_data`` helpers directly. Older tests
-    and callers still expect a compact status/fallback shape from this function.
-    """
+    """Dispatcher for panel-specific data retrieval with error fallbacks."""
     try:
         if panel_id == "today":
             conn = sqlite3.connect(":memory:")
             conn.close()
             data = get_today_data()
-            return {
-                "status": "active",
-                "fallback": False,
-                "count": len(data.get("panels", [])),
-            }
-
-        if panel_id == "context":
+            # Test expectation requires "count"
+            if "count" not in data:
+                data["count"] = len(data.get("panels", []))
+            data["fallback"] = False
+            return data
+        elif panel_id == "authority":
+            return get_authority_data()
+        elif panel_id == "packets":
+            return {"items": get_packets_data()}
+        elif panel_id == "proof":
+            return {"items": get_proof_data()}
+        elif panel_id == "risks":
+            return {"items": get_risks_data()}
+        elif panel_id == "pr_queue":
+            return get_pr_queue_data()
+        elif panel_id == "context":
             lock_path = Path(os.getenv("TMPDIR", "/tmp")) / "dopemux-context-panel.lock"
             lock = FileLock(str(lock_path), timeout=0.05)
             with lock:
                 data = get_context_data()
-            return {
-                "status": "active",
-                "fallback": False,
-                "progress_entries_count": len(data.get("sources", data)),
-            }
-
-        if panel_id == "authority":
-            data = get_authority_data()
-            return {
-                "status": "active",
-                "fallback": False,
-                "rules": [data.get("authority", "")],
-            }
-
-        if panel_id == "packets":
-            return {
-                "status": "active",
-                "fallback": False,
-                "count": len(get_packets_data()),
-            }
-
-        if panel_id == "proof":
-            return {
-                "status": "active",
-                "fallback": False,
-                "count": len(get_proof_data()),
-            }
-
-        if panel_id == "risks":
-            return {
-                "status": "active",
-                "fallback": False,
-                "active_risks": len(get_risks_data()),
-            }
-
-        if panel_id == "pr_queue":
-            data = get_pr_queue_data()
-            return {
-                "status": "active",
-                "fallback": False,
-                "items": data.get("items", []),
-            }
-
-        if panel_id == "do_not_touch":
-            data = get_do_not_touch_data()
-            return {
-                "status": "active",
-                "fallback": False,
-                "safe": not data.get("refusals"),
-            }
-
-        return {"status": "unknown", "fallback": True, "error": f"Unknown panel: {panel_id}"}
-
-    except Timeout:
+            if "progress_entries_count" not in data:
+                data["progress_entries_count"] = len(data.get("sources", data))
+            data["fallback"] = False
+            return data
+        elif panel_id == "do_not_touch":
+            return get_do_not_touch_data()
+        else:
+            return {"error": f"Unknown panel: {panel_id}"}
+    except sqlite3.OperationalError as e:
         return {
-            "status": "active (lock contention fallback)",
             "fallback": True,
-            "progress_entries_count": 0,
+            "error": str(e),
+            "status": "degraded (database error)",
+            "count": 0,
         }
-    except sqlite3.OperationalError as exc:
-        return {
-            "status": "degraded (concurrency error)",
-            "fallback": True,
-            "error": str(exc),
-        }
-    except Exception as exc:
-        return {
-            "status": "degraded (unexpected error)",
-            "fallback": True,
-            "error": str(exc),
-        }
+    except Timeout as e:
+        if panel_id == "context":
+            return {
+                "fallback": True,
+                "progress_entries_count": 0,
+                "status": "lock contention fallback",
+                "error": str(e),
+            }
+        raise
 
 
-def get_all_panels() -> Dict[str, Dict[str, Any]]:
-    """Return compact data for all legacy panel IDs."""
-    return {panel_id: get_panel_data(panel_id) for panel_id in PANEL_IDS}
+def get_all_panels() -> Dict[str, Any]:
+    """Retrieve data for all known dashboard panels."""
+    return {pid: get_panel_data(pid) for pid in DASHBOARD_PANELS}

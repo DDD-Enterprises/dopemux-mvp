@@ -18,6 +18,18 @@
     "Direct route fixture smoke via wrapper: PASS"
   ],
   "pal_mcp_called": false,
-  "pal_clink_audit_output_captured": false,
-  "route_is_audit_verdict": false
+  "route_is_audit_verdict": false,
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": "Wrapper-only packet; logic implementation deferred."
+  }
 }
