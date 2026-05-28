@@ -150,6 +150,7 @@ logs/
 .claude/settings.local.json
 .claude/session-*
 .claude/temp-*
+.claude/.orchestrator-*.json
 
 # macOS
 .DS_Store
@@ -377,9 +378,6 @@ proof/*
 !proof/fast-dev-os/**
 !proof/orchestrator/
 !proof/orchestrator/**
-!proof/rte-cost-profile-redesign/
-!proof/rte-cost-profile-redesign/**
-proof/rte-cost-profile-redesign/**/.DS_Store
 
 # Extraction and Research artifacts
 _audit_out/
@@ -406,3 +404,4 @@ LIVE_LOG*.txt
 .antigravitycli/
 .claude/.orchestrator-context-cache.json
 .claude/.orchestrator-edit-nudge.json
+.antigravitycli/
