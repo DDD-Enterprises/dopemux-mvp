@@ -70,7 +70,9 @@ class TestConPortAdapterRecordProgress:
                     timeout=1
                 )
 
-        mock_request.assert_not_called()
+        # After the move of journal write to after the HTTP call, the request will be made
+        # even if the journal write later times out.
+        mock_request.assert_called_once()
 
     @pytest.mark.asyncio
     @patch("dopemux.pm.adapters.conport.ConPortAdapter._request")
