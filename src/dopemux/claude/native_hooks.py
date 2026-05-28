@@ -109,14 +109,21 @@ class NativeHookAdapter:
     def _emit(self, payload: Dict[str, Any], exit_code: int = EXIT_SUCCESS) -> Tuple[int, Dict[str, Any]]:
         return exit_code, payload
 
-    def _allow(self, *, system_message: Optional[str] = None, additional_context: Optional[str] = None) -> Tuple[int, Dict[str, Any]]:
+    def _allow(
+        self,
+        *,
+        system_message: Optional[str] = None,
+        additional_context: Optional[str] = None,
+        hook_event_name: Optional[str] = None,
+    ) -> Tuple[int, Dict[str, Any]]:
         payload: Dict[str, Any] = {}
         if system_message:
             payload["systemMessage"] = system_message
         if additional_context:
-            payload["hookSpecificOutput"] = {
-                "additionalContext": additional_context,
-            }
+            hook_output = {"additionalContext": additional_context}
+            if hook_event_name:
+                hook_output["hookEventName"] = hook_event_name
+            payload["hookSpecificOutput"] = hook_output
         return self._emit(payload, EXIT_SUCCESS)
 
     def _deny_tool(self, message: str, additional_context: Optional[str] = None) -> Tuple[int, Dict[str, Any]]:
@@ -293,7 +300,7 @@ class NativeHookAdapter:
         state = self._active_state()
         if not state:
             if nudge:
-                return self._allow(additional_context=nudge)
+                return self._allow(additional_context=nudge, hook_event_name="posttooluse")
             return self._allow()
 
         self.kernel.record_tool_event(
@@ -308,7 +315,10 @@ class NativeHookAdapter:
         )
         if nudge:
             wf_ctx = _workflow_context_lines(state, include_gates=True)
-            return self._allow(additional_context=f"{wf_ctx}\n\n{nudge}")
+            return self._allow(
+                additional_context=f"{wf_ctx}\n\n{nudge}",
+                hook_event_name="posttooluse"
+            )
         return self._allow()
 
     def _on_post_tool_use_failure(self, data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
