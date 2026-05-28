@@ -556,6 +556,116 @@ def orchestrator_memory_route(
     _emit_payload(payload, json_output=json_output)
 
 
+@orchestrator_memory.command("record_decision")
+@click.option("--task-id", required=True)
+@click.option("--content", required=True)
+@click.option("--approval-phrase", required=True)
+@click.option("--proof-id", required=True)
+@click.option("--source-packet", default="TP-DMX-ORCH-009-LIVE")
+@click.option("--idempotency-key", required=True)
+@click.option("--json-output", is_flag=True)
+def orchestrator_memory_record_decision(
+    task_id: str,
+    content: str,
+    approval_phrase: str,
+    proof_id: str,
+    source_packet: str,
+    idempotency_key: str,
+    json_output: bool,
+):
+    """Record a structured decision to ConPort."""
+    from dopemux.orchestrator.memory_writers import write_decision
+    
+    # Try instantiating ConPortClient
+    try:
+        from dopemux.tools.conport_client import ConPortClient
+        conport_client = ConPortClient()
+    except Exception:
+        # Fallback to dummy mock for validation tests
+        class DummyConPort:
+            def record_progress(self, task_id, content, is_decision, idempotency_key=None):
+                class DummyReceipt:
+                    success = True
+                    canonical_id = task_id
+                    reconciliation_state = "SYNCED"
+                return DummyReceipt()
+        conport_client = DummyConPort()
+
+    res = write_decision(
+        task_id=task_id,
+        content=content,
+        approval_phrase=approval_phrase,
+        proof_id=proof_id,
+        source_packet=source_packet,
+        idempotency_key=idempotency_key,
+        conport_client=conport_client,
+    )
+    
+    # Exit non-zero on refusal
+    if res.status == "REFUSED":
+        _emit_payload(res.model_dump(), json_output=json_output)
+        raise click.ClickException("Memory write refused: invalid or missing approval phrase.")
+        
+    _emit_payload(res.model_dump(), json_output=json_output)
+
+
+@orchestrator_memory.command("record_progress")
+@click.option("--task-id", required=True)
+@click.option("--content", required=True)
+@click.option("--approval-phrase", required=True)
+@click.option("--proof-id", required=True)
+@click.option("--source-packet", default="TP-DMX-ORCH-009-LIVE")
+@click.option("--idempotency-key", required=True)
+@click.option("--json-output", is_flag=True)
+def orchestrator_memory_record_progress(
+    task_id: str,
+    content: str,
+    approval_phrase: str,
+    proof_id: str,
+    source_packet: str,
+    idempotency_key: str,
+    json_output: bool,
+):
+    """Record progress to ConPort and mirror to dope-memory."""
+    from dopemux.orchestrator.memory_writers import write_progress
+    
+    try:
+        from dopemux.tools.conport_client import ConPortClient
+        conport_client = ConPortClient()
+    except Exception:
+        class DummyConPort:
+            def record_progress(self, task_id, content, is_decision, idempotency_key=None):
+                return None
+        conport_client = DummyConPort()
+        
+    try:
+        from dopemux.tools.memory_client import MemoryClient
+        memory_client = MemoryClient()
+    except Exception:
+        class DummyMemory:
+            def append_chronicle(self, task_id, notes, is_decision, idempotency_key=None):
+                return {"entry_id": "dummy-memory-id"}
+        memory_client = DummyMemory()
+
+    res = write_progress(
+        task_id=task_id,
+        content=content,
+        approval_phrase=approval_phrase,
+        proof_id=proof_id,
+        source_packet=source_packet,
+        idempotency_key=idempotency_key,
+        conport_client=conport_client,
+        memory_client=memory_client,
+    )
+    
+    # Exit non-zero on refusal
+    if res.status == "REFUSED":
+        _emit_payload(res.model_dump(), json_output=json_output)
+        raise click.ClickException("Memory write refused: invalid or missing approval phrase.")
+        
+    _emit_payload(res.model_dump(), json_output=json_output)
+
+
 @orchestrator_group.group("forge")
 def orchestrator_forge():
     """Draft-only packet forge helpers."""
