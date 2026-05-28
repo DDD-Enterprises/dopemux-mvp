@@ -1,3 +1,15 @@
+---
+id: orchestrator-audit-2026-05-28
+title: Orchestrator Audit 2026 05 28
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-28'
+last_review: '2026-05-28'
+next_review: '2026-08-26'
+prelude: Orchestrator Audit 2026 05 28 (reference) for dopemux documentation and developer
+  workflows.
+---
 # Task-Orchestrator Deep Audit + Reconciliation — 2026-05-28
 
 > **Provenance / volatility note:** This file was written, lost, and recreated within one session. A **concurrent process checked out branch `claude/upbeat-thompson-35f2e8` (PR #718) in the shared working directory** mid-session (git reflog `HEAD@{3}: checkout: moving from codex/tp-dmx-orch-007-plugin-hooks to claude/upbeat-thompson-35f2e8`), which wiped the original untracked copy. `claudedocs/` is not gitignored, so a copy here remains volatile. A durable backup exists at `~/.claude/projects/-Users-hue-code-dopemux-mvp/memory/orchestrator_audit_2026_05_28_FULL.md`. The orchestrator reconciliation (below) lives in the MCP's own DB and is unaffected by the working-tree branch switch.
