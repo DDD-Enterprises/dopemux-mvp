@@ -377,6 +377,9 @@ proof/*
 !proof/fast-dev-os/**
 !proof/orchestrator/
 !proof/orchestrator/**
+!proof/rte-cost-profile-redesign/
+!proof/rte-cost-profile-redesign/**
+proof/rte-cost-profile-redesign/**/.DS_Store
 
 # Extraction and Research artifacts
 _audit_out/
@@ -400,3 +403,6 @@ LIVE_LOG*.txt
 
 # Local backups created by `dopemux mcp sync-globals --apply` and the project .claude.json strip
 .claude.json.backup-*
+.antigravitycli/
+.claude/.orchestrator-context-cache.json
+.claude/.orchestrator-edit-nudge.json

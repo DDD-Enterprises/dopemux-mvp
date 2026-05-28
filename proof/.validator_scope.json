@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0.0",
+  "purpose": "Bounds the scope of scripts/audit/validate_audit_proof.py --all enforcement. Only proof bundles whose TP ID matches one of `include_patterns` are validated; bundles matching `exclude_patterns` are explicitly grandfathered with the documented reason. Out-of-pattern bundles are skipped with a warning.",
+  "include_patterns": [
+    "proof/TP-DMX-*/PROOF.json"
+  ],
+  "exclude_patterns": [
+    {
+      "pattern": "proof/codex-refresh/**/PROOF.json",
+      "reason": "Pre-existing bundles missing embedded_audit; grandfathered pending TP-DMX-LEGACY-BACKFILL-NNN"
+    },
+    {
+      "pattern": "proof/fast-dev-os/**/PROOF.json",
+      "reason": "Pre-existing bundles missing embedded_audit; grandfathered pending TP-DMX-LEGACY-BACKFILL-NNN"
+    },
+    {
+      "pattern": "proof/orchestrator/**/PROOF.json",
+      "reason": "Pre-existing bundles missing embedded_audit; grandfathered pending TP-DMX-LEGACY-BACKFILL-NNN"
+    },
+    {
+      "pattern": "proof/repo-truth-extractor/**/PROOF.json",
+      "reason": "Pre-existing bundles missing embedded_audit; grandfathered pending TP-DMX-LEGACY-BACKFILL-NNN"
+    },
+    {
+      "pattern": "proof/rte-cost-profile-redesign/**/PROOF.json",
+      "reason": "Pre-existing bundles missing embedded_audit; grandfathered pending TP-DMX-LEGACY-BACKFILL-NNN"
+    },
+    {
+      "pattern": "proof/rte-ux/**/PROOF.json",
+      "reason": "Pre-existing bundles missing embedded_audit; grandfathered pending TP-DMX-LEGACY-BACKFILL-NNN"
+    },
+    {
+      "pattern": "proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/PROOF.json",
+      "reason": "Pre-existing bundle with incomplete embedded_audit; grandfathered pending TP-DMX-LEGACY-BACKFILL-NNN"
+    },
+    {
+      "pattern": "proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/*/PROOF.json",
+      "reason": "Pre-existing bundle with incomplete embedded_audit; grandfathered pending TP-DMX-LEGACY-BACKFILL-NNN"
+    },
+    {
+      "pattern": "proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/PROOF.json",
+      "reason": "Pre-existing bundle missing embedded_audit; grandfathered pending TP-DMX-LEGACY-BACKFILL-NNN"
+    }
+  ],
+  "default_when_unmatched": "skip_with_warning"
+}

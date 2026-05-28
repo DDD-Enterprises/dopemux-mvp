@@ -1,0 +1,270 @@
+{
+  "task_packet_id": "TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002",
+  "status": "PASS_WITH_RISKS",
+  "verdict": "PASS_TARGETED_TESTS_WITH_SCOPE_CONFLICT",
+  "repo": {
+    "path": "/Users/hue/.codex/worktrees/693f/dopemux-mvp",
+    "remote": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "branch": "codex/tp-dmx-auditor-router-pal-clink-002",
+    "base_ref": "origin/main",
+    "base_sha": "898310bd01cf48b2703a166b429d4b330ec9f84e",
+    "repo_marker": ".dopetaskroot"
+  },
+  "scope_conflict": {
+    "status": "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
+    "expected_predecessor": "TP-DMX-AUDITOR-ROUTER-001",
+    "observed_missing_baseline_surfaces": [
+      "tools/auditor_router/**",
+      "tests/auditor_router/**",
+      "scripts/auditor-preflight"
+    ],
+    "impact": [
+      "This branch is broader than a pure PAL clink extension.",
+      "It bootstraps the minimal auditor-router runtime needed for PAL clink classification tests.",
+      "No claim is made that the full CLI wrapper contract is complete."
+    ]
+  },
+  "route_behavior": {
+    "implemented": "PAL MCP clink bridge-tier classification by static config inspection.",
+    "selected_route": "pal-mcp-clink",
+    "supported_clink_clients": [
+      "claude-audit",
+      "gemini-audit"
+    ],
+    "copilot_status": "DEFERRED_COPILOT_RUNNER_UNSUPPORTED",
+    "pal_mcp_called": true,
+    "external_cli_called_for_pal_clink": false,
+    "repo_context_sent": false,
+    "requires_operator_approval": true,
+    "route_is_audit_verdict": false,
+    "pal_clink_attempted_clients": [
+      "claude"
+    ],
+    "pal_clink_attempt_result": "SANDBOX_BLOCKED"
+  },
+  "review_fixes": {
+    "fixes": [
+      "Allowed Copilot FALLBACK_ONLY selection now returns exit 0 when --allow-fallback is provided.",
+      "PAL clink audit finding normalization preserves explicit blocking=true markers before verdict classification.",
+      "Unsafe or mismatched PAL clink audit configs emit schema-safe underlying_cli=null instead of invalid CLI strings.",
+      "Non-object PAL clink JSON config payloads are classified TOOLING_UNSAFE instead of crashing.",
+      "PAL clink audit configs now require command to match the expected CLI exactly.",
+      "PAL clink config discovery now models clink override order so later override configs replace built-in audit configs.",
+      "PAL clink audit configs now require explicit name and runner fields before availability.",
+      "PAL clink role scanning now rejects non-object roles and role values without crashing preflight.",
+      "Hardened PAL clink argument parsing with shlex.split() to prevent shell injection.",
+      "Expanded MUTATION_TOKENS with execute, run, and apply for stricter auditing.",
+      "Tightened _canonical_role_prompt_path to reject absolute paths and traversal strictly.",
+      "Narrowed exception handling in config discovery to json.JSONDecodeError and OSError.",
+      "Added non-empty dict validation to inspect_clink_client_config."
+    ],
+    "source": "PR #713 unresolved Codex review threads + Task R1 hardening",
+    "status": "LOCAL_REVIEW_THREADS_PATCHED_WITH_HARDENING_COMPLETE",
+    "tests_added": [
+      "test_preflight_allow_fallback_returns_success_for_fallback_only",
+      "test_normalize_pal_clink_preserves_blocking_marker",
+      "test_mismatched_runner_route_remains_schema_safe",
+      "test_reject_non_object_config_payload",
+      "test_reject_mismatched_command_for_audit_client",
+      "test_override_config_location_takes_precedence",
+      "test_reject_missing_name_or_runner",
+      "test_reject_non_object_roles_without_crashing",
+      "test_reject_non_object_role_value_without_crashing",
+      "test_as_args_shlex_parsing",
+      "test_detect_mutation_flags_new_tokens",
+      "test_canonical_role_prompt_path_strict"
+    ]
+  },
+  "follow_up_resolution": {
+    "packet_id": "TP-DMX-AUDITOR-ROUTER-WRAPPER-003",
+    "resolved_blockers": [
+      "WRAPPER_BLOCKED_BY_ALLOWLIST"
+    ],
+    "remaining_blockers": [
+      "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
+      "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500"
+    ],
+    "note": "The wrapper blocker was historical for PAL-CLINK-002 and is closed by the follow-up wrapper packet. The bundle-local PAL MCP clink rerun completed host-side, read 12 evidence files, and returned PASS_WITH_RISKS."
+  },
+  "blockers": [
+    "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
+    "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500"
+  ],
+  "nonblocking_results": [
+    "Bundle-local PAL clink audit completed host-side and returned PASS_WITH_RISKS after reading 12 evidence files.",
+    "PAL clink bridge-tier classification implemented as pure config inspection",
+    "auditor_route schema accepts pal-mcp-clink route evidence",
+    "embedded_audit schema accepts pal-mcp-clink as auditor_tool",
+    "Targeted auditor-router tests passed after local review fixes: 46 passed",
+    "PAL clink review regressions passed after local review fixes: 41 test_pal_clink tests",
+    "PAL MCP clink was callable host-side, but the clink session sandbox blocked all evidence reads.",
+    "PAL clink command and override-order review fixes passed targeted tests: 43 test_pal_clink tests",
+    "Auditor-router test suite passed after command and override fixes: 47 passed",
+    "PAL clink explicit name/runner and roles-shape review fixes passed targeted tests: 46 test_pal_clink tests",
+    "Auditor-router test suite passed after explicit field and roles-shape fixes: 50 passed"
+  ],
+  "validation": {
+    "commands": [
+      {
+        "command": "python -m json.tool task-packets/generated/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002.json",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python -m json.tool schemas/proof/auditor_route.schema.json",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python -m json.tool schemas/proof/embedded_audit.schema.json",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python -m jsonschema -i task-packets/generated/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "exit_code": 0,
+        "result": "PASS with jsonschema CLI deprecation warning"
+      },
+      {
+        "command": "python -m tools.auditor_router.preflight --help",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python -m tools.auditor_router.preflight --fixture-dir tests/fixtures/auditor_router/pal_clink_chosen_when_direct_auth_required --out /tmp/auditor-route-pal-clink --packet-id TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002",
+        "exit_code": 0,
+        "result": "PASS: selected pal-mcp-clink AVAILABLE"
+      },
+      {
+        "command": "python -m json.tool /tmp/auditor-route-pal-clink/AUDITOR_ROUTE.json",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python -m json.tool /tmp/auditor-route-pal-clink/ROUTE_PROBE_OUTPUTS.json",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python -m tools.auditor_router.preflight --fixture-dir tests/fixtures/auditor_router/pal_clink_not_chosen_when_direct_available --out /tmp/auditor-route-direct-wins --packet-id TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002",
+        "exit_code": 0,
+        "result": "PASS: selected claude-code-cli AVAILABLE"
+      },
+      {
+        "command": "python -m json.tool /tmp/auditor-route-direct-wins/AUDITOR_ROUTE.json",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python -m jsonschema -i /tmp/auditor-route-direct-wins/AUDITOR_ROUTE.json schemas/proof/auditor_route.schema.json",
+        "exit_code": 0,
+        "result": "PASS with jsonschema CLI deprecation warning"
+      },
+      {
+        "command": "python -m tools.auditor_router.preflight --out /tmp/auditor-route-live --packet-id TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002",
+        "exit_code": 0,
+        "result": "PASS: static repo-local clink config selected; direct CLI probing intentionally not executed"
+      },
+      {
+        "command": "scripts/auditor-preflight --help",
+        "exit_code": 127,
+        "result": "BLOCKED: scripts/auditor-preflight is referenced by validation but omitted from the packet allowlist"
+      },
+      {
+        "command": "git diff --check",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "pre-commit run --files $(cat proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/CHANGED_FILES.txt)",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python -m compileall -q tools tests",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "pytest -q tests/auditor_router/test_pal_clink.py",
+        "exit_code": 0,
+        "result": "PASS: 46 passed"
+      },
+      {
+        "command": "pytest -q tests/auditor_router",
+        "exit_code": 0,
+        "result": "PASS: 50 passed"
+      },
+      {
+        "command": "python -m tools.auditor_router.preflight --fixture-dir tests/fixtures/auditor_router/pal_clink_no_configs_found --out /private/tmp/auditor-route-pr713-fallback --packet-id TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002 --allow-fallback",
+        "exit_code": 0,
+        "result": "PASS: selected copilot-cli FALLBACK_ONLY and returned success with --allow-fallback"
+      },
+      {
+        "command": "PAL MCP clink cli_name=claude role=codereviewer",
+        "exit_code": 1,
+        "result": "BLOCKED: Executable 'claude' not found in PATH for CLI 'claude'."
+      },
+      {
+        "command": "PAL MCP clink cli_name=gemini role=codereviewer",
+        "exit_code": 1,
+        "result": "BLOCKED: Executable 'gemini' not found in PATH for CLI 'gemini'."
+      },
+      {
+        "command": "PAL MCP clink cli_name=codex role=codereviewer",
+        "exit_code": 1,
+        "result": "BLOCKED: Executable 'codex' not found in PATH for CLI 'codex'."
+      },
+      {
+        "command": "PAL MCP clink cli_name=claude role=codereviewer (bundle-local evidence bundle)",
+        "exit_code": 0,
+        "result": "PASS: bundle-local audit returned PASS_WITH_RISKS after 12 evidence files read"
+      }
+    ],
+    "status": "PASS_WITH_RISKS"
+  },
+  "embedded_audit": {
+    "required": true,
+    "audit_output_captured": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "pal-mcp-clink",
+    "auditor_model": "unknown",
+    "invocation": "PAL MCP clink cli_name=claude role=codereviewer",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN: origin/main lacks tools/auditor_router/**, tests/auditor_router/**, and scripts/auditor-preflight; this branch is a partial bootstrap, not a pure PAL clink extension.",
+      "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500: GitHub workflow dispatch returns HTTP 500; PR merge gate is unavailable and the branch cannot be merged via CI.",
+      "scripts/auditor-preflight wrapper is not allowlisted in this packet; validation command exited 127. Resolution is tracked in TP-DMX-AUDITOR-ROUTER-WRAPPER-003."
+    ],
+    "skip_reason": null
+  },
+  "codereview": {
+    "status": "REVIEW_THREADS_PATCHED_WITH_CLINK_EXECUTION_BLOCKED",
+    "result": "Prompt path, equals-form mutation detection, fallback exit handling, blocking finding preservation, schema-safe unsafe routes, and non-object config handling are patched with regression tests. Packet-level blockers remain preserved."
+  },
+  "precommit": {
+    "status": "PASS",
+    "commands": [
+      "git diff --check",
+      "pre-commit run --files $(cat proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/CHANGED_FILES.txt)"
+    ]
+  },
+  "commit": {
+    "status": "LOCAL_FOLLOW_UP_COMMIT_PENDING",
+    "previous_pr_head_sha": "92ca508aad3d419f8e23b015428f7b5415622581",
+    "message": "fix(governance): harden pal clink config shape validation",
+    "note": "Final commit SHA is reported after commit because a commit cannot contain its own final SHA."
+  },
+  "recommended_follow_ups": [
+    "TP-DMX-AUDITOR-ROUTER-WRAPPER-003",
+    "TP-DMX-AUDITOR-ROUTER-PAL-CLINK-AUDIT-HANDOFF-004"
+  ],
+  "head_sha_before_local_review_fixes": "6b10eed65c6256733900de06163ce312f8b99bdc",
+  "updated_at": "2026-05-26T23:16:55Z",
+  "head_sha_before_clink_attempt": "282257216002b0635fee696a06e8ef123a31f150",
+  "head_sha_before_command_override_fixes": "e3246aee05a30951bc0a6f7aba910341fca02151",
+  "head_sha_before_shape_validation_fixes": "92ca508aad3d419f8e23b015428f7b5415622581"
+}

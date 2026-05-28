@@ -1,0 +1,41 @@
+{
+  "artifacts": [
+    "SUMMARY.md",
+    "PROOF.json",
+    "AUDITOR_REPORT.md",
+    "VALIDATION_OUTPUT.md",
+    "GIT_STATE.md",
+    "DIFF_STAT.txt",
+    "CHANGED_FILES.txt",
+    "ARTIFACT_INDEX.md",
+    "artifacts/AUDITOR_ROUTE.json",
+    "artifacts/ROUTE_PROBE_OUTPUTS.json",
+    "artifacts/PAL_CLINK_AUDIT_OUTPUT.json"
+  ],
+  "blockers": [
+    "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
+    "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500"
+  ],
+  "created_by": "codex",
+  "hashes": {
+    "SUMMARY.md": "4ddc33380cfa6c32ccabba130178bcded8bd122289f1710684ef55452577b4eb",
+    "PROOF.json": "420901d96d409d578aa1c8c6b51e3ff4a4be7e9388cb18a10684e3a1900b4485",
+    "AUDITOR_REPORT.md": "ea2dfc56f6d53b14ea8655d5905d27503cbb18f70ab68630eff3134ca5d9aeda",
+    "VALIDATION_OUTPUT.md": "428b092a9832c0d2d092c7394417740fafac85c9cd4fad7c4e8faa81e42844ff",
+    "GIT_STATE.md": "2ed1d0c1d886eb899cb122f3b23ce0a1106203fd10603c83a8d50fcfe5d7fbb3",
+    "DIFF_STAT.txt": "874fa64a101d7a4095a9831c57910cf7e885b4602dba28f55767223b212448c2",
+    "CHANGED_FILES.txt": "11f0723c51cef4edb2c760b5f4ed98bd25915f6bbf750dc47950cca75f8072ae",
+    "ARTIFACT_INDEX.md": "875f6d4056775ef4576b7e21be9878b642d300b4a7394f8a1dfbda439a799a91",
+    "artifacts/AUDITOR_ROUTE.json": "07f4b1affae31b6691bf7bdad008b28d20ff3511240c34e698e17e82e4c77d9d",
+    "artifacts/ROUTE_PROBE_OUTPUTS.json": "fc986cdc44c4bfa8c641adf272cc50cdce0c355419ff7a540e2b3f4a0597beb7",
+    "artifacts/PAL_CLINK_AUDIT_OUTPUT.json": "3b4aabab2785b43c1169677c64ad8e83c3cd618b07e76c1768374ff89bfb3829"
+  },
+  "packet_id": "TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002",
+  "resolved_by_follow_up": [
+    "WRAPPER_BLOCKED_BY_ALLOWLIST"
+  ],
+  "route_is_audit_verdict": false,
+  "status": "PASS_WITH_RISKS",
+  "updated_at": "2026-05-26T23:16:55Z",
+  "verdict": "PASS_TARGETED_TESTS_WITH_SCOPE_CONFLICT"
+}

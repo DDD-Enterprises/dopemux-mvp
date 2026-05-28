@@ -1,0 +1,119 @@
+{
+  "schema_version": "1.0.0",
+  "tp_id": "TP-DMX-PAL-CLINK-RUNNER-003",
+  "series_id": "DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "claude/upbeat-thompson-35f2e8",
+  "base_branch": "main",
+  "head_before": "ddf21d009",
+  "head_after": null,
+  "mutation_performed": false,
+  "github_mutation_performed": false,
+  "secret_values_recorded": false,
+  "operator_authorization_used": [],
+  "forbidden_surfaces_touched": false,
+  "files_changed": [
+    "scripts/audit/pal_clink_runner.py",
+    "tests/audit/test_pal_clink_runner.py",
+    "schemas/audit/pal_clink_audit_output.schema.json",
+    "docs/ops/pal-clink-audit-runner.md",
+    "proof/TP-DMX-PAL-CLINK-RUNNER-003/PROOF.json",
+    "proof/TP-DMX-PAL-CLINK-RUNNER-003/AUDITOR_REPORT.md"
+  ],
+  "commands": [
+    {
+      "cmd": "python -m pytest tests/audit/ -v",
+      "exit_code": 0,
+      "result": "84 passed in 0.10s"
+    }
+  ],
+  "validation": {
+    "status": "PASS",
+    "details": [
+      {"check": "pytest_35_runner_tests", "status": "PASS", "detail": "35 new tests in test_pal_clink_runner.py all pass: preflight guards (codex cli_name, codex-audit cli_name, codex command bypass, command not found), success/failure, timeout, stdin delivery, env merge, schema validation (4 scenarios)"},
+      {"check": "pytest_49_prior_tests_preserved", "status": "PASS", "detail": "All 49 prior tests (27 router + 22 bundle) continue to pass without modification"},
+      {"check": "codex_command_guard", "status": "PASS", "detail": "run_audit() now rejects route.command=='codex' in addition to route.cli_name in FORBIDDEN_CLI_NAMES; test_codex_command_raises_even_with_safe_cli_name confirms bypass is closed"},
+      {"check": "schema_invariants", "status": "PASS", "detail": "pal_clink_audit_output.schema.json allOf if/then: timed_out=true→exit_code=null+error=string; exit_code=null→error=string; all 4 schema validation tests pass with tightened constraints"},
+      {"check": "stdin_prompt_delivery", "status": "PASS", "detail": "prompt encoded as UTF-8 bytes and passed via subprocess input= kwarg; not in argv; tested for non-empty and empty prompt"},
+      {"check": "timeout_as_data", "status": "PASS", "detail": "TimeoutExpired caught internally; returns PalClinkAuditOutput(timed_out=True, exit_code=None, error=...) — does not raise"},
+      {"check": "env_merge", "status": "PASS", "detail": "{**os.environ, **route.env} — route.env overrides os.environ keys; tested including PATH override"},
+      {"check": "actionlint", "status": "NOT_RUN", "reason": "no workflow files changed in this TP"},
+      {"check": "mypy", "status": "NOT_RUN", "reason": "mypy not configured in CI for scripts/; type annotations present for reviewer inspection"}
+    ]
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "mcp__pal__codereview expert_model=gpt-5.2 review_type=full",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PAL-CLINK-RUNNER-003/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-003-HIGH-1",
+        "severity": "HIGH",
+        "title": "Codex guard checked cli_name only, leaving command='codex' bypass path",
+        "status": "RESOLVED",
+        "body": "run_audit() guarded route.cli_name in FORBIDDEN_CLI_NAMES but not route.command. A duck-typed or deserialized route with cli_name='claude-audit' and command='codex' bypassed the guard. Fixed by extending guard to also check route.command == 'codex'. Added test_codex_command_raises_even_with_safe_cli_name."
+      },
+      {
+        "id": "F-003-MED-1",
+        "severity": "MEDIUM",
+        "title": "Schema allowed inconsistent state combinations (timed_out=true with non-null exit_code)",
+        "status": "RESOLVED",
+        "body": "pal_clink_audit_output.schema.json did not constrain exit_code and error based on timed_out. Added allOf if/then: timed_out=true implies exit_code=null and error=non-empty string; exit_code=null implies error=non-empty string. All 4 schema validation tests pass with tightened constraints."
+      },
+      {
+        "id": "F-003-LOW-1",
+        "severity": "LOW",
+        "title": "No test for empty prompt",
+        "status": "RESOLVED",
+        "body": "Empty string prompt encodes to b'' and passes via stdin. Added test_empty_prompt_passed_as_empty_bytes."
+      },
+      {
+        "id": "F-003-LOW-2",
+        "severity": "LOW",
+        "title": "Unnecessary forward-reference string in _SubprocessRunFn type alias",
+        "status": "RESOLVED",
+        "body": "_SubprocessRunFn = Callable[..., 'subprocess.CompletedProcess[bytes]'] used quotes unnecessarily since subprocess is already imported. Removed quotes."
+      }
+    ],
+    "fixes_applied": [
+      "Extended run_audit() codex guard: route.cli_name in FORBIDDEN_CLI_NAMES or route.command == 'codex'",
+      "Added allOf if/then invariants to pal_clink_audit_output.schema.json (timed_out=true→exit_code null; exit_code null→error non-empty)",
+      "Added test_codex_command_raises_even_with_safe_cli_name",
+      "Added test_empty_prompt_passed_as_empty_bytes",
+      "Removed unnecessary forward-reference string from _SubprocessRunFn"
+    ],
+    "remaining_risks": [
+      "mypy not run — type annotations present but not statically checked",
+      "AuditRoute.__post_init__ does not check command=='codex' — out of scope for this TP (route_schema.py in TP-002 files_allowed); runner now provides defense-in-depth coverage at both cli_name and command level",
+      "probe_capability uses shutil.which only; PATH at invocation time may differ from probe time",
+      "route.env overrides system env keys including PATH — shadow semantics documented; callers must be aware"
+    ],
+    "skip_reason": null
+  },
+  "embedded_audit_status": "PASS_WITH_RISKS",
+  "commit": {
+    "performed": false,
+    "sha": null,
+    "message": "feat(audit): add PAL clink audit runner"
+  },
+  "governance": {
+    "branch_protection_changed": false,
+    "required_checks_changed": false,
+    "pull_request_target_introduced": false,
+    "secrets_touched": false,
+    "codeowners_changed": false,
+    "mutation_surfaces_added": false
+  },
+  "stop_conditions_hit": [],
+  "remaining_risks": [
+    "mypy not run — type annotations present but not statically checked",
+    "AuditRoute.__post_init__ does not check command=='codex' — runner provides defense-in-depth but dataclass layer has gap",
+    "probe_capability uses shutil.which only; PATH at invocation time may differ from probe time",
+    "route.env overrides system env keys including PATH — shadow semantics documented"
+  ],
+  "next_recommended_action": "Opus audit this proof + diff. On PASS, operator commits with 'feat(audit): add PAL clink audit runner'. Then execute TP-DMX-PR-ACTION-BRIDGE-006 (depends_on: [TP-001, TP-005])."
+}

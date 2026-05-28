@@ -1,0 +1,172 @@
+{
+  "id": "TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002",
+  "project": "dopemux-mvp",
+  "target": "Partial bootstrap of the missing auditor-router runtime on main, plus PAL MCP clink bridge-tier classification by static config inspection.",
+  "invariants": [
+    "Expected TP-DMX-AUDITOR-ROUTER-001 runtime was not present on origin/main; this packet is a partial bootstrap, not a pure extension.",
+    "No repo content is sent during preflight.",
+    "No PAL MCP call occurs during preflight.",
+    "No external CLI call occurs for PAL clink classification.",
+    "PAL clink route classification uses static config inspection only.",
+    "Only claude-audit and gemini-audit PAL clink configs are supported.",
+    "Copilot clink support remains deferred.",
+    "Route output is evidence for operator handoff, not an audit verdict.",
+    "scripts/auditor-preflight is not created because it is referenced by validation but omitted from this packet allowlist.",
+    "PAL_CLINK_AUDIT_OUTPUT.json remains missing until a host-side operator runs clink."
+  ],
+  "depends_on": [
+    "TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-AUDITOR-ROUTER",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-AUDITOR-ROUTER-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-auditor-router-pal-clink-002",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(governance): bootstrap auditor router pal clink classification",
+    "allowlist": [
+      "tools/auditor_router/pal_clink.py",
+      "tools/auditor_router/policy.py",
+      "tools/auditor_router/models.py",
+      "tools/auditor_router/fixtures.py",
+      "tools/auditor_router/preflight.py",
+      "schemas/proof/auditor_route.schema.json",
+      "schemas/proof/embedded_audit.schema.json",
+      "tests/auditor_router/test_pal_clink.py",
+      "tests/auditor_router/test_preflight.py",
+      "tests/fixtures/auditor_router/pal_clink_no_configs_found/**",
+      "tests/fixtures/auditor_router/pal_clink_only_mutating_configs/**",
+      "tests/fixtures/auditor_router/pal_clink_audit_safe_claude_available/**",
+      "tests/fixtures/auditor_router/pal_clink_audit_safe_gemini_available/**",
+      "tests/fixtures/auditor_router/pal_clink_chosen_when_direct_auth_required/**",
+      "tests/fixtures/auditor_router/pal_clink_selected_when_all_tier1_not_installed/**",
+      "tests/fixtures/auditor_router/pal_clink_not_chosen_when_direct_available/**",
+      "tests/fixtures/auditor_router/pal_clink_mutation_flag_in_role_args/**",
+      "tests/fixtures/auditor_router/pal_clink_no_verdict_needs_supervisor/**",
+      "docs/ops/embedded-audit.md",
+      "docs/ops/tool-routing-matrix.md",
+      "docs/ops/health-check-matrix.md",
+      "docs/ops/pr-acceptance.md",
+      "task-packets/generated/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002.json",
+      "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002.json",
+      "python -m json.tool schemas/proof/auditor_route.schema.json",
+      "python -m json.tool schemas/proof/embedded_audit.schema.json",
+      "python -m compileall -q tools tests",
+      "pytest -q tests/auditor_router",
+      "python -m tools.auditor_router.preflight --help",
+      "python -m tools.auditor_router.preflight --fixture-dir tests/fixtures/auditor_router/pal_clink_chosen_when_direct_auth_required --out /tmp/auditor-route-pal-clink --packet-id TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002",
+      "python -m json.tool /tmp/auditor-route-pal-clink/AUDITOR_ROUTE.json",
+      "python -m json.tool /tmp/auditor-route-pal-clink/ROUTE_PROBE_OUTPUTS.json",
+      "python -m tools.auditor_router.preflight --fixture-dir tests/fixtures/auditor_router/pal_clink_not_chosen_when_direct_available --out /tmp/auditor-route-direct-wins --packet-id TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002",
+      "python -m json.tool /tmp/auditor-route-direct-wins/AUDITOR_ROUTE.json",
+      "scripts/auditor-preflight --help",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(governance): bootstrap auditor router pal clink classification",
+    "body": "## Summary\n\nBootstraps the missing auditor-router runtime on `main` and adds PAL MCP clink bridge-tier classification as pure config inspection.\n\n## Scope Conflict\n\nThe planned packet assumed `TP-DMX-AUDITOR-ROUTER-001` runtime already existed on `main`. It did not. This PR therefore includes the minimal router baseline needed for fixture-driven PAL clink classification.\n\n## Blockers / Not Complete\n\n- `scripts/auditor-preflight` is not created because this packet's allowlist does not permit it.\n- PAL clink execution is not performed by the router.\n- `PAL_CLINK_AUDIT_OUTPUT` is not captured.\n- Route selection is not an audit verdict.\n\n## Validation\n\n- `pytest -q tests/auditor_router`: 27 passed\n- JSON/schema/doc/proof validation as recorded\n\n@codex review\n@gemini\n@copilot",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repo identity, PR #711 merge status, active task context, and expected auditor-router baseline surfaces.",
+      "context_files": [
+        "AGENTS.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "task-packets/generated/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001.json",
+        "proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/PROOF.json"
+      ],
+      "validation": [
+        "PR #711 merge commit is present on origin/main.",
+        "Missing baseline surfaces tools/auditor_router, tests/auditor_router, and scripts/auditor-preflight are recorded as scope conflict."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add minimal fixture-driven auditor-router baseline and PAL clink static classification.",
+      "expected_files": [
+        "tools/auditor_router/pal_clink.py",
+        "tools/auditor_router/policy.py",
+        "tools/auditor_router/models.py",
+        "tools/auditor_router/fixtures.py",
+        "tools/auditor_router/preflight.py",
+        "tests/auditor_router/test_pal_clink.py",
+        "tests/auditor_router/test_preflight.py",
+        "tests/fixtures/auditor_router/**"
+      ],
+      "validation": [
+        "pytest -q tests/auditor_router passes with fixture-only tests.",
+        "No PAL MCP invocation is implemented.",
+        "No external CLI invocation is used for PAL clink classification."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Update proof schemas and docs for pal-mcp-clink bridge-tier routing.",
+      "expected_files": [
+        "schemas/proof/auditor_route.schema.json",
+        "schemas/proof/embedded_audit.schema.json",
+        "docs/ops/embedded-audit.md",
+        "docs/ops/tool-routing-matrix.md",
+        "docs/ops/health-check-matrix.md",
+        "docs/ops/pr-acceptance.md"
+      ],
+      "validation": [
+        "auditor_route schema accepts pal-mcp-clink route evidence.",
+        "embedded_audit schema accepts pal-mcp-clink as auditor_tool.",
+        "Docs state that route evidence is not an audit verdict."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Create proof bundle with PASS_WITH_BLOCKERS status, missing baseline scope conflict, wrapper allowlist blocker, and missing PAL clink audit output.",
+      "expected_files": [
+        "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json",
+        "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/VALIDATION_OUTPUT.md",
+        "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/GIT_STATE.md",
+        "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/DIFF_STAT.txt",
+        "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/CHANGED_FILES.txt",
+        "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/AUDITOR_REPORT.md",
+        "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PAL_CLINK_AUDIT_INPUT.md",
+        "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PAL_CLINK_AUDIT_OUTPUT.json",
+        "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/**"
+      ],
+      "validation": [
+        "Proof status is PASS_WITH_BLOCKERS, not READY or MERGE_READY.",
+        "Blockers include MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN, WRAPPER_BLOCKED_BY_ALLOWLIST, and PAL_CLINK_AUDIT_OUTPUT_MISSING.",
+        "git diff --check passes."
+      ]
+    }
+  ]
+}

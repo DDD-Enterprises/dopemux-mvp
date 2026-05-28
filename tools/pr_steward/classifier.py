@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 
-SCHEMA_VERSION = "1.0.0"
+SCHEMA_VERSION = "1.1.0"
 PASSING_AUDITS = {"PASS", "PASS_WITH_RISKS"}
 BLOCKING_AUDITS = {"FAIL", "NEEDS_SUPERVISOR", "SKIPPED"}
 FAILED_CHECK_CONCLUSIONS = {
@@ -49,6 +49,7 @@ def build_artifacts(
     known_reviewers, trusted_associations = load_known_reviewers(known_path)
 
     pr = _pr_payload(harvest, pr_number=pr_number)
+    pr_raw = harvest.get("pr") or {}
     review_items: list[dict[str, Any]] = []
     thread_dispositions: list[dict[str, Any]] = []
     checks = _classify_checks(
@@ -66,6 +67,13 @@ def build_artifacts(
         _append_once(blockers, "HARVEST_INCOMPLETE")
         for error in harvest.get("harvest_errors") or []:
             _append_once(unknowns, str(error))
+
+    pr_assoc = _association(pr_raw)
+    if pr_assoc is None and isinstance(pr_raw.get("author"), dict):
+        pr_assoc = _association(pr_raw["author"])
+    if not _known_author(pr["author"], pr_assoc, known_reviewers, trusted_associations):
+        _append_once(blockers, "UNKNOWN_PR_AUTHOR")
+        _append_once(unknowns, f"Unknown PR author: {pr['author']}")
 
     if pr["draft"]:
         _append_once(blockers, "PR_IS_DRAFT")
@@ -114,21 +122,28 @@ def build_artifacts(
 
     review_items.extend(checks["review_items"])
 
+    if _detect_mixed_sha_checks(harvest.get("checks") or [], pr_head_sha=pr["head_sha"]):
+        _append_once(blockers, "MIXED_SHA_ARTIFACT_SET")
+
     embedded_audit = _embedded_audit(harvest)
+    raw_status = embedded_audit.pop("_raw_status", "")
     audit_status = embedded_audit["status"]
     if audit_status in BLOCKING_AUDITS:
         _append_once(blockers, f"EMBEDDED_AUDIT_{audit_status}")
-    elif audit_status not in PASSING_AUDITS:
+    if raw_status:
         _append_once(blockers, "EMBEDDED_AUDIT_UNKNOWN")
-        _append_once(unknowns, f"Unknown embedded audit status: {audit_status}")
+        _append_once(unknowns, f"Unknown embedded audit status: {raw_status}")
 
     proof = _proof(harvest)
-    if not proof["matches_pr_head"]:
-        _append_once(blockers, "PROOF_STALE_OR_MISSING")
+    if proof["proof_freshness"] == "STALE":
+        _append_once(blockers, "PROOF_STALE")
+    elif proof["proof_freshness"] == "MISSING":
+        _append_once(blockers, "PROOF_MISSING")
     if not proof["proof_head_sha"]:
         _append_once(unknowns, "Proof head SHA missing")
 
     readiness = _readiness(blockers)
+    tier = _risk_tier(readiness)
     review_item_ledger = {
         "schema_version": SCHEMA_VERSION,
         "generated_at": generated,
@@ -191,6 +206,7 @@ def build_artifacts(
             "commits": [item["sha"] for item in snapshot["commits"]],
         },
         "readiness": readiness,
+        "risk_tier": tier,
         "review_item_ledger_path": "REVIEW_ITEM_LEDGER.json",
         "thread_dispositions_path": "THREAD_DISPOSITIONS.json",
         "ci_triage_path": "CI_TRIAGE.json",
@@ -225,10 +241,12 @@ def _classify_reviews(
         association = _association(review)
         body = str(review.get("body") or "")
         review_id = str(review.get("id") or f"review-{index}")
+        item_blockers: list[str] = []
         if not _known_author(author, association, known_reviewers, trusted_associations):
             disposition = "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION"
             blocking = True
             rationale = "Reviewer is not in known reviewer config."
+            item_blockers.append("UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION")
             _append_once(blockers, "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION")
             _append_once(unknowns, f"Unknown reviewer: {author}")
         elif str(review.get("state") or "").upper() in {
@@ -238,10 +256,15 @@ def _classify_reviews(
             disposition = "MUST_FIX"
             blocking = True
             rationale = "Review requested changes."
+            item_blockers.append("REQUEST_CHANGES")
             _append_once(blockers, "REQUEST_CHANGES")
         else:
             disposition, blocking, rationale = _body_disposition(body)
             if blocking:
+                if disposition == "NEEDS_SUPERVISOR":
+                    item_blockers.append("REVIEW_ITEM_NEEDS_SUPERVISOR")
+                elif disposition == "MUST_FIX":
+                    item_blockers.append("REVIEW_ITEM_MUST_FIX")
                 _append_disposition_blocker(blockers, disposition)
         items.append(
             _review_item(
@@ -252,6 +275,7 @@ def _classify_reviews(
                 body=body,
                 disposition=disposition,
                 blocking=blocking,
+                blockers=item_blockers,
                 rationale=rationale,
             )
         )
@@ -273,15 +297,21 @@ def _classify_comments(
         association = _association(comment)
         body = str(comment.get("body") or "")
         item_id = str(comment.get("id") or f"{source}-{index}")
+        item_blockers: list[str] = []
         if not _known_author(author, association, known_reviewers, trusted_associations):
             disposition = "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION"
             blocking = True
             rationale = "Comment author is not in known reviewer config."
+            item_blockers.append("UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION")
             _append_once(blockers, "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION")
             _append_once(unknowns, f"Unknown {source} author: {author}")
         else:
             disposition, blocking, rationale = _body_disposition(body)
             if blocking:
+                if disposition == "NEEDS_SUPERVISOR":
+                    item_blockers.append("REVIEW_ITEM_NEEDS_SUPERVISOR")
+                elif disposition == "MUST_FIX":
+                    item_blockers.append("REVIEW_ITEM_MUST_FIX")
                 _append_disposition_blocker(blockers, disposition)
         items.append(
             _review_item(
@@ -292,6 +322,7 @@ def _classify_comments(
                 body=body,
                 disposition=disposition,
                 blocking=blocking,
+                blockers=item_blockers,
                 rationale=rationale,
             )
         )
@@ -403,25 +434,31 @@ def _classify_checks(
             required_count += 1
         status = _normalize_status(check.get("status") or check.get("state"))
         conclusion = _normalize_conclusion(check.get("conclusion"))
+        if conclusion is None and check.get("state") == "FAILURE":
+            conclusion = "failure"
         url = check.get("detailsUrl") or check.get("targetUrl") or check.get("url")
         head_sha = str(check.get("headSha") or check.get("head_sha") or pr_head_sha)
 
         blocking = False
         rationale = "Check is nonblocking or successful."
+        check_blockers: list[str] = []
         if required and conclusion in FAILED_CHECK_CONCLUSIONS:
             blocking = True
             failed_count += 1
             rationale = "Required check did not succeed."
+            check_blockers.append("FAILED_CHECK")
             _append_once(blockers, "FAILED_CHECK")
         elif required and strict and status in PENDING_CHECK_STATUSES:
             blocking = True
             pending_count += 1
             rationale = "Strict mode requires final check state."
+            check_blockers.append("PENDING_CHECK")
             _append_once(blockers, "PENDING_CHECK")
         elif required and status == "unknown":
             blocking = True
             unknown_count += 1
             rationale = "Check status is unknown."
+            check_blockers.append("UNKNOWN_CHECK")
             _append_once(blockers, "UNKNOWN_CHECK")
             _append_once(unknowns, f"Unknown check status: {name}")
 
@@ -434,6 +471,7 @@ def _classify_checks(
                 "url": url,
                 "head_sha": head_sha,
                 "blocking": blocking,
+                "blockers": check_blockers,
                 "rationale": rationale,
             }
         )
@@ -447,6 +485,7 @@ def _classify_checks(
                     body=f"{name}: {status}/{conclusion}",
                     disposition="MUST_FIX",
                     blocking=True,
+                    blockers=check_blockers,
                     rationale=rationale,
                 )
             )
@@ -462,16 +501,27 @@ def _classify_checks(
     }
 
 
+_READINESS_TO_RISK: dict[str, str] = {
+    "BLOCKED": "CRITICAL",
+    "NEEDS_SUPERVISOR": "HIGH",
+    "NEEDS_IMPLEMENTER": "MEDIUM",
+    "NOT_READY": "LOW",
+    "READY": "CLEAR",
+}
+
+
 def _readiness(blockers: list[str]) -> str:
     blocker_set = set(blockers)
-    if blocker_set & {"HARVEST_INCOMPLETE", "PR_IS_DRAFT", "PR_CLOSED"}:
+    if blocker_set & {"HARVEST_INCOMPLETE", "PR_IS_DRAFT", "PR_CLOSED", "MIXED_SHA_ARTIFACT_SET"}:
         return "BLOCKED"
     if any(
         item.startswith("EMBEDDED_AUDIT_")
         for item in blocker_set
     ) or blocker_set & {
         "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION",
-        "PROOF_STALE_OR_MISSING",
+        "PROOF_STALE",
+        "PROOF_MISSING",
+        "UNKNOWN_PR_AUTHOR",
         "UNKNOWN_CHECK",
         "REVIEW_ITEM_NEEDS_SUPERVISOR",
     }:
@@ -486,6 +536,10 @@ def _readiness(blockers: list[str]) -> str:
     if blocker_set & {"PENDING_CHECK"}:
         return "NOT_READY"
     return "READY"
+
+
+def _risk_tier(readiness: str) -> str:
+    return _READINESS_TO_RISK.get(readiness, "CRITICAL")
 
 
 def _pr_payload(harvest: dict[str, Any], *, pr_number: int) -> dict[str, Any]:
@@ -548,20 +602,50 @@ def _commits(commits: list[Any]) -> list[dict[str, Any]]:
 
 def _embedded_audit(harvest: dict[str, Any]) -> dict[str, str]:
     raw = harvest.get("embedded_audit") or {}
+    raw_status = str(raw.get("status") or "").upper()
+    if raw_status in PASSING_AUDITS | BLOCKING_AUDITS:
+        normalized = raw_status
+        was_unknown = False
+    else:
+        normalized = "SKIPPED"
+        was_unknown = bool(raw_status)  # only "unknown" if upstream supplied a non-empty bad value
     return {
-        "status": str(raw.get("status") or "SKIPPED"),
-        "report_path": str(
-            raw.get("report_path") or "proof/TP-DMX-PR-STEWARD-001/AUDITOR_REPORT.md"
-        ),
+        "status": normalized,
+        "report_path": str(raw.get("report_path") or ""),
+        # `_raw_status` is internal; the caller uses it to add the
+        # EMBEDDED_AUDIT_UNKNOWN blocker, then strips it before serializing.
+        "_raw_status": raw_status if was_unknown else "",
     }
+
+
+def _detect_mixed_sha_checks(checks: list[Any], *, pr_head_sha: str) -> bool:
+    for check in checks:
+        raw_sha = check.get("headSha") or check.get("head_sha")
+        sha = (raw_sha or "").strip() if isinstance(raw_sha, str) else ""
+        if sha and sha != pr_head_sha:
+            return True
+    return False
 
 
 def _proof(harvest: dict[str, Any]) -> dict[str, Any]:
     raw = harvest.get("proof") or {}
+    proof_head_sha = raw.get("proof_head_sha")
+    proof_path = str(raw.get("proof_path") or "")
+    matches = bool(raw.get("matches_pr_head", False))
+    if not proof_head_sha and not proof_path:
+        freshness = "MISSING"
+    elif not proof_head_sha:
+        # proof_path present but no verifiable SHA — cannot confirm freshness, treat as MISSING.
+        freshness = "MISSING"
+    elif proof_head_sha and matches:
+        freshness = "FRESH"
+    else:
+        freshness = "STALE"
     return {
-        "proof_path": str(raw.get("proof_path") or ""),
-        "proof_head_sha": raw.get("proof_head_sha"),
-        "matches_pr_head": bool(raw.get("matches_pr_head", False)),
+        "proof_path": proof_path,
+        "proof_head_sha": proof_head_sha,
+        "matches_pr_head": matches,
+        "proof_freshness": freshness,
     }
 
 
@@ -601,17 +685,20 @@ def _review_item(
     disposition: str,
     blocking: bool,
     rationale: str,
+    blockers: list[str] | None = None,
 ) -> dict[str, Any]:
     return {
         "id": item_id,
         "source": source,
         "author": author,
-        "author_association": association,
-        "body_excerpt": _excerpt(body),
+        "association": association,
+        "body": body,
         "disposition": disposition,
         "blocking": blocking,
+        "blockers": blockers or [],
         "rationale": rationale,
     }
+
 
 
 def _known_author(
@@ -693,6 +780,7 @@ def _summary(readiness: dict[str, Any]) -> str:
         "# PR Steward Summary\n\n"
         f"- PR: {readiness['pr']['number']}\n"
         f"- readiness: {readiness['readiness']}\n"
+        f"- risk_tier: {readiness['risk_tier']}\n"
         "- mutation_performed: false\n\n"
         "## Blockers\n\n"
         f"{blocker_lines}\n\n"
