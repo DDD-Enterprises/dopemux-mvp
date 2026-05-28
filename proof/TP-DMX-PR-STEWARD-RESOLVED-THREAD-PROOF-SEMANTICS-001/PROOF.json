@@ -10,7 +10,7 @@
     "docs/ops/pr-acceptance.md",
     "docs/ops/embedded-audit.md"
   ],
-  "base_sha": "898310bd01cf48b2703a166b429d4b330ec9f84e",
+  "base_sha": "ef0c30bf4",
   "branch": "codex/pr-steward-resolved-thread-proof-semantics-001",
   "bundle_id": "TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001",
   "chain_of_custody": [
@@ -72,7 +72,7 @@
     "docs/ops/pr-acceptance.md",
     "docs/ops/embedded-audit.md"
   ],
-  "head_sha": "898310bd01cf48b2703a166b429d4b330ec9f84e",
+  "head_sha": "a34995e34",
   "repo_identity": {
     "branch": "codex/pr-steward-resolved-thread-proof-semantics-001",
     "identity_match": true,
