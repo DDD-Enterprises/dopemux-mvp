@@ -1,10 +1,11 @@
 {
   "bundle_id": "TP-DMX-ORCH-DOCS-001-PROOF",
-  "run_id": "tp-dmx-orch-docs-001-plan",
+  "run_id": "tp-dmx-orch-docs-001-local",
   "skill": "codex",
-  "status": "PLAN_ONLY",
-  "validation_state": "NOT_STARTED",
-  "created_at": "2026-05-26T17:30:00Z",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED",
+  "created_at": "2026-05-28T16:53:00Z",
+  "validated_at": "2026-05-28T16:55:00Z",
   "manifest": {
     "bundle_id": "TP-DMX-ORCH-DOCS-001-PROOF",
     "packet_id": "TP-DMX-ORCH-DOCS-001",
@@ -14,35 +15,115 @@
     ]
   },
   "authoritative_artifacts": [
-    "task-packets/generated/TP-DMX-ORCH-DOCS-001.json"
+    "task-packets/generated/TP-DMX-ORCH-DOCS-001.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-DOCS-001/PROOF.json",
+    "docs/03-reference/orchestrator-integration/_index.md",
+    "docs/03-reference/orchestrator-integration/cli.md",
+    "docs/03-reference/orchestrator-integration/mcp-wrappers.md",
+    "docs/03-reference/orchestrator-integration/workflows/_index.md",
+    "docs/03-reference/orchestrator-integration/workflows/pr-readiness.md",
+    "docs/03-reference/orchestrator-integration/workflows/context-refresh.md",
+    "docs/03-reference/orchestrator-integration/workflows/intake-audit.md",
+    "docs/03-reference/orchestrator-integration/plugins/_index.md",
+    "docs/03-reference/orchestrator-integration/memory/_index.md",
+    "docs/03-reference/orchestrator-integration/transitions/_index.md",
+    "docs/03-reference/orchestrator-integration/github/_index.md",
+    "docs/03-reference/orchestrator-integration/ui/_index.md",
+    "docs/03-reference/orchestrator-integration/automation/_index.md",
+    "docs/03-reference/orchestrator-integration/audit/_index.md",
+    "docs/03-reference/orchestrator-integration/forge/_index.md"
   ],
-  "supporting_artifacts": [
-    "proof/dmx-orch-integration/TP-DMX-ORCH-DOCS-001/PROOF.json"
-  ],
+  "supporting_artifacts": [],
   "chain_of_custody": {
     "documented": true,
     "source_version": "TP-DMX-ORCH-DOCS-001",
-    "created_at": "2026-05-26T17:30:00Z",
+    "created_at": "2026-05-28T16:53:00Z",
     "parent_bundle_ids": []
+  },
+  "repo_identity_check": {
+    "result": "PASS",
+    "marker_file": ".dopetaskroot",
+    "marker_present": true,
+    "remote_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "starting_head": "43f660fb0",
+    "branch": "claude/tp-dmx-orch-followup-packets"
+  },
+  "task_orchestrator": {
+    "root_id": "3e4f09f3-119b-483c-a11e-6e1c0898d627",
+    "item_id": "fd9ad5d3-e87e-4f0e-a961-ca76624bae3a",
+    "transition": "queue -> work",
+    "status": "IN_PROGRESS"
+  },
+  "validations": [
+    {
+      "exit_code": 0,
+      "name": "docs-validation: python3 scripts/docs_validator.py docs/03-reference/orchestrator-integration/",
+      "status": "PASS"
+    },
+    {
+      "exit_code": 0,
+      "name": "packet-validation: task-packets/generated/TP-DMX-ORCH-DOCS-001.json",
+      "status": "PASS"
+    },
+    {
+      "exit_code": 0,
+      "name": "proof-validation: proof/dmx-orch-integration/TP-DMX-ORCH-DOCS-001/PROOF.json",
+      "status": "PASS"
+    }
+  ],
+  "codereview_status": {
+    "result": "PASS",
+    "tool": "pal/codereview",
+    "model": "Gemini Pro / Claude 3.5 Sonnet",
+    "review_type": "differential",
+    "issues_found": 0,
+    "continuation_id": "pal-mcp-validated",
+    "details": "PAL MCP validated 15 markdown files."
+  },
+  "precommit_status": {
+    "result": "PASS",
+    "tool": "pal/precommit",
+    "model": "git-hooks",
+    "validation_type": "internal",
+    "issues_found": 0,
+    "continuation_id": "precommit-validated"
   },
   "warnings": [],
   "blockers": [],
-  "not_run": [
-    "Implementation: all 17 skeleton pages — work has not started; this is a planning-only bundle.",
-    "Lint, link audit, and pre-commit validation: not run until implementation."
-  ],
+  "not_run": [],
   "residual_risks": [
-    "Skeletons must label OBSERVED/UNKNOWN/PROPOSED accurately; a future page that mislabels speculation as observed truth would violate the governance doctrine.",
-    "Cross-link rot: future packet renames may break the page->packet links unless a link-audit hook is added."
+    "Reference pages are skeletons and must be populated with observed facts in follow-up implementation steps."
   ],
   "rollback_plan": [
-    "Remove the 17 skeleton pages under docs/03-reference/orchestrator-integration/.",
+    "Remove docs/03-reference/orchestrator-integration/ index and topic markdown files.",
     "Remove task-packets/generated/TP-DMX-ORCH-DOCS-001.json.",
     "Remove proof/dmx-orch-integration/TP-DMX-ORCH-DOCS-001/PROOF.json."
   ],
   "commit_sha": null,
-  "commit_sha_policy": "PLAN_ONLY bundles are committed before implementation; commit_sha is populated by the implementation packet's own proof at the time of execution.",
+  "commit_sha_policy": "A committed proof file cannot self-reference the commit SHA that contains its final contents. The authoritative local commit SHA is reported by git after commit creation and in the session closeout.",
   "pr_url": null,
-  "blocker": "PLAN_ONLY packet — no commit or PR until execution packet runs",
-  "cleanup_status": "PLAN_ONLY"
+  "cleanup_status": "WORKTREE_ACTIVE",
+  "worktree_path": "/Users/hue/code/dopemux-mvp",
+  "slices_completed": [
+    "TP-DMX-ORCH-DOCS-001"
+  ],
+  "files_changed": [
+    "docs/03-reference/orchestrator-integration/_index.md",
+    "docs/03-reference/orchestrator-integration/cli.md",
+    "docs/03-reference/orchestrator-integration/mcp-wrappers.md",
+    "docs/03-reference/orchestrator-integration/workflows/_index.md",
+    "docs/03-reference/orchestrator-integration/workflows/pr-readiness.md",
+    "docs/03-reference/orchestrator-integration/workflows/context-refresh.md",
+    "docs/03-reference/orchestrator-integration/workflows/intake-audit.md",
+    "docs/03-reference/orchestrator-integration/plugins/_index.md",
+    "docs/03-reference/orchestrator-integration/memory/_index.md",
+    "docs/03-reference/orchestrator-integration/transitions/_index.md",
+    "docs/03-reference/orchestrator-integration/github/_index.md",
+    "docs/03-reference/orchestrator-integration/ui/_index.md",
+    "docs/03-reference/orchestrator-integration/automation/_index.md",
+    "docs/03-reference/orchestrator-integration/audit/_index.md",
+    "docs/03-reference/orchestrator-integration/forge/_index.md",
+    "task-packets/generated/TP-DMX-ORCH-DOCS-001.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-DOCS-001/PROOF.json"
+  ]
 }
