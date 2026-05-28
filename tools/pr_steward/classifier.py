@@ -419,6 +419,8 @@ def _classify_checks(
             required_count += 1
         status = _normalize_status(check.get("status") or check.get("state"))
         conclusion = _normalize_conclusion(check.get("conclusion"))
+        if conclusion is None and check.get("state") == "FAILURE":
+            conclusion = "failure"
         url = check.get("detailsUrl") or check.get("targetUrl") or check.get("url")
         head_sha = str(check.get("headSha") or check.get("head_sha") or pr_head_sha)
 
