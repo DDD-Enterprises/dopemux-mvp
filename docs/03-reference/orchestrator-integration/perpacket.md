@@ -5,9 +5,13 @@ type: reference
 owner: '@hu3mann'
 date: '2026-05-28'
 related_packets:
-  - TP-DMX-ORCH-PROOF-PERPACKET-001
+- TP-DMX-ORCH-PROOF-PERPACKET-001
+author: '@hu3mann'
+last_review: '2026-05-28'
+next_review: '2026-08-26'
+prelude: Per-Packet Test Isolation and Validation (reference) for dopemux documentation
+  and developer workflows.
 ---
-
 # Per-Packet Test Isolation & Validation Reference
 
 This document outlines the workflow and toolchain for validating Task Packets in absolute isolation within the `DMX-ORCH-INTEGRATION-FOLLOWUP` series.

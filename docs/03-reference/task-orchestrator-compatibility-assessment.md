@@ -1,10 +1,22 @@
+---
+id: task-orchestrator-compatibility-assessment
+title: Task Orchestrator Compatibility Assessment
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-05-28'
+last_review: '2026-05-28'
+next_review: '2026-08-26'
+prelude: Task Orchestrator Compatibility Assessment (reference) for dopemux documentation
+  and developer workflows.
+---
 # Dopemux Task-Orchestrator Upstream Compatibility Assessment
 
 ## 1. Executive Summary
 
-This document provides a comprehensive, read-only compatibility assessment of the upstream plugin repository `claude-plugins/task-orchestrator` with the Dopemux architecture. 
+This document provides a comprehensive, read-only compatibility assessment of the upstream plugin repository `claude-plugins/task-orchestrator` with the Dopemux architecture.
 
-Historically, task-orchestrator has evolved from a simple Kotlin-based MCP wrapper (`server.py`) to a sophisticated workflow engine (v3.8.0) that utilizes composable traits, note-based gate enforcement, and automated Hook injection. Dopemux currently implements a robust, concurrent Python-based dispatcher (`src/dopemux/claude/native_hooks.py`) and a multi-worktree execution model. 
+Historically, task-orchestrator has evolved from a simple Kotlin-based MCP wrapper (`server.py`) to a sophisticated workflow engine (v3.8.0) that utilizes composable traits, note-based gate enforcement, and automated Hook injection. Dopemux currently implements a robust, concurrent Python-based dispatcher (`src/dopemux/claude/native_hooks.py`) and a multi-worktree execution model.
 
 ### Core Recommendation
 **Do not directly replace or hot-swap Dopemux's native hook adapter with the upstream Node.js hook suite.** Instead, maintain the Python-based `native_hooks.py` as the canonical dispatcher, and bridge upstream v3 capabilities (such as the schema workflow and composable traits) by translating the hook context injection into Python or orchestrating the Node.js hooks in an isolated sandbox. Upstream's singleton assumptions clash with Dopemux's parallel worktree isolation, requiring explicit workspace isolation and provenance tracking.
@@ -94,7 +106,7 @@ Integrating the upstream task-orchestrator into Dopemux reveals four key compati
 
 ### Gap 1: Worktree Parallelism vs. Stdio Singleton
 *   **Upstream Assumption**: A single, local workspace utilizing a single task-orchestrator DB singleton.
-*   **Dopemux Reality**: Dopemux supports **parallel worktrees** running concurrently (e.g., active developer worktrees under `.claude/worktrees/`). 
+*   **Dopemux Reality**: Dopemux supports **parallel worktrees** running concurrently (e.g., active developer worktrees under `.claude/worktrees/`).
 *   **Collision**: The upstream wrapper's multi-spawn singleton check (`docker run --name task-orchestrator-${workspace_id}`) prevents multiple active containers from locking the same DB. If two parallel Dopemux worktrees run tasks, the second container launch will forcefully kill the first container. If both point to the same host database without distinct workspace mapping, write locks and race conditions will occur.
 
 ### Gap 2: JavaScript Node Hooks vs. Python `native_hooks.py` Dispatcher
@@ -145,6 +157,5 @@ Dopemux formally selects **Path B (Native Rebuild / Integration)** over a direct
     1.  **Dopemux CLI** (`dopemux orchestrator`) provides complete read-only dashboard surfaces.
     2.  **SuperClaude Slash Commands** (`.claude/commands/dx/`) fully map all 14 task-orchestrator operations (start, complete, note, context, backlinks, tree, block, blocked, next, resume, preview).
     3.  **Python Hooks** (`src/dopemux/claude/native_hooks.py`) provide complete checkpoint stop-gating and system context injection.
-    
-Consequently, the native Dopemux environment completely covers the upstream plugin capabilities without running conflicting external JavaScript hooks or server singletons.
 
+Consequently, the native Dopemux environment completely covers the upstream plugin capabilities without running conflicting external JavaScript hooks or server singletons.

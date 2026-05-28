@@ -95,7 +95,7 @@ class IdempotencyStore:
                 conn.execute("BEGIN IMMEDIATE;")
                 cursor = conn.cursor()
                 cursor.execute(
-                    "SELECT status, response_json, updated_at FROM idempotency_records WHERE idempotency_key = ?;",
+                    "SELECT status, response_json, updated_at, project_id, workflow_id, transition_name FROM idempotency_records WHERE idempotency_key = ?;",
                     (idempotency_key,)
                 )
                 row = cursor.fetchone()
@@ -123,6 +123,19 @@ class IdempotencyStore:
                     conn.execute("COMMIT;")
                     return {"action": "PROCEED", "response_json": None}
                 
+                # Reject reused idempotency keys for different transitions
+                if (
+                    row["project_id"] != project_id or 
+                    row["workflow_id"] != workflow_id or 
+                    row["transition_name"] != transition_name
+                ):
+                    conn.execute("COMMIT;")
+                    raise ValueError(
+                        f"Idempotency key '{idempotency_key}' is already used for a different transition: "
+                        f"{row['project_id']}/{row['workflow_id']}/{row['transition_name']} "
+                        f"(requested: {project_id}/{workflow_id}/{transition_name})"
+                    )
+
                 status = row["status"]
                 response_json = row["response_json"]
                 updated_at_str = row["updated_at"]
