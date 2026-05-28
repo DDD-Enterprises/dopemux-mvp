@@ -81,11 +81,29 @@ mcp__conport__get_recent_activity_summary --workspace_id "$WORKSPACE_ID" --hours
 ```
 
 ### Sprint Management (mem4sprint)
+
+Sprint goals are task-orchestrator work-items with schema `sprint-goal` (lifecycle PERMANENT). ConPort `active_context` retains PLAN/ACT mode tracking; it does **not** store workflow state.
+
 ```bash
-# Set mode and create sprint structure
-mcp__conport__update_active_context --workspace_id "$WORKSPACE_ID" --patch_content '{"mode": "PLAN", "sprint_id": "S-2025.09"}'
-mcp__conport__log_custom_data --workspace_id "$WORKSPACE_ID" --category "sprint_goals" --key "S-2025.09-G1" --value '{"type": "sprint_goal", "content": "Goal description", "sprint_id": "S-2025.09", "status": "planned"}'
+# 1. Mode hint via ConPort (mode tracking only — not workflow state)
+mcp__conport__update_active_context --workspace_id "$WORKSPACE_ID" \
+  --patch_content '{"mode": "PLAN", "sprint_id": "S-2025.09"}'
+
+# 2. Create sprint goal in task-orchestrator
+mcp__task-orchestrator__manage_items --operation create \
+  --items '[{"title": "Sprint S-2025.09: <goal>", "type": "sprint-goal", "tags": "sprint,S-2025.09", "priority": "high"}]'
+# → returns <sprint-goal-uuid>
+
+# 3. Fill required goal-definition note (gates the start transition)
+mcp__task-orchestrator__manage_notes --operation upsert \
+  --notes '[{"itemId": "<sprint-goal-uuid>", "key": "goal-definition", "role": "queue", "body": "Sprint S-2025.09. Goal: <statement>. Linked stories: ... Definition of done: ..."}]'
+
+# 4. Open the sprint
+mcp__task-orchestrator__advance_item \
+  --transitions '[{"itemId": "<sprint-goal-uuid>", "trigger": "start"}]'
 ```
+
+Full methodology, entity mapping, and PRD decomposition flow: [`.claude/modules/shared/sprint.md`](modules/shared/sprint.md).
 
 ### Authority Routing
 - **Workflow state + transitions**: task-orchestrator (MCP) — owns work-item roles, gates, dependencies, claim mechanism. Per [`AGENTS.md §6`](../AGENTS.md) + the accepted workflow-authority ADR.
