@@ -401,3 +401,7 @@ LIVE_LOG*.txt
 
 # Local backups created by `dopemux mcp sync-globals --apply` and the project .claude.json strip
 .claude.json.backup-*
+.antigravitycli/
+.claude/.orchestrator-context-cache.json
+.claude/.orchestrator-edit-nudge.json
+.antigravitycli/
