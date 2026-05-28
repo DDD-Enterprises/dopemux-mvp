@@ -1,93 +1,149 @@
+"""Deterministic, read-only data adapters for Orchestrator TUI panels."""
+
+from __future__ import annotations
+
 import os
-import sqlite3
-import json
-from typing import Dict, Any
-from filelock import FileLock, Timeout
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+from dopemux.orchestrator.operator_workflows import (
+    build_dashboard_snapshot,
+    build_pr_queue,
+    context_status,
+)
+from dopemux.orchestrator.policy import (
+    load_approval_policy,
+    classify_capability,
+)
+from dopemux.orchestrator.validation.packets import validate_packet_file
+from dopemux.orchestrator.validation.proof import validate_proof_file
 
 
-def get_panel_data(panel_id: str) -> Dict[str, Any]:
-    """Load and return data for a specific TUI panel with strict concurrency safety."""
-    try:
-        if panel_id == "today":
-            # Access SQLite idempotency store to count transition records
-            from dopemux.orchestrator.idempotency import IdempotencyStore
-            store = IdempotencyStore()
-            # Simple select count
-            with store._get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute("SELECT COUNT(*) FROM idempotency_records;")
-                count = cursor.fetchone()[0]
-            return {"status": "active", "fallback": False, "count": count}
+def get_today_data() -> Dict[str, Any]:
+    """Retrieve general snapshot overview."""
+    return build_dashboard_snapshot()
 
-        elif panel_id == "context":
-            # Access progress log which requires a FileLock
-            journal_path = os.path.expanduser("~/.local/share/dopemux/progress_log.json")
-            lock_path = journal_path + ".lock"
-            
-            # Attempt to acquire the lock with a very short timeout (50ms) to avoid TUI thread freezes
-            lock = FileLock(lock_path, timeout=0.05)
+
+def get_authority_data() -> Dict[str, Any]:
+    """Retrieve capabilities and classification tiers from the active security policy."""
+    policy = load_approval_policy()
+    capabilities_list = []
+    for cap_id, capability in policy.capabilities.items():
+        decision = classify_capability(cap_id, policy)
+        capabilities_list.append({
+            "capability_id": cap_id,
+            "title": capability.title,
+            "tier": capability.tier,
+            "mode": capability.mode,
+            "allowed": decision.allowed,
+            "reason": decision.reason,
+        })
+    return {
+        "authority": policy.authority,
+        "updated": policy.updated,
+        "capabilities": capabilities_list,
+    }
+
+
+def get_packets_data(base_dir: Optional[Path] = None) -> List[Dict[str, Any]]:
+    """Scan and validate all generated task packets in task-packets/generated/."""
+    target_dir = base_dir or Path("task-packets/generated")
+    results = []
+    if target_dir.exists() and target_dir.is_dir():
+        for file_path in target_dir.glob("*.json"):
             try:
-                with lock:
-                    count = 0
-                    if os.path.exists(journal_path):
-                        with open(journal_path, "r", encoding="utf-8") as f:
-                            count = len(json.load(f))
-                return {"status": "active", "fallback": False, "progress_entries_count": count}
-            except Timeout:
-                # Lock-free read fallback under contention
-                count = 0
-                if os.path.exists(journal_path):
+                report = validate_packet_file(file_path)
+                results.append({
+                    "name": file_path.name,
+                    "path": str(file_path),
+                    "valid": report.valid,
+                    "status": report.status,
+                    "errors": [err.get("message", "Unknown error") if isinstance(err, dict) else getattr(err, "message", str(err)) for err in report.errors],
+                })
+            except Exception as e:
+                results.append({
+                    "name": file_path.name,
+                    "path": str(file_path),
+                    "valid": False,
+                    "status": "ERROR",
+                    "errors": [str(e)],
+                })
+    # Sort by filename
+    results.sort(key=lambda x: x["name"])
+    return results
+
+
+def get_proof_data(base_dir: Optional[Path] = None) -> List[Dict[str, Any]]:
+    """Scan and validate all PROOF.json or proof.json files in proof/."""
+    target_dir = base_dir or Path("proof")
+    results = []
+    if target_dir.exists() and target_dir.is_dir():
+        # Scan for PROOF.json or proof.json files recursively
+        for root, _, files in os.walk(target_dir):
+            for file in files:
+                if file.lower() in {"proof.json"}:
+                    file_path = Path(root) / file
                     try:
-                        with open(journal_path, "r", encoding="utf-8") as f:
-                            count = len(json.load(f))
-                    except Exception:
-                        pass
-                return {"status": "active (lock contention fallback)", "fallback": True, "progress_entries_count": count}
-
-        elif panel_id == "authority":
-            return {"status": "active", "fallback": False, "rules": ["AGENTS.md", "PM_PLANE.md"]}
-
-        elif panel_id == "packets":
-            # Count local packets
-            count = 0
-            if os.path.exists("task-packets/generated"):
-                count = len([f for f in os.listdir("task-packets/generated") if f.endswith(".json")])
-            return {"status": "active", "fallback": False, "count": count}
-
-        elif panel_id == "proof":
-            count = 0
-            if os.path.exists("proof"):
-                count = len([f for f in os.listdir("proof") if os.path.isdir(os.path.join("proof", f))])
-            return {"status": "active", "fallback": False, "count": count}
-
-        elif panel_id == "risks":
-            return {"status": "active", "fallback": False, "active_risks": 0}
-
-        elif panel_id == "pr_queue":
-            return {"status": "active", "fallback": False, "items": []}
-
-        elif panel_id == "do_not_touch":
-            return {"status": "active", "fallback": False, "safe": True}
-
-        else:
-            return {"status": "unknown", "fallback": True, "error": f"Unknown panel: {panel_id}"}
-
-    except (sqlite3.OperationalError, Timeout) as e:
-        # Graceful fallback state for TUI concurrency safety
-        return {
-            "status": "degraded (concurrency error)",
-            "fallback": True,
-            "error": str(e)
-        }
-    except Exception as e:
-        return {
-            "status": "degraded (unexpected error)",
-            "fallback": True,
-            "error": str(e)
-        }
+                        report = validate_proof_file(file_path)
+                        results.append({
+                            "name": file_path.name,
+                            "path": str(file_path.relative_to(target_dir)),
+                            "valid": report.valid,
+                            "status": report.status,
+                            "errors": [err.get("message", "Unknown error") if isinstance(err, dict) else getattr(err, "message", str(err)) for err in report.errors],
+                        })
+                    except Exception as e:
+                        results.append({
+                            "name": file,
+                            "path": str(file_path.relative_to(target_dir)),
+                            "valid": False,
+                            "status": "ERROR",
+                            "errors": [str(e)],
+                        })
+    # Sort by path
+    results.sort(key=lambda x: x["path"])
+    return results
 
 
-def get_all_panels() -> Dict[str, Dict[str, Any]]:
-    """Fetch data for all 8 panels concurrently/sequentially."""
-    panels = ["today", "authority", "packets", "proof", "risks", "pr_queue", "context", "do_not_touch"]
-    return {pid: get_panel_data(pid) for pid in panels}
+def get_risks_data() -> List[Dict[str, Any]]:
+    """Retrieve capabilities carrying elevated risk (TX, TU, T6) in the active policy."""
+    policy = load_approval_policy()
+    risks = []
+    for cap_id, cap in policy.capabilities.items():
+        if cap.tier in {"TX", "TU", "T6"}:
+            risks.append({
+                "capability_id": cap_id,
+                "title": cap.title,
+                "tier": cap.tier,
+                "mode": cap.mode,
+                "canonical_writer": cap.canonical_writer,
+            })
+    return risks
+
+
+def get_pr_queue_data(repo: str = "DDD-Enterprises/dopemux-mvp") -> Dict[str, Any]:
+    """Retrieve Classified PR readiness status."""
+    return build_pr_queue(repo=repo)
+
+
+def get_context_data() -> Dict[str, Any]:
+    """Retrieve context freshness status."""
+    return context_status()
+
+
+def get_do_not_touch_data() -> Dict[str, Any]:
+    """Retrieve refusal matrix snapshot details."""
+    policy = load_approval_policy()
+    refusals = []
+    for cap_id, cap in policy.capabilities.items():
+        if cap.decision == "refuse" or cap.tier in {"TX", "TU"}:
+            refusals.append({
+                "capability_id": cap_id,
+                "title": cap.title,
+                "tier": cap.tier,
+                "decision": cap.decision,
+            })
+    return {
+        "policy_id": policy.policy_id,
+        "refusals": refusals,
+    }
