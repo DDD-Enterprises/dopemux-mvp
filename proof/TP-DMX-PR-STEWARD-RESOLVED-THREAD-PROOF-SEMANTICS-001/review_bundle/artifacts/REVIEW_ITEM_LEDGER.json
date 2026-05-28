@@ -1,0 +1,49 @@
+{
+  "generated_at": "2026-05-27T00:53:35.445208Z",
+  "items": [
+    {
+      "author": "chatgpt-codex-connector",
+      "author_association": "MEMBER",
+      "blocking": false,
+      "body_excerpt": "P1: address this before merge.",
+      "disposition": "AUTO_APPLIED",
+      "id": "RTC_713_1",
+      "rationale": "Resolved review thread clears original raw review comment blocker.",
+      "source": "review_comment"
+    },
+    {
+      "author": "chatgpt-codex-connector",
+      "author_association": "MEMBER",
+      "blocking": false,
+      "body_excerpt": "P2: already addressed.",
+      "disposition": "AUTO_APPLIED",
+      "id": "RTC_713_2",
+      "rationale": "Resolved review thread clears original raw review comment blocker.",
+      "source": "review_comment"
+    },
+    {
+      "author": "chatgpt-codex-connector",
+      "author_association": "MEMBER",
+      "blocking": false,
+      "body_excerpt": "P1: address this before merge.",
+      "disposition": "OPTIONAL_DEFERRED",
+      "id": "RTC_713_1",
+      "rationale": "Resolved thread has no active blocker.",
+      "source": "review_thread"
+    },
+    {
+      "author": "chatgpt-codex-connector",
+      "author_association": "MEMBER",
+      "blocking": false,
+      "body_excerpt": "P2: already addressed.",
+      "disposition": "AUTO_APPLIED",
+      "id": "RTC_713_2",
+      "rationale": "Resolved outdated thread is historical evidence only.",
+      "source": "review_thread"
+    }
+  ],
+  "mutation_performed": false,
+  "pr_number": 704,
+  "schema_version": "1.0.0",
+  "unclassified_count": 0
+}

@@ -1,0 +1,124 @@
+{
+  "schema_version": "1.0.0",
+  "tp_id": "TP-DMX-PR-FIXTURES-011",
+  "series_id": "DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "claude/upbeat-thompson-35f2e8",
+  "base_branch": "main",
+  "head_before": "3b9b06fe5",
+  "head_after": "2bff4c0a2",
+  "mutation_performed": false,
+  "github_mutation_performed": false,
+  "secret_values_recorded": false,
+  "operator_authorization_used": [],
+  "forbidden_surfaces_touched": false,
+  "files_changed": [
+    "tests/fixtures/pr_steward/proof_stale_blocks/harvest.json",
+    "tests/fixtures/pr_steward/proof_missing_blocks/harvest.json",
+    "tests/fixtures/pr_steward/unknown_pr_author_blocks/harvest.json",
+    "tests/fixtures/pr_action_bridge/ready_green.json",
+    "tests/fixtures/pr_action_bridge/needs_supervisor_proof_stale.json",
+    "tests/fixtures/pr_action_bridge/needs_supervisor_proof_missing.json",
+    "tests/fixtures/pr_action_bridge/needs_supervisor_unknown_author.json",
+    "tests/fixtures/pr_action_bridge/needs_implementer_failed_check.json",
+    "tests/pr_steward/test_intake.py",
+    "tests/pr_action_bridge/test_compiler_fixtures.py",
+    "docs/ops/pr-fixtures.md",
+    "proof/TP-DMX-PR-FIXTURES-011/PROOF.json",
+    "proof/TP-DMX-PR-FIXTURES-011/AUDITOR_REPORT.md"
+  ],
+  "commands": [
+    {
+      "cmd": "python -m pytest tests/pr_steward/test_intake.py tests/pr_action_bridge/test_compiler_fixtures.py -v",
+      "exit_code": 0,
+      "result": "38 passed in 0.59s"
+    },
+    {
+      "cmd": "python -m pytest tests/copilot_repair/ tests/pr_action_bridge/ tests/audit/ tests/ci/ tests/pr_steward/",
+      "exit_code": 0,
+      "result": "304 passed in 0.73s (prior 277 + 27 new)"
+    }
+  ],
+  "validation": {
+    "status": "PASS",
+    "details": [
+      {"check": "pytest_38_new_fixture_tests", "status": "PASS", "detail": "38 tests in test_intake.py + test_compiler_fixtures.py all pass; includes 3 new BLOCKING_CASES entries and 27 fixture-driven compiler tests"},
+      {"check": "pytest_304_full_suite", "status": "PASS", "detail": "All 304 tests pass; 277 prior preserved + 27 new"},
+      {"check": "proof_stale_fixture_shape", "status": "PASS", "detail": "proof.matches_pr_head=false with proof_head_sha present → _proof() returns STALE → PROOF_STALE blocker"},
+      {"check": "proof_missing_fixture_shape", "status": "PASS", "detail": "proof={} → proof_head_sha and proof_path absent → _proof() returns MISSING → PROOF_MISSING blocker"},
+      {"check": "unknown_pr_author_fixture_shape", "status": "PASS", "detail": "author.login=external-bot absent from known_reviewers.json and no trusted authorAssociation → UNKNOWN_PR_AUTHOR blocker"},
+      {"check": "action_bridge_fixture_pr_number_toplevel", "status": "PASS", "detail": "All 5 action_bridge fixtures have pr_number as top-level field in merge_readiness matching compiler.compile_action_plan() contract"},
+      {"check": "schema_validation_all_action_plans", "status": "PASS", "detail": "All 5 action_bridge fixtures validated against action_plan.schema.json via Draft7Validator in test_compiler_fixtures.py"},
+      {"check": "no_builtin_shadowing", "status": "PASS", "detail": "test_compiler_fixtures.py uses compile_action_plan directly (not aliased as compile) — MEDIUM finding from PAL review resolved"},
+      {"check": "no_branch_protection_mutated", "status": "PASS", "detail": "Fixture and test files only; zero GitHub API writes"},
+      {"check": "no_pull_request_target_introduced", "status": "PASS", "detail": "No workflow files modified"},
+      {"check": "no_new_secrets_or_permissions", "status": "PASS", "detail": "No secrets referenced, no permissions elevated"},
+      {"check": "no_forbidden_imports", "status": "PASS", "detail": "tools.pr_merge not imported in any changed file"},
+      {"check": "files_within_allowlist", "status": "PASS", "detail": "All files in tests/fixtures/pr_steward/**, tests/fixtures/pr_action_bridge/**, tests/pr_steward/**, tests/pr_action_bridge/**, docs/ops/pr-fixtures.md, proof/TP-DMX-PR-FIXTURES-011/**"},
+      {"check": "trailing_whitespace", "status": "PASS", "detail": "No trailing whitespace in new/modified files"},
+      {"check": "mypy", "status": "NOT_RUN", "reason": "No new typed source files; fixture/test files only"}
+    ]
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "mcp__pal__codereview expert_model=gpt-5.2 review_type=full",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR-FIXTURES-011/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-011-MED-1",
+        "severity": "MEDIUM",
+        "title": "test_compiler_fixtures.py aliased compile_action_plan as compile, shadowing Python builtin",
+        "status": "RESOLVED",
+        "body": "Changed alias to use compile_action_plan directly. No behavioral risk (Python's builtin compile() not used in this module), but removed for clarity."
+      },
+      {
+        "id": "F-011-LOW-1",
+        "severity": "LOW",
+        "title": "mixed_sha_checks_block fixture not covered by BLOCKING_CASES loop",
+        "status": "ACCEPTED_RISK",
+        "body": "Pre-existing gap, not introduced by TP-011. test_classifier_mixed_sha.py covers the mixed-SHA classifier logic independently."
+      },
+      {
+        "id": "F-011-LOW-2",
+        "severity": "LOW",
+        "title": "proof_stale_blocks uses non-hex proof_head_sha ('old' prefix)",
+        "status": "ACCEPTED_RISK",
+        "body": "Semantically correct for testing. Classifier accepts any non-empty string as proof_head_sha. No SHA format validation in classifier."
+      }
+    ],
+    "fixes_applied": [
+      "Renamed compile alias in test_compiler_fixtures.py to use compile_action_plan directly"
+    ],
+    "remaining_risks": [
+      "mixed_sha_checks_block fixture coverage gap (pre-existing, not in TP-011 scope)",
+      "mypy not run (no new typed source files)",
+      "action_plan.schema.json generated_at field has no ISO format constraint (pre-existing)"
+    ],
+    "skip_reason": null
+  },
+  "embedded_audit_status": "PASS_WITH_RISKS",
+  "commit": {
+    "performed": true,
+    "sha": "3108f1a6b",
+    "message": "test(pr): add steward and action bridge fixtures"
+  },
+  "governance": {
+    "branch_protection_changed": false,
+    "required_checks_changed": false,
+    "pull_request_target_introduced": false,
+    "secrets_touched": false,
+    "codeowners_changed": false,
+    "mutation_surfaces_added": false
+  },
+  "stop_conditions_hit": [],
+  "remaining_risks": [
+    "mypy not run",
+    "mixed_sha_checks_block fixture has no BLOCKING_CASES entry (pre-existing gap)",
+    "action_plan.schema.json generated_at format constraint absent (pre-existing)"
+  ],
+  "next_recommended_action": "Operator: review diff, run `git add -f` for proof/ files, commit with 'test(pr): add steward and action bridge fixtures', then continue to TP-DMX-AUDIT-PROOF-004."
+}

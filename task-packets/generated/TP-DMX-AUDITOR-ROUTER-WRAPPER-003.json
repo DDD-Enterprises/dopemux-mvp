@@ -1,0 +1,103 @@
+{
+  "id": "TP-DMX-AUDITOR-ROUTER-WRAPPER-003",
+  "project": "dopemux-mvp",
+  "target": "Add the missing scripts/auditor-preflight wrapper for the bootstrapped auditor-router runtime.",
+  "invariants": [
+    "This packet resolves WRAPPER_BLOCKED_BY_ALLOWLIST from PR #713.",
+    "No PAL MCP clink execution occurs.",
+    "No PAL_CLINK_AUDIT_OUTPUT.json is captured.",
+    "No route logic changes are allowed.",
+    "No schema changes are allowed.",
+    "No PR Steward runtime changes are allowed.",
+    "This packet does not make PR #713 merge-ready.",
+    "GitHub workflow dispatch for PR Steward failed with HTTP 500 before this packet and must not block local wrapper validation."
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-AUDITOR-ROUTER",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-auditor-router-pal-clink-002",
+    "base_branch": "main",
+    "starting_head": "428fd7398f341ba429f39b216ac92733c6296d9c"
+  },
+  "commit": {
+    "message": "feat(governance): add auditor preflight wrapper",
+    "allowlist": [
+      "scripts/auditor-preflight",
+      "task-packets/generated/TP-DMX-AUDITOR-ROUTER-WRAPPER-003.json",
+      "proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/**",
+      "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json",
+      "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/VALIDATION_OUTPUT.md",
+      "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-AUDITOR-ROUTER-WRAPPER-003.json",
+      "python -m compileall -q tools tests",
+      "pytest -q tests/auditor_router",
+      "python -m tools.auditor_router.preflight --help",
+      "scripts/auditor-preflight --help",
+      "scripts/auditor-preflight --fixture-dir tests/fixtures/auditor_router/pal_clink_chosen_when_direct_auth_required --out /tmp/auditor-route-wrapper-pal --packet-id TP-DMX-AUDITOR-ROUTER-WRAPPER-003",
+      "python -m json.tool /tmp/auditor-route-wrapper-pal/AUDITOR_ROUTE.json",
+      "python -m json.tool /tmp/auditor-route-wrapper-pal/ROUTE_PROBE_OUTPUTS.json",
+      "scripts/auditor-preflight --fixture-dir tests/fixtures/auditor_router/pal_clink_not_chosen_when_direct_available --out /tmp/auditor-route-wrapper-direct --packet-id TP-DMX-AUDITOR-ROUTER-WRAPPER-003",
+      "python -m json.tool /tmp/auditor-route-wrapper-direct/AUDITOR_ROUTE.json",
+      "git diff --check",
+      "pre-commit run --files $(git diff --name-only)"
+    ]
+  },
+  "pr": {
+    "title": "feat(governance): bootstrap auditor router pal clink classification",
+    "body_update": "Adds scripts/auditor-preflight as the wrapper follow-up for PR #713 while preserving draft and packet blockers.",
+    "number": 713,
+    "base": "main",
+    "draft": true
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "implement",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Verify PR #713 branch, draft state, and starting head.",
+      "validation": [
+        "PR #713 is open on codex/tp-dmx-auditor-router-pal-clink-002.",
+        "Starting head is 428fd7398f341ba429f39b216ac92733c6296d9c or recorded if different.",
+        "PR #713 remains draft."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add scripts/auditor-preflight wrapper delegating to python -m tools.auditor_router.preflight.",
+      "validation": [
+        "scripts/auditor-preflight --help exits 0.",
+        "Wrapper fixture smokes produce JSON route artifacts."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Create proof bundle and mark WRAPPER_BLOCKED_BY_ALLOWLIST resolved by this packet.",
+      "validation": [
+        "Proof status is PASS_WITH_BLOCKERS.",
+        "Resolved blockers include WRAPPER_BLOCKED_BY_ALLOWLIST.",
+        "Remaining blockers include MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN, PAL_CLINK_AUDIT_OUTPUT_MISSING, and BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500."
+      ]
+    }
+  ]
+}

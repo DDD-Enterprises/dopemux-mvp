@@ -1,0 +1,24 @@
+{
+  "direct_routes": [
+    {
+      "tool": "claude-code-cli",
+      "status": "AUTH_REQUIRED",
+      "risk": "MEDIUM",
+      "reason": "Fixture direct CLI auth is not available."
+    },
+    {
+      "tool": "gemini-cli",
+      "status": "NOT_INSTALLED",
+      "risk": "MEDIUM",
+      "reason": "Fixture direct CLI is absent."
+    }
+  ],
+  "fallback_routes": [
+    {
+      "tool": "copilot-cli",
+      "status": "FALLBACK_ONLY",
+      "risk": "HIGH",
+      "reason": "Fixture fallback requires explicit --allow-fallback."
+    }
+  ]
+}

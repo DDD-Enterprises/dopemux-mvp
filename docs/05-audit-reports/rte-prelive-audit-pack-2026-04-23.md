@@ -12,10 +12,10 @@ prelude: Deterministic pre-live Repo Truth Extractor audit pack for GPT-5.4 Pro 
 ---
 # RTE Pre-Live Audit Pack
 
-**Task packet**: `TP-DMX-RTEAUDIT-001`  
-**Audit date**: `2026-04-23`  
-**Execution branch**: `codex/rte-audit-pack-assembly`  
-**Target reviewer**: `GPT-5.4 Pro`  
+**Task packet**: `TP-DMX-RTEAUDIT-001`
+**Audit date**: `2026-04-23`
+**Execution branch**: `codex/rte-audit-pack-assembly`
+**Target reviewer**: `GPT-5.4 Pro`
 **Scope**: assemble evidence only; no live RTE execution
 
 ---
