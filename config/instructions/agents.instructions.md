@@ -989,3 +989,101 @@ Each level can override settings from previous levels.
 - ⚠️ Some properties may behave differently
 
 When creating agents for multiple environments, focus on common properties and test in all target environments. Use `target` property to create environment-specific agents when necessary.
+
+---
+
+## Task-Orchestrator Integration (for `*.agent.md` files that touch task management)
+
+> **Authority caveat** (per `AGENTS.md §8 Local Instruction Surfaces`): this file is GitHub Copilot custom-agent-file guidance. Per the `applyTo: '**/*.agent.md'` glob at the top of this document, it shapes what `*.agent.md` files should look like. It is NOT Codex runtime authority — Codex authority is `AGENTS.md` itself.
+
+### When this applies
+
+Read this section if you are authoring a custom agent file (`<name>.agent.md`) whose responsibilities include any of:
+
+- Picking up work items from a queue
+- Advancing work items through workflow phases
+- Filing notes (PAL chain artifacts, proof bundles, observations)
+- Resolving dependencies between work items
+- Generating audit findings or retrospective observations
+- Anything that the upstream `task-orchestrator` MCP would track
+
+### What custom-agent files MUST do
+
+When the agent's task interacts with task-orchestrator, the agent file should:
+
+1. **Reference the canonical protocol** — not re-spec it inline. Point at:
+
+   ```markdown
+   - Read [`docs/03-reference/orchestrator-note-filling-protocol.md`](../docs/03-reference/orchestrator-note-filling-protocol.md) for the cross-agent note-filling protocol.
+   - Read `AGENTS.md §12 Orchestrator Operations` for the Codex floor.
+   - Read `AGENTS.md §5 (PAL chains)` and `§9 (Proof and Finality)` for the chain → notes mapping and proof-bundle structure.
+   ```
+
+2. **Declare orchestrator MCP tools** in the agent's `tools:` list (for environments that support `tools:`) so the agent has direct access:
+
+   ```yaml
+   tools:
+     - read
+     - edit
+     - search
+     - 'mcp__task-orchestrator__*'   # full surface
+     # OR be specific:
+     - 'mcp__task-orchestrator__get_context'
+     - 'mcp__task-orchestrator__get_next_item'
+     - 'mcp__task-orchestrator__manage_notes'
+     - 'mcp__task-orchestrator__advance_item'
+   ```
+
+   Without explicit tool listing, the agent cannot call MCP tools per the parent orchestrator's tool-ceiling rule documented above.
+
+3. **Set `type` on items at creation** if the agent creates work items. Tag-only matching falls through to the `default` schema (proof-bundle gate only). Set `type` to one of the canonical schema keys:
+
+   - `task-packet` — atomic repo-changing work
+   - `feature-implementation` — multi-TP feature container
+   - `bug-fix` — bug repro + root cause + regression-test workflow
+   - `rfc-proposal` — consensus-building doc
+   - `audit-pack` — RTE-style phased audit
+   - `sprint-goal` — top-level container (never auto-terminates)
+   - `retrospective` — meta-work item for L1+ retros
+
+   Full schema details in [`.taskorchestrator/config.yaml`](../.taskorchestrator/config.yaml).
+
+4. **Honor the complete-gate**: `advance_item(trigger="complete")` on a change-producing item FAILS without a `proof-bundle` note. Custom agents must populate the bundle per `AGENTS.md §9` before completing items. Do not bypass via `cancel` or `reopen`.
+
+5. **Use actor attribution** when calling `manage_notes` or `advance_item`:
+
+   ```json
+   {
+     "actor": {
+       "id": "agent-<your-agent-name>-<session>",
+       "kind": "agent",
+       "parent": "<copilot-session-id>"
+     }
+   }
+   ```
+
+### What custom-agent files MUST NOT do
+
+- **Don't edit `.taskorchestrator/config.yaml`** without an ADR. It's contract-sensitive per `AGENTS.md §6`. Schema/trait changes require canonical-writer review.
+- **Don't shadow task state** in local Markdown or YAML. The orchestrator is the source of truth.
+- **Don't recommend ConPort `progress_entry`** for new task storage. ConPort is decisions/progress audit/knowledge graph; workflow state belongs to task-orchestrator.
+- **Don't generate text that bypasses the proof-bundle gate** ("just cancel it", "skip the proof for now", etc.). The gate exists for finality per `AGENTS.md §9`.
+- **Don't propose changes to the external MCP wrapper** at `/Users/hue/plugins/dopemux-mission-control/`. That's outside this repo's authority boundary; snapshots live in [`scripts/external-references/`](../scripts/external-references/) for traceability only.
+
+### Multi-agent coordination
+
+If multiple agents will work the same orchestrator items concurrently (e.g., one agent picks, another implements), use the claim mechanism:
+
+```
+mcp__task-orchestrator__claim_item(claims=[{itemId, ttlSeconds:900}], actor={...}, requestId=<uuid>)
+```
+
+Per the upstream workflow guide §10 (Claim Mechanism for Multi-Agent Fleets) and `AGENTS.md §12`, claims are self-reported (`actor_authentication.enabled` is off in our config). The orchestrator wrapper enforces one container per workspace, so the dominant multi-agent contention surface is at the claim layer, not the container layer.
+
+### Companion files
+
+- `AGENTS.md §12` — Codex orchestrator operations
+- `.github/copilot-instructions.md §13` — Copilot-baseline orchestrator pointer
+- `docs/03-reference/orchestrator-note-filling-protocol.md` — the cross-agent protocol (linkable single source of truth)
+- `.taskorchestrator/config.yaml` — schema config (runtime source of truth)
+- `scripts/external-references/README.md` — external wrapper snapshots and multi-spawn fix documentation
