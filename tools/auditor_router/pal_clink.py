@@ -36,6 +36,9 @@ MUTATION_TOKENS = {
     "--autopilot",
     "auto_edit",
     "--add-dir",
+    "execute",
+    "run",
+    "apply",
 }
 VALUE_COUPLED_MUTATION_PATTERNS = {
     ("--permission-mode", "acceptEdits"),
@@ -63,7 +66,7 @@ def discover_clink_config_paths(
                     paths_by_client[client] = path
                 elif path.stem in SUPPORTED_AUDIT_CLIENTS:
                     paths_by_client[path.stem] = path
-            except Exception:
+            except (json.JSONDecodeError, OSError):
                 if path.stem in SUPPORTED_AUDIT_CLIENTS:
                     paths_by_client[path.stem] = path
     return sorted(paths_by_client.values(), key=_candidate_sort_key)
@@ -79,7 +82,10 @@ def _as_args(value: Any) -> list[str]:
     if isinstance(value, list):
         return [str(item) for item in value]
     if isinstance(value, str):
-        return [value]
+        try:
+            return shlex.split(value)
+        except ValueError as err:
+            raise ValueError(f"Arguments string could not be parsed safely: {err}")
     raise ValueError("Arguments field must be a list or a string.")
 
 
@@ -148,12 +154,12 @@ def inspect_clink_client_config(
         config = load_clink_client_config(path)
     except Exception as exc:
         return _unsafe(path, None, None, f"Config could not be parsed: {exc}")
-    if not isinstance(config, dict):
+    if not isinstance(config, dict) or not config:
         return _unsafe(
             path,
             None,
             None,
-            "Config payload must be a JSON object.",
+            "Config payload must be a non-empty JSON object.",
         )
 
     raw_client_name = config.get("name")
@@ -412,15 +418,16 @@ def _iter_config_root_paths(root: Path) -> list[Path]:
 
 
 def _canonical_role_prompt_path(value: Any) -> PurePosixPath | None:
-    raw_path = str(value or "")
-    raw_parts = raw_path.split("/")
-    prompt_path = PurePosixPath(raw_path)
-    if (
-        prompt_path.is_absolute()
-        or any(part in {"", ".", ".."} for part in raw_parts)
-    ):
+    raw_path = str(value or "").strip()
+    if not raw_path:
         return None
-    return prompt_path
+    # Reject any absolute path or traversal
+    if raw_path.startswith("/") or "\\" in raw_path:
+        return None
+    raw_parts = raw_path.split("/")
+    if any(part in {"", ".", ".."} for part in raw_parts):
+        return None
+    return PurePosixPath(raw_path)
 
 
 def _candidate_sort_key(path: Path) -> tuple[int, str]:

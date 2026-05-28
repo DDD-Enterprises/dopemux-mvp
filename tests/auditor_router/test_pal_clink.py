@@ -78,7 +78,7 @@ def test_reject_non_object_config_payload(tmp_path: Path) -> None:
     inspection = inspect_clink_client_config(path)
 
     assert inspection.status == "TOOLING_UNSAFE"
-    assert inspection.reason == "Config payload must be a JSON object."
+    assert inspection.reason == "Config payload must be a non-empty JSON object."
 
 
 def test_mismatched_runner_route_remains_schema_safe(tmp_path: Path) -> None:
@@ -761,3 +761,24 @@ def test_falsey_role_args_invalid(tmp_path: Path) -> None:
     path.write_text(json.dumps(config), encoding="utf-8")
     inspection = inspect_clink_client_config(path)
     assert inspection.status == "INVALID"
+
+def test_as_args_shlex_parsing():
+    from auditor_router.pal_clink import _as_args
+    assert _as_args("arg1 arg2") == ["arg1", "arg2"]
+    assert _as_args("arg1 'arg2 with space'") == ["arg1", "arg2 with space"]
+    assert _as_args(None) == []
+    assert _as_args(["list", "args"]) == ["list", "args"]
+
+def test_detect_mutation_flags_new_tokens():
+    from auditor_router.pal_clink import detect_mutation_flags
+    assert "execute" in detect_mutation_flags(["execute"])
+    assert "run" in detect_mutation_flags(["run"])
+    assert "apply" in detect_mutation_flags(["apply"])
+
+def test_canonical_role_prompt_path_strict():
+    from auditor_router.pal_clink import _canonical_role_prompt_path
+    assert _canonical_role_prompt_path("/absolute/path") is None
+    assert _canonical_role_prompt_path("path/../traversal") is None
+    assert _canonical_role_prompt_path("path/./current") is None
+    assert _canonical_role_prompt_path("   ") is None
+    assert _canonical_role_prompt_path("valid/path.txt") is not None
