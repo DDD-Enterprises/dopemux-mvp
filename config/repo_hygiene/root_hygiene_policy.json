@@ -4,6 +4,7 @@
     "templates",
     "ui-dashboard-backend",
     ".taskx",
+    ".taskorchestrator",
     "ops",
     "reports",
     "ARCHIVED_RECOVERY",

@@ -1,13 +1,13 @@
 ---
-id: DX-COMMAND-AUTHORING
-title: /dx: Command Authoring Template
+id: dx-command-authoring
+title: Dopemux dx Slash Command Authoring
 type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-05-27'
 last_review: '2026-05-27'
 next_review: '2026-08-25'
-prelude: Canonical structure for authoring Dopemux /dx: slash commands that wrap the task-orchestrator MCP. Codifies frontmatter, phased body, read-vs-write safety, the actor-attribution gap, and the orchestrator tool contracts so every command stays consistent.
+prelude: Canonical structure for authoring Dopemux dx slash commands that wrap the task-orchestrator MCP. Codifies frontmatter, phased body, read-vs-write safety, and orchestrator tool contracts.
 ---
 # /dx: Command Authoring Template
 
