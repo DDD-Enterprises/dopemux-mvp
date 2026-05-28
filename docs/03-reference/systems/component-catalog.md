@@ -11,8 +11,9 @@ prelude: Compact component catalog for Dopemux systems, authorities, and drift m
 ---
 # Component Catalog
 
-This catalog is a compact operator reference. `SERVICE_CATALOG.md` and the
-system docs remain the richer source for tiering and detailed evidence.
+This catalog is a compact operator reference. The per-system docs under
+[`docs/03-reference/systems/`](.) (`system-<name>.md`) remain the richer
+source for tiering and detailed evidence.
 
 > **Task Orchestrator dual-surface note**: two distinct runtimes share the "Task Orchestrator" name — the in-repo FastAPI workflow service AND the upstream stdio MCP container that holds workflow-state authority per the accepted ADR. See [`task-orchestrator/system-taskorchestrator.md`](task-orchestrator/system-taskorchestrator.md) §9 for the canonical disambiguation.
 
