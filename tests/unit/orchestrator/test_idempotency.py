@@ -301,3 +301,28 @@ class TestIdempotencyStore:
         # Verify it has a fresh timestamp
         updated_at = datetime.fromisoformat(record["updated_at"])
         assert (datetime.now(timezone.utc) - updated_at).total_seconds() < 5.0
+
+    def test_idempotency_key_reuse_rejection(self):
+        store = IdempotencyStore()
+        idem_key = "shared-key"
+        
+        # 1. Record first transition
+        store.record_intent(idem_key, "proj-1", "wf-1", "start")
+        
+        # 2. Attempt to claim same key for DIFFERENT transition
+        with pytest.raises(ValueError, match="is already used for a different transition"):
+            store.claim_transition(
+                idempotency_key=idem_key,
+                project_id="proj-1",
+                workflow_id="wf-1",
+                transition_name="different-transition"
+            )
+        
+        # 3. Attempt same key for DIFFERENT project
+        with pytest.raises(ValueError, match="is already used for a different transition"):
+            store.claim_transition(
+                idempotency_key=idem_key,
+                project_id="different-project",
+                workflow_id="wf-1",
+                transition_name="start"
+            )

@@ -12,9 +12,9 @@ prelude: Phase-3 survivor resolution after phase-2 safe archive cleanup.
 ---
 # Repo Branch and Worktree Cleanup Phase 3
 
-**Task packet**: `TP-DMX-REPOHYG-003`  
-**Parent packet**: `TP-DMX-REPOHYG-002`  
-**Execution branch**: `codex/repo-hygiene-phase3-unresolved-survivors`  
+**Task packet**: `TP-DMX-REPOHYG-003`
+**Parent packet**: `TP-DMX-REPOHYG-002`
+**Execution branch**: `codex/repo-hygiene-phase3-unresolved-survivors`
 **Execution date**: `2026-04-23`
 
 ---

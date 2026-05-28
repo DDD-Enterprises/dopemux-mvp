@@ -133,10 +133,7 @@ class ConPortAdapter:
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
 
-        # 1. Offload synchronous lock acquisition and writing to a background thread to prevent event loop starvation
-        await asyncio.to_thread(self._write_journal_sync, filepath, lock_path, entry, timeout)
-
-        # 2. Canonical HTTP post to ConPort API
+        # 1. Canonical HTTP post to ConPort API
         payload = {
             "workspace_id": "default",
             "category": "decision" if is_decision else "progress",
@@ -149,6 +146,10 @@ class ConPortAdapter:
         }
         response = await self._request("POST", "/kg/custom_data", json=payload)
         response.raise_for_status()
+
+        # 2. Persist progress receipt only after ConPort accepts it
+        await asyncio.to_thread(self._write_journal_sync, filepath, lock_path, entry, timeout)
+
         return response.json()
 
     def _write_journal_sync(self, filepath: str, lock_path: str, entry: Dict[str, Any], timeout: int):
