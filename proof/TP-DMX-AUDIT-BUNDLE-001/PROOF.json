@@ -1,0 +1,109 @@
+{
+  "schema_version": "1.0.0",
+  "tp_id": "TP-DMX-AUDIT-BUNDLE-001",
+  "series_id": "DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "claude/upbeat-thompson-35f2e8",
+  "base_branch": "main",
+  "head_before": "794162a4c5b507fa978c776bd4441cc9ad13748d",
+  "head_after": null,
+  "mutation_performed": false,
+  "github_mutation_performed": false,
+  "secret_values_recorded": false,
+  "operator_authorization_used": [],
+  "forbidden_surfaces_touched": false,
+  "files_changed": [
+    "scripts/audit/__init__.py",
+    "scripts/audit/build_evidence_bundle.py",
+    "tests/audit/__init__.py",
+    "tests/audit/fixtures/clean_file.txt",
+    "tests/audit/test_evidence_bundle.py",
+    "docs/ops/audit-bundles.md",
+    "schemas/audit/bundle_manifest.schema.json",
+    "proof/TP-DMX-AUDIT-BUNDLE-001/PROOF.json",
+    "proof/TP-DMX-AUDIT-BUNDLE-001/AUDITOR_REPORT.md"
+  ],
+  "commands": [
+    {
+      "cmd": "python -m pytest tests/audit/test_evidence_bundle.py -v",
+      "exit_code": 0,
+      "result": "22 passed in 0.08s"
+    }
+  ],
+  "validation": {
+    "status": "PASS",
+    "details": [
+      {"check": "pytest_22_tests", "status": "PASS", "tool": "pytest 9.0.3"},
+      {"check": "schema_additionalProperties_false", "status": "PASS", "detail": "schemas/audit/bundle_manifest.schema.json enforces additionalProperties:false on manifest and file_record"},
+      {"check": "fail_closed_default", "status": "PASS", "detail": "allow_redact=False rejects secret files; tested by TestSecretRejection::test_secret_file_rejected_by_default"},
+      {"check": "symlink_rejection", "status": "PASS", "detail": "TestSymlinkRejection::test_symlink_rejected"},
+      {"check": "path_escape_rejection", "status": "PASS", "detail": "TestPathEscapeRejection::test_path_escape_rejected"},
+      {"check": "deterministic_ordering", "status": "PASS", "detail": "TestBuildBundleInclude::test_deterministic_ordering"},
+      {"check": "no_absolute_host_paths_in_output", "status": "PASS", "detail": "source_root stored as-is from caller; no Path.resolve() calls in manifest output"},
+      {"check": "actionlint", "status": "NOT_RUN", "reason": "no workflow files changed in this TP"},
+      {"check": "mypy", "status": "NOT_RUN", "reason": "mypy not configured in CI for scripts/; type annotations present for reviewer inspection"}
+    ]
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "mcp__pal__codereview: two-step review of scripts/audit/build_evidence_bundle.py + schemas/audit/bundle_manifest.schema.json + tests/audit/test_evidence_bundle.py",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-AUDIT-BUNDLE-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F001",
+        "severity": "LOW",
+        "title": "Untested token patterns: openai bare sk- and PEM private key header",
+        "status": "ACCEPTED_RISK",
+        "body": "openai_key and private_key_header patterns lack dedicated positive-match tests. Secret scanning is defensive and fail-closed; absence of explicit test is a coverage gap, not a correctness gap."
+      },
+      {
+        "id": "F002",
+        "severity": "LOW",
+        "title": "Dead assignment `_ = rel` in bundle builder",
+        "status": "ACCEPTED_RISK",
+        "body": "Relationship object assigned to _ and never used. No behavioral impact. Cosmetic cleanup deferred."
+      },
+      {
+        "id": "F003",
+        "severity": "LOW",
+        "title": "CLI exit-code 1 fatal path not subprocess-tested",
+        "status": "ACCEPTED_RISK",
+        "body": "Library correctness is tested; CLI exit-1 branch covered only by unit tests, not subprocess invocation. Low-risk thin shim."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Untested token patterns: openai bare sk- and PEM private key header (F001)",
+      "Dead assignment _ = rel in bundle builder (F002, cosmetic)",
+      "CLI exit-1 not subprocess-tested (F003)",
+      "mypy not run — type annotations present but not statically verified",
+      "Binary file content is included as <binary file: N bytes> without secret scanning (documented limitation)"
+    ],
+    "skip_reason": null
+  },
+  "embedded_audit_status": "PASS",
+  "commit": {
+    "performed": false,
+    "sha": null,
+    "message": "feat(audit): add deterministic evidence bundle builder"
+  },
+  "governance": {
+    "branch_protection_changed": false,
+    "required_checks_changed": false,
+    "pull_request_target_introduced": false,
+    "secrets_touched": false,
+    "codeowners_changed": false,
+    "mutation_surfaces_added": false
+  },
+  "stop_conditions_hit": [],
+  "remaining_risks": [
+    "mypy not run — type annotations present but not statically checked",
+    "Binary file secret scanning is not performed (no text decode possible); documented as known limitation",
+    "Generic secret pattern (api_key=...) uses a heuristic length threshold of 16 chars; short values not flagged"
+  ],
+  "next_recommended_action": "Opus audit this proof + diff. On PASS, operator commits with 'feat(audit): add deterministic evidence bundle builder'. Then execute TP-DMX-PR-STEWARD-FRESHNESS-005 (depends_on: []) and TP-DMX-AUDIT-ROUTER-002 (depends_on: [TP-DMX-AUDIT-BUNDLE-001]) in parallel."
+}

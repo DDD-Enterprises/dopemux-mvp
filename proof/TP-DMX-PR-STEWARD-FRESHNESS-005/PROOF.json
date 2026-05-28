@@ -1,0 +1,121 @@
+{
+  "schema_version": "1.0.0",
+  "tp_id": "TP-DMX-PR-STEWARD-FRESHNESS-005",
+  "series_id": "DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "claude/upbeat-thompson-35f2e8",
+  "base_branch": "main",
+  "head_before": "794162a4c5b507fa978c776bd4441cc9ad13748d",
+  "head_after": null,
+  "mutation_performed": false,
+  "github_mutation_performed": false,
+  "secret_values_recorded": false,
+  "operator_authorization_used": [],
+  "forbidden_surfaces_touched": false,
+  "files_changed": [
+    "tools/pr_steward/classifier.py",
+    "schemas/pr_steward/merge_readiness.schema.json",
+    "schemas/pr_steward/pr_state_snapshot.schema.json",
+    "tests/pr_steward/test_classifier_mixed_sha.py",
+    "tests/pr_steward/test_classifier_proof_status.py",
+    "tests/fixtures/pr_steward/mixed_sha_checks_block/harvest.json",
+    "proof/TP-DMX-PR-STEWARD-FRESHNESS-005/PROOF.json",
+    "proof/TP-DMX-PR-STEWARD-FRESHNESS-005/AUDITOR_REPORT.md"
+  ],
+  "commands": [
+    {
+      "cmd": "python -m pytest tests/pr_steward/ -v",
+      "exit_code": 0,
+      "result": "31 passed in 0.48s"
+    }
+  ],
+  "validation": {
+    "status": "PASS",
+    "details": [
+      {"check": "pytest_11_existing_tests_preserved", "status": "PASS", "detail": "All 11 tests in test_intake.py continue to pass without modification"},
+      {"check": "pytest_10_mixed_sha_tests", "status": "PASS", "detail": "TestMixedShaDetection (9 unit, +3 explicit-null/REST) + test_mixed_sha_fixture_produces_blocked_via_intake (1 integration) all pass"},
+      {"check": "pytest_10_proof_freshness_tests", "status": "PASS", "detail": "TestProofFreshnessSubstates (6) + TestProofFreshnessInArtifacts (4) all pass"},
+      {"check": "schema_additionalProperties_false_preserved", "status": "PASS", "detail": "merge_readiness.schema.json and pr_state_snapshot.schema.json both retain additionalProperties:false; proof_freshness added to required[] and properties in both"},
+      {"check": "mixed_sha_hard_fail", "status": "PASS", "detail": "_detect_mixed_sha_checks returns True when any check.headSha differs from pr.head_sha; MIXED_SHA_ARTIFACT_SET appended to blockers; _readiness() returns BLOCKED"},
+      {"check": "proof_freshness_substates", "status": "PASS", "detail": "FRESH (sha set + matches), STALE (sha set or path set, not matching), MISSING (no sha and no path); PROOF_STALE_OR_MISSING blocker replaces direct matches_pr_head check"},
+      {"check": "no_github_mutation", "status": "PASS", "detail": "No gh calls, no PR mutations, no branch protection changes"},
+      {"check": "embedded_audit_schema_unchanged", "status": "PASS", "detail": "schemas/proof/embedded_audit.schema.json not touched — stop condition preserved"},
+      {"check": "actionlint", "status": "NOT_RUN", "reason": "no workflow files changed in this TP"},
+      {"check": "mypy", "status": "NOT_RUN", "reason": "mypy not configured in CI for tools/; type annotations present for reviewer inspection"}
+    ]
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "mcp__pal__codereview: two-step review of tools/pr_steward/classifier.py + schemas + tests; independent expert pass via PAL MCP (gpt-5.2/OpenAI)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR-STEWARD-FRESHNESS-005/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F001",
+        "severity": "HIGH",
+        "title": "Null SHA normalization ambiguous in _detect_mixed_sha_checks",
+        "status": "RESOLVED",
+        "body": "Original str(x or y or '') expression had unclear intent for non-string/None values. Replaced with explicit isinstance guard: raw_sha = ...; sha = (raw_sha or '').strip() if isinstance(raw_sha, str) else ''. Behavioral impact: none (original was safe, fix makes intent explicit)."
+      },
+      {
+        "id": "F002",
+        "severity": "MEDIUM",
+        "title": "_proof() STALE/MISSING boundary with proof_path set but no sha",
+        "status": "ACCEPTED_RISK",
+        "body": "Expert suggested empty sha + present path should be MISSING. Re-analysis: STALE is correct — a path without SHA means we know a proof exists but cannot verify currency. This is a conservative staleness signal, not absence. Code is correct as written."
+      },
+      {
+        "id": "F003",
+        "severity": "MEDIUM",
+        "title": "Missing explicit null headSha/head_sha test cases",
+        "status": "RESOLVED",
+        "body": "Added test_explicit_null_headSha_not_treated_as_mismatch, test_explicit_null_head_sha_rest_field_not_treated_as_mismatch, and test_head_sha_rest_field_stale_blocks. Test count: 28 → 31, all passing."
+      },
+      {
+        "id": "F004",
+        "severity": "LOW",
+        "title": "head_sha REST field not unit-tested for mismatch detection",
+        "status": "RESOLVED",
+        "body": "Added test_head_sha_rest_field_stale_blocks confirming REST head_sha field triggers MIXED_SHA_ARTIFACT_SET blocker when stale."
+      }
+    ],
+    "fixes_applied": [
+      "tools/pr_steward/classifier.py: _detect_mixed_sha_checks — defensive isinstance guard for raw_sha before strip()",
+      "tests/pr_steward/test_classifier_mixed_sha.py: added test_explicit_null_headSha_not_treated_as_mismatch",
+      "tests/pr_steward/test_classifier_mixed_sha.py: added test_explicit_null_head_sha_rest_field_not_treated_as_mismatch",
+      "tests/pr_steward/test_classifier_mixed_sha.py: added test_head_sha_rest_field_stale_blocks"
+    ],
+    "remaining_risks": [
+      "mypy not run — type annotations present but not statically verified",
+      "Mixed-SHA detection reads headSha (GraphQL) and head_sha (REST) fields; a third field name in future GitHub API responses would silently bypass detection",
+      "MISSING substate requires both proof_path and proof_head_sha absent/falsy; path-present + sha-absent classifies as STALE (conservative, accepted)",
+      "schemas/pr_steward/pr_state_snapshot.schema.json updated to accept proof_freshness; not validated by fixture tests but validated inline via validate_artifacts()"
+    ],
+    "skip_reason": null
+  },
+  "embedded_audit_status": "PASS_WITH_RISKS",
+  "commit": {
+    "performed": false,
+    "sha": null,
+    "message": "fix(pr-steward): fail closed on mixed-sha artifact sets"
+  },
+  "governance": {
+    "branch_protection_changed": false,
+    "required_checks_changed": false,
+    "pull_request_target_introduced": false,
+    "secrets_touched": false,
+    "codeowners_changed": false,
+    "mutation_surfaces_added": false
+  },
+  "stop_conditions_hit": [],
+  "remaining_risks": [
+    "mypy not run — type annotations present but not statically checked",
+    "Mixed-SHA detection reads check.headSha (GraphQL) and check.head_sha (REST) fields; a third field name used by future GitHub API responses would silently bypass detection",
+    "MISSING substate requires both proof_path and proof_head_sha to be absent/empty; a harvest with only proof_path set (no sha) classifies as STALE, which is conservative but worth noting",
+    "schemas/pr_steward/pr_state_snapshot.schema.json was also updated (required to accept proof_freshness); this schema is not validated by the test_intake.py fixture tests but is validated inline via validate_artifacts()"
+  ],
+  "next_recommended_action": "Opus audit this proof + diff. On PASS, operator commits with 'fix(pr-steward): fail closed on mixed-sha artifact sets'. Then execute TP-DMX-AUDIT-ROUTER-002 (depends_on: [TP-DMX-AUDIT-BUNDLE-001]) and TP-DMX-PR-ACTION-BRIDGE-006 (depends_on: [TP-DMX-AUDIT-BUNDLE-001, TP-DMX-PR-STEWARD-FRESHNESS-005]) — note both are still blocked on TP-001 commit."
+}

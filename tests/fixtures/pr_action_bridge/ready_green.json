@@ -1,0 +1,15 @@
+{
+  "merge_readiness": {
+    "schema_version": "1.1.0",
+    "pr_number": 704,
+    "repo": "DDD-Enterprises/dopemux-mvp",
+    "readiness": "READY",
+    "risk_tier": "CLEAR",
+    "blockers": [],
+    "unknowns": [],
+    "mutation_performed": false
+  },
+  "review_ledger": {"items": []},
+  "thread_dispositions": {"threads": [], "unresolved_blocking_count": 0},
+  "ci_triage": {"checks": [], "required_check_count": 0, "failed_required_count": 0, "pending_required_count": 0}
+}

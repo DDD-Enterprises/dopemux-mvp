@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 
-SCHEMA_VERSION = "1.0.0"
+SCHEMA_VERSION = "1.1.0"
 PASSING_AUDITS = {"PASS", "PASS_WITH_RISKS"}
 BLOCKING_AUDITS = {"FAIL", "NEEDS_SUPERVISOR", "SKIPPED"}
 FAILED_CHECK_CONCLUSIONS = {
@@ -49,6 +49,7 @@ def build_artifacts(
     known_reviewers, trusted_associations = load_known_reviewers(known_path)
 
     pr = _pr_payload(harvest, pr_number=pr_number)
+    pr_raw = harvest.get("pr") or {}
     review_items: list[dict[str, Any]] = []
     thread_dispositions: list[dict[str, Any]] = []
     checks = _classify_checks(
@@ -67,6 +68,13 @@ def build_artifacts(
         for error in harvest.get("harvest_errors") or []:
             _append_once(unknowns, str(error))
 
+    pr_assoc = _association(pr_raw)
+    if pr_assoc is None and isinstance(pr_raw.get("author"), dict):
+        pr_assoc = _association(pr_raw["author"])
+    if not _known_author(pr["author"], pr_assoc, known_reviewers, trusted_associations):
+        _append_once(blockers, "UNKNOWN_PR_AUTHOR")
+        _append_once(unknowns, f"Unknown PR author: {pr['author']}")
+
     if pr["draft"]:
         _append_once(blockers, "PR_IS_DRAFT")
     if pr["state"].upper() != "OPEN" and not allow_closed:
@@ -81,14 +89,12 @@ def build_artifacts(
             unknowns=unknowns,
         )
     )
-    thread_lookup = _thread_comment_lookup(harvest.get("review_threads") or [])
     review_items.extend(
         _classify_comments(
             harvest.get("review_comments") or [],
             source="review_comment",
             known_reviewers=known_reviewers,
             trusted_associations=trusted_associations,
-            thread_lookup=thread_lookup,
             blockers=blockers,
             unknowns=unknowns,
         )
@@ -99,7 +105,6 @@ def build_artifacts(
             source="issue_comment",
             known_reviewers=known_reviewers,
             trusted_associations=trusted_associations,
-            thread_lookup=None,
             blockers=blockers,
             unknowns=unknowns,
         )
@@ -117,21 +122,28 @@ def build_artifacts(
 
     review_items.extend(checks["review_items"])
 
+    if _detect_mixed_sha_checks(harvest.get("checks") or [], pr_head_sha=pr["head_sha"]):
+        _append_once(blockers, "MIXED_SHA_ARTIFACT_SET")
+
     embedded_audit = _embedded_audit(harvest)
+    raw_status = embedded_audit.pop("_raw_status", "")
     audit_status = embedded_audit["status"]
     if audit_status in BLOCKING_AUDITS:
         _append_once(blockers, f"EMBEDDED_AUDIT_{audit_status}")
-    elif audit_status not in PASSING_AUDITS:
+    if raw_status:
         _append_once(blockers, "EMBEDDED_AUDIT_UNKNOWN")
-        _append_once(unknowns, f"Unknown embedded audit status: {audit_status}")
+        _append_once(unknowns, f"Unknown embedded audit status: {raw_status}")
 
     proof = _proof(harvest)
-    if not _proof_is_current(proof, pr["head_sha"]):
-        _append_once(blockers, "PROOF_STALE_OR_MISSING")
+    if proof["proof_freshness"] == "STALE":
+        _append_once(blockers, "PROOF_STALE")
+    elif proof["proof_freshness"] == "MISSING":
+        _append_once(blockers, "PROOF_MISSING")
     if not proof["proof_head_sha"]:
         _append_once(unknowns, "Proof head SHA missing")
 
     readiness = _readiness(blockers)
+    tier = _risk_tier(readiness)
     review_item_ledger = {
         "schema_version": SCHEMA_VERSION,
         "generated_at": generated,
@@ -194,6 +206,7 @@ def build_artifacts(
             "commits": [item["sha"] for item in snapshot["commits"]],
         },
         "readiness": readiness,
+        "risk_tier": tier,
         "review_item_ledger_path": "REVIEW_ITEM_LEDGER.json",
         "thread_dispositions_path": "THREAD_DISPOSITIONS.json",
         "ci_triage_path": "CI_TRIAGE.json",
@@ -228,10 +241,12 @@ def _classify_reviews(
         association = _association(review)
         body = str(review.get("body") or "")
         review_id = str(review.get("id") or f"review-{index}")
+        item_blockers: list[str] = []
         if not _known_author(author, association, known_reviewers, trusted_associations):
             disposition = "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION"
             blocking = True
             rationale = "Reviewer is not in known reviewer config."
+            item_blockers.append("UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION")
             _append_once(blockers, "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION")
             _append_once(unknowns, f"Unknown reviewer: {author}")
         elif str(review.get("state") or "").upper() in {
@@ -241,10 +256,15 @@ def _classify_reviews(
             disposition = "MUST_FIX"
             blocking = True
             rationale = "Review requested changes."
+            item_blockers.append("REQUEST_CHANGES")
             _append_once(blockers, "REQUEST_CHANGES")
         else:
             disposition, blocking, rationale = _body_disposition(body)
             if blocking:
+                if disposition == "NEEDS_SUPERVISOR":
+                    item_blockers.append("REVIEW_ITEM_NEEDS_SUPERVISOR")
+                elif disposition == "MUST_FIX":
+                    item_blockers.append("REVIEW_ITEM_MUST_FIX")
                 _append_disposition_blocker(blockers, disposition)
         items.append(
             _review_item(
@@ -255,6 +275,7 @@ def _classify_reviews(
                 body=body,
                 disposition=disposition,
                 blocking=blocking,
+                blockers=item_blockers,
                 rationale=rationale,
             )
         )
@@ -267,7 +288,6 @@ def _classify_comments(
     source: str,
     known_reviewers: set[str],
     trusted_associations: set[str],
-    thread_lookup: dict[str, dict[str, Any]] | None,
     blockers: list[str],
     unknowns: list[str],
 ) -> list[dict[str, Any]]:
@@ -277,29 +297,21 @@ def _classify_comments(
         association = _association(comment)
         body = str(comment.get("body") or "")
         item_id = str(comment.get("id") or f"{source}-{index}")
-        thread = (thread_lookup or {}).get(item_id)
+        item_blockers: list[str] = []
         if not _known_author(author, association, known_reviewers, trusted_associations):
             disposition = "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION"
             blocking = True
             rationale = "Comment author is not in known reviewer config."
+            item_blockers.append("UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION")
             _append_once(blockers, "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION")
             _append_once(unknowns, f"Unknown {source} author: {author}")
-        elif thread and thread.get("is_resolved"):
-            disposition = "AUTO_APPLIED"
-            blocking = False
-            rationale = "Resolved review thread clears original raw review comment blocker."
-        elif thread and thread.get("is_outdated"):
-            disposition = "AUTO_APPLIED"
-            blocking = False
-            rationale = "Outdated review thread is historical evidence only."
-        elif thread and not thread.get("is_resolved"):
-            disposition = "MUST_FIX"
-            blocking = True
-            rationale = "Linked unresolved review thread blocks readiness."
-            _append_once(blockers, "UNRESOLVED_REVIEW_THREAD")
         else:
             disposition, blocking, rationale = _body_disposition(body)
             if blocking:
+                if disposition == "NEEDS_SUPERVISOR":
+                    item_blockers.append("REVIEW_ITEM_NEEDS_SUPERVISOR")
+                elif disposition == "MUST_FIX":
+                    item_blockers.append("REVIEW_ITEM_MUST_FIX")
                 _append_disposition_blocker(blockers, disposition)
         items.append(
             _review_item(
@@ -310,6 +322,7 @@ def _classify_comments(
                 body=body,
                 disposition=disposition,
                 blocking=blocking,
+                blockers=item_blockers,
                 rationale=rationale,
             )
         )
@@ -348,19 +361,19 @@ def _classify_threads(
                 rationale = "Thread author is not in known reviewer config."
                 _append_once(blockers, "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION")
                 _append_once(unknowns, f"Unknown review_thread author: {author}")
-            elif is_resolved or is_outdated:
-                disposition = "AUTO_APPLIED"
-                blocking = False
-                rationale = (
-                    "Resolved review thread clears blocker."
-                    if is_resolved
-                    else "Outdated review thread is historical evidence only."
-                )
-            else:
+            elif not is_resolved:
                 disposition = "MUST_FIX"
                 blocking = True
                 rationale = "Active unresolved review thread blocks readiness."
                 _append_once(blockers, "UNRESOLVED_REVIEW_THREAD")
+            elif is_outdated:
+                disposition = "AUTO_APPLIED"
+                blocking = False
+                rationale = "Resolved outdated thread is historical evidence only."
+            else:
+                disposition = "OPTIONAL_DEFERRED"
+                blocking = False
+                rationale = "Resolved thread has no active blocker."
             items.append(
                 _review_item(
                     item_id=item_id,
@@ -421,25 +434,31 @@ def _classify_checks(
             required_count += 1
         status = _normalize_status(check.get("status") or check.get("state"))
         conclusion = _normalize_conclusion(check.get("conclusion"))
+        if conclusion is None and check.get("state") == "FAILURE":
+            conclusion = "failure"
         url = check.get("detailsUrl") or check.get("targetUrl") or check.get("url")
         head_sha = str(check.get("headSha") or check.get("head_sha") or pr_head_sha)
 
         blocking = False
         rationale = "Check is nonblocking or successful."
+        check_blockers: list[str] = []
         if required and conclusion in FAILED_CHECK_CONCLUSIONS:
             blocking = True
             failed_count += 1
             rationale = "Required check did not succeed."
+            check_blockers.append("FAILED_CHECK")
             _append_once(blockers, "FAILED_CHECK")
         elif required and strict and status in PENDING_CHECK_STATUSES:
             blocking = True
             pending_count += 1
             rationale = "Strict mode requires final check state."
+            check_blockers.append("PENDING_CHECK")
             _append_once(blockers, "PENDING_CHECK")
         elif required and status == "unknown":
             blocking = True
             unknown_count += 1
             rationale = "Check status is unknown."
+            check_blockers.append("UNKNOWN_CHECK")
             _append_once(blockers, "UNKNOWN_CHECK")
             _append_once(unknowns, f"Unknown check status: {name}")
 
@@ -452,6 +471,7 @@ def _classify_checks(
                 "url": url,
                 "head_sha": head_sha,
                 "blocking": blocking,
+                "blockers": check_blockers,
                 "rationale": rationale,
             }
         )
@@ -465,6 +485,7 @@ def _classify_checks(
                     body=f"{name}: {status}/{conclusion}",
                     disposition="MUST_FIX",
                     blocking=True,
+                    blockers=check_blockers,
                     rationale=rationale,
                 )
             )
@@ -480,16 +501,27 @@ def _classify_checks(
     }
 
 
+_READINESS_TO_RISK: dict[str, str] = {
+    "BLOCKED": "CRITICAL",
+    "NEEDS_SUPERVISOR": "HIGH",
+    "NEEDS_IMPLEMENTER": "MEDIUM",
+    "NOT_READY": "LOW",
+    "READY": "CLEAR",
+}
+
+
 def _readiness(blockers: list[str]) -> str:
     blocker_set = set(blockers)
-    if blocker_set & {"HARVEST_INCOMPLETE", "PR_IS_DRAFT", "PR_CLOSED"}:
+    if blocker_set & {"HARVEST_INCOMPLETE", "PR_IS_DRAFT", "PR_CLOSED", "MIXED_SHA_ARTIFACT_SET"}:
         return "BLOCKED"
     if any(
         item.startswith("EMBEDDED_AUDIT_")
         for item in blocker_set
     ) or blocker_set & {
         "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION",
-        "PROOF_STALE_OR_MISSING",
+        "PROOF_STALE",
+        "PROOF_MISSING",
+        "UNKNOWN_PR_AUTHOR",
         "UNKNOWN_CHECK",
         "REVIEW_ITEM_NEEDS_SUPERVISOR",
     }:
@@ -504,6 +536,10 @@ def _readiness(blockers: list[str]) -> str:
     if blocker_set & {"PENDING_CHECK"}:
         return "NOT_READY"
     return "READY"
+
+
+def _risk_tier(readiness: str) -> str:
+    return _READINESS_TO_RISK.get(readiness, "CRITICAL")
 
 
 def _pr_payload(harvest: dict[str, Any], *, pr_number: int) -> dict[str, Any]:
@@ -566,165 +602,51 @@ def _commits(commits: list[Any]) -> list[dict[str, Any]]:
 
 def _embedded_audit(harvest: dict[str, Any]) -> dict[str, str]:
     raw = harvest.get("embedded_audit") or {}
+    raw_status = str(raw.get("status") or "").upper()
+    if raw_status in PASSING_AUDITS | BLOCKING_AUDITS:
+        normalized = raw_status
+        was_unknown = False
+    else:
+        normalized = "SKIPPED"
+        was_unknown = bool(raw_status)  # only "unknown" if upstream supplied a non-empty bad value
     return {
-        "status": str(raw.get("status") or "SKIPPED"),
-        "report_path": str(
-            raw.get("report_path") or "proof/TP-DMX-PR-STEWARD-001/AUDITOR_REPORT.md"
-        ),
+        "status": normalized,
+        "report_path": str(raw.get("report_path") or ""),
+        # `_raw_status` is internal; the caller uses it to add the
+        # EMBEDDED_AUDIT_UNKNOWN blocker, then strips it before serializing.
+        "_raw_status": raw_status if was_unknown else "",
     }
+
+
+def _detect_mixed_sha_checks(checks: list[Any], *, pr_head_sha: str) -> bool:
+    for check in checks:
+        raw_sha = check.get("headSha") or check.get("head_sha")
+        sha = (raw_sha or "").strip() if isinstance(raw_sha, str) else ""
+        if sha and sha != pr_head_sha:
+            return True
+    return False
 
 
 def _proof(harvest: dict[str, Any]) -> dict[str, Any]:
     raw = harvest.get("proof") or {}
     proof_head_sha = raw.get("proof_head_sha")
-    pr_head_sha = _harvest_pr_head_sha(harvest.get("pr") or {})
-    freshness = _proof_freshness(raw, proof_head_sha, pr_head_sha)
-    raw_matches = raw.get("matches_pr_head")
+    proof_path = str(raw.get("proof_path") or "")
+    matches = bool(raw.get("matches_pr_head", False))
+    if not proof_head_sha and not proof_path:
+        freshness = "MISSING"
+    elif not proof_head_sha:
+        # proof_path present but no verifiable SHA — cannot confirm freshness, treat as MISSING.
+        freshness = "MISSING"
+    elif proof_head_sha and matches:
+        freshness = "FRESH"
+    else:
+        freshness = "STALE"
     return {
-        "proof_path": str(raw.get("proof_path") or ""),
+        "proof_path": proof_path,
         "proof_head_sha": proof_head_sha,
-        "matches_pr_head": bool(
-            freshness["matches_pr_head"] if raw_matches is None else raw_matches
-        ),
+        "matches_pr_head": matches,
         "proof_freshness": freshness,
     }
-
-
-def _harvest_pr_head_sha(pr: dict[str, Any]) -> str:
-    for key in ("head_sha", "headRefOid", "head_ref_oid"):
-        value = pr.get(key)
-        if value:
-            return str(value)
-    return ""
-
-
-def _proof_freshness(
-    raw: dict[str, Any], proof_head_sha: Any, pr_head_sha: str
-) -> dict[str, Any]:
-    proof_freshness = raw.get("proof_freshness")
-    if isinstance(proof_freshness, dict):
-        status = str(proof_freshness.get("status") or "UNKNOWN")
-        freshness = {
-            "status": status,
-            "matches_pr_head": bool(
-                proof_freshness.get("matches_pr_head", bool(proof_head_sha and pr_head_sha and str(proof_head_sha) == pr_head_sha))
-            ),
-            "reason": str(proof_freshness.get("reason") or ""),
-            "proof_recorded_sha": _maybe_string(proof_freshness.get("proof_recorded_sha"))
-            or _maybe_string(proof_head_sha),
-            "pr_head_sha": _maybe_string(
-                proof_freshness.get("pr_head_sha")
-            )
-            or (pr_head_sha or None),
-            "self_reference_exception": proof_freshness.get(
-                "self_reference_exception"
-            )
-            if isinstance(proof_freshness.get("self_reference_exception"), dict)
-            else None,
-        }
-        return freshness
-
-    if not proof_head_sha:
-        return {
-            "status": "MISSING",
-            "matches_pr_head": False,
-            "reason": "Proof head SHA missing.",
-            "proof_recorded_sha": None,
-            "pr_head_sha": pr_head_sha or None,
-            "self_reference_exception": None,
-        }
-    if pr_head_sha and str(proof_head_sha) == pr_head_sha:
-        return {
-            "status": "CURRENT",
-            "matches_pr_head": True,
-            "reason": "Proof head SHA matches PR head SHA.",
-            "proof_recorded_sha": str(proof_head_sha),
-            "pr_head_sha": pr_head_sha,
-            "self_reference_exception": None,
-        }
-    return {
-        "status": "STALE",
-        "matches_pr_head": False,
-        "reason": "Proof head SHA does not match PR head SHA.",
-        "proof_recorded_sha": str(proof_head_sha),
-        "pr_head_sha": pr_head_sha or None,
-        "self_reference_exception": None,
-    }
-
-
-def _proof_is_current(proof: dict[str, Any], pr_head_sha: str) -> bool:
-    freshness = proof.get("proof_freshness") or {}
-    status = str(freshness.get("status") or "UNKNOWN")
-    proof_head_sha = proof.get("proof_head_sha")
-    if status == "CURRENT":
-        if not proof_head_sha or str(proof_head_sha) != pr_head_sha:
-            return False
-        if not freshness.get("matches_pr_head", False):
-            return False
-        return True
-    if status != "CURRENT_WITH_SELF_REFERENCE_EXCEPTION":
-        return False
-    if not proof_head_sha:
-        return False
-    if str(freshness.get("pr_head_sha") or "") != pr_head_sha:
-        return False
-    exception = freshness.get("self_reference_exception") or {}
-    if not isinstance(exception, dict):
-        return False
-    if exception.get("supervisor_accepted") is not True:
-        return False
-    allowed_when = {
-        str(item)
-        for item in exception.get("allowed_when") or []
-        if str(item).strip()
-    }
-    required = {
-        "proof-only final commit",
-        "no runtime/source/test/schema changes after validated head",
-        "embedded audit is PASS or PASS_WITH_RISKS",
-        "supervisor acceptance recorded",
-    }
-    if not required.issubset(allowed_when):
-        return False
-    changed_files = exception.get("changed_files") or []
-    if not isinstance(changed_files, list) or not changed_files:
-        return False
-    for path in changed_files:
-        path_str = str(path or "").strip()
-        if not path_str.startswith("proof/"):
-            return False
-    return True
-
-
-def _maybe_string(value: Any) -> str | None:
-    if value is None:
-        return None
-    value = str(value)
-    return value if value else None
-
-
-def _thread_comment_lookup(threads: list[Any]) -> dict[str, dict[str, Any]]:
-    lookup: dict[str, dict[str, Any]] = {}
-    for thread_index, thread in enumerate(threads):
-        thread_id = str(thread.get("id") or f"thread-{thread_index}")
-        is_resolved = bool(thread.get("isResolved", False))
-        is_outdated = bool(thread.get("isOutdated", False))
-        path = str(thread.get("path") or "")
-        line = thread.get("line")
-        start_line = thread.get("startLine")
-        for comment_index, comment in enumerate(thread.get("comments") or []):
-            comment_id = str(
-                comment.get("id") or f"{thread_id}-comment-{comment_index}"
-            )
-            lookup[comment_id] = {
-                "thread_id": thread_id,
-                "is_resolved": is_resolved,
-                "is_outdated": is_outdated,
-                "path": path,
-                "line": line,
-                "start_line": start_line,
-            }
-    return lookup
 
 
 def _body_disposition(body: str) -> tuple[str, bool, str]:
@@ -763,17 +685,20 @@ def _review_item(
     disposition: str,
     blocking: bool,
     rationale: str,
+    blockers: list[str] | None = None,
 ) -> dict[str, Any]:
     return {
         "id": item_id,
         "source": source,
         "author": author,
-        "author_association": association,
-        "body_excerpt": _excerpt(body),
+        "association": association,
+        "body": body,
         "disposition": disposition,
         "blocking": blocking,
+        "blockers": blockers or [],
         "rationale": rationale,
     }
+
 
 
 def _known_author(
@@ -855,6 +780,7 @@ def _summary(readiness: dict[str, Any]) -> str:
         "# PR Steward Summary\n\n"
         f"- PR: {readiness['pr']['number']}\n"
         f"- readiness: {readiness['readiness']}\n"
+        f"- risk_tier: {readiness['risk_tier']}\n"
         "- mutation_performed: false\n\n"
         "## Blockers\n\n"
         f"{blocker_lines}\n\n"
