@@ -5,11 +5,10 @@ type: adr
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-03-11'
-last_review: '2026-05-27'
-next_review: '2026-08-25'
+last_review: '2026-03-11'
+next_review: '2026-06-09'
 prelude: Delegate workflow legality, blockers, next-action, and progression policy to Task Orchestrator.
-status: accepted
-ratified_date: '2026-05-27'
+status: proposed
 graph_metadata:
   node_type: ADR
   impact: high
@@ -18,13 +17,12 @@ graph_metadata:
     - adr-dopecon-bridge-narrowing-to-adapter-only-role
     - adr-leantime-json-rpc-plus-plugin-integration-strategy
     - adr-conport-as-decision-progress-and-context-authority
-    - adr-task-orchestrator-claude-surface-integration
 ---
 
 # ADR: Task Orchestrator as workflow authority
 
-**Status:** Accepted (ratified 2026-05-27)
-**Date:** 2026-03-11 (ratified 2026-05-27)
+**Status:** Proposed
+**Date:** 2026-03-11
 **Owners:** Dopemux Workflow Plane / PM Plane / Integration Layer
 **Decision Type:** Authority Boundary / Workflow Architecture
 **Scope:** Task Orchestrator, Leantime, dopecon-bridge, ConPort, dope-memory, PM-plane consumers

@@ -38,6 +38,7 @@
         "claude-code-cli",
         "copilot-cli",
         "gemini-cli",
+        "pal-mcp-clink",
         "none"
       ]
     },

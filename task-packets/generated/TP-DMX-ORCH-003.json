@@ -1,0 +1,146 @@
+{
+  "id": "TP-DMX-ORCH-003",
+  "project": "dopemux-mvp",
+  "target": "Add Task Packet and proof validators without writing proof bundles",
+  "invariants": [
+    "Validators must not execute Task Packets",
+    "Validators must not write proof bundles except this packet's own proof artifacts",
+    "Missing schema path blocks with UNKNOWN/REQUIRES_REPO_INSPECTION",
+    "Known-invalid fixtures fail closed",
+    "task-orchestrator must not become PM, memory, retrieval, execution, proof, bridge, agent, or governance authority",
+    "dopecon-bridge remains adapter/proxy/event transport only and must not be treated as source truth",
+    "dopetask remains Task Packet execution/proof runtime after handoff",
+    "No workflow transition calls",
+    "No PM writes",
+    "No ConPort writes",
+    "No dope-memory writes",
+    "No dope-context index mutation",
+    "No GitHub mutation"
+  ],
+  "depends_on": [
+    "TP-DMX-ORCH-002"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ORCH-INTEGRATION",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-ORCH-002",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-orch-003-validators",
+    "base_branch": "codex/tp-dmx-orch-002-readonly-cli",
+    "stacked_because": "TP-DMX-ORCH-003 depends on TP-DMX-ORCH-002 and reuses the newly added orchestrator CLI command group."
+  },
+  "commit": {
+    "message": "feat(orchestrator): add packet and proof validators",
+    "allowlist": [
+      "src/dopemux/commands/orchestrator_commands.py",
+      "src/dopemux/orchestrator/validation/**",
+      "tests/unit/test_cli_orchestrator_validation_commands.py",
+      "tests/unit/orchestrator/**",
+      "docs/03-reference/orchestrator-integration/**",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-003/**",
+      "task-packets/generated/TP-DMX-ORCH-003.json"
+    ],
+    "verify": [
+      "python -m compileall -q src",
+      "python -m pytest -q tests/unit/test_cli_orchestrator_validation_commands.py tests/unit/orchestrator",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-003.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+    ]
+  },
+  "pr": {
+    "title": "feat(orchestrator): add packet and proof validators",
+    "body": "Add read-only Task Packet and proof validators to the task-orchestrator daily operator workflow.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect_existing_validation",
+      "task": "Inspect existing packet schema, proof-contract docs, proof helpers, CLI registration, and tests before implementation.",
+      "validation": [
+        "Evidence names the canonical Task Packet schema, proof bundle shape, and no-write command boundary."
+      ],
+      "context_files": [
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "services/repo-truth-extractor/lib/proof_contract.py",
+        "src/dopemux/commands/orchestrator_commands.py",
+        "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md"
+      ]
+    },
+    {
+      "id": "packet_validator",
+      "task": "Implement read-only Task Packet schema validation with fail-closed UNKNOWN behavior for missing schema paths.",
+      "validation": [
+        "Valid packet fixture exits 0",
+        "Invalid packet fixture exits nonzero",
+        "Missing schema path returns UNKNOWN/REQUIRES_REPO_INSPECTION"
+      ],
+      "expected_files": [
+        "src/dopemux/orchestrator/validation/packets.py",
+        "tests/unit/orchestrator/test_validation.py"
+      ]
+    },
+    {
+      "id": "proof_validator",
+      "task": "Implement read-only proof bundle shape validation without writing proof artifacts.",
+      "validation": [
+        "Valid proof fixture exits 0",
+        "Missing manifest fails closed",
+        "Missing chain_of_custody fails closed",
+        "Invalid status fails closed",
+        "Warnings and blockers require artifact backing"
+      ],
+      "expected_files": [
+        "src/dopemux/orchestrator/validation/proof.py",
+        "tests/unit/orchestrator/test_validation.py"
+      ]
+    },
+    {
+      "id": "cli_commands",
+      "task": "Expose thin dopemux orchestrator packet validate and proof validate CLI commands.",
+      "validation": [
+        "CLI JSON reports are deterministic",
+        "Invalid packet/proof commands exit nonzero",
+        "AST guard confirms no execute/write/transition calls in orchestrator command module"
+      ],
+      "expected_files": [
+        "src/dopemux/commands/orchestrator_commands.py",
+        "tests/unit/test_cli_orchestrator_validation_commands.py"
+      ]
+    },
+    {
+      "id": "proof",
+      "task": "Create this packet's generated Task Packet and proof artifact.",
+      "validation": [
+        "Generated Task Packet validates against dopetask-canonical-spec.json",
+        "Proof artifact validates with dopemux orchestrator proof validate",
+        "git diff --check passes"
+      ],
+      "expected_files": [
+        "task-packets/generated/TP-DMX-ORCH-003.json",
+        "proof/dmx-orch-integration/TP-DMX-ORCH-003/PROOF.json"
+      ]
+    }
+  ]
+}

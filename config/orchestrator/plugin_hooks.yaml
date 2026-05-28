@@ -1,0 +1,251 @@
+schema_version: "1"
+id: task-orchestrator-plugin-hooks
+authority: docs/03-reference/systems/task-orchestrator/operator-integration-authority.md
+updated: "2026-05-26"
+mode: read_only_registry
+
+plugins:
+  orchestrator-operator-hooks:
+    title: Task Orchestrator operator hooks
+    enabled: true
+    tier: T1
+    capabilities:
+      - orchestrator.hooks.list
+      - orchestrator.hooks.validate
+      - orchestrator.plugins.doctor
+    description: Declarative registry for Task Orchestrator operator hook safety review.
+
+hooks:
+  - id: on_startup
+    trigger: dopemux start or session start
+    tier: T0
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: false
+    allowed_actions:
+      - orchestrator.status.queue
+      - orchestrator.status.blockers
+      - orchestrator.status.state
+    forbidden_actions:
+      - writes
+      - transitions
+      - decomposition
+    failure_behavior: Degrade partial.
+    plugins:
+      - orchestrator-operator-hooks
+
+  - id: on_repo_scan
+    trigger: Manual scan
+    tier: T0
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: false
+    allowed_actions:
+      - git.status.read
+      - repo.files.read
+      - schema.locations.read
+    forbidden_actions:
+      - edits
+      - index deletion
+    failure_behavior: Fail closed on dirty/mismatch.
+    plugins:
+      - orchestrator-operator-hooks
+
+  - id: on_context_refresh
+    trigger: Manual or stale index
+    tier: T1
+    automatic_allowed: false
+    approval_required: true
+    receipt_required: true
+    allowed_actions:
+      - orchestrator.context.refresh_status
+      - scoped context sync with approval
+    forbidden_actions:
+      - clear_index
+      - broad reindex without approval
+    failure_behavior: Fail closed if scope unknown.
+    plugins:
+      - orchestrator-operator-hooks
+
+  - id: on_packet_created
+    trigger: Packet draft saved
+    tier: T1
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    allowed_actions:
+      - orchestrator.packet.validate
+      - orchestrator.packet.inspect
+      - authority review
+    forbidden_actions:
+      - execution
+      - branch mutation
+    failure_behavior: Block if invalid.
+    plugins:
+      - orchestrator-operator-hooks
+
+  - id: on_packet_started
+    trigger: Operator-approved packet
+    tier: T1
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    allowed_actions:
+      - verify worktree
+      - verify branch
+      - verify marker
+    forbidden_actions:
+      - continue on mismatch
+    failure_behavior: Stop.
+    plugins:
+      - orchestrator-operator-hooks
+
+  - id: on_packet_completed
+    trigger: Implementer proof returned
+    tier: T1
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    allowed_actions:
+      - orchestrator.review.intake
+      - orchestrator.proof.validate
+    forbidden_actions:
+      - mark complete without evidence
+    failure_behavior: BLOCKED if incomplete.
+    plugins:
+      - orchestrator-operator-hooks
+
+  - id: on_proof_received
+    trigger: Proof bundle uploaded
+    tier: T1
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    allowed_actions:
+      - orchestrator.proof.validate
+      - chain validation
+      - command validation
+    forbidden_actions:
+      - accept missing artifacts
+    failure_behavior: Fail closed.
+    plugins:
+      - orchestrator-operator-hooks
+
+  - id: on_audit_requested
+    trigger: Manual/high-risk
+    tier: T1
+    automatic_allowed: false
+    approval_required: false
+    receipt_required: true
+    allowed_actions:
+      - read-only red team
+    forbidden_actions:
+      - mutate code
+    failure_behavior: Fail if evidence missing.
+    plugins:
+      - orchestrator-operator-hooks
+
+  - id: on_pr_opened
+    trigger: PR created
+    tier: T1
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    allowed_actions:
+      - orchestrator.github.pr_readiness
+      - read proof refs
+    forbidden_actions:
+      - comment without approval
+      - label without approval
+    failure_behavior: Partial if GitHub unavailable.
+    plugins:
+      - orchestrator-operator-hooks
+
+  - id: on_pr_updated
+    trigger: New commit/check
+    tier: T1
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    allowed_actions:
+      - orchestrator.github.pr_readiness
+      - re-read status
+    forbidden_actions:
+      - auto-merge
+    failure_behavior: Fail closed on stale proof.
+    plugins:
+      - orchestrator-operator-hooks
+
+  - id: on_merge_candidate
+    trigger: PR appears ready
+    tier: T1
+    automatic_allowed: false
+    approval_required: false
+    receipt_required: true
+    allowed_actions:
+      - orchestrator.github.pr_readiness
+      - readiness classification
+    forbidden_actions:
+      - merge without typed approval
+    failure_behavior: Block on missing proof.
+    plugins:
+      - orchestrator-operator-hooks
+
+  - id: on_blocker_detected
+    trigger: Queue/proof/audit blocker
+    tier: T1
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    allowed_actions:
+      - surface blocker
+      - write only via owner
+    forbidden_actions:
+      - hide
+      - auto-resolve
+    failure_behavior: Fail visible.
+    plugins:
+      - orchestrator-operator-hooks
+
+  - id: on_daily_plan_requested
+    trigger: Operator daily
+    tier: T1
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    allowed_actions:
+      - orchestrator.daily.summary
+      - read and rank
+    forbidden_actions:
+      - mutate workflow
+    failure_behavior: Degrade.
+    plugins:
+      - orchestrator-operator-hooks
+
+  - id: on_memory_write_requested
+    trigger: Decision/progress receipt
+    tier: T1
+    automatic_allowed: false
+    approval_required: true
+    receipt_required: true
+    allowed_actions:
+      - route to canonical writer
+    forbidden_actions:
+      - write through task-orchestrator as owner
+    failure_behavior: Fail closed.
+    plugins:
+      - orchestrator-operator-hooks
+
+  - id: on_authority_violation
+    trigger: Duplicate writer/proxy authority
+    tier: T1
+    automatic_allowed: true
+    approval_required: false
+    receipt_required: true
+    allowed_actions:
+      - block and warn
+    forbidden_actions:
+      - continue
+    failure_behavior: Hard stop.
+    plugins:
+      - orchestrator-operator-hooks

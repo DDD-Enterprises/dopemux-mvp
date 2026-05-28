@@ -1,0 +1,10 @@
+{
+  "direct_routes": [
+    {
+      "tool": "claude-code-cli",
+      "status": "AVAILABLE",
+      "risk": "LOW",
+      "reason": "Fixture direct Claude CLI is available."
+    }
+  ]
+}

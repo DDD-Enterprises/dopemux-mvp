@@ -1,0 +1,9 @@
+ docs/ops/embedded-audit.md                       |   2 +
+ docs/ops/pr-acceptance.md                        |   3 +-
+ docs/ops/pr-steward.md                           |   6 +-
+ schemas/pr_steward/merge_readiness.schema.json   | 132 +++++++++++++++---
+ schemas/pr_steward/pr_state_snapshot.schema.json |  72 ++++++++++
+ tests/pr_steward/test_intake.py                  | 136 +++++++++++++++++++
+ tools/pr_steward/classifier.py                   | 164 ++++++++++++++++++++++-
+ tools/pr_steward/collector.py                    |  61 +++++++++
+ 8 files changed, 556 insertions(+), 20 deletions(-)

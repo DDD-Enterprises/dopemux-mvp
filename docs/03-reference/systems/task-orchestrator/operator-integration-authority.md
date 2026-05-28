@@ -201,6 +201,12 @@ explicit operator approval and receipts.
 | `on_memory_write_requested` | Decision/progress receipt | Route to canonical writer | Write through task-orchestrator as owner | Fail closed. |
 | `on_authority_violation` | Duplicate writer/proxy authority | Block and warn | Continue | Hard stop. |
 
+The machine-readable registry for these hooks is
+`config/orchestrator/plugin_hooks.yaml`. The registry is read-only
+classification and audit input only. It does not load plugins, execute hooks,
+grant approvals, apply transitions, write memory, mutate GitHub, or replace a
+canonical writer.
+
 ## Memory Write Policy
 
 Write receipts, not guesses.
@@ -283,6 +289,14 @@ Validation rules:
 | T6 Destructive/deploy/release | clear index, deploy, force push, delete records | No | Typed phrase and operator present | Mandatory |
 | TX Unknown | opaque or externally unresolved tool | No | Cannot approve safely | Violation receipt |
 | TU Unclassified | unenumerated tools | No | Cannot approve safely | Violation receipt |
+
+The machine-readable registry for these tiers and the proposed
+operator-facing capabilities is
+`config/orchestrator/approval_policy.yaml`. The registry is a classification
+and validation source only. It does not grant approval, apply workflow
+transitions, write receipts, mutate GitHub, write memory, or override a
+canonical writer. Unregistered capabilities classify as `TU` and refuse by
+default.
 
 Typed confirmation pattern:
 
@@ -396,6 +410,13 @@ Build only after the first read-only/status packet proves stable.
 5. Event consumer audit packet:
    inspect EventCoordinator consumers and map missing ConPort/dope-memory/proof
    chain before implementing any event-to-memory automation.
+
+Local implementation note (2026-05-26): `src/dopemux/orchestrator/operator_workflows.py`
+implements the remaining integration surfaces as fail-closed local plans,
+receipts, previews, validators, and read-only snapshots. The module does not
+write context indexes, ConPort, dope-memory, workflow state, GitHub state, or
+acceptance records; T4/T5 paths only report readiness for the named canonical
+writer after exact typed approval.
 
 ## Advanced Integration Deferred
 
@@ -547,6 +568,13 @@ The first implementation packet should be exactly this shape:
    current repo authority is insufficient.
 9. Is `services/mcp-integration-bridge` dead, orphaned, or still reachable?
 10. Which proof schema wins for merge-readiness automation?
+
+TP-DMX-ORCH-001 reconciliation note: the repo-local validator added by
+TP-DMX-ORCH-003 validates this repository's
+`dopetask-canonical-spec.json` and a local proof-governance shape only. It does
+not prove equivalence with an external dopeTask-owned schema, installed
+dopeTask runtime version, Supervisor Ledger acceptance contract, or final
+merge-readiness proof schema. Those remain `UNKNOWN` until separately verified.
 
 ## Bottom Line
 
