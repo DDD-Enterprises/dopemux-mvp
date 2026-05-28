@@ -230,10 +230,10 @@ def _process_source(
         rel_path = source.resolve().relative_to(allowed_root.resolve())
         rel_str = rel_path.as_posix()
     except ValueError:
-        # Path escape caught before hashing
+        # Path escape caught before hashing. Redact absolute path in record.
         rejected_list.append(
             FileRecord(
-                path=str(source),
+                path="[redacted_path_escape]",
                 sha256="",
                 size_bytes=0,
                 kind="excluded",

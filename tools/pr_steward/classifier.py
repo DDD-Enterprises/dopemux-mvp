@@ -241,10 +241,12 @@ def _classify_reviews(
         association = _association(review)
         body = str(review.get("body") or "")
         review_id = str(review.get("id") or f"review-{index}")
+        item_blockers: list[str] = []
         if not _known_author(author, association, known_reviewers, trusted_associations):
             disposition = "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION"
             blocking = True
             rationale = "Reviewer is not in known reviewer config."
+            item_blockers.append("UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION")
             _append_once(blockers, "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION")
             _append_once(unknowns, f"Unknown reviewer: {author}")
         elif str(review.get("state") or "").upper() in {
@@ -254,10 +256,15 @@ def _classify_reviews(
             disposition = "MUST_FIX"
             blocking = True
             rationale = "Review requested changes."
+            item_blockers.append("REQUEST_CHANGES")
             _append_once(blockers, "REQUEST_CHANGES")
         else:
             disposition, blocking, rationale = _body_disposition(body)
             if blocking:
+                if disposition == "NEEDS_SUPERVISOR":
+                    item_blockers.append("REVIEW_ITEM_NEEDS_SUPERVISOR")
+                elif disposition == "MUST_FIX":
+                    item_blockers.append("REVIEW_ITEM_MUST_FIX")
                 _append_disposition_blocker(blockers, disposition)
         items.append(
             _review_item(
@@ -268,6 +275,7 @@ def _classify_reviews(
                 body=body,
                 disposition=disposition,
                 blocking=blocking,
+                blockers=item_blockers,
                 rationale=rationale,
             )
         )
@@ -289,15 +297,21 @@ def _classify_comments(
         association = _association(comment)
         body = str(comment.get("body") or "")
         item_id = str(comment.get("id") or f"{source}-{index}")
+        item_blockers: list[str] = []
         if not _known_author(author, association, known_reviewers, trusted_associations):
             disposition = "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION"
             blocking = True
             rationale = "Comment author is not in known reviewer config."
+            item_blockers.append("UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION")
             _append_once(blockers, "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION")
             _append_once(unknowns, f"Unknown {source} author: {author}")
         else:
             disposition, blocking, rationale = _body_disposition(body)
             if blocking:
+                if disposition == "NEEDS_SUPERVISOR":
+                    item_blockers.append("REVIEW_ITEM_NEEDS_SUPERVISOR")
+                elif disposition == "MUST_FIX":
+                    item_blockers.append("REVIEW_ITEM_MUST_FIX")
                 _append_disposition_blocker(blockers, disposition)
         items.append(
             _review_item(
@@ -308,6 +322,7 @@ def _classify_comments(
                 body=body,
                 disposition=disposition,
                 blocking=blocking,
+                blockers=item_blockers,
                 rationale=rationale,
             )
         )
@@ -426,20 +441,24 @@ def _classify_checks(
 
         blocking = False
         rationale = "Check is nonblocking or successful."
+        check_blockers: list[str] = []
         if required and conclusion in FAILED_CHECK_CONCLUSIONS:
             blocking = True
             failed_count += 1
             rationale = "Required check did not succeed."
+            check_blockers.append("FAILED_CHECK")
             _append_once(blockers, "FAILED_CHECK")
         elif required and strict and status in PENDING_CHECK_STATUSES:
             blocking = True
             pending_count += 1
             rationale = "Strict mode requires final check state."
+            check_blockers.append("PENDING_CHECK")
             _append_once(blockers, "PENDING_CHECK")
         elif required and status == "unknown":
             blocking = True
             unknown_count += 1
             rationale = "Check status is unknown."
+            check_blockers.append("UNKNOWN_CHECK")
             _append_once(blockers, "UNKNOWN_CHECK")
             _append_once(unknowns, f"Unknown check status: {name}")
 
@@ -452,6 +471,7 @@ def _classify_checks(
                 "url": url,
                 "head_sha": head_sha,
                 "blocking": blocking,
+                "blockers": check_blockers,
                 "rationale": rationale,
             }
         )
@@ -465,6 +485,7 @@ def _classify_checks(
                     body=f"{name}: {status}/{conclusion}",
                     disposition="MUST_FIX",
                     blocking=True,
+                    blockers=check_blockers,
                     rationale=rationale,
                 )
             )
@@ -664,17 +685,20 @@ def _review_item(
     disposition: str,
     blocking: bool,
     rationale: str,
+    blockers: list[str] | None = None,
 ) -> dict[str, Any]:
     return {
         "id": item_id,
         "source": source,
         "author": author,
-        "author_association": association,
-        "body_excerpt": _excerpt(body),
+        "association": association,
+        "body": body,
         "disposition": disposition,
         "blocking": blocking,
+        "blockers": blockers or [],
         "rationale": rationale,
     }
+
 
 
 def _known_author(
