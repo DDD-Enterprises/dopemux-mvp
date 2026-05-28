@@ -690,12 +690,17 @@ def orchestrator_pr():
     "--pr",
     "entries",
     multiple=True,
-    help="PR entry as number:checks:proof, for example 123:passing:present.",
+    help="PR entry as number:checks:proof, for example 123:passing:present (DEPRECATED).",
 )
+@click.option("--repo", default="DDD-Enterprises/dopemux-mvp", help="Target GitHub repository.")
 @click.option("--json-output", is_flag=True)
-def orchestrator_pr_queue(entries: tuple[str, ...], json_output: bool):
-    """Classify PR readiness from provided read-only status rows."""
-    payload = build_pr_queue(_parse_pr_items(entries))
+def orchestrator_pr_queue(entries: tuple[str, ...], repo: str, json_output: bool):
+    """Classify PR readiness from live GitHub feed or offline fallback."""
+    if entries:
+        click.echo("WARNING: --pr flag is deprecated. Use live mode (no --pr) instead.", err=True)
+        payload = build_pr_queue(_parse_pr_items(entries))
+    else:
+        payload = build_pr_queue(repo=repo)
     _emit_payload(payload, json_output=json_output)
 
 
@@ -704,22 +709,38 @@ def orchestrator_pr_queue(entries: tuple[str, ...], json_output: bool):
 @click.option("--body", required=True)
 @click.option("--proof-id", required=True)
 @click.option("--approval-phrase", default="")
+@click.option("--execute", is_flag=True, help="Execute the comment on GitHub if approved.")
+@click.option("--repo", default="DDD-Enterprises/dopemux-mvp")
 @click.option("--json-output", is_flag=True)
 def orchestrator_pr_comment(
     pr_number: int,
     body: str,
     proof_id: str,
     approval_phrase: str,
+    execute: bool,
+    repo: str,
     json_output: bool,
 ):
-    """Plan a PR comment without calling GitHub."""
+    """Plan or execute a PR comment."""
     payload = pr_comment_plan(
         pr_number=pr_number,
         body=body,
         proof_id=proof_id,
         approval_phrase=approval_phrase,
     )
+    if execute and payload["decision"] == "ready_for_canonical_writer":
+        from dopemux.orchestrator.github_adapter import GithubAdapter
+        adapter = GithubAdapter()
+        res = adapter.comment(repo, pr_number, body, approval_id=proof_id)
+        payload = {
+            **payload,
+            "status": "executed",
+            "will_write": True,
+            "receipt": res,
+            "canonical_writer": "github-api"
+        }
     _emit_payload(payload, json_output=json_output)
+
 
 
 @orchestrator_group.group("dashboard")

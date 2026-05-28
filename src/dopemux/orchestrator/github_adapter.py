@@ -3,6 +3,7 @@ import subprocess
 import json
 import yaml
 from typing import Dict, Any, List, Optional
+from datetime import datetime, timezone
 
 
 class GithubAdapterError(Exception):
@@ -73,19 +74,83 @@ class GithubAdapter:
 
         return result.stdout
 
-    def list_prs(self, repo: str) -> List[Dict[str, Any]]:
+    def list_prs(self, repo: str, filters: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
         """List open pull requests with their checks/reviews."""
-        # Use gh pr list with json fields
-        output = self._run_gh(
-            ["pr", "list", "--state", "open", "--json", "number,title,state,statusCheckRollup,reviews"],
-            repo
-        )
+        cmd = ["pr", "list"]
+        state = "open"
+        limit = "30"
+        if filters:
+            if "state" in filters:
+                state = filters["state"]
+            if "limit" in filters:
+                limit = str(filters["limit"])
+            if "base" in filters:
+                cmd.extend(["--base", filters["base"]])
+            if "head" in filters:
+                cmd.extend(["--head", filters["head"]])
+
+        cmd.extend(["--state", state, "--limit", limit, "--json", "number,title,state,statusCheckRollup,reviews,headRefName,headRepositoryOwner,createdAt"])
+        output = self._run_gh(cmd, repo)
         try:
             return json.loads(output)
         except Exception as e:
             raise GithubAdapterError(f"Failed to parse pull requests JSON: {e}") from e
 
-    def comment(self, repo: str, pr_number: int, body: str) -> Dict[str, Any]:
+    def get_pr(self, repo: str, number: int) -> Dict[str, Any]:
+        """Get details for a specific pull request."""
+        output = self._run_gh(
+            ["pr", "view", str(number), "--json", "number,title,state,statusCheckRollup,reviews,headRefName,headRepositoryOwner,createdAt"],
+            repo
+        )
+        try:
+            return json.loads(output)
+        except Exception as e:
+            raise GithubAdapterError(f"Failed to parse pull request JSON: {e}") from e
+
+    def get_checks(self, repo: str, number: int) -> List[Dict[str, Any]]:
+        """Get checks status for a pull request."""
+        pr = self.get_pr(repo, number)
+        return pr.get("statusCheckRollup") or []
+
+    def get_reviews(self, repo: str, number: int) -> List[Dict[str, Any]]:
+        """Get reviews status for a pull request."""
+        pr = self.get_pr(repo, number)
+        return pr.get("reviews") or []
+
+    def get_branch_age(self, repo: str, number: int) -> float:
+        """Get pull request branch age in days since creation."""
+        pr = self.get_pr(repo, number)
+        created_at_str = pr.get("createdAt")
+        if not created_at_str:
+            return 0.0
+        if created_at_str.endswith("Z"):
+            created_at_str = created_at_str[:-1] + "+00:00"
+        try:
+            created_at = datetime.fromisoformat(created_at_str)
+            now = datetime.now(timezone.utc)
+            delta = now - created_at
+            return delta.total_seconds() / 86400.0
+        except Exception as e:
+            raise GithubAdapterError(f"Failed to parse branch age: {e}") from e
+
+    def find_proof_path(self, repo: str, number: int) -> Optional[str]:
+        """Find the path to the PROOF.json file in the PR's files."""
+        output = self._run_gh(
+            ["pr", "view", str(number), "--json", "files"],
+            repo
+        )
+        try:
+            data = json.loads(output)
+            files = data.get("files", [])
+            for f in files:
+                path = f.get("path", "")
+                if path.endswith("PROOF.json"):
+                    return path
+            return None
+        except Exception as e:
+            raise GithubAdapterError(f"Failed to find proof path: {e}") from e
+
+    def comment(self, repo: str, pr_number: int, body: str, approval_id: Optional[str] = None) -> Dict[str, Any]:
         """Create a comment on a pull request."""
         self._run_gh(
             ["pr", "comment", str(pr_number), "--body", body],
@@ -94,5 +159,7 @@ class GithubAdapter:
         return {
             "success": True,
             "pr_number": pr_number,
-            "comment_body_length": len(body)
+            "comment_body_length": len(body),
+            "approval_id": approval_id,
+            "canonical_writer": "github-api"
         }
