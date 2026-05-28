@@ -26,38 +26,35 @@ It is **NOT** a Two-Plane coordinator - that architecture was simplified. It's n
 - MetaMCP role-based tool filtering enforcement
 
 **Integration Bridge NEVER:**
-- Owns workflow state (task-orchestrator authority — per AGENTS.md §6 + accepted workflow-authority ADR)
-- Stores decisions (ConPort authority)
+- Stores task data (ConPort authority)
 - Parses PRDs (SuperClaude authority)
 - Calculates ADHD metrics (Python ADHD Engine authority)
 - Provides LSP operations (Serena authority)
-- Stores PM entity records (Leantime authority)
+- Stores decisions (ConPort authority)
 
 ## Event Coordination Patterns
 
 ### Simplified Event Flow
 ```bash
-# PRD to Work-Item Creation Flow (orchestrator-first)
+# PRD to Task Creation Flow
 1. User runs: /dx:prd-parse "requirements.md"
-2. SuperClaude + PAL planner → JSON work-item hierarchy
+2. SuperClaude + Zen planner → JSON task hierarchy
 3. Human reviews and approves
-4. SuperClaude → mcp__task-orchestrator__create_work_tree (with `type` set on each item)
-5. Orchestrator → "item-created" events for each new work-item
-6. Integration Bridge → fans out to subscribers
-7. Dashboard → updates UI with new work-items
-8. ADHD Engine → queries orchestrator for ranked candidates
-9. ConPort → optional log_decision if the PRD parsing itself was architectural; link_conport_items to the new items
+4. Python validator → adds ADHD metadata
+5. ConPort batch import → progress_entry + custom_data + links
+6. Integration Bridge → publishes "tasks_imported" event
+7. Dashboard → updates UI with new tasks
+8. ADHD Engine → analyzes tasks and calculates recommendations
 
-# Implementation Flow (orchestrator-first)
-1. User runs: /dx:next (or /dx:implement)
-2. Orchestrator → get_next_item returns ranked candidates with schema + gate status
-3. User picks an item → /dx:start <id>
-4. Orchestrator → advance_item(trigger="start") + emits "item-started" event
-5. Integration Bridge → publishes "item-started" + ADHD Engine starts 25min timer
-6. During work → manage_notes(upsert) accumulates implementation-evidence
-7. At completion → /dx:complete <id> requires `proof-bundle` note filed first
-8. Orchestrator → advance_item(trigger="complete") + emits "item-completed" event
-9. Integration Bridge publishes "item-completed" → Dashboard celebrates + ConPort.log_decision if architectural
+# Implementation Flow
+1. User runs: /dx:implement
+2. ADHD Engine → queries ConPort for optimal task
+3. Python session manager → starts 25min timer
+4. Integration Bridge → publishes "session_started" event
+5. Dashboard → shows timer + current task
+6. Auto-save every 5min → ConPort update_progress
+7. Integration Bridge → publishes "progress_updated" event
+8. Dashboard → updates progress bar
 ```
 
 ### Redis Streams Architecture
@@ -118,37 +115,15 @@ async for msg_id, msg_data in bus.subscribe("dopemux:events", "dashboard"):
 
 ### Event Types
 
-**Workflow events** (canonical source: task-orchestrator MCP per AGENTS.md §6):
-
 | Event Type | Publisher | Subscribers | Purpose |
 |-----------|-----------|------------|---------|
-| `item-created` | task-orchestrator | Dashboard, ADHD Engine | New work-item available (via manage_items or create_work_tree) |
-| `item-started` | task-orchestrator | Dashboard, ADHD Engine, ConPort (for active_context) | Work-item advanced queue → work |
-| `item-blocked` | task-orchestrator | Dashboard | Work-item advanced any → blocked (or BLOCKED-BY edge fired) |
-| `item-resumed` | task-orchestrator | Dashboard | Blocked work-item resumed to previous role |
-| `item-completed` | task-orchestrator | Dashboard, ConPort (for decision linkage), ADHD Engine | Work-item advanced to terminal (gate-passed: proof-bundle filled) |
-| `item-cancelled` | task-orchestrator | Dashboard | Work-item terminal via `cancel` (statusLabel="cancelled") |
-| `item-reopened` | task-orchestrator | Dashboard | Terminal item reopened to queue |
-| `dependency-satisfied` | task-orchestrator | Dashboard, ADHD Engine | BLOCKS edge satisfied (item now eligible to advance) |
-| `claim-acquired` | task-orchestrator | Dashboard (operator visibility) | Agent claimed an item via claim_item |
-| `claim-released` / `claim-expired` | task-orchestrator | Dashboard, anti-pattern detector | Stale-claim detection feeds Phase 7 retros |
-
-**Session + ADHD events** (canonical source: ADHD Engine):
-
-| Event Type | Publisher | Subscribers | Purpose |
-|-----------|-----------|------------|---------|
-| `session_started` | ADHD Engine | Dashboard, ConPort (active_context) | 25min session begins |
+| `tasks_imported` | ConPort | Dashboard, ADHD Engine | New tasks available |
+| `session_started` | ADHD Engine | Dashboard, ConPort | 25min session begins |
 | `session_paused` | ADHD Engine | Dashboard, ConPort | Break time |
+| `progress_updated` | ConPort | Dashboard | Task progress changed |
+| `decision_logged` | ConPort | All services | New architectural decision |
 | `adhd_state_changed` | ADHD Engine | Dashboard | Energy/attention updated |
 | `break_reminder` | ADHD Engine | Dashboard, User | Time for break |
-
-**Decision events** (canonical source: ConPort):
-
-| Event Type | Publisher | Subscribers | Purpose |
-|-----------|-----------|------------|---------|
-| `decision_logged` | ConPort | All services | New architectural decision (often linked to an orchestrator work-item via link_conport_items) |
-
-**Deprecated**: `tasks_imported`, `progress_updated` (ConPort progress_entry no longer represents workflow state; replaced by `item-created` and the role-transition events above).
 
 ## REST API Endpoints
 
