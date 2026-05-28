@@ -3,7 +3,7 @@
   "status": "VERIFIED",
   "status_scope": "series_gate",
   "verdict_summary": "CostProfile F series VERIFIED at HEAD a9dd0659270575deafe269b145da7aea52a4a23f. All 5 verification gates passed under RTE_DISABLE_LIVE_LLM_IN_TESTS=1 with no live provider calls and no live extraction. Full-suite result was 1114 passed, 8 xfailed, 1 skipped, 0 failed, and 0 xpassed; deferred-state total xfailed + skipped = 9. Cluster D prescan failures remain deferred via strict xfail markers per TP-RTE-WALKER-006.",
-  "base_sha": "a9dd0659270575deafe269b145da7aea52a4a23f",
+  "base_sha": "ef0c30bf4",
   "branch": "codex/rte-costprofile-f-verify-002",
   "worktree_path": "/private/tmp/dopemux-f-verify-002",
   "source_repair_pr": {
@@ -135,7 +135,7 @@
   },
   "print_config_summary": {
     "exit_code": 0,
-    "git_sha_emitted": "a9dd0659270575deafe269b145da7aea52a4a23f",
+    "git_sha_emitted": "3afda1dd0",
     "runner_sha256_emitted": "f08e29b584fdcaddcdae24014a80157fbe7a9bb9425dd738d19666a3a4a1bf1b",
     "cost_profile_field_present": true,
     "cost_profile_field_value": "value-default",
