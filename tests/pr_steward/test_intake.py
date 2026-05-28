@@ -93,6 +93,141 @@ def test_ready_with_resolved_outdated_thread_records_nonblocking_evidence(
     assert threads["threads"][0]["blocking"] is False
 
 
+def test_resolved_thread_clears_review_comment_block(
+    tmp_path: Path,
+) -> None:
+    result = run_intake("resolved_thread_clears_review_item", tmp_path)
+
+    assert result.returncode == 0, result.stderr
+    validate_artifacts(tmp_path)
+    readiness = load_json(tmp_path / "MERGE_READINESS.json")
+    ledger = load_json(tmp_path / "REVIEW_ITEM_LEDGER.json")
+    threads = load_json(tmp_path / "THREAD_DISPOSITIONS.json")
+    review_comment_items = [
+        item for item in ledger["items"] if item["source"] == "review_comment"
+    ]
+    assert readiness["readiness"] == "READY"
+    assert "REVIEW_ITEM_MUST_FIX" not in readiness["blockers"]
+    assert "UNRESOLVED_REVIEW_THREAD" not in readiness["blockers"]
+    assert review_comment_items[0]["disposition"] == "AUTO_APPLIED"
+    assert review_comment_items[0]["blocking"] is False
+    assert threads["threads"][0]["disposition"] == "OPTIONAL_DEFERRED"
+
+
+def test_outdated_resolved_thread_nonblocking(
+    tmp_path: Path,
+) -> None:
+    result = run_intake("outdated_resolved_thread_nonblocking", tmp_path)
+
+    assert result.returncode == 0, result.stderr
+    validate_artifacts(tmp_path)
+    readiness = load_json(tmp_path / "MERGE_READINESS.json")
+    ledger = load_json(tmp_path / "REVIEW_ITEM_LEDGER.json")
+    threads = load_json(tmp_path / "THREAD_DISPOSITIONS.json")
+    review_comment_items = [
+        item for item in ledger["items"] if item["source"] == "review_comment"
+    ]
+    assert readiness["readiness"] == "READY"
+    assert threads["threads"][0]["disposition"] == "AUTO_APPLIED"
+    assert review_comment_items[0]["disposition"] == "AUTO_APPLIED"
+    assert review_comment_items[0]["blocking"] is False
+
+
+def test_raw_review_comment_without_thread_still_blocks(
+    tmp_path: Path,
+) -> None:
+    result = run_intake("raw_review_comment_without_thread_still_blocks", tmp_path)
+
+    assert result.returncode == 2, result.stderr
+    validate_artifacts(tmp_path)
+    readiness = load_json(tmp_path / "MERGE_READINESS.json")
+    ledger = load_json(tmp_path / "REVIEW_ITEM_LEDGER.json")
+    assert readiness["readiness"] == "NEEDS_IMPLEMENTER"
+    assert "REVIEW_ITEM_MUST_FIX" in readiness["blockers"]
+    assert ledger["items"][0]["disposition"] == "MUST_FIX"
+    assert ledger["items"][0]["blocking"] is True
+
+
+def test_unresolved_thread_still_blocks(
+    tmp_path: Path,
+) -> None:
+    result = run_intake("unresolved_thread_still_blocks", tmp_path)
+
+    assert result.returncode == 2, result.stderr
+    validate_artifacts(tmp_path)
+    readiness = load_json(tmp_path / "MERGE_READINESS.json")
+    threads = load_json(tmp_path / "THREAD_DISPOSITIONS.json")
+    assert readiness["readiness"] == "NEEDS_IMPLEMENTER"
+    assert "UNRESOLVED_REVIEW_THREAD" in readiness["blockers"]
+    assert threads["threads"][0]["disposition"] == "MUST_FIX"
+
+
+def test_proof_current_exact_head_ready(tmp_path: Path) -> None:
+    result = run_intake("proof_current_exact_head_ready", tmp_path)
+
+    assert result.returncode == 0, result.stderr
+    validate_artifacts(tmp_path)
+    readiness = load_json(tmp_path / "MERGE_READINESS.json")
+    assert readiness["readiness"] == "READY"
+    assert readiness["proof"]["proof_freshness"]["status"] == "CURRENT"
+    assert readiness["proof"]["matches_pr_head"] is True
+
+
+def test_proof_self_reference_exception_ready(tmp_path: Path) -> None:
+    result = run_intake("proof_self_reference_exception_ready_or_needs_supervisor", tmp_path)
+
+    assert result.returncode == 0, result.stderr
+    validate_artifacts(tmp_path)
+    readiness = load_json(tmp_path / "MERGE_READINESS.json")
+    assert readiness["readiness"] == "READY"
+    assert (
+        readiness["proof"]["proof_freshness"]["status"]
+        == "CURRENT_WITH_SELF_REFERENCE_EXCEPTION"
+    )
+    assert readiness["proof"]["matches_pr_head"] is False
+
+
+def test_proof_self_reference_exception_rejects_runtime_changes(
+    tmp_path: Path,
+) -> None:
+    result = run_intake(
+        "proof_self_reference_exception_rejects_runtime_changes",
+        tmp_path,
+    )
+
+    assert result.returncode == 2, result.stderr
+    validate_artifacts(tmp_path)
+    readiness = load_json(tmp_path / "MERGE_READINESS.json")
+    assert readiness["readiness"] == "NEEDS_SUPERVISOR"
+    assert "PROOF_STALE_OR_MISSING" in readiness["blockers"]
+
+
+def test_embedded_audit_pass_with_risks_nonblocking(tmp_path: Path) -> None:
+    result = run_intake("embedded_audit_pass_with_risks_nonblocking", tmp_path)
+
+    assert result.returncode == 0, result.stderr
+    validate_artifacts(tmp_path)
+    readiness = load_json(tmp_path / "MERGE_READINESS.json")
+    assert readiness["readiness"] == "READY"
+    assert readiness["embedded_audit"]["status"] == "PASS_WITH_RISKS"
+
+
+def test_pr713_like_resolved_threads_with_pass_with_risks_audit(
+    tmp_path: Path,
+) -> None:
+    result = run_intake(
+        "pr713_like_resolved_threads_with_pass_with_risks_audit",
+        tmp_path,
+    )
+
+    assert result.returncode == 0, result.stderr
+    validate_artifacts(tmp_path)
+    readiness = load_json(tmp_path / "MERGE_READINESS.json")
+    assert readiness["readiness"] == "READY"
+    assert "REVIEW_ITEM_MUST_FIX" not in readiness["blockers"]
+    assert "UNRESOLVED_REVIEW_THREAD" not in readiness["blockers"]
+
+
 def test_forbidden_mutation_args_are_not_supported(tmp_path: Path) -> None:
     help_result = subprocess.run(
         [sys.executable, "-m", "tools.pr_steward.intake", "--help"],
@@ -262,6 +397,7 @@ def test_live_collection_uses_proof_path_for_ready_state(
     assert readiness["embedded_audit"]["status"] == "PASS_WITH_RISKS"
     assert readiness["proof"]["proof_head_sha"] == pr_head
     assert readiness["proof"]["matches_pr_head"] is True
+    assert readiness["proof"]["proof_freshness"]["status"] == "CURRENT"
 
 
 def test_trusted_author_association_is_nonblocking() -> None:

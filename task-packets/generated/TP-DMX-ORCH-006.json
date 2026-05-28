@@ -1,0 +1,135 @@
+{
+  "id": "TP-DMX-ORCH-006",
+  "project": "dopemux-mvp",
+  "target": "Add workflow DSL parser and validator",
+  "invariants": [
+    "Workflow DSL validation is read-only and does not apply transitions",
+    "Workflow DSL validation does not write PM state, ConPort state, dope-memory state, dope-context indexes, GitHub state, or repository files",
+    "Orchestrator step capabilities must be registered in the TP004 approval policy registry",
+    "Unknown capabilities fail closed",
+    "Write/destructive workflow steps must name canonical writers",
+    "Bridge-mediated writes must name upstream canonical writers",
+    "T4 and higher workflow DSLs must require approval",
+    "TX/TU workflow DSLs must refuse by default"
+  ],
+  "depends_on": [
+    "TP-DMX-ORCH-004"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ORCH-INTEGRATION",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-ORCH-004",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-orch-006-workflow-dsl",
+    "base_branch": "codex/tp-dmx-orch-005-readonly-mcp",
+    "stacked_because": "TP-DMX-ORCH-006 depends on TP-DMX-ORCH-004 and is stacked after TP-DMX-ORCH-005 to preserve this implementation sequence."
+  },
+  "commit": {
+    "message": "feat(orchestrator): add workflow DSL validator",
+    "allowlist": [
+      "src/dopemux/orchestrator/workflow_dsl.py",
+      "src/dopemux/commands/orchestrator_commands.py",
+      "tests/unit/orchestrator/test_workflow_dsl.py",
+      "tests/unit/test_cli_orchestrator_validation_commands.py",
+      "task-packets/generated/TP-DMX-ORCH-006.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-006/PROOF.json"
+    ],
+    "verify": [
+      "uv run pytest -q tests/unit/orchestrator/test_workflow_dsl.py tests/unit/test_cli_orchestrator_validation_commands.py",
+      ".venv/bin/python -m compileall -q src",
+      ".venv/bin/python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-006.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      ".venv/bin/python -m dopemux.cli orchestrator packet validate task-packets/generated/TP-DMX-ORCH-006.json --json-output",
+      ".venv/bin/python -m dopemux.cli orchestrator proof validate proof/dmx-orch-integration/TP-DMX-ORCH-006/PROOF.json --json-output",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(orchestrator): add workflow DSL validator",
+    "body": "Adds a read-only workflow DSL parser and validator with approval-policy-aware transition capability checks.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect_workflow_authority",
+      "task": "Inspect existing workflow models, Task Orchestrator workflow authority docs, and the TP004 approval policy registry.",
+      "validation": [
+        "Evidence distinguishes parsing/validation from workflow mutation",
+        "Capability checks use the TP004 approval policy registry"
+      ],
+      "context_files": [
+        "src/dopemux/workflow/models.py",
+        "src/dopemux/workflow/service.py",
+        "docs/03-reference/planes/pm/pm-plane.md",
+        "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+        "config/orchestrator/approval_policy.yaml"
+      ]
+    },
+    {
+      "id": "dsl_parser_validator",
+      "task": "Add a read-only YAML/JSON workflow DSL parser and validator for the documented owner, authority, tier, trigger, input, step, output, and approval contract.",
+      "validation": [
+        "Valid YAML and JSON workflows pass",
+        "Missing authority owner fails closed",
+        "Unknown automation tiers fail closed",
+        "Forbidden semantics fail closed",
+        "Unknown capabilities fail closed",
+        "Write steps require canonical writers",
+        "Bridge-mediated writes require upstream canonical writers",
+        "Proof and packet steps require schema paths",
+        "T4 and higher workflow DSLs require approval",
+        "TX/TU workflow DSLs require refusal"
+      ],
+      "expected_files": [
+        "src/dopemux/orchestrator/workflow_dsl.py",
+        "tests/unit/orchestrator/test_workflow_dsl.py"
+      ]
+    },
+    {
+      "id": "cli_validator",
+      "task": "Expose the workflow DSL validator through a read-only orchestrator CLI command.",
+      "validation": [
+        "CLI JSON output returns a workflow_dsl validation report",
+        "Invalid DSL exits nonzero",
+        "Existing orchestrator validator commands continue to pass"
+      ],
+      "expected_files": [
+        "src/dopemux/commands/orchestrator_commands.py",
+        "tests/unit/test_cli_orchestrator_validation_commands.py"
+      ]
+    },
+    {
+      "id": "proof",
+      "task": "Create this packet's generated Task Packet and proof artifact.",
+      "validation": [
+        "Generated Task Packet validates against dopetask-canonical-spec.json",
+        "Proof artifact validates with dopemux orchestrator proof validate",
+        "git diff --check passes"
+      ],
+      "expected_files": [
+        "task-packets/generated/TP-DMX-ORCH-006.json",
+        "proof/dmx-orch-integration/TP-DMX-ORCH-006/PROOF.json"
+      ]
+    }
+  ]
+}

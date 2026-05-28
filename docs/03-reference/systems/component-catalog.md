@@ -11,18 +11,15 @@ prelude: Compact component catalog for Dopemux systems, authorities, and drift m
 ---
 # Component Catalog
 
-This catalog is a compact operator reference. The per-system docs under
-[`docs/03-reference/systems/`](.) (`system-<name>.md`) remain the richer
-source for tiering and detailed evidence.
-
-> **Task Orchestrator dual-surface note**: two distinct runtimes share the "Task Orchestrator" name — the in-repo FastAPI workflow service AND the upstream stdio MCP container that holds workflow-state authority per the accepted ADR. See [`task-orchestrator/system-taskorchestrator.md`](task-orchestrator/system-taskorchestrator.md) §9 for the canonical disambiguation.
+This catalog is a compact operator reference. `SERVICE_CATALOG.md` and the
+system docs remain the richer source for tiering and detailed evidence.
 
 | Component | Role | Authority | Drift / UNKNOWN |
 | --- | --- | --- | --- |
 | `dopemux` | Operator CLI and control surface | startup, routing, MCP/server coordination | Does not own downstream PM, memory, retrieval, or execution truth. |
 | `dopetask` | External execution runtime | execution after `scripts/dopetask` handoff | TaskX naming remains in some code/tests as compatibility drift. |
 | Leantime | PM application | passive metadata and project/ticket snapshots | Mostly accessed through adapters/bridge tooling. |
-| Task Orchestrator | Workflow surfaces (dual) | **upstream stdio MCP** (canonical workflow authority per accepted ADR): work-item state machine, schema-driven gates, proof-bundle complete-gate, claims; **in-repo FastAPI service**: idea/epic CRUD, project workflow views, PM-plane write routing | Two distinct runtimes share the name — see `task-orchestrator/system-taskorchestrator.md` §9. FastAPI runtime path + port `8000` vs `3014` drift remains. |
+| Task Orchestrator | Workflow service | workflow transitions, queue, blockers | Runtime path and historical port assumptions remain drift-prone. |
 | ConPort | Structured context system | decisions, progress, context, custom data | Access is split across `3004`, `3005`, and caller assumptions. |
 | dope-memory | Chronicle service | historical receipts and chronicle ledger | Lives under working-memory-assistant tree; do not treat as all memory. |
 | working-memory-assistant | Memory support surface | snapshot/recovery support where implemented | Non-ledger persistence authority remains `UNKNOWN`. |
