@@ -2,7 +2,7 @@
 
 **Packet**: `TP-RTE-COSTPROFILE-F-VERIFY-002`
 **Series**: `rte-cost-profile-redesign`
-**Base SHA**: `a9dd0659270575deafe269b145da7aea52a4a23f` (origin/main at execution time)
+**Base SHA**: `ef0c30bf43ba01f55f9247b9d755b57bccaa74b5` (origin/main at execution time)
 **Branch**: `codex/rte-costprofile-f-verify-002`
 **Worktree**: `/private/tmp/dopemux-f-verify-002`
 **Status Scope**: `series_gate`
@@ -11,7 +11,7 @@
 
 ## Executive Verdict
 
-**VERIFIED** — The CostProfile F series is series-gate verified at HEAD `a9dd0659270575deafe269b145da7aea52a4a23f` following the F-FULLSUITE-REPAIR (PR #709) and INDEX-status correction (PR #710).
+**VERIFIED** — The CostProfile F series is series-gate verified at HEAD `ef0c30bf43ba01f55f9247b9d755b57bccaa74b5` following the F-FULLSUITE-REPAIR (PR #709) and INDEX-status correction (PR #710).
 
 All 5 verification gates now have evidence under `RTE_DISABLE_LIVE_LLM_IN_TESTS=1` with no live provider calls and no live extraction. The full suite passed with `1114 passed, 8 xfailed, 1 skipped, 0 failed, 0 xpassed`; deferred-state total remained `8 xfailed + 1 skipped = 9`. Gate 4 was rerun under the no-live flag. Cluster D prescan failures remain deferred via strict xfail markers per `TP-RTE-WALKER-006`.
 
@@ -40,7 +40,7 @@ The existing gate evidence remains the original F-VERIFY-002 evidence. This foll
 | Source | Type | Identifier | Status |
 | --- | --- | --- | --- |
 | PR #709 | F-FULLSUITE-REPAIR | `bab75c949cb9a50ea150d90a38928ce101d761ad` | MERGED 2026-05-26T09:31:35Z |
-| PR #710 | INDEX status correction | `a9dd0659270575deafe269b145da7aea52a4a23f` | MERGED 2026-05-26T09:54:13Z |
+| PR #710 | INDEX status correction | `ef0c30bf43ba01f55f9247b9d755b57bccaa74b5` | MERGED 2026-05-26T09:54:13Z |
 | `proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/PROOF.json` | Repair proof | status_scope=`repair_gate_only_not_series_gate` | Present on origin/main, parses, references F-VERIFY-002 |
 | `proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/REPAIR_DECISIONS.md` | Repair decisions | — | Present on origin/main |
 | `task-packets/INDEX.md` (origin/main) | Packet ledger | F-FULLSUITE-REPAIR row marked `Merged (PR #709)` | Confirmed |
@@ -70,7 +70,7 @@ The existing gate evidence remains the original F-VERIFY-002 evidence. This foll
 **Environment-driven divergence** (8 xfailed vs. 9 xfailed):
 - `regression/audit_2026_05_22/test_fa_8_high_1_preflight_probe.py` carries a `pytest.skip()` at module:37 gated on `OPENROUTER_API_KEY`.
 - Repair env (`bab75c949`) had the key set → the test ran and hit the `@pytest.mark.xfail` assertion → XFAIL.
-- Verify env (`a9dd0659`) does not have the key set → the test bails at the module-level `skip()` before reaching the xfail marker → SKIPPED.
+- Verify env (`ef0c30bf4`) does not have the key set → the test bails at the module-level `skip()` before reaching the xfail marker → SKIPPED.
 - Underlying test behavior is unchanged; the marker classification simply shifted because of an environment variable. **Total deferred-state count (xfailed + skipped) = 9 in both runs.** No regression, no XPASS.
 
 **XPASS discriminator**: `grep -E '^XPASS|, [0-9]+ xpass' pytest_full_run.txt` → zero matches. Cluster D strict xfails all remained expected; no Walker-006 deferred test silently passed.
@@ -118,7 +118,7 @@ The existing gate evidence remains the original F-VERIFY-002 evidence. This foll
 
 **Result**: `2 passed, 1 warning in 0.44s` — `exit_code=0`
 
-The Phase D provider-preflight residuals around OpenRouter 402 behavior and required-when-cost-routes-include-openrouter both hold at HEAD `a9dd0659` under `RTE_DISABLE_LIVE_LLM_IN_TESTS=1`.
+The Phase D provider-preflight residuals around OpenRouter 402 behavior and required-when-cost-routes-include-openrouter both hold at HEAD `ef0c30bf4` under `RTE_DISABLE_LIVE_LLM_IN_TESTS=1`.
 
 ---
 
@@ -179,9 +179,9 @@ Walker-006 remains the next follow-up packet to retire Cluster D xfails, but it 
 | Verdict | **VERIFIED** (series_gate) |
 | Live provider calls | NOT_RUN |
 | Live extraction | NOT_RUN |
-| Worktree HEAD | `a9dd0659270575deafe269b145da7aea52a4a23f` |
+| Worktree HEAD | `ef0c30bf43ba01f55f9247b9d755b57bccaa74b5` |
 | Pytest exit | 0 |
 | Pytest counts | 1114 passed / 8 xfailed / 1 skipped / 0 failed / 0 xpassed |
 | Repair PR | #709 (MERGED 2026-05-26T09:31:35Z, merge `bab75c949`) |
-| INDEX PR | #710 (MERGED 2026-05-26T09:54:13Z, merge `a9dd0659`) |
+| INDEX PR | #710 (MERGED 2026-05-26T09:54:13Z, merge `ef0c30bf4`) |
 | Follow-up | TP-RTE-WALKER-006 (Cluster D deferred work) |
