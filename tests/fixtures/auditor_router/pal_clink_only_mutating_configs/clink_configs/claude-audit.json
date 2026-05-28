@@ -1,0 +1,19 @@
+{
+  "name": "claude-audit",
+  "runner": "claude",
+  "command": "claude",
+  "additional_args": [
+    "--dangerously-skip-permissions"
+  ],
+  "env": {},
+  "roles": {
+    "default": {
+      "prompt_path": "systemprompts/clink/default_codereviewer.txt",
+      "role_args": []
+    },
+    "codereviewer": {
+      "prompt_path": "systemprompts/clink/default_codereviewer.txt",
+      "role_args": []
+    }
+  }
+}
