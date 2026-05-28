@@ -226,6 +226,23 @@ def default_policy_path() -> Path:
 
 def load_approval_policy(path: str | Path | None = None) -> ApprovalPolicy:
     policy_path = Path(path) if path is not None else default_policy_path()
+    if not policy_path.exists():
+        # Fail closed with empty policy if file is missing
+        return ApprovalPolicy.from_mapping(
+            {
+                "schema_version": 1,
+                "id": "missing-policy-fallback",
+                "authority": "system",
+                "updated": "1970-01-01T00:00:00Z",
+                "defaults": {
+                    "unregistered_decision": "refuse",
+                    "unknown_capability_tier": "TU",
+                },
+                "tiers": {},
+                "capabilities": {},
+            },
+            source_path=path_text(policy_path)
+        )
     payload = _load_yaml_mapping(policy_path)
     return ApprovalPolicy.from_mapping(payload, source_path=path_text(policy_path))
 
