@@ -32,22 +32,26 @@ EDIT_THRESHOLD = 5   # edits before first nudge
 NUDGE_COOLDOWN = 10  # edits between subsequent nudges
 
 
-def _nudge_path(project_root: Path) -> Path:
-    return project_root / ".claude" / _NUDGE_STATE_FILE
+def _nudge_path(project_root: Path, session_id: Optional[str] = None) -> Path:
+    if session_id:
+        filename = f".orchestrator-edit-nudge-{session_id[:8]}.json"
+    else:
+        filename = _NUDGE_STATE_FILE
+    return project_root / ".claude" / filename
 
 
-def reset_edit_counter(project_root: Path) -> None:
+def reset_edit_counter(project_root: Path, session_id: Optional[str] = None) -> None:
     """Zero out the edit counter. Called at SessionStart."""
     try:
-        path = _nudge_path(project_root)
+        path = _nudge_path(project_root, session_id)
         path.write_text(json.dumps({"edits_since_last_nudge": 0, "updated_at": datetime.now(timezone.utc).isoformat()}))
     except Exception:
         pass
 
 
-def _read_nudge_state(project_root: Path) -> dict:
+def _read_nudge_state(project_root: Path, session_id: Optional[str] = None) -> dict:
     try:
-        path = _nudge_path(project_root)
+        path = _nudge_path(project_root, session_id)
         if path.exists():
             return json.loads(path.read_text())
     except Exception:
@@ -55,10 +59,10 @@ def _read_nudge_state(project_root: Path) -> dict:
     return {"edits_since_last_nudge": 0}
 
 
-def _write_nudge_state(project_root: Path, state: dict) -> None:
+def _write_nudge_state(project_root: Path, state: dict, session_id: Optional[str] = None) -> None:
     try:
         state["updated_at"] = datetime.now(timezone.utc).isoformat()
-        _nudge_path(project_root).write_text(json.dumps(state))
+        _nudge_path(project_root, session_id).write_text(json.dumps(state))
     except Exception:
         pass
 
@@ -73,7 +77,7 @@ def _first_work_item(cache: Optional[dict]) -> Optional[dict]:
     return None
 
 
-def on_edit_tool(project_root: Path) -> Optional[str]:
+def on_edit_tool(project_root: Path, session_id: Optional[str] = None) -> Optional[str]:
     """
     Increment the edit counter and return a nudge string if the threshold
     is reached, or None otherwise.
@@ -83,20 +87,20 @@ def on_edit_tool(project_root: Path) -> Optional[str]:
     if not work_item:
         return None  # No active work item — skip nudge entirely
 
-    state = _read_nudge_state(project_root)
+    state = _read_nudge_state(project_root, session_id)
     count = state.get("edits_since_last_nudge", 0) + 1
     threshold = NUDGE_COOLDOWN if state.get("nudge_sent") else EDIT_THRESHOLD
 
     if count < threshold:
         state["edits_since_last_nudge"] = count
         state["nudge_sent"] = state.get("nudge_sent", False)
-        _write_nudge_state(project_root, state)
+        _write_nudge_state(project_root, state, session_id)
         return None
 
     # Threshold reached — emit nudge and reset counter
     state["edits_since_last_nudge"] = 0
     state["nudge_sent"] = True
-    _write_nudge_state(project_root, state)
+    _write_nudge_state(project_root, state, session_id)
 
     item_id = work_item.get("id", "")
     short = short_id(item_id)

@@ -47,7 +47,7 @@ Every multi-step response under this style follows:
 ```
 
 Rules:
-- Root → parent → item, deepest shown first (root last, truncated at 3 levels)
+- Root → parent → item order (root first, deepest last), truncated at 3 levels
 - Short UUID = first 8 chars, shown once per response
 - Gate status: `✅ clear` when `canAdvance: true`; `⚠️ N missing` when `canAdvance: false`
 - Next action: the recommended trigger from `get_next_status()` if available
