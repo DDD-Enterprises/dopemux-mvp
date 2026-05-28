@@ -1,3 +1,7 @@
+---
+name: developer
+---
+
 # Developer Agent Configuration
 
 **Agent Type**: Implementation-focused specialist
