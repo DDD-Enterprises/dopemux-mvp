@@ -12,9 +12,9 @@ prelude: Phase-2 execution ledger for evidence-backed safe archive cleanup.
 ---
 # Repo Branch and Worktree Cleanup Phase 2
 
-**Task packet**: `TP-DMX-REPOHYG-002`  
-**Parent packet**: `TP-DMX-REPOHYG-001`  
-**Execution branch**: `codex/repo-hygiene-phase2-safe-archive-cleanup`  
+**Task packet**: `TP-DMX-REPOHYG-002`
+**Parent packet**: `TP-DMX-REPOHYG-001`
+**Execution branch**: `codex/repo-hygiene-phase2-safe-archive-cleanup`
 **Execution date**: `2026-04-23`
 
 ---
