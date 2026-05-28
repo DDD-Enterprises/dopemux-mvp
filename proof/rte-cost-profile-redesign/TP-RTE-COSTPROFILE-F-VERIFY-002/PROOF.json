@@ -2,7 +2,7 @@
   "packet_id": "TP-RTE-COSTPROFILE-F-VERIFY-002",
   "status": "VERIFIED",
   "status_scope": "series_gate",
-  "verdict_summary": "CostProfile F series VERIFIED at HEAD a9dd0659270575deafe269b145da7aea52a4a23f. All 5 verification gates passed under RTE_DISABLE_LIVE_LLM_IN_TESTS=1 with no live provider calls and no live extraction. Full-suite result was 1114 passed, 8 xfailed, 1 skipped, 0 failed, and 0 xpassed; deferred-state total xfailed + skipped = 9. Cluster D prescan failures remain deferred via strict xfail markers per TP-RTE-WALKER-006.",
+  "verdict_summary": "CostProfile F series VERIFIED at HEAD ef0c30bf43ba01f55f9247b9d755b57bccaa74b5. All 5 verification gates passed under RTE_DISABLE_LIVE_LLM_IN_TESTS=1 with no live provider calls and no live extraction. Full-suite result was 1114 passed, 8 xfailed, 1 skipped, 0 failed, and 0 xpassed; deferred-state total xfailed + skipped = 9. Cluster D prescan failures remain deferred via strict xfail markers per TP-RTE-WALKER-006.",
   "base_sha": "ef0c30bf4",
   "branch": "codex/rte-costprofile-f-verify-002",
   "worktree_path": "/private/tmp/dopemux-f-verify-002",
@@ -19,7 +19,7 @@
     "title": "docs(rte): mark costprofile repair packet merged",
     "state": "MERGED",
     "merged_at": "2026-05-26T09:54:13Z",
-    "merge_commit": "a9dd0659270575deafe269b145da7aea52a4a23f",
+    "merge_commit": "ef0c30bf43ba01f55f9247b9d755b57bccaa74b5",
     "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/710"
   },
   "source_artifacts": [
@@ -113,7 +113,7 @@
     "exit_code": 0,
     "duration_seconds": 143.36,
     "total_collected": 1123,
-    "env_classification_note": "test_fa_8_high_1_preflight_probe.py moved XFAIL (repair env, bab75c949) -> SKIPPED (verify env, a9dd0659) due to absent OPENROUTER_API_KEY; audit-only skipif at module:37. Underlying test behavior unchanged. Total deferred-state count (xfailed + skipped) = 9 in both runs.",
+    "env_classification_note": "test_fa_8_high_1_preflight_probe.py moved XFAIL (repair env, bab75c949) -> SKIPPED (verify env, ef0c30bf4) due to absent OPENROUTER_API_KEY; audit-only skipif at module:37. Underlying test behavior unchanged. Total deferred-state count (xfailed + skipped) = 9 in both runs.",
     "xfail_inventory": [
       "regression/audit_2026_05_22/test_fa_3_high_1_prompt_input_separator.py::test_at_least_one_prompt_has_input_delimiter",
       "regression/audit_2026_05_22/test_fa_7_med_1_status_no_telemetry.py::test_status_text_should_be_fully_readonly",
@@ -174,7 +174,7 @@
       "Preflight: PR #709 MERGED, PR #710 MERGED, repair PROOF.json status=VERIFIED and status_scope=repair_gate_only_not_series_gate, repair PROOF.json lists TP-RTE-COSTPROFILE-F-VERIFY-002 as follow-up.",
       "Preflight: INDEX.md row for F-FULLSUITE-REPAIR-001 shows 'Merged (PR #709)'.",
       "Preflight: REPAIR_DECISIONS.md readable on origin/main.",
-      "Worktree: branch=codex/rte-costprofile-f-verify-002, HEAD=a9dd0659..., status clean before edits.",
+      "Worktree: branch=codex/rte-costprofile-f-verify-002, HEAD=ef0c30bf4..., status clean before edits.",
       "Post-review governance: packet PAL chain includes planner in the Codex minimum sequence analyze -> planner -> codereview -> precommit.",
       "Post-review governance: packet worktree creation now uses captured base SHA from /tmp/F_VERIFY_002_BASE_SHA.txt and verifies worktree HEAD equals that SHA.",
       "Post-review governance: packet S1 now fails closed on tracked dirty state before verification setup and after fresh worktree creation while intentionally ignoring untracked artifacts.",

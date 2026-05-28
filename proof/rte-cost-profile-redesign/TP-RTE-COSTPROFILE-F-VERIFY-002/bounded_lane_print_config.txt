@@ -9,7 +9,7 @@
   "repo_root": "/private/tmp/dopemux-f-verify-002",
   "artifact_root": "/private/tmp/rte-f-verify-002-print-config",
   "run_root": "/private/tmp/rte-f-verify-002-print-config/runs/f_verify_002_print_config",
-  "git_sha": "a9dd0659270575deafe269b145da7aea52a4a23f",
+  "git_sha": "ef0c30bf43ba01f55f9247b9d755b57bccaa74b5",
   "runner_sha256": "f08e29b584fdcaddcdae24014a80157fbe7a9bb9425dd738d19666a3a4a1bf1b",
   "python_version": "3.12.13",
   "cwd": "/private/tmp/dopemux-f-verify-002",
