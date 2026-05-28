@@ -1,0 +1,82 @@
+{
+  "id": "TP-DMX-ORCH-017",
+  "project": "dopemux-mvp",
+  "target": "Final end-to-end proof, docs, acceptance, and cleanup for DMX-ORCH-INTEGRATION",
+  "invariants": [
+    "Final readiness does not fabricate external acceptance",
+    "Proof validation is local and read-only",
+    "Ready-for-merge remains false while acceptance authority is UNKNOWN"
+  ],
+  "depends_on": [
+    "TP-DMX-ORCH-015",
+    "TP-DMX-ORCH-016"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ORCH-INTEGRATION",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-ORCH-016",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-orch-007-plugin-hooks",
+    "base_branch": "codex/tp-dmx-orch-007-plugin-hooks",
+    "stacked_because": "The remaining DMX-ORCH packets were implemented as bounded fail-closed local workflow surfaces after TP-DMX-ORCH-007."
+  },
+  "commit": {
+    "message": "feat(orchestrator): add remaining operator workflows",
+    "allowlist": [
+      "config/orchestrator/approval_policy.yaml",
+      "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+      "src/dopemux/orchestrator/operator_workflows.py",
+      "src/dopemux/commands/orchestrator_commands.py",
+      "tests/unit/orchestrator/test_operator_workflows.py",
+      "task-packets/generated/TP-DMX-ORCH-017.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-017/PROOF.json"
+    ],
+    "verify": [
+      ".venv/bin/python -m pytest -q tests/unit/orchestrator/test_operator_workflows.py",
+      ".venv/bin/python -m dopemux.cli orchestrator final proof --proof proof/dmx-orch-integration/TP-DMX-ORCH-017/PROOF.json --json-output"
+    ]
+  },
+  "pr": {
+    "title": "feat(orchestrator): add final readiness proof check",
+    "body": "Adds final local readiness proof checks while preserving UNKNOWN external acceptance.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "final_readiness",
+      "task": "Implement final local readiness proof check and document remaining acceptance uncertainty.",
+      "validation": [
+        "Valid proof reports proof status PASS",
+        "Acceptance status remains UNKNOWN",
+        "ready_for_merge remains false without external acceptance"
+      ],
+      "expected_files": [
+        "src/dopemux/orchestrator/operator_workflows.py",
+        "src/dopemux/commands/orchestrator_commands.py",
+        "docs/03-reference/systems/task-orchestrator/operator-integration-authority.md",
+        "tests/unit/orchestrator/test_operator_workflows.py"
+      ]
+    }
+  ]
+}

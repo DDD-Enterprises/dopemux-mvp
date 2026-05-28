@@ -1,0 +1,113 @@
+{
+  "audited_files": [
+    "tools/pr_steward/classifier.py",
+    "tools/pr_steward/collector.py",
+    "tests/pr_steward/test_intake.py",
+    "schemas/pr_steward/merge_readiness.schema.json",
+    "schemas/pr_steward/pr_state_snapshot.schema.json",
+    "docs/ops/pr-steward.md",
+    "docs/ops/pr-acceptance.md",
+    "docs/ops/embedded-audit.md"
+  ],
+  "confirmed_pass": [
+    {
+      "area": "PASS_WITH_RISKS",
+      "evidence": "PASS_WITH_RISKS is in PASSING_AUDITS, not in BLOCKING_AUDITS, and the schema allows READY with PASS_WITH_RISKS. Covered by focused tests.",
+      "verdict": "PASS"
+    },
+    {
+      "area": "resolved thread clears review comment blocker",
+      "evidence": "Resolved review threads map linked comments to AUTO_APPLIED and nonblocking dispositions; tests confirm readiness is READY.",
+      "verdict": "PASS"
+    },
+    {
+      "area": "resolved outdated thread nonblocking",
+      "evidence": "Resolved outdated threads are AUTO_APPLIED and nonblocking; fixture smoke confirms unresolved_blocking_count=0.",
+      "verdict": "PASS"
+    },
+    {
+      "area": "unresolved thread blocks",
+      "evidence": "Unresolved threads contribute MUST_FIX and UNRESOLVED_REVIEW_THREAD blockers; fixture smoke confirms failure closed.",
+      "verdict": "PASS"
+    },
+    {
+      "area": "raw review comment without thread still blocks",
+      "evidence": "Comments without thread linkage fall back to body disposition and block on P1 bodies.",
+      "verdict": "PASS"
+    },
+    {
+      "area": "proof freshness CURRENT exact head",
+      "evidence": "Exact head SHA match produces proof_freshness.status=CURRENT and matches_pr_head=true.",
+      "verdict": "PASS"
+    },
+    {
+      "area": "proof freshness self-reference exception gating",
+      "evidence": "CURRENT_WITH_SELF_REFERENCE_EXCEPTION requires supervisor acceptance, the required allowed_when set, and proof-only changed files.",
+      "verdict": "PASS"
+    },
+    {
+      "area": "self-reference exception rejects runtime changes",
+      "evidence": "A runtime file in changed_files causes _proof_is_current to fail and the readiness state remains supervisor-blocked.",
+      "verdict": "PASS"
+    },
+    {
+      "area": "check-only boundary enforcement",
+      "evidence": "mutation_performed stays false, forbidden mutator flags are absent, and docs keep PR Steward check-only.",
+      "verdict": "PASS"
+    },
+    {
+      "area": "schema allOf READY invariants",
+      "evidence": "Schemas accept READY only with exact-head or explicit self-reference exception semantics and no blockers.",
+      "verdict": "PASS"
+    },
+    {
+      "area": "collector two-phase proof state",
+      "evidence": "The collector now derives proof freshness from the live PR head, not only the raw proof blob.",
+      "verdict": "PASS"
+    },
+    {
+      "area": "embedded-audit.md verdict rules alignment",
+      "evidence": "PASS_WITH_RISKS remains acceptable downstream when no blocking findings remain.",
+      "verdict": "PASS"
+    }
+  ],
+  "findings": [
+    {
+      "area": "resolved/outdated thread handling",
+      "description": "The thread classifier treats unresolved-outdated review threads as blocking MUST_FIX, while the comment classifier treats the linked raw review comment as AUTO_APPLIED and nonblocking. The net system still fails closed because the thread classifier contributes the blocker, but the audit trail is contradictory and the divergent state is not covered by a fixture.",
+      "doc_intent": "pr-steward.md describes resolved and outdated review threads as historical evidence, which is consistent with the comment classifier but not with the thread classifier in the unresolved-outdated case.",
+      "id": "F1",
+      "impact": "Latent and nonblocking. The blocker still survives, but the audit trail is inconsistent if this state occurs.",
+      "location": "classifier.py:_classify_threads:351 vs _classify_comments:291-298",
+      "severity": "MEDIUM",
+      "status": "NOT_BLOCKING",
+      "title": "Thread and comment classifiers diverge on isOutdated=true, isResolved=false"
+    },
+    {
+      "area": "test coverage",
+      "description": "All new outdated-thread fixtures set isResolved=true. No fixture exercises the unresolved-outdated divergence identified in F1.",
+      "id": "F2",
+      "impact": "Coverage gap only.",
+      "location": "tests/pr_steward/test_intake.py",
+      "severity": "LOW",
+      "status": "NOT_BLOCKING",
+      "title": "isOutdated=true+isResolved=false thread case is untested"
+    },
+    {
+      "area": "test coverage",
+      "description": "The fallback branch for embedded audit statuses outside PASS/PASS_WITH_RISKS is not exercised by a fixture.",
+      "id": "F3",
+      "impact": "Coverage gap only; the logic is straightforward and fail-closed.",
+      "location": "tools/pr_steward/classifier.py:124-126",
+      "severity": "LOW",
+      "status": "NOT_BLOCKING",
+      "title": "EMBEDDED_AUDIT_UNKNOWN blocker path is untested"
+    }
+  ],
+  "notes": [
+    "The phrase \u201cresolved and outdated review threads are historical evidence\u201d is ambiguous in the docs. The comment classifier treats either resolved or outdated as nonblocking; the thread classifier still treats unresolved-outdated as blocking. That is conservative overall, but the audit trail is inconsistent and should be clarified in a follow-up packet.",
+    "proof_freshness is intentionally optional in the schemas so older proofs still validate. The classifier synthesizes CURRENT freshness from matching SHAs when the field is absent.",
+    "The collector and classifier both define _proof_freshness with different inputs. They are separate module-local helpers and do not collide."
+  ],
+  "verdict": "PASS_WITH_RISKS"
+}

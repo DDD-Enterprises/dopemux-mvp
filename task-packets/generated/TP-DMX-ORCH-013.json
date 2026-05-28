@@ -1,0 +1,80 @@
+{
+  "id": "TP-DMX-ORCH-013",
+  "project": "dopemux-mvp",
+  "target": "Add PR queue/readiness surface and approval-gated PR comment path",
+  "invariants": [
+    "PR readiness is local classification only",
+    "PR comment path does not call GitHub",
+    "T5 comment path requires exact typed approval and proof id"
+  ],
+  "depends_on": [
+    "TP-DMX-ORCH-011",
+    "TP-DMX-ORCH-012"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ORCH-INTEGRATION",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-ORCH-012",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-orch-007-plugin-hooks",
+    "base_branch": "codex/tp-dmx-orch-007-plugin-hooks",
+    "stacked_because": "The remaining DMX-ORCH packets were implemented as bounded fail-closed local workflow surfaces after TP-DMX-ORCH-007."
+  },
+  "commit": {
+    "message": "feat(orchestrator): add remaining operator workflows",
+    "allowlist": [
+      "config/orchestrator/approval_policy.yaml",
+      "src/dopemux/orchestrator/operator_workflows.py",
+      "src/dopemux/commands/orchestrator_commands.py",
+      "tests/unit/orchestrator/test_operator_workflows.py",
+      "task-packets/generated/TP-DMX-ORCH-013.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-013/PROOF.json"
+    ],
+    "verify": [
+      ".venv/bin/python -m pytest -q tests/unit/orchestrator/test_operator_workflows.py",
+      ".venv/bin/python -m dopemux.cli orchestrator pr queue --pr 123:passing:present --json-output"
+    ]
+  },
+  "pr": {
+    "title": "feat(orchestrator): add PR readiness planning",
+    "body": "Adds read-only PR readiness classification and approval-gated PR comment planning.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "pr_queue_comment_plan",
+      "task": "Implement PR queue readiness classification and gated PR comment planning without GitHub mutation.",
+      "validation": [
+        "Passing PR with proof is classified merge_candidate",
+        "Comment plan is T5",
+        "Comment plan without typed approval is blocked and will_write false"
+      ],
+      "expected_files": [
+        "src/dopemux/orchestrator/operator_workflows.py",
+        "src/dopemux/commands/orchestrator_commands.py",
+        "tests/unit/orchestrator/test_operator_workflows.py"
+      ]
+    }
+  ]
+}

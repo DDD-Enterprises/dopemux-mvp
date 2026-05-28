@@ -1,0 +1,131 @@
+{
+  "authoritative_artifacts": [
+    "task-packets/generated/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001.json",
+    "tools/pr_steward/classifier.py",
+    "tools/pr_steward/collector.py",
+    "tests/pr_steward/test_intake.py",
+    "schemas/pr_steward/merge_readiness.schema.json",
+    "schemas/pr_steward/pr_state_snapshot.schema.json",
+    "docs/ops/pr-steward.md",
+    "docs/ops/pr-acceptance.md",
+    "docs/ops/embedded-audit.md"
+  ],
+  "base_sha": "ef0c30bf4",
+  "branch": "codex/pr-steward-resolved-thread-proof-semantics-001",
+  "bundle_id": "TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001",
+  "chain_of_custody": [
+    {
+      "evidence": "Updated PR Steward runtime, schemas, tests, fixtures, and docs to support resolved-thread and proof-freshness semantics.",
+      "step": "implementation"
+    },
+    {
+      "evidence": "Focused validation passed; see command_outputs and VALIDATION_OUTPUT.md.",
+      "step": "validation"
+    },
+    {
+      "evidence": "Local authenticated Claude Code audit returned PASS_WITH_RISKS with one medium nonblocking divergence and two low coverage gaps.",
+      "step": "audit"
+    }
+  ],
+  "command_outputs": [
+    {
+      "command": "python -m compileall -q tools tests",
+      "exit_code": 0,
+      "output": "PASS"
+    },
+    {
+      "command": "pytest -q tests/pr_steward",
+      "exit_code": 0,
+      "output": "21 passed"
+    },
+    {
+      "command": "python -m tools.pr_steward.intake --fixture-dir tests/fixtures/pr_steward/pr713_like_resolved_threads_with_pass_with_risks_audit --repo DDD-Enterprises/dopemux-mvp --pr 704 --out /tmp/pr-steward-pr713-like --strict",
+      "exit_code": 0,
+      "output": "/tmp/pr-steward-pr713-like generated with readiness READY"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "output": "PASS"
+    },
+    {
+      "command": "local direct Claude audit",
+      "exit_code": 0,
+      "output": "PASS_WITH_RISKS"
+    }
+  ],
+  "created_at": "2026-05-27T00:55:19.209497Z",
+  "files_changed": [
+    "docs/ops/embedded-audit.md",
+    "docs/ops/pr-acceptance.md",
+    "docs/ops/pr-steward.md",
+    "schemas/pr_steward/merge_readiness.schema.json",
+    "schemas/pr_steward/pr_state_snapshot.schema.json",
+    "tests/pr_steward/test_intake.py",
+    "tools/pr_steward/classifier.py",
+    "tools/pr_steward/collector.py"
+  ],
+  "git_status_after": " M docs/ops/embedded-audit.md\n M docs/ops/pr-acceptance.md\n M docs/ops/pr-steward.md\n M schemas/pr_steward/merge_readiness.schema.json\n M schemas/pr_steward/pr_state_snapshot.schema.json\n M tests/pr_steward/test_intake.py\n M tools/pr_steward/classifier.py\n M tools/pr_steward/collector.py\n?? task-packets/generated/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001.json\n?? tests/fixtures/pr_steward/embedded_audit_pass_with_risks_nonblocking/\n?? tests/fixtures/pr_steward/outdated_resolved_thread_nonblocking/\n?? tests/fixtures/pr_steward/pr713_like_resolved_threads_with_pass_with_risks_audit/\n?? tests/fixtures/pr_steward/proof_current_exact_head_ready/\n?? tests/fixtures/pr_steward/proof_self_reference_exception_ready_or_needs_supervisor/\n?? tests/fixtures/pr_steward/proof_self_reference_exception_rejects_runtime_changes/\n?? tests/fixtures/pr_steward/raw_review_comment_without_thread_still_blocks/\n?? tests/fixtures/pr_steward/resolved_thread_clears_review_item/\n?? tests/fixtures/pr_steward/unresolved_thread_still_blocks/\n",
+  "git_status_before": "",
+  "handoff_refs": [
+    "docs/ops/pr-steward.md",
+    "docs/ops/pr-acceptance.md",
+    "docs/ops/embedded-audit.md"
+  ],
+  "head_sha": "a34995e34",
+  "repo_identity": {
+    "branch": "codex/pr-steward-resolved-thread-proof-semantics-001",
+    "identity_match": true,
+    "path": "/Users/hue/.codex/worktrees/693f/dopemux-mvp",
+    "remote": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "repo_marker": ".dopetaskroot"
+  },
+  "review_bundle": {
+    "contains_all_review_required_artifacts": true,
+    "manifest": "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/MANIFEST.json",
+    "path": "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle",
+    "upload_unit": "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle"
+  },
+  "review_order_hint": [
+    "Verify resolved/outdated review-thread semantics and proof freshness logic in tools/pr_steward.",
+    "Review the schemas for additive proof_freshness support.",
+    "Review the fixture coverage and proof bundle artifacts."
+  ],
+  "run_id": "2026-05-27T00:55:19.209497Z",
+  "skill": "pr-steward-check-only-runtime",
+  "status": "PASS_WITH_RISKS",
+  "supporting_artifacts": [
+    "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/MANIFEST.json",
+    "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/SUMMARY.md",
+    "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/PROOF.json",
+    "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/AUDITOR_REPORT.md",
+    "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/VALIDATION_OUTPUT.md",
+    "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/GIT_STATE.md",
+    "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/DIFF_STAT.txt",
+    "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/CHANGED_FILES.txt",
+    "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/ARTIFACT_INDEX.md",
+    "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/AUDITOR_OUTPUT.json",
+    "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/AUDITOR_REPORT.md",
+    "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/VALIDATION_OUTPUT.md"
+  ],
+  "validation_state": {
+    "failed_or_blocked": [],
+    "not_run": [
+      "commit",
+      "push",
+      "PR creation"
+    ],
+    "overall": "PASS_WITH_RISKS",
+    "passed": [
+      "task packet JSON parse",
+      "PR Steward schemas JSON parse",
+      "compileall tools/tests",
+      "pytest tests/pr_steward",
+      "fixture smoke pr713_like_resolved_threads_with_pass_with_risks_audit",
+      "fixture smoke JSON artifacts parse",
+      "git diff --check",
+      "local direct Claude audit PASS_WITH_RISKS"
+    ],
+    "reason": "Local direct Claude audit returned PASS_WITH_RISKS; one medium nonblocking divergence between thread and comment classifiers remains untested but conservative."
+  }
+}

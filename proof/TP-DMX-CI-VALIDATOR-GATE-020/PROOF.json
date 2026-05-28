@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0.0",
+  "tp_id": "TP-DMX-CI-VALIDATOR-GATE-020",
+  "series_id": "DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "claude/upbeat-thompson-35f2e8",
+  "base_branch": "main",
+  "head_before": "2aaa6c5754bd0f78a47d04d347293bdfc6fffd19",
+  "head_after": "pending",
+  "mutation_performed": false,
+  "github_mutation_performed": false,
+  "secret_values_recorded": false,
+  "operator_authorization_used": [],
+  "forbidden_surfaces_touched": false,
+  "files_changed": [
+    ".github/workflows/ci-complete.yml"
+  ],
+  "purpose": "Lock in TP-DMX-VALIDATOR-SCOPE-015 by adding `audit-validator` CI job that runs `python3 scripts/audit/validate_audit_proof.py --all proof/` and is registered as a required PR-gate check. Without this gate the PR-body claim about --all proof/ exit code can silently drift between manifest changes, which is exactly the governance gap that produced the original review-cycle false claim about 19/19 PASS.",
+  "commands": [
+    {
+      "cmd": "python3 -c 'import yaml; yaml.safe_load(open(\".github/workflows/ci-complete.yml\"))'",
+      "exit_code": 0,
+      "result": "YAML OK"
+    },
+    {
+      "cmd": "python3 scripts/audit/validate_audit_proof.py --all proof/",
+      "exit_code": 0,
+      "result": "Result: 19/19 PASS, 37 SKIP — confirms the new CI job will pass on its first run."
+    }
+  ],
+  "validation": {
+    "status": "PASS",
+    "details": [
+      {
+        "check": "yaml_valid",
+        "status": "PASS",
+        "detail": "ci-complete.yml parses cleanly via PyYAML."
+      },
+      {
+        "check": "validator_run_pre_push",
+        "status": "PASS",
+        "detail": "--all proof/ returns exit 0 at HEAD; CI job will pass on first run."
+      },
+      {
+        "check": "no_mutation_surfaces",
+        "status": "PASS",
+        "detail": "Only .github/workflows/ci-complete.yml modified; no pr_merge import, no pull_request_target, no CODEOWNERS or branch-protection edits."
+      },
+      {
+        "check": "gate_registered",
+        "status": "PASS",
+        "detail": "audit-validator added to ci-summary needs[] and to the gate_ok check block. BLOCKED message updated to surface audit_validator status."
+      }
+    ]
+  },
+  "remaining_risks": [
+    "Branch-protection truth is UNKNOWN; operator must verify that ci-summary is registered as a required status check in branch protection rules for this gate to actually block merge.",
+    "The job runs --all proof/ recursively — if the proof tree grows substantially, runtime could increase. Current 51-bundle corpus runs in well under 10s; timeout-minutes set to 10 for headroom."
+  ],
+  "embedded_audit": {
+    "required": false,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-CI-VALIDATOR-GATE-020/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": "CI workflow change only; no audit-bearing logic introduced. The new job is itself an audit mechanism that locks in TP-015's contract. Self-audit would be circular; the validator's own correctness is exercised by tests/audit/test_validator_scope.py + tests/audit/test_audit_proof.py."
+  }
+}
