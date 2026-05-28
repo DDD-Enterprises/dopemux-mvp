@@ -201,13 +201,14 @@ class NativeHookAdapter:
         state = self._active_state()
         if not state:
             if orch_ctx:
-                return self._allow(additional_context=orch_ctx)
+                return self._allow(additional_context=orch_ctx, hook_event_name="SessionStart")
             return self._allow()
         workflow_ctx = _workflow_context_lines(state, include_gates=True)
         combined = "\n\n".join(filter(None, [orch_ctx, workflow_ctx]))
         return self._allow(
             system_message=f"Dopemux workflow mode: {state.mode}",
             additional_context=combined or None,
+            hook_event_name="SessionStart",
         )
 
     def _on_user_prompt(self, data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
@@ -300,7 +301,7 @@ class NativeHookAdapter:
         state = self._active_state()
         if not state:
             if nudge:
-                return self._allow(additional_context=nudge, hook_event_name="posttooluse")
+                return self._allow(additional_context=nudge, hook_event_name="PostToolUse")
             return self._allow()
 
         self.kernel.record_tool_event(
@@ -317,7 +318,7 @@ class NativeHookAdapter:
             wf_ctx = _workflow_context_lines(state, include_gates=True)
             return self._allow(
                 additional_context=f"{wf_ctx}\n\n{nudge}",
-                hook_event_name="posttooluse"
+                hook_event_name="PostToolUse"
             )
         return self._allow()
 
