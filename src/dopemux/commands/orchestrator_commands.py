@@ -1067,3 +1067,12 @@ def orchestrator_daily(project_id: str, json_output: bool):
     else:
         lines.append("state: empty")
     _emit_lines(lines)
+
+
+@orchestrator_group.command("tui")
+@click.option("--once", is_flag=True, help="Headless snapshot-and-exit mode for validation.")
+def orchestrator_tui(once: bool):
+    """Launch the read-only TUI operator dashboard HUD."""
+    from dopemux.tui.app import OrchestratorTUI
+    app = OrchestratorTUI(once=once)
+    app.run()
