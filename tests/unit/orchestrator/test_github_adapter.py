@@ -71,3 +71,62 @@ class TestGithubAdapter:
         
         with pytest.raises(GithubAdapterError, match="GitHub CLI command timed out"):
             adapter.list_prs("DDD-Enterprises/dopemux-mvp")
+
+    def test_get_pr(self, mock_run):
+        mock_response = MagicMock()
+        mock_response.returncode = 0
+        mock_response.stdout = '{"number": 123, "title": "Test PR", "state": "OPEN"}'
+        mock_run.return_value = mock_response
+
+        adapter = GithubAdapter(allowlist=["DDD-Enterprises/dopemux-mvp"])
+        res = adapter.get_pr("DDD-Enterprises/dopemux-mvp", 123)
+        assert res["number"] == 123
+        assert res["title"] == "Test PR"
+
+    def test_get_checks_and_reviews(self, mock_run):
+        mock_response = MagicMock()
+        mock_response.returncode = 0
+        mock_response.stdout = '{"number": 123, "statusCheckRollup": [{"name": "validate", "conclusion": "SUCCESS"}], "reviews": [{"state": "APPROVED"}]}'
+        mock_run.return_value = mock_response
+
+        adapter = GithubAdapter(allowlist=["DDD-Enterprises/dopemux-mvp"])
+        checks = adapter.get_checks("DDD-Enterprises/dopemux-mvp", 123)
+        reviews = adapter.get_reviews("DDD-Enterprises/dopemux-mvp", 123)
+        assert len(checks) == 1
+        assert checks[0]["name"] == "validate"
+        assert len(reviews) == 1
+        assert reviews[0]["state"] == "APPROVED"
+
+    def test_get_branch_age(self, mock_run):
+        mock_response = MagicMock()
+        mock_response.returncode = 0
+        from datetime import datetime, timezone, timedelta
+        # 3 days ago in ISO 8601
+        three_days_ago = (datetime.now(timezone.utc) - timedelta(days=3)).isoformat()
+        mock_response.stdout = f'{{"number": 123, "createdAt": "{three_days_ago}"}}'
+        mock_run.return_value = mock_response
+
+        adapter = GithubAdapter(allowlist=["DDD-Enterprises/dopemux-mvp"])
+        age = adapter.get_branch_age("DDD-Enterprises/dopemux-mvp", 123)
+        assert 2.9 < age < 3.1
+
+    def test_find_proof_path(self, mock_run):
+        mock_response = MagicMock()
+        mock_response.returncode = 0
+        mock_response.stdout = '{"files": [{"path": "src/adapter.py"}, {"path": "proof/dmx/TP-013/PROOF.json"}]}'
+        mock_run.return_value = mock_response
+
+        adapter = GithubAdapter(allowlist=["DDD-Enterprises/dopemux-mvp"])
+        path = adapter.find_proof_path("DDD-Enterprises/dopemux-mvp", 123)
+        assert path == "proof/dmx/TP-013/PROOF.json"
+
+    def test_comment(self, mock_run):
+        mock_response = MagicMock()
+        mock_response.returncode = 0
+        mock_response.stdout = "Commented successfully"
+        mock_run.return_value = mock_response
+
+        adapter = GithubAdapter(allowlist=["DDD-Enterprises/dopemux-mvp"])
+        res = adapter.comment("DDD-Enterprises/dopemux-mvp", 123, "LGTTM!", approval_id="app-123")
+        assert res["success"] is True
+        assert res["approval_id"] == "app-123"
