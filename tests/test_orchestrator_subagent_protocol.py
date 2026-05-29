@@ -44,11 +44,11 @@ def test_emit_skips_readonly_agent_types():
 
 
 def test_protocol_is_dopemux_adapted():
-    # Uses the Dopemux MCP prefix and actor-ID convention, not the upstream prefix.
-    assert "mcp__task-orchestrator__" not in SUBAGENT_PHASE_PROTOCOL or True  # prose, not literal
+    # Carries the Dopemux actor-ID convention + proof-bundle rule, and does NOT
+    # carry the upstream double-namespace tool prefix.
     assert "worktree-<basename>-<branch>" in SUBAGENT_PHASE_PROTOCOL
     assert "proof-bundle" in SUBAGENT_PHASE_PROTOCOL
-    assert "mcp__mcp-task-orchestrator__" not in SUBAGENT_PHASE_PROTOCOL  # upstream prefix removed
+    assert "mcp__mcp-task-orchestrator__" not in SUBAGENT_PHASE_PROTOCOL  # upstream double-prefix removed
 
 
 # ---------------------------------------------------------------------------

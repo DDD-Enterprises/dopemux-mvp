@@ -1,16 +1,14 @@
 ---
 id: plugin-hooks-port
-title: Orchestrator Plugin Hooks Port (Path B)
+title: Plugin Hooks Port
 type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-05-28'
-prelude: What TP-CS-101 ported from the upstream task-orchestrator Claude plugin into Dopemux's native hook dispatcher and /dx: command surface, and why.
-related_packets:
-  - TP-CS-100
-  - TP-CS-101
+last_review: '2026-05-28'
+next_review: '2026-08-26'
+prelude: Plugin Hooks Port (reference) for dopemux documentation and developer workflows.
 ---
-
 # Orchestrator Plugin Hooks Port (Path B)
 
 ## Why
