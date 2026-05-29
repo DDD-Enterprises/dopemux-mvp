@@ -33,8 +33,10 @@ ENV PYTHONPATH=/app/src
 RUN mkdir -p /app/data /app/logs
 
 # Health check - verify MCP server is responding
+# `|| exit 1` ensures a failed/unreachable /health marks the container unhealthy.
+# (`|| exit 0` previously masked failures and the container could never report unhealthy.)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=45s --retries=3 \
-    CMD curl -f http://localhost:3010/health || exit 0
+    CMD curl -f http://localhost:3010/health || exit 1
 
 # Labels
 LABEL mcp.role="search"
