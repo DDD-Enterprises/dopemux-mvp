@@ -30,6 +30,14 @@ if _HOOKS_DIR.is_dir() and str(_HOOKS_DIR) not in sys.path:
 try:
     from orchestrator_session_start import emit_session_context, write_context_cache
     from orchestrator_post_edit_nudge import on_edit_tool, reset_edit_counter
+    from orchestrator_subagent_protocol import emit_subagent_protocol
+    from orchestrator_enforcement import (
+        PRE_PLAN_GUIDANCE,
+        POST_PLAN_GUIDANCE,
+        actor_attribution_block,
+        find_orchestrator_config,
+        skill_enforcement_warnings,
+    )
     _ORCH_HOOKS_AVAILABLE = True
 except ImportError:
     _ORCH_HOOKS_AVAILABLE = False
@@ -37,6 +45,12 @@ except ImportError:
     def write_context_cache(_root, _resp): pass  # type: ignore[misc]
     def on_edit_tool(_root, _sid=None): return None  # type: ignore[misc]
     def reset_edit_counter(_root, _sid=None): pass  # type: ignore[misc]
+    def emit_subagent_protocol(_agent_type=None): return None  # type: ignore[misc]
+    def find_orchestrator_config(_root): return None  # type: ignore[misc]
+    def actor_attribution_block(_tool, _inp, _cfg): return None  # type: ignore[misc]
+    def skill_enforcement_warnings(_tool, _inp, _cfg): return []  # type: ignore[misc]
+    PRE_PLAN_GUIDANCE = ""  # type: ignore[misc]
+    POST_PLAN_GUIDANCE = ""  # type: ignore[misc]
 
 from dopemux.workflow import WorkflowStatus, contains_completion_token, parse_workflow_checkpoint  # noqa: E402
 from dopemux.workflow.service import WorkflowKernel  # noqa: E402
@@ -175,6 +189,8 @@ class NativeHookAdapter:
         try:
             if event_name == "SessionStart":
                 return self._on_session_start()
+            if event_name == "SubagentStart":
+                return self._on_subagent_start(event_data)
             if event_name == "UserPromptSubmit":
                 return self._on_user_prompt(event_data)
             if event_name == "PreToolUse":
@@ -211,6 +227,18 @@ class NativeHookAdapter:
             hook_event_name="SessionStart",
         )
 
+    def _on_subagent_start(self, data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
+        """Inject the agent-owned-phase protocol when an implementation subagent spawns.
+
+        Read-only agent types (Explore, Plan) are skipped inside the helper.
+        Independent of Dopemux workflow state — orchestrator coordination applies
+        to every implementation subagent, not just active-workflow sessions.
+        """
+        protocol = emit_subagent_protocol(data.get("agent_type"))
+        if not protocol:
+            return self._allow()
+        return self._allow(additional_context=protocol, hook_event_name="SubagentStart")
+
     def _on_user_prompt(self, data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
         state = self._active_state()
         if not state:
@@ -228,11 +256,32 @@ class NativeHookAdapter:
         )
 
     def _on_pre_tool_use(self, data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
+        tool_name = str(data.get("tool_name") or "unknown")
+        tool_input = data.get("tool_input") or {}
+
+        # --- Orchestrator enforcement (independent of Dopemux workflow state) ---
+        # Config is only needed for orchestrator MCP write tools; skip the file
+        # walk for the common case (Read/Edit/Bash/etc.).
+        needs_config = "advance_item" in tool_name or "manage_notes" in tool_name
+        config_text = find_orchestrator_config(self.project_root) if needs_config else None
+
+        # Hard block: actor attribution required when actor_authentication is enabled.
+        block_reason = actor_attribution_block(tool_name, tool_input, config_text)
+        if block_reason:
+            return self._deny_tool(block_reason)
+
+        # Advisory context: plan-mode entry guidance + skill-invocation enforcement.
+        extra_parts = []
+        if tool_name == "EnterPlanMode" and PRE_PLAN_GUIDANCE:
+            extra_parts.append(PRE_PLAN_GUIDANCE)
+        extra_parts.extend(skill_enforcement_warnings(tool_name, tool_input, config_text))
+        extra_context = "\n\n".join(p for p in extra_parts if p) or None
+
         state = self._active_state()
         if not state:
+            if extra_context:
+                return self._allow(additional_context=extra_context, hook_event_name="PreToolUse")
             return self._allow()
-
-        tool_name = str(data.get("tool_name") or "unknown")
 
         if state.max_iterations == 0 and "wf-limit" in state.workflow_id:
             return self._deny_tool("Workflow iteration limit reached (0/0).", _workflow_context_lines(state, include_gates=True))
@@ -258,6 +307,8 @@ class NativeHookAdapter:
                 "tool_input": _truncate(data.get("tool_input")),
             },
         )
+        if extra_context:
+            return self._allow(additional_context=extra_context, hook_event_name="PreToolUse")
         return self._allow()
 
     def _on_permission_request(self, data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
@@ -293,15 +344,22 @@ class NativeHookAdapter:
         ):
             write_context_cache(self.project_root, tool_response)
 
-        # Nudge to file implementation-evidence notes after N file edits.
-        nudge: Optional[str] = None
+        # Advisory context emitted regardless of workflow state:
+        #   - plan-mode exit guidance when a plan was just approved,
+        #   - nudge to file implementation-evidence notes after N file edits.
+        advisory_parts = []
+        if tool_name == "ExitPlanMode" and POST_PLAN_GUIDANCE:
+            advisory_parts.append(POST_PLAN_GUIDANCE)
         if tool_name in {"Edit", "Write"}:
             nudge = on_edit_tool(self.project_root, self.session_id)
+            if nudge:
+                advisory_parts.append(nudge)
+        advisory = "\n\n".join(advisory_parts) or None
 
         state = self._active_state()
         if not state:
-            if nudge:
-                return self._allow(additional_context=nudge, hook_event_name="PostToolUse")
+            if advisory:
+                return self._allow(additional_context=advisory, hook_event_name="PostToolUse")
             return self._allow()
 
         self.kernel.record_tool_event(
@@ -314,10 +372,10 @@ class NativeHookAdapter:
                 "tool_response": _truncate(data.get("tool_response")),
             },
         )
-        if nudge:
+        if advisory:
             wf_ctx = _workflow_context_lines(state, include_gates=True)
             return self._allow(
-                additional_context=f"{wf_ctx}\n\n{nudge}",
+                additional_context=f"{wf_ctx}\n\n{advisory}",
                 hook_event_name="PostToolUse"
             )
         return self._allow()
