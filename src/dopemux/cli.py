@@ -4926,9 +4926,17 @@ def _pipeline_version_options(command_fn: Callable) -> Callable:
 def _resolved_pipeline_version(
     pipeline_version: str, engine_version_legacy: Optional[str]
 ) -> str:
-    if engine_version_legacy:
-        return engine_version_legacy
-    return pipeline_version
+    resolved = engine_version_legacy if engine_version_legacy else pipeline_version
+    # v3-warn (audit): v3 is the legacy/shadow engine, still operator-reachable via the
+    # hidden --engine-version flag or --pipeline-version v3. Keep it working but warn
+    # loudly so operators don't silently run the unsupported engine. v5 is canonical.
+    if str(resolved).strip().lower() == "v3":
+        console.logger.warning(
+            "[warning]⚠️  Pipeline engine v3 is DEPRECATED[/warning] — it is the legacy/"
+            "shadow engine and v5 is canonical. Prefer --pipeline-version v5. v3 remains "
+            "available but is unsupported and may be removed."
+        )
+    return resolved
 
 
 def _run_truth_v5_alias(
