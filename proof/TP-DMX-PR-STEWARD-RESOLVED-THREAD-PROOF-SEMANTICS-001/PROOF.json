@@ -108,6 +108,45 @@
     "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/AUDITOR_REPORT.md",
     "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/VALIDATION_OUTPUT.md"
   ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "claude -p --model sonnet --effort low --permission-mode plan --tools Read --add-dir /Users/hue/.codex/worktrees/693f/dopemux-mvp --output-format json --no-session-persistence ...",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F001",
+        "severity": "MEDIUM",
+        "title": "Thread/comment classifier diverge on unresolved-outdated threads",
+        "status": "OPEN",
+        "body": "classifier.py:_classify_threads:351 vs _classify_comments:291-298. Clarify semantics or align the two paths in a follow-up packet."
+      },
+      {
+        "id": "F002",
+        "severity": "LOW",
+        "title": "Unresolved-outdated thread state is untested",
+        "status": "OPEN",
+        "body": "tests/pr_steward/test_intake.py. Add a fixture if the state should be explicitly represented."
+      },
+      {
+        "id": "F003",
+        "severity": "LOW",
+        "title": "EMBEDDED_AUDIT_UNKNOWN path is untested",
+        "status": "OPEN",
+        "body": "classifier.py:124-126. Add a fixture only if this path needs direct regression coverage."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "The unresolved-outdated thread state is conservative but audit-trail inconsistent.",
+      "The proof freshness self-reference exception remains intentionally narrow.",
+      "The local audit lane completed through authenticated Claude Code, not through PAL bridge MCP."
+    ],
+    "skip_reason": null
+  },
   "validation_state": {
     "failed_or_blocked": [],
     "not_run": [
