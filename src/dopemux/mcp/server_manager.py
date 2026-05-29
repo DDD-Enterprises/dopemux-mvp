@@ -24,6 +24,7 @@ Integration Points:
 import asyncio
 import json
 import logging
+import os
 import subprocess
 import time
 from dataclasses import dataclass, field
@@ -36,6 +37,73 @@ import websockets
 import yaml
 
 logger = logging.getLogger(__name__)
+
+# Security (TP-2 / MCP1-04): child MCP processes must NOT inherit the full host
+# environment, which would leak every secret (API keys, tokens) to every server.
+# We forward only a conservative base of non-secret operational variables, plus
+# any secrets the server has explicitly declared via `requires_env`/`optional_env`,
+# plus the per-server `environment` dict. Secrets are forwarded by *name* only when
+# the server declares it needs them — never blanket-copied.
+_CHILD_ENV_BASE_ALLOWLIST: tuple[str, ...] = (
+    # Process/runtime essentials
+    "PATH",
+    "HOME",
+    "USER",
+    "LOGNAME",
+    "SHELL",
+    "TMPDIR",
+    "TERM",
+    # Locale (also matched by LC_* prefix below)
+    "LANG",
+    "LC_ALL",
+    # Python launcher vars (spawned interpreters break without these)
+    "PYTHONPATH",
+    "PYTHONHOME",
+    "PYTHONUNBUFFERED",
+    "VIRTUAL_ENV",
+    # Node launcher vars (some stdio servers are node-based)
+    "NODE_PATH",
+    "NVM_DIR",
+)
+
+
+def _build_child_env(config: Dict[str, Any]) -> Dict[str, str]:
+    """Build a fail-closed environment for a spawned (stdio) MCP child process.
+
+    Precedence (lowest to highest): base operational allow-list (from host) <
+    declared secrets named in ``requires_env``/``optional_env`` (from host, if set) <
+    explicit per-server ``environment`` dict (from config).
+
+    Crucially this does NOT copy the entire host environment, so unrelated host
+    secrets never reach the child. A server only receives a secret if it has
+    explicitly declared a need for it by name.
+    """
+    child_env: Dict[str, str] = {}
+
+    # 1. Base operational allow-list + any LC_* locale vars present on the host.
+    for key, value in os.environ.items():
+        if key in _CHILD_ENV_BASE_ALLOWLIST or key.startswith("LC_"):
+            child_env[key] = value
+
+    # 2. Explicitly declared secrets, forwarded by name only when present on host.
+    declared_env_names: List[str] = []
+    for decl_key in ("requires_env", "optional_env"):
+        declared = config.get(decl_key) or []
+        if isinstance(declared, (list, tuple)):
+            declared_env_names.extend(str(name) for name in declared)
+    for name in declared_env_names:
+        host_value = os.environ.get(name)
+        if host_value is not None:
+            child_env[name] = host_value
+
+    # 3. Per-server environment dict wins over everything above.
+    explicit_env = config.get("environment", {})
+    if isinstance(explicit_env, dict):
+        for key, value in explicit_env.items():
+            if value is not None:
+                child_env[str(key)] = str(value)
+
+    return child_env
 
 
 class ServerTransport(Enum):
@@ -434,7 +502,6 @@ class MCPServerManager:
         config = connection.config
         command = config.get("command", [])
         working_dir = config.get("working_directory", ".")
-        env = config.get("environment", {})
 
         if not command:
             raise ValueError(
@@ -442,11 +509,11 @@ class MCPServerManager:
             )
 
         try:
-            # Prepare environment
-            import os
-
-            full_env = os.environ.copy()
-            full_env.update(env)
+            # Prepare environment (TP-2 / MCP1-04): fail-closed allow-list instead
+            # of copying the full host environment, which would leak every host
+            # secret to every child MCP process. `_build_child_env` forwards only
+            # base operational vars + declared secrets + the per-server env dict.
+            child_env = _build_child_env(config)
 
             # Start process
             connection.process = subprocess.Popen(
@@ -455,7 +522,7 @@ class MCPServerManager:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 cwd=working_dir,
-                env=full_env,
+                env=child_env,
                 text=True,
                 bufsize=0,
             )
