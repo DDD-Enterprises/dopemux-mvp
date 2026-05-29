@@ -212,10 +212,9 @@
   },
   "embedded_audit": {
     "required": true,
-    "audit_output_captured": true,
     "status": "NEEDS_SUPERVISOR",
     "auditor_tool": "pal-mcp-clink",
-    "auditor_model": "unknown",
+    "auditor_model": "claude-sonnet-4.6",
     "invocation": "PAL MCP clink attempts: claude/codereviewer, gemini/codereviewer, codex/codereviewer",
     "exit_code": 1,
     "report_path": "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/AUDITOR_REPORT.md",
