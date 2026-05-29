@@ -334,6 +334,7 @@ function App() {
       label: 'Energy Level',
       value: cognitiveState.energy,
       icon: <Zap color={brandTokens.colors.serumMint} size={24} aria-hidden="true" />,
+      accentColor: brandTokens.colors.serumMint,
       roast: "You're sipping ambition like it's lukewarm coffee.",
       tooltip: 'Your current biometric energy reserve based on activity and sleep data',
     },
@@ -341,6 +342,7 @@ function App() {
       label: 'Attention Focus',
       value: cognitiveState.attention,
       icon: <Eye color={brandTokens.colors.ritualCyan} size={24} aria-hidden="true" />,
+      accentColor: brandTokens.colors.ritualCyan,
       roast: 'Focus is flirting with you; stop ghosting it.',
       tooltip: 'Real-time attention state: scattered, focused, or hyperfocused',
     },
@@ -348,6 +350,7 @@ function App() {
       label: 'Cognitive Load',
       value: cognitiveState.load,
       icon: <Brain color={brandTokens.colors.saintGold} size={24} aria-hidden="true" />,
+      accentColor: brandTokens.colors.saintGold,
       roast: 'Load creeping up like a brat testing limits.',
       tooltip: 'Total mental effort being exerted on current tasks',
     },
@@ -355,6 +358,7 @@ function App() {
       label: '15-min Prediction',
       value: cognitiveState.prediction ?? null,
       icon: <TrendingUp color={brandTokens.colors.giltEdge} size={24} aria-hidden="true" />,
+      accentColor: brandTokens.colors.giltEdge,
       roast: 'Future you is pacing. Hydrate before they mutiny.',
       tooltip: 'AI-driven forecast of your cognitive state for the next 15 minutes',
     },
@@ -518,6 +522,7 @@ function App() {
         <Collapse in={Boolean(errorMessage)}>
           <Alert
             severity="error"
+            icon={<AlertTriangle size={20} />}
             onClose={() => setErrorMessage(null)}
             sx={{
               mb: 3,
@@ -550,9 +555,9 @@ function App() {
                     outline: 'none',
                     transition: 'transform 0.2s, box-shadow 0.2s',
                     '&:hover, &:focus-visible': {
-                      borderColor: brandTokens.colors.ritualCyan,
+                      borderColor: metric.accentColor,
                       transform: 'translateY(-4px)',
-                      boxShadow: `0 0 20px ${alpha(brandTokens.colors.ritualCyan, 0.2)}`,
+                      boxShadow: `0 0 20px ${alpha(metric.accentColor, 0.2)}`,
                     },
                   }}
                 >
