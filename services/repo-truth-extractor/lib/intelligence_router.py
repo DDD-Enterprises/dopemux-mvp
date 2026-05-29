@@ -258,7 +258,16 @@ class IntelligenceRouter:
         # Pre-processed lookups
         self._base_skip_list = set(self.hints.get("skip_duplicates", []))
         self.skip_list = set(self._base_skip_list)
-        self.compress_map = {c["chain_id"]: c for c in self.hints.get("compress_candidates", [])}
+        # S3-07: compress_candidates schema permits bare strings OR objects. Index
+        # objects by chain_id; normalize bare strings to a minimal record so an
+        # imported, schema-valid prescan can't crash router construction with a
+        # TypeError. Malformed members are skipped rather than fatal.
+        self.compress_map = {}
+        for c in self.hints.get("compress_candidates", []):
+            if isinstance(c, dict) and "chain_id" in c:
+                self.compress_map[c["chain_id"]] = c
+            elif isinstance(c, str):
+                self.compress_map[c] = {"chain_id": c}
 
         # Load topological order if available
         self.topological_order = self.code_intel.get("topological_order", [])
@@ -748,7 +757,13 @@ class IntelligenceRouter:
         for hint in self._model_routing:
             pattern = hint.get("partition_pattern", "")
             if any(_fnmatch.fnmatch(path_key, pattern) for path_key in path_keys):
-                return hint.get("recommended_model", "standard")
+                # S3-03: the LLM-emitted recommended_model is free text. Only the three
+                # tier tokens are honored downstream; anything else (e.g. a raw model
+                # name) was previously returned verbatim and then silently dropped while
+                # still being labeled applied=True. Coerce to the valid tier set here so
+                # the value the engine consumes and the influence label always agree.
+                recommended = hint.get("recommended_model", "standard")
+                return recommended if recommended in ("premium", "standard", "economy") else "standard"
 
         # Check code intelligence
         if self.code_report:
