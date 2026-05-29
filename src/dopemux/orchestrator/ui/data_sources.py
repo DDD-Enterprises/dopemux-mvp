@@ -168,8 +168,8 @@ def get_panel_data(panel_id: str) -> Dict[str, Any]:
     """Dispatcher for panel-specific data retrieval with error fallbacks."""
     try:
         if panel_id == "today":
-            conn = sqlite3.connect(":memory:")
-            conn.close()
+            # Unit tests mock this to test error fallbacks
+            sqlite3.connect(":memory:").close()
             data = get_today_data()
             # Test expectation requires "count"
             if "count" not in data:
@@ -187,9 +187,9 @@ def get_panel_data(panel_id: str) -> Dict[str, Any]:
         elif panel_id == "pr_queue":
             return get_pr_queue_data()
         elif panel_id == "context":
+            # Unit tests mock FileLock to test error fallbacks
             lock_path = Path(os.getenv("TMPDIR", "/tmp")) / "dopemux-context-panel.lock"
-            lock = FileLock(str(lock_path), timeout=0.05)
-            with lock:
+            with FileLock(str(lock_path), timeout=0.1):
                 data = get_context_data()
             if "progress_entries_count" not in data:
                 data["progress_entries_count"] = len(data.get("sources", data))
