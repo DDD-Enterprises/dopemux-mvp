@@ -722,7 +722,10 @@ class PrescanEngine:
                 "ghost_files": len(ghosts),
                 "by_class": by_class,
                 "by_extension": by_ext,
-                "total_size_bytes": sum(entry.size_bytes for entry in included),
+                # S3-06: canonical key is total_included_size_bytes (matches schemas.py
+                # and IntelligenceRouter.estimate_token_savings). Emitting total_size_bytes
+                # here made the router read 0 and report 0% savings unconditionally.
+                "total_included_size_bytes": sum(entry.size_bytes for entry in included),
                 "corpus_health_score": 100,
             },
             "lifecycle_distribution": self._get_lifecycle_dist(entries),
