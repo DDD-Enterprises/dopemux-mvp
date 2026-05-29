@@ -40,9 +40,9 @@ Adaptations from upstream: Dopemux `mcp__task-orchestrator__` tool prefix (match
 - `config.yaml` is only read for orchestrator write-tool calls (`advance_item`/`manage_notes`), avoiding per-call overhead on ordinary tools.
 - `.claude/settings.json` adds a `SubagentStart` registration routing to `native_hooks.py` (no matcher; `agent_type` filtering happens in the dispatcher).
 
-## `/dx:` commands added
+## `/dx:` commands (companion, ships separately)
 
-`summary` (PM dashboard, read-only), `plan-enter` / `plan-exit` (plan-mode entry/exit workflow), `schema` (read-only schema inspector). These extend the broader `/dx:` surface.
+Four net-new commands extend the `/dx:` surface: `summary` (PM dashboard, read-only), `plan-enter` / `plan-exit` (plan-mode entry/exit workflow), `schema` (read-only schema inspector). They are **not** in this hooks PR: the broader `/dx:` surface (18 commands), `dx-command-authoring.md`, and `config.yaml` were accidentally dropped from `main` by an unrelated Palette merge (`d8e0268d3`) and currently survive only on the `task-orchestrator-claude-surface` series branch. The four commands ship on a branch off that series branch where they cohere; they land on `main` once the surface is restored there (tracked separately).
 
 ## Fail-safe and integration notes
 
