@@ -231,8 +231,10 @@ def check_json_output(base: list[str], path: list[str]) -> dict[str, Any]:
     """Run a command with --json and assert the output parses as valid JSON."""
     import json
 
-    cmd = base + path + ["--json"]
-    label = " ".join(path) + " --json"
+    # --json is a root-level flag on the dopemux Click group; it must come
+    # before the subcommand, i.e. `dopemux --json health` not `dopemux health --json`
+    cmd = base + ["--json"] + path
+    label = "--json " + " ".join(path)
     try:
         result = subprocess.run(
             cmd,

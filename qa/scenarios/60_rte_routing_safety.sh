@@ -114,11 +114,11 @@ _spend_detected() {
         return 0
     fi
 
-    # 2. Spend ledger file shows a non-zero entry written in the last 30 seconds
+    # 2. Spend ledger file shows a non-zero entry written since scenario start
     local spend_files
     spend_files="$(find "${ROOT}" -maxdepth 4 \
         \( -name 'spend.log' -o -name 'spend.jsonl' -o -name 'llm_spend.jsonl' \) \
-        -newer "${ROOT}/qa/scenarios/60_rte_routing_safety.sh" 2>/dev/null | head -5 || true)"
+        -newer "${_SPEND_MARKER_FILE}" 2>/dev/null | head -5 || true)"
 
     if [[ -n "${spend_files}" ]]; then
         while IFS= read -r f; do
@@ -136,6 +136,11 @@ _spend_detected() {
 # Begin scenario
 # ═══════════════════════════════════════════════════════════════════════════════
 scenario_start "rte_routing_safety"
+
+# Create a marker file timestamped at scenario start; spend detection uses
+# -newer against this file so only logs written during this run are counted.
+_SPEND_MARKER_FILE="${RESULTS_DIR}/60_rte_spend_marker_${RUN_ID:-$$}"
+touch "${_SPEND_MARKER_FILE}"
 
 # ── Preflight: locate dopemux ────────────────────────────────────────────────
 DOPEMUX_BIN=""

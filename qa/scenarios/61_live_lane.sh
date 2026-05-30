@@ -206,7 +206,7 @@ elif echo "${PAL_OUT}" | grep -qiE 'token|usage|cost|spend'; then
 fi
 
 PAL_WITHIN_CAP=true
-if ! _float_le "${SPEND_AFTER_PAL}" "${SPEND_CAP}"; then
+if ! _float_le "${PAL_SPEND_DELTA}" "${SPEND_CAP}"; then
     PAL_WITHIN_CAP=false
 fi
 
@@ -275,6 +275,7 @@ set +e
 RTE_OUT="$(
     DPMX_LIVE_OK=1 timeout 120 \
         ${DOPEMUX_BIN} ${RTE_SUBCMD} --execute \
+            --allow-legacy-v3-scan \
             --workspace "${FIXTURE_WORKSPACE}" \
         2>&1
 )"
@@ -288,7 +289,7 @@ RTE_SPEND_DELTA="$(awk "BEGIN{printf \"%.6f\", ${SPEND_AFTER_RTE}-${SPEND_BEFORE
 log_info "Spend after RTE call: \$${SPEND_AFTER_RTE} (delta: \$${RTE_SPEND_DELTA})"
 
 RTE_WITHIN_CAP=true
-if ! _float_le "${SPEND_AFTER_RTE}" "${SPEND_CAP}"; then
+if ! _float_le "${RTE_SPEND_DELTA}" "${SPEND_CAP}"; then
     RTE_WITHIN_CAP=false
 fi
 
