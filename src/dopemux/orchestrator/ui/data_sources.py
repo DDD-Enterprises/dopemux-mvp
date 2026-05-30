@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import sqlite3
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -21,12 +22,25 @@ from dopemux.orchestrator.validation.proof import validate_proof_file
 
 
 def get_today_data() -> Dict[str, Any]:
-    """Retrieve general snapshot overview."""
-    import sqlite3
-    # Dummy connectivity probe to satisfy TUI error-handling tests
-    # which expect this panel to be sqlite-backed.
-    sqlite3.connect(":memory:").close()
-    return build_dashboard_snapshot()
+    """Retrieve today's task summary with active item count from ConPort SQLite.
+
+    Calls sqlite3.connect so that callers (get_panel_data) can catch
+    sqlite3.OperationalError when the database is locked or unavailable.
+    """
+    snap = build_dashboard_snapshot()
+    db_path = str(Path(os.environ.get("CONPORT_DB_PATH", ".conport/conport.db")))
+    conn = sqlite3.connect(db_path)  # may raise sqlite3.OperationalError
+    try:
+        row = conn.execute(
+            "SELECT COUNT(*) FROM progress_entries WHERE status != 'DONE'"
+        ).fetchone()
+        count = row[0] if row else 0
+    except sqlite3.OperationalError:
+        # Table not yet created in this environment — treat as empty.
+        count = 0
+    finally:
+        conn.close()
+    return {**snap, "count": count}
 
 
 def get_authority_data() -> Dict[str, Any]:
