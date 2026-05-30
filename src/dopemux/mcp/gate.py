@@ -84,14 +84,6 @@ class DiscoveryGate:
                 missing_globs = []
                 for glob in required_globs:
                     matches = fnmatch.filter(discovered_tools, glob)
-                    
-                    # Special case for ConPort: handle both spellings if one fails
-                    if not matches and (glob.startswith("conport_") or glob.startswith("conport_")):
-                        if "conport_" in glob:
-                            alt_glob = glob.replace("conport_", "conport_")
-                        else:
-                            alt_glob = glob.replace("conport_", "conport_")
-                        matches = fnmatch.filter(discovered_tools, alt_glob)
 
                     if not matches and not handshake_required:
                         missing_globs.append(glob)
