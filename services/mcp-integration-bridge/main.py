@@ -1201,11 +1201,24 @@ app = FastAPI(
 # an invalid combo with allow_credentials=True). Restrict to a configured allow-list
 # (comma-separated MCP_INTEGRATION_CORS_ORIGINS), defaulting to localhost. Override
 # explicitly for an intentional networked deployment.
+# P2: CORS matches scheme+host+port exactly; bare "http://localhost" blocks any
+# browser client at localhost:3000 etc.  Include the common local dev ports in
+# the default so the Dopemux dashboard works out of the box.  Operators who need
+# a different set should set MCP_INTEGRATION_CORS_ORIGINS explicitly.
 _cors_origins = [
     origin.strip()
     for origin in os.getenv("MCP_INTEGRATION_CORS_ORIGINS", "").split(",")
     if origin.strip()
-] or ["http://localhost", "http://127.0.0.1"]
+] or [
+    "http://localhost",
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:8080",
+    "http://127.0.0.1",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+    "http://127.0.0.1:8080",
+]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
