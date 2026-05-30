@@ -747,7 +747,11 @@ class PrescanEngine:
             "version_chain_count": version_chain_count,
             "extraction_hints": {
                 "skip_duplicates": sorted(entry.rel_path for entry in entries if entry.is_duplicate),
-                "compression_candidates": sorted(
+                # P1-4: align key with intelligence_router ("compress_candidates").
+                # The old key "compression_candidates" was read nowhere — the router
+                # only populates compress_map / iterates hints["compress_candidates"],
+                # so offline prescan hints were silently ignored.
+                "compress_candidates": sorted(
                     entry.rel_path
                     for entry in entries
                     if entry.is_duplicate or (entry.version_chain_id and not entry.is_latest_version)

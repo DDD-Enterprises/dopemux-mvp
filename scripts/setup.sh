@@ -153,11 +153,15 @@ fi
 echo
 echo -e "${CYAN}🔧 Step 6/8: Initializing git submodules...${NC}"
 
-if git submodule update --init --recursive 2>&1 | grep -q "Submodule"; then
+# P2: `set -o pipefail` + `grep -q` closes the pipe early → SIGPIPE → non-zero
+# exit → pipefail fires.  Capture output first, then test.
+_submodule_out=$(git submodule update --init --recursive 2>&1)
+if echo "$_submodule_out" | grep -q "Submodule"; then
     echo -e "${GREEN}   ✅ Submodules initialized${NC}"
 else
     echo -e "${YELLOW}   ⏭️  No submodules configured yet${NC}"
 fi
+unset _submodule_out
 
 # ============================================================================
 # Step 7: Docker Setup (Optional)
@@ -214,11 +218,18 @@ echo -e "${CYAN}🏥 Step 8/8: Verifying installation...${NC}"
 if command -v dopemux &> /dev/null; then
     if [ "$SKIP_DOCKER" = false ]; then
         echo -e "${CYAN}   Running health check...${NC}"
-        if dopemux health 2>&1 | head -10; then
+        # P2: `set -o pipefail` + `head` closes the pipe early → SIGPIPE on the
+        # producer → non-zero pipeline exit even when dopemux health succeeds.
+        # Capture output + exit code separately to avoid the SIGPIPE.
+        _health_out=$(dopemux health 2>&1)
+        _health_rc=$?
+        echo "$_health_out" | head -10
+        if [ $_health_rc -eq 0 ]; then
             echo -e "${GREEN}   ✅ Health check passed${NC}"
         else
             echo -e "${YELLOW}   ⚠️  Some services may not be ready yet${NC}"
         fi
+        unset _health_out _health_rc
     else
         echo -e "${YELLOW}   ⏭️  Skipping health check (Docker not started)${NC}"
     fi
