@@ -67,6 +67,10 @@ AUDITED_PYTHON_FILES = [
     "src/dopemux/commands/extractor_validation_ui.py",
     "src/dopemux/config/manager.py",
     "src/dopemux/extractor/runner.py",
+    "src/dopemux/ui/cockpit/__init__.py",
+    "src/dopemux/ui/cockpit/app.py",
+    "src/dopemux/ui/cockpit/render.py",
+    "src/dopemux/ui/cockpit/runtime_contract.py",
     "src/dopemux/ui/dashboard.py",
     "src/dopemux/ui/dashboard_detail.py",
     "src/dopemux/ui/service_endpoints.py",
@@ -92,6 +96,9 @@ AUTHORITATIVE_BRAND_DOCS = [
 
 OPERATIONAL_UI_FILES = [
     "src/dopemux/commands/extractor_validation_ui.py",
+    "src/dopemux/ui/cockpit/app.py",
+    "src/dopemux/ui/cockpit/render.py",
+    "src/dopemux/ui/cockpit/runtime_contract.py",
     "src/dopemux/ui/dashboard.py",
     "src/dopemux/ui/dashboard_detail.py",
     "src/dopemux/ui/voice.py",
