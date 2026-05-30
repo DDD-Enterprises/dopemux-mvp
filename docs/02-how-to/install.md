@@ -80,7 +80,7 @@ That's it! The installer handles everything automatically.
 
 The canonical `compose.yml` file at the repository root is the single source of truth for runtime orchestration. Legacy compose files are deprecated.
 
-During interactive runs the installer now previews each bundle (services + estimated runtime) so you know exactly what will be launched. Passing `--stack` skips the prompt but still prints the summary. Full installs automatically create the required Docker networks (`mcp-network`, `dopemux-unified-network`, `leantime-net`).
+During interactive runs the installer now previews each bundle (services + estimated runtime) so you know exactly what will be launched. Passing `--stack` skips the prompt but still prints the summary. Full installs automatically create the required Docker networks (`mcp-network`, `dopemux-network`, `leantime-net`).
 
 ### Environment Variables & `.env`
 

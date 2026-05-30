@@ -33,6 +33,26 @@ validate_env_var() {
     fi
 }
 
+# P1-2: checkout helper with master fallback — when the default ref is "main"
+# and the remote has no "main" branch (master-only upstream), fall back to
+# "master" before giving up.  Under set -e a bare `git checkout main` on such
+# a repo would abort the entire installer.
+_checkout_with_master_fallback() {
+    local ref="$1"
+    local server_name="$2"
+    if git checkout "$ref" 2>/dev/null; then
+        return 0
+    fi
+    # Only attempt the fallback when the caller didn't pin an explicit ref.
+    if [ "$ref" = "main" ] || [ -z "$ref" ]; then
+        echo "⚠️  $server_name: branch 'main' not found, trying 'master'..."
+        git checkout master
+    else
+        # Non-default ref: let the original failure propagate.
+        git checkout "$ref"
+    fi
+}
+
 # Function to install a Docker MCP server
 install_docker_mcp_server() {
     local server_name="$1"
@@ -57,13 +77,13 @@ install_docker_mcp_server() {
     if [ -d ".git" ]; then
         echo "🔄 Updating existing $server_name repository (ref: $ref)..."
         git fetch --all --tags
-        git checkout "$ref"
+        _checkout_with_master_fallback "$ref" "$server_name"
         # Only fast-forward when tracking a branch; tags/SHAs have no upstream to pull.
         git pull --ff-only 2>/dev/null || true
     else
         echo "📥 Cloning $server_name repository (ref: $ref)..."
         git clone "$repo_url" .
-        git checkout "$ref"
+        _checkout_with_master_fallback "$ref" "$server_name"
     fi
 
     if [ "$ref" = "main" ] || [ "$ref" = "master" ]; then
