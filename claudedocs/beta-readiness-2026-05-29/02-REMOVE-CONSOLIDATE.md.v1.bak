@@ -1,0 +1,40 @@
+# Dopemux Beta-Readiness — Remove / Consolidate
+
+Run metadata: HEAD `755bf3846`, 2026-05-29.
+
+> **Caveat (applies to every item below):** each target still needs a confirming diff (e.g. `git show HEAD:<path>` + a referencing-callers sweep) immediately before deletion — do not delete on the strength of this list alone.
+
+---
+
+## Removal Candidates
+
+| target | confirmations | rationale | evidence |
+|--------|:-:|-----------|----------|
+| `services/router` (directory) | 2 | Stub only: `__init__.py` with a version string and service-name constant, no server/handler/MCP entry. Confirmed dead by inherited RV-11 (PARTIAL) and MCP-8 (CONFIRMED/high), and independently re-verified at this HEAD (only file is `__init__.py`). | `services/router/__init__.py` — sole file, contents are `__version__`/`__service_name__` only; RV-11 + MCP-8 both name `services/router` as stub |
+| `services/dope-query` (directory) | 2 | No server: only `auth/models.py` and `tests/test_password_utils.py` exist; no main/server/MCP entrypoint. Confirmed by inherited RV-11 (PARTIAL) and MCP-8 (CONFIRMED/high), re-verified at this HEAD. | `find services/dope-query -type f` → `auth/models.py`, `tests/test_password_utils.py` only; RV-11 + MCP-8 both name `services/dope-query` as having no server |
+
+---
+
+## Detail
+
+### `services/router` — DELETE (post-beta, BETA-CLEAN-01)
+
+- **Confirmation count:** 2 (inherited RV-11 PARTIAL + MCP-8 CONFIRMED/high), plus independent re-verification at this HEAD.
+- **Rationale:** Stub-only package — `services/router/__init__.py` is the sole file and contains only `__version__ = "0.1.0"` and `__service_name__ = "dopemux-router"` (no classes, no functions, no server/MCP entry). Not wired as a runnable service in `compose.yml` or `services/registry.yaml`. The one `from router import CommandRouter` reference (`services/session-manager/src/main.py:29`) cannot resolve to this package because it defines no `CommandRouter` symbol — so removing the directory does not break that import (which is already non-resolving against this package).
+- **Evidence:**
+  - `services/router/__init__.py` — sole file, contents are `__version__`/`__service_name__` only
+  - RV-11 + MCP-8 both name `services/router` as a stub
+
+### `services/dope-query` — DELETE (post-beta, BETA-CLEAN-01)
+
+- **Confirmation count:** 2 (inherited RV-11 PARTIAL + MCP-8 CONFIRMED/high), re-verified at this HEAD.
+- **Rationale:** No runnable server. The directory holds only `auth/models.py` (a SQLAlchemy `User` model, header 'ConPort-KG Authentication Models') and `tests/test_password_utils.py`. No `main`/`server`/MCP entrypoint exists, and the directory is unreferenced by `compose.yml` and `services/registry.yaml` (it appears only in docs/reports). Its relationship to `conport_kg` auth is untraced — possibly a stale duplicate (`UNKNOWN`) — so confirm-before-delete is especially warranted here.
+- **Evidence:**
+  - `find services/dope-query -type f` → `auth/models.py`, `tests/test_password_utils.py` only
+  - RV-11 + MCP-8 both name `services/dope-query` as having no server
+
+---
+
+## Explicitly NOT a Removal Target
+
+- **`dope-memory` / `services/dope-memory/`** — NOT dead, NOT a duplicate. The runnable `dope-memory` compose service (`compose.yml:454-458`) builds from `services/working-memory-assistant/Dockerfile.dope-memory` (entrypoint `services/working-memory-assistant/dope_memory_main.py`, port 3020) — it is a packaging/facet of WMA. The `services/dope-memory/` directory is a separate, real-but-stale stdio shim (`mcp_stdio_adapter.py`) in FRONT of WMA, not a duplicate codebase. The inherited 'dope-memory duplicates working-memory-assistant' claim is refuted. (See RV-11 in `00-MASTER-REPORT.md`.)
