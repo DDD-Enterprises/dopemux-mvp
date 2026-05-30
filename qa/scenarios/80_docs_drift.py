@@ -165,8 +165,18 @@ def extract_shell_commands(text: str) -> list[str]:
     return unique
 
 
+_SHELL_METACHAR_RE = re.compile(r'[;&|`$<>\\()\n]')
+
+
 def is_safe_command(cmd: str) -> bool:
-    """Return True if the command matches a known read-only safe pattern."""
+    """Return True if the command matches a known read-only safe pattern.
+
+    Rejects any command containing shell metacharacters so that a doc line
+    like ``dopemux --help; rm -rf /`` cannot pass the allowlist even though
+    it starts with a safe prefix.
+    """
+    if _SHELL_METACHAR_RE.search(cmd):
+        return False
     for pattern in SAFE_COMMAND_PATTERNS:
         if pattern.match(cmd):
             return True

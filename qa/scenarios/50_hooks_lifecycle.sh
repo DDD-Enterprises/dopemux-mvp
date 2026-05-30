@@ -120,11 +120,12 @@ _fire_hook() {
 
     local rc=0
     # Dispatcher reads from stdin; exit 0 = allow, exit 2 = block (both non-crash)
-    PYTHONPATH="${pythonpath_extra}${SRC_DIR}" \
-    CLAUDE_PROJECT_DIR="${QA_HOOKS_WORKSPACE}" \
-    DOPEMUX_INSTANCE_ID="QA" \
-        echo "${payload}" \
-        | timeout 10 \
+    # env vars must prefix the pipeline, not just echo
+    echo "${payload}" \
+        | PYTHONPATH="${pythonpath_extra}${SRC_DIR}" \
+          CLAUDE_PROJECT_DIR="${QA_HOOKS_WORKSPACE}" \
+          DOPEMUX_INSTANCE_ID="QA" \
+          timeout 10 \
             "${python_bin}" -m "${HOOKS_MODULE}" \
             >/dev/null 2>/dev/null \
         || rc=$?

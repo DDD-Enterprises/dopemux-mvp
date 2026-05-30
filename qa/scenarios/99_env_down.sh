@@ -2,7 +2,9 @@
 # qa/scenarios/99_env_down.sh — Crash-safe teardown of the QA stack.
 #
 # ALWAYS runs (called in trap by the orchestrator).
-# Uses || true on every docker command — this script MUST NOT exit non-zero.
+# Uses || true on every docker command — docker teardown MUST NOT exit non-zero.
+# EXCEPTION: exits 1 before any docker call if COMPOSE_PROJECT_NAME is wrong,
+# to prevent accidental teardown of the wrong project.
 # NEVER deletes volumes (-v), NEVER touches the live 'dopemux' project.
 #
 # Emits:
@@ -40,6 +42,8 @@ else
     log_info()  { echo "[INFO ] $(date -u +%H:%M:%S) $*" >&2; }
     log_warn()  { echo "[WARN ] $(date -u +%H:%M:%S) $*" >&2; }
     log_error() { echo "[ERROR] $(date -u +%H:%M:%S) $*" >&2; }
+    scenario_start() { CURRENT_SCENARIO="${1:-unknown}"; _SCENARIO_START=$SECONDS; }
+    scenario_skip()  { emit_result "${CURRENT_SCENARIO}" "NOT_RUN" "${1:-skipped}"; exit 0; }
 fi
 
 # ── Setup ─────────────────────────────────────────────────────────────────────
