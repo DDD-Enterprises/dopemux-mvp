@@ -1,5 +1,65 @@
 import { createTheme, alpha } from '@mui/material/styles';
 
+// ─── Brand Palettes ───────────────────────────────────────────────────────────
+// Mirror of src/dopemux/ui/theme.py _PALETTES.  Keys are the raw 8-slot names
+// from that dict (cyan/mint/pink/violet/gold/black/navy/grey) so the flat-regex
+// sync validator (scripts/sync_brand_tokens.py) never sees a camelCase collision
+// against brandTokens.colors.  Hex values for mint-mojo are byte-identical to
+// theme.py to keep sync_brand_tokens.py exit 0.
+
+export type BrandPaletteKey = 'cyan' | 'mint' | 'pink' | 'violet' | 'gold' | 'black' | 'navy' | 'grey';
+
+export type BrandPaletteName = 'mint-mojo' | 'pastel-neon-dreamscape' | 'pastel-neon-dreams';
+
+export type BrandPalette = Record<BrandPaletteKey, string>;
+
+export const brandPalettes: Record<BrandPaletteName, BrandPalette> = {
+  'mint-mojo': {
+    cyan:   '#7DFBF6',
+    mint:   '#94FADB',
+    pink:   '#FF8BD1',
+    violet: '#9B78FF',
+    gold:   '#F5F26D',
+    black:  '#020617',
+    navy:   '#041628',
+    grey:   '#94A3B8',
+  },
+  'pastel-neon-dreamscape': {
+    cyan:   '#00FFFF',
+    mint:   '#66FF66',
+    pink:   '#FF00FF',
+    violet: '#FF66FF',
+    gold:   '#FFFF00',
+    black:  '#000000',
+    navy:   '#080808',
+    grey:   '#A9A9A9',
+  },
+  'pastel-neon-dreams': {
+    cyan:   '#00FFFF',
+    mint:   '#7FFFD4',
+    pink:   '#FF69B4',
+    violet: '#FFB2FF',
+    gold:   '#FFFFE0',
+    black:  '#000000',
+    navy:   '#080808',
+    grey:   '#A9A9A9',
+  },
+};
+
+/** Resolve a raw theme name to a validated BrandPaletteName, defaulting to
+ *  'mint-mojo'.  Mirrors Python's get_active_theme_name() / _PALETTES.get()
+ *  semantics.  Pass import.meta.env.VITE_DOPEMUX_THEME to respect the env var.
+ */
+export function resolveBrandPaletteName(name?: string | null): BrandPaletteName {
+  const c = (name ?? '').toLowerCase() as BrandPaletteName;
+  return c in brandPalettes ? c : 'mint-mojo';
+}
+
+/** Active brand palette (default mint-mojo, mirrors DOPEMUX_THEME env default). */
+export const activeBrandPalette: BrandPalette = brandPalettes['mint-mojo'];
+
+// ─── Brand Tokens ─────────────────────────────────────────────────────────────
+
 export const brandTokens = {
   colors: {
     inkBlack: '#020617',

@@ -9,6 +9,7 @@
   --velvet-plum-rgb: 26 5 32;
   --gremlin-pink-rgb: 255 139 209;
   --aftercare-violet-rgb: 155 120 255;
+  --saint-gold-rgb: 255 207 120;
   --text-primary-rgb: 226 232 240;
   --ink-black: rgb(var(--ink-black-rgb));
   --void-navy: rgb(var(--void-navy-rgb));
@@ -18,6 +19,7 @@
   --velvet-plum: rgb(var(--velvet-plum-rgb));
   --gremlin-pink: rgb(var(--gremlin-pink-rgb));
   --aftercare-violet: rgb(var(--aftercare-violet-rgb));
+  --saint-gold: rgb(var(--saint-gold-rgb));
   --text-primary: rgb(var(--text-primary-rgb));
   --halo-gradient: radial-gradient(circle at 20% 20%, rgb(var(--ritual-cyan-rgb) / 0.2), rgb(var(--ink-black-rgb) / 0.95));
 }
