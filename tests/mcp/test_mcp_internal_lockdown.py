@@ -52,9 +52,31 @@ def test_safe_session_filename_accepts_valid():
 
 @pytest.mark.parametrize(
     "bad",
-    ["../etc/passwd", "a/b", "..", "", "a.b", "a b", "a/../b", "/abs"],
+    # MCP1-05 / P1-3: reject real path-traversal sequences (/, .., null, empty).
+    # Dots and spaces/colons in non-traversal ids are now percent-encoded rather
+    # than rejected so that legitimate client-supplied ids (e.g. "agent:primary",
+    # "v1.0.0") don't silently lose persistence state.
+    ["../etc/passwd", "a/b", "..", "", "a/../b", "/abs", "\x00bad"],
 )
 def test_safe_session_filename_rejects_traversal(bad):
-    # MCP1-05: reject path separators / parent refs / unexpected chars.
     with pytest.raises(ValueError):
         SessionManager._safe_session_filename(bad)
+
+
+@pytest.mark.parametrize(
+    "sid, expected",
+    [
+        # Plain alphanumeric — unchanged
+        ("abc-123_X", "abc-123_X.json"),
+        # Colon-style lane ids — encoded
+        ("agent:primary", "agent%3Aprimary.json"),
+        # Dots (version strings, timestamps) — encoded
+        ("v1.0.0", "v1%2E0%2E0.json"),
+        # Spaces — encoded
+        ("a b", "a%20b.json"),
+    ],
+)
+def test_safe_session_filename_encodes_non_traversal(sid, expected):
+    # P1-3: non-traversal ids that contain chars outside [A-Za-z0-9_-] are now
+    # percent-encoded rather than rejected.
+    assert SessionManager._safe_session_filename(sid) == expected

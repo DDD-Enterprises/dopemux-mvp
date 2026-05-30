@@ -109,10 +109,13 @@ class CaptureMCPServer:
                 # a malformed event or out-of-enum mode rather than ingesting unchecked.
                 if not isinstance(event, dict):
                     raise ValueError("'event' must be an object")
-                event_type = event.get("event_type")
+                # P1-1: accept "type" alias — emit_capture_event supports both
+                # "event_type" and "type"; the guard must match so aliased clients
+                # aren't silently dropped with a structured error.
+                event_type = event.get("event_type") or event.get("type")
                 if not isinstance(event_type, str) or not event_type.strip():
                     raise ValueError(
-                        "'event.event_type' is required and must be a non-empty string"
+                        "'event.event_type' (or alias 'event.type') is required and must be a non-empty string"
                     )
                 allowed_modes = {"plugin", "cli", "mcp", "auto"}
                 if mode not in allowed_modes:

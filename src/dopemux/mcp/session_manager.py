@@ -733,15 +733,20 @@ class SessionManager:
 
     @staticmethod
     def _safe_session_filename(session_id: str) -> str:
-        # MCP1-05 (audit): session_id flows into a filesystem path (f"{session_id}.json").
-        # Reject separators / parent refs / unexpected chars so a crafted id (e.g.
-        # "../../etc/passwd") cannot escape the session storage directory.
+        # MCP1-05 (audit): session_id flows into a filesystem path.  Block the
+        # path-traversal chars that can escape the storage directory ("/", null,
+        # "..") then percent-encode everything else so that clients using
+        # colon-style ids ("agent:primary", ISO timestamps) are not silently
+        # dropped — the ValueError was caught by a broad `except Exception` and
+        # swallowed, making persistence silently fail.
         sid = str(session_id)
-        if not re.fullmatch(r"[A-Za-z0-9_-]+", sid):
+        if not sid or "/" in sid or "\x00" in sid or sid in (".", ".."):
             raise ValueError(
-                f"Invalid session_id (must match [A-Za-z0-9_-]+): {session_id!r}"
+                f"Invalid session_id (contains path-traversal characters): {session_id!r}"
             )
-        return f"{sid}.json"
+        # Percent-encode chars that are not filesystem-safe on any platform.
+        safe = re.sub(r"[^A-Za-z0-9_\-]", lambda m: f"%{ord(m.group()):02X}", sid)
+        return f"{safe}.json"
 
     async def _save_session_state(self, session: SessionState) -> None:
         """Save session state to disk"""

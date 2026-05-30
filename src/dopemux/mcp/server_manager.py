@@ -64,6 +64,19 @@ _CHILD_ENV_BASE_ALLOWLIST: tuple[str, ...] = (
     # Node launcher vars (some stdio servers are node-based)
     "NODE_PATH",
     "NVM_DIR",
+    # P2: outbound proxy / TLS trust — non-secret operational vars that
+    # stdio children need when the host is behind a corporate proxy or uses
+    # a custom CA bundle.  Without these, spawned children silently lose TLS
+    # connectivity.  These are NOT secret and carry no credentials.
+    "HTTP_PROXY",
+    "HTTPS_PROXY",
+    "NO_PROXY",
+    "http_proxy",
+    "https_proxy",
+    "no_proxy",
+    "SSL_CERT_FILE",
+    "REQUESTS_CA_BUNDLE",
+    "CURL_CA_BUNDLE",
 )
 
 
