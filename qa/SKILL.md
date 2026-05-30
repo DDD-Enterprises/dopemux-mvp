@@ -68,7 +68,7 @@ Claude should follow these steps in order. Do not parallelize scenario scripts â
 ### Step 1 â€” Initialize run
 
 ```bash
-ROOT=/Users/hue/code/dopemux-mvp/.claude/worktrees/hopeful-shirley-656b07
+ROOT=$(git rev-parse --show-toplevel)
 RUN_ID=$(date +%Y%m%d-%H%M%S)
 RESULTS_DIR="$ROOT/qa/results/$RUN_ID"
 RESULTS_FILE="$RESULTS_DIR/results.jsonl"
