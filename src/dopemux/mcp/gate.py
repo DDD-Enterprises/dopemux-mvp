@@ -100,10 +100,27 @@ class DiscoveryGate:
                     self.report["missing_required_tools"][name] = missing_globs
                     if is_mandatory:
                         passed = False
+                    else:
+                        # Non-mandatory (env_var / global_fallback): ALWAYS WARN; escalate
+                        # to a hard BLOCK only under strict_optional (fail-closed opt-in).
+                        self.report["warnings"].append(
+                            f"Non-mandatory server '{name}' is missing required tool(s): "
+                            f"{', '.join(missing_globs)}"
+                        )
+                        if self.strict_optional:
+                            passed = False
             else:
                 self.report["unreachable_transport"].append(name)
                 if is_mandatory:
                     passed = False
+                else:
+                    # Non-mandatory (env_var / global_fallback): ALWAYS WARN; escalate
+                    # to a hard BLOCK only under strict_optional (fail-closed opt-in).
+                    self.report["warnings"].append(
+                        f"Non-mandatory server '{name}' is unreachable (transport failed)"
+                    )
+                    if self.strict_optional:
+                        passed = False
 
         self.report["status"] = "PASS" if passed else "BLOCK"
         self._save_report()
