@@ -91,6 +91,7 @@ _find_skip_clusters() {
           | select(.outcome == "skipped" or .outcome == "xfailed" or .outcome == "xpassed")
           | .nodeid | split("::")[0]
         ]
+        | sort
         | group_by(.)
         | map({file: .[0], count: length})
         | map(select(.count > $t))
@@ -186,7 +187,7 @@ if [[ ! -d "${UNIT_DIR}" ]]; then
 else
     # Build pytest invocation
     UNIT_ARGS=("${PYTHON_BIN}" -m pytest "${UNIT_DIR}" -q --tb=short)
-    if command -v parallel >/dev/null 2>&1 || ${PYTHON_BIN} -c "import xdist" >/dev/null 2>&1; then
+    if ${PYTHON_BIN} -c "import xdist" >/dev/null 2>&1; then
         UNIT_ARGS+=(-n auto)
     fi
     if [[ "${USE_JSON_REPORT}" == "true" ]]; then

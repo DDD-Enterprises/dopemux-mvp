@@ -38,6 +38,8 @@ else
     log_info()  { echo "[INFO ] $(date -u +%H:%M:%S) $*" >&2; }
     log_warn()  { echo "[WARN ] $(date -u +%H:%M:%S) $*" >&2; }
     log_error() { echo "[ERROR] $(date -u +%H:%M:%S) $*" >&2; }
+    scenario_start() { CURRENT_SCENARIO="${1:-unknown}"; _SCENARIO_START=$SECONDS; }
+    scenario_skip()  { emit_result "${CURRENT_SCENARIO}" "NOT_RUN" "${1:-skipped}"; exit 0; }
 fi
 
 # ── Setup ─────────────────────────────────────────────────────────────────────
