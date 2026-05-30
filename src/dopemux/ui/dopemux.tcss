@@ -7,7 +7,7 @@
 $base: #020617;
 $mantle: #041628;
 $crust: #0a0e1a;
-$text: #E2E8F0;
+$text: #E5E5E5;
 $text-dim: #94A3B8;
 $text-muted: #64748B;
 $green: #94FADB;
