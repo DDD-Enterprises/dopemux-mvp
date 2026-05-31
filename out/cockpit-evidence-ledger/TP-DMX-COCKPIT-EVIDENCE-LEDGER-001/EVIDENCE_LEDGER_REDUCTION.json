@@ -1,0 +1,203 @@
+{
+  "schema_version": "dopemux.cockpit.evidence_ledger_reduction.v1",
+  "packet_id": "TP-DMX-COCKPIT-EVIDENCE-LEDGER-001",
+  "created_at_utc": "2026-05-31T06:41:39Z",
+  "worktree": "/Users/hue/.codex/worktrees/cockpit-ui-evidence-ledger-001",
+  "branch": "codex/cockpit-ui-evidence-ledger-001",
+  "base_branch": "claude/hungry-buck-67a0d3",
+  "head": "f257f3e6528ed17413fa985e9b44765c59be37f5",
+  "source_ledger": "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/EVIDENCE_LEDGER.md",
+  "condition": {
+    "id": "CLAUDE_DESIGN_BLOCKERS_CONDITION_8",
+    "evidence_required": "Decision subcommands, optional genetic, defined-but-not-registered worktree/vault surfaces resolved or explicitly rejected; root RULES.md and TRUTH_*.md absences resolved.",
+    "status": "SATISFIED_FOR_CONDITION_8",
+    "does_not_flip_gate": true
+  },
+  "authority_evidence": {
+    "agents_md_truth_order": "AGENTS.md states root TRUTH_*.md is used when present, otherwise docs/03-reference/truth/* equivalents are used; RULES.md-class files may use tracked docs/03-reference equivalents.",
+    "root_rules_md_present": false,
+    "root_truth_md_count": 0,
+    "docs_reference_rules": [
+      "docs/03-reference/governance/rules.md",
+      "docs/03-reference/governance/rules-2.md"
+    ],
+    "docs_reference_truth_files": [
+      "docs/03-reference/truth/truth-audit-proofs.md",
+      "docs/03-reference/truth/truth-canonicals.md",
+      "docs/03-reference/truth/truth-data-events.md",
+      "docs/03-reference/truth/truth-gaps.md",
+      "docs/03-reference/truth/truth-interfaces.md",
+      "docs/03-reference/truth/truth-scope.md",
+      "docs/03-reference/truth/truth-systems.md"
+    ]
+  },
+  "runtime_cli_evidence": {
+    "command": "PYTHONPATH=src python - <<'PY' ... from dopemux.cli import cli ... PY",
+    "exit_code": 0,
+    "nonfatal_stderr_observed": [
+      "LiteLLM warning: botocore not importable for bedrock-runtime response stream shape",
+      "LiteLLM warning: botocore not importable for sagemaker-runtime response stream shape"
+    ],
+    "registered_top_level": {
+      "decisions": true,
+      "genetic": false,
+      "worktree": false,
+      "worktrees": false,
+      "vault": false,
+      "env": true,
+      "session": true,
+      "safe": true
+    },
+    "registered_subcommands": {
+      "decisions": [
+        "energy",
+        "patterns"
+      ],
+      "env": [
+        "check",
+        "count",
+        "list",
+        "validate"
+      ],
+      "session": [
+        "find",
+        "resume"
+      ],
+      "safe": [
+        "check",
+        "status"
+      ]
+    },
+    "help_command": {
+      "command": "PYTHONPATH=src python -m dopemux --help",
+      "exit_code": 0,
+      "contains_decisions": true,
+      "contains_genetic": false,
+      "contains_worktree": false,
+      "contains_worktrees": false,
+      "contains_vault": false
+    }
+  },
+  "source_evidence": {
+    "decisions_group_source": "src/dopemux/commands/decisions_commands.py",
+    "decisions_leaf_callback_status": "NO_CONCRETE_LEAF_CALLBACKS",
+    "worktrees_group_source": "src/dopemux/commands/worktrees_commands.py",
+    "worktrees_registration_status": "DEFINED_NOT_REGISTERED_AT_TOP_LEVEL",
+    "vault_group_source": "src/dopemux/claude_tools/cli.py",
+    "vault_registration_status": "DEFINED_NOT_REGISTERED_BY_REGISTER_COMMANDS",
+    "genetic_runtime_surface": "NO_CURRENT_REGISTERED_DOPMUX_CLI_COMMAND_OR_SERVICE_DIRECTORY",
+    "genetic_archival_surface": "SYSTEM_ARCHIVE/genetic_agent_root_duplicate"
+  },
+  "reductions": [
+    {
+      "old_ledger_item": "Root RULES.md is absent in the fresh worktree; docs/reference rules and AGENTS.md were used where available.",
+      "current_status": "RESOLVED",
+      "resolution": "AGENTS.md authority order permits tracked docs/03-reference equivalents for RULES.md-class authority when root RULES.md is absent. Root absence remains observed and is no longer a blocker for condition 8.",
+      "evidence": [
+        "root RULES.md presence check exit=1",
+        "docs/03-reference/governance/rules.md exists",
+        "AGENTS.md truth order"
+      ]
+    },
+    {
+      "old_ledger_item": "Root TRUTH_*.md files are absent; docs/03-reference/truth equivalents were used.",
+      "current_status": "RESOLVED",
+      "resolution": "AGENTS.md explicitly defines docs/03-reference/truth/* as the fallback authority when root TRUTH_*.md files are absent.",
+      "evidence": [
+        "root TRUTH_*.md count=0",
+        "seven docs/03-reference/truth files observed",
+        "AGENTS.md truth order"
+      ]
+    },
+    {
+      "old_ledger_item": "Prior command inventory was generated at old HEAD af5c4627 while this fresh worktree is origin/main 4959a089f; no new command inventory was regenerated in this packet.",
+      "current_status": "RESOLVED",
+      "resolution": "The preceding inventory regeneration packet refreshed current integration-head artifacts and was merged before this packet. This evidence ledger packet is based on the updated integration head.",
+      "evidence": [
+        "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/PROOF.json",
+        "current head f257f3e6528ed17413fa985e9b44765c59be37f5"
+      ]
+    },
+    {
+      "old_ledger_item": "Runtime dopemux help remained an input UNKNOWN from the inventory packet because its environment lacked litellm.",
+      "current_status": "RESOLVED",
+      "resolution": "Current runtime help renders with PYTHONPATH=src. LiteLLM emits nonfatal botocore preload warnings, but the help command exits 0 and shows current registered top-level commands.",
+      "evidence": [
+        "PYTHONPATH=src python -m dopemux --help exit_code=0",
+        "help output contains decisions/env/session/safe and does not contain genetic/worktree/worktrees/vault"
+      ]
+    },
+    {
+      "old_ledger_item": "Decision subcommands remain unresolved until runtime registration is repaired or rejected.",
+      "current_status": "EXPLICITLY_REJECTED",
+      "resolution": "The current runtime registers top-level decisions with only energy and patterns groups, and the source file records no concrete decision-management callbacks. No Cockpit command affordance should treat hidden decision leaf actions as current runtime behavior.",
+      "evidence": [
+        "runtime cli.commands['decisions'].commands == ['energy', 'patterns']",
+        "src/dopemux/commands/decisions_commands.py comment: no concrete decision-management callbacks"
+      ]
+    },
+    {
+      "old_ledger_item": "Optional genetic remains unresolved until runtime registration is repaired or rejected.",
+      "current_status": "EXPLICITLY_REJECTED",
+      "resolution": "No current dopemux top-level genetic command is registered, no current services/genetic_agent directory is present, and the remaining genetic surface is archival. Genetic is rejected as a current Cockpit command surface.",
+      "evidence": [
+        "registered_top_level.genetic=false",
+        "find services -maxdepth 2 -type d -name '*genetic*' returned no active service directory",
+        "SYSTEM_ARCHIVE/genetic_agent_root_duplicate is archival"
+      ]
+    },
+    {
+      "old_ledger_item": "Defined-but-not-registered worktree/vault surfaces remain unresolved until runtime registration is repaired or rejected.",
+      "current_status": "EXPLICITLY_REJECTED",
+      "resolution": "Runtime does not register worktree, worktrees, or vault as top-level commands. Source-defined worktrees and vault groups are not current runtime CLI affordances and must remain out of Cockpit command exposure until a future packet intentionally registers or deprecates them.",
+      "evidence": [
+        "registered_top_level.worktree=false",
+        "registered_top_level.worktrees=false",
+        "registered_top_level.vault=false",
+        "src/dopemux/commands/worktrees_commands.py defines a worktrees group",
+        "src/dopemux/claude_tools/cli.py defines vault_group but register_commands does not add it"
+      ]
+    }
+  ],
+  "condition_8_unresolved_items": [],
+  "residual_not_condition_8": [
+    {
+      "item": "Final runtime renderer, browser visual approval, screenshot approval, and proof JSON validation",
+      "status": "OUT_OF_SCOPE_FOR_THIS_PACKET",
+      "owner": "Phase 2+ runtime and final acceptance packets"
+    },
+    {
+      "item": "safe_for_claude_design gate flip",
+      "status": "OUT_OF_SCOPE_FOR_THIS_PACKET",
+      "owner": "TP-DMX-COCKPIT-GATE-FLIP-001 after all eight blockers are verified together"
+    },
+    {
+      "item": "Task-orchestrator MCP notes",
+      "status": "NOT_RUN",
+      "reason": "Task-orchestrator get_context returned Transport closed earlier in this run; local plan mirror and repo artifacts were used."
+    }
+  ],
+  "boundary_preservation": {
+    "safe_for_claude_design": "NO",
+    "ready_for_claude_design": "not approved",
+    "does_not_modify_runtime": true,
+    "does_not_register_commands": true,
+    "does_not_execute_actions": true,
+    "does_not_reclassify_inventory_rows": true,
+    "does_not_approve_final_screens": true
+  },
+  "source_artifact_hashes": {
+    "AGENTS.md": "2bc5af89089eb2ef9354019db5a0a87086d92e8b995ced358e788d3fea7a5339",
+    "PROJECT.md": "a3bfabc28ad461c85be3b97c939e99c4288a641fa412ccaeebf12d935d839942",
+    "ARCHITECTURE.md": "f6d1dfdaddb6afc719cf7bab299bb71552bbc1849fc2b2378a34d309d98e89e5",
+    "PM_PLANE.md": "e7c6a1e891638f7274c7a4375d9ec57f662275d9f563f745880f75e49d14a3de",
+    "SERVICE_CATALOG.md": "1a824133ef2c49144eeb55a258a2c218a9777ad57d006055f30eee6490202fea",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/EVIDENCE_LEDGER.md": "d7709e913d2242a4fe998dbe993d15fcda4ab31d94662aecca3fc07b10c5b8dd",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/CLAUDE_DESIGN_BLOCKERS.md": "d929cb83d93f5d1da4afc50d3bbdfbe1032c03f5a81f71c0f8419d7dbe85c038",
+    "src/dopemux/cli.py": "6216a867451f8d770527070e6682b95a4362466c0c17b723390f19e007bd1c3b",
+    "src/dopemux/commands/decisions_commands.py": "82a2571f131bcef7b31d3449700d0a75b267988890c06f4f2eb96fcccf8d5bb4",
+    "src/dopemux/commands/worktrees_commands.py": "4f69bc4ad09836784c7387cc2fc1cb2995f0e2a529aa062d31f6419a65f5a123",
+    "src/dopemux/claude_tools/cli.py": "1626ee392d06ecd2778cc641753725627c41acdc2a8359c44d8b169ff48bfcf7",
+    "src/dopemux/claude_tools/vault.py": "e8f7c76ff6a71d997045c98b5bd7d3f86b35e5a53ef83fad7b57b8cc6fe3cb42"
+  }
+}
