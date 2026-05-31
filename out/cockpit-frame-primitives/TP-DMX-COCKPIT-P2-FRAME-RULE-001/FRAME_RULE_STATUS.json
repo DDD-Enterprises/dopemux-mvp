@@ -1,0 +1,57 @@
+{
+  "schema_version": "dopemux.cockpit.frame_rule.status.v1",
+  "packet_id": "TP-DMX-COCKPIT-P2-FRAME-RULE-001",
+  "created_at_utc": "2026-05-31T07:25:18Z",
+  "primitive_scope": "Frame + Rule character-grid primitives only",
+  "replaces_render_pm": false,
+  "live_data_wiring_added": false,
+  "runtime_action_execution_enabled": false,
+  "supported_sizes": [
+    {
+      "cols": 120,
+      "rows": 40,
+      "left_divider_col": 25,
+      "right_divider_col": 84,
+      "inspector_split_row": 22,
+      "center_split_row": 25,
+      "body_rule_row": 35,
+      "command_row": 36,
+      "status_rule_row": 37,
+      "status_row": 38,
+      "bottom_row": 39
+    },
+    {
+      "cols": 100,
+      "rows": 32,
+      "left_divider_col": 21,
+      "right_divider_col": 70,
+      "inspector_split_row": 17,
+      "center_split_row": 19,
+      "body_rule_row": 27,
+      "command_row": 28,
+      "status_rule_row": 29,
+      "status_row": 30,
+      "bottom_row": 31
+    },
+    {
+      "cols": 80,
+      "rows": 24,
+      "left_divider_col": 17,
+      "right_divider_col": 56,
+      "inspector_split_row": 11,
+      "center_split_row": 13,
+      "body_rule_row": 19,
+      "command_row": 20,
+      "status_rule_row": 21,
+      "status_row": 22,
+      "bottom_row": 23
+    }
+  ],
+  "below_minimum_behavior": "[BLOCKER] terminal too small (minimum 80x24)",
+  "protected_cell_policy": {
+    "outer_border_cells_immutable": true,
+    "divider_cells_immutable": true,
+    "rule_cells_immutable": true,
+    "whole_character_coordinates_required": true
+  }
+}

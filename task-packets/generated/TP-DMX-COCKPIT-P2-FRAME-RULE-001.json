@@ -1,0 +1,98 @@
+{
+  "id": "TP-DMX-COCKPIT-P2-FRAME-RULE-001",
+  "project": "dopemux-mvp",
+  "target": "Implement Phase 2 P2-01 Frame + Rule primitives for the Cockpit core: a width-locked three-column character grid at 120x40, 100x32, and 80x24, with fail-closed blocker behavior below 80x24.",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-COCKPIT-UI",
+    "base_branch": "claude/hungry-buck-67a0d3",
+    "parent_tp_id": "3ddc5c24",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/cockpit-ui-frame-primitives-001",
+    "base_branch": "claude/hungry-buck-67a0d3"
+  },
+  "commit": {
+    "message": "feat(cockpit): add frame rule primitives",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-COCKPIT-P2-FRAME-RULE-001.json",
+      "src/dopemux/ui/cockpit/frame.py",
+      "tests/unit/dopemux/ui/cockpit/test_frame_primitives.py",
+      "proof/cockpit-frame-primitives/TP-DMX-COCKPIT-P2-FRAME-RULE-001/**",
+      "out/cockpit-frame-primitives/TP-DMX-COCKPIT-P2-FRAME-RULE-001/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-P2-FRAME-RULE-001.json >/dev/null",
+      "python -m json.tool out/cockpit-frame-primitives/TP-DMX-COCKPIT-P2-FRAME-RULE-001/PROOF.json >/dev/null",
+      "cd out/cockpit-frame-primitives/TP-DMX-COCKPIT-P2-FRAME-RULE-001 && shasum -a 256 -c sha256sums.txt",
+      "python scripts/brand_lint.py",
+      "python scripts/sync_brand_tokens.py",
+      "python -m pytest tests/unit/dopemux/ui/cockpit/test_frame_primitives.py -q",
+      "python -m pytest tests/unit/dopemux/ui/cockpit/ -q",
+      "python -m compileall -q src/dopemux tests",
+      "git diff --check",
+      "git status --short --branch"
+    ]
+  },
+  "pr": {
+    "title": "feat(cockpit): add frame rule primitives",
+    "body": "## Summary\n- add Cockpit Frame and Rule primitives for the approved 120x40, 100x32, and 80x24 character grids\n- enforce protected border/divider/rule cells and whole-character-cell drawing\n- return the existing fail-closed blocker string below 80x24\n\n## Strict scope\n- primitive geometry only\n- no replacement of render_pm\n- no mode dispatch changes\n- no live data wiring\n- no runtime action execution\n\n## Validation\nSee closeout proof for command outputs and exit codes.",
+    "base": "claude/hungry-buck-67a0d3"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Inspect D3 Frame/Rule primitive requirements and current render.py viewport behavior.",
+      "validation": [
+        "The implementation uses the existing viewport contract from render.py.",
+        "No parallel PM renderer is introduced.",
+        "The approved grid coordinates for 120x40, 100x32, and 80x24 are recorded."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Implement primitive-level FrameLayout, FrameBuffer, protected rule cells, and frame shell rendering.",
+      "validation": [
+        "Three approved frame sizes render exact line width and count.",
+        "Outer border, column dividers, body rule, status rule, and bottom rule cells are protected.",
+        "Below 80x24 returns the canonical blocker string."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Add focused tests for grid coordinates, width locks, protected writes, and blocker behavior.",
+      "validation": [
+        "Focused frame primitive tests pass.",
+        "Cockpit unit slice passes or known unrelated failures are reported.",
+        "No runtime execution, upload, or live data wiring is added."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run brand audits, relevant tests, proof hash validation, codereview/precommit, commit, push, and open PR.",
+      "validation": [
+        "brand_lint exits with 0 errors and 0 warnings.",
+        "sync_brand_tokens exits 0.",
+        "git diff --check passes.",
+        "Only allowlisted files are staged.",
+        "PR URL or exact blocker is recorded in proof and final closeout."
+      ]
+    }
+  ]
+}

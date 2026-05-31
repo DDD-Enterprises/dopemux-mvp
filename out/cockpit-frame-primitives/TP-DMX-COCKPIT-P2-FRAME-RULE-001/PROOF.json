@@ -1,0 +1,140 @@
+{
+  "schema_version": "dopemux.cockpit.frame_rule.proof.v1",
+  "packet_id": "TP-DMX-COCKPIT-P2-FRAME-RULE-001",
+  "created_at_utc": "2026-05-31T07:25:18Z",
+  "worktree": "/Users/hue/.codex/worktrees/cockpit-ui-frame-primitives-001",
+  "branch": "codex/cockpit-ui-frame-primitives-001",
+  "base_branch": "claude/hungry-buck-67a0d3",
+  "base_head": "b86b1180420175b42e59d9c31a1ee2b9cb4450bd",
+  "head_before": "b86b1180420175b42e59d9c31a1ee2b9cb4450bd",
+  "implementation_commit_sha": "RECORDED_IN_FINAL_CLOSEOUT_AFTER_COMMIT",
+  "pr_url": "RECORDED_IN_FINAL_CLOSEOUT_AFTER_PR_CREATE",
+  "pr_blocker": null,
+  "tp_path": "task-packets/generated/TP-DMX-COCKPIT-P2-FRAME-RULE-001.json",
+  "files_changed": [
+    "task-packets/generated/TP-DMX-COCKPIT-P2-FRAME-RULE-001.json",
+    "src/dopemux/ui/cockpit/frame.py",
+    "tests/unit/dopemux/ui/cockpit/test_frame_primitives.py",
+    "out/cockpit-frame-primitives/TP-DMX-COCKPIT-P2-FRAME-RULE-001/FRAME_RULE_STATUS.json",
+    "out/cockpit-frame-primitives/TP-DMX-COCKPIT-P2-FRAME-RULE-001/PROOF.json",
+    "out/cockpit-frame-primitives/TP-DMX-COCKPIT-P2-FRAME-RULE-001/sha256sums.txt",
+    "proof/cockpit-frame-primitives/TP-DMX-COCKPIT-P2-FRAME-RULE-001/README.md"
+  ],
+  "source_artifacts_read": [
+    "AGENTS.md",
+    "docs/04-explanation/branding/cockpit-ui-implementation-handoff.md",
+    "docs/04-explanation/branding/cockpit-ui-task-plan-2026-05-29.md",
+    "docs/03-reference/Dopemux Cockpit TUI Design System/cockpit-design-system-v1.md",
+    "src/dopemux/ui/cockpit/render.py",
+    "tests/unit/dopemux/ui/cockpit/test_cockpit_render.py"
+  ],
+  "generated_artifacts": [
+    "out/cockpit-frame-primitives/TP-DMX-COCKPIT-P2-FRAME-RULE-001/FRAME_RULE_STATUS.json",
+    "out/cockpit-frame-primitives/TP-DMX-COCKPIT-P2-FRAME-RULE-001/PROOF.json",
+    "out/cockpit-frame-primitives/TP-DMX-COCKPIT-P2-FRAME-RULE-001/sha256sums.txt",
+    "proof/cockpit-frame-primitives/TP-DMX-COCKPIT-P2-FRAME-RULE-001/README.md"
+  ],
+  "acceptance_status": {
+    "status": "PASS",
+    "three_column_grid_at_120x40": true,
+    "three_column_grid_at_100x32": true,
+    "three_column_grid_at_80x24": true,
+    "below_80x24_blocker": true,
+    "protected_rules_enforced": true
+  },
+  "boundary_preservation": {
+    "no_parallel_renderer": true,
+    "render_pm_replaced": false,
+    "mode_dispatch_changed": false,
+    "live_data_wiring_added": false,
+    "runtime_action_execution_added": false,
+    "claude_design_upload_added": false
+  },
+  "validation_commands": [
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-P2-FRAME-RULE-001.json >/dev/null && python -m json.tool out/cockpit-frame-primitives/TP-DMX-COCKPIT-P2-FRAME-RULE-001/FRAME_RULE_STATUS.json >/dev/null && python -m json.tool out/cockpit-frame-primitives/TP-DMX-COCKPIT-P2-FRAME-RULE-001/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "jsonschema.validate(task-packets/generated/TP-DMX-COCKPIT-P2-FRAME-RULE-001.json, dopetask-canonical-spec.json)",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "schema: PASS"
+    },
+    {
+      "command": "cd out/cockpit-frame-primitives/TP-DMX-COCKPIT-P2-FRAME-RULE-001 && shasum -a 256 -c sha256sums.txt",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python scripts/brand_lint.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "0 errors, 0 warnings"
+    },
+    {
+      "command": "python scripts/sync_brand_tokens.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "All brand tokens in sync across theme.py, dopemux.tcss, theme.ts"
+    },
+    {
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit/test_frame_primitives.py -q",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "11 passed"
+    },
+    {
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit/ -q",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "133 passed"
+    },
+    {
+      "command": "python -m compileall -q src/dopemux tests",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "forbidden positive execution/upload/live-wiring claim scan over frame packet files",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "pre-commit run --files $(git diff --cached --name-only)",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m pytest tests/unit -q",
+      "exit_code": 1,
+      "status": "FAIL",
+      "failure": "Unrelated known failure: tests/unit/orchestrator/test_data_sources.py::TestUIDataSources::test_today_panel_sqlite_operational_error_fallback expected fallback True but observed False."
+    }
+  ],
+  "codereview_status": {
+    "tool": "pal/codereview",
+    "status": "PASS",
+    "continuation_id": "8ba843d0-7ad7-47fa-994e-665a636daed5",
+    "issues_found": 0
+  },
+  "precommit_status": {
+    "tool": "pal/precommit",
+    "status": "PASS",
+    "continuation_id": "e0ebdf8d-f414-48ad-950f-394a0d3fa707",
+    "issues_found": 0
+  },
+  "unknowns": [
+    "Task-orchestrator MCP note recording remains NOT_RUN because get_context returned Transport closed earlier in this run."
+  ],
+  "residual_risks": [
+    "This packet does not wire the frame shell into render_pm or Textual app dispatch; later Phase 2 packets own integration.",
+    "This packet does not implement Chip, Row, or mode pane builders."
+  ]
+}
