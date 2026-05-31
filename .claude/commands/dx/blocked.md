@@ -25,7 +25,7 @@ Parse `$ARGUMENTS`:
 - `--scope <ancestor-uuid>` → restrict to items under this parent (`parentId` param).
 - `--no-details` → drop summary + tags from each blocked item (compact mode for very large block lists).
 
-Defaults: workspace-wide; `includeItemDetails=true` (set false only when `--no-details` passed); `includeAncestors=true`.
+Defaults: workspace-wide; `includeBlockerDetails=true` (set false only when `--no-details` passed).
 
 ---
 
@@ -34,8 +34,7 @@ Defaults: workspace-wide; `includeItemDetails=true` (set false only when `--no-d
 ```
 get_blocked_items({
   parentId: <if --scope provided>,
-  includeItemDetails: <false if --no-details, else true>,
-  includeAncestors: true
+  includeBlockerDetails: <false if --no-details, else true>
 })
 ```
 
@@ -84,7 +83,7 @@ Group output by `blockType`. Within each group, sort by priority (high first) th
   ⛔ <title>  (<short-prefix>)
       Role:       blocked  │  Priority: <priority>  │  Complexity: <complexity>
       Ancestors:  <breadcrumb>
-      <if includeItemDetails (default): "Tags: <tags>" line; otherwise omit>
+      <if includeBlockerDetails (default): "Tags: <tags>" line; otherwise omit>
       <if blockedBy non-empty: blockedBy list — usually empty for explicit blocks>
 
 ── Dependency blocks (blockType="dependency") ──
@@ -92,7 +91,7 @@ Group output by `blockType`. Within each group, sort by priority (high first) th
   ⛔ <title>  (<short-prefix>)
       Role:       <role>  │  Priority: <priority>
       Ancestors:  <breadcrumb>
-      <if includeItemDetails (default): "Tags: <tags>" line; otherwise omit>
+      <if includeBlockerDetails (default): "Tags: <tags>" line; otherwise omit>
       Blockers (<blockerCount>):
         <for each blocker in blockedBy:>
           • [<role>] <blocker title>  (<short-prefix>)
