@@ -1,0 +1,189 @@
+{
+  "id": "TP-DMX-COCKPIT-SAFE-ACTIONS-001",
+  "project": "dopemux-mvp",
+  "target": "Wire Safe Action Gate runtime guards for non-read Cockpit affordances while preserving no execution, no T4 remote mutation, and safe_for_claude_design: NO.",
+  "invariants": [
+    "safe_for_claude_design remains NO.",
+    "READY_FOR_CLAUDE_DESIGN remains not approved.",
+    "No Claude Design upload or final-screen generation is authorized.",
+    "No runtime action execution is authorized.",
+    "No T4 remote mutation is authorized.",
+    "Safe Action Gate remains cross-cutting and non-executing.",
+    "T0 and T0i do not reach a confirm affordance.",
+    "T5 and T6 require exact typed confirmation before confirm is enabled.",
+    "T6 refuses when the task-packet gate is absent.",
+    "TX and TU remain non-executable.",
+    "BLOCKED_IN_COCKPIT, UNKNOWN, and EXTERNAL_ONLY rows fail closed."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-COCKPIT-UI",
+    "base_branch": "claude/hungry-buck-67a0d3",
+    "parent_tp_id": "7fb6c62d",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/cockpit-ui-safe-actions-001",
+    "base_branch": "claude/hungry-buck-67a0d3"
+  },
+  "commit": {
+    "message": "fix(cockpit): enforce safe action typed gates",
+    "allowlist": [
+      "src/dopemux/ui/cockpit/runtime_contract.py",
+      "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+      "task-packets/generated/TP-DMX-COCKPIT-SAFE-ACTIONS-001.json",
+      "task-packets/INDEX.md",
+      "proof/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/**",
+      "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-SAFE-ACTIONS-001.json >/dev/null",
+      "python -m json.tool proof/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/PROOF.json >/dev/null",
+      "python -m pytest tests/unit/dopemux/ui/cockpit/test_runtime_contract.py -q",
+      "python -m pytest tests/unit/dopemux/ui/cockpit/ -q",
+      "python scripts/brand_lint.py",
+      "python scripts/sync_brand_tokens.py",
+      "python -m compileall -q src/dopemux/ui/cockpit tests/unit/dopemux/ui/cockpit",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(cockpit): enforce safe action typed gates",
+    "body": "Implements TP-DMX-COCKPIT-SAFE-ACTIONS-001 for Phase 1 blocker 2. Adds runtime Safe Action Gate guards for high-risk T5/T6 typed confirmation and T6 task-packet gate absence while preserving no execution, no T4 remote mutation, TX/TU fail-closed behavior, and safe_for_claude_design: NO. Links D3 §2.8/§11.9 and D4 cockpit TUI ADR.",
+    "base": "claude/hungry-buck-67a0d3"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Verify worktree, branch, base, marker, and Safe Action authority before edits.",
+      "requirements": [
+        "Work from a dedicated branch based on claude/hungry-buck-67a0d3.",
+        "Preserve unrelated dirty files.",
+        "Treat runtime code as authority over stale artifact prose.",
+        "Do not flip safe_for_claude_design."
+      ],
+      "commands": [
+        "pwd",
+        "git rev-parse --show-toplevel",
+        "git branch --show-current",
+        "git rev-parse HEAD",
+        "git status --short"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Dedicated branch is codex/cockpit-ui-safe-actions-001.",
+        "Base commit is the updated integration branch head.",
+        "Worktree is clean before implementation."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docs/04-explanation/branding/cockpit-ui-implementation-handoff.md",
+        "docs/04-explanation/branding/cockpit-ui-task-plan-2026-05-29.md",
+        "docs/03-reference/Dopemux Cockpit TUI Design System/cockpit-design-system-v1.md",
+        "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/CLAUDE_DESIGN_BLOCKERS.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add tests for Safe Action Gate high-risk typed-confirmation and task-packet gate refusal.",
+      "requirements": [
+        "T5 must refuse before typed confirmation exactly matches service_id.",
+        "T6 must refuse before typed confirmation exactly matches tp_or_task_id.",
+        "T6 must refuse when tp_gate_present is not true.",
+        "Existing T0/T0i/TX/TU fail-closed behavior must remain unchanged."
+      ],
+      "commands": [
+        "python -m pytest tests/unit/dopemux/ui/cockpit/test_runtime_contract.py -q"
+      ],
+      "expected_files": [
+        "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py"
+      ],
+      "validation": [
+        "Red test fails before runtime implementation.",
+        "Focused runtime contract tests pass after implementation."
+      ],
+      "context_files": [
+        "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_CONFIRMATION_FLOWS.md",
+        "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_REFUSAL_RULES.md",
+        "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement minimal Safe Action preflight guards in runtime_contract.py.",
+      "requirements": [
+        "Do not execute any action.",
+        "Do not add process-spawning, network, Docker, PM, memory, bridge, or remote mutation behavior.",
+        "Use the existing runtime_contract.py renderer primitives rather than a parallel renderer.",
+        "Return explicit fail-closed PreflightResult statuses."
+      ],
+      "commands": [
+        "python -m pytest tests/unit/dopemux/ui/cockpit/test_runtime_contract.py -q"
+      ],
+      "expected_files": [
+        "src/dopemux/ui/cockpit/runtime_contract.py",
+        "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py"
+      ],
+      "validation": [
+        "T5/T6 typed mismatch cannot confirm.",
+        "T5/T6 exact match can confirm but execution_status remains not_attempted.",
+        "T6 absent task gate routes to Unknown/Drift Queue.",
+        "Focused tests pass."
+      ],
+      "context_files": [
+        "src/dopemux/ui/cockpit/runtime_contract.py"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run packet validation, codereview, precommit, commit, push, and open PR.",
+      "requirements": [
+        "Run brand_lint with 0 errors and 0 warnings.",
+        "Run sync_brand_tokens with exit 0.",
+        "Run targeted pytest.",
+        "Run git diff --check.",
+        "Run codereview before precommit.",
+        "Record proof bundle with validation outcomes and residual risk."
+      ],
+      "commands": [
+        "python scripts/brand_lint.py",
+        "python scripts/sync_brand_tokens.py",
+        "python -m pytest tests/unit/dopemux/ui/cockpit/ -q",
+        "git diff --check",
+        "pre-commit run --files src/dopemux/ui/cockpit/runtime_contract.py tests/unit/dopemux/ui/cockpit/test_runtime_contract.py task-packets/generated/TP-DMX-COCKPIT-SAFE-ACTIONS-001.json task-packets/INDEX.md proof/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/PROOF.json"
+      ],
+      "expected_files": [
+        "proof/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/PROOF.json"
+      ],
+      "validation": [
+        "All listed validations pass or are reported with exact failure.",
+        "PR targets claude/hungry-buck-67a0d3.",
+        "Proof records commit SHA, PR URL, validations, codereview, and residual risks."
+      ],
+      "context_files": [
+        "docs/04-explanation/branding/cockpit-ui-task-plan-2026-05-29.md",
+        "AGENTS.md"
+      ]
+    }
+  ]
+}
