@@ -24,10 +24,10 @@ def test_r1_campaign_selection_is_bounded_and_explicit(tmp_path: Path) -> None:
 
     cohorts = [item["cohort"] for item in manifest["campaign_candidates"]]
     assert cohorts.count("control") == 2
-    assert cohorts.count("premium") == 1
-    assert cohorts.count("balanced") == 1
+    assert cohorts.count("premium") == 2
+    assert cohorts.count("balanced") == 2
     assert cohorts.count("experimental") == 1
-    assert len(manifest["campaign_candidates"]) == 5
+    assert len(manifest["campaign_candidates"]) == 7
 
     route_ids = {item["route_id"] for item in manifest["campaign_candidates"]}
     assert "route_openrouter_openai_gpt_5_4_v1" in route_ids
@@ -35,8 +35,23 @@ def test_r1_campaign_selection_is_bounded_and_explicit(tmp_path: Path) -> None:
     assert "route_local_fixture_v1" in route_ids
     assert "route_openrouter_openai_gpt_5_3_codex_v1" in route_ids
     assert "route_openai_gpt_5_4_mini_v1" in route_ids
+    assert "route_gemini_direct_gemini_3_1_pro_preview_v1" in route_ids
+    assert "route_openrouter_gemini_3_1_pro_preview_v1" in route_ids
     assert manifest["case_set_id"] == "r1_first_campaign_v1"
     assert manifest["contract_snapshot_id"]
+
+    # Guard anchor-group assignments per route so index shifts are caught early.
+    anchor_by_route = {
+        item["route_id"]: item.get("control_anchor_group_id")
+        for item in manifest["campaign_candidates"]
+        if item.get("control_anchor_group_id")
+    }
+    # Direct-provider routes must contest against the direct anchor.
+    assert anchor_by_route.get("route_gemini_direct_gemini_3_1_pro_preview_v1") == "anchor_direct_strict_v1"
+    assert anchor_by_route.get("route_openai_gpt_5_4_mini_v1") == "anchor_direct_strict_v1"
+    # OpenRouter-routed routes must contest against the openrouter anchor.
+    assert anchor_by_route.get("route_openrouter_gemini_3_1_pro_preview_v1") == "anchor_openrouter_strict_v1"
+    assert anchor_by_route.get("route_openrouter_openai_gpt_5_3_codex_v1") == "anchor_openrouter_strict_v1"
 
 
 def test_step_route_signature_is_stable() -> None:
@@ -83,4 +98,6 @@ def test_route_admissibility_only_gates_live_campaign_assignments(tmp_path: Path
         "route_openai_gpt_5_4_v1",
         "route_openrouter_openai_gpt_5_3_codex_v1",
         "route_openai_gpt_5_4_mini_v1",
+        "route_gemini_direct_gemini_3_1_pro_preview_v1",
+        "route_openrouter_gemini_3_1_pro_preview_v1",
     }
