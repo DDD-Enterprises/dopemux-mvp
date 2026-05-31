@@ -1,0 +1,153 @@
+{
+  "schema_version": "dopemux.cockpit.evidence_ledger.proof.v1",
+  "packet_id": "TP-DMX-COCKPIT-EVIDENCE-LEDGER-001",
+  "created_at_utc": "2026-05-31T06:41:39Z",
+  "worktree": "/Users/hue/.codex/worktrees/cockpit-ui-evidence-ledger-001",
+  "branch": "codex/cockpit-ui-evidence-ledger-001",
+  "base_branch": "claude/hungry-buck-67a0d3",
+  "base_head": "f257f3e6528ed17413fa985e9b44765c59be37f5",
+  "head_before": "f257f3e6528ed17413fa985e9b44765c59be37f5",
+  "implementation_commit_sha": "RECORDED_IN_FINAL_CLOSEOUT_AFTER_COMMIT",
+  "pr_url": "RECORDED_IN_FINAL_CLOSEOUT_AFTER_PR_CREATE",
+  "pr_blocker": null,
+  "tp_path": "task-packets/generated/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001.json",
+  "files_changed": [
+    "task-packets/generated/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001.json",
+    "tests/unit/dopemux/ui/cockpit/test_evidence_ledger_artifacts.py",
+    "out/cockpit-evidence-ledger/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001/EVIDENCE_LEDGER_REDUCTION.json",
+    "out/cockpit-evidence-ledger/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001/EVIDENCE_LEDGER_REDUCTION.md",
+    "out/cockpit-evidence-ledger/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001/PROOF.json",
+    "out/cockpit-evidence-ledger/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001/sha256sums.txt",
+    "proof/cockpit-evidence-ledger/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001/README.md"
+  ],
+  "source_artifacts_read": [
+    "AGENTS.md",
+    "docs/04-explanation/branding/cockpit-ui-implementation-handoff.md",
+    "docs/04-explanation/branding/cockpit-ui-task-plan-2026-05-29.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/CLAUDE_DESIGN_BLOCKERS.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/EVIDENCE_LEDGER.md",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/PROOF.json",
+    "src/dopemux/cli.py",
+    "src/dopemux/commands/decisions_commands.py",
+    "src/dopemux/commands/worktrees_commands.py",
+    "src/dopemux/claude_tools/cli.py",
+    "src/dopemux/claude_tools/vault.py"
+  ],
+  "generated_artifacts": [
+    "out/cockpit-evidence-ledger/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001/EVIDENCE_LEDGER_REDUCTION.json",
+    "out/cockpit-evidence-ledger/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001/EVIDENCE_LEDGER_REDUCTION.md",
+    "out/cockpit-evidence-ledger/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001/PROOF.json",
+    "out/cockpit-evidence-ledger/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001/sha256sums.txt",
+    "proof/cockpit-evidence-ledger/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001/README.md"
+  ],
+  "condition_8_status": {
+    "status": "PASS",
+    "condition_8_unresolved_items": 0,
+    "resolved_items": 4,
+    "explicitly_rejected_items": 3,
+    "notes": [
+      "Root authority-file absence is resolved by AGENTS.md fallback order and observed docs/reference equivalents.",
+      "Runtime CLI registration rejects genetic/worktree/worktrees/vault as current top-level command affordances.",
+      "Decision leaf actions are rejected as current cockpit affordances because only empty decision groups are registered."
+    ]
+  },
+  "boundary_preservation": {
+    "safe_for_claude_design": "NO",
+    "READY_FOR_CLAUDE_DESIGN": "not approved",
+    "no_runtime_change": true,
+    "no_command_registration_change": true,
+    "no_runtime_action_execution": true,
+    "no_runtime_reclassification": true,
+    "no_claude_design_upload": true,
+    "no_final_screen_readiness_claim": true
+  },
+  "validation_commands": [
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001.json >/dev/null && python -m json.tool out/cockpit-evidence-ledger/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001/EVIDENCE_LEDGER_REDUCTION.json >/dev/null && python -m json.tool out/cockpit-evidence-ledger/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "jsonschema.validate(task-packets/generated/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001.json, dopetask-canonical-spec.json)",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "schema: PASS"
+    },
+    {
+      "command": "cd out/cockpit-evidence-ledger/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001 && shasum -a 256 -c sha256sums.txt",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python scripts/brand_lint.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "0 errors, 0 warnings"
+    },
+    {
+      "command": "python scripts/sync_brand_tokens.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "All brand tokens in sync across theme.py, dopemux.tcss, theme.ts"
+    },
+    {
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit/test_evidence_ledger_artifacts.py -q",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "8 passed"
+    },
+    {
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit/ -q",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "cockpit unit slice passed"
+    },
+    {
+      "command": "python -m pytest tests/unit/test_cockpit_cli.py -q",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "5 passed"
+    },
+    {
+      "command": "python -m compileall -q src/dopemux tests",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "forbidden positive governance-claim scan over out/cockpit-evidence-ledger proof/cockpit-evidence-ledger tests/unit/dopemux/ui/cockpit/test_evidence_ledger_artifacts.py",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m pytest tests/unit -q",
+      "exit_code": 1,
+      "status": "FAIL",
+      "failure": "Unrelated known failure: tests/unit/orchestrator/test_data_sources.py::TestUIDataSources::test_today_panel_sqlite_operational_error_fallback expected fallback True but observed False."
+    }
+  ],
+  "codereview_status": {
+    "tool": "pal/codereview",
+    "status": "PASS",
+    "continuation_id": "d17b9ded-6e7d-464e-866b-d2b6c1c09c92",
+    "issues_found": 0
+  },
+  "precommit_status": {
+    "tool": "pal/precommit",
+    "status": "PASS",
+    "continuation_id": "77c02c93-d39b-4233-af8c-a488bd5e587d",
+    "issues_found": 0
+  },
+  "unknowns": [
+    "Task-orchestrator MCP note recording is NOT_RUN because get_context returned Transport closed earlier in this run.",
+    "Gate flip remains unperformed until TP-DMX-COCKPIT-GATE-FLIP-001 verifies all eight blockers together."
+  ],
+  "residual_risks": [
+    "Future packets may intentionally register or deprecate currently source-defined worktrees/vault groups; this packet only records current runtime truth.",
+    "This packet does not validate visual/browser output or Phase 2 render primitives."
+  ]
+}
