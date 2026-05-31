@@ -30,6 +30,7 @@
     "message": "fix(ci): gate full RTE and auditor router suites",
     "allowlist": [
       ".github/workflows/ci-complete.yml",
+      "CHANGELOG.md",
       "task-packets/INDEX.md",
       "task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json",
       "claudedocs/ci-full-test-suite-proof-2026-05-31.md"
@@ -40,7 +41,7 @@
       "PYTHONPATH=src pytest tests/auditor_router -q --tb=short",
       "PYTHONPATH=src pytest services/repo-truth-extractor/tests/ -q --tb=short --disable-warnings --no-cov",
       "git diff --check",
-      "pre-commit run --files .github/workflows/ci-complete.yml task-packets/INDEX.md task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json claudedocs/ci-full-test-suite-proof-2026-05-31.md"
+      "pre-commit run --files .github/workflows/ci-complete.yml CHANGELOG.md task-packets/INDEX.md task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json claudedocs/ci-full-test-suite-proof-2026-05-31.md"
     ]
   },
   "pr": {
@@ -95,7 +96,7 @@
         "python -m json.tool task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json >/dev/null",
         "python -m jsonschema -i task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
         "git diff --check",
-        "pre-commit run --files .github/workflows/ci-complete.yml task-packets/INDEX.md task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json claudedocs/ci-full-test-suite-proof-2026-05-31.md"
+        "pre-commit run --files .github/workflows/ci-complete.yml CHANGELOG.md task-packets/INDEX.md task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json claudedocs/ci-full-test-suite-proof-2026-05-31.md"
       ]
     }
   ]
