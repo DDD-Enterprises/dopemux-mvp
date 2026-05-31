@@ -66,8 +66,12 @@ docker network create dopemux-network 2>/dev/null || true
 # that Docker rejects when the live dopemux stack is already running.
 # If a QA overlay (compose.qa.yml) doesn't exist AND the live stack is up,
 # the harness cannot run in isolation — emit NOT_RUN rather than failing cryptically.
-QA_COMPOSE_FILE="${ROOT}/compose.yml"
+QA_BASE_COMPOSE="${ROOT}/compose.yml"
 QA_OVERLAY="${ROOT}/qa/compose.qa.yml"
+# Build the -f flag list: base file always first; overlay appended when present.
+# Docker Compose requires all files to be listed — an overlay-only file would
+# start no services; passing both merges them correctly.
+QA_COMPOSE_ARGS=(-f "${QA_BASE_COMPOSE}")
 LIVE_RUNNING=0
 LIVE_RUNNING=$(docker compose -p dopemux ps -q 2>/dev/null | wc -l | tr -d ' ') || LIVE_RUNNING=0
 if [[ "${LIVE_RUNNING}" -gt 0 ]] && [[ ! -f "${QA_OVERLAY}" ]]; then
@@ -76,7 +80,7 @@ if [[ "${LIVE_RUNNING}" -gt 0 ]] && [[ ! -f "${QA_OVERLAY}" ]]; then
 fi
 if [[ -f "${QA_OVERLAY}" ]]; then
     log_info "Using QA overlay: ${QA_OVERLAY}"
-    QA_COMPOSE_FILE="${QA_OVERLAY}"
+    QA_COMPOSE_ARGS+=(-f "${QA_OVERLAY}")
 fi
 
 # ── Step 3: Bring up the QA stack ─────────────────────────────────────────────
@@ -87,7 +91,7 @@ LOG_FILE="${RESULTS_DIR}/00_env_up.log"
 # Allow compose up to fail without killing the script; we capture and check
 set +e
 qa_docker_compose \
-    -f "${QA_COMPOSE_FILE}" \
+    "${QA_COMPOSE_ARGS[@]}" \
     up -d --wait \
     2>&1 | tee "${LOG_FILE}"
 COMPOSE_RC=${PIPESTATUS[0]}
@@ -156,7 +160,7 @@ log_info "Counting running QA containers"
 CONTAINER_COUNT=0
 set +e
 CONTAINER_JSON="$(qa_docker_compose \
-    -f "${QA_COMPOSE_FILE}" \
+    "${QA_COMPOSE_ARGS[@]}" \
     ps --format json 2>/dev/null)"
 set -e
 

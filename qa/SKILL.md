@@ -222,7 +222,7 @@ If `--baseline` was passed and the run had no FAIL results:
 
 ```bash
 python3 "$ROOT/qa/lib/qa_common.py" update_baseline \
-    "$RESULTS_DIR/results.jsonl" \
+    "$RESULTS_DIR" \
     "$ROOT/qa/baseline/baseline.json"
 echo "[qa-run] baseline.json updated from run $RUN_ID"
 ```
