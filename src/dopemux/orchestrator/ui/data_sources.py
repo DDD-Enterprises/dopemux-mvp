@@ -3,11 +3,8 @@
 from __future__ import annotations
 
 import os
-import sqlite3
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-
-from filelock import FileLock, Timeout
 
 from dopemux.orchestrator.operator_workflows import (
     build_dashboard_snapshot,
@@ -20,17 +17,6 @@ from dopemux.orchestrator.policy import (
 )
 from dopemux.orchestrator.validation.packets import validate_packet_file
 from dopemux.orchestrator.validation.proof import validate_proof_file
-
-PANEL_IDS = (
-    "today",
-    "authority",
-    "packets",
-    "proof",
-    "risks",
-    "pr_queue",
-    "context",
-    "do_not_touch",
-)
 
 
 def get_today_data() -> Dict[str, Any]:
@@ -188,44 +174,22 @@ def get_panel_data(panel_id: str) -> Any:
         return {"error": f"Unknown panel: {panel_id}", "fallback": True, "status": "error"}
 
     try:
+        data = dispatch[panel_id]()
+
+        # Post-processing to satisfy specific UI tests
         if panel_id == "today":
-            # Unit tests mock this to test error fallbacks
-            sqlite3.connect(":memory:").close()
-            data = get_today_data()
             if not isinstance(data, dict):
                 data = {"data": data}
             if "count" not in data:
                 # build_dashboard_snapshot returns panels list
                 data["count"] = len(data.get("panels", []))
             data["fallback"] = False
-            return data
         elif panel_id == "context":
-            # Unit tests mock FileLock to test error fallbacks
-            lock_path = Path(os.getenv("TMPDIR", "/tmp")) / "dopemux-context-panel.lock"
-            with FileLock(str(lock_path), timeout=0.1):
-                data = get_context_data()
             if not isinstance(data, dict):
                 data = {"data": data}
             data["fallback"] = False
-            return data
-        else:
-            return dispatch[panel_id]()
-    except sqlite3.OperationalError as e:
-        return {
-            "fallback": True,
-            "error": str(e),
-            "status": "degraded (database error)",
-            "count": 0,
-        }
-    except Timeout as e:
-        if panel_id == "context":
-            return {
-                "fallback": True,
-                "progress_entries_count": 0,
-                "status": "lock contention fallback",
-                "error": str(e),
-            }
-        raise
+
+        return data
     except Exception as e:
         fallback_data: Dict[str, Any] = {
             "error": str(e),
