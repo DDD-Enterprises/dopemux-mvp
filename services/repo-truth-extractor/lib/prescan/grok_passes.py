@@ -16,6 +16,14 @@ from output_safety import (
 
 logger = logging.getLogger(__name__)
 CACHE_KEY_VERSION = "dopemux-rte-prescan-cache-v3"
+# Providers that receive response_format={"type":"json_object"} in prescan calls.
+# Mirrors the json_object-capable set in lib/structured_output_contracts.schema_capability_reason
+# for the openai_sdk transport — the only transport _call_grok supports.
+# Gemini is intentionally absent: prescan routes Gemini via _call_grok only when
+# execution_transport=="openai_sdk", but Gemini candidates always carry
+# execution_transport=="sdk", which raises ValueError at the transport guard
+# (line ~521) before any response_format is consumed. If a future Gemini prescan
+# route is added with openai_sdk transport, add "gemini" here and test it.
 PRESCAN_JSON_OBJECT_PROVIDERS = {"openai", "xai", "openrouter"}
 
 class RTEPrescanError(Exception):

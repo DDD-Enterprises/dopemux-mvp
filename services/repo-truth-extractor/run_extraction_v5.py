@@ -19882,6 +19882,7 @@ def run_batch_watch(
                 parsed = parse_json_from_response(
                     response_text,
                     metadata_out=salvage_meta,
+                    claimed_strict_route=bool(row.get("strict_json_schema", False)),
                 )
                 artifacts = coerce_artifacts_from_response(
                     parsed=parsed,
