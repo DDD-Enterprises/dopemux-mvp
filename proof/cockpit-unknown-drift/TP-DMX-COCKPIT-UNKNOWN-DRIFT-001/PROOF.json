@@ -104,8 +104,8 @@
     "status": "PASS",
     "issues_found": 0
   },
-  "commit_sha": "RECORDED_IN_FINAL_CLOSEOUT_AFTER_COMMIT",
-  "pr_url": "RECORDED_IN_FINAL_CLOSEOUT_AFTER_PR_CREATE",
+  "commit_sha": "0c1e8f2dfc80fd5a5a7fb44821b2d52aae81962c",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/733",
   "residual_risks": [
     "This PR certifies existing Unknown / Drift Queue primitives; it does not add new runtime behavior.",
     "Queue counts remain aggregate lower bounds where accepted artifacts lack per-row detail.",
