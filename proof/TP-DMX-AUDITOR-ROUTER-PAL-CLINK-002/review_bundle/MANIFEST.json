@@ -12,20 +12,17 @@
     "artifacts/ROUTE_PROBE_OUTPUTS.json",
     "artifacts/PAL_CLINK_AUDIT_OUTPUT.json"
   ],
-  "blockers": [
-    "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
-    "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500"
-  ],
+  "blockers": [],
   "created_by": "codex",
   "hashes": {
-    "SUMMARY.md": "4ddc33380cfa6c32ccabba130178bcded8bd122289f1710684ef55452577b4eb",
-    "PROOF.json": "420901d96d409d578aa1c8c6b51e3ff4a4be7e9388cb18a10684e3a1900b4485",
-    "AUDITOR_REPORT.md": "ea2dfc56f6d53b14ea8655d5905d27503cbb18f70ab68630eff3134ca5d9aeda",
+    "SUMMARY.md": "b2a7f7826b7874596a768d91ab97a00a373db616d7638e57c1f1d7841b32f05c",
+    "PROOF.json": "eb7e0b2b1b9cb1b9f6b6e5a2074590bd51dec29d272935cee5e9988aef9406bf",
+    "AUDITOR_REPORT.md": "1458effb959dd81ae68a4c452385422963a5de2379bd17e7c379d36a794a71be",
     "VALIDATION_OUTPUT.md": "428b092a9832c0d2d092c7394417740fafac85c9cd4fad7c4e8faa81e42844ff",
-    "GIT_STATE.md": "2ed1d0c1d886eb899cb122f3b23ce0a1106203fd10603c83a8d50fcfe5d7fbb3",
-    "DIFF_STAT.txt": "874fa64a101d7a4095a9831c57910cf7e885b4602dba28f55767223b212448c2",
-    "CHANGED_FILES.txt": "11f0723c51cef4edb2c760b5f4ed98bd25915f6bbf750dc47950cca75f8072ae",
-    "ARTIFACT_INDEX.md": "875f6d4056775ef4576b7e21be9878b642d300b4a7394f8a1dfbda439a799a91",
+    "GIT_STATE.md": "d21aec8efa850d06806479ea272041bee3be57bb95d3fbc065c165e56063197f",
+    "DIFF_STAT.txt": "a9db18f2c6f2b7ba2f3ad55d21407fcbc34e64ce55a38ae9e57484d56f0bb152",
+    "CHANGED_FILES.txt": "80a872c94b8d974cbf3e0b0fd6abb9ac15f3a69cbf0d27beed814889df863250",
+    "ARTIFACT_INDEX.md": "30e6726191851a4f8913e9e5c03fc2d79636173d95654405dc224ed04a8c60e2",
     "artifacts/AUDITOR_ROUTE.json": "07f4b1affae31b6691bf7bdad008b28d20ff3511240c34e698e17e82e4c77d9d",
     "artifacts/ROUTE_PROBE_OUTPUTS.json": "fc986cdc44c4bfa8c641adf272cc50cdce0c355419ff7a540e2b3f4a0597beb7",
     "artifacts/PAL_CLINK_AUDIT_OUTPUT.json": "3b4aabab2785b43c1169677c64ad8e83c3cd618b07e76c1768374ff89bfb3829"
@@ -36,6 +33,27 @@
   ],
   "route_is_audit_verdict": false,
   "status": "PASS_WITH_RISKS",
-  "updated_at": "2026-05-26T23:16:55Z",
-  "verdict": "PASS_TARGETED_TESTS_WITH_SCOPE_CONFLICT"
+  "updated_at": "2026-05-31T06:45:00Z",
+  "verdict": "PASS_TARGETED_TESTS_WITH_SCOPE_CONFLICT",
+  "blocker_resolution": {
+    "updated_at": "2026-05-31T06:01:22Z",
+    "resolver_branch": "codex/tp-dmx-auditor-blockers-fix",
+    "evidence": [
+      "gh pr view 713: state=MERGED, mergeCommit=be5a31d981840336a783097323755feb233e5560, mergedAt=2026-05-28T20:38:59Z",
+      "git merge-base --is-ancestor be5a31d981840336a783097323755feb233e5560 origin/main: PR713_MERGE_ON_MAIN=YES",
+      "origin/main contains tools/auditor_router/pal_clink.py, tests/auditor_router/test_pal_clink.py, scripts/auditor-preflight, tools/auditor_router/preflight.py, and schemas/proof/auditor_route.schema.json"
+    ],
+    "resolved_blockers": [
+      "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
+      "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500"
+    ],
+    "resolution_notes": {
+      "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN": "Resolved for current main: the PAL clink/auditor-router baseline surfaces are now present after PR #713 and follow-up wrapper work merged.",
+      "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500": "Resolved as an active PR #713 merge blocker: PR #713 is merged. GitHub workflow-dispatch health was not re-tested here and remains UNKNOWN as a platform/ops condition, not an active blocker for this merged packet."
+    },
+    "remaining_unknowns": [
+      "GitHub workflow-dispatch health was not re-tested in this reconciliation slice.",
+      "Historical proof reflects conditions observed before PR #713 merged; this update records current post-merge resolution evidence."
+    ]
+  }
 }
