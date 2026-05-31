@@ -24,6 +24,7 @@ from .runtime import CommandResult, append_command_log, append_live_log, execute
 from .schema import ARTIFACT_VERSION, ArtifactMeta, BlockerType, FallbackReason, Finding, FindingSeverity, Fingerprint, MergeDecision, MergeActionType, OverrideRecord, PhaseRecord, PRResult, PRState, PRStateData, POLICY_SCHEMA_VERSION, PreflightCheck, PreflightResult, PullRequestState, QueueOrderingLayer, ReviewThread, RunManifest, ThreadComment, ThreadDisposition, ThreadDispositionType, TruthSource, ValidationReport, ValidationStatus, ValidationStepResult, TOOL_VERSION
 from .validation import run_validation, validation_report_md
 from .strategy_library import STRATEGY_LIBRARY, select_strategy, StrategyAssignment, TRAIN_ELIGIBLE_STRATEGIES, STRATEGY_EXECUTION_ORDER
+from .steward_gate import StewardGateResult, steward_gate
 
 
 
@@ -66,7 +67,7 @@ from .conflict import (
 from .merge import checks_green, wait_for_green_checks, checks_blocker_reason, decide_merge_action, run_merge_with_fallback, serialize_check_payload
 from .worktree import prepare_worktree, cleanup_worktree, ensure_worktree_matches_pr_head, attempt_rebase, attempt_speculative_rebase, push_rebased_head, auto_recover_rebase_conflicts
 
-__all__ = ['queue_scan', 'queue_scan_internal', 'pr_plan', 'pr_apply', 'pr_merge', 'pr_approve', 'pr_ready', '_get_ops_engine', '_derive_allowed_actions', 'queue_drain', 'stage_and_push_if_needed', 'update_remaining_pr_bases']
+__all__ = ['queue_scan', 'queue_scan_internal', 'pr_plan', 'pr_apply', 'pr_merge', 'pr_approve', 'pr_ready', '_get_ops_engine', '_derive_allowed_actions', 'queue_drain', 'stage_and_push_if_needed', 'update_remaining_pr_bases', 'require_steward_remediation_gate', 'global_fix_prs_allowed']
 
 def stage_and_push_if_needed(*, worktree_path: Path, head_ref: str, active_run_id: str, pr_id: int, execute: bool, commands_log: Path, policy: Dict[str, Any], log: Optional[Callable] = None) -> bool:
     def _log(msg: str):
@@ -277,6 +278,143 @@ def _with_operator_state(
         else result.lifecycle_state
     )
     return replace(result, lifecycle_state=lifecycle_state, artifacts=artifacts)
+
+
+IMPLEMENTER_BLOCKERS = {
+    "UNRESOLVED_REVIEW_THREAD",
+    "FAILED_CHECK",
+    "REQUEST_CHANGES",
+    "REVIEW_ITEM_MUST_FIX",
+    "ACTIVE_THREAD",
+    "REQUIRED_CHECK_FAILED",
+    "CONFLICT_DETECTED",
+}
+
+
+def global_fix_prs_allowed(policy: Dict[str, Any]) -> bool:
+    return bool(policy.get("steward_gate", {}).get("allow_global_fix_prs", False))
+
+
+def _steward_gate_now(value: Any) -> Optional[datetime]:
+    if value is None or isinstance(value, datetime):
+        return value
+    if isinstance(value, str):
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    raise TypeError("now must be a datetime, ISO timestamp string, or None")
+
+
+def _steward_artifact_path(
+    raw_path: Any,
+    *,
+    pr_dir: Path,
+    pr_id: int,
+    default_name: str,
+) -> Path:
+    if raw_path:
+        rendered = str(raw_path).format(pr_dir=str(pr_dir), pr_id=pr_id)
+        path = Path(rendered)
+        return path if path.is_absolute() else pr_dir / path
+    return pr_dir / default_name
+
+
+def require_steward_remediation_gate(
+    *,
+    pr: PullRequestState,
+    policy: Dict[str, Any],
+    pr_dir: Path,
+    now: Any = None,
+) -> StewardGateResult:
+    gate_policy = policy.get("steward_gate", {})
+    merge_readiness_path = _steward_artifact_path(
+        gate_policy.get("merge_readiness_path"),
+        pr_dir=pr_dir,
+        pr_id=pr.pr_id,
+        default_name="MERGE_READINESS.json",
+    )
+    audit_proof_path = _steward_artifact_path(
+        gate_policy.get("audit_proof_path"),
+        pr_dir=pr_dir,
+        pr_id=pr.pr_id,
+        default_name="PROOF.json",
+    )
+    result = steward_gate(
+        head_sha=pr.head_sha,
+        required_class="REMEDIATION",
+        merge_readiness_path=merge_readiness_path,
+        audit_proof_path=audit_proof_path,
+        now=_steward_gate_now(now),
+        ttl_seconds=int(gate_policy.get("artifact_ttl_seconds", 3600) or 3600),
+    )
+    if not result.allowed:
+        return result
+
+    try:
+        readiness = json.loads(merge_readiness_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError) as exc:
+        return StewardGateResult(
+            allowed=False,
+            reason_code="DENY_ARTIFACT_UNREADABLE",
+            required_class="REMEDIATION",
+            evidence={"error": type(exc).__name__},
+        )
+    blockers = [
+        str(item)
+        for item in readiness.get("blockers", [])
+        if isinstance(item, str) and item
+    ]
+    implementer_blockers = [
+        blocker for blocker in blockers if blocker in IMPLEMENTER_BLOCKERS
+    ]
+    if not implementer_blockers:
+        return StewardGateResult(
+            allowed=False,
+            reason_code="DENY_NO_IMPLEMENTER_BLOCKER",
+            required_class="REMEDIATION",
+            evidence={**dict(result.evidence), "blockers": blockers},
+        )
+    return StewardGateResult(
+        allowed=True,
+        reason_code=result.reason_code,
+        required_class=result.required_class,
+        evidence={**dict(result.evidence), "implementer_blockers": implementer_blockers},
+    )
+
+
+def _steward_gate_blocked_result(
+    *,
+    active_run_id: str,
+    pr: PullRequestState,
+    threads: List[ReviewThread],
+    check_payload: Dict[str, Any],
+    validation: ValidationReport,
+    policy: Dict[str, Any],
+    gate_result: StewardGateResult,
+    pr_dir: Path,
+) -> PRResult:
+    result = build_plan_result(
+        active_run_id=active_run_id,
+        pr=pr,
+        threads=threads,
+        check_payload=check_payload,
+        validation_report=validation,
+        policy=policy,
+    )
+    result = _with_operator_state(
+        result,
+        "steward_remediation_blocked",
+        detail=gate_result.reason_code,
+    )
+    write_json(
+        pr_dir / "STEWARD_REMEDIATION_GATE.json",
+        {
+            "allowed": gate_result.allowed,
+            "reason_code": gate_result.reason_code,
+            "required_class": gate_result.required_class,
+            "evidence": dict(gate_result.evidence),
+        },
+    )
+    write_pr_state_artifact(pr_dir, result)
+    return result
 
 
 def _merge_prepared_result(
@@ -863,6 +1001,37 @@ def pr_apply(
             if has_conflicts(pr.mergeable, pr.merge_state_status)
             else ""
         )
+        needs_thread_remediation = any(
+            disposition.disposition
+            in {
+                ThreadDispositionType.IMPLEMENT,
+                ThreadDispositionType.AGENTIC_FIX,
+                ThreadDispositionType.DECLINE_WITH_RATIONALE,
+                ThreadDispositionType.AUTO_RESOLVE_OUTDATED,
+            }
+            for disposition in thread_dispositions
+        )
+        if execute and needs_thread_remediation:
+            gate_result = require_steward_remediation_gate(
+                pr=pr,
+                policy=policy,
+                pr_dir=pr_dir,
+            )
+            if not gate_result.allowed:
+                log(
+                    f"Steward remediation gate denied thread remediation: {gate_result.reason_code}",
+                    "ERROR",
+                )
+                return _steward_gate_blocked_result(
+                    active_run_id=active_run_id,
+                    pr=pr,
+                    threads=threads,
+                    check_payload=check_payload,
+                    validation=validation,
+                    policy=policy,
+                    gate_result=gate_result,
+                    pr_dir=pr_dir,
+                )
         if conflict_state in {"manual_conflict_required", "semantic_conflict_blocked"}:
             analysis_path = pr_dir / "CONFLICT_ANALYSIS.md"
             write_text(
@@ -997,6 +1166,27 @@ def pr_apply(
                 ),
             )
             if conflict_state == "eligible":
+                if execute:
+                    gate_result = require_steward_remediation_gate(
+                        pr=pr,
+                        policy=policy,
+                        pr_dir=pr_dir,
+                    )
+                    if not gate_result.allowed:
+                        log(
+                            f"Steward remediation gate denied conflict remediation: {gate_result.reason_code}",
+                            "ERROR",
+                        )
+                        return _steward_gate_blocked_result(
+                            active_run_id=active_run_id,
+                            pr=pr,
+                            threads=threads,
+                            check_payload=check_payload,
+                            validation=validation,
+                            policy=policy,
+                            gate_result=gate_result,
+                            pr_dir=pr_dir,
+                        )
                 log("Attempting automated mechanical conflict recovery...")
                 recovered, recovery_state, _recovery_meta = auto_recover_rebase_conflicts(
                     pr=pr,
@@ -1063,30 +1253,41 @@ def pr_apply(
         )
         
         if not validation.passed and execute:
-            log("Validation failed, attempting AI remediation...")
-            if remediate_ci_failure(worktree_path, validation, log):
-                log("Re-running validation suite after AI fix...", "START")
-                validation = run_validation(
-                    repo_root=repo_root,
-                    worktree_path=worktree_path,
-                    policy=policy,
-                    execute=execute,
-                    commands_log=commands_log,
-                    pr_id=pr.pr_id,
-                    head_sha=pr.head_sha,
-                    base_sha=pr.base_sha,
-                    policy_fingerprint=policy_fingerprint(policy),
-                    lifecycle_state=(
-                        pr.lifecycle_state.value
-                        if hasattr(pr.lifecycle_state, "value")
-                        else str(pr.lifecycle_state)
-                    ),
-                    progress_callback=progress_callback
+            gate_result = require_steward_remediation_gate(
+                pr=pr,
+                policy=policy,
+                pr_dir=pr_dir,
+            )
+            if not gate_result.allowed:
+                log(
+                    f"Steward remediation gate denied CI remediation: {gate_result.reason_code}",
+                    "ERROR",
                 )
-                if validation.passed:
-                    log("Committing AI remediation fix...")
-                    if stage_and_push_if_needed(worktree_path=worktree_path, head_ref=pr.head_ref, active_run_id=active_run_id, pr_id=pr.pr_id, execute=execute, commands_log=commands_log, policy=policy, log=log):
-                        _refresh_client_state(client, pr.pr_id)        
+            else:
+                log("Validation failed, attempting AI remediation...")
+                if remediate_ci_failure(worktree_path, validation, log):
+                    log("Re-running validation suite after AI fix...", "START")
+                    validation = run_validation(
+                        repo_root=repo_root,
+                        worktree_path=worktree_path,
+                        policy=policy,
+                        execute=execute,
+                        commands_log=commands_log,
+                        pr_id=pr.pr_id,
+                        head_sha=pr.head_sha,
+                        base_sha=pr.base_sha,
+                        policy_fingerprint=policy_fingerprint(policy),
+                        lifecycle_state=(
+                            pr.lifecycle_state.value
+                            if hasattr(pr.lifecycle_state, "value")
+                            else str(pr.lifecycle_state)
+                        ),
+                        progress_callback=progress_callback
+                    )
+                    if validation.passed:
+                        log("Committing AI remediation fix...")
+                        if stage_and_push_if_needed(worktree_path=worktree_path, head_ref=pr.head_ref, active_run_id=active_run_id, pr_id=pr.pr_id, execute=execute, commands_log=commands_log, policy=policy, log=log):
+                            _refresh_client_state(client, pr.pr_id)
         if validation.passed:
             log("Validation PASSED", "SUCCESS")
         else:
@@ -1105,10 +1306,21 @@ def pr_apply(
                 log=log,
             )
             if remote_validation is not None and not remote_validation.passed:
-                log(
-                    f"Remote required check '{reproduced_check}' failed locally; attempting AI remediation..."
+                gate_result = require_steward_remediation_gate(
+                    pr=pr,
+                    policy=policy,
+                    pr_dir=pr_dir,
                 )
-                if remediate_ci_failure(worktree_path, remote_validation, log):
+                if not gate_result.allowed:
+                    log(
+                        f"Steward remediation gate denied remote-check remediation: {gate_result.reason_code}",
+                        "ERROR",
+                    )
+                else:
+                    log(
+                        f"Remote required check '{reproduced_check}' failed locally; attempting AI remediation..."
+                    )
+                if gate_result.allowed and remediate_ci_failure(worktree_path, remote_validation, log):
                     reproduced_check, remote_validation = reproduce_remote_required_check_failure(
                         worktree_path=worktree_path,
                         commands_log=commands_log,
@@ -1145,15 +1357,6 @@ def pr_apply(
                         else:
                             log("Full validation still failed after remote-check remediation.", "ERROR")
 
-        if validation.passed:
-            resolve_verified_threads(
-                dispositions=applied_threads,
-                execute=execute,
-                commands_log=commands_log,
-                repo_root=repo_root,
-                policy=policy
-            )
-
         result = build_plan_result(
             active_run_id=active_run_id,
             pr=refreshed_pr,
@@ -1161,7 +1364,7 @@ def pr_apply(
             check_payload=refreshed_checks,
             validation_report=validation,
             policy=policy,
-            threads_resolved_locally=validation.passed and any(d.applied for d in applied_threads)
+            threads_resolved_locally=False
         )
         if operator_state:
             result = _with_operator_state(result, operator_state)
@@ -1871,6 +2074,13 @@ def _handle_global_ci_blockers(
             for r, _failed_step in blocked_prs:
                 blocked_map[r.pr_state.pr_id] = pr_number
         else:
+            if "steward_gate" in client.policy and not global_fix_prs_allowed(client.policy):
+                _log(
+                    f"Global CI blocker fingerprint {fingerprint} requires supervisor; "
+                    "shared global-fix PR creation is disabled by steward_gate policy.",
+                    "WARNING",
+                )
+                continue
             # New global blocker. Create a global fix PR.
             _log(
                 f"New global CI blocker detected for fingerprint {fingerprint}; triggering shared remediation for {len(blocked_prs)} PRs.",

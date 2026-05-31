@@ -43,6 +43,35 @@ The gate denies when:
 | `REMEDIATION` | `NEEDS_IMPLEMENTER` |
 | `FINALIZATION` | `READY` |
 
-TP-DMX-STEWARD-GATE-201 only adds the guard library. It is not wired into
-remediation, finalization, merge, thread-resolution, or GitHub mutation seams.
-Those integrations are separate packets.
+## Remediation Wiring
+
+TP-DMX-MERGE-REMEDIATION-202 wires `steward_gate(REMEDIATION)` into the
+remediation mutation seams in `dopemux_pr_merge_specialist.queue_drain`:
+
+- review-thread implementation, rationale replies, and agentic thread fixes
+- mechanical conflict recovery after rebase failure
+- local validation and reproduced remote-check AI remediation
+- shared global-fix PR creation policy
+
+Remediation requires fresh local `MERGE_READINESS.json` and `PROOF.json`
+artifacts for the exact PR head SHA. The PR Steward readiness must be
+`NEEDS_IMPLEMENTER`, both embedded-audit statuses must be `PASS` or
+`PASS_WITH_RISKS`, and `MERGE_READINESS.json.blockers` must contain at least one
+implementer-owned blocker such as `UNRESOLVED_REVIEW_THREAD`, `FAILED_CHECK`,
+`REQUEST_CHANGES`, or `REVIEW_ITEM_MUST_FIX`.
+
+When the remediation gate denies, queue drain records
+`STEWARD_REMEDIATION_GATE.json`, sets `operator_state` to
+`steward_remediation_blocked`, and does not launch Gemini, apply review-thread
+changes, create shared global-fix PRs, or perform conflict auto-recovery.
+
+Thread resolution remains outside TP-DMX-MERGE-REMEDIATION-202. Remediation may
+reply and push verified fixes, but resolving review threads is deferred to the
+finalization packet.
+
+Shared global-fix PR creation is disabled when `steward_gate` policy is present
+unless `steward_gate.allow_global_fix_prs` is explicitly `true`.
+
+TP-DMX-STEWARD-GATE-201 only added the guard library. TP202 wires remediation
+seams only; finalization, merge execution, governed automerge, and review-thread
+resolution remain separate packet work.

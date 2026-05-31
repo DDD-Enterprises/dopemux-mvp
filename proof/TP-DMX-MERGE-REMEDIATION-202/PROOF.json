@@ -1,0 +1,142 @@
+{
+  "tp_id": "TP-DMX-MERGE-REMEDIATION-202",
+  "status": "PASS_WITH_LIMITS",
+  "generated_at": "2026-05-31T14:18:45Z",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-merge-remediation-202",
+  "branch": "codex/tp-dmx-merge-remediation-202",
+  "base_ref": "origin/codex/tp-dmx-steward-gate-201",
+  "base_sha": "eac0853f521041c5d52f0d40eddb4be84d66b424",
+  "head_sha": "29bed2029a813e9c294273e6db36901fcd3ba13b",
+  "repo_identity": {
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker": ".dopetaskroot",
+    "identity_match": true
+  },
+  "stacking": {
+    "reason": "TP202 depends on TP-DMX-STEWARD-GATE-201, which is open as draft PR #765 and not yet merged to main.",
+    "base_branch": "codex/tp-dmx-steward-gate-201"
+  },
+  "dependency_proofs": [
+    {
+      "tp_id": "TP-DMX-STEWARD-GATE-201",
+      "path": "proof/TP-DMX-STEWARD-GATE-201/PROOF.json",
+      "present": true,
+      "status": "PASS_WITH_LIMITS",
+      "note": "Dependency proof validates and #765 CI passed, but its external embedded audit was locally skipped."
+    }
+  ],
+  "authority_used": [
+    "AGENTS.md",
+    "task-packets/generated/TP-DMX-MERGE-REMEDIATION-202.json",
+    "task-packets/generated/TP-DMX-STEWARD-GATE-201.json",
+    "docs/ops/steward-merge-gate.md",
+    "src/dopemux_pr_merge_specialist/queue_drain.py",
+    "src/dopemux_pr_merge_specialist/steward_gate.py",
+    "config/pr_merge_specialist/policy.yaml",
+    "tests/pr_merge_specialist"
+  ],
+  "slices_completed": [
+    "RED: added tests/pr_merge_specialist/test_remediation_gate.py and observed AttributeError for missing queue_drain gate helpers.",
+    "GREEN: added require_steward_remediation_gate and global_fix_prs_allowed helpers, then wired the gate into queue-drain remediation mutation points.",
+    "Changed pr_apply thread handling so remediation does not resolve review threads; finalization remains deferred to TP203.",
+    "Disabled shared global-fix PR creation under repo steward_gate policy unless explicitly allowed.",
+    "Updated TP202 docs and packet base to reflect the stacked TP201 dependency."
+  ],
+  "files_changed": [
+    "config/pr_merge_specialist/policy.yaml",
+    "docs/ops/steward-merge-gate.md",
+    "src/dopemux_pr_merge_specialist/queue_drain.py",
+    "task-packets/generated/TP-DMX-MERGE-REMEDIATION-202.json",
+    "tests/pr_merge_specialist/test_remediation_gate.py",
+    "proof/TP-DMX-MERGE-REMEDIATION-202/AUDITOR_REPORT.md",
+    "proof/TP-DMX-MERGE-REMEDIATION-202/CHANGED_FILES.txt",
+    "proof/TP-DMX-MERGE-REMEDIATION-202/DIFF_STAT.txt",
+    "proof/TP-DMX-MERGE-REMEDIATION-202/GIT_STATE.md",
+    "proof/TP-DMX-MERGE-REMEDIATION-202/PROOF.json",
+    "proof/TP-DMX-MERGE-REMEDIATION-202/VALIDATION_OUTPUT.md",
+    "proof/TP-DMX-MERGE-REMEDIATION-202/review_bundle/README.md"
+  ],
+  "validations": [
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 pytest -q -s -p no:cacheprovider tests/pr_merge_specialist/test_remediation_gate.py",
+      "exit_code": 1,
+      "status": "RED_PASS",
+      "evidence": "AttributeError for missing require_steward_remediation_gate and global_fix_prs_allowed helpers."
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 pytest -q -s -p no:cacheprovider tests/pr_merge_specialist/test_remediation_gate.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "4 passed"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 pytest -q -s -p no:cacheprovider tests/pr_merge_specialist/test_remediation_gate.py tests/pr_merge_specialist/test_agentic_thread_remediation.py tests/pr_merge_specialist/test_queue_drain_integration.py",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 pytest -q -s -p no:cacheprovider tests/pr_merge_specialist",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m py_compile src/dopemux_pr_merge_specialist/queue_drain.py src/dopemux_pr_merge_specialist/policy.py tests/pr_merge_specialist/test_remediation_gate.py",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m compileall -q src tests",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-MERGE-REMEDIATION-202.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m jsonschema -i task-packets/generated/TP-DMX-MERGE-REMEDIATION-202.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "pre-commit run --files <TP202 changed files>",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-MERGE-REMEDIATION-202/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "External embedded audit was not invoked in this Codex session.",
+      "Supervisor review is still required for this red-lane merge-engine change."
+    ],
+    "skip_reason": "No supported external embedded-auditor invocation was available in this session; Codex performed bounded manual audit and records this required audit as skipped."
+  },
+  "codereview_status": "Manual bounded review complete; tests cover gate allow/deny and existing queue-drain regressions pass.",
+  "precommit_status": "PASS: pre-commit run on TP202 changed files and git diff --check passed.",
+  "commit_sha": "29bed2029a813e9c294273e6db36901fcd3ba13b",
+  "pr_url": "PENDING_PR",
+  "residual_risks": [
+    "TP202 is stacked on TP201 because TP201 is not merged to main.",
+    "External embedded audit and supervisor review remain required before treating this red-lane packet as accepted.",
+    "Admin-bypass and merge-finalization authority remain intentionally deferred to TP203."
+  ],
+  "unknowns": [
+    "Task Orchestrator MCP context unavailable: Transport closed."
+  ],
+  "cleanup_status": "WORKTREE_ACTIVE_PENDING_PR"
+}
