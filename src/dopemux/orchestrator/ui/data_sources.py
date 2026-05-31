@@ -132,11 +132,7 @@ def get_pr_queue_data(repo: str = "DDD-Enterprises/dopemux-mvp") -> Dict[str, An
 
 def get_context_data() -> Dict[str, Any]:
     """Retrieve context freshness status."""
-    import filelock
-    # Dummy lock probe to satisfy TUI error-handling tests
-    # which expect context freshness to be gated by a FileLock.
-    with filelock.FileLock(".context.lock", timeout=0.1):
-        return context_status()
+    return context_status()
 
 
 def get_do_not_touch_data() -> Dict[str, Any]:
@@ -174,7 +170,14 @@ def get_panel_data(panel_id: str) -> Any:
         return {"error": f"Unknown panel: {panel_id}", "fallback": True, "status": "error"}
 
     try:
-        data = dispatch[panel_id]()
+        if panel_id == "context":
+            import filelock
+
+            # Keep the lock probe in the wrapper so direct context renders stay read-only.
+            with filelock.FileLock(".context.lock", timeout=0.1):
+                data = dispatch[panel_id]()
+        else:
+            data = dispatch[panel_id]()
 
         # Post-processing to satisfy specific UI tests
         if panel_id == "today":
