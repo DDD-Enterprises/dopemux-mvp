@@ -40,9 +40,15 @@ source "${QA_DIR}/lib/qa_common.sh"
 guard_qa_project
 
 # ── Load QA env file if present ──────────────────────────────────────────────
+# Only set vars from the file that are NOT already exported (e.g. DPMX_LIVE_OK=1
+# exported by the driver's --live flag must not be overwritten by the template default).
 if [[ -f "${QA_ENV_FILE}" ]]; then
-    # shellcheck disable=SC1090
-    source <(grep -E '^[A-Z_]+=' "${QA_ENV_FILE}" | grep -v '^#' | sed 's/^/export /')
+    while IFS='=' read -r _k _v; do
+        [[ "$_k" =~ ^[A-Z_][A-Z0-9_]*$ ]] || continue
+        if [[ -z "${!_k+set}" ]]; then
+            export "${_k}=${_v}"
+        fi
+    done < <(grep -E '^[A-Z_][A-Z0-9_]*=' "${QA_ENV_FILE}" | grep -v '^#')
 fi
 
 # ── Helper: locate dopemux binary ────────────────────────────────────────────
