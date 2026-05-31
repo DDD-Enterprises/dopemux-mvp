@@ -275,7 +275,7 @@
   "proof_artifact_hashes": [
     {
       "path": "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json",
-      "sha256": "06fc34b93887f61c8bf803137f5a39921abc5ca28f5495f2041669da25016fc5"
+      "sha256": "b19b69ad5feb2d5bcca3a8bd908d89796d63c76a3cc9f9a820e950edecaba4e7"
     },
     {
       "path": "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.md",
