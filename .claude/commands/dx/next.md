@@ -66,7 +66,7 @@ For each returned item, render a card:
 └─────────────────────────────────────────────────────
 ```
 
-If `includeAncestors` returns an empty array (root item), show "(top-level)" instead of a breadcrumb.
+If no parent or ancestor context is present in the returned item, show "(top-level)" instead of a breadcrumb.
 
 If the orchestrator returns 0 candidates, print:
 

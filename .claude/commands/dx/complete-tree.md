@@ -47,7 +47,7 @@ Each result: `applied` / `skipped` (skippedReason) / `gateErrors` (missing notes
 
 **2d — `--cancel-incomplete` follow-up (only if flag set).** Collect the ids that have `gateErrors` or were `skipped` for a non-terminal reason (exclude already-terminal). Cancel each **individually** so already-completed descendants are left untouched:
 ```
-advance_item(transitions=[{ itemId: "<failed id>", trigger: "cancel" }, ...])
+advance_item({ itemId: "<failed id>", trigger: "cancel", summary: "cancel incomplete item after /dx:complete-tree" })
 ```
 **Do NOT** re-run `complete_tree(trigger="cancel")` on these — as a tree operation it would cascade-cancel descendants that already completed successfully. Per-item `advance_item` cancels only the named items.
 
@@ -79,7 +79,7 @@ If gate failures remain and `--cancel-incomplete` was NOT passed, tell the opera
 Next actions:
   /dx:tree <id>      → confirm the subtree state after the operation
   /dx:note <id> <key>→ fill a gate that blocked completion
-  /dx:reopen <id>    → undo if a parent over-completed
+  /dx:reopen <id>    → inspect an over-completed parent; automatic reopen is not currently exposed
 ```
 
 ---
