@@ -522,7 +522,7 @@ function App() {
         <Collapse in={Boolean(errorMessage)}>
           <Alert
             severity="error"
-            icon={<AlertTriangle size={20} />}
+            icon={<AlertTriangle size={20} aria-hidden="true" />}
             onClose={() => setErrorMessage(null)}
             sx={{
               mb: 3,
