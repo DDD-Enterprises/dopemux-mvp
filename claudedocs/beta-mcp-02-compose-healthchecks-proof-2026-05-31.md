@@ -2,7 +2,7 @@
 
 ## Status
 
-VERIFIED_TARGETED for local validation. Commit SHA and PR URL are recorded in the final response after Git/GitHub mutation.
+VERIFIED_TARGETED for local validation. Implementation commit SHA and PR URL are recorded below.
 
 ## Task Packet
 
@@ -126,8 +126,8 @@ PASS: self-review of final diff found no out-of-allowlist edits and no mixed-for
 
 ## Commit / PR
 
-- Commit SHA: recorded in final response after commit creation.
-- PR URL: recorded in final response after PR creation.
+- Implementation Commit SHA: `e546bd494dbbde20c12017c6674251a30affa213`
+- PR URL: `https://github.com/DDD-Enterprises/dopemux-mvp/pull/744`
 
 ## Remaining Uncertainty / Risk
 
