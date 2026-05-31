@@ -75,7 +75,7 @@ LIVE_BEFORE=$(docker compose -p dopemux ps -q 2>/dev/null | wc -l | tr -d ' ') |
 log_info "Live dopemux containers before teardown: $LIVE_BEFORE"
 
 # ── docker compose down (no -v: never delete volumes) ─────────────────────────
-docker compose -p dopemux-qa down --remove-orphans 2>&1 | tee "$TEARDOWN_LOG" || true
+docker compose -p dopemux-qa -f "${ROOT}/compose.yml" down --remove-orphans 2>&1 | tee "$TEARDOWN_LOG" || true
 
 # ── Remove QA-specific network (NOT the shared dopemux-network) ───────────────
 QA_NETWORK="${QA_NETWORK:-dopemux-qa-network}"
@@ -95,7 +95,7 @@ fi
 QA_REMAINING=0
 QA_REMAINING_JSON="[]"
 RAW_PS=""
-RAW_PS=$(docker compose -p dopemux-qa ps --format json 2>/dev/null || true)
+RAW_PS=$(docker compose -p dopemux-qa -f "${ROOT}/compose.yml" ps --format json 2>/dev/null || true)
 
 # docker compose ps --format json may return an array or newline-delimited objects
 if [[ -n "$RAW_PS" ]]; then

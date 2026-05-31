@@ -61,6 +61,23 @@ docker network create "${QA_NETWORK}" 2>/dev/null || true
 log_info "Creating external network 'dopemux-network' (if not exists)"
 docker network create dopemux-network 2>/dev/null || true
 
+# ── Step 2b: Guard against fixed-container-name conflicts ────────────────────
+# compose.yml has fixed container_name values (dopemux-postgres-age, redis-events, …)
+# that Docker rejects when the live dopemux stack is already running.
+# If a QA overlay (compose.qa.yml) doesn't exist AND the live stack is up,
+# the harness cannot run in isolation — emit NOT_RUN rather than failing cryptically.
+QA_COMPOSE_FILE="${ROOT}/compose.yml"
+QA_OVERLAY="${ROOT}/qa/compose.qa.yml"
+LIVE_RUNNING=0
+LIVE_RUNNING=$(docker compose -p dopemux ps -q 2>/dev/null | wc -l | tr -d ' ') || LIVE_RUNNING=0
+if [[ "${LIVE_RUNNING}" -gt 0 ]] && [[ ! -f "${QA_OVERLAY}" ]]; then
+    scenario_skip "Live dopemux stack has ${LIVE_RUNNING} running container(s) and no qa/compose.qa.yml overlay exists. Create qa/compose.qa.yml that overrides fixed container_name values before running QA beside the live stack."
+fi
+if [[ -f "${QA_OVERLAY}" ]]; then
+    log_info "Using QA overlay: ${QA_OVERLAY}"
+    QA_COMPOSE_FILE="${QA_OVERLAY}"
+fi
+
 # ── Step 3: Bring up the QA stack ─────────────────────────────────────────────
 log_info "Running: qa_docker_compose up -d --wait"
 mkdir -p "${RESULTS_DIR}"
@@ -69,7 +86,7 @@ LOG_FILE="${RESULTS_DIR}/00_env_up.log"
 # Allow compose up to fail without killing the script; we capture and check
 set +e
 qa_docker_compose \
-    -f "${ROOT}/compose.yml" \
+    -f "${QA_COMPOSE_FILE}" \
     up -d --wait \
     2>&1 | tee "${LOG_FILE}"
 COMPOSE_RC=${PIPESTATUS[0]}
@@ -138,7 +155,7 @@ log_info "Counting running QA containers"
 CONTAINER_COUNT=0
 set +e
 CONTAINER_JSON="$(qa_docker_compose \
-    -f "${ROOT}/compose.yml" \
+    -f "${QA_COMPOSE_FILE}" \
     ps --format json 2>/dev/null)"
 set -e
 
