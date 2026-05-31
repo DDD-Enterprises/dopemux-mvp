@@ -1,0 +1,254 @@
+{
+  "task_packet_id": "TP-RTE-FINAL-AUDIT-GROK-NONE-REASONING-006",
+  "summary": "Restore xAI grok-4.3 reasoning_effort=none preservation that PR #685's global drop incorrectly stripped at the payload boundary.",
+  "branch": "codex/rte-grok-none-reasoning-006",
+  "base_branch": "main",
+  "base_sha": "811f50c846239101a97fb1e40d405eb0a0c07620",
+  "head_sha": "b8ffbb32bdce92d7f55c9a61c8fb22d5f10f298d",
+  "code_commit_sha": "5f0b37ec8637e3620f74667f83052b41ea7ef512",
+  "proof_only_commit_shas": [
+    "b8ffbb32bdce92d7f55c9a61c8fb22d5f10f298d",
+    "FINALIZE_PROOF_SHA_SET_AFTER_THIS_COMMIT_LANDS"
+  ],
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/705",
+  "created_at_utc": "2026-05-25T00:00:00Z",
+  "scope": {
+    "allowed_files": [
+      "services/repo-truth-extractor/lib/route_options.py",
+      "services/repo-truth-extractor/llm_runtime.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/test_route_request_options.py",
+      "services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_opt_model_refresh.py",
+      "proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-GROK-NONE-REASONING-006_PROOF.json"
+    ],
+    "out_of_scope": [
+      "model_map.yaml (forbidden — the 139 grok-4.3 reasoning_effort=none rows are the documented intent and must not be edited)",
+      "lib/batch_clients.py (forbidden — fix routes around it via Option A at run_extraction_v5.py:13144)",
+      "lib/phase_contract_map.py / lib/structured_output_contracts.py (forbidden — dict-self-inference makes their existing call-shape correct without edits)"
+    ]
+  },
+  "problem_statement": {
+    "bug": "Post-PR-685, services/repo-truth-extractor/lib/route_options.py declared _DROP_VALUES = frozenset({'', 'none'}) and unconditionally dropped reasoning_effort='none' at the payload boundary for every route, including xAI grok-4.3.",
+    "incorrect_behavior_pre_fix": "All 139 model_map.yaml rows declaring reasoning_effort: none for xai/grok-4.3 had the value silently stripped before the SDK call. xAI grok-4.3 then fell back to its provider default (reasoning_effort=low) instead of the intended no-reasoning mode.",
+    "intended_behavior_post_fix": "xAI grok-4.3 receives reasoning_effort='none' end-to-end. All other providers/models continue to have 'none' dropped (the 4xx-safety behavior remains for OpenAI reasoning family etc.)."
+  },
+  "source_authority": {
+    "xai_grok_4_3_reasoning_effort_enum": {
+      "documented_values": ["none", "low", "medium", "high"],
+      "default_when_omitted": "low",
+      "migration_guidance": "xAI recommends grok-4.3 with reasoning_effort='none' for non-reasoning workloads (former grok-4-1-fast-non-reasoning replacement).",
+      "verification_status": "SOURCE_VERIFIED_PER_USER_PROMPT",
+      "verification_note": "Current user prompt (CLAUDE CODE OPUS PROMPT — Fix Grok 4.3 reasoning_effort=none Preservation) asserts the documented enum and the 'none' value. Per Truth Order, latest user instruction outranks prior session's beliefs. LIVE_NOT_VERIFIED in this session (no live provider calls authorized)."
+    },
+    "openai_reasoning_models_enum": {
+      "documented_values": ["minimal", "low", "medium", "high"],
+      "verification_status": "SOURCE_VERIFIED_PER_PRIOR_SESSION",
+      "verification_note": "PR #685 fix documented this enum. 'none' is not in it; forwarding 'none' to an OpenAI reasoning model would 4xx. The fix preserves this safety for non-xai/non-grok-4.3 routes."
+    },
+    "conflict_note": "The merged route_options.py docstring (PR #685, commit 903022fc on the codex/rte-final-audit-model-refresh-004 branch) asserts \"xAI's documented reasoning_effort enum is low|high\" — i.e., the previous Opus session believed 'none' was NOT a valid xAI value. The current prompt asserts the opposite. Per authority order, the current user instruction wins. The new route_options.py docstring documents the corrected facts; a reviewer reading git history will see both claims and should use the proof bundle as the tie-breaker.",
+    "in_repo_corroboration": "The in-repo migration evidence at proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROOF.json (deferred_changes entry, line 30) records: 'DEFERRED_STRUCTURED_FIELD_UNSUPPORTED: migration requires explicit reasoning_effort none and the runtime does not support that route field' with required_runtime_fields=['reasoning_effort'] and official_source='https://docs.x.ai/developers/migration/may-15-retirement'. That bundle was written by the same prior session that authored the conflicting route_options.py docstring — establishing that the prior session already KNEW the xAI migration documented 'none' as a required value but then deferred runtime support rather than implementing it, and the subsequent global-drop fix at the payload boundary contradicted both the prior session's own deferral note AND the official source it cited. The current fix realigns the runtime with the established migration intent. Net: the conflict resolves to 'user prompt + prior migration proof bundle + cited xAI doc' on the preserve side, vs 'PR #685 route_options.py docstring' (outlier) on the drop side."
+  },
+  "design": {
+    "approach": "Provider/model-aware gating + dict-self-inference fallback in normalize_route_request_options.",
+    "signature_change": "normalize_route_request_options(value, *, provider=None, model_id=None) -> Dict[str, str]",
+    "backward_compatibility": "Kwargs default to None; legacy callers without route context still drop 'none' (safe default). Explicit kwargs always win over dict-self-inference (matches SDK-boundary semantics where the caller's view of the route is authoritative).",
+    "dict_self_inference": "When kwargs are absent, the normalizer reads value['provider'] / value['model_id']. Route dicts (the input shape used by phase contract parsers in lib/phase_contract_map.py and lib/structured_output_contracts.py) carry these keys natively, so those out-of-scope files get correct gating WITHOUT being edited.",
+    "allowlist_for_reasoning_effort_none": [
+      {"provider": "xai", "model_id_prefix": "grok-4.3"}
+    ],
+    "service_tier_none_handling": "Always dropped regardless of route — no provider documents 'none' as a valid service_tier value. The gate condition is `option_key == 'reasoning_effort' and reasoning_none_allowed`, so service_tier='none' never falls into the preservation branch.",
+    "empty_string_handling": "Always dropped (never a valid request option value).",
+    "non_string_scalar_handling": "Always dropped (YAML footgun safety, e.g. service_tier: true stringifying to 'True').",
+    "option_a_batch_seam_closure": "build_v5_batch_request (run_extraction_v5.py:13160) now injects provider/model_id into BatchRequest.request_options. The allowlist filter in normalize_route_request_options strips these routing-context keys from the SDK body, but they enable dict-self-inference at lib/batch_clients.py:521 (defense-in-depth re-normalize) without that file needing to be edited. Without Option A, xAI grok-4.3 batch calls would silently lose reasoning_effort='none' at the batch payload boundary."
+  },
+  "code_changes": [
+    {
+      "file": "services/repo-truth-extractor/lib/route_options.py",
+      "change_type": "REWRITE",
+      "summary": "Add _REASONING_EFFORT_NONE_ROUTES allowlist + _supports_reasoning_effort_none helper. Extend normalize_route_request_options with optional provider/model_id kwargs and dict-self-inference fallback. Split the prior _DROP_VALUES = frozenset({'', 'none'}) into separate handling: '' always dropped, 'none' route-gated for reasoning_effort only and always dropped for service_tier."
+    },
+    {
+      "file": "services/repo-truth-extractor/run_extraction_v5.py",
+      "change_type": "EDIT",
+      "summary": "build_chat_payload (line 9541) now passes provider/model_id into normalized_route_request_options. The alias function (line 9545) accepts and forwards provider/model_id kwargs. build_v5_batch_request (line ~13160) injects provider/model_id into request_options before BatchRequest construction (Option A — closes the batch seam without editing lib/batch_clients.py)."
+    },
+    {
+      "file": "services/repo-truth-extractor/llm_runtime.py",
+      "change_type": "EDIT",
+      "summary": "All three normalize_route_request_options call sites (line 426 service_tier introspection, line 431 service_tier_requested resolution, line 779 defense-in-depth re-normalize at chat.completions.create) now thread provider/model_id from the call_llm function scope. Comment block at line ~774 updated to explain the route-aware preservation."
+    },
+    {
+      "file": "services/repo-truth-extractor/tests/test_route_request_options.py",
+      "change_type": "EDIT_AND_APPEND",
+      "summary": "Renamed/rescoped existing 'drops_literal_none_case_insensitive' test to 'drops_none_when_route_context_absent' (asserts legacy/no-context default-drop). Flipped 'grok_4_3_routes_with_reasoning_effort_none_normalize_to_empty' to 'preserve_via_dict_self_inference'. Flipped end of 'test_full_chain_build_chat_payload_to_sdk_kwargs' to assert preservation for xai/grok-4.3 plus a counter-example assertion that openai/gpt-5.5 still drops 'none'. Updated 'test_strict_batch_request_uses_resolved_route_request_options' to expect provider/model_id route-context keys in request_options. Appended 15 new tests covering: kwargs preservation (grok-4.3), kwargs preservation (grok-4.3 low), kwargs drop (openai), kwargs drop (xai non-grok-4.3), dict-self-inference preserve (grok-4.3), dict-self-inference drop (openai), kwargs-win-over-dict precedence, service_tier='none' still dropped, non-allowlisted metadata still dropped, non-string scalars still dropped, empty strings still dropped, openai service_tier=flex preserved, legacy bare-tuple route normalization, build_chat_payload end-to-end (grok-4.3 + openai), build_v5_batch_request route-context carrying (grok-4.3 + openai), batch_clients re-normalize end-to-end preserving 'none' for xai grok-4.3 via XAIBatchClient.submit."
+    },
+    {
+      "file": "services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_opt_model_refresh.py",
+      "change_type": "EDIT",
+      "summary": "Flipped 'test_grok_4_3_none_routes_normalize_to_empty_request_options' to 'test_grok_4_3_none_routes_preserve_reasoning_effort_none'. The test fixture rows already carry provider/model_id keys, so dict-self-inference automatically preserves 'none'; the assertion now reads `normalized.get('reasoning_effort') == 'none'`. Docstring updated to cite the corrected source authority and explicitly note the conflict with the prior session's beliefs."
+    }
+  ],
+  "tests": {
+    "test_files_touched": [
+      "services/repo-truth-extractor/tests/test_route_request_options.py",
+      "services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_opt_model_refresh.py"
+    ],
+    "new_test_names": [
+      "test_normalize_route_request_options_drops_none_when_route_context_absent",
+      "test_grok_4_3_routes_with_reasoning_effort_none_preserve_via_dict_self_inference",
+      "test_normalize_xai_grok_4_3_preserves_reasoning_effort_none_via_kwargs",
+      "test_normalize_xai_grok_4_3_preserves_reasoning_effort_low_via_kwargs",
+      "test_normalize_openai_drops_reasoning_effort_none_with_route_context",
+      "test_normalize_xai_non_grok_4_3_drops_reasoning_effort_none",
+      "test_normalize_grok_4_3_dict_self_inference_preserves_none",
+      "test_normalize_openai_dict_self_inference_drops_none",
+      "test_normalize_explicit_kwargs_win_over_dict_self_inference",
+      "test_normalize_service_tier_none_dropped_even_for_grok_4_3",
+      "test_normalize_non_allowlisted_metadata_still_dropped_for_grok_4_3",
+      "test_normalize_non_string_still_dropped_with_route_context",
+      "test_normalize_empty_string_still_dropped_with_route_context",
+      "test_normalize_direct_openai_service_tier_flex_preserved",
+      "test_normalize_legacy_tuple_route_dict_still_normalizes",
+      "test_build_chat_payload_xai_grok_4_3_preserves_reasoning_effort_none_end_to_end",
+      "test_build_chat_payload_openai_drops_reasoning_effort_none_end_to_end",
+      "test_build_v5_batch_request_xai_grok_4_3_carries_route_context_for_batch_seam",
+      "test_build_v5_batch_request_openai_drops_reasoning_effort_none_at_construction",
+      "test_batch_clients_re_normalize_at_sdk_seam_preserves_none_for_grok_4_3",
+      "test_grok_4_3_none_routes_preserve_reasoning_effort_none (regression file)"
+    ],
+    "prompt_requirement_coverage": {
+      "xai_grok_4_3_reasoning_effort_none_reaches_final_kwargs": [
+        "test_normalize_xai_grok_4_3_preserves_reasoning_effort_none_via_kwargs",
+        "test_build_chat_payload_xai_grok_4_3_preserves_reasoning_effort_none_end_to_end",
+        "test_batch_clients_re_normalize_at_sdk_seam_preserves_none_for_grok_4_3",
+        "test_full_chain_build_chat_payload_to_sdk_kwargs (flipped end)"
+      ],
+      "xai_grok_4_3_reasoning_effort_low_reaches_final_kwargs": [
+        "test_normalize_xai_grok_4_3_preserves_reasoning_effort_low_via_kwargs",
+        "test_llm_runtime_forwards_request_options_to_sdk_chat_completion (existing)"
+      ],
+      "empty_string_still_dropped": [
+        "test_normalize_empty_string_still_dropped_with_route_context"
+      ],
+      "non_string_values_still_dropped": [
+        "test_normalize_non_string_still_dropped_with_route_context",
+        "test_normalize_route_request_options_rejects_non_string_scalars (existing)"
+      ],
+      "non_allowlisted_metadata_still_dropped": [
+        "test_normalize_non_allowlisted_metadata_still_dropped_for_grok_4_3"
+      ],
+      "direct_openai_service_tier_flex_preserved": [
+        "test_normalize_direct_openai_service_tier_flex_preserved",
+        "test_phase_contract_routes_preserve_request_options (existing)",
+        "test_openai_batch_jsonl_serializes_request_options (existing)"
+      ],
+      "legacy_tuple_routes_still_normalize": [
+        "test_normalize_legacy_tuple_route_dict_still_normalizes",
+        "test_ladder_hop_route_entry_uses_index_to_disambiguate_request_options (existing)"
+      ]
+    }
+  },
+  "validation": {
+    "PASS": [
+      {
+        "command": "PYTHONPATH=services/repo-truth-extractor python -m pytest -q services/repo-truth-extractor/tests/test_route_request_options.py",
+        "result": "30 passed (15 existing + 15 new + 0 dropped)"
+      },
+      {
+        "command": "PYTHONPATH=services/repo-truth-extractor python -m pytest -q services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_opt_model_refresh.py",
+        "result": "7 passed"
+      },
+      {
+        "command": "python -m compileall -q services/repo-truth-extractor/lib/route_options.py services/repo-truth-extractor/llm_runtime.py services/repo-truth-extractor/run_extraction_v5.py",
+        "result": "clean (no syntax errors)"
+      },
+      {
+        "command": "PYTHONPATH=services/repo-truth-extractor python -m pytest -q services/repo-truth-extractor/tests/test_llm_runtime_seam.py services/repo-truth-extractor/tests/test_batch_clients_integration.py services/repo-truth-extractor/tests/test_structured_output_provider_modes.py",
+        "result": "12 passed (adjacent suites; no regression)"
+      },
+      {
+        "command": "PYTHONPATH=services/repo-truth-extractor python -m pytest -q services/repo-truth-extractor/tests/test_structured_output_schema_strictness.py services/repo-truth-extractor/tests/test_pricing_catalog.py services/repo-truth-extractor/tests/test_pricing_surface_static_identity.py",
+        "result": "9 passed (adjacent suites; no regression)"
+      }
+    ],
+    "FAIL": [],
+    "NOT_RUN": [
+      {
+        "scope": "live xAI grok-4.3 chat.completions call with reasoning_effort='none'",
+        "reason": "Prompt explicitly forbids live provider calls. Source-verified per xAI docs cited above.",
+        "residual_risk": "If xAI's documented enum has changed since the user's source review, the runtime would 4xx instead of 4xx-safely-falling-back. Mitigation: revert is a single-line _REASONING_EFFORT_NONE_ROUTES = () change."
+      },
+      {
+        "scope": "live extraction run end-to-end",
+        "reason": "Prompt explicitly forbids live extraction.",
+        "residual_risk": "Unit + integration test coverage in test_route_request_options.py + adjacent suites exercises every call site of normalize_route_request_options; behavior is determined by deterministic dict logic + frozen allowlist."
+      },
+      {
+        "scope": "Full PR #685 envelope (extractor_smoke, extractor_full_advisory, etc.)",
+        "reason": "These are CI-only suites and were validated for the PR #685 merge; this fix is a strict superset of the merged behavior for non-xAI/non-grok-4.3 routes (no semantics change) and an additive correction for xAI grok-4.3.",
+        "residual_risk": "CI on the codex/rte-grok-none-reasoning-006 branch will exercise the same envelope once pushed."
+      }
+    ]
+  },
+  "residual_risks": [
+    {
+      "risk": "Future xAI model that documents reasoning_effort='none' (e.g. a grok-4.4 successor) would not be on the allowlist until _REASONING_EFFORT_NONE_ROUTES is extended.",
+      "severity": "LOW",
+      "mitigation": "Adding a new entry is one line + a test. The allowlist is intentionally narrow per the governance principle of fail-closed-when-evidence-is-missing."
+    },
+    {
+      "risk": "If model_map.yaml later declares reasoning_effort='none' for an OpenAI reasoning model, the row would carry through the early parsers preserving 'none' only at the route-aware boundary, where it would then be dropped. Net: the row is documentary-only for OpenAI (declares intent but the runtime ignores it).",
+      "severity": "LOW",
+      "mitigation": "Documented in route_options.py docstring. The 4xx-safety remains intact."
+    },
+    {
+      "risk": "Out-of-scope file lib/batch_clients.py:521 still calls _request_options_for_body(req.request_options) without explicit kwargs. The Option A injection at run_extraction_v5.py:13160 carries provider/model_id IN the request_options dict so dict-self-inference works at the seam. If a future code path constructs a BatchRequest WITHOUT going through build_v5_batch_request and WITHOUT carrying provider/model_id in request_options, the batch seam would default to dropping 'none'.",
+      "severity": "LOW",
+      "mitigation": "Single existing BatchRequest construction site (grep confirmed: run_extraction_v5.py:13144 in v5; run_extraction_v3.py:7843 in legacy v3). v3 path is unchanged. New BatchRequest construction sites should follow the v5 pattern."
+    },
+    {
+      "risk": "Conflicting xAI doc claim in git history: PR #685's merged route_options.py docstring asserts the opposite of this fix's source facts. A future reviewer may be confused.",
+      "severity": "LOW",
+      "mitigation": "New route_options.py docstring documents the corrected facts. This proof bundle (under 'source_authority.conflict_note' and 'source_authority.in_repo_corroboration') explicitly records both claims and the truth-order resolution."
+    },
+    {
+      "risk": "Model-prefix over-match: the allowlist matches model_id.startswith('grok-4.3'), which would also match a hypothetical future grok-4.30 (numeric extension), grok-4.300, etc. — releases that may or may not document reasoning_effort='none'.",
+      "severity": "LOW",
+      "mitigation": "The current xAI roadmap has no published 4.30 version; the risk is hypothetical. If xAI releases such a variant without documenting 'none', a single-line change tightens the prefix (e.g. to match only 'grok-4.3' exact OR 'grok-4.3-<alpha-suffix>'). The docstring on _REASONING_EFFORT_NONE_ROUTES explicitly requires citation when adding entries — this serves as a process gate for the inverse case as well."
+    }
+  ],
+  "rollback": {
+    "approach": "git revert <merge-commit-sha> on main; or revert just lib/route_options.py to the pre-fix _DROP_VALUES form. Single-file revert is sufficient because the call-site edits are forward-compatible (they pass kwargs that the old normalizer would ignore).",
+    "blast_radius": "Narrow — xAI grok-4.3 reverts to falling back to provider-default reasoning_effort (low) for the 139 'none'-declared routes. Other providers / models / routes unaffected."
+  },
+  "git_state": {
+    "branch": "codex/rte-grok-none-reasoning-006",
+    "base_branch": "main",
+    "base_sha": "811f50c846239101a97fb1e40d405eb0a0c07620",
+    "commit_status": "COMMITTED_PUSHED_PR_OPEN",
+    "code_commit_sha": "5f0b37ec8637e3620f74667f83052b41ea7ef512",
+    "code_commit_message_headline": "fix(rte): preserve reasoning_effort=\"none\" for xAI grok-4.3",
+    "proof_rename_commit_sha": "b8ffbb32bdce92d7f55c9a61c8fb22d5f10f298d",
+    "proof_rename_commit_message_headline": "proof: rename TP-RTE-GROK-NONE-REASONING-006 -> TP-RTE-FINAL-AUDIT-GROK-NONE-REASONING-006",
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/705",
+    "pr_number": 705,
+    "pr_title": "fix(rte): preserve grok none reasoning effort",
+    "pr_base": "main",
+    "pr_head": "codex/rte-grok-none-reasoning-006",
+    "push_remote": "origin",
+    "proof_finalization_note": "This commit message will appear in the proof_only_commit_shas placeholder; per the precedent in TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROOF.json, the proof commit that finalizes the SHA set cannot reference its own SHA (chicken-and-egg). The authoritative history of proof amendments for this packet is `git log -- proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-GROK-NONE-REASONING-006_PROOF.json` against `origin/codex/rte-grok-none-reasoning-006`."
+  },
+  "authority_used": [
+    "current user prompt (xAI grok-4.3 source facts)",
+    "merged PR #685 code on origin/main (current runtime authority)",
+    "model_map.yaml grok-4.3 row inventory (260 rows; 121 'low', 139 'none')",
+    "runtime call-site trace via grep + Read (5 call sites confirmed)",
+    "build_chat_payload + build_v5_batch_request signatures (provider/model_id in function scope)"
+  ],
+  "labels": {
+    "reasoning_effort_none_for_xai_grok_4_3": "SOURCE_VERIFIED_PER_USER_PROMPT, LIVE_NOT_VERIFIED",
+    "openai_reasoning_models_drop_none_safety": "SOURCE_VERIFIED, LIVE_NOT_VERIFIED",
+    "test_pass_rate": "37 of 37 (30 route_options + 7 regression); 21 adjacent suite tests also passing",
+    "rollback_safety": "VERIFIED (single-file revert)"
+  }
+}

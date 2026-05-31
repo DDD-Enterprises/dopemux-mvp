@@ -19,7 +19,24 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { AlertTriangle, Bell, Brain, Check, Copy, Droplet, Eye, Trash2, TrendingUp, Zap } from 'lucide-react';
+import {
+  AlertCircle,
+  AlertTriangle,
+  Bell,
+  Brain,
+  Check,
+  CheckCircle,
+  Clock,
+  Copy,
+  Droplet,
+  Eye,
+  Info,
+  PauseCircle,
+  Trash2,
+  TrendingUp,
+  X,
+  Zap,
+} from 'lucide-react';
 
 import { dashboardApiHeaders, dashboardApiUrl, dashboardWsUrl } from './config';
 import CognitiveLoadGauge from './components/CognitiveLoadGauge';
@@ -39,6 +56,7 @@ interface CognitiveState {
 }
 
 interface Notification {
+  id: string;
   message: string;
   notificationType: string;
   timestamp: string;
@@ -126,6 +144,30 @@ const formatTimestamp = (dateStr: string) => {
   return `[${hh}:${mm}:${ss}]`;
 };
 
+const getNotificationIcon = (type: string) => {
+  const iconSize = 14;
+  switch (type) {
+    case 'decision':
+      return <CheckCircle size={iconSize} aria-hidden="true" />;
+    case 'progress':
+      return <TrendingUp size={iconSize} aria-hidden="true" />;
+    case 'break':
+      return <PauseCircle size={iconSize} aria-hidden="true" />;
+    case 'session':
+      return <Clock size={iconSize} aria-hidden="true" />;
+    case 'warning':
+      return <AlertTriangle size={iconSize} aria-hidden="true" />;
+    case 'error':
+      return <AlertCircle size={iconSize} aria-hidden="true" />;
+    case 'hyperfocus':
+      return <Zap size={iconSize} aria-hidden="true" />;
+    case 'info':
+      return <Info size={iconSize} aria-hidden="true" />;
+    default:
+      return <Bell size={iconSize} aria-hidden="true" />;
+  }
+};
+
 function App() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const feedHeadingRef = useRef<HTMLHeadingElement>(null);
@@ -144,6 +186,10 @@ function App() {
   const clearConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleDismissNotification = useCallback((id: string) => {
+    setNotifications((current) => current.filter((n) => n.id !== id));
+  }, []);
 
   const handleCopyRecommendation = useCallback(async () => {
     if (!navigator.clipboard?.writeText) {
@@ -226,6 +272,7 @@ function App() {
         if (message.type === 'dashboard_notification') {
           setNotifications((current) => [
             {
+              id: String(message.id || Date.now().toString() + Math.random().toString(36).substring(2, 9)),
               message: String(message.message || 'Notification received'),
               notificationType: String(message.notification_type || 'info'),
               timestamp: String(message.timestamp || new Date().toISOString()),
@@ -443,7 +490,7 @@ function App() {
                   )
                 }
                 label={`Recommendation: ${cognitiveState.recommendation}`}
-                aria-label={isCopied ? 'Recommendation copied to clipboard' : `AI Recommendation: ${cognitiveState.recommendation}. Click to copy.`}
+                aria-label={isCopied ? `AI Recommendation: ${cognitiveState.recommendation} (Copied)` : `Copy AI Recommendation: ${cognitiveState.recommendation}`}
                 onClick={handleCopyRecommendation}
                 tabIndex={0}
                 sx={{
@@ -471,7 +518,7 @@ function App() {
                   }),
                 }}
               />
-            </Tooltip>oltip>
+            </Tooltip>
           </Box>
         </Box>
 
@@ -618,19 +665,32 @@ function App() {
             >
               {notifications.map((notification) => {
                 const severityColor = getNotificationColor(notification.notificationType);
+                const notificationLabel = `${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`;
                 return (
-                  <Fade in={true} key={`${notification.timestamp}-${notification.message}`}>
-                    <Chip
-                      label={`${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`}
-                      variant="outlined"
-                      tabIndex={0}
-                      sx={{
-                        maxWidth: '100%',
-                        borderColor: alpha(severityColor, 0.6),
-                        color: severityColor,
-                        backgroundColor: alpha(severityColor, 0.08),
-                      }}
-                    />
+                  <Fade in={true} key={notification.id}>
+                    <Tooltip title="Dismiss notification" arrow describeChild>
+                      <Chip
+                        icon={getNotificationIcon(notification.notificationType)}
+                        label={notificationLabel}
+                        aria-label={notificationLabel}
+                        variant="outlined"
+                        onDelete={() => handleDismissNotification(notification.id)}
+                        deleteIcon={<X size={14} aria-hidden="true" />}
+                        tabIndex={0}
+                        sx={{
+                          maxWidth: '100%',
+                          borderColor: alpha(severityColor, 0.6),
+                          color: severityColor,
+                          backgroundColor: alpha(severityColor, 0.08),
+                          '& .MuiChip-deleteIcon': {
+                            color: alpha(severityColor, 0.7),
+                            '&:hover': {
+                              color: severityColor,
+                            },
+                          },
+                        }}
+                      />
+                    </Tooltip>
                   </Fade>
                 );
               })}

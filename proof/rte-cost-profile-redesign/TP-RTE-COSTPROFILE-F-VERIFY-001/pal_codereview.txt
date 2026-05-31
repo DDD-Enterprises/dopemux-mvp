@@ -1,0 +1,32 @@
+PAL codereview transcript summary for TP-RTE-COSTPROFILE-F-VERIFY-001
+
+Mode: mcp__pal__.codereview
+Model parameter: gpt-5-codex
+Review validation type: internal
+Review type: full
+Confidence: high
+
+Files / artifacts checked:
+- task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-001.json
+- task-packets/INDEX.md
+- proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/pytest_full_run.txt
+- proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/promptset_audit_v3.txt
+- proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/bounded_lane_print_config.txt
+
+Applicable final analysis:
+- No production code edits observed.
+- Verification evidence supports NOT_VERIFIED only.
+- Critical blocker: full suite failed 26 tests including cost-profile/routing readiness surfaces.
+- High blocker: bounded print_config does not emit cost_profile despite packet expectation.
+- Medium note: normalized stack means some GitHub merge commits are not direct ancestors; report must record both PR merge SHAs and actual current-base ancestor status.
+
+Issues found:
+- CRITICAL: Full RTE suite failure prevents VERIFIED status.
+- HIGH: print_config omits cost_profile from emitted JSON; this violates F evidence expectation.
+- MEDIUM: PR #690 merge commit is not an ancestor of current normalized post-E9 base, so proof must avoid implying every GitHub merge SHA is directly replayable from HEAD.
+
+Disposition:
+- Record this packet as NOT_VERIFIED.
+- Preserve failed verification evidence.
+- Do not modify production code in F.
+- Route repair work to a follow-up packet.

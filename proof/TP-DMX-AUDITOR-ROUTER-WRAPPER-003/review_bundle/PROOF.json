@@ -1,0 +1,36 @@
+{
+  "packet_id": "TP-DMX-AUDITOR-ROUTER-WRAPPER-003",
+  "status": "PASS_WITH_BLOCKERS",
+  "resolved_blockers": [
+    "WRAPPER_BLOCKED_BY_ALLOWLIST"
+  ],
+  "remaining_blockers": [
+    "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
+    "PAL_CLINK_AUDIT_OUTPUT_MISSING",
+    "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500"
+  ],
+  "wrapper": "scripts/auditor-preflight",
+  "delegates_to": "python -m tools.auditor_router.preflight \"$@\"",
+  "validation": [
+    "pytest -q tests/auditor_router: 33 passed",
+    "scripts/auditor-preflight --help: PASS",
+    "PAL clink fixture smoke via wrapper: PASS",
+    "Direct route fixture smoke via wrapper: PASS"
+  ],
+  "pal_mcp_called": false,
+  "pal_clink_audit_output_captured": false,
+  "route_is_audit_verdict": false,
+  "embedded_audit": {
+    "required": false,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": "Pre-existing bundle; auditor not run at time of original submission"
+  }
+}

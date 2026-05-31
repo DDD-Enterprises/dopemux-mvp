@@ -1,0 +1,18 @@
+{
+  "auth_status": "NOT_CHECKED",
+  "executable": null,
+  "help_command": null,
+  "help_exit_code": null,
+  "installed": true,
+  "model": null,
+  "model_selector_proven": true,
+  "noninteractive_mode_proven": true,
+  "reason": "Fixture direct Claude CLI is available.",
+  "repo_context_sent": false,
+  "risk": "LOW",
+  "status": "AVAILABLE",
+  "timeout_used": false,
+  "tool": "claude-code-cli",
+  "tools_disabled": true,
+  "version": null
+}

@@ -5,6 +5,7 @@ import json
 import os
 import shutil
 import sys
+from contextlib import contextmanager
 from pathlib import Path
 from types import SimpleNamespace
 from types import ModuleType
@@ -54,10 +55,22 @@ def test_upgrades_and_extractor_runner_resolution_preserves_v5_authority() -> No
     assert extractor_commands._extractor_runner_path(repo_root, "v3").name == "run_extraction_v3.py"
 
 
-def test_truth_run_finds_v5_runner_directly() -> None:
+def test_truth_run_finds_v5_runner_directly(monkeypatch: pytest.MonkeyPatch) -> None:
     src_path = str(_repo_root() / "src")
     if src_path not in sys.path:
         sys.path.insert(0, src_path)
+
+    @contextmanager
+    def _noop_mobile_task_notification(*args: object, **kwargs: object):
+        yield
+
+    mobile_pkg = ModuleType("dopemux.mobile")
+    mobile_pkg.__path__ = []  # type: ignore[attr-defined]
+    hooks_mod = ModuleType("dopemux.mobile.hooks")
+    hooks_mod.mobile_task_notification = _noop_mobile_task_notification  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "dopemux.mobile", mobile_pkg)
+    monkeypatch.setitem(sys.modules, "dopemux.mobile.hooks", hooks_mod)
+
     from dopemux.commands import extract_commands
 
     runner_path = extract_commands._find_runner(_repo_root())

@@ -4172,7 +4172,7 @@ def write_step_metrics_snapshot(
     step_id: str,
     metrics: Dict[str, Any],
 ) -> Dict[str, Any]:
-    return rte_write_step_metrics_snapshot(
+    return reporting_write_step_metrics_snapshot(
         _telemetry_writer_deps(), run_root, phase, step_id, metrics
     )
 
@@ -6331,7 +6331,7 @@ def write_run_manifest(
     run_context: RunContext,
     phases: List[str],
 ) -> Dict[str, Any]:
-    return rte_write_run_manifest(
+    return reporting_write_run_manifest(
         _reporting_deps(), root, dirs, run_id, args, run_context, phases
     )
 
@@ -9538,13 +9538,29 @@ def build_chat_payload(
             payload["response_format"] = {"type": "json_object"}
         elif provider in {"openai", "xai"}:
             payload["response_format"] = {"type": "json_object"}
-    payload.update(normalized_route_request_options(request_options))
+    payload.update(
+        normalized_route_request_options(
+            request_options, provider=provider, model_id=model_id
+        )
+    )
     return payload
 
 
-def normalized_route_request_options(value: Optional[Dict[str, Any]]) -> Dict[str, str]:
-    """Backwards-compatible alias for :func:`normalize_route_request_options`."""
-    return _shared_normalize_route_request_options(value)
+def normalized_route_request_options(
+    value: Optional[Dict[str, Any]],
+    *,
+    provider: Optional[str] = None,
+    model_id: Optional[str] = None,
+) -> Dict[str, str]:
+    """Backwards-compatible alias for :func:`normalize_route_request_options`.
+
+    Forwards ``provider`` / ``model_id`` kwargs so the route-gated
+    ``reasoning_effort="none"`` preservation (xAI grok-4.3) reaches the shared
+    normalizer when call sites have explicit route context.
+    """
+    return _shared_normalize_route_request_options(
+        value, provider=provider, model_id=model_id
+    )
 
 
 def serialize_payload_body(payload: Dict[str, Any]) -> bytes:
@@ -13141,6 +13157,18 @@ def build_v5_batch_request(
                 f"Strict batch request for {phase}/{step_id} requires at least one artifact schema"
             )
 
+    # Carry route identity forward in request_options so batch_clients'
+    # defense-in-depth re-normalize at the SDK seam (line ~521) can gate
+    # ``reasoning_effort="none"`` correctly via dict-self-inference. The
+    # allowlist filter in :func:`normalize_route_request_options` strips
+    # ``provider`` / ``model_id`` from the actual SDK body — they act only
+    # as routing context. Without this, xAI grok-4.3 batch calls would
+    # silently lose ``reasoning_effort="none"`` at the batch payload boundary.
+    batch_request_options: Dict[str, Any] = dict(request_options)
+    if provider:
+        batch_request_options["provider"] = provider
+    if model_id:
+        batch_request_options["model_id"] = model_id
     return BatchRequest(
         custom_id=custom_id,
         model_id=model_id,
@@ -13149,7 +13177,7 @@ def build_v5_batch_request(
         force_json_output=bool(force_json_output and not strict_contract_required),
         metadata=batch_metadata,
         response_format=response_format,
-        request_options=request_options,
+        request_options=batch_request_options,
     )
 
 
@@ -16688,6 +16716,13 @@ else sdk_auth_present_flags(p_provider, True)
             request_meta["escalation_trigger"] = (
                 request_meta.get("escalation_trigger") or "gated_retry"
             )
+        elif (
+            request_meta.get("escalation_trigger") == "provider_failure"
+            and len(request_meta.get("route_attempts", [])) == 1
+            and request_meta.get("route_attempts", [{}])[0].get("escalation_trigger")
+            == "provider_failure"
+        ):
+            request_meta["escalation_trigger"] = None
         else:
             request_meta["escalation_trigger"] = request_meta.get("escalation_trigger")
         request_meta["provider"] = request_meta.get("provider") or final_provider
@@ -19181,6 +19216,7 @@ def print_config(
         "python_version": platform.python_version(),
         "cwd": str(Path.cwd().resolve()),
         "phases": phases,
+        "cost_profile": cfg.cost_profile,
         "cli": {
             "phase_argument": args.phase,
             "preset": getattr(args, "preset", None),

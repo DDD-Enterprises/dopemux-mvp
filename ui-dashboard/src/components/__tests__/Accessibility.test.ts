@@ -148,7 +148,7 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toMatch(/<Tooltip title="Current cognitive status and load percentage" arrow>[\s\S]*tabIndex=\{0\}/);
   expect(appContent).toMatch(/<Tooltip title=\{isCopied \? 'Recommendation copied!' : 'Copy recommendation to clipboard'\} arrow>[\s\S]*tabIndex=\{0\}/);
   expect(appContent).toContain('aria-label={`System is actively monitoring ritual state: ${connectionLabel} DØPEMÜX Ritual Daemon`}');
-  expect(appContent).toMatch(/aria-label=\{\s*isCopied\s*\?\s*`AI Recommendation: \$\{cognitiveState\.recommendation\} \(Copied\)`\s*:\s*`AI Recommendation: \$\{cognitiveState\.recommendation\}`\s*\}/);
+  expect(appContent).toMatch(/aria-label=\{\s*isCopied\s*\?\s*`AI Recommendation: \$\{cognitiveState\.recommendation\} \(Copied\)`\s*:\s*`Copy AI Recommendation: \$\{cognitiveState\.recommendation\}`\s*\}/);
   expect(appContent).toContain('aria-label={isConfirmingClear ? \'Confirm clear all notifications\' : \'Clear all notifications\'}');
   expect(appContent).toMatch(/<Tooltip title=\{isConfirmingClear \? 'Confirm to clear all notifications' : 'Clear all notifications to reduce visual noise'\} arrow>/);
   expect(appContent).toContain('Listening for ConPort and ADHD event traffic');
@@ -160,5 +160,7 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('tabIndex={-1}');
 
   // Verify notification chips are focusable
+  expect(appContent).toContain('<Tooltip title="Dismiss notification" arrow describeChild>');
+  expect(appContent).toContain('aria-label={notificationLabel}');
   expect(appContent).toContain('tabIndex={0}');
 });

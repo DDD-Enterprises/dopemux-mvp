@@ -1,0 +1,142 @@
+{
+  "schema_version": "1.0.0",
+  "tp_id": "TP-DMX-PR-STEWARD-HARDEN-010",
+  "series_id": "DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "claude/upbeat-thompson-35f2e8",
+  "base_branch": "main",
+  "head_before": "f422f8d04",
+  "head_after": "3b9b06fe5",
+  "mutation_performed": false,
+  "github_mutation_performed": false,
+  "secret_values_recorded": false,
+  "operator_authorization_used": [],
+  "forbidden_surfaces_touched": false,
+  "files_changed": [
+    "tools/pr_steward/classifier.py",
+    "schemas/pr_steward/merge_readiness.schema.json",
+    "schemas/pr_steward/pr_state_snapshot.schema.json",
+    "schemas/pr_steward/review_item_ledger.schema.json",
+    "schemas/pr_steward/thread_dispositions.schema.json",
+    "schemas/pr_steward/ci_triage.schema.json",
+    "tools/pr_action_bridge/compiler.py",
+    "schemas/pr_action_bridge/action_plan.schema.json",
+    "tests/pr_steward/test_classifier_readiness_harden.py",
+    "tests/pr_steward/test_classifier_proof_status.py",
+    "tests/pr_action_bridge/test_compiler.py",
+    "docs/ops/pr-steward-readiness.md",
+    "proof/TP-DMX-PR-STEWARD-HARDEN-010/PROOF.json",
+    "proof/TP-DMX-PR-STEWARD-HARDEN-010/AUDITOR_REPORT.md"
+  ],
+  "commands": [
+    {
+      "cmd": "python -m pytest tests/pr_steward/test_classifier_readiness_harden.py -v",
+      "exit_code": 0,
+      "result": "25 passed in 0.03s"
+    },
+    {
+      "cmd": "python -m pytest tests/copilot_repair/ tests/pr_action_bridge/ tests/audit/ tests/ci/ tests/pr_steward/",
+      "exit_code": 0,
+      "result": "277 passed in 0.62s (prior 249 + 28 new)"
+    }
+  ],
+  "validation": {
+    "status": "PASS",
+    "details": [
+      {"check": "pytest_25_new_harden_tests", "status": "PASS", "detail": "25 tests in test_classifier_readiness_harden.py: 7 proof-blocker-split, 8 unknown-pr-author, 10 risk-tier tests all pass"},
+      {"check": "pytest_277_full_suite", "status": "PASS", "detail": "All 277 tests pass; 249 prior preserved + 28 new (25 harden + 3 schema-validation in test_compiler.py)"},
+      {"check": "proof_stale_or_missing_removed", "status": "PASS", "detail": "grep confirmed zero PROOF_STALE_OR_MISSING references in tools/ or tests/"},
+      {"check": "schema_version_bumped", "status": "PASS", "detail": "All 5 pr_steward schemas bumped to 1.1.0; action_plan.schema.json enum updated with proof-missing and unknown-pr-author"},
+      {"check": "risk_tier_in_schema_and_allof", "status": "PASS", "detail": "risk_tier added to merge_readiness.schema.json required + properties; allOf READY constraint pins risk_tier: CLEAR"},
+      {"check": "association_fallback", "status": "PASS", "detail": "_association() now checks nested pr.author.authorAssociation when top-level absent; tested with nested OWNER and nested absent"},
+      {"check": "no_branch_protection_mutated", "status": "PASS", "detail": "Read-only classifier changes only; zero GitHub API writes"},
+      {"check": "no_pull_request_target_introduced", "status": "PASS", "detail": "No workflow files modified"},
+      {"check": "no_new_secrets_or_permissions", "status": "PASS", "detail": "No secrets referenced, no permissions elevated"},
+      {"check": "no_forbidden_imports", "status": "PASS", "detail": "tools.pr_merge not imported anywhere in changed files"},
+      {"check": "trailing_whitespace", "status": "PASS", "detail": "No trailing whitespace in new/modified files"},
+      {"check": "mypy", "status": "NOT_RUN", "reason": "No new typed source files requiring mypy scope expansion; existing mypy config unchanged"}
+    ]
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "mcp__pal__codereview expert_model=gpt-5.2 review_type=full",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR-STEWARD-HARDEN-010/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-010-HIGH-1",
+        "severity": "HIGH",
+        "title": "proof-stale rationale stale; proof-missing and unknown-pr-author absent from action_plan schema enum",
+        "status": "RESOLVED",
+        "body": "compiler.py rationale message said 'stale or missing' after split. action_plan.schema.json enum missing proof-missing and unknown-pr-author categories. Fixed: updated rationale messages, added both categories to schema enum, added schema validation tests."
+      },
+      {
+        "id": "F-010-MED-1",
+        "severity": "MEDIUM",
+        "title": "_association() false positive for OWNER-associated PRs with nested GraphQL author shape",
+        "status": "RESOLVED",
+        "body": "Added fallback: if _association(pr_raw) returns None and pr_raw['author'] is a dict, try _association(pr_raw['author']). Tests added for nested OWNER (trusted) and nested absent (still blocked)."
+      },
+      {
+        "id": "F-010-LOW-1",
+        "severity": "LOW",
+        "title": "_READINESS_TO_RISK dict not exported",
+        "status": "ACCEPTED_RISK",
+        "body": "Intentional internal helper. No external consumers."
+      },
+      {
+        "id": "F-010-LOW-2",
+        "severity": "LOW",
+        "title": "risk_tier absent from PR_STATE_SNAPSHOT.json",
+        "status": "ACCEPTED_RISK",
+        "body": "Intentional: snapshot is raw observed state; risk_tier is derived classification."
+      },
+      {
+        "id": "F-010-LOW-3",
+        "severity": "LOW",
+        "title": "_risk_tier() fallback to CRITICAL silently swallows schema drift",
+        "status": "ACCEPTED_RISK",
+        "body": "_readiness() is deterministic and only returns known strings. Fallback is dead code in practice."
+      }
+    ],
+    "fixes_applied": [
+      "Updated proof-stale rationale message to remove 'or missing'",
+      "Added proof-missing rationale message to compiler.py _build_rationale()",
+      "Added unknown-pr-author rationale message to compiler.py _build_rationale()",
+      "Added proof-missing and unknown-pr-author to action_plan.schema.json category enum",
+      "Added schema validation tests for proof-missing and unknown-pr-author categories",
+      "Added nested author.authorAssociation fallback in build_artifacts() UNKNOWN_PR_AUTHOR check",
+      "Added tests for nested OWNER trusted and nested absent cases"
+    ],
+    "remaining_risks": [
+      "_risk_tier() CRITICAL fallback on unknown readiness is dead code but unguarded",
+      "known_reviewers.json must be kept current as repo collaborators change",
+      "mypy not run"
+    ],
+    "skip_reason": null
+  },
+  "embedded_audit_status": "PASS_WITH_RISKS",
+  "commit": {
+    "performed": true,
+    "sha": "3b9b06fe5",
+    "message": "fix(pr-steward): harden readiness risk classification"
+  },
+  "governance": {
+    "branch_protection_changed": false,
+    "required_checks_changed": false,
+    "pull_request_target_introduced": false,
+    "secrets_touched": false,
+    "codeowners_changed": false,
+    "mutation_surfaces_added": false
+  },
+  "stop_conditions_hit": [],
+  "remaining_risks": [
+    "mypy not run",
+    "_risk_tier() CRITICAL fallback on unknown readiness string is dead code but unguarded",
+    "known_reviewers.json must be kept current as collaborators change or UNKNOWN_PR_AUTHOR will fire for legitimate authors"
+  ],
+  "next_recommended_action": "Operator: review diff, run `git add -f` for proof/ files, commit with 'fix(pr-steward): harden readiness risk classification', then continue to TP-DMX-PR-FIXTURES-011."
+}

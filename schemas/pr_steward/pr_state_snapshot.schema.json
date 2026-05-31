@@ -1,0 +1,348 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PR Steward State Snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "repo",
+    "pr_number",
+    "harvest_complete",
+    "harvest_errors",
+    "mutation_performed",
+    "pr",
+    "changed_files",
+    "commits",
+    "reviews",
+    "review_comments",
+    "review_threads",
+    "issue_comments",
+    "checks",
+    "embedded_audit",
+    "proof"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.1.0"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "repo": {
+      "type": "string",
+      "pattern": "^[^/]+/[^/]+$"
+    },
+    "pr_number": {
+      "type": "integer"
+    },
+    "harvest_complete": {
+      "type": "boolean"
+    },
+    "harvest_errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "mutation_performed": {
+      "type": "boolean",
+      "const": false
+    },
+    "pr": {
+      "$ref": "#/definitions/pr"
+    },
+    "changed_files": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/changed_file"
+      }
+    },
+    "commits": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/commit"
+      }
+    },
+    "reviews": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "review_comments": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "review_threads": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "issue_comments": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/check"
+      }
+    },
+    "embedded_audit": {
+      "$ref": "#/definitions/embedded_audit"
+    },
+    "proof": {
+      "$ref": "#/definitions/proof"
+    }
+  },
+  "definitions": {
+    "pr": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "number",
+        "url",
+        "state",
+        "draft",
+        "mergeable",
+        "merge_state_status",
+        "review_decision",
+        "base_ref",
+        "base_sha",
+        "head_ref",
+        "head_sha",
+        "author",
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "number": {
+          "type": "integer"
+        },
+        "url": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "draft": {
+          "type": "boolean"
+        },
+        "mergeable": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "merge_state_status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review_decision": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "base_ref": {
+          "type": "string"
+        },
+        "base_sha": {
+          "type": "string"
+        },
+        "head_ref": {
+          "type": "string"
+        },
+        "head_sha": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "updated_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "changed_file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "additions",
+        "deletions",
+        "status"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "additions": {
+          "type": "integer"
+        },
+        "deletions": {
+          "type": "integer"
+        },
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "commit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sha",
+        "message"
+      ],
+      "properties": {
+        "sha": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "required",
+        "status",
+        "conclusion",
+        "url",
+        "head_sha",
+        "blocking",
+        "rationale"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "queued",
+            "in_progress",
+            "completed",
+            "requested",
+            "waiting",
+            "pending",
+            "unknown"
+          ]
+        },
+        "conclusion": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "success",
+            "failure",
+            "cancelled",
+            "skipped",
+            "timed_out",
+            "action_required",
+            "stale",
+            "startup_failure",
+            "neutral",
+            null
+          ]
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "head_sha": {
+          "type": "string"
+        },
+        "blocking": {
+          "type": "boolean"
+        },
+        "rationale": {
+          "type": "string"
+        }
+      }
+    },
+    "embedded_audit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "report_path"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "PASS",
+            "PASS_WITH_RISKS",
+            "FAIL",
+            "NEEDS_SUPERVISOR",
+            "SKIPPED"
+          ]
+        },
+        "report_path": {
+          "type": "string"
+        }
+      }
+    },
+    "proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "proof_path",
+        "proof_head_sha",
+        "matches_pr_head",
+        "proof_freshness"
+      ],
+      "properties": {
+        "proof_path": {
+          "type": "string"
+        },
+        "proof_head_sha": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "matches_pr_head": {
+          "type": "boolean"
+        },
+        "proof_freshness": {
+          "type": "string",
+          "enum": ["FRESH", "STALE", "MISSING"]
+        }
+      }
+    }
+  }
+}

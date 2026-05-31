@@ -31,6 +31,7 @@ canonical_roots:
   - mobile
   - integrations
   - packaging
+  - ops
   - pr_merge
   - policy
   - releases

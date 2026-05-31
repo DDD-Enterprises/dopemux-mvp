@@ -76,6 +76,7 @@ def _run_print_config(
     *,
     resume: bool,
     latest_run_id: str | None = None,
+    cost_profile: str | None = None,
 ):
     output_root = tmp_path / "artifact-root"
     if latest_run_id is not None:
@@ -96,6 +97,8 @@ def _run_print_config(
         "--output-root",
         str(output_root),
     ]
+    if cost_profile is not None:
+        cmd.extend(["--cost-profile", cost_profile])
     if resume:
         cmd.append("--resume")
 
@@ -274,8 +277,21 @@ def test_print_config_is_readonly_and_does_not_create_run_artifacts(tmp_path: Pa
     payload, output_root = _run_print_config(tmp_path, resume=False)
 
     assert payload["cli"]["print_config"] is True
+    assert payload["cost_profile"] == "value-default"
     assert payload["cli"]["latest_run_id_written"] is False
     _assert_no_readonly_artifacts(output_root, payload["run_id"])
+
+
+def test_print_config_reports_selected_cost_profile(tmp_path: Path) -> None:
+    payload, _output_root = _run_print_config(
+        tmp_path,
+        resume=False,
+        cost_profile="quality",
+    )
+
+    assert payload["cost_profile"] == "quality"
+    assert payload["cli"]["routing_policy"] == "quality"
+    assert payload["route_readiness_summary"]["target_policy"] == "quality"
 
 
 def test_print_config_resume_reads_latest_without_mutating_pointer(tmp_path: Path) -> None:
@@ -393,11 +409,12 @@ def test_doctor_preflight_and_auth_doctor_do_not_run_prescan_or_create_run_artif
         ["--phase", "A", "--dry-run", "--preflight-providers", "--run-id", "ro_preflight"],
         ["--phase", "A", "--dry-run", "--doctor-auth", "--run-id", "ro_auth"],
     ):
-        code, stdout, _stderr, output_root = _invoke_runner_main(
+        code, stdout, stderr, output_root = _invoke_runner_main(
             runner, monkeypatch, tmp_path / args[4], args
         )
-        assert code == 0
-        assert stdout.strip()
+        assert code == 2
+        assert not stdout.strip()
+        assert "Missing consent: DPMX_LIVE_OK=1" in stderr
         _assert_no_readonly_artifacts(output_root, args[args.index("--run-id") + 1])
 
 
@@ -1098,20 +1115,21 @@ def test_route_readiness_summary_distinguishes_required_fallback_and_configured(
     monkeypatch.delenv("DPMX_EXPLICIT_STEP_ROUTES", raising=False)
     summary = runner.derive_route_readiness_summary(["A", "H", "D"], "cost")
 
-    assert "OPENROUTER_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
+    assert "OPENAI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
     assert "GEMINI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
-    assert "XAI_API_KEY" in summary["api_key_env_categories"]["optional_fallback"]
+    assert "XAI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
+    assert summary["api_key_env_categories"]["optional_fallback"] == []
     assert "OPENAI_API_KEY" in summary["api_key_env_categories"]["configured_not_required"]
 
-    openrouter_required = [
+    openai_required = [
         row
         for row in summary["routes"]
-        if row["provider"] == "openrouter"
-        and row["model_id"] == "openai/gpt-5.3-codex"
+        if row["provider"] == "openai"
+        and row["model_id"] == "gpt-5.3-codex"
     ]
-    assert openrouter_required
-    assert openrouter_required[0]["requirement_level"] == "required_active_route"
-    assert openrouter_required[0]["configured_not_required"] is False
+    assert openai_required
+    assert openai_required[0]["requirement_level"] == "required_active_route"
+    assert openai_required[0]["configured_not_required"] is False
 
 
 def test_route_readiness_summary_honors_explicit_step_routes(monkeypatch) -> None:
@@ -1121,8 +1139,8 @@ def test_route_readiness_summary_honors_explicit_step_routes(monkeypatch) -> Non
         json.dumps(
             {
                 "enabled": True,
-                "steps": {"H:H3": "openrouter/openai/gpt-5.4"},
-                "phases": {"H": "openrouter/openai/gpt-5.4"},
+                "steps": {"H:H3": "openai/gpt-5.4"},
+                "phases": {"H": "openai/gpt-5.4"},
             },
             sort_keys=True,
             separators=(",", ":"),
@@ -1136,7 +1154,7 @@ def test_route_readiness_summary_honors_explicit_step_routes(monkeypatch) -> Non
         if row["requirement_level"] == "required_active_route"
     }
 
-    assert required_routes == {"openrouter/openai/gpt-5.4"}
+    assert required_routes == {"openai/gpt-5.4"}
 
 
 def test_print_config_includes_route_readiness_summary() -> None:
@@ -1162,10 +1180,10 @@ def test_print_config_includes_route_readiness_summary() -> None:
 
     assert summary["target_policy"] == "cost"
     assert summary["target_phases"] == ["A", "H", "D", "C"]
-    assert "OPENROUTER_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
+    assert "OPENAI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
     assert "XAI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
     assert "GEMINI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
-    assert summary["api_key_env_categories"]["configured_not_required"] == ["OPENAI_API_KEY"]
+    assert summary["api_key_env_categories"]["configured_not_required"] == ["OPENAI_API_KEY", "XAI_API_KEY"]
     assert payload["effective_model_routing"]["A"]["scope"] == "representative_phase_default_not_step_authoritative"
 
 
