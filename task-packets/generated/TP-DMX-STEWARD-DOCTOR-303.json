@@ -1,0 +1,122 @@
+{
+  "id": "TP-DMX-STEWARD-DOCTOR-303",
+  "project": "dopemux-mvp",
+  "target": "Implement dopemux pr-steward doctor: detect engine versus scaffold version skew and validate per-repo config/pr_steward against the engine config schema, failing closed with actionable messages on unknown schema. Report-only in v1 (no auto-fix).",
+  "invariants": [
+    "Do not auto-fix or migrate config (report-only v1).",
+    "Do not mutate any repo state."
+  ],
+  "depends_on": [
+    "TP-DMX-STEWARD-PACKAGE-301",
+    "TP-DMX-STEWARD-SCAFFOLD-302"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-AUTOREVIEW-PLATFORM",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-STEWARD-SCAFFOLD-302",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-steward-doctor-303",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(cli): add dopemux pr-steward doctor skew and config check",
+    "allowlist": [
+      "src/dopemux_pr_steward/doctor.py",
+      "schemas/pr_steward/config.schema.json",
+      "tests/dopemux_cli/test_doctor.py",
+      "docs/ops/pr-steward-distribution.md",
+      "task-packets/generated/TP-DMX-STEWARD-DOCTOR-303.json",
+      "proof/TP-DMX-STEWARD-DOCTOR-303/**"
+    ],
+    "verify": [
+      "python -m compileall -q src tests",
+      "pytest -q tests/dopemux_cli/test_doctor.py",
+      "python -m dopemux.cli pr-steward doctor --help",
+      "python -m json.tool task-packets/generated/TP-DMX-STEWARD-DOCTOR-303.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(cli): add dopemux pr-steward doctor skew and config check",
+    "body": "## Summary\\n\\nImplement dopemux pr-steward doctor: detect engine versus scaffold version skew and validate per-repo config/pr_steward against the engine config schema, failing closed with actionable messages on unknown schema. Report-only in v1 (no auto-fix).\\n\\n## Scope\\n\\nAllowlist-bound; see commit.allowlist. Out of scope: Do not auto-fix or migrate config (report-only v1). Do not mutate any repo state.\\n\\n## Validation\\n\\nSee commit.verify; embedded audit + proof bundle required.\\n\\n@codex review\\n@gemini\\n@copilot",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: verify repo identity (repo_marker .dopetaskroot, origin matches origin_hint, branch matches execution.branch, worktree clean or only intended files dirty) and verify dependency proofs exist and passed for: TP-DMX-STEWARD-PACKAGE-301, TP-DMX-STEWARD-SCAFFOLD-302.",
+      "context_files": [
+        "AGENTS.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "src/dopemux_pr_steward/cli.py",
+        "docs/ops/pr-steward-distribution.md"
+      ],
+      "validation": [
+        "Repo identity matches repo_binding.",
+        "Dependency proofs are present and PASS (or 'none' for a root packet).",
+        "Active task context recorded; worktree is clean or only contains intended files."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Implement: Implement dopemux pr-steward doctor: detect engine versus scaffold version skew and validate per-repo config/pr_steward against the engine config schema, failing closed with actionable messages on unknown schema. Report-only in v1 (no auto-fix).",
+      "expected_files": [
+        "src/dopemux_pr_steward/doctor.py",
+        "schemas/pr_steward/config.schema.json",
+        "tests/dopemux_cli/test_doctor.py",
+        "docs/ops/pr-steward-distribution.md"
+      ],
+      "validation": [
+        "Only allowlisted files are changed.",
+        "Do not auto-fix or migrate config (report-only v1).",
+        "Do not mutate any repo state."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Add or extend tests and docs to cover the change; run the packet validation commands.",
+      "validation": [
+        "`python -m compileall -q src tests` passes.",
+        "`pytest -q tests/dopemux_cli/test_doctor.py` passes.",
+        "`python -m dopemux.cli pr-steward doctor --help` passes.",
+        "git diff --check passes."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Write the proof bundle proof/TP-DMX-STEWARD-DOCTOR-303/ including the review_bundle as the single upload unit.",
+      "expected_files": [
+        "proof/TP-DMX-STEWARD-DOCTOR-303/PROOF.json",
+        "proof/TP-DMX-STEWARD-DOCTOR-303/VALIDATION_OUTPUT.md",
+        "proof/TP-DMX-STEWARD-DOCTOR-303/GIT_STATE.md",
+        "proof/TP-DMX-STEWARD-DOCTOR-303/DIFF_STAT.txt",
+        "proof/TP-DMX-STEWARD-DOCTOR-303/CHANGED_FILES.txt",
+        "proof/TP-DMX-STEWARD-DOCTOR-303/AUDITOR_REPORT.md",
+        "proof/TP-DMX-STEWARD-DOCTOR-303/review_bundle/**"
+      ],
+      "validation": [
+        "Embedded audit is recorded per schemas/proof/embedded_audit.schema.json and the status reflects reality.",
+        "review_bundle/ exists as the single upload/review unit.",
+        "No secrets or tokens are included in the proof bundle."
+      ]
+    }
+  ]
+}
