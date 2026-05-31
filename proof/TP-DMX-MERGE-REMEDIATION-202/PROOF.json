@@ -6,7 +6,7 @@
   "branch": "codex/tp-dmx-merge-remediation-202",
   "base_ref": "origin/codex/tp-dmx-steward-gate-201",
   "base_sha": "eac0853f521041c5d52f0d40eddb4be84d66b424",
-  "head_sha": "29bed2029a813e9c294273e6db36901fcd3ba13b",
+  "head_sha": "01e83f86a3cd60543f2835a378fb409e0387e1a7",
   "repo_identity": {
     "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
     "marker": ".dopetaskroot",
@@ -128,7 +128,7 @@
   },
   "codereview_status": "Manual bounded review complete; tests cover gate allow/deny and existing queue-drain regressions pass.",
   "precommit_status": "PASS: pre-commit run on TP202 changed files and git diff --check passed.",
-  "commit_sha": "29bed2029a813e9c294273e6db36901fcd3ba13b",
+  "commit_sha": "01e83f86a3cd60543f2835a378fb409e0387e1a7",
   "pr_url": "PENDING_PR",
   "residual_risks": [
     "TP202 is stacked on TP201 because TP201 is not merged to main.",
