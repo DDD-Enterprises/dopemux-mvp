@@ -130,5 +130,18 @@
     "draft_expected": true,
     "ready_for_merge": false
   },
-  "recommended_follow_up": "TP-DMX-AUDITOR-ROUTER-PAL-CLINK-AUDIT-HANDOFF-004"
+  "recommended_follow_up": "TP-DMX-AUDITOR-ROUTER-PAL-CLINK-AUDIT-HANDOFF-004",
+  "embedded_audit": {
+    "required": false,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": "Pre-existing bundle; auditor not run at time of original submission"
+  }
 }
