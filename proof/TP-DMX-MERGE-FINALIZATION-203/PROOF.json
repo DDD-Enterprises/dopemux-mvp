@@ -6,7 +6,7 @@
   "branch": "codex/tp-dmx-merge-finalization-203",
   "base_ref": "origin/codex/tp-dmx-merge-remediation-202",
   "base_sha": "623bcf09de40f720d98b9b083df2b4b854d3cbce",
-  "head_sha": "623bcf09de40f720d98b9b083df2b4b854d3cbce",
+  "head_sha": "778222754409a2efd0163fa112fe68b3442d689c",
   "repo_identity": {
     "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
     "marker": ".dopetaskroot",
@@ -139,7 +139,7 @@
   },
   "codereview_status": "Manual bounded review complete; found and fixed incorrect --repo usage on gh api graphql, then reran focused and full validation.",
   "precommit_status": "PASS: pre-commit run on TP203 changed files and git diff --check passed.",
-  "commit_sha": "PENDING_COMMIT_METADATA",
+  "commit_sha": "778222754409a2efd0163fa112fe68b3442d689c",
   "pr_url": "PENDING_PR",
   "residual_risks": [
     "TP203 is stacked on TP202 because TP202 is not merged to main.",
