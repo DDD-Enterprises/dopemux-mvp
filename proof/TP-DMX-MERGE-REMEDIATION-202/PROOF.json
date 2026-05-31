@@ -129,7 +129,7 @@
   "codereview_status": "Manual bounded review complete; tests cover gate allow/deny and existing queue-drain regressions pass.",
   "precommit_status": "PASS: pre-commit run on TP202 changed files and git diff --check passed.",
   "commit_sha": "01e83f86a3cd60543f2835a378fb409e0387e1a7",
-  "pr_url": "PENDING_PR",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/766",
   "residual_risks": [
     "TP202 is stacked on TP201 because TP201 is not merged to main.",
     "External embedded audit and supervisor review remain required before treating this red-lane packet as accepted.",
