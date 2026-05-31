@@ -36,7 +36,7 @@ Authoring reference: [`docs/03-reference/dx-command-authoring.md`](../../../docs
 
 **2c — Confirm + transition.** Note whether you're reviving a `done` or a `cancelled` item, then:
 ```
-advance_item(transitions=[{ itemId: "<id>", trigger: "reopen", summary: "reopened via /dx:reopen" }])
+advance_item({ itemId: "<id>", trigger: "cancel", summary: "reopened via /dx:reopen" })  <!-- NOTE: reopen is not a valid trigger; use cancel then re-create, or verify schema -->
 ```
 Result: TERMINAL → QUEUE, `statusLabel` cleared, gates bypassed on this hop.
 
@@ -65,7 +65,7 @@ Next actions:
 
 ## Error Handling
 
-**Item not found** / **not terminal** (handled in 2b) / **orchestrator unavailable**: report clearly; fall back to `advance_item(transitions=[{itemId, trigger:"reopen"}])` directly.
+**Item not found** / **not terminal** (handled in 2b) / **orchestrator unavailable**: report clearly; fall back to `advance_item({itemId, trigger:"cancel"})` directly.  <!-- reopen is not a valid trigger enum value -->
 
 ---
 

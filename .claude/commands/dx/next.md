@@ -27,20 +27,18 @@ Parse `$ARGUMENTS` for optional filters:
 - `--tags <comma-list>` → pass to `tags` parameter (OR logic, substring match)
 - `--priority <level>` → pass to `priority` parameter (high/medium/low)
 - `--scope <uuid>` → pass to `parentId` parameter (scope to subtree)
-- `--limit N` → pass to `limit` parameter (default: 3 for ADHD-friendly disclosure; max: 10)
+- `--limit N` → limit display to N results client-side (default: 3 for ADHD-friendly disclosure; max: 10)
 
-Default if no arguments: `limit=3, includeAncestors=true`.
+Default if no arguments: display top 3 results from returned list.
 
 ---
 
 ## Phase 2: Fetch Candidates
 
-Call `mcp__task-orchestrator__get_next_item` with parsed parameters PLUS `includeAncestors: true`.
+Call `mcp__task-orchestrator__get_next_item` with parsed parameters (parentId, role, priority, tags only).
 
 ```
 get_next_item({
-  limit: <N or 3>,
-  includeAncestors: true,
   tags: <if provided>,
   priority: <if provided>,
   parentId: <if provided>

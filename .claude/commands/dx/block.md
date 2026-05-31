@@ -36,7 +36,7 @@ Authoring reference: [`docs/03-reference/dx-command-authoring.md`](../../../docs
 
 **2c — Confirm + transition.** Show what will pause, then:
 ```
-advance_item(transitions=[{ itemId: "<id>", trigger: "block", summary: "<reason or 'blocked via /dx:block'>" }])
+advance_item({ itemId: "<id>", trigger: "block", summary: "<reason or 'blocked via /dx:block'>" })
 ```
 The orchestrator saves `previousRole` automatically so `resume` can restore it.
 
@@ -67,7 +67,7 @@ Next actions:
 
 ## Error Handling
 
-**Item not found** / **already terminal or blocked** (handled in 2b) / **orchestrator unavailable**: report clearly; for the unavailable case, fall back to `advance_item(transitions=[{itemId, trigger:"block"}])` directly.
+**Item not found** / **already terminal or blocked** (handled in 2b) / **orchestrator unavailable**: report clearly; for the unavailable case, fall back to `advance_item({itemId, trigger:"block"})` directly.
 
 ---
 

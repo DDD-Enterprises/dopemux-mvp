@@ -73,7 +73,7 @@ Doctrine (CLAUDE.md, the plan) describes `advance_item(trigger="start", actor={i
 
 Consequences for write wrappers:
 
-- Pass only supported fields: `advance_item(transitions=[{itemId, trigger, summary}])`.
+- Pass only supported fields: `advance_item(itemId, trigger, summary?)`.
 - The `summary` field IS supported — use it for the human reason for the transition. Operators who need attribution *now* may include their actor id in the summary text.
 - `/dx:context` session-resume mode renders an `Actor:` field; for advance_item-driven transitions it will show `—` until `claim_item` (and its actor plumbing) ships. Document this in the command's Notes so the empty field isn't read as a bug.
 
@@ -90,12 +90,12 @@ Verified against the loaded MCP schemas (2026-05-27). Re-verify if the orchestra
 
 | Tool | Shape | Notes |
 |---|---|---|
-| `advance_item` | `transitions:[{itemId, trigger, summary?}]` | triggers: `start` (queue→work→review→terminal), `complete` (→terminal, requires all required notes), `block`/`hold` (→blocked, saves previousRole), `resume` (blocked→previousRole), `cancel` (→terminal, statusLabel=cancelled), `reopen` (terminal→queue, **bypasses gates**). No `actor`. |
+| `advance_item` | `{itemId (required), trigger (required), summary?}` | triggers: `start` (queue→work→review→terminal), `complete` (→terminal, requires all required notes), `block`/`hold` (→blocked, saves previousRole), `resume` (blocked→previousRole), `cancel` (→terminal, statusLabel=cancelled). No `actor`. No `reopen` trigger. |
 | `manage_notes` | `operation=upsert, notes:[{itemId, key, role:queue\|work\|review, body?}]` | `(itemId, key)` unique → idempotent. `delete` by ids or itemId(+key). |
 | `query_notes` | `operation=get(id)` / `list(itemId, role?, includeBody?)` | read-only. |
 | `manage_dependencies` | `operation=create, dependencies:[{fromItemId, toItemId, type?, unblockAt?}]` | **`fromItemId` BLOCKS `toItemId`** (toItemId is blocked until fromItemId reaches `unblockAt`). Shared `type` (default `BLOCKS`), `unblockAt` (default `terminal`; values queue/work/review/terminal). Shortcuts: `linear`+`itemIds`, `fan-out`+`source`+`targets`, `fan-in`+`sources`+`target`. Atomic; cycle/duplicate detection. |
 | `query_dependencies` | `itemId, direction:incoming\|outgoing\|all, type?, includeItemInfo?` | `outgoing` = what this item blocks; `incoming` = what blocks this item. |
-| `get_context` | `()` health-check · `(itemId)` gate status + notes · `(since)` session-resume | read-only. Item mode returns `canAdvance` + missing required notes + `guidancePointer` + `noteProgress`. |
+| `get_context` | `()` health-check · `(itemId)` gate status + notes · `(mode="session")` session-resume | read-only. Item mode returns `canAdvance` + missing required notes + `guidancePointer` + `noteProgress`. |
 | `get_next_status` | `(itemId)` → `{recommendation: Ready\|Blocked\|Terminal, currentRole, nextRole?, trigger?, blockers?}` | read-only; takes **only `itemId`** (no `trigger` input) and *returns* the recommended next `trigger`. Don't author a wrapper that passes a trigger to it. |
 
 ### Gate behavior (task-packet schema)
