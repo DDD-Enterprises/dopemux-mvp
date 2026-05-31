@@ -24,11 +24,12 @@ def _load_module():
     return module
 
 
-def test_strict_live_route_ids_include_gemini_attestation_candidates() -> None:
+def test_strict_live_route_ids_exclude_non_strict_gemini_candidates() -> None:
     module = _load_module()
 
-    assert "route_gemini_direct_gemini_3_1_pro_preview_v1" in module.STRICT_LIVE_ROUTE_IDS
-    assert "route_openrouter_gemini_3_1_pro_preview_v1" in module.STRICT_LIVE_ROUTE_IDS
+    assert "route_gemini_direct_gemini_3_1_pro_preview_v1" not in module.STRICT_LIVE_ROUTE_IDS
+    assert "route_openrouter_gemini_3_1_pro_preview_v1" not in module.STRICT_LIVE_ROUTE_IDS
+    assert "route_openrouter_openai_gpt_5_4_v1" in module.STRICT_LIVE_ROUTE_IDS
 
 
 def test_provider_readiness_aggregates_blocker_codes_and_rerun_worthiness(monkeypatch) -> None:
