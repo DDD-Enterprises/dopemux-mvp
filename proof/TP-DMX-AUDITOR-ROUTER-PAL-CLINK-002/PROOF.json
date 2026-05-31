@@ -227,7 +227,7 @@
     "required": true,
     "status": "PASS_WITH_RISKS",
     "auditor_tool": "pal-mcp-clink",
-    "auditor_model": "sonnet",
+    "auditor_model": "claude-sonnet-4.6",
     "invocation": "PAL MCP clink cli_name=claude role=codereviewer",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/AUDITOR_REPORT.md",

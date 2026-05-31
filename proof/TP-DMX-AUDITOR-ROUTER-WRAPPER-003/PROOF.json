@@ -142,6 +142,6 @@
     "findings": [],
     "fixes_applied": [],
     "remaining_risks": [],
-    "skip_reason": "Grandfathered or minimal change"
+    "skip_reason": "Pre-existing bundle; auditor not run at time of original submission"
   }
 }

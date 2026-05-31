@@ -27,10 +27,10 @@
     "auditor_model": "unknown",
     "invocation": null,
     "exit_code": null,
-    "report_path": "proof/UNKNOWN/AUDITOR_REPORT.md",
+    "report_path": "proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/AUDITOR_REPORT.md",
     "findings": [],
     "fixes_applied": [],
     "remaining_risks": [],
-    "skip_reason": "Grandfathered or minimal change"
+    "skip_reason": "Pre-existing bundle; auditor not run at time of original submission"
   }
 }
