@@ -28,8 +28,12 @@ def get_today_data() -> Dict[str, Any]:
     sqlite3.OperationalError when the database is locked or unavailable.
     """
     snap = build_dashboard_snapshot()
-    db_path = str(Path(os.environ.get("CONPORT_DB_PATH", ".conport/conport.db")))
-    conn = sqlite3.connect(db_path)  # may raise sqlite3.OperationalError
+    db_path = Path(os.environ.get("CONPORT_DB_PATH", ".conport/conport.db"))
+    # Only connect if the file already exists — avoid creating an empty DB as a
+    # side effect and avoid OperationalError when the parent directory is absent.
+    if not db_path.exists():
+        return {**snap, "count": 0}
+    conn = sqlite3.connect(str(db_path))  # may raise sqlite3.OperationalError
     try:
         row = conn.execute(
             "SELECT COUNT(*) FROM progress_entries WHERE status != 'DONE'"
