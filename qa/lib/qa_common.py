@@ -241,6 +241,80 @@ def require_env(*vars_: str) -> None:
         sys.exit(1)
 
 
+# ── Baseline update ───────────────────────────────────────────────────────────
+def update_baseline(results_dir: str, baseline_file: str) -> None:
+    """Read results.jsonl from *results_dir* and update *baseline_file*.
+
+    Extracts pass/fail/skip counts and evidence signals from the results,
+    then merges them into the baseline JSON so future runs can trend against
+    this known-good state.
+    """
+    import json as _json
+    import subprocess as _subprocess
+    from pathlib import Path as _Path
+
+    rdir = _Path(results_dir)
+    bfile = _Path(baseline_file)
+    jsonl_path = rdir / "results.jsonl"
+
+    if not jsonl_path.exists():
+        log("WARN", f"No results.jsonl at {jsonl_path} — baseline not updated.")
+        return
+
+    rows: list[dict] = []
+    for line in jsonl_path.read_text().splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            rows.append(_json.loads(line))
+        except _json.JSONDecodeError:
+            continue
+
+    counts: dict[str, int] = {}
+    for r in rows:
+        status = r.get("status", "UNKNOWN").upper()
+        counts[status] = counts.get(status, 0) + 1
+
+    # Derive HEAD SHA
+    head_sha = None
+    try:
+        head_sha = _subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], stderr=_subprocess.DEVNULL, text=True
+        ).strip()
+    except Exception:
+        pass
+
+    # Load existing baseline or start fresh
+    existing: dict = {}
+    if bfile.exists():
+        try:
+            existing = _json.loads(bfile.read_text())
+        except _json.JSONDecodeError:
+            pass
+
+    signals = existing.get("signals", {})
+    signals["qa_pass_count"] = counts.get("PASS", 0)
+    signals["qa_fail_count"] = counts.get("FAIL", 0)
+    signals["qa_not_run_count"] = counts.get("NOT_RUN", 0)
+    signals["qa_total_scenarios"] = len(rows)
+
+    import datetime as _dt
+    baseline = {
+        **existing,
+        "schema_version": existing.get("schema_version", 1),
+        "generated_at": _dt.datetime.now(_dt.timezone.utc).isoformat(),
+        "head_sha": head_sha,
+        "signals": signals,
+        "golden_snapshots": existing.get("golden_snapshots", {}),
+        "notes": f"Updated from {rdir.name} at {head_sha or 'unknown SHA'}",
+    }
+
+    bfile.parent.mkdir(parents=True, exist_ok=True)
+    bfile.write_text(_json.dumps(baseline, indent=2) + "\n")
+    log("INFO", f"Baseline updated: {bfile} (PASS={counts.get('PASS',0)}, FAIL={counts.get('FAIL',0)}, NOT_RUN={counts.get('NOT_RUN',0)}, sha={head_sha})")
+
+
 # ── CLI entrypoint ────────────────────────────────────────────────────────────
 def synthesize_report(results_dir: str) -> None:
     """Read results.jsonl from *results_dir* and write report.md."""
@@ -317,4 +391,4 @@ if __name__ == "__main__":
     if args.cmd == "synthesize_report":
         synthesize_report(args.results_dir)
     elif args.cmd == "update_baseline":
-        log("INFO", f"update_baseline: {args.results_dir} → {args.baseline_file} (stub)")
+        update_baseline(args.results_dir, args.baseline_file)
