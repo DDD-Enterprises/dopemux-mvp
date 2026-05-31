@@ -1,0 +1,135 @@
+{
+  "id": "TP-DMX-ADHD-COGNITIVE-T4-01-EVENT-BACKBONE-001",
+  "project": "dopemux-mvp",
+  "target": "Reconcile ADHD engine event APIs onto ADHDEventEmitter",
+  "invariants": [
+    "ADHDEventEmitter remains the canonical ADHD event transport for Redis Stream events.",
+    "Event emission must remain bounded to structured event type, source, timestamp, and JSON payload fields.",
+    "Missing Redis availability must not be reported as successful publication."
+  ],
+  "depends_on": [
+    "DMX-ADHD-COGNITIVE-T4-01"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ADHD-COGNITIVE-REMEDIATION",
+    "base_branch": "feat/autoreview-platform-series",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/adhd-event-backbone-001",
+    "base_branch": "feat/autoreview-platform-series"
+  },
+  "commit": {
+    "message": "fix(adhd): reconcile event backbone APIs",
+    "allowlist": [
+      "services/adhd_engine/event_emitter.py",
+      "services/adhd_engine/event_listener.py",
+      "services/adhd_engine/workspace_watcher.py",
+      "services/adhd_engine/external_activity.py",
+      "services/adhd_engine/api/routes.py",
+      "tests/unit/test_adhd_event_backbone.py",
+      "task-packets/TP-DMX-ADHD-COGNITIVE-T4-01-EVENT-BACKBONE-001.json",
+      "task-packets/TP-DMX-ADHD-COGNITIVE-T4-01-EVENT-BACKBONE-001-implementation-notes.md"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-01-EVENT-BACKBONE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/unit/test_adhd_event_backbone.py tests/unit/test_adhd_engine_settings_contract.py tests/unit/test_adhd_engine_task_orchestrator_url.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(adhd): reconcile event backbone APIs",
+    "body": "## Summary\n- reconcile ADHD workspace, external activity, listener finding, and route hook event calls onto ADHDEventEmitter\n- add unit coverage for canonical publish/emit compatibility, package-relative route imports, and handled Claude tool completion events\n- keep Redis-unavailable publication fail-closed while preserving structured event payloads\n\n## Validation\n- python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-01-EVENT-BACKBONE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- python -m pytest tests/unit/test_adhd_event_backbone.py tests/unit/test_adhd_engine_settings_contract.py tests/unit/test_adhd_engine_task_orchestrator_url.py\n- git diff --check\n\n@codex review\n@gemini\n@copilot\n\nGenerate release notes, ensure all documentation referencing all code changes is updated, all tests pass, and release notes, changelog, and feature lists are updated",
+    "base": "feat/autoreview-platform-series"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect",
+      "task": "Trace existing ADHD event emitters, listeners, routes, and startup wiring before changing runtime code.",
+      "requirements": [
+        "Identify canonical writer and consumer paths for dopemux:events.",
+        "Call out unsupported or stale event_bus imports as observed defects."
+      ],
+      "expected_files": [
+        "services/adhd_engine/event_emitter.py",
+        "services/adhd_engine/event_listener.py",
+        "services/adhd_engine/workspace_watcher.py",
+        "services/adhd_engine/external_activity.py",
+        "services/adhd_engine/api/routes.py"
+      ],
+      "validation": [
+        "rg -n \"EventType|EventTypes|ADHDEventEmitter|event_bus|publish|emit_claude_tool\" services/adhd_engine tests -g '*.py'"
+      ]
+    },
+    {
+      "id": "test",
+      "task": "Add focused failing tests for the observed T4-01 event API mismatches.",
+      "requirements": [
+        "Cover package-relative route imports enabling event hooks.",
+        "Cover WorkspaceEventEmitter and ExternalActivityManager emission through the canonical emitter API.",
+        "Cover listener handling for claude_tool_completed."
+      ],
+      "expected_files": [
+        "tests/unit/test_adhd_event_backbone.py"
+      ],
+      "validation": [
+        "python -m pytest tests/unit/test_adhd_event_backbone.py"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Make the smallest runtime changes needed to reconcile event producers and consumers onto ADHDEventEmitter.",
+      "requirements": [
+        "Use relative imports inside services.adhd_engine package surfaces.",
+        "Preserve Redis Stream replay semantics through xadd plus consumer groups.",
+        "Do not introduce provider calls, live extraction, or new external dependencies."
+      ],
+      "expected_files": [
+        "services/adhd_engine/event_emitter.py",
+        "services/adhd_engine/event_listener.py",
+        "services/adhd_engine/workspace_watcher.py",
+        "services/adhd_engine/external_activity.py",
+        "services/adhd_engine/api/routes.py"
+      ],
+      "validation": [
+        "python -m pytest tests/unit/test_adhd_event_backbone.py tests/unit/test_adhd_engine_settings_contract.py tests/unit/test_adhd_engine_task_orchestrator_url.py"
+      ]
+    },
+    {
+      "id": "precommit",
+      "task": "Run schema, targeted tests, diff, and configured pre-commit checks for the allowlisted paths.",
+      "requirements": [
+        "Report PASS, FAIL, and NOT_RUN explicitly.",
+        "Do not claim integration behavior beyond the commands run."
+      ],
+      "validation": [
+        "python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-01-EVENT-BACKBONE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python -m pytest tests/unit/test_adhd_event_backbone.py tests/unit/test_adhd_engine_settings_contract.py tests/unit/test_adhd_engine_task_orchestrator_url.py",
+        "git diff --check",
+        "pre-commit run --files services/adhd_engine/event_emitter.py services/adhd_engine/event_listener.py services/adhd_engine/workspace_watcher.py services/adhd_engine/external_activity.py services/adhd_engine/api/routes.py tests/unit/test_adhd_event_backbone.py task-packets/TP-DMX-ADHD-COGNITIVE-T4-01-EVENT-BACKBONE-001.json task-packets/TP-DMX-ADHD-COGNITIVE-T4-01-EVENT-BACKBONE-001-implementation-notes.md"
+      ]
+    }
+  ]
+}

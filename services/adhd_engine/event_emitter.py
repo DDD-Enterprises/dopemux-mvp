@@ -122,24 +122,35 @@ class ADHDEventEmitter:
             data=data,
             source=source
         )
-        
-        # Always log the event
-        logger.debug(f"📤 Emitting event: {event_type} from {source}")
-        
+
+        return await self._publish_event(self.stream_name, event)
+
+    async def publish(self, stream: str, event: Event) -> bool:
+        """Publish a prebuilt Event to a Redis Stream.
+
+        Compatibility bridge for older EventBus-style callers while preserving
+        ADHDEventEmitter as the canonical ADHD event transport.
+        """
+        return await self._publish_event(stream, event)
+
+    async def _publish_event(self, stream: str, event: Event) -> bool:
+        """Publish a structured event to a Redis Stream."""
+        logger.debug(f"📤 Emitting event: {event.type} from {event.source or 'adhd_engine'}")
+
         if not self._connected or not self._redis:
-            logger.debug(f"Event logged (Redis unavailable): {event_type}")
+            logger.debug(f"Event logged (Redis unavailable): {event.type}")
             return False
-        
+
         try:
             # Publish to Redis Stream
             await self._redis.xadd(
-                self.stream_name,
+                stream,
                 event.to_redis_dict(),
                 maxlen=10000  # Keep reasonable stream length
             )
-            logger.debug(f"✅ Event published: {event_type}")
+            logger.debug(f"✅ Event published: {event.type}")
             return True
-            
+
         except Exception as e:
             logger.warning(f"Event publication failed: {e}")
             return False
@@ -247,11 +258,29 @@ class EventTypes:
     # File activity events
     FILE_OPENED = "file_opened"
     FILE_SAVED = "file_saved"
+    FILE_CLOSED = "file_closed"
     FILE_ACTIVITY = "file_activity"
+    FILE_UNCHANGED_30MIN = "file_unchanged_30min"
+
+    # Desktop activity events
+    WINDOW_SWITCHED = "window_switched"
+    APP_FOCUSED = "app_focused"
+    IDLE_DETECTED = "idle_detected"
+    ACTIVITY_RESUMED = "activity_resumed"
+    OVERWHELM_DETECTED = "overwhelm_detected"
     
     # Progress events
     PROGRESS_LOGGED = "progress_logged"
+    TASK_STARTED = "task_started"
     TASK_COMPLETED = "task_completed"
+    TASK_SWITCHED = "task_switched"
+    GIT_COMMIT = "git_commit"
+
+    # Calendar events
+    MEETING_STARTED = "meeting_started"
+    MEETING_ENDED = "meeting_ended"
+    MEETING_APPROACHING = "meeting.approaching"
+    SOCIAL_BATTERY_LOW = "social_battery_low"
     
     # Context events
     CONTEXT_SAVED = "context_saved"

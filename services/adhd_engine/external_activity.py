@@ -17,6 +17,8 @@ from typing import Any, Dict, List, Optional
 from dataclasses import dataclass, field
 import httpx
 
+from .event_emitter import EventTypes
+
 logger = logging.getLogger(__name__)
 
 
@@ -218,11 +220,9 @@ class DesktopActivityMonitor:
         
         # Emit event
         try:
-            from event_bus import Event, EventType
-            
-            event = Event(
-                type=EventType.WINDOW_SWITCHED,
-                data={
+            await self.event_bus.emit(
+                EventTypes.WINDOW_SWITCHED,
+                {
                     "from_app": from_app,
                     "to_app": to_app,
                     "from_window": from_window,
@@ -233,25 +233,22 @@ class DesktopActivityMonitor:
                     "switches_this_hour": self.switch_count_last_hour,
                     "rapid_switching": self.switch_count_last_hour > self.rapid_switch_threshold
                 },
-                source="desktop_activity_monitor"
+                source="desktop_activity_monitor",
             )
-            
-            await self.event_bus.publish("dopemux:events", event)
-            
+
             logger.debug(f"Window switch: {from_app} → {to_app}")
             
             # Emit overwhelm warning if rapid switching
             if self.switch_count_last_hour > self.rapid_switch_threshold:
-                overwhelm_event = Event(
-                    type=EventType.OVERWHELM_DETECTED,
-                    data={
+                await self.event_bus.emit(
+                    EventTypes.OVERWHELM_DETECTED,
+                    {
                         "trigger": "rapid_window_switching",
                         "switches_per_hour": self.switch_count_last_hour,
                         "threshold": self.rapid_switch_threshold
                     },
-                    source="desktop_activity_monitor"
+                    source="desktop_activity_monitor",
                 )
-                await self.event_bus.publish("dopemux:events", overwhelm_event)
                 
         except Exception as e:
             logger.warning(f"Failed to emit window switch event: {e}")
@@ -262,20 +259,16 @@ class DesktopActivityMonitor:
             return
         
         try:
-            from event_bus import Event, EventType
-            
-            event = Event(
-                type=EventType.IDLE_DETECTED,
-                data={
+            await self.event_bus.emit(
+                EventTypes.IDLE_DETECTED,
+                {
                     "idle_seconds": idle_seconds,
                     "idle_minutes": idle_seconds / 60,
                     "last_active_app": self.current_app,
                     "is_break": idle_seconds > 300  # 5+ min = break
                 },
-                source="desktop_activity_monitor"
+                source="desktop_activity_monitor",
             )
-            
-            await self.event_bus.publish("dopemux:events", event)
             
         except Exception as e:
             logger.warning(f"Failed to emit idle event: {e}")
@@ -488,11 +481,9 @@ class CalendarIntegration:
         self.meetings_today += 1
         
         try:
-            from event_bus import Event, EventType
-            
-            event = Event(
-                type=EventType.MEETING_STARTED,
-                data={
+            await self.event_bus.emit(
+                EventTypes.MEETING_STARTED,
+                {
                     "title": meeting.title,
                     "meeting_type": meeting.meeting_type,
                     "attendees": meeting.attendees,
@@ -500,10 +491,8 @@ class CalendarIntegration:
                     "social_battery_before": self.social_battery,
                     "meetings_today": self.meetings_today
                 },
-                source="calendar_integration"
+                source="calendar_integration",
             )
-            
-            await self.event_bus.publish("dopemux:events", event)
             logger.info(f"📅 Meeting started: {meeting.title}")
             
         except Exception as e:
@@ -519,8 +508,6 @@ class CalendarIntegration:
         self.meeting_hours_today += duration_minutes / 60
         
         try:
-            from event_bus import Event, EventType
-            
             # Determine recovery suggestion based on social battery
             if self.social_battery < 20:
                 recovery_suggestion = "Take a 15-minute solo break - social battery critically low"
@@ -528,34 +515,31 @@ class CalendarIntegration:
                 recovery_suggestion = "Consider a 5-minute break before next task"
             else:
                 recovery_suggestion = None
-            
-            event = Event(
-                type=EventType.MEETING_ENDED,
-                data={
+
+            await self.event_bus.emit(
+                EventTypes.MEETING_ENDED,
+                {
                     "title": meeting.title,
                     "duration_minutes": duration_minutes,
                     "social_battery_after": self.social_battery,
                     "meeting_hours_today": self.meeting_hours_today,
                     "recovery_suggestion": recovery_suggestion
                 },
-                source="calendar_integration"
+                source="calendar_integration",
             )
-            
-            await self.event_bus.publish("dopemux:events", event)
             logger.info(f"📅 Meeting ended: {meeting.title}")
             
             # Emit social battery warning if low
             if self.social_battery < 30:
-                battery_event = Event(
-                    type=EventType.SOCIAL_BATTERY_LOW,
-                    data={
+                await self.event_bus.emit(
+                    EventTypes.SOCIAL_BATTERY_LOW,
+                    {
                         "social_battery": self.social_battery,
                         "meeting_hours_today": self.meeting_hours_today,
                         "recovery_time_needed_minutes": (50 - self.social_battery) * 6
                     },
-                    source="calendar_integration"
+                    source="calendar_integration",
                 )
-                await self.event_bus.publish("dopemux:events", battery_event)
                 
         except Exception as e:
             logger.warning(f"Failed to emit meeting end event: {e}")
@@ -566,8 +550,6 @@ class CalendarIntegration:
             return
         
         try:
-            from event_bus import Event
-            
             # Determine preparation suggestion based on current state
             if self.social_battery < 30:
                 prep_suggestion = "Low social battery - consider declining or shortening this meeting"
@@ -575,19 +557,17 @@ class CalendarIntegration:
                 prep_suggestion = "Meeting starting soon - save your work"
             else:
                 prep_suggestion = f"Meeting in {int(minutes_until)} minutes"
-            
-            event = Event(
-                type="meeting.approaching",  # Custom event
-                data={
+
+            await self.event_bus.emit(
+                EventTypes.MEETING_APPROACHING,
+                {
                     "title": meeting.title,
                     "minutes_until": minutes_until,
                     "social_battery": self.social_battery,
                     "preparation_suggestion": prep_suggestion
                 },
-                source="calendar_integration"
+                source="calendar_integration",
             )
-            
-            await self.event_bus.publish("dopemux:events", event)
             
         except Exception as e:
             logger.warning(f"Failed to emit meeting approaching event: {e}")

@@ -28,6 +28,8 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional, Set
 from dataclasses import dataclass, field
 
+from .event_emitter import EventTypes
+
 logger = logging.getLogger(__name__)
 
 # Try to import watchdog for efficient monitoring
@@ -124,35 +126,33 @@ class WorkspaceEventEmitter:
         
         try:
             # Determine event type
-            from event_bus import Event, EventType
-            
             if action == "saved":
-                event_type = EventType.FILE_SAVED
+                event_type = EventTypes.FILE_SAVED
             elif action == "opened":
-                event_type = EventType.FILE_OPENED
+                event_type = EventTypes.FILE_OPENED
+            elif action == "closed":
+                event_type = EventTypes.FILE_CLOSED
             else:
-                event_type = getattr(EventType, 'FILE_ACTIVITY', 'file_activity')
+                event_type = EventTypes.FILE_ACTIVITY
             
             # Get relative path for cleaner logging
             try:
                 rel_path = Path(file_path).relative_to(self.workspace_path)
             except ValueError:
                 rel_path = file_path
-            
-            event = Event(
-                type=event_type,
-                data={
+
+            await self.event_bus.emit(
+                event_type,
+                {
                     "file": str(file_path),
                     "relative_path": str(rel_path),
                     "action": action,
                     "timestamp": datetime.now().isoformat(),
-                    "extension": Path(file_path).suffix
+                    "extension": Path(file_path).suffix,
                 },
-                source="workspace_watcher"
+                source="workspace_watcher",
             )
-            
-            await self.event_bus.publish("dopemux:events", event)
-            
+
             # Track activity
             async with self._activity_lock:
                 self.last_modified[file_path] = datetime.now()
@@ -167,8 +167,6 @@ class WorkspaceEventEmitter:
             
             logger.debug(f"📁 File {action}: {rel_path}")
             
-        except ImportError:
-            logger.warning(brand_log("EventBus not available - file event not emitted", chip=StatusChip.AFTERCARE))
         except Exception as e:
             logger.error(brand_log(f"Failed to emit file event: {e}", chip=StatusChip.BLOCKER))
     
@@ -181,19 +179,15 @@ class WorkspaceEventEmitter:
             for file_path, last_mod in list(self.last_modified.items()):
                 if now - last_mod > unchanged_threshold:
                     # File unchanged for >30 min - possible hyperfocus
-                    from event_bus import Event, EventType
-                    
-                    event = Event(
-                        type=getattr(EventType, 'FILE_UNCHANGED_30MIN', 'file_unchanged'),
-                        data={
+                    await self.event_bus.emit(
+                        EventTypes.FILE_UNCHANGED_30MIN,
+                        {
                             "file": file_path,
                             "unchanged_minutes": int((now - last_mod).total_seconds() / 60),
-                            "timestamp": now.isoformat()
+                            "timestamp": now.isoformat(),
                         },
                         source="workspace_watcher"
                     )
-                    
-                    await self.event_bus.publish("dopemux:events", event)
                     logger.info(brand_log(f"🔥 Possible hyperfocus: {file_path} unchanged for 30+ min", chip=StatusChip.LIVE))
                     
                     # Remove from tracking to avoid repeated alerts

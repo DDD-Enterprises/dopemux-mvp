@@ -60,15 +60,13 @@ from ..core.models import ADHDProfile, EnergyLevel, AttentionState
 
 # Event emission for implicit triggers (Phase 7)
 try:
-    from event_emitter import emit_claude_prompt, emit_claude_tool, emit_context_saved
-    EVENT_EMISSION_AVAILABLE = True
-except ImportError:
-    EVENT_EMISSION_AVAILABLE = False
-    logger.debug("Event emission not available - hooks won't trigger EventBus")
-
-# Event emission for implicit triggers (Phase 7)
-try:
-    from event_emitter import emit_claude_prompt, emit_claude_tool, emit_context_saved
+    from ..event_emitter import (
+        ADHDEventEmitter,
+        EventTypes,
+        emit_claude_prompt,
+        emit_claude_tool,
+        emit_context_saved,
+    )
     EVENT_EMISSION_AVAILABLE = True
 except ImportError:
     EVENT_EMISSION_AVAILABLE = False
@@ -1917,10 +1915,9 @@ async def log_git_event(
         # Emit to EventBus (Phase 7)
         if EVENT_EMISSION_AVAILABLE:
             try:
-                from event_emitter import ADHDEventEmitter
                 emitter = await ADHDEventEmitter.get_instance()
                 await emitter.emit(
-                    "git_commit" if event_type == "git_commit" else "git_event",
+                    EventTypes.GIT_COMMIT if event_type == "git_commit" else "git_event",
                     data,
                     source="git_hook"
                 )
