@@ -1,0 +1,142 @@
+{
+  "task_packet_id": "TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001",
+  "task_packet_revision": "REV2",
+  "repo": {
+    "path": "/Users/hue/.codex/worktrees/792d/dopemux-mvp",
+    "remote": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "branch": "codex/pal-clink-audit-configs-001",
+    "base_sha": "17d3fe3bf31dc7020b25daf27894500b1368d95d",
+    "repo_marker": ".dopetaskroot"
+  },
+  "configs_created": [
+    "docker/mcp-servers-source/pal/pal-mcp-server/conf/cli_clients/claude-audit.json",
+    "docker/mcp-servers-source/pal/pal-mcp-server/conf/cli_clients/gemini-audit.json"
+  ],
+  "copilot_status": "DEFERRED_COPILOT_RUNNER_UNSUPPORTED",
+  "copilot_reason": "Existing clink internals support gemini, codex, and claude only; adding copilot runner support is out of scope.",
+  "default_role_status": "ACCEPTED_DEFAULT_ROLE_INJECTION",
+  "default_role_rationale": "clink registry injects/defaults a default role; audit-safe configs map default and codereviewer to systemprompts/clink/default_codereviewer.txt with empty role_args.",
+  "embedded_audit": {
+    "required": false,
+    "status": "SKIPPED",
+    "skip_reason": "Supervisor-approved bootstrap exception for audit-safe config prep packet. This packet creates audit-enabling configs only and does not claim PR merge readiness without supervisor review."
+  },
+  "out_of_scope": [
+    "Copilot runner support",
+    "auditor-router integration",
+    "no-default-role registry behavior",
+    "authenticated CLI prompts",
+    "embedded audit verdict capture"
+  ],
+  "validation": {
+    "status": "PASS_WITH_ENV_NOTE",
+    "commands": [
+      {
+        "command": "pwd",
+        "exit_code": 0,
+        "result": "/Users/hue/.codex/worktrees/792d/dopemux-mvp"
+      },
+      {
+        "command": "git status --short --branch",
+        "exit_code": 0,
+        "result": "branch codex/pal-clink-audit-configs-001; allowed files changed; proof bundle force-added because proof/* is ignored"
+      },
+      {
+        "command": "git rev-parse HEAD",
+        "exit_code": 0,
+        "result": "17d3fe3bf31dc7020b25daf27894500b1368d95d"
+      },
+      {
+        "command": "python -m json.tool task-packets/generated/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001.json",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python -m jsonschema -i task-packets/generated/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python -m json.tool docker/mcp-servers-source/pal/pal-mcp-server/conf/cli_clients/claude-audit.json",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python -m json.tool docker/mcp-servers-source/pal/pal-mcp-server/conf/cli_clients/gemini-audit.json",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "cd docker/mcp-servers-source/pal/pal-mcp-server && python -m pytest -q tests/test_clink_audit_configs.py",
+        "exit_code": 4,
+        "result": "FAIL in ambient Python before test collection: ModuleNotFoundError: No module named 'google'"
+      },
+      {
+        "command": "cd docker/mcp-servers-source/pal/pal-mcp-server && source .venv/bin/activate && python -m pytest -q tests/test_clink_audit_configs.py",
+        "exit_code": 0,
+        "result": "PASS: 3 passed in 0.08s after installing PAL requirements-dev.txt into local .venv"
+      },
+      {
+        "command": "python -m compileall -q docker/mcp-servers-source/pal/pal-mcp-server",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python -m json.tool proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/PROOF.json",
+        "exit_code": 0,
+        "result": "PASS after proof update"
+      },
+      {
+        "command": "python -m json.tool proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/review_bundle/MANIFEST.json",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "git diff --check",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "claude --help",
+        "exit_code": 0,
+        "result": "PASS: help output includes --permission-mode choices including plan"
+      },
+      {
+        "command": "gemini --help",
+        "exit_code": 0,
+        "result": "PASS: help output includes --approval-mode choices including plan"
+      },
+      {
+        "command": "pre-commit run --files $(cat proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/CHANGED_FILES.txt)",
+        "exit_code": 0,
+        "result": "PASS: repository hygiene hooks passed or skipped as not applicable"
+      }
+    ]
+  },
+  "codereview": {
+    "status": "PASS",
+    "method": "Manual precommit diff review",
+    "result": "No out-of-scope runtime, auditor-router, schema, scripts, docs/ops, GitHub workflow, or Copilot config changes observed."
+  },
+  "precommit": {
+    "status": "PASS",
+    "command": "pre-commit run --files $(cat proof/TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/CHANGED_FILES.txt)",
+    "exit_code": 0
+  },
+  "warnings": [
+    "Audit-safe configs do not themselves produce an audit verdict.",
+    "Actual PAL MCP clink audit output must be captured and normalized into proof by a later auditor-router packet.",
+    "This packet is not eligible for skip-second-supervisor review.",
+    "Ambient python pytest failed because the local test environment lacked google.genai; validation passed in the PAL local .venv after installing requirements-dev.txt."
+  ],
+  "blockers": [],
+  "known_unknowns": [
+    "Local provider authentication state was not tested because authenticated prompts are out of scope.",
+    "Future auditor-router discovery behavior is not exercised in this packet."
+  ],
+  "commit": {
+    "status": "COMMITTED",
+    "sha": "c1f34ff1362ccbaf46caaa30414808508e20d677",
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/711"
+  }
+}

@@ -24,6 +24,8 @@ COPY services/task-orchestrator/task_decomposition_endpoint.py /app/task_decompo
 COPY services/task-orchestrator/pal_client.py /app/pal_client.py
 COPY services/shared /app/services/shared
 COPY src/dopemux /app/dopemux
+COPY src/core /app/core
+COPY src/integrations /app/integrations
 
 # Set up environment
 ENV PYTHONPATH=/app \

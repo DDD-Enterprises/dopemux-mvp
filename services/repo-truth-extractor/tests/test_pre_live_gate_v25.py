@@ -20,8 +20,8 @@ def _load_gate_module():
 
 def test_default_policy_requires_direct_gemini_and_xai() -> None:
     gate = _load_gate_module()
-    assert gate.DEFAULT_TARGET_POLICY == "balanced_openrouter"
-    assert gate.resolve_required_direct_providers("balanced_openrouter", None) == ("gemini", "xai")
+    assert gate.DEFAULT_TARGET_POLICY == "cost"
+    assert gate.resolve_required_direct_providers("cost", None) == ()
 
 
 def test_truth_split_prefers_specific_classification() -> None:

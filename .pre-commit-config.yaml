@@ -113,11 +113,15 @@ repos:
 
               # Canonical docs locations
               if [[ "$normalized" =~ ^\./(docs/) ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(prompts/|runbooks/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(llm-plans/|dopemux_voice_branding_bundle/|config/instructions/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(task-packets/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(reports/|quarantine/|UPGRADES/|out/|_audit_out/|extraction/|proof/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(ARCHIVED_RECOVERY|audit_inputs|audit_prep)/ ]]; then continue; fi
               if [[ "$normalized" =~ /(SYSTEM_ARCHIVE|archive|ARCHIVE)/ ]]; then continue; fi
+              # Claude-generated audit/research output and QA harness docs
+              if [[ "$normalized" =~ ^\./(claudedocs/) ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(qa/) ]]; then continue; fi
 
               # Config/state and tooling docs
               if [[ "$normalized" =~ /\.claude/ ]]; then continue; fi

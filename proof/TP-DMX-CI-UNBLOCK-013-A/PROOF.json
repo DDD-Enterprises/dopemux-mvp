@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "tp_id": "TP-DMX-CI-UNBLOCK-013-A",
+  "series_id": "DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "claude/upbeat-thompson-35f2e8",
+  "base_branch": "main",
+  "head_before": "c9f66d2ab6ff6c1db1b6f6d6c6e7a2c6d48c9c64",
+  "head_after": "pending",
+  "mutation_performed": false,
+  "github_mutation_performed": false,
+  "secret_values_recorded": false,
+  "operator_authorization_used": [],
+  "forbidden_surfaces_touched": false,
+  "files_changed": [
+    "docs/ops/load-plans/load_plan-DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED.json"
+  ],
+  "commands": [
+    {
+      "cmd": "mkdir -p docs/ops/load-plans && git mv artifacts/task-orchestrator/DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED/load_plan.json docs/ops/load-plans/load_plan-DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED.json",
+      "exit_code": 0,
+      "result": ""
+    }
+  ],
+  "validation": {
+    "status": "PASS",
+    "details": [
+      {
+        "check": "file_moved",
+        "status": "PASS",
+        "detail": "load_plan.json successfully moved to docs/ops/load-plans/"
+      }
+    ]
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "system prompt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-CI-UNBLOCK-013-A/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null
+  }
+}

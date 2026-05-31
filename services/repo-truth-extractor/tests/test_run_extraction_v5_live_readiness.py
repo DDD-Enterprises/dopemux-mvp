@@ -126,7 +126,11 @@ def test_route_readiness_summary_honors_benchmark_owned_lane(monkeypatch) -> Non
         ),
     )
     summary = runner.derive_route_readiness_summary(["A"], "cost")
-    required_routes = summary["routes"]
+    required_routes = [
+        row
+        for row in summary["routes"]
+        if row["requirement_level"] == "required_active_route"
+    ]
     assert required_routes
     assert {row["provider"] for row in required_routes} == {"openai"}
     assert {row["model_id"] for row in required_routes} == {"gpt-5.4"}

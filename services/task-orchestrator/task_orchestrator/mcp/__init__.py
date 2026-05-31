@@ -7,6 +7,12 @@ MCP tool definitions for task orchestration.
 import logging
 from typing import Any, Dict, List, Optional
 
+from dopemux.orchestrator.mcp_wrappers import (
+    ORCHESTRATOR_MCP_TOOL_NAMES,
+    ORCHESTRATOR_MCP_TOOLS,
+    handle_orchestrator_tool_call,
+)
+
 from ..adhd import adhd_monitor
 from ..agents import agent_coordinator
 from ..core import leantime_client, redis_manager
@@ -102,13 +108,21 @@ MCP_TOOLS = [
             "type": "object",
             "properties": {}
         }
-    }
+    },
+    *ORCHESTRATOR_MCP_TOOLS,
 ]
 
 
 async def handle_tool_call(tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
     """Handle MCP tool call and return result."""
     try:
+        if tool_name in ORCHESTRATOR_MCP_TOOL_NAMES:
+            from dopemux.orchestrator.policy import default_policy_path
+            policy_path = default_policy_path()
+            if not policy_path.exists():
+                raise ValueError("orchestrator policy missing")
+            return await handle_orchestrator_tool_call(tool_name, arguments)
+
         if tool_name == "analyze_dependencies":
             return await _analyze_dependencies(arguments.get("tasks", []))
         

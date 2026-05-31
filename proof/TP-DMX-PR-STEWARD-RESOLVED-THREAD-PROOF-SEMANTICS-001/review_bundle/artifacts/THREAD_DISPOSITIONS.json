@@ -1,0 +1,29 @@
+{
+  "generated_at": "2026-05-27T00:53:35.445208Z",
+  "mutation_performed": false,
+  "pr_number": 704,
+  "schema_version": "1.0.0",
+  "threads": [
+    {
+      "blocking": false,
+      "disposition": "OPTIONAL_DEFERRED",
+      "is_resolved": true,
+      "rationale": "Resolved review thread is nonblocking.",
+      "review_item_ids": [
+        "RTC_713_1"
+      ],
+      "thread_id": "RT_713_1"
+    },
+    {
+      "blocking": false,
+      "disposition": "AUTO_APPLIED",
+      "is_resolved": true,
+      "rationale": "Resolved outdated thread is nonblocking evidence.",
+      "review_item_ids": [
+        "RTC_713_2"
+      ],
+      "thread_id": "RT_713_2"
+    }
+  ],
+  "unresolved_blocking_count": 0
+}

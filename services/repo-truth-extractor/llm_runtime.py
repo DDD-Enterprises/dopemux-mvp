@@ -423,14 +423,17 @@ def call_llm(
         and service_tier
         and provider in ("openai", "openrouter")
         and str(service_tier).lower() in ("default", "flex", "priority", "auto")
-        and "service_tier" not in normalize_route_request_options(payload)
+        and "service_tier"
+        not in normalize_route_request_options(
+            payload, provider=provider, model_id=model_id
+        )
     ):
         payload["service_tier"] = str(service_tier).lower()
         service_tier_requested = payload["service_tier"]
     else:
-        service_tier_requested = normalize_route_request_options(payload).get(
-            "service_tier", service_tier
-        )
+        service_tier_requested = normalize_route_request_options(
+            payload, provider=provider, model_id=model_id
+        ).get("service_tier", service_tier)
     body = deps.serialize_payload_body(payload)
     request_payload_bytes = deps.measure_payload_bytes_from_body(body)
     request_payload_bytes_mode = (
@@ -774,9 +777,15 @@ def call_llm(
                 # build_chat_payload normalizes route request options at
                 # construction time, but we re-normalize here as defense in
                 # depth: any future alternate payload builder must not be
-                # able to reintroduce the literal "none" or a non-string
-                # scalar into chat kwargs forwarded to the provider SDK.
-                for option_key, option_value in normalize_route_request_options(payload).items():
+                # able to reintroduce a non-string scalar or an out-of-enum
+                # value into chat kwargs forwarded to the provider SDK.
+                # Provider/model context is required so that
+                # ``reasoning_effort="none"`` survives this pass for the
+                # routes that document it (xAI grok-4.3) and is dropped
+                # everywhere else.
+                for option_key, option_value in normalize_route_request_options(
+                    payload, provider=provider, model_id=model_id
+                ).items():
                     chat_kwargs[option_key] = option_value
                 # Inject service_tier for OpenAI (and OpenRouter passthrough where
                 # supported). xAI does not document a service_tier parameter

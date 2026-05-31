@@ -1,0 +1,145 @@
+{
+  "schema_version": "1.0.0",
+  "tp_id": "TP-DMX-PR-ACTION-BRIDGE-006",
+  "series_id": "DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "claude/upbeat-thompson-35f2e8",
+  "base_branch": "main",
+  "head_before": "1c820b516",
+  "head_after": "9f18ce2f6",
+  "mutation_performed": false,
+  "github_mutation_performed": false,
+  "secret_values_recorded": false,
+  "operator_authorization_used": [],
+  "forbidden_surfaces_touched": false,
+  "files_changed": [
+    "tools/pr_action_bridge/__init__.py",
+    "tools/pr_action_bridge/compiler.py",
+    "schemas/pr_action_bridge/action_plan.schema.json",
+    "tests/pr_action_bridge/__init__.py",
+    "tests/pr_action_bridge/test_compiler.py",
+    "docs/ops/pr-action-bridge.md",
+    "proof/TP-DMX-PR-ACTION-BRIDGE-006/PROOF.json",
+    "proof/TP-DMX-PR-ACTION-BRIDGE-006/AUDITOR_REPORT.md"
+  ],
+  "commands": [
+    {
+      "cmd": "python -m pytest tests/pr_action_bridge/ -v",
+      "exit_code": 0,
+      "result": "52 passed in 0.09s"
+    },
+    {
+      "cmd": "python -m pytest tests/audit/ -q",
+      "exit_code": 0,
+      "result": "84 passed in 0.09s (prior tests preserved)"
+    }
+  ],
+  "validation": {
+    "status": "PASS",
+    "details": [
+      {"check": "pytest_52_compiler_tests", "status": "PASS", "detail": "52 new tests in test_compiler.py all pass: static safety (no pr_merge import, no gh mutation calls, mutation_performed=False), all 4 readiness tiers, EMBEDDED_AUDIT_* prefix, source_item_id cross-referencing, REPAIR_PACKET.md render, unknown blocker skip, sequential IDs, empty ID collapse, input validation"},
+      {"check": "pytest_84_prior_tests_preserved", "status": "PASS", "detail": "All 84 prior tests (35 runner + 27 router + 22 bundle) continue to pass without modification"},
+      {"check": "action_id_sequential_invariant", "status": "PASS", "detail": "IDs use separate action_num counter; stay sequential even when unknown blockers appear between recognized ones"},
+      {"check": "no_builtin_shadow", "status": "PASS", "detail": "Function renamed compile_action_plan; no Python builtin shadowing"},
+      {"check": "input_validation", "status": "PASS", "detail": "KeyError raised for missing pr_number, repo, readiness; 3 tests confirm"},
+      {"check": "unknown_blocker_forward_compat", "status": "PASS", "detail": "Unknown blockers silently skipped with inline comment; test_unknown_blocker_is_silently_skipped locks behavior"},
+      {"check": "empty_id_normalization", "status": "PASS", "detail": "_item_id helper returns None for empty/falsy IDs; test_empty_string_item_id_collapses_to_none confirms"},
+      {"check": "schema_ready_invariant", "status": "PASS", "detail": "allOf if/then: readiness=READY → actions maxItems:0; compiler emits empty actions and schema validates"},
+      {"check": "mutation_performed_false", "status": "PASS", "detail": "mutation_performed hardcoded False; behavioral test type(plan['mutation_performed']) is bool confirms"},
+      {"check": "no_pr_merge_import", "status": "PASS", "detail": "test_no_pr_merge_import checks all import lines; none contain pr_merge"},
+      {"check": "no_gh_mutation_calls", "status": "PASS", "detail": "test_no_gh_mutation_calls checks for gh pr merge/approve/ready/comment; none present"},
+      {"check": "repair_packet_no_trailing_whitespace", "status": "PASS", "detail": "test_repair_packet_no_trailing_whitespace_on_any_line verifies every line"},
+      {"check": "docs_no_trailing_whitespace", "status": "PASS", "detail": "pre-commit hook check passed on docs/ops/pr-action-bridge.md"},
+      {"check": "actionlint", "status": "NOT_RUN", "reason": "no workflow files changed in this TP"},
+      {"check": "mypy", "status": "NOT_RUN", "reason": "mypy not configured in CI for tools/; type annotations present for reviewer inspection"}
+    ]
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "mcp__pal__codereview expert_model=gpt-5.2 review_type=full",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR-ACTION-BRIDGE-006/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-006-HIGH-1",
+        "severity": "HIGH",
+        "title": "Action IDs non-sequential when unknown blockers are skipped",
+        "status": "RESOLVED",
+        "body": "compile_action_plan() used enumerate(blockers) for ID generation, producing gapped IDs (action-0001, action-0003) when an unknown blocker appeared between known ones. Fixed by using a separate action_num counter that only increments on recognized blockers. Added test_ids_stay_sequential_when_unknown_blocker_between_known."
+      },
+      {
+        "id": "F-006-MED-1",
+        "severity": "MEDIUM",
+        "title": "compile() shadows Python built-in",
+        "status": "RESOLVED",
+        "body": "Public function named compile shadowed Python's built-in. Renamed to compile_action_plan. Tests import as alias for readability."
+      },
+      {
+        "id": "F-006-MED-2",
+        "severity": "MEDIUM",
+        "title": "Silent coercion to placeholder values hides malformed inputs",
+        "status": "RESOLVED",
+        "body": "pr_number and repo silently defaulted to 0/''. Added explicit KeyError for missing required keys (pr_number, repo, readiness). Three validation tests added."
+      },
+      {
+        "id": "F-006-LOW-1",
+        "severity": "LOW",
+        "title": "Unknown blocker skip behavior undocumented",
+        "status": "RESOLVED",
+        "body": "Added inline comment explaining forward-compat rationale. Added test_unknown_blocker_is_silently_skipped."
+      },
+      {
+        "id": "F-006-LOW-2",
+        "severity": "LOW",
+        "title": "Empty string item IDs ambiguous normalization",
+        "status": "RESOLVED",
+        "body": "_item_id helper now returns None directly for falsy IDs. test_empty_string_item_id_collapses_to_none added."
+      },
+      {
+        "id": "F-006-LOW-3",
+        "severity": "LOW",
+        "title": "Static mutation test was brittle substring check",
+        "status": "RESOLVED",
+        "body": "Replaced string search with behavioral assertion: plan['mutation_performed'] is False plus type check."
+      }
+    ],
+    "fixes_applied": [
+      "Replaced enumerate-based ID generation with separate action_num counter",
+      "Renamed compile() to compile_action_plan()",
+      "Added KeyError validation for required merge_readiness keys",
+      "Added _item_id helper with explicit None return for falsy IDs",
+      "Added inline comment explaining unknown blocker skip forward-compat behavior",
+      "Replaced brittle static mutation test with behavioral assertion"
+    ],
+    "remaining_risks": [
+      "mypy not run — type annotations present but not statically checked",
+      "blockers list entries not validated as strings — accepted risk, callers expected to pass schema-validated merge_readiness",
+      "_find_source_item_id returns first matching item only — accepted for v1"
+    ],
+    "skip_reason": null
+  },
+  "embedded_audit_status": "PASS_WITH_RISKS",
+  "commit": {
+    "performed": true,
+    "sha": "9f18ce2f6",
+    "message": "feat(pr): add read-only action bridge compiler"
+  },
+  "governance": {
+    "branch_protection_changed": false,
+    "required_checks_changed": false,
+    "pull_request_target_introduced": false,
+    "secrets_touched": false,
+    "codeowners_changed": false,
+    "mutation_surfaces_added": false
+  },
+  "stop_conditions_hit": [],
+  "remaining_risks": [
+    "mypy not run — type annotations present but not statically checked",
+    "blockers list entries not validated as strings — accepted risk",
+    "_find_source_item_id returns first matching item only — accepted for v1"
+  ],
+  "next_recommended_action": "Opus audit this proof + diff. On PASS, operator commits with 'feat(pr): add read-only action bridge compiler'. Then execute TP-DMX-COPILOT-REPAIR-007 (or next packet per series)."
+}

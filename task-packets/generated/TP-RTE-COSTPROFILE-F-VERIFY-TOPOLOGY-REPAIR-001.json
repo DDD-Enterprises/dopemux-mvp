@@ -1,0 +1,117 @@
+{
+  "id": "TP-RTE-COSTPROFILE-F-VERIFY-TOPOLOGY-REPAIR-001",
+  "project": "dopemux-mvp",
+  "target": "Repair the governance topology for TP-RTE-COSTPROFILE-F-VERIFY-001 by publishing its failed verification proof and ledger disposition from a clean origin/main branch, without running or implementing TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001.",
+  "invariants": [
+    "Do not implement CostProfile repair in this packet.",
+    "Do not touch PR #699 except to read state.",
+    "Do not merge #699 before the active F-VERIFY-001 proof/ledger PR lands on main.",
+    "Do not edit runtime/source code.",
+    "Preserve the historical F-VERIFY-001 proof artifacts exactly as evidence; only ledger topology is repaired here.",
+    "Keep the replacement PR scoped to proof, ledger, and this topology-repair task packet."
+  ],
+  "depends_on": [
+    "TP-RTE-COSTPROFILE-F-VERIFY-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "rte-cost-profile-redesign",
+    "base_branch": "main",
+    "parent_tp_id": "TP-RTE-COSTPROFILE-F-VERIFY-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-costprofile-f-verify-001-proof-ledger",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(rte): ledger costprofile f verification evidence",
+    "allowlist": [
+      "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-TOPOLOGY-REPAIR-001.json",
+      "task-packets/INDEX.md",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/PROOF.json",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/sha256sums.txt",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/SERIES_VERIFICATION_REPORT.md",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/pytest_full_run.txt",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/promptset_audit_v3.txt",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/bounded_lane_print_config.txt",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/pal_codereview.txt",
+      "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/pal_precommit.txt"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-TOPOLOGY-REPAIR-001.json >/tmp/topology-repair-tp-json-ok.txt",
+      "python -m json.tool proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001/PROOF.json >/tmp/f-verify-proof-json-ok.txt",
+      "cd proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001 && shasum -a 256 -c sha256sums.txt",
+      "rg -n \"TP-RTE-COSTPROFILE-F-VERIFY-001|NOT_VERIFIED_ACCEPTED_AS_EVIDENCE|SERIES_VERIFICATION_REPORT\" task-packets/INDEX.md proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-001",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(rte): ledger costprofile f verification evidence",
+    "body": "## Summary\n- Replaces polluted-base PR #698 with a clean main-targeted proof/ledger PR for TP-RTE-COSTPROFILE-F-VERIFY-001.\n- Carries only the F-VERIFY-001 failed-verification proof bundle plus ledger disposition.\n- Adds this topology-repair task packet so the corrective publication is traceable.\n\n## Scope\nProof/ledger only. No runtime code changes. Does not run or implement TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001.\n\n## Validation\n- Task packet JSON parses.\n- F-VERIFY PROOF.json parses.\n- F-VERIFY sha256 manifest verifies proof files.\n- Ledger records NOT_VERIFIED_ACCEPTED_AS_EVIDENCE for F-VERIFY-001.\n- git diff --check passes.\n\n## Merge order\n1. Merge this active F-VERIFY-001 proof/ledger PR.\n2. Merge PR #699.\n3. Run merged-base preflight again.\n4. Only then branch repair execution.\n\n@codex review\n@gemini\n@copilot",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight current GitHub state for PR #698 and PR #699, verify origin/main, and classify whether retargeting #698 would contaminate the diff.",
+      "validation": [
+        "PR #698 inspected.",
+        "PR #699 read-only state inspected.",
+        "origin/main SHA captured.",
+        "Retarget decision is based on direct diff evidence."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create a clean branch from origin/main and copy only TP-RTE-COSTPROFILE-F-VERIFY-001 proof artifacts from PR #698 head.",
+      "validation": [
+        "Branch base is origin/main.",
+        "No runtime/source code files are changed.",
+        "Proof artifacts are present and non-empty."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Update task-packets/INDEX.md to record TP-RTE-COSTPROFILE-F-VERIFY-001 as NOT_VERIFIED_ACCEPTED_AS_EVIDENCE and add this topology-repair packet.",
+      "validation": [
+        "INDEX.md contains TP-RTE-COSTPROFILE-F-VERIFY-001 with NOT_VERIFIED_ACCEPTED_AS_EVIDENCE.",
+        "INDEX.md contains TP-RTE-COSTPROFILE-F-VERIFY-TOPOLOGY-REPAIR-001."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Validate JSON, proof checksums, ledger lines, and whitespace before committing.",
+      "validation": [
+        "Task packet JSON parses.",
+        "PROOF.json parses.",
+        "sha256sums.txt verifies.",
+        "git diff --check passes."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Commit, push, open a replacement PR against main, and comment on old PR #698 with the replacement URL.",
+      "validation": [
+        "Replacement PR targets main.",
+        "Old PR #698 has a supersedence comment.",
+        "PR #699 remains unmodified."
+      ]
+    }
+  ]
+}

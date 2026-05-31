@@ -151,8 +151,8 @@ def test_contract_lane_routes_override_policy_for_json_managed_steps() -> None:
     runner = _load_runner_module()
     expected_d0 = [
         ("gemini", "gemini-3.1-pro-preview", "GEMINI_API_KEY"),
-        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-        ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+        ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
+        ("openai", "gpt-5.5", "OPENAI_API_KEY"),
     ]
     assert runner.resolve_step_ladder("cost", "D", "D0") == expected_d0
     assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D0") == expected_d0
@@ -160,16 +160,16 @@ def test_contract_lane_routes_override_policy_for_json_managed_steps() -> None:
 
     assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D2") == [
         ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
-        ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"),
+        ("xai", "grok-4.3", "XAI_API_KEY"),
     ]
     assert runner.resolve_step_ladder("balanced_grok_openrouter", "C", "C1") == [
-        ("xai", "grok-code-fast-1", "XAI_API_KEY"),
-        ("xai", "grok-4.20-beta-0309-reasoning", "XAI_API_KEY"),
+        ("xai", "grok-build-0.1", "XAI_API_KEY"),
+        ("xai", "grok-4.3", "XAI_API_KEY"),
     ]
     assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D4") == [
         ("gemini", "gemini-3.1-pro-preview", "GEMINI_API_KEY"),
-        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
-        ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"),
+        ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
+        ("openai", "gpt-5.5", "OPENAI_API_KEY"),
     ]
 
 
@@ -180,8 +180,8 @@ def test_resolve_effective_step_route_marks_strict_required_contract_lane() -> N
     route_info = runner.resolve_effective_step_route("D", "D1", cfg, step_contract=contract)
     assert route_info["reason"] == "contract_lane_primary_strict"
     assert route_info["strict_required"] is True
-    assert route_info["provider"] == "openrouter"
-    assert route_info["model_id"] == "openai/gpt-5.3-codex"
+    assert route_info["provider"] == "openai"
+    assert route_info["model_id"] == "gpt-5.3-codex"
     attempts = route_info.get("strict_route_attempts")
     assert isinstance(attempts, list) and len(attempts) >= 2
     # First attempt is Gemini (non-strict, skipped), second is GPT codex (strict)
@@ -302,7 +302,8 @@ def test_no_auto_transport_flip_across_retry_hops(monkeypatch: pytest.MonkeyPatc
     assert request_meta["no_auto_transport_flips"] is True
     attempts = request_meta.get("route_attempts", [])
     assert len(attempts) == 2
-    assert all(row["provider"] == "openrouter" for row in attempts)
+    assert {row["provider"] for row in attempts} == {"openai"}
+    assert {row["model_id"] for row in attempts} == {"gpt-5.3-codex", "gpt-5.5"}
 
 
 def test_provider_preflight_fails_when_an_active_provider_probe_fails(
@@ -366,5 +367,5 @@ def test_print_config_reports_contract_lane_effective_model_routing(tmp_path: Pa
     payload = json.loads(result.stdout)
     assert payload["cli"]["gemini_model_id"] == "models/gemini-2.5-flash"
     assert payload["cli"]["routing_policy"] == "cost"
-    assert payload["effective_model_routing"]["A"]["provider"] == "openrouter"
-    assert payload["effective_model_routing"]["A"]["model_id"] == "openai/gpt-5.3-codex"
+    assert payload["effective_model_routing"]["A"]["provider"] == "openai"
+    assert payload["effective_model_routing"]["A"]["model_id"] == "gpt-5.3-codex"

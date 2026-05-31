@@ -1,0 +1,127 @@
+{
+  "id": "TP-DMX-ORCH-005",
+  "project": "dopemux-mvp",
+  "target": "Add read-only MCP wrapper tools for orchestrator status and validators",
+  "invariants": [
+    "Wrapper tools expose only T0/T1 policy-registered read or local-analysis capabilities",
+    "Wrapper tools do not apply workflow transitions",
+    "Wrapper tools do not write PM state, ConPort state, dope-memory state, dope-context indexes, GitHub state, or repository files",
+    "Unregistered wrapper names fail closed",
+    "The local service MCP shim is not the current external 13-tool Task Orchestrator launcher",
+    "Validation wrappers return validation reports only and do not create proof or packet artifacts"
+  ],
+  "depends_on": [
+    "TP-DMX-ORCH-004"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ORCH-INTEGRATION",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-ORCH-004",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-orch-005-readonly-mcp",
+    "base_branch": "codex/tp-dmx-orch-004-safety-tiers",
+    "stacked_because": "TP-DMX-ORCH-005 depends on the TP-DMX-ORCH-004 approval policy registry and reuses TP-DMX-ORCH-002 status reads plus TP-DMX-ORCH-003 validators."
+  },
+  "commit": {
+    "message": "feat(orchestrator): add read-only MCP wrappers",
+    "allowlist": [
+      "src/dopemux/orchestrator/mcp_wrappers.py",
+      "services/task-orchestrator/task_orchestrator/mcp/__init__.py",
+      "tests/unit/orchestrator/test_mcp_wrappers.py",
+      "tests/unit/test_task_orchestrator_mcp_wrappers.py",
+      "task-packets/generated/TP-DMX-ORCH-005.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-005/PROOF.json"
+    ],
+    "verify": [
+      "uv run pytest -q tests/unit/orchestrator/test_mcp_wrappers.py tests/unit/test_task_orchestrator_mcp_wrappers.py",
+      ".venv/bin/python -m compileall -q src services/task-orchestrator/task_orchestrator",
+      ".venv/bin/python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-005.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      ".venv/bin/python -m dopemux.cli orchestrator packet validate task-packets/generated/TP-DMX-ORCH-005.json --json-output",
+      ".venv/bin/python -m dopemux.cli orchestrator proof validate proof/dmx-orch-integration/TP-DMX-ORCH-005/PROOF.json --json-output",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(orchestrator): add read-only MCP wrappers",
+    "body": "Adds read-only local MCP wrapper tools for orchestrator status reads and packet/proof validators, gated by the TP004 policy registry.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect_mcp_authority",
+      "task": "Inspect the local service MCP shim, current external launcher distinction, PM read helpers, validators, and approval policy registry.",
+      "validation": [
+        "Evidence distinguishes the local service MCP shim from the current external 13-tool launcher",
+        "Only T0/T1 policy-registered capabilities are selected for wrappers"
+      ],
+      "context_files": [
+        "services/task-orchestrator/app/main.py",
+        "services/task-orchestrator/mcp_stdio.py",
+        "services/task-orchestrator/task_orchestrator/mcp/__init__.py",
+        "src/dopemux/pm/reads.py",
+        "src/dopemux/orchestrator/policy.py",
+        "config/orchestrator/approval_policy.yaml"
+      ]
+    },
+    {
+      "id": "wrapper_module",
+      "task": "Add pure read-only orchestrator MCP wrapper descriptors and dispatch handlers for status, daily summary, packet validation, and proof validation.",
+      "validation": [
+        "Wrapper descriptors are policy registered as T0/T1 automatic capabilities",
+        "Status wrappers call read helpers only",
+        "Validator wrappers return validation reports only",
+        "Unknown wrapper names fail closed"
+      ],
+      "expected_files": [
+        "src/dopemux/orchestrator/mcp_wrappers.py",
+        "tests/unit/orchestrator/test_mcp_wrappers.py"
+      ]
+    },
+    {
+      "id": "service_registration",
+      "task": "Register the read-only wrapper descriptors in the local task-orchestrator service MCP shim and dispatch wrapper calls before legacy tools.",
+      "validation": [
+        "MCP_TOOLS includes all wrapper names",
+        "handle_tool_call routes wrapper names to the read-only wrapper dispatcher"
+      ],
+      "expected_files": [
+        "services/task-orchestrator/task_orchestrator/mcp/__init__.py",
+        "tests/unit/test_task_orchestrator_mcp_wrappers.py"
+      ]
+    },
+    {
+      "id": "proof",
+      "task": "Create this packet's generated Task Packet and proof artifact.",
+      "validation": [
+        "Generated Task Packet validates against dopetask-canonical-spec.json",
+        "Proof artifact validates with dopemux orchestrator proof validate",
+        "git diff --check passes"
+      ],
+      "expected_files": [
+        "task-packets/generated/TP-DMX-ORCH-005.json",
+        "proof/dmx-orch-integration/TP-DMX-ORCH-005/PROOF.json"
+      ]
+    }
+  ]
+}

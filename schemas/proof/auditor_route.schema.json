@@ -1,0 +1,195 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Auditor Route Proof Object",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "tool",
+    "installed",
+    "executable",
+    "version",
+    "help_command",
+    "help_exit_code",
+    "noninteractive_mode_proven",
+    "model_selector_proven",
+    "model",
+    "auth_status",
+    "timeout_used",
+    "repo_context_sent",
+    "tools_disabled",
+    "status",
+    "risk",
+    "reason"
+  ],
+  "properties": {
+    "tool": {
+      "type": "string",
+      "enum": [
+        "agy",
+        "antigravity",
+        "claude-code-cli",
+        "gemini-cli",
+        "copilot-cli",
+        "pal-mcp-clink"
+      ]
+    },
+    "installed": {
+      "type": "boolean"
+    },
+    "executable": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "help_command": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "help_exit_code": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "noninteractive_mode_proven": {
+      "type": "boolean"
+    },
+    "model_selector_proven": {
+      "type": "boolean"
+    },
+    "model": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "auth_status": {
+      "type": "string",
+      "enum": [
+        "NOT_CHECKED",
+        "AUTHENTICATED",
+        "AUTH_REQUIRED",
+        "UNKNOWN"
+      ]
+    },
+    "timeout_used": {
+      "type": "boolean"
+    },
+    "repo_context_sent": {
+      "type": "boolean"
+    },
+    "tools_disabled": {
+      "type": "boolean"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "AVAILABLE",
+        "AVAILABLE_WITH_RISKS",
+        "AUTH_REQUIRED",
+        "TIMEOUT",
+        "MODEL_UNPROVEN",
+        "NOT_INSTALLED",
+        "SANDBOX_BLOCKED",
+        "TOOLING_UNSAFE",
+        "DISABLED_BY_POLICY",
+        "FALLBACK_ONLY",
+        "NEEDS_SUPERVISOR"
+      ]
+    },
+    "risk": {
+      "type": "string",
+      "enum": [
+        "LOW",
+        "MEDIUM",
+        "HIGH"
+      ]
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "underlying_cli": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "claude",
+        "gemini",
+        null
+      ]
+    },
+    "clink_client_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "clink_role": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "clink_config_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "clink_mutation_flags_detected": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "audit_safe_config_proven": {
+      "type": "boolean"
+    },
+    "requires_operator_approval": {
+      "type": "boolean"
+    },
+    "invocation_template": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "tool": {
+            "const": "pal-mcp-clink"
+          }
+        },
+        "required": [
+          "tool"
+        ]
+      },
+      "then": {
+        "required": [
+          "underlying_cli",
+          "clink_client_name",
+          "clink_role",
+          "clink_config_path",
+          "clink_mutation_flags_detected",
+          "audit_safe_config_proven",
+          "requires_operator_approval",
+          "invocation_template"
+        ]
+      }
+    }
+  ]
+}

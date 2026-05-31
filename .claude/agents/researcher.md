@@ -1,3 +1,7 @@
+---
+name: researcher
+---
+
 # Researcher Agent Configuration
 
 **Agent Type**: Information gathering and analysis specialist

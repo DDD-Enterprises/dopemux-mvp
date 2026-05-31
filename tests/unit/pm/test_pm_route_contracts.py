@@ -51,6 +51,8 @@ def test_sync_task_orchestrator_adapter_uses_project_scoped_transition_path(monk
 
     adapter = SyncTaskOrchestratorAdapter(base_url="http://localhost:8000")
     monkeypatch.setattr(adapter, "_request", fake_request)
+    monkeypatch.setattr(adapter.idempotency_store, "claim_transition", lambda *args, **kwargs: {"action": "PROCEED"})
+    monkeypatch.setattr(adapter.idempotency_store, "update_status", lambda *args, **kwargs: None)
 
     adapter.transition(
         project_id="proj-123",

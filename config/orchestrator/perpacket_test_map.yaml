@@ -1,0 +1,68 @@
+# config/orchestrator/perpacket_test_map.yaml
+# Declarative mapping for per-packet isolation validation.
+# Maps packet IDs to their targeted test suites, packet specs, and validation paths.
+
+TP-DMX-ORCH-PROOF-PERPACKET-001:
+  tests:
+    - "tests/unit/orchestrator/test_perpacket.py"
+  packet: "task-packets/generated/TP-DMX-ORCH-PROOF-PERPACKET-001.json"
+  proof: "proof/dmx-orch-integration/TP-DMX-ORCH-PROOF-PERPACKET-001/PROOF.json"
+  verify_commands:
+    - ".venv/bin/python -m pytest tests/unit/orchestrator/test_perpacket.py"
+
+TP-DMX-ORCH-DOCS-001:
+  tests: []
+  packet: "task-packets/generated/TP-DMX-ORCH-DOCS-001.json"
+  proof: "proof/dmx-orch-integration/TP-DMX-ORCH-DOCS-001/PROOF.json"
+  verify_commands:
+    - ".venv/bin/python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-DOCS-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+
+TP-DMX-ORCH-013-LIVE:
+  tests:
+    - "tests/unit/orchestrator/test_github_adapter.py"
+  packet: "task-packets/generated/TP-DMX-ORCH-013-LIVE.json"
+  proof: "proof/dmx-orch-integration/TP-DMX-ORCH-013-LIVE/PROOF.json"
+  verify_commands:
+    - ".venv/bin/python -m pytest tests/unit/orchestrator/test_github_adapter.py"
+
+TP-DMX-ORCH-009-LIVE:
+  tests:
+    - "tests/unit/test_memory_capture_client.py"
+  packet: "task-packets/generated/TP-DMX-ORCH-009-LIVE.json"
+  proof: "proof/dmx-orch-integration/TP-DMX-ORCH-009-LIVE/PROOF.json"
+  verify_commands:
+    - ".venv/bin/python -m pytest tests/unit/test_memory_capture_client.py"
+
+TP-DMX-ORCH-012-LIVE:
+  tests:
+    - "tests/unit/orchestrator/test_idempotency.py"
+  packet: "task-packets/generated/TP-DMX-ORCH-012-LIVE.json"
+  proof: "proof/dmx-orch-integration/TP-DMX-ORCH-012-LIVE/PROOF.json"
+  verify_commands:
+    - ".venv/bin/python -m pytest tests/unit/orchestrator/test_idempotency.py"
+
+TP-DMX-ORCH-015-TUI:
+  tests: []
+  packet: "task-packets/generated/TP-DMX-ORCH-015-TUI.json"
+  proof: "proof/dmx-orch-integration/TP-DMX-ORCH-015-TUI/PROOF.json"
+  verify_commands: []
+
+TP-DMX-ORCH-014A-UPSTREAM:
+  tests: []
+  packet: "task-packets/generated/TP-DMX-ORCH-014A-UPSTREAM.json"
+  proof: "proof/dmx-orch-integration/TP-DMX-ORCH-014A-UPSTREAM/PROOF.json"
+  verify_commands: []
+
+TP-DMX-ORCH-016-DAEMON:
+  tests:
+    - "tests/unit/orchestrator/test_daemon.py"
+  packet: "task-packets/generated/TP-DMX-ORCH-016-DAEMON.json"
+  proof: "proof/dmx-orch-integration/TP-DMX-ORCH-016-DAEMON/PROOF.json"
+  verify_commands:
+    - ".venv/bin/python -m pytest tests/unit/orchestrator/test_daemon.py"
+
+TP-DMX-ORCH-017-FINAL:
+  tests: []
+  packet: "task-packets/generated/TP-DMX-ORCH-017-FINAL.json"
+  proof: "proof/dmx-orch-integration/TP-DMX-ORCH-017-FINAL/PROOF.json"
+  verify_commands: []
