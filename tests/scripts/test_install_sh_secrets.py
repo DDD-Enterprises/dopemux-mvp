@@ -185,6 +185,45 @@ cat "$ENV_FILE"
     assert "dopemux_age_dev_password" not in env_text
 
 
+def test_core_stack_regenerates_copied_secret_placeholders(tmp_path: Path) -> None:
+    env_file = tmp_path / "core-placeholder.env"
+    env_file.write_text(
+        "\n".join(
+            [
+                "AGE_PASSWORD=CHANGE_ME_generate_with_openssl_rand_hex_32_placeholder",
+                "TASK_ORCHESTRATOR_API_KEY=CHANGE_ME_generate_with_openssl_rand_hex_32_placeholder",
+                "ADHD_ENGINE_API_KEY=CHANGE_ME_generate_with_openssl_rand_hex_32_placeholder",
+                "",
+            ]
+        )
+    )
+    script = f"""
+set -euo pipefail
+source {shlex.quote(str(INSTALL_SH))}
+trap - ERR
+ENV_FILE={shlex.quote(str(env_file))}
+AUTO_CONFIRM=true
+INSTALLER_TEST_MODE=1
+unset AGE_PASSWORD TASK_ORCHESTRATOR_API_KEY ADHD_ENGINE_API_KEY
+install_docker_services core
+printf '%s\\n' '---ENV---'
+cat "$ENV_FILE"
+"""
+
+    result = run_bash(script)
+
+    assert "placeholder or development value" in result.stderr
+    env_text = result.stdout.split("---ENV---", 1)[1]
+    env_values = dict(
+        line.split("=", 1)
+        for line in env_text.splitlines()
+        if line and not line.startswith("#")
+    )
+    for key in ["AGE_PASSWORD", "TASK_ORCHESTRATOR_API_KEY", "ADHD_ENGINE_API_KEY"]:
+        assert env_values[key] != "CHANGE_ME_generate_with_openssl_rand_hex_32_placeholder"
+        assert len(env_values[key]) == 64
+
+
 def test_env_example_uses_invalid_placeholders_for_local_secrets() -> None:
     text = (REPO_ROOT / ".env.example").read_text()
 
