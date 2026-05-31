@@ -339,6 +339,8 @@ def run_structured_benchmark(
         validation_errors.append("missing_actual_model")
     if downgrade_detected:
         validation_errors.append("response_format_downgrade_json_object")
+    elif response_format_type != "json_schema":
+        validation_errors.append(f"response_format_not_json_schema:{response_format_type}")
     if not structured_outputs_supported:
         validation_errors.append("unsupported_structured_output_route")
     if route_classification == "FREE_EXPERIMENTAL":
@@ -384,6 +386,7 @@ def run_structured_benchmark(
         "route_classification": route_classification,
         "direct_overlap_status": direct_overlap_status,
         "direct_overlap_comparison_required": direct_overlap_comparison_required,
+        "response_format_type": response_format_type,
         "expected_validation_outcome": expected_validation_outcome,
         "actual_validation_outcome": actual_validation_outcome,
         "json_parse_success": parse_success,
