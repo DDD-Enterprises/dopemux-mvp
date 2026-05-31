@@ -24,6 +24,7 @@ After updating the peer-compatible plugin, `npm run build` exposed missing proje
 ## Change
 
 - Updated `eslint-plugin-react-hooks` to `^7.1.1`, which declares peer support for ESLint 10.
+- Regenerated `pnpm-lock.yaml` so pnpm frozen-lockfile installs agree with `package.json`.
 - Added the missing Vite entrypoint files required by the existing `build` script.
 - Added the missing dashboard components imported by `src/App.tsx`.
 - Kept generated `dist/` output untracked.
@@ -37,6 +38,8 @@ PASS:
 - `git diff --check`
 - `cd ui-dashboard && npm install`
   - Result: up to date, audited 395 packages, 0 vulnerabilities.
+- `cd ui-dashboard && npm exec --yes --package=pnpm@10 -- pnpm install --frozen-lockfile --ignore-scripts`
+  - Result: lockfile up to date; install exited 0 using pnpm v10.34.1.
 - `cd ui-dashboard && npm test -- --run`
   - Result: 3 test files passed, 16 tests passed.
 - `cd ui-dashboard && npm run build`
@@ -53,6 +56,7 @@ PASS:
 WARN:
 
 - Vite build logs existing MUI package-level `"use client"` directive warnings but exits 0.
+- `npm run lint` is not a TP validation and currently exits 2 because `ui-dashboard` has no `eslint.config.*` flat config for ESLint 10; GitHub `Code Quality & Linting` passed on the PR head.
 - Browser console logs a React `validateDOMNesting` warning rooted in existing `TaskSequencer`; this is outside the TP build-fix scope.
 - Clipboard copy interaction was blocked by browser permission during smoke validation; the app surfaced the failure as an alert.
 
