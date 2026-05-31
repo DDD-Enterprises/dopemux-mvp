@@ -2,20 +2,20 @@
 
 Packet: `TP-DMX-COCKPIT-INVENTORY-REGEN-001`
 
-Current source HEAD inspected: `b6b89fae076a669952ef1178d7d7d17a3e01eb7b`
+Current source HEAD inspected: `d0a6ce1fb479bda8d995e32804b9a512d61a0a48`
 
-Branch: `codex/cockpit-inventory-regen-001`
+Branch: `codex/cockpit-ui-inventory-regen-001`
 
-PR base: `codex/cockpit-unknown-drift-001`
+PR base: `claude/hungry-buck-67a0d3`
 
 ## Upstream PR Chain
 
 | PR | Head | Base | Status used |
 | --- | --- | --- | --- |
-| [568](https://github.com/DDD-Enterprises/dopemux-mvp/pull/568) | `codex/cockpit-runtime-render-001` | `pack/cockpit-pack-remediate-006-ia` | accepted with risks |
-| [569](https://github.com/DDD-Enterprises/dopemux-mvp/pull/569) | `codex/cockpit-settings-runtime-001` | `codex/cockpit-runtime-render-001` | accepted with risks |
-| [570](https://github.com/DDD-Enterprises/dopemux-mvp/pull/570) | `codex/cockpit-unknown-drift-001` | `codex/cockpit-settings-runtime-001` | audit PASS; Ledger request ACCEPT_WITH_RISKS |
-
+| [731](https://github.com/DDD-Enterprises/dopemux-mvp/pull/731) | `codex/cockpit-ui-command-palette-001` | `claude/hungry-buck-67a0d3` | merged current integration branch |
+| [732](https://github.com/DDD-Enterprises/dopemux-mvp/pull/732) | `codex/cockpit-ui-safe-actions-001` | `claude/hungry-buck-67a0d3` | merged current integration branch |
+| [733](https://github.com/DDD-Enterprises/dopemux-mvp/pull/733) | `codex/cockpit-ui-unknown-drift-001` | `claude/hungry-buck-67a0d3` | merged current integration branch |
+| [736](https://github.com/DDD-Enterprises/dopemux-mvp/pull/736) | `codex/cockpit-ui-settings-runtime-001` | `claude/hungry-buck-67a0d3` | merged current integration branch |
 ## Runtime Model
 
 - Five top-level modes are present: `PM`, `Implementer`, `Overview`, `Services`, `Events`.
@@ -32,6 +32,6 @@ PR base: `codex/cockpit-unknown-drift-001`
 - Remote-mutation policy is missing.
 - Claude Design final screens remain blocked.
 - UNKNOWN inventory classes remain unresolved.
-- Per-row inventory data is unavailable in accepted artifacts.
-- Root authority docs/schema gaps remain: root `RULES.md`, `TRUTH_*.md`, `SYSTEM_*.md`, and dopetask canonical schema were not found.
+- Per-row inventory data remains unavailable in accepted artifacts; aggregate current-head inventory is refreshed and explicit UNKNOWN is preserved.
+- Root authority docs gaps remain: root `RULES.md`, `TRUTH_*.md`, and `SYSTEM_*.md` were not found; dopetask canonical schema is present and was used.
 - Runtime `dopemux help` resolution remains an accepted residual `UNKNOWN`; live runtime discovery was out of scope.

@@ -2,10 +2,10 @@
   "schema_version": "dopemux.cockpit.command_surface_inventory.v1",
   "packet_id": "TP-DMX-COCKPIT-INVENTORY-REGEN-001",
   "inventory_id": "cockpit-command-surface-inventory-2026-05-04T215346Z-b6b89fae",
-  "generated_at_utc": "2026-05-04T21:53:46Z",
-  "base_branch": "codex/cockpit-unknown-drift-001",
-  "base_head": "b6b89fae076a669952ef1178d7d7d17a3e01eb7b",
-  "current_head": "b6b89fae076a669952ef1178d7d7d17a3e01eb7b",
+  "generated_at_utc": "2026-05-31T06:02:29Z",
+  "base_branch": "claude/hungry-buck-67a0d3",
+  "base_head": "d0a6ce1fb479bda8d995e32804b9a512d61a0a48",
+  "current_head": "d0a6ce1fb479bda8d995e32804b9a512d61a0a48",
   "generation_scope": "artifact-only aggregate regeneration against current HEAD; no live service calls, no runtime action execution, no canonical writes",
   "per_row_data_status": "UNAVAILABLE_IN_ACCEPTED_ARTIFACTS",
   "per_row_data_policy": "Aggregate records are preserved where accepted artifacts expose counts but not row-level evidence. No row is reclassified by this packet.",
@@ -31,17 +31,17 @@
     {
       "path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/COMMAND_PALETTE_CONTRACT.md",
       "role": "palette broker-only contract",
-      "sha256": "UNKNOWN_NOT_HASHED_IN_PREFLIGHT_SAMPLE"
+      "sha256": "39ae90c7d9f55055dad932e3eb2ae0225adc11b2113f28e48b92cb449a36cc68"
     },
     {
       "path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_ROUTING_RULES.md",
       "role": "deterministic routing rules",
-      "sha256": "UNKNOWN_NOT_HASHED_IN_PREFLIGHT_SAMPLE"
+      "sha256": "d798c3fd7aa686cc17ddb8525574d37b6a2bb36c138b5feae0e0b70f62eebad4"
     },
     {
       "path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PALETTE_BLOCKED_UNKNOWN_STATES.md",
       "role": "blocked and unknown display states",
-      "sha256": "UNKNOWN_NOT_HASHED_IN_PREFLIGHT_SAMPLE"
+      "sha256": "f9eeef6ea04f514fba26174a50b02e5568e224f069a27aa11ee20115a109c1e0"
     },
     {
       "path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_GATE_TIER_SCHEMA.json",
@@ -56,7 +56,7 @@
     {
       "path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_REFUSAL_RULES.md",
       "role": "Safe Action refusal routing",
-      "sha256": "UNKNOWN_NOT_HASHED_IN_PREFLIGHT_SAMPLE"
+      "sha256": "7b83c366ed28e69bb1ec8d9de37123bfdecc5e13336be0ce25ea02a3bcbd2564"
     },
     {
       "path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PACKAGE_REMEDIATION_INDEX.json",
@@ -76,7 +76,7 @@
     {
       "path": "out/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/PROOF.json",
       "role": "accepted Settings/Admin/Runtime proof",
-      "sha256": "39ec48e8f37a5d720c98f3129b817fb2e0c6143220831940a5118888d269d2d4"
+      "sha256": "af862d9a162824e995652a814647d6723701fe00884e20da854152a0bc00b17e"
     },
     {
       "path": "out/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/PROOF.json",
