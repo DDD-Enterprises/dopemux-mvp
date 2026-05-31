@@ -129,7 +129,7 @@ servers:
     scope: per-worktree
     state_scope: per-repo
     transport: stdio
-    command: /Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh
+    command: plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh
     args: []
     doctor_args: ["--print-resolution"]
     requires_env: ["TASK_ORCHESTRATOR_PROJECT_ROOT"]
