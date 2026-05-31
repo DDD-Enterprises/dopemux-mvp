@@ -101,8 +101,8 @@
   },
   "codereview_status": "Manual bounded review complete: docs describe observed workflow/API behavior only; no workflow runtime behavior was changed.",
   "precommit_status": "PASS: pre-commit run on touched files and git diff --check passed.",
-  "commit_sha": "PENDING",
-  "pr_url": "PENDING",
+  "commit_sha": "08b81136e6b9ff3ede76e5009c6d13b71f900c80",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/763",
   "residual_risks": [
     "Admin and maintainer bypass actors remain active in branch ruleset/classic protection.",
     "Branch protection can drift after this read-only refresh.",
