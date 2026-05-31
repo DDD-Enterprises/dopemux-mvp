@@ -40,6 +40,30 @@
     {
       "pattern": "proof/TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001/PROOF.json",
       "reason": "Pre-existing bundle missing embedded_audit; grandfathered pending TP-DMX-LEGACY-BACKFILL-NNN"
+    },
+    {
+      "pattern": "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json",
+      "reason": "Pre-existing bundle with schema-incomplete embedded_audit; grandfathered pending TP-DMX-LEGACY-BACKFILL-NNN"
+    },
+    {
+      "pattern": "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/*/PROOF.json",
+      "reason": "Pre-existing bundle with schema-incomplete embedded_audit; grandfathered pending TP-DMX-LEGACY-BACKFILL-NNN"
+    },
+    {
+      "pattern": "proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/PROOF.json",
+      "reason": "Pre-existing bundle missing embedded_audit; grandfathered pending TP-DMX-LEGACY-BACKFILL-NNN"
+    },
+    {
+      "pattern": "proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/*/PROOF.json",
+      "reason": "Pre-existing bundle missing embedded_audit; grandfathered pending TP-DMX-LEGACY-BACKFILL-NNN"
+    },
+    {
+      "pattern": "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/PROOF.json",
+      "reason": "Pre-existing bundle missing embedded_audit; grandfathered pending TP-DMX-LEGACY-BACKFILL-NNN"
+    },
+    {
+      "pattern": "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/*/PROOF.json",
+      "reason": "Pre-existing bundle missing embedded_audit; grandfathered pending TP-DMX-LEGACY-BACKFILL-NNN"
     }
   ],
   "default_when_unmatched": "skip_with_warning"
