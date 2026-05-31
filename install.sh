@@ -82,6 +82,7 @@ FULL_STACK_ENV_VARS=(
     LEANTIME_TOKEN
     TASK_ORCHESTRATOR_API_KEY
     ADHD_ENGINE_API_KEY
+    LITELLM_MASTER_KEY
     LITELLM_DATABASE_URL
     TAVILY_API_KEY
     EXA_API_KEY
@@ -237,6 +238,7 @@ env_prompt() {
         LEANTIME_TOKEN) echo "Leantime API token" ;;
         TASK_ORCHESTRATOR_API_KEY) echo "Task Orchestrator API key" ;;
         ADHD_ENGINE_API_KEY) echo "ADHD Engine API key" ;;
+        LITELLM_MASTER_KEY) echo "LiteLLM master key (generate with: printf 'sk-%s\\n' \"$(openssl rand -hex 32)\")" ;;
         LITELLM_DATABASE_URL) echo "LiteLLM database URL (PostgreSQL DSN)" ;;
         OPENAI_WEBHOOK_SECRET) echo "OpenAI webhook secret (optional receiver verification)" ;;
         *) echo "$1" ;;
@@ -249,6 +251,7 @@ env_default() {
         LEANTIME_URL) echo "http://localhost:8097" ;;
         TASK_ORCHESTRATOR_API_KEY) echo "dev-key-456" ;;
         ADHD_ENGINE_API_KEY) echo "dev-key-123" ;;
+        LITELLM_MASTER_KEY) python3 -c 'import secrets; print("sk-" + secrets.token_hex(32))' ;;
         LITELLM_DATABASE_URL) echo "postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/litellm" ;;
         *) echo "" ;;
     esac
@@ -256,7 +259,7 @@ env_default() {
 
 env_is_sensitive() {
     case "$1" in
-        AGE_PASSWORD|ANTHROPIC_API_KEY|OPENAI_API_KEY|OPENROUTER_API_KEY|GEMINI_API_KEY|XAI_API_KEY|VOYAGE_API_KEY|TAVILY_API_KEY|EXA_API_KEY|LEANTIME_TOKEN|TASK_ORCHESTRATOR_API_KEY|ADHD_ENGINE_API_KEY|LITELLM_DATABASE_URL|OPENAI_WEBHOOK_SECRET)
+        AGE_PASSWORD|ANTHROPIC_API_KEY|OPENAI_API_KEY|OPENROUTER_API_KEY|GEMINI_API_KEY|XAI_API_KEY|VOYAGE_API_KEY|TAVILY_API_KEY|EXA_API_KEY|LEANTIME_TOKEN|TASK_ORCHESTRATOR_API_KEY|ADHD_ENGINE_API_KEY|LITELLM_MASTER_KEY|LITELLM_DATABASE_URL|OPENAI_WEBHOOK_SECRET)
             return 0
             ;;
         *)
@@ -275,7 +278,7 @@ env_is_sensitive() {
 #   mode when a provider-optional value is missing.
 env_policy() {
     case "$1" in
-        AGE_PASSWORD|LEANTIME_URL|TASK_ORCHESTRATOR_API_KEY|ADHD_ENGINE_API_KEY|LITELLM_DATABASE_URL)
+        AGE_PASSWORD|LEANTIME_URL|TASK_ORCHESTRATOR_API_KEY|ADHD_ENGINE_API_KEY|LITELLM_MASTER_KEY|LITELLM_DATABASE_URL)
             echo "local-defaultable"
             ;;
         ANTHROPIC_API_KEY|OPENAI_API_KEY|OPENROUTER_API_KEY|GEMINI_API_KEY|XAI_API_KEY|VOYAGE_API_KEY|TAVILY_API_KEY|EXA_API_KEY|LEANTIME_TOKEN|OPENAI_WEBHOOK_SECRET)
@@ -302,6 +305,7 @@ capability_label() {
         LEANTIME_TOKEN) echo "Leantime sync" ;;
         TASK_ORCHESTRATOR_API_KEY) echo "Task Orchestrator auth" ;;
         ADHD_ENGINE_API_KEY) echo "ADHD Engine auth" ;;
+        LITELLM_MASTER_KEY) echo "LiteLLM master key" ;;
         LITELLM_DATABASE_URL) echo "LiteLLM database URL" ;;
         OPENAI_WEBHOOK_SECRET) echo "OpenAI webhook verification" ;;
         *) echo "$1" ;;
