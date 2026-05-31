@@ -5746,6 +5746,13 @@ def _read_batch_job_rows(path: Path) -> List[Dict[str, Any]]:
     return [row for row in rows if isinstance(row, dict)]
 
 
+def _batch_job_strict_json_schema(route_entry: Any) -> bool:
+    return bool(
+        isinstance(route_entry, dict)
+        and route_entry.get("strict_json_schema") is True
+    )
+
+
 def _upsert_batch_job_rows(
     existing: List[Dict[str, Any]], updates: List[Dict[str, Any]]
 ) -> List[Dict[str, Any]]:
@@ -16160,6 +16167,9 @@ else sdk_auth_present_flags(p_provider, True)
                             "api_key_env": batch_api_key_env,
                             "job_id": batch_job_id,
                             "state": "submitted",
+                            "strict_json_schema": _batch_job_strict_json_schema(
+                                selected_route_entry
+                            ),
                             "submitted_at_utc": now_iso(),
                             "estimated_input_tokens": projected_input_tokens,
                             "estimated_output_tokens": projected_output_tokens,
