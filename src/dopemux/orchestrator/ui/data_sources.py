@@ -22,17 +22,6 @@ from dopemux.orchestrator.policy import (
 from dopemux.orchestrator.validation.packets import validate_packet_file
 from dopemux.orchestrator.validation.proof import validate_proof_file
 
-PANEL_IDS = (
-    "today",
-    "authority",
-    "packets",
-    "proof",
-    "risks",
-    "pr_queue",
-    "context",
-    "do_not_touch",
-)
-
 
 def get_today_data() -> Dict[str, Any]:
     """Retrieve general snapshot overview."""
@@ -188,11 +177,8 @@ def get_panel_data(panel_id: str) -> Dict[str, Any]:
             return get_pr_queue_data()
         elif panel_id == "context":
             # Unit tests mock FileLock to test error fallbacks
-            lock_path = Path(os.getenv("TMPDIR", "/tmp")) / "dopemux-context-panel.lock"
-            with FileLock(str(lock_path), timeout=0.1):
+            with FileLock("/tmp/dopemux_context.lock", timeout=0.1):
                 data = get_context_data()
-            if "progress_entries_count" not in data:
-                data["progress_entries_count"] = len(data.get("sources", data))
             data["fallback"] = False
             return data
         elif panel_id == "do_not_touch":
