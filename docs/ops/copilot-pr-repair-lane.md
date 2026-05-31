@@ -5,14 +5,14 @@ type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-05-27'
-last_review: '2026-05-27'
-next_review: '2026-08-25'
+last_review: '2026-05-31'
+next_review: '2026-08-29'
 prelude: Copilot Pr Repair Lane (explanation) for dopemux documentation and developer
   workflows.
 ---
 # Copilot PR Repair Lane
 
-> **Status**: Scaffold only — no automatic posting, no GitHub mutation.
+> **Status**: Read-only generator and renderer — no automatic posting, no GitHub mutation.
 > Copilot authority: `implementer-only` (L1-L2 code changes).
 
 ---
@@ -39,7 +39,7 @@ code changes.
 | Category enum restricted to 4 implementer categories | Supervisor-role and CI-role items are out of scope for Copilot |
 | `id` pattern `repair-XXXX` (not `action-XXXX`) | Distinguishes repair items from ACTION_PLAN actions; prevents ID collision |
 | `additionalProperties: false` everywhere | Forward-compat schema discipline; callers cannot inject undeclared fields |
-| Template is static Jinja2; no renderer yet | Renderer is a separate concern; template documents intent and governance |
+| Template is static Jinja2; renderer returns a file-ready artifact | Rendering is local-only and performs no GitHub mutation |
 | Governance prohibitions in template HTML comment | Visible in raw source before any rendering; cannot be stripped by caller |
 
 ---
@@ -65,40 +65,47 @@ require human operator attention.
 
 ## Usage Example
 
-Produce a repair packet dict, validate it against the schema, then pass it to a
-template renderer when one exists:
+Produce a repair packet dict from an ACTION_PLAN, validate it against the
+schema, then render the governed Jinja2 template:
 
 ```python
 import json
 import pathlib
 import jsonschema
 
+from tools.copilot_repair import generate_repair_packet, render_repair_packet
+
 schema = json.loads(
     pathlib.Path("schemas/copilot/repair_packet.schema.json").read_text()
 )
 
-packet = {
+action_plan = {
     "schema_version": "1.0.0",
     "generated_at": "2026-05-26T12:00:00Z",
     "pr_number": 99,
     "repo": "acme/widget",
-    "copilot_authority": "implementer-only",
+    "readiness": "NEEDS_IMPLEMENTER",
     "mutation_performed": False,
-    "source_action_plan_id": None,
-    "items": [
+    "actions": [
         {
-            "id": "repair-0001",
+            "id": "action-0001",
             "category": "failed-check",
+            "target_role": "implementer",
             "source_blocker": "FAILED_CHECK",
             "source_item_id": "ci-lint",
             "rationale": "CI check failed; implementer must investigate and fix.",
-            "suggested_action": "Run lint locally and fix reported issues.",
         }
     ],
 }
 
+packet = generate_repair_packet(
+    action_plan,
+    source_action_plan_id="ACTION_PLAN.json",
+)
 jsonschema.Draft202012Validator(schema).validate(packet)
-# If no exception: packet is schema-valid and governance pins are satisfied.
+rendered = render_repair_packet(packet)
+
+# If no exception: packet is schema-valid, rendered locally, and governance pins are satisfied.
 ```
 
 ---
