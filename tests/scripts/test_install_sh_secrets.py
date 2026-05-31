@@ -1,6 +1,7 @@
 import shlex
 import subprocess
 from pathlib import Path
+from urllib.parse import urlparse
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -132,3 +133,72 @@ cat "$ENV_FILE"
     assert "EXA_API_KEY=from-shell-exa" in env_text
     assert "TAVILY_API_KEY=" not in env_text
     assert "OPENAI_WEBHOOK_SECRET=" not in env_text
+
+
+def test_placeholder_env_values_are_rejected_and_regenerated(tmp_path: Path) -> None:
+    env_file = tmp_path / "placeholder.env"
+    env_file.write_text(
+        "\n".join(
+            [
+                "AGE_PASSWORD=your_secure_age_password_here",
+                "TASK_ORCHESTRATOR_API_KEY=dev-key-456",
+                "ADHD_ENGINE_API_KEY=CHANGE_ME_generate_with_openssl_rand_hex_32_placeholder",
+                "LITELLM_DATABASE_URL=postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/litellm",
+                "",
+            ]
+        )
+    )
+    script = f"""
+set -euo pipefail
+source {shlex.quote(str(INSTALL_SH))}
+trap - ERR
+ENV_FILE={shlex.quote(str(env_file))}
+AUTO_CONFIRM=true
+INSTALLER_TEST_MODE=1
+unset ANTHROPIC_API_KEY OPENAI_API_KEY OPENROUTER_API_KEY GEMINI_API_KEY XAI_API_KEY VOYAGE_API_KEY LEANTIME_URL LEANTIME_TOKEN TASK_ORCHESTRATOR_API_KEY ADHD_ENGINE_API_KEY LITELLM_DATABASE_URL TAVILY_API_KEY EXA_API_KEY OPENAI_WEBHOOK_SECRET AGE_PASSWORD
+export OPENAI_API_KEY=from-shell-openai
+export VOYAGE_API_KEY=from-shell-voyage
+export EXA_API_KEY=from-shell-exa
+export TAVILY_API_KEY=from-shell-tav
+install_docker_services full
+printf '%s\\n' '---ENV---'
+cat "$ENV_FILE"
+"""
+
+    result = run_bash(script)
+
+    assert "placeholder or development value" in result.stderr
+    env_text = result.stdout.split("---ENV---", 1)[1]
+    env_values = dict(
+        line.split("=", 1)
+        for line in env_text.splitlines()
+        if line and not line.startswith("#")
+    )
+    assert env_values["AGE_PASSWORD"] != "your_secure_age_password_here"
+    assert env_values["TASK_ORCHESTRATOR_API_KEY"] != "dev-key-456"
+    assert env_values["ADHD_ENGINE_API_KEY"] != "CHANGE_ME_generate_with_openssl_rand_hex_32_placeholder"
+    assert len(env_values["AGE_PASSWORD"]) == 64
+    assert len(env_values["TASK_ORCHESTRATOR_API_KEY"]) == 64
+    assert len(env_values["ADHD_ENGINE_API_KEY"]) == 64
+    litellm_url = urlparse(env_values["LITELLM_DATABASE_URL"])
+    assert litellm_url.password == env_values["AGE_PASSWORD"]
+    assert "dopemux_age_dev_password" not in env_text
+
+
+def test_env_example_uses_invalid_placeholders_for_local_secrets() -> None:
+    text = (REPO_ROOT / ".env.example").read_text()
+
+    assert "your_secure_" not in text
+    assert "your_openai_api_key_here" not in text
+    assert "your_anthropic_api_key_here" not in text
+    for key in [
+        "AGE_PASSWORD",
+        "REDIS_PASSWORD",
+        "QDRANT_API_KEY",
+        "ADHD_ENGINE_API_KEY",
+        "TASK_ORCHESTRATOR_API_KEY",
+    ]:
+        assert (
+            f"# REQUIRED: generate with: openssl rand -hex 32\n{key}=CHANGE_ME_generate_with_openssl_rand_hex_32_placeholder"
+            in text
+        )
