@@ -57,18 +57,20 @@ _sub_pass() { PASS_COUNT=$(( PASS_COUNT + 1 )); }
 
 # ── Step A: cockpit --audit ───────────────────────────────────────────────────
 {
-    AUDIT_OUT="$RESULTS_DIR/cockpit_audit.json"
+    AUDIT_OUT="$RESULTS_DIR/cockpit_audit.txt"
     rc=0
-    dopemux cockpit --audit --output "$AUDIT_OUT" >"$RESULTS_DIR/cockpit_audit.stdout" 2>&1 || rc=$?
-    if [[ $rc -eq 0 && -f "$AUDIT_OUT" ]] && jq -e . "$AUDIT_OUT" >/dev/null 2>&1; then
+    dopemux cockpit run --audit --size 120x40 >"$AUDIT_OUT" 2>"$RESULTS_DIR/cockpit_audit.stderr" || rc=$?
+    local_size=0
+    [[ -f "$AUDIT_OUT" ]] && local_size=$(wc -c < "$AUDIT_OUT" | tr -d ' ')
+    if [[ $rc -eq 0 && ${local_size:-0} -gt 0 ]]; then
         emit_result "tui_cockpit_audit" "PASS" \
-            "cockpit --audit exited 0 and produced valid JSON" \
-            "{\"output_file\":\"cockpit_audit.json\"}"
+            "cockpit --audit exited 0 and produced ${local_size} bytes" \
+            "{\"output_file\":\"cockpit_audit.txt\",\"bytes\":$local_size}"
         _sub_pass
     else
         emit_result "tui_cockpit_audit" "FAIL" \
-            "cockpit --audit failed (rc=$rc) or output invalid JSON" \
-            "{\"rc\":$rc}"
+            "cockpit --audit failed (rc=$rc) or empty output (${local_size} bytes)" \
+            "{\"rc\":$rc,\"bytes\":${local_size:-0}}"
     fi
 } || true
 
@@ -76,7 +78,7 @@ _sub_pass() { PASS_COUNT=$(( PASS_COUNT + 1 )); }
 {
     PLAIN_OUT="$RESULTS_DIR/cockpit_plain.txt"
     rc=0
-    dopemux cockpit --plain >"$PLAIN_OUT" 2>&1 || rc=$?
+    dopemux cockpit run --plain --size 120x40 >"$PLAIN_OUT" 2>&1 || rc=$?
     local_size=0
     [[ -f "$PLAIN_OUT" ]] && local_size=$(wc -c < "$PLAIN_OUT" | tr -d ' ')
     if [[ $rc -eq 0 && ${local_size:-0} -gt 0 ]]; then
@@ -96,11 +98,11 @@ _sub_pass() { PASS_COUNT=$(( PASS_COUNT + 1 )); }
     DEMO_OUT="$RESULTS_DIR/dashboard_demo.html"
     rc=0
     # Try CLI first; fall back to module entrypoint
-    if dopemux dashboard --demo --output "$DEMO_OUT" >"$RESULTS_DIR/dashboard_demo.stdout" 2>&1; then
+    if dopemux dashboard --demo >"$DEMO_OUT" 2>"$RESULTS_DIR/dashboard_demo.stderr"; then
         rc=0
     elif python3 -c "
-from dopemux.ui.dashboard import main
-main(['--demo'])
+from dopemux.ui.dashboard import run_dashboard
+run_dashboard(demo=True)
 " >"$DEMO_OUT" 2>&1; then
         rc=0
     else
