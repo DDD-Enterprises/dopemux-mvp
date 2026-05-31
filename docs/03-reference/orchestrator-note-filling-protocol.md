@@ -48,7 +48,7 @@ queue → work → review → terminal
                (resume)
 ```
 
-Triggers (used in `advance_item(transitions=[{itemId, trigger, summary?, actor?}])`):
+Triggers (used in `advance_item({itemId, trigger, summary?})`):
 
 | Trigger | From | To | Notes |
 |---|---|---|---|
@@ -59,7 +59,7 @@ Triggers (used in `advance_item(transitions=[{itemId, trigger, summary?, actor?}
 | `block` / `hold` | any non-terminal | blocked | Saves previous role |
 | `resume` | blocked | previous role | Restores saved role |
 | `cancel` | any non-terminal | terminal (`statusLabel=cancelled`) | Bypasses gates |
-| `reopen` | terminal | queue | Bypasses gates; clears statusLabel |
+| `reopen` | terminal | queue | Not exposed by the current deployed MCP schema |
 
 ---
 
@@ -85,11 +85,11 @@ Triggers (used in `advance_item(transitions=[{itemId, trigger, summary?, actor?}
 4. Repeat get_context until gateStatus.canAdvance: true
    (or until all required notes for ALL phases are filled, for `complete`)
 
-5. advance_item(transitions=[{
+5. advance_item({
      itemId: <uuid>,
-     trigger: "start" | "complete" | "block" | "resume" | "cancel" | "reopen",
+     trigger: "start" | "complete" | "block" | "hold" | "resume" | "cancel",
      summary: "<one-line summary of what just shipped — include agent id here for attribution>"
-   }])
+   })
 ```
 
 **Idempotency**: (itemId, key) pairs are unique. Upserting the same key twice updates the existing note in place. Safe to retry.
@@ -204,16 +204,15 @@ Common operator queries (Bare-MCP form; vendor-specific surfaces wrap these):
 
 | Goal | MCP call |
 |---|---|
-| What's next? | `get_next_item(includeAncestors=true, limit=3)` |
-| Where was I? | `get_context()` (health-check) or `get_context(since="<timestamp>")` (resume) |
-| What's blocked? | `get_blocked_items(includeAncestors=true)` |
+| What's next? | `get_next_item(parentId?, role?, priority?, tags?)` |
+| Where was I? | `get_context()` (health-check) or `get_context(mode="session")` (resume) |
+| What's blocked? | `get_blocked_items(parentId?, includeBlockerDetails?)` |
 | Show me one item's full state | `get_context(itemId="<uuid>")` |
 | Show this item's notes | `query_notes(operation="list", itemId="<uuid>")` |
 | Read one note's full body | `query_notes(operation="get", id="<note-uuid>")` |
 | Find items by content | `query_items(operation="search", query="<words>")` |
-| Find notes by content | `query_notes(operation="search", query="<words>", snippet=true)` |
 | What blocks REQ-42? | `query_dependencies(operation="backlinks", itemId="<req-42-uuid>")` |
-| Preview a transition | `get_next_status(itemId="<uuid>", trigger="start")` |
+| Preview a transition | `get_next_status(itemId="<uuid>")` |
 
 ---
 

@@ -1,19 +1,16 @@
 ---
-description: "Reopen a terminal work-item (reopen trigger) back to queue — bypasses gates"
+description: "Explain why reopening terminal work-items is not currently exposed"
 arguments: "<id-or-prefix>"
 allowed-tools: [
   "Bash", "Read",
-  "mcp__task-orchestrator__get_context",
-  "mcp__task-orchestrator__advance_item"
+  "mcp__task-orchestrator__get_context"
 ]
 model: "claude-sonnet-4-5"
 ---
 
-# /dx:reopen — Reopen a Terminal Work-Item (reopen trigger)
+# /dx:reopen — Reopen Is Not Currently Exposed
 
-Send a `terminal` item back to `queue` and clear its `statusLabel`. Undoes a premature `/dx:complete` or `/dx:cancel`, or revives a container/series that was auto-terminalled by a cascade.
-
-**Important:** `reopen` **bypasses gate enforcement** — the item re-enters `queue` regardless of note state. It does not delete existing notes (the proof-bundle, if any, remains filed).
+Fail closed when asked to revive a terminal work-item. The deployed task-orchestrator MCP schema does not expose a `reopen` trigger on `advance_item`; do not emulate reopen with `cancel` or any other terminal transition.
 
 **Authority**: task-orchestrator MCP per `AGENTS.md §6` + ADR `docs/90-adr/adr-task-orchestrator-as-workflow-authority.md`.
 
@@ -23,31 +20,35 @@ Authoring reference: [`docs/03-reference/dx-command-authoring.md`](../../../docs
 
 ## Phase 1: Argument Parsing
 
-- First positional → `<id-or-prefix>`. **Required.**
+- First positional -> `<id-or-prefix>`. **Required.**
 
 ---
 
-## Phase 2: Safety & Confirmation (MUTATES state)
+## Phase 2: Inspect Only
 
-**2a — Preflight.** `get_context(itemId="<id>")`. Read `role`, `statusLabel`.
+Call `get_context(itemId="<id>")` to identify the current role, status label, parent, and retained notes. This command is read-only even when the item is terminal.
 
-**2b — Guard.**
-- `role != "terminal"` → stop: "Item isn't terminal (role: `<role>`); nothing to reopen. To pause a live item use `/dx:block`."
+If the item is not terminal, stop with the current role and point operators to the normal state commands:
 
-**2c — Confirm + transition.** Note whether you're reviving a `done` or a `cancelled` item, then:
-```
-advance_item({ itemId: "<id>", trigger: "cancel", summary: "reopened via /dx:reopen" })  <!-- NOTE: reopen is not a valid trigger; use cancel then re-create, or verify schema -->
-```
-Result: TERMINAL → QUEUE, `statusLabel` cleared, gates bypassed on this hop.
+- queue/work/review item that should pause -> `/dx:block <id>`
+- blocked item that should resume -> `/dx:resume <id>`
+- active item that should terminal -> `/dx:complete <id>` or `/dx:cancel <id>`
+
+If the item is terminal, report that automatic reopen is unavailable in the current schema.
 
 ---
 
 ## Phase 3: Render Result
 
 ```
-↩️  Reopened: <title>   (terminal → queue)
-   statusLabel cleared (was: <previous statusLabel or "—">)
-   Note: gates were bypassed on reopen; existing notes (incl. proof-bundle) are retained.
+⛔ Reopen unavailable for <title>
+   Current role: <role>
+   statusLabel: <statusLabel or "—">
+
+The deployed advance_item schema accepts only:
+  start, complete, block, hold, resume, cancel
+
+No state was changed.
 ```
 
 ---
@@ -56,29 +57,29 @@ Result: TERMINAL → QUEUE, `statusLabel` cleared, gates bypassed on this hop.
 
 ```
 Next actions:
-  /dx:start <id>     → advance it back into work
-  /dx:context <id>   → review retained notes + gate status
-  /dx:tree <parent>  → see it back among the parent's queue children
+  /dx:context <id>  -> inspect retained notes and child state
+  /dx:start <id>    -> only if the item is not terminal and can advance normally
+  Create a new child/work item for follow-up work when terminal state must remain auditable
 ```
 
 ---
 
 ## Error Handling
 
-**Item not found** / **not terminal** (handled in 2b) / **orchestrator unavailable**: report clearly; fall back to `advance_item({itemId, trigger:"cancel"})` directly.  <!-- reopen is not a valid trigger enum value -->
+**Item not found** / **orchestrator unavailable**: report clearly and do not mutate state.
 
 ---
 
 ## Success Criteria
 
-- ✅ Refuses non-terminal items with a clear redirect (`/dx:block` for pausing live work).
-- ✅ Surfaces that gates are bypassed and notes are retained.
-- ✅ Reports the cleared statusLabel.
+- Refuses to invent or emulate a missing `reopen` transition.
+- Does not call `advance_item`.
+- Shows the operator the current state and a non-mutating recovery path.
 
 ---
 
 ## Notes for Claude
 
-- **Mutates state.** `reopen` is the ONLY transition into `queue` from `terminal`, and the only one that bypasses gate enforcement — by design (you're reviving, not re-shipping).
-- Common use: a long-running series/container auto-terminalled when its last non-terminal child completed. Reopen restores it to active so new children can be added. (This series uses `reopen` exactly this way after Phase-batch cascades.)
-- Retained notes mean a reopened-then-recompleted item still satisfies the proof-bundle gate without re-filing — verify the bundle is still accurate before re-completing.
+- **This is a read-only wrapper. Never mutate workflow state from this command.**
+- `cancel` is a terminal transition, not a reopen substitute.
+- Preserve terminal history; create follow-up work instead of rewriting terminal state unless the MCP schema adds an explicit reopen operation.

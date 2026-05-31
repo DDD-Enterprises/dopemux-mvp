@@ -31,7 +31,7 @@ Authoring reference: [`docs/03-reference/dx-command-authoring.md`](../../../docs
 **2a — Preflight.** `get_context(itemId="<id>")`. Read `role`.
 
 **2b — Guard.**
-- `role == "terminal"` → stop: "Terminal items can't be blocked. Use `/dx:reopen <id>` first if you need to revive it."
+- `role == "terminal"` -> stop: "Terminal items can't be blocked. `/dx:reopen <id>` can inspect the item, but the current MCP schema does not expose a reopen transition."
 - `role == "blocked"` → stop: "Already blocked. Use `/dx:resume <id>` to restore it."
 
 **2c — Confirm + transition.** Show what will pause, then:
