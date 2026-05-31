@@ -183,6 +183,23 @@ def test_downgrade_to_json_object_is_detected_and_blocks_certification() -> None
     assert "response_format_downgrade_json_object" in result["validation_errors"]
 
 
+def test_missing_response_format_blocks_certification() -> None:
+    catalog = load_benchmark_fixtures(FIXTURE_PATH)
+    response = _base_response()
+    response.pop("response_format_type")
+
+    result = run_structured_benchmark(
+        fixture=catalog["fixtures"][0],
+        schema_record=catalog["schema"],
+        model_response=response,
+        certification_mode=True,
+    )
+
+    assert result["response_format_type"] == "UNKNOWN"
+    assert result["final_artifact_allowed"] is False
+    assert "response_format_not_json_schema:UNKNOWN" in result["validation_errors"]
+
+
 def test_live_mode_without_opt_in_fails_closed(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv(LIVE_BENCHMARK_ENV, raising=False)
 
