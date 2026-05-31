@@ -51,6 +51,14 @@ export default function TeamDashboard() {
               p: 1.5,
               borderRadius: 2,
               border: `1px solid ${alpha(statusStyles[member.status].color, 0.4)}`,
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+              cursor: 'help',
+              '&:hover, &:focus-within': {
+                transform: 'translateY(-2px)',
+                bgcolor: alpha(statusStyles[member.status].color, 0.05),
+                borderColor: statusStyles[member.status].color,
+                boxShadow: `0 4px 12px ${alpha(statusStyles[member.status].color, 0.15)}`,
+              },
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -59,7 +67,7 @@ export default function TeamDashboard() {
               </Avatar>
               <Typography variant="body2">{member.name}</Typography>
               <Tooltip title={statusStyles[member.status].label} arrow>
-                <Chip size="small" label={statusStyles[member.status].label} />
+                <Chip size="small" label={statusStyles[member.status].label} tabIndex={0} sx={{ cursor: 'help' }} />
               </Tooltip>
               <Box aria-hidden="true" sx={{ ml: 'auto', width: 6, height: 6, borderRadius: '50%', bgcolor: statusStyles[member.status].color }} />
             </Box>
@@ -68,13 +76,22 @@ export default function TeamDashboard() {
               aria-valuetext={`${member.load}%`}
               variant="determinate"
               value={member.load}
+              sx={{
+                height: 6,
+                borderRadius: 3,
+                bgcolor: alpha(statusStyles[member.status].color, 0.1),
+                '& .MuiLinearProgress-bar': {
+                  bgcolor: statusStyles[member.status].color,
+                  borderRadius: 3,
+                },
+              }}
             />
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
               <Tooltip title="Current energy level" arrow>
-                <Chip size="small" tabIndex={0} label={`Energy ${member.energy}%`} />
+                <Chip size="small" tabIndex={0} label={`Energy ${member.energy}%`} sx={{ cursor: 'help' }} />
               </Tooltip>
               <Tooltip title="Current attention focus" arrow>
-                <Chip size="small" tabIndex={0} label={`Attention ${member.attention}%`} />
+                <Chip size="small" tabIndex={0} label={`Attention ${member.attention}%`} sx={{ cursor: 'help' }} />
               </Tooltip>
             </Box>
           </Box>
@@ -87,16 +104,20 @@ export default function TeamDashboard() {
       </Tooltip>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
         {teamSignals.map((signal) => (
-          <Chip
-            key={signal.label}
-            label={`${signal.label}: ${signal.value}`}
-            sx={{
-              color: signal.color,
-              border: `1px solid ${alpha(signal.color, 0.55)}`,
-              backgroundColor: alpha(signal.color, 0.08),
-            }}
-            variant="outlined"
-          />
+          <Tooltip key={signal.label} title={`Team signal: ${signal.label} status`} arrow>
+            <Chip
+              label={`${signal.label}: ${signal.value}`}
+              aria-label={`Team signal: ${signal.label} is ${signal.value}`}
+              tabIndex={0}
+              sx={{
+                color: signal.color,
+                border: `1px solid ${alpha(signal.color, 0.55)}`,
+                backgroundColor: alpha(signal.color, 0.08),
+                cursor: 'help',
+              }}
+              variant="outlined"
+            />
+          </Tooltip>
         ))}
       </Box>
     </Paper>
