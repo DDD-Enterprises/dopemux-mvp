@@ -1,0 +1,129 @@
+{
+  "id": "TP-BETA-MCP-02-COMPOSE-HEALTHCHECKS",
+  "project": "dopemux-mvp",
+  "target": "Repair Docker Compose cold-start dependency readiness for core MCP infrastructure services by gating dependents on healthchecked postgres, redis-primary, and conport dependencies.",
+  "invariants": [
+    "Do not run live Docker startup or service health probes.",
+    "Do not change leantime or mysql_leantime dependency or healthcheck behavior.",
+    "Do not alter ports, images, build contexts, volumes, secrets, or service runtime behavior beyond dependency readiness gating.",
+    "Preserve compose.yml as the canonical runtime file.",
+    "Fail closed where a healthcheck is present for a critical dependency."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "BETA-MCP",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "fix/beta-mcp-02-compose-healthchecks",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(compose): BETA-MCP-02 gate MCP deps on healthchecks",
+    "allowlist": [
+      "compose.yml",
+      "task-packets/INDEX.md",
+      "task-packets/generated/TP-BETA-MCP-02-COMPOSE-HEALTHCHECKS.json",
+      "claudedocs/beta-mcp-02-compose-healthchecks-proof-2026-05-31.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-BETA-MCP-02-COMPOSE-HEALTHCHECKS.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-BETA-MCP-02-COMPOSE-HEALTHCHECKS.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python - <<'PY'\\nimport yaml\\nfrom pathlib import Path\\nyaml.safe_load(Path('compose.yml').read_text())\\nPY",
+      "docker compose -f compose.yml config --quiet",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(compose): gate MCP deps on healthchecks",
+    "body": "## Summary\n- Converts core MCP dependents from bare depends_on entries to service_healthy where the target service has a real healthcheck.\n- Makes the ConPort compose healthcheck fail closed instead of reporting healthy after curl failures.\n- Leaves leantime and mysql_leantime unchanged.\n\n## Test Plan\n- python -m json.tool task-packets/generated/TP-BETA-MCP-02-COMPOSE-HEALTHCHECKS.json >/dev/null\n- python -m jsonschema -i task-packets/generated/TP-BETA-MCP-02-COMPOSE-HEALTHCHECKS.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- python - <<'PY'\nimport yaml\nfrom pathlib import Path\nyaml.safe_load(Path('compose.yml').read_text())\nPY\n- docker compose -f compose.yml config --quiet\n- git diff --check\n\n## NOT_RUN\n- docker compose up / live service startup: not required by packet and may mutate local runtime state.\n\n@codex review\n@gemini\n@copilot",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repo identity, branch, marker, worktree isolation, dirty state, and relevant authority files.",
+      "context_files": [
+        "AGENTS.md",
+        ".claude/claude.md",
+        ".claude/modules/shared/governance-principles.md",
+        "claudedocs/codex-remaining-work-prompt-2026-05-30.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ],
+      "validation": [
+        "Repo root is /Users/hue/code/dopemux-mvp-wt-beta-mcp-02.",
+        "Branch is fix/beta-mcp-02-compose-healthchecks.",
+        "Remote identifies DDD-Enterprises/dopemux-mvp.",
+        ".dopetaskroot exists.",
+        "Task Orchestrator MCP status is recorded if available; otherwise marked NOT_RUN with error."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Inspect compose.yml dependencies on postgres, redis-primary, conport, task-orchestrator, and adhd-engine and verify target healthchecks.",
+      "context_files": [
+        "compose.yml",
+        "docker/mcp-servers/conport/Dockerfile",
+        "docker/mcp-servers/conport/start_with_info.sh",
+        "docker/mcp-servers/conport/enhanced_server.py"
+      ],
+      "validation": [
+        "Every depends_on reference to postgres, redis-primary, conport, task-orchestrator, or adhd-engine is classified as bare-list, service_started, or service_healthy.",
+        "Healthcheck presence and fail-open/fail-closed behavior is recorded for each affected target."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Apply the minimal compose.yml dependency readiness change.",
+      "expected_files": [
+        "compose.yml"
+      ],
+      "validation": [
+        "conport depends on postgres and redis-primary with condition: service_healthy.",
+        "litellm depends on postgres with condition: service_healthy.",
+        "task-orchestrator depends on redis-primary and conport with condition: service_healthy while preserving leantime's service_started behavior.",
+        "adhd-engine depends on redis-primary with condition: service_healthy.",
+        "conport healthcheck no longer exits 0 after curl failure.",
+        "leantime and mysql_leantime blocks are unchanged."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Validate schema, compose syntax, diff scope, and precommit state; produce proof.",
+      "expected_files": [
+        "claudedocs/beta-mcp-02-compose-healthchecks-proof-2026-05-31.md"
+      ],
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-BETA-MCP-02-COMPOSE-HEALTHCHECKS.json >/dev/null",
+        "python -m jsonschema -i task-packets/generated/TP-BETA-MCP-02-COMPOSE-HEALTHCHECKS.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python - <<'PY'\\nimport yaml\\nfrom pathlib import Path\\nyaml.safe_load(Path('compose.yml').read_text())\\nPY",
+        "docker compose -f compose.yml config --quiet",
+        "git diff --check",
+        "git status --short --branch"
+      ]
+    }
+  ]
+}
