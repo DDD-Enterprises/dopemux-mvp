@@ -64,7 +64,11 @@ CORE_STACK_PORTS=(5432 6379 6333 6334 3004 8000 8095)
 RESEARCH_STACK_EXTRA_PORTS=(3009 3011)
 FULL_STACK_EXTRA_PORTS=(3003 3009 3011 3012 3015 3016 4000 8081 8090 8790)
 
-CORE_STACK_ENV_VARS=()
+CORE_STACK_ENV_VARS=(
+    AGE_PASSWORD
+    TASK_ORCHESTRATOR_API_KEY
+    ADHD_ENGINE_API_KEY
+)
 RESEARCH_STACK_ENV_VARS=(
     OPENAI_API_KEY
     TAVILY_API_KEY
@@ -82,6 +86,7 @@ FULL_STACK_ENV_VARS=(
     LEANTIME_TOKEN
     TASK_ORCHESTRATOR_API_KEY
     ADHD_ENGINE_API_KEY
+    LITELLM_MASTER_KEY
     LITELLM_DATABASE_URL
     TAVILY_API_KEY
     EXA_API_KEY
@@ -237,6 +242,7 @@ env_prompt() {
         LEANTIME_TOKEN) echo "Leantime API token" ;;
         TASK_ORCHESTRATOR_API_KEY) echo "Task Orchestrator API key" ;;
         ADHD_ENGINE_API_KEY) echo "ADHD Engine API key" ;;
+        LITELLM_MASTER_KEY) echo "LiteLLM master key (generate with: printf 'sk-%s\\n' \"$(openssl rand -hex 32)\")" ;;
         LITELLM_DATABASE_URL) echo "LiteLLM database URL (PostgreSQL DSN)" ;;
         OPENAI_WEBHOOK_SECRET) echo "OpenAI webhook secret (optional receiver verification)" ;;
         *) echo "$1" ;;
@@ -245,18 +251,44 @@ env_prompt() {
 
 env_default() {
     case "$1" in
-        AGE_PASSWORD) echo "dopemux_age_dev_password" ;;
+        AGE_PASSWORD) env_generated_secret ;;
         LEANTIME_URL) echo "http://localhost:8097" ;;
-        TASK_ORCHESTRATOR_API_KEY) echo "dev-key-456" ;;
-        ADHD_ENGINE_API_KEY) echo "dev-key-123" ;;
-        LITELLM_DATABASE_URL) echo "postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/litellm" ;;
+        TASK_ORCHESTRATOR_API_KEY) env_generated_secret ;;
+        ADHD_ENGINE_API_KEY) env_generated_secret ;;
+        LITELLM_MASTER_KEY) python3 -c 'import secrets; print("sk-" + secrets.token_hex(32))' ;;
+        LITELLM_DATABASE_URL)
+            local age_password="${AGE_PASSWORD:-$(env_generated_secret)}"
+            echo "postgresql://dopemux_age:${age_password}@dopemux-postgres-age:5432/litellm"
+            ;;
         *) echo "" ;;
+    esac
+}
+
+env_generated_secret() {
+    python3 -c 'import secrets; print(secrets.token_hex(32))'
+}
+
+env_is_placeholder_value() {
+    local value="${1:-}"
+    local lowered
+    lowered=$(printf '%s' "$value" | tr '[:upper:]' '[:lower:]')
+
+    case "$lowered" in
+        your_secure_*|your_*_here|dev-key-*|changeme*|change_me*|*_placeholder|dopemux_age_dev_password)
+            return 0
+            ;;
+        postgresql://dopemux_age:dopemux_age_dev_password@*)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
     esac
 }
 
 env_is_sensitive() {
     case "$1" in
-        AGE_PASSWORD|ANTHROPIC_API_KEY|OPENAI_API_KEY|OPENROUTER_API_KEY|GEMINI_API_KEY|XAI_API_KEY|VOYAGE_API_KEY|TAVILY_API_KEY|EXA_API_KEY|LEANTIME_TOKEN|TASK_ORCHESTRATOR_API_KEY|ADHD_ENGINE_API_KEY|LITELLM_DATABASE_URL|OPENAI_WEBHOOK_SECRET)
+        AGE_PASSWORD|ANTHROPIC_API_KEY|OPENAI_API_KEY|OPENROUTER_API_KEY|GEMINI_API_KEY|XAI_API_KEY|VOYAGE_API_KEY|TAVILY_API_KEY|EXA_API_KEY|LEANTIME_TOKEN|TASK_ORCHESTRATOR_API_KEY|ADHD_ENGINE_API_KEY|LITELLM_MASTER_KEY|LITELLM_DATABASE_URL|OPENAI_WEBHOOK_SECRET)
             return 0
             ;;
         *)
@@ -275,7 +307,7 @@ env_is_sensitive() {
 #   mode when a provider-optional value is missing.
 env_policy() {
     case "$1" in
-        AGE_PASSWORD|LEANTIME_URL|TASK_ORCHESTRATOR_API_KEY|ADHD_ENGINE_API_KEY|LITELLM_DATABASE_URL)
+        AGE_PASSWORD|LEANTIME_URL|TASK_ORCHESTRATOR_API_KEY|ADHD_ENGINE_API_KEY|LITELLM_MASTER_KEY|LITELLM_DATABASE_URL)
             echo "local-defaultable"
             ;;
         ANTHROPIC_API_KEY|OPENAI_API_KEY|OPENROUTER_API_KEY|GEMINI_API_KEY|XAI_API_KEY|VOYAGE_API_KEY|TAVILY_API_KEY|EXA_API_KEY|LEANTIME_TOKEN|OPENAI_WEBHOOK_SECRET)
@@ -302,6 +334,7 @@ capability_label() {
         LEANTIME_TOKEN) echo "Leantime sync" ;;
         TASK_ORCHESTRATOR_API_KEY) echo "Task Orchestrator auth" ;;
         ADHD_ENGINE_API_KEY) echo "ADHD Engine auth" ;;
+        LITELLM_MASTER_KEY) echo "LiteLLM master key" ;;
         LITELLM_DATABASE_URL) echo "LiteLLM database URL" ;;
         OPENAI_WEBHOOK_SECRET) echo "OpenAI webhook verification" ;;
         *) echo "$1" ;;
@@ -326,12 +359,23 @@ resolve_existing_env_value() {
     local var="$1"
     local env_file="$2"
     local shell_override="${!var:-}"
+    local value=""
+    local source=""
     if [ -n "$shell_override" ]; then
-        echo "$shell_override"
+        value="$shell_override"
+        source="shell environment"
+    else
+        value=$(read_env_file_value "$var" "$env_file")
+        source="$env_file"
+    fi
+
+    if [ -n "$value" ] && env_is_placeholder_value "$value"; then
+        warning "$var is set to a placeholder or development value in $source; ignoring it." >&2
+        echo ""
         return 0
     fi
 
-    read_env_file_value "$var" "$env_file"
+    echo "$value"
 }
 
 read_secret_from_keychain() {
@@ -677,6 +721,8 @@ ensure_env_file() {
         required_vars=("${FULL_STACK_ENV_VARS[@]}")
     elif [ "$stack" = "research" ]; then
         required_vars=("${RESEARCH_STACK_ENV_VARS[@]}")
+    elif [ "$stack" = "core" ]; then
+        required_vars=("${CORE_STACK_ENV_VARS[@]}")
     fi
 
     if [ ${#required_vars[@]} -eq 0 ]; then
