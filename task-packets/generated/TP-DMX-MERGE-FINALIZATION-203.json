@@ -6,8 +6,14 @@
       "src/dopemux_pr_merge_specialist/queue_drain.py",
       "src/dopemux_pr_merge_specialist/thread_resolution.py",
       "src/dopemux_pr_merge_specialist/policy.py",
+      "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/github_api.py",
+      "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/merge.py",
+      "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py",
+      "templates/skills/pr-merge-specialist/config/policy.example.yaml",
       "config/pr_merge_specialist/policy.yaml",
       "tests/pr_merge_specialist/test_finalization_gate.py",
+      "tests/pr_merge_specialist/test_thread_and_merge_logic.py",
+      "tests/pr_merge_specialist/test_queue_drain_integration.py",
       "docs/ops/steward-merge-gate.md",
       "docs/ops/pr-acceptance.md",
       "task-packets/generated/TP-DMX-MERGE-FINALIZATION-203.json",
@@ -17,17 +23,18 @@
     "verify": [
       "python -m json.tool task-packets/generated/TP-DMX-MERGE-FINALIZATION-203.json",
       "python -m compileall -q src tests",
-      "pytest -q tests/pr_merge_specialist/test_finalization_gate.py",
+      "pytest -q tests/pr_merge_specialist",
       "git diff --check"
     ]
   },
   "depends_on": [
     "TP-DMX-STEWARD-GATE-201",
-    "TP-DMX-AUDIT-CI-PROVENANCE-104"
+    "TP-DMX-AUDIT-CI-PROVENANCE-104",
+    "TP-DMX-MERGE-REMEDIATION-202"
   ],
   "execution": {
     "agent": "codex",
-    "base_branch": "main",
+    "base_branch": "codex/tp-dmx-merge-remediation-202",
     "branch": "codex/tp-dmx-merge-finalization-203",
     "stacked_because": "Part of the DMX-AUTOREVIEW-PLATFORM dependency DAG."
   },
@@ -57,7 +64,7 @@
     ]
   },
   "pr": {
-    "base": "main",
+    "base": "codex/tp-dmx-merge-remediation-202",
     "body": "## Summary\n- Wire steward_gate(FINALIZATION) into run_merge_with_fallback / resolve_verified_threads / pr_merge: require fresh Steward=READY + independent embedded_audit=PASS; merge via GraphQL mergePullRequest with expectedHeadOid; governed_automerge default OFF; per-PR train refresh (no audit reuse); bound passes; no empty commits.\n\n## Scope\nTrack: B-govern-merge. Risk: HIGH. Red lane: true.\n\n## Validation\nRun the packet validation commands and capture proof under proof/TP-DMX-MERGE-FINALIZATION-203/PROOF.json.\n\n## NOT_RUN\nList any skipped live, integration, credentialed, or supervisor-gated checks explicitly.",
     "title": "Feat(pr-merge): gate finalization behind READY plus independent audit with expected-SHA merge"
   },
@@ -69,7 +76,7 @@
     "require_identity_match": true
   },
   "series": {
-    "base_branch": "main",
+    "base_branch": "codex/tp-dmx-merge-remediation-202",
     "final_packet": false,
     "id": "DMX-AUTOREVIEW-PLATFORM",
     "parent_tp_id": "TP-DMX-STEWARD-GATE-201"
@@ -98,8 +105,14 @@
         "src/dopemux_pr_merge_specialist/queue_drain.py",
         "src/dopemux_pr_merge_specialist/thread_resolution.py",
         "src/dopemux_pr_merge_specialist/policy.py",
+        "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/github_api.py",
+        "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/merge.py",
+        "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py",
+        "templates/skills/pr-merge-specialist/config/policy.example.yaml",
         "config/pr_merge_specialist/policy.yaml",
         "tests/pr_merge_specialist/test_finalization_gate.py",
+        "tests/pr_merge_specialist/test_thread_and_merge_logic.py",
+        "tests/pr_merge_specialist/test_queue_drain_integration.py",
         "docs/ops/steward-merge-gate.md",
         "docs/ops/pr-acceptance.md",
         "task-packets/generated/TP-DMX-MERGE-FINALIZATION-203.json",
@@ -123,6 +136,8 @@
     {
       "expected_files": [
         "tests/pr_merge_specialist/test_finalization_gate.py",
+        "tests/pr_merge_specialist/test_thread_and_merge_logic.py",
+        "tests/pr_merge_specialist/test_queue_drain_integration.py",
         "docs/ops/steward-merge-gate.md",
         "docs/ops/pr-acceptance.md",
         "proof/TP-DMX-MERGE-FINALIZATION-203/**"
@@ -139,7 +154,7 @@
       "commands": [
         "python -m json.tool task-packets/generated/TP-DMX-MERGE-FINALIZATION-203.json",
         "python -m compileall -q src tests",
-        "pytest -q tests/pr_merge_specialist/test_finalization_gate.py",
+        "pytest -q tests/pr_merge_specialist",
         "git diff --check"
       ],
       "id": "S4",
@@ -147,7 +162,7 @@
       "validation": [
         "python -m json.tool task-packets/generated/TP-DMX-MERGE-FINALIZATION-203.json",
         "python -m compileall -q src tests",
-        "pytest -q tests/pr_merge_specialist/test_finalization_gate.py",
+        "pytest -q tests/pr_merge_specialist",
         "git diff --check"
       ]
     }

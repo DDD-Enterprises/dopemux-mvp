@@ -47,3 +47,18 @@ This acceptance policy does not implement auto-fix, thread resolution, auto-merg
 PAL MCP clink route evidence is not an embedded audit verdict. A PR using the PAL clink bridge must include captured `PAL_CLINK_AUDIT_OUTPUT.json` and normalized `AUDITOR_REPORT.md` before it can satisfy the embedded audit gate. A route-only `pal-mcp-clink` selection, missing wrapper, or missing host-side output blocks `READY`.
 
 Copilot clink support remains deferred. PR Steward remains check-only and must not call PAL MCP clink or mutate GitHub state.
+
+## Merge Finalization Boundary
+
+Automated merge finalization is stricter than normal closeout. The merge
+specialist may execute a direct merge only after `steward_gate(FINALIZATION)`
+allows the exact head SHA with PR Steward readiness `READY` and independent
+embedded-audit `PASS`. `PASS_WITH_RISKS` does not authorize finalization.
+
+Direct merge execution must use GraphQL `mergePullRequest` with
+`expectedHeadOid`. Missing GraphQL authority, missing PR node id, or missing
+head SHA is recorded as `UNKNOWN` and blocks execution; the specialist must not
+fall back to ungated `gh pr merge`.
+
+Governed automerge is policy-disabled by default, and admin-bypass squash is
+supervisor-only. Branch protection mutation remains out of scope.

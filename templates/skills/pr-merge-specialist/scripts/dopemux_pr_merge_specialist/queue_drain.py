@@ -24,6 +24,7 @@ from .runtime import CommandResult, append_command_log, append_live_log, execute
 from .schema import ARTIFACT_VERSION, ArtifactMeta, BlockerType, FallbackReason, Finding, FindingSeverity, Fingerprint, MergeDecision, MergeActionType, OverrideRecord, PhaseRecord, PRResult, PRState, PRStateData, POLICY_SCHEMA_VERSION, PreflightCheck, PreflightResult, PullRequestState, QueueOrderingLayer, ReviewThread, RunManifest, ThreadComment, ThreadDisposition, ThreadDispositionType, TruthSource, ValidationReport, ValidationStatus, ValidationStepResult, TOOL_VERSION
 from .validation import run_validation, validation_report_md
 from .strategy_library import STRATEGY_LIBRARY, select_strategy, StrategyAssignment, TRAIN_ELIGIBLE_STRATEGIES, STRATEGY_EXECUTION_ORDER
+from .steward_gate import StewardGateResult, steward_gate
 
 
 
@@ -66,7 +67,7 @@ from .conflict import (
 from .merge import checks_green, wait_for_green_checks, checks_blocker_reason, decide_merge_action, run_merge_with_fallback, serialize_check_payload
 from .worktree import prepare_worktree, cleanup_worktree, ensure_worktree_matches_pr_head, attempt_rebase, attempt_speculative_rebase, push_rebased_head, auto_recover_rebase_conflicts
 
-__all__ = ['queue_scan', 'queue_scan_internal', 'pr_plan', 'pr_apply', 'pr_merge', 'pr_approve', 'pr_ready', '_get_ops_engine', '_derive_allowed_actions', 'queue_drain', 'stage_and_push_if_needed', 'update_remaining_pr_bases']
+__all__ = ['queue_scan', 'queue_scan_internal', 'pr_plan', 'pr_apply', 'pr_merge', 'pr_approve', 'pr_ready', '_get_ops_engine', '_derive_allowed_actions', 'queue_drain', 'stage_and_push_if_needed', 'update_remaining_pr_bases', 'require_steward_remediation_gate', 'require_steward_finalization_gate', 'global_fix_prs_allowed']
 
 def stage_and_push_if_needed(*, worktree_path: Path, head_ref: str, active_run_id: str, pr_id: int, execute: bool, commands_log: Path, policy: Dict[str, Any], log: Optional[Callable] = None) -> bool:
     def _log(msg: str):
@@ -140,7 +141,7 @@ def _refresh_client_state(client: GitHubClient, pr_id: int) -> None:
 def _gemini_ci_remediation_command(prompt: str) -> List[str]:
     # Gemini CLI no longer accepts --skill in headless mode, so the runbook
     # must live in the prompt and the invocation stays prompt-only.
-    return ["gemini", "--prompt", prompt]
+    return ["gemini", "--skip-trust", "--prompt", prompt, "--yolo"]
 
 
 _GEMINI_AUTH_ENV_ALLOWLIST = (
@@ -153,6 +154,7 @@ _GEMINI_AUTH_ENV_ALLOWLIST = (
     "GOOGLE_CLOUD_LOCATION",
     "GEMINI_MODEL",
     "GEMINI_DEBUG",
+    "GEMINI_CLI_TRUST_WORKSPACE",
 )
 
 
@@ -166,12 +168,8 @@ def _sanitize_for_prompt(text: str, max_length: int = 4000) -> str:
     """
     if not text:
         return ""
-    # Replace triple backticks with a visibly inert sequence so a CI log line
-    # cannot terminate the fenced code block we wrap it in.
     sanitized = text.replace("```", "''' ")
     if len(sanitized) > max_length:
-        # Keep the tail: failure messages tend to be most informative at the
-        # end (final exception, final assertion).
         sanitized = "[truncated]\n" + sanitized[-(max_length - len("[truncated]\n")) :]
     return sanitized
 
@@ -184,7 +182,7 @@ def _isolated_gemini_home_env() -> Iterable[Dict[str, str]]:
     A tight allowlist of Gemini auth/config env vars is forwarded so the CLI
     can authenticate via the operator's intentional secret (typically
     GEMINI_API_KEY in CI). Repository-side env vars (PYTHONPATH, VIRTUAL_ENV,
-    service URLs, test credentials, etc.) are deliberately *not* forwarded —
+    service URLs, test credentials, etc.) are deliberately not forwarded:
     Gemini operates on a stripped environment and the queue-drain caller
     runs its own pre-checks and final verification with the real env.
     """
@@ -282,6 +280,208 @@ def _with_operator_state(
     return replace(result, lifecycle_state=lifecycle_state, artifacts=artifacts)
 
 
+IMPLEMENTER_BLOCKERS = {
+    "UNRESOLVED_REVIEW_THREAD",
+    "FAILED_CHECK",
+    "REQUEST_CHANGES",
+    "REVIEW_ITEM_MUST_FIX",
+    "ACTIVE_THREAD",
+    "REQUIRED_CHECK_FAILED",
+    "CONFLICT_DETECTED",
+}
+
+
+def global_fix_prs_allowed(policy: Dict[str, Any]) -> bool:
+    return bool(policy.get("steward_gate", {}).get("allow_global_fix_prs", False))
+
+
+def _steward_gate_now(value: Any) -> Optional[datetime]:
+    if value is None or isinstance(value, datetime):
+        return value
+    if isinstance(value, str):
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    raise TypeError("now must be a datetime, ISO timestamp string, or None")
+
+
+def _steward_artifact_path(
+    raw_path: Any,
+    *,
+    pr_dir: Path,
+    pr_id: int,
+    default_name: str,
+) -> Path:
+    if raw_path:
+        rendered = str(raw_path).format(pr_dir=str(pr_dir), pr_id=pr_id)
+        path = Path(rendered)
+        return path if path.is_absolute() else pr_dir / path
+    return pr_dir / default_name
+
+
+def require_steward_remediation_gate(
+    *,
+    pr: PullRequestState,
+    policy: Dict[str, Any],
+    pr_dir: Path,
+    now: Any = None,
+) -> StewardGateResult:
+    gate_policy = policy.get("steward_gate", {})
+    merge_readiness_path = _steward_artifact_path(
+        gate_policy.get("merge_readiness_path"),
+        pr_dir=pr_dir,
+        pr_id=pr.pr_id,
+        default_name="MERGE_READINESS.json",
+    )
+    audit_proof_path = _steward_artifact_path(
+        gate_policy.get("audit_proof_path"),
+        pr_dir=pr_dir,
+        pr_id=pr.pr_id,
+        default_name="PROOF.json",
+    )
+    result = steward_gate(
+        head_sha=pr.head_sha,
+        required_class="REMEDIATION",
+        merge_readiness_path=merge_readiness_path,
+        audit_proof_path=audit_proof_path,
+        now=_steward_gate_now(now),
+        ttl_seconds=int(gate_policy.get("artifact_ttl_seconds", 3600) or 3600),
+    )
+    if not result.allowed:
+        return result
+
+    try:
+        readiness = json.loads(merge_readiness_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError) as exc:
+        return StewardGateResult(
+            allowed=False,
+            reason_code="DENY_ARTIFACT_UNREADABLE",
+            required_class="REMEDIATION",
+            evidence={"error": type(exc).__name__},
+        )
+    blockers = [
+        str(item)
+        for item in readiness.get("blockers", [])
+        if isinstance(item, str) and item
+    ]
+    implementer_blockers = [
+        blocker for blocker in blockers if blocker in IMPLEMENTER_BLOCKERS
+    ]
+    if not implementer_blockers:
+        return StewardGateResult(
+            allowed=False,
+            reason_code="DENY_NO_IMPLEMENTER_BLOCKER",
+            required_class="REMEDIATION",
+            evidence={**dict(result.evidence), "blockers": blockers},
+        )
+    return StewardGateResult(
+        allowed=True,
+        reason_code=result.reason_code,
+        required_class=result.required_class,
+        evidence={**dict(result.evidence), "implementer_blockers": implementer_blockers},
+    )
+
+
+def require_steward_finalization_gate(
+    *,
+    pr: PullRequestState,
+    policy: Dict[str, Any],
+    pr_dir: Path,
+    now: Any = None,
+) -> StewardGateResult:
+    gate_policy = policy.get("steward_gate", {})
+    merge_readiness_path = _steward_artifact_path(
+        gate_policy.get("merge_readiness_path"),
+        pr_dir=pr_dir,
+        pr_id=pr.pr_id,
+        default_name="MERGE_READINESS.json",
+    )
+    audit_proof_path = _steward_artifact_path(
+        gate_policy.get("audit_proof_path"),
+        pr_dir=pr_dir,
+        pr_id=pr.pr_id,
+        default_name="PROOF.json",
+    )
+    result = steward_gate(
+        head_sha=pr.head_sha,
+        required_class="FINALIZATION",
+        merge_readiness_path=merge_readiness_path,
+        audit_proof_path=audit_proof_path,
+        now=_steward_gate_now(now),
+        ttl_seconds=int(gate_policy.get("artifact_ttl_seconds", 3600) or 3600),
+    )
+    evidence = dict(result.evidence)
+    if not result.allowed:
+        return result
+    if (
+        evidence.get("merge_embedded_audit_status") != "PASS"
+        or evidence.get("proof_embedded_audit_status") != "PASS"
+    ):
+        return StewardGateResult(
+            allowed=False,
+            reason_code="DENY_AUDIT_NOT_STRICT_PASS",
+            required_class="FINALIZATION",
+            evidence=evidence,
+        )
+    return StewardGateResult(
+        allowed=True,
+        reason_code=result.reason_code,
+        required_class=result.required_class,
+        evidence=evidence,
+    )
+
+
+def _write_steward_finalization_gate_artifact(
+    *,
+    pr_dir: Path,
+    gate_result: StewardGateResult,
+) -> None:
+    write_json(
+        pr_dir / "STEWARD_FINALIZATION_GATE.json",
+        {
+            "allowed": gate_result.allowed,
+            "reason_code": gate_result.reason_code,
+            "required_class": gate_result.required_class,
+            "evidence": dict(gate_result.evidence),
+        },
+    )
+
+
+def _steward_gate_blocked_result(
+    *,
+    active_run_id: str,
+    pr: PullRequestState,
+    threads: List[ReviewThread],
+    check_payload: Dict[str, Any],
+    validation: ValidationReport,
+    policy: Dict[str, Any],
+    gate_result: StewardGateResult,
+    pr_dir: Path,
+) -> PRResult:
+    result = build_plan_result(
+        active_run_id=active_run_id,
+        pr=pr,
+        threads=threads,
+        check_payload=check_payload,
+        validation_report=validation,
+        policy=policy,
+    )
+    result = _with_operator_state(
+        result,
+        "steward_remediation_blocked",
+        detail=gate_result.reason_code,
+    )
+    write_json(
+        pr_dir / "STEWARD_REMEDIATION_GATE.json",
+        {
+            "allowed": gate_result.allowed,
+            "reason_code": gate_result.reason_code,
+            "required_class": gate_result.required_class,
+            "evidence": dict(gate_result.evidence),
+        },
+    )
+    write_pr_state_artifact(pr_dir, result)
+    return result
+
+
 def _merge_prepared_result(
     *,
     args: argparse.Namespace,
@@ -309,6 +509,21 @@ def _merge_prepared_result(
     pr_id = prepared_result.pr_state.pr_id
     pr_dir = pr_dir_for(pr_root, pr_id)
     commands_log = pr_dir / "COMMANDS_RUN.txt"
+
+    if bool(getattr(args, "execute", False)):
+        gate_result = require_steward_finalization_gate(
+            pr=prepared_result.pr_state,
+            policy=policy,
+            pr_dir=pr_dir,
+        )
+        _write_steward_finalization_gate_artifact(
+            pr_dir=pr_dir,
+            gate_result=gate_result,
+        )
+        if not gate_result.allowed:
+            raise RuntimeError(
+                f"Steward finalization gate denied merge: {gate_result.reason_code}"
+            )
 
     log("Executing merge command...")
     executed_decision = run_merge_with_fallback(
@@ -512,7 +727,7 @@ Output/Error:
 {error_output}
 ```
 
-Please diagnose the issue and FIX IT.
+Please diagnose the issue and FIX IT. You are running in YOLO mode with full tool access.
 
 CRITICAL: You MUST follow the ci-remediation-specialist runbook:
 1. REPRODUCE the failure locally first by running the command `{step.command}`.
@@ -523,8 +738,8 @@ CRITICAL: You MUST follow the ci-remediation-specialist runbook:
 Identify the root cause, modify the necessary files, and ensure the command passes.
 """
 
-    log(f"Launching Gemini CLI agent (worktree: {worktree_path.name})...")
-    
+    log(f"Launching Gemini CLI agent in YOLO mode (worktree: {worktree_path.name})...")
+
     try:
         cmd = _gemini_ci_remediation_command(prompt)
         with _isolated_gemini_home_env() as gemini_env:
@@ -567,6 +782,95 @@ Identify the root cause, modify the necessary files, and ensure the command pass
         
     log("Agentic remediation cycle complete.")
     return True
+
+
+def reproduce_remote_required_check_failure(
+    *,
+    worktree_path: Path,
+    commands_log: Path,
+    policy: Dict[str, Any],
+    check_payload: Dict[str, Any],
+    log: Callable[[str, str], None],
+) -> Tuple[Optional[str], Optional[ValidationReport]]:
+    failed_required_checks = [
+        str(name).strip()
+        for name in check_payload.get("failed_required_checks", []) or []
+        if str(name).strip()
+    ]
+    if not failed_required_checks:
+        return None, None
+
+    if not list(policy.get("remote_check_repro", {}).get("steps", [])):
+        log(
+            "Required GitHub checks are failing, but no remote-check reproduction mappings are configured.",
+            "INFO",
+        )
+        return None, None
+
+    timeout_seconds = int(
+        policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600
+    )
+    for check_name in failed_required_checks:
+        step = _remote_check_repro_mapping(policy, check_name)
+        if step is None:
+            continue
+        scope = str(step.get("scope", "repo"))
+        if scope != "repo":
+            log(
+                f"Skipping remote-check reproduction for '{check_name}': unsupported scope '{scope}'.",
+                "INFO",
+            )
+            return None, None
+        command = [str(part) for part in step.get("command", []) if str(part)]
+        if not command:
+            log(
+                f"Skipping remote-check reproduction for '{check_name}': empty command mapping.",
+                "INFO",
+            )
+            return None, None
+
+        log(f"Reproducing remote required check locally: {check_name}", "START")
+        result = execute_or_dry_run(
+            command,
+            execute=True,
+            cwd=worktree_path,
+            commands_log=commands_log,
+            timeout_seconds=timeout_seconds,
+        )
+        status = "passed" if result.returncode == 0 else "failed"
+        report = ValidationReport(
+            status=(
+                ValidationStatus.PASSED
+                if result.returncode == 0
+                else ValidationStatus.FAILED
+            ),
+            required_for_merge_ready=True,
+            steps=[
+                ValidationStepResult(
+                    name=check_name,
+                    command=shell_join(command),
+                    status=status,
+                    returncode=result.returncode,
+                    stdout=result.stdout,
+                    stderr=result.stderr,
+                )
+            ],
+            attempts=1,
+            remediation_applied=False,
+        )
+        if report.passed:
+            log(
+                f"Remote required check '{check_name}' passed locally; no local reproduction found.",
+                "INFO",
+            )
+        else:
+            log(f"Remote required check '{check_name}' reproduced locally.", "ERROR")
+        return check_name, report
+    log(
+        "Required GitHub checks are failing, but none of the failing check names have local reproduction mappings.",
+        "INFO",
+    )
+    return None, None
 
 
 def remediate_review_thread(
@@ -680,133 +984,83 @@ Modify the necessary files to satisfy the reviewer's request.
     return True
 
 
-def reproduce_remote_required_check_failure(
-    *,
-    worktree_path: Path,
-    commands_log: Path,
-    policy: Dict[str, Any],
-    check_payload: Dict[str, Any],
-    log: Callable[[str, str], None],
-) -> Tuple[Optional[str], Optional[ValidationReport]]:
-    failed_required_checks = [
-        str(name).strip()
-        for name in check_payload.get("failed_required_checks", []) or []
-        if str(name).strip()
-    ]
-    if not failed_required_checks:
-        return None, None
-
-    if not list(policy.get("remote_check_repro", {}).get("steps", [])):
-        log(
-            "Required GitHub checks are failing, but no remote-check reproduction mappings are configured.",
-            "INFO",
-        )
-        return None, None
-
-    timeout_seconds = int(
-        policy.get("timeouts", {}).get("subprocess_seconds", 600) or 600
-    )
-    for check_name in failed_required_checks:
-        step = _remote_check_repro_mapping(policy, check_name)
-        if step is None:
-            continue
-        scope = str(step.get("scope", "repo"))
-        if scope != "repo":
-            log(
-                f"Skipping remote-check reproduction for '{check_name}': unsupported scope '{scope}'.",
-                "INFO",
-            )
-            return None, None
-        command = [str(part) for part in step.get("command", []) if str(part)]
-        if not command:
-            log(
-                f"Skipping remote-check reproduction for '{check_name}': empty command mapping.",
-                "INFO",
-            )
-            return None, None
-
-        log(f"Reproducing remote required check locally: {check_name}", "START")
-        result = execute_or_dry_run(
-            command,
-            execute=True,
-            cwd=worktree_path,
-            commands_log=commands_log,
-            timeout_seconds=timeout_seconds,
-        )
-        status = "passed" if result.returncode == 0 else "failed"
-        report = ValidationReport(
-            status=(
-                ValidationStatus.PASSED
-                if result.returncode == 0
-                else ValidationStatus.FAILED
-            ),
-            required_for_merge_ready=True,
-            steps=[
-                ValidationStepResult(
-                    name=check_name,
-                    command=shell_join(command),
-                    status=status,
-                    returncode=result.returncode,
-                    stdout=result.stdout,
-                    stderr=result.stderr,
-                )
-            ],
-            attempts=1,
-            remediation_applied=False,
-        )
-        if report.passed:
-            log(
-                f"Remote required check '{check_name}' passed locally; no local reproduction found.",
-                "INFO",
-            )
-        else:
-            log(f"Remote required check '{check_name}' reproduced locally.", "ERROR")
-        return check_name, report
-    log(
-        "Required GitHub checks are failing, but none of the failing check names have local reproduction mappings.",
-        "INFO",
-    )
-    return None, None
-
-
-def pr_apply(args: argparse.Namespace, progress_callback: Optional[Callable[[str, str], None]] = None) -> PRResult:
+def pr_apply(
+    args: argparse.Namespace, progress_callback: Optional[Callable[[str, str], None]] = None
+) -> PRResult:
     def log(msg: str, s_type: str = "INFO"):
         if progress_callback:
             progress_callback(msg, s_type)
-            
+
     repo_root = Path.cwd()
     active_run_id = getattr(args, "run_id", None) or run_id()
     run_dir, _, pr_root = build_run_paths(args.out_dir, active_run_id)
-    policy = load_effective_policy(repo_root, explicit_path=getattr(args, "policy", None))
-    client = GitHubClient(repo=getattr(args, "repo", None), repo_root=repo_root, policy=policy)
+    policy = load_effective_policy(
+        repo_root, explicit_path=getattr(args, "policy", None)
+    )
+    client = GitHubClient(
+        repo=getattr(args, "repo", None), repo_root=repo_root, policy=policy
+    )
     repo_slug = client.resolve_repo_slug()
-    
+
     log(f"Fetching PR #{args.id} subspace data...")
     raw, threads, pr, check_payload = _load_pr_context(client=client, pr_id=int(args.id))
     pr_dir = pr_dir_for(pr_root, pr.pr_id)
     commands_log = pr_dir / "COMMANDS_RUN.txt"
-    write_json(pr_dir / "INTAKE.json", {"meta": artifact_meta(repo_root=repo_root, repo_slug=repo_slug, run_identifier=active_run_id, pr_head_sha=pr.head_sha, base_sha=pr.base_sha).to_dict(), "pr": pr.to_dict()})
-    
+    write_json(
+        pr_dir / "INTAKE.json",
+        {
+            "meta": artifact_meta(
+                repo_root=repo_root,
+                repo_slug=repo_slug,
+                run_identifier=active_run_id,
+                pr_head_sha=pr.head_sha,
+                base_sha=pr.base_sha,
+            ).to_dict(),
+            "pr": pr.to_dict(),
+        },
+    )
+
     worktree_path: Optional[Path] = None
     branch: Optional[str] = None
-    thread_dispositions = [decide_thread_disposition(thread, validation_green=pr.ci_status == "SUCCESS", policy=policy) for thread in threads if not thread.is_resolved]
-    
+    thread_dispositions = [
+        decide_thread_disposition(
+            thread, validation_green=pr.ci_status == "SUCCESS", policy=policy
+        )
+        for thread in threads
+        if not thread.is_resolved
+    ]
+
     execute = getattr(args, "execute", False)
     lock_path: Optional[Path] = None
     owns_lock = execute and not bool(getattr(args, "_queue_lock_held", False))
     if owns_lock:
-        ok, lock_path, err = acquire_queue_lock(repo_root=repo_root, active_run_id=active_run_id)
+        ok, lock_path, err = acquire_queue_lock(
+            repo_root=repo_root, active_run_id=active_run_id
+        )
         if not ok:
             raise RuntimeError(f"Unable to acquire queue lock: {err}")
-            
+
     try:
         log("Initializing isolated worktree...")
-        worktree_path, branch, err = prepare_worktree(repo_root=repo_root, pr_id=pr.pr_id, active_run_id=active_run_id, commands_log=commands_log, policy=policy)
+        worktree_path, branch, err = prepare_worktree(
+            repo_root=repo_root,
+            pr_id=pr.pr_id,
+            active_run_id=active_run_id,
+            commands_log=commands_log,
+            policy=policy,
+        )
         if err:
             raise RuntimeError(f"Error preparing worktree: {err}")
-            
+
         log("Checking worktree head OID...")
-        matches, err = ensure_worktree_matches_pr_head(worktree_path=worktree_path, pr_id=pr.pr_id, head_ref=pr.head_ref, client=client, commands_log=commands_log, policy=policy)
+        matches, err = ensure_worktree_matches_pr_head(
+            worktree_path=worktree_path,
+            pr_id=pr.pr_id,
+            head_ref=pr.head_ref,
+            client=client,
+            commands_log=commands_log,
+            policy=policy,
+        )
         if not matches:
             raise RuntimeError(f"Worktree head mismatch: {err}")
 
@@ -827,6 +1081,37 @@ def pr_apply(args: argparse.Namespace, progress_callback: Optional[Callable[[str
             if has_conflicts(pr.mergeable, pr.merge_state_status)
             else ""
         )
+        needs_thread_remediation = any(
+            disposition.disposition
+            in {
+                ThreadDispositionType.IMPLEMENT,
+                ThreadDispositionType.AGENTIC_FIX,
+                ThreadDispositionType.DECLINE_WITH_RATIONALE,
+                ThreadDispositionType.AUTO_RESOLVE_OUTDATED,
+            }
+            for disposition in thread_dispositions
+        )
+        if execute and needs_thread_remediation:
+            gate_result = require_steward_remediation_gate(
+                pr=pr,
+                policy=policy,
+                pr_dir=pr_dir,
+            )
+            if not gate_result.allowed:
+                log(
+                    f"Steward remediation gate denied thread remediation: {gate_result.reason_code}",
+                    "ERROR",
+                )
+                return _steward_gate_blocked_result(
+                    active_run_id=active_run_id,
+                    pr=pr,
+                    threads=threads,
+                    check_payload=check_payload,
+                    validation=validation,
+                    policy=policy,
+                    gate_result=gate_result,
+                    pr_dir=pr_dir,
+                )
         if conflict_state in {"manual_conflict_required", "semantic_conflict_blocked"}:
             analysis_path = pr_dir / "CONFLICT_ANALYSIS.md"
             write_text(
@@ -961,6 +1246,27 @@ def pr_apply(args: argparse.Namespace, progress_callback: Optional[Callable[[str
                 ),
             )
             if conflict_state == "eligible":
+                if execute:
+                    gate_result = require_steward_remediation_gate(
+                        pr=pr,
+                        policy=policy,
+                        pr_dir=pr_dir,
+                    )
+                    if not gate_result.allowed:
+                        log(
+                            f"Steward remediation gate denied conflict remediation: {gate_result.reason_code}",
+                            "ERROR",
+                        )
+                        return _steward_gate_blocked_result(
+                            active_run_id=active_run_id,
+                            pr=pr,
+                            threads=threads,
+                            check_payload=check_payload,
+                            validation=validation,
+                            policy=policy,
+                            gate_result=gate_result,
+                            pr_dir=pr_dir,
+                        )
                 log("Attempting automated mechanical conflict recovery...")
                 recovered, recovery_state, _recovery_meta = auto_recover_rebase_conflicts(
                     pr=pr,
@@ -1027,30 +1333,41 @@ def pr_apply(args: argparse.Namespace, progress_callback: Optional[Callable[[str
         )
         
         if not validation.passed and execute:
-            log("Validation failed, attempting AI remediation...")
-            if remediate_ci_failure(worktree_path, validation, log):
-                log("Re-running validation suite after AI fix...", "START")
-                validation = run_validation(
-                    repo_root=repo_root,
-                    worktree_path=worktree_path,
-                    policy=policy,
-                    execute=execute,
-                    commands_log=commands_log,
-                    pr_id=pr.pr_id,
-                    head_sha=pr.head_sha,
-                    base_sha=pr.base_sha,
-                    policy_fingerprint=policy_fingerprint(policy),
-                    lifecycle_state=(
-                        pr.lifecycle_state.value
-                        if hasattr(pr.lifecycle_state, "value")
-                        else str(pr.lifecycle_state)
-                    ),
-                    progress_callback=progress_callback
+            gate_result = require_steward_remediation_gate(
+                pr=pr,
+                policy=policy,
+                pr_dir=pr_dir,
+            )
+            if not gate_result.allowed:
+                log(
+                    f"Steward remediation gate denied CI remediation: {gate_result.reason_code}",
+                    "ERROR",
                 )
-                if validation.passed:
-                    log("Committing AI remediation fix...")
-                    if stage_and_push_if_needed(worktree_path=worktree_path, head_ref=pr.head_ref, active_run_id=active_run_id, pr_id=pr.pr_id, execute=execute, commands_log=commands_log, policy=policy, log=log):
-                        _refresh_client_state(client, pr.pr_id)        
+            else:
+                log("Validation failed, attempting AI remediation...")
+                if remediate_ci_failure(worktree_path, validation, log):
+                    log("Re-running validation suite after AI fix...", "START")
+                    validation = run_validation(
+                        repo_root=repo_root,
+                        worktree_path=worktree_path,
+                        policy=policy,
+                        execute=execute,
+                        commands_log=commands_log,
+                        pr_id=pr.pr_id,
+                        head_sha=pr.head_sha,
+                        base_sha=pr.base_sha,
+                        policy_fingerprint=policy_fingerprint(policy),
+                        lifecycle_state=(
+                            pr.lifecycle_state.value
+                            if hasattr(pr.lifecycle_state, "value")
+                            else str(pr.lifecycle_state)
+                        ),
+                        progress_callback=progress_callback
+                    )
+                    if validation.passed:
+                        log("Committing AI remediation fix...")
+                        if stage_and_push_if_needed(worktree_path=worktree_path, head_ref=pr.head_ref, active_run_id=active_run_id, pr_id=pr.pr_id, execute=execute, commands_log=commands_log, policy=policy, log=log):
+                            _refresh_client_state(client, pr.pr_id)
         if validation.passed:
             log("Validation PASSED", "SUCCESS")
         else:
@@ -1069,10 +1386,21 @@ def pr_apply(args: argparse.Namespace, progress_callback: Optional[Callable[[str
                 log=log,
             )
             if remote_validation is not None and not remote_validation.passed:
-                log(
-                    f"Remote required check '{reproduced_check}' failed locally; attempting AI remediation..."
+                gate_result = require_steward_remediation_gate(
+                    pr=pr,
+                    policy=policy,
+                    pr_dir=pr_dir,
                 )
-                if remediate_ci_failure(worktree_path, remote_validation, log):
+                if not gate_result.allowed:
+                    log(
+                        f"Steward remediation gate denied remote-check remediation: {gate_result.reason_code}",
+                        "ERROR",
+                    )
+                else:
+                    log(
+                        f"Remote required check '{reproduced_check}' failed locally; attempting AI remediation..."
+                    )
+                if gate_result.allowed and remediate_ci_failure(worktree_path, remote_validation, log):
                     reproduced_check, remote_validation = reproduce_remote_required_check_failure(
                         worktree_path=worktree_path,
                         commands_log=commands_log,
@@ -1109,15 +1437,6 @@ def pr_apply(args: argparse.Namespace, progress_callback: Optional[Callable[[str
                         else:
                             log("Full validation still failed after remote-check remediation.", "ERROR")
 
-        if validation.passed:
-            resolve_verified_threads(
-                dispositions=applied_threads,
-                execute=execute,
-                commands_log=commands_log,
-                repo_root=repo_root,
-                policy=policy
-            )
-
         result = build_plan_result(
             active_run_id=active_run_id,
             pr=refreshed_pr,
@@ -1125,7 +1444,7 @@ def pr_apply(args: argparse.Namespace, progress_callback: Optional[Callable[[str
             check_payload=refreshed_checks,
             validation_report=validation,
             policy=policy,
-            threads_resolved_locally=validation.passed and any(d.applied for d in applied_threads)
+            threads_resolved_locally=False
         )
         if operator_state:
             result = _with_operator_state(result, operator_state)
@@ -1609,7 +1928,7 @@ Output/Error:
 {error_output}
 ```
 
-Please diagnose the issue and FIX IT against the `main` branch.
+Please diagnose the issue and FIX IT against the `main` branch. You are running in YOLO mode with full tool access.
 CRITICAL: You MUST follow the ci-remediation-specialist runbook:
 1. REPRODUCE the failure locally first by running the command `{targeted_repro_command}`.
 2. USE AUTO-FIXERS if applicable (e.g., ruff check --fix).
@@ -1806,7 +2125,13 @@ def _handle_global_ci_blockers(
             status="failed",
             returncode=1,
             stdout="",
-            stderr=_sanitize_for_prompt(remote_failure.evidence_summary.strip()),
+            stderr=_sanitize_for_prompt(
+                (
+                    f"{remote_failure.evidence_summary}\n\n"
+                    + (remote_failure.evidence.log_text or "")[-6000:]
+                ).strip(),
+                max_length=8000,
+            ),
         )
         failing_prs_by_fingerprint[remote_failure.fingerprint].append((r, failed_step))
         remote_group_metadata.setdefault(remote_failure.fingerprint, remote_failure)
@@ -1829,6 +2154,13 @@ def _handle_global_ci_blockers(
             for r, _failed_step in blocked_prs:
                 blocked_map[r.pr_state.pr_id] = pr_number
         else:
+            if "steward_gate" in client.policy and not global_fix_prs_allowed(client.policy):
+                _log(
+                    f"Global CI blocker fingerprint {fingerprint} requires supervisor; "
+                    "shared global-fix PR creation is disabled by steward_gate policy.",
+                    "WARNING",
+                )
+                continue
             # New global blocker. Create a global fix PR.
             _log(
                 f"New global CI blocker detected for fingerprint {fingerprint}; triggering shared remediation for {len(blocked_prs)} PRs.",
