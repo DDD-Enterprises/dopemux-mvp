@@ -1,0 +1,102 @@
+{
+  "id": "TP-CI-FULL-TEST-SUITE-001",
+  "project": "dopemux-mvp",
+  "target": "CI full test suite gating for RTE and auditor-router",
+  "invariants": [
+    "Gate the full repo-truth-extractor test suite in pull request CI.",
+    "Gate tests/auditor_router in pull request CI.",
+    "Do not add live or Docker/API-key-dependent tests to the PR path.",
+    "Do not change test code unless a failure is reproduced."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "beta-remaining-ci-full-suite",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "fix/ci-full-test-suite",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(ci): gate full RTE and auditor router suites",
+    "allowlist": [
+      ".github/workflows/ci-complete.yml",
+      "task-packets/INDEX.md",
+      "task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json",
+      "claudedocs/ci-full-test-suite-proof-2026-05-31.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "PYTHONPATH=src pytest tests/auditor_router -q --tb=short",
+      "PYTHONPATH=src pytest services/repo-truth-extractor/tests/ -q --tb=short --disable-warnings --no-cov",
+      "git diff --check",
+      "pre-commit run --files .github/workflows/ci-complete.yml task-packets/INDEX.md task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json claudedocs/ci-full-test-suite-proof-2026-05-31.md"
+    ]
+  },
+  "pr": {
+    "title": "fix(ci): gate full RTE and auditor-router suites",
+    "body": "## Problem\\nCI currently gates only a focused extractor smoke subset and does not gate tests/auditor_router.\\n\\n## Fix\\nMake the full RTE suite fail the PR CI lane on regressions and add an auditor-router test job.\\n\\n## Test Plan\\n- Validate Task Packet JSON and schema.\\n- Run tests/auditor_router.\\n- Run services/repo-truth-extractor/tests.\\n- Run git diff --check and pre-commit on changed files.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect",
+      "task": "Inspect current CI workflow and reproduce auditor-router/full-RTE test status.",
+      "requirements": [
+        "Read .github/workflows before editing.",
+        "Run the requested test discovery command.",
+        "Reproduce auditor-router import behavior locally."
+      ],
+      "validation": [
+        "find . -path \"*/tests/test_*.py\" | head -20",
+        "PYTHONPATH=src pytest tests/auditor_router -q --tb=short",
+        "PYTHONPATH=src pytest services/repo-truth-extractor/tests/ -q --tb=short --disable-warnings --no-cov"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Wire RTE full suite and auditor-router tests into CI as blocking PR gates.",
+      "requirements": [
+        "Keep live/integration tests out of the pull_request path.",
+        "Use PYTHONPATH=src for the full RTE command.",
+        "Do not keep the full extractor suite advisory if it is intended to gate readiness."
+      ],
+      "validation": [
+        "rg -n \"Extractor Full|Auditor Router|tests/auditor_router|repo-truth-extractor/tests\" .github/workflows/ci-complete.yml"
+      ]
+    },
+    {
+      "id": "precommit",
+      "task": "Validate workflow changes, codereview, pre-commit, commit, push, and open the PR.",
+      "requirements": [
+        "Inspect diff scope before staging.",
+        "Report live/Docker/API-key validation as NOT_RUN."
+      ],
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json >/dev/null",
+        "python -m jsonschema -i task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "git diff --check",
+        "pre-commit run --files .github/workflows/ci-complete.yml task-packets/INDEX.md task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json claudedocs/ci-full-test-suite-proof-2026-05-31.md"
+      ]
+    }
+  ]
+}
