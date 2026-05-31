@@ -444,6 +444,8 @@ services:
       - HOST=0.0.0.0
       - ADHD_ENGINE_API_KEY=${ADHD_ENGINE_API_KEY:-dev-key-123}
       - REDIS_URL=redis://redis-primary:6379
+      # Scope ADHD state/cache keys per worktree instance while preserving explicit overrides.
+      - ADHD_ENGINE_REDIS_PREFIX=${ADHD_ENGINE_REDIS_PREFIX:-${DOPEMUX_INSTANCE_ID:-default}}
       - CONPORT_URL=http://conport:3005
       - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
       - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
