@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 import hashlib
 import json
@@ -17,6 +17,9 @@ COMMAND_PALETTE_PACKET_ID = "TP-DMX-COCKPIT-COMMAND-PALETTE-001"
 RUNTIME_PACKET_ID = "TP-DMX-COCKPIT-RUNTIME-RENDER-001"
 SETTINGS_RUNTIME_PACKET_ID = "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001"
 UNKNOWN_DRIFT_PACKET_ID = "TP-DMX-COCKPIT-UNKNOWN-DRIFT-001"
+INVENTORY_REGEN_PACKET_ID = "TP-DMX-COCKPIT-INVENTORY-REGEN-001"
+EVIDENCE_LEDGER_PACKET_ID = "TP-DMX-COCKPIT-EVIDENCE-LEDGER-001"
+GATE_FLIP_PACKET_ID = "TP-DMX-COCKPIT-GATE-FLIP-001"
 SETTINGS_ADMIN_SOURCE_ARTIFACT = "SETTINGS_ADMIN_RUNTIME_PACKAGE_HANDOFF.md"
 UNKNOWN_DRIFT_SOURCE_ARTIFACT = "UNKNOWN_DRIFT_PACKAGE_HANDOFF.md"
 
@@ -270,6 +273,41 @@ REQUIRED_PACKAGE_FILES: tuple[str, ...] = (
     "PACKAGE_REMEDIATION_TEST_MATRIX.md",
 )
 
+GATE_FLIP_REQUIRED_PROOFS: tuple[tuple[str, str], ...] = (
+    (
+        COMMAND_PALETTE_PACKET_ID,
+        "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PROOF.json",
+    ),
+    (
+        "TP-DMX-COCKPIT-SAFE-ACTIONS-001",
+        "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/PROOF.json",
+    ),
+    (
+        SETTINGS_RUNTIME_PACKET_ID,
+        "out/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/PROOF.json",
+    ),
+    (
+        UNKNOWN_DRIFT_PACKET_ID,
+        "out/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/PROOF.json",
+    ),
+    (
+        PACKAGE_PACKET_ID,
+        "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PROOF.json",
+    ),
+    (
+        RUNTIME_PACKET_ID,
+        "out/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/PROOF.json",
+    ),
+    (
+        INVENTORY_REGEN_PACKET_ID,
+        "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/PROOF.json",
+    ),
+    (
+        EVIDENCE_LEDGER_PACKET_ID,
+        "out/cockpit-evidence-ledger/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001/PROOF.json",
+    ),
+)
+
 COMMON_REQUIRED_FIELDS: tuple[str, ...] = (
     "command",
     "authority_domain",
@@ -435,6 +473,23 @@ class RuntimeRenderModel:
     config: RuntimeConfig
     settings_admin_runtime: SettingsAdminRuntimeSummary
     unknown_drift_queue: UnknownDriftQueueSummary
+
+@dataclass(frozen=True)
+class GateFlipStatus:
+    packet_id: str
+    safe_for_claude_design: str
+    ready_for_claude_design: str
+    claude_design_blocked: bool
+    conditions: tuple[dict[str, Any], ...]
+
+    def as_payload(self) -> dict[str, Any]:
+        return {
+            "packet_id": self.packet_id,
+            "safe_for_claude_design": self.safe_for_claude_design,
+            "READY_FOR_CLAUDE_DESIGN": self.ready_for_claude_design,
+            "claude_design_blocked": self.claude_design_blocked,
+            "conditions": list(self.conditions),
+        }
 
 @dataclass(frozen=True)
 class PreflightResult:
@@ -693,6 +748,268 @@ def load_package_artifacts(package_dir: str | Path) -> LoadedPackage:
         index=index,
         proof=proof,
         artifacts=tuple(artifacts),
+    )
+
+def _repo_root_from_package(package: LoadedPackage) -> Path:
+    root = _repo_root_marker(package.package_dir)
+    if root is None:
+        raise RuntimeContractError("[BLOCKER] repository root marker missing for gate verification")
+    return root
+
+def _load_gate_proof(repo_root: Path, packet_id: str, relative_path: str) -> dict[str, Any]:
+    path = repo_root / relative_path
+    if not path.is_file():
+        raise RuntimeContractError(f"[BLOCKER] gate proof missing: {relative_path}")
+    payload = _load_json(path)
+    if payload.get("packet_id") != packet_id:
+        raise RuntimeContractError(f"[BLOCKER] gate proof packet_id mismatch: {relative_path}")
+    return payload
+
+def _all_true(*values: Any) -> bool:
+    return all(value is True for value in values)
+
+def _gate_condition(
+    condition_id: str,
+    packet_id: str,
+    relative_path: str,
+    passed: bool,
+    evidence: Mapping[str, Any],
+) -> dict[str, Any]:
+    return {
+        "id": condition_id,
+        "packet_id": packet_id,
+        "proof_path": relative_path,
+        "passed": passed,
+        "evidence": dict(evidence),
+    }
+
+def _required_gate_proofs(repo_root: Path) -> dict[str, tuple[str, dict[str, Any]]]:
+    return {
+        packet_id: (relative_path, _load_gate_proof(repo_root, packet_id, relative_path))
+        for packet_id, relative_path in GATE_FLIP_REQUIRED_PROOFS
+    }
+
+def verify_claude_design_gate(package: LoadedPackage) -> GateFlipStatus:
+    repo_root = _repo_root_from_package(package)
+    proofs = _required_gate_proofs(repo_root)
+
+    palette_path, palette = proofs[COMMAND_PALETTE_PACKET_ID]
+    palette_contract = palette.get("palette_contract", {})
+    command_palette_passed = _all_true(
+        palette_contract.get("broker_not_executor"),
+        palette_contract.get("preserves_authority_per_row"),
+        palette_contract.get("fail_closed_on_unknown_required_field"),
+        palette_contract.get("preserves_provenance_end_to_end"),
+    ) and not any(
+        palette_contract.get(key)
+        for key in (
+            "silent_execution_allowed",
+            "unknown_execution_allowed",
+            "blocked_execution_allowed",
+            "auto_confirm_allowed",
+            "implicit_default_parameters_allowed",
+            "reclassification_inside_palette_allowed",
+            "sixth_top_level_mode",
+            "owns_authority",
+        )
+    )
+
+    safe_path, safe = proofs["TP-DMX-COCKPIT-SAFE-ACTIONS-001"]
+    gate_contract = safe.get("gate_contract", {})
+    safe_actions_passed = _all_true(
+        gate_contract.get("cross_cutting_not_mode"),
+        gate_contract.get("proof_required_for_completion"),
+        gate_contract.get("refuses_unknown_required_fields"),
+        gate_contract.get("blocks_remote_mutation_until_policy_approved"),
+        gate_contract.get("settings_admin_runtime_must_invoke_gate_for_admin_rows"),
+        gate_contract.get("never_reclassifies_in_gate"),
+        gate_contract.get("emits_event_receipt_on_every_invocation"),
+        gate_contract.get("fails_closed_on_index_drift_or_stale_handoff"),
+        gate_contract.get("no_runtime_execution_in_this_packet"),
+    ) and (
+        tuple(gate_contract.get("typed_confirmation_required_for_high_risk_tiers", ())) == ("T4", "T5", "T6")
+    ) and not any(
+        gate_contract.get(key)
+        for key in (
+            "auto_confirm_allowed",
+            "blocked_execution_allowed",
+            "unknown_execution_allowed",
+        )
+    )
+
+    settings_path, settings = proofs[SETTINGS_RUNTIME_PACKET_ID]
+    settings_runtime = settings.get("runtime_truth_observed", {})
+    settings_passed = _all_true(
+        settings_runtime.get("settings_admin_surface_exists"),
+        settings_runtime.get("safe_action_gate_preserved"),
+    ) and (
+        settings_runtime.get("surface_kind") == "secondary/global surface"
+        and settings_runtime.get("flow_group_count") == 9
+        and settings_runtime.get("row_count") == 62
+        and settings_runtime.get("unknown_tier_count") == 62
+        and settings_runtime.get("execution_allowed") is False
+        and settings_runtime.get("direct_execution_allowed") is False
+    )
+
+    unknown_path, unknown = proofs[UNKNOWN_DRIFT_PACKET_ID]
+    unknown_snapshot = unknown.get("runtime_snapshot_summary", {})
+    unknown_boundary = unknown.get("boundary_preservation", {})
+    unknown_passed = (
+        unknown_snapshot.get("unknown_drift_surface_kind") == "secondary/global surface"
+        and unknown_snapshot.get("unknown_drift_total_queue_items_lower_bound", 0) >= 487
+        and unknown_snapshot.get("unknown_drift_aggregated_item_count") == 45
+        and unknown_snapshot.get("execution_allowed") is False
+        and unknown_snapshot.get("runtime_reclassification_allowed") is False
+        and unknown_snapshot.get("requires_packet_for_resolution") is True
+        and _all_true(
+            unknown_boundary.get("unknown_drift_does_not_execute"),
+            unknown_boundary.get("runtime_reclassification_disabled"),
+        )
+    )
+
+    pack_path, pack = proofs[PACKAGE_PACKET_ID]
+    package_invariants = pack.get("package_invariants", {})
+    pack_passed = _all_true(
+        package_invariants.get("five_top_level_modes_preserved"),
+        package_invariants.get("four_secondary_surfaces_preserved"),
+        package_invariants.get("no_sixth_top_level_mode"),
+        package_invariants.get("safe_action_gate_cross_cutting"),
+        package_invariants.get("t4_remote_mutation_blocked_until_policy_approves"),
+        package_invariants.get("authority_boundaries_preserved_per_inventory"),
+        package_invariants.get("carried_inventory_counts_preserved"),
+        package_invariants.get("unknowns_preserved"),
+        package_invariants.get("blockers_preserved"),
+    ) and not any(
+        package_invariants.get(key)
+        for key in (
+            "secondary_surface_promoted_to_top_level",
+            "safe_action_gate_auto_confirm_allowed",
+            "safe_action_gate_blocked_execution_allowed",
+            "safe_action_gate_unknown_execution_allowed",
+            "safe_action_gate_in_gate_reclassification_allowed",
+            "authority_collapse_into_one_brain",
+            "runtime_code_added_in_this_packet",
+            "cockpit_package_html_css_react_edited",
+            "final_screens_authored_in_this_packet",
+            "claude_design_upload_attempted",
+            "ready_for_claude_design_claimed",
+        )
+    )
+
+    render_path, render = proofs[RUNTIME_PACKET_ID]
+    render_boundary = render.get("boundary_preservation", {})
+    render_passed = (
+        tuple(render_boundary.get("five_top_level_modes", ())) == TOP_LEVEL_MODES
+        and tuple(render_boundary.get("four_global_surfaces", ())) == GLOBAL_SURFACES
+        and tuple(render_boundary.get("safe_action_tiers", ())) == SAFE_ACTION_TIERS
+        and _all_true(
+            render_boundary.get("no_sixth_top_level_mode"),
+            render_boundary.get("palette_broker_only"),
+            render_boundary.get("safe_action_gate_cross_cutting"),
+            render_boundary.get("t4_blocked_until_remote_policy"),
+            render_boundary.get("tx_tu_never_executable"),
+            render_boundary.get("unknown_drift_visible"),
+        )
+        and render_boundary.get("safe_action_gate_executes_actions") is False
+        and render_boundary.get("claude_design_upload_attempted") is False
+        and render_boundary.get("final_screens_generated") is False
+    )
+
+    inventory_path, inventory = proofs[INVENTORY_REGEN_PACKET_ID]
+    current_base = inventory.get("current_base_certification", {})
+    inventory_boundary = inventory.get("boundary_preservation", {})
+    inventory_passed = _all_true(
+        current_base.get("current_head_inventory_regenerated"),
+        current_base.get("source_artifact_hashes_refreshed"),
+        current_base.get("runtime_source_hashes_refreshed"),
+        inventory_boundary.get("t4_blocked"),
+        inventory_boundary.get("tx_tu_never_executable"),
+        inventory_boundary.get("unknown_drift_does_not_execute"),
+        inventory_boundary.get("runtime_reclassification_disabled"),
+    )
+
+    evidence_path, evidence = proofs[EVIDENCE_LEDGER_PACKET_ID]
+    evidence_status = evidence.get("condition_8_status", {})
+    evidence_passed = (
+        evidence_status.get("status") == "PASS"
+        and evidence_status.get("condition_8_unresolved_items") == 0
+        and evidence_status.get("resolved_items", 0) >= 4
+        and evidence_status.get("explicitly_rejected_items", 0) >= 3
+    )
+
+    conditions = (
+        _gate_condition(
+            "COMMAND_PALETTE",
+            COMMAND_PALETTE_PACKET_ID,
+            palette_path,
+            command_palette_passed,
+            {"broker_not_executor": palette_contract.get("broker_not_executor")},
+        ),
+        _gate_condition(
+            "SAFE_ACTIONS",
+            "TP-DMX-COCKPIT-SAFE-ACTIONS-001",
+            safe_path,
+            safe_actions_passed,
+            {
+                "cross_cutting_not_mode": gate_contract.get("cross_cutting_not_mode"),
+                "typed_confirmation_required_for_high_risk_tiers": gate_contract.get(
+                    "typed_confirmation_required_for_high_risk_tiers"
+                ),
+            },
+        ),
+        _gate_condition(
+            "SETTINGS_RUNTIME",
+            SETTINGS_RUNTIME_PACKET_ID,
+            settings_path,
+            settings_passed,
+            {"flow_group_count": settings_runtime.get("flow_group_count")},
+        ),
+        _gate_condition(
+            "UNKNOWN_DRIFT",
+            UNKNOWN_DRIFT_PACKET_ID,
+            unknown_path,
+            unknown_passed,
+            {"total_queue_items_lower_bound": unknown_snapshot.get("unknown_drift_total_queue_items_lower_bound")},
+        ),
+        _gate_condition(
+            "PACK_REMEDIATE_IA",
+            PACKAGE_PACKET_ID,
+            pack_path,
+            pack_passed,
+            {"no_sixth_top_level_mode": package_invariants.get("no_sixth_top_level_mode")},
+        ),
+        _gate_condition(
+            "RUNTIME_RENDER",
+            RUNTIME_PACKET_ID,
+            render_path,
+            render_passed,
+            {"five_top_level_modes": render_boundary.get("five_top_level_modes")},
+        ),
+        _gate_condition(
+            "INVENTORY_REGEN",
+            INVENTORY_REGEN_PACKET_ID,
+            inventory_path,
+            inventory_passed,
+            {"current_head_inventory_regenerated": current_base.get("current_head_inventory_regenerated")},
+        ),
+        _gate_condition(
+            "EVIDENCE_LEDGER",
+            EVIDENCE_LEDGER_PACKET_ID,
+            evidence_path,
+            evidence_passed,
+            {"condition_8_unresolved_items": evidence_status.get("condition_8_unresolved_items")},
+        ),
+    )
+    failed = [condition["id"] for condition in conditions if not condition["passed"]]
+    if failed:
+        joined = ", ".join(failed)
+        raise RuntimeContractError(f"[BLOCKER] Claude Design gate blockers still open: {joined}")
+    return GateFlipStatus(
+        packet_id=GATE_FLIP_PACKET_ID,
+        safe_for_claude_design="YES",
+        ready_for_claude_design="approved",
+        claude_design_blocked=False,
+        conditions=conditions,
     )
 
 def _settings_admin_source_path(package: LoadedPackage) -> str:
@@ -1646,6 +1963,7 @@ def build_runtime_render_model(
         raise RuntimeContractError("[BLOCKER] package proof no longer blocks Claude Design")
     if package.proof.get("ready_for_claude_design") is not False:
         raise RuntimeContractError("[BLOCKER] package proof changed Claude Design readiness")
+    gate_status = verify_claude_design_gate(package)
 
     package_invariants = package.proof.get("package_invariants", {})
     invariants = {
@@ -1658,12 +1976,30 @@ def build_runtime_render_model(
         ),
         "tx_tu_never_executable": True,
         "unknown_drift_visible": bool(package_invariants.get("unknowns_preserved")),
-        "claude_design_blocked": True,
+        "claude_design_blocked": gate_status.claude_design_blocked,
+        "claude_design_gate_verified": True,
     }
-    if not all(invariants.values()):
+    preserved_invariants = {
+        key: value for key, value in invariants.items() if key != "claude_design_blocked"
+    }
+    if not all(preserved_invariants.values()):
         raise RuntimeContractError("[BLOCKER] package invariants are not preserved")
 
     settings_admin_runtime = build_settings_admin_runtime_summary(package)
+    settings_admin_runtime = replace(
+        settings_admin_runtime,
+        safe_for_claude_design=gate_status.safe_for_claude_design,
+        ready_for_claude_design=gate_status.ready_for_claude_design,
+    )
+    unknown_drift_queue = build_unknown_drift_queue_summary(
+        package,
+        settings_admin_runtime=settings_admin_runtime,
+    )
+    unknown_drift_queue = replace(
+        unknown_drift_queue,
+        safe_for_claude_design=gate_status.safe_for_claude_design,
+        ready_for_claude_design=gate_status.ready_for_claude_design,
+    )
     return RuntimeRenderModel(
         top_level_modes=TOP_LEVEL_MODES,
         global_surfaces=GLOBAL_SURFACES,
@@ -1672,16 +2008,13 @@ def build_runtime_render_model(
         package_dir=str(package.package_dir),
         package_index_sha256=package.package_index_sha256,
         proof_sha256=package.proof_sha256,
-        safe_for_claude_design="NO",
-        ready_for_claude_design="not approved",
+        safe_for_claude_design=gate_status.safe_for_claude_design,
+        ready_for_claude_design=gate_status.ready_for_claude_design,
         ia_verdict=str(package.proof.get("ia_verdict", "UNKNOWN")),
         invariants=invariants,
         config=config or RuntimeConfig(),
         settings_admin_runtime=settings_admin_runtime,
-        unknown_drift_queue=build_unknown_drift_queue_summary(
-            package,
-            settings_admin_runtime=settings_admin_runtime,
-        ),
+        unknown_drift_queue=unknown_drift_queue,
     )
 
 
@@ -1771,7 +2104,7 @@ def render_runtime_snapshot(
             "  Command Palette broker-only",
             "  Safe Actions / Proof Gate cross-cutting and non-executing here",
             "  Unknown / Drift Queue visible and non-executable",
-            "  Claude Design upload blocked",
+            "  Claude Design gate verified; upload remains an explicit downstream action",
         )
     )
     return "\n".join(lines).rstrip() + "\n"

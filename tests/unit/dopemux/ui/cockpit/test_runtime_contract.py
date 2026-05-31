@@ -31,6 +31,7 @@ from dopemux.ui.cockpit.runtime_contract import (
     normalize_command_palette_index_row,
     runtime_snapshot_payload,
     stable_sha256,
+    verify_claude_design_gate,
 )
 
 
@@ -216,12 +217,37 @@ def test_runtime_render_model_preserves_modes_surfaces_and_tiers():
     assert "Unknown / Drift Queue" in model.global_surfaces
     assert model.unknown_drift_queue.surface_kind == "secondary/global surface"
     assert model.unknown_drift_queue.execution_allowed is False
+    assert model.safe_for_claude_design == "YES"
+    assert model.ready_for_claude_design == "approved"
+    assert model.invariants["claude_design_blocked"] is False
+    assert model.invariants["claude_design_gate_verified"] is True
+
+
+def test_claude_design_gate_verifies_all_eight_blockers_before_flip():
+    package = load_package_artifacts(PACKAGE_DIR)
+    gate = verify_claude_design_gate(package)
+
+    assert gate.packet_id == "TP-DMX-COCKPIT-GATE-FLIP-001"
+    assert gate.safe_for_claude_design == "YES"
+    assert gate.ready_for_claude_design == "approved"
+    assert gate.claude_design_blocked is False
+    assert {condition["id"] for condition in gate.conditions} == {
+        "COMMAND_PALETTE",
+        "SAFE_ACTIONS",
+        "SETTINGS_RUNTIME",
+        "UNKNOWN_DRIFT",
+        "PACK_REMEDIATE_IA",
+        "RUNTIME_RENDER",
+        "INVENTORY_REGEN",
+        "EVIDENCE_LEDGER",
+    }
+    assert all(condition["passed"] is True for condition in gate.conditions)
 
 
 def test_runtime_snapshot_preserves_governance_and_boundaries():
     output = render_runtime_snapshot(PACKAGE_DIR)
-    assert "safe_for_claude_design: NO" in output
-    assert "READY_FOR_CLAUDE_DESIGN: not approved" in output
+    assert "safe_for_claude_design: YES" in output
+    assert "READY_FOR_CLAUDE_DESIGN: approved" in output
     top_line = next(line for line in output.splitlines() if line.startswith("top_level_modes:"))
     assert "PM | Implementer | Overview | Services | Events" in top_line
     assert "Safe Actions / Proof Gate" not in top_line
@@ -240,6 +266,8 @@ def test_runtime_snapshot_preserves_governance_and_boundaries():
     assert "execution_allowed: false" in output
     assert "runtime_reclassification_allowed: false" in output
     assert "requires_packet_for_resolution: true" in output
+    assert "claude_design_blocked: false" in output
+    assert "claude_design_gate_verified: true" in output
 
 
 def test_command_palette_search_axes_cover_spec_axes():
@@ -417,8 +445,8 @@ def test_runtime_snapshot_payload_includes_settings_admin_summary():
     assert settings["unknown_tier_count"] == 62
     assert settings["mapped_tier_counts"]["TU"] == 0
     assert settings["refusal_counts"]["UNKNOWN_DRIFT_QUEUE"] == 62
-    assert settings["safe_for_claude_design"] == "NO"
-    assert settings["READY_FOR_CLAUDE_DESIGN"] == "not approved"
+    assert settings["safe_for_claude_design"] == "YES"
+    assert settings["READY_FOR_CLAUDE_DESIGN"] == "approved"
     assert len(settings["flow_groups"]) == 9
 
 
@@ -1020,8 +1048,6 @@ def test_receipt_redacts_secret_payloads():
 def test_forbidden_positive_claims_absent_from_runtime_snapshot():
     output = render_runtime_snapshot(PACKAGE_DIR)
     forbidden = (
-        _joined("READY_FOR_CLAUDE_DESIGN: ", "approved"),
-        _joined("safe_for_claude_design: ", "YES"),
         _joined("Claude Design upload ", "allowed"),
         _joined("T4 ", "authorized"),
         _joined("runtime execution ", "implemented"),
