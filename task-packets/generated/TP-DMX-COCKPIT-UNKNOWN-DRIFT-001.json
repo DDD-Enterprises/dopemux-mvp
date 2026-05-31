@@ -5,21 +5,22 @@
   "repo_binding": {
     "project_id": "dopemux-mvp",
     "repo_marker": ".dopetaskroot",
-    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
     "require_identity_match": true
   },
   "series": {
-    "id": "dopemux-cockpit-ia-remediation",
-    "base_branch": "codex/cockpit-settings-runtime-001",
-    "parent_tp_id": "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001",
+    "id": "DMX-COCKPIT-UI",
+    "base_branch": "claude/hungry-buck-67a0d3",
+    "parent_tp_id": "7fb6c62d",
     "final_packet": false
   },
   "execution": {
     "agent": "codex",
-    "branch": "codex/cockpit-unknown-drift-001"
+    "branch": "codex/cockpit-ui-unknown-drift-001",
+    "base_branch": "claude/hungry-buck-67a0d3"
   },
   "commit": {
-    "message": "ui(cockpit): wire unknown drift queue primitives",
+    "message": "chore(cockpit): certify unknown drift queue primitives",
     "allowlist": [
       "src/dopemux/ui/cockpit/**",
       "src/dopemux/commands/cockpit_commands.py",
@@ -47,9 +48,9 @@
     ]
   },
   "pr": {
-    "title": "ui(cockpit): wire unknown drift queue primitives",
-    "body": "## Summary\n- add deterministic Unknown / Drift Queue primitive summary to the local runtime-render snapshot\n- build aggregated queue items from accepted package, runtime-render, settings-runtime, Safe Action, Palette, and IA artifacts without mutating upstream artifacts\n- preserve five top-level modes, fail-closed Safe Action behavior, and Claude Design blockers\n\n## Strict scope\n- no final screens\n- no Claude Design upload\n- no runtime action execution\n- no T4 remote mutation\n- no live service adapters\n- no canonical writes\n- no Unknown / Drift execution\n- no runtime reclassification\n\n## Governance state\nsafe_for_claude_design: NO\nREADY_FOR_CLAUDE_DESIGN: not approved\n\n## Validation\nSee closeout proof for command outputs and exit codes.\n\n## Residual risks and downstream packets\n- inventory regeneration against current HEAD remains a separate packet\n- queue items are aggregated where accepted artifacts expose counts rather than per-row data\n- remote-mutation policy remains absent, so T4 stays refused\n- promotions, demotions, and reclassification remain packet-owned outside the runtime renderer",
-    "base": "codex/cockpit-settings-runtime-001"
+    "title": "chore(cockpit): certify unknown drift queue primitives",
+    "body": "## Summary\n- certify that the existing Unknown / Drift Queue runtime primitives satisfy Phase 1 blocker 4 on the current integration base\n- preserve the existing non-executable queue, no runtime reclassification, five top-level modes, and Claude Design blockers\n- record current-base proof without changing runtime behavior\n\n## Strict scope\n- no final screens\n- no Claude Design upload\n- no runtime action execution\n- no T4 remote mutation\n- no live service adapters\n- no canonical writes\n- no Unknown / Drift execution\n- no runtime reclassification\n\n## Governance state\nsafe_for_claude_design: NO\nREADY_FOR_CLAUDE_DESIGN: not approved\n\n## Validation\nSee closeout proof for command outputs and exit codes.\n\n## Residual risks and downstream packets\n- inventory regeneration against current HEAD remains a separate packet\n- queue items are aggregated where accepted artifacts expose counts rather than per-row data\n- remote-mutation policy remains absent, so T4 stays refused\n- promotions, demotions, and reclassification remain packet-owned outside the runtime renderer",
+    "base": "claude/hungry-buck-67a0d3"
   },
   "pal_chain": {
     "enabled": true,
@@ -69,7 +70,7 @@
       "id": "S1",
       "task": "Inspect repo authority, accepted package/runtime/settings artifacts, Safe Action, Palette, IA handoffs, and current Cockpit runtime surfaces before implementation.",
       "validation": [
-        "Dedicated worktree is verified from origin/codex/cockpit-settings-runtime-001 at the audited SHA.",
+        "Dedicated worktree is verified from claude/hungry-buck-67a0d3 at the audited SHA.",
         "Accepted package, runtime-render, and settings-runtime proof artifacts parse.",
         "Missing root authority files and schema files are recorded as UNKNOWN rather than inferred."
       ]
