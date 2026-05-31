@@ -1,0 +1,107 @@
+{
+  "id": "TP-DOCS-FIRST-TOUCH-PRODUCT-NAME-001",
+  "project": "dopemux-mvp",
+  "target": "first-touch docs product name and onboarding drift",
+  "invariants": [
+    "Fix only confirmed stale first-touch onboarding content.",
+    "Preserve repo truth labels where runtime startup behavior is not validated.",
+    "Do not rewrite archived or historical docs unless they are active onboarding surfaces.",
+    "Document remaining archive-only chatx references as out of scope."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "beta-remaining-docs-first-touch",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "fix/docs-first-touch-product-name",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(onboarding): refresh first-touch start here",
+    "allowlist": [
+      "docs/01-tutorials/start-here.md",
+      "docs/01-tutorials/start-here-2.md",
+      "docs/01-tutorials/start-here-3.md",
+      "task-packets/INDEX.md",
+      "task-packets/generated/TP-DOCS-FIRST-TOUCH-PRODUCT-NAME-001.json",
+      "claudedocs/docs-first-touch-product-name-proof-2026-05-31.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DOCS-FIRST-TOUCH-PRODUCT-NAME-001.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DOCS-FIRST-TOUCH-PRODUCT-NAME-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "grep -rn \"chatx\\|chat-x\\|ChatX\" README.md INSTALL.md docs/01-tutorials 2>/dev/null",
+      "python scripts/docs_validator.py docs/01-tutorials/start-here.md docs/01-tutorials/start-here-2.md docs/01-tutorials/start-here-3.md",
+      "python scripts/docs_frontmatter_guard.py docs/01-tutorials/start-here.md docs/01-tutorials/start-here-2.md docs/01-tutorials/start-here-3.md",
+      "git diff --check",
+      "pre-commit run --files docs/01-tutorials/start-here.md docs/01-tutorials/start-here-2.md docs/01-tutorials/start-here-3.md task-packets/INDEX.md task-packets/generated/TP-DOCS-FIRST-TOUCH-PRODUCT-NAME-001.json claudedocs/docs-first-touch-product-name-proof-2026-05-31.md"
+    ]
+  },
+  "pr": {
+    "title": "docs(onboarding): refresh first-touch start here",
+    "body": "## Problem\\nThe active Start Here tutorial describes a stale code-audit branch rather than Dopemux onboarding.\\n\\n## Fix\\nReplace the active Start Here variants with a repo-grounded Dopemux first-touch flow.\\n\\n## Test Plan\\n- Validate Task Packet JSON and schema.\\n- Check active first-touch docs for chatx references.\\n- Run docs validator/frontmatter guard, git diff --check, and pre-commit on changed files.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect",
+      "task": "Inspect active first-touch docs and product-name references before editing.",
+      "requirements": [
+        "Run the prescribed chatx grep.",
+        "Read active tutorial start/quickstart surfaces.",
+        "Distinguish active onboarding docs from archived historical docs."
+      ],
+      "validation": [
+        "grep -rn \"chatx\\|chat-x\\|ChatX\" docs/ README.md INSTALL.md 2>/dev/null | head -20",
+        "sed -n '1,180p' docs/01-tutorials/start-here.md",
+        "sed -n '1,180p' docs/01-tutorials/quickstart.md"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Replace confirmed stale Start Here content with the actual Dopemux first-touch flow.",
+      "requirements": [
+        "Reflect clone/install, ./install.sh, dopemux start, and opening Claude Code.",
+        "Preserve explicit uncertainty for live startup behavior not validated in this slice.",
+        "Keep archived chatx references out of scope unless active onboarding docs reference them."
+      ],
+      "validation": [
+        "grep -rn \"chatx\\|chat-x\\|ChatX\" README.md INSTALL.md docs/01-tutorials 2>/dev/null"
+      ]
+    },
+    {
+      "id": "precommit",
+      "task": "Validate docs, codereview, pre-commit, commit, push, and open the PR.",
+      "requirements": [
+        "Inspect diff scope before staging.",
+        "Report archive-only chatx references as remaining risk, not active onboarding failures."
+      ],
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-DOCS-FIRST-TOUCH-PRODUCT-NAME-001.json >/dev/null",
+        "python -m jsonschema -i task-packets/generated/TP-DOCS-FIRST-TOUCH-PRODUCT-NAME-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python scripts/docs_validator.py docs/01-tutorials/start-here.md docs/01-tutorials/start-here-2.md docs/01-tutorials/start-here-3.md",
+        "python scripts/docs_frontmatter_guard.py docs/01-tutorials/start-here.md docs/01-tutorials/start-here-2.md docs/01-tutorials/start-here-3.md",
+        "git diff --check",
+        "pre-commit run --files docs/01-tutorials/start-here.md docs/01-tutorials/start-here-2.md docs/01-tutorials/start-here-3.md task-packets/INDEX.md task-packets/generated/TP-DOCS-FIRST-TOUCH-PRODUCT-NAME-001.json claudedocs/docs-first-touch-product-name-proof-2026-05-31.md"
+      ]
+    }
+  ]
+}
