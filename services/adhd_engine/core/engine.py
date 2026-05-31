@@ -33,6 +33,7 @@ from .models import (
     AccommodationRecommendation
 )
 from ..config import settings  # Relative import
+from ..operator_identity import resolve_operator_user_id
 from .activity_tracker import ActivityTracker
 from ..conport_mcp_client import ConPortMCPClient  # Relative import
 from ..bridge_integration import ConPortBridgeAdapter  # Relative import
@@ -65,7 +66,7 @@ from ..event_listener import ADHDEventListener
 try:
     from ..event_emitter import ADHDEventEmitter
 except ImportError:
-    pass
+    ADHDEventEmitter = None
 
 # ConPort-KG Integration (optional)
 try:
@@ -116,6 +117,7 @@ class ADHDAccommodationEngine:
         """Initialize ADHD accommodation engine with settings-based configuration."""
         self.redis_url = settings.redis_url
         self.workspace_id = settings.workspace_id
+        self.operator_user_id = resolve_operator_user_id()
 
         # Redis connection for state persistence (now using shared pool)
         self.redis_client: Optional[redis.Redis] = None
@@ -294,12 +296,13 @@ class ADHDAccommodationEngine:
         """Initialize DDD domain components."""
         # Attention Domain
         self.hyperfocus_guard = HyperfocusGuard()
-        self.attention_calibrator = AttentionCalibrator(user_id=settings.workspace_id)  # Using workspace_id as default user
+        self.operator_user_id = resolve_operator_user_id()
+        self.attention_calibrator = AttentionCalibrator(user_id=self.operator_user_id)
         self.procrastination_detector = ProcrastinationDetector()
         self.overwhelm_detector = OverwhelmDetector()
         
         # Wellbeing Domain
-        self.social_battery_monitor = SocialBatteryMonitor(user_id=settings.workspace_id, bridge_client=self.conport)
+        self.social_battery_monitor = SocialBatteryMonitor(user_id=self.operator_user_id, bridge_client=self.conport)
         
         # Task Enablement Domain
         self.task_decomposer = TaskDecompositionAssistant()
@@ -311,17 +314,10 @@ class ADHDAccommodationEngine:
         self.voice_assistant = VoiceAssistant(adhd_engine=self)
         
         # Event Listener
-        from ..event_listener import ADHDEventListener
-        # We need an EventBus - usually this would be injected or imported
-        # For now, we will create a dummy event bus if not available or assume it's part of the engine
-        # But wait, event_listener expects 'event_bus'.
-        # Assuming engine has access to event bus, or we need to create one.
-        # Let's import the event bus if available.
-        try:
-            from ..event_emitter import ADHDEventEmitter
+        if ADHDEventEmitter is not None:
             # Event emitter expects a Redis URL, not a bridge adapter object.
             self.event_bus = ADHDEventEmitter(settings.redis_url)
-        except ImportError:
+        else:
             self.event_bus = None
             
         self.event_listener = ADHDEventListener(
@@ -335,7 +331,8 @@ class ADHDAccommodationEngine:
     async def _start_event_listener(self) -> None:
         """Start the central event listener."""
         if self.event_listener:
-            await self.event_listener.start(user_id=settings.workspace_id)
+            self.operator_user_id = resolve_operator_user_id()
+            await self.event_listener.start(user_id=self.operator_user_id)
 
     # Core Accommodation Methods
 

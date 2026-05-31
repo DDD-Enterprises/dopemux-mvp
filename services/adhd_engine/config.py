@@ -36,6 +36,10 @@ class Settings:
     conport_url: str = os.getenv("CONPORT_URL", "http://localhost:3010")
     pal_url: str = os.getenv("PAL_URL", os.getenv("ZEN_URL", "http://localhost:3003"))  # Backward compat with ZEN_URL
     workspace_id: str = os.getenv("ADHD_WORKSPACE_ID", os.getcwd())
+    operator_id_path: str = os.getenv(
+        "ADHD_OPERATOR_ID_PATH",
+        os.path.expanduser("~/.dopemux/operator_id"),
+    )
     dopecon_bridge_url: str = os.getenv("DOPECON_BRIDGE_URL", os.getenv("CONPORT_BRIDGE_URL", "http://localhost:3016"))
     dopecon_bridge_token: Optional[str] = os.getenv("DOPECON_BRIDGE_TOKEN")
     dopecon_bridge_source_plane: str = os.getenv("DOPECON_BRIDGE_SOURCE_PLANE", "cognitive_plane")

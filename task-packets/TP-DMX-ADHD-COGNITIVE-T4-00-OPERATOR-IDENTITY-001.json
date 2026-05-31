@@ -1,0 +1,144 @@
+{
+  "id": "TP-DMX-ADHD-COGNITIVE-T4-00-OPERATOR-IDENTITY-001",
+  "project": "dopemux-mvp",
+  "target": "ADHD Engine operator identity gate for the cognitive signal pipeline",
+  "invariants": [
+    "Operator identity must be content-free and must not derive from machine identifiers, paths, usernames, hostnames, prompts, file contents, or code contents.",
+    "The active FastAPI runtime imports services.adhd_engine.core.engine; the legacy services/adhd_engine/engine.py sibling is not the authority for this slice.",
+    "T4-00 must not seed default profiles or close the activity input loop; those remain T4-03a/T4-03b work.",
+    "ADHD Engine remains cognitive-only under AGENTS.md section 6."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ADHD-COGNITIVE-REMEDIATION",
+    "base_branch": "feat/autoreview-platform-series",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/adhd-operator-identity-001",
+    "base_branch": "feat/autoreview-platform-series",
+    "stacked_because": "Primary checkout is dirty and the loaded ADHD remediation plan is uncommitted there."
+  },
+  "commit": {
+    "message": "feat(adhd): resolve stable operator identity",
+    "allowlist": [
+      "services/adhd_engine/operator_identity.py",
+      "services/adhd_engine/config.py",
+      "services/adhd_engine/core/engine.py",
+      "services/adhd_engine/api/routes.py",
+      "services/adhd_engine/main.py",
+      "task-packets/TP-DMX-ADHD-COGNITIVE-T4-00-OPERATOR-IDENTITY-001.json",
+      "task-packets/TP-DMX-ADHD-COGNITIVE-T4-00-OPERATOR-IDENTITY-001-implementation-notes.md",
+      "tests/unit/test_adhd_operator_identity.py"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-00-OPERATOR-IDENTITY-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/unit/test_adhd_operator_identity.py tests/unit/test_adhd_engine_settings_contract.py tests/unit/test_adhd_engine_task_orchestrator_url.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(adhd): resolve stable operator identity",
+    "body": "## Summary\n- add a content-free persisted random operator identity resolver for ADHD engine user threading\n- stop using workspace_id and hard-coded default user ids for active ADHD engine startup/state defaults\n- add targeted regression tests for persistence, permissions, override behavior, and runtime threading\n\n## Validation\n- python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-00-OPERATOR-IDENTITY-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- python -m pytest tests/unit/test_adhd_operator_identity.py tests/unit/test_adhd_engine_settings_contract.py tests/unit/test_adhd_engine_task_orchestrator_url.py\n- git diff --check",
+    "base": "feat/autoreview-platform-series"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect",
+      "task": "Inspect active ADHD engine imports, identity defaults, route defaults, settings, and existing ADHD tests before editing.",
+      "requirements": [
+        "Distinguish active services.adhd_engine.core.engine runtime from legacy services/adhd_engine/engine.py.",
+        "Do not widen into T4-01 event API or T4-03 profile seeding work."
+      ],
+      "commands": [
+        "rg -n \"workspace_id|user_id|default_user|operator_id|AttentionCalibrator|event_listener.start|/state\" services/adhd_engine src tests -g '*.py'",
+        "nl -ba services/adhd_engine/core/engine.py | sed -n '1,420p'",
+        "nl -ba services/adhd_engine/api/routes.py | sed -n '220,260p;1460,1510p'"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Runtime authority and change points are identified before tests or production edits."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/adhd-cognitive-remediation-plan-2026-05-31.md",
+        "docs/ops/load-plans/load_plan-DMX-ADHD-COGNITIVE-REMEDIATION.json",
+        "services/adhd_engine/core/engine.py",
+        "services/adhd_engine/api/routes.py",
+        "services/adhd_engine/main.py",
+        "services/adhd_engine/config.py"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Add a persisted random operator identity resolver and thread it through active engine startup, event listener startup, MCP cognitive-state default, and local /state hook default.",
+      "requirements": [
+        "Write failing tests before production code.",
+        "Persisted identity file must be created with 0600 permissions where supported.",
+        "Generated identity must be random UUID text and stable across resolver calls.",
+        "Explicit environment override is allowed only as an operator-provided content-free id and must not write the persisted identity file.",
+        "No machine fingerprinting, path hashing, hostname use, prompt/content capture, profile seeding, or task authority changes."
+      ],
+      "commands": [
+        "apply_patch"
+      ],
+      "expected_files": [
+        "services/adhd_engine/operator_identity.py",
+        "services/adhd_engine/config.py",
+        "services/adhd_engine/core/engine.py",
+        "services/adhd_engine/api/routes.py",
+        "services/adhd_engine/main.py",
+        "tests/unit/test_adhd_operator_identity.py"
+      ],
+      "validation": [
+        "Targeted identity tests fail before implementation and pass after implementation."
+      ],
+      "context_files": [
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "validate",
+      "task": "Validate packet schema, targeted tests, diff scope, and precommit checks for the bounded T4-00 slice.",
+      "requirements": [
+        "Report every NOT_RUN command with reason.",
+        "Inspect git status and diff scope before final summary.",
+        "Do not claim T4-01/T4-03 activity pipeline behavior."
+      ],
+      "commands": [
+        "python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-00-OPERATOR-IDENTITY-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python -m pytest tests/unit/test_adhd_operator_identity.py tests/unit/test_adhd_engine_settings_contract.py tests/unit/test_adhd_engine_task_orchestrator_url.py",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "task-packets/TP-DMX-ADHD-COGNITIVE-T4-00-OPERATOR-IDENTITY-001-implementation-notes.md"
+      ],
+      "validation": [
+        "Proof notes and final response distinguish PASS, FAIL, NOT_RUN, and remaining UNKNOWNs."
+      ],
+      "context_files": []
+    }
+  ]
+}
