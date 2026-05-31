@@ -1,0 +1,124 @@
+{
+  "packet_id": "TP-DMX-COCKPIT-SAFE-ACTIONS-001",
+  "branch": "codex/cockpit-ui-safe-actions-001",
+  "base_branch": "claude/hungry-buck-67a0d3",
+  "base_commit": "93a779c97a2f84202cfaf16abe18ab3b061c6e88",
+  "worktree_path": "/Users/hue/.codex/worktrees/cockpit-ui-safe-actions-001",
+  "repo_identity": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp"
+  },
+  "safe_for_claude_design": "NO",
+  "ready_for_claude_design": false,
+  "runtime_execution": "not_implemented",
+  "t4_remote_mutation": "not_authorized",
+  "claude_design_upload": "not_authorized",
+  "implementation_summary": [
+    "Added pure runtime typed-confirmation matching for T5 service actions and T6 task-packet execution handoffs.",
+    "T5/T6 candidates with mismatched typed confirmation return can_confirm=false and execution_status=not_attempted.",
+    "T6 candidates with tp_gate_present not true fail closed to UNKNOWN_DRIFT_QUEUE with TP_GATE_ABSENT.",
+    "Existing T0/T0i/T4/TX/TU and EXTERNAL_ONLY fail-closed behavior remains covered by tests.",
+    "Updated only derived inventory metadata for runtime_contract.py line count and sha256 plus matching proof checksum fields."
+  ],
+  "files_changed": [
+    "src/dopemux/ui/cockpit/runtime_contract.py",
+    "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+    "task-packets/generated/TP-DMX-COCKPIT-SAFE-ACTIONS-001.json",
+    "task-packets/INDEX.md",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/PROOF.json",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/sha256sums.txt",
+    "proof/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/PROOF.json"
+  ],
+  "tdd_evidence": [
+    {
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit/test_runtime_contract.py -q",
+      "phase": "RED",
+      "exit_code": 1,
+      "summary": "3 failures showed T5/T6 typed-confirmation mismatch and T6 absent task gate still allowed confirmation."
+    },
+    {
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit/test_runtime_contract.py -q",
+      "phase": "GREEN",
+      "exit_code": 0,
+      "summary": "51 passed."
+    }
+  ],
+  "validation": [
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-SAFE-ACTIONS-001.json >/dev/null",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "jsonschema.validate(task-packets/generated/TP-DMX-COCKPIT-SAFE-ACTIONS-001.json, dopetask-canonical-spec.json)",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "schema: PASS"
+    },
+    {
+      "command": "python scripts/brand_lint.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "0 errors, 0 warnings"
+    },
+    {
+      "command": "python scripts/sync_brand_tokens.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "All brand tokens in sync across theme.py, dopemux.tcss, theme.ts"
+    },
+    {
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit/test_runtime_contract.py -q",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "51 passed"
+    },
+    {
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit/ -q",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "99 passed"
+    },
+    {
+      "command": "python -m compileall -q src/dopemux/ui/cockpit tests/unit/dopemux/ui/cockpit",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "cd out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001 && shasum -a 256 -c sha256sums.txt",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "All listed artifacts OK."
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ],
+  "codereview": {
+    "tool": "pal/codereview",
+    "continuation_id": "6f5fd72b-2424-404f-a886-5aa452ee7880",
+    "status": "PASS",
+    "issues_found": 0
+  },
+  "precommit": {
+    "tool": "pal/precommit",
+    "continuation_id": "15c73781-c806-46e0-9e9a-ef6d6c37d21f",
+    "status": "PASS",
+    "issues_found": 0
+  },
+  "commit_sha": "RECORDED_IN_FINAL_CLOSEOUT_AFTER_COMMIT",
+  "pr_url": "RECORDED_IN_FINAL_CLOSEOUT_AFTER_PR_CREATE",
+  "residual_risks": [
+    "This packet wires Safe Action preflight guards only; it does not implement action execution or post-action proof capture.",
+    "T4 remains refused until a remote-mutation policy exists and a later runtime packet authorizes it.",
+    "Inventory metadata update is narrow and derived; full inventory regeneration remains owned by TP-DMX-COCKPIT-INVENTORY-REGEN-001.",
+    "safe_for_claude_design remains NO because the remaining Phase 1 blockers are not all closed."
+  ],
+  "unknowns": [
+    "Task-orchestrator MCP context retrieval was unavailable in this run; the mirrored task-plan and local packet are the observed execution authority."
+  ]
+}
