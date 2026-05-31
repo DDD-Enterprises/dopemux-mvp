@@ -105,8 +105,8 @@
     },
     {
       "path": "src/dopemux/ui/cockpit/runtime_contract.py",
-      "sha256": "1eadd5ce2ac215a468c8dbbdced0f5840981ea800aae7316c722a80c74d397a2",
-      "line_count": 2145,
+      "sha256": "d7b36a9997676ad9ad87a1cd5be4f24457f2a07421b3b2b42838692e643eb951",
+      "line_count": 2179,
       "observed_role": "local-only package-derived runtime primitives and Safe Action preflight model"
     },
     {

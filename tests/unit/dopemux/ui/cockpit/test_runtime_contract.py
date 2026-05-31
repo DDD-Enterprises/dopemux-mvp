@@ -91,6 +91,35 @@ def _candidate(**overrides: object) -> dict[str, object]:
     return data
 
 
+def _t5_candidate(**overrides: object) -> dict[str, object]:
+    data = _candidate(
+        gate_tier="T5",
+        expected_proof="SERVICE_STATUS_AND_LOG",
+        service_id="dopemux-rte",
+        service_scope="local",
+        expected_state_transition="stopped -> running",
+        pre_state_snapshot={"status": "stopped"},
+        typed_confirmation="dopemux-rte",
+    )
+    data.update(overrides)
+    return data
+
+
+def _t6_candidate(**overrides: object) -> dict[str, object]:
+    data = _candidate(
+        gate_tier="T6",
+        expected_proof="TP_RUNNER_PROOF",
+        tp_or_task_id="TP-DMX-COCKPIT-SAFE-ACTIONS-001",
+        runner_id="dopetask-local",
+        branch="codex/cockpit-ui-safe-actions-001",
+        output_or_proof_target="proof/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001",
+        tp_gate_present=True,
+        typed_confirmation="TP-DMX-COCKPIT-SAFE-ACTIONS-001",
+    )
+    data.update(overrides)
+    return data
+
+
 def _palette_row(**overrides: object) -> dict[str, object]:
     data: dict[str, object] = {
         "command_path": "dopemux cockpit run",
@@ -328,6 +357,25 @@ def test_command_palette_unresolved_required_parameter_fails_closed_before_gate(
         _palette_row(
             parameter_schema={
                 "required_parameters": [{"name": "target", "value": "UNKNOWN"}],
+                "optional_parameters": [],
+                "cwd_target": str(REPO_ROOT),
+                "output_target": "NOT_APPLICABLE",
+                "side_effects": ["execution_handoff"],
+            }
+        )
+    )
+
+    assert decision.outcome == "ShowUnknownDriftReason"
+    assert decision.routing_destination == "UNKNOWN_DRIFT_QUEUE"
+    assert decision.refusal_reason == "PARAM_UNRESOLVED"
+    assert decision.can_open_safe_action_gate is False
+
+
+def test_command_palette_unknown_required_parameters_string_fails_closed_before_gate():
+    decision = route_command_palette_row(
+        _palette_row(
+            parameter_schema={
+                "required_parameters": "UNKNOWN",
                 "optional_parameters": [],
                 "cwd_target": str(REPO_ROOT),
                 "output_target": "NOT_APPLICABLE",
@@ -692,6 +740,55 @@ def test_t4_is_refused_until_remote_policy_scope_exists():
     assert result.status == "REFUSE_T4_POLICY_MISSING"
     assert result.can_confirm is False
     assert result.refusal_reason == "REMOTE_MUTATION_POLICY_MISSING"
+
+
+@pytest.mark.parametrize(
+    ("candidate", "expected_status"),
+    [
+        (_t5_candidate(typed_confirmation="wrong-service"), "REFUSE_TYPED_CONFIRMATION_MISMATCH"),
+        (_t6_candidate(typed_confirmation="wrong-task"), "REFUSE_TYPED_CONFIRMATION_MISMATCH"),
+    ],
+)
+def test_t5_and_t6_refuse_before_typed_confirmation_matches(
+    candidate: dict[str, object],
+    expected_status: str,
+):
+    result = evaluate_safe_action_preflight(
+        candidate,
+        current_row_hash="row-hash-001",
+        evaluated_at_utc=EVALUATED_AT,
+    )
+    assert result.status == expected_status
+    assert result.can_confirm is False
+    assert result.refusal_reason == "TYPED_CONFIRMATION_MISMATCH"
+    assert result.routing_destination == "SAFE_ACTION_GATE"
+    assert result.execution_status == "not_attempted"
+
+
+@pytest.mark.parametrize("candidate", [_t5_candidate(), _t6_candidate()])
+def test_t5_and_t6_allow_confirm_only_after_typed_confirmation_matches(
+    candidate: dict[str, object],
+):
+    result = evaluate_safe_action_preflight(
+        candidate,
+        current_row_hash="row-hash-001",
+        evaluated_at_utc=EVALUATED_AT,
+    )
+    assert result.status == "ALLOW_CONFIRM"
+    assert result.can_confirm is True
+    assert result.execution_status == "not_attempted"
+
+
+def test_t6_refuses_when_task_packet_gate_is_absent():
+    result = evaluate_safe_action_preflight(
+        _t6_candidate(tp_gate_present=False),
+        current_row_hash="row-hash-001",
+        evaluated_at_utc=EVALUATED_AT,
+    )
+    assert result.status == "REFUSE_TP_GATE_ABSENT"
+    assert result.can_confirm is False
+    assert result.refusal_reason == "TP_GATE_ABSENT"
+    assert result.routing_destination == "UNKNOWN_DRIFT_QUEUE"
 
 
 @pytest.mark.parametrize("tier", ["T0", "T0i"])
