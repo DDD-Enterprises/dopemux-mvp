@@ -1,0 +1,17 @@
+version: 1
+merge:
+  allow_governed_automerge: false
+  allow_auto_fallback_only_for:
+    - merge_queue_required
+governed_automerge:
+  enabled: false
+steward_gate:
+  artifact_ttl_seconds: 3600
+  allow_global_fix_prs: false
+  remediation_readiness:
+    - NEEDS_IMPLEMENTER
+  finalization_readiness:
+    - READY
+safety:
+  fail_closed_on_incomplete_data: true
+  require_expected_head_oid: true
