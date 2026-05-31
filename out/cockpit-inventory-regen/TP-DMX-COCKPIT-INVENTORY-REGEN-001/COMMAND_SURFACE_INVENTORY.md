@@ -2,9 +2,9 @@
 
 Packet: `TP-DMX-COCKPIT-INVENTORY-REGEN-001`
 
-Generated at UTC: `2026-05-04T21:53:46Z`
+Generated at UTC: `2026-05-31T06:02:29Z`
 
-Base/current source HEAD inspected: `b6b89fae076a669952ef1178d7d7d17a3e01eb7b`
+Base/current source HEAD inspected: `d0a6ce1fb479bda8d995e32804b9a512d61a0a48`
 
 Governance state:
 

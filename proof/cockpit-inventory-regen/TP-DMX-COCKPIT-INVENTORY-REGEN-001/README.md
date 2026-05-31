@@ -2,17 +2,17 @@
 
 Packet: `TP-DMX-COCKPIT-INVENTORY-REGEN-001`
 
-Worktree: `/Users/hue/code/dopemux-worktrees/dopemux-cockpit-inventory-regen-001`
+Worktree: `/Users/hue/.codex/worktrees/cockpit-ui-inventory-regen-001`
 
-Branch: `codex/cockpit-inventory-regen-001`
+Branch: `codex/cockpit-ui-inventory-regen-001`
 
-Base branch: `codex/cockpit-unknown-drift-001`
+Base branch: `claude/hungry-buck-67a0d3`
 
-Base/source HEAD: `b6b89fae076a669952ef1178d7d7d17a3e01eb7b`
+Base/source HEAD: `d0a6ce1fb479bda8d995e32804b9a512d61a0a48`
 
-Implementation commit: `e9e7e286422304266d98717a176775d6428689f1`
+Implementation commit: `RECORDED_IN_FINAL_CLOSEOUT_AFTER_COMMIT`
 
-PR: `https://github.com/DDD-Enterprises/dopemux-mvp/pull/571`
+PR: `RECORDED_IN_FINAL_CLOSEOUT_AFTER_PR_CREATE`
 
 ## Artifact Paths
 

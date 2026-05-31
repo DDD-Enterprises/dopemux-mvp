@@ -2,7 +2,7 @@
 
 Packet: `TP-DMX-COCKPIT-INVENTORY-REGEN-001`
 
-Compared source HEAD: `b6b89fae076a669952ef1178d7d7d17a3e01eb7b`
+Compared source HEAD: `d0a6ce1fb479bda8d995e32804b9a512d61a0a48`
 
 ## Result
 
