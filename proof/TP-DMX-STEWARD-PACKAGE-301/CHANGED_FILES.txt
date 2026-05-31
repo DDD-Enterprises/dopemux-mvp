@@ -1,0 +1,14 @@
+docs/ops/pr-steward-cli.md
+docs/ops/pr-steward.md
+proof/TP-DMX-STEWARD-PACKAGE-301/AUDITOR_REPORT.md
+proof/TP-DMX-STEWARD-PACKAGE-301/CHANGED_FILES.txt
+proof/TP-DMX-STEWARD-PACKAGE-301/DIFF_STAT.txt
+proof/TP-DMX-STEWARD-PACKAGE-301/GIT_STATE.md
+proof/TP-DMX-STEWARD-PACKAGE-301/PROOF.json
+proof/TP-DMX-STEWARD-PACKAGE-301/VALIDATION_OUTPUT.md
+proof/TP-DMX-STEWARD-PACKAGE-301/review_bundle/README.md
+src/dopemux/cli.py
+src/dopemux_pr_steward/__init__.py
+src/dopemux_pr_steward/cli.py
+task-packets/generated/TP-DMX-STEWARD-PACKAGE-301.json
+tests/dopemux_cli/test_pr_steward_cmd.py
