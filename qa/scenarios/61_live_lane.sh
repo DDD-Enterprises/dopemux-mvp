@@ -294,8 +294,11 @@ SPEND_AFTER_RTE="$(_read_spend_usd)"
 RTE_SPEND_DELTA="$(awk "BEGIN{printf \"%.6f\", ${SPEND_AFTER_RTE}-${SPEND_BEFORE_RTE}}")"
 log_info "Spend after RTE call: \$${SPEND_AFTER_RTE} (delta: \$${RTE_SPEND_DELTA})"
 
+# Check cumulative spend for the whole live lane (from SPEND_BEFORE), not just
+# the RTE delta, so PAL + RTE together cannot exceed the cap.
+CUMULATIVE_DELTA="$(awk "BEGIN{printf \"%.6f\", ${SPEND_AFTER_RTE}-${SPEND_BEFORE}}")"
 RTE_WITHIN_CAP=true
-if ! _float_le "${RTE_SPEND_DELTA}" "${SPEND_CAP}"; then
+if ! _float_le "${CUMULATIVE_DELTA}" "${SPEND_CAP}"; then
     RTE_WITHIN_CAP=false
 fi
 
