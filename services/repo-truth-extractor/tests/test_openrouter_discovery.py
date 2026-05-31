@@ -86,6 +86,22 @@ def test_free_routes_are_experimental_and_preserve_privacy_warning() -> None:
     assert native_free["privacy_warning"] == "PROVIDER_LOGGING_INDICATED"
 
 
+def test_pricing_with_extra_billable_dimension_is_not_marked_free() -> None:
+    row = classify_openrouter_model(
+        {
+            "id": "qwen/qwen3-coder:free",
+            "pricing": {
+                "prompt": "0",
+                "completion": "0",
+                "request": "0",
+                "image": "0.0001",
+            },
+        }
+    )
+
+    assert row["free_or_paid"] == "PAID"
+
+
 def test_hosted_open_weight_candidate_is_admitted_for_benchmarking() -> None:
     row = classify_openrouter_model(
         {
@@ -146,6 +162,16 @@ def test_live_fetch_requires_explicit_opt_in(monkeypatch: pytest.MonkeyPatch) ->
     monkeypatch.delenv(LIVE_FETCH_ENV, raising=False)
 
     with pytest.raises(OpenRouterMetadataError, match=LIVE_FETCH_ENV):
+        fetch_openrouter_models_live(timeout_seconds=0.001)
+
+
+def test_live_fetch_requires_repo_live_consent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(LIVE_FETCH_ENV, "1")
+    monkeypatch.delenv("DPMX_LIVE_OK", raising=False)
+
+    with pytest.raises(OpenRouterMetadataError, match="DPMX_LIVE_OK"):
         fetch_openrouter_models_live(timeout_seconds=0.001)
 
 

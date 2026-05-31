@@ -16,6 +16,7 @@ UNKNOWN = "UNKNOWN"
 SNAPSHOT_SCHEMA_ID = "rte_openrouter_route_metadata_discovery_v1"
 OPENROUTER_MODELS_URL = "https://openrouter.ai/api/v1/models"
 LIVE_FETCH_ENV = "RTE_OPENROUTER_DISCOVERY_LIVE"
+LIVE_CONSENT_ENV = "DPMX_LIVE_OK"
 
 CLASSIFICATION_LABELS = (
     "DIRECT_OVERLAP_EXCLUDE",
@@ -153,22 +154,20 @@ def _top_provider_context_length(model: dict[str, Any]) -> int | float | str:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise OpenRouterMetadataError(
             "top_provider.context_length must be a number when present"
-        )
+    )
     return value
 
 
+def _pricing_values(pricing: dict[str, Any]) -> list[Any]:
+    return [value for value in pricing.values() if value is not None]
+
+
 def _is_free(model_id: str, pricing: dict[str, Any] | str) -> bool:
-    if model_id.lower().endswith(":free"):
-        return True
     if not isinstance(pricing, dict):
-        return False
-    price_values = [
-        pricing.get(key)
-        for key in ("prompt", "completion", "request")
-        if key in pricing
-    ]
+        return model_id.lower().endswith(":free")
+    price_values = _pricing_values(pricing)
     if not price_values:
-        return False
+        return model_id.lower().endswith(":free")
     try:
         return all(float(str(value)) == 0.0 for value in price_values)
     except (TypeError, ValueError):
@@ -180,11 +179,7 @@ def _free_or_paid(model_id: str, pricing: dict[str, Any] | str) -> str:
         return "FREE"
     if not isinstance(pricing, dict):
         return UNKNOWN
-    price_values = [
-        pricing.get(key)
-        for key in ("prompt", "completion", "request")
-        if key in pricing
-    ]
+    price_values = _pricing_values(pricing)
     if not price_values:
         return UNKNOWN
     try:
@@ -500,6 +495,10 @@ def fetch_openrouter_models_live(timeout_seconds: float = 30.0) -> dict[str, Any
     if os.environ.get(LIVE_FETCH_ENV) != "1":
         raise OpenRouterMetadataError(
             f"live OpenRouter discovery requires {LIVE_FETCH_ENV}=1"
+        )
+    if os.environ.get(LIVE_CONSENT_ENV) != "1":
+        raise OpenRouterMetadataError(
+            f"live OpenRouter discovery requires {LIVE_CONSENT_ENV}=1"
         )
     headers = {"Accept": "application/json"}
     api_key = _api_key_from_env()
