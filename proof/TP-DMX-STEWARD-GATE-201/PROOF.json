@@ -1,0 +1,145 @@
+{
+  "tp_id": "TP-DMX-STEWARD-GATE-201",
+  "status": "PASS_WITH_LIMITS",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-steward-gate-201",
+  "branch": "codex/tp-dmx-steward-gate-201",
+  "base_ref": "origin/codex/tp-dmx-audit-ci-provenance-104",
+  "base_sha": "746a3f7dadbc5fc24e2bc648cd2f9f4e0b7d52fc",
+  "repo_identity": {
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker": ".dopetaskroot",
+    "identity_match": true
+  },
+  "stacking": {
+    "reason": "TP201 depends on TP-DMX-AUDIT-CI-PROVENANCE-104, which is open as draft PR #761 and not yet merged to main.",
+    "base_branch": "codex/tp-dmx-audit-ci-provenance-104"
+  },
+  "dependency_proofs": [
+    {
+      "tp_id": "TP-DMX-AUDIT-CI-PROVENANCE-104",
+      "path": "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/PROOF.json",
+      "present": true,
+      "status": "PASS",
+      "embedded_audit_status": "SKIPPED",
+      "note": "Dependency proof exists and validates; its independent embedded audit was skipped because trusted token status was UNKNOWN."
+    }
+  ],
+  "authority_used": [
+    "AGENTS.md",
+    "task-packets/generated/TP-DMX-STEWARD-GATE-201.json",
+    "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+    "src/dopemux_pr_merge_specialist/merge.py",
+    "tools/pr_steward/classifier.py",
+    "schemas/proof/embedded_audit.schema.json",
+    "config/pr_merge_specialist/policy.yaml"
+  ],
+  "slices_completed": [
+    "RED: added tests/pr_merge_specialist/test_steward_gate.py and observed ModuleNotFoundError for missing steward_gate module.",
+    "GREEN: added pure local steward_gate implementation, policy TTL/readiness config, and steward merge gate docs.",
+    "Validated focused behavior, schema, JSON, purity scan, AST parse, proof shape, diff hygiene, and precommit where environment allowed."
+  ],
+  "files_changed": [
+    "config/pr_merge_specialist/policy.yaml",
+    "docs/ops/steward-merge-gate.md",
+    "src/dopemux_pr_merge_specialist/steward_gate.py",
+    "tests/pr_merge_specialist/test_steward_gate.py",
+    "proof/TP-DMX-STEWARD-GATE-201/AUDITOR_REPORT.md",
+    "proof/TP-DMX-STEWARD-GATE-201/CHANGED_FILES.txt",
+    "proof/TP-DMX-STEWARD-GATE-201/DIFF_STAT.txt",
+    "proof/TP-DMX-STEWARD-GATE-201/GIT_STATE.md",
+    "proof/TP-DMX-STEWARD-GATE-201/PROOF.json",
+    "proof/TP-DMX-STEWARD-GATE-201/VALIDATION_OUTPUT.md",
+    "proof/TP-DMX-STEWARD-GATE-201/review_bundle/README.md"
+  ],
+  "validations": [
+    {
+      "command": "pytest -q tests/pr_merge_specialist/test_steward_gate.py",
+      "exit_code": 2,
+      "status": "RED_PASS",
+      "evidence": "ModuleNotFoundError: No module named 'dopemux_pr_merge_specialist.steward_gate'"
+    },
+    {
+      "command": "pytest -q tests/pr_merge_specialist/test_steward_gate.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "5 passed"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 pytest -q -s -p no:cacheprovider tests/pr_merge_specialist/test_steward_gate.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "5 passed with capture/cache disabled after disk pressure."
+    },
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-STEWARD-GATE-201.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m jsonschema -i task-packets/generated/TP-DMX-STEWARD-GATE-201.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m compileall -q src tests",
+      "exit_code": 1,
+      "status": "FAIL_ENV",
+      "evidence": "No space left on device while writing __pycache__ files."
+    },
+    {
+      "command": "python -c ast.parse changed Python files",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -c purity static check",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python scripts/audit/validate_audit_proof.py proof/TP-DMX-STEWARD-GATE-201/PROOF.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "pre-commit run --files <TP201 changed files>",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-STEWARD-GATE-201/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "External embedded audit was not invoked in this Codex session.",
+      "Local broad compileall is environment-blocked by disk exhaustion; CI is expected to provide broader validation."
+    ],
+    "skip_reason": "No supported external embedded-auditor invocation was available in this session; Codex performed bounded manual audit and records this required audit as skipped."
+  },
+  "codereview_status": "Manual bounded review complete: guard is local-only and not wired into mutation seams.",
+  "precommit_status": "PASS: pre-commit run on touched files and git diff --check passed.",
+  "commit_sha": "PENDING",
+  "pr_url": "PENDING",
+  "residual_risks": [
+    "TP104 dependency embedded audit status is SKIPPED, not PASS.",
+    "TP201 is stacked on TP104 because TP104 is not merged to main.",
+    "Broad compileall failed locally due disk exhaustion.",
+    "External embedded audit and supervisor review remain required before treating this red-lane packet as accepted."
+  ],
+  "unknowns": [
+    "Task Orchestrator MCP context unavailable: Transport closed."
+  ],
+  "cleanup_status": "WORKTREE_ACTIVE_PENDING_PR"
+}
