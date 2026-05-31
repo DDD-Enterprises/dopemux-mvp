@@ -64,7 +64,11 @@ CORE_STACK_PORTS=(5432 6379 6333 6334 3004 8000 8095)
 RESEARCH_STACK_EXTRA_PORTS=(3009 3011)
 FULL_STACK_EXTRA_PORTS=(3003 3009 3011 3012 3015 3016 4000 8081 8090 8790)
 
-CORE_STACK_ENV_VARS=()
+CORE_STACK_ENV_VARS=(
+    AGE_PASSWORD
+    TASK_ORCHESTRATOR_API_KEY
+    ADHD_ENGINE_API_KEY
+)
 RESEARCH_STACK_ENV_VARS=(
     OPENAI_API_KEY
     TAVILY_API_KEY
@@ -713,6 +717,8 @@ ensure_env_file() {
         required_vars=("${FULL_STACK_ENV_VARS[@]}")
     elif [ "$stack" = "research" ]; then
         required_vars=("${RESEARCH_STACK_ENV_VARS[@]}")
+    elif [ "$stack" = "core" ]; then
+        required_vars=("${CORE_STACK_ENV_VARS[@]}")
     fi
 
     if [ ${#required_vars[@]} -eq 0 ]; then
