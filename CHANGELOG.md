@@ -4,6 +4,7 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 
 ## [Unreleased]
 ### Added
+- Restored task-orchestrator Claude-surface infrastructure (17 `/dx:` slash commands, `.taskorchestrator/config.yaml` schema, ADR, reference docs, and external MCP wrapper snapshots) that was removed by the stale-branch merge in PR #720. Unblocks PR #724 (TP-CS-101 plugin hooks). Added `.taskorchestrator` to the root-hygiene allowlist.
 - Consolidated V5 extraction engine and validation toolchain (PR #313).
 - Run ID propagation across `queue-drain` and `flight` to ensure consistent artifact grouping.
 - Persistent `RUN_SUMMARY.md` writing at the end of `queue-drain` execution.

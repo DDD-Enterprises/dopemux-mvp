@@ -41,7 +41,7 @@ About to complete <N> items under <title> (topological order<, root included | r
 
 **2c — Complete pass.**
 ```
-complete_tree({ rootId: "<id>", trigger: "complete", includeRoot: <false if --no-root, else true> })
+complete_tree({ itemId: "<id>", trigger: "complete" })
 ```
 Each result: `applied` / `skipped` (skippedReason) / `gateErrors` (missing notes). Already-terminal items report as skipped.
 

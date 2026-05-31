@@ -4,7 +4,7 @@
 # broad coverage via traits composability).
 #
 # Authority: ADR docs/90-adr/adr-task-orchestrator-claude-surface-integration.md
-#            ADR docs/90-adr/adr-task-orchestrator-as-workflow-authority.md (accepted)
+#            ADR docs/90-adr/adr-task-orchestrator-as-workflow-authority.md (proposed)
 #            AGENTS.md §5 (PAL chains), §6 (boundaries + contract-sensitive surfaces), §9 (proof and finality)
 #
 # Implementation plan: ~/.claude/plans/on-a-new-branch-sleepy-robin.md
