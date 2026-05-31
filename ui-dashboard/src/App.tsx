@@ -665,12 +665,14 @@ function App() {
             >
               {notifications.map((notification) => {
                 const severityColor = getNotificationColor(notification.notificationType);
+                const notificationLabel = `${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`;
                 return (
                   <Fade in={true} key={notification.id}>
-                    <Tooltip title="Dismiss notification" arrow>
+                    <Tooltip title="Dismiss notification" arrow describeChild>
                       <Chip
                         icon={getNotificationIcon(notification.notificationType)}
-                        label={`${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`}
+                        label={notificationLabel}
+                        aria-label={notificationLabel}
                         variant="outlined"
                         onDelete={() => handleDismissNotification(notification.id)}
                         deleteIcon={<X size={14} aria-hidden="true" />}
