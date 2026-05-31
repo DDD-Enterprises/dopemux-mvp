@@ -32,7 +32,10 @@ def test_async_task_orchestrator_adapter_defaults_to_active_runtime_port():
     assert adapter.base_url == "http://localhost:8000"
 
 
-def test_sync_task_orchestrator_adapter_uses_project_scoped_transition_path(monkeypatch):
+def test_sync_task_orchestrator_adapter_uses_project_scoped_transition_path(
+    monkeypatch, tmp_path
+):
+    monkeypatch.setenv("HOME", str(tmp_path))
     captured = {}
 
     def fake_request(method, path, **kwargs):

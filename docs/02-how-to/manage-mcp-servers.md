@@ -29,6 +29,10 @@ Codex does not read `~/.claude.json`, `~/.gemini/settings.json`, or Dopemux `.mc
 
 The validated Task Orchestrator MCP runtime for Codex is the current 13-tool upstream container launched by `/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh`. That script resolves the current local git repository and stores state under `~/.local/share/dopemux-mission-control/task-orchestrator/<repo-id>/current-tasks.db`.
 
+The repo-owned distribution for that local plugin lives at `plugins/dopemux-mission-control/`. Use it as the source of truth for the local install at `/Users/hue/plugins/dopemux-mission-control`.
+
+Codex may launch required MCP servers from a non-project process cwd and without project-root env vars. The launcher therefore resolves roots in this order: explicit workspace/project env vars, current git cwd, explicit `TASK_ORCHESTRATOR_PROJECT_ROOT` / `DOPEMUX_PROJECT_ROOT`, then the active Codex session metadata cwd under `~/.codex/sessions`. The Codex session fallback is only a startup recovery path; it does not outrank explicit env or git cwd resolution.
+
 Do not point Codex or generated config at `services/task-orchestrator/task_orchestrator/app.py`; that entrypoint is an unsupported runtime variant.
 
 ## Bootstrap a fresh worktree
@@ -171,6 +175,14 @@ If `doctor` reports a Task Orchestrator resolution failure, confirm the command 
 ```
 
 That command does not start Docker; it only prints the resolved worktree root, project root, state id, data directory, and database path.
+
+To exercise the Codex fallback specifically, run from a non-git directory with no task-orchestrator root env set:
+
+```bash
+cd /tmp
+env -u TASK_ORCHESTRATOR_WORKSPACE_ROOT -u DOPEMUX_WORKSPACE_ROOT -u CODEX_WORKSPACE_ROOT -u CODEX_PROJECT_ROOT -u TASK_ORCHESTRATOR_PROJECT_ROOT -u DOPEMUX_PROJECT_ROOT \
+  /Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh --print-resolution
+```
 
 ## What's NOT touched
 

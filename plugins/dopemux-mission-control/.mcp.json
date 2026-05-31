@@ -1,0 +1,26 @@
+{
+  "mcpServers": {
+    "pal": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-pal",
+        "/app/.venv/bin/python",
+        "server.py"
+      ],
+      "required": true,
+      "startup_timeout_sec": 60,
+      "tool_timeout_sec": 300,
+      "note": "PAL/Zen MCP via the validated local Docker stdio path. Avoids the stale /mcp and legacy SSE wrappers."
+    },
+    "task-orchestrator": {
+      "command": "/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh",
+      "args": [],
+      "required": true,
+      "startup_timeout_sec": 60,
+      "tool_timeout_sec": 300,
+      "note": "Current 13-tool MCP Task Orchestrator using a pinned GHCR image and repo-scoped SQLite state."
+    }
+  }
+}
