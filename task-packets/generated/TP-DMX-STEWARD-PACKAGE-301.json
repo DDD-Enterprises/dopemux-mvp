@@ -15,6 +15,7 @@
       "python -m json.tool task-packets/generated/TP-DMX-STEWARD-PACKAGE-301.json",
       "python -m compileall -q src tests",
       "pytest -q tests/dopemux_cli/test_pr_steward_cmd.py",
+      "python -m dopemux.cli pr-steward --help",
       "git diff --check"
     ]
   },
@@ -24,7 +25,7 @@
   ],
   "execution": {
     "agent": "codex",
-    "base_branch": "main",
+    "base_branch": "codex/tp-dmx-merge-finalization-203",
     "branch": "codex/tp-dmx-steward-package-301",
     "stacked_because": "Part of the DMX-AUTOREVIEW-PLATFORM dependency DAG."
   },
@@ -51,7 +52,7 @@
     ]
   },
   "pr": {
-    "base": "main",
+    "base": "codex/tp-dmx-merge-finalization-203",
     "body": "## Summary\n- Make the Steward/Bridge/gate engine importable; expose `dopemux pr-steward` (intake|bridge|gate|audit|doctor) with a stable versioned CLI contract; steward_gate logic ships in the package, never in scaffolded YAML.\n\n## Scope\nTrack: C-distribute. Risk: MEDIUM. Red lane: false.\n\n## Validation\nRun the packet validation commands and capture proof under proof/TP-DMX-STEWARD-PACKAGE-301/PROOF.json.\n\n## NOT_RUN\nList any skipped live, integration, credentialed, or supervisor-gated checks explicitly.",
     "title": "Feat(cli): add dopemux pr-steward console command"
   },
@@ -63,7 +64,7 @@
     "require_identity_match": true
   },
   "series": {
-    "base_branch": "main",
+    "base_branch": "codex/tp-dmx-merge-finalization-203",
     "final_packet": false,
     "id": "DMX-AUTOREVIEW-PLATFORM",
     "parent_tp_id": "TP-DMX-ACTIONBRIDGE-CLI-102"
@@ -129,6 +130,7 @@
         "python -m json.tool task-packets/generated/TP-DMX-STEWARD-PACKAGE-301.json",
         "python -m compileall -q src tests",
         "pytest -q tests/dopemux_cli/test_pr_steward_cmd.py",
+        "python -m dopemux.cli pr-steward --help",
         "git diff --check"
       ],
       "id": "S4",
@@ -137,6 +139,7 @@
         "python -m json.tool task-packets/generated/TP-DMX-STEWARD-PACKAGE-301.json",
         "python -m compileall -q src tests",
         "pytest -q tests/dopemux_cli/test_pr_steward_cmd.py",
+        "python -m dopemux.cli pr-steward --help",
         "git diff --check"
       ]
     }
