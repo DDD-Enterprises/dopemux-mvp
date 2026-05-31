@@ -1296,7 +1296,7 @@ def _palette_required_parameter_unknown(parameter_schema: Any) -> bool:
         return True
     required = parameter_schema.get("required_parameters")
     if required in (None, "UNKNOWN"):
-        return False
+        return True
     if not isinstance(required, (list, tuple)):
         return True
     for parameter in required:

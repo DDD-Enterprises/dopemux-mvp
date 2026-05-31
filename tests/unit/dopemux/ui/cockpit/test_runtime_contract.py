@@ -342,6 +342,25 @@ def test_command_palette_unresolved_required_parameter_fails_closed_before_gate(
     assert decision.can_open_safe_action_gate is False
 
 
+def test_command_palette_unknown_required_parameters_string_fails_closed_before_gate():
+    decision = route_command_palette_row(
+        _palette_row(
+            parameter_schema={
+                "required_parameters": "UNKNOWN",
+                "optional_parameters": [],
+                "cwd_target": str(REPO_ROOT),
+                "output_target": "NOT_APPLICABLE",
+                "side_effects": ["execution_handoff"],
+            }
+        )
+    )
+
+    assert decision.outcome == "ShowUnknownDriftReason"
+    assert decision.routing_destination == "UNKNOWN_DRIFT_QUEUE"
+    assert decision.refusal_reason == "PARAM_UNRESOLVED"
+    assert decision.can_open_safe_action_gate is False
+
+
 def test_settings_admin_summary_uses_package_handoff_without_mutating_artifact():
     source = PACKAGE_DIR / "SETTINGS_ADMIN_RUNTIME_PACKAGE_HANDOFF.md"
     before = _sha(source)
