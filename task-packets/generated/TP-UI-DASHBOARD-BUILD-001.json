@@ -31,6 +31,7 @@
     "allowlist": [
       "ui-dashboard/package.json",
       "ui-dashboard/package-lock.json",
+      "ui-dashboard/pnpm-lock.yaml",
       "ui-dashboard/tsconfig.json",
       "ui-dashboard/index.html",
       "ui-dashboard/src/App.tsx",
@@ -50,9 +51,10 @@
       "python -m json.tool task-packets/generated/TP-UI-DASHBOARD-BUILD-001.json >/dev/null",
       "python -m jsonschema -i task-packets/generated/TP-UI-DASHBOARD-BUILD-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
       "cd ui-dashboard && npm install",
+      "cd ui-dashboard && npm exec --yes --package=pnpm@10 -- pnpm install --frozen-lockfile --ignore-scripts",
       "cd ui-dashboard && npm run build",
       "git diff --check",
-      "pre-commit run --files ui-dashboard/package.json ui-dashboard/package-lock.json ui-dashboard/tsconfig.json ui-dashboard/index.html ui-dashboard/src/App.tsx ui-dashboard/src/components/CognitiveLoadGauge.tsx ui-dashboard/src/components/PredictionPanel.tsx ui-dashboard/src/components/TeamDashboard.tsx ui-dashboard/src/config.ts ui-dashboard/src/index.css ui-dashboard/src/main.tsx ui-dashboard/src/theme.ts ui-dashboard/src/vite-env.d.ts task-packets/INDEX.md task-packets/generated/TP-UI-DASHBOARD-BUILD-001.json claudedocs/ui-dashboard-build-proof-2026-05-31.md"
+      "pre-commit run --files ui-dashboard/package.json ui-dashboard/package-lock.json ui-dashboard/pnpm-lock.yaml ui-dashboard/tsconfig.json ui-dashboard/index.html ui-dashboard/src/App.tsx ui-dashboard/src/components/CognitiveLoadGauge.tsx ui-dashboard/src/components/PredictionPanel.tsx ui-dashboard/src/components/TeamDashboard.tsx ui-dashboard/src/config.ts ui-dashboard/src/index.css ui-dashboard/src/main.tsx ui-dashboard/src/theme.ts ui-dashboard/src/vite-env.d.ts task-packets/INDEX.md task-packets/generated/TP-UI-DASHBOARD-BUILD-001.json claudedocs/ui-dashboard-build-proof-2026-05-31.md"
     ]
   },
   "pr": {
@@ -84,6 +86,7 @@
         "AGENTS.md",
         "ui-dashboard/package.json",
         "ui-dashboard/package-lock.json",
+        "ui-dashboard/pnpm-lock.yaml",
         "ui-dashboard/src/App.tsx"
       ]
     },
@@ -97,10 +100,12 @@
       "expected_files": [
         "ui-dashboard/package.json",
         "ui-dashboard/package-lock.json",
+        "ui-dashboard/pnpm-lock.yaml",
         "claudedocs/ui-dashboard-build-proof-2026-05-31.md"
       ],
       "validation": [
         "cd ui-dashboard && npm install",
+        "cd ui-dashboard && npm exec --yes --package=pnpm@10 -- pnpm install --frozen-lockfile --ignore-scripts",
         "cd ui-dashboard && npm run build"
       ]
     },
@@ -115,7 +120,7 @@
         "python -m json.tool task-packets/generated/TP-UI-DASHBOARD-BUILD-001.json >/dev/null",
         "python -m jsonschema -i task-packets/generated/TP-UI-DASHBOARD-BUILD-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
         "git diff --check",
-        "pre-commit run --files ui-dashboard/package.json ui-dashboard/package-lock.json ui-dashboard/tsconfig.json ui-dashboard/index.html ui-dashboard/src/main.tsx ui-dashboard/src/components/CognitiveLoadGauge.tsx ui-dashboard/src/components/PredictionPanel.tsx ui-dashboard/src/components/TeamDashboard.tsx task-packets/INDEX.md task-packets/generated/TP-UI-DASHBOARD-BUILD-001.json claudedocs/ui-dashboard-build-proof-2026-05-31.md"
+        "pre-commit run --files ui-dashboard/package.json ui-dashboard/package-lock.json ui-dashboard/pnpm-lock.yaml ui-dashboard/tsconfig.json ui-dashboard/index.html ui-dashboard/src/main.tsx ui-dashboard/src/components/CognitiveLoadGauge.tsx ui-dashboard/src/components/PredictionPanel.tsx ui-dashboard/src/components/TeamDashboard.tsx task-packets/INDEX.md task-packets/generated/TP-UI-DASHBOARD-BUILD-001.json claudedocs/ui-dashboard-build-proof-2026-05-31.md"
       ]
     }
   ]
