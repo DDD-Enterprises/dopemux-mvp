@@ -4,8 +4,8 @@
 - branch: `codex/tp-dmx-merge-remediation-202`
 - base branch: `origin/codex/tp-dmx-steward-gate-201`
 - base/head before TP202 commit: `eac0853f521041c5d52f0d40eddb4be84d66b424`
-- TP202 implementation commit before proof metadata amend:
-  `29bed2029a813e9c294273e6db36901fcd3ba13b`
+- TP202 implementation commit:
+  `01e83f86a3cd60543f2835a378fb409e0387e1a7`
 - origin: `https://github.com/DDD-Enterprises/dopemux-mvp.git`
 - repo marker: `.dopetaskroot` present
 - primary checkout dirty state: ignored; TP202 work ran in the dedicated worktree above
