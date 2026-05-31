@@ -13,6 +13,7 @@ from .storage.hashing import hash_json, stable_json_dumps
 
 
 LIVE_BENCHMARK_ENV = "RTE_OPENROUTER_BENCHMARK_LIVE"
+DPMX_LIVE_OK_ENV = "DPMX_LIVE_OK"
 API_KEY_ENVS = ("OPENROUTER_API_KEY", "V5_OPENROUTER_API_KEY")
 UNKNOWN = "UNKNOWN"
 
@@ -106,7 +107,7 @@ def _validate_fixture_catalog(payload: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(fixtures, list) or not all(
         isinstance(item, dict) for item in fixtures
     ):
-        raise BenchmarkExecutionError("fixtures must be an object array")
+        raise BenchmarkExecutionError("fixtures must be an array of objects")
 
     _require_fields(
         schema_record,
@@ -166,6 +167,10 @@ def validate_live_mode_allowed(
     if source.get(LIVE_BENCHMARK_ENV) != "1":
         raise BenchmarkExecutionError(
             f"live OpenRouter benchmark requires {LIVE_BENCHMARK_ENV}=1"
+        )
+    if source.get(DPMX_LIVE_OK_ENV) != "1":
+        raise BenchmarkExecutionError(
+            f"live OpenRouter benchmark requires {DPMX_LIVE_OK_ENV}=1"
         )
     if not _safe_string(route_profile_id, default=""):
         raise BenchmarkExecutionError(
@@ -230,6 +235,49 @@ def _as_list(value: Any) -> list[Any]:
     return [_redact_value(value)]
 
 
+def _expected_fact_errors(
+    *, parsed: Any, expected_facts: Any
+) -> list[str]:
+    if not isinstance(expected_facts, dict):
+        return ["expected_facts_invalid"]
+    if not isinstance(parsed, dict):
+        return []
+
+    parsed_facts = parsed.get("facts")
+    fact_values: dict[str, Any] = {}
+    if isinstance(parsed_facts, list):
+        for fact in parsed_facts:
+            if not isinstance(fact, dict):
+                continue
+            key = fact.get("key")
+            if isinstance(key, str) and key.strip():
+                fact_values[key] = fact.get("value")
+
+    errors: list[str] = []
+    for key, expected_value in sorted(expected_facts.items()):
+        if key in parsed:
+            actual_value = parsed.get(key)
+        else:
+            actual_value = fact_values.get(key, UNKNOWN)
+        if actual_value != expected_value:
+            errors.append(f"expected_fact_mismatch:{_safe_string(key)}")
+    return errors
+
+
+def _validation_outcome(
+    *, parse_success: bool, schema_success: bool, validation_errors: list[str]
+) -> str:
+    if (
+        parse_success
+        and schema_success
+        and validation_errors == ["direct_overlap_comparison_required"]
+    ):
+        return "PASS_WITH_DIRECT_COMPARISON_REQUIRED"
+    if parse_success and schema_success and not validation_errors:
+        return "PASS"
+    return "FAIL"
+
+
 def run_structured_benchmark(
     *,
     fixture: dict[str, Any],
@@ -281,6 +329,12 @@ def run_structured_benchmark(
     validation_errors: list[str] = []
     validation_errors.extend(parse_errors)
     validation_errors.extend(schema_errors)
+    validation_errors.extend(
+        _expected_fact_errors(
+            parsed=parsed,
+            expected_facts=fixture.get("expected_facts"),
+        )
+    )
     if certification_mode and actual_model == UNKNOWN:
         validation_errors.append("missing_actual_model")
     if downgrade_detected:
@@ -291,6 +345,22 @@ def run_structured_benchmark(
         validation_errors.append("free_experimental_not_final_artifact_authority")
     if direct_overlap_comparison_required:
         validation_errors.append("direct_overlap_comparison_required")
+    expected_validation_outcome = _safe_string(
+        fixture.get("expected_validation_outcome")
+    )
+    actual_validation_outcome = _validation_outcome(
+        parse_success=parse_success,
+        schema_success=schema_success,
+        validation_errors=validation_errors,
+    )
+    if (
+        expected_validation_outcome != UNKNOWN
+        and expected_validation_outcome != actual_validation_outcome
+    ):
+        validation_errors.append(
+            "expected_validation_outcome_mismatch:"
+            f"{expected_validation_outcome}:{actual_validation_outcome}"
+        )
 
     final_artifact_allowed = (
         bool(certification_mode)
@@ -314,6 +384,8 @@ def run_structured_benchmark(
         "route_classification": route_classification,
         "direct_overlap_status": direct_overlap_status,
         "direct_overlap_comparison_required": direct_overlap_comparison_required,
+        "expected_validation_outcome": expected_validation_outcome,
+        "actual_validation_outcome": actual_validation_outcome,
         "json_parse_success": parse_success,
         "schema_validation_success": schema_success,
         "validation_errors": sorted(set(_redact_value(validation_errors))),

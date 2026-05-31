@@ -7,6 +7,7 @@ import pytest
 
 from benchmarking.openrouter_structured_benchmark import (
     BenchmarkExecutionError,
+    DPMX_LIVE_OK_ENV,
     LIVE_BENCHMARK_ENV,
     load_benchmark_fixtures,
     run_structured_benchmark,
@@ -98,6 +99,26 @@ def test_offline_benchmark_succeeds_with_valid_strict_json() -> None:
     assert result["final_artifact_allowed"] is True
 
 
+def test_factually_wrong_response_blocks_certification() -> None:
+    catalog = load_benchmark_fixtures(FIXTURE_PATH)
+    payload = _valid_payload()
+    payload["repo_name"] = "wrong-repo"
+
+    result = run_structured_benchmark(
+        fixture=catalog["fixtures"][0],
+        schema_record=catalog["schema"],
+        model_response=_base_response(content=json.dumps(payload)),
+        certification_mode=True,
+    )
+
+    assert result["json_parse_success"] is True
+    assert result["schema_validation_success"] is True
+    assert result["final_artifact_allowed"] is False
+    assert "expected_fact_mismatch:repo_name" in result["validation_errors"]
+    assert result["expected_validation_outcome"] == "PASS"
+    assert "expected_validation_outcome_mismatch:PASS:FAIL" in result["validation_errors"]
+
+
 def test_invalid_json_fails_parse_and_blocks_certification() -> None:
     catalog = load_benchmark_fixtures(FIXTURE_PATH)
     result = run_structured_benchmark(
@@ -173,6 +194,19 @@ def test_live_mode_without_opt_in_fails_closed(monkeypatch: pytest.MonkeyPatch) 
         )
 
 
+def test_live_mode_requires_repo_wide_live_consent() -> None:
+    with pytest.raises(BenchmarkExecutionError, match=DPMX_LIVE_OK_ENV):
+        validate_live_mode_allowed(
+            live_mode=True,
+            route_profile_id="or_qwen_structured_benchmark",
+            requested_model="qwen/qwen3-coder",
+            env={
+                LIVE_BENCHMARK_ENV: "1",
+                "OPENROUTER_API_KEY": "fixture-key",
+            },
+        )
+
+
 def test_live_mode_accepts_explicit_env_without_network_call() -> None:
     catalog = load_benchmark_fixtures(FIXTURE_PATH)
     result = run_structured_benchmark(
@@ -182,6 +216,7 @@ def test_live_mode_accepts_explicit_env_without_network_call() -> None:
         certification_mode=True,
         live_mode=True,
         env={
+            DPMX_LIVE_OK_ENV: "1",
             LIVE_BENCHMARK_ENV: "1",
             "OPENROUTER_API_KEY": "fixture-key",
         },
