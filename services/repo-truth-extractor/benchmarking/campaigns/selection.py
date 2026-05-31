@@ -460,6 +460,14 @@ def build_r1_campaign_plan(repo: BenchmarkCatalogRepo) -> CampaignPlan:
         ),
     ]
     candidates = [
+        # [0] openrouter_openai_gpt_5_3_codex  → anchor_openrouter_strict_v1
+        # [1] xai_grok_4_20_reasoning          (no live_assignment — not yet admitted)
+        # [2] gemini_3_1_pro_preview            (no live_assignment — pending telemetry)
+        # [3] gemini_direct_3_1_pro_preview     → anchor_direct_strict_v1
+        # [4] openrouter_gemini_3_1_pro_preview → anchor_openrouter_strict_v1
+        # [5] openai_gpt_5_4_mini               → anchor_direct_strict_v1
+        # [6] local_fixture                     → tool_aware_repo_reasoning_v1 (non-live)
+        # When inserting a new candidate, update live_assignment indices AND this table.
         _candidate(
             route_id="route_openrouter_openai_gpt_5_3_codex_v1",
             cohort="premium",

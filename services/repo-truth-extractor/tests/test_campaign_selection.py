@@ -40,6 +40,19 @@ def test_r1_campaign_selection_is_bounded_and_explicit(tmp_path: Path) -> None:
     assert manifest["case_set_id"] == "r1_first_campaign_v1"
     assert manifest["contract_snapshot_id"]
 
+    # Guard anchor-group assignments per route so index shifts are caught early.
+    anchor_by_route = {
+        item["route_id"]: item.get("control_anchor_group_id")
+        for item in manifest["campaign_candidates"]
+        if item.get("control_anchor_group_id")
+    }
+    # Direct-provider routes must contest against the direct anchor.
+    assert anchor_by_route.get("route_gemini_direct_gemini_3_1_pro_preview_v1") == "anchor_direct_strict_v1"
+    assert anchor_by_route.get("route_openai_gpt_5_4_mini_v1") == "anchor_direct_strict_v1"
+    # OpenRouter-routed routes must contest against the openrouter anchor.
+    assert anchor_by_route.get("route_openrouter_gemini_3_1_pro_preview_v1") == "anchor_openrouter_strict_v1"
+    assert anchor_by_route.get("route_openrouter_openai_gpt_5_3_codex_v1") == "anchor_openrouter_strict_v1"
+
 
 def test_step_route_signature_is_stable() -> None:
     left = _step_route_signature(
