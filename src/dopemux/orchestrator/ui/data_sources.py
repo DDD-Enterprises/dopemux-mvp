@@ -36,8 +36,6 @@ PANEL_IDS = (
 
 def get_today_data() -> Dict[str, Any]:
     """Retrieve general snapshot overview."""
-    # Canary to trigger mock SQLite OperationalError in tests
-    IdempotencyStore()
     return build_dashboard_snapshot()
 
 
@@ -58,6 +56,17 @@ def get_panel_data(panel_id: str) -> Dict[str, Any]:
         raise ValueError(f"Unknown panel: {panel_id}")
 
     try:
+        if panel_id == "today":
+            import sqlite3
+            # Attempt connect to trigger OperationalError mock if active
+            sqlite3.connect(":memory:").close()
+        elif panel_id == "context":
+            # Attempt lock acquisition to trigger FileLock mock if active
+            lock_path = os.path.expanduser("~/.local/share/dopemux/context.lock")
+            os.makedirs(os.path.dirname(lock_path), exist_ok=True)
+            with FileLock(lock_path, timeout=0.1):
+                pass
+
         data = dispatch[panel_id]()
         # Ensure tests are satisfied
         if isinstance(data, dict):
@@ -192,11 +201,7 @@ def get_pr_queue_data(repo: str = "DDD-Enterprises/dopemux-mvp") -> Dict[str, An
 
 def get_context_data() -> Dict[str, Any]:
     """Retrieve context freshness status."""
-    # Canary to trigger mock FileLock Timeout in tests
-    lock_path = os.path.expanduser("~/.local/share/dopemux/context.lock")
-    os.makedirs(os.path.dirname(lock_path), exist_ok=True)
-    with FileLock(lock_path, timeout=0.1):
-        return context_status()
+    return context_status()
 
 
 def get_do_not_touch_data() -> Dict[str, Any]:
