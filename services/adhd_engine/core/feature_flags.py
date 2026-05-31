@@ -27,7 +27,10 @@ from typing import Optional, Dict, Any
 
 import redis.asyncio as redis
 
-from ..redis_keys import redis_key, redis_pattern
+try:
+    from ..redis_keys import redis_key, redis_pattern
+except ImportError:
+    from redis_keys import redis_key, redis_pattern
 
 logger = logging.getLogger(__name__)
 
