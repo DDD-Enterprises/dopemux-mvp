@@ -150,13 +150,25 @@ log_info "qa2 env file: ${QA2_ENV_FILE}"
 # ── Step 2: Bring up minimal qa2 stack (postgres + conport only) ──────────────
 log_info "Bringing up dopemux-qa2 stack (postgres + conport services)"
 
+# compose.yml has fixed container_name values (dopemux-postgres-age, redis-events, …)
+# that conflict with the already-running qa stack. qa/compose.qa.yml must override
+# those names; without it Docker rejects the second stack before any collision test.
+QA_OVERLAY="${ROOT}/qa/compose.qa.yml"
+if [[ ! -f "${QA_OVERLAY}" ]]; then
+    emit_result "multi_instance_collision" "NOT_RUN" \
+        "qa/compose.qa.yml not found — required to run a second stack without fixed container_name conflicts" \
+        '{"reason":"missing_qa_overlay","help":"Create qa/compose.qa.yml overriding fixed container_name values"}'
+    exit 0
+fi
+log_info "Using QA overlay for qa2: ${QA_OVERLAY}"
+
 # Ensure dopemux-network exists (BETA-INSTALL-02)
 docker network create dopemux-network 2>/dev/null || true
 
 set +e
 docker compose -p dopemux-qa2 \
     --env-file "${QA2_ENV_FILE}" \
-    -f "${ROOT}/compose.yml" \
+    -f "${QA_OVERLAY}" \
     up -d \
     --scale pal=0 \
     --scale litellm=0 \
