@@ -667,7 +667,7 @@ function App() {
                 const severityColor = getNotificationColor(notification.notificationType);
                 return (
                   <Fade in={true} key={notification.id}>
-                    <Tooltip title="Dismiss notification" arrow describeChild>
+                    <Tooltip title="Dismiss notification" arrow>
                       <Chip
                         icon={getNotificationIcon(notification.notificationType)}
                         label={`${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`}
