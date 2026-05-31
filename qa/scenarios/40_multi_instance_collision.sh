@@ -161,6 +161,8 @@ if [[ ! -f "${QA_OVERLAY}" ]]; then
     exit 0
 fi
 log_info "Using QA overlay for qa2: ${QA_OVERLAY}"
+# Pass base file + overlay so Docker Compose merges them; overlay-only would start no services.
+QA2_COMPOSE_ARGS=(-f "${ROOT}/compose.yml" -f "${QA_OVERLAY}")
 
 # Ensure dopemux-network exists (BETA-INSTALL-02)
 docker network create dopemux-network 2>/dev/null || true
@@ -168,7 +170,7 @@ docker network create dopemux-network 2>/dev/null || true
 set +e
 docker compose -p dopemux-qa2 \
     --env-file "${QA2_ENV_FILE}" \
-    -f "${QA_OVERLAY}" \
+    "${QA2_COMPOSE_ARGS[@]}" \
     up -d \
     --scale pal=0 \
     --scale litellm=0 \
