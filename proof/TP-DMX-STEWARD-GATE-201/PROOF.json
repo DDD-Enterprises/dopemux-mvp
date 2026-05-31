@@ -130,8 +130,8 @@
   },
   "codereview_status": "Manual bounded review complete: guard is local-only and not wired into mutation seams.",
   "precommit_status": "PASS: pre-commit run on touched files and git diff --check passed.",
-  "commit_sha": "PENDING",
-  "pr_url": "PENDING",
+  "commit_sha": "4e8b71fb5efe59a899c57515f59707407f839c5a",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/765",
   "residual_risks": [
     "TP104 dependency embedded audit status is SKIPPED, not PASS.",
     "TP201 is stacked on TP104 because TP104 is not merged to main.",
