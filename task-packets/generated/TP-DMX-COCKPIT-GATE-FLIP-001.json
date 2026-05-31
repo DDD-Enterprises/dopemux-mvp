@@ -1,0 +1,108 @@
+{
+  "id": "TP-DMX-COCKPIT-GATE-FLIP-001",
+  "project": "dopemux-mvp",
+  "target": "Verify all eight Cockpit Phase 1 design-gate blockers against current runtime proof artifacts, flip safe_for_claude_design only when every blocker holds, and preserve non-execution boundaries.",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-COCKPIT-UI",
+    "base_branch": "claude/hungry-buck-67a0d3",
+    "parent_tp_id": "TP-DMX-COCKPIT-EVIDENCE-LEDGER-001",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/cockpit-ui-gate-flip-001",
+    "base_branch": "claude/hungry-buck-67a0d3"
+  },
+  "commit": {
+    "message": "feat(cockpit): verify design gate flip",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-COCKPIT-GATE-FLIP-001.json",
+      "src/dopemux/ui/cockpit/runtime_contract.py",
+      "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+      "tests/unit/dopemux/ui/cockpit/test_gate_flip_artifacts.py",
+      "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json",
+      "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/sha256sums.txt",
+      "proof/cockpit-gate-flip/TP-DMX-COCKPIT-GATE-FLIP-001/**",
+      "out/cockpit-gate-flip/TP-DMX-COCKPIT-GATE-FLIP-001/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-GATE-FLIP-001.json >/dev/null",
+      "python -m json.tool out/cockpit-gate-flip/TP-DMX-COCKPIT-GATE-FLIP-001/GATE_FLIP_STATUS.json >/dev/null",
+      "python -m json.tool out/cockpit-gate-flip/TP-DMX-COCKPIT-GATE-FLIP-001/PROOF.json >/dev/null",
+      "cd out/cockpit-gate-flip/TP-DMX-COCKPIT-GATE-FLIP-001 && shasum -a 256 -c sha256sums.txt",
+      "python scripts/brand_lint.py",
+      "python scripts/sync_brand_tokens.py",
+      "python -m pytest tests/unit/dopemux/ui/cockpit/test_runtime_contract.py -q",
+      "python -m pytest tests/unit/dopemux/ui/cockpit/test_gate_flip_artifacts.py -q",
+      "python -m pytest tests/unit/dopemux/ui/cockpit/ -q",
+      "python -m pytest tests/unit/test_cockpit_cli.py -q",
+      "! grep -R -E \"Claude Design upload allowed|T4 authorized|runtime execution implemented|Unknown / Drift execution|runtime reclassification allowed|execute anyway|approve anyway|final screens approved\" -n out/cockpit-gate-flip proof/cockpit-gate-flip tests/unit/dopemux/ui/cockpit/test_gate_flip_artifacts.py",
+      "git diff --check",
+      "git status --short --branch"
+    ]
+  },
+  "pr": {
+    "title": "feat(cockpit): verify design gate flip",
+    "body": "## Summary\n- verify all eight Phase 1 Cockpit design-gate blockers against current proof artifacts\n- flip runtime snapshot governance state to safe_for_claude_design: YES and READY_FOR_CLAUDE_DESIGN: approved only after the aggregate verifier passes\n- record a deterministic Gate Flip proof bundle while preserving non-execution and no-upload boundaries\n\n## Strict scope\n- runtime contract gate verification and proof artifacts only\n- no parallel renderer\n- no Claude Design upload action\n- no runtime action execution\n- no T4 remote mutation authorization\n- no runtime reclassification\n\n## Governance state\nsafe_for_claude_design: YES\nREADY_FOR_CLAUDE_DESIGN: approved\n\n## Validation\nSee closeout proof for command outputs and exit codes.\n\n## Residual risks and downstream packets\n- task-orchestrator MCP context recording remains unavailable in this environment\n- Claude Design upload remains an explicit downstream/manual action, not implemented by this packet",
+    "base": "claude/hungry-buck-67a0d3"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Inspect current Phase 1 proof artifacts and runtime cockpit contract before changing the gate state.",
+      "validation": [
+        "Dedicated worktree is verified from claude/hungry-buck-67a0d3 at 1a75b672ad238b736d8da23aee7bf4c0ea60d221.",
+        "All eight required proof artifacts parse and match their expected packet IDs.",
+        "Runtime verifier fails closed if any required proof is missing or any blocker condition does not hold."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add aggregate Claude Design gate verification to the existing runtime contract renderer and flip the exposed governance state only from that verifier.",
+      "validation": [
+        "Runtime snapshot reports safe_for_claude_design: YES only after all eight condition records pass.",
+        "READY_FOR_CLAUDE_DESIGN is approved only after all eight condition records pass.",
+        "Claude Design upload remains a non-implemented downstream action."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Create deterministic Gate Flip status and proof artifacts with focused artifact tests.",
+      "validation": [
+        "Gate Flip JSON artifacts parse and hash validation passes.",
+        "Focused artifact tests confirm all eight blockers are present, passed, and sourced to proof paths.",
+        "Forbidden positive execution and upload claims remain absent."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run global brand audits, focused Cockpit tests, broad unit awareness, codereview/precommit where available, commit allowed files, push, and open PR against claude/hungry-buck-67a0d3.",
+      "validation": [
+        "brand_lint exits with 0 errors and 0 warnings.",
+        "sync_brand_tokens exits 0.",
+        "git diff --check passes.",
+        "Only allowlisted files are staged.",
+        "PR URL or exact blocker is recorded in proof and final closeout."
+      ]
+    }
+  ]
+}

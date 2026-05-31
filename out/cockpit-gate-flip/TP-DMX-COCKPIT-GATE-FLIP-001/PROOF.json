@@ -1,0 +1,179 @@
+{
+  "schema_version": "dopemux.cockpit.gate_flip.proof.v1",
+  "packet_id": "TP-DMX-COCKPIT-GATE-FLIP-001",
+  "created_at_utc": "2026-05-31T07:05:10Z",
+  "worktree": "/Users/hue/.codex/worktrees/cockpit-ui-gate-flip-001",
+  "branch": "codex/cockpit-ui-gate-flip-001",
+  "base_branch": "claude/hungry-buck-67a0d3",
+  "base_head": "1a75b672ad238b736d8da23aee7bf4c0ea60d221",
+  "head_before": "1a75b672ad238b736d8da23aee7bf4c0ea60d221",
+  "implementation_commit_sha": "RECORDED_IN_FINAL_CLOSEOUT_AFTER_COMMIT",
+  "pr_url": "RECORDED_IN_FINAL_CLOSEOUT_AFTER_PR_CREATE",
+  "pr_blocker": null,
+  "tp_path": "task-packets/generated/TP-DMX-COCKPIT-GATE-FLIP-001.json",
+  "files_changed": [
+    "task-packets/generated/TP-DMX-COCKPIT-GATE-FLIP-001.json",
+    "src/dopemux/ui/cockpit/runtime_contract.py",
+    "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+    "tests/unit/dopemux/ui/cockpit/test_gate_flip_artifacts.py",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/sha256sums.txt",
+    "out/cockpit-gate-flip/TP-DMX-COCKPIT-GATE-FLIP-001/GATE_FLIP_STATUS.json",
+    "out/cockpit-gate-flip/TP-DMX-COCKPIT-GATE-FLIP-001/GATE_FLIP_STATUS.md",
+    "out/cockpit-gate-flip/TP-DMX-COCKPIT-GATE-FLIP-001/PROOF.json",
+    "out/cockpit-gate-flip/TP-DMX-COCKPIT-GATE-FLIP-001/sha256sums.txt",
+    "proof/cockpit-gate-flip/TP-DMX-COCKPIT-GATE-FLIP-001/README.md"
+  ],
+  "source_artifacts_read": [
+    "AGENTS.md",
+    "docs/04-explanation/branding/cockpit-ui-implementation-handoff.md",
+    "docs/04-explanation/branding/cockpit-ui-design-system-v1.md",
+    "docs/04-explanation/branding/cockpit-ui-adr-2026-05-29.md",
+    "docs/04-explanation/branding/cockpit-ui-task-plan-2026-05-29.md",
+    "out/cockpit-ia-reconcile/TP-DMX-COCKPIT-IA-RECONCILE-001/CLAUDE_DESIGN_BLOCKERS.md",
+    "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PROOF.json",
+    "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/PROOF.json",
+    "out/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/PROOF.json",
+    "out/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/PROOF.json",
+    "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PROOF.json",
+    "out/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/PROOF.json",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/PROOF.json",
+    "out/cockpit-evidence-ledger/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001/PROOF.json",
+    "src/dopemux/ui/cockpit/runtime_contract.py",
+    "src/dopemux/ui/cockpit/render.py"
+  ],
+  "generated_artifacts": [
+    "out/cockpit-gate-flip/TP-DMX-COCKPIT-GATE-FLIP-001/GATE_FLIP_STATUS.json",
+    "out/cockpit-gate-flip/TP-DMX-COCKPIT-GATE-FLIP-001/GATE_FLIP_STATUS.md",
+    "out/cockpit-gate-flip/TP-DMX-COCKPIT-GATE-FLIP-001/PROOF.json",
+    "out/cockpit-gate-flip/TP-DMX-COCKPIT-GATE-FLIP-001/sha256sums.txt",
+    "proof/cockpit-gate-flip/TP-DMX-COCKPIT-GATE-FLIP-001/README.md"
+  ],
+  "gate_flip_status": {
+    "status": "PASS",
+    "condition_count": 8,
+    "failed_conditions": [],
+    "safe_for_claude_design": "YES",
+    "READY_FOR_CLAUDE_DESIGN": "approved",
+    "claude_design_blocked": false
+  },
+  "boundary_preservation": {
+    "no_parallel_renderer": true,
+    "runtime_contract_uses_existing_renderer_path": true,
+    "no_runtime_action_execution": true,
+    "no_runtime_reclassification": true,
+    "no_claude_design_upload": true,
+    "no_t4_remote_mutation_authorization": true,
+    "upload_remains_downstream_action": true
+  },
+  "validation_commands": [
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-GATE-FLIP-001.json >/dev/null && python -m json.tool out/cockpit-gate-flip/TP-DMX-COCKPIT-GATE-FLIP-001/GATE_FLIP_STATUS.json >/dev/null && python -m json.tool out/cockpit-gate-flip/TP-DMX-COCKPIT-GATE-FLIP-001/PROOF.json >/dev/null && python -m json.tool out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json >/dev/null",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "jsonschema.validate(task-packets/generated/TP-DMX-COCKPIT-GATE-FLIP-001.json, dopetask-canonical-spec.json)",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "schema: PASS"
+    },
+    {
+      "command": "cd out/cockpit-gate-flip/TP-DMX-COCKPIT-GATE-FLIP-001 && shasum -a 256 -c sha256sums.txt",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "cd out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001 && shasum -a 256 -c sha256sums.txt",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python scripts/brand_lint.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "0 errors, 0 warnings"
+    },
+    {
+      "command": "python scripts/sync_brand_tokens.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "All brand tokens in sync across theme.py, dopemux.tcss, theme.ts"
+    },
+    {
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit/test_runtime_contract.py -q",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "60 passed"
+    },
+    {
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit/test_gate_flip_artifacts.py -q",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "6 passed"
+    },
+    {
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit/test_runtime_contract.py tests/unit/dopemux/ui/cockpit/test_gate_flip_artifacts.py -q",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "66 passed"
+    },
+    {
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit/ -q",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "122 passed"
+    },
+    {
+      "command": "python -m pytest tests/unit/test_cockpit_cli.py -q",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "5 passed"
+    },
+    {
+      "command": "python -m compileall -q src/dopemux tests",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "forbidden positive execution/upload governance-claim scan over out/cockpit-gate-flip proof/cockpit-gate-flip tests/unit/dopemux/ui/cockpit/test_gate_flip_artifacts.py tests/unit/test_cockpit_cli.py",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "pre-commit run --files $(git diff --cached --name-only)",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m pytest tests/unit -q",
+      "exit_code": 1,
+      "status": "FAIL",
+      "failure": "Unrelated known failure: tests/unit/orchestrator/test_data_sources.py::TestUIDataSources::test_today_panel_sqlite_operational_error_fallback expected fallback True but observed False."
+    }
+  ],
+  "codereview_status": {
+    "tool": "pal/codereview",
+    "status": "PASS",
+    "continuation_id": "eead6312-467d-47ef-86a4-f03d1b5bb6cc",
+    "issues_found": 0
+  },
+  "precommit_status": {
+    "tool": "pal/precommit",
+    "status": "PASS",
+    "continuation_id": "582842f9-210e-4452-b326-915d8b60c37b",
+    "issues_found": 0
+  },
+  "unknowns": [
+    "Task-orchestrator MCP note recording is NOT_RUN because get_context returned Transport closed earlier in this run."
+  ],
+  "residual_risks": [
+    "Claude Design upload remains outside this packet and must be handled by a separate explicit action.",
+    "This packet does not validate browser visuals or Phase 2 render primitives."
+  ]
+}
