@@ -1,0 +1,102 @@
+{
+  "id": "TP-DMX-COCKPIT-COMMAND-PALETTE-001",
+  "project": "dopemux-mvp",
+  "target": "Wire a deterministic Command Palette broker primitive to the Cockpit runtime contract while preserving broker-only behavior, fail-closed routing, no execution, and Claude Design blockers.",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dopemux-cockpit-ui-phase-1-gate",
+    "base_branch": "claude/hungry-buck-67a0d3",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/cockpit-ui-command-palette-001"
+  },
+  "commit": {
+    "message": "feat(cockpit): wire command palette broker primitive",
+    "allowlist": [
+      "src/dopemux/ui/cockpit/runtime_contract.py",
+      "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+      "task-packets/generated/TP-DMX-COCKPIT-COMMAND-PALETTE-001.json",
+      "task-packets/INDEX.md",
+      "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json",
+      "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/PROOF.json",
+      "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/sha256sums.txt",
+      "proof/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/**",
+      "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-COMMAND-PALETTE-001.json >/dev/null",
+      "python -m pytest tests/unit/dopemux/ui/cockpit/test_runtime_contract.py -q",
+      "python -m pytest tests/unit/dopemux/ui/cockpit/ -q",
+      "cd out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001 && shasum -a 256 -c sha256sums.txt",
+      "python scripts/brand_lint.py",
+      "python scripts/sync_brand_tokens.py",
+      "git diff --check",
+      "git status --short --branch"
+    ]
+  },
+  "pr": {
+    "title": "feat(cockpit): wire command palette broker primitive",
+    "body": "## Summary\n- add a pure Command Palette row normalizer and deterministic broker router to the Cockpit runtime contract\n- route palette rows by activation, authority, safety class, parameters, placement, coverage, and allowed outcomes without executing commands\n- add focused tests proving broker-only behavior, fail-closed UNKNOWN/BLOCKED handling, Settings/Admin routing, Safe Action Gate handoff, and search-axis coverage\n\n## Strict scope\n- no final screens\n- no Claude Design upload\n- no runtime action execution\n- no T4 remote mutation\n- no live service adapters\n- no canonical writes\n- no safe_for_claude_design flip\n\n## Governance state\nsafe_for_claude_design: NO\nREADY_FOR_CLAUDE_DESIGN: not approved\n\n## Validation\nSee proof bundle for command outputs and exit codes.",
+    "base": "claude/hungry-buck-67a0d3"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Inspect AGENTS.md, the Cockpit handoff, D3/D4, the task plan, doctrine package, command-palette artifacts, current runtime contract code, tests, and package proofs before implementation.",
+      "validation": [
+        "Integration branch and dedicated worktree are verified.",
+        "Command Palette artifact proof is identified as primitive-level and not runtime wiring.",
+        "Runtime code and tests are inspected before editing."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add failing tests for a pure Command Palette broker primitive covering search axes, row normalization, deterministic row hashes, Safe Action Gate routing, Settings/Admin routing, and fail-closed blocked/unknown/external rows.",
+      "validation": [
+        "Focused tests fail before production code exists.",
+        "Tests assert broker_only true and executes false.",
+        "Tests assert no blocked, unknown, external, unresolved-parameter, or unknown-authority row can open the Safe Action Gate."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement the minimal deterministic Command Palette broker primitive in runtime_contract.py without execution side effects.",
+      "validation": [
+        "Rows normalize missing fields to literal UNKNOWN.",
+        "Routing applies the accepted rule order and resolves exactly one outcome.",
+        "The primitive produces no shellout, network, service, PM, ConPort, dope-memory, or canonical-write behavior."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Validate the packet, inspect diff scope, run codereview/precommit checks, commit, push, and open a PR to the integration branch.",
+      "validation": [
+        "Task packet JSON parses and conforms to the canonical schema.",
+        "Focused Cockpit tests, cockpit test directory, brand_lint, sync_brand_tokens, and git diff checks pass or exact blockers are recorded.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}
