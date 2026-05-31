@@ -238,7 +238,7 @@ env_prompt() {
         LEANTIME_TOKEN) echo "Leantime API token" ;;
         TASK_ORCHESTRATOR_API_KEY) echo "Task Orchestrator API key" ;;
         ADHD_ENGINE_API_KEY) echo "ADHD Engine API key" ;;
-        LITELLM_MASTER_KEY) echo "LiteLLM master key (generate with: openssl rand -hex 32)" ;;
+        LITELLM_MASTER_KEY) echo "LiteLLM master key (generate with: printf 'sk-%s\\n' \"$(openssl rand -hex 32)\")" ;;
         LITELLM_DATABASE_URL) echo "LiteLLM database URL (PostgreSQL DSN)" ;;
         OPENAI_WEBHOOK_SECRET) echo "OpenAI webhook secret (optional receiver verification)" ;;
         *) echo "$1" ;;
@@ -251,7 +251,7 @@ env_default() {
         LEANTIME_URL) echo "http://localhost:8097" ;;
         TASK_ORCHESTRATOR_API_KEY) echo "dev-key-456" ;;
         ADHD_ENGINE_API_KEY) echo "dev-key-123" ;;
-        LITELLM_MASTER_KEY) python3 -c 'import secrets; print(secrets.token_hex(32))' ;;
+        LITELLM_MASTER_KEY) python3 -c 'import secrets; print("sk-" + secrets.token_hex(32))' ;;
         LITELLM_DATABASE_URL) echo "postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/litellm" ;;
         *) echo "" ;;
     esac
