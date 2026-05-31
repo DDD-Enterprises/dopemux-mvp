@@ -18,6 +18,7 @@ from datetime import datetime, timezone
 
 from ..config import settings
 from ..bridge_integration import ConPortBridgeAdapter
+from ..redis_keys import redis_key
 
 logger = logging.getLogger(__name__)
 
@@ -109,11 +110,11 @@ class ActivityTracker:
         context_switches = activity_log.get('context_switches', 0) if activity_log else 0
 
         # Get last break from Redis
-        last_break_str = await self.redis.get(f"adhd:last_break:{user_id}")
+        last_break_str = await self.redis.get(redis_key(f"adhd:last_break:{user_id}"))
         minutes_since_break = self._calculate_minutes_since(last_break_str)
 
         # Calculate break compliance from Redis break history
-        break_history = await self.redis.lrange(f"adhd:breaks:{user_id}", 0, 10)
+        break_history = await self.redis.lrange(redis_key(f"adhd:breaks:{user_id}"), 0, 10)
         break_compliance = self._calculate_break_compliance(break_history)
 
         result = {
