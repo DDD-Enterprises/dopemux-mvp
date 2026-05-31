@@ -34,7 +34,7 @@ Authoring reference: [`docs/03-reference/dx-command-authoring.md`](../../../docs
 
 **2c — Transition.**
 ```
-advance_item(transitions=[{ itemId: "<id>", trigger: "resume", summary: "resumed via /dx:resume" }])
+advance_item({ itemId: "<id>", trigger: "resume", summary: "resumed via /dx:resume" })
 ```
 Restores the saved `previousRole` (BLOCKED → previousRole).
 
@@ -67,7 +67,7 @@ Next actions:
 
 ## Error Handling
 
-**Item not found** / **not blocked** (handled in 2b) / **orchestrator unavailable**: report clearly; fall back to `advance_item(transitions=[{itemId, trigger:"resume"}])` directly.
+**Item not found** / **not blocked** (handled in 2b) / **orchestrator unavailable**: report clearly; fall back to `advance_item({itemId, trigger:"resume"})` directly.
 
 ---
 

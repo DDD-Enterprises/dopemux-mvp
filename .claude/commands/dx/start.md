@@ -54,7 +54,7 @@ If no id is given, stop and ask for one (do not guess).
 
 **2c — Transition.** Call:
 ```
-advance_item(transitions=[{ itemId: "<id>", trigger: "start", summary: "<--summary or 'start via /dx:start'>" }])
+advance_item({ itemId: "<id>", trigger: "start", summary: "<--summary or 'start via /dx:start'>" })
 ```
 
 > **No `actor` field.** `advance_item` accepts only `{itemId, trigger, summary?}`. To attribute the transition today, include your actor id in `--summary` (Dopemux convention `worktree-<basename>-<branch>`). Structured actor attribution awaits `claim_item`.
@@ -108,7 +108,7 @@ Next actions:
 **Orchestrator MCP unavailable**:
 ```
 ⚠️ task-orchestrator MCP not responding.
-  Fallback: mcp__task-orchestrator__advance_item(transitions=[{itemId, trigger:"start"}]) after a manual get_context gate check.
+  Fallback: mcp__task-orchestrator__advance_item(itemId, trigger:"start") after a manual get_context gate check.
 ```
 
 **Gate failure on the actual call** (race: notes changed between preflight and transition): report the orchestrator's `expectedNotes`/error verbatim; do not retry blindly.
