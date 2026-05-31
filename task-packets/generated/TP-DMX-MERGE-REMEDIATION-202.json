@@ -23,7 +23,7 @@
   ],
   "execution": {
     "agent": "codex",
-    "base_branch": "main",
+    "base_branch": "codex/tp-dmx-steward-gate-201",
     "branch": "codex/tp-dmx-merge-remediation-202",
     "stacked_because": "Part of the DMX-AUTOREVIEW-PLATFORM dependency DAG."
   },
@@ -53,7 +53,7 @@
     ]
   },
   "pr": {
-    "base": "main",
+    "base": "codex/tp-dmx-steward-gate-201",
     "body": "## Summary\n- Wire steward_gate into pr_apply / apply_thread_dispositions (reply-only) / conflict+CI remediation, gated on NEEDS_IMPLEMENTER + implementer-role blocker; demote thread RESOLVE to finalization; route global-fix-PR/admin-bypass/fork-force-push to supervisor (blocked by default).\n\n## Scope\nTrack: B-govern-merge. Risk: HIGH. Red lane: true.\n\n## Validation\nRun the packet validation commands and capture proof under proof/TP-DMX-MERGE-REMEDIATION-202/PROOF.json.\n\n## NOT_RUN\nList any skipped live, integration, credentialed, or supervisor-gated checks explicitly.",
     "title": "Feat(pr-merge): gate remediation seams behind steward_gate"
   },

@@ -1,0 +1,12 @@
+config/pr_merge_specialist/policy.yaml
+docs/ops/steward-merge-gate.md
+src/dopemux_pr_merge_specialist/queue_drain.py
+task-packets/generated/TP-DMX-MERGE-REMEDIATION-202.json
+tests/pr_merge_specialist/test_remediation_gate.py
+proof/TP-DMX-MERGE-REMEDIATION-202/AUDITOR_REPORT.md
+proof/TP-DMX-MERGE-REMEDIATION-202/CHANGED_FILES.txt
+proof/TP-DMX-MERGE-REMEDIATION-202/DIFF_STAT.txt
+proof/TP-DMX-MERGE-REMEDIATION-202/GIT_STATE.md
+proof/TP-DMX-MERGE-REMEDIATION-202/PROOF.json
+proof/TP-DMX-MERGE-REMEDIATION-202/VALIDATION_OUTPUT.md
+proof/TP-DMX-MERGE-REMEDIATION-202/review_bundle/README.md
