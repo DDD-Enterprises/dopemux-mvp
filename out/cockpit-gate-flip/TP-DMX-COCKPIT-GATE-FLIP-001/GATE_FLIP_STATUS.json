@@ -1,0 +1,97 @@
+{
+  "schema_version": "dopemux.cockpit.gate_flip.status.v1",
+  "packet_id": "TP-DMX-COCKPIT-GATE-FLIP-001",
+  "created_at_utc": "2026-05-31T07:05:10Z",
+  "safe_for_claude_design": "YES",
+  "READY_FOR_CLAUDE_DESIGN": "approved",
+  "claude_design_blocked": false,
+  "upload_action_implemented": false,
+  "runtime_action_execution_enabled": false,
+  "runtime_reclassification_enabled": false,
+  "t4_remote_mutation_authorized": false,
+  "conditions": [
+    {
+      "id": "COMMAND_PALETTE",
+      "packet_id": "TP-DMX-COCKPIT-COMMAND-PALETTE-001",
+      "proof_path": "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PROOF.json",
+      "passed": true,
+      "evidence": {
+        "broker_not_executor": true
+      }
+    },
+    {
+      "id": "SAFE_ACTIONS",
+      "packet_id": "TP-DMX-COCKPIT-SAFE-ACTIONS-001",
+      "proof_path": "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/PROOF.json",
+      "passed": true,
+      "evidence": {
+        "cross_cutting_not_mode": true,
+        "typed_confirmation_required_for_high_risk_tiers": [
+          "T4",
+          "T5",
+          "T6"
+        ]
+      }
+    },
+    {
+      "id": "SETTINGS_RUNTIME",
+      "packet_id": "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001",
+      "proof_path": "out/cockpit-settings-runtime/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001/PROOF.json",
+      "passed": true,
+      "evidence": {
+        "flow_group_count": 9
+      }
+    },
+    {
+      "id": "UNKNOWN_DRIFT",
+      "packet_id": "TP-DMX-COCKPIT-UNKNOWN-DRIFT-001",
+      "proof_path": "out/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/PROOF.json",
+      "passed": true,
+      "evidence": {
+        "total_queue_items_lower_bound": 487
+      }
+    },
+    {
+      "id": "PACK_REMEDIATE_IA",
+      "packet_id": "TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA",
+      "proof_path": "out/cockpit-pack-remediation/TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA/PROOF.json",
+      "passed": true,
+      "evidence": {
+        "no_sixth_top_level_mode": true
+      }
+    },
+    {
+      "id": "RUNTIME_RENDER",
+      "packet_id": "TP-DMX-COCKPIT-RUNTIME-RENDER-001",
+      "proof_path": "out/cockpit-runtime-render/TP-DMX-COCKPIT-RUNTIME-RENDER-001/PROOF.json",
+      "passed": true,
+      "evidence": {
+        "five_top_level_modes": [
+          "PM",
+          "Implementer",
+          "Overview",
+          "Services",
+          "Events"
+        ]
+      }
+    },
+    {
+      "id": "INVENTORY_REGEN",
+      "packet_id": "TP-DMX-COCKPIT-INVENTORY-REGEN-001",
+      "proof_path": "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/PROOF.json",
+      "passed": true,
+      "evidence": {
+        "current_head_inventory_regenerated": true
+      }
+    },
+    {
+      "id": "EVIDENCE_LEDGER",
+      "packet_id": "TP-DMX-COCKPIT-EVIDENCE-LEDGER-001",
+      "proof_path": "out/cockpit-evidence-ledger/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001/PROOF.json",
+      "passed": true,
+      "evidence": {
+        "condition_8_unresolved_items": 0
+      }
+    }
+  ]
+}
