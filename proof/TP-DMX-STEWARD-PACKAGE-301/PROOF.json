@@ -151,7 +151,7 @@
   "codereview_status": "Manual bounded review complete; preserved existing PR Steward v1 docs and fixed package importability outside repo root.",
   "precommit_status": "PASS: pre-commit run on TP301 changed files and git diff --check passed.",
   "commit_sha": "33801d19cbde6654f421f26e2b58730354fc6a71",
-  "pr_url": "PENDING_PR",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/770",
   "residual_risks": [
     "TP301 is stacked on TP203/#767 while TP102 remains a sibling dependency on PR #758.",
     "The package imports outside repo root, and gate/audit are packaged; intake and bridge require repo-local tools modules until a later package-layout packet moves those engines under src.",
