@@ -11,7 +11,7 @@
     "repo_marker": ".dopetaskroot"
   },
   "scope_conflict": {
-    "status": "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
+    "status": "RESOLVED_AFTER_PR713_MERGE",
     "expected_predecessor": "TP-DMX-AUDITOR-ROUTER-001",
     "observed_missing_baseline_surfaces": [
       "tools/auditor_router/**",
@@ -22,7 +22,9 @@
       "This branch is broader than a pure PAL clink extension.",
       "It bootstraps the minimal auditor-router runtime needed for PAL clink classification tests.",
       "No claim is made that the full CLI wrapper contract is complete."
-    ]
+    ],
+    "resolved_at": "2026-05-31T06:01:22Z",
+    "resolution": "The missing baseline surfaces are now present on origin/main after PR #713 merged; the original scope conflict remains historical context only."
   },
   "route_behavior": {
     "implemented": "PAL MCP clink bridge-tier classification by static config inspection.",
@@ -78,18 +80,14 @@
   "follow_up_resolution": {
     "packet_id": "TP-DMX-AUDITOR-ROUTER-WRAPPER-003",
     "resolved_blockers": [
-      "WRAPPER_BLOCKED_BY_ALLOWLIST"
-    ],
-    "remaining_blockers": [
+      "WRAPPER_BLOCKED_BY_ALLOWLIST",
       "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
       "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500"
     ],
-    "note": "The wrapper blocker was historical for PAL-CLINK-002 and is closed by the follow-up wrapper packet. The bundle-local PAL MCP clink rerun completed host-side, read 12 evidence files, and returned PASS_WITH_RISKS."
+    "remaining_blockers": [],
+    "note": "Historical PAL-CLINK-002 blockers are resolved for current main: wrapper follow-up landed, PR #713 is merged, and the auditor-router/PAL clink baseline surfaces are present. Workflow-dispatch health remains UNKNOWN, but it no longer blocks merged PR #713."
   },
-  "blockers": [
-    "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
-    "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500"
-  ],
+  "blockers": [],
   "nonblocking_results": [
     "Bundle-local PAL clink audit completed host-side and returned PASS_WITH_RISKS after reading 12 evidence files.",
     "PAL clink bridge-tier classification implemented as pure config inspection",
@@ -101,7 +99,10 @@
     "PAL clink command and override-order review fixes passed targeted tests: 43 test_pal_clink tests",
     "Auditor-router test suite passed after command and override fixes: 47 passed",
     "PAL clink explicit name/runner and roles-shape review fixes passed targeted tests: 46 test_pal_clink tests",
-    "Auditor-router test suite passed after explicit field and roles-shape fixes: 50 passed"
+    "Auditor-router test suite passed after explicit field and roles-shape fixes: 50 passed",
+    "Post-merge blocker reconciliation: PR #713 is merged and current origin/main contains the auditor-router/PAL clink baseline surfaces; historical blockers are no longer active.",
+    "Post-merge validation: pytest -q tests/auditor_router passes without PYTHONPATH override after correcting three local test imports.",
+    "CI unit failure fix: test_today_panel_sqlite_operational_error_fallback now creates an existing temp CONPORT_DB_PATH before patching sqlite3.connect; local fast unit lane passes without xdist."
   ],
   "validation": {
     "commands": [
@@ -234,9 +235,9 @@
     "findings": [],
     "fixes_applied": [],
     "remaining_risks": [
-      "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN: origin/main lacks tools/auditor_router/**, tests/auditor_router/**, and scripts/auditor-preflight; this branch is a partial bootstrap, not a pure PAL clink extension.",
-      "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500: GitHub workflow dispatch returns HTTP 500; PR merge gate is unavailable and the branch cannot be merged via CI.",
-      "scripts/auditor-preflight wrapper is not allowlisted in this packet; validation command exited 127. Resolution is tracked in TP-DMX-AUDITOR-ROUTER-WRAPPER-003."
+      "PAL-CLINK-002 remains a historical partial-bootstrap packet; current main contains the baseline surfaces after merge.",
+      "GitHub workflow-dispatch health was not re-tested in this reconciliation slice and remains UNKNOWN as an ops/platform condition.",
+      "Route selection remains evidence for operator handoff, not an audit verdict."
     ],
     "skip_reason": null
   },
@@ -262,8 +263,106 @@
     "TP-DMX-AUDITOR-ROUTER-PAL-CLINK-AUDIT-HANDOFF-004"
   ],
   "head_sha_before_local_review_fixes": "6b10eed65c6256733900de06163ce312f8b99bdc",
-  "updated_at": "2026-05-26T23:16:55Z",
+  "updated_at": "2026-05-31T06:45:00Z",
   "head_sha_before_clink_attempt": "282257216002b0635fee696a06e8ef123a31f150",
   "head_sha_before_command_override_fixes": "e3246aee05a30951bc0a6f7aba910341fca02151",
-  "head_sha_before_shape_validation_fixes": "92ca508aad3d419f8e23b015428f7b5415622581"
+  "head_sha_before_shape_validation_fixes": "92ca508aad3d419f8e23b015428f7b5415622581",
+  "blocker_resolution": {
+    "updated_at": "2026-05-31T06:01:22Z",
+    "resolver_branch": "codex/tp-dmx-auditor-blockers-fix",
+    "evidence": [
+      "gh pr view 713: state=MERGED, mergeCommit=be5a31d981840336a783097323755feb233e5560, mergedAt=2026-05-28T20:38:59Z",
+      "git merge-base --is-ancestor be5a31d981840336a783097323755feb233e5560 origin/main: PR713_MERGE_ON_MAIN=YES",
+      "origin/main contains tools/auditor_router/pal_clink.py, tests/auditor_router/test_pal_clink.py, scripts/auditor-preflight, tools/auditor_router/preflight.py, and schemas/proof/auditor_route.schema.json"
+    ],
+    "resolved_blockers": [
+      "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN",
+      "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500"
+    ],
+    "resolution_notes": {
+      "MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN": "Resolved for current main: the PAL clink/auditor-router baseline surfaces are now present after PR #713 and follow-up wrapper work merged.",
+      "BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500": "Resolved as an active PR #713 merge blocker: PR #713 is merged. GitHub workflow-dispatch health was not re-tested here and remains UNKNOWN as a platform/ops condition, not an active blocker for this merged packet."
+    },
+    "remaining_unknowns": [
+      "GitHub workflow-dispatch health was not re-tested in this reconciliation slice.",
+      "Historical proof reflects conditions observed before PR #713 merged; this update records current post-merge resolution evidence."
+    ]
+  },
+  "post_merge_reconciliation_validation": {
+    "generated_at": "2026-05-31T06:01:22Z",
+    "branch": "codex/tp-dmx-auditor-blockers-fix",
+    "commands": [
+      {
+        "command": "python -m json.tool task-packets/generated/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002.json",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python -m json.tool proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python -m json.tool proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/PROOF.json",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python -m json.tool proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/MANIFEST.json",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python -m compileall -q tools tests",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "pytest -q tests/auditor_router",
+        "exit_code": 0,
+        "result": "PASS: 50 passed"
+      },
+      {
+        "command": "git diff --check",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python -m jsonschema -i task-packets/generated/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "exit_code": 0,
+        "result": "PASS with jsonschema CLI deprecation warning"
+      },
+      {
+        "command": "pre-commit run --files $(git diff --name-only)",
+        "exit_code": 0,
+        "result": "PASS: hooks passed or skipped as not applicable"
+      },
+      {
+        "command": "uv run --frozen pytest tests/unit/orchestrator/test_data_sources.py::TestUIDataSources::test_today_panel_sqlite_operational_error_fallback -q --no-cov",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "uv run --frozen pytest tests/unit/orchestrator/test_data_sources.py -q --no-cov",
+        "exit_code": 0,
+        "result": "PASS: 5 passed"
+      },
+      {
+        "command": "uv run --frozen pytest tests/unit tests/test_voice_core.py tests/test_brand_voice.py --maxfail=1 --disable-warnings --no-cov",
+        "exit_code": 0,
+        "result": "PASS: 981 passed, 2 skipped, 2 warnings"
+      },
+      {
+        "command": "uv run --frozen pytest tests/unit tests/test_voice_core.py tests/test_brand_voice.py -n auto --maxfail=1 --disable-warnings --no-cov",
+        "exit_code": 4,
+        "result": "NOT_RUN locally: pytest-xdist -n option unavailable in local uv environment; CI uses xdist and this command shape."
+      }
+    ],
+    "additional_fix": "Corrected three test_pal_clink.py imports from auditor_router.* to tools.auditor_router.* so the repo-default pytest invocation passes without PYTHONPATH=tools."
+  },
+  "git_state_privacy": {
+    "full_worktree_list_recorded": false,
+    "reason": "Full git worktree list contains operator-local paths and unrelated branch names; proof records only PR-relevant branch/base/status evidence."
+  },
+  "changed_files_source": "git diff --name-only origin/main, refreshed after review feedback so generated proof lists include every file changed by the PR."
 }
