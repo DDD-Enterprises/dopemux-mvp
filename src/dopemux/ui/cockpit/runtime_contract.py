@@ -1570,6 +1570,24 @@ def _missing_required_fields(candidate: dict[str, Any], tier: str) -> tuple[str,
     return tuple(dict.fromkeys(missing))
 
 
+def _typed_confirmation_expected_value(candidate: dict[str, Any], tier: str) -> str | None:
+    if tier == "T5":
+        value = candidate.get("service_id")
+    elif tier == "T6":
+        value = candidate.get("tp_or_task_id")
+    else:
+        return None
+    if isinstance(value, str) and value:
+        return value
+    return None
+
+
+def _typed_confirmation_matches(candidate: dict[str, Any], tier: str) -> bool:
+    expected = _typed_confirmation_expected_value(candidate, tier)
+    typed = candidate.get("typed_confirmation")
+    return isinstance(typed, str) and expected is not None and typed == expected
+
+
 def _parse_utc(value: str) -> datetime | None:
     try:
         if value.endswith("Z"):
@@ -1694,6 +1712,22 @@ def evaluate_safe_action_preflight(
             "MISSING_REQUIRED_FIELD",
             missing,
             "UNKNOWN_DRIFT_QUEUE",
+        )
+    if tier == "T6" and candidate.get("tp_gate_present") is not True:
+        return PreflightResult(
+            "REFUSE_TP_GATE_ABSENT",
+            False,
+            "TP_GATE_ABSENT",
+            (),
+            "UNKNOWN_DRIFT_QUEUE",
+        )
+    if tier in {"T5", "T6"} and not _typed_confirmation_matches(candidate, tier):
+        return PreflightResult(
+            "REFUSE_TYPED_CONFIRMATION_MISMATCH",
+            False,
+            "TYPED_CONFIRMATION_MISMATCH",
+            (),
+            "SAFE_ACTION_GATE",
         )
     if tier in NON_CONFIRM_TIERS:
         return PreflightResult(
