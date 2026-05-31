@@ -160,5 +160,7 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('tabIndex={-1}');
 
   // Verify notification chips are focusable
+  expect(appContent).toContain('<Tooltip title="Dismiss notification" arrow describeChild>');
+  expect(appContent).toContain('aria-label={notificationLabel}');
   expect(appContent).toContain('tabIndex={0}');
 });
