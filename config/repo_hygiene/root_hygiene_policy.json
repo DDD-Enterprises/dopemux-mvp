@@ -24,6 +24,7 @@
     ".dopemux",
     "installers",
     "claudedocs",
+    "qa",
     "interruption_shield",
     ".Jules",
     "_audit_out",
