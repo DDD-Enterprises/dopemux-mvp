@@ -76,9 +76,12 @@ A packet is superseded by another packet
 | TP-DMX-AGENTS-CODEX-ENDTOEND-0001 | Agent Guidance | Make Codex execute TP lifecycle end-to-end by default | Ready | N/A |
 | TP-DMX-ORCH-DOCS-003 | Task Orchestrator | Document read-only/operator-status integration authority boundaries | Active | N/A |
 | TP-DMX-COMPOSE-RESTORE-001 | Infra | Restore canonical Docker Compose authority | Ready | N/A |
+| TP-UI-DASHBOARD-BUILD-001 | UI Dashboard | Restore ui-dashboard npm install and build | Active | N/A |
 | TP-BETA-MCP-02-COMPOSE-HEALTHCHECKS | Infra | Gate core MCP compose dependencies on healthchecked services | Active | N/A |
 | TP-BETA-MCP-03-ADHD-REDIS-ISOLATION | ADHD Engine | Isolate ADHD Engine Redis keys by instance | Active | N/A |
 | TP-SEC-COMPOSE-LITELLM-LOCALHOST-001 | Security | Externalize LiteLLM healthcheck key and localize compose service ports | Active | N/A |
+| TP-SEC-WEAK-DEFAULT-SECRETS-001 | Security | Reject weak default secrets in env template and installer | Active | N/A |
+| TP-DOCS-FIRST-TOUCH-PRODUCT-NAME-001 | Docs | Refresh active Start Here onboarding and product naming | Active | N/A |
 | DMX-COCKPIT-STATIC-002 | UI Cockpit | Expose deterministic static cockpit renderer through guarded CLI wrapper | Merged (PR #528) | N/A |
 | TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001 | UI Cockpit | Audit and prepare Cockpit PR stack 568-571 plus PR 573 evidence for safe consolidation | Active | N/A |
 | TP-DMX-COCKPIT-RUNTIME-RENDER-001 | UI Cockpit | Wire runtime renderer primitives to accepted Cockpit IA package contract | Active | N/A |
