@@ -9,6 +9,7 @@ SERVICE_ROOT = Path(__file__).resolve().parents[1]
 if str(SERVICE_ROOT) not in sys.path:
     sys.path.insert(0, str(SERVICE_ROOT))
 
+from benchmarking.campaigns.selection import ensure_r1_campaign_records
 from benchmarking.cli.benchmark_registry_smoke import run_registry_smoke
 from benchmarking.registry.registry_loader import seed_registry
 from benchmarking.storage.sqlite_repo import BenchmarkCatalogRepo
@@ -36,8 +37,20 @@ def test_case_set_registry_links_cases_snapshot_and_control_anchor(tmp_path: Pat
 
 
 def test_registry_seeds_gemini_strict_candidates_unverified(tmp_path: Path) -> None:
+    # Gemini attestation routes and surface follow the r1-campaign-seed pattern
+    # (matching surface_gemini_api_v1): seeded by ensure_r1_campaign_records, not
+    # seed_registry. seed_registry alone must NOT contain them to avoid INSERT OR
+    # REPLACE collisions with different source_ref values.
     repo = BenchmarkCatalogRepo.from_root(tmp_path)
+
+    # Confirm seed_registry does NOT include the gemini direct surface or routes.
     seed_registry(repo)
+    assert repo.fetch_provider_surface("surface_gemini_direct_api_v1") is None
+    assert repo.fetch_route("route_gemini_direct_gemini_3_1_pro_preview_v1") is None
+    assert repo.fetch_route("route_openrouter_gemini_3_1_pro_preview_v1") is None
+
+    # After ensure_r1_campaign_records, the surface and routes are present.
+    ensure_r1_campaign_records(repo)
 
     direct_surface = repo.fetch_provider_surface("surface_gemini_direct_api_v1")
     assert direct_surface is not None
