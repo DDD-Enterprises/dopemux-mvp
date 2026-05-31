@@ -18,9 +18,12 @@ class TestUIDataSources:
         assert "count" in data
         assert data.get("fallback") is False
 
-    @patch("sqlite3.connect")
+    @patch("dopemux.orchestrator.idempotency.sqlite3.connect")
     def test_today_panel_sqlite_operational_error_fallback(self, mock_connect, monkeypatch, tmp_path):
-        # Simulate SQLite operational lock error
+        # Simulate SQLite operational lock error.
+        # Use module-scoped patch path (idempotency.sqlite3.connect) for
+        # deterministic behaviour under pytest-xdist parallel execution.
+        # Also isolate the db path so workers don't share a real db file.
         db_path = tmp_path / "conport.db"
         db_path.touch()
         monkeypatch.setenv("CONPORT_DB_PATH", str(db_path))
