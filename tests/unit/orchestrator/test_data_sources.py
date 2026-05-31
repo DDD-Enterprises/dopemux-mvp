@@ -1,5 +1,6 @@
 import pytest
 import sqlite3
+import tempfile
 from unittest.mock import patch
 from filelock import Timeout
 
@@ -36,3 +37,30 @@ class TestUIDataSources:
         assert data.get("fallback") is True
         assert "progress_entries_count" in data
         assert "lock contention fallback" in data["status"]
+
+    def test_context_panel_filelock_uses_tempdir(self, monkeypatch, tmp_path):
+        captured = {}
+
+        class DummyLock:
+            def __init__(self, path, timeout):
+                captured["path"] = path
+                captured["timeout"] = timeout
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                return False
+
+        monkeypatch.setattr(
+            "dopemux.orchestrator.ui.data_sources.context_status",
+            lambda *args, **kwargs: {"dope-context": {"fresh": True}, "ConPort": {"fresh": True}},
+        )
+        monkeypatch.setattr(tempfile, "gettempdir", lambda: str(tmp_path))
+        monkeypatch.setattr("filelock.FileLock", DummyLock)
+
+        data = get_panel_data("context")
+
+        assert captured["path"] == str(tmp_path / "dopemux-context-panel.lock")
+        assert captured["timeout"] == 0.1
+        assert data.get("fallback") is False

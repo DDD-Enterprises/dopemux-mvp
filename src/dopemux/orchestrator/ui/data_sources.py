@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -172,9 +173,13 @@ def get_panel_data(panel_id: str) -> Any:
     try:
         if panel_id == "context":
             import filelock
+            lock_path = os.path.join(
+                tempfile.gettempdir(),
+                "dopemux-context-panel.lock",
+            )
 
             # Keep the lock probe in the wrapper so direct context renders stay read-only.
-            with filelock.FileLock(".context.lock", timeout=0.1):
+            with filelock.FileLock(lock_path, timeout=0.1):
                 data = dispatch[panel_id]()
         else:
             data = dispatch[panel_id]()
