@@ -41,7 +41,7 @@ def test_runtime_render_requires_package_dir():
     assert RUNTIME_RENDER_BLOCKER in output
 
 
-def test_runtime_render_text_snapshot_preserves_blocked_governance_state():
+def test_runtime_render_text_snapshot_preserves_gate_verified_governance_state():
     code, output = _invoke(
         "--runtime-render",
         "--package-dir",
@@ -50,8 +50,8 @@ def test_runtime_render_text_snapshot_preserves_blocked_governance_state():
         "120x40",
     )
     assert code == 0
-    assert "safe_for_claude_design: NO" in output
-    assert "READY_FOR_CLAUDE_DESIGN: not approved" in output
+    assert "safe_for_claude_design: YES" in output
+    assert "READY_FOR_CLAUDE_DESIGN: approved" in output
     assert "top_level_modes: PM | Implementer | Overview | Services | Events" in output
     assert "Command Palette broker-only" in output
     assert "settings_admin_runtime:" in output
@@ -62,6 +62,8 @@ def test_runtime_render_text_snapshot_preserves_blocked_governance_state():
     assert "settings_unknown_tier_count: 62" in output
     assert "execution_allowed: false" in output
     assert "runtime_reclassification_allowed: false" in output
+    assert "claude_design_blocked: false" in output
+    assert "claude_design_gate_verified: true" in output
     assert "T4 blocked until remote mutation policy exists" in output
     assert "TX/TU never executable" in output
 
@@ -93,8 +95,8 @@ def test_runtime_render_json_snapshot_preserves_modes_and_surfaces():
     ]
     assert len(payload["artifact_provenance"]) >= 13
     assert payload["artifact_provenance"][0]["actual_sha256"]
-    assert payload["safe_for_claude_design"] == "NO"
-    assert payload["READY_FOR_CLAUDE_DESIGN"] == "not approved"
+    assert payload["safe_for_claude_design"] == "YES"
+    assert payload["READY_FOR_CLAUDE_DESIGN"] == "approved"
     assert payload["settings_admin_runtime"]["surface_name"] == "Settings/Admin/Runtime"
     assert payload["settings_admin_runtime"]["row_count"] == 62
     assert payload["settings_admin_runtime"]["unknown_tier_count"] == 62
@@ -116,8 +118,6 @@ def test_runtime_render_output_has_no_forbidden_positive_claims():
     )
     assert code == 0
     forbidden = (
-        _joined("READY_FOR_CLAUDE_DESIGN: ", "approved"),
-        _joined("safe_for_claude_design: ", "YES"),
         _joined("Claude Design upload ", "allowed"),
         _joined("T4 ", "authorized"),
         _joined("runtime execution ", "implemented"),
