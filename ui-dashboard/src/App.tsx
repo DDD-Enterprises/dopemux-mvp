@@ -34,6 +34,7 @@ import {
   PauseCircle,
   Trash2,
   TrendingUp,
+  X,
   Zap,
 } from 'lucide-react';
 
@@ -55,6 +56,7 @@ interface CognitiveState {
 }
 
 interface Notification {
+  id: string;
   message: string;
   notificationType: string;
   timestamp: string;
@@ -185,6 +187,10 @@ function App() {
   const [isCopied, setIsCopied] = useState(false);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const handleDismissNotification = useCallback((id: string) => {
+    setNotifications((current) => current.filter((n) => n.id !== id));
+  }, []);
+
   const handleCopyRecommendation = useCallback(async () => {
     if (!navigator.clipboard?.writeText) {
       setErrorMessage('Clipboard API is not supported in this browser or context.');
@@ -266,6 +272,7 @@ function App() {
         if (message.type === 'dashboard_notification') {
           setNotifications((current) => [
             {
+              id: String(message.id || Date.now().toString() + Math.random().toString(36).substring(2, 9)),
               message: String(message.message || 'Notification received'),
               notificationType: String(message.notification_type || 'info'),
               timestamp: String(message.timestamp || new Date().toISOString()),
@@ -663,20 +670,32 @@ function App() {
             >
               {notifications.map((notification) => {
                 const severityColor = getNotificationColor(notification.notificationType);
+                const notificationLabel = `${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`;
                 return (
-                  <Fade in={true} key={`${notification.timestamp}-${notification.message}`}>
-                    <Chip
-                      icon={getNotificationIcon(notification.notificationType)}
-                      label={`${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`}
-                      variant="outlined"
-                      tabIndex={0}
-                      sx={{
-                        maxWidth: '100%',
-                        borderColor: alpha(severityColor, 0.6),
-                        color: severityColor,
-                        backgroundColor: alpha(severityColor, 0.08),
-                      }}
-                    />
+                  <Fade in={true} key={notification.id}>
+                    <Tooltip title="Dismiss notification" arrow describeChild>
+                      <Chip
+                        icon={getNotificationIcon(notification.notificationType)}
+                        label={notificationLabel}
+                        aria-label={notificationLabel}
+                        variant="outlined"
+                        onDelete={() => handleDismissNotification(notification.id)}
+                        deleteIcon={<X size={14} aria-hidden="true" />}
+                        tabIndex={0}
+                        sx={{
+                          maxWidth: '100%',
+                          borderColor: alpha(severityColor, 0.6),
+                          color: severityColor,
+                          backgroundColor: alpha(severityColor, 0.08),
+                          '& .MuiChip-deleteIcon': {
+                            color: alpha(severityColor, 0.7),
+                            '&:hover': {
+                              color: severityColor,
+                            },
+                          },
+                        }}
+                      />
+                    </Tooltip>
                   </Fade>
                 );
               })}

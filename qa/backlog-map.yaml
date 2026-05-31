@@ -1,0 +1,65 @@
+# qa/backlog-map.yaml
+# Maps each QA scenario name to the BETA-* backlog IDs it regresses.
+# Used by the results reporter to surface which backlog items are covered
+# by a given run and which remain untested.
+#
+# Key:   scenario name (matches "scenario" field in result JSON lines)
+# Value: list of BETA-* item IDs from the beta-readiness backlog
+
+scenarios:
+  env_up:
+    - BETA-INSTALL-02              # dopemux-network never created on fresh install
+
+  probe_entrypoints:
+    - BETA-CLI-01                  # `dopemux` entry point reachable
+    - BETA-CLI-02                  # Core subcommands present in --help
+
+  install_gauntlet:
+    - BETA-INSTALL-01              # .mcp.json hardcoded path
+    - BETA-INSTALL-02              # dopemux-network not auto-created
+    - BETA-INSTALL-03              # First-run init flow
+    - BETA-INSTALL-04              # Docker Compose service boot
+    - BETA-INSTALL-05              # Secrets injection / env wiring
+    - BETA-INSTALL-06              # Post-install health check passes
+
+  cli_sweep:
+    - BETA-CLI-01                  # CLI entry point stable
+    - BETA-CLI-02                  # Subcommand set complete
+    - BETA-CLI-04                  # `decisions` subcommand gap
+    - BETA-CLI-05                  # Output format / JSON flags
+
+  mcp_roundtrips:
+    - BETA-MCP-01                  # ConPort MCP round-trip
+    - BETA-MCP-02                  # PAL MCP round-trip
+
+  multi_instance_collision:
+    - BETA-MCP-03                  # Redis multi-instance port collision
+
+  hooks_lifecycle:
+    - BETA-HOOK-01                 # SessionStart hook fires
+    - BETA-HOOK-02                 # PostToolUse hook fires
+
+  rte_routing_safety:
+    - BETA-RTE-01                  # SP fail-close at execution time
+    - BETA-RTE-02                  # Routing safety / injection guards
+
+  live_lane:
+    - BETA-RTE-03                  # Real LLM call end-to-end (gated by DPMX_LIVE_OK)
+
+  pytest_lanes:
+    - BETA-TEST-01                 # Unit test suite passes
+    - BETA-TEST-02                 # Integration test suite passes
+    - BETA-TEST-03                 # Provider-modes tests pass
+    - BETA-TEST-06                 # Series-gate / CostProfile tests pass
+
+  docs_drift:
+    - BETA-DOCS-02                 # Docs describe correct product
+    - BETA-DOCS-05                 # CLI help text matches docs
+    - BETA-DOCS-06                 # MCP manifest matches runtime shape
+
+  tui_renders:
+    - BETA-UI-02                   # Dashboard renders without crash
+    - BETA-UI-03                   # dx-clobber regression (#720)
+
+  env_down:
+    []                             # Teardown only — no backlog items targeted

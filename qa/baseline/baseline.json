@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "generated_at": null,
+  "head_sha": null,
+  "signals": {
+    "conport_decision_count": null,
+    "dope_context_search_relevance_avg": null,
+    "pytest_unit_pass_count": null,
+    "pytest_unit_skip_count": null,
+    "pytest_integration_pass_count": null,
+    "mcp_startup_time_s": null,
+    "cli_help_commands_count": null,
+    "adhd_cognitive_load_avg": null
+  },
+  "golden_snapshots": {},
+  "notes": "Run qa-run baseline to populate from a known-good HEAD"
+}

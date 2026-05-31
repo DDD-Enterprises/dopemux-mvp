@@ -16,6 +16,15 @@ from output_safety import (
 
 logger = logging.getLogger(__name__)
 CACHE_KEY_VERSION = "dopemux-rte-prescan-cache-v3"
+# Providers that receive response_format={"type":"json_object"} in prescan calls.
+# Mirrors the json_object-capable set in lib/structured_output_contracts.schema_capability_reason
+# for the openai_sdk transport — the only transport _call_grok supports.
+# Gemini is intentionally absent: prescan routes Gemini via _call_grok only when
+# execution_transport=="openai_sdk", but Gemini candidates always carry
+# execution_transport=="sdk", which raises ValueError at the transport guard
+# (line ~521) before any response_format is consumed. If a future Gemini prescan
+# route is added with openai_sdk transport, add "gemini" here and test it.
+PRESCAN_JSON_OBJECT_PROVIDERS = {"openai", "xai", "openrouter"}
 
 class RTEPrescanError(Exception):
     """Base error for prescan."""
@@ -527,6 +536,11 @@ class GrokPassRunner:
 
         import openai
 
+        prescan_response_format = (
+            {"type": "json_object"}
+            if provider in PRESCAN_JSON_OBJECT_PROVIDERS
+            else None
+        )
         base_url = None
         if provider == "openrouter":
             base_url = "https://openrouter.ai/api/v1"
@@ -534,16 +548,19 @@ class GrokPassRunner:
             base_url = self.config.xai_base_url
 
         client = openai.OpenAI(api_key=api_key, base_url=base_url)
-        response = client.chat.completions.create(
-            model=model_id,
-            messages=[
+        create_kwargs: dict[str, Any] = {
+            "model": model_id,
+            "messages": [
                 {
                     "role": "user",
                     "content": payload,
                 }
             ],
-            temperature=self.config.temperature,
-        )
+            "temperature": self.config.temperature,
+        }
+        if prescan_response_format is not None:
+            create_kwargs["response_format"] = prescan_response_format
+        response = client.chat.completions.create(**create_kwargs)
         content = getattr(response.choices[0].message, "content", "") or "{}"
         data = json.loads(content)
         if not isinstance(data, dict):
