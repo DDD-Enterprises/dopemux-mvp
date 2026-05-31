@@ -16,7 +16,7 @@ prelude: System Taskorchestrator (reference) for dopemux documentation and devel
 
 Task Orchestrator is the workflow-coordination service surface for dopemux. In the inspected runtime code it exposes HTTP, WebSocket, and MCP surfaces for workflow idea/epic operations, project workflow views, PM-plane write routing, and cross-plane coordination.
 
-This service must not be confused with the upstream 13-tool stdio MCP Task Orchestrator container used by Codex and `dopemux mcp` local configs. The upstream stdio MCP runtime is launched through `/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh` and stores repo-scoped SQLite state under the operator's local data directory. The in-repo service described here is the Dopemux FastAPI workflow service.
+This service must not be confused with the upstream 13-tool stdio MCP Task Orchestrator container used by Codex and `dopemux mcp` local configs. The upstream stdio MCP runtime is launched through `plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh` and stores repo-scoped SQLite state under the operator's local data directory. The in-repo service described here is the Dopemux FastAPI workflow service.
 
 Its canonical authority slice is narrow:
 - workflow-significant API behavior and transition routing exposed by `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/main.py`, `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/api/project_workflow.py`, and `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/api/pm_tools.py`
@@ -58,7 +58,7 @@ It does not own durable PM entity truth, chronicle truth, or structured retrieva
 
 - Canonical runtime code: `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/main.py`
 - Canonical stdio MCP wrapper: `/Users/hue/code/dopemux-mvp/services/task-orchestrator/mcp_stdio.py`
-- Upstream 13-tool stdio MCP launcher for Codex/local MCP clients: `/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh`
+- Upstream 13-tool stdio MCP launcher for Codex/local MCP clients: `plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh`
 - Unsupported runtime variant: `/Users/hue/code/dopemux-mvp/services/task-orchestrator/task_orchestrator/app.py`
   This file exits immediately and says to use `app/main.py`.
 - Container/runtime packaging surface: `/Users/hue/code/dopemux-mvp/services/task-orchestrator/Dockerfile`
@@ -125,7 +125,7 @@ Storage surfaces:
 - Operational
   `/Users/hue/code/dopemux-mvp/compose.yml`, `/Users/hue/code/dopemux-mvp/docker/compose.core.yml`, and `/Users/hue/code/dopemux-mvp/services/registry.yaml` for current exposed port `8000`.
   `/Users/hue/code/dopemux-mvp/services/task-orchestrator/mcp_stdio.py` for stdio MCP launch.
-  `/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh` for the upstream 13-tool stdio MCP runtime used by Codex/local MCP config.
+  `plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh` for the upstream 13-tool stdio MCP runtime used by Codex/local MCP config.
 
 - Unknown
   The repo-wide relationship between the in-repo FastAPI workflow service and the upstream 13-tool stdio MCP Task Orchestrator remains a boundary, not a unified runtime contract.
