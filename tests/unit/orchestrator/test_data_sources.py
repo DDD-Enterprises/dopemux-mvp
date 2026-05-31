@@ -19,10 +19,13 @@ class TestUIDataSources:
         assert data.get("fallback") is False
 
     @patch("sqlite3.connect")
-    def test_today_panel_sqlite_operational_error_fallback(self, mock_connect):
+    def test_today_panel_sqlite_operational_error_fallback(self, mock_connect, monkeypatch, tmp_path):
         # Simulate SQLite operational lock error
+        db_path = tmp_path / "conport.db"
+        db_path.touch()
+        monkeypatch.setenv("CONPORT_DB_PATH", str(db_path))
         mock_connect.side_effect = sqlite3.OperationalError("database is locked")
-        
+
         data = get_panel_data("today")
         assert data.get("fallback") is True
         assert "error" in data
