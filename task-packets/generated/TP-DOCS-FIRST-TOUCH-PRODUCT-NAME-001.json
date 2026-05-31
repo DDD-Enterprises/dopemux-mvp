@@ -39,7 +39,7 @@
     "verify": [
       "python -m json.tool task-packets/generated/TP-DOCS-FIRST-TOUCH-PRODUCT-NAME-001.json >/dev/null",
       "python -m jsonschema -i task-packets/generated/TP-DOCS-FIRST-TOUCH-PRODUCT-NAME-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
-      "grep -rn \"chatx\\|chat-x\\|ChatX\" README.md INSTALL.md docs/01-tutorials 2>/dev/null",
+      "grep -rn \"chatx\\|chat-x\\|ChatX\" README.md INSTALL.md docs/01-tutorials 2>/dev/null; test $? -eq 1",
       "python scripts/docs_validator.py docs/01-tutorials/start-here.md docs/01-tutorials/start-here-2.md docs/01-tutorials/start-here-3.md",
       "python scripts/docs_frontmatter_guard.py docs/01-tutorials/start-here.md docs/01-tutorials/start-here-2.md docs/01-tutorials/start-here-3.md",
       "git diff --check",
@@ -70,7 +70,7 @@
         "Distinguish active onboarding docs from archived historical docs."
       ],
       "validation": [
-        "grep -rn \"chatx\\|chat-x\\|ChatX\" docs/ README.md INSTALL.md 2>/dev/null | head -20",
+        "grep -rn \"chatx\\|chat-x\\|ChatX\" docs/ README.md INSTALL.md 2>/dev/null; test $? -eq 1",
         "sed -n '1,180p' docs/01-tutorials/start-here.md",
         "sed -n '1,180p' docs/01-tutorials/quickstart.md"
       ]
@@ -84,7 +84,7 @@
         "Keep archived chatx references out of scope unless active onboarding docs reference them."
       ],
       "validation": [
-        "grep -rn \"chatx\\|chat-x\\|ChatX\" README.md INSTALL.md docs/01-tutorials 2>/dev/null"
+        "grep -rn \"chatx\\|chat-x\\|ChatX\" README.md INSTALL.md docs/01-tutorials 2>/dev/null; test $? -eq 1"
       ]
     },
     {

@@ -50,7 +50,11 @@ specific options, see [INSTALL.md](../../INSTALL.md).
 Load the shell integration that the installer wrote, or open a new terminal:
 
 ```bash
+# zsh
 source ~/.zshrc
+
+# bash
+source ~/.bashrc
 ```
 
 Start the operator CLI:
