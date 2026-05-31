@@ -31,6 +31,9 @@
     "allowlist": [
       ".github/workflows/ci-complete.yml",
       "CHANGELOG.md",
+      "services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py",
+      "services/repo-truth-extractor/tests/test_phase_s_step_selection.py",
+      "services/repo-truth-extractor/tests/test_prescan_e2e_smoke.py",
       "task-packets/INDEX.md",
       "task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json",
       "claudedocs/ci-full-test-suite-proof-2026-05-31.md"
@@ -39,9 +42,10 @@
       "python -m json.tool task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json >/dev/null",
       "python -m jsonschema -i task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
       "PYTHONPATH=src pytest tests/auditor_router -q --tb=short",
+      "PYTHONPATH=src uv run --python 3.11 --frozen pytest services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py::test_code_prescan_emits_dotted_relative_python_imports services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py::test_code_prescan_api_surface_detection_avoids_substring_false_positives services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py::test_code_prescan_arrow_function_signatures_match_symbol_coverage services/repo-truth-extractor/tests/test_prescan_e2e_smoke.py::test_prescan_real_repo_full_and_incremental_smoke services/repo-truth-extractor/tests/test_phase_s_step_selection.py::test_v4_help_does_not_expose_s_extra_steps -q --tb=short --disable-warnings --no-cov",
       "PYTHONPATH=src pytest services/repo-truth-extractor/tests/ -q --tb=short --disable-warnings --no-cov",
       "git diff --check",
-      "pre-commit run --files .github/workflows/ci-complete.yml CHANGELOG.md task-packets/INDEX.md task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json claudedocs/ci-full-test-suite-proof-2026-05-31.md"
+      "pre-commit run --files .github/workflows/ci-complete.yml CHANGELOG.md services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py services/repo-truth-extractor/tests/test_phase_s_step_selection.py services/repo-truth-extractor/tests/test_prescan_e2e_smoke.py task-packets/INDEX.md task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json claudedocs/ci-full-test-suite-proof-2026-05-31.md"
     ]
   },
   "pr": {
@@ -96,7 +100,7 @@
         "python -m json.tool task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json >/dev/null",
         "python -m jsonschema -i task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
         "git diff --check",
-        "pre-commit run --files .github/workflows/ci-complete.yml CHANGELOG.md task-packets/INDEX.md task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json claudedocs/ci-full-test-suite-proof-2026-05-31.md"
+        "pre-commit run --files .github/workflows/ci-complete.yml CHANGELOG.md services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py services/repo-truth-extractor/tests/test_phase_s_step_selection.py services/repo-truth-extractor/tests/test_prescan_e2e_smoke.py task-packets/INDEX.md task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json claudedocs/ci-full-test-suite-proof-2026-05-31.md"
       ]
     }
   ]
