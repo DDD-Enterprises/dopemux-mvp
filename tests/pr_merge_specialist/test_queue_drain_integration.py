@@ -392,12 +392,36 @@ def test_merge_prepared_result_logs_auto_merge_handoff_truthfully(
         ),
         artifacts={"operator_state": "queued_for_merge"},
     )
+    pr_dir = pr_dir_for(tmp_path, 190)
+    (pr_dir / "MERGE_READINESS.json").write_text(
+        json.dumps(
+            {
+                "generated_at": "2026-05-31T12:00:00Z",
+                "readiness": "READY",
+                "blockers": [],
+                "pr": {"number": 190, "head_sha": "head-190"},
+                "proof": {"proof_head_sha": "head-190"},
+                "embedded_audit": {"status": "PASS"},
+            }
+        ),
+        encoding="utf-8",
+    )
+    (pr_dir / "PROOF.json").write_text(
+        json.dumps(
+            {
+                "generated_at": "2026-05-31T12:00:00Z",
+                "head_sha": "head-190",
+                "embedded_audit": {"status": "PASS"},
+            }
+        ),
+        encoding="utf-8",
+    )
 
     result = queue_drain_module._merge_prepared_result(
         args=Namespace(id=190, out_dir=str(tmp_path), repo=None, execute=True),
         client=client,
         repo_root=tmp_path,
-        policy={},
+        policy={"steward_gate": {"artifact_ttl_seconds": 10_000_000}},
         pr_root=tmp_path,
         active_run_id="truthfulhandoff",
         prepared_result=prepared_result,

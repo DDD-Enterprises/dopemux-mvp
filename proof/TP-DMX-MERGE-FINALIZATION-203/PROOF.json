@@ -1,0 +1,155 @@
+{
+  "tp_id": "TP-DMX-MERGE-FINALIZATION-203",
+  "status": "PASS_WITH_LIMITS",
+  "generated_at": "2026-05-31T23:05:58Z",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-merge-finalization-203",
+  "branch": "codex/tp-dmx-merge-finalization-203",
+  "base_ref": "origin/codex/tp-dmx-merge-remediation-202",
+  "base_sha": "623bcf09de40f720d98b9b083df2b4b854d3cbce",
+  "head_sha": "623bcf09de40f720d98b9b083df2b4b854d3cbce",
+  "repo_identity": {
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker": ".dopetaskroot",
+    "identity_match": true
+  },
+  "stacking": {
+    "reason": "TP203 depends on TP-DMX-MERGE-REMEDIATION-202, which is open as draft PR #766 and not yet merged to main.",
+    "base_branch": "codex/tp-dmx-merge-remediation-202",
+    "base_pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/766"
+  },
+  "dependency_proofs": [
+    {
+      "tp_id": "TP-DMX-STEWARD-GATE-201",
+      "path": "proof/TP-DMX-STEWARD-GATE-201/PROOF.json",
+      "present": true,
+      "json_valid": true,
+      "status": "PASS_WITH_LIMITS"
+    },
+    {
+      "tp_id": "TP-DMX-AUDIT-CI-PROVENANCE-104",
+      "path": "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/PROOF.json",
+      "present": true,
+      "json_valid": true,
+      "status": "NO_STATUS_FIELD"
+    },
+    {
+      "tp_id": "TP-DMX-MERGE-REMEDIATION-202",
+      "path": "proof/TP-DMX-MERGE-REMEDIATION-202/PROOF.json",
+      "present": true,
+      "json_valid": true,
+      "status": "PASS_WITH_LIMITS"
+    }
+  ],
+  "authority_used": [
+    "AGENTS.md",
+    "task-packets/generated/TP-DMX-MERGE-FINALIZATION-203.json",
+    "docs/ops/load-plans/load_plan-DMX-AUTOREVIEW-PLATFORM.json",
+    "docs/ops/steward-merge-gate.md",
+    "docs/ops/pr-acceptance.md",
+    "src/dopemux_pr_merge_specialist/merge.py",
+    "src/dopemux_pr_merge_specialist/github_api.py",
+    "src/dopemux_pr_merge_specialist/queue_drain.py",
+    "tests/pr_merge_specialist"
+  ],
+  "slices_completed": [
+    "RED: added tests/pr_merge_specialist/test_finalization_gate.py and observed failures for missing finalization helper, raw shell merge fallback, enabled automerge default, and admin-bypass selection.",
+    "GREEN: added require_steward_finalization_gate and wired it into _merge_prepared_result before live merge execution.",
+    "Switched direct rebase merge execution to GitHub GraphQL mergePullRequest with expectedHeadOid and disabled ungated gh pr merge fallback.",
+    "Blocked governed auto-merge execution by default with merge.allow_governed_automerge false.",
+    "Blocked admin-bypass squash unless a future supervisor-authorized packet implements explicit proof handling.",
+    "Synchronized PR merge specialist skill template runtime modules with changed runtime modules to preserve template/runtime parity."
+  ],
+  "files_changed": [
+    "config/pr_merge_specialist/policy.yaml",
+    "docs/ops/pr-acceptance.md",
+    "docs/ops/steward-merge-gate.md",
+    "src/dopemux_pr_merge_specialist/github_api.py",
+    "src/dopemux_pr_merge_specialist/merge.py",
+    "src/dopemux_pr_merge_specialist/queue_drain.py",
+    "task-packets/generated/TP-DMX-MERGE-FINALIZATION-203.json",
+    "templates/skills/pr-merge-specialist/config/policy.example.yaml",
+    "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/github_api.py",
+    "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/merge.py",
+    "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py",
+    "tests/pr_merge_specialist/test_finalization_gate.py",
+    "tests/pr_merge_specialist/test_queue_drain_integration.py",
+    "tests/pr_merge_specialist/test_thread_and_merge_logic.py",
+    "proof/TP-DMX-MERGE-FINALIZATION-203/**"
+  ],
+  "validations": [
+    {
+      "command": "pytest -q tests/pr_merge_specialist/test_finalization_gate.py",
+      "exit_code": 1,
+      "status": "RED_PASS",
+      "evidence": "6 failed for missing finalization helper and old merge/admin/automerge behavior."
+    },
+    {
+      "command": "pytest -q tests/pr_merge_specialist/test_finalization_gate.py::test_graphql_expected_head_merge_does_not_use_pr_command_repo_flag",
+      "exit_code": 1,
+      "status": "RED_PASS",
+      "evidence": "Command builder incorrectly included --repo on gh api graphql before fix."
+    },
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-MERGE-FINALIZATION-203.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m jsonschema -i task-packets/generated/TP-DMX-MERGE-FINALIZATION-203.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m compileall -q src tests templates/skills/pr-merge-specialist/scripts",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "pytest -q tests/pr_merge_specialist",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "88 passed"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "pre-commit run --files <TP203 changed files>",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-MERGE-FINALIZATION-203/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "External embedded audit was not invoked in this Codex session.",
+      "Supervisor review remains required before using this red-lane finalization authority for live merges."
+    ],
+    "skip_reason": "No supported external embedded-auditor invocation was available in this session; Codex performed bounded manual audit and records this required audit as skipped."
+  },
+  "codereview_status": "Manual bounded review complete; found and fixed incorrect --repo usage on gh api graphql, then reran focused and full validation.",
+  "precommit_status": "PASS: pre-commit run on TP203 changed files and git diff --check passed.",
+  "commit_sha": "PENDING_COMMIT_METADATA",
+  "pr_url": "PENDING_PR",
+  "residual_risks": [
+    "TP203 is stacked on TP202 because TP202 is not merged to main.",
+    "External embedded audit and explicit supervisor sign-off remain required before live merge execution authority is accepted.",
+    "GraphQL mergePullRequest expectedHeadOid was unit-tested for command construction and fail-closed behavior, but no live GitHub merge was executed.",
+    "Branch deletion after GraphQL merge is not implemented in this slice."
+  ],
+  "unknowns": [
+    "Current gh auth scope for live mergePullRequest expectedHeadOid execution was not exercised.",
+    "Live merge queue behavior under GraphQL expectedHeadOid remains unexercised."
+  ],
+  "cleanup_status": "WORKTREE_ACTIVE_PENDING_PR"
+}
