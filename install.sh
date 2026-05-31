@@ -64,7 +64,11 @@ CORE_STACK_PORTS=(5432 6379 6333 6334 3004 8000 8095)
 RESEARCH_STACK_EXTRA_PORTS=(3009 3011)
 FULL_STACK_EXTRA_PORTS=(3003 3009 3011 3012 3015 3016 4000 8081 8090 8790)
 
-CORE_STACK_ENV_VARS=()
+CORE_STACK_ENV_VARS=(
+    AGE_PASSWORD
+    TASK_ORCHESTRATOR_API_KEY
+    ADHD_ENGINE_API_KEY
+)
 RESEARCH_STACK_ENV_VARS=(
     OPENAI_API_KEY
     TAVILY_API_KEY
@@ -247,13 +251,38 @@ env_prompt() {
 
 env_default() {
     case "$1" in
-        AGE_PASSWORD) echo "dopemux_age_dev_password" ;;
+        AGE_PASSWORD) env_generated_secret ;;
         LEANTIME_URL) echo "http://localhost:8097" ;;
-        TASK_ORCHESTRATOR_API_KEY) echo "dev-key-456" ;;
-        ADHD_ENGINE_API_KEY) echo "dev-key-123" ;;
+        TASK_ORCHESTRATOR_API_KEY) env_generated_secret ;;
+        ADHD_ENGINE_API_KEY) env_generated_secret ;;
         LITELLM_MASTER_KEY) python3 -c 'import secrets; print("sk-" + secrets.token_hex(32))' ;;
-        LITELLM_DATABASE_URL) echo "postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/litellm" ;;
+        LITELLM_DATABASE_URL)
+            local age_password="${AGE_PASSWORD:-$(env_generated_secret)}"
+            echo "postgresql://dopemux_age:${age_password}@dopemux-postgres-age:5432/litellm"
+            ;;
         *) echo "" ;;
+    esac
+}
+
+env_generated_secret() {
+    python3 -c 'import secrets; print(secrets.token_hex(32))'
+}
+
+env_is_placeholder_value() {
+    local value="${1:-}"
+    local lowered
+    lowered=$(printf '%s' "$value" | tr '[:upper:]' '[:lower:]')
+
+    case "$lowered" in
+        your_secure_*|your_*_here|dev-key-*|changeme*|change_me*|*_placeholder|dopemux_age_dev_password)
+            return 0
+            ;;
+        postgresql://dopemux_age:dopemux_age_dev_password@*)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
     esac
 }
 
@@ -330,12 +359,23 @@ resolve_existing_env_value() {
     local var="$1"
     local env_file="$2"
     local shell_override="${!var:-}"
+    local value=""
+    local source=""
     if [ -n "$shell_override" ]; then
-        echo "$shell_override"
+        value="$shell_override"
+        source="shell environment"
+    else
+        value=$(read_env_file_value "$var" "$env_file")
+        source="$env_file"
+    fi
+
+    if [ -n "$value" ] && env_is_placeholder_value "$value"; then
+        warning "$var is set to a placeholder or development value in $source; ignoring it." >&2
+        echo ""
         return 0
     fi
 
-    read_env_file_value "$var" "$env_file"
+    echo "$value"
 }
 
 read_secret_from_keychain() {
@@ -681,6 +721,8 @@ ensure_env_file() {
         required_vars=("${FULL_STACK_ENV_VARS[@]}")
     elif [ "$stack" = "research" ]; then
         required_vars=("${RESEARCH_STACK_ENV_VARS[@]}")
+    elif [ "$stack" = "core" ]; then
+        required_vars=("${CORE_STACK_ENV_VARS[@]}")
     fi
 
     if [ ${#required_vars[@]} -eq 0 ]; then
