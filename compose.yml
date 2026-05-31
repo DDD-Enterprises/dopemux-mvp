@@ -254,12 +254,16 @@ services:
       - "${CONPORT_MCP_PORT:-3005}:3005"
       - "${CONPORT_INFO_PORT:-4004}:4004"
     depends_on:
-      - postgres
-      - redis-primary
-      - mcp-qdrant
-      - dopecon-bridge
+      postgres:
+        condition: service_healthy
+      redis-primary:
+        condition: service_healthy
+      mcp-qdrant:
+        condition: service_started
+      dopecon-bridge:
+        condition: service_started
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:3004/health || exit 0" ]
+      test: [ "CMD-SHELL", "curl -f http://localhost:3004/health || exit 1" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -304,12 +308,14 @@ services:
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - DATABASE_URL=${LITELLM_DATABASE_URL:-postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/litellm}
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
     ports:
       - "${LITELLM_PORT:-4000}:4000"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f -H 'Authorization: Bearer <REDACTED_LITELLM_MASTER_KEY>' http://localhost:4000/health || exit 1" ]
+      test: [ "CMD-SHELL", "curl -f -H \"Authorization: Bearer $${LITELLM_MASTER_KEY}\" http://localhost:4000/health || exit 1" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -326,6 +332,7 @@ services:
 
     environment:
       - MCP_SERVER_PORT=${DOPE_CONTEXT_PORT:-3010}
+      # Docker-published services must listen on the container interface; host publication is loopback-only below.
       - MCP_SERVER_HOST=0.0.0.0
       - VOYAGE_API_KEY=${VOYAGE_API_KEY}
       - VOYAGEAI_API_KEY=${VOYAGE_API_KEY}
@@ -412,9 +419,12 @@ services:
     ports:
       - "${TASK_ORCHESTRATOR_PORT:-8000}:8000"
     depends_on:
-      - redis-primary
-      - conport
-      - leantime
+      redis-primary:
+        condition: service_healthy
+      conport:
+        condition: service_healthy
+      leantime:
+        condition: service_started
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
       timeout: 10s
@@ -433,17 +443,21 @@ services:
 
     environment:
       - API_PORT=8095
+      # Dockerfile starts uvicorn on 0.0.0.0; host publication is restricted to loopback below.
       - HOST=0.0.0.0
       - ADHD_ENGINE_API_KEY=${ADHD_ENGINE_API_KEY:-dev-key-123}
       - REDIS_URL=redis://redis-primary:6379
+      # Scope ADHD state/cache keys per worktree instance while preserving explicit overrides.
+      - ADHD_ENGINE_REDIS_PREFIX=${ADHD_ENGINE_REDIS_PREFIX:-${DOPEMUX_INSTANCE_ID:-default}}
       - CONPORT_URL=http://conport:3005
       - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
       - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
       - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097
     ports:
-      - "${ADHD_ENGINE_PORT:-3025}:8095"
+      - "127.0.0.1:${ADHD_ENGINE_PORT:-3025}:8095"
     depends_on:
-      - redis-primary
+      redis-primary:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://localhost:8095/health || exit 1" ]
       timeout: 10s
@@ -589,8 +603,9 @@ services:
     networks:
       - dopemux-network
     ports:
-      - "${LEANTIME_BRIDGE_PORT:-3015}:3015"
+      - "127.0.0.1:${LEANTIME_BRIDGE_PORT:-3015}:3015"
     environment:
+      # Container-internal bind required for Docker port publication; host port is loopback-only.
       - MCP_SERVER_HOST=0.0.0.0
       - MCP_SERVER_PORT=${LEANTIME_BRIDGE_PORT:-3015}
       - LEANTIME_API_URL=${LEANTIME_API_URL:-${LEANTIME_URL:-http://leantime:80}}
@@ -615,8 +630,9 @@ services:
     networks:
       - dopemux-network
     ports:
-      - "${WEBHOOK_RECEIVER_HOST_PORT:-8790}:8790"
+      - "127.0.0.1:${WEBHOOK_RECEIVER_HOST_PORT:-8790}:8790"
     environment:
+      # Container-internal bind required for Docker port publication; host port is loopback-only.
       - WEBHOOK_RECEIVER_HOST=0.0.0.0
       - WEBHOOK_RECEIVER_PORT=8790
       # Default to SQLite at WEBHOOK_DB_PATH; set WEBHOOK_DB_URL to use PostgreSQL instead.
