@@ -1,3 +1,11 @@
+"""Legacy ProcessPool partition-function snippet.
+
+This file was introduced as a partial reference fragment, not as a runnable
+module. Keep the original snippet inert so repository-wide compile checks do not
+fail while preserving the historical text for audit review.
+"""
+
+LEGACY_PARTITION_FUNCTION_SNIPPET = r'''
     def _run_one_partition(partition: Dict[str, Any]) -> PartitionExecResult:
         partition_id = str(partition["id"])
         out_json = raw_dir / f"{step_id}__{partition_id}.json"
@@ -16,3 +24,4 @@
                 partition_id=partition_id,
                 expected_artifact_names=output_artifacts,
             )
+'''

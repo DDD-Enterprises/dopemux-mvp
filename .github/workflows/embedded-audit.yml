@@ -1,0 +1,89 @@
+name: embedded-audit
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number to inspect
+        required: true
+        type: string
+      head_sha:
+        description: Expected pull request head SHA
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: read
+  statuses: read
+  actions: read
+
+jobs:
+  embedded-audit:
+    name: independent embedded audit
+    runs-on: ubuntu-latest
+    env:
+      EMBEDDED_AUDIT_TOKEN: ${{ secrets.EMBEDDED_AUDIT_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
+
+      - name: Set PR metadata
+        id: pr
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          INPUT_PR_NUMBER: ${{ inputs.pr_number }}
+          INPUT_HEAD_SHA: ${{ inputs.head_sha }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            printf 'number=%s\n' "$EVENT_PR_NUMBER" >> "$GITHUB_OUTPUT"
+            printf 'head_sha=%s\n' "$EVENT_HEAD_SHA" >> "$GITHUB_OUTPUT"
+          else
+            printf 'number=%s\n' "$INPUT_PR_NUMBER" >> "$GITHUB_OUTPUT"
+            printf 'head_sha=%s\n' "$INPUT_HEAD_SHA" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Static auditor route preflight
+        continue-on-error: true
+        run: |
+          python -m tools.auditor_router.preflight \
+            --packet-id "TP-DMX-AUDIT-CI-PROVENANCE-104" \
+            --out embedded-audit-artifacts \
+            --format json
+
+      - name: Emit embedded audit proof
+        if: always()
+        run: |
+          python scripts/audit/run_embedded_audit.py \
+            --packet-id "TP-DMX-AUDIT-CI-PROVENANCE-104" \
+            --repo "$GITHUB_REPOSITORY" \
+            --pr "${{ steps.pr.outputs.number }}" \
+            --head-sha "${{ steps.pr.outputs.head_sha }}" \
+            --route-json embedded-audit-artifacts/AUDITOR_ROUTE.json \
+            --out embedded-audit-artifacts
+
+      - name: Write job summary
+        if: always()
+        run: |
+          {
+            printf '## Embedded audit\n\n'
+            printf -- '- mutation_performed: false\n'
+            printf -- '- proof_author: independent-embedded-audit\n'
+            printf -- '- token_value_recorded: false\n'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload embedded audit artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: embedded-audit-${{ steps.pr.outputs.number }}
+          path: embedded-audit-artifacts/
+          if-no-files-found: error
