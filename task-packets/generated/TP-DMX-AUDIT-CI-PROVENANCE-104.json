@@ -6,6 +6,9 @@
       "tests/audit/test_run_embedded_audit.py",
       "docs/ops/embedded-audit.md",
       "docs/ops/embedded-audit-proof.md",
+      "scripts/migration/switchover.py",
+      "scripts/partition_function.py",
+      "scripts/submit_loop_context.py",
       "task-packets/generated/TP-DMX-AUDIT-CI-PROVENANCE-104.json",
       "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/**"
     ],
