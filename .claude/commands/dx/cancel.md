@@ -42,7 +42,7 @@ If the item itself has non-terminal children, warn that they are NOT auto-cancel
 
 **2d — Confirm (required) + transition.** Cancellation is a deliberate abandonment — confirm before acting, then:
 ```
-advance_item(transitions=[{ itemId: "<id>", trigger: "cancel", summary: "<reason or 'cancelled via /dx:cancel'>" }])
+advance_item({ itemId: "<id>", trigger: "cancel", summary: "<reason or 'cancelled via /dx:cancel'>" })
 ```
 
 > No `actor` param — attribution rides in `summary`.
@@ -76,7 +76,7 @@ Next actions:
 
 ## Error Handling
 
-**Item not found** / **already terminal** (handled in 2b) / **orchestrator unavailable**: report clearly; fall back to `advance_item(transitions=[{itemId, trigger:"cancel"}])` directly.
+**Item not found** / **already terminal** (handled in 2b) / **orchestrator unavailable**: report clearly; fall back to `advance_item({itemId, trigger:"cancel"})` directly.
 
 ---
 

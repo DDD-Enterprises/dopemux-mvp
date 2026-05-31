@@ -57,7 +57,7 @@ Confirm before proceeding.
 
 **2d — Complete.**
 ```
-advance_item(transitions=[{ itemId: "<id>", trigger: "complete", summary: "<--summary or 'complete via /dx:complete'>" }])
+advance_item({ itemId: "<id>", trigger: "complete", summary: "<--summary or 'complete via /dx:complete'>" })
 ```
 > No `actor` field — use `summary` (see authoring reference). The `Actor:` field in session-resume stays `—` until `claim_item` ships.
 

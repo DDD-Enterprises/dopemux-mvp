@@ -1,6 +1,6 @@
 ---
 description: "Show full task-orchestrator context — gate status, missing notes, guidance pointer, schema"
-arguments: "[<item-id-or-prefix>] [--since <iso8601>]"
+arguments: "[<item-id-or-prefix>] [--session] [--health]"
 allowed-tools: [
   "Read", "Bash",
   "mcp__task-orchestrator__get_context",
@@ -27,7 +27,7 @@ Three modes, picked automatically based on arguments:
 Parse `$ARGUMENTS`:
 
 - If first arg looks like a UUID or hex prefix (≥4 hex chars) → **Item mode**
-- Else if `--since <timestamp>` provided → **Session resume mode**
+- Else if `--session` provided → **Session resume mode**
 - Else → **Health check mode**
 
 ---
@@ -77,7 +77,7 @@ Filed notes (filed > 0):
 
 ## Phase 2b: Session Resume Mode
 
-Call `mcp__task-orchestrator__get_context(since="<timestamp>")`.
+Call `mcp__task-orchestrator__get_context(mode="session")`.
 
 Render:
 
