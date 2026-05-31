@@ -19,5 +19,18 @@
   ],
   "pal_mcp_called": false,
   "pal_clink_audit_output_captured": false,
-  "route_is_audit_verdict": false
+  "route_is_audit_verdict": false,
+  "embedded_audit": {
+    "required": false,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/UNKNOWN/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": "Grandfathered or minimal change"
+  }
 }

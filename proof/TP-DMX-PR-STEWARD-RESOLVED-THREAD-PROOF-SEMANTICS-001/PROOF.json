@@ -127,5 +127,18 @@
       "local direct Claude audit PASS_WITH_RISKS"
     ],
     "reason": "Local direct Claude audit returned PASS_WITH_RISKS; one medium nonblocking divergence between thread and comment classifiers remains untested but conservative."
+  },
+  "embedded_audit": {
+    "required": false,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": "Grandfathered or minimal change"
   }
 }
