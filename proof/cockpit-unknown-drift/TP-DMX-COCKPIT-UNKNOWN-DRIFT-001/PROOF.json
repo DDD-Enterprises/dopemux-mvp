@@ -1,0 +1,118 @@
+{
+  "packet_id": "TP-DMX-COCKPIT-UNKNOWN-DRIFT-001",
+  "proof_role": "current-base certification proof for local-only Cockpit Unknown / Drift Queue runtime primitives",
+  "branch": "codex/cockpit-ui-unknown-drift-001",
+  "base_branch": "claude/hungry-buck-67a0d3",
+  "base_commit": "93a779c97a2f84202cfaf16abe18ab3b061c6e88",
+  "worktree_path": "/Users/hue/.codex/worktrees/cockpit-ui-unknown-drift-001",
+  "repo_identity": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp"
+  },
+  "runtime_truth_observed": {
+    "unknown_drift_surface_exists": true,
+    "surface_name": "Unknown / Drift Queue",
+    "surface_kind": "secondary/global surface",
+    "execution_allowed": false,
+    "runtime_reclassification_allowed": false,
+    "requires_packet_for_resolution": true,
+    "safe_for_claude_design": "NO",
+    "ready_for_claude_design": false
+  },
+  "handoff_conflict_flagged": {
+    "conflict": "The current handoff/task-plan labels Phase 1 blockers as remaining, but the integration base already contains Unknown / Drift Queue runtime primitives, tests, task packet, and older proof from PR #570.",
+    "resolution": "Runtime outranks docs; this PR certifies the existing current-base behavior and does not add a parallel renderer."
+  },
+  "implementation_summary": [
+    "No runtime code change was required on the current integration base.",
+    "Existing runtime_contract.py exposes Unknown / Drift Queue as a secondary/global surface, not a sixth top-level mode.",
+    "Existing queue item defaults are non-executable, cannot reclassify at runtime, and require a packet for resolution.",
+    "Existing tests cover reason taxonomy, redaction, aggregate counts, display-only affordances, and runtime snapshot output.",
+    "Task packet metadata was updated from the old stack branch to the current integration branch."
+  ],
+  "files_changed": [
+    "task-packets/generated/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001.json",
+    "proof/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/PROOF.json"
+  ],
+  "validation": [
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001.json >/dev/null",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m json.tool out/cockpit-unknown-drift/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "jsonschema.validate(task-packets/generated/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001.json, dopetask-canonical-spec.json)",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "schema: PASS"
+    },
+    {
+      "command": "python scripts/brand_lint.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "0 errors, 0 warnings"
+    },
+    {
+      "command": "python scripts/sync_brand_tokens.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "All brand tokens in sync across theme.py, dopemux.tcss, theme.ts"
+    },
+    {
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit/test_runtime_contract.py -q",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "46 passed"
+    },
+    {
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit/ -q",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "94 passed"
+    },
+    {
+      "command": "python -m compileall -q src/dopemux/ui/cockpit tests/unit/dopemux/ui/cockpit",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "forbidden runtime token scan over src/dopemux/ui/cockpit and tests/unit/dopemux/ui/cockpit",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "forbidden positive Claude Design/readiness scan",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ],
+  "codereview": {
+    "tool": "pal/codereview",
+    "continuation_id": "811a4515-0144-4726-adf4-e804bc5bf35b",
+    "status": "PASS",
+    "issues_found": 0
+  },
+  "precommit": {
+    "tool": "pal/precommit",
+    "continuation_id": "6b7c6dcf-8e1e-48f1-9ea8-cfa24a867abd",
+    "status": "PASS",
+    "issues_found": 0
+  },
+  "commit_sha": "RECORDED_IN_FINAL_CLOSEOUT_AFTER_COMMIT",
+  "pr_url": "RECORDED_IN_FINAL_CLOSEOUT_AFTER_PR_CREATE",
+  "residual_risks": [
+    "This PR certifies existing Unknown / Drift Queue primitives; it does not add new runtime behavior.",
+    "Queue counts remain aggregate lower bounds where accepted artifacts lack per-row detail.",
+    "Promotions, demotions, and reclassification remain packet-owned outside runtime.",
+    "safe_for_claude_design remains NO because all eight Phase 1 blockers are not yet closed."
+  ],
+  "unknowns": [
+    "Task-orchestrator MCP context retrieval was unavailable earlier in this run; the mirrored task-plan and local packet are the observed execution authority."
+  ]
+}
