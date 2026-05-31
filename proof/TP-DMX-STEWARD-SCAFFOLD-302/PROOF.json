@@ -8,7 +8,7 @@
   "base_sha": "7acb4d9ad43453e3b1c7cfe7b0504dc880007ffe",
   "implementation_commit_sha": "2b8f1c16c25d28c443e6136b2262dc4381ce7158",
   "proof_commit_sha": "0a2ea96ae3d40e0fa78e82a4d921958379d516a3",
-  "pr_url": "PENDING_PR_CREATION",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/772",
   "repo_identity": {
     "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
     "marker": ".dopetaskroot",
