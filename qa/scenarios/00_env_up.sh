@@ -72,6 +72,7 @@ LIVE_RUNNING=0
 LIVE_RUNNING=$(docker compose -p dopemux ps -q 2>/dev/null | wc -l | tr -d ' ') || LIVE_RUNNING=0
 if [[ "${LIVE_RUNNING}" -gt 0 ]] && [[ ! -f "${QA_OVERLAY}" ]]; then
     scenario_skip "Live dopemux stack has ${LIVE_RUNNING} running container(s) and no qa/compose.qa.yml overlay exists. Create qa/compose.qa.yml that overrides fixed container_name values before running QA beside the live stack."
+    exit 0
 fi
 if [[ -f "${QA_OVERLAY}" ]]; then
     log_info "Using QA overlay: ${QA_OVERLAY}"

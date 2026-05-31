@@ -167,87 +167,19 @@ log_info "dopemux binary: ${DOPEMUX_BIN}"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Test 1: live_lane_pal
-# Run a minimal PAL completion (cheapest/flash model, minimal tokens).
-# Assert: exit 0, non-empty response, spend ledger records > 0.
+# NOTE: dopemux does not expose a `pal` CLI command — PAL is accessed through
+# the PAL MCP server (mcp__pal__*), not via the dopemux CLI.
+# Emit NOT_RUN with an actionable message; the RTE subtest below provides the
+# live LLM call validation for this scenario.
 # ─────────────────────────────────────────────────────────────────────────────
-log_info "=== Test 1: live_lane_pal ==="
+log_info "=== Test 1: live_lane_pal (NOT_RUN — no CLI path) ==="
+
+emit_result "live_lane_pal" "NOT_RUN" \
+    "dopemux CLI does not expose a 'pal' command; PAL is an MCP tool (mcp__pal__*). To add a PAL live test, invoke the PAL MCP server directly from a helper script." \
+    '{"reason":"no_pal_cli_command","workaround":"invoke PAL MCP server directly"}'
 
 SPEND_BEFORE="$(_read_spend_usd)"
-log_info "Spend before PAL call: \$${SPEND_BEFORE}"
-
-# Model preference order (cheapest first): gemini-flash → gpt-4o-mini → gpt-3.5-turbo
-PAL_MODEL="${DPMX_QA_PAL_MODEL:-gemini-flash}"
-PAL_MSG="Reply: ok"
-PAL_MAX_TOKENS=3
-
-PAL_RC=0
-PAL_OUT=""
-set +e
-PAL_OUT="$(
-    DPMX_LIVE_OK=1 timeout 60 \
-        ${DOPEMUX_BIN} pal chat \
-            --model "${PAL_MODEL}" \
-            --message "${PAL_MSG}" \
-            --max-tokens "${PAL_MAX_TOKENS}" \
-        2>&1
-)"
-PAL_RC=$?
-set -e
-
-log_info "PAL exit: ${PAL_RC}, output: $(echo "${PAL_OUT}" | head -2 | tr '\n' '|')"
-
-SPEND_AFTER_PAL="$(_read_spend_usd)"
-PAL_SPEND_DELTA="$(awk "BEGIN{printf \"%.6f\", ${SPEND_AFTER_PAL}-${SPEND_BEFORE}}")"
-log_info "Spend after PAL call: \$${SPEND_AFTER_PAL} (delta: \$${PAL_SPEND_DELTA})"
-
-PAL_RESPONSE_OK=false
-[[ ${PAL_RC} -eq 0 && -n "${PAL_OUT}" ]] && PAL_RESPONSE_OK=true
-
-PAL_SPEND_RECORDED=false
-# Spend delta > 0 or output mentions tokens/spend
-if awk "BEGIN{exit !(${PAL_SPEND_DELTA} > 0)}"; then
-    PAL_SPEND_RECORDED=true
-elif echo "${PAL_OUT}" | grep -qiE 'token|usage|cost|spend'; then
-    PAL_SPEND_RECORDED=true
-fi
-
-PAL_WITHIN_CAP=true
-if ! _float_le "${PAL_SPEND_DELTA}" "${SPEND_CAP}"; then
-    PAL_WITHIN_CAP=false
-fi
-
-PAL_EVIDENCE=$(printf \
-    '{"model":"%s","exit_code":%d,"response_ok":%s,"spend_before_usd":"%s","spend_after_usd":"%s","spend_delta_usd":"%s","spend_recorded":%s,"within_cap":%s,"cap_usd":"%s"}' \
-    "${PAL_MODEL}" \
-    "${PAL_RC}" \
-    "${PAL_RESPONSE_OK}" \
-    "${SPEND_BEFORE}" \
-    "${SPEND_AFTER_PAL}" \
-    "${PAL_SPEND_DELTA}" \
-    "${PAL_SPEND_RECORDED}" \
-    "${PAL_WITHIN_CAP}" \
-    "${SPEND_CAP}")
-
-# Hard abort on overspend
-if [[ "${PAL_WITHIN_CAP}" == "false" ]]; then
-    emit_result "live_lane_pal" "FAIL" \
-        "Spend cap exceeded after PAL call: \$${SPEND_AFTER_PAL} > cap \$${SPEND_CAP}" \
-        "${PAL_EVIDENCE}"
-    emit_result "live_lane_rte" "NOT_RUN" \
-        "Skipped — spend cap exceeded during PAL test" \
-        '{"reason":"spend_cap_exceeded_before_rte"}'
-    exit 0
-fi
-
-if [[ "${PAL_RESPONSE_OK}" == "true" ]]; then
-    emit_result "live_lane_pal" "PASS" \
-        "PAL call succeeded (model=${PAL_MODEL}, exit=${PAL_RC}, spend_delta=\$${PAL_SPEND_DELTA})" \
-        "${PAL_EVIDENCE}"
-else
-    emit_result "live_lane_pal" "FAIL" \
-        "PAL call failed or returned empty response (exit=${PAL_RC})" \
-        "${PAL_EVIDENCE}"
-fi
+log_info "Spend baseline before RTE call: \$${SPEND_BEFORE}"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Test 2: live_lane_rte
