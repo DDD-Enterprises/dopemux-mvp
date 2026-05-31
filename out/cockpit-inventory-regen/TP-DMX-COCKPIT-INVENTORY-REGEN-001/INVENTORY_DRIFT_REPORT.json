@@ -1,10 +1,10 @@
 {
   "schema_version": "dopemux.cockpit.inventory_drift_report.v1",
   "packet_id": "TP-DMX-COCKPIT-INVENTORY-REGEN-001",
-  "generated_at_utc": "2026-05-04T21:53:46Z",
-  "base_branch": "codex/cockpit-unknown-drift-001",
-  "base_head": "b6b89fae076a669952ef1178d7d7d17a3e01eb7b",
-  "current_head": "b6b89fae076a669952ef1178d7d7d17a3e01eb7b",
+  "generated_at_utc": "2026-05-31T06:02:29Z",
+  "base_branch": "claude/hungry-buck-67a0d3",
+  "base_head": "d0a6ce1fb479bda8d995e32804b9a512d61a0a48",
+  "current_head": "d0a6ce1fb479bda8d995e32804b9a512d61a0a48",
   "comparison_policy": "Compare regenerated aggregate evidence to accepted carried counts only where both sides expose comparable fields. Do not infer per-row drift from aggregates.",
   "classifications_used": [
     "SAME",
@@ -16,17 +16,7 @@
     "UNCOMPARABLE",
     "NEEDS_PACKET_DECISION"
   ],
-  "summary": {
-    "total_comparisons": 17,
-    "same": 11,
-    "increased": 0,
-    "decreased": 0,
-    "new_unknown": 0,
-    "resolved_unknown": 1,
-    "stale_input": 2,
-    "uncomparable": 2,
-    "needs_packet_decision": 1
-  },
+  "summary": "Current-head aggregate inventory was refreshed on the integration branch. Counts remain stable against accepted artifacts; unavailable row-level evidence remains explicit UNKNOWN rather than silently resolved.",
   "comparisons": [
     {
       "metric": "total_inventory_rows",
