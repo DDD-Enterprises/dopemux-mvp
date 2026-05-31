@@ -13,6 +13,7 @@ from typing import Any
 from uuid import NAMESPACE_URL, uuid5
 
 PACKAGE_PACKET_ID = "TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA"
+COMMAND_PALETTE_PACKET_ID = "TP-DMX-COCKPIT-COMMAND-PALETTE-001"
 RUNTIME_PACKET_ID = "TP-DMX-COCKPIT-RUNTIME-RENDER-001"
 SETTINGS_RUNTIME_PACKET_ID = "TP-DMX-COCKPIT-SETTINGS-RUNTIME-001"
 UNKNOWN_DRIFT_PACKET_ID = "TP-DMX-COCKPIT-UNKNOWN-DRIFT-001"
@@ -78,6 +79,51 @@ SAFE_ACTION_TIERS: tuple[str, ...] = (
     "T6",
     "TX",
     "TU",
+)
+
+COMMAND_PALETTE_REQUIRED_FIELDS: tuple[str, ...] = (
+    "command_path",
+    "parent_group",
+    "authority_domain",
+    "canonical_writer",
+    "safe_ui_exposure",
+    "cockpit_placement",
+    "current_cockpit_coverage",
+    "activation_status",
+    "source_file",
+    "source_symbol",
+    "help_text_or_summary",
+    "evidence_path_or_command",
+    "parameter_schema",
+    "proof_requirement",
+    "gate_tier",
+    "allowed_palette_outcomes",
+    "blocked_reason",
+    "unknown_reason",
+    "updated_at_or_source_timestamp",
+)
+
+COMMAND_PALETTE_SEARCH_AXES: tuple[str, ...] = (
+    "command_path",
+    "parent_group",
+    "source_symbol",
+    "authority_domain",
+    "safe_ui_exposure",
+    "cockpit_placement",
+    "canonical_writer",
+    "proof_requirement",
+    "source_file",
+    "evidence_path_or_command",
+    "activation_status",
+)
+
+COMMAND_PALETTE_OUTCOMES: tuple[str, ...] = (
+    "Inspect",
+    "CopyCommand",
+    "OpenSafeActionGate",
+    "OpenSettingsAdminRuntime",
+    "ShowBlockedReason",
+    "ShowUnknownDriftReason",
 )
 
 EXECUTABLE_TIERS: frozenset[str] = frozenset(("T0i", "T1", "T2", "T3", "T5", "T6"))
@@ -398,6 +444,35 @@ class PreflightResult:
     missing_fields: tuple[str, ...]
     routing_destination: str
     execution_status: str = "not_attempted"
+
+@dataclass(frozen=True)
+class CommandPaletteRoutingDecision:
+    outcome: str
+    routing_destination: str
+    rule_id: str
+    refusal_reason: str | None
+    row_hash: str
+    allowed_palette_outcomes: tuple[str, ...]
+    can_open_safe_action_gate: bool
+    can_open_settings_admin_runtime: bool
+    broker_only: bool = True
+    executes: bool = False
+    execution_status: str = "not_attempted"
+
+    def as_payload(self) -> dict[str, Any]:
+        return {
+            "outcome": self.outcome,
+            "routing_destination": self.routing_destination,
+            "rule_id": self.rule_id,
+            "refusal_reason": self.refusal_reason,
+            "row_hash": self.row_hash,
+            "allowed_palette_outcomes": list(self.allowed_palette_outcomes),
+            "can_open_safe_action_gate": self.can_open_safe_action_gate,
+            "can_open_settings_admin_runtime": self.can_open_settings_admin_runtime,
+            "broker_only": self.broker_only,
+            "executes": self.executes,
+            "execution_status": self.execution_status,
+        }
 
 @dataclass(frozen=True)
 class SettingsAdminTierMapping:
@@ -1175,6 +1250,222 @@ def _normalize_token(value: Any) -> str:
         cleaned = value.strip()
         return cleaned if cleaned else "UNKNOWN"
     return str(value)
+
+
+def _normalize_palette_value(value: Any) -> Any:
+    if value is None:
+        return "UNKNOWN"
+    if isinstance(value, str):
+        return _normalize_token(value)
+    if isinstance(value, Mapping):
+        return {str(key): _normalize_palette_value(child) for key, child in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_normalize_palette_value(child) for child in value]
+    return value
+
+
+def _palette_allowed_outcomes(value: Any) -> tuple[str, ...]:
+    if isinstance(value, str):
+        candidates = (value,)
+    elif isinstance(value, (list, tuple)):
+        candidates = tuple(str(candidate) for candidate in value)
+    else:
+        return ()
+    return tuple(candidate for candidate in candidates if candidate in COMMAND_PALETTE_OUTCOMES)
+
+
+def normalize_command_palette_index_row(row: Mapping[str, Any]) -> dict[str, Any]:
+    """Normalize one palette index row without execution or reclassification."""
+
+    normalized = {
+        field_name: _normalize_palette_value(row.get(field_name))
+        for field_name in COMMAND_PALETTE_REQUIRED_FIELDS
+    }
+    normalized["allowed_palette_outcomes"] = list(
+        _palette_allowed_outcomes(normalized["allowed_palette_outcomes"])
+    )
+    canonical = redact_secrets(normalized)
+    normalized["row_hash"] = stable_sha256(canonical)
+    normalized["broker_only"] = True
+    normalized["executes"] = False
+    return normalized
+
+
+def _palette_required_parameter_unknown(parameter_schema: Any) -> bool:
+    if not isinstance(parameter_schema, Mapping):
+        return True
+    required = parameter_schema.get("required_parameters")
+    if required in (None, "UNKNOWN"):
+        return False
+    if not isinstance(required, (list, tuple)):
+        return True
+    for parameter in required:
+        if parameter in (None, "UNKNOWN"):
+            return True
+        if isinstance(parameter, Mapping):
+            if "value" not in parameter:
+                continue
+            if _is_unknown(parameter.get("value")):
+                return True
+            if _nested_unknowns("required_parameters", dict(parameter)):
+                return True
+            continue
+        if _is_unknown(parameter):
+            return True
+    return False
+
+
+def _palette_destination_for_outcome(outcome: str) -> str:
+    return {
+        "Inspect": "INSPECT_DRAWER",
+        "CopyCommand": "ORIGINATING_SURFACE",
+        "OpenSafeActionGate": "SAFE_ACTION_GATE",
+        "OpenSettingsAdminRuntime": "SETTINGS_ADMIN_RUNTIME",
+        "ShowBlockedReason": "SHOW_BLOCKED_REASON",
+        "ShowUnknownDriftReason": "UNKNOWN_DRIFT_QUEUE",
+    }[outcome]
+
+
+def _palette_decision(
+    row: Mapping[str, Any],
+    *,
+    outcome: str,
+    rule_id: str,
+    refusal_reason: str | None = None,
+) -> CommandPaletteRoutingDecision:
+    allowed = _palette_allowed_outcomes(row.get("allowed_palette_outcomes"))
+    if outcome not in allowed and outcome != "ShowUnknownDriftReason":
+        outcome = "ShowUnknownDriftReason"
+        rule_id = "R-9"
+        refusal_reason = "OUTCOME_DENIED"
+    return CommandPaletteRoutingDecision(
+        outcome=outcome,
+        routing_destination=_palette_destination_for_outcome(outcome),
+        rule_id=rule_id,
+        refusal_reason=refusal_reason,
+        row_hash=str(row["row_hash"]),
+        allowed_palette_outcomes=allowed,
+        can_open_safe_action_gate=outcome == "OpenSafeActionGate",
+        can_open_settings_admin_runtime=outcome == "OpenSettingsAdminRuntime",
+    )
+
+
+def route_command_palette_row(row: Mapping[str, Any]) -> CommandPaletteRoutingDecision:
+    """Route one palette row to exactly one broker outcome; never execute."""
+
+    normalized = normalize_command_palette_index_row(row)
+    safety_class = str(normalized["safe_ui_exposure"])
+    placement = str(normalized["cockpit_placement"])
+    activation_status = str(normalized["activation_status"])
+    authority_domain = str(normalized["authority_domain"])
+    canonical_writer = str(normalized["canonical_writer"])
+    coverage = str(normalized["current_cockpit_coverage"])
+
+    required_missing = [
+        field_name
+        for field_name in (
+            "command_path",
+            "safe_ui_exposure",
+            "cockpit_placement",
+            "activation_status",
+            "allowed_palette_outcomes",
+        )
+        if _is_unknown(normalized.get(field_name))
+    ]
+    if required_missing:
+        return _palette_decision(
+            normalized,
+            outcome="ShowUnknownDriftReason",
+            rule_id="R-1",
+            refusal_reason="MISSING_REQUIRED_FIELD",
+        )
+
+    if activation_status == "DEPRECATED_BLOCKED":
+        return _palette_decision(
+            normalized,
+            outcome="ShowBlockedReason",
+            rule_id="R-2",
+            refusal_reason="DEPRECATED_BLOCKED",
+        )
+    if activation_status in {"DEFINED_NOT_REGISTERED", "OPTIONAL_IMPORT_UNKNOWN"}:
+        return _palette_decision(
+            normalized,
+            outcome="ShowUnknownDriftReason",
+            rule_id="R-2",
+            refusal_reason=activation_status,
+        )
+
+    if authority_domain in {"UNKNOWN", "unknown / conflicting"} or canonical_writer in {
+        "UNKNOWN",
+        "unknown / conflicting",
+    }:
+        return _palette_decision(
+            normalized,
+            outcome="ShowUnknownDriftReason",
+            rule_id="R-3",
+            refusal_reason="AUTHORITY_CONFLICT",
+        )
+
+    if safety_class == "BLOCKED_IN_COCKPIT":
+        return _palette_decision(
+            normalized,
+            outcome="ShowBlockedReason",
+            rule_id="R-4",
+            refusal_reason="BLOCKED_IN_COCKPIT",
+        )
+    if safety_class == "UNKNOWN":
+        return _palette_decision(
+            normalized,
+            outcome="ShowUnknownDriftReason",
+            rule_id="R-4",
+            refusal_reason="UNKNOWN_CLASS",
+        )
+    if safety_class == "EXTERNAL_ONLY":
+        outcome = "CopyCommand" if "CopyCommand" in normalized["allowed_palette_outcomes"] else "Inspect"
+        return _palette_decision(
+            normalized,
+            outcome=outcome,
+            rule_id="R-4",
+            refusal_reason="EXTERNAL_ONLY",
+        )
+
+    if safety_class in {"DISPLAY_ONLY", "INSPECT_ACTION"}:
+        return _palette_decision(normalized, outcome="Inspect", rule_id="R-5")
+
+    if safety_class in {"CONFIRM_REQUIRED", "COMMAND_PALETTE_ONLY"}:
+        if _palette_required_parameter_unknown(normalized["parameter_schema"]):
+            return _palette_decision(
+                normalized,
+                outcome="ShowUnknownDriftReason",
+                rule_id="R-6",
+                refusal_reason="PARAM_UNRESOLVED",
+            )
+        if placement == "Settings/Admin":
+            return _palette_decision(
+                normalized,
+                outcome="OpenSettingsAdminRuntime",
+                rule_id="R-7",
+            )
+        if placement == "External/Not Cockpit":
+            outcome = "CopyCommand" if "CopyCommand" in normalized["allowed_palette_outcomes"] else "Inspect"
+            return _palette_decision(normalized, outcome=outcome, rule_id="R-7")
+        if placement == "UNKNOWN":
+            return _palette_decision(
+                normalized,
+                outcome="ShowUnknownDriftReason",
+                rule_id="R-7",
+                refusal_reason="UNKNOWN_PLACEMENT",
+            )
+        if coverage == "OUT_OF_SCOPE":
+            return _palette_decision(normalized, outcome="Inspect", rule_id="R-8")
+        return _palette_decision(normalized, outcome="OpenSafeActionGate", rule_id="R-7")
+
+    return _palette_decision(
+        normalized,
+        outcome="ShowUnknownDriftReason",
+        rule_id="R-1",
+        refusal_reason="UNKNOWN_CLASS",
+    )
 
 
 def _row_evidence_tokens(value: Any) -> tuple[str, ...]:

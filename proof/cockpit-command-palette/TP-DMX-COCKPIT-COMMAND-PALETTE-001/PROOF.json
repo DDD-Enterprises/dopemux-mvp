@@ -1,0 +1,115 @@
+{
+  "packet_id": "TP-DMX-COCKPIT-COMMAND-PALETTE-001",
+  "worktree": "/Users/hue/.codex/worktrees/cockpit-ui-command-palette-001",
+  "branch": "codex/cockpit-ui-command-palette-001",
+  "base_branch": "claude/hungry-buck-67a0d3",
+  "base_head": "93a779c97a2f84202cfaf16abe18ab3b061c6e88",
+  "repo_identity": {
+    "repo_root": "/Users/hue/.codex/worktrees/cockpit-ui-command-palette-001",
+    "repo_marker": ".dopetaskroot",
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git"
+  },
+  "governance_state": {
+    "safe_for_claude_design": "NO",
+    "READY_FOR_CLAUDE_DESIGN": "not approved",
+    "claude_design_gate_flipped": false,
+    "runtime_execution_implemented": false,
+    "final_screens_approved": false
+  },
+  "slices_completed": [
+    "Added pure Command Palette row normalization and deterministic broker routing.",
+    "Added focused tests for search axes, UNKNOWN normalization, Safe Action Gate routing, Settings/Admin routing, and blocked/unknown/external fail-closed routing.",
+    "Added generated task packet and task-packet index entry.",
+    "Updated existing inventory artifact runtime_contract.py line-count/hash and checksums to keep artifact tests truthful after source change."
+  ],
+  "files_changed": [
+    "src/dopemux/ui/cockpit/runtime_contract.py",
+    "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+    "task-packets/generated/TP-DMX-COCKPIT-COMMAND-PALETTE-001.json",
+    "task-packets/INDEX.md",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/PROOF.json",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/sha256sums.txt",
+    "proof/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PROOF.json"
+  ],
+  "validations": [
+    {
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit/test_runtime_contract.py -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "53 passed"
+    },
+    {
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit/ -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "Full cockpit unit directory passed"
+    },
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-COMMAND-PALETTE-001.json >/dev/null && jsonschema.validate(...)",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "Task packet JSON parsed and canonical schema validation printed schema: PASS"
+    },
+    {
+      "command": "python scripts/brand_lint.py",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "0 errors, 0 warnings"
+    },
+    {
+      "command": "python scripts/sync_brand_tokens.py",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "All brand tokens in sync across theme.py, dopemux.tcss, theme.ts"
+    },
+    {
+      "command": "python -m compileall -q src/dopemux/ui/cockpit tests/unit/dopemux/ui/cockpit",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "No compile errors"
+    },
+    {
+      "command": "cd out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001 && shasum -a 256 -c sha256sums.txt",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "All listed artifact checksums OK"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "No whitespace errors"
+    },
+    {
+      "command": "pre-commit run --files <touched files>",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "Configured hooks for touched files passed"
+    }
+  ],
+  "codereview": {
+    "tool": "mcp__pal.codereview",
+    "status": "PASS",
+    "continuation_id": "adef74a6-0ac6-4c0a-ba94-f0aeb7148985",
+    "issues_found": 0
+  },
+  "precommit": {
+    "tool": "mcp__pal.precommit",
+    "status": "PASS",
+    "continuation_id": "0117eb8e-230b-4119-9693-c6b76e1751b4",
+    "issues_found": 0
+  },
+  "commit_sha": "RECORDED_IN_FINAL_CLOSEOUT_AFTER_COMMIT",
+  "pr_url": "RECORDED_IN_FINAL_CLOSEOUT_AFTER_PR_CREATE",
+  "residual_risks": [
+    "The inventory artifact update is a narrow consistency update, not a full command inventory regeneration; full inventory regeneration remains owned by TP-DMX-COCKPIT-INVENTORY-REGEN-001.",
+    "This packet wires a runtime-contract broker primitive only; no live Textual command palette screen or final Cockpit screen is approved here.",
+    "The Claude Design gate remains blocked until all eight Phase 1 blockers and the gate-flip packet are complete."
+  ],
+  "unknowns": [
+    "Task-orchestrator MCP get_context failed earlier with transport closed, so orchestrator work/review notes were not updated.",
+    "No live cockpit TUI run was performed for this packet because the implementation is a pure runtime-contract primitive and no final screen is in scope."
+  ],
+  "cleanup_status": "Dedicated worktree retained for next packet/PR follow-up until operator cleanup."
+}

@@ -10,6 +10,7 @@ import pytest
 
 from dopemux.ui.cockpit.runtime_contract import (
     ALLOWED_UNKNOWN_DRIFT_AFFORDANCES,
+    COMMAND_PALETTE_SEARCH_AXES,
     GLOBAL_SURFACES,
     SAFE_ACTION_TIERS,
     TOP_LEVEL_MODES,
@@ -26,6 +27,8 @@ from dopemux.ui.cockpit.runtime_contract import (
     map_settings_admin_row_to_gate_tier,
     redact_secrets,
     render_runtime_snapshot,
+    route_command_palette_row,
+    normalize_command_palette_index_row,
     runtime_snapshot_payload,
     stable_sha256,
 )
@@ -83,6 +86,38 @@ def _candidate(**overrides: object) -> dict[str, object]:
         "created_at_utc": BASE_TIME,
         "output_target_path": "out/cockpit-runtime-render/proof.json",
         "overwrite_behavior": "refuse_if_exists",
+    }
+    data.update(overrides)
+    return data
+
+
+def _palette_row(**overrides: object) -> dict[str, object]:
+    data: dict[str, object] = {
+        "command_path": "dopemux cockpit run",
+        "parent_group": "dopemux cockpit",
+        "authority_domain": "dopemux operator control",
+        "canonical_writer": "dopemux operator control",
+        "safe_ui_exposure": "CONFIRM_REQUIRED",
+        "cockpit_placement": "PM",
+        "current_cockpit_coverage": "PARTIAL",
+        "activation_status": "ACTIVE",
+        "source_file": "src/dopemux/commands/cockpit_commands.py",
+        "source_symbol": "cockpit",
+        "help_text_or_summary": "Run the guarded cockpit surface.",
+        "evidence_path_or_command": "dopemux cockpit --help",
+        "parameter_schema": {
+            "required_parameters": [{"name": "mode", "value": "pm"}],
+            "optional_parameters": [{"name": "dry_run", "default": True}],
+            "cwd_target": str(REPO_ROOT),
+            "output_target": "NOT_APPLICABLE",
+            "side_effects": ["execution_handoff"],
+        },
+        "proof_requirement": "TP_RUNNER_PROOF",
+        "gate_tier": "T6",
+        "allowed_palette_outcomes": ["Inspect", "OpenSafeActionGate"],
+        "blocked_reason": "NOT_APPLICABLE",
+        "unknown_reason": "NOT_APPLICABLE",
+        "updated_at_or_source_timestamp": BASE_TIME,
     }
     data.update(overrides)
     return data
@@ -176,6 +211,135 @@ def test_runtime_snapshot_preserves_governance_and_boundaries():
     assert "execution_allowed: false" in output
     assert "runtime_reclassification_allowed: false" in output
     assert "requires_packet_for_resolution: true" in output
+
+
+def test_command_palette_search_axes_cover_spec_axes():
+    assert COMMAND_PALETTE_SEARCH_AXES == (
+        "command_path",
+        "parent_group",
+        "source_symbol",
+        "authority_domain",
+        "safe_ui_exposure",
+        "cockpit_placement",
+        "canonical_writer",
+        "proof_requirement",
+        "source_file",
+        "evidence_path_or_command",
+        "activation_status",
+    )
+
+
+def test_command_palette_normalizes_missing_fields_to_unknown_without_mutation():
+    raw = _palette_row()
+    raw.pop("canonical_writer")
+    before = dict(raw)
+
+    normalized = normalize_command_palette_index_row(raw)
+
+    assert raw == before
+    assert normalized["canonical_writer"] == "UNKNOWN"
+    assert len(normalized["row_hash"]) == 64
+    assert normalized["broker_only"] is True
+    assert normalized["executes"] is False
+
+
+def test_command_palette_routes_confirm_required_rows_to_safe_action_gate_without_execution():
+    decision = route_command_palette_row(_palette_row())
+
+    assert decision.outcome == "OpenSafeActionGate"
+    assert decision.routing_destination == "SAFE_ACTION_GATE"
+    assert decision.rule_id == "R-7"
+    assert decision.executes is False
+    assert decision.broker_only is True
+
+
+def test_command_palette_routes_settings_admin_rows_to_settings_surface():
+    decision = route_command_palette_row(
+        _palette_row(
+            cockpit_placement="Settings/Admin",
+            allowed_palette_outcomes=["Inspect", "OpenSettingsAdminRuntime"],
+        )
+    )
+
+    assert decision.outcome == "OpenSettingsAdminRuntime"
+    assert decision.routing_destination == "SETTINGS_ADMIN_RUNTIME"
+    assert decision.executes is False
+
+
+def test_command_palette_never_executes_blocked_unknown_or_external_rows():
+    cases = [
+        (
+            _palette_row(
+                safe_ui_exposure="BLOCKED_IN_COCKPIT",
+                gate_tier="TX",
+                allowed_palette_outcomes=["ShowBlockedReason"],
+                blocked_reason="blocked by cockpit policy",
+            ),
+            "ShowBlockedReason",
+            "SHOW_BLOCKED_REASON",
+        ),
+        (
+            _palette_row(
+                safe_ui_exposure="UNKNOWN",
+                gate_tier="TU",
+                allowed_palette_outcomes=["ShowUnknownDriftReason"],
+                unknown_reason="authority unresolved",
+            ),
+            "ShowUnknownDriftReason",
+            "UNKNOWN_DRIFT_QUEUE",
+        ),
+        (
+            _palette_row(
+                safe_ui_exposure="EXTERNAL_ONLY",
+                gate_tier="TX",
+                cockpit_placement="External/Not Cockpit",
+                allowed_palette_outcomes=["Inspect", "CopyCommand"],
+            ),
+            "CopyCommand",
+            "ORIGINATING_SURFACE",
+        ),
+    ]
+
+    for row, outcome, destination in cases:
+        decision = route_command_palette_row(row)
+        assert decision.outcome == outcome
+        assert decision.routing_destination == destination
+        assert decision.executes is False
+        assert decision.can_open_safe_action_gate is False
+
+
+def test_command_palette_unknown_authority_fails_closed_to_unknown_drift_queue():
+    decision = route_command_palette_row(
+        _palette_row(
+            authority_domain="unknown / conflicting",
+            canonical_writer="UNKNOWN",
+            allowed_palette_outcomes=["Inspect", "OpenSafeActionGate"],
+        )
+    )
+
+    assert decision.outcome == "ShowUnknownDriftReason"
+    assert decision.routing_destination == "UNKNOWN_DRIFT_QUEUE"
+    assert decision.refusal_reason == "AUTHORITY_CONFLICT"
+    assert decision.can_open_safe_action_gate is False
+
+
+def test_command_palette_unresolved_required_parameter_fails_closed_before_gate():
+    decision = route_command_palette_row(
+        _palette_row(
+            parameter_schema={
+                "required_parameters": [{"name": "target", "value": "UNKNOWN"}],
+                "optional_parameters": [],
+                "cwd_target": str(REPO_ROOT),
+                "output_target": "NOT_APPLICABLE",
+                "side_effects": ["execution_handoff"],
+            }
+        )
+    )
+
+    assert decision.outcome == "ShowUnknownDriftReason"
+    assert decision.routing_destination == "UNKNOWN_DRIFT_QUEUE"
+    assert decision.refusal_reason == "PARAM_UNRESOLVED"
+    assert decision.can_open_safe_action_gate is False
 
 
 def test_settings_admin_summary_uses_package_handoff_without_mutating_artifact():
