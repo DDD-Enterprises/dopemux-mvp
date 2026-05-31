@@ -57,6 +57,7 @@ except ImportError:
 
 from . import schemas
 from ..core.models import ADHDProfile, EnergyLevel, AttentionState
+from ..operator_identity import resolve_operator_user_id
 
 # Event emission for implicit triggers (Phase 7)
 try:
@@ -1486,7 +1487,7 @@ async def adjust_automation_level(
 
 @router.get("/state")
 async def get_adhd_state(
-    user_id: str = "default",
+    user_id: str | None = None,
     engine = Depends(get_engine)
 ):
     """
@@ -1500,6 +1501,7 @@ async def get_adhd_state(
     Returns simplified state without API key requirement for local hooks.
     """
     try:
+        user_id = user_id or resolve_operator_user_id()
         # Get energy level
         energy_level = engine.current_energy_levels.get(user_id, EnergyLevel.MEDIUM)
         energy_str = energy_level.value if hasattr(energy_level, 'value') else str(energy_level).lower()
@@ -1524,6 +1526,7 @@ async def get_adhd_state(
         
     except Exception as e:
         logger.error(brand_log(f"ADHD state retrieval failed: {e}"))
+        user_id = user_id or "unknown"
         return {
             "energy": "medium",
             "attention": "focused",
