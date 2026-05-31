@@ -27,6 +27,8 @@ from typing import Optional, Dict, Any
 
 import redis.asyncio as redis
 
+from ..redis_keys import redis_key, redis_pattern
+
 logger = logging.getLogger(__name__)
 
 
@@ -75,7 +77,7 @@ class ADHDFeatureFlags:
         """
         # Priority 1: Check user override
         if user_id:
-            user_key = f"adhd:feature_flags:{feature}:user:{user_id}"
+            user_key = redis_key(f"adhd:feature_flags:{feature}:user:{user_id}")
             user_flag = await self.redis.get(user_key)
             if user_flag is not None:
                 enabled = user_flag.lower() in ("true", "1", "yes")
@@ -83,7 +85,7 @@ class ADHDFeatureFlags:
                 return enabled
 
         # Priority 2: Check service flag
-        service_key = f"adhd:feature_flags:{feature}:service:{service}"
+        service_key = redis_key(f"adhd:feature_flags:{feature}:service:{service}")
         service_flag = await self.redis.get(service_key)
         if service_flag is not None:
             enabled = service_flag.lower() in ("true", "1", "yes")
@@ -91,7 +93,7 @@ class ADHDFeatureFlags:
             return enabled
 
         # Priority 3: Check global flag
-        global_key = f"adhd:feature_flags:{feature}:global"
+        global_key = redis_key(f"adhd:feature_flags:{feature}:global")
         global_flag = await self.redis.get(global_key)
         if global_flag is not None:
             enabled = global_flag.lower() in ("true", "1", "yes")
@@ -112,13 +114,13 @@ class ADHDFeatureFlags:
             feature: Feature flag name
             service: Service name to enable for
         """
-        key = f"adhd:feature_flags:{feature}:service:{service}"
+        key = redis_key(f"adhd:feature_flags:{feature}:service:{service}")
         await self.redis.set(key, "true")
         logger.info(f"✅ Enabled {feature} for service {service}")
 
     async def disable_for_service(self, feature: str, service: str) -> None:
         """Disable feature for specific service."""
-        key = f"adhd:feature_flags:{feature}:service:{service}"
+        key = redis_key(f"adhd:feature_flags:{feature}:service:{service}")
         await self.redis.delete(key)
         logger.info(f"❌ Disabled {feature} for service {service}")
 
@@ -132,13 +134,13 @@ class ADHDFeatureFlags:
             feature: Feature flag name
             user_id: User ID to enable for
         """
-        key = f"adhd:feature_flags:{feature}:user:{user_id}"
+        key = redis_key(f"adhd:feature_flags:{feature}:user:{user_id}")
         await self.redis.set(key, "true")
         logger.info(f"✅ Enabled {feature} for user {user_id}")
 
     async def disable_for_user(self, feature: str, user_id: str) -> None:
         """Disable feature for specific user."""
-        key = f"adhd:feature_flags:{feature}:user:{user_id}"
+        key = redis_key(f"adhd:feature_flags:{feature}:user:{user_id}")
         await self.redis.delete(key)
         logger.info(f"❌ Disabled {feature} for user {user_id}")
 
@@ -151,7 +153,7 @@ class ADHDFeatureFlags:
         Args:
             feature: Feature flag name
         """
-        key = f"adhd:feature_flags:{feature}:global"
+        key = redis_key(f"adhd:feature_flags:{feature}:global")
         await self.redis.set(key, "true")
         logger.info(f"🌐 Enabled {feature} globally")
 
@@ -161,7 +163,7 @@ class ADHDFeatureFlags:
 
         All services immediately revert to legacy behavior.
         """
-        key = f"adhd:feature_flags:{feature}:global"
+        key = redis_key(f"adhd:feature_flags:{feature}:global")
         await self.redis.delete(key)
         logger.info(f"🚨 Disabled {feature} globally (rollback)")
 
@@ -185,12 +187,12 @@ class ADHDFeatureFlags:
         }
 
         # Check global
-        global_key = f"adhd:feature_flags:{feature}:global"
+        global_key = redis_key(f"adhd:feature_flags:{feature}:global")
         global_flag = await self.redis.get(global_key)
         status["global"] = bool(global_flag and global_flag.lower() in ("true", "1", "yes"))
 
         # Get all service flags
-        pattern = f"adhd:feature_flags:{feature}:service:*"
+        pattern = redis_pattern(f"adhd:feature_flags:{feature}:service:*")
         service_keys = await self.redis.keys(pattern)
         for key in service_keys:
             service_name = key.split(":")[-1]
@@ -198,7 +200,7 @@ class ADHDFeatureFlags:
             status["services"][service_name] = flag_value.lower() in ("true", "1", "yes")
 
         # Get all user flags
-        pattern = f"adhd:feature_flags:{feature}:user:*"
+        pattern = redis_pattern(f"adhd:feature_flags:{feature}:user:*")
         user_keys = await self.redis.keys(pattern)
         for key in user_keys:
             user_id = key.split(":")[-1]
