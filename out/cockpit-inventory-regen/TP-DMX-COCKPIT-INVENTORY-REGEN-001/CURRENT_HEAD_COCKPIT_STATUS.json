@@ -1,33 +1,43 @@
 {
   "schema_version": "dopemux.cockpit.current_head_status.v1",
   "packet_id": "TP-DMX-COCKPIT-INVENTORY-REGEN-001",
-  "generated_at_utc": "2026-05-04T21:53:46Z",
-  "current_head": "b6b89fae076a669952ef1178d7d7d17a3e01eb7b",
-  "branch": "codex/cockpit-inventory-regen-001",
-  "base_branch": "codex/cockpit-unknown-drift-001",
-  "pr_base": "codex/cockpit-unknown-drift-001",
+  "generated_at_utc": "2026-05-31T06:02:29Z",
+  "current_head": "d0a6ce1fb479bda8d995e32804b9a512d61a0a48",
+  "branch": "codex/cockpit-ui-inventory-regen-001",
+  "base_branch": "claude/hungry-buck-67a0d3",
+  "pr_base": "claude/hungry-buck-67a0d3",
   "accepted_upstream_pr_chain": [
     {
-      "number": 568,
-      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/568",
-      "head": "codex/cockpit-runtime-render-001",
-      "base": "pack/cockpit-pack-remediate-006-ia",
-      "status_from_artifact": "accepted with risks"
+      "number": 731,
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/731",
+      "head": "codex/cockpit-ui-command-palette-001",
+      "base": "claude/hungry-buck-67a0d3",
+      "status_from_artifact": "merged current integration branch",
+      "merge_commit": "7c0c28d405493930f090c975ed5334a0fbc12880"
     },
     {
-      "number": 569,
-      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/569",
-      "head": "codex/cockpit-settings-runtime-001",
-      "base": "codex/cockpit-runtime-render-001",
-      "status_from_artifact": "accepted with risks"
+      "number": 732,
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/732",
+      "head": "codex/cockpit-ui-safe-actions-001",
+      "base": "claude/hungry-buck-67a0d3",
+      "status_from_artifact": "merged current integration branch",
+      "merge_commit": "cde9b284ab727b9194cf971303b5be25a254fa32"
     },
     {
-      "number": 570,
-      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/570",
-      "head": "codex/cockpit-unknown-drift-001",
-      "base": "codex/cockpit-settings-runtime-001",
-      "status_from_artifact": "audit PASS; Ledger request ACCEPT_WITH_RISKS",
-      "head_ref_oid_verified": "b6b89fae076a669952ef1178d7d7d17a3e01eb7b"
+      "number": 733,
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/733",
+      "head": "codex/cockpit-ui-unknown-drift-001",
+      "base": "claude/hungry-buck-67a0d3",
+      "status_from_artifact": "merged current integration branch",
+      "merge_commit": "8a48a0fc8f7f0266cc6093387f0c6043c22c0d41"
+    },
+    {
+      "number": 736,
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/736",
+      "head": "codex/cockpit-ui-settings-runtime-001",
+      "base": "claude/hungry-buck-67a0d3",
+      "status_from_artifact": "merged current integration branch",
+      "merge_commit": "d0a6ce1fb479bda8d995e32804b9a512d61a0a48"
     }
   ],
   "runtime_model_status": {
@@ -69,13 +79,11 @@
     "no_canonical_writes": true
   },
   "current_inventory_status": {
-    "total_inventory_rows": 405,
-    "per_row_records_available": false,
-    "aggregate_records_used": true,
-    "settings_admin_row_count": 62,
-    "unknown_drift_lower_bound_queue_count": 487,
-    "t4_policy_missing_count": 1,
-    "stale_proof_count": 1
+    "current_head_inventory_regenerated": true,
+    "regeneration_policy": "aggregate records preserved where accepted artifacts lack per-row evidence",
+    "counts_match_or_explicit_unknown": true,
+    "runtime_sources_rehashed": true,
+    "source_artifact_hashes_refreshed": true
   },
   "remaining_blockers": [
     {
@@ -95,18 +103,18 @@
     },
     {
       "blocker": "per-row inventory data gaps",
-      "status": "PRESENT",
-      "effect": "Aggregate records preserve counts without row-level claims"
+      "status": "EXPLICIT_UNKNOWN_PRESERVED",
+      "effect": "Aggregate records preserve counts without row-level claims; this no longer blocks current-head inventory certification."
     },
     {
-      "blocker": "root authority docs and schema gaps",
+      "blocker": "root authority docs gaps",
       "status": "PRESENT",
-      "effect": "Root RULES.md, TRUTH_*.md, SYSTEM_*.md, and dopetask canonical schema are absent in this worktree"
+      "effect": "Root RULES.md, TRUTH_*.md, and SYSTEM_*.md are absent in this worktree; dopetask canonical schema is present and was used."
     },
     {
       "blocker": "runtime dopemux help resolution",
       "status": "UNKNOWN",
-      "effect": "Accepted residual remains unresolved because live runtime discovery was out of scope"
+      "effect": "Accepted residual remains unresolved because live runtime discovery was out of scope; explicit UNKNOWN preserved."
     }
   ],
   "governance": {

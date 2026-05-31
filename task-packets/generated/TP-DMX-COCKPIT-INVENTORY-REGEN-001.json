@@ -5,21 +5,22 @@
   "repo_binding": {
     "project_id": "dopemux-mvp",
     "repo_marker": ".dopetaskroot",
-    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
     "require_identity_match": true
   },
   "series": {
-    "id": "dopemux-cockpit-ia-remediation",
-    "base_branch": "codex/cockpit-unknown-drift-001",
-    "parent_tp_id": "TP-DMX-COCKPIT-UNKNOWN-DRIFT-001",
+    "id": "DMX-COCKPIT-UI",
+    "base_branch": "claude/hungry-buck-67a0d3",
+    "parent_tp_id": "7fb6c62d",
     "final_packet": false
   },
   "execution": {
     "agent": "codex",
-    "branch": "codex/cockpit-inventory-regen-001"
+    "branch": "codex/cockpit-ui-inventory-regen-001",
+    "base_branch": "claude/hungry-buck-67a0d3"
   },
   "commit": {
-    "message": "docs(cockpit): regenerate current head inventory",
+    "message": "docs(cockpit): refresh current head inventory",
     "allowlist": [
       "src/dopemux/ui/cockpit/**",
       "src/dopemux/commands/cockpit_commands.py",
@@ -51,9 +52,9 @@
     ]
   },
   "pr": {
-    "title": "docs(cockpit): regenerate current head inventory",
-    "body": "## Summary\n- regenerate Cockpit command/surface inventory evidence against current HEAD using accepted artifacts and current runtime source inspection\n- produce deterministic inventory, drift, current-head status, next-packet, hash, and proof artifacts\n- preserve UNKNOWN/drift, T4 refusal, TX/TU non-execution, and Claude Design blockers\n\n## Strict scope\n- artifact-only plus focused artifact tests\n- no final screens\n- no Claude Design upload\n- no runtime action execution\n- no T4 remote mutation\n- no live service adapters\n- no canonical writes\n- no runtime reclassification\n\n## Governance state\nsafe_for_claude_design: NO\nREADY_FOR_CLAUDE_DESIGN: not approved\n\n## Validation\nSee closeout proof for command outputs and exit codes.\n\n## Residual risks and downstream packets\n- aggregate records are used where accepted artifacts do not expose per-row evidence\n- remote-mutation policy remains absent, so T4 stays refused\n- additional UNKNOWN resolution remains packet-owned outside runtime\n- PR chain may need merge/stack consolidation before further design work",
-    "base": "codex/cockpit-unknown-drift-001"
+    "title": "docs(cockpit): refresh current head inventory",
+    "body": "## Summary\n- refresh Cockpit command/surface inventory evidence against current integration HEAD using accepted artifacts and current runtime source inspection\n- produce deterministic inventory, drift, current-head status, next-packet, hash, and proof artifacts\n- preserve UNKNOWN/drift, T4 refusal, TX/TU non-execution, and Claude Design blockers\n\n## Strict scope\n- artifact-only plus focused artifact tests\n- no final screens\n- no Claude Design upload\n- no runtime action execution\n- no T4 remote mutation\n- no live service adapters\n- no canonical writes\n- no runtime reclassification\n\n## Governance state\nsafe_for_claude_design: NO\nREADY_FOR_CLAUDE_DESIGN: not approved\n\n## Validation\nSee closeout proof for command outputs and exit codes.\n\n## Residual risks and downstream packets\n- aggregate records are used where accepted artifacts do not expose per-row evidence\n- remote-mutation policy remains absent, so T4 stays refused\n- additional UNKNOWN resolution remains packet-owned outside runtime\n- inventory is current against integration head; remaining blockers still prevent gate flip",
+    "base": "claude/hungry-buck-67a0d3"
   },
   "pal_chain": {
     "enabled": true,
@@ -73,7 +74,7 @@
       "id": "S1",
       "task": "Inspect repo authority, accepted Cockpit package/runtime/settings/unknown-drift artifacts, current Cockpit runtime sources, tests, and existing inventory tooling before implementation.",
       "validation": [
-        "Dedicated worktree is verified from origin/codex/cockpit-unknown-drift-001 at b6b89fae076a669952ef1178d7d7d17a3e01eb7b.",
+        "Dedicated worktree is verified from claude/hungry-buck-67a0d3 at d0a6ce1fb479bda8d995e32804b9a512d61a0a48.",
         "Accepted package/runtime/settings/unknown-drift proof artifacts parse as JSON.",
         "Missing root authority files and schema files are recorded as UNKNOWN rather than inferred."
       ]
@@ -108,7 +109,7 @@
     },
     {
       "id": "S5",
-      "task": "Review diff, run codereview/precommit where available, commit allowed files, push, and open PR against codex/cockpit-unknown-drift-001.",
+      "task": "Review diff, run codereview/precommit where available, commit allowed files, push, and open PR against claude/hungry-buck-67a0d3.",
       "validation": [
         "git diff --check passes.",
         "Only allowlisted files are staged.",
