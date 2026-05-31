@@ -4,6 +4,7 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 
 ## [Unreleased]
 ### Added
+- Restored task-orchestrator Claude-surface infrastructure (17 `/dx:` slash commands, `.taskorchestrator/config.yaml` schema, ADR, reference docs, and external MCP wrapper snapshots) that was removed by the stale-branch merge in PR #720. Unblocks PR #724 (TP-CS-101 plugin hooks). Added `.taskorchestrator` to the root-hygiene allowlist.
 - Consolidated V5 extraction engine and validation toolchain (PR #313).
 - Run ID propagation across `queue-drain` and `flight` to ensure consistent artifact grouping.
 - Persistent `RUN_SUMMARY.md` writing at the end of `queue-drain` execution.
@@ -12,6 +13,7 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 - A provider-override step in the extraction wizard for session-local API key overrides per supported model provider.
 
 ### Changed
+- Pull request CI now treats the full Repo Truth Extractor suite and auditor-router tests as blocking gates, with both jobs included in the aggregate CI summary.
 - `stage_and_push_if_needed` now uses `git add -A` to detect case-only renames on macOS.
 - `pr_merge_loop.sh` updated with progress-based exit logic to prevent infinite retries on stuck PRs.
 - The speculative train now rebases each candidate against `origin/main` instead of chaining later PRs onto earlier speculative branches.

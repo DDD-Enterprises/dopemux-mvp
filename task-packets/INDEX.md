@@ -70,13 +70,19 @@ A packet is superseded by another packet
 | TP-RTE-COSTPROFILE-F-VERIFY-001 | Repo Truth Extractor | Series-final verification gate: full test run + promptset v3 audit + bounded-lane dry-run + pal/codereview + pal/precommit | NOT_VERIFIED_ACCEPTED_AS_EVIDENCE | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
 | TP-RTE-COSTPROFILE-F-VERIFY-TOPOLOGY-REPAIR-001 | Repo Truth Extractor | Rehome F-VERIFY-001 proof/ledger evidence from polluted PR #698 onto a main-targeted replacement PR | Active | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
 | TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001 | Repo Truth Extractor | Repair CostProfile F full-suite failures accepted as evidence by F-VERIFY-001 | Merged (PR #709) | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
-| TP-RTE-COSTPROFILE-F-VERIFY-002 | Repo Truth Extractor | Series-gate verification after F-FULLSUITE-REPAIR (#709) and INDEX correction (#710): full RTE suite + bounded print-config + OpenRouter route-readiness + CLI import probes | Verified (PR pending) | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
+| TP-RTE-COSTPROFILE-F-VERIFY-002 | Repo Truth Extractor | Series-gate verification after F-FULLSUITE-REPAIR (#709) and INDEX correction (#710): full RTE suite + bounded print-config + OpenRouter route-readiness + CLI import probes | Merged (PR #712) | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
 | TP-RTE-COSTPROFILE-OUTPUT-VALIDATORS-001 | Repo Truth Extractor | Post-step output validators (control_plane_truth_check + security_claim_verification) for structural / security_sensitive impact_class | Ready | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
 | TP-RTE-COSTPROFILE-XAI-BATCH-VERIFY-001 | Repo Truth Extractor | Live probe to determine xAI /v1/batches support; updates spend_ledger + batch_clients + cost profile based on verdict | Ready | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
 | TP-DMX-AGENTS-CODEX-ENDTOEND-0001 | Agent Guidance | Make Codex execute TP lifecycle end-to-end by default | Ready | N/A |
 | TP-DMX-ORCH-DOCS-003 | Task Orchestrator | Document read-only/operator-status integration authority boundaries | Active | N/A |
 | TP-DMX-COMPOSE-RESTORE-001 | Infra | Restore canonical Docker Compose authority | Ready | N/A |
 | TP-CI-FULL-TEST-SUITE-001 | CI | Gate full RTE and auditor-router test suites | Active | N/A |
+| TP-UI-DASHBOARD-BUILD-001 | UI Dashboard | Restore ui-dashboard npm install and build | Active | N/A |
+| TP-BETA-MCP-02-COMPOSE-HEALTHCHECKS | Infra | Gate core MCP compose dependencies on healthchecked services | Active | N/A |
+| TP-BETA-MCP-03-ADHD-REDIS-ISOLATION | ADHD Engine | Isolate ADHD Engine Redis keys by instance | Active | N/A |
+| TP-SEC-COMPOSE-LITELLM-LOCALHOST-001 | Security | Externalize LiteLLM healthcheck key and localize compose service ports | Active | N/A |
+| TP-SEC-WEAK-DEFAULT-SECRETS-001 | Security | Reject weak default secrets in env template and installer | Active | N/A |
+| TP-DOCS-FIRST-TOUCH-PRODUCT-NAME-001 | Docs | Refresh active Start Here onboarding and product naming | Active | N/A |
 | DMX-COCKPIT-STATIC-002 | UI Cockpit | Expose deterministic static cockpit renderer through guarded CLI wrapper | Merged (PR #528) | N/A |
 | TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001 | UI Cockpit | Audit and prepare Cockpit PR stack 568-571 plus PR 573 evidence for safe consolidation | Active | N/A |
 | TP-DMX-COCKPIT-RUNTIME-RENDER-001 | UI Cockpit | Wire runtime renderer primitives to accepted Cockpit IA package contract | Active | N/A |
