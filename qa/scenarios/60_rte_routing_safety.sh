@@ -230,7 +230,7 @@ EXEC_OUT=""
 set +e
 EXEC_OUT="$(
     unset DPMX_LIVE_OK
-    timeout 30 ${DOPEMUX_BIN} ${RTE_SUBCMD} --execute 2>&1
+    timeout 30 ${DOPEMUX_BIN} ${RTE_SUBCMD} --execute --allow-legacy-v3-scan 2>&1
 )"
 EXEC_RC=$?
 set -e
@@ -275,7 +275,7 @@ ENV0_RC=0
 ENV0_OUT=""
 set +e
 ENV0_OUT="$(
-    DPMX_LIVE_OK=0 timeout 30 ${DOPEMUX_BIN} ${RTE_SUBCMD} --execute 2>&1
+    DPMX_LIVE_OK=0 timeout 30 ${DOPEMUX_BIN} ${RTE_SUBCMD} --execute --allow-legacy-v3-scan 2>&1
 )"
 ENV0_RC=$?
 set -e
