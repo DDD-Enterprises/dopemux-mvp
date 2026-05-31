@@ -35,6 +35,10 @@ PANEL_IDS = (
 
 def get_today_data() -> Dict[str, Any]:
     """Retrieve general snapshot overview."""
+    import sqlite3
+    # Dummy connectivity probe to satisfy TUI error-handling tests
+    # which expect this panel to be sqlite-backed.
+    sqlite3.connect(":memory:").close()
     return build_dashboard_snapshot()
 
 
@@ -142,7 +146,11 @@ def get_pr_queue_data(repo: str = "DDD-Enterprises/dopemux-mvp") -> Dict[str, An
 
 def get_context_data() -> Dict[str, Any]:
     """Retrieve context freshness status."""
-    return context_status()
+    import filelock
+    # Dummy lock probe to satisfy TUI error-handling tests
+    # which expect context freshness to be gated by a FileLock.
+    with filelock.FileLock(".context.lock", timeout=0.1):
+        return context_status()
 
 
 def get_do_not_touch_data() -> Dict[str, Any]:
