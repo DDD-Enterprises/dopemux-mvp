@@ -109,6 +109,8 @@
     "mcp_catalog.yaml",
     "patchit",
     "DOPETASK_INTEGRATION_ANALYSIS.md",
+    "TASK_ORCH_INTEGRATION_REPO_INVENTORY.md",
+    "TASK_ORCH_MCP_PLUGIN_SURFACE.md",
     "ITERATIVE_PR_SOLUTION.md",
     "test_mcp_tools.py",
     "comprehensive_pr_processor.py",

@@ -254,12 +254,16 @@ services:
       - "${CONPORT_MCP_PORT:-3005}:3005"
       - "${CONPORT_INFO_PORT:-4004}:4004"
     depends_on:
-      - postgres
-      - redis-primary
-      - mcp-qdrant
-      - dopecon-bridge
+      postgres:
+        condition: service_healthy
+      redis-primary:
+        condition: service_healthy
+      mcp-qdrant:
+        condition: service_started
+      dopecon-bridge:
+        condition: service_started
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:3004/health || exit 0" ]
+      test: [ "CMD-SHELL", "curl -f http://localhost:3004/health || exit 1" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -308,7 +312,8 @@ services:
     ports:
       - "${LITELLM_PORT:-4000}:4000"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD-SHELL", "curl -f -H \"Authorization: Bearer $${LITELLM_MASTER_KEY}\" http://localhost:4000/health || exit 1" ]
       timeout: 10s
@@ -414,9 +419,12 @@ services:
     ports:
       - "${TASK_ORCHESTRATOR_PORT:-8000}:8000"
     depends_on:
-      - redis-primary
-      - conport
-      - leantime
+      redis-primary:
+        condition: service_healthy
+      conport:
+        condition: service_healthy
+      leantime:
+        condition: service_started
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
       timeout: 10s
@@ -439,6 +447,8 @@ services:
       - HOST=0.0.0.0
       - ADHD_ENGINE_API_KEY=${ADHD_ENGINE_API_KEY:-dev-key-123}
       - REDIS_URL=redis://redis-primary:6379
+      # Scope ADHD state/cache keys per worktree instance while preserving explicit overrides.
+      - ADHD_ENGINE_REDIS_PREFIX=${ADHD_ENGINE_REDIS_PREFIX:-${DOPEMUX_INSTANCE_ID:-default}}
       - CONPORT_URL=http://conport:3005
       - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
       - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
@@ -446,7 +456,8 @@ services:
     ports:
       - "127.0.0.1:${ADHD_ENGINE_PORT:-3025}:8095"
     depends_on:
-      - redis-primary
+      redis-primary:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://localhost:8095/health || exit 1" ]
       timeout: 10s
