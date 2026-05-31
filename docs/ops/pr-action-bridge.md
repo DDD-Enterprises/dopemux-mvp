@@ -5,15 +5,16 @@ type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-05-27'
-last_review: '2026-05-27'
-next_review: '2026-08-25'
+last_review: '2026-05-31'
+next_review: '2026-08-29'
 prelude: Pr Action Bridge (explanation) for dopemux documentation and developer workflows.
 ---
 # PR Action Bridge
 
 **Module**: `tools/pr_action_bridge/compiler.py`
+**CLI**: `python -m tools.pr_action_bridge` or `scripts/pr-action-bridge`
 **Schema**: `schemas/pr_action_bridge/action_plan.schema.json`
-**Tests**: `tests/pr_action_bridge/test_compiler.py`
+**Tests**: `tests/pr_action_bridge/test_compiler.py`, `tests/pr_action_bridge/test_cli.py`
 
 ## Overview
 
@@ -23,12 +24,16 @@ The PR Action Bridge compiler takes PR Steward artifacts and produces:
 2. `REPAIR_PACKET.md` — human-readable repair instructions grouped by `target_role`
 
 The compiler is a **pure function** — no filesystem I/O, no GitHub mutation, no subprocess calls.
+The CLI is a thin filesystem adapter around that pure function. It reads PR Steward artifacts
+from an operator-provided directory and writes derived artifacts to an operator-provided output
+directory.
 
 ## Key Design Decisions
 
 | Decision | Choice | Reason |
 |---|---|---|
 | Pure function | `compile_action_plan(merge_readiness, review_ledger, thread_dispositions, ci_triage)` | Testable without I/O; caller owns persistence |
+| CLI adapter | `python -m tools.pr_action_bridge --artifact-dir DIR --out DIR` | Provides replayable local artifact generation without adding GitHub mutation |
 | No GitHub mutation | `mutation_performed: false` hardcoded | PR Steward v1 is check-only; action bridge is compiler/planner only |
 | Action taxonomy | Locked to `classifier._readiness()` blocker taxonomy | Single source of truth for valid categories |
 | EMBEDDED_AUDIT_* prefix | Maps to `embedded-audit-failed` / supervisor | All embedded audit failures require supervisor review |
@@ -36,6 +41,42 @@ The compiler is a **pure function** — no filesystem I/O, no GitHub mutation, n
 | REPAIR_PACKET.md | Groups by role: supervisor → implementer → ci | Canonical role order matches escalation path |
 
 ## Usage
+
+### CLI
+
+The CLI reads these required files from `--artifact-dir`:
+
+| File | Compiler argument |
+|---|---|
+| `MERGE_READINESS.json` | `merge_readiness` |
+| `REVIEW_ITEM_LEDGER.json` | `review_ledger` |
+| `THREAD_DISPOSITIONS.json` | `thread_dispositions` |
+| `CI_TRIAGE.json` | `ci_triage` |
+
+Run either entrypoint:
+
+```bash
+python -m tools.pr_action_bridge \
+  --artifact-dir proof/TP-DMX-PR-STEWARD-002/review_bundle/artifacts \
+  --out /tmp/pr-action-bridge
+
+scripts/pr-action-bridge \
+  --artifact-dir proof/TP-DMX-PR-STEWARD-002/review_bundle/artifacts \
+  --out /tmp/pr-action-bridge
+```
+
+The CLI writes:
+
+- `ACTION_PLAN.json`
+- `REPAIR_PACKET.md`
+
+Use `--generated-at 2026-01-01T00:00:00Z` only when deterministic replay fixtures need
+a fixed timestamp.
+
+If any required artifact is missing or invalid, the CLI exits non-zero before writing output
+files for that invocation.
+
+### Python
 
 ```python
 from tools.pr_action_bridge.compiler import compile_action_plan
@@ -116,6 +157,8 @@ This module is **read-only**. It must never:
 - Execute subprocesses that mutate repository state
 
 The static test `test_no_pr_merge_import` enforces this at test time.
+The CLI tests also check that the CLI entrypoints do not import PR merge tooling or embed
+GitHub mutation commands.
 
 ## Related Files
 
