@@ -1,0 +1,132 @@
+{
+  "id": "TP-DMX-MERGE-REMEDIATION-202",
+  "project": "dopemux-mvp",
+  "target": "Wire steward_gate(REMEDIATION) into the merge engine's remediation seams (pr_apply, apply_thread_dispositions as REPLY-only, conflict and CI remediation) gated on Steward=NEEDS_IMPLEMENTER plus an implementer-role blocker; demote thread RESOLVE to finalization; route global-fix PRs, admin-bypass, and fork force-push to supervisor (blocked by default).",
+  "invariants": [
+    "Do not wire finalization/merge seams here (that is TP-203).",
+    "Do not enable global-fix PRs or admin-bypass.",
+    "Do not resolve threads during remediation (reply only).",
+    "RED-LANE: edits the autonomous merge engine. Embedded audit and supervisor review required."
+  ],
+  "depends_on": [
+    "TP-DMX-STEWARD-GATE-201"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-AUTOREVIEW-PLATFORM",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-STEWARD-GATE-201",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-merge-remediation-202",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(pr-merge): gate remediation seams behind steward_gate",
+    "allowlist": [
+      "src/dopemux_pr_merge_specialist/queue_drain.py",
+      "src/dopemux_pr_merge_specialist/thread_resolution.py",
+      "src/dopemux_pr_merge_specialist/policy.py",
+      "tests/pr_merge_specialist/test_remediation_gate.py",
+      "docs/ops/steward-merge-gate.md",
+      "config/pr_merge_specialist/policy.yaml",
+      "task-packets/generated/TP-DMX-MERGE-REMEDIATION-202.json",
+      "proof/TP-DMX-MERGE-REMEDIATION-202/**"
+    ],
+    "verify": [
+      "python -m compileall -q src tests",
+      "pytest -q tests/pr_merge_specialist",
+      "python -m json.tool task-packets/generated/TP-DMX-MERGE-REMEDIATION-202.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(pr-merge): gate remediation seams behind steward_gate",
+    "body": "## Summary\\n\\nWire steward_gate(REMEDIATION) into the merge engine's remediation seams (pr_apply, apply_thread_dispositions as REPLY-only, conflict and CI remediation) gated on Steward=NEEDS_IMPLEMENTER plus an implementer-role blocker; demote thread RESOLVE to finalization; route global-fix PRs, admin-bypass, and fork force-push to supervisor (blocked by default).\\n\\n## Scope\\n\\nAllowlist-bound; see commit.allowlist. Out of scope: Do not wire finalization/merge seams here (that is TP-203). Do not enable global-fix PRs or admin-bypass. Do not resolve threads during remediation (reply only).\\n\\n## Validation\\n\\nSee commit.verify; embedded audit + proof bundle required.\\n\\n> RED-LANE: RED-LANE: edits the autonomous merge engine. Embedded audit and supervisor review required.\\n\\n@codex review\\n@gemini\\n@copilot",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: verify repo identity (repo_marker .dopetaskroot, origin matches origin_hint, branch matches execution.branch, worktree clean or only intended files dirty) and verify dependency proofs exist and passed for: TP-DMX-STEWARD-GATE-201.",
+      "context_files": [
+        "AGENTS.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "src/dopemux_pr_merge_specialist/queue_drain.py",
+        "src/dopemux_pr_merge_specialist/thread_resolution.py",
+        "docs/ops/steward-merge-gate.md"
+      ],
+      "validation": [
+        "Repo identity matches repo_binding.",
+        "Dependency proofs are present and PASS (or 'none' for a root packet).",
+        "Active task context recorded; worktree is clean or only contains intended files."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Implement: Wire steward_gate(REMEDIATION) into the merge engine's remediation seams (pr_apply, apply_thread_dispositions as REPLY-only, conflict and CI remediation) gated on Steward=NEEDS_IMPLEMENTER plus an implementer-role blocker; demote thread RESOLVE to finalization; route global-fix PRs, admin-bypass, and fork force-push to supervisor (blocked by default).",
+      "expected_files": [
+        "src/dopemux_pr_merge_specialist/queue_drain.py",
+        "src/dopemux_pr_merge_specialist/thread_resolution.py",
+        "src/dopemux_pr_merge_specialist/policy.py",
+        "tests/pr_merge_specialist/test_remediation_gate.py",
+        "docs/ops/steward-merge-gate.md",
+        "config/pr_merge_specialist/policy.yaml"
+      ],
+      "validation": [
+        "Only allowlisted files are changed.",
+        "Do not wire finalization/merge seams here (that is TP-203).",
+        "Do not enable global-fix PRs or admin-bypass.",
+        "Do not resolve threads during remediation (reply only)."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Add or extend tests and docs to cover the change; run the packet validation commands.",
+      "validation": [
+        "`python -m compileall -q src tests` passes.",
+        "`pytest -q tests/pr_merge_specialist` passes.",
+        "git diff --check passes."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Write the proof bundle proof/TP-DMX-MERGE-REMEDIATION-202/ including the review_bundle as the single upload unit.",
+      "expected_files": [
+        "proof/TP-DMX-MERGE-REMEDIATION-202/PROOF.json",
+        "proof/TP-DMX-MERGE-REMEDIATION-202/VALIDATION_OUTPUT.md",
+        "proof/TP-DMX-MERGE-REMEDIATION-202/GIT_STATE.md",
+        "proof/TP-DMX-MERGE-REMEDIATION-202/DIFF_STAT.txt",
+        "proof/TP-DMX-MERGE-REMEDIATION-202/CHANGED_FILES.txt",
+        "proof/TP-DMX-MERGE-REMEDIATION-202/AUDITOR_REPORT.md",
+        "proof/TP-DMX-MERGE-REMEDIATION-202/review_bundle/**"
+      ],
+      "validation": [
+        "Embedded audit is recorded per schemas/proof/embedded_audit.schema.json and the status reflects reality.",
+        "review_bundle/ exists as the single upload/review unit.",
+        "No secrets or tokens are included in the proof bundle."
+      ]
+    }
+  ]
+}

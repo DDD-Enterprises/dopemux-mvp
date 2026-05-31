@@ -1,0 +1,138 @@
+{
+  "id": "TP-DMX-AUTOREVIEW-HARDEN-401",
+  "project": "dopemux-mvp",
+  "target": "Final adversarial audit (Claude Code Opus) of the whole autoreview platform end-to-end (check-only governance, governed merge integration, distribution), close residual risks within scope, refresh docs/ops/operating-model.md and pr-acceptance.md, and emit the series completion proof bundle.",
+  "invariants": [
+    "Do not add new feature code (audit and docs only).",
+    "Do not enable governed_automerge.",
+    "Do not change schema enum values."
+  ],
+  "depends_on": [
+    "TP-DMX-PALCLINK-VERDICT-101",
+    "TP-DMX-ACTIONBRIDGE-CLI-102",
+    "TP-DMX-COPILOT-RENDERER-103",
+    "TP-DMX-AUDIT-CI-PROVENANCE-104",
+    "TP-DMX-AUTOREVIEW-E2E-105",
+    "TP-DMX-GHA-RELIABILITY-106",
+    "TP-DMX-STEWARD-GATE-201",
+    "TP-DMX-MERGE-REMEDIATION-202",
+    "TP-DMX-MERGE-FINALIZATION-203",
+    "TP-DMX-STEWARD-PACKAGE-301",
+    "TP-DMX-STEWARD-SCAFFOLD-302",
+    "TP-DMX-STEWARD-DOCTOR-303"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-AUTOREVIEW-PLATFORM",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-STEWARD-DOCTOR-303",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-autoreview-harden-401",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(ops): harden and finalize the autoreview platform",
+    "allowlist": [
+      "docs/ops/operating-model.md",
+      "docs/ops/pr-acceptance.md",
+      "docs/ops/steward-merge-gate.md",
+      "docs/ops/pr-steward-distribution.md",
+      "task-packets/generated/TP-DMX-AUTOREVIEW-HARDEN-401.json",
+      "proof/TP-DMX-AUTOREVIEW-HARDEN-401/**"
+    ],
+    "verify": [
+      "pytest -q tests/pr_steward tests/pr_action_bridge tests/audit tests/copilot_repair tests/pr_merge_specialist",
+      "python scripts/audit/validate_audit_proof.py --all proof/",
+      "python -m json.tool task-packets/generated/TP-DMX-AUTOREVIEW-HARDEN-401.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(ops): harden and finalize the autoreview platform",
+    "body": "## Summary\\n\\nFinal adversarial audit (Claude Code Opus) of the whole autoreview platform end-to-end (check-only governance, governed merge integration, distribution), close residual risks within scope, refresh docs/ops/operating-model.md and pr-acceptance.md, and emit the series completion proof bundle.\\n\\n## Scope\\n\\nAllowlist-bound; see commit.allowlist. Out of scope: Do not add new feature code (audit and docs only). Do not enable governed_automerge. Do not change schema enum values.\\n\\n## Validation\\n\\nSee commit.verify; embedded audit + proof bundle required.\\n\\n@codex review\\n@gemini\\n@copilot",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: verify repo identity (repo_marker .dopetaskroot, origin matches origin_hint, branch matches execution.branch, worktree clean or only intended files dirty) and verify dependency proofs exist and passed for: TP-DMX-PALCLINK-VERDICT-101, TP-DMX-ACTIONBRIDGE-CLI-102, TP-DMX-COPILOT-RENDERER-103, TP-DMX-AUDIT-CI-PROVENANCE-104, TP-DMX-AUTOREVIEW-E2E-105, TP-DMX-GHA-RELIABILITY-106, TP-DMX-STEWARD-GATE-201, TP-DMX-MERGE-REMEDIATION-202, TP-DMX-MERGE-FINALIZATION-203, TP-DMX-STEWARD-PACKAGE-301, TP-DMX-STEWARD-SCAFFOLD-302, TP-DMX-STEWARD-DOCTOR-303.",
+      "context_files": [
+        "AGENTS.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "docs/ops/operating-model.md",
+        "docs/ops/pr-acceptance.md",
+        "docs/ops/steward-merge-gate.md"
+      ],
+      "validation": [
+        "Repo identity matches repo_binding.",
+        "Dependency proofs are present and PASS (or 'none' for a root packet).",
+        "Active task context recorded; worktree is clean or only contains intended files."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Implement: Final adversarial audit (Claude Code Opus) of the whole autoreview platform end-to-end (check-only governance, governed merge integration, distribution), close residual risks within scope, refresh docs/ops/operating-model.md and pr-acceptance.md, and emit the series completion proof bundle.",
+      "expected_files": [
+        "docs/ops/operating-model.md",
+        "docs/ops/pr-acceptance.md",
+        "docs/ops/steward-merge-gate.md",
+        "docs/ops/pr-steward-distribution.md"
+      ],
+      "validation": [
+        "Only allowlisted files are changed.",
+        "Do not add new feature code (audit and docs only).",
+        "Do not enable governed_automerge.",
+        "Do not change schema enum values."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Add or extend tests and docs to cover the change; run the packet validation commands.",
+      "validation": [
+        "`pytest -q tests/pr_steward tests/pr_action_bridge tests/audit tests/copilot_repair tests/pr_merge_specialist` passes.",
+        "`python scripts/audit/validate_audit_proof.py --all proof/` passes.",
+        "git diff --check passes."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Write the proof bundle proof/TP-DMX-AUTOREVIEW-HARDEN-401/ including the review_bundle as the single upload unit.",
+      "expected_files": [
+        "proof/TP-DMX-AUTOREVIEW-HARDEN-401/PROOF.json",
+        "proof/TP-DMX-AUTOREVIEW-HARDEN-401/VALIDATION_OUTPUT.md",
+        "proof/TP-DMX-AUTOREVIEW-HARDEN-401/GIT_STATE.md",
+        "proof/TP-DMX-AUTOREVIEW-HARDEN-401/DIFF_STAT.txt",
+        "proof/TP-DMX-AUTOREVIEW-HARDEN-401/CHANGED_FILES.txt",
+        "proof/TP-DMX-AUTOREVIEW-HARDEN-401/AUDITOR_REPORT.md",
+        "proof/TP-DMX-AUTOREVIEW-HARDEN-401/review_bundle/**"
+      ],
+      "validation": [
+        "Embedded audit is recorded per schemas/proof/embedded_audit.schema.json and the status reflects reality.",
+        "review_bundle/ exists as the single upload/review unit.",
+        "No secrets or tokens are included in the proof bundle."
+      ]
+    }
+  ]
+}

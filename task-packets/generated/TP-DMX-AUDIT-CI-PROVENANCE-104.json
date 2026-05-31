@@ -1,0 +1,131 @@
+{
+  "id": "TP-DMX-AUDIT-CI-PROVENANCE-104",
+  "project": "dopemux-mvp",
+  "target": "Add an independent embedded-audit CI workflow (.github/workflows/embedded-audit.yml) that runs the auditor router under a separate least-privilege token with verifiable provenance (run id, commit SHA, actor) and emits the embedded_audit proof object, plus an in-lane invocation entrypoint. The merge engine may REQUEST but never AUTHOR the audit proof.",
+  "invariants": [
+    "Do not add secrets without supervisor sign-off.",
+    "Do not use pull_request_target for PR-controlled code.",
+    "Do not grant the merge engine write access to the proof location."
+  ],
+  "depends_on": [
+    "TP-DMX-PALCLINK-VERDICT-101"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-AUTOREVIEW-PLATFORM",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-PALCLINK-VERDICT-101",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-audit-ci-provenance-104",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(audit): independent embedded-audit CI workflow with trusted provenance",
+    "allowlist": [
+      ".github/workflows/embedded-audit.yml",
+      "scripts/audit/run_embedded_audit.py",
+      "tests/audit/test_run_embedded_audit.py",
+      "docs/ops/embedded-audit.md",
+      "docs/ops/embedded-audit-proof.md",
+      "task-packets/generated/TP-DMX-AUDIT-CI-PROVENANCE-104.json",
+      "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/**"
+    ],
+    "verify": [
+      "python -m compileall -q scripts tests",
+      "pytest -q tests/audit",
+      "python -c \"import yaml;yaml.safe_load(open('.github/workflows/embedded-audit.yml'));print('yaml ok')\"",
+      "python -m json.tool task-packets/generated/TP-DMX-AUDIT-CI-PROVENANCE-104.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(audit): independent embedded-audit CI workflow with trusted provenance",
+    "body": "## Summary\\n\\nAdd an independent embedded-audit CI workflow (.github/workflows/embedded-audit.yml) that runs the auditor router under a separate least-privilege token with verifiable provenance (run id, commit SHA, actor) and emits the embedded_audit proof object, plus an in-lane invocation entrypoint. The merge engine may REQUEST but never AUTHOR the audit proof.\\n\\n## Scope\\n\\nAllowlist-bound; see commit.allowlist. Out of scope: Do not add secrets without supervisor sign-off. Do not use pull_request_target for PR-controlled code. Do not grant the merge engine write access to the proof location.\\n\\n## Validation\\n\\nSee commit.verify; embedded audit + proof bundle required.\\n\\n@codex review\\n@gemini\\n@copilot",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: verify repo identity (repo_marker .dopetaskroot, origin matches origin_hint, branch matches execution.branch, worktree clean or only intended files dirty) and verify dependency proofs exist and passed for: TP-DMX-PALCLINK-VERDICT-101.",
+      "context_files": [
+        "AGENTS.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "scripts/audit/auditor_router.py",
+        "docs/ops/embedded-audit.md",
+        "schemas/proof/embedded_audit.schema.json"
+      ],
+      "validation": [
+        "Repo identity matches repo_binding.",
+        "Dependency proofs are present and PASS (or 'none' for a root packet).",
+        "Active task context recorded; worktree is clean or only contains intended files."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Implement: Add an independent embedded-audit CI workflow (.github/workflows/embedded-audit.yml) that runs the auditor router under a separate least-privilege token with verifiable provenance (run id, commit SHA, actor) and emits the embedded_audit proof object, plus an in-lane invocation entrypoint. The merge engine may REQUEST but never AUTHOR the audit proof.",
+      "expected_files": [
+        ".github/workflows/embedded-audit.yml",
+        "scripts/audit/run_embedded_audit.py",
+        "tests/audit/test_run_embedded_audit.py",
+        "docs/ops/embedded-audit.md",
+        "docs/ops/embedded-audit-proof.md"
+      ],
+      "validation": [
+        "Only allowlisted files are changed.",
+        "Do not add secrets without supervisor sign-off.",
+        "Do not use pull_request_target for PR-controlled code.",
+        "Do not grant the merge engine write access to the proof location."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Add or extend tests and docs to cover the change; run the packet validation commands.",
+      "validation": [
+        "`python -m compileall -q scripts tests` passes.",
+        "`pytest -q tests/audit` passes.",
+        "`python -c \"import yaml;yaml.safe_load(open('.github/workflows/embedded-audit.yml'));print('yaml ok')\"` passes.",
+        "git diff --check passes."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Write the proof bundle proof/TP-DMX-AUDIT-CI-PROVENANCE-104/ including the review_bundle as the single upload unit.",
+      "expected_files": [
+        "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/PROOF.json",
+        "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/VALIDATION_OUTPUT.md",
+        "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/GIT_STATE.md",
+        "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/DIFF_STAT.txt",
+        "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/CHANGED_FILES.txt",
+        "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/AUDITOR_REPORT.md",
+        "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/review_bundle/**"
+      ],
+      "validation": [
+        "Embedded audit is recorded per schemas/proof/embedded_audit.schema.json and the status reflects reality.",
+        "review_bundle/ exists as the single upload/review unit.",
+        "No secrets or tokens are included in the proof bundle."
+      ]
+    }
+  ]
+}

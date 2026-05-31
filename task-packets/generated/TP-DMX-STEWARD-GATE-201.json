@@ -1,0 +1,131 @@
+{
+  "id": "TP-DMX-STEWARD-GATE-201",
+  "project": "dopemux-mvp",
+  "target": "Add a pure, fail-closed steward_gate(head_sha, required_class) guard library to dopemux_pr_merge_specialist that loads MERGE_READINESS.json and the independent embedded_audit proof, enforces a triple-SHA freshness match plus TTL, and returns allow/deny. Not yet wired into any mutation seam.",
+  "invariants": [
+    "Do not wire the gate into any mutation seam (that is TP-202/203).",
+    "Do not perform any gh mutation.",
+    "Do not change schemas/proof/embedded_audit.schema.json enum values.",
+    "The gate must be pure (no GitHub calls) and must deny on any missing, stale, or SHA-mismatched input.",
+    "RED-LANE: edits src/dopemux_pr_merge_specialist/, which PR #718 fenced in forbidden_surfaces; explicitly authorized by the operator for this series. Embedded audit and supervisor review required."
+  ],
+  "depends_on": [
+    "TP-DMX-AUDIT-CI-PROVENANCE-104"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-AUTOREVIEW-PLATFORM",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-AUDIT-CI-PROVENANCE-104",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-steward-gate-201",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(pr-merge): add fail-closed steward_gate guard library",
+    "allowlist": [
+      "src/dopemux_pr_merge_specialist/steward_gate.py",
+      "tests/pr_merge_specialist/test_steward_gate.py",
+      "docs/ops/steward-merge-gate.md",
+      "config/pr_merge_specialist/policy.yaml",
+      "task-packets/generated/TP-DMX-STEWARD-GATE-201.json",
+      "proof/TP-DMX-STEWARD-GATE-201/**"
+    ],
+    "verify": [
+      "python -m compileall -q src tests",
+      "pytest -q tests/pr_merge_specialist/test_steward_gate.py",
+      "python -m json.tool task-packets/generated/TP-DMX-STEWARD-GATE-201.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(pr-merge): add fail-closed steward_gate guard library",
+    "body": "## Summary\\n\\nAdd a pure, fail-closed steward_gate(head_sha, required_class) guard library to dopemux_pr_merge_specialist that loads MERGE_READINESS.json and the independent embedded_audit proof, enforces a triple-SHA freshness match plus TTL, and returns allow/deny. Not yet wired into any mutation seam.\\n\\n## Scope\\n\\nAllowlist-bound; see commit.allowlist. Out of scope: Do not wire the gate into any mutation seam (that is TP-202/203). Do not perform any gh mutation. Do not change schemas/proof/embedded_audit.schema.json enum values. The gate must be pure (no GitHub calls) and must deny on any missing, stale, or SHA-mismatched input.\\n\\n## Validation\\n\\nSee commit.verify; embedded audit + proof bundle required.\\n\\n> RED-LANE: RED-LANE: edits src/dopemux_pr_merge_specialist/, which PR #718 fenced in forbidden_surfaces; explicitly authorized by the operator for this series. Embedded audit and supervisor review required.\\n\\n@codex review\\n@gemini\\n@copilot",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: verify repo identity (repo_marker .dopetaskroot, origin matches origin_hint, branch matches execution.branch, worktree clean or only intended files dirty) and verify dependency proofs exist and passed for: TP-DMX-AUDIT-CI-PROVENANCE-104.",
+      "context_files": [
+        "AGENTS.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "src/dopemux_pr_merge_specialist/merge.py",
+        "tools/pr_steward/classifier.py",
+        "schemas/proof/embedded_audit.schema.json",
+        "docs/ops/pr-acceptance.md"
+      ],
+      "validation": [
+        "Repo identity matches repo_binding.",
+        "Dependency proofs are present and PASS (or 'none' for a root packet).",
+        "Active task context recorded; worktree is clean or only contains intended files."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Implement: Add a pure, fail-closed steward_gate(head_sha, required_class) guard library to dopemux_pr_merge_specialist that loads MERGE_READINESS.json and the independent embedded_audit proof, enforces a triple-SHA freshness match plus TTL, and returns allow/deny. Not yet wired into any mutation seam.",
+      "expected_files": [
+        "src/dopemux_pr_merge_specialist/steward_gate.py",
+        "tests/pr_merge_specialist/test_steward_gate.py",
+        "docs/ops/steward-merge-gate.md",
+        "config/pr_merge_specialist/policy.yaml"
+      ],
+      "validation": [
+        "Only allowlisted files are changed.",
+        "Do not wire the gate into any mutation seam (that is TP-202/203).",
+        "Do not perform any gh mutation.",
+        "Do not change schemas/proof/embedded_audit.schema.json enum values.",
+        "The gate must be pure (no GitHub calls) and must deny on any missing, stale, or SHA-mismatched input."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Add or extend tests and docs to cover the change; run the packet validation commands.",
+      "validation": [
+        "`python -m compileall -q src tests` passes.",
+        "`pytest -q tests/pr_merge_specialist/test_steward_gate.py` passes.",
+        "git diff --check passes."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Write the proof bundle proof/TP-DMX-STEWARD-GATE-201/ including the review_bundle as the single upload unit.",
+      "expected_files": [
+        "proof/TP-DMX-STEWARD-GATE-201/PROOF.json",
+        "proof/TP-DMX-STEWARD-GATE-201/VALIDATION_OUTPUT.md",
+        "proof/TP-DMX-STEWARD-GATE-201/GIT_STATE.md",
+        "proof/TP-DMX-STEWARD-GATE-201/DIFF_STAT.txt",
+        "proof/TP-DMX-STEWARD-GATE-201/CHANGED_FILES.txt",
+        "proof/TP-DMX-STEWARD-GATE-201/AUDITOR_REPORT.md",
+        "proof/TP-DMX-STEWARD-GATE-201/review_bundle/**"
+      ],
+      "validation": [
+        "Embedded audit is recorded per schemas/proof/embedded_audit.schema.json and the status reflects reality.",
+        "review_bundle/ exists as the single upload/review unit.",
+        "No secrets or tokens are included in the proof bundle."
+      ]
+    }
+  ]
+}
