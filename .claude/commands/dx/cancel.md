@@ -11,7 +11,7 @@ model: "claude-sonnet-4-5"
 
 # /dx:cancel — Cancel a Work-Item (cancel trigger)
 
-Send an item to `terminal` with `statusLabel = "cancelled"` — abandoned, not completed. Bypasses the proof-bundle gate (cancelling is not shipping). Reversible via `/dx:reopen`.
+Send an item to `terminal` with `statusLabel = "cancelled"` — abandoned, not completed. Bypasses the proof-bundle gate (cancelling is not shipping). The current MCP schema does not expose an automatic reopen transition.
 
 **Authority**: task-orchestrator MCP per `AGENTS.md §6` + ADR `docs/90-adr/adr-task-orchestrator-as-workflow-authority.md`.
 
@@ -67,7 +67,7 @@ advance_item({ itemId: "<id>", trigger: "cancel", summary: "<reason or 'cancelle
 
 ```
 Next actions:
-  /dx:reopen <id>   → changed your mind? send it back to queue
+  /dx:reopen <id>   → inspect the current no-reopen recovery path
   /dx:tree <parent> → check the parent's remaining children
   /dx:next          → pick the next item
 ```
@@ -92,5 +92,5 @@ Next actions:
 ## Notes for Claude
 
 - **Mutates state and can cascade.** `cancel` differs from `complete`: cancel → `statusLabel=cancelled` and bypasses the proof-bundle gate; complete → `done` and enforces proof. Use cancel for abandoned work, complete for shipped work.
-- Reversible: `/dx:reopen` returns a cancelled item to `queue` and clears the label.
+- Not automatically reversible in the current MCP schema; `/dx:reopen` is read-only and explains the recovery limitation.
 - Cancelling the last non-terminal child auto-terminals the parent (observed orchestrator behavior) — reopen long-running parents afterward.

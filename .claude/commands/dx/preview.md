@@ -55,7 +55,7 @@ Returns `recommendation` (`Ready` | `Blocked` | `Terminal`) plus:
        • <blocker title> (<short-prefix>) — needs to reach <requiredRole>, currently <currentRole>
 
 <if Terminal:>
-  🏁 Terminal — <reason>. Nothing to advance. (/dx:reopen <id> to revive.)
+  🏁 Terminal — <reason>. Nothing to advance. (/dx:reopen <id> explains the current no-reopen schema.)
 ```
 
 ---
