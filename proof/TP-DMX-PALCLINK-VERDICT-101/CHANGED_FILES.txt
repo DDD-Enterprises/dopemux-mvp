@@ -1,0 +1,4 @@
+docs/ops/pal-clink-audit-runner.md
+scripts/audit/pal_clink_runner.py
+task-packets/generated/TP-DMX-PALCLINK-VERDICT-101.json
+tests/audit/test_pal_clink_runner.py
