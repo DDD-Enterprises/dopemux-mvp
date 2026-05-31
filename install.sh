@@ -693,7 +693,10 @@ ensure_docker_networks() {
         warning "[test-mode] Skipping docker network creation"
         return 0
     fi
-    local networks=("mcp-network" "dopemux-unified-network" "leantime-net")
+    # BETA-INSTALL-02: compose.yml declares "dopemux-network" (external: true).
+    # Using the old name "dopemux-unified-network" means containers can never
+    # join the network — every fresh install fails to start.
+    local networks=("mcp-network" "dopemux-network" "leantime-net")
     for network in "${networks[@]}"; do
         if docker network ls --format '{{.Name}}' | grep -q "^${network}$"; then
             debug "Docker network already exists: $network"
