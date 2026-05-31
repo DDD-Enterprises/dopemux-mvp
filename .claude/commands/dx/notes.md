@@ -85,5 +85,5 @@ Next actions:
 ## Notes for Claude
 
 - **This is a read-only wrapper. Never mutate workflow state from this command.**
-- This is the **list** half of note reading; the single-note **get** is `/dx:note read <noteId>` (already in `note.md`). `/dx:search` finds notes by text; `/dx:notes` lists everything on a known item.
+- This is the **list** half of note reading; the single-note **get** is `/dx:note read <noteId>` (already in `note.md`). `/dx:search` finds work-items by title/status; note full-text search is not available — use `/dx:notes <id>` to list note headers for a known item, then `/dx:note read <noteId>` to fetch the body.
 - Default `includeBody=true`; reach for `--no-body` on items with large notes (e.g. a full proof bundle) when you just want the inventory.

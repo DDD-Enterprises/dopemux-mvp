@@ -48,7 +48,7 @@ The *Claude-facing surface* of that integration is missing.
 
 * No `.taskorchestrator/config.yaml` exists at the repo root → zero schemas defined → zero gate enforcement → `guidancePointer` is permanently `null` for every work item.
 * No `/dx:` slash commands target the orchestrator MCP — operators call `mcp__task-orchestrator__*` tools by hand.
-* Claude-facing doctrine docs ([.claude/CLAUDE.md](../../.claude/CLAUDE.md), [.claude/modules/coordination/authority-matrix.md](../../.claude/modules/coordination/authority-matrix.md), [.claude/agents/project-manager.md](../../.claude/agents/project-manager.md), [.claude/modules/shared/superclaude-workflows.md](../../.claude/modules/shared/superclaude-workflows.md), [.claude/modules/shared/sprint.md](../../.claude/modules/shared/sprint.md)) **still state that ConPort owns task storage and that task-orchestrator was "removed"**, directly contradicting `AGENTS.md §6` and the existing workflow-authority ADR.
+* Claude-facing doctrine docs ([.claude/claude.md](../../.claude/claude.md), [.claude/modules/coordination/authority-matrix.md](../../.claude/modules/coordination/authority-matrix.md), [.claude/agents/project-manager.md](../../.claude/agents/project-manager.md), [.claude/modules/shared/superclaude-workflows.md](../../.claude/modules/shared/superclaude-workflows.md), [.claude/modules/shared/sprint.md](../../.claude/modules/shared/sprint.md)) **still state that ConPort owns task storage and that task-orchestrator was "removed"**, directly contradicting `AGENTS.md §6` and the existing workflow-authority ADR.
 * Hooks don't surface orchestrator context at session start; agents don't know how to consume `guidancePointer`; the PAL chain mandated by `AGENTS.md §5` has no mechanical enforcement at the orchestrator layer.
 * Cross-agent surfaces (`AGENTS.md` for Codex, `.github/copilot-instructions.md` for GitHub Copilot, `.claude/personas/*.agent.md` for personas) lack orchestrator operational guidance.
 
@@ -72,7 +72,7 @@ The Claude-facing surface of task-orchestrator integration is owned by a dedicat
 5. **PAL chain → required-notes mapping** per `AGENTS.md §5`: every chain stage (`analyze`, `planner`, `codereview`, `precommit`, plus risky-chain `thinkdeep` and `challenge-*` rungs) becomes a note key with a matching role-phase placement and `skill:` field that invokes the named PAL tool.
 6. **Proof bundle as `complete`-gate** per `AGENTS.md §9`: the `proof-bundle` note (review-phase, `required: true`) holds the full bundle (TP path/ID, worktree path, branch, repo identity, slices, files changed, validations with exit codes, codereview status, precommit status, commit SHA, PR URL or blocker, residual risks, `UNKNOWN`s, cleanup status). Mechanical enforcement: `advance_item(trigger="complete")` fails if the note is unfilled.
 
-Cross-agent applicability: `AGENTS.md` (Codex), `.claude/CLAUDE.md` (Claude Code), `.github/copilot-instructions.md` (Copilot), `config/instructions/agents.instructions.md` (Copilot custom-agent), `.claude/personas/*.agent.md` (personas) each receive an "Orchestrator Operations" section linked to the shared note-filling protocol doc.
+Cross-agent applicability: `AGENTS.md` (Codex), `.claude/claude.md` (Claude Code), `.github/copilot-instructions.md` (Copilot), `config/instructions/agents.instructions.md` (Copilot custom-agent), `.claude/personas/*.agent.md` (personas) each receive an "Orchestrator Operations" section linked to the shared note-filling protocol doc.
 
 Schema posture starts with **Option A — Soft gates, broad coverage (~6 schemas + `default` fallback, composed via traits)**: queue/work phases carry rich `description` + `guidance` + `skill` fields but `required: false`; only `proof-bundle` in `review` is `required: true`. Existing 19 `DMX-ORCH-INTEGRATION` TPs continue to advance freely (no retroactive blocking). Tighter postures (Option B hard gates) are reversible upward by editing trait definitions.
 
@@ -105,7 +105,7 @@ Add Claude-surface TPs as additional children under `32df1792` instead of a new 
 
 ### Alternative 2 — Skip ADR and proceed by convention
 
-Document the integration in `.claude/CLAUDE.md` only; no ADR; rely on convention to maintain doctrine consistency.
+Document the integration in `.claude/claude.md` only; no ADR; rely on convention to maintain doctrine consistency.
 
 * **Pros**: Faster to ship; no ratification review cycle.
 * **Cons**: Doctrine drift recurs (Claude-facing modules already drifted out of sync with `AGENTS.md §6` and the workflow-authority ADR). Without a ratified ADR for the Claude-surface, the next person to touch CLAUDE.md re-introduces the old pattern. No genealogy linking schema config decisions back to a canonical source.
@@ -180,7 +180,7 @@ How do we prove this ADR is correctly implemented?
 * **Schema load**: `mcp__task-orchestrator__get_context(itemId="<any task-packet tagged item>")` returns a populated `schema` array and resolved `guidancePointer`.
 * **PAL chain → notes**: `query_notes(operation="list", itemId=<TP id>, role="review")` on any completed TP-CS-NNN returns the four chain notes (`analyze`, `planner`, `codereview`, `precommit`) plus `proof-bundle`.
 * **Complete-gate enforcement**: `advance_item(trigger="complete")` on a test item without `proof-bundle` filled returns a gate error citing the missing note.
-* **Cross-agent floor**: Reading `AGENTS.md` in isolation (Codex CLI session) gives sufficient instruction to drive the MCP unaided. Same for `.claude/CLAUDE.md` (Claude Code), `.github/copilot-instructions.md` (Copilot).
+* **Cross-agent floor**: Reading `AGENTS.md` in isolation (Codex CLI session) gives sufficient instruction to drive the MCP unaided. Same for `.claude/claude.md` (Claude Code), `.github/copilot-instructions.md` (Copilot).
 * **Doctrine consistency**: `grep -r "no external orchestrators" .claude/` → zero matches; `grep -r "Task-Master" .claude/agents/` → zero matches; `grep -r "removed.*[Tt]ask-[Oo]rchestrator" .claude/` → zero matches.
 * **Plan §11 verification suite**: All 20 verification steps in the plan file pass (schema load, item creation, slash commands, gate enforcement, cross-agent paths, self-improving metrics + anti-patterns + retro creation + action wiring + genealogy, claim lifecycle).
 * **Proof bundle queryable**: For one shipped TP-CS-NNN, `query_notes(operation="get")` on its `proof-bundle` returns all fields from `AGENTS.md §9`.

@@ -88,8 +88,7 @@ Triggers (used in `advance_item(transitions=[{itemId, trigger, summary?, actor?}
 5. advance_item(transitions=[{
      itemId: <uuid>,
      trigger: "start" | "complete" | "block" | "resume" | "cancel" | "reopen",
-     summary: "<one-line summary of what just shipped>",
-     actor: { id: <agent-id>, kind: <agent-kind>, parent: <session-id> }
+     summary: "<one-line summary of what just shipped — include agent id here for attribution>"
    }])
 ```
 
@@ -189,17 +188,13 @@ Per `AGENTS.md §9`: **no proof means incomplete**. The gate is mechanical.
 
 ## Actor attribution
 
-`advance_item` and `manage_notes` accept an optional `actor` field. Dopemux convention:
+The current `advance_item` and `manage_notes` MCP schema accepts `{itemId, trigger, summary?}` — there is no structured `actor` field in the deployed schema. Encode agent attribution in `summary` until structured actor support is added:
 
 ```
-{
-  "id": "worktree-<basename>-<branch>",   // e.g. "worktree-dopemux-mvp-task-orchestrator-claude-surface"
-  "kind": "subagent",                      // or "agent", "human", "system"
-  "parent": "<session-id>"                 // Claude Code / Codex / Copilot session id
-}
+summary: "[worktree-dopemux-mvp-feat-branch / subagent] Completed extraction phase"
 ```
 
-Currently: `actor_authentication.enabled` is **off** in `.taskorchestrator/config.yaml` — claims are self-reported (Stage 1 trust). Operators can flip to enabled for stricter enforcement later.
+When structured actor support is added to the upstream MCP, this section will be updated with the accepted field shape. Do not pass an `actor` object to `advance_item` — it will fail schema validation.
 
 ---
 

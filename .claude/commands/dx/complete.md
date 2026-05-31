@@ -4,7 +4,6 @@ arguments: "<id-or-prefix> [--summary <text>]"
 allowed-tools: [
   "Bash", "Read",
   "mcp__task-orchestrator__get_context",
-  "mcp__task-orchestrator__query_notes",
   "mcp__task-orchestrator__advance_item"
 ]
 model: "claude-sonnet-4-5"
