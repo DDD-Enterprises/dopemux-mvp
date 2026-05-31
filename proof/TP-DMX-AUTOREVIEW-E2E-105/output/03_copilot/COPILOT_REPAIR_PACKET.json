@@ -1,0 +1,19 @@
+{
+  "copilot_authority": "implementer-only",
+  "generated_at": "2026-01-01T00:00:00Z",
+  "items": [
+    {
+      "category": "failed-check",
+      "id": "repair-0001",
+      "rationale": "CI check failed; implementer must investigate and fix.",
+      "source_blocker": "FAILED_CHECK",
+      "source_item_id": "unit",
+      "suggested_action": "Fix the failing CI check locally, then rerun the relevant focused validation."
+    }
+  ],
+  "mutation_performed": false,
+  "pr_number": 704,
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "schema_version": "1.0.0",
+  "source_action_plan_id": "proof/TP-DMX-AUTOREVIEW-E2E-105/output/02_action_bridge/ACTION_PLAN.json"
+}

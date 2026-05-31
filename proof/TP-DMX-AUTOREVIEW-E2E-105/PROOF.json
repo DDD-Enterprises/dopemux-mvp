@@ -1,0 +1,87 @@
+{
+  "base_branch": "codex/tp-dmx-audit-ci-provenance-104",
+  "branch": "codex/tp-dmx-autoreview-e2e-105",
+  "branch_composition": {
+    "base": "codex/tp-dmx-audit-ci-provenance-104",
+    "merge_strategy": "git merge --no-ff --no-edit origin/codex/tp-dmx-copilot-renderer-103",
+    "merged_dependency_branch": "origin/codex/tp-dmx-copilot-renderer-103",
+    "reason": "TP105 depends on TP102, TP103, and TP104; TP103 and TP104 are separate dependency branches."
+  },
+  "embedded_audit": {
+    "auditor_model": "sonnet",
+    "auditor_tool": "pal-mcp-clink",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [],
+    "invocation": "pal-clink --client claude-audit --role codereviewer --input PAL_CLINK_AUDIT_INPUT.md --output PAL_CLINK_AUDIT_OUTPUT.json",
+    "remaining_risks": [],
+    "report_path": "proof/TP-DMX-AUTOREVIEW-E2E-105/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "github_mutation_route_added": false,
+  "mutation_performed": false,
+  "outputs": [
+    "proof/TP-DMX-AUTOREVIEW-E2E-105/output/01_pr_steward_initial/MERGE_READINESS.json",
+    "proof/TP-DMX-AUTOREVIEW-E2E-105/output/02_action_bridge/ACTION_PLAN.json",
+    "proof/TP-DMX-AUTOREVIEW-E2E-105/output/03_copilot/COPILOT_REPAIR_PACKET.json",
+    "proof/TP-DMX-AUTOREVIEW-E2E-105/output/04_embedded_audit/PROOF.json",
+    "proof/TP-DMX-AUTOREVIEW-E2E-105/output/05_pr_steward_final/MERGE_READINESS.json"
+  ],
+  "packet_id": "TP-DMX-AUTOREVIEW-E2E-105",
+  "residual_risks": [
+    "The loop is offline-only and does not prove live GitHub behavior.",
+    "Live PAL clink execution is represented by deterministic fixture output, not by a live external auditor run in this TP105 replay.",
+    "TP105 branch includes a dependency merge of TP103 into the TP104 stack because no single linear parent contained all declared dependencies.",
+    "Task Orchestrator item state could not be advanced because the transport was closed."
+  ],
+  "summary": "Added an offline deterministic autoreview loop fixture covering PR Steward intake, Action Bridge, Copilot repair rendering, independent embedded audit proof, and final PR Steward re-intake.",
+  "validation": [
+    {
+      "command": "pytest -q tests/integration/test_autoreview_loop.py",
+      "evidence": "1 passed.",
+      "status": "PASS"
+    },
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-AUTOREVIEW-E2E-105.json",
+      "evidence": "Task packet JSON parsed successfully.",
+      "status": "PASS"
+    },
+    {
+      "command": "python -m json.tool proof/TP-DMX-AUTOREVIEW-E2E-105/PROOF.json",
+      "evidence": "Proof JSON parsed successfully.",
+      "status": "PASS"
+    },
+    {
+      "command": "python -m compileall -q tests",
+      "evidence": "Test compile completed with exit code 0.",
+      "status": "PASS"
+    },
+    {
+      "command": "python scripts/audit/validate_audit_proof.py proof/TP-DMX-AUTOREVIEW-E2E-105/PROOF.json",
+      "evidence": "Embedded audit object validated against schemas/proof/embedded_audit.schema.json.",
+      "status": "PASS"
+    },
+    {
+      "command": "jsonschema validation for generated ACTION_PLAN.json and COPILOT_REPAIR_PACKET.json",
+      "evidence": "Generated Action Bridge and Copilot repair artifacts validated against their schemas.",
+      "status": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "evidence": "No whitespace errors reported.",
+      "status": "PASS"
+    },
+    {
+      "command": "pre-commit run --files <TP105 changed files>",
+      "evidence": "Docs hygiene, markdownlint, trailing whitespace, EOF, and YAML checks passed for changed files.",
+      "status": "PASS"
+    },
+    {
+      "command": "mcp task-orchestrator get_context health-check",
+      "evidence": "Task Orchestrator transport returned Transport closed.",
+      "status": "FAIL"
+    }
+  ]
+}
