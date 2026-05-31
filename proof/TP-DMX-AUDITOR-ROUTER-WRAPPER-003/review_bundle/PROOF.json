@@ -11,6 +11,19 @@
   ],
   "wrapper": "scripts/auditor-preflight",
   "delegates_to": "python -m tools.auditor_router.preflight \"$@\"",
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": "Historical bundle transition"
+  },
   "validation": [
     "pytest -q tests/auditor_router: 33 passed",
     "scripts/auditor-preflight --help: PASS",
