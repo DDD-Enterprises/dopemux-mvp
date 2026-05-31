@@ -52,6 +52,10 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
   expect(content).toMatch(/<Tooltip title="Current energy level"[\s\S]*tabIndex=\{0\}/);
   expect(content).toMatch(/<Tooltip title="Current attention focus"[\s\S]*tabIndex=\{0\}/);
   expect(content).toMatch(/<Tooltip[^>]*title="AI-generated team coordination insights"[^>]*arrow/);
+  // Verify team signal chips
+  expect(content).toMatch(/<Tooltip key=\{signal\.label\} title=\{`Team signal: \$\{signal\.label\} status`\} arrow>/);
+  expect(content).toContain('aria-label={`Team signal: ${signal.label} is ${signal.value}`}');
+  expect(content).toContain('cursor: \'help\'');
 });
 
 test('App.tsx exposes metric card tooltips with focus indicators and labels', () => {
