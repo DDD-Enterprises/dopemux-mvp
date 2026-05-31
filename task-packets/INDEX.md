@@ -76,6 +76,7 @@ A packet is superseded by another packet
 | TP-DMX-AGENTS-CODEX-ENDTOEND-0001 | Agent Guidance | Make Codex execute TP lifecycle end-to-end by default | Ready | N/A |
 | TP-DMX-ORCH-DOCS-003 | Task Orchestrator | Document read-only/operator-status integration authority boundaries | Active | N/A |
 | TP-DMX-COMPOSE-RESTORE-001 | Infra | Restore canonical Docker Compose authority | Ready | N/A |
+| TP-BETA-MCP-02-COMPOSE-HEALTHCHECKS | Infra | Gate core MCP compose dependencies on healthchecked services | Active | N/A |
 | DMX-COCKPIT-STATIC-002 | UI Cockpit | Expose deterministic static cockpit renderer through guarded CLI wrapper | Merged (PR #528) | N/A |
 | TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001 | UI Cockpit | Audit and prepare Cockpit PR stack 568-571 plus PR 573 evidence for safe consolidation | Active | N/A |
 | TP-DMX-COCKPIT-RUNTIME-RENDER-001 | UI Cockpit | Wire runtime renderer primitives to accepted Cockpit IA package contract | Active | N/A |
