@@ -56,7 +56,7 @@ PASS_COUNT=0
 _sub_pass() { PASS_COUNT=$(( PASS_COUNT + 1 )); }
 
 # ── Step A: cockpit --audit ───────────────────────────────────────────────────
-(
+{
     AUDIT_OUT="$RESULTS_DIR/cockpit_audit.json"
     rc=0
     dopemux cockpit --audit --output "$AUDIT_OUT" >"$RESULTS_DIR/cockpit_audit.stdout" 2>&1 || rc=$?
@@ -70,10 +70,10 @@ _sub_pass() { PASS_COUNT=$(( PASS_COUNT + 1 )); }
             "cockpit --audit failed (rc=$rc) or output invalid JSON" \
             "{\"rc\":$rc}"
     fi
-) || true
+} || true
 
 # ── Step B: cockpit --plain ───────────────────────────────────────────────────
-(
+{
     PLAIN_OUT="$RESULTS_DIR/cockpit_plain.txt"
     rc=0
     dopemux cockpit --plain >"$PLAIN_OUT" 2>&1 || rc=$?
@@ -89,10 +89,10 @@ _sub_pass() { PASS_COUNT=$(( PASS_COUNT + 1 )); }
             "cockpit --plain failed (rc=$rc) or empty output (${local_size} bytes)" \
             "{\"rc\":$rc,\"bytes\":${local_size:-0}}"
     fi
-) || true
+} || true
 
 # ── Step C: dashboard --demo ──────────────────────────────────────────────────
-(
+{
     DEMO_OUT="$RESULTS_DIR/dashboard_demo.html"
     rc=0
     # Try CLI first; fall back to module entrypoint
@@ -114,10 +114,10 @@ main(['--demo'])
         emit_result "tui_dashboard_demo" "FAIL" \
             "dashboard --demo unavailable (both CLI and module entrypoint failed)" "{}"
     fi
-) || true
+} || true
 
 # ── Step D: Textual SVG snapshot ──────────────────────────────────────────────
-(
+{
     SVG_OUT="$RESULTS_DIR/tui_snapshot.svg"
     rc=0
     python3 - "$SVG_OUT" <<'PYEOF' 2>/dev/null || rc=$?
@@ -150,26 +150,20 @@ PYEOF
             "Textual export_screenshot produced ${svg_size}-byte SVG" \
             "{\"bytes\":$svg_size,\"file\":\"tui_snapshot.svg\"}"
         _sub_pass
-        # Save as new golden if none exists yet
-        GOLDEN="$SNAPSHOTS_DIR/tui_snapshot_golden.svg"
-        if [[ ! -f "$GOLDEN" ]]; then
-            cp "$SVG_OUT" "$GOLDEN"
-            log_info "Saved new golden SVG snapshot: $GOLDEN"
-        fi
     else
         emit_result "tui_svg_snapshot" "FAIL" \
             "SVG snapshot failed (rc=$rc, bytes=${svg_size:-0})" \
             "{\"rc\":$rc,\"bytes\":${svg_size:-0}}"
     fi
-) || true
+} || true
 
 # ── Step E: golden diff ───────────────────────────────────────────────────────
-(
+{
     CURRENT_SVG="$RESULTS_DIR/tui_snapshot.svg"
     GOLDEN_SVG="$SNAPSHOTS_DIR/tui_snapshot_golden.svg"
     if [[ ! -f "$GOLDEN_SVG" ]]; then
         emit_result "tui_golden_diff" "NOT_RUN" \
-            "No golden snapshot exists yet in baseline/snapshots/; will be created on first passing SVG run" "{}"
+            "No golden snapshot exists yet in baseline/snapshots/; baseline update is a separate flow" "{}"
     elif [[ ! -f "$CURRENT_SVG" ]]; then
         emit_result "tui_golden_diff" "NOT_RUN" \
             "Current SVG snapshot was not produced (step D failed); cannot diff" "{}"
@@ -188,10 +182,10 @@ PYEOF
                 "{\"diff_lines\":$diff_lines}"
         fi
     fi
-) || true
+} || true
 
 # ── Step F: ui-dashboard npm build (BETA-UI-01: build may be broken) ──────────
-(
+{
     PKG_JSON="${ROOT}/ui-dashboard/package.json"
     if [[ ! -f "$PKG_JSON" ]]; then
         emit_result "tui_ui_dashboard_build" "NOT_RUN" \
@@ -210,7 +204,7 @@ PYEOF
                 "{\"rc\":$rc}"
         fi
     fi
-) || true
+} || true
 
 # ── Overall rollup ────────────────────────────────────────────────────────────
 if [[ $PASS_COUNT -ge 2 ]]; then
