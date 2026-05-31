@@ -16,6 +16,7 @@ from output_safety import (
 
 logger = logging.getLogger(__name__)
 CACHE_KEY_VERSION = "dopemux-rte-prescan-cache-v3"
+PRESCAN_JSON_OBJECT_PROVIDERS = {"openai", "xai", "openrouter"}
 
 class RTEPrescanError(Exception):
     """Base error for prescan."""
@@ -527,6 +528,11 @@ class GrokPassRunner:
 
         import openai
 
+        prescan_response_format = (
+            {"type": "json_object"}
+            if provider in PRESCAN_JSON_OBJECT_PROVIDERS
+            else None
+        )
         base_url = None
         if provider == "openrouter":
             base_url = "https://openrouter.ai/api/v1"
@@ -534,16 +540,19 @@ class GrokPassRunner:
             base_url = self.config.xai_base_url
 
         client = openai.OpenAI(api_key=api_key, base_url=base_url)
-        response = client.chat.completions.create(
-            model=model_id,
-            messages=[
+        create_kwargs: dict[str, Any] = {
+            "model": model_id,
+            "messages": [
                 {
                     "role": "user",
                     "content": payload,
                 }
             ],
-            temperature=self.config.temperature,
-        )
+            "temperature": self.config.temperature,
+        }
+        if prescan_response_format is not None:
+            create_kwargs["response_format"] = prescan_response_format
+        response = client.chat.completions.create(**create_kwargs)
         content = getattr(response.choices[0].message, "content", "") or "{}"
         data = json.loads(content)
         if not isinstance(data, dict):

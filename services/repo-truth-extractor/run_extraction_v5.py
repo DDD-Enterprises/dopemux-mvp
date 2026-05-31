@@ -11850,9 +11850,13 @@ def try_repair_json_truncation(
 
 def parse_json_from_response_with_provenance(
     text: str,
+    *,
+    claimed_strict_route: bool = False,
 ) -> Tuple[Optional[Any], Dict[str, Any]]:
     return llm_runtime_parse_json_from_response_with_provenance(
-        _llm_runtime_deps(), text
+        _llm_runtime_deps(),
+        text,
+        claimed_strict_route=claimed_strict_route,
     )
 
 
@@ -11930,6 +11934,7 @@ def _sanitize_provenance_for_logging(finalized: Dict[str, Any]) -> Dict[str, Any
         "repaired_response_length",
         "chars_lost",
         "chars_delta",
+        "claimed_strict_route",
     }
 
     safe: Dict[str, Any] = {}
@@ -11961,9 +11966,14 @@ def log_response_parse_repair(finalized: Dict[str, Any]) -> None:
 def parse_json_from_response(
     text: str,
     metadata_out: Optional[Dict[str, Any]] = None,
+    *,
+    claimed_strict_route: bool = False,
 ) -> Optional[Any]:
     return llm_runtime_parse_json_from_response(
-        _llm_runtime_deps(), text, metadata_out=metadata_out
+        _llm_runtime_deps(),
+        text,
+        metadata_out=metadata_out,
+        claimed_strict_route=claimed_strict_route,
     )
 
 
@@ -15201,7 +15211,8 @@ else sdk_auth_present_flags(p_provider, True)
             request_meta_local["strict_route_attempts"] = strict_attempts
             request_meta_local["strict_route_attestations"] = strict_attestations
             parsed, provenance = parse_json_from_response_with_provenance(
-                response_text_local
+                response_text_local,
+                claimed_strict_route=bool(selected_route.get("strict_json_schema", False)),
             )
             finalized_provenance = finalize_response_parse_provenance(
                 provenance,
