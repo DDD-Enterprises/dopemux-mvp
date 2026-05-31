@@ -1,0 +1,103 @@
+{
+  "id": "TP-DMX-COCKPIT-EVIDENCE-LEDGER-001",
+  "project": "dopemux-mvp",
+  "target": "Reduce or explicitly reject the open EVIDENCE_LEDGER UNKNOWNs that block Cockpit Phase 1 condition 8, using current runtime evidence without changing cockpit runtime behavior.",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-COCKPIT-UI",
+    "base_branch": "claude/hungry-buck-67a0d3",
+    "parent_tp_id": "7fb6c62d",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/cockpit-ui-evidence-ledger-001",
+    "base_branch": "claude/hungry-buck-67a0d3"
+  },
+  "commit": {
+    "message": "docs(cockpit): reduce evidence ledger unknowns",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001.json",
+      "tests/unit/dopemux/ui/cockpit/test_evidence_ledger_artifacts.py",
+      "proof/cockpit-evidence-ledger/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001/**",
+      "out/cockpit-evidence-ledger/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001.json >/dev/null",
+      "python -m json.tool out/cockpit-evidence-ledger/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001/EVIDENCE_LEDGER_REDUCTION.json >/dev/null",
+      "python -m json.tool out/cockpit-evidence-ledger/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001/PROOF.json >/dev/null",
+      "cd out/cockpit-evidence-ledger/TP-DMX-COCKPIT-EVIDENCE-LEDGER-001 && shasum -a 256 -c sha256sums.txt",
+      "python scripts/brand_lint.py",
+      "python scripts/sync_brand_tokens.py",
+      "python -m pytest tests/unit/dopemux/ui/cockpit/test_evidence_ledger_artifacts.py -q",
+      "python -m pytest tests/unit/dopemux/ui/cockpit/ -q",
+      "python -m pytest tests/unit/test_cockpit_cli.py -q",
+      "! grep -R -E \"READY_FOR_CLAUDE_DESIGN: approved|safe_for_claude_design: YES|Claude Design upload allowed|T4 authorized|runtime execution implemented|Unknown / Drift execution|runtime reclassification allowed|execute anyway|approve anyway|resolve now|final screens approved\" -n out/cockpit-evidence-ledger proof/cockpit-evidence-ledger tests/unit/dopemux/ui/cockpit/test_evidence_ledger_artifacts.py",
+      "git diff --check",
+      "git status --short --branch"
+    ]
+  },
+  "pr": {
+    "title": "docs(cockpit): reduce evidence ledger unknowns",
+    "body": "## Summary\n- reduce the Phase 1 Evidence Ledger blocker with current runtime CLI, source, and authority-file evidence\n- explicitly reject non-registered genetic/worktree/vault surfaces as current Cockpit command affordances\n- resolve root RULES/TRUTH absence through AGENTS authority fallback without creating fake root files\n\n## Strict scope\n- artifact-only plus focused artifact tests\n- no Cockpit runtime behavior change\n- no final-screen approval\n- no Claude Design upload\n- no runtime action execution\n- no runtime reclassification\n\n## Governance state\nsafe_for_claude_design: NO\nREADY_FOR_CLAUDE_DESIGN: not approved\n\n## Validation\nSee closeout proof for command outputs and exit codes.\n\n## Residual risks and downstream packets\n- task-orchestrator MCP context recording remains unavailable in this environment\n- safe_for_claude_design remains blocked until the dedicated gate-flip packet verifies all eight blockers together",
+    "base": "claude/hungry-buck-67a0d3"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Inspect the carried EVIDENCE_LEDGER, current AGENTS authority order, root authority file presence, docs/reference fallbacks, CLI registrations, and source-defined-but-unregistered surfaces.",
+      "validation": [
+        "Dedicated worktree is verified from claude/hungry-buck-67a0d3 at f257f3e6528ed17413fa985e9b44765c59be37f5.",
+        "Root RULES.md and root TRUTH_*.md presence checks are recorded as observed evidence.",
+        "Current CLI command registration is inspected by source and runtime import."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create deterministic current-head evidence ledger reduction artifacts that resolve or explicitly reject the Phase 1 condition 8 UNKNOWNs.",
+      "validation": [
+        "EVIDENCE_LEDGER_REDUCTION.json parses and marks every condition-8 item as RESOLVED or EXPLICITLY_REJECTED.",
+        "The markdown ledger cites observed evidence without mutating the historical IA reconcile packet.",
+        "No artifact claims final-screen readiness or flips the design gate."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Add focused artifact tests for ledger completeness, CLI registration evidence, authority fallback, and forbidden governance claims.",
+      "validation": [
+        "Focused evidence-ledger artifact tests pass.",
+        "Cockpit unit slice passes.",
+        "Top-level Cockpit CLI tests pass."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run global brand audits, hash validation, diff review, codereview/precommit where available, commit allowed files, push, and open PR against claude/hungry-buck-67a0d3.",
+      "validation": [
+        "brand_lint exits with 0 errors and 0 warnings.",
+        "sync_brand_tokens exits 0.",
+        "git diff --check passes.",
+        "Only allowlisted files are staged.",
+        "PR URL or exact blocker is recorded in proof and final closeout."
+      ]
+    }
+  ]
+}
