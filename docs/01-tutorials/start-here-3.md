@@ -47,6 +47,12 @@ Run the installer:
 The installer is the repo's first-touch setup path. For unattended or stack
 specific options, see [INSTALL.md](../../INSTALL.md).
 
+Load the shell integration that the installer wrote, or open a new terminal:
+
+```bash
+source ~/.zshrc
+```
+
 Start the operator CLI:
 
 ```bash
