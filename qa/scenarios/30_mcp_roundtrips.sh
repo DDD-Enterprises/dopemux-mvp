@@ -51,7 +51,8 @@ _qa_stack_running() {
     local count=0
     set +e
     local raw
-    raw="$(docker compose -p dopemux-qa ps --format json 2>/dev/null)"
+    # Pass -f to anchor to the repo compose file regardless of working directory.
+    raw="$(docker compose -p dopemux-qa -f "${ROOT}/compose.yml" ps --format json 2>/dev/null)"
     if [[ -n "$raw" ]]; then
         if echo "$raw" | jq -e '.[0]' >/dev/null 2>&1; then
             count="$(echo "$raw" | jq '[.[] | select(.State == "running")] | length' 2>/dev/null || echo 0)"
@@ -148,10 +149,14 @@ CONPORT_FUNC_RESP="$(http_post_json "${CONPORT_MCP_BASE}/mcp" "${CONPORT_FUNC_BO
 CONPORT_FUNC_OK=false
 CONPORT_FUNC_MSG="no valid JSON response"
 if [[ -n "${CONPORT_FUNC_RESP}" ]] && echo "${CONPORT_FUNC_RESP}" | jq -e '.' >/dev/null 2>&1; then
-    # Accept either a result key or an error key (both are valid JSON-RPC responses)
-    if json_has_key "${CONPORT_FUNC_RESP}" '.result // .error'; then
+    # Require .result and reject .error — a JSON-RPC error is a broken tool call,
+    # not a healthy round-trip, even though it is technically valid JSON-RPC.
+    if json_has_key "${CONPORT_FUNC_RESP}" '.result' && \
+       ! json_has_key "${CONPORT_FUNC_RESP}" '.error'; then
         CONPORT_FUNC_OK=true
         CONPORT_FUNC_MSG="get_active_context returned valid JSON-RPC response"
+    elif json_has_key "${CONPORT_FUNC_RESP}" '.error'; then
+        CONPORT_FUNC_MSG="JSON-RPC error: $(echo "${CONPORT_FUNC_RESP}" | jq -r '.error.message // .error' 2>/dev/null)"
     fi
 fi
 
@@ -210,10 +215,13 @@ PAL_FUNC_RESP="$(http_post_json "${PAL_BASE}/mcp" "${PAL_FUNC_BODY}")"
 PAL_FUNC_OK=false
 PAL_FUNC_MSG="no valid JSON response"
 if [[ -n "${PAL_FUNC_RESP}" ]] && echo "${PAL_FUNC_RESP}" | jq -e '.' >/dev/null 2>&1; then
-    # Check for result.content (typical MCP tool response) or any array/list in result
-    if json_has_key "${PAL_FUNC_RESP}" '.result // .error'; then
+    # Require .result and reject .error (same reasoning as ConPort check above)
+    if json_has_key "${PAL_FUNC_RESP}" '.result' && \
+       ! json_has_key "${PAL_FUNC_RESP}" '.error'; then
         PAL_FUNC_OK=true
         PAL_FUNC_MSG="listmodels returned valid JSON-RPC response"
+    elif json_has_key "${PAL_FUNC_RESP}" '.error'; then
+        PAL_FUNC_MSG="JSON-RPC error: $(echo "${PAL_FUNC_RESP}" | jq -r '.error.message // .error' 2>/dev/null)"
     fi
 fi
 
@@ -270,10 +278,14 @@ DOPE_FUNC_RESP="$(http_post_json "${DOPE_CONTEXT_BASE}/mcp" "${DOPE_FUNC_BODY}")
 DOPE_FUNC_OK=false
 DOPE_FUNC_MSG="no valid JSON response"
 if [[ -n "${DOPE_FUNC_RESP}" ]] && echo "${DOPE_FUNC_RESP}" | jq -e '.' >/dev/null 2>&1; then
-    # Accept result (with any content including empty results array) or error (e.g. unindexed workspace)
-    if json_has_key "${DOPE_FUNC_RESP}" '.result // .error'; then
+    # Require .result; reject .error (unindexed workspace returns a result with
+    # an empty list, not an error, so this check is safe for that case too)
+    if json_has_key "${DOPE_FUNC_RESP}" '.result' && \
+       ! json_has_key "${DOPE_FUNC_RESP}" '.error'; then
         DOPE_FUNC_OK=true
         DOPE_FUNC_MSG="search_code returned valid JSON-RPC response"
+    elif json_has_key "${DOPE_FUNC_RESP}" '.error'; then
+        DOPE_FUNC_MSG="JSON-RPC error: $(echo "${DOPE_FUNC_RESP}" | jq -r '.error.message // .error' 2>/dev/null)"
     fi
 fi
 
