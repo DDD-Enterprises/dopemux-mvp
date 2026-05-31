@@ -37,6 +37,12 @@
 - Rechecked the prior `extractor-full` failures after current-base merge:
   - The four prescan cases returned expected XFAIL, not XPASS.
   - `test_v4_help_does_not_expose_s_extra_steps` passed.
+- Remote GitHub Actions on `e48ff4ee85a1b6600249c78b3507e6ddc081a7a6` still reproduced Linux full-gate failures:
+  - Four prescan tests XPASSed under Linux.
+  - `test_v4_help_does_not_expose_s_extra_steps` did not see `--s-steps` in Rich/Typer help output.
+- Second repair:
+  - Scoped the known prescan xfails to `sys.platform == "darwin"` so Linux CI executes the assertions normally and macOS preserves the documented prescan gaps.
+  - Stabilized the v4 help subprocess with deterministic `COLUMNS`, `NO_COLOR`, and `TERM` values.
 
 ## Validation
 
@@ -67,14 +73,17 @@ PASS:
 - PAL codereview with `gpt-5-codex`
   - Result: no issues found.
   - Exit code: 0.
-- `pre-commit run --files .github/workflows/ci-complete.yml CHANGELOG.md task-packets/INDEX.md task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json claudedocs/ci-full-test-suite-proof-2026-05-31.md`
+- `pre-commit run --files .github/workflows/ci-complete.yml CHANGELOG.md services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py services/repo-truth-extractor/tests/test_phase_s_step_selection.py services/repo-truth-extractor/tests/test_prescan_e2e_smoke.py task-packets/INDEX.md task-packets/generated/TP-CI-FULL-TEST-SUITE-001.json claudedocs/ci-full-test-suite-proof-2026-05-31.md`
   - Result: passed.
   - Exit code: 0.
 
 Repair-pass validation:
 
-- `PYTHONPATH=src uv run --frozen pytest services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py::test_code_prescan_emits_dotted_relative_python_imports services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py::test_code_prescan_api_surface_detection_avoids_substring_false_positives services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py::test_code_prescan_arrow_function_signatures_match_symbol_coverage services/repo-truth-extractor/tests/test_prescan_e2e_smoke.py::test_prescan_real_repo_full_and_incremental_smoke services/repo-truth-extractor/tests/test_phase_s_step_selection.py::test_v4_help_does_not_expose_s_extra_steps -q --tb=short --disable-warnings --no-cov`
+- `PYTHONPATH=src uv run --python 3.11 --frozen pytest services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py::test_code_prescan_emits_dotted_relative_python_imports services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py::test_code_prescan_api_surface_detection_avoids_substring_false_positives services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py::test_code_prescan_arrow_function_signatures_match_symbol_coverage services/repo-truth-extractor/tests/test_prescan_e2e_smoke.py::test_prescan_real_repo_full_and_incremental_smoke services/repo-truth-extractor/tests/test_phase_s_step_selection.py::test_v4_help_does_not_expose_s_extra_steps -q --tb=short --disable-warnings --no-cov`
   - Result: 1 passed, 4 xfailed.
+  - Exit code: 0.
+- `PYTHONPATH=src uv run --python 3.11 --frozen pytest services/repo-truth-extractor/tests/ -q --tb=short --disable-warnings --no-cov`
+  - Result: passed with documented XFAILs after the platform-scoped xfail repair.
   - Exit code: 0.
 
 WARN:
