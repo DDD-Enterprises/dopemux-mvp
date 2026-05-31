@@ -242,8 +242,8 @@ services:
       - DOPEMUX_INSTANCE_ID=${DOPEMUX_INSTANCE_ID:-}
       - MCP_SERVER_PORT=3005
       - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
-      - DATABASE_URL=postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
-      - POSTGRES_URL=postgresql+asyncpg://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
+      - DATABASE_URL=postgresql://dopemux_age:${AGE_PASSWORD:-dopemux_age_dev_password}@dopemux-postgres-age:5432/dopemux_knowledge_graph
+      - POSTGRES_URL=postgresql+asyncpg://dopemux_age:${AGE_PASSWORD:-dopemux_age_dev_password}@dopemux-postgres-age:5432/dopemux_knowledge_graph
       - AGE_HOST=dopemux-postgres-age
       - AGE_PORT=5432
       - AGE_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
@@ -307,7 +307,7 @@ services:
       - XAI_API_KEY=${XAI_API_KEY}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - DATABASE_URL=${LITELLM_DATABASE_URL:-postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/litellm}
+      - DATABASE_URL=${LITELLM_DATABASE_URL:-postgresql://dopemux_age:${AGE_PASSWORD:-dopemux_age_dev_password}@dopemux-postgres-age:5432/litellm}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
     ports:
       - "${LITELLM_PORT:-4000}:4000"
@@ -375,7 +375,7 @@ services:
       - "${DOPECON_BRIDGE_PORT:-3016}:3016"
     environment:
       - PORT_BASE=${DOPEMUX_PORT_BASE:-3000}
-      - POSTGRES_URL=postgresql+asyncpg://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
+      - POSTGRES_URL=postgresql+asyncpg://dopemux_age:${AGE_PASSWORD:-dopemux_age_dev_password}@dopemux-postgres-age:5432/dopemux_knowledge_graph
       - AGE_HOST=dopemux-postgres-age
       - AGE_PORT=5432
       - AGE_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
