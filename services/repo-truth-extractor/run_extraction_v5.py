@@ -223,6 +223,11 @@ from rte_reports import (
     write_step_metrics_snapshot as rte_write_step_metrics_snapshot,
 )
 from reporting import build_run_id_resolution_precedence
+from rte_constants import (
+    RUN_STATUS_BLOCKED,
+    RUN_STATUS_COST_ABORTED,
+    RUN_STATUS_OK,
+)
 from llm_runtime import (
     LLMRuntimeDeps,
     _RESPONSE_SUMMARY_PASSTHROUGH_KEYS,
@@ -3603,16 +3608,16 @@ def compute_run_status(
     cost_abort_triggered: bool = False,
 ) -> str:
     if cost_abort_triggered:
-        return "COST_ABORTED"
+        return RUN_STATUS_COST_ABORTED
     if blocked_promptset:
-        return "BLOCKED"
+        return RUN_STATUS_BLOCKED
     if missing_required_artifacts_total > 0:
-        return "BLOCKED"
+        return RUN_STATUS_BLOCKED
     if phase_statuses:
         for status in phase_statuses.values():
             if status == "FAIL":
-                return "BLOCKED"
-    return "OK"
+                return RUN_STATUS_BLOCKED
+    return RUN_STATUS_OK
 
 
 def update_run_manifest_status(
@@ -5744,6 +5749,13 @@ def _read_batch_job_rows(path: Path) -> List[Dict[str, Any]]:
     if not isinstance(rows, list):
         return []
     return [row for row in rows if isinstance(row, dict)]
+
+
+def _batch_job_strict_json_schema(route_entry: Any) -> bool:
+    return bool(
+        isinstance(route_entry, dict)
+        and route_entry.get("strict_json_schema") is True
+    )
 
 
 def _upsert_batch_job_rows(
@@ -11850,9 +11862,13 @@ def try_repair_json_truncation(
 
 def parse_json_from_response_with_provenance(
     text: str,
+    *,
+    claimed_strict_route: bool = False,
 ) -> Tuple[Optional[Any], Dict[str, Any]]:
     return llm_runtime_parse_json_from_response_with_provenance(
-        _llm_runtime_deps(), text
+        _llm_runtime_deps(),
+        text,
+        claimed_strict_route=claimed_strict_route,
     )
 
 
@@ -11930,6 +11946,7 @@ def _sanitize_provenance_for_logging(finalized: Dict[str, Any]) -> Dict[str, Any
         "repaired_response_length",
         "chars_lost",
         "chars_delta",
+        "claimed_strict_route",
     }
 
     safe: Dict[str, Any] = {}
@@ -11961,9 +11978,14 @@ def log_response_parse_repair(finalized: Dict[str, Any]) -> None:
 def parse_json_from_response(
     text: str,
     metadata_out: Optional[Dict[str, Any]] = None,
+    *,
+    claimed_strict_route: bool = False,
 ) -> Optional[Any]:
     return llm_runtime_parse_json_from_response(
-        _llm_runtime_deps(), text, metadata_out=metadata_out
+        _llm_runtime_deps(),
+        text,
+        metadata_out=metadata_out,
+        claimed_strict_route=claimed_strict_route,
     )
 
 
@@ -13930,6 +13952,26 @@ def execute_step_for_partitions(
         if json_managed_step and contract_artifacts
         else prompt_spec.output_artifacts
     )
+    # S4-CRIT-2 (audit): fail closed at EXECUTION time when a phase-SP step would emit a
+    # JSON artifact but has no phase contract. Phase 'SP' is absent from
+    # reports/repo_truth_map.json, so step_contract is None for every SP step and its JSON
+    # output would be written with no schema / required-field enforcement. The guard lives
+    # here (live execution only, dry-run excluded) rather than at prompt resolution, which
+    # read-only paths exercise (phase listing, the CostProfile validator, dry-run /
+    # post-review preview) -- a resolution-time raise would break those.
+    if (
+        str(phase).strip().upper() == "SP"
+        and not cfg.dry_run
+        and step_contract is None
+        and any(str(artifact).lower().endswith(".json") for artifact in output_artifacts)
+    ):
+        raise RuntimeError(
+            f"Phase SP step {step_id} would emit JSON artifact(s) "
+            f"{tuple(output_artifacts)} with no phase contract (phase 'SP' is not declared "
+            f"in reports/repo_truth_map.json). Refusing to run an uncontracted synthesis "
+            f"step live. Register phase SP in the truth map (with required_fields/schema) "
+            f"to re-enable, or preview with --dry-run."
+        )
     contract_lane = resolve_contract_lane(step_contract)
     contract_repair_mode = resolve_contract_repair_mode(step_contract)
     contract_sidefill_enabled = resolve_contract_sidefill_enabled(step_contract)
@@ -15201,7 +15243,8 @@ else sdk_auth_present_flags(p_provider, True)
             request_meta_local["strict_route_attempts"] = strict_attempts
             request_meta_local["strict_route_attestations"] = strict_attestations
             parsed, provenance = parse_json_from_response_with_provenance(
-                response_text_local
+                response_text_local,
+                claimed_strict_route=bool(selected_route.get("strict_json_schema", False)),
             )
             finalized_provenance = finalize_response_parse_provenance(
                 provenance,
@@ -16149,6 +16192,9 @@ else sdk_auth_present_flags(p_provider, True)
                             "api_key_env": batch_api_key_env,
                             "job_id": batch_job_id,
                             "state": "submitted",
+                            "strict_json_schema": _batch_job_strict_json_schema(
+                                selected_route_entry
+                            ),
                             "submitted_at_utc": now_iso(),
                             "estimated_input_tokens": projected_input_tokens,
                             "estimated_output_tokens": projected_output_tokens,
@@ -19871,6 +19917,7 @@ def run_batch_watch(
                 parsed = parse_json_from_response(
                     response_text,
                     metadata_out=salvage_meta,
+                    claimed_strict_route=bool(row.get("strict_json_schema", False)),
                 )
                 artifacts = coerce_artifacts_from_response(
                     parsed=parsed,

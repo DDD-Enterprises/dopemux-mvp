@@ -775,7 +775,7 @@ def mcp_list_cmd():
             console.logger.info(f"  {name}{marker}")
 
 
-def _run_stdio_doctor(name: str, spec: Dict[str, Any], env: Dict[str, str]) -> List[str]:
+def _run_stdio_doctor(name: str, spec: Dict[str, Any], env: Dict[str, str], cwd: Path) -> List[str]:
     """Run a stdio server's configured non-mutating doctor command."""
     doctor_args = list(spec.get("doctor_args") or [])
     if not doctor_args:
@@ -793,6 +793,7 @@ def _run_stdio_doctor(name: str, spec: Dict[str, Any], env: Dict[str, str]) -> L
             timeout=10,
             check=False,
             env=env,
+            cwd=cwd,
         )
     except FileNotFoundError:
         return [f"`{name}`: doctor command not found: {command}"]
@@ -852,7 +853,7 @@ def mcp_doctor_cmd():
             if not env_source.get(env_key):
                 problems.append(f"`{name}`: required env `{env_key}` is unset.")
         if is_stdio:
-            problems.extend(_run_stdio_doctor(name, spec, doctor_env))
+            problems.extend(_run_stdio_doctor(name, spec, doctor_env, Path(repo)))
             continue
         if spec.get("port_var"):
             port_str = doctor_env.get(spec["port_var"])
