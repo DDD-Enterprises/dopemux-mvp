@@ -100,6 +100,7 @@ A packet is superseded by another packet
 | TP-DMX-DEPENDABOT-UV-RESOLVER-001 | Dependencies / CI | Repair Dependabot uv security update resolver metadata | Active | N/A |
 | TP-BETA-INSTALL-02-CLAUDE-REVIEW-001 | Installer | Apply Claude review cleanup to BETA-INSTALL-02 network repair | Active | N/A |
 | TP-BETA-INSTALL-01-MCP-01-REVIEW-001 | MCP Config | Repair PR #737 review blockers for portable Task Orchestrator launch | Active | N/A |
+| TP-BETA-CLI-01-DECISIONS-REVIEW-001 | CLI Decisions | Repair PR #740 review blockers for decisions CLI subcommands | Active | N/A |
 
 ────────────────────────────────────────────────────────────
 🟢 Completed Task Packets
