@@ -1,7 +1,10 @@
 docs/ops/autoreview-loop.md
+pyproject.toml
 proof/TP-DMX-AUTOREVIEW-E2E-105/**
+task-packets/generated/TP-DMX-AUTOREVIEW-E2E-105.json
 tests/fixtures/autoreview/offline_pr/**
 tests/integration/test_autoreview_loop.py
+uv.lock
 
 Final staged diff stat is captured by the commit and PR. This file lists the packet-scoped
 surfaces because proof artifacts are ignored by default until force-added.
