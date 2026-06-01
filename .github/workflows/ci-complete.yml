@@ -4,9 +4,10 @@ on:
   push:
     branches: [main]
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, ready_for_review]
   merge_group:
     types: [checks_requested]
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -244,12 +245,38 @@ jobs:
           tests/unit/test_cli_upgrades_commands.py
           -n auto --maxfail=1 --disable-warnings --no-cov
 
-  extractor-full:
-    name: "🧪 Extractor Full (Advisory)"
+  audit-validator:
+    name: "🔍 Audit Proof Validator (--all)"
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    outputs:
-      suite_status: ${{ steps.extractor_full.outputs.suite_status }}
+    timeout-minutes: 10
+    # Scope: machine-verifies that proof/.validator_scope.json + the in-scope
+    # PROOF.json corpus stays clean. Locks in TP-DMX-VALIDATOR-SCOPE-015 so
+    # the PR-body claim about "--all proof/" exit code can never silently
+    # drift. Required PR-gate check (registered in ci-summary gate block).
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 📦 Install jsonschema
+        run: python -m pip install --upgrade pip jsonschema
+
+      - name: ▶️ Validate in-scope proof bundles
+        run: |
+          python3 scripts/audit/validate_audit_proof.py --all proof/
+          # exit 1 if any in-scope bundle FAILs; exit 0 on clean run.
+
+  extractor-full:
+    name: "🧪 Extractor Full"
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
       - name: 📥 Checkout code
@@ -271,18 +298,42 @@ jobs:
       - name: 📦 Sync extractor full environment
         run: uv sync --frozen --extra test --extra services
 
-      - id: extractor_full
-        name: ▶️ Run extractor full lane (advisory)
+      - name: ▶️ Run extractor full gate
         run: |
-          set +e
-          uv run --frozen pytest services/repo-truth-extractor/tests -n auto --maxfail=1 --disable-warnings --no-cov
-          status=$?
-          if [ "$status" -eq 0 ]; then
-            echo "suite_status=passing" >> "$GITHUB_OUTPUT"
-          else
-            echo "suite_status=failing" >> "$GITHUB_OUTPUT"
-          fi
-          exit 0
+          PYTHONPATH=src uv run --frozen pytest \
+            services/repo-truth-extractor/tests/ \
+            -q --tb=short --disable-warnings --no-cov
+
+  auditor-router:
+    name: "🧪 Auditor Router"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: ⚡ Setup uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: 📦 Sync auditor-router environment
+        run: uv sync --frozen --extra test --extra services
+
+      - name: ▶️ Run auditor-router gate
+        run: |
+          PYTHONPATH=src uv run --frozen pytest \
+            tests/auditor_router/ \
+            -q --tb=short --disable-warnings --no-cov
 
   installer-smoke:
     name: "🧪 Installer Smoke"
@@ -371,7 +422,7 @@ jobs:
   ci-summary:
     name: "📊 CI Pipeline Summary"
     runs-on: ubuntu-latest
-    needs: [code-quality, security, docs, tests, extractor-smoke, extractor-full, installer-smoke, scoped-coverage, integration]
+    needs: [code-quality, security, docs, tests, extractor-smoke, audit-validator, extractor-full, auditor-router, installer-smoke, scoped-coverage, integration]
     if: always()
 
 
@@ -418,10 +469,22 @@ jobs:
             echo "🧪 **Extractor Smoke:** Failing - stabilize focused RTE regressions before merge." >> $GITHUB_STEP_SUMMARY
           fi
 
-          if [ "${{ needs.extractor-full.outputs.suite_status }}" == "passing" ]; then
-            echo "✅ **Extractor Full (Advisory):** Passing - broader RTE suite is currently clean." >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.audit-validator.result }}" == "success" ]; then
+            echo "✅ **Audit Proof Validator:** Passing - in-scope proof corpus is schema-clean." >> $GITHUB_STEP_SUMMARY
           else
-            echo "🧪 **Extractor Full (Advisory):** Failing - visible but non-blocking until stabilization completes." >> $GITHUB_STEP_SUMMARY
+            echo "🔍 **Audit Proof Validator:** Failing - proof/PROOF.json bundles need remediation. Run scripts/audit/validate_audit_proof.py --all proof/ locally." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.extractor-full.result }}" == "success" ]; then
+            echo "✅ **Extractor Full:** Passing - broader RTE suite is clean." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "🧪 **Extractor Full:** Failing - fix broader RTE regressions before merge." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.auditor-router.result }}" == "success" ]; then
+            echo "✅ **Auditor Router:** Passing - route safety tests are gated." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "🧪 **Auditor Router:** Failing - fix route safety regressions before merge." >> $GITHUB_STEP_SUMMARY
           fi
 
           # Advisory lanes
@@ -465,3 +528,33 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
           echo "*Powered by Dopemux ADHD-optimized CI/CD*" >> $GITHUB_STEP_SUMMARY
+
+          # ── PR Gate ────────────────────────────────────────────────────────
+          # Required blocking jobs (always run on PRs, never structurally skipped):
+          #   code-quality, tests, extractor-smoke, audit-validator,
+          #   extractor-full, auditor-router
+          # Advisory jobs (skipped on PRs via `if: github.event_name != 'pull_request'`
+          #   or structurally always-exit-0): security, docs, installer-smoke,
+          #   scoped-coverage, integration
+          # NOTE: branch protection truth is UNKNOWN; operator must verify that
+          #   "ci-summary" is registered as a required status check in branch protection.
+          code_quality="${{ needs.code-quality.result || 'missing' }}"
+          gate_tests="${{ needs.tests.result || 'missing' }}"
+          extractor_smoke="${{ needs.extractor-smoke.result || 'missing' }}"
+          audit_validator="${{ needs.audit-validator.result || 'missing' }}"
+          extractor_full="${{ needs.extractor-full.result || 'missing' }}"
+          auditor_router="${{ needs.auditor-router.result || 'missing' }}"
+          gate_ok=true
+          [ "$code_quality"    != "success" ] && gate_ok=false
+          [ "$gate_tests"      != "success" ] && gate_ok=false
+          [ "$extractor_smoke" != "success" ] && gate_ok=false
+          [ "$audit_validator" != "success" ] && gate_ok=false
+          [ "$extractor_full"  != "success" ] && gate_ok=false
+          [ "$auditor_router"  != "success" ] && gate_ok=false
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "$gate_ok" = "false" ]; then
+            echo "### ❌ PR Gate: BLOCKED" >> $GITHUB_STEP_SUMMARY
+            echo "Required checks failed: code-quality=$code_quality tests=$gate_tests extractor-smoke=$extractor_smoke audit-validator=$audit_validator extractor-full=$extractor_full auditor-router=$auditor_router" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          echo "### ✅ PR Gate: CLEAR" >> $GITHUB_STEP_SUMMARY

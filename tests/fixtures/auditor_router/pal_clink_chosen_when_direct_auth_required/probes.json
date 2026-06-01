@@ -1,0 +1,22 @@
+{
+  "direct_routes": [
+    {
+      "tool": "agy",
+      "status": "AUTH_REQUIRED",
+      "risk": "MEDIUM",
+      "reason": "Fixture AGY auth is unavailable."
+    },
+    {
+      "tool": "claude-code-cli",
+      "status": "AUTH_REQUIRED",
+      "risk": "MEDIUM",
+      "reason": "Fixture Claude auth is unavailable."
+    },
+    {
+      "tool": "gemini-cli",
+      "status": "AUTH_REQUIRED",
+      "risk": "MEDIUM",
+      "reason": "Fixture Gemini auth is unavailable."
+    }
+  ]
+}

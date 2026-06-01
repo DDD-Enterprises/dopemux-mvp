@@ -16,7 +16,7 @@ prelude: System Taskorchestrator (reference) for dopemux documentation and devel
 
 Task Orchestrator is the workflow-coordination service surface for dopemux. In the inspected runtime code it exposes HTTP, WebSocket, and MCP surfaces for workflow idea/epic operations, project workflow views, PM-plane write routing, and cross-plane coordination.
 
-This service must not be confused with the upstream 13-tool stdio MCP Task Orchestrator container used by Codex and `dopemux mcp` local configs. The upstream stdio MCP runtime is launched through `/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh` and stores repo-scoped SQLite state under the operator's local data directory. The in-repo service described here is the Dopemux FastAPI workflow service.
+This service must not be confused with the upstream 13-tool stdio MCP Task Orchestrator container used by Codex and `dopemux mcp` local configs. The upstream stdio MCP runtime is launched through the tracked repo wrapper `scripts/mcp-wrappers/task-orchestrator-current-stdio.sh` and stores repo-scoped SQLite state under the operator's local data directory. The in-repo service described here is the Dopemux FastAPI workflow service.
 
 Its canonical authority slice is narrow:
 - workflow-significant API behavior and transition routing exposed by `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/main.py`, `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/api/project_workflow.py`, and `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/api/pm_tools.py`
@@ -58,7 +58,7 @@ It does not own durable PM entity truth, chronicle truth, or structured retrieva
 
 - Canonical runtime code: `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/main.py`
 - Canonical stdio MCP wrapper: `/Users/hue/code/dopemux-mvp/services/task-orchestrator/mcp_stdio.py`
-- Upstream 13-tool stdio MCP launcher for Codex/local MCP clients: `/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh`
+- Upstream 13-tool stdio MCP launcher for Codex/local MCP clients: `scripts/mcp-wrappers/task-orchestrator-current-stdio.sh`
 - Unsupported runtime variant: `/Users/hue/code/dopemux-mvp/services/task-orchestrator/task_orchestrator/app.py`
   This file exits immediately and says to use `app/main.py`.
 - Container/runtime packaging surface: `/Users/hue/code/dopemux-mvp/services/task-orchestrator/Dockerfile`
@@ -67,8 +67,8 @@ It does not own durable PM entity truth, chronicle truth, or structured retrieva
 Active ports observed in code/config:
 - `8000` is the current compose/registry/container port.
   Evidence: `/Users/hue/code/dopemux-mvp/compose.yml`, `/Users/hue/code/dopemux-mvp/docker/compose.core.yml`, and `/Users/hue/code/dopemux-mvp/services/registry.yaml` map Task Orchestrator to `8000`; `/Users/hue/code/dopemux-mvp/services/task-orchestrator/Dockerfile` sets `PORT=8000`, exposes `8000`, and health-checks `http://localhost:8000/health`.
-- `3014` remains an intended or historical runtime port in code.
-  Evidence: `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/main.py` uses `os.getenv("PORT", 3014)` for `/info` and `__main__`; `/Users/hue/code/dopemux-mvp/services/task-orchestrator/task_orchestrator/app.py` declares `app/main.py (Port 3014)`.
+- `3014` remains only as legacy or archival text outside current runtime authority.
+  Evidence: current runtime code/config uses `8000`; any remaining `3014` mention must be treated as historical unless a current entrypoint, adapter, compose file, registry entry, or Dockerfile proves otherwise.
 
 Primary APIs and transports:
 - HTTP health and discovery: `/health`, `/info`, `/metrics`
@@ -125,7 +125,7 @@ Storage surfaces:
 - Operational
   `/Users/hue/code/dopemux-mvp/compose.yml`, `/Users/hue/code/dopemux-mvp/docker/compose.core.yml`, and `/Users/hue/code/dopemux-mvp/services/registry.yaml` for current exposed port `8000`.
   `/Users/hue/code/dopemux-mvp/services/task-orchestrator/mcp_stdio.py` for stdio MCP launch.
-  `/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh` for the upstream 13-tool stdio MCP runtime used by Codex/local MCP config.
+  `scripts/mcp-wrappers/task-orchestrator-current-stdio.sh` for the upstream 13-tool stdio MCP runtime used by Codex/local MCP config.
 
 - Unknown
   The repo-wide relationship between the in-repo FastAPI workflow service and the upstream 13-tool stdio MCP Task Orchestrator remains a boundary, not a unified runtime contract.
@@ -136,7 +136,7 @@ Storage surfaces:
 - Runtime entrypoint drift:
   `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/main.py` is the active runtime code, and the current Dockerfile launches `app.main:app` on port `8000`. Older docs and local MCP config may still point at `task_orchestrator.app`, which is an unsupported hard-failing entrypoint.
 - Port drift:
-  `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/main.py` defaults to `3014`, while `/Users/hue/code/dopemux-mvp/services/task-orchestrator/Dockerfile`, `/Users/hue/code/dopemux-mvp/compose.yml`, `/Users/hue/code/dopemux-mvp/docker/compose.core.yml`, and `/Users/hue/code/dopemux-mvp/services/registry.yaml` all use `8000`.
+  Current adapter/runtime/container wiring aligns on `8000`: `/Users/hue/code/dopemux-mvp/src/dopemux/pm/adapters/orchestrator.py`, `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/main.py`, `/Users/hue/code/dopemux-mvp/services/task-orchestrator/Dockerfile`, `/Users/hue/code/dopemux-mvp/compose.yml`, `/Users/hue/code/dopemux-mvp/docker/compose.core.yml`, and `/Users/hue/code/dopemux-mvp/services/registry.yaml`. Remaining `3014` mentions are legacy or archival until direct runtime evidence proves otherwise.
 - Bridge-backed persistence means local storage ownership is absent:
   `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/services/workflow_store.py` stores workflow data via DopeconBridge custom-data categories instead of a Task Orchestrator-owned database.
 - Health-monitor target mismatch:
@@ -150,7 +150,7 @@ Storage surfaces:
 
 - Treat `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/main.py` as the strongest runtime-code authority for this system.
 - Treat `8000` as the current compose/registry/container port in this checkout.
-- Preserve `3014` explicitly as unresolved intended or historical port truth still present in code.
+- Preserve `3014` only as legacy or archival drift unless current runtime code/config proves it is active again.
 - Do not document `task_orchestrator/app.py` as a usable runtime; it is a hard-failing path.
 - Do not describe Task Orchestrator as owning its own workflow database unless that becomes true in runtime code.
 - Treat bridge-mediated workflow storage as a dependency boundary, not as proof that DopeconBridge is the workflow authority.

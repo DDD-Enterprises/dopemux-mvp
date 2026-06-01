@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "action_plan.schema.json",
+  "title": "PRActionPlan",
+  "description": "Read-only action plan produced by the PR Action Bridge compiler. Never mutates GitHub.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "pr_number",
+    "repo",
+    "readiness",
+    "actions",
+    "mutation_performed"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "generated_at": {
+      "type": "string",
+      "description": "ISO 8601 UTC timestamp",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+    },
+    "pr_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "repo": {
+      "type": "string",
+      "description": "owner/repo"
+    },
+    "readiness": {
+      "type": "string",
+      "enum": ["READY", "NOT_READY", "NEEDS_SUPERVISOR", "NEEDS_IMPLEMENTER", "BLOCKED"]
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Action"
+      }
+    },
+    "mutation_performed": {
+      "type": "boolean",
+      "const": false,
+      "description": "Always false — this compiler never mutates GitHub"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "readiness": {"const": "READY"}
+        },
+        "required": ["readiness"]
+      },
+      "then": {
+        "properties": {
+          "actions": {
+            "maxItems": 0
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "Action": {
+      "type": "object",
+      "required": [
+        "id",
+        "category",
+        "target_role",
+        "source_blocker",
+        "source_item_id",
+        "rationale"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Stable action ID, e.g. action-0001"
+        },
+        "category": {
+          "type": "string",
+          "description": "Kebab-case action category locked to classifier blocker taxonomy",
+          "enum": [
+            "harvest-incomplete",
+            "pr-is-draft",
+            "pr-closed",
+            "mixed-sha",
+            "unknown-reviewer",
+            "proof-stale",
+            "proof-missing",
+            "unknown-pr-author",
+            "unknown-check",
+            "needs-supervisor",
+            "embedded-audit-failed",
+            "unresolved-thread",
+            "failed-check",
+            "request-changes",
+            "must-fix",
+            "pending-check"
+          ]
+        },
+        "target_role": {
+          "type": "string",
+          "enum": ["supervisor", "implementer", "ci"]
+        },
+        "source_blocker": {
+          "type": "string",
+          "description": "Exact blocker string from merge_readiness.blockers"
+        },
+        "source_item_id": {
+          "type": ["string", "null"],
+          "description": "ID of the ledger/thread/ci item that caused this action, or null"
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

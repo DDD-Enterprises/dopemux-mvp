@@ -1,0 +1,79 @@
+{
+  "id": "TP-DMX-ORCH-014A",
+  "project": "dopemux-mvp",
+  "target": "Add formal Dopemux-compatible transition proof envelope to Kotlin task-orchestrator mutation responses",
+  "invariants": [
+    "Proof envelope requires receipt metadata",
+    "Canonical writer remains task-orchestrator",
+    "Local implementation defines the Dopemux-compatible envelope contract only"
+  ],
+  "depends_on": [
+    "TP-DMX-ORCH-013"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ORCH-INTEGRATION",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-ORCH-013",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-orch-007-plugin-hooks",
+    "base_branch": "codex/tp-dmx-orch-007-plugin-hooks",
+    "stacked_because": "The remaining DMX-ORCH packets were implemented as bounded fail-closed local workflow surfaces after TP-DMX-ORCH-007."
+  },
+  "commit": {
+    "message": "feat(orchestrator): add remaining operator workflows",
+    "allowlist": [
+      "config/orchestrator/approval_policy.yaml",
+      "src/dopemux/orchestrator/operator_workflows.py",
+      "src/dopemux/commands/orchestrator_commands.py",
+      "tests/unit/orchestrator/test_operator_workflows.py",
+      "task-packets/generated/TP-DMX-ORCH-014A.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-014A/PROOF.json"
+    ],
+    "verify": [
+      ".venv/bin/python -m pytest -q tests/unit/orchestrator/test_operator_workflows.py",
+      ".venv/bin/python -m dopemux.cli orchestrator policy classify orchestrator.transition.proof.validate --json-output"
+    ]
+  },
+  "pr": {
+    "title": "feat(orchestrator): define transition proof envelope",
+    "body": "Adds the local validation contract for task-orchestrator transition proof envelopes.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "transition_proof_contract",
+      "task": "Define the required transition proof envelope fields and validator contract.",
+      "validation": [
+        "Envelope requires workflow_id, transition, idempotency_key, actor, canonical_writer, and receipt",
+        "Missing receipt fails closed",
+        "Non task-orchestrator canonical writer fails closed"
+      ],
+      "expected_files": [
+        "src/dopemux/orchestrator/operator_workflows.py",
+        "src/dopemux/commands/orchestrator_commands.py",
+        "tests/unit/orchestrator/test_operator_workflows.py"
+      ]
+    }
+  ]
+}

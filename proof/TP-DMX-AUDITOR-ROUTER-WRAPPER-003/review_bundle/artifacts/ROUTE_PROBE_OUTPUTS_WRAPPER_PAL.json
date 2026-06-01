@@ -1,0 +1,57 @@
+{
+  "direct_routes": [
+    {
+      "reason": "Fixture AGY auth is unavailable.",
+      "risk": "MEDIUM",
+      "status": "AUTH_REQUIRED",
+      "tool": "agy"
+    },
+    {
+      "reason": "Fixture Claude auth is unavailable.",
+      "risk": "MEDIUM",
+      "status": "AUTH_REQUIRED",
+      "tool": "claude-code-cli"
+    },
+    {
+      "reason": "Fixture Gemini auth is unavailable.",
+      "risk": "MEDIUM",
+      "status": "AUTH_REQUIRED",
+      "tool": "gemini-cli"
+    }
+  ],
+  "external_cli_called_for_pal_clink": false,
+  "fallback_routes": [],
+  "packet_id": "TP-DMX-AUDITOR-ROUTER-WRAPPER-003",
+  "pal_clink_routes": [
+    {
+      "audit_safe_config_proven": true,
+      "auth_status": "NOT_CHECKED",
+      "clink_client_name": "claude-audit",
+      "clink_config_path": "tests/fixtures/auditor_router/pal_clink_chosen_when_direct_auth_required/clink_configs/claude-audit.json",
+      "clink_mutation_flags_detected": [],
+      "clink_role": "codereviewer",
+      "executable": null,
+      "help_command": null,
+      "help_exit_code": null,
+      "installed": true,
+      "invocation_template": "pal-clink --client claude-audit --role codereviewer --input PAL_CLINK_AUDIT_INPUT.md --output PAL_CLINK_AUDIT_OUTPUT.json",
+      "model": "claude-audit",
+      "model_selector_proven": true,
+      "noninteractive_mode_proven": true,
+      "reason": "Audit-safe PAL clink config is available by static inspection.",
+      "repo_context_sent": false,
+      "requires_operator_approval": true,
+      "risk": "LOW",
+      "status": "AVAILABLE",
+      "timeout_used": false,
+      "tool": "pal-mcp-clink",
+      "tools_disabled": true,
+      "underlying_cli": "claude",
+      "version": null
+    }
+  ],
+  "pal_mcp_called": false,
+  "repo_context_sent": false,
+  "selected_status": "AVAILABLE",
+  "selected_tool": "pal-mcp-clink"
+}

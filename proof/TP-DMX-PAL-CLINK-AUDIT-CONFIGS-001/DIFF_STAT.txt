@@ -1,0 +1,19 @@
+ .../conf/cli_clients/claude-audit.json             |  22 +++
+ .../conf/cli_clients/gemini-audit.json             |  22 +++
+ .../pal/pal-mcp-server/docs/tools/clink.md         |  17 +++
+ .../tests/test_clink_audit_configs.py              | 108 ++++++++++++++
+ .../CHANGED_FILES.txt                              |  18 +++
+ .../DIFF_STAT.txt                                  |  19 +++
+ .../GIT_STATE.md                                   |  14 ++
+ .../TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001/PROOF.json  | 141 +++++++++++++++++++
+ .../VALIDATION_OUTPUT.md                           |  36 +++++
+ .../review_bundle/ARTIFACT_INDEX.md                |   9 ++
+ .../review_bundle/CHANGED_FILES.txt                |   1 +
+ .../review_bundle/DIFF_STAT.txt                    |   1 +
+ .../review_bundle/GIT_STATE.md                     |   5 +
+ .../review_bundle/MANIFEST.json                    |  16 +++
+ .../review_bundle/PROOF.json                       |  11 ++
+ .../review_bundle/SUMMARY.md                       |  13 ++
+ .../review_bundle/VALIDATION_OUTPUT.md             |   5 +
+ .../TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001.json        | 156 +++++++++++++++++++++
+ 18 files changed, 614 insertions(+)

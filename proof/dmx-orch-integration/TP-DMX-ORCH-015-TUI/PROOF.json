@@ -1,0 +1,81 @@
+{
+  "tp_id": "TP-DMX-ORCH-015-TUI",
+  "objective": "Implement the orchestrator TUI under src/dopemux/tui/** and src/dopemux/orchestrator/ui/** with the eight read-only panels declared in DASHBOARD_PANELS",
+  "starting_head": "628c8565d503c233c99f4567abf699e41b7988e2",
+  "ending_head": "SELF_REFERENTIAL_COMMIT_SHA_REPORTED_IN_CLOSEOUT",
+  "branch": "claude/tp-dmx-orch-followup-packets",
+  "base_branch": "main",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED",
+  "created_at": "2026-05-28T17:40:00Z",
+  "manifest": {
+    "bundle_id": "TP-DMX-ORCH-015-TUI-PROOF",
+    "packet_id": "TP-DMX-ORCH-015-TUI",
+    "generated_artifacts": [
+      "src/dopemux/tui/__init__.py",
+      "src/dopemux/tui/app.py",
+      "src/dopemux/tui/widgets/today.py",
+      "src/dopemux/tui/widgets/authority.py",
+      "src/dopemux/tui/widgets/packets.py",
+      "src/dopemux/tui/widgets/proof.py",
+      "src/dopemux/tui/widgets/risks.py",
+      "src/dopemux/tui/widgets/pr_queue.py",
+      "src/dopemux/tui/widgets/context.py",
+      "src/dopemux/tui/widgets/do_not_touch.py",
+      "src/dopemux/orchestrator/ui/__init__.py",
+      "src/dopemux/orchestrator/ui/data_sources.py",
+      "tests/unit/tui/test_app.py",
+      "tests/unit/tui/test_widgets.py",
+      "tests/unit/orchestrator/test_ui_data_sources.py",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-015-TUI/PROOF.json"
+    ]
+  },
+  "authoritative_artifacts": [
+    "task-packets/generated/TP-DMX-ORCH-015-TUI.json"
+  ],
+  "supporting_artifacts": [
+    "proof/dmx-orch-integration/TP-DMX-ORCH-015-TUI/PROOF.json"
+  ],
+  "chain_of_custody": {
+    "documented": true,
+    "source_version": "TP-DMX-ORCH-015-TUI",
+    "created_at": "2026-05-28T17:40:00Z",
+    "parent_bundle_ids": [
+      "TP-DMX-ORCH-015"
+    ]
+  },
+  "validation_commands": [
+    {
+      "command": ".venv/bin/pytest tests/unit/orchestrator/test_ui_data_sources.py",
+      "exit_code": 0,
+      "summary": "PASS: data sources unit tests verifying today, authority, packets, proof, risks, and refusal matrix snapshots are deterministic and offline-mocked."
+    },
+    {
+      "command": ".venv/bin/pytest tests/unit/tui",
+      "exit_code": 0,
+      "summary": "PASS: TUI unit tests verifying individual widgets rendering, and app telemetry layout boot, keybindings, and headless once run under mock event loops."
+    },
+    {
+      "command": ".venv/bin/python -m dopemux.cli orchestrator perpacket validate TP-DMX-ORCH-015-TUI",
+      "exit_code": 0,
+      "summary": "PASS: isolated per-packet schema and proof verification returns Valid: True."
+    }
+  ],
+  "warnings": [],
+  "blockers": [],
+  "not_run": [],
+  "residual_risks": [
+    "Textual snapshot stability across CI environments can be brittle; the implementation must pin Textual version and use deterministic terminal-size fixtures.",
+    "Action buttons that surface but do not perform a mutation can mislead operators if approval-prompt UX drifts from the CLI behavior — a single approval-phrase source of truth must back both."
+  ],
+  "rollback_plan": [
+    "Remove src/dopemux/tui/ and src/dopemux/orchestrator/ui/ in their entirety.",
+    "Revert the `orchestrator tui` CLI subcommand in src/dopemux/commands/orchestrator_commands.py.",
+    "Remove tests/unit/tui/ and tests/snapshots/tui/.",
+    "Remove task-packets/generated/TP-DMX-ORCH-015-TUI.json and its proof bundle."
+  ],
+  "commit_sha": null,
+  "commit_sha_policy": "Populated by merging PR or reported in CLI final closeout",
+  "pr_url": null,
+  "cleanup_status": "CLEAN"
+}

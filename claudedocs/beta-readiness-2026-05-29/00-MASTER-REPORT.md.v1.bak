@@ -1,0 +1,242 @@
+# Dopemux Beta-Readiness Audit — Master Report
+
+## Run Metadata
+
+| Field | Value |
+|-------|-------|
+| HEAD | `755bf38460d1f2f6bba6e072ec9a627e9e218b15` (`755bf3846`) |
+| Branch | `claude/hopeful-shirley-656b07` |
+| Worktree | `/Users/hue/code/dopemux-mvp/.claude/worktrees/hopeful-shirley-656b07` |
+| Date | 2026-05-29 |
+| Mode | Read-only audit; every inherited claim re-verified against code at THIS HEAD |
+| Evidence convention | `path:line`; observed vs inferred separated; `UNKNOWN` where unconfirmable |
+
+---
+
+## Executive Summary
+
+NOT public-ready; internal dogfood is close but gated. Verdict at HEAD 755bf3846. PUBLIC-BETA is blocked by three independently-confirmed classes: (1) install path — the committed .mcp.json:25 hardcodes /Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh with no installer rewrite, so the task-orchestrator MCP is dead on every non-author clone; (2) multi-instance safety — no per-instance Redis (instance_overlay.write_compose_override never remaps redis-primary) and ADHD-engine keys are user-scoped only, so two worktrees for the same user collide on attention/break/profile state; (3) cold-start races — compose.yml uses condition: service_started (bare-list depends_on) for conport/task-orchestrator/adhd-engine. INTERNAL-BETA is gated by RV-3 (the `decisions` CLI group ships only energy+patterns; review/list/show/update-outcome/query are absent) and by the agent-wrapping live-run path being UNASSESSABLE (the AGENT-WRAPPING SPEC arrived empty {} — no work_breakdown was provided, so I cannot fold wrapping build-items in or confirm that codex/copilot/claude/vanilla wrapping actually runs). A known regression is also live: PR #720 stripped the orchestrator /dx: command surface — .claude/commands/dx/ now contains only implement.md (Wave 0 restore). Re-verification CLEARED several inherited fears: RV-2 (routing NameError) is genuinely fixed, RV-6 (litellm hard-import) is fixed, RV-10 has a stop_hook_active re-entry guard so it is friction not a hard lockup, and MCP-9's worktree-isolation residual is refuted because ConPort's _ensure_schema() idempotently adds instance_id at boot. Top risks to close first: clean-machine install (task-orchestrator path), then the dual data-integrity gaps (Redis multi-instance + startup races), then RV-3.
+
+---
+
+## Re-verification of Inherited Findings
+
+| ID | Verdict | Confidence | Claim |
+|----|---------|-----------|-------|
+| RV-2 | RESOLVED | certain | Routing mode switch is broken: `_set_routing_mode` references an undefined `content` variable (NameError) |
+| RV-3 | CONFIRMED | certain | `decisions` subcommands missing: only energy/patterns registered; review/list/show/update-outcome/query absent |
+| RV-6 | RESOLVED | high | mobile/tmux commands hard-require litellm and break (ImportError) if it is not installed |
+| RV-7 | PARTIAL | high | Redis keys are NOT namespaced per workspace — two instances on shared redis-primary collide (e.g. `adhd:state:*`) |
+| RV-9 | CONFIRMED | certain | compose.yml `depends_on` uses `condition: service_started` (not `service_healthy`) so dependents (task-orchestrator/adhd-engine/dope-context/conport) race startup |
+| RV-10 | PARTIAL | high | Stop hook can trap the user: blocks session exit (EXIT_BLOCK) with no timeout or reset when a workflow is mid-phase |
+| RV-11 | PARTIAL | high | Dead/duplicate services: `services/dope-query` is empty, `services/router` is only `__init__`, dope-memory duplicates working-memory-assistant |
+
+### RV-2 — RESOLVED (certain)
+
+- `src/dopemux/routing_cli.py:548-569` — `_set_routing_mode` at HEAD 755bf3846 defines/uses only `loaded`, `rendered`, `tmp_path`; writes via `rendered = yaml.safe_dump(loaded, sort_keys=False)` (L564) then `tmp_path.write_text(rendered, ...)` (L568). No `content` variable exists.
+- Bash `rg "\bcontent\b" src/dopemux/routing_cli.py` returns exit code 1 (zero matches) — the `content` token is absent from the entire file at this HEAD.
+- `git show 8765535a1:src/dopemux/routing_cli.py` — the BROKEN historical version: `_set_routing_mode` body contained `config_path.write_text(content)` with `content` never assigned (only `loaded` is built), which would raise NameError. This is the state the prior (≤2026-05-01) audit captured.
+- `git log -S 'rendered = yaml.safe_dump'` — commits 8765535a1 / 3bb5464db (Fri May 1 23:55:54 2026) reverted the safe write back to `config_path.write_text(content)` (introducing the NameError); commit f6df0bdbd 'fix(cli): recover audit hardening tranche' (Thu May 7 02:41:19 2026) restored `rendered`/`tmp_path.write_text(rendered)`, fixing it. f6df0bdbd is an ancestor of HEAD 755bf3846.
+- `src/dopemux/routing_cli.py:190,221` — callers `dopemux routing api` -> `_set_routing_mode(config_path, 'api')` and `dopemux routing direct` -> `_set_routing_mode(config_path, 'subscription')`; both reach the fixed function body. (Note: the CLI subcommands are named `api` and `direct`, not `routing mode api|direct` as the claim's repro hint implies.)
+- `tests/unit/test_cli_audit_remediations.py:86` — the only `content` reference is a LOCAL test variable (`content = config_path.read_text(...)`), unrelated to the function under test; it does not indicate a bug in `_set_routing_mode`.
+
+### RV-3 — CONFIRMED (certain)
+
+- `src/dopemux/commands/decisions_commands.py:22-31` — `@click.group()` defines `decisions`, body is `pass` (no inline commands)
+- `src/dopemux/commands/decisions_commands.py:34-43` — `@decisions.group()` registers `energy` subgroup (body `pass`)
+- `src/dopemux/commands/decisions_commands.py:46-55` — `@decisions.group()` registers `patterns` subgroup (body `pass`)
+- `src/dopemux/commands/decisions_commands.py:57-59` — explicit source comment: 'No concrete decision-management callbacks are present in this module today.'
+- `rg '^@'` over the 66-line file returns exactly 3 decorators (lines 22, 34, 46) — energy/patterns are the only subgroups; no `@decisions.command` / `@energy.command` / `@patterns.command` / `add_command` anywhere
+- review|list|show|update-outcome|query — zero matches in decisions_commands.py
+- `src/dopemux/cli.py:3111,3113` — `decisions` group is imported and wired via `cli.add_command(decisions)`, so the group is live but exposes only the two empty subgroups
+
+### RV-6 — RESOLVED (high)
+
+- `src/dopemux/cli.py:179-199` — mobile/mobile-env import block wrapped in `try/except ModuleNotFoundError`; catches missing litellm (re-raises any other missing module) and substitutes `_unavailable_group` stubs + no-op `mobile_task_notification`/`update_tmux_mobile_indicator`
+- `src/dopemux/cli.py:208-215` — tmux import block wrapped in `try/except ModuleNotFoundError`; on missing litellm substitutes `tmux_commands = _unavailable_group('Tmux commands are unavailable because the litellm package is not importable.')`
+- `src/dopemux/cli.py:102-107` — `_unavailable_group` returns a `click.Group` that raises a clean `ClickException` only when invoked, not at import time (so the CLI loads successfully without litellm)
+- `src/dopemux/cli.py:3119-3121` — `cli.add_command(mobile_commands,'mobile')`, `mobile_env_commands('mobile-env')`, `tmux_commands('tmux')`: registration uses the guarded names, so registration cannot crash on missing litellm
+- `src/dopemux/litellm_proxy.py:20` — bare `import litellm  # type: ignore` at module top; raises `ModuleNotFoundError(name='litellm')` when absent (the real transitive dependency)
+- `src/dopemux/tmux/__init__.py:3` — `from .cli import tmux`, and `src/dopemux/tmux/cli.py:33` `from ..litellm_proxy import (...)` — confirms the tmux group transitively imports litellm; without the guard, importing the CLI would crash
+- `git show 15b650647~1:src/dopemux/cli.py` lines 130 & 142 — BEFORE commit 15b650647 the imports were bare (`from .mobile import mobile as mobile_commands`, `from .tmux import tmux as tmux_commands`) with no try/except; claim WAS true at that earlier state
+- commit 15b650647 (fix(rte): cost-profile series full-suite repair, F-FULLSUITE-REPAIR) — `git log -L` on cli.py:179,215 shows this commit added the `try/except ModuleNotFoundError` guards for both mobile and tmux, i.e. the fix
+
+### RV-7 — PARTIAL (high)
+
+- `services/adhd_engine/adhd_config_service.py:288` — `redis_key = f"adhd:attention_state:{user_id}"` (read); also :316 `adhd:energy_level:{user_id}`, :349 `adhd:profile:{user_id}`. All state-bearing keys are keyed by user_id ONLY — no workspace component.
+- `services/adhd_engine/adhd_config_service.py:47,56` — `ADHDConfigService.__init__(self, redis_url, workspace_id)` stores `self.workspace_id`, but grep confirms it is NEVER interpolated into any Redis key. The param is dead for namespacing.
+- `services/adhd_engine/adhd_config_service.py:489-490` — default `redis_url="redis://localhost:6379/5"`, `workspace_id="/Users/hue/code/dopemux-mvp"` hardcoded.
+- `services/adhd_engine/api/routes.py:221-227` — `_make_cache_key()` builds `adhd:{endpoint}:{user_id}` with NO workspace part; used for energy/attention/break/activity cache keys (lines 324,404,464,640).
+- `services/adhd_engine/api/routes.py:611-612` — profile persisted as `adhd:profile:{request.user_id}` via `cache.set(...)`; routes.py:653-654 activity as `adhd:activity:{user_id}:latest`/`:history`. All user_id-only.
+- `services/adhd_engine/engine.py:225,288(config),1078,1221,1650` — writer/reader keys `adhd:last_break:{user_id}`, `adhd:hyperfocus_start:{user_id}`, `adhd:session_start:{user_id}` are user_id-only.
+- `services/adhd_engine/engine.py:246` (and `services/adhd_engine/core/engine.py:258`) — `redis_client.keys("adhd:profile:*")` global scan, no workspace scoping → loads ALL profiles regardless of workspace.
+- `services/adhd_engine/docker/mcp-servers/shared/cache.py:93-124` (set) and :61-91 (get) — `RedisCache` stores/reads the key VERBATIM; no workspace prefix injected. `self.prefixes` (:38-44) are workspace-independent and bypassed by callers passing full keys.
+- `services/adhd_engine/docker/mcp-servers/shared/redis_pool.py:32` — `self.redis_url = os.getenv("REDIS_URL", "redis://redis-primary:6379")`; :62 `redis.from_url(...)` default DB 0. Two instances → same host, same DB, same un-prefixed keys.
+- `compose.yml:93-105,250,404,438,598` — `redis-primary` is a single shared container; multiple services point at `REDIS_URL=redis://redis-primary:6379`. No per-workspace DB or instance.
+- COUNTEREXAMPLES (why PARTIAL, not CONFIRMED): `services/adhd_engine/engine.py:1165,1171` `adhd:break_recommendations:{self.workspace_id}`, :1256 `adhd:hyperfocus_warnings:{self.workspace_id}`, :1600,1605 `adhd:notifications:{self.workspace_id}` ARE workspace-namespaced and collision-safe across workspaces (mirrored in core/engine.py:1161-1591).
+- `services/adhd-dashboard/backend.py:260` — `pubsub.psubscribe("adhd:state_changes:*")`: closest literal match to the claim's `adhd:state:*`, also un-namespaced. No literal `adhd:state:` key exists in the codebase.
+
+### RV-9 — CONFIRMED (certain)
+
+- `compose.yml:256-260` — conport `depends_on` is short-form list (`- postgres` / `- redis-primary` / `- mcp-qdrant` / `- dopecon-bridge`); no `condition` key, so per the Compose spec this is `condition: service_started` (waits for container start, not health)
+- `compose.yml:344-345` — dope-context `depends_on: - mcp-qdrant` (short-form list = service_started; races qdrant readiness)
+- `compose.yml:414-417` — task-orchestrator `depends_on: - redis-primary` / `- conport` / `- leantime` (short-form list = service_started; does not wait for conport/leantime health)
+- `compose.yml:445-446` — adhd-engine `depends_on: - redis-primary` (short-form list = service_started; does not wait for redis health)
+- `compose.yml:168,379,381,485,487` — 5 explicit `condition: service_healthy` gates exist on OTHER services (leantime->mysql, dopecon-bridge->postgres+redis-events, dope-memory->2 deps); proves the file is NOT uniformly service_started, so RV-9 must stay scoped to the 4 named services
+- `compose.yml:170,383` — the only two explicit `condition: service_started` strings belong to leantime->redis_leantime and dopecon-bridge->mcp-qdrant, i.e. NOT the four named services; the four named services express service_started via short-form list rather than an explicit key
+
+### RV-10 — PARTIAL (high)
+
+- `src/dopemux/claude/native_hooks.py:370-373` — `_on_stop` returns `_block_stop(...)` when an active workflow is mid-phase and not stop-safe (TRUE part of claim)
+- `src/dopemux/claude/native_hooks.py:141-150` + :46 — `_block_stop` emits `decision='block'` and exits with EXIT_BLOCK=2 (confirms the block + exit code)
+- `src/dopemux/claude/native_hooks.py:188-193` — Stop/SubagentStop route to `_on_stop`, but SessionEnd routes to `_on_session_end`
+- `src/dopemux/claude/native_hooks.py:383-394` — `_on_session_end` ALWAYS returns `_allow()`; the user ending the session is never blocked. The gate targets the agent's mid-turn stop, not 'session exit' (refutes 'trap the user')
+- `src/dopemux/claude/native_hooks.py:347-348` — `stop_hook_active` re-entry guard: on the second Stop in a loop the hook `_allow()`s. This IS a reset (re-entry-based), contradicting 'no reset' (OBSERVED guard; 'bounds to one extra turn' INFERRED from documented Claude Code semantics)
+- `src/dopemux/claude/native_hooks.py:344-345` + :152-160 — block only reachable when `_active_state()` is non-None (a workflow with status ACTIVE/PAUSED exists); no active workflow => immediate `_allow()`. Narrows scope to mid-run workflows only
+- `src/dopemux/claude/native_hooks.py:162-169` vs :245 — `_elapsed_minutes` exists but is used only in the user-prompt/attempt path (line 245), NEVER in `_on_stop`, so 'no timeout' is TRUE
+- `src/dopemux/workflow/models.py:109-112` — `is_stop_safe` (COMPLETE/APPROVED/SKIPPED) provides a non-time escape; combined with completion-token path at native_hooks.py:364 the block is escapable by content
+- `git log -S 'stop_hook_active' / '_block_stop' -- native_hooks.py` — both introduced in same commit 9d44b8936; the re-entry reset is co-original with the block, so this is not a later fix (rules out RESOLVED)
+
+### RV-11 — PARTIAL (high)
+
+- `services/dope-query` — REFUTED on 'empty': directory contains 2 files, NOT empty. `find services/dope-query` lists `services/dope-query/auth/models.py` (header at services/dope-query/auth/models.py:1-22 = 'ConPort-KG Authentication Models', SQLAlchemy User model) and `services/dope-query/tests/test_password_utils.py:1-19` (imports `conport_kg.auth.password_utils`). Status: non-empty; appears unreferenced by compose.yml and services/registry.yaml; only appears in docs/reports (SERVICE_CATALOG.md, docs/**). Relationship to conport_kg auth NOT traced — possible stale duplicate, UNKNOWN.
+- `services/router` — CONFIRMED on 'only __init__': `ls services/router` shows exactly one file, `services/router/__init__.py` (123 bytes). Full contents = only `__version__='0.1.0'` and `__service_name__='dopemux-router'` (services/router/__init__.py:1-5); no classes/functions. Not referenced as a service in compose.yml or services/registry.yaml (grep returns no service entry). The only `from router import CommandRouter` hit (services/session-manager/src/main.py:29) CANNOT resolve to this package because services/router/__init__.py defines no `CommandRouter` symbol. So: stub-only and not wired as a runnable service.
+- dope-memory vs working-memory-assistant — REFUTED on 'duplicates': not a duplicate. The runnable `dope-memory` compose service (compose.yml:454-458) builds from `services/working-memory-assistant/Dockerfile.dope-memory`, whose entrypoint is `services/working-memory-assistant/dope_memory_main.py` (docstring at :1-6: 'canonical entry point for the Dope-Memory service', port 3020). dope-memory is a PACKAGING/FACET of WMA, not a separate duplicate codebase.
+- `services/dope-memory/` directory — separate orphaned shim, still NOT a duplicate of WMA. `ls services/dope-memory` shows only `mcp_stdio_adapter.py` (241 lines, services/dope-memory/mcp_stdio_adapter.py:1-21 = thin stdio JSON-RPC -> REST proxy for 3 tools targeting http://localhost:8096). No MCP-client launcher (`command: python .../mcp_stdio_adapter.py`) found in any *.json/*.yaml/*.toml. References are descriptive only: config/runtime_authority_manifest.json:352,361,385 (catalog entry, not invocation) and repo-truth-pack/dope-memory/* which explicitly label it a 'Tier 3 stale shim' with port drift (DRIFT_REPORT.md:123 targets 8096 vs live 3020) and recommend `deprecate` (task-packets/TP-DMX-AIG-001.md:106,200). So it is a real-but-stale shim in FRONT of WMA, reinforcing 'not a duplicate'.
+- `compose.yml` grep for dope-query / router as services: only LiteLLM 'Model Router' (compose.yml:290) and unrelated env lines; no dope-query/router service blocks. `services/registry.yaml` lists dope-memory (registry.yaml:183-190) but no dope-query or services/router entry.
+
+---
+
+## Confirmed Findings by Domain
+
+### Install
+
+#### BETA-INSTALL-01 — Committed `.mcp.json` hardcodes a machine-specific absolute task-orchestrator path with no installer rewrite (HIGH, public-beta blocker)
+
+> Any external user cloning the repo gets a task-orchestrator MCP server pointing at a script that does not exist on their machine → the orchestrator MCP silently fails to start. Replace the absolute path with a repo-relative launcher (e.g. `./scripts/...`) or have install.sh generate the `.mcp.json` command per-machine. This is a first-touch install blocker for public beta. Re-raised against this HEAD because the prior REFUTED label carried no evidence.
+
+- `git show HEAD:.mcp.json` line 25 — `"command":"/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh"` (committed literal, not just working-tree)
+- grep of install.sh for `task-orchestrator-current-stdio` / `dopemux-mission-control` / `.mcp.json` → ZERO matches (installer does not generate or rewrite this path)
+- Path is under `/Users/hue/plugins/` (a personal dir), not a standard `~/.claude/plugins` location — machine-specific by construction
+- Introduced by PR #646 (fbf1b5df3 'scope Task Orchestrator MCP state by repo')
+- NOTE: inherited input filed this as REFUTED (MCP-3) but with an EMPTY confirmation tag () — that refutation was unevidenced; this HEAD shows live breakage, raised under a NEW id
+
+### CLI
+
+#### BETA-CLI-01 — `dopemux decisions` group ships only energy+patterns; review/list/show/update-outcome/query subcommands absent (HIGH, internal-beta blocker)
+
+> The decisions surface is the user-facing read/write path over ConPort decision records. With only energy/patterns subgroups, a dogfooder cannot list, show, review, or update-outcome decisions from the CLI — a core ADHD-workflow flow. Implement the missing subcommands (review/list/show/update-outcome/query) against the ConPort client, mirroring the energy/patterns group structure.
+
+- `src/dopemux/commands/decisions_commands.py:22-23` — `@click.group() def decisions()`
+- `src/dopemux/commands/decisions_commands.py:35` — only `@decisions.group() def energy()`
+- `src/dopemux/commands/decisions_commands.py:47` — only `@decisions.group() def patterns()`
+- `src/dopemux/cli.py:3111,3113` — decisions imported + registered, but no other module adds review/list/show/update-outcome/query (rg across src confirms no `@decisions.command` for them)
+- Confirms inherited RV-3 (CONFIRMED/certain)
+
+### MCP
+
+#### BETA-MCP-01 — `.mcp.json` conport/dope-memory SSE URLs use `${CONPORT_MCP_PORT}`/`${DOPE_MEMORY_PORT}` with no `:-` default — empty-port URL if launcher not run first (HIGH, both gates)
+
+> If Claude Code is launched without first running the instance-overlay launcher that exports these vars, both SSE URLs resolve to `http://localhost:/mcp` (empty port) and ConPort + dope-memory MCP fail to connect — breaking the primary memory/knowledge flow for you and close users. Add `:-3005` / `:-3020` defaults matching the compose defaults (or guarantee the launcher always exports them). Kept on BOTH gates conservatively; downgrade to public-only ONLY if the dogfood launcher is proven to always export the port vars (currently NOT proven — see open_unknowns).
+
+- `.mcp.json:5` — `"url":"http://localhost:${CONPORT_MCP_PORT}/mcp"` (no fallback)
+- `.mcp.json:16` — `"url":"http://localhost:${DOPE_MEMORY_PORT}/mcp"` (no fallback)
+- `.mcp.json:7` — contrast: `DOPEMUX_WORKSPACE_ID` uses `${VAR:-}` safe form
+- `src/dopemux/mcp/instance_overlay.py:90` emits `CONPORT_MCP_PORT`, :95 emits `DOPE_MEMORY_PORT` — only when overlay/launcher runs
+- `.env.template:18-19,27` list these ports only as comments, not as `VAR=value` exports — so undefined by default
+- Confirms inherited MCP-6
+
+#### BETA-MCP-02 — compose.yml uses `condition: service_started` (bare-list depends_on) for ConPort, task-orchestrator, adhd-engine — cold-start connection-refused races (MED, public-beta blocker)
+
+> On a cold `docker compose up`, ConPort starts before Postgres/Redis accept connections, and task-orchestrator/adhd-engine start before ConPort is healthy → intermittent crash loops (masked by `restart: unless-stopped` but adds churn and first-run flakiness for new users). Convert these bare-list depends_on entries to long-form with `condition: service_healthy`, mirroring the dopecon-bridge/dope-memory blocks already in the file.
+
+- `compose.yml:256-260` — conport depends_on postgres/redis-primary/mcp-qdrant/dopecon-bridge as a bare list (implicit service_started)
+- `compose.yml:414-417` — task-orchestrator depends_on redis-primary/conport/leantime (bare list)
+- `compose.yml:445-446` — adhd-engine depends_on redis-primary (bare list)
+- `compose.yml:377-383` (dopecon-bridge) and :483-487 (dope-memory) correctly use `condition: service_healthy` — proving the long-form pattern is already known in-file
+- Confirms inherited RV-9 / MCP-4
+
+#### BETA-MCP-03 — No per-instance Redis isolation: instance overlay never remaps redis-primary, and ADHD-engine state keys are user-scoped only — two same-user worktrees collide (MED, public-beta blocker)
+
+> In the exact dogfood scenario (one user running 2+ worktrees), ADHD state — attention state, last-break timestamp, energy profile — is shared across instances because keys carry only user_id, and there is no per-instance Redis. Cross-instance state bleed corrupts break timing and attention-aware limits. Namespace the keys with workspace_id/instance_id (preferred, cheap) or fork a per-instance redis-primary in the overlay. Public-beta multi-instance safety item.
+
+- `src/dopemux/mcp/instance_overlay.py:112-150` — `write_compose_override` remaps ports for conport/serena/dope-context/dope-memory/litellm but NEVER for redis-primary; no per-instance Redis service
+- `services/adhd_engine/adhd_config_service.py` — Redis keys built as `last_break:{user_id}`, `energy_level:{user_id}`, `profile:{user_id}` (user-scoped, no workspace/instance component)
+- `services/adhd_engine/engine.py` — `last_break:{user_id}` key; attention/energy keyed by user only
+- `compose.yml:438` (adhd-engine) and :404,410 (task-orchestrator) both point `REDIS_URL` at the single redis-primary:6379
+- Confirms inherited RV-7 (PARTIAL); supersedes MCP-1 (same fact, disposition upgraded to live multi-instance risk)
+
+### Tooling
+
+#### BETA-SURF-01 — Orchestrator `/dx:` command surface regressed off main by PR #720 — `.claude/commands/dx/` now contains only `implement.md` (MED, internal-beta blocker)
+
+> A stale Jules/Gemini palette PR (#720) reverted the CLAUDE-SURFACE orchestrator command surface (the `/dx:` slash commands + orchestrator config.yaml + protocol). The runtime hooks from #722 are still present, but the operator-facing dx command surface is gone, degrading the dogfooding workflow. Restore the surface by cherry-picking the deleted files from `origin/task-orchestrator-claude-surface`. Scope is the `.claude` tooling surface (author/dogfood workflow), not end-user product flow — hence MED.
+
+- `ls .claude/commands/dx/` at HEAD 755bf3846 → only `implement.md`
+- No orchestrator config.yaml under .claude (`find .claude -iname '*orchestr*'` returns only runtime hook artifacts .orchestrator-edit-nudge*.json / .orchestrator-context-cache.json, not the command surface or config)
+- `git log` shows #720 (d8e0268d3 family) merged; matches durable memory [palette-clobber-main-2026-05-28] 'verified at main 755bf3846'
+- Recovery source per memory: `origin/task-orchestrator-claude-surface` (branch not present in this worktree's refs)
+
+### Hooks
+
+#### BETA-HOOK-01 — Stop hook blocks session exit once per stop when a workflow is active and no checkpoint/completion-token emitted (friction, not hard lockup) (LOW, polish)
+
+> Only bites a user who tries to end the session mid dopemux-workflow with no emitted checkpoint. The block fires once, then `stop_hook_active` lets the next exit through, so it is recoverable confusion rather than a lockup. For polish, add an explicit `dopemux workflow abandon` escape or a time/iteration-based auto-release so the first block isn't surprising. Low priority for internal beta.
+
+- `src/dopemux/claude/native_hooks.py:370-373` — `_on_stop` returns `_block_stop` (EXIT_BLOCK) when workflow active and not stop-safe
+- `src/dopemux/claude/native_hooks.py:347-348` — but `if data.get('stop_hook_active') is True: return self._allow()` — Claude Code's re-entry signal lets the 2nd Stop pass, preventing a permanent trap
+- `src/dopemux/claude/native_hooks.py:344-345` — no active workflow → `_allow` immediately (vanilla users unaffected)
+- `src/dopemux/claude/native_hooks.py:355,361,364` — checkpoint/completion-token escape paths exist; no time-based timeout
+- Narrows inherited RV-10 (PARTIAL): re-entry guard exists, so not the trap originally described
+
+### Cleanup (post-beta, confirmed)
+
+#### BETA-CLEAN-01 — Remove dead/stub services: `services/router` (only `__init__`) and `services/dope-query` (no server) (OBS, post-beta)
+
+> These two service directories have no runnable server and no compose service. They add navigation noise and imply capability that does not exist. Delete them (or move to an explicit `/experiments` area). NOTE: dope-memory is NOT in this set — it is an active service (compose builds it from services/working-memory-assistant/Dockerfile.dope-memory and ships mcp_stdio_adapter.py); the inherited 'dope-memory duplicates working-memory-assistant' claim is refuted.
+
+- `services/router/` — only `__init__.py` (version string + service-name constant, no implementation)
+- `services/dope-query/` — only `auth/models.py` + `tests/test_password_utils.py`, no server/main/MCP entry
+- Confirmed by both inherited RV-11 and MCP-8 (2 sources)
+
+#### BETA-MCP-04 — Document shared-Postgres single-role/dev-credential posture; confirm migration 007 ordering for advanced graph features (OBS, post-beta)
+
+> Data-plane isolation for ConPort holds on a fresh install (workspace_id is a partition key; active_context is per (workspace_id, instance_id) via _ensure_schema-added column). Two doc items remain: (1) all services share one Postgres role/DB with dev-default credentials — fine for single-tenant local, must be hardened/documented before any shared deployment; (2) document which migrations beyond instance_id are auto-applied vs require manual run, since start_with_info.sh has no migration step.
+
+- `compose.yml:245-246` — ConPort DATABASE_URL/POSTGRES_URL hardcoded to dopemux-postgres-age/dopemux_knowledge_graph with dev-default creds (not instance-parameterized)
+- `compose.yml:471,477` dope-memory and :371 dopecon-bridge share the same Postgres role/DB
+- `docker/mcp-servers-source/conport/enhanced_server.py:408,480-481` — `_ensure_schema()` runs `ALTER TABLE ADD COLUMN IF NOT EXISTS instance_id` at boot (so worktree-isolation residual from inherited MCP-9 is REFUTED — instance_id is auto-applied; the standalone 007 SQL is not the only path)
+- `docker/mcp-servers-source/conport/start_with_info.sh` — launches servers only, no migration step (so anything NOT covered by `_ensure_schema` must be applied manually)
+
+---
+
+## Likely Resolved
+
+- **RV-2 (routing mode NameError)** — RE-VERIFIED RESOLVED/certain at this HEAD: routing_cli.py:548-569 `_set_routing_mode` uses loaded/rendered/mode cleanly with no undefined `content`; callers at :190,:221 pass (config_path, mode); group registered via cli.py:6129-6142.
+- **RV-6 (mobile/tmux hard-require litellm)** — RE-VERIFIED RESOLVED/high: src/dopemux/mobile/cli.py and mobile/runtime.py import only config + tmux.common + tmux.controller; tmux/controller.py and tmux/common.py have no litellm import. The litellm tokens in tmux/cli.py are env-var name strings (LITELLM_MASTER_KEY etc.), not Python imports.
+- **MCP-0 (Qdrant cross-project index poisoning)** — inherited REFUTED; not re-investigated, no contradicting evidence surfaced.
+- **MCP-1 (Redis user-scoped not workspace-scoped)** — same fact as RV-7; disposition upgraded — re-verify (RV-7 / BETA-MCP-03) supersedes it as a live public-beta multi-instance item. Listed here to avoid double-counting as a separate blocker.
+- **MCP-2 (multi-instance detection probes wrong port)** — inherited REFUTED; not re-investigated.
+- **MCP-5 (two contradictory port-offset schemes)** — inherited REFUTED; not re-investigated.
+- **MCP-7 (mcp-proxy config still registers mas-sequential-thinking)** — inherited REFUTED; not re-investigated.
+- **MCP-9 worktree-isolation RESIDUAL (requires migration 007 to have run)** — REFUTED at this HEAD: enhanced_server.py:176 calls `_ensure_schema()` which at :480-481 runs `ALTER TABLE ... ADD COLUMN IF NOT EXISTS instance_id` idempotently at boot, and active_context read/write at :501-564 is fully instance-aware. The shared-credentials documentation note from MCP-9 is retained as post_beta BETA-MCP-04.
+- **RV-10 (Stop hook traps user)** — narrowed, not fully resolved: re-entry guard (native_hooks.py:347-348) prevents a hard trap; retained as LOW-severity friction item BETA-HOOK-01 rather than a blocker.
+
+---
+
+## External Escalations
+
+These are upstream in the Kotlin task-orchestrator MCP server (`dopemux-mission-control`), NOT repo packets:
+
+- **Timestamp-parse silent-zero** — malformed/missing timestamps parse to zero instead of erroring, corrupting ordering/age computations.
+- **Health-check under-report** — the health endpoint reports healthy/ready under conditions where it should report degraded, masking real failures.
+- **Dangling dependency edges** — dependency edges can reference deleted/non-existent items, leaving orphaned edges in the graph.
+
+---
+
+## Open Unknowns
+
+- **AGENT-WRAPPING live-run path**: the AGENT-WRAPPING SPEC input was empty (`{}`), so no work_breakdown was provided. I could not assess whether codex/copilot/claude/vanilla agent wrapping actually executes end-to-end, nor fold wrapping build-items into the backlog. This blocks a confident internal-beta GO until the wrapping path is exercised and its tasks enumerated. (See `03-AGENT-WRAPPING-SPEC.md`.)
+- **BETA-MCP-01 single-vs-dual-gate**: whether the dogfood launcher ALWAYS exports `CONPORT_MCP_PORT`/`DOPE_MEMORY_PORT` before Claude Code starts is unconfirmed. `instance_overlay.write_mcp_env` emits them, but I did not trace every launch entrypoint. If the launcher is guaranteed-first, BETA-MCP-01 is public-only; otherwise it is also internal. Kept on both gates conservatively.
+- **BETA-SURF-01 recovery completeness**: `origin/task-orchestrator-claude-surface` (the restore source named in durable memory) is not present in this worktree's refs, so I could not diff the exact set of deleted `/dx:` files + orchestrator config.yaml against HEAD. The regression is confirmed (only implement.md remains under `.claude/commands/dx/`) but the precise restore manifest is unverified.
+- **ConPort `_ensure_schema` coverage**: `_ensure_schema()` auto-adds instance_id, but I did not enumerate every column/index the standalone migrations 002/003/007 create. Whether any advanced graph feature depends on a migration NOT covered by `_ensure_schema` (and thus silently missing on fresh installs, since start_with_info.sh runs no migration step) is unverified — captured in BETA-MCP-04.

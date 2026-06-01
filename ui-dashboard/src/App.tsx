@@ -19,7 +19,24 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { AlertTriangle, Bell, Brain, Check, Copy, Droplet, Eye, Trash2, TrendingUp, Zap } from 'lucide-react';
+import {
+  AlertCircle,
+  AlertTriangle,
+  Bell,
+  Brain,
+  Check,
+  CheckCircle,
+  Clock,
+  Copy,
+  Droplet,
+  Eye,
+  Info,
+  PauseCircle,
+  Trash2,
+  TrendingUp,
+  X,
+  Zap,
+} from 'lucide-react';
 
 import { dashboardApiHeaders, dashboardApiUrl, dashboardWsUrl } from './config';
 import CognitiveLoadGauge from './components/CognitiveLoadGauge';
@@ -39,6 +56,7 @@ interface CognitiveState {
 }
 
 interface Notification {
+  id: string;
   message: string;
   notificationType: string;
   timestamp: string;
@@ -126,6 +144,30 @@ const formatTimestamp = (dateStr: string) => {
   return `[${hh}:${mm}:${ss}]`;
 };
 
+const getNotificationIcon = (type: string) => {
+  const iconSize = 14;
+  switch (type) {
+    case 'decision':
+      return <CheckCircle size={iconSize} aria-hidden="true" />;
+    case 'progress':
+      return <TrendingUp size={iconSize} aria-hidden="true" />;
+    case 'break':
+      return <PauseCircle size={iconSize} aria-hidden="true" />;
+    case 'session':
+      return <Clock size={iconSize} aria-hidden="true" />;
+    case 'warning':
+      return <AlertTriangle size={iconSize} aria-hidden="true" />;
+    case 'error':
+      return <AlertCircle size={iconSize} aria-hidden="true" />;
+    case 'hyperfocus':
+      return <Zap size={iconSize} aria-hidden="true" />;
+    case 'info':
+      return <Info size={iconSize} aria-hidden="true" />;
+    default:
+      return <Bell size={iconSize} aria-hidden="true" />;
+  }
+};
+
 function App() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const feedHeadingRef = useRef<HTMLHeadingElement>(null);
@@ -144,6 +186,10 @@ function App() {
   const clearConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleDismissNotification = useCallback((id: string) => {
+    setNotifications((current) => current.filter((n) => n.id !== id));
+  }, []);
 
   const handleCopyRecommendation = useCallback(async () => {
     if (!navigator.clipboard?.writeText) {
@@ -226,6 +272,7 @@ function App() {
         if (message.type === 'dashboard_notification') {
           setNotifications((current) => [
             {
+              id: String(message.id || Date.now().toString() + Math.random().toString(36).substring(2, 9)),
               message: String(message.message || 'Notification received'),
               notificationType: String(message.notification_type || 'info'),
               timestamp: String(message.timestamp || new Date().toISOString()),
@@ -294,6 +341,7 @@ function App() {
       label: 'Energy Level',
       value: cognitiveState.energy,
       icon: <Zap color={brandTokens.colors.serumMint} size={24} aria-hidden="true" />,
+      accentColor: brandTokens.colors.serumMint,
       roast: "You're sipping ambition like it's lukewarm coffee.",
       tooltip: 'Your current biometric energy reserve based on activity and sleep data',
     },
@@ -301,6 +349,7 @@ function App() {
       label: 'Attention Focus',
       value: cognitiveState.attention,
       icon: <Eye color={brandTokens.colors.ritualCyan} size={24} aria-hidden="true" />,
+      accentColor: brandTokens.colors.ritualCyan,
       roast: 'Focus is flirting with you; stop ghosting it.',
       tooltip: 'Real-time attention state: scattered, focused, or hyperfocused',
     },
@@ -308,6 +357,7 @@ function App() {
       label: 'Cognitive Load',
       value: cognitiveState.load,
       icon: <Brain color={brandTokens.colors.saintGold} size={24} aria-hidden="true" />,
+      accentColor: brandTokens.colors.saintGold,
       roast: 'Load creeping up like a brat testing limits.',
       tooltip: 'Total mental effort being exerted on current tasks',
     },
@@ -315,6 +365,7 @@ function App() {
       label: '15-min Prediction',
       value: cognitiveState.prediction ?? null,
       icon: <TrendingUp color={brandTokens.colors.giltEdge} size={24} aria-hidden="true" />,
+      accentColor: brandTokens.colors.giltEdge,
       roast: 'Future you is pacing. Hydrate before they mutiny.',
       tooltip: 'AI-driven forecast of your cognitive state for the next 15 minutes',
     },
@@ -443,7 +494,7 @@ function App() {
                   )
                 }
                 label={`Recommendation: ${cognitiveState.recommendation}`}
-                aria-label={isCopied ? 'Recommendation copied to clipboard' : `AI Recommendation: ${cognitiveState.recommendation}. Click to copy.`}
+                aria-label={isCopied ? `AI Recommendation: ${cognitiveState.recommendation} (Copied)` : `Copy AI Recommendation: ${cognitiveState.recommendation}`}
                 onClick={handleCopyRecommendation}
                 tabIndex={0}
                 sx={{
@@ -471,13 +522,14 @@ function App() {
                   }),
                 }}
               />
-            </Tooltip>oltip>
+            </Tooltip>
           </Box>
         </Box>
 
         <Collapse in={Boolean(errorMessage)}>
           <Alert
             severity="error"
+            icon={<AlertTriangle size={20} />}
             onClose={() => setErrorMessage(null)}
             sx={{
               mb: 3,
@@ -510,9 +562,9 @@ function App() {
                     outline: 'none',
                     transition: 'transform 0.2s, box-shadow 0.2s',
                     '&:hover, &:focus-visible': {
-                      borderColor: brandTokens.colors.ritualCyan,
+                      borderColor: metric.accentColor,
                       transform: 'translateY(-4px)',
-                      boxShadow: `0 0 20px ${alpha(brandTokens.colors.ritualCyan, 0.2)}`,
+                      boxShadow: `0 0 20px ${alpha(metric.accentColor, 0.2)}`,
                     },
                   }}
                 >
@@ -618,19 +670,32 @@ function App() {
             >
               {notifications.map((notification) => {
                 const severityColor = getNotificationColor(notification.notificationType);
+                const notificationLabel = `${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`;
                 return (
-                  <Fade in={true} key={`${notification.timestamp}-${notification.message}`}>
-                    <Chip
-                      label={`${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`}
-                      variant="outlined"
-                      tabIndex={0}
-                      sx={{
-                        maxWidth: '100%',
-                        borderColor: alpha(severityColor, 0.6),
-                        color: severityColor,
-                        backgroundColor: alpha(severityColor, 0.08),
-                      }}
-                    />
+                  <Fade in={true} key={notification.id}>
+                    <Tooltip title="Dismiss notification" arrow describeChild>
+                      <Chip
+                        icon={getNotificationIcon(notification.notificationType)}
+                        label={notificationLabel}
+                        aria-label={notificationLabel}
+                        variant="outlined"
+                        onDelete={() => handleDismissNotification(notification.id)}
+                        deleteIcon={<X size={14} aria-hidden="true" />}
+                        tabIndex={0}
+                        sx={{
+                          maxWidth: '100%',
+                          borderColor: alpha(severityColor, 0.6),
+                          color: severityColor,
+                          backgroundColor: alpha(severityColor, 0.08),
+                          '& .MuiChip-deleteIcon': {
+                            color: alpha(severityColor, 0.7),
+                            '&:hover': {
+                              color: severityColor,
+                            },
+                          },
+                        }}
+                      />
+                    </Tooltip>
                   </Fade>
                 );
               })}
