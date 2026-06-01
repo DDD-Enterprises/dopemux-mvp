@@ -7,7 +7,7 @@
 | `python -m json.tool task-packets/generated/TP-DMX-GHA-RELIABILITY-106.json >/tmp/tp106-json-tool.out` | 0 | PASS |
 | `python -m json.tool proof/TP-DMX-GHA-RELIABILITY-106/PROOF.json >/tmp/tp106-proof-json-tool.out` | 0 | PASS |
 | `python -m jsonschema -i task-packets/generated/TP-DMX-GHA-RELIABILITY-106.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json` | 0 | PASS |
-| `python - <<'PY' ... workflow trigger assertions ... PY` | 0 | PASS |
+| `python - <<'PY'`<br>`import pathlib`<br>`import yaml`<br>`for name in ['ci-complete.yml','pr-steward.yml','preflight.yml']:`<br>`    path = pathlib.Path('.github/workflows') / name`<br>`    doc = yaml.load(path.read_text(), Loader=yaml.BaseLoader)`<br>`    events = doc.get('on', {})`<br>`    assert 'pull_request_target' not in events, name`<br>`    assert 'ready_for_review' in events['pull_request']['types'], name`<br>`    assert 'workflow_dispatch' in events, name`<br>`print('workflow trigger assertions PASS')`<br>`PY` | 0 | PASS |
 | `gh api repos/DDD-Enterprises/dopemux-mvp/branches/main/protection --jq '.required_status_checks.contexts \| index("📊 CI Pipeline Summary") != null'` | 0 | PASS (`true`) |
 | `git diff --check` | 0 | PASS |
 | `pre-commit run --files docs/ops/pr-gate-runbook.md docs/ops/branch-policy-audit.md docs/ops/ci-trigger-refresh.md task-packets/generated/TP-DMX-GHA-RELIABILITY-106.json proof/TP-DMX-GHA-RELIABILITY-106/AUDITOR_REPORT.md proof/TP-DMX-GHA-RELIABILITY-106/PROOF.json proof/TP-DMX-GHA-RELIABILITY-106/VALIDATION_OUTPUT.md` | 0 | PASS |

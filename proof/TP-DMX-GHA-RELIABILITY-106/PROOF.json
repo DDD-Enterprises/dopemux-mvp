@@ -65,7 +65,7 @@
       "status": "PASS"
     },
     {
-      "command": "python workflow trigger assertion for ready_for_review, workflow_dispatch, and no pull_request_target",
+      "command": "python - <<'PY'\nimport pathlib\nimport yaml\nfor name in ['ci-complete.yml','pr-steward.yml','preflight.yml']:\n    path = pathlib.Path('.github/workflows') / name\n    doc = yaml.load(path.read_text(), Loader=yaml.BaseLoader)\n    events = doc.get('on', {})\n    assert 'pull_request_target' not in events, name\n    assert 'ready_for_review' in events['pull_request']['types'], name\n    assert 'workflow_dispatch' in events, name\nprint('workflow trigger assertions PASS')\nPY",
       "exit_code": 0,
       "status": "PASS"
     },
@@ -117,8 +117,8 @@
   },
   "codereview_status": "Manual bounded review complete: docs describe observed workflow/API behavior only; no workflow runtime behavior was changed.",
   "precommit_status": "PASS: pre-commit run on touched files and git diff --check passed.",
-  "commit_sha": "PENDING_FINAL_SHA_AFTER_REVIEW_REPAIR",
-  "commit_sha_scope": "Review repair changed proof, docs, tests, and task packet metadata after the original implementation commit. The immutable repair commit SHA is established after this proof refresh is committed and pushed.",
+  "commit_sha": "56c28fa8d4abba538df7f5a369ad8176f621b991",
+  "commit_sha_scope": "Review repair commit that introduced the current docs/tests/proof evidence refresh. A later proof-only finalization commit may update metadata without changing the validated runtime surfaces.",
   "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/763",
   "residual_risks": [
     "Admin and maintainer bypass actors remain active in branch ruleset/classic protection.",

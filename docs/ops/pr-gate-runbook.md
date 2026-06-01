@@ -102,8 +102,11 @@ classic protection or the active ruleset. See
 
 ### Advisory check failed (installer-smoke / scoped-coverage / integration / security / docs)
 
-Advisory failures are **non-blocking** for merge. They appear in the Step
-Summary but do not cause `ci-summary` to exit 1.
+Advisory failures are **non-blocking in the `ci-summary` gate**. They appear
+in the Step Summary but do not cause `ci-summary` to exit 1. Merge can still be
+blocked by any advisory job that is also configured as a required branch
+protection status check; as of the 2026-05-31 read-only refresh, `security`
+maps to required context `🔒 Security Review`.
 
 Recommended response:
 - Skipped advisory jobs: expected on PR fast-path; no action needed.
@@ -138,7 +141,7 @@ python -m pytest tests/ci/ -v
 
 Tests assert:
 - `ci-summary` has `if: always()`
-- All 9 upstream jobs present in `needs`
+- All 11 upstream jobs present in `needs`
 - Gate script uses `!= "success"` for each required blocking job:
   `code-quality`, `tests`, `extractor-smoke`, `audit-validator`,
   `extractor-full`, and `auditor-router`
