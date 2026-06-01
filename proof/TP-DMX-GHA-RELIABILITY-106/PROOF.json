@@ -117,8 +117,8 @@
   },
   "codereview_status": "Manual bounded review complete: docs describe observed workflow/API behavior only; no workflow runtime behavior was changed.",
   "precommit_status": "PASS: pre-commit run on touched files and git diff --check passed.",
-  "commit_sha": "56c28fa8d4abba538df7f5a369ad8176f621b991",
-  "commit_sha_scope": "Review repair commit that introduced the current docs/tests/proof evidence refresh. A later proof-only finalization commit may update metadata without changing the validated runtime surfaces.",
+  "commit_sha": "PENDING_FINAL_PROOF_ONLY_COMMIT_SHA",
+  "commit_sha_scope": "Explicitly pending because the proof bundle is being updated in the commit that would otherwise need to name itself. The final PR head SHA is verified with GitHub before merge.",
   "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/763",
   "residual_risks": [
     "Admin and maintainer bypass actors remain active in branch ruleset/classic protection.",

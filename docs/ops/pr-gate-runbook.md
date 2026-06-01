@@ -44,7 +44,7 @@ GitHub marks it as failed — which branch protection can use as a required chec
 | `scoped-coverage` | **ADVISORY** | `if: github.event_name != 'pull_request'` — skipped on all PR runs |
 | `integration` | **ADVISORY** | `if: github.event_name != 'pull_request'` — skipped on all PR runs |
 | `security` | **ADVISORY REQUIRED BY BRANCH PROTECTION** | GitHub branch protection currently requires `🔒 Security Review`; CI gate logic treats it as advisory because it may be secret-gated |
-| `docs` | **ADVISORY** | Documentation link checks; non-blocking |
+| `docs` | **ADVISORY REQUIRED BY BRANCH PROTECTION** | GitHub branch protection currently requires `📚 Documentation Check`; CI gate logic treats it as advisory because it is outside the required `ci-summary` gate |
 
 ---
 
@@ -106,7 +106,8 @@ Advisory failures are **non-blocking in the `ci-summary` gate**. They appear
 in the Step Summary but do not cause `ci-summary` to exit 1. Merge can still be
 blocked by any advisory job that is also configured as a required branch
 protection status check; as of the 2026-05-31 read-only refresh, `security`
-maps to required context `🔒 Security Review`.
+maps to required context `🔒 Security Review` and `docs` maps to required
+context `📚 Documentation Check`.
 
 Recommended response:
 - Skipped advisory jobs: expected on PR fast-path; no action needed.
