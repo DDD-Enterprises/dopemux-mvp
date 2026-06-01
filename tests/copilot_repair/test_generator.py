@@ -122,6 +122,28 @@ def test_generate_repair_packet_renumbers_multiple_implementer_items() -> None:
     ]
 
 
+def test_unresolved_thread_action_does_not_tell_copilot_to_resolve_thread() -> None:
+    action_plan = _action_plan(
+        [
+            _action(
+                action_id="action-0001",
+                category="unresolved-thread",
+                target_role="implementer",
+                source_blocker="UNRESOLVED_REVIEW_THREAD",
+                source_item_id="PRRT_123",
+            )
+        ]
+    )
+
+    packet = generate_repair_packet(action_plan)
+    suggested_action = packet["items"][0]["suggested_action"]
+
+    _validate(packet)
+    assert "leave GitHub thread resolution to the operator" in suggested_action
+    assert "resolve it" not in suggested_action
+    assert "resolve the GitHub" not in suggested_action
+
+
 def test_generate_repair_packet_normalizes_fractional_source_timestamp() -> None:
     action_plan = _action_plan([])
     action_plan["generated_at"] = "2026-01-01T00:00:00.123456Z"
