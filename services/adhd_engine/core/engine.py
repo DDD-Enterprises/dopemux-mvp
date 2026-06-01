@@ -139,6 +139,7 @@ class ADHDAccommodationEngine:
         self.current_energy_levels: Dict[str, EnergyLevel] = {}
         self.current_attention_states: Dict[str, AttentionState] = {}
         self.recent_activity_updates: Dict[str, Dict[str, Any]] = {}
+        self.recent_activity_samples: Dict[str, List[Dict[str, Any]]] = {}
         self.active_accommodations: Dict[str, List[AccommodationRecommendation]] = {}
 
         # Cognitive load monitoring
@@ -476,6 +477,9 @@ class ADHDAccommodationEngine:
     ) -> Dict[str, Any]:
         """Record a bounded activity signal and refresh current ADHD state."""
         metrics = self._sanitize_activity_metrics(activity_data)
+        if self._is_hook_activity(metrics):
+            self._append_activity_sample(user_id, metrics)
+            metrics = self._derive_hook_activity_metrics(user_id)
         self.recent_activity_updates[user_id] = metrics
 
         if user_id not in self.user_profiles:
@@ -511,6 +515,45 @@ class ADHDAccommodationEngine:
             key: value
             for key, value in activity_data.items()
             if key in allowed_fields and value is not None
+        }
+
+    @staticmethod
+    def _is_hook_activity(activity_data: Dict[str, Any]) -> bool:
+        return any(key in activity_data for key in ("hook_event_name", "status", "tool_name"))
+
+    def _append_activity_sample(self, user_id: str, activity_data: Dict[str, Any]) -> None:
+        samples = self.recent_activity_samples.setdefault(user_id, [])
+        samples.append(dict(activity_data))
+        self.recent_activity_samples[user_id] = samples[-50:]
+
+    def _derive_hook_activity_metrics(self, user_id: str) -> Dict[str, Any]:
+        """Derive bounded activity metrics from content-free hook events."""
+        samples = self.recent_activity_samples.get(user_id, [])
+        failures = sum(
+            1
+            for sample in samples
+            if sample.get("status") == "failure"
+            or sample.get("hook_event_name") == "PostToolUseFailure"
+        )
+        successes = sum(1 for sample in samples if sample.get("status") == "success")
+        attempts = sum(1 for sample in samples if sample.get("status") == "attempt")
+        prompt_events = sum(1 for sample in samples if sample.get("hook_event_name") == "UserPromptSubmit")
+        tool_events = sum(1 for sample in samples if sample.get("tool_name"))
+
+        outcome_count = successes + failures
+        completion_rate = successes / outcome_count if outcome_count else 0.5
+
+        return {
+            "completion_rate": completion_rate,
+            "context_switches": prompt_events,
+            "break_compliance": max(0.0, 1.0 - (failures * 0.2)),
+            "minutes_since_break": min(120, 30 + failures * 10 + attempts * 2),
+            "tool_failures": failures,
+            "tool_successes": successes,
+            "tool_attempts": attempts,
+            "tool_events": tool_events,
+            "prompt_events": prompt_events,
+            "activity_evidence": bool(samples),
         }
 
     def _calculate_task_cognitive_load(
@@ -1410,12 +1453,7 @@ Format: {{
         try:
             if user_id in self.recent_activity_updates:
                 activity = self.recent_activity_updates[user_id]
-                return {
-                    "context_switches_per_hour": activity.get("context_switches", 0),
-                    "abandoned_tasks": 0,
-                    "average_focus_duration": 25,
-                    "distraction_events": 0,
-                }
+                return self._attention_indicators_from_activity(activity)
             if self.activity_tracker:
                 return await self.activity_tracker.get_attention_indicators(user_id)
             else:
@@ -1434,6 +1472,28 @@ Format: {{
                 "average_focus_duration": 25,
                 "distraction_events": 2
             }
+
+    @staticmethod
+    def _attention_indicators_from_activity(activity: Dict[str, Any]) -> Dict[str, Any]:
+        """Map bounded activity metrics into attention indicators."""
+        context_switches = int(activity.get("context_switches", 0) or 0)
+        prompt_events = int(activity.get("prompt_events", 0) or 0)
+        tool_failures = int(activity.get("tool_failures", 0) or 0)
+        context_switches_per_hour = max(context_switches, prompt_events)
+
+        if context_switches_per_hour >= 10:
+            average_focus_duration = 8
+        elif context_switches_per_hour >= 6:
+            average_focus_duration = 12
+        else:
+            average_focus_duration = max(10, 25 - tool_failures * 3)
+
+        return {
+            "context_switches_per_hour": context_switches_per_hour,
+            "abandoned_tasks": tool_failures,
+            "average_focus_duration": average_focus_duration,
+            "distraction_events": (tool_failures * 3) + max(0, context_switches_per_hour - 15),
+        }
 
     async def _calculate_system_cognitive_load(self) -> float:
         """
