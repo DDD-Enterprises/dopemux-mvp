@@ -138,6 +138,34 @@ def test_missing_required_artifact_fails_closed(tmp_path: Path) -> None:
     assert not (out_dir / "REPAIR_PACKET.md").exists()
 
 
+def test_invalid_generated_at_fails_before_writing_outputs(tmp_path: Path) -> None:
+    artifact_dir = _write_artifact_dir(tmp_path, "ready_green.json")
+    out_dir = tmp_path / "out"
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "tools.pr_action_bridge",
+            "--artifact-dir",
+            str(artifact_dir),
+            "--out",
+            str(out_dir),
+            "--generated-at",
+            "not-a-timestamp",
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 2
+    assert "--generated-at must be an ISO 8601 timestamp" in result.stderr
+    assert not (out_dir / "ACTION_PLAN.json").exists()
+    assert not (out_dir / "REPAIR_PACKET.md").exists()
+
+
 def test_cli_sources_do_not_import_pr_merge_or_embed_gh_mutation() -> None:
     for source_path in (CLI_SRC, MAIN_SRC):
         source = source_path.read_text(encoding="utf-8")
