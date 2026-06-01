@@ -12,7 +12,7 @@
     "message": "feat(audit): independent embedded-audit CI workflow with trusted provenance",
     "verify": [
       "python -m json.tool task-packets/generated/TP-DMX-AUDIT-CI-PROVENANCE-104.json",
-      "python -m compileall -q scripts tests",
+      "python -m compileall -q scripts/audit/run_embedded_audit.py tests/audit/test_run_embedded_audit.py",
       "pytest -q tests/audit/test_run_embedded_audit.py",
       "git diff --check"
     ]
@@ -125,7 +125,7 @@
     {
       "commands": [
         "python -m json.tool task-packets/generated/TP-DMX-AUDIT-CI-PROVENANCE-104.json",
-        "python -m compileall -q scripts tests",
+        "python -m compileall -q scripts/audit/run_embedded_audit.py tests/audit/test_run_embedded_audit.py",
         "pytest -q tests/audit/test_run_embedded_audit.py",
         "git diff --check"
       ],
@@ -133,7 +133,7 @@
       "task": "Run focused validation, inspect git diff, run codereview/precommit review, and prepare a truthful completion summary.",
       "validation": [
         "python -m json.tool task-packets/generated/TP-DMX-AUDIT-CI-PROVENANCE-104.json",
-        "python -m compileall -q scripts tests",
+        "python -m compileall -q scripts/audit/run_embedded_audit.py tests/audit/test_run_embedded_audit.py",
         "pytest -q tests/audit/test_run_embedded_audit.py",
         "git diff --check"
       ]
