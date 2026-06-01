@@ -50,7 +50,7 @@
   },
   "pr": {
     "base": "main",
-    "body": "## Summary\n- embedded-audit.yml runs the auditor router under a separate least-privilege token with verifiable provenance and emits the embedded_audit proof object; plus an in-lane invocation entrypoint. Engine may REQUEST but never AUTHOR the proof.\n\n## Scope\nTrack: A-complete-lane. Risk: HIGH. Red lane: false.\n\n## Validation\nRun the packet validation commands and capture proof under proof/TP-DMX-AUDIT-CI-PROVENANCE-104/PROOF.json.\n\n## NOT_RUN\nList any skipped live, integration, credentialed, or supervisor-gated checks explicitly.",
+    "body": "## Summary\n- embedded-audit.yml runs the auditor router under a separate least-privilege token with verifiable provenance and emits the embedded_audit proof object; plus an in-lane invocation entrypoint. Engine may REQUEST but never AUTHOR the proof.\n\n## Scope\nTrack: A-complete-lane. Risk: HIGH. Red lane: true.\n\n## Validation\nRun the packet validation commands and capture proof under proof/TP-DMX-AUDIT-CI-PROVENANCE-104/PROOF.json.\n\n## NOT_RUN\nList any skipped live, integration, credentialed, or supervisor-gated checks explicitly.",
     "title": "Feat(audit): independent embedded-audit CI workflow with trusted provenance"
   },
   "project": "dopemux-mvp",
@@ -97,7 +97,8 @@
         "Track: A-complete-lane",
         "Proof path: proof/TP-DMX-AUDIT-CI-PROVENANCE-104/PROOF.json",
         "Executor default: claude-code-sonnet",
-        "Auditor default: claude-code-opus"
+        "Auditor default: claude-code-opus",
+        "Supervisor/red-lane handling required before any secret-bearing workflow or token configuration change."
       ],
       "task": "embedded-audit.yml runs the auditor router under a separate least-privilege token with verifiable provenance and emits the embedded_audit proof object; plus an in-lane invocation entrypoint. Engine may REQUEST but never AUTHOR the proof.",
       "validation": [
