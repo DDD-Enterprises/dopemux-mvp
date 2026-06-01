@@ -32,6 +32,7 @@
       ".mcp.json",
       "mcp_catalog.yaml",
       "src/dopemux/mcp/default_catalog.yaml",
+      "src/dopemux/commands/mcp_commands.py",
       "scripts/mcp-wrappers/task-orchestrator-current-stdio.sh",
       "scripts/mcp-wrappers/task-orchestrator-logback.xml",
       "tests/unit/test_task_orchestrator_launcher.py",
@@ -50,8 +51,9 @@
       "bash -n scripts/mcp-wrappers/task-orchestrator-current-stdio.sh",
       "scripts/mcp-wrappers/task-orchestrator-current-stdio.sh --print-resolution",
       "python -m pytest tests/unit/test_task_orchestrator_launcher.py tests/unit/test_mcp_commands_catalog.py::test_mcp_init_keeps_matching_committed_template_and_writes_envrc tests/unit/test_mcp_commands_catalog.py::test_committed_mcp_json_matches_root_catalog_defaults -q",
+      "python -m pytest tests/unit/test_mcp_commands_catalog.py::test_doctor_runs_relative_stdio_resolution_from_repo_root -q",
       "git diff --check",
-      "pre-commit run --files .mcp.json mcp_catalog.yaml src/dopemux/mcp/default_catalog.yaml scripts/mcp-wrappers/task-orchestrator-current-stdio.sh scripts/mcp-wrappers/task-orchestrator-logback.xml tests/unit/test_task_orchestrator_launcher.py tests/unit/test_mcp_commands_catalog.py docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md CHANGELOG.md task-packets/INDEX.md task-packets/generated/TP-BETA-INSTALL-01-MCP-01-REVIEW-001.json claudedocs/pr737-review-repair-proof-2026-05-31.md"
+      "pre-commit run --files .mcp.json mcp_catalog.yaml src/dopemux/mcp/default_catalog.yaml src/dopemux/commands/mcp_commands.py scripts/mcp-wrappers/task-orchestrator-current-stdio.sh scripts/mcp-wrappers/task-orchestrator-logback.xml tests/unit/test_task_orchestrator_launcher.py tests/unit/test_mcp_commands_catalog.py docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md CHANGELOG.md task-packets/INDEX.md task-packets/generated/TP-BETA-INSTALL-01-MCP-01-REVIEW-001.json claudedocs/pr737-review-repair-proof-2026-05-31.md"
     ]
   },
   "pr": {
@@ -91,12 +93,13 @@
         "Ship the current upstream Task Orchestrator launcher and required logback config at tracked paths.",
         "Point .mcp.json, mcp_catalog.yaml, default_catalog.yaml, and active docs at the tracked path.",
         "Keep conport and dope-memory URL defaults identical between checked-in .mcp.json and catalog-rendered .mcp.json.",
+        "Run relative stdio doctor commands from the resolved repo root, not the shell caller's subdirectory.",
         "Add a launcher test that does not skip when the launcher is absent."
       ],
       "validation": [
         "bash -n scripts/mcp-wrappers/task-orchestrator-current-stdio.sh",
         "scripts/mcp-wrappers/task-orchestrator-current-stdio.sh --print-resolution",
-        "python -m pytest tests/unit/test_task_orchestrator_launcher.py tests/unit/test_mcp_commands_catalog.py::test_mcp_init_keeps_matching_committed_template_and_writes_envrc tests/unit/test_mcp_commands_catalog.py::test_committed_mcp_json_matches_root_catalog_defaults -q"
+        "python -m pytest tests/unit/test_task_orchestrator_launcher.py tests/unit/test_mcp_commands_catalog.py::test_mcp_init_keeps_matching_committed_template_and_writes_envrc tests/unit/test_mcp_commands_catalog.py::test_committed_mcp_json_matches_root_catalog_defaults tests/unit/test_mcp_commands_catalog.py::test_doctor_runs_relative_stdio_resolution_from_repo_root -q"
       ]
     },
     {
@@ -111,7 +114,7 @@
         "python -m json.tool task-packets/generated/TP-BETA-INSTALL-01-MCP-01-REVIEW-001.json >/dev/null",
         "python -m jsonschema -i task-packets/generated/TP-BETA-INSTALL-01-MCP-01-REVIEW-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
         "git diff --check",
-        "pre-commit run --files .mcp.json mcp_catalog.yaml src/dopemux/mcp/default_catalog.yaml scripts/mcp-wrappers/task-orchestrator-current-stdio.sh scripts/mcp-wrappers/task-orchestrator-logback.xml tests/unit/test_task_orchestrator_launcher.py tests/unit/test_mcp_commands_catalog.py docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md CHANGELOG.md task-packets/INDEX.md task-packets/generated/TP-BETA-INSTALL-01-MCP-01-REVIEW-001.json claudedocs/pr737-review-repair-proof-2026-05-31.md"
+        "pre-commit run --files .mcp.json mcp_catalog.yaml src/dopemux/mcp/default_catalog.yaml src/dopemux/commands/mcp_commands.py scripts/mcp-wrappers/task-orchestrator-current-stdio.sh scripts/mcp-wrappers/task-orchestrator-logback.xml tests/unit/test_task_orchestrator_launcher.py tests/unit/test_mcp_commands_catalog.py docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md CHANGELOG.md task-packets/INDEX.md task-packets/generated/TP-BETA-INSTALL-01-MCP-01-REVIEW-001.json claudedocs/pr737-review-repair-proof-2026-05-31.md"
       ]
     }
   ]
