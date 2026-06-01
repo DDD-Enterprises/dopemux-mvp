@@ -21,6 +21,13 @@
   "mutation_performed": false,
   "github_mutation_route_added": false,
   "canonical_writer": "tools/pr_action_bridge/compiler.py::compile_action_plan",
+  "proof_finality": {
+    "worktree": "dedicated local worktree, basename dopemux-mvp-wt-pr758-review-repair",
+    "commit_sha": "8e2f1e1d667604ad3eee1d12ca6ea505a9d2cb94",
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/758",
+    "codereview_status": "PASS_WITH_FOLLOWUP: automated review comments were inspected and addressed in follow-up repair commits.",
+    "precommit_status": "PASS: pre-commit run --files $(git diff --name-only origin/main)"
+  },
   "outputs": [
     "proof/TP-DMX-ACTIONBRIDGE-CLI-102/output/ACTION_PLAN.json",
     "proof/TP-DMX-ACTIONBRIDGE-CLI-102/output/REPAIR_PACKET.md"
@@ -54,7 +61,12 @@
     {
       "command": "scripts/pr-action-bridge invoked by absolute path from /tmp",
       "status": "PASS",
-      "evidence": "Wrote ACTION_PLAN.json and REPAIR_PACKET.md under /tmp/pr-action-bridge-wrapper-proof/out."
+      "evidence": "With caller-relative --artifact-dir artifacts and --out out, wrote out/ACTION_PLAN.json and out/REPAIR_PACKET.md under the caller cwd."
+    },
+    {
+      "command": "! git check-ignore -q proof/TP-DMX-ACTIONBRIDGE-CLI-102/PROOF.json",
+      "status": "PASS",
+      "evidence": "Path is no longer ignored after adding the TP102 proof bundle to the tracked proof ledger allowlist."
     },
     {
       "command": "git diff --check",

@@ -378,6 +378,8 @@ proof/*
 !proof/fast-dev-os/**
 !proof/orchestrator/
 !proof/orchestrator/**
+!proof/TP-DMX-ACTIONBRIDGE-CLI-102/
+!proof/TP-DMX-ACTIONBRIDGE-CLI-102/**
 
 # Extraction and Research artifacts
 _audit_out/
