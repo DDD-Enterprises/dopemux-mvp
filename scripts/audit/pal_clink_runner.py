@@ -185,9 +185,10 @@ def run_audit_and_capture_verdict(
 ) -> dict[str, Any]:
     """Run a PAL clink audit, persist raw output, and normalize a verdict.
 
-    ``PAL_CLINK_AUDIT_OUTPUT.json`` records the deterministic host-side runner
-    result. The clink verdict payload is parsed from stdout and normalized
-    through the existing embedded-audit policy in ``tools.auditor_router``.
+    ``PAL_CLINK_AUDIT_OUTPUT.json`` records the host-side runner result,
+    including timing and process output. The clink verdict payload is parsed
+    from stdout and normalized through the existing embedded-audit policy in
+    ``tools.auditor_router``.
     """
     output = run_audit(
         route,
@@ -208,6 +209,15 @@ def run_audit_and_capture_verdict(
         route=route_record,
         report_path=report_path,
     )
+    if _payload_is_fixture_only(verdict_payload):
+        embedded_audit = {
+            **embedded_audit,
+            "status": "NEEDS_SUPERVISOR",
+            "exit_code": 1,
+            "remaining_risks": [
+                "Fixture-only audit is blocking; no live external PAL clink CLI was invoked."
+            ],
+        }
 
     report_file = report_file_path or Path(report_path)
     report_file.parent.mkdir(parents=True, exist_ok=True)
@@ -239,8 +249,34 @@ def _verdict_payload_from_output(output: PalClinkAuditOutput) -> dict[str, Any]:
     except json.JSONDecodeError:
         return {"status": "success", "content": output.stdout}
     if isinstance(payload, dict):
-        return payload
+        return _unwrap_tool_output_payload(payload)
     return {"status": "success", "content": output.stdout}
+
+
+def _unwrap_tool_output_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    if payload.get("status") != "success" or "verdict" in payload:
+        return payload
+    content = payload.get("content")
+    if not isinstance(content, str):
+        return payload
+    try:
+        content_payload = json.loads(content)
+    except json.JSONDecodeError:
+        return payload
+    if isinstance(content_payload, dict):
+        return content_payload
+    return payload
+
+
+def _payload_is_fixture_only(payload: dict[str, Any]) -> bool:
+    values: list[str] = []
+    for item in payload.get("risks") or []:
+        values.append(str(item))
+    content = payload.get("content")
+    if isinstance(content, str):
+        values.append(content)
+    text = "\n".join(values).lower()
+    return "fixture run only" in text or "fixture-only audit" in text
 
 
 def _render_audit_report(embedded_audit: dict[str, Any]) -> str:
