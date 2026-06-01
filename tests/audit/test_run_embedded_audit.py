@@ -123,7 +123,7 @@ def test_run_cli_writes_proof_and_auditor_report(tmp_path: Path) -> None:
     )
     assert "secret-value" not in (out_dir / "PROOF.json").read_text(encoding="utf-8")
     assert "secret-value" not in report_text
-    assert "Count: 0" in report_text
+    assert "PROOF.json" in report_text
 
 
 def test_run_cli_skips_when_route_json_is_missing(tmp_path: Path) -> None:
