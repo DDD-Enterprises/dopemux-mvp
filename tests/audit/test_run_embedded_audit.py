@@ -157,6 +157,43 @@ def test_run_cli_skips_when_route_json_is_missing(tmp_path: Path) -> None:
     assert (out_dir / proof["embedded_audit"]["report_path"]).is_file()
 
 
+def test_run_cli_skips_when_supplied_pal_output_json_is_missing(
+    tmp_path: Path,
+) -> None:
+    route_path = tmp_path / "AUDITOR_ROUTE.json"
+    out_dir = tmp_path / "proof"
+    route_path.write_text(json.dumps(_route()), encoding="utf-8")
+
+    exit_code = run_cli(
+        [
+            "--packet-id",
+            "TP-DMX-AUDIT-CI-PROVENANCE-104",
+            "--repo",
+            "DDD-Enterprises/dopemux-mvp",
+            "--pr",
+            "760",
+            "--head-sha",
+            "e" * 40,
+            "--route-json",
+            str(route_path),
+            "--pal-output-json",
+            str(tmp_path / "missing" / "PAL_CLINK_AUDIT_OUTPUT.json"),
+            "--out",
+            str(out_dir),
+            "--generated-at",
+            "2026-01-01T00:00:00Z",
+        ],
+        env={"EMBEDDED_AUDIT_TOKEN": "secret-value"},
+    )
+
+    assert exit_code == 0
+    proof = json.loads((out_dir / "PROOF.json").read_text(encoding="utf-8"))
+    jsonschema.Draft7Validator(_schema()).validate(proof["embedded_audit"])
+    assert proof["embedded_audit"]["status"] == "SKIPPED"
+    assert "PAL clink output JSON" in proof["embedded_audit"]["skip_reason"]
+    assert (out_dir / proof["embedded_audit"]["report_path"]).is_file()
+
+
 def test_embedded_audit_workflow_is_read_only_and_not_pull_request_target() -> None:
     text = WORKFLOW_PATH.read_text(encoding="utf-8")
     permissions = text.split("permissions:\n", 1)[1].split("\njobs:", 1)[0]
@@ -178,6 +215,8 @@ def test_embedded_audit_workflow_runs_emitter_from_trusted_source() -> None:
     assert "Checkout trusted audit source" in text
     assert "path: trusted-source" in text
     assert "ref: ${{ steps.pr.outputs.trusted_ref }}" in text
+    assert "TRUSTED_FALLBACK_REF: ${{ github.event.repository.default_branch }}" in text
+    assert "TRUSTED_FALLBACK_SHA" not in text
     assert "working-directory: trusted-source" in text
     assert "id: head_integrity" in text
     assert "HEAD_VERIFIED: ${{ steps.head_integrity.outputs.verified }}" in text
