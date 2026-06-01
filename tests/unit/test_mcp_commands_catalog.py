@@ -1,9 +1,11 @@
 import json
 import subprocess
+from pathlib import Path
 from types import SimpleNamespace
 
 import click
 import pytest
+import yaml
 from click.testing import CliRunner
 
 from dopemux.commands import mcp_commands
@@ -55,6 +57,17 @@ def test_mcp_init_keeps_matching_committed_template_and_writes_envrc(tmp_path, m
     assert "export CONPORT_MCP_PORT=" in envrc
     assert "export CONPORT_HTTP_PORT=" in envrc
     assert "export CONPORT_INFO_PORT=" in envrc
+
+
+def test_committed_mcp_json_matches_root_catalog_defaults():
+    repo_root = Path(__file__).resolve().parents[2]
+    catalog = yaml.safe_load((repo_root / "mcp_catalog.yaml").read_text())
+    defaults = catalog.get("defaults", {}).get("per_worktree", [])
+
+    expected = mcp_commands._build_local_mcp_json(defaults, catalog)
+    actual = json.loads((repo_root / ".mcp.json").read_text())
+
+    assert actual == expected
 
 
 def test_mcp_add_appends_primary_and_extra_catalog_ports(tmp_path, monkeypatch):
