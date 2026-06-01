@@ -22,7 +22,7 @@
     },
     "task-orchestrator": {
       "type": "stdio",
-      "command": "plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh",
+      "command": "scripts/mcp-wrappers/task-orchestrator-current-stdio.sh",
       "args": [],
       "env": {
         "TASK_ORCHESTRATOR_PROJECT_ROOT": "${TASK_ORCHESTRATOR_PROJECT_ROOT:-}",
