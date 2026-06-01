@@ -1,0 +1,160 @@
+{
+  "tp_id": "TP-DMX-STEWARD-DOCTOR-303",
+  "status": "PASS_WITH_LIMITS",
+  "generated_at": "2026-06-01T00:10:00Z",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-steward-doctor-303",
+  "branch": "codex/tp-dmx-steward-doctor-303",
+  "base_ref": "origin/codex/tp-dmx-steward-scaffold-302",
+  "base_sha": "3f4231d5e43df404cf2e8c0847b5a6e4f13bb760",
+  "implementation_commit_sha": "ef22118875695c668f364dca3487d22d48509f94",
+  "proof_commit_sha": "PENDING_PROOF_COMMIT",
+  "pr_url": "PENDING_PR_CREATION",
+  "repo_identity": {
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker": ".dopetaskroot",
+    "identity_match": true
+  },
+  "stacking": {
+    "reason": "TP303 depends on TP-DMX-STEWARD-SCAFFOLD-302, so the packet and PR base were changed from main to codex/tp-dmx-steward-scaffold-302.",
+    "base_branch": "codex/tp-dmx-steward-scaffold-302",
+    "base_pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/772"
+  },
+  "dependency_proofs": [
+    {
+      "tp_id": "TP-DMX-STEWARD-PACKAGE-301",
+      "path": "proof/TP-DMX-STEWARD-PACKAGE-301/PROOF.json",
+      "present": true,
+      "json_valid": true,
+      "status": "PASS_WITH_LIMITS",
+      "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/770"
+    },
+    {
+      "tp_id": "TP-DMX-STEWARD-SCAFFOLD-302",
+      "path": "proof/TP-DMX-STEWARD-SCAFFOLD-302/PROOF.json",
+      "present": true,
+      "json_valid": true,
+      "status": "PASS_WITH_LIMITS",
+      "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/772"
+    }
+  ],
+  "authority_used": [
+    "AGENTS.md",
+    "task-packets/generated/TP-DMX-STEWARD-DOCTOR-303.json",
+    "docs/ops/load-plans/load_plan-DMX-AUTOREVIEW-PLATFORM.json",
+    "src/dopemux_pr_steward/cli.py",
+    "src/dopemux/templates/init/config/pr_steward/policy.json",
+    "docs/ops/pr-steward-distribution.md",
+    "proof/TP-DMX-STEWARD-SCAFFOLD-302/PROOF.json"
+  ],
+  "slices_completed": [
+    "Preflight verified the dedicated worktree, origin, branch, .dopetaskroot marker, TP303 schema, and TP301/TP302 dependency proofs.",
+    "RED: added tests/dopemux_cli/test_doctor.py and observed all five tests fail against the placeholder doctor implementation.",
+    "GREEN: added report-only doctor module, config schema, CLI wiring, docs, and packet base metadata.",
+    "Implemented fail-closed behavior for missing/unknown schema, invalid config, and scaffold skew without writing files.",
+    "Refreshed the local editable install to this TP303 worktree so the exact python -m dopemux.cli validation command resolved the new doctor implementation."
+  ],
+  "files_changed": [
+    "docs/ops/pr-steward-distribution.md",
+    "schemas/pr_steward/config.schema.json",
+    "src/dopemux_pr_steward/cli.py",
+    "src/dopemux_pr_steward/doctor.py",
+    "task-packets/generated/TP-DMX-STEWARD-DOCTOR-303.json",
+    "tests/dopemux_cli/test_doctor.py",
+    "proof/TP-DMX-STEWARD-DOCTOR-303/**"
+  ],
+  "validations": [
+    {
+      "command": "pytest -q tests/dopemux_cli/test_doctor.py",
+      "exit_code": 1,
+      "status": "RED_PASS",
+      "evidence": "Five tests failed against placeholder doctor behavior."
+    },
+    {
+      "command": "pytest -q tests/dopemux_cli/test_doctor.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "5 passed"
+    },
+    {
+      "command": "pytest -q tests/dopemux_cli/test_doctor.py tests/dopemux_cli/test_pr_steward_cmd.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "10 passed"
+    },
+    {
+      "command": "python -m pip install -e .",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Refreshed local editable install from the prior TP302 worktree to this TP303 worktree."
+    },
+    {
+      "command": "python -m dopemux.cli pr-steward doctor --help",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Help lists --workspace, --schema, and --format; LiteLLM emitted non-fatal botocore warnings."
+    },
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-STEWARD-DOCTOR-303.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m jsonschema -i task-packets/generated/TP-DMX-STEWARD-DOCTOR-303.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m json.tool schemas/pr_steward/config.schema.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m compileall -q src tests",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "pytest -q tests/dopemux_cli",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "10 passed"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "pre-commit run --files <TP303 changed files>",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-STEWARD-DOCTOR-303/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "External embedded audit was not invoked in this Codex session.",
+      "Doctor validates a deliberately small JSON Schema subset; unsupported schema keywords fail closed as UNKNOWN_SCHEMA."
+    ],
+    "skip_reason": "No supported external embedded-auditor invocation was available in this session; Codex performed bounded manual audit and records this required audit as skipped."
+  },
+  "codereview_status": "Manual bounded review complete; doctor is report-only, no auto-fix path exists, and tests assert no policy mutation.",
+  "precommit_status": "PASS: pre-commit run on TP303 changed files and git diff --check passed.",
+  "residual_risks": [
+    "Doctor compares config/pr_steward/policy.json to the packaged scaffold policy exactly; intentional local policy customization is reported as scaffold skew and requires operator review.",
+    "Live downstream repository doctor execution was not exercised before this proof was written.",
+    "External embedded audit is skipped locally and should be supplied by CI or supervisor review."
+  ],
+  "unknowns": [
+    "Whether downstream projects want configurable allowed drift for PR Steward policy remains UNKNOWN and is deferred outside TP303."
+  ],
+  "cleanup_status": "WORKTREE_ACTIVE_PENDING_PR"
+}
