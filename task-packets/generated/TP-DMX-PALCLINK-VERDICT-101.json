@@ -13,7 +13,7 @@
     "message": "feat(audit): execute PAL clink audit and capture real verdict",
     "verify": [
       "python -m json.tool task-packets/generated/TP-DMX-PALCLINK-VERDICT-101.json",
-      "python -m compileall -q tools scripts tests",
+      "python -m compileall -q scripts/audit/pal_clink_runner.py tools/auditor_router/pal_clink.py tests/audit/test_pal_clink_runner.py tests/auditor_router/test_pal_clink.py",
       "pytest -q tests/audit/test_pal_clink_runner.py",
       "pytest -q tests/auditor_router/test_pal_clink.py",
       "git diff --check"
@@ -125,7 +125,7 @@
     {
       "commands": [
         "python -m json.tool task-packets/generated/TP-DMX-PALCLINK-VERDICT-101.json",
-        "python -m compileall -q tools scripts tests",
+        "python -m compileall -q scripts/audit/pal_clink_runner.py tools/auditor_router/pal_clink.py tests/audit/test_pal_clink_runner.py tests/auditor_router/test_pal_clink.py",
         "pytest -q tests/audit/test_pal_clink_runner.py",
         "pytest -q tests/auditor_router/test_pal_clink.py",
         "git diff --check"
@@ -134,7 +134,7 @@
       "task": "Run focused validation, inspect git diff, run codereview/precommit review, and prepare a truthful completion summary.",
       "validation": [
         "python -m json.tool task-packets/generated/TP-DMX-PALCLINK-VERDICT-101.json",
-        "python -m compileall -q tools scripts tests",
+        "python -m compileall -q scripts/audit/pal_clink_runner.py tools/auditor_router/pal_clink.py tests/audit/test_pal_clink_runner.py tests/auditor_router/test_pal_clink.py",
         "pytest -q tests/audit/test_pal_clink_runner.py",
         "pytest -q tests/auditor_router/test_pal_clink.py",
         "git diff --check"

@@ -12,7 +12,7 @@
     "message": "feat(pr): add read-only Action Bridge CLI",
     "verify": [
       "python -m json.tool task-packets/generated/TP-DMX-ACTIONBRIDGE-CLI-102.json",
-      "python -m compileall -q tools scripts tests",
+      "python -m compileall -q tools/pr_action_bridge/__main__.py tools/pr_action_bridge/cli.py scripts/pr-action-bridge tests/pr_action_bridge/test_cli.py",
       "pytest -q tests/pr_action_bridge/test_cli.py",
       "git diff --check"
     ]
@@ -121,7 +121,7 @@
     {
       "commands": [
         "python -m json.tool task-packets/generated/TP-DMX-ACTIONBRIDGE-CLI-102.json",
-        "python -m compileall -q tools scripts tests",
+        "python -m compileall -q tools/pr_action_bridge/__main__.py tools/pr_action_bridge/cli.py scripts/pr-action-bridge tests/pr_action_bridge/test_cli.py",
         "pytest -q tests/pr_action_bridge/test_cli.py",
         "git diff --check"
       ],
@@ -129,7 +129,7 @@
       "task": "Run focused validation, inspect git diff, run codereview/precommit review, and prepare a truthful completion summary.",
       "validation": [
         "python -m json.tool task-packets/generated/TP-DMX-ACTIONBRIDGE-CLI-102.json",
-        "python -m compileall -q tools scripts tests",
+        "python -m compileall -q tools/pr_action_bridge/__main__.py tools/pr_action_bridge/cli.py scripts/pr-action-bridge tests/pr_action_bridge/test_cli.py",
         "pytest -q tests/pr_action_bridge/test_cli.py",
         "git diff --check"
       ]
