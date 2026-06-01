@@ -90,6 +90,10 @@
 **Learning:** Expanding the interactive hit area of informational cards by making the entire container focusable (rather than just small internal icons) significantly improves usability for both mouse and keyboard users. Adding thematic visual feedback like hover lifts and border glows reinforces the card's interactability and provides a more delightful experience.
 **Action:** Prefer making informational containers interactive surfaces with clear focus/hover states over burying interaction in small, secondary elements.
 
+## 2026-05-26 - [Reactive Personality through Dynamic Feedback]
+**Learning:** In dashboards monitoring human performance (like Energy or Focus), static feedback strings ("You're sipping ambition...") can feel disconnected over time. Implementing dynamic, value-sensitive roasts creates a "Reactive Personality" for the dashboard, making the AI feel more alive and attentive to the user's current state.
+**Action:** Use value-based logic to swap feedback strings or "roasts" in real-time metrics to maintain user engagement and provide a more responsive UX.
+
 ## 2026-05-20 - [Pulsing Soft Confirmation Feedbacks]
 **Learning:** For destructive actions using a multi-step "soft" confirmation (e.g., "Reset Ritual"), a static label change might be too subtle for users in high-stimulation dashboard environments. Adding a rhythmic scale-and-glow pulse animation during the confirmation window provides a clear "active warning" state that reduces accidental progress loss while increasing the perceived safety of the interaction.
 **Action:** Use subtle `reset-pulse` animations for button components during time-limited confirmation windows to provide stronger visual feedback for destructive actions.
