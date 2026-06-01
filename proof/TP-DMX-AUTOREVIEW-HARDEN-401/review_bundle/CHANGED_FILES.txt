@@ -1,0 +1,11 @@
+docs/ops/operating-model.md
+docs/ops/pr-acceptance.md
+docs/ops/pr-steward-distribution.md
+docs/ops/steward-merge-gate.md
+task-packets/generated/TP-DMX-AUTOREVIEW-HARDEN-401.json
+proof/TP-DMX-AUTOREVIEW-HARDEN-401/PROOF.json
+proof/TP-DMX-AUTOREVIEW-HARDEN-401/VALIDATION_OUTPUT.md
+proof/TP-DMX-AUTOREVIEW-HARDEN-401/AUDITOR_REPORT.md
+proof/TP-DMX-AUTOREVIEW-HARDEN-401/GIT_STATE.md
+proof/TP-DMX-AUTOREVIEW-HARDEN-401/DIFF_STAT.txt
+proof/TP-DMX-AUTOREVIEW-HARDEN-401/CHANGED_FILES.txt
