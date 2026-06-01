@@ -54,6 +54,21 @@ SELECTED_STACK="core"  # core | research | full
 SELECTED_COMPOSE_FILE="$DOCKER_COMPOSE_CORE"
 ENV_FILE="${ENV_FILE:-.env}"
 STACK_SELECTED_FROM_FLAG=false
+# ============================================================================
+# INSTALLER_TEST_MODE — CI/dry-run guard (set to "1" by automated installer tests).
+#
+# When enabled, every side-effecting step is SHORT-CIRCUITED. This mode validates
+# control flow, arg parsing, prompts, and env-file handling ONLY. It deliberately
+# does NOT exercise (and therefore CANNOT catch regressions in):
+#   - Docker network creation        (ensure_docker_networks)
+#   - Docker image pull / build      (install_docker_services)
+#   - `docker compose ... up -d`     (install_docker_services)
+#   - Python venv + `pip install -e` (install_dopemux_core)
+#   - Shell integration / rc edits   (configure_shell_integration)
+#   - System resource preflight      (check_system_resources / preflight_checks / check_docker)
+#   - Post-install verification       (verify_installation)
+# Validate those paths manually or in a full (non-test-mode) install on a throwaway host.
+# ============================================================================
 INSTALLER_TEST_MODE="${INSTALLER_TEST_MODE:-0}"
 STARTED_CAPABILITIES=()
 DEFERRED_CAPABILITIES=()

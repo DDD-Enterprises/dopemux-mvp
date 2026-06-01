@@ -311,6 +311,16 @@ def resolve_phase_s_prompts(
     if normalized_mode == legacy_mode:
         return legacy_phase_prompt_specs("S")
 
+    # S4-CRIT-1 (audit): non-legacy modes swap the Phase-S step set from the default
+    # S0-S12 to the SP0-SP12 registry steps (still written under the S_synthesis dir).
+    # Make that explicit and loud so it cannot be activated silently via DOPEMUX_S_PROMPTS.
+    logger.warning(
+        "Phase S prompts mode=%r resolves the SP registry step set (SP0-SP12) under phase "
+        "'S' -- NOT the default legacy S0-S12 set. Set DOPEMUX_S_PROMPTS=legacy to restore "
+        "default behavior.",
+        normalized_mode,
+    )
+
     try:
         registry = load_phase_s_registry()
     except Exception as exc:
