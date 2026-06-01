@@ -1,0 +1,127 @@
+{
+  "id": "TP-SEC-COMPOSE-LITELLM-LOCALHOST-001",
+  "project": "dopemux-mvp",
+  "target": "compose LiteLLM secret handling and localhost-only host publication for internal services",
+  "invariants": [
+    "Do not repeat or expose committed secret values in proofs or output.",
+    "Preserve Docker container reachability; internal container binds may remain 0.0.0.0 only when required for Docker port publication.",
+    "Restrict externally published internal service ports to 127.0.0.1 unless runtime evidence proves public access is intentional.",
+    "Report observed prompt/runtime conflicts as UNKNOWN or documented exceptions rather than silently forcing the prompt."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "beta-remaining-security-compose",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "fix/security-litellm-key-compose",
+    "base_branch": "main",
+    "stacked_because": "Items 3 and 4 both touch compose.yml and are safer as one compose security PR."
+  },
+  "commit": {
+    "message": "fix(security): SEC - externalize LiteLLM healthcheck key and localize service ports",
+    "allowlist": [
+      ".env.example",
+      "compose.yml",
+      "install.sh",
+      "task-packets/INDEX.md",
+      "task-packets/generated/TP-SEC-COMPOSE-LITELLM-LOCALHOST-001.json",
+      "claudedocs/security-compose-litellm-localhost-proof-2026-05-31.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-SEC-COMPOSE-LITELLM-LOCALHOST-001.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-SEC-COMPOSE-LITELLM-LOCALHOST-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python - <<'PY'\\nimport yaml\\nfrom pathlib import Path\\ncompose = yaml.safe_load(Path('compose.yml').read_text())\\nservices = compose['services']\\nassert '${LITELLM_MASTER_KEY}' in str(services['litellm']['healthcheck']['test'])\\nfor service in ['adhd-engine', 'leantime-bridge', 'webhook-receiver']:\\n    ports = services[service]['ports']\\n    assert all(str(port).startswith('127.0.0.1:') for port in ports), (service, ports)\\nPY",
+      "bash -n install.sh",
+      "docker compose -f compose.yml config --quiet",
+      "git diff --check",
+      "pre-commit run --files .env.example compose.yml install.sh task-packets/INDEX.md task-packets/generated/TP-SEC-COMPOSE-LITELLM-LOCALHOST-001.json claudedocs/security-compose-litellm-localhost-proof-2026-05-31.md"
+    ]
+  },
+  "pr": {
+    "title": "fix(security): externalize LiteLLM key and restrict compose ports",
+    "body": "## Problem\\n- LiteLLM healthcheck carried a hardcoded bearer value in compose.yml instead of an environment reference.\\n- Several internal compose services published host ports on all interfaces, while Docker runtime evidence shows container-internal 0.0.0.0 binds may be required for published ports to remain reachable.\\n\\n## Fix\\n- Move the LiteLLM healthcheck bearer to LITELLM_MASTER_KEY.\\n- Add LITELLM_MASTER_KEY to .env.example and installer full-stack env handling.\\n- Restrict internal service host port publication to 127.0.0.1 and document intentional container-internal binds where needed.\\n\\n## Test Plan\\n- Validate Task Packet JSON and schema.\\n- Parse and assert compose security invariants with PyYAML.\\n- Run bash -n install.sh.\\n- Run docker compose config.\\n- Run git diff --check and pre-commit on changed files.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect",
+      "task": "Inspect compose, service entrypoints, installer env handling, and authority docs before editing.",
+      "requirements": [
+        "Differentiate current repo truth from the audit prompt when the redacted LiteLLM placeholder differs from the claimed committed secret.",
+        "Identify whether changing container bind hosts would break Docker reachability."
+      ],
+      "validation": [
+        "grep -n \"LITELLM_MASTER_KEY\\|Authorization.*Bearer\" compose.yml",
+        "grep -n \"0\\\\.0\\\\.0\\\\.0\" compose.yml",
+        "rg -n \"MCP_SERVER_HOST|WEBHOOK_RECEIVER_HOST|HOST|uvicorn\" services docker src"
+      ],
+      "context_files": [
+        "AGENTS.md",
+        ".claude/claude.md",
+        ".claude/modules/shared/governance-principles.md",
+        "compose.yml",
+        "install.sh",
+        ".env.example"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Externalize the LiteLLM healthcheck bearer and restrict host-published internal service ports to localhost.",
+      "requirements": [
+        "Use LITELLM_MASTER_KEY in compose healthcheck instead of a hardcoded bearer value.",
+        "Add LITELLM_MASTER_KEY to .env.example and installer full-stack env handling.",
+        "Restrict adhd-engine, leantime-bridge, and webhook-receiver host port publication to 127.0.0.1.",
+        "Document any retained container-internal 0.0.0.0 binds as Docker reachability requirements."
+      ],
+      "expected_files": [
+        ".env.example",
+        "compose.yml",
+        "install.sh",
+        "claudedocs/security-compose-litellm-localhost-proof-2026-05-31.md"
+      ],
+      "validation": [
+        "python - <<'PY'\\nimport yaml\\nfrom pathlib import Path\\ncompose = yaml.safe_load(Path('compose.yml').read_text())\\nservices = compose['services']\\nassert '${LITELLM_MASTER_KEY}' in str(services['litellm']['healthcheck']['test'])\\nfor service in ['adhd-engine', 'leantime-bridge', 'webhook-receiver']:\\n    ports = services[service]['ports']\\n    assert all(str(port).startswith('127.0.0.1:') for port in ports), (service, ports)\\nPY",
+        "bash -n install.sh",
+        "docker compose -f compose.yml config --quiet"
+      ]
+    },
+    {
+      "id": "precommit",
+      "task": "Run diff, focused validation, pre-commit, commit, push, and open the PR with proof.",
+      "requirements": [
+        "Inspect git diff before staging.",
+        "Do not claim Docker runtime start was exercised unless it was actually run."
+      ],
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-SEC-COMPOSE-LITELLM-LOCALHOST-001.json >/dev/null",
+        "python -m jsonschema -i task-packets/generated/TP-SEC-COMPOSE-LITELLM-LOCALHOST-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "git diff --check",
+        "pre-commit run --files .env.example compose.yml install.sh task-packets/INDEX.md task-packets/generated/TP-SEC-COMPOSE-LITELLM-LOCALHOST-001.json claudedocs/security-compose-litellm-localhost-proof-2026-05-31.md"
+      ]
+    }
+  ]
+}
