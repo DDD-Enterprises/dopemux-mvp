@@ -1,3 +1,17 @@
+docs/ops/pr-action-bridge.md
 proof/TP-DMX-ACTIONBRIDGE-CLI-102/AUDITOR_REPORT.md
+proof/TP-DMX-ACTIONBRIDGE-CLI-102/CHANGED_FILES.txt
+proof/TP-DMX-ACTIONBRIDGE-CLI-102/DIFF_STAT.txt
+proof/TP-DMX-ACTIONBRIDGE-CLI-102/GIT_STATE.md
 proof/TP-DMX-ACTIONBRIDGE-CLI-102/PROOF.json
 proof/TP-DMX-ACTIONBRIDGE-CLI-102/VALIDATION_OUTPUT.md
+proof/TP-DMX-ACTIONBRIDGE-CLI-102/input/CI_TRIAGE.json
+proof/TP-DMX-ACTIONBRIDGE-CLI-102/input/MERGE_READINESS.json
+proof/TP-DMX-ACTIONBRIDGE-CLI-102/input/REVIEW_ITEM_LEDGER.json
+proof/TP-DMX-ACTIONBRIDGE-CLI-102/input/THREAD_DISPOSITIONS.json
+proof/TP-DMX-ACTIONBRIDGE-CLI-102/output/ACTION_PLAN.json
+proof/TP-DMX-ACTIONBRIDGE-CLI-102/output/REPAIR_PACKET.md
+scripts/pr-action-bridge
+tests/pr_action_bridge/test_cli.py
+tools/pr_action_bridge/__main__.py
+tools/pr_action_bridge/cli.py

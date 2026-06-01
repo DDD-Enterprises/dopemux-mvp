@@ -91,7 +91,7 @@ def test_wrapper_script_invokes_module_cli(tmp_path: Path) -> None:
             "--generated-at",
             FIXED_TS,
         ],
-        cwd=ROOT,
+        cwd=tmp_path,
         text=True,
         capture_output=True,
         check=False,
