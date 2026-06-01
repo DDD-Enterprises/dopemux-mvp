@@ -209,6 +209,15 @@ def run_audit_and_capture_verdict(
         route=route_record,
         report_path=report_path,
     )
+    if _payload_is_fixture_only(verdict_payload):
+        embedded_audit = {
+            **embedded_audit,
+            "status": "NEEDS_SUPERVISOR",
+            "exit_code": 1,
+            "remaining_risks": [
+                "Fixture-only audit is blocking; no live external PAL clink CLI was invoked."
+            ],
+        }
 
     report_file = report_file_path or Path(report_path)
     report_file.parent.mkdir(parents=True, exist_ok=True)
@@ -257,6 +266,17 @@ def _unwrap_tool_output_payload(payload: dict[str, Any]) -> dict[str, Any]:
     if isinstance(content_payload, dict):
         return content_payload
     return payload
+
+
+def _payload_is_fixture_only(payload: dict[str, Any]) -> bool:
+    values: list[str] = []
+    for item in payload.get("risks") or []:
+        values.append(str(item))
+    content = payload.get("content")
+    if isinstance(content, str):
+        values.append(content)
+    text = "\n".join(values).lower()
+    return "fixture run only" in text or "fixture-only audit" in text
 
 
 def _render_audit_report(embedded_audit: dict[str, Any]) -> str:
