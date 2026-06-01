@@ -183,6 +183,9 @@ it emits `SKIPPED` and records the missing authority in `skip_reason`.
 The emitted `embedded_audit.report_path` is the canonical
 `proof/<packet-id>/AUDITOR_REPORT.md` path. Artifact bundles must include that
 relative file path so consumers following the proof object can read the report.
+If the trusted checkout does not yet contain the proof emitter, bootstrap CI
+must emit a schema-valid `SKIPPED` proof rather than executing the PR-head copy
+of the emitter.
 
 ---
 

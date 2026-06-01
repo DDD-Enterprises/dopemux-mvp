@@ -175,6 +175,8 @@ def test_embedded_audit_workflow_runs_emitter_from_trusted_source() -> None:
     assert "path: trusted-source" in text
     assert "ref: ${{ steps.pr.outputs.trusted_ref }}" in text
     assert "working-directory: trusted-source" in text
+    assert "if [ -f scripts/audit/run_embedded_audit.py ]; then" in text
+    assert "ref does not yet contain scripts/audit/run_embedded_audit.py" in text
     assert "git -C trusted-source fetch --no-tags --depth=1 origin" in text
     assert "ref: ${{ steps.pr.outputs.head_sha }}" not in text
     assert "github.event.pull_request.head.sha || github.sha" not in text
