@@ -42,17 +42,23 @@ Result: PASS.
 Result: PASS after resolving `task-packets/generated/TP-DMX-ACTIONBRIDGE-CLI-102.json`
 to keep the current narrowed `compileall` validation command.
 
-`/Users/hue/code/dopemux-mvp-wt-pr758-review-repair/scripts/pr-action-bridge --artifact-dir /Users/hue/code/dopemux-mvp-wt-pr758-review-repair/proof/TP-DMX-ACTIONBRIDGE-CLI-102/input --out /tmp/pr-action-bridge-wrapper-proof/out --generated-at 2026-01-01T00:00:00Z`
+`/path/to/worktree/scripts/pr-action-bridge --artifact-dir artifacts --out out --generated-at 2026-01-01T00:00:00Z`
 
-Run from `/tmp`.
+Run from `/tmp/pr-action-bridge-wrapper-proof-cwd`, with `artifacts/` populated from
+`proof/TP-DMX-ACTIONBRIDGE-CLI-102/input/`.
 
 Result: PASS.
 
 ```text
-wrote /tmp/pr-action-bridge-wrapper-proof/out/ACTION_PLAN.json
-wrote /tmp/pr-action-bridge-wrapper-proof/out/REPAIR_PACKET.md
+wrote out/ACTION_PLAN.json
+wrote out/REPAIR_PACKET.md
 # REPAIR_PACKET
 ```
+
+`! git check-ignore -q proof/TP-DMX-ACTIONBRIDGE-CLI-102/PROOF.json`
+
+Result: PASS. The TP102 proof bundle is now included in the tracked proof ledger
+allowlist instead of requiring `git add -f`.
 
 `git diff --check`
 
