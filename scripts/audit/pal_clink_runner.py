@@ -240,8 +240,23 @@ def _verdict_payload_from_output(output: PalClinkAuditOutput) -> dict[str, Any]:
     except json.JSONDecodeError:
         return {"status": "success", "content": output.stdout}
     if isinstance(payload, dict):
-        return payload
+        return _unwrap_tool_output_payload(payload)
     return {"status": "success", "content": output.stdout}
+
+
+def _unwrap_tool_output_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    if payload.get("status") != "success" or "verdict" in payload:
+        return payload
+    content = payload.get("content")
+    if not isinstance(content, str):
+        return payload
+    try:
+        content_payload = json.loads(content)
+    except json.JSONDecodeError:
+        return payload
+    if isinstance(content_payload, dict):
+        return content_payload
+    return payload
 
 
 def _render_audit_report(embedded_audit: dict[str, Any]) -> str:

@@ -43,7 +43,7 @@
     "packet_json": "PASS",
     "packet_scoped_compileall": "PASS",
     "review_repair_fixture_only_audit_blocks": "PASS NEEDS_SUPERVISOR",
-    "tests_audit_pal_clink_runner": "PASS 36 passed",
+    "tests_audit_pal_clink_runner": "PASS 37 passed",
     "tests_auditor_router_pal_clink": "PASS 46 passed"
   }
 }
