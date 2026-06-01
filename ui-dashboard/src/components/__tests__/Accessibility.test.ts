@@ -28,8 +28,8 @@ test('PredictionPanel.tsx has aria-label for LinearProgress and loading state', 
   expect(content).toContain('aria-label="15-Minute Load Prediction Percentage"');
   expect(content).toContain('aria-valuetext');
   expect(content).toContain('Prediction Loading...');
-  // Indeterminate LinearProgress in loading state
-  expect(content).toContain('aria-label="Loading prediction data"');
+  // Primary LinearProgress handles indeterminate state during loading
+  expect(content).toContain('variant={hasPrediction ? \'determinate\' : \'indeterminate\'}');
   expect(content).toMatch(/<Tooltip[^>]*title="Predictive LSTM model running on edge device"[^>]*arrow/);
 });
 

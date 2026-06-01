@@ -168,6 +168,31 @@ const getNotificationIcon = (type: string) => {
   }
 };
 
+const getDynamicRoast = (label: string, value: number | null) => {
+  if (value === null) return 'Future you is pacing. Hydrate before they mutiny.';
+
+  switch (label) {
+    case 'Energy Level':
+      if (value > 0.8) return 'Hyperfocus detected. Try not to vibrate into another dimension.';
+      if (value > 0.5) return "You're sipping ambition like it's lukewarm coffee.";
+      return 'Battery low. Even your shadow looks tired.';
+    case 'Attention Focus':
+      if (value > 0.8) return 'Focus is absolute. The world is just background noise now.';
+      if (value > 0.5) return 'Focus is flirting with you; stop ghosting it.';
+      return 'Attention scattered like a dropped bag of glitter.';
+    case 'Cognitive Load':
+      if (value > 0.8) return 'Brain melting. I can smell the ozone from here.';
+      if (value > 0.5) return 'Load creeping up like a brat testing limits.';
+      return 'Idle mind? Careful, I might fill it with something weird.';
+    case '15-min Prediction':
+      if (value > 0.8) return 'Incoming storm. Buckle up or bail out.';
+      if (value > 0.5) return 'Future you is pacing. Hydrate before they mutiny.';
+      return 'Smooth sailing ahead. Don’t get too comfortable.';
+    default:
+      return 'Logged. Hydrate. Ask for mercy with details.';
+  }
+};
+
 function App() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const feedHeadingRef = useRef<HTMLHeadingElement>(null);
@@ -342,7 +367,7 @@ function App() {
       value: cognitiveState.energy,
       icon: <Zap color={brandTokens.colors.serumMint} size={24} aria-hidden="true" />,
       accentColor: brandTokens.colors.serumMint,
-      roast: "You're sipping ambition like it's lukewarm coffee.",
+      roast: getDynamicRoast('Energy Level', cognitiveState.energy),
       tooltip: 'Your current biometric energy reserve based on activity and sleep data',
     },
     {
@@ -350,7 +375,7 @@ function App() {
       value: cognitiveState.attention,
       icon: <Eye color={brandTokens.colors.ritualCyan} size={24} aria-hidden="true" />,
       accentColor: brandTokens.colors.ritualCyan,
-      roast: 'Focus is flirting with you; stop ghosting it.',
+      roast: getDynamicRoast('Attention Focus', cognitiveState.attention),
       tooltip: 'Real-time attention state: scattered, focused, or hyperfocused',
     },
     {
@@ -358,7 +383,7 @@ function App() {
       value: cognitiveState.load,
       icon: <Brain color={brandTokens.colors.saintGold} size={24} aria-hidden="true" />,
       accentColor: brandTokens.colors.saintGold,
-      roast: 'Load creeping up like a brat testing limits.',
+      roast: getDynamicRoast('Cognitive Load', cognitiveState.load),
       tooltip: 'Total mental effort being exerted on current tasks',
     },
     {
@@ -366,7 +391,7 @@ function App() {
       value: cognitiveState.prediction ?? null,
       icon: <TrendingUp color={brandTokens.colors.giltEdge} size={24} aria-hidden="true" />,
       accentColor: brandTokens.colors.giltEdge,
-      roast: 'Future you is pacing. Hydrate before they mutiny.',
+      roast: getDynamicRoast('15-min Prediction', cognitiveState.prediction ?? null),
       tooltip: 'AI-driven forecast of your cognitive state for the next 15 minutes',
     },
   ];
