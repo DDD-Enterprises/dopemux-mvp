@@ -1,6 +1,6 @@
 # TP-DMX-COPILOT-RENDERER-103 Git State
 
-- Worktree: `/Users/hue/code/dopemux-mvp-wt-pr760-review-repair`
+- Worktree: `dopemux-mvp-wt-pr760-review-repair`
 - Branch: `codex/tp-dmx-copilot-renderer-103`
 - Local repair branch: `codex/pr760-review-repair-20260601`
 - Base branch: `main`

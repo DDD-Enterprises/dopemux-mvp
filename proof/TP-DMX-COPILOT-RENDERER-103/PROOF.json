@@ -23,8 +23,15 @@
   "canonical_writer": "tools/copilot_repair/generator.py::generate_repair_packet",
   "renderer": "tools/copilot_repair/renderer.py::render_repair_packet",
   "source_action_plan": "proof/TP-DMX-ACTIONBRIDGE-CLI-102/output/ACTION_PLAN.json",
-  "worktree": "/Users/hue/code/dopemux-mvp-wt-pr760-review-repair",
   "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/760",
+  "proof_finality": {
+    "worktree": "dopemux-mvp-wt-pr760-review-repair",
+    "commit_sha": "ab5c9e613cadcd5e63df7ebac7b49b2e82ab03ed",
+    "commit_sha_scope": "Latest observed PR head when this proof metadata was updated; final immutable merge identity is the PR URL and merge commit after merge.",
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/760",
+    "codereview_status": "PASS_WITH_REPAIRS",
+    "precommit_status": "PASS"
+  },
   "outputs": [
     "proof/TP-DMX-COPILOT-RENDERER-103/output/COPILOT_REPAIR_PACKET.json",
     "proof/TP-DMX-COPILOT-RENDERER-103/output/PR_REPAIR_PACKET.md"
@@ -33,7 +40,7 @@
     {
       "command": "pytest -q tests/copilot_repair/test_generator.py",
       "status": "PASS",
-      "evidence": "Focused generator and renderer tests passed, including the unresolved-thread no-GitHub-resolution regression."
+      "evidence": "Focused generator and renderer tests passed, including unresolved-thread no-GitHub-resolution and StrictUndefined regressions."
     },
     {
       "command": "pytest -q tests/copilot_repair",
@@ -74,6 +81,11 @@
       "command": "git diff --check",
       "status": "PASS",
       "evidence": "No whitespace errors reported."
+    },
+    {
+      "command": "git check-ignore -q proof/TP-DMX-COPILOT-RENDERER-103/PROOF.json; test $? -eq 1",
+      "status": "PASS",
+      "evidence": "TP103 proof bundle is allowlisted in .gitignore."
     },
     {
       "command": "pre-commit run --files <TP103 changed files>",
