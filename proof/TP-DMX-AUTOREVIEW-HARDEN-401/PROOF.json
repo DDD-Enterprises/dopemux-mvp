@@ -7,6 +7,8 @@
   "base_ref": "origin/codex/tp-dmx-steward-doctor-303",
   "base_sha": "98010d84d3151f7664179f5622684de723c30710",
   "implementation_commit_sha": "ac974fc69e9203ffa1f628ae61bf77e8808d6011",
+  "proof_metadata_commit_sha": "2911160bf67838873962c08f54544a805b84da49",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/779",
   "repo_identity": {
     "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
     "marker": ".dopetaskroot",
