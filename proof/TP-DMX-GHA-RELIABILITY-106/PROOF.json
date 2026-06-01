@@ -1,0 +1,112 @@
+{
+  "tp_id": "TP-DMX-GHA-RELIABILITY-106",
+  "status": "PASS_WITH_LIMITS",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-gha-reliability-106",
+  "branch": "codex/tp-dmx-gha-reliability-106",
+  "base_ref": "origin/main",
+  "base_sha": "5bab790effc7b1f4f1b06f3dd5d13e92c0d48d53",
+  "repo_identity": {
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker": ".dopetaskroot",
+    "identity_match": true
+  },
+  "authority_used": [
+    "AGENTS.md",
+    "task-packets/generated/TP-DMX-GHA-RELIABILITY-106.json",
+    "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+    ".github/workflows/ci-complete.yml",
+    ".github/workflows/pr-steward.yml",
+    ".github/workflows/preflight.yml",
+    "docs/ops/pr-gate-runbook.md",
+    "docs/ops/branch-policy-audit.md",
+    "docs/ops/ci-trigger-refresh.md",
+    "read-only gh api branch protection/ruleset responses"
+  ],
+  "unknowns": [
+    {
+      "id": "UNKNOWN-LOAD-PLAN-ABSENT",
+      "detail": "docs/ops/load-plans/load_plan-DMX-AUTOREVIEW-PLATFORM.json is named by the packet but absent on origin/main at base 5bab790effc7b1f4f1b06f3dd5d13."
+    }
+  ],
+  "slices_completed": [
+    "S1 inspected authority files, runtime workflows, docs, and live read-only branch protection.",
+    "S2 confirmed scoped workflow triggers and single ci-summary gate without runtime YAML changes.",
+    "S3 refreshed operator docs and proof artifacts.",
+    "S4 ran focused validation, proof validation, precommit on touched files, and diff hygiene checks."
+  ],
+  "files_changed": [
+    "docs/ops/pr-gate-runbook.md",
+    "docs/ops/branch-policy-audit.md",
+    "docs/ops/ci-trigger-refresh.md",
+    "task-packets/generated/TP-DMX-GHA-RELIABILITY-106.json",
+    "proof/TP-DMX-GHA-RELIABILITY-106/AUDITOR_REPORT.md",
+    "proof/TP-DMX-GHA-RELIABILITY-106/PROOF.json"
+  ],
+  "validations": [
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-GHA-RELIABILITY-106.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m json.tool proof/TP-DMX-GHA-RELIABILITY-106/PROOF.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m jsonschema -i task-packets/generated/TP-DMX-GHA-RELIABILITY-106.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python workflow trigger assertion for ready_for_review, workflow_dispatch, and no pull_request_target",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "gh api repos/DDD-Enterprises/dopemux-mvp/branches/main/protection --jq '.required_status_checks.contexts | index(\"📊 CI Pipeline Summary\") != null'",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python scripts/audit/validate_audit_proof.py proof/TP-DMX-GHA-RELIABILITY-106/PROOF.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "pre-commit run --files docs/ops/pr-gate-runbook.md docs/ops/branch-policy-audit.md docs/ops/ci-trigger-refresh.md task-packets/generated/TP-DMX-GHA-RELIABILITY-106.json proof/TP-DMX-GHA-RELIABILITY-106/AUDITOR_REPORT.md proof/TP-DMX-GHA-RELIABILITY-106/PROOF.json proof/TP-DMX-GHA-RELIABILITY-106/VALIDATION_OUTPUT.md",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-GHA-RELIABILITY-106/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "External embedded auditor was not invoked from this Codex session; bounded internal audit is recorded in AUDITOR_REPORT.md."
+    ],
+    "skip_reason": "No supported external auditor tool invocation was available in this session; Codex performed bounded manual audit and records this as a required-but-skipped embedded audit."
+  },
+  "codereview_status": "Manual bounded review complete: docs describe observed workflow/API behavior only; no workflow runtime behavior was changed.",
+  "precommit_status": "PASS: pre-commit run on touched files and git diff --check passed.",
+  "commit_sha": "08b81136e6b9ff3ede76e5009c6d13b71f900c80",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/763",
+  "residual_risks": [
+    "Admin and maintainer bypass actors remain active in branch ruleset/classic protection.",
+    "Branch protection can drift after this read-only refresh.",
+    "The packet load-plan context file is absent on the captured base."
+  ],
+  "cleanup_status": "WORKTREE_ACTIVE_PENDING_PR"
+}

@@ -1,0 +1,13 @@
+Final staged diff stat:
+
+ docs/ops/branch-policy-audit.md                    |  38 +++---
+ docs/ops/ci-trigger-refresh.md                     |  24 +++-
+ docs/ops/pr-gate-runbook.md                        |  49 +++++---
+ proof/TP-DMX-GHA-RELIABILITY-106/AUDITOR_REPORT.md |  11 ++
+ proof/TP-DMX-GHA-RELIABILITY-106/CHANGED_FILES.txt |  10 ++
+ proof/TP-DMX-GHA-RELIABILITY-106/DIFF_STAT.txt     |   8 ++
+ proof/TP-DMX-GHA-RELIABILITY-106/GIT_STATE.md      |  12 ++
+ proof/TP-DMX-GHA-RELIABILITY-106/PROOF.json        | 112 +++++++++++++++++
+ .../VALIDATION_OUTPUT.md                           |  24 ++++
+ .../generated/TP-DMX-GHA-RELIABILITY-106.json      | 135 +++++++++++++++++++++
+ 10 files changed, 381 insertions(+), 42 deletions(-)

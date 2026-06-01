@@ -5,15 +5,15 @@ type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-05-27'
-last_review: '2026-05-27'
+last_review: '2026-05-31'
 next_review: '2026-08-25'
 prelude: Branch Policy Audit (explanation) for dopemux documentation and developer
   workflows.
 ---
 # Branch Protection Policy Audit
 
-> **Status**: Evidence captured 2026-05-27 via admin-accessible `gh api`.
-> **Executor**: claude-code-sonnet (read-only; no mutations performed).
+> **Status**: Evidence refreshed 2026-05-31 via read-only `gh api`.
+> **Executor**: Codex (read-only; no mutations performed).
 
 ---
 
@@ -44,10 +44,10 @@ they are additive.
 | `Analyze (python)` | GitHub Actions (15368) |
 | `Analyze (javascript-typescript)` | GitHub Actions (15368) |
 | `Analyze (ruby)` | GitHub Actions (15368) |
+| `📊 CI Pipeline Summary` | GitHub Actions (15368) |
 
-> ⚠️ **ABSENT**: `ci-summary` / `📊 CI Pipeline Summary` is NOT listed as a
-> required check. The gate added in TP-DMX-PR-GATE-009 will block merges only
-> if this check is registered here. **Operator action required** — see below.
+`📊 CI Pipeline Summary` is the GitHub status context for the
+`.github/workflows/ci-complete.yml` `ci-summary` job.
 
 ### Other Settings
 
@@ -100,7 +100,7 @@ The 7 required checks are enforced exclusively through classic protection.
 
 | Item | Status | Action Required |
 |---|---|---|
-| `ci-summary` in required checks | **ABSENT** | Operator must add via Settings → Branches → main → Required status checks |
+| `ci-summary` in required checks | PASS — `📊 CI Pipeline Summary` present | None |
 | Force push protection | PASS — both classic + ruleset prevent it | None |
 | Deletion protection | PASS — both layers | None |
 | Required conversation resolution | PASS | None |
@@ -113,22 +113,9 @@ The 7 required checks are enforced exclusively through classic protection.
 
 ## Required Operator Action
 
-**Add `ci-summary` as a required status check** so that the PR gate from
-TP-DMX-PR-GATE-009 is enforced at merge time.
-
-Steps (GitHub UI):
-
-1. Repository → **Settings** → **Branches** → branch protection rule for `main`
-2. Under "Require status checks to pass before merging", click the search box
-3. Type `ci-summary` or `📊 CI Pipeline Summary`
-4. Select the check and save
-5. Verify the check appears in the `contexts` list via:
-   ```bash
-   gh api repos/DDD-Enterprises/dopemux-mvp/branches/main/protection \
-     --jq '.required_status_checks.contexts[]'
-   ```
-
-Until this is done, PRs can be merged even if `ci-summary` exits 1.
+No branch-protection mutation is required for `ci-summary` as of the
+2026-05-31 read-only refresh. Re-run the evidence commands below after any
+GitHub settings change or required-check rename.
 
 ---
 
@@ -142,3 +129,8 @@ gh api repos/DDD-Enterprises/dopemux-mvp/rulesets/13063360
 ```
 
 Timestamp: 2026-05-27. Re-run to refresh.
+
+Refreshed via the same read-only API calls on 2026-05-31. The refresh observed
+`📊 CI Pipeline Summary` in classic branch protection's
+`required_status_checks.contexts` and observed ruleset `13063360` still active
+with deletion, non-fast-forward, pull-request, and Copilot-code-review rules.
