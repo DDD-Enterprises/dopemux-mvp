@@ -29,6 +29,8 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 - CI now includes wrapper-authority coverage, interactive import smoke, and the production `brand_lint.py` gate.
 
 ### Fixed
+- MCP doctor now runs relative stdio doctor commands from the resolved repo root, so Task Orchestrator wrapper checks work when invoked from repo subdirectories.
+- MCP bootstrap now points Task Orchestrator at a tracked launcher wrapper and keeps catalog-rendered SSE URL defaults aligned with checked-in `.mcp.json`.
 - Installer review cleanup now removes dead SQLite test isolation code and makes setup-time `dopemux-network` creation fail closed on unexpected Docker errors.
 - Dependabot uv security-update resolution now has bounded Python support metadata and a patched MCP service floor compatible with current Semgrep/LiteLLM resolution.
 - Repo Truth Extractor full-suite CI now avoids platform-sensitive strict XPASS failures by scoping known prescan xfails to macOS and stabilizing the v4 help assertion environment.

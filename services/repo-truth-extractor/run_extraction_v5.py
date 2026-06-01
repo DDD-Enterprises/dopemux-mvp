@@ -223,6 +223,11 @@ from rte_reports import (
     write_step_metrics_snapshot as rte_write_step_metrics_snapshot,
 )
 from reporting import build_run_id_resolution_precedence
+from rte_constants import (
+    RUN_STATUS_BLOCKED,
+    RUN_STATUS_COST_ABORTED,
+    RUN_STATUS_OK,
+)
 from llm_runtime import (
     LLMRuntimeDeps,
     _RESPONSE_SUMMARY_PASSTHROUGH_KEYS,
@@ -3603,16 +3608,16 @@ def compute_run_status(
     cost_abort_triggered: bool = False,
 ) -> str:
     if cost_abort_triggered:
-        return "COST_ABORTED"
+        return RUN_STATUS_COST_ABORTED
     if blocked_promptset:
-        return "BLOCKED"
+        return RUN_STATUS_BLOCKED
     if missing_required_artifacts_total > 0:
-        return "BLOCKED"
+        return RUN_STATUS_BLOCKED
     if phase_statuses:
         for status in phase_statuses.values():
             if status == "FAIL":
-                return "BLOCKED"
-    return "OK"
+                return RUN_STATUS_BLOCKED
+    return RUN_STATUS_OK
 
 
 def update_run_manifest_status(
@@ -13947,6 +13952,26 @@ def execute_step_for_partitions(
         if json_managed_step and contract_artifacts
         else prompt_spec.output_artifacts
     )
+    # S4-CRIT-2 (audit): fail closed at EXECUTION time when a phase-SP step would emit a
+    # JSON artifact but has no phase contract. Phase 'SP' is absent from
+    # reports/repo_truth_map.json, so step_contract is None for every SP step and its JSON
+    # output would be written with no schema / required-field enforcement. The guard lives
+    # here (live execution only, dry-run excluded) rather than at prompt resolution, which
+    # read-only paths exercise (phase listing, the CostProfile validator, dry-run /
+    # post-review preview) -- a resolution-time raise would break those.
+    if (
+        str(phase).strip().upper() == "SP"
+        and not cfg.dry_run
+        and step_contract is None
+        and any(str(artifact).lower().endswith(".json") for artifact in output_artifacts)
+    ):
+        raise RuntimeError(
+            f"Phase SP step {step_id} would emit JSON artifact(s) "
+            f"{tuple(output_artifacts)} with no phase contract (phase 'SP' is not declared "
+            f"in reports/repo_truth_map.json). Refusing to run an uncontracted synthesis "
+            f"step live. Register phase SP in the truth map (with required_fields/schema) "
+            f"to re-enable, or preview with --dry-run."
+        )
     contract_lane = resolve_contract_lane(step_contract)
     contract_repair_mode = resolve_contract_repair_mode(step_contract)
     contract_sidefill_enabled = resolve_contract_sidefill_enabled(step_contract)
