@@ -47,14 +47,16 @@ audit proof emission. The workflow uses read-only repository permissions
 (`contents`, `pull-requests`, `checks`, `statuses`, and `actions`) and does not
 use `pull_request_target`.
 
-The workflow runs static auditor-route preflight and then invokes
+The workflow checks out and verifies the expected PR head SHA, runs static
+auditor-route preflight, and then invokes
 `scripts/audit/run_embedded_audit.py` to emit `PROOF.json` and
 `AUDITOR_REPORT.md` into the uploaded `embedded-audit-artifacts/` bundle.
 Preflight may fail or classify tooling as unavailable; proof emission still runs
 so unavailable audit authority is recorded explicitly instead of disappearing.
 
-The entrypoint never records token values. It records whether the expected
-`EMBEDDED_AUDIT_TOKEN` was present as provenance:
+The pull-request workflow does not expose `EMBEDDED_AUDIT_TOKEN` to PR-head
+code. The entrypoint never records token values, and trusted-ref callers may
+record whether the expected token was present as provenance:
 
 - `trusted_token_status: AVAILABLE` when the token is present.
 - `trusted_token_status: UNKNOWN` when the token is absent or unproven.

@@ -14,7 +14,7 @@ Expected missing-entrypoint failure was observed:
 
 `pytest -q tests/audit/test_run_embedded_audit.py`
 
-Result: PASS.
+Result: PASS (`5 passed`).
 
 `python -m json.tool task-packets/generated/TP-DMX-AUDIT-CI-PROVENANCE-104.json`
 
@@ -53,6 +53,10 @@ Final result: PASS.
 Result: PASS.
 
 `git diff --check`
+
+Result: PASS.
+
+`git check-ignore -q proof/TP-DMX-AUDIT-CI-PROVENANCE-104/PROOF.json; test $? -eq 1`
 
 Result: PASS.
 

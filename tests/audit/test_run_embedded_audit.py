@@ -126,6 +126,7 @@ def test_embedded_audit_workflow_is_read_only_and_not_pull_request_target() -> N
     text = WORKFLOW_PATH.read_text(encoding="utf-8")
 
     assert "pull_request_target" not in text
+    assert "EMBEDDED_AUDIT_TOKEN: ${{ secrets.EMBEDDED_AUDIT_TOKEN }}" not in text
     assert "contents: read" in text
     assert "pull-requests: read" in text
     assert "checks: read" in text
@@ -133,3 +134,12 @@ def test_embedded_audit_workflow_is_read_only_and_not_pull_request_target() -> N
     assert "continue-on-error: true" in text
     assert "write" not in text
     assert "scripts/audit/run_embedded_audit.py" in text
+
+
+def test_embedded_audit_workflow_checks_out_verified_head_sha() -> None:
+    text = WORKFLOW_PATH.read_text(encoding="utf-8")
+
+    assert "ref: ${{ steps.pr.outputs.head_sha }}" in text
+    assert "github.event.pull_request.head.sha || github.sha" not in text
+    assert "Verify checked out head SHA" in text
+    assert 'test "$actual_head_sha" = "$EXPECTED_HEAD_SHA"' in text
