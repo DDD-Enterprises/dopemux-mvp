@@ -124,6 +124,7 @@ merge:
     - merge_queue_required
 steward_gate:
   artifact_ttl_seconds: 3600
+  allow_global_fix_prs: false
   remediation_readiness:
     - NEEDS_IMPLEMENTER
   finalization_readiness:
