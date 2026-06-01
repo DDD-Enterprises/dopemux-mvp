@@ -1,0 +1,79 @@
+{
+  "changed_files": [
+    {
+      "additions": 12,
+      "deletions": 1,
+      "path": "src/example.py",
+      "status": "modified"
+    }
+  ],
+  "checks": [
+    {
+      "blockers": [
+        "FAILED_CHECK"
+      ],
+      "blocking": true,
+      "conclusion": "failure",
+      "head_sha": "head000000000000000000000000000000000000",
+      "name": "unit",
+      "rationale": "Required check did not succeed.",
+      "required": true,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/105"
+    }
+  ],
+  "commits": [
+    {
+      "message": "feat(example): introduce offline autoreview fixture",
+      "sha": "head000000000000000000000000000000000000"
+    }
+  ],
+  "embedded_audit": {
+    "report_path": "proof/TP-DMX-AUTOREVIEW-E2E-105/AUDITOR_REPORT.md",
+    "status": "PASS"
+  },
+  "generated_at": "2026-01-01T00:00:00Z",
+  "harvest_complete": true,
+  "harvest_errors": [],
+  "issue_comments": [],
+  "mutation_performed": false,
+  "pr": {
+    "author": "hu3mann",
+    "base_ref": "main",
+    "base_sha": "base000000000000000000000000000000000000",
+    "created_at": "2026-05-31T12:00:00Z",
+    "draft": false,
+    "head_ref": "codex/offline-autoreview-fixture",
+    "head_sha": "head000000000000000000000000000000000000",
+    "merge_state_status": "CLEAN",
+    "mergeable": "MERGEABLE",
+    "number": 704,
+    "review_decision": "APPROVED",
+    "state": "OPEN",
+    "updated_at": "2026-05-31T12:05:00Z",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/704"
+  },
+  "pr_number": 704,
+  "proof": {
+    "matches_pr_head": true,
+    "proof_freshness": "FRESH",
+    "proof_head_sha": "head000000000000000000000000000000000000",
+    "proof_path": "proof/TP-DMX-AUTOREVIEW-E2E-105/PROOF.json"
+  },
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "review_comments": [],
+  "review_threads": [],
+  "reviews": [
+    {
+      "author": {
+        "login": "chatgpt-codex-connector"
+      },
+      "authorAssociation": "MEMBER",
+      "body": "Approved for offline autoreview fixture.",
+      "id": "R_AUTOREVIEW_APPROVED",
+      "state": "APPROVED",
+      "submittedAt": "2026-05-31T12:04:00Z"
+    }
+  ],
+  "schema_version": "1.1.0"
+}
