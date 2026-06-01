@@ -393,7 +393,11 @@ def test_merge_prepared_result_logs_auto_merge_handoff_truthfully(
         artifacts={"operator_state": "queued_for_merge"},
     )
     pr_dir = pr_dir_for(tmp_path, 190)
-    (pr_dir / "MERGE_READINESS.json").write_text(
+    steward_dir = tmp_path / "pr-steward" / "pr-190"
+    audit_dir = tmp_path / "embedded-audit" / "pr-190"
+    steward_dir.mkdir(parents=True)
+    audit_dir.mkdir(parents=True)
+    (steward_dir / "MERGE_READINESS.json").write_text(
         json.dumps(
             {
                 "generated_at": "2026-05-31T12:00:00Z",
@@ -406,7 +410,7 @@ def test_merge_prepared_result_logs_auto_merge_handoff_truthfully(
         ),
         encoding="utf-8",
     )
-    (pr_dir / "PROOF.json").write_text(
+    (audit_dir / "PROOF.json").write_text(
         json.dumps(
             {
                 "generated_at": "2026-05-31T12:00:00Z",
@@ -421,7 +425,13 @@ def test_merge_prepared_result_logs_auto_merge_handoff_truthfully(
         args=Namespace(id=190, out_dir=str(tmp_path), repo=None, execute=True),
         client=client,
         repo_root=tmp_path,
-        policy={"steward_gate": {"artifact_ttl_seconds": 10_000_000}},
+        policy={
+            "steward_gate": {
+                "artifact_ttl_seconds": 10_000_000,
+                "merge_readiness_path": "{out_dir}/pr-steward/pr-{pr_id}/MERGE_READINESS.json",
+                "audit_proof_path": "{out_dir}/embedded-audit/pr-{pr_id}/PROOF.json",
+            }
+        },
         pr_root=tmp_path,
         active_run_id="truthfulhandoff",
         prepared_result=prepared_result,

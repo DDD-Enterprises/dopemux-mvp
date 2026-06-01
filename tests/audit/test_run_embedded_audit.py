@@ -132,4 +132,6 @@ def test_embedded_audit_workflow_is_read_only_and_not_pull_request_target() -> N
     assert "statuses: read" in text
     assert "continue-on-error: true" in text
     assert "write" not in text
+    assert "scripts/audit/pal_clink_runner.py" in text
     assert "scripts/audit/run_embedded_audit.py" in text
+    assert "--pal-output-json embedded-audit-artifacts/PAL_CLINK_AUDIT_OUTPUT.json" in text

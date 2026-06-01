@@ -26,6 +26,9 @@ overwrite local workflow or policy edits.
 ## Boundaries
 
 - The workflows call the packaged `python -m dopemux.cli pr-steward` command.
+- Scaffolded workflows install Dopemux from `DOPEMUX_INSTALL_SPEC` before
+  invoking the packaged command, because downstream repositories do not carry
+  this source tree on `PYTHONPATH`.
 - The scaffold does not generate or copy `steward_gate` Python logic.
 - The scaffold does not add a setup subcommand, checksum manifest, or reusable
   composite action.
@@ -46,6 +49,7 @@ invalid config, or scaffold skew. It does not auto-fix, migrate, or write files.
 Distribution intentionally keeps runtime authority in the installed package:
 
 - scaffolded workflows call `python -m dopemux.cli pr-steward`
+- scaffolded workflows install the package explicitly before that call
 - scaffolded policy files are small operator-owned inputs
 - `dopemux init` does not overwrite existing workflow or policy files
 - doctor reports drift and config problems without mutating the target repo

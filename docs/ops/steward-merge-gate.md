@@ -54,7 +54,12 @@ remediation mutation seams in `dopemux_pr_merge_specialist.queue_drain`:
 - shared global-fix PR creation policy
 
 Remediation requires fresh local `MERGE_READINESS.json` and `PROOF.json`
-artifacts for the exact PR head SHA. The PR Steward readiness must be
+artifacts for the exact PR head SHA. Queue-drain resolves those artifacts only
+from explicit `steward_gate.merge_readiness_path` and
+`steward_gate.audit_proof_path` policy entries. The checked-in policy uses
+stable per-PR artifact locations under `{out_dir}/pr-steward/pr-{pr_id}/` and
+`{out_dir}/embedded-audit/pr-{pr_id}/`; it does not fall back to queue-run state
+files. The PR Steward readiness must be
 `NEEDS_IMPLEMENTER`, both embedded-audit statuses must be `PASS` or
 `PASS_WITH_RISKS`, and `MERGE_READINESS.json.blockers` must contain at least one
 implementer-owned blocker such as `UNRESOLVED_REVIEW_THREAD`, `FAILED_CHECK`,
@@ -80,8 +85,9 @@ resolution remain separate packet work.
 
 TP-DMX-MERGE-FINALIZATION-203 wires `steward_gate(FINALIZATION)` into the
 merge execution path. A live merge attempt through `_merge_prepared_result`
-must find fresh local `MERGE_READINESS.json` and `PROOF.json` artifacts for the
-exact PR head SHA, PR Steward readiness `READY`, and strict independent
+must find fresh local `MERGE_READINESS.json` and `PROOF.json` artifacts at the
+explicit configured policy paths for the exact PR head SHA, PR Steward
+readiness `READY`, and strict independent
 embedded-audit status `PASS` in both artifacts. `PASS_WITH_RISKS` remains
 acceptable for remediation and general acceptance evidence, but does not grant
 finalization authority.

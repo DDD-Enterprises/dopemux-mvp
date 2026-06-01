@@ -141,8 +141,69 @@ dopemux-github = "dopemux_github_specialist.cli:main"
 dopemux-pr-merge = "dopemux_pr_merge_specialist.cli:main"
 dopemux-pr-steward = "dopemux_pr_steward.cli:main"
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.setuptools]
+packages = [
+    "core",
+    "core.config",
+    "dopemux",
+    "dopemux.adhd",
+    "dopemux.analysis",
+    "dopemux.claude",
+    "dopemux.claude_tools",
+    "dopemux.commands",
+    "dopemux.config",
+    "dopemux.conport",
+    "dopemux.core_logging",
+    "dopemux.embeddings",
+    "dopemux.embeddings.core",
+    "dopemux.embeddings.enhancers",
+    "dopemux.embeddings.integrations",
+    "dopemux.embeddings.pipelines",
+    "dopemux.embeddings.providers",
+    "dopemux.embeddings.storage",
+    "dopemux.events",
+    "dopemux.execution",
+    "dopemux.extraction",
+    "dopemux.extractor",
+    "dopemux.logging",
+    "dopemux.mcp",
+    "dopemux.memory",
+    "dopemux.memory.adapters",
+    "dopemux.mobile",
+    "dopemux.pm",
+    "dopemux.pm.adapters",
+    "dopemux.roles",
+    "dopemux.system_data",
+    "dopemux.tmux",
+    "dopemux.tui",
+    "dopemux.ui",
+    "dopemux.ui.cockpit",
+    "dopemux.update",
+    "dopemux.upgrades",
+    "dopemux.ux",
+    "dopemux.ux.wizard",
+    "dopemux.voice",
+    "dopemux.workflow",
+    "dopemux_github_specialist",
+    "dopemux_github_specialist.gemini",
+    "dopemux_github_specialist.github",
+    "dopemux_pr_merge_specialist",
+    "dopemux_pr_steward",
+    "integrations",
+    "tools",
+    "tools.pr_action_bridge",
+    "tools.pr_steward",
+    "utils",
+]
+
+[tool.setuptools.package-dir]
+"" = "src"
+"tools" = "tools"
+"tools.pr_action_bridge" = "tools/pr_action_bridge"
+"tools.pr_steward" = "tools/pr_steward"
+
+[tool.setuptools.package-data]
+"tools.pr_steward" = ["known_reviewers.json"]
 
 [tool.black]
 line-length = 88

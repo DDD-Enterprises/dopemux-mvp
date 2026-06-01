@@ -62,6 +62,16 @@ def _audit_proof() -> dict:
     }
 
 
+def _gate_policy(pr_dir: Path) -> dict:
+    return {
+        "steward_gate": {
+            "artifact_ttl_seconds": 3600,
+            "merge_readiness_path": str(pr_dir / "MERGE_READINESS.json"),
+            "audit_proof_path": str(pr_dir / "PROOF.json"),
+        }
+    }
+
+
 def test_remediation_gate_allows_needs_implementer_with_implementer_blocker(tmp_path: Path):
     pr_dir = tmp_path / "pr" / "765"
     _write_json(pr_dir / "MERGE_READINESS.json", _merge_readiness(blockers=["UNRESOLVED_REVIEW_THREAD"]))
@@ -69,7 +79,7 @@ def test_remediation_gate_allows_needs_implementer_with_implementer_blocker(tmp_
 
     result = queue_drain.require_steward_remediation_gate(
         pr=_pr_state(),
-        policy={"steward_gate": {"artifact_ttl_seconds": 3600}},
+        policy=_gate_policy(pr_dir),
         pr_dir=pr_dir,
         now="2026-05-31T12:30:00Z",
     )
@@ -86,7 +96,7 @@ def test_remediation_gate_denies_missing_implementer_blocker(tmp_path: Path):
 
     result = queue_drain.require_steward_remediation_gate(
         pr=_pr_state(),
-        policy={"steward_gate": {"artifact_ttl_seconds": 3600}},
+        policy=_gate_policy(pr_dir),
         pr_dir=pr_dir,
         now="2026-05-31T12:30:00Z",
     )
@@ -99,13 +109,31 @@ def test_remediation_gate_denies_missing_implementer_blocker(tmp_path: Path):
 def test_remediation_gate_denies_missing_artifacts(tmp_path: Path):
     result = queue_drain.require_steward_remediation_gate(
         pr=_pr_state(),
-        policy={"steward_gate": {"artifact_ttl_seconds": 3600}},
+        policy={
+            "steward_gate": {
+                "artifact_ttl_seconds": 3600,
+                "merge_readiness_path": str(tmp_path / "missing" / "MERGE_READINESS.json"),
+                "audit_proof_path": str(tmp_path / "missing" / "PROOF.json"),
+            }
+        },
         pr_dir=tmp_path / "missing",
         now="2026-05-31T12:30:00Z",
     )
 
     assert result.allowed is False
     assert result.reason_code == "DENY_ARTIFACT_UNREADABLE"
+
+
+def test_remediation_gate_denies_unconfigured_artifact_paths(tmp_path: Path):
+    result = queue_drain.require_steward_remediation_gate(
+        pr=_pr_state(),
+        policy={"steward_gate": {"artifact_ttl_seconds": 3600}},
+        pr_dir=tmp_path / "missing",
+        now="2026-05-31T12:30:00Z",
+    )
+
+    assert result.allowed is False
+    assert result.reason_code == "DENY_STEWARD_ARTIFACT_PATH_UNCONFIGURED"
 
 
 def test_global_fix_pr_creation_requires_explicit_policy_opt_in():

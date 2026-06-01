@@ -47,11 +47,13 @@ audit proof emission. The workflow uses read-only repository permissions
 (`contents`, `pull-requests`, `checks`, `statuses`, and `actions`) and does not
 use `pull_request_target`.
 
-The workflow runs static auditor-route preflight and then invokes
-`scripts/audit/run_embedded_audit.py` to emit `PROOF.json` and
+The workflow runs static auditor-route preflight, invokes
+`scripts/audit/pal_clink_runner.py` to capture `PAL_CLINK_AUDIT_OUTPUT.json`,
+and then invokes `scripts/audit/run_embedded_audit.py` to emit `PROOF.json` and
 `AUDITOR_REPORT.md` into the uploaded `embedded-audit-artifacts/` bundle.
-Preflight may fail or classify tooling as unavailable; proof emission still runs
-so unavailable audit authority is recorded explicitly instead of disappearing.
+Preflight or runner execution may fail or classify tooling as unavailable;
+proof emission still runs so unavailable audit authority is recorded explicitly
+instead of disappearing.
 
 The entrypoint never records token values. It records whether the expected
 `EMBEDDED_AUDIT_TOKEN` was present as provenance:

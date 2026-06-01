@@ -308,13 +308,30 @@ def _steward_artifact_path(
     *,
     pr_dir: Path,
     pr_id: int,
-    default_name: str,
+    path_key: str,
 ) -> Path:
-    if raw_path:
-        rendered = str(raw_path).format(pr_dir=str(pr_dir), pr_id=pr_id)
-        path = Path(rendered)
-        return path if path.is_absolute() else pr_dir / path
-    return pr_dir / default_name
+    if not raw_path:
+        raise ValueError(f"steward_gate.{path_key} is required")
+    out_dir = _steward_out_dir_from_pr_dir(pr_dir, pr_id=pr_id)
+    rendered = str(raw_path).format(
+        out_dir=str(out_dir),
+        pr_dir=str(pr_dir),
+        pr_id=pr_id,
+    )
+    path = Path(rendered)
+    return path if path.is_absolute() else out_dir / path
+
+
+def _steward_out_dir_from_pr_dir(pr_dir: Path, *, pr_id: int) -> Path:
+    if (
+        pr_dir.parent.name == "pr"
+        and pr_dir.parent.parent.name.startswith("run_")
+        and pr_dir.parent.parent.parent != pr_dir.parent.parent
+    ):
+        return pr_dir.parent.parent.parent
+    if pr_dir.name == str(pr_id):
+        return pr_dir.parent
+    return pr_dir
 
 
 def require_steward_remediation_gate(
@@ -325,18 +342,26 @@ def require_steward_remediation_gate(
     now: Any = None,
 ) -> StewardGateResult:
     gate_policy = policy.get("steward_gate", {})
-    merge_readiness_path = _steward_artifact_path(
-        gate_policy.get("merge_readiness_path"),
-        pr_dir=pr_dir,
-        pr_id=pr.pr_id,
-        default_name="MERGE_READINESS.json",
-    )
-    audit_proof_path = _steward_artifact_path(
-        gate_policy.get("audit_proof_path"),
-        pr_dir=pr_dir,
-        pr_id=pr.pr_id,
-        default_name="PROOF.json",
-    )
+    try:
+        merge_readiness_path = _steward_artifact_path(
+            gate_policy.get("merge_readiness_path"),
+            pr_dir=pr_dir,
+            pr_id=pr.pr_id,
+            path_key="merge_readiness_path",
+        )
+        audit_proof_path = _steward_artifact_path(
+            gate_policy.get("audit_proof_path"),
+            pr_dir=pr_dir,
+            pr_id=pr.pr_id,
+            path_key="audit_proof_path",
+        )
+    except ValueError as exc:
+        return StewardGateResult(
+            allowed=False,
+            reason_code="DENY_STEWARD_ARTIFACT_PATH_UNCONFIGURED",
+            required_class="REMEDIATION",
+            evidence={"error": str(exc)},
+        )
     result = steward_gate(
         head_sha=pr.head_sha,
         required_class="REMEDIATION",
@@ -388,18 +413,26 @@ def require_steward_finalization_gate(
     now: Any = None,
 ) -> StewardGateResult:
     gate_policy = policy.get("steward_gate", {})
-    merge_readiness_path = _steward_artifact_path(
-        gate_policy.get("merge_readiness_path"),
-        pr_dir=pr_dir,
-        pr_id=pr.pr_id,
-        default_name="MERGE_READINESS.json",
-    )
-    audit_proof_path = _steward_artifact_path(
-        gate_policy.get("audit_proof_path"),
-        pr_dir=pr_dir,
-        pr_id=pr.pr_id,
-        default_name="PROOF.json",
-    )
+    try:
+        merge_readiness_path = _steward_artifact_path(
+            gate_policy.get("merge_readiness_path"),
+            pr_dir=pr_dir,
+            pr_id=pr.pr_id,
+            path_key="merge_readiness_path",
+        )
+        audit_proof_path = _steward_artifact_path(
+            gate_policy.get("audit_proof_path"),
+            pr_dir=pr_dir,
+            pr_id=pr.pr_id,
+            path_key="audit_proof_path",
+        )
+    except ValueError as exc:
+        return StewardGateResult(
+            allowed=False,
+            reason_code="DENY_STEWARD_ARTIFACT_PATH_UNCONFIGURED",
+            required_class="FINALIZATION",
+            evidence={"error": str(exc)},
+        )
     result = steward_gate(
         head_sha=pr.head_sha,
         required_class="FINALIZATION",
