@@ -1,0 +1,15 @@
+{
+  "auditor_model": "sonnet",
+  "auditor_tool": "pal-mcp-clink",
+  "exit_code": 1,
+  "findings": [],
+  "fixes_applied": [],
+  "invocation": "pal-clink --client claude-audit --role codereviewer --input PAL_CLINK_AUDIT_INPUT.md --output PAL_CLINK_AUDIT_OUTPUT.json",
+  "remaining_risks": [
+    "Fixture-only audit is blocking; no live external PAL clink CLI was invoked."
+  ],
+  "report_path": "proof/TP-DMX-PALCLINK-VERDICT-101/AUDITOR_REPORT.md",
+  "required": true,
+  "skip_reason": null,
+  "status": "NEEDS_SUPERVISOR"
+}

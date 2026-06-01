@@ -85,21 +85,25 @@ def test_wrapper_script_invokes_module_cli(tmp_path: Path) -> None:
         [
             str(WRAPPER),
             "--artifact-dir",
-            str(artifact_dir),
+            artifact_dir.name,
             "--out",
-            str(out_dir),
+            out_dir.name,
             "--generated-at",
             FIXED_TS,
         ],
-        cwd=ROOT,
+        cwd=tmp_path,
         text=True,
         capture_output=True,
         check=False,
     )
 
     assert result.returncode == 0, result.stderr
-    action_plan = json.loads((out_dir / "ACTION_PLAN.json").read_text(encoding="utf-8"))
-    repair_packet = (out_dir / "REPAIR_PACKET.md").read_text(encoding="utf-8")
+    action_plan = json.loads(
+        (tmp_path / out_dir.name / "ACTION_PLAN.json").read_text(encoding="utf-8")
+    )
+    repair_packet = (tmp_path / out_dir.name / "REPAIR_PACKET.md").read_text(
+        encoding="utf-8"
+    )
     assert action_plan["actions"] == []
     assert action_plan["mutation_performed"] is False
     assert "No actions required" in repair_packet
@@ -130,6 +134,34 @@ def test_missing_required_artifact_fails_closed(tmp_path: Path) -> None:
 
     assert result.returncode == 2
     assert "CI_TRIAGE.json" in result.stderr
+    assert not (out_dir / "ACTION_PLAN.json").exists()
+    assert not (out_dir / "REPAIR_PACKET.md").exists()
+
+
+def test_invalid_generated_at_fails_before_writing_outputs(tmp_path: Path) -> None:
+    artifact_dir = _write_artifact_dir(tmp_path, "ready_green.json")
+    out_dir = tmp_path / "out"
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "tools.pr_action_bridge",
+            "--artifact-dir",
+            str(artifact_dir),
+            "--out",
+            str(out_dir),
+            "--generated-at",
+            "not-a-timestamp",
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 2
+    assert "--generated-at must be an ISO 8601 timestamp" in result.stderr
     assert not (out_dir / "ACTION_PLAN.json").exists()
     assert not (out_dir / "REPAIR_PACKET.md").exists()
 

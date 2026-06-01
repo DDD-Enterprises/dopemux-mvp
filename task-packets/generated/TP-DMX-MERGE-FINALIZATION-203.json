@@ -23,6 +23,7 @@
   },
   "depends_on": [
     "TP-DMX-STEWARD-GATE-201",
+    "TP-DMX-MERGE-REMEDIATION-202",
     "TP-DMX-AUDIT-CI-PROVENANCE-104"
   ],
   "execution": {
@@ -40,7 +41,8 @@
     "Do not modify files outside the packet allowlist without stopping for supervisor review.",
     "Do not enable governed_automerge by default.",
     "Do not bypass PR Steward or independent embedded-audit readiness.",
-    "Supervisor approval is required before executing any merge-finalization authority."
+    "Supervisor approval is required before executing any merge-finalization authority.",
+    "This finalization packet must execute after TP-DMX-MERGE-REMEDIATION-202 because both packets touch shared merge-specialist policy and docs surfaces."
   ],
   "pal_chain": {
     "enabled": true,

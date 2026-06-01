@@ -1,5 +1,6 @@
 import json
 import fnmatch
+import os
 from pathlib import Path
 from typing import Optional
 from .resolver import InstanceResolver
@@ -12,19 +13,41 @@ class DiscoveryGate:
     - Runs Tool Discovery (JSON-RPC POST tools/list)
     - Validates required tool globs are satisfied
     - Fails closed with structured report
+
+    Provenance-aware failure policy (TP-2 / MCP1-02):
+    - repo_profile servers are ALWAYS mandatory: unreachable or missing-glob -> BLOCK.
+    - env_var / global_fallback servers are non-mandatory. Previously their failures
+      were silently fail-open. They now ALWAYS emit a clearly-labeled WARNING in the
+      report. With ``strict_optional=True`` (or env DOPEMUX_MCP_GATE_STRICT=1) those
+      warnings additionally escalate to a hard BLOCK (fail-closed opt-in).
     """
-    def __init__(self, project_root: Optional[Path] = None, run_id: str = "latest"):
+    def __init__(
+        self,
+        project_root: Optional[Path] = None,
+        run_id: str = "latest",
+        strict_optional: Optional[bool] = None,
+    ):
         self.project_root = project_root or Path.cwd()
         self.run_id = run_id
         self.resolver = InstanceResolver(self.project_root)
         self.discovery = ToolDiscoveryClient()
         self.proof_dir = self.project_root / "proof" / run_id
+        # Opt-in fail-closed for non-mandatory servers. Default is loud-warn (safe,
+        # non-breaking for existing optional-server setups). Env var lets operators
+        # turn on strict mode without code changes.
+        if strict_optional is None:
+            strict_optional = os.environ.get(
+                "DOPEMUX_MCP_GATE_STRICT", ""
+            ).strip().lower() in ("1", "true", "yes", "on")
+        self.strict_optional = strict_optional
         self.report = {
             "status": "INIT",
             "reachable_transport": [],
             "unreachable_transport": [],
             "tools_discoverable": {},
             "missing_required_tools": {},
+            "warnings": [],
+            "strict_optional": self.strict_optional,
             "resolved_endpoints": {},
             "provenance": {}
         }
@@ -61,14 +84,6 @@ class DiscoveryGate:
                 missing_globs = []
                 for glob in required_globs:
                     matches = fnmatch.filter(discovered_tools, glob)
-                    
-                    # Special case for ConPort: handle both spellings if one fails
-                    if not matches and (glob.startswith("conport_") or glob.startswith("conport_")):
-                        if "conport_" in glob:
-                            alt_glob = glob.replace("conport_", "conport_")
-                        else:
-                            alt_glob = glob.replace("conport_", "conport_")
-                        matches = fnmatch.filter(discovered_tools, alt_glob)
 
                     if not matches and not handshake_required:
                         missing_globs.append(glob)
@@ -77,10 +92,27 @@ class DiscoveryGate:
                     self.report["missing_required_tools"][name] = missing_globs
                     if is_mandatory:
                         passed = False
+                    else:
+                        # Non-mandatory (env_var / global_fallback): ALWAYS WARN; escalate
+                        # to a hard BLOCK only under strict_optional (fail-closed opt-in).
+                        self.report["warnings"].append(
+                            f"Non-mandatory server '{name}' is missing required tool(s): "
+                            f"{', '.join(missing_globs)}"
+                        )
+                        if self.strict_optional:
+                            passed = False
             else:
                 self.report["unreachable_transport"].append(name)
                 if is_mandatory:
                     passed = False
+                else:
+                    # Non-mandatory (env_var / global_fallback): ALWAYS WARN; escalate
+                    # to a hard BLOCK only under strict_optional (fail-closed opt-in).
+                    self.report["warnings"].append(
+                        f"Non-mandatory server '{name}' is unreachable (transport failed)"
+                    )
+                    if self.strict_optional:
+                        passed = False
 
         self.report["status"] = "PASS" if passed else "BLOCK"
         self._save_report()

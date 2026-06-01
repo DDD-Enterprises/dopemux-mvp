@@ -35,7 +35,17 @@ from typing import Any, Dict, List, Optional
 # Policy paths
 # ---------------------------------------------------------------------------
 _SCRIPT_DIR = Path(__file__).resolve().parent
+# S8-001 (audit) is STALE: parents[1] correctly resolves to the repo root
+# (parents[0] = services/, parents[1] = repo root) -- no change needed here.
 _REPO_ROOT_DEFAULT = _SCRIPT_DIR.parents[1]
+# S8-002 (audit): these point at the canonical hygiene config, but the policy used by this
+# module is currently HARDCODED below and is NOT loaded from these YAML files -- so the YAML
+# under config/extraction_hygiene/ may diverge from runtime behavior. Wiring a yaml loader
+# that merges these files over the hardcoded defaults is deferred to a dedicated follow-up:
+# it requires reconciling the YAML schema against the hardcoded policy first, since this
+# module performs destructive quarantine moves and silently switching the policy source
+# could change what gets quarantined/cleaned. Until then the hardcoded policy is
+# authoritative and these paths document where the canonical config is intended to live.
 _POLICY_PATH = _REPO_ROOT_DEFAULT / "config" / "extraction_hygiene" / "hygiene_policy.yaml"
 _TIERS_PATH = _REPO_ROOT_DEFAULT / "config" / "extraction_hygiene" / "authority_tiers.yaml"
 

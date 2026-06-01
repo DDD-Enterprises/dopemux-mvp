@@ -65,7 +65,7 @@ servers:
   conport:
     scope: per-worktree
     transport: sse
-    url_template: "http://localhost:${CONPORT_MCP_PORT}/mcp"
+    url_template: "http://localhost:${CONPORT_MCP_PORT:-3005}/mcp"
     port_var: CONPORT_MCP_PORT
     default_port_base: 3005
     extra_port_vars:
@@ -81,7 +81,7 @@ servers:
   dope-memory:
     scope: per-worktree
     transport: sse
-    url_template: "http://localhost:${DOPE_MEMORY_PORT}/mcp"
+    url_template: "http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp"
     port_var: DOPE_MEMORY_PORT
     default_port_base: 3020
     docker_compose_service: dope-memory
@@ -92,7 +92,7 @@ servers:
     scope: per-worktree
     state_scope: per-repo
     transport: stdio
-    command: /Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh
+    command: scripts/mcp-wrappers/task-orchestrator-current-stdio.sh
     args: []
     doctor_args: ["--print-resolution"]
     requires_env: ["TASK_ORCHESTRATOR_PROJECT_ROOT"]
