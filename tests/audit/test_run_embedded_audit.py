@@ -118,8 +118,11 @@ def test_run_cli_writes_proof_and_auditor_report(tmp_path: Path) -> None:
     proof = json.loads((out_dir / "PROOF.json").read_text(encoding="utf-8"))
     jsonschema.Draft7Validator(_schema()).validate(proof["embedded_audit"])
     assert proof["embedded_audit"]["status"] == "PASS"
-    assert (out_dir / proof["embedded_audit"]["report_path"]).is_file()
+    report_text = (out_dir / proof["embedded_audit"]["report_path"]).read_text(
+        encoding="utf-8"
+    )
     assert "secret-value" not in (out_dir / "PROOF.json").read_text(encoding="utf-8")
+    assert "secret-value" not in report_text
 
 
 def test_run_cli_skips_when_route_json_is_missing(tmp_path: Path) -> None:
