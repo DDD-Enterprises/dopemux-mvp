@@ -23,7 +23,7 @@ Expected missing-entrypoint failures were observed:
 
 Result: PASS.
 
-`python -m compileall -q tools/pr_action_bridge tests/pr_action_bridge/test_cli.py`
+`python -m compileall -q tools/pr_action_bridge/__main__.py tools/pr_action_bridge/cli.py scripts/pr-action-bridge tests/pr_action_bridge/test_cli.py`
 
 Result: PASS.
 
@@ -33,6 +33,25 @@ Result: PASS.
 
 ```text
 ....                                                                     [100%]
+```
+
+## Claude Review Repair
+
+`git merge --no-edit origin/main`
+
+Result: PASS after resolving `task-packets/generated/TP-DMX-ACTIONBRIDGE-CLI-102.json`
+to keep the current narrowed `compileall` validation command.
+
+`/Users/hue/code/dopemux-mvp-wt-pr758-review-repair/scripts/pr-action-bridge --artifact-dir /Users/hue/code/dopemux-mvp-wt-pr758-review-repair/proof/TP-DMX-ACTIONBRIDGE-CLI-102/input --out /tmp/pr-action-bridge-wrapper-proof/out --generated-at 2026-01-01T00:00:00Z`
+
+Run from `/tmp`.
+
+Result: PASS.
+
+```text
+wrote /tmp/pr-action-bridge-wrapper-proof/out/ACTION_PLAN.json
+wrote /tmp/pr-action-bridge-wrapper-proof/out/REPAIR_PACKET.md
+# REPAIR_PACKET
 ```
 
 `git diff --check`

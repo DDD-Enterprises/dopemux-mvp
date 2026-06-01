@@ -1,7 +1,7 @@
 {
   "packet_id": "TP-DMX-ACTIONBRIDGE-CLI-102",
   "branch": "codex/tp-dmx-actionbridge-cli-102",
-  "base_branch": "codex/autoreview-platform-packets-20260531",
+  "base_branch": "main",
   "embedded_audit": {
     "required": true,
     "status": "SKIPPED",
@@ -17,7 +17,7 @@
     ],
     "skip_reason": "Task Orchestrator transport returned Transport closed and no external embedded-audit route was available during TP102 execution. The skipped audit is recorded explicitly rather than inferred as PASS."
   },
-  "summary": "Added a read-only PR Action Bridge CLI that reads PR Steward artifacts from disk and writes ACTION_PLAN.json plus REPAIR_PACKET.md by reusing compile_action_plan().",
+  "summary": "Added a read-only PR Action Bridge CLI that reads PR Steward artifacts from disk and writes ACTION_PLAN.json plus REPAIR_PACKET.md by reusing compile_action_plan(); review repair anchors scripts/pr-action-bridge to the repo root for absolute-path invocation.",
   "mutation_performed": false,
   "github_mutation_route_added": false,
   "canonical_writer": "tools/pr_action_bridge/compiler.py::compile_action_plan",
@@ -39,7 +39,7 @@
     {
       "command": "pytest -q tests/pr_action_bridge/test_cli.py",
       "status": "PASS",
-      "evidence": "4 passed."
+      "evidence": "4 passed, including wrapper invocation from a cwd outside the repository."
     },
     {
       "command": "python -m json.tool task-packets/generated/TP-DMX-ACTIONBRIDGE-CLI-102.json",
@@ -47,9 +47,14 @@
       "evidence": "JSON parsed successfully."
     },
     {
-      "command": "python -m compileall -q tools/pr_action_bridge tests/pr_action_bridge/test_cli.py",
+      "command": "python -m compileall -q tools/pr_action_bridge/__main__.py tools/pr_action_bridge/cli.py scripts/pr-action-bridge tests/pr_action_bridge/test_cli.py",
       "status": "PASS",
       "evidence": "Scoped compile completed with exit code 0."
+    },
+    {
+      "command": "scripts/pr-action-bridge invoked by absolute path from /tmp",
+      "status": "PASS",
+      "evidence": "Wrote ACTION_PLAN.json and REPAIR_PACKET.md under /tmp/pr-action-bridge-wrapper-proof/out."
     },
     {
       "command": "git diff --check",
