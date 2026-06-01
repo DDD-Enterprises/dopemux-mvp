@@ -138,6 +138,7 @@ class ADHDAccommodationEngine:
         self.user_profiles: Dict[str, ADHDProfile] = {}
         self.current_energy_levels: Dict[str, EnergyLevel] = {}
         self.current_attention_states: Dict[str, AttentionState] = {}
+        self.recent_activity_updates: Dict[str, Dict[str, Any]] = {}
         self.active_accommodations: Dict[str, List[AccommodationRecommendation]] = {}
 
         # Cognitive load monitoring
@@ -357,7 +358,8 @@ class ADHDAccommodationEngine:
             hyperfocus_guard=self.hyperfocus_guard,
             overwhelm_detector=self.overwhelm_detector,
             procrastination_detector=self.procrastination_detector,
-            activity_tracker=self.activity_tracker
+            activity_tracker=self.activity_tracker,
+            adhd_engine=self,
         )
 
     async def _start_event_listener(self) -> None:
@@ -466,6 +468,50 @@ class ADHDAccommodationEngine:
         except Exception as e:
             logger.error(f"Task suitability assessment failed: {e}")
             return {"error": str(e)}
+
+    async def record_activity_update(
+        self,
+        user_id: str,
+        activity_data: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """Record a bounded activity signal and refresh current ADHD state."""
+        metrics = self._sanitize_activity_metrics(activity_data)
+        self.recent_activity_updates[user_id] = metrics
+
+        if user_id not in self.user_profiles:
+            self.user_profiles[user_id] = ADHDProfile(user_id=user_id)
+
+        energy_level = await self._assess_current_energy_level(user_id)
+        attention_state = await self._assess_attention_state(user_id)
+
+        self.current_energy_levels[user_id] = energy_level
+        self.current_attention_states[user_id] = attention_state
+
+        return {
+            "energy_level": energy_level,
+            "attention_state": attention_state,
+            "energy_updated": True,
+            "attention_updated": True,
+        }
+
+    @staticmethod
+    def _sanitize_activity_metrics(activity_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Keep only content-free numeric/status activity fields."""
+        allowed_fields = {
+            "completion_rate",
+            "context_switches",
+            "break_compliance",
+            "minutes_since_break",
+            "hook_event_name",
+            "status",
+            "tool_name",
+            "source_event",
+        }
+        return {
+            key: value
+            for key, value in activity_data.items()
+            if key in allowed_fields and value is not None
+        }
 
     def _calculate_task_cognitive_load(
         self,
@@ -1333,6 +1379,8 @@ Format: {{
         Queries real data via ActivityTracker for accurate ADHD assessments.
         """
         try:
+            if user_id in self.recent_activity_updates:
+                return self.recent_activity_updates[user_id]
             if self.activity_tracker:
                 return await self.activity_tracker.get_recent_activity(user_id)
             else:
@@ -1360,6 +1408,14 @@ Format: {{
         Analyzes real activity log data for accurate attention state detection.
         """
         try:
+            if user_id in self.recent_activity_updates:
+                activity = self.recent_activity_updates[user_id]
+                return {
+                    "context_switches_per_hour": activity.get("context_switches", 0),
+                    "abandoned_tasks": 0,
+                    "average_focus_duration": 25,
+                    "distraction_events": 0,
+                }
             if self.activity_tracker:
                 return await self.activity_tracker.get_attention_indicators(user_id)
             else:

@@ -61,17 +61,10 @@ from ..operator_identity import resolve_operator_user_id
 
 # Event emission for implicit triggers (Phase 7)
 try:
-    from event_emitter import emit_claude_prompt, emit_claude_tool, emit_context_saved
+    from ..event_emitter import ADHDEventEmitter, emit_claude_prompt, emit_claude_tool, emit_context_saved
     EVENT_EMISSION_AVAILABLE = True
 except ImportError:
-    EVENT_EMISSION_AVAILABLE = False
-    logger.debug("Event emission not available - hooks won't trigger EventBus")
-
-# Event emission for implicit triggers (Phase 7)
-try:
-    from event_emitter import emit_claude_prompt, emit_claude_tool, emit_context_saved
-    EVENT_EMISSION_AVAILABLE = True
-except ImportError:
+    ADHDEventEmitter = None
     EVENT_EMISSION_AVAILABLE = False
     logger.debug("Event emission not available - hooks won't trigger EventBus")
 
@@ -637,19 +630,14 @@ async def update_activity(
     """
     try:
         cache = await get_cache_instance()
-        # Check cache first (though POST, cache recent activity summary)
         cache_key = _make_cache_key("activity", user_id)
-        cached_data = await cache.get(cache_key)
 
-        if cached_data:
-            logger.debug(f"Cache hit for activity update: {user_id}")
-            return schemas.ActivityUpdateResponse.model_validate_json(cached_data)
-
-        # Cache miss - record current event and append to rolling activity history.
+        # Record current event and append to rolling activity history.
+        activity_metrics = request.model_dump(exclude_none=True, exclude={"user_id"})
         activity_event = {
             "user_id": user_id,
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "metrics": request.model_dump(exclude_none=True),
+            "metrics": activity_metrics,
         }
         latest_key = f"adhd:activity:{user_id}:latest"
         history_key = f"adhd:activity:{user_id}:history"
@@ -665,14 +653,23 @@ async def update_activity(
         history = history[-200:]  # keep recent bounded history
         await cache.set(history_key, json.dumps(history), ttl=86400)
 
-        # Trigger reassessment if engine has this user
-        energy_updated = False
-        attention_updated = False
+        update_result = await engine.record_activity_update(user_id, activity_metrics)
+        energy_updated = bool(update_result.get("energy_updated"))
+        attention_updated = bool(update_result.get("attention_updated"))
 
-        if user_id in engine.user_profiles:
-            # Would trigger immediate assessment here
-            energy_updated = True
-            attention_updated = True
+        if EVENT_EMISSION_AVAILABLE and ADHDEventEmitter is not None:
+            try:
+                emitter = await ADHDEventEmitter.get_instance()
+                await emitter.emit(
+                    "activity_updated",
+                    {
+                        "user_id": user_id,
+                        "metrics": activity_metrics,
+                    },
+                    source="adhd_activity_api",
+                )
+            except Exception as e:
+                logger.warning(brand_log(f"Activity event emission failed: {e}", chip=StatusChip.BLOCKER))
 
         # Get ML prediction if available (predict activity impact)
         ml_prediction = None
