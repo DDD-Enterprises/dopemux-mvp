@@ -185,9 +185,10 @@ def run_audit_and_capture_verdict(
 ) -> dict[str, Any]:
     """Run a PAL clink audit, persist raw output, and normalize a verdict.
 
-    ``PAL_CLINK_AUDIT_OUTPUT.json`` records the deterministic host-side runner
-    result. The clink verdict payload is parsed from stdout and normalized
-    through the existing embedded-audit policy in ``tools.auditor_router``.
+    ``PAL_CLINK_AUDIT_OUTPUT.json`` records the host-side runner result,
+    including timing and process output. The clink verdict payload is parsed
+    from stdout and normalized through the existing embedded-audit policy in
+    ``tools.auditor_router``.
     """
     output = run_audit(
         route,

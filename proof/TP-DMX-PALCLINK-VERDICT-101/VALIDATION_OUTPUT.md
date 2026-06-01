@@ -12,3 +12,4 @@ FAIL (pre-existing outside packet allowlist): python -m compileall -q tools scri
 - scripts/submit_loop_context.py: IndentationError at line 1
 
 NOT_RUN: live external PAL clink CLI invocation. Fixture run only; see PAL_CLINK_AUDIT_OUTPUT.json and AUDITOR_OUTPUT.json.
+PASS: review repair marks fixture-only embedded audit as NEEDS_SUPERVISOR so it cannot satisfy passing audit gates.
