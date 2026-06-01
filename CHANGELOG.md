@@ -29,6 +29,7 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 - CI now includes wrapper-authority coverage, interactive import smoke, and the production `brand_lint.py` gate.
 
 ### Fixed
+- Installer review cleanup now removes dead SQLite test isolation code and makes setup-time `dopemux-network` creation fail closed on unexpected Docker errors.
 - Dependabot uv security-update resolution now has bounded Python support metadata and a patched MCP service floor compatible with current Semgrep/LiteLLM resolution.
 - Repo Truth Extractor full-suite CI now avoids platform-sensitive strict XPASS failures by scoping known prescan xfails to macOS and stabilizing the v4 help assertion environment.
 - Task sequencer predictive action labels now use the same complete and skip transition rules as the buttons they describe.

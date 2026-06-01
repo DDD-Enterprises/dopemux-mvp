@@ -170,9 +170,10 @@ if [ "$SKIP_DOCKER" = false ]; then
     # BETA-INSTALL-02: create "dopemux-network" — the name compose.yml declares
     # as external.  The old "dopemux-unified-network" was never joined by any
     # container since compose.yml was updated.
-    if docker network create dopemux-network 2>&1 | grep -q "already exists"; then
+    if docker network ls --format '{{.Name}}' | grep -q "^dopemux-network$"; then
         echo -e "${YELLOW}   ⏭️  Network already exists: dopemux-network${NC}"
     else
+        docker network create dopemux-network
         echo -e "${GREEN}   ✅ Created network: dopemux-network${NC}"
     fi
 
