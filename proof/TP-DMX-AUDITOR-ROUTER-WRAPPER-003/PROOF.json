@@ -39,6 +39,19 @@
     "status": "FORCE_ADDED",
     "reason": "proof/* is ignored; packet explicitly requires proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003."
   },
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": "Historical bundle transition"
+  },
   "validation": {
     "status": "PASS_WITH_BLOCKERS",
     "commands": [
@@ -118,6 +131,23 @@
         "result": "PASS"
       }
     ]
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "mcp__pal__codereview expert_model=gpt-5.2 review_type=full",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "Added scripts/auditor-preflight as a repo wrapper delegating to python -m tools.auditor_router.preflight."
+    ],
+    "remaining_risks": [
+      "scripts/auditor-preflight wrapper relies on Python being available in the environment path."
+    ],
+    "skip_reason": null
   },
   "commit": {
     "status": "PENDING",

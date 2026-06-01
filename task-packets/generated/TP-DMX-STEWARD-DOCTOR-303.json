@@ -1,8 +1,9 @@
 {
   "commit": {
     "allowlist": [
+      "pyproject.toml",
       "src/dopemux_pr_steward/doctor.py",
-      "schemas/pr_steward/config.schema.json",
+      "src/dopemux_pr_steward/schemas/config.schema.json",
       "tests/dopemux_cli/test_doctor.py",
       "docs/ops/pr-steward-distribution.md",
       "task-packets/generated/TP-DMX-STEWARD-DOCTOR-303.json",
@@ -32,7 +33,8 @@
     "Preserve PR Steward check-only semantics unless this packet explicitly authorizes a governed mutation gate.",
     "Preserve fail-closed behavior on missing evidence, stale SHAs, unsupported permissions, or unknown authority.",
     "Do not expose secrets, tokens, private keys, or unredacted provider metadata in proof artifacts.",
-    "Do not modify files outside the packet allowlist without stopping for supervisor review."
+    "Do not modify files outside the packet allowlist without stopping for supervisor review.",
+    "The doctor config schema must be package-shipped with the installed dopemux_pr_steward distribution; a top-level repo-only schema path is insufficient."
   ],
   "pal_chain": {
     "enabled": true,
@@ -83,8 +85,9 @@
     },
     {
       "expected_files": [
+        "pyproject.toml",
         "src/dopemux_pr_steward/doctor.py",
-        "schemas/pr_steward/config.schema.json",
+        "src/dopemux_pr_steward/schemas/config.schema.json",
         "tests/dopemux_cli/test_doctor.py",
         "docs/ops/pr-steward-distribution.md",
         "task-packets/generated/TP-DMX-STEWARD-DOCTOR-303.json",
@@ -100,6 +103,7 @@
       "task": "Detect engine vs scaffold version skew and validate config/pr_steward against the engine config schema, failing closed with actionable messages. Report-only (no auto-fix) in v1.",
       "validation": [
         "Implementation preserves fail-closed behavior and deterministic artifact output.",
+        "Installed wheel/sdist package data includes src/dopemux_pr_steward/schemas/config.schema.json or equivalent package data verified by the packet.",
         "No file outside commit.allowlist changed.",
         "Stop conditions from this packet were not triggered, or execution stopped with evidence."
       ]
