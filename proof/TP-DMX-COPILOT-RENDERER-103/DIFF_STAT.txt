@@ -1,0 +1,7 @@
+docs/ops/copilot-pr-repair-lane.md
+proof/TP-DMX-COPILOT-RENDERER-103/**
+tests/copilot_repair/test_generator.py
+tools/copilot_repair/**
+
+Final staged diff stat is captured by the commit and PR. This file lists the packet-scoped
+surfaces because proof artifacts are ignored by default until force-added.
