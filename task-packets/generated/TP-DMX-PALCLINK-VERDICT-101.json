@@ -1,0 +1,145 @@
+{
+  "commit": {
+    "allowlist": [
+      "scripts/audit/pal_clink_runner.py",
+      "tools/auditor_router/pal_clink.py",
+      "schemas/audit/pal_clink_audit_output.schema.json",
+      "tests/audit/test_pal_clink_runner.py",
+      "tests/auditor_router/test_pal_clink.py",
+      "docs/ops/pal-clink-audit-runner.md",
+      "task-packets/generated/TP-DMX-PALCLINK-VERDICT-101.json",
+      "proof/TP-DMX-PALCLINK-VERDICT-101/**"
+    ],
+    "message": "feat(audit): execute PAL clink audit and capture real verdict",
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-PALCLINK-VERDICT-101.json",
+      "python -m compileall -q tools scripts tests",
+      "pytest -q tests/audit/test_pal_clink_runner.py",
+      "pytest -q tests/auditor_router/test_pal_clink.py",
+      "git diff --check"
+    ]
+  },
+  "depends_on": [],
+  "execution": {
+    "agent": "codex",
+    "base_branch": "main",
+    "branch": "codex/tp-dmx-palclink-verdict-101",
+    "stacked_because": "Root packet for the DMX-AUTOREVIEW-PLATFORM dependency DAG."
+  },
+  "id": "TP-DMX-PALCLINK-VERDICT-101",
+  "invariants": [
+    "Runtime/source truth outranks this packet and the load plan.",
+    "Preserve PR Steward check-only semantics unless this packet explicitly authorizes a governed mutation gate.",
+    "Preserve fail-closed behavior on missing evidence, stale SHAs, unsupported permissions, or unknown authority.",
+    "Do not expose secrets, tokens, private keys, or unredacted provider metadata in proof artifacts.",
+    "Do not modify files outside the packet allowlist without stopping for supervisor review."
+  ],
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "pr": {
+    "base": "main",
+    "body": "## Summary\n- Run the proven claude-audit/gemini-audit clink config against an evidence bundle, capture PAL_CLINK_AUDIT_OUTPUT.json, and normalize to a real embedded_audit verdict (close PASS_WITH_BLOCKERS from TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002).\n\n## Scope\nTrack: A-complete-lane. Risk: HIGH. Red lane: false.\n\n## Validation\nRun the packet validation commands and capture proof under proof/TP-DMX-PALCLINK-VERDICT-101/PROOF.json.\n\n## NOT_RUN\nList any skipped live, integration, credentialed, or supervisor-gated checks explicitly.",
+    "title": "Feat(audit): execute PAL clink audit and capture real verdict"
+  },
+  "project": "dopemux-mvp",
+  "repo_binding": {
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "require_identity_match": true
+  },
+  "series": {
+    "base_branch": "main",
+    "final_packet": false,
+    "id": "DMX-AUTOREVIEW-PLATFORM",
+    "parent_tp_id": null
+  },
+  "steps": [
+    {
+      "context_files": [
+        "AGENTS.md",
+        "docs/ops/load-plans/load_plan-DMX-AUTOREVIEW-PLATFORM.json",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "docs/ops/pal-clink-audit-runner.md"
+      ],
+      "id": "S1",
+      "task": "Inspect current repo truth, authority docs, runtime entrypoints, schemas, tests, and existing conventions before editing.",
+      "validation": [
+        "Canonical writer and downstream consumers are identified.",
+        "Any missing authority is recorded as UNKNOWN rather than inferred.",
+        "The planned diff is confirmed to stay within the packet allowlist."
+      ]
+    },
+    {
+      "expected_files": [
+        "scripts/audit/pal_clink_runner.py",
+        "tools/auditor_router/pal_clink.py",
+        "schemas/audit/pal_clink_audit_output.schema.json",
+        "tests/audit/test_pal_clink_runner.py",
+        "tests/auditor_router/test_pal_clink.py",
+        "docs/ops/pal-clink-audit-runner.md",
+        "task-packets/generated/TP-DMX-PALCLINK-VERDICT-101.json",
+        "proof/TP-DMX-PALCLINK-VERDICT-101/**"
+      ],
+      "id": "S2",
+      "requirements": [
+        "Track: A-complete-lane",
+        "Proof path: proof/TP-DMX-PALCLINK-VERDICT-101/PROOF.json",
+        "Executor default: claude-code-sonnet",
+        "Auditor default: claude-code-opus"
+      ],
+      "task": "Run the proven claude-audit/gemini-audit clink config against an evidence bundle, capture PAL_CLINK_AUDIT_OUTPUT.json, and normalize to a real embedded_audit verdict (close PASS_WITH_BLOCKERS from TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002).",
+      "validation": [
+        "Implementation preserves fail-closed behavior and deterministic artifact output.",
+        "No file outside commit.allowlist changed.",
+        "Stop conditions from this packet were not triggered, or execution stopped with evidence."
+      ]
+    },
+    {
+      "expected_files": [
+        "tests/audit/test_pal_clink_runner.py",
+        "tests/auditor_router/test_pal_clink.py",
+        "docs/ops/pal-clink-audit-runner.md",
+        "proof/TP-DMX-PALCLINK-VERDICT-101/**"
+      ],
+      "id": "S3",
+      "task": "Update tests, docs, and proof artifacts required by the packet allowlist and keep runtime claims backed by observed code or validation.",
+      "validation": [
+        "Docs describe implemented behavior only.",
+        "Proof artifacts include commands, exit codes, diff scope, residual risks, and UNKNOWNs.",
+        "Generated artifacts are stable and replayable."
+      ]
+    },
+    {
+      "commands": [
+        "python -m json.tool task-packets/generated/TP-DMX-PALCLINK-VERDICT-101.json",
+        "python -m compileall -q tools scripts tests",
+        "pytest -q tests/audit/test_pal_clink_runner.py",
+        "pytest -q tests/auditor_router/test_pal_clink.py",
+        "git diff --check"
+      ],
+      "id": "S4",
+      "task": "Run focused validation, inspect git diff, run codereview/precommit review, and prepare a truthful completion summary.",
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-DMX-PALCLINK-VERDICT-101.json",
+        "python -m compileall -q tools scripts tests",
+        "pytest -q tests/audit/test_pal_clink_runner.py",
+        "pytest -q tests/auditor_router/test_pal_clink.py",
+        "git diff --check"
+      ]
+    }
+  ],
+  "target": "Run the proven claude-audit/gemini-audit clink config against an evidence bundle, capture PAL_CLINK_AUDIT_OUTPUT.json, and normalize to a real embedded_audit verdict (close PASS_WITH_BLOCKERS from TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002)."
+}
