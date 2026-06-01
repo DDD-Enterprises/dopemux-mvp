@@ -5746,6 +5746,13 @@ def _read_batch_job_rows(path: Path) -> List[Dict[str, Any]]:
     return [row for row in rows if isinstance(row, dict)]
 
 
+def _batch_job_strict_json_schema(route_entry: Any) -> bool:
+    return bool(
+        isinstance(route_entry, dict)
+        and route_entry.get("strict_json_schema") is True
+    )
+
+
 def _upsert_batch_job_rows(
     existing: List[Dict[str, Any]], updates: List[Dict[str, Any]]
 ) -> List[Dict[str, Any]]:
@@ -11850,9 +11857,13 @@ def try_repair_json_truncation(
 
 def parse_json_from_response_with_provenance(
     text: str,
+    *,
+    claimed_strict_route: bool = False,
 ) -> Tuple[Optional[Any], Dict[str, Any]]:
     return llm_runtime_parse_json_from_response_with_provenance(
-        _llm_runtime_deps(), text
+        _llm_runtime_deps(),
+        text,
+        claimed_strict_route=claimed_strict_route,
     )
 
 
@@ -11930,6 +11941,7 @@ def _sanitize_provenance_for_logging(finalized: Dict[str, Any]) -> Dict[str, Any
         "repaired_response_length",
         "chars_lost",
         "chars_delta",
+        "claimed_strict_route",
     }
 
     safe: Dict[str, Any] = {}
@@ -11961,9 +11973,14 @@ def log_response_parse_repair(finalized: Dict[str, Any]) -> None:
 def parse_json_from_response(
     text: str,
     metadata_out: Optional[Dict[str, Any]] = None,
+    *,
+    claimed_strict_route: bool = False,
 ) -> Optional[Any]:
     return llm_runtime_parse_json_from_response(
-        _llm_runtime_deps(), text, metadata_out=metadata_out
+        _llm_runtime_deps(),
+        text,
+        metadata_out=metadata_out,
+        claimed_strict_route=claimed_strict_route,
     )
 
 
@@ -15201,7 +15218,8 @@ else sdk_auth_present_flags(p_provider, True)
             request_meta_local["strict_route_attempts"] = strict_attempts
             request_meta_local["strict_route_attestations"] = strict_attestations
             parsed, provenance = parse_json_from_response_with_provenance(
-                response_text_local
+                response_text_local,
+                claimed_strict_route=bool(selected_route.get("strict_json_schema", False)),
             )
             finalized_provenance = finalize_response_parse_provenance(
                 provenance,
@@ -16149,6 +16167,9 @@ else sdk_auth_present_flags(p_provider, True)
                             "api_key_env": batch_api_key_env,
                             "job_id": batch_job_id,
                             "state": "submitted",
+                            "strict_json_schema": _batch_job_strict_json_schema(
+                                selected_route_entry
+                            ),
                             "submitted_at_utc": now_iso(),
                             "estimated_input_tokens": projected_input_tokens,
                             "estimated_output_tokens": projected_output_tokens,
@@ -19871,6 +19892,7 @@ def run_batch_watch(
                 parsed = parse_json_from_response(
                     response_text,
                     metadata_out=salvage_meta,
+                    claimed_strict_route=bool(row.get("strict_json_schema", False)),
                 )
                 artifacts = coerce_artifacts_from_response(
                     parsed=parsed,
