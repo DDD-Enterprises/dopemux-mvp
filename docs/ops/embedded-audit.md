@@ -47,12 +47,15 @@ audit proof emission. The workflow uses read-only repository permissions
 (`contents`, `pull-requests`, `checks`, `statuses`, and `actions`) and does not
 use `pull_request_target`.
 
-The workflow checks out and verifies the expected PR head SHA, runs static
-auditor-route preflight, and then invokes
-`scripts/audit/run_embedded_audit.py` to emit `PROOF.json` and
-`AUDITOR_REPORT.md` into the uploaded `embedded-audit-artifacts/` bundle.
-Preflight may fail or classify tooling as unavailable; proof emission still runs
-so unavailable audit authority is recorded explicitly instead of disappearing.
+The workflow checks out a trusted audit-source ref, fetches and verifies the
+requested PR head SHA as data, runs static auditor-route preflight from the
+trusted source checkout, and then invokes
+`scripts/audit/run_embedded_audit.py` from that trusted checkout. The emitter
+writes `PROOF.json` and the canonical
+`proof/<packet-id>/AUDITOR_REPORT.md` report path into the uploaded
+`embedded-audit-artifacts/` bundle. Preflight may fail or classify tooling as
+unavailable; proof emission still runs so unavailable audit authority is
+recorded explicitly instead of disappearing.
 
 The pull-request workflow does not expose `EMBEDDED_AUDIT_TOKEN` to PR-head
 code. The entrypoint never records token values, and trusted-ref callers may
@@ -61,9 +64,9 @@ record whether the expected token was present as provenance:
 - `trusted_token_status: AVAILABLE` when the token is present.
 - `trusted_token_status: UNKNOWN` when the token is absent or unproven.
 
-When the token is absent or PAL clink output is missing, the emitted
-`embedded_audit` object is schema-valid `SKIPPED` with a non-empty
-`skip_reason`. This is not a PASS verdict.
+When route evidence is unavailable, the token is absent, or PAL clink output is
+missing, the emitted `embedded_audit` object is schema-valid `SKIPPED` with a
+non-empty `skip_reason`. This is not a PASS verdict.
 
 The workflow is proof-authoring authority only for the embedded-audit artifact.
 PR Steward and merge/remediation engines may request audit proof but must not

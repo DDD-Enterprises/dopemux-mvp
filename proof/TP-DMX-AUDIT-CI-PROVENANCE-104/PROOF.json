@@ -65,7 +65,7 @@
     {
       "command": "pytest -q tests/audit/test_run_embedded_audit.py",
       "status": "PASS",
-      "evidence": "5 passed, including workflow head-SHA verification and no audit secret in PR-head job."
+      "evidence": "6 passed, including trusted-source workflow execution, canonical report path emission, missing route JSON skip behavior, and no audit secret in PR-head job."
     },
     {
       "command": "python -m json.tool task-packets/generated/TP-DMX-AUDIT-CI-PROVENANCE-104.json",
@@ -90,7 +90,12 @@
     {
       "command": "python scripts/audit/run_embedded_audit.py --packet-id TP-DMX-AUDIT-CI-PROVENANCE-104 ...",
       "status": "PASS",
-      "evidence": "Entry point wrote PROOF.json and AUDITOR_REPORT.md without recording token values."
+      "evidence": "Entry point wrote PROOF.json and the canonical proof/<packet-id>/AUDITOR_REPORT.md without recording token values."
+    },
+    {
+      "command": "python scripts/audit/run_embedded_audit.py --route-json <missing> --out <tmp-artifacts>",
+      "status": "PASS",
+      "evidence": "Missing route JSON produced exit code 0 with schema-valid SKIPPED proof and canonical report artifact."
     },
     {
       "command": "python scripts/audit/validate_audit_proof.py proof/TP-DMX-AUDIT-CI-PROVENANCE-104/PROOF.json",
@@ -119,7 +124,7 @@
     }
   ],
   "residual_risks": [
-    "The CI workflow does not expose EMBEDDED_AUDIT_TOKEN to PR-head code; trusted_token_status remains UNKNOWN and embedded_audit.status is SKIPPED unless a future trusted-ref execution path is implemented.",
+    "The CI workflow runs proof emission from a trusted-source checkout and does not expose EMBEDDED_AUDIT_TOKEN to PR-head code; trusted_token_status remains UNKNOWN and embedded_audit.status is SKIPPED unless a future trusted-ref execution path supplies token authority and PAL output.",
     "No live PAL clink audit output was captured in this local run.",
     "Task Orchestrator item state could not be advanced because the transport was closed."
   ]
