@@ -1,0 +1,15 @@
+docs/ops/pr-steward-distribution.md
+src/dopemux/templates/init/.github/workflows/embedded-audit.yml
+src/dopemux/templates/init/.github/workflows/pr-steward.yml
+src/dopemux/templates/init/config/pr_merge_specialist/policy.yaml
+src/dopemux/templates/init/config/pr_steward/policy.json
+task-packets/generated/TP-DMX-STEWARD-SCAFFOLD-302.json
+tests/dopemux_init/test_pr_steward_scaffold.py
+proof/TP-DMX-STEWARD-SCAFFOLD-302/AUDITOR_REPORT.md
+proof/TP-DMX-STEWARD-SCAFFOLD-302/CHANGED_FILES.txt
+proof/TP-DMX-STEWARD-SCAFFOLD-302/DIFF_STAT.txt
+proof/TP-DMX-STEWARD-SCAFFOLD-302/GIT_STATE.md
+proof/TP-DMX-STEWARD-SCAFFOLD-302/PROOF.json
+proof/TP-DMX-STEWARD-SCAFFOLD-302/VALIDATION_OUTPUT.md
+proof/TP-DMX-STEWARD-SCAFFOLD-302/review_bundle/MANIFEST.json
+proof/TP-DMX-STEWARD-SCAFFOLD-302/review_bundle/SUMMARY.md
