@@ -218,7 +218,7 @@
       "id": "TP-DMX-STEWARD-PACKAGE-301",
       "title": "Importable engine + single `dopemux pr-steward` console command",
       "track": "C-distribute",
-      "objective": "Make the existing Steward/Bridge/gate engine importable from installed packages; expose `dopemux pr-steward` (intake|bridge|gate|audit|doctor) with a stable versioned CLI contract; steward_gate logic ships in the package, never in scaffolded YAML.",
+      "objective": "Make the existing Steward/Bridge/gate engine importable from installed packages; expose `dopemux pr-steward` (intake|bridge|gate|audit) with a stable versioned CLI contract; steward_gate logic ships in the package, never in scaffolded YAML. The doctor subcommand is reserved for TP-DMX-STEWARD-DOCTOR-303.",
       "depends_on": ["TP-DMX-ACTIONBRIDGE-CLI-102", "TP-DMX-STEWARD-GATE-201"],
       "blocks": ["TP-DMX-STEWARD-SCAFFOLD-302", "TP-DMX-STEWARD-DOCTOR-303"],
       "can_run_parallel_with": [],
@@ -229,9 +229,9 @@
       "redlane": false,
       "proof_required": true,
       "proof_path": "proof/TP-DMX-STEWARD-PACKAGE-301/PROOF.json",
-      "files_allowed": ["pyproject.toml", "src/dopemux/cli.py", "src/dopemux_pr_steward/**", "tools/pr_steward/**", "tools/pr_action_bridge/**", "tests/dopemux_cli/test_pr_steward_cmd.py", "docs/ops/pr-steward.md", "docs/ops/pr-steward-cli.md", "task-packets/generated/TP-DMX-STEWARD-PACKAGE-301.json", "proof/TP-DMX-STEWARD-PACKAGE-301/**"],
+      "files_allowed": ["pyproject.toml", "src/dopemux/cli.py", "src/dopemux_pr_steward/__init__.py", "src/dopemux_pr_steward/cli.py", "src/dopemux_pr_steward/intake.py", "src/dopemux_pr_steward/bridge.py", "src/dopemux_pr_steward/gate.py", "src/dopemux_pr_steward/audit.py", "tools/pr_steward/**", "tools/pr_action_bridge/**", "tests/dopemux_cli/test_pr_steward_cmd.py", "docs/ops/pr-steward.md", "docs/ops/pr-steward-cli.md", "task-packets/generated/TP-DMX-STEWARD-PACKAGE-301.json", "proof/TP-DMX-STEWARD-PACKAGE-301/**"],
       "commit": "feat(cli): add dopemux pr-steward console command",
-      "stop_conditions": ["thin wrapper cannot import the existing engine from an installed wheel", "changing engine semantics", "scaffolding (TP-302)", "file outside allowlist must change"]
+      "stop_conditions": ["thin wrapper cannot import the existing engine from an installed wheel", "doctor subcommand or schema implementation needed before TP-DMX-STEWARD-DOCTOR-303", "changing engine semantics", "scaffolding (TP-302)", "file outside allowlist must change"]
     },
     {
       "id": "TP-DMX-STEWARD-SCAFFOLD-302",
