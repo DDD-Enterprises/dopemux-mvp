@@ -12,13 +12,13 @@ Expected missing-module failure was observed:
 
 ## Focused Packet Validation
 
-`python -m compileall -q tools tests`
+`python -m compileall -q tools/copilot_repair tests/copilot_repair`
 
 Result: PASS.
 
 `pytest -q tests/copilot_repair/test_generator.py`
 
-Result: PASS.
+Result: PASS (`7 passed`).
 
 `pytest -q tests/copilot_repair`
 
