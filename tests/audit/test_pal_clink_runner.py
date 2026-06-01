@@ -525,3 +525,45 @@ class TestRunAuditAndCaptureVerdict:
         )
 
         assert embedded["status"] == "PASS"
+
+    def test_fixture_only_capture_blocks_even_with_pass_verdict(
+        self, tmp_path: Path
+    ) -> None:
+        route = _make_route(cli_name="claude-audit", command="claude")
+        route_record = {
+            "tool": "pal-mcp-clink",
+            "underlying_cli": "claude",
+            "clink_client_name": "claude-audit",
+            "audit_safe_config_proven": True,
+            "clink_mutation_flags_detected": [],
+            "invocation_template": (
+                "pal-clink --client claude-audit --role codereviewer "
+                "--input PAL_CLINK_AUDIT_INPUT.md "
+                "--output PAL_CLINK_AUDIT_OUTPUT.json"
+            ),
+        }
+
+        embedded = run_audit_and_capture_verdict(
+            route,
+            "audit prompt",
+            route_record=route_record,
+            raw_output_path=tmp_path / "PAL_CLINK_AUDIT_OUTPUT.json",
+            report_path="proof/TP-DMX-PALCLINK-VERDICT-101/AUDITOR_REPORT.md",
+            report_file_path=tmp_path / "AUDITOR_REPORT.md",
+            which_fn=_always_found,
+            subprocess_run=_make_subprocess_run(
+                stdout=json.dumps(
+                    {
+                        "status": "success",
+                        "verdict": "PASS",
+                        "findings": [],
+                        "risks": [
+                            "Fixture run only; no live external PAL clink CLI was invoked."
+                        ],
+                    }
+                ).encode("utf-8")
+            ),
+        )
+
+        assert embedded["status"] == "NEEDS_SUPERVISOR"
+        assert embedded["exit_code"] == 1

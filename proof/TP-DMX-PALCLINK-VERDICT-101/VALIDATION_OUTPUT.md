@@ -2,7 +2,7 @@
 
 PASS: python -m json.tool task-packets/generated/TP-DMX-PALCLINK-VERDICT-101.json
 PASS: python -m compileall -q scripts/audit/pal_clink_runner.py tools/auditor_router/pal_clink.py tests/audit/test_pal_clink_runner.py tests/auditor_router/test_pal_clink.py
-PASS: pytest -q tests/audit/test_pal_clink_runner.py (37 passed)
+PASS: pytest -q tests/audit/test_pal_clink_runner.py (38 passed)
 PASS: pytest -q tests/auditor_router/test_pal_clink.py (46 passed)
 PASS: git diff --check
 
