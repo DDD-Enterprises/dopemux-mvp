@@ -1,0 +1,9 @@
+{
+  "cli_name": "claude-audit",
+  "duration_seconds": 1.2416974641382694e-05,
+  "error": null,
+  "exit_code": 0,
+  "stderr": "",
+  "stdout": "{\"status\": \"success\", \"verdict\": \"PASS\", \"findings\": [], \"risks\": [\"Fixture run only; no live external PAL clink CLI was invoked.\"]}",
+  "timed_out": false
+}
