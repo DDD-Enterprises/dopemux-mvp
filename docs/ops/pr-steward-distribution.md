@@ -35,5 +35,8 @@ overwrite local workflow or policy edits.
 
 ## Follow-Up
 
-`dopemux pr-steward doctor` remains fail-closed until
-TP-DMX-STEWARD-DOCTOR-303 adds package/scaffold skew and config checks.
+`dopemux pr-steward doctor` is report-only. It validates
+`config/pr_steward/policy.json` against
+`schemas/pr_steward/config.schema.json`, compares the local policy to the
+packaged scaffold policy, and exits blocked on missing config, unknown schema,
+invalid config, or scaffold skew. It does not auto-fix, migrate, or write files.

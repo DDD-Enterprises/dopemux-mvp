@@ -9,6 +9,7 @@ from typing import Any, Sequence
 from dopemux_pr_merge_specialist.steward_gate import steward_gate
 
 from . import CONTRACT_VERSION
+from .doctor import format_result, run_doctor
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -62,9 +63,16 @@ def build_parser() -> argparse.ArgumentParser:
 
     doctor = subparsers.add_parser(
         "doctor",
-        help="Report PR Steward package/scaffold health. Full checks land in TP303.",
+        help="Run report-only PR Steward package/scaffold health checks.",
+        description=(
+            "Run report-only PR Steward package/scaffold health checks. "
+            "No files are modified."
+        ),
     )
-    doctor.set_defaults(handler=_run_doctor_placeholder)
+    doctor.add_argument("--workspace", default=".", type=Path)
+    doctor.add_argument("--schema", type=Path)
+    doctor.add_argument("--format", choices=["json", "text"], default="text")
+    doctor.set_defaults(handler=_run_doctor)
     return parser
 
 
@@ -167,13 +175,14 @@ def _run_audit(args: argparse.Namespace) -> int:
     return 0 if status in {"PASS", "PASS_WITH_RISKS"} else 2
 
 
-def _run_doctor_placeholder(args: argparse.Namespace) -> int:
-    print(
-        "pr-steward doctor is report-only and will be implemented by "
-        "TP-DMX-STEWARD-DOCTOR-303.",
-        file=sys.stderr,
-    )
-    return 2
+def _run_doctor(args: argparse.Namespace) -> int:
+    result = run_doctor(workspace=args.workspace, schema_path=args.schema)
+    output = format_result(result, output_format=args.format)
+    if args.format == "json" or result.ok:
+        print(output)
+    else:
+        print(output, file=sys.stderr)
+    return 0 if result.ok else 2
 
 
 def _load_json(path: Path) -> dict[str, Any]:

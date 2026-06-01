@@ -22,7 +22,7 @@
   ],
   "execution": {
     "agent": "codex",
-    "base_branch": "main",
+    "base_branch": "codex/tp-dmx-steward-scaffold-302",
     "branch": "codex/tp-dmx-steward-doctor-303",
     "stacked_because": "Part of the DMX-AUTOREVIEW-PLATFORM dependency DAG."
   },
@@ -49,7 +49,7 @@
     ]
   },
   "pr": {
-    "base": "main",
+    "base": "codex/tp-dmx-steward-scaffold-302",
     "body": "## Summary\n- Detect engine vs scaffold version skew and validate config/pr_steward against the engine config schema, failing closed with actionable messages. Report-only (no auto-fix) in v1.\n\n## Scope\nTrack: C-distribute. Risk: LOW. Red lane: false.\n\n## Validation\nRun the packet validation commands and capture proof under proof/TP-DMX-STEWARD-DOCTOR-303/PROOF.json.\n\n## NOT_RUN\nList any skipped live, integration, credentialed, or supervisor-gated checks explicitly.",
     "title": "Feat(cli): add dopemux pr-steward doctor skew and config check"
   },
@@ -61,10 +61,10 @@
     "require_identity_match": true
   },
   "series": {
-    "base_branch": "main",
+    "base_branch": "codex/tp-dmx-steward-scaffold-302",
     "final_packet": false,
     "id": "DMX-AUTOREVIEW-PLATFORM",
-    "parent_tp_id": "TP-DMX-STEWARD-PACKAGE-301"
+    "parent_tp_id": "TP-DMX-STEWARD-SCAFFOLD-302"
   },
   "steps": [
     {
