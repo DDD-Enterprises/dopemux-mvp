@@ -75,6 +75,7 @@ jobs:
       - name: Verify requested head SHA
         id: head_integrity
         env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
           EXPECTED_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
         run: |
           if git -C trusted-source fetch --no-tags --depth=1 origin "$EXPECTED_HEAD_SHA"; then
@@ -82,7 +83,8 @@ jobs:
           else
             actual_head_sha=""
           fi
-          if [ "$actual_head_sha" = "$EXPECTED_HEAD_SHA" ]; then
+          pr_head_sha="$(git -C trusted-source ls-remote origin "refs/pull/${PR_NUMBER}/head" | awk '{print $1}')"
+          if [ "$actual_head_sha" = "$EXPECTED_HEAD_SHA" ] && [ "$pr_head_sha" = "$EXPECTED_HEAD_SHA" ]; then
             printf 'verified=true\n' >> "$GITHUB_OUTPUT"
           else
             printf 'verified=false\n' >> "$GITHUB_OUTPUT"
@@ -104,7 +106,7 @@ jobs:
           HEAD_VERIFIED: ${{ steps.head_integrity.outputs.verified }}
         run: |
           if [ "$HEAD_VERIFIED" != "true" ]; then
-            SKIP_REASON="Independent embedded audit skipped because the requested head SHA could not be fetched or verified."
+            SKIP_REASON="Independent embedded audit skipped because the requested head SHA could not be fetched or did not match the requested PR head."
           elif [ ! -f scripts/audit/run_embedded_audit.py ]; then
             SKIP_REASON="Independent embedded audit skipped because the trusted source ref does not yet contain scripts/audit/run_embedded_audit.py."
           else

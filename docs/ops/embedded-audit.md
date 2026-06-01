@@ -47,8 +47,8 @@ audit proof emission. The workflow uses read-only repository permissions
 (`contents`, `pull-requests`, `checks`, `statuses`, and `actions`) and does not
 use `pull_request_target`.
 
-The workflow checks out a trusted audit-source ref, fetches and verifies the
-requested PR head SHA as data, runs static auditor-route preflight from the
+The workflow checks out a trusted audit-source ref, fetches the requested PR
+head SHA as data, verifies it matches `refs/pull/<number>/head`, runs static auditor-route preflight from the
 trusted source checkout, and then invokes
 `scripts/audit/run_embedded_audit.py` from that trusted checkout. The emitter
 writes `PROOF.json` and the canonical
@@ -61,12 +61,14 @@ During bootstrap PRs where the trusted base ref does not yet contain the proof
 emitter, the workflow emits a schema-valid `SKIPPED` proof instead of executing
 the PR-head copy of the emitter.
 
-If the requested PR head SHA cannot be fetched or verified, the workflow emits a
-schema-valid `SKIPPED` proof with that integrity failure as the reason rather
-than emitting a normal proof for an unverified head.
+If the requested PR head SHA cannot be fetched or does not match the requested
+PR head ref, the workflow emits a schema-valid `SKIPPED` proof with that
+integrity failure as the reason rather than emitting a normal proof for an
+unverified or unrelated head.
 
 Manual dispatch uses the repository default branch as the trusted proof-authoring
-checkout and treats the supplied `head_sha` only as the inspected target.
+checkout and treats the supplied `head_sha` only as the inspected target after
+confirming it belongs to the supplied `pr_number`.
 
 The workflow passes `EMBEDDED_AUDIT_TOKEN` only to the trusted-source emitter
 step. Bootstrap and head-integrity SKIPPED paths run without that secret.
