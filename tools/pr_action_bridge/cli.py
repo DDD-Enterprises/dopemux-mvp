@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime
 import json
 import sys
 from pathlib import Path
@@ -53,6 +54,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     try:
+        validate_generated_at(args.generated_at)
         artifacts = load_artifacts(args.artifact_dir)
         action_plan, repair_packet = compile_action_plan(
             artifacts["merge_readiness"],
@@ -69,6 +71,18 @@ def main(argv: list[str] | None = None) -> int:
     print(f"wrote {args.out / 'ACTION_PLAN.json'}")
     print(f"wrote {args.out / 'REPAIR_PACKET.md'}")
     return 0
+
+
+def validate_generated_at(generated_at: str | None) -> None:
+    if generated_at is None:
+        return
+    if "T" not in generated_at:
+        raise CliError("--generated-at must be an ISO 8601 timestamp")
+    value = generated_at[:-1] + "+00:00" if generated_at.endswith("Z") else generated_at
+    try:
+        datetime.fromisoformat(value)
+    except ValueError as exc:
+        raise CliError("--generated-at must be an ISO 8601 timestamp") from exc
 
 
 def load_artifacts(artifact_dir: Path) -> dict[str, dict[str, Any]]:

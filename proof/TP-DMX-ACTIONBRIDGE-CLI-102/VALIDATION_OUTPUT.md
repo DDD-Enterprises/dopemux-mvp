@@ -23,7 +23,7 @@ Expected missing-entrypoint failures were observed:
 
 Result: PASS.
 
-`python -m compileall -q tools/pr_action_bridge tests/pr_action_bridge/test_cli.py`
+`python -m compileall -q tools/pr_action_bridge/__main__.py tools/pr_action_bridge/cli.py scripts/pr-action-bridge tests/pr_action_bridge/test_cli.py`
 
 Result: PASS.
 
@@ -32,8 +32,33 @@ Result: PASS.
 Result: PASS.
 
 ```text
-....                                                                     [100%]
+.....                                                                    [100%]
 ```
+
+## Claude Review Repair
+
+`git merge --no-edit origin/main`
+
+Result: PASS after resolving `task-packets/generated/TP-DMX-ACTIONBRIDGE-CLI-102.json`
+to keep the current narrowed `compileall` validation command.
+
+`/path/to/worktree/scripts/pr-action-bridge --artifact-dir artifacts --out out --generated-at 2026-01-01T00:00:00Z`
+
+Run from `/tmp/pr-action-bridge-wrapper-proof-cwd`, with `artifacts/` populated from
+`proof/TP-DMX-ACTIONBRIDGE-CLI-102/input/`.
+
+Result: PASS.
+
+```text
+wrote out/ACTION_PLAN.json
+wrote out/REPAIR_PACKET.md
+# REPAIR_PACKET
+```
+
+`! git check-ignore -q proof/TP-DMX-ACTIONBRIDGE-CLI-102/PROOF.json`
+
+Result: PASS. The TP102 proof bundle is now included in the tracked proof ledger
+allowlist instead of requiring `git add -f`.
 
 `git diff --check`
 

@@ -101,6 +101,26 @@ def _core_surface_records() -> tuple[list[ProviderSurface], list[ModelRecord], l
             content_hash=hash_json({"model_key": "openai/gpt-5.4-mini"}),
             source_ref="m1_registry_seed",
         ),
+        ModelRecord(
+            model_key="gemini/gemini-3.1-pro-preview",
+            display_name="Gemini 3.1 Pro Preview",
+            family="gemini-3",
+            source_registry_ref="runtime_candidate_registry",
+            registry_class="current_state_authority",
+            lifecycle_status="candidate",
+            content_hash=hash_json({"model_key": "gemini/gemini-3.1-pro-preview"}),
+            source_ref="m1_registry_seed",
+        ),
+        ModelRecord(
+            model_key="google/gemini-3.1-pro-preview",
+            display_name="Gemini 3.1 Pro Preview via OpenRouter",
+            family="gemini-3",
+            source_registry_ref="runtime_candidate_registry",
+            registry_class="current_state_authority",
+            lifecycle_status="candidate",
+            content_hash=hash_json({"model_key": "google/gemini-3.1-pro-preview"}),
+            source_ref="m1_registry_seed",
+        ),
     ]
     routes = [
         RouteRecord(

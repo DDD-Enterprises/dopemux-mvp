@@ -65,6 +65,9 @@ scripts/pr-action-bridge \
   --out /tmp/pr-action-bridge
 ```
 
+The `scripts/pr-action-bridge` wrapper resolves the repository root from its own path,
+so it can be invoked by absolute path from another working directory.
+
 The CLI writes:
 
 - `ACTION_PLAN.json`

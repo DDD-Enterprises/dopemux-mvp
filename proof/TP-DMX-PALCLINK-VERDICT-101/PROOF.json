@@ -13,17 +13,17 @@
   "embedded_audit": {
     "auditor_model": "sonnet",
     "auditor_tool": "pal-mcp-clink",
-    "exit_code": 0,
+    "exit_code": 1,
     "findings": [],
     "fixes_applied": [],
     "invocation": "pal-clink --client claude-audit --role codereviewer --input PAL_CLINK_AUDIT_INPUT.md --output PAL_CLINK_AUDIT_OUTPUT.json",
     "remaining_risks": [
-      "Fixture run only; no live external PAL clink CLI was invoked."
+      "Fixture-only audit is blocking; no live external PAL clink CLI was invoked."
     ],
     "report_path": "proof/TP-DMX-PALCLINK-VERDICT-101/AUDITOR_REPORT.md",
     "required": true,
     "skip_reason": null,
-    "status": "PASS_WITH_RISKS"
+    "status": "NEEDS_SUPERVISOR"
   },
   "github_mutation_performed": false,
   "mutation_performed": true,
@@ -42,7 +42,8 @@
     "live_external_pal_clink": "NOT_RUN fixture only",
     "packet_json": "PASS",
     "packet_scoped_compileall": "PASS",
-    "tests_audit_pal_clink_runner": "PASS 36 passed",
+    "review_repair_fixture_only_audit_blocks": "PASS NEEDS_SUPERVISOR",
+    "tests_audit_pal_clink_runner": "PASS 38 passed",
     "tests_auditor_router_pal_clink": "PASS 46 passed"
   }
 }

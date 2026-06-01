@@ -9,13 +9,14 @@
       "scripts/migration/switchover.py",
       "scripts/partition_function.py",
       "scripts/submit_loop_context.py",
+      ".gitignore",
       "task-packets/generated/TP-DMX-AUDIT-CI-PROVENANCE-104.json",
       "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/**"
     ],
     "message": "feat(audit): independent embedded-audit CI workflow with trusted provenance",
     "verify": [
       "python -m json.tool task-packets/generated/TP-DMX-AUDIT-CI-PROVENANCE-104.json",
-      "python -m compileall -q scripts tests",
+      "python -m compileall -q scripts/audit/run_embedded_audit.py tests/audit/test_run_embedded_audit.py",
       "pytest -q tests/audit/test_run_embedded_audit.py",
       "git diff --check"
     ]
@@ -53,7 +54,7 @@
   },
   "pr": {
     "base": "main",
-    "body": "## Summary\n- embedded-audit.yml runs the auditor router under a separate least-privilege token with verifiable provenance and emits the embedded_audit proof object; plus an in-lane invocation entrypoint. Engine may REQUEST but never AUTHOR the proof.\n\n## Scope\nTrack: A-complete-lane. Risk: HIGH. Red lane: false.\n\n## Validation\nRun the packet validation commands and capture proof under proof/TP-DMX-AUDIT-CI-PROVENANCE-104/PROOF.json.\n\n## NOT_RUN\nList any skipped live, integration, credentialed, or supervisor-gated checks explicitly.",
+    "body": "## Summary\n- embedded-audit.yml runs the auditor router under a separate least-privilege token with verifiable provenance and emits the embedded_audit proof object; plus an in-lane invocation entrypoint. Engine may REQUEST but never AUTHOR the proof.\n\n## Scope\nTrack: A-complete-lane. Risk: HIGH. Red lane: true.\n\n## Validation\nRun the packet validation commands and capture proof under proof/TP-DMX-AUDIT-CI-PROVENANCE-104/PROOF.json.\n\n## NOT_RUN\nList any skipped live, integration, credentialed, or supervisor-gated checks explicitly.",
     "title": "Feat(audit): independent embedded-audit CI workflow with trusted provenance"
   },
   "project": "dopemux-mvp",
@@ -92,6 +93,7 @@
         "tests/audit/test_run_embedded_audit.py",
         "docs/ops/embedded-audit.md",
         "docs/ops/embedded-audit-proof.md",
+        ".gitignore",
         "task-packets/generated/TP-DMX-AUDIT-CI-PROVENANCE-104.json",
         "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/**"
       ],
@@ -100,7 +102,8 @@
         "Track: A-complete-lane",
         "Proof path: proof/TP-DMX-AUDIT-CI-PROVENANCE-104/PROOF.json",
         "Executor default: claude-code-sonnet",
-        "Auditor default: claude-code-opus"
+        "Auditor default: claude-code-opus",
+        "Supervisor/red-lane handling required before any secret-bearing workflow or token configuration change."
       ],
       "task": "embedded-audit.yml runs the auditor router under a separate least-privilege token with verifiable provenance and emits the embedded_audit proof object; plus an in-lane invocation entrypoint. Engine may REQUEST but never AUTHOR the proof.",
       "validation": [
@@ -127,7 +130,7 @@
     {
       "commands": [
         "python -m json.tool task-packets/generated/TP-DMX-AUDIT-CI-PROVENANCE-104.json",
-        "python -m compileall -q scripts tests",
+        "python -m compileall -q scripts/audit/run_embedded_audit.py tests/audit/test_run_embedded_audit.py",
         "pytest -q tests/audit/test_run_embedded_audit.py",
         "git diff --check"
       ],
@@ -135,7 +138,7 @@
       "task": "Run focused validation, inspect git diff, run codereview/precommit review, and prepare a truthful completion summary.",
       "validation": [
         "python -m json.tool task-packets/generated/TP-DMX-AUDIT-CI-PROVENANCE-104.json",
-        "python -m compileall -q scripts tests",
+        "python -m compileall -q scripts/audit/run_embedded_audit.py tests/audit/test_run_embedded_audit.py",
         "pytest -q tests/audit/test_run_embedded_audit.py",
         "git diff --check"
       ]

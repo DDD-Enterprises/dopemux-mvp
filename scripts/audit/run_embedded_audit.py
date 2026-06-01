@@ -19,7 +19,6 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from scripts.audit.pal_clink_runner import _render_audit_report
 from tools.auditor_router.pal_clink import normalize_pal_clink_audit_output
 
 
@@ -46,11 +45,31 @@ def build_embedded_audit_proof(
     pal_output: Mapping[str, Any] | None,
     token_present: bool,
     token_source: str,
+    route_error: str | None = None,
+    pal_output_error: str | None = None,
     generated_at: str | None = None,
 ) -> dict[str, Any]:
     """Build a top-level proof bundle with canonical embedded_audit object."""
     report_path = f"proof/{packet_id}/AUDITOR_REPORT.md"
-    if not token_present:
+    if route_error:
+        embedded_audit = _skipped_audit(
+            report_path=report_path,
+            reason=(
+                "Independent embedded audit skipped because auditor route JSON "
+                f"is missing or invalid: {route_error}"
+            ),
+        )
+        trusted_token_status = "AVAILABLE" if token_present else "UNKNOWN"
+    elif pal_output_error:
+        embedded_audit = _skipped_audit(
+            report_path=report_path,
+            reason=(
+                "Independent embedded audit skipped because PAL clink output "
+                f"JSON is missing or invalid: {pal_output_error}"
+            ),
+        )
+        trusted_token_status = "AVAILABLE" if token_present else "UNKNOWN"
+    elif not token_present:
         embedded_audit = _skipped_audit(
             report_path=report_path,
             reason=(
@@ -142,9 +161,11 @@ def run_cli(
 ) -> int:
     args = build_parser().parse_args(argv)
     environ = os.environ if env is None else env
-    route = _read_json_object(args.route_json)
-    pal_output = (
-        _read_json_object(args.pal_output_json) if args.pal_output_json else None
+    route, route_error = _read_optional_json_object(args.route_json)
+    pal_output, pal_output_error = (
+        _read_optional_json_object(args.pal_output_json)
+        if args.pal_output_json
+        else (None, None)
     )
     proof = build_embedded_audit_proof(
         packet_id=args.packet_id,
@@ -155,6 +176,8 @@ def run_cli(
         pal_output=pal_output,
         token_present=bool(environ.get(TOKEN_ENV_VAR)),
         token_source=TOKEN_ENV_VAR,
+        route_error=route_error,
+        pal_output_error=pal_output_error,
         generated_at=args.generated_at,
     )
     _write_outputs(args.out, proof)
@@ -168,15 +191,38 @@ def _read_json_object(path: Path) -> dict[str, Any]:
     return payload
 
 
+def _read_optional_json_object(path: Path) -> tuple[dict[str, Any], str | None]:
+    try:
+        return _read_json_object(path), None
+    except (FileNotFoundError, json.JSONDecodeError, ValueError) as exc:
+        return {}, str(exc)
+
+
 def _write_outputs(out_dir: Path, proof: dict[str, Any]) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "PROOF.json").write_text(
         json.dumps(proof, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
-    (out_dir / "AUDITOR_REPORT.md").write_text(
-        _render_audit_report(proof["embedded_audit"]),
-        encoding="utf-8",
+    report_path = Path(proof["embedded_audit"]["report_path"])
+    report_file = out_dir / report_path
+    report_file.parent.mkdir(parents=True, exist_ok=True)
+    report_text = _render_public_audit_report()
+    report_file.write_text(report_text, encoding="utf-8")
+    root_report_file = out_dir / "AUDITOR_REPORT.md"
+    if root_report_file != report_file:
+        root_report_file.write_text(report_text, encoding="utf-8")
+
+
+def _render_public_audit_report() -> str:
+    return "\n".join(
+        [
+            "# PAL Clink Audit Report",
+            "",
+            "The canonical embedded audit details are recorded in PROOF.json.",
+            "This Markdown file intentionally omits raw finding and risk text.",
+            "",
+        ]
     )
 
 

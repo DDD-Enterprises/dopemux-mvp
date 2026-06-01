@@ -172,10 +172,28 @@ records:
 - `engine_authored_proof: false`
 
 The entrypoint accepts a static `AUDITOR_ROUTE.json` and, when available,
-`PAL_CLINK_AUDIT_OUTPUT.json`. With a present `EMBEDDED_AUDIT_TOKEN` and
-captured PAL output, it normalizes the PAL verdict through the existing
-embedded-audit policy. Without the token or PAL output, it emits `SKIPPED` and
-records the missing authority in `skip_reason`.
+`PAL_CLINK_AUDIT_OUTPUT.json`. Pull-request CI does not expose
+`EMBEDDED_AUDIT_TOKEN` to PR-head code and runs the proof emitter from a trusted
+checkout, so that path emits `SKIPPED` unless a trusted-ref caller supplies both
+token authority and PAL output. With a present token in a trusted invocation and
+captured PAL output, the entrypoint normalizes the PAL verdict through the
+existing embedded-audit policy. Without route evidence, the token, or PAL output,
+it emits `SKIPPED` and records the missing authority in `skip_reason`.
+
+The emitted `embedded_audit.report_path` is the canonical
+`proof/<packet-id>/AUDITOR_REPORT.md` path. Artifact bundles must include that
+relative file path so consumers following the proof object can read the report.
+If the trusted checkout does not yet contain the proof emitter, bootstrap CI
+must emit a schema-valid `SKIPPED` proof rather than executing the PR-head copy
+of the emitter.
+If the requested head SHA cannot be fetched or does not match
+`refs/pull/<number>/head`, the proof must also be `SKIPPED` and record the
+head-integrity failure as the reason.
+Manual dispatch must keep proof-authoring code on the repository default branch
+and must not treat the selected dispatch branch as trusted proof-authoring code
+or as proof that the supplied SHA belongs to the requested PR.
+The audit token may be passed only to the trusted-source emitter step; bootstrap
+and head-integrity SKIPPED proof paths must not receive it.
 
 ---
 
