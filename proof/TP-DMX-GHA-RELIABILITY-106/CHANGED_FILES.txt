@@ -1,6 +1,7 @@
 docs/ops/branch-policy-audit.md
 docs/ops/ci-trigger-refresh.md
 docs/ops/pr-gate-runbook.md
+tests/ci/test_pr_gate.py
 task-packets/generated/TP-DMX-GHA-RELIABILITY-106.json
 proof/TP-DMX-GHA-RELIABILITY-106/AUDITOR_REPORT.md
 proof/TP-DMX-GHA-RELIABILITY-106/CHANGED_FILES.txt

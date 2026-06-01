@@ -37,7 +37,9 @@ GitHub marks it as failed — which branch protection can use as a required chec
 | `code-quality` | **REQUIRED BLOCKING** | Always runs on PRs; linting / type-check regressions must block merge |
 | `tests` | **REQUIRED BLOCKING** | Always runs on PRs; unit-test regressions must block merge |
 | `extractor-smoke` | **REQUIRED BLOCKING** | Always runs on PRs; focused canonical RTE regression gate |
-| `extractor-full` | **ADVISORY** | Uses `set +e; exit 0` trap — job `result` is structurally always `success`; informational display only via `outputs.suite_status` |
+| `audit-validator` | **REQUIRED BLOCKING** | Always runs on PRs; proof-schema regressions must block merge |
+| `extractor-full` | **REQUIRED BLOCKING** | Always runs on PRs; full extractor regressions must block merge |
+| `auditor-router` | **REQUIRED BLOCKING** | Always runs on PRs; embedded-audit routing regressions must block merge |
 | `installer-smoke` | **ADVISORY** | `if: github.event_name != 'pull_request'` — skipped on all PR runs |
 | `scoped-coverage` | **ADVISORY** | `if: github.event_name != 'pull_request'` — skipped on all PR runs |
 | `integration` | **ADVISORY** | `if: github.event_name != 'pull_request'` — skipped on all PR runs |
@@ -53,6 +55,9 @@ _gate_ok=true
 [ "${{ needs.code-quality.result }}"    != "success" ] && _gate_ok=false
 [ "${{ needs.tests.result }}"           != "success" ] && _gate_ok=false
 [ "${{ needs.extractor-smoke.result }}" != "success" ] && _gate_ok=false
+[ "${{ needs.audit-validator.result }}" != "success" ] && _gate_ok=false
+[ "${{ needs.extractor-full.result }}"  != "success" ] && _gate_ok=false
+[ "${{ needs.auditor-router.result }}"  != "success" ] && _gate_ok=false
 if [ "$_gate_ok" = "false" ]; then
   # posts "PR Gate: BLOCKED" to step summary, then:
   exit 1
@@ -87,7 +92,7 @@ classic protection or the active ruleset. See
 
 ## Failure Response Procedures
 
-### Required check failed (code-quality / tests / extractor-smoke)
+### Required check failed (code-quality / tests / extractor-smoke / audit-validator / extractor-full / auditor-router)
 
 1. Identify which check failed from the Step Summary (`PR Gate: BLOCKED` line
    includes the result of each required job).
@@ -95,14 +100,12 @@ classic protection or the active ruleset. See
 3. Fix the regression; push a new commit to the PR branch.
 4. Required checks re-run automatically on the new push.
 
-### Advisory check failed (extractor-full / installer-smoke / scoped-coverage / integration / security / docs)
+### Advisory check failed (installer-smoke / scoped-coverage / integration / security / docs)
 
 Advisory failures are **non-blocking** for merge. They appear in the Step
 Summary but do not cause `ci-summary` to exit 1.
 
 Recommended response:
-- `extractor-full` advisory failure: file a follow-up issue; mark tests as
-  expected-failure or fix on a separate branch.
 - Skipped advisory jobs: expected on PR fast-path; no action needed.
 
 ### ci-summary itself fails unexpectedly
@@ -137,9 +140,9 @@ Tests assert:
 - `ci-summary` has `if: always()`
 - All 9 upstream jobs present in `needs`
 - Gate script uses `!= "success"` for each required blocking job:
-  `code-quality`, `tests`, `extractor-smoke`, and `audit-validator`
+  `code-quality`, `tests`, `extractor-smoke`, `audit-validator`,
+  `extractor-full`, and `auditor-router`
 - `exit 1` present in gate script
-- `extractor-full.result` does not feed into `exit 1`
 - branch-protection caveat documented in gate script
 - `advisory` carve-out documented in gate script
 - `PR Gate: BLOCKED` and `PR Gate: CLEAR` messages present
