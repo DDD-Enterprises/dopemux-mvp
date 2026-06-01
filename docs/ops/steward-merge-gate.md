@@ -95,3 +95,21 @@ or GraphQL merge authority is unavailable, the merge result is blocked with
 Governed automerge remains disabled by default with
 `merge.allow_governed_automerge: false`. Admin-bypass squash remains blocked
 unless a later supervised packet adds explicit authorization and proof handling.
+
+## Final Hardening Findings
+
+The gate design intentionally separates three decisions:
+
+- whether remediation may write implementer-owned fixes
+- whether finalization may resolve verified threads and merge the exact head
+- whether branch protection or administrator bypass should be changed
+
+Only the first two are represented in `steward_gate`; branch protection changes
+and administrator bypass remain outside the gate and require separate
+supervisor authority. The gate must continue to deny on missing artifacts,
+stale timestamps, mismatched head SHAs, unsupported readiness classes, and
+unknown GraphQL merge authority.
+
+During the TP401 hardening pass, the current series still contains draft PRs.
+That means `steward_gate(FINALIZATION)` is accepted as implemented branch
+behavior, not as permission to perform live merge execution from this proof.
