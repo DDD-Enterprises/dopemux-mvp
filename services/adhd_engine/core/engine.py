@@ -19,6 +19,7 @@ import asyncio
 import json
 import logging
 import os
+from dataclasses import asdict
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -89,6 +90,13 @@ def _resolve_task_orchestrator_url() -> str:
     if isinstance(configured, str) and configured.strip():
         return configured.strip()
     return os.getenv("TASK_ORCHESTRATOR_URL", "http://task-orchestrator:8000")
+
+
+def _redis_text(value: Any) -> str:
+    """Normalize Redis text responses across decoded and raw-byte clients."""
+    if isinstance(value, (bytes, bytearray)):
+        return value.decode("utf-8")
+    return str(value)
 
 # Machine Learning (IP-005 Days 11-12)
 try:
@@ -260,22 +268,46 @@ class ADHDAccommodationEngine:
             profile_keys = await self.redis_client.keys("adhd:profile:*")
 
             for key in profile_keys:
-                user_id = key.split(":")[-1]
+                key_text = _redis_text(key)
+                user_id = key_text.rsplit(":", 1)[-1]
                 profile_data = await self.redis_client.get(key)
 
                 if profile_data:
-                    profile = ADHDProfile(**json.loads(profile_data))
+                    profile = ADHDProfile(**json.loads(_redis_text(profile_data)))
                     self.user_profiles[user_id] = profile
                     
                     # Initialize ML predictor for user (Phase 10.5)
-                    if ML_AVAILABLE and settings.enable_ml_predictions:
-                        self.energy_predictors[user_id] = EnergyPatternPredictor(user_id)
-                        logger.info(f"🧠 Initialized ML energy predictor for user: {user_id}")
+                    self._ensure_energy_predictor(user_id)
+
+            await self._ensure_operator_profile_seeded()
 
             logger.info(f"📋 Loaded {len(self.user_profiles)} ADHD profiles")
 
         except Exception as e:
             logger.error(f"Failed to load ADHD profiles: {e}")
+
+    def _ensure_energy_predictor(self, user_id: str) -> None:
+        """Initialize the optional ML predictor for a loaded or seeded profile."""
+        if ML_AVAILABLE and settings.enable_ml_predictions and user_id not in self.energy_predictors:
+            self.energy_predictors[user_id] = EnergyPatternPredictor(user_id)
+            logger.info(f"🧠 Initialized ML energy predictor for user: {user_id}")
+
+    async def _ensure_operator_profile_seeded(self) -> None:
+        """Seed and persist a default profile for the stable local operator."""
+        operator_user_id = self.operator_user_id or resolve_operator_user_id()
+        self.operator_user_id = operator_user_id
+
+        if operator_user_id in self.user_profiles:
+            self._ensure_energy_predictor(operator_user_id)
+            return
+
+        profile = ADHDProfile(user_id=operator_user_id)
+        self.user_profiles[operator_user_id] = profile
+        self._ensure_energy_predictor(operator_user_id)
+
+        profile_key = f"adhd:profile:{operator_user_id}"
+        await self.redis_client.set(profile_key, json.dumps(asdict(profile), default=str))
+        logger.info(f"📋 Seeded default ADHD profile for operator: {operator_user_id}")
 
     async def _start_accommodation_monitoring(self) -> None:
         """Start background monitoring tasks."""
