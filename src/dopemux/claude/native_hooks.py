@@ -44,6 +44,67 @@ from dopemux.workflow.service import WorkflowKernel  # noqa: E402
 # Claude Code command hook exit codes
 EXIT_SUCCESS = 0
 EXIT_BLOCK = 2
+DEFAULT_ACTIVITY_STREAM = "dopemux:events"
+NATIVE_HOOK_ACTIVITY_EVENT_TYPE = "native_hook_activity"
+
+
+def _native_hook_activity_events_enabled() -> bool:
+    disabled_values = {"0", "false", "no", "off"}
+    configured = os.environ.get("DOPEMUX_NATIVE_HOOK_EVENTS_ENABLED", "1").strip().lower()
+    return configured not in disabled_values
+
+
+def _open_activity_redis_client():
+    redis_url = (
+        os.environ.get("DOPEMUX_EVENTS_REDIS_URL")
+        or os.environ.get("REDIS_URL")
+        or "redis://localhost:6379/0"
+    )
+    import redis  # type: ignore[import-not-found]
+
+    return redis.Redis.from_url(redis_url, decode_responses=True)
+
+
+def _emit_activity_event(
+    *,
+    hook_event_name: str,
+    status: str,
+    tool_name: Optional[str] = None,
+) -> bool:
+    """Emit a content-free native hook activity event to Redis Streams."""
+    if not _native_hook_activity_events_enabled():
+        return False
+
+    client = None
+    try:
+        client = _open_activity_redis_client()
+        data: Dict[str, Any] = {
+            "hook_event_name": hook_event_name,
+            "status": status,
+        }
+        if tool_name:
+            data["tool_name"] = tool_name
+
+        client.xadd(
+            os.environ.get("DOPEMUX_ACTIVITY_EVENT_STREAM", DEFAULT_ACTIVITY_STREAM),
+            {
+                "event_type": NATIVE_HOOK_ACTIVITY_EVENT_TYPE,
+                "timestamp": datetime.utcnow().isoformat() + "Z",
+                "source": "dopemux.native_hooks",
+                "data": json.dumps(data, sort_keys=True, separators=(",", ":")),
+            },
+            maxlen=10000,
+            approximate=True,
+        )
+        return True
+    except Exception:
+        return False
+    finally:
+        if client is not None and hasattr(client, "close"):
+            try:
+                client.close()
+            except Exception:
+                pass
 
 
 def _truncate(value: Any, limit: int = 400) -> Any:
@@ -212,6 +273,7 @@ class NativeHookAdapter:
         )
 
     def _on_user_prompt(self, data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
+        _emit_activity_event(hook_event_name="UserPromptSubmit", status="observed")
         state = self._active_state()
         if not state:
             return self._allow()
@@ -228,11 +290,15 @@ class NativeHookAdapter:
         )
 
     def _on_pre_tool_use(self, data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
+        tool_name = str(data.get("tool_name") or "unknown")
+        _emit_activity_event(
+            hook_event_name="PreToolUse",
+            status="attempt",
+            tool_name=tool_name,
+        )
         state = self._active_state()
         if not state:
             return self._allow()
-
-        tool_name = str(data.get("tool_name") or "unknown")
 
         if state.max_iterations == 0 and "wf-limit" in state.workflow_id:
             return self._deny_tool("Workflow iteration limit reached (0/0).", _workflow_context_lines(state, include_gates=True))
@@ -281,6 +347,11 @@ class NativeHookAdapter:
 
     def _on_post_tool_use(self, data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
         tool_name = str(data.get("tool_name") or "unknown")
+        _emit_activity_event(
+            hook_event_name="PostToolUse",
+            status="success",
+            tool_name=tool_name,
+        )
         tool_input = data.get("tool_input") or {}
         tool_response = data.get("tool_response")
 
@@ -323,6 +394,12 @@ class NativeHookAdapter:
         return self._allow()
 
     def _on_post_tool_use_failure(self, data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
+        tool_name = str(data.get("tool_name") or "unknown")
+        _emit_activity_event(
+            hook_event_name="PostToolUseFailure",
+            status="failure",
+            tool_name=tool_name,
+        )
         state = self._active_state()
         if not state:
             return self._allow()
@@ -330,7 +407,7 @@ class NativeHookAdapter:
         self.kernel.record_tool_event(
             state,
             event_name="posttoolusefailure",
-            tool_name=str(data.get("tool_name") or "unknown"),
+            tool_name=tool_name,
             status="failure",
             payload={
                 "tool_input": _truncate(data.get("tool_input")),
