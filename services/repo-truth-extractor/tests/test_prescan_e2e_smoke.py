@@ -67,6 +67,7 @@ def _load_json(path: Path) -> dict:
 
 
 @pytest.mark.xfail(
+    sys.platform == "darwin",
     reason="Deferred to TP-RTE-WALKER-006: prescan incremental cache semantics are outside CostProfile F repair scope.",
     strict=True,
 )
