@@ -1,0 +1,48 @@
+{
+  "artifacts": [
+    "AUDITOR_REPORT.md",
+    "AUDITOR_OUTPUT.json",
+    "PAL_CLINK_AUDIT_OUTPUT.json",
+    "VALIDATION_OUTPUT.md",
+    "GIT_STATE.md",
+    "DIFF_STAT.txt",
+    "CHANGED_FILES.txt"
+  ],
+  "base_branch": "main",
+  "branch": "codex/tp-dmx-palclink-verdict-101",
+  "embedded_audit": {
+    "auditor_model": "sonnet",
+    "auditor_tool": "pal-mcp-clink",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [],
+    "invocation": "pal-clink --client claude-audit --role codereviewer --input PAL_CLINK_AUDIT_INPUT.md --output PAL_CLINK_AUDIT_OUTPUT.json",
+    "remaining_risks": [
+      "Fixture run only; no live external PAL clink CLI was invoked."
+    ],
+    "report_path": "proof/TP-DMX-PALCLINK-VERDICT-101/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "github_mutation_performed": false,
+  "mutation_performed": true,
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "residual_risks": [
+    "Live external PAL clink CLI invocation was not run in this slice.",
+    "Repo-wide compileall remains blocked by unrelated pre-existing files outside packet allowlist."
+  ],
+  "schema_version": "1.0.0",
+  "secret_values_recorded": false,
+  "series_id": "DMX-AUTOREVIEW-PLATFORM",
+  "tp_id": "TP-DMX-PALCLINK-VERDICT-101",
+  "validations": {
+    "broad_compileall_tools_scripts_tests": "FAIL pre-existing files outside packet allowlist",
+    "git_diff_check": "PASS",
+    "live_external_pal_clink": "NOT_RUN fixture only",
+    "packet_json": "PASS",
+    "packet_scoped_compileall": "PASS",
+    "tests_audit_pal_clink_runner": "PASS 36 passed",
+    "tests_auditor_router_pal_clink": "PASS 46 passed"
+  }
+}
