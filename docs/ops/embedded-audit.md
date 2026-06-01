@@ -5,8 +5,8 @@ type: reference
 owner: '@hu3mann'
 author: '@codex'
 date: '2026-05-25'
-last_review: '2026-05-25'
-next_review: '2026-08-23'
+last_review: '2026-05-31'
+next_review: '2026-08-29'
 prelude: Embedded audit policy and proof contract for governance/process/schema packets.
 ---
 # Embedded Audit
@@ -39,6 +39,33 @@ Packet-specific supervisor-approved fallback auditors may be used only when the 
 PAL MCP clink router classification is static config inspection only. The router must not call PAL MCP, execute host-side CLIs, or send repo content during preflight. Its route output is evidence for operator handoff, not an audit verdict.
 
 For a PAL MCP clink audit, the operator or host-side runner must execute clink outside the Codex sandbox, capture `PAL_CLINK_AUDIT_OUTPUT.json`, and normalize that output into `AUDITOR_REPORT.md`. Embedded audit remains incomplete until the captured output is normalized.
+
+## Independent CI Workflow
+
+`.github/workflows/embedded-audit.yml` is the independent CI lane for embedded
+audit proof emission. The workflow uses read-only repository permissions
+(`contents`, `pull-requests`, `checks`, `statuses`, and `actions`) and does not
+use `pull_request_target`.
+
+The workflow runs static auditor-route preflight and then invokes
+`scripts/audit/run_embedded_audit.py` to emit `PROOF.json` and
+`AUDITOR_REPORT.md` into the uploaded `embedded-audit-artifacts/` bundle.
+Preflight may fail or classify tooling as unavailable; proof emission still runs
+so unavailable audit authority is recorded explicitly instead of disappearing.
+
+The entrypoint never records token values. It records whether the expected
+`EMBEDDED_AUDIT_TOKEN` was present as provenance:
+
+- `trusted_token_status: AVAILABLE` when the token is present.
+- `trusted_token_status: UNKNOWN` when the token is absent or unproven.
+
+When the token is absent or PAL clink output is missing, the emitted
+`embedded_audit` object is schema-valid `SKIPPED` with a non-empty
+`skip_reason`. This is not a PASS verdict.
+
+The workflow is proof-authoring authority only for the embedded-audit artifact.
+PR Steward and merge/remediation engines may request audit proof but must not
+author it.
 
 ## Required Proof Object
 
