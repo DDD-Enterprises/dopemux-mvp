@@ -1,9 +1,13 @@
 """ConPort backend adapter for PM-plane decision and progress integration."""
 
+import asyncio
 import logging
 import os
+import json
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 import httpx
+from filelock import FileLock
 
 logger = logging.getLogger(__name__)
 
@@ -105,3 +109,61 @@ class ConPortAdapter:
             return response.status_code == 200
         except Exception:
             return False
+
+    async def record_progress(
+        self,
+        task_id: str,
+        progress_notes: str,
+        is_decision: bool,
+        idempotency_key: Optional[str] = None,
+        timeout: int = 5,
+    ) -> Dict[str, Any]:
+        """Record progress/decision canonical write, protected by a file lock and logged to a local journal."""
+        # Define XDG journal and lock files
+        xdg_share = os.path.expanduser("~/.local/share/dopemux")
+        os.makedirs(xdg_share, exist_ok=True)
+        filepath = os.path.join(xdg_share, "progress_log.json")
+        lock_path = filepath + ".lock"
+
+        entry = {
+            "task_id": task_id,
+            "progress_notes": progress_notes,
+            "is_decision": is_decision,
+            "idempotency_key": idempotency_key,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+
+        # 1. Canonical HTTP post to ConPort API
+        payload = {
+            "workspace_id": "default",
+            "category": "decision" if is_decision else "progress",
+            "key": task_id,
+            "value": {
+                "description": progress_notes,
+                "is_decision": is_decision,
+                "idempotency_key": idempotency_key
+            }
+        }
+        response = await self._request("POST", "/kg/custom_data", json=payload)
+        response.raise_for_status()
+
+        # 2. Persist progress receipt only after ConPort accepts it
+        await asyncio.to_thread(self._write_journal_sync, filepath, lock_path, entry, timeout)
+
+        return response.json()
+
+    def _write_journal_sync(self, filepath: str, lock_path: str, entry: Dict[str, Any], timeout: int):
+        """Synchronously acquire FileLock and append to the journal file."""
+        with FileLock(lock_path, timeout=timeout):
+            existing = []
+            if os.path.exists(filepath):
+                try:
+                    with open(filepath, "r", encoding="utf-8") as f:
+                        existing = json.load(f)
+                except Exception:
+                    existing = []
+
+            existing.append(entry)
+
+            with open(filepath, "w", encoding="utf-8") as f:
+                json.dump(existing, f, indent=2, sort_keys=True)

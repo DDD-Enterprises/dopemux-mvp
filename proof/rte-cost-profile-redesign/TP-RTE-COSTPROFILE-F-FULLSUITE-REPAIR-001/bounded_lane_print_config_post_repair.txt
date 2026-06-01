@@ -1,0 +1,1069 @@
+00:48:44 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A0 provider=openai model=gpt-5.3-codex
+00:48:44 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A1 provider=openai model=gpt-5.3-codex
+00:48:44 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A11 provider=openai model=gpt-5.3-codex
+00:48:44 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A12 provider=openai model=gpt-5.3-codex
+00:48:44 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A13 provider=openai model=gpt-5.3-codex
+00:48:44 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A99 provider=openai model=gpt-5.5
+{
+  "run_id": "f_repair_print_config",
+  "repo_root": "/private/tmp/dopemux-pr706-clean-001",
+  "artifact_root": "/private/tmp/rte-f-repair-print-config",
+  "run_root": "/private/tmp/rte-f-repair-print-config/runs/f_repair_print_config",
+  "git_sha": "c4f0c17b29f67dd949b15953f7c5e6b01ac5cbdf",
+  "runner_sha256": "f08e29b584fdcaddcdae24014a80157fbe7a9bb9425dd738d19666a3a4a1bf1b",
+  "python_version": "3.12.13",
+  "cwd": "/private/tmp/dopemux-pr706-clean-001",
+  "phases": [
+    "A"
+  ],
+  "cost_profile": "value-default",
+  "cli": {
+    "phase_argument": "A",
+    "preset": null,
+    "preset_stage": "initial",
+    "skip_pre_live_validator": false,
+    "verify_phase_output": null,
+    "doctor": false,
+    "doctor_auth": false,
+    "preflight_providers": false,
+    "coverage_report": false,
+    "ui": "auto",
+    "quiet": false,
+    "jsonl_events": false,
+    "pretty": false,
+    "print_promptpack": false,
+    "print_run_order": false,
+    "print_phase_routing": false,
+    "print_routing_guide": false,
+    "print_prescan_guide": false,
+    "print_cost_preview": false,
+    "print_phase_prompts": null,
+    "print_config": true,
+    "run_id_override": "f_repair_print_config",
+    "run_id_source": "explicit",
+    "run_id_resolution_precedence": [
+      "explicit(--run-id)",
+      "generated(new timestamp run id)"
+    ],
+    "dry_run": false,
+    "resume": false,
+    "no_write_latest": false,
+    "write_latest_even_on_dry_run": false,
+    "latest_run_id_written": false,
+    "latest_run_id_file": "/private/tmp/rte-f-repair-print-config/latest_run_id.txt",
+    "home_scan_mode": "safe",
+    "max_files_docs": 35,
+    "max_files_code": 20,
+    "max_chars": 650000,
+    "max_request_bytes": 200000,
+    "file_truncate_chars": 70000,
+    "fail_fast_auth": true,
+    "gemini_auth_mode": "auto",
+    "gemini_model_id": "gemini-3-flash-preview",
+    "gemini_transport": "sdk",
+    "openai_transport": "openai_sdk",
+    "xai_transport": "openai_sdk",
+    "retry_policy": "default",
+    "retry_max_attempts": 4,
+    "retry_base_seconds": 2.0,
+    "retry_max_seconds": 30.0,
+    "phase_auth_fail_threshold": 5,
+    "partition_workers": 1,
+    "routing_policy": "balanced_openrouter",
+    "dpmx_routing_enable": "",
+    "dpmx_model_inventory": "",
+    "dpmx_model_extract": "",
+    "dpmx_model_synthesis": "",
+    "dpmx_model_qa": "",
+    "disable_escalation": false,
+    "escalation_max_hops": 2,
+    "batch_mode": false,
+    "batch_submit_only": false,
+    "batch_watch": false,
+    "batch_provider": "auto",
+    "batch_poll_seconds": 30,
+    "batch_wait_timeout_seconds": 86400,
+    "batch_max_requests_per_job": 2000,
+    "dpmx_webhook_url": "",
+    "dpmx_webhook_secret_set": false,
+    "dpmx_webhook_timeout_seconds": "",
+    "dpmx_webhook_required": "",
+    "dpmx_webhook_auto_continue": "",
+    "dpmx_live_ok": "",
+    "debug_phase_inputs": false,
+    "fail_fast_missing_inputs": false,
+    "output_root": "/tmp/rte-f-repair-print-config"
+  },
+  "output_layout": {
+    "artifact_root": "/private/tmp/rte-f-repair-print-config",
+    "runs_root": "/private/tmp/rte-f-repair-print-config/runs",
+    "latest_run_id_file": "/private/tmp/rte-f-repair-print-config/latest_run_id.txt",
+    "doctor_root": "/private/tmp/rte-f-repair-print-config/doctor",
+    "path_convention": "v5 runtime artifacts live under the active output layout root, not the legacy v3 path."
+  },
+  "limits": {
+    "max_files_docs": 35,
+    "max_files_code": 20,
+    "max_chars": 650000,
+    "max_request_bytes": 200000,
+    "file_truncate_chars": 70000
+  },
+  "dirs": {
+    "A": "/private/tmp/rte-f-repair-print-config/runs/f_repair_print_config/A_repo_control_plane"
+  },
+  "routing_policy_version": "RTE_ROUTING_V1",
+  "routing_ladders": {
+    "cost": {
+      "bulk": [
+        {
+          "provider": "openai",
+          "model_id": "gpt-5-nano",
+          "api_key_env": "OPENAI_API_KEY"
+        },
+        {
+          "provider": "gemini",
+          "model_id": "gemini-3-flash-preview",
+          "api_key_env": "GEMINI_API_KEY"
+        },
+        {
+          "provider": "xai",
+          "model_id": "grok-code-fast-1",
+          "api_key_env": "XAI_API_KEY"
+        }
+      ],
+      "extract": [
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.4-mini",
+          "api_key_env": "OPENAI_API_KEY"
+        },
+        {
+          "provider": "gemini",
+          "model_id": "gemini-3-flash-preview",
+          "api_key_env": "GEMINI_API_KEY"
+        },
+        {
+          "provider": "xai",
+          "model_id": "grok-code-fast-1",
+          "api_key_env": "XAI_API_KEY"
+        }
+      ],
+      "synthesis": [
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.2",
+          "api_key_env": "OPENAI_API_KEY"
+        },
+        {
+          "provider": "gemini",
+          "model_id": "gemini-3-flash-preview",
+          "api_key_env": "GEMINI_API_KEY"
+        },
+        {
+          "provider": "xai",
+          "model_id": "grok-code-fast-1",
+          "api_key_env": "XAI_API_KEY"
+        }
+      ],
+      "qa": [
+        {
+          "provider": "openai",
+          "model_id": "gpt-5-nano",
+          "api_key_env": "OPENAI_API_KEY"
+        },
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.4-mini",
+          "api_key_env": "OPENAI_API_KEY"
+        },
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.2",
+          "api_key_env": "OPENAI_API_KEY"
+        }
+      ]
+    },
+    "balanced": {
+      "bulk": [
+        {
+          "provider": "openai",
+          "model_id": "gpt-5-nano",
+          "api_key_env": "OPENAI_API_KEY"
+        },
+        {
+          "provider": "gemini",
+          "model_id": "gemini-3-flash-preview",
+          "api_key_env": "GEMINI_API_KEY"
+        },
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.4-mini",
+          "api_key_env": "OPENAI_API_KEY"
+        }
+      ],
+      "extract": [
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.4-mini",
+          "api_key_env": "OPENAI_API_KEY"
+        },
+        {
+          "provider": "gemini",
+          "model_id": "gemini-3-flash-preview",
+          "api_key_env": "GEMINI_API_KEY"
+        },
+        {
+          "provider": "xai",
+          "model_id": "grok-code-fast-1",
+          "api_key_env": "XAI_API_KEY"
+        }
+      ],
+      "synthesis": [
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.2",
+          "api_key_env": "OPENAI_API_KEY"
+        },
+        {
+          "provider": "gemini",
+          "model_id": "gemini-3-flash-preview",
+          "api_key_env": "GEMINI_API_KEY"
+        },
+        {
+          "provider": "xai",
+          "model_id": "grok-code-fast-1",
+          "api_key_env": "XAI_API_KEY"
+        }
+      ],
+      "qa": [
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.4-mini",
+          "api_key_env": "OPENAI_API_KEY"
+        },
+        {
+          "provider": "openai",
+          "model_id": "gpt-5-nano",
+          "api_key_env": "OPENAI_API_KEY"
+        },
+        {
+          "provider": "gemini",
+          "model_id": "gemini-3-flash-preview",
+          "api_key_env": "GEMINI_API_KEY"
+        }
+      ]
+    },
+    "balanced_openrouter": {
+      "bulk": [
+        {
+          "provider": "openrouter",
+          "model_id": "openai/gpt-5-nano",
+          "api_key_env": "OPENROUTER_API_KEY"
+        },
+        {
+          "provider": "gemini",
+          "model_id": "gemini-3-flash-preview",
+          "api_key_env": "GEMINI_API_KEY"
+        },
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.4-mini",
+          "api_key_env": "OPENAI_API_KEY"
+        }
+      ],
+      "extract": [
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.4-mini",
+          "api_key_env": "OPENAI_API_KEY"
+        },
+        {
+          "provider": "gemini",
+          "model_id": "gemini-3-flash-preview",
+          "api_key_env": "GEMINI_API_KEY"
+        },
+        {
+          "provider": "xai",
+          "model_id": "grok-code-fast-1",
+          "api_key_env": "XAI_API_KEY"
+        }
+      ],
+      "synthesis": [
+        {
+          "provider": "openrouter",
+          "model_id": "openai/gpt-5.2-chat",
+          "api_key_env": "OPENROUTER_API_KEY"
+        },
+        {
+          "provider": "gemini",
+          "model_id": "gemini-3-flash-preview",
+          "api_key_env": "GEMINI_API_KEY"
+        },
+        {
+          "provider": "xai",
+          "model_id": "grok-code-fast-1",
+          "api_key_env": "XAI_API_KEY"
+        }
+      ],
+      "qa": [
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.4-mini",
+          "api_key_env": "OPENAI_API_KEY"
+        },
+        {
+          "provider": "openrouter",
+          "model_id": "openai/gpt-5-nano",
+          "api_key_env": "OPENROUTER_API_KEY"
+        },
+        {
+          "provider": "gemini",
+          "model_id": "gemini-3-flash-preview",
+          "api_key_env": "GEMINI_API_KEY"
+        }
+      ]
+    },
+    "balanced_grok_openrouter": {
+      "bulk": [
+        {
+          "provider": "xai",
+          "model_id": "grok-4-1-fast-non-reasoning",
+          "api_key_env": "XAI_API_KEY"
+        },
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.4-mini",
+          "api_key_env": "OPENAI_API_KEY"
+        }
+      ],
+      "extract": [
+        {
+          "provider": "xai",
+          "model_id": "grok-4-1-fast-non-reasoning",
+          "api_key_env": "XAI_API_KEY"
+        },
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.4-mini",
+          "api_key_env": "OPENAI_API_KEY"
+        }
+      ],
+      "synthesis": [
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.3-codex",
+          "api_key_env": "OPENAI_API_KEY"
+        },
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.5",
+          "api_key_env": "OPENAI_API_KEY"
+        },
+        {
+          "provider": "openrouter",
+          "model_id": "anthropic/claude-opus-4-6",
+          "api_key_env": "OPENROUTER_API_KEY"
+        }
+      ],
+      "qa": [
+        {
+          "provider": "xai",
+          "model_id": "grok-4-1-fast-non-reasoning",
+          "api_key_env": "XAI_API_KEY"
+        },
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.4-mini",
+          "api_key_env": "OPENAI_API_KEY"
+        }
+      ]
+    },
+    "quality": {
+      "bulk": [
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.4-mini",
+          "api_key_env": "OPENAI_API_KEY"
+        },
+        {
+          "provider": "gemini",
+          "model_id": "gemini-3-flash-preview",
+          "api_key_env": "GEMINI_API_KEY"
+        },
+        {
+          "provider": "xai",
+          "model_id": "grok-code-fast-1",
+          "api_key_env": "XAI_API_KEY"
+        }
+      ],
+      "extract": [
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.2",
+          "api_key_env": "OPENAI_API_KEY"
+        },
+        {
+          "provider": "gemini",
+          "model_id": "gemini-3-flash-preview",
+          "api_key_env": "GEMINI_API_KEY"
+        },
+        {
+          "provider": "xai",
+          "model_id": "grok-code-fast-1",
+          "api_key_env": "XAI_API_KEY"
+        }
+      ],
+      "synthesis": [
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.2",
+          "api_key_env": "OPENAI_API_KEY"
+        },
+        {
+          "provider": "gemini",
+          "model_id": "gemini-3-flash-preview",
+          "api_key_env": "GEMINI_API_KEY"
+        },
+        {
+          "provider": "xai",
+          "model_id": "grok-code-fast-1",
+          "api_key_env": "XAI_API_KEY"
+        }
+      ],
+      "qa": [
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.4-mini",
+          "api_key_env": "OPENAI_API_KEY"
+        },
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.2",
+          "api_key_env": "OPENAI_API_KEY"
+        },
+        {
+          "provider": "gemini",
+          "model_id": "gemini-3-flash-preview",
+          "api_key_env": "GEMINI_API_KEY"
+        }
+      ]
+    },
+    "openrouter": {
+      "bulk": [
+        {
+          "provider": "openrouter",
+          "model_id": "openai/gpt-4.1-nano",
+          "api_key_env": "OPENROUTER_API_KEY"
+        },
+        {
+          "provider": "openrouter",
+          "model_id": "openai/gpt-4o-mini",
+          "api_key_env": "OPENROUTER_API_KEY"
+        },
+        {
+          "provider": "openrouter",
+          "model_id": "openai/gpt-5-nano",
+          "api_key_env": "OPENROUTER_API_KEY"
+        },
+        {
+          "provider": "gemini",
+          "model_id": "gemini-3-flash-preview",
+          "api_key_env": "GEMINI_API_KEY"
+        }
+      ],
+      "extract": [
+        {
+          "provider": "openrouter",
+          "model_id": "openai/gpt-5-nano",
+          "api_key_env": "OPENROUTER_API_KEY"
+        },
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.4-mini",
+          "api_key_env": "OPENAI_API_KEY"
+        },
+        {
+          "provider": "gemini",
+          "model_id": "gemini-3-flash-preview",
+          "api_key_env": "GEMINI_API_KEY"
+        },
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.4-mini",
+          "api_key_env": "OPENAI_API_KEY"
+        }
+      ],
+      "synthesis": [
+        {
+          "provider": "openrouter",
+          "model_id": "openai/gpt-5.2-pro",
+          "api_key_env": "OPENROUTER_API_KEY"
+        },
+        {
+          "provider": "openrouter",
+          "model_id": "openai/gpt-5.2-chat",
+          "api_key_env": "OPENROUTER_API_KEY"
+        },
+        {
+          "provider": "openrouter",
+          "model_id": "openai/gpt-5-pro",
+          "api_key_env": "OPENROUTER_API_KEY"
+        },
+        {
+          "provider": "gemini",
+          "model_id": "gemini-3-flash-preview",
+          "api_key_env": "GEMINI_API_KEY"
+        }
+      ],
+      "qa": [
+        {
+          "provider": "openrouter",
+          "model_id": "openai/gpt-4.1-nano",
+          "api_key_env": "OPENROUTER_API_KEY"
+        },
+        {
+          "provider": "openrouter",
+          "model_id": "openai/gpt-4o-mini",
+          "api_key_env": "OPENROUTER_API_KEY"
+        },
+        {
+          "provider": "gemini",
+          "model_id": "gemini-3-flash-preview",
+          "api_key_env": "GEMINI_API_KEY"
+        },
+        {
+          "provider": "openai",
+          "model_id": "gpt-5-nano",
+          "api_key_env": "OPENAI_API_KEY"
+        }
+      ]
+    },
+    "gemini_primary": {
+      "bulk": [
+        {
+          "provider": "gemini",
+          "model_id": "gemini-3-flash-preview",
+          "api_key_env": "GEMINI_API_KEY"
+        },
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.4-mini",
+          "api_key_env": "OPENAI_API_KEY"
+        }
+      ],
+      "extract": [
+        {
+          "provider": "gemini",
+          "model_id": "gemini-3-flash-preview",
+          "api_key_env": "GEMINI_API_KEY"
+        },
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.4-mini",
+          "api_key_env": "OPENAI_API_KEY"
+        }
+      ],
+      "synthesis": [
+        {
+          "provider": "gemini",
+          "model_id": "gemini-3-flash-preview",
+          "api_key_env": "GEMINI_API_KEY"
+        },
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.5",
+          "api_key_env": "OPENAI_API_KEY"
+        },
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.3-codex",
+          "api_key_env": "OPENAI_API_KEY"
+        }
+      ],
+      "qa": [
+        {
+          "provider": "gemini",
+          "model_id": "gemini-3-flash-preview",
+          "api_key_env": "GEMINI_API_KEY"
+        },
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.4-mini",
+          "api_key_env": "OPENAI_API_KEY"
+        }
+      ]
+    },
+    "optimal": {
+      "bulk": [
+        {
+          "provider": "xai",
+          "model_id": "grok-4-1-fast-non-reasoning",
+          "api_key_env": "XAI_API_KEY"
+        },
+        {
+          "provider": "xai",
+          "model_id": "grok-4.3",
+          "api_key_env": "XAI_API_KEY"
+        }
+      ],
+      "extract": [
+        {
+          "provider": "xai",
+          "model_id": "grok-4.3",
+          "api_key_env": "XAI_API_KEY"
+        },
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.4-mini",
+          "api_key_env": "OPENAI_API_KEY"
+        }
+      ],
+      "synthesis": [
+        {
+          "provider": "xai",
+          "model_id": "grok-4.3",
+          "api_key_env": "XAI_API_KEY"
+        },
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.5",
+          "api_key_env": "OPENAI_API_KEY"
+        },
+        {
+          "provider": "openrouter",
+          "model_id": "anthropic/claude-opus-4-6",
+          "api_key_env": "OPENROUTER_API_KEY"
+        }
+      ],
+      "qa": [
+        {
+          "provider": "xai",
+          "model_id": "grok-4.3",
+          "api_key_env": "XAI_API_KEY"
+        },
+        {
+          "provider": "openai",
+          "model_id": "gpt-5.4-mini",
+          "api_key_env": "OPENAI_API_KEY"
+        }
+      ]
+    }
+  },
+  "effective_model_routing": {
+    "A": {
+      "provider": "openai",
+      "model_id": "gpt-5.3-codex",
+      "api_key_env": "OPENAI_API_KEY",
+      "scope": "representative_phase_default_not_step_authoritative"
+    },
+    "H": {
+      "provider": "openai",
+      "model_id": "gpt-5.3-codex",
+      "api_key_env": "OPENAI_API_KEY",
+      "scope": "representative_phase_default_not_step_authoritative"
+    },
+    "D": {
+      "provider": "gemini",
+      "model_id": "gemini-3.1-pro-preview",
+      "api_key_env": "GEMINI_API_KEY",
+      "scope": "representative_phase_default_not_step_authoritative"
+    },
+    "C": {
+      "provider": "openai",
+      "model_id": "gpt-5.3-codex",
+      "api_key_env": "OPENAI_API_KEY",
+      "scope": "representative_phase_default_not_step_authoritative"
+    },
+    "E": {
+      "provider": "openai",
+      "model_id": "gpt-5.3-codex",
+      "api_key_env": "OPENAI_API_KEY",
+      "scope": "representative_phase_default_not_step_authoritative"
+    },
+    "W": {
+      "provider": "openai",
+      "model_id": "gpt-5.3-codex",
+      "api_key_env": "OPENAI_API_KEY",
+      "scope": "representative_phase_default_not_step_authoritative"
+    },
+    "B": {
+      "provider": "openai",
+      "model_id": "gpt-5.3-codex",
+      "api_key_env": "OPENAI_API_KEY",
+      "scope": "representative_phase_default_not_step_authoritative"
+    },
+    "G": {
+      "provider": "openai",
+      "model_id": "gpt-5.3-codex",
+      "api_key_env": "OPENAI_API_KEY",
+      "scope": "representative_phase_default_not_step_authoritative"
+    },
+    "X": {
+      "provider": "gemini",
+      "model_id": "gemini-3.1-pro-preview",
+      "api_key_env": "GEMINI_API_KEY",
+      "scope": "representative_phase_default_not_step_authoritative"
+    },
+    "Q": {
+      "provider": "gemini",
+      "model_id": "gemini-3.1-pro-preview",
+      "api_key_env": "GEMINI_API_KEY",
+      "scope": "representative_phase_default_not_step_authoritative"
+    },
+    "R": {
+      "provider": "openrouter",
+      "model_id": "openai/gpt-5.2-chat",
+      "api_key_env": "OPENROUTER_API_KEY",
+      "scope": "representative_phase_default_not_step_authoritative"
+    },
+    "T": {
+      "provider": "gemini",
+      "model_id": "gemini-3.1-pro-preview",
+      "api_key_env": "GEMINI_API_KEY",
+      "scope": "representative_phase_default_not_step_authoritative"
+    },
+    "Z": {
+      "provider": "gemini",
+      "model_id": "gemini-3.1-pro-preview",
+      "api_key_env": "GEMINI_API_KEY",
+      "scope": "representative_phase_default_not_step_authoritative"
+    },
+    "S": {
+      "provider": "openrouter",
+      "model_id": "openai/gpt-5-nano",
+      "api_key_env": "OPENROUTER_API_KEY",
+      "scope": "representative_phase_default_not_step_authoritative"
+    },
+    "SP": {
+      "provider": "openrouter",
+      "model_id": "openai/gpt-5-nano",
+      "api_key_env": "OPENROUTER_API_KEY",
+      "scope": "representative_phase_default_not_step_authoritative"
+    }
+  },
+  "route_readiness_summary": {
+    "target_policy": "balanced_openrouter",
+    "target_phases": [
+      "A"
+    ],
+    "routes": [
+      {
+        "route_signature": "gemini:gemini-3-flash-preview:GEMINI_API_KEY",
+        "provider": "gemini",
+        "model_id": "gemini-3-flash-preview",
+        "api_key_env": "GEMINI_API_KEY",
+        "required_active_route": false,
+        "optional_fallback": false,
+        "configured_not_required": true,
+        "fallback_chain_present": false,
+        "steps": [],
+        "requirement_level": "configured_not_required"
+      },
+      {
+        "route_signature": "openai:gpt-5.3-codex:OPENAI_API_KEY",
+        "provider": "openai",
+        "model_id": "gpt-5.3-codex",
+        "api_key_env": "OPENAI_API_KEY",
+        "required_active_route": true,
+        "optional_fallback": false,
+        "configured_not_required": false,
+        "fallback_chain_present": true,
+        "steps": [
+          {
+            "phase": "A",
+            "step_id": "A0",
+            "ladder_index": 0,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A1",
+            "ladder_index": 0,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A11",
+            "ladder_index": 0,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A12",
+            "ladder_index": 0,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A13",
+            "ladder_index": 0,
+            "ladder_size": 2
+          }
+        ],
+        "requirement_level": "required_active_route"
+      },
+      {
+        "route_signature": "openai:gpt-5.4-mini:OPENAI_API_KEY",
+        "provider": "openai",
+        "model_id": "gpt-5.4-mini",
+        "api_key_env": "OPENAI_API_KEY",
+        "required_active_route": false,
+        "optional_fallback": false,
+        "configured_not_required": true,
+        "fallback_chain_present": false,
+        "steps": [],
+        "requirement_level": "configured_not_required"
+      },
+      {
+        "route_signature": "openai:gpt-5.5:OPENAI_API_KEY",
+        "provider": "openai",
+        "model_id": "gpt-5.5",
+        "api_key_env": "OPENAI_API_KEY",
+        "required_active_route": true,
+        "optional_fallback": true,
+        "configured_not_required": false,
+        "fallback_chain_present": false,
+        "steps": [
+          {
+            "phase": "A",
+            "step_id": "A0",
+            "ladder_index": 1,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A1",
+            "ladder_index": 1,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A11",
+            "ladder_index": 1,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A12",
+            "ladder_index": 1,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A13",
+            "ladder_index": 1,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A99",
+            "ladder_index": 0,
+            "ladder_size": 1
+          }
+        ],
+        "requirement_level": "required_active_route"
+      },
+      {
+        "route_signature": "openrouter:openai/gpt-5-nano:OPENROUTER_API_KEY",
+        "provider": "openrouter",
+        "model_id": "openai/gpt-5-nano",
+        "api_key_env": "OPENROUTER_API_KEY",
+        "required_active_route": false,
+        "optional_fallback": false,
+        "configured_not_required": true,
+        "fallback_chain_present": false,
+        "steps": [],
+        "requirement_level": "configured_not_required"
+      },
+      {
+        "route_signature": "xai:grok-4.3:XAI_API_KEY",
+        "provider": "xai",
+        "model_id": "grok-4.3",
+        "api_key_env": "XAI_API_KEY",
+        "required_active_route": true,
+        "optional_fallback": true,
+        "configured_not_required": false,
+        "fallback_chain_present": true,
+        "steps": [
+          {
+            "phase": "A",
+            "step_id": "A2",
+            "ladder_index": 0,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A2",
+            "ladder_index": 1,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A3",
+            "ladder_index": 0,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A3",
+            "ladder_index": 1,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A4",
+            "ladder_index": 0,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A4",
+            "ladder_index": 1,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A5",
+            "ladder_index": 0,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A5",
+            "ladder_index": 1,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A6",
+            "ladder_index": 0,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A6",
+            "ladder_index": 1,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A7",
+            "ladder_index": 0,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A7",
+            "ladder_index": 1,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A8",
+            "ladder_index": 0,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A8",
+            "ladder_index": 1,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A9",
+            "ladder_index": 0,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A9",
+            "ladder_index": 1,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A10",
+            "ladder_index": 0,
+            "ladder_size": 2
+          },
+          {
+            "phase": "A",
+            "step_id": "A10",
+            "ladder_index": 1,
+            "ladder_size": 2
+          }
+        ],
+        "requirement_level": "required_active_route"
+      },
+      {
+        "route_signature": "xai:grok-code-fast-1:XAI_API_KEY",
+        "provider": "xai",
+        "model_id": "grok-code-fast-1",
+        "api_key_env": "XAI_API_KEY",
+        "required_active_route": false,
+        "optional_fallback": false,
+        "configured_not_required": true,
+        "fallback_chain_present": false,
+        "steps": [],
+        "requirement_level": "configured_not_required"
+      }
+    ],
+    "provider_categories": {
+      "required_active_route": [
+        "openai",
+        "xai"
+      ],
+      "optional_fallback": [],
+      "configured_not_required": [
+        "gemini",
+        "openai",
+        "openrouter",
+        "xai"
+      ]
+    },
+    "api_key_env_categories": {
+      "required_active_route": [
+        "OPENAI_API_KEY",
+        "XAI_API_KEY"
+      ],
+      "optional_fallback": [],
+      "configured_not_required": [
+        "GEMINI_API_KEY",
+        "OPENAI_API_KEY",
+        "OPENROUTER_API_KEY",
+        "XAI_API_KEY"
+      ]
+    }
+  },
+  "dpmx_env_routing": {
+    "enabled": false,
+    "models": {
+      "inventory": "",
+      "extract": "",
+      "synthesis": "",
+      "qa": ""
+    }
+  },
+  "benchmark_route_ownership": {
+    "enabled": false
+  },
+  "webhook_settings": {
+    "schema": "DPMX_WEBHOOK_V1",
+    "event": "batch.completed",
+    "url": "",
+    "secret_set": false,
+    "timeout_seconds": 5,
+    "required": false,
+    "auto_continue": false,
+    "live_ok": false
+  },
+  "batch_settings": {
+    "enabled": false,
+    "submit_only": false,
+    "provider": "auto",
+    "poll_seconds": 30,
+    "wait_timeout_seconds": 86400,
+    "max_requests_per_job": 2000
+  }
+}

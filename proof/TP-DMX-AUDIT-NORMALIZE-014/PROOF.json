@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0.0",
+  "tp_id": "TP-DMX-AUDIT-NORMALIZE-014",
+  "series_id": "DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "claude/upbeat-thompson-35f2e8",
+  "base_branch": "main",
+  "head_before": "c9f66d2ab6ff6c1db1b6f6d6c6e7a2c6d48c9c64",
+  "head_after": "pending",
+  "mutation_performed": false,
+  "github_mutation_performed": false,
+  "secret_values_recorded": false,
+  "operator_authorization_used": [],
+  "forbidden_surfaces_touched": false,
+  "files_changed": [
+    "tools/pr_steward/classifier.py",
+    "tests/pr_steward/test_classifier_embedded_audit_normalization.py"
+  ],
+  "commands": [
+    {
+      "cmd": "python3 -m pytest tests/pr_steward/test_classifier_embedded_audit_normalization.py -v",
+      "exit_code": 0,
+      "result": "15 passed"
+    },
+    {
+      "cmd": "python3 -c \"... [spot check code] ...\"",
+      "exit_code": 0,
+      "result": "status: SKIPPED\nEMBEDDED_AUDIT_UNKNOWN in blockers: True\nschema validation: PASS"
+    }
+  ],
+  "validation": {
+    "status": "PASS",
+    "details": [
+      {
+        "check": "tests_pass",
+        "status": "PASS",
+        "detail": "Regression test and full pr_steward suite pass."
+      },
+      {
+        "check": "spot_check",
+        "status": "PASS",
+        "detail": "Spot check correctly normalizes NOT_RUN to SKIPPED and adds EMBEDDED_AUDIT_UNKNOWN blocker."
+      }
+    ]
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "system prompt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-AUDIT-NORMALIZE-014/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null
+  }
+}

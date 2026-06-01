@@ -35,8 +35,8 @@
 **Action:** Aggregate and display total remaining estimated duration in sequential task managers to help users maintain perspective on their progress.
 
 ## 2026-03-12 - [Cognitive Load & Feed Management]
-**Learning:** In high-stimulation environments (like a live signal feed), accumulating notifications can contribute to "cognitive clutter," which is particularly taxing for users with ADHD. Providing a "Clear" button that is only visible when the feed is active allows users to reset their visual field and reduce overwhelm once information has been processed.
-**Action:** Always provide a conditional "Clear" or "Reset" mechanism for live data feeds to help users manage cognitive load and maintain a clean workspace.
+**Learning:** In high-stimulation environments (like a live signal feed), accumulating notifications can contribute to "cognitive clutter," which is particularly taxing for users with ADHD. Providing a "Clear" button that is only visible when the feed is active allows users to reset their visual field and reduce overwhelm once information has been processed. Implementing individual dismissal (via a clear `X` action) further empowers users to triage and remove specific distractions without losing the entire context of the feed.
+**Action:** Always provide both bulk "Clear" and individual dismissal mechanisms for live data feeds to help users manage cognitive load and maintain a clean workspace.
 
 ## 2026-03-25 - [Tooltip Visibility on Disabled Elements]
 **Learning:** Material UI Tooltips do not trigger on disabled elements (like buttons) because they don't emit pointer events. Wrapping the disabled element in a `<span>` ensures the tooltip remains accessible, allowing users to understand *why* an action is unavailable.
@@ -109,3 +109,7 @@
 ## 2025-05-23 - [Interactive Utility for Insight Chips]
 **Learning:** Informational chips (like AI recommendations) in high-density dashboards can be transformed from static content into active utility tools by adding "Copy to Clipboard" functionality. This reduces friction for users who need to act on or share insights elsewhere. A clear, time-limited success state (icon swap + tactile animation) is essential to provide positive reinforcement and confirm the action.
 **Action:** Implement "Copy to Clipboard" micro-interactions for critical text-based insights or recommendations, ensuring they include clear visual feedback and updated ARIA labels during the success state.
+
+## 2025-05-24 - [Color-Coordinated Interactive Feedback]
+**Learning:** In dashboards with multiple categorical metrics (e.g., Energy, Focus, Load), using a single "brand" color (like Cyan) for all hover/focus states can obscure the semantic boundaries between different cards. Applying color-coordinated `borderColor` and `boxShadow` that match each metric's specific icon/theme color reinforces the categorical identity of the card and provides more precise visual feedback.
+**Action:** Use individualized accent colors for card-level hover and focus states to maintain categorical clarity in multi-metric dashboards.

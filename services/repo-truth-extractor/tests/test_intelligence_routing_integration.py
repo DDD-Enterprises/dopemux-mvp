@@ -83,8 +83,15 @@ def test_intelligence_driven_routing_upgrade(tmp_path: Path, mock_router):
     phase_dir = tmp_path / "phase_c"
     (phase_dir / "raw").mkdir(parents=True)
     
-    with patch("run_extraction_v5._ACTIVE_INTELLIGENCE_ROUTER", mock_router), \
-         patch("run_extraction_v5.resolve_effective_step_route") as mock_resolve:
+    mock_resolve = MagicMock()
+    runner_globals = execute_step_for_partitions.__globals__
+    with patch.dict(
+        runner_globals,
+        {
+            "_ACTIVE_INTELLIGENCE_ROUTER": mock_router,
+            "resolve_effective_step_route": mock_resolve,
+        },
+    ):
         
         # Initial call for the whole step (standard tier)
         mock_resolve.return_value = {

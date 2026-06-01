@@ -1,0 +1,56 @@
+{
+  "bundle_id": "TP-DMX-ORCH-009-LIVE-PROOF",
+  "run_id": "tp-dmx-orch-009-live-execution",
+  "skill": "gemini",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED",
+  "created_at": "2026-05-28T16:58:00Z",
+  "manifest": {
+    "bundle_id": "TP-DMX-ORCH-009-LIVE-PROOF",
+    "packet_id": "TP-DMX-ORCH-009-LIVE",
+    "generated_artifacts": [
+      "src/dopemux/orchestrator/memory_writers.py",
+      "task-packets/generated/TP-DMX-ORCH-009-LIVE.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-009-LIVE/PROOF.json"
+    ]
+  },
+  "authoritative_artifacts": [
+    "task-packets/generated/TP-DMX-ORCH-009-LIVE.json"
+  ],
+  "supporting_artifacts": [
+    "tests/unit/orchestrator/test_memory_writers.py",
+    "tests/integration/orchestrator/test_memory_writers_integration.py",
+    "src/dopemux/commands/orchestrator_commands.py",
+    "docs/03-reference/orchestrator-integration/memory/_index.md",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-009-LIVE/PROOF.json"
+  ],
+  "chain_of_custody": {
+    "documented": true,
+    "source_version": "TP-DMX-ORCH-009-LIVE",
+    "created_at": "2026-05-28T16:58:00Z",
+    "parent_bundle_ids": [
+      "TP-DMX-ORCH-009",
+      "TP-DMX-ORCH-PROOF-PERPACKET-001"
+    ]
+  },
+  "warnings": [],
+  "blockers": [],
+  "not_run": [],
+  "residual_risks": [
+    "Mirror semantics must not roll back canonical state on mirror failure; a regression here violates the chronicle/canonical split.",
+    "Approval-phrase format drift between approve_phrase() and the AUTHORITY doc would silently break gating; the implementation must add a guard test.",
+    "ConPort schema/port drift is not in scope for this packet but is a known carry-forward risk."
+  ],
+  "rollback_plan": [
+    "Remove src/dopemux/orchestrator/memory_writers.py.",
+    "Revert memory_route_receipt and write-wrapper changes in src/dopemux/orchestrator/operator_workflows.py.",
+    "Revert the new `orchestrator memory record_decision` / `record_progress` CLI subcommands.",
+    "Remove integration tests under tests/integration/orchestrator/test_memory_writers_integration.py.",
+    "Remove task-packets/generated/TP-DMX-ORCH-009-LIVE.json and its proof bundle."
+  ],
+  "commit_sha": null,
+  "commit_sha_policy": "Populated on PR merge",
+  "pr_url": null,
+  "blocker": null,
+  "cleanup_status": "CLEAN"
+}

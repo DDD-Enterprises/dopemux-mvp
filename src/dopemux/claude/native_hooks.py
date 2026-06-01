@@ -19,6 +19,39 @@ CORE_DIR = Path(__file__).resolve().parents[2]
 if str(CORE_DIR) not in sys.path:
     sys.path.insert(0, str(CORE_DIR))
 
+# Add .claude/hooks/ to path so orchestrator hook modules are importable.
+# Project root is 3 levels above this file (src/dopemux/claude/native_hooks.py).
+_env_root = os.environ.get("CLAUDE_PROJECT_DIR")
+_PROJECT_ROOT = Path(_env_root).resolve() if _env_root else Path(__file__).resolve().parents[3]
+_HOOKS_DIR = _PROJECT_ROOT / ".claude" / "hooks"
+if _HOOKS_DIR.is_dir() and str(_HOOKS_DIR) not in sys.path:
+    sys.path.insert(0, str(_HOOKS_DIR))
+
+try:
+    from orchestrator_session_start import emit_session_context, write_context_cache
+    from orchestrator_post_edit_nudge import on_edit_tool, reset_edit_counter
+    from orchestrator_subagent_protocol import emit_subagent_protocol
+    from orchestrator_enforcement import (
+        PRE_PLAN_GUIDANCE,
+        POST_PLAN_GUIDANCE,
+        actor_attribution_block,
+        find_orchestrator_config,
+        skill_enforcement_warnings,
+    )
+    _ORCH_HOOKS_AVAILABLE = True
+except ImportError:
+    _ORCH_HOOKS_AVAILABLE = False
+    def emit_session_context(_root): return None  # type: ignore[misc]
+    def write_context_cache(_root, _resp): pass  # type: ignore[misc]
+    def on_edit_tool(_root, _sid=None): return None  # type: ignore[misc]
+    def reset_edit_counter(_root, _sid=None): pass  # type: ignore[misc]
+    def emit_subagent_protocol(_agent_type=None): return None  # type: ignore[misc]
+    def find_orchestrator_config(_root): return None  # type: ignore[misc]
+    def actor_attribution_block(_tool, _inp, _cfg): return None  # type: ignore[misc]
+    def skill_enforcement_warnings(_tool, _inp, _cfg): return []  # type: ignore[misc]
+    PRE_PLAN_GUIDANCE = ""  # type: ignore[misc]
+    POST_PLAN_GUIDANCE = ""  # type: ignore[misc]
+
 from dopemux.workflow import WorkflowStatus, contains_completion_token, parse_workflow_checkpoint  # noqa: E402
 from dopemux.workflow.service import WorkflowKernel  # noqa: E402
 
@@ -84,19 +117,27 @@ class NativeHookAdapter:
     def __init__(self, project_root: Optional[Path] = None):
         self.project_root = (project_root or Path.cwd()).resolve()
         self.instance_id = os.environ.get("DOPEMUX_INSTANCE_ID") or "A"
+        self.session_id: Optional[str] = None
         self.kernel = WorkflowKernel(self.project_root)
 
     def _emit(self, payload: Dict[str, Any], exit_code: int = EXIT_SUCCESS) -> Tuple[int, Dict[str, Any]]:
         return exit_code, payload
 
-    def _allow(self, *, system_message: Optional[str] = None, additional_context: Optional[str] = None) -> Tuple[int, Dict[str, Any]]:
+    def _allow(
+        self,
+        *,
+        system_message: Optional[str] = None,
+        additional_context: Optional[str] = None,
+        hook_event_name: Optional[str] = None,
+    ) -> Tuple[int, Dict[str, Any]]:
         payload: Dict[str, Any] = {}
         if system_message:
             payload["systemMessage"] = system_message
         if additional_context:
-            payload["hookSpecificOutput"] = {
-                "additionalContext": additional_context,
-            }
+            hook_output = {"additionalContext": additional_context}
+            if hook_event_name:
+                hook_output["hookEventName"] = hook_event_name
+            payload["hookSpecificOutput"] = hook_output
         return self._emit(payload, EXIT_SUCCESS)
 
     def _deny_tool(self, message: str, additional_context: Optional[str] = None) -> Tuple[int, Dict[str, Any]]:
@@ -144,9 +185,12 @@ class NativeHookAdapter:
     def handle_event(self, event_data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
         """Main entry point for hook execution."""
         event_name = str(event_data.get("hook_event_name", ""))
+        self.session_id = event_data.get("session_id") or None
         try:
             if event_name == "SessionStart":
                 return self._on_session_start()
+            if event_name == "SubagentStart":
+                return self._on_subagent_start(event_data)
             if event_name == "UserPromptSubmit":
                 return self._on_user_prompt(event_data)
             if event_name == "PreToolUse":
@@ -168,14 +212,32 @@ class NativeHookAdapter:
         return self._allow()
 
     def _on_session_start(self) -> Tuple[int, Dict[str, Any]]:
+        reset_edit_counter(self.project_root, self.session_id)
+        orch_ctx = emit_session_context(self.project_root)
         state = self._active_state()
         if not state:
+            if orch_ctx:
+                return self._allow(additional_context=orch_ctx, hook_event_name="SessionStart")
             return self._allow()
-        context = _workflow_context_lines(state, include_gates=True)
+        workflow_ctx = _workflow_context_lines(state, include_gates=True)
+        combined = "\n\n".join(filter(None, [orch_ctx, workflow_ctx]))
         return self._allow(
             system_message=f"Dopemux workflow mode: {state.mode}",
-            additional_context=context,
+            additional_context=combined or None,
+            hook_event_name="SessionStart",
         )
+
+    def _on_subagent_start(self, data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
+        """Inject the agent-owned-phase protocol when an implementation subagent spawns.
+
+        Read-only agent types (Explore, Plan) are skipped inside the helper.
+        Independent of Dopemux workflow state — orchestrator coordination applies
+        to every implementation subagent, not just active-workflow sessions.
+        """
+        protocol = emit_subagent_protocol(data.get("agent_type"))
+        if not protocol:
+            return self._allow()
+        return self._allow(additional_context=protocol, hook_event_name="SubagentStart")
 
     def _on_user_prompt(self, data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
         state = self._active_state()
@@ -194,11 +256,32 @@ class NativeHookAdapter:
         )
 
     def _on_pre_tool_use(self, data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
+        tool_name = str(data.get("tool_name") or "unknown")
+        tool_input = data.get("tool_input") or {}
+
+        # --- Orchestrator enforcement (independent of Dopemux workflow state) ---
+        # Config is only needed for orchestrator MCP write tools; skip the file
+        # walk for the common case (Read/Edit/Bash/etc.).
+        needs_config = "advance_item" in tool_name or "manage_notes" in tool_name
+        config_text = find_orchestrator_config(self.project_root) if needs_config else None
+
+        # Hard block: actor attribution required when actor_authentication is enabled.
+        block_reason = actor_attribution_block(tool_name, tool_input, config_text)
+        if block_reason:
+            return self._deny_tool(block_reason)
+
+        # Advisory context: plan-mode entry guidance + skill-invocation enforcement.
+        extra_parts = []
+        if tool_name == "EnterPlanMode" and PRE_PLAN_GUIDANCE:
+            extra_parts.append(PRE_PLAN_GUIDANCE)
+        extra_parts.extend(skill_enforcement_warnings(tool_name, tool_input, config_text))
+        extra_context = "\n\n".join(p for p in extra_parts if p) or None
+
         state = self._active_state()
         if not state:
+            if extra_context:
+                return self._allow(additional_context=extra_context, hook_event_name="PreToolUse")
             return self._allow()
-
-        tool_name = str(data.get("tool_name") or "unknown")
 
         if state.max_iterations == 0 and "wf-limit" in state.workflow_id:
             return self._deny_tool("Workflow iteration limit reached (0/0).", _workflow_context_lines(state, include_gates=True))
@@ -224,6 +307,8 @@ class NativeHookAdapter:
                 "tool_input": _truncate(data.get("tool_input")),
             },
         )
+        if extra_context:
+            return self._allow(additional_context=extra_context, hook_event_name="PreToolUse")
         return self._allow()
 
     def _on_permission_request(self, data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
@@ -246,20 +331,53 @@ class NativeHookAdapter:
         return self._allow()
 
     def _on_post_tool_use(self, data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
+        tool_name = str(data.get("tool_name") or "unknown")
+        tool_input = data.get("tool_input") or {}
+        tool_response = data.get("tool_response")
+
+        # Cache orchestrator health-check responses for SessionStart injection.
+        if (
+            tool_name == "mcp__task-orchestrator__get_context"
+            and not tool_input.get("itemId")
+            and not tool_input.get("since")
+            and tool_response is not None
+        ):
+            write_context_cache(self.project_root, tool_response)
+
+        # Advisory context emitted regardless of workflow state:
+        #   - plan-mode exit guidance when a plan was just approved,
+        #   - nudge to file implementation-evidence notes after N file edits.
+        advisory_parts = []
+        if tool_name == "ExitPlanMode" and POST_PLAN_GUIDANCE:
+            advisory_parts.append(POST_PLAN_GUIDANCE)
+        if tool_name in {"Edit", "Write"}:
+            nudge = on_edit_tool(self.project_root, self.session_id)
+            if nudge:
+                advisory_parts.append(nudge)
+        advisory = "\n\n".join(advisory_parts) or None
+
         state = self._active_state()
         if not state:
+            if advisory:
+                return self._allow(additional_context=advisory, hook_event_name="PostToolUse")
             return self._allow()
 
         self.kernel.record_tool_event(
             state,
             event_name="posttooluse",
-            tool_name=str(data.get("tool_name") or "unknown"),
+            tool_name=tool_name,
             status="success",
             payload={
                 "tool_input": _truncate(data.get("tool_input")),
                 "tool_response": _truncate(data.get("tool_response")),
             },
         )
+        if advisory:
+            wf_ctx = _workflow_context_lines(state, include_gates=True)
+            return self._allow(
+                additional_context=f"{wf_ctx}\n\n{advisory}",
+                hook_event_name="PostToolUse"
+            )
         return self._allow()
 
     def _on_post_tool_use_failure(self, data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:

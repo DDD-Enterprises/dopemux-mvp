@@ -12,10 +12,10 @@ prelude: Branch, remote, and worktree phase-1 audit for deterministic cleanup pl
 ---
 # Repo Branch and Worktree Audit
 
-**Audit packet**: `TP-DMX-REPOHYG-001`  
-**Audit date**: `2026-04-23`  
-**Execution branch**: `codex/repo-hygiene-audit-phase1`  
-**Base branch**: `main`  
+**Audit packet**: `TP-DMX-REPOHYG-001`
+**Audit date**: `2026-04-23`
+**Execution branch**: `codex/repo-hygiene-audit-phase1`
+**Base branch**: `main`
 **Scope**: phase-1 evidence collection and non-destructive cleanup planning only
 
 ---

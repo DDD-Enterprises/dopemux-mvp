@@ -91,7 +91,7 @@ This means PM context reads are already split inside the ConPort integration its
 - `pm_get_blockers(...)`
 - `pm_get_workflow_state(...)`
 
-These calls go through `TaskOrchestratorAdapter`, which defaults to `TASK_ORCHESTRATOR_URL=http://localhost:3014` and calls:
+These calls go through `TaskOrchestratorAdapter`, which defaults to `TASK_ORCHESTRATOR_URL=http://localhost:8000` and calls:
 
 - `GET /api/projects/{project_id}/workflow/queue`
 - `GET /api/projects/{project_id}/workflow/blockers`
@@ -223,7 +223,7 @@ Authority must be classified per PM slice, not per brand name.
 
 - Bridge breadth vs non-authority is real drift. `services/dopecon-bridge/dopecon_bridge/routes.py` exposes `/route/pm`, `/kg/*`, and `/ddg/*`, but its module header explicitly says bridge must not be canonical task, workflow, decision, or progress authority.
 
-- Task-orchestrator runtime and port configuration conflict. `src/dopemux/pm/adapters/orchestrator.py` defaults to `http://localhost:3014`, while `compose.yml` and `services/registry.yaml` expose task-orchestrator on `8000`. The repo-truth pack also marks Docker/runtime entrypoint conflict between `services/task-orchestrator/app/main.py`, `services/task-orchestrator/task_orchestrator/app.py`, and `services/task-orchestrator/Dockerfile`.
+- Task-orchestrator runtime authority remains split by legacy entrypoint presence, but the active adapter, compose, registry, Dockerfile, and `services/task-orchestrator/app/main.py` now align on `8000`. Remaining `3014` references should be treated as legacy or archival unless backed by current runtime code/config.
 
 - PM reads use split ConPort ports. `src/dopemux/pm/reads.py` reads project context through `ConPortClient` defaulting to `3005`, but decision context through `ConPortAdapter` defaulting to `3004`. That is an observed interface split inside one PM backend role.
 

@@ -1,0 +1,25 @@
+ .../TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json |  17 ++-
+ .../VALIDATION_OUTPUT.md                           |   5 +-
+ .../review_bundle/MANIFEST.json                    |   7 +-
+ .../review_bundle/PROOF.json                       |   7 +-
+ .../review_bundle/SUMMARY.md                       |   6 +-
+ .../review_bundle/VALIDATION_OUTPUT.md             |   4 +-
+ .../CHANGED_FILES.txt                              |  24 ++++
+ .../DIFF_STAT.txt                                  |  25 ++++
+ .../TP-DMX-AUDITOR-ROUTER-WRAPPER-003/GIT_STATE.md |  22 ++++
+ proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/PROOF.json | 134 +++++++++++++++++++++
+ .../VALIDATION_OUTPUT.md                           |  50 ++++++++
+ .../review_bundle/ARTIFACT_INDEX.md                |   5 +
+ .../review_bundle/CHANGED_FILES.txt                |   1 +
+ .../review_bundle/DIFF_STAT.txt                    |   1 +
+ .../review_bundle/GIT_STATE.md                     |   9 ++
+ .../review_bundle/MANIFEST.json                    |  25 ++++
+ .../review_bundle/PROOF.json                       |  23 ++++
+ .../review_bundle/SUMMARY.md                       |  29 +++++
+ .../review_bundle/VALIDATION_OUTPUT.md             |  15 +++
+ .../artifacts/AUDITOR_ROUTE_WRAPPER_DIRECT.json    |  18 +++
+ .../artifacts/AUDITOR_ROUTE_WRAPPER_PAL.json       |  26 ++++
+ .../artifacts/ROUTE_PROBE_OUTPUTS_WRAPPER_PAL.json |  57 +++++++++
+ scripts/auditor-preflight                          |   4 +
+ .../TP-DMX-AUDITOR-ROUTER-WRAPPER-003.json         | 103 ++++++++++++++++
+ 24 files changed, 606 insertions(+), 11 deletions(-)

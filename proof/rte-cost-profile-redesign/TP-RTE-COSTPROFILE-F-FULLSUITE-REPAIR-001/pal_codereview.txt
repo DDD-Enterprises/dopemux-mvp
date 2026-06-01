@@ -1,0 +1,203 @@
+# PAL Codereview / Challenge Transcript
+
+Packet: TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001
+Branch: codex/rte-costprofile-f-fullsuite-repair-001
+Base SHA: c4f0c17b29f67dd949b15953f7c5e6b01ac5cbdf
+
+## Operator Constraint Update
+
+Original recovery constraint: do not retry failed Gemini PAL work with a
+non-Gemini model.
+
+Superseding operator instruction during S11/S12: do not use Gemini; redo all
+PAL with working models.
+
+Active PAL constraint for this proof: no Gemini models. Use working non-Gemini
+models where a model is selectable.
+
+## Historical Degraded Attempt
+
+An earlier PAL codereview attempt requested `gemini-2.5-pro` and failed during
+external expert validation:
+
+`Gemini API error for model gemini-2.5-pro after 1 attempt: 429 RESOURCE_EXHAUSTED`
+
+That attempt is superseded by the non-Gemini PAL records below. It is retained
+as chain-of-custody evidence only and is not used as the current review basis.
+
+## S2 PAL Redo
+
+### Analyze
+
+Tool: mcp__pal__.analyze
+Model: gpt-5-codex
+Provider: openai
+Status: local_work_complete
+Issues recorded by tool status: high=1, medium=2 insights
+
+Result summary:
+
+- Preserved the S2 classification of the frozen 26-failure inventory.
+- Confirmed Cluster A/B/C/E/F repair directions remain tied to runtime/source
+  evidence.
+- Confirmed Cluster D prescan failures remain out of CostProfile F scope and
+  are explicitly deferred to TP-RTE-WALKER-006.
+- Confirmed S9 OpenRouter residual is a stale test expectation because current
+  Phase D/cost route collection has no OpenRouter route.
+
+### Thinkdeep
+
+Tool: mcp__pal__.thinkdeep
+Model: gpt-5-codex
+Provider: openai
+Status: deep_thinking_complete_ready_for_implementation
+Issues identified: 2 low
+
+Low findings:
+
+- Legacy routing fields remain and need future deprecation/removal tracking.
+- Cluster D xfails are real deferred prescan work tracked to TP-RTE-WALKER-006.
+
+Result summary:
+
+- Keeping top-level `cost_profile` while preserving legacy routing projections
+  is the narrowest non-breaking repair.
+- Removing legacy fields in this packet would be operator-breaking and broader
+  than the task packet.
+- No replay/idempotency hazards were introduced by the repair.
+
+### Consensus
+
+Tool: mcp__pal__.consensus
+Models: gpt-5-codex (for), gpt-5 (against)
+Providers: openai
+Status: consensus_workflow_complete
+Consensus confidence: high
+
+Agreement:
+
+- Keep both top-level `cost_profile` and legacy routing projections for a
+  compatibility window.
+- Treat Phase D/cost OpenRouter preflight expectations as stale only because
+  runtime route collection currently has no OpenRouter route.
+- Keep Cluster D prescan failures as explicitly-ticketed xfails, not silent
+  passes.
+
+Challenge / caveat:
+
+- The `gpt-5` against stance suggested a central no-Gemini runtime routing
+  guard. This is recorded as out of scope for this packet because the
+  operator's current no-Gemini instruction governs PAL/tool model choice, not
+  RTE runtime route policy.
+
+## S11 PAL Codereview Redo
+
+### External Non-Gemini Attempt
+
+Tool: mcp__pal__.codereview
+Model: gpt-5-codex
+Provider: openai
+Status: files_required_to_continue
+
+Result:
+
+- The external assistant-model handoff requested embedded file contents and did
+  not independently inspect path-only context.
+- Issues found before handoff: 0.
+- This is recorded as a caveat, not as a completed external review.
+
+### Completed Internal Non-Gemini Codereview
+
+Tool: mcp__pal__.codereview
+Model: gpt-5-codex
+Provider: openai
+Status: code_review_complete_ready_for_implementation
+Review validation type: internal
+Critical findings: 0
+High findings: 0
+Low findings: 1
+
+Low finding:
+
+- External non-Gemini PAL codereview requested embedded files and therefore did
+  not provide independent assistant-model findings. Internal PAL codereview
+  completed with the locally inspected diff and records this caveat.
+
+Local review result:
+
+- Runtime changes are narrow: `run_extraction_v5.py` prints top-level
+  `cost_profile`, routes reporting wrappers through patchable
+  `reporting_write_*` aliases, and avoids promoting single-attempt
+  provider-failure metadata to top-level `escalation_trigger`.
+- `src/dopemux/cli.py` optional dependency wrappers preserve importability and
+  fail closed when dependency-backed commands are invoked without their
+  dependencies.
+- Route/preflight tests align to runtime/model-map evidence.
+- Cluster D xfail deferrals are explicit and tied to TP-RTE-WALKER-006.
+- No live provider calls or `--execute` invocations were added.
+
+S11 verdict:
+
+No CRITICAL or HIGH findings remain. Proceed to S12/S13 with the recorded
+external-review caveat.
+
+## S15 Final Challenge
+
+Packet order note:
+
+S15 appends to this proof file. S14 includes commit/push/PR. To keep proof
+current to the committed diff, the final challenge was performed before the
+actual git commit/push/PR mutation.
+
+### PAL Challenge Availability
+
+Requested packet tool: pal/challenge.
+
+Status: SKIPPED under superseding operator/model constraints.
+
+Exact reason:
+
+- `mcp__pal__.challenge` has no selectable `model` parameter, so this run could
+  not guarantee the operator-updated no-Gemini constraint.
+- A model-selected PAL `chat` challenge with `gpt-5-codex` was attempted as a
+  safer non-Gemini path, but the tool rejected the action as unacceptable risk
+  because it would send private workspace file contents to an unverified
+  external PAL/model service.
+
+No stronger PAL challenge result is claimed.
+
+### Local Challenge Review
+
+Scope challenged:
+
+- Relaxed/assertion-updated route and OpenRouter provider-preflight tests.
+- Code-only repairs in `run_extraction_v5.py` and `src/dopemux/cli.py`.
+- Cluster D executable xfail deferrals.
+- Proof and handoff artifacts.
+
+Findings:
+
+- CRITICAL: 0
+- HIGH: 0
+- MEDIUM: 0
+- LOW/INFO:
+  - External/model-backed final PAL challenge is unavailable under current
+    constraints; this remains a proof caveat.
+  - Cluster D xfails are principled only because each marker names
+    `TP-RTE-WALKER-006` and the full suite reports them as xfailed rather than
+    passing.
+  - Legacy routing fields remain and require future deprecation tracking; this
+    is out of scope for this repair packet.
+
+Challenge conclusions:
+
+- Relaxed CostProfile/OpenRouter assertions are tied to runtime route evidence:
+  Phase D/cost route collection currently resolves Gemini/OpenAI/xAI only, with
+  no OpenRouter route requiring provider preflight.
+- Code-only repair in `run_extraction_v5.py` is covered by focused reporting,
+  print-config, and full-suite validation.
+- Code-only repair in `src/dopemux/cli.py` is covered by the
+  `PYTHONPATH=src import dopemux.cli` probe and characterization tests, while
+  dependency-backed commands still fail visibly if invoked without dependencies.
+- Cluster D deferral is explicit, executable, and named; it is not silently
+  converted to a pass.

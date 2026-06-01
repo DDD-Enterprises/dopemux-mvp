@@ -20,8 +20,8 @@ def _load_gate_module():
 
 def test_default_policy_requires_direct_gemini_and_xai() -> None:
     gate = _load_gate_module()
-    assert gate.DEFAULT_TARGET_POLICY == "balanced_openrouter"
-    assert gate.resolve_required_direct_providers("balanced_openrouter", None) == ("gemini", "xai")
+    assert gate.DEFAULT_TARGET_POLICY == "cost"
+    assert gate.resolve_required_direct_providers("cost", None) == ()
 
 
 def test_truth_split_prefers_specific_classification() -> None:
@@ -59,6 +59,18 @@ def test_truth_split_prefers_specific_classification() -> None:
         )
         == "STALE_ARTIFACT_MAP"
     )
+
+
+def test_collect_truth_split_fails_closed_until_implemented() -> None:
+    # S7 (audit): the runner/promptset/model-map drift audit is unimplemented. It must
+    # fail closed with a waivable P1 blocker, never a fake PASS.
+    gate = _load_gate_module()
+    payload, blockers, findings = gate.collect_truth_split(None, None)
+    assert payload["status"] == "NOT_IMPLEMENTED"
+    assert len(blockers) == 1
+    assert blockers[0].reason_code == gate.TRUTH_SPLIT_NOT_IMPLEMENTED
+    assert blockers[0].severity == "P1"
+    assert findings == []
 
 
 def test_pal_validation_is_conditional_when_missing_for_active_route(tmp_path: Path) -> None:

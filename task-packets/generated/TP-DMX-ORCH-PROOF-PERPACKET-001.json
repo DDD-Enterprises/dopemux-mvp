@@ -1,0 +1,110 @@
+{
+  "id": "TP-DMX-ORCH-PROOF-PERPACKET-001",
+  "project": "dopemux-mvp",
+  "target": "Add per-packet test isolation + per-packet pal/codereview helper so each TP-DMX-ORCH-XXX can advance codereview_status from NOT_RUN to PASS",
+  "invariants": [
+    "Existing bundle-level pytest invocation remains supported",
+    "Per-packet test invocation maps each TP to its own targeted test list and verify commands",
+    "pal/codereview invocation produces a deterministic record (continuation_id, model, review_type, issues_found)",
+    "No proof file is rewritten by this packet; the helper only emits a per-packet codereview snippet that operators paste into the bundle's codereview_status",
+    "No new MCP surfaces are exposed"
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ORCH-INTEGRATION-FOLLOWUP",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "claude/tp-dmx-orch-proof-perpacket-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(orchestrator): per-packet test isolation and codereview helper",
+    "allowlist": [
+      "src/dopemux/orchestrator/perpacket.py",
+      "src/dopemux/commands/orchestrator_commands.py",
+      "scripts/orchestrator/perpacket_codereview.py",
+      "config/orchestrator/perpacket_test_map.yaml",
+      "tests/unit/orchestrator/test_perpacket.py",
+      "docs/03-reference/orchestrator-integration/perpacket.md",
+      "task-packets/generated/TP-DMX-ORCH-PROOF-PERPACKET-001.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-PROOF-PERPACKET-001/PROOF.json"
+    ],
+    "verify": [
+      ".venv/bin/python -m compileall -q src scripts",
+      ".venv/bin/python -m pytest -q tests/unit/orchestrator/test_perpacket.py",
+      ".venv/bin/python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-PROOF-PERPACKET-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      ".venv/bin/python -c \"import sys; sys.exit(0)\"",
+      ".venv/bin/python -c \"import sys; sys.exit(0)\""
+    ]
+  },
+  "pr": {
+    "title": "feat(orchestrator): per-packet test isolation and codereview helper",
+    "body": "Adds (1) a per-packet test map (config/orchestrator/perpacket_test_map.yaml) so each TP-DMX-ORCH-XXX can be revalidated in isolation, (2) a `dopemux orchestrator perpacket validate <TP>` CLI that runs that packet's targeted pytest + packet/proof validators and emits a JSON summary suitable for pasting into the packet's PROOF.json `validations[]`, and (3) a scripts/orchestrator/perpacket_codereview.py helper that runs pal/codereview against the diff for a given packet's allowlist and emits a codereview_status JSON snippet.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": ["analyze", "planner", "codereview", "precommit"]
+  },
+  "steps": [
+    {
+      "id": "design_test_map",
+      "task": "Design config/orchestrator/perpacket_test_map.yaml: for each TP-DMX-ORCH-XXX, declare its targeted pytest paths, its packet path, its proof path, and any extra verify commands.",
+      "validation": [
+        "YAML loads cleanly via PyYAML safe_load.",
+        "Every TP currently in task-packets/generated/ has an entry.",
+        "Missing entries fail loudly with a deterministic error code."
+      ]
+    },
+    {
+      "id": "implement_perpacket_runner",
+      "task": "Implement src/dopemux/orchestrator/perpacket.py: load the test map, run targeted pytest, packet validate, proof validate, and emit a JSON validations[] suitable for PROOF.json.",
+      "validation": [
+        "Runner returns non-zero on any failure.",
+        "JSON output matches the shape used by the existing PROOF.json validations[]."
+      ]
+    },
+    {
+      "id": "cli_command",
+      "task": "Add `dopemux orchestrator perpacket validate TP-DMX-ORCH-XXX --json-output` CLI command.",
+      "validation": [
+        "CLI tests cover present-and-passing, missing-test-map-entry, and pytest-failure paths.",
+        "Command does not write to PROOF.json; it only prints the snippet."
+      ]
+    },
+    {
+      "id": "codereview_helper",
+      "task": "Implement scripts/orchestrator/perpacket_codereview.py: gather the packet's allowlist, build the relevant diff range, invoke pal/codereview, and emit a JSON codereview_status snippet.",
+      "validation": [
+        "Helper requires pal MCP availability; refuses cleanly if absent.",
+        "Output snippet includes result, tool, model, review_type, issues_found, and continuation_id."
+      ]
+    },
+    {
+      "id": "documentation",
+      "task": "Document the perpacket workflow at docs/03-reference/orchestrator-integration/perpacket.md.",
+      "validation": [
+        "Doc explains how to revalidate one TP, how to paste the snippets into PROOF.json, and when each packet can advance from NOT_RUN to PASS.",
+        "Doc links to AGENTS.md §9 and the dopetask canonical spec."
+      ]
+    },
+    {
+      "id": "proof_bundle",
+      "task": "Emit proof bundle at proof/dmx-orch-integration/TP-DMX-ORCH-PROOF-PERPACKET-001/PROOF.json.",
+      "validation": [
+        "dopemux orchestrator proof validate exits 0.",
+        "Proof status is READY_FOR_REVIEW only after every step's validation array passes."
+      ]
+    }
+  ]
+}

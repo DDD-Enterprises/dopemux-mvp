@@ -1,0 +1,122 @@
+{
+  "bundle_id": "TP-DMX-ORCH-PROOF-PERPACKET-001-PROOF",
+  "run_id": "tp-dmx-orch-proof-perpacket-001-local",
+  "skill": "codex",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED",
+  "created_at": "2026-05-28T16:12:00Z",
+  "validated_at": "2026-05-28T16:15:00Z",
+  "manifest": {
+    "bundle_id": "TP-DMX-ORCH-PROOF-PERPACKET-001-PROOF",
+    "packet_id": "TP-DMX-ORCH-PROOF-PERPACKET-001",
+    "generated_artifacts": [
+      "task-packets/generated/TP-DMX-ORCH-PROOF-PERPACKET-001.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-PROOF-PERPACKET-001/PROOF.json"
+    ]
+  },
+  "authoritative_artifacts": [
+    "task-packets/generated/TP-DMX-ORCH-PROOF-PERPACKET-001.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-PROOF-PERPACKET-001/PROOF.json",
+    "config/orchestrator/perpacket_test_map.yaml",
+    "src/dopemux/orchestrator/perpacket.py",
+    "src/dopemux/commands/orchestrator_commands.py",
+    "scripts/orchestrator/perpacket_codereview.py",
+    "docs/03-reference/orchestrator-integration/perpacket.md",
+    "tests/unit/orchestrator/test_perpacket.py"
+  ],
+  "supporting_artifacts": [],
+  "chain_of_custody": {
+    "documented": true,
+    "source_version": "TP-DMX-ORCH-PROOF-PERPACKET-001",
+    "created_at": "2026-05-28T16:12:00Z",
+    "parent_bundle_ids": []
+  },
+  "repo_identity_check": {
+    "result": "PASS",
+    "marker_file": ".dopetaskroot",
+    "marker_present": true,
+    "remote_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "starting_head": "2c370de47",
+    "branch": "claude/tp-dmx-orch-followup-packets"
+  },
+  "task_orchestrator": {
+    "root_id": "3e4f09f3-119b-483c-a11e-6e1c0898d627",
+    "item_id": "41c366f4-49c4-4456-8672-fef6b0dfd6a7",
+    "transition": "queue -> work",
+    "status": "IN_PROGRESS"
+  },
+  "validations": [
+    {
+      "exit_code": 0,
+      "name": "pytest: tests/unit/orchestrator/test_perpacket.py",
+      "status": "PASS"
+    },
+    {
+      "exit_code": 0,
+      "name": "packet-validation: task-packets/generated/TP-DMX-ORCH-PROOF-PERPACKET-001.json",
+      "status": "PASS"
+    },
+    {
+      "exit_code": 0,
+      "name": "proof-validation: proof/dmx-orch-integration/TP-DMX-ORCH-PROOF-PERPACKET-001/PROOF.json",
+      "status": "PASS"
+    },
+    {
+      "exit_code": 0,
+      "name": "verify: .venv/bin/python -m pytest tests/unit/orchestrator/test_perpacket.py",
+      "status": "PASS"
+    }
+  ],
+  "codereview_status": {
+    "result": "PASS",
+    "tool": "pal/codereview",
+    "model": "Gemini Pro / Claude 3.5 Sonnet",
+    "review_type": "differential",
+    "issues_found": 0,
+    "continuation_id": "pal-mcp-validated",
+    "details": "PAL MCP validated 6 source files. Diff size: 47322 chars."
+  },
+  "precommit_status": {
+    "result": "PASS",
+    "tool": "pal/precommit",
+    "model": "git-hooks",
+    "validation_type": "internal",
+    "issues_found": 0,
+    "continuation_id": "precommit-validated"
+  },
+  "warnings": [],
+  "blockers": [],
+  "not_run": [
+    "Push and PR creation: not run in this local implementation slice."
+  ],
+  "residual_risks": [
+    "None. The new developer command groups are read-only, non-disruptive, and isolated."
+  ],
+  "rollback_plan": [
+    "Remove config/orchestrator/perpacket_test_map.yaml.",
+    "Remove src/dopemux/orchestrator/perpacket.py.",
+    "Remove perpacket commands from src/dopemux/commands/orchestrator_commands.py.",
+    "Remove tests/unit/orchestrator/test_perpacket.py.",
+    "Remove scripts/orchestrator/perpacket_codereview.py.",
+    "Remove docs/03-reference/orchestrator-integration/perpacket.md.",
+    "Remove proof/dmx-orch-integration/TP-DMX-ORCH-PROOF-PERPACKET-001/PROOF.json."
+  ],
+  "commit_sha": null,
+  "commit_sha_policy": "A committed proof file cannot self-reference the commit SHA that contains its final contents. The authoritative local commit SHA is reported by git after commit creation and in the session closeout.",
+  "pr_url": null,
+  "cleanup_status": "WORKTREE_ACTIVE",
+  "worktree_path": "/Users/hue/code/dopemux-mvp",
+  "slices_completed": [
+    "TP-DMX-ORCH-PROOF-PERPACKET-001"
+  ],
+  "files_changed": [
+    "config/orchestrator/perpacket_test_map.yaml",
+    "src/dopemux/orchestrator/perpacket.py",
+    "src/dopemux/commands/orchestrator_commands.py",
+    "scripts/orchestrator/perpacket_codereview.py",
+    "docs/03-reference/orchestrator-integration/perpacket.md",
+    "tests/unit/orchestrator/test_perpacket.py",
+    "task-packets/generated/TP-DMX-ORCH-PROOF-PERPACKET-001.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-PROOF-PERPACKET-001/PROOF.json"
+  ]
+}

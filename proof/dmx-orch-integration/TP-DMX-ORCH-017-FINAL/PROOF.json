@@ -1,0 +1,62 @@
+{
+  "bundle_id": "TP-DMX-ORCH-017-FINAL-PROOF",
+  "run_id": "tp-dmx-orch-017-final-plan",
+  "skill": "gemini",
+  "status": "PLAN_ONLY",
+  "validation_state": "NOT_STARTED",
+  "created_at": "2026-05-26T17:30:00Z",
+  "manifest": {
+    "bundle_id": "TP-DMX-ORCH-017-FINAL-PROOF",
+    "packet_id": "TP-DMX-ORCH-017-FINAL",
+    "generated_artifacts": [
+      "task-packets/generated/TP-DMX-ORCH-017-FINAL.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-017-FINAL/PROOF.json"
+    ]
+  },
+  "authoritative_artifacts": [
+    "task-packets/generated/TP-DMX-ORCH-017-FINAL.json"
+  ],
+  "supporting_artifacts": [
+    "proof/dmx-orch-integration/TP-DMX-ORCH-017-FINAL/PROOF.json"
+  ],
+  "chain_of_custody": {
+    "documented": true,
+    "source_version": "TP-DMX-ORCH-017-FINAL",
+    "created_at": "2026-05-26T17:30:00Z",
+    "parent_bundle_ids": [
+      "TP-DMX-ORCH-017",
+      "TP-DMX-ORCH-DOCS-001",
+      "TP-DMX-ORCH-PROOF-PERPACKET-001",
+      "TP-DMX-ORCH-009-LIVE",
+      "TP-DMX-ORCH-012-LIVE",
+      "TP-DMX-ORCH-013-LIVE",
+      "TP-DMX-ORCH-014A-UPSTREAM",
+      "TP-DMX-ORCH-015-TUI",
+      "TP-DMX-ORCH-016-DAEMON"
+    ]
+  },
+  "warnings": [],
+  "blockers": [],
+  "not_run": [
+    "Every step in this packet: work has not started; this packet cannot begin until its 8 dependency packets are merged on main with PASS codereview_status.",
+    "End-to-end acceptance matrix, safety matrix, authority audit: deferred until implementation.",
+    "Supervisor Ledger acceptance entry: external to this packet; final VERIFIED status is held by the ledger, not by this proof bundle."
+  ],
+  "residual_risks": [
+    "Final packet status is READY_FOR_REVIEW even after green tests; only the Supervisor Ledger entry promotes to VERIFIED.",
+    "Live runs against ConPort, dope-memory, GitHub, and the Kotlin task-orchestrator require operator-controlled environments; a CI-only run is insufficient.",
+    "If any dependency packet regresses after merge (e.g., a follow-up commit on main weakens the approval gate), this packet's earlier preflight must re-run before final-acceptance evidence is trusted."
+  ],
+  "rollback_plan": [
+    "Remove tests/integration/orchestrator/test_e2e_acceptance.py, test_safety_matrix.py, and test_authority_audit.py.",
+    "Remove scripts/orchestrator/run_final_acceptance.py.",
+    "Remove docs/03-reference/orchestrator-integration/final-acceptance.md.",
+    "Remove task-packets/generated/TP-DMX-ORCH-017-FINAL.json and its proof bundle.",
+    "Note: rolling back the FINAL packet does NOT roll back the live writers / TUI / daemon — each of those has its own rollback in its own proof bundle."
+  ],
+  "commit_sha": null,
+  "commit_sha_policy": "PLAN_ONLY bundles are committed before implementation; commit_sha is populated by the implementation packet's own proof at the time of execution.",
+  "pr_url": null,
+  "blocker": "PLAN_ONLY packet — no commit or PR until execution packet runs",
+  "cleanup_status": "PLAN_ONLY"
+}
