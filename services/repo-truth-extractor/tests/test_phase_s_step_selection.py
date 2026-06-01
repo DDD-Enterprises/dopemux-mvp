@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -190,11 +191,18 @@ def test_v3_help_does_not_expose_s_extra_steps() -> None:
 def test_v4_help_does_not_expose_s_extra_steps() -> None:
     root = Path(__file__).resolve().parents[3]
     script = root / "services" / "repo-truth-extractor" / "run_extraction_v4.py"
+    help_env = {
+        **os.environ,
+        "COLUMNS": "200",
+        "NO_COLOR": "1",
+        "TERM": "dumb",
+    }
     result = subprocess.run(
         [sys.executable, str(script), "--help"],
         check=True,
         text=True,
         capture_output=True,
+        env=help_env,
     )
     combined = f"{result.stdout}\n{result.stderr}"
     assert "--s-steps" in combined

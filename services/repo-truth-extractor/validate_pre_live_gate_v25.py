@@ -101,6 +101,7 @@ CONTRACT_MAP_VOLATILE_KEYS = {
 IMPORT_OR_CLI_FAILURE = "IMPORT_OR_CLI_FAILURE"
 TARGET_PROMPT_INTEGRITY_FAILURE = "TARGET_PROMPT_INTEGRITY_FAILURE"
 TARGET_TRUTH_SPLIT_MISMATCH = "TARGET_TRUTH_SPLIT_MISMATCH"
+TRUTH_SPLIT_NOT_IMPLEMENTED = "TRUTH_SPLIT_NOT_IMPLEMENTED"
 CONTRACT_MAP_NONDETERMINISTIC = "CONTRACT_MAP_NONDETERMINISTIC"
 ROUTE_DERIVATION_FAILURE = "ROUTE_DERIVATION_FAILURE"
 REQUIRED_API_KEY_MISSING = "REQUIRED_API_KEY_MISSING"
@@ -474,8 +475,34 @@ def evaluate_prompt_integrity(runner: Any, config: GateConfig) -> Tuple[Dict[str
 
 
 def collect_truth_split(runner: Any, config: GateConfig) -> Tuple[Dict[str, Any], List[Blocker], List[Dict[str, Any]]]:
-    # Placeholder for truth split logic
-    return {"layer": "truth_split_audit", "status": "PASS", "target_phase_mismatch_count": 0, "repo_wide_mismatch_count": 0, "rows": []}, [], []
+    # FAIL-CLOSED (audit finding S7): the runner/promptset/model-map drift audit is not
+    # implemented. This previously returned a hardcoded PASS, which silently asserted
+    # "no drift" without running any check -- giving false go-live confidence. Until
+    # classify_truth_split_row (above) is wired into a real per-step comparison, we must
+    # not claim PASS. Emit a waivable P1 blocker so the gate fails closed; an operator who
+    # accepts the gap may proceed with `--waiver-code TRUTH_SPLIT_NOT_IMPLEMENTED`.
+    blocker = Blocker(
+        reason_code=TRUTH_SPLIT_NOT_IMPLEMENTED,
+        layer="truth_split_audit",
+        severity="P1",
+        message=(
+            "Truth-split drift audit is not implemented; cannot assert runner/promptset/"
+            "model-map alignment. Failing closed. Waive with "
+            "--waiver-code TRUTH_SPLIT_NOT_IMPLEMENTED to proceed without this check."
+        ),
+        details={"implemented": False},
+    )
+    return (
+        {
+            "layer": "truth_split_audit",
+            "status": "NOT_IMPLEMENTED",
+            "target_phase_mismatch_count": 0,
+            "repo_wide_mismatch_count": 0,
+            "rows": [],
+        },
+        [blocker],
+        [],
+    )
 
 
 def evaluate_contract_map(
