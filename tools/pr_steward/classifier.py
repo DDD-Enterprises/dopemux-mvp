@@ -19,6 +19,29 @@ FAILED_CHECK_CONCLUSIONS = {
     "startup_failure",
 }
 PENDING_CHECK_STATUSES = {"queued", "in_progress", "requested", "waiting", "pending"}
+CURRENT_PROOF_STATUSES = {"CURRENT", "CURRENT_WITH_SELF_REFERENCE_EXCEPTION", "FRESH"}
+STALE_PROOF_STATUSES = {"STALE"}
+MISSING_PROOF_STATUSES = {"MISSING"}
+
+
+class ProofFreshness(dict):
+    """Dict proof state with legacy string comparisons for older callers."""
+
+    _LEGACY_EQUIVALENTS = {
+        "CURRENT": {"CURRENT", "FRESH"},
+        "CURRENT_WITH_SELF_REFERENCE_EXCEPTION": {
+            "CURRENT_WITH_SELF_REFERENCE_EXCEPTION",
+            "FRESH",
+        },
+        "STALE": {"STALE"},
+        "MISSING": {"MISSING"},
+    }
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, str):
+            status = str(self.get("status") or "")
+            return other in self._LEGACY_EQUIVALENTS.get(status, {status})
+        return super().__eq__(other)
 
 
 def utc_now() -> str:
@@ -89,6 +112,10 @@ def build_artifacts(
             unknowns=unknowns,
         )
     )
+    resolved_review_comment_dispositions = _resolved_review_comment_dispositions(
+        harvest.get("review_threads") or []
+    )
+
     review_items.extend(
         _classify_comments(
             harvest.get("review_comments") or [],
@@ -97,6 +124,7 @@ def build_artifacts(
             trusted_associations=trusted_associations,
             blockers=blockers,
             unknowns=unknowns,
+            resolved_review_comment_dispositions=resolved_review_comment_dispositions,
         )
     )
     review_items.extend(
@@ -134,11 +162,22 @@ def build_artifacts(
         _append_once(blockers, "EMBEDDED_AUDIT_UNKNOWN")
         _append_once(unknowns, f"Unknown embedded audit status: {raw_status}")
 
-    proof = _proof(harvest)
-    if proof["proof_freshness"] == "STALE":
+    snapshot_changed_files = _changed_files(harvest.get("changed_files") or [])
+    proof = _proof(harvest, pr_head_sha=pr["head_sha"])
+    proof_status = _proof_status(proof)
+    if proof_status in STALE_PROOF_STATUSES:
         _append_once(blockers, "PROOF_STALE")
-    elif proof["proof_freshness"] == "MISSING":
+    elif proof_status in MISSING_PROOF_STATUSES:
         _append_once(blockers, "PROOF_MISSING")
+    elif (
+        proof_status == "CURRENT_WITH_SELF_REFERENCE_EXCEPTION"
+        and not _valid_self_reference_exception(
+            proof,
+            changed_files=snapshot_changed_files,
+            embedded_audit_status=audit_status,
+        )
+    ):
+        _append_once(blockers, "PROOF_STALE_OR_MISSING")
     if not proof["proof_head_sha"]:
         _append_once(unknowns, "Proof head SHA missing")
 
@@ -183,7 +222,7 @@ def build_artifacts(
         "harvest_errors": [str(item) for item in harvest.get("harvest_errors") or []],
         "mutation_performed": False,
         "pr": pr,
-        "changed_files": _changed_files(harvest.get("changed_files") or []),
+        "changed_files": snapshot_changed_files,
         "commits": _commits(harvest.get("commits") or []),
         "reviews": _raw_list(harvest.get("reviews") or []),
         "review_comments": _raw_list(harvest.get("review_comments") or []),
@@ -192,6 +231,7 @@ def build_artifacts(
         "checks": checks["checks"],
         "embedded_audit": embedded_audit,
         "proof": proof,
+        "blockers": blockers,
     }
     merge_readiness = {
         "schema_version": SCHEMA_VERSION,
@@ -290,15 +330,22 @@ def _classify_comments(
     trusted_associations: set[str],
     blockers: list[str],
     unknowns: list[str],
+    resolved_review_comment_dispositions: dict[str, dict[str, str | bool]] | None = None,
 ) -> list[dict[str, Any]]:
     items = []
+    resolved_review_comment_dispositions = resolved_review_comment_dispositions or {}
     for index, comment in enumerate(comments):
         author = _author_login(comment)
         association = _association(comment)
         body = str(comment.get("body") or "")
         item_id = str(comment.get("id") or f"{source}-{index}")
         item_blockers: list[str] = []
-        if not _known_author(author, association, known_reviewers, trusted_associations):
+        linked_resolution = resolved_review_comment_dispositions.get(item_id)
+        if linked_resolution is not None:
+            disposition = str(linked_resolution["disposition"])
+            blocking = bool(linked_resolution["blocking"])
+            rationale = str(linked_resolution["rationale"])
+        elif not _known_author(author, association, known_reviewers, trusted_associations):
             disposition = "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION"
             blocking = True
             rationale = "Comment author is not in known reviewer config."
@@ -415,6 +462,25 @@ def _classify_threads(
     return {"items": items, "threads": dispositions}
 
 
+def _resolved_review_comment_dispositions(
+    threads: list[Any],
+) -> dict[str, dict[str, str | bool]]:
+    dispositions: dict[str, dict[str, str | bool]] = {}
+    for thread in threads:
+        if not bool(thread.get("isResolved", False)):
+            continue
+        for comment in thread.get("comments") or []:
+            comment_id = str(comment.get("id") or "")
+            if not comment_id:
+                continue
+            dispositions[comment_id] = {
+                "disposition": "AUTO_APPLIED",
+                "blocking": False,
+                "rationale": "Linked review thread is resolved.",
+            }
+    return dispositions
+
+
 def _classify_checks(
     checks: list[Any], *, pr_head_sha: str, strict: bool
 ) -> dict[str, Any]:
@@ -521,6 +587,7 @@ def _readiness(blockers: list[str]) -> str:
         "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION",
         "PROOF_STALE",
         "PROOF_MISSING",
+        "PROOF_STALE_OR_MISSING",
         "UNKNOWN_PR_AUTHOR",
         "UNKNOWN_CHECK",
         "REVIEW_ITEM_NEEDS_SUPERVISOR",
@@ -627,26 +694,127 @@ def _detect_mixed_sha_checks(checks: list[Any], *, pr_head_sha: str) -> bool:
     return False
 
 
-def _proof(harvest: dict[str, Any]) -> dict[str, Any]:
+def _proof(harvest: dict[str, Any], *, pr_head_sha: str | None = None) -> dict[str, Any]:
     raw = harvest.get("proof") or {}
     proof_head_sha = raw.get("proof_head_sha")
     proof_path = str(raw.get("proof_path") or "")
     matches = bool(raw.get("matches_pr_head", False))
-    if not proof_head_sha and not proof_path:
-        freshness = "MISSING"
-    elif not proof_head_sha:
-        # proof_path present but no verifiable SHA — cannot confirm freshness, treat as MISSING.
-        freshness = "MISSING"
-    elif proof_head_sha and matches:
-        freshness = "FRESH"
+    raw_freshness = raw.get("proof_freshness")
+    if isinstance(raw_freshness, dict):
+        freshness = ProofFreshness(
+            {
+                "status": str(raw_freshness.get("status") or "UNKNOWN"),
+                "matches_pr_head": bool(raw_freshness.get("matches_pr_head", matches)),
+                "reason": str(raw_freshness.get("reason") or ""),
+                "proof_recorded_sha": raw_freshness.get("proof_recorded_sha")
+                or proof_head_sha,
+                "pr_head_sha": raw_freshness.get("pr_head_sha") or pr_head_sha,
+                "self_reference_exception": raw_freshness.get(
+                    "self_reference_exception"
+                )
+                if isinstance(raw_freshness.get("self_reference_exception"), dict)
+                else None,
+            }
+        )
+    elif isinstance(raw_freshness, str) and raw_freshness:
+        freshness = _proof_freshness_payload(
+            status=raw_freshness,
+            proof_head_sha=proof_head_sha,
+            pr_head_sha=pr_head_sha,
+            matches=matches,
+        )
     else:
-        freshness = "STALE"
+        if not proof_head_sha and not proof_path:
+            freshness = _proof_freshness_payload(
+                status="MISSING",
+                proof_head_sha=None,
+                pr_head_sha=pr_head_sha,
+                matches=False,
+                reason="Proof file was not provided.",
+            )
+        elif not proof_head_sha:
+            # proof_path present but no verifiable SHA — cannot confirm freshness, treat as MISSING.
+            freshness = _proof_freshness_payload(
+                status="MISSING",
+                proof_head_sha=None,
+                pr_head_sha=pr_head_sha,
+                matches=False,
+                reason="Proof head SHA missing.",
+            )
+        elif proof_head_sha and matches:
+            freshness = _proof_freshness_payload(
+                status="CURRENT",
+                proof_head_sha=proof_head_sha,
+                pr_head_sha=pr_head_sha,
+                matches=True,
+                reason="Proof head SHA matches PR head SHA.",
+            )
+        else:
+            freshness = _proof_freshness_payload(
+                status="STALE",
+                proof_head_sha=proof_head_sha,
+                pr_head_sha=pr_head_sha,
+                matches=False,
+                reason="Proof head SHA does not match PR head SHA.",
+            )
     return {
         "proof_path": proof_path,
         "proof_head_sha": proof_head_sha,
         "matches_pr_head": matches,
         "proof_freshness": freshness,
     }
+
+
+def _proof_freshness_payload(
+    *,
+    status: str,
+    proof_head_sha: str | None,
+    pr_head_sha: str | None,
+    matches: bool,
+    reason: str = "",
+) -> ProofFreshness:
+    normalized = "CURRENT" if status == "FRESH" else status
+    return ProofFreshness(
+        {
+            "status": normalized,
+            "matches_pr_head": matches,
+            "reason": reason,
+            "proof_recorded_sha": proof_head_sha,
+            "pr_head_sha": pr_head_sha,
+            "self_reference_exception": None,
+        }
+    )
+
+
+def _proof_status(proof: dict[str, Any]) -> str:
+    freshness = proof.get("proof_freshness")
+    if isinstance(freshness, dict):
+        return str(freshness.get("status") or "UNKNOWN")
+    if freshness == "FRESH":
+        return "CURRENT"
+    return str(freshness or "UNKNOWN")
+
+
+def _valid_self_reference_exception(
+    proof: dict[str, Any],
+    *,
+    changed_files: list[dict[str, Any]],
+    embedded_audit_status: str,
+) -> bool:
+    freshness = proof.get("proof_freshness")
+    if not isinstance(freshness, dict):
+        return False
+    exception = freshness.get("self_reference_exception")
+    if not isinstance(exception, dict):
+        return False
+    if exception.get("supervisor_accepted") is not True:
+        return False
+    if embedded_audit_status not in PASSING_AUDITS:
+        return False
+    changed_paths = [str(item.get("path") or "") for item in changed_files]
+    exception_paths = [str(item) for item in exception.get("changed_files") or []]
+    paths = exception_paths or changed_paths
+    return bool(paths) and all(path.startswith("proof/") for path in paths)
 
 
 def _body_disposition(body: str) -> tuple[str, bool, str]:
