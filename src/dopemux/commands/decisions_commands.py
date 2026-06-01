@@ -3,23 +3,31 @@ Decisions Commands
 
 BETA-CLI-01: list / show / query / review / update-outcome subcommands
 were absent.  This module now implements them against the ConPort HTTP
-API (localhost:${CONPORT_MCP_PORT:-3005}).
+API (localhost:${CONPORT_HTTP_PORT:-3004} or CONPORT_URL).
 """
 
 import os
-from typing import Optional
+import sys
+from typing import Any, Optional
 
 import click
+import requests
 
 from ..console import console
-from ..ui.theme import styled_panel, styled_table, error_panel, Glyphs, StatusChip
+from ..ui.theme import styled_panel, styled_table
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
+DEFAULT_DECISION_LOOKUP_LIMIT = 1000
+WORKSPACE_HELP = "Workspace ID (defaults to DOPEMUX_WORKSPACE_ID or cwd)"
+
+
 def _conport_url() -> str:
-    port = os.environ.get("CONPORT_MCP_PORT", "3005")
+    if url := os.environ.get("CONPORT_URL"):
+        return url.rstrip("/")
+    port = os.environ.get("CONPORT_HTTP_PORT", "3004")
     return f"http://localhost:{port}"
 
 
@@ -30,29 +38,49 @@ def _workspace_id() -> str:
     )
 
 
-def _get_decisions(workspace_id: str) -> list:
+def _get_decisions(workspace_id: str, limit: int = 20) -> list[dict[str, Any]]:
     """Fetch all decisions from ConPort. Returns [] on error."""
     try:
-        import requests
         r = requests.get(
             f"{_conport_url()}/api/decisions",
-            params={"workspace_id": workspace_id},
+            params={"workspace_id": workspace_id, "limit": limit},
             timeout=10,
         )
         r.raise_for_status()
         return r.json().get("decisions", [])
-    except Exception as exc:
+    except (requests.ConnectionError, requests.Timeout) as exc:
         console.logger.warning(f"[yellow]ConPort unavailable: {exc}[/yellow]")
+        return []
+    except requests.HTTPError as exc:
+        response = exc.response
+        status = response.status_code if response is not None else "unknown"
+        console.logger.warning(f"[yellow]ConPort rejected decisions request: HTTP {status}[/yellow]")
+        return []
+    except requests.RequestException as exc:
+        console.logger.warning(f"[yellow]ConPort request failed: {exc}[/yellow]")
         return []
 
 
-def _print_decision_table(decisions: list) -> None:
+def _find_decision(decisions: list[dict[str, Any]], decision_id: str) -> dict[str, Any] | None:
+    return next((d for d in decisions if str(d.get("id")) == decision_id), None)
+
+
+def _created_decision_id(result: dict[str, Any]) -> str:
+    decision = result.get("decision")
+    if isinstance(decision, dict):
+        return str(decision.get("id", "?"))
+    return str(result.get("id", "?"))
+
+
+def _print_decision_table(decisions: list[dict[str, Any]]) -> None:
     if not decisions:
         console.logger.info("[text.dim]No decisions found.[/text.dim]")
         return
     table = styled_table(
         "Decisions",
-        columns=["ID", "Summary", "Date"],
+        "ID",
+        "Summary",
+        "Date",
         show_lines=True,
     )
     for d in decisions:
@@ -85,12 +113,12 @@ def decisions():
 # ---------------------------------------------------------------------------
 
 @decisions.command("list")
-@click.option("--workspace", "-w", default=None, help="Workspace ID (defaults to DOPEMUX_WORKSPACE_ID or cwd)")
+@click.option("--workspace", "-w", default=None, help=WORKSPACE_HELP)
 @click.option("--limit", "-n", default=20, show_default=True, help="Max decisions to show")
 def decisions_list(workspace: Optional[str], limit: int):
     """List recent decisions from ConPort."""
     wid = workspace or _workspace_id()
-    items = _get_decisions(wid)
+    items = _get_decisions(wid, limit=limit)
     _print_decision_table(items[:limit])
 
 
@@ -99,16 +127,16 @@ def decisions_list(workspace: Optional[str], limit: int):
 # ---------------------------------------------------------------------------
 
 @decisions.command("show")
-@click.argument("decision_id", type=int)
-@click.option("--workspace", "-w", default=None)
-def decisions_show(decision_id: int, workspace: Optional[str]):
+@click.argument("decision_id")
+@click.option("--workspace", "-w", default=None, help=WORKSPACE_HELP)
+def decisions_show(decision_id: str, workspace: Optional[str]):
     """Show full detail for a single decision by ID."""
     wid = workspace or _workspace_id()
-    items = _get_decisions(wid)
-    match = next((d for d in items if d.get("id") == decision_id), None)
+    items = _get_decisions(wid, limit=DEFAULT_DECISION_LOOKUP_LIMIT)
+    match = _find_decision(items, decision_id)
     if not match:
         console.logger.error(f"[red]Decision {decision_id} not found.[/red]")
-        raise SystemExit(1)
+        sys.exit(1)
     panel = styled_panel(
         "\n".join([
             f"[bold]Summary:[/bold]    {match.get('summary', '—')}",
@@ -117,7 +145,7 @@ def decisions_show(decision_id: int, workspace: Optional[str]):
             f"[bold]Date:[/bold]       {match.get('created_at', match.get('timestamp', '—'))}",
             f"[bold]Tags:[/bold]       {', '.join(match.get('tags', [])) or '—'}",
         ]),
-        title=f"Decision #{decision_id}",
+        title=f"Decision {decision_id}",
     )
     console.print(panel)
 
@@ -128,12 +156,12 @@ def decisions_show(decision_id: int, workspace: Optional[str]):
 
 @decisions.command("query")
 @click.argument("term")
-@click.option("--workspace", "-w", default=None)
-@click.option("--limit", "-n", default=20, show_default=True)
+@click.option("--workspace", "-w", default=None, help=WORKSPACE_HELP)
+@click.option("--limit", "-n", default=20, show_default=True, help="Max matching decisions to show")
 def decisions_query(term: str, workspace: Optional[str], limit: int):
     """Search decisions whose summary or rationale contains TERM."""
     wid = workspace or _workspace_id()
-    items = _get_decisions(wid)
+    items = _get_decisions(wid, limit=max(limit, DEFAULT_DECISION_LOOKUP_LIMIT))
     term_lower = term.lower()
     matches = [
         d for d in items
@@ -151,36 +179,38 @@ def decisions_query(term: str, workspace: Optional[str], limit: int):
 # ---------------------------------------------------------------------------
 
 @decisions.command("review")
-@click.argument("decision_id", type=int)
+@click.argument("decision_id")
 @click.option("--note", "-m", required=True, help="Review note to attach")
-@click.option("--workspace", "-w", default=None)
-def decisions_review(decision_id: int, note: str, workspace: Optional[str]):
+@click.option("--workspace", "-w", default=None, help=WORKSPACE_HELP)
+def decisions_review(decision_id: str, note: str, workspace: Optional[str]):
     """
-    Attach a review note to a decision by logging a linked follow-up entry.
+    Attach a review note to a decision by logging a referencing follow-up entry.
 
     ConPort does not support in-place mutation, so review notes are stored as
     a new decision whose summary references the original ID.
     """
     wid = workspace or _workspace_id()
+    if not _find_decision(_get_decisions(wid, limit=DEFAULT_DECISION_LOOKUP_LIMIT), decision_id):
+        console.logger.error(f"[red]Decision {decision_id} not found; review not logged.[/red]")
+        sys.exit(1)
     try:
-        import requests
         r = requests.post(
             f"{_conport_url()}/api/decisions",
             json={
                 "workspace_id": wid,
-                "summary": f"[Review of #{decision_id}] {note}",
-                "rationale": f"Follow-up review note for decision #{decision_id}.",
+                "summary": f"[Review of {decision_id}] {note}",
+                "rationale": f"Follow-up review note for decision {decision_id}.",
                 "alternatives": [],
             },
             timeout=10,
         )
         r.raise_for_status()
         result = r.json()
-        new_id = result.get("id", "?")
+        new_id = _created_decision_id(result)
         console.logger.info(f"[green]Review note logged as decision #{new_id}.[/green]")
-    except Exception as exc:
+    except requests.RequestException as exc:
         console.logger.error(f"[red]Failed to log review: {exc}[/red]")
-        raise SystemExit(1)
+        sys.exit(1)
 
 
 # ---------------------------------------------------------------------------
@@ -188,38 +218,40 @@ def decisions_review(decision_id: int, note: str, workspace: Optional[str]):
 # ---------------------------------------------------------------------------
 
 @decisions.command("update-outcome")
-@click.argument("decision_id", type=int)
+@click.argument("decision_id")
 @click.option("--outcome", "-o", required=True, help="Outcome description (what actually happened)")
-@click.option("--workspace", "-w", default=None)
-def decisions_update_outcome(decision_id: int, outcome: str, workspace: Optional[str]):
+@click.option("--workspace", "-w", default=None, help=WORKSPACE_HELP)
+def decisions_update_outcome(decision_id: str, outcome: str, workspace: Optional[str]):
     """
     Record the real-world outcome of a decision.
 
-    Logged as a new ConPort entry linked to the original decision ID so the
+    Logged as a new ConPort entry referencing the original decision ID so the
     history is append-only and auditable.
     """
     wid = workspace or _workspace_id()
+    if not _find_decision(_get_decisions(wid, limit=DEFAULT_DECISION_LOOKUP_LIMIT), decision_id):
+        console.logger.error(f"[red]Decision {decision_id} not found; outcome not logged.[/red]")
+        sys.exit(1)
     try:
-        import requests
         r = requests.post(
             f"{_conport_url()}/api/decisions",
             json={
                 "workspace_id": wid,
-                "summary": f"[Outcome of #{decision_id}] {outcome}",
-                "rationale": f"Real-world outcome recorded for decision #{decision_id}.",
+                "summary": f"[Outcome of {decision_id}] {outcome}",
+                "rationale": f"Real-world outcome recorded for decision {decision_id}.",
                 "alternatives": [],
             },
             timeout=10,
         )
         r.raise_for_status()
         result = r.json()
-        new_id = result.get("id", "?")
+        new_id = _created_decision_id(result)
         console.logger.info(
-            f"[green]Outcome logged as decision #{new_id} (linked to #{decision_id}).[/green]"
+            f"[green]Outcome logged as decision #{new_id} (references {decision_id}).[/green]"
         )
-    except Exception as exc:
+    except requests.RequestException as exc:
         console.logger.error(f"[red]Failed to log outcome: {exc}[/red]")
-        raise SystemExit(1)
+        sys.exit(1)
 
 
 # ---------------------------------------------------------------------------

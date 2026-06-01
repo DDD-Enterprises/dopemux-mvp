@@ -100,12 +100,18 @@ def test_routing_mode_update_fails_closed_on_invalid_yaml(tmp_path: Path):
     assert config_path.read_text(encoding="utf-8") == original
 
 
-def test_decisions_runtime_does_not_advertise_missing_subcommands():
+def test_decisions_subcommands_are_registered():
     decisions = cli.commands["decisions"]
 
-    assert set(decisions.commands) == {"energy", "patterns"}
-    assert "review" not in decisions.commands
-    assert "list" not in decisions.commands
+    assert set(decisions.commands) == {
+        "energy",
+        "patterns",
+        "list",
+        "show",
+        "query",
+        "review",
+        "update-outcome",
+    }
 
 
 def test_removed_genetic_code_commands_are_not_registered():
