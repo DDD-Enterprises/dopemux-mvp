@@ -1,0 +1,148 @@
+{
+  "commit": {
+    "allowlist": [
+      "src/dopemux_pr_merge_specialist/queue_drain.py",
+      "src/dopemux_pr_merge_specialist/thread_resolution.py",
+      "src/dopemux_pr_merge_specialist/policy.py",
+      "tests/pr_merge_specialist/test_remediation_gate.py",
+      "docs/ops/steward-merge-gate.md",
+      "config/pr_merge_specialist/policy.yaml",
+      "task-packets/generated/TP-DMX-MERGE-REMEDIATION-202.json",
+      "proof/TP-DMX-MERGE-REMEDIATION-202/**"
+    ],
+    "message": "feat(pr-merge): gate remediation seams behind steward_gate",
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-MERGE-REMEDIATION-202.json",
+      "python -m compileall -q src tests",
+      "pytest -q tests/pr_merge_specialist/test_remediation_gate.py",
+      "git diff --check"
+    ]
+  },
+  "depends_on": [
+    "TP-DMX-STEWARD-GATE-201"
+  ],
+  "execution": {
+    "agent": "codex",
+    "base_branch": "main",
+    "branch": "codex/tp-dmx-merge-remediation-202",
+    "stacked_because": "Part of the DMX-AUTOREVIEW-PLATFORM dependency DAG."
+  },
+  "id": "TP-DMX-MERGE-REMEDIATION-202",
+  "invariants": [
+    "Runtime/source truth outranks this packet and the load plan.",
+    "Preserve PR Steward check-only semantics unless this packet explicitly authorizes a governed mutation gate.",
+    "Preserve fail-closed behavior on missing evidence, stale SHAs, unsupported permissions, or unknown authority.",
+    "Do not expose secrets, tokens, private keys, or unredacted provider metadata in proof artifacts.",
+    "Do not modify files outside the packet allowlist without stopping for supervisor review.",
+    "Do not enable governed_automerge by default.",
+    "Do not bypass PR Steward or independent embedded-audit readiness.",
+    "Supervisor approval is required before executing any merge-finalization authority.",
+    "TP-DMX-MERGE-FINALIZATION-203 must execute after this remediation packet because both packets touch shared merge-specialist policy and docs surfaces."
+  ],
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "pr": {
+    "base": "main",
+    "body": "## Summary\n- Wire steward_gate into pr_apply / apply_thread_dispositions (reply-only) / conflict+CI remediation, gated on NEEDS_IMPLEMENTER + implementer-role blocker; demote thread RESOLVE to finalization; route global-fix-PR/admin-bypass/fork-force-push to supervisor (blocked by default).\n\n## Scope\nTrack: B-govern-merge. Risk: HIGH. Red lane: true.\n\n## Validation\nRun the packet validation commands and capture proof under proof/TP-DMX-MERGE-REMEDIATION-202/PROOF.json.\n\n## NOT_RUN\nList any skipped live, integration, credentialed, or supervisor-gated checks explicitly.",
+    "title": "Feat(pr-merge): gate remediation seams behind steward_gate"
+  },
+  "project": "dopemux-mvp",
+  "repo_binding": {
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "require_identity_match": true
+  },
+  "series": {
+    "base_branch": "main",
+    "final_packet": false,
+    "id": "DMX-AUTOREVIEW-PLATFORM",
+    "parent_tp_id": "TP-DMX-STEWARD-GATE-201"
+  },
+  "steps": [
+    {
+      "context_files": [
+        "AGENTS.md",
+        "docs/ops/load-plans/load_plan-DMX-AUTOREVIEW-PLATFORM.json",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "config/pr_merge_specialist/policy.yaml"
+      ],
+      "id": "S1",
+      "task": "Inspect current repo truth, authority docs, runtime entrypoints, schemas, tests, and existing conventions before editing.",
+      "validation": [
+        "Canonical writer and downstream consumers are identified.",
+        "Any missing authority is recorded as UNKNOWN rather than inferred.",
+        "The planned diff is confirmed to stay within the packet allowlist."
+      ]
+    },
+    {
+      "expected_files": [
+        "src/dopemux_pr_merge_specialist/queue_drain.py",
+        "src/dopemux_pr_merge_specialist/thread_resolution.py",
+        "src/dopemux_pr_merge_specialist/policy.py",
+        "tests/pr_merge_specialist/test_remediation_gate.py",
+        "docs/ops/steward-merge-gate.md",
+        "config/pr_merge_specialist/policy.yaml",
+        "task-packets/generated/TP-DMX-MERGE-REMEDIATION-202.json",
+        "proof/TP-DMX-MERGE-REMEDIATION-202/**"
+      ],
+      "id": "S2",
+      "requirements": [
+        "Track: B-govern-merge",
+        "Proof path: proof/TP-DMX-MERGE-REMEDIATION-202/PROOF.json",
+        "Executor default: claude-code-sonnet",
+        "Auditor default: claude-code-opus",
+        "Supervisor/red-lane handling required for TP-DMX-MERGE-REMEDIATION-202."
+      ],
+      "task": "Wire steward_gate into pr_apply / apply_thread_dispositions (reply-only) / conflict+CI remediation, gated on NEEDS_IMPLEMENTER + implementer-role blocker; demote thread RESOLVE to finalization; route global-fix-PR/admin-bypass/fork-force-push to supervisor (blocked by default).",
+      "validation": [
+        "Implementation preserves fail-closed behavior and deterministic artifact output.",
+        "No file outside commit.allowlist changed.",
+        "Stop conditions from this packet were not triggered, or execution stopped with evidence."
+      ]
+    },
+    {
+      "expected_files": [
+        "tests/pr_merge_specialist/test_remediation_gate.py",
+        "docs/ops/steward-merge-gate.md",
+        "proof/TP-DMX-MERGE-REMEDIATION-202/**"
+      ],
+      "id": "S3",
+      "task": "Update tests, docs, and proof artifacts required by the packet allowlist and keep runtime claims backed by observed code or validation.",
+      "validation": [
+        "Docs describe implemented behavior only.",
+        "Proof artifacts include commands, exit codes, diff scope, residual risks, and UNKNOWNs.",
+        "Generated artifacts are stable and replayable."
+      ]
+    },
+    {
+      "commands": [
+        "python -m json.tool task-packets/generated/TP-DMX-MERGE-REMEDIATION-202.json",
+        "python -m compileall -q src tests",
+        "pytest -q tests/pr_merge_specialist/test_remediation_gate.py",
+        "git diff --check"
+      ],
+      "id": "S4",
+      "task": "Run focused validation, inspect git diff, run codereview/precommit review, and prepare a truthful completion summary.",
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-DMX-MERGE-REMEDIATION-202.json",
+        "python -m compileall -q src tests",
+        "pytest -q tests/pr_merge_specialist/test_remediation_gate.py",
+        "git diff --check"
+      ]
+    }
+  ],
+  "target": "Wire steward_gate into pr_apply / apply_thread_dispositions (reply-only) / conflict+CI remediation, gated on NEEDS_IMPLEMENTER + implementer-role blocker; demote thread RESOLVE to finalization; route global-fix-PR/admin-bypass/fork-force-push to supervisor (blocked by default)."
+}
