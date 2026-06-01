@@ -186,10 +186,12 @@ relative file path so consumers following the proof object can read the report.
 If the trusted checkout does not yet contain the proof emitter, bootstrap CI
 must emit a schema-valid `SKIPPED` proof rather than executing the PR-head copy
 of the emitter.
-If the requested head SHA cannot be fetched or verified, the proof must also be
-`SKIPPED` and record the head-integrity failure as the reason.
+If the requested head SHA cannot be fetched or does not match
+`refs/pull/<number>/head`, the proof must also be `SKIPPED` and record the
+head-integrity failure as the reason.
 Manual dispatch must keep proof-authoring code on the repository default branch
-and must not treat the selected dispatch branch as trusted proof-authoring code.
+and must not treat the selected dispatch branch as trusted proof-authoring code
+or as proof that the supplied SHA belongs to the requested PR.
 The audit token may be passed only to the trusted-source emitter step; bootstrap
 and head-integrity SKIPPED proof paths must not receive it.
 

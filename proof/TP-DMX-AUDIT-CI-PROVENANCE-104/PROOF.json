@@ -65,7 +65,7 @@
     {
       "command": "pytest -q tests/audit/test_run_embedded_audit.py",
       "status": "PASS",
-      "evidence": "7 passed, including trusted-source workflow execution, trusted-token step isolation, default-branch manual dispatch trust, bootstrap skip behavior, canonical report path emission, missing route/PAL JSON skip behavior, and no audit secret in PR-head job."
+      "evidence": "7 passed, including trusted-source workflow execution, trusted-token step isolation, default-branch manual dispatch trust, requested PR head-ref membership verification, bootstrap skip behavior, canonical report path emission, missing route/PAL JSON skip behavior, and no audit secret in PR-head job."
     },
     {
       "command": "python -m json.tool task-packets/generated/TP-DMX-AUDIT-CI-PROVENANCE-104.json",
@@ -124,7 +124,7 @@
     }
   ],
   "residual_risks": [
-    "The CI workflow runs proof emission from a trusted-source checkout and does not expose EMBEDDED_AUDIT_TOKEN to PR-head code; trusted_token_status remains UNKNOWN and embedded_audit.status is SKIPPED unless a future trusted-ref execution path supplies token authority and PAL output.",
+    "The CI workflow runs proof emission from a trusted-source checkout, verifies requested SHAs against refs/pull/<number>/head, and does not expose EMBEDDED_AUDIT_TOKEN to PR-head code; trusted_token_status remains UNKNOWN and embedded_audit.status is SKIPPED unless a future trusted-ref execution path supplies token authority and PAL output.",
     "No live PAL clink audit output was captured in this local run.",
     "Task Orchestrator item state could not be advanced because the transport was closed."
   ]
