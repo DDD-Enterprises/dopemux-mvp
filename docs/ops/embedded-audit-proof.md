@@ -186,6 +186,8 @@ relative file path so consumers following the proof object can read the report.
 If the trusted checkout does not yet contain the proof emitter, bootstrap CI
 must emit a schema-valid `SKIPPED` proof rather than executing the PR-head copy
 of the emitter.
+If the requested head SHA cannot be fetched or verified, the proof must also be
+`SKIPPED` and record the head-integrity failure as the reason.
 
 ---
 

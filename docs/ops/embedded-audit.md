@@ -61,6 +61,10 @@ During bootstrap PRs where the trusted base ref does not yet contain the proof
 emitter, the workflow emits a schema-valid `SKIPPED` proof instead of executing
 the PR-head copy of the emitter.
 
+If the requested PR head SHA cannot be fetched or verified, the workflow emits a
+schema-valid `SKIPPED` proof with that integrity failure as the reason rather
+than emitting a normal proof for an unverified head.
+
 The pull-request workflow does not expose `EMBEDDED_AUDIT_TOKEN` to PR-head
 code. The entrypoint never records token values, and trusted-ref callers may
 record whether the expected token was present as provenance:
