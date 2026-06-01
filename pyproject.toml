@@ -139,6 +139,7 @@ dopemux = "dopemux.cli:main"
 dopemux-mobile = "dopemux.mobile.main:main"
 dopemux-github = "dopemux_github_specialist.cli:main"
 dopemux-pr-merge = "dopemux_pr_merge_specialist.cli:main"
+dopemux-pr-steward = "dopemux_pr_steward.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
