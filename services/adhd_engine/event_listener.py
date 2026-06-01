@@ -209,6 +209,7 @@ class ADHDEventListener:
             "hook_event_name",
             "status",
             "tool_name",
+            "boundary_type",
         }
         activity_data = {
             key: value
@@ -233,6 +234,12 @@ class ADHDEventListener:
     
     async def _on_file_activity(self, data: Dict[str, Any]):
         """Handle file activity events."""
+        if data.get("action") == "closed":
+            await self._record_activity_signal(
+                {"boundary_type": "file_close"},
+                source_event="file_closed",
+            )
+
         # Add to rolling window
         self._file_activity_window.append({
             "file": data.get("file"),
