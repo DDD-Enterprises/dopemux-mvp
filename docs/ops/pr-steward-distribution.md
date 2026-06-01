@@ -40,3 +40,16 @@ overwrite local workflow or policy edits.
 `schemas/pr_steward/config.schema.json`, compares the local policy to the
 packaged scaffold policy, and exits blocked on missing config, unknown schema,
 invalid config, or scaffold skew. It does not auto-fix, migrate, or write files.
+
+## Hardening Posture
+
+Distribution intentionally keeps runtime authority in the installed package:
+
+- scaffolded workflows call `python -m dopemux.cli pr-steward`
+- scaffolded policy files are small operator-owned inputs
+- `dopemux init` does not overwrite existing workflow or policy files
+- doctor reports drift and config problems without mutating the target repo
+
+This leaves downstream repositories with an explicit operator step for local
+policy drift. That is deliberate for v1; automatic migration or repair would
+cross from distribution into mutation authority and requires a later packet.

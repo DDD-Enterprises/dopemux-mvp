@@ -1,0 +1,104 @@
+{
+  "tp_id": "TP-DMX-AUTOREVIEW-HARDEN-401",
+  "status": "PASS_WITH_RISKS",
+  "generated_at": "2026-06-01T00:54:39Z",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-autoreview-harden-401",
+  "branch": "codex/tp-dmx-autoreview-harden-401",
+  "base_ref": "origin/codex/tp-dmx-steward-doctor-303",
+  "base_sha": "98010d84d3151f7664179f5622684de723c30710",
+  "implementation_commit_sha": "ac974fc69e9203ffa1f628ae61bf77e8808d6011",
+  "proof_metadata_commit_sha": "2911160bf67838873962c08f54544a805b84da49",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/779",
+  "repo_identity": {
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker": ".dopetaskroot",
+    "identity_match": true
+  },
+  "stacking": {
+    "base_branch": "codex/tp-dmx-steward-doctor-303",
+    "base_pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/775",
+    "external_dependency_prs": [
+      "https://github.com/DDD-Enterprises/dopemux-mvp/pull/755",
+      "https://github.com/DDD-Enterprises/dopemux-mvp/pull/758",
+      "https://github.com/DDD-Enterprises/dopemux-mvp/pull/760",
+      "https://github.com/DDD-Enterprises/dopemux-mvp/pull/762",
+      "https://github.com/DDD-Enterprises/dopemux-mvp/pull/763"
+    ],
+    "residual_risk": "The final hardening branch is docs-only on the TP303 stack. Parallel dependency branches are proven by PR evidence but are not all contained in this branch until the stack is merged or an integration branch is created."
+  },
+  "dependency_pr_evidence": [
+    {"tp_id": "TP-DMX-PALCLINK-VERDICT-101", "pr": 756, "head_sha": "de21c772f623ca0f8dff04019e2836ae5ce3bb9d", "checks": "PASS"},
+    {"tp_id": "TP-DMX-ACTIONBRIDGE-CLI-102", "pr": 758, "head_sha": "38c6a3c4f0900a664b8ac6f49e1876bdc9f9352d", "checks": "PASS"},
+    {"tp_id": "TP-DMX-COPILOT-RENDERER-103", "pr": 760, "head_sha": "a789f22b03a106a37c15cf7617343261cf5c77b1", "checks": "PASS"},
+    {"tp_id": "TP-DMX-AUDIT-CI-PROVENANCE-104", "pr": 761, "head_sha": "746a3f7dadbc5fc24e2bc648cd2f9f4e0b7d52fc", "checks": "PASS"},
+    {"tp_id": "TP-DMX-AUTOREVIEW-E2E-105", "pr": 762, "head_sha": "0ee1a1812c23e5b0325644920466140d8b4062e6", "checks": "PASS"},
+    {"tp_id": "TP-DMX-GHA-RELIABILITY-106", "pr": 763, "head_sha": "37901758344924ab515ba4a1f0760b8fa6cb62f7", "checks": "PASS"},
+    {"tp_id": "TP-DMX-STEWARD-GATE-201", "pr": 765, "head_sha": "eac0853f521041c5d52f0d40eddb4be84d66b424", "checks": "PASS"},
+    {"tp_id": "TP-DMX-MERGE-REMEDIATION-202", "pr": 766, "head_sha": "623bcf09de40f720d98b9b083df2b4b854d3cbce", "checks": "PASS"},
+    {"tp_id": "TP-DMX-MERGE-FINALIZATION-203", "pr": 767, "head_sha": "6ad676ce9522806bc658b4b9af1999259f7113ab", "checks": "PASS"},
+    {"tp_id": "TP-DMX-STEWARD-PACKAGE-301", "pr": 770, "head_sha": "7acb4d9ad43453e3b1c7cfe7b0504dc880007ffe", "checks": "PASS"},
+    {"tp_id": "TP-DMX-STEWARD-SCAFFOLD-302", "pr": 772, "head_sha": "3f4231d5e43df404cf2e8c0847b5a6e4f13bb760", "checks": "PASS"},
+    {"tp_id": "TP-DMX-STEWARD-DOCTOR-303", "pr": 775, "head_sha": "98010d84d3151f7664179f5622684de723c30710", "checks": "PASS"}
+  ],
+  "authority_used": [
+    "AGENTS.md",
+    "task-packets/generated/TP-DMX-AUTOREVIEW-HARDEN-401.json",
+    "docs/ops/load-plans/load_plan-DMX-AUTOREVIEW-PLATFORM.json",
+    "docs/ops/operating-model.md",
+    "docs/ops/pr-acceptance.md",
+    "docs/ops/steward-merge-gate.md",
+    "docs/ops/pr-steward-distribution.md",
+    "GitHub PR status rollups for #755,#756,#758,#760,#761,#762,#763,#765,#766,#767,#770,#772,#775"
+  ],
+  "files_changed": [
+    "docs/ops/operating-model.md",
+    "docs/ops/pr-acceptance.md",
+    "docs/ops/steward-merge-gate.md",
+    "docs/ops/pr-steward-distribution.md",
+    "task-packets/generated/TP-DMX-AUTOREVIEW-HARDEN-401.json",
+    "proof/TP-DMX-AUTOREVIEW-HARDEN-401/**"
+  ],
+  "validations": [
+    {"command": "python -m json.tool task-packets/generated/TP-DMX-AUTOREVIEW-HARDEN-401.json", "exit_code": 0, "status": "PASS"},
+    {"command": "python -m jsonschema -i task-packets/generated/TP-DMX-AUTOREVIEW-HARDEN-401.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json", "exit_code": 0, "status": "PASS"},
+    {"command": "git diff --check", "exit_code": 0, "status": "PASS"},
+    {"command": "python scripts/audit/validate_audit_proof.py proof/TP-DMX-AUTOREVIEW-HARDEN-401/PROOF.json", "exit_code": 0, "status": "PASS"},
+    {"command": "pre-commit run --files <TP401 changed files>", "exit_code": 0, "status": "PASS"},
+    {
+      "command": "pytest -q tests/pr_steward tests/pr_action_bridge tests/audit tests/copilot_repair tests/pr_merge_specialist tests/dopemux_cli tests/dopemux_init",
+      "exit_code": 1,
+      "status": "FAIL",
+      "evidence": "17 failures observed on the TP303-based branch, primarily because the final hardening branch does not contain all parallel Track A dependency branches and the local editable package was not refreshed for outside-repo import smoke."
+    }
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-AUTOREVIEW-HARDEN-401/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "No external Claude Code Opus audit was invoked in this Codex session.",
+      "The whole-platform code test set was not green on this docs-only branch because not all parallel dependency branches are contained in the branch.",
+      "All dependency PRs are still draft review artifacts; merged-runtime truth remains unproven until the PR stack lands."
+    ],
+    "skip_reason": "No supported external embedded-auditor invocation was available in this session; Codex performed bounded manual hardening review and records this required audit as skipped."
+  },
+  "codereview_status": "Manual bounded review complete; docs now distinguish green draft PR evidence from merged runtime truth and record the parallel-branch integration risk.",
+  "precommit_status": "PASS: pre-commit run on TP401 changed files and git diff --check passed.",
+  "residual_risks": [
+    "TP401 is not a single integrated code tree containing all dependency branches.",
+    "Draft PRs with passing checks are review-complete, not merged-runtime-complete.",
+    "Branch protection strictness can make #755 and #763 BEHIND again if main advances.",
+    "External embedded audit remains skipped locally."
+  ],
+  "unknowns": [
+    "Whether the final landing strategy will merge parallel Track A branches before TP401 or create a separate integration branch remains UNKNOWN.",
+    "Live governed merge execution remains unexercised."
+  ],
+  "cleanup_status": "WORKTREE_ACTIVE_PENDING_PR"
+}
