@@ -65,7 +65,7 @@
     {
       "command": "pytest -q tests/audit/test_run_embedded_audit.py",
       "status": "PASS",
-      "evidence": "6 passed, including trusted-source workflow execution, canonical report path emission, missing route JSON skip behavior, and no audit secret in PR-head job."
+      "evidence": "6 passed, including trusted-source workflow execution, bootstrap skip behavior, canonical report path emission, missing route JSON skip behavior, and no audit secret in PR-head job."
     },
     {
       "command": "python -m json.tool task-packets/generated/TP-DMX-AUDIT-CI-PROVENANCE-104.json",

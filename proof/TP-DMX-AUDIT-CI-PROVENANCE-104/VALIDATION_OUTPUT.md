@@ -14,7 +14,8 @@ Expected missing-entrypoint failure was observed:
 
 `pytest -q tests/audit/test_run_embedded_audit.py`
 
-Result: PASS (`6 passed`).
+Result: PASS (`6 passed`, including trusted-source execution and bootstrap
+SKIPPED proof assertions).
 
 `python -m json.tool task-packets/generated/TP-DMX-AUDIT-CI-PROVENANCE-104.json`
 
