@@ -3,9 +3,10 @@
 Structural invariants:
 - ci-summary needs all 9 upstream jobs
 - ci-summary runs with if: always()
-- Gate blocks on code-quality, tests, extractor-smoke failures
-- Advisory jobs (extractor-full, installer-smoke, scoped-coverage, integration,
-  security, docs) do NOT trigger exit 1
+- Gate blocks on code-quality, tests, extractor-smoke, audit-validator,
+  extractor-full, and auditor-router failures
+- Advisory jobs (installer-smoke, scoped-coverage, integration, security, docs)
+  do NOT trigger exit 1
 - Gate comment mentions branch-protection UNKNOWN caveat
 """
 import pathlib
@@ -23,8 +24,21 @@ _GATE_STEP = next(
 )
 _GATE_SCRIPT = _GATE_STEP["run"]
 
-_REQUIRED_BLOCKING = ("code-quality", "tests", "extractor-smoke")
-_ADVISORY = ("extractor-full", "installer-smoke", "scoped-coverage", "integration", "security", "docs")
+_REQUIRED_BLOCKING = (
+    "code-quality",
+    "tests",
+    "extractor-smoke",
+    "audit-validator",
+    "extractor-full",
+    "auditor-router",
+)
+_ADVISORY = (
+    "installer-smoke",
+    "scoped-coverage",
+    "integration",
+    "security",
+    "docs",
+)
 
 
 class TestCiSummaryStructure:
@@ -61,11 +75,20 @@ class TestGateLogic:
     def test_gate_blocks_on_extractor_smoke(self):
         assert "needs.extractor-smoke.result" in _GATE_SCRIPT
 
+    def test_gate_blocks_on_audit_validator(self):
+        assert "needs.audit-validator.result" in _GATE_SCRIPT
+
+    def test_gate_blocks_on_extractor_full(self):
+        assert "needs.extractor-full.result" in _GATE_SCRIPT
+
+    def test_gate_blocks_on_auditor_router(self):
+        assert "needs.auditor-router.result" in _GATE_SCRIPT
+
     def test_gate_exits_1_on_failure(self):
         assert "exit 1" in _GATE_SCRIPT
 
     def test_gate_checks_each_required_job_uses_success_comparison(self):
-        # All three required blocking jobs must be referenced in the gate section
+        # Required blocking jobs must be referenced in the gate section
         # and each must be compared against "success" (skipped/cancelled also block).
         for job in _REQUIRED_BLOCKING:
             assert f"needs.{job}.result" in _GATE_SCRIPT, (
@@ -76,15 +99,6 @@ class TestGateLogic:
         assert len(success_checks) >= len(_REQUIRED_BLOCKING), (
             f"Gate must have >= {len(_REQUIRED_BLOCKING)} '!= success' comparisons "
             f"(one per required blocking job), found {len(success_checks)}"
-        )
-
-    def test_advisory_extractor_full_result_absent_from_gate(self):
-        # extractor-full always exits 0 (set +e trap) — its .result is structurally
-        # always "success" regardless of actual test outcomes.
-        # Gate must not reference extractor-full.result at all.
-        assert "needs.extractor-full.result" not in _GATE_SCRIPT, (
-            "extractor-full.result must not appear in gate script; "
-            "it is advisory-only (always exits 0); use outputs.suite_status for informational display"
         )
 
     def test_gate_has_branch_protection_unknown_caveat(self):

@@ -3,8 +3,8 @@
   "status": "PASS_WITH_LIMITS",
   "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-gha-reliability-106",
   "branch": "codex/tp-dmx-gha-reliability-106",
-  "base_ref": "origin/main",
-  "base_sha": "5bab790effc7b1f4f1b06f3dd5d13e92c0d48d53",
+  "base_ref": "mvp/main",
+  "base_sha": "83ca005b784a2a3811d3281ad0b2cfedee91b91d",
   "repo_identity": {
     "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
     "marker": ".dopetaskroot",
@@ -32,15 +32,21 @@
     "S1 inspected authority files, runtime workflows, docs, and live read-only branch protection.",
     "S2 confirmed scoped workflow triggers and single ci-summary gate without runtime YAML changes.",
     "S3 refreshed operator docs and proof artifacts.",
-    "S4 ran focused validation, proof validation, precommit on touched files, and diff hygiene checks."
+    "S4 ran focused validation, proof validation, precommit on touched files, and diff hygiene checks.",
+    "S5 review repair aligned PR gate docs/tests with current workflow blocking jobs and refreshed proof metadata."
   ],
   "files_changed": [
     "docs/ops/pr-gate-runbook.md",
     "docs/ops/branch-policy-audit.md",
     "docs/ops/ci-trigger-refresh.md",
+    "tests/ci/test_pr_gate.py",
     "task-packets/generated/TP-DMX-GHA-RELIABILITY-106.json",
     "proof/TP-DMX-GHA-RELIABILITY-106/AUDITOR_REPORT.md",
-    "proof/TP-DMX-GHA-RELIABILITY-106/PROOF.json"
+    "proof/TP-DMX-GHA-RELIABILITY-106/CHANGED_FILES.txt",
+    "proof/TP-DMX-GHA-RELIABILITY-106/DIFF_STAT.txt",
+    "proof/TP-DMX-GHA-RELIABILITY-106/GIT_STATE.md",
+    "proof/TP-DMX-GHA-RELIABILITY-106/PROOF.json",
+    "proof/TP-DMX-GHA-RELIABILITY-106/VALIDATION_OUTPUT.md"
   ],
   "validations": [
     {
@@ -74,6 +80,16 @@
       "status": "PASS"
     },
     {
+      "command": "pytest -q tests/ci/test_pr_gate.py",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m compileall -q tests/ci/test_pr_gate.py",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
       "command": "pre-commit run --files docs/ops/pr-gate-runbook.md docs/ops/branch-policy-audit.md docs/ops/ci-trigger-refresh.md task-packets/generated/TP-DMX-GHA-RELIABILITY-106.json proof/TP-DMX-GHA-RELIABILITY-106/AUDITOR_REPORT.md proof/TP-DMX-GHA-RELIABILITY-106/PROOF.json proof/TP-DMX-GHA-RELIABILITY-106/VALIDATION_OUTPUT.md",
       "exit_code": 0,
       "status": "PASS"
@@ -101,7 +117,8 @@
   },
   "codereview_status": "Manual bounded review complete: docs describe observed workflow/API behavior only; no workflow runtime behavior was changed.",
   "precommit_status": "PASS: pre-commit run on touched files and git diff --check passed.",
-  "commit_sha": "08b81136e6b9ff3ede76e5009c6d13b71f900c80",
+  "commit_sha": "PENDING_FINAL_SHA_AFTER_REVIEW_REPAIR",
+  "commit_sha_scope": "Review repair changed proof, docs, tests, and task packet metadata after the original implementation commit. The immutable repair commit SHA is established after this proof refresh is committed and pushed.",
   "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/763",
   "residual_risks": [
     "Admin and maintainer bypass actors remain active in branch ruleset/classic protection.",
