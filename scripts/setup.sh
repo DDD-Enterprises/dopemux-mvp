@@ -11,6 +11,7 @@
 #
 
 set -e  # Exit on error
+set -o pipefail  # Fail a pipeline if any stage fails (so `cmd | tail` reflects cmd's exit)
 
 # Colors for output
 RED='\033[0;31m'
@@ -152,11 +153,15 @@ fi
 echo
 echo -e "${CYAN}🔧 Step 6/8: Initializing git submodules...${NC}"
 
-if git submodule update --init --recursive 2>&1 | grep -q "Submodule"; then
+# P2: `set -o pipefail` + `grep -q` closes the pipe early → SIGPIPE → non-zero
+# exit → pipefail fires.  Capture output first, then test.
+_submodule_out=$(git submodule update --init --recursive 2>&1)
+if echo "$_submodule_out" | grep -q "Submodule"; then
     echo -e "${GREEN}   ✅ Submodules initialized${NC}"
 else
     echo -e "${YELLOW}   ⏭️  No submodules configured yet${NC}"
 fi
+unset _submodule_out
 
 # ============================================================================
 # Step 7: Docker Setup (Optional)
@@ -166,22 +171,30 @@ if [ "$SKIP_DOCKER" = false ]; then
     echo
     echo -e "${CYAN}🐳 Step 7/8: Setting up Docker services...${NC}"
 
-    # Create Docker network
     # BETA-INSTALL-02: create "dopemux-network" — the name compose.yml declares
     # as external.  The old "dopemux-unified-network" was never joined by any
     # container since compose.yml was updated.
-    if docker network ls --format '{{.Name}}' | grep -q "^dopemux-network$"; then
+    # Use an existence pre-check instead of piping `docker network create` into grep:
+    # `docker network create` exits non-zero when the network exists, which under
+    # `set -o pipefail` would make the pipeline fail and misreport the result.
+    if docker network inspect dopemux-network >/dev/null 2>&1; then
         echo -e "${YELLOW}   ⏭️  Network already exists: dopemux-network${NC}"
     else
-        docker network create dopemux-network
+        docker network create dopemux-network >/dev/null
+
         echo -e "${GREEN}   ✅ Created network: dopemux-network${NC}"
     fi
 
     # Start MCP services
+    # Capture output to a var so the compose exit status drives the if/else
+    # (piping straight into `tail` would evaluate tail's exit code, always 0,
+    # making the failure branch dead even with pipefail).
     echo -e "${CYAN}   🐳 Starting MCP services...${NC}"
-    if docker compose -f compose.yml up -d 2>&1 | tail -5; then
+    if compose_output=$(docker compose -f compose.yml up -d 2>&1); then
+        echo "$compose_output" | tail -5
         echo -e "${GREEN}   ✅ MCP services started${NC}"
     else
+        echo "$compose_output" | tail -5
         echo -e "${RED}   ❌ Docker startup failed${NC}"
         exit 1
     fi
@@ -205,11 +218,18 @@ echo -e "${CYAN}🏥 Step 8/8: Verifying installation...${NC}"
 if command -v dopemux &> /dev/null; then
     if [ "$SKIP_DOCKER" = false ]; then
         echo -e "${CYAN}   Running health check...${NC}"
-        if dopemux health 2>&1 | head -10; then
+        # P2: `set -o pipefail` + `head` closes the pipe early → SIGPIPE on the
+        # producer → non-zero pipeline exit even when dopemux health succeeds.
+        # Capture output + exit code separately to avoid the SIGPIPE.
+        _health_out=$(dopemux health 2>&1)
+        _health_rc=$?
+        echo "$_health_out" | head -10
+        if [ $_health_rc -eq 0 ]; then
             echo -e "${GREEN}   ✅ Health check passed${NC}"
         else
             echo -e "${YELLOW}   ⚠️  Some services may not be ready yet${NC}"
         fi
+        unset _health_out _health_rc
     else
         echo -e "${YELLOW}   ⏭️  Skipping health check (Docker not started)${NC}"
     fi

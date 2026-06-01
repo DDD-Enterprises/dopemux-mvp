@@ -101,6 +101,13 @@ def read_yaml(path: Path) -> Dict[str, Any]:
 
 
 def load_promptset() -> Dict[str, Any]:
+    # S2 (audit), documented: promptset.yaml declares `required_prompt_sections`, but no
+    # runtime code enforces those sections against the prompt bodies (grep: zero readers).
+    # Relatedly, the "Legacy Context (for intent only; never as evidence)" line in the prompt
+    # templates is a defensive guardrail -- the runtime injects no block named "Legacy
+    # Context", so the guardrail is harmless-but-inert. Both are known gaps left as-is:
+    # enforcing sections is a behavior change, and stripping the guardrail would touch ~105
+    # prompt files (shifting many promptset hashes) for no functional gain.
     return read_yaml(PROMPTSET_PATH)
 
 

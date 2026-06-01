@@ -177,7 +177,8 @@
     "mcp-proxy-config*.yaml",
     "CHECKLIST.md",
     ".dockerignore",
-    ".python-version"
+    ".python-version",
+    "KNOWN_GAPS.md"
   ],
   "legacy_root_files": [
     "ARCHITECTURE.md",
