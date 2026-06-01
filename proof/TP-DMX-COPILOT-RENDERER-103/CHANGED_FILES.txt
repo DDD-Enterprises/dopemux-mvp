@@ -1,0 +1,13 @@
+docs/ops/copilot-pr-repair-lane.md
+proof/TP-DMX-COPILOT-RENDERER-103/AUDITOR_REPORT.md
+proof/TP-DMX-COPILOT-RENDERER-103/CHANGED_FILES.txt
+proof/TP-DMX-COPILOT-RENDERER-103/DIFF_STAT.txt
+proof/TP-DMX-COPILOT-RENDERER-103/GIT_STATE.md
+proof/TP-DMX-COPILOT-RENDERER-103/PROOF.json
+proof/TP-DMX-COPILOT-RENDERER-103/VALIDATION_OUTPUT.md
+proof/TP-DMX-COPILOT-RENDERER-103/output/COPILOT_REPAIR_PACKET.json
+proof/TP-DMX-COPILOT-RENDERER-103/output/PR_REPAIR_PACKET.md
+tests/copilot_repair/test_generator.py
+tools/copilot_repair/__init__.py
+tools/copilot_repair/generator.py
+tools/copilot_repair/renderer.py

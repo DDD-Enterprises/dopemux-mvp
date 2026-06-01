@@ -1,0 +1,13 @@
+.github/workflows/embedded-audit.yml
+docs/ops/embedded-audit.md
+docs/ops/embedded-audit-proof.md
+proof/TP-DMX-AUDIT-CI-PROVENANCE-104/**
+scripts/audit/run_embedded_audit.py
+scripts/migration/switchover.py
+scripts/partition_function.py
+scripts/submit_loop_context.py
+task-packets/generated/TP-DMX-AUDIT-CI-PROVENANCE-104.json
+tests/audit/test_run_embedded_audit.py
+
+Final staged diff stat is captured by the commit and PR. This file lists the packet-scoped
+surfaces because proof artifacts are ignored by default until force-added.
