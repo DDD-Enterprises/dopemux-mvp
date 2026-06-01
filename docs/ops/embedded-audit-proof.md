@@ -172,10 +172,13 @@ records:
 - `engine_authored_proof: false`
 
 The entrypoint accepts a static `AUDITOR_ROUTE.json` and, when available,
-`PAL_CLINK_AUDIT_OUTPUT.json`. With a present `EMBEDDED_AUDIT_TOKEN` and
-captured PAL output, it normalizes the PAL verdict through the existing
-embedded-audit policy. Without the token or PAL output, it emits `SKIPPED` and
-records the missing authority in `skip_reason`.
+`PAL_CLINK_AUDIT_OUTPUT.json`. Pull-request CI does not expose
+`EMBEDDED_AUDIT_TOKEN` to PR-head code, so that path emits `SKIPPED` unless a
+future trusted-ref caller supplies both token authority and PAL output. With a
+present token in a trusted invocation and captured PAL output, the entrypoint
+normalizes the PAL verdict through the existing embedded-audit policy. Without
+the token or PAL output, it emits `SKIPPED` and records the missing authority in
+`skip_reason`.
 
 ---
 

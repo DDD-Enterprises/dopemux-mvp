@@ -25,15 +25,7 @@ jobs:
   embedded-audit:
     name: independent embedded audit
     runs-on: ubuntu-latest
-    env:
-      EMBEDDED_AUDIT_TOKEN: ${{ secrets.EMBEDDED_AUDIT_TOKEN }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          fetch-depth: 2
-
       - name: Set PR metadata
         id: pr
         env:
@@ -50,6 +42,20 @@ jobs:
             printf 'number=%s\n' "$INPUT_PR_NUMBER" >> "$GITHUB_OUTPUT"
             printf 'head_sha=%s\n' "$INPUT_HEAD_SHA" >> "$GITHUB_OUTPUT"
           fi
+          test -n "${EVENT_HEAD_SHA:-$INPUT_HEAD_SHA}"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr.outputs.head_sha }}
+          fetch-depth: 2
+
+      - name: Verify checked out head SHA
+        env:
+          EXPECTED_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+        run: |
+          actual_head_sha="$(git rev-parse HEAD)"
+          test "$actual_head_sha" = "$EXPECTED_HEAD_SHA"
 
       - name: Static auditor route preflight
         continue-on-error: true

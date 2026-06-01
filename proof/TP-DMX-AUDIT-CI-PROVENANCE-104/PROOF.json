@@ -38,6 +38,14 @@
   },
   "repo": "DDD-Enterprises/dopemux-mvp",
   "summary": "Added an independent read-only embedded-audit workflow and entrypoint that emit schema-valid proof artifacts with redacted provenance.",
+  "proof_finality": {
+    "worktree": "dopemux-mvp-wt-pr761-review-repair",
+    "commit_sha": "746a3f7dadbc5fc24e2bc648cd2f9f4e0b7d52fc",
+    "commit_sha_scope": "Latest observed PR head when this proof metadata was updated; final immutable merge identity is the PR URL and merge commit after merge.",
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/761",
+    "codereview_status": "PASS_WITH_REPAIRS",
+    "precommit_status": "PASS"
+  },
   "scope_expansion": {
     "authorized_by": "User request: fix other compille issues",
     "reason": "The packet's broad compile validation was blocked by pre-existing syntax errors outside the original TP104 allowlist.",
@@ -57,7 +65,7 @@
     {
       "command": "pytest -q tests/audit/test_run_embedded_audit.py",
       "status": "PASS",
-      "evidence": "4 passed."
+      "evidence": "5 passed, including workflow head-SHA verification and no audit secret in PR-head job."
     },
     {
       "command": "python -m json.tool task-packets/generated/TP-DMX-AUDIT-CI-PROVENANCE-104.json",
@@ -95,6 +103,11 @@
       "evidence": "No whitespace errors reported."
     },
     {
+      "command": "git check-ignore -q proof/TP-DMX-AUDIT-CI-PROVENANCE-104/PROOF.json; test $? -eq 1",
+      "status": "PASS",
+      "evidence": "TP104 proof bundle is allowlisted in .gitignore."
+    },
+    {
       "command": "pre-commit run --files <TP104 changed files>",
       "status": "PASS",
       "evidence": "Docs hygiene, markdownlint, trailing whitespace, EOF, and YAML checks passed for changed files."
@@ -106,7 +119,7 @@
     }
   ],
   "residual_risks": [
-    "No separate EMBEDDED_AUDIT_TOKEN was available in this local run; trusted_token_status is UNKNOWN and embedded_audit.status is SKIPPED.",
+    "The CI workflow does not expose EMBEDDED_AUDIT_TOKEN to PR-head code; trusted_token_status remains UNKNOWN and embedded_audit.status is SKIPPED unless a future trusted-ref execution path is implemented.",
     "No live PAL clink audit output was captured in this local run.",
     "Task Orchestrator item state could not be advanced because the transport was closed."
   ]
