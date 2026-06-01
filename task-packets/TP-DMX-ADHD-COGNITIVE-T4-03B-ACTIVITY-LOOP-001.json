@@ -1,0 +1,152 @@
+{
+  "id": "TP-DMX-ADHD-COGNITIVE-T4-03B-ACTIVITY-LOOP-001",
+  "project": "dopemux-mvp",
+  "target": "ADHD Engine listener and /activity endpoint close the activity signal loop into current state",
+  "invariants": [
+    "The active FastAPI runtime imports services.adhd_engine.core.engine; the legacy services/adhd_engine/engine.py sibling is not the authority for this slice.",
+    "Activity loop updates must remain content-free and must not persist prompts, paths, usernames, hostnames, file contents, code contents, or raw tool arguments.",
+    "Listener activity handling must call an engine assessment/update path and write current_energy_levels and current_attention_states for the active operator.",
+    "/activity must perform a real engine state update and emit a bounded activity event instead of only returning stub booleans.",
+    "Native hook producer code remains in TP-DMX-ADHD-COGNITIVE-T4-02A; this slice consumes the native_hook_activity event type but does not modify native hook files.",
+    "ADHD Engine remains cognitive-only under AGENTS.md section 6."
+  ],
+  "depends_on": [
+    "TP-DMX-ADHD-COGNITIVE-T4-00-OPERATOR-IDENTITY-001",
+    "TP-DMX-ADHD-COGNITIVE-T4-02A-NATIVE-HOOKS-EVENTS-001",
+    "TP-DMX-ADHD-COGNITIVE-T4-03A-OPERATOR-PROFILE-SEED-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ADHD-COGNITIVE-REMEDIATION",
+    "base_branch": "codex/adhd-profile-seed-001",
+    "parent_tp_id": "TP-DMX-ADHD-COGNITIVE-T4-03A-OPERATOR-PROFILE-SEED-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/adhd-activity-loop-001",
+    "base_branch": "codex/adhd-profile-seed-001",
+    "stacked_because": "Activity loop closure depends on the stable operator identity and startup operator profile seed; native hook producer changes are a parallel dependency with no shared files."
+  },
+  "commit": {
+    "message": "feat(adhd): close activity signal loop",
+    "allowlist": [
+      "services/adhd_engine/core/engine.py",
+      "services/adhd_engine/event_listener.py",
+      "services/adhd_engine/api/routes.py",
+      "tests/unit/test_adhd_activity_loop.py",
+      "task-packets/TP-DMX-ADHD-COGNITIVE-T4-03B-ACTIVITY-LOOP-001.json",
+      "task-packets/TP-DMX-ADHD-COGNITIVE-T4-03B-ACTIVITY-LOOP-001-implementation-notes.md"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-03B-ACTIVITY-LOOP-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/unit/test_adhd_activity_loop.py tests/unit/test_adhd_operator_profile_seed.py tests/unit/test_adhd_operator_identity.py tests/unit/test_adhd_engine_settings_contract.py tests/unit/test_adhd_engine_task_orchestrator_url.py",
+      "python -m py_compile services/adhd_engine/core/engine.py services/adhd_engine/event_listener.py services/adhd_engine/api/routes.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(adhd): close activity signal loop",
+    "body": "## Summary\n- add a bounded engine activity update path that writes current energy and attention state\n- have the listener consume content-free native_hook_activity and activity_updated events through that path\n- make /activity update engine state and emit a content-free activity_updated event instead of only returning stub booleans\n\n## Validation\n- python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-03B-ACTIVITY-LOOP-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- python -m pytest tests/unit/test_adhd_activity_loop.py tests/unit/test_adhd_operator_profile_seed.py tests/unit/test_adhd_operator_identity.py tests/unit/test_adhd_engine_settings_contract.py tests/unit/test_adhd_engine_task_orchestrator_url.py\n- python -m py_compile services/adhd_engine/core/engine.py services/adhd_engine/event_listener.py services/adhd_engine/api/routes.py\n- git diff --check",
+    "base": "codex/adhd-profile-seed-001"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect",
+      "task": "Inspect active listener dispatch, native hook event shape, /activity route behavior, engine assessment writers, and profile seed dependency before editing.",
+      "requirements": [
+        "Distinguish active services.adhd_engine.core.engine runtime from legacy services/adhd_engine/engine.py.",
+        "Confirm native_hook_activity payload remains content-free.",
+        "Do not modify native hook producer files in this slice.",
+        "Do not replace the real assessment algorithms; only wire activity signals into the existing assessment/update path."
+      ],
+      "commands": [
+        "rg -n \"native_hook_activity|_dispatch|_on_activity|update_activity|_assess_current_energy_level|_assess_attention_state|current_energy_levels|current_attention_states\" services/adhd_engine src tests -g '*.py'",
+        "sed -n '1,620p' services/adhd_engine/event_listener.py",
+        "sed -n '620,720p' services/adhd_engine/api/routes.py",
+        "sed -n '880,1050p' services/adhd_engine/core/engine.py"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Runtime authority and activity loop change points are identified before tests or production edits."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "task-packets/TP-DMX-ADHD-COGNITIVE-T4-03A-OPERATOR-PROFILE-SEED-001.json",
+        "services/adhd_engine/core/engine.py",
+        "services/adhd_engine/event_listener.py",
+        "services/adhd_engine/api/routes.py",
+        "services/adhd_engine/event_emitter.py",
+        "src/dopemux/claude/native_hooks.py"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Add tests then wire content-free activity events and /activity updates into a shared engine state update path.",
+      "requirements": [
+        "Write failing tests before production code.",
+        "Listener must handle native_hook_activity and activity_updated events.",
+        "Listener must use the current listener user id unless an explicit event user_id is present.",
+        "Engine update path must write current_energy_levels and current_attention_states from assessment results.",
+        "/activity must update engine state and best-effort emit activity_updated without exposing raw content.",
+        "Do not persist prompts, paths, file names, raw code, or raw tool arguments in emitted event data."
+      ],
+      "commands": [
+        "apply_patch"
+      ],
+      "expected_files": [
+        "services/adhd_engine/core/engine.py",
+        "services/adhd_engine/event_listener.py",
+        "services/adhd_engine/api/routes.py",
+        "tests/unit/test_adhd_activity_loop.py"
+      ],
+      "validation": [
+        "Targeted activity-loop tests fail before implementation and pass after implementation."
+      ],
+      "context_files": [
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "validate",
+      "task": "Validate packet schema, targeted tests, syntax, diff scope, and precommit checks for the bounded T4-03b slice.",
+      "requirements": [
+        "Report every NOT_RUN command with reason.",
+        "Inspect git status and diff scope before final summary.",
+        "Do not claim full native hook to engine integration until both producer and consumer branches are merged together and exercised."
+      ],
+      "commands": [
+        "python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-03B-ACTIVITY-LOOP-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python -m pytest tests/unit/test_adhd_activity_loop.py tests/unit/test_adhd_operator_profile_seed.py tests/unit/test_adhd_operator_identity.py tests/unit/test_adhd_engine_settings_contract.py tests/unit/test_adhd_engine_task_orchestrator_url.py",
+        "python -m py_compile services/adhd_engine/core/engine.py services/adhd_engine/event_listener.py services/adhd_engine/api/routes.py",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "task-packets/TP-DMX-ADHD-COGNITIVE-T4-03B-ACTIVITY-LOOP-001-implementation-notes.md"
+      ],
+      "validation": [
+        "Proof notes and final response distinguish PASS, FAIL, NOT_RUN, and remaining UNKNOWNs."
+      ],
+      "context_files": []
+    }
+  ]
+}
