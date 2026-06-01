@@ -2,8 +2,10 @@
   "commit": {
     "allowlist": [
       "src/dopemux/cli.py",
-      "src/dopemux_pr_steward/__init__.py",
-      "src/dopemux_pr_steward/cli.py",
+      "pyproject.toml",
+      "src/dopemux_pr_steward/**",
+      "tools/pr_steward/**",
+      "tools/pr_action_bridge/**",
       "tests/dopemux_cli/test_pr_steward_cmd.py",
       "docs/ops/pr-steward.md",
       "docs/ops/pr-steward-cli.md",
@@ -13,7 +15,7 @@
     "message": "feat(cli): add dopemux pr-steward console command",
     "verify": [
       "python -m json.tool task-packets/generated/TP-DMX-STEWARD-PACKAGE-301.json",
-      "python -m compileall -q src tests",
+      "python -m compileall -q src tools tests",
       "pytest -q tests/dopemux_cli/test_pr_steward_cmd.py",
       "git diff --check"
     ]
@@ -34,7 +36,8 @@
     "Preserve PR Steward check-only semantics unless this packet explicitly authorizes a governed mutation gate.",
     "Preserve fail-closed behavior on missing evidence, stale SHAs, unsupported permissions, or unknown authority.",
     "Do not expose secrets, tokens, private keys, or unredacted provider metadata in proof artifacts.",
-    "Do not modify files outside the packet allowlist without stopping for supervisor review."
+    "Do not modify files outside the packet allowlist without stopping for supervisor review.",
+    "The shipped `dopemux pr-steward` command must import the existing Steward/Bridge/gate implementation from an installed package; a thin wrapper around unpackageable top-level modules is not sufficient."
   ],
   "pal_chain": {
     "enabled": true,
@@ -52,7 +55,7 @@
   },
   "pr": {
     "base": "main",
-    "body": "## Summary\n- Make the Steward/Bridge/gate engine importable; expose `dopemux pr-steward` (intake|bridge|gate|audit|doctor) with a stable versioned CLI contract; steward_gate logic ships in the package, never in scaffolded YAML.\n\n## Scope\nTrack: C-distribute. Risk: MEDIUM. Red lane: false.\n\n## Validation\nRun the packet validation commands and capture proof under proof/TP-DMX-STEWARD-PACKAGE-301/PROOF.json.\n\n## NOT_RUN\nList any skipped live, integration, credentialed, or supervisor-gated checks explicitly.",
+    "body": "## Summary\n- Make the existing Steward/Bridge/gate engine importable from installed packages; expose `dopemux pr-steward` (intake|bridge|gate|audit|doctor) with a stable versioned CLI contract; steward_gate logic ships in the package, never in scaffolded YAML.\n\n## Scope\nTrack: C-distribute. Risk: MEDIUM. Red lane: false.\n\n## Validation\nRun the packet validation commands and capture proof under proof/TP-DMX-STEWARD-PACKAGE-301/PROOF.json.\n\n## NOT_RUN\nList any skipped live, integration, credentialed, or supervisor-gated checks explicitly.",
     "title": "Feat(cli): add dopemux pr-steward console command"
   },
   "project": "dopemux-mvp",
@@ -74,7 +77,10 @@
         "AGENTS.md",
         "docs/ops/load-plans/load_plan-DMX-AUTOREVIEW-PLATFORM.json",
         "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
-        "docs/ops/pr-steward.md"
+        "docs/ops/pr-steward.md",
+        "pyproject.toml",
+        "tools/pr_steward",
+        "tools/pr_action_bridge"
       ],
       "id": "S1",
       "task": "Inspect current repo truth, authority docs, runtime entrypoints, schemas, tests, and existing conventions before editing.",
@@ -87,8 +93,10 @@
     {
       "expected_files": [
         "src/dopemux/cli.py",
-        "src/dopemux_pr_steward/__init__.py",
-        "src/dopemux_pr_steward/cli.py",
+        "pyproject.toml",
+        "src/dopemux_pr_steward/**",
+        "tools/pr_steward/**",
+        "tools/pr_action_bridge/**",
         "tests/dopemux_cli/test_pr_steward_cmd.py",
         "docs/ops/pr-steward.md",
         "docs/ops/pr-steward-cli.md",
@@ -102,9 +110,10 @@
         "Executor default: claude-code-sonnet",
         "Auditor default: claude-code-opus"
       ],
-      "task": "Make the Steward/Bridge/gate engine importable; expose `dopemux pr-steward` (intake|bridge|gate|audit|doctor) with a stable versioned CLI contract; steward_gate logic ships in the package, never in scaffolded YAML.",
+      "task": "Make the existing Steward/Bridge/gate engine importable from installed packages; expose `dopemux pr-steward` (intake|bridge|gate|audit|doctor) with a stable versioned CLI contract; steward_gate logic ships in the package, never in scaffolded YAML.",
       "validation": [
         "Implementation preserves fail-closed behavior and deterministic artifact output.",
+        "The package can import the existing Steward/Bridge/gate implementation after installation; no unpackageable top-level wrapper dependency remains.",
         "No file outside commit.allowlist changed.",
         "Stop conditions from this packet were not triggered, or execution stopped with evidence."
       ]
@@ -127,7 +136,7 @@
     {
       "commands": [
         "python -m json.tool task-packets/generated/TP-DMX-STEWARD-PACKAGE-301.json",
-        "python -m compileall -q src tests",
+        "python -m compileall -q src tools tests",
         "pytest -q tests/dopemux_cli/test_pr_steward_cmd.py",
         "git diff --check"
       ],
@@ -135,11 +144,11 @@
       "task": "Run focused validation, inspect git diff, run codereview/precommit review, and prepare a truthful completion summary.",
       "validation": [
         "python -m json.tool task-packets/generated/TP-DMX-STEWARD-PACKAGE-301.json",
-        "python -m compileall -q src tests",
+        "python -m compileall -q src tools tests",
         "pytest -q tests/dopemux_cli/test_pr_steward_cmd.py",
         "git diff --check"
       ]
     }
   ],
-  "target": "Make the Steward/Bridge/gate engine importable; expose `dopemux pr-steward` (intake|bridge|gate|audit|doctor) with a stable versioned CLI contract; steward_gate logic ships in the package, never in scaffolded YAML."
+  "target": "Make the existing Steward/Bridge/gate engine importable from installed packages; expose `dopemux pr-steward` (intake|bridge|gate|audit|doctor) with a stable versioned CLI contract; steward_gate logic ships in the package, never in scaffolded YAML."
 }
