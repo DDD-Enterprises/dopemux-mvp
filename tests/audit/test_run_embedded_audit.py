@@ -199,7 +199,6 @@ def test_embedded_audit_workflow_is_read_only_and_not_pull_request_target() -> N
     permissions = text.split("permissions:\n", 1)[1].split("\njobs:", 1)[0]
 
     assert "pull_request_target" not in text
-    assert "EMBEDDED_AUDIT_TOKEN: ${{ secrets.EMBEDDED_AUDIT_TOKEN }}" not in text
     assert "contents: read" in text
     assert "pull-requests: read" in text
     assert "checks: read" in text
@@ -221,6 +220,9 @@ def test_embedded_audit_workflow_runs_emitter_from_trusted_source() -> None:
     assert "id: head_integrity" in text
     assert "HEAD_VERIFIED: ${{ steps.head_integrity.outputs.verified }}" in text
     assert 'if [ "$HEAD_VERIFIED" != "true" ]; then' in text
+    assert "Emit skipped embedded audit proof" in text
+    assert "Emit embedded audit proof with trusted token" in text
+    assert "EMBEDDED_AUDIT_TOKEN: ${{ secrets.EMBEDDED_AUDIT_TOKEN }}" in text
     assert "requested head SHA could not be fetched or verified" in text
     assert "ref does not yet contain scripts/audit/run_embedded_audit.py" in text
     assert "git -C trusted-source fetch --no-tags --depth=1 origin" in text

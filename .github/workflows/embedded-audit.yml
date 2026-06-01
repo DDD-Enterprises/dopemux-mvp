@@ -97,7 +97,7 @@ jobs:
             --out ../embedded-audit-artifacts \
             --format json
 
-      - name: Emit embedded audit proof
+      - name: Emit skipped embedded audit proof
         if: always()
         working-directory: trusted-source
         env:
@@ -108,13 +108,6 @@ jobs:
           elif [ ! -f scripts/audit/run_embedded_audit.py ]; then
             SKIP_REASON="Independent embedded audit skipped because the trusted source ref does not yet contain scripts/audit/run_embedded_audit.py."
           else
-            python scripts/audit/run_embedded_audit.py \
-              --packet-id "TP-DMX-AUDIT-CI-PROVENANCE-104" \
-              --repo "$GITHUB_REPOSITORY" \
-              --pr "${{ steps.pr.outputs.number }}" \
-              --head-sha "${{ steps.pr.outputs.head_sha }}" \
-              --route-json ../embedded-audit-artifacts/AUDITOR_ROUTE.json \
-              --out ../embedded-audit-artifacts
             exit 0
           fi
           export SKIP_REASON
@@ -180,6 +173,23 @@ jobs:
           report_file.write_text(report_text, encoding="utf-8")
           (out_dir / "AUDITOR_REPORT.md").write_text(report_text, encoding="utf-8")
           PY
+
+      - name: Emit embedded audit proof with trusted token
+        if: always() && steps.head_integrity.outputs.verified == 'true'
+        working-directory: trusted-source
+        env:
+          EMBEDDED_AUDIT_TOKEN: ${{ secrets.EMBEDDED_AUDIT_TOKEN }}
+        run: |
+          if [ ! -f scripts/audit/run_embedded_audit.py ]; then
+            exit 0
+          fi
+          python scripts/audit/run_embedded_audit.py \
+            --packet-id "TP-DMX-AUDIT-CI-PROVENANCE-104" \
+            --repo "$GITHUB_REPOSITORY" \
+            --pr "${{ steps.pr.outputs.number }}" \
+            --head-sha "${{ steps.pr.outputs.head_sha }}" \
+            --route-json ../embedded-audit-artifacts/AUDITOR_ROUTE.json \
+            --out ../embedded-audit-artifacts
 
       - name: Write job summary
         if: always()

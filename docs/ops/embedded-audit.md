@@ -68,6 +68,9 @@ than emitting a normal proof for an unverified head.
 Manual dispatch uses the repository default branch as the trusted proof-authoring
 checkout and treats the supplied `head_sha` only as the inspected target.
 
+The workflow passes `EMBEDDED_AUDIT_TOKEN` only to the trusted-source emitter
+step. Bootstrap and head-integrity SKIPPED paths run without that secret.
+
 The pull-request workflow does not expose `EMBEDDED_AUDIT_TOKEN` to PR-head
 code. The entrypoint never records token values, and trusted-ref callers may
 record whether the expected token was present as provenance:

@@ -14,9 +14,9 @@ Expected missing-entrypoint failure was observed:
 
 `pytest -q tests/audit/test_run_embedded_audit.py`
 
-Result: PASS (`7 passed`, including trusted-source execution, default-branch
-manual dispatch trust, missing PAL output handling, and bootstrap SKIPPED proof
-assertions).
+Result: PASS (`7 passed`, including trusted-source execution, trusted-token
+step isolation, default-branch manual dispatch trust, missing PAL output
+handling, and bootstrap SKIPPED proof assertions).
 
 `python -m json.tool task-packets/generated/TP-DMX-AUDIT-CI-PROVENANCE-104.json`
 

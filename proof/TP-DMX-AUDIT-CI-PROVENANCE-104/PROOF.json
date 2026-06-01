@@ -65,7 +65,7 @@
     {
       "command": "pytest -q tests/audit/test_run_embedded_audit.py",
       "status": "PASS",
-      "evidence": "7 passed, including trusted-source workflow execution, default-branch manual dispatch trust, bootstrap skip behavior, canonical report path emission, missing route/PAL JSON skip behavior, and no audit secret in PR-head job."
+      "evidence": "7 passed, including trusted-source workflow execution, trusted-token step isolation, default-branch manual dispatch trust, bootstrap skip behavior, canonical report path emission, missing route/PAL JSON skip behavior, and no audit secret in PR-head job."
     },
     {
       "command": "python -m json.tool task-packets/generated/TP-DMX-AUDIT-CI-PROVENANCE-104.json",
