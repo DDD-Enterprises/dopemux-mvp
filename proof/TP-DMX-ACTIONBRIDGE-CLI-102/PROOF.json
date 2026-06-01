@@ -23,7 +23,8 @@
   "canonical_writer": "tools/pr_action_bridge/compiler.py::compile_action_plan",
   "proof_finality": {
     "worktree": "dedicated local worktree, basename dopemux-mvp-wt-pr758-review-repair",
-    "commit_sha": "8e2f1e1d667604ad3eee1d12ca6ea505a9d2cb94",
+    "commit_sha": "c9a210454551c443c8145a098470ab2c8aa98776",
+    "commit_sha_scope": "Latest observed PR head when this proof metadata was updated; final immutable merge identity is the PR URL and merge commit after merge.",
     "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/758",
     "codereview_status": "PASS_WITH_FOLLOWUP: automated review comments were inspected and addressed in follow-up repair commits.",
     "precommit_status": "PASS: pre-commit run --files $(git diff --name-only origin/main)"
