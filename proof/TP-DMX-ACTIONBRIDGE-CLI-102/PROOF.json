@@ -47,7 +47,7 @@
     {
       "command": "pytest -q tests/pr_action_bridge/test_cli.py",
       "status": "PASS",
-      "evidence": "4 passed, including wrapper invocation from a cwd outside the repository."
+      "evidence": "5 passed, including wrapper invocation from a cwd outside the repository and invalid --generated-at fail-closed coverage."
     },
     {
       "command": "python -m json.tool task-packets/generated/TP-DMX-ACTIONBRIDGE-CLI-102.json",
