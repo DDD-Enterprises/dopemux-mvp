@@ -1,0 +1,144 @@
+{
+  "id": "TP-DMX-ADHD-COGNITIVE-T4-07-BOUNDARY-DETECTION-001",
+  "project": "dopemux-mvp",
+  "target": "ADHD Engine boundary detection uses work breakpoints instead of wall-clock-only activity state",
+  "invariants": [
+    "ADHD Engine remains cognitive-only and must not store prompts, paths, filenames, code content, raw tool arguments, task records, or PM records.",
+    "Boundary detection must use content-free breakpoint categories only: commit, test, build, or file_close.",
+    "Boundary signals must be accepted through the existing activity update path and must drive derived activity metrics.",
+    "File-close events must not forward file paths into ADHD Engine activity state.",
+    "No live Redis, EventBus, provider, notifier, dashboard, or shell-hook validation is authorized in this slice.",
+    "Do not widen into hyperfocus latch, idle/distracted corroboration, dashboard UI, persistent calibration, or native hook raw-command persistence work."
+  ],
+  "depends_on": [
+    "TP-DMX-ADHD-COGNITIVE-T4-06-BASELINE-CALIBRATION-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ADHD-COGNITIVE-REMEDIATION",
+    "base_branch": "codex/adhd-baseline-calibration-001",
+    "parent_tp_id": "TP-DMX-ADHD-COGNITIVE-T4-06-BASELINE-CALIBRATION-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/adhd-boundary-detection-001",
+    "base_branch": "codex/adhd-baseline-calibration-001",
+    "stacked_because": "Boundary detection consumes the privacy-safe activity loop, real assessment, and per-user baseline paths from preceding T4 slices."
+  },
+  "commit": {
+    "message": "feat(adhd): derive state from work boundaries",
+    "allowlist": [
+      "services/adhd_engine/core/engine.py",
+      "services/adhd_engine/event_listener.py",
+      "tests/unit/test_adhd_boundary_detection.py",
+      "task-packets/TP-DMX-ADHD-COGNITIVE-T4-07-BOUNDARY-DETECTION-001.json",
+      "task-packets/TP-DMX-ADHD-COGNITIVE-T4-07-BOUNDARY-DETECTION-001-implementation-notes.md"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-07-BOUNDARY-DETECTION-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/unit/test_adhd_boundary_detection.py tests/unit/test_adhd_baseline_calibration.py tests/unit/test_adhd_privacy_guard.py tests/unit/test_adhd_real_assessment.py tests/unit/test_adhd_activity_loop.py tests/unit/test_adhd_operator_profile_seed.py tests/unit/test_adhd_operator_identity.py tests/unit/test_adhd_engine_settings_contract.py tests/unit/test_adhd_engine_task_orchestrator_url.py services/adhd_engine/tests/test_activity_tracker.py services/adhd_engine/tests/test_api.py",
+      "python -m py_compile services/adhd_engine/core/engine.py services/adhd_engine/event_listener.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(adhd): derive state from work boundaries",
+    "body": "## Summary\n- accept content-free work boundary categories in ADHD activity signals\n- derive activity metrics from commit/test/build/file-close breakpoints instead of wall-clock-only assumptions\n- route file_closed events into bounded activity updates without forwarding file paths\n\n## Validation\n- python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-07-BOUNDARY-DETECTION-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- python -m pytest tests/unit/test_adhd_boundary_detection.py tests/unit/test_adhd_baseline_calibration.py tests/unit/test_adhd_privacy_guard.py tests/unit/test_adhd_real_assessment.py tests/unit/test_adhd_activity_loop.py tests/unit/test_adhd_operator_profile_seed.py tests/unit/test_adhd_operator_identity.py tests/unit/test_adhd_engine_settings_contract.py tests/unit/test_adhd_engine_task_orchestrator_url.py services/adhd_engine/tests/test_activity_tracker.py services/adhd_engine/tests/test_api.py\n- python -m py_compile services/adhd_engine/core/engine.py services/adhd_engine/event_listener.py\n- git diff --check",
+    "base": "codex/adhd-baseline-calibration-001"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect",
+      "task": "Inspect ADHD activity intake, native hook activity forwarding, file activity handling, and derived weak-signal metrics before editing.",
+      "requirements": [
+        "Confirm canonical state writer remains ADHDAccommodationEngine.record_activity_update.",
+        "Confirm boundary signal shape remains content-free.",
+        "Do not persist prompt/path/content data or introduce task/PM authority."
+      ],
+      "commands": [
+        "rg -n \"boundary|breakpoint|commit|test|build|file_closed|native_hook_activity|record_activity_update|hook_event_name\" services/adhd_engine src tests -g '*.py'",
+        "nl -ba services/adhd_engine/event_listener.py | sed -n '190,245p'",
+        "nl -ba services/adhd_engine/core/engine.py | sed -n '476,638p;1538,1598p'"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Runtime activity intake and boundary-safe change points are identified before tests or production edits."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "task-packets/TP-DMX-ADHD-COGNITIVE-T4-06-BASELINE-CALIBRATION-001.json",
+        "services/adhd_engine/core/engine.py",
+        "services/adhd_engine/event_listener.py",
+        "tests/unit/test_adhd_activity_loop.py"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Add failing tests, then add content-free boundary categories and make derived activity metrics respond to work breakpoints.",
+      "requirements": [
+        "Write failing tests before production code.",
+        "Accepted boundary types are commit, test, build, and file_close only.",
+        "Boundary events must improve completion signal and reduce stale time-since-break assumptions.",
+        "File-close handling must send only boundary_type/action/source_event, never file path.",
+        "Unknown boundary types must not be retained."
+      ],
+      "commands": [
+        "apply_patch",
+        "python -m pytest tests/unit/test_adhd_boundary_detection.py"
+      ],
+      "expected_files": [
+        "services/adhd_engine/core/engine.py",
+        "services/adhd_engine/event_listener.py",
+        "tests/unit/test_adhd_boundary_detection.py"
+      ],
+      "validation": [
+        "Targeted boundary detection tests fail before implementation and pass after implementation."
+      ],
+      "context_files": [
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "validate",
+      "task": "Validate packet schema, focused tests, syntax, diff scope, and precommit checks for the boundary detection slice.",
+      "requirements": [
+        "Report every NOT_RUN command with reason.",
+        "Inspect git status and diff scope before final summary.",
+        "Do not claim live hook/eventbus validation beyond tested in-process dispatch paths."
+      ],
+      "commands": [
+        "python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-07-BOUNDARY-DETECTION-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python -m pytest tests/unit/test_adhd_boundary_detection.py tests/unit/test_adhd_baseline_calibration.py tests/unit/test_adhd_privacy_guard.py tests/unit/test_adhd_real_assessment.py tests/unit/test_adhd_activity_loop.py tests/unit/test_adhd_operator_profile_seed.py tests/unit/test_adhd_operator_identity.py tests/unit/test_adhd_engine_settings_contract.py tests/unit/test_adhd_engine_task_orchestrator_url.py services/adhd_engine/tests/test_activity_tracker.py services/adhd_engine/tests/test_api.py",
+        "python -m py_compile services/adhd_engine/core/engine.py services/adhd_engine/event_listener.py",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "task-packets/TP-DMX-ADHD-COGNITIVE-T4-07-BOUNDARY-DETECTION-001-implementation-notes.md"
+      ],
+      "validation": [
+        "Proof notes and final response distinguish PASS, FAIL, NOT_RUN, and remaining UNKNOWNs."
+      ],
+      "context_files": []
+    }
+  ]
+}

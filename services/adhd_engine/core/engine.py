@@ -514,16 +514,20 @@ class ADHDAccommodationEngine:
             "status",
             "tool_name",
             "source_event",
+            "boundary_type",
         }
-        return {
+        metrics = {
             key: value
             for key, value in activity_data.items()
             if key in allowed_fields and value is not None
         }
+        if metrics.get("boundary_type") not in {"commit", "test", "build", "file_close"}:
+            metrics.pop("boundary_type", None)
+        return metrics
 
     @staticmethod
     def _is_hook_activity(activity_data: Dict[str, Any]) -> bool:
-        return any(key in activity_data for key in ("hook_event_name", "status", "tool_name"))
+        return any(key in activity_data for key in ("hook_event_name", "status", "tool_name", "boundary_type"))
 
     def _append_activity_sample(self, user_id: str, activity_data: Dict[str, Any]) -> None:
         samples = self.recent_activity_samples.setdefault(user_id, [])
@@ -620,20 +624,41 @@ class ADHDAccommodationEngine:
         attempts = sum(1 for sample in samples if sample.get("status") == "attempt")
         prompt_events = sum(1 for sample in samples if sample.get("hook_event_name") == "UserPromptSubmit")
         tool_events = sum(1 for sample in samples if sample.get("tool_name"))
+        boundary_events = sum(1 for sample in samples if sample.get("boundary_type"))
+        work_boundary_events = sum(
+            1
+            for sample in samples
+            if sample.get("boundary_type") in {"commit", "test", "build"}
+        )
 
-        outcome_count = successes + failures
+        boundary_without_status = sum(
+            1
+            for sample in samples
+            if sample.get("boundary_type") and sample.get("status") not in {"success", "failure"}
+        )
+        outcome_count = successes + failures + boundary_without_status
         completion_rate = successes / outcome_count if outcome_count else 0.5
+        if boundary_without_status and outcome_count:
+            completion_rate = (successes + boundary_without_status) / outcome_count
+
+        context_switches = max(0, prompt_events - boundary_events * 2)
+        minutes_since_break = max(
+            0,
+            min(120, 30 + failures * 10 + attempts * 2) - boundary_events * 10,
+        )
 
         return {
             "completion_rate": completion_rate,
-            "context_switches": prompt_events,
+            "context_switches": context_switches,
             "break_compliance": max(0.0, 1.0 - (failures * 0.2)),
-            "minutes_since_break": min(120, 30 + failures * 10 + attempts * 2),
+            "minutes_since_break": minutes_since_break,
             "tool_failures": failures,
             "tool_successes": successes,
             "tool_attempts": attempts,
             "tool_events": tool_events,
             "prompt_events": prompt_events,
+            "boundary_events": boundary_events,
+            "work_boundary_events": work_boundary_events,
             "activity_evidence": bool(samples),
         }
 
