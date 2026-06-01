@@ -19,7 +19,6 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from scripts.audit.pal_clink_runner import _render_audit_report
 from tools.auditor_router.pal_clink import normalize_pal_clink_audit_output
 
 
@@ -195,15 +194,61 @@ def _write_outputs(out_dir: Path, proof: dict[str, Any]) -> None:
     report_path = Path(proof["embedded_audit"]["report_path"])
     report_file = out_dir / report_path
     report_file.parent.mkdir(parents=True, exist_ok=True)
-    report_text = _render_audit_report(proof["embedded_audit"])
-    # The audit report is a normalized proof artifact; token values are not
-    # included in the embedded_audit object passed to the renderer.
-    # codeql[py/clear-text-storage-sensitive-data]
+    report_text = _render_public_audit_report(proof["embedded_audit"])
     report_file.write_text(report_text, encoding="utf-8")
     root_report_file = out_dir / "AUDITOR_REPORT.md"
     if root_report_file != report_file:
-        # codeql[py/clear-text-storage-sensitive-data]
         root_report_file.write_text(report_text, encoding="utf-8")
+
+
+def _render_public_audit_report(embedded_audit: Mapping[str, Any]) -> str:
+    status = _public_enum(
+        embedded_audit.get("status"),
+        allowed={"PASS", "FAIL", "PASS_WITH_RISKS", "SKIPPED"},
+        fallback="UNKNOWN",
+    )
+    auditor_tool = _public_enum(
+        embedded_audit.get("auditor_tool"),
+        allowed={"pal-mcp-clink", "claude", "gemini", "none"},
+        fallback="unknown",
+    )
+    auditor_model = _public_text(embedded_audit.get("auditor_model"))
+    exit_code = embedded_audit.get("exit_code")
+    rendered_exit_code = str(exit_code) if isinstance(exit_code, int) else "None"
+    findings = embedded_audit.get("findings")
+    risks = embedded_audit.get("remaining_risks")
+    finding_count = len(findings) if isinstance(findings, list) else 0
+    risk_count = len(risks) if isinstance(risks, list) else 0
+    return "\n".join(
+        [
+            "# PAL Clink Audit Report",
+            "",
+            f"PAL clink audit verdict: {status}",
+            f"Auditor tool: {auditor_tool}",
+            f"Auditor model: {auditor_model}",
+            f"Exit code: {rendered_exit_code}",
+            "",
+            "## Findings",
+            f"- Count: {finding_count}",
+            "",
+            "## Remaining Risks",
+            f"- Count: {risk_count}",
+            "",
+        ]
+    )
+
+
+def _public_enum(value: Any, *, allowed: set[str], fallback: str) -> str:
+    if isinstance(value, str) and value in allowed:
+        return value
+    return fallback
+
+
+def _public_text(value: Any) -> str:
+    if not isinstance(value, str):
+        return "unknown"
+    safe_chars = [char for char in value if char.isalnum() or char in {"-", "_", "."}]
+    return "".join(safe_chars)[:80] or "unknown"
 
 
 def main() -> int:
