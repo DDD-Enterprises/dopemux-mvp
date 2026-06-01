@@ -11,6 +11,7 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 - Git case-insensitivity warning in `preflight` for macOS environments.
 - Production certification audit artifacts and a machine-readable certification status for the repo-truth extractor and Dopemux operator surfaces.
 - A provider-override step in the extraction wizard for session-local API key overrides per supported model provider.
+- Orchestrator plugin hooks (Path B, TP-CS-101): `SubagentStart` agent-owned-phase protocol injection, actor-attribution and skill-invocation enforcement, and plan-mode (Enter/ExitPlanMode) guidance — ported from the upstream `task-orchestrator` Claude plugin into the native Python hook dispatcher (`native_hooks.py`); all fail-open and dormant without `.taskorchestrator/config.yaml` (PR #724).
 
 ### Changed
 - Pull request CI now treats the full Repo Truth Extractor suite and auditor-router tests as blocking gates, with both jobs included in the aggregate CI summary.
