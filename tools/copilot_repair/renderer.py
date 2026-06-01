@@ -4,8 +4,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from jinja2 import Template
-
 
 TEMPLATE_PATH = (
     Path(__file__).resolve().parents[2]
@@ -23,5 +21,10 @@ def render_repair_packet(
     template_path: Path = TEMPLATE_PATH,
 ) -> str:
     """Render a CopilotRepairPacket to Markdown without side effects."""
-    template = Template(template_path.read_text(encoding="utf-8"))
+    from jinja2 import StrictUndefined, Template
+
+    template = Template(
+        template_path.read_text(encoding="utf-8"),
+        undefined=StrictUndefined,
+    )
     return template.render(**repair_packet).rstrip() + "\n"

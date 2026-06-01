@@ -202,3 +202,11 @@ def test_render_repair_packet_uses_template_without_mutation_language() -> None:
     assert "repair-0001" in rendered
     assert "failed-check" in rendered
     assert "unit" in rendered
+
+
+def test_render_repair_packet_fails_closed_on_missing_template_fields() -> None:
+    packet = generate_repair_packet(_action_plan([]))
+    del packet["repo"]
+
+    with pytest.raises(Exception, match="'repo' is undefined"):
+        render_repair_packet(packet)

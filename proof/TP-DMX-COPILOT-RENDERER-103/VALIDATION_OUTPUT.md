@@ -18,7 +18,7 @@ Result: PASS.
 
 `pytest -q tests/copilot_repair/test_generator.py`
 
-Result: PASS (`7 passed`).
+Result: PASS (`8 passed`).
 
 `pytest -q tests/copilot_repair`
 
@@ -45,6 +45,10 @@ Result: PASS.
 Result: PASS.
 
 `git diff --check`
+
+Result: PASS.
+
+`git check-ignore -q proof/TP-DMX-COPILOT-RENDERER-103/PROOF.json; test $? -eq 1`
 
 Result: PASS.
 
