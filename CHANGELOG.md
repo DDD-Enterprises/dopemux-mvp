@@ -13,6 +13,7 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 - A provider-override step in the extraction wizard for session-local API key overrides per supported model provider.
 
 ### Changed
+- Pull request CI now treats the full Repo Truth Extractor suite and auditor-router tests as blocking gates, with both jobs included in the aggregate CI summary.
 - `stage_and_push_if_needed` now uses `git add -A` to detect case-only renames on macOS.
 - `pr_merge_loop.sh` updated with progress-based exit logic to prevent infinite retries on stuck PRs.
 - The speculative train now rebases each candidate against `origin/main` instead of chaining later PRs onto earlier speculative branches.
@@ -28,6 +29,8 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 - CI now includes wrapper-authority coverage, interactive import smoke, and the production `brand_lint.py` gate.
 
 ### Fixed
+- Dependabot uv security-update resolution now has bounded Python support metadata and a patched MCP service floor compatible with current Semgrep/LiteLLM resolution.
+- Repo Truth Extractor full-suite CI now avoids platform-sensitive strict XPASS failures by scoping known prescan xfails to macOS and stabilizing the v4 help assertion environment.
 - Task sequencer predictive action labels now use the same complete and skip transition rules as the buttons they describe.
 - Repo-truth extractor prescan now excludes generated artifact, proof, audit, operator-local, and known secret-bearing paths from default corpus input, while allowlisting committed `.env.example` / `.env.template` / `.env.sample` placeholders so they remain in the corpus as text. Wired through `run_integrated_prescan_stage` so the v5 integrated path uses the same defaults.
 - Claude security review automation now resolves the repository-specific scan and false-positive instruction files referenced by `security-review.yml` and `ci-complete.yml`, preventing missing-path failures during AI security analysis.
