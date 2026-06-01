@@ -71,6 +71,19 @@ def test_init_scaffolds_pr_steward_workflows_and_policy(tmp_path: Path) -> None:
     assert any(
         "python -m dopemux.cli pr-steward audit" in run for run in embedded_audit_runs
     )
+    assert any("python -m pip install \"$DOPEMUX_INSTALL_SPEC\"" in run for run in pr_steward_runs)
+    assert any(
+        "python -m pip install \"$DOPEMUX_INSTALL_SPEC\"" in run
+        for run in embedded_audit_runs
+    )
+    assert (
+        pr_steward_yaml["jobs"]["pr-steward"]["env"]["DOPEMUX_INSTALL_SPEC"]
+        == "git+https://github.com/DDD-Enterprises/dopemux-mvp.git"
+    )
+    assert (
+        embedded_audit_yaml["jobs"]["embedded-audit"]["env"]["DOPEMUX_INSTALL_SPEC"]
+        == "git+https://github.com/DDD-Enterprises/dopemux-mvp.git"
+    )
     assert pr_steward_config["mode"] == "check_only"
     assert pr_steward_config["mutates_github"] is False
     assert merge_config["governed_automerge"]["enabled"] is False

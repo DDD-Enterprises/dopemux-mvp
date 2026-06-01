@@ -125,6 +125,8 @@ merge:
     - merge_queue_required
 steward_gate:
   artifact_ttl_seconds: 3600
+  merge_readiness_path: "{out_dir}/pr-steward/pr-{pr_id}/MERGE_READINESS.json"
+  audit_proof_path: "{out_dir}/embedded-audit/pr-{pr_id}/PROOF.json"
   allow_global_fix_prs: false
   remediation_readiness:
     - NEEDS_IMPLEMENTER

@@ -76,6 +76,16 @@ def _audit_proof(*, embedded_status: str = "PASS") -> dict:
     }
 
 
+def _gate_policy(pr_dir: Path) -> dict:
+    return {
+        "steward_gate": {
+            "artifact_ttl_seconds": 3600,
+            "merge_readiness_path": str(pr_dir / "MERGE_READINESS.json"),
+            "audit_proof_path": str(pr_dir / "PROOF.json"),
+        }
+    }
+
+
 class RecordingClient:
     def __init__(self, payload: dict | None = None, result: CommandResult | None = None) -> None:
         self.payload = payload or {
@@ -143,7 +153,7 @@ def test_finalization_gate_allows_ready_with_strict_pass(tmp_path: Path):
 
     result = queue_drain.require_steward_finalization_gate(
         pr=_pr_state(),
-        policy={"steward_gate": {"artifact_ttl_seconds": 3600}},
+        policy=_gate_policy(pr_dir),
         pr_dir=pr_dir,
         now="2026-05-31T12:30:00Z",
     )
@@ -160,7 +170,7 @@ def test_finalization_gate_denies_pass_with_risks(tmp_path: Path):
 
     result = queue_drain.require_steward_finalization_gate(
         pr=_pr_state(),
-        policy={"steward_gate": {"artifact_ttl_seconds": 3600}},
+        policy=_gate_policy(pr_dir),
         pr_dir=pr_dir,
         now="2026-05-31T12:30:00Z",
     )
