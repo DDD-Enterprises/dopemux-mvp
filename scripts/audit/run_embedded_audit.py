@@ -46,6 +46,7 @@ def build_embedded_audit_proof(
     token_present: bool,
     token_source: str,
     route_error: str | None = None,
+    pal_output_error: str | None = None,
     generated_at: str | None = None,
 ) -> dict[str, Any]:
     """Build a top-level proof bundle with canonical embedded_audit object."""
@@ -56,6 +57,15 @@ def build_embedded_audit_proof(
             reason=(
                 "Independent embedded audit skipped because auditor route JSON "
                 f"is missing or invalid: {route_error}"
+            ),
+        )
+        trusted_token_status = "AVAILABLE" if token_present else "UNKNOWN"
+    elif pal_output_error:
+        embedded_audit = _skipped_audit(
+            report_path=report_path,
+            reason=(
+                "Independent embedded audit skipped because PAL clink output "
+                f"JSON is missing or invalid: {pal_output_error}"
             ),
         )
         trusted_token_status = "AVAILABLE" if token_present else "UNKNOWN"
@@ -152,8 +162,10 @@ def run_cli(
     args = build_parser().parse_args(argv)
     environ = os.environ if env is None else env
     route, route_error = _read_optional_json_object(args.route_json)
-    pal_output = (
-        _read_json_object(args.pal_output_json) if args.pal_output_json else None
+    pal_output, pal_output_error = (
+        _read_optional_json_object(args.pal_output_json)
+        if args.pal_output_json
+        else (None, None)
     )
     proof = build_embedded_audit_proof(
         packet_id=args.packet_id,
@@ -165,6 +177,7 @@ def run_cli(
         token_present=bool(environ.get(TOKEN_ENV_VAR)),
         token_source=TOKEN_ENV_VAR,
         route_error=route_error,
+        pal_output_error=pal_output_error,
         generated_at=args.generated_at,
     )
     _write_outputs(args.out, proof)

@@ -188,6 +188,8 @@ must emit a schema-valid `SKIPPED` proof rather than executing the PR-head copy
 of the emitter.
 If the requested head SHA cannot be fetched or verified, the proof must also be
 `SKIPPED` and record the head-integrity failure as the reason.
+Manual dispatch must keep proof-authoring code on the repository default branch
+and must not treat the selected dispatch branch as trusted proof-authoring code.
 
 ---
 

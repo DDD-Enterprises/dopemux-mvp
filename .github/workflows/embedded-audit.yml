@@ -35,7 +35,7 @@ jobs:
           EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           INPUT_PR_NUMBER: ${{ inputs.pr_number }}
           INPUT_HEAD_SHA: ${{ inputs.head_sha }}
-          TRUSTED_FALLBACK_SHA: ${{ github.sha }}
+          TRUSTED_FALLBACK_REF: ${{ github.event.repository.default_branch }}
         run: |
           if [ "$EVENT_NAME" = "pull_request" ]; then
             printf 'number=%s\n' "$EVENT_PR_NUMBER" >> "$GITHUB_OUTPUT"
@@ -44,14 +44,14 @@ jobs:
           else
             printf 'number=%s\n' "$INPUT_PR_NUMBER" >> "$GITHUB_OUTPUT"
             printf 'head_sha=%s\n' "$INPUT_HEAD_SHA" >> "$GITHUB_OUTPUT"
-            printf 'trusted_ref=%s\n' "$TRUSTED_FALLBACK_SHA" >> "$GITHUB_OUTPUT"
+            printf 'trusted_ref=%s\n' "$TRUSTED_FALLBACK_REF" >> "$GITHUB_OUTPUT"
           fi
           if [ "$EVENT_NAME" = "pull_request" ]; then
             test -n "$EVENT_HEAD_SHA"
             test -n "$EVENT_BASE_SHA"
           else
             test -n "$INPUT_HEAD_SHA"
-            test -n "$TRUSTED_FALLBACK_SHA"
+            test -n "$TRUSTED_FALLBACK_REF"
           fi
 
       - name: Checkout trusted audit source
@@ -66,7 +66,11 @@ jobs:
           EXPECTED_TRUSTED_REF: ${{ steps.pr.outputs.trusted_ref }}
         run: |
           actual_trusted_ref="$(git -C trusted-source rev-parse HEAD)"
-          test "$actual_trusted_ref" = "$EXPECTED_TRUSTED_REF"
+          if printf '%s' "$EXPECTED_TRUSTED_REF" | grep -Eq '^[0-9a-f]{40}$'; then
+            test "$actual_trusted_ref" = "$EXPECTED_TRUSTED_REF"
+          else
+            test -n "$actual_trusted_ref"
+          fi
 
       - name: Verify requested head SHA
         id: head_integrity
