@@ -1,3 +1,11 @@
+"""Legacy ProcessPool submit-loop snippet.
+
+This file was introduced as a partial reference fragment, not as a runnable
+module. Keep the original snippet inert so repository-wide compile checks do not
+fail while preserving the historical text for audit review.
+"""
+
+LEGACY_SUBMIT_LOOP_CONTEXT_SNIPPET = r'''
                     out_failed_json=out_failed_json,
                     exc=exc,
                 )
@@ -14,3 +22,4 @@
                 try:
                     results_by_partition[partition_id] = future.result()
                 except Exception as exc:
+'''

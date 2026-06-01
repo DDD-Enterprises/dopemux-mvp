@@ -5,8 +5,8 @@ type: reference
 owner: governance
 date: 2026-05-27
 author: '@hu3mann'
-last_review: '2026-05-27'
-next_review: '2026-08-25'
+last_review: '2026-05-31'
+next_review: '2026-08-29'
 prelude: Embedded Audit Proof Format (explanation) for dopemux documentation and developer
   workflows.
 ---
@@ -156,6 +156,26 @@ python scripts/audit/validate_audit_proof.py --schema path/to/schema.json proof/
 - `0` — all validated bundles PASS
 - `1` — one or more bundles FAIL
 - `2` — usage error (bad arguments, missing schema, no files found)
+
+## Independent Workflow Output
+
+`scripts/audit/run_embedded_audit.py` writes a top-level `PROOF.json` bundle with
+the canonical `embedded_audit` sub-object and a separate `provenance` object.
+The provenance object is outside the schema-governed `embedded_audit` object and
+records:
+
+- proof author: `independent-embedded-audit`
+- workflow: `embedded-audit.yml`
+- read-only permission set
+- trusted-token status (`AVAILABLE` or `UNKNOWN`)
+- `token_value_recorded: false`
+- `engine_authored_proof: false`
+
+The entrypoint accepts a static `AUDITOR_ROUTE.json` and, when available,
+`PAL_CLINK_AUDIT_OUTPUT.json`. With a present `EMBEDDED_AUDIT_TOKEN` and
+captured PAL output, it normalizes the PAL verdict through the existing
+embedded-audit policy. Without the token or PAL output, it emits `SKIPPED` and
+records the missing authority in `skip_reason`.
 
 ---
 
