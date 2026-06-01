@@ -5,14 +5,16 @@ type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-05-27'
-last_review: '2026-05-27'
+last_review: '2026-05-31'
 next_review: '2026-08-25'
 prelude: Pr Gate Runbook (explanation) for dopemux documentation and developer workflows.
 ---
 # PR Gate Runbook
 
 > **Status**: Active — `ci-summary` job in `.github/workflows/ci-complete.yml`
-> exits 1 when required checks fail, making it a hard gate for PRs.
+> exits 1 when required checks fail, and live branch-protection evidence on
+> 2026-05-31 shows `📊 CI Pipeline Summary` is a required status check for
+> `main`.
 
 ---
 
@@ -39,7 +41,7 @@ GitHub marks it as failed — which branch protection can use as a required chec
 | `installer-smoke` | **ADVISORY** | `if: github.event_name != 'pull_request'` — skipped on all PR runs |
 | `scoped-coverage` | **ADVISORY** | `if: github.event_name != 'pull_request'` — skipped on all PR runs |
 | `integration` | **ADVISORY** | `if: github.event_name != 'pull_request'` — skipped on all PR runs |
-| `security` | **ADVISORY** | May be skipped when API keys are absent; non-blocking by design |
+| `security` | **ADVISORY REQUIRED BY BRANCH PROTECTION** | GitHub branch protection currently requires `🔒 Security Review`; CI gate logic treats it as advisory because it may be secret-gated |
 | `docs` | **ADVISORY** | Documentation link checks; non-blocking |
 
 ---
@@ -66,21 +68,20 @@ conditions from accidentally clearing a required check.
 
 ## Branch Protection Configuration
 
-> ⚠️ **UNKNOWN** — Branch protection truth cannot be verified from inside the
-> worktree. An operator must manually confirm the following.
+Verified read-only with:
 
-**Required operator action**: verify that `ci-summary` (display name
-`"📊 CI Pipeline Summary"`) is listed as a **required status check** in the
-branch protection rule for `main`.
+```bash
+gh api repos/DDD-Enterprises/dopemux-mvp/branches/main/protection \
+  --jq '.required_status_checks.contexts[]'
+```
 
-Steps (GitHub UI):
-1. Repository → Settings → Branches → Branch protection rules → `main`
-2. Check "Require status checks to pass before merging"
-3. Search for `ci-summary` or `📊 CI Pipeline Summary` in the required checks list
-4. If absent: add it, save
+Observed 2026-05-31: `📊 CI Pipeline Summary` is present in the required status
+check list. The workflow job id remains `ci-summary`; the required status
+check context exposed to GitHub is the job display name.
 
-Until this is confirmed, the gate logic is structurally correct but not enforced
-at the GitHub branch-protection layer.
+Residual caveat: admins and maintainers may still have bypass paths through
+classic protection or the active ruleset. See
+`docs/ops/branch-policy-audit.md`.
 
 ---
 
@@ -109,6 +110,19 @@ Recommended response:
 If `ci-summary` fails for a reason other than the gate (e.g., runner error),
 re-run it via GitHub Actions → Re-run jobs → Re-run failed jobs.
 
+### Avoid empty commits for CI refresh
+
+Do not use empty commits to refresh CI. Supported refresh paths are:
+
+- Push a real commit that changes tracked repo content.
+- Convert a draft PR to ready for review; `ready_for_review` is an explicit
+  trigger for the PR workflows.
+- Use `workflow_dispatch` where the workflow supports it.
+- Use GitHub's "Re-run jobs" action for a completed workflow run.
+
+Empty commits are audit noise: they change branch history without changing the
+repo truth being validated.
+
 ---
 
 ## Structural Tests
@@ -122,10 +136,11 @@ python -m pytest tests/ci/ -v
 Tests assert:
 - `ci-summary` has `if: always()`
 - All 9 upstream jobs present in `needs`
-- Gate script uses `!= "success"` for each required blocking job
+- Gate script uses `!= "success"` for each required blocking job:
+  `code-quality`, `tests`, `extractor-smoke`, and `audit-validator`
 - `exit 1` present in gate script
 - `extractor-full.result` does not feed into `exit 1`
-- `UNKNOWN` caveat documented in gate script
+- branch-protection caveat documented in gate script
 - `advisory` carve-out documented in gate script
 - `PR Gate: BLOCKED` and `PR Gate: CLEAR` messages present
 - No trailing whitespace in gate script
