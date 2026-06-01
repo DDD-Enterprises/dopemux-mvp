@@ -7,7 +7,7 @@ date: '2026-05-26'
 author: '@hu3mann'
 last_review: '2026-05-31'
 next_review: '2026-08-25'
-prelude: CI Trigger Refresh Runbook (explanation) for dopemux documentation and developer
+prelude: CI Trigger Refresh Runbook (how-to) for dopemux documentation and developer
   workflows.
 ---
 # CI Trigger Refresh Runbook

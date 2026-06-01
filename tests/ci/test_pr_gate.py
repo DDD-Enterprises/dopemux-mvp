@@ -1,7 +1,7 @@
 """Tests for the ci-summary PR gate in ci-complete.yml.
 
 Structural invariants:
-- ci-summary needs all 9 upstream jobs
+- ci-summary needs all 11 upstream jobs
 - ci-summary runs with if: always()
 - Gate blocks on code-quality, tests, extractor-smoke, audit-validator,
   extractor-full, and auditor-router failures
@@ -57,6 +57,10 @@ class TestCiSummaryStructure:
         needs = _CI_SUMMARY.get("needs", [])
         for job in _ADVISORY:
             assert job in needs, f"ci-summary missing advisory job: {job!r}"
+
+    def test_ci_summary_needs_exact_job_count(self):
+        needs = _CI_SUMMARY.get("needs", [])
+        assert len(needs) == len(_REQUIRED_BLOCKING) + len(_ADVISORY)
 
     def test_ci_summary_has_exactly_one_step(self):
         assert len(_CI_SUMMARY["steps"]) == 1
