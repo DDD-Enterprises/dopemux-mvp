@@ -67,7 +67,7 @@ from .conflict import (
 from .merge import checks_green, wait_for_green_checks, checks_blocker_reason, decide_merge_action, run_merge_with_fallback, serialize_check_payload
 from .worktree import prepare_worktree, cleanup_worktree, ensure_worktree_matches_pr_head, attempt_rebase, attempt_speculative_rebase, push_rebased_head, auto_recover_rebase_conflicts
 
-__all__ = ['queue_scan', 'queue_scan_internal', 'pr_plan', 'pr_apply', 'pr_merge', 'pr_approve', 'pr_ready', '_get_ops_engine', '_derive_allowed_actions', 'queue_drain', 'stage_and_push_if_needed', 'update_remaining_pr_bases', 'require_steward_remediation_gate', 'global_fix_prs_allowed']
+__all__ = ['queue_scan', 'queue_scan_internal', 'pr_plan', 'pr_apply', 'pr_merge', 'pr_approve', 'pr_ready', '_get_ops_engine', '_derive_allowed_actions', 'queue_drain', 'stage_and_push_if_needed', 'update_remaining_pr_bases', 'require_steward_remediation_gate', 'require_steward_finalization_gate', 'global_fix_prs_allowed']
 
 def stage_and_push_if_needed(*, worktree_path: Path, head_ref: str, active_run_id: str, pr_id: int, execute: bool, commands_log: Path, policy: Dict[str, Any], log: Optional[Callable] = None) -> bool:
     def _log(msg: str):
@@ -380,6 +380,71 @@ def require_steward_remediation_gate(
     )
 
 
+def require_steward_finalization_gate(
+    *,
+    pr: PullRequestState,
+    policy: Dict[str, Any],
+    pr_dir: Path,
+    now: Any = None,
+) -> StewardGateResult:
+    gate_policy = policy.get("steward_gate", {})
+    merge_readiness_path = _steward_artifact_path(
+        gate_policy.get("merge_readiness_path"),
+        pr_dir=pr_dir,
+        pr_id=pr.pr_id,
+        default_name="MERGE_READINESS.json",
+    )
+    audit_proof_path = _steward_artifact_path(
+        gate_policy.get("audit_proof_path"),
+        pr_dir=pr_dir,
+        pr_id=pr.pr_id,
+        default_name="PROOF.json",
+    )
+    result = steward_gate(
+        head_sha=pr.head_sha,
+        required_class="FINALIZATION",
+        merge_readiness_path=merge_readiness_path,
+        audit_proof_path=audit_proof_path,
+        now=_steward_gate_now(now),
+        ttl_seconds=int(gate_policy.get("artifact_ttl_seconds", 3600) or 3600),
+    )
+    evidence = dict(result.evidence)
+    if not result.allowed:
+        return result
+    if (
+        evidence.get("merge_embedded_audit_status") != "PASS"
+        or evidence.get("proof_embedded_audit_status") != "PASS"
+    ):
+        return StewardGateResult(
+            allowed=False,
+            reason_code="DENY_AUDIT_NOT_STRICT_PASS",
+            required_class="FINALIZATION",
+            evidence=evidence,
+        )
+    return StewardGateResult(
+        allowed=True,
+        reason_code=result.reason_code,
+        required_class=result.required_class,
+        evidence=evidence,
+    )
+
+
+def _write_steward_finalization_gate_artifact(
+    *,
+    pr_dir: Path,
+    gate_result: StewardGateResult,
+) -> None:
+    write_json(
+        pr_dir / "STEWARD_FINALIZATION_GATE.json",
+        {
+            "allowed": gate_result.allowed,
+            "reason_code": gate_result.reason_code,
+            "required_class": gate_result.required_class,
+            "evidence": dict(gate_result.evidence),
+        },
+    )
+
+
 def _steward_gate_blocked_result(
     *,
     active_run_id: str,
@@ -444,6 +509,21 @@ def _merge_prepared_result(
     pr_id = prepared_result.pr_state.pr_id
     pr_dir = pr_dir_for(pr_root, pr_id)
     commands_log = pr_dir / "COMMANDS_RUN.txt"
+
+    if bool(getattr(args, "execute", False)):
+        gate_result = require_steward_finalization_gate(
+            pr=prepared_result.pr_state,
+            policy=policy,
+            pr_dir=pr_dir,
+        )
+        _write_steward_finalization_gate_artifact(
+            pr_dir=pr_dir,
+            gate_result=gate_result,
+        )
+        if not gate_result.allowed:
+            raise RuntimeError(
+                f"Steward finalization gate denied merge: {gate_result.reason_code}"
+            )
 
     log("Executing merge command...")
     executed_decision = run_merge_with_fallback(
@@ -647,7 +727,7 @@ Output/Error:
 {error_output}
 ```
 
-Please diagnose the issue and FIX IT. You are running in YOLO mode with full tool access. 
+Please diagnose the issue and FIX IT. You are running in YOLO mode with full tool access.
 
 CRITICAL: You MUST follow the ci-remediation-specialist runbook:
 1. REPRODUCE the failure locally first by running the command `{step.command}`.
@@ -657,9 +737,9 @@ CRITICAL: You MUST follow the ci-remediation-specialist runbook:
 
 Identify the root cause, modify the necessary files, and ensure the command passes.
 """
-    
+
     log(f"Launching Gemini CLI agent in YOLO mode (worktree: {worktree_path.name})...")
-    
+
     try:
         cmd = _gemini_ci_remediation_command(prompt)
         with _isolated_gemini_home_env() as gemini_env:
@@ -1848,7 +1928,7 @@ Output/Error:
 {error_output}
 ```
 
-Please diagnose the issue and FIX IT against the `main` branch. You are running in YOLO mode with full tool access. 
+Please diagnose the issue and FIX IT against the `main` branch. You are running in YOLO mode with full tool access.
 CRITICAL: You MUST follow the ci-remediation-specialist runbook:
 1. REPRODUCE the failure locally first by running the command `{targeted_repro_command}`.
 2. USE AUTO-FIXERS if applicable (e.g., ruff check --fix).

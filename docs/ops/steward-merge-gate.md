@@ -75,3 +75,23 @@ unless `steward_gate.allow_global_fix_prs` is explicitly `true`.
 TP-DMX-STEWARD-GATE-201 only added the guard library. TP202 wires remediation
 seams only; finalization, merge execution, governed automerge, and review-thread
 resolution remain separate packet work.
+
+## Finalization Wiring
+
+TP-DMX-MERGE-FINALIZATION-203 wires `steward_gate(FINALIZATION)` into the
+merge execution path. A live merge attempt through `_merge_prepared_result`
+must find fresh local `MERGE_READINESS.json` and `PROOF.json` artifacts for the
+exact PR head SHA, PR Steward readiness `READY`, and strict independent
+embedded-audit status `PASS` in both artifacts. `PASS_WITH_RISKS` remains
+acceptable for remediation and general acceptance evidence, but does not grant
+finalization authority.
+
+When the finalization gate denies, queue drain writes
+`STEWARD_FINALIZATION_GATE.json` and stops before merge execution. Direct merge
+uses GitHub GraphQL `mergePullRequest` with `expectedHeadOid`; if the head SHA
+or GraphQL merge authority is unavailable, the merge result is blocked with
+`UNKNOWN` evidence and does not fall back to ungated `gh pr merge`.
+
+Governed automerge remains disabled by default with
+`merge.allow_governed_automerge: false`. Admin-bypass squash remains blocked
+unless a later supervised packet adds explicit authorization and proof handling.
