@@ -167,10 +167,14 @@ if [ "$SKIP_DOCKER" = false ]; then
     echo -e "${CYAN}🐳 Step 7/8: Setting up Docker services...${NC}"
 
     # Create Docker network
-    if docker network create dopemux-unified-network 2>&1 | grep -q "already exists"; then
-        echo -e "${YELLOW}   ⏭️  Network already exists: dopemux-unified-network${NC}"
+    # BETA-INSTALL-02: create "dopemux-network" — the name compose.yml declares
+    # as external.  The old "dopemux-unified-network" was never joined by any
+    # container since compose.yml was updated.
+    if docker network ls --format '{{.Name}}' | grep -q "^dopemux-network$"; then
+        echo -e "${YELLOW}   ⏭️  Network already exists: dopemux-network${NC}"
     else
-        echo -e "${GREEN}   ✅ Created network: dopemux-unified-network${NC}"
+        docker network create dopemux-network
+        echo -e "${GREEN}   ✅ Created network: dopemux-network${NC}"
     fi
 
     # Start MCP services

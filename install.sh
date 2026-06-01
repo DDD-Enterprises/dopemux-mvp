@@ -686,14 +686,23 @@ choose_install_stack() {
 
 ensure_docker_networks() {
     local stack="${1:-core}"
-    if [ "$stack" != "full" ]; then
-        return 0
-    fi
     if [ "$INSTALLER_TEST_MODE" = "1" ]; then
         warning "[test-mode] Skipping docker network creation"
         return 0
     fi
-    local networks=("mcp-network" "dopemux-unified-network" "leantime-net")
+    # BETA-INSTALL-02: compose.yml declares "dopemux-network" as external: true
+    # for ALL services — every stack type (core/research/full) needs it.
+    # Create it unconditionally so core and --quick installs don't fail with
+    # "network not found" when docker compose up runs.
+    local core_networks=("dopemux-network")
+    # mcp-network and leantime-net are only referenced by full-stack services.
+    local full_only_networks=("mcp-network" "leantime-net")
+
+    local networks=("${core_networks[@]}")
+    if [ "$stack" = "full" ]; then
+        networks+=("${full_only_networks[@]}")
+    fi
+
     for network in "${networks[@]}"; do
         if docker network ls --format '{{.Name}}' | grep -q "^${network}$"; then
             debug "Docker network already exists: $network"
