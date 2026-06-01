@@ -9,6 +9,7 @@ from jsonschema import Draft7Validator
 
 from tools.auditor_router import fixtures
 from tools.auditor_router.pal_clink import (
+    build_pal_clink_embedded_audit_object,
     classify_pal_clink_route,
     detect_mutation_flags,
     discover_clink_config_paths,
@@ -712,10 +713,19 @@ def test_dict_arg_field_invalid(tmp_path: Path) -> None:
 
 
 def test_payload_type_non_dict_never_raises() -> None:
-    route = {"clink_mutation_flags_detected": [], "audit_safe_config_proven": True}
-    res = normalize_pal_clink_audit_output("not a dict", route=route, report_path="some_path")
+    route = {
+        "clink_mutation_flags_detected": [],
+        "audit_safe_config_proven": True,
+        "underlying_cli": "claude",
+    }
+    res = normalize_pal_clink_audit_output(
+        "not a dict",
+        route=route,
+        report_path="proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/AUDITOR_REPORT.md",
+    )
     assert res["status"] == "NEEDS_SUPERVISOR"
     assert "PAL clink payload was not a valid mapping." in res["remaining_risks"]
+    assert_schema_valid(res, ROOT / "schemas" / "proof" / "embedded_audit.schema.json")
 
 
 def test_filename_stem_mismatch_correct_client_field(tmp_path: Path) -> None:
@@ -782,3 +792,58 @@ def test_canonical_role_prompt_path_strict():
     assert _canonical_role_prompt_path("path/./current") is None
     assert _canonical_role_prompt_path("   ") is None
     assert _canonical_role_prompt_path("valid/path.txt") is not None
+
+
+def test_normalize_unproven_route_emits_schema_valid_skipped() -> None:
+    # Regression for the embedded-audit schema violation flagged by the external
+    # PAL clink audit of PR #713: an unproven route (no audit-safe underlying CLI)
+    # cannot attribute a real auditor model, so it must NOT emit
+    # auditor_model="unknown" under a non-SKIPPED status (forbidden by
+    # embedded_audit.schema.json allOf[1]). It is coerced to a schema-valid
+    # SKIPPED object, which the PR Steward still treats as blocking.
+    route = {"clink_mutation_flags_detected": [], "audit_safe_config_proven": False}
+    audit = normalize_pal_clink_audit_output(
+        {"status": "success", "verdict": "PASS"},
+        route=route,
+        report_path="proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/AUDITOR_REPORT.md",
+    )
+    assert audit["status"] == "SKIPPED"
+    assert audit["auditor_tool"] == "none"
+    assert audit["auditor_model"] == "unknown"
+    assert audit["invocation"] is None
+    assert audit["exit_code"] is None
+    assert audit["skip_reason"]
+    assert_schema_valid(audit, ROOT / "schemas" / "proof" / "embedded_audit.schema.json")
+
+
+def test_build_embedded_audit_unknown_model_any_status_coerced_to_skipped() -> None:
+    # The guard fires for any non-SKIPPED status, not just NEEDS_SUPERVISOR.
+    for status in ("FAIL", "PASS", "PASS_WITH_RISKS", "NEEDS_SUPERVISOR"):
+        audit = build_pal_clink_embedded_audit_object(
+            status=status,
+            route={"underlying_cli": None},
+            report_path="proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/AUDITOR_REPORT.md",
+            findings=[],
+            remaining_risks=["unattributable model"],
+            exit_code=1,
+        )
+        assert audit["status"] == "SKIPPED", status
+        assert audit["auditor_tool"] == "none", status
+        assert audit["auditor_model"] == "unknown", status
+        assert audit["invocation"] is None, status
+        assert audit["exit_code"] is None, status
+        assert audit["skip_reason"], status
+        assert_schema_valid(audit, ROOT / "schemas" / "proof" / "embedded_audit.schema.json")
+
+    # A proven route is unaffected: status is preserved with a real model.
+    proven = build_pal_clink_embedded_audit_object(
+        status="PASS_WITH_RISKS",
+        route={"underlying_cli": "claude"},
+        report_path="proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/AUDITOR_REPORT.md",
+        findings=[],
+        remaining_risks=[],
+        exit_code=0,
+    )
+    assert proven["status"] == "PASS_WITH_RISKS"
+    assert proven["auditor_model"] == "sonnet"
+    assert_schema_valid(proven, ROOT / "schemas" / "proof" / "embedded_audit.schema.json")

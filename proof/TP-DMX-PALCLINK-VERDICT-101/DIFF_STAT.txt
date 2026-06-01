@@ -1,5 +1,12 @@
  docs/ops/pal-clink-audit-runner.md                 |   9 +-
- scripts/audit/pal_clink_runner.py                  | 103 ++++++++++++++++++++-
- .../generated/TP-DMX-PALCLINK-VERDICT-101.json     |   6 +-
- tests/audit/test_pal_clink_runner.py               |  56 +++++++++++
- 4 files changed, 169 insertions(+), 5 deletions(-)
+ .../AUDITOR_OUTPUT.json                            |  15 +++
+ .../TP-DMX-PALCLINK-VERDICT-101/AUDITOR_REPORT.md  |  12 ++
+ .../TP-DMX-PALCLINK-VERDICT-101/CHANGED_FILES.txt  |  11 ++
+ proof/TP-DMX-PALCLINK-VERDICT-101/DIFF_STAT.txt    |  12 ++
+ proof/TP-DMX-PALCLINK-VERDICT-101/GIT_STATE.md     |  20 +++
+ .../PAL_CLINK_AUDIT_OUTPUT.json                    |   9 ++
+ proof/TP-DMX-PALCLINK-VERDICT-101/PROOF.json       |  49 +++++++
+ .../VALIDATION_OUTPUT.md                           |  15 +++
+ scripts/audit/pal_clink_runner.py                  | 139 +++++++++++++++++++-
+ tests/audit/test_pal_clink_runner.py               | 143 +++++++++++++++++++++
+ 11 files changed, 432 insertions(+), 2 deletions(-)
