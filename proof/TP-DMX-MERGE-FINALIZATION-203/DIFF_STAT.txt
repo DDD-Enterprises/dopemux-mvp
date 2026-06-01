@@ -1,0 +1,22 @@
+ config/pr_merge_specialist/policy.yaml             |   1 +
+ docs/ops/pr-acceptance.md                          |  15 +
+ docs/ops/steward-merge-gate.md                     |  20 +
+ .../AUDITOR_REPORT.md                              |  33 ++
+ .../CHANGED_FILES.txt                              |  20 +
+ proof/TP-DMX-MERGE-FINALIZATION-203/DIFF_STAT.txt  |   0
+ proof/TP-DMX-MERGE-FINALIZATION-203/GIT_STATE.md   |  31 +
+ proof/TP-DMX-MERGE-FINALIZATION-203/PROOF.json     | 155 +++++
+ .../VALIDATION_OUTPUT.md                           |  78 +++
+ .../review_bundle/README.md                        |  15 +
+ src/dopemux_pr_merge_specialist/github_api.py      |  60 ++
+ src/dopemux_pr_merge_specialist/merge.py           | 125 ++--
+ src/dopemux_pr_merge_specialist/queue_drain.py     |  90 ++-
+ .../generated/TP-DMX-MERGE-FINALIZATION-203.json   |  29 +-
+ .../pr-merge-specialist/config/policy.example.yaml |   1 +
+ .../dopemux_pr_merge_specialist/github_api.py      |  60 ++
+ .../scripts/dopemux_pr_merge_specialist/merge.py   | 135 ++---
+ .../dopemux_pr_merge_specialist/queue_drain.py     | 634 ++++++++++++++++-----
+ .../pr_merge_specialist/test_finalization_gate.py  | 273 +++++++++
+ .../test_queue_drain_integration.py                |  26 +-
+ .../test_thread_and_merge_logic.py                 |  10 +-
+ 21 files changed, 1476 insertions(+), 335 deletions(-)

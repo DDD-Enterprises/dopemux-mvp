@@ -109,13 +109,11 @@ def test_implement_disposition_for_conflict_marker_resolution_comment():
     assert disposition.disposition == "implement"
 
 
-def test_merge_fallback_to_auto_when_policy_requires_queue(monkeypatch, tmp_path: Path):
+def test_merge_blocks_without_expected_head_oid(monkeypatch, tmp_path: Path):
     calls = []
 
     def fake_execute(cmd, *, execute, cwd, commands_log, timeout_seconds=600):
         calls.append(cmd)
-        if len(calls) == 1:
-            return engine.CommandResult(command=list(cmd), returncode=1, stdout="", stderr="merge queue required")
         return engine.CommandResult(command=list(cmd), returncode=0, stdout="ok", stderr="")
 
     monkeypatch.setattr(engine, "execute_or_dry_run", fake_execute)
@@ -138,9 +136,9 @@ def test_merge_fallback_to_auto_when_policy_requires_queue(monkeypatch, tmp_path
         client=DummyClient(),
     )
 
-    assert result.action == MergeActionType.AUTO_MERGE_FALLBACK
-    assert "--auto" in result.command
-    assert result.reason_code == "merge_queue_required"
+    assert result.action == MergeActionType.BLOCKED
+    assert result.reason_code == "expected_head_oid_unknown"
+    assert calls == []
 
 
 def test_conflict_analysis_explicitly_rejects_easy_defaults(tmp_path: Path):
