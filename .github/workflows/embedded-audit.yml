@@ -69,12 +69,20 @@ jobs:
           test "$actual_trusted_ref" = "$EXPECTED_TRUSTED_REF"
 
       - name: Verify requested head SHA
+        id: head_integrity
         env:
           EXPECTED_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
         run: |
-          git -C trusted-source fetch --no-tags --depth=1 origin "$EXPECTED_HEAD_SHA"
-          actual_head_sha="$(git -C trusted-source rev-parse FETCH_HEAD)"
-          test "$actual_head_sha" = "$EXPECTED_HEAD_SHA"
+          if git -C trusted-source fetch --no-tags --depth=1 origin "$EXPECTED_HEAD_SHA"; then
+            actual_head_sha="$(git -C trusted-source rev-parse FETCH_HEAD)"
+          else
+            actual_head_sha=""
+          fi
+          if [ "$actual_head_sha" = "$EXPECTED_HEAD_SHA" ]; then
+            printf 'verified=true\n' >> "$GITHUB_OUTPUT"
+          else
+            printf 'verified=false\n' >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Static auditor route preflight
         continue-on-error: true
@@ -88,8 +96,14 @@ jobs:
       - name: Emit embedded audit proof
         if: always()
         working-directory: trusted-source
+        env:
+          HEAD_VERIFIED: ${{ steps.head_integrity.outputs.verified }}
         run: |
-          if [ -f scripts/audit/run_embedded_audit.py ]; then
+          if [ "$HEAD_VERIFIED" != "true" ]; then
+            SKIP_REASON="Independent embedded audit skipped because the requested head SHA could not be fetched or verified."
+          elif [ ! -f scripts/audit/run_embedded_audit.py ]; then
+            SKIP_REASON="Independent embedded audit skipped because the trusted source ref does not yet contain scripts/audit/run_embedded_audit.py."
+          else
             python scripts/audit/run_embedded_audit.py \
               --packet-id "TP-DMX-AUDIT-CI-PROVENANCE-104" \
               --repo "$GITHUB_REPOSITORY" \
@@ -97,7 +111,9 @@ jobs:
               --head-sha "${{ steps.pr.outputs.head_sha }}" \
               --route-json ../embedded-audit-artifacts/AUDITOR_ROUTE.json \
               --out ../embedded-audit-artifacts
-          else
+            exit 0
+          fi
+          export SKIP_REASON
             python - <<'PY'
           import json
           import os
@@ -106,10 +122,7 @@ jobs:
 
           packet_id = "TP-DMX-AUDIT-CI-PROVENANCE-104"
           report_path = f"proof/{packet_id}/AUDITOR_REPORT.md"
-          reason = (
-              "Independent embedded audit skipped because the trusted source "
-              "ref does not yet contain scripts/audit/run_embedded_audit.py."
-          )
+          reason = os.environ["SKIP_REASON"]
           out_dir = Path("../embedded-audit-artifacts")
           out_dir.mkdir(parents=True, exist_ok=True)
           proof = {
@@ -163,7 +176,6 @@ jobs:
           report_file.write_text(report_text, encoding="utf-8")
           (out_dir / "AUDITOR_REPORT.md").write_text(report_text, encoding="utf-8")
           PY
-          fi
 
       - name: Write job summary
         if: always()
