@@ -122,3 +122,9 @@ retry:
 merge:
   allow_auto_fallback_only_for:
     - merge_queue_required
+steward_gate:
+  artifact_ttl_seconds: 3600
+  remediation_readiness:
+    - NEEDS_IMPLEMENTER
+  finalization_readiness:
+    - READY
