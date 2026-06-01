@@ -1,0 +1,142 @@
+{
+  "id": "TP-DMX-ADHD-COGNITIVE-T4-06-BASELINE-CALIBRATION-001",
+  "project": "dopemux-mvp",
+  "target": "ADHD Engine per-user activity baseline calibration replaces fixed assessment thresholds",
+  "invariants": [
+    "ADHD Engine remains cognitive-only and must not store prompts, paths, filenames, code content, raw tool arguments, task records, or PM records.",
+    "Baseline calibration must use only content-free bounded activity metrics already accepted by the activity update path.",
+    "Users with fewer than the minimum baseline samples must remain explicitly marked as calibrating.",
+    "Ready baseline thresholds must be derived from per-user relative percentiles instead of global fixed switch, focus-duration, completion, break, or fatigue thresholds.",
+    "No live Redis, EventBus, provider, notifier, dashboard, or shell-hook validation is authorized in this slice.",
+    "Do not widen into opt-in self-report calibration, boundary detection, dashboard UI, or hyperfocus latch work."
+  ],
+  "depends_on": [
+    "TP-DMX-ADHD-COGNITIVE-T4-04-REAL-ASSESSMENT-001",
+    "TP-DMX-ADHD-COGNITIVE-T4-05-PRIVACY-GUARD-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ADHD-COGNITIVE-REMEDIATION",
+    "base_branch": "codex/adhd-privacy-guard-001",
+    "parent_tp_id": "TP-DMX-ADHD-COGNITIVE-T4-05-PRIVACY-GUARD-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/adhd-baseline-calibration-001",
+    "base_branch": "codex/adhd-privacy-guard-001",
+    "stacked_because": "Calibration consumes the real activity and privacy-safe payload paths from preceding T4 slices."
+  },
+  "commit": {
+    "message": "feat(adhd): calibrate assessment baselines per user",
+    "allowlist": [
+      "services/adhd_engine/core/engine.py",
+      "tests/unit/test_adhd_baseline_calibration.py",
+      "task-packets/TP-DMX-ADHD-COGNITIVE-T4-06-BASELINE-CALIBRATION-001.json",
+      "task-packets/TP-DMX-ADHD-COGNITIVE-T4-06-BASELINE-CALIBRATION-001-implementation-notes.md"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-06-BASELINE-CALIBRATION-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/unit/test_adhd_baseline_calibration.py tests/unit/test_adhd_privacy_guard.py tests/unit/test_adhd_real_assessment.py tests/unit/test_adhd_activity_loop.py tests/unit/test_adhd_operator_profile_seed.py tests/unit/test_adhd_operator_identity.py tests/unit/test_adhd_engine_settings_contract.py tests/unit/test_adhd_engine_task_orchestrator_url.py services/adhd_engine/tests/test_activity_tracker.py services/adhd_engine/tests/test_api.py",
+      "python -m py_compile services/adhd_engine/core/engine.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(adhd): calibrate assessment baselines per user",
+    "body": "## Summary\n- collect bounded per-user activity baseline samples from accepted activity metrics\n- expose explicit calibrating/ready baseline status\n- use ready percentile thresholds for energy and attention assessment instead of fixed global thresholds\n\n## Validation\n- python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-06-BASELINE-CALIBRATION-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- python -m pytest tests/unit/test_adhd_baseline_calibration.py tests/unit/test_adhd_privacy_guard.py tests/unit/test_adhd_real_assessment.py tests/unit/test_adhd_activity_loop.py tests/unit/test_adhd_operator_profile_seed.py tests/unit/test_adhd_operator_identity.py tests/unit/test_adhd_engine_settings_contract.py tests/unit/test_adhd_engine_task_orchestrator_url.py services/adhd_engine/tests/test_activity_tracker.py services/adhd_engine/tests/test_api.py\n- python -m py_compile services/adhd_engine/core/engine.py\n- git diff --check",
+    "base": "codex/adhd-privacy-guard-001"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect",
+      "task": "Inspect active energy and attention assessment thresholds, activity sample flow, and existing calibration support before editing.",
+      "requirements": [
+        "Confirm active runtime is services.adhd_engine.core.engine.",
+        "Identify current fixed thresholds and existing calibrator behavior.",
+        "Do not persist prompt/path/content data or introduce task/PM authority."
+      ],
+      "commands": [
+        "rg -n \"completion_rate|context_switches|break_compliance|minutes_since_break|average_focus_duration|distraction_events|calibrat|baseline|percentile|threshold\" services/adhd_engine/core services/adhd_engine/domains tests/unit -g '*.py'",
+        "nl -ba services/adhd_engine/core/engine.py | sed -n '992,1125p;1476,1498p'",
+        "nl -ba services/adhd_engine/domains/attention/attention_calibrator.py | sed -n '1,260p'"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Hard-coded assessment thresholds and existing calibration boundaries are identified before tests or production edits."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "task-packets/TP-DMX-ADHD-COGNITIVE-T4-04-REAL-ASSESSMENT-001.json",
+        "task-packets/TP-DMX-ADHD-COGNITIVE-T4-05-PRIVACY-GUARD-001.json",
+        "services/adhd_engine/core/engine.py",
+        "services/adhd_engine/domains/attention/attention_calibrator.py"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Add failing tests, then add bounded per-user percentile baselines and route assessment decisions through ready baseline thresholds.",
+      "requirements": [
+        "Write failing tests before production code.",
+        "Baseline status must be calibrating until minimum sample count is reached.",
+        "Ready baselines must expose derived percentile thresholds.",
+        "Energy assessment must not penalize normal-for-this-user switch counts once baseline is ready.",
+        "Attention assessment must classify high relative switch counts for low-switch users and avoid scattered labels for normal-for-this-user switch counts."
+      ],
+      "commands": [
+        "apply_patch"
+      ],
+      "expected_files": [
+        "services/adhd_engine/core/engine.py",
+        "tests/unit/test_adhd_baseline_calibration.py"
+      ],
+      "validation": [
+        "Targeted baseline calibration tests fail before implementation and pass after implementation."
+      ],
+      "context_files": [
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "validate",
+      "task": "Validate packet schema, focused tests, syntax, diff scope, and precommit checks for the baseline calibration slice.",
+      "requirements": [
+        "Report every NOT_RUN command with reason.",
+        "Inspect git status and diff scope before final summary.",
+        "Do not claim live or persistent calibration beyond in-engine content-free baseline samples."
+      ],
+      "commands": [
+        "python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-06-BASELINE-CALIBRATION-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python -m pytest tests/unit/test_adhd_baseline_calibration.py tests/unit/test_adhd_privacy_guard.py tests/unit/test_adhd_real_assessment.py tests/unit/test_adhd_activity_loop.py tests/unit/test_adhd_operator_profile_seed.py tests/unit/test_adhd_operator_identity.py tests/unit/test_adhd_engine_settings_contract.py tests/unit/test_adhd_engine_task_orchestrator_url.py services/adhd_engine/tests/test_activity_tracker.py services/adhd_engine/tests/test_api.py",
+        "python -m py_compile services/adhd_engine/core/engine.py",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "task-packets/TP-DMX-ADHD-COGNITIVE-T4-06-BASELINE-CALIBRATION-001-implementation-notes.md"
+      ],
+      "validation": [
+        "Proof notes and final response distinguish PASS, FAIL, NOT_RUN, and remaining UNKNOWNs."
+      ],
+      "context_files": []
+    }
+  ]
+}

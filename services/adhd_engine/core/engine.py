@@ -140,6 +140,9 @@ class ADHDAccommodationEngine:
         self.current_attention_states: Dict[str, AttentionState] = {}
         self.recent_activity_updates: Dict[str, Dict[str, Any]] = {}
         self.recent_activity_samples: Dict[str, List[Dict[str, Any]]] = {}
+        self.activity_baseline_samples: Dict[str, List[Dict[str, float]]] = {}
+        self.activity_baseline_min_samples = 5
+        self.activity_baseline_window = 50
         self.active_accommodations: Dict[str, List[AccommodationRecommendation]] = {}
 
         # Cognitive load monitoring
@@ -481,6 +484,7 @@ class ADHDAccommodationEngine:
             self._append_activity_sample(user_id, metrics)
             metrics = self._derive_hook_activity_metrics(user_id)
         self.recent_activity_updates[user_id] = metrics
+        self._append_activity_baseline_sample(user_id, metrics)
 
         if user_id not in self.user_profiles:
             self.user_profiles[user_id] = ADHDProfile(user_id=user_id)
@@ -525,6 +529,83 @@ class ADHDAccommodationEngine:
         samples = self.recent_activity_samples.setdefault(user_id, [])
         samples.append(dict(activity_data))
         self.recent_activity_samples[user_id] = samples[-50:]
+
+    def _append_activity_baseline_sample(self, user_id: str, activity_data: Dict[str, Any]) -> None:
+        """Store bounded numeric activity metrics for per-user calibration."""
+        sample = self._activity_baseline_sample(activity_data)
+        samples = self.activity_baseline_samples.setdefault(user_id, [])
+        samples.append(sample)
+        self.activity_baseline_samples[user_id] = samples[-self.activity_baseline_window:]
+
+    def get_activity_baseline_status(self, user_id: str) -> Dict[str, Any]:
+        """Return readiness and thresholds for the user's activity baseline."""
+        sample_count = len(self.activity_baseline_samples.get(user_id, []))
+        ready = sample_count >= self.activity_baseline_min_samples
+        return {
+            "status": "ready" if ready else "calibrating",
+            "ready": ready,
+            "sample_count": sample_count,
+            "min_samples": self.activity_baseline_min_samples,
+            "thresholds": self._activity_baseline_thresholds(user_id) if ready else {},
+        }
+
+    def _activity_thresholds_for_user(self, user_id: str) -> Dict[str, float]:
+        if len(self.activity_baseline_samples.get(user_id, [])) < self.activity_baseline_min_samples:
+            return self._bootstrap_activity_thresholds()
+        return self._activity_baseline_thresholds(user_id)
+
+    @staticmethod
+    def _bootstrap_activity_thresholds() -> Dict[str, float]:
+        return {
+            "low_completion_rate": 0.3,
+            "high_completion_rate": 0.8,
+            "high_context_switches": 5.0,
+            "high_attention_context_switches": 10.0,
+            "low_break_compliance": 0.5,
+            "long_minutes_since_break": 60.0,
+            "low_focus_duration": 10.0,
+            "high_focus_duration": 60.0,
+            "high_distraction_events": 10.0,
+            "high_abandoned_tasks": 3.0,
+        }
+
+    def _activity_baseline_thresholds(self, user_id: str) -> Dict[str, float]:
+        samples = self.activity_baseline_samples.get(user_id, [])
+        if not samples:
+            return self._bootstrap_activity_thresholds()
+        return {
+            "low_completion_rate": self._percentile([sample["completion_rate"] for sample in samples], 25),
+            "high_completion_rate": self._percentile([sample["completion_rate"] for sample in samples], 75),
+            "high_context_switches": self._percentile([sample["context_switches"] for sample in samples], 75),
+            "high_attention_context_switches": self._percentile([sample["context_switches"] for sample in samples], 75),
+            "low_break_compliance": self._percentile([sample["break_compliance"] for sample in samples], 25),
+            "long_minutes_since_break": self._percentile([sample["minutes_since_break"] for sample in samples], 75),
+            "low_focus_duration": self._percentile([sample["average_focus_duration"] for sample in samples], 25),
+            "high_focus_duration": self._percentile([sample["average_focus_duration"] for sample in samples], 75),
+            "high_distraction_events": self._percentile([sample["distraction_events"] for sample in samples], 75),
+            "high_abandoned_tasks": self._percentile([sample["abandoned_tasks"] for sample in samples], 75),
+        }
+
+    @staticmethod
+    def _activity_baseline_sample(activity_data: Dict[str, Any]) -> Dict[str, float]:
+        indicators = ADHDAccommodationEngine._attention_indicators_from_activity(activity_data)
+        return {
+            "completion_rate": float(activity_data.get("completion_rate", 0.5) or 0.0),
+            "context_switches": float(activity_data.get("context_switches", 0) or 0.0),
+            "break_compliance": float(activity_data.get("break_compliance", 1.0) or 0.0),
+            "minutes_since_break": float(activity_data.get("minutes_since_break", 0) or 0.0),
+            "average_focus_duration": float(indicators.get("average_focus_duration", 25) or 0.0),
+            "distraction_events": float(indicators.get("distraction_events", 0) or 0.0),
+            "abandoned_tasks": float(indicators.get("abandoned_tasks", 0) or 0.0),
+        }
+
+    @staticmethod
+    def _percentile(values: List[float], percentile: int) -> float:
+        sorted_values = sorted(float(value) for value in values)
+        if not sorted_values:
+            return 0.0
+        rank = max(1, (percentile * len(sorted_values) + 99) // 100)
+        return sorted_values[min(rank, len(sorted_values)) - 1]
 
     def _derive_hook_activity_metrics(self, user_id: str) -> Dict[str, Any]:
         """Derive bounded activity metrics from content-free hook events."""
@@ -1000,26 +1081,27 @@ Format: {{
             context_switches = activity_data.get("context_switches", 0)
             break_compliance = activity_data.get("break_compliance", 1.0)
             time_since_last_break = activity_data.get("minutes_since_break", 0)
+            thresholds = self._activity_thresholds_for_user(user_id)
 
             # Energy assessment algorithm
             energy_score = 0.6  # Base energy level
 
             # Task completion indicates energy
-            if task_completion_rate > 0.8:
+            if task_completion_rate > thresholds["high_completion_rate"]:
                 energy_score += 0.3
-            elif task_completion_rate < 0.3:
+            elif task_completion_rate < thresholds["low_completion_rate"]:
                 energy_score -= 0.4
 
             # High context switching indicates scattered energy
-            if context_switches > 5:
+            if context_switches > thresholds["high_context_switches"]:
                 energy_score -= 0.3
 
             # Break compliance indicates energy management
-            if break_compliance < 0.5:
+            if break_compliance < thresholds["low_break_compliance"]:
                 energy_score -= 0.2
 
             # Time since break affects energy
-            if time_since_last_break > 60:  # More than 1 hour
+            if time_since_last_break > thresholds["long_minutes_since_break"]:
                 energy_score -= 0.3
 
             # ML PREDICTION (Phase 10.5)
@@ -1093,20 +1175,29 @@ Format: {{
         try:
             # Get attention indicators
             indicators = await self._get_attention_indicators(user_id)
+            thresholds = self._activity_thresholds_for_user(user_id)
 
-            rapid_switching = indicators.get("context_switches_per_hour", 0) > 10
-            task_abandonment = indicators.get("abandoned_tasks", 0) > 2
+            rapid_switching = (
+                indicators.get("context_switches_per_hour", 0)
+                > thresholds["high_attention_context_switches"]
+            )
+            task_abandonment = indicators.get("abandoned_tasks", 0)
             focus_duration = indicators.get("average_focus_duration", 25)
             distraction_events = indicators.get("distraction_events", 0)
+            excessive_abandonment = task_abandonment > thresholds["high_abandoned_tasks"]
+            excessive_distractions = distraction_events > thresholds["high_distraction_events"]
+            short_focus = focus_duration < thresholds["low_focus_duration"]
+            long_focus = focus_duration > thresholds["high_focus_duration"]
+            low_distraction = distraction_events < max(2, thresholds["high_distraction_events"] / 2)
 
             # Assess attention state
-            if task_abandonment > 3 or distraction_events > 10:
+            if excessive_abandonment or excessive_distractions:
                 attention_state = AttentionState.OVERWHELMED
-            elif rapid_switching and focus_duration < 10:
+            elif rapid_switching and short_focus:
                 attention_state = AttentionState.SCATTERED
-            elif focus_duration > 60 and distraction_events < 2:
+            elif long_focus and low_distraction:
                 attention_state = AttentionState.HYPERFOCUSED
-            elif focus_duration > 20 and distraction_events < 5:
+            elif not rapid_switching and focus_duration >= thresholds["low_focus_duration"] and low_distraction:
                 attention_state = AttentionState.FOCUSED
             else:
                 attention_state = AttentionState.TRANSITIONING
