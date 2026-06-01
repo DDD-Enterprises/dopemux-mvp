@@ -109,3 +109,7 @@
 ## 2025-05-23 - [Interactive Utility for Insight Chips]
 **Learning:** Informational chips (like AI recommendations) in high-density dashboards can be transformed from static content into active utility tools by adding "Copy to Clipboard" functionality. This reduces friction for users who need to act on or share insights elsewhere. A clear, time-limited success state (icon swap + tactile animation) is essential to provide positive reinforcement and confirm the action.
 **Action:** Implement "Copy to Clipboard" micro-interactions for critical text-based insights or recommendations, ensuring they include clear visual feedback and updated ARIA labels during the success state.
+
+## 2025-05-24 - [Color-Coordinated Interactive Feedback]
+**Learning:** In dashboards with multiple categorical metrics (e.g., Energy, Focus, Load), using a single "brand" color (like Cyan) for all hover/focus states can obscure the semantic boundaries between different cards. Applying color-coordinated `borderColor` and `boxShadow` that match each metric's specific icon/theme color reinforces the categorical identity of the card and provides more precise visual feedback.
+**Action:** Use individualized accent colors for card-level hover and focus states to maintain categorical clarity in multi-metric dashboards.

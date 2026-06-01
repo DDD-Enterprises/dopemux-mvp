@@ -59,8 +59,10 @@ class KGAuthorityMiddleware(BaseHTTPMiddleware):
         method = request.method
 
         # Find matching authority rule
+        matched_rule = False
         for path_prefix, rules in self.AUTHORITY_RULES.items():
             if path.startswith(path_prefix):
+                matched_rule = True
                 # Check plane authorization
                 allowed_planes = rules["allowed_planes"]
                 if allowed_planes and source_plane not in allowed_planes:
@@ -87,6 +89,18 @@ class KGAuthorityMiddleware(BaseHTTPMiddleware):
 
                 logger.info(f"✅ KG request authorized: {source_plane} {method} {path}")
                 break
+
+        # MCP2-01 (audit): deny-by-default. A /kg/* path matching NO authority rule was
+        # previously passed straight through (fail-open). Refuse it instead, so a newly
+        # added or mistyped /kg/* route cannot bypass the Two-Plane boundary by omission.
+        if not matched_rule:
+            logger.warning(
+                f"❌ No KG authority rule for path={path}; denying (deny-by-default)"
+            )
+            raise HTTPException(
+                status_code=403,
+                detail=f"No authority rule defined for {path}",
+            )
 
         # Request authorized, continue
         response = await call_next(request)

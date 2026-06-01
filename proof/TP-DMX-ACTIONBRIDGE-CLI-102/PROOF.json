@@ -1,7 +1,7 @@
 {
   "packet_id": "TP-DMX-ACTIONBRIDGE-CLI-102",
   "branch": "codex/tp-dmx-actionbridge-cli-102",
-  "base_branch": "codex/autoreview-platform-packets-20260531",
+  "base_branch": "main",
   "embedded_audit": {
     "required": true,
     "status": "SKIPPED",
@@ -17,10 +17,18 @@
     ],
     "skip_reason": "Task Orchestrator transport returned Transport closed and no external embedded-audit route was available during TP102 execution. The skipped audit is recorded explicitly rather than inferred as PASS."
   },
-  "summary": "Added a read-only PR Action Bridge CLI that reads PR Steward artifacts from disk and writes ACTION_PLAN.json plus REPAIR_PACKET.md by reusing compile_action_plan().",
+  "summary": "Added a read-only PR Action Bridge CLI that reads PR Steward artifacts from disk and writes ACTION_PLAN.json plus REPAIR_PACKET.md by reusing compile_action_plan(); review repair anchors scripts/pr-action-bridge to the repo root for absolute-path invocation.",
   "mutation_performed": false,
   "github_mutation_route_added": false,
   "canonical_writer": "tools/pr_action_bridge/compiler.py::compile_action_plan",
+  "proof_finality": {
+    "worktree": "dedicated local worktree, basename dopemux-mvp-wt-pr758-review-repair",
+    "commit_sha": "c9a210454551c443c8145a098470ab2c8aa98776",
+    "commit_sha_scope": "Latest observed PR head when this proof metadata was updated; final immutable merge identity is the PR URL and merge commit after merge.",
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/758",
+    "codereview_status": "PASS_WITH_FOLLOWUP: automated review comments were inspected and addressed in follow-up repair commits.",
+    "precommit_status": "PASS: pre-commit run --files $(git diff --name-only origin/main)"
+  },
   "outputs": [
     "proof/TP-DMX-ACTIONBRIDGE-CLI-102/output/ACTION_PLAN.json",
     "proof/TP-DMX-ACTIONBRIDGE-CLI-102/output/REPAIR_PACKET.md"
@@ -39,7 +47,7 @@
     {
       "command": "pytest -q tests/pr_action_bridge/test_cli.py",
       "status": "PASS",
-      "evidence": "4 passed."
+      "evidence": "5 passed, including wrapper invocation from a cwd outside the repository and invalid --generated-at fail-closed coverage."
     },
     {
       "command": "python -m json.tool task-packets/generated/TP-DMX-ACTIONBRIDGE-CLI-102.json",
@@ -47,9 +55,19 @@
       "evidence": "JSON parsed successfully."
     },
     {
-      "command": "python -m compileall -q tools/pr_action_bridge tests/pr_action_bridge/test_cli.py",
+      "command": "python -m compileall -q tools/pr_action_bridge/__main__.py tools/pr_action_bridge/cli.py scripts/pr-action-bridge tests/pr_action_bridge/test_cli.py",
       "status": "PASS",
       "evidence": "Scoped compile completed with exit code 0."
+    },
+    {
+      "command": "scripts/pr-action-bridge invoked by absolute path from /tmp",
+      "status": "PASS",
+      "evidence": "With caller-relative --artifact-dir artifacts and --out out, wrote out/ACTION_PLAN.json and out/REPAIR_PACKET.md under the caller cwd."
+    },
+    {
+      "command": "! git check-ignore -q proof/TP-DMX-ACTIONBRIDGE-CLI-102/PROOF.json",
+      "status": "PASS",
+      "evidence": "Path is no longer ignored after adding the TP102 proof bundle to the tracked proof ledger allowlist."
     },
     {
       "command": "git diff --check",

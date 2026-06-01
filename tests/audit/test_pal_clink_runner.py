@@ -14,6 +14,7 @@ from scripts.audit.pal_clink_runner import (
     PalClinkAuditOutput,
     build_invocation,
     run_audit,
+    run_audit_and_capture_verdict,
 )
 from scripts.audit.route_schema import AuditRoute
 
@@ -424,3 +425,145 @@ class TestPalClinkAuditOutputSchema:
         route = _make_route()
         out = run_audit(route, "prompt", which_fn=_always_found, subprocess_run=_make_subprocess_run(2))
         jsonschema.validate(_output_as_dict(out), self._schema())
+
+
+# ---------------------------------------------------------------------------
+# run_audit_and_capture_verdict
+# ---------------------------------------------------------------------------
+
+
+class TestRunAuditAndCaptureVerdict:
+    def test_success_writes_raw_output_report_and_embedded_audit(
+        self, tmp_path: Path
+    ) -> None:
+        route = _make_route(cli_name="claude-audit", command="claude")
+        route_record = {
+            "tool": "pal-mcp-clink",
+            "underlying_cli": "claude",
+            "clink_client_name": "claude-audit",
+            "audit_safe_config_proven": True,
+            "clink_mutation_flags_detected": [],
+            "invocation_template": (
+                "pal-clink --client claude-audit --role codereviewer "
+                "--input PAL_CLINK_AUDIT_INPUT.md "
+                "--output PAL_CLINK_AUDIT_OUTPUT.json"
+            ),
+        }
+        raw_output_path = tmp_path / "PAL_CLINK_AUDIT_OUTPUT.json"
+        report_file_path = tmp_path / "AUDITOR_REPORT.md"
+
+        embedded = run_audit_and_capture_verdict(
+            route,
+            "audit prompt",
+            route_record=route_record,
+            raw_output_path=raw_output_path,
+            report_path="proof/TP-DMX-PALCLINK-VERDICT-101/AUDITOR_REPORT.md",
+            report_file_path=report_file_path,
+            which_fn=_always_found,
+            subprocess_run=_make_subprocess_run(
+                stdout=json.dumps(
+                    {
+                        "status": "success",
+                        "verdict": "PASS",
+                        "findings": [],
+                        "risks": [],
+                    }
+                ).encode("utf-8")
+            ),
+        )
+
+        raw_output = json.loads(raw_output_path.read_text(encoding="utf-8"))
+        jsonschema.validate(raw_output, json.loads(SCHEMA_PATH.read_text()))
+        assert embedded["status"] == "PASS"
+        assert embedded["auditor_tool"] == "pal-mcp-clink"
+        assert embedded["report_path"] == "proof/TP-DMX-PALCLINK-VERDICT-101/AUDITOR_REPORT.md"
+        assert "PAL clink audit verdict: PASS" in report_file_path.read_text(
+            encoding="utf-8"
+        )
+
+    def test_tool_output_content_is_parsed_before_normalization(
+        self, tmp_path: Path
+    ) -> None:
+        route = _make_route(cli_name="claude-audit", command="claude")
+        route_record = {
+            "tool": "pal-mcp-clink",
+            "underlying_cli": "claude",
+            "clink_client_name": "claude-audit",
+            "audit_safe_config_proven": True,
+            "clink_mutation_flags_detected": [],
+            "invocation_template": (
+                "pal-clink --client claude-audit --role codereviewer "
+                "--input PAL_CLINK_AUDIT_INPUT.md "
+                "--output PAL_CLINK_AUDIT_OUTPUT.json"
+            ),
+        }
+        tool_output = {
+            "status": "success",
+            "content": json.dumps(
+                {
+                    "status": "success",
+                    "verdict": "PASS",
+                    "findings": [],
+                    "risks": [],
+                }
+            ),
+            "content_type": "text",
+            "metadata": {},
+        }
+
+        embedded = run_audit_and_capture_verdict(
+            route,
+            "audit prompt",
+            route_record=route_record,
+            raw_output_path=tmp_path / "PAL_CLINK_AUDIT_OUTPUT.json",
+            report_path="proof/TP-DMX-PALCLINK-VERDICT-101/AUDITOR_REPORT.md",
+            report_file_path=tmp_path / "AUDITOR_REPORT.md",
+            which_fn=_always_found,
+            subprocess_run=_make_subprocess_run(
+                stdout=json.dumps(tool_output).encode("utf-8")
+            ),
+        )
+
+        assert embedded["status"] == "PASS"
+
+    def test_fixture_only_capture_blocks_even_with_pass_verdict(
+        self, tmp_path: Path
+    ) -> None:
+        route = _make_route(cli_name="claude-audit", command="claude")
+        route_record = {
+            "tool": "pal-mcp-clink",
+            "underlying_cli": "claude",
+            "clink_client_name": "claude-audit",
+            "audit_safe_config_proven": True,
+            "clink_mutation_flags_detected": [],
+            "invocation_template": (
+                "pal-clink --client claude-audit --role codereviewer "
+                "--input PAL_CLINK_AUDIT_INPUT.md "
+                "--output PAL_CLINK_AUDIT_OUTPUT.json"
+            ),
+        }
+
+        embedded = run_audit_and_capture_verdict(
+            route,
+            "audit prompt",
+            route_record=route_record,
+            raw_output_path=tmp_path / "PAL_CLINK_AUDIT_OUTPUT.json",
+            report_path="proof/TP-DMX-PALCLINK-VERDICT-101/AUDITOR_REPORT.md",
+            report_file_path=tmp_path / "AUDITOR_REPORT.md",
+            which_fn=_always_found,
+            subprocess_run=_make_subprocess_run(
+                stdout=json.dumps(
+                    {
+                        "status": "success",
+                        "verdict": "PASS",
+                        "findings": [],
+                        "risks": [
+                            "Fixture run only; no live external PAL clink CLI was invoked."
+                        ],
+                    }
+                ).encode("utf-8")
+            ),
+        )
+
+        assert embedded["status"] == "NEEDS_SUPERVISOR"
+        assert embedded["exit_code"] == 1
