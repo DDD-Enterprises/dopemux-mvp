@@ -6,6 +6,7 @@
   "branch": "codex/tp-dmx-autoreview-harden-401",
   "base_ref": "origin/codex/tp-dmx-steward-doctor-303",
   "base_sha": "98010d84d3151f7664179f5622684de723c30710",
+  "implementation_commit_sha": "ac974fc69e9203ffa1f628ae61bf77e8808d6011",
   "repo_identity": {
     "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
     "marker": ".dopetaskroot",
