@@ -191,6 +191,7 @@ packages = [
     "dopemux_pr_steward",
     "integrations",
     "tools",
+    "tools.copilot_repair",
     "tools.pr_action_bridge",
     "tools.pr_steward",
     "utils",
@@ -199,6 +200,7 @@ packages = [
 [tool.setuptools.package-dir]
 "" = "src"
 "tools" = "tools"
+"tools.copilot_repair" = "tools/copilot_repair"
 "tools.pr_action_bridge" = "tools/pr_action_bridge"
 "tools.pr_steward" = "tools/pr_steward"
 

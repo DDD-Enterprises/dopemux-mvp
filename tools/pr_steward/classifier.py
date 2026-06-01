@@ -698,24 +698,61 @@ def _proof(harvest: dict[str, Any], *, pr_head_sha: str | None = None) -> dict[s
     raw = harvest.get("proof") or {}
     proof_head_sha = raw.get("proof_head_sha")
     proof_path = str(raw.get("proof_path") or "")
-    matches = bool(raw.get("matches_pr_head", False))
+    matches = (
+        bool(proof_head_sha and proof_head_sha == pr_head_sha)
+        if pr_head_sha
+        else bool(raw.get("matches_pr_head", False))
+    )
     raw_freshness = raw.get("proof_freshness")
+    self_reference_exception = (
+        raw_freshness.get("self_reference_exception")
+        if isinstance(raw_freshness, dict)
+        and isinstance(raw_freshness.get("self_reference_exception"), dict)
+        else None
+    )
     if isinstance(raw_freshness, dict):
-        freshness = ProofFreshness(
-            {
-                "status": str(raw_freshness.get("status") or "UNKNOWN"),
-                "matches_pr_head": bool(raw_freshness.get("matches_pr_head", matches)),
-                "reason": str(raw_freshness.get("reason") or ""),
-                "proof_recorded_sha": raw_freshness.get("proof_recorded_sha")
-                or proof_head_sha,
-                "pr_head_sha": raw_freshness.get("pr_head_sha") or pr_head_sha,
-                "self_reference_exception": raw_freshness.get(
-                    "self_reference_exception"
-                )
-                if isinstance(raw_freshness.get("self_reference_exception"), dict)
-                else None,
-            }
-        )
+        raw_status = str(raw_freshness.get("status") or "UNKNOWN")
+        if raw_status == "CURRENT_WITH_SELF_REFERENCE_EXCEPTION" and not matches:
+            freshness = _proof_freshness_payload(
+                status=raw_status,
+                proof_head_sha=proof_head_sha,
+                pr_head_sha=pr_head_sha,
+                matches=False,
+                reason="Proof freshness requires self-reference exception validation.",
+            )
+            freshness["self_reference_exception"] = self_reference_exception
+        elif not proof_head_sha and not proof_path:
+            freshness = _proof_freshness_payload(
+                status="MISSING",
+                proof_head_sha=None,
+                pr_head_sha=pr_head_sha,
+                matches=False,
+                reason="Proof file was not provided.",
+            )
+        elif not proof_head_sha:
+            freshness = _proof_freshness_payload(
+                status="MISSING",
+                proof_head_sha=None,
+                pr_head_sha=pr_head_sha,
+                matches=False,
+                reason="Proof head SHA missing.",
+            )
+        elif matches:
+            freshness = _proof_freshness_payload(
+                status="CURRENT",
+                proof_head_sha=proof_head_sha,
+                pr_head_sha=pr_head_sha,
+                matches=True,
+                reason="Proof head SHA matches PR head SHA.",
+            )
+        else:
+            freshness = _proof_freshness_payload(
+                status="STALE",
+                proof_head_sha=proof_head_sha,
+                pr_head_sha=pr_head_sha,
+                matches=False,
+                reason="Proof head SHA does not match PR head SHA.",
+            )
     elif isinstance(raw_freshness, str) and raw_freshness:
         freshness = _proof_freshness_payload(
             status=raw_freshness,

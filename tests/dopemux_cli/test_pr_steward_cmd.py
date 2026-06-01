@@ -136,6 +136,7 @@ def test_installed_pr_steward_console_can_import_engines(tmp_path: Path):
                 "from dopemux_pr_steward.cli import build_parser; "
                 "import pathlib; "
                 "import tools.pr_steward.classifier as classifier; "
+                "import tools.copilot_repair.generator; "
                 "import tools.pr_steward.intake; "
                 "import tools.pr_action_bridge.compiler; "
                 "build_parser(); "
