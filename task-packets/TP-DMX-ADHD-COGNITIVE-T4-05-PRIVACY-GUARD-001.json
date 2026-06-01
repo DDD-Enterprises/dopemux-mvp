@@ -1,0 +1,150 @@
+{
+  "id": "TP-DMX-ADHD-COGNITIVE-T4-05-PRIVACY-GUARD-001",
+  "project": "dopemux-mvp",
+  "target": "ADHD Engine section 6 compliance and privacy schema guard",
+  "invariants": [
+    "ADHD Engine is cognitive-only and must not act as task, PM, work-item, source-code, prompt, path, or content authority.",
+    "Local hook routes must reject prompt text, prompt summaries, file paths, filenames, code content, raw tool arguments, and arbitrary content fields.",
+    "Recommendation and hook events must remain content-free and bounded to state, reason codes, counters, booleans, and allowlisted tool/status labels.",
+    "ADHD Engine must not create ConPort progress entries, task records, PM records, or unfinished-work projections.",
+    "Routes that previously exposed task/PM work data must fail closed rather than returning task or path details.",
+    "This slice must not widen into notifier UX, calibration, dashboard rendering, or live Redis/event-stream validation."
+  ],
+  "depends_on": [
+    "TP-DMX-ADHD-COGNITIVE-T4-03B-ACTIVITY-LOOP-001",
+    "TP-DMX-ADHD-COGNITIVE-T4-04-REAL-ASSESSMENT-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ADHD-COGNITIVE-REMEDIATION",
+    "base_branch": "codex/adhd-real-assessment-001",
+    "parent_tp_id": "TP-DMX-ADHD-COGNITIVE-T4-04-REAL-ASSESSMENT-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/adhd-privacy-guard-001",
+    "base_branch": "codex/adhd-real-assessment-001",
+    "stacked_because": "Privacy guards must cover the newest real-assessment activity sample path from T4-04."
+  },
+  "commit": {
+    "message": "fix(adhd): enforce content-free privacy guards",
+    "allowlist": [
+      "services/adhd_engine/core/engine.py",
+      "services/adhd_engine/api/routes.py",
+      "services/adhd_engine/event_emitter.py",
+      "tests/unit/test_adhd_privacy_guard.py",
+      "services/adhd_engine/tests/test_api.py",
+      "task-packets/TP-DMX-ADHD-COGNITIVE-T4-05-PRIVACY-GUARD-001.json",
+      "task-packets/TP-DMX-ADHD-COGNITIVE-T4-05-PRIVACY-GUARD-001-implementation-notes.md"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-05-PRIVACY-GUARD-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/unit/test_adhd_privacy_guard.py tests/unit/test_adhd_real_assessment.py tests/unit/test_adhd_activity_loop.py tests/unit/test_adhd_operator_profile_seed.py tests/unit/test_adhd_operator_identity.py tests/unit/test_adhd_engine_settings_contract.py tests/unit/test_adhd_engine_task_orchestrator_url.py services/adhd_engine/tests/test_activity_tracker.py services/adhd_engine/tests/test_api.py",
+      "python -m py_compile services/adhd_engine/core/engine.py services/adhd_engine/api/routes.py services/adhd_engine/event_emitter.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(adhd): enforce content-free privacy guards",
+    "body": "## Summary\n- reject prompt/path/content-bearing local hook payloads before persistence or event emission\n- fail closed on ADHD task/unfinished-work routes so task and PM authority does not leak through ADHD Engine\n- stop cognitive-overload handling from creating ConPort progress tasks\n\n## Validation\n- python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-05-PRIVACY-GUARD-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- python -m pytest tests/unit/test_adhd_privacy_guard.py tests/unit/test_adhd_real_assessment.py tests/unit/test_adhd_activity_loop.py tests/unit/test_adhd_operator_profile_seed.py tests/unit/test_adhd_operator_identity.py tests/unit/test_adhd_engine_settings_contract.py tests/unit/test_adhd_engine_task_orchestrator_url.py services/adhd_engine/tests/test_activity_tracker.py services/adhd_engine/tests/test_api.py\n- python -m py_compile services/adhd_engine/core/engine.py services/adhd_engine/api/routes.py services/adhd_engine/event_emitter.py\n- git diff --check",
+    "base": "codex/adhd-real-assessment-001"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect",
+      "task": "Inspect ADHD Engine route, event, and persistence paths that accept prompts, paths, task records, or PM/work projections.",
+      "requirements": [
+        "Distinguish active services.adhd_engine.core.engine runtime from legacy sibling modules.",
+        "Identify canonical writers and reject ADHD Engine ownership of task, PM, or work-item truth.",
+        "Do not touch notifier, dashboard, calibration, or live transport behavior."
+      ],
+      "commands": [
+        "rg -n \"tasks|unfinished-work|save-context|log-intent|prompt_hint|prompt_summary|files|log_progress_entry|emit_context_saved|emit_claude_prompt\" services/adhd_engine tests -g '*.py'",
+        "nl -ba services/adhd_engine/api/routes.py | sed -n '830,875p;1535,1776p'",
+        "nl -ba services/adhd_engine/core/engine.py | sed -n '1536,1563p'",
+        "nl -ba services/adhd_engine/event_emitter.py | sed -n '261,313p'"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Unsafe prompt/path/task/PM surfaces are identified before tests or production edits."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "task-packets/TP-DMX-ADHD-COGNITIVE-T4-03B-ACTIVITY-LOOP-001.json",
+        "task-packets/TP-DMX-ADHD-COGNITIVE-T4-04-REAL-ASSESSMENT-001.json",
+        "services/adhd_engine/api/routes.py",
+        "services/adhd_engine/core/engine.py",
+        "services/adhd_engine/event_emitter.py"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Add failing privacy tests, then make ADHD Engine reject content-bearing hook payloads, emit content-free events, and fail closed on task/PM routes.",
+      "requirements": [
+        "Write failing tests before production code.",
+        "`/save-context` and `/log-intent` must reject prompt/path/content-bearing payloads before persistence.",
+        "`emit_claude_prompt` and `emit_context_saved` must not include prompt summaries or prompt hints in emitted data.",
+        "`/tasks` and `/unfinished-work` must not expose task, PM, path, or unfinished-work details.",
+        "Cognitive overload handling must not create ConPort progress entries."
+      ],
+      "commands": [
+        "apply_patch"
+      ],
+      "expected_files": [
+        "services/adhd_engine/core/engine.py",
+        "services/adhd_engine/api/routes.py",
+        "services/adhd_engine/event_emitter.py",
+        "tests/unit/test_adhd_privacy_guard.py",
+        "services/adhd_engine/tests/test_api.py"
+      ],
+      "validation": [
+        "Targeted privacy guard tests fail before implementation and pass after implementation."
+      ],
+      "context_files": [
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "validate",
+      "task": "Validate packet schema, focused tests, syntax, diff scope, and precommit checks for the privacy guard slice.",
+      "requirements": [
+        "Report every NOT_RUN command with reason.",
+        "Inspect git status and diff scope before final summary.",
+        "Do not claim full live privacy enforcement beyond the tested route/event/persistence paths."
+      ],
+      "commands": [
+        "python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-05-PRIVACY-GUARD-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python -m pytest tests/unit/test_adhd_privacy_guard.py tests/unit/test_adhd_real_assessment.py tests/unit/test_adhd_activity_loop.py tests/unit/test_adhd_operator_profile_seed.py tests/unit/test_adhd_operator_identity.py tests/unit/test_adhd_engine_settings_contract.py tests/unit/test_adhd_engine_task_orchestrator_url.py services/adhd_engine/tests/test_activity_tracker.py services/adhd_engine/tests/test_api.py",
+        "python -m py_compile services/adhd_engine/core/engine.py services/adhd_engine/api/routes.py services/adhd_engine/event_emitter.py",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "task-packets/TP-DMX-ADHD-COGNITIVE-T4-05-PRIVACY-GUARD-001-implementation-notes.md"
+      ],
+      "validation": [
+        "Proof notes and final response distinguish PASS, FAIL, NOT_RUN, and remaining UNKNOWNs."
+      ],
+      "context_files": []
+    }
+  ]
+}
