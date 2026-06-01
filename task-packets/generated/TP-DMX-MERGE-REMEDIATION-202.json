@@ -36,7 +36,8 @@
     "Do not modify files outside the packet allowlist without stopping for supervisor review.",
     "Do not enable governed_automerge by default.",
     "Do not bypass PR Steward or independent embedded-audit readiness.",
-    "Supervisor approval is required before executing any merge-finalization authority."
+    "Supervisor approval is required before executing any merge-finalization authority.",
+    "TP-DMX-MERGE-FINALIZATION-203 must execute after this remediation packet because both packets touch shared merge-specialist policy and docs surfaces."
   ],
   "pal_chain": {
     "enabled": true,
