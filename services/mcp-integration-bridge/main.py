@@ -1197,9 +1197,31 @@ app = FastAPI(
     description=f"Task management coordination for Dopemux instance: {INSTANCE_NAME}",
 )
 
+# MCP2-07 (audit): wildcard origins on a service exposing task/KG data is unsafe (and is
+# an invalid combo with allow_credentials=True). Restrict to a configured allow-list
+# (comma-separated MCP_INTEGRATION_CORS_ORIGINS), defaulting to localhost. Override
+# explicitly for an intentional networked deployment.
+# P2: CORS matches scheme+host+port exactly; bare "http://localhost" blocks any
+# browser client at localhost:3000 etc.  Include the common local dev ports in
+# the default so the Dopemux dashboard works out of the box.  Operators who need
+# a different set should set MCP_INTEGRATION_CORS_ORIGINS explicitly.
+_cors_origins = [
+    origin.strip()
+    for origin in os.getenv("MCP_INTEGRATION_CORS_ORIGINS", "").split(",")
+    if origin.strip()
+] or [
+    "http://localhost",
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:8080",
+    "http://127.0.0.1",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+    "http://127.0.0.1:8080",
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -1690,15 +1712,20 @@ async def debug_instance_info():
             "task_orchestrator": TASK_ORCHESTRATOR_URL,
             "leantime_bridge": LEANTIME_BRIDGE_URL,
         },
-        "database_url": POSTGRES_URL,
-        "redis_url": REDIS_URL,
+        # MCP2-06 (audit): never return the DB/Redis connection strings -- they embed
+        # credentials. Report only whether they are configured.
+        "database_configured": bool(POSTGRES_URL),
+        "redis_configured": bool(REDIS_URL),
     }
 
 
 if __name__ == "__main__":
+    # MCP2-06 (audit): bind localhost by default so the bridge (which exposes task/KG data
+    # and a debug endpoint) is not reachable off-host unless explicitly opted in.
+    host = os.getenv("MCP_INTEGRATION_HOST", "127.0.0.1")
     uvicorn.run(
         "main:app",
-        host="0.0.0.0",
+        host=host,
         port=MCP_INTEGRATION_PORT,
         reload=False,  # Disable reload in production
     )
