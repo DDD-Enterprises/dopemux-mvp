@@ -81,8 +81,14 @@ class CLinkTool(SimpleTool):
             "their capabilities inside existing workflows."
         )
 
-    def get_annotations(self) -> dict[str, Any]:
-        return {"readOnlyHint": True}
+    def get_annotations(self) -> dict[str, Any] | None:
+        # Do NOT inherit SimpleTool's readOnlyHint=True. Shipped client configs in
+        # conf/cli_clients/ carry mutation flags (--permission-mode acceptEdits,
+        # --yolo, --dangerously-bypass-approvals-and-sandbox), so this tool cannot
+        # honestly advertise read-only. Mutation-flag classification is intentionally
+        # left to callers (e.g., tools/auditor_router/pal_clink.py) rather than
+        # duplicated here.
+        return None
 
     def requires_model(self) -> bool:
         return False
