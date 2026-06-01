@@ -5,9 +5,9 @@ type: reference
 owner: '@hu3mann'
 author: '@codex'
 date: '2026-05-25'
-last_review: '2026-05-25'
-next_review: '2026-08-23'
-prelude: Check-only PR review intake design scaffold for PR Steward v1.
+last_review: '2026-05-31'
+next_review: '2026-08-29'
+prelude: Check-only PR review intake and packaged CLI reference for PR Steward v1.
 ---
 # PR Steward V1
 
@@ -91,6 +91,29 @@ Fixture mode is the offline validation lane and must not require live GitHub:
 ```bash
 python -m tools.pr_steward.intake --fixture-dir tests/fixtures/pr_steward/ready_all_green --repo DDD-Enterprises/dopemux-mvp --pr 704 --out /tmp/pr-steward-ready --strict
 ```
+
+## Packaged Dopemux Command
+
+TP-DMX-STEWARD-PACKAGE-301 adds the packaged operator surface:
+
+```bash
+dopemux pr-steward
+```
+
+The packaged command exposes `intake`, `bridge`, `gate`, `audit`, and a
+fail-closed `doctor` placeholder. It is intentionally a single Dopemux CLI
+surface and does not add new console scripts or scaffold repository files.
+
+`steward_gate` logic ships in Python package code and must not be generated
+into scaffold YAML.
+
+## Packaged Command Boundaries
+
+- No PR mutation is performed by `intake`, `bridge`, `gate`, or `audit`.
+- `doctor` is report-only and currently exits blocked until TP303 implements
+  scaffold/config skew checks.
+- The command wraps existing engines; it does not change PR Steward classifier,
+  Action Bridge compiler, or merge-specialist gate semantics.
 
 ## Review Bundle
 
