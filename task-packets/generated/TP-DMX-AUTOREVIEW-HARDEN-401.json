@@ -1,0 +1,146 @@
+{
+  "commit": {
+    "allowlist": [
+      "docs/ops/operating-model.md",
+      "docs/ops/pr-acceptance.md",
+      "docs/ops/steward-merge-gate.md",
+      "docs/ops/pr-steward-distribution.md",
+      "task-packets/generated/TP-DMX-AUTOREVIEW-HARDEN-401.json",
+      "proof/TP-DMX-AUTOREVIEW-HARDEN-401/**"
+    ],
+    "message": "docs(ops): harden and finalize the autoreview platform",
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-AUTOREVIEW-HARDEN-401.json",
+      "git diff --check"
+    ]
+  },
+  "depends_on": [
+    "TP-DMX-PALCLINK-VERDICT-101",
+    "TP-DMX-ACTIONBRIDGE-CLI-102",
+    "TP-DMX-COPILOT-RENDERER-103",
+    "TP-DMX-AUDIT-CI-PROVENANCE-104",
+    "TP-DMX-AUTOREVIEW-E2E-105",
+    "TP-DMX-GHA-RELIABILITY-106",
+    "TP-DMX-STEWARD-GATE-201",
+    "TP-DMX-MERGE-REMEDIATION-202",
+    "TP-DMX-MERGE-FINALIZATION-203",
+    "TP-DMX-STEWARD-PACKAGE-301",
+    "TP-DMX-STEWARD-SCAFFOLD-302",
+    "TP-DMX-STEWARD-DOCTOR-303"
+  ],
+  "execution": {
+    "agent": "codex",
+    "base_branch": "main",
+    "branch": "codex/tp-dmx-autoreview-harden-401",
+    "stacked_because": "Part of the DMX-AUTOREVIEW-PLATFORM dependency DAG."
+  },
+  "id": "TP-DMX-AUTOREVIEW-HARDEN-401",
+  "invariants": [
+    "Runtime/source truth outranks this packet and the load plan.",
+    "Preserve PR Steward check-only semantics unless this packet explicitly authorizes a governed mutation gate.",
+    "Preserve fail-closed behavior on missing evidence, stale SHAs, unsupported permissions, or unknown authority.",
+    "Do not expose secrets, tokens, private keys, or unredacted provider metadata in proof artifacts.",
+    "Do not modify files outside the packet allowlist without stopping for supervisor review."
+  ],
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "pr": {
+    "base": "main",
+    "body": "## Summary\n- Opus adversarial audit of the whole platform end-to-end (governance + governed merge + distribution); close residual risks; refresh operating-model.md + pr-acceptance.md; emit series completion proof.\n\n## Scope\nTrack: D-harden. Risk: MEDIUM. Red lane: false.\n\n## Validation\nRun the packet validation commands and capture proof under proof/TP-DMX-AUTOREVIEW-HARDEN-401/PROOF.json.\n\n## NOT_RUN\nList any skipped live, integration, credentialed, or supervisor-gated checks explicitly.",
+    "title": "Docs(ops): harden and finalize the autoreview platform"
+  },
+  "project": "dopemux-mvp",
+  "repo_binding": {
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "require_identity_match": true
+  },
+  "series": {
+    "base_branch": "main",
+    "final_packet": true,
+    "id": "DMX-AUTOREVIEW-PLATFORM",
+    "parent_tp_id": "TP-DMX-PALCLINK-VERDICT-101"
+  },
+  "steps": [
+    {
+      "context_files": [
+        "AGENTS.md",
+        "docs/ops/load-plans/load_plan-DMX-AUTOREVIEW-PLATFORM.json",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "docs/ops/pr-acceptance.md"
+      ],
+      "id": "S1",
+      "task": "Inspect current repo truth, authority docs, runtime entrypoints, schemas, tests, and existing conventions before editing.",
+      "validation": [
+        "Canonical writer and downstream consumers are identified.",
+        "Any missing authority is recorded as UNKNOWN rather than inferred.",
+        "The planned diff is confirmed to stay within the packet allowlist."
+      ]
+    },
+    {
+      "expected_files": [
+        "docs/ops/operating-model.md",
+        "docs/ops/pr-acceptance.md",
+        "docs/ops/steward-merge-gate.md",
+        "docs/ops/pr-steward-distribution.md",
+        "task-packets/generated/TP-DMX-AUTOREVIEW-HARDEN-401.json",
+        "proof/TP-DMX-AUTOREVIEW-HARDEN-401/**"
+      ],
+      "id": "S2",
+      "requirements": [
+        "Track: D-harden",
+        "Proof path: proof/TP-DMX-AUTOREVIEW-HARDEN-401/PROOF.json",
+        "Executor default: claude-code-sonnet",
+        "Auditor default: claude-code-opus"
+      ],
+      "task": "Opus adversarial audit of the whole platform end-to-end (governance + governed merge + distribution); close residual risks; refresh operating-model.md + pr-acceptance.md; emit series completion proof.",
+      "validation": [
+        "Implementation preserves fail-closed behavior and deterministic artifact output.",
+        "No file outside commit.allowlist changed.",
+        "Stop conditions from this packet were not triggered, or execution stopped with evidence."
+      ]
+    },
+    {
+      "expected_files": [
+        "docs/ops/operating-model.md",
+        "docs/ops/pr-acceptance.md",
+        "docs/ops/steward-merge-gate.md",
+        "docs/ops/pr-steward-distribution.md",
+        "proof/TP-DMX-AUTOREVIEW-HARDEN-401/**"
+      ],
+      "id": "S3",
+      "task": "Update tests, docs, and proof artifacts required by the packet allowlist and keep runtime claims backed by observed code or validation.",
+      "validation": [
+        "Docs describe implemented behavior only.",
+        "Proof artifacts include commands, exit codes, diff scope, residual risks, and UNKNOWNs.",
+        "Generated artifacts are stable and replayable."
+      ]
+    },
+    {
+      "commands": [
+        "python -m json.tool task-packets/generated/TP-DMX-AUTOREVIEW-HARDEN-401.json",
+        "git diff --check"
+      ],
+      "id": "S4",
+      "task": "Run focused validation, inspect git diff, run codereview/precommit review, and prepare a truthful completion summary.",
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-DMX-AUTOREVIEW-HARDEN-401.json",
+        "git diff --check"
+      ]
+    }
+  ],
+  "target": "Opus adversarial audit of the whole platform end-to-end (governance + governed merge + distribution); close residual risks; refresh operating-model.md + pr-acceptance.md; emit series completion proof."
+}

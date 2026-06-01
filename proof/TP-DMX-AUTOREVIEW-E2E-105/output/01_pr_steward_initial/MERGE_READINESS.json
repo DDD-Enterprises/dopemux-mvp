@@ -1,0 +1,37 @@
+{
+  "blockers": [
+    "FAILED_CHECK"
+  ],
+  "ci_triage_path": "CI_TRIAGE.json",
+  "embedded_audit": {
+    "report_path": "proof/TP-DMX-AUTOREVIEW-E2E-105/AUDITOR_REPORT.md",
+    "status": "PASS"
+  },
+  "generated_at": "2026-01-01T00:00:00Z",
+  "mutation_performed": false,
+  "pr": {
+    "base_ref": "main",
+    "changed_files": [
+      "src/example.py"
+    ],
+    "commits": [
+      "head000000000000000000000000000000000000"
+    ],
+    "head_ref": "codex/offline-autoreview-fixture",
+    "head_sha": "head000000000000000000000000000000000000",
+    "number": 704,
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/704"
+  },
+  "proof": {
+    "matches_pr_head": true,
+    "proof_freshness": "FRESH",
+    "proof_head_sha": "head000000000000000000000000000000000000",
+    "proof_path": "proof/TP-DMX-AUTOREVIEW-E2E-105/PROOF.json"
+  },
+  "readiness": "NEEDS_IMPLEMENTER",
+  "review_item_ledger_path": "REVIEW_ITEM_LEDGER.json",
+  "risk_tier": "MEDIUM",
+  "schema_version": "1.1.0",
+  "thread_dispositions_path": "THREAD_DISPOSITIONS.json",
+  "unknowns": []
+}

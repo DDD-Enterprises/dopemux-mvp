@@ -1,0 +1,16 @@
+{
+  "checks": [
+    {
+      "name": "unit",
+      "status": "COMPLETED",
+      "conclusion": "FAILURE",
+      "required": true,
+      "blockers": [
+        "FAILED_CHECK"
+      ]
+    }
+  ],
+  "required_check_count": 1,
+  "failed_required_count": 1,
+  "pending_required_count": 0
+}

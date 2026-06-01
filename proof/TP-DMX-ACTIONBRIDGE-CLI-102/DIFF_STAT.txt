@@ -1,0 +1,20 @@
+ .gitignore                                         |   2 +
+ docs/ops/pr-action-bridge.md                       |  52 +++++-
+ .../TP-DMX-ACTIONBRIDGE-CLI-102/AUDITOR_REPORT.md  |  10 ++
+ .../TP-DMX-ACTIONBRIDGE-CLI-102/CHANGED_FILES.txt  |  19 +++
+ proof/TP-DMX-ACTIONBRIDGE-CLI-102/DIFF_STAT.txt    |   0
+ proof/TP-DMX-ACTIONBRIDGE-CLI-102/GIT_STATE.md     |   4 +
+ proof/TP-DMX-ACTIONBRIDGE-CLI-102/PROOF.json       | 104 ++++++++++++
+ .../VALIDATION_OUTPUT.md                           | 113 +++++++++++++
+ .../input/CI_TRIAGE.json                           |  16 ++
+ .../input/MERGE_READINESS.json                     |  12 ++
+ .../input/REVIEW_ITEM_LEDGER.json                  |   3 +
+ .../input/THREAD_DISPOSITIONS.json                 |   4 +
+ .../output/ACTION_PLAN.json                        |  18 +++
+ .../output/REPAIR_PACKET.md                        |  11 ++
+ scripts/pr-action-bridge                           |   8 +
+ .../generated/TP-DMX-ACTIONBRIDGE-CLI-102.json     |   3 +
+ tests/pr_action_bridge/test_cli.py                 | 174 +++++++++++++++++++++
+ tools/pr_action_bridge/__main__.py                 |   7 +
+ tools/pr_action_bridge/cli.py                      | 121 ++++++++++++++
+ 19 files changed, 678 insertions(+), 3 deletions(-)

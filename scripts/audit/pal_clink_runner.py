@@ -25,15 +25,18 @@ Usage:
 """
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import subprocess
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Optional
+from pathlib import Path
+from typing import Any, Optional
 
 from scripts.audit.route_schema import AuditRoute, FORBIDDEN_CLI_NAMES
+from tools.auditor_router.pal_clink import normalize_pal_clink_audit_output
 
 
 @dataclass(frozen=True)
@@ -166,3 +169,137 @@ def run_audit(
             error=f"timed out after {timeout_seconds}s",
             duration_seconds=duration,
         )
+
+
+def run_audit_and_capture_verdict(
+    route: AuditRoute,
+    prompt: str,
+    *,
+    route_record: dict[str, Any],
+    raw_output_path: Path,
+    report_path: str,
+    report_file_path: Path | None = None,
+    timeout_seconds: float = 300.0,
+    subprocess_run: _SubprocessRunFn = subprocess.run,
+    which_fn: Callable[[str], Optional[str]] = shutil.which,
+) -> dict[str, Any]:
+    """Run a PAL clink audit, persist raw output, and normalize a verdict.
+
+    ``PAL_CLINK_AUDIT_OUTPUT.json`` records the host-side runner result,
+    including timing and process output. The clink verdict payload is parsed
+    from stdout and normalized through the existing embedded-audit policy in
+    ``tools.auditor_router``.
+    """
+    output = run_audit(
+        route,
+        prompt,
+        timeout_seconds=timeout_seconds,
+        subprocess_run=subprocess_run,
+        which_fn=which_fn,
+    )
+    raw_output_path.parent.mkdir(parents=True, exist_ok=True)
+    raw_output_path.write_text(
+        json.dumps(_audit_output_as_dict(output), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    verdict_payload = _verdict_payload_from_output(output)
+    embedded_audit = normalize_pal_clink_audit_output(
+        verdict_payload,
+        route=route_record,
+        report_path=report_path,
+    )
+    if _payload_is_fixture_only(verdict_payload):
+        embedded_audit = {
+            **embedded_audit,
+            "status": "NEEDS_SUPERVISOR",
+            "exit_code": 1,
+            "remaining_risks": [
+                "Fixture-only audit is blocking; no live external PAL clink CLI was invoked."
+            ],
+        }
+
+    report_file = report_file_path or Path(report_path)
+    report_file.parent.mkdir(parents=True, exist_ok=True)
+    report_file.write_text(_render_audit_report(embedded_audit), encoding="utf-8")
+    return embedded_audit
+
+
+def _audit_output_as_dict(output: PalClinkAuditOutput) -> dict[str, Any]:
+    return {
+        "cli_name": output.cli_name,
+        "exit_code": output.exit_code,
+        "stdout": output.stdout,
+        "stderr": output.stderr,
+        "timed_out": output.timed_out,
+        "error": output.error,
+        "duration_seconds": output.duration_seconds,
+    }
+
+
+def _verdict_payload_from_output(output: PalClinkAuditOutput) -> dict[str, Any]:
+    if output.timed_out or output.exit_code != 0 or output.error:
+        return {
+            "status": "error",
+            "content": output.stdout,
+            "risks": [output.error or output.stderr or "PAL clink exited non-zero."],
+        }
+    try:
+        payload = json.loads(output.stdout)
+    except json.JSONDecodeError:
+        return {"status": "success", "content": output.stdout}
+    if isinstance(payload, dict):
+        return _unwrap_tool_output_payload(payload)
+    return {"status": "success", "content": output.stdout}
+
+
+def _unwrap_tool_output_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    if payload.get("status") != "success" or "verdict" in payload:
+        return payload
+    content = payload.get("content")
+    if not isinstance(content, str):
+        return payload
+    try:
+        content_payload = json.loads(content)
+    except json.JSONDecodeError:
+        return payload
+    if isinstance(content_payload, dict):
+        return content_payload
+    return payload
+
+
+def _payload_is_fixture_only(payload: dict[str, Any]) -> bool:
+    values: list[str] = []
+    for item in payload.get("risks") or []:
+        values.append(str(item))
+    content = payload.get("content")
+    if isinstance(content, str):
+        values.append(content)
+    text = "\n".join(values).lower()
+    return "fixture run only" in text or "fixture-only audit" in text
+
+
+def _render_audit_report(embedded_audit: dict[str, Any]) -> str:
+    findings = embedded_audit.get("findings") or []
+    risks = embedded_audit.get("remaining_risks") or []
+    lines = [
+        "# PAL Clink Audit Report",
+        "",
+        f"PAL clink audit verdict: {embedded_audit['status']}",
+        f"Auditor tool: {embedded_audit['auditor_tool']}",
+        f"Auditor model: {embedded_audit['auditor_model']}",
+        f"Exit code: {embedded_audit['exit_code']}",
+        "",
+        "## Findings",
+    ]
+    if findings:
+        for finding in findings:
+            lines.append(f"- {finding['severity']} {finding['id']}: {finding['title']}")
+    else:
+        lines.append("- None")
+    lines.extend(["", "## Remaining Risks"])
+    if risks:
+        lines.extend(f"- {risk}" for risk in risks)
+    else:
+        lines.append("- None")
+    return "\n".join(lines) + "\n"
