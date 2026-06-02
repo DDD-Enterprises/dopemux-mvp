@@ -236,6 +236,16 @@ def test_embedded_audit_workflow_runs_emitter_from_trusted_source() -> None:
     assert "scripts/audit/pal_clink_runner.py" in text
     assert "preflight_status=$?" in text
     assert "mkdir -p ../embedded-audit-artifacts" in text
+    assert "base_sha=\"$(git rev-parse HEAD)\"" in text
+    assert "head_sha='${{ steps.pr.outputs.head_sha }}'" in text
+    assert "git cat-file -e \"${head_sha}^{commit}\"" in text
+    assert "Changed files:" in text
+    assert "git diff --find-renames --name-status \"$base_sha\" \"$head_sha\"" in text
+    assert "Unified diff:" in text
+    assert (
+        "git diff --find-renames --no-ext-diff "
+        "\"$base_sha\" \"$head_sha\""
+    ) in text
     assert "--route-json ../embedded-audit-artifacts/AUDITOR_ROUTE.json" in text
     assert (
         "--pal-output-json "
