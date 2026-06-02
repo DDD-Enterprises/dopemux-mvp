@@ -372,9 +372,34 @@ class ServicesGrid(Static):
 class TrendsPanel(Static):
     """Sparkline trends (Tier 3)."""
 
-    cognitive_history = reactive(DEMO_COGNITIVE_HISTORY)
-    velocity_history = reactive(DEMO_VELOCITY_HISTORY)
-    switches_history = reactive(DEMO_SWITCHES_HISTORY)
+    cognitive_history = reactive([])
+    velocity_history = reactive([])
+    switches_history = reactive([])
+    source_label = reactive("unavailable")
+    last_sampled_at = reactive(None)
+
+    async def on_mount(self) -> None:
+        self.set_interval(30.0, self.update_trends)
+        await self.update_trends()
+
+    async def update_trends(self) -> None:
+        app: DopemuxDashboard = self.app  # type: ignore[assignment]
+        if app.demo:
+            self.apply_demo_trends()
+            return
+
+        self.cognitive_history = []
+        self.velocity_history = []
+        self.switches_history = []
+        self.source_label = "unavailable"
+        self.last_sampled_at = None
+
+    def apply_demo_trends(self) -> None:
+        self.cognitive_history = list(DEMO_COGNITIVE_HISTORY)
+        self.velocity_history = list(DEMO_VELOCITY_HISTORY)
+        self.switches_history = list(DEMO_SWITCHES_HISTORY)
+        self.source_label = "demo"
+        self.last_sampled_at = datetime.now(timezone.utc)
 
     def render(self) -> object:
         def sparkline(data: list[float | int]) -> str:
@@ -382,18 +407,28 @@ class TrendsPanel(Static):
             mx = max(data) or 1
             return "".join(chars[min(int((v / mx) * 7), 7)] for v in data)
 
+        def trend_value(data: list[float | int], style: str) -> str:
+            if not data:
+                return "[warning]UNAVAILABLE no live trend data[/]"
+            return f"[{style}]{sparkline(data)}[/]"
+
         table = _grid_table()
         table.add_row(
             "[label]Cognitive load[/]",
-            f"[mint.soft]{sparkline(self.cognitive_history)}[/] [text.dim](last 2h)[/]",
+            f"{trend_value(self.cognitive_history, 'mint.soft')} [text.dim](last 2h)[/]",
         )
         table.add_row(
             "[label]Task velocity[/]",
-            f"[info]{sparkline(self.velocity_history)}[/] [text.dim](last 7d)[/]",
+            f"{trend_value(self.velocity_history, 'info')} [text.dim](last 7d)[/]",
         )
         table.add_row(
             "[label]Context switches[/]",
-            f"[warning]{sparkline(self.switches_history)}[/] [text.dim](last 24h)[/]",
+            f"{trend_value(self.switches_history, 'warning')} [text.dim](last 24h)[/]",
+        )
+        table.add_row("[label]Source[/]", f"[text.dim]{self.source_label}[/]")
+        table.add_row(
+            "[label]Updated[/]",
+            f"[text.dim]{refresh_age_label(self.last_sampled_at)}[/]",
         )
 
         return styled_panel(table, title="📈 COGNITIVE TRENDS", border_style="warning")
@@ -502,6 +537,8 @@ class DopemuxDashboard(App):
             panel.call_later(panel.update_metrics)
         for panel in self.query(ServicesGrid):
             panel.call_later(panel.update_services)
+        for panel in self.query(TrendsPanel):
+            panel.call_later(panel.update_trends)
         self.notify("[LIVE] Refreshing cockpit telemetry.", severity="information")
 
 
