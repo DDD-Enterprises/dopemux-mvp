@@ -31,7 +31,7 @@
 **Action:** Always implement explicit success and empty states for sequential task components to provide closure and guidance when a workflow is completed or empty.
 
 ## 2025-05-20 - [Combatting Time Blindness]
-**Learning:** For users with ADHD, seeing a list of tasks without an aggregate "time to finish" can lead to "time blindness" or feeling overwhelmed by an infinite-feeling backlog. Providing a "Total Remaining Duration" counter that updates in real-time creates a "light at the end of the tunnel" effect, making the workload feel finite and manageable.
+**Learning:** For users with ADHD, seeing a list of tasks without an aggregate "time to finish" can lead to "time blindness" or feeling overwhelmed by an infinite-feeling backlog. Providing a "Total Remaining Duration" counter that updates in real-time creates a "light at the end of the tunnel" effect, making the workload feel more finite and manageable.
 **Action:** Aggregate and display total remaining estimated duration in sequential task managers to help users maintain perspective on their progress.
 
 ## 2026-03-12 - [Cognitive Load & Feed Management]
@@ -113,3 +113,7 @@
 ## 2025-05-24 - [Color-Coordinated Interactive Feedback]
 **Learning:** In dashboards with multiple categorical metrics (e.g., Energy, Focus, Load), using a single "brand" color (like Cyan) for all hover/focus states can obscure the semantic boundaries between different cards. Applying color-coordinated `borderColor` and `boxShadow` that match each metric's specific icon/theme color reinforces the categorical identity of the card and provides more precise visual feedback.
 **Action:** Use individualized accent colors for card-level hover and focus states to maintain categorical clarity in multi-metric dashboards.
+
+## 2025-05-25 - [Reactive Metric Feedback (Roasts)]
+**Learning:** Purely numerical metrics can feel "cold" and abstract. Adding a playful, reactive "roast" or personality-driven status message (e.g., "Future you is screaming" vs. "Focus flirting") based on thresholds provides immediate emotional context and reduces the cognitive effort required to interpret high values.
+**Action:** Use helper functions to inject personality-driven status strings into metric displays, providing human-readable context alongside raw data.

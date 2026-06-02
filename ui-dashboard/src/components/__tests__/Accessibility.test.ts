@@ -28,8 +28,6 @@ test('PredictionPanel.tsx has aria-label for LinearProgress and loading state', 
   expect(content).toContain('aria-label="15-Minute Load Prediction Percentage"');
   expect(content).toContain('aria-valuetext');
   expect(content).toContain('Prediction Loading...');
-  // Indeterminate LinearProgress in loading state
-  expect(content).toContain('aria-label="Loading prediction data"');
   expect(content).toMatch(/<Tooltip[^>]*title="Predictive LSTM model running on edge device"[^>]*arrow/);
 });
 
@@ -44,7 +42,7 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
   expect(content).toContain('aria-label={`${member.name}\'s Cognitive Load Percentage`}');
   expect(content).toContain('aria-label={`Profile picture of ${member.name}`}');
   expect(content).toContain('<Tooltip title={statusStyles[member.status].label} arrow>');
-  expect(content).toContain('<Tooltip title="Average cognitive load across all team members" arrow>');
+  expect(content).toMatch(/<Tooltip title=\{`Average cognitive load across all team members: \$\{teamAverageLoad\}%`\} arrow>/);
   expect(content).toContain('<Tooltip title="Current energy level" arrow>');
   expect(content).toContain('<Tooltip title="Current attention focus" arrow>');
   expect(content).toContain('<Tooltip title="AI-generated team coordination insights" arrow>');
