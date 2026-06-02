@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from dopemux_pr_merge_specialist import engine
+from dopemux_pr_merge_specialist import queue_drain as queue_drain_module
 from dopemux_pr_merge_specialist.schema import (
     BlockerType,
     Finding,
@@ -13,6 +14,7 @@ from dopemux_pr_merge_specialist.schema import (
     PullRequestState,
     ReviewThread,
     ThreadComment,
+    ThreadDisposition,
     ValidationReport,
     ValidationStatus,
 )
@@ -181,6 +183,34 @@ def test_truth_sources_include_validation_status():
         {"_meta": {"fingerprint": "abc"}},
     )
     assert sources[2].status == ValidationStatus.NOT_EXECUTED.value
+
+
+def test_applied_thread_dispositions_preserve_local_resolution_evidence():
+    dispositions = [
+        ThreadDisposition(
+            thread_id="T1",
+            disposition="implement",
+            reason="applied suggestion",
+            path="src/example.py",
+            applied=True,
+        )
+    ]
+
+    assert queue_drain_module._applied_threads_resolved_locally(dispositions) is True
+
+
+def test_declined_thread_disposition_does_not_count_as_locally_resolved():
+    dispositions = [
+        ThreadDisposition(
+            thread_id="T1",
+            disposition="decline_with_rationale",
+            reason="not safely applicable",
+            path="src/example.py",
+            applied=True,
+        )
+    ]
+
+    assert queue_drain_module._applied_threads_resolved_locally(dispositions) is False
 
 
 def test_decide_merge_action_returns_rebase_command_when_green():
