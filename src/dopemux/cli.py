@@ -53,6 +53,7 @@ from .ui.theme import (
 )
 from .ui.prompts import dopemux_prompt, dopemux_confirm
 from .ui.voice import VoiceEngine
+from .ux.confidence_band import ConfidenceBandState, render_confidence_band
 
 # Load environment variables from .env file
 load_dotenv()
@@ -2683,7 +2684,14 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
         table.add_row(
             "Session Duration", f"{metrics.get('session_duration', 0):.1f} min", "⏱️"
         )
-        table.add_row("Focus Score", f"{metrics.get('focus_score', 0):.1%}", "🎯")
+        table.add_row(
+            "Focus Score",
+            render_confidence_band(
+                value=metrics.get("focus_score"),
+                state=ConfidenceBandState.INFERRED,
+            ),
+            "🎯",
+        )
         table.add_row("Context Switches", str(metrics.get("context_switches", 0)), "🔄")
 
         console.logger.info(table)
