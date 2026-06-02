@@ -9,6 +9,11 @@ name: PR Steward
         description: Pull request number to inspect
         required: true
         type: string
+      proof_path:
+        description: Proof bundle path to inspect
+        required: true
+        type: string
+        default: proof/PROOF.json
 
 permissions:
   contents: read
@@ -47,6 +52,14 @@ jobs:
             printf 'number=%s\n' "$INPUT_PR_NUMBER" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Set proof path
+        id: proof
+        env:
+          INPUT_PROOF_PATH: ${{ inputs.proof_path }}
+        run: |
+          proof_path="${INPUT_PROOF_PATH:-proof/PROOF.json}"
+          printf 'path=%s\n' "$proof_path" >> "$GITHUB_OUTPUT"
+
       - name: Run PR Steward
         id: steward
         continue-on-error: true
@@ -56,6 +69,7 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --pr "${{ steps.pr.outputs.number }}" \
             --out pr-steward-artifacts \
+            --proof-path "${{ steps.proof.outputs.path }}" \
             --strict \
             --format text
           status=$?
