@@ -25,7 +25,35 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", metavar="COMMAND")
 
     intake = subparsers.add_parser("intake", help="Run check-only PR Steward intake.")
-    intake.add_argument("args", nargs=argparse.REMAINDER)
+    intake.add_argument("--repo", required=True, help="GitHub repository owner/name.")
+    intake.add_argument("--pr", required=True, type=int, help="Pull request number.")
+    intake.add_argument("--out", required=True, type=Path, help="Output directory.")
+    intake.add_argument(
+        "--strict",
+        action="store_true",
+        help="Require final CI/check state before READY.",
+    )
+    intake.add_argument(
+        "--fixture-dir",
+        type=Path,
+        help="Offline fixture directory containing harvest.json.",
+    )
+    intake.add_argument(
+        "--proof-path",
+        type=Path,
+        help="Proof JSON path used in live mode to verify audit status and PR head SHA.",
+    )
+    intake.add_argument(
+        "--allow-closed",
+        action="store_true",
+        help="Allow closed or merged PRs to be reported without PR_CLOSED blocker.",
+    )
+    intake.add_argument(
+        "--format",
+        choices=["json", "text"],
+        default="text",
+        help="Print JSON readiness or text summary.",
+    )
     intake.set_defaults(handler=_run_intake)
 
     bridge = subparsers.add_parser(
@@ -95,7 +123,24 @@ def _run_intake(args: argparse.Namespace) -> int:
     except ModuleNotFoundError as exc:
         print(f"pr-steward intake unavailable: {exc}", file=sys.stderr)
         return 2
-    return int(intake_main(list(args.args)))
+    forwarded = [
+        "--repo",
+        args.repo,
+        "--pr",
+        str(args.pr),
+        "--out",
+        str(args.out),
+    ]
+    if args.strict:
+        forwarded.append("--strict")
+    if args.fixture_dir is not None:
+        forwarded.extend(["--fixture-dir", str(args.fixture_dir)])
+    if args.proof_path is not None:
+        forwarded.extend(["--proof-path", str(args.proof_path)])
+    if args.allow_closed:
+        forwarded.append("--allow-closed")
+    forwarded.extend(["--format", args.format])
+    return int(intake_main(forwarded))
 
 
 def _run_bridge(args: argparse.Namespace) -> int:
