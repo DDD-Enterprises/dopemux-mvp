@@ -136,11 +136,20 @@ def test_installed_pr_steward_console_can_import_engines(tmp_path: Path):
                 "from dopemux_pr_steward.cli import build_parser; "
                 "import pathlib; "
                 "import tools.pr_steward.classifier as classifier; "
+                "import dopemux.agent; "
+                "import dopemux.orchestrator.validation; "
+                "import dopemux.tui.widgets; "
                 "import tools.copilot_repair.generator; "
+                "import tools.auditor_router; "
                 "import tools.pr_steward.intake; "
                 "import tools.pr_action_bridge.compiler; "
+                "from importlib.resources import files; "
                 "build_parser(); "
-                "print(pathlib.Path(classifier.__file__).with_name('known_reviewers.json').is_file())"
+                "print(pathlib.Path(classifier.__file__).with_name("
+                "'known_reviewers.json').is_file()); "
+                "print(files('dopemux_pr_steward').joinpath('config.schema.json').is_file()); "
+                "print(files('dopemux.templates').joinpath("
+                "'init/config/pr_steward/policy.json').is_file())"
             ),
         ],
         cwd=tmp_path,
@@ -151,4 +160,4 @@ def test_installed_pr_steward_console_can_import_engines(tmp_path: Path):
     )
 
     assert probe.returncode == 0, probe.stderr
-    assert probe.stdout.strip() == "True"
+    assert probe.stdout.strip().splitlines() == ["True", "True", "True"]
