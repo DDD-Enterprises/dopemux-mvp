@@ -147,7 +147,7 @@ User Request
 **Planned Commands**:
 
 - `/dx:prd-parse` - PRD decomposition with Zen planner + ConPort import
-- `/dx:implement` - ADHD-optimized 25min sessions with auto-save
+- `/dx:implement` - ADHD-optimized 25-minute sessions with planned save checkpoints
 - `/dx:analyze` - Direct Zen thinkdeep integration
 - `/dx:review` - Direct Zen codereview with multi-model validation
 - `/dx:session` - Focus session management with timers
@@ -242,6 +242,10 @@ Example: "/sc:troubleshoot authentication failing intermittently"
 
 ## ADHD Session Workflow
 
+**Observed runtime support**: manual `/dx:save`, `dopemux save`, registered lifecycle hook dispatch, and best-effort Stop/energy/progress hook signals.
+
+**Planned/specification behavior**: `/dx:implement` timers, recurring save checkpoints, break prompts, and hyperfocus pause enforcement are not proven wired in observed Claude runtime.
+
 ### 25-Minute Focus Session
 
 ```
@@ -253,7 +257,7 @@ Session Start (2 min)
 
 Implementation (20 min)
 ├─ /sc:implement or /sc:fix   # Primary work
-├─ Auto-save every 5 min      # Context preservation
+├─ Save checkpoint every 5 min # Context preservation through verified paths
 ├─ Progress tracking          # Update ConPort progress_entry
 └─ Focus maintenance          # Minimize context switches
 
@@ -264,18 +268,18 @@ Session End (3 min)
 └─ Plan next session          # Set next_steps in active_context
 
 Break (5 min)
-└─ Mandatory after 25 min     # ADHD accommodation
+└─ Recommended after 25 min   # ADHD accommodation
 ```
 
-### Hyperfocus Protection
+### Planned Hyperfocus Protection
 
 ```
 Warning at 60 min
 └─> "You've been coding for 60 minutes. Consider a break soon."
 
-Mandatory at 90 min
+Forced pause at 90 min
 └─> "90 minutes elapsed. Taking a break now to prevent burnout."
-    ├─ /sc:save (forced)
+    ├─ /sc:save or `/dx:save`
     ├─ Session pause
     └─ 15-minute minimum break
 ```
@@ -284,8 +288,8 @@ Mandatory at 90 min
 
 ```
 Interrupted During Work
-├─ Auto-save triggered        # .dopemux/context.db updated
-├─ Session snapshot created   # .dopemux/sessions/session-<id>.json
+├─ Save checkpoint requested  # .dopemux/context.db updated when save path runs
+├─ Session snapshot created   # .dopemux/sessions/session-<id>.json when save path runs
 └─ ConPort context preserved  # active_context unchanged
 
 Resume After Interruption
@@ -915,10 +919,10 @@ sqlite3 .dopemux/context.db "SELECT * FROM session_metadata ORDER BY last_active
 │ Navigate Code:      serena/find_symbol                  │
 │ Multi-Model:        zen/consensus or zen/thinkdeep      │
 │                                                          │
-│ Break Reminder:     Every 25 minutes                    │
-│ Auto-Save:          Every 5 minutes during work         │
-│ Hyperfocus Warn:    At 60 minutes                       │
-│ Mandatory Break:    At 90 minutes                       │
+│ Break Checkpoint:   At 25 minutes, planned              │
+│ Save Checkpoint:    Every 5 minutes, planned            │
+│ Hyperfocus Alert:   At 60 minutes, planned              │
+│ Forced Pause:       At 90 minutes, planned              │
 └─────────────────────────────────────────────────────────┘
 ```
 
