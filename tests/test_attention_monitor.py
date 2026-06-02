@@ -85,12 +85,15 @@ class TestAttentionMonitor:
         assert attention_monitor._monitoring is False
 
     def test_get_current_metrics_no_data(self, attention_monitor):
-        """Test getting current metrics when no data available."""
+        """Test current metrics fail honest when no data is available."""
         metrics = attention_monitor.get_current_metrics()
 
-        assert metrics["attention_state"] == AttentionState.NORMAL
-        assert metrics["focus_score"] == 0.5
-        assert metrics["session_duration"] == 0
+        assert metrics["attention_state"] == "unavailable"
+        assert metrics["focus_score"] is None
+        assert metrics["session_duration"] is None
+        assert metrics["context_switches"] is None
+        assert metrics["data_status"] == "unavailable"
+        assert metrics["status_message"] == "no active monitoring data"
         assert metrics["monitoring_active"] is False
 
     def test_get_current_metrics_with_data(self, attention_monitor):

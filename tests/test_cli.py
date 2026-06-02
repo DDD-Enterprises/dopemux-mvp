@@ -522,6 +522,33 @@ class TestCLI:
         assert "Context Information" in result.output
         assert "Task Progress" in result.output
 
+    @patch("dopemux.cli.AttentionMonitor")
+    def test_status_attention_no_data_fails_honest(self, mock_attention):
+        """Test status --attention does not render fabricated defaults."""
+        mock_attention_monitor = Mock()
+        mock_attention_monitor.get_current_metrics.return_value = {
+            "attention_state": "unavailable",
+            "session_duration": None,
+            "focus_score": None,
+            "context_switches": None,
+            "data_status": "unavailable",
+            "status_message": "no active monitoring data",
+            "monitoring_active": False,
+        }
+        mock_attention.return_value = mock_attention_monitor
+
+        runner = CliRunner()
+        with patch("dopemux.cli.Path.cwd", return_value=Path("/test")):
+            with patch("dopemux.cli.Path.exists", return_value=True):
+                result = runner.invoke(cli, ["status", "--attention"])
+
+        assert result.exit_code == 0
+        assert "UNAVAILABLE" in result.output
+        assert "no active monitoring data" in result.output
+        assert "INFERRED" not in result.output
+        assert "50%" not in result.output
+        assert "normal" not in result.output
+
     @patch("dopemux.cli.ConfigManager")
     @patch("dopemux.cli.TaskDecomposer")
     def test_task_command_add_task(self, mock_decomposer, mock_config):
