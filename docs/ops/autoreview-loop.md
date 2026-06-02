@@ -17,7 +17,8 @@ The autoreview loop is a read-only, deterministic governance lane:
 1. PR Steward classifies a harvested PR fixture and emits check-only artifacts.
 2. Action Bridge reads those artifacts from disk and writes `ACTION_PLAN.json`.
 3. Copilot repair generation maps implementer-role actions into a bounded
-   `CopilotRepairPacket` and renders the governed PR repair template.
+   `CopilotRepairPacket` and renders the governed PR repair template with the
+   declared Jinja2 runtime dependency.
 4. Independent embedded audit emits a schema-valid proof object with redacted
    provenance.
 5. PR Steward re-intake verifies the final harvested state.

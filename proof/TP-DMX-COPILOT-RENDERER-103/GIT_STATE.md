@@ -1,8 +1,9 @@
 # TP-DMX-COPILOT-RENDERER-103 Git State
 
-- Worktree: `/Users/hue/code/dopemux-mvp/.worktrees/autoreview-platform-packets-20260531`
+- Worktree: `dopemux-mvp-wt-pr760-review-repair`
 - Branch: `codex/tp-dmx-copilot-renderer-103`
-- Base branch: `codex/tp-dmx-actionbridge-cli-102`
+- Local repair branch: `codex/pr760-review-repair-20260601`
+- Base branch: `main`
 - Remote: `https://github.com/DDD-Enterprises/dopemux-mvp.git`
 - Primary checkout: `/Users/hue/code/dopemux-mvp` (not used for edits)
 - Repo marker: `.dopetaskroot` observed in repository root

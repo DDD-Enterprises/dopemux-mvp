@@ -14,7 +14,10 @@ Expected missing-entrypoint failure was observed:
 
 `pytest -q tests/audit/test_run_embedded_audit.py`
 
-Result: PASS.
+Result: PASS (`7 passed`, including trusted-source execution, trusted-token
+step isolation, default-branch manual dispatch trust, requested PR head-ref
+membership verification, missing PAL output handling, and bootstrap SKIPPED
+proof assertions).
 
 `python -m json.tool task-packets/generated/TP-DMX-AUDIT-CI-PROVENANCE-104.json`
 
@@ -56,6 +59,10 @@ Result: PASS.
 
 Result: PASS.
 
+`git check-ignore -q proof/TP-DMX-AUDIT-CI-PROVENANCE-104/PROOF.json; test $? -eq 1`
+
+Result: PASS.
+
 `pre-commit run --files <TP104 changed files>`
 
 Result: PASS.
@@ -85,6 +92,14 @@ Result: PASS.
 The generated proof records `trusted_token_status=UNKNOWN`,
 `token_value_recorded=false`, and `embedded_audit.status=SKIPPED` because no
 separate `EMBEDDED_AUDIT_TOKEN` or live PAL clink output was available locally.
+
+`python scripts/audit/run_embedded_audit.py --packet-id TP-DMX-AUDIT-CI-PROVENANCE-104 --repo DDD-Enterprises/dopemux-mvp --pr 761 --head-sha ce4acffb066f8860311c76d74f5fb353d82b412c --route-json <missing> --out <tmp-artifacts> --generated-at 2026-01-01T00:00:00Z`
+
+Result: PASS.
+
+The missing route JSON path returned exit code 0 with a schema-valid `SKIPPED`
+proof and wrote `proof/TP-DMX-AUDIT-CI-PROVENANCE-104/AUDITOR_REPORT.md` under
+the temporary artifact root.
 
 ## Task Orchestrator
 

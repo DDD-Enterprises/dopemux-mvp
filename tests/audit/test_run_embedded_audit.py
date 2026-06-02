@@ -118,12 +118,85 @@ def test_run_cli_writes_proof_and_auditor_report(tmp_path: Path) -> None:
     proof = json.loads((out_dir / "PROOF.json").read_text(encoding="utf-8"))
     jsonschema.Draft7Validator(_schema()).validate(proof["embedded_audit"])
     assert proof["embedded_audit"]["status"] == "PASS"
-    assert (out_dir / "AUDITOR_REPORT.md").is_file()
+    report_text = (out_dir / proof["embedded_audit"]["report_path"]).read_text(
+        encoding="utf-8"
+    )
     assert "secret-value" not in (out_dir / "PROOF.json").read_text(encoding="utf-8")
+    assert "secret-value" not in report_text
+    assert "PROOF.json" in report_text
+
+
+def test_run_cli_skips_when_route_json_is_missing(tmp_path: Path) -> None:
+    out_dir = tmp_path / "proof"
+
+    exit_code = run_cli(
+        [
+            "--packet-id",
+            "TP-DMX-AUDIT-CI-PROVENANCE-104",
+            "--repo",
+            "DDD-Enterprises/dopemux-mvp",
+            "--pr",
+            "760",
+            "--head-sha",
+            "d" * 40,
+            "--route-json",
+            str(tmp_path / "missing" / "AUDITOR_ROUTE.json"),
+            "--out",
+            str(out_dir),
+            "--generated-at",
+            "2026-01-01T00:00:00Z",
+        ],
+        env={},
+    )
+
+    assert exit_code == 0
+    proof = json.loads((out_dir / "PROOF.json").read_text(encoding="utf-8"))
+    jsonschema.Draft7Validator(_schema()).validate(proof["embedded_audit"])
+    assert proof["embedded_audit"]["status"] == "SKIPPED"
+    assert "auditor route JSON" in proof["embedded_audit"]["skip_reason"]
+    assert (out_dir / proof["embedded_audit"]["report_path"]).is_file()
+
+
+def test_run_cli_skips_when_supplied_pal_output_json_is_missing(
+    tmp_path: Path,
+) -> None:
+    route_path = tmp_path / "AUDITOR_ROUTE.json"
+    out_dir = tmp_path / "proof"
+    route_path.write_text(json.dumps(_route()), encoding="utf-8")
+
+    exit_code = run_cli(
+        [
+            "--packet-id",
+            "TP-DMX-AUDIT-CI-PROVENANCE-104",
+            "--repo",
+            "DDD-Enterprises/dopemux-mvp",
+            "--pr",
+            "760",
+            "--head-sha",
+            "e" * 40,
+            "--route-json",
+            str(route_path),
+            "--pal-output-json",
+            str(tmp_path / "missing" / "PAL_CLINK_AUDIT_OUTPUT.json"),
+            "--out",
+            str(out_dir),
+            "--generated-at",
+            "2026-01-01T00:00:00Z",
+        ],
+        env={"EMBEDDED_AUDIT_TOKEN": "secret-value"},
+    )
+
+    assert exit_code == 0
+    proof = json.loads((out_dir / "PROOF.json").read_text(encoding="utf-8"))
+    jsonschema.Draft7Validator(_schema()).validate(proof["embedded_audit"])
+    assert proof["embedded_audit"]["status"] == "SKIPPED"
+    assert "PAL clink output JSON" in proof["embedded_audit"]["skip_reason"]
+    assert (out_dir / proof["embedded_audit"]["report_path"]).is_file()
 
 
 def test_embedded_audit_workflow_is_read_only_and_not_pull_request_target() -> None:
     text = WORKFLOW_PATH.read_text(encoding="utf-8")
+    permissions = text.split("permissions:\n", 1)[1].split("\njobs:", 1)[0]
 
     assert "pull_request_target" not in text
     assert "contents: read" in text
@@ -131,9 +204,44 @@ def test_embedded_audit_workflow_is_read_only_and_not_pull_request_target() -> N
     assert "checks: read" in text
     assert "statuses: read" in text
     assert "continue-on-error: true" in text
-    assert "Checkout requested head" in text
-    assert "ref: ${{ steps.pr.outputs.head_sha }}" in text
-    assert "write" not in text
-    assert "scripts/audit/pal_clink_runner.py" in text
+    assert ": write" not in permissions
     assert "scripts/audit/run_embedded_audit.py" in text
-    assert "--pal-output-json embedded-audit-artifacts/PAL_CLINK_AUDIT_OUTPUT.json" in text
+
+
+def test_embedded_audit_workflow_runs_emitter_from_trusted_source() -> None:
+    text = WORKFLOW_PATH.read_text(encoding="utf-8")
+
+    assert "Checkout trusted audit source" in text
+    assert "path: trusted-source" in text
+    assert "ref: ${{ steps.pr.outputs.trusted_ref }}" in text
+    assert "TRUSTED_FALLBACK_REF: ${{ github.event.repository.default_branch }}" in text
+    assert "TRUSTED_FALLBACK_SHA" not in text
+    assert "working-directory: trusted-source" in text
+    assert "id: head_integrity" in text
+    assert "HEAD_VERIFIED: ${{ steps.head_integrity.outputs.verified }}" in text
+    assert 'if [ "$HEAD_VERIFIED" != "true" ]; then' in text
+    assert "Emit skipped embedded audit proof" in text
+    assert "Emit embedded audit proof with trusted token" in text
+    assert "EMBEDDED_AUDIT_TOKEN: ${{ secrets.EMBEDDED_AUDIT_TOKEN }}" in text
+    assert "refs/pull/${PR_NUMBER}/head" in text
+    assert 'pr_head_sha" = "$EXPECTED_HEAD_SHA"' in text
+    assert "requested head SHA could not be fetched or did not match" in text
+    assert "ref does not yet contain scripts/audit/run_embedded_audit.py" in text
+    assert "git -C trusted-source fetch --no-tags --depth=1 origin" in text
+    assert "Checkout requested head" not in text
+    assert "ref: ${{ steps.pr.outputs.head_sha }}" not in text
+    assert "github.event.pull_request.head.sha || github.sha" not in text
+    assert "Verify requested head SHA" in text
+    assert "Run PAL clink audit" in text
+    assert "scripts/audit/pal_clink_runner.py" in text
+    assert "preflight_status=$?" in text
+    assert "mkdir -p ../embedded-audit-artifacts" in text
+    assert "--route-json ../embedded-audit-artifacts/AUDITOR_ROUTE.json" in text
+    assert (
+        "--pal-output-json "
+        "../embedded-audit-artifacts/PAL_CLINK_AUDIT_OUTPUT.json"
+    ) in text
+    assert (
+        'if [ "$actual_head_sha" = "$EXPECTED_HEAD_SHA" ] '
+        '&& [ "$pr_head_sha" = "$EXPECTED_HEAD_SHA" ]; then'
+    ) in text

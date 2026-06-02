@@ -15,8 +15,8 @@ IMPLEMENTER_CATEGORIES = {
 }
 SUGGESTED_ACTIONS = {
     "unresolved-thread": (
-        "Address the unresolved review thread and resolve it after the code "
-        "change is made."
+        "Address the local code change requested by the unresolved review "
+        "thread; leave GitHub thread resolution to the operator."
     ),
     "failed-check": (
         "Fix the failing CI check locally, then rerun the relevant focused "

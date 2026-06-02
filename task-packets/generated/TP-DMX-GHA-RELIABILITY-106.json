@@ -7,6 +7,7 @@
       "docs/ops/pr-gate-runbook.md",
       "docs/ops/branch-policy-audit.md",
       "docs/ops/ci-trigger-refresh.md",
+      "tests/ci/test_pr_gate.py",
       "task-packets/generated/TP-DMX-GHA-RELIABILITY-106.json",
       "proof/TP-DMX-GHA-RELIABILITY-106/**"
     ],
@@ -86,6 +87,7 @@
         "docs/ops/pr-gate-runbook.md",
         "docs/ops/branch-policy-audit.md",
         "docs/ops/ci-trigger-refresh.md",
+        "tests/ci/test_pr_gate.py",
         "task-packets/generated/TP-DMX-GHA-RELIABILITY-106.json",
         "proof/TP-DMX-GHA-RELIABILITY-106/**"
       ],
@@ -108,6 +110,7 @@
         "docs/ops/pr-gate-runbook.md",
         "docs/ops/branch-policy-audit.md",
         "docs/ops/ci-trigger-refresh.md",
+        "tests/ci/test_pr_gate.py",
         "proof/TP-DMX-GHA-RELIABILITY-106/**"
       ],
       "id": "S3",

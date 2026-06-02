@@ -128,9 +128,9 @@ gh api repos/DDD-Enterprises/dopemux-mvp/rulesets
 gh api repos/DDD-Enterprises/dopemux-mvp/rulesets/13063360
 ```
 
-Timestamp: 2026-05-27. Re-run to refresh.
+Initial capture timestamp: 2026-05-27.
 
-Refreshed via the same read-only API calls on 2026-05-31. The refresh observed
-`📊 CI Pipeline Summary` in classic branch protection's
-`required_status_checks.contexts` and observed ruleset `13063360` still active
+Refresh timestamp: 2026-05-31. The refresh used the same read-only API calls,
+observed `📊 CI Pipeline Summary` in classic branch protection's
+`required_status_checks.contexts`, and observed ruleset `13063360` still active
 with deletion, non-fast-forward, pull-request, and Copilot-code-review rules.

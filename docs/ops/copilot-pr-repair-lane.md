@@ -50,7 +50,7 @@ These are the only categories that appear in a `CopilotRepairPacket`:
 
 | Category | Source Blocker | What to do |
 |---|---|---|
-| `unresolved-thread` | `UNRESOLVED_REVIEW_THREAD` | Address the review thread and resolve it |
+| `unresolved-thread` | `UNRESOLVED_REVIEW_THREAD` | Make the local code change; operator resolves the GitHub thread |
 | `failed-check` | `FAILED_CHECK` | Investigate and fix the failing CI check |
 | `request-changes` | `REQUEST_CHANGES` | Address reviewer-requested changes |
 | `must-fix` | `REVIEW_ITEM_MUST_FIX` | Resolve the must-fix review item |

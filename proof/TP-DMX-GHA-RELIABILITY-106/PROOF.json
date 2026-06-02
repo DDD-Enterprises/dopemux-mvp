@@ -3,8 +3,8 @@
   "status": "PASS_WITH_LIMITS",
   "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-gha-reliability-106",
   "branch": "codex/tp-dmx-gha-reliability-106",
-  "base_ref": "origin/main",
-  "base_sha": "5bab790effc7b1f4f1b06f3dd5d13e92c0d48d53",
+  "base_ref": "mvp/main",
+  "base_sha": "83ca005b784a2a3811d3281ad0b2cfedee91b91d",
   "repo_identity": {
     "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
     "marker": ".dopetaskroot",
@@ -32,15 +32,21 @@
     "S1 inspected authority files, runtime workflows, docs, and live read-only branch protection.",
     "S2 confirmed scoped workflow triggers and single ci-summary gate without runtime YAML changes.",
     "S3 refreshed operator docs and proof artifacts.",
-    "S4 ran focused validation, proof validation, precommit on touched files, and diff hygiene checks."
+    "S4 ran focused validation, proof validation, precommit on touched files, and diff hygiene checks.",
+    "S5 review repair aligned PR gate docs/tests with current workflow blocking jobs and refreshed proof metadata."
   ],
   "files_changed": [
     "docs/ops/pr-gate-runbook.md",
     "docs/ops/branch-policy-audit.md",
     "docs/ops/ci-trigger-refresh.md",
+    "tests/ci/test_pr_gate.py",
     "task-packets/generated/TP-DMX-GHA-RELIABILITY-106.json",
     "proof/TP-DMX-GHA-RELIABILITY-106/AUDITOR_REPORT.md",
-    "proof/TP-DMX-GHA-RELIABILITY-106/PROOF.json"
+    "proof/TP-DMX-GHA-RELIABILITY-106/CHANGED_FILES.txt",
+    "proof/TP-DMX-GHA-RELIABILITY-106/DIFF_STAT.txt",
+    "proof/TP-DMX-GHA-RELIABILITY-106/GIT_STATE.md",
+    "proof/TP-DMX-GHA-RELIABILITY-106/PROOF.json",
+    "proof/TP-DMX-GHA-RELIABILITY-106/VALIDATION_OUTPUT.md"
   ],
   "validations": [
     {
@@ -59,7 +65,7 @@
       "status": "PASS"
     },
     {
-      "command": "python workflow trigger assertion for ready_for_review, workflow_dispatch, and no pull_request_target",
+      "command": "python - <<'PY'\nimport pathlib\nimport yaml\nfor name in ['ci-complete.yml','pr-steward.yml','preflight.yml']:\n    path = pathlib.Path('.github/workflows') / name\n    doc = yaml.load(path.read_text(), Loader=yaml.BaseLoader)\n    events = doc.get('on', {})\n    assert 'pull_request_target' not in events, name\n    assert 'ready_for_review' in events['pull_request']['types'], name\n    assert 'workflow_dispatch' in events, name\nprint('workflow trigger assertions PASS')\nPY",
       "exit_code": 0,
       "status": "PASS"
     },
@@ -70,6 +76,16 @@
     },
     {
       "command": "python scripts/audit/validate_audit_proof.py proof/TP-DMX-GHA-RELIABILITY-106/PROOF.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "pytest -q tests/ci/test_pr_gate.py",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m compileall -q tests/ci/test_pr_gate.py",
       "exit_code": 0,
       "status": "PASS"
     },
@@ -101,7 +117,8 @@
   },
   "codereview_status": "Manual bounded review complete: docs describe observed workflow/API behavior only; no workflow runtime behavior was changed.",
   "precommit_status": "PASS: pre-commit run on touched files and git diff --check passed.",
-  "commit_sha": "08b81136e6b9ff3ede76e5009c6d13b71f900c80",
+  "commit_sha": "PENDING_FINAL_PROOF_ONLY_COMMIT_SHA",
+  "commit_sha_scope": "Explicitly pending because the proof bundle is being updated in the commit that would otherwise need to name itself. The final PR head SHA is verified with GitHub before merge.",
   "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/763",
   "residual_risks": [
     "Admin and maintainer bypass actors remain active in branch ruleset/classic protection.",
