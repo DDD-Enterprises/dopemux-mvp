@@ -19,6 +19,16 @@ export default function TeamDashboard() {
     teamMembers.reduce((total, member) => total + member.load, 0) / teamMembers.length
   );
 
+  const getStatusFromLoad = (load: number) => {
+    if (load > 80) return 'critical';
+    if (load > 60) return 'high';
+    if (load < 30) return 'low';
+    return 'optimal';
+  };
+
+  const teamStatus = getStatusFromLoad(teamAverageLoad);
+  const teamStatusColor = statusStyles[teamStatus].color;
+
   return (
     <Paper
       aria-label="Team dashboard signal summary"
@@ -31,13 +41,22 @@ export default function TeamDashboard() {
       <Typography variant="h6" sx={{ mb: 2 }}>
         Team Signal Board
       </Typography>
-      <Tooltip title="Average cognitive load across all team members" arrow>
+      <Tooltip title={`Average cognitive load across all team members: ${teamAverageLoad}%`} arrow>
         <LinearProgress
           aria-label="Team Average Cognitive Load Percentage"
           aria-valuetext={`${teamAverageLoad}%`}
           variant="determinate"
           value={teamAverageLoad}
-          sx={{ mb: 2, height: 8, borderRadius: 6 }}
+          sx={{
+            mb: 2,
+            height: 8,
+            borderRadius: 6,
+            bgcolor: alpha(teamStatusColor, 0.1),
+            '& .MuiLinearProgress-bar': {
+              bgcolor: teamStatusColor,
+              borderRadius: 3,
+            },
+          }}
         />
       </Tooltip>
       <Box sx={{ display: 'grid', gap: 1.5, mb: 2 }}>
