@@ -122,11 +122,22 @@ jobs:
         continue-on-error: true
         working-directory: trusted-source
         run: |
+          base_sha="$(git rev-parse HEAD)"
+          head_sha='${{ steps.pr.outputs.head_sha }}'
+          if ! git cat-file -e "${head_sha}^{commit}"; then
+            git fetch --no-tags --depth=1 origin "$head_sha"
+          fi
           {
             printf 'Review pull request %s in %s at head SHA %s.\n\n' \
               '${{ steps.pr.outputs.number }}' \
               "$GITHUB_REPOSITORY" \
-              '${{ steps.pr.outputs.head_sha }}'
+              "$head_sha"
+            printf 'Trusted base/source SHA: %s\n\n' "$base_sha"
+            printf 'Changed files:\n'
+            git diff --find-renames --name-status "$base_sha" "$head_sha"
+            printf '\nUnified diff:\n```diff\n'
+            git diff --find-renames --no-ext-diff "$base_sha" "$head_sha"
+            printf '\n```\n\n'
             printf 'Return JSON with status, verdict, findings, and risks.\n'
           } > ../embedded-audit-artifacts/PAL_CLINK_AUDIT_INPUT.md
           set +e
