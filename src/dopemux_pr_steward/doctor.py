@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
+from importlib.resources import files
+from importlib.resources.abc import Traversable
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +15,10 @@ SCHEMA_RELATIVE_PATH = Path("schemas/pr_steward/config.schema.json")
 SCAFFOLD_RELATIVE_PATH = Path(
     "src/dopemux/templates/init/config/pr_steward/policy.json"
 )
+SCHEMA_RESOURCE_PACKAGE = "dopemux_pr_steward"
+SCHEMA_RESOURCE_NAME = "config.schema.json"
+SCAFFOLD_RESOURCE_PACKAGE = "dopemux.templates"
+SCAFFOLD_RESOURCE_NAME = "init/config/pr_steward/policy.json"
 
 SUPPORTED_SCHEMA_KEYS = {
     "$id",
@@ -60,12 +66,12 @@ def run_doctor(
     """Validate PR Steward config and scaffold skew without mutating files."""
     workspace = workspace.expanduser().resolve()
     config_path = workspace / CONFIG_RELATIVE_PATH
-    schema_path = schema_path or _find_repo_file(SCHEMA_RELATIVE_PATH)
-    scaffold_path = scaffold_path or _find_repo_file(SCAFFOLD_RELATIVE_PATH)
+    schema_source = schema_path or _default_schema_source()
+    scaffold_source = scaffold_path or _default_scaffold_source()
 
     checks: dict[str, dict[str, str]] = {}
 
-    schema = _load_schema(schema_path)
+    schema = _load_schema(schema_source)
     if isinstance(schema, str):
         checks["config_schema"] = {"status": "FAIL", "message": schema}
         return _blocked("UNKNOWN_SCHEMA", workspace, checks)
@@ -100,7 +106,7 @@ def run_doctor(
         "message": f"{CONFIG_RELATIVE_PATH} validates against {SCHEMA_RELATIVE_PATH}.",
     }
 
-    scaffold = _load_json_object(scaffold_path)
+    scaffold = _load_json_object(scaffold_source)
     if isinstance(scaffold, str):
         checks["scaffold_skew"] = {"status": "FAIL", "message": scaffold}
         return _blocked("SCAFFOLD_UNKNOWN", workspace, checks)
@@ -157,6 +163,32 @@ def _blocked(
     )
 
 
+JsonSource = Path | Traversable
+
+
+def _default_schema_source() -> JsonSource:
+    return _find_packaged_file(SCHEMA_RESOURCE_PACKAGE, SCHEMA_RESOURCE_NAME) or _find_repo_file(
+        SCHEMA_RELATIVE_PATH
+    )
+
+
+def _default_scaffold_source() -> JsonSource:
+    return _find_packaged_file(
+        SCAFFOLD_RESOURCE_PACKAGE,
+        SCAFFOLD_RESOURCE_NAME,
+    ) or _find_repo_file(SCAFFOLD_RELATIVE_PATH)
+
+
+def _find_packaged_file(package: str, resource_name: str) -> Traversable | None:
+    try:
+        candidate = files(package)
+    except (ModuleNotFoundError, ValueError):
+        return None
+    for part in Path(resource_name).parts:
+        candidate = candidate.joinpath(part)
+    return candidate if candidate.is_file() else None
+
+
 def _find_repo_file(relative_path: Path) -> Path:
     candidates = [Path.cwd(), *Path(__file__).resolve().parents]
     for candidate in candidates:
@@ -166,23 +198,30 @@ def _find_repo_file(relative_path: Path) -> Path:
     return Path.cwd() / relative_path
 
 
-def _load_schema(path: Path) -> dict[str, Any] | str:
-    payload = _load_json_object(path)
+def _load_schema(source: JsonSource) -> dict[str, Any] | str:
+    payload = _load_json_object(source)
     if isinstance(payload, str):
-        return f"Unknown schema at {path}: {payload}"
+        return f"Unknown schema at {_source_label(source)}: {payload}"
     return payload
 
 
-def _load_json_object(path: Path) -> dict[str, Any] | str:
-    if not path.exists():
-        return f"Missing JSON object file: {path}"
+def _load_json_object(source: JsonSource) -> dict[str, Any] | str:
+    if isinstance(source, Path):
+        if not source.exists():
+            return f"Missing JSON object file: {source}"
+    elif not source.is_file():
+        return f"Missing JSON object file: {_source_label(source)}"
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload = json.loads(source.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
-        return f"Invalid JSON in {path}: {exc.msg}"
+        return f"Invalid JSON in {_source_label(source)}: {exc.msg}"
     if not isinstance(payload, dict):
-        return f"{path} must contain a JSON object"
+        return f"{_source_label(source)} must contain a JSON object"
     return payload
+
+
+def _source_label(source: JsonSource) -> str:
+    return str(source)
 
 
 def _find_unsupported_schema_keys(schema: Any, *, in_properties: bool = False) -> set[str]:

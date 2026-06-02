@@ -50,13 +50,23 @@ def steward_gate(
         )
 
     evidence = _evidence(readiness, audit_proof)
-    sha_values = {
+    required_sha_values = {
         "requested_head_sha": head_sha,
         "merge_readiness_pr_head_sha": evidence["merge_pr_head_sha"],
-        "merge_readiness_proof_head_sha": evidence["merge_proof_head_sha"],
         "audit_proof_head_sha": evidence["audit_proof_head_sha"],
     }
-    if any(not value for value in sha_values.values()) or len(set(sha_values.values())) != 1:
+    sha_values = {
+        **required_sha_values,
+        "merge_readiness_proof_head_sha": evidence["merge_proof_head_sha"],
+    }
+    if any(not value for value in required_sha_values.values()) or len(
+        set(required_sha_values.values())
+    ) != 1:
+        return _deny(normalized_class, "DENY_SHA_MISMATCH", **evidence, sha_values=sha_values)
+    if evidence["merge_proof_head_sha"] != head_sha and not _allows_self_reference_exception(
+        evidence,
+        head_sha=head_sha,
+    ):
         return _deny(normalized_class, "DENY_SHA_MISMATCH", **evidence, sha_values=sha_values)
 
     if evidence["merge_readiness"] not in READINESS_BY_CLASS[normalized_class]:
@@ -93,16 +103,35 @@ def _evidence(readiness: Mapping[str, Any], audit_proof: Mapping[str, Any]) -> d
     readiness_proof = _mapping(readiness.get("proof"))
     readiness_audit = _mapping(readiness.get("embedded_audit"))
     proof_audit = _mapping(audit_proof.get("embedded_audit"))
+    proof_freshness = readiness_proof.get("proof_freshness")
     return {
         "merge_readiness": str(readiness.get("readiness") or ""),
         "merge_generated_at": str(readiness.get("generated_at") or ""),
         "proof_generated_at": str(audit_proof.get("generated_at") or ""),
         "merge_pr_head_sha": str(pr.get("head_sha") or ""),
         "merge_proof_head_sha": str(readiness_proof.get("proof_head_sha") or ""),
+        "merge_proof_freshness": proof_freshness,
         "audit_proof_head_sha": str(audit_proof.get("head_sha") or ""),
         "merge_embedded_audit_status": str(readiness_audit.get("status") or "").upper(),
         "proof_embedded_audit_status": str(proof_audit.get("status") or "").upper(),
     }
+
+
+def _allows_self_reference_exception(evidence: Mapping[str, Any], *, head_sha: str) -> bool:
+    freshness = evidence.get("merge_proof_freshness")
+    if not isinstance(freshness, Mapping):
+        return False
+    exception = freshness.get("self_reference_exception")
+    return (
+        str(freshness.get("status") or "").upper()
+        == "CURRENT_WITH_SELF_REFERENCE_EXCEPTION"
+        and freshness.get("matches_pr_head") is False
+        and str(freshness.get("pr_head_sha") or "") == head_sha
+        and str(freshness.get("proof_recorded_sha") or "")
+        == str(evidence.get("merge_proof_head_sha") or "")
+        and isinstance(exception, Mapping)
+        and exception.get("supervisor_accepted") is True
+    )
 
 
 def _mapping(value: Any) -> Mapping[str, Any]:

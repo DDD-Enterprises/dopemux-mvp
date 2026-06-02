@@ -24,6 +24,7 @@ def _merge_readiness(
     readiness: str = "NEEDS_IMPLEMENTER",
     audit_status: str = "PASS",
     generated_at: str = FRESH,
+    proof_freshness: str | dict = "FRESH",
 ) -> dict:
     return {
         "schema_version": "1.1.0",
@@ -45,7 +46,7 @@ def _merge_readiness(
             "proof_path": "proof/TP/PROOF.json",
             "proof_head_sha": proof_head_sha,
             "matches_pr_head": proof_head_sha == head_sha,
-            "proof_freshness": "FRESH",
+            "proof_freshness": proof_freshness,
         },
         "blockers": ["FAILED_CHECK"],
         "unknowns": [],
@@ -116,6 +117,41 @@ def test_remediation_gate_denies_sha_mismatch(tmp_path: Path):
 
     assert result.allowed is False
     assert result.reason_code == "DENY_SHA_MISMATCH"
+
+
+def test_finalization_gate_allows_valid_self_reference_exception(tmp_path: Path):
+    proof_head_sha = "proof-only-final-sha"
+    readiness_path = _write_json(
+        tmp_path / "MERGE_READINESS.json",
+        _merge_readiness(
+            readiness="READY",
+            proof_head_sha=proof_head_sha,
+            proof_freshness={
+                "status": "CURRENT_WITH_SELF_REFERENCE_EXCEPTION",
+                "matches_pr_head": False,
+                "reason": "Final proof commit cannot contain its own SHA.",
+                "proof_recorded_sha": proof_head_sha,
+                "pr_head_sha": HEAD_SHA,
+                "self_reference_exception": {
+                    "supervisor_accepted": True,
+                    "allowed_when": ["proof-only final commit"],
+                },
+            },
+        ),
+    )
+    proof_path = _write_json(tmp_path / "PROOF.json", _audit_proof())
+
+    result = steward_gate(
+        head_sha=HEAD_SHA,
+        required_class="FINALIZATION",
+        merge_readiness_path=readiness_path,
+        audit_proof_path=proof_path,
+        now=NOW,
+        ttl_seconds=3600,
+    )
+
+    assert result.allowed is True
+    assert result.reason_code == "ALLOW_FINALIZATION"
 
 
 def test_remediation_gate_denies_skipped_independent_audit(tmp_path: Path):

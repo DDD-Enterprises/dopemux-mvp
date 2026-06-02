@@ -144,10 +144,12 @@ dopemux-pr-steward = "dopemux_pr_steward.cli:main"
 
 [tool.setuptools]
 packages = [
+    "conport",
     "core",
     "core.config",
     "dopemux",
     "dopemux.adhd",
+    "dopemux.agent",
     "dopemux.analysis",
     "dopemux.claude",
     "dopemux.claude_tools",
@@ -166,21 +168,31 @@ packages = [
     "dopemux.execution",
     "dopemux.extraction",
     "dopemux.extractor",
+    "dopemux.hooks",
     "dopemux.logging",
     "dopemux.mcp",
     "dopemux.memory",
     "dopemux.memory.adapters",
     "dopemux.mobile",
+    "dopemux.orchestrator",
+    "dopemux.orchestrator.automation",
+    "dopemux.orchestrator.ui",
+    "dopemux.orchestrator.validation",
     "dopemux.pm",
     "dopemux.pm.adapters",
     "dopemux.roles",
+    "dopemux.service_base",
     "dopemux.system_data",
+    "dopemux.templates",
+    "dopemux.tools",
     "dopemux.tmux",
     "dopemux.tui",
+    "dopemux.tui.widgets",
     "dopemux.ui",
     "dopemux.ui.cockpit",
     "dopemux.update",
     "dopemux.upgrades",
+    "dopemux.utils",
     "dopemux.ux",
     "dopemux.ux.wizard",
     "dopemux.voice",
@@ -192,7 +204,10 @@ packages = [
     "dopemux_pr_steward",
     "integrations",
     "tools",
+    "tools.auditor_router",
     "tools.copilot_repair",
+    "tools.prompt_rewrite_v4",
+    "tools.prompt_rewrite_v4.benchmark",
     "tools.pr_action_bridge",
     "tools.pr_steward",
     "utils",
@@ -206,6 +221,8 @@ packages = [
 "tools.pr_steward" = "tools/pr_steward"
 
 [tool.setuptools.package-data]
+"dopemux.templates" = ["init/config/pr_steward/policy.json"]
+"dopemux_pr_steward" = ["config.schema.json"]
 "tools.pr_steward" = ["known_reviewers.json"]
 
 [tool.black]
