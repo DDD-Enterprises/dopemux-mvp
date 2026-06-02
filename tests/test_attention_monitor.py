@@ -195,15 +195,44 @@ class TestAttentionMonitor:
         assert score == 0.0  # Should be clamped to 0
 
     def test_classify_attention_state_distracted(self, attention_monitor):
-        """Test classifying distracted state."""
+        """Test classifying distracted state with corroborating pressure."""
         state = attention_monitor._classify_attention_state(
             keystroke_rate=0,
-            error_rate=0,
-            context_switches=0,
+            error_rate=3,
+            context_switches=5,
             pause_duration=700,  # > 10 minutes
             focus_score=0.5,
         )
         assert state == AttentionState.DISTRACTED
+
+    def test_classify_attention_state_lone_pause_is_not_distracted(
+        self, attention_monitor
+    ):
+        """Test lone pause evidence does not classify as distracted."""
+        state = attention_monitor._classify_attention_state(
+            keystroke_rate=0,
+            error_rate=0,
+            context_switches=0,
+            pause_duration=700,
+            focus_score=0.0,
+        )
+        assert state == AttentionState.NORMAL
+
+    def test_classify_attention_state_hyperfocus_latches_through_lone_pause(
+        self, attention_monitor
+    ):
+        """Test hyperfocus stays latched until corroborating evidence."""
+        attention_monitor._current_state = AttentionState.HYPERFOCUS
+        attention_monitor._state_duration = 50 * 60
+
+        state = attention_monitor._classify_attention_state(
+            keystroke_rate=0,
+            error_rate=0,
+            context_switches=0,
+            pause_duration=700,
+            focus_score=0.0,
+        )
+        assert state == AttentionState.HYPERFOCUS
 
     def test_classify_attention_state_scattered(self, attention_monitor):
         """Test classifying scattered state."""

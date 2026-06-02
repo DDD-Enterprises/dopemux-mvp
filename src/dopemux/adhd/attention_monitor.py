@@ -303,8 +303,21 @@ class AttentionMonitor:
         focus_score: float,
     ) -> str:
         """Classify current attention state."""
-        # Check for distraction (long pause)
-        if pause_duration > 600:  # 10 minutes
+        long_pause = pause_duration > 600
+        pressure_signals = sum(
+            1
+            for signal_seen in (
+                context_switches > self.context_switch_threshold,
+                error_rate >= 2,
+            )
+            if signal_seen
+        )
+
+        if self._current_state == AttentionState.HYPERFOCUS and pressure_signals < 2:
+            return AttentionState.HYPERFOCUS
+
+        # Check for distraction (long pause with corroborating pressure)
+        if long_pause and pressure_signals >= 2:
             return AttentionState.DISTRACTED
 
         # Check for hyperfocus (sustained high activity)

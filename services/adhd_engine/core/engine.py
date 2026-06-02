@@ -515,6 +515,9 @@ class ADHDAccommodationEngine:
             "tool_name",
             "source_event",
             "boundary_type",
+            "tool_failures",
+            "idle_detected",
+            "idle_minutes",
         }
         metrics = {
             key: value
@@ -1214,6 +1217,14 @@ Format: {{
             short_focus = focus_duration < thresholds["low_focus_duration"]
             long_focus = focus_duration > thresholds["high_focus_duration"]
             low_distraction = distraction_events < max(2, thresholds["high_distraction_events"] / 2)
+            boundary_seen = (
+                indicators.get("boundary_events", 0) > 0
+                or indicators.get("work_boundary_events", 0) > 0
+            )
+            idle_seen = (
+                bool(indicators.get("idle_detected"))
+                or indicators.get("idle_minutes", 0) > 0
+            )
 
             # Assess attention state
             if excessive_abandonment or excessive_distractions:
@@ -1229,6 +1240,18 @@ Format: {{
 
             # Update tracking
             previous_state = self.current_attention_states.get(user_id)
+            if previous_state == AttentionState.HYPERFOCUSED and not boundary_seen:
+                exit_signal_count = sum(
+                    1
+                    for signal_seen in (
+                        rapid_switching,
+                        excessive_abandonment or excessive_distractions,
+                        idle_seen,
+                    )
+                    if signal_seen
+                )
+                if exit_signal_count < 2:
+                    attention_state = AttentionState.HYPERFOCUSED
             self.current_attention_states[user_id] = attention_state
 
             # Log state change
@@ -1596,6 +1619,13 @@ Format: {{
         prompt_events = int(activity.get("prompt_events", 0) or 0)
         tool_failures = int(activity.get("tool_failures", 0) or 0)
         context_switches_per_hour = max(context_switches, prompt_events)
+        idle_minutes = float(activity.get("idle_minutes", 0) or 0.0)
+        boundary_events = int(activity.get("boundary_events", 0) or 0)
+        work_boundary_events = int(activity.get("work_boundary_events", 0) or 0)
+        if activity.get("boundary_type"):
+            boundary_events = max(boundary_events, 1)
+            if activity.get("boundary_type") in {"commit", "test", "build"}:
+                work_boundary_events = max(work_boundary_events, 1)
 
         if context_switches_per_hour >= 10:
             average_focus_duration = 8
@@ -1609,6 +1639,10 @@ Format: {{
             "abandoned_tasks": tool_failures,
             "average_focus_duration": average_focus_duration,
             "distraction_events": (tool_failures * 3) + max(0, context_switches_per_hour - 15),
+            "boundary_events": boundary_events,
+            "work_boundary_events": work_boundary_events,
+            "idle_detected": bool(activity.get("idle_detected")) or idle_minutes > 0,
+            "idle_minutes": idle_minutes,
         }
 
     async def _calculate_system_cognitive_load(self) -> float:
