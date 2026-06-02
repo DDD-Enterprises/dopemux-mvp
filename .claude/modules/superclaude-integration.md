@@ -6,6 +6,10 @@
 **Status**: ✅ Fully Integrated (2025-10-03)
 **SuperClaude Version**: 4.1.5
 
+**Observed runtime support**: `/sc:` command integration, manual `/dx:save`, `dopemux save`, registered lifecycle hook dispatch, and best-effort Stop/energy/progress hook signals.
+
+**Planned/specification behavior**: `/dx:implement` timers, recurring save checkpoints, break prompts, and hyperfocus pause enforcement are not proven wired in observed Claude runtime.
+
 ## Why SuperClaude?
 
 SuperClaude provides an **excellent command framework** with 25 commands and 15 specialized agents. However, Dopemux's MCP stack is **superior**:
@@ -79,7 +83,7 @@ SuperClaude provides an **excellent command framework** with 25 commands and 15 
                              v
 ┌───────────────────────────────────────────────────────────┐
 │              Python ADHD Engine + Dashboard                │
-│  Energy tracking │ 25min sessions │ Break monitoring      │
+│  Energy tracking │ 25-minute specs │ Break monitoring      │
 └───────────────────────────────────────────────────────────┘
 ```
 
@@ -232,13 +236,13 @@ workflow:
 ```
 
 ### 3. `/dx:implement` - ADHD-Optimized Implementation (PRIMARY DEVELOPMENT)
-**Purpose**: 25min focus sessions with energy matching
-**ADHD Value**: Break management, auto-save, hyperfocus protection
+**Purpose**: 25-minute focus sessions with energy matching
+**ADHD Value**: Break management, save checkpoints, hyperfocus protection
 
 ```yaml
 # ~/.claude/commands/dx/implement.yaml
 name: implement
-description: ADHD-optimized implementation with 25min sessions
+description: ADHD-optimized implementation with 25-minute sessions
 agent: developer
 workflow:
   - step: check_energy
@@ -256,7 +260,7 @@ workflow:
       status_filter: "TODO"
 
   - step: start_session
-    description: "Start 25min timer with auto-save every 5min"
+    description: "Start an operator-managed 25-minute checkpoint with planned save checkpoints"
     output: |
       🎯 **Starting 25-minute focus session**
 
@@ -266,17 +270,17 @@ workflow:
       ✅ **Match**: Good fit!
 
       **Timer**: 25:00 ⏱️
-      **Auto-save**: Every 5 minutes
-      **Break**: Reminder at 25min
+      **Save checkpoint**: Every 5 minutes through a verified save path
+      **Break**: Checkpoint at 25 minutes
 
   - step: implementation
     agent: developer
     mode: focused_implementation
     adhd_hooks:
-      - auto_save_interval: 300  # 5 minutes
-      - break_reminder: 1500     # 25 minutes
-      - hyperfocus_warn: 3600    # 60 minutes
-      - hyperfocus_force: 5400   # 90 minutes
+      - save_checkpoint: 300     # 5 minutes, planned
+      - break_checkpoint: 1500   # 25 minutes, planned
+      - hyperfocus_alert: 3600   # 60 minutes, planned
+      - hyperfocus_pause: 5400   # 90 minutes, planned
 ```
 
 ### 4. `/dx:prd-parse` - PRD Decomposition with Human Review
@@ -492,10 +496,10 @@ mcp_servers:
 # ADHD optimizations
 adhd:
   session_duration: 25  # minutes
-  auto_save_interval: 5  # minutes
-  break_reminders: true
-  hyperfocus_warn: 60   # minutes
-  hyperfocus_force: 90  # minutes
+  save_checkpoint_interval: 5  # minutes, planned unless runtime wiring is verified
+  break_checkpoints: true
+  hyperfocus_alert: 60     # minutes, planned unless runtime wiring is verified
+  hyperfocus_pause: 90    # minutes, planned unless runtime wiring is verified
 
   # Progressive disclosure
   max_detail_levels: 3
@@ -538,7 +542,7 @@ Configure MCP routing for:
 
 ### Day 6: Testing & Documentation (6-8 hours)
 - [ ] Test complete workflows (PRD → Implementation → Review)
-- [ ] Verify ADHD accommodations (25min sessions, breaks)
+- [ ] Verify ADHD accommodations (25-minute sessions, breaks)
 - [ ] Document command usage patterns
 - [ ] Create troubleshooting guide
 
@@ -552,7 +556,7 @@ Configure MCP routing for:
 # Start implementation
 /dx:implement
 
-# (25 minutes later: automatic break reminder)
+# (25 minutes later: planned break checkpoint)
 # "Great work! Time for 5min break ☕"
 
 # Continue or switch tasks
@@ -578,7 +582,7 @@ Configure MCP routing for:
 # Step 3: Implementation
 /dx:implement
 # → ADHD engine selects optimal task based on energy
-# → 25min session with auto-save
+# → Operator-managed 25-minute session with planned save checkpoints
 
 # Step 4: Code review
 /dx:review "src/auth/*.py"

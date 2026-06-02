@@ -25,11 +25,11 @@
 
 ## 🧠 Core ADHD Principles
 
-- **Context Preservation**: Auto-save every 30 seconds, maintain awareness across interruptions
+- **Context Preservation**: Manual `dopemux save` and `/dx:save` support context capture; Stop hooks can perform best-effort saves when the ADHD Engine is running. A background 30-second save loop is planned/configured behavior, not observed Claude runtime support.
 - **Gentle Guidance**: Encouraging, supportive language with clear next steps
 - **Progressive Disclosure**: Essential info first, details on request
 - **Decision Reduction**: Maximum 3 options to reduce cognitive overwhelm
-- **Task Chunking**: Break work into 25-minute segments with visual progress
+- **Task Chunking**: Use operator-managed 25-minute checkpoints with visual progress; automatic timer enforcement is not observed runtime support.
 
 ## ⚡ Simplified Task & Cognitive Architecture
 
@@ -37,7 +37,7 @@
 **Authorities**: Task storage, PRD decomposition, ADHD optimization, progress tracking
 - **ConPort (PostgreSQL AGE)**: Task storage via progress_entry, metadata in custom_data, dependencies via link_conport_items, knowledge graph queries for unblocked tasks, decision logging
 - **SuperClaude**: PRD parsing via `/dx:prd-parse` with PAL planner, 25 standard commands, 15 specialized agents, `/dx:` custom commands for ADHD workflows
-- **Python ADHD Engine**: Energy tracking, cognitive load calculation, break monitoring, attention state analysis, smart task routing, hyperfocus protection
+- **Python ADHD Engine**: Energy tracking, cognitive load calculation, break monitoring, attention state analysis, smart task routing, and hyperfocus-support modules. Claude-facing timer, break, and forced-pause automation remains not proven wired unless an explicit command/service path is verified.
 - **React Ink Dashboard**: Visual task progress, ADHD metrics, attention-aware UI, real-time updates
 
 ### Cognitive Plane
@@ -121,7 +121,11 @@ All Dopemux MCPs documented in `~/.claude/MCP_*.md` (auto-imported):
 
 The project's `.claude/settings.json` registers 10 lifecycle hooks (`SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`, `Stop`, `SubagentStop`, `PreCompact`, `SessionEnd`), all dispatched through one entry point: `src/dopemux/claude/native_hooks.py`. Individual hook scripts live under `.claude/hooks/` (e.g., `check_energy.sh`, `log_progress.sh`, `save_context.sh`, `track_file_edit.sh`, `prompt_analyzer.py`, `session_lifecycle.py`).
 
-Hooks run outside the model's turn — they're how the project automates auto-save, energy/break tracking, and ConPort context preservation. If you want to change hook behavior, edit the dispatcher or `.claude/hooks/` scripts; routine settings tweaks should go through the `update-config` skill rather than hand-editing `settings.json`. Hook output reaches the model as `<user-prompt-submit-hook>` blocks — treat as user input.
+**Observed runtime support**: Settings dispatch all lifecycle events through `native_hooks.py`; hook scripts provide best-effort context save on Stop, energy warnings before complex tools, and progress/edit event signals.
+
+**Planned/specification behavior**: focus-session timers, periodic save loops, automatic break prompts, and forced hyperfocus pauses are not proven wired in the observed Claude runtime.
+
+Hooks run outside the model's turn. If you want to change hook behavior, edit the dispatcher or `.claude/hooks/` scripts; routine settings tweaks should go through the `update-config` skill rather than hand-editing `settings.json`. Hook output reaches the model as `<user-prompt-submit-hook>` blocks — treat as user input.
 
 ## 📚 Detailed Information Locations
 
@@ -131,7 +135,7 @@ When you need comprehensive details, refer to:
 **SuperClaude Workflows**: `.claude/modules/shared/superclaude-workflows.md` (integration patterns, command selection, ADHD sessions)
 **Task Management**: `.claude/modules/superclaude-integration.md`, `.claude/modules/custom-commands.md`
 **Cognitive Plane**: `.claude/modules/cognitive-plane/` (serena-lsp.md, conport-memory.md)
-**ADHD Engine**: `.claude/modules/shared/adhd-patterns.md` (sessions, energy tracking, break management)
+**ADHD Engine**: `.claude/modules/shared/adhd-patterns.md` (sessions, energy tracking, break management; separates observed support from planned automation)
 **Shared Systems**: `.claude/modules/shared/` (sprint.md, event-patterns.md, superclaude-workflows.md)
 **Filesystem Organization**: `docs/03-reference/filesystem-guide.md` (directory structure, file placement rules)
 **Harness features** (Plan mode, advisor, /loop, ToolSearch, Skill): `~/.claude/MODES_AND_TOOLS.md`

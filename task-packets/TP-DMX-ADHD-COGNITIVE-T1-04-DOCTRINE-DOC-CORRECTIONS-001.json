@@ -1,0 +1,161 @@
+{
+  "id": "TP-DMX-ADHD-COGNITIVE-T1-04-DOCTRINE-DOC-CORRECTIONS-001",
+  "project": "dopemux-mvp",
+  "target": "Doctrine docs distinguish implemented ADHD runtime support from planned focus-session automation",
+  "invariants": [
+    "Do not present planned or specified ADHD behaviors as implemented runtime truth.",
+    "Runtime-supported hook claims must be limited to behavior observed in .claude/settings.json, src/dopemux/claude/native_hooks.py, and active hook scripts.",
+    "25-minute timers, automatic 5-minute auto-save loops, forced 90-minute breaks, and automatic break reminders must be labeled planned/specification unless runtime evidence is cited.",
+    "Do not change runtime code, hook registration, service behavior, or command behavior in this documentation slice.",
+    "Do not edit archived, deprecated, persona, or generated history copies in this slice.",
+    "Preserve AGENTS.md and governance authority order."
+  ],
+  "depends_on": [
+    "TP-DMX-ADHD-COGNITIVE-T1-03-TRENDSPANEL-DEMO-GATE-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ADHD-COGNITIVE-REMEDIATION",
+    "base_branch": "codex/adhd-trendspanel-demo-gate-001",
+    "parent_tp_id": "TP-DMX-ADHD-COGNITIVE-T1-03-TRENDSPANEL-DEMO-GATE-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/adhd-doctrine-doc-corrections-001",
+    "base_branch": "codex/adhd-trendspanel-demo-gate-001",
+    "stacked_because": "Doctrine correction follows the T1 honesty-layer dashboard and status fail-honest slices."
+  },
+  "commit": {
+    "message": "docs(adhd): label planned focus automation honestly",
+    "allowlist": [
+      ".claude/claude.md",
+      ".claude/modules/shared/adhd-patterns.md",
+      ".claude/modules/shared/superclaude-workflows.md",
+      ".claude/modules/custom-commands.md",
+      ".claude/modules/superclaude-integration.md",
+      ".claude/commands/save.md",
+      ".claude/commands/dx/implement.md",
+      "scripts/validate_adhd_doctrine_docs.py",
+      "task-packets/TP-DMX-ADHD-COGNITIVE-T1-04-DOCTRINE-DOC-CORRECTIONS-001.json",
+      "task-packets/TP-DMX-ADHD-COGNITIVE-T1-04-DOCTRINE-DOC-CORRECTIONS-001-implementation-notes.md"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T1-04-DOCTRINE-DOC-CORRECTIONS-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python scripts/validate_adhd_doctrine_docs.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(adhd): label planned focus automation honestly",
+    "body": "## Summary\n- correct active Claude doctrine surfaces so planned focus-session automation is not described as live runtime behavior\n- limit hook claims to observed native-hook registration and hook-script behavior\n- keep 25-minute timers, auto-save loops, break reminders, and forced hyperfocus breaks as planned/spec guidance unless runtime-backed\n\n## Validation\n- python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T1-04-DOCTRINE-DOC-CORRECTIONS-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- python scripts/validate_adhd_doctrine_docs.py\n- git diff --check",
+    "base": "codex/adhd-trendspanel-demo-gate-001"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect",
+      "task": "Inspect active Claude doctrine and hook/runtime evidence before editing documentation claims.",
+      "requirements": [
+        "Identify observed hook registration and active hook script behavior.",
+        "Identify stale planned-as-runtime ADHD claims in active instruction docs.",
+        "Exclude archived, deprecated, persona, and generated history copies from this slice."
+      ],
+      "commands": [
+        "sed -n '1,150p' .claude/claude.md",
+        "sed -n '500,690p' .claude/modules/shared/adhd-patterns.md",
+        "sed -n '1,140p' .claude/settings.json",
+        "sed -n '1,220p' src/dopemux/claude/native_hooks.py"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Observed runtime support and planned/specification claims are separated before documentation edits."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        ".claude/claude.md",
+        ".claude/settings.json",
+        "src/dopemux/claude/native_hooks.py",
+        ".claude/hooks/save_context.sh",
+        ".claude/hooks/check_energy.sh",
+        ".claude/hooks/log_progress.sh",
+        ".claude/hooks/track_file_edit.sh",
+        ".claude/modules/shared/adhd-patterns.md",
+        ".claude/modules/shared/superclaude-workflows.md",
+        ".claude/modules/custom-commands.md",
+        ".claude/modules/superclaude-integration.md",
+        ".claude/commands/save.md",
+        ".claude/commands/dx/implement.md"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Update active doctrine docs so planned ADHD focus-session automation is labeled planned/specification and observed hooks are described narrowly.",
+      "requirements": [
+        "Do not edit runtime code.",
+        "Do not claim 25-minute timers, 5-minute auto-save loops, forced 90-minute breaks, or automatic break reminders are currently wired unless runtime evidence supports it.",
+        "Preserve command guidance as a manual/operator workflow where appropriate.",
+        "Document residual UNKNOWNs explicitly."
+      ],
+      "commands": [
+        "apply_patch",
+        "python scripts/validate_adhd_doctrine_docs.py"
+      ],
+      "expected_files": [
+        ".claude/claude.md",
+        ".claude/modules/shared/adhd-patterns.md",
+        ".claude/modules/shared/superclaude-workflows.md",
+        ".claude/modules/custom-commands.md",
+        ".claude/modules/superclaude-integration.md",
+        ".claude/commands/save.md",
+        ".claude/commands/dx/implement.md",
+        "scripts/validate_adhd_doctrine_docs.py"
+      ],
+      "validation": [
+        "Stale active-doctrine claim scan fails before edits and passes after edits."
+      ],
+      "context_files": [
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "validate",
+      "task": "Validate packet schema, stale-claim scan, diff scope, PAL codereview, and precommit hooks.",
+      "requirements": [
+        "Report every NOT_RUN command with reason.",
+        "Inspect git status and diff scope before final summary.",
+        "Do not claim runtime automation behavior changed."
+      ],
+      "commands": [
+        "python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T1-04-DOCTRINE-DOC-CORRECTIONS-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python scripts/validate_adhd_doctrine_docs.py",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "task-packets/TP-DMX-ADHD-COGNITIVE-T1-04-DOCTRINE-DOC-CORRECTIONS-001-implementation-notes.md"
+      ],
+      "validation": [
+        "Proof notes and final response distinguish PASS, FAIL, NOT_RUN, and remaining UNKNOWNs."
+      ],
+      "context_files": []
+    }
+  ]
+}
