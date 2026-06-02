@@ -87,6 +87,14 @@ def test_init_scaffolds_pr_steward_workflows_and_policy(tmp_path: Path) -> None:
     assert pr_steward_config["mode"] == "check_only"
     assert pr_steward_config["mutates_github"] is False
     assert merge_config["governed_automerge"]["enabled"] is False
+    assert (
+        merge_config["steward_gate"]["merge_readiness_path"]
+        == "{out_dir}/pr-steward/pr-{pr_id}/MERGE_READINESS.json"
+    )
+    assert (
+        merge_config["steward_gate"]["audit_proof_path"]
+        == "{out_dir}/embedded-audit/pr-{pr_id}/PROOF.json"
+    )
 
 
 def test_init_force_does_not_clobber_existing_pr_steward_files(tmp_path: Path) -> None:

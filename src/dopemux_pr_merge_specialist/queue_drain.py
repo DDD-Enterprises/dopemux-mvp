@@ -265,6 +265,21 @@ def _threads_resolved_locally(result: Optional[PRResult]) -> bool:
     )
 
 
+def _applied_threads_resolved_locally(
+    dispositions: Iterable[ThreadDisposition],
+) -> bool:
+    resolving_dispositions = {
+        ThreadDispositionType.IMPLEMENT.value,
+        ThreadDispositionType.AGENTIC_FIX.value,
+        ThreadDispositionType.AUTO_RESOLVE_OUTDATED.value,
+    }
+    return any(
+        disposition.applied
+        and _state_value(disposition.disposition) in resolving_dispositions
+        for disposition in dispositions
+    )
+
+
 def _with_operator_state(
     result: PRResult, operator_state: str, *, detail: str = ""
 ) -> PRResult:
@@ -1477,7 +1492,7 @@ def pr_apply(
             check_payload=refreshed_checks,
             validation_report=validation,
             policy=policy,
-            threads_resolved_locally=False
+            threads_resolved_locally=_applied_threads_resolved_locally(applied_threads),
         )
         if operator_state:
             result = _with_operator_state(result, operator_state)
