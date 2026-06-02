@@ -149,7 +149,13 @@ def test_installed_pr_steward_console_can_import_engines(tmp_path: Path):
                 "'known_reviewers.json').is_file()); "
                 "print(files('dopemux_pr_steward').joinpath('config.schema.json').is_file()); "
                 "print(files('dopemux.templates').joinpath("
-                "'init/config/pr_steward/policy.json').is_file())"
+                "'init/config/pr_steward/policy.json').is_file()); "
+                "print(files('dopemux.templates').joinpath("
+                "'init/config/pr_merge_specialist/policy.yaml').is_file()); "
+                "print(files('dopemux.templates').joinpath("
+                "'init/.github/workflows/pr-steward.yml').is_file()); "
+                "print(files('dopemux.templates').joinpath("
+                "'init/.github/workflows/embedded-audit.yml').is_file())"
             ),
         ],
         cwd=tmp_path,
@@ -160,4 +166,11 @@ def test_installed_pr_steward_console_can_import_engines(tmp_path: Path):
     )
 
     assert probe.returncode == 0, probe.stderr
-    assert probe.stdout.strip().splitlines() == ["True", "True", "True"]
+    assert probe.stdout.strip().splitlines() == [
+        "True",
+        "True",
+        "True",
+        "True",
+        "True",
+        "True",
+    ]
