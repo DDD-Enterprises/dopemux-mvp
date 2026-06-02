@@ -36,6 +36,7 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 - Tightened follow-up autoreview review fixes: PR Steward recomputes proof freshness from the current PR head, manual embedded-audit dispatch checks out the requested head SHA, and packaged installs include the Copilot repair engine.
 - Aligned PR Steward scaffold merge policy with explicit steward artifact paths and preserved local thread-resolution evidence in the final queue-drain apply state.
 - Closed latest autoreview review gaps by packaging existing Dopemux namespaces, loading PR Steward doctor defaults from packaged resources, and allowing validated proof self-reference exceptions through the steward finalization gate.
+- Wired scaffolded PR Steward intake to pass the configured proof bundle path so initialized downstream repositories do not emit missing-proof readiness blockers by default.
 - Decisions CLI review repair now uses the ConPort HTTP REST port, accepts string decision IDs, validates referenced decisions before append-only writes, preserves requested list limits, and covers the new subcommands with focused tests.
 - MCP doctor now runs relative stdio doctor commands from the resolved repo root, so Task Orchestrator wrapper checks work when invoked from repo subdirectories.
 - MCP bootstrap now points Task Orchestrator at a tracked launcher wrapper and keeps catalog-rendered SSE URL defaults aligned with checked-in `.mcp.json`.
