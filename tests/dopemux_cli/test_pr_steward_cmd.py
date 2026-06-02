@@ -36,6 +36,50 @@ def test_importable_pr_steward_cli_help_lists_contract(capsys):
     assert "contract-version" in captured.out
 
 
+def test_intake_subcommand_forwards_documented_flags(monkeypatch, tmp_path: Path):
+    import tools.pr_steward.intake as intake
+
+    captured: dict[str, list[str]] = {}
+
+    def fake_intake_main(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 0
+
+    monkeypatch.setattr(intake, "main", fake_intake_main)
+
+    rc = steward_main(
+        [
+            "intake",
+            "--repo",
+            "owner/repo",
+            "--pr",
+            "1",
+            "--out",
+            str(tmp_path / "artifacts"),
+            "--proof-path",
+            "proof/PROOF.json",
+            "--strict",
+            "--format",
+            "text",
+        ]
+    )
+
+    assert rc == 0
+    assert captured["argv"] == [
+        "--repo",
+        "owner/repo",
+        "--pr",
+        "1",
+        "--out",
+        str(tmp_path / "artifacts"),
+        "--strict",
+        "--proof-path",
+        "proof/PROOF.json",
+        "--format",
+        "text",
+    ]
+
+
 def test_gate_subcommand_uses_packaged_steward_gate(tmp_path: Path, capsys):
     readiness = _write_json(
         tmp_path / "MERGE_READINESS.json",
