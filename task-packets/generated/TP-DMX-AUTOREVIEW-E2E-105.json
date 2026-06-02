@@ -3,6 +3,8 @@
     "allowlist": [
       "tests/integration/test_autoreview_loop.py",
       "tests/fixtures/autoreview/**",
+      "pyproject.toml",
+      "uv.lock",
       "docs/ops/autoreview-loop.md",
       "task-packets/generated/TP-DMX-AUTOREVIEW-E2E-105.json",
       "proof/TP-DMX-AUTOREVIEW-E2E-105/**"
@@ -85,6 +87,8 @@
       "expected_files": [
         "tests/integration/test_autoreview_loop.py",
         "tests/fixtures/autoreview/**",
+        "pyproject.toml",
+        "uv.lock",
         "docs/ops/autoreview-loop.md",
         "task-packets/generated/TP-DMX-AUTOREVIEW-E2E-105.json",
         "proof/TP-DMX-AUTOREVIEW-E2E-105/**"
@@ -107,6 +111,8 @@
       "expected_files": [
         "tests/integration/test_autoreview_loop.py",
         "tests/fixtures/autoreview/**",
+        "pyproject.toml",
+        "uv.lock",
         "docs/ops/autoreview-loop.md",
         "proof/TP-DMX-AUTOREVIEW-E2E-105/**"
       ],

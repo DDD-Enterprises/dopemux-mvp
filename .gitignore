@@ -380,6 +380,10 @@ proof/*
 !proof/orchestrator/**
 !proof/TP-DMX-ACTIONBRIDGE-CLI-102/
 !proof/TP-DMX-ACTIONBRIDGE-CLI-102/**
+!proof/TP-DMX-COPILOT-RENDERER-103/
+!proof/TP-DMX-COPILOT-RENDERER-103/**
+!proof/TP-DMX-AUDIT-CI-PROVENANCE-104/
+!proof/TP-DMX-AUDIT-CI-PROVENANCE-104/**
 
 # Extraction and Research artifacts
 _audit_out/

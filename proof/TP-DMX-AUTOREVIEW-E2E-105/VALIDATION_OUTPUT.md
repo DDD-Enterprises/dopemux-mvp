@@ -20,7 +20,24 @@ Result: PASS.
 .                                                                        [100%]
 ```
 
+`pytest -q tests/integration/test_autoreview_loop.py tests/copilot_repair/test_generator.py`
+
+Result: PASS.
+
+```text
+.........                                                                [100%]
+```
+
 `python -m json.tool task-packets/generated/TP-DMX-AUTOREVIEW-E2E-105.json`
+
+Result: PASS.
+
+`python - <<'PY'
+import tomllib
+from pathlib import Path
+deps = tomllib.loads(Path("pyproject.toml").read_text())["project"]["dependencies"]
+assert any(dep.lower().startswith("jinja2") for dep in deps)
+PY`
 
 Result: PASS.
 
@@ -72,6 +89,14 @@ Replay stages captured under `proof/TP-DMX-AUTOREVIEW-E2E-105/output/`:
 - `05_pr_steward_final`: final PR Steward re-intake, `READY`
 
 Result: PASS.
+
+## Review Repair
+
+PR review noted that `tools.copilot_repair.renderer` imports Jinja2 but the
+project did not declare Jinja2 as a direct runtime dependency. `pyproject.toml`
+now declares `jinja2>=3.1.0`, and `uv.lock` metadata records it as a direct
+`dopemux` dependency. The locked Jinja2 artifact was already present
+transitively.
 
 ## Task Orchestrator
 

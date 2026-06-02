@@ -1,11 +1,11 @@
 {
-  "base_branch": "codex/tp-dmx-audit-ci-provenance-104",
+  "base_branch": "main",
   "branch": "codex/tp-dmx-autoreview-e2e-105",
   "branch_composition": {
-    "base": "codex/tp-dmx-audit-ci-provenance-104",
-    "merge_strategy": "git merge --no-ff --no-edit origin/codex/tp-dmx-copilot-renderer-103",
-    "merged_dependency_branch": "origin/codex/tp-dmx-copilot-renderer-103",
-    "reason": "TP105 depends on TP102, TP103, and TP104; TP103 and TP104 are separate dependency branches."
+    "base": "main",
+    "merge_strategy": "git merge --no-edit mvp/main after dependency PRs merged",
+    "merged_dependency_branch": "mvp/main",
+    "reason": "TP105 depends on TP102, TP103, and TP104; those dependencies are present on main after PRs #758, #760, and #761 merged."
   },
   "embedded_audit": {
     "auditor_model": "sonnet",
@@ -36,16 +36,21 @@
     "TP105 branch includes a dependency merge of TP103 into the TP104 stack because no single linear parent contained all declared dependencies.",
     "Task Orchestrator item state could not be advanced because the transport was closed."
   ],
-  "summary": "Added an offline deterministic autoreview loop fixture covering PR Steward intake, Action Bridge, Copilot repair rendering, independent embedded audit proof, and final PR Steward re-intake.",
+  "summary": "Added an offline deterministic autoreview loop fixture covering PR Steward intake, Action Bridge, Copilot repair rendering, independent embedded audit proof, and final PR Steward re-intake; review repair declares Jinja2 as a direct runtime dependency for the renderer.",
   "validation": [
     {
-      "command": "pytest -q tests/integration/test_autoreview_loop.py",
-      "evidence": "1 passed.",
+      "command": "pytest -q tests/integration/test_autoreview_loop.py tests/copilot_repair/test_generator.py",
+      "evidence": "9 passed.",
       "status": "PASS"
     },
     {
       "command": "python -m json.tool task-packets/generated/TP-DMX-AUTOREVIEW-E2E-105.json",
       "evidence": "Task packet JSON parsed successfully.",
+      "status": "PASS"
+    },
+    {
+      "command": "python - <<'PY' ... assert pyproject declares jinja2 ... PY",
+      "evidence": "pyproject.toml includes a direct jinja2 dependency and uv.lock metadata records jinja2 in the dopemux direct dependencies.",
       "status": "PASS"
     },
     {
