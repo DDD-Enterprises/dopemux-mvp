@@ -1,0 +1,6 @@
+ config/pr_merge_specialist/policy.yaml             |   1 +
+ docs/ops/steward-merge-gate.md                     |  35 ++-
+ src/dopemux_pr_merge_specialist/queue_drain.py     | 284 ++++++++++++++++++---
+ .../generated/TP-DMX-MERGE-REMEDIATION-202.json    |   4 +-
+ tests/pr_merge_specialist/test_remediation_gate.py | 119 +++++++++
+ 5 files changed, 401 insertions(+), 42 deletions(-)

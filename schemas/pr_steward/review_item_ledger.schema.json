@@ -46,8 +46,6 @@
         "id",
         "source",
         "author",
-        "author_association",
-        "body_excerpt",
         "disposition",
         "blocking",
         "rationale"
@@ -76,7 +74,16 @@
             "null"
           ]
         },
+        "association": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "body_excerpt": {
+          "type": "string"
+        },
+        "body": {
           "type": "string"
         },
         "disposition": {
@@ -84,6 +91,12 @@
         },
         "blocking": {
           "type": "boolean"
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "rationale": {
           "type": "string"
