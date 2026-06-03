@@ -16,6 +16,12 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime
 import json
 
+try:
+    from .security_config import clean_secret_value
+except ImportError:  # pragma: no cover - direct script execution path
+    from security_config import clean_secret_value
+
+
 class ADHDEngineClient:
     """
     Client for ADHD Engine integration with Working Memory Assistant.
@@ -24,11 +30,11 @@ class ADHDEngineClient:
 
     def __init__(self, base_url: str = None, api_key: str = None):
         self.base_url = base_url or os.getenv('ADHD_ENGINE_URL', 'http://localhost:8095')
-        self.api_key = api_key or os.getenv('ADHD_ENGINE_API_KEY', 'dev-key-123')
-        self.client = httpx.AsyncClient(
-            timeout=5.0,
-            headers={'Authorization': f'Bearer {self.api_key}'}
+        self.api_key = clean_secret_value(
+            api_key if api_key is not None else os.getenv('ADHD_ENGINE_API_KEY')
         )
+        headers = {'X-API-Key': self.api_key} if self.api_key else {}
+        self.client = httpx.AsyncClient(timeout=5.0, headers=headers)
 
     async def __aenter__(self):
         return self
