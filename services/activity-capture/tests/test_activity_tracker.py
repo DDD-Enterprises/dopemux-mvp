@@ -46,3 +46,42 @@ async def test_aggregate_summary_uses_engine_schema():
     })
     assert tracker.summaries_sent == 1
     assert tracker.pending_activities == []
+
+
+@pytest.mark.asyncio
+async def test_workspace_switch_pending_activity_is_content_free():
+    adhd_client = AsyncMock()
+    tracker = ActivityTracker(adhd_client=adhd_client)
+
+    await tracker.handle_workspace_switch({
+        "from_workspace": "one",
+        "to_workspace": "two",
+        "prompt": "top-level private prompt",
+        "code": "print('top-level leak')",
+        "file_activity": {
+            "files_modified": 1,
+            "seconds_since_last_save": 3,
+            "most_recent_file": "src/private_prompt.py",
+            "prompt": "private prompt text",
+            "code": "def leaked(): pass",
+        },
+    })
+
+    activity = tracker.pending_activities[0]
+    assert set(activity) == {"type", "timestamp", "file_activity"}
+    assert activity["file_activity"] == {
+        "has_recent_activity": True,
+        "files_modified": 1,
+        "seconds_since_last_save": 3,
+    }
+    serialized = repr(tracker.pending_activities)
+    for forbidden in [
+        "one",
+        "two",
+        "src/private_prompt.py",
+        "private prompt text",
+        "def leaked",
+        "top-level private prompt",
+        "top-level leak",
+    ]:
+        assert forbidden not in serialized

@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from adhd_client import ADHDEngineClient
+from adhd_client import ADHDEngineClient, build_activity_payload
 
 
 class FakeResponse:
@@ -70,3 +70,27 @@ async def test_initialize_attaches_api_key_headers():
 
     assert client.session is not None
     assert client.headers["X-API-Key"] == "secret-key"
+
+
+def test_build_activity_payload_ignores_content_bearing_fields():
+    payload = build_activity_payload("default", {
+        "completion_rate": 0.25,
+        "context_switches": 3,
+        "break_compliance": 0.5,
+        "minutes_since_break": 12,
+        "filename": "src/private_prompt.py",
+        "prompt": "private prompt text",
+        "code": "def leaked(): pass",
+        "messages": [{"content": "secret message"}],
+    })
+
+    assert payload == {
+        "user_id": "default",
+        "completion_rate": 0.25,
+        "context_switches": 3,
+        "break_compliance": 0.5,
+        "minutes_since_break": 12,
+    }
+    serialized = repr(payload)
+    for forbidden in ["src/private_prompt.py", "private prompt text", "def leaked", "secret message"]:
+        assert forbidden not in serialized

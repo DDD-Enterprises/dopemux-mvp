@@ -44,28 +44,34 @@ def normalize_event(event_type: str, event_data: Dict[str, Any]) -> Tuple[str, D
     return normalized_type, normalized_data
 
 
-def normalize_workspace_switch(event_data: Dict[str, Any]) -> Dict[str, Any]:
-    """Flatten watcher payloads into a single file activity summary."""
-    normalized = dict(event_data)
-    context_capture = normalized.get("adhd_context_capture") or {}
-    raw_file_activity = normalized.get("file_activity") or context_capture.get("file_activity") or {}
-
+def normalize_file_activity(raw_file_activity: Dict[str, Any] | None) -> Dict[str, Any]:
+    """Return aggregate-only file activity suitable for ADHD signal payloads."""
     if not isinstance(raw_file_activity, dict):
         raw_file_activity = {}
 
     files_modified = int(raw_file_activity.get("files_modified", 0) or 0)
-    normalized["file_activity"] = {
+    return {
         "has_recent_activity": bool(raw_file_activity.get("has_recent_activity", files_modified > 0)),
         "files_modified": files_modified,
-        "most_recent_file": raw_file_activity.get("most_recent_file"),
         "seconds_since_last_save": raw_file_activity.get("seconds_since_last_save"),
     }
-    normalized["from_app"] = normalized.get("from_app")
-    normalized["to_app"] = normalized.get("to_app")
-    normalized["switch_type"] = normalized.get("switch_type")
-    normalized["workspace_id"] = normalized.get("workspace_id") or normalized.get("to_workspace") or "unknown"
-    normalized.pop("adhd_context_capture", None)
-    return normalized
+
+
+def normalize_workspace_switch(event_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Flatten watcher payloads into a single file activity summary."""
+    normalized = dict(event_data or {})
+    context_capture = normalized.get("adhd_context_capture") or {}
+    raw_file_activity = normalized.get("file_activity") or context_capture.get("file_activity") or {}
+
+    return {
+        "from_workspace": normalized.get("from_workspace"),
+        "to_workspace": normalized.get("to_workspace"),
+        "file_activity": normalize_file_activity(raw_file_activity),
+        "from_app": normalized.get("from_app"),
+        "to_app": normalized.get("to_app"),
+        "switch_type": normalized.get("switch_type"),
+        "workspace_id": normalized.get("workspace_id") or normalized.get("to_workspace") or "unknown",
+    }
 
 
 def normalize_progress_update(event_data: Dict[str, Any]) -> Dict[str, Any]:
