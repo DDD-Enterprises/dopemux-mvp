@@ -1,0 +1,99 @@
+{
+  "tp_id": "TP-DCP-0001",
+  "tp_path": "task-packets/TP-DCP-0001.json",
+  "worktree_path": "/Users/hue/code/dopemux-mvp-wt-dcp-build",
+  "branch": "dcp/core-contracts-tp-0001",
+  "base": "origin/main",
+  "base_sha": "5dbfef5ee",
+  "repo_identity": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "identity_match": true
+  },
+  "implementer": "claude-sonnet (Sonnet agent, wf_8e3b5a04)",
+  "auditor": "claude-opus (Opus agent, wf_8e3b5a04 — distinct from implementer)",
+  "supervisor": "claude-code-session (fd75148f)",
+  "slices_completed": ["S1-schemas", "S2-red-lane-taxonomy", "S3-fixture", "S4-tests"],
+  "files_changed": [
+    "schemas/dcp/dcp_red_lane_taxonomy.schema.json",
+    "schemas/dcp/dcp_control_snapshot.schema.json",
+    "schemas/dcp/dcp_proof_pointer.schema.json",
+    "schemas/dcp/dcp_evidence_hit.schema.json",
+    "schemas/dcp/dcp_chronicle_receipt.schema.json",
+    "schemas/dcp/dcp_helper_receipt.schema.json",
+    "schemas/dcp/README.md",
+    "tests/dcp/fixtures/dcp_core_fixture.json",
+    "tests/dcp/test_dcp_contracts.py",
+    "task-packets/TP-DCP-0001.json",
+    "proof/TP-DCP-0001/AUDIT.md",
+    "proof/TP-DCP-0001/PROOF.json"
+  ],
+  "validations": [
+    {
+      "id": "pytest",
+      "command": "python3 -m pytest tests/dcp -q",
+      "exit_code": 0,
+      "status": "PASS",
+      "output_tail": "7 passed in 0.06s"
+    },
+    {
+      "id": "standalone-runner",
+      "command": "python3 tests/dcp/test_dcp_contracts.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "output_tail": "7 tests: 7 passed, 0 failed"
+    },
+    {
+      "id": "git-diff-check",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "id": "tp-schema-validation",
+      "command": "python3 -c jsonschema.validate(tp, spec)",
+      "exit_code": 0,
+      "status": "PASS",
+      "note": "TP-DCP-0001.json validates against dopetask-canonical-spec.json (draft-07, strict)"
+    }
+  ],
+  "audit_criteria": [
+    {"id": "C1", "name": "6 schemas exist, valid JSON, draft-07, additionalProperties:false, .v0, provenance+validation blocks", "result": "PASS"},
+    {"id": "C2", "name": "Provenance presence-lint is a SEPARATE assertion from fixture round-trip (not circular)", "result": "PASS"},
+    {"id": "C3", "name": "External/invented contracts have validation_state=PROVISIONAL_UNVERIFIED_ENFORCEMENT", "result": "PASS (enum-constrained in schema + const-asserted in test; auditor marked PARTIAL due to no const-pin — enum+test is the correct design since schemas must eventually graduate to REPO_CROSS_CHECKED; const-pin would be wrong)"},
+    {"id": "C4", "name": "dcp_proof_pointer: auditor_verdict and validation_state are DISTINCT fields", "result": "PASS"},
+    {"id": "C5", "name": "DCP-RED-MERGE-SEAM-0001 in fixture names BOTH merge-seam paths", "result": "PASS"},
+    {"id": "C6", "name": "DEFER GUARD: deferred 3 schemas absent from schemas/dcp/", "result": "PASS"},
+    {"id": "C7", "name": "No live SHA computed; fixture sha/digest are obvious placeholders", "result": "PASS"},
+    {"id": "C8", "name": "Net-new files only; nothing outside allowlist changed; auditor != implementer", "result": "PASS"}
+  ],
+  "audit_verdict": "ACCEPT_WITH_RISKS",
+  "audit_note": "Opus auditor (distinct from Sonnet implementer) ran tests independently. 7/7 tests pass. C3 was marked PARTIAL by auditor (enum vs const-pin); supervisor assessment: enum+test is correct design. proof/ gitignored at .gitignore:362 (pre-existing repo condition); force-add required for proof files.",
+  "codereview_status": "PASS (Opus adversarial audit, distinct from implementer)",
+  "precommit_status": "git diff --check exit 0; only allowlisted untracked paths in git status",
+  "commit_sha": "fd920a445",
+  "pr_url": "PENDING — push + PR gated on supervisor approval",
+  "residual_risks": [
+    "C3 (resolved): external/invented schemas use enum (not const-pin) for validation_state — this is correct design; enforced at test level with a distinct assertion",
+    "proof/ gitignored at .gitignore:362 — proof files committed with git add -f (matching repo convention for other proof bundles)",
+    "execution.agent enum lacks 'claude' option (documented repo gap from SCHEMA-0001) — execution omitted from TP, implementer/auditor identities recorded here instead",
+    "DCP_MUTATION_CLASS / DCP_APPROVAL_ARTIFACT / DCP_PROJECT_RESOURCE_MAP deferred — their source files (approval_policy.yaml, policy.py) exist; TP-DCP-0002 derives them"
+  ],
+  "unknowns": [
+    "Push to origin/PR creation — gated on supervisor approval (first write to shared remote)",
+    "ConPort/dope-memory deployed-primary endpoints remain PROVISIONAL (L-02)",
+    "LIVE_WRITE_READY still undefined and blocking (K-46 — master gate for all live adapter work)"
+  ],
+  "cleanup_status": "PENDING — worktree retained pending PR; will be removed after PR merge per AGENTS.md §4.13",
+  "invariants_confirmed": [
+    "LIVE_WRITE_READY undefined and blocking — no live adapters created",
+    "DCP-RED-MERGE-SEAM-0001: src/dopemux_pr_merge_specialist not imported/called/wired; scripts/batch_resolve_and_merge.py not called; both verified present in origin/main",
+    "Net-new files only; no edits to existing code/config",
+    "auditor (Opus) distinct from implementer (Sonnet)",
+    "Static fixture SHAs are illustrative placeholders; no filesystem traversal",
+    "Open PRs #765-792 + generated TP series remain CLAIMED_ONLY (not referenced in contracts)",
+    "mirrors/proxies/indexes/cache-freshness never authority — schema provenance tags enforce this"
+  ],
+  "campaign_trail": "dcp/evidence-campaign branch @ /Users/hue/code/dopemux-mvp-wt-dcp-evidence (5 commits: evidence + synthesis + audit + revise + recheck)"
+}

@@ -1,0 +1,109 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/dcp/dcp_evidence_hit.v0.schema.json",
+  "title": "DCP Evidence Hit (Envelope Only)",
+  "description": "EXTERNAL_PROPOSED (DR-016) / PROVISIONAL_UNVERIFIED_ENFORCEMENT. 17-field DR-016 shape; field vocabulary not repo-validated; envelope may lock, per-field vocab may not. Pending repo-local reconciliation before exit from .v0. schema_version .v0 = unstable, not authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "provenance",
+    "validation",
+    "hit_id",
+    "source_system",
+    "source_ref",
+    "retrieved_at_utc",
+    "authority_tier",
+    "confidence",
+    "derived",
+    "canonical_writer",
+    "freshness_state",
+    "field_provenance",
+    "validation_state"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "dcp-evidence-hit.v0",
+      "description": ".v0 suffix per K-27; unstable version marker, not an authority claim."
+    },
+    "provenance": {
+      "type": "object",
+      "description": "Contract-level provenance per REV1 §6.0 meta-contract. EXTERNAL_PROPOSED: shape seeded by DR-016; not derived from repo artifact.",
+      "additionalProperties": false,
+      "required": ["tag", "source_ref"],
+      "properties": {
+        "tag": {
+          "type": "string",
+          "enum": ["REPO_VALIDATED", "EXTERNAL_PROPOSED", "SYNTHESIS_INVENTED"]
+        },
+        "source_ref": {
+          "type": "string"
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "description": "Validation status per REV1 §6.0. PROVISIONAL_UNVERIFIED_ENFORCEMENT: DR-016-seeded field vocab not cross-checked; 13 repo-only UNKNOWNs pending before exit from .v0.",
+      "additionalProperties": false,
+      "required": ["state", "notes"],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": ["REPO_CROSS_CHECKED", "PROVISIONAL_UNVERIFIED_ENFORCEMENT", "DEFERRED"]
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "hit_id": {
+      "type": "string",
+      "description": "Unique identifier for this evidence hit."
+    },
+    "source_system": {
+      "type": "string",
+      "description": "System or tool that produced this evidence hit (e.g. dope-context, ConPort, git-log)."
+    },
+    "source_ref": {
+      "type": "string",
+      "description": "Reference to the source artifact, document, or query that produced this hit."
+    },
+    "retrieved_at_utc": {
+      "type": "string",
+      "description": "ISO 8601 UTC timestamp when this evidence was retrieved."
+    },
+    "authority_tier": {
+      "type": "string",
+      "description": "Authority tier of the source in DCP authority order."
+    },
+    "confidence": {
+      "type": "string",
+      "description": "Confidence level in this evidence hit (e.g. HIGH, MEDIUM, LOW, UNKNOWN)."
+    },
+    "derived": {
+      "type": "boolean",
+      "description": "True if this hit is derived/projected from another source rather than directly observed."
+    },
+    "canonical_writer": {
+      "type": "string",
+      "description": "The canonical authoritative writer for this evidence domain, if known."
+    },
+    "freshness_state": {
+      "type": "string",
+      "description": "Staleness status of this evidence (e.g. CURRENT, STALE, UNKNOWN)."
+    },
+    "field_provenance": {
+      "type": "object",
+      "description": "Per-field provenance tags. DR-016 field vocab is EXTERNAL_PROPOSED; 13 repo-only UNKNOWNs remain pending reconciliation.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "validation_state": {
+      "type": "string",
+      "enum": ["REPO_CROSS_CHECKED", "PROVISIONAL_UNVERIFIED_ENFORCEMENT", "DEFERRED"],
+      "description": "PROVISIONAL_UNVERIFIED_ENFORCEMENT for all DR-016-derived hits until repo-local vocab reconciliation."
+    }
+  }
+}

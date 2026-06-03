@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/dcp/dcp_control_snapshot.v0.schema.json",
+  "title": "DCP Control Snapshot (Envelope Only)",
+  "description": "SYNTHESIS_INVENTED / PROVISIONAL_UNVERIFIED_ENFORCEMENT. Envelope + authority-metadata wrapper only. Per-surface projection fields are DEFERRED pending DCP_PROJECT_RESOURCE_MAP + canonical-root reconciliation. schema_version .v0 = unstable, not authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "provenance",
+    "validation",
+    "snapshot_id",
+    "project_id",
+    "created_at_utc",
+    "source_pack_refs",
+    "authority_order_ref",
+    "surfaces",
+    "field_provenance"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "dcp-control-snapshot.v0",
+      "description": ".v0 suffix per K-27; unstable version marker, not an authority claim."
+    },
+    "provenance": {
+      "type": "object",
+      "description": "Contract-level provenance per REV1 §6.0 meta-contract. SYNTHESIS_INVENTED: envelope shape invented in GPT-5.5 REV1 synthesis; not derived from a repo artifact.",
+      "additionalProperties": false,
+      "required": ["tag", "source_ref"],
+      "properties": {
+        "tag": {
+          "type": "string",
+          "enum": ["REPO_VALIDATED", "EXTERNAL_PROPOSED", "SYNTHESIS_INVENTED"]
+        },
+        "source_ref": {
+          "type": "string"
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "description": "Validation status per REV1 §6.0. PROVISIONAL_UNVERIFIED_ENFORCEMENT: shape not cross-checked against repo artifact; enforcement not verified.",
+      "additionalProperties": false,
+      "required": ["state", "notes"],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": ["REPO_CROSS_CHECKED", "PROVISIONAL_UNVERIFIED_ENFORCEMENT", "DEFERRED"]
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "snapshot_id": {
+      "type": "string",
+      "description": "Unique identifier for this control snapshot."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project identifier."
+    },
+    "created_at_utc": {
+      "type": "string",
+      "description": "ISO 8601 UTC timestamp of snapshot creation."
+    },
+    "source_pack_refs": {
+      "type": "array",
+      "description": "References to source task packets or evidence packs contributing to this snapshot.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "authority_order_ref": {
+      "type": "string",
+      "description": "Reference to the authority-order document governing this snapshot."
+    },
+    "surfaces": {
+      "type": "object",
+      "description": "Per-surface projection fields are DEFERRED. Only status and note are locked in .v0.",
+      "additionalProperties": false,
+      "required": ["status", "note"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "PROVISIONAL: per-surface fields not locked in .v0."
+        },
+        "note": {
+          "type": "string",
+          "description": "Explanation of why per-surface fields are deferred."
+        }
+      }
+    },
+    "field_provenance": {
+      "type": "object",
+      "description": "Per-field provenance tags for all fields in this contract instance. Keys are field names; values are provenance tags.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  }
+}

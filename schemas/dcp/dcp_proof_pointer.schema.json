@@ -1,0 +1,154 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/dcp/dcp_proof_pointer.v0.schema.json",
+  "title": "DCP Proof Pointer (Pointer Shell)",
+  "description": "SYNTHESIS_INVENTED / PROVISIONAL_UNVERIFIED_ENFORCEMENT. Pointer shell only; no live SHA/hash computation in packet 1. INVARIANT: auditor_verdict and validation_state are DISTINCT sibling fields — auditor_verdict is the auditor's assessment of correctness/completeness; validation.state is the contract enforcement status. These must never be merged or proxied. schema_version .v0 = unstable, not authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "provenance",
+    "validation",
+    "pointer_id",
+    "project_id",
+    "repo_id",
+    "source_family",
+    "source_artifact_ref",
+    "validation_state",
+    "auditor_verdict",
+    "freshness_state",
+    "authority_tier",
+    "confidence",
+    "derived",
+    "field_provenance"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "dcp-proof-pointer.v0",
+      "description": ".v0 suffix per K-27; unstable version marker, not an authority claim."
+    },
+    "provenance": {
+      "type": "object",
+      "description": "Contract-level provenance per REV1 §6.0 meta-contract. SYNTHESIS_INVENTED: pointer shape invented in synthesis REV1.",
+      "additionalProperties": false,
+      "required": ["tag", "source_ref"],
+      "properties": {
+        "tag": {
+          "type": "string",
+          "enum": ["REPO_VALIDATED", "EXTERNAL_PROPOSED", "SYNTHESIS_INVENTED"]
+        },
+        "source_ref": {
+          "type": "string"
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "description": "Validation status per REV1 §6.0. PROVISIONAL_UNVERIFIED_ENFORCEMENT: pointer shell not derived from a repo artifact; enforcement not verified.",
+      "additionalProperties": false,
+      "required": ["state", "notes"],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": ["REPO_CROSS_CHECKED", "PROVISIONAL_UNVERIFIED_ENFORCEMENT", "DEFERRED"]
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "pointer_id": {
+      "type": "string",
+      "description": "Unique identifier for this proof pointer."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project identifier."
+    },
+    "repo_id": {
+      "type": "string",
+      "description": "Repository identifier (e.g. from .repo_id marker)."
+    },
+    "source_family": {
+      "type": "string",
+      "description": "Broad family/category of the source artifact (e.g. task-packet, evidence-campaign, synthesis)."
+    },
+    "source_artifact_ref": {
+      "type": "string",
+      "description": "Reference (path, ID, or URI) to the source artifact being pointed at."
+    },
+    "source_artifact_digest": {
+      "type": "object",
+      "description": "Optional digest of the source artifact. In .v0 fixture, value MUST be an illustrative placeholder — no live SHA computation.",
+      "additionalProperties": false,
+      "required": ["value", "provenance_tag", "validation_state"],
+      "properties": {
+        "value": {
+          "type": "string",
+          "description": "SHA-256 digest or placeholder. In .v0 fixtures: sha256:PLACEHOLDER-illustrative-not-computed."
+        },
+        "provenance_tag": {
+          "type": "string",
+          "enum": ["REPO_VALIDATED", "EXTERNAL_PROPOSED", "SYNTHESIS_INVENTED"]
+        },
+        "validation_state": {
+          "type": "string",
+          "enum": ["REPO_CROSS_CHECKED", "PROVISIONAL_UNVERIFIED_ENFORCEMENT", "DEFERRED"]
+        }
+      }
+    },
+    "source_head_sha": {
+      "type": "object",
+      "description": "Optional HEAD SHA at time of pointer creation. In .v0 fixture, value MUST be an illustrative placeholder.",
+      "additionalProperties": false,
+      "required": ["value", "provenance_tag", "validation_state"],
+      "properties": {
+        "value": {
+          "type": "string",
+          "description": "Git SHA or placeholder. In .v0 fixtures: sha256:PLACEHOLDER-illustrative-not-computed."
+        },
+        "provenance_tag": {
+          "type": "string",
+          "enum": ["REPO_VALIDATED", "EXTERNAL_PROPOSED", "SYNTHESIS_INVENTED"]
+        },
+        "validation_state": {
+          "type": "string",
+          "enum": ["REPO_CROSS_CHECKED", "PROVISIONAL_UNVERIFIED_ENFORCEMENT", "DEFERRED"]
+        }
+      }
+    },
+    "validation_state": {
+      "type": "string",
+      "enum": ["REPO_CROSS_CHECKED", "PROVISIONAL_UNVERIFIED_ENFORCEMENT", "DEFERRED"],
+      "description": "DISTINCT from auditor_verdict. This is the contract enforcement status of the artifact being pointed at. Must never be conflated with or proxied by auditor_verdict."
+    },
+    "auditor_verdict": {
+      "type": "string",
+      "description": "DISTINCT from validation_state. The auditor's assessment of the pointed-at artifact (e.g. GO, GO_WITH_FIXES, NO_GO, PENDING). Must never be conflated with or proxied by validation_state. Invariant: auditor != implementer for this field to carry meaning."
+    },
+    "freshness_state": {
+      "type": "string",
+      "description": "Staleness status of the pointed-at artifact (e.g. CURRENT, STALE, UNKNOWN)."
+    },
+    "authority_tier": {
+      "type": "string",
+      "description": "Authority tier of the source artifact in DCP authority order."
+    },
+    "confidence": {
+      "type": "string",
+      "description": "Confidence level in the pointer's accuracy (e.g. HIGH, MEDIUM, LOW, UNKNOWN)."
+    },
+    "derived": {
+      "type": "boolean",
+      "description": "True if this pointer is derived from another artifact rather than directly authored."
+    },
+    "field_provenance": {
+      "type": "object",
+      "description": "Per-field provenance tags for all fields in this contract instance. Keys are field names; values are provenance tags.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  }
+}

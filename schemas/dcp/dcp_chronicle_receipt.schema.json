@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/dcp/dcp_chronicle_receipt.v0.schema.json",
+  "title": "DCP Chronicle Receipt (Envelope Only)",
+  "description": "EXTERNAL_PROPOSED (DR-016) / PROVISIONAL_UNVERIFIED_ENFORCEMENT. Envelope only; other 22 candidate fields are CANDIDATE until repo-local vocab reconciliation. Separate from proof bundles; not runtime state. schema_version .v0 = unstable, not authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "provenance",
+    "validation",
+    "receipt_id",
+    "receipt_type",
+    "project_id",
+    "timestamp_utc",
+    "artifact_refs",
+    "proof_refs",
+    "authority_label",
+    "red_lanes",
+    "field_provenance",
+    "validation_state"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "dcp-chronicle-receipt.v0",
+      "description": ".v0 suffix per K-27; unstable version marker, not an authority claim."
+    },
+    "provenance": {
+      "type": "object",
+      "description": "Contract-level provenance per REV1 §6.0 meta-contract. EXTERNAL_PROPOSED: shape seeded by DR-016; not derived from repo artifact.",
+      "additionalProperties": false,
+      "required": ["tag", "source_ref"],
+      "properties": {
+        "tag": {
+          "type": "string",
+          "enum": ["REPO_VALIDATED", "EXTERNAL_PROPOSED", "SYNTHESIS_INVENTED"]
+        },
+        "source_ref": {
+          "type": "string"
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "description": "Validation status per REV1 §6.0. PROVISIONAL_UNVERIFIED_ENFORCEMENT: DR-016 envelope not cross-checked against repo artifact; 22 candidate fields not locked.",
+      "additionalProperties": false,
+      "required": ["state", "notes"],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": ["REPO_CROSS_CHECKED", "PROVISIONAL_UNVERIFIED_ENFORCEMENT", "DEFERRED"]
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "receipt_id": {
+      "type": "string",
+      "description": "Unique identifier for this chronicle receipt."
+    },
+    "receipt_type": {
+      "type": "string",
+      "description": "Type of chronicle event being receipted (e.g. packet-accepted, red-lane-triggered, audit-completed)."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project identifier."
+    },
+    "timestamp_utc": {
+      "type": "string",
+      "description": "ISO 8601 UTC timestamp of the chronicled event."
+    },
+    "artifact_refs": {
+      "type": "array",
+      "description": "References to artifacts associated with this receipt.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "proof_refs": {
+      "type": "array",
+      "description": "References to proof bundles associated with this receipt.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "authority_label": {
+      "type": "string",
+      "description": "Authority label for the event source in DCP authority order."
+    },
+    "red_lanes": {
+      "type": "array",
+      "description": "Red lane IDs that were evaluated or triggered in connection with this receipt.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "field_provenance": {
+      "type": "object",
+      "description": "Per-field provenance tags. DR-016 field vocab is EXTERNAL_PROPOSED; envelope fields may lock but candidate fields may not exit .v0 without reconciliation.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "validation_state": {
+      "type": "string",
+      "enum": ["REPO_CROSS_CHECKED", "PROVISIONAL_UNVERIFIED_ENFORCEMENT", "DEFERRED"],
+      "description": "PROVISIONAL_UNVERIFIED_ENFORCEMENT for all DR-016-derived chronicle receipts until repo-local vocab reconciliation."
+    }
+  }
+}
