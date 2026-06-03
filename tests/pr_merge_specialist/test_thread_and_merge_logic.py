@@ -199,6 +199,85 @@ def test_applied_thread_dispositions_preserve_local_resolution_evidence():
     assert queue_drain_module._applied_threads_resolved_locally(dispositions) is True
 
 
+def test_applied_thread_resolution_requires_verified_resolver(monkeypatch, tmp_path: Path):
+    calls: list[list[ThreadDisposition]] = []
+    dispositions = [
+        ThreadDisposition(
+            thread_id="T1",
+            disposition="implement",
+            reason="applied suggestion",
+            path="src/example.py",
+            applied=True,
+        )
+    ]
+    validation = ValidationReport(
+        status=ValidationStatus.PASSED,
+        required_for_merge_ready=True,
+        steps=[],
+        attempts=1,
+        remediation_applied=False,
+    )
+
+    def fake_resolve_verified_threads(**kwargs):
+        calls.append(kwargs["dispositions"])
+        return True
+
+    monkeypatch.setattr(
+        queue_drain_module,
+        "resolve_verified_threads",
+        fake_resolve_verified_threads,
+    )
+
+    resolved = queue_drain_module._resolve_applied_threads_after_validation(
+        applied_threads=dispositions,
+        validation=validation,
+        execute=True,
+        commands_log=tmp_path / "COMMANDS_RUN.txt",
+        repo_root=tmp_path,
+        policy={},
+    )
+
+    assert resolved is True
+    assert calls == [dispositions]
+
+
+def test_applied_thread_resolution_fails_closed_when_resolver_fails(
+    monkeypatch, tmp_path: Path
+):
+    dispositions = [
+        ThreadDisposition(
+            thread_id="T1",
+            disposition="implement",
+            reason="applied suggestion",
+            path="src/example.py",
+            applied=True,
+        )
+    ]
+    validation = ValidationReport(
+        status=ValidationStatus.PASSED,
+        required_for_merge_ready=True,
+        steps=[],
+        attempts=1,
+        remediation_applied=False,
+    )
+    monkeypatch.setattr(
+        queue_drain_module,
+        "resolve_verified_threads",
+        lambda **_kwargs: False,
+    )
+
+    resolved = queue_drain_module._resolve_applied_threads_after_validation(
+        applied_threads=dispositions,
+        validation=validation,
+        execute=True,
+        commands_log=tmp_path / "COMMANDS_RUN.txt",
+        repo_root=tmp_path,
+        policy={},
+    )
+
+    assert resolved is False
+
+
 def test_declined_thread_disposition_does_not_count_as_locally_resolved():
     dispositions = [
         ThreadDisposition(
