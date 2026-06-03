@@ -39,6 +39,7 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 - Wired scaffolded PR Steward intake to pass the configured proof bundle path so initialized downstream repositories do not emit missing-proof readiness blockers by default.
 - Added verified base-to-head diff context to the embedded-audit PAL prompt so independent audit proof is based on visible PR changes.
 - Fixed the packaged PR Steward intake wrapper so documented `--repo`, `--pr`, `--out`, proof, and format options are parsed and forwarded to the intake runtime.
+- Hardened PR Steward proof self-reference exceptions against spoofed proof-reported file lists by validating them against the actual harvested PR files.
 - Decisions CLI review repair now uses the ConPort HTTP REST port, accepts string decision IDs, validates referenced decisions before append-only writes, preserves requested list limits, and covers the new subcommands with focused tests.
 - MCP doctor now runs relative stdio doctor commands from the resolved repo root, so Task Orchestrator wrapper checks work when invoked from repo subdirectories.
 - MCP bootstrap now points Task Orchestrator at a tracked launcher wrapper and keeps catalog-rendered SSE URL defaults aligned with checked-in `.mcp.json`.

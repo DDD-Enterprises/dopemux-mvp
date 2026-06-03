@@ -848,10 +848,15 @@ def _valid_self_reference_exception(
         return False
     if embedded_audit_status not in PASSING_AUDITS:
         return False
-    changed_paths = [str(item.get("path") or "") for item in changed_files]
-    exception_paths = [str(item) for item in exception.get("changed_files") or []]
-    paths = exception_paths or changed_paths
-    return bool(paths) and all(path.startswith("proof/") for path in paths)
+    changed_paths = sorted(
+        {str(item.get("path") or "") for item in changed_files if item.get("path")}
+    )
+    exception_paths = sorted(
+        {str(item) for item in exception.get("changed_files") or [] if item}
+    )
+    if not changed_paths or changed_paths != exception_paths:
+        return False
+    return all(path.startswith("proof/") for path in changed_paths)
 
 
 def _body_disposition(body: str) -> tuple[str, bool, str]:
