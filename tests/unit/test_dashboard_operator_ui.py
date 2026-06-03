@@ -5,7 +5,13 @@ from datetime import datetime, timedelta, timezone
 from io import StringIO
 
 from dopemux.ui import service_endpoints
-from dopemux.ui.dashboard import ADHDStatePanel
+from dopemux.ui.dashboard import (
+    ADHDStatePanel,
+    DEMO_COGNITIVE_HISTORY,
+    DEMO_SWITCHES_HISTORY,
+    DEMO_VELOCITY_HISTORY,
+    TrendsPanel,
+)
 from dopemux.ui.theme import create_console
 
 
@@ -60,6 +66,53 @@ def test_dashboard_panel_render_shows_endpoint_next_action_when_offline() -> Non
     assert (
         "Verify the resolved ADHD Engine endpoint or restart the service." in rendered
     )
+
+
+def _render_to_text(renderable: object) -> str:
+    buffer = StringIO()
+    console = create_console(
+        file=buffer, force_terminal=False, color_system=None, width=160
+    )
+    console.print(renderable)
+    return buffer.getvalue()
+
+
+def _sparkline(data: list[float | int]) -> str:
+    chars = "▁▂▃▄▅▆▇█"
+    mx = max(data) or 1
+    return "".join(chars[min(int((v / mx) * 7), 7)] for v in data)
+
+
+def test_trends_panel_live_defaults_do_not_use_demo_histories() -> None:
+    panel = TrendsPanel()
+
+    assert panel.cognitive_history == []
+    assert panel.velocity_history == []
+    assert panel.switches_history == []
+
+    rendered = _render_to_text(panel.render())
+
+    assert "UNAVAILABLE" in rendered
+    assert "no live trend data" in rendered
+    assert _sparkline(DEMO_COGNITIVE_HISTORY) not in rendered
+    assert _sparkline(DEMO_VELOCITY_HISTORY) not in rendered
+    assert _sparkline(DEMO_SWITCHES_HISTORY) not in rendered
+
+
+def test_trends_panel_demo_histories_are_explicit() -> None:
+    panel = TrendsPanel()
+
+    panel.apply_demo_trends()
+
+    assert panel.cognitive_history == DEMO_COGNITIVE_HISTORY
+    assert panel.velocity_history == DEMO_VELOCITY_HISTORY
+    assert panel.switches_history == DEMO_SWITCHES_HISTORY
+
+    rendered = _render_to_text(panel.render())
+
+    assert _sparkline(DEMO_COGNITIVE_HISTORY) in rendered
+    assert _sparkline(DEMO_VELOCITY_HISTORY) in rendered
+    assert _sparkline(DEMO_SWITCHES_HISTORY) in rendered
 
 
 def test_resolve_dashboard_endpoints_ignores_invalid_explicit_url(monkeypatch) -> None:
