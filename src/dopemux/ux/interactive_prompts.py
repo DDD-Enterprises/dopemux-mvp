@@ -32,7 +32,13 @@ class InteractivePrompts:
         self.max_choices = 3  # ADHD-optimized limit
         self.default_timeout = 30  # Seconds before auto-selecting default
 
-    def ask_action_selection(self, actions: List[Dict[str, Any]], context: str = "") -> Optional[str]:
+    def ask_action_selection(
+        self,
+        actions: List[Dict[str, Any]],
+        context: str = "",
+        *,
+        show_all: bool = False,
+    ) -> Optional[str]:
         """
         Ask user to select from available actions with limited choices.
 
@@ -49,8 +55,8 @@ class InteractivePrompts:
         # Sort by complexity (show simpler options first)
         sorted_actions = sorted(actions, key=lambda x: x.get('complexity', 0.5))
 
-        # Limit to max_choices
-        display_actions = sorted_actions[:self.max_choices]
+        # Limit to max_choices until the operator explicitly expands the list.
+        display_actions = sorted_actions if show_all else sorted_actions[:self.max_choices]
 
         # Create choices with descriptions
         questionary, Choice = _questionary_parts()
@@ -62,7 +68,7 @@ class InteractivePrompts:
             choices.append(Choice(choice_text, value=action['name']))
 
         # Add "Show more options" if limited
-        if len(actions) > self.max_choices:
+        if len(sorted_actions) > len(display_actions):
             choices.append(Choice("Show more options...", value="__show_more__"))
 
         # Ask the question
@@ -84,7 +90,11 @@ class InteractivePrompts:
 
             if result == "__show_more__":
                 # Show all options
-                return self.ask_action_selection(actions, f"{context} (showing all options)")
+                return self.ask_action_selection(
+                    actions,
+                    f"{context} (showing all options)",
+                    show_all=True,
+                )
             else:
                 return result
 
@@ -202,7 +212,14 @@ class InteractivePrompts:
 
         return basic_info
 
-    def show_menu(self, title: str, options: List[Dict[str, Any]], context: str = "") -> Optional[str]:
+    def show_menu(
+        self,
+        title: str,
+        options: List[Dict[str, Any]],
+        context: str = "",
+        *,
+        show_all: bool = False,
+    ) -> Optional[str]:
         """
         Show a menu of options with descriptions.
 
@@ -221,13 +238,15 @@ class InteractivePrompts:
         # Create choices
         questionary, Choice = _questionary_parts()
         choices = []
-        for option in options[:self.max_choices]:  # Limit choices
+        display_options = options if show_all else options[:self.max_choices]
+
+        for option in display_options:
             choice_text = f"{option['name']}"
             if 'description' in option:
                 choice_text += f" - {option['description'][:30]}"
             choices.append(Choice(choice_text, value=option.get('action', option['name'])))
 
-        if len(options) > self.max_choices:
+        if len(options) > len(display_options):
             choices.append(Choice("Show all options...", value="__show_all__"))
 
         # Add back/cancel option
@@ -244,7 +263,12 @@ class InteractivePrompts:
             ).ask()
 
             if result == "__show_all__":
-                return self.show_menu(title, options, f"{context} (showing all)")
+                return self.show_menu(
+                    title,
+                    options,
+                    f"{context} (showing all)",
+                    show_all=True,
+                )
             elif result == "__cancel__":
                 return None
             else:
