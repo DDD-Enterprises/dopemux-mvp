@@ -1,0 +1,164 @@
+{
+  "tp_id": "TP-DMX-STEWARD-PACKAGE-301",
+  "status": "PASS_WITH_LIMITS",
+  "generated_at": "2026-05-31T23:35:32Z",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-steward-package-301",
+  "branch": "codex/tp-dmx-steward-package-301",
+  "base_ref": "origin/codex/tp-dmx-merge-finalization-203",
+  "base_sha": "6ad676ce9522806bc658b4b9af1999259f7113ab",
+  "head_sha": "33801d19cbde6654f421f26e2b58730354fc6a71",
+  "repo_identity": {
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker": ".dopetaskroot",
+    "identity_match": true
+  },
+  "stacking": {
+    "reason": "TP301 is stacked on TP203/#767 to continue the active AUTOREVIEW train. TP-DMX-ACTIONBRIDGE-CLI-102 is a sibling dependency; its proof was verified from origin/codex/tp-dmx-actionbridge-cli-102.",
+    "base_branch": "codex/tp-dmx-merge-finalization-203",
+    "base_pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/767"
+  },
+  "dependency_proofs": [
+    {
+      "tp_id": "TP-DMX-ACTIONBRIDGE-CLI-102",
+      "path": "origin/codex/tp-dmx-actionbridge-cli-102:proof/TP-DMX-ACTIONBRIDGE-CLI-102/PROOF.json",
+      "present": true,
+      "json_valid": true,
+      "head_sha": "38c6a3c4f0900a664b8ac6f49e1876bdc9f9352d",
+      "note": "Dependency is on a sibling PR stack, so proof was verified with git show rather than from this worktree."
+    },
+    {
+      "tp_id": "TP-DMX-STEWARD-GATE-201",
+      "path": "proof/TP-DMX-STEWARD-GATE-201/PROOF.json",
+      "present": true,
+      "json_valid": true,
+      "status": "PASS_WITH_LIMITS",
+      "head_sha": "eac0853f521041c5d52f0d40eddb4be84d66b424"
+    }
+  ],
+  "authority_used": [
+    "AGENTS.md",
+    "task-packets/generated/TP-DMX-STEWARD-PACKAGE-301.json",
+    "docs/ops/load-plans/load_plan-DMX-AUTOREVIEW-PLATFORM.json",
+    "docs/ops/pr-steward.md",
+    "docs/ops/pr-steward-cli.md",
+    "src/dopemux/cli.py",
+    "tools/pr_steward/intake.py",
+    "tools/pr_action_bridge/compiler.py",
+    "src/dopemux_pr_merge_specialist/steward_gate.py"
+  ],
+  "slices_completed": [
+    "RED: added tests/dopemux_cli/test_pr_steward_cmd.py and observed ModuleNotFoundError for missing dopemux_pr_steward package.",
+    "GREEN: added importable dopemux_pr_steward package with a versioned argparse CLI.",
+    "Added dopemux pr-steward pass-through command without adding a new console script.",
+    "Added gate, audit, bridge, intake, and fail-closed doctor subcommands without changing underlying engine semantics.",
+    "Added outside-repo import regression coverage and lazy-loaded repo-local tools dependencies so the package imports when cwd is not the repo root.",
+    "Updated docs while preserving the existing PR Steward v1 intake contract."
+  ],
+  "files_changed": [
+    "src/dopemux/cli.py",
+    "src/dopemux_pr_steward/__init__.py",
+    "src/dopemux_pr_steward/cli.py",
+    "tests/dopemux_cli/test_pr_steward_cmd.py",
+    "docs/ops/pr-steward.md",
+    "docs/ops/pr-steward-cli.md",
+    "task-packets/generated/TP-DMX-STEWARD-PACKAGE-301.json",
+    "proof/TP-DMX-STEWARD-PACKAGE-301/**"
+  ],
+  "validations": [
+    {
+      "command": "pytest -q tests/dopemux_cli/test_pr_steward_cmd.py",
+      "exit_code": 2,
+      "status": "RED_PASS",
+      "evidence": "ModuleNotFoundError: No module named 'dopemux_pr_steward'."
+    },
+    {
+      "command": "pytest -q tests/dopemux_cli/test_pr_steward_cmd.py::test_pr_steward_package_imports_outside_repo_root",
+      "exit_code": 1,
+      "status": "RED_PASS",
+      "evidence": "ModuleNotFoundError: No module named 'tools' before lazy imports."
+    },
+    {
+      "command": "python -m pip install -e .",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Refreshed stale editable dopemux install from a removed /private/tmp checkout to this TP301 worktree."
+    },
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-STEWARD-PACKAGE-301.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m jsonschema -i task-packets/generated/TP-DMX-STEWARD-PACKAGE-301.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m compileall -q src tests",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "pytest -q tests/dopemux_cli/test_pr_steward_cmd.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "5 passed"
+    },
+    {
+      "command": "pytest -q tests/dopemux_cli",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "5 passed"
+    },
+    {
+      "command": "pytest -q tests/dopemux_cli/test_pr_steward_cmd.py tests/test_cli.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "36 passed"
+    },
+    {
+      "command": "python -m dopemux.cli pr-steward --help",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "pre-commit run --files <TP301 changed files>",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-STEWARD-PACKAGE-301/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "External embedded audit was not invoked in this Codex session.",
+      "intake and bridge subcommands still delegate to repo-local tools modules; packaging those engines fully is constrained by the TP301 allowlist."
+    ],
+    "skip_reason": "No supported external embedded-auditor invocation was available in this session; Codex performed bounded manual audit and records this required audit as skipped."
+  },
+  "codereview_status": "Manual bounded review complete; preserved existing PR Steward v1 docs and fixed package importability outside repo root.",
+  "precommit_status": "PASS: pre-commit run on TP301 changed files and git diff --check passed.",
+  "commit_sha": "33801d19cbde6654f421f26e2b58730354fc6a71",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/770",
+  "residual_risks": [
+    "TP301 is stacked on TP203/#767 while TP102 remains a sibling dependency on PR #758.",
+    "The package imports outside repo root, and gate/audit are packaged; intake and bridge require repo-local tools modules until a later package-layout packet moves those engines under src.",
+    "Local editable install was refreshed to this worktree to validate the exact packet command."
+  ],
+  "unknowns": [
+    "Whether downstream installed environments expect intake and bridge to run outside the repo root remains UNKNOWN."
+  ],
+  "cleanup_status": "WORKTREE_ACTIVE_PENDING_PR"
+}
