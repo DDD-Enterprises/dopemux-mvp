@@ -105,8 +105,7 @@
           "type": "boolean"
         },
         "proof_freshness": {
-          "type": "string",
-          "enum": ["FRESH", "STALE", "MISSING"]
+          "$ref": "#/definitions/proof_freshness"
         }
       }
     },
@@ -160,11 +159,18 @@
                 "type": "string",
                 "minLength": 1
               },
-              "matches_pr_head": {
-                "const": true
-              },
               "proof_freshness": {
-                "const": "FRESH"
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "CURRENT",
+                      "CURRENT_WITH_SELF_REFERENCE_EXCEPTION"
+                    ]
+                  }
+                },
+                "required": [
+                  "status"
+                ]
               }
             },
             "required": [
@@ -226,6 +232,54 @@
           "items": {
             "type": "string"
           }
+        }
+      }
+    },
+    "proof_freshness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "matches_pr_head",
+        "reason",
+        "proof_recorded_sha",
+        "pr_head_sha",
+        "self_reference_exception"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "CURRENT",
+            "CURRENT_WITH_SELF_REFERENCE_EXCEPTION",
+            "STALE",
+            "MISSING",
+            "UNKNOWN"
+          ]
+        },
+        "matches_pr_head": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "proof_recorded_sha": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pr_head_sha": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "self_reference_exception": {
+          "type": [
+            "object",
+            "null"
+          ]
         }
       }
     }

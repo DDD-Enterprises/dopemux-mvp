@@ -120,6 +120,12 @@
         "blocking": {
           "type": "boolean"
         },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "rationale": {
           "type": "string"
         }

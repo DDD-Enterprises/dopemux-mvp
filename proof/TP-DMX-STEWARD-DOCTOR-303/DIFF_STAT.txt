@@ -1,0 +1,7 @@
+ docs/ops/pr-steward-distribution.md                |   7 +-
+ schemas/pr_steward/config.schema.json              |  44 ++++
+ src/dopemux_pr_steward/cli.py                      |  27 ++-
+ src/dopemux_pr_steward/doctor.py                   | 256 +++++++++++++++++++++
+ .../generated/TP-DMX-STEWARD-DOCTOR-303.json       |   8 +-
+ tests/dopemux_cli/test_doctor.py                   | 107 +++++++++
+ 6 files changed, 434 insertions(+), 15 deletions(-)

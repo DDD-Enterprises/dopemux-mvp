@@ -32,6 +32,25 @@ GITHUB_ACTIONS_DETAILS_URL_RE = re.compile(
 GIT_REMOTE_SLUG_RE = re.compile(
     r"(?:github\.com[:/])(?P<owner>[^/\s]+)/(?P<repo>[^/\s]+?)(?:\.git)?$"
 )
+MERGE_PULL_REQUEST_MUTATION = """
+mutation($pullRequestId: ID!, $expectedHeadOid: GitObjectID!, $mergeMethod: PullRequestMergeMethod!) {
+  mergePullRequest(
+    input: {
+      pullRequestId: $pullRequestId
+      expectedHeadOid: $expectedHeadOid
+      mergeMethod: $mergeMethod
+    }
+  ) {
+    pullRequest {
+      number
+      merged
+      mergeCommit {
+        oid
+      }
+    }
+  }
+}
+""".strip()
 
 
 @dataclass(frozen=True)
@@ -258,6 +277,7 @@ class GitHubClient:
             ",".join(
                 [
                     "number",
+                    "id",
                     "title",
                     "author",
                     "state",
@@ -348,6 +368,7 @@ class GitHubClient:
             ",".join(
                 [
                     "number",
+                    "id",
                     "title",
                     "author",
                     "state",
@@ -386,6 +407,45 @@ class GitHubClient:
         if not oid:
             return None, "PR head SHA was empty"
         return oid, None
+
+    def merge_pull_request_expected_head(
+        self,
+        pr_id: int,
+        *,
+        expected_head_oid: str,
+        method: str = "REBASE",
+    ) -> CommandResult:
+        payload = self.fetch_pr(pr_id)
+        node_id = str(payload.get("id") or "").strip()
+        normalized_method = str(method or "REBASE").upper()
+        command = [
+            "gh",
+            "api",
+            "graphql",
+            "-f",
+            f"query={MERGE_PULL_REQUEST_MUTATION}",
+            "-F",
+            f"pullRequestId={node_id}",
+            "-F",
+            f"expectedHeadOid={expected_head_oid}",
+            "-F",
+            f"mergeMethod={normalized_method}",
+        ]
+        if not node_id:
+            return CommandResult(
+                command=command,
+                returncode=1,
+                stdout="",
+                stderr="UNKNOWN: pull request GraphQL id is unavailable.",
+            )
+        if not expected_head_oid:
+            return CommandResult(
+                command=command,
+                returncode=1,
+                stdout="",
+                stderr="UNKNOWN: expectedHeadOid is unavailable.",
+            )
+        return self._run(command)
 
     def fetch_branch_protection(self, branch: str) -> Dict[str, Any]:
         branch_name = str(branch or "").strip()
