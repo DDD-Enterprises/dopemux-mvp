@@ -135,7 +135,9 @@ function mapRealtimeState(message: Record<string, unknown>): CognitiveState | nu
   };
 }
 
-const getDynamicRoast = (label: string, value: number | null) => {
+type MetricLabel = 'Energy Level' | 'Attention Focus' | 'Cognitive Load' | '15-min Prediction';
+
+const getDynamicRoast = (label: MetricLabel, value: number | null) => {
   if (value === null) return 'Data ghosting. Refreshing...';
   if (value > 0.8) {
     if (label === 'Energy Level') return 'Hyperfocus or just vibrating? Slow down.';
@@ -355,7 +357,7 @@ function App() {
 
   const metricCards = [
     {
-      label: 'Energy Level',
+      label: 'Energy Level' as const,
       value: cognitiveState.energy,
       icon: <Zap color={brandTokens.colors.serumMint} size={24} aria-hidden="true" />,
       accentColor: brandTokens.colors.serumMint,
@@ -363,7 +365,7 @@ function App() {
       tooltip: 'Your current biometric energy reserve based on activity and sleep data',
     },
     {
-      label: 'Attention Focus',
+      label: 'Attention Focus' as const,
       value: cognitiveState.attention,
       icon: <Eye color={brandTokens.colors.ritualCyan} size={24} aria-hidden="true" />,
       accentColor: brandTokens.colors.ritualCyan,
@@ -371,7 +373,7 @@ function App() {
       tooltip: 'Real-time attention state: scattered, focused, or hyperfocused',
     },
     {
-      label: 'Cognitive Load',
+      label: 'Cognitive Load' as const,
       value: cognitiveState.load,
       icon: <Brain color={brandTokens.colors.saintGold} size={24} aria-hidden="true" />,
       accentColor: brandTokens.colors.saintGold,
@@ -379,7 +381,7 @@ function App() {
       tooltip: 'Total mental effort being exerted on current tasks',
     },
     {
-      label: '15-min Prediction',
+      label: '15-min Prediction' as const,
       value: cognitiveState.prediction ?? null,
       icon: <TrendingUp color={brandTokens.colors.giltEdge} size={24} aria-hidden="true" />,
       accentColor: brandTokens.colors.giltEdge,

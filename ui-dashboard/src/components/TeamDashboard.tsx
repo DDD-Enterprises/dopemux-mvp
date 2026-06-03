@@ -19,7 +19,7 @@ export default function TeamDashboard() {
     teamMembers.reduce((total, member) => total + member.load, 0) / teamMembers.length
   );
 
-  const getStatusFromLoad = (load: number) => {
+  const getStatusFromLoad = (load: number): keyof typeof statusStyles => {
     if (load > 80) return 'critical';
     if (load > 60) return 'high';
     if (load < 30) return 'low';
