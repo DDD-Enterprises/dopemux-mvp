@@ -583,6 +583,7 @@ def _merge_prepared_result(
         repo_root=repo_root,
         policy=policy,
         client=client,
+        expected_head_oid=prepared_result.pr_state.head_sha,
     )
     if _state_value(executed_decision.action) == MergeActionType.BLOCKED.value:
         raise RuntimeError(executed_decision.reason)
