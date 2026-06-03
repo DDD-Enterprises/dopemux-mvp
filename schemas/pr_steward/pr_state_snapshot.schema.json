@@ -20,7 +20,8 @@
     "issue_comments",
     "checks",
     "embedded_audit",
-    "proof"
+    "proof",
+    "blockers"
   ],
   "properties": {
     "schema_version": {
@@ -101,6 +102,12 @@
     },
     "proof": {
       "$ref": "#/definitions/proof"
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
   },
   "definitions": {
@@ -288,6 +295,12 @@
         "blocking": {
           "type": "boolean"
         },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "rationale": {
           "type": "string"
         }
@@ -339,8 +352,55 @@
           "type": "boolean"
         },
         "proof_freshness": {
+          "$ref": "#/definitions/proof_freshness"
+        }
+      }
+    },
+    "proof_freshness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "matches_pr_head",
+        "reason",
+        "proof_recorded_sha",
+        "pr_head_sha",
+        "self_reference_exception"
+      ],
+      "properties": {
+        "status": {
           "type": "string",
-          "enum": ["FRESH", "STALE", "MISSING"]
+          "enum": [
+            "CURRENT",
+            "CURRENT_WITH_SELF_REFERENCE_EXCEPTION",
+            "STALE",
+            "MISSING",
+            "UNKNOWN"
+          ]
+        },
+        "matches_pr_head": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "proof_recorded_sha": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pr_head_sha": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "self_reference_exception": {
+          "type": [
+            "object",
+            "null"
+          ]
         }
       }
     }

@@ -1,0 +1,152 @@
+{
+  "tp_id": "TP-DMX-STEWARD-SCAFFOLD-302",
+  "status": "PASS_WITH_LIMITS",
+  "generated_at": "2026-05-31T23:55:00Z",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-steward-scaffold-302",
+  "branch": "codex/tp-dmx-steward-scaffold-302",
+  "base_ref": "origin/codex/tp-dmx-steward-package-301",
+  "base_sha": "7acb4d9ad43453e3b1c7cfe7b0504dc880007ffe",
+  "implementation_commit_sha": "2b8f1c16c25d28c443e6136b2262dc4381ce7158",
+  "proof_commit_sha": "0a2ea96ae3d40e0fa78e82a4d921958379d516a3",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/772",
+  "repo_identity": {
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker": ".dopetaskroot",
+    "identity_match": true
+  },
+  "stacking": {
+    "reason": "TP302 depends on TP-DMX-STEWARD-PACKAGE-301, so the packet and PR base were changed from main to codex/tp-dmx-steward-package-301.",
+    "base_branch": "codex/tp-dmx-steward-package-301",
+    "base_pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/770"
+  },
+  "dependency_proofs": [
+    {
+      "tp_id": "TP-DMX-STEWARD-PACKAGE-301",
+      "path": "proof/TP-DMX-STEWARD-PACKAGE-301/PROOF.json",
+      "present": true,
+      "json_valid": true,
+      "status": "PASS_WITH_LIMITS",
+      "head_sha": "33801d19cbde6654f421f26e2b58730354fc6a71",
+      "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/770"
+    }
+  ],
+  "authority_used": [
+    "AGENTS.md",
+    "task-packets/generated/TP-DMX-STEWARD-SCAFFOLD-302.json",
+    "docs/ops/load-plans/load_plan-DMX-AUTOREVIEW-PLATFORM.json",
+    "src/dopemux/project_init.py",
+    "src/dopemux_pr_steward/cli.py",
+    "docs/ops/pr-steward.md",
+    "docs/ops/pr-steward-cli.md",
+    "config/pr_merge_specialist/policy.yaml"
+  ],
+  "slices_completed": [
+    "Preflight verified the dedicated worktree, origin, branch, .dopetaskroot marker, TP302 schema, and TP301 dependency proof.",
+    "RED: pytest -q tests/dopemux_init exited 4 before the test directory existed on the TP301 base.",
+    "RED: added tests/dopemux_init/test_pr_steward_scaffold.py and observed failure because .github/workflows/pr-steward.yml was not scaffolded.",
+    "GREEN: added thin PR Steward and embedded-audit workflow templates plus pr_steward and pr_merge_specialist policy templates.",
+    "Confirmed project_init.py already recursively copies template files and skips existing destination files, including under initialize(..., force=True), so no runtime code change was needed.",
+    "Updated TP302 base and PR metadata to codex/tp-dmx-steward-package-301 to match the dependency stack."
+  ],
+  "files_changed": [
+    "docs/ops/pr-steward-distribution.md",
+    "src/dopemux/templates/init/.github/workflows/embedded-audit.yml",
+    "src/dopemux/templates/init/.github/workflows/pr-steward.yml",
+    "src/dopemux/templates/init/config/pr_merge_specialist/policy.yaml",
+    "src/dopemux/templates/init/config/pr_steward/policy.json",
+    "task-packets/generated/TP-DMX-STEWARD-SCAFFOLD-302.json",
+    "tests/dopemux_init/test_pr_steward_scaffold.py",
+    "proof/TP-DMX-STEWARD-SCAFFOLD-302/**"
+  ],
+  "validations": [
+    {
+      "command": "pytest -q tests/dopemux_init",
+      "exit_code": 4,
+      "status": "BASELINE_ABSENT",
+      "evidence": "ERROR: file or directory not found: tests/dopemux_init"
+    },
+    {
+      "command": "pytest -q tests/dopemux_init/test_pr_steward_scaffold.py",
+      "exit_code": 1,
+      "status": "RED_PASS",
+      "evidence": "AssertionError: .github/workflows/pr-steward.yml did not exist after init."
+    },
+    {
+      "command": "pytest -q tests/dopemux_init/test_pr_steward_scaffold.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "2 passed"
+    },
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-STEWARD-SCAFFOLD-302.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m jsonschema -i task-packets/generated/TP-DMX-STEWARD-SCAFFOLD-302.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python -m compileall -q src tests",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "pytest -q tests/dopemux_init tests/test_project_init_templates.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "8 passed"
+    },
+    {
+      "command": "python -c \"import yaml;yaml.safe_load(open('src/dopemux/templates/init/.github/workflows/pr-steward.yml'));yaml.safe_load(open('src/dopemux/templates/init/.github/workflows/embedded-audit.yml'));print('yaml ok')\"",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "yaml ok"
+    },
+    {
+      "command": "pytest -q tests/dopemux_init",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "2 passed"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "pre-commit run --files <TP302 implementation files>",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-STEWARD-SCAFFOLD-302/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "External embedded audit was not invoked in this Codex session.",
+      "The scaffolded workflows assume the Dopemux package/command is available in the target repository CI environment; live downstream CI installation behavior was not exercised."
+    ],
+    "skip_reason": "No supported external embedded-auditor invocation was available in this session; Codex performed bounded manual audit and records this required audit as skipped."
+  },
+  "codereview_status": "Manual bounded review complete; project_init.py already provides recursive no-clobber template copying, so the implementation is template-only plus tests/docs/packet metadata.",
+  "precommit_status": "PASS: pre-commit run on TP302 implementation files and git diff --check passed.",
+  "residual_risks": [
+    "The scaffolded GitHub workflows were YAML-parsed and init-copied locally, but they were not executed in GitHub Actions before this proof was written.",
+    "Downstream projects may need a separate installation path for the Dopemux package before python -m dopemux.cli is available in CI; TP302 explicitly avoided heavy setup and reusable action work.",
+    "External embedded audit is skipped locally and should be supplied by CI or supervisor review."
+  ],
+  "unknowns": [
+    "Whether every dopemux-init target repository has a CI environment with Dopemux installed is UNKNOWN.",
+    "Whether downstream branch protection will treat scaffolded PR Steward as advisory or required is UNKNOWN until project-local policy is configured."
+  ],
+  "cleanup_status": "WORKTREE_ACTIVE_PENDING_PR"
+}
