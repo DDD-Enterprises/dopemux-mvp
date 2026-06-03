@@ -1,0 +1,131 @@
+{
+  "id": "TP-DMX-ADHD-PRIVACY-PAYLOADS-001",
+  "project": "dopemux-mvp",
+  "target": "enforce content-free ADHD activity payloads",
+  "invariants": [
+    "Do not send filenames, prompt text, code snippets, message content, or file paths to ADHD Engine activity endpoints.",
+    "Preserve aggregate activity signals such as counts, completion rate, break compliance, and recency timing.",
+    "Do not start live services or require live Redis/ADHD Engine connections for validation.",
+    "Keep the slice scoped to Activity Capture privacy/schema enforcement."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-adhd-cognitive-remediation-t8-safety",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/adhd-activity-payload-privacy",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "test(adhd): enforce activity payload privacy",
+    "allowlist": [
+      "services/activity-capture/event_normalization.py",
+      "services/activity-capture/activity_tracker.py",
+      "services/activity-capture/adhd_client.py",
+      "services/activity-capture/tests/test_event_normalization.py",
+      "services/activity-capture/tests/test_event_subscriber.py",
+      "services/activity-capture/tests/test_activity_tracker.py",
+      "services/activity-capture/tests/test_adhd_client.py",
+      "task-packets/INDEX.md",
+      "task-packets/generated/TP-DMX-ADHD-PRIVACY-PAYLOADS-001.json"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-ADHD-PRIVACY-PAYLOADS-001.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-ADHD-PRIVACY-PAYLOADS-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest services/activity-capture/tests/test_event_normalization.py services/activity-capture/tests/test_event_subscriber.py services/activity-capture/tests/test_activity_tracker.py services/activity-capture/tests/test_adhd_client.py -q",
+      "python -m compileall services/activity-capture/event_normalization.py services/activity-capture/activity_tracker.py services/activity-capture/adhd_client.py",
+      "git diff --check",
+      "pre-commit run --files services/activity-capture/event_normalization.py services/activity-capture/activity_tracker.py services/activity-capture/adhd_client.py services/activity-capture/tests/test_event_normalization.py services/activity-capture/tests/test_event_subscriber.py services/activity-capture/tests/test_activity_tracker.py services/activity-capture/tests/test_adhd_client.py task-packets/INDEX.md task-packets/generated/TP-DMX-ADHD-PRIVACY-PAYLOADS-001.json"
+    ]
+  },
+  "pr": {
+    "title": "test(adhd): enforce activity payload privacy",
+    "body": "## Problem\\nActivity Capture accepts events that may include filenames, prompt text, code snippets, or other content-bearing fields. ADHD Engine activity payloads must remain content-free and aggregate-only.\\n\\n## Fix\\n- Strip content-bearing file/prompt/code fields from normalized workspace activity.\\n- Ensure pending tracker activity stores only aggregate-safe file activity fields.\\n- Keep ADHD Engine activity client payload construction allowlisted.\\n- Add focused tests proving forbidden fields are not forwarded or stored.\\n\\n## Test Plan\\n- Validate Task Packet JSON and schema.\\n- Run focused Activity Capture tests.\\n- Run compileall, git diff --check, and pre-commit on changed files.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect",
+      "task": "Inspect Activity Capture normalization, tracker aggregation, ADHD Engine client payload construction, and focused tests.",
+      "requirements": [
+        "Identify content-bearing fields that must not leave Activity Capture.",
+        "Preserve existing aggregate payload schema to ADHD Engine.",
+        "Do not touch unrelated ADHD Engine assessment internals."
+      ],
+      "validation": [
+        "rg -n \"most_recent_file|prompt|code|content|send_activity_data|file_activity\" services/activity-capture services/activity-capture/tests"
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "services/activity-capture/event_normalization.py",
+        "services/activity-capture/activity_tracker.py",
+        "services/activity-capture/adhd_client.py",
+        "services/activity-capture/tests/test_event_normalization.py",
+        "services/activity-capture/tests/test_event_subscriber.py",
+        "services/activity-capture/tests/test_activity_tracker.py",
+        "services/activity-capture/tests/test_adhd_client.py"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Add content-free payload enforcement and tests for Activity Capture.",
+      "requirements": [
+        "Normalized workspace file activity must not retain filenames or path-like file identifiers.",
+        "Tracker pending activity must store only safe aggregate file activity fields.",
+        "ADHD client engine payload must be allowlisted to aggregate fields only.",
+        "Tests must fail if filenames, prompt text, code snippets, content, messages, or file paths are included in engine-bound payloads."
+      ],
+      "expected_files": [
+        "services/activity-capture/event_normalization.py",
+        "services/activity-capture/activity_tracker.py",
+        "services/activity-capture/adhd_client.py",
+        "services/activity-capture/tests/test_event_normalization.py",
+        "services/activity-capture/tests/test_event_subscriber.py",
+        "services/activity-capture/tests/test_activity_tracker.py",
+        "services/activity-capture/tests/test_adhd_client.py"
+      ],
+      "validation": [
+        "python -m pytest services/activity-capture/tests/test_event_normalization.py services/activity-capture/tests/test_event_subscriber.py services/activity-capture/tests/test_activity_tracker.py services/activity-capture/tests/test_adhd_client.py -q",
+        "python -m compileall services/activity-capture/event_normalization.py services/activity-capture/activity_tracker.py services/activity-capture/adhd_client.py"
+      ]
+    },
+    {
+      "id": "precommit",
+      "task": "Run packet validation, focused tests, codereview/precommit, commit, push, PR, and update Task Orchestrator with proof.",
+      "requirements": [
+        "Inspect diff scope before staging.",
+        "Report live Redis/ADHD Engine integration as NOT_RUN unless explicitly exercised."
+      ],
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-DMX-ADHD-PRIVACY-PAYLOADS-001.json >/dev/null",
+        "python -m jsonschema -i task-packets/generated/TP-DMX-ADHD-PRIVACY-PAYLOADS-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "git diff --check",
+        "pre-commit run --files services/activity-capture/event_normalization.py services/activity-capture/activity_tracker.py services/activity-capture/adhd_client.py services/activity-capture/tests/test_event_normalization.py services/activity-capture/tests/test_event_subscriber.py services/activity-capture/tests/test_activity_tracker.py services/activity-capture/tests/test_adhd_client.py task-packets/INDEX.md task-packets/generated/TP-DMX-ADHD-PRIVACY-PAYLOADS-001.json"
+      ]
+    }
+  ]
+}
