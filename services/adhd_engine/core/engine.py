@@ -1543,22 +1543,10 @@ Format: {{
         total_load = await self._calculate_system_cognitive_load()
         logger.warning(f"⚠️ COGNITIVE OVERLOAD DETECTED: {total_load:.2f}")
 
-        # Week 3: Create break recommendation in ConPort
-        if self.conport and total_load > 0.8:  # Overload threshold
-            try:
-                # Create high-priority break task
-                entry_id = self.conport.log_progress_entry(
-                    status="TODO",
-                    description=f"🧠 BREAK RECOMMENDED - System cognitive load: {total_load:.1%}. "
-                                f"Consider taking a 5-10 minute break to prevent burnout."
-                )
-
-                if entry_id:
-                    logger.info(f"✅ Created break recommendation #{entry_id} in ConPort")
-                    self.accommodation_stats["breaks_suggested"] += 1
-
-            except Exception as e:
-                logger.error(f"Failed to create break recommendation in ConPort: {e}")
+        if total_load > 0.8:
+            logger.info(
+                "Cognitive overload detected; ADHD Engine does not create task or PM records"
+            )
 
     async def _adjust_task_recommendations_for_protection(self, user_id: str) -> None:
         """

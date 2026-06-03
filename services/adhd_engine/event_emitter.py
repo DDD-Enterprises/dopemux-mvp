@@ -269,7 +269,6 @@ async def emit_claude_prompt(
     return await emitter.emit(
         EventTypes.CLAUDE_PROMPT_RECEIVED,
         {
-            "prompt_summary": prompt_summary[:100],  # Truncate for privacy
             "signals": signals,
             "adhd_state": adhd_state,
         },
@@ -307,7 +306,6 @@ async def emit_context_saved(
         {
             "user_id": user_id,
             "reason": reason,
-            "prompt_hint": prompt_hint[:50]
         },
         source="save_context_hook"
     )
