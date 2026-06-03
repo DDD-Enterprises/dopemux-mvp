@@ -22,6 +22,19 @@ async def test_break_event_sends_engine_compatible_payload():
 
 
 @pytest.mark.asyncio
+async def test_break_taken_coerces_content_smuggled_in_duration():
+    adhd_client = AsyncMock()
+    tracker = ActivityTracker(adhd_client=adhd_client)
+
+    await tracker.handle_break_taken({"duration_minutes": "/repo/src/secret.py"})
+
+    assert tracker.pending_activities, "break activity should be recorded"
+    recorded = tracker.pending_activities[-1]
+    assert recorded["duration_minutes"] == 5
+    assert "secret.py" not in repr(recorded)
+
+
+@pytest.mark.asyncio
 async def test_aggregate_summary_uses_engine_schema():
     adhd_client = AsyncMock()
     tracker = ActivityTracker(adhd_client=adhd_client)
