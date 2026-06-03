@@ -265,6 +265,46 @@ def _threads_resolved_locally(result: Optional[PRResult]) -> bool:
     )
 
 
+def _applied_threads_resolved_locally(
+    dispositions: Iterable[ThreadDisposition],
+) -> bool:
+    resolving_dispositions = {
+        ThreadDispositionType.IMPLEMENT.value,
+        ThreadDispositionType.AGENTIC_FIX.value,
+        ThreadDispositionType.AUTO_RESOLVE_OUTDATED.value,
+    }
+    return any(
+        disposition.applied
+        and _state_value(disposition.disposition) in resolving_dispositions
+        for disposition in dispositions
+    )
+
+
+def _resolve_applied_threads_after_validation(
+    *,
+    applied_threads: Iterable[ThreadDisposition],
+    validation: ValidationReport,
+    execute: bool,
+    commands_log: Path,
+    repo_root: Path,
+    policy: Dict[str, Any],
+) -> bool:
+    if not validation.passed or not execute:
+        return False
+    applied_thread_list = list(applied_threads)
+    if not _applied_threads_resolved_locally(applied_thread_list):
+        return False
+    return bool(
+        resolve_verified_threads(
+            dispositions=applied_thread_list,
+            execute=execute,
+            commands_log=commands_log,
+            repo_root=repo_root,
+            policy=policy,
+        )
+    )
+
+
 def _with_operator_state(
     result: PRResult, operator_state: str, *, detail: str = ""
 ) -> PRResult:
@@ -308,13 +348,32 @@ def _steward_artifact_path(
     *,
     pr_dir: Path,
     pr_id: int,
-    default_name: str,
+    path_key: str,
 ) -> Path:
-    if raw_path:
-        rendered = str(raw_path).format(pr_dir=str(pr_dir), pr_id=pr_id)
-        path = Path(rendered)
-        return path if path.is_absolute() else pr_dir / path
-    return pr_dir / default_name
+    if not raw_path:
+        raise ValueError(f"steward_gate.{path_key} is required")
+    out_dir = _steward_out_dir_from_pr_dir(pr_dir, pr_id=pr_id)
+    rendered = str(raw_path).format(
+        out_dir=str(out_dir),
+        pr_dir=str(pr_dir),
+        pr_id=pr_id,
+    )
+    path = Path(rendered)
+    if "{out_dir}" in str(raw_path) or "{pr_dir}" in str(raw_path):
+        return path
+    return path if path.is_absolute() else out_dir / path
+
+
+def _steward_out_dir_from_pr_dir(pr_dir: Path, *, pr_id: int) -> Path:
+    if (
+        pr_dir.parent.name == "pr"
+        and pr_dir.parent.parent.name.startswith("run_")
+        and pr_dir.parent.parent.parent != pr_dir.parent.parent
+    ):
+        return pr_dir.parent.parent.parent
+    if pr_dir.name == str(pr_id):
+        return pr_dir.parent
+    return pr_dir
 
 
 def require_steward_remediation_gate(
@@ -325,18 +384,26 @@ def require_steward_remediation_gate(
     now: Any = None,
 ) -> StewardGateResult:
     gate_policy = policy.get("steward_gate", {})
-    merge_readiness_path = _steward_artifact_path(
-        gate_policy.get("merge_readiness_path"),
-        pr_dir=pr_dir,
-        pr_id=pr.pr_id,
-        default_name="MERGE_READINESS.json",
-    )
-    audit_proof_path = _steward_artifact_path(
-        gate_policy.get("audit_proof_path"),
-        pr_dir=pr_dir,
-        pr_id=pr.pr_id,
-        default_name="PROOF.json",
-    )
+    try:
+        merge_readiness_path = _steward_artifact_path(
+            gate_policy.get("merge_readiness_path"),
+            pr_dir=pr_dir,
+            pr_id=pr.pr_id,
+            path_key="merge_readiness_path",
+        )
+        audit_proof_path = _steward_artifact_path(
+            gate_policy.get("audit_proof_path"),
+            pr_dir=pr_dir,
+            pr_id=pr.pr_id,
+            path_key="audit_proof_path",
+        )
+    except ValueError as exc:
+        return StewardGateResult(
+            allowed=False,
+            reason_code="DENY_STEWARD_ARTIFACT_PATH_UNCONFIGURED",
+            required_class="REMEDIATION",
+            evidence={"error": str(exc)},
+        )
     result = steward_gate(
         head_sha=pr.head_sha,
         required_class="REMEDIATION",
@@ -388,18 +455,26 @@ def require_steward_finalization_gate(
     now: Any = None,
 ) -> StewardGateResult:
     gate_policy = policy.get("steward_gate", {})
-    merge_readiness_path = _steward_artifact_path(
-        gate_policy.get("merge_readiness_path"),
-        pr_dir=pr_dir,
-        pr_id=pr.pr_id,
-        default_name="MERGE_READINESS.json",
-    )
-    audit_proof_path = _steward_artifact_path(
-        gate_policy.get("audit_proof_path"),
-        pr_dir=pr_dir,
-        pr_id=pr.pr_id,
-        default_name="PROOF.json",
-    )
+    try:
+        merge_readiness_path = _steward_artifact_path(
+            gate_policy.get("merge_readiness_path"),
+            pr_dir=pr_dir,
+            pr_id=pr.pr_id,
+            path_key="merge_readiness_path",
+        )
+        audit_proof_path = _steward_artifact_path(
+            gate_policy.get("audit_proof_path"),
+            pr_dir=pr_dir,
+            pr_id=pr.pr_id,
+            path_key="audit_proof_path",
+        )
+    except ValueError as exc:
+        return StewardGateResult(
+            allowed=False,
+            reason_code="DENY_STEWARD_ARTIFACT_PATH_UNCONFIGURED",
+            required_class="FINALIZATION",
+            evidence={"error": str(exc)},
+        )
     result = steward_gate(
         head_sha=pr.head_sha,
         required_class="FINALIZATION",
@@ -535,6 +610,7 @@ def _merge_prepared_result(
         repo_root=repo_root,
         policy=policy,
         client=client,
+        expected_head_oid=prepared_result.pr_state.head_sha,
     )
     if _state_value(executed_decision.action) == MergeActionType.BLOCKED.value:
         raise RuntimeError(executed_decision.reason)
@@ -1437,6 +1513,25 @@ def pr_apply(
                         else:
                             log("Full validation still failed after remote-check remediation.", "ERROR")
 
+        threads_resolved_locally = _resolve_applied_threads_after_validation(
+            applied_threads=applied_threads,
+            validation=validation,
+            execute=execute,
+            commands_log=commands_log,
+            repo_root=repo_root,
+            policy=policy,
+        )
+        if (
+            validation.passed
+            and execute
+            and _applied_threads_resolved_locally(applied_threads)
+            and not threads_resolved_locally
+        ):
+            log(
+                "Thread resolution did not complete; active thread blockers remain authoritative.",
+                "ERROR",
+            )
+
         result = build_plan_result(
             active_run_id=active_run_id,
             pr=refreshed_pr,
@@ -1444,7 +1539,7 @@ def pr_apply(
             check_payload=refreshed_checks,
             validation_report=validation,
             policy=policy,
-            threads_resolved_locally=False
+            threads_resolved_locally=threads_resolved_locally,
         )
         if operator_state:
             result = _with_operator_state(result, operator_state)
