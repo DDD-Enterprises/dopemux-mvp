@@ -33,6 +33,11 @@ from passlib.context import CryptContext
 import uvicorn
 from pathlib import Path
 
+try:
+    from .security_config import generate_fernet_key, resolve_secret
+except ImportError:  # pragma: no cover - direct script execution path
+    from security_config import generate_fernet_key, resolve_secret
+
 # Import ADHD integration
 try:
     from .adhd_engine_client import ADHDEngineClient, get_adhd_engine_client, close_adhd_engine_client
@@ -84,7 +89,7 @@ def check_rate_limit(client_ip: str, max_requests: int = 100, window_seconds: in
     return False
 
 # Security configuration
-SECRET_KEY = os.getenv("WMA_SECRET_KEY", "your-secret-key-change-in-production")
+SECRET_KEY = resolve_secret("WMA_SECRET_KEY", allow_ephemeral_dev=True)
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -94,8 +99,12 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # Encryption utilities for sensitive data
 from cryptography.fernet import Fernet
 
-# Use environment variable or generate key (in production, use env var)
-ENCRYPTION_KEY = os.getenv("WMA_ENCRYPTION_KEY", Fernet.generate_key())
+# Missing or placeholder encryption keys are only generated for dev/test/local.
+ENCRYPTION_KEY = resolve_secret(
+    "WMA_ENCRYPTION_KEY",
+    allow_ephemeral_dev=True,
+    generator=generate_fernet_key,
+)
 cipher_suite = Fernet(ENCRYPTION_KEY)
 
 def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):

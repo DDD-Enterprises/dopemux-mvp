@@ -417,7 +417,7 @@ All endpoints require the `X-API-Key` header:
 X-API-Key: your-api-key-here
 ```
 
-Default key: `dev-key-123` (development only)
+No default key is configured. Development and test runs may omit `ADHD_ENGINE_API_KEY`; non-development runtimes fail closed when it is missing or set to a placeholder.
 
 ## Error Responses
 
