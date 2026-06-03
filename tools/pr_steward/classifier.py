@@ -754,12 +754,38 @@ def _proof(harvest: dict[str, Any], *, pr_head_sha: str | None = None) -> dict[s
                 reason="Proof head SHA does not match PR head SHA.",
             )
     elif isinstance(raw_freshness, str) and raw_freshness:
-        freshness = _proof_freshness_payload(
-            status=raw_freshness,
-            proof_head_sha=proof_head_sha,
-            pr_head_sha=pr_head_sha,
-            matches=matches,
-        )
+        if not proof_head_sha and not proof_path:
+            freshness = _proof_freshness_payload(
+                status="MISSING",
+                proof_head_sha=None,
+                pr_head_sha=pr_head_sha,
+                matches=False,
+                reason="Proof file was not provided.",
+            )
+        elif not proof_head_sha:
+            freshness = _proof_freshness_payload(
+                status="MISSING",
+                proof_head_sha=None,
+                pr_head_sha=pr_head_sha,
+                matches=False,
+                reason="Proof head SHA missing.",
+            )
+        elif matches:
+            freshness = _proof_freshness_payload(
+                status="CURRENT",
+                proof_head_sha=proof_head_sha,
+                pr_head_sha=pr_head_sha,
+                matches=True,
+                reason="Proof head SHA matches PR head SHA.",
+            )
+        else:
+            freshness = _proof_freshness_payload(
+                status="STALE",
+                proof_head_sha=proof_head_sha,
+                pr_head_sha=pr_head_sha,
+                matches=False,
+                reason="Proof head SHA does not match PR head SHA.",
+            )
     else:
         if not proof_head_sha and not proof_path:
             freshness = _proof_freshness_payload(

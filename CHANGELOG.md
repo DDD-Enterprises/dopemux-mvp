@@ -43,6 +43,7 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 - Pinned final PR Merge Specialist GraphQL merges to the PR head SHA validated by the steward finalization gate instead of a freshly fetched head.
 - Fixed steward gate artifact resolution so relative `{out_dir}` policy paths are not prefixed with `out_dir` twice.
 - Restored post-validation GitHub review-thread resolution before queue-drain records local thread-resolution evidence.
+- Recomputed PR Steward legacy string proof-freshness values from proof and PR head SHAs so stale proof cannot self-report current.
 - Decisions CLI review repair now uses the ConPort HTTP REST port, accepts string decision IDs, validates referenced decisions before append-only writes, preserves requested list limits, and covers the new subcommands with focused tests.
 - MCP doctor now runs relative stdio doctor commands from the resolved repo root, so Task Orchestrator wrapper checks work when invoked from repo subdirectories.
 - MCP bootstrap now points Task Orchestrator at a tracked launcher wrapper and keeps catalog-rendered SSE URL defaults aligned with checked-in `.mcp.json`.
