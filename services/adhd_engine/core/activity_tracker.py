@@ -115,12 +115,14 @@ class ActivityTracker:
         # Calculate break compliance from Redis break history
         break_history = await self.redis.lrange(f"adhd:breaks:{user_id}", 0, 10)
         break_compliance = self._calculate_break_compliance(break_history)
+        activity_evidence = bool(progress_entries or activity_log or last_break_str or break_history)
 
         result = {
             "completion_rate": completion_rate,
             "context_switches": context_switches,
             "break_compliance": break_compliance,
             "minutes_since_break": minutes_since_break,
+            "activity_evidence": activity_evidence,
             "familiarity_score": round(min(1.0, (completion_rate * 0.7) + 0.3), 2),
             "complexity_avg_30min": self._calculate_average_complexity(progress_entries),
         }

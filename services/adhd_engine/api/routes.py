@@ -1,8 +1,8 @@
 """
 FastAPI routes for ADHD Accommodation Engine.
 
-Provides 6 API endpoints (/api/v1/*) for ADHD-optimized task management:
-- POST /assess-task - Task suitability assessment
+Provides API endpoints (/api/v1/*) for ADHD cognitive state and accommodations:
+- POST /assess-task - Cognitive suitability assessment
 - GET /energy-level/{user_id} - Current energy level
 - GET /attention-state/{user_id} - Current attention state
 - POST /recommend-break - Personalized break recommendations
@@ -27,6 +27,25 @@ import importlib
 import asyncio
 
 logger = logging.getLogger(__name__)
+
+CONTENT_BEARING_HOOK_KEYS = {
+    "arg",
+    "args",
+    "argument",
+    "arguments",
+    "code",
+    "content",
+    "file",
+    "file_path",
+    "filename",
+    "files",
+    "path",
+    "paths",
+    "prompt",
+    "prompt_hint",
+    "prompt_summary",
+    "raw_args",
+}
 
 from services.shared.brand_voice import (
     StatusChip,
@@ -70,6 +89,7 @@ try:
     )
     EVENT_EMISSION_AVAILABLE = True
 except ImportError:
+    ADHDEventEmitter = None
     EVENT_EMISSION_AVAILABLE = False
     logger.debug("Event emission not available - hooks won't trigger EventBus")
 
@@ -108,6 +128,46 @@ def _brand_error_payload(message: str, chip: StatusChip = StatusChip.BLOCKER) ->
         "error": brand_error(message, chip=chip),
         **_brand_meta(chip),
     }
+
+
+def _has_nonempty_value(value: Any) -> bool:
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return bool(value.strip())
+    if isinstance(value, (list, tuple, set, dict)):
+        return bool(value)
+    return True
+
+
+def _find_content_bearing_key(value: Any, *, path: str = "") -> str | None:
+    if isinstance(value, dict):
+        for key, nested_value in value.items():
+            key_text = str(key)
+            key_path = f"{path}.{key_text}" if path else key_text
+            if key_text.lower() in CONTENT_BEARING_HOOK_KEYS and _has_nonempty_value(nested_value):
+                return key_path
+            nested_match = _find_content_bearing_key(nested_value, path=key_path)
+            if nested_match:
+                return nested_match
+    elif isinstance(value, (list, tuple)):
+        for index, item in enumerate(value):
+            nested_match = _find_content_bearing_key(item, path=f"{path}[{index}]")
+            if nested_match:
+                return nested_match
+    return None
+
+
+def _reject_content_bearing_hook_payload(payload: dict) -> None:
+    matched_key = _find_content_bearing_key(payload)
+    if matched_key:
+        raise HTTPException(
+            status_code=400,
+            detail=brand_error(
+                f"Content-bearing hook payload rejected at '{matched_key}'. "
+                "ADHD Engine accepts content-free signals only."
+            ),
+        )
 
 
 class _InMemoryCache:
@@ -635,19 +695,14 @@ async def update_activity(
     """
     try:
         cache = await get_cache_instance()
-        # Check cache first (though POST, cache recent activity summary)
         cache_key = _make_cache_key("activity", user_id)
-        cached_data = await cache.get(cache_key)
 
-        if cached_data:
-            logger.debug(f"Cache hit for activity update: {user_id}")
-            return schemas.ActivityUpdateResponse.model_validate_json(cached_data)
-
-        # Cache miss - record current event and append to rolling activity history.
+        # Record current event and append to rolling activity history.
+        activity_metrics = request.model_dump(exclude_none=True, exclude={"user_id"})
         activity_event = {
             "user_id": user_id,
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "metrics": request.model_dump(exclude_none=True),
+            "metrics": activity_metrics,
         }
         latest_key = f"adhd:activity:{user_id}:latest"
         history_key = f"adhd:activity:{user_id}:history"
@@ -663,14 +718,23 @@ async def update_activity(
         history = history[-200:]  # keep recent bounded history
         await cache.set(history_key, json.dumps(history), ttl=86400)
 
-        # Trigger reassessment if engine has this user
-        energy_updated = False
-        attention_updated = False
+        update_result = await engine.record_activity_update(user_id, activity_metrics)
+        energy_updated = bool(update_result.get("energy_updated"))
+        attention_updated = bool(update_result.get("attention_updated"))
 
-        if user_id in engine.user_profiles:
-            # Would trigger immediate assessment here
-            energy_updated = True
-            attention_updated = True
+        if EVENT_EMISSION_AVAILABLE and ADHDEventEmitter is not None:
+            try:
+                emitter = await ADHDEventEmitter.get_instance()
+                await emitter.emit(
+                    "activity_updated",
+                    {
+                        "user_id": user_id,
+                        "metrics": activity_metrics,
+                    },
+                    source="adhd_activity_api",
+                )
+            except Exception as e:
+                logger.warning(brand_log(f"Activity event emission failed: {e}", chip=StatusChip.BLOCKER))
 
         # Get ML prediction if available (predict activity impact)
         ml_prediction = None
@@ -843,22 +907,13 @@ async def get_tasks_for_user(
     engine = Depends(get_engine),
     api_key: str = Security(verify_api_key)
 ):
-    """Get aggregated task completion metrics for user."""
-    try:
-        completed = await engine.get_tasks_completed(user_id)
-        total = await engine.get_total_tasks(user_id)
-        rate = completed / total if total > 0 else 0.0
-
-        return {
-            "completed": completed,
-            "total": total,
-            "rate": round(rate, 2),
-            "user_id": user_id,
-            "timestamp": datetime.now(timezone.utc)
-        }
-    except Exception as e:
-        logger.error(brand_log(f"Tasks metrics retrieval failed: {e}"))
-        raise HTTPException(status_code=500, detail=brand_error(str(e)))
+    """Fail closed; ADHD Engine is not task/PM authority."""
+    raise HTTPException(
+        status_code=410,
+        detail=brand_error(
+            "ADHD Engine task metrics endpoint is disabled. Use canonical PM/task authority."
+        ),
+    )
 
 
 @router.get("/tasks", response_model=schemas.TasksResponse)
@@ -1551,7 +1606,7 @@ async def log_user_intent(
     - timestamp: ISO timestamp
     """
     try:
-        prompt_summary = request.get("prompt_summary", "")
+        _reject_content_bearing_hook_payload(request)
         signals = request.get("signals", {})
         adhd_state = request.get("adhd_state", {})
         timestamp = request.get("timestamp")
@@ -1563,7 +1618,6 @@ async def log_user_intent(
                     category="claude_intents",
                     key=f"intent_{timestamp}",
                     value={
-                        "prompt_hint": prompt_summary[:50],  # Even more truncated for privacy
                         "signals": signals,
                         "energy": adhd_state.get("energy"),
                         "attention": adhd_state.get("attention"),
@@ -1608,7 +1662,7 @@ async def log_user_intent(
         if EVENT_EMISSION_AVAILABLE:
             try:
                 await emit_claude_prompt(
-                    prompt_summary=prompt_summary,
+                    prompt_summary="",
                     signals=signals,
                     adhd_state=adhd_state
                 )
@@ -1621,6 +1675,8 @@ async def log_user_intent(
             "buffer_size": len(engine._intent_buffer)
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(brand_log(f"Intent logging failed: {e}"))
         return {"recorded": False, "error": str(e)}
@@ -1642,10 +1698,9 @@ async def save_context_for_hook(
     Triggers WorkingMemorySupport and ContextPreserver.
     """
     try:
+        _reject_content_bearing_hook_payload(request)
         reason = request.get("reason", "unknown")
-        prompt_hint = request.get("prompt_hint", "")
-        files = request.get("files", [])
-        
+
         context_saved = False
         breadcrumb_saved = False
         
@@ -1655,7 +1710,7 @@ async def save_context_for_hook(
                 await engine.context_preserver.save_context(
                     user_id=user_id,
                     reason=reason,
-                    additional_context={"files": files, "prompt_hint": prompt_hint}
+                    additional_context={}
                 )
                 context_saved = True
             except Exception as e:
@@ -1666,7 +1721,7 @@ async def save_context_for_hook(
             try:
                 await engine.working_memory_support.save_breadcrumb(
                     user_id=user_id,
-                    description=f"[{reason}] {prompt_hint}"[:100]
+                    description=f"[{reason}]"[:100]
                 )
                 breadcrumb_saved = True
             except Exception as e:
@@ -1679,8 +1734,6 @@ async def save_context_for_hook(
             
             engine._context_snapshots[user_id] = {
                 "reason": reason,
-                "prompt_hint": prompt_hint,
-                "files": files,
                 "timestamp": datetime.now(timezone.utc).isoformat()
             }
             context_saved = True
@@ -1691,7 +1744,7 @@ async def save_context_for_hook(
                 await emit_context_saved(
                     user_id=user_id,
                     reason=reason,
-                    prompt_hint=prompt_hint
+                    prompt_hint=""
                 )
             except Exception as e:
                 logger.debug(f"Event emission failed: {e}")
@@ -1703,6 +1756,8 @@ async def save_context_for_hook(
             "reason": reason
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(brand_log(f"Context save failed: {e}"))
         return {"saved": False, "error": str(e)}
@@ -1714,67 +1769,14 @@ async def get_unfinished_work(
     engine = Depends(get_engine)
 ):
     """
-    Get count and list of unfinished work items.
-    
-    Used by prompt_analyzer.py to warn when starting new features
-    with many unfinished items.
-    
-    Sources:
-    - ConPort progress entries with status != DONE
-    - Serena UntrackedWorkDetector if available
-    - Local abandoned tasks
+    Fail closed; ADHD Engine is not task, PM, or unfinished-work authority.
     """
-    try:
-        unfinished_items = []
-        
-        # Get from ConPort if available
-        if hasattr(engine, 'conport') and engine.conport:
-            try:
-                progress_entries = await engine.conport.get_progress(
-                    status="IN_PROGRESS",
-                    limit=50
-                )
-                for entry in progress_entries:
-                    unfinished_items.append({
-                        "id": entry.get("id"),
-                        "title": entry.get("title", "Unknown"),
-                        "status": entry.get("status"),
-                        "last_updated": entry.get("updated_at")
-                    })
-            except Exception as e:
-                logger.warning(brand_log(f"Failed to get ConPort progress: {e}"))
-        
-        # Get from UntrackedWorkDetector if available
-        if hasattr(engine, 'untracked_detector') and engine.untracked_detector:
-            try:
-                untracked = await engine.untracked_detector.detect()
-                for item in untracked.get("items", []):
-                    unfinished_items.append({
-                        "id": f"untracked_{item.get('path', 'unknown')}",
-                        "title": item.get("path", "Untracked work"),
-                        "status": "untracked",
-                        "confidence": item.get("confidence")
-                    })
-            except Exception as e:
-                logger.warning(brand_log(f"Failed to get untracked work: {e}"))
-        
-        # Deduplicate by id
-        seen_ids = set()
-        unique_items = []
-        for item in unfinished_items:
-            if item.get("id") not in seen_ids:
-                seen_ids.add(item.get("id"))
-                unique_items.append(item)
-        
-        return {
-            "count": len(unique_items),
-            "items": unique_items[:10],  # Return top 10 for display
-            "total_available": len(unique_items)
-        }
-        
-    except Exception as e:
-        logger.error(brand_log(f"Unfinished work retrieval failed: {e}"))
-        return {"count": 0, "items": [], "error": str(e)}
+    raise HTTPException(
+        status_code=410,
+        detail=brand_error(
+            "ADHD Engine unfinished-work endpoint is disabled. Use canonical PM/task authority."
+        ),
+    )
 
 
 @router.post("/record-progress")

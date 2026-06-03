@@ -127,6 +127,9 @@ class AttentionMonitor:
             ),  # Last minute
             "state_duration": self._state_duration,
             "monitoring_active": self._monitoring,
+            "data_status": "available",
+            "status_message": "active monitoring data",
+            "sample_count": len(self._metrics_history),
         }
 
     def get_session_summary(self) -> Dict[str, Any]:
@@ -303,8 +306,21 @@ class AttentionMonitor:
         focus_score: float,
     ) -> str:
         """Classify current attention state."""
-        # Check for distraction (long pause)
-        if pause_duration > 600:  # 10 minutes
+        long_pause = pause_duration > 600
+        pressure_signals = sum(
+            1
+            for signal_seen in (
+                context_switches > self.context_switch_threshold,
+                error_rate >= 2,
+            )
+            if signal_seen
+        )
+
+        if self._current_state == AttentionState.HYPERFOCUS and pressure_signals < 2:
+            return AttentionState.HYPERFOCUS
+
+        # Check for distraction (long pause with corroborating pressure)
+        if long_pause and pressure_signals >= 2:
             return AttentionState.DISTRACTED
 
         # Check for hyperfocus (sustained high activity)
@@ -417,7 +433,10 @@ class AttentionMonitor:
                 ]
             )
 
-        elif current_metrics["focus_score"] < 0.5:
+        elif (
+            current_metrics.get("focus_score") is not None
+            and current_metrics["focus_score"] < 0.5
+        ):
             recommendations.extend(
                 [
                     "Low focus detected - try the Pomodoro technique",
@@ -426,7 +445,10 @@ class AttentionMonitor:
                 ]
             )
 
-        elif current_metrics["session_duration"] > 90:
+        elif (
+            current_metrics.get("session_duration") is not None
+            and current_metrics["session_duration"] > 90
+        ):
             recommendations.append(
                 "Long session detected - consider taking a longer break"
             )
@@ -449,14 +471,17 @@ class AttentionMonitor:
             json.dump(session_data, f, indent=2)
 
     def _get_default_metrics(self) -> Dict[str, Any]:
-        """Get default metrics when no data available."""
+        """Get fail-honest metrics when no attention samples are available."""
         return {
-            "attention_state": AttentionState.NORMAL,
-            "focus_score": 0.5,
-            "session_duration": 0,
-            "keystroke_rate": 0,
-            "error_rate": 0,
-            "context_switches": 0,
-            "state_duration": 0,
+            "attention_state": "unavailable",
+            "focus_score": None,
+            "session_duration": None,
+            "keystroke_rate": None,
+            "error_rate": None,
+            "context_switches": None,
+            "state_duration": None,
             "monitoring_active": self._monitoring,
+            "data_status": "unavailable",
+            "status_message": "no active monitoring data",
+            "sample_count": 0,
         }
