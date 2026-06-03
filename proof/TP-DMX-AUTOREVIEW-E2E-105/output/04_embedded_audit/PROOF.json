@@ -1,0 +1,38 @@
+{
+  "embedded_audit": {
+    "auditor_model": "sonnet",
+    "auditor_tool": "pal-mcp-clink",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [],
+    "invocation": "pal-clink --client claude-audit --role codereviewer --input PAL_CLINK_AUDIT_INPUT.md --output PAL_CLINK_AUDIT_OUTPUT.json",
+    "remaining_risks": [],
+    "report_path": "proof/TP-DMX-AUTOREVIEW-E2E-105/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "generated_at": "2026-01-01T00:00:00Z",
+  "github_mutation_route_added": false,
+  "head_sha": "head000000000000000000000000000000000000",
+  "mutation_performed": false,
+  "packet_id": "TP-DMX-AUTOREVIEW-E2E-105",
+  "pr_number": 704,
+  "provenance": {
+    "engine_authored_proof": false,
+    "engine_requested_only": true,
+    "permissions": {
+      "actions": "read",
+      "checks": "read",
+      "contents": "read",
+      "pull-requests": "read",
+      "statuses": "read"
+    },
+    "proof_author": "independent-embedded-audit",
+    "token_source": "EMBEDDED_AUDIT_TOKEN",
+    "token_value_recorded": false,
+    "trusted_token_status": "AVAILABLE",
+    "workflow": "embedded-audit.yml"
+  },
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

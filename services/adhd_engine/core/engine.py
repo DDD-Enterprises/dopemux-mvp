@@ -39,6 +39,7 @@ from .activity_tracker import ActivityTracker
 from ..conport_mcp_client import ConPortMCPClient  # Relative import
 from ..bridge_integration import ConPortBridgeAdapter  # Relative import
 from ..pal_client import ADHDPALClient  # Relative import
+from ..redis_keys import redis_key, redis_pattern
 
 # Domain Imports - Attention
 from ..domains.attention.attention_calibrator import AttentionCalibrator
@@ -270,7 +271,7 @@ class ADHDAccommodationEngine:
         """Load ADHD profiles from persistent storage."""
         try:
             # Load profiles from Redis
-            profile_keys = await self.redis_client.keys("adhd:profile:*")
+            profile_keys = await self.redis_client.keys(redis_pattern("adhd:profile:*"))
 
             for key in profile_keys:
                 key_text = _redis_text(key)
@@ -1328,7 +1329,7 @@ Format: {{
         """Check if user needs break recommendation."""
         try:
             # Get last break time
-            last_break_key = f"adhd:last_break:{user_id}"
+            last_break_key = redis_key(f"adhd:last_break:{user_id}")
             last_break_str = await self.redis_client.get(last_break_key)
 
             if last_break_str:
@@ -1415,13 +1416,13 @@ Format: {{
             }
 
             await self.redis_client.lpush(
-                f"adhd:break_recommendations:{self.workspace_id}",
+                redis_key(f"adhd:break_recommendations:{self.workspace_id}"),
                 json.dumps(break_data)
             )
 
             # Trim to keep recent recommendations
             await self.redis_client.ltrim(
-                f"adhd:break_recommendations:{self.workspace_id}",
+                redis_key(f"adhd:break_recommendations:{self.workspace_id}"),
                 0, 9  # Keep 10 most recent
             )
 
@@ -1471,7 +1472,7 @@ Format: {{
         """Apply hyperfocus protection measures."""
         try:
             # Get hyperfocus session duration
-            session_start_key = f"adhd:hyperfocus_start:{user_id}"
+            session_start_key = redis_key(f"adhd:hyperfocus_start:{user_id}")
             session_start_str = await self.redis_client.get(session_start_key)
 
             if session_start_str:
@@ -1506,7 +1507,7 @@ Format: {{
                 }
 
                 await self.redis_client.lpush(
-                    f"adhd:hyperfocus_warnings:{self.workspace_id}",
+                    redis_key(f"adhd:hyperfocus_warnings:{self.workspace_id}"),
                     json.dumps(warning_data)
                 )
 
@@ -1866,12 +1867,12 @@ Format: {{
         # Store notification in Redis for tracking
         try:
             await self.redis_client.lpush(
-                f"adhd:notifications:{self.workspace_id}",
+                redis_key(f"adhd:notifications:{self.workspace_id}"),
                 json.dumps(notification)
             )
             # Keep only recent notifications
             await self.redis_client.ltrim(
-                f"adhd:notifications:{self.workspace_id}",
+                redis_key(f"adhd:notifications:{self.workspace_id}"),
                 0, 49  # Keep 50 most recent
             )
         except Exception as e:
@@ -1930,7 +1931,7 @@ Format: {{
         """Get current session duration in minutes."""
         try:
             # Check if we have a session start time in Redis
-            session_start_str = await self.redis_client.get(f"adhd:session_start:{user_id}")
+            session_start_str = await self.redis_client.get(redis_key(f"adhd:session_start:{user_id}"))
             if session_start_str:
                 session_start = datetime.fromisoformat(session_start_str)
                 # Ensure session_start is timezone-aware (assume stored times are in UTC if naive)
@@ -2020,7 +2021,7 @@ Format: {{
             # Publish to Redis Pub/Sub for other services (Phase 10.6)
             if self.redis_client:
                 try:
-                    channel = f"adhd:state_changes:{user_id}"
+                    channel = redis_key(f"adhd:state_changes:{user_id}")
                     await self.redis_client.publish(channel, json.dumps(message))
                     logger.debug(f"📢 Published state update to Redis channel: {channel}")
                 except Exception as e:

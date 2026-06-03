@@ -30,8 +30,10 @@ from redis.exceptions import RedisError
 
 try:
     from .inmemory_redis import InMemoryRedis
+    from .redis_keys import redis_key
 except ImportError:
     from inmemory_redis import InMemoryRedis
+    from redis_keys import redis_key
 
 logger = logging.getLogger(__name__)
 
@@ -222,7 +224,7 @@ class ADHDConfigService:
                       and maintain sustainable productivity.
         """
         # Check time since last break
-        last_break_key = f"adhd:last_break:{user_id}"
+        last_break_key = redis_key(f"adhd:last_break:{user_id}")
         last_break_str = await self.redis_client.get(last_break_key)
 
         if last_break_str:
@@ -285,8 +287,8 @@ class ADHDConfigService:
             return cached_value
 
         # Query ADHD Engine Redis
-        redis_key = f"adhd:attention_state:{user_id}"
-        state = await self.redis_client.get(redis_key)
+        attention_key = redis_key(f"adhd:attention_state:{user_id}")
+        state = await self.redis_client.get(attention_key)
 
         if not state:
             state = "transitioning"  # Safe default if ADHD Engine hasn't assessed yet
@@ -313,8 +315,8 @@ class ADHDConfigService:
             return cached_value
 
         # Query ADHD Engine Redis
-        redis_key = f"adhd:energy_level:{user_id}"
-        level = await self.redis_client.get(redis_key)
+        energy_key = redis_key(f"adhd:energy_level:{user_id}")
+        level = await self.redis_client.get(energy_key)
 
         if not level:
             level = "medium"  # Safe default
@@ -346,8 +348,8 @@ class ADHDConfigService:
             return cached_value
 
         # Query ADHD Engine Redis
-        redis_key = f"adhd:profile:{user_id}"
-        profile_json = await self.redis_client.get(redis_key)
+        profile_key = redis_key(f"adhd:profile:{user_id}")
+        profile_json = await self.redis_client.get(profile_key)
 
         if not profile_json:
             logger.debug(f"No ADHD profile found for {user_id}, using defaults")

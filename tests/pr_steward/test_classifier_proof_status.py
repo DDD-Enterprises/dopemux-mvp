@@ -164,3 +164,37 @@ class TestProofFreshnessInArtifacts:
         snapshot_proof = artifacts["PR_STATE_SNAPSHOT.json"]["proof"]
         assert "proof_freshness" in snapshot_proof
         assert snapshot_proof["proof_freshness"] == "FRESH"
+
+    def test_self_reference_exception_uses_actual_pr_changed_files(self) -> None:
+        harvest = _base_harvest()
+        harvest["changed_files"] = [
+            {"path": "src/app.py", "additions": 1},
+            {"path": "proof/PROOF.json", "additions": 1},
+        ]
+        harvest["proof"] = {
+            "proof_path": "proof/PROOF.json",
+            "proof_head_sha": "old000000000000000000000000000000000000",
+            "matches_pr_head": False,
+            "proof_freshness": {
+                "status": "CURRENT_WITH_SELF_REFERENCE_EXCEPTION",
+                "matches_pr_head": False,
+                "proof_recorded_sha": "old000000000000000000000000000000000000",
+                "pr_head_sha": harvest["pr"]["headRefOid"],
+                "self_reference_exception": {
+                    "supervisor_accepted": True,
+                    "changed_files": ["proof/PROOF.json"],
+                },
+            },
+        }
+
+        artifacts = build_artifacts(
+            harvest,
+            repo="DDD-Enterprises/dopemux-mvp",
+            pr_number=704,
+            strict=True,
+            allow_closed=False,
+        )
+
+        readiness = artifacts["MERGE_READINESS.json"]
+        assert readiness["readiness"] == "NEEDS_SUPERVISOR"
+        assert "PROOF_STALE_OR_MISSING" in readiness["blockers"]

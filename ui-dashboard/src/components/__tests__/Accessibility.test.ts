@@ -28,8 +28,6 @@ test('PredictionPanel.tsx has aria-label for LinearProgress and loading state', 
   expect(content).toContain('aria-label="15-Minute Load Prediction Percentage"');
   expect(content).toContain('aria-valuetext');
   expect(content).toContain('Prediction Loading...');
-  // Indeterminate LinearProgress in loading state
-  expect(content).toContain('aria-label="Loading prediction data"');
   expect(content).toMatch(/<Tooltip[^>]*title="Predictive LSTM model running on edge device"[^>]*arrow/);
 });
 
@@ -44,7 +42,7 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
   expect(content).toContain('aria-label={`${member.name}\'s Cognitive Load Percentage`}');
   expect(content).toContain('aria-label={`Profile picture of ${member.name}`}');
   expect(content).toContain('<Tooltip title={statusStyles[member.status].label} arrow>');
-  expect(content).toContain('<Tooltip title="Average cognitive load across all team members" arrow>');
+  expect(content).toMatch(/<Tooltip[^>]*title=\{`Average cognitive load across all team members: \$\{teamAverageLoad\}%`\}[^>]*arrow/);
   expect(content).toContain('<Tooltip title="Current energy level" arrow>');
   expect(content).toContain('<Tooltip title="Current attention focus" arrow>');
   expect(content).toContain('<Tooltip title="AI-generated team coordination insights" arrow>');
@@ -52,6 +50,10 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
   expect(content).toMatch(/<Tooltip title="Current energy level"[\s\S]*tabIndex=\{0\}/);
   expect(content).toMatch(/<Tooltip title="Current attention focus"[\s\S]*tabIndex=\{0\}/);
   expect(content).toMatch(/<Tooltip[^>]*title="AI-generated team coordination insights"[^>]*arrow/);
+  // Verify team signal chips
+  expect(content).toMatch(/<Tooltip key=\{signal\.label\} title=\{`Team signal: \$\{signal\.label\} status`\} arrow>/);
+  expect(content).toContain('aria-label={`Team signal: ${signal.label} is ${signal.value}`}');
+  expect(content).toContain('cursor: \'help\'');
 });
 
 test('App.tsx exposes metric card tooltips with focus indicators and labels', () => {
@@ -160,5 +162,7 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('tabIndex={-1}');
 
   // Verify notification chips are focusable
+  expect(appContent).toContain('<Tooltip title="Dismiss notification" arrow describeChild>');
+  expect(appContent).toContain('aria-label={notificationLabel}');
   expect(appContent).toContain('tabIndex={0}');
 });

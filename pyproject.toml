@@ -7,7 +7,7 @@ name = "dopemux"
 version = "0.1.0"
 description = "ADHD-optimized development platform that wraps Claude Code with custom configurations"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.14"
 license = {text = "MIT"}
 authors = [
     {name = "Dopemux Team", email = "team@dopemux.dev"},
@@ -39,6 +39,8 @@ dependencies = [
     "watchdog>=3.0.0",
     "python-dateutil>=2.8.2",
     "python-dotenv>=1.2.2",
+    "filelock>=3.12.0",
+    "jinja2>=3.1.0",
     "sqlite-utils>=3.30.0",
     "psutil>=5.9.0",
     "pydantic>=2.7.0",
@@ -98,7 +100,7 @@ services = [
     "httpx>=0.28.1",
     "pydantic-settings>=2.1.0",
     "python-jose[cryptography]>=3.5.0",
-    "mcp>=1.0.0",
+    "mcp>=1.23.3",
     "tenacity>=8.2.3",
     "structlog>=24.1.0",
     "prometheus-client>=0.19.0",
@@ -138,9 +140,112 @@ dopemux = "dopemux.cli:main"
 dopemux-mobile = "dopemux.mobile.main:main"
 dopemux-github = "dopemux_github_specialist.cli:main"
 dopemux-pr-merge = "dopemux_pr_merge_specialist.cli:main"
+dopemux-pr-steward = "dopemux_pr_steward.cli:main"
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.setuptools]
+packages = [
+    "conport",
+    "core",
+    "core.config",
+    "dopemux",
+    "dopemux.adhd",
+    "dopemux.agent",
+    "dopemux.analysis",
+    "dopemux.claude",
+    "dopemux.claude_tools",
+    "dopemux.commands",
+    "dopemux.config",
+    "dopemux.conport",
+    "dopemux.core_logging",
+    "dopemux.embeddings",
+    "dopemux.embeddings.core",
+    "dopemux.embeddings.enhancers",
+    "dopemux.embeddings.integrations",
+    "dopemux.embeddings.pipelines",
+    "dopemux.embeddings.providers",
+    "dopemux.embeddings.storage",
+    "dopemux.events",
+    "dopemux.execution",
+    "dopemux.extraction",
+    "dopemux.extractor",
+    "dopemux.hooks",
+    "dopemux.logging",
+    "dopemux.mcp",
+    "dopemux.memory",
+    "dopemux.memory.adapters",
+    "dopemux.mobile",
+    "dopemux.orchestrator",
+    "dopemux.orchestrator.automation",
+    "dopemux.orchestrator.ui",
+    "dopemux.orchestrator.validation",
+    "dopemux.pm",
+    "dopemux.pm.adapters",
+    "dopemux.roles",
+    "dopemux.service_base",
+    "dopemux.system_data",
+    "dopemux.templates",
+    "dopemux.tools",
+    "dopemux.tmux",
+    "dopemux.tui",
+    "dopemux.tui.widgets",
+    "dopemux.ui",
+    "dopemux.ui.cockpit",
+    "dopemux.update",
+    "dopemux.upgrades",
+    "dopemux.utils",
+    "dopemux.ux",
+    "dopemux.ux.wizard",
+    "dopemux.voice",
+    "dopemux.workflow",
+    "dopemux_github_specialist",
+    "dopemux_github_specialist.gemini",
+    "dopemux_github_specialist.github",
+    "dopemux_pr_merge_specialist",
+    "dopemux_pr_steward",
+    "integrations",
+    "tools",
+    "tools.auditor_router",
+    "tools.copilot_repair",
+    "tools.prompt_rewrite_v4",
+    "tools.prompt_rewrite_v4.benchmark",
+    "tools.pr_action_bridge",
+    "tools.pr_steward",
+    "utils",
+]
+
+[tool.setuptools.package-dir]
+"" = "src"
+"tools" = "tools"
+"tools.copilot_repair" = "tools/copilot_repair"
+"tools.pr_action_bridge" = "tools/pr_action_bridge"
+"tools.pr_steward" = "tools/pr_steward"
+
+[tool.setuptools.package-data]
+"dopemux.templates" = [
+    "init/.claude/PRIMER.md",
+    "init/.claude/PROJECT_INSTRUCTIONS.MD",
+    "init/.claude/README.md",
+    "init/.claude/claude.md",
+    "init/.github/workflows/embedded-audit.yml",
+    "init/.github/workflows/pr-steward.yml",
+    "init/config/pr_merge_specialist/policy.yaml",
+    "init/config/pr_steward/policy.json",
+    "init/docs/90-adr/TEMPLATE_ADR.md",
+    "init/docs/90-adr/TEMPLATE_ADR_LIGHT.md",
+    "init/docs/90-adr/TEMPLATE_ADR_RECORD.md",
+    "init/docs/task-packets/CHECKLIST.md",
+    "init/docs/task-packets/INDEX.md",
+    "init/docs/task-packets/README.md",
+    "init/docs/task-packets/STATUS.md",
+    "init/docs/task-packets/TEMPLATE_TASK_PACKET.md",
+    "init/task-packets/CHECKLIST.md",
+    "init/task-packets/INDEX.md",
+    "init/task-packets/README.md",
+    "init/task-packets/STATUS.md",
+    "init/task-packets/TEMPLATE_TASK_PACKET.md",
+]
+"dopemux_pr_steward" = ["config.schema.json"]
+"tools.pr_steward" = ["known_reviewers.json"]
 
 [tool.black]
 line-length = 88

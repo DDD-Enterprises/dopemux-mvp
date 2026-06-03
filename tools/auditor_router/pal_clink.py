@@ -341,11 +341,43 @@ def build_pal_clink_embedded_audit_object(
     remaining_risks: list[str],
     exit_code: int,
 ) -> dict[str, Any]:
+    auditor_model = _embedded_audit_model(route)
+    # embedded_audit.schema.json forbids auditor_model="unknown" for any non-SKIPPED
+    # status. When the route has no audit-safe underlying CLI we cannot attribute a
+    # real auditor model, so emit a schema-valid SKIPPED object instead of a
+    # schema-violating NEEDS_SUPERVISOR/FAIL object. SKIPPED is still treated as
+    # blocking by the PR Steward (tools/pr_steward/classifier.py BLOCKING_AUDITS),
+    # so this preserves the fail-closed behavior while keeping the proof schema-valid.
+    if status != "SKIPPED" and auditor_model == "unknown":
+        # Preserve the original (blocking) intent for consumers that do not key off
+        # `status`: surface it both in remaining_risks and in skip_reason.
+        coerced_risks = [
+            "Audit result coerced to SKIPPED due to unattributable auditor model; "
+            "treat as blocking.",
+            *remaining_risks,
+        ]
+        return {
+            "required": True,
+            "status": "SKIPPED",
+            "auditor_tool": "none",
+            "auditor_model": "unknown",
+            "invocation": None,
+            "exit_code": None,
+            "report_path": report_path,
+            "findings": findings,
+            "fixes_applied": [],
+            "remaining_risks": coerced_risks,
+            "skip_reason": (
+                f"Embedded audit skipped (coerced from {status}): PAL clink route has no "
+                "audit-safe underlying CLI, so no auditor model could be attributed; "
+                "supervisor review required."
+            ),
+        }
     return {
         "required": True,
         "status": status,
         "auditor_tool": "pal-mcp-clink",
-        "auditor_model": _embedded_audit_model(route),
+        "auditor_model": auditor_model,
         "invocation": route.get("invocation_template") or "PAL MCP clink host handoff",
         "exit_code": exit_code,
         "report_path": report_path,

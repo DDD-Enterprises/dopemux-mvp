@@ -3,7 +3,7 @@
   "project": "dopemux-mvp",
   "target": "Partial bootstrap of the missing auditor-router runtime on main, plus PAL MCP clink bridge-tier classification by static config inspection.",
   "invariants": [
-    "Expected TP-DMX-AUDITOR-ROUTER-001 runtime was not present on origin/main; this packet is a partial bootstrap, not a pure extension.",
+    "Expected TP-DMX-AUDITOR-ROUTER-001 runtime was not present on the original PR base; after PR #713 merged, the auditor-router/PAL clink baseline surfaces are present on current origin/main.",
     "No repo content is sent during preflight.",
     "No PAL MCP call occurs during preflight.",
     "No external CLI call occurs for PAL clink classification.",
@@ -11,8 +11,8 @@
     "Only claude-audit and gemini-audit PAL clink configs are supported.",
     "Copilot clink support remains deferred.",
     "Route output is evidence for operator handoff, not an audit verdict.",
-    "scripts/auditor-preflight is not created because it is referenced by validation but omitted from this packet allowlist.",
-    "PAL_CLINK_AUDIT_OUTPUT.json remains missing until a host-side operator runs clink."
+    "scripts/auditor-preflight was added by follow-up wrapper work and is present on current origin/main.",
+    "PAL_CLINK_AUDIT_OUTPUT.json is present after the host-side PAL MCP clink bundle-local audit returned PASS_WITH_RISKS."
   ],
   "depends_on": [
     "TP-DMX-PAL-CLINK-AUDIT-CONFIGS-001"
@@ -60,7 +60,8 @@
       "docs/ops/health-check-matrix.md",
       "docs/ops/pr-acceptance.md",
       "task-packets/generated/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002.json",
-      "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/**"
+      "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/**",
+      "tests/unit/orchestrator/test_data_sources.py"
     ],
     "verify": [
       "python -m json.tool task-packets/generated/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002.json",
@@ -75,7 +76,9 @@
       "python -m tools.auditor_router.preflight --fixture-dir tests/fixtures/auditor_router/pal_clink_not_chosen_when_direct_available --out /tmp/auditor-route-direct-wins --packet-id TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002",
       "python -m json.tool /tmp/auditor-route-direct-wins/AUDITOR_ROUTE.json",
       "scripts/auditor-preflight --help",
-      "git diff --check"
+      "git diff --check",
+      "uv run --frozen pytest tests/unit/orchestrator/test_data_sources.py -q --no-cov",
+      "uv run --frozen pytest tests/unit tests/test_voice_core.py tests/test_brand_voice.py --maxfail=1 --disable-warnings --no-cov"
     ]
   },
   "pr": {
@@ -150,7 +153,7 @@
     },
     {
       "id": "S4",
-      "task": "Create proof bundle with PASS_WITH_BLOCKERS status, missing baseline scope conflict, wrapper allowlist blocker, and missing PAL clink audit output.",
+      "task": "Create proof bundle that preserves historical scope-conflict evidence and records post-merge blocker reconciliation.",
       "expected_files": [
         "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json",
         "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/VALIDATION_OUTPUT.md",
@@ -163,9 +166,10 @@
         "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/**"
       ],
       "validation": [
-        "Proof status is PASS_WITH_BLOCKERS, not READY or MERGE_READY.",
-        "Blockers include MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN, WRAPPER_BLOCKED_BY_ALLOWLIST, and PAL_CLINK_AUDIT_OUTPUT_MISSING.",
-        "git diff --check passes."
+        "Proof status is PASS_WITH_RISKS and blockers[] is empty after post-merge reconciliation.",
+        "Resolved blocker evidence records MISSING_BASELINE_AUDITOR_ROUTER_ON_MAIN, WRAPPER_BLOCKED_BY_ALLOWLIST, and BLOCKED_BY_GITHUB_WORKFLOW_DISPATCH_500 as historical/resolved conditions.",
+        "git diff --check passes.",
+        "CI unit fallback test passes in clean workspaces by creating an existing temp CONPORT_DB_PATH before patching sqlite3.connect."
       ]
     }
   ]

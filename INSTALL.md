@@ -51,7 +51,7 @@ That's it! The installer handles everything automatically.
 - `--stack core|full` – Preselect which service profile to run within canonical `compose.yml` (useful for CI or scripted installs)
 - `--env-file /path/to/.env` – Override where API keys/secrets are read/written (defaults to repo-root `.env`)
 - `--yes` – Auto-confirm every prompt (implied by `--quick` and `--full`)
-- `INSTALLER_TEST_MODE=1 ./install.sh ...` – CI-friendly dry-run that skips Docker/pip/shell side effects (used by automated tests)
+- `INSTALLER_TEST_MODE=1 ./install.sh ...` – CI-friendly dry-run used by automated tests. It exercises control flow, arg parsing, prompts, and env-file handling **only**. It does **not** cover (and cannot catch regressions in): Docker network creation, image pull/build, `docker compose up`, Python venv + `pip install`, shell-integration/rc edits, system-resource preflight, or post-install verification. Validate those via a full (non-test-mode) install on a throwaway host.
 
 ### Verify Installation
 ```bash

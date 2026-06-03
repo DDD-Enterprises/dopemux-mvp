@@ -1,0 +1,106 @@
+{
+  "packet_id": "TP-DMX-COPILOT-RENDERER-103",
+  "branch": "codex/tp-dmx-copilot-renderer-103",
+  "base_branch": "main",
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-COPILOT-RENDERER-103/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "External embedded audit/codereview route was unavailable in this turn; local focused tests, pre-commit, diff review, and CI checks provide validation evidence but do not replace an external audit verdict."
+    ],
+    "skip_reason": "Task Orchestrator transport returned Transport closed and no external embedded-audit route was available during TP103 execution. The skipped audit is recorded explicitly rather than inferred as PASS."
+  },
+  "summary": "Added read-only Copilot repair packet generation from ACTION_PLAN implementer-role items plus local Jinja2 rendering to a file-ready Markdown artifact; unresolved-thread guidance leaves GitHub thread resolution to the operator.",
+  "mutation_performed": false,
+  "github_mutation_route_added": false,
+  "canonical_writer": "tools/copilot_repair/generator.py::generate_repair_packet",
+  "renderer": "tools/copilot_repair/renderer.py::render_repair_packet",
+  "source_action_plan": "proof/TP-DMX-ACTIONBRIDGE-CLI-102/output/ACTION_PLAN.json",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/760",
+  "proof_finality": {
+    "worktree": "dopemux-mvp-wt-pr760-review-repair",
+    "commit_sha": "ab5c9e613cadcd5e63df7ebac7b49b2e82ab03ed",
+    "commit_sha_scope": "Latest observed PR head when this proof metadata was updated; final immutable merge identity is the PR URL and merge commit after merge.",
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/760",
+    "codereview_status": "PASS_WITH_REPAIRS",
+    "precommit_status": "PASS"
+  },
+  "outputs": [
+    "proof/TP-DMX-COPILOT-RENDERER-103/output/COPILOT_REPAIR_PACKET.json",
+    "proof/TP-DMX-COPILOT-RENDERER-103/output/PR_REPAIR_PACKET.md"
+  ],
+  "validation": [
+    {
+      "command": "pytest -q tests/copilot_repair/test_generator.py",
+      "status": "PASS",
+      "evidence": "Focused generator and renderer tests passed, including unresolved-thread no-GitHub-resolution and StrictUndefined regressions."
+    },
+    {
+      "command": "pytest -q tests/copilot_repair",
+      "status": "PASS",
+      "evidence": "Full Copilot repair test directory passed."
+    },
+    {
+      "command": "python -m compileall -q tools/copilot_repair tests/copilot_repair",
+      "status": "PASS",
+      "evidence": "Scoped packet validation compile command completed with exit code 0."
+    },
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-COPILOT-RENDERER-103.json",
+      "status": "PASS",
+      "evidence": "Task packet JSON parsed successfully."
+    },
+    {
+      "command": "python -m json.tool proof/TP-DMX-COPILOT-RENDERER-103/PROOF.json",
+      "status": "PASS",
+      "evidence": "Proof JSON parsed successfully."
+    },
+    {
+      "command": "python -m json.tool proof/TP-DMX-COPILOT-RENDERER-103/output/COPILOT_REPAIR_PACKET.json",
+      "status": "PASS",
+      "evidence": "Generated Copilot repair packet JSON parsed successfully."
+    },
+    {
+      "command": "jsonschema.Draft202012Validator(schemas/copilot/repair_packet.schema.json).validate(COPILOT_REPAIR_PACKET.json)",
+      "status": "PASS",
+      "evidence": "Generated Copilot repair packet validates against schemas/copilot/repair_packet.schema.json."
+    },
+    {
+      "command": "python scripts/audit/validate_audit_proof.py proof/TP-DMX-COPILOT-RENDERER-103/PROOF.json",
+      "status": "PASS",
+      "evidence": "Embedded audit object validated against schemas/proof/embedded_audit.schema.json."
+    },
+    {
+      "command": "git diff --check",
+      "status": "PASS",
+      "evidence": "No whitespace errors reported."
+    },
+    {
+      "command": "git check-ignore -q proof/TP-DMX-COPILOT-RENDERER-103/PROOF.json; test $? -eq 1",
+      "status": "PASS",
+      "evidence": "TP103 proof bundle is allowlisted in .gitignore."
+    },
+    {
+      "command": "pre-commit run --files <TP103 changed files>",
+      "status": "PASS",
+      "evidence": "Docs hygiene, markdownlint, trailing whitespace, EOF, and YAML checks passed for changed files."
+    },
+    {
+      "command": "mcp task-orchestrator get_context health-check",
+      "status": "FAIL",
+      "evidence": "Task Orchestrator transport returned Transport closed."
+    }
+  ],
+  "residual_risks": [
+    "External embedded audit/codereview was not run; the proof bundle records this as SKIPPED.",
+    "The renderer performs local template rendering only; no GitHub posting or mutation path was implemented.",
+    "Task Orchestrator item state could not be advanced because the transport was closed."
+  ]
+}

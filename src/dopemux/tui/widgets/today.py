@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from textual.widgets import Static
 
-from dopemux.orchestrator.ui.data_sources import get_today_data
+from dopemux.orchestrator.ui.data_sources import get_panel_data
 from dopemux.ui.theme import Glyphs, styled_panel, styled_table
 
 
@@ -13,7 +13,7 @@ class TodayPanel(Static):
 
     def render(self) -> object:
         try:
-            data = get_today_data()
+            data = get_panel_data("today")
             table = styled_table(
                 "",
                 "Metric",

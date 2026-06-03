@@ -1,0 +1,127 @@
+{
+  "id": "TP-UI-DASHBOARD-BUILD-001",
+  "project": "dopemux-mvp",
+  "target": "ui-dashboard npm install and build failure",
+  "invariants": [
+    "Make the smallest change needed for ui-dashboard npm install and npm run build to pass.",
+    "Do not change dashboard user-facing logic or UI unless the compiler requires a source correction.",
+    "Do not use legacy-peer-deps or force flags as the fix.",
+    "Commit package-lock.json when npm install changes dependency resolution."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "beta-remaining-ui-dashboard",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "fix/ui-dashboard-build",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(ui-dashboard): RV-13 - restore build",
+    "allowlist": [
+      "ui-dashboard/package.json",
+      "ui-dashboard/package-lock.json",
+      "ui-dashboard/pnpm-lock.yaml",
+      "ui-dashboard/tsconfig.json",
+      "ui-dashboard/index.html",
+      "ui-dashboard/src/App.tsx",
+      "ui-dashboard/src/components/CognitiveLoadGauge.tsx",
+      "ui-dashboard/src/components/PredictionPanel.tsx",
+      "ui-dashboard/src/components/TeamDashboard.tsx",
+      "ui-dashboard/src/config.ts",
+      "ui-dashboard/src/index.css",
+      "ui-dashboard/src/main.tsx",
+      "ui-dashboard/src/theme.ts",
+      "ui-dashboard/src/vite-env.d.ts",
+      "task-packets/INDEX.md",
+      "task-packets/generated/TP-UI-DASHBOARD-BUILD-001.json",
+      "claudedocs/ui-dashboard-build-proof-2026-05-31.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-UI-DASHBOARD-BUILD-001.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-UI-DASHBOARD-BUILD-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "cd ui-dashboard && npm install",
+      "cd ui-dashboard && npm exec --yes --package=pnpm@10 -- pnpm install --frozen-lockfile --ignore-scripts",
+      "cd ui-dashboard && npm run build",
+      "git diff --check",
+      "pre-commit run --files ui-dashboard/package.json ui-dashboard/package-lock.json ui-dashboard/pnpm-lock.yaml ui-dashboard/tsconfig.json ui-dashboard/index.html ui-dashboard/src/App.tsx ui-dashboard/src/components/CognitiveLoadGauge.tsx ui-dashboard/src/components/PredictionPanel.tsx ui-dashboard/src/components/TeamDashboard.tsx ui-dashboard/src/config.ts ui-dashboard/src/index.css ui-dashboard/src/main.tsx ui-dashboard/src/theme.ts ui-dashboard/src/vite-env.d.ts task-packets/INDEX.md task-packets/generated/TP-UI-DASHBOARD-BUILD-001.json claudedocs/ui-dashboard-build-proof-2026-05-31.md"
+    ]
+  },
+  "pr": {
+    "title": "fix(ui-dashboard): restore build",
+    "body": "## Problem\\nui-dashboard fails during npm install/build.\\n\\n## Fix\\nApply the smallest dependency/source/build wiring changes needed for npm install and npm run build to pass.\\n\\n## Test Plan\\n- Validate Task Packet JSON and schema.\\n- Run npm install and npm run build in ui-dashboard.\\n- Run git diff --check and pre-commit on changed files.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect",
+      "task": "Inspect ui-dashboard package metadata, lockfile state, and reproduce npm install/build failure.",
+      "requirements": [
+        "Use npm because the task specifies npm install and npm run build.",
+        "Record exact failure output before changing dependencies."
+      ],
+      "validation": [
+        "cd ui-dashboard && npm install && npm run build 2>&1 | tail -30"
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "ui-dashboard/package.json",
+        "ui-dashboard/package-lock.json",
+        "ui-dashboard/pnpm-lock.yaml",
+        "ui-dashboard/src/App.tsx"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Fix npm dependency/build failures without UI behavior changes.",
+      "requirements": [
+        "Prefer updating the incompatible package over using npm force or legacy peer dependency flags.",
+        "Only add build config or source fixes if npm run build exposes them after install succeeds."
+      ],
+      "expected_files": [
+        "ui-dashboard/package.json",
+        "ui-dashboard/package-lock.json",
+        "ui-dashboard/pnpm-lock.yaml",
+        "claudedocs/ui-dashboard-build-proof-2026-05-31.md"
+      ],
+      "validation": [
+        "cd ui-dashboard && npm install",
+        "cd ui-dashboard && npm exec --yes --package=pnpm@10 -- pnpm install --frozen-lockfile --ignore-scripts",
+        "cd ui-dashboard && npm run build"
+      ]
+    },
+    {
+      "id": "precommit",
+      "task": "Run focused validation, codereview, pre-commit, commit, push, and open the PR.",
+      "requirements": [
+        "Inspect diff scope before staging.",
+        "Report rendered Browser validation as NOT_RUN if the change is build-only and no dev server is started."
+      ],
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-UI-DASHBOARD-BUILD-001.json >/dev/null",
+        "python -m jsonschema -i task-packets/generated/TP-UI-DASHBOARD-BUILD-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "git diff --check",
+        "pre-commit run --files ui-dashboard/package.json ui-dashboard/package-lock.json ui-dashboard/pnpm-lock.yaml ui-dashboard/tsconfig.json ui-dashboard/index.html ui-dashboard/src/main.tsx ui-dashboard/src/components/CognitiveLoadGauge.tsx ui-dashboard/src/components/PredictionPanel.tsx ui-dashboard/src/components/TeamDashboard.tsx task-packets/INDEX.md task-packets/generated/TP-UI-DASHBOARD-BUILD-001.json claudedocs/ui-dashboard-build-proof-2026-05-31.md"
+      ]
+    }
+  ]
+}

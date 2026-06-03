@@ -1,0 +1,2 @@
+tests/auditor_router/test_pal_clink.py
+tools/auditor_router/pal_clink.py

@@ -1,0 +1,104 @@
+{
+  "packet_id": "TP-DMX-ACTIONBRIDGE-CLI-102",
+  "branch": "codex/tp-dmx-actionbridge-cli-102",
+  "base_branch": "main",
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-ACTIONBRIDGE-CLI-102/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "External embedded audit/codereview route was unavailable in this turn; local focused tests, pre-commit, diff review, and CI checks provide validation evidence but do not replace an external audit verdict."
+    ],
+    "skip_reason": "Task Orchestrator transport returned Transport closed and no external embedded-audit route was available during TP102 execution. The skipped audit is recorded explicitly rather than inferred as PASS."
+  },
+  "summary": "Added a read-only PR Action Bridge CLI that reads PR Steward artifacts from disk and writes ACTION_PLAN.json plus REPAIR_PACKET.md by reusing compile_action_plan(); review repair anchors scripts/pr-action-bridge to the repo root for absolute-path invocation.",
+  "mutation_performed": false,
+  "github_mutation_route_added": false,
+  "canonical_writer": "tools/pr_action_bridge/compiler.py::compile_action_plan",
+  "proof_finality": {
+    "worktree": "dedicated local worktree, basename dopemux-mvp-wt-pr758-review-repair",
+    "commit_sha": "c9a210454551c443c8145a098470ab2c8aa98776",
+    "commit_sha_scope": "Latest observed PR head when this proof metadata was updated; final immutable merge identity is the PR URL and merge commit after merge.",
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/758",
+    "codereview_status": "PASS_WITH_FOLLOWUP: automated review comments were inspected and addressed in follow-up repair commits.",
+    "precommit_status": "PASS: pre-commit run --files $(git diff --name-only origin/main)"
+  },
+  "outputs": [
+    "proof/TP-DMX-ACTIONBRIDGE-CLI-102/output/ACTION_PLAN.json",
+    "proof/TP-DMX-ACTIONBRIDGE-CLI-102/output/REPAIR_PACKET.md"
+  ],
+  "validation": [
+    {
+      "command": "gh pr checks 755 --watch=false",
+      "status": "PASS",
+      "evidence": "All checks reported pass or skipping for PR #755."
+    },
+    {
+      "command": "gh pr checks 756 --watch=false",
+      "status": "PASS",
+      "evidence": "All checks reported pass or skipping for PR #756."
+    },
+    {
+      "command": "pytest -q tests/pr_action_bridge/test_cli.py",
+      "status": "PASS",
+      "evidence": "5 passed, including wrapper invocation from a cwd outside the repository and invalid --generated-at fail-closed coverage."
+    },
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-ACTIONBRIDGE-CLI-102.json",
+      "status": "PASS",
+      "evidence": "JSON parsed successfully."
+    },
+    {
+      "command": "python -m compileall -q tools/pr_action_bridge/__main__.py tools/pr_action_bridge/cli.py scripts/pr-action-bridge tests/pr_action_bridge/test_cli.py",
+      "status": "PASS",
+      "evidence": "Scoped compile completed with exit code 0."
+    },
+    {
+      "command": "scripts/pr-action-bridge invoked by absolute path from /tmp",
+      "status": "PASS",
+      "evidence": "With caller-relative --artifact-dir artifacts and --out out, wrote out/ACTION_PLAN.json and out/REPAIR_PACKET.md under the caller cwd."
+    },
+    {
+      "command": "! git check-ignore -q proof/TP-DMX-ACTIONBRIDGE-CLI-102/PROOF.json",
+      "status": "PASS",
+      "evidence": "Path is no longer ignored after adding the TP102 proof bundle to the tracked proof ledger allowlist."
+    },
+    {
+      "command": "git diff --check",
+      "status": "PASS",
+      "evidence": "No whitespace errors reported."
+    },
+    {
+      "command": "python -m compileall -q tools scripts tests",
+      "status": "FAIL",
+      "evidence": "Unrelated pre-existing syntax/indentation failures in scripts/migration/switchover.py, scripts/partition_function.py, and scripts/submit_loop_context.py."
+    },
+    {
+      "command": "pytest -q tests/pr_action_bridge",
+      "status": "FAIL",
+      "evidence": "Three pre-existing compiler tests fail outside the TP102 allowlist."
+    },
+    {
+      "command": "mcp task-orchestrator get_context for cd264d11-fa45-412a-9132-c71727fd68b6",
+      "status": "NOT_RUN",
+      "evidence": "Task Orchestrator transport returned Transport closed."
+    },
+    {
+      "command": "gh pr checks 758 --watch --interval 10",
+      "status": "FAIL",
+      "evidence": "Initial run failed because PROOF.json was missing embedded_audit."
+    }
+  ],
+  "residual_risks": [
+    "Full repo compileall remains blocked by unrelated legacy syntax errors outside this packet allowlist.",
+    "Full PR Action Bridge test suite has pre-existing compiler test failures outside this packet allowlist.",
+    "Task Orchestrator item state could not be advanced because the transport was closed.",
+    "External embedded audit/codereview was not run; the proof bundle records this as SKIPPED."
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "mode": "check_only",
+  "mutates_github": false,
+  "fail_closed_on_unknown": true,
+  "required_artifacts": [
+    "MERGE_READINESS.json",
+    "REVIEW_ITEM_LEDGER.json",
+    "THREAD_DISPOSITIONS.json",
+    "CI_TRIAGE.json",
+    "PR_STATE_SNAPSHOT.json"
+  ],
+  "trusted_reviewer_associations": [
+    "OWNER",
+    "MEMBER",
+    "COLLABORATOR"
+  ]
+}

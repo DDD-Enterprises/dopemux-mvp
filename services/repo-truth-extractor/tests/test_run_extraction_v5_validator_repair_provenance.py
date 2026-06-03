@@ -205,6 +205,37 @@ def test_parse_json_provenance_repaired_output_marked_degraded() -> None:
     assert finalized["degraded_acceptance"] is True
 
 
+def test_parse_json_provenance_surfaces_claimed_strict_route() -> None:
+    runner = _load_runner_module()
+
+    parsed, provenance = runner.parse_json_from_response_with_provenance(
+        'prefix {"ok": true}',
+        claimed_strict_route=True,
+    )
+    finalized = runner.finalize_response_parse_provenance(
+        provenance,
+        phase="A",
+        step_id="A0",
+        partition_id="A_P0002",
+        provider="openai",
+        model_id="gpt-5-mini",
+        contract_lane="extract",
+        accepted=True,
+    )
+
+    assert parsed == {"ok": True}
+    assert finalized["repair_applied"] is True
+    assert finalized["claimed_strict_route"] is True
+
+    metadata: dict[str, object] = {}
+    assert runner.parse_json_from_response(
+        'prefix {"ok": true}',
+        metadata_out=metadata,
+        claimed_strict_route=True,
+    ) == {"ok": True}
+    assert metadata["claimed_strict_route"] is True
+
+
 def test_parse_json_provenance_rejected_output_is_deterministic() -> None:
     runner = _load_runner_module()
 

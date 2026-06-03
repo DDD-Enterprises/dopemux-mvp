@@ -77,6 +77,7 @@ except ImportError:
 from . import schemas
 from ..core.models import ADHDProfile, EnergyLevel, AttentionState
 from ..operator_identity import resolve_operator_user_id
+from ..redis_keys import redis_key
 
 # Event emission for implicit triggers (Phase 7)
 try:
@@ -283,7 +284,7 @@ def _make_cache_key(endpoint: str, user_id: str, **params) -> str:
     for k, v in sorted(params.items()):
         if v is not None:
             key_parts.append(f"{k}:{v}")
-    return ":".join(key_parts)
+    return redis_key(":".join(key_parts))
 
 async def _invalidate_user_caches(user_id: str):
     """Invalidate all cached responses for a user (used when profile updates)."""
@@ -667,7 +668,7 @@ async def create_or_update_profile(
 
         # Persist profile snapshot in shared cache for cross-process reuse.
         cache = await get_cache_instance()
-        profile_key = f"adhd:profile:{request.user_id}"
+        profile_key = redis_key(f"adhd:profile:{request.user_id}")
         await cache.set(profile_key, json.dumps(asdict(profile), default=str), ttl=86400)
 
         return schemas.UserProfileResponse(
@@ -704,8 +705,8 @@ async def update_activity(
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "metrics": activity_metrics,
         }
-        latest_key = f"adhd:activity:{user_id}:latest"
-        history_key = f"adhd:activity:{user_id}:history"
+        latest_key = redis_key(f"adhd:activity:{user_id}:latest")
+        history_key = redis_key(f"adhd:activity:{user_id}:history")
         await cache.set(latest_key, json.dumps(activity_event), ttl=86400)
         history_raw = await cache.get(history_key, "[]")
         try:
