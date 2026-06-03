@@ -14,11 +14,20 @@ WEAK_ADHD_API_KEYS = {
 
 
 def runtime_environment() -> str:
-    """Return the resolved runtime environment name."""
-    return (
-        os.getenv("ENVIRONMENT", os.getenv("DPMX_ENV", "development")).strip().lower()
-        or "development"
-    )
+    """Return the resolved runtime environment name.
+
+    A blank/whitespace ``ENVIRONMENT`` must not shadow ``DPMX_ENV``: the env var
+    can be *present but empty* (e.g. ``ENVIRONMENT:`` in compose), and a naive
+    ``os.getenv("ENVIRONMENT", os.getenv("DPMX_ENV", ...))`` would return ``""``
+    and fall through to ``development`` — silently disabling fail-closed auth in
+    a production runtime. Consult each source in priority order and only accept a
+    non-empty value.
+    """
+    for value in (os.getenv("ENVIRONMENT"), os.getenv("DPMX_ENV")):
+        candidate = (value or "").strip().lower()
+        if candidate:
+            return candidate
+    return "development"
 
 
 def is_development_environment(environment: str | None = None) -> bool:

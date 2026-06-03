@@ -77,3 +77,13 @@ def test_adhd_settings_rejects_weak_api_key_in_production(monkeypatch):
             monkeypatch,
             {"ENVIRONMENT": "production", "ADHD_ENGINE_API_KEY": "dev-key-123"},
         )
+
+
+def test_adhd_settings_blank_environment_does_not_shadow_production_dpmx_env(monkeypatch):
+    # ENVIRONMENT present-but-empty must not fall through to "development" and
+    # disable fail-closed auth when DPMX_ENV marks the runtime as production.
+    with pytest.raises(RuntimeError, match="ADHD_ENGINE_API_KEY"):
+        _reload_config(
+            monkeypatch,
+            {"ENVIRONMENT": "", "DPMX_ENV": "production"},
+        )

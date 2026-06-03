@@ -55,6 +55,19 @@ def test_wma_generates_ephemeral_secret_only_in_development(monkeypatch):
     assert resolved == "generated-local-secret"
 
 
+def test_wma_blank_environment_does_not_shadow_production_dpmx_env(monkeypatch):
+    # ENVIRONMENT present-but-empty must fall through to DPMX_ENV, not "development".
+    security_config = _load_wma_module("security_config")
+    monkeypatch.setenv("ENVIRONMENT", "")
+    monkeypatch.setenv("DPMX_ENV", "production")
+    monkeypatch.delenv("WMA_SECRET_KEY", raising=False)
+
+    assert security_config.runtime_environment() == "production"
+    assert security_config.is_development_environment() is False
+    with pytest.raises(RuntimeError, match="WMA_SECRET_KEY"):
+        security_config.resolve_secret("WMA_SECRET_KEY", allow_ephemeral_dev=True)
+
+
 def test_wma_adhd_client_does_not_default_to_weak_api_key(monkeypatch):
     monkeypatch.delenv("ADHD_ENGINE_API_KEY", raising=False)
     adhd_engine_client = _load_wma_module("adhd_engine_client")
