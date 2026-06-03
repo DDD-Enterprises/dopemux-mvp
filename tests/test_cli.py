@@ -518,6 +518,7 @@ class TestCLI:
 
         assert result.exit_code == 0
         assert "Attention Metrics" in result.output
+        assert "INFERRED" in result.output
         assert "Context Information" in result.output
         assert "Task Progress" in result.output
 
