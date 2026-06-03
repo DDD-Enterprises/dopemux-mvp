@@ -279,7 +279,7 @@ Warning at 60 min
 
 Forced pause at 90 min
 └─> "90 minutes elapsed. Taking a break now to prevent burnout."
-    ├─ /sc:save or `/dx:save`
+    ├─ /sc:save or /dx:save
     ├─ Session pause
     └─ 15-minute minimum break
 ```

@@ -103,7 +103,10 @@ class ADHDEventListener:
             "file_saved": self._on_file_activity,
             "file_closed": self._on_file_activity,
             "file_activity": self._on_file_activity,
-            "activity_updated": self._on_activity_updated,
+            # NOTE: "activity_updated" is intentionally NOT registered here.
+            # That event is emitted BY the /activity route AFTER it has already
+            # called engine.record_activity_update() directly.  Re-processing it
+            # in the listener would double-count the same update.
             "native_hook_activity": self._on_native_hook_activity,
             "window_switched": self._on_window_switch,
             "app_focused": self._on_app_focus,
@@ -326,7 +329,17 @@ class ADHDEventListener:
     async def _on_idle(self, data: Dict[str, Any]):
         """Handle idle detection."""
         idle_minutes = data.get("minutes", 0)
-        
+
+        # Forward idle metrics to the engine so the hyperfocus latch and attention
+        # assessment can react to real idle signals (#786).
+        await self._record_activity_signal(
+            {
+                "idle_detected": True,
+                "idle_minutes": idle_minutes,
+            },
+            source_event="idle_detected",
+        )
+
         # Trigger context save on extended idle
         if idle_minutes >= 5 and self.context_preserver:
             await self.context_preserver.save_context(

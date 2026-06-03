@@ -76,7 +76,14 @@ def _open_activity_redis_client():
     )
     import redis  # type: ignore[import-not-found]
 
-    return redis.Redis.from_url(redis_url, decode_responses=True)
+    # Use short timeouts so a missing / slow Redis instance does not stall the
+    # hook process (hooks run synchronously in Claude Code's event loop).
+    return redis.Redis.from_url(
+        redis_url,
+        decode_responses=True,
+        socket_connect_timeout=1,
+        socket_timeout=2,
+    )
 
 
 def _emit_activity_event(

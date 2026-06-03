@@ -14,7 +14,7 @@ prelude: Tp Dmx Adhd Cognitive T4 08 Hyperfocus Latch 001 Implementation Notes (
 
 ## Authority and Scope
 
-- Worktree: `/Users/hue/code/dopemux-mvp/.worktrees/adhd-hyperfocus-latch-001`
+- Worktree: `<repo-root>/.worktrees/adhd-hyperfocus-latch-001`
 - Branch: `codex/adhd-hyperfocus-latch-001`
 - Base: `origin/codex/adhd-boundary-detection-001`
 - Primary checkout dirty state was not modified.

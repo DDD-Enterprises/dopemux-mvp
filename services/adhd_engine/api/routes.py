@@ -694,6 +694,19 @@ async def update_activity(
 
     Updates will trigger immediate energy/attention reassessment.
     """
+    # Reject misattributed updates: if the body carries a user_id that differs
+    # from the URL path parameter, the caller is confused about who owns the
+    # update.  Fail loudly rather than silently attributing to the wrong user.
+    # This check is outside the try/except so the 422 is never swallowed.
+    if request.user_id != user_id:
+        raise HTTPException(
+            status_code=422,
+            detail=brand_error(
+                f"user_id mismatch: path '{user_id}' != body '{request.user_id}'. "
+                "Use the path parameter as the authoritative user identity."
+            ),
+        )
+
     try:
         cache = await get_cache_instance()
         cache_key = _make_cache_key("activity", user_id)
@@ -1699,7 +1712,21 @@ async def save_context_for_hook(
     Triggers WorkingMemorySupport and ContextPreserver.
     """
     try:
-        _reject_content_bearing_hook_payload(request)
+        # The /save-context endpoint is called by local .claude/hooks scripts
+        # (save_context.sh, prompt_analyzer.py) which may legitimately include
+        # fields such as "files" (open-file list) or "prompt_hint" (truncated
+        # prompt).  These fields are content-bearing but are NEVER forwarded to
+        # any persistence layer — only "reason" is consumed here.
+        # Rather than rejecting the request and silently breaking hook callers,
+        # we log a debug warning and ignore the content-bearing fields.
+        matched_key = _find_content_bearing_key(request)
+        if matched_key:
+            logger.debug(
+                brand_log(
+                    f"save-context: ignoring content-bearing field '{matched_key}' "
+                    "(only 'reason' is used; content is not persisted)."
+                )
+            )
         reason = request.get("reason", "unknown")
 
         context_saved = False
