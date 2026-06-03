@@ -128,7 +128,18 @@ class ActivityTracker:
     async def handle_break_taken(self, event_data: dict):
         """Handle break taken event."""
         event_data = event_data or {}
-        duration_minutes = event_data.get("duration_minutes", 5)
+        # Coerce to a number before logging/storing so a sender cannot smuggle
+        # content (paths, prompts) through duration_minutes into logs or payloads.
+        raw_duration = event_data.get("duration_minutes", 5)
+        if isinstance(raw_duration, bool):
+            duration_minutes = 5
+        elif isinstance(raw_duration, (int, float)):
+            duration_minutes = raw_duration
+        else:
+            try:
+                duration_minutes = float(raw_duration)
+            except (TypeError, ValueError):
+                duration_minutes = 5
         logger.info(brand_log(f"Break taken: duration_minutes={duration_minutes}", chip=StatusChip.LIVE))
 
         self.break_events += 1
