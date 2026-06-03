@@ -11,8 +11,8 @@
 
 **Observed runtime support**:
 - Manual context save through `/dx:save` and `dopemux save`
-- Registered lifecycle hook dispatch through `.claude/settings.json` and `src/dopemux/claude/native_hooks.py`
-- Best-effort hook signals for Stop-time context save, energy warnings before complex tools, and progress/edit tracking
+- Registered lifecycle hook dispatch through `.claude/settings.json` to `src/dopemux/claude/native_hooks.py`
+- Available hook signal implementations for Stop-time context save, energy warnings before complex tools, and progress/edit tracking (dormant unless invoked by the dispatcher)
 
 **Planned/specification behavior**:
 - `/dx:implement` focus timers, recurring save checkpoints, automatic break prompts, and forced hyperfocus pauses remain not proven wired in the observed Claude runtime

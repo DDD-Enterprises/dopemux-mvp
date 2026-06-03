@@ -312,7 +312,9 @@ class ADHDAccommodationEngine:
         self._ensure_energy_predictor(operator_user_id)
 
         profile_key = f"adhd:profile:{operator_user_id}"
-        await self.redis_client.set(profile_key, json.dumps(asdict(profile), default=str))
+        # Use SET NX (set-if-not-exists) so a profile written by another process
+        # between our load and seed is never silently overwritten.
+        await self.redis_client.set(profile_key, json.dumps(asdict(profile), default=str), nx=True)
         logger.info(f"📋 Seeded default ADHD profile for operator: {operator_user_id}")
 
     async def _start_accommodation_monitoring(self) -> None:
@@ -483,7 +485,27 @@ class ADHDAccommodationEngine:
         metrics = self._sanitize_activity_metrics(activity_data)
         if self._is_hook_activity(metrics):
             self._append_activity_sample(user_id, metrics)
-            metrics = self._derive_hook_activity_metrics(user_id)
+            hook_metrics = self._derive_hook_activity_metrics(user_id)
+            # Merge hook-derived metrics onto any existing real activity metrics so
+            # that a sparse, content-free hook event (carrying only hook_event_name /
+            # status) does not zero-out richer numeric signals already recorded via
+            # the /activity PUT endpoint.
+            existing = self.recent_activity_updates.get(user_id)
+            if existing:
+                merged = dict(existing)
+                merged.update(hook_metrics)
+                metrics = merged
+            else:
+                metrics = hook_metrics
+        else:
+            # For direct numeric activity updates, merge onto existing cached values
+            # so a single-field update (e.g. only completion_rate) does not drop
+            # previously-recorded fields (context_switches, break_compliance, etc.).
+            existing = self.recent_activity_updates.get(user_id)
+            if existing:
+                merged = dict(existing)
+                merged.update(metrics)
+                metrics = merged
         self.recent_activity_updates[user_id] = metrics
         self._append_activity_baseline_sample(user_id, metrics)
 
@@ -538,8 +560,18 @@ class ADHDAccommodationEngine:
         samples.append(dict(activity_data))
         self.recent_activity_samples[user_id] = samples[-50:]
 
+    # Fields that must actually be present for a calibration sample to be useful.
+    _BASELINE_REQUIRED_FIELDS = {"completion_rate", "context_switches"}
+
     def _append_activity_baseline_sample(self, user_id: str, activity_data: Dict[str, Any]) -> None:
-        """Store bounded numeric activity metrics for per-user calibration."""
+        """Store bounded numeric activity metrics for per-user calibration.
+
+        Only records a sample when the activity data contains at least the core
+        numeric fields.  Absent fields must not be turned into real baseline
+        values by using their default substitutes (that would corrupt thresholds).
+        """
+        if not any(f in activity_data for f in self._BASELINE_REQUIRED_FIELDS):
+            return
         sample = self._activity_baseline_sample(activity_data)
         samples = self.activity_baseline_samples.setdefault(user_id, [])
         samples.append(sample)

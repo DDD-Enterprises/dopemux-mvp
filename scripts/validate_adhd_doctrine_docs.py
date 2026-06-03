@@ -51,7 +51,11 @@ def main() -> int:
 
     for rel_path in ACTIVE_DOCS:
         path = ROOT / rel_path
-        text = path.read_text(encoding="utf-8")
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (FileNotFoundError, PermissionError, OSError) as e:
+            failures.append(f"{rel_path}: cannot read file ({type(e).__name__}: {e})")
+            continue
         combined += text + "\n"
         for phrase in FORBIDDEN_PHRASES:
             if phrase in text:

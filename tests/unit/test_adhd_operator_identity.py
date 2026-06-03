@@ -46,6 +46,21 @@ def test_operator_identity_rejects_pathlike_or_empty_overrides(tmp_path, monkeyp
         resolve_operator_user_id(identity_path=identity_path)
 
 
+def test_operator_identity_rejects_colon_containing_ids(tmp_path, monkeypatch):
+    """Colons in an operator ID corrupt 'adhd:profile:<id>' Redis keys (#776)."""
+    from services.adhd_engine.operator_identity import resolve_operator_user_id
+
+    identity_path = tmp_path / ".dopemux" / "operator_id"
+    monkeypatch.setenv("DOPEMUX_ADHD_USER_ID", "user:admin")
+
+    with pytest.raises(ValueError, match="colon"):
+        resolve_operator_user_id(identity_path=identity_path)
+
+    monkeypatch.setenv("DOPEMUX_ADHD_USER_ID", "a:b:c")
+    with pytest.raises(ValueError, match="colon"):
+        resolve_operator_user_id(identity_path=identity_path)
+
+
 def test_adhd_settings_exposes_operator_identity_path(monkeypatch, tmp_path):
     managed_keys = ["ADHD_OPERATOR_ID_PATH", "DOPEMUX_ADHD_USER_ID", "ADHD_OPERATOR_USER_ID"]
     for key in managed_keys:

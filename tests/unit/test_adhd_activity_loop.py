@@ -239,3 +239,38 @@ async def test_activity_route_processes_update_even_when_response_cache_exists(m
 
     assert response.energy_updated is True
     assert calls == [("operator-local-001", {"completion_rate": 0.4})]
+
+
+@pytest.mark.asyncio
+async def test_activity_route_rejects_user_id_path_body_mismatch(monkeypatch):
+    """PUT /activity/{user_id} must reject if body user_id != path user_id (#777)."""
+    from fastapi import HTTPException
+    from services.adhd_engine.api import routes
+    from services.adhd_engine.api.schemas import ActivityUpdateRequest
+
+    class FakeEngine:
+        user_profiles = {}
+        current_energy_levels = {}
+        current_attention_states = {}
+        predictive_engine = None
+
+        async def record_activity_update(self, user_id, activity_data):
+            raise AssertionError("must not be reached on mismatch")
+
+    async def fake_cache_instance():
+        return FakeCache()
+
+    monkeypatch.setattr(routes, "get_cache_instance", fake_cache_instance)
+    monkeypatch.setattr(routes, "EVENT_EMISSION_AVAILABLE", False)
+
+    with pytest.raises(HTTPException) as exc_info:
+        await routes.update_activity(
+            user_id="alice",
+            request=ActivityUpdateRequest(
+                user_id="bob",
+                completion_rate=0.7,
+            ),
+            engine=FakeEngine(),
+        )
+
+    assert exc_info.value.status_code == 422

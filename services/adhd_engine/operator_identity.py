@@ -19,6 +19,11 @@ def _validate_content_free_operator_id(value: str, *, source: str) -> str:
         raise ValueError(
             f"ADHD operator identity from {source} must be content-free, not path-like"
         )
+    if ":" in operator_id:
+        raise ValueError(
+            f"ADHD operator identity from {source} must not contain colons "
+            "(colons corrupt the adhd:profile:<id> Redis key namespace)"
+        )
     if len(operator_id) > 128:
         raise ValueError(f"ADHD operator identity from {source} is too long")
     return operator_id
