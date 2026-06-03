@@ -82,6 +82,7 @@ A packet is superseded by another packet
 | TP-BETA-MCP-03-ADHD-REDIS-ISOLATION | ADHD Engine | Isolate ADHD Engine Redis keys by instance | Active | N/A |
 | TP-SEC-COMPOSE-LITELLM-LOCALHOST-001 | Security | Externalize LiteLLM healthcheck key and localize compose service ports | Active | N/A |
 | TP-SEC-WEAK-DEFAULT-SECRETS-001 | Security | Reject weak default secrets in env template and installer | Active | N/A |
+| TP-DMX-ADHD-SIGNAL-E2E-WIRING-001 | ADHD Engine / Dashboard | Prove synthetic ADHD state updates reach the dashboard UI band | Active | N/A |
 | TP-DOCS-FIRST-TOUCH-PRODUCT-NAME-001 | Docs | Refresh active Start Here onboarding and product naming | Active | N/A |
 | DMX-COCKPIT-STATIC-002 | UI Cockpit | Expose deterministic static cockpit renderer through guarded CLI wrapper | Merged (PR #528) | N/A |
 | TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001 | UI Cockpit | Audit and prepare Cockpit PR stack 568-571 plus PR 573 evidence for safe consolidation | Active | N/A |
@@ -101,6 +102,7 @@ A packet is superseded by another packet
 | TP-BETA-INSTALL-02-CLAUDE-REVIEW-001 | Installer | Apply Claude review cleanup to BETA-INSTALL-02 network repair | Active | N/A |
 | TP-BETA-INSTALL-01-MCP-01-REVIEW-001 | MCP Config | Repair PR #737 review blockers for portable Task Orchestrator launch | Active | N/A |
 | TP-BETA-CLI-01-DECISIONS-REVIEW-001 | CLI Decisions | Repair PR #740 review blockers for decisions CLI subcommands | Active | N/A |
+| TP-DMX-ADHD-INTERACTIVE-PROMPTS-001 | ADHD UX | Wire interactive prompts into launch and profile flows | Active | N/A |
 
 ────────────────────────────────────────────────────────────
 🟢 Completed Task Packets

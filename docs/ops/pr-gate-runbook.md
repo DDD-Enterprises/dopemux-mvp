@@ -5,14 +5,16 @@ type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-05-27'
-last_review: '2026-05-27'
+last_review: '2026-05-31'
 next_review: '2026-08-25'
 prelude: Pr Gate Runbook (explanation) for dopemux documentation and developer workflows.
 ---
 # PR Gate Runbook
 
 > **Status**: Active — `ci-summary` job in `.github/workflows/ci-complete.yml`
-> exits 1 when required checks fail, making it a hard gate for PRs.
+> exits 1 when required checks fail, and live branch-protection evidence on
+> 2026-05-31 shows `📊 CI Pipeline Summary` is a required status check for
+> `main`.
 
 ---
 
@@ -35,12 +37,14 @@ GitHub marks it as failed — which branch protection can use as a required chec
 | `code-quality` | **REQUIRED BLOCKING** | Always runs on PRs; linting / type-check regressions must block merge |
 | `tests` | **REQUIRED BLOCKING** | Always runs on PRs; unit-test regressions must block merge |
 | `extractor-smoke` | **REQUIRED BLOCKING** | Always runs on PRs; focused canonical RTE regression gate |
-| `extractor-full` | **ADVISORY** | Uses `set +e; exit 0` trap — job `result` is structurally always `success`; informational display only via `outputs.suite_status` |
+| `audit-validator` | **REQUIRED BLOCKING** | Always runs on PRs; proof-schema regressions must block merge |
+| `extractor-full` | **REQUIRED BLOCKING** | Always runs on PRs; full extractor regressions must block merge |
+| `auditor-router` | **REQUIRED BLOCKING** | Always runs on PRs; embedded-audit routing regressions must block merge |
 | `installer-smoke` | **ADVISORY** | `if: github.event_name != 'pull_request'` — skipped on all PR runs |
 | `scoped-coverage` | **ADVISORY** | `if: github.event_name != 'pull_request'` — skipped on all PR runs |
 | `integration` | **ADVISORY** | `if: github.event_name != 'pull_request'` — skipped on all PR runs |
-| `security` | **ADVISORY** | May be skipped when API keys are absent; non-blocking by design |
-| `docs` | **ADVISORY** | Documentation link checks; non-blocking |
+| `security` | **ADVISORY REQUIRED BY BRANCH PROTECTION** | GitHub branch protection currently requires `🔒 Security Review`; CI gate logic treats it as advisory because it may be secret-gated |
+| `docs` | **ADVISORY REQUIRED BY BRANCH PROTECTION** | GitHub branch protection currently requires `📚 Documentation Check`; CI gate logic treats it as advisory because it is outside the required `ci-summary` gate |
 
 ---
 
@@ -51,6 +55,9 @@ _gate_ok=true
 [ "${{ needs.code-quality.result }}"    != "success" ] && _gate_ok=false
 [ "${{ needs.tests.result }}"           != "success" ] && _gate_ok=false
 [ "${{ needs.extractor-smoke.result }}" != "success" ] && _gate_ok=false
+[ "${{ needs.audit-validator.result }}" != "success" ] && _gate_ok=false
+[ "${{ needs.extractor-full.result }}"  != "success" ] && _gate_ok=false
+[ "${{ needs.auditor-router.result }}"  != "success" ] && _gate_ok=false
 if [ "$_gate_ok" = "false" ]; then
   # posts "PR Gate: BLOCKED" to step summary, then:
   exit 1
@@ -66,27 +73,26 @@ conditions from accidentally clearing a required check.
 
 ## Branch Protection Configuration
 
-> ⚠️ **UNKNOWN** — Branch protection truth cannot be verified from inside the
-> worktree. An operator must manually confirm the following.
+Verified read-only with:
 
-**Required operator action**: verify that `ci-summary` (display name
-`"📊 CI Pipeline Summary"`) is listed as a **required status check** in the
-branch protection rule for `main`.
+```bash
+gh api repos/DDD-Enterprises/dopemux-mvp/branches/main/protection \
+  --jq '.required_status_checks.contexts[]'
+```
 
-Steps (GitHub UI):
-1. Repository → Settings → Branches → Branch protection rules → `main`
-2. Check "Require status checks to pass before merging"
-3. Search for `ci-summary` or `📊 CI Pipeline Summary` in the required checks list
-4. If absent: add it, save
+Observed 2026-05-31: `📊 CI Pipeline Summary` is present in the required status
+check list. The workflow job id remains `ci-summary`; the required status
+check context exposed to GitHub is the job display name.
 
-Until this is confirmed, the gate logic is structurally correct but not enforced
-at the GitHub branch-protection layer.
+Residual caveat: admins and maintainers may still have bypass paths through
+classic protection or the active ruleset. See
+`docs/ops/branch-policy-audit.md`.
 
 ---
 
 ## Failure Response Procedures
 
-### Required check failed (code-quality / tests / extractor-smoke)
+### Required check failed (code-quality / tests / extractor-smoke / audit-validator / extractor-full / auditor-router)
 
 1. Identify which check failed from the Step Summary (`PR Gate: BLOCKED` line
    includes the result of each required job).
@@ -94,20 +100,35 @@ at the GitHub branch-protection layer.
 3. Fix the regression; push a new commit to the PR branch.
 4. Required checks re-run automatically on the new push.
 
-### Advisory check failed (extractor-full / installer-smoke / scoped-coverage / integration / security / docs)
+### Advisory check failed (installer-smoke / scoped-coverage / integration / security / docs)
 
-Advisory failures are **non-blocking** for merge. They appear in the Step
-Summary but do not cause `ci-summary` to exit 1.
+Advisory failures are **non-blocking in the `ci-summary` gate**. They appear
+in the Step Summary but do not cause `ci-summary` to exit 1. Merge can still be
+blocked by any advisory job that is also configured as a required branch
+protection status check; as of the 2026-05-31 read-only refresh, `security`
+maps to required context `🔒 Security Review` and `docs` maps to required
+context `📚 Documentation Check`.
 
 Recommended response:
-- `extractor-full` advisory failure: file a follow-up issue; mark tests as
-  expected-failure or fix on a separate branch.
 - Skipped advisory jobs: expected on PR fast-path; no action needed.
 
 ### ci-summary itself fails unexpectedly
 
 If `ci-summary` fails for a reason other than the gate (e.g., runner error),
 re-run it via GitHub Actions → Re-run jobs → Re-run failed jobs.
+
+### Avoid empty commits for CI refresh
+
+Do not use empty commits to refresh CI. Supported refresh paths are:
+
+- Push a real commit that changes tracked repo content.
+- Convert a draft PR to ready for review; `ready_for_review` is an explicit
+  trigger for the PR workflows.
+- Use `workflow_dispatch` where the workflow supports it.
+- Use GitHub's "Re-run jobs" action for a completed workflow run.
+
+Empty commits are audit noise: they change branch history without changing the
+repo truth being validated.
 
 ---
 
@@ -121,11 +142,12 @@ python -m pytest tests/ci/ -v
 
 Tests assert:
 - `ci-summary` has `if: always()`
-- All 9 upstream jobs present in `needs`
-- Gate script uses `!= "success"` for each required blocking job
+- All 11 upstream jobs present in `needs`
+- Gate script uses `!= "success"` for each required blocking job:
+  `code-quality`, `tests`, `extractor-smoke`, `audit-validator`,
+  `extractor-full`, and `auditor-router`
 - `exit 1` present in gate script
-- `extractor-full.result` does not feed into `exit 1`
-- `UNKNOWN` caveat documented in gate script
+- branch-protection caveat documented in gate script
 - `advisory` carve-out documented in gate script
 - `PR Gate: BLOCKED` and `PR Gate: CLEAR` messages present
 - No trailing whitespace in gate script

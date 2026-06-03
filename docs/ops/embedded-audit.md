@@ -48,14 +48,16 @@ audit proof emission. The workflow uses read-only repository permissions
 use `pull_request_target`.
 
 The workflow checks out a trusted audit-source ref, fetches the requested PR
-head SHA as data, verifies it matches `refs/pull/<number>/head`, runs static auditor-route preflight from the
-trusted source checkout, and then invokes
+head SHA as data, verifies it matches `refs/pull/<number>/head`, runs static
+auditor-route preflight from the trusted source checkout, and invokes the
+trusted-source `scripts/audit/pal_clink_runner.py` when present to capture
+`PAL_CLINK_AUDIT_OUTPUT.json`. It then invokes
 `scripts/audit/run_embedded_audit.py` from that trusted checkout. The emitter
-writes `PROOF.json` and the canonical
-`proof/<packet-id>/AUDITOR_REPORT.md` report path into the uploaded
-`embedded-audit-artifacts/` bundle. Preflight may fail or classify tooling as
-unavailable; proof emission still runs so unavailable audit authority is
-recorded explicitly instead of disappearing.
+writes `PROOF.json` and the canonical `proof/<packet-id>/AUDITOR_REPORT.md`
+report path into the uploaded `embedded-audit-artifacts/` bundle. Preflight or
+runner execution may fail or classify tooling as unavailable; proof emission
+still runs so unavailable audit authority is recorded explicitly instead of
+disappearing.
 
 During bootstrap PRs where the trusted base ref does not yet contain the proof
 emitter, the workflow emits a schema-valid `SKIPPED` proof instead of executing
