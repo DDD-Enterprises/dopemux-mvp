@@ -90,3 +90,40 @@ def test_normalize_file_activity_strips_content_bearing_fields():
         "raw editor content",
     ]:
         assert forbidden not in serialized
+
+
+def test_normalize_file_activity_coerces_content_smuggled_through_numeric_fields():
+    # A sender must not be able to smuggle content through the "numeric" fields,
+    # nor trip an int() ValueError that echoes content into logs.
+    payload = normalize_file_activity({
+        "files_modified": "/repo/src/private_prompt.py",
+        "seconds_since_last_save": "leaked prompt text",
+        "has_recent_activity": True,
+    })
+
+    assert payload == {
+        "has_recent_activity": True,
+        "files_modified": 0,
+        "seconds_since_last_save": None,
+    }
+    serialized = repr(payload)
+    for forbidden in ["private_prompt.py", "leaked prompt text"]:
+        assert forbidden not in serialized
+
+
+def test_normalize_workspace_switch_coerces_smuggled_numeric_file_activity():
+    payload = normalize_workspace_switch({
+        "from_workspace": "one",
+        "to_workspace": "two",
+        "file_activity": {
+            "files_modified": "src/secret.py",
+            "seconds_since_last_save": "/repo/secret.py",
+        },
+    })
+
+    assert payload["file_activity"] == {
+        "has_recent_activity": False,
+        "files_modified": 0,
+        "seconds_since_last_save": None,
+    }
+    assert "secret.py" not in repr(payload)
