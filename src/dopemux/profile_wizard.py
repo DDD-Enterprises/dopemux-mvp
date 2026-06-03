@@ -17,6 +17,7 @@ import click
 import yaml
 from rich.panel import Panel
 from dopemux.ui.prompts import dopemux_confirm, dopemux_prompt
+from dopemux.ux.interactive_prompts import InteractivePrompts
 
 from .console import console
 from .profile_analyzer import GitHistoryAnalyzer
@@ -47,6 +48,35 @@ class ProfileWizard:
         """
         self.repo_path = repo_path or Path.cwd()
         self.analyzer = GitHistoryAnalyzer(self.repo_path)
+
+    def _choose_mcp_selection(self, suggested_mcps: List[str]) -> Optional[str]:
+        """Choose an MCP bundle with max-three progressive disclosure."""
+        actions = [
+            {
+                "name": "recommended",
+                "description": f"Use git-history recommendation ({len(suggested_mcps)} servers)",
+                "complexity": 0.1,
+            },
+            {
+                "name": "minimal",
+                "description": "Use only Serena and ConPort",
+                "complexity": 0.2,
+            },
+            {
+                "name": "full",
+                "description": f"Enable all {len(self.ALL_MCPS)} known servers",
+                "complexity": 0.7,
+            },
+            {
+                "name": "custom",
+                "description": "Pick individual server numbers",
+                "complexity": 0.9,
+            },
+        ]
+        return InteractivePrompts().ask_action_selection(
+            actions,
+            "Choose MCP server set",
+        )
 
     def run(self, profile_name: Optional[str] = None, output_dir: Optional[Path] = None) -> Optional[Path]:
         """
@@ -87,11 +117,11 @@ class ProfileWizard:
         console.logger.info(f"\n[bold]Question 2 of 3:[/bold] Which MCP servers do you want?")
         console.logger.info(f"[text.dim]Based on your git history, I recommend: {', '.join(analysis.suggested_mcps)}[/text.dim]")
 
-        mcp_choice = dopemux_prompt(
-            "MCP selection",
-            choices=["recommended", "minimal", "full", "custom"],
-            default="recommended"
-        )
+        mcp_choice = self._choose_mcp_selection(analysis.suggested_mcps)
+
+        if not mcp_choice:
+            console.logger.info("[warning]❌ Profile creation cancelled[/warning]")
+            return None
 
         if mcp_choice == "recommended":
             selected_mcps = analysis.suggested_mcps

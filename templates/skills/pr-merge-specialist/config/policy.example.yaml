@@ -102,5 +102,6 @@ retry:
     - timeout
     - temporary failure
 merge:
+  allow_governed_automerge: false
   allow_auto_fallback_only_for:
     - merge_queue_required

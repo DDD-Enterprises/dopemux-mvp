@@ -28,12 +28,12 @@
     "TP-DMX-STEWARD-SCAFFOLD-302",
     "TP-DMX-STEWARD-DOCTOR-303"
   ],
-  "execution": {
-    "agent": "codex",
-    "base_branch": "main",
-    "branch": "codex/tp-dmx-autoreview-harden-401",
-    "stacked_because": "Part of the DMX-AUTOREVIEW-PLATFORM dependency DAG."
-  },
+    "execution": {
+        "agent": "codex",
+        "base_branch": "codex/tp-dmx-steward-doctor-303",
+        "branch": "codex/tp-dmx-autoreview-harden-401",
+        "stacked_because": "TP401 is the final hardening pass over the TP303 distribution stack; TP106 remains a parallel dependency recorded as external green PR evidence."
+    },
   "id": "TP-DMX-AUTOREVIEW-HARDEN-401",
   "invariants": [
     "Runtime/source truth outranks this packet and the load plan.",
@@ -57,7 +57,7 @@
     ]
   },
   "pr": {
-    "base": "main",
+        "base": "codex/tp-dmx-steward-doctor-303",
     "body": "## Summary\n- Opus adversarial audit of the whole platform end-to-end (governance + governed merge + distribution); close residual risks; refresh operating-model.md + pr-acceptance.md; emit series completion proof.\n\n## Scope\nTrack: D-harden. Risk: MEDIUM. Red lane: false.\n\n## Validation\nRun the packet validation commands and capture proof under proof/TP-DMX-AUTOREVIEW-HARDEN-401/PROOF.json.\n\n## NOT_RUN\nList any skipped live, integration, credentialed, or supervisor-gated checks explicitly.",
     "title": "Docs(ops): harden and finalize the autoreview platform"
   },
@@ -69,10 +69,10 @@
     "require_identity_match": true
   },
   "series": {
-    "base_branch": "main",
-    "final_packet": true,
-    "id": "DMX-AUTOREVIEW-PLATFORM",
-    "parent_tp_id": "TP-DMX-PALCLINK-VERDICT-101"
+        "base_branch": "codex/tp-dmx-steward-doctor-303",
+        "final_packet": true,
+        "id": "DMX-AUTOREVIEW-PLATFORM",
+        "parent_tp_id": "TP-DMX-STEWARD-DOCTOR-303"
   },
   "steps": [
     {

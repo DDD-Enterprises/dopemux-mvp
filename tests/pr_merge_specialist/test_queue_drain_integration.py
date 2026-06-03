@@ -323,16 +323,21 @@ def test_merge_prepared_result_logs_auto_merge_handoff_truthfully(
     monkeypatch, tmp_path: Path
 ):
     messages: list[tuple[str, str]] = []
+    merge_expected_heads: list[str | None] = []
 
-    monkeypatch.setattr(
-        queue_drain_module,
-        "run_merge_with_fallback",
-        lambda **_kwargs: MergeDecision(
+    def fake_run_merge_with_fallback(**kwargs):
+        merge_expected_heads.append(kwargs.get("expected_head_oid"))
+        return MergeDecision(
             action=MergeActionType.AUTO_MERGE_FALLBACK,
             command=["gh", "pr", "merge", "190", "--auto"],
             reason="pending checks",
             reason_code="auto_merge_pending_checks",
-        ),
+        )
+
+    monkeypatch.setattr(
+        queue_drain_module,
+        "run_merge_with_fallback",
+        fake_run_merge_with_fallback,
     )
     monkeypatch.setattr(queue_drain_module, "_refresh_client_state", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
@@ -392,12 +397,46 @@ def test_merge_prepared_result_logs_auto_merge_handoff_truthfully(
         ),
         artifacts={"operator_state": "queued_for_merge"},
     )
+    pr_dir = pr_dir_for(tmp_path, 190)
+    steward_dir = tmp_path / "pr-steward" / "pr-190"
+    audit_dir = tmp_path / "embedded-audit" / "pr-190"
+    steward_dir.mkdir(parents=True)
+    audit_dir.mkdir(parents=True)
+    (steward_dir / "MERGE_READINESS.json").write_text(
+        json.dumps(
+            {
+                "generated_at": "2026-05-31T12:00:00Z",
+                "readiness": "READY",
+                "blockers": [],
+                "pr": {"number": 190, "head_sha": "head-190"},
+                "proof": {"proof_head_sha": "head-190"},
+                "embedded_audit": {"status": "PASS"},
+            }
+        ),
+        encoding="utf-8",
+    )
+    (audit_dir / "PROOF.json").write_text(
+        json.dumps(
+            {
+                "generated_at": "2026-05-31T12:00:00Z",
+                "head_sha": "head-190",
+                "embedded_audit": {"status": "PASS"},
+            }
+        ),
+        encoding="utf-8",
+    )
 
     result = queue_drain_module._merge_prepared_result(
         args=Namespace(id=190, out_dir=str(tmp_path), repo=None, execute=True),
         client=client,
         repo_root=tmp_path,
-        policy={},
+        policy={
+            "steward_gate": {
+                "artifact_ttl_seconds": 10_000_000,
+                "merge_readiness_path": "{out_dir}/pr-steward/pr-{pr_id}/MERGE_READINESS.json",
+                "audit_proof_path": "{out_dir}/embedded-audit/pr-{pr_id}/PROOF.json",
+            }
+        },
         pr_root=tmp_path,
         active_run_id="truthfulhandoff",
         prepared_result=prepared_result,
@@ -407,6 +446,7 @@ def test_merge_prepared_result_logs_auto_merge_handoff_truthfully(
     assert result.lifecycle_state == PRState.QUEUED_FOR_MERGE.value
     assert ("SUCCESS", "Auto-merge handoff successful") in messages
     assert ("SUCCESS", "Merge successful") not in messages
+    assert merge_expected_heads == ["head-190"]
 
 
 def test_queue_drain_orchestrates_phase_functions(monkeypatch, tmp_path: Path):

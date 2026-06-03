@@ -12,7 +12,6 @@ from enum import Enum, auto
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-import readchar
 from rich.align import Align
 from rich.console import Console, Group
 from rich.layout import Layout
@@ -26,6 +25,7 @@ from ..console import console as shared_console
 from ..claude.instruction_manager import InstructionManager
 from ..roles.catalog import ROLE_CATALOG, RoleSpec
 from ..ui.theme import StatusChip
+from .interactive_prompts import InteractivePrompts
 
 DOPEMUX_HEADER_TEXT = Text.from_markup(
     """
@@ -210,7 +210,7 @@ class LauncherWizard:
         """Builds the footer with instructions."""
         if self.state == LauncherState.ROLE_SELECTION:
             return Text.from_markup(
-                StatusChip.LOGGED.render("Use ↑/↓ to navigate, Enter to select, Ctrl+C to quit"),
+                StatusChip.LOGGED.render("Select a role from the prompt to continue, or cancel to quit."),
                 justify="center",
             )
         return Text.from_markup(
@@ -225,27 +225,39 @@ class LauncherWizard:
     # --- Public API for state transitions and updates ---
     def run_role_selection(self) -> Optional[str]:
         """
-        Runs the interactive loop for role selection.
+        Runs the progressive interactive role selection prompt.
         Returns the selected role key or None if the user quits.
         """
-        try:
-            while True:
-                key = readchar.readkey()
-                if key in (readchar.key.CTRL_C, "q"):
-                    raise KeyboardInterrupt
+        attention_complexity = {
+            "scattered": 0.1,
+            "focused": 0.3,
+            "variable": 0.6,
+            "hyperfocused": 0.7,
+        }
+        actions = [
+            {
+                "name": key,
+                "description": f"{role.label} - {role.description}",
+                "complexity": attention_complexity.get(role.attention_state, 0.5),
+            }
+            for key, role in self.roles
+        ]
 
-                if self.state == LauncherState.ROLE_SELECTION:
-                    if key == readchar.key.UP:
-                        self.selected_index = (self.selected_index - 1) % len(self.roles)
-                    elif key == readchar.key.DOWN:
-                        self.selected_index = (self.selected_index + 1) % len(self.roles)
-                    elif key in (readchar.key.ENTER, readchar.key.CR):
-                        self.state = LauncherState.BOOT_SEQUENCE
-                        self._refresh_live_view()
-                        return self.roles[self.selected_index][0]
-                    self._refresh_live_view()
-        except KeyboardInterrupt:
+        selected_role = InteractivePrompts().ask_action_selection(
+            actions,
+            "Select agent role",
+        )
+        if not selected_role:
             return None
+
+        for idx, (key, _role) in enumerate(self.roles):
+            if key == selected_role:
+                self.selected_index = idx
+                self.state = LauncherState.BOOT_SEQUENCE
+                return key
+
+        self.error_message = f"Unknown selected role: {selected_role}"
+        return None
 
     def update_boot_step(self, step_name: str, status: BootStepStatus, message: str = ""):
         """
@@ -294,21 +306,16 @@ def start_wizard() -> Optional[Tuple[str, LauncherWizard]]:
         A tuple of (role_key, wizard_instance) if a role is selected.
         (None, None) if the user quits.
     """
-    try:
-        import readchar
-    except ImportError:
-        shared_console.print(StatusChip.BLOCKER.render("Missing dependency: readchar"), style="error")
-        shared_console.print(StatusChip.EDGE.render("Fix: install `readchar` before using the launcher wizard."), style="info")
-        return None, None
-        
     wizard = LauncherWizard(shared_console)
     try:
-        wizard.live.start()
         role_key = wizard.run_role_selection()
         if role_key:
+            wizard.live.start()
+            wizard._refresh_live_view()
             return role_key, wizard
         else:
-            wizard.live.stop()
+            if wizard.live.is_started:
+                wizard.live.stop()
             shared_console.print("[text.dim]Role selection cancelled.[/]")
             return None, None
     except Exception as e:

@@ -5,7 +5,7 @@ type: reference
 owner: '@hu3mann'
 author: '@codex'
 date: '2026-05-25'
-last_review: '2026-05-25'
+last_review: '2026-06-01'
 next_review: '2026-08-23'
 prelude: PR acceptance gates for embedded audit, PR Steward readiness, and second-supervisor skip decisions.
 ---
@@ -27,6 +27,24 @@ A PR is eligible for normal closeout only when all of these are true:
 - no blocking thread, failed required check, stale proof, or unresolved audit finding remains
 - proof freshness may be satisfied by an explicit supervisor-accepted self-reference exception when the proof records proof-only changed-file evidence and the embedded audit is nonblocking
 
+## Series Completion Acceptance
+
+For the DMX-AUTOREVIEW-PLATFORM series, a final hardening PR may claim series
+closeout evidence only when it records all of the following:
+
+- every dependency packet PR number, base branch, head SHA, draft state, and CI
+  result used as evidence
+- the branch line used for the final hardening PR
+- any parallel dependency branch that is not contained in the final PR base
+- any `UNKNOWN`, `SKIPPED`, or `PASS_WITH_LIMITS` proof posture from dependency
+  bundles
+- whether the observed `mergeStateStatus` is caused by failing checks,
+  required-up-to-date strictness, draft state, or another unresolved condition
+
+If dependency PRs are still draft, the series is review-complete only. It is not
+merged-runtime-complete until the relevant PRs land and runtime truth is
+re-read from the resulting base branch.
+
 ## Skip-Second-GPT-5.5 Rule
 
 Skip the second GPT-5.5 Pro supervisor review only when both gates are READY:
@@ -47,3 +65,29 @@ This acceptance policy does not implement auto-fix, thread resolution, auto-merg
 PAL MCP clink route evidence is not an embedded audit verdict. A PR using the PAL clink bridge must include captured `PAL_CLINK_AUDIT_OUTPUT.json` and normalized `AUDITOR_REPORT.md` before it can satisfy the embedded audit gate. A route-only `pal-mcp-clink` selection, missing wrapper, or missing host-side output blocks `READY`.
 
 Copilot clink support remains deferred. PR Steward remains check-only and must not call PAL MCP clink or mutate GitHub state.
+
+## Merge Finalization Boundary
+
+Automated merge finalization is stricter than normal closeout. The merge
+specialist may execute a direct merge only after `steward_gate(FINALIZATION)`
+allows the exact head SHA with PR Steward readiness `READY` and independent
+embedded-audit `PASS`. `PASS_WITH_RISKS` does not authorize finalization.
+
+Direct merge execution must use GraphQL `mergePullRequest` with
+`expectedHeadOid`. Missing GraphQL authority, missing PR node id, or missing
+head SHA is recorded as `UNKNOWN` and blocks execution; the specialist must not
+fall back to ungated `gh pr merge`.
+
+Governed automerge is policy-disabled by default, and admin-bypass squash is
+supervisor-only. Branch protection mutation remains out of scope.
+
+## Draft And Up-To-Date Semantics
+
+`mergeStateStatus=BLOCKED` is not enough by itself to classify a PR as failed.
+Operators must inspect the status rollup and PR draft state. A draft PR with all
+required checks passing is blocked for review/finality, while a non-draft PR
+with a failed required check is blocked by validation.
+
+When classic branch protection has `strict: true`, a PR can become blocked after
+passing CI if `main` advances. The correct action is a bounded branch refresh
+and a fresh CI run. Empty commits must not be used as CI prods.

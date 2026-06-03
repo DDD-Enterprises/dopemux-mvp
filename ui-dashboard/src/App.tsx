@@ -117,7 +117,7 @@ function mapAggregateState(payload: AggregateDashboardState): CognitiveState {
   };
 }
 
-function mapRealtimeState(message: Record<string, unknown>): CognitiveState | null {
+export function mapRealtimeState(message: Record<string, unknown>): CognitiveState | null {
   if (message.type !== 'state_update') {
     return null;
   }

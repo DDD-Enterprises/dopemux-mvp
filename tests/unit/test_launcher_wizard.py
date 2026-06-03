@@ -49,4 +49,32 @@ def test_launcher_footer_renders_status_chip(monkeypatch) -> None:
     footer = wizard._build_footer()
 
     assert "[LOGGED]" in footer.plain
-    assert "Use ↑/↓ to navigate" in footer.plain
+    assert "Select a role from the prompt" in footer.plain
+
+
+def test_launcher_role_selection_uses_interactive_prompts(monkeypatch) -> None:
+    captured: dict[str, object] = {}
+
+    class FakeInstructionManager:
+        def __init__(self, _cwd: Path) -> None:
+            pass
+
+        def list_personas(self) -> list[str]:
+            return []
+
+    class FakePrompts:
+        def ask_action_selection(self, actions, context=""):  # type: ignore[no-untyped-def]
+            captured["actions"] = actions
+            captured["context"] = context
+            return "developer"
+
+    monkeypatch.setattr(launcher_wizard, "InstructionManager", FakeInstructionManager)
+    monkeypatch.setattr(launcher_wizard, "InteractivePrompts", lambda: FakePrompts())
+
+    wizard = launcher_wizard.LauncherWizard(dopemux_console)
+    selected = wizard.run_role_selection()
+
+    assert selected == "developer"
+    assert captured["context"] == "Select agent role"
+    assert any(action["name"] == "developer" for action in captured["actions"])
+    assert wizard.state is launcher_wizard.LauncherState.BOOT_SEQUENCE
