@@ -317,6 +317,80 @@ def test_auto_merge_execution_is_disabled_by_default(tmp_path: Path):
     assert result.reason_code == "governed_automerge_disabled"
 
 
+def test_governed_auto_merge_uses_gated_expected_head_oid(monkeypatch, tmp_path: Path):
+    calls = []
+
+    def fake_execute(command, **kwargs):
+        calls.append((list(command), kwargs))
+        return CommandResult(list(command), 0, "", "")
+
+    monkeypatch.setattr(merge, "execute_or_dry_run", fake_execute)
+    client = RecordingClient(
+        payload={
+            "id": "PR_node_id",
+            "title": "Ready PR",
+            "state": "OPEN",
+            "headRefOid": "new-unaudited-head",
+        }
+    )
+
+    result = merge.run_merge_with_fallback(
+        decision=_decision(MergeActionType.AUTO_MERGE_FALLBACK),
+        pr_id=203,
+        execute=True,
+        repo="DDD-Enterprises/dopemux-mvp",
+        commands_log=tmp_path / "COMMANDS_RUN.txt",
+        repo_root=tmp_path,
+        policy={
+            "merge": {"allow_governed_automerge": True},
+            "timeouts": {"subprocess_seconds": 5},
+        },
+        client=client,
+        expected_head_oid=HEAD_SHA,
+    )
+
+    assert result.action == MergeActionType.AUTO_MERGE_FALLBACK
+    assert calls
+    command = calls[0][0]
+    assert command == [
+        "gh",
+        "pr",
+        "merge",
+        "203",
+        "--auto",
+        "--rebase",
+        "--match-head-commit",
+        HEAD_SHA,
+        "--repo",
+        "DDD-Enterprises/dopemux-mvp",
+    ]
+
+
+def test_governed_auto_merge_blocks_without_expected_head_oid(monkeypatch, tmp_path: Path):
+    calls = []
+    monkeypatch.setattr(
+        merge,
+        "execute_or_dry_run",
+        lambda *args, **kwargs: calls.append((args, kwargs)) or CommandResult([], 0, "", ""),
+    )
+    client = RecordingClient()
+
+    result = merge.run_merge_with_fallback(
+        decision=_decision(MergeActionType.AUTO_MERGE_FALLBACK),
+        pr_id=203,
+        execute=True,
+        repo=None,
+        commands_log=tmp_path / "COMMANDS_RUN.txt",
+        repo_root=tmp_path,
+        policy={"merge": {"allow_governed_automerge": True}},
+        client=client,
+    )
+
+    assert result.action == MergeActionType.BLOCKED
+    assert result.reason_code == "expected_head_oid_unknown"
+    assert calls == []
+
+
 def test_approval_missing_does_not_admin_bypass_without_supervisor():
     report = ValidationReport(
         status=ValidationStatus.PASSED,
