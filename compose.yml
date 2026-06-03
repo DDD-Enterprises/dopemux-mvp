@@ -445,7 +445,12 @@ services:
       - API_PORT=8095
       # Dockerfile starts uvicorn on 0.0.0.0; host publication is restricted to loopback below.
       - HOST=0.0.0.0
-      - ENVIRONMENT=${ENVIRONMENT:-development}
+      # Do not force a non-empty ENVIRONMENT default: that would shadow DPMX_ENV
+      # inside the container and silently disable fail-closed auth when the host
+      # marks production via DPMX_ENV. Pass both through; runtime_environment()
+      # consults DPMX_ENV when ENVIRONMENT is blank.
+      - ENVIRONMENT=${ENVIRONMENT:-}
+      - DPMX_ENV=${DPMX_ENV:-}
       - ADHD_ENGINE_API_KEY=${ADHD_ENGINE_API_KEY:-}
       - REDIS_URL=redis://redis-primary:6379
       # Scope ADHD state/cache keys per worktree instance while preserving explicit overrides.
