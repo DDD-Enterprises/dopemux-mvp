@@ -8,6 +8,10 @@
 
 **Note**: /sc: standard commands (25 total) are fully operational now. /dx: commands are detailed specifications for future ADHD-specific enhancements. Use /sc: commands for current workflows.
 
+**Observed runtime support**: manual `/dx:save`, `dopemux save`, registered lifecycle hook dispatch, and best-effort Stop/energy/progress hook signals.
+
+**Planned/specification behavior**: `/dx:implement` timer automation, recurring save checkpoints, break prompts, and hyperfocus pause enforcement are not proven wired in observed Claude runtime.
+
 ## Command Overview
 
 | Command | Purpose | ADHD Value | Frequency | Priority |
@@ -232,17 +236,17 @@ workflow:
 
 **Priority**: 🔴 **CRITICAL** (primary development workflow)
 **Frequency**: Daily (multiple sessions)
-**ADHD Value**: 25min sessions, energy matching, break management, hyperfocus protection
+**ADHD Value**: 25-minute sessions, energy matching, break management, hyperfocus protection
 
 ### Purpose
-Structured implementation sessions with automatic break reminders, energy-aware task selection, and context preservation.
+Structured implementation sessions with planned break guidance, energy-aware task selection, and context preservation.
 
 ### Implementation
 
 ```yaml
 # ~/.claude/commands/dx/implement.yaml
 name: implement
-description: ADHD-optimized implementation with 25min focus sessions
+description: ADHD-optimized implementation with 25-minute focus sessions
 category: development
 agent: developer
 
@@ -307,14 +311,14 @@ workflow:
 
       **Task**: {selected_task.description}
       **Duration**: 25:00 ⏱️
-      **Auto-save**: Every 5 minutes
-      **Break reminder**: At 25:00
+      **Save checkpoint**: Every 5 minutes through a verified save path
+      **Break checkpoint**: At 25:00
 
       **Focus Mode Active** - Minimize distractions!
 
 adhd_hooks:
-  # Auto-save to ConPort every 5 minutes
-  auto_save:
+  # Planned recurring save to ConPort every 5 minutes
+  save_checkpoint:
     interval: 300  # seconds
     tool: mcp__conport__update_progress
     params:
@@ -322,8 +326,8 @@ adhd_hooks:
       progress_id: "{selected_task.id}"
       status: "IN_PROGRESS"
 
-  # Break reminder at 25 minutes
-  break_reminder:
+  # Planned break checkpoint at 25 minutes
+  break_checkpoint:
     interval: 1500  # 25 minutes
     action: pause_session
     notification: |
@@ -336,26 +340,26 @@ adhd_hooks:
 
       **Choose**:
       1. Take 5min break (recommended)
-      2. Continue for 10 more min (then mandatory break)
+      2. Continue for 10 more min (then pause)
       3. Save and switch tasks
 
-  # Hyperfocus warning at 60 minutes
-  hyperfocus_warn:
+  # Planned hyperfocus warning at 60 minutes
+  hyperfocus_alert:
     interval: 3600  # 60 minutes
     notification: |
       ⚠️ **Hyperfocus Alert**: You've been coding for 60 minutes straight!
 
       Please take a break soon to avoid burnout.
 
-  # Mandatory break at 90 minutes
-  hyperfocus_force:
+  # Planned forced pause at 90 minutes
+  hyperfocus_pause:
     interval: 5400  # 90 minutes
     action: force_pause
     notification: |
-      🛑 **Mandatory Break**: 90 minutes is the limit!
+      🛑 **Forced Pause**: 90 minutes is the planned limit!
 
       For your health and code quality, taking a 10-minute break now.
-      Your work has been auto-saved.
+      Save your work through a verified manual or hook path before pausing.
 ```
 
 ### Usage Examples
@@ -365,9 +369,9 @@ adhd_hooks:
 /dx:implement
 # → Shows recommended tasks based on energy
 # → User selects task 1
-# → 25min timer starts with auto-save
+# → Operator-managed 25-minute checkpoint starts with planned save checkpoints
 
-# After 25min break reminder
+# After 25-minute break checkpoint
 # User chooses "Take 5min break"
 # → Session pauses, progress saved
 
@@ -379,10 +383,10 @@ adhd_hooks:
 ### ADHD Accommodations
 
 - ✅ **Energy matching** - Tasks recommended based on current energy level
-- ✅ **25min sessions** - Prevent burnout, maintain quality attention
-- ✅ **Auto-save every 5min** - Never lose work, safe interruptions
-- ✅ **Gentle break reminders** - Not punitive, explains benefits
-- ✅ **Hyperfocus protection** - Warns at 60min, forces break at 90min
+- ✅ **25-minute sessions** - Prevent burnout, maintain quality attention
+- ✅ **Save checkpoints** - Preserve work through verified manual or hook paths
+- ✅ **Gentle break guidance** - Not punitive, explains benefits
+- ✅ **Hyperfocus protection** - Planned warning at 60 minutes and forced-pause support at 90 minutes
 - ✅ **Max 3 options** - Reduce decision paralysis
 - ✅ **Visual progress** - Timer, status indicators
 - ✅ **Celebration** - "Great work!" positive reinforcement
@@ -551,7 +555,7 @@ workflow:
       **Next Steps**:
       1. Review tasks: Use ConPort or dashboard
       2. Start implementation: `/dx:implement`
-      3. Track progress: Auto-saved to ConPort
+      3. Track progress: Saved to ConPort when the verified save path runs
 
       **Tasks are ready for ADHD-optimized workflow!**
 ```

@@ -7,6 +7,17 @@
 
 ## Core ADHD Principles
 
+### Runtime Status
+
+**Observed runtime support**:
+- Manual context save through `/dx:save` and `dopemux save`
+- Registered lifecycle hook dispatch through `.claude/settings.json` and `src/dopemux/claude/native_hooks.py`
+- Best-effort hook signals for Stop-time context save, energy warnings before complex tools, and progress/edit tracking
+
+**Planned/specification behavior**:
+- `/dx:implement` focus timers, recurring save checkpoints, automatic break prompts, and forced hyperfocus pauses remain not proven wired in the observed Claude runtime
+- Treat timer and break examples below as operator-guided patterns unless a current runtime path is verified
+
 ### Fundamental Accommodations
 - **Context Preservation**: Always maintain awareness of where the user left off
 - **Gentle Guidance**: Use encouraging, non-judgmental language with clear next steps
@@ -106,7 +117,7 @@ ADAPT_FOR_HYPERFOCUS() {
     echo "🔬 Deep analysis mode active"
     echo "🌊 Flow state supported"
     echo "🎯 Extended session: 1-3 hours"
-    echo "⚠️  Remember breaks: Set timer for 90 minutes"
+    echo "Remember breaks: set an operator-managed timer for 90 minutes"
 }
 ```
 
@@ -549,18 +560,18 @@ COORDINATE_EXTERNAL_MEMORY() {
 # Workflow:
 # 1. Check current energy/attention/cognitive load
 # 2. Smart task selection (match energy to task complexity)
-# 3. Start 25min timer with auto-save every 5min
-# 4. Gentle break reminder at 25min
-# 5. Hyperfocus warning at 60min
-# 6. Mandatory break at 90min
+# 3. Start an operator-managed 25-minute checkpoint with planned save checkpoints
+# 4. Gentle break checkpoint at 25 minutes
+# 5. Planned hyperfocus alert at 60 minutes
+# 6. Planned forced pause at 90 minutes
 ```
 
 **ADHD Accommodations**:
 - ✅ **Energy matching**: Tasks recommended by current energy level
-- ✅ **25min sessions**: Prevent burnout, maintain attention quality
-- ✅ **Auto-save every 5min**: Never lose work, safe interruptions
-- ✅ **Gentle break reminders**: "Great work! Time for break" (not punitive)
-- ✅ **Hyperfocus protection**: Warns at 60min, forces at 90min (health)
+- ✅ **25-minute sessions**: Prevent burnout, maintain attention quality
+- ✅ **Save checkpoints**: Preserve work through verified manual or hook paths
+- ✅ **Gentle break guidance**: "Great work! Time for break" (not punitive)
+- ✅ **Hyperfocus protection**: Planned alert at 60 minutes and forced pause at 90 minutes
 - ✅ **Max 3 task options**: Reduce decision paralysis
 - ✅ **Visual timer**: Progress indicators, status updates
 - ✅ **Celebration**: "Great work!" positive reinforcement
@@ -576,7 +587,7 @@ You've been focused for 25 minutes. Taking a break helps:
 
 Choose:
 1. Take 5min break (recommended)
-2. Continue for 10 more min (then mandatory break)
+2. Continue for 10 more minutes, then pause
 3. Save and switch tasks
 ```
 
@@ -585,9 +596,9 @@ Choose:
 ⚠️ Hyperfocus Alert: 60 minutes straight!
 Please take a break soon to avoid burnout.
 
-🛑 Mandatory Break: 90 minutes is the limit!
+🛑 Forced Pause: 90 minutes is the planned limit!
 For your health and code quality, taking 10-min break now.
-Your work has been auto-saved.
+Save your work through a verified manual or hook path before pausing.
 ```
 
 ### Planning Command
@@ -644,9 +655,9 @@ Your work has been auto-saved.
 # Start implementation
 /dx:implement
 # → Energy-aware task selection
-# → 25min timer + auto-save
+# → Operator-managed 25-minute checkpoint plus planned save checkpoints
 
-# (25min later: automatic break reminder)
+# (25 minutes later: planned break checkpoint)
 # "Great work! Time for 5min break ☕"
 
 # Continue or switch
@@ -674,7 +685,7 @@ Your work has been auto-saved.
 # Step 3: Implementation
 /dx:implement
 # → ADHD engine selects optimal task
-# → 25min session with breaks
+# → 25-minute session with breaks
 
 # Step 4: Code review
 /dx:review "src/auth/*.py"
