@@ -78,7 +78,7 @@ class TestTUIWidgets:
 
     def test_widget_failure_handling(self):
         # Verify that widgets catch exceptions and render failure panels cleanly
-        with patch("dopemux.tui.widgets.today.get_today_data", side_effect=ValueError("Boom")):
+        with patch("dopemux.tui.widgets.today.get_panel_data", side_effect=ValueError("Boom")):
             panel = TodayPanel()
             res = panel.render()
             assert isinstance(res, Panel)

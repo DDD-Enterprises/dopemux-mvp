@@ -33,12 +33,37 @@ validate_env_var() {
     fi
 }
 
+# P1-2: checkout helper with master fallback — when the default ref is "main"
+# and the remote has no "main" branch (master-only upstream), fall back to
+# "master" before giving up.  Under set -e a bare `git checkout main` on such
+# a repo would abort the entire installer.
+_checkout_with_master_fallback() {
+    local ref="$1"
+    local server_name="$2"
+    if git checkout "$ref" 2>/dev/null; then
+        return 0
+    fi
+    # Only attempt the fallback when the caller didn't pin an explicit ref.
+    if [ "$ref" = "main" ] || [ -z "$ref" ]; then
+        echo "⚠️  $server_name: branch 'main' not found, trying 'master'..."
+        git checkout master
+    else
+        # Non-default ref: let the original failure propagate.
+        git checkout "$ref"
+    fi
+}
+
 # Function to install a Docker MCP server
 install_docker_mcp_server() {
     local server_name="$1"
     local repo_url="$2"
     local provider="$3"
     local model="$4"
+    # Optional git ref (branch, tag, or SHA) to pin the checkout. Defaults to "main".
+    # SECURITY/SUPPLY-CHAIN TODO: "main" is a moving branch HEAD — pin a verified tag or
+    # commit SHA here (or pass it as $5 / a $REF env var) once a known-good revision of the
+    # upstream repo has been audited, so installs become reproducible and tamper-evident.
+    local ref="${5:-${MCP_SERVER_REF:-main}}"
 
     echo "📦 Installing $server_name..."
 
@@ -50,11 +75,20 @@ install_docker_mcp_server() {
 
     # Clone or update repository
     if [ -d ".git" ]; then
-        echo "🔄 Updating existing $server_name repository..."
-        git pull origin main || git pull origin master
+        echo "🔄 Updating existing $server_name repository (ref: $ref)..."
+        git fetch --all --tags
+        _checkout_with_master_fallback "$ref" "$server_name"
+        # Only fast-forward when tracking a branch; tags/SHAs have no upstream to pull.
+        git pull --ff-only 2>/dev/null || true
     else
-        echo "📥 Cloning $server_name repository..."
+        echo "📥 Cloning $server_name repository (ref: $ref)..."
         git clone "$repo_url" .
+        _checkout_with_master_fallback "$ref" "$server_name"
+    fi
+
+    if [ "$ref" = "main" ] || [ "$ref" = "master" ]; then
+        echo "⚠️  WARNING: $server_name is pinned to moving branch '$ref' (unpinned HEAD)."
+        echo "    Builds are NOT reproducible. Pin a tag/SHA via MCP_SERVER_REF to harden."
     fi
 
     # Create environment configuration
@@ -82,6 +116,9 @@ MAX_THINKING_STEPS=10
 # === Docker Configuration ===
 MCP_SERVER_PORT=3001
 EOF
+
+    # Restrict the .env (contains API keys/tokens) to the owner only — it was world-readable.
+    chmod 600 .env
 
     # Fix Dockerfile if needed (for src/ layout)
     if [ -f "Dockerfile" ] && grep -q "COPY main.py" Dockerfile; then

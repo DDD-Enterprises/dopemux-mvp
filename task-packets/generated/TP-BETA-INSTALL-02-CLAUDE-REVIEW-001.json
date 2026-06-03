@@ -1,0 +1,107 @@
+{
+  "id": "TP-BETA-INSTALL-02-CLAUDE-REVIEW-001",
+  "project": "dopemux-mvp",
+  "target": "Apply Claude review cleanup to BETA-INSTALL-02 network repair",
+  "invariants": [
+    "Apply only the Claude review suggestions on PR #735.",
+    "Do not change the intended installer network set: dopemux-network for all stacks, mcp-network and leantime-net for full stack only.",
+    "Do not run live Docker startup or install flows during validation.",
+    "Preserve fail-closed behavior for unexpected Docker errors."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "beta-install-02-review-cleanup",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "fix/beta-install-02-dopemux-network",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(install): apply beta install review cleanup",
+    "allowlist": [
+      "scripts/setup.sh",
+      "tests/unit/orchestrator/test_data_sources.py",
+      "CHANGELOG.md",
+      "task-packets/INDEX.md",
+      "task-packets/generated/TP-BETA-INSTALL-02-CLAUDE-REVIEW-001.json",
+      "claudedocs/beta-install-02-claude-review-proof-2026-05-31.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-BETA-INSTALL-02-CLAUDE-REVIEW-001.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-BETA-INSTALL-02-CLAUDE-REVIEW-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "bash -n scripts/setup.sh",
+      "python -m pytest tests/unit/orchestrator/test_data_sources.py::TestUIDataSources::test_today_panel_sqlite_operational_error_fallback -q",
+      "git diff --check",
+      "pre-commit run --files scripts/setup.sh tests/unit/orchestrator/test_data_sources.py CHANGELOG.md task-packets/INDEX.md task-packets/generated/TP-BETA-INSTALL-02-CLAUDE-REVIEW-001.json claudedocs/beta-install-02-claude-review-proof-2026-05-31.md"
+    ]
+  },
+  "pr": {
+    "title": "fix(install): BETA-INSTALL-02 - create dopemux-network on fresh install",
+    "body": "## Review cleanup\n- Removes the CONPORT_DB_PATH test path called out by Claude review and aligns the SQLite patch target with the current UI data-source module.\n- Makes scripts/setup.sh check for dopemux-network before creating it, so unexpected Docker errors are not reported as success.\n\n## Test Plan\n- Validate Task Packet JSON and schema.\n- Run shell syntax check on scripts/setup.sh.\n- Run the targeted data source fallback test.\n- Run git diff --check and pre-commit on changed files.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "challenge",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "analyze",
+      "task": "Inspect Claude, Codex, and Copilot review comments on PR #735 and identify required cleanup.",
+      "requirements": [
+        "Treat user instruction to integrate Claude suggestions as authoritative.",
+        "Verify the original network gating bug remains repaired after branch update.",
+        "Separate required review cleanup from live Docker install validation."
+      ],
+      "validation": [
+        "gh pr view 735 --json comments,reviews,headRefOid,mergeStateStatus",
+        "gh api repos/DDD-Enterprises/dopemux-mvp/issues/735/comments --paginate",
+        "gh api graphql -f query='query($owner:String!,$name:String!,$number:Int!){ repository(owner:$owner,name:$name){ pullRequest(number:$number){ reviewThreads(first:100){nodes{id isResolved isOutdated path line comments(first:20){nodes{author{login} body createdAt url}}}} } } }' -F owner=DDD-Enterprises -F name=dopemux-mvp -F number=735"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Apply the two Claude review suggestions without broadening installer behavior.",
+      "requirements": [
+        "Remove the CONPORT_DB_PATH test path and keep the SQLite fallback test aligned with the current data source module.",
+        "Replace the setup.sh create-and-grep pattern with check-then-create network handling.",
+        "Leave live Docker install/startup unrun."
+      ],
+      "validation": [
+        "bash -n scripts/setup.sh",
+        "python -m pytest tests/unit/orchestrator/test_data_sources.py::TestUIDataSources::test_today_panel_sqlite_operational_error_fallback -q"
+      ]
+    },
+    {
+      "id": "precommit",
+      "task": "Validate packet, changed files, and diff scope before pushing review cleanup.",
+      "requirements": [
+        "Record validation exit codes in proof.",
+        "Inspect git status and diff scope before staging.",
+        "Do not resolve review threads until checks pass on the pushed head."
+      ],
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-BETA-INSTALL-02-CLAUDE-REVIEW-001.json >/dev/null",
+        "python -m jsonschema -i task-packets/generated/TP-BETA-INSTALL-02-CLAUDE-REVIEW-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "git diff --check",
+        "pre-commit run --files scripts/setup.sh tests/unit/orchestrator/test_data_sources.py CHANGELOG.md task-packets/INDEX.md task-packets/generated/TP-BETA-INSTALL-02-CLAUDE-REVIEW-001.json claudedocs/beta-install-02-claude-review-proof-2026-05-31.md"
+      ]
+    }
+  ]
+}

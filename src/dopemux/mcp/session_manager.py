@@ -25,6 +25,7 @@ Design Principles:
 import asyncio
 import json
 import logging
+import re
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
@@ -204,7 +205,13 @@ class SessionManager:
 
         # Session storage
         self.session_storage_path = Path("/tmp/metamcp_sessions")
-        self.session_storage_path.mkdir(exist_ok=True)
+        # MCP1-05 (audit): /tmp is world-accessible and these files hold session context.
+        # Restrict to owner-only; mkdir's mode is masked by umask, so chmod explicitly.
+        self.session_storage_path.mkdir(mode=0o700, exist_ok=True)
+        try:
+            self.session_storage_path.chmod(0o700)
+        except OSError:
+            pass
 
         logger.info("SessionManager initialized with ADHD accommodations")
 
@@ -724,10 +731,27 @@ class SessionManager:
         except Exception as e:
             logger.error(f"Session monitoring error for {session_id}: {e}")
 
+    @staticmethod
+    def _safe_session_filename(session_id: str) -> str:
+        # MCP1-05 (audit): session_id flows into a filesystem path.  Block the
+        # path-traversal chars that can escape the storage directory ("/", null,
+        # "..") then percent-encode everything else so that clients using
+        # colon-style ids ("agent:primary", ISO timestamps) are not silently
+        # dropped — the ValueError was caught by a broad `except Exception` and
+        # swallowed, making persistence silently fail.
+        sid = str(session_id)
+        if not sid or "/" in sid or "\x00" in sid or sid in (".", ".."):
+            raise ValueError(
+                f"Invalid session_id (contains path-traversal characters): {session_id!r}"
+            )
+        # Percent-encode chars that are not filesystem-safe on any platform.
+        safe = re.sub(r"[^A-Za-z0-9_\-]", lambda m: f"%{ord(m.group()):02X}", sid)
+        return f"{safe}.json"
+
     async def _save_session_state(self, session: SessionState) -> None:
         """Save session state to disk"""
         try:
-            session_file = self.session_storage_path / f"{session.session_id}.json"
+            session_file = self.session_storage_path / self._safe_session_filename(session.session_id)
 
             # Convert to serializable format
             session_data = {
@@ -785,7 +809,7 @@ class SessionManager:
     async def _load_session_state(self, session_id: str) -> Optional[SessionState]:
         """Load session state from disk"""
         try:
-            session_file = self.session_storage_path / f"{session_id}.json"
+            session_file = self.session_storage_path / self._safe_session_filename(session_id)
 
             if not session_file.exists():
                 return None

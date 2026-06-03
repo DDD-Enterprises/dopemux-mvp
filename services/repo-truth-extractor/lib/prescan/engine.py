@@ -722,7 +722,10 @@ class PrescanEngine:
                 "ghost_files": len(ghosts),
                 "by_class": by_class,
                 "by_extension": by_ext,
-                "total_size_bytes": sum(entry.size_bytes for entry in included),
+                # S3-06: canonical key is total_included_size_bytes (matches schemas.py
+                # and IntelligenceRouter.estimate_token_savings). Emitting total_size_bytes
+                # here made the router read 0 and report 0% savings unconditionally.
+                "total_included_size_bytes": sum(entry.size_bytes for entry in included),
                 "corpus_health_score": 100,
             },
             "lifecycle_distribution": self._get_lifecycle_dist(entries),
@@ -744,7 +747,11 @@ class PrescanEngine:
             "version_chain_count": version_chain_count,
             "extraction_hints": {
                 "skip_duplicates": sorted(entry.rel_path for entry in entries if entry.is_duplicate),
-                "compression_candidates": sorted(
+                # P1-4: align key with intelligence_router ("compress_candidates").
+                # The old key "compression_candidates" was read nowhere — the router
+                # only populates compress_map / iterates hints["compress_candidates"],
+                # so offline prescan hints were silently ignored.
+                "compress_candidates": sorted(
                     entry.rel_path
                     for entry in entries
                     if entry.is_duplicate or (entry.version_chain_id and not entry.is_latest_version)

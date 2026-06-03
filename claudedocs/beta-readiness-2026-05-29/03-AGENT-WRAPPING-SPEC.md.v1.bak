@@ -1,0 +1,52 @@
+# Dopemux Beta-Readiness — Agent-Wrapping Spec
+
+Run metadata: HEAD `755bf3846`, 2026-05-29.
+
+## Status: INPUT NOT PROVIDED
+
+The `WRAPPING` input to this audit arrived **empty (`{}`)**. No `current_state`, `target_spec`, `gaps`, `work_breakdown`, `files`, or `risks` were supplied. Per the governance doctrine (fail closed when evidence is missing; do not launder assumptions into certainty), the sections below are recorded as **NOT PROVIDED** rather than reconstructed. Inferring a work_breakdown by grepping the repo would manufacture exactly the certainty the synthesis explicitly disclaims.
+
+This is a confirmed **open unknown** that blocks a confident internal-beta GO — see `00-MASTER-REPORT.md` → Open Unknowns ("AGENT-WRAPPING live-run path") and the executive summary, which states the agent-wrapping live-run path is **UNASSESSABLE**: the codex/copilot/claude/vanilla wrapping cannot be confirmed to run end-to-end, and its build-items cannot be folded into the sequenced backlog.
+
+---
+
+## current_state (claude / codex / copilot / vanilla)
+
+| surface | state |
+|---------|-------|
+| claude | NOT PROVIDED — WRAPPING input was empty `{}` |
+| codex | NOT PROVIDED — WRAPPING input was empty `{}` |
+| copilot | NOT PROVIDED — WRAPPING input was empty `{}` |
+| vanilla | NOT PROVIDED — WRAPPING input was empty `{}` |
+
+The live-run path for all four agent surfaces is **UNASSESSABLE** at this HEAD: it was neither described in the input nor exercised during this read-only audit.
+
+## target_spec
+
+NOT PROVIDED — WRAPPING input was empty `{}`.
+
+## gaps
+
+NOT PROVIDED — WRAPPING input was empty `{}`. (Because neither current_state nor target_spec was supplied, no gap delta can be computed.)
+
+## work_breakdown
+
+| id | task | size | depends_on | notes |
+|----|------|------|------------|-------|
+| — | NOT PROVIDED | — | — | WRAPPING input was empty `{}`; no sized work-items were supplied. Could not fold wrapping build-items into `01-SEQUENCED-BACKLOG.md`. |
+
+## files
+
+NOT PROVIDED — WRAPPING input was empty `{}`. (No file list was supplied; not independently reconstructed, to avoid asserting unverified scope.)
+
+## risks
+
+NOT PROVIDED — WRAPPING input was empty `{}`.
+
+The one risk that **is** established (from the audit synthesis, not from the empty WRAPPING input): the agent-wrapping live-run path being UNASSESSABLE blocks a confident internal-beta GO until the wrapping path is exercised and its tasks enumerated.
+
+---
+
+## Requested Next Step for This File
+
+Re-run the agent-wrapping analysis with a populated `WRAPPING` object (or exercise codex/copilot/claude/vanilla wrapping end-to-end and capture the result), then this file can be completed and any build-items merged into the sequenced backlog.

@@ -1,124 +1,142 @@
 {
-  "id": "TP-DMX-COPILOT-RENDERER-103",
-  "project": "dopemux-mvp",
-  "target": "Implement the Copilot repair packet generator and renderer: map ACTION_PLAN implementer-role items to a schema-valid CopilotRepairPacket and render the existing Jinja2 template to a file artifact only; preserve copilot_authority=implementer-only and mutation_performed=false pins; no GitHub posting.",
-  "invariants": [
-    "Do not post to GitHub or add comments.",
-    "Do not enable Copilot cloud-agent features.",
-    "Do not include supervisor-role or ci-role categories in the packet."
-  ],
-  "depends_on": [
-    "TP-DMX-ACTIONBRIDGE-CLI-102"
-  ],
-  "repo_binding": {
-    "project_id": "dopemux-mvp",
-    "repo_marker": ".dopetaskroot",
-    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
-    "require_identity_match": true
-  },
-  "series": {
-    "id": "DMX-AUTOREVIEW-PLATFORM",
-    "base_branch": "main",
-    "parent_tp_id": "TP-DMX-ACTIONBRIDGE-CLI-102",
-    "final_packet": false
-  },
-  "execution": {
-    "agent": "codex",
-    "branch": "codex/tp-dmx-copilot-renderer-103",
-    "base_branch": "main"
-  },
   "commit": {
-    "message": "feat(copilot): add PR repair packet generator and renderer",
     "allowlist": [
       "tools/copilot_repair/__init__.py",
       "tools/copilot_repair/generator.py",
       "tools/copilot_repair/renderer.py",
       "tests/copilot_repair/test_generator.py",
       "docs/ops/copilot-pr-repair-lane.md",
+      ".gitignore",
       "task-packets/generated/TP-DMX-COPILOT-RENDERER-103.json",
       "proof/TP-DMX-COPILOT-RENDERER-103/**"
     ],
+    "message": "feat(copilot): add PR repair packet generator and renderer",
     "verify": [
-      "python -m compileall -q tools tests",
-      "pytest -q tests/copilot_repair",
       "python -m json.tool task-packets/generated/TP-DMX-COPILOT-RENDERER-103.json",
+      "python -m compileall -q tools/copilot_repair tests/copilot_repair",
+      "pytest -q tests/copilot_repair/test_generator.py",
       "git diff --check"
     ]
   },
-  "pr": {
-    "title": "feat(copilot): add PR repair packet generator and renderer",
-    "body": "## Summary\\n\\nImplement the Copilot repair packet generator and renderer: map ACTION_PLAN implementer-role items to a schema-valid CopilotRepairPacket and render the existing Jinja2 template to a file artifact only; preserve copilot_authority=implementer-only and mutation_performed=false pins; no GitHub posting.\\n\\n## Scope\\n\\nAllowlist-bound; see commit.allowlist. Out of scope: Do not post to GitHub or add comments. Do not enable Copilot cloud-agent features. Do not include supervisor-role or ci-role categories in the packet.\\n\\n## Validation\\n\\nSee commit.verify; embedded audit + proof bundle required.\\n\\n@codex review\\n@gemini\\n@copilot",
-    "base": "main"
+  "depends_on": [
+    "TP-DMX-ACTIONBRIDGE-CLI-102"
+  ],
+  "execution": {
+    "agent": "codex",
+    "base_branch": "main",
+    "branch": "codex/tp-dmx-copilot-renderer-103",
+    "stacked_because": "Part of the DMX-AUTOREVIEW-PLATFORM dependency DAG."
   },
+  "id": "TP-DMX-COPILOT-RENDERER-103",
+  "invariants": [
+    "Runtime/source truth outranks this packet and the load plan.",
+    "Preserve PR Steward check-only semantics unless this packet explicitly authorizes a governed mutation gate.",
+    "Preserve fail-closed behavior on missing evidence, stale SHAs, unsupported permissions, or unknown authority.",
+    "Do not expose secrets, tokens, private keys, or unredacted provider metadata in proof artifacts.",
+    "Do not modify files outside the packet allowlist without stopping for supervisor review."
+  ],
   "pal_chain": {
     "enabled": true,
     "steps": [
       "analyze",
+      "thinkdeep",
+      "challenge",
       "planner",
+      "challenge",
+      "implement",
       "codereview",
-      "precommit"
+      "precommit",
+      "challenge"
     ]
+  },
+  "pr": {
+    "base": "main",
+    "body": "## Summary\n- Map ACTION_PLAN implementer-role items to a schema-valid CopilotRepairPacket and render the Jinja2 template to a file artifact; copilot_authority=implementer-only, mutation_performed=false pins hold; no posting.\n\n## Scope\nTrack: A-complete-lane. Risk: MEDIUM. Red lane: false.\n\n## Validation\nRun the packet validation commands and capture proof under proof/TP-DMX-COPILOT-RENDERER-103/PROOF.json.\n\n## NOT_RUN\nList any skipped live, integration, credentialed, or supervisor-gated checks explicitly.",
+    "title": "Feat(copilot): add PR repair packet generator and renderer"
+  },
+  "project": "dopemux-mvp",
+  "repo_binding": {
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "require_identity_match": true
+  },
+  "series": {
+    "base_branch": "main",
+    "final_packet": false,
+    "id": "DMX-AUTOREVIEW-PLATFORM",
+    "parent_tp_id": "TP-DMX-ACTIONBRIDGE-CLI-102"
   },
   "steps": [
     {
-      "id": "S1",
-      "task": "Preflight: verify repo identity (repo_marker .dopetaskroot, origin matches origin_hint, branch matches execution.branch, worktree clean or only intended files dirty) and verify dependency proofs exist and passed for: TP-DMX-ACTIONBRIDGE-CLI-102.",
       "context_files": [
         "AGENTS.md",
-        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
-        "schemas/copilot/repair_packet.schema.json",
-        "docs/03-reference/templates/copilot/pr-repair-packet.md",
-        "docs/ops/copilot-pr-repair-lane.md"
+        "docs/ops/load-plans/load_plan-DMX-AUTOREVIEW-PLATFORM.json",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
       ],
+      "id": "S1",
+      "task": "Inspect current repo truth, authority docs, runtime entrypoints, schemas, tests, and existing conventions before editing.",
       "validation": [
-        "Repo identity matches repo_binding.",
-        "Dependency proofs are present and PASS (or 'none' for a root packet).",
-        "Active task context recorded; worktree is clean or only contains intended files."
+        "Canonical writer and downstream consumers are identified.",
+        "Any missing authority is recorded as UNKNOWN rather than inferred.",
+        "The planned diff is confirmed to stay within the packet allowlist."
       ]
     },
     {
-      "id": "S2",
-      "task": "Implement: Implement the Copilot repair packet generator and renderer: map ACTION_PLAN implementer-role items to a schema-valid CopilotRepairPacket and render the existing Jinja2 template to a file artifact only; preserve copilot_authority=implementer-only and mutation_performed=false pins; no GitHub posting.",
       "expected_files": [
         "tools/copilot_repair/__init__.py",
         "tools/copilot_repair/generator.py",
         "tools/copilot_repair/renderer.py",
         "tests/copilot_repair/test_generator.py",
-        "docs/ops/copilot-pr-repair-lane.md"
+        "docs/ops/copilot-pr-repair-lane.md",
+        ".gitignore",
+        "task-packets/generated/TP-DMX-COPILOT-RENDERER-103.json",
+        "proof/TP-DMX-COPILOT-RENDERER-103/**"
       ],
+      "id": "S2",
+      "requirements": [
+        "Track: A-complete-lane",
+        "Proof path: proof/TP-DMX-COPILOT-RENDERER-103/PROOF.json",
+        "Executor default: claude-code-sonnet",
+        "Auditor default: claude-code-opus"
+      ],
+      "task": "Map ACTION_PLAN implementer-role items to a schema-valid CopilotRepairPacket and render the Jinja2 template to a file artifact; copilot_authority=implementer-only, mutation_performed=false pins hold; no posting.",
       "validation": [
-        "Only allowlisted files are changed.",
-        "Do not post to GitHub or add comments.",
-        "Do not enable Copilot cloud-agent features.",
-        "Do not include supervisor-role or ci-role categories in the packet."
+        "Implementation preserves fail-closed behavior and deterministic artifact output.",
+        "No file outside commit.allowlist changed.",
+        "Stop conditions from this packet were not triggered, or execution stopped with evidence."
       ]
     },
     {
-      "id": "S3",
-      "task": "Add or extend tests and docs to cover the change; run the packet validation commands.",
-      "validation": [
-        "`python -m compileall -q tools tests` passes.",
-        "`pytest -q tests/copilot_repair` passes.",
-        "git diff --check passes."
-      ]
-    },
-    {
-      "id": "S4",
-      "task": "Write the proof bundle proof/TP-DMX-COPILOT-RENDERER-103/ including the review_bundle as the single upload unit.",
       "expected_files": [
-        "proof/TP-DMX-COPILOT-RENDERER-103/PROOF.json",
-        "proof/TP-DMX-COPILOT-RENDERER-103/VALIDATION_OUTPUT.md",
-        "proof/TP-DMX-COPILOT-RENDERER-103/GIT_STATE.md",
-        "proof/TP-DMX-COPILOT-RENDERER-103/DIFF_STAT.txt",
-        "proof/TP-DMX-COPILOT-RENDERER-103/CHANGED_FILES.txt",
-        "proof/TP-DMX-COPILOT-RENDERER-103/AUDITOR_REPORT.md",
-        "proof/TP-DMX-COPILOT-RENDERER-103/review_bundle/**"
+        "tests/copilot_repair/test_generator.py",
+        "docs/ops/copilot-pr-repair-lane.md",
+        "proof/TP-DMX-COPILOT-RENDERER-103/**"
       ],
+      "id": "S3",
+      "task": "Update tests, docs, and proof artifacts required by the packet allowlist and keep runtime claims backed by observed code or validation.",
       "validation": [
-        "Embedded audit is recorded per schemas/proof/embedded_audit.schema.json and the status reflects reality.",
-        "review_bundle/ exists as the single upload/review unit.",
-        "No secrets or tokens are included in the proof bundle."
+        "Docs describe implemented behavior only.",
+        "Proof artifacts include commands, exit codes, diff scope, residual risks, and UNKNOWNs.",
+        "Generated artifacts are stable and replayable."
+      ]
+    },
+    {
+      "commands": [
+        "python -m json.tool task-packets/generated/TP-DMX-COPILOT-RENDERER-103.json",
+        "python -m compileall -q tools/copilot_repair tests/copilot_repair",
+        "pytest -q tests/copilot_repair/test_generator.py",
+        "git diff --check"
+      ],
+      "id": "S4",
+      "task": "Run focused validation, inspect git diff, run codereview/precommit review, and prepare a truthful completion summary.",
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-DMX-COPILOT-RENDERER-103.json",
+        "python -m compileall -q tools/copilot_repair tests/copilot_repair",
+        "pytest -q tests/copilot_repair/test_generator.py",
+        "git diff --check"
       ]
     }
-  ]
+  ],
+  "target": "Map ACTION_PLAN implementer-role items to a schema-valid CopilotRepairPacket and render the Jinja2 template to a file artifact; copilot_authority=implementer-only, mutation_performed=false pins hold; no posting."
 }

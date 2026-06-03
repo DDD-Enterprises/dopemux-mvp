@@ -1247,10 +1247,13 @@ def call_llm_with_ladder(
 def parse_json_from_response_with_provenance(
     deps: LLMRuntimeDeps,
     text: str,
+    *,
+    claimed_strict_route: bool = False,
 ) -> Tuple[Optional[Any], Dict[str, Any]]:
     provenance = {
         "repair_applied": False,
         "repair_type": None,
+        "claimed_strict_route": claimed_strict_route,
         "original_response_length": len(text) if text else 0,
         "repaired_response_length": len(text) if text else 0,
         "chars_lost": 0,
@@ -1343,8 +1346,14 @@ def parse_json_from_response(
     deps: LLMRuntimeDeps,
     text: str,
     metadata_out: Optional[Dict[str, Any]] = None,
+    *,
+    claimed_strict_route: bool = False,
 ) -> Optional[Any]:
-    parsed, provenance = parse_json_from_response_with_provenance(deps, text)
+    parsed, provenance = parse_json_from_response_with_provenance(
+        deps,
+        text,
+        claimed_strict_route=claimed_strict_route,
+    )
     if isinstance(metadata_out, dict):
         metadata_out.clear()
         metadata_out.update(provenance)

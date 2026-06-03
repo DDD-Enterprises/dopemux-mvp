@@ -1,0 +1,152 @@
+{
+  "id": "TP-RTE-STRICT-OUTPUT-ATTESTATION-WIRING-001",
+  "project": "dopemux-mvp",
+  "target": "services/repo-truth-extractor",
+  "invariants": [
+    "Do not edit services/repo-truth-extractor/promptsets/v4/model_map.yaml.",
+    "Do not weaken strict structured-output fail-closed gates.",
+    "Keep Gemini strict_passthrough_verified false until live benchmark evidence exists.",
+    "Preserve non-strict prescan json_object mode only for known OpenAI-compatible providers."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "rte-structured-output-attestation-wiring",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-strict-output-attestation-wiring",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(rte): wire strict output attestation candidates",
+    "allowlist": [
+      "task-packets/generated/TP-RTE-STRICT-OUTPUT-ATTESTATION-WIRING-001.json",
+      "services/repo-truth-extractor/benchmarking/registry/registry_loader.py",
+      "services/repo-truth-extractor/benchmarking/campaigns/selection.py",
+      "services/repo-truth-extractor/benchmarking/cli/benchmark_live_route_readiness_smoke.py",
+      "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+      "services/repo-truth-extractor/llm_runtime.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/test_case_set_registry.py",
+      "services/repo-truth-extractor/tests/test_campaign_selection.py",
+      "services/repo-truth-extractor/tests/test_benchmark_live_route_readiness_smoke.py",
+      "services/repo-truth-extractor/tests/test_prescan_hardening.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_validator_repair_provenance.py"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/generated/TP-RTE-STRICT-OUTPUT-ATTESTATION-WIRING-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/test_case_set_registry.py tests/test_campaign_selection.py tests/test_benchmark_live_route_readiness_smoke.py tests/test_prescan_hardening.py tests/test_run_extraction_v5_validator_repair_provenance.py -q",
+      "python -m pytest tests/test_strict_passthrough_attestations.py tests/test_run_extraction_v5_benchmark_route_ownership.py tests/test_route_request_options.py -q",
+      "python -m pytest tests/ -x -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(rte): wire strict-output attestation candidates + prescan json_object + repair telemetry",
+    "body": "## Summary\n- Register Gemini 3.1 Pro preview direct and OpenRouter strict-output candidate routes without flipping passthrough verification.\n- Include the new routes in live readiness campaign selection and smoke filtering.\n- Use non-strict json_object response format for prescan OpenAI-compatible providers.\n- Surface claimed_strict_route in response parse repair provenance.\n\n## Validation\n- python -m pytest tests/ -x -q\n- git diff --check",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "analyze",
+      "task": "Inspect RTE registry, campaign selection, live readiness smoke, prescan LLM call, and JSON parse provenance runtime paths.",
+      "requirements": [
+        "Identify canonical writers and consumers before editing.",
+        "Record authority mismatch where handoff line references omit observed campaign selection and v5 wrapper paths."
+      ],
+      "commands": [
+        "nl -ba services/repo-truth-extractor/benchmarking/registry/registry_loader.py",
+        "nl -ba services/repo-truth-extractor/benchmarking/campaigns/selection.py",
+        "nl -ba services/repo-truth-extractor/lib/prescan/grok_passes.py",
+        "rg -n \"parse_json_from_response\" services/repo-truth-extractor"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Observed files and consumers are cited in final proof."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "claudedocs/codex-handoff-rte-structured-outputs-2026-05-30.md"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Implement minimal test-driven changes for Gemini route candidates, live readiness selection, prescan json_object mode, and strict-route repair telemetry.",
+      "requirements": [
+        "Write failing tests before production edits.",
+        "Keep promptsets/v4/model_map.yaml untouched.",
+        "Do not edit provider_schema_variant or strict passthrough gates."
+      ],
+      "commands": [
+        "python -m pytest tests/test_case_set_registry.py tests/test_campaign_selection.py tests/test_benchmark_live_route_readiness_smoke.py tests/test_prescan_hardening.py tests/test_run_extraction_v5_validator_repair_provenance.py -q"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/benchmarking/registry/registry_loader.py",
+        "services/repo-truth-extractor/benchmarking/campaigns/selection.py",
+        "services/repo-truth-extractor/benchmarking/cli/benchmark_live_route_readiness_smoke.py",
+        "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+        "services/repo-truth-extractor/llm_runtime.py",
+        "services/repo-truth-extractor/run_extraction_v5.py"
+      ],
+      "validation": [
+        "Focused tests pass after red-green cycle."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/tests/test_case_set_registry.py",
+        "services/repo-truth-extractor/tests/test_campaign_selection.py",
+        "services/repo-truth-extractor/tests/test_benchmark_live_route_readiness_smoke.py",
+        "services/repo-truth-extractor/tests/test_prescan_hardening.py",
+        "services/repo-truth-extractor/tests/test_run_extraction_v5_validator_repair_provenance.py"
+      ]
+    },
+    {
+      "id": "precommit",
+      "task": "Validate scope, tests, strict-attestation gate, full RTE suite, diff cleanliness, commit, push, and open PR if credentials permit.",
+      "requirements": [
+        "Report any NOT_RUN command with reason.",
+        "Preserve unrelated dirty files outside the dedicated worktree."
+      ],
+      "commands": [
+        "python -m jsonschema -i task-packets/generated/TP-RTE-STRICT-OUTPUT-ATTESTATION-WIRING-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "cd services/repo-truth-extractor && python -m pytest tests/test_strict_passthrough_attestations.py tests/test_run_extraction_v5_benchmark_route_ownership.py tests/test_route_request_options.py -q",
+        "cd services/repo-truth-extractor && python -m pytest tests/ -x -q",
+        "git diff --check",
+        "git status --short"
+      ],
+      "expected_files": [],
+      "validation": [
+        "All validation outputs and exit codes are included in final proof."
+      ],
+      "context_files": [
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    }
+  ]
+}

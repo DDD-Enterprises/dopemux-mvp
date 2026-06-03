@@ -5,6 +5,7 @@ import pytest
 from clink import get_registry
 from clink.agents import AgentOutput
 from clink.parsers.base import ParsedCLIResponse
+from clink.registry import ClinkRegistry
 from tools.clink import MAX_RESPONSE_CHARS, CLinkTool
 
 
@@ -184,3 +185,63 @@ async def test_clink_tool_truncates_without_summary(monkeypatch):
     assert metadata.get("output_truncated") is True
     assert metadata.get("events_removed_for_normal") is True
     assert metadata.get("output_original_length") == len(long_text)
+
+
+def test_clink_tool_omits_readonly_hint_while_configs_carry_mutation_flags(monkeypatch, tmp_path):
+    """CLinkTool must not advertise readOnlyHint=True while any shipped client
+    config carries a mutation-capable flag.
+
+    Test structure:
+      1. PREMISE — using a fresh ClinkRegistry isolated from user overrides and
+         env-injected paths, confirm at least one shipped client config still
+         carries a known mutation flag. If this premise ever stops holding (e.g.,
+         configs are cleaned up upstream), the assertion fails loudly so the
+         get_annotations() decision can be revisited.
+      2. CONTRACT — CLinkTool.get_annotations() must not assert readOnlyHint=True.
+    """
+    # Isolate the registry from user overrides (~/.zen/cli_clients) and any
+    # CLI_CLIENTS_CONFIG_PATH the developer/CI happens to set, so the premise
+    # check sees only the shipped configs.
+    monkeypatch.delenv("CLI_CLIENTS_CONFIG_PATH", raising=False)
+    monkeypatch.setattr("clink.registry.USER_CONFIG_DIR", tmp_path / "no_user_configs")
+
+    registry = ClinkRegistry()
+
+    # Mutation flags known to ship in conf/cli_clients/{claude,gemini,codex}.json.
+    # Single-token flags: presence is enough. Pair-form flags require matching value.
+    single_token_mutation_flags = {"--yolo", "--dangerously-bypass-approvals-and-sandbox"}
+    pair_form_mutation_flags = {("--permission-mode", "acceptEdits")}
+
+    def carries_mutation_flag(args: list[str]) -> bool:
+        if any(flag in args for flag in single_token_mutation_flags):
+            return True
+        for i in range(len(args) - 1):
+            if (args[i], args[i + 1]) in pair_form_mutation_flags:
+                return True
+        return False
+
+    offenders: list[str] = []
+    for name in registry.list_clients():
+        client = registry.get_client(name)
+        client_args = list(client.internal_args) + list(client.config_args)
+        if carries_mutation_flag(client_args):
+            offenders.append(name)
+            continue
+        for role_name, role in client.roles.items():
+            if carries_mutation_flag(list(role.role_args)):
+                offenders.append(f"{name}:{role_name}")
+                break
+
+    assert offenders, (
+        "Premise no longer holds: no shipped CLI client config in conf/cli_clients/ "
+        "carries a known mutation flag. If configs were intentionally cleaned, "
+        "revisit CLinkTool.get_annotations() — it currently returns None precisely "
+        "because shipped configs are mutation-capable."
+    )
+
+    tool = CLinkTool()
+    annotations = tool.get_annotations()
+    assert annotations is None or not annotations.get("readOnlyHint"), (
+        f"CLinkTool.get_annotations() must not assert readOnlyHint=True while "
+        f"shipped configs carry mutation flags ({offenders}). Got: {annotations!r}"
+    )

@@ -1,0 +1,141 @@
+{
+  "schema_version": "1.0.0",
+  "tp_id": "TP-DMX-AUDITOR-ROUTER-PAL-CLINK-FOLLOWUP-001",
+  "series_id": "DMX-AUDITOR-ROUTER-PAL-CLINK",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "claude/auditor-router-pal-clink-followup-2026-05-30",
+  "base_branch": "main",
+  "head_before": "508bcc0df74db4ee5d1384d8a2da73acdccd8c2e",
+  "head_after": null,
+  "mutation_performed": true,
+  "github_mutation_performed": false,
+  "secret_values_recorded": false,
+  "operator_authorization_used": false,
+  "forbidden_surfaces_touched": false,
+  "context": "Remediates two defects found by a read-only audit of the already-merged PR #713 (TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002). Audit report: claudedocs/pr713-auditor-router-pal-clink-audit-2026-05-30.md. Closes the external PAL-clink auditor's own un-actioned required fix (F2) and the dead-test/import defect (F8).",
+  "files_changed": [
+    "tools/auditor_router/pal_clink.py",
+    "tests/auditor_router/test_pal_clink.py",
+    "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-FOLLOWUP-001/PROOF.json",
+    "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-FOLLOWUP-001/AUDITOR_REPORT.md",
+    "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-FOLLOWUP-001/VALIDATION_OUTPUT.md",
+    "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-FOLLOWUP-001/CHANGED_FILES.txt",
+    "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-FOLLOWUP-001/DIFF_STAT.txt"
+  ],
+  "commands": [
+    {
+      "cmd": "python -m pytest tests/auditor_router/",
+      "exit_code": 0,
+      "result": "52 passed (was 47 passed + 3 failed on origin/main before fix; fixed 3 + added 2)"
+    },
+    {
+      "cmd": "python -m ruff check tools/auditor_router/pal_clink.py tests/auditor_router/test_pal_clink.py",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "cmd": "python3 scripts/audit/validate_audit_proof.py --all proof/",
+      "exit_code": 0,
+      "result": "26/26 PASS before adding this bundle; re-run after add must remain clean"
+    },
+    {
+      "cmd": "python -m compileall -q tools/auditor_router/pal_clink.py",
+      "exit_code": 0,
+      "result": "compiled clean"
+    }
+  ],
+  "validation": {
+    "status": "PASS",
+    "details": [
+      {
+        "check": "F8_import_paths_fixed",
+        "status": "PASS",
+        "detail": "3 tests (test_as_args_shlex_parsing, test_detect_mutation_flags_new_tokens, test_canonical_role_prompt_path_strict) changed from `from auditor_router.pal_clink` to `from tools.auditor_router.pal_clink`. They previously errored ModuleNotFoundError under canonical pytest; now collected and passing. These exercise security hardening (shlex parsing, execute/run/apply mutation tokens, absolute/traversal/whitespace path rejection)."
+      },
+      {
+        "check": "F2_schema_violation_guarded",
+        "status": "PASS",
+        "detail": "build_pal_clink_embedded_audit_object now coerces any non-SKIPPED status whose auditor_model resolves to 'unknown' (no audit-safe underlying CLI) into a schema-valid SKIPPED object. Pre-fix repro: unproven route -> auditor_model='unknown' + NEEDS_SUPERVISOR -> embedded_audit.schema.json error \"'unknown' should not be valid under {'const': 'unknown'}\". Post-fix: SKIPPED, 0 schema errors."
+      },
+      {
+        "check": "fail_closed_preserved",
+        "status": "PASS",
+        "detail": "tools/pr_steward/classifier.py BLOCKING_AUDITS = {FAIL, NEEDS_SUPERVISOR, SKIPPED} -> coerced SKIPPED is still blocking. Coercion branch also prepends a 'treat as blocking' entry to remaining_risks and records the original status in skip_reason, preserving the signal for consumers that do not key off status."
+      },
+      {
+        "check": "regression_coverage_added",
+        "status": "PASS",
+        "detail": "Added test_normalize_unproven_route_emits_schema_valid_skipped and test_build_embedded_audit_unknown_model_any_status_coerced_to_skipped (asserts SKIPPED-field invariants + schema validity across FAIL/PASS/PASS_WITH_RISKS/NEEDS_SUPERVISOR, and that a proven route is unaffected). Strengthened test_payload_type_non_dict_never_raises with assert_schema_valid."
+      },
+      {
+        "check": "blast_radius_contained",
+        "status": "PASS",
+        "detail": "normalize_pal_clink_audit_output has no production caller (only tests); build_pal_clink_embedded_audit_object is called only by normalize. No external prod callers of the changed functions."
+      }
+    ]
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "opus",
+    "invocation": "mcp__pal__codereview expert_model=gpt-5.2 review_type=full",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-FOLLOWUP-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-FOLLOWUP-F2",
+        "severity": "MEDIUM",
+        "title": "embedded_audit could emit auditor_model='unknown' under non-SKIPPED status (schema violation)",
+        "status": "RESOLVED",
+        "body": "Guarded at the build_pal_clink_embedded_audit_object choke-point: non-SKIPPED + unattributable model now coerces to a schema-valid SKIPPED object that the PR Steward still treats as blocking. Reproduced before fix; 0 schema errors after. This was the external PAL-clink auditor's own required fix on PR #713, shipped unactioned."
+      },
+      {
+        "id": "F-FOLLOWUP-F8",
+        "severity": "MEDIUM",
+        "title": "Three security-hardening tests dead due to wrong import path",
+        "status": "RESOLVED",
+        "body": "Fixed `from auditor_router.pal_clink` -> `from tools.auditor_router.pal_clink` (lines 766/773/779). These previously errored under canonical pytest and were not collected by CI (the required Unit Tests job does not include tests/auditor_router/)."
+      },
+      {
+        "id": "F-FOLLOWUP-CR-1",
+        "severity": "LOW",
+        "title": "Coercion could lose NEEDS_SUPERVISOR vs SKIPPED observability",
+        "status": "RESOLVED",
+        "body": "pal/codereview (gpt-5.2) observation. Addressed: skip_reason now embeds the original status ('coerced from {status}') and remaining_risks is prepended with an explicit blocking marker."
+      },
+      {
+        "id": "F-FOLLOWUP-CR-2",
+        "severity": "LOW",
+        "title": "Pre-existing annotation `payload: dict[str, Any]` understates non-mapping handling",
+        "status": "ACCEPTED_RISK",
+        "body": "pal/codereview observation. Deferred as out-of-scope: not introduced by this fix; widening the diff into an untouched signature is avoided per minimal-change discipline."
+      }
+    ],
+    "fixes_applied": [
+      "Added unattributable-model -> SKIPPED coercion guard in build_pal_clink_embedded_audit_object",
+      "Embedded original status in skip_reason and prepended a blocking marker to remaining_risks on coercion",
+      "Corrected 3 function-local import paths in test_pal_clink.py to the tools.auditor_router namespace",
+      "Added 2 regression tests with assert_schema_valid coverage on the unproven/unknown-model path; strengthened test_payload_type_non_dict_never_raises"
+    ],
+    "remaining_risks": [
+      "Embedded audit for THIS change was performed via pal/codereview (gpt-5.2) as the Claude Code reviewer, not an independent cross-vendor PAL clink run; consistent with sibling TP-DMX-PAL-CLINK-RUNNER-003 convention.",
+      "F2 was latent (no production caller invokes normalize_pal_clink_audit_output yet); the guard is defense-in-depth for when the auditor-router runtime is wired up.",
+      "Pre-existing payload annotation inaccuracy left untouched (out of scope)."
+    ],
+    "skip_reason": null
+  },
+  "embedded_audit_status": "PASS_WITH_RISKS",
+  "commit": null,
+  "governance": {
+    "pal_chain": "analyze (prior audit) -> implement minimal -> codereview (pal/codereview gpt-5.2) -> precommit",
+    "authority_order_respected": true,
+    "minimal_change": true
+  },
+  "stop_conditions_hit": [],
+  "remaining_risks": [
+    "GitHub merge gate and PR Steward verdict are evaluated post-push; SKIPPED-style/embedded-audit-via-codereview may surface a steward advisory requiring human acknowledgement before merge.",
+    "tests/auditor_router/ is still not collected by the required CI Unit Tests job (separate finding F8 in the audit report); wiring it into CI is recommended as a follow-up but out of scope for this fix."
+  ],
+  "next_recommended_action": "Open PR to main; human reviewer (operator) to confirm before merge. Follow-up: add tests/auditor_router/ to the CI Unit Tests job so this surface is gated."
+}

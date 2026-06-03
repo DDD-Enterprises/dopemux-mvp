@@ -2,7 +2,7 @@
   "mcpServers": {
     "conport": {
       "type": "sse",
-      "url": "http://localhost:${CONPORT_MCP_PORT}/mcp",
+      "url": "http://localhost:${CONPORT_MCP_PORT:-3005}/mcp",
       "env": {
         "DOPEMUX_WORKSPACE_ID": "${DOPEMUX_WORKSPACE_ID:-}",
         "GEMINI_API_KEY": "${GEMINI_API_KEY:-}",
@@ -13,7 +13,7 @@
     },
     "dope-memory": {
       "type": "sse",
-      "url": "http://localhost:${DOPE_MEMORY_PORT}/mcp",
+      "url": "http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp",
       "env": {
         "DOPE_MEMORY_WORKSPACE_ID": "${DOPE_MEMORY_WORKSPACE_ID:-}",
         "DOPE_MEMORY_INSTANCE_ID": "${DOPE_MEMORY_INSTANCE_ID:-}"
@@ -22,7 +22,7 @@
     },
     "task-orchestrator": {
       "type": "stdio",
-      "command": "/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh",
+      "command": "scripts/mcp-wrappers/task-orchestrator-current-stdio.sh",
       "args": [],
       "env": {
         "TASK_ORCHESTRATOR_PROJECT_ROOT": "${TASK_ORCHESTRATOR_PROJECT_ROOT:-}",

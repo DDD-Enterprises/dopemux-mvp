@@ -37,7 +37,7 @@ echo "== Dopemux: Bringing up all stacks (cached images preferred) =="
 
 # Core shared networks
 ensure_network mcp-network
-ensure_network dopemux-unified-network
+ensure_network dopemux-network
 ensure_network leantime-net
 
 # Event Bus (optional)

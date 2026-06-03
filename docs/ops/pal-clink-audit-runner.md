@@ -37,7 +37,7 @@ The audit prompt is delivered via **stdin** so that both claude and gemini CLIs 
 
 ```python
 from scripts.audit.auditor_router import default_routes, select_route
-from scripts.audit.pal_clink_runner import run_audit
+from scripts.audit.pal_clink_runner import run_audit, run_audit_and_capture_verdict
 
 route = select_route(default_routes())
 if route is None:
@@ -53,6 +53,13 @@ elif output.exit_code != 0:
 else:
     print(output.stdout)
 ```
+
+For packet proof generation, use `run_audit_and_capture_verdict(...)`. It
+performs one host-side invocation, writes the raw runner result to
+`PAL_CLINK_AUDIT_OUTPUT.json`, parses the PAL clink verdict payload from stdout,
+normalizes it through the embedded-audit policy, and writes `AUDITOR_REPORT.md`.
+Non-zero exits, timeouts, missing commands, invalid JSON, and missing verdicts
+fail closed into `NEEDS_SUPERVISOR` rather than an inferred pass.
 
 ## Output Shape
 

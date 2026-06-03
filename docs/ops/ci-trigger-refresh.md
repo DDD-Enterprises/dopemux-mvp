@@ -5,12 +5,28 @@ type: how-to
 owner: '@hu3mann'
 date: '2026-05-26'
 author: '@hu3mann'
-last_review: '2026-05-27'
+last_review: '2026-05-31'
 next_review: '2026-08-25'
-prelude: CI Trigger Refresh Runbook (explanation) for dopemux documentation and developer
+prelude: CI Trigger Refresh Runbook (how-to) for dopemux documentation and developer
   workflows.
 ---
 # CI Trigger Refresh Runbook
+
+## Current Status (TP-DMX-GHA-RELIABILITY-106)
+
+Verified 2026-05-31 against runtime workflow YAML:
+
+- `.github/workflows/ci-complete.yml` handles `ready_for_review` and
+  `workflow_dispatch`.
+- `.github/workflows/pr-steward.yml` handles `ready_for_review` and
+  `workflow_dispatch` with explicit `pr_number` input.
+- `.github/workflows/preflight.yml` handles `ready_for_review` and
+  `workflow_dispatch`.
+- No `pull_request_target` trigger is used for these workflows.
+
+Use these trigger paths or GitHub's "Re-run jobs" control to refresh CI.
+Do not use empty commits as CI prods; they mutate branch history without
+changing the repo truth under test.
 
 ## What Changed (TP-DMX-CI-TRIGGERS-008)
 
@@ -45,4 +61,8 @@ gh workflow run "🚀 Complete CI Pipeline (ADHD-Optimized)" \
 
 ## Admin Follow-Up (Supervisor Required)
 
-Branch protection required-check names reference the stable job names (`ci-summary`, `preflight`, etc.). No branch protection changes are needed for this trigger repair — the check names are unchanged. If required checks need reconfiguration, that is a separate admin action outside this packet.
+Branch protection required-check names reference GitHub status contexts exposed
+from job display names. As of the 2026-05-31 read-only branch-policy refresh,
+`📊 CI Pipeline Summary` is present in `main` branch protection required
+checks. If required checks are renamed or workflows are split, re-run the
+branch-policy audit before relying on merge protection.

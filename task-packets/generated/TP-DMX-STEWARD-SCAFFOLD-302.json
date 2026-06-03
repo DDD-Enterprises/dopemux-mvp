@@ -1,34 +1,5 @@
 {
-  "id": "TP-DMX-STEWARD-SCAFFOLD-302",
-  "project": "dopemux-mvp",
-  "target": "Add minimal dopemux init scaffolding under src/dopemux/templates/init/: a thin .github/workflows/pr-steward.yml and embedded-audit.yml (which just call the console command), a small config/pr_steward/, and config/pr_merge_specialist/policy.yaml (governed_automerge OFF). Verify dopemux init and init --force provision them without clobbering existing files.",
-  "invariants": [
-    "Do not add a heavy setup subcommand or checksum manifest (deferred, YAGNI).",
-    "Do not add a reusable composite GitHub Action (deferred).",
-    "Do not overwrite existing repo files on init."
-  ],
-  "depends_on": [
-    "TP-DMX-STEWARD-PACKAGE-301"
-  ],
-  "repo_binding": {
-    "project_id": "dopemux-mvp",
-    "repo_marker": ".dopetaskroot",
-    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
-    "require_identity_match": true
-  },
-  "series": {
-    "id": "DMX-AUTOREVIEW-PLATFORM",
-    "base_branch": "main",
-    "parent_tp_id": "TP-DMX-STEWARD-PACKAGE-301",
-    "final_packet": false
-  },
-  "execution": {
-    "agent": "codex",
-    "branch": "codex/tp-dmx-steward-scaffold-302",
-    "base_branch": "main"
-  },
   "commit": {
-    "message": "feat(init): scaffold PR-steward workflows and config",
     "allowlist": [
       "src/dopemux/templates/init/.github/workflows/pr-steward.yml",
       "src/dopemux/templates/init/.github/workflows/embedded-audit.yml",
@@ -40,47 +11,81 @@
       "task-packets/generated/TP-DMX-STEWARD-SCAFFOLD-302.json",
       "proof/TP-DMX-STEWARD-SCAFFOLD-302/**"
     ],
+    "message": "feat(init): scaffold PR-steward workflows and config",
     "verify": [
-      "python -m compileall -q src tests",
-      "pytest -q tests/dopemux_init",
-      "python -c \"import yaml;yaml.safe_load(open('src/dopemux/templates/init/.github/workflows/pr-steward.yml'));print('yaml ok')\"",
       "python -m json.tool task-packets/generated/TP-DMX-STEWARD-SCAFFOLD-302.json",
+      "python -m compileall -q src tests",
+      "pytest -q tests/dopemux_init/test_pr_steward_scaffold.py",
       "git diff --check"
     ]
   },
-  "pr": {
-    "title": "feat(init): scaffold PR-steward workflows and config",
-    "body": "## Summary\\n\\nAdd minimal dopemux init scaffolding under src/dopemux/templates/init/: a thin .github/workflows/pr-steward.yml and embedded-audit.yml (which just call the console command), a small config/pr_steward/, and config/pr_merge_specialist/policy.yaml (governed_automerge OFF). Verify dopemux init and init --force provision them without clobbering existing files.\\n\\n## Scope\\n\\nAllowlist-bound; see commit.allowlist. Out of scope: Do not add a heavy setup subcommand or checksum manifest (deferred, YAGNI). Do not add a reusable composite GitHub Action (deferred). Do not overwrite existing repo files on init.\\n\\n## Validation\\n\\nSee commit.verify; embedded audit + proof bundle required.\\n\\n@codex review\\n@gemini\\n@copilot",
-    "base": "main"
+  "depends_on": [
+    "TP-DMX-STEWARD-PACKAGE-301"
+  ],
+  "execution": {
+    "agent": "codex",
+    "base_branch": "codex/tp-dmx-steward-package-301",
+    "branch": "codex/tp-dmx-steward-scaffold-302",
+    "stacked_because": "Part of the DMX-AUTOREVIEW-PLATFORM dependency DAG."
   },
+  "id": "TP-DMX-STEWARD-SCAFFOLD-302",
+  "invariants": [
+    "Runtime/source truth outranks this packet and the load plan.",
+    "Preserve PR Steward check-only semantics unless this packet explicitly authorizes a governed mutation gate.",
+    "Preserve fail-closed behavior on missing evidence, stale SHAs, unsupported permissions, or unknown authority.",
+    "Do not expose secrets, tokens, private keys, or unredacted provider metadata in proof artifacts.",
+    "Do not modify files outside the packet allowlist without stopping for supervisor review."
+  ],
   "pal_chain": {
     "enabled": true,
     "steps": [
       "analyze",
+      "thinkdeep",
+      "challenge",
       "planner",
+      "challenge",
+      "implement",
       "codereview",
-      "precommit"
+      "precommit",
+      "challenge"
     ]
+  },
+  "pr": {
+    "base": "codex/tp-dmx-steward-package-301",
+    "body": "## Summary\n- Add thin .github/workflows/{pr-steward,embedded-audit}.yml + small config/pr_steward/ + config/pr_merge_specialist/policy.yaml (governed_automerge OFF) to src/dopemux/templates/init/; verify dopemux init + init --force provision without clobbering existing files.\n\n## Scope\nTrack: C-distribute. Risk: MEDIUM. Red lane: false.\n\n## Validation\nRun the packet validation commands and capture proof under proof/TP-DMX-STEWARD-SCAFFOLD-302/PROOF.json.\n\n## NOT_RUN\nList any skipped live, integration, credentialed, or supervisor-gated checks explicitly.",
+    "title": "Feat(init): scaffold PR-steward workflows and config"
+  },
+  "project": "dopemux-mvp",
+  "repo_binding": {
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "require_identity_match": true
+  },
+  "series": {
+    "base_branch": "codex/tp-dmx-steward-package-301",
+    "final_packet": false,
+    "id": "DMX-AUTOREVIEW-PLATFORM",
+    "parent_tp_id": "TP-DMX-STEWARD-PACKAGE-301"
   },
   "steps": [
     {
-      "id": "S1",
-      "task": "Preflight: verify repo identity (repo_marker .dopetaskroot, origin matches origin_hint, branch matches execution.branch, worktree clean or only intended files dirty) and verify dependency proofs exist and passed for: TP-DMX-STEWARD-PACKAGE-301.",
       "context_files": [
         "AGENTS.md",
+        "docs/ops/load-plans/load_plan-DMX-AUTOREVIEW-PLATFORM.json",
         "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
-        "src/dopemux/project_init.py",
-        "docs/ops/pr-steward.md"
+        "config/pr_merge_specialist/policy.yaml",
+        "src/dopemux/project_init.py"
       ],
+      "id": "S1",
+      "task": "Inspect current repo truth, authority docs, runtime entrypoints, schemas, tests, and existing conventions before editing.",
       "validation": [
-        "Repo identity matches repo_binding.",
-        "Dependency proofs are present and PASS (or 'none' for a root packet).",
-        "Active task context recorded; worktree is clean or only contains intended files."
+        "Canonical writer and downstream consumers are identified.",
+        "Any missing authority is recorded as UNKNOWN rather than inferred.",
+        "The planned diff is confirmed to stay within the packet allowlist."
       ]
     },
     {
-      "id": "S2",
-      "task": "Implement: Add minimal dopemux init scaffolding under src/dopemux/templates/init/: a thin .github/workflows/pr-steward.yml and embedded-audit.yml (which just call the console command), a small config/pr_steward/, and config/pr_merge_specialist/policy.yaml (governed_automerge OFF). Verify dopemux init and init --force provision them without clobbering existing files.",
       "expected_files": [
         "src/dopemux/templates/init/.github/workflows/pr-steward.yml",
         "src/dopemux/templates/init/.github/workflows/embedded-audit.yml",
@@ -88,42 +93,54 @@
         "src/dopemux/templates/init/config/pr_merge_specialist/policy.yaml",
         "src/dopemux/project_init.py",
         "tests/dopemux_init/test_pr_steward_scaffold.py",
-        "docs/ops/pr-steward-distribution.md"
+        "docs/ops/pr-steward-distribution.md",
+        "task-packets/generated/TP-DMX-STEWARD-SCAFFOLD-302.json",
+        "proof/TP-DMX-STEWARD-SCAFFOLD-302/**"
       ],
+      "id": "S2",
+      "requirements": [
+        "Track: C-distribute",
+        "Proof path: proof/TP-DMX-STEWARD-SCAFFOLD-302/PROOF.json",
+        "Executor default: claude-code-sonnet",
+        "Auditor default: claude-code-opus"
+      ],
+      "task": "Add thin .github/workflows/{pr-steward,embedded-audit}.yml + small config/pr_steward/ + config/pr_merge_specialist/policy.yaml (governed_automerge OFF) to src/dopemux/templates/init/; verify dopemux init + init --force provision without clobbering existing files.",
       "validation": [
-        "Only allowlisted files are changed.",
-        "Do not add a heavy setup subcommand or checksum manifest (deferred, YAGNI).",
-        "Do not add a reusable composite GitHub Action (deferred).",
-        "Do not overwrite existing repo files on init."
+        "Implementation preserves fail-closed behavior and deterministic artifact output.",
+        "No file outside commit.allowlist changed.",
+        "Stop conditions from this packet were not triggered, or execution stopped with evidence."
       ]
     },
     {
-      "id": "S3",
-      "task": "Add or extend tests and docs to cover the change; run the packet validation commands.",
-      "validation": [
-        "`python -m compileall -q src tests` passes.",
-        "`pytest -q tests/dopemux_init` passes.",
-        "`python -c \"import yaml;yaml.safe_load(open('src/dopemux/templates/init/.github/workflows/pr-steward.yml'));print('yaml ok')\"` passes.",
-        "git diff --check passes."
-      ]
-    },
-    {
-      "id": "S4",
-      "task": "Write the proof bundle proof/TP-DMX-STEWARD-SCAFFOLD-302/ including the review_bundle as the single upload unit.",
       "expected_files": [
-        "proof/TP-DMX-STEWARD-SCAFFOLD-302/PROOF.json",
-        "proof/TP-DMX-STEWARD-SCAFFOLD-302/VALIDATION_OUTPUT.md",
-        "proof/TP-DMX-STEWARD-SCAFFOLD-302/GIT_STATE.md",
-        "proof/TP-DMX-STEWARD-SCAFFOLD-302/DIFF_STAT.txt",
-        "proof/TP-DMX-STEWARD-SCAFFOLD-302/CHANGED_FILES.txt",
-        "proof/TP-DMX-STEWARD-SCAFFOLD-302/AUDITOR_REPORT.md",
-        "proof/TP-DMX-STEWARD-SCAFFOLD-302/review_bundle/**"
+        "tests/dopemux_init/test_pr_steward_scaffold.py",
+        "docs/ops/pr-steward-distribution.md",
+        "proof/TP-DMX-STEWARD-SCAFFOLD-302/**"
       ],
+      "id": "S3",
+      "task": "Update tests, docs, and proof artifacts required by the packet allowlist and keep runtime claims backed by observed code or validation.",
       "validation": [
-        "Embedded audit is recorded per schemas/proof/embedded_audit.schema.json and the status reflects reality.",
-        "review_bundle/ exists as the single upload/review unit.",
-        "No secrets or tokens are included in the proof bundle."
+        "Docs describe implemented behavior only.",
+        "Proof artifacts include commands, exit codes, diff scope, residual risks, and UNKNOWNs.",
+        "Generated artifacts are stable and replayable."
+      ]
+    },
+    {
+      "commands": [
+        "python -m json.tool task-packets/generated/TP-DMX-STEWARD-SCAFFOLD-302.json",
+        "python -m compileall -q src tests",
+        "pytest -q tests/dopemux_init/test_pr_steward_scaffold.py",
+        "git diff --check"
+      ],
+      "id": "S4",
+      "task": "Run focused validation, inspect git diff, run codereview/precommit review, and prepare a truthful completion summary.",
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-DMX-STEWARD-SCAFFOLD-302.json",
+        "python -m compileall -q src tests",
+        "pytest -q tests/dopemux_init/test_pr_steward_scaffold.py",
+        "git diff --check"
       ]
     }
-  ]
+  ],
+  "target": "Add thin .github/workflows/{pr-steward,embedded-audit}.yml + small config/pr_steward/ + config/pr_merge_specialist/policy.yaml (governed_automerge OFF) to src/dopemux/templates/init/; verify dopemux init + init --force provision without clobbering existing files."
 }

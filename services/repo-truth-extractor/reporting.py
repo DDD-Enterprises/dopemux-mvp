@@ -19,6 +19,7 @@ from rte_config import (
     RUN_DASHBOARD_FILENAME,
     STEP_METRICS_FILENAME,
 )
+from rte_constants import RUN_STATUS_BLOCKED, RUN_STATUS_OK
 
 
 @dataclass(frozen=True)
@@ -166,9 +167,12 @@ def write_run_dashboard_snapshot(
 
 def _normalize_gate_status(value: Optional[str]) -> str:
     token = str(value or "").strip().upper()
-    if token in {"PASS", "PASSED", "READY", "OK"}:
+    if token in {"PASS", "PASSED", "READY", "OK", "CLEAR"}:
         return "PASS"
-    if token in {"FAIL", "FAILED", "BLOCKED", "NO_GO"}:
+    # S6-OBS-1 (audit): COST_ABORTED previously fell through to UNKNOWN. Map it to FAIL so a
+    # cost-aborted run status, if ever routed through this normalizer, fails closed rather
+    # than reading as UNKNOWN.
+    if token in {"FAIL", "FAILED", "BLOCKED", "NO_GO", "COST_ABORTED"}:
         return "FAIL"
     return "UNKNOWN"
 
@@ -584,7 +588,7 @@ def write_run_manifest(
         "prompt_failures": prompt_report.get("prompt_failures", []),
         "prompt_failures_count": int(prompt_report.get("prompt_failures_count", 0)),
         "promptset_sha256": prompt_report["promptset_sha256"],
-        "run_status": "BLOCKED" if run_blocked else "OK",
+        "run_status": RUN_STATUS_BLOCKED if run_blocked else RUN_STATUS_OK,
         "phase_status": "blocked_promptset" if run_blocked else "ready",
         "blocked_promptset": run_blocked,
         "routing_policy": routing_policy,

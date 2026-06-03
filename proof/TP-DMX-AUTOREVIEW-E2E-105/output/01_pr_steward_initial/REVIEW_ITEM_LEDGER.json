@@ -1,0 +1,33 @@
+{
+  "generated_at": "2026-01-01T00:00:00Z",
+  "items": [
+    {
+      "association": "MEMBER",
+      "author": "chatgpt-codex-connector",
+      "blockers": [],
+      "blocking": false,
+      "body": "Approved for offline autoreview fixture.",
+      "disposition": "OPTIONAL_DEFERRED",
+      "id": "R_AUTOREVIEW_APPROVED",
+      "rationale": "Known author comment is classified nonblocking.",
+      "source": "review"
+    },
+    {
+      "association": null,
+      "author": "github-actions[bot]",
+      "blockers": [
+        "FAILED_CHECK"
+      ],
+      "blocking": true,
+      "body": "unit: completed/failure",
+      "disposition": "MUST_FIX",
+      "id": "ci-0-unit",
+      "rationale": "Required check did not succeed.",
+      "source": "ci_annotation"
+    }
+  ],
+  "mutation_performed": false,
+  "pr_number": 704,
+  "schema_version": "1.1.0",
+  "unclassified_count": 0
+}

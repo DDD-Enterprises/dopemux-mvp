@@ -1,0 +1,18 @@
+{
+  "actions": [
+    {
+      "category": "failed-check",
+      "id": "action-0001",
+      "rationale": "CI check failed; implementer must investigate and fix.",
+      "source_blocker": "FAILED_CHECK",
+      "source_item_id": "unit",
+      "target_role": "implementer"
+    }
+  ],
+  "generated_at": "2026-01-01T00:00:00Z",
+  "mutation_performed": false,
+  "pr_number": 704,
+  "readiness": "NEEDS_IMPLEMENTER",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "schema_version": "1.0.0"
+}
