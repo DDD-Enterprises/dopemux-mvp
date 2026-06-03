@@ -33,6 +33,7 @@ from services.shared.brand_voice import StatusChip, brand_log
 import time
 from collections import defaultdict
 from typing import Dict, Any, List
+from event_normalization import normalize_file_activity
 
 logger = logging.getLogger(__name__)
 
@@ -71,19 +72,19 @@ class ActivityTracker:
 
     async def handle_workspace_switch(self, event_data: dict):
         """Handle workspace switch event."""
-        logger.info(brand_log(f"Workspace switch: {event_data}", chip=StatusChip.LIVE))
-
+        event_data = event_data or {}
         self.workspace_switches += 1
+        file_activity = normalize_file_activity(event_data.get("file_activity"))
+        logger.info(brand_log(
+            f"Workspace switch captured: files_modified={file_activity['files_modified']}",
+            chip=StatusChip.LIVE,
+        ))
 
         # Record activity
         activity = {
             "type": "workspace_switch",
             "timestamp": time.time(),
-            "from_workspace": event_data.get("from_workspace"),
-            "to_workspace": event_data.get("to_workspace"),
-            "from_app": event_data.get("from_app"),
-            "to_app": event_data.get("to_app"),
-            "file_activity": event_data.get("file_activity", {}),
+            "file_activity": file_activity,
         }
 
         self.pending_activities.append(activity)
@@ -94,7 +95,8 @@ class ActivityTracker:
 
     async def handle_progress_update(self, event_data: dict):
         """Handle progress update event."""
-        logger.debug(f"Progress update: {event_data}")
+        event_data = event_data or {}
+        logger.debug("Progress update captured")
 
         self.task_updates += 1
 
@@ -102,7 +104,6 @@ class ActivityTracker:
         activity = {
             "type": "progress_update",
             "timestamp": time.time(),
-            "task_id": event_data.get("task_id"),
             "status": event_data.get("status"),
             "progress": event_data.get("progress", 0)
         }
@@ -112,7 +113,8 @@ class ActivityTracker:
 
     async def handle_session_start(self, event_data: dict):
         """Handle session start event."""
-        logger.info(brand_log(f"Session started: {event_data}", chip=StatusChip.LIVE))
+        event_data = event_data or {}
+        logger.info(brand_log("Session started", chip=StatusChip.LIVE))
 
         self.current_session = event_data.get("session_id", "unknown")
         self.session_start_time = time.time()
@@ -125,7 +127,9 @@ class ActivityTracker:
 
     async def handle_break_taken(self, event_data: dict):
         """Handle break taken event."""
-        logger.info(brand_log(f"Break taken: {event_data}", chip=StatusChip.LIVE))
+        event_data = event_data or {}
+        duration_minutes = event_data.get("duration_minutes", 5)
+        logger.info(brand_log(f"Break taken: duration_minutes={duration_minutes}", chip=StatusChip.LIVE))
 
         self.break_events += 1
 
@@ -133,8 +137,7 @@ class ActivityTracker:
         activity = {
             "type": "break_taken",
             "timestamp": time.time(),
-            "duration_minutes": event_data.get("duration_minutes", 5),
-            "reason": event_data.get("reason", "scheduled")
+            "duration_minutes": duration_minutes,
         }
 
         self.pending_activities.append(activity)
