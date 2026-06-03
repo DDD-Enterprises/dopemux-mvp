@@ -311,7 +311,11 @@ class ADHDAccommodationEngine:
         self.user_profiles[operator_user_id] = profile
         self._ensure_energy_predictor(operator_user_id)
 
-        profile_key = f"adhd:profile:{operator_user_id}"
+        # Apply the instance namespace so the seed write lands on the same key
+        # the prefixed reads (redis_pattern("adhd:profile:*")) scan; a bare key
+        # would be invisible on restart in namespaced deployments, causing
+        # repeated reseeding and cross-instance leakage.
+        profile_key = redis_key(f"adhd:profile:{operator_user_id}")
         # Use SET NX (set-if-not-exists) so a profile written by another process
         # between our load and seed is never silently overwritten.
         await self.redis_client.set(profile_key, json.dumps(asdict(profile), default=str), nx=True)
