@@ -6,12 +6,53 @@ import os
 from typing import List, Optional
 
 
+DEV_ENVIRONMENTS = {"dev", "development", "local", "test", "testing"}
+WEAK_ADHD_API_KEYS = {
+    "dev-key-123",
+    "CHANGE_ME_generate_with_openssl_rand_hex_32_placeholder",
+}
+
+
+def runtime_environment() -> str:
+    """Return the resolved runtime environment name."""
+    return (
+        os.getenv("ENVIRONMENT", os.getenv("DPMX_ENV", "development")).strip().lower()
+        or "development"
+    )
+
+
+def is_development_environment(environment: str | None = None) -> bool:
+    return (environment or runtime_environment()).strip().lower() in DEV_ENVIRONMENTS
+
+
+def clean_secret_value(value: str | None, *, weak_values: set[str]) -> str:
+    resolved = (value or "").strip()
+    if not resolved or resolved in weak_values:
+        return ""
+    return resolved
+
+
+def require_runtime_secret(var_name: str, *, weak_values: set[str]) -> str:
+    resolved = clean_secret_value(os.getenv(var_name), weak_values=weak_values)
+    if resolved:
+        return resolved
+
+    environment = runtime_environment()
+    if is_development_environment(environment):
+        return ""
+
+    raise RuntimeError(
+        f"{var_name} must be set to a non-placeholder value when ENVIRONMENT={environment}"
+    )
+
+
 class Settings:
     """
     Application settings loaded from environment variables.
     """
     
     # Server settings
+    environment: str = runtime_environment()
     api_port: int = int(os.getenv("API_PORT", "8095"))
     host: str = os.getenv("HOST", "0.0.0.0")
     # Backward/forward-compatible alias used by startup logging paths
@@ -24,7 +65,10 @@ class Settings:
     ).split(",")
     
     # Authentication
-    api_key: str = os.getenv("ADHD_ENGINE_API_KEY", "dev-key-123")
+    api_key: str = require_runtime_secret(
+        "ADHD_ENGINE_API_KEY",
+        weak_values=WEAK_ADHD_API_KEYS,
+    )
     
     # Redis settings
     redis_url: str = os.getenv("REDIS_URL", "redis://redis-primary:6379")

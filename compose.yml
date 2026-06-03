@@ -445,7 +445,8 @@ services:
       - API_PORT=8095
       # Dockerfile starts uvicorn on 0.0.0.0; host publication is restricted to loopback below.
       - HOST=0.0.0.0
-      - ADHD_ENGINE_API_KEY=${ADHD_ENGINE_API_KEY:-dev-key-123}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - ADHD_ENGINE_API_KEY=${ADHD_ENGINE_API_KEY:-}
       - REDIS_URL=redis://redis-primary:6379
       # Scope ADHD state/cache keys per worktree instance while preserving explicit overrides.
       - ADHD_ENGINE_REDIS_PREFIX=${ADHD_ENGINE_REDIS_PREFIX:-${DOPEMUX_INSTANCE_ID:-default}}
@@ -476,8 +477,9 @@ services:
     ports:
       - "${DOPE_MEMORY_PORT:-3020}:3020"
     environment:
-      - WMA_SECRET_KEY=${WMA_SECRET_KEY:-dev-only-change-me}
-      - WMA_ENCRYPTION_KEY=${WMA_ENCRYPTION_KEY:-dev-only-change-me}
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - WMA_SECRET_KEY=${WMA_SECRET_KEY:-}
+      - WMA_ENCRYPTION_KEY=${WMA_ENCRYPTION_KEY:-}
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - POSTGRES_DB=dopemux_knowledge_graph

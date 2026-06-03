@@ -1,10 +1,15 @@
 import importlib
 
+import pytest
+
 
 def _reload_config(monkeypatch, env_updates=None):
     env_updates = env_updates or {}
     managed_keys = [
+        "ADHD_ENGINE_API_KEY",
         "API_HOST",
+        "DPMX_ENV",
+        "ENVIRONMENT",
         "HOST",
         "TASK_ORCHESTRATOR_URL",
         "ENERGY_MONITOR_INTERVAL",
@@ -49,3 +54,26 @@ def test_adhd_settings_supports_attention_check_interval_alias(monkeypatch):
 def test_adhd_settings_api_host_falls_back_to_host(monkeypatch):
     config = _reload_config(monkeypatch, {"HOST": "127.0.0.1"})
     assert config.settings.api_host == "127.0.0.1"
+
+
+def test_adhd_settings_sanitizes_weak_api_key_in_development(monkeypatch):
+    config = _reload_config(
+        monkeypatch,
+        {"ENVIRONMENT": "development", "ADHD_ENGINE_API_KEY": "dev-key-123"},
+    )
+
+    assert config.settings.environment == "development"
+    assert config.settings.api_key == ""
+
+
+def test_adhd_settings_rejects_missing_api_key_in_production(monkeypatch):
+    with pytest.raises(RuntimeError, match="ADHD_ENGINE_API_KEY"):
+        _reload_config(monkeypatch, {"ENVIRONMENT": "production"})
+
+
+def test_adhd_settings_rejects_weak_api_key_in_production(monkeypatch):
+    with pytest.raises(RuntimeError, match="ADHD_ENGINE_API_KEY"):
+        _reload_config(
+            monkeypatch,
+            {"ENVIRONMENT": "production", "ADHD_ENGINE_API_KEY": "dev-key-123"},
+        )

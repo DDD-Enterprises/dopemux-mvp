@@ -3,16 +3,19 @@ API Key Authentication Middleware for ADHD Engine
 Secures all API endpoints with API key validation
 """
 
-import os
 from fastapi import Security, HTTPException, status
 from fastapi.security import APIKeyHeader
+
+from .config import settings
 
 # API Key configuration
 API_KEY_NAME = "X-API-Key"  # pragma: allowlist secret
 api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 
-# Load API key from environment
-EXPECTED_API_KEY = os.getenv("ADHD_ENGINE_API_KEY")  # pragma: allowlist secret
+# Load sanitized API key from settings. Non-dev runtimes fail during config load
+# when the value is missing or a known placeholder.
+EXPECTED_API_KEY = settings.api_key  # pragma: allowlist secret
+
 
 async def verify_api_key(api_key: str = Security(api_key_header)):
     """
