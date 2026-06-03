@@ -128,6 +128,7 @@ class ADHDEventListener:
             # Claude Code events
             "claude_prompt_received": self._on_claude_prompt,
             "claude_tool_started": self._on_claude_tool,
+            "claude_tool_completed": self._on_claude_tool,
             "claude_session_stopped": self._on_claude_stop,
         }
     
