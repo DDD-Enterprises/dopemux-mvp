@@ -334,6 +334,8 @@ def _steward_artifact_path(
         pr_id=pr_id,
     )
     path = Path(rendered)
+    if "{out_dir}" in str(raw_path) or "{pr_dir}" in str(raw_path):
+        return path
     return path if path.is_absolute() else out_dir / path
 
 

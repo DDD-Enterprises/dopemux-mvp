@@ -163,6 +163,36 @@ def test_finalization_gate_allows_ready_with_strict_pass(tmp_path: Path):
     assert result.evidence["merge_readiness"] == "READY"
 
 
+def test_finalization_gate_does_not_double_prefix_rendered_relative_out_dir(
+    monkeypatch, tmp_path: Path
+):
+    monkeypatch.chdir(tmp_path)
+    pr_dir = Path("proof/pr_merge/run_testrun/pr/203")
+    _write_json(
+        Path("proof/pr_merge/pr-steward/pr-203/MERGE_READINESS.json"),
+        _merge_readiness(),
+    )
+    _write_json(Path("proof/pr_merge/embedded-audit/pr-203/PROOF.json"), _audit_proof())
+
+    result = queue_drain.require_steward_finalization_gate(
+        pr=_pr_state(),
+        policy={
+            "steward_gate": {
+                "artifact_ttl_seconds": 3600,
+                "merge_readiness_path": (
+                    "{out_dir}/pr-steward/pr-{pr_id}/MERGE_READINESS.json"
+                ),
+                "audit_proof_path": "{out_dir}/embedded-audit/pr-{pr_id}/PROOF.json",
+            }
+        },
+        pr_dir=pr_dir,
+        now="2026-05-31T12:30:00Z",
+    )
+
+    assert result.allowed is True
+    assert result.reason_code == "ALLOW_FINALIZATION"
+
+
 def test_finalization_gate_denies_pass_with_risks(tmp_path: Path):
     pr_dir = tmp_path / "pr" / "203"
     _write_json(pr_dir / "MERGE_READINESS.json", _merge_readiness(audit_status="PASS_WITH_RISKS"))
