@@ -201,6 +201,36 @@ def test_run_merge_uses_graphql_expected_head_oid_without_shell_fallback(monkeyp
     assert shell_calls == []
 
 
+def test_run_merge_uses_gated_expected_head_oid_when_pr_head_moves(monkeypatch, tmp_path: Path):
+    shell_calls = []
+    monkeypatch.setattr(merge, "execute_or_dry_run", lambda *args, **kwargs: shell_calls.append(args) or CommandResult([], 0, "", ""))
+    client = RecordingClient(
+        payload={
+            "id": "PR_node_id",
+            "title": "Ready PR",
+            "state": "OPEN",
+            "headRefOid": "new-unaudited-head",
+        }
+    )
+
+    result = merge.run_merge_with_fallback(
+        decision=_decision(),
+        pr_id=203,
+        execute=True,
+        repo=None,
+        commands_log=tmp_path / "COMMANDS_RUN.txt",
+        repo_root=tmp_path,
+        policy={"timeouts": {"subprocess_seconds": 5}},
+        client=client,
+        expected_head_oid=HEAD_SHA,
+    )
+
+    assert result.action == MergeActionType.REBASE_MERGE
+    assert result.reason_code == "expected_head_merge_succeeded"
+    assert client.merge_calls == [(203, HEAD_SHA, "REBASE")]
+    assert shell_calls == []
+
+
 def test_graphql_expected_head_merge_does_not_use_pr_command_repo_flag(tmp_path: Path):
     client = CapturingGitHubClient(tmp_path)
 

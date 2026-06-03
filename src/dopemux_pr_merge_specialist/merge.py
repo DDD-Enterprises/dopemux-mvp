@@ -292,6 +292,7 @@ def run_merge_with_fallback(
     repo_root: Path,
     policy: Dict[str, Any],
     client: GitHubClient,
+    expected_head_oid: Optional[str] = None,
 ) -> MergeDecision:
     action = _state_value(decision.action)
     if action == MergeActionType.BLOCKED.value:
@@ -311,8 +312,10 @@ def run_merge_with_fallback(
             reason_code="supervisor_required_for_admin_bypass",
         )
     elif action == MergeActionType.REBASE_MERGE.value:
-        expected_head_oid = str(pr_payload.get("headRefOid") or "").strip()
-        if not expected_head_oid:
+        merge_expected_head_oid = str(
+            expected_head_oid or pr_payload.get("headRefOid") or ""
+        ).strip()
+        if not merge_expected_head_oid:
             return MergeDecision(
                 action=MergeActionType.BLOCKED,
                 command=[],
@@ -321,7 +324,7 @@ def run_merge_with_fallback(
             )
         result = client.merge_pull_request_expected_head(
             pr_id,
-            expected_head_oid=expected_head_oid,
+            expected_head_oid=merge_expected_head_oid,
             method="REBASE",
         )
         append_command_log(commands_log, result)
