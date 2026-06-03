@@ -1,0 +1,57 @@
+name: embedded-audit
+
+"on":
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      proof_path:
+        description: Proof bundle path to inspect
+        required: true
+        type: string
+        default: proof/PROOF.json
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: read
+  statuses: read
+  actions: read
+
+jobs:
+  embedded-audit:
+    name: embedded audit proof check
+    runs-on: ubuntu-latest
+    env:
+      DOPEMUX_INSTALL_SPEC: git+https://github.com/DDD-Enterprises/dopemux-mvp.git
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Dopemux
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "$DOPEMUX_INSTALL_SPEC"
+
+      - name: Set proof path
+        id: proof
+        env:
+          INPUT_PROOF_PATH: ${{ inputs.proof_path }}
+        run: |
+          proof_path="${INPUT_PROOF_PATH:-proof/PROOF.json}"
+          printf 'path=%s\n' "$proof_path" >> "$GITHUB_OUTPUT"
+
+      - name: Run embedded audit proof check
+        run: |
+          python -m dopemux.cli pr-steward audit \
+            --proof "${{ steps.proof.outputs.path }}" \
+            --format json
+
+      - name: Write job summary
+        if: always()
+        run: |
+          {
+            printf '## Embedded audit proof check\n\n'
+            printf -- '- proof_path: %s\n' '${{ steps.proof.outputs.path }}'
+            printf -- '- mutation_performed: false\n'
+          } >> "$GITHUB_STEP_SUMMARY"
