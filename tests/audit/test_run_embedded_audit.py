@@ -228,9 +228,29 @@ def test_embedded_audit_workflow_runs_emitter_from_trusted_source() -> None:
     assert "requested head SHA could not be fetched or did not match" in text
     assert "ref does not yet contain scripts/audit/run_embedded_audit.py" in text
     assert "git -C trusted-source fetch --no-tags --depth=1 origin" in text
+    assert "Checkout requested head" not in text
     assert "ref: ${{ steps.pr.outputs.head_sha }}" not in text
     assert "github.event.pull_request.head.sha || github.sha" not in text
     assert "Verify requested head SHA" in text
+    assert "Run PAL clink audit" in text
+    assert "scripts/audit/pal_clink_runner.py" in text
+    assert "preflight_status=$?" in text
+    assert "mkdir -p ../embedded-audit-artifacts" in text
+    assert "base_sha=\"$(git rev-parse HEAD)\"" in text
+    assert "head_sha='${{ steps.pr.outputs.head_sha }}'" in text
+    assert "git cat-file -e \"${head_sha}^{commit}\"" in text
+    assert "Changed files:" in text
+    assert "git diff --find-renames --name-status \"$base_sha\" \"$head_sha\"" in text
+    assert "Unified diff:" in text
+    assert (
+        "git diff --find-renames --no-ext-diff "
+        "\"$base_sha\" \"$head_sha\""
+    ) in text
+    assert "--route-json ../embedded-audit-artifacts/AUDITOR_ROUTE.json" in text
+    assert (
+        "--pal-output-json "
+        "../embedded-audit-artifacts/PAL_CLINK_AUDIT_OUTPUT.json"
+    ) in text
     assert (
         'if [ "$actual_head_sha" = "$EXPECTED_HEAD_SHA" ] '
         '&& [ "$pr_head_sha" = "$EXPECTED_HEAD_SHA" ]; then'

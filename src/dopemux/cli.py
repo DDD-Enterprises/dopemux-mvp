@@ -2637,6 +2637,27 @@ def pr_merge_command(args):
         sys.exit(e.code)
 
 
+@cli.command(
+    name="pr-steward",
+    context_settings=dict(ignore_unknown_options=True),
+    add_help_option=False,
+)
+@click.argument("args", nargs=-1, type=click.UNPROCESSED)
+def pr_steward_command(args):
+    """
+    🧾 Check-Only Governance: PR Steward
+
+    Exposes the versioned PR Steward command contract:
+    intake, bridge, gate, audit, and doctor.
+    """
+    from dopemux_pr_steward.cli import main as pr_steward_main
+
+    try:
+        raise SystemExit(pr_steward_main(list(args)))
+    except SystemExit as e:
+        sys.exit(e.code)
+
+
 @cli.command()
 @click.option("--attention", "-a", is_flag=True, help="🧠 Cognitive Load: Show attention metrics and focus state.")
 @click.option("--context", "-c", is_flag=True, help="🔬 Mental Model: Show active mental model and context density.")

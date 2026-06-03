@@ -92,6 +92,41 @@ class TestProofBlockerSplit:
         assert "PROOF_MISSING" not in readiness["blockers"]
         assert "PROOF_STALE_OR_MISSING" not in readiness["blockers"]
 
+    def test_stale_proof_recomputed_even_when_harvest_claims_current(self) -> None:
+        harvest = _base_harvest()
+        harvest["proof"] = {
+            "proof_path": "proof/PROOF.json",
+            "proof_head_sha": "old000000000000000000000000000000000000",
+            "matches_pr_head": True,
+            "proof_freshness": {
+                "status": "CURRENT",
+                "matches_pr_head": True,
+                "proof_recorded_sha": "old000000000000000000000000000000000000",
+                "pr_head_sha": harvest["pr"]["headRefOid"],
+            },
+        }
+
+        readiness = _artifacts(harvest)
+
+        assert "PROOF_STALE" in readiness["blockers"]
+        assert readiness["proof"]["matches_pr_head"] is False
+        assert readiness["proof"]["proof_freshness"]["status"] == "STALE"
+
+    def test_stale_proof_recomputed_for_legacy_current_string(self) -> None:
+        harvest = _base_harvest()
+        harvest["proof"] = {
+            "proof_path": "proof/PROOF.json",
+            "proof_head_sha": "old000000000000000000000000000000000000",
+            "matches_pr_head": True,
+            "proof_freshness": "FRESH",
+        }
+
+        readiness = _artifacts(harvest)
+
+        assert "PROOF_STALE" in readiness["blockers"]
+        assert readiness["proof"]["matches_pr_head"] is False
+        assert readiness["proof"]["proof_freshness"]["status"] == "STALE"
+
     def test_missing_proof_emits_proof_missing_not_combined(self) -> None:
         harvest = _base_harvest()
         harvest["proof"] = {}

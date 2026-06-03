@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dopemux.dev/pr_steward/config.schema.json",
+  "title": "PR Steward policy config",
+  "description": "Report-only PR Steward v1 policy configuration.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "mode",
+    "mutates_github",
+    "fail_closed_on_unknown",
+    "required_artifacts",
+    "trusted_reviewer_associations"
+  ],
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": [
+        "check_only"
+      ]
+    },
+    "mutates_github": {
+      "type": "boolean",
+      "enum": [
+        false
+      ]
+    },
+    "fail_closed_on_unknown": {
+      "type": "boolean",
+      "enum": [
+        true
+      ]
+    },
+    "required_artifacts": {
+      "type": "array",
+      "minItems": 5,
+      "items": {
+        "type": "string"
+      }
+    },
+    "trusted_reviewer_associations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": [
+          "OWNER",
+          "MEMBER",
+          "COLLABORATOR"
+        ]
+      }
+    }
+  }
+}
