@@ -213,6 +213,8 @@ class ADHDEventListener:
             "status",
             "tool_name",
             "boundary_type",
+            "idle_detected",
+            "idle_minutes",
         }
         activity_data = {
             key: value
