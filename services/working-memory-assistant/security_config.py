@@ -18,10 +18,16 @@ WEAK_SECRET_VALUES = {
 
 
 def runtime_environment() -> str:
-    return (
-        os.getenv("ENVIRONMENT", os.getenv("DPMX_ENV", "development")).strip().lower()
-        or "development"
-    )
+    # A blank/whitespace ENVIRONMENT must not shadow DPMX_ENV. os.getenv's default
+    # only applies when the var is *absent*, so `ENVIRONMENT=""` would otherwise
+    # resolve to "development" and let resolve_secret() mint ephemeral dev secrets
+    # for a production runtime. Consult each source in order, accepting only a
+    # non-empty value.
+    for value in (os.getenv("ENVIRONMENT"), os.getenv("DPMX_ENV")):
+        candidate = (value or "").strip().lower()
+        if candidate:
+            return candidate
+    return "development"
 
 
 def is_development_environment(environment: str | None = None) -> bool:
