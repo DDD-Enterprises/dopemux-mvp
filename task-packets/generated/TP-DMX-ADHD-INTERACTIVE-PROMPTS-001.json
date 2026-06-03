@@ -1,0 +1,135 @@
+{
+  "id": "TP-DMX-ADHD-INTERACTIVE-PROMPTS-001",
+  "project": "dopemux-mvp",
+  "target": "Wire ADHD interactive prompts into live launcher and profile flows with max-three progressive disclosure.",
+  "invariants": [
+    "Preserve non-interactive, dry-run, and background command behavior.",
+    "Do not start live services or Claude Code during validation.",
+    "Keep initial interactive choices limited to three operator choices before an explicit show-more action.",
+    "Preserve deterministic role/profile resolution and existing launch boot-sequence behavior.",
+    "Do not introduce new dependencies."
+  ],
+  "depends_on": [
+    "885c68a0-ad46-4b78-a659-5de52040d9cb"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ADHD-COGNITIVE-REMEDIATION",
+    "base_branch": "main",
+    "parent_tp_id": "885c68a0-ad46-4b78-a659-5de52040d9cb",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/adhd-interactive-prompts-live-cli",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(adhd): wire interactive prompts into launch and profile flows",
+    "allowlist": [
+      "src/dopemux/ux/interactive_prompts.py",
+      "src/dopemux/ux/launcher_wizard.py",
+      "src/dopemux/profile_wizard.py",
+      "tests/unit/test_wizard_interactivity.py",
+      "tests/unit/test_launcher_wizard.py",
+      "tests/unit/test_profile_wizard.py",
+      "task-packets/INDEX.md",
+      "task-packets/generated/TP-DMX-ADHD-INTERACTIVE-PROMPTS-001.json"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-ADHD-INTERACTIVE-PROMPTS-001.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-ADHD-INTERACTIVE-PROMPTS-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/unit/test_wizard_interactivity.py tests/unit/test_launcher_wizard.py tests/unit/test_profile_wizard.py -q",
+      "python -m pytest tests/test_cli.py::TestCLI::test_start_command_role_dry_run tests/test_cli.py::TestCLI::test_start_command_profile_dry_run -q",
+      "git diff --check",
+      "pre-commit run --files src/dopemux/ux/interactive_prompts.py src/dopemux/ux/launcher_wizard.py src/dopemux/profile_wizard.py tests/unit/test_wizard_interactivity.py tests/unit/test_launcher_wizard.py tests/unit/test_profile_wizard.py task-packets/INDEX.md task-packets/generated/TP-DMX-ADHD-INTERACTIVE-PROMPTS-001.json"
+    ]
+  },
+  "pr": {
+    "title": "fix(adhd): wire interactive prompts into launch and profile flows",
+    "body": "## Summary\n- Fixes the ADHD interactive prompt helper so show-more actually expands beyond the initial max-three choices.\n- Wires the helper into live launcher role selection while preserving the existing boot-sequence UI.\n- Uses the same progressive prompt pattern for profile wizard MCP selection.\n\n## Test Plan\n- python -m json.tool task-packets/generated/TP-DMX-ADHD-INTERACTIVE-PROMPTS-001.json >/dev/null\n- python -m jsonschema -i task-packets/generated/TP-DMX-ADHD-INTERACTIVE-PROMPTS-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- python -m pytest tests/unit/test_wizard_interactivity.py tests/unit/test_launcher_wizard.py tests/unit/test_profile_wizard.py -q\n- python -m pytest tests/test_cli.py::TestCLI::test_start_command_role_dry_run tests/test_cli.py::TestCLI::test_start_command_profile_dry_run -q\n- git diff --check\n- pre-commit run --files <changed files>\n\n@codex review\n@gemini\n@copilot",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repo identity, item state, and existing prompt, launcher, and profile wizard behavior.",
+      "context_files": [
+        "AGENTS.md",
+        ".taskorchestrator/config.yaml",
+        "src/dopemux/ux/interactive_prompts.py",
+        "src/dopemux/ux/launcher_wizard.py",
+        "src/dopemux/profile_wizard.py",
+        "src/dopemux/cli.py",
+        "tests/unit/test_wizard_interactivity.py",
+        "tests/unit/test_launcher_wizard.py",
+        "tests/unit/test_profile_wizard.py"
+      ],
+      "validation": [
+        "get_context 885c68a0 reports ready or work state with no unsatisfied dependencies.",
+        "Existing non-test callers of InteractivePrompts and live launcher/profile prompt paths are identified before editing."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Fix progressive disclosure in InteractivePrompts without changing max_choices default.",
+      "requirements": [
+        "Initial action/menu views must show at most three real choices plus an explicit show-more affordance.",
+        "The show-more affordance must terminate by expanding the selectable set instead of recursively repeating the same limited view.",
+        "KeyboardInterrupt handling and missing questionary behavior must remain deterministic."
+      ],
+      "expected_files": [
+        "src/dopemux/ux/interactive_prompts.py",
+        "tests/unit/test_wizard_interactivity.py"
+      ],
+      "validation": [
+        "Focused tests cover max-three initial action selection and expanded show-more selection."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Wire InteractivePrompts into live launch/profile flows without affecting non-interactive runs.",
+      "requirements": [
+        "Launcher role selection should use max-three progressive disclosure and then preserve boot-sequence wizard updates after a role is selected.",
+        "Profile wizard MCP selection should use the same max-three progressive helper for recommended/minimal/full/custom options.",
+        "Existing dry-run and explicit --role paths must not prompt."
+      ],
+      "expected_files": [
+        "src/dopemux/ux/launcher_wizard.py",
+        "src/dopemux/profile_wizard.py",
+        "tests/unit/test_launcher_wizard.py",
+        "tests/unit/test_profile_wizard.py"
+      ],
+      "validation": [
+        "python -m pytest tests/unit/test_launcher_wizard.py tests/unit/test_profile_wizard.py -q",
+        "python -m pytest tests/test_cli.py::TestCLI::test_start_command_role_dry_run tests/test_cli.py::TestCLI::test_start_command_profile_dry_run -q"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run packet, focused tests, diff hygiene, and precommit validation.",
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-DMX-ADHD-INTERACTIVE-PROMPTS-001.json >/dev/null",
+        "python -m jsonschema -i task-packets/generated/TP-DMX-ADHD-INTERACTIVE-PROMPTS-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python -m pytest tests/unit/test_wizard_interactivity.py tests/unit/test_launcher_wizard.py tests/unit/test_profile_wizard.py -q",
+        "python -m pytest tests/test_cli.py::TestCLI::test_start_command_role_dry_run tests/test_cli.py::TestCLI::test_start_command_profile_dry_run -q",
+        "git diff --check",
+        "pre-commit run --files src/dopemux/ux/interactive_prompts.py src/dopemux/ux/launcher_wizard.py src/dopemux/profile_wizard.py tests/unit/test_wizard_interactivity.py tests/unit/test_launcher_wizard.py tests/unit/test_profile_wizard.py task-packets/INDEX.md task-packets/generated/TP-DMX-ADHD-INTERACTIVE-PROMPTS-001.json"
+      ]
+    }
+  ]
+}
