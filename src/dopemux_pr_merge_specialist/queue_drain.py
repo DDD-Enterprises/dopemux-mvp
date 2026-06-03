@@ -280,6 +280,31 @@ def _applied_threads_resolved_locally(
     )
 
 
+def _resolve_applied_threads_after_validation(
+    *,
+    applied_threads: Iterable[ThreadDisposition],
+    validation: ValidationReport,
+    execute: bool,
+    commands_log: Path,
+    repo_root: Path,
+    policy: Dict[str, Any],
+) -> bool:
+    if not validation.passed or not execute:
+        return False
+    applied_thread_list = list(applied_threads)
+    if not _applied_threads_resolved_locally(applied_thread_list):
+        return False
+    return bool(
+        resolve_verified_threads(
+            dispositions=applied_thread_list,
+            execute=execute,
+            commands_log=commands_log,
+            repo_root=repo_root,
+            policy=policy,
+        )
+    )
+
+
 def _with_operator_state(
     result: PRResult, operator_state: str, *, detail: str = ""
 ) -> PRResult:
@@ -1488,6 +1513,25 @@ def pr_apply(
                         else:
                             log("Full validation still failed after remote-check remediation.", "ERROR")
 
+        threads_resolved_locally = _resolve_applied_threads_after_validation(
+            applied_threads=applied_threads,
+            validation=validation,
+            execute=execute,
+            commands_log=commands_log,
+            repo_root=repo_root,
+            policy=policy,
+        )
+        if (
+            validation.passed
+            and execute
+            and _applied_threads_resolved_locally(applied_threads)
+            and not threads_resolved_locally
+        ):
+            log(
+                "Thread resolution did not complete; active thread blockers remain authoritative.",
+                "ERROR",
+            )
+
         result = build_plan_result(
             active_run_id=active_run_id,
             pr=refreshed_pr,
@@ -1495,7 +1539,7 @@ def pr_apply(
             check_payload=refreshed_checks,
             validation_report=validation,
             policy=policy,
-            threads_resolved_locally=_applied_threads_resolved_locally(applied_threads),
+            threads_resolved_locally=threads_resolved_locally,
         )
         if operator_state:
             result = _with_operator_state(result, operator_state)
