@@ -1,0 +1,14 @@
+Final staged diff stat:
+
+ config/pr_merge_specialist/policy.yaml             |   6 +
+ docs/ops/steward-merge-gate.md                     |  48 ++++++
+ proof/TP-DMX-STEWARD-GATE-201/AUDITOR_REPORT.md    |  12 ++
+ proof/TP-DMX-STEWARD-GATE-201/CHANGED_FILES.txt    |  11 ++
+ proof/TP-DMX-STEWARD-GATE-201/DIFF_STAT.txt        |   9 ++
+ proof/TP-DMX-STEWARD-GATE-201/GIT_STATE.md         |  11 ++
+ proof/TP-DMX-STEWARD-GATE-201/PROOF.json           | 145 +++++++++++++++++
+ proof/TP-DMX-STEWARD-GATE-201/VALIDATION_OUTPUT.md |  19 +++
+ .../review_bundle/README.md                        |  16 ++
+ src/dopemux_pr_merge_specialist/steward_gate.py    | 134 ++++++++++++++++
+ tests/pr_merge_specialist/test_steward_gate.py     | 175 +++++++++++++++++++++
+ 11 files changed, 586 insertions(+)
