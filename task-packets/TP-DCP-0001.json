@@ -1,0 +1,112 @@
+{
+  "id": "TP-DCP-0001",
+  "project": "dopemux-mvp",
+  "target": "DCP Core provenance contracts + read-only control-snapshot envelope (contract-locking only; net-new files under schemas/dcp, tests/dcp, proof/TP-DCP-0001; no live adapters, no mutation).",
+  "invariants": [
+    "Read-only contract-locking packet: net-new files only; no edits to existing code/config/workflows.",
+    "Every contract carries provenance {REPO_VALIDATED|EXTERNAL_PROPOSED|SYNTHESIS_INVENTED} + validation_state (REV1 §6.0).",
+    "DR-016-derived and synthesis-invented field lists are PROVISIONAL-UNVERIFIED_ENFORCEMENT; not locked as repo authority.",
+    "DCP-RED-MERGE-SEAM-0001: never import/call/wrap/wire src/dopemux_pr_merge_specialist/queue_drain.py execute=True seam or scripts/batch_resolve_and_merge.py (both verified present in origin/main).",
+    "DCP_MUTATION_CLASS, DCP_APPROVAL_ARTIFACT, DCP_PROJECT_RESOURCE_MAP are DEFERRED from this packet (REV1 §4); locking any without direct repo derivation stops the packet.",
+    "LIVE_WRITE_READY undefined and blocking; no live reads/writes; no subprocess except local pytest + read-only git; no filesystem traversal of target repo for fixtures (SHAs are illustrative placeholders only).",
+    "auditor != implementer: embedded audit by an actor distinct from the contract author; supervisor sign-off recorded separately in the proof bundle.",
+    "auditorVerdict is a distinct field from validationState; mirrors/proxies/indexes/cache-freshness are never authority.",
+    "Open PRs #765-792 and generated TP series remain CLAIMED_ONLY; UNKNOWN is never promoted to fact.",
+    "execution.agent enum lacks a Claude option (documented repo gap, SCHEMA-0001); execution omitted rather than mislabel as codex — actual implementer/auditor identities recorded in PROOF.json."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "origin_hint": "github.com/DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DCP-CORE-CONTRACTS",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "feat(dcp): TP-DCP-0001 provenance-safe DCP core contracts + read-only control-snapshot envelope (.v0)",
+    "allowlist": [
+      "schemas/dcp/*.schema.json",
+      "schemas/dcp/README.md",
+      "tests/dcp/test_dcp_contracts.py",
+      "tests/dcp/fixtures/dcp_core_fixture.json",
+      "task-packets/TP-DCP-0001.json",
+      "proof/TP-DCP-0001/PROOF.json",
+      "proof/TP-DCP-0001/AUDIT.md"
+    ],
+    "verify": [
+      "python3 -m pytest tests/dcp -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): DCP core provenance contracts + control-snapshot envelope (TP-DCP-0001)",
+    "body": "First DCP build packet, contract-locking only (read-only, net-new files). Locks the provenance-safe .v0 contract floor from the GPT-5.5 synthesis REV1 (Opus-audited GO_WITH_FIXES, delta-rechecked): dcp_red_lane_taxonomy (incl. the DCP-RED-MERGE-SEAM-0001 invariant), dcp_control_snapshot (envelope-only), and PROVISIONAL .v0 envelopes for dcp_proof_pointer / dcp_evidence_hit / dcp_chronicle_receipt / dcp_helper_receipt + a §6.0 provenance meta-contract. No live adapters/writes; DCP_MUTATION_CLASS/APPROVAL_ARTIFACT/PROJECT_RESOURCE_MAP deferred. Every contract+field provenance-tagged (REPO_VALIDATED/EXTERNAL_PROPOSED/SYNTHESIS_INVENTED); acceptance verifies provenance coverage, not just fixture round-trip; auditor != implementer. Evidence campaign + synthesis + audit trail in artifacts/dcp (dcp/evidence-campaign branch).",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "implement",
+      "codereview(auditor!=implementer)",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Author the §6.0 provenance/validation meta-contract and the six DCP .v0 contract schemas under schemas/dcp/: dcp_red_lane_taxonomy, dcp_control_snapshot (envelope+authority-metadata only; per-surface fields provisional), dcp_proof_pointer (pointer shell; auditor_verdict distinct from validation_state), dcp_evidence_hit, dcp_chronicle_receipt, dcp_helper_receipt. Each schema embeds a provenance block (tag + source_ref) and validation block (state). External (DR-016) / synthesis-invented shapes carry validation_state=PROVISIONAL_UNVERIFIED_ENFORCEMENT.",
+      "requirements": [
+        "draft-07; additionalProperties:false at top level",
+        "schema_version uses .v0 suffix (K-27 unresolved)",
+        "no live SHA/hash computation; digest/sha fields optional in fixtures"
+      ],
+      "expected_files": [
+        "schemas/dcp/dcp_red_lane_taxonomy.schema.json",
+        "schemas/dcp/dcp_control_snapshot.schema.json",
+        "schemas/dcp/dcp_proof_pointer.schema.json",
+        "schemas/dcp/dcp_evidence_hit.schema.json",
+        "schemas/dcp/dcp_chronicle_receipt.schema.json",
+        "schemas/dcp/dcp_helper_receipt.schema.json",
+        "schemas/dcp/README.md"
+      ],
+      "validation": [
+        "python3 -c \"import json,glob; [json.load(open(f)) for f in glob.glob('schemas/dcp/*.schema.json')]\" exits 0 (all parse)",
+        "every schema has $schema=draft-07, schema_version ending .v0, and a provenance + validation block"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Encode DCP-RED-MERGE-SEAM-0001 and the universal red lanes into dcp_red_lane_taxonomy (schema enumerations + a seed instance in the fixture). Each lane carries a provenance tag; the merge-seam lane names src/dopemux_pr_merge_specialist/queue_drain.py and scripts/batch_resolve_and_merge.py and is tagged REPO_VALIDATED_BY_AUDIT.",
+      "validation": [
+        "fixture's red_lane_taxonomy contains a lane id DCP-RED-MERGE-SEAM-0001 naming both merge-seam paths",
+        "every lane entry has a provenance tag from the allowed set"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Author a single static fixture tests/dcp/fixtures/dcp_core_fixture.json containing one instance per contract, populated ONLY from pasted evidence text. All SHA/hash/digest values are illustrative placeholders (clearly marked); no file-system traversal of the target repo.",
+      "expected_files": ["tests/dcp/fixtures/dcp_core_fixture.json"],
+      "validation": [
+        "fixture instances validate against their .v0 schemas",
+        "no real repo SHA is computed; placeholder markers present"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Author tests/dcp/test_dcp_contracts.py: (a) jsonschema-validate each fixture instance against its schema; (b) provenance presence-lint — every contract + every field carries a provenance tag; (c) assert external/invented contracts are validation_state=PROVISIONAL; (d) assert auditor_verdict and validation_state are distinct fields in dcp_proof_pointer; (e) assert the deferred 3 contracts are ABSENT from schemas/dcp (defer guard). Provenance coverage is a separate assertion from fixture round-trip.",
+      "expected_files": ["tests/dcp/test_dcp_contracts.py"],
+      "validation": [
+        "python3 -m pytest tests/dcp -q passes",
+        "test suite includes a provenance-coverage assertion distinct from schema round-trip",
+        "test asserts dcp_mutation_class/dcp_approval_artifact/dcp_project_resource_map schemas are NOT present (deferred)"
+      ]
+    }
+  ]
+}

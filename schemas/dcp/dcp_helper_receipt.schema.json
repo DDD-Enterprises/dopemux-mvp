@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/dcp/dcp_helper_receipt.v0.schema.json",
+  "title": "DCP Helper Receipt (Envelope Only)",
+  "description": "EXTERNAL_PROPOSED (DR-016) / PROVISIONAL_UNVERIFIED_ENFORCEMENT. Advisory only; a helper receipt cannot certify readiness. No repo-runtime helper-receipt artifact exists to validate against. schema_version .v0 = unstable, not authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "provenance",
+    "validation",
+    "helper_receipt_id",
+    "helper_tool",
+    "helper_model",
+    "invocation_ref",
+    "output_ref",
+    "mutation_performed",
+    "red_lane_flags",
+    "remaining_risks",
+    "field_provenance",
+    "validation_state"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "dcp-helper-receipt.v0",
+      "description": ".v0 suffix per K-27; unstable version marker, not an authority claim."
+    },
+    "provenance": {
+      "type": "object",
+      "description": "Contract-level provenance per REV1 §6.0 meta-contract. EXTERNAL_PROPOSED: shape seeded by DR-016; no repo-runtime helper-receipt exists.",
+      "additionalProperties": false,
+      "required": ["tag", "source_ref"],
+      "properties": {
+        "tag": {
+          "type": "string",
+          "enum": ["REPO_VALIDATED", "EXTERNAL_PROPOSED", "SYNTHESIS_INVENTED"]
+        },
+        "source_ref": {
+          "type": "string"
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "description": "Validation status per REV1 §6.0. PROVISIONAL_UNVERIFIED_ENFORCEMENT: envelope not cross-checked; no repo-runtime analog exists.",
+      "additionalProperties": false,
+      "required": ["state", "notes"],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": ["REPO_CROSS_CHECKED", "PROVISIONAL_UNVERIFIED_ENFORCEMENT", "DEFERRED"]
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "helper_receipt_id": {
+      "type": "string",
+      "description": "Unique identifier for this helper receipt."
+    },
+    "helper_tool": {
+      "type": "string",
+      "description": "Name of the helper tool or agent that produced this receipt."
+    },
+    "helper_model": {
+      "type": "string",
+      "description": "Model identifier of the helper (e.g. claude-sonnet-4-6, gpt-5)."
+    },
+    "invocation_ref": {
+      "type": "string",
+      "description": "Reference to the invocation record (e.g. session ID, task packet ID, conversation ref)."
+    },
+    "output_ref": {
+      "type": "string",
+      "description": "Reference to the output artifact produced by the helper."
+    },
+    "exit_code": {
+      "type": ["integer", "null"],
+      "description": "Optional exit code from the helper invocation (null if not applicable)."
+    },
+    "mutation_performed": {
+      "type": "boolean",
+      "description": "True if the helper performed a mutation. False for read-only analysis. Advisory: a helper receipt cannot self-certify readiness."
+    },
+    "red_lane_flags": {
+      "type": "array",
+      "description": "Red lane IDs that were flagged by or relevant to this helper invocation.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "remaining_risks": {
+      "type": "array",
+      "description": "Risks or uncertainties identified by the helper that remain unresolved.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "field_provenance": {
+      "type": "object",
+      "description": "Per-field provenance tags. DR-016 field vocab is EXTERNAL_PROPOSED; no repo-runtime analog exists for cross-check.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "validation_state": {
+      "type": "string",
+      "enum": ["REPO_CROSS_CHECKED", "PROVISIONAL_UNVERIFIED_ENFORCEMENT", "DEFERRED"],
+      "description": "PROVISIONAL_UNVERIFIED_ENFORCEMENT for all DR-016-derived helper receipts until repo-local vocab reconciliation."
+    }
+  }
+}
