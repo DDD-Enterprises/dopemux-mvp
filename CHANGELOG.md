@@ -45,6 +45,7 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 - Restored post-validation GitHub review-thread resolution before queue-drain records local thread-resolution evidence.
 - Recomputed PR Steward legacy string proof-freshness values from proof and PR head SHAs so stale proof cannot self-report current.
 - Synced the PR Merge Specialist skill template with the runtime finalization modules so generated skills include `steward_gate.py` and pin merges to the steward-gated head SHA.
+- Pinned governed auto-merge fallback commands with `--match-head-commit` and blocked arming auto-merge when no steward-gated head SHA is available.
 - Decisions CLI review repair now uses the ConPort HTTP REST port, accepts string decision IDs, validates referenced decisions before append-only writes, preserves requested list limits, and covers the new subcommands with focused tests.
 - MCP doctor now runs relative stdio doctor commands from the resolved repo root, so Task Orchestrator wrapper checks work when invoked from repo subdirectories.
 - MCP bootstrap now points Task Orchestrator at a tracked launcher wrapper and keeps catalog-rendered SSE URL defaults aligned with checked-in `.mcp.json`.

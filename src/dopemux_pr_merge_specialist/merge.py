@@ -367,7 +367,24 @@ def run_merge_with_fallback(
             )
         # For auto-merge, we still use the 'gh pr merge --auto' command via shell for now
         # until client support is added, but REBASE is the preference.
-        command = ["gh", "pr", "merge", str(pr_id), "--auto", "--rebase"]
+        merge_expected_head_oid = str(expected_head_oid or "").strip()
+        if not merge_expected_head_oid:
+            return MergeDecision(
+                action=MergeActionType.BLOCKED,
+                command=[],
+                reason="UNKNOWN: governed auto-merge requires the steward-gated expected head SHA.",
+                reason_code="expected_head_oid_unknown",
+            )
+        command = [
+            "gh",
+            "pr",
+            "merge",
+            str(pr_id),
+            "--auto",
+            "--rebase",
+            "--match-head-commit",
+            merge_expected_head_oid,
+        ]
         if repo:
             command.extend(["--repo", repo])
         result = execute_or_dry_run(
