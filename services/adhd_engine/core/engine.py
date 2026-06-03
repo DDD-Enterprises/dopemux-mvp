@@ -570,11 +570,12 @@ class ADHDAccommodationEngine:
     def _append_activity_baseline_sample(self, user_id: str, activity_data: Dict[str, Any]) -> None:
         """Store bounded numeric activity metrics for per-user calibration.
 
-        Only records a sample when the activity data contains at least the core
-        numeric fields.  Absent fields must not be turned into real baseline
-        values by using their default substitutes (that would corrupt thresholds).
+        Only records a sample when the activity data contains ALL of the core
+        numeric fields.  A partial update must not be turned into a baseline
+        sample, because the missing field would be filled with a default
+        substitute and corrupt the per-user thresholds.
         """
-        if not any(f in activity_data for f in self._BASELINE_REQUIRED_FIELDS):
+        if not all(f in activity_data for f in self._BASELINE_REQUIRED_FIELDS):
             return
         sample = self._activity_baseline_sample(activity_data)
         samples = self.activity_baseline_samples.setdefault(user_id, [])
