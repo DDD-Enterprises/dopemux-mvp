@@ -1,0 +1,237 @@
+{
+  "id": "DMX-DESIGN-CLI-PALETTE-CUTOVER-001",
+  "project": "dopemux-mvp",
+  "target": "Cutover the live CLI palette (src/dopemux/ui/theme.py) to Direction B — Electric Refresh. Fixes the two structurally-broken slots (error=pink→red-family, success=mint→green-family), repairs the AA fail on text.muted, and updates BRAND_SYSTEM.md doctrine accordingly. Single source of truth becomes claudedocs/design/tokens.json. No web surfaces touched.",
+  "invariants": [
+    "Do not touch src/dopemux/ui/theme.py without a passing run of brand_lint.py after the edit.",
+    "Do not touch src/dopemux/tmux/theme.py or any Textual TCSS until the Rich theme cutover is proven to pass all tests.",
+    "Do not change web surfaces (claudedocs/design/ artifacts are scratch; actual MUI/Radix theming is out of scope for this packet).",
+    "Preserve all existing named style keys in build_theme() — add or change values only, never remove a key another module references.",
+    "error must map to a red-family hue (hue 330–20°). Magenta/pink is forbidden as error after this packet.",
+    "success must map to a green-family hue (hue 80–160°). Cyan/mint is forbidden as success after this packet.",
+    "Every changed hex must produce WCAG AA ≥4.5 on base surface #020617 (text_disabled is WCAG-exempt).",
+    "gremlin_pink must be retained as a non-semantic brand-accent name only — no status use.",
+    "BRAND_SYSTEM.md doctrine update (danger=red-family) is required in this same commit.",
+    "sync_brand_tokens.py and brand_lint.py gates must be updated to enforce the new values, not the old ones.",
+    "Do not introduce new dependencies.",
+    "Do not alter ANSI fallback maps to anything other than their correct color-family name.",
+    "Mark UNKNOWN explicitly for any surface you cannot verify."
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dopemux-design-cli-palette",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/design-cli-palette-cutover"
+  },
+  "commit": {
+    "message": "feat(brand): Direction B palette cutover — error→red, success→green, AA fix",
+    "allowlist": [
+      "src/dopemux/ui/theme.py",
+      "BRAND_SYSTEM.md",
+      "scripts/sync_brand_tokens.py",
+      "scripts/brand_lint.py",
+      "task-packets/DMX-DESIGN-CLI-PALETTE-CUTOVER-001.json",
+      "task-packets/INDEX.md"
+    ],
+    "verify": [
+      "git rev-parse --show-toplevel",
+      "test -f .dopetaskroot",
+      "git remote -v",
+      "git branch --show-current",
+      "git status --short --branch",
+      "python -m json.tool task-packets/DMX-DESIGN-CLI-PALETTE-CUTOVER-001.json",
+      "python scripts/brand_lint.py",
+      "python -m pytest tests/ -x -q 2>&1 | tail -5",
+      "python -c \"from src.dopemux.ui.theme import build_theme; t=build_theme(); print('error:', t.styles.get('error')); print('success:', t.styles.get('success'))\"",
+      "grep -n 'FF8BD1\\|FF00FF' src/dopemux/ui/theme.py && echo 'FAIL: stale pink refs remain' || echo 'PASS: no stale pink'"
+    ]
+  },
+  "pr": {
+    "title": "feat(brand): Direction B palette cutover — error→red, success→green, AA fix",
+    "body": "## Summary\n- Cuts over `src/dopemux/ui/theme.py` to Direction B Electric Refresh palette\n- Fixes error slot: `#FF8BD1` (pink/magenta) → `#FF2255` (hot rose-red, ANSI-red-family, hue 346°)\n- Fixes success slot: `#94FADB` (cyan-colliding mint) → `#00FF85` (neon green, ANSI-green-family, hue 151°)\n- Fixes `text.muted`: `#64748B` (AA-fail 4.31) → `#808DA0` (WCAG AA 5.99)\n- Demotes gremlin-pink `#FF00CC` to accent-only (no status use)\n- Updates BRAND_SYSTEM.md: danger doctrine changed to red-family\n- Updates brand_lint.py / sync_brand_tokens.py enforcement gates\n\n## Scope\n- `src/dopemux/ui/theme.py` — palette values only, no key removals\n- `BRAND_SYSTEM.md` — doctrine section only\n- `scripts/sync_brand_tokens.py` + `scripts/brand_lint.py` — gate values only\n- No web surfaces, no Textual TCSS, no new deps\n\n## Validation\n- brand_lint.py PASS\n- ANSI maps: success=green, error=red, warning=yellow, info=cyan, aftercare=blue\n- WCAG AA verified by compute: all status tokens ≥4.5 on `#020617`\n- No stale `#FF8BD1` or `#FF00FF` refs in theme.py\n- Existing style key list unchanged (no removals)",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Verify repo identity, branch state, and locate all consumers of theme.py palette tokens.",
+      "requirements": [
+        "Confirm repo root, marker, origin, branch.",
+        "Locate every import of theme.py (RITUAL_CYAN, SERUM_MINT, GREMLIN_PINK, etc.) across the codebase.",
+        "Locate every reference to #FF8BD1 (old error pink) — must be zero after cutover.",
+        "Confirm brand_lint.py and sync_brand_tokens.py are the lint gates (read-only at this step).",
+        "Confirm current test suite runs and record baseline pass count."
+      ],
+      "commands": [
+        "git rev-parse --show-toplevel",
+        "test -f .dopetaskroot",
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short --branch",
+        "grep -rn 'from.*theme import\\|import.*theme\\|RITUAL_CYAN\\|SERUM_MINT\\|GREMLIN_PINK\\|AFTERCARE_VIOLET\\|GILT_EDGE\\|build_theme' src/ tests/ --include='*.py' | grep -v '__pycache__'",
+        "grep -rn 'FF8BD1\\|FF00FF\\|94FADB\\|64748B' src/ --include='*.py'",
+        "python -m pytest tests/ -x -q 2>&1 | tail -10"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Repo identity confirmed.",
+        "All theme.py consumers listed.",
+        "Baseline test count recorded.",
+        "Old hex refs located and flagged for removal."
+      ],
+      "context_files": [
+        "src/dopemux/ui/theme.py",
+        "scripts/brand_lint.py",
+        "scripts/sync_brand_tokens.py",
+        "BRAND_SYSTEM.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Apply Direction B palette values to src/dopemux/ui/theme.py.",
+      "requirements": [
+        "Change palette dict 'mint-mojo' color values to Direction B hexes (brand=#2FFFF0, success=#00FF85, error=#FF2255, warning=#FFE600, info=#00E5FF, aftercare=#C07BFF, gremlin_pink=#FF00CC).",
+        "Update build_theme() style map: error→bold #FF2255, success→#00FF85, and all derived chip/bar/panel styles that referenced the old pink or mint.",
+        "Update ANSI-16 low_color fallback: pink→magenta entry must become error→red (bold red), success entry → bold green.",
+        "Update text.muted to #808DA0.",
+        "Do NOT remove any existing key from the Theme dict.",
+        "Do NOT change any key name."
+      ],
+      "commands": [
+        "python -c \"from src.dopemux.ui.theme import build_theme; t=build_theme(); print('error:', t.styles.get('error')); print('success:', t.styles.get('success')); print('text.muted:', t.styles.get('text.muted'))\"",
+        "grep -n 'FF8BD1\\|FF00FF\\|94FADB\\|64748B' src/dopemux/ui/theme.py && echo 'FAIL: stale refs' || echo 'PASS'"
+      ],
+      "expected_files": [
+        "src/dopemux/ui/theme.py"
+      ],
+      "validation": [
+        "build_theme() returns error=bold #ff2255, success=#00ff85.",
+        "No stale #FF8BD1 or #FF00FF in theme.py.",
+        "All keys from baseline are still present."
+      ],
+      "context_files": [
+        "claudedocs/design/tokens.json",
+        "claudedocs/design/generated/dopemux_theme.py"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Update BRAND_SYSTEM.md doctrine: danger = red-family.",
+      "requirements": [
+        "Find the section declaring danger/error color and update the hex and hue-family description.",
+        "Add a note: 'gremlin-pink (#FF00CC) is a brand accent — decorative only, never a status indicator.'",
+        "Do not rewrite unrelated brand doctrine sections.",
+        "Keep the diff minimal."
+      ],
+      "commands": [
+        "grep -n 'danger\\|error\\|pink\\|gremlin\\|#FF8BD1\\|hot pink' BRAND_SYSTEM.md | head -20"
+      ],
+      "expected_files": [
+        "BRAND_SYSTEM.md"
+      ],
+      "validation": [
+        "BRAND_SYSTEM.md no longer claims pink as the danger color.",
+        "gremlin-pink accent-only note is present."
+      ],
+      "context_files": [
+        "BRAND_SYSTEM.md"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Update brand_lint.py and sync_brand_tokens.py gate values to enforce Direction B.",
+      "requirements": [
+        "Replace any hardcoded old error hex (#FF8BD1) in lint/sync scripts with #FF2255.",
+        "Replace any hardcoded old success hex (#94FADB) with #00FF85.",
+        "Replace old text.muted (#64748B) with #808DA0.",
+        "Run brand_lint.py to confirm it exits 0 after the changes."
+      ],
+      "commands": [
+        "grep -n 'FF8BD1\\|94FADB\\|64748B' scripts/brand_lint.py scripts/sync_brand_tokens.py 2>/dev/null || echo 'no matches'",
+        "python scripts/brand_lint.py"
+      ],
+      "expected_files": [
+        "scripts/brand_lint.py",
+        "scripts/sync_brand_tokens.py"
+      ],
+      "validation": [
+        "brand_lint.py exits 0.",
+        "No stale old-palette hex values remain in lint/sync scripts."
+      ],
+      "context_files": [
+        "scripts/brand_lint.py",
+        "scripts/sync_brand_tokens.py"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run full test suite and verify no regressions.",
+      "requirements": [
+        "Run pytest -x — must pass at or above baseline count from S1.",
+        "Manually render a short status chip row in Rich to confirm colors are visually correct (optional if no interactive terminal available).",
+        "Run the stale-pink grep as a hard gate — must return zero matches."
+      ],
+      "commands": [
+        "python -m pytest tests/ -x -q 2>&1 | tail -15",
+        "python scripts/brand_lint.py",
+        "grep -rn 'FF8BD1\\|FF00FF' src/ --include='*.py' && echo 'FAIL: stale pink' || echo 'PASS: clean'",
+        "python -c \"from src.dopemux.ui.theme import build_theme; import rich.console as rc; c=rc.Console(theme=build_theme()); c.print('[success]✓ DONE[/] [error]✗ FAIL[/] [warning]⚠ WARN[/] [info]● INFO[/]')\""
+      ],
+      "expected_files": [],
+      "validation": [
+        "pytest exit 0, count at or above baseline.",
+        "brand_lint.py exit 0.",
+        "No stale pink refs.",
+        "Rich renders status line without exceptions."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "S6",
+      "task": "Commit, update INDEX.md, open PR.",
+      "requirements": [
+        "Stage only the allowlist files.",
+        "Verify no unintended files are staged.",
+        "Write commit message from packet spec.",
+        "Update task-packets/INDEX.md with this packet entry.",
+        "Open PR to main with the body from packet spec."
+      ],
+      "commands": [
+        "git diff --name-only --cached",
+        "python -m json.tool task-packets/DMX-DESIGN-CLI-PALETTE-CUTOVER-001.json",
+        "git status --short --branch"
+      ],
+      "expected_files": [
+        "task-packets/DMX-DESIGN-CLI-PALETTE-CUTOVER-001.json",
+        "task-packets/INDEX.md"
+      ],
+      "validation": [
+        "Only allowlist files in commit.",
+        "PR open against main.",
+        "INDEX.md updated."
+      ],
+      "context_files": [
+        "task-packets/INDEX.md"
+      ]
+    }
+  ]
+}
