@@ -230,7 +230,51 @@ def test_14_unsupported_uri_schemes_are_rejected_not_referenced(tmp_path):
     assert any("unsupported reference scheme not followed" in error for error in result.errors)
 
 
-def test_15_dcp_modules_do_not_contain_forbidden_execution_paths():
+def test_15_json_proof_bundle_with_audit_text_is_not_markdown_audit(tmp_path):
+    proof = tmp_path / "PROOF.json"
+    proof.write_text(
+        json.dumps(
+            {
+                "packet_id": "TP-DCP-0003",
+                "head_sha": _EXPECTED_HEAD_SHA,
+                "changed_files": [],
+                "audit_notes": "Audit Verdict: PASS_WITH_RISKS",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = classify_artifact(proof, expected_head_sha=_EXPECTED_HEAD_SHA)
+
+    assert result.family is ProofFamily.DCP_PROOF_BUNDLE
+    assert result.freshness is FreshnessStatus.FRESH
+    assert result.fields["packet_id"].value == "TP-DCP-0003"
+    assert result.fields["head_sha"].value == _EXPECTED_HEAD_SHA
+
+
+def test_16_detected_live_write_status_fails_closed(tmp_path):
+    proof = tmp_path / "PROOF.json"
+    proof.write_text(
+        json.dumps(
+            {
+                "packet_id": "TP-DCP-0003",
+                "head_sha": _EXPECTED_HEAD_SHA,
+                "changed_files": [],
+                "live_write_status": "DETECTED",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = classify_artifact(proof, expected_head_sha=_EXPECTED_HEAD_SHA)
+
+    assert result.live_write_status is LiveWriteStatus.DETECTED
+    assert result.family is ProofFamily.CONFLICTING
+    assert result.freshness is FreshnessStatus.CONFLICTING
+    assert any("live_write_status appears detected" in error for error in result.errors)
+
+
+def test_17_dcp_modules_do_not_contain_forbidden_execution_paths():
     dcp_root = Path(__file__).resolve().parents[2] / "src" / "dopemux" / "dcp"
     text = "\n".join(
         path.read_text(encoding="utf-8")
@@ -247,7 +291,7 @@ def test_15_dcp_modules_do_not_contain_forbidden_execution_paths():
     assert all(fragment not in text for fragment in forbidden_fragments)
 
 
-def test_16_dcp_modules_do_not_contain_external_endpoint_call_paths():
+def test_18_dcp_modules_do_not_contain_external_endpoint_call_paths():
     dcp_root = Path(__file__).resolve().parents[2] / "src" / "dopemux" / "dcp"
     text = "\n".join(
         path.read_text(encoding="utf-8")
