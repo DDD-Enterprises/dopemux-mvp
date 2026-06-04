@@ -359,6 +359,9 @@ def _extract_references(
         if parsed.scheme in {"http", "https"}:
             errors.append(f"remote reference not followed: {ref}")
             continue
+        if parsed.scheme:
+            errors.append(f"unsupported reference scheme not followed: {ref}")
+            continue
         candidate = Path(ref)
         if candidate.is_absolute() or ".." in candidate.parts:
             errors.append(f"unsafe local reference not followed: {ref}")

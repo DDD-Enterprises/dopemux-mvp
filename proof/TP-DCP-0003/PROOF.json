@@ -219,16 +219,61 @@
     }
   ],
   "pr_steward_readiness_result": "NOT_RUN",
-  "pr_url": null,
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/809",
   "proof_freshness": {
     "head_sha_current": false,
     "proof_commit_matches_head": false,
     "reason": "Generated before the packet commit. Embedding the final commit SHA in the same committed file is hash-recursive; final SHA is reported in final output and can be checked by PR Steward.",
     "stale": true
   },
+  "review_followup": {
+    "source": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/809#discussion_r3356130582",
+    "issue": "Reject non-HTTP remote pointer schemes instead of accepting them as local referenced paths.",
+    "status": "FIXED_LOCALLY",
+    "commands": [
+      {
+        "command": "python3 -m pytest tests/dcp/test_dcp_0003_proof_family_dispatch.py::test_14_unsupported_uri_schemes_are_rejected_not_referenced -q",
+        "exit_code": 1,
+        "result": "RED_EXPECTED",
+        "evidence": "Regression test failed before the implementation because ssh://host/repo/proof/PROOF.json was present in referenced_paths."
+      },
+      {
+        "command": "python3 -m pytest tests/dcp/test_dcp_0003_proof_family_dispatch.py::test_14_unsupported_uri_schemes_are_rejected_not_referenced -q",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python3 -m pytest tests/dcp/test_dcp_0003_proof_family_dispatch.py -q",
+        "exit_code": 0,
+        "result": "PASS",
+        "stdout": "................                                                         [100%]\n"
+      },
+      {
+        "command": "python3 -m pytest tests/dcp -q",
+        "exit_code": 0,
+        "result": "PASS",
+        "stdout": ".........................................                                [100%]\n"
+      },
+      {
+        "command": "python3 -m compileall -q src tests",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python3 -m json.tool proof/TP-DCP-0003/PROOF.json >/dev/null",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "git diff --check",
+        "exit_code": 0,
+        "result": "PASS"
+      }
+    ]
+  },
   "residual_risks": [
     "Freshness classification is local-only and depends on a caller-supplied expected_head_sha.",
-    "No PR Steward run yet; readiness is NOT_RUN before PR creation.",
+    "No local PR Steward readiness artifact is committed; GitHub PR Steward must be rechecked on the pushed commit before merge.",
     "Final commit SHA cannot be embedded in this same committed proof file without changing the commit hash.",
     "Validation grep over tests/dcp reports pre-existing TP-DCP-0001/0002 red-line fixture references; no new DCP module forbidden import/call/wrap path was added."
   ],
@@ -243,14 +288,14 @@
       "exit_code": 0,
       "result": "PASS",
       "stderr": "",
-      "stdout": "...............                                                          [100%]\n"
+      "stdout": "................                                                         [100%]\n"
     },
     {
       "command": "python3 -m pytest tests/dcp -q",
       "exit_code": 0,
       "result": "PASS",
       "stderr": "",
-      "stdout": "........................................                                 [100%]\n"
+      "stdout": ".........................................                                [100%]\n"
     },
     {
       "command": "python3 -m compileall -q src tests",
