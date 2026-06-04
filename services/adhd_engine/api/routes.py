@@ -1625,11 +1625,12 @@ async def log_user_intent(
         # only structured signals/adhd_state/timestamp are stored. Strip/ignore
         # content rather than rejecting and breaking the live hook (mirrors
         # /save-context).
-        matched_key = _find_content_bearing_key(request)
-        if matched_key:
+        if _find_content_bearing_key(request) is not None:
+            # Do not log the field path itself — it derives from the request and
+            # a static message keeps the log provably free of request-derived data.
             logger.debug(
                 brand_log(
-                    f"log-intent: ignoring content-bearing field '{matched_key}' "
+                    "log-intent: ignoring content-bearing field(s) "
                     "(only structured signals are stored)."
                 )
             )
@@ -1731,11 +1732,11 @@ async def save_context_for_hook(
         # any persistence layer — only "reason" is consumed here.
         # Rather than rejecting the request and silently breaking hook callers,
         # we log a debug warning and ignore the content-bearing fields.
-        matched_key = _find_content_bearing_key(request)
-        if matched_key:
+        if _find_content_bearing_key(request) is not None:
+            # Static message only — never log the request-derived field path.
             logger.debug(
                 brand_log(
-                    f"save-context: ignoring content-bearing field '{matched_key}' "
+                    "save-context: ignoring content-bearing field(s) "
                     "(only 'reason' is used; content is not persisted)."
                 )
             )
