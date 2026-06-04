@@ -58,7 +58,7 @@
     }
   ],
   "commit_sha": "719f4de84",
-  "pr_url": "PENDING — set after push",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/805",
   "live_write_ready_status": "UNDEFINED AND BLOCKING — not defined in this packet",
   "live_writes_performed": false,
   "merge_seam_invariant": "DCP-RED-MERGE-SEAM-0001 preserved — MC-MERGE-SEAM-FORBIDDEN hard-block class present in mutation class registry; queue_drain.py and batch_resolve_and_merge.py not imported/called/referenced as execution paths in any schema",
