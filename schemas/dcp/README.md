@@ -60,7 +60,7 @@ Every schema and every fixture instance carries two mandatory blocks:
 | Schema File | Provenance Tag | Validation State | Notes |
 |-------------|---------------|-----------------|-------|
 | `dcp_red_lane_taxonomy.schema.json` | `REPO_VALIDATED` | `REPO_CROSS_CHECKED` | Core lane taxonomy verified against origin/main. Each lane carries its own `provenance_tag` (may include `REPO_VALIDATED_BY_AUDIT`). |
-| `dcp_control_snapshot.schema.json` | `SYNTHESIS_INVENTED` | `PROVISIONAL_UNVERIFIED_ENFORCEMENT` | Envelope + authority-metadata only. Per-surface fields unlocked pending `DCP_PROJECT_RESOURCE_MAP` (now available). |
+| `dcp_control_snapshot.schema.json` | `SYNTHESIS_INVENTED` | `PROVISIONAL_UNVERIFIED_ENFORCEMENT` | Envelope + authority-metadata plus TP-DCP-0004 local derived snapshot fields. Per-surface fields remain non-authoritative. |
 | `dcp_proof_pointer.schema.json` | `SYNTHESIS_INVENTED` | `PROVISIONAL_UNVERIFIED_ENFORCEMENT` | Pointer shell only; no live SHA/hash. `auditor_verdict` and `validation_state` are DISTINCT fields — see invariant below. |
 | `dcp_evidence_hit.schema.json` | `EXTERNAL_PROPOSED` | `PROVISIONAL_UNVERIFIED_ENFORCEMENT` | 17-field DR-016 shape. 13 repo-only UNKNOWNs pending before exit from `.v0`. |
 | `dcp_chronicle_receipt.schema.json` | `EXTERNAL_PROPOSED` | `PROVISIONAL_UNVERIFIED_ENFORCEMENT` | DR-016 envelope only. 22 candidate fields not locked. |
@@ -76,6 +76,16 @@ The following contracts were deferred from TP-DCP-0001 and delivered by TP-DCP-0
 - `DCP_MUTATION_CLASS` — DELIVERED by TP-DCP-0002 (tier vocab from `approval_policy.yaml` + `policy.py`)
 - `DCP_APPROVAL_ARTIFACT` — DELIVERED by TP-DCP-0002 (SYNTHESIS_INVENTED envelope; REPO_VALIDATED vocab)
 - `DCP_PROJECT_RESOURCE_MAP` — DELIVERED by TP-DCP-0002 (path roots from ARCHITECTURE.md + filesystem)
+
+### TP-DCP-0004 Control Snapshot Generator
+
+TP-DCP-0004 extends the existing repo-local schema file
+`schemas/dcp/dcp_control_snapshot.schema.json`. It does not introduce
+`schemas/dcp/dcp_control_snapshot.v0.schema.json`.
+
+The generated `DCP_CONTROL_SNAPSHOT` object is a local, derived,
+non-authoritative inspection view. Source task packets, proof artifacts,
+schemas, and tests remain more authoritative than generated snapshots.
 
 ---
 
