@@ -7,10 +7,11 @@ author: '@hu3mann'
 date: '2026-05-28'
 prelude: Reference for GitHub adapter methods driving pull request queueing and comments.
 related_packets:
-  - TP-DMX-ORCH-013
-  - TP-DMX-ORCH-013-LIVE
+- TP-DMX-ORCH-013
+- TP-DMX-ORCH-013-LIVE
+last_review: '2026-06-04'
+next_review: '2026-09-02'
 ---
-
 # GitHub Adapter Reference
 
 The GitHub adapter coordinates live pull request reads and comment mutations through the CLI and JSON adapters.

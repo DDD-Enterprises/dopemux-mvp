@@ -5,11 +5,13 @@ type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-05-28'
-prelude: Reference explaining modified file cache checks and gated context freshness nudging.
+prelude: Reference explaining modified file cache checks and gated context freshness
+  nudging.
 related_packets:
-  - TP-DMX-ORCH-008
+- TP-DMX-ORCH-008
+last_review: '2026-06-04'
+next_review: '2026-09-02'
 ---
-
 # Context Status & Refresh Workflow
 
 The context refresh workflow ensures that the agent's context window stays fresh relative to recent upstream code mutations.

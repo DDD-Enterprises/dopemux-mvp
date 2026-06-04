@@ -1,0 +1,55 @@
+{
+  "audit": "RTE Final Go-Live Audit (before live spend)",
+  "date": "2026-06-03",
+  "type": "read-only audit (no product code changed)",
+  "target": {
+    "branch": "main",
+    "sha": "31d1f168ebaaa2b3e5805529c8e754e1efbe59c4",
+    "method": "detached git worktree at main SHA (/Users/hue/code/dmx-rte-audit, removed after)"
+  },
+  "auditor_env": {"python": "3.12.13", "os": "darwin", "ci_reference_env": "python 3.11 / linux"},
+  "prior_baseline": {"sha": "8ea182dd3", "verdict": "6 CRIT BLOCKING -> RUNNABLE-BOUNDED-LANE-ONLY", "commits_since": 575},
+  "verdicts": {
+    "local_cli_default_legacy_lane": "CONDITIONAL-GO / RUNNABLE-BOUNDED-LANE (after fixing default-route 404; cap-abort must be exercised on a completing paid run before unattended spend)",
+    "local_cli_sp_registry_lane": "NO-GO (S4: 0 SP contract entries; truth-split gate dead + P1-waivable)",
+    "networked_mcp": "NO-GO without hardening (~15 services bind 0.0.0.0; default DB password in source)"
+  },
+  "validations": [
+    {"name": "full RTE suite on main", "result": "PASS (CI ref env)", "detail": "~1158 tests; green on python3.11/linux CI; 4 strict-xfail XPASS on 3.12/macOS (env-dependent prescan invariants, deferred TP-RTE-WALKER-006)", "exit_code_local": 1, "note": "local exit 1 due to XPASS(strict), not regressions"},
+    {"name": "targeted spend/gate/structured suites (202 tests)", "result": "PASS", "exit_code": 0, "files": ["test_spend_ledger*", "test_cost_profiles", "test_run_extraction_v5_cost_cap", "test_pre_live_gate_v25", "test_run_extraction_v5_validator*", "test_structured_output_schema_strictness", "test_batch_clients_integration"]},
+    {"name": "live-consent guard (--execute without DPMX_LIVE_OK)", "result": "PASS (refused before network dispatch)", "reproduced": true},
+    {"name": "source-truth poisoning dynamic check (completing dry-run, --output-root temp)", "result": "PASS (git tree clean; 188 artifacts sandboxed)"},
+    {"name": "SP contract-map probe", "result": "PASS (confirms finding)", "detail": "112 step keys, 0 SP: entries, 1 S: entry -> step_contract_for(SP,*) = None"},
+    {"name": "live canary (~$0.05 authorized, real keys)", "result": "BLOCKED NO_GO by gate", "detail": "P0 ONLINE_PREFLIGHT_FAILURE (default gpt-5.3-codex 404) + P1 TRUTH_SPLIT_NOT_IMPLEMENTED; gate proven end-to-end; trivial unmetered preflight probe spend (<$0.01)"},
+    {"name": "completing paid run (ledger accumulate + cap abort end-to-end)", "result": "NOT_RUN", "reason": "canary blocked at preflight (default model 404); make this a precondition before unattended spend"},
+    {"name": "MCP2-06 re-check", "result": "PASS (remediated)", "detail": "debug endpoint returns booleans only; binds 127.0.0.1 by default"},
+    {"name": "cost-profile registry review", "result": "PASS (4 profiles; default value-default + quality UNCAPPED)", "detail": "run_extraction_v5.py:624; cap preflight disabled when max_cost_usd None (v5:3945)"},
+    {"name": "full-repo spend preview per profile", "result": "PASS (estimates produced)", "detail": "value-default ~$63.39, economy ~$47.19, quality ~$47.19; ALL phases low_confidence; quality<value-default contradicts profile note -> preview does not faithfully price profile models"},
+    {"name": "pricing catalog coverage", "result": "PARTIAL", "detail": "59 priced models; profile models mostly covered but bare anthropic/* aliases only priced under openrouter/ prefix; dual fallback $0.15/$0.60 (estimator) vs $30/$180 (ledger)"}
+  ],
+  "findings": [
+    {"id": "S4", "severity": "HIGH", "status": "PARTIAL-OPEN", "title": "SP-registry lane runs contract-unenforced (0 SP entries in contract map)"},
+    {"id": "ROUTING-404", "severity": "HIGH", "status": "OPEN", "title": "Default phase-A route openai/gpt-5.3-codex returns 404 on live key; blocks all live runs until fixed"},
+    {"id": "S7", "severity": "MED", "status": "PARTIAL", "title": "truth-split gate fails closed but classifier is dead code; blocker P1-waivable (logged)"},
+    {"id": "MCP-NET", "severity": "MED", "status": "OPEN (networked only)", "title": "~15 services bind 0.0.0.0 by default; default dopemux_password in source"},
+    {"id": "CAP-NOTRUN", "severity": "MED", "status": "PRECONDITION", "title": "cost-cap abort unit-tested only; not exercised by a completing paid run"},
+    {"id": "L1-PREFLIGHT", "severity": "LOW", "status": "OPEN", "title": "preflight probe spend unmetered (not capped, not ledgered); scales with phase count x4 retries"},
+    {"id": "C2-VALIDATOR-WRITE", "severity": "LOW", "status": "OPEN", "title": "pre-live validator writes report tree into repo working tree, ignoring --output-root"},
+    {"id": "FAILOPEN-THEORETICAL", "severity": "LOW", "status": "HARDENING", "title": "enforcement treats subprocess exit0+empty-stdout as GO (not practically reachable)"},
+    {"id": "COST-UNCAPPED-DEFAULT", "severity": "HIGH", "status": "OPEN", "title": "default profile value-default + quality are UNCAPPED (max_cost_usd_default None); cap preflight disabled, no warning"},
+    {"id": "COST-PREVIEW-FIDELITY", "severity": "MED", "status": "OPEN", "title": "preview does not faithfully price profile models (quality~$47 < value-default~$63, contradicts 3-5x note); cannot compare profiles / likely under-estimates premium"},
+    {"id": "COST-OUTPUT-HEURISTIC", "severity": "MED", "status": "OPEN", "title": "estimator assumes output=15% of input; under-counts reasoning models -> total likely higher"},
+    {"id": "COST-DUAL-FALLBACK", "severity": "MED", "status": "OPEN", "title": "estimator fallback $0.15/$0.60 vs ledger fallback $30/$180 (~200x); unpriced models preview cheap, bill expensive"}
+  ],
+  "spend_estimate_full_repo": {"value_default_default": "~$63.39", "economy": "~$47.19", "quality": "~$47.19", "confidence": "LOW (all phases low_confidence; preview self-labeled planning-only)", "recommendation": "budget $60-150, set explicit --max-cost-usd, reconcile vs SPEND_LEDGER.json after a first small completing run"},
+  "pal_chain": {"challenge": "PASS (3 confidence refinements incorporated; verdict tightened not flipped)"},
+  "residual_uncertainty": [
+    "Completing paid run cap-abort not exercised (model 404 blocked it)",
+    "F4-CRIT-2 doc/CLI naming inversion not deeply re-verified",
+    "MCP2-04 secrets-in-history not re-investigated",
+    "Validator gating verified empirically for sync phase-A single-step; generalized (not exhaustively tested) across resume/batch-submit"
+  ],
+  "report": "claudedocs/rte-final-go-live-audit-2026-06-03.md",
+  "git_state": {"audit_changed_repo": false, "worktree_removed": true, "temp_artifacts_removed": true},
+  "rollback": "N/A (no repo changes); delete claudedocs/rte-final-go-live-audit-2026-06-03.{md,proof.json} to discard the report"
+}

@@ -5,12 +5,14 @@ type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-05-28'
-prelude: Reference detailing PR queue management, check verification, and readiness classification.
+prelude: Reference detailing PR queue management, check verification, and readiness
+  classification.
 related_packets:
-  - TP-DMX-ORCH-013
-  - TP-DMX-ORCH-013-LIVE
+- TP-DMX-ORCH-013
+- TP-DMX-ORCH-013-LIVE
+last_review: '2026-06-04'
+next_review: '2026-09-02'
 ---
-
 # PR Queue & Readiness Workflow
 
 This document details the PR readiness classifier which consumes live `gh` data feeds and maps open Pull Requests to structured safety states.

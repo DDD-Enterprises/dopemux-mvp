@@ -1,3 +1,15 @@
+---
+id: pr-718-remediation-plan-for-agy
+title: Pr 718 Remediation Plan For Agy
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-04'
+last_review: '2026-06-04'
+next_review: '2026-09-02'
+prelude: Pr 718 Remediation Plan For Agy (explanation) for dopemux documentation and
+  developer workflows.
+---
 # PR #718 Remediation Plan — for agy
 
 **Target PR**: [#718 — DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED](https://github.com/DDD-Enterprises/dopemux-mvp/pull/718)

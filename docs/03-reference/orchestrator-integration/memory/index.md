@@ -5,12 +5,14 @@ type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-05-28'
-prelude: Reference for ConPort decision and progress write operations with dope-memory mirroring.
+prelude: Reference for ConPort decision and progress write operations with dope-memory
+  mirroring.
 related_packets:
-  - TP-DMX-ORCH-009
-  - TP-DMX-ORCH-009-LIVE
+- TP-DMX-ORCH-009
+- TP-DMX-ORCH-009-LIVE
+last_review: '2026-06-04'
+next_review: '2026-09-02'
 ---
-
 # ConPort Writers & dope-memory Mirroring
 
 This reference details the live database write operations and mirroring strategies implemented within the `memory_writers` module.

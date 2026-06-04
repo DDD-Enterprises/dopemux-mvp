@@ -5,11 +5,13 @@ type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-05-28'
-prelude: Reference explaining structured intake verification and safety-tier auditing routines.
+prelude: Reference explaining structured intake verification and safety-tier auditing
+  routines.
 related_packets:
-  - TP-DMX-ORCH-011
+- TP-DMX-ORCH-011
+last_review: '2026-06-04'
+next_review: '2026-09-02'
 ---
-
 # Intake & Red-Team Audit Workflow
 
 Provides a formal, structured red-team audit flow on newly ingested task packets before scheduling them in the active execution queue.

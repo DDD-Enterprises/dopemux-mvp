@@ -5,12 +5,14 @@ type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-05-28'
-prelude: Reference detailing background queue-draining, daemon executors, and safety kill-switches.
+prelude: Reference detailing background queue-draining, daemon executors, and safety
+  kill-switches.
 related_packets:
-  - TP-DMX-ORCH-016
-  - TP-DMX-ORCH-016-DAEMON
+- TP-DMX-ORCH-016
+- TP-DMX-ORCH-016-DAEMON
+last_review: '2026-06-04'
+next_review: '2026-09-02'
 ---
-
 # Automation Pilot & Daemon
 
 The automation pilot operates background queue-draining, test isolation execution, and dependency resolution loops.
