@@ -123,7 +123,7 @@
   },
   "codereview_status": "PASS_MANUAL_DIFF_REVIEW_NO_RUNTIME_SCOPE_EXPANSION",
   "precommit_status": "PASS",
-  "commit_sha": "87c7f38b02de6e0b791a195cd065793ea1e9c5f9",
+  "commit_sha": "57e2ff4eb4c915b9129e5c9629b2e40573ba32b9",
   "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/804",
   "residual_risks": [
     "Task Orchestrator live state and dependency unblock cannot be mutated while the MCP transport is closed.",
