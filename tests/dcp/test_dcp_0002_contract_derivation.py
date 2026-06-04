@@ -478,7 +478,7 @@ def test_15_resource_map_endpoints_are_provisional():
 
 def test_16_no_forbidden_files_modified():
     result = subprocess.run(
-        ["git", "diff", "--name-only", "HEAD"],
+        ["git", "diff", "--name-only", "origin/main...HEAD"],
         capture_output=True, text=True,
         cwd=Path(__file__).resolve().parents[2]
     )
