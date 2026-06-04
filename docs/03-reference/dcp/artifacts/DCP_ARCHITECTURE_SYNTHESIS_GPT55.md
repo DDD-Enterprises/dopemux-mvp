@@ -1,7 +1,19 @@
+---
+id: DCP_ARCHITECTURE_SYNTHESIS_GPT55
+title: Dcp Architecture Synthesis Gpt55
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-04'
+last_review: '2026-06-04'
+next_review: '2026-09-02'
+prelude: Dcp Architecture Synthesis Gpt55 (reference) for dopemux documentation and
+  developer workflows.
+---
 # DCP Architecture Synthesis — Decision Artifact (GPT-5.5 Pro, 2026-06-03)
 
 > [!NOTE]
-> **Provenance**: `SYNTHESIS_INVENTED`  
+> **Provenance**: `SYNTHESIS_INVENTED`
 > **Status**: Preserved Decision Input (Audited / Superseded-in-Part)
 
 > Source: operator-run GPT-5.5 Pro synthesis from `DCP_5_5_SYNTHESIS_INPUT_PACK.md` + `DCP_PRE_SYNTHESIS_CONTRADICTION_LEDGER.md` + `DCP_SYNTHESIS_CHATGPT_PROMPT.md`. Treats the input pack as authoritative campaign compression (not the architecture decision) and the contradiction ledger as a guardrail artifact (preserves authority leaks, does not resolve them). Repo runtime evidence outranks external DR; open PRs + generated TP series stay CLAIMED_ONLY; UNKNOWN is not promoted. **This is the decision artifact audited in Stage 3.**

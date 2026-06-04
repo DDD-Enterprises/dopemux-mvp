@@ -1,7 +1,19 @@
+---
+id: DCP_5_5_SYNTHESIS_INPUT_PACK
+title: Dcp 5 5 Synthesis Input Pack
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-04'
+last_review: '2026-06-04'
+next_review: '2026-09-02'
+prelude: Dcp 5 5 Synthesis Input Pack (reference) for dopemux documentation and developer
+  workflows.
+---
 # DCP 5.5 Synthesis Input Pack
 
 > [!NOTE]
-> **Provenance**: `EXTERNAL_PROPOSED`  
+> **Provenance**: `EXTERNAL_PROPOSED`
 > **Status**: Preservation Only (Design Input / Non-Runtime)
 
 **Packet**: TP-DCP-COMPRESS-0001 (Stage 2 assembly)

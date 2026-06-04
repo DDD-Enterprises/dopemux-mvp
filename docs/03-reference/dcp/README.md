@@ -1,3 +1,14 @@
+---
+id: README
+title: Readme
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-04'
+last_review: '2026-06-04'
+next_review: '2026-09-02'
+prelude: Readme (reference) for dopemux documentation and developer workflows.
+---
 # Declarative Control Plane (DCP) - Core Reference and Decision Shelf
 
 This directory serves as the canonical authority shelf for Declarative Control Plane (DCP) decision, audit, and revision artifacts.

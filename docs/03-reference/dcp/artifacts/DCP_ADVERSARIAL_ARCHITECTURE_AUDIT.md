@@ -1,7 +1,19 @@
+---
+id: DCP_ADVERSARIAL_ARCHITECTURE_AUDIT
+title: Dcp Adversarial Architecture Audit
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-04'
+last_review: '2026-06-04'
+next_review: '2026-09-02'
+prelude: Dcp Adversarial Architecture Audit (reference) for dopemux documentation
+  and developer workflows.
+---
 # DCP Adversarial Architecture Audit (Opus, Stage 3)
 
 > [!NOTE]
-> **Provenance**: `EXTERNAL_PROPOSED`  
+> **Provenance**: `EXTERNAL_PROPOSED`
 > **Status**: Preservation Only (Design Input / Audit Artifact)
 
 **Auditor**: Opus (adversarial architecture auditor), 2026-06-03
