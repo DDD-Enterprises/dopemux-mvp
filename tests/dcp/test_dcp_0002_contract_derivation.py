@@ -25,6 +25,7 @@ Run modes:
   python3 -m pytest tests/dcp/test_dcp_0002_contract_derivation.py -q
 """
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -84,6 +85,9 @@ _FORBIDDEN_SCHEMA_STRINGS = [
     "dopemux_pr_merge_specialist",
 ]
 
+_PACKET_BASE_PATH = Path(__file__).resolve().parents[2] / "task-packets" / "TP-DCP-0002.md"
+_PACKET_BASE_RE = re.compile(r"^\*\*Base\*\*:\s*`[^`]+`\s*@\s*`([0-9a-f]{7,40})`", re.MULTILINE)
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -96,6 +100,15 @@ def _load_json(path: Path) -> dict:
 def _schema_text(name: str) -> str:
     path = _SCHEMA_FILES[name]
     return path.read_text(encoding="utf-8")
+
+
+def _packet_base_ref() -> str | None:
+    if not _PACKET_BASE_PATH.exists():
+        return None
+    match = _PACKET_BASE_RE.search(_PACKET_BASE_PATH.read_text(encoding="utf-8"))
+    if not match:
+        return None
+    return match.group(1)
 
 
 # ---------------------------------------------------------------------------
@@ -488,13 +501,15 @@ def test_15_resource_map_endpoints_are_provisional():
 # ---------------------------------------------------------------------------
 
 def test_16_no_forbidden_files_modified():
+    base_ref = _packet_base_ref()
+    diff_range = f"{base_ref}...HEAD" if base_ref else "HEAD^..HEAD"
     result = subprocess.run(
-        ["git", "diff", "--name-only", "origin/main...HEAD"],
+        ["git", "diff", "--name-only", diff_range],
         capture_output=True, text=True,
         cwd=Path(__file__).resolve().parents[2]
     )
     assert result.returncode == 0, (
-        "git diff --name-only origin/main...HEAD failed "
+        f"git diff --name-only {diff_range} failed "
         f"(exit {result.returncode}): {result.stderr.strip() or 'no stderr output'}"
     )
     changed = result.stdout.strip().splitlines()
