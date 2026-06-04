@@ -62,6 +62,18 @@ def ensure_r1_campaign_records(repo: BenchmarkCatalogRepo) -> None:
         seed_registry(repo)
     surfaces = [
         ProviderSurface(
+            surface_id="surface_gemini_direct_api_v1",
+            surface_class="direct_provider_api",
+            provider_name="gemini",
+            transport_kind="openai_sdk",
+            endpoint_ref="https://generativelanguage.googleapis.com",
+            logging_posture="operator_visible",
+            residency_posture="unknown",
+            surface_hash=hash_json({"surface_id": "surface_gemini_direct_api_v1"}),
+            source_ref="r1_campaign_seed",
+            notes=["R1 direct provider surface for strict-output attestation candidates."],
+        ),
+        ProviderSurface(
             surface_id="surface_gemini_api_v1",
             surface_class="direct_provider_api",
             provider_name="gemini",
@@ -108,6 +120,16 @@ def ensure_r1_campaign_records(repo: BenchmarkCatalogRepo) -> None:
             registry_class="current_state_authority",
             lifecycle_status="candidate",
             content_hash=hash_json({"model_key": "gemini/gemini-3.1-pro-preview"}),
+            source_ref="r1_campaign_seed",
+        ),
+        ModelRecord(
+            model_key="google/gemini-3.1-pro-preview",
+            display_name="Gemini 3.1 Pro Preview via OpenRouter",
+            family="gemini-3",
+            source_registry_ref="runtime_candidate_registry",
+            registry_class="current_state_authority",
+            lifecycle_status="candidate",
+            content_hash=hash_json({"model_key": "google/gemini-3.1-pro-preview"}),
             source_ref="r1_campaign_seed",
         ),
         ModelRecord(
@@ -159,6 +181,32 @@ def ensure_r1_campaign_records(repo: BenchmarkCatalogRepo) -> None:
             strict_passthrough_verified=True,
             route_hash=hash_json({"route_id": "route_openai_gpt_5_4_mini_v1"}),
             content_hash=hash_json({"route_id": "route_openai_gpt_5_4_mini_v1"}),
+            source_ref="r1_campaign_seed",
+        ),
+        RouteRecord(
+            route_id="route_gemini_direct_gemini_3_1_pro_preview_v1",
+            surface_id="surface_gemini_direct_api_v1",
+            model_key="gemini/gemini-3.1-pro-preview",
+            provider_model_id="gemini-3.1-pro-preview",
+            api_key_ref="GEMINI_API_KEY",
+            route_pin="gemini-3.1-pro-preview",
+            strict_json_schema_declared=True,
+            strict_passthrough_verified=False,
+            route_hash=hash_json({"route_id": "route_gemini_direct_gemini_3_1_pro_preview_v1"}),
+            content_hash=hash_json({"route_id": "route_gemini_direct_gemini_3_1_pro_preview_v1"}),
+            source_ref="r1_campaign_seed",
+        ),
+        RouteRecord(
+            route_id="route_openrouter_gemini_3_1_pro_preview_v1",
+            surface_id="surface_openrouter_api_v1",
+            model_key="google/gemini-3.1-pro-preview",
+            provider_model_id="google/gemini-3.1-pro-preview",
+            api_key_ref="OPENROUTER_API_KEY",
+            route_pin="google/gemini-3.1-pro-preview",
+            strict_json_schema_declared=True,
+            strict_passthrough_verified=False,
+            route_hash=hash_json({"route_id": "route_openrouter_gemini_3_1_pro_preview_v1"}),
+            content_hash=hash_json({"route_id": "route_openrouter_gemini_3_1_pro_preview_v1"}),
             source_ref="r1_campaign_seed",
         ),
         RouteRecord(
@@ -412,6 +460,14 @@ def build_r1_campaign_plan(repo: BenchmarkCatalogRepo) -> CampaignPlan:
         ),
     ]
     candidates = [
+        # [0] openrouter_openai_gpt_5_3_codex  → anchor_openrouter_strict_v1
+        # [1] xai_grok_4_20_reasoning          (no live_assignment — not yet admitted)
+        # [2] gemini_3_1_pro_preview            (no live_assignment — pending telemetry)
+        # [3] gemini_direct_3_1_pro_preview     → anchor_direct_strict_v1
+        # [4] openrouter_gemini_3_1_pro_preview → anchor_openrouter_strict_v1
+        # [5] openai_gpt_5_4_mini               → anchor_direct_strict_v1
+        # [6] local_fixture                     → tool_aware_repo_reasoning_v1 (non-live)
+        # When inserting a new candidate, update live_assignment indices AND this table.
         _candidate(
             route_id="route_openrouter_openai_gpt_5_3_codex_v1",
             cohort="premium",
@@ -444,6 +500,28 @@ def build_r1_campaign_plan(repo: BenchmarkCatalogRepo) -> CampaignPlan:
             provider_model_id="gemini-3.1-pro-preview",
             admission_reason="Balanced candidate remains out of the first admitted cohort because current dry-run ownership telemetry for this route is not yet strong enough to satisfy route-identity admissibility.",
             policy_note="Do not admit until owned-lane telemetry becomes admissibility-grade.",
+        ),
+        _candidate(
+            route_id="route_gemini_direct_gemini_3_1_pro_preview_v1",
+            cohort="balanced",
+            surface_id="surface_gemini_direct_api_v1",
+            surface_class="direct_provider_api",
+            provider_name="gemini",
+            model_key="gemini/gemini-3.1-pro-preview",
+            provider_model_id="gemini-3.1-pro-preview",
+            admission_reason="Direct Gemini strict-output candidate for live passthrough attestation; verification flag remains false until campaign evidence exists.",
+            policy_note="Attestation candidate only; do not promote without live strict passthrough proof.",
+        ),
+        _candidate(
+            route_id="route_openrouter_gemini_3_1_pro_preview_v1",
+            cohort="premium",
+            surface_id="surface_openrouter_api_v1",
+            surface_class="openrouter_routed",
+            provider_name="openrouter",
+            model_key="google/gemini-3.1-pro-preview",
+            provider_model_id="google/gemini-3.1-pro-preview",
+            admission_reason="OpenRouter Gemini strict-output candidate for routed passthrough attestation; verification flag remains false until campaign evidence exists.",
+            policy_note="Attestation candidate only; do not promote without live strict passthrough proof.",
         ),
         _candidate(
             route_id="route_openai_gpt_5_4_mini_v1",
@@ -492,8 +570,10 @@ def build_r1_campaign_plan(repo: BenchmarkCatalogRepo) -> CampaignPlan:
         baseline_assignments[1],
         live_assignment(candidates[0], "balanced_production", "anchor_openrouter_strict_v1"),
         live_assignment(candidates[3], "balanced_production", "anchor_direct_strict_v1"),
+        live_assignment(candidates[4], "balanced_production", "anchor_openrouter_strict_v1"),
+        live_assignment(candidates[5], "balanced_production", "anchor_direct_strict_v1"),
         CampaignAssignment(
-            candidate=candidates[4],
+            candidate=candidates[6],
             case_id="tool_aware_repo_reasoning_v1",
             archetype_id="tool_aware_repo_reasoning",
             profile_id="benchmark_local_validation",

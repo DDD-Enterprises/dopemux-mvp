@@ -621,7 +621,7 @@ class MonitoringDashboard:
                 return external_port
             elif service_name in ['serena', 'mcp-serena'] and internal == '3006':
                 return external_port
-            elif service_name in ['dope-context', 'mcp-dope-context'] and internal == '3014':
+            elif service_name in ['dope-context', 'mcp-dope-context'] and internal == '3010':
                 return external_port
             elif service_name in ['gpt-researcher', 'mcp-gptr-mcp'] and internal == '3009':
                 return external_port

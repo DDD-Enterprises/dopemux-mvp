@@ -31,12 +31,12 @@
 **Action:** Always implement explicit success and empty states for sequential task components to provide closure and guidance when a workflow is completed or empty.
 
 ## 2025-05-20 - [Combatting Time Blindness]
-**Learning:** For users with ADHD, seeing a list of tasks without an aggregate "time to finish" can lead to "time blindness" or feeling overwhelmed by an infinite-feeling backlog. Providing a "Total Remaining Duration" counter that updates in real-time creates a "light at the end of the tunnel" effect, making the workload feel finite and manageable.
+**Learning:** For users with ADHD, seeing a list of tasks without an aggregate "time to finish" can lead to "time blindness" or feeling overwhelmed by an infinite-feeling backlog. Providing a "Total Remaining Duration" counter that updates in real-time creates a "light at the end of the tunnel" effect, making the workload feel more finite and manageable.
 **Action:** Aggregate and display total remaining estimated duration in sequential task managers to help users maintain perspective on their progress.
 
 ## 2026-03-12 - [Cognitive Load & Feed Management]
-**Learning:** In high-stimulation environments (like a live signal feed), accumulating notifications can contribute to "cognitive clutter," which is particularly taxing for users with ADHD. Providing a "Clear" button that is only visible when the feed is active allows users to reset their visual field and reduce overwhelm once information has been processed.
-**Action:** Always provide a conditional "Clear" or "Reset" mechanism for live data feeds to help users manage cognitive load and maintain a clean workspace.
+**Learning:** In high-stimulation environments (like a live signal feed), accumulating notifications can contribute to "cognitive clutter," which is particularly taxing for users with ADHD. Providing a "Clear" button that is only visible when the feed is active allows users to reset their visual field and reduce overwhelm once information has been processed. Implementing individual dismissal (via a clear `X` action) further empowers users to triage and remove specific distractions without losing the entire context of the feed.
+**Action:** Always provide both bulk "Clear" and individual dismissal mechanisms for live data feeds to help users manage cognitive load and maintain a clean workspace.
 
 ## 2026-03-25 - [Tooltip Visibility on Disabled Elements]
 **Learning:** Material UI Tooltips do not trigger on disabled elements (like buttons) because they don't emit pointer events. Wrapping the disabled element in a `<span>` ensures the tooltip remains accessible, allowing users to understand *why* an action is unavailable.
@@ -113,3 +113,11 @@
 ## 2025-05-24 - [Color-Coordinated Interactive Feedback]
 **Learning:** In dashboards with multiple categorical metrics (e.g., Energy, Focus, Load), using a single "brand" color (like Cyan) for all hover/focus states can obscure the semantic boundaries between different cards. Applying color-coordinated `borderColor` and `boxShadow` that match each metric's specific icon/theme color reinforces the categorical identity of the card and provides more precise visual feedback.
 **Action:** Use individualized accent colors for card-level hover and focus states to maintain categorical clarity in multi-metric dashboards.
+
+## 2025-05-25 - [Reactive Metric Feedback (Roasts)]
+**Learning:** Purely numerical metrics can feel "cold" and abstract. Adding a playful, reactive "roast" or personality-driven status message (e.g., "Future you is screaming" vs. "Focus flirting") based on thresholds provides immediate emotional context and reduces the cognitive effort required to interpret high values.
+**Action:** Use helper functions to inject personality-driven status strings into metric displays, providing human-readable context alongside raw data.
+
+## 2025-05-26 - [Card-Level Interactive surfaces for dashboard panels]
+**Learning:** For informational dashboard panels (like the Cognitive Load Gauge), making the entire container focusable (`tabIndex={0}`) and adding tactile feedback (hover/focus lift and glow) significantly improves discoverability of high-level context (like tooltips). Consolidating multiple nested tooltips and labels into a single root description reduces cognitive clutter and screen reader noise.
+**Action:** Prefer root-level interactive surfaces for complex metric cards to improve temporal grounding and provide a more delightful, accessible experience.

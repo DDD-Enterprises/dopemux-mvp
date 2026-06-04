@@ -1,0 +1,14 @@
+{
+  "tp_id": "TP-DMX-STEWARD-SCAFFOLD-302",
+  "bundle_type": "review_bundle",
+  "artifacts": [
+    "../PROOF.json",
+    "../VALIDATION_OUTPUT.md",
+    "../GIT_STATE.md",
+    "../DIFF_STAT.txt",
+    "../CHANGED_FILES.txt",
+    "../AUDITOR_REPORT.md",
+    "SUMMARY.md"
+  ],
+  "excluded": []
+}

@@ -96,6 +96,7 @@
             "unknown-pr-author",
             "unknown-check",
             "needs-supervisor",
+            "unknown-blocker",
             "embedded-audit-failed",
             "unresolved-thread",
             "failed-check",

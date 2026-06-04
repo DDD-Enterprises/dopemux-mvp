@@ -6,12 +6,62 @@ import os
 from typing import List, Optional
 
 
+DEV_ENVIRONMENTS = {"dev", "development", "local", "test", "testing"}
+WEAK_ADHD_API_KEYS = {
+    "dev-key-123",
+    "CHANGE_ME_generate_with_openssl_rand_hex_32_placeholder",
+}
+
+
+def runtime_environment() -> str:
+    """Return the resolved runtime environment name.
+
+    A blank/whitespace ``ENVIRONMENT`` must not shadow ``DPMX_ENV``: the env var
+    can be *present but empty* (e.g. ``ENVIRONMENT:`` in compose), and a naive
+    ``os.getenv("ENVIRONMENT", os.getenv("DPMX_ENV", ...))`` would return ``""``
+    and fall through to ``development`` — silently disabling fail-closed auth in
+    a production runtime. Consult each source in priority order and only accept a
+    non-empty value.
+    """
+    for value in (os.getenv("ENVIRONMENT"), os.getenv("DPMX_ENV")):
+        candidate = (value or "").strip().lower()
+        if candidate:
+            return candidate
+    return "development"
+
+
+def is_development_environment(environment: str | None = None) -> bool:
+    return (environment or runtime_environment()).strip().lower() in DEV_ENVIRONMENTS
+
+
+def clean_secret_value(value: str | None, *, weak_values: set[str]) -> str:
+    resolved = (value or "").strip()
+    if not resolved or resolved in weak_values:
+        return ""
+    return resolved
+
+
+def require_runtime_secret(var_name: str, *, weak_values: set[str]) -> str:
+    resolved = clean_secret_value(os.getenv(var_name), weak_values=weak_values)
+    if resolved:
+        return resolved
+
+    environment = runtime_environment()
+    if is_development_environment(environment):
+        return ""
+
+    raise RuntimeError(
+        f"{var_name} must be set to a non-placeholder value when ENVIRONMENT={environment}"
+    )
+
+
 class Settings:
     """
     Application settings loaded from environment variables.
     """
     
     # Server settings
+    environment: str = runtime_environment()
     api_port: int = int(os.getenv("API_PORT", "8095"))
     host: str = os.getenv("HOST", "0.0.0.0")
     # Backward/forward-compatible alias used by startup logging paths
@@ -24,7 +74,10 @@ class Settings:
     ).split(",")
     
     # Authentication
-    api_key: str = os.getenv("ADHD_ENGINE_API_KEY", "dev-key-123")
+    api_key: str = require_runtime_secret(
+        "ADHD_ENGINE_API_KEY",
+        weak_values=WEAK_ADHD_API_KEYS,
+    )
     
     # Redis settings
     redis_url: str = os.getenv("REDIS_URL", "redis://redis-primary:6379")
@@ -36,6 +89,10 @@ class Settings:
     conport_url: str = os.getenv("CONPORT_URL", "http://localhost:3010")
     pal_url: str = os.getenv("PAL_URL", os.getenv("ZEN_URL", "http://localhost:3003"))  # Backward compat with ZEN_URL
     workspace_id: str = os.getenv("ADHD_WORKSPACE_ID", os.getcwd())
+    operator_id_path: str = os.getenv(
+        "ADHD_OPERATOR_ID_PATH",
+        os.path.expanduser("~/.dopemux/operator_id"),
+    )
     dopecon_bridge_url: str = os.getenv("DOPECON_BRIDGE_URL", os.getenv("CONPORT_BRIDGE_URL", "http://localhost:3016"))
     dopecon_bridge_token: Optional[str] = os.getenv("DOPECON_BRIDGE_TOKEN")
     dopecon_bridge_source_plane: str = os.getenv("DOPECON_BRIDGE_SOURCE_PLANE", "cognitive_plane")

@@ -1,9 +1,11 @@
 import json
 import subprocess
+from pathlib import Path
 from types import SimpleNamespace
 
 import click
 import pytest
+import yaml
 from click.testing import CliRunner
 
 from dopemux.commands import mcp_commands
@@ -55,6 +57,17 @@ def test_mcp_init_keeps_matching_committed_template_and_writes_envrc(tmp_path, m
     assert "export CONPORT_MCP_PORT=" in envrc
     assert "export CONPORT_HTTP_PORT=" in envrc
     assert "export CONPORT_INFO_PORT=" in envrc
+
+
+def test_committed_mcp_json_matches_root_catalog_defaults():
+    repo_root = Path(__file__).resolve().parents[2]
+    catalog = yaml.safe_load((repo_root / "mcp_catalog.yaml").read_text())
+    defaults = catalog.get("defaults", {}).get("per_worktree", [])
+
+    expected = mcp_commands._build_local_mcp_json(defaults, catalog)
+    actual = json.loads((repo_root / ".mcp.json").read_text())
+
+    assert actual == expected
 
 
 def test_mcp_add_appends_primary_and_extra_catalog_ports(tmp_path, monkeypatch):
@@ -322,13 +335,16 @@ def test_doctor_aggregates_problems_and_exits_nonzero(tmp_path, monkeypatch):
     assert "CONPORT_MCP_PORT" in result.output
 
 
-def test_doctor_runs_stdio_resolution_without_port_check(tmp_path, monkeypatch):
-    doctor_script = tmp_path / "doctor.sh"
+def test_doctor_runs_relative_stdio_resolution_from_repo_root(tmp_path, monkeypatch):
+    wrapper_dir = tmp_path / "scripts" / "mcp-wrappers"
+    wrapper_dir.mkdir(parents=True)
+    doctor_script = wrapper_dir / "doctor.sh"
     doctor_script.write_text("#!/usr/bin/env bash\nprintf 'state_id=test-state\\n'\n")
     doctor_script.chmod(0o755)
+    relative_command = "scripts/mcp-wrappers/doctor.sh"
     (tmp_path / mcp_commands.PROJECT_MCP_FILENAME).write_text(json.dumps({
         "mcpServers": {
-            "task-orchestrator": {"type": "stdio", "command": str(doctor_script), "args": []},
+            "task-orchestrator": {"type": "stdio", "command": relative_command, "args": []},
         }
     }, indent=2) + "\n")
     (tmp_path / mcp_commands.ENVRC_FILENAME).write_text("")
@@ -339,7 +355,7 @@ def test_doctor_runs_stdio_resolution_without_port_check(tmp_path, monkeypatch):
                 "scope": "per-worktree",
                 "state_scope": "per-repo",
                 "transport": "stdio",
-                "command": str(doctor_script),
+                "command": relative_command,
                 "doctor_args": ["--print-resolution"],
                 "requires_env": ["TASK_ORCHESTRATOR_PROJECT_ROOT"],
             },
@@ -350,6 +366,9 @@ def test_doctor_runs_stdio_resolution_without_port_check(tmp_path, monkeypatch):
     monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
     monkeypatch.setattr(mcp_commands, "resolve_project_identity", lambda **_: _identity(tmp_path))
     monkeypatch.delenv("TASK_ORCHESTRATOR_PROJECT_ROOT", raising=False)
+    subdir = tmp_path / "nested"
+    subdir.mkdir()
+    monkeypatch.chdir(subdir)
 
     result = CliRunner().invoke(mcp_commands.mcp_doctor_cmd, [])
 

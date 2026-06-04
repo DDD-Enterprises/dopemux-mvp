@@ -34,6 +34,7 @@ import {
   PauseCircle,
   Trash2,
   TrendingUp,
+  X,
   Zap,
 } from 'lucide-react';
 
@@ -55,6 +56,7 @@ interface CognitiveState {
 }
 
 interface Notification {
+  id: string;
   message: string;
   notificationType: string;
   timestamp: string;
@@ -115,7 +117,7 @@ function mapAggregateState(payload: AggregateDashboardState): CognitiveState {
   };
 }
 
-function mapRealtimeState(message: Record<string, unknown>): CognitiveState | null {
+export function mapRealtimeState(message: Record<string, unknown>): CognitiveState | null {
   if (message.type !== 'state_update') {
     return null;
   }
@@ -132,6 +134,25 @@ function mapRealtimeState(message: Record<string, unknown>): CognitiveState | nu
     recommendation: String(data.recommendation || 'No active recommendation'),
   };
 }
+
+type MetricLabel = 'Energy Level' | 'Attention Focus' | 'Cognitive Load' | '15-min Prediction';
+
+const getDynamicRoast = (label: MetricLabel, value: number | null) => {
+  if (value === null) return 'Data ghosting. Refreshing...';
+  if (value > 0.8) {
+    if (label === 'Energy Level') return 'Hyperfocus or just vibrating? Slow down.';
+    if (label === 'Attention Focus') return 'Laser vision acquired. Don’t blink.';
+    if (label === 'Cognitive Load') return 'Brain cooking. Steam is visible.';
+    if (label === '15-min Prediction') return 'Future you screaming from the abyss.';
+  }
+  if (value > 0.5) {
+    if (label === 'Energy Level') return "You're sipping ambition like it's lukewarm coffee.";
+    if (label === 'Attention Focus') return 'Focus flirting with you; stop ghosting it.';
+    if (label === 'Cognitive Load') return 'Load creeping up like a brat testing limits.';
+    if (label === '15-min Prediction') return 'Future you pacing. Hydrate before they mutiny.';
+  }
+  return 'The ritual observes you silently. Logged. Hydrate.';
+};
 
 const formatTimestamp = (dateStr: string) => {
   const date = new Date(dateStr);
@@ -184,6 +205,10 @@ function App() {
   const clearConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleDismissNotification = useCallback((id: string) => {
+    setNotifications((current) => current.filter((n) => n.id !== id));
+  }, []);
 
   const handleCopyRecommendation = useCallback(async () => {
     if (!navigator.clipboard?.writeText) {
@@ -266,6 +291,7 @@ function App() {
         if (message.type === 'dashboard_notification') {
           setNotifications((current) => [
             {
+              id: String(message.id || Date.now().toString() + Math.random().toString(36).substring(2, 9)),
               message: String(message.message || 'Notification received'),
               notificationType: String(message.notification_type || 'info'),
               timestamp: String(message.timestamp || new Date().toISOString()),
@@ -327,39 +353,39 @@ function App() {
       ? brandTokens.colors.ritualCyan
       : connectionStatus === 'connecting'
         ? brandTokens.colors.saintGold
-        : brandTokens.colors.gremlinPink;
+        : brandTokens.colors.errorRed;
 
   const metricCards = [
     {
-      label: 'Energy Level',
+      label: 'Energy Level' as const,
       value: cognitiveState.energy,
       icon: <Zap color={brandTokens.colors.serumMint} size={24} aria-hidden="true" />,
       accentColor: brandTokens.colors.serumMint,
-      roast: "You're sipping ambition like it's lukewarm coffee.",
+      roast: getDynamicRoast('Energy Level', cognitiveState.energy),
       tooltip: 'Your current biometric energy reserve based on activity and sleep data',
     },
     {
-      label: 'Attention Focus',
+      label: 'Attention Focus' as const,
       value: cognitiveState.attention,
       icon: <Eye color={brandTokens.colors.ritualCyan} size={24} aria-hidden="true" />,
       accentColor: brandTokens.colors.ritualCyan,
-      roast: 'Focus is flirting with you; stop ghosting it.',
+      roast: getDynamicRoast('Attention Focus', cognitiveState.attention),
       tooltip: 'Real-time attention state: scattered, focused, or hyperfocused',
     },
     {
-      label: 'Cognitive Load',
+      label: 'Cognitive Load' as const,
       value: cognitiveState.load,
       icon: <Brain color={brandTokens.colors.saintGold} size={24} aria-hidden="true" />,
       accentColor: brandTokens.colors.saintGold,
-      roast: 'Load creeping up like a brat testing limits.',
+      roast: getDynamicRoast('Cognitive Load', cognitiveState.load),
       tooltip: 'Total mental effort being exerted on current tasks',
     },
     {
-      label: '15-min Prediction',
+      label: '15-min Prediction' as const,
       value: cognitiveState.prediction ?? null,
       icon: <TrendingUp color={brandTokens.colors.giltEdge} size={24} aria-hidden="true" />,
       accentColor: brandTokens.colors.giltEdge,
-      roast: 'Future you is pacing. Hydrate before they mutiny.',
+      roast: getDynamicRoast('15-min Prediction', cognitiveState.prediction ?? null),
       tooltip: 'AI-driven forecast of your cognitive state for the next 15 minutes',
     },
   ];
@@ -527,8 +553,8 @@ function App() {
             sx={{
               mb: 3,
               borderRadius: 3,
-              backgroundColor: alpha(brandTokens.colors.gremlinPink, 0.08),
-              border: `1px solid ${brandTokens.colors.gremlinPink}`,
+              backgroundColor: alpha(brandTokens.colors.errorRed, 0.08),
+              border: `1px solid ${brandTokens.colors.errorRed}`,
             }}
           >
             {errorMessage}
@@ -635,9 +661,9 @@ function App() {
                   sx={{
                     ml: isLoading ? 1 : 'auto',
                     cursor: 'pointer',
-                    bgcolor: alpha(isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.gremlinPink, 0.1),
-                    color: isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.gremlinPink,
-                    borderColor: isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.gremlinPink,
+                    bgcolor: alpha(isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.errorRed, 0.1),
+                    color: isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.errorRed,
+                    borderColor: isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.errorRed,
                     transition: 'all 0.2s ease',
                     ...(isConfirmingClear && {
                       animation: 'clear-pulse 2s infinite',
@@ -648,7 +674,7 @@ function App() {
                       }
                     }),
                     '&:hover': {
-                      bgcolor: alpha(isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.gremlinPink, 0.2),
+                      bgcolor: alpha(isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.errorRed, 0.2),
                     },
                   }}
                 />
@@ -663,20 +689,32 @@ function App() {
             >
               {notifications.map((notification) => {
                 const severityColor = getNotificationColor(notification.notificationType);
+                const notificationLabel = `${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`;
                 return (
-                  <Fade in={true} key={`${notification.timestamp}-${notification.message}`}>
-                    <Chip
-                      icon={getNotificationIcon(notification.notificationType)}
-                      label={`${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`}
-                      variant="outlined"
-                      tabIndex={0}
-                      sx={{
-                        maxWidth: '100%',
-                        borderColor: alpha(severityColor, 0.6),
-                        color: severityColor,
-                        backgroundColor: alpha(severityColor, 0.08),
-                      }}
-                    />
+                  <Fade in={true} key={notification.id}>
+                    <Tooltip title="Dismiss notification" arrow describeChild>
+                      <Chip
+                        icon={getNotificationIcon(notification.notificationType)}
+                        label={notificationLabel}
+                        aria-label={notificationLabel}
+                        variant="outlined"
+                        onDelete={() => handleDismissNotification(notification.id)}
+                        deleteIcon={<X size={14} aria-hidden="true" />}
+                        tabIndex={0}
+                        sx={{
+                          maxWidth: '100%',
+                          borderColor: alpha(severityColor, 0.6),
+                          color: severityColor,
+                          backgroundColor: alpha(severityColor, 0.08),
+                          '& .MuiChip-deleteIcon': {
+                            color: alpha(severityColor, 0.7),
+                            '&:hover': {
+                              color: severityColor,
+                            },
+                          },
+                        }}
+                      />
+                    </Tooltip>
                   </Fade>
                 );
               })}

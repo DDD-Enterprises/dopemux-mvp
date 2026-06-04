@@ -1,0 +1,151 @@
+{
+  "schema": {
+    "schema_id": "rte_repo_summary_benchmark_v1",
+    "schema_version": "1.0.0",
+    "schema": {
+      "type": "object",
+      "required": [
+        "repo_name",
+        "primary_language",
+        "summary_status",
+        "facts",
+        "unknowns",
+        "conflicts",
+        "direct_overlap_evaluation"
+      ],
+      "properties": {
+        "repo_name": {
+          "type": "string"
+        },
+        "primary_language": {
+          "type": "string"
+        },
+        "summary_status": {
+          "type": "string",
+          "enum": [
+            "OBSERVED",
+            "PARTIAL",
+            "CONFLICTED",
+            "UNKNOWN"
+          ]
+        },
+        "facts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "key",
+              "value",
+              "status",
+              "evidence"
+            ],
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "OBSERVED",
+                  "INFERRED",
+                  "CONFLICTED",
+                  "UNKNOWN"
+                ]
+              },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "path",
+                    "start_line",
+                    "end_line"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "start_line": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "end_line": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "unknowns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "conflicts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "direct_overlap_evaluation": {
+          "type": "string",
+          "enum": [
+            "NOT_REQUIRED",
+            "REQUIRED",
+            "COMPLETED"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "fixtures": [
+    {
+      "fixture_id": "small_clean_repo",
+      "fixture_class": "clean",
+      "input_text": "README.md:1 atlas-api is a Python service. README.md:2 CI runs through GitHub Actions.",
+      "expected_schema_id": "rte_repo_summary_benchmark_v1",
+      "expected_facts": {
+        "repo_name": "atlas-api",
+        "primary_language": "Python",
+        "ci_system": "GitHub Actions"
+      },
+      "expected_validation_outcome": "PASS",
+      "direct_overlap_required": false,
+      "live_allowed": false
+    },
+    {
+      "fixture_id": "doc_code_contradiction_repo",
+      "fixture_class": "contradiction",
+      "input_text": "README.md:4 says the service is Node. pyproject.toml:1 says the package is Python.",
+      "expected_schema_id": "rte_repo_summary_benchmark_v1",
+      "expected_facts": {
+        "summary_status": "CONFLICTED"
+      },
+      "expected_validation_outcome": "PASS_WITH_DIRECT_COMPARISON_REQUIRED",
+      "direct_overlap_required": true,
+      "live_allowed": false
+    },
+    {
+      "fixture_id": "sparse_doc_repo",
+      "fixture_class": "sparse",
+      "input_text": "README.md:1 contains only the repository name.",
+      "expected_schema_id": "rte_repo_summary_benchmark_v1",
+      "expected_facts": {
+        "summary_status": "UNKNOWN"
+      },
+      "expected_validation_outcome": "PASS",
+      "direct_overlap_required": false,
+      "live_allowed": false
+    }
+  ]
+}

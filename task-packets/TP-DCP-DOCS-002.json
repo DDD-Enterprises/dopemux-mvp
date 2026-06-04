@@ -1,0 +1,84 @@
+{
+  "id": "TP-DCP-DOCS-002",
+  "project": "dopemux-mvp",
+  "target": "Dopemux repo: generate ChatGPT Project setup docs for all four supervisor projects",
+  "invariants": [
+    "ChatGPT Projects are context docks, not source truth.",
+    "Uploaded files never outrank runtime code/config/tests.",
+    "Secret-pattern files are excluded.",
+    "DCP Core Project is generic.",
+    "Dopemux Project is Dopemux-specific.",
+    "dNh-CRM Project is dNh-specific and must not inherit Dopemux authority shape.",
+    "Packet Lab is temporary and lean."
+  ],
+  "depends_on": [
+    "TP-DCP-DOCS-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "origin_hint": "github.com/DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "SERIES-DCP-PROJECT-DOCS-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DCP-DOCS-001",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "gemini"
+  },
+  "commit": {
+    "message": "docs(dcp): generate ChatGPT Project setup docs (TP-DCP-DOCS-002)",
+    "allowlist": [
+      "docs/03-reference/dcp/chatgpt-projects/README.md",
+      "docs/03-reference/dcp/chatgpt-projects/dcp-core-supervisor.md",
+      "docs/03-reference/dcp/chatgpt-projects/dopemux-supervisor.md",
+      "docs/03-reference/dcp/chatgpt-projects/dnh-crm-supervisor.md",
+      "docs/03-reference/dcp/chatgpt-projects/dcp-packet-lab.md",
+      "docs/03-reference/dcp/chatgpt-projects/upload-sets.md",
+      "docs/03-reference/dcp/chatgpt-projects/project-instructions.md",
+      "task-packets/TP-DCP-DOCS-002.json",
+      "proof/TP-DCP-DOCS-002/PROOF.json"
+    ],
+    "verify": [
+      "test -d docs/03-reference/dcp/chatgpt-projects",
+      "test -f docs/03-reference/dcp/chatgpt-projects/README.md",
+      "rg -n \"repo truth|runtime|UNKNOWN|CLAIMED_ONLY|LIVE_WRITE_READY|DCP-RED-MERGE-SEAM|secret\" docs/03-reference/dcp/chatgpt-projects",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(dcp): generate ChatGPT Project setup docs (TP-DCP-DOCS-002)",
+    "body": "Generate the setup docs and project instructions for the four supervisor projects under docs/03-reference/dcp/chatgpt-projects/.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "implement",
+      "docgen",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Create setup docs for the four ChatGPT Projects (DCP Core Supervisor, Dopemux Supervisor, dNh-CRM Supervisor, DCP Packet Lab), details on upload sets, and project instruction blocks.",
+      "validation": [
+        "test -f docs/03-reference/dcp/chatgpt-projects/README.md",
+        "test -f docs/03-reference/dcp/chatgpt-projects/dcp-core-supervisor.md",
+        "test -f docs/03-reference/dcp/chatgpt-projects/dopemux-supervisor.md",
+        "test -f docs/03-reference/dcp/chatgpt-projects/dnh-crm-supervisor.md",
+        "test -f docs/03-reference/dcp/chatgpt-projects/dcp-packet-lab.md",
+        "test -f docs/03-reference/dcp/chatgpt-projects/upload-sets.md",
+        "test -f docs/03-reference/dcp/chatgpt-projects/project-instructions.md"
+      ]
+    }
+  ]
+}

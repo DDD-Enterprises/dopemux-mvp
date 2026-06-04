@@ -53,6 +53,7 @@ from .ui.theme import (
 )
 from .ui.prompts import dopemux_prompt, dopemux_confirm
 from .ui.voice import VoiceEngine
+from .ux.confidence_band import ConfidenceBandState, render_confidence_band
 
 # Load environment variables from .env file
 load_dotenv()
@@ -2637,6 +2638,27 @@ def pr_merge_command(args):
         sys.exit(e.code)
 
 
+@cli.command(
+    name="pr-steward",
+    context_settings=dict(ignore_unknown_options=True),
+    add_help_option=False,
+)
+@click.argument("args", nargs=-1, type=click.UNPROCESSED)
+def pr_steward_command(args):
+    """
+    🧾 Check-Only Governance: PR Steward
+
+    Exposes the versioned PR Steward command contract:
+    intake, bridge, gate, audit, and doctor.
+    """
+    from dopemux_pr_steward.cli import main as pr_steward_main
+
+    try:
+        raise SystemExit(pr_steward_main(list(args)))
+    except SystemExit as e:
+        sys.exit(e.code)
+
+
 @cli.command()
 @click.option("--attention", "-a", is_flag=True, help="🧠 Cognitive Load: Show attention metrics and focus state.")
 @click.option("--context", "-c", is_flag=True, help="🔬 Mental Model: Show active mental model and context density.")
@@ -2667,6 +2689,20 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
     if attention:
         monitor = AttentionMonitor(project_path)
         metrics = monitor.get_current_metrics()
+        no_attention_data = metrics.get("data_status") == "unavailable"
+        attention_state = metrics.get("attention_state", "unknown")
+        attention_state_value = str(attention_state)
+        session_duration = metrics.get("session_duration")
+        context_switches = metrics.get("context_switches")
+        focus_band_state = (
+            ConfidenceBandState.UNAVAILABLE
+            if no_attention_data
+            else ConfidenceBandState.INFERRED
+        )
+
+        if no_attention_data:
+            message = metrics.get("status_message", "no active monitoring data")
+            attention_state_value = f"UNAVAILABLE {message}"
 
         table = styled_table(
             "🧠 Attention Metrics",
@@ -2677,14 +2713,41 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
 
         table.add_row(
             "Current State",
-            metrics.get("attention_state", "unknown"),
-            _get_attention_emoji(metrics.get("attention_state")),
+            attention_state_value,
+            _get_attention_emoji(attention_state),
         )
         table.add_row(
-            "Session Duration", f"{metrics.get('session_duration', 0):.1f} min", "⏱️"
+            "Session Duration",
+            (
+                f"{session_duration:.1f} min"
+                if session_duration is not None
+                else render_confidence_band(
+                    value=None,
+                    state=ConfidenceBandState.UNAVAILABLE,
+                )
+            ),
+            "⏱️",
         )
-        table.add_row("Focus Score", f"{metrics.get('focus_score', 0):.1%}", "🎯")
-        table.add_row("Context Switches", str(metrics.get("context_switches", 0)), "🔄")
+        table.add_row(
+            "Focus Score",
+            render_confidence_band(
+                value=metrics.get("focus_score"),
+                state=focus_band_state,
+            ),
+            "🎯",
+        )
+        table.add_row(
+            "Context Switches",
+            (
+                str(context_switches)
+                if context_switches is not None
+                else render_confidence_band(
+                    value=None,
+                    state=ConfidenceBandState.UNAVAILABLE,
+                )
+            ),
+            "🔄",
+        )
 
         console.logger.info(table)
 
@@ -4926,9 +4989,17 @@ def _pipeline_version_options(command_fn: Callable) -> Callable:
 def _resolved_pipeline_version(
     pipeline_version: str, engine_version_legacy: Optional[str]
 ) -> str:
-    if engine_version_legacy:
-        return engine_version_legacy
-    return pipeline_version
+    resolved = engine_version_legacy if engine_version_legacy else pipeline_version
+    # v3-warn (audit): v3 is the legacy/shadow engine, still operator-reachable via the
+    # hidden --engine-version flag or --pipeline-version v3. Keep it working but warn
+    # loudly so operators don't silently run the unsupported engine. v5 is canonical.
+    if str(resolved).strip().lower() == "v3":
+        console.logger.warning(
+            "[warning]⚠️  Pipeline engine v3 is DEPRECATED[/warning] — it is the legacy/"
+            "shadow engine and v5 is canonical. Prefer --pipeline-version v5. v3 remains "
+            "available but is unsupported and may be removed."
+        )
+    return resolved
 
 
 def _run_truth_v5_alias(

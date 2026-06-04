@@ -1,0 +1,144 @@
+{
+  "packet_id": "TP-DMX-COCKPIT-SAFE-ACTIONS-001",
+  "proof_id": "TP-DMX-COCKPIT-SAFE-ACTIONS-001-MATERIALIZATION",
+  "created_at_utc": "2026-06-04T05:18:50Z",
+  "validation_state": "TASK_PACKET_MATERIALIZED_VALIDATED",
+  "scope": "Artifact-only materialization of the missing strict generated Task Packet and packet index row for the existing Safe Action Gate primitive contract evidence.",
+  "repo_identity": {
+    "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/cockpit-safe-actions-task-packet-001",
+    "primary_checkout_path": "/Users/hue/code/dopemux-mvp",
+    "branch": "codex/cockpit-safe-actions-task-packet-001",
+    "base": "origin/main",
+    "base_head": "68f7435f66d0be9c59e8b49df486fbccb9dfdd1f",
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "repo_marker": ".dopetaskroot",
+    "primary_checkout_dirty": true
+  },
+  "authority_used": [
+    "AGENTS.md",
+    ".taskorchestrator/config.yaml",
+    "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+    "task-packets/INDEX.md",
+    "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/PROOF.json",
+    "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_GATE_CONTRACT.md",
+    "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/CLAUDE_DESIGN_SAFE_ACTION_BLOCKERS.md",
+    "task-packets/generated/TP-DMX-COCKPIT-RUNTIME-RENDER-001.json",
+    "task-packets/generated/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001.json",
+    "task-packets/generated/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001.json"
+  ],
+  "files_changed": [
+    {
+      "path": "task-packets/generated/TP-DMX-COCKPIT-SAFE-ACTIONS-001.json",
+      "change": "added strict generated Task Packet"
+    },
+    {
+      "path": "task-packets/INDEX.md",
+      "change": "added one Active packet registry row"
+    },
+    {
+      "path": "proof/cockpit-safe-actions-task-packet/TP-DMX-COCKPIT-SAFE-ACTIONS-001-MATERIALIZATION/PROOF.json",
+      "change": "added materialization proof"
+    }
+  ],
+  "slices_completed": [
+    "Preflighted primary checkout and created isolated worktree from origin/main.",
+    "Inspected Safe Action Gate evidence and adjacent Cockpit generated Task Packets.",
+    "Materialized strict generated Task Packet using only schema-declared fields.",
+    "Registered the packet in task-packets/INDEX.md.",
+    "Validated packet JSON, canonical schema, existing Safe Action checksums, focused Cockpit tests, and diff hygiene."
+  ],
+  "governance_state_preserved": {
+    "safe_for_claude_design": "NO",
+    "ready_for_claude_design": "not approved",
+    "runtime_action_execution": "not_authorized",
+    "t4_remote_mutation": "not_authorized",
+    "tx_tu_execution": "disabled",
+    "unknown_drift_runtime_reclassification": "disabled",
+    "claude_design_final_screens": "not_approved"
+  },
+  "validation": {
+    "pass": [
+      {
+        "command": "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-SAFE-ACTIONS-001.json >/dev/null",
+        "exit_code": 0,
+        "summary": "Task Packet JSON parsed."
+      },
+      {
+        "command": "python -m jsonschema -i task-packets/generated/TP-DMX-COCKPIT-SAFE-ACTIONS-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "exit_code": 0,
+        "summary": "Task Packet validated against dopetask-canonical-spec.json. jsonschema emitted a deprecation warning for its CLI."
+      },
+      {
+        "command": "python - <<'PY' ... count TP-DMX-COCKPIT-SAFE-ACTIONS-001 in task-packets/INDEX.md ... PY",
+        "exit_code": 0,
+        "summary": "Index contained exactly one Safe Action packet row."
+      },
+      {
+        "command": "python -m json.tool out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/PROOF.json >/dev/null",
+        "exit_code": 0,
+        "summary": "Existing Safe Action proof JSON parsed."
+      },
+      {
+        "command": "cd out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001 && shasum -a 256 -c sha256sums.txt",
+        "exit_code": 0,
+        "summary": "All Safe Action artifact checksums passed."
+      },
+      {
+        "command": "python -m pytest tests/unit/dopemux/ui/cockpit/test_runtime_contract.py tests/unit/test_cockpit_cli.py -q",
+        "exit_code": 0,
+        "summary": "51 focused Cockpit tests passed."
+      },
+      {
+        "command": "git diff --check",
+        "exit_code": 0,
+        "summary": "No whitespace errors."
+      },
+      {
+        "command": "python -m json.tool proof/cockpit-safe-actions-task-packet/TP-DMX-COCKPIT-SAFE-ACTIONS-001-MATERIALIZATION/PROOF.json >/dev/null",
+        "exit_code": 0,
+        "summary": "Materialization proof JSON parsed."
+      },
+      {
+        "command": "pre-commit run --files task-packets/generated/TP-DMX-COCKPIT-SAFE-ACTIONS-001.json task-packets/INDEX.md proof/cockpit-safe-actions-task-packet/TP-DMX-COCKPIT-SAFE-ACTIONS-001-MATERIALIZATION/PROOF.json",
+        "exit_code": 0,
+        "summary": "Pre-commit hooks passed for touched files."
+      },
+      {
+        "command": "manual diff review",
+        "exit_code": 0,
+        "summary": "Reviewed generated packet scope, index row placement, proof content, and changed-file allowlist; no runtime files changed."
+      }
+    ],
+    "fail": [],
+    "not_run": [
+      {
+        "command": "Task Orchestrator get_context / query_items / item advancement",
+        "reason": "MCP calls returned Transport closed during this turn. No item advancement or dependency unblock was claimed."
+      },
+      {
+        "command": "git push / gh pr create",
+        "reason": "Pending validation and commit."
+      }
+    ]
+  },
+  "codereview_status": "PASS_MANUAL_DIFF_REVIEW_NO_RUNTIME_SCOPE_EXPANSION",
+  "precommit_status": "PASS",
+  "commit_sha": "57e2ff4eb4c915b9129e5c9629b2e40573ba32b9",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/804",
+  "residual_risks": [
+    "Task Orchestrator live state and dependency unblock cannot be mutated while the MCP transport is closed.",
+    "Existing Safe Action proof omits a top-level READY_FOR_CLAUDE_DESIGN key but includes ready_for_claude_design=not approved; this materialization preserves the existing artifact rather than rewriting it.",
+    "This packet restores traceability only; it does not change runtime Safe Action behavior or clear downstream Settings/Admin per-row tier UNKNOWNs."
+  ],
+  "unknowns": [
+    "Current Task Orchestrator item role and gate note status for the Safe Action item.",
+    "Whether Settings/Admin dependency unblock can be advanced in the orchestrator after MCP recovery.",
+    "Final PR URL until push and PR creation succeed."
+  ],
+  "rollback": [
+    "Revert task-packets/generated/TP-DMX-COCKPIT-SAFE-ACTIONS-001.json.",
+    "Remove the TP-DMX-COCKPIT-SAFE-ACTIONS-001 row from task-packets/INDEX.md.",
+    "Remove proof/cockpit-safe-actions-task-packet/TP-DMX-COCKPIT-SAFE-ACTIONS-001-MATERIALIZATION/PROOF.json."
+  ],
+  "cleanup_status": "Worktree retained for commit, push, and PR creation."
+}

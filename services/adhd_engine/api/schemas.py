@@ -241,6 +241,9 @@ class ActivityUpdateRequest(BaseModel):
     context_switches: Optional[int] = Field(None, ge=0)
     break_compliance: Optional[float] = Field(None, ge=0.0, le=1.0)
     minutes_since_break: Optional[int] = Field(None, ge=0)
+    # boundary_type is accepted from the /activity PUT endpoint and passed
+    # through to the engine sanitizer which enforces the allowed-value list.
+    boundary_type: Optional[str] = Field(None, description="Work boundary signal (commit/test/build/file_close)")
 
 
 class ActivityUpdateResponse(BaseModel):

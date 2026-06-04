@@ -19,6 +19,7 @@ import asyncio
 import json
 import logging
 import os
+from dataclasses import asdict
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -33,10 +34,12 @@ from .models import (
     AccommodationRecommendation
 )
 from ..config import settings  # Relative import
+from ..operator_identity import resolve_operator_user_id
 from .activity_tracker import ActivityTracker
 from ..conport_mcp_client import ConPortMCPClient  # Relative import
 from ..bridge_integration import ConPortBridgeAdapter  # Relative import
 from ..pal_client import ADHDPALClient  # Relative import
+from ..redis_keys import redis_key, redis_pattern
 
 # Domain Imports - Attention
 from ..domains.attention.attention_calibrator import AttentionCalibrator
@@ -65,7 +68,7 @@ from ..event_listener import ADHDEventListener
 try:
     from ..event_emitter import ADHDEventEmitter
 except ImportError:
-    pass
+    ADHDEventEmitter = None
 
 # ConPort-KG Integration (optional)
 try:
@@ -88,6 +91,13 @@ def _resolve_task_orchestrator_url() -> str:
     if isinstance(configured, str) and configured.strip():
         return configured.strip()
     return os.getenv("TASK_ORCHESTRATOR_URL", "http://task-orchestrator:8000")
+
+
+def _redis_text(value: Any) -> str:
+    """Normalize Redis text responses across decoded and raw-byte clients."""
+    if isinstance(value, (bytes, bytearray)):
+        return value.decode("utf-8")
+    return str(value)
 
 # Machine Learning (IP-005 Days 11-12)
 try:
@@ -116,6 +126,7 @@ class ADHDAccommodationEngine:
         """Initialize ADHD accommodation engine with settings-based configuration."""
         self.redis_url = settings.redis_url
         self.workspace_id = settings.workspace_id
+        self.operator_user_id = resolve_operator_user_id()
 
         # Redis connection for state persistence (now using shared pool)
         self.redis_client: Optional[redis.Redis] = None
@@ -128,6 +139,11 @@ class ADHDAccommodationEngine:
         self.user_profiles: Dict[str, ADHDProfile] = {}
         self.current_energy_levels: Dict[str, EnergyLevel] = {}
         self.current_attention_states: Dict[str, AttentionState] = {}
+        self.recent_activity_updates: Dict[str, Dict[str, Any]] = {}
+        self.recent_activity_samples: Dict[str, List[Dict[str, Any]]] = {}
+        self.activity_baseline_samples: Dict[str, List[Dict[str, float]]] = {}
+        self.activity_baseline_min_samples = 5
+        self.activity_baseline_window = 50
         self.active_accommodations: Dict[str, List[AccommodationRecommendation]] = {}
 
         # Cognitive load monitoring
@@ -255,25 +271,55 @@ class ADHDAccommodationEngine:
         """Load ADHD profiles from persistent storage."""
         try:
             # Load profiles from Redis
-            profile_keys = await self.redis_client.keys("adhd:profile:*")
+            profile_keys = await self.redis_client.keys(redis_pattern("adhd:profile:*"))
 
             for key in profile_keys:
-                user_id = key.split(":")[-1]
+                key_text = _redis_text(key)
+                user_id = key_text.rsplit(":", 1)[-1]
                 profile_data = await self.redis_client.get(key)
 
                 if profile_data:
-                    profile = ADHDProfile(**json.loads(profile_data))
+                    profile = ADHDProfile(**json.loads(_redis_text(profile_data)))
                     self.user_profiles[user_id] = profile
                     
                     # Initialize ML predictor for user (Phase 10.5)
-                    if ML_AVAILABLE and settings.enable_ml_predictions:
-                        self.energy_predictors[user_id] = EnergyPatternPredictor(user_id)
-                        logger.info(f"🧠 Initialized ML energy predictor for user: {user_id}")
+                    self._ensure_energy_predictor(user_id)
+
+            await self._ensure_operator_profile_seeded()
 
             logger.info(f"📋 Loaded {len(self.user_profiles)} ADHD profiles")
 
         except Exception as e:
             logger.error(f"Failed to load ADHD profiles: {e}")
+
+    def _ensure_energy_predictor(self, user_id: str) -> None:
+        """Initialize the optional ML predictor for a loaded or seeded profile."""
+        if ML_AVAILABLE and settings.enable_ml_predictions and user_id not in self.energy_predictors:
+            self.energy_predictors[user_id] = EnergyPatternPredictor(user_id)
+            logger.info(f"🧠 Initialized ML energy predictor for user: {user_id}")
+
+    async def _ensure_operator_profile_seeded(self) -> None:
+        """Seed and persist a default profile for the stable local operator."""
+        operator_user_id = self.operator_user_id or resolve_operator_user_id()
+        self.operator_user_id = operator_user_id
+
+        if operator_user_id in self.user_profiles:
+            self._ensure_energy_predictor(operator_user_id)
+            return
+
+        profile = ADHDProfile(user_id=operator_user_id)
+        self.user_profiles[operator_user_id] = profile
+        self._ensure_energy_predictor(operator_user_id)
+
+        # Apply the instance namespace so the seed write lands on the same key
+        # the prefixed reads (redis_pattern("adhd:profile:*")) scan; a bare key
+        # would be invisible on restart in namespaced deployments, causing
+        # repeated reseeding and cross-instance leakage.
+        profile_key = redis_key(f"adhd:profile:{operator_user_id}")
+        # Use SET NX (set-if-not-exists) so a profile written by another process
+        # between our load and seed is never silently overwritten.
+        await self.redis_client.set(profile_key, json.dumps(asdict(profile), default=str), nx=True)
+        logger.info(f"📋 Seeded default ADHD profile for operator: {operator_user_id}")
 
     async def _start_accommodation_monitoring(self) -> None:
         """Start background monitoring tasks."""
@@ -294,12 +340,13 @@ class ADHDAccommodationEngine:
         """Initialize DDD domain components."""
         # Attention Domain
         self.hyperfocus_guard = HyperfocusGuard()
-        self.attention_calibrator = AttentionCalibrator(user_id=settings.workspace_id)  # Using workspace_id as default user
+        self.operator_user_id = resolve_operator_user_id()
+        self.attention_calibrator = AttentionCalibrator(user_id=self.operator_user_id)
         self.procrastination_detector = ProcrastinationDetector()
         self.overwhelm_detector = OverwhelmDetector()
         
         # Wellbeing Domain
-        self.social_battery_monitor = SocialBatteryMonitor(user_id=settings.workspace_id, bridge_client=self.conport)
+        self.social_battery_monitor = SocialBatteryMonitor(user_id=self.operator_user_id, bridge_client=self.conport)
         
         # Task Enablement Domain
         self.task_decomposer = TaskDecompositionAssistant()
@@ -311,17 +358,10 @@ class ADHDAccommodationEngine:
         self.voice_assistant = VoiceAssistant(adhd_engine=self)
         
         # Event Listener
-        from ..event_listener import ADHDEventListener
-        # We need an EventBus - usually this would be injected or imported
-        # For now, we will create a dummy event bus if not available or assume it's part of the engine
-        # But wait, event_listener expects 'event_bus'.
-        # Assuming engine has access to event bus, or we need to create one.
-        # Let's import the event bus if available.
-        try:
-            from ..event_emitter import ADHDEventEmitter
+        if ADHDEventEmitter is not None:
             # Event emitter expects a Redis URL, not a bridge adapter object.
             self.event_bus = ADHDEventEmitter(settings.redis_url)
-        except ImportError:
+        else:
             self.event_bus = None
             
         self.event_listener = ADHDEventListener(
@@ -329,13 +369,15 @@ class ADHDAccommodationEngine:
             hyperfocus_guard=self.hyperfocus_guard,
             overwhelm_detector=self.overwhelm_detector,
             procrastination_detector=self.procrastination_detector,
-            activity_tracker=self.activity_tracker
+            activity_tracker=self.activity_tracker,
+            adhd_engine=self,
         )
 
     async def _start_event_listener(self) -> None:
         """Start the central event listener."""
         if self.event_listener:
-            await self.event_listener.start(user_id=settings.workspace_id)
+            self.operator_user_id = resolve_operator_user_id()
+            await self.event_listener.start(user_id=self.operator_user_id)
 
     # Core Accommodation Methods
 
@@ -437,6 +479,229 @@ class ADHDAccommodationEngine:
         except Exception as e:
             logger.error(f"Task suitability assessment failed: {e}")
             return {"error": str(e)}
+
+    async def record_activity_update(
+        self,
+        user_id: str,
+        activity_data: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """Record a bounded activity signal and refresh current ADHD state."""
+        metrics = self._sanitize_activity_metrics(activity_data)
+        if self._is_hook_activity(metrics):
+            self._append_activity_sample(user_id, metrics)
+            hook_metrics = self._derive_hook_activity_metrics(user_id)
+            # Merge hook-derived metrics onto any existing real activity metrics so
+            # that a sparse, content-free hook event (carrying only hook_event_name /
+            # status) does not zero-out richer numeric signals already recorded via
+            # the /activity PUT endpoint.
+            existing = self.recent_activity_updates.get(user_id)
+            if existing:
+                merged = dict(existing)
+                merged.update(hook_metrics)
+                metrics = merged
+            else:
+                metrics = hook_metrics
+        else:
+            # For direct numeric activity updates, merge onto existing cached values
+            # so a single-field update (e.g. only completion_rate) does not drop
+            # previously-recorded fields (context_switches, break_compliance, etc.).
+            existing = self.recent_activity_updates.get(user_id)
+            if existing:
+                merged = dict(existing)
+                merged.update(metrics)
+                metrics = merged
+        self.recent_activity_updates[user_id] = metrics
+        self._append_activity_baseline_sample(user_id, metrics)
+
+        if user_id not in self.user_profiles:
+            self.user_profiles[user_id] = ADHDProfile(user_id=user_id)
+
+        energy_level = await self._assess_current_energy_level(user_id)
+        attention_state = await self._assess_attention_state(user_id)
+
+        self.current_energy_levels[user_id] = energy_level
+        self.current_attention_states[user_id] = attention_state
+
+        return {
+            "energy_level": energy_level,
+            "attention_state": attention_state,
+            "energy_updated": True,
+            "attention_updated": True,
+        }
+
+    @staticmethod
+    def _sanitize_activity_metrics(activity_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Keep only content-free numeric/status activity fields."""
+        allowed_fields = {
+            "completion_rate",
+            "context_switches",
+            "break_compliance",
+            "minutes_since_break",
+            "hook_event_name",
+            "status",
+            "tool_name",
+            "source_event",
+            "boundary_type",
+            "tool_failures",
+            "idle_detected",
+            "idle_minutes",
+        }
+        metrics = {
+            key: value
+            for key, value in activity_data.items()
+            if key in allowed_fields and value is not None
+        }
+        if metrics.get("boundary_type") not in {"commit", "test", "build", "file_close"}:
+            metrics.pop("boundary_type", None)
+        return metrics
+
+    @staticmethod
+    def _is_hook_activity(activity_data: Dict[str, Any]) -> bool:
+        return any(key in activity_data for key in ("hook_event_name", "status", "tool_name", "boundary_type"))
+
+    def _append_activity_sample(self, user_id: str, activity_data: Dict[str, Any]) -> None:
+        samples = self.recent_activity_samples.setdefault(user_id, [])
+        samples.append(dict(activity_data))
+        self.recent_activity_samples[user_id] = samples[-50:]
+
+    # Fields that must actually be present for a calibration sample to be useful.
+    _BASELINE_REQUIRED_FIELDS = {"completion_rate", "context_switches"}
+
+    def _append_activity_baseline_sample(self, user_id: str, activity_data: Dict[str, Any]) -> None:
+        """Store bounded numeric activity metrics for per-user calibration.
+
+        Only records a sample when the activity data contains ALL of the core
+        numeric fields.  A partial update must not be turned into a baseline
+        sample, because the missing field would be filled with a default
+        substitute and corrupt the per-user thresholds.
+        """
+        if not all(f in activity_data for f in self._BASELINE_REQUIRED_FIELDS):
+            return
+        sample = self._activity_baseline_sample(activity_data)
+        samples = self.activity_baseline_samples.setdefault(user_id, [])
+        samples.append(sample)
+        self.activity_baseline_samples[user_id] = samples[-self.activity_baseline_window:]
+
+    def get_activity_baseline_status(self, user_id: str) -> Dict[str, Any]:
+        """Return readiness and thresholds for the user's activity baseline."""
+        sample_count = len(self.activity_baseline_samples.get(user_id, []))
+        ready = sample_count >= self.activity_baseline_min_samples
+        return {
+            "status": "ready" if ready else "calibrating",
+            "ready": ready,
+            "sample_count": sample_count,
+            "min_samples": self.activity_baseline_min_samples,
+            "thresholds": self._activity_baseline_thresholds(user_id) if ready else {},
+        }
+
+    def _activity_thresholds_for_user(self, user_id: str) -> Dict[str, float]:
+        if len(self.activity_baseline_samples.get(user_id, [])) < self.activity_baseline_min_samples:
+            return self._bootstrap_activity_thresholds()
+        return self._activity_baseline_thresholds(user_id)
+
+    @staticmethod
+    def _bootstrap_activity_thresholds() -> Dict[str, float]:
+        return {
+            "low_completion_rate": 0.3,
+            "high_completion_rate": 0.8,
+            "high_context_switches": 5.0,
+            "high_attention_context_switches": 10.0,
+            "low_break_compliance": 0.5,
+            "long_minutes_since_break": 60.0,
+            "low_focus_duration": 10.0,
+            "high_focus_duration": 60.0,
+            "high_distraction_events": 10.0,
+            "high_abandoned_tasks": 3.0,
+        }
+
+    def _activity_baseline_thresholds(self, user_id: str) -> Dict[str, float]:
+        samples = self.activity_baseline_samples.get(user_id, [])
+        if not samples:
+            return self._bootstrap_activity_thresholds()
+        return {
+            "low_completion_rate": self._percentile([sample["completion_rate"] for sample in samples], 25),
+            "high_completion_rate": self._percentile([sample["completion_rate"] for sample in samples], 75),
+            "high_context_switches": self._percentile([sample["context_switches"] for sample in samples], 75),
+            "high_attention_context_switches": self._percentile([sample["context_switches"] for sample in samples], 75),
+            "low_break_compliance": self._percentile([sample["break_compliance"] for sample in samples], 25),
+            "long_minutes_since_break": self._percentile([sample["minutes_since_break"] for sample in samples], 75),
+            "low_focus_duration": self._percentile([sample["average_focus_duration"] for sample in samples], 25),
+            "high_focus_duration": self._percentile([sample["average_focus_duration"] for sample in samples], 75),
+            "high_distraction_events": self._percentile([sample["distraction_events"] for sample in samples], 75),
+            "high_abandoned_tasks": self._percentile([sample["abandoned_tasks"] for sample in samples], 75),
+        }
+
+    @staticmethod
+    def _activity_baseline_sample(activity_data: Dict[str, Any]) -> Dict[str, float]:
+        indicators = ADHDAccommodationEngine._attention_indicators_from_activity(activity_data)
+        return {
+            "completion_rate": float(activity_data.get("completion_rate", 0.5) or 0.0),
+            "context_switches": float(activity_data.get("context_switches", 0) or 0.0),
+            "break_compliance": float(activity_data.get("break_compliance", 1.0) or 0.0),
+            "minutes_since_break": float(activity_data.get("minutes_since_break", 0) or 0.0),
+            "average_focus_duration": float(indicators.get("average_focus_duration", 25) or 0.0),
+            "distraction_events": float(indicators.get("distraction_events", 0) or 0.0),
+            "abandoned_tasks": float(indicators.get("abandoned_tasks", 0) or 0.0),
+        }
+
+    @staticmethod
+    def _percentile(values: List[float], percentile: int) -> float:
+        sorted_values = sorted(float(value) for value in values)
+        if not sorted_values:
+            return 0.0
+        rank = max(1, (percentile * len(sorted_values) + 99) // 100)
+        return sorted_values[min(rank, len(sorted_values)) - 1]
+
+    def _derive_hook_activity_metrics(self, user_id: str) -> Dict[str, Any]:
+        """Derive bounded activity metrics from content-free hook events."""
+        samples = self.recent_activity_samples.get(user_id, [])
+        failures = sum(
+            1
+            for sample in samples
+            if sample.get("status") == "failure"
+            or sample.get("hook_event_name") == "PostToolUseFailure"
+        )
+        successes = sum(1 for sample in samples if sample.get("status") == "success")
+        attempts = sum(1 for sample in samples if sample.get("status") == "attempt")
+        prompt_events = sum(1 for sample in samples if sample.get("hook_event_name") == "UserPromptSubmit")
+        tool_events = sum(1 for sample in samples if sample.get("tool_name"))
+        boundary_events = sum(1 for sample in samples if sample.get("boundary_type"))
+        work_boundary_events = sum(
+            1
+            for sample in samples
+            if sample.get("boundary_type") in {"commit", "test", "build"}
+        )
+
+        boundary_without_status = sum(
+            1
+            for sample in samples
+            if sample.get("boundary_type") and sample.get("status") not in {"success", "failure"}
+        )
+        outcome_count = successes + failures + boundary_without_status
+        completion_rate = successes / outcome_count if outcome_count else 0.5
+        if boundary_without_status and outcome_count:
+            completion_rate = (successes + boundary_without_status) / outcome_count
+
+        context_switches = max(0, prompt_events - boundary_events * 2)
+        minutes_since_break = max(
+            0,
+            min(120, 30 + failures * 10 + attempts * 2) - boundary_events * 10,
+        )
+
+        return {
+            "completion_rate": completion_rate,
+            "context_switches": context_switches,
+            "break_compliance": max(0.0, 1.0 - (failures * 0.2)),
+            "minutes_since_break": minutes_since_break,
+            "tool_failures": failures,
+            "tool_successes": successes,
+            "tool_attempts": attempts,
+            "tool_events": tool_events,
+            "prompt_events": prompt_events,
+            "boundary_events": boundary_events,
+            "work_boundary_events": work_boundary_events,
+            "activity_evidence": bool(samples),
+        }
 
     def _calculate_task_cognitive_load(
         self,
@@ -882,26 +1147,27 @@ Format: {{
             context_switches = activity_data.get("context_switches", 0)
             break_compliance = activity_data.get("break_compliance", 1.0)
             time_since_last_break = activity_data.get("minutes_since_break", 0)
+            thresholds = self._activity_thresholds_for_user(user_id)
 
             # Energy assessment algorithm
             energy_score = 0.6  # Base energy level
 
             # Task completion indicates energy
-            if task_completion_rate > 0.8:
+            if task_completion_rate > thresholds["high_completion_rate"]:
                 energy_score += 0.3
-            elif task_completion_rate < 0.3:
+            elif task_completion_rate < thresholds["low_completion_rate"]:
                 energy_score -= 0.4
 
             # High context switching indicates scattered energy
-            if context_switches > 5:
+            if context_switches > thresholds["high_context_switches"]:
                 energy_score -= 0.3
 
             # Break compliance indicates energy management
-            if break_compliance < 0.5:
+            if break_compliance < thresholds["low_break_compliance"]:
                 energy_score -= 0.2
 
             # Time since break affects energy
-            if time_since_last_break > 60:  # More than 1 hour
+            if time_since_last_break > thresholds["long_minutes_since_break"]:
                 energy_score -= 0.3
 
             # ML PREDICTION (Phase 10.5)
@@ -975,26 +1241,55 @@ Format: {{
         try:
             # Get attention indicators
             indicators = await self._get_attention_indicators(user_id)
+            thresholds = self._activity_thresholds_for_user(user_id)
 
-            rapid_switching = indicators.get("context_switches_per_hour", 0) > 10
-            task_abandonment = indicators.get("abandoned_tasks", 0) > 2
+            rapid_switching = (
+                indicators.get("context_switches_per_hour", 0)
+                > thresholds["high_attention_context_switches"]
+            )
+            task_abandonment = indicators.get("abandoned_tasks", 0)
             focus_duration = indicators.get("average_focus_duration", 25)
             distraction_events = indicators.get("distraction_events", 0)
+            excessive_abandonment = task_abandonment > thresholds["high_abandoned_tasks"]
+            excessive_distractions = distraction_events > thresholds["high_distraction_events"]
+            short_focus = focus_duration < thresholds["low_focus_duration"]
+            long_focus = focus_duration > thresholds["high_focus_duration"]
+            low_distraction = distraction_events < max(2, thresholds["high_distraction_events"] / 2)
+            boundary_seen = (
+                indicators.get("boundary_events", 0) > 0
+                or indicators.get("work_boundary_events", 0) > 0
+            )
+            idle_seen = (
+                bool(indicators.get("idle_detected"))
+                or indicators.get("idle_minutes", 0) > 0
+            )
 
             # Assess attention state
-            if task_abandonment > 3 or distraction_events > 10:
+            if excessive_abandonment or excessive_distractions:
                 attention_state = AttentionState.OVERWHELMED
-            elif rapid_switching and focus_duration < 10:
+            elif rapid_switching and short_focus:
                 attention_state = AttentionState.SCATTERED
-            elif focus_duration > 60 and distraction_events < 2:
+            elif long_focus and low_distraction:
                 attention_state = AttentionState.HYPERFOCUSED
-            elif focus_duration > 20 and distraction_events < 5:
+            elif not rapid_switching and focus_duration >= thresholds["low_focus_duration"] and low_distraction:
                 attention_state = AttentionState.FOCUSED
             else:
                 attention_state = AttentionState.TRANSITIONING
 
             # Update tracking
             previous_state = self.current_attention_states.get(user_id)
+            if previous_state == AttentionState.HYPERFOCUSED and not boundary_seen:
+                exit_signal_count = sum(
+                    1
+                    for signal_seen in (
+                        rapid_switching,
+                        excessive_abandonment or excessive_distractions,
+                        idle_seen,
+                    )
+                    if signal_seen
+                )
+                if exit_signal_count < 2:
+                    attention_state = AttentionState.HYPERFOCUSED
             self.current_attention_states[user_id] = attention_state
 
             # Log state change
@@ -1071,7 +1366,7 @@ Format: {{
         """Check if user needs break recommendation."""
         try:
             # Get last break time
-            last_break_key = f"adhd:last_break:{user_id}"
+            last_break_key = redis_key(f"adhd:last_break:{user_id}")
             last_break_str = await self.redis_client.get(last_break_key)
 
             if last_break_str:
@@ -1158,13 +1453,13 @@ Format: {{
             }
 
             await self.redis_client.lpush(
-                f"adhd:break_recommendations:{self.workspace_id}",
+                redis_key(f"adhd:break_recommendations:{self.workspace_id}"),
                 json.dumps(break_data)
             )
 
             # Trim to keep recent recommendations
             await self.redis_client.ltrim(
-                f"adhd:break_recommendations:{self.workspace_id}",
+                redis_key(f"adhd:break_recommendations:{self.workspace_id}"),
                 0, 9  # Keep 10 most recent
             )
 
@@ -1214,7 +1509,7 @@ Format: {{
         """Apply hyperfocus protection measures."""
         try:
             # Get hyperfocus session duration
-            session_start_key = f"adhd:hyperfocus_start:{user_id}"
+            session_start_key = redis_key(f"adhd:hyperfocus_start:{user_id}")
             session_start_str = await self.redis_client.get(session_start_key)
 
             if session_start_str:
@@ -1249,7 +1544,7 @@ Format: {{
                 }
 
                 await self.redis_client.lpush(
-                    f"adhd:hyperfocus_warnings:{self.workspace_id}",
+                    redis_key(f"adhd:hyperfocus_warnings:{self.workspace_id}"),
                     json.dumps(warning_data)
                 )
 
@@ -1304,6 +1599,8 @@ Format: {{
         Queries real data via ActivityTracker for accurate ADHD assessments.
         """
         try:
+            if user_id in self.recent_activity_updates:
+                return self.recent_activity_updates[user_id]
             if self.activity_tracker:
                 return await self.activity_tracker.get_recent_activity(user_id)
             else:
@@ -1331,6 +1628,9 @@ Format: {{
         Analyzes real activity log data for accurate attention state detection.
         """
         try:
+            if user_id in self.recent_activity_updates:
+                activity = self.recent_activity_updates[user_id]
+                return self._attention_indicators_from_activity(activity)
             if self.activity_tracker:
                 return await self.activity_tracker.get_attention_indicators(user_id)
             else:
@@ -1349,6 +1649,39 @@ Format: {{
                 "average_focus_duration": 25,
                 "distraction_events": 2
             }
+
+    @staticmethod
+    def _attention_indicators_from_activity(activity: Dict[str, Any]) -> Dict[str, Any]:
+        """Map bounded activity metrics into attention indicators."""
+        context_switches = int(activity.get("context_switches", 0) or 0)
+        prompt_events = int(activity.get("prompt_events", 0) or 0)
+        tool_failures = int(activity.get("tool_failures", 0) or 0)
+        context_switches_per_hour = max(context_switches, prompt_events)
+        idle_minutes = float(activity.get("idle_minutes", 0) or 0.0)
+        boundary_events = int(activity.get("boundary_events", 0) or 0)
+        work_boundary_events = int(activity.get("work_boundary_events", 0) or 0)
+        if activity.get("boundary_type"):
+            boundary_events = max(boundary_events, 1)
+            if activity.get("boundary_type") in {"commit", "test", "build"}:
+                work_boundary_events = max(work_boundary_events, 1)
+
+        if context_switches_per_hour >= 10:
+            average_focus_duration = 8
+        elif context_switches_per_hour >= 6:
+            average_focus_duration = 12
+        else:
+            average_focus_duration = max(10, 25 - tool_failures * 3)
+
+        return {
+            "context_switches_per_hour": context_switches_per_hour,
+            "abandoned_tasks": tool_failures,
+            "average_focus_duration": average_focus_duration,
+            "distraction_events": (tool_failures * 3) + max(0, context_switches_per_hour - 15),
+            "boundary_events": boundary_events,
+            "work_boundary_events": work_boundary_events,
+            "idle_detected": bool(activity.get("idle_detected")) or idle_minutes > 0,
+            "idle_minutes": idle_minutes,
+        }
 
     async def _calculate_system_cognitive_load(self) -> float:
         """
@@ -1398,22 +1731,10 @@ Format: {{
         total_load = await self._calculate_system_cognitive_load()
         logger.warning(f"⚠️ COGNITIVE OVERLOAD DETECTED: {total_load:.2f}")
 
-        # Week 3: Create break recommendation in ConPort
-        if self.conport and total_load > 0.8:  # Overload threshold
-            try:
-                # Create high-priority break task
-                entry_id = self.conport.log_progress_entry(
-                    status="TODO",
-                    description=f"🧠 BREAK RECOMMENDED - System cognitive load: {total_load:.1%}. "
-                                f"Consider taking a 5-10 minute break to prevent burnout."
-                )
-
-                if entry_id:
-                    logger.info(f"✅ Created break recommendation #{entry_id} in ConPort")
-                    self.accommodation_stats["breaks_suggested"] += 1
-
-            except Exception as e:
-                logger.error(f"Failed to create break recommendation in ConPort: {e}")
+        if total_load > 0.8:
+            logger.info(
+                "Cognitive overload detected; ADHD Engine does not create task or PM records"
+            )
 
     async def _adjust_task_recommendations_for_protection(self, user_id: str) -> None:
         """
@@ -1583,12 +1904,12 @@ Format: {{
         # Store notification in Redis for tracking
         try:
             await self.redis_client.lpush(
-                f"adhd:notifications:{self.workspace_id}",
+                redis_key(f"adhd:notifications:{self.workspace_id}"),
                 json.dumps(notification)
             )
             # Keep only recent notifications
             await self.redis_client.ltrim(
-                f"adhd:notifications:{self.workspace_id}",
+                redis_key(f"adhd:notifications:{self.workspace_id}"),
                 0, 49  # Keep 50 most recent
             )
         except Exception as e:
@@ -1647,7 +1968,7 @@ Format: {{
         """Get current session duration in minutes."""
         try:
             # Check if we have a session start time in Redis
-            session_start_str = await self.redis_client.get(f"adhd:session_start:{user_id}")
+            session_start_str = await self.redis_client.get(redis_key(f"adhd:session_start:{user_id}"))
             if session_start_str:
                 session_start = datetime.fromisoformat(session_start_str)
                 # Ensure session_start is timezone-aware (assume stored times are in UTC if naive)
@@ -1737,7 +2058,7 @@ Format: {{
             # Publish to Redis Pub/Sub for other services (Phase 10.6)
             if self.redis_client:
                 try:
-                    channel = f"adhd:state_changes:{user_id}"
+                    channel = redis_key(f"adhd:state_changes:{user_id}")
                     await self.redis_client.publish(channel, json.dumps(message))
                     logger.debug(f"📢 Published state update to Redis channel: {channel}")
                 except Exception as e:

@@ -51,8 +51,8 @@ def get_active_theme_name() -> str:
 
 _PALETTES = {
     "mint-mojo": {
-        "cyan": "#7DFBF6", "mint": "#94FADB", "pink": "#FF8BD1", "violet": "#9B78FF", 
-        "gold": "#F5F26D", "black": "#020617", "navy": "#041628", "grey": "#94A3B8"
+        "cyan": "#2FFFF0", "mint": "#00FF85", "pink": "#FF00CC", "violet": "#C07BFF",
+        "gold": "#FFE600", "black": "#020617", "navy": "#041628", "grey": "#94A3B8"
     },
     "pastel-neon-dreamscape": {
         "cyan": "#00FFFF", "mint": "#66FF66", "pink": "#FF00FF", "violet": "#FF66FF",
@@ -78,8 +78,12 @@ SAINT_GOLD = "#FFCF78"
 INK_BLACK = _active_palette["black"]
 VOID_NAVY = _active_palette["navy"]
 VELVET_PLUM = "#1A001A"
-TEXT_PRIMARY = "#E5E5E5"
+TEXT_PRIMARY = "#E2E8F0"
 TEXT_SECONDARY = _active_palette["grey"]
+# Canonical red-family status color for tmux/TUI/dashboard alert surfaces.
+ERROR_RED = "#FF2255"
+# Shared border tone used by tables and panels in the TUI widget layer.
+STRUCTURAL_BORDER = "#4A9E94"
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Theme Definitions & Multi-Theme Engine
@@ -88,55 +92,78 @@ TEXT_SECONDARY = _active_palette["grey"]
 def build_theme(name: str) -> Theme:
     """Construct a Rich Theme object for the specified palette."""
     if name == "mint-mojo":
+        # Single-definition base hues: every repeated/status hue is defined once
+        # here so it cannot drift between slots. (A few single-use decorative
+        # tones stay inline — they have no second slot to drift against.)
+        # `red`/`border` reuse the module constants so the theme dict can never
+        # diverge from ERROR_RED / STRUCTURAL_BORDER (the drift that bit the
+        # status-palette cutover — error was repeated across 3 slots + 1 const).
+        # NOTE: literals here are intentionally static, NOT the dynamic
+        # _active_palette constants (RITUAL_CYAN etc.), so build_theme("mint-mojo")
+        # stays deterministic regardless of the active-theme env var.
+        red = ERROR_RED            # #FF2255 — danger: error / blocker / critical
+        border = STRUCTURAL_BORDER  # #4A9E94 — table / panel / rule borders
+        teal = "#2FFFF0"           # brand cyan — headings / bars / accents
+        teal_soft = "#00C9B8"
+        green = "#00FF85"          # success / healthy
+        gold = "#FFE600"           # warning / hazard / override
+        info_cyan = "#00E5FF"      # info / live (distinct from brand teal)
+        muted = "#808DA0"          # text.muted / severity.unknown
+        dim = "#94A3B8"            # text.dim / label
+        violet = "#C07BFF"         # aftercare / debug
+        pink = "#FF00CC"           # gremlin accent — decorative only
+        navy = "#041628"
+        black = "#020617"
+        plum = "#1A0520"
         return Theme({
-            "mint": "bold #7DFBF6",
-            "mint.soft": "#94FADB",
-            "mint.bright": "bold #B4FFEE",
-            "mint.dim": "#4A9E94",
-            "magenta": "bold #FF8BD1",
-            "violet": "#9B78FF",
+            "mint": f"bold {teal}",
+            "mint.soft": teal_soft,
+            "mint.bright": "bold #60FFF5",
+            "mint.dim": border,
+            "magenta": f"bold {pink}",
+            "violet": violet,
             "violet.dim": "#6B4FBF",
             "text": "#E2E8F0",
-            "text.dim": "#94A3B8",
-            "text.muted": "#64748B",
+            "text.dim": dim,
+            "text.muted": muted,
             "text.disabled": "#475569",
-            "text.emphasis": "bold #94FADB",
-            "heading": "bold #7DFBF6",
-            "subheading": "bold #94FADB",
-            "label": "#94A3B8",
-            "success": "#94FADB",
-            "error": "bold #FF8BD1",
-            "warning": "#F5F26D",
-            "info": "#7DFBF6",
-            "debug": "#9B78FF",
-            "hazard": "#F5F26D",
-            "gilt.edge": "#F5F26D",
-            "chip.live": "bold #7DFBF6",
-            "chip.override": "bold #F5F26D",
-            "chip.blocker": "bold #FF8BD1",
-            "chip.logged": "#94FADB",
-            "chip.aftercare": "#9B78FF",
-            "chip.edge": "bold #7DFBF6",
-            "table.header": "bold #7DFBF6",
-            "table.border": "#4A9E94",
-            "table.row.alt": "on #041628",
-            "panel.border": "#4A9E94",
-            "panel.title": "bold #94FADB",
-            "bar.complete": "#7DFBF6",
-            "bar.remaining": "#1A0520",
-            "bar.pulse": "#FF8BD1",
-            "spinner": "#7DFBF6",
-            "severity.healthy": "#94FADB",
-            "severity.warning": "#F5F26D",
-            "severity.critical": "bold #FF8BD1",
-            "severity.unknown": "#64748B",
-            "rule.line": "#4A9E94",
-            "surface.black": "#020617",
-            "surface.navy": "#041628",
-            "surface.plum": "#1A0520",
-            "bg.black": "on #020617",
-            "bg.navy": "on #041628",
-            "row.active": "bold #94FADB on #041628",
+            "text.emphasis": f"bold {green}",
+            "heading": f"bold {teal}",
+            "subheading": f"bold {teal_soft}",
+            "label": dim,
+            "success": green,
+            "error": f"bold {red}",
+            "warning": gold,
+            "info": info_cyan,
+            "debug": violet,
+            "hazard": gold,
+            "gilt.edge": gold,
+            "chip.live": f"bold {info_cyan}",
+            "chip.override": f"bold {gold}",
+            "chip.blocker": f"bold {red}",
+            "chip.logged": green,
+            "chip.aftercare": violet,
+            "chip.edge": f"bold {teal}",
+            "table.header": f"bold {teal}",
+            "table.border": border,
+            "table.row.alt": f"on {navy}",
+            "panel.border": border,
+            "panel.title": f"bold {teal}",
+            "bar.complete": teal,
+            "bar.remaining": plum,
+            "bar.pulse": pink,
+            "spinner": teal,
+            "severity.healthy": green,
+            "severity.warning": gold,
+            "severity.critical": f"bold {red}",
+            "severity.unknown": muted,
+            "rule.line": border,
+            "surface.black": black,
+            "surface.navy": navy,
+            "surface.plum": plum,
+            "bg.black": f"on {black}",
+            "bg.navy": f"on {navy}",
+            "row.active": f"bold {green} on {navy}",
         })
     elif name == "pastel-neon-dreamscape":
         # New Theme: Pastel Neon Dreamscape on Black

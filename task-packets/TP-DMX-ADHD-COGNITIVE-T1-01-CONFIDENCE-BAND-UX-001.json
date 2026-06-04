@@ -1,0 +1,148 @@
+{
+  "id": "TP-DMX-ADHD-COGNITIVE-T1-01-CONFIDENCE-BAND-UX-001",
+  "project": "dopemux-mvp",
+  "target": "ADHD confidence-band UX primitive for measured, inferred, low-confidence, calibrating, and unavailable states",
+  "invariants": [
+    "Never present defaults, heuristics, estimates, calibration state, or missing evidence as measurement.",
+    "Confidence-band rendering must always include an explicit evidence label; never render a bare number as the full value.",
+    "The primitive must be deterministic, side-effect-free, and unit-tested for every state.",
+    "Live status --attention wiring may use the primitive but must not add live service calls or data collection.",
+    "No live Redis, EventBus, provider, notifier, dashboard, or shell-hook validation is authorized in this slice.",
+    "Do not widen into full status --attention fail-honest rewiring, TrendsPanel demo gating, dashboard live refresh, or documentation doctrine cleanup."
+  ],
+  "depends_on": [
+    "TP-DMX-ADHD-COGNITIVE-T4-08-HYPERFOCUS-LATCH-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ADHD-COGNITIVE-REMEDIATION",
+    "base_branch": "codex/adhd-hyperfocus-latch-001",
+    "parent_tp_id": "TP-DMX-ADHD-COGNITIVE-T4-08-HYPERFOCUS-LATCH-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/adhd-confidence-band-ux-001",
+    "base_branch": "codex/adhd-hyperfocus-latch-001",
+    "stacked_because": "Confidence-band UX is the next concrete ADHD remediation task and is stacked on the current ADHD remediation PR tip to preserve series continuity."
+  },
+  "commit": {
+    "message": "feat(adhd): add confidence band renderer",
+    "allowlist": [
+      "src/dopemux/ux/confidence_band.py",
+      "src/dopemux/ux/__init__.py",
+      "src/dopemux/cli.py",
+      "tests/unit/test_confidence_band_ux.py",
+      "tests/test_cli.py",
+      "task-packets/TP-DMX-ADHD-COGNITIVE-T1-01-CONFIDENCE-BAND-UX-001.json",
+      "task-packets/TP-DMX-ADHD-COGNITIVE-T1-01-CONFIDENCE-BAND-UX-001-implementation-notes.md"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T1-01-CONFIDENCE-BAND-UX-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/unit/test_confidence_band_ux.py tests/test_cli.py::TestCLI::test_status_command_all_metrics tests/test_cli.py::TestCLI::test_attention_emoji_mapping tests/test_attention_monitor.py",
+      "python -m py_compile src/dopemux/ux/confidence_band.py src/dopemux/cli.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(adhd): add confidence band renderer",
+    "body": "## Summary\n- add a deterministic confidence-band UX primitive for measured, inferred, low-confidence, calibrating, and unavailable states\n- ensure each rendered value includes explicit evidence status instead of a bare number\n- wire status --attention focus score through the primitive without adding live service calls\n\n## Validation\n- python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T1-01-CONFIDENCE-BAND-UX-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- python -m pytest tests/unit/test_confidence_band_ux.py tests/test_cli.py::TestCLI::test_status_command_all_metrics tests/test_cli.py::TestCLI::test_attention_emoji_mapping tests/test_attention_monitor.py\n- python -m py_compile src/dopemux/ux/confidence_band.py src/dopemux/cli.py\n- git diff --check",
+    "base": "codex/adhd-hyperfocus-latch-001"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect",
+      "task": "Inspect live status --attention rendering, existing UX/theme helpers, and tests before editing.",
+      "requirements": [
+        "Identify current bare numeric confidence-like outputs.",
+        "Confirm this packet is a primitive/wiring slice only.",
+        "Do not add live telemetry or service calls."
+      ],
+      "commands": [
+        "nl -ba src/dopemux/cli.py | sed -n '2640,2690p'",
+        "find src/dopemux/ux src/dopemux/ui -maxdepth 3 -type f -name '*.py' -print | sort | xargs rg -n \"confidence|band|chip|status|render|label\"",
+        "nl -ba tests/test_cli.py | sed -n '466,610p'"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Live status attention output and local UI helper conventions are identified before tests or production edits."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "src/dopemux/cli.py",
+        "src/dopemux/ux/interactive_prompts.py",
+        "src/dopemux/ui/theme.py",
+        "tests/test_cli.py"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Add failing tests, then add the confidence-band primitive and wire status --attention focus score through it.",
+      "requirements": [
+        "Write failing tests before production code.",
+        "Test measured, inferred, low-confidence, calibrating, and unavailable states.",
+        "Rendered primitive output must include an explicit state label.",
+        "Rendered primitive output must not equal a bare numeric or percent string.",
+        "status --attention must not show the focus score as only a bare percent."
+      ],
+      "commands": [
+        "apply_patch",
+        "python -m pytest tests/unit/test_confidence_band_ux.py tests/test_cli.py::TestCLI::test_status_command_all_metrics"
+      ],
+      "expected_files": [
+        "src/dopemux/ux/confidence_band.py",
+        "src/dopemux/ux/__init__.py",
+        "src/dopemux/cli.py",
+        "tests/unit/test_confidence_band_ux.py",
+        "tests/test_cli.py"
+      ],
+      "validation": [
+        "Targeted primitive/status tests fail before implementation and pass after implementation."
+      ],
+      "context_files": [
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "validate",
+      "task": "Validate packet schema, focused tests, syntax, diff scope, PAL codereview, and precommit checks.",
+      "requirements": [
+        "Report every NOT_RUN command with reason.",
+        "Inspect git status and diff scope before final summary.",
+        "Do not claim live status telemetry validation beyond mocked CLI paths."
+      ],
+      "commands": [
+        "python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T1-01-CONFIDENCE-BAND-UX-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python -m pytest tests/unit/test_confidence_band_ux.py tests/test_cli.py::TestCLI::test_status_command_all_metrics tests/test_cli.py::TestCLI::test_attention_emoji_mapping tests/test_attention_monitor.py",
+        "python -m py_compile src/dopemux/ux/confidence_band.py src/dopemux/cli.py",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "task-packets/TP-DMX-ADHD-COGNITIVE-T1-01-CONFIDENCE-BAND-UX-001-implementation-notes.md"
+      ],
+      "validation": [
+        "Proof notes and final response distinguish PASS, FAIL, NOT_RUN, and remaining UNKNOWNs."
+      ],
+      "context_files": []
+    }
+  ]
+}

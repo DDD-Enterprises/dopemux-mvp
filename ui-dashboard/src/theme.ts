@@ -4,13 +4,14 @@ export const brandTokens = {
   colors: {
     inkBlack: '#020617',
     voidNavy: '#041628',
-    ritualCyan: '#7DFBF6',
-    serumMint: '#94FADB',
-    giltEdge: '#F5F26D',
+    ritualCyan: '#2FFFF0',
+    serumMint: '#00FF85',
+    giltEdge: '#FFE600',
     velvetPlum: '#1A0520',
-    gremlinPink: '#FF8BD1',
+    gremlinPink: '#FF00CC',  // brand accent only — never a status indicator
+    errorRed: '#FF2255',
     saintGold: '#FFCF78',
-    aftercareViolet: '#9B78FF',
+    aftercareViolet: '#C07BFF',
   },
   text: {
     primary: '#F6F7FB',
@@ -22,8 +23,8 @@ export const brandTokens = {
     focusCard: 'linear-gradient(155deg, rgba(4, 22, 40, 0.92), rgba(26, 5, 32, 0.82))',
   },
   borders: {
-    cyan: alpha('#7DFBF6', 0.6),
-    mint: alpha('#94FADB', 0.55),
+    cyan: alpha('#2FFFF0', 0.6),
+    mint: alpha('#00FF85', 0.55),
     gold: alpha('#FFCF78', 0.7),
     subtle: alpha('#F6F7FB', 0.12),
   },
@@ -45,10 +46,10 @@ export const brandTokens = {
     consent: '[CONSENT CHECK? y/N]',
   },
   status: {
-    low: '#94FADB',
-    optimal: '#7DFBF6',
-    high: '#F5F26D',
-    critical: '#FF8BD1',
+    low: '#00FF85',
+    optimal: '#2FFFF0',
+    high: '#FFE600',
+    critical: '#FF2255',
   },
 };
 
@@ -100,15 +101,18 @@ const theme = createTheme({
       main: brandTokens.colors.giltEdge,
     },
     error: {
-      main: brandTokens.colors.gremlinPink,
+      main: brandTokens.colors.errorRed,
     },
   },
   typography: {
-    fontFamily: '"Inter","Space Grotesk","SF Pro Display",sans-serif',
-    h1: { fontSize: '2.75rem', fontWeight: 600, letterSpacing: '0.04em' },
-    h2: { fontSize: '2rem', fontWeight: 600 },
-    h3: { fontSize: '1.6rem', fontWeight: 500 },
-    h6: { letterSpacing: '0.12em', textTransform: 'uppercase' },
+    // hue.body — Inter; hue.display — Space Grotesk; hue.mono — JetBrains Mono
+    fontFamily: '"Inter","SF Pro Display",sans-serif',
+    h1: { fontFamily: '"Space Grotesk",sans-serif', fontSize: '2.75rem', fontWeight: 600, letterSpacing: '0.04em' },
+    h2: { fontFamily: '"Space Grotesk",sans-serif', fontSize: '2rem', fontWeight: 600 },
+    h3: { fontFamily: '"Space Grotesk",sans-serif', fontSize: '1.6rem', fontWeight: 500 },
+    h4: { fontFamily: '"Space Grotesk",sans-serif' },
+    h5: { fontFamily: '"Space Grotesk",sans-serif' },
+    h6: { fontFamily: '"Space Grotesk",sans-serif', letterSpacing: '0.12em', textTransform: 'uppercase' },
     subtitle1: { fontWeight: 500 },
     button: { fontWeight: 600, letterSpacing: '0.08em' },
     fontSize: 15,
@@ -145,6 +149,7 @@ const theme = createTheme({
         contained: {
           background: `linear-gradient(120deg, ${brandTokens.colors.ritualCyan}, ${brandTokens.colors.serumMint})`,
           color: brandTokens.colors.inkBlack,
+          '&:hover': { filter: 'brightness(1.1)' },
         },
         outlined: {
           borderColor: alpha(brandTokens.colors.saintGold, 0.8),

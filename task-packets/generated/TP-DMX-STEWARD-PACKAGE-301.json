@@ -1,129 +1,166 @@
 {
-  "id": "TP-DMX-STEWARD-PACKAGE-301",
-  "project": "dopemux-mvp",
-  "target": "Make the PR-Steward, Bridge, and gate engine importable and expose a single dopemux pr-steward console command (subcommands intake, bridge, gate, audit, doctor) with a stable, versioned CLI contract. The safety-critical steward_gate logic ships in the package (pip), never in scaffolded YAML.",
-  "invariants": [
-    "Do not change engine semantics.",
-    "Do not scaffold into init templates (that is TP-302).",
-    "Do not add console scripts beyond dopemux pr-steward."
-  ],
-  "depends_on": [
-    "TP-DMX-ACTIONBRIDGE-CLI-102",
-    "TP-DMX-STEWARD-GATE-201"
-  ],
-  "repo_binding": {
-    "project_id": "dopemux-mvp",
-    "repo_marker": ".dopetaskroot",
-    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
-    "require_identity_match": true
-  },
-  "series": {
-    "id": "DMX-AUTOREVIEW-PLATFORM",
-    "base_branch": "main",
-    "parent_tp_id": "TP-DMX-STEWARD-GATE-201",
-    "final_packet": false
-  },
-  "execution": {
-    "agent": "codex",
-    "branch": "codex/tp-dmx-steward-package-301",
-    "base_branch": "main"
-  },
   "commit": {
-    "message": "feat(cli): add dopemux pr-steward console command",
     "allowlist": [
       "src/dopemux/cli.py",
+      "pyproject.toml",
       "src/dopemux_pr_steward/__init__.py",
       "src/dopemux_pr_steward/cli.py",
+      "src/dopemux_pr_steward/intake.py",
+      "src/dopemux_pr_steward/bridge.py",
+      "src/dopemux_pr_steward/gate.py",
+      "src/dopemux_pr_steward/audit.py",
+      "tools/pr_steward/**",
+      "tools/pr_action_bridge/**",
       "tests/dopemux_cli/test_pr_steward_cmd.py",
       "docs/ops/pr-steward.md",
       "docs/ops/pr-steward-cli.md",
       "task-packets/generated/TP-DMX-STEWARD-PACKAGE-301.json",
       "proof/TP-DMX-STEWARD-PACKAGE-301/**"
     ],
+    "message": "feat(cli): add dopemux pr-steward console command",
     "verify": [
-      "python -m compileall -q src tests",
-      "pytest -q tests/dopemux_cli",
-      "python -m dopemux.cli pr-steward --help",
       "python -m json.tool task-packets/generated/TP-DMX-STEWARD-PACKAGE-301.json",
+      "python -m compileall -q src tools tests",
+      "pytest -q tests/dopemux_cli/test_pr_steward_cmd.py",
       "git diff --check"
     ]
   },
-  "pr": {
-    "title": "feat(cli): add dopemux pr-steward console command",
-    "body": "## Summary\\n\\nMake the PR-Steward, Bridge, and gate engine importable and expose a single dopemux pr-steward console command (subcommands intake, bridge, gate, audit, doctor) with a stable, versioned CLI contract. The safety-critical steward_gate logic ships in the package (pip), never in scaffolded YAML.\\n\\n## Scope\\n\\nAllowlist-bound; see commit.allowlist. Out of scope: Do not change engine semantics. Do not scaffold into init templates (that is TP-302). Do not add console scripts beyond dopemux pr-steward.\\n\\n## Validation\\n\\nSee commit.verify; embedded audit + proof bundle required.\\n\\n@codex review\\n@gemini\\n@copilot",
-    "base": "main"
+  "depends_on": [
+    "TP-DMX-ACTIONBRIDGE-CLI-102",
+    "TP-DMX-STEWARD-GATE-201"
+  ],
+  "execution": {
+    "agent": "codex",
+    "base_branch": "main",
+    "branch": "codex/tp-dmx-steward-package-301",
+    "stacked_because": "Part of the DMX-AUTOREVIEW-PLATFORM dependency DAG."
   },
+  "id": "TP-DMX-STEWARD-PACKAGE-301",
+  "invariants": [
+    "Runtime/source truth outranks this packet and the load plan.",
+    "Preserve PR Steward check-only semantics unless this packet explicitly authorizes a governed mutation gate.",
+    "Preserve fail-closed behavior on missing evidence, stale SHAs, unsupported permissions, or unknown authority.",
+    "Do not expose secrets, tokens, private keys, or unredacted provider metadata in proof artifacts.",
+    "Do not modify files outside the packet allowlist without stopping for supervisor review.",
+    "The shipped `dopemux pr-steward` command must import the existing Steward/Bridge/gate implementation from an installed package; a thin wrapper around unpackageable top-level modules is not sufficient.",
+    "Do not implement or expose the doctor subcommand in this packet; TP-DMX-STEWARD-DOCTOR-303 owns doctor.py, its schema, and its command contract."
+  ],
   "pal_chain": {
     "enabled": true,
     "steps": [
       "analyze",
+      "thinkdeep",
+      "challenge",
       "planner",
+      "challenge",
+      "implement",
       "codereview",
-      "precommit"
+      "precommit",
+      "challenge"
     ]
+  },
+  "pr": {
+    "base": "main",
+    "body": "## Summary\n- Make the existing Steward/Bridge/gate engine importable from installed packages; expose `dopemux pr-steward` (intake|bridge|gate|audit) with a stable versioned CLI contract; steward_gate logic ships in the package, never in scaffolded YAML. The doctor subcommand is reserved for TP-DMX-STEWARD-DOCTOR-303.\n\n## Scope\nTrack: C-distribute. Risk: MEDIUM. Red lane: false.\n\n## Validation\nRun the packet validation commands and capture proof under proof/TP-DMX-STEWARD-PACKAGE-301/PROOF.json.\n\n## NOT_RUN\nList any skipped live, integration, credentialed, or supervisor-gated checks explicitly.",
+    "title": "Feat(cli): add dopemux pr-steward console command"
+  },
+  "project": "dopemux-mvp",
+  "repo_binding": {
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "require_identity_match": true
+  },
+  "series": {
+    "base_branch": "main",
+    "final_packet": false,
+    "id": "DMX-AUTOREVIEW-PLATFORM",
+    "parent_tp_id": "TP-DMX-ACTIONBRIDGE-CLI-102"
   },
   "steps": [
     {
-      "id": "S1",
-      "task": "Preflight: verify repo identity (repo_marker .dopetaskroot, origin matches origin_hint, branch matches execution.branch, worktree clean or only intended files dirty) and verify dependency proofs exist and passed for: TP-DMX-ACTIONBRIDGE-CLI-102, TP-DMX-STEWARD-GATE-201.",
       "context_files": [
         "AGENTS.md",
+        "docs/ops/load-plans/load_plan-DMX-AUTOREVIEW-PLATFORM.json",
         "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "docs/ops/pr-steward.md",
+        "pyproject.toml",
+        "tools/pr_steward",
+        "tools/pr_action_bridge"
+      ],
+      "id": "S1",
+      "task": "Inspect current repo truth, authority docs, runtime entrypoints, schemas, tests, and existing conventions before editing.",
+      "validation": [
+        "Canonical writer and downstream consumers are identified.",
+        "Any missing authority is recorded as UNKNOWN rather than inferred.",
+        "The planned diff is confirmed to stay within the packet allowlist."
+      ]
+    },
+    {
+      "expected_files": [
         "src/dopemux/cli.py",
         "pyproject.toml",
-        "tools/pr_steward/intake.py"
-      ],
-      "validation": [
-        "Repo identity matches repo_binding.",
-        "Dependency proofs are present and PASS (or 'none' for a root packet).",
-        "Active task context recorded; worktree is clean or only contains intended files."
-      ]
-    },
-    {
-      "id": "S2",
-      "task": "Implement: Make the PR-Steward, Bridge, and gate engine importable and expose a single dopemux pr-steward console command (subcommands intake, bridge, gate, audit, doctor) with a stable, versioned CLI contract. The safety-critical steward_gate logic ships in the package (pip), never in scaffolded YAML.",
-      "expected_files": [
-        "src/dopemux/cli.py",
         "src/dopemux_pr_steward/__init__.py",
         "src/dopemux_pr_steward/cli.py",
+        "src/dopemux_pr_steward/intake.py",
+        "src/dopemux_pr_steward/bridge.py",
+        "src/dopemux_pr_steward/gate.py",
+        "src/dopemux_pr_steward/audit.py",
+        "tools/pr_steward/**",
+        "tools/pr_action_bridge/**",
         "tests/dopemux_cli/test_pr_steward_cmd.py",
         "docs/ops/pr-steward.md",
-        "docs/ops/pr-steward-cli.md"
+        "docs/ops/pr-steward-cli.md",
+        "task-packets/generated/TP-DMX-STEWARD-PACKAGE-301.json",
+        "proof/TP-DMX-STEWARD-PACKAGE-301/**"
       ],
+      "id": "S2",
+      "requirements": [
+        "Track: C-distribute",
+        "Proof path: proof/TP-DMX-STEWARD-PACKAGE-301/PROOF.json",
+        "Executor default: claude-code-sonnet",
+        "Auditor default: claude-code-opus"
+      ],
+      "task": "Make the existing Steward/Bridge/gate engine importable from installed packages; expose `dopemux pr-steward` (intake|bridge|gate|audit) with a stable versioned CLI contract; steward_gate logic ships in the package, never in scaffolded YAML. The doctor subcommand is reserved for TP-DMX-STEWARD-DOCTOR-303.",
       "validation": [
-        "Only allowlisted files are changed.",
-        "Do not change engine semantics.",
-        "Do not scaffold into init templates (that is TP-302).",
-        "Do not add console scripts beyond dopemux pr-steward."
+        "Implementation preserves fail-closed behavior and deterministic artifact output.",
+        "The package can import the existing Steward/Bridge/gate implementation after installation; no unpackageable top-level wrapper dependency remains.",
+        "The package contract does not expose doctor before TP-DMX-STEWARD-DOCTOR-303 implements its command and package-shipped schema.",
+        "No file outside commit.allowlist changed.",
+        "Stop conditions from this packet were not triggered, or execution stopped with evidence."
       ]
     },
     {
-      "id": "S3",
-      "task": "Add or extend tests and docs to cover the change; run the packet validation commands.",
-      "validation": [
-        "`python -m compileall -q src tests` passes.",
-        "`pytest -q tests/dopemux_cli` passes.",
-        "`python -m dopemux.cli pr-steward --help` passes.",
-        "git diff --check passes."
-      ]
-    },
-    {
-      "id": "S4",
-      "task": "Write the proof bundle proof/TP-DMX-STEWARD-PACKAGE-301/ including the review_bundle as the single upload unit.",
       "expected_files": [
-        "proof/TP-DMX-STEWARD-PACKAGE-301/PROOF.json",
-        "proof/TP-DMX-STEWARD-PACKAGE-301/VALIDATION_OUTPUT.md",
-        "proof/TP-DMX-STEWARD-PACKAGE-301/GIT_STATE.md",
-        "proof/TP-DMX-STEWARD-PACKAGE-301/DIFF_STAT.txt",
-        "proof/TP-DMX-STEWARD-PACKAGE-301/CHANGED_FILES.txt",
-        "proof/TP-DMX-STEWARD-PACKAGE-301/AUDITOR_REPORT.md",
-        "proof/TP-DMX-STEWARD-PACKAGE-301/review_bundle/**"
+        "tests/dopemux_cli/test_pr_steward_cmd.py",
+        "docs/ops/pr-steward.md",
+        "docs/ops/pr-steward-cli.md",
+        "proof/TP-DMX-STEWARD-PACKAGE-301/**"
       ],
+      "id": "S3",
+      "task": "Update tests, docs, and proof artifacts required by the packet allowlist and keep runtime claims backed by observed code or validation.",
       "validation": [
-        "Embedded audit is recorded per schemas/proof/embedded_audit.schema.json and the status reflects reality.",
-        "review_bundle/ exists as the single upload/review unit.",
-        "No secrets or tokens are included in the proof bundle."
+        "Docs describe implemented behavior only.",
+        "Proof artifacts include commands, exit codes, diff scope, residual risks, and UNKNOWNs.",
+        "Generated artifacts are stable and replayable."
+      ]
+    },
+    {
+      "commands": [
+        "python -m json.tool task-packets/generated/TP-DMX-STEWARD-PACKAGE-301.json",
+        "python -m compileall -q src tools tests",
+        "pytest -q tests/dopemux_cli/test_pr_steward_cmd.py",
+        "git diff --check"
+      ],
+      "id": "S4",
+      "task": "Run focused validation, inspect git diff, run codereview/precommit review, and prepare a truthful completion summary.",
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-DMX-STEWARD-PACKAGE-301.json",
+        "python -m compileall -q src tools tests",
+        "pytest -q tests/dopemux_cli/test_pr_steward_cmd.py",
+        "git diff --check"
       ]
     }
-  ]
+  ],
+  "target": "Make the existing Steward/Bridge/gate engine importable from installed packages; expose `dopemux pr-steward` (intake|bridge|gate|audit) with a stable versioned CLI contract; steward_gate logic ships in the package, never in scaffolded YAML. The doctor subcommand is reserved for TP-DMX-STEWARD-DOCTOR-303."
 }

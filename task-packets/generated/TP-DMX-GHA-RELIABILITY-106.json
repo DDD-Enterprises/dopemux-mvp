@@ -1,33 +1,5 @@
 {
-  "id": "TP-DMX-GHA-RELIABILITY-106",
-  "project": "dopemux-mvp",
-  "target": "Finalize GitHub Actions trigger and branch-protection reliability: confirm workflow_dispatch and ready_for_review handling, designate the single required pr-gate check, codify no-empty-commits-as-CI-prods, and capture branch-protection truth read-only (mark UNKNOWN if admin access unavailable).",
-  "invariants": [
-    "Do not add new secrets or elevated permissions.",
-    "Do not use pull_request_target for PR-controlled code.",
-    "Do not mutate branch protection.",
-    "Do not rename required checks beyond the designated pr-gate."
-  ],
-  "depends_on": [],
-  "repo_binding": {
-    "project_id": "dopemux-mvp",
-    "repo_marker": ".dopetaskroot",
-    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
-    "require_identity_match": true
-  },
-  "series": {
-    "id": "DMX-AUTOREVIEW-PLATFORM",
-    "base_branch": "main",
-    "parent_tp_id": null,
-    "final_packet": false
-  },
-  "execution": {
-    "agent": "codex",
-    "branch": "codex/tp-dmx-gha-reliability-106",
-    "base_branch": "main"
-  },
   "commit": {
-    "message": "ci: finalize PR trigger and branch-protection reliability",
     "allowlist": [
       ".github/workflows/ci-complete.yml",
       ".github/workflows/pr-steward.yml",
@@ -35,20 +7,31 @@
       "docs/ops/pr-gate-runbook.md",
       "docs/ops/branch-policy-audit.md",
       "docs/ops/ci-trigger-refresh.md",
+      "tests/ci/test_pr_gate.py",
       "task-packets/generated/TP-DMX-GHA-RELIABILITY-106.json",
       "proof/TP-DMX-GHA-RELIABILITY-106/**"
     ],
+    "message": "ci: finalize PR trigger and branch-protection reliability",
     "verify": [
-      "python -c \"import yaml,glob;[yaml.safe_load(open(p)) for p in glob.glob('.github/workflows/*.yml')];print('yaml ok')\"",
       "python -m json.tool task-packets/generated/TP-DMX-GHA-RELIABILITY-106.json",
       "git diff --check"
     ]
   },
-  "pr": {
-    "title": "ci: finalize PR trigger and branch-protection reliability",
-    "body": "## Summary\\n\\nFinalize GitHub Actions trigger and branch-protection reliability: confirm workflow_dispatch and ready_for_review handling, designate the single required pr-gate check, codify no-empty-commits-as-CI-prods, and capture branch-protection truth read-only (mark UNKNOWN if admin access unavailable).\\n\\n## Scope\\n\\nAllowlist-bound; see commit.allowlist. Out of scope: Do not add new secrets or elevated permissions. Do not use pull_request_target for PR-controlled code. Do not mutate branch protection. Do not rename required checks beyond the designated pr-gate.\\n\\n## Validation\\n\\nSee commit.verify; embedded audit + proof bundle required.\\n\\n@codex review\\n@gemini\\n@copilot",
-    "base": "main"
+  "depends_on": [],
+  "execution": {
+    "agent": "codex",
+    "base_branch": "main",
+    "branch": "codex/tp-dmx-gha-reliability-106",
+    "stacked_because": "Root packet for the DMX-AUTOREVIEW-PLATFORM dependency DAG."
   },
+  "id": "TP-DMX-GHA-RELIABILITY-106",
+  "invariants": [
+    "Runtime/source truth outranks this packet and the load plan.",
+    "Preserve PR Steward check-only semantics unless this packet explicitly authorizes a governed mutation gate.",
+    "Preserve fail-closed behavior on missing evidence, stale SHAs, unsupported permissions, or unknown authority.",
+    "Do not expose secrets, tokens, private keys, or unredacted provider metadata in proof artifacts.",
+    "Do not modify files outside the packet allowlist without stopping for supervisor review."
+  ],
   "pal_chain": {
     "enabled": true,
     "steps": [
@@ -63,67 +46,93 @@
       "challenge"
     ]
   },
+  "pr": {
+    "base": "main",
+    "body": "## Summary\n- Confirm workflow_dispatch + ready_for_review handling, designate the single required pr-gate, codify no-empty-commits, capture branch-protection truth read-only (UNKNOWN if no admin).\n\n## Scope\nTrack: A-complete-lane. Risk: HIGH. Red lane: false.\n\n## Validation\nRun the packet validation commands and capture proof under proof/TP-DMX-GHA-RELIABILITY-106/PROOF.json.\n\n## NOT_RUN\nList any skipped live, integration, credentialed, or supervisor-gated checks explicitly.",
+    "title": "Ci: finalize PR trigger and branch-protection reliability"
+  },
+  "project": "dopemux-mvp",
+  "repo_binding": {
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "require_identity_match": true
+  },
+  "series": {
+    "base_branch": "main",
+    "final_packet": false,
+    "id": "DMX-AUTOREVIEW-PLATFORM",
+    "parent_tp_id": null
+  },
   "steps": [
     {
-      "id": "S1",
-      "task": "Preflight: verify repo identity (repo_marker .dopetaskroot, origin matches origin_hint, branch matches execution.branch, worktree clean or only intended files dirty) and verify dependency proofs exist and passed for: none (root packet).",
       "context_files": [
         "AGENTS.md",
-        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
-        ".github/workflows/ci-complete.yml",
-        "docs/ops/pr-gate-runbook.md",
-        "docs/ops/branch-policy-audit.md"
+        "docs/ops/load-plans/load_plan-DMX-AUTOREVIEW-PLATFORM.json",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
       ],
+      "id": "S1",
+      "task": "Inspect current repo truth, authority docs, runtime entrypoints, schemas, tests, and existing conventions before editing.",
       "validation": [
-        "Repo identity matches repo_binding.",
-        "Dependency proofs are present and PASS (or 'none' for a root packet).",
-        "Active task context recorded; worktree is clean or only contains intended files."
+        "Canonical writer and downstream consumers are identified.",
+        "Any missing authority is recorded as UNKNOWN rather than inferred.",
+        "The planned diff is confirmed to stay within the packet allowlist."
       ]
     },
     {
-      "id": "S2",
-      "task": "Implement: Finalize GitHub Actions trigger and branch-protection reliability: confirm workflow_dispatch and ready_for_review handling, designate the single required pr-gate check, codify no-empty-commits-as-CI-prods, and capture branch-protection truth read-only (mark UNKNOWN if admin access unavailable).",
       "expected_files": [
         ".github/workflows/ci-complete.yml",
         ".github/workflows/pr-steward.yml",
         ".github/workflows/preflight.yml",
         "docs/ops/pr-gate-runbook.md",
         "docs/ops/branch-policy-audit.md",
-        "docs/ops/ci-trigger-refresh.md"
+        "docs/ops/ci-trigger-refresh.md",
+        "tests/ci/test_pr_gate.py",
+        "task-packets/generated/TP-DMX-GHA-RELIABILITY-106.json",
+        "proof/TP-DMX-GHA-RELIABILITY-106/**"
       ],
+      "id": "S2",
+      "requirements": [
+        "Track: A-complete-lane",
+        "Proof path: proof/TP-DMX-GHA-RELIABILITY-106/PROOF.json",
+        "Executor default: claude-code-sonnet",
+        "Auditor default: claude-code-opus"
+      ],
+      "task": "Confirm workflow_dispatch + ready_for_review handling, designate the single required pr-gate, codify no-empty-commits, capture branch-protection truth read-only (UNKNOWN if no admin).",
       "validation": [
-        "Only allowlisted files are changed.",
-        "Do not add new secrets or elevated permissions.",
-        "Do not use pull_request_target for PR-controlled code.",
-        "Do not mutate branch protection.",
-        "Do not rename required checks beyond the designated pr-gate."
+        "Implementation preserves fail-closed behavior and deterministic artifact output.",
+        "No file outside commit.allowlist changed.",
+        "Stop conditions from this packet were not triggered, or execution stopped with evidence."
       ]
     },
     {
-      "id": "S3",
-      "task": "Add or extend tests and docs to cover the change; run the packet validation commands.",
-      "validation": [
-        "`python -c \"import yaml,glob;[yaml.safe_load(open(p)) for p in glob.glob('.github/workflows/*.yml')];print('yaml ok')\"` passes.",
-        "git diff --check passes."
-      ]
-    },
-    {
-      "id": "S4",
-      "task": "Write the proof bundle proof/TP-DMX-GHA-RELIABILITY-106/ including the review_bundle as the single upload unit.",
       "expected_files": [
-        "proof/TP-DMX-GHA-RELIABILITY-106/PROOF.json",
-        "proof/TP-DMX-GHA-RELIABILITY-106/VALIDATION_OUTPUT.md",
-        "proof/TP-DMX-GHA-RELIABILITY-106/GIT_STATE.md",
-        "proof/TP-DMX-GHA-RELIABILITY-106/DIFF_STAT.txt",
-        "proof/TP-DMX-GHA-RELIABILITY-106/CHANGED_FILES.txt",
-        "proof/TP-DMX-GHA-RELIABILITY-106/AUDITOR_REPORT.md",
-        "proof/TP-DMX-GHA-RELIABILITY-106/review_bundle/**"
+        "docs/ops/pr-gate-runbook.md",
+        "docs/ops/branch-policy-audit.md",
+        "docs/ops/ci-trigger-refresh.md",
+        "tests/ci/test_pr_gate.py",
+        "proof/TP-DMX-GHA-RELIABILITY-106/**"
       ],
+      "id": "S3",
+      "task": "Update tests, docs, and proof artifacts required by the packet allowlist and keep runtime claims backed by observed code or validation.",
       "validation": [
-        "Embedded audit is recorded per schemas/proof/embedded_audit.schema.json and the status reflects reality.",
-        "review_bundle/ exists as the single upload/review unit.",
-        "No secrets or tokens are included in the proof bundle."
+        "Docs describe implemented behavior only.",
+        "Proof artifacts include commands, exit codes, diff scope, residual risks, and UNKNOWNs.",
+        "Generated artifacts are stable and replayable."
+      ]
+    },
+    {
+      "commands": [
+        "python -m json.tool task-packets/generated/TP-DMX-GHA-RELIABILITY-106.json",
+        "git diff --check"
+      ],
+      "id": "S4",
+      "task": "Run focused validation, inspect git diff, run codereview/precommit review, and prepare a truthful completion summary.",
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-DMX-GHA-RELIABILITY-106.json",
+        "git diff --check"
       ]
     }
-  ]
+  ],
+  "target": "Confirm workflow_dispatch + ready_for_review handling, designate the single required pr-gate, codify no-empty-commits, capture branch-protection truth read-only (UNKNOWN if no admin)."
 }

@@ -107,6 +107,7 @@ This applies only where operator dashboards or visual surfaces exist.
 - Yellow means degraded, delayed, or attention needed.
 - Red means failed, blocked, or urgent operator action required.
 - Gray means inactive, unavailable, or unknown.
+- Hot magenta (#FF00CC, "gremlin pink") is a brand accent — decorative only. Never used as a status indicator.
 - Typography should be plain, compact, and easy to scan.
 - Charts and panels should emphasize trend, threshold, and current state.
 - Avoid oversized hero elements, soft gradients, glassmorphism, and ornamental motion.

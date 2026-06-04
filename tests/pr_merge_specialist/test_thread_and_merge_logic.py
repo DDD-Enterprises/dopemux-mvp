@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from dopemux_pr_merge_specialist import engine
+from dopemux_pr_merge_specialist import queue_drain as queue_drain_module
 from dopemux_pr_merge_specialist.schema import (
     BlockerType,
     Finding,
@@ -13,6 +14,7 @@ from dopemux_pr_merge_specialist.schema import (
     PullRequestState,
     ReviewThread,
     ThreadComment,
+    ThreadDisposition,
     ValidationReport,
     ValidationStatus,
 )
@@ -109,13 +111,11 @@ def test_implement_disposition_for_conflict_marker_resolution_comment():
     assert disposition.disposition == "implement"
 
 
-def test_merge_fallback_to_auto_when_policy_requires_queue(monkeypatch, tmp_path: Path):
+def test_merge_blocks_without_expected_head_oid(monkeypatch, tmp_path: Path):
     calls = []
 
     def fake_execute(cmd, *, execute, cwd, commands_log, timeout_seconds=600):
         calls.append(cmd)
-        if len(calls) == 1:
-            return engine.CommandResult(command=list(cmd), returncode=1, stdout="", stderr="merge queue required")
         return engine.CommandResult(command=list(cmd), returncode=0, stdout="ok", stderr="")
 
     monkeypatch.setattr(engine, "execute_or_dry_run", fake_execute)
@@ -138,9 +138,9 @@ def test_merge_fallback_to_auto_when_policy_requires_queue(monkeypatch, tmp_path
         client=DummyClient(),
     )
 
-    assert result.action == MergeActionType.AUTO_MERGE_FALLBACK
-    assert "--auto" in result.command
-    assert result.reason_code == "merge_queue_required"
+    assert result.action == MergeActionType.BLOCKED
+    assert result.reason_code == "expected_head_oid_unknown"
+    assert calls == []
 
 
 def test_conflict_analysis_explicitly_rejects_easy_defaults(tmp_path: Path):
@@ -183,6 +183,113 @@ def test_truth_sources_include_validation_status():
         {"_meta": {"fingerprint": "abc"}},
     )
     assert sources[2].status == ValidationStatus.NOT_EXECUTED.value
+
+
+def test_applied_thread_dispositions_preserve_local_resolution_evidence():
+    dispositions = [
+        ThreadDisposition(
+            thread_id="T1",
+            disposition="implement",
+            reason="applied suggestion",
+            path="src/example.py",
+            applied=True,
+        )
+    ]
+
+    assert queue_drain_module._applied_threads_resolved_locally(dispositions) is True
+
+
+def test_applied_thread_resolution_requires_verified_resolver(monkeypatch, tmp_path: Path):
+    calls: list[list[ThreadDisposition]] = []
+    dispositions = [
+        ThreadDisposition(
+            thread_id="T1",
+            disposition="implement",
+            reason="applied suggestion",
+            path="src/example.py",
+            applied=True,
+        )
+    ]
+    validation = ValidationReport(
+        status=ValidationStatus.PASSED,
+        required_for_merge_ready=True,
+        steps=[],
+        attempts=1,
+        remediation_applied=False,
+    )
+
+    def fake_resolve_verified_threads(**kwargs):
+        calls.append(kwargs["dispositions"])
+        return True
+
+    monkeypatch.setattr(
+        queue_drain_module,
+        "resolve_verified_threads",
+        fake_resolve_verified_threads,
+    )
+
+    resolved = queue_drain_module._resolve_applied_threads_after_validation(
+        applied_threads=dispositions,
+        validation=validation,
+        execute=True,
+        commands_log=tmp_path / "COMMANDS_RUN.txt",
+        repo_root=tmp_path,
+        policy={},
+    )
+
+    assert resolved is True
+    assert calls == [dispositions]
+
+
+def test_applied_thread_resolution_fails_closed_when_resolver_fails(
+    monkeypatch, tmp_path: Path
+):
+    dispositions = [
+        ThreadDisposition(
+            thread_id="T1",
+            disposition="implement",
+            reason="applied suggestion",
+            path="src/example.py",
+            applied=True,
+        )
+    ]
+    validation = ValidationReport(
+        status=ValidationStatus.PASSED,
+        required_for_merge_ready=True,
+        steps=[],
+        attempts=1,
+        remediation_applied=False,
+    )
+    monkeypatch.setattr(
+        queue_drain_module,
+        "resolve_verified_threads",
+        lambda **_kwargs: False,
+    )
+
+    resolved = queue_drain_module._resolve_applied_threads_after_validation(
+        applied_threads=dispositions,
+        validation=validation,
+        execute=True,
+        commands_log=tmp_path / "COMMANDS_RUN.txt",
+        repo_root=tmp_path,
+        policy={},
+    )
+
+    assert resolved is False
+
+
+def test_declined_thread_disposition_does_not_count_as_locally_resolved():
+    dispositions = [
+        ThreadDisposition(
+            thread_id="T1",
+            disposition="decline_with_rationale",
+            reason="not safely applicable",
+            path="src/example.py",
+            applied=True,
+        )
+    ]
+
+    assert queue_drain_module._applied_threads_resolved_locally(dispositions) is False
 
 
 def test_decide_merge_action_returns_rebase_command_when_green():

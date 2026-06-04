@@ -5,7 +5,7 @@ type: reference
 owner: '@hu3mann'
 author: '@codex'
 date: '2026-05-25'
-last_review: '2026-05-25'
+last_review: '2026-06-01'
 next_review: '2026-08-23'
 prelude: Governance-first operating model for macro-packet, implementer, embedded audit, and PR Steward intake gates.
 ---
@@ -16,7 +16,14 @@ prelude: Governance-first operating model for macro-packet, implementer, embedde
 - OBSERVED: `AGENTS.md` requires repo-bound task packets, proof, validation, and explicit UNKNOWNs before finality.
 - OBSERVED: `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json` is the strict task-packet schema in this checkout.
 - OBSERVED: `PROJECT.md`, `ARCHITECTURE.md`, `PM_PLANE.md`, and `SERVICE_CATALOG.md` preserve split system authority.
-- PROPOSED: This operating model defines the first governance slice for optimized development flow. It does not implement PR mutation or merge automation.
+- OBSERVED: The DMX-AUTOREVIEW-PLATFORM implementation stack is split across
+  draft PRs. The PRs are review artifacts until merged; runtime behavior must
+  still be read from the branch under review, not from this document.
+- OBSERVED: `dopemux pr-steward doctor` is report-only and fails closed on
+  missing config, invalid config, unsupported schema, and scaffold skew.
+- OBSERVED: governed automerge remains disabled by default; direct merge
+  execution is gated by PR Steward readiness, independent embedded-audit proof,
+  and exact head-SHA matching.
 
 ## Default Flow
 
@@ -26,6 +33,21 @@ prelude: Governance-first operating model for macro-packet, implementer, embedde
 4. If a PR is opened, PR Steward v1 is the review-intake gate. It harvests GitHub state, classifies every review item, and emits `MERGE_READINESS.json`.
 5. A second GPT-5.5 Pro supervisor review is skipped only when embedded audit is `PASS` or non-blocking `PASS_WITH_RISKS` and PR Steward readiness is `READY`.
 6. Escalation remains mandatory for blocked, unknown, high-risk, conflicting, or authority-boundary cases.
+
+## Platform Lane Status
+
+The final hardening pass treats the platform as four coordinated lanes:
+
+| Lane | Implemented surface | Closeout posture |
+| --- | --- | --- |
+| Governance intake | PR Steward check-only intake, Action Bridge, Copilot repair packet rendering, offline loop fixture | Review-only until draft PRs are merged. No GitHub mutation is authorized by intake or repair packet generation. |
+| Independent audit | PAL clink verdict capture plus embedded-audit CI provenance | Independent proof may be requested by automation, but the merge engine does not author trusted audit proof. Missing trusted token evidence remains `UNKNOWN` or `SKIPPED`, not success. |
+| Governed merge | `steward_gate` remediation/finalization boundaries, GraphQL merge with expected head SHA | Remediation and finalization are separate gates. Finalization requires strict `PASS`; `PASS_WITH_RISKS` does not authorize live merge execution. |
+| Distribution | Packaged `dopemux pr-steward`, init scaffolding, and doctor skew/config check | Scaffolding is thin and non-clobbering. Runtime logic ships in the package, not copied workflow YAML. |
+
+Draft PRs with all required checks passing are not equivalent to merged runtime
+truth. `mergeStateStatus=BLOCKED` on a draft PR is recorded as a review-state
+blocker, not a CI failure, when every check is green and the PR remains draft.
 
 ## Model Routing
 
@@ -59,6 +81,7 @@ Escalate to a human or supervisor when any of the following is true:
 
 - embedded audit returns `FAIL` or unresolved `NEEDS_SUPERVISOR`
 - PR Steward returns anything other than `READY`
+- a draft PR is being treated as merged runtime truth
 - a reviewer or bot cannot be classified
 - GitHub auth, PR state, CI state, or review thread state cannot be proven
 - repo identity, branch identity, or task-packet schema alignment is unclear

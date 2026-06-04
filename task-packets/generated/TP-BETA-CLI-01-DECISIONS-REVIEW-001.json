@@ -1,0 +1,110 @@
+{
+  "id": "TP-BETA-CLI-01-DECISIONS-REVIEW-001",
+  "project": "dopemux-mvp",
+  "target": "Repair PR #740 review blockers for decisions CLI subcommands",
+  "invariants": [
+    "Apply all actionable Claude, Codex, and Copilot review suggestions on PR #740.",
+    "Keep decisions CLI writes append-only and fail closed when the referenced decision is absent.",
+    "Use the ConPort HTTP REST API endpoint, not the MCP/SSE port, for /api/decisions.",
+    "Do not run live ConPort or Docker services during validation."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "beta-cli-01-decisions-review-repair",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/pr740-review-repair-20260601",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(cli): repair decisions command review blockers",
+    "allowlist": [
+      "src/dopemux/commands/decisions_commands.py",
+      "tests/unit/test_decisions_commands.py",
+      "tests/unit/test_cli_audit_remediations.py",
+      "CHANGELOG.md",
+      "task-packets/INDEX.md",
+      "task-packets/generated/TP-BETA-CLI-01-DECISIONS-REVIEW-001.json",
+      "claudedocs/pr740-review-repair-proof-2026-06-01.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-BETA-CLI-01-DECISIONS-REVIEW-001.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-BETA-CLI-01-DECISIONS-REVIEW-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/unit/test_decisions_commands.py tests/unit/test_cli_audit_remediations.py::test_decisions_subcommands_are_registered -q",
+      "git diff --check",
+      "pre-commit run --files src/dopemux/commands/decisions_commands.py tests/unit/test_decisions_commands.py tests/unit/test_cli_audit_remediations.py CHANGELOG.md task-packets/INDEX.md task-packets/generated/TP-BETA-CLI-01-DECISIONS-REVIEW-001.json claudedocs/pr740-review-repair-proof-2026-06-01.md"
+    ]
+  },
+  "pr": {
+    "title": "feat(cli): BETA-CLI-01 - add decisions list/show/query/review/update-outcome",
+    "body": "## Review repair\n- Uses ConPort HTTP REST port defaults for decisions API calls.\n- Accepts string decision IDs and compares IDs as strings.\n- Threads requested limits through GET /api/decisions and uses a bounded lookup window for search/show/write validation.\n- Fixes styled_table invocation, nested POST response ID parsing, and append-only reference wording.\n- Validates referenced decisions before review/outcome writes.\n- Adds focused unit coverage for all new command paths and updates the command-registration snapshot.\n\n## Test Plan\n- Validate Task Packet JSON/schema.\n- Run focused decisions command tests and command registration snapshot.\n- Run git diff --check and pre-commit on changed files.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "challenge",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "analyze",
+      "task": "Inspect PR #740 review threads, decisions CLI implementation, ConPort HTTP contract, and existing command tests.",
+      "requirements": [
+        "Identify every unresolved Claude, Codex, and Copilot review suggestion.",
+        "Inspect ConPort REST endpoint ports, ID shapes, response envelopes, and list limits.",
+        "Inspect styled_table signature and current decisions registration tests."
+      ],
+      "validation": [
+        "gh api graphql query for PR #740 reviewThreads",
+        "sed -n '1,280p' src/dopemux/commands/decisions_commands.py",
+        "rg -n 'CONPORT_HTTP_PORT|CONPORT_MCP_PORT|/api/decisions|decision_id' src docker repo-truth-pack compose.yml"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Repair decisions CLI runtime behavior and add focused regression coverage.",
+      "requirements": [
+        "Use CONPORT_URL or CONPORT_HTTP_PORT default 3004 for decisions REST calls.",
+        "Accept string decision IDs and compare IDs as strings.",
+        "Pass requested limits to ConPort and use a bounded lookup limit for lookup/search/write validation.",
+        "Validate review and update-outcome target IDs before POST writes.",
+        "Read created IDs from the nested decision response object.",
+        "Use positional styled_table columns and complete workspace help text.",
+        "Use append-only reference wording instead of claiming graph links."
+      ],
+      "validation": [
+        "python -m pytest tests/unit/test_decisions_commands.py tests/unit/test_cli_audit_remediations.py::test_decisions_subcommands_are_registered -q"
+      ]
+    },
+    {
+      "id": "precommit",
+      "task": "Validate packet, tests, diff scope, and pre-commit before pushing PR #740 review repair.",
+      "requirements": [
+        "Record validation exit codes in proof.",
+        "Inspect git status and changed-file scope before staging.",
+        "Do not resolve review threads until checks pass on the pushed PR head."
+      ],
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-BETA-CLI-01-DECISIONS-REVIEW-001.json >/dev/null",
+        "python -m jsonschema -i task-packets/generated/TP-BETA-CLI-01-DECISIONS-REVIEW-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "git diff --check",
+        "pre-commit run --files src/dopemux/commands/decisions_commands.py tests/unit/test_decisions_commands.py tests/unit/test_cli_audit_remediations.py CHANGELOG.md task-packets/INDEX.md task-packets/generated/TP-BETA-CLI-01-DECISIONS-REVIEW-001.json claudedocs/pr740-review-repair-proof-2026-06-01.md"
+      ]
+    }
+  ]
+}

@@ -3,7 +3,7 @@
 > Save your current development context including open files, mental model, cursor positions, and recent decisions for seamless restoration later.
 
 ## Overview
-The `/save` command integrates with Dopemux's ADHD-optimized context manager to preserve your development session state automatically. This saves:
+The `/save` command integrates with Dopemux's ADHD-optimized context manager to preserve your development session state when invoked. Stop hooks can also perform best-effort context saves when the ADHD Engine is running. Continuous background cadence is not proven wired in the observed command path. This saves:
 
 - **Open files** and cursor positions
 - **Mental model** and current goals
@@ -30,8 +30,8 @@ The `/save` command integrates with Dopemux's ADHD-optimized context manager to 
 5. **Provides feedback**: Shows session ID and save note
 
 ## ADHD Optimizations
-- **25-minute focus-block saves**: Automatically preserves context at the end of each Pomodoro-style focus block
-- **30-second auto-save cadence**: Background state capture every 30 seconds during active sessions
+- **Operator checkpoint saves**: Preserve context at natural focus-session boundaries
+- **Best-effort Stop-hook save**: Context can be captured on Stop when the ADHD Engine is available
 - **Zero interruption**: Doesn't break your focus flow
 - **Context continuity**: Seamless restoration after interruptions
 - **Mental model preservation**: Recaptures your thought processes
@@ -59,7 +59,7 @@ This command works with the full Dopemux CLI:
 - **Add meaningful messages**: Helps identify session purpose later
 - **Save before context switches**: Preserves mental model
 - **Use with task chunks**: Save between 25-minute focus periods
-- **Regular manual saves**: Supplement automatic saves
+- **Regular manual saves**: Use explicit checkpoints for replayable state
 
 ---
-*Powered by Dopemux's 30-second auto-save cadence with 25-minute focus-block checkpoints — ADHD accommodations* 🧠
+*Powered by Dopemux context checkpoints and best-effort hook support — ADHD accommodations* 🧠
