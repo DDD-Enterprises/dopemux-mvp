@@ -72,7 +72,7 @@
   "audit_note": "Opus auditor (distinct from Sonnet implementer) ran tests independently. 8/8 tests pass (7 original + new (c2) schema-level C3 enforcement test). C3 PARTIAL resolved: validation_state const-pinned in evidence_hit/chronicle_receipt/helper_receipt; validation.state const-pinned in proof_pointer/control_snapshot. proof/ gitignored at .gitignore:362 (pre-existing repo condition); force-add required for proof files.",
   "codereview_status": "PASS (Opus adversarial audit, distinct from implementer; C3 fix reviewed by supervisor code-review)",
   "precommit_status": "git diff --check exit 0; only allowlisted untracked paths in git status",
-  "commit_sha": "2143907a7",
+  "commit_sha": "3876d4de8",
   "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/797",
   "residual_risks": [
     "C3 RESOLVED: validation_state const-pinned in 3 EXTERNAL_PROPOSED schemas (evidence_hit/chronicle_receipt/helper_receipt); validation.state const-pinned in 2 SYNTHESIS_INVENTED schemas (proof_pointer/control_snapshot); new test (c2) enforces schema-level const at pytest time",
