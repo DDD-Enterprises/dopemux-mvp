@@ -5,6 +5,8 @@ from __future__ import annotations
 import pytest
 
 from dopemux.ui.cockpit.render import (
+    Frame,
+    Rule,
     TOO_SMALL_MESSAGE,
     TOP_LEVEL_MODES,
     PaneDeclaration,
@@ -127,6 +129,36 @@ def test_top3_contract_visible_in_pm_render():
     text = render_pm(cols=120, rows=40)
     assert "more_count:" in text
     assert "next_token:" in text
+
+
+@pytest.mark.parametrize("width", [80, 100, 120])
+def test_rule_renders_exact_supported_widths(width):
+    rendered = Rule(width=width).render()
+    assert len(rendered) == width
+    assert set(rendered) == {"━"}
+
+
+@pytest.mark.parametrize("width", [80, 100, 120])
+def test_frame_renders_hard_corner_box_at_supported_widths(width):
+    lines = Frame(width=width, title="readiness").render(
+        ("domain: readiness_queue", "authority: task-orchestrator")
+    )
+    assert lines[0] == "┏" + ("━" * (width - 2)) + "┓"
+    assert lines[-1] == "┗" + ("━" * (width - 2)) + "┛"
+    assert all(len(line) == width for line in lines)
+    assert all("╭" not in line and "╮" not in line for line in lines)
+    assert any("readiness" in line for line in lines)
+
+
+@pytest.mark.parametrize("size", [(120, 40), (100, 32), (80, 24)])
+def test_supported_viewports_render_frame_and_rule_primitives(size):
+    cols, rows = size
+    text = render_pm(cols=cols, rows=rows)
+    assert "┏" in text
+    assert "┓" in text
+    assert "┗" in text
+    assert "┛" in text
+    assert "━" * 8 in text
 
 
 def test_bridge_collapses_at_80x24():

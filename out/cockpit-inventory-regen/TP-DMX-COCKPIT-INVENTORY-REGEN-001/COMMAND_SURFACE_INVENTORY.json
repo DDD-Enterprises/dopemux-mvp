@@ -99,8 +99,8 @@
     },
     {
       "path": "src/dopemux/ui/cockpit/render.py",
-      "sha256": "8999e8aa0272b9da09f70cdd27dbb5aea63be6e903ae4392452bf53fe479c6b2",
-      "line_count": 353,
+      "sha256": "378e46c7b3067bf14625b7c93da90e87405ddd8e10dd86565b7e517d508f1ff7",
+      "line_count": 395,
       "observed_role": "deterministic PM render model with five top-level modes"
     },
     {
