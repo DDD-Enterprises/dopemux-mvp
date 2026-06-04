@@ -1521,9 +1521,19 @@ async def get_index_status(
     return await _get_index_status_impl(workspace_path, workspace_paths)
 
 
+def _clear_index_approval_phrase(workspace: Path, target: str, proof_id: str) -> str:
+    """Build the exact operator phrase required for destructive index clearing."""
+    return (
+        f"I AUTHORIZE dope-context clear_index ON {workspace} "
+        f"TARGET {target} WITH PROOF {proof_id}"
+    )
+
+
 async def _clear_index_impl(
     workspace_path: Optional[str] = None,
     target: str = "code",
+    proof_id: Optional[str] = None,
+    approval_phrase: Optional[str] = None,
 ) -> Dict:
     """Implementation of clear_index tool."""
     workspace = (
@@ -1534,6 +1544,29 @@ async def _clear_index_impl(
     target_normalized = (target or "code").lower()
     if target_normalized not in {"code", "docs", "both"}:
         raise ValueError("target must be one of: code, docs, both")
+
+    expected_phrase = (
+        _clear_index_approval_phrase(workspace, target_normalized, proof_id)
+        if proof_id
+        else None
+    )
+    if not proof_id or approval_phrase != expected_phrase:
+        return {
+            "status": "refused",
+            "workspace": str(workspace),
+            "target": target_normalized,
+            "cleared": [],
+            "errors": [
+                {
+                    "index": "approval",
+                    "error": "clear_index requires proof_id and exact approval_phrase",
+                }
+            ],
+            "approval_required": True,
+            "approval_matched": False,
+            "proof_id": proof_id,
+            "required_phrase": expected_phrase,
+        }
 
     code_collection, docs_collection = get_collection_names(workspace)
     workspace_hash = workspace_to_hash(workspace)
@@ -1579,6 +1612,9 @@ async def _clear_index_impl(
         "target": target_normalized,
         "cleared": cleared,
         "errors": errors,
+        "approval_required": True,
+        "approval_matched": True,
+        "proof_id": proof_id,
     }
 
 
@@ -1586,6 +1622,8 @@ async def _clear_index_impl(
 async def clear_index(
     workspace_path: Optional[str] = None,
     target: str = "code",
+    proof_id: Optional[str] = None,
+    approval_phrase: Optional[str] = None,
 ) -> Dict:
     """
     Clear a workspace's index/indices.
@@ -1593,11 +1631,18 @@ async def clear_index(
     Args:
         workspace_path: Workspace root (defaults to auto-detected root)
         target: Which index to clear - "code", "docs", or "both"
+        proof_id: Proof artifact or Task Packet id authorizing the deletion
+        approval_phrase: Exact phrase returned by a refused dry call
 
     Returns:
         Success message
     """
-    return await _clear_index_impl(workspace_path, target)
+    return await _clear_index_impl(
+        workspace_path,
+        target,
+        proof_id=proof_id,
+        approval_phrase=approval_phrase,
+    )
 
 
 # NEW DOCS TOOLS
