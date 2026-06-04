@@ -57,8 +57,8 @@
       "status": "PASS"
     }
   ],
-  "commit_sha": "PENDING — updated after commit",
-  "pr_url": "PENDING",
+  "commit_sha": "c426afdee",
+  "pr_url": "PENDING — set after push",
   "live_write_ready_status": "UNDEFINED AND BLOCKING — not defined in this packet",
   "live_writes_performed": false,
   "merge_seam_invariant": "DCP-RED-MERGE-SEAM-0001 preserved — MC-MERGE-SEAM-FORBIDDEN hard-block class present in mutation class registry; queue_drain.py and batch_resolve_and_merge.py not imported/called/referenced as execution paths in any schema",
