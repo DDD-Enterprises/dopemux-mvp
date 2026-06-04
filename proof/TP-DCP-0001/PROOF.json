@@ -51,11 +51,11 @@
       "status": "PASS"
     },
     {
-      "id": "tp-schema-validation",
-      "command": "python3 -c jsonschema.validate(tp, spec)",
+      "id": "tp-json-validity",
+      "command": "python3 -m json.tool task-packets/TP-DCP-0001.json >/dev/null",
       "exit_code": 0,
       "status": "PASS",
-      "note": "TP-DCP-0001.json validates against dopetask-canonical-spec.json (draft-07, strict)"
+      "note": "TP-DCP-0001.json is valid JSON. No dopetask-canonical-spec.json exists in repo; structural validity is enforced by the json.tool check and packet format review."
     }
   ],
   "audit_criteria": [
