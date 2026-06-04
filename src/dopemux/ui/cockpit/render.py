@@ -97,6 +97,48 @@ class PaneRender:
     src: str | None = None  # provenance only, never on chrome
 
 
+@dataclass(frozen=True)
+class Rule:
+    """Deterministic box-drawing horizontal rule."""
+
+    width: int
+    glyph: str = "━"
+
+    def render(self) -> str:
+        if self.width < 1:
+            raise ValueError("rule width must be at least 1")
+        return self.glyph * self.width
+
+
+@dataclass(frozen=True)
+class Frame:
+    """Hard-cornered fixed-width box for cockpit panes."""
+
+    width: int
+    title: str | None = None
+
+    def render(self, lines: Iterable[str]) -> list[str]:
+        if self.width < 4:
+            raise ValueError("frame width must be at least 4")
+
+        inner_width = self.width - 2
+        out = [
+            "┏" + Rule(inner_width).render() + "┓",
+        ]
+        if self.title:
+            out.append(_frame_line(self.title, inner_width))
+            out.append("┃" + Rule(inner_width).render() + "┃")
+        for line in lines:
+            out.append(_frame_line(line, inner_width))
+        out.append("┗" + Rule(inner_width).render() + "┛")
+        return out
+
+
+def _frame_line(text: str, inner_width: int) -> str:
+    cell = text[:inner_width].ljust(inner_width)
+    return f"┃{cell}┃"
+
+
 # ---------------------------------------------------------------------------
 # Static PM model (demo data; no backend calls)
 # ---------------------------------------------------------------------------
@@ -284,16 +326,15 @@ def _bridge_role_for_viewport(cols: int, rows: int) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _format_pane(pane: PaneRender) -> list[str]:
+def _format_pane(pane: PaneRender, *, width: int) -> list[str]:
     out: list[str] = []
-    out.append(f"## {pane.title}")
     for line in pane.declaration.header_lines():
         out.append(line)
     if pane.src is not None:
         out.append(f"SRC={pane.src}")
     out.append("")
     out.extend(pane.body)
-    return out
+    return Frame(width=width, title=pane.title).render(out)
 
 
 def render_pm(cols: int = 120, rows: int = 40, *, plain: bool = False) -> str:
@@ -306,6 +347,7 @@ def render_pm(cols: int = 120, rows: int = 40, *, plain: bool = False) -> str:
         return TOO_SMALL_MESSAGE
 
     bridge_role = _bridge_role_for_viewport(cols, rows)
+    frame_width = min(cols, 120)
 
     lines: list[str] = []
     lines.append("# Dopemux Cockpit  mode=PM")
@@ -320,17 +362,17 @@ def render_pm(cols: int = 120, rows: int = 40, *, plain: bool = False) -> str:
         # 80x24: bridge is collapsed into inspector detail only -- not a peer pane.
         primary_panes = [p for p in panes if p.declaration.domain != "bridge_transport"]
         for pane in primary_panes:
-            lines.extend(_format_pane(pane))
+            lines.extend(_format_pane(pane, width=frame_width))
             lines.append("")
         # Collapsed inline detail (one annotated line, NOT a pane).
         lines.append("[inspector-detail] bridge collapsed: dopecon-bridge adapter/proxy ref only")
     else:
         for pane in panes:
-            lines.extend(_format_pane(pane))
+            lines.extend(_format_pane(pane, width=frame_width))
             lines.append("")
 
     # Chrome rail: no SRC, no authority claim on data.
-    lines.append("---")
+    lines.append(Rule(width=frame_width).render())
     lines.extend(_command_status_rail())
     return "\n".join(lines).rstrip() + "\n"
 
