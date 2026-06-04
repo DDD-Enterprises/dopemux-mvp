@@ -38,6 +38,7 @@ except Exception:  # pragma: no cover - fallback path for isolated service image
 from .core.engine import ADHDAccommodationEngine
 from .api import routes
 from .config import settings
+from .operator_identity import resolve_operator_user_id
 from .middleware.rate_limit import RateLimitMiddleware
 from .core.error_handling import with_error_handling
 try:
@@ -60,10 +61,12 @@ except ImportError:  # pragma: no cover - optional dependency for local test env
 mcp = FastMCP("ADHD-Engine")
 
 @mcp.tool()
-async def get_cognitive_state(user_id: str = "default") -> dict:
+async def get_cognitive_state(user_id: str | None = None) -> dict:
     """Get current cognitive state (energy, attention, load)."""
     if not engine:
         return {"error": "Engine not initialized"}
+
+    user_id = user_id or resolve_operator_user_id()
 
     # We call the engine directly for speed
     energy = await engine.get_energy_level(user_id)
@@ -368,7 +371,7 @@ async def lifespan(app: FastAPI):
 
                 # Start event listener as background task
                 event_listener_task = asyncio.create_task(
-                    event_listener.start(user_id="default"),
+                    event_listener.start(user_id=resolve_operator_user_id()),
                     name="adhd_event_listener"
                 )
 

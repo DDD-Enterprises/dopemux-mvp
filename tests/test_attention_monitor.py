@@ -85,12 +85,15 @@ class TestAttentionMonitor:
         assert attention_monitor._monitoring is False
 
     def test_get_current_metrics_no_data(self, attention_monitor):
-        """Test getting current metrics when no data available."""
+        """Test current metrics fail honest when no data is available."""
         metrics = attention_monitor.get_current_metrics()
 
-        assert metrics["attention_state"] == AttentionState.NORMAL
-        assert metrics["focus_score"] == 0.5
-        assert metrics["session_duration"] == 0
+        assert metrics["attention_state"] == "unavailable"
+        assert metrics["focus_score"] is None
+        assert metrics["session_duration"] is None
+        assert metrics["context_switches"] is None
+        assert metrics["data_status"] == "unavailable"
+        assert metrics["status_message"] == "no active monitoring data"
         assert metrics["monitoring_active"] is False
 
     def test_get_current_metrics_with_data(self, attention_monitor):
@@ -195,15 +198,44 @@ class TestAttentionMonitor:
         assert score == 0.0  # Should be clamped to 0
 
     def test_classify_attention_state_distracted(self, attention_monitor):
-        """Test classifying distracted state."""
+        """Test classifying distracted state with corroborating pressure."""
         state = attention_monitor._classify_attention_state(
             keystroke_rate=0,
-            error_rate=0,
-            context_switches=0,
+            error_rate=3,
+            context_switches=5,
             pause_duration=700,  # > 10 minutes
             focus_score=0.5,
         )
         assert state == AttentionState.DISTRACTED
+
+    def test_classify_attention_state_lone_pause_is_not_distracted(
+        self, attention_monitor
+    ):
+        """Test lone pause evidence does not classify as distracted."""
+        state = attention_monitor._classify_attention_state(
+            keystroke_rate=0,
+            error_rate=0,
+            context_switches=0,
+            pause_duration=700,
+            focus_score=0.0,
+        )
+        assert state == AttentionState.NORMAL
+
+    def test_classify_attention_state_hyperfocus_latches_through_lone_pause(
+        self, attention_monitor
+    ):
+        """Test hyperfocus stays latched until corroborating evidence."""
+        attention_monitor._current_state = AttentionState.HYPERFOCUS
+        attention_monitor._state_duration = 50 * 60
+
+        state = attention_monitor._classify_attention_state(
+            keystroke_rate=0,
+            error_rate=0,
+            context_switches=0,
+            pause_duration=700,
+            focus_score=0.0,
+        )
+        assert state == AttentionState.HYPERFOCUS
 
     def test_classify_attention_state_scattered(self, attention_monitor):
         """Test classifying scattered state."""
