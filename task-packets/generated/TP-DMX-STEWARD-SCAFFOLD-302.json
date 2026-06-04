@@ -24,7 +24,7 @@
   ],
   "execution": {
     "agent": "codex",
-    "base_branch": "main",
+    "base_branch": "codex/tp-dmx-steward-package-301",
     "branch": "codex/tp-dmx-steward-scaffold-302",
     "stacked_because": "Part of the DMX-AUTOREVIEW-PLATFORM dependency DAG."
   },
@@ -51,7 +51,7 @@
     ]
   },
   "pr": {
-    "base": "main",
+    "base": "codex/tp-dmx-steward-package-301",
     "body": "## Summary\n- Add thin .github/workflows/{pr-steward,embedded-audit}.yml + small config/pr_steward/ + config/pr_merge_specialist/policy.yaml (governed_automerge OFF) to src/dopemux/templates/init/; verify dopemux init + init --force provision without clobbering existing files.\n\n## Scope\nTrack: C-distribute. Risk: MEDIUM. Red lane: false.\n\n## Validation\nRun the packet validation commands and capture proof under proof/TP-DMX-STEWARD-SCAFFOLD-302/PROOF.json.\n\n## NOT_RUN\nList any skipped live, integration, credentialed, or supervisor-gated checks explicitly.",
     "title": "Feat(init): scaffold PR-steward workflows and config"
   },
@@ -63,7 +63,7 @@
     "require_identity_match": true
   },
   "series": {
-    "base_branch": "main",
+    "base_branch": "codex/tp-dmx-steward-package-301",
     "final_packet": false,
     "id": "DMX-AUTOREVIEW-PLATFORM",
     "parent_tp_id": "TP-DMX-STEWARD-PACKAGE-301"

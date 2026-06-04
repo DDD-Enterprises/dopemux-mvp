@@ -1,0 +1,147 @@
+{
+  "id": "TP-DMX-ADHD-COGNITIVE-T1-02-STATUS-ATTENTION-FAIL-HONEST-001",
+  "project": "dopemux-mvp",
+  "target": "status --attention fails honest when no active monitoring data exists",
+  "invariants": [
+    "Never present default attention state, focus score, session duration, or context-switch count as observed data.",
+    "No active monitoring data must render as unavailable or calibrating, not normal/focused defaults.",
+    "status --attention must use the confidence-band primitive from T1-01 for missing or inferred focus-score evidence.",
+    "The change must not add live service calls, telemetry collection, persistence, or dashboard behavior.",
+    "No live Redis, EventBus, provider, notifier, dashboard, or shell-hook validation is authorized in this slice.",
+    "Do not widen into TrendsPanel demo gating, dashboard live refresh, interactive prompt wiring, or documentation doctrine cleanup."
+  ],
+  "depends_on": [
+    "TP-DMX-ADHD-COGNITIVE-T1-01-CONFIDENCE-BAND-UX-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ADHD-COGNITIVE-REMEDIATION",
+    "base_branch": "codex/adhd-confidence-band-ux-001",
+    "parent_tp_id": "TP-DMX-ADHD-COGNITIVE-T1-01-CONFIDENCE-BAND-UX-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/adhd-status-attention-fail-honest-001",
+    "base_branch": "codex/adhd-confidence-band-ux-001",
+    "stacked_because": "status --attention fail-honest rendering depends on the confidence-band primitive introduced by the preceding T1 slice."
+  },
+  "commit": {
+    "message": "fix(adhd): make attention status fail honest",
+    "allowlist": [
+      "src/dopemux/adhd/attention_monitor.py",
+      "src/dopemux/cli.py",
+      "tests/test_attention_monitor.py",
+      "tests/test_cli.py",
+      "task-packets/TP-DMX-ADHD-COGNITIVE-T1-02-STATUS-ATTENTION-FAIL-HONEST-001.json",
+      "task-packets/TP-DMX-ADHD-COGNITIVE-T1-02-STATUS-ATTENTION-FAIL-HONEST-001-implementation-notes.md"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T1-02-STATUS-ATTENTION-FAIL-HONEST-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/test_cli.py::TestCLI::test_status_command_all_metrics tests/test_cli.py::TestCLI::test_status_attention_no_data_fails_honest tests/test_attention_monitor.py::TestAttentionMonitor::test_get_current_metrics_no_data tests/unit/test_confidence_band_ux.py",
+      "python -m py_compile src/dopemux/adhd/attention_monitor.py src/dopemux/cli.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(adhd): make attention status fail honest",
+    "body": "## Summary\n- stop treating missing attention samples as normal state with a 50% focus score\n- render status --attention no-data state as unavailable/calibrating using the confidence-band primitive\n- preserve existing inferred rendering when real in-process metrics exist\n\n## Validation\n- python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T1-02-STATUS-ATTENTION-FAIL-HONEST-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- python -m pytest tests/test_cli.py::TestCLI::test_status_command_all_metrics tests/test_cli.py::TestCLI::test_status_attention_no_data_fails_honest tests/test_attention_monitor.py::TestAttentionMonitor::test_get_current_metrics_no_data tests/unit/test_confidence_band_ux.py\n- python -m py_compile src/dopemux/adhd/attention_monitor.py src/dopemux/cli.py\n- git diff --check",
+    "base": "codex/adhd-confidence-band-ux-001"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect",
+      "task": "Inspect attention monitor no-data defaults, status --attention rendering, and current CLI tests before editing.",
+      "requirements": [
+        "Identify fabricated no-data fields before implementation.",
+        "Confirm confidence-band primitive exists in the stack.",
+        "Do not add live telemetry or service calls."
+      ],
+      "commands": [
+        "nl -ba src/dopemux/cli.py | sed -n '2660,2695p'",
+        "nl -ba src/dopemux/adhd/attention_monitor.py | sed -n '440,475p'",
+        "nl -ba tests/test_cli.py | sed -n '466,530p'"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Current fabricated fallback fields and CLI rendering path are identified before tests or production edits."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "task-packets/TP-DMX-ADHD-COGNITIVE-T1-01-CONFIDENCE-BAND-UX-001.json",
+        "src/dopemux/cli.py",
+        "src/dopemux/adhd/attention_monitor.py",
+        "src/dopemux/ux/confidence_band.py",
+        "tests/test_cli.py",
+        "tests/test_attention_monitor.py"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Add failing tests, then make attention no-data and status rendering fail honest.",
+      "requirements": [
+        "Write failing tests before production code.",
+        "No metrics history must not return normal attention state or 0.5 focus score as evidence.",
+        "status --attention no-data output must include an unavailable/calibrating evidence label.",
+        "Existing metric samples must still render through the inferred confidence-band path."
+      ],
+      "commands": [
+        "apply_patch",
+        "python -m pytest tests/test_cli.py::TestCLI::test_status_attention_no_data_fails_honest tests/test_attention_monitor.py::TestAttentionMonitor::test_get_current_metrics_no_data"
+      ],
+      "expected_files": [
+        "src/dopemux/adhd/attention_monitor.py",
+        "src/dopemux/cli.py",
+        "tests/test_attention_monitor.py",
+        "tests/test_cli.py"
+      ],
+      "validation": [
+        "Targeted fail-honest tests fail before implementation and pass after implementation."
+      ],
+      "context_files": [
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "validate",
+      "task": "Validate packet schema, focused tests, syntax, diff scope, PAL codereview, and precommit checks.",
+      "requirements": [
+        "Report every NOT_RUN command with reason.",
+        "Inspect git status and diff scope before final summary.",
+        "Do not claim live status telemetry validation beyond mocked CLI paths."
+      ],
+      "commands": [
+        "python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T1-02-STATUS-ATTENTION-FAIL-HONEST-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python -m pytest tests/test_cli.py::TestCLI::test_status_command_all_metrics tests/test_cli.py::TestCLI::test_status_attention_no_data_fails_honest tests/test_attention_monitor.py::TestAttentionMonitor::test_get_current_metrics_no_data tests/unit/test_confidence_band_ux.py",
+        "python -m py_compile src/dopemux/adhd/attention_monitor.py src/dopemux/cli.py",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "task-packets/TP-DMX-ADHD-COGNITIVE-T1-02-STATUS-ATTENTION-FAIL-HONEST-001-implementation-notes.md"
+      ],
+      "validation": [
+        "Proof notes and final response distinguish PASS, FAIL, NOT_RUN, and remaining UNKNOWNs."
+      ],
+      "context_files": []
+    }
+  ]
+}

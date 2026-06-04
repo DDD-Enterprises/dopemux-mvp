@@ -17,6 +17,8 @@ Start an ADHD-optimized 25-minute focused implementation session with intelligen
 
 **Purpose**: Provide structured, supportive implementation sessions that respect ADHD needs for focus, breaks, and progress tracking.
 
+**Runtime truth note**: This command is operator-guided. The current command text does not by itself start an automatic timer, run a recurring save loop, or enforce breaks. Those behaviors remain planned/specification behavior unless a separate runtime path is verified.
+
 ---
 
 ## Phase 1: Task Selection & ADHD Assessment
@@ -147,7 +149,7 @@ Show to user:
 
 ADHD Support Active:
 ✅ Progress tracked in ConPort
-✅ Break reminder at 25 minutes
+✅ Operator checkpoint at 25 minutes
 ✅ Energy-optimized task selection
 
 Let's build! 💪
@@ -312,7 +314,7 @@ Use mcp__conport__update_active_context with:
 - ✅ Session started (ConPort updated to IN_PROGRESS)
 - ✅ User completed focused work
 - ✅ Progress tracked in ConPort
-- ✅ Break reminder shown
+- ✅ Break checkpoint shown
 - ✅ Supportive, encouraging tone maintained throughout
 
 ---
@@ -321,5 +323,5 @@ Use mcp__conport__update_active_context with:
 
 **Tone**: Be warm, encouraging, and supportive. Celebrate progress.
 **Visuals**: Use progress bars, boxes, emojis for visual engagement.
-**Flexibility**: If user wants to deviate from 25min, that's fine - adjust.
+**Flexibility**: If user wants to deviate from 25-minute checkpoints, that's fine - adjust.
 **ADHD First**: Always prioritize user wellbeing over rigid process.

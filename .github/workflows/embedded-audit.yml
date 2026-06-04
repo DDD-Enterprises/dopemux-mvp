@@ -94,10 +94,68 @@ jobs:
         continue-on-error: true
         working-directory: trusted-source
         run: |
+          mkdir -p ../embedded-audit-artifacts
+          set +e
           python -m tools.auditor_router.preflight \
             --packet-id "TP-DMX-AUDIT-CI-PROVENANCE-104" \
             --out ../embedded-audit-artifacts \
             --format json
+          preflight_status=$?
+          set -e
+          if [ ! -f ../embedded-audit-artifacts/AUDITOR_ROUTE.json ]; then
+            cat > ../embedded-audit-artifacts/AUDITOR_ROUTE.json <<'JSON'
+          {
+            "tool": "pal-mcp-clink",
+            "underlying_cli": null,
+            "clink_client_name": null,
+            "audit_safe_config_proven": false,
+            "clink_mutation_flags_detected": [],
+            "invocation_template": null,
+            "status": "NEEDS_SUPERVISOR",
+            "reason": "Static auditor route preflight did not emit AUDITOR_ROUTE.json."
+          }
+          JSON
+          fi
+
+      - name: Run PAL clink audit
+        if: always() && steps.head_integrity.outputs.verified == 'true'
+        continue-on-error: true
+        working-directory: trusted-source
+        run: |
+          base_sha="$(git rev-parse HEAD)"
+          head_sha='${{ steps.pr.outputs.head_sha }}'
+          if ! git cat-file -e "${head_sha}^{commit}"; then
+            git fetch --no-tags --depth=1 origin "$head_sha"
+          fi
+          {
+            printf 'Review pull request %s in %s at head SHA %s.\n\n' \
+              '${{ steps.pr.outputs.number }}' \
+              "$GITHUB_REPOSITORY" \
+              "$head_sha"
+            printf 'Trusted base/source SHA: %s\n\n' "$base_sha"
+            printf 'Changed files:\n'
+            git diff --find-renames --name-status "$base_sha" "$head_sha"
+            printf '\nUnified diff:\n```diff\n'
+            git diff --find-renames --no-ext-diff "$base_sha" "$head_sha"
+            printf '\n```\n\n'
+            printf 'Return JSON with status, verdict, findings, and risks.\n'
+          } > ../embedded-audit-artifacts/PAL_CLINK_AUDIT_INPUT.md
+          set +e
+          if [ -f scripts/audit/pal_clink_runner.py ]; then
+            python scripts/audit/pal_clink_runner.py \
+              --route-json ../embedded-audit-artifacts/AUDITOR_ROUTE.json \
+              --prompt ../embedded-audit-artifacts/PAL_CLINK_AUDIT_INPUT.md \
+              --pal-output-json ../embedded-audit-artifacts/PAL_CLINK_AUDIT_OUTPUT.json \
+              --raw-output-json ../embedded-audit-artifacts/PAL_CLINK_AUDIT_RUNNER_OUTPUT.json
+            status=$?
+          else
+            status=127
+          fi
+          if [ ! -f ../embedded-audit-artifacts/PAL_CLINK_AUDIT_OUTPUT.json ]; then
+            printf '{"status":"error","risks":["PAL clink runner did not emit output; exit_code=%s"]}\n' "$status" \
+              > ../embedded-audit-artifacts/PAL_CLINK_AUDIT_OUTPUT.json
+          fi
+          exit 0
 
       - name: Emit skipped embedded audit proof
         if: always()
@@ -191,6 +249,7 @@ jobs:
             --pr "${{ steps.pr.outputs.number }}" \
             --head-sha "${{ steps.pr.outputs.head_sha }}" \
             --route-json ../embedded-audit-artifacts/AUDITOR_ROUTE.json \
+            --pal-output-json ../embedded-audit-artifacts/PAL_CLINK_AUDIT_OUTPUT.json \
             --out ../embedded-audit-artifacts
 
       - name: Write job summary

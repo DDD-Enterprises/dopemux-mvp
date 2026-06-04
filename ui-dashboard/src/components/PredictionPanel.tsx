@@ -44,13 +44,6 @@ export default function PredictionPanel({ prediction }: PredictionPanelProps) {
           }}
         />
       </Tooltip>
-      {!hasPrediction && (
-        <LinearProgress
-          aria-label="Loading prediction data"
-          aria-valuetext="Prediction Loading..."
-          sx={{ mt: 1 }}
-        />
-      )}
       <Box sx={{ mt: 3 }}>
         <Typography variant="body2" color="text.secondary">
           {hasPrediction

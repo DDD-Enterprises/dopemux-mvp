@@ -1,0 +1,123 @@
+{
+  "id": "TP-DMX-ADHD-COGNITIVE-T4-02A-NATIVE-HOOKS-EVENTS-001",
+  "project": "dopemux-mvp",
+  "target": "Emit content-free native hook activity events to dopemux:events",
+  "invariants": [
+    "Native hook event payloads must not include prompt text, tool input, tool response, errors, file paths, or cwd.",
+    "Redis publication failures must not change Claude hook allow/block behavior.",
+    "Events must use Redis XADD to dopemux:events with stable event_type, timestamp, source, and JSON data fields."
+  ],
+  "depends_on": [
+    "TP-DMX-ADHD-COGNITIVE-T4-01-EVENT-BACKBONE-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ADHD-COGNITIVE-REMEDIATION",
+    "base_branch": "feat/autoreview-platform-series",
+    "parent_tp_id": "TP-DMX-ADHD-COGNITIVE-T4-01-EVENT-BACKBONE-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/adhd-native-hooks-events-001",
+    "base_branch": "feat/autoreview-platform-series"
+  },
+  "commit": {
+    "message": "feat(adhd): emit native hook activity events",
+    "allowlist": [
+      "src/dopemux/claude/native_hooks.py",
+      "tests/test_native_hooks_workflow.py",
+      "task-packets/TP-DMX-ADHD-COGNITIVE-T4-02A-NATIVE-HOOKS-EVENTS-001.json",
+      "task-packets/TP-DMX-ADHD-COGNITIVE-T4-02A-NATIVE-HOOKS-EVENTS-001-implementation-notes.md"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-02A-NATIVE-HOOKS-EVENTS-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/test_native_hooks_workflow.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(adhd): emit native hook activity events",
+    "body": "## Summary\n- emit content-free native hook activity events for prompt, pre-tool, post-tool, and tool-failure hooks through Redis XADD to dopemux:events\n- keep Redis unavailable/failure paths non-blocking for Claude hook allow/block behavior\n- add unit coverage proving activity events exclude prompt text, tool inputs, tool responses, errors, cwd, and file/path payloads\n\n## Validation\n- python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-02A-NATIVE-HOOKS-EVENTS-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- python -m pytest tests/test_native_hooks_workflow.py\n- git diff --check\n\n@codex review\n@gemini\n@copilot\n\nGenerate release notes, ensure all documentation referencing all code changes is updated, all tests pass, and release notes, changelog, and feature lists are updated",
+    "base": "feat/autoreview-platform-series"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect",
+      "task": "Trace native hook dispatch, existing workflow side effects, and event stream conventions.",
+      "requirements": [
+        "Identify exactly which hook events are in scope.",
+        "Verify content-bearing fields that must not reach Redis event data."
+      ],
+      "expected_files": [
+        "src/dopemux/claude/native_hooks.py",
+        "tests/test_native_hooks_workflow.py"
+      ],
+      "validation": [
+        "rg -n \"UserPromptSubmit|PreToolUse|PostToolUse|PostToolUseFailure|xadd|dopemux:events\" src/dopemux/claude/native_hooks.py tests/test_native_hooks_workflow.py"
+      ]
+    },
+    {
+      "id": "test",
+      "task": "Add failing tests proving native hooks emit content-free Redis stream events.",
+      "requirements": [
+        "Use an injected fake Redis client; do not require live Redis.",
+        "Assert no prompt text, tool_input, tool_response, error, cwd, file, or path content is serialized."
+      ],
+      "expected_files": [
+        "tests/test_native_hooks_workflow.py"
+      ],
+      "validation": [
+        "python -m pytest tests/test_native_hooks_workflow.py"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Add minimal best-effort Redis XADD emission in native_hooks.py for prompt, pre-tool, post-tool, and tool-failure hooks.",
+      "requirements": [
+        "Default stream must be dopemux:events.",
+        "Redis errors must be swallowed inside the event emitter helper.",
+        "Existing hook allow/block semantics must remain unchanged."
+      ],
+      "expected_files": [
+        "src/dopemux/claude/native_hooks.py"
+      ],
+      "validation": [
+        "python -m pytest tests/test_native_hooks_workflow.py"
+      ]
+    },
+    {
+      "id": "precommit",
+      "task": "Run schema, targeted tests, diff checks, PAL codereview, and pre-commit for allowlisted files.",
+      "requirements": [
+        "Report PASS, FAIL, and NOT_RUN explicitly.",
+        "Do not claim live Redis integration unless a live Redis run is performed."
+      ],
+      "validation": [
+        "python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-02A-NATIVE-HOOKS-EVENTS-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python -m pytest tests/test_native_hooks_workflow.py",
+        "git diff --check",
+        "pre-commit run --files src/dopemux/claude/native_hooks.py tests/test_native_hooks_workflow.py task-packets/TP-DMX-ADHD-COGNITIVE-T4-02A-NATIVE-HOOKS-EVENTS-001.json task-packets/TP-DMX-ADHD-COGNITIVE-T4-02A-NATIVE-HOOKS-EVENTS-001-implementation-notes.md"
+      ]
+    }
+  ]
+}

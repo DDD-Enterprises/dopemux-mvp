@@ -37,6 +37,21 @@ import aiohttp
 logger = logging.getLogger(__name__)
 
 
+ACTIVITY_PAYLOAD_KEYS = (
+    "completion_rate",
+    "context_switches",
+    "break_compliance",
+    "minutes_since_break",
+)
+
+
+def build_activity_payload(user_id: str, activity_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Build the content-free payload accepted by the ADHD Engine activity endpoint."""
+    payload = {"user_id": user_id}
+    payload.update({key: activity_data.get(key) for key in ACTIVITY_PAYLOAD_KEYS})
+    return payload
+
+
 class ADHDEngineClient:
     """
     Client for communicating with ADHD Accommodation Engine.
@@ -95,13 +110,7 @@ class ADHDEngineClient:
             if self.session is None:
                 await self.initialize()
 
-            payload = {
-                "user_id": self.user_id,
-                "completion_rate": activity_data.get("completion_rate"),
-                "context_switches": activity_data.get("context_switches"),
-                "break_compliance": activity_data.get("break_compliance"),
-                "minutes_since_break": activity_data.get("minutes_since_break"),
-            }
+            payload = build_activity_payload(self.user_id, activity_data)
 
             async with self.session.put(
                 f"{self.base_url}/api/v1/activity/{self.user_id}",

@@ -58,7 +58,6 @@ async def test_process_message_routes_workspace_switch_with_nested_file_activity
         "file_activity": {
             "has_recent_activity": True,
             "files_modified": 1,
-            "most_recent_file": None,
             "seconds_since_last_save": None,
         },
         "from_app": None,

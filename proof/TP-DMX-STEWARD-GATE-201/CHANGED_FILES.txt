@@ -1,0 +1,11 @@
+config/pr_merge_specialist/policy.yaml
+docs/ops/steward-merge-gate.md
+src/dopemux_pr_merge_specialist/steward_gate.py
+tests/pr_merge_specialist/test_steward_gate.py
+proof/TP-DMX-STEWARD-GATE-201/AUDITOR_REPORT.md
+proof/TP-DMX-STEWARD-GATE-201/CHANGED_FILES.txt
+proof/TP-DMX-STEWARD-GATE-201/DIFF_STAT.txt
+proof/TP-DMX-STEWARD-GATE-201/GIT_STATE.md
+proof/TP-DMX-STEWARD-GATE-201/PROOF.json
+proof/TP-DMX-STEWARD-GATE-201/VALIDATION_OUTPUT.md
+proof/TP-DMX-STEWARD-GATE-201/review_bundle/README.md
