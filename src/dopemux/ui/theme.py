@@ -78,8 +78,12 @@ SAINT_GOLD = "#FFCF78"
 INK_BLACK = _active_palette["black"]
 VOID_NAVY = _active_palette["navy"]
 VELVET_PLUM = "#1A001A"
-TEXT_PRIMARY = "#E5E5E5"
+TEXT_PRIMARY = "#E2E8F0"
 TEXT_SECONDARY = _active_palette["grey"]
+# Canonical red-family status color for tmux/TUI/dashboard alert surfaces.
+ERROR_RED = "#FF2255"
+# Shared border tone used by tables and panels in the TUI widget layer.
+STRUCTURAL_BORDER = "#4A9E94"
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Theme Definitions & Multi-Theme Engine
