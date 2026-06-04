@@ -1,0 +1,144 @@
+{
+  "id": "TP-DMX-ADHD-COGNITIVE-T4-03A-OPERATOR-PROFILE-SEED-001",
+  "project": "dopemux-mvp",
+  "target": "ADHD Engine startup seeds a default profile for the stable operator identity",
+  "invariants": [
+    "The active FastAPI runtime imports services.adhd_engine.core.engine; the legacy services/adhd_engine/engine.py sibling is not the authority for this slice.",
+    "Operator profile identity must come from resolve_operator_user_id and must not derive from workspace paths, prompts, hostnames, usernames, machine identifiers, or content.",
+    "Startup profile seeding must keep user_profiles non-empty for the operator when Redis has no profiles.",
+    "Existing persisted profiles must be preserved and an existing operator profile must not be overwritten.",
+    "ADHD Engine remains cognitive-only under AGENTS.md section 6."
+  ],
+  "depends_on": [
+    "TP-DMX-ADHD-COGNITIVE-T4-00-OPERATOR-IDENTITY-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ADHD-COGNITIVE-REMEDIATION",
+    "base_branch": "codex/adhd-operator-identity-001",
+    "parent_tp_id": "TP-DMX-ADHD-COGNITIVE-T4-00-OPERATOR-IDENTITY-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/adhd-profile-seed-001",
+    "base_branch": "codex/adhd-operator-identity-001",
+    "stacked_because": "Default profile seeding depends on the stable operator identity resolver introduced by T4-00."
+  },
+  "commit": {
+    "message": "feat(adhd): seed operator profile at startup",
+    "allowlist": [
+      "services/adhd_engine/core/engine.py",
+      "tests/unit/test_adhd_operator_profile_seed.py",
+      "task-packets/TP-DMX-ADHD-COGNITIVE-T4-03A-OPERATOR-PROFILE-SEED-001.json",
+      "task-packets/TP-DMX-ADHD-COGNITIVE-T4-03A-OPERATOR-PROFILE-SEED-001-implementation-notes.md"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-03A-OPERATOR-PROFILE-SEED-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/unit/test_adhd_operator_profile_seed.py tests/unit/test_adhd_operator_identity.py tests/unit/test_adhd_engine_settings_contract.py tests/unit/test_adhd_engine_task_orchestrator_url.py",
+      "python -m py_compile services/adhd_engine/core/engine.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(adhd): seed operator profile at startup",
+    "body": "## Summary\n- seed a default ADHDProfile for the stable operator identity during active engine profile loading\n- persist only newly missing operator profiles under the existing adhd:profile:<user_id> Redis key contract\n- preserve existing Redis profiles and avoid workspace/path-derived user ids\n\n## Validation\n- python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-03A-OPERATOR-PROFILE-SEED-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- python -m pytest tests/unit/test_adhd_operator_profile_seed.py tests/unit/test_adhd_operator_identity.py tests/unit/test_adhd_engine_settings_contract.py tests/unit/test_adhd_engine_task_orchestrator_url.py\n- python -m py_compile services/adhd_engine/core/engine.py\n- git diff --check",
+    "base": "codex/adhd-operator-identity-001"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect",
+      "task": "Inspect the active engine profile load path, ADHDProfile schema, persistence readers, and existing operator identity tests before editing.",
+      "requirements": [
+        "Distinguish active services.adhd_engine.core.engine runtime from legacy services/adhd_engine/engine.py.",
+        "Confirm Redis profile key and JSON shape before persistence changes.",
+        "Do not widen into native hook ingestion, activity loops, or API profile update behavior."
+      ],
+      "commands": [
+        "rg -n \"ADHDProfile|adhd:profile|user_profiles|_load_user_profiles\" tests services/adhd_engine -g '*.py'",
+        "sed -n '1,240p' services/adhd_engine/core/models.py",
+        "sed -n '240,290p' services/adhd_engine/core/engine.py",
+        "sed -n '580,635p' services/adhd_engine/api/routes.py"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Runtime authority and persistence contract are identified before tests or production edits."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "task-packets/TP-DMX-ADHD-COGNITIVE-T4-00-OPERATOR-IDENTITY-001.json",
+        "services/adhd_engine/core/engine.py",
+        "services/adhd_engine/core/models.py",
+        "services/adhd_engine/api/routes.py",
+        "services/adhd_engine/adhd_config_service.py",
+        "tests/unit/test_adhd_operator_identity.py"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Add a startup seed path that creates and persists a default operator ADHDProfile only when the operator profile is absent after Redis profile loading.",
+      "requirements": [
+        "Write failing tests before production code.",
+        "The seeded user id must be exactly resolve_operator_user_id output.",
+        "Persist under adhd:profile:<operator_user_id> with the same asdict JSON shape used by the profile API.",
+        "Do not overwrite an existing operator profile.",
+        "Preserve existing non-operator profiles.",
+        "Decode Redis byte keys and values deterministically if encountered."
+      ],
+      "commands": [
+        "apply_patch"
+      ],
+      "expected_files": [
+        "services/adhd_engine/core/engine.py",
+        "tests/unit/test_adhd_operator_profile_seed.py"
+      ],
+      "validation": [
+        "Targeted startup profile seed tests fail before implementation and pass after implementation."
+      ],
+      "context_files": [
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "validate",
+      "task": "Validate packet schema, targeted tests, syntax, diff scope, and precommit checks for the bounded T4-03a slice.",
+      "requirements": [
+        "Report every NOT_RUN command with reason.",
+        "Inspect git status and diff scope before final summary.",
+        "Do not claim native hook activity ingestion or monitor behavior beyond the profile load path exercised by tests."
+      ],
+      "commands": [
+        "python -m jsonschema -i task-packets/TP-DMX-ADHD-COGNITIVE-T4-03A-OPERATOR-PROFILE-SEED-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python -m pytest tests/unit/test_adhd_operator_profile_seed.py tests/unit/test_adhd_operator_identity.py tests/unit/test_adhd_engine_settings_contract.py tests/unit/test_adhd_engine_task_orchestrator_url.py",
+        "python -m py_compile services/adhd_engine/core/engine.py",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "task-packets/TP-DMX-ADHD-COGNITIVE-T4-03A-OPERATOR-PROFILE-SEED-001-implementation-notes.md"
+      ],
+      "validation": [
+        "Proof notes and final response distinguish PASS, FAIL, NOT_RUN, and remaining UNKNOWNs."
+      ],
+      "context_files": []
+    }
+  ]
+}
