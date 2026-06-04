@@ -32,6 +32,13 @@
 - Issue: non-HTTP URI schemes such as `ssh://...` were accepted as local referenced paths.
 - Fix: unsupported non-empty URI schemes are now rejected before local-path handling.
 - Validation: the regression test failed before the code change, then passed after the fix; `python3 -m pytest tests/dcp -q` returned 41 passed.
+- GitHub review thread: <https://github.com/DDD-Enterprises/dopemux-mvp/pull/809#discussion_r3356261900>
+- Issue: JSON proof bundles containing `Audit Verdict:` text were classified as markdown audit reports before JSON parsing.
+- Fix: `.json` artifacts are parsed as JSON before the markdown-audit heuristic can run.
+- GitHub review thread: <https://github.com/DDD-Enterprises/dopemux-mvp/pull/809#discussion_r3356261908>
+- Issue: `live_write_status: DETECTED` without operational `LIVE_WRITE_READY` did not fail closed.
+- Fix: any detected live-write status now makes the artifact `CONFLICTING`.
+- Validation: both new regression tests failed before the code changes, then passed after the fixes; `python3 -m pytest tests/dcp -q` returned 43 passed.
 
 ## Residual Risks
 

@@ -271,6 +271,46 @@
       }
     ]
   },
+  "additional_review_followups": [
+    {
+      "source": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/809#discussion_r3356261900",
+      "issue": "JSON proof bundles containing audit text were classified as markdown audit reports before JSON parsing.",
+      "status": "FIXED_LOCALLY"
+    },
+    {
+      "source": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/809#discussion_r3356261908",
+      "issue": "JSON artifacts with live_write_status=DETECTED but no operational LIVE_WRITE_READY did not fail closed.",
+      "status": "FIXED_LOCALLY"
+    },
+    {
+      "commands": [
+        {
+          "command": "python3 -m pytest tests/dcp/test_dcp_0003_proof_family_dispatch.py::test_15_json_proof_bundle_with_audit_text_is_not_markdown_audit tests/dcp/test_dcp_0003_proof_family_dispatch.py::test_16_detected_live_write_status_fails_closed -q",
+          "exit_code": 1,
+          "result": "RED_EXPECTED",
+          "evidence": "Both regression tests failed before the implementation: JSON proof bundle was classified as DCP_AUDIT_REPORT and detected live-write proof remained DCP_PROOF_BUNDLE."
+        },
+        {
+          "command": "python3 -m pytest tests/dcp/test_dcp_0003_proof_family_dispatch.py::test_15_json_proof_bundle_with_audit_text_is_not_markdown_audit tests/dcp/test_dcp_0003_proof_family_dispatch.py::test_16_detected_live_write_status_fails_closed -q",
+          "exit_code": 0,
+          "result": "PASS",
+          "stdout": "..                                                                       [100%]\n"
+        },
+        {
+          "command": "python3 -m pytest tests/dcp/test_dcp_0003_proof_family_dispatch.py -q",
+          "exit_code": 0,
+          "result": "PASS",
+          "stdout": "..................                                                       [100%]\n"
+        },
+        {
+          "command": "python3 -m pytest tests/dcp -q",
+          "exit_code": 0,
+          "result": "PASS",
+          "stdout": "...........................................                              [100%]\n"
+        }
+      ]
+    }
+  ],
   "residual_risks": [
     "Freshness classification is local-only and depends on a caller-supplied expected_head_sha.",
     "No local PR Steward readiness artifact is committed; GitHub PR Steward must be rechecked on the pushed commit before merge.",
@@ -288,14 +328,14 @@
       "exit_code": 0,
       "result": "PASS",
       "stderr": "",
-      "stdout": "................                                                         [100%]\n"
+      "stdout": "..................                                                       [100%]\n"
     },
     {
       "command": "python3 -m pytest tests/dcp -q",
       "exit_code": 0,
       "result": "PASS",
       "stderr": "",
-      "stdout": ".........................................                                [100%]\n"
+      "stdout": "...........................................                              [100%]\n"
     },
     {
       "command": "python3 -m compileall -q src tests",
