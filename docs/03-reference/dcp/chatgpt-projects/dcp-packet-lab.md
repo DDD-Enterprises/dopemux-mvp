@@ -1,3 +1,14 @@
+---
+id: dcp-packet-lab
+title: Dcp Packet Lab
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-04'
+last_review: '2026-06-04'
+next_review: '2026-09-02'
+prelude: Dcp Packet Lab (reference) for dopemux documentation and developer workflows.
+---
 # DCP Packet Lab
 
 ## Purpose

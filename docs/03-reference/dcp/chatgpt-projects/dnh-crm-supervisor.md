@@ -1,3 +1,14 @@
+---
+id: dnh-crm-supervisor
+title: Dnh Crm Supervisor
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-04'
+last_review: '2026-06-04'
+next_review: '2026-09-02'
+prelude: Dnh Crm Supervisor (reference) for dopemux documentation and developer workflows.
+---
 # dNh-CRM Supervisor
 
 ## Purpose

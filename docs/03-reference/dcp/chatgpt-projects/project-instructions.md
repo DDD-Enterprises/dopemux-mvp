@@ -1,3 +1,15 @@
+---
+id: project-instructions
+title: Project Instructions
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-04'
+last_review: '2026-06-04'
+next_review: '2026-09-02'
+prelude: Project Instructions (reference) for dopemux documentation and developer
+  workflows.
+---
 # ChatGPT Projects Custom Instructions Reference
 
 This document compiles the copy-pasteable instruction blocks for each ChatGPT Project.

@@ -1,7 +1,19 @@
+---
+id: DCP_PRE_SYNTHESIS_CONTRADICTION_LEDGER
+title: Dcp Pre Synthesis Contradiction Ledger
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-04'
+last_review: '2026-06-04'
+next_review: '2026-09-02'
+prelude: Dcp Pre Synthesis Contradiction Ledger (reference) for dopemux documentation
+  and developer workflows.
+---
 # DCP Pre-Synthesis Contradiction Ledger
 
 > [!NOTE]
-> **Provenance**: `EXTERNAL_PROPOSED`  
+> **Provenance**: `EXTERNAL_PROPOSED`
 > **Status**: Preservation Only (Design Input / Non-Runtime)
 
 **Role**: Adversarial validation of `DCP_5_5_SYNTHESIS_INPUT_PACK.md` (the Stage-2 compression product), produced **before** GPT-5.5 architecture synthesis.

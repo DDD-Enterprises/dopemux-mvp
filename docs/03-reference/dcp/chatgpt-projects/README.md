@@ -1,3 +1,14 @@
+---
+id: README
+title: Readme
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-04'
+last_review: '2026-06-04'
+next_review: '2026-09-02'
+prelude: Readme (reference) for dopemux documentation and developer workflows.
+---
 # ChatGPT Projects and Supervisor Setup Reference
 
 This directory contains instructions and file-upload sets for configuring ChatGPT Projects as specialized agent workspaces (Supervisors).

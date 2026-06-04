@@ -1,7 +1,19 @@
+---
+id: DCP_DR_EXTERNAL_CONSTRAINTS_LEDGER
+title: Dcp Dr External Constraints Ledger
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-04'
+last_review: '2026-06-04'
+next_review: '2026-09-02'
+prelude: Dcp Dr External Constraints Ledger (reference) for dopemux documentation
+  and developer workflows.
+---
 # DCP External-Constraints Ledger (TP-DCP-DR-INTAKE-0001) — **COMPLETE (DR-DCP-001..015)**
 
 > [!NOTE]
-> **Provenance**: `EXTERNAL_PROPOSED`  
+> **Provenance**: `EXTERNAL_PROPOSED`
 > **Status**: Preservation Only (Design Input / External Research)
 
 > Status: **complete**. All 13 operator-run Deep Research reports ingested. Run **inline** (no agent spawn — reports were already in-context; budget optimization vs the planned Haiku worker). Full report texts preserved at `artifacts/dcp/dr/DR_DCP_0*.md`.

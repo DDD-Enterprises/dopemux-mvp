@@ -1,7 +1,19 @@
+---
+id: DCP_ARCHITECTURE_SYNTHESIS_REVISED_DELTA
+title: Dcp Architecture Synthesis Revised Delta
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-04'
+last_review: '2026-06-04'
+next_review: '2026-09-02'
+prelude: Dcp Architecture Synthesis Revised Delta (reference) for dopemux documentation
+  and developer workflows.
+---
 # DCP Architecture Synthesis — Revised Delta (GPT-5.5 Pro, REV1, 2026-06-03)
 
 > [!NOTE]
-> **Provenance**: `SYNTHESIS_INVENTED`  
+> **Provenance**: `SYNTHESIS_INVENTED`
 > **Status**: Preserved Decision Input (Audited / Authoritative for TP-DCP-0001 Scope)
 
 > Applies the 5 Opus audit must-fixes (`GO_WITH_FIXES`). Changed sections only: **§4, §5, §6, §10, §11**. Decision artifact revision, not a build plan. No redesign — every audit finding was REVISE, not KILL. D1–D16 postures, the four-surface TO model, the dry-run set, and the red-lane contract remain intact. Status: `READY_FOR_DELTA_ONLY_OPUS_RECHECK`.

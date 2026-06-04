@@ -1,3 +1,14 @@
+---
+id: upload-sets
+title: Upload Sets
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-04'
+last_review: '2026-06-04'
+next_review: '2026-09-02'
+prelude: Upload Sets (reference) for dopemux documentation and developer workflows.
+---
 # ChatGPT Projects Upload Sets Reference
 
 This document maps out the specific sets of files to upload when creating or updating each ChatGPT Project.
