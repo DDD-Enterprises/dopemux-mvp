@@ -1,0 +1,14 @@
+{
+  "packet_id": "TP-DCP-0003",
+  "status": "READY",
+  "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "checks_current": true,
+  "proof_fresh": true,
+  "unknown_reviewers": [],
+  "unknown_bots": [],
+  "blocking_threads": [],
+  "forbidden_files": [],
+  "live_write_status": "NONE",
+  "live_write_ready_status": "UNDEFINED_AND_BLOCKING",
+  "merge_seam_status": "PRESERVED"
+}
