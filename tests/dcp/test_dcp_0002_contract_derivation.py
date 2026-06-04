@@ -493,6 +493,10 @@ def test_16_no_forbidden_files_modified():
         capture_output=True, text=True,
         cwd=Path(__file__).resolve().parents[2]
     )
+    assert result.returncode == 0, (
+        "git diff --name-only origin/main...HEAD failed "
+        f"(exit {result.returncode}): {result.stderr.strip() or 'no stderr output'}"
+    )
     changed = result.stdout.strip().splitlines()
     forbidden_prefixes = [
         "src/dopemux_pr_merge_specialist/",
