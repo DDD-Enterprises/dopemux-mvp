@@ -26,6 +26,13 @@
 - Conflicting proof remains CONFLICTING: PASS
 - Implementer and auditor distinct: PASS
 
+## Post-Review Follow-Up
+
+- GitHub review thread: <https://github.com/DDD-Enterprises/dopemux-mvp/pull/809#discussion_r3356130582>
+- Issue: non-HTTP URI schemes such as `ssh://...` were accepted as local referenced paths.
+- Fix: unsupported non-empty URI schemes are now rejected before local-path handling.
+- Validation: the regression test failed before the code change, then passed after the fix; `python3 -m pytest tests/dcp -q` returned 41 passed.
+
 ## Residual Risks
 
 - Stale SHA detection requires the caller to supply expected_head_sha; otherwise freshness remains UNKNOWN by design.

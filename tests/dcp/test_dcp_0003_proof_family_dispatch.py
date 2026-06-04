@@ -206,7 +206,31 @@ def test_13_remote_urls_are_preserved_but_not_followed(tmp_path):
     assert any("remote reference not followed" in error for error in result.errors)
 
 
-def test_14_dcp_modules_do_not_contain_forbidden_execution_paths():
+def test_14_unsupported_uri_schemes_are_rejected_not_referenced(tmp_path):
+    pointer = tmp_path / "pointer.json"
+    pointer.write_text(
+        json.dumps(
+            {
+                "schema_version": "dcp-proof-pointer.v0",
+                "pointer_id": "ptr-unsafe-scheme",
+                "source_artifact_ref": "ssh://host/repo/proof/PROOF.json",
+                "source_head_sha": {"value": _EXPECTED_HEAD_SHA},
+                "validation_state": "REPO_CROSS_CHECKED",
+                "auditor_verdict": "PASS",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = read_proof_pointer(pointer, expected_head_sha=_EXPECTED_HEAD_SHA)
+
+    assert result.family is ProofFamily.DCP_PROOF_POINTER
+    assert result.raw_references == ["ssh://host/repo/proof/PROOF.json"]
+    assert result.referenced_paths == []
+    assert any("unsupported reference scheme not followed" in error for error in result.errors)
+
+
+def test_15_dcp_modules_do_not_contain_forbidden_execution_paths():
     dcp_root = Path(__file__).resolve().parents[2] / "src" / "dopemux" / "dcp"
     text = "\n".join(
         path.read_text(encoding="utf-8")
@@ -223,7 +247,7 @@ def test_14_dcp_modules_do_not_contain_forbidden_execution_paths():
     assert all(fragment not in text for fragment in forbidden_fragments)
 
 
-def test_15_dcp_modules_do_not_contain_external_endpoint_call_paths():
+def test_16_dcp_modules_do_not_contain_external_endpoint_call_paths():
     dcp_root = Path(__file__).resolve().parents[2] / "src" / "dopemux" / "dcp"
     text = "\n".join(
         path.read_text(encoding="utf-8")
