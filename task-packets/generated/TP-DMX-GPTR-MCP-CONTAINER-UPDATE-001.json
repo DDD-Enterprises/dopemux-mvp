@@ -1,0 +1,139 @@
+{
+  "id": "TP-DMX-GPTR-MCP-CONTAINER-UPDATE-001",
+  "project": "dopemux-mvp",
+  "target": "Repair the GPT Researcher MCP Docker image so stale MCP client commands using /app/server.py work, and update the pinned gpt-researcher package to the current PyPI release.",
+  "invariants": [
+    "Preserve compose.yml as the canonical runtime file.",
+    "Do not print or persist provider secret values.",
+    "Do not change provider credential names or environment variable semantics.",
+    "Keep the upstream gptr-mcp repository ref pinned for reproducibility unless a separate packet authorizes changing it.",
+    "Keep the Dockerfile mirror under docker/mcp-servers-source/gptr-mcp aligned with the active Dockerfile."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-GPTR-MCP",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/gptr-mcp-container-update-20260604",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(mcp): restore gpt researcher container entrypoint",
+    "allowlist": [
+      "docker/mcp-servers/gptr-mcp/Dockerfile",
+      "docker/mcp-servers-source/gptr-mcp/Dockerfile",
+      "tests/docker/test_gptr_mcp_dockerfile.py",
+      "task-packets/INDEX.md",
+      "task-packets/generated/TP-DMX-GPTR-MCP-CONTAINER-UPDATE-001.json",
+      "claudedocs/gptr-mcp-container-update-proof-2026-06-04.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-GPTR-MCP-CONTAINER-UPDATE-001.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-GPTR-MCP-CONTAINER-UPDATE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest -q tests/docker/test_gptr_mcp_dockerfile.py",
+      "docker compose -f compose.yml config --quiet",
+      "docker compose -f compose.yml build gptr-mcp",
+      "docker compose -f compose.yml up -d gptr-mcp",
+      "docker exec dopemux-mcp-gptr-mcp python -m py_compile /app/server.py /app/gptr-mcp/server.py",
+      "docker exec -i dopemux-mcp-gptr-mcp python - <<'PY'\nimport importlib.metadata as m\nprint(m.version('gpt-researcher'))\nPY",
+      "docker exec dopemux-mcp-gptr-mcp test -f /app/server.py",
+      "docker inspect --format '{{json .State.Health.Status}}' dopemux-mcp-gptr-mcp",
+      "git diff --check",
+      "git status --short --branch"
+    ]
+  },
+  "pr": {
+    "title": "fix(mcp): restore GPT Researcher container entrypoint",
+    "body": "## Summary\n- Adds a /app/server.py compatibility wrapper inside the GPT Researcher MCP image so stale client commands work.\n- Updates the pinned gpt-researcher package from 0.14.8 to 0.15.1.\n- Adds a narrow Dockerfile regression test and proof note.\n\n## Test Plan\n- python -m json.tool task-packets/generated/TP-DMX-GPTR-MCP-CONTAINER-UPDATE-001.json >/dev/null\n- python -m jsonschema -i task-packets/generated/TP-DMX-GPTR-MCP-CONTAINER-UPDATE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- python -m pytest -q tests/docker/test_gptr_mcp_dockerfile.py\n- docker compose -f compose.yml config --quiet\n- docker compose -f compose.yml build gptr-mcp\n- docker compose -f compose.yml up -d gptr-mcp\n- docker exec dopemux-mcp-gptr-mcp python -m py_compile /app/server.py /app/gptr-mcp/server.py\n- docker inspect --format '{{json .State.Health.Status}}' dopemux-mcp-gptr-mcp\n- git diff --check\n\n## Security Note\n- Do not include provider keys or raw environment values in proof.\n\n@codex review\n@gemini\n@copilot",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repo identity, worktree isolation, dirty state, package versions, and container failure surface.",
+      "context_files": [
+        "AGENTS.md",
+        "compose.yml",
+        "docker/mcp-servers/gptr-mcp/Dockerfile",
+        "docker/mcp-servers-source/gptr-mcp/Dockerfile",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ],
+      "validation": [
+        "Worktree is isolated from the dirty primary checkout.",
+        "Running container has gpt-researcher 0.14.8 before this packet.",
+        "PyPI reports gpt-researcher 0.15.1 as current at implementation time.",
+        "Running container lacks /app/server.py while MCP client config calls that path."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add a focused regression test for the GPT Researcher MCP Dockerfiles.",
+      "expected_files": [
+        "tests/docker/test_gptr_mcp_dockerfile.py"
+      ],
+      "validation": [
+        "python -m pytest -q tests/docker/test_gptr_mcp_dockerfile.py fails before the Dockerfile fix because /app/server.py compatibility and version 0.15.1 are absent."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Patch both GPT Researcher MCP Dockerfile copies minimally.",
+      "expected_files": [
+        "docker/mcp-servers/gptr-mcp/Dockerfile",
+        "docker/mcp-servers-source/gptr-mcp/Dockerfile"
+      ],
+      "validation": [
+        "Both Dockerfiles copy src/ and tools/ before uv pip install .[services] so clean-cache builds include all pyproject-declared package directories.",
+        "Both Dockerfiles pin ARG GPT_RESEARCHER_VERSION=0.15.1.",
+        "Both Dockerfiles create /app/server.py as a wrapper that loads /app/gptr-mcp/server.py with /app/gptr-mcp on sys.path.",
+        "The wrapper defaults to stdio for bare docker exec MCP clients.",
+        "Both Dockerfiles run the long-lived container service with DOPEMUX_GPTR_TRANSPORT=sse."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Validate the static contract, compose syntax, rebuilt container, package version, compatibility path, health, and diff scope.",
+      "expected_files": [
+        "claudedocs/gptr-mcp-container-update-proof-2026-06-04.md"
+      ],
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-DMX-GPTR-MCP-CONTAINER-UPDATE-001.json >/dev/null",
+        "python -m jsonschema -i task-packets/generated/TP-DMX-GPTR-MCP-CONTAINER-UPDATE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python -m pytest -q tests/docker/test_gptr_mcp_dockerfile.py",
+        "docker compose -f compose.yml config --quiet",
+        "docker compose -f compose.yml build gptr-mcp",
+        "docker compose -f compose.yml up -d gptr-mcp",
+        "docker exec dopemux-mcp-gptr-mcp python -m py_compile /app/server.py /app/gptr-mcp/server.py",
+        "docker exec -i dopemux-mcp-gptr-mcp python - <<'PY'\nimport importlib.metadata as m\nprint(m.version('gpt-researcher'))\nPY",
+        "docker exec dopemux-mcp-gptr-mcp test -f /app/server.py",
+        "docker inspect --format '{{json .State.Health.Status}}' dopemux-mcp-gptr-mcp",
+        "git diff --check",
+        "git status --short --branch"
+      ]
+    }
+  ]
+}
