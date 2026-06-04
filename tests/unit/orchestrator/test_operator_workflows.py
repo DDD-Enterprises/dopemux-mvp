@@ -483,7 +483,7 @@ def test_transition_proof_envelope_accepts_supported_schema_version(tmp_path):
 
 def test_transition_proof_envelope_rejects_unsupported_schema_version(tmp_path):
     envelope = _envelope_payload()
-    envelope["schema_version"] = "999"
+    envelope["schema_version"] = "1.0"
     envelope_path = tmp_path / "envelope.json"
     envelope_path.write_text(json.dumps(envelope), encoding="utf-8")
 
