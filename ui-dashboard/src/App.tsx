@@ -353,7 +353,7 @@ function App() {
       ? brandTokens.colors.ritualCyan
       : connectionStatus === 'connecting'
         ? brandTokens.colors.saintGold
-        : brandTokens.colors.gremlinPink;
+        : brandTokens.colors.errorRed;
 
   const metricCards = [
     {
@@ -553,8 +553,8 @@ function App() {
             sx={{
               mb: 3,
               borderRadius: 3,
-              backgroundColor: alpha(brandTokens.colors.gremlinPink, 0.08),
-              border: `1px solid ${brandTokens.colors.gremlinPink}`,
+              backgroundColor: alpha(brandTokens.colors.errorRed, 0.08),
+              border: `1px solid ${brandTokens.colors.errorRed}`,
             }}
           >
             {errorMessage}
@@ -661,9 +661,9 @@ function App() {
                   sx={{
                     ml: isLoading ? 1 : 'auto',
                     cursor: 'pointer',
-                    bgcolor: alpha(isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.gremlinPink, 0.1),
-                    color: isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.gremlinPink,
-                    borderColor: isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.gremlinPink,
+                    bgcolor: alpha(isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.errorRed, 0.1),
+                    color: isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.errorRed,
+                    borderColor: isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.errorRed,
                     transition: 'all 0.2s ease',
                     ...(isConfirmingClear && {
                       animation: 'clear-pulse 2s infinite',
@@ -674,7 +674,7 @@ function App() {
                       }
                     }),
                     '&:hover': {
-                      bgcolor: alpha(isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.gremlinPink, 0.2),
+                      bgcolor: alpha(isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.errorRed, 0.2),
                     },
                   }}
                 />
