@@ -1,11 +1,22 @@
+---
+id: TP-DCP-0002
+title: Tp Dcp 0002
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-04'
+last_review: '2026-06-04'
+next_review: '2026-09-02'
+prelude: Tp Dcp 0002 (explanation) for dopemux documentation and developer workflows.
+---
 # TP-DCP-0002 — Derive Mutation Classes, Approval Artifact, and Project Resource Map
 
-**Packet ID**: TP-DCP-0002  
-**Project**: DCP — Data Control Plane  
-**Target**: `dcp/contract-derivation-tp-0002` branch  
-**Implementer**: claude-sonnet  
-**Auditor**: claude-opus (distinct from implementer)  
-**Status**: IMPLEMENTATION_COMPLETE — pending Opus audit  
+**Packet ID**: TP-DCP-0002
+**Project**: DCP — Data Control Plane
+**Target**: `dcp/contract-derivation-tp-0002` branch
+**Implementer**: claude-sonnet
+**Auditor**: claude-opus (distinct from implementer)
+**Status**: IMPLEMENTATION_COMPLETE — pending Opus audit
 **Base**: `main` @ `68f7435f6` (TP-DCP-0001 merge commit)
 
 ---
