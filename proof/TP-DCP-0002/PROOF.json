@@ -1,0 +1,98 @@
+{
+  "tp_id": "TP-DCP-0002",
+  "tp_path": "task-packets/TP-DCP-0002.md",
+  "branch": "dcp/contract-derivation-tp-0002",
+  "base": "main",
+  "base_sha": "68f7435f66d0be9c59e8b49df486fbccb9dfdd1f",
+  "implementer": "claude-sonnet-4-6",
+  "auditor": "claude-opus (distinct from implementer — see AUDIT.md)",
+  "auditor_distinct_from_implementer": true,
+  "changed_files": [
+    "schemas/dcp/dcp_mutation_class.schema.json",
+    "schemas/dcp/dcp_approval_artifact.schema.json",
+    "schemas/dcp/dcp_project_resource_map.schema.json",
+    "schemas/dcp/README.md",
+    "tests/dcp/fixtures/tp_dcp_0002_mutation_class.fixture.json",
+    "tests/dcp/fixtures/tp_dcp_0002_approval_artifact.fixture.json",
+    "tests/dcp/fixtures/tp_dcp_0002_project_resource_map.fixture.json",
+    "tests/dcp/test_dcp_0002_contract_derivation.py",
+    "tests/dcp/test_dcp_contracts.py",
+    "task-packets/TP-DCP-0002.md",
+    "proof/TP-DCP-0002/PROOF.json",
+    "proof/TP-DCP-0002/AUDIT.md",
+    "proof/TP-DCP-0002/DERIVATION_NOTES.md"
+  ],
+  "allowlist_check": "PASS — all changed files are in TP-DCP-0002 §7 allowlist",
+  "forbidden_file_check": "PASS — git diff --name-only shows no forbidden paths (src/dopemux_pr_merge_specialist/, scripts/batch_resolve_and_merge.py, .github/workflows/)",
+  "commands": [
+    {
+      "id": "json-validation-schemas",
+      "command": "python3 -m json.tool schemas/dcp/dcp_mutation_class.schema.json >/dev/null && python3 -m json.tool schemas/dcp/dcp_approval_artifact.schema.json >/dev/null && python3 -m json.tool schemas/dcp/dcp_project_resource_map.schema.json >/dev/null",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "id": "json-validation-fixtures",
+      "command": "python3 -m json.tool tests/dcp/fixtures/tp_dcp_0002_mutation_class.fixture.json >/dev/null && python3 -m json.tool tests/dcp/fixtures/tp_dcp_0002_approval_artifact.fixture.json >/dev/null && python3 -m json.tool tests/dcp/fixtures/tp_dcp_0002_project_resource_map.fixture.json >/dev/null",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "id": "pytest-full-dcp-suite",
+      "command": "python3 -m pytest tests/dcp -q",
+      "exit_code": 0,
+      "status": "PASS",
+      "output_tail": "25 passed (8 TP-DCP-0001 + 17 TP-DCP-0002)"
+    },
+    {
+      "id": "git-diff-check",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "id": "forbidden-file-check",
+      "command": "git diff --name-only | grep -E '^(src/dopemux_pr_merge_specialist/|scripts/batch_resolve_and_merge.py|\\.github/workflows/)' && exit 1 || true",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ],
+  "commit_sha": "PENDING — updated after commit",
+  "pr_url": "PENDING",
+  "live_write_ready_status": "UNDEFINED AND BLOCKING — not defined in this packet",
+  "live_writes_performed": false,
+  "merge_seam_invariant": "DCP-RED-MERGE-SEAM-0001 preserved — MC-MERGE-SEAM-FORBIDDEN hard-block class present in mutation class registry; queue_drain.py and batch_resolve_and_merge.py not imported/called/referenced as execution paths in any schema",
+  "provenance_coverage_summary": {
+    "dcp_mutation_class": "REPO_VALIDATED (tier vocab T0-T6/TX/TU from approval_policy.yaml + policy.py); per-class PROVISIONAL where noted; MC-MERGE-SEAM-FORBIDDEN REPO_VALIDATED_BY_AUDIT",
+    "dcp_approval_artifact": "SYNTHESIS_INVENTED envelope; REPO_VALIDATED tier/decision vocab from policy.py; field_provenance present for all data fields",
+    "dcp_project_resource_map": "REPO_VALIDATED path roots from ARCHITECTURE.md + filesystem; endpoint bindings PROVISIONAL/UNKNOWN only; field_provenance present for all data fields"
+  },
+  "derived_repo_sources_inspected": [
+    "config/orchestrator/approval_policy.yaml",
+    "src/dopemux/orchestrator/policy.py",
+    "src/dopemux/orchestrator/validation/proof.py",
+    "ARCHITECTURE.md",
+    "AGENTS.md",
+    "docs/03-reference/systems/system-boundaries.md",
+    "src/dopemux_pr_merge_specialist/queue_drain.py (line 2402 execute=True verified)",
+    "scripts/batch_resolve_and_merge.py (existence verified)",
+    "src/dopemux_pr_merge_specialist/steward_gate.py (NOW present — was absent at TP-DCP-0001)"
+  ],
+  "unresolved_unknowns": [
+    "TRUTH_*.md files absent from repo root",
+    "RUNTIME_AUTHORITY_POINTERS.md absent",
+    "Dopetask execution tier not in approval_policy.yaml — MC-DOPETASK-EXEC is PROVISIONAL",
+    "ConPort endpoint (port 5455) PROVISIONAL — not runtime-proven",
+    "dope-memory endpoint PROVISIONAL — not runtime-proven",
+    "expiry_window semantics undefined in approval_policy.yaml",
+    "steward_gate.py now present — red lane still active, gate enforcement not verified"
+  ],
+  "residual_risks": [
+    "MC-DOPETASK-EXEC and MC-BRIDGE-MEDIATED are PROVISIONAL — tier not yet registered in approval_policy.yaml",
+    "MC-EXTERNAL-WRITE tier inferred from T5/T6 analogy — no explicit capability",
+    "DCP_APPROVAL_ARTIFACT expiry_window is SYNTHESIS_INVENTED — no repo equivalent",
+    "Endpoint bindings all PROVISIONAL — no live proof in checkout"
+  ],
+  "rollback": "git restore schemas/dcp/{dcp_mutation_class,dcp_approval_artifact,dcp_project_resource_map}.schema.json tests/dcp/test_dcp_0002_contract_derivation.py tests/dcp/test_dcp_contracts.py schemas/dcp/README.md tests/dcp/fixtures/tp_dcp_0002_*.fixture.json task-packets/TP-DCP-0002.md && rm -rf proof/TP-DCP-0002",
+  "tp_dcp_0003_unblocked": "YES — proof-family dispatch, control snapshots, red-lane scanning, PR readiness intake, cockpit projections all depend on DCP_MUTATION_CLASS, DCP_APPROVAL_ARTIFACT, DCP_PROJECT_RESOURCE_MAP which are now locked in .v0"
+}

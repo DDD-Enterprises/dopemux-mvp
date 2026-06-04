@@ -1,0 +1,328 @@
+{
+  "schema_version": "dcp-project-resource-map.v0",
+  "contract_id": "dcp-project-resource-map-dopemux-mvp-v0-seed",
+  "contract_status": "PROVISIONAL",
+  "provenance": {
+    "tag": "REPO_VALIDATED",
+    "source_ref": "ARCHITECTURE.md §3; src/dopemux/orchestrator/policy.py canonical_writer fields; filesystem observation; AGENTS.md §4; TP-DCP-0002 derivation"
+  },
+  "validation": {
+    "state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+    "notes": "Path roots REPO_VALIDATED from ARCHITECTURE.md + filesystem. Endpoint bindings are PROVISIONAL (no runtime proof in this checkout). Mixed state constrains contract to PROVISIONAL_UNVERIFIED_ENFORCEMENT at .v0."
+  },
+  "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+  "field_provenance": {
+    "contract_id": "SYNTHESIS_INVENTED",
+    "contract_status": "SYNTHESIS_INVENTED",
+    "validation_state": "PROVISIONAL",
+    "project_id": "REPO_VALIDATED",
+    "repo_id": "REPO_VALIDATED",
+    "repo_root_marker": "REPO_VALIDATED",
+    "canonical_source_roots": "REPO_VALIDATED",
+    "schema_roots": "REPO_VALIDATED",
+    "test_roots": "REPO_VALIDATED",
+    "proof_roots": "REPO_VALIDATED",
+    "task_packet_roots": "REPO_VALIDATED",
+    "config_roots": "REPO_VALIDATED",
+    "runtime_authority_pointers": "REPO_VALIDATED",
+    "provisional_surfaces": "PROVISIONAL",
+    "forbidden_paths": "REPO_VALIDATED_BY_AUDIT",
+    "red_line_paths": "REPO_VALIDATED_BY_AUDIT",
+    "bridge_proxy_surfaces": "REPO_VALIDATED",
+    "memory_context_chronicle_surfaces": "REPO_VALIDATED",
+    "task_orchestrator_surfaces": "REPO_VALIDATED",
+    "dopetask_surfaces": "REPO_VALIDATED",
+    "github_ci_surfaces": "REPO_VALIDATED",
+    "endpoint_bindings": "PROVISIONAL",
+    "canonical_writers_map": "REPO_VALIDATED",
+    "known_unknowns": "REPO_VALIDATED",
+    "red_lines": "REPO_VALIDATED_BY_AUDIT",
+    "supersedes": "SYNTHESIS_INVENTED"
+  },
+  "project_id": "dopemux-mvp",
+  "repo_id": "dopemux-mvp",
+  "repo_root_marker": {
+    "primary": ".repo_id",
+    "secondary": "vendor/dopetask",
+    "notes": "AGENTS.md §4 references .repo_id as repo marker. vendor/dopetask directory also observed in repo root as a dopetask presence marker. Both present in origin/main as of 2026-06-04."
+  },
+  "canonical_source_roots": [
+    "src/dopemux",
+    "src/dopemux_pr_merge_specialist",
+    "src/dopemux_pr_steward",
+    "services/adhd_engine",
+    "services/activity-capture",
+    "services/working-memory-assistant",
+    "services/adhd-dashboard",
+    "tools/pr_action_bridge",
+    "tools/pr_steward"
+  ],
+  "schema_roots": [
+    "schemas/dcp",
+    "schemas/audit",
+    "schemas/pr_steward",
+    "schemas/pr_action_bridge",
+    "schemas/copilot",
+    "schemas/proof"
+  ],
+  "test_roots": [
+    "tests/dcp",
+    "tests/pr_merge_specialist",
+    "tests/pr_steward",
+    "tests/audit",
+    "tests/dopemux",
+    "tests/dopemux_cli",
+    "tests/unit"
+  ],
+  "proof_roots": [
+    "proof"
+  ],
+  "task_packet_roots": [
+    "task-packets",
+    "task-packets/generated"
+  ],
+  "config_roots": [
+    "config/orchestrator"
+  ],
+  "runtime_authority_pointers": [
+    {
+      "authority_name": "approval-policy",
+      "path": "config/orchestrator/approval_policy.yaml",
+      "tier": "T0",
+      "provenance_tag": "REPO_VALIDATED",
+      "notes": "PRIMARY policy authority. schema_version 1, id: task-orchestrator-approval-policy. authority: docs/03-reference/systems/task-orchestrator/operator-integration-authority.md"
+    },
+    {
+      "authority_name": "agents-governance",
+      "path": "AGENTS.md",
+      "tier": "T0",
+      "provenance_tag": "REPO_VALIDATED",
+      "notes": "Durable operator-control guidance for Codex and agent-style work. Truth order §2."
+    },
+    {
+      "authority_name": "architecture",
+      "path": "ARCHITECTURE.md",
+      "tier": "T0",
+      "provenance_tag": "REPO_VALIDATED",
+      "notes": "Repo architecture as observed in runtime code and config. Not target-state diagram."
+    },
+    {
+      "authority_name": "system-boundaries",
+      "path": "docs/03-reference/systems/system-boundaries.md",
+      "tier": "T0",
+      "provenance_tag": "REPO_VALIDATED",
+      "notes": "Authority boundary reference. Root SYSTEM_BOUNDARIES.md absent; this tracked doc is the current boundary reference per ARCHITECTURE.md §7."
+    },
+    {
+      "authority_name": "truth-systems",
+      "path": "docs/03-reference/truth/truth-systems.md",
+      "tier": "T0",
+      "provenance_tag": "PROVISIONAL",
+      "notes": "AGENTS.md §2 references TRUTH_*.md at root — absent. docs/03-reference/truth/ path inferred from system-boundaries.md prelude. Not directly inspected in this packet."
+    },
+    {
+      "authority_name": "policy-py",
+      "path": "src/dopemux/orchestrator/policy.py",
+      "tier": "T0",
+      "provenance_tag": "REPO_VALIDATED",
+      "notes": "Runtime authority: REQUIRED_TIERS, WRITE_MODES, T4_PLUS, REFUSAL_TIERS constants; AutomationTier and CapabilityPolicy dataclasses."
+    }
+  ],
+  "provisional_surfaces": [
+    {
+      "surface_id": "PROV-CONPORT-ENDPOINT",
+      "description": "ConPort PostgreSQL AGE endpoint (port 5455, host localhost)",
+      "reason": "Endpoint binding from MCP_ConPort.md documentation; not runtime-proven in this checkout",
+      "provenance_tag": "PROVISIONAL"
+    },
+    {
+      "surface_id": "PROV-DOPE-CONTEXT-QDRANT",
+      "description": "Qdrant vector database for dope-context (port 6333)",
+      "reason": "Port from MCP_DopeContext.md; not runtime-proven in this checkout",
+      "provenance_tag": "PROVISIONAL"
+    },
+    {
+      "surface_id": "PROV-WMA-ENDPOINT",
+      "description": "Working-memory-assistant HTTP endpoint",
+      "reason": "Service observed in services/ but endpoint not resolved in this checkout",
+      "provenance_tag": "UNKNOWN"
+    },
+    {
+      "surface_id": "PROV-DOPECON-BRIDGE",
+      "description": "dopecon-bridge routing proxy",
+      "reason": "ARCHITECTURE.md §3.6 describes this plane; runtime explicitly denies domain authority",
+      "provenance_tag": "PROVISIONAL"
+    }
+  ],
+  "forbidden_paths": [
+    {
+      "path": "src/dopemux_pr_merge_specialist/queue_drain.py",
+      "reason": "execute_or_dry_run(execute=True) seam at line 2402. DCP must never import/call/wrap this path. DCP-RED-MERGE-SEAM-0001.",
+      "red_lane_id": "DCP-RED-MERGE-SEAM-0001",
+      "provenance_tag": "REPO_VALIDATED_BY_AUDIT"
+    },
+    {
+      "path": "scripts/batch_resolve_and_merge.py",
+      "reason": "Batch merge automation script. DCP must never import/call/wrap this path. DCP-RED-MERGE-SEAM-0001.",
+      "red_lane_id": "DCP-RED-MERGE-SEAM-0001",
+      "provenance_tag": "REPO_VALIDATED_BY_AUDIT"
+    }
+  ],
+  "red_line_paths": [
+    "DCP-RED-MERGE-SEAM-0001",
+    "DCP-RED-BRANCH-PROTECTION-MUTATION",
+    "DCP-RED-CODEOWNERS-MUTATION",
+    "DCP-RED-WORKFLOW-PERMISSION-ESCALATION",
+    "DCP-RED-SELF-CERTIFYING-LOOP",
+    "DCP-RED-PROOF-CONTRACT-SCHEMA-MUTATION",
+    "DCP-RED-AGENT-APPROVED-MERGE-WITHOUT-SUPERVISOR"
+  ],
+  "bridge_proxy_surfaces": [
+    {
+      "surface_id": "BRIDGE-DOPECON",
+      "path_or_service": "services/dopecon-bridge (if present)",
+      "authority_posture": "routing and proxying only; not domain authority per ARCHITECTURE.md §3.6",
+      "provenance_tag": "REPO_VALIDATED"
+    }
+  ],
+  "memory_context_chronicle_surfaces": [
+    {
+      "surface_id": "MEM-CONPORT",
+      "service": "ConPort (PostgreSQL AGE)",
+      "owns": "structured decisions, progress, project context, knowledge graph",
+      "endpoint_status": "PROVISIONAL",
+      "provenance_tag": "REPO_VALIDATED",
+      "notes": "Canonical writer for decisions/progress per policy.py capabilities. Endpoint (port 5455) PROVISIONAL — from MCP docs, not runtime-proven."
+    },
+    {
+      "surface_id": "MEM-DOPE-MEMORY",
+      "service": "dope-memory",
+      "owns": "durable chronicle memory, work-log, raw-event history",
+      "endpoint_status": "PROVISIONAL",
+      "provenance_tag": "REPO_VALIDATED",
+      "notes": "mirror_writer for orchestrator.memory.record_progress per policy.py. Split authority with ConPort not resolved per ARCHITECTURE.md §3.4."
+    },
+    {
+      "surface_id": "MEM-WMA",
+      "service": "working-memory-assistant",
+      "owns": "operational snapshot, recovery support surfaces",
+      "endpoint_status": "UNKNOWN",
+      "provenance_tag": "PROVISIONAL",
+      "notes": "Observed in services/working-memory-assistant. Endpoint not resolved."
+    },
+    {
+      "surface_id": "MEM-DOPE-CONTEXT",
+      "service": "dope-context",
+      "owns": "deterministic code and docs retrieval indexing",
+      "endpoint_status": "PROVISIONAL",
+      "provenance_tag": "REPO_VALIDATED",
+      "notes": "canonical_writer=dope-context in orchestrator.context.refresh_index. Qdrant port 6333 PROVISIONAL."
+    }
+  ],
+  "task_orchestrator_surfaces": [
+    {
+      "surface_id": "ORCH-TRANSITION",
+      "description": "Canonical workflow transition application",
+      "canonical_writer": "task-orchestrator",
+      "tier": "T4",
+      "provenance_tag": "REPO_VALIDATED"
+    },
+    {
+      "surface_id": "ORCH-QUEUE-STATUS",
+      "description": "Read workflow queue and state",
+      "canonical_writer": "task-orchestrator",
+      "tier": "T0",
+      "provenance_tag": "REPO_VALIDATED"
+    }
+  ],
+  "dopetask_surfaces": [
+    {
+      "surface_id": "DOPETASK-TASKX",
+      "path": "scripts/taskx",
+      "scope": "wrapper_only",
+      "provenance_tag": "REPO_VALIDATED"
+    },
+    {
+      "surface_id": "DOPETASK-WRAPPER",
+      "path": "scripts/dopetask",
+      "scope": "wrapper_only",
+      "provenance_tag": "REPO_VALIDATED"
+    },
+    {
+      "surface_id": "DOPETASK-EXTERNAL",
+      "path": "vendor/dopetask",
+      "scope": "external_out_of_scope",
+      "provenance_tag": "PROVISIONAL"
+    }
+  ],
+  "github_ci_surfaces": [
+    {
+      "surface_id": "GITHUB-PR-MERGE",
+      "path_or_service": "GitHub PR merge API",
+      "tier": "T5",
+      "canonical_writer": "GitHub",
+      "provenance_tag": "REPO_VALIDATED"
+    },
+    {
+      "surface_id": "GITHUB-CI-WORKFLOWS",
+      "path_or_service": ".github/workflows/",
+      "tier": "T4",
+      "canonical_writer": "GitHub",
+      "provenance_tag": "REPO_VALIDATED"
+    }
+  ],
+  "endpoint_bindings": [
+    {
+      "service_id": "conport",
+      "host_port_hint": "localhost:5455",
+      "binding_status": "PROVISIONAL",
+      "provenance_tag": "PROVISIONAL",
+      "notes": "From MCP_ConPort.md documentation. Not runtime-proven in this checkout. Must not be treated as resolved authority."
+    },
+    {
+      "service_id": "qdrant-dope-context",
+      "host_port_hint": "localhost:6333",
+      "binding_status": "PROVISIONAL",
+      "provenance_tag": "PROVISIONAL",
+      "notes": "From MCP_DopeContext.md documentation. Not runtime-proven in this checkout."
+    },
+    {
+      "service_id": "working-memory-assistant",
+      "host_port_hint": null,
+      "binding_status": "UNKNOWN",
+      "provenance_tag": "UNKNOWN",
+      "notes": "Service exists in services/working-memory-assistant but endpoint not observed."
+    },
+    {
+      "service_id": "adhd-engine",
+      "host_port_hint": null,
+      "binding_status": "PROVISIONAL",
+      "provenance_tag": "PROVISIONAL",
+      "notes": "Service exists in services/adhd_engine. HTTP/MCP/WebSocket surfaces mentioned in ARCHITECTURE.md §3.7 but endpoint not resolved."
+    }
+  ],
+  "canonical_writers_map": [
+    { "resource_domain": "decisions-and-progress", "canonical_writer": "ConPort", "provenance_tag": "REPO_VALIDATED" },
+    { "resource_domain": "workflow-transitions", "canonical_writer": "task-orchestrator", "provenance_tag": "REPO_VALIDATED" },
+    { "resource_domain": "proof-bundles-and-schemas", "canonical_writer": "proof-bundle-governance", "provenance_tag": "REPO_VALIDATED" },
+    { "resource_domain": "github-mutations", "canonical_writer": "GitHub", "provenance_tag": "REPO_VALIDATED" },
+    { "resource_domain": "dope-context-index", "canonical_writer": "dope-context", "provenance_tag": "REPO_VALIDATED" },
+    { "resource_domain": "dope-memory-chronicle", "canonical_writer": "dope-memory", "provenance_tag": "REPO_VALIDATED" },
+    { "resource_domain": "operator-control-routing", "canonical_writer": "dopemux", "provenance_tag": "REPO_VALIDATED" },
+    { "resource_domain": "external-dopetask-execution", "canonical_writer": "UNKNOWN", "provenance_tag": "UNKNOWN" }
+  ],
+  "known_unknowns": [
+    "TRUTH_*.md files absent from repo root (TRUTH_INTERFACES, TRUTH_SYSTEMS, TRUTH_CANONICALS, TRUTH_GAPS) — referenced by AGENTS.md §2 but not found",
+    "RUNTIME_AUTHORITY_POINTERS.md absent from repo root",
+    "PROJECT.md, PM_PLANE.md absent",
+    "All endpoint bindings PROVISIONAL — no runtime proof in this checkout",
+    "ConPort endpoint (port 5455) from MCP docs, not runtime-proven",
+    "docs/03-reference/truth/ truth packet not fully inspected in this packet",
+    "services/ boundary not fully enumerated — only ARCHITECTURE.md §3 planes included",
+    "steward_gate.py now present on main (absent at TP-DCP-0001 audit) — DCP-RED-MERGE-SEAM-0001 still active"
+  ],
+  "red_lines": [
+    "DCP-RED-MERGE-SEAM-0001"
+  ],
+  "supersedes": null
+}

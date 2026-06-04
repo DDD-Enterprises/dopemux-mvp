@@ -1,0 +1,186 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/dcp/dcp_mutation_class.v0.schema.json",
+  "title": "DCP Mutation Class Registry (.v0)",
+  "description": "REPO_VALIDATED tier vocabulary (T0-T6, TX, TU from approval_policy.yaml + policy.py) / PROVISIONAL for Dopetask and bridge postures. Classifies mutation posture and required gating WITHOUT performing mutation. LIVE_WRITE_READY is undefined and must not be introduced. DCP-RED-MERGE-SEAM-0001 is a hard-block class. schema_version .v0 = unstable, not authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "contract_id",
+    "contract_status",
+    "provenance",
+    "validation",
+    "validation_state",
+    "field_provenance",
+    "authority_notes",
+    "known_unknowns",
+    "red_lines",
+    "supersedes",
+    "classes"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "dcp-mutation-class.v0",
+      "description": ".v0 suffix per K-27; unstable version marker, not an authority claim."
+    },
+    "contract_id": {
+      "type": "string",
+      "description": "Unique identifier for this contract instance."
+    },
+    "contract_status": {
+      "type": "string",
+      "enum": ["ACTIVE", "PROVISIONAL", "DEFERRED", "SUPERSEDED"],
+      "description": "Lifecycle status of this contract. Not the same as validation_state or proof freshness."
+    },
+    "provenance": {
+      "type": "object",
+      "description": "Contract-level provenance per REV1 §6.0. REPO_VALIDATED: tier vocabulary derived from config/orchestrator/approval_policy.yaml + src/dopemux/orchestrator/policy.py.",
+      "additionalProperties": false,
+      "required": ["tag", "source_ref"],
+      "properties": {
+        "tag": {
+          "type": "string",
+          "enum": ["REPO_VALIDATED", "EXTERNAL_PROPOSED", "SYNTHESIS_INVENTED"]
+        },
+        "source_ref": { "type": "string" }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "description": "Validation status per REV1 §6.0. REPO_CROSS_CHECKED: tier ID vocabulary verified against approval_policy.yaml and policy.py in origin/main.",
+      "additionalProperties": false,
+      "required": ["state", "notes"],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": ["REPO_CROSS_CHECKED", "PROVISIONAL_UNVERIFIED_ENFORCEMENT", "DEFERRED"],
+          "description": "REPO_CROSS_CHECKED for the contract's tier vocabulary; individual PROVISIONAL classes carry their own provenance."
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "validation_state": {
+      "type": "string",
+      "enum": ["REPO_CROSS_CHECKED", "PROVISIONAL_UNVERIFIED_ENFORCEMENT", "DEFERRED"],
+      "description": "Top-level contract enforcement state. REPO_CROSS_CHECKED: tier vocab verified against repo sources. Individual classes may be PROVISIONAL — see per-class provenance field."
+    },
+    "field_provenance": {
+      "type": "object",
+      "description": "Per-field provenance tags for all top-level fields.",
+      "additionalProperties": { "type": "string" }
+    },
+    "authority_notes": {
+      "type": "string",
+      "description": "Notes on authority sources and derivation rationale."
+    },
+    "known_unknowns": {
+      "type": "array",
+      "description": "Explicit list of unresolved unknowns for this contract.",
+      "items": { "type": "string" }
+    },
+    "red_lines": {
+      "type": "array",
+      "description": "Red line IDs that apply to this contract. Must include DCP-RED-MERGE-SEAM-0001.",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "supersedes": {
+      "description": "Contract ID(s) superseded by this contract, or null if none.",
+      "oneOf": [
+        { "type": "null" },
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } }
+      ]
+    },
+    "classes": {
+      "type": "array",
+      "description": "Registry of mutation class entries. Each class classifies a mutation posture without performing mutation.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "class_id",
+          "display_name",
+          "description",
+          "mutation_surface",
+          "side_effect_posture",
+          "canonical_writer_required",
+          "approval_tier",
+          "proof_required",
+          "dry_run_required",
+          "red_lane_triggers",
+          "allowed_in_v1",
+          "live_write_ready_required",
+          "provenance",
+          "known_unknowns"
+        ],
+        "properties": {
+          "class_id": {
+            "type": "string",
+            "description": "Unique class identifier (e.g. MC-READ-ONLY, MC-T4-SOURCE, MC-MERGE-SEAM-FORBIDDEN)."
+          },
+          "display_name": {
+            "type": "string",
+            "description": "Human-readable name for this mutation class."
+          },
+          "description": {
+            "type": "string",
+            "description": "Full description of this mutation posture."
+          },
+          "mutation_surface": {
+            "type": "string",
+            "description": "What surface or resource this class may mutate (or 'none' for read-only)."
+          },
+          "side_effect_posture": {
+            "type": "string",
+            "enum": ["none", "local_only", "repo_write", "github_write", "external_write", "destructive", "hard_block"],
+            "description": "Side-effect posture. 'hard_block' means this class is absolutely forbidden for DCP to perform."
+          },
+          "canonical_writer_required": {
+            "type": ["string", "null"],
+            "description": "The canonical writer that must own this mutation surface, or null if not applicable."
+          },
+          "approval_tier": {
+            "type": "string",
+            "enum": ["T0", "T1", "T2", "T3", "T4", "T5", "T6", "TX", "TU", "HARD_BLOCK", "PROVISIONAL"],
+            "description": "Approval tier required for this mutation class per approval_policy.yaml. HARD_BLOCK = forbidden. PROVISIONAL = tier not yet resolved from repo authority."
+          },
+          "proof_required": {
+            "type": "boolean",
+            "description": "Whether a proof artifact is required before this class may be executed."
+          },
+          "dry_run_required": {
+            "type": "boolean",
+            "description": "Whether a dry-run preview is required before execution."
+          },
+          "red_lane_triggers": {
+            "type": "array",
+            "description": "Red lane IDs that are triggered or must be checked for this mutation class.",
+            "items": { "type": "string" }
+          },
+          "allowed_in_v1": {
+            "type": "boolean",
+            "description": "Whether DCP may execute this class in .v1 (with appropriate gating). False = deferred or hard-blocked beyond .v1."
+          },
+          "live_write_ready_required": {
+            "type": "boolean",
+            "description": "Whether LIVE_WRITE_READY gate must be defined before this class may be used. True for any actual mutation class. LIVE_WRITE_READY remains undefined in .v0."
+          },
+          "provenance": {
+            "type": "string",
+            "enum": ["REPO_VALIDATED", "REPO_VALIDATED_BY_AUDIT", "EXTERNAL_PROPOSED", "SYNTHESIS_INVENTED", "PROVISIONAL"],
+            "description": "Provenance of this specific class entry."
+          },
+          "known_unknowns": {
+            "type": "array",
+            "description": "Per-class unresolved unknowns.",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}
