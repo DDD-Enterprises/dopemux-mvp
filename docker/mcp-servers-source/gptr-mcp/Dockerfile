@@ -7,7 +7,8 @@ WORKDIR /app
 
 # Copy dependency manifests first for better caching
 COPY pyproject.toml .
-COPY src/dopemux/__init__.py src/dopemux/
+COPY src/ src/
+COPY tools/ tools/
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -34,11 +35,35 @@ RUN uv pip install --system --no-cache -r /app/gptr-mcp/requirements.txt
 # Force-pin gpt-researcher to an explicit version so rebuilds don't drift backward
 # when upstream gptr-mcp's requirements.txt changes. Override at build time with
 # --build-arg GPT_RESEARCHER_VERSION=<version>.
-ARG GPT_RESEARCHER_VERSION=0.14.8
+ARG GPT_RESEARCHER_VERSION=0.15.1
 RUN uv pip install --system --no-cache "gpt-researcher==${GPT_RESEARCHER_VERSION}"
 
 # Create logs and data directories
 RUN mkdir -p /app/logs /app/data
+
+# Preserve the historical /app/server.py MCP entrypoint while the upstream
+# gptr-mcp server remains checked out under /app/gptr-mcp.
+RUN cat > /app/server.py <<'PY'
+import importlib.util
+import os
+import sys
+from pathlib import Path
+
+server_dir = Path("/app/gptr-mcp")
+sys.path.insert(0, str(server_dir))
+spec = importlib.util.spec_from_file_location("gptr_mcp_server", server_dir / "server.py")
+module = importlib.util.module_from_spec(spec)
+if spec.loader is None:
+    raise RuntimeError("Unable to load /app/gptr-mcp/server.py")
+spec.loader.exec_module(module)
+
+transport = os.getenv("DOPEMUX_GPTR_TRANSPORT", "stdio").lower()
+if transport == "stdio":
+    module.mcp.run(transport="stdio")
+else:
+    os.environ.setdefault("MCP_TRANSPORT", transport)
+    module.run_server()
+PY
 
 # Copy wrapper and environment files (relative to root)
 COPY docker/mcp-servers-source/gptr-mcp/wrapper.py /app/wrapper.py
@@ -61,5 +86,5 @@ LABEL mcp.priority="high"
 LABEL mcp.transport="mcp"
 LABEL mcp.description="GPT Researcher MCP server with direct MCP protocol"
 
-# Run the MCP server directly (server.py is the actual MCP server using FastMCP)
-CMD ["python", "/app/gptr-mcp/server.py"]
+# Run the long-lived container service as SSE; bare docker exec uses stdio.
+CMD ["sh", "-c", "DOPEMUX_GPTR_TRANSPORT=sse exec python /app/server.py"]
