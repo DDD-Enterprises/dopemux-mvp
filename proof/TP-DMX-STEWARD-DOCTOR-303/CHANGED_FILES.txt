@@ -1,0 +1,14 @@
+docs/ops/pr-steward-distribution.md
+schemas/pr_steward/config.schema.json
+src/dopemux_pr_steward/cli.py
+src/dopemux_pr_steward/doctor.py
+task-packets/generated/TP-DMX-STEWARD-DOCTOR-303.json
+tests/dopemux_cli/test_doctor.py
+proof/TP-DMX-STEWARD-DOCTOR-303/AUDITOR_REPORT.md
+proof/TP-DMX-STEWARD-DOCTOR-303/CHANGED_FILES.txt
+proof/TP-DMX-STEWARD-DOCTOR-303/DIFF_STAT.txt
+proof/TP-DMX-STEWARD-DOCTOR-303/GIT_STATE.md
+proof/TP-DMX-STEWARD-DOCTOR-303/PROOF.json
+proof/TP-DMX-STEWARD-DOCTOR-303/VALIDATION_OUTPUT.md
+proof/TP-DMX-STEWARD-DOCTOR-303/review_bundle/MANIFEST.json
+proof/TP-DMX-STEWARD-DOCTOR-303/review_bundle/SUMMARY.md

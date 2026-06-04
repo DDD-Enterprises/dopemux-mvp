@@ -9,6 +9,7 @@ from types import SimpleNamespace
 import pytest
 
 import dopemux.ux.questionary_support as questionary_support
+import dopemux.ux.interactive_prompts as interactive_prompts
 import dopemux.ux.wizard.corpus as wizard_corpus
 import dopemux.ux.wizard.cost_profiles as wizard_cost_profiles
 import dopemux.ux.wizard.extraction as wizard_extraction
@@ -18,6 +19,7 @@ from dopemux.ux.questionary_support import (
     QUESTIONARY_INSTALL_MESSAGE,
     require_questionary,
 )
+from dopemux.ux.interactive_prompts import InteractivePrompts
 from dopemux.ux.wizard.corpus import run_corpus_audit
 from dopemux.ux.wizard.cost_profiles import run_cost_selection
 from dopemux.ux.wizard.extraction import run_extraction
@@ -62,6 +64,56 @@ def test_require_questionary_raises_deterministic_message(
         require_questionary()
 
     assert "uv sync --frozen --extra test --extra services" in QUESTIONARY_INSTALL_MESSAGE
+
+
+def test_action_selection_limits_to_three_then_expands(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    seen_choices: list[list[str]] = []
+    answers = iter(["__show_more__", "delta"])
+
+    class _Choice:
+        def __init__(self, title: str, value: str):
+            self.title = title
+            self.value = value
+
+    class _Prompt:
+        def __init__(self, value: str):
+            self._value = value
+
+        def ask(self) -> str:
+            return self._value
+
+    def _select(*_args, **kwargs):
+        choices = kwargs["choices"]
+        seen_choices.append([choice.value for choice in choices])
+        return _Prompt(next(answers))
+
+    fake_questionary = SimpleNamespace(
+        Choice=_Choice,
+        Style=lambda styles: styles,
+        select=_select,
+    )
+    monkeypatch.setattr(
+        interactive_prompts,
+        "require_questionary",
+        lambda: fake_questionary,
+    )
+
+    actions = [
+        {"name": "alpha", "description": "first", "complexity": 0.1},
+        {"name": "beta", "description": "second", "complexity": 0.2},
+        {"name": "gamma", "description": "third", "complexity": 0.3},
+        {"name": "delta", "description": "fourth", "complexity": 0.4},
+    ]
+
+    result = InteractivePrompts().ask_action_selection(actions)
+
+    assert result == "delta"
+    assert seen_choices == [
+        ["alpha", "beta", "gamma", "__show_more__"],
+        ["alpha", "beta", "gamma", "delta"],
+    ]
 
 
 def test_run_extraction_uses_v5_upgrades_wrapper_with_resume_and_rich_ui(

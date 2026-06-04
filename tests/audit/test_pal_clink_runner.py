@@ -14,6 +14,7 @@ from scripts.audit.pal_clink_runner import (
     PalClinkAuditOutput,
     build_invocation,
     run_audit,
+    run_audit_and_capture_payload,
     run_audit_and_capture_verdict,
 )
 from scripts.audit.route_schema import AuditRoute
@@ -567,3 +568,34 @@ class TestRunAuditAndCaptureVerdict:
 
         assert embedded["status"] == "NEEDS_SUPERVISOR"
         assert embedded["exit_code"] == 1
+
+
+class TestRunAuditAndCapturePayload:
+    def test_writes_runner_output_and_verdict_payload(self, tmp_path: Path) -> None:
+        route = _make_route(cli_name="claude-audit", command="claude")
+        raw_output_path = tmp_path / "PAL_CLINK_AUDIT_RUNNER_OUTPUT.json"
+        pal_output_path = tmp_path / "PAL_CLINK_AUDIT_OUTPUT.json"
+
+        payload = run_audit_and_capture_payload(
+            route,
+            "audit prompt",
+            raw_output_path=raw_output_path,
+            pal_output_path=pal_output_path,
+            which_fn=_always_found,
+            subprocess_run=_make_subprocess_run(
+                stdout=json.dumps(
+                    {
+                        "status": "success",
+                        "verdict": "PASS",
+                        "findings": [],
+                        "risks": [],
+                    }
+                ).encode("utf-8")
+            ),
+        )
+
+        raw_output = json.loads(raw_output_path.read_text(encoding="utf-8"))
+        captured_payload = json.loads(pal_output_path.read_text(encoding="utf-8"))
+        jsonschema.validate(raw_output, json.loads(SCHEMA_PATH.read_text()))
+        assert payload["verdict"] == "PASS"
+        assert captured_payload["verdict"] == "PASS"

@@ -1,0 +1,8 @@
+ docs/ops/pr-steward-distribution.md                | 39 +++++++++
+ .../init/.github/workflows/embedded-audit.yml      | 50 ++++++++++++
+ .../init/.github/workflows/pr-steward.yml          | 79 +++++++++++++++++++
+ .../init/config/pr_merge_specialist/policy.yaml    | 17 ++++
+ .../templates/init/config/pr_steward/policy.json   | 17 ++++
+ .../generated/TP-DMX-STEWARD-SCAFFOLD-302.json     |  6 +-
+ tests/dopemux_init/test_pr_steward_scaffold.py     | 92 ++++++++++++++++++++++
+ 7 files changed, 297 insertions(+), 3 deletions(-)

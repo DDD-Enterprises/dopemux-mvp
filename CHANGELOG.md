@@ -4,6 +4,7 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 
 ## [Unreleased]
 ### Added
+- Autoreview platform integration stack: task packets, PAL clink audit verdict capture, read-only PR Action Bridge CLI, Copilot repair packet rendering, embedded-audit provenance workflow, offline autoreview loop fixtures, PR steward merge gates, PR steward CLI/package/scaffold/doctor flows, and final ops hardening docs.
 - Restored task-orchestrator Claude-surface infrastructure (17 `/dx:` slash commands, `.taskorchestrator/config.yaml` schema, ADR, reference docs, and external MCP wrapper snapshots) that was removed by the stale-branch merge in PR #720. Unblocks PR #724 (TP-CS-101 plugin hooks). Added `.taskorchestrator` to the root-hygiene allowlist.
 - Consolidated V5 extraction engine and validation toolchain (PR #313).
 - Run ID propagation across `queue-drain` and `flight` to ensure consistent artifact grouping.
@@ -30,6 +31,21 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
 - CI now includes wrapper-authority coverage, interactive import smoke, and the production `brand_lint.py` gate.
 
 ### Fixed
+- Reconciled autoreview integration contracts across PR Steward schemas/runtime, Action Bridge fallback action categories, resolved-thread review-comment handling, proof self-reference freshness states, and PR Steward package entrypoint metadata.
+- Hardened autoreview integration review fixes: embedded-audit CI now captures PAL clink output before proof emission, PR Steward console installs include steward/action-bridge engines, scaffolded downstream workflows install Dopemux before invocation, and steward gates require explicit artifact paths instead of implicit queue-run fallbacks.
+- Tightened follow-up autoreview review fixes: PR Steward recomputes proof freshness from the current PR head, manual embedded-audit dispatch checks out the requested head SHA, and packaged installs include the Copilot repair engine.
+- Aligned PR Steward scaffold merge policy with explicit steward artifact paths and preserved local thread-resolution evidence in the final queue-drain apply state.
+- Closed latest autoreview review gaps by packaging existing Dopemux namespaces, loading PR Steward doctor defaults from packaged resources, and allowing validated proof self-reference exceptions through the steward finalization gate.
+- Wired scaffolded PR Steward intake to pass the configured proof bundle path so initialized downstream repositories do not emit missing-proof readiness blockers by default.
+- Added verified base-to-head diff context to the embedded-audit PAL prompt so independent audit proof is based on visible PR changes.
+- Fixed the packaged PR Steward intake wrapper so documented `--repo`, `--pr`, `--out`, proof, and format options are parsed and forwarded to the intake runtime.
+- Hardened PR Steward proof self-reference exceptions against spoofed proof-reported file lists by validating them against the actual harvested PR files.
+- Pinned final PR Merge Specialist GraphQL merges to the PR head SHA validated by the steward finalization gate instead of a freshly fetched head.
+- Fixed steward gate artifact resolution so relative `{out_dir}` policy paths are not prefixed with `out_dir` twice.
+- Restored post-validation GitHub review-thread resolution before queue-drain records local thread-resolution evidence.
+- Recomputed PR Steward legacy string proof-freshness values from proof and PR head SHAs so stale proof cannot self-report current.
+- Synced the PR Merge Specialist skill template with the runtime finalization modules so generated skills include `steward_gate.py` and pin merges to the steward-gated head SHA.
+- Pinned governed auto-merge fallback commands with `--match-head-commit` and blocked arming auto-merge when no steward-gated head SHA is available.
 - Decisions CLI review repair now uses the ConPort HTTP REST port, accepts string decision IDs, validates referenced decisions before append-only writes, preserves requested list limits, and covers the new subcommands with focused tests.
 - MCP doctor now runs relative stdio doctor commands from the resolved repo root, so Task Orchestrator wrapper checks work when invoked from repo subdirectories.
 - MCP bootstrap now points Task Orchestrator at a tracked launcher wrapper and keeps catalog-rendered SSE URL defaults aligned with checked-in `.mcp.json`.
