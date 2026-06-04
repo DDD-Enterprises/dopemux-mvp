@@ -1,0 +1,8 @@
+{
+  "packet_id": "TP-DCP-0003",
+  "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "changed_files": [],
+  "live_write_ready_status": "UNDEFINED_AND_BLOCKING",
+  "live_write_status": "NONE",
+  "merge_seam_status": "PRESERVED"
+}

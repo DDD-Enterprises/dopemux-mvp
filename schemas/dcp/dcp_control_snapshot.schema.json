@@ -98,6 +98,275 @@
       "additionalProperties": {
         "type": "string"
       }
+    },
+    "snapshot_family": {
+      "type": "string",
+      "const": "DCP_CONTROL_SNAPSHOT",
+      "description": "TP-DCP-0004 derived snapshot family marker. This is a generated view, not source authority."
+    },
+    "snapshot_contract_version": {
+      "type": "string",
+      "const": "0.1.0",
+      "description": "TP-DCP-0004 local snapshot body version. schema_version remains dcp-control-snapshot.v0 to preserve repo convention."
+    },
+    "generated_at": {
+      "type": "string",
+      "description": "ISO 8601 timestamp for snapshot generation. This is the only expected nondeterministic field."
+    },
+    "generator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["packet_id", "implementation", "live_adapters_used", "external_writes_used"],
+      "properties": {
+        "packet_id": {
+          "type": "string",
+          "const": "TP-DCP-0004"
+        },
+        "implementation": {
+          "type": "string",
+          "const": "local"
+        },
+        "live_adapters_used": {
+          "type": "boolean",
+          "const": false
+        },
+        "external_writes_used": {
+          "type": "boolean",
+          "const": false
+        }
+      }
+    },
+    "repo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["base_branch", "base_sha", "head_sha", "worktree"],
+      "properties": {
+        "base_branch": {
+          "type": "string"
+        },
+        "base_sha": {
+          "type": ["string", "null"]
+        },
+        "head_sha": {
+          "type": ["string", "null"]
+        },
+        "worktree": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "source_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "family", "exists", "authority_label", "freshness", "notes"],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "family": {
+            "type": "string"
+          },
+          "exists": {
+            "type": "boolean"
+          },
+          "authority_label": {
+            "type": "string",
+            "enum": ["OBSERVED", "CLAIMED", "INFERRED", "UNKNOWN", "CONFLICTING"]
+          },
+          "freshness": {
+            "type": "string",
+            "enum": ["FRESH", "STALE", "UNKNOWN", "CONFLICTING"]
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "packet_states": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "packet_id",
+          "task_packet_path",
+          "proof_path",
+          "audit_path",
+          "merge_readiness_path",
+          "state",
+          "freshness",
+          "residual_risks",
+          "stop_conditions",
+          "errors"
+        ],
+        "properties": {
+          "packet_id": {
+            "type": "string"
+          },
+          "task_packet_path": {
+            "type": ["string", "null"]
+          },
+          "proof_path": {
+            "type": ["string", "null"]
+          },
+          "audit_path": {
+            "type": ["string", "null"]
+          },
+          "merge_readiness_path": {
+            "type": ["string", "null"]
+          },
+          "state": {
+            "type": "string",
+            "enum": ["OBSERVED", "CLAIMED", "UNKNOWN", "CONFLICTING"]
+          },
+          "freshness": {
+            "type": "string",
+            "enum": ["FRESH", "STALE", "UNKNOWN", "CONFLICTING"]
+          },
+          "residual_risks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stop_conditions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "guards": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "live_write_ready_status",
+        "live_write_status",
+        "merge_seam_status",
+        "dopetask_execution_status",
+        "external_write_status"
+      ],
+      "properties": {
+        "live_write_ready_status": {
+          "type": "string",
+          "enum": ["UNDEFINED_AND_BLOCKING", "OPERATIONAL", "UNKNOWN"]
+        },
+        "live_write_status": {
+          "type": "string",
+          "enum": ["NONE", "DETECTED", "UNKNOWN"]
+        },
+        "merge_seam_status": {
+          "type": "string",
+          "enum": ["PRESERVED", "VIOLATED", "UNKNOWN"]
+        },
+        "dopetask_execution_status": {
+          "type": "string",
+          "enum": ["NONE", "DETECTED", "UNKNOWN"]
+        },
+        "external_write_status": {
+          "type": "string",
+          "enum": ["NONE", "DETECTED", "UNKNOWN"]
+        }
+      }
+    },
+    "endpoint_certainty": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task_orchestrator", "conport", "dope_memory", "dope_context", "dopecon_bridge"],
+      "properties": {
+        "task_orchestrator": {
+          "type": "string",
+          "enum": ["PROJECTION_ONLY", "PROVISIONAL", "UNKNOWN", "LIVE_WRITE_READY"]
+        },
+        "conport": {
+          "type": "string",
+          "enum": ["PROVISIONAL", "UNKNOWN", "LIVE_WRITE_READY"]
+        },
+        "dope_memory": {
+          "type": "string",
+          "enum": ["PROVISIONAL", "UNKNOWN", "LIVE_WRITE_READY"]
+        },
+        "dope_context": {
+          "type": "string",
+          "enum": ["PROVISIONAL", "UNKNOWN", "LIVE_WRITE_READY"]
+        },
+        "dopecon_bridge": {
+          "type": "string",
+          "enum": ["PROXY_ONLY", "PROVISIONAL", "UNKNOWN", "LIVE_WRITE_READY"]
+        }
+      }
+    },
+    "readiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["snapshot_status", "blocking_reasons", "warnings", "recommended_next_action"],
+      "properties": {
+        "snapshot_status": {
+          "type": "string",
+          "enum": ["READY", "BLOCKED", "UNKNOWN", "CONFLICTING"]
+        },
+        "blocking_reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "recommended_next_action": {
+          "type": "string"
+        }
+      }
+    },
+    "authority_label_summary": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "residual_risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "stop_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "stop_condition_summary": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "derived": {
+      "type": "boolean",
+      "const": true
+    },
+    "authoritative": {
+      "type": "boolean",
+      "const": false
     }
   }
 }
