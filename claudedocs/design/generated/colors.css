@@ -1,0 +1,34 @@
+/* Auto-generated web CSS vars — Direction B Electric Refresh */
+:root {
+    --hue-display: "Space Grotesk";
+    --hue-body:    "Inter";
+    --hue-mono:    "JetBrains Mono";
+    --color-base:          #020617;
+    --color-raised:        #041628;
+    --color-overlay:       #081832;
+    --color-border:        #1E2A3A;
+    --color-border-strong: #2E3F54;
+    --color-brand:         #2FFFF0;
+    --color-brand-dim:     #00C9B8;
+    --color-success:       #00FF85;
+    --color-error:         #FF2255;
+    --color-warning:       #FFE600;
+    --color-info:          #00E5FF;
+    --color-aftercare:     #C07BFF;
+    --color-accent:        #FF00CC;
+    --color-text:          #E2E8F0;
+    --color-text-dim:      #94A3B8;
+    --color-text-muted:    #808DA0;
+    --color-text-disabled: #475569;
+    --color-text-inverse:  #020617;
+    --sp-xs:  4px;
+    --sp-sm:  8px;
+    --sp-md:  16px;
+    --sp-lg:  24px;
+    --sp-xl:  32px;
+    --radius-sm:   6px;
+    --radius-md:   10px;
+    --radius-pill: 999px;
+    --shadow-subtle:  0 1px 3px rgba(0,0,0,0.4);
+    --shadow-overlay: 0 8px 24px rgba(0,0,0,0.55);
+}
