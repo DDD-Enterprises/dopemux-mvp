@@ -5,11 +5,13 @@ type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-05-28'
-prelude: Reference index and canonical documentation for Task Orchestrator integration in Dopemux.
+prelude: Reference index and canonical documentation for Task Orchestrator integration
+  in Dopemux.
 related_packets:
-  - TP-DMX-ORCH-DOCS-001
+- TP-DMX-ORCH-DOCS-001
+last_review: '2026-06-04'
+next_review: '2026-09-02'
 ---
-
 # Task Orchestrator Integration
 
 This section contains canonical documentation for the Task Orchestrator integration within the Dopemux daily operator workflow.

@@ -5,11 +5,13 @@ type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-05-28'
-prelude: Reference detailing structured red-team validation and proof verification gates.
+prelude: Reference detailing structured red-team validation and proof verification
+  gates.
 related_packets:
-  - TP-DMX-ORCH-011
+- TP-DMX-ORCH-011
+last_review: '2026-06-04'
+next_review: '2026-09-02'
 ---
-
 # Red-Team Auditing & Verification
 
 Provides a safety verification harness to run post-step output validators on features, hooks, and prompt Map YAML files.

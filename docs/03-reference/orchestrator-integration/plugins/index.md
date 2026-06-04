@@ -7,9 +7,10 @@ author: '@hu3mann'
 date: '2026-05-28'
 prelude: Reference for declarative plugin hooks and event hooks within the Task Orchestrator.
 related_packets:
-  - TP-DMX-ORCH-007
+- TP-DMX-ORCH-007
+last_review: '2026-06-04'
+next_review: '2026-09-02'
 ---
-
 # Declarative Plugins & Hooks
 
 This reference describes the declarative hook registry and safe execution boundaries used by Task Orchestrator plugins.
