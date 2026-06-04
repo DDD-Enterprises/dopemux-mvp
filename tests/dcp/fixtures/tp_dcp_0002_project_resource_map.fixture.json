@@ -280,6 +280,13 @@
       "notes": "From MCP_ConPort.md documentation. Not runtime-proven in this checkout. Must not be treated as resolved authority."
     },
     {
+      "service_id": "dope-memory",
+      "host_port_hint": "localhost:3020",
+      "binding_status": "PROVISIONAL",
+      "provenance_tag": "PROVISIONAL",
+      "notes": "From docs/01-tutorials/* and SERVICE_CATALOG.md. Not runtime-proven in this checkout."
+    },
+    {
       "service_id": "qdrant-dope-context",
       "host_port_hint": "localhost:6333",
       "binding_status": "PROVISIONAL",
