@@ -1,0 +1,119 @@
+{
+  "id": "TP-RTE-GOLIVE-REMEDIATION-001",
+  "project": "dopemux-mvp",
+  "target": "Remediate the first Repo Truth Extractor go-live audit safety slice on main: require the pre-live validator to evaluate the selected S/SP prompt mode, replace the truth-split placeholder with target-scoped runtime rows, hard-block live SP registry selections with missing step contracts, and add default spend caps to value-default and quality cost profiles.",
+  "invariants": [
+    "Runtime/source truth governs behavior claims; generated audit packs and plans are advisory only.",
+    "No live extraction, live provider calls, network preflight, or account-specific checks are authorized by this packet.",
+    "Preserve DPMX_LIVE_OK and pre-live validator consent boundaries; do not weaken live execution gates.",
+    "Truth-split UNKNOWN or missing SP contract state must fail closed for live SP targets.",
+    "Implement only this first remediation slice; network/secrets containment, pre-live UX cleanup, and prescan closeout remain follow-up slices."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "rte-go-live-remediation",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/rte-golive-remediation-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(rte): harden go-live preflight safety",
+    "allowlist": [
+      "task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-001.json",
+      "task-packets/INDEX.md",
+      "proof/rte-golive-remediation/TP-RTE-GOLIVE-REMEDIATION-001/implementation-notes.md",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+      "services/repo-truth-extractor/tests/test_cost_profiles.py",
+      "services/repo-truth-extractor/tests/test_pre_live_gate_v25.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_cost_cap.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-001.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 PYTHONPATH=services/repo-truth-extractor python -m pytest services/repo-truth-extractor/tests/test_cost_profiles.py services/repo-truth-extractor/tests/test_pre_live_gate_v25.py services/repo-truth-extractor/tests/test_run_extraction_v5_cost_cap.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py -q --tb=short --disable-warnings --no-cov",
+      "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): harden go-live preflight safety",
+    "body": "## Summary\n- Passes the active S/SP prompt mode into the pre-live validator so live registry selections are evaluated by the same target mode that execution will use.\n- Replaces the truth-split placeholder with target-scoped rows derived from runtime prompt resolution, model-map declarations, and artifact contract declarations.\n- Hard-blocks selected SP registry steps when their step contract is missing, and adds default cost caps to value-default and quality profiles.\n\n## Validation\n- python -m json.tool task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-001.json >/dev/null\n- python -m jsonschema -i task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- RTE_DISABLE_LIVE_LLM_IN_TESTS=1 PYTHONPATH=services/repo-truth-extractor python -m pytest services/repo-truth-extractor/tests/test_cost_profiles.py services/repo-truth-extractor/tests/test_pre_live_gate_v25.py services/repo-truth-extractor/tests/test_run_extraction_v5_cost_cap.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py -q --tb=short --disable-warnings --no-cov\n- python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/validate_pre_live_gate_v25.py\n- git diff --check\n\n## NOT_RUN\n- Live extraction.\n- Live provider calls or network preflight.\n- Full RTE suite.\n\n@codex review\n@gemini\n@copilot",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Register this Task Packet and validate it against the canonical dopetask schema before implementation.",
+      "expected_files": [
+        "task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-001.json",
+        "task-packets/INDEX.md"
+      ],
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-001.json >/dev/null",
+        "python -m jsonschema -i task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add focused RED tests for default cost caps, pre-live validator S/SP prompt mode propagation, target-scoped truth-split rows, and missing SP contract hard blocking.",
+      "expected_files": [
+        "services/repo-truth-extractor/tests/test_cost_profiles.py",
+        "services/repo-truth-extractor/tests/test_pre_live_gate_v25.py",
+        "services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py"
+      ],
+      "validation": [
+        "Targeted tests fail before implementation for at least one assertion in the new behavior."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement the minimal RTE runtime changes required by S2 while preserving live consent, deterministic ordering, and fail-closed missing-contract semantics.",
+      "expected_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/validate_pre_live_gate_v25.py"
+      ],
+      "validation": [
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 PYTHONPATH=services/repo-truth-extractor python -m pytest services/repo-truth-extractor/tests/test_cost_profiles.py services/repo-truth-extractor/tests/test_pre_live_gate_v25.py services/repo-truth-extractor/tests/test_run_extraction_v5_cost_cap.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py -q --tb=short --disable-warnings --no-cov"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Record implementation notes, run precommit-grade checks, inspect diff scope, and prepare the PR.",
+      "expected_files": [
+        "proof/rte-golive-remediation/TP-RTE-GOLIVE-REMEDIATION-001/implementation-notes.md"
+      ],
+      "validation": [
+        "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+        "git diff --check",
+        "git status --short --branch"
+      ]
+    }
+  ]
+}

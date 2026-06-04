@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Tuple
 from urllib.parse import urlparse
 
 import yaml
@@ -102,6 +102,7 @@ IMPORT_OR_CLI_FAILURE = "IMPORT_OR_CLI_FAILURE"
 TARGET_PROMPT_INTEGRITY_FAILURE = "TARGET_PROMPT_INTEGRITY_FAILURE"
 TARGET_TRUTH_SPLIT_MISMATCH = "TARGET_TRUTH_SPLIT_MISMATCH"
 TRUTH_SPLIT_NOT_IMPLEMENTED = "TRUTH_SPLIT_NOT_IMPLEMENTED"
+SP_CONTRACT_MISSING = "SP_CONTRACT_MISSING"
 CONTRACT_MAP_NONDETERMINISTIC = "CONTRACT_MAP_NONDETERMINISTIC"
 ROUTE_DERIVATION_FAILURE = "ROUTE_DERIVATION_FAILURE"
 REQUIRED_API_KEY_MISSING = "REQUIRED_API_KEY_MISSING"
@@ -124,6 +125,7 @@ class GateConfig:
     target_profile: str
     target_phases: Tuple[str, ...]
     target_step: Optional[str] = None
+    s_prompts_mode: str = "legacy"
     allow_online_preflight: bool = False
     pal_validation_file: Optional[Path] = None
     waiver_codes: Tuple[str, ...] = ()
@@ -273,6 +275,12 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="Execution step filter.",
     )
     parser.add_argument(
+        "--s-prompts",
+        choices=("auto", "legacy", "registry"),
+        default="legacy",
+        help="Phase S prompt surface to validate for live execution.",
+    )
+    parser.add_argument(
         "--pal-validation-file",
         type=Path,
         default=None,
@@ -325,6 +333,7 @@ def build_config(args: argparse.Namespace) -> GateConfig:
         target_profile=str(args.target_profile).strip(),
         target_phases=tuple(str(phase).strip().upper() for phase in args.target_phases),
         target_step=args.step,
+        s_prompts_mode=str(args.s_prompts).strip().lower(),
         allow_online_preflight=bool(args.allow_online_preflight),
         pal_validation_file=pal_file.resolve() if pal_file else None,
         waiver_codes=tuple(sorted({str(code).strip() for code in args.waiver_code if str(code).strip()})),
@@ -389,6 +398,7 @@ def derive_scope(runner: Any, contract_module: Any, config: GateConfig) -> Dict[
         "target_policy": config.target_policy,
         "target_phases": list(config.target_phases),
         "target_step": config.target_step,
+        "target_s_prompts_mode": config.s_prompts_mode,
         "target_mode": config.target_mode,
         "target_runner_path": str(RUNNER_PATH.resolve()),
         "target_contract_map_path": str(CONTRACT_MAP_PATH.resolve()),
@@ -474,34 +484,155 @@ def evaluate_prompt_integrity(runner: Any, config: GateConfig) -> Tuple[Dict[str
     return results, blockers
 
 
+def promptset_declared_step_keys() -> Set[Tuple[str, str]]:
+    payload = read_yaml(PROMPTSET_PATH)
+    phases = payload.get("phases")
+    if not isinstance(phases, Mapping):
+        return set()
+    keys: Set[Tuple[str, str]] = set()
+    for phase, phase_payload in phases.items():
+        phase_code = str(phase or "").strip().upper()
+        steps = phase_payload.get("steps") if isinstance(phase_payload, Mapping) else None
+        if not isinstance(steps, list):
+            continue
+        for row in steps:
+            if not isinstance(row, Mapping):
+                continue
+            step_id = str(row.get("step_id") or "").strip().upper()
+            if phase_code and step_id:
+                keys.add((phase_code, step_id))
+    return keys
+
+
+def model_map_declared_step_keys() -> Set[Tuple[str, str]]:
+    payload = read_yaml(MODEL_MAP_PATH)
+    steps = payload.get("steps")
+    if not isinstance(steps, list):
+        return set()
+    keys: Set[Tuple[str, str]] = set()
+    for row in steps:
+        if not isinstance(row, Mapping):
+            continue
+        phase = str(row.get("phase") or "").strip().upper()
+        step_id = str(row.get("step_id") or "").strip().upper()
+        if phase and step_id:
+            keys.add((phase, step_id))
+    return keys
+
+
 def collect_truth_split(runner: Any, config: GateConfig) -> Tuple[Dict[str, Any], List[Blocker], List[Dict[str, Any]]]:
-    # FAIL-CLOSED (audit finding S7): the runner/promptset/model-map drift audit is not
-    # implemented. This previously returned a hardcoded PASS, which silently asserted
-    # "no drift" without running any check -- giving false go-live confidence. Until
-    # classify_truth_split_row (above) is wired into a real per-step comparison, we must
-    # not claim PASS. Emit a waivable P1 blocker so the gate fails closed; an operator who
-    # accepts the gap may proceed with `--waiver-code TRUTH_SPLIT_NOT_IMPLEMENTED`.
-    blocker = Blocker(
-        reason_code=TRUTH_SPLIT_NOT_IMPLEMENTED,
-        layer="truth_split_audit",
-        severity="P1",
-        message=(
-            "Truth-split drift audit is not implemented; cannot assert runner/promptset/"
-            "model-map alignment. Failing closed. Waive with "
-            "--waiver-code TRUTH_SPLIT_NOT_IMPLEMENTED to proceed without this check."
-        ),
-        details={"implemented": False},
-    )
+    blockers: List[Blocker] = []
+    findings: List[Dict[str, Any]] = []
+    rows: List[Dict[str, Any]] = []
+    if runner is None or config is None:
+        blockers.append(
+            Blocker(
+                TARGET_TRUTH_SPLIT_MISMATCH,
+                "truth_split_audit",
+                "P0",
+                "Truth-split audit could not run without a runner and gate config.",
+                {"runner_present": runner is not None, "config_present": config is not None},
+            )
+        )
+        return (
+            {
+                "layer": "truth_split_audit",
+                "status": "FAIL",
+                "target_phase_mismatch_count": 1,
+                "repo_wide_mismatch_count": 0,
+                "rows": [],
+            },
+            blockers,
+            findings,
+        )
+
+    promptset_declared_keys = promptset_declared_step_keys()
+    model_map_declared_keys = model_map_declared_step_keys()
+    target_step = str(config.target_step or "").strip().upper()
+
+    for target_phase in config.target_phases:
+        target_phase_code = str(target_phase or "").strip().upper()
+        if not target_phase_code:
+            continue
+        specs = runner.get_phase_prompts(target_phase_code)
+        for spec in specs:
+            step_id = str(getattr(spec, "step_id", "") or "").strip().upper()
+            if not step_id:
+                continue
+            if target_step and step_id != target_step:
+                continue
+            effective_phase = "SP" if step_id.startswith("SP") else target_phase_code
+            prompt_source = str(getattr(spec, "source", "") or "").strip().lower() or "unknown"
+            contract = getattr(spec, "contract", None)
+            contract_present = isinstance(contract, dict) and bool(contract)
+            output_artifacts = tuple(getattr(spec, "output_artifacts", ()) or ())
+            promptset_declared = (
+                (effective_phase, step_id) in promptset_declared_keys
+                or prompt_source == "registry"
+            )
+            model_map_declared = (effective_phase, step_id) in model_map_declared_keys
+            artifact_declarations_present = bool(output_artifacts)
+            classification = classify_truth_split_row(
+                step_id=step_id,
+                runner_active=True,
+                prompt_resolution_active=True,
+                promptset_declared=promptset_declared,
+                model_map_declared=model_map_declared,
+                artifact_declarations_present=artifact_declarations_present,
+            )
+            row = {
+                "phase": effective_phase,
+                "target_phase": target_phase_code,
+                "step_id": step_id,
+                "runner_active": True,
+                "prompt_resolution_active": True,
+                "promptset_declared": promptset_declared,
+                "model_map_declared": model_map_declared,
+                "artifact_declarations_present": artifact_declarations_present,
+                "contract_present": contract_present,
+                "prompt_source": prompt_source,
+                "classification": classification,
+            }
+            rows.append(row)
+            if effective_phase == "SP" and not contract_present:
+                blockers.append(
+                    Blocker(
+                        SP_CONTRACT_MISSING,
+                        "truth_split_audit",
+                        "P0",
+                        "Selected SP registry step is missing a phase contract.",
+                        {
+                            "target_phase": target_phase_code,
+                            "phase": effective_phase,
+                            "step_id": step_id,
+                            "s_prompts_mode": config.s_prompts_mode,
+                        },
+                    )
+                )
+            elif classification != "MATCH":
+                blockers.append(
+                    Blocker(
+                        TARGET_TRUTH_SPLIT_MISMATCH,
+                        "truth_split_audit",
+                        "P0",
+                        "Target runner/promptset/model-map/artifact truth split mismatch.",
+                        row,
+                    )
+                )
+
+    mismatch_count = sum(1 for row in rows if row.get("classification") != "MATCH")
+    if any(blocker.reason_code == SP_CONTRACT_MISSING for blocker in blockers):
+        mismatch_count = max(mismatch_count, len(blockers))
     return (
         {
             "layer": "truth_split_audit",
-            "status": "NOT_IMPLEMENTED",
-            "target_phase_mismatch_count": 0,
+            "status": "FAIL" if blockers else "PASS",
+            "target_phase_mismatch_count": mismatch_count,
             "repo_wide_mismatch_count": 0,
-            "rows": [],
+            "rows": rows,
         },
-        [blocker],
-        [],
+        blockers,
+        findings,
     )
 
 
@@ -1258,6 +1389,8 @@ def run_gate(
     config.output_dir.mkdir(parents=True, exist_ok=True)
     runner = load_module(RUNNER_PATH, "run_extraction_v5_pre_live_gate")
     contract_module = load_module(CONTRACT_MAP_PATH, "phase_contract_map_pre_live_gate")
+    if hasattr(runner, "set_active_s_prompts_mode"):
+        runner.set_active_s_prompts_mode(config.s_prompts_mode)
 
     scope = derive_scope(runner, contract_module, config)
     write_json(config.output_dir / "VALIDATION_SCOPE.json", scope)
