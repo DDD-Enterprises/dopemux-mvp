@@ -650,7 +650,7 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "enable_cached_input": True,
         "enable_batch_when_supported": True,
         "escalation_max_hops": 2,
-        "max_cost_usd_default": None,
+        "max_cost_usd_default": 5.00,
         "cost_cap_mode": "preventive",
         "notes": (
             "Best cost/quality ratio. Flex tier on EXTRACT/AGG bulk lanes; "
@@ -671,7 +671,7 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "enable_cached_input": True,
         "enable_batch_when_supported": False,
         "escalation_max_hops": 3,
-        "max_cost_usd_default": None,
+        "max_cost_usd_default": 25.00,
         "cost_cap_mode": "preventive",
         "notes": (
             "Premium models with priority service tier where available. "
@@ -3089,6 +3089,7 @@ def build_pre_live_validator_command(
     target_phases: Sequence[str],
     allow_online_preflight: bool,
     target_step: Optional[str] = None,
+    s_prompts_mode: Optional[str] = None,
 ) -> List[str]:
     cmd = [
         sys.executable,
@@ -3098,6 +3099,9 @@ def build_pre_live_validator_command(
     ]
     if target_step:
         cmd.extend(["--step", str(target_step)])
+    normalized_s_prompts_mode = str(s_prompts_mode or "").strip().lower()
+    if normalized_s_prompts_mode:
+        cmd.extend(["--s-prompts", normalized_s_prompts_mode])
     normalized_phases = [
         str(phase).strip().upper() for phase in target_phases if str(phase).strip()
     ]
@@ -3470,6 +3474,7 @@ def enforce_pre_live_validator_for_execution(
         target_phases=_validator_phase_targets(args, phase_sequence),
         allow_online_preflight=True,
         target_step=getattr(args, "step", None),
+        s_prompts_mode=getattr(args, "s_prompts", None),
     )
     proc = subprocess.run(
         cmd,

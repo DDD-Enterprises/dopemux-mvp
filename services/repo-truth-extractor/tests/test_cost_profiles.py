@@ -291,6 +291,7 @@ def test_economy_profile_uses_flex_tier_by_default() -> None:
 def test_quality_profile_uses_priority_tier() -> None:
     assert runner.COST_PROFILES["quality"]["default_service_tier"] == "priority"
     assert runner.COST_PROFILES["quality"]["escalation_max_hops"] == 3
+    assert runner.COST_PROFILES["quality"]["max_cost_usd_default"] == 25.00
 
 
 def test_value_default_profile_balanced_tradeoffs() -> None:
@@ -298,7 +299,7 @@ def test_value_default_profile_balanced_tradeoffs() -> None:
     assert p["default_service_tier"] == "default"
     assert p["enable_cached_input"] is True
     assert p["enable_batch_when_supported"] is True
-    assert p["max_cost_usd_default"] is None  # operator explicitly sets
+    assert p["max_cost_usd_default"] == 5.00
 
 
 def test_cli_help_lists_new_flags() -> None:

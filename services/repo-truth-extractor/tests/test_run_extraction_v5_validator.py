@@ -327,6 +327,36 @@ def test_enforce_pre_live_validator_returns_payload_on_go(
     assert result["returncode"] == 0
 
 
+def test_enforce_pre_live_validator_forwards_s_prompts_mode(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runner = _load_runner_module()
+    monkeypatch.setenv("DPMX_LIVE_OK", "1")
+    captured = {}
+
+    def _fake_subprocess_run(cmd, *args, **kwargs):
+        captured["cmd"] = list(cmd)
+        return _FakeCompletedProcess(
+            returncode=0,
+            stdout=json.dumps({"verdict": "GO"}),
+            stderr="",
+        )
+
+    monkeypatch.setattr(runner.subprocess, "run", _fake_subprocess_run)
+
+    result = runner.enforce_pre_live_validator_for_execution(
+        root=Path("."),
+        args=_make_args(execute=True, s_prompts="registry", step="SP4"),
+        phase_sequence=["S"],
+    )
+
+    assert result["verdict"] == "GO"
+    assert "--s-prompts" in captured["cmd"]
+    assert captured["cmd"][captured["cmd"].index("--s-prompts") + 1] == "registry"
+    assert "--step" in captured["cmd"]
+    assert captured["cmd"][captured["cmd"].index("--step") + 1] == "SP4"
+
+
 def test_enforce_pre_live_validator_short_circuits_without_consent(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
