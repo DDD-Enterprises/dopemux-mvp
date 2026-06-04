@@ -330,7 +330,10 @@ class ADHDEventListener:
     
     async def _on_idle(self, data: Dict[str, Any]):
         """Handle idle detection."""
-        idle_minutes = data.get("minutes", 0)
+        # external_activity.py emits idle_detected events with `idle_minutes`,
+        # while other producers use `minutes`; accept either so the duration is
+        # not silently forwarded as 0.
+        idle_minutes = data.get("idle_minutes", data.get("minutes", 0))
 
         # Forward idle metrics to the engine so the hyperfocus latch and attention
         # assessment can react to real idle signals (#786).

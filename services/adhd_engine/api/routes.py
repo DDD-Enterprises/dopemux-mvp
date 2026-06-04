@@ -1620,7 +1620,19 @@ async def log_user_intent(
     - timestamp: ISO timestamp
     """
     try:
-        _reject_content_bearing_hook_payload(request)
+        # The UserPromptSubmit hook (.claude/hooks/prompt_analyzer.py) posts
+        # prompt_summary, which is content-bearing but never persisted here —
+        # only structured signals/adhd_state/timestamp are stored. Strip/ignore
+        # content rather than rejecting and breaking the live hook (mirrors
+        # /save-context).
+        matched_key = _find_content_bearing_key(request)
+        if matched_key:
+            logger.debug(
+                brand_log(
+                    f"log-intent: ignoring content-bearing field '{matched_key}' "
+                    "(only structured signals are stored)."
+                )
+            )
         signals = request.get("signals", {})
         adhd_state = request.get("adhd_state", {})
         timestamp = request.get("timestamp")

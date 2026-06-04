@@ -93,12 +93,18 @@ async def test_save_context_strips_content_fields_and_does_not_forward_them(monk
 
 
 @pytest.mark.asyncio
-async def test_log_intent_rejects_prompt_summary_before_conport_or_event(monkeypatch):
+async def test_log_intent_ignores_prompt_summary_without_leaking_content(monkeypatch):
+    # The live UserPromptSubmit hook posts prompt_summary; rather than rejecting
+    # (which breaks the hook), /log-intent strips/ignores it and processes only
+    # the structured signals. This asserts the real invariant: the request
+    # succeeds AND prompt content never reaches ConPort, the event, or the buffer.
     from services.adhd_engine.api import routes
 
-    class ForbiddenIntentConPort:
+    persisted = []
+
+    class RecordingConPort:
         async def log_custom_data(self, **kwargs):
-            raise AssertionError("ConPort must not receive prompt summaries")
+            persisted.append(kwargs)
 
     emitted = []
 
@@ -106,25 +112,31 @@ async def test_log_intent_rejects_prompt_summary_before_conport_or_event(monkeyp
         emitted.append(kwargs)
         return True
 
-    engine = SimpleNamespace(conport=ForbiddenIntentConPort())
+    engine = SimpleNamespace(conport=RecordingConPort())
 
     monkeypatch.setattr(routes, "EVENT_EMISSION_AVAILABLE", True)
     monkeypatch.setattr(routes, "emit_claude_prompt", fake_emit_claude_prompt)
 
-    with pytest.raises(HTTPException) as exc_info:
-        await routes.log_user_intent(
-            {
-                "prompt_summary": "build the secret thing in /tmp/private.py",
-                "signals": {"is_context_switch": True},
-                "adhd_state": {"energy": "low"},
-                "timestamp": "2026-05-31T00:00:00Z",
-            },
-            engine=engine,
-        )
+    secret = "build the secret thing in /tmp/private.py"
+    result = await routes.log_user_intent(
+        {
+            "prompt_summary": secret,
+            "signals": {"is_context_switch": True},
+            "adhd_state": {"energy": "low"},
+            "timestamp": "2026-05-31T00:00:00Z",
+        },
+        engine=engine,
+    )
 
-    assert exc_info.value.status_code == 400
-    assert emitted == []
-    assert not hasattr(engine, "_intent_buffer")
+    # Request succeeds so the hook keeps working...
+    assert result["recorded"] is True
+    # ...and the structured signal is still captured.
+    assert engine._intent_buffer[-1]["signals"] == {"is_context_switch": True}
+    # ...but prompt content never reaches ConPort, the emitted event, or the buffer.
+    assert secret not in repr(persisted)
+    assert secret not in repr(emitted)
+    assert all(kw.get("prompt_summary", "") == "" for kw in emitted)
+    assert secret not in repr(engine._intent_buffer)
 
 
 @pytest.mark.asyncio
