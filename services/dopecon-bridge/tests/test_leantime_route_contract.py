@@ -166,7 +166,7 @@ async def test_mcp_client_includes_leantime_setup_hint_on_upstream_error(monkeyp
 async def test_mcp_client_preserves_non_leantime_status_context(monkeypatch):
     manager = MCPClientManager()
     manager.session = _FakeSession(status=500, text_body="upstream failure")
-    monkeypatch.setattr(manager, "_get_service_url", lambda _service: "http://task-orchestrator:3014")
+    monkeypatch.setattr(manager, "_get_service_url", lambda _service: "http://task-orchestrator:8000")
 
     with pytest.raises(HTTPException) as exc:
         await manager.call_tool("task-orchestrator", "analyze_dependencies", {"tasks": []})
