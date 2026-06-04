@@ -81,6 +81,7 @@ A packet is superseded by another packet
 | TP-UI-DASHBOARD-BUILD-001 | UI Dashboard | Restore ui-dashboard npm install and build | Active | N/A |
 | TP-BETA-MCP-02-COMPOSE-HEALTHCHECKS | Infra | Gate core MCP compose dependencies on healthchecked services | Active | N/A |
 | TP-BETA-MCP-03-ADHD-REDIS-ISOLATION | ADHD Engine | Isolate ADHD Engine Redis keys by instance | Active | N/A |
+| TP-DMX-GPTR-MCP-CONTAINER-UPDATE-001 | Infra / MCP | Restore GPT Researcher MCP container entrypoint and update package pin | Active | N/A |
 | TP-SEC-COMPOSE-LITELLM-LOCALHOST-001 | Security | Externalize LiteLLM healthcheck key and localize compose service ports | Active | N/A |
 | TP-SEC-WEAK-DEFAULT-SECRETS-001 | Security | Reject weak default secrets in env template and installer | Active | N/A |
 | TP-DMX-ADHD-SIGNAL-E2E-WIRING-001 | ADHD Engine / Dashboard | Prove synthetic ADHD state updates reach the dashboard UI band | Active | N/A |
