@@ -5,7 +5,7 @@
   "invariants": [
     "Read-only contract-locking packet: net-new files only; no edits to existing code/config/workflows.",
     "Every contract carries provenance {REPO_VALIDATED|EXTERNAL_PROPOSED|SYNTHESIS_INVENTED} + validation_state (REV1 §6.0).",
-    "DR-016-derived and synthesis-invented field lists are PROVISIONAL-UNVERIFIED_ENFORCEMENT; not locked as repo authority.",
+    "DR-016-derived and synthesis-invented field lists are PROVISIONAL_UNVERIFIED_ENFORCEMENT; not locked as repo authority.",
     "DCP-RED-MERGE-SEAM-0001: never import/call/wrap/wire src/dopemux_pr_merge_specialist/queue_drain.py execute=True seam or scripts/batch_resolve_and_merge.py (both verified present in origin/main).",
     "DCP_MUTATION_CLASS, DCP_APPROVAL_ARTIFACT, DCP_PROJECT_RESOURCE_MAP are DEFERRED from this packet (REV1 §4); locking any without direct repo derivation stops the packet.",
     "LIVE_WRITE_READY undefined and blocking; no live reads/writes; no subprocess except local pytest + read-only git; no filesystem traversal of target repo for fixtures (SHAs are illustrative placeholders only).",

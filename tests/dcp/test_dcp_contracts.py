@@ -16,7 +16,6 @@ Run modes:
 """
 import json
 import sys
-import os
 from pathlib import Path
 
 # Resolve paths relative to THIS file so that both invocation modes work:
@@ -27,8 +26,7 @@ _FIXTURES_DIR = _THIS_DIR / "fixtures"
 _SCHEMAS_DIR = _THIS_DIR.parent.parent / "schemas" / "dcp"
 
 try:
-    import jsonschema
-    from jsonschema import Draft7Validator, validate as _jsonschema_validate
+    from jsonschema import Draft7Validator
     _HAS_JSONSCHEMA = True
 except ImportError:
     _HAS_JSONSCHEMA = False
@@ -294,9 +292,15 @@ def test_proof_pointer_auditor_verdict_distinct_from_validation_state():
         "Fixture dcp_proof_pointer: missing 'validation_state' field."
     )
 
-    assert pp["auditor_verdict"] != pp["validation_state"], (
-        f"Fixture dcp_proof_pointer: auditor_verdict ('{pp['auditor_verdict']}') must not "
-        f"equal validation_state ('{pp['validation_state']}') — they are DISTINCT fields."
+    # Two distinct fields can share a value without being aliases; the meaningful
+    # guard is that auditor_verdict must NOT be drawn from the validation_state
+    # vocabulary (REPO_CROSS_CHECKED / PROVISIONAL_UNVERIFIED_ENFORCEMENT / DEFERRED),
+    # because the two fields express fundamentally different concepts.
+    _VALIDATION_STATE_VOCAB = {"REPO_CROSS_CHECKED", "PROVISIONAL_UNVERIFIED_ENFORCEMENT", "DEFERRED"}
+    assert pp["auditor_verdict"] not in _VALIDATION_STATE_VOCAB, (
+        f"Fixture dcp_proof_pointer: auditor_verdict ('{pp['auditor_verdict']}') is a "
+        f"validation_state vocabulary value — the fields must not share vocabulary, "
+        f"as that would imply semantic aliasing between DISTINCT concepts."
     )
 
 
@@ -510,8 +514,8 @@ def test_all_schemas_have_v0_version():
 # __main__ runner — allows python3 tests/dcp/test_dcp_contracts.py
 # ---------------------------------------------------------------------------
 
-def _run_all_tests():
-    tests = [
+def _run_all_tests(skip_roundtrip: bool = False):
+    all_tests = [
         ("(a) schema_round_trip", test_schema_round_trip),
         ("(b) provenance_presence_lint", test_provenance_presence_lint),
         ("(b2) per_field_provenance_coverage", test_per_field_provenance_coverage),
@@ -520,6 +524,10 @@ def _run_all_tests():
         ("(d) proof_pointer_auditor_verdict_distinct", test_proof_pointer_auditor_verdict_distinct_from_validation_state),
         ("(e) deferred_contracts_absent", test_deferred_contracts_absent),
         ("sanity: all_schemas_have_v0_version", test_all_schemas_have_v0_version),
+    ]
+    tests = [
+        (name, fn) for name, fn in all_tests
+        if not (skip_roundtrip and name.startswith("(a)"))
     ]
 
     passed = 0
@@ -548,7 +556,7 @@ if __name__ == "__main__":
     print(f"  fixtures dir: {_FIXTURES_DIR}")
     print()
     if not _HAS_JSONSCHEMA:
-        print("WARNING: jsonschema not installed — round-trip test (a) will be skipped.")
+        print("WARNING: jsonschema not installed — round-trip test (a) is SKIPPED.")
         print()
-    failed_count = _run_all_tests()
+    failed_count = _run_all_tests(skip_roundtrip=not _HAS_JSONSCHEMA)
     sys.exit(1 if failed_count > 0 else 0)
