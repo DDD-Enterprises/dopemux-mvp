@@ -1,3 +1,15 @@
+---
+id: 2026-05-27-pr700-plus-remediation-plan
+title: 2026 05 27 Pr700 Plus Remediation Plan
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-04'
+last_review: '2026-06-04'
+next_review: '2026-09-02'
+prelude: 2026 05 27 Pr700 Plus Remediation Plan (explanation) for dopemux documentation
+  and developer workflows.
+---
 # PR #700+ Remediation, Repair, and Merge Plan
 
 **Generated**: 2026-05-27

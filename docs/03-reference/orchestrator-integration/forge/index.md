@@ -5,11 +5,13 @@ type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-05-28'
-prelude: Reference detailing templates and automated pipelines for scaffolding Task Packets.
+prelude: Reference detailing templates and automated pipelines for scaffolding Task
+  Packets.
 related_packets:
-  - TP-DMX-ORCH-010
+- TP-DMX-ORCH-010
+last_review: '2026-06-04'
+next_review: '2026-09-02'
 ---
-
 # Task Packet Forge Workflow
 
 The task packet forge provides automated template-building pipelines for scaffolding new, spec-compliant Task Packets.
