@@ -416,6 +416,73 @@ def test_per_field_provenance_coverage():
 
 
 # ---------------------------------------------------------------------------
+# (c2) Schema-level enforcement: external/invented schemas const-pin PROVISIONAL
+# ---------------------------------------------------------------------------
+
+# For contracts with a top-level validation_state, it must be const-pinned.
+# For contracts where the schema meta-state lives only in validation.state
+# (dcp_control_snapshot, dcp_proof_pointer), validation.state must be const-pinned.
+_CONST_PIN_TOP_LEVEL = {
+    "dcp_evidence_hit",
+    "dcp_chronicle_receipt",
+    "dcp_helper_receipt",
+}
+_CONST_PIN_NESTED_STATE = {
+    "dcp_control_snapshot",
+    "dcp_proof_pointer",
+}
+
+
+def test_c3_schemas_enforce_provisional():
+    """
+    (c2) Schema-level C3 enforcement (DISTINCT from fixture check in test_c):
+    For .v0 EXTERNAL_PROPOSED / SYNTHESIS_INVENTED schemas, PROVISIONAL must be
+    enforced by const in the schema itself — not just present in the fixture.
+
+    - Contracts in _CONST_PIN_TOP_LEVEL: top-level validation_state must use
+      {"const": "PROVISIONAL_UNVERIFIED_ENFORCEMENT"}.
+    - Contracts in _CONST_PIN_NESTED_STATE: validation.state must use
+      {"const": "PROVISIONAL_UNVERIFIED_ENFORCEMENT"}.
+    """
+    errors = []
+
+    for contract_key in _CONST_PIN_TOP_LEVEL:
+        schema_path = _SCHEMAS_DIR / _CONTRACT_REGISTRY[contract_key]
+        assert schema_path.exists(), f"Schema not found: {schema_path}"
+        schema = _load_json(schema_path)
+
+        props = schema.get("properties", {})
+        vs_prop = props.get("validation_state", {})
+        const_val = vs_prop.get("const")
+        if const_val != "PROVISIONAL_UNVERIFIED_ENFORCEMENT":
+            errors.append(
+                f"[schema:{contract_key}] top-level validation_state.const is "
+                f"'{const_val}'; expected 'PROVISIONAL_UNVERIFIED_ENFORCEMENT'. "
+                f"C3 requires schema-level enforcement, not just fixture convention."
+            )
+
+    for contract_key in _CONST_PIN_NESTED_STATE:
+        schema_path = _SCHEMAS_DIR / _CONTRACT_REGISTRY[contract_key]
+        assert schema_path.exists(), f"Schema not found: {schema_path}"
+        schema = _load_json(schema_path)
+
+        props = schema.get("properties", {})
+        val_block = props.get("validation", {})
+        nested_props = val_block.get("properties", {})
+        state_prop = nested_props.get("state", {})
+        const_val = state_prop.get("const")
+        if const_val != "PROVISIONAL_UNVERIFIED_ENFORCEMENT":
+            errors.append(
+                f"[schema:{contract_key}] validation.state.const is '{const_val}'; "
+                f"expected 'PROVISIONAL_UNVERIFIED_ENFORCEMENT'. "
+                f"This schema has no top-level validation_state; validation.state IS "
+                f"the schema's own meta-state and must be const-pinned for .v0."
+            )
+
+    assert not errors, "C3 schema-level enforcement failures:\n" + "\n".join(errors)
+
+
+# ---------------------------------------------------------------------------
 # Additional sanity: schema_version const ends .v0
 # ---------------------------------------------------------------------------
 
@@ -449,6 +516,7 @@ def _run_all_tests():
         ("(b) provenance_presence_lint", test_provenance_presence_lint),
         ("(b2) per_field_provenance_coverage", test_per_field_provenance_coverage),
         ("(c) external_invented_contracts_are_provisional", test_external_invented_contracts_are_provisional),
+        ("(c2) schemas_enforce_provisional_via_const", test_c3_schemas_enforce_provisional),
         ("(d) proof_pointer_auditor_verdict_distinct", test_proof_pointer_auditor_verdict_distinct_from_validation_state),
         ("(e) deferred_contracts_absent", test_deferred_contracts_absent),
         ("sanity: all_schemas_have_v0_version", test_all_schemas_have_v0_version),

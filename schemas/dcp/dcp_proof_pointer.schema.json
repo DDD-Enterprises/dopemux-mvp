@@ -50,8 +50,8 @@
       "required": ["state", "notes"],
       "properties": {
         "state": {
-          "type": "string",
-          "enum": ["REPO_CROSS_CHECKED", "PROVISIONAL_UNVERIFIED_ENFORCEMENT", "DEFERRED"]
+          "const": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+          "description": "Const-pinned for .v0 SYNTHESIS_INVENTED schema. This is the schema's own meta-state; distinct from the domain validation_state field which describes the pointed-at artifact's enforcement status."
         },
         "notes": {
           "type": "string"
