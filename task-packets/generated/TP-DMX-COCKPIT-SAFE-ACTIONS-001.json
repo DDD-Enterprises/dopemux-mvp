@@ -1,0 +1,169 @@
+{
+  "id": "TP-DMX-COCKPIT-SAFE-ACTIONS-001",
+  "project": "dopemux-mvp",
+  "target": "Materialize the strict generated Task Packet for the accepted Safe Action Gate primitive contract and reconcile packet registry traceability without changing runtime behavior.",
+  "invariants": [
+    "This packet is artifact-only for Task Packet traceability.",
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must not modify Cockpit runtime behavior.",
+    "This packet must not execute Cockpit actions.",
+    "This packet must not add live service adapters.",
+    "This packet must not add canonical writes.",
+    "This packet must not upload anything to Claude Design.",
+    "This packet must not generate or approve final UI screens.",
+    "This packet must preserve safe_for_claude_design: NO.",
+    "This packet must preserve READY_FOR_CLAUDE_DESIGN: not approved.",
+    "This packet must not authorize T4 remote mutation.",
+    "This packet must preserve TX and TU as non-executable in Cockpit.",
+    "This packet must not reclassify Unknown/Drift rows at runtime.",
+    "This packet must treat the existing out/cockpit-safe-actions artifact tree as evidence, not as runtime truth beyond what runtime code already supports.",
+    "This packet must classify unresolved or missing evidence as UNKNOWN."
+  ],
+  "depends_on": [
+    "TP-DMX-COCKPIT-IA-RECONCILE-001",
+    "TP-DMX-COCKPIT-COMMAND-PALETTE-001",
+    "TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dopemux-cockpit-ia-remediation",
+    "base_branch": "origin/main",
+    "parent_tp_id": "TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/cockpit-safe-actions-task-packet-001",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(cockpit): materialize safe action task packet",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-COCKPIT-SAFE-ACTIONS-001.json",
+      "task-packets/INDEX.md",
+      "proof/cockpit-safe-actions-task-packet/TP-DMX-COCKPIT-SAFE-ACTIONS-001-MATERIALIZATION/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-SAFE-ACTIONS-001.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-COCKPIT-SAFE-ACTIONS-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m json.tool out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/PROOF.json >/dev/null",
+      "python -m json.tool proof/cockpit-safe-actions-task-packet/TP-DMX-COCKPIT-SAFE-ACTIONS-001-MATERIALIZATION/PROOF.json >/dev/null",
+      "cd out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001 && shasum -a 256 -c sha256sums.txt",
+      "python -m pytest tests/unit/dopemux/ui/cockpit/test_runtime_contract.py tests/unit/test_cockpit_cli.py -q",
+      "git diff --check",
+      "pre-commit run --files task-packets/generated/TP-DMX-COCKPIT-SAFE-ACTIONS-001.json task-packets/INDEX.md proof/cockpit-safe-actions-task-packet/TP-DMX-COCKPIT-SAFE-ACTIONS-001-MATERIALIZATION/PROOF.json"
+    ]
+  },
+  "pr": {
+    "title": "docs(cockpit): materialize safe action task packet",
+    "body": "Materializes the missing strict generated Task Packet for TP-DMX-COCKPIT-SAFE-ACTIONS-001 and indexes it for Cockpit Phase 1 traceability. This is artifact-only and does not change runtime behavior, execute actions, upload to Claude Design, approve final screens, authorize T4 remote mutation, add live adapters, add canonical writes, or runtime-reclassify Unknown/Drift rows. It preserves safe_for_claude_design: NO and READY_FOR_CLAUDE_DESIGN: not approved.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, HEAD, and clean status before editing.",
+      "requirements": [
+        "Primary checkout remains read-only because it has unrelated dirty files.",
+        "Execution worktree must be separate from /Users/hue/code/dopemux-mvp."
+      ],
+      "commands": [
+        "git fetch origin --prune",
+        "git worktree add .worktrees/cockpit-safe-actions-task-packet-001 -b codex/cockpit-safe-actions-task-packet-001 origin/main",
+        "git status --short --branch",
+        "test -f .dopetaskroot"
+      ],
+      "validation": [
+        "Stop if repo identity, marker, branch, base HEAD, or clean status cannot be verified."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        ".taskorchestrator/config.yaml",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Inspect the existing Safe Action Gate evidence tree and adjacent generated Cockpit Task Packets before authoring this packet.",
+      "requirements": [
+        "Do not infer Safe Action runtime behavior from artifact prose alone.",
+        "Preserve the Safe Action contract as primitive-level and non-runtime.",
+        "Confirm the generated packet is absent before adding it."
+      ],
+      "commands": [
+        "find out/cockpit-safe-actions task-packets/generated -maxdepth 3 -type f | sort",
+        "python -m json.tool out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/PROOF.json >/dev/null",
+        "cd out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001 && shasum -a 256 -c sha256sums.txt"
+      ],
+      "validation": [
+        "Existing Safe Action artifacts parse and checksum verification passes.",
+        "Existing proof state remains SAFE_ACTION_GATE_SPEC_READY_FOR_PACKAGE_REMEDIATION.",
+        "Existing governance remains safe_for_claude_design: NO and READY_FOR_CLAUDE_DESIGN: not approved."
+      ],
+      "context_files": [
+        "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/PROOF.json",
+        "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/SAFE_ACTION_GATE_CONTRACT.md",
+        "out/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/CLAUDE_DESIGN_SAFE_ACTION_BLOCKERS.md",
+        "task-packets/generated/TP-DMX-COCKPIT-RUNTIME-RENDER-001.json",
+        "task-packets/generated/TP-DMX-COCKPIT-SETTINGS-RUNTIME-001.json",
+        "task-packets/generated/TP-DMX-COCKPIT-UNKNOWN-DRIFT-001.json"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Add task-packets/generated/TP-DMX-COCKPIT-SAFE-ACTIONS-001.json and register it in task-packets/INDEX.md.",
+      "requirements": [
+        "Use only fields declared by dopetask-canonical-spec.json.",
+        "Keep the packet repo-bound, series-bound, commit-sized, and verifiable.",
+        "Do not update runtime sources or existing Safe Action artifacts in this slice."
+      ],
+      "expected_files": [
+        "task-packets/generated/TP-DMX-COCKPIT-SAFE-ACTIONS-001.json",
+        "task-packets/INDEX.md"
+      ],
+      "validation": [
+        "Task Packet JSON parses.",
+        "Task Packet validates against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json.",
+        "Task Packet index contains exactly one row for TP-DMX-COCKPIT-SAFE-ACTIONS-001."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Add proof for the materialization slice and run focused validation.",
+      "requirements": [
+        "Proof must distinguish PASS, FAIL, NOT_RUN, and UNKNOWN.",
+        "Proof must record Task Orchestrator MCP transport failure if it remains unavailable.",
+        "Proof must not claim item advancement or dependency unblock unless the orchestrator mutation succeeds."
+      ],
+      "expected_files": [
+        "proof/cockpit-safe-actions-task-packet/TP-DMX-COCKPIT-SAFE-ACTIONS-001-MATERIALIZATION/PROOF.json"
+      ],
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-SAFE-ACTIONS-001.json >/dev/null",
+        "python -m jsonschema -i task-packets/generated/TP-DMX-COCKPIT-SAFE-ACTIONS-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python -m json.tool proof/cockpit-safe-actions-task-packet/TP-DMX-COCKPIT-SAFE-ACTIONS-001-MATERIALIZATION/PROOF.json >/dev/null",
+        "python -m pytest tests/unit/dopemux/ui/cockpit/test_runtime_contract.py tests/unit/test_cockpit_cli.py -q",
+        "git diff --check",
+        "pre-commit run --files task-packets/generated/TP-DMX-COCKPIT-SAFE-ACTIONS-001.json task-packets/INDEX.md proof/cockpit-safe-actions-task-packet/TP-DMX-COCKPIT-SAFE-ACTIONS-001-MATERIALIZATION/PROOF.json"
+      ]
+    }
+  ]
+}

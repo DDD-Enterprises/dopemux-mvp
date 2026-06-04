@@ -22,7 +22,7 @@ export const getNotificationColor = (type: NotificationType | string) => {
     case 'warning':
       return brandTokens.colors.saintGold;
     case 'error':
-      return brandTokens.colors.gremlinPink;
+      return brandTokens.colors.errorRed;
     default:
       return brandTokens.colors.ritualCyan;
   }
