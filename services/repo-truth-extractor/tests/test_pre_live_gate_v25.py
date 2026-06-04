@@ -4,6 +4,7 @@ import importlib.util
 import json
 from pathlib import Path
 import sys
+from types import SimpleNamespace
 
 
 def _load_gate_module():
@@ -61,16 +62,169 @@ def test_truth_split_prefers_specific_classification() -> None:
     )
 
 
-def test_collect_truth_split_fails_closed_until_implemented() -> None:
-    # S7 (audit): the runner/promptset/model-map drift audit is unimplemented. It must
-    # fail closed with a waivable P1 blocker, never a fake PASS.
+def test_collect_truth_split_reports_target_row_match(tmp_path: Path) -> None:
     gate = _load_gate_module()
-    payload, blockers, findings = gate.collect_truth_split(None, None)
-    assert payload["status"] == "NOT_IMPLEMENTED"
-    assert len(blockers) == 1
-    assert blockers[0].reason_code == gate.TRUTH_SPLIT_NOT_IMPLEMENTED
-    assert blockers[0].severity == "P1"
+
+    class FakeRunner:
+        def get_phase_prompts(self, phase):
+            assert phase == "A"
+            return [
+                SimpleNamespace(
+                    step_id="A0",
+                    output_artifacts=("INSTRUCTION_SURFACES.json",),
+                    source="legacy",
+                    contract={"expected_artifacts": ["INSTRUCTION_SURFACES.json"]},
+                )
+            ]
+
+    config = gate.GateConfig(
+        repo_root=Path("/tmp/repo"),
+        output_dir=tmp_path,
+        run_id="truth_split_match",
+        target_policy="cost",
+        target_mode="direct",
+        target_profile="P00_GENERIC",
+        target_phases=("A",),
+        target_step="A0",
+    )
+    payload, blockers, findings = gate.collect_truth_split(FakeRunner(), config)
+    assert payload["status"] == "PASS"
+    assert blockers == []
     assert findings == []
+    assert payload["target_phase_mismatch_count"] == 0
+    assert payload["rows"] == [
+        {
+            "phase": "A",
+            "target_phase": "A",
+            "step_id": "A0",
+            "runner_active": True,
+            "prompt_resolution_active": True,
+            "promptset_declared": True,
+            "model_map_declared": True,
+            "artifact_declarations_present": True,
+            "contract_present": True,
+            "prompt_source": "legacy",
+            "classification": "MATCH",
+        }
+    ]
+
+
+def test_collect_truth_split_blocks_selected_sp_without_contract(tmp_path: Path) -> None:
+    gate = _load_gate_module()
+
+    class FakeRunner:
+        def get_phase_prompts(self, phase):
+            assert phase == "S"
+            return [
+                SimpleNamespace(
+                    step_id="SP4",
+                    output_artifacts=("SP4_TRUTH_PACK_INDEX.json",),
+                    source="registry",
+                    contract=None,
+                )
+            ]
+
+    config = gate.GateConfig(
+        repo_root=Path("/tmp/repo"),
+        output_dir=tmp_path,
+        run_id="truth_split_sp_missing_contract",
+        target_policy="cost",
+        target_mode="direct",
+        target_profile="P00_GENERIC",
+        target_phases=("S",),
+        target_step="SP4",
+        s_prompts_mode="registry",
+    )
+    payload, blockers, findings = gate.collect_truth_split(FakeRunner(), config)
+    assert payload["status"] == "FAIL"
+    assert payload["target_phase_mismatch_count"] == 1
+    assert payload["repo_wide_mismatch_count"] == 0
+    assert findings == []
+    assert payload["rows"][0]["phase"] == "SP"
+    assert payload["rows"][0]["target_phase"] == "S"
+    assert payload["rows"][0]["step_id"] == "SP4"
+    assert payload["rows"][0]["prompt_source"] == "registry"
+    assert payload["rows"][0]["contract_present"] is False
+    assert payload["rows"][0]["classification"] == "STALE_MODEL_MAP"
+    assert [(blocker.reason_code, blocker.severity) for blocker in blockers] == [
+        (gate.SP_CONTRACT_MISSING, "P0")
+    ]
+
+
+def test_run_gate_applies_s_prompts_mode_before_scope_derivation(
+    monkeypatch, tmp_path: Path
+) -> None:
+    gate = _load_gate_module()
+    observed = {}
+
+    class FakeRunner:
+        def set_active_s_prompts_mode(self, mode):
+            observed["set_mode"] = mode
+
+    class FakeContract:
+        def compile_phase_contract_map(self):
+            return {"steps": {}}
+
+    fake_scope = {
+        "validation_started_at": "2026-03-12T00:00:00+00:00",
+        "git_sha": "abc123",
+        "validator_host": "host",
+        "validator_python": "3.11.0",
+        "target_policy": "cost",
+        "target_mode": "direct",
+        "target_profile": "P00_GENERIC",
+        "target_phases": ["S"],
+        "target_step": "SP4",
+        "target_runner_path": "/tmp/run_extraction_v5.py",
+        "target_runner_sha256": "runner",
+        "promptset_sha256": "promptset",
+        "artifacts_sha256": "artifacts",
+        "model_map_sha256": "modelmap",
+        "required_provider_routes": [],
+        "required_api_key_envs": [],
+        "fallback_api_key_envs": [],
+        "all_route_api_key_envs": [],
+        "routing_fingerprint_hash": "routing",
+        "phase_contract_map_hash": "contract",
+    }
+
+    def fake_derive_scope(runner, contract_module, config):
+        observed["scope_mode"] = observed.get("set_mode")
+        return dict(fake_scope)
+
+    monkeypatch.setattr(
+        gate,
+        "load_module",
+        lambda path, name: FakeRunner()
+        if "run_extraction" in str(path)
+        else FakeContract(),
+    )
+    monkeypatch.setattr(gate, "derive_scope", fake_derive_scope)
+    monkeypatch.setattr(gate, "evaluate_import_cli_smoke", lambda config: ({"status": "PASS"}, []))
+    monkeypatch.setattr(gate, "evaluate_prompt_integrity", lambda runner, config: ({"status": "PASS"}, []))
+    monkeypatch.setattr(gate, "collect_truth_split", lambda runner, config: ({"layer": "truth_split_audit", "status": "PASS", "rows": [], "target_phase_mismatch_count": 0, "repo_wide_mismatch_count": 0}, [], []))
+    monkeypatch.setattr(gate, "evaluate_contract_map", lambda runner, contract_module, config: ({"status": "PASS"}, []))
+    monkeypatch.setattr(gate, "evaluate_route_readiness", lambda runner, config, scope: ({"status": "PASS"}, []))
+    monkeypatch.setattr(gate, "evaluate_pytest_layer", lambda **kwargs: ({"status": "PASS"}, [], []))
+    monkeypatch.setattr(gate, "evaluate_pal_validation", lambda config, scope: ({"layer": "pal_provider_validation", "status": "PASS", "routes": []}, [], []))
+    monkeypatch.setattr(gate, "evaluate_online_preflight", lambda runner, config: ({"layer": "online_provider_preflight", "status": "PASS"}, [], []))
+    monkeypatch.setattr(gate, "evaluate_smoke_tests", lambda config: ({"status": "PASS"}, []))
+
+    config = gate.GateConfig(
+        repo_root=Path("/tmp/repo"),
+        output_dir=tmp_path,
+        run_id="registry_mode_gate",
+        target_policy="cost",
+        target_mode="direct",
+        target_profile="P00_GENERIC",
+        target_phases=("S",),
+        target_step="SP4",
+        s_prompts_mode="registry",
+    )
+    result = gate.run_gate(config)
+
+    assert result["verdict"]["verdict"] == "GO"
+    assert observed == {"set_mode": "registry", "scope_mode": "registry"}
 
 
 def test_pal_validation_is_conditional_when_missing_for_active_route(tmp_path: Path) -> None:
