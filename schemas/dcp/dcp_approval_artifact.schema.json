@@ -2,7 +2,16 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://dopemux.dev/schemas/dcp/dcp_approval_artifact.v0.schema.json",
   "title": "DCP Approval Artifact (.v0)",
-  "description": "SYNTHESIS_INVENTED envelope + REPO_VALIDATED tier/decision vocabulary / PROVISIONAL_UNVERIFIED_ENFORCEMENT. Represents a supervisor approval RECORD for a proposed mutation class. This artifact does NOT execute the mutation and must not become a write executor. INVARIANT: requester != approver (no self-certification). LIVE_WRITE_READY must not be defined. schema_version .v0 = unstable, not authority.",
+  "description": "SYNTHESIS_INVENTED envelope + REPO_VALIDATED tier/decision vocabulary / PROVISIONAL_UNVERIFIED_ENFORCEMENT. Represents a supervisor approval RECORD for a proposed mutation class. This artifact does NOT execute the mutation and must not become a write executor. INVARIANT: requester != approver (no self-certification). Draft-07 cannot express sibling-field inequality directly, so this cross-field rule is carried as a contract annotation and enforced by packet-level validation. LIVE_WRITE_READY must not be defined. schema_version .v0 = unstable, not authority.",
+  "x-contract-invariants": [
+    {
+      "rule_id": "DCP-RED-SELF-CERTIFYING-LOOP",
+      "expression": "requester != approver",
+      "enforced_by": "tests/dcp/test_dcp_0002_contract_derivation.py::test_14",
+      "enforcement": "packet-level cross-field validation; JSON Schema draft-07 cannot compare sibling fields",
+      "status": "PROVISIONAL"
+    }
+  ],
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -113,11 +122,11 @@
     },
     "requester": {
       "type": "string",
-      "description": "Identity of the requester. INVARIANT: must not equal approver. No self-certification."
+      "description": "Identity of the requester. Cross-field invariant requester != approver is enforced by the packet-level contract linter/test_14; JSON Schema draft-07 cannot compare sibling fields directly."
     },
     "approver": {
       "type": "string",
-      "description": "Identity of the approver. INVARIANT: must not equal requester. Separate actor required."
+      "description": "Identity of the approver. Cross-field invariant requester != approver is enforced by the packet-level contract linter/test_14; JSON Schema draft-07 cannot compare sibling fields directly."
     },
     "supervisor_signoff": {
       "type": "object",
