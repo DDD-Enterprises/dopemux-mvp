@@ -123,8 +123,8 @@
   },
   "codereview_status": "PASS_MANUAL_DIFF_REVIEW_NO_RUNTIME_SCOPE_EXPANSION",
   "precommit_status": "PASS",
-  "commit_sha": "RECORDED_AFTER_COMMIT_IN_FINAL_RESPONSE",
-  "pr_url": "RECORDED_AFTER_PR_CREATION_IN_FINAL_RESPONSE_OR_BLOCKER",
+  "commit_sha": "87c7f38b02de6e0b791a195cd065793ea1e9c5f9",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/804",
   "residual_risks": [
     "Task Orchestrator live state and dependency unblock cannot be mutated while the MCP transport is closed.",
     "Existing Safe Action proof omits a top-level READY_FOR_CLAUDE_DESIGN key but includes ready_for_claude_design=not approved; this materialization preserves the existing artifact rather than rewriting it.",
