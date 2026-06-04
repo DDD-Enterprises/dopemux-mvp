@@ -299,7 +299,8 @@ NEXT:    resize to at least 80x24.
 
 - [ ] Every pane carries a four-field declaration; every data row carries `SRC=`; chrome carries none.
 - [ ] No forbidden chips/vocab (manual review until a runtime validator primitive exists).
-- [ ] Mapping completeness: all 8 OrchestratorTUI + 4 DopemuxDashboard panels placed with a real source.
+- [ ] Mapping completeness: all 8 OrchestratorTUI panels and all real-source DopemuxDashboard
+      panels placed; demo-only trends stay `[EDGE]`/unavailable, never fabricated.
 - [ ] Every color reference resolves to a `tokens.json` Direction B token; ANSI anchors preserved;
       color-never-alone (glyph + label) on every status.
 - [ ] ADHD pipeline: each stage labeled REAL/SYNTHETIC/HEURISTIC/INFERRED/UNKNOWN; advisory-not-gate
