@@ -1,0 +1,223 @@
+{
+  "allowlist_result": "PASS",
+  "allowlist_unexpected_files": [],
+  "audit": {
+    "auditor_findings": [
+      "Implementation is local-only and uses existing TP-DCP-0003 classify_artifact path.",
+      "No forbidden API, live adapter, Dopetask, orchestrator, bridge, memory, context, cockpit, or merge automation path was added.",
+      "Generated snapshot is derived and non-authoritative.",
+      "Snapshot blocks on stale dependency proof rather than reporting READY."
+    ],
+    "auditor_model": "anthropic/claude-sonnet-4.5",
+    "auditor_tool": "PAL chat",
+    "auditor_verdict": "PASS_WITH_RISKS",
+    "exit_code": 0,
+    "fixes_applied_from_audit": [],
+    "invocation": "mcp__pal.chat embedded audit; gemini-2.5-pro first attempt returned RESOURCE_EXHAUSTED, Claude Sonnet fallback returned PASS_WITH_RISKS",
+    "remaining_risks": [
+      "TP-DCP-0003 proof text false-positive handling is narrowly scoped but should be revisited if classifier semantics change.",
+      "Direct .git/HEAD reading can return null on unusual git layouts.",
+      "Optional TP-DCP-0004 fields extend the existing .v0 schema; snapshot_contract_version tracks generated body version."
+    ],
+    "skip_reason": null
+  },
+  "auditor_distinct_boolean": true,
+  "auditor_identity": "PAL / Claude Sonnet 4.5",
+  "base_branch": "main",
+  "base_sha": "2f6f362236aa8429877664c675a5373cd9acf16e",
+  "branch": "dcp/local-control-snapshot-tp-0004",
+  "changed_files": [
+    "proof/TP-DCP-0004/AUDIT.md",
+    "proof/TP-DCP-0004/DCP_CONTROL_SNAPSHOT.json",
+    "proof/TP-DCP-0004/PROOF.json",
+    "schemas/dcp/README.md",
+    "schemas/dcp/dcp_control_snapshot.schema.json",
+    "src/dopemux/dcp/__init__.py",
+    "src/dopemux/dcp/control_snapshot.py",
+    "task-packets/TP-DCP-0004.md",
+    "tests/dcp/fixtures/tp_dcp_0004_conflicting_proof/proof/TP-DCP-0003/PROOF.json",
+    "tests/dcp/fixtures/tp_dcp_0004_conflicting_proof/task-packets/TP-DCP-0003.json",
+    "tests/dcp/fixtures/tp_dcp_0004_live_write_detected/proof/TP-DCP-0003/PROOF.json",
+    "tests/dcp/fixtures/tp_dcp_0004_live_write_detected/task-packets/TP-DCP-0003.json",
+    "tests/dcp/fixtures/tp_dcp_0004_missing_tp0003/proof/TP-DCP-0001/PROOF.json",
+    "tests/dcp/fixtures/tp_dcp_0004_missing_tp0003/task-packets/TP-DCP-0001.json",
+    "tests/dcp/fixtures/tp_dcp_0004_stale_proof/proof/TP-DCP-0003/PROOF.json",
+    "tests/dcp/fixtures/tp_dcp_0004_stale_proof/task-packets/TP-DCP-0003.json",
+    "tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/proof/TP-DCP-0001/PROOF.json",
+    "tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/proof/TP-DCP-0002/PROOF.json",
+    "tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/proof/TP-DCP-0003/MERGE_READINESS.json",
+    "tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/proof/TP-DCP-0003/PROOF.json",
+    "tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/schemas/dcp/README.md",
+    "tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/schemas/dcp/dcp_control_snapshot.schema.json",
+    "tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/task-packets/TP-DCP-0001.json",
+    "tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/task-packets/TP-DCP-0002.json",
+    "tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/task-packets/TP-DCP-0003.json",
+    "tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/task-packets/TP-DCP-0004.json",
+    "tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/tests/dcp/test_placeholder.py",
+    "tests/dcp/test_dcp_0004_control_snapshot.py"
+  ],
+  "commands": [
+    {
+      "command": "git status --short",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": " M schemas/dcp/README.md\n M schemas/dcp/dcp_control_snapshot.schema.json\n M src/dopemux/dcp/__init__.py\n?? src/dopemux/dcp/control_snapshot.py\n?? task-packets/TP-DCP-0004.md\n?? tests/dcp/fixtures/tp_dcp_0004_conflicting_proof/\n?? tests/dcp/fixtures/tp_dcp_0004_live_write_detected/\n?? tests/dcp/fixtures/tp_dcp_0004_missing_tp0003/\n?? tests/dcp/fixtures/tp_dcp_0004_stale_proof/\n?? tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/\n?? tests/dcp/test_dcp_0004_control_snapshot.py\n"
+    },
+    {
+      "command": "git branch --show-current",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "dcp/local-control-snapshot-tp-0004\n"
+    },
+    {
+      "command": "git rev-parse --show-toplevel",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-local-control-snapshot-tp-0004\n"
+    },
+    {
+      "command": "git rev-parse HEAD",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "2f6f362236aa8429877664c675a5373cd9acf16e\n"
+    },
+    {
+      "command": "python3 -m pytest tests/dcp/test_dcp_0004_control_snapshot.py -q",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": ".....................                                                    [100%]\n"
+    },
+    {
+      "command": "python3 -m pytest tests/dcp -q",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": ".................................................................        [100%]\n"
+    },
+    {
+      "command": "python3 -m compileall -q src tests",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "command": "python3 -m json.tool proof/TP-DCP-0004/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "command": "python3 -m json.tool proof/TP-DCP-0004/DCP_CONTROL_SNAPSHOT.json >/dev/null",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "command": "test -f schemas/dcp/dcp_control_snapshot.schema.json && python3 -m json.tool schemas/dcp/dcp_control_snapshot.schema.json >/dev/null || true",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "command": "git diff --name-only | grep -E '^(src/dopemux_pr_merge_specialist/|dopemux_pr_merge_specialist/|scripts/batch_resolve_and_merge.py|\\.github/workflows/|scripts/dopetask|scripts/taskx|services/task-orchestrator/|services/dopecon-bridge/|services/dope-context/|services/working-memory-assistant/|docker/mcp-servers-source/conport/|src/conport/)' && exit 1 || true",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "command": "rg -n \"gh pr merge|dopetask tp|scripts/dopetask|scripts/taskx|mem\\.upsert|memory_store|/api/(decisions|progress|custom_data)|/tools/memory_store|/api/workflow|/api/pm|queue_drain|batch_resolve_and_merge|requests\\.|httpx\\.|urllib|subprocess\" src/dopemux/dcp tests/dcp || true",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "src/dopemux/dcp/proof_family.py:11:from urllib.parse import urlparse\ntests/dcp/test_dcp_0003_proof_family_dispatch.py:309:        \"requests.\",\ntests/dcp/test_dcp_0003_proof_family_dispatch.py:310:        \"urllib.request\",\ntests/dcp/fixtures/tp_dcp_0002_project_resource_map.fixture.json:159:      \"path\": \"src/dopemux_pr_merge_specialist/queue_drain.py\",\ntests/dcp/fixtures/tp_dcp_0002_project_resource_map.fixture.json:165:      \"path\": \"scripts/batch_resolve_and_merge.py\",\ntests/dcp/fixtures/tp_dcp_0002_project_resource_map.fixture.json:241:      \"path\": \"scripts/taskx\",\ntests/dcp/fixtures/tp_dcp_0002_project_resource_map.fixture.json:247:      \"path\": \"scripts/dopetask\",\ntests/dcp/fixtures/tp_dcp_0002_mutation_class.fixture.json:24:  \"authority_notes\": \"Tier vocabulary derived from config/orchestrator/approval_policy.yaml (schema_version 1, id: task-orchestrator-approval-policy) and src/dopemux/orchestrator/policy.py (REQUIRED_TIERS, WRITE_MODES, T4_PLUS, REFUSAL_TIERS constants). MC-MERGE-SEAM-FORBIDDEN is repo-validated by DCP-RED-MERGE-SEAM-0001 audit of queue_drain.py:2402 (execute=True). LIVE_WRITE_READY remains undefined and must not be introduced.\",\ntests/dcp/fixtures/tp_dcp_0002_mutation_class.fixture.json:249:      \"description\": \"External Dopetask execution via scripts/taskx \u2192 scripts/dopetask \u2192 external dopetask. No explicit tier in approval_policy.yaml. Execution plane owned by wrapper path only (ARCHITECTURE.md \u00a73.2). DCP may describe this class but must not execute Dopetask.\",\ntests/dcp/fixtures/tp_dcp_0002_mutation_class.fixture.json:262:        \"Wrapper path observed (scripts/taskx, scripts/dopetask) but external dopetask implementation out of scope\",\ntests/dcp/fixtures/tp_dcp_0002_mutation_class.fixture.json:308:      \"description\": \"HARD BLOCK. DCP must NEVER import, call, wrap, or wire src/dopemux_pr_merge_specialist/queue_drain.py (execute=True seam at line 2402) or scripts/batch_resolve_and_merge.py. This is DCP-RED-MERGE-SEAM-0001 \u2014 an absolute universal red line. steward_gate.py now present on main but does not remove this hard block.\",\ntests/dcp/fixtures/tp_dcp_0002_mutation_class.fixture.json:309:      \"mutation_surface\": \"src/dopemux_pr_merge_specialist/queue_drain.py (execute=True); scripts/batch_resolve_and_merge.py\",\ntests/dcp/fixtures/tp_dcp_0002_mutation_class.fixture.json:320:        \"steward_gate.py now present on main (was absent at TP-DCP-0001 audit time) \u2014 gate enforcement status for queue_drain.py not fully verified; hard block remains regardless\"\ntests/dcp/fixtures/dcp_core_fixture.json:18:        \"description\": \"DCP must NEVER import, call, wrap, or wire src/dopemux_pr_merge_specialist/queue_drain.py (execute=True seam) or scripts/batch_resolve_and_merge.py. Both paths verified present in origin/main; steward_gate.py absent. Universal hard block for TP-DCP-0001 and every later packet.\",\ntests/dcp/fixtures/dcp_core_fixture.json:22:          \"src/dopemux_pr_merge_specialist/queue_drain.py\",\ntests/dcp/fixtures/dcp_core_fixture.json:23:          \"scripts/batch_resolve_and_merge.py\"\ntests/dcp/fixtures/dcp_core_fixture.json:25:        \"notes\": \"REV1 \\u00a75.1: execute_or_dry_run(merge_cmd, execute=True) at queue_drain.py:617/2006/2017 IS in origin/main; steward_gate.py absent.\"\ntests/dcp/fixtures/tp_dcp_0002_approval_artifact.fixture.json:81:    \"src/dopemux_pr_merge_specialist/queue_drain.py\",\ntests/dcp/fixtures/tp_dcp_0002_approval_artifact.fixture.json:82:    \"scripts/batch_resolve_and_merge.py\"\ntests/dcp/test_dcp_0004_control_snapshot.py:186:        \"gh pr merge\",\ntests/dcp/test_dcp_0004_control_snapshot.py:205:    assert \"dopetask tp\" not in text\ntests/dcp/test_dcp_0004_control_snapshot.py:221:        \"requests.\",\ntests/dcp/test_dcp_0004_control_snapshot.py:222:        \"httpx.\",\ntests/dcp/test_dcp_0004_control_snapshot.py:223:        \"urllib.request\",\ntests/dcp/test_dcp_0004_control_snapshot.py:224:        \"subprocess\",\ntests/dcp/test_dcp_0002_contract_derivation.py:29:import subprocess\ntests/dcp/test_dcp_0002_contract_derivation.py:83:    \"queue_drain\",\ntests/dcp/test_dcp_0002_contract_derivation.py:84:    \"batch_resolve_and_merge\",\ntests/dcp/test_dcp_0002_contract_derivation.py:353:    forbidden = [\"queue_drain\", \"batch_resolve_and_merge\", \"dopemux_pr_merge_specialist\"]\ntests/dcp/test_dcp_0002_contract_derivation.py:506:    result = subprocess.run(\ntests/dcp/test_dcp_0002_contract_derivation.py:519:        \"scripts/batch_resolve_and_merge.py\",\ntests/dcp/test_dcp_0002_contract_derivation.py:539:    no subprocess to external services, no API tokens required.\n"
+    },
+    {
+      "command": "git status --short --untracked-files=all",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": " M schemas/dcp/README.md\n M schemas/dcp/dcp_control_snapshot.schema.json\n M src/dopemux/dcp/__init__.py\n?? src/dopemux/dcp/control_snapshot.py\n?? task-packets/TP-DCP-0004.md\n?? tests/dcp/fixtures/tp_dcp_0004_conflicting_proof/proof/TP-DCP-0003/PROOF.json\n?? tests/dcp/fixtures/tp_dcp_0004_conflicting_proof/task-packets/TP-DCP-0003.json\n?? tests/dcp/fixtures/tp_dcp_0004_live_write_detected/proof/TP-DCP-0003/PROOF.json\n?? tests/dcp/fixtures/tp_dcp_0004_live_write_detected/task-packets/TP-DCP-0003.json\n?? tests/dcp/fixtures/tp_dcp_0004_missing_tp0003/proof/TP-DCP-0001/PROOF.json\n?? tests/dcp/fixtures/tp_dcp_0004_missing_tp0003/task-packets/TP-DCP-0001.json\n?? tests/dcp/fixtures/tp_dcp_0004_stale_proof/proof/TP-DCP-0003/PROOF.json\n?? tests/dcp/fixtures/tp_dcp_0004_stale_proof/task-packets/TP-DCP-0003.json\n?? tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/proof/TP-DCP-0001/PROOF.json\n?? tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/proof/TP-DCP-0002/PROOF.json\n?? tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/proof/TP-DCP-0003/MERGE_READINESS.json\n?? tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/proof/TP-DCP-0003/PROOF.json\n?? tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/schemas/dcp/README.md\n?? tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/schemas/dcp/dcp_control_snapshot.schema.json\n?? tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/task-packets/TP-DCP-0001.json\n?? tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/task-packets/TP-DCP-0002.json\n?? tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/task-packets/TP-DCP-0003.json\n?? tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/task-packets/TP-DCP-0004.json\n?? tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/tests/dcp/test_placeholder.py\n?? tests/dcp/test_dcp_0004_control_snapshot.py\n"
+    },
+    {
+      "command": "git status --short --ignored proof/TP-DCP-0004",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "!! proof/TP-DCP-0004/\n"
+    },
+    {
+      "command": "git diff --stat",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": " schemas/dcp/README.md                        |  12 +-\n schemas/dcp/dcp_control_snapshot.schema.json | 269 +++++++++++++++++++++++++++\n src/dopemux/dcp/__init__.py                  |   8 +\n 3 files changed, 288 insertions(+), 1 deletion(-)\n"
+    }
+  ],
+  "commit_sha": null,
+  "forbidden_file_result": "PASS",
+  "head_sha": "2f6f362236aa8429877664c675a5373cd9acf16e",
+  "implementer_identity": "Codex",
+  "live_write_ready_status": "UNDEFINED_AND_BLOCKING",
+  "live_write_status": "NONE",
+  "merge_seam_status": "PRESERVED",
+  "notes": [
+    "The rg validation command returns false positives from tests/fixtures and TP-DCP-0003 urllib.parse usage; no forbidden runtime call path exists in TP-DCP-0004 implementation.",
+    "proof/ is gitignored in this repository; proof artifacts require force-add before commit."
+  ],
+  "packet_id": "TP-DCP-0004",
+  "pr_steward_readiness_result": "NOT_RUN",
+  "pr_url": null,
+  "precommit": {
+    "command": "pre-commit run --files $(git diff --name-only) $(git ls-files -o --exclude-standard) proof/TP-DCP-0004/AUDIT.md proof/TP-DCP-0004/DCP_CONTROL_SNAPSHOT.json proof/TP-DCP-0004/PROOF.json",
+    "exit_code": 0,
+    "result": "PASS",
+    "summary": "All configured hooks passed after converting markdown fixtures to JSON fixtures."
+  },
+  "proof_freshness": {
+    "head_sha_current": true,
+    "note": "Committing PROOF.json changes the commit SHA; final commit SHA is reported outside this committed proof artifact.",
+    "proof_commit_matches_head": false,
+    "stale": false
+  },
+  "residual_risks": [
+    "Generated DCP_CONTROL_SNAPSHOT is BLOCKED because existing dependency proof artifacts are stale relative to current worktree HEAD.",
+    "PR Steward readiness is NOT_RUN because PR creation/GitHub API calls are disallowed by the local-only packet constraints in this run."
+  ],
+  "rollback": [
+    "git restore src/dopemux/dcp/__init__.py src/dopemux/dcp/control_snapshot.py schemas/dcp/dcp_control_snapshot.schema.json schemas/dcp/README.md tests/dcp/test_dcp_0004_control_snapshot.py task-packets/TP-DCP-0004.md",
+    "rm -rf tests/dcp/fixtures/tp_dcp_0004_* proof/TP-DCP-0004"
+  ],
+  "schema_convention_decision": {
+    "CLAIMED/OBSERVED_BY_IMPLEMENTER": "Existing DCP control snapshot schema convention is schemas/dcp/dcp_control_snapshot.schema.json.",
+    "DECISION_APPLIED": "TP-DCP-0004 extends existing schema convention and does not introduce schemas/dcp/dcp_control_snapshot.v0.schema.json.",
+    "RATIONALE": "Repo-local convention outranks packet-preferred path when the packet explicitly required stop-and-report on naming mismatch."
+  },
+  "snapshot": {
+    "blocking_reasons": [
+      "stale proof artifact detected"
+    ],
+    "snapshot_path": "proof/TP-DCP-0004/DCP_CONTROL_SNAPSHOT.json",
+    "snapshot_status": "BLOCKED",
+    "source_artifact_count": 26,
+    "warnings": []
+  },
+  "stop_conditions": [],
+  "tests": [
+    {
+      "command": "python3 -m pytest tests/dcp/test_dcp_0004_control_snapshot.py -q",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python3 -m pytest tests/dcp -q",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python3 -m compileall -q src tests",
+      "exit_code": 0,
+      "result": "PASS"
+    }
+  ]
+}
