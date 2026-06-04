@@ -1,0 +1,242 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/dcp/dcp_approval_artifact.v0.schema.json",
+  "title": "DCP Approval Artifact (.v0)",
+  "description": "SYNTHESIS_INVENTED envelope + REPO_VALIDATED tier/decision vocabulary / PROVISIONAL_UNVERIFIED_ENFORCEMENT. Represents a supervisor approval RECORD for a proposed mutation class. This artifact does NOT execute the mutation and must not become a write executor. INVARIANT: requester != approver (no self-certification). LIVE_WRITE_READY must not be defined. schema_version .v0 = unstable, not authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "contract_id",
+    "contract_status",
+    "provenance",
+    "validation",
+    "validation_state",
+    "field_provenance",
+    "approval_id",
+    "project_id",
+    "repo_id",
+    "requested_action_summary",
+    "mutation_class",
+    "approval_tier",
+    "requester",
+    "approver",
+    "supervisor_signoff",
+    "approved_artifact_refs",
+    "proof_refs",
+    "head_sha_or_digest",
+    "freshness_state",
+    "red_lanes_present",
+    "forbidden_paths_acknowledged",
+    "explicit_exclusions",
+    "expiry_window",
+    "decision",
+    "decision_timestamp",
+    "rationale",
+    "known_unknowns",
+    "red_lines",
+    "supersedes"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "dcp-approval-artifact.v0",
+      "description": ".v0 suffix per K-27; unstable version marker, not an authority claim."
+    },
+    "contract_id": {
+      "type": "string",
+      "description": "Unique identifier for this contract instance."
+    },
+    "contract_status": {
+      "type": "string",
+      "enum": ["ACTIVE", "PROVISIONAL", "DEFERRED", "SUPERSEDED"]
+    },
+    "provenance": {
+      "type": "object",
+      "description": "Contract-level provenance. SYNTHESIS_INVENTED envelope; tier/decision vocabulary is REPO_VALIDATED from policy.py.",
+      "additionalProperties": false,
+      "required": ["tag", "source_ref"],
+      "properties": {
+        "tag": {
+          "type": "string",
+          "enum": ["REPO_VALIDATED", "EXTERNAL_PROPOSED", "SYNTHESIS_INVENTED"]
+        },
+        "source_ref": { "type": "string" }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "description": "Validation status per REV1 §6.0.",
+      "additionalProperties": false,
+      "required": ["state", "notes"],
+      "properties": {
+        "state": {
+          "const": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+          "description": "Const-pinned for .v0 SYNTHESIS_INVENTED envelope. May not exit .v0 until repo-local reconciliation."
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "validation_state": {
+      "const": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "description": "Const-pinned for .v0 SYNTHESIS_INVENTED contract. The tier/decision vocabulary sub-fields are REPO_VALIDATED but the envelope itself is SYNTHESIS_INVENTED."
+    },
+    "field_provenance": {
+      "type": "object",
+      "description": "Per-field provenance tags for all fields in this artifact instance.",
+      "additionalProperties": { "type": "string" }
+    },
+    "approval_id": {
+      "type": "string",
+      "description": "Unique identifier for this approval record."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project identifier (e.g. dopemux-mvp)."
+    },
+    "repo_id": {
+      "type": "string",
+      "description": "Repository identifier from .repo_id marker."
+    },
+    "requested_action_summary": {
+      "type": "string",
+      "description": "Human-readable summary of the mutation action being approved. Corresponds to CapabilityPolicy.title pattern from policy.py."
+    },
+    "mutation_class": {
+      "type": "string",
+      "description": "Class ID from DCP_MUTATION_CLASS registry (e.g. MC-SOURCE-CONFIG, MC-GITHUB-MUTATION)."
+    },
+    "approval_tier": {
+      "type": "string",
+      "enum": ["T0", "T1", "T2", "T3", "T4", "T5", "T6", "TX", "TU", "HARD_BLOCK", "PROVISIONAL"],
+      "description": "Approval tier from REQUIRED_TIERS in policy.py. REPO_VALIDATED vocabulary."
+    },
+    "requester": {
+      "type": "string",
+      "description": "Identity of the requester. INVARIANT: must not equal approver. No self-certification."
+    },
+    "approver": {
+      "type": "string",
+      "description": "Identity of the approver. INVARIANT: must not equal requester. Separate actor required."
+    },
+    "supervisor_signoff": {
+      "type": "object",
+      "description": "Supervisor sign-off record. Required for T4+ mutations per policy.py T4_PLUS gate. PROVISIONAL: supervisor identity resolution not proven wired to runtime.",
+      "additionalProperties": false,
+      "required": ["required", "provided", "signoff_identity", "notes"],
+      "properties": {
+        "required": {
+          "type": "boolean",
+          "description": "Whether supervisor signoff is required (true for T4+ tiers per policy.py T4_PLUS)."
+        },
+        "provided": {
+          "type": "boolean",
+          "description": "Whether supervisor signoff has been provided."
+        },
+        "signoff_identity": {
+          "type": ["string", "null"],
+          "description": "Identity of the supervisor who signed off, or null if not yet provided."
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "approved_artifact_refs": {
+      "type": "array",
+      "description": "References to artifacts approved by this record. Pattern from proof.py _validate_manifest generated_artifacts.",
+      "items": { "type": "string" }
+    },
+    "proof_refs": {
+      "type": "array",
+      "description": "References to proof bundles associated with this approval.",
+      "items": { "type": "string" }
+    },
+    "head_sha_or_digest": {
+      "type": "object",
+      "description": "HEAD SHA or artifact digest under review. In .v0 fixtures: value must be an illustrative placeholder (no live SHA computation).",
+      "additionalProperties": false,
+      "required": ["value", "provenance_tag"],
+      "properties": {
+        "value": {
+          "type": "string",
+          "description": "Git SHA or digest. In .v0 fixtures: sha256:PLACEHOLDER-illustrative-not-computed."
+        },
+        "provenance_tag": {
+          "type": "string",
+          "enum": ["REPO_VALIDATED", "EXTERNAL_PROPOSED", "SYNTHESIS_INVENTED"]
+        }
+      }
+    },
+    "freshness_state": {
+      "type": "string",
+      "enum": ["PLAN_ONLY", "SPECIFICATION_COMPLETE", "IMPLEMENTATION_STARTED", "IMPLEMENTATION_COMPLETE", "READY_FOR_REVIEW", "VERIFIED", "BLOCKED", "UNKNOWN"],
+      "description": "Freshness/status of the approved artifact. Vocabulary from proof.py ALLOWED_PROOF_STATUSES + UNKNOWN. REPO_VALIDATED vocabulary."
+    },
+    "red_lanes_present": {
+      "type": "array",
+      "description": "Red lane IDs from DCP_RED_LANE_TAXONOMY that are present or triggered in this approval context.",
+      "items": { "type": "string" }
+    },
+    "forbidden_paths_acknowledged": {
+      "type": "array",
+      "description": "Forbidden paths explicitly acknowledged by the approver. DCP-RED-MERGE-SEAM-0001 paths must appear here when relevant.",
+      "items": { "type": "string" }
+    },
+    "explicit_exclusions": {
+      "type": "array",
+      "description": "Explicit exclusions from this approval scope. SYNTHESIS_INVENTED: no repo equivalent. Documents what is NOT approved.",
+      "items": { "type": "string" }
+    },
+    "expiry_window": {
+      "type": "object",
+      "description": "Freshness/expiry window for this approval. SYNTHESIS_INVENTED: no proof freshness window defined in approval_policy.yaml.",
+      "additionalProperties": false,
+      "required": ["value", "unit", "provenance_tag"],
+      "properties": {
+        "value": {
+          "type": ["integer", "null"],
+          "description": "Expiry window value, or null if no expiry."
+        },
+        "unit": {
+          "type": ["string", "null"],
+          "enum": ["hours", "days", "commits", null],
+          "description": "Unit for expiry window."
+        },
+        "provenance_tag": {
+          "type": "string",
+          "enum": ["REPO_VALIDATED", "EXTERNAL_PROPOSED", "SYNTHESIS_INVENTED"]
+        }
+      }
+    },
+    "decision": {
+      "type": "string",
+      "enum": ["allow", "draft_only", "gated", "refuse", "block"],
+      "description": "Decision from CapabilityPolicy.decision field vocabulary in policy.py. REPO_VALIDATED vocabulary."
+    },
+    "decision_timestamp": {
+      "type": ["string", "null"],
+      "description": "ISO 8601 UTC timestamp of the decision, or null if pending."
+    },
+    "rationale": {
+      "type": "string",
+      "description": "Human-readable rationale for the approval decision."
+    },
+    "known_unknowns": {
+      "type": "array",
+      "description": "Explicit unresolved unknowns for this approval instance.",
+      "items": { "type": "string" }
+    },
+    "red_lines": {
+      "type": "array",
+      "description": "Red line IDs that apply to this artifact. Must reference DCP-RED-MERGE-SEAM-0001 when applicable.",
+      "items": { "type": "string" }
+    },
+    "supersedes": {
+      "description": "Contract ID(s) superseded, or null.",
+      "oneOf": [
+        { "type": "null" },
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } }
+      ]
+    }
+  }
+}
