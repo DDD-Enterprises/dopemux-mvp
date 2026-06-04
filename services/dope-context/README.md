@@ -318,6 +318,8 @@ Control flags:
 **Parameters**:
 - `workspace_path`: Workspace whose indexes should be removed
 - `target`: `"code"`, `"docs"`, or `"both"` (default `"code"`)
+- `proof_id`: Task Packet or proof artifact authorizing the destructive clear
+- `approval_phrase`: Exact phrase from a refused dry call; required before deletion
 
 ### Search Metrics - `mcp__dope-context__get_search_metrics`
 

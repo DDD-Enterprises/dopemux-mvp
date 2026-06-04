@@ -106,6 +106,7 @@ A packet is superseded by another packet
 | TP-BETA-INSTALL-01-MCP-01-REVIEW-001 | MCP Config | Repair PR #737 review blockers for portable Task Orchestrator launch | Active | N/A |
 | TP-BETA-CLI-01-DECISIONS-REVIEW-001 | CLI Decisions | Repair PR #740 review blockers for decisions CLI subcommands | Active | N/A |
 | TP-DMX-ADHD-INTERACTIVE-PROMPTS-001 | ADHD UX | Wire interactive prompts into launch and profile flows | Active | N/A |
+| TP-DMX-ORCH-AUDIT-FIX-001 | Task Orchestrator | Close DMX-ORCH integration audit gaps | Active | N/A |
 
 ────────────────────────────────────────────────────────────
 🟢 Completed Task Packets
