@@ -140,23 +140,23 @@ def classify_artifact(
     live_write_ready_status, live_write_status = _live_write_status(text, None)
     merge_seam_status = _merge_seam_status(text, None)
 
-    if _looks_like_audit_report(path, text):
-        audit_fields = dict(fields)
-        audit_fields["audit_verdict"] = _observed(
-            _extract_markdown_verdict(text) or "UNKNOWN"
-        )
-        return ArtifactInspection(
-            path=str(path),
-            family=ProofFamily.DCP_AUDIT_REPORT,
-            authority_label=AuthorityLabel.OBSERVED,
-            freshness=FreshnessStatus.UNKNOWN,
-            fields=audit_fields,
-            live_write_status=live_write_status,
-            live_write_ready_status=live_write_ready_status,
-            merge_seam_status=merge_seam_status,
-        )
-
     if path.suffix.lower() != ".json":
+        if _looks_like_audit_report(path, text):
+            audit_fields = dict(fields)
+            audit_fields["audit_verdict"] = _observed(
+                _extract_markdown_verdict(text) or "UNKNOWN"
+            )
+            return ArtifactInspection(
+                path=str(path),
+                family=ProofFamily.DCP_AUDIT_REPORT,
+                authority_label=AuthorityLabel.OBSERVED,
+                freshness=FreshnessStatus.UNKNOWN,
+                fields=audit_fields,
+                live_write_status=live_write_status,
+                live_write_ready_status=live_write_ready_status,
+                merge_seam_status=merge_seam_status,
+            )
+
         return ArtifactInspection(
             path=str(path),
             family=ProofFamily.UNKNOWN,
@@ -211,6 +211,12 @@ def classify_artifact(
 
     if live_write_ready_status is LiveWriteReadyStatus.OPERATIONAL:
         errors.append("LIVE_WRITE_READY appears operational")
+    if live_write_status is LiveWriteStatus.DETECTED:
+        errors.append("live_write_status appears detected")
+    if (
+        live_write_ready_status is LiveWriteReadyStatus.OPERATIONAL
+        or live_write_status is LiveWriteStatus.DETECTED
+    ):
         family = ProofFamily.CONFLICTING
         freshness = FreshnessStatus.CONFLICTING
 
