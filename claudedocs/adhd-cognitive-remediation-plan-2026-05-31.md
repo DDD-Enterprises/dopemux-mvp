@@ -1,3 +1,15 @@
+---
+id: adhd-cognitive-remediation-plan-2026-05-31
+title: Adhd Cognitive Remediation Plan 2026 05 31
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-04'
+last_review: '2026-06-04'
+next_review: '2026-09-02'
+prelude: Adhd Cognitive Remediation Plan 2026 05 31 (explanation) for dopemux documentation
+  and developer workflows.
+---
 # DMX-ADHD-COGNITIVE-REMEDIATION — Comprehensive Plan
 
 **Date:** 2026-05-31 · **Branch base:** `feat/autoreview-platform-series` (audit HEAD `63918aab1`)

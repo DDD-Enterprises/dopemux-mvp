@@ -7,10 +7,11 @@ author: '@hu3mann'
 date: '2026-05-28'
 prelude: Reference for UI Dashboard and Cockpit panel integration inside Task Orchestrator.
 related_packets:
-  - TP-DMX-ORCH-015
-  - TP-DMX-ORCH-015-TUI
+- TP-DMX-ORCH-015
+- TP-DMX-ORCH-015-TUI
+last_review: '2026-06-04'
+next_review: '2026-09-02'
 ---
-
 # UI Dashboard & Cockpit Integration
 
 The orchestrator daily planning and tracking data is surfaced dynamically through CLI-rendered TUIs and dashboard frames.

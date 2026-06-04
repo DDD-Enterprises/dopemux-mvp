@@ -7,9 +7,10 @@ author: '@hu3mann'
 date: '2026-05-28'
 prelude: Reference for read-only Task Orchestrator subcommands and validation helpers.
 related_packets:
-  - TP-DMX-ORCH-002
+- TP-DMX-ORCH-002
+last_review: '2026-06-04'
+next_review: '2026-09-02'
 ---
-
 # Task Orchestrator CLI Reference
 
 The `dopemux orchestrator` command group exposes several read-only subcommands for status, policy, and validation.

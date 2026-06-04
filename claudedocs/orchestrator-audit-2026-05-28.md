@@ -1,3 +1,15 @@
+---
+id: orchestrator-audit-2026-05-28
+title: Orchestrator Audit 2026 05 28
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-04'
+last_review: '2026-06-04'
+next_review: '2026-09-02'
+prelude: Orchestrator Audit 2026 05 28 (explanation) for dopemux documentation and
+  developer workflows.
+---
 # Task-Orchestrator Deep Audit — 2026-05-28
 
 **Auditor**: Claude Code (read-only audit; no orchestrator state mutated)

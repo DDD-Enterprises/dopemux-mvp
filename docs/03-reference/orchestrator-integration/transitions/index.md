@@ -5,12 +5,14 @@ type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-05-28'
-prelude: Reference detailing transition previews, safety tier classifications, and advance_item rules.
+prelude: Reference detailing transition previews, safety tier classifications, and
+  advance_item rules.
 related_packets:
-  - TP-DMX-ORCH-012
-  - TP-DMX-ORCH-012-LIVE
+- TP-DMX-ORCH-012
+- TP-DMX-ORCH-012-LIVE
+last_review: '2026-06-04'
+next_review: '2026-09-02'
 ---
-
 # Workflow Transition Preview & Gating
 
 Task state transitions map directly to safety policies. All mutating transitions require explicit approval.

@@ -1,3 +1,15 @@
+---
+id: CROSS_REPO_INVENTORY
+title: Cross Repo Inventory
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-04'
+last_review: '2026-06-04'
+next_review: '2026-09-02'
+prelude: Cross Repo Inventory (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Cross-Repo Boundary Inventory — Dopemux Task-Orchestrator Integration
 
 > Generated 2026-05-25. Consolidator across 4 peer repos.
