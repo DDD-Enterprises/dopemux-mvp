@@ -117,3 +117,7 @@
 ## 2025-05-25 - [Reactive Metric Feedback (Roasts)]
 **Learning:** Purely numerical metrics can feel "cold" and abstract. Adding a playful, reactive "roast" or personality-driven status message (e.g., "Future you is screaming" vs. "Focus flirting") based on thresholds provides immediate emotional context and reduces the cognitive effort required to interpret high values.
 **Action:** Use helper functions to inject personality-driven status strings into metric displays, providing human-readable context alongside raw data.
+
+## 2025-05-26 - [Card-Level Interactive surfaces for dashboard panels]
+**Learning:** For informational dashboard panels (like the Cognitive Load Gauge), making the entire container focusable (`tabIndex={0}`) and adding tactile feedback (hover/focus lift and glow) significantly improves discoverability of high-level context (like tooltips). Consolidating multiple nested tooltips and labels into a single root description reduces cognitive clutter and screen reader noise.
+**Action:** Prefer root-level interactive surfaces for complex metric cards to improve temporal grounding and provide a more delightful, accessible experience.

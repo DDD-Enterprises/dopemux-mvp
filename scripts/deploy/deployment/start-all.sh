@@ -47,7 +47,7 @@ echo ""
 echo "🤖 Step 3/4: Starting Task Orchestrator..."
 cd "$PROJECT_ROOT"
 docker compose -p dopemux -f compose.yml up -d task-orchestrator
-echo "✅ Task Orchestrator started (port 3014)"
+echo "✅ Task Orchestrator started (port 8000)"
 echo ""
 
 # Step 4: Start ADHD Engine (background process - Docker version has dependency issues)
@@ -176,7 +176,7 @@ if [ "$VERIFY" = true ]; then
     fi
 
     # Check Task Orchestrator
-    echo -n "  Task Orchestrator (3014): "
+    echo -n "  Task Orchestrator (8000): "
     if docker ps \
         --filter "label=com.docker.compose.project=dopemux" \
         --filter "label=com.docker.compose.service=task-orchestrator" \
@@ -224,7 +224,7 @@ fi
 
 echo "🔗 Service URLs:"
 echo "  DopeconBridge: http://localhost:3016/health"
-echo "  Task Orchestrator:  http://localhost:3014/health (stdio MCP)"
+echo "  Task Orchestrator:  http://localhost:8000/health (stdio MCP)"
 echo "  Activity Capture:   http://localhost:8096/health"
 echo "  ADHD Engine:        http://localhost:8095/health"
 echo "  ADHD Dashboard:     http://localhost:8097 (optional, start manually)"

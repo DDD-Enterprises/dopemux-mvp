@@ -55,7 +55,10 @@ NETWORK_NAME = os.getenv("NETWORK_NAME", f"mcp-network-{INSTANCE_NAME}")
 MCP_INTEGRATION_PORT = PORT_BASE + 16
 
 # Service discovery - instance-aware container names
-TASK_ORCHESTRATOR_URL = f"http://{CONTAINER_PREFIX}-task-orchestrator:3014"
+TASK_ORCHESTRATOR_URL = os.getenv(
+    "TASK_ORCHESTRATOR_URL",
+    f"http://{CONTAINER_PREFIX}-task-orchestrator:8000",
+)
 LEANTIME_BRIDGE_URL = f"http://{CONTAINER_PREFIX}-leantime-bridge:3015"
 
 # Shared infrastructure (external to instances)

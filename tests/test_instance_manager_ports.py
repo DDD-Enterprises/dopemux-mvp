@@ -17,7 +17,7 @@ def test_get_instance_env_vars_offsets():
     assert env_a["DOPE_CONTEXT_PORT"] == "3010"
     assert env_a["EXA_PORT"] == "3011"
     assert env_a["DESKTOP_COMMANDER_PORT"] == "3012"
-    assert env_a["TASK_ORCHESTRATOR_PORT"] == "3014"
+    assert env_a["TASK_ORCHESTRATOR_PORT"] == "8000"
     assert env_a["LEANTIME_BRIDGE_PORT"] == "3015"
     assert env_a["DOPE_MEMORY_PORT"] == "3020"
     assert env_a["ADHD_ENGINE_PORT"] == "3025"

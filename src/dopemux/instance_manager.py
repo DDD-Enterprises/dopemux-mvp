@@ -271,6 +271,9 @@ class InstanceManager:
         # other instances use dynamic mapping (port_base + 7).
         conport_port = 3004 if instance_id == 'A' or not instance_id else (port_base + 7)
 
+        # Instance A follows the canonical compose default; B-E keep offset isolation.
+        task_orchestrator_port = 8000 if instance_id == "A" else port_base + 14
+
         env_vars = {
             "DOPEMUX_INSTANCE_ID": instance_id if instance_id != 'A' else "",
             # CRITICAL FIX: Use actual_workspace (not self.workspace_root)
@@ -295,7 +298,7 @@ class InstanceManager:
             "DOPE_CONTEXT_PORT": str(port_base + 10),
             "EXA_PORT": str(port_base + 11),
             "DESKTOP_COMMANDER_PORT": str(port_base + 12),
-            "TASK_ORCHESTRATOR_PORT": str(port_base + 14),
+            "TASK_ORCHESTRATOR_PORT": str(task_orchestrator_port),
             "LEANTIME_BRIDGE_PORT": str(port_base + 15),
             "DOPE_MEMORY_PORT": str(port_base + 20),
             "ADHD_ENGINE_PORT": str(port_base + 25),

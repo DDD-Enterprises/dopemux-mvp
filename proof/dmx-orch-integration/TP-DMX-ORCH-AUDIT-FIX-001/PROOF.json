@@ -1,0 +1,228 @@
+{
+  "bundle_id": "TP-DMX-ORCH-AUDIT-FIX-001-PROOF",
+  "run_id": "tp-dmx-orch-audit-fix-001-local",
+  "skill": "codex",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED",
+  "created_at": "2026-06-04T19:26:24Z",
+  "validated_at": "2026-06-04T19:26:24Z",
+  "manifest": {
+    "bundle_id": "TP-DMX-ORCH-AUDIT-FIX-001-PROOF",
+    "packet_id": "TP-DMX-ORCH-AUDIT-FIX-001",
+    "generated_artifacts": [
+      "task-packets/generated/TP-DMX-ORCH-AUDIT-FIX-001.json",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-AUDIT-FIX-001/research.md",
+      "proof/dmx-orch-integration/TP-DMX-ORCH-AUDIT-FIX-001/PROOF.json"
+    ]
+  },
+  "authoritative_artifacts": [
+    "task-packets/generated/TP-DMX-ORCH-AUDIT-FIX-001.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-AUDIT-FIX-001/research.md",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-AUDIT-FIX-001/PROOF.json",
+    "services/dope-context/src/mcp/server.py",
+    "src/dopemux/instance_manager.py",
+    "services/mcp-integration-bridge/main.py",
+    "services/monitoring-dashboard/server.py"
+  ],
+  "supporting_artifacts": [
+    "AGENTS.md",
+    "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+    "src/dopemux/orchestrator/validation/proof.py",
+    "compose.yml",
+    "services/task-orchestrator/Dockerfile",
+    "services/task-orchestrator/app/main.py",
+    "src/dopemux/pm/adapters/orchestrator.py"
+  ],
+  "chain_of_custody": {
+    "documented": true,
+    "source_version": "TP-DMX-ORCH-AUDIT-FIX-001",
+    "created_at": "2026-06-04T19:26:24Z",
+    "parent_bundle_ids": [
+      "TP-DMX-ORCH-002",
+      "TP-DMX-ORCH-003",
+      "TP-DMX-ORCH-DOCS-003"
+    ]
+  },
+  "repo_identity_check": {
+    "result": "PASS",
+    "repo_root": "/Users/hue/code/dopemux-mvp__dmx-orch-audit-fixes",
+    "branch": "codex/dmx-orch-audit-fixes",
+    "head": "8571c33873d5c78eead660be9caa6178b5d8b1e3",
+    "remote_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker_file": ".dopetaskroot",
+    "marker_present": true
+  },
+  "task_packet": {
+    "id": "TP-DMX-ORCH-AUDIT-FIX-001",
+    "path": "task-packets/generated/TP-DMX-ORCH-AUDIT-FIX-001.json",
+    "schema_path": "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+    "schema_validation": "PASS"
+  },
+  "slices_completed": [
+    "audit",
+    "proof-normalization",
+    "clear-index-guard",
+    "runtime-port-cleanup",
+    "proof-and-precommit"
+  ],
+  "files_changed": [
+    "task-packets/generated/TP-DMX-ORCH-AUDIT-FIX-001.json",
+    "task-packets/INDEX.md",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-AUDIT-FIX-001/research.md",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-AUDIT-FIX-001/PROOF.json",
+    "proof/dmx-orch-integration/TP-DMX-ORCH-002/PROOF.json",
+    "proof/orchestrator/TP-DMX-ORCH-DOCS-003/PROOF.json",
+    "scripts/deploy/deployment/start-all.sh",
+    "services/dope-context/README.md",
+    "services/dope-context/src/mcp/server.py",
+    "services/dope-context/tests/test_mcp_server.py",
+    "services/dopecon-bridge/tests/test_leantime_route_contract.py",
+    "services/mcp-integration-bridge/main.py",
+    "services/monitoring-dashboard/server.py",
+    "src/dopemux/instance_manager.py",
+    "tests/test_instance_manager_ports.py",
+    "tests/test_task_management_integration.py"
+  ],
+  "validations": [
+    {
+      "name": "Task Packet schema validation",
+      "command": "uv run python -m jsonschema -i task-packets/generated/TP-DMX-ORCH-AUDIT-FIX-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "note": "jsonschema CLI emitted its deprecation warning and exited 0."
+    },
+    {
+      "name": "clear_index TDD red run",
+      "command": "PYTHONPATH=services/dope-context uv run pytest -q services/dope-context/tests/test_mcp_server.py::test_clear_index_refuses_without_approval services/dope-context/tests/test_mcp_server.py::test_clear_index_tool",
+      "exit_code": 4,
+      "status": "PASS",
+      "note": "Expected red state: test collection failed because _clear_index_approval_phrase did not exist yet."
+    },
+    {
+      "name": "clear_index guarded behavior tests",
+      "command": "PYTHONPATH=services/dope-context uv run pytest -q services/dope-context/tests/test_mcp_server.py::test_clear_index_refuses_without_approval services/dope-context/tests/test_mcp_server.py::test_clear_index_tool",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": ".. [100%]"
+    },
+    {
+      "name": "Task Orchestrator runtime port tests",
+      "command": "uv run pytest -q tests/test_instance_manager_ports.py tests/test_task_management_integration.py tests/unit/test_task_orchestrator_runtime_config.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": ".... [100%]"
+    },
+    {
+      "name": "Dopecon non-leantime status-context test",
+      "command": "uv run --extra services --extra dev pytest -q services/dopecon-bridge/tests/test_leantime_route_contract.py::test_mcp_client_preserves_non_leantime_status_context",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": ". [100%]"
+    },
+    {
+      "name": "Monitoring dashboard compile check",
+      "command": "uv run python -m compileall -q services/monitoring-dashboard/server.py",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "No stale active edited-file port references",
+      "command": "! rg -n \"Task Orchestrator.*3014|3014.*Task Orchestrator|TASK_ORCHESTRATOR_URL = .*3014|TASK_ORCHESTRATOR_PORT.*3014|task-orchestrator:3014|mcp-dope-context.*3014|dope-context.*3014\" scripts/deploy/deployment/start-all.sh services/dopecon-bridge/tests/test_leantime_route_contract.py services/mcp-integration-bridge/main.py services/monitoring-dashboard/server.py src/dopemux/instance_manager.py tests/test_instance_manager_ports.py tests/test_task_management_integration.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "note": "Shell negation converts rg no-match exit 1 into pass."
+    },
+    {
+      "name": "TP-DMX-ORCH-002 proof validator",
+      "command": "uv run python -m dopemux.cli orchestrator proof validate proof/dmx-orch-integration/TP-DMX-ORCH-002/PROOF.json --json-output",
+      "exit_code": 0,
+      "status": "PASS",
+      "note": "LiteLLM emitted unrelated missing botocore warnings before JSON output."
+    },
+    {
+      "name": "TP-DMX-ORCH-DOCS-003 proof validator",
+      "command": "uv run python -m dopemux.cli orchestrator proof validate proof/orchestrator/TP-DMX-ORCH-DOCS-003/PROOF.json --json-output",
+      "exit_code": 0,
+      "status": "PASS",
+      "note": "LiteLLM emitted unrelated missing botocore warnings before JSON output."
+    },
+    {
+      "name": "All ORCH proof bundle sweep",
+      "command": "uv run python - <<PY ... validate_proof_file over proof/dmx-orch-integration and proof/orchestrator TP-DMX-ORCH*/PROOF.json ... PY",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout": "SUMMARY total=28 failed=0"
+    },
+    {
+      "name": "Diff whitespace check",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "Pre-commit hooks for packet allowlist",
+      "command": "pre-commit run --files task-packets/generated/TP-DMX-ORCH-AUDIT-FIX-001.json task-packets/INDEX.md proof/dmx-orch-integration/TP-DMX-ORCH-AUDIT-FIX-001/research.md proof/dmx-orch-integration/TP-DMX-ORCH-AUDIT-FIX-001/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-002/PROOF.json proof/orchestrator/TP-DMX-ORCH-DOCS-003/PROOF.json scripts/deploy/deployment/start-all.sh services/dope-context/README.md services/dope-context/src/mcp/server.py services/dope-context/tests/test_mcp_server.py services/dopecon-bridge/tests/test_leantime_route_contract.py services/mcp-integration-bridge/main.py services/monitoring-dashboard/server.py src/dopemux/instance_manager.py tests/test_instance_manager_ports.py tests/test_task_management_integration.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_note": "Docs, root hygiene, markdownlint, whitespace, EOF, and YAML hooks passed; some docs-only hooks skipped where no files applied."
+    },
+    {
+      "name": "PAL precommit tool attempts",
+      "command": "mcp__pal.precommit (two attempts)",
+      "exit_code": null,
+      "status": "NOT_RUN",
+      "note": "Tool transport closed before returning a precommit analysis. Repo pre-commit hooks passed separately."
+    }
+  ],
+  "codereview_status": {
+    "result": "PASS",
+    "tool": "pal/codereview",
+    "model": "gpt-5-codex",
+    "validation_type": "internal",
+    "review_type": "full",
+    "issues_found": 0,
+    "continuation_id": "3a47867e-d8ba-4f74-97bf-99217f9c9262"
+  },
+  "precommit_status": {
+    "result": "PASS",
+    "tool": "pre-commit",
+    "command": "pre-commit run --files task-packets/generated/TP-DMX-ORCH-AUDIT-FIX-001.json task-packets/INDEX.md proof/dmx-orch-integration/TP-DMX-ORCH-AUDIT-FIX-001/research.md proof/dmx-orch-integration/TP-DMX-ORCH-AUDIT-FIX-001/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-002/PROOF.json proof/orchestrator/TP-DMX-ORCH-DOCS-003/PROOF.json scripts/deploy/deployment/start-all.sh services/dope-context/README.md services/dope-context/src/mcp/server.py services/dope-context/tests/test_mcp_server.py services/dopecon-bridge/tests/test_leantime_route_contract.py services/mcp-integration-bridge/main.py services/monitoring-dashboard/server.py src/dopemux/instance_manager.py tests/test_instance_manager_ports.py tests/test_task_management_integration.py",
+    "exit_code": 0
+  },
+  "warnings": [
+    {
+      "artifact": "scripts/mcp/wire_claude_mcp.py",
+      "message": "Legacy Gradle/stdout task-orchestrator launcher still contains --port=3014; left unchanged because the correct fix is the separate portable MCP launcher contract, not numeric substitution."
+    },
+    {
+      "artifact": "services/monitoring-dashboard/server.py",
+      "message": "Port extraction still only parses 0.0.0.0 Docker mappings; loopback-only published ports are a separate dashboard parsing issue."
+    }
+  ],
+  "blockers": [],
+  "not_run": [
+    "Full repository test suite: out of scope for this bounded audit-fix packet.",
+    "Docker compose startup: not run; this packet validates static compose/runtime alignment and targeted unit paths only.",
+    "Live task-orchestrator, ConPort, PM, dope-memory, GitHub, provider, or index mutations: not run by packet invariant."
+  ],
+  "residual_risks": [
+    "The Claude MCP wiring script remains a known legacy path and should be handled by the portable Task Orchestrator launch repair lane.",
+    "Existing unguarded callers of dope-context clear_index now receive a refused result until they provide proof_id and the exact approval phrase.",
+    "Historical docs and generated evidence still mention 3014; this packet intentionally does not rewrite archived records."
+  ],
+  "rollback_plan": [
+    "Revert dope-context clear_index signature, guard helper, README, and tests.",
+    "Revert active port literal changes in start-all, instance manager, integration bridge, dashboard, and tests.",
+    "Remove added proof contract fields from the two legacy proof bundles if the validator contract changes.",
+    "Remove TP-DMX-ORCH-AUDIT-FIX-001 from task-packets/INDEX.md and delete its packet/proof artifacts."
+  ],
+  "commit_sha": null,
+  "commit_sha_policy": "A committed proof file cannot self-reference the commit SHA that contains its final contents. The final commit SHA is reported by git after commit creation and in the closeout.",
+  "pr_url": null,
+  "cleanup_status": "WORKTREE_ACTIVE",
+  "pal_precommit_status": {
+    "result": "NOT_RUN",
+    "tool": "pal/precommit",
+    "reason": "Transport closed on two consecutive attempts before analysis returned."
+  }
+}
