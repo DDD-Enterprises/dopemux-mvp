@@ -150,6 +150,18 @@ def test_v5_batch_request_construction_propagates_strict_response_format_to_wire
     assert response_format["json_schema"]["schema"]["additionalProperties"] is False
 
 
+def test_v5_batch_job_row_persists_strict_schema_flag_for_watch() -> None:
+    runner = _load_runner_module()
+
+    assert runner._batch_job_strict_json_schema(
+        {"strict_json_schema": True}
+    ) is True
+    assert runner._batch_job_strict_json_schema(
+        {"strict_json_schema": False}
+    ) is False
+    assert runner._batch_job_strict_json_schema({}) is False
+
+
 def test_v5_strict_batch_request_missing_schema_fails_before_upload_or_submit() -> None:
     runner = _load_runner_module()
     client, fake = _client(runner)

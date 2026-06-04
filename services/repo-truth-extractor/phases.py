@@ -196,6 +196,12 @@ REQUIRED_PROMPT_STEP_IDS: Dict[str, Set[str]] = {
     "Z": {"Z0", "Z1", "Z2", "Z9"},
     "S": set(PHASE_S_BASE_STEPS),
     "SP": set(PHASE_SP_BASE_STEPS),
+    # S4-MED-1: "M" is an orphan phase id. It has required prompt-step ids here and is
+    # referenced in v5 routing sets (PREMIUM_SYNTHESIS_PHASES / OPTIMAL_NO_CODE_PHASES),
+    # but there is NO PhaseId.M, no PhaseDefinition, no dir_name, and no dispatch path, so
+    # it can never be selected or executed. Coverage/verify tooling that enumerates these
+    # ids will count M0-M6 as "required" for a phase that cannot run. Retained (not removed)
+    # to avoid touching the routing sets; treat as reserved/inert until a real M phase lands.
     "M": {"M0", "M1", "M2", "M3", "M4", "M5", "M6"},
 }
 

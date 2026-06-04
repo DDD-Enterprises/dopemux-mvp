@@ -1,0 +1,147 @@
+{
+  "id": "TP-BETA-MCP-03-ADHD-REDIS-ISOLATION",
+  "project": "dopemux-mvp",
+  "target": "Isolate ADHD Engine Redis state by instance so parallel worktrees do not collide on user-scoped attention, energy, break, profile, cache, and notification keys.",
+  "invariants": [
+    "Do not change Redis server topology, ports, volumes, or compose service names.",
+    "Do not introduce new dependencies.",
+    "Preserve unprefixed Redis keys when no ADHD Engine Redis prefix or instance id is configured outside compose.",
+    "Expose compose runtime isolation through DOPEMUX_INSTANCE_ID-derived ADHD_ENGINE_REDIS_PREFIX.",
+    "Keep Redis key serialization deterministic and explicit."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "BETA-MCP",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "fix/beta-mcp-03-adhd-engine-redis-isolation",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(adhd-engine): BETA-MCP-03 isolate Redis keys by instance",
+    "allowlist": [
+      "compose.yml",
+      "services/adhd_engine/redis_keys.py",
+      "services/adhd_engine/adhd_config_service.py",
+      "services/adhd_engine/api/routes.py",
+      "services/adhd_engine/core/activity_tracker.py",
+      "services/adhd_engine/core/engine.py",
+      "services/adhd_engine/core/feature_flags.py",
+      "services/adhd_engine/engine.py",
+      "services/adhd_engine/tests/test_redis_keys.py",
+      "task-packets/INDEX.md",
+      "task-packets/generated/TP-BETA-MCP-03-ADHD-REDIS-ISOLATION.json",
+      "claudedocs/beta-mcp-03-adhd-redis-isolation-proof-2026-05-31.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-BETA-MCP-03-ADHD-REDIS-ISOLATION.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-BETA-MCP-03-ADHD-REDIS-ISOLATION.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest services/adhd_engine/tests/test_redis_keys.py services/adhd_engine/tests/test_adhd_config_service.py -q",
+      "python -m compileall services/adhd_engine",
+      "docker compose -f compose.yml config --quiet",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(adhd-engine): isolate Redis keys by instance",
+    "body": "## Summary\n- Adds deterministic ADHD Engine Redis key prefixing from ADHD_ENGINE_REDIS_PREFIX, ADHD_ENGINE_INSTANCE_ID, or DOPEMUX_INSTANCE_ID.\n- Exposes ADHD_ENGINE_REDIS_PREFIX in compose via DOPEMUX_INSTANCE_ID.\n- Applies the prefix to ADHD state/cache/profile/break/notification keys while preserving unprefixed behavior when no prefix is configured outside compose.\n\n## Test Plan\n- python -m json.tool task-packets/generated/TP-BETA-MCP-03-ADHD-REDIS-ISOLATION.json >/dev/null\n- python -m jsonschema -i task-packets/generated/TP-BETA-MCP-03-ADHD-REDIS-ISOLATION.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- python -m pytest services/adhd_engine/tests/test_redis_keys.py services/adhd_engine/tests/test_adhd_config_service.py -q\n- python -m compileall services/adhd_engine\n- docker compose -f compose.yml config --quiet\n- git diff --check\n\n## NOT_RUN\n- docker compose up / live service startup: not required by packet and may mutate local runtime state.\n\n@codex review\n@gemini\n@copilot",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repo identity, branch, marker, worktree isolation, dirty state, and required authority files.",
+      "context_files": [
+        "AGENTS.md",
+        ".claude/claude.md",
+        ".claude/modules/shared/governance-principles.md",
+        "claudedocs/codex-remaining-work-prompt-2026-05-30.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ],
+      "validation": [
+        "Repo root is /Users/hue/code/dopemux-mvp-wt-beta-mcp-03.",
+        "Branch is fix/beta-mcp-03-adhd-engine-redis-isolation.",
+        "Remote identifies DDD-Enterprises/dopemux-mvp.",
+        ".dopetaskroot exists."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Trace ADHD Engine Redis key construction and existing instance-overlay behavior.",
+      "context_files": [
+        "compose.yml",
+        "src/dopemux/mcp/instance_overlay.py",
+        "services/adhd_engine/adhd_config_service.py",
+        "services/adhd_engine/api/routes.py",
+        "services/adhd_engine/core/activity_tracker.py",
+        "services/adhd_engine/core/engine.py",
+        "services/adhd_engine/core/feature_flags.py",
+        "services/adhd_engine/engine.py"
+      ],
+      "validation": [
+        "Current compose environment is checked for ADHD_ENGINE_INSTANCE_ID and ADHD_ENGINE_REDIS_PREFIX.",
+        "Redis keys for attention, energy, breaks, profiles, activity, feature flags, and notifications are identified.",
+        "Existing instance overlay DOPEMUX_INSTANCE_ID behavior is recorded."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Add deterministic Redis key prefixing and expose it in compose.",
+      "expected_files": [
+        "compose.yml",
+        "services/adhd_engine/redis_keys.py",
+        "services/adhd_engine/adhd_config_service.py",
+        "services/adhd_engine/api/routes.py",
+        "services/adhd_engine/core/activity_tracker.py",
+        "services/adhd_engine/core/engine.py",
+        "services/adhd_engine/core/feature_flags.py",
+        "services/adhd_engine/engine.py"
+      ],
+      "validation": [
+        "compose.yml sets ADHD_ENGINE_REDIS_PREFIX from ADHD_ENGINE_REDIS_PREFIX or DOPEMUX_INSTANCE_ID.",
+        "No configured prefix preserves historical unprefixed key behavior.",
+        "Configured prefix scopes ADHD Engine Redis keys deterministically."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Add focused tests and run targeted validation plus precommit.",
+      "expected_files": [
+        "services/adhd_engine/tests/test_redis_keys.py",
+        "claudedocs/beta-mcp-03-adhd-redis-isolation-proof-2026-05-31.md"
+      ],
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-BETA-MCP-03-ADHD-REDIS-ISOLATION.json >/dev/null",
+        "python -m jsonschema -i task-packets/generated/TP-BETA-MCP-03-ADHD-REDIS-ISOLATION.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python -m pytest services/adhd_engine/tests/test_redis_keys.py services/adhd_engine/tests/test_adhd_config_service.py -q",
+        "python -m compileall services/adhd_engine",
+        "docker compose -f compose.yml config --quiet",
+        "git diff --check"
+      ]
+    }
+  ]
+}

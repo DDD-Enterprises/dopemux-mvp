@@ -1,0 +1,42 @@
+{
+  "packet_id": "TP-DCP-DOCS-002",
+  "repo_root": "/Users/hue/code/dopemux-mvp",
+  "worktree_path": "/Users/hue/code/dopemux-mvp-wt-dcp-docs-001",
+  "branch": "codex/dcp-docs-001",
+  "base_branch": "main",
+  "starting_head": "ff20d6b8d",
+  "ending_head": "UNKNOWN_FINAL_COMMIT_SELF_REFERENCE",
+  "files_created": [
+    "task-packets/TP-DCP-DOCS-002.json",
+    "docs/03-reference/dcp/chatgpt-projects/README.md",
+    "docs/03-reference/dcp/chatgpt-projects/dcp-core-supervisor.md",
+    "docs/03-reference/dcp/chatgpt-projects/dopemux-supervisor.md",
+    "docs/03-reference/dcp/chatgpt-projects/dnh-crm-supervisor.md",
+    "docs/03-reference/dcp/chatgpt-projects/dcp-packet-lab.md",
+    "docs/03-reference/dcp/chatgpt-projects/upload-sets.md",
+    "docs/03-reference/dcp/chatgpt-projects/project-instructions.md",
+    "proof/TP-DCP-DOCS-002/PROOF.json"
+  ],
+  "files_modified": [],
+  "forbidden_files_touched": false,
+  "validation_commands": [
+    {
+      "command": "test -f docs/03-reference/dcp/chatgpt-projects/README.md",
+      "exit_code": 0
+    },
+    {
+      "command": "rg -n \"repo truth|runtime|UNKNOWN|CLAIMED_ONLY|LIVE_WRITE_READY|DCP-RED-MERGE-SEAM|secret\" docs/03-reference/dcp/chatgpt-projects",
+      "exit_code": 0
+    }
+  ],
+  "source_files_inspected": [
+    "AGENTS.md",
+    "PROJECT.md",
+    "ARCHITECTURE.md"
+  ],
+  "generated_artifact_hashes": {},
+  "skipped_unsafe_files": [],
+  "unknowns": [],
+  "residual_risks": [],
+  "final_status": "VERIFIED"
+}

@@ -59,6 +59,7 @@ class ADHDEventListener:
         working_memory_support=None,
         context_preserver=None,
         activity_tracker=None,
+        adhd_engine=None,
         output_channels: Optional[List] = None
     ):
         """
@@ -72,9 +73,11 @@ class ADHDEventListener:
             working_memory_support: WorkingMemorySupport instance
             context_preserver: ContextPreserver instance
             activity_tracker: ActivityTracker instance
+            adhd_engine: ADHDAccommodationEngine instance for state refreshes
             output_channels: List of output channel handlers
         """
         self.event_bus = event_bus
+        self.adhd_engine = adhd_engine
         self.hyperfocus_guard = hyperfocus_guard
         self.overwhelm_detector = overwhelm_detector
         self.procrastination_detector = procrastination_detector
@@ -100,6 +103,11 @@ class ADHDEventListener:
             "file_saved": self._on_file_activity,
             "file_closed": self._on_file_activity,
             "file_activity": self._on_file_activity,
+            # NOTE: "activity_updated" is intentionally NOT registered here.
+            # That event is emitted BY the /activity route AFTER it has already
+            # called engine.record_activity_update() directly.  Re-processing it
+            # in the listener would double-count the same update.
+            "native_hook_activity": self._on_native_hook_activity,
             "window_switched": self._on_window_switch,
             "app_focused": self._on_app_focus,
             "idle_detected": self._on_idle,
@@ -128,6 +136,7 @@ class ADHDEventListener:
             # Claude Code events
             "claude_prompt_received": self._on_claude_prompt,
             "claude_tool_started": self._on_claude_tool,
+            "claude_tool_completed": self._on_claude_tool,
             "claude_session_stopped": self._on_claude_stop,
         }
     
@@ -180,9 +189,62 @@ class ADHDEventListener:
     # ─────────────────────────────────────────────────────────────
     # Activity Event Handlers
     # ─────────────────────────────────────────────────────────────
+
+    async def _record_activity_signal(
+        self,
+        data: Dict[str, Any],
+        *,
+        source_event: str,
+    ) -> None:
+        """Refresh engine state from a content-free activity signal."""
+        if not self.adhd_engine or not hasattr(self.adhd_engine, "record_activity_update"):
+            return
+
+        user_id = data.get("user_id") or self._current_user_id
+        if not user_id:
+            return
+
+        allowed_fields = {
+            "completion_rate",
+            "context_switches",
+            "break_compliance",
+            "minutes_since_break",
+            "hook_event_name",
+            "status",
+            "tool_name",
+            "boundary_type",
+            "idle_detected",
+            "idle_minutes",
+        }
+        activity_data = {
+            key: value
+            for key, value in data.items()
+            if key in allowed_fields and value is not None
+        }
+        activity_data["source_event"] = source_event
+        await self.adhd_engine.record_activity_update(user_id, activity_data)
+
+    async def _on_activity_updated(self, data: Dict[str, Any]):
+        """Handle activity updates emitted by the local /activity endpoint."""
+        metrics = data.get("metrics") if isinstance(data.get("metrics"), dict) else {}
+        activity_data = {
+            "user_id": data.get("user_id"),
+            **metrics,
+        }
+        await self._record_activity_signal(activity_data, source_event="activity_updated")
+
+    async def _on_native_hook_activity(self, data: Dict[str, Any]):
+        """Handle content-free native hook activity emitted by Dopemux hooks."""
+        await self._record_activity_signal(data, source_event="native_hook_activity")
     
     async def _on_file_activity(self, data: Dict[str, Any]):
         """Handle file activity events."""
+        if data.get("action") == "closed":
+            await self._record_activity_signal(
+                {"boundary_type": "file_close"},
+                source_event="file_closed",
+            )
+
         # Add to rolling window
         self._file_activity_window.append({
             "file": data.get("file"),
@@ -268,8 +330,21 @@ class ADHDEventListener:
     
     async def _on_idle(self, data: Dict[str, Any]):
         """Handle idle detection."""
-        idle_minutes = data.get("minutes", 0)
-        
+        # external_activity.py emits idle_detected events with `idle_minutes`,
+        # while other producers use `minutes`; accept either so the duration is
+        # not silently forwarded as 0.
+        idle_minutes = data.get("idle_minutes", data.get("minutes", 0))
+
+        # Forward idle metrics to the engine so the hyperfocus latch and attention
+        # assessment can react to real idle signals (#786).
+        await self._record_activity_signal(
+            {
+                "idle_detected": True,
+                "idle_minutes": idle_minutes,
+            },
+            source_event="idle_detected",
+        )
+
         # Trigger context save on extended idle
         if idle_minutes >= 5 and self.context_preserver:
             await self.context_preserver.save_context(
@@ -528,5 +603,6 @@ def create_adhd_event_listener(
         working_memory_support=getattr(engine, 'working_memory_support', None),
         context_preserver=getattr(engine, 'context_preserver', None),
         activity_tracker=getattr(engine, 'activity_tracker', None),
+        adhd_engine=engine,
         output_channels=output_channels or [],
     )

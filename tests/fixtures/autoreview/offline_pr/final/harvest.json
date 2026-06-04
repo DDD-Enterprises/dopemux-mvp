@@ -1,0 +1,70 @@
+{
+  "changed_files": [
+    {
+      "additions": 12,
+      "deletions": 1,
+      "path": "src/example.py",
+      "status": "modified"
+    }
+  ],
+  "checks": [
+    {
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/105",
+      "headSha": "head000000000000000000000000000000000000",
+      "isRequired": true,
+      "name": "unit",
+      "status": "COMPLETED"
+    }
+  ],
+  "commits": [
+    {
+      "messageHeadline": "feat(example): introduce offline autoreview fixture",
+      "oid": "head000000000000000000000000000000000000"
+    }
+  ],
+  "embedded_audit": {
+    "report_path": "proof/TP-DMX-AUTOREVIEW-E2E-105/AUDITOR_REPORT.md",
+    "status": "PASS"
+  },
+  "harvest_complete": true,
+  "harvest_errors": [],
+  "issue_comments": [],
+  "pr": {
+    "author": {
+      "login": "hu3mann"
+    },
+    "baseRefName": "main",
+    "baseRefOid": "base000000000000000000000000000000000000",
+    "createdAt": "2026-05-31T12:00:00Z",
+    "headRefName": "codex/offline-autoreview-fixture",
+    "headRefOid": "head000000000000000000000000000000000000",
+    "isDraft": false,
+    "mergeStateStatus": "CLEAN",
+    "mergeable": "MERGEABLE",
+    "number": 704,
+    "reviewDecision": "APPROVED",
+    "state": "OPEN",
+    "updatedAt": "2026-05-31T12:15:00Z",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/704"
+  },
+  "proof": {
+    "matches_pr_head": true,
+    "proof_head_sha": "head000000000000000000000000000000000000",
+    "proof_path": "proof/TP-DMX-AUTOREVIEW-E2E-105/PROOF.json"
+  },
+  "review_comments": [],
+  "review_threads": [],
+  "reviews": [
+    {
+      "author": {
+        "login": "chatgpt-codex-connector"
+      },
+      "authorAssociation": "MEMBER",
+      "body": "Approved for offline autoreview fixture.",
+      "id": "R_AUTOREVIEW_APPROVED",
+      "state": "APPROVED",
+      "submittedAt": "2026-05-31T12:04:00Z"
+    }
+  ]
+}

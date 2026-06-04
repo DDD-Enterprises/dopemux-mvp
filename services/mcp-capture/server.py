@@ -103,6 +103,26 @@ class CaptureMCPServer:
                 lane = arguments.get("lane")
                 repo_root_str = arguments.get("repo_root")
 
+                # MCP2-03 (audit): validate the untrusted event envelope before forwarding
+                # to Chronicle ingestion -- the MCP runtime does not enforce the declared
+                # inputSchema. Fail closed (the except below returns a structured error) on
+                # a malformed event or out-of-enum mode rather than ingesting unchecked.
+                if not isinstance(event, dict):
+                    raise ValueError("'event' must be an object")
+                # P1-1: accept "type" alias — emit_capture_event supports both
+                # "event_type" and "type"; the guard must match so aliased clients
+                # aren't silently dropped with a structured error.
+                event_type = event.get("event_type") or event.get("type")
+                if not isinstance(event_type, str) or not event_type.strip():
+                    raise ValueError(
+                        "'event.event_type' (or alias 'event.type') is required and must be a non-empty string"
+                    )
+                allowed_modes = {"plugin", "cli", "mcp", "auto"}
+                if mode not in allowed_modes:
+                    raise ValueError(
+                        f"'mode' must be one of {sorted(allowed_modes)}; got {mode!r}"
+                    )
+
                 repo_root = Path(repo_root_str) if repo_root_str else None
 
                 # Call emit_capture_event

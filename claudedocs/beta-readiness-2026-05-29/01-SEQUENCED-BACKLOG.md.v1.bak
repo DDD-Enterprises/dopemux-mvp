@@ -1,0 +1,74 @@
+# Dopemux Beta-Readiness — Sequenced Backlog
+
+Run metadata: HEAD `755bf3846`, 2026-05-29. Severities/effort/disposition transcribed from the audit synthesis; every item's evidence lives in `00-MASTER-REPORT.md` (path:line).
+
+---
+
+## Internal-Beta Blockers (dogfood gate)
+
+| id | title | severity | domain | effort | depends_on | fix_summary |
+|----|-------|----------|--------|--------|------------|-------------|
+| BETA-CLI-01 | `dopemux decisions` group ships only energy+patterns; review/list/show/update-outcome/query subcommands absent | HIGH | CLI | M | — | The decisions surface is the user-facing read/write path over ConPort decision records. With only energy/patterns subgroups, a dogfooder cannot list, show, review, or update-outcome decisions from the CLI — a core ADHD-workflow flow. Implement the missing subcommands (review/list/show/update-outcome/query) against the ConPort client, mirroring the energy/patterns group structure. |
+| BETA-MCP-01 | `.mcp.json` conport/dope-memory SSE URLs use `${CONPORT_MCP_PORT}`/`${DOPE_MEMORY_PORT}` with no `:-` default — empty-port URL if launcher not run first | HIGH | MCP | S | — | If Claude Code is launched without first running the instance-overlay launcher that exports these vars, both SSE URLs resolve to `http://localhost:/mcp` (empty port) and ConPort + dope-memory MCP fail to connect — breaking the primary memory/knowledge flow for you and close users. Add `:-3005` / `:-3020` defaults matching the compose defaults (or guarantee the launcher always exports them). Kept on BOTH gates conservatively; downgrade to public-only ONLY if the dogfood launcher is proven to always export the port vars (currently NOT proven — see open_unknowns). |
+| BETA-SURF-01 | Orchestrator `/dx:` command surface regressed off main by PR #720 — `.claude/commands/dx/` now contains only `implement.md` | MED | Tooling | M | — | A stale Jules/Gemini palette PR (#720) reverted the CLAUDE-SURFACE orchestrator command surface (the `/dx:` slash commands + orchestrator config.yaml + protocol). The runtime hooks from #722 are still present, but the operator-facing dx command surface is gone, degrading the dogfooding workflow. Restore the surface by cherry-picking the deleted files from `origin/task-orchestrator-claude-surface`. Scope is the `.claude` tooling surface (author/dogfood workflow), not end-user product flow — hence MED. |
+| BETA-HOOK-01 | Stop hook blocks session exit once per stop when a workflow is active and no checkpoint/completion-token emitted (friction, not hard lockup) | LOW | Hooks | S | — | Only bites a user who tries to end the session mid dopemux-workflow with no emitted checkpoint. The block fires once, then `stop_hook_active` lets the next exit through, so it is recoverable confusion rather than a lockup. For polish, add an explicit `dopemux workflow abandon` escape or a time/iteration-based auto-release so the first block isn't surprising. Low priority for internal beta. |
+
+---
+
+## Public-Beta Blockers (external-clone gate)
+
+| id | title | severity | domain | effort | depends_on | fix_summary |
+|----|-------|----------|--------|--------|------------|-------------|
+| BETA-INSTALL-01 | Committed `.mcp.json` hardcodes a machine-specific absolute task-orchestrator path (`/Users/hue/plugins/...`) with no installer rewrite — dead MCP on every non-author clone | HIGH | Install | S | — | Any external user cloning the repo gets a task-orchestrator MCP server pointing at a script that does not exist on their machine → the orchestrator MCP silently fails to start. Replace the absolute path with a repo-relative launcher (e.g. `./scripts/...`) or have install.sh generate the `.mcp.json` command per-machine. This is a first-touch install blocker for public beta. Re-raised against this HEAD because the prior REFUTED label carried no evidence. |
+| BETA-MCP-02 | compose.yml uses `condition: service_started` (bare-list depends_on) for ConPort, task-orchestrator, adhd-engine — cold-start connection-refused races | MED | MCP | S | — | On a cold `docker compose up`, ConPort starts before Postgres/Redis accept connections, and task-orchestrator/adhd-engine start before ConPort is healthy → intermittent crash loops (masked by `restart: unless-stopped` but adds churn and first-run flakiness for new users). Convert these bare-list depends_on entries to long-form with `condition: service_healthy`, mirroring the dopecon-bridge/dope-memory blocks already in the file. |
+| BETA-MCP-03 | No per-instance Redis isolation: instance overlay never remaps redis-primary, and ADHD-engine state keys are user-scoped only — two same-user worktrees collide | MED | MCP | M | — | In the exact dogfood scenario (one user running 2+ worktrees), ADHD state — attention state, last-break timestamp, energy profile — is shared across instances because keys carry only user_id, and there is no per-instance Redis. Cross-instance state bleed corrupts break timing and attention-aware limits. Namespace the keys with workspace_id/instance_id (preferred, cheap) or fork a per-instance redis-primary in the overlay. Public-beta multi-instance safety item. |
+
+---
+
+## Post-Beta (non-gating)
+
+| id | title | severity | domain | action | effort | depends_on | fix_summary |
+|----|-------|----------|--------|--------|--------|------------|-------------|
+| BETA-CLEAN-01 | Remove dead/stub services: `services/router` (only `__init__`) and `services/dope-query` (no server) | OBS | Cleanup | remove | S | — | These two service directories have no runnable server and no compose service. They add navigation noise and imply capability that does not exist. Delete them (or move to an explicit `/experiments` area). NOTE: dope-memory is NOT in this set — it is an active service (compose builds it from services/working-memory-assistant/Dockerfile.dope-memory and ships mcp_stdio_adapter.py); the inherited 'dope-memory duplicates working-memory-assistant' claim is refuted. |
+| BETA-MCP-04 | Document shared-Postgres single-role/dev-credential posture; confirm migration 007 ordering for advanced graph features | OBS | MCP | document | S | — | Data-plane isolation for ConPort holds on a fresh install (workspace_id is a partition key; active_context is per (workspace_id, instance_id) via _ensure_schema-added column). Two doc items remain: (1) all services share one Postgres role/DB with dev-default credentials — fine for single-tenant local, must be hardened/documented before any shared deployment; (2) document which migrations beyond instance_id are auto-applied vs require manual run, since start_with_info.sh has no migration step. |
+
+---
+
+## Sequencing Waves — Ordered Roadmap
+
+### Wave 0 — restore/unblock
+
+**Items:** `BETA-SURF-01`
+
+Restore the orchestrator `/dx:` command surface stripped by PR #720 before doing further dogfood work, so the workflow surface the rest of the backlog assumes is actually present. Recover from `origin/task-orchestrator-claude-surface`. No code dependencies; do first because it is pure restore and unblocks operator workflows.
+
+### Wave 1 — internal-beta gate (dogfood)
+
+**Items:** `BETA-CLI-01`, `BETA-MCP-01`
+
+Close the two confirmed internal-dogfood blockers: the missing decisions subcommands (RV-3, core CLI flow) and the empty-port `.mcp.json` risk (MCP-6, connection of core memory MCPs). BETA-MCP-01 also benefits the public gate. Independent of each other; can run in parallel.
+
+### Wave 2 — public-beta gate
+
+**Items:** `BETA-INSTALL-01`, `BETA-MCP-02`, `BETA-MCP-03`
+
+The external-user delta: clean-machine install (hardcoded task-orchestrator path), cold-start races (service_healthy), and multi-instance Redis safety. BETA-INSTALL-01 first (highest external impact), then the two compose/runtime items. No hard dependencies among them but all should land before any external clone is attempted.
+
+### Wave 3 — polish/cleanup
+
+**Items:** `BETA-HOOK-01`, `BETA-CLEAN-01`, `BETA-MCP-04`
+
+Non-gating: Stop-hook UX escape valve, deletion of dead router/dope-query stubs, and documentation of shared-Postgres credential posture + migration ordering. Safe to defer until after both beta gates are green.
+
+---
+
+## Roadmap at a Glance
+
+| Wave | Gate | Items | Parallelizable |
+|------|------|-------|----------------|
+| 0 | Restore/unblock | BETA-SURF-01 | n/a (single item, do first) |
+| 1 | Internal-beta | BETA-CLI-01, BETA-MCP-01 | yes (independent) |
+| 2 | Public-beta | BETA-INSTALL-01, BETA-MCP-02, BETA-MCP-03 | yes, but INSTALL-01 first by impact |
+| 3 | Polish/post-beta | BETA-HOOK-01, BETA-CLEAN-01, BETA-MCP-04 | yes (deferred until gates green) |
+
+> Caveat: A confident internal-beta GO additionally requires exercising the agent-wrapping live-run path — UNASSESSABLE here because the AGENT-WRAPPING SPEC input was empty. See `03-AGENT-WRAPPING-SPEC.md` and `00-MASTER-REPORT.md` → Open Unknowns.

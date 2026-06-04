@@ -1,0 +1,18 @@
+{
+  "packet_id": "TP-DCP-0003",
+  "branch": "dcp/proof-family-dispatch-tp-0003",
+  "base_branch": "main",
+  "base_sha": "1111111111111111111111111111111111111111",
+  "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "commit_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "audit_verdict": "PASS",
+  "audit": {
+    "auditor_verdict": "FAIL"
+  },
+  "proof_freshness": {
+    "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "head_sha_current": true,
+    "proof_commit_matches_head": true,
+    "stale": false
+  }
+}

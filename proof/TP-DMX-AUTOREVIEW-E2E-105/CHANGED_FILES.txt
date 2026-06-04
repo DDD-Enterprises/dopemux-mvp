@@ -1,0 +1,13 @@
+docs/ops/autoreview-loop.md
+pyproject.toml
+proof/TP-DMX-AUTOREVIEW-E2E-105/AUDITOR_REPORT.md
+proof/TP-DMX-AUTOREVIEW-E2E-105/CHANGED_FILES.txt
+proof/TP-DMX-AUTOREVIEW-E2E-105/DIFF_STAT.txt
+proof/TP-DMX-AUTOREVIEW-E2E-105/GIT_STATE.md
+proof/TP-DMX-AUTOREVIEW-E2E-105/PROOF.json
+proof/TP-DMX-AUTOREVIEW-E2E-105/VALIDATION_OUTPUT.md
+proof/TP-DMX-AUTOREVIEW-E2E-105/output/**
+task-packets/generated/TP-DMX-AUTOREVIEW-E2E-105.json
+tests/fixtures/autoreview/offline_pr/**
+tests/integration/test_autoreview_loop.py
+uv.lock

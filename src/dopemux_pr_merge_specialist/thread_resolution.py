@@ -368,12 +368,14 @@ def resolve_verified_threads(
     commands_log: Path,
     repo_root: Path,
     policy: Dict[str, Any],
-) -> None:
+) -> bool:
     """Resolve threads that were previously applied or marked for resolution, now that verification has passed."""
     if not execute:
-        return
+        return False
 
     timeout_seconds = int(policy.get("timeouts", {}).get("gh_seconds", 120) or 120)
+    attempted = False
+    all_succeeded = True
     for disposition in dispositions:
         if not disposition.applied:
             continue
@@ -383,6 +385,7 @@ def resolve_verified_threads(
             "agentic_fix",
             "auto_resolve_outdated",
         }:
+            attempted = True
             # Post evidence-backed reply first
             reply_body = f"✅ Automated verification passed for this {disposition.disposition}."
             if disposition.disposition == "agentic_fix":
@@ -393,24 +396,25 @@ def resolve_verified_threads(
             elif disposition.disposition == "implement":
                 reply_body = "✅ Machine-applicable suggestion applied and verified locally. Resolving thread."
 
-            append_command_log(
-                commands_log,
-                _execute_thread_graphql(
-                    graph_reply_to_thread,
-                    disposition.thread_id,
-                    reply_body,
-                    repo_root=repo_root,
-                    timeout_seconds=timeout_seconds,
-                ),
+            reply_result = _execute_thread_graphql(
+                graph_reply_to_thread,
+                disposition.thread_id,
+                reply_body,
+                repo_root=repo_root,
+                timeout_seconds=timeout_seconds,
             )
+            append_command_log(commands_log, reply_result)
+            if not _graphql_mutation_ok(reply_result):
+                all_succeeded = False
 
             # Then resolve
-            append_command_log(
-                commands_log,
-                _execute_thread_graphql(
-                    graph_resolve_thread,
-                    disposition.thread_id,
-                    repo_root=repo_root,
-                    timeout_seconds=timeout_seconds,
-                ),
+            resolve_result = _execute_thread_graphql(
+                graph_resolve_thread,
+                disposition.thread_id,
+                repo_root=repo_root,
+                timeout_seconds=timeout_seconds,
             )
+            append_command_log(commands_log, resolve_result)
+            if not _graphql_mutation_ok(resolve_result):
+                all_succeeded = False
+    return attempted and all_succeeded

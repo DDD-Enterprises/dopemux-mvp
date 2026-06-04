@@ -564,11 +564,16 @@ class MetaMCPBroker:
                     f"Escalation type '{escalation_type}' not allowed for role '{session.role}'"
                 )
 
+            # `escalation_triggers` values are `EscalationRule` dataclass instances
+            # (see roles.py), not dicts — use attribute access (TP-2 fix; `.get()`
+            # raised AttributeError).
             escalation_config = role_config.escalation_triggers[escalation_type]
 
-            # Check if approval is required
-            if escalation_config.get("approval_required", False):
-                # In a real implementation, this would trigger an approval workflow
+            # Check if approval is required.
+            # NOTE: the approval dispatch path is currently unwired — this returns
+            # an "approval_required" status but no transport actually requests or
+            # records approval (observation only; no transport added here).
+            if escalation_config.approval_required:
                 logger.info(
                     f"Escalation approval required for {session_id}: {escalation_type}"
                 )
@@ -580,13 +585,13 @@ class MetaMCPBroker:
                 }
 
             # Mount additional tools
-            additional_tools = set(escalation_config.get("additional_tools", []))
+            additional_tools = set(escalation_config.additional_tools or [])
             if additional_tools:
                 await self._mount_tools(session_id, additional_tools)
                 session.mounted_tools.update(additional_tools)
 
             # Set escalation expiry
-            duration = escalation_config.get("max_duration", 1800)  # Default 30 minutes
+            duration = escalation_config.max_duration  # seconds (dataclass default 1800)
             session.escalation_active = True
             session.escalation_expires = datetime.now() + timedelta(seconds=duration)
 

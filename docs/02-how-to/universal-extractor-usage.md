@@ -17,6 +17,20 @@ next_review: '2026-06-04'
 ---
 # How to: Use the Universal Repo-Truth-Extractor
 
+> **⚠️ Command migration (audit USAGE-INV):** the `dopemux extractor <subcommand>` surface
+> shown in some examples below is **deprecated and disabled** — invoking it prints a refusal
+> that points at the canonical command. Use the `dopemux rte …` commands instead:
+>
+> | Deprecated (shadowed) | Canonical |
+> |---|---|
+> | `dopemux extractor init …` | `dopemux rte promptset sync …` |
+> | `dopemux extractor validate …` | `dopemux rte promptset validate …` |
+> | `dopemux extractor status …` | `dopemux rte status …` |
+> | `dopemux extractor run …` | `dopemux rte run …` |
+> | `dopemux extractor prescan …` | `dopemux rte run …` (prescan is integrated) |
+>
+> Flags are unchanged — the canonical commands reuse the same underlying implementations.
+
 ## Prerequisites
 
 - Python 3.11+ with dopemux installed (`pip install -e .`)

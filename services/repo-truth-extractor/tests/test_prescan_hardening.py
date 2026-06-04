@@ -3,6 +3,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 import os
 import json
+from types import SimpleNamespace
 
 from lib.prescan.models import PrescanConfig
 from lib.prescan.grok_passes import (
@@ -176,3 +177,62 @@ def test_prescan_limiter_acquire_called_before_request(mock_config):
                 pass
             
             limiter.acquire.assert_called_once_with(500)
+
+
+@pytest.mark.parametrize(
+    ("provider", "expected_response_format"),
+    [
+        ("openai", {"type": "json_object"}),
+        ("xai", {"type": "json_object"}),
+        ("openrouter", {"type": "json_object"}),
+        ("mock", None),
+    ],
+)
+def test_prescan_call_grok_uses_json_object_only_for_supported_providers(
+    tmp_path: Path,
+    provider: str,
+    expected_response_format: dict[str, str] | None,
+) -> None:
+    config = PrescanConfig(
+        repo_root=tmp_path / "repo",
+        output_dir=tmp_path / "out",
+        allow_online_llm=True,
+    )
+    runner = GrokPassRunner(config)
+    candidate = {
+        "provider": provider,
+        "model_id": "model-1",
+        "api_key_env": "TEST_API_KEY",
+    }
+    attempt = ExecutionAttempt(
+        provider=provider,
+        model="model-1",
+        api_key_env="TEST_API_KEY",
+        status="pending",
+    )
+    create_calls: list[dict[str, object]] = []
+
+    class FakeCompletions:
+        def create(self, **kwargs):
+            create_calls.append(kwargs)
+            return SimpleNamespace(
+                choices=[
+                    SimpleNamespace(message=SimpleNamespace(content='{"ok": true}'))
+                ],
+                usage=SimpleNamespace(prompt_tokens=1, completion_tokens=1),
+            )
+
+    class FakeClient:
+        def __init__(self, **kwargs):
+            self.kwargs = kwargs
+            self.chat = SimpleNamespace(completions=FakeCompletions())
+
+    with patch.dict(os.environ, {"TEST_API_KEY": "test-key"}):
+        with patch("openai.OpenAI", FakeClient):
+            assert runner._call_grok("dedup", "payload", candidate, attempt) == {"ok": True}
+
+    assert len(create_calls) == 1
+    if expected_response_format is None:
+        assert "response_format" not in create_calls[0]
+    else:
+        assert create_calls[0]["response_format"] == expected_response_format

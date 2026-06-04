@@ -1,32 +1,47 @@
 # Git State
 
-- Worktree: `/Users/hue/.codex/worktrees/693f/dopemux-mvp`
-- Branch: `codex/tp-dmx-auditor-router-pal-clink-002`
-- Base: `origin/main`
-- Base SHA: `898310bd01cf48b2703a166b429d4b330ec9f84e`
-- PR #711: merged at `2026-05-26T10:34:55Z`, merge commit `898310bd01cf48b2703a166b429d4b330ec9f84e`
-- Repo marker: `.dopetaskroot` observed
-- Task Orchestrator context: no active, blocked, or stalled items observed
-- PR #713 head before P1 review fix: `cee2d45e234554ec628cbdf8ff25e4770d430d02`
-- Follow-up commit SHA for the P1 review fix is reported in the closing response because a commit cannot contain its own final SHA.
+- branch: `codex/tp-dmx-auditor-blockers-fix`
+- base_ref: `origin/main`
+- base_sha_at_reconciliation: `508bcc0df74db4ee5d1384d8a2da73acdccd8c2e`
+- pre_amend_head: `8bae63521c95fe3e4c4ad9328c9a42ab76791142`
+- final PR head: recorded by GitHub PR #738 after push; this pre-commit artifact does not claim to contain its own final SHA.
+- post-merge reconciliation: PR #713 merged; active blockers cleared in proof metadata.
+- CI unit fix included for clean-workspace SQLite fallback test.
 
-## Scope Conflict
+## Active Worktree
 
-`origin/main` did not contain:
+```text
+worktree <redacted>/dopemux-auditor-blockers-fix
+branch refs/heads/codex/tp-dmx-auditor-blockers-fix
+```
 
-- `tools/auditor_router/**`
-- `tests/auditor_router/**`
-- `scripts/auditor-preflight`
+## Status Before Amend
 
-This branch bootstraps the minimal auditor-router baseline required for PAL clink fixture tests. `scripts/auditor-preflight` remains absent because it is not allowlisted for this packet.
+```text
+```
 
-## P1 Review Fix
+## Changed Files
 
-The follow-up patch addresses two unresolved PR #713 review threads:
+```text
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/AUDITOR_REPORT.md
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/CHANGED_FILES.txt
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/DIFF_STAT.txt
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/GIT_STATE.md
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/VALIDATION_OUTPUT.md
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/ARTIFACT_INDEX.md
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/AUDITOR_REPORT.md
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/CHANGED_FILES.txt
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/DIFF_STAT.txt
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/GIT_STATE.md
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/MANIFEST.json
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/PROOF.json
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/SUMMARY.md
+task-packets/generated/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002.json
+tests/auditor_router/test_pal_clink.py
+tests/unit/orchestrator/test_data_sources.py
+```
 
-- canonical PAL clink prompt-path validation
-- equals-form mutation flag detection
+## Privacy Note
 
-## Working Tree Notes
-
-Proof files under `proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/` are ignored by repo `.gitignore`; they must be force-added under packet authority.
+Full local `git worktree list` output is intentionally omitted because it includes operator-local paths and unrelated branch names that are not needed to prove this PR's head/base state.

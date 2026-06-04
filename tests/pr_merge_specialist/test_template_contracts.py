@@ -34,9 +34,12 @@ MODULES = [
     "cli.py",
     "engine.py",
     "github_api.py",
+    "merge.py",
     "policy.py",
+    "queue_drain.py",
     "runtime.py",
     "schema.py",
+    "steward_gate.py",
     "validation.py",
 ]
 

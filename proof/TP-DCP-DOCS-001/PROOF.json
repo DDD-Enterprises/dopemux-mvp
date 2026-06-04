@@ -1,0 +1,48 @@
+{
+  "packet_id": "TP-DCP-DOCS-001",
+  "repo_root": "/Users/hue/code/dopemux-mvp",
+  "worktree_path": "/Users/hue/code/dopemux-mvp-wt-dcp-docs-001",
+  "branch": "codex/dcp-docs-001",
+  "base_branch": "main",
+  "starting_head": "8571c3387",
+  "ending_head": "UNKNOWN_FINAL_COMMIT_SELF_REFERENCE",
+  "files_created": [
+    "task-packets/TP-DCP-DOCS-001.json",
+    "docs/03-reference/dcp/README.md",
+    "docs/03-reference/dcp/artifacts/DCP_5_5_SYNTHESIS_INPUT_PACK.md",
+    "docs/03-reference/dcp/artifacts/DCP_PRE_SYNTHESIS_CONTRADICTION_LEDGER.md",
+    "docs/03-reference/dcp/artifacts/DCP_ARCHITECTURE_SYNTHESIS_GPT55.md",
+    "docs/03-reference/dcp/artifacts/DCP_ADVERSARIAL_ARCHITECTURE_AUDIT.md",
+    "docs/03-reference/dcp/artifacts/DCP_ARCHITECTURE_SYNTHESIS_REVISED_DELTA.md",
+    "docs/03-reference/dcp/artifacts/DCP_DR_EXTERNAL_CONSTRAINTS_LEDGER.md",
+    "proof/TP-DCP-DOCS-001/PROOF.json"
+  ],
+  "files_modified": [],
+  "forbidden_files_touched": false,
+  "validation_commands": [
+    {
+      "command": "test -f docs/03-reference/dcp/README.md",
+      "exit_code": 0
+    },
+    {
+      "command": "test -d docs/03-reference/dcp/artifacts",
+      "exit_code": 0
+    },
+    {
+      "command": "rg -n \"LIVE_WRITE_READY|CLAIMED_ONLY|UNKNOWN|DCP-RED-MERGE-SEAM|EXTERNAL_PROPOSED|SYNTHESIS_INVENTED|REPO_VALIDATED\" docs/03-reference/dcp",
+      "exit_code": 0
+    }
+  ],
+  "source_files_inspected": [
+    "AGENTS.md",
+    "PROJECT.md",
+    "ARCHITECTURE.md",
+    "PM_PLANE.md",
+    "SERVICE_CATALOG.md"
+  ],
+  "generated_artifact_hashes": {},
+  "skipped_unsafe_files": [],
+  "unknowns": [],
+  "residual_risks": [],
+  "final_status": "VERIFIED"
+}

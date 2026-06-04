@@ -1,0 +1,131 @@
+{
+  "embedded_audit": {
+    "auditor_model": "unknown",
+    "auditor_tool": "none",
+    "exit_code": null,
+    "findings": [],
+    "fixes_applied": [],
+    "invocation": null,
+    "remaining_risks": [
+      "Independent embedded audit skipped because the separate least-privilege token is unavailable or UNKNOWN."
+    ],
+    "report_path": "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": "Independent embedded audit skipped because the separate least-privilege token is unavailable or UNKNOWN.",
+    "status": "SKIPPED"
+  },
+  "generated_at": "2026-01-01T00:00:00Z",
+  "github_mutation_route_added": false,
+  "head_sha": "de21c772f623ca0f8dff04019e2836ae5ce3bb9d",
+  "mutation_performed": false,
+  "packet_id": "TP-DMX-AUDIT-CI-PROVENANCE-104",
+  "pr_number": 756,
+  "provenance": {
+    "engine_authored_proof": false,
+    "engine_requested_only": true,
+    "permissions": {
+      "actions": "read",
+      "checks": "read",
+      "contents": "read",
+      "pull-requests": "read",
+      "statuses": "read"
+    },
+    "proof_author": "independent-embedded-audit",
+    "token_source": "EMBEDDED_AUDIT_TOKEN",
+    "token_value_recorded": false,
+    "trusted_token_status": "UNKNOWN",
+    "workflow": "embedded-audit.yml"
+  },
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "summary": "Added an independent read-only embedded-audit workflow and entrypoint that emit schema-valid proof artifacts with redacted provenance.",
+  "proof_finality": {
+    "worktree": "dopemux-mvp-wt-pr761-review-repair",
+    "commit_sha": "746a3f7dadbc5fc24e2bc648cd2f9f4e0b7d52fc",
+    "commit_sha_scope": "Latest observed PR head when this proof metadata was updated; final immutable merge identity is the PR URL and merge commit after merge.",
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/761",
+    "codereview_status": "PASS_WITH_REPAIRS",
+    "precommit_status": "PASS"
+  },
+  "scope_expansion": {
+    "authorized_by": "User request: fix other compille issues",
+    "reason": "The packet's broad compile validation was blocked by pre-existing syntax errors outside the original TP104 allowlist.",
+    "files": [
+      "scripts/migration/switchover.py",
+      "scripts/partition_function.py",
+      "scripts/submit_loop_context.py"
+    ]
+  },
+  "outputs": [
+    "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/AUDITOR_ROUTE.json",
+    "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/ROUTE_PROBE_OUTPUTS.json",
+    "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/PROOF.json",
+    "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/AUDITOR_REPORT.md"
+  ],
+  "validation": [
+    {
+      "command": "pytest -q tests/audit/test_run_embedded_audit.py",
+      "status": "PASS",
+      "evidence": "7 passed, including trusted-source workflow execution, trusted-token step isolation, default-branch manual dispatch trust, requested PR head-ref membership verification, bootstrap skip behavior, canonical report path emission, missing route/PAL JSON skip behavior, and no audit secret in PR-head job."
+    },
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-AUDIT-CI-PROVENANCE-104.json",
+      "status": "PASS",
+      "evidence": "Task packet JSON parsed successfully."
+    },
+    {
+      "command": "python -m compileall -q scripts/audit/run_embedded_audit.py tests/audit/test_run_embedded_audit.py",
+      "status": "PASS",
+      "evidence": "Scoped TP104 compile completed with exit code 0."
+    },
+    {
+      "command": "python -m compileall -q scripts tests",
+      "status": "PASS",
+      "evidence": "Broad scripts/tests compile completed after user-authorized fixes to legacy compile blockers."
+    },
+    {
+      "command": "python -m tools.auditor_router.preflight --packet-id TP-DMX-AUDIT-CI-PROVENANCE-104 --out proof/TP-DMX-AUDIT-CI-PROVENANCE-104 --format json",
+      "status": "PASS",
+      "evidence": "Static route preflight wrote AUDITOR_ROUTE.json and ROUTE_PROBE_OUTPUTS.json."
+    },
+    {
+      "command": "python scripts/audit/run_embedded_audit.py --packet-id TP-DMX-AUDIT-CI-PROVENANCE-104 ...",
+      "status": "PASS",
+      "evidence": "Entry point wrote PROOF.json and the canonical proof/<packet-id>/AUDITOR_REPORT.md without recording token values."
+    },
+    {
+      "command": "python scripts/audit/run_embedded_audit.py --route-json <missing> --out <tmp-artifacts>",
+      "status": "PASS",
+      "evidence": "Missing route JSON produced exit code 0 with schema-valid SKIPPED proof and canonical report artifact."
+    },
+    {
+      "command": "python scripts/audit/validate_audit_proof.py proof/TP-DMX-AUDIT-CI-PROVENANCE-104/PROOF.json",
+      "status": "PASS",
+      "evidence": "Embedded audit object validated against schemas/proof/embedded_audit.schema.json."
+    },
+    {
+      "command": "git diff --check",
+      "status": "PASS",
+      "evidence": "No whitespace errors reported."
+    },
+    {
+      "command": "git check-ignore -q proof/TP-DMX-AUDIT-CI-PROVENANCE-104/PROOF.json; test $? -eq 1",
+      "status": "PASS",
+      "evidence": "TP104 proof bundle is allowlisted in .gitignore."
+    },
+    {
+      "command": "pre-commit run --files <TP104 changed files>",
+      "status": "PASS",
+      "evidence": "Docs hygiene, markdownlint, trailing whitespace, EOF, and YAML checks passed for changed files."
+    },
+    {
+      "command": "mcp task-orchestrator get_context health-check",
+      "status": "FAIL",
+      "evidence": "Task Orchestrator transport returned Transport closed."
+    }
+  ],
+  "residual_risks": [
+    "The CI workflow runs proof emission from a trusted-source checkout, verifies requested SHAs against refs/pull/<number>/head, and does not expose EMBEDDED_AUDIT_TOKEN to PR-head code; trusted_token_status remains UNKNOWN and embedded_audit.status is SKIPPED unless a future trusted-ref execution path supplies token authority and PAL output.",
+    "No live PAL clink audit output was captured in this local run.",
+    "Task Orchestrator item state could not be advanced because the transport was closed."
+  ]
+}

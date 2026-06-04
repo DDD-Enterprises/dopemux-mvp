@@ -48,3 +48,30 @@ def test_profile_wizard_save_profile_writes_yaml(tmp_path, monkeypatch):
     content = out_file.read_text(encoding="utf-8")
     assert "name: saved-flow" in content
     assert "mcps:" in content
+
+
+def test_profile_wizard_mcp_selection_uses_progressive_prompts(tmp_path, monkeypatch):
+    wizard = ProfileWizard(repo_path=tmp_path)
+    captured = {}
+
+    class FakePrompts:
+        def ask_action_selection(self, actions, context=""):  # type: ignore[no-untyped-def]
+            captured["actions"] = actions
+            captured["context"] = context
+            return "minimal"
+
+    monkeypatch.setattr(
+        "dopemux.profile_wizard.InteractivePrompts",
+        lambda: FakePrompts(),
+    )
+
+    result = wizard._choose_mcp_selection(["dopemux-serena", "dopemux-conport"])
+
+    assert result == "minimal"
+    assert captured["context"] == "Choose MCP server set"
+    assert [action["name"] for action in captured["actions"]] == [
+        "recommended",
+        "minimal",
+        "full",
+        "custom",
+    ]

@@ -14,7 +14,7 @@ class TaskManagementTester:
     def __init__(self):
         self.base_urls = {
             'task_master': 'http://localhost:3005',
-            'task_orchestrator': 'http://localhost:3014',
+            'task_orchestrator': 'http://localhost:8000',
             'leantime_bridge': 'http://localhost:3015'
         }
         self.results = []

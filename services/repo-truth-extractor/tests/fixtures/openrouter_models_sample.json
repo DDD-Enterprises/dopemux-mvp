@@ -1,0 +1,208 @@
+{
+  "data": [
+    {
+      "id": "anthropic/claude-sonnet-4.5",
+      "name": "Claude Sonnet 4.5",
+      "created": 1760000000,
+      "description": "Closed Anthropic route fixture.",
+      "context_length": 200000,
+      "architecture": {
+        "input_modalities": ["text"],
+        "output_modalities": ["text"],
+        "tokenizer": "Claude",
+        "instruct_type": null
+      },
+      "pricing": {
+        "prompt": "0.000003",
+        "completion": "0.000015",
+        "request": "0"
+      },
+      "top_provider": {
+        "context_length": 200000,
+        "max_completion_tokens": 64000,
+        "is_moderated": true
+      },
+      "supported_parameters": ["max_tokens", "response_format", "structured_outputs"]
+    },
+    {
+      "id": "deepseek/deepseek-chat",
+      "name": "DeepSeek Chat",
+      "created": 1760000001,
+      "description": "Direct-overlap exception fixture.",
+      "context_length": 64000,
+      "pricing": {
+        "prompt": "0.00000027",
+        "completion": "0.0000011",
+        "request": "0"
+      },
+      "top_provider": {
+        "context_length": 64000,
+        "max_completion_tokens": 8192,
+        "is_moderated": false
+      },
+      "supported_parameters": ["max_tokens", "response_format", "structured_outputs"]
+    },
+    {
+      "id": "google/gemini-2.5-pro",
+      "name": "Gemini 2.5 Pro",
+      "created": 1760000002,
+      "description": "Closed Google route fixture.",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.00000125",
+        "completion": "0.000010",
+        "request": "0"
+      },
+      "top_provider": {
+        "context_length": 1048576,
+        "max_completion_tokens": 65536,
+        "is_moderated": true
+      },
+      "supported_parameters": ["max_tokens", "response_format", "structured_outputs"]
+    },
+    {
+      "id": "meta-llama/llama-3.3-70b-instruct",
+      "name": "Llama 3.3 70B Instruct",
+      "created": 1760000003,
+      "description": "Direct-platform route fixture.",
+      "context_length": 131072,
+      "pricing": {
+        "prompt": "0.00000012",
+        "completion": "0.00000030",
+        "request": "0"
+      },
+      "top_provider": {
+        "context_length": 131072,
+        "max_completion_tokens": 8192,
+        "is_moderated": false
+      },
+      "supported_parameters": ["max_tokens", "response_format"]
+    },
+    {
+      "id": "mistralai/mistral-large",
+      "name": "Mistral Large",
+      "created": 1760000004,
+      "description": "Flagship Mistral route fixture.",
+      "context_length": 128000,
+      "pricing": {
+        "prompt": "0.000002",
+        "completion": "0.000006",
+        "request": "0"
+      },
+      "top_provider": {
+        "context_length": 128000,
+        "max_completion_tokens": 8192,
+        "is_moderated": true
+      },
+      "supported_parameters": ["max_tokens", "response_format", "structured_outputs"]
+    },
+    {
+      "id": "moonshotai/kimi-k2",
+      "name": "Kimi K2",
+      "created": 1760000005,
+      "description": "Kimi fixture.",
+      "context_length": 128000,
+      "pricing": {
+        "prompt": "0.00000055",
+        "completion": "0.0000022",
+        "request": "0"
+      },
+      "top_provider": {
+        "context_length": 128000,
+        "max_completion_tokens": 8192,
+        "is_moderated": false
+      },
+      "supported_parameters": ["max_tokens", "response_format"]
+    },
+    {
+      "id": "openai/gpt-4o-mini",
+      "name": "GPT-4o Mini",
+      "created": 1760000006,
+      "description": "Closed OpenAI route fixture.",
+      "context_length": 128000,
+      "pricing": {
+        "prompt": "0.00000015",
+        "completion": "0.00000060",
+        "request": "0"
+      },
+      "top_provider": {
+        "context_length": 128000,
+        "max_completion_tokens": 16384,
+        "is_moderated": true
+      },
+      "supported_parameters": ["max_tokens", "response_format", "structured_outputs"]
+    },
+    {
+      "id": "openrouter/owl-alpha",
+      "name": "Owl Alpha",
+      "created": 1760000007,
+      "description": "OpenRouter-native free route. Prompts and outputs are logged to improve the provider model.",
+      "context_length": 32768,
+      "pricing": {
+        "prompt": "0",
+        "completion": "0",
+        "request": "0"
+      },
+      "top_provider": {
+        "context_length": 32768,
+        "max_completion_tokens": 4096,
+        "is_moderated": false
+      },
+      "supported_parameters": ["max_tokens", "response_format", "structured_outputs"]
+    },
+    {
+      "id": "qwen/qwen3-coder:free",
+      "name": "Qwen3 Coder Free",
+      "created": 1760000008,
+      "description": "Pinned free route fixture.",
+      "context_length": 262144,
+      "pricing": {
+        "prompt": "0",
+        "completion": "0",
+        "request": "0"
+      },
+      "top_provider": {
+        "context_length": 262144,
+        "max_completion_tokens": 32768,
+        "is_moderated": false
+      },
+      "supported_parameters": ["max_tokens", "response_format", "structured_outputs"]
+    },
+    {
+      "id": "qwen/qwen3-coder",
+      "name": "Qwen3 Coder",
+      "created": 1760000009,
+      "description": "Hosted open-weight candidate fixture.",
+      "context_length": 262144,
+      "pricing": {
+        "prompt": "0.00000020",
+        "completion": "0.00000080",
+        "request": "0"
+      },
+      "top_provider": {
+        "context_length": 262144,
+        "max_completion_tokens": 32768,
+        "is_moderated": false
+      },
+      "supported_parameters": ["max_tokens", "response_format", "structured_outputs"]
+    },
+    {
+      "id": "x-ai/grok-4",
+      "name": "Grok 4",
+      "created": 1760000010,
+      "description": "Closed xAI route fixture.",
+      "context_length": 256000,
+      "pricing": {
+        "prompt": "0.000003",
+        "completion": "0.000015",
+        "request": "0"
+      },
+      "top_provider": {
+        "context_length": 256000,
+        "max_completion_tokens": 32768,
+        "is_moderated": false
+      },
+      "supported_parameters": ["max_tokens", "response_format", "structured_outputs"]
+    }
+  ]
+}

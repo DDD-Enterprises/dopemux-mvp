@@ -1,0 +1,104 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/dcp/dcp_red_lane_taxonomy.v0.schema.json",
+  "title": "DCP Red Lane Taxonomy",
+  "description": "Enumerates universal DCP red lanes (hard blocks and project gates). Every lane carries a provenance tag. DCP-RED-MERGE-SEAM-0001 is a named absolute red line. schema_version .v0 = unstable, not authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "provenance",
+    "validation",
+    "taxonomy_id",
+    "lanes"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "dcp-red-lane-taxonomy.v0",
+      "description": ".v0 suffix per K-27; unstable version marker, not an authority claim."
+    },
+    "provenance": {
+      "type": "object",
+      "description": "Contract-level provenance per REV1 §6.0 meta-contract.",
+      "additionalProperties": false,
+      "required": ["tag", "source_ref"],
+      "properties": {
+        "tag": {
+          "type": "string",
+          "enum": ["REPO_VALIDATED", "EXTERNAL_PROPOSED", "SYNTHESIS_INVENTED"],
+          "description": "REPO_VALIDATED: core lane taxonomy is grounded in repo-verified paths."
+        },
+        "source_ref": {
+          "type": "string",
+          "description": "REV1 §5 + ground-truth verification of origin/main paths."
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "description": "Validation status per REV1 §6.0.",
+      "additionalProperties": false,
+      "required": ["state", "notes"],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": ["REPO_CROSS_CHECKED", "PROVISIONAL_UNVERIFIED_ENFORCEMENT", "DEFERRED"],
+          "description": "REPO_CROSS_CHECKED: core lanes verified against origin/main."
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "taxonomy_id": {
+      "type": "string",
+      "description": "Unique identifier for this taxonomy instance."
+    },
+    "lanes": {
+      "type": "array",
+      "description": "Ordered list of red-lane definitions. Each lane carries provenance and gate classification.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description", "gate", "provenance_tag"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique red-lane identifier."
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable description of the red lane."
+          },
+          "gate": {
+            "type": "string",
+            "enum": ["hard_block", "project_gate"],
+            "description": "hard_block = universal absolute block; project_gate = context-scoped gate."
+          },
+          "provenance_tag": {
+            "type": "string",
+            "enum": [
+              "REPO_VALIDATED",
+              "REPO_VALIDATED_BY_AUDIT",
+              "EXTERNAL_PROPOSED",
+              "SYNTHESIS_INVENTED"
+            ],
+            "description": "Per-lane provenance tag. REPO_VALIDATED_BY_AUDIT = verified by auditor against origin/main."
+          },
+          "paths_forbidden": {
+            "type": "array",
+            "description": "Filesystem paths (relative to repo root) forbidden by this lane. Present only for path-specific lanes.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "notes": {
+            "type": "string",
+            "description": "Optional additional context."
+          }
+        }
+      }
+    }
+  }
+}

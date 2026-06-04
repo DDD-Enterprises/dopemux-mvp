@@ -551,14 +551,14 @@ def _validate_transition_proof_envelope(
     schema_version = payload.get("schema_version")
     if (
         _non_empty_string(schema_version)
-        and schema_version not in {"1", "1.0"}
+        and schema_version != SUPPORTED_TRANSITION_PROOF_SCHEMA_VERSION
     ):
         errors.append(
             issue(
                 "TRANSITION_PROOF_SCHEMA_VERSION_UNSUPPORTED",
                 (
                     f"Transition proof schema_version must be "
-                    f"one of {{'1', '1.0'}}; "
+                    f"{SUPPORTED_TRANSITION_PROOF_SCHEMA_VERSION!r}; "
                     f"got {schema_version!r}."
                 ),
                 path="/schema_version",

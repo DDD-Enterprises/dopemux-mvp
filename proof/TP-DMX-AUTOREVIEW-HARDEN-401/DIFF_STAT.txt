@@ -1,0 +1,6 @@
+docs/ops/operating-model.md                        | 27 +++++++++++++++++--
+docs/ops/pr-acceptance.md                          | 31 +++++++++++++++++++++-
+docs/ops/pr-steward-distribution.md                | 13 +++++++++
+docs/ops/steward-merge-gate.md                     | 18 +++++++++++++
+task-packets/generated/TP-DMX-AUTOREVIEW-HARDEN-401.json | 22 +++++++--------
+proof/TP-DMX-AUTOREVIEW-HARDEN-401/**              | new proof bundle

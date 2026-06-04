@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.1.0",
+  "pr_number": 704,
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "readiness": "NEEDS_IMPLEMENTER",
+  "risk_tier": "MEDIUM",
+  "blockers": [
+    "FAILED_CHECK"
+  ],
+  "unknowns": [],
+  "mutation_performed": false
+}

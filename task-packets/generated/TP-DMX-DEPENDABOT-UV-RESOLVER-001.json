@@ -1,0 +1,108 @@
+{
+  "id": "TP-DMX-DEPENDABOT-UV-RESOLVER-001",
+  "project": "dopemux-mvp",
+  "target": "Dependabot uv security update resolver repair",
+  "invariants": [
+    "Repair only root Python package metadata needed for Dependabot uv security update resolution.",
+    "Do not broaden supported Python versions beyond classifiers and validated local tooling.",
+    "Do not change runtime dependency APIs or service code.",
+    "Keep proof explicit about local resolver simulation versus GitHub Dependabot behavior."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dependabot-uv-resolver-repair",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dependabot-uv-resolver-20260531",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(deps): repair dependabot uv resolver metadata",
+    "allowlist": [
+      "pyproject.toml",
+      "uv.lock",
+      "CHANGELOG.md",
+      "task-packets/INDEX.md",
+      "task-packets/generated/TP-DMX-DEPENDABOT-UV-RESOLVER-001.json",
+      "claudedocs/dependabot-uv-resolver-proof-2026-05-31.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-DEPENDABOT-UV-RESOLVER-001.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-DEPENDABOT-UV-RESOLVER-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "uv tool run --from uv==0.11.8 uv lock --check",
+      "uv tool run --from uv==0.11.8 uv lock --dry-run -P litellm -P Mako -P PyJWT -P ecdsa -P fastmcp -P mcp -P semgrep",
+      "git diff --check",
+      "pre-commit run --files pyproject.toml uv.lock CHANGELOG.md task-packets/INDEX.md task-packets/generated/TP-DMX-DEPENDABOT-UV-RESOLVER-001.json claudedocs/dependabot-uv-resolver-proof-2026-05-31.md"
+    ]
+  },
+  "pr": {
+    "title": "fix(deps): repair dependabot uv resolver metadata",
+    "body": "## Problem\nThe post-merge Dependabot uv security-update workflow on main fails while resolving a security update group that includes LiteLLM, MCP, FastMCP, Semgrep, PyJWT, ecdsa, and Mako. The log shows an unsatisfiable split around newer LiteLLM, Semgrep, and MCP selection.\n\n## Fix\nAlign root package Python support metadata with advertised classifiers and raise the MCP service floor to the Semgrep-compatible patched MCP release.\n\n## Test Plan\n- Validate Task Packet JSON and schema.\n- Check the uv lock with uv 0.11.8, matching the Dependabot updater version observed in logs.\n- Dry-run the Dependabot-relevant package update set with uv 0.11.8.\n- Run git diff --check and pre-commit on changed files.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "challenge",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "analyze",
+      "task": "Inspect the GitHub Dependabot failure, root package metadata, and uv lock resolver markers.",
+      "requirements": [
+        "Identify whether the failure is a repo CI gate or Dependabot updater failure.",
+        "Inspect root pyproject dependencies and Python support metadata.",
+        "Use uv 0.11.8 for resolver simulation because Dependabot reported that updater version."
+      ],
+      "validation": [
+        "gh run view 26727373180 --json name,event,status,conclusion,headSha,headBranch,displayTitle,createdAt,updatedAt,url,jobs",
+        "sed -n '1,180p' pyproject.toml",
+        "sed -n '1,40p' uv.lock",
+        "uv tool run --from uv==0.11.8 uv --version"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Update only the root dependency metadata and lockfile required to unblock Dependabot uv resolution.",
+      "requirements": [
+        "Keep Python support bounded to the versions advertised by classifiers.",
+        "Raise MCP service dependency to the compatible patched release required by current Semgrep.",
+        "Regenerate only lockfile changes implied by pyproject metadata."
+      ],
+      "validation": [
+        "uv tool run --from uv==0.11.8 uv lock --check",
+        "uv tool run --from uv==0.11.8 uv lock --dry-run -P litellm -P Mako -P PyJWT -P ecdsa -P fastmcp -P mcp -P semgrep"
+      ]
+    },
+    {
+      "id": "precommit",
+      "task": "Validate packet, dependency metadata, proof, diff scope, and pre-commit before opening the PR.",
+      "requirements": [
+        "Record validation exit codes in proof.",
+        "Inspect git status and diff scope before staging.",
+        "Do not claim GitHub Dependabot is fixed until the repair PR lands and the workflow is observed."
+      ],
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-DMX-DEPENDABOT-UV-RESOLVER-001.json >/dev/null",
+        "python -m jsonschema -i task-packets/generated/TP-DMX-DEPENDABOT-UV-RESOLVER-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "git diff --check",
+        "pre-commit run --files pyproject.toml uv.lock CHANGELOG.md task-packets/INDEX.md task-packets/generated/TP-DMX-DEPENDABOT-UV-RESOLVER-001.json claudedocs/dependabot-uv-resolver-proof-2026-05-31.md"
+      ]
+    }
+  ]
+}

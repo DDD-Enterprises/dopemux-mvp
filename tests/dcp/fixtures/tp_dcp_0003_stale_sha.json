@@ -1,0 +1,18 @@
+{
+  "packet_id": "TP-DCP-0003",
+  "branch": "dcp/proof-family-dispatch-tp-0003",
+  "base_branch": "main",
+  "base_sha": "1111111111111111111111111111111111111111",
+  "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "commit_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "changed_files": [],
+  "audit_verdict": "PASS_WITH_RISKS",
+  "pr_url": null,
+  "pr_steward_readiness_result": "NOT_RUN",
+  "proof_freshness": {
+    "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "head_sha_current": false,
+    "proof_commit_matches_head": false,
+    "stale": true
+  }
+}

@@ -5,7 +5,16 @@ from __future__ import annotations
 from textual.widgets import Static
 
 from dopemux.orchestrator.ui.data_sources import get_proof_data
-from dopemux.ui.theme import Glyphs, styled_panel, styled_table
+from dopemux.ui.theme import (
+    ERROR_RED,
+    Glyphs,
+    RITUAL_CYAN,
+    SERUM_MINT,
+    STRUCTURAL_BORDER,
+    TEXT_SECONDARY,
+    styled_panel,
+    styled_table,
+)
 
 
 class ProofPanel(Static):
@@ -20,35 +29,35 @@ class ProofPanel(Static):
                 "Validation",
                 show_header=True,
                 compact=True,
-                border_style="#4A9E94",
-                header_style="bold #7DFBF6"
+                border_style=STRUCTURAL_BORDER,
+                header_style=f"bold {RITUAL_CYAN}"
             )
-            
+
             # Show top 3 proof bundles
             for proof in proofs[:3]:
-                status_color = "#94FADB" if proof["valid"] else "#FF8BD1"
+                status_color = SERUM_MINT if proof["valid"] else ERROR_RED
                 status_label = "PASS" if proof["valid"] else "FAIL"
                 table.add_row(
-                    f"[bold]{proof['path']}[/]",
+                    f"[bold {RITUAL_CYAN}]{proof['path']}[/]",
                     f"[{status_color}]{status_label}[/]"
                 )
-                
+
             if len(proofs) > 3:
                 table.add_row(
-                    f"[bold #94A3B8](+{len(proofs) - 3} more proof bundles)[/]",
+                    f"[bold {TEXT_SECONDARY}](+{len(proofs) - 3} more proof bundles)[/]",
                     ""
                 )
             elif not proofs:
-                table.add_row("[bold #94A3B8]No proof bundles found[/]", "")
-                
+                table.add_row(f"[bold {TEXT_SECONDARY}]No proof bundles found[/]", "")
+
             return styled_panel(
                 table,
                 title=f"{Glyphs.WRENCH} PROOF ATTESTATION MATRIX",
-                border_style="#94FADB",
+                border_style=SERUM_MINT,
             )
         except Exception as e:
             return styled_panel(
-                f"[#FF8BD1]Error: {e}[/]",
+                f"[{ERROR_RED}]Error: {e}[/]",
                 title="PROOF ATTESTATION MATRIX (FAILED)",
-                border_style="red",
+                border_style=ERROR_RED,
             )
