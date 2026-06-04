@@ -422,6 +422,14 @@ def test_14_approval_artifact_requester_ne_approver():
     assert "requester" in required, "'requester' not in schema required"
     assert "approver" in required, "'approver' not in schema required"
     assert "supervisor_signoff" in props, "Schema missing 'supervisor_signoff' property"
+    invariants = schema.get("x-contract-invariants", [])
+    assert isinstance(invariants, list), "Schema missing x-contract-invariants annotation"
+    assert any(
+        isinstance(rule, dict)
+        and rule.get("rule_id") == "DCP-RED-SELF-CERTIFYING-LOOP"
+        and rule.get("expression") == "requester != approver"
+        for rule in invariants
+    ), "Schema missing explicit requester != approver contract annotation"
 
     # Fixture must have requester != approver
     requester = fixture.get("requester", "")
@@ -469,6 +477,9 @@ def test_15_resource_map_endpoints_are_provisional():
     service_ids = {b.get("service_id", "") for b in endpoint_bindings if isinstance(b, dict)}
     assert any("conport" in sid.lower() for sid in service_ids), (
         "endpoint_bindings must include ConPort — its binding status is PROVISIONAL"
+    )
+    assert any("dope-memory" in sid.lower() for sid in service_ids), (
+        "endpoint_bindings must include dope-memory — its binding status is PROVISIONAL"
     )
 
 
