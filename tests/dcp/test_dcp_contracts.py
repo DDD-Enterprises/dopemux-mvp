@@ -310,21 +310,25 @@ def test_proof_pointer_auditor_verdict_distinct_from_validation_state():
 
 def test_deferred_contracts_absent():
     """
-    (e) The three deferred contracts (dcp_mutation_class, dcp_approval_artifact,
-    dcp_project_resource_map) must NOT have schema files in schemas/dcp/.
-    Locking any of these without direct repo derivation stops the packet.
+    (e) TP-DCP-0001 deferred guard — updated for TP-DCP-0002.
+
+    The three contracts (dcp_mutation_class, dcp_approval_artifact,
+    dcp_project_resource_map) were deferred from TP-DCP-0001 pending direct
+    repo derivation. TP-DCP-0002 has completed that derivation and added all
+    three schemas to schemas/dcp/. This test now verifies they ARE present
+    (TP-DCP-0002 delivered them) rather than that they are absent.
     """
     assert _SCHEMAS_DIR.exists(), f"Schema directory not found: {_SCHEMAS_DIR}"
 
-    present_deferred = []
-    for schema_file in _SCHEMAS_DIR.glob("*.schema.json"):
-        stem = schema_file.stem.replace(".schema", "")
-        if stem in _DEFERRED_SCHEMA_STEMS:
-            present_deferred.append(str(schema_file))
+    missing = []
+    for stem in _DEFERRED_SCHEMA_STEMS:
+        schema_file = _SCHEMAS_DIR / f"{stem}.schema.json"
+        if not schema_file.exists():
+            missing.append(str(schema_file))
 
-    assert not present_deferred, (
-        "Deferred contracts found in schemas/dcp/ — this stops the packet:\n"
-        + "\n".join(present_deferred)
+    assert not missing, (
+        "TP-DCP-0002 contract schemas expected but not found in schemas/dcp/:\n"
+        + "\n".join(missing)
     )
 
 
