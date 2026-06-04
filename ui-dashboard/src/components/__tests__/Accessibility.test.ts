@@ -28,7 +28,9 @@ test('PredictionPanel.tsx has aria-label for LinearProgress and loading state', 
   expect(content).toContain('aria-label="15-Minute Load Prediction Percentage"');
   expect(content).toContain('aria-valuetext');
   expect(content).toContain('Prediction Loading...');
-  expect(content).toMatch(/<Tooltip[^>]*title="Predictive LSTM model running on edge device"[^>]*arrow/);
+  expect(content).toMatch(/<Tooltip[^>]*title="15-minute forecast: AI-driven projection of your cognitive load"[^>]*arrow/);
+  expect(content).toContain('tabIndex={0}');
+  expect(content).toContain('&:hover, &:focus-visible');
 });
 
 test('TeamDashboard.tsx has aria-labels for team and member progress bars and Tooltips', () => {
