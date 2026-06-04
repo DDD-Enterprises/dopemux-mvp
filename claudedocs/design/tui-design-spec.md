@@ -25,9 +25,12 @@ It does **not** restate or fork the existing laws. It **cites and obeys** them:
   exists. `UNKNOWN` stays literal text, never a chip. Web-equivalent mapping:
   `DEGRADED→OVERRIDE`, `FAILED→BLOCKER`, `BLOCKED→BLOCKER`, `SYNC→AFTERCARE`.
 - **Viewports** — `120×40` (north star) / `100×32` / `80×24`; below `80×24` renders a `[BLOCKER]`.
-  Fixed coordinates from `cockpit/frame.py::Layout`.
-- **Vocabulary + render gate** — forbidden words/chips enforced by
-  `cockpit/tokens.py::validate_rendered_text`; no emoji; `->` not `→`.
+  Runtime currently proves the minimum gate through `src/dopemux/ui/cockpit/render.py::MIN_COLS`
+  and `MIN_ROWS`; fixed divider coordinates below are design targets until a layout primitive
+  lands.
+- **Vocabulary + render gate** — forbidden words/chips are manual review gates in this spec.
+  Runtime has no executable vocabulary validator primitive yet; this gate is `UNKNOWN`/manual until
+  implementation adds one. No emoji; `->` not `→`.
 - **Type** — Iosevka Hue Term mono, single weight/size per viewport; emphasis is bold + color,
   never size. Box-drawing grid; hard corners (`┏ ┓ ┗ ┛`); no rounded corners, gradients, blur,
   mouse, or hover.
@@ -100,10 +103,12 @@ All 8 OrchestratorTUI panels and all 4 DopemuxDashboard panels are accounted for
 
 ## 4. Per-mode design
 
-Layout regions reference `cockpit/frame.py::Layout` at 120×40: left divider col 25, right divider
-col 84, inspector split row 22, center split row 25, body rule row 35, command row 36, status rule
-row 37, status row 38, bottom row 39. Three columns: **left rail** (cols 1–24), **center**
-(cols 26–83), **right inspector** (cols 85–120). Bottom: command rail then status rail.
+Layout regions are design-target coordinates at 120×40, not current runtime API: left divider col
+25, right divider col 84, inspector split row 22, center split row 25, body rule row 35, command
+row 36, status rule row 37, status row 38, bottom row 39. Three columns: **left rail** (cols
+1–24), **center** (cols 26–83), **right inspector** (cols 85–120). Bottom: command rail then
+status rail. Current runtime module anchors are `src/dopemux/ui/cockpit/render.py` for the PM
+render model and `src/dopemux/ui/cockpit/runtime_contract.py` for accepted mode/surface contracts.
 
 Each pane below lists its four-field declaration, region, real source, SRC, and states.
 
@@ -293,7 +298,7 @@ NEXT:    resize to at least 80x24.
 ## 8. Verification checklist
 
 - [ ] Every pane carries a four-field declaration; every data row carries `SRC=`; chrome carries none.
-- [ ] No forbidden chips/vocab (cross-check `cockpit/tokens.py::validate_rendered_text`).
+- [ ] No forbidden chips/vocab (manual review until a runtime validator primitive exists).
 - [ ] Mapping completeness: all 8 OrchestratorTUI + 4 DopemuxDashboard panels placed with a real source.
 - [ ] Every color reference resolves to a `tokens.json` Direction B token; ANSI anchors preserved;
       color-never-alone (glyph + label) on every status.
