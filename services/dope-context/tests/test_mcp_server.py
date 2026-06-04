@@ -148,6 +148,7 @@ class _StubBM25:
 sys.modules.setdefault("rank_bm25", types.SimpleNamespace(BM25Okapi=_StubBM25))
 
 from src.mcp.server import (
+    _clear_index_approval_phrase,
     _clear_index_impl,
     _default_decision_sync_config,
     _docs_search_impl,
@@ -458,8 +459,8 @@ async def test_get_index_status_tool(tmp_path, monkeypatch):
 
 
 @pytest.mark.anyio
-async def test_clear_index_tool(tmp_path, monkeypatch):
-    """Test clear_index MCP tool."""
+async def test_clear_index_refuses_without_approval(tmp_path, monkeypatch):
+    """clear_index must fail closed before any destructive operation."""
     workspace = tmp_path / "workspace"
     workspace.mkdir()
     workspace_hash = workspace_to_hash(workspace)
@@ -488,7 +489,58 @@ async def test_clear_index_tool(tmp_path, monkeypatch):
 
     result = await _clear_index_impl(workspace_path=str(workspace), target="both")
 
+    assert result["status"] == "refused"
+    assert result["approval_required"] is True
+    assert result["cleared"] == []
+    assert result["errors"][0]["index"] == "approval"
+    assert deleted == []
+    assert bm25_path.exists()
+
+
+@pytest.mark.anyio
+async def test_clear_index_tool(tmp_path, monkeypatch):
+    """Test clear_index MCP tool."""
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    workspace_hash = workspace_to_hash(workspace)
+
+    fake_home = tmp_path / "home"
+    bm25_path = (
+        fake_home / ".dope-context" / "snapshots" / workspace_hash / "bm25_index.pkl"
+    )
+    bm25_path.parent.mkdir(parents=True, exist_ok=True)
+    bm25_path.write_bytes(b"cache")
+
+    monkeypatch.setattr("src.mcp.server.Path.home", lambda: fake_home)
+
+    deleted = []
+
+    class DummyVectorSearch:
+        def __init__(
+            self, collection_name, url="localhost", port=6333, vector_size=1024
+        ):
+            self.collection_name = collection_name
+
+        async def delete_collection(self):
+            deleted.append(self.collection_name)
+
+    monkeypatch.setattr("src.mcp.server.MultiVectorSearch", DummyVectorSearch)
+
+    proof_id = "TP-DMX-ORCH-AUDIT-FIX-001"
+    approval_phrase = _clear_index_approval_phrase(
+        workspace.resolve(),
+        "both",
+        proof_id,
+    )
+    result = await _clear_index_impl(
+        workspace_path=str(workspace),
+        target="both",
+        proof_id=proof_id,
+        approval_phrase=approval_phrase,
+    )
+
     assert result["status"] == "success"
+    assert result["approval_matched"] is True
     assert set(deleted) == {f"code_{workspace_hash}", f"docs_{workspace_hash}"}
     assert not bm25_path.exists()
 
