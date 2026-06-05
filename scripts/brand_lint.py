@@ -275,6 +275,15 @@ def _hue_degrees(hex_color: str) -> float:
 def _is_red_family(hex_color: str) -> bool:
     # Red-family band around 0°: accept [340°, 360) ∪ [0°, 20°]. This rejects the
     # magenta/pink region (~300–330°); reds near pure red (e.g. 346/0/354) pass.
+    # Achromatic colors (R==G==B: white/black/gray) have NO hue — _hue_degrees
+    # returns 0.0 for them, which would otherwise slip through the <=20 band — so
+    # reject zero-saturation colors explicitly: a gray "danger" doesn't read red.
+    if not re.fullmatch(r"#?[0-9A-Fa-f]{6}", hex_color):
+        raise ValueError(f"invalid hex color: {hex_color!r}")
+    h = hex_color.lstrip("#")
+    r, g, b = (int(h[i : i + 2], 16) for i in (0, 2, 4))
+    if max(r, g, b) == min(r, g, b):
+        return False
     hue = _hue_degrees(hex_color)
     return hue >= 340 or hue <= 20
 
