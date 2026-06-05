@@ -20,8 +20,9 @@
     "base_branch": "main",
     "base_sha": "59b309f27ab745a76dee2dfe7c1e6c0c2e0e36fd"
   },
-  "commit_sha": "PENDING_POST_COMMIT",
-  "head_sha": "PENDING_POST_COMMIT",
+  "commit_sha": "45255c5911c272c4917433117ed58f0023b00f59",
+  "head_sha": "45255c5911c272c4917433117ed58f0023b00f59",
+  "commit_sha_note": "Points at the deliverable commit (all source files). This proof-sync commit that records the SHA is intentionally separate, to avoid the proof self-reference loop.",
   "files_changed": [
     "docs/03-reference/systems/task-orchestrator/callable-surface-inventory.md",
     ".taskorchestrator/surface_manifest.json",
@@ -90,7 +91,7 @@
   "schema_notes": [
     "execution.agent enum is [gemini, codex, vibe, shell]; no 'claude' option. Used 'shell' (executed via shell tooling in an interactive session)."
   ],
-  "pr_url": "PENDING_POST_PR",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/829",
   "blockers": [],
   "cleanup_status": "No temp files left in the commit; bite-test mutation reverted and confirmed clean via git status.",
   "review_transition": "HELD pending human signoff (orchestrator item 54d02bdb is supervised-only). proof-bundle note to be filled; review advance not auto-applied."
