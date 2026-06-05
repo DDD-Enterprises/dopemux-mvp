@@ -28,6 +28,12 @@ from rich.text import Text
 from rich.theme import Theme
 
 
+# Canonical set of themes build_theme() can return — single source of truth. Add
+# new theme names here so get_active_theme_name() accepts them and brand_lint's
+# danger-hue gate validates them.
+THEME_NAMES = ("mint-mojo", "pastel-neon-dreamscape", "pastel-neon-dreams")
+
+
 def get_active_theme_name() -> str:
     """Return the name of the active theme from environment or default.
 
@@ -37,7 +43,11 @@ def get_active_theme_name() -> str:
     """
     env_theme = os.environ.get("DOPEMUX_THEME")
     if env_theme:
-        return env_theme.lower()
+        candidate = env_theme.lower()
+        if candidate in THEME_NAMES:
+            return candidate
+        # Unknown theme name → fall back to the documented default rather than
+        # silently selecting build_theme()'s catch-all branch.
 
     # Fallback default theme when no environment override is set.
     return "mint-mojo"
@@ -186,7 +196,7 @@ def build_theme(name: str) -> Theme:
             "label": "#A9A9A9",
             "success": "#00FF00",
             "success.soft": "#66FF66",
-            "error": "bold #FF00FF",
+            "error": "bold #FF0000",
             "warning": "#FFFF00",
             "gold": "#FFFF00",
             "amber": "#FFCF78",
@@ -197,7 +207,7 @@ def build_theme(name: str) -> Theme:
             "gilt.edge": "#FFFF00",
             "chip.live": "bold #00FFFF",
             "chip.override": "bold #FFFF00",
-            "chip.blocker": "bold #FF00FF",
+            "chip.blocker": "bold #FF0000",
             "chip.logged": "#66FF66",
             "chip.aftercare": "#FF66FF",
             "chip.edge": "bold #66FFFF",
@@ -212,7 +222,7 @@ def build_theme(name: str) -> Theme:
             "spinner": "#00FFFF",
             "severity.healthy": "#00FF00",
             "severity.warning": "#FFFF00",
-            "severity.critical": "bold #FF00FF",
+            "severity.critical": "bold #FF0000",
             "severity.unknown": "#333333",
             "rule.line": "#333333",
             "surface.black": "#000000",
@@ -242,7 +252,7 @@ def build_theme(name: str) -> Theme:
             "subheading": "bold #7FFFD4",
             "label": "#A9A9A9",
             "success": "#7FFFD4",
-            "error": "bold #FF69B4",
+            "error": "bold #FF6B7A",
             "warning": "#FFFFE0",
             "gold": "#FFFFE0",
             "amber": "#FFCF78",
@@ -252,7 +262,7 @@ def build_theme(name: str) -> Theme:
             "gilt.edge": "#FFFFE0",
             "chip.live": "bold #00FFFF",
             "chip.override": "bold #FFFFE0",
-            "chip.blocker": "bold #FF69B4",
+            "chip.blocker": "bold #FF6B7A",
             "chip.logged": "#7FFFD4",
             "chip.aftercare": "#FFB2FF",
             "chip.edge": "bold #B2FFFF",
@@ -267,7 +277,7 @@ def build_theme(name: str) -> Theme:
             "spinner": "#00FFFF",
             "severity.healthy": "#7FFFD4",
             "severity.warning": "#FFFFE0",
-            "severity.critical": "bold #FF69B4",
+            "severity.critical": "bold #FF6B7A",
             "severity.unknown": "#4D4D4D",
             "rule.line": "#A9A9A9",
             "surface.black": "#000000",
