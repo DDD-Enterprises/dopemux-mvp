@@ -123,3 +123,60 @@ def project_entry():
         }
 
     return _entry
+
+
+class _FakeTransport:
+    """Records the last HTTP call and returns a configured response (no network)."""
+
+    def __init__(self, status=200, json_body=None, raise_exc=None):
+        self.status = status
+        self.json_body = json_body if json_body is not None else {}
+        self.raise_exc = raise_exc
+        self.calls: list[dict] = []
+
+    def __call__(self, *, method, url, params, json, timeout):
+        self.calls.append(
+            {"method": method, "url": url, "params": params, "json": json, "timeout": timeout}
+        )
+        if self.raise_exc is not None:
+            raise self.raise_exc
+        from dcp_facade.http_client import HttpResponse
+
+        ok = 200 <= self.status < 300
+        return HttpResponse(status=self.status, json=self.json_body, ok=ok)
+
+    @property
+    def last(self) -> dict:
+        return self.calls[-1]
+
+
+@pytest.fixture
+def fake_transport():
+    """Factory: fake_transport(status=, json_body=, raise_exc=) -> recording transport."""
+
+    def _make(status=200, json_body=None, raise_exc=None):
+        return _FakeTransport(status=status, json_body=json_body, raise_exc=raise_exc)
+
+    return _make
+
+
+@pytest.fixture
+def make_client(fake_transport):
+    """Build a ReadOnlyHttpClient backed by a fake transport; returns (client, transport)."""
+
+    def _make(status=200, json_body=None, raise_exc=None):
+        from dcp_facade.http_client import ReadOnlyHttpClient
+
+        ft = _FakeTransport(status=status, json_body=json_body, raise_exc=raise_exc)
+        return ReadOnlyHttpClient(transport=ft), ft
+
+    return _make
+
+
+@pytest.fixture
+def conport_dm_profiles():
+    """Loopback-bound conport + dope_memory service profiles for a test project."""
+    return {
+        "conport": {"base_url": "http://127.0.0.1:3004", "workspace_id": "ws-test"},
+        "dope_memory": {"base_url": "http://127.0.0.1:3020", "workspace_id": "ws-test"},
+    }
