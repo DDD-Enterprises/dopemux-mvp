@@ -74,6 +74,9 @@ Prior to schema 1.1.0 both stale and missing proof emitted a single `PROOF_STALE
 As of TP-DMX-PR-STEWARD-HARDEN-010:
 
 - **`PROOF_STALE`**: Proof exists but `proof_head_sha` does not match the current PR head SHA. The PR was likely updated after the last proof run. Re-run the proof cycle.
+
+  *Self-Reference Exception Rule*: Updating `PROOF.json` inside a branch changes the branch's head SHA, causing a potential infinite loop of stale proof detections. Under `docs/ops/pr-acceptance.md` §1 (Acceptance Gates), proof freshness may be satisfied by an explicit supervisor-accepted self-reference exception when the proof records proof-only changed-file evidence (e.g. only proof or documentation files have changed since the last validated SHA) and the embedded audit is nonblocking. In post-merge scenarios, reconciliation can be recorded in `POST_MERGE_RECONCILIATION.json` to formally close the gap.
+
 - **`PROOF_MISSING`**: No proof bundle found (`proof_head_sha` absent). No proof has been produced for this PR. Run the full TP cycle and produce a proof bundle.
 
 Both remain `NEEDS_SUPERVISOR` tier and map to the `proof-stale` / `proof-missing` action categories in the Action Bridge.

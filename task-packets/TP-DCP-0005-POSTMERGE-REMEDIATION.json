@@ -1,0 +1,83 @@
+{
+  "id": "TP-DCP-0005-POSTMERGE-REMEDIATION",
+  "project": "dopemux-mvp",
+  "target": "Post-merge remediation for TP-DCP-0005 red-lane scanner to unfreeze DCP series",
+  "invariants": [
+    "DCP series is frozen until this post-merge remediation lands.",
+    "Do not revert the merge of PR #820.",
+    "Reconcile proof freshness discrepancies via POST_MERGE_RECONCILIATION.json.",
+    "No live write operations or network calls are allowed."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "origin_hint": "github.com/DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "SERIES-DCP-RED-LANE-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DCP-0005",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "gemini"
+  },
+  "commit": {
+    "message": "chore(dcp): landing TP-DCP-0005 post-merge remediation and unfreezing series",
+    "allowlist": [
+      "task-packets/TP-DCP-0005-POSTMERGE-REMEDIATION.json",
+      "proof/TP-DCP-0005/POST_MERGE_RECONCILIATION.json",
+      "proof/TP-DCP-0005/AUDIT.md",
+      "docs/ops/pr-steward-readiness.md",
+      "src/dopemux/dcp/red_lane_scanner.py"
+    ],
+    "verify": [
+      "python3 -m pytest tests/dcp/test_dcp_0005_red_lane_scanner.py -q",
+      "python3 -m pytest tests/dcp -q",
+      "python3 -m compileall -q src tests",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "chore(dcp): landing TP-DCP-0005 post-merge remediation and unfreezing series",
+    "body": "Remediation PR to address the stale proof chain and unfreeze the DCP series post-PR #820 merge. Generates POST_MERGE_RECONCILIATION.json and documents the self-reference exception rule.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "implement",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Generate proof/TP-DCP-0005/POST_MERGE_RECONCILIATION.json with the required audit fields and status.",
+      "validation": [
+        "test -f proof/TP-DCP-0005/POST_MERGE_RECONCILIATION.json",
+        "python3 -m json.tool proof/TP-DCP-0005/POST_MERGE_RECONCILIATION.json >/dev/null"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Update proof/TP-DCP-0005/AUDIT.md to reflect post-merge remediation and verification results.",
+      "validation": [
+        "test -f proof/TP-DCP-0005/AUDIT.md"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Document the proof self-reference rule in docs/ops/pr-steward-readiness.md and red_lane_scanner.py code comments.",
+      "validation": [
+        "grep -q \"Self-Reference Exception\" docs/ops/pr-steward-readiness.md",
+        "grep -q \"Self-Reference Exception\" src/dopemux/dcp/red_lane_scanner.py"
+      ]
+    }
+  ]
+}
