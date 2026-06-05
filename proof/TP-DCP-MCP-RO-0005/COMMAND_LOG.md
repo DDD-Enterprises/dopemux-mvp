@@ -44,3 +44,24 @@ services/dcp-readonly-facade/tests/test_route_denylist.py
 (none — within allowlist)
 ## Forbidden files? (expect none)
 (none)
+
+## Final post-commit snapshot (clean tree)
+
+### $ git rev-parse HEAD
+60a77c99c9f9fa95270b1a1203a01500f2dac4aa
+### $ git status --short --branch
+## dcp/chatgpt-mcp-ro-0005-conport-and-dope-memory-read-ada...origin/main [ahead 1]
+ M proof/TP-DCP-MCP-RO-0005/COMMAND_LOG.md
+### $ git diff --stat 876d0c624bee8f4f838a990a119ab1f1e9521bf5..HEAD
+ .../src/dcp_facade/dope_memory.py                  |  57 +++++++
+ .../dcp-readonly-facade/src/dcp_facade/envelope.py |   3 +
+ .../src/dcp_facade/http_client.py                  | 142 +++++++++++++++++
+ .../src/dcp_facade/route_manifest.py               |  59 +++++++
+ .../dcp-readonly-facade/src/dcp_facade/tools.py    | 174 ++++++++++++++++++++-
+ services/dcp-readonly-facade/src/mcp/server.py     |  26 +++
+ .../tests/test_adapter_tools.py                    | 102 ++++++++++++
+ .../dcp-readonly-facade/tests/test_adapters.py     |  73 +++++++++
+ .../dcp-readonly-facade/tests/test_http_client.py  |  84 ++++++++++
+ .../tests/test_live_optional.py                    |  40 +++++
+ .../tests/test_route_denylist.py                   |  40 +++++
+ 17 files changed, 1113 insertions(+), 2 deletions(-)
