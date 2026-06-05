@@ -15,13 +15,13 @@ class RedLaneScanner:
 
     def scan(
         self,
-        changed_files: List[str] = None,
-        diff_text: str = None,
-        control_snapshot_paths: List[str] = None,
-        proof_paths: List[str] = None,
-        audit_paths: List[str] = None,
-        merge_readiness_paths: List[str] = None,
-        expected_head_sha: str = None
+        changed_files: Optional[List[str]] = None,
+        diff_text: Optional[str] = None,
+        control_snapshot_paths: Optional[List[str]] = None,
+        proof_paths: Optional[List[str]] = None,
+        audit_paths: Optional[List[str]] = None,
+        merge_readiness_paths: Optional[List[str]] = None,
+        expected_head_sha: Optional[str] = None
     ) -> RedLaneReport:
         changed_files = changed_files or []
         control_snapshot_paths = control_snapshot_paths or []
@@ -137,9 +137,15 @@ class RedLaneScanner:
         )
 
     def _scan_artifacts(
-        self, proof_paths, audit_paths, merge_readiness_paths, control_snapshot_paths,
-        expected_head_sha, guards, findings
-    ):
+        self, 
+        proof_paths: List[str], 
+        audit_paths: List[str], 
+        merge_readiness_paths: List[str], 
+        control_snapshot_paths: List[str],
+        expected_head_sha: Optional[str], 
+        guards: GuardsInfo, 
+        findings: List[Finding]
+    ) -> None:
         # We need to process proof/audit/merge_readiness to confirm:
         # no stale proof, no self-certification, no unknown reviewers.
         
