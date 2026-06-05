@@ -1,0 +1,98 @@
+{
+  "id": "TP-DMX-ORCH-CS-P1",
+  "project": "dopemux-mvp",
+  "target": "Catalog and bound the read-only Claude-facing surface over the task-orchestrator MCP: a callable-surface inventory classifying all 14 tools and 18 /dx: commands, an independent machine-readable manifest, and a read-only validator + test that enforce the read-surface boundary. Catalog/enforce only — no new commands, no schema/config edits, no live writes.",
+  "invariants": [
+    "No live task-orchestrator writes (manage_*, advance_item, claim_item, create_work_tree, complete_tree).",
+    "No Dopetask execution.",
+    "No bridge writes (dopecon-bridge / ConPort writes).",
+    "No memory/context writes (dope-memory).",
+    "Catalog only: do not edit existing /dx: command files, .taskorchestrator/config.yaml, or the ADRs.",
+    "The surface manifest is hand-authored independent authority, not generated from command frontmatter.",
+    "The validator is runtime-read-only: it inspects files and never calls the orchestrator MCP."
+  ],
+  "depends_on": ["DMX-ORCH-CLAUDE-SURFACE"],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "1b633d83-82c4-4e28-abd3-d5ab73321390",
+    "base_branch": "main",
+    "parent_tp_id": "DMX-ORCH-CLAUDE-SURFACE",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "shell",
+    "branch": "claude/dmx-orch-cs-p1",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(orch): task-orchestrator read-only callable-surface inventory + boundary enforcement (TP-DMX-ORCH-CS-P1)",
+    "allowlist": [
+      "docs/03-reference/systems/task-orchestrator/callable-surface-inventory.md",
+      ".taskorchestrator/surface_manifest.json",
+      "scripts/validate_dx_surface.py",
+      "tests/orchestrator/test_dx_surface_manifest.py",
+      "task-packets/TP-DMX-ORCH-CS-P1.json",
+      "proof/TP-DMX-ORCH-CS-P1/PROOF.json",
+      "proof/TP-DMX-ORCH-CS-P1/pal/01_ANALYZE.md",
+      "proof/TP-DMX-ORCH-CS-P1/pal/02_PLANNER.md",
+      "proof/TP-DMX-ORCH-CS-P1/pal/03_CODEREVIEW.md",
+      "proof/TP-DMX-ORCH-CS-P1/pal/04_PRECOMMIT.md"
+    ],
+    "verify": [
+      "python3 scripts/validate_dx_surface.py",
+      "python3 -m pytest tests/orchestrator/test_dx_surface_manifest.py -q",
+      "python3 -m json.tool .taskorchestrator/surface_manifest.json",
+      "python3 -m json.tool task-packets/TP-DMX-ORCH-CS-P1.json",
+      "python3 -m json.tool proof/TP-DMX-ORCH-CS-P1/PROOF.json",
+      "python3 -m jsonschema -i task-packets/TP-DMX-ORCH-CS-P1.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python3 -m compileall -q scripts/validate_dx_surface.py tests/orchestrator/test_dx_surface_manifest.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(orch): task-orchestrator read-only callable-surface inventory + boundary enforcement",
+    "body": "First implementation packet of the DMX-ORCH-CLAUDE-SURFACE series (root 1b633d83). Catalogs the already-built /dx: surface rather than rebuilding it: a callable-surface inventory classifying all 14 v3 orchestrator tools and the 18 /dx: commands, an independent machine-readable manifest (.taskorchestrator/surface_manifest.json), and a read-only validator + pytest that enforce the read-surface boundary (a read command cannot gain a write tool). No new commands, no config/ADR edits, no live writes. Validator and test are runtime-read-only.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": ["analyze", "planner", "codereview", "precommit"]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Author the callable-surface inventory doc classifying all 14 tools and 18 /dx: commands, with the read-surface boundary and provenance/skew notes.",
+      "validation": [
+        "test -f docs/03-reference/systems/task-orchestrator/callable-surface-inventory.md",
+        "grep -q 'read-surface' docs/03-reference/systems/task-orchestrator/callable-surface-inventory.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Author the independent machine-readable surface manifest (.taskorchestrator/surface_manifest.json) with per-tool classification and per-command surface_class + orchestrator_tools.",
+      "validation": [
+        "python3 -m json.tool .taskorchestrator/surface_manifest.json"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement the read-only validator and a pytest (with a bite test) that enforce command frontmatter against the manifest.",
+      "validation": [
+        "python3 scripts/validate_dx_surface.py",
+        "python3 -m pytest tests/orchestrator/test_dx_surface_manifest.py -q"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Produce the AGENTS.md §9 proof bundle with PAL chain artifacts and recorded validation exit codes.",
+      "validation": [
+        "python3 -m json.tool proof/TP-DMX-ORCH-CS-P1/PROOF.json"
+      ]
+    }
+  ]
+}
