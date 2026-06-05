@@ -1,0 +1,143 @@
+{
+  "id": "TP-DCP-MCP-RO-0007",
+  "project": "dopemux-mvp",
+  "target": "Document local Secure MCP Tunnel integration, redacted sample configs, local-only runtime posture, manual validation, and ChatGPT connector test flow without committing secrets.",
+  "invariants": [
+    "All examples use placeholders.",
+    "Tunnel only points to facade, never backend services.",
+    "Docs require loopback binding.",
+    "Docs say developer mode can expose read/write tools, so facade denylist is mandatory.",
+    "No secrets committed.",
+    "OUT OF SCOPE: No real tunnel ID/API keys/secrets.",
+    "OUT OF SCOPE: No running tunnel-client in CI.",
+    "OUT OF SCOPE: No connector creation automation.",
+    "OUT OF SCOPE: No code changes unless small config sample fixtures under docs.",
+    "OUT OF SCOPE: No public ingress.",
+    "STOP IF: Official tunnel behavior contradicts docs.",
+    "STOP IF: Tunnel requires root privileges.",
+    "STOP IF: Tunnel requires storing credentials unencrypted in repo.",
+    "STOP IF: Manual validation requires public ingress or backend direct exposure.",
+    "STOP IF: Secret scan finds real credentials.",
+    "FORBIDDEN FILE: services/** except if updating README under services/dcp-readonly-facade is strictly needed",
+    "FORBIDDEN FILE: src/**",
+    "FORBIDDEN FILE: .env*",
+    "FORBIDDEN FILE: .dopemux/**",
+    "FORBIDDEN FILE: compose*.yml"
+  ],
+  "depends_on": [
+    "TP-DCP-MCP-RO-0006"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "origin_hint": "github.com/DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DCP-MCP-RO",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DCP-MCP-RO-0006",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "dcp/chatgpt-mcp-ro-0007-secure-mcp-tunnel-integration-do",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(dcp): add secure mcp tunnel validation guide",
+    "allowlist": [
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/**",
+      "proof/TP-DCP-MCP-RO-0007/**"
+    ],
+    "verify": [
+      "rg -n \"CONTROL_PLANE_API_KEY|OPENAI_API_KEY|ANTHROPIC_API_KEY|GEMINI_API_KEY|sk-|Bearer |TOKEN=|PASSWORD=|SECRET=|tunnel_[A-Za-z0-9]\" docs/03-reference/dcp/chatgpt-mcp-readonly services/dcp-readonly-facade || true",
+      "git diff --stat",
+      "git diff -- docs/03-reference/dcp/chatgpt-mcp-readonly services/dcp-readonly-facade proof/TP-DCP-MCP-RO-0007",
+      "git status --short --branch"
+    ]
+  },
+  "pr": {
+    "title": "Secure MCP Tunnel integration docs for readonly facade",
+    "body": "Document local Secure MCP Tunnel integration, redacted sample configs, local-only runtime posture, manual validation, and ChatGPT connector test flow without committing secrets.\n\nRequired PR sections: Objective, Scope, Evidence, Validation, Embedded audit, Risks and unknowns, Rollback, Proof bundle links",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Implement per objective: Document local Secure MCP Tunnel integration, redacted sample configs, local-only runtime posture, manual validation, and ChatGPT connector test flow without committing secrets. In-scope work: Add Secure MCP Tunnel local integration guide. Add redacted tunnel-client profile examples. Add MCP inspector/manual validation checklist. Add failure-mode runbook. Add docs warning about ChatGPT developer mode and read/write MCP exposure risk. Add proof of no secrets in docs.",
+      "requirements": [
+        "Add Secure MCP Tunnel local integration guide.",
+        "Add redacted tunnel-client profile examples.",
+        "Add MCP inspector/manual validation checklist.",
+        "Add failure-mode runbook.",
+        "Add docs warning about ChatGPT developer mode and read/write MCP exposure risk.",
+        "Add proof of no secrets in docs."
+      ],
+      "expected_files": [
+        "TUNNEL_INTEGRATION.md",
+        "MANUAL_VALIDATION.md",
+        "FAILURE_RUNBOOK.md",
+        "Proof bundle for packet 0007"
+      ],
+      "context_files": [
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/READ_ONLY_SURFACE_INVENTORY.json",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/ARCHITECTURE.md",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md"
+      ],
+      "validation": [
+        "No files outside commit.allowlist are modified; change matches the stated scope."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Run the packet validation commands and inspect the diff.",
+      "commands": [
+        "pwd",
+        "git rev-parse --show-toplevel",
+        "git remote -v",
+        "git branch --show-current",
+        "git rev-parse HEAD",
+        "git status --short --branch",
+        "python -m pytest -q services/dcp-readonly-facade/tests",
+        "rg -n \"CONTROL_PLANE_API_KEY|OPENAI_API_KEY|ANTHROPIC_API_KEY|GEMINI_API_KEY|sk-|Bearer |TOKEN=|PASSWORD=|SECRET=|tunnel_[A-Za-z0-9]\" docs/03-reference/dcp/chatgpt-mcp-readonly services/dcp-readonly-facade || true",
+        "git diff --stat",
+        "git diff -- docs/03-reference/dcp/chatgpt-mcp-readonly services/dcp-readonly-facade proof/TP-DCP-MCP-RO-0007",
+        "git status --short --branch"
+      ],
+      "validation": [
+        "Docs include tunnel topology and local-only listener.",
+        "Docs include no real credentials.",
+        "Docs instruct tunnel-client to connect only to facade endpoint.",
+        "Manual validation checklist covers list_projects, get_repo_state_snapshot, denied route tests, stale proof warning.",
+        "Secret scan produces no real secrets.",
+        "Existing tests pass."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Produce the proof bundle under proof/TP-DCP-MCP-RO-0007/ (PROOF.json, COMMAND_LOG.md, AUDIT.md) and run the embedded audit.",
+      "requirements": [
+        "PROOF.json.",
+        "COMMAND_LOG.md.",
+        "AUDIT.md challenging doc safety and secret leakage.",
+        "Secret scan output.",
+        "Test output.",
+        "Diff and diff stat."
+      ],
+      "validation": [
+        "Proof bundle present with command outputs and exit codes.",
+        "Embedded audit verdict recorded (PASS or PASS_WITH_RISKS with non-blocking risks)."
+      ]
+    }
+  ]
+}
