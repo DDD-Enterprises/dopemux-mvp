@@ -1,0 +1,171 @@
+{
+  "id": "TP-DCP-MCP-RO-0003",
+  "title": "Inspect Dopemux Init Registry Contract",
+  "project": "DCP Secure MCP Read-Only Evidence Facade",
+  "target": "DDD-Enterprises/dopemux-mvp",
+  "status": "READY",
+  "task_class": "unknown subsystem/API-sensitive/documentation-sensitive",
+  "risk": "MEDIUM",
+  "objective": "Inspect actual dopemux init/workspace identity behavior and formalize the project registry validation contract without implementing the facade.",
+  "why_this_packet_exists_now": "Multi-project support depends on proving how a Dopemux-initialized workspace is identified. Guessing markers would be a tiny elegant bear trap.",
+  "depends_on": [
+    "TP-DCP-MCP-RO-0002"
+  ],
+  "execution": {
+    "primary_agent": "codex",
+    "supervisor": "GPT-5.5 Pro",
+    "embedded_auditor_default": "AGY/Sonnet; fallback Claude Code Sonnet; fallback Opus/Gemini for contradiction hunt",
+    "branch": "dcp/chatgpt-mcp-ro-0003-inspect-dopemux-init-registry-co"
+  },
+  "scope": {
+    "in": [
+      "Static inspection of dopemux init, workspace validation, project/workspace config, and .dopemux marker usage.",
+      "Document observed init markers and unknowns.",
+      "Refine MULTI_PROJECT_REGISTRY_CONTRACT.md based on evidence.",
+      "Add DOPMUX_INIT_REGISTRY_DISCOVERY.md."
+    ],
+    "out": [
+      "No changes to dopemux init behavior.",
+      "No facade implementation.",
+      "No auto-registering projects.",
+      "No writes to .dopemux metadata.",
+      "No service startup."
+    ]
+  },
+  "invariants": [
+    "Marker contract must be OBSERVED or UNKNOWN.",
+    "Eligibility does not equal exposure.",
+    "Registry remains explicit operator approval.",
+    "No arbitrary path acceptance.",
+    "Symlink escape must remain blocked."
+  ],
+  "allowed_files": [
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/Dopemux_INIT_REGISTRY_DISCOVERY.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/MULTI_PROJECT_REGISTRY_CONTRACT.md",
+    "proof/TP-DCP-MCP-RO-0003/**"
+  ],
+  "forbidden_files": [
+    "src/** except read-only inspection",
+    "services/**",
+    ".dopemux/**",
+    "compose*.yml",
+    "docker/**"
+  ],
+  "plan": [
+    "Search for dopemux init implementation, workspace validation, marker files, registry config, and project_id usage.",
+    "Trace active CLI entrypoint and command registration enough to locate init or confirm UNKNOWN.",
+    "Identify marker files and config fields used to prove a workspace is initialized.",
+    "Identify whether dopemux already has a project registry or list command.",
+    "Update registry contract with OBSERVED marker rules or explicit UNKNOWN sections.",
+    "Document validation algorithm for registry entry verification.",
+    "Record contradictions and stop if multiple incompatible marker contracts exist.",
+    "Run doc validation and diff inspection."
+  ],
+  "exact_commands": [
+    "pwd",
+    "git rev-parse --show-toplevel",
+    "git remote -v",
+    "git branch --show-current",
+    "git rev-parse HEAD",
+    "git status --short --branch",
+    "rg -n \"dopemux init|def init|@.*init|workspace_id|workspace_root|repo_root|\\.dopemux|project_id|repo_marker|validate.*workspace|resolve.*workspace|projects list|list_projects|registry\" src services docs tests pyproject.toml",
+    "rg -n \"\\.dopemux|dopemux.toml|workspace|init\" README.md PROJECT.md ARCHITECTURE.md AGENTS.md docs/03-reference -S || true",
+    "git diff --stat",
+    "git diff -- docs/03-reference/dcp/chatgpt-mcp-readonly proof/TP-DCP-MCP-RO-0003",
+    "git status --short --branch"
+  ],
+  "validation_gates": [
+    "Observed init markers are documented with exact paths and code references, or marked UNKNOWN.",
+    "Registry contract no longer depends on invented marker assumptions.",
+    "No runtime files changed.",
+    "Multi-project resolver algorithm is explicit and fail-closed.",
+    "Diff stays within allowlist."
+  ],
+  "proof_requirements": [
+    "PROOF.json.",
+    "COMMAND_LOG.md.",
+    "AUDIT.md challenging init marker findings and project registry assumptions.",
+    "Command outputs for rg scans.",
+    "Diff and diff stat."
+  ],
+  "acceptance_criteria": [
+    "Dopemux init identity contract is documented.",
+    "Remaining unknowns are explicit.",
+    "Registry schema is ready for implementation in 0004."
+  ],
+  "rollback_steps": [
+    "Revert docs modified by this packet.",
+    "Delete proof/TP-DCP-MCP-RO-0003."
+  ],
+  "stop_conditions": [
+    "No init/workspace identity code can be found.",
+    "Multiple conflicting marker contracts require supervisor decision.",
+    "Any validation would require mutating a workspace.",
+    "Generated docs would need to reveal local secrets or private paths."
+  ],
+  "embedded_audit": {
+    "required": true,
+    "auditor_focus": [
+      "Were marker findings actually observed?",
+      "Did implementation accidentally begin?",
+      "Does the registry contract fail closed?",
+      "Are UNKNOWNs preserved?"
+    ]
+  },
+  "expected_output": [
+    "Dopemux_INIT_REGISTRY_DISCOVERY.md",
+    "Updated MULTI_PROJECT_REGISTRY_CONTRACT.md",
+    "Proof bundle for packet 0003"
+  ],
+  "commit": {
+    "message": "docs(dcp): formalize dopemux init registry contract",
+    "allowlist": [
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/Dopemux_INIT_REGISTRY_DISCOVERY.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/MULTI_PROJECT_REGISTRY_CONTRACT.md",
+      "proof/TP-DCP-MCP-RO-0003/**"
+    ],
+    "verify": [
+      "rg -n \"\\.dopemux|dopemux.toml|workspace|init\" README.md PROJECT.md ARCHITECTURE.md AGENTS.md docs/03-reference -S || true",
+      "git diff --stat",
+      "git diff -- docs/03-reference/dcp/chatgpt-mcp-readonly proof/TP-DCP-MCP-RO-0003",
+      "git status --short --branch"
+    ]
+  },
+  "pr": {
+    "title": "Dopemux init registry discovery for readonly MCP facade",
+    "body_required_sections": [
+      "Objective",
+      "Scope",
+      "Evidence",
+      "Validation",
+      "Embedded audit",
+      "Risks and unknowns",
+      "Rollback",
+      "Proof bundle links"
+    ],
+    "base": "main"
+  },
+  "to_load": {
+    "epic": "DCP Secure MCP Read-Only Evidence Facade",
+    "lane": "dcp-readonly-facade",
+    "priority": "HIGH",
+    "labels": [
+      "dcp",
+      "mcp",
+      "readonly",
+      "chatgpt",
+      "secure-tunnel",
+      "dopemux"
+    ],
+    "blocked_by": [
+      "TP-DCP-MCP-RO-0002"
+    ],
+    "ready_when": [
+      "Observed init markers are documented with exact paths and code references, or marked UNKNOWN.",
+      "Registry contract no longer depends on invented marker assumptions.",
+      "No runtime files changed.",
+      "Multi-project resolver algorithm is explicit and fail-closed.",
+      "Diff stays within allowlist."
+    ]
+  }
+}
