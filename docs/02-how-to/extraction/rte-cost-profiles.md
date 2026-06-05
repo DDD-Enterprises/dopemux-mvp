@@ -25,6 +25,12 @@ The Repo Truth Extractor exposes 11 cost profiles via the `--cost-profile` CLI f
 
 > **Strict cells are OpenAI-only.** `CE` + `AGG` steps require OpenAI-style strict JSON-schema passthrough, which only OpenAI models provide here (direct `openai/*` or `openrouter/openai/*`). So `CE_MODEL`/`SYNTH_MODEL` always resolve to OpenAI; a fail-closed guard rejects xai/gemini/anthropic on a strict cell **before any spend**. Provider diversity (Gemini, xAI) lives on the non-strict bulk lanes.
 
+### Repair & sidefill also follow the profile (Increment 3)
+
+The same placeholder mechanism now drives the **repair** and **sidefill** recovery routes, not just primary. Each lane's repair/sidefill lead resolves to its profile cell (`CE`/`AGG` → strict OpenAI; bulk → the profile's bulk model), with the original hardcoded model kept as a fallback.
+
+> **Bulk repair/sidefill are now active.** Previously the recovery dispatch hard-required a strict route, so non-strict bulk lanes never selected one and bulk repair/sidefill **never ran**. Recovery strictness is now lane-aware, so bulk failures get a profile-driven recovery attempt — its output is still validated by the same contract gate as bulk primary. This adds conditional LLM calls (and cost) on bulk-lane failures that did not occur before. The 7 phase-M steps that deliberately repair with a strict OpenAI model stay pinned (not profile-driven). The full-repo `--print-cost-preview` prices primary routes only; reconcile `SPEND_LEDGER.json` after the first bounded `--execute` run before unattended use.
+
 ## TL;DR
 
 ```bash
