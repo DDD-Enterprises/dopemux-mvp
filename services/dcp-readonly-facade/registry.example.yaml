@@ -21,6 +21,12 @@ projects:
       conport:
         workspace_id: "<conport-workspace-id>"
         base_url: "http://127.0.0.1:3004"
+        # search_progress is fail-closed: ConPort's default enhanced server
+        # auto-forks (WRITES) progress rows when a workspace has none
+        # (DOPEMUX_AUTO_FORK_PROGRESS defaults to 1). Only set this true AFTER
+        # you have set DOPEMUX_AUTO_FORK_PROGRESS=0 on that backend; otherwise a
+        # progress read is not read-only.
+        progress_readonly_safe: false
       dope_memory:
         profile: "<memory-profile>"
         base_url: "http://127.0.0.1:3020"

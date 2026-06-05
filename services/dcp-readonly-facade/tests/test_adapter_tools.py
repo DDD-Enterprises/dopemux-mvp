@@ -55,6 +55,26 @@ def test_replay_requires_session_id(make_workspace, build_registry, project_entr
     assert any("session_id is required" in r for r in env["blocked_reasons"])
 
 
+def test_search_progress_fail_closed_without_readonly_flag(make_workspace, build_registry, project_entry, make_client):
+    # conport profile WITHOUT progress_readonly_safe → blocked (auto-fork risk)
+    ws = make_workspace()["path"]
+    reg = _reg(build_registry, project_entry, ws, {"conport": {"base_url": "http://127.0.0.1:3004", "workspace_id": "w"}})
+    client, ft = make_client(json_body={"progress": []})
+    env = tools.search_progress(reg, "p", client=client)
+    assert env["status"] == E.BLOCKED
+    assert any("auto-fork" in r for r in env["blocked_reasons"])
+    assert ft.calls == []  # never hit the backend
+
+
+def test_search_progress_allowed_with_readonly_flag(make_workspace, build_registry, project_entry, make_client, conport_dm_profiles):
+    ws = make_workspace()["path"]
+    reg = _reg(build_registry, project_entry, ws, conport_dm_profiles)
+    client, ft = make_client(json_body={"progress": [], "count": 0})
+    env = tools.search_progress(reg, "p", client=client)
+    assert env["status"] == E.OK
+    assert ft.last["url"].endswith("/api/progress")
+
+
 def test_unknown_project_blocked(build_registry, make_client):
     reg = build_registry([])
     client, _ = make_client()

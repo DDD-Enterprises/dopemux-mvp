@@ -4,7 +4,7 @@
   "branch": "dcp/chatgpt-mcp-ro-0005-conport-and-dope-memory-read-ada",
   "base_branch": "main",
   "base_sha": "876d0c624 (PR #830 / 0004 merge)",
-  "head_sha": "60a77c99c9f9fa95270b1a1203a01500f2dac4aa",
+  "head_sha": "PENDING_POST_COMMIT_SYNC",
   "task_class": "implementation/security-sensitive/API-sensitive",
   "risk": "HIGH",
   "depends_on": "TP-DCP-MCP-RO-0004 (merged via PR #830)",
@@ -45,7 +45,8 @@
     "diff_within_allowlist": "PASS",
     "no_forbidden_files": "PASS",
     "httpx_lazy_import": "PASS",
-    "docs_precommit": "PASS (markdownlint, frontmatter)"
+    "docs_precommit": "PASS (markdownlint, frontmatter)",
+    "search_progress_fail_closed_on_auto_fork": "PASS"
   },
   "pal_codereview": {
     "tool": "pal/codereview (security, external)",
@@ -80,5 +81,8 @@
   ],
   "embedded_audit": "PASS_WITH_RISKS",
   "command_log": "proof/TP-DCP-MCP-RO-0005/COMMAND_LOG.md",
-  "audit": "proof/TP-DCP-MCP-RO-0005/AUDIT.md"
+  "audit": "proof/TP-DCP-MCP-RO-0005/AUDIT.md",
+  "review_feedback_round": {
+    "P1_progress_auto_fork": "FIXED \u2014 search_progress fail-closed: blocked unless conport.progress_readonly_safe=true (operator must disable DOPEMUX_AUTO_FORK_PROGRESS first); ConPort GET /api/progress auto-forks (writes) on empty workspace. Documented + tested (backend never hit when blocked)."
+  }
 }

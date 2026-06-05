@@ -177,6 +177,11 @@ def make_client(fake_transport):
 def conport_dm_profiles():
     """Loopback-bound conport + dope_memory service profiles for a test project."""
     return {
-        "conport": {"base_url": "http://127.0.0.1:3004", "workspace_id": "ws-test"},
+        "conport": {
+            "base_url": "http://127.0.0.1:3004",
+            "workspace_id": "ws-test",
+            # operator asserts DOPEMUX_AUTO_FORK_PROGRESS=0 on this backend
+            "progress_readonly_safe": True,
+        },
         "dope_memory": {"base_url": "http://127.0.0.1:3020", "workspace_id": "ws-test"},
     }

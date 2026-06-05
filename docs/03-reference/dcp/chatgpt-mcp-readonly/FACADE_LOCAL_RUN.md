@@ -98,6 +98,18 @@ surface. **Denied** (structurally unreachable, regression-tested): ConPort
 `memory_correct` / reflection / store / mark-issue / link-resolution;
 dopecon-bridge `/ddg/`; and any `/kg/` / `/route/pm` PM-write route.
 
+### `search_progress` is fail-closed (auto-fork hazard)
+
+ConPort's default enhanced server is **not** read-only for `GET /api/progress`:
+with `DOPEMUX_AUTO_FORK_PROGRESS=1` (the default), `_get_progress` *auto-forks
+(writes)* progress rows from shared when the requested workspace has none. The
+facade cannot suppress that per-request, so `search_progress` is **blocked by
+default** and only runs when the operator sets
+`service_profiles.conport.progress_readonly_safe: true` — which you should do
+**only after** setting `DOPEMUX_AUTO_FORK_PROGRESS=0` on that ConPort backend.
+(`search_decisions` / `search_chronicle` / `replay_chronicle_session` have no
+such write-on-read behavior.)
+
 ### Security controls
 
 - **Loopback-only** `base_url` (validated via `ipaddress.is_loopback`; non-loopback / unspecified hosts rejected — SSRF guard).
