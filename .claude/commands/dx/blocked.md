@@ -2,7 +2,7 @@
 description: "List blocked work-items with blocker chains and unblock thresholds"
 arguments: "[--scope <ancestor-uuid>] [--no-details]"
 allowed-tools: [
-  "Bash", "Read",
+  "Bash(git rev-parse:*)", "Read",
   "mcp__task-orchestrator__get_blocked_items"
 ]
 model: "claude-sonnet-4-5"

@@ -2,7 +2,7 @@
 description: "List all notes on a work-item (query_notes list) — read-only"
 arguments: "<item-id-or-prefix> [--role queue|work|review] [--no-body]"
 allowed-tools: [
-  "Bash", "Read",
+  "Bash(git rev-parse:*)", "Read",
   "mcp__task-orchestrator__query_notes"
 ]
 model: "claude-sonnet-4-5"

@@ -2,7 +2,7 @@
 description: "Show full task-orchestrator context — gate status, missing notes, guidance pointer, schema"
 arguments: "[<item-id-or-prefix>] [--session] [--health]"
 allowed-tools: [
-  "Read", "Bash",
+  "Read", "Bash(git rev-parse:*)",
   "mcp__task-orchestrator__get_context",
   "mcp__task-orchestrator__query_notes",
   "mcp__conport__get_active_context"
