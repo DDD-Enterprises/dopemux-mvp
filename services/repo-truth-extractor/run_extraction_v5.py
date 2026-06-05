@@ -621,6 +621,31 @@ DEFAULT_COST_PROFILE = "value-default"
 # 1M-context model). See promptsets/v4/model_map.yaml v3 tag_definitions.
 # ---------------------------------------------------------------------------
 
+# Canonical, PROFILE-AGNOSTIC cell-alias keys. Every profile MUST define all
+# four so a single shared promptsets/v4/model_map.yaml can reference ${CELL}
+# placeholders that resolve under any --cost-profile. Keys map 1:1 to
+# model_map lane_class:
+#   BULK_DOCS_MODEL  -> lane_class BULK_DOCS_GENERAL (non-strict)
+#   BULK_CODE_MODEL  -> lane_class BULK_CODE_HEAVY   (non-strict, code-heavy)
+#   CE_MODEL         -> lane_class CE                (STRICT json schema)
+#   SYNTH_MODEL      -> lane_class AGG               (STRICT, synthesis-critical)
+# Values are 'provider/model' strings parsed by _parse_alias_provider_model:
+# direct providers {openai,gemini,xai}; anthropic ONLY via openrouter/...; the
+# resolved provider drives provider + api_key_env (direct-provider-per-profile).
+# STRICT cells (CE_MODEL, SYNTH_MODEL) MUST resolve to a strict-capable provider
+# {openai, openrouter} — enforced fail-closed at dispatch + preflight.
+COST_PROFILE_CELL_KEYS: Tuple[str, ...] = (
+    "BULK_DOCS_MODEL",
+    "BULK_CODE_MODEL",
+    "CE_MODEL",
+    "SYNTH_MODEL",
+)
+COST_PROFILE_STRICT_CELL_KEYS: Tuple[str, ...] = ("CE_MODEL", "SYNTH_MODEL")
+# Providers permitted to serve STRICT cells. Closes the xai/gemini fail-open
+# hole: strict_capability_reason() treats xai as strict-capable, but xai/gemini
+# strict-JSON reliability on RTE cells is unproven (Phase D research).
+STRICT_ALLOWED_PROVIDERS: Tuple[str, ...] = ("openai", "openrouter")
+
 COST_PROFILES: Dict[str, Dict[str, Any]] = {
     "economy": {
         "routing_policy": "cost",
@@ -635,13 +660,13 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
             "Quality degraded on SYNTH-critical cells; review PROOF_PACK before "
             "relying on outputs."
         ),
-        # Cell aliases: ${ALIAS_NAME} references in cell route ladders resolve
+        # Cell aliases: ${CELL} references in model_map route ladders resolve
         # from this dict. Operator overrides via --model-alias K=V or env var.
         "cell_aliases": {
-            "ECONOMY_CE_MEDIUM_MODEL": "openai/gpt-5.1-codex-mini",
-            "ECONOMY_SYNTH_HIGH_MODEL": "anthropic/claude-haiku-4.5",
-            "ECONOMY_SYNTH_CRITICAL_MODEL": "anthropic/claude-sonnet-4.5",
-            "ECONOMY_BULK_EXTRACT_MODEL": "openai/gpt-5.4-mini",
+            "BULK_DOCS_MODEL": "openai/gpt-5.4-mini",
+            "BULK_CODE_MODEL": "openai/gpt-5.4-mini",
+            "CE_MODEL": "openai/gpt-5.1-codex-mini",
+            "SYNTH_MODEL": "openrouter/anthropic/claude-sonnet-4.5",
         },
     },
     "value-default": {
@@ -655,14 +680,13 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "notes": (
             "Best cost/quality ratio. Flex tier on EXTRACT/AGG bulk lanes; "
             "standard for CE/SYNTH. Cached input on globally. Batch enabled "
-            "for non-CE/SYNTH cells. NEW DEFAULT replacing balanced_openrouter."
+            "for non-CE/SYNTH cells. Default profile."
         ),
         "cell_aliases": {
-            "VALUE_DEFAULT_CE_MEDIUM_MODEL": "openai/gpt-5.3-codex",
-            "VALUE_DEFAULT_CE_HIGH_MODEL": "openai/gpt-5.4",
-            "VALUE_DEFAULT_SYNTH_HIGH_MODEL": "anthropic/claude-sonnet-4.6",
-            "VALUE_DEFAULT_SYNTH_CRITICAL_MODEL": "anthropic/claude-opus-4.6",
-            "VALUE_DEFAULT_BULK_EXTRACT_MODEL": "openai/gpt-5.4-mini",
+            "BULK_DOCS_MODEL": "openai/gpt-5.4-mini",
+            "BULK_CODE_MODEL": "openai/gpt-5.3-codex",
+            "CE_MODEL": "openai/gpt-5.3-codex",
+            "SYNTH_MODEL": "openrouter/anthropic/claude-opus-4.6",
         },
     },
     "quality": {
@@ -675,17 +699,14 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "cost_cap_mode": "preventive",
         "notes": (
             "Premium models with priority service tier where available. "
-            "Estimated 3-5x cost of value-default. Use for production go/no-go."
+            "Estimated 3-5x cost of value-default. Use for production go/no-go. "
+            "SYNTH-critical uses opus 4.6 (not 4.7) to avoid the tokenization tax."
         ),
-        # Cell aliases per Phase D consensus: opus 4.6 default for SYNTH/critical
-        # (not 4.7 — avoid the ~1.35x tokenization tax). Swap centrally via env
-        # var when 4.7 proves better on canary steps.
         "cell_aliases": {
-            "QUALITY_CE_MEDIUM_MODEL": "openai/gpt-5.5",
-            "QUALITY_CE_HIGH_MODEL": "openai/gpt-5.5",
-            "QUALITY_SYNTH_HIGH_MODEL": "anthropic/claude-opus-4.6",
-            "QUALITY_SYNTH_CRITICAL_MODEL": "anthropic/claude-opus-4.6",
-            "QUALITY_SYNTH_CRITICAL_FALLBACK_MODEL": "openai/gpt-5.5-pro",
+            "BULK_DOCS_MODEL": "openai/gpt-5.4",
+            "BULK_CODE_MODEL": "openai/gpt-5.5",
+            "CE_MODEL": "openai/gpt-5.5",
+            "SYNTH_MODEL": "openrouter/anthropic/claude-opus-4.6",
         },
     },
     "experimental": {
@@ -697,7 +718,7 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "max_cost_usd_default": 25.00,
         "cost_cap_mode": "preventive",
         "notes": (
-            "Bleed-edge frontier models (gpt-5.5-pro, claude-opus-4.7, "
+            "Bleed-edge frontier models (gpt-5.5, claude-opus-4.7, "
             "gemini-3.5-flash). May have higher tokenization (opus 4.7 = ~35% "
             "more tokens for same text). Bypasses some validators; operator "
             "must inspect PROOF_PACK."
@@ -707,9 +728,149 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
             "unexpected behavior. Not for production."
         ),
         "cell_aliases": {
-            "EXPERIMENTAL_CE_MEDIUM_MODEL": "openai/gpt-5.5",
-            "EXPERIMENTAL_SYNTH_HIGH_MODEL": "anthropic/claude-opus-4.7",
-            "EXPERIMENTAL_SYNTH_CRITICAL_MODEL": "anthropic/claude-opus-4.7",
+            "BULK_DOCS_MODEL": "gemini/gemini-3.5-flash",
+            "BULK_CODE_MODEL": "openai/gpt-5.5",
+            "CE_MODEL": "openai/gpt-5.5",
+            "SYNTH_MODEL": "openrouter/anthropic/claude-opus-4.7",
+        },
+    },
+    "gemini-value": {
+        "routing_policy": "balanced_openrouter",
+        "default_service_tier": "flex",
+        "enable_cached_input": True,
+        "enable_batch_when_supported": True,
+        "escalation_max_hops": 2,
+        "max_cost_usd_default": 8.00,
+        "cost_cap_mode": "preventive",
+        "notes": (
+            "Cheap Gemini lean on non-code bulk/docs; CE stays on a strict-capable "
+            "OpenAI model (Gemini weak on strict code extraction); SYNTH on "
+            "opus-4.6 via OpenRouter. Never routes a strict cell to Gemini."
+        ),
+        "cell_aliases": {
+            "BULK_DOCS_MODEL": "gemini/gemini-3-flash-preview",
+            "BULK_CODE_MODEL": "gemini/gemini-3.1-pro-preview",
+            "CE_MODEL": "openai/gpt-5.3-codex",
+            "SYNTH_MODEL": "openrouter/anthropic/claude-opus-4.6",
+        },
+    },
+    "grok-fast": {
+        "routing_policy": "balanced_grok_openrouter",
+        "default_service_tier": "flex",
+        "enable_cached_input": True,
+        # xAI batch support unverified (Phase D consensus) — keep batch off.
+        "enable_batch_when_supported": False,
+        "escalation_max_hops": 2,
+        "max_cost_usd_default": 6.00,
+        "cost_cap_mode": "preventive",
+        "notes": (
+            "Cheapest code-extract lean using xAI Grok on non-strict bulk/code "
+            "lanes. STRICT CE/SYNTH stay on OpenAI/OpenRouter (xAI strict-JSON "
+            "reliability unproven) — the strict guard rejects xAI on strict cells."
+        ),
+        "cell_aliases": {
+            "BULK_DOCS_MODEL": "xai/grok-4-fast",
+            "BULK_CODE_MODEL": "xai/grok-4.3",
+            "CE_MODEL": "openai/gpt-5.3-codex",
+            "SYNTH_MODEL": "openrouter/anthropic/claude-opus-4.6",
+        },
+    },
+    "openrouter-resilient": {
+        "routing_policy": "openrouter",
+        "default_service_tier": "default",
+        "enable_cached_input": True,
+        "enable_batch_when_supported": False,
+        "escalation_max_hops": 3,
+        "max_cost_usd_default": 20.00,
+        "cost_cap_mode": "preventive",
+        "notes": (
+            "Single-key, multi-upstream resilience: every cell routed through "
+            "OpenRouter (one OPENROUTER_API_KEY). Aggregator latency is the "
+            "tradeoff; failover replaces a per-provider circuit breaker."
+        ),
+        "cell_aliases": {
+            "BULK_DOCS_MODEL": "openrouter/openai/gpt-5.4-mini",
+            "BULK_CODE_MODEL": "openrouter/openai/gpt-5.3-codex",
+            "CE_MODEL": "openrouter/openai/gpt-5.3-codex",
+            "SYNTH_MODEL": "openrouter/anthropic/claude-opus-4.6",
+        },
+    },
+    "openai-heavy": {
+        "routing_policy": "quality",
+        "default_service_tier": "default",
+        "enable_cached_input": True,
+        "enable_batch_when_supported": True,
+        "escalation_max_hops": 2,
+        "max_cost_usd_default": 15.00,
+        "cost_cap_mode": "preventive",
+        "notes": (
+            "OpenAI-direct across all cells (single OPENAI_API_KEY, no aggregator "
+            "latency). SYNTH on gpt-5.5 instead of Anthropic for an all-OpenAI lane."
+        ),
+        "cell_aliases": {
+            "BULK_DOCS_MODEL": "openai/gpt-5.4-mini",
+            "BULK_CODE_MODEL": "openai/gpt-5.3-codex",
+            "CE_MODEL": "openai/gpt-5.3-codex",
+            "SYNTH_MODEL": "openai/gpt-5.5",
+        },
+    },
+    "balanced-mix": {
+        "routing_policy": "balanced_openrouter",
+        "default_service_tier": "default",
+        "enable_cached_input": True,
+        # xAI on BULK_CODE — keep batch off.
+        "enable_batch_when_supported": False,
+        "escalation_max_hops": 2,
+        "max_cost_usd_default": 12.00,
+        "cost_cap_mode": "preventive",
+        "notes": (
+            "Best-of-each-provider: Gemini on docs bulk, xAI on code bulk, OpenAI "
+            "on strict CE, opus-4.6 via OpenRouter on strict SYNTH."
+        ),
+        "cell_aliases": {
+            "BULK_DOCS_MODEL": "gemini/gemini-3-flash-preview",
+            "BULK_CODE_MODEL": "xai/grok-4.3",
+            "CE_MODEL": "openai/gpt-5.3-codex",
+            "SYNTH_MODEL": "openrouter/anthropic/claude-opus-4.6",
+        },
+    },
+    "quality-mix": {
+        "routing_policy": "quality",
+        "default_service_tier": "priority",
+        "enable_cached_input": True,
+        "enable_batch_when_supported": False,
+        "escalation_max_hops": 3,
+        "max_cost_usd_default": 30.00,
+        "cost_cap_mode": "preventive",
+        "notes": (
+            "Premium multi-provider: OpenAI flagship on bulk/CE, opus-4.6 via "
+            "OpenRouter on synthesis. Highest cost ceiling of the mix profiles."
+        ),
+        "cell_aliases": {
+            "BULK_DOCS_MODEL": "openai/gpt-5.4",
+            "BULK_CODE_MODEL": "openai/gpt-5.3-codex",
+            "CE_MODEL": "openai/gpt-5.5",
+            "SYNTH_MODEL": "openrouter/anthropic/claude-opus-4.6",
+        },
+    },
+    "budget-mix": {
+        "routing_policy": "cost",
+        "default_service_tier": "flex",
+        "enable_cached_input": True,
+        # xAI on BULK_CODE — keep batch off.
+        "enable_batch_when_supported": False,
+        "escalation_max_hops": 1,
+        "max_cost_usd_default": 6.00,
+        "cost_cap_mode": "preventive",
+        "notes": (
+            "Cheapest multi-provider blend: Gemini docs bulk + xAI code bulk for "
+            "minimum spend, but strict CE/SYNTH still on capable OpenAI models."
+        ),
+        "cell_aliases": {
+            "BULK_DOCS_MODEL": "gemini/gemini-3-flash-preview",
+            "BULK_CODE_MODEL": "xai/grok-4-fast",
+            "CE_MODEL": "openai/gpt-5.3-codex",
+            "SYNTH_MODEL": "openai/gpt-5.4",
         },
     },
 }
@@ -850,6 +1011,145 @@ def _resolve_route_entry_alias(
     model_id = str(resolved.get("model_id") or "")
     resolved["model_id"] = _resolve_route_model_alias(provider, model_id, cfg)
     return resolved
+
+
+_ALIAS_PLACEHOLDER_RE = re.compile(r"^\$\{[A-Z0-9_]+\}$")
+
+
+def _is_alias_placeholder(value: Any) -> bool:
+    """True if value is a bare ``${CELL_KEY}`` placeholder token."""
+    return isinstance(value, str) and bool(_ALIAS_PLACEHOLDER_RE.match(value.strip()))
+
+
+def _parse_alias_provider_model(value: str) -> Tuple[str, str]:
+    """Parse a cell-alias value ``provider/model...`` into (provider, model_id).
+
+    Validates provider against PROVIDER_API_KEY_ENV. Anthropic models are only
+    reachable via OpenRouter, so a bare ``anthropic/...`` value is rejected.
+    The model_id remainder is preserved verbatim (OpenRouter keeps its
+    ``x-ai/`` / ``google/`` / ``anthropic/`` namespace; direct providers keep
+    the local id).
+    """
+    text = str(value or "").strip()
+    if "/" not in text:
+        raise ValueError(
+            f"Cell alias value must be 'provider/model', got {value!r}"
+        )
+    provider, _, remainder = text.partition("/")
+    provider = provider.strip().lower()
+    remainder = remainder.strip()
+    if provider not in PROVIDER_API_KEY_ENV:
+        raise ValueError(
+            f"Unknown provider {provider!r} in cell alias value {value!r}; "
+            f"allowed: {sorted(PROVIDER_API_KEY_ENV)}"
+        )
+    if not remainder:
+        raise ValueError(f"Empty model id in cell alias value {value!r}")
+    if provider != "openrouter" and remainder.split("/", 1)[0] == "anthropic":
+        raise ValueError(
+            f"Direct anthropic routing is unsupported; use "
+            f"'openrouter/anthropic/...' instead of {value!r}"
+        )
+    return provider, remainder
+
+
+def _resolve_route_entry_alias_full(
+    route: Dict[str, Any],
+    cfg: "RunnerConfig",
+) -> Dict[str, Any]:
+    """Resolve a single model_map route entry for direct-provider cost profiles.
+
+    When ``model_id`` is a ``${CELL}`` placeholder, the active profile's
+    cell_aliases (or --model-alias / env override) supplies a ``provider/model``
+    value from which provider, model_id AND api_key_env are all derived,
+    overriding the route's hardcoded provider/api_key_env. Bare-literal routes
+    are returned unchanged, so resolution is idempotent and safe to call on
+    already-resolved or never-templated contracts.
+    """
+    original_model = str(route.get("model_id") or "")
+    if not _is_alias_placeholder(original_model):
+        return dict(route)
+    profile = str(
+        getattr(cfg, "cost_profile", DEFAULT_COST_PROFILE) or DEFAULT_COST_PROFILE
+    )
+    alias_value = resolve_cell_alias(
+        original_model,
+        profile,
+        cli_overrides=_model_alias_overrides_dict(
+            getattr(cfg, "model_alias_overrides", ())
+        ),
+        env=os.environ,
+    )
+    if _is_alias_placeholder(str(alias_value)):
+        raise ValueError(
+            f"Cell alias unresolved for route placeholder {original_model!r} "
+            f"under cost_profile={profile!r}"
+        )
+    provider, model_id = _parse_alias_provider_model(str(alias_value))
+    resolved = dict(route)
+    resolved["provider"] = provider
+    resolved["model_id"] = model_id
+    resolved["api_key_env"] = PROVIDER_API_KEY_ENV[provider]
+    return resolved
+
+
+def _resolve_lane_routes_alias(
+    lane: Dict[str, Any],
+    cfg: "RunnerConfig",
+) -> Dict[str, Any]:
+    resolved_lane = dict(lane)
+    for stage_key in ("primary_routes", "repair_routes", "sidefill_routes"):
+        rows = lane.get(stage_key)
+        if isinstance(rows, list):
+            resolved_lane[stage_key] = [
+                _resolve_route_entry_alias_full(row, cfg)
+                if isinstance(row, dict)
+                else row
+                for row in rows
+            ]
+    return resolved_lane
+
+
+def resolve_contract_routes(
+    contract: Optional[Dict[str, Any]],
+    cfg: "RunnerConfig",
+) -> Optional[Dict[str, Any]]:
+    """Return a deep-copied step contract with all primary/repair/sidefill route
+    placeholders resolved for ``cfg.cost_profile``. cfg-independent raw contracts
+    are never mutated; callers feed the resolved view to route_entries_for_stage /
+    resolve_stage_route / identity-match helpers so comparisons are resolved-vs-
+    resolved. Idempotent on already-resolved or never-templated contracts.
+    """
+    if not isinstance(contract, dict):
+        return contract
+    resolved = dict(contract)
+    lane = contract.get("lane")
+    if isinstance(lane, dict):
+        resolved["lane"] = _resolve_lane_routes_alias(lane, cfg)
+    return resolved
+
+
+def assert_strict_route_provider_allowed(
+    *,
+    phase: str,
+    step_id: str,
+    provider: str,
+    model_id: str,
+) -> None:
+    """Fail closed before any spend if a strict-required step resolved to a
+    provider outside STRICT_ALLOWED_PROVIDERS. strict_capability_reason() treats
+    xAI as strict-capable, but xAI/Gemini strict-JSON reliability on RTE cells is
+    unproven — a profile (or --model-alias override) must not silently route a
+    strict CE/AGG cell there.
+    """
+    normalized = str(provider or "").strip().lower()
+    if normalized not in STRICT_ALLOWED_PROVIDERS:
+        raise RuntimeError(
+            f"Strict-required step {phase}:{step_id} resolved to provider "
+            f"{normalized!r} (model {model_id!r}) which is not in the strict "
+            f"allowlist {STRICT_ALLOWED_PROVIDERS}. Adjust the cost profile's "
+            f"strict cell alias before spend."
+        )
 
 
 DEFAULT_GEMINI_MODEL_ID = "gemini-3-flash-preview"
@@ -5434,7 +5734,7 @@ def _resolve_benchmark_owned_stage_route(
             payload.get("strict_passthrough_verified", False)
         ),
     }
-    route = _resolve_route_entry_alias(route, cfg)
+    route = _resolve_route_entry_alias_full(route, cfg)
     contract_route_entry = _contract_route_entry_for_provider_model(
         step_contract,
         provider=str(route["provider"]),
@@ -5546,7 +5846,7 @@ def resolve_effective_step_route(
             )
         )
         if benchmark_owned_route is not None:
-            benchmark_owned_route = _resolve_route_entry_alias(
+            benchmark_owned_route = _resolve_route_entry_alias_full(
                 dict(benchmark_owned_route), cfg
             )
             provider = str(benchmark_owned_route["provider"])
@@ -5567,7 +5867,7 @@ def resolve_effective_step_route(
                 "route_ownership": benchmark_meta,
             }
         primary_routes = [
-            _resolve_route_entry_alias(route, cfg)
+            _resolve_route_entry_alias_full(route, cfg)
             for route in route_entries_for_stage(contract, "primary")
         ]
         if not primary_routes:
@@ -5610,6 +5910,14 @@ def resolve_effective_step_route(
                     f"{phase}:{step_id} attempts={attempt_json}"
                 )
             provider, model_id = strict_ladder[0]
+            # Fail closed before spend if a profile/override routed this strict
+            # cell to a provider outside the strict allowlist (xai/gemini).
+            assert_strict_route_provider_allowed(
+                phase=phase,
+                step_id=step_id,
+                provider=provider,
+                model_id=model_id,
+            )
             logger.info(
                 "STRICT_ROUTE_CHOSEN phase=%s step=%s provider=%s model=%s",
                 phase,
@@ -21686,9 +21994,10 @@ def main() -> None:
         metavar="ALIAS=MODEL_ID",
         help=(
             "Override a cell-level model alias (e.g., "
-            "--model-alias QUALITY_SYNTH_CRITICAL_MODEL=anthropic/claude-opus-4.7). "
-            "Repeatable. See COST_PROFILES[<profile>].cell_aliases for available "
-            "alias keys per profile."
+            "--model-alias SYNTH_MODEL=openrouter/anthropic/claude-opus-4.7). "
+            "Value is 'provider/model'; anthropic only via openrouter/. "
+            "Repeatable. Canonical cell keys: BULK_DOCS_MODEL, BULK_CODE_MODEL, "
+            "CE_MODEL, SYNTH_MODEL (CE/SYNTH must stay on openai|openrouter)."
         ),
     )
     parser.add_argument(
