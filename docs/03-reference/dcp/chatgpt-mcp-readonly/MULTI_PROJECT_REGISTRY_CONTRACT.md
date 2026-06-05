@@ -12,7 +12,7 @@ prelude: Multi-project registry and resolver contract for the read-only MCP evid
 
 # Multi-Project Registry Contract
 
-> **Status.** The registry **schema and validation rules** here are `PROPOSED` design. The exact `dopemux init` marker / workspace-identity contract is `UNKNOWN` at this packet and is resolved by static inspection in TP-DCP-MCP-RO-0003. This document must be updated from that evidence before the resolver is implemented in TP-DCP-MCP-RO-0004.
+> **Status.** Schema/resolver shape remains `PROPOSED` design. The `dopemux init` marker / workspace-identity contract is now **`OBSERVED`** — resolved by the static inspection in TP-DCP-MCP-RO-0003 (see [`DOPEMUX_INIT_REGISTRY_DISCOVERY.md`](DOPEMUX_INIT_REGISTRY_DISCOVERY.md)) and reflected in §2/§4/§5 below. Concrete registry file location and load mechanics are implemented in TP-DCP-MCP-RO-0004.
 
 ## 1. Purpose
 
@@ -20,10 +20,10 @@ The registry is the facade's **trust boundary**. It is the single source of trut
 
 ## 2. Eligibility vs Exposure (core invariant)
 
-- **Eligibility**: a workspace that has been `dopemux init`-ialized is *eligible* to be registered.
-- **Exposure**: a workspace is only *exposed* when an operator adds an explicit, `enabled: true` entry to the registry.
+- **Eligibility**: a workspace that has been `dopemux init`-ialized is *eligible* to be registered. `OBSERVED` (§1 of the discovery doc): the init marker is the **`.dopemux/` directory** (`src/dopemux/project_init.py:167`; checked at `cli.py:770`).
+- **Exposure**: a workspace is only *exposed* when an operator adds an explicit, `enabled: true` entry to the facade's own registry.
 
-`dopemux init` is **eligibility, not consent.** Initializing a workspace must never auto-expose it. This is fail-closed: absent a registry entry, a project does not exist as far as the facade is concerned.
+`dopemux init` is **eligibility, not consent.** Initializing a workspace must never auto-expose it. This is fail-closed: absent a registry entry, a project does not exist as far as the facade is concerned. In particular, the facade **must not** derive exposure from dopemux's global workspace registry (`~/.dopemux/config.json`, `src/dopemux/global_config.py:24`), which records *every workspace the user has ever opened* — that is eligibility, not exposure.
 
 ## 3. Registry Schema (`PROPOSED`)
 
@@ -33,6 +33,9 @@ projects:
   - project_id: "dopemux-mvp"          # opaque caller-facing id
     workspace_path: "/abs/path/..."     # resolved + validated at load
     enabled: true                       # exposure switch; default false
+    identity:                           # matched against the workspace's .repo_id (§4.5)
+      project: "dopemux-mvp"            # REQUIRED; must equal .repo_id `project=`
+      owner: "hu3mann"                  # OPTIONAL; if present, must equal .repo_id `owner=`
     service_profiles:                   # per-backend bindings
       conport:
         workspace_id: "<conport-workspace-id>"
@@ -51,6 +54,7 @@ Field notes:
 - `project_id` is the **only** project handle a caller may supply.
 - `workspace_path`, `workspace_id`, `base_url`, ports, and routes are **registry-owned**; callers cannot set or override them.
 - `enabled` defaults to `false`; omission means not exposed.
+- `identity.project` is **required** (the value compared against the workspace's `.repo_id` `project=`); `identity.owner` is **optional** and only enforced when present. The identity block is the registry-side value the §4.5 identity check matches against.
 - `service_profiles` may be partial — a project missing a profile reports that capability as unavailable (see [`TOOL_CONTRACT.md`](TOOL_CONTRACT.md) and `get_project_capabilities`), returning `PARTIAL`/`BLOCKED`, never guessed data.
 
 ## 4. Validation Rules (fail closed)
@@ -59,8 +63,9 @@ Field notes:
 2. A `project_id` not present in the registry → `BLOCKED` (unknown project).
 3. A `project_id` present but `enabled: false` → `BLOCKED` (disabled project).
 4. `workspace_path` must resolve (canonical, symlink-followed) to a path **contained within an approved root**. Escape → `BLOCKED`.
-5. No caller-supplied path, URL, port, backend route, `workspace_id`, SQL, or shell is ever accepted.
-6. Registry load itself fails closed: a malformed entry disables that project rather than exposing it loosely.
+5. **Eligibility validation (`OBSERVED`-backed):** the resolved workspace must (a) validate as a real workspace via `validate_workspace()` / `get_workspace_root()` (`src/dopemux/workspace_detection.py:222`/`:82`, git-toplevel based); (b) contain a **`.dopemux/`** directory (init marker); (c) carry a **`.repo_id`** whose `project=` equals the registry entry's **required** `identity.project`, and — **only if** the entry declares `identity.owner` — whose `owner=` equals it. (`.repo_id` is the canonical identity marker per `schemas/dcp/dcp_project_resource_map.schema.json`.) Any miss → `BLOCKED`. The owner check is conditional so it is always satisfiable: an entry without `identity.owner` is matched on `project` alone, never blocked for a field the registry didn't declare.
+6. No caller-supplied path, URL, port, backend route, `workspace_id`, SQL, or shell is ever accepted.
+7. Registry load itself fails closed: a malformed entry disables that project rather than exposing it loosely.
 
 ## 5. Resolver Flow (`PROPOSED`)
 
@@ -68,9 +73,11 @@ Field notes:
 project_id
   → registry lookup            (unknown → BLOCKED)
   → enabled check              (disabled → BLOCKED)
-  → workspace_path → realpath  (resolve symlinks)
+  → workspace_path → realpath  (resolve symlinks; get_workspace_root semantics)
   → containment check          (escapes approved root → BLOCKED)
-  → bind service_profiles      (missing profile → capability unavailable)
+  → eligibility check          (.dopemux/ present + validate_workspace() ok → else BLOCKED)
+  → identity check             (.repo_id project == identity.project; owner == identity.owner if declared → else BLOCKED)
+  → bind service_profiles      (missing profile → capability unavailable / PARTIAL)
   → canonical path + bindings  → adapter
 ```
 
@@ -84,6 +91,7 @@ Each project advertises capabilities derived from its `service_profiles` (which 
 
 ## 8. Open Questions / UNKNOWNs
 
-- `UNKNOWN`: the concrete `dopemux init` marker(s) and workspace-identity fields (TP-DCP-MCP-RO-0003).
-- `UNKNOWN`: whether dopemux already exposes a project list/registry primitive the facade should reuse vs. a standalone `registry.yaml` (TP-DCP-MCP-RO-0003).
-- `PROPOSED`: exact location and load mechanics of the registry file (TP-DCP-MCP-RO-0004).
+- ~~`UNKNOWN`: the concrete `dopemux init` marker(s) and workspace-identity fields~~ → **RESOLVED** in TP-DCP-MCP-RO-0003: init marker = `.dopemux/`; identity = `.repo_id`; detection = `get_workspace_root()`/`validate_workspace()`. See [`DOPEMUX_INIT_REGISTRY_DISCOVERY.md`](DOPEMUX_INIT_REGISTRY_DISCOVERY.md).
+- ~~`UNKNOWN`: whether dopemux already exposes a project list/registry primitive~~ → **RESOLVED**: no `list_projects` CLI; the global `~/.dopemux/config.json` is an opened-workspaces cache (eligibility, not exposure); the facade keeps its own explicit allowlist. (Discovery §4.)
+- `CONFLICTING` (operator decision, repo-wide): repo-root marker fragmentation — `.repo_id` vs `.dopetaskroot` (`operator_workflows.py:141`) vs the **absent** `.n` (referenced by some task packets). The facade adopts `.repo_id` for identity per `dcp_project_resource_map.schema.json`; repo-wide unification is out of facade scope.
+- `PROPOSED`: exact location and load mechanics of the facade registry file (TP-DCP-MCP-RO-0004).
