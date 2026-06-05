@@ -20,6 +20,12 @@ jobs:
   review:
     runs-on: 'ubuntu-latest'
     timeout-minutes: 7
+    # The Gemini CLI hard-fails in headless mode unless the workspace is trusted.
+    # Review is gated by gemini-dispatch.yml to OWNER/MEMBER/COLLABORATOR authors
+    # only, which bounds the trust to repo collaborators' PRs. Re-added after
+    # 4206a2972 removed it (a newer CLI now enforces trusted-folders).
+    env:
+      GEMINI_CLI_TRUST_WORKSPACE: 'true'
     permissions:
       contents: 'read'
       id-token: 'write'
