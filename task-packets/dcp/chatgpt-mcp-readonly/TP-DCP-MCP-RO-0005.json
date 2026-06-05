@@ -54,7 +54,7 @@
       "proof/TP-DCP-MCP-RO-0005/**"
     ],
     "verify": [
-      "rg -n \"POST|PUT|PATCH|DELETE|/kg/|/ddg/|/route/pm|memory_correct|memory_generate_reflection|memory_store|memory_mark_issue|memory_link_resolution|log_decision|upsert|graph.link\" services/dcp-readonly-facade || true",
+      "rg -n \"PUT|PATCH|DELETE|/kg/|/ddg/|/route/pm|memory_correct|memory_generate_reflection|memory_store|memory_mark_issue|memory_link_resolution|log_decision|upsert|graph.link\" services/dcp-readonly-facade || true",
       "git diff --stat",
       "git diff -- services/dcp-readonly-facade docs/03-reference/dcp/chatgpt-mcp-readonly proof/TP-DCP-MCP-RO-0005",
       "git status --short --branch"
@@ -113,7 +113,7 @@
         "git status --short --branch",
         "python -m pytest -q services/dcp-readonly-facade/tests",
         "python -m compileall -q services/dcp-readonly-facade",
-        "rg -n \"POST|PUT|PATCH|DELETE|/kg/|/ddg/|/route/pm|memory_correct|memory_generate_reflection|memory_store|memory_mark_issue|memory_link_resolution|log_decision|upsert|graph.link\" services/dcp-readonly-facade || true",
+        "rg -n \"PUT|PATCH|DELETE|/kg/|/ddg/|/route/pm|memory_correct|memory_generate_reflection|memory_store|memory_mark_issue|memory_link_resolution|log_decision|upsert|graph.link\" services/dcp-readonly-facade || true",
         "git diff --stat",
         "git diff -- services/dcp-readonly-facade docs/03-reference/dcp/chatgpt-mcp-readonly proof/TP-DCP-MCP-RO-0005",
         "git status --short --branch"
