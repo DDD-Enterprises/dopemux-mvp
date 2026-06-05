@@ -3,7 +3,7 @@
   "title": "Architecture Doc And Multi Project Contract",
   "branch": "dcp/chatgpt-mcp-ro-0002-architecture-doc-and-multi-proje",
   "base_sha": "62d16375119c8c7fac2fc3280152c4095c5898ac",
-  "head_sha": "1d7fe03d1c30218a0aafb9ffec8e255497d421a0",
+  "head_sha": "f7b27de2ea95b4f58fb8e1a518c1b1db8d67b595",
   "task_class": "architecture/documentation-sensitive/security-sensitive",
   "risk": "MEDIUM",
   "deviation": {
@@ -74,6 +74,8 @@
     "P2_get_index_status": "FIXED \u2014 relabeled PROPOSED (not in inventory) in TOOL_CONTRACT.md \u00a71c with deferral note.",
     "P2_proof_sha": "NOTED \u2014 reviewed SHA was GitHub ephemeral merge ref; head_sha tracks branch tip.",
     "ci_frontmatter": "FIXED \u2014 frontmatter added to 7 packet .md stubs + TASK_ORCHESTRATOR_LOAD.md.",
-    "ci_markdownlint": "FIXED \u2014 INDEX.md MD055 (blank line before divider)."
+    "ci_markdownlint": "FIXED \u2014 INDEX.md MD055 (blank line before divider).",
+    "P2_grep_post_routes": "FIXED \u2014 dropped bare POST from RO-0005/0008 write-hazard regex; named mutating routes still caught.",
+    "P2_command_log_final_snapshot": "FIXED \u2014 appended final clean post-commit status/head/diff to COMMAND_LOG.md."
   }
 }
