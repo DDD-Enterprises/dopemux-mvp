@@ -3,6 +3,7 @@ id: dcp-mcp-readonly-response-envelope
 title: DCP Read-Only MCP Facade — Response Envelope Schema
 type: reference
 owner: '@hu3mann'
+author: '@hu3mann'
 date: '2026-06-05'
 last_review: '2026-06-05'
 next_review: '2026-09-03'
