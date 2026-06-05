@@ -146,8 +146,9 @@ Recorded truthfully per governance doctrine (observed vs inferred vs stale):
   lists a write **orchestrator** tool, lists a non-orchestrator tool outside the read allowlist
   (catching `Write`/`Edit`/ConPort-write drift), lists an unknown tool, or drifts from the
   manifest. It also fails if `read_only_tools` diverges from the manifest's
-  `safe_read_only` classifications, so a write-class tool cannot be smuggled into the read set.
-  Full failure conditions (a)–(g) are documented in the script header.
+  `safe_read_only` classifications, and it validates the non-orchestrator allowlist itself so a
+  write-class tool or mutating Bash command cannot be smuggled into the read set. Full failure
+  conditions (a)–(g) are documented in the script header.
 - Test: `tests/orchestrator/test_dx_surface_manifest.py` — includes bite tests proving the
   validator catches a read command that gains either a write **orchestrator** tool or a
   non-orchestrator write tool (`Write`, `mcp__conport__log_decision`).

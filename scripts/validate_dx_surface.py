@@ -38,6 +38,14 @@ import sys
 from pathlib import Path
 
 ORCH_PREFIX = "mcp__task-orchestrator__"
+READ_COMMAND_NONORCH_TOOL_ALLOWLIST = {
+    "Read",
+    "Grep",
+    "Glob",
+    "LS",
+    "mcp__conport__get_active_context",
+}
+READ_COMMAND_BASH_ALLOWLIST = {"git rev-parse"}
 
 
 def repo_root() -> Path:
@@ -128,13 +136,28 @@ def run_validation(root: Path) -> tuple[list[str], list[str]]:
     nonorch_cfg: dict = manifest.get("read_command_nonorch_allowlist", {})
     nonorch_allowlist: set[str] = set(nonorch_cfg.get("tools", []))
     bash_allowed_commands: list[str] = list(nonorch_cfg.get("bash_allowed_commands", []))
+    failures: list[str] = []
+
+    # (f) internal manifest consistency: the non-orchestrator allowlist itself must stay safe.
+    disallowed_allowlist = sorted(nonorch_allowlist - READ_COMMAND_NONORCH_TOOL_ALLOWLIST)
+    if disallowed_allowlist:
+        failures.append(
+            "manifest: read_command_nonorch_allowlist.tools contains disallowed entry(ies) "
+            f"{disallowed_allowlist}"
+        )
+
+    disallowed_bash = sorted(set(bash_allowed_commands) - READ_COMMAND_BASH_ALLOWLIST)
+    if disallowed_bash:
+        failures.append(
+            "manifest: read_command_nonorch_allowlist.bash_allowed_commands contains disallowed "
+            f"entry(ies) {disallowed_bash}"
+        )
 
     cmd_dir = root / ".claude" / "commands" / "dx"
     if not cmd_dir.is_dir():
         _fail_setup(f"command dir not found: {cmd_dir}")
     files = {p.stem: p for p in sorted(cmd_dir.glob("*.md"))}
 
-    failures: list[str] = []
     lines: list[str] = []
 
     # (f) internal manifest consistency: read_surface == commands with surface_class=read
