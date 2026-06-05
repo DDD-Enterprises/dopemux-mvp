@@ -60,6 +60,17 @@
     "implement":     { "surface_class": "composite", "orchestrator_tools": [], "note": "Composite ADHD session command; calls ConPort/Serena/PAL tools, not the task-orchestrator surface. Uses legacy tool aliases (mcp__zen__*, mcp__serena__*) — an existing inconsistency, out of scope for this catalog packet." }
   },
   "read_surface": ["backlinks", "blocked", "context", "next", "notes", "preview", "search", "tree"],
+  "read_command_nonorch_allowlist": {
+    "_note": "Non-orchestrator tools a read-class command MAY declare. Fail-closed: any non-orchestrator tool in a read command that is NOT in this list is a violation — this catches a read command gaining a repo-write (Write/Edit) or a bridge/memory write (e.g. mcp__conport__log_decision), which the orchestrator-only check would otherwise miss. 'Bash' is permitted as a general read utility (read commands use it for git plumbing); the validator cannot introspect what Bash does, so this remains a trusted, documented concession (see inventory §4).",
+    "tools": [
+      "Bash",
+      "Read",
+      "Grep",
+      "Glob",
+      "LS",
+      "mcp__conport__get_active_context"
+    ]
+  },
   "boundary": {
     "in_scope_read_surface": "The 8 read commands above + the 7 safe_read_only tools. These may be used without mutating workflow or repo state.",
     "out_of_scope": [

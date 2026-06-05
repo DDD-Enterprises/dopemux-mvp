@@ -17,6 +17,10 @@ Failure conditions (each -> non-zero exit):
   (d) A command file exists with no manifest entry (uncatalogued surface).
   (e) The manifest references a command with no corresponding file (stale manifest).
   (f) Internal manifest inconsistency (read_surface != commands with surface_class=read).
+  (g) A `read`-class command lists a NON-orchestrator tool that is not in the manifest's
+      read_command_nonorch_allowlist (fail-closed: catches a read command gaining a repo
+      write such as Write/Edit or a bridge/memory write such as mcp__conport__log_decision,
+      which the orchestrator-only check in (a) would otherwise miss).
 
 Usage:
   python scripts/validate_dx_surface.py            # validate; print PASS/FAIL summary
@@ -78,6 +82,11 @@ def orchestrator_tools(tools: list[str]) -> set[str]:
     return {t[len(ORCH_PREFIX):] for t in tools if t.startswith(ORCH_PREFIX)}
 
 
+def nonorch_tools(tools: list[str]) -> set[str]:
+    """The non-task-orchestrator entries in an allowed-tools list (full tool names)."""
+    return {t for t in tools if not t.startswith(ORCH_PREFIX)}
+
+
 def run_validation(root: Path) -> tuple[list[str], list[str]]:
     """Core check. Returns (failures, per-command report lines). Pure: no exit, no print.
 
@@ -89,6 +98,9 @@ def run_validation(root: Path) -> tuple[list[str], list[str]]:
     read_only_tools: set[str] = set(manifest.get("read_only_tools", []))
     commands: dict = manifest.get("commands", {})
     declared_read_surface: set[str] = set(manifest.get("read_surface", []))
+    nonorch_allowlist: set[str] = set(
+        manifest.get("read_command_nonorch_allowlist", {}).get("tools", [])
+    )
 
     cmd_dir = root / ".claude" / "commands" / "dx"
     if not cmd_dir.is_dir():
@@ -118,7 +130,8 @@ def run_validation(root: Path) -> tuple[list[str], list[str]]:
             lines.append(f"  FAIL {name}: uncatalogued")
             continue
 
-        actual = orchestrator_tools(parse_frontmatter_allowed_tools(path))
+        all_tools = parse_frontmatter_allowed_tools(path)
+        actual = orchestrator_tools(all_tools)
         expected = set(spec.get("orchestrator_tools", []))
         klass = spec.get("surface_class", "?")
         problems: list[str] = []
@@ -132,11 +145,18 @@ def run_validation(root: Path) -> tuple[list[str], list[str]]:
         if actual != expected:
             problems.append(f"orchestrator-tool drift: frontmatter={sorted(actual)} manifest={sorted(expected)}")
 
-        # (a) read command must use only read-only tools
+        # (a) read command must use only read-only orchestrator tools
         if klass == "read":
             non_read = {t for t in actual if t not in read_only_tools}
             if non_read:
-                problems.append(f"read command lists non-read tool(s): {sorted(non_read)}")
+                problems.append(f"read command lists non-read orchestrator tool(s): {sorted(non_read)}")
+
+            # (g) read command's non-orchestrator tools must be in the fail-closed allowlist
+            disallowed = {t for t in nonorch_tools(all_tools) if t not in nonorch_allowlist}
+            if disallowed:
+                problems.append(
+                    f"read command lists non-orchestrator tool(s) outside the read allowlist: {sorted(disallowed)}"
+                )
 
         if problems:
             failures.extend(f"{name}: {p}" for p in problems)

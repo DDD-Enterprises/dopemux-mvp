@@ -98,6 +98,17 @@ out of the read-surface.
 - no Dopetask execution
 - no bridge writes (dopecon-bridge / ConPort writes)
 - no memory/context writes (dope-memory)
+- no repo writes (`Write`, `Edit`, and the like)
+
+The boundary covers **both** the orchestrator tools and the non-orchestrator permissions a read
+command declares. A read command's `allowed-tools` may only carry the non-orchestrator entries
+in the manifest's `read_command_nonorch_allowlist` (read helpers — `Read`/`Grep`/`Glob`/`LS`,
+plus `Bash` as a trusted utility, plus explicitly read-only MCP tools such as
+`mcp__conport__get_active_context`). The allowlist is **fail-closed**: any non-orchestrator tool
+not on it — a repo write (`Write`/`Edit`) or a bridge/memory write
+(`mcp__conport__log_decision`) — is a violation. `Bash` is the one capability concession: the
+validator cannot introspect what a `Bash` invocation does, so its read-only use in read commands
+is trusted (see §4).
 
 ## 4. Provenance & skew notes
 
@@ -126,8 +137,11 @@ Recorded truthfully per governance doctrine (observed vs inferred vs stale):
 - Authority: `.taskorchestrator/surface_manifest.json` (hand-authored; **not** generated from
   frontmatter, so command drift is detectable against an independent contract).
 - Validator: `python scripts/validate_dx_surface.py` — read-only; exit 1 if a read command
-  lists a write tool, a command lists an unknown tool, or frontmatter drifts from the manifest.
-- Test: `tests/orchestrator/test_dx_surface_manifest.py` — includes a bite test proving the
-  validator catches a read command that gains a write tool.
+  lists a write **orchestrator** tool, lists a non-orchestrator tool outside the read allowlist
+  (catching `Write`/`Edit`/ConPort-write drift), lists an unknown tool, or drifts from the
+  manifest. Full failure conditions (a)–(g) are documented in the script header.
+- Test: `tests/orchestrator/test_dx_surface_manifest.py` — includes bite tests proving the
+  validator catches a read command that gains either a write **orchestrator** tool or a
+  non-orchestrator write tool (`Write`, `mcp__conport__log_decision`).
 
 Wiring the validator into CI / pre-commit is deferred to a follow-up packet.
