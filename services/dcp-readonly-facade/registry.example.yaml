@@ -1,0 +1,31 @@
+# DCP read-only MCP facade — EXAMPLE registry (no secrets).
+#
+# Copy this to a path OUTSIDE the repo and point $DCP_FACADE_REGISTRY at it
+# (default: ~/.dopemux/dcp-facade-registry.yaml). NEVER commit a populated
+# registry with real workspace paths or service credentials.
+#
+# Contract: docs/03-reference/dcp/chatgpt-mcp-readonly/MULTI_PROJECT_REGISTRY_CONTRACT.md
+
+# Optional: workspaces must resolve (symlink-followed) inside one of these.
+approved_roots:
+  - /abs/approved/root
+
+projects:
+  - project_id: "dopemux-mvp"          # opaque caller-facing id (the only handle a caller may supply)
+    workspace_path: "/abs/approved/root/dopemux-mvp"
+    enabled: true                       # exposure switch; omit/false = NOT exposed
+    identity:                           # matched against the workspace's .repo_id
+      project: "dopemux-mvp"            # REQUIRED; must equal .repo_id `project=`
+      owner: "hu3mann"                  # OPTIONAL; enforced only when present
+    service_profiles:                   # per-backend bindings (registry-owned; not exposed in Phase 1 tools)
+      conport:
+        workspace_id: "<conport-workspace-id>"
+        base_url: "http://127.0.0.1:3004"
+      dope_memory:
+        profile: "<memory-profile>"
+        base_url: "http://127.0.0.1:3020"
+      dope_context:
+        base_url: "http://127.0.0.1:3010"
+      task_orchestrator:
+        project_id: "<to-project-id>"
+        base_url: "http://127.0.0.1:8000"

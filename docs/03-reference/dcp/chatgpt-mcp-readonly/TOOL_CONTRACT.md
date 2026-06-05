@@ -23,8 +23,10 @@ prelude: Phase-1 tool contract, allowed/denied routes, and authority labels for 
 | `list_projects` | no | registry | facade | Returns approved (`enabled`) projects only. |
 | `get_project_capabilities` | yes | registry + reachability | facade | Reports which backends are bound/available. |
 | `get_repo_state_snapshot` | yes | local git (fixed cmd allowlist) | OBSERVED/git | branch, head_sha, dirty state. No arbitrary git. |
-| `list_proof_bundles` | yes | filesystem (proof roots) | OBSERVED/fs | packet_id regex; bounded to proof roots. |
-| `fetch_proof_bundle` | yes | filesystem (proof roots) | OBSERVED/fs | Cannot cross project root; symlink-escape blocked. |
+| `list_proof_bundles` | yes | filesystem (proof roots) | OBSERVED/fs | optional `packet_id_filter` = **literal substring** (≤128 chars, **not** a regex — avoids ReDoS); bounded to proof roots; cap 20. |
+| `fetch_proof_bundle` | yes | filesystem (proof roots) | OBSERVED/fs | Cannot cross project root; symlink-escape blocked; bounded read (256KB/file). |
+
+> **Note (0004 implementation):** `list_proof_bundles`' filter is a literal substring, not a regex. Accepting an untrusted caller-supplied regex is a ReDoS (catastrophic-backtracking) DoS surface; the scaffold therefore matches a bounded literal substring instead. The 0001 inventory / earlier drafts referred to a "packet_id regex" — superseded here for safety.
 
 ### 1b. ConPort + dope-memory read tools — packet 0005
 
