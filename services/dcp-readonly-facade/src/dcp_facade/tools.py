@@ -260,6 +260,19 @@ def search_progress(
     base_url, ws_id, missing = _profile_binding(res.project, "conport")
     if missing:
         return E.blocked(res.project.project_id, missing)
+    # ConPort GET /api/progress is NOT always side-effect-free: the default
+    # enhanced server (DOPEMUX_AUTO_FORK_PROGRESS=1) auto-forks (writes) progress
+    # rows from shared when the workspace has none. The facade cannot suppress
+    # that per-request, so search_progress is fail-closed: it runs only when the
+    # operator explicitly asserts the backend is read-only-safe.
+    prof = _bound_profile(res.project, "conport")
+    if not (prof and prof.get("progress_readonly_safe") is True):
+        return E.blocked(
+            res.project.project_id,
+            "search_progress disabled: ConPort GET /api/progress can auto-fork "
+            "(write) when empty; set conport.progress_readonly_safe=true after "
+            "disabling DOPEMUX_AUTO_FORK_PROGRESS on the backend",
+        )
     c = client or _default_client()
     fetch = lambda: conport_adapter.get_progress(c, base_url, ws_id, status, limit)
     return _enveloped_backend_read(res.project.project_id, res.workspace, E.SOURCE_CONPORT, fetch)

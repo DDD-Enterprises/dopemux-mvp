@@ -38,3 +38,9 @@ Ran `pal/codereview` (security, external) on http_client / conport / dope_memory
 - **DNS rebinding** is not addressable at this layer (base_url is a registry-owned literal host; we do not re-resolve). Acceptable for loopback-only.
 - **Redaction is heuristic** defence-in-depth (may over-redact); reachability of `service_profiles` is exercised against a mocked transport (live tests are opt-in behind `DCP_FACADE_LIVE_TESTS=1`).
 - **`httpx` optional**: imported lazily; tests inject a fake transport and make no live calls.
+
+## Round 2 — PR #832 review feedback (codex P1)
+
+**P1 — `GET /api/progress` is not always read-only (auto-fork on read).** Confirmed against `docker/mcp-servers-source/conport/enhanced_server.py`: `auto_fork_progress = os.getenv("DOPEMUX_AUTO_FORK_PROGRESS","1")=="1"` (default ON); `_get_progress` calls `_fork_progress_from_shared(...)` (a WRITE) when the workspace has no rows (lines 910-915). The handler accepts only `workspace_id`/`status`/`limit` — there is **no** per-request param to suppress the fork. So `search_progress` against a default ConPort could create rows merely by reading.
+
+**Fix:** `search_progress` is now **fail-closed** — it returns `BLOCKED` unless the registry's conport profile explicitly sets `progress_readonly_safe: true`, which the operator may set only after disabling `DOPEMUX_AUTO_FORK_PROGRESS` on the backend. Default (`false`/absent) → blocked, backend never hit (test asserts `ft.calls == []`). Documented in `registry.example.yaml` + `FACADE_LOCAL_RUN.md`. Verified `get_decisions`/`search_content` have no fork/write on read (so `search_decisions` is unaffected); dope-memory reads were classified side-effect-free by the 0001 inventory.
