@@ -1,42 +1,7 @@
 {
   "id": "TP-DCP-MCP-RO-0004",
-  "title": "Facade Scaffold Registry Resolver Repo Proof Tools",
-  "project": "DCP Secure MCP Read-Only Evidence Facade",
-  "target": "DDD-Enterprises/dopemux-mvp",
-  "status": "READY",
-  "task_class": "implementation/security-sensitive",
-  "risk": "HIGH",
-  "objective": "Implement the minimal read-only MCP facade scaffold with project registry, workspace resolver, response envelope, redaction baseline, repo-state tool, proof listing, and proof fetch tools.",
-  "why_this_packet_exists_now": "This is the first code slice. It keeps to local filesystem/git read-only surfaces before touching service backends. If this fails, we learn cheaply.",
-  "depends_on": [
-    "TP-DCP-MCP-RO-0003"
-  ],
-  "execution": {
-    "primary_agent": "codex",
-    "supervisor": "GPT-5.5 Pro",
-    "embedded_auditor_default": "AGY/Sonnet; fallback Claude Code Sonnet; fallback Opus/Gemini for contradiction hunt",
-    "branch": "dcp/chatgpt-mcp-ro-0004-facade-scaffold-registry-resolve"
-  },
-  "scope": {
-    "in": [
-      "Create services/dcp-readonly-facade package.",
-      "Implement registry schema loader and validator.",
-      "Implement workspace resolver with project_id-only access.",
-      "Implement response envelope.",
-      "Implement redaction baseline.",
-      "Implement list_projects, get_project_capabilities, get_repo_state_snapshot, list_proof_bundles, fetch_proof_bundle.",
-      "Add tests for registry/resolver/path/proof/git tools.",
-      "Add local run docs."
-    ],
-    "out": [
-      "No ConPort/dope-memory/dope-context/task-orchestrator adapters.",
-      "No generic search/fetch.",
-      "No tunnel-client setup.",
-      "No service startup.",
-      "No backend HTTP calls except none in this packet.",
-      "No writes to registered projects."
-    ]
-  },
+  "project": "dopemux-mvp",
+  "target": "Implement the minimal read-only MCP facade scaffold with project registry, workspace resolver, response envelope, redaction baseline, repo-state tool, proof listing, and proof fetch tools.",
   "invariants": [
     "All project-scoped tools require project_id.",
     "No arbitrary path, URL, port, backend route, SQL, or shell.",
@@ -44,105 +9,48 @@
     "Proof fetch cannot cross project root.",
     "Symlink escape is blocked.",
     "Absolute paths are redacted by default.",
-    "Every response uses the canonical envelope."
+    "Every response uses the canonical envelope.",
+    "OUT OF SCOPE: No ConPort/dope-memory/dope-context/task-orchestrator adapters.",
+    "OUT OF SCOPE: No generic search/fetch.",
+    "OUT OF SCOPE: No tunnel-client setup.",
+    "OUT OF SCOPE: No service startup.",
+    "OUT OF SCOPE: No backend HTTP calls except none in this packet.",
+    "OUT OF SCOPE: No writes to registered projects.",
+    "STOP IF: Marker contract from 0003 is unresolved.",
+    "STOP IF: A tool requires arbitrary shell or path input.",
+    "STOP IF: Any test requires changing real project state.",
+    "STOP IF: Secret patterns appear in fixtures.",
+    "STOP IF: Need to touch files outside allowlist.",
+    "FORBIDDEN FILE: src/**",
+    "FORBIDDEN FILE: services/dope-context/**",
+    "FORBIDDEN FILE: services/dopecon-bridge/**",
+    "FORBIDDEN FILE: services/task-orchestrator/**",
+    "FORBIDDEN FILE: services/working-memory-assistant/**",
+    "FORBIDDEN FILE: docker/**",
+    "FORBIDDEN FILE: compose*.yml",
+    "FORBIDDEN FILE: .dopemux/**",
+    "FORBIDDEN FILE: .env*"
   ],
-  "allowed_files": [
-    "services/dcp-readonly-facade/**",
-    "docs/03-reference/dcp/chatgpt-mcp-readonly/**",
-    "proof/TP-DCP-MCP-RO-0004/**"
+  "depends_on": [
+    "TP-DCP-MCP-RO-0003"
   ],
-  "forbidden_files": [
-    "src/**",
-    "services/dope-context/**",
-    "services/dopecon-bridge/**",
-    "services/task-orchestrator/**",
-    "services/working-memory-assistant/**",
-    "docker/**",
-    "compose*.yml",
-    ".dopemux/**",
-    ".env*"
-  ],
-  "plan": [
-    "Create package skeleton under services/dcp-readonly-facade.",
-    "Define registry schema and sample redacted fixture registry for tests.",
-    "Implement registry loader with schema validation and disabled-project rejection.",
-    "Implement workspace resolver using canonical path checks and marker validation from 0003.",
-    "Implement response envelope module.",
-    "Implement redaction module.",
-    "Implement fixed git command runner with hardcoded command allowlist.",
-    "Implement proof file adapter with allowed proof roots and packet_id regex.",
-    "Implement MCP tools for list_projects, get_project_capabilities, get_repo_state_snapshot, list_proof_bundles, fetch_proof_bundle.",
-    "Add unit tests and fixture workspaces.",
-    "Add README/local-run docs.",
-    "Run tests, compile, grep for write hazards, inspect diff."
-  ],
-  "exact_commands": [
-    "pwd",
-    "git rev-parse --show-toplevel",
-    "git remote -v",
-    "git branch --show-current",
-    "git rev-parse HEAD",
-    "git status --short --branch",
-    "python -m pytest -q services/dcp-readonly-facade/tests",
-    "python -m compileall -q services/dcp-readonly-facade",
-    "rg -n \"write_text|open\\(.*['\\\"]w|mkdir|unlink|remove|rmtree|POST|PUT|PATCH|DELETE|/route/pm|/kg/|/ddg/|index_workspace|clear_index|transition|memory_correct|subprocess\" services/dcp-readonly-facade || true",
-    "git diff --stat",
-    "git diff -- services/dcp-readonly-facade docs/03-reference/dcp/chatgpt-mcp-readonly proof/TP-DCP-MCP-RO-0004",
-    "git status --short --branch"
-  ],
-  "validation_gates": [
-    "Unit tests pass.",
-    "Unknown project blocked.",
-    "Disabled project blocked.",
-    "Raw path rejected.",
-    "Symlink escape rejected.",
-    "Cross-project proof fetch rejected.",
-    "Stale proof warning tested.",
-    "Dirty worktree warning tested.",
-    "No non-allowlisted shell commands.",
-    "No writes detected in implementation except test fixture setup."
-  ],
-  "proof_requirements": [
-    "PROOF.json with test results and no-write grep review.",
-    "COMMAND_LOG.md.",
-    "AUDIT.md challenging filesystem safety, registry validation, and proof freshness.",
-    "Route/tool manifest for Phase-1 local tools.",
-    "Diff and diff stat."
-  ],
-  "acceptance_criteria": [
-    "MCP facade starts locally in test mode.",
-    "All five local tools return canonical envelope.",
-    "All path traversal/cross-project tests pass.",
-    "Implementation stays inside services/dcp-readonly-facade."
-  ],
-  "rollback_steps": [
-    "Delete services/dcp-readonly-facade if this packet is the first implementation and fails.",
-    "Revert docs/proof changes.",
-    "Do not modify existing systems."
-  ],
-  "stop_conditions": [
-    "Marker contract from 0003 is unresolved.",
-    "A tool requires arbitrary shell or path input.",
-    "Any test requires changing real project state.",
-    "Secret patterns appear in fixtures.",
-    "Need to touch files outside allowlist."
-  ],
-  "embedded_audit": {
-    "required": true,
-    "auditor_focus": [
-      "Can any tool read outside a registered root?",
-      "Can any caller provide a raw path or shell?",
-      "Are outputs correctly redacted and enveloped?",
-      "Is proof staleness detected?"
-    ]
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "origin_hint": "github.com/DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
   },
-  "expected_output": [
-    "Working scaffold service",
-    "Registry/resolver/envelope/redaction modules",
-    "MCP local/proof/git tools",
-    "Tests and docs",
-    "Proof bundle for packet 0004"
-  ],
+  "series": {
+    "id": "DCP-MCP-RO",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DCP-MCP-RO-0003",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "dcp/chatgpt-mcp-ro-0004-facade-scaffold-registry-resolve",
+    "base_branch": "main"
+  },
   "commit": {
     "message": "feat(dcp): scaffold readonly mcp facade registry and proof tools",
     "allowlist": [
@@ -159,44 +67,92 @@
   },
   "pr": {
     "title": "Scaffold DCP readonly MCP facade with registry and proof tools",
-    "body_required_sections": [
-      "Objective",
-      "Scope",
-      "Evidence",
-      "Validation",
-      "Embedded audit",
-      "Risks and unknowns",
-      "Rollback",
-      "Proof bundle links"
-    ],
+    "body": "Implement the minimal read-only MCP facade scaffold with project registry, workspace resolver, response envelope, redaction baseline, repo-state tool, proof listing, and proof fetch tools.\n\nRequired PR sections: Objective, Scope, Evidence, Validation, Embedded audit, Risks and unknowns, Rollback, Proof bundle links",
     "base": "main"
   },
-  "to_load": {
-    "epic": "DCP Secure MCP Read-Only Evidence Facade",
-    "lane": "dcp-readonly-facade",
-    "priority": "HIGH",
-    "labels": [
-      "dcp",
-      "mcp",
-      "readonly",
-      "chatgpt",
-      "secure-tunnel",
-      "dopemux"
-    ],
-    "blocked_by": [
-      "TP-DCP-MCP-RO-0003"
-    ],
-    "ready_when": [
-      "Unit tests pass.",
-      "Unknown project blocked.",
-      "Disabled project blocked.",
-      "Raw path rejected.",
-      "Symlink escape rejected.",
-      "Cross-project proof fetch rejected.",
-      "Stale proof warning tested.",
-      "Dirty worktree warning tested.",
-      "No non-allowlisted shell commands.",
-      "No writes detected in implementation except test fixture setup."
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
     ]
-  }
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Implement per objective: Implement the minimal read-only MCP facade scaffold with project registry, workspace resolver, response envelope, redaction baseline, repo-state tool, proof listing, and proof fetch tools. In-scope work: Create services/dcp-readonly-facade package. Implement registry schema loader and validator. Implement workspace resolver with project_id-only access. Implement response envelope. Implement redaction baseline. Implement list_projects, get_project_capabilities, get_repo_state_snapshot, list_proof_bundles, fetch_proof_bundle. Add tests for registry/resolver/path/proof/git tools. Add local run docs.",
+      "requirements": [
+        "Create services/dcp-readonly-facade package.",
+        "Implement registry schema loader and validator.",
+        "Implement workspace resolver with project_id-only access.",
+        "Implement response envelope.",
+        "Implement redaction baseline.",
+        "Implement list_projects, get_project_capabilities, get_repo_state_snapshot, list_proof_bundles, fetch_proof_bundle.",
+        "Add tests for registry/resolver/path/proof/git tools.",
+        "Add local run docs."
+      ],
+      "expected_files": [
+        "Working scaffold service",
+        "Registry/resolver/envelope/redaction modules",
+        "MCP local/proof/git tools",
+        "Tests and docs",
+        "Proof bundle for packet 0004"
+      ],
+      "context_files": [
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/READ_ONLY_SURFACE_INVENTORY.json",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/ARCHITECTURE.md",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md"
+      ],
+      "validation": [
+        "No files outside commit.allowlist are modified; change matches the stated scope."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Run the packet validation commands and inspect the diff.",
+      "commands": [
+        "pwd",
+        "git rev-parse --show-toplevel",
+        "git remote -v",
+        "git branch --show-current",
+        "git rev-parse HEAD",
+        "git status --short --branch",
+        "python -m pytest -q services/dcp-readonly-facade/tests",
+        "python -m compileall -q services/dcp-readonly-facade",
+        "rg -n \"write_text|open\\(.*['\\\"]w|mkdir|unlink|remove|rmtree|POST|PUT|PATCH|DELETE|/route/pm|/kg/|/ddg/|index_workspace|clear_index|transition|memory_correct|subprocess\" services/dcp-readonly-facade || true",
+        "git diff --stat",
+        "git diff -- services/dcp-readonly-facade docs/03-reference/dcp/chatgpt-mcp-readonly proof/TP-DCP-MCP-RO-0004",
+        "git status --short --branch"
+      ],
+      "validation": [
+        "Unit tests pass.",
+        "Unknown project blocked.",
+        "Disabled project blocked.",
+        "Raw path rejected.",
+        "Symlink escape rejected.",
+        "Cross-project proof fetch rejected.",
+        "Stale proof warning tested.",
+        "Dirty worktree warning tested.",
+        "No non-allowlisted shell commands.",
+        "No writes detected in implementation except test fixture setup."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Produce the proof bundle under proof/TP-DCP-MCP-RO-0004/ (PROOF.json, COMMAND_LOG.md, AUDIT.md) and run the embedded audit.",
+      "requirements": [
+        "PROOF.json with test results and no-write grep review.",
+        "COMMAND_LOG.md.",
+        "AUDIT.md challenging filesystem safety, registry validation, and proof freshness.",
+        "Route/tool manifest for Phase-1 local tools.",
+        "Diff and diff stat."
+      ],
+      "validation": [
+        "Proof bundle present with command outputs and exit codes.",
+        "Embedded audit verdict recorded (PASS or PASS_WITH_RISKS with non-blocking risks)."
+      ]
+    }
+  ]
 }

@@ -37,11 +37,13 @@ prelude: Phase-1 tool contract, allowed/denied routes, and authority labels for 
 
 ### 1c. dope-context + task-orchestrator read tools — packet 0006
 
-| Tool | Backing surface (OBSERVED) | Transport | Authority | Notes |
-| --- | --- | --- | --- | --- |
-| `search_code_docs` | dope-context `search_code` + `docs_search` | MCP | DERIVED | direct; hits DERIVED until exact-source fetch exists |
-| `get_index_status` | dope-context index status | MCP | DERIVED | capability/freshness reporting |
-| `get_workflow_status_snapshot` | task-orchestrator `/queue` + `/blockers` (GET) | HTTP | CANONICAL | workflow-view only, **not** PM truth; strip identities |
+| Tool | Backing surface | Source | Transport | Authority | Notes |
+| --- | --- | --- | --- | --- | --- |
+| `search_code_docs` | dope-context `search_code` + `docs_search` | `OBSERVED` (inventory) | MCP | DERIVED | direct; hits DERIVED until exact-source fetch exists |
+| `get_index_status` | dope-context index status | `PROPOSED` (load-pack 0006 scope; **not** in inventory) | MCP | DERIVED | ⚠️ no inventoried surface — see note below |
+| `get_workflow_status_snapshot` | task-orchestrator `/queue` + `/blockers` (GET) | `OBSERVED` (inventory) | HTTP | CANONICAL | workflow-view only, **not** PM truth; strip identities |
+
+> ⚠️ **`get_index_status` is not backed by the discovery inventory.** The committed `READ_ONLY_SURFACE_INVENTORY.json` inventories only `search_code`, `docs_search`, and `search_all` for dope-context. `get_index_status` is named in the TP-DCP-MCP-RO-0006 load-pack scope but has **no** read-only classification, side-effect review, or evidence trail. Before 0006 exposes it, it **must** be added to the inventory with `OBSERVED` evidence (route/method/classification/side-effect notes) — or deferred. Until then it is `PROPOSED` only and must not be wired into the allowlist.
 
 ## 2. Denied Routes / Tools (Phase 1)
 

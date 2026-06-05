@@ -1,41 +1,7 @@
 {
   "id": "TP-DCP-MCP-RO-0008",
-  "title": "Hardening Cross Project Isolation And PR Readiness",
-  "project": "DCP Secure MCP Read-Only Evidence Facade",
-  "target": "DDD-Enterprises/dopemux-mvp",
-  "status": "READY",
-  "task_class": "security-sensitive/testing/review-hardening",
-  "risk": "HIGH",
-  "objective": "Harden the full facade with cross-project isolation tests, injection/redaction tests, stale-proof checks, denylist regression tests, no-write evidence, embedded audit, and PR readiness artifacts.",
-  "why_this_packet_exists_now": "This is the final acceptance slice. No shiny new features, just lock the vault and try to break the hinges.",
-  "depends_on": [
-    "TP-DCP-MCP-RO-0007"
-  ],
-  "execution": {
-    "primary_agent": "codex",
-    "supervisor": "GPT-5.5 Pro",
-    "embedded_auditor_default": "AGY/Sonnet; fallback Claude Code Sonnet; fallback Opus/Gemini for contradiction hunt",
-    "branch": "dcp/chatgpt-mcp-ro-0008-hardening-cross-project-isolatio"
-  },
-  "scope": {
-    "in": [
-      "Add/expand hardening tests.",
-      "Add property/fixture tests for multi-project isolation.",
-      "Add prompt-injection wrapping tests.",
-      "Add redaction regression tests.",
-      "Add no-write/static hazard checks.",
-      "Add PR readiness proof docs.",
-      "Run full facade test suite and compile.",
-      "Produce final proof bundle."
-    ],
-    "out": [
-      "No new user-facing tools unless required to expose health/readiness.",
-      "No generic search/fetch unless explicitly approved by supervisor.",
-      "No write tools.",
-      "No tunnel secret handling changes.",
-      "No backend service code changes."
-    ]
-  },
+  "project": "dopemux-mvp",
+  "target": "Harden the full facade with cross-project isolation tests, injection/redaction tests, stale-proof checks, denylist regression tests, no-write evidence, embedded audit, and PR readiness artifacts.",
   "invariants": [
     "Denied routes remain denied.",
     "Cross-project evidence cannot leak.",
@@ -43,109 +9,47 @@
     "All untrusted retrieved content is marked untrusted.",
     "Secret redaction is tested.",
     "No arbitrary path/URL/port/backend selection.",
-    "PR proof is current to head SHA."
+    "PR proof is current to head SHA.",
+    "OUT OF SCOPE: No new user-facing tools unless required to expose health/readiness.",
+    "OUT OF SCOPE: No generic search/fetch unless explicitly approved by supervisor.",
+    "OUT OF SCOPE: No write tools.",
+    "OUT OF SCOPE: No tunnel secret handling changes.",
+    "OUT OF SCOPE: No backend service code changes.",
+    "STOP IF: Any test requires weakening a denylist.",
+    "STOP IF: Any write path is discovered.",
+    "STOP IF: Cross-project isolation fails.",
+    "STOP IF: Secret redaction fails.",
+    "STOP IF: A stale-proof condition cannot be detected.",
+    "STOP IF: Embedded auditor returns FAIL or NEEDS_SUPERVISOR.",
+    "FORBIDDEN FILE: services/dope-context/**",
+    "FORBIDDEN FILE: services/dopecon-bridge/**",
+    "FORBIDDEN FILE: services/task-orchestrator/**",
+    "FORBIDDEN FILE: services/working-memory-assistant/**",
+    "FORBIDDEN FILE: docker/**",
+    "FORBIDDEN FILE: src/** outside services/dcp-readonly-facade if service is not under src",
+    "FORBIDDEN FILE: .env*",
+    "FORBIDDEN FILE: .dopemux/**"
   ],
-  "allowed_files": [
-    "services/dcp-readonly-facade/**",
-    "docs/03-reference/dcp/chatgpt-mcp-readonly/**",
-    "proof/TP-DCP-MCP-RO-0008/**"
+  "depends_on": [
+    "TP-DCP-MCP-RO-0007"
   ],
-  "forbidden_files": [
-    "services/dope-context/**",
-    "services/dopecon-bridge/**",
-    "services/task-orchestrator/**",
-    "services/working-memory-assistant/**",
-    "docker/**",
-    "src/** outside services/dcp-readonly-facade if service is not under src",
-    ".env*",
-    ".dopemux/**"
-  ],
-  "plan": [
-    "Review all previous packet outputs and unresolved risks.",
-    "Add multi-project fixture set with enabled, disabled, missing, dirty, stale-proof, and symlink cases.",
-    "Add tests for unknown project, disabled project, raw path, symlink escape, cross-project proof fetch, cross-project backend mismatch.",
-    "Add tests for stale proof and dirty worktree warnings.",
-    "Add tests for redaction across proof/code/memory-like payloads.",
-    "Add tests for prompt injection wrapping.",
-    "Add tests denying dopecon-bridge, mutating routes, arbitrary URLs, arbitrary ports, arbitrary backend routes.",
-    "Add no-write static grep/script check if not already present.",
-    "Run full tests, compile, secret scan, forbidden route scan.",
-    "Prepare PR handoff/readiness artifact if PR is opened.",
-    "Run embedded audit and apply fixes if in scope."
-  ],
-  "exact_commands": [
-    "pwd",
-    "git rev-parse --show-toplevel",
-    "git remote -v",
-    "git branch --show-current",
-    "git rev-parse HEAD",
-    "git status --short --branch",
-    "python -m pytest -q services/dcp-readonly-facade/tests",
-    "python -m compileall -q services/dcp-readonly-facade",
-    "rg -n \"write_text|open\\(.*['\\\"]w|mkdir|unlink|remove|rmtree|POST|PUT|PATCH|DELETE|/route/pm|/kg/|/ddg/|index_workspace|clear_index|transition|memory_correct|memory_generate_reflection|subprocess|os.system|shell=True\" services/dcp-readonly-facade || true",
-    "rg -n \"OPENAI_API_KEY|ANTHROPIC_API_KEY|GEMINI_API_KEY|sk-|Bearer |TOKEN=|PASSWORD=|SECRET=\" services/dcp-readonly-facade docs/03-reference/dcp/chatgpt-mcp-readonly || true",
-    "git diff --stat",
-    "git diff",
-    "git status --short --branch"
-  ],
-  "validation_gates": [
-    "All tests pass.",
-    "No forbidden mutating route is callable.",
-    "No arbitrary path/URL/port/backend route accepted.",
-    "Cross-project isolation tests pass.",
-    "Prompt-injection wrapping tests pass.",
-    "Secret redaction tests pass.",
-    "Stale proof and dirty state warnings tested.",
-    "Embedded audit PASS or PASS_WITH_RISKS with non-blocking risks.",
-    "Proof is current to final head SHA."
-  ],
-  "proof_requirements": [
-    "PROOF.json.",
-    "COMMAND_LOG.md.",
-    "AUDIT.md.",
-    "NO_WRITE_REVIEW.md.",
-    "ROUTE_DENYLIST_TEST_OUTPUT.md.",
-    "REDACTION_TEST_OUTPUT.md.",
-    "CROSS_PROJECT_ISOLATION_TEST_OUTPUT.md.",
-    "PR_READINESS.md if PR opened.",
-    "Full diff and diff stat."
-  ],
-  "acceptance_criteria": [
-    "Facade is implementation-complete for Phase 1.",
-    "All acceptance gates pass.",
-    "PR can be opened or marked merge-ready after PR Steward review."
-  ],
-  "rollback_steps": [
-    "Revert hardening changes from this packet.",
-    "If tests reveal architectural weakness, stop and create follow-up design packet.",
-    "Do not weaken denylist to pass tests."
-  ],
-  "stop_conditions": [
-    "Any test requires weakening a denylist.",
-    "Any write path is discovered.",
-    "Cross-project isolation fails.",
-    "Secret redaction fails.",
-    "A stale-proof condition cannot be detected.",
-    "Embedded auditor returns FAIL or NEEDS_SUPERVISOR."
-  ],
-  "embedded_audit": {
-    "required": true,
-    "auditor_focus": [
-      "Try to break cross-project isolation.",
-      "Try to reach bridge/proxy routes.",
-      "Try to invoke mutating routes.",
-      "Try prompt injection through returned content.",
-      "Try secret leakage through proof/code/memory payloads.",
-      "Verify final proof is not stale."
-    ]
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "origin_hint": "github.com/DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
   },
-  "expected_output": [
-    "Hardened facade",
-    "Full regression suite",
-    "Security proof artifacts",
-    "PR readiness material",
-    "Proof bundle for packet 0008"
-  ],
+  "series": {
+    "id": "DCP-MCP-RO",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DCP-MCP-RO-0007",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "dcp/chatgpt-mcp-ro-0008-hardening-cross-project-isolatio",
+    "base_branch": "main"
+  },
   "commit": {
     "message": "test(dcp): harden readonly facade isolation and denylist",
     "allowlist": [
@@ -162,43 +66,96 @@
   },
   "pr": {
     "title": "Harden DCP readonly facade for cross-project isolation and PR readiness",
-    "body_required_sections": [
-      "Objective",
-      "Scope",
-      "Evidence",
-      "Validation",
-      "Embedded audit",
-      "Risks and unknowns",
-      "Rollback",
-      "Proof bundle links"
-    ],
+    "body": "Harden the full facade with cross-project isolation tests, injection/redaction tests, stale-proof checks, denylist regression tests, no-write evidence, embedded audit, and PR readiness artifacts.\n\nRequired PR sections: Objective, Scope, Evidence, Validation, Embedded audit, Risks and unknowns, Rollback, Proof bundle links",
     "base": "main"
   },
-  "to_load": {
-    "epic": "DCP Secure MCP Read-Only Evidence Facade",
-    "lane": "dcp-readonly-facade",
-    "priority": "HIGH",
-    "labels": [
-      "dcp",
-      "mcp",
-      "readonly",
-      "chatgpt",
-      "secure-tunnel",
-      "dopemux"
-    ],
-    "blocked_by": [
-      "TP-DCP-MCP-RO-0007"
-    ],
-    "ready_when": [
-      "All tests pass.",
-      "No forbidden mutating route is callable.",
-      "No arbitrary path/URL/port/backend route accepted.",
-      "Cross-project isolation tests pass.",
-      "Prompt-injection wrapping tests pass.",
-      "Secret redaction tests pass.",
-      "Stale proof and dirty state warnings tested.",
-      "Embedded audit PASS or PASS_WITH_RISKS with non-blocking risks.",
-      "Proof is current to final head SHA."
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
     ]
-  }
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Implement per objective: Harden the full facade with cross-project isolation tests, injection/redaction tests, stale-proof checks, denylist regression tests, no-write evidence, embedded audit, and PR readiness artifacts. In-scope work: Add/expand hardening tests. Add property/fixture tests for multi-project isolation. Add prompt-injection wrapping tests. Add redaction regression tests. Add no-write/static hazard checks. Add PR readiness proof docs. Run full facade test suite and compile. Produce final proof bundle.",
+      "requirements": [
+        "Add/expand hardening tests.",
+        "Add property/fixture tests for multi-project isolation.",
+        "Add prompt-injection wrapping tests.",
+        "Add redaction regression tests.",
+        "Add no-write/static hazard checks.",
+        "Add PR readiness proof docs.",
+        "Run full facade test suite and compile.",
+        "Produce final proof bundle."
+      ],
+      "expected_files": [
+        "Hardened facade",
+        "Full regression suite",
+        "Security proof artifacts",
+        "PR readiness material",
+        "Proof bundle for packet 0008"
+      ],
+      "context_files": [
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/READ_ONLY_SURFACE_INVENTORY.json",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/ARCHITECTURE.md",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md"
+      ],
+      "validation": [
+        "No files outside commit.allowlist are modified; change matches the stated scope."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Run the packet validation commands and inspect the diff.",
+      "commands": [
+        "pwd",
+        "git rev-parse --show-toplevel",
+        "git remote -v",
+        "git branch --show-current",
+        "git rev-parse HEAD",
+        "git status --short --branch",
+        "python -m pytest -q services/dcp-readonly-facade/tests",
+        "python -m compileall -q services/dcp-readonly-facade",
+        "rg -n \"write_text|open\\(.*['\\\"]w|mkdir|unlink|remove|rmtree|POST|PUT|PATCH|DELETE|/route/pm|/kg/|/ddg/|index_workspace|clear_index|transition|memory_correct|memory_generate_reflection|subprocess|os.system|shell=True\" services/dcp-readonly-facade || true",
+        "rg -n \"OPENAI_API_KEY|ANTHROPIC_API_KEY|GEMINI_API_KEY|sk-|Bearer |TOKEN=|PASSWORD=|SECRET=\" services/dcp-readonly-facade docs/03-reference/dcp/chatgpt-mcp-readonly || true",
+        "git diff --stat",
+        "git diff",
+        "git status --short --branch"
+      ],
+      "validation": [
+        "All tests pass.",
+        "No forbidden mutating route is callable.",
+        "No arbitrary path/URL/port/backend route accepted.",
+        "Cross-project isolation tests pass.",
+        "Prompt-injection wrapping tests pass.",
+        "Secret redaction tests pass.",
+        "Stale proof and dirty state warnings tested.",
+        "Embedded audit PASS or PASS_WITH_RISKS with non-blocking risks.",
+        "Proof is current to final head SHA."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Produce the proof bundle under proof/TP-DCP-MCP-RO-0008/ (PROOF.json, COMMAND_LOG.md, AUDIT.md) and run the embedded audit.",
+      "requirements": [
+        "PROOF.json.",
+        "COMMAND_LOG.md.",
+        "AUDIT.md.",
+        "NO_WRITE_REVIEW.md.",
+        "ROUTE_DENYLIST_TEST_OUTPUT.md.",
+        "REDACTION_TEST_OUTPUT.md.",
+        "CROSS_PROJECT_ISOLATION_TEST_OUTPUT.md.",
+        "PR_READINESS.md if PR opened.",
+        "Full diff and diff stat."
+      ],
+      "validation": [
+        "Proof bundle present with command outputs and exit codes.",
+        "Embedded audit verdict recorded (PASS or PASS_WITH_RISKS with non-blocking risks)."
+      ]
+    }
+  ]
 }
