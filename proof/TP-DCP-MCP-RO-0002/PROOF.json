@@ -1,8 +1,22 @@
 {
   "packet_id": "TP-DCP-MCP-RO-0002",
+  "title": "Architecture Doc And Multi Project Contract",
   "branch": "dcp/chatgpt-mcp-ro-0002-architecture-doc-and-multi-proje",
-  "head_sha": "62d16375119c8c7fac2fc3280152c4095c5898ac",
-  "docs_created": [
+  "base_sha": "62d16375119c8c7fac2fc3280152c4095c5898ac",
+  "head_sha": "PENDING_POST_COMMIT_SYNC",
+  "task_class": "architecture/documentation-sensitive/security-sensitive",
+  "risk": "MEDIUM",
+  "deviation": {
+    "type": "restored_clobbered_artifact",
+    "artifact": "docs/03-reference/dcp/chatgpt-mcp-readonly/READ_ONLY_SURFACE_INVENTORY.json",
+    "before_lines": 53,
+    "after_lines": 431,
+    "source_sha": "7c9ac6a45",
+    "source_packet": "TP-DCP-MCP-RO-0001",
+    "reason": "Prior commit 78b04fb33 shipped generate_docs.py which overwrote the canonical discovery inventory with a hardcoded stub; restored verbatim from discovery commit and removed the script.",
+    "removed_file": "docs/03-reference/dcp/chatgpt-mcp-readonly/generate_docs.py"
+  },
+  "docs_finalized": [
     "docs/03-reference/dcp/chatgpt-mcp-readonly/ARCHITECTURE.md",
     "docs/03-reference/dcp/chatgpt-mcp-readonly/MULTI_PROJECT_REGISTRY_CONTRACT.md",
     "docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md",
@@ -13,10 +27,32 @@
     "docs/03-reference/dcp/chatgpt-mcp-readonly/TASK_ORCHESTRATOR_LOAD.md",
     "docs/03-reference/dcp/chatgpt-mcp-readonly/READ_ONLY_SURFACE_INVENTORY.json"
   ],
-  "validation_commands": [
-    "bash run_checks.sh"
+  "other_changes": [
+    "task-packets/INDEX.md (corrected drifted titles for 0003-0008 to canonical)",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/generate_docs.py (deleted)"
   ],
-  "exit_codes": {
-    "bash run_checks.sh": 0
-  }
+  "validation": {
+    "all_8_md_docs_present": "PASS",
+    "no_python_in_docs_dir": "PASS",
+    "json_inventory_validates": "PASS",
+    "inventory_restored_to_431_lines": "PASS",
+    "denylist_reconciles_8_plus_7_eq_15": "PASS",
+    "diff_within_allowlist": "PASS",
+    "no_runtime_service_config_files_touched": "PASS",
+    "no_secrets_in_docs": "PASS"
+  },
+  "validation_commands": {
+    "ls docs/03-reference/dcp/chatgpt-mcp-readonly/*.md | wc -l": {"expect": 8, "exit": 0},
+    "find docs/03-reference/dcp/chatgpt-mcp-readonly -name '*.py'": {"expect": "empty", "exit": 0},
+    "python3 -m json.tool READ_ONLY_SURFACE_INVENTORY.json": {"exit": 0},
+    "denylist reconciliation (summary 8+7==15)": {"exit": 0}
+  },
+  "embedded_audit": "PASS_WITH_RISKS",
+  "residual_risks": [
+    "8/7 phase-1 split reconciled to inventory summary; identity of 2 deferred reads inferred (no per-surface phase_1 flag) — flagged inline, resolved in 0004/0005.",
+    "RESPONSE_ENVELOPE_SCHEMA introduces 'OK' success token not named in load pack — flagged inline, reconcile in 0004.",
+    "dopemux init marker contract UNKNOWN — deferred to 0003."
+  ],
+  "command_log": "proof/TP-DCP-MCP-RO-0002/COMMAND_LOG.md",
+  "audit": "proof/TP-DCP-MCP-RO-0002/AUDIT.md"
 }
