@@ -16,7 +16,9 @@ Failure conditions (each -> non-zero exit):
   (c) A command's orchestrator-tool set drifts from the manifest's expected set.
   (d) A command file exists with no manifest entry (uncatalogued surface).
   (e) The manifest references a command with no corresponding file (stale manifest).
-  (f) Internal manifest inconsistency (read_surface != commands with surface_class=read).
+  (f) Internal manifest inconsistency:
+      - read_surface != commands with surface_class=read
+      - read_only_tools != tools classified safe_read_only
   (g) A `read`-class command lists a NON-orchestrator tool that is not permitted by the
       manifest's read_command_nonorch_allowlist (fail-closed: catches a read command gaining a
       repo write such as Write/Edit or a bridge/memory write such as mcp__conport__log_decision,
@@ -140,6 +142,16 @@ def run_validation(root: Path) -> tuple[list[str], list[str]]:
     if read_class != declared_read_surface:
         failures.append(
             f"manifest: read_surface {sorted(declared_read_surface)} != read-class commands {sorted(read_class)}"
+        )
+
+    # (f) internal manifest consistency: read_only_tools must match safe_read_only classifications
+    classified_read_only = {
+        name for name, spec in tool_table.items() if spec.get("classification") == "safe_read_only"
+    }
+    if read_only_tools != classified_read_only:
+        failures.append(
+            "manifest: read_only_tools "
+            f"{sorted(read_only_tools)} != safe_read_only tools {sorted(classified_read_only)}"
         )
 
     # (e) manifest entries must have files

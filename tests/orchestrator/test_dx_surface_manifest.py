@@ -45,13 +45,19 @@ def test_manifest_is_valid_json_with_required_shape(manifest):
 
 
 def test_read_only_tools_are_classified_safe_read_only(manifest):
-    for tool in manifest["read_only_tools"]:
-        assert manifest["tools"][tool]["classification"] == "safe_read_only"
+    safe_read_only = {
+        name for name, spec in manifest["tools"].items() if spec.get("classification") == "safe_read_only"
+    }
+    assert set(manifest["read_only_tools"]) == safe_read_only
 
 
 def test_manifest_internal_consistency(manifest):
     read_class = {n for n, s in manifest["commands"].items() if s.get("surface_class") == "read"}
     assert read_class == set(manifest["read_surface"])
+    safe_read_only = {
+        name for name, spec in manifest["tools"].items() if spec.get("classification") == "safe_read_only"
+    }
+    assert set(manifest["read_only_tools"]) == safe_read_only
 
 
 def test_validator_passes_against_committed_surface(validator):
@@ -99,6 +105,27 @@ def test_validator_bites_when_read_command_gains_a_write_tool(validator, tmp_pat
     failures, _ = validator.run_validation(tmp_path)
     assert any("advance_item" in f and "tree" in f for f in failures), \
         f"validator failed to catch a read command gaining a write tool; failures={failures}"
+
+
+def test_validator_bites_when_read_only_tools_gain_a_write_tool(validator, tmp_path):
+    """A write-class tool in read_only_tools must fail the internal manifest consistency check."""
+    (tmp_path / ".taskorchestrator").mkdir()
+    shutil.copy(MANIFEST, tmp_path / ".taskorchestrator" / "surface_manifest.json")
+    dx = tmp_path / ".claude" / "commands" / "dx"
+    dx.mkdir(parents=True)
+    for p in DX_DIR.glob("*.md"):
+        shutil.copy(p, dx / p.name)
+
+    assert validator.run_validation(tmp_path)[0] == []
+
+    manifest_path = tmp_path / ".taskorchestrator" / "surface_manifest.json"
+    manifest_data = json.loads(manifest_path.read_text())
+    manifest_data["read_only_tools"].append("advance_item")
+    manifest_path.write_text(json.dumps(manifest_data, indent=2))
+
+    failures, _ = validator.run_validation(tmp_path)
+    assert any("read_only_tools" in f and "advance_item" in f for f in failures), \
+        f"validator failed to catch a write-class tool in read_only_tools; failures={failures}"
 
 
 def test_read_command_nonorch_allowlist_present_and_writefree(manifest):
