@@ -149,8 +149,12 @@ def test_step_tier_classifier_is_deterministic() -> None:
 
 def test_contract_lane_routes_override_policy_for_json_managed_steps() -> None:
     runner = _load_runner_module()
+    # Plan B: the legacy v3 runner resolves the ${CELL} placeholder leads to the
+    # default (value-default) profile's concrete OpenAI models (strict cells are
+    # OpenAI-only); hardcoded fallbacks remain. The contract lane (not the policy
+    # ladder) still drives json-managed steps.
     expected_d0 = [
-        ("gemini", "gemini-3.1-pro-preview", "GEMINI_API_KEY"),
+        ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
         ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
         ("openai", "gpt-5.5", "OPENAI_API_KEY"),
     ]
@@ -159,15 +163,15 @@ def test_contract_lane_routes_override_policy_for_json_managed_steps() -> None:
     assert runner.resolve_step_ladder("quality", "D", "D1") == expected_d0
 
     assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D2") == [
-        ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
+        ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
         ("xai", "grok-4.3", "XAI_API_KEY"),
     ]
     assert runner.resolve_step_ladder("balanced_grok_openrouter", "C", "C1") == [
-        ("xai", "grok-build-0.1", "XAI_API_KEY"),
+        ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
         ("xai", "grok-4.3", "XAI_API_KEY"),
     ]
     assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D4") == [
-        ("gemini", "gemini-3.1-pro-preview", "GEMINI_API_KEY"),
+        ("openai", "gpt-5.5", "OPENAI_API_KEY"),
         ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
         ("openai", "gpt-5.5", "OPENAI_API_KEY"),
     ]

@@ -666,7 +666,7 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
             "BULK_DOCS_MODEL": "openai/gpt-5.4-mini",
             "BULK_CODE_MODEL": "openai/gpt-5.4-mini",
             "CE_MODEL": "openai/gpt-5.1-codex-mini",
-            "SYNTH_MODEL": "openrouter/anthropic/claude-sonnet-4.5",
+            "SYNTH_MODEL": "openai/gpt-5.4",
         },
     },
     "value-default": {
@@ -680,13 +680,14 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "notes": (
             "Best cost/quality ratio. Flex tier on EXTRACT/AGG bulk lanes; "
             "standard for CE/SYNTH. Cached input on globally. Batch enabled "
-            "for non-CE/SYNTH cells. Default profile."
+            "for non-CE/SYNTH cells. Default profile. Strict cells (CE/SYNTH) "
+            "are OpenAI (only provider that does strict-JSON passthrough here)."
         ),
         "cell_aliases": {
             "BULK_DOCS_MODEL": "openai/gpt-5.4-mini",
             "BULK_CODE_MODEL": "openai/gpt-5.3-codex",
             "CE_MODEL": "openai/gpt-5.3-codex",
-            "SYNTH_MODEL": "openrouter/anthropic/claude-opus-4.6",
+            "SYNTH_MODEL": "openai/gpt-5.5",
         },
     },
     "quality": {
@@ -700,13 +701,13 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "notes": (
             "Premium models with priority service tier where available. "
             "Estimated 3-5x cost of value-default. Use for production go/no-go. "
-            "SYNTH-critical uses opus 4.6 (not 4.7) to avoid the tokenization tax."
+            "Strict CE/SYNTH on gpt-5.5 (OpenAI is the only strict-JSON provider)."
         ),
         "cell_aliases": {
             "BULK_DOCS_MODEL": "openai/gpt-5.4",
             "BULK_CODE_MODEL": "openai/gpt-5.5",
             "CE_MODEL": "openai/gpt-5.5",
-            "SYNTH_MODEL": "openrouter/anthropic/claude-opus-4.6",
+            "SYNTH_MODEL": "openai/gpt-5.5",
         },
     },
     "experimental": {
@@ -718,10 +719,9 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "max_cost_usd_default": 25.00,
         "cost_cap_mode": "preventive",
         "notes": (
-            "Bleed-edge frontier models (gpt-5.5, claude-opus-4.7, "
-            "gemini-3.5-flash). May have higher tokenization (opus 4.7 = ~35% "
-            "more tokens for same text). Bypasses some validators; operator "
-            "must inspect PROOF_PACK."
+            "Bleed-edge frontier models (gpt-5.5, gemini-3.5-flash on bulk). "
+            "Bypasses some validators; operator must inspect PROOF_PACK. Strict "
+            "cells stay on OpenAI gpt-5.5."
         ),
         "warning": (
             "Models in this profile may be in preview/beta and exhibit "
@@ -731,7 +731,7 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
             "BULK_DOCS_MODEL": "gemini/gemini-3.5-flash",
             "BULK_CODE_MODEL": "openai/gpt-5.5",
             "CE_MODEL": "openai/gpt-5.5",
-            "SYNTH_MODEL": "openrouter/anthropic/claude-opus-4.7",
+            "SYNTH_MODEL": "openai/gpt-5.5",
         },
     },
     "gemini-value": {
@@ -743,15 +743,15 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "max_cost_usd_default": 8.00,
         "cost_cap_mode": "preventive",
         "notes": (
-            "Cheap Gemini lean on non-code bulk/docs; CE stays on a strict-capable "
-            "OpenAI model (Gemini weak on strict code extraction); SYNTH on "
-            "opus-4.6 via OpenRouter. Never routes a strict cell to Gemini."
+            "Cheap Gemini lean on non-code bulk/docs; strict CE/SYNTH stay on "
+            "OpenAI (Gemini is not strict-JSON-passthrough capable here). Never "
+            "routes a strict cell to Gemini."
         ),
         "cell_aliases": {
             "BULK_DOCS_MODEL": "gemini/gemini-3-flash-preview",
             "BULK_CODE_MODEL": "gemini/gemini-3.1-pro-preview",
             "CE_MODEL": "openai/gpt-5.3-codex",
-            "SYNTH_MODEL": "openrouter/anthropic/claude-opus-4.6",
+            "SYNTH_MODEL": "openai/gpt-5.5",
         },
     },
     "grok-fast": {
@@ -765,14 +765,14 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "cost_cap_mode": "preventive",
         "notes": (
             "Cheapest code-extract lean using xAI Grok on non-strict bulk/code "
-            "lanes. STRICT CE/SYNTH stay on OpenAI/OpenRouter (xAI strict-JSON "
-            "reliability unproven) — the strict guard rejects xAI on strict cells."
+            "lanes. STRICT CE/SYNTH stay on OpenAI (xAI is not strict-JSON "
+            "capable) — the strict guard rejects xAI on strict cells."
         ),
         "cell_aliases": {
             "BULK_DOCS_MODEL": "xai/grok-4-fast",
             "BULK_CODE_MODEL": "xai/grok-4.3",
             "CE_MODEL": "openai/gpt-5.3-codex",
-            "SYNTH_MODEL": "openrouter/anthropic/claude-opus-4.6",
+            "SYNTH_MODEL": "openai/gpt-5.4",
         },
     },
     "openrouter-resilient": {
@@ -785,14 +785,15 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "cost_cap_mode": "preventive",
         "notes": (
             "Single-key, multi-upstream resilience: every cell routed through "
-            "OpenRouter (one OPENROUTER_API_KEY). Aggregator latency is the "
-            "tradeoff; failover replaces a per-provider circuit breaker."
+            "OpenRouter (one OPENROUTER_API_KEY). Strict cells use "
+            "openrouter/openai/* (strict-JSON capable). Aggregator latency is "
+            "the tradeoff; failover replaces a per-provider circuit breaker."
         ),
         "cell_aliases": {
             "BULK_DOCS_MODEL": "openrouter/openai/gpt-5.4-mini",
             "BULK_CODE_MODEL": "openrouter/openai/gpt-5.3-codex",
             "CE_MODEL": "openrouter/openai/gpt-5.3-codex",
-            "SYNTH_MODEL": "openrouter/anthropic/claude-opus-4.6",
+            "SYNTH_MODEL": "openrouter/openai/gpt-5.4",
         },
     },
     "openai-heavy": {
@@ -805,7 +806,7 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "cost_cap_mode": "preventive",
         "notes": (
             "OpenAI-direct across all cells (single OPENAI_API_KEY, no aggregator "
-            "latency). SYNTH on gpt-5.5 instead of Anthropic for an all-OpenAI lane."
+            "latency). SYNTH on gpt-5.5 for an all-OpenAI lane."
         ),
         "cell_aliases": {
             "BULK_DOCS_MODEL": "openai/gpt-5.4-mini",
@@ -824,14 +825,14 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "max_cost_usd_default": 12.00,
         "cost_cap_mode": "preventive",
         "notes": (
-            "Best-of-each-provider: Gemini on docs bulk, xAI on code bulk, OpenAI "
-            "on strict CE, opus-4.6 via OpenRouter on strict SYNTH."
+            "Best-of-each-provider on the non-strict lanes: Gemini on docs bulk, "
+            "xAI on code bulk; strict CE/SYNTH on OpenAI gpt-5.x."
         ),
         "cell_aliases": {
             "BULK_DOCS_MODEL": "gemini/gemini-3-flash-preview",
             "BULK_CODE_MODEL": "xai/grok-4.3",
             "CE_MODEL": "openai/gpt-5.3-codex",
-            "SYNTH_MODEL": "openrouter/anthropic/claude-opus-4.6",
+            "SYNTH_MODEL": "openai/gpt-5.5",
         },
     },
     "quality-mix": {
@@ -843,14 +844,14 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "max_cost_usd_default": 30.00,
         "cost_cap_mode": "preventive",
         "notes": (
-            "Premium multi-provider: OpenAI flagship on bulk/CE, opus-4.6 via "
-            "OpenRouter on synthesis. Highest cost ceiling of the mix profiles."
+            "Premium: OpenAI flagship on bulk/CE/synthesis. Highest cost ceiling "
+            "of the mix profiles. Strict cells OpenAI (gpt-5.5)."
         ),
         "cell_aliases": {
             "BULK_DOCS_MODEL": "openai/gpt-5.4",
             "BULK_CODE_MODEL": "openai/gpt-5.3-codex",
             "CE_MODEL": "openai/gpt-5.5",
-            "SYNTH_MODEL": "openrouter/anthropic/claude-opus-4.6",
+            "SYNTH_MODEL": "openai/gpt-5.5",
         },
     },
     "budget-mix": {
@@ -1143,12 +1144,20 @@ def assert_strict_route_provider_allowed(
     strict CE/AGG cell there.
     """
     normalized = str(provider or "").strip().lower()
-    if normalized not in STRICT_ALLOWED_PROVIDERS:
+    model = str(model_id or "").strip().lower()
+    # Strict-JSON passthrough is only verified for OpenAI models — direct, or
+    # via OpenRouter's openai/* namespace. openrouter/anthropic, xai and gemini
+    # are NOT strict-capable here (see config/pricing.yaml supports_json_schema_strict
+    # + structured_output_contracts.strict_capability_reason).
+    allowed = normalized == "openai" or (
+        normalized == "openrouter" and model.startswith("openai/")
+    )
+    if not allowed:
         raise RuntimeError(
-            f"Strict-required step {phase}:{step_id} resolved to provider "
-            f"{normalized!r} (model {model_id!r}) which is not in the strict "
-            f"allowlist {STRICT_ALLOWED_PROVIDERS}. Adjust the cost profile's "
-            f"strict cell alias before spend."
+            f"Strict-required step {phase}:{step_id} resolved to "
+            f"{normalized}/{model_id} which is not strict-JSON capable. Strict "
+            f"cells (CE/AGG) must use openai/* or openrouter/openai/* models. "
+            f"Adjust the cost profile's strict cell alias before spend."
         )
 
 
@@ -4262,6 +4271,7 @@ def initialize_spend_tracker(
         phases=phases,
         routing_policy=cfg.routing_policy,
         selected_step_ids_by_phase=selected_step_ids_by_phase or None,
+        cost_profile=cfg.cost_profile,
     )
     missing = sorted(
         _pricing_key(route["provider"], route["model_id"])
@@ -6603,6 +6613,26 @@ def effective_model_routing_payload(
     payload: Dict[str, Dict[str, Any]] = {}
     for phase in PHASES:
         provider, model_id, api_key_env = MODEL_ROUTING.get(phase, ("", "", ""))
+        # Plan B: the representative routing model may be a ${CELL} placeholder.
+        # Resolve it for display under the active (or default) cost profile so
+        # operators see the concrete model, not the placeholder token.
+        if _is_alias_placeholder(model_id):
+            profile = str(
+                getattr(cfg, "cost_profile", None) or DEFAULT_COST_PROFILE
+            )
+            alias_value = resolve_cell_alias(
+                model_id,
+                profile,
+                cli_overrides=_model_alias_overrides_dict(
+                    getattr(cfg, "model_alias_overrides", ())
+                )
+                if cfg is not None
+                else None,
+                env=os.environ,
+            )
+            if not _is_alias_placeholder(str(alias_value)):
+                provider, model_id = _parse_alias_provider_model(str(alias_value))
+                api_key_env = PROVIDER_API_KEY_ENV[provider]
         row: Dict[str, Any] = {
             "provider": provider,
             "model_id": model_id,
@@ -7368,12 +7398,30 @@ def collect_provider_routes(
     phases: List[str],
     routing_policy: str,
     selected_step_ids_by_phase: Optional[Dict[str, Sequence[str]]] = None,
+    *,
+    cost_profile: Optional[str] = None,
 ) -> Dict[str, Dict[str, str]]:
+    # Bind cost_profile so the readiness summary resolves ${CELL} placeholders
+    # under the operator's active profile (not the default) — preflight must
+    # probe the models that will actually run.
+    def _derive(
+        ph: Sequence[str],
+        rp: str,
+        *,
+        selected_step_ids_by_phase: Optional[Dict[str, Sequence[str]]] = None,
+    ) -> Dict[str, Any]:
+        return derive_route_readiness_summary(
+            ph,
+            rp,
+            selected_step_ids_by_phase=selected_step_ids_by_phase,
+            cost_profile=cost_profile,
+        )
+
     return _collect_provider_routes_impl(
         phases,
         routing_policy,
         selected_step_ids_by_phase=selected_step_ids_by_phase,
-        derive_route_readiness_summary=derive_route_readiness_summary,
+        derive_route_readiness_summary=_derive,
     )
 
 
@@ -7381,9 +7429,14 @@ def derive_route_readiness_summary(
     phases: Sequence[str],
     routing_policy: str,
     selected_step_ids_by_phase: Optional[Dict[str, Sequence[str]]] = None,
+    *,
+    cost_profile: Optional[str] = None,
 ) -> Dict[str, Any]:
+    effective_cost_profile = cost_profile or DEFAULT_COST_PROFILE
+
     def _runner_config_factory(selected_policy: str) -> RunnerConfig:
         return RunnerConfig(
+            cost_profile=effective_cost_profile,
             dry_run=True,
             max_files_docs=35,
             max_files_code=20,
@@ -7545,6 +7598,7 @@ def run_provider_preflight(
             phases=phases,
             routing_policy=cfg.routing_policy,
             selected_step_ids_by_phase=selected_step_ids_by_phase or None,
+            cost_profile=cfg.cost_profile,
         )
         provider_probes = [
             run_provider_doctor_probe(
@@ -8258,6 +8312,7 @@ def phase_requires_provider_preflight(phase: str, cfg: RunnerConfig) -> bool:
     routes = collect_provider_routes(
         phases=[normalized_phase],
         routing_policy=cfg.routing_policy,
+        cost_profile=cfg.cost_profile,
         selected_step_ids_by_phase={
             normalized_phase: selected_ids
             for phase_name in [normalized_phase]
@@ -8686,6 +8741,7 @@ def run_doctor_full(
     provider_routes = collect_provider_routes(
         phases=phases,
         routing_policy=cfg.routing_policy,
+        cost_profile=cfg.cost_profile,
     )
     provider_probes = [
         run_provider_doctor_probe(
@@ -19564,6 +19620,7 @@ def print_config(
     route_readiness_summary = derive_route_readiness_summary(
         phases,
         cfg.routing_policy,
+        cost_profile=cfg.cost_profile,
     )
     config_payload = {
         "run_id": run_id,
@@ -21767,6 +21824,7 @@ def write_confidence_ramp_artifacts(
     route_readiness = derive_route_readiness_summary(
         list(phase_sequence) if phase_sequence else [],
         cfg.routing_policy,
+        cost_profile=cfg.cost_profile,
     )
     batch_pilot = {
         "generated_at": now_iso(),

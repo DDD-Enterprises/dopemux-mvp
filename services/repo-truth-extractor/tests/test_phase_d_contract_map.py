@@ -37,7 +37,9 @@ def test_compile_phase_contract_map_includes_d0_d1_lane_and_artifacts() -> None:
     assert d0["lane"]["lane_class"] == "CE"
     assert d0["lane"]["strict_schema_required"] is True
     assert d0["lane"]["primary_routes"][0]["provider"] == "gemini"
-    assert d0["lane"]["primary_routes"][0]["model_id"] == "gemini-3.1-pro-preview"
+    # Plan B: CE primary lead is the ${CE_MODEL} placeholder (model resolved per
+    # cost profile at dispatch).
+    assert d0["lane"]["primary_routes"][0]["model_id"] == "${CE_MODEL}"
     assert d0["lane"]["sidefill_enabled"] is True
 
     d1 = steps["D:D1"]

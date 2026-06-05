@@ -111,8 +111,10 @@ def test_phase_d_provider_preflight_is_required_when_cost_routes_include_openrou
     )
     routes = runner.collect_provider_routes(["D"], cfg.routing_policy)
     assert routes
+    # Plan B: under the default value-default profile, phase D strict cells resolve
+    # to OpenAI; the only non-OpenAI route left is the hardcoded xAI bulk fallback.
+    # No openrouter on the active path → first-party preflight not required.
     assert {row["provider"] for row in routes.values()} == {
-        "gemini",
         "openai",
         "xai",
     }

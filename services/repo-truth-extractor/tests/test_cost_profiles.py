@@ -163,8 +163,7 @@ def test_resolve_cost_profile_handles_all_inputs() -> None:
 
 def test_resolve_cell_alias_resolves_from_profile_defaults() -> None:
     assert (
-        runner.resolve_cell_alias("${SYNTH_MODEL}", "quality")
-        == "openrouter/anthropic/claude-opus-4.6"
+        runner.resolve_cell_alias("${SYNTH_MODEL}", "quality") == "openai/gpt-5.5"
     )
     assert (
         runner.resolve_cell_alias("${CE_MODEL}", "value-default")
@@ -312,21 +311,18 @@ def test_ladder_runtime_filters_disabled_providers_before_attempt() -> None:
     assert result["request_meta"]["provider"] == "xai"
 
 
-def test_quality_profile_uses_opus_4_6_not_4_7() -> None:
-    """Per Phase D consensus (claude-opus-4.5 against-stance review):
-    Default to opus 4.6 to avoid the ~1.35x tokenization tax of opus 4.7.
-    Operators can swap centrally via env var or --model-alias."""
-    profile = runner.COST_PROFILES["quality"]
-    assert (
-        profile["cell_aliases"]["SYNTH_MODEL"]
-        == "openrouter/anthropic/claude-opus-4.6"
-    )
-    # And experimental profile DOES use 4.7 (opt-in for canary testing).
-    exp = runner.COST_PROFILES["experimental"]
-    assert (
-        exp["cell_aliases"]["SYNTH_MODEL"]
-        == "openrouter/anthropic/claude-opus-4.7"
-    )
+def test_strict_cells_use_openai_namespace_everywhere() -> None:
+    """Strict cells (CE/SYNTH) can only use OpenAI strict-JSON-passthrough
+    models: openai/* direct, or openrouter/openai/*. Verified for every
+    profile via the dispatch guard."""
+    for name, profile in runner.COST_PROFILES.items():
+        for cell in runner.COST_PROFILE_STRICT_CELL_KEYS:
+            value = profile["cell_aliases"][cell]
+            provider, model = runner._parse_alias_provider_model(value)
+            # Must not raise — this is exactly the dispatch-time guard.
+            runner.assert_strict_route_provider_allowed(
+                phase="X", step_id="X0", provider=provider, model_id=model
+            )
 
 
 def test_economy_profile_uses_flex_tier_by_default() -> None:
@@ -472,7 +468,15 @@ def test_strict_guard_rejects_disallowed_provider() -> None:
         runner.assert_strict_route_provider_allowed(
             phase="A", step_id="A0", provider="gemini", model_id="gemini-3-flash-preview"
         )
-    # Allowed providers do not raise.
+    # openrouter/anthropic is NOT strict-JSON capable → must raise.
+    with pytest.raises(RuntimeError):
+        runner.assert_strict_route_provider_allowed(
+            phase="A",
+            step_id="A0",
+            provider="openrouter",
+            model_id="anthropic/claude-opus-4.6",
+        )
+    # Allowed: openai/* direct, and openrouter/openai/*.
     runner.assert_strict_route_provider_allowed(
         phase="A", step_id="A0", provider="openai", model_id="gpt-5.5"
     )
@@ -480,7 +484,7 @@ def test_strict_guard_rejects_disallowed_provider() -> None:
         phase="A",
         step_id="A0",
         provider="openrouter",
-        model_id="anthropic/claude-opus-4.6",
+        model_id="openai/gpt-5.4",
     )
 
 

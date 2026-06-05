@@ -695,7 +695,7 @@ def test_run_provider_preflight_records_openrouter_specific_remediation(
     monkeypatch.setattr(
         runner,
         "collect_provider_routes",
-        lambda phases, routing_policy, selected_step_ids_by_phase=None: {
+        lambda phases, routing_policy, selected_step_ids_by_phase=None, cost_profile=None, **_kw: {
             "openrouter:openai/gpt-5.3-codex:OPENROUTER_API_KEY": {
                 "provider": "openrouter",
                 "model_id": "openai/gpt-5.3-codex",
@@ -760,7 +760,7 @@ def test_prepare_phase_provider_preflight_writes_partial_scope_file_without_cano
     monkeypatch.setattr(
         runner,
         "collect_provider_routes",
-        lambda phases, routing_policy, selected_step_ids_by_phase=None: {
+        lambda phases, routing_policy, selected_step_ids_by_phase=None, cost_profile=None, **_kw: {
             "openrouter:openai/gpt-5.3-codex:OPENROUTER_API_KEY": {
                 "provider": "openrouter",
                 "model_id": "openai/gpt-5.3-codex",
@@ -848,7 +848,7 @@ def test_prepare_phase_provider_preflight_skips_redundant_probe_when_launch_scop
     monkeypatch.setattr(
         runner,
         "collect_provider_routes",
-        lambda phases, routing_policy, selected_step_ids_by_phase=None: {
+        lambda phases, routing_policy, selected_step_ids_by_phase=None, cost_profile=None, **_kw: {
             "openrouter:openai/gpt-5.3-codex:OPENROUTER_API_KEY": {
                 "provider": "openrouter",
                 "model_id": "openai/gpt-5.3-codex",
@@ -911,7 +911,7 @@ def test_prepare_phase_provider_preflight_reprobes_stale_launch_scope_file(
     monkeypatch.setattr(
         runner,
         "collect_provider_routes",
-        lambda phases, routing_policy, selected_step_ids_by_phase=None: {
+        lambda phases, routing_policy, selected_step_ids_by_phase=None, cost_profile=None, **_kw: {
             "openrouter:openai/gpt-5.3-codex:OPENROUTER_API_KEY": {
                 "provider": "openrouter",
                 "model_id": "openai/gpt-5.3-codex",
@@ -1113,13 +1113,18 @@ def test_ensure_launch_provider_preflight_prefers_run_local_over_shared_doctor(
 def test_route_readiness_summary_distinguishes_required_fallback_and_configured(monkeypatch) -> None:
     runner = _load_runner_module()
     monkeypatch.delenv("DPMX_EXPLICIT_STEP_ROUTES", raising=False)
+    # Plan B: no cost_profile passed → resolves under the default (value-default),
+    # whose cells are all OpenAI. So the required active route is OpenAI; the
+    # hardcoded grok fallback routes show as optional_fallback; gemini shows as
+    # configured_not_required. (Provider diversity is now profile-driven — see
+    # the grok-fast/gemini-value readiness behavior, exercised elsewhere.)
     summary = runner.derive_route_readiness_summary(["A", "H", "D"], "cost")
 
-    assert "OPENAI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
-    assert "GEMINI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
-    assert "XAI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
-    assert summary["api_key_env_categories"]["optional_fallback"] == []
-    assert "OPENAI_API_KEY" in summary["api_key_env_categories"]["configured_not_required"]
+    cats = summary["api_key_env_categories"]
+    assert cats["required_active_route"] == ["OPENAI_API_KEY"]
+    assert "XAI_API_KEY" in cats["optional_fallback"]
+    assert "OPENAI_API_KEY" in cats["configured_not_required"]
+    assert "GEMINI_API_KEY" in cats["configured_not_required"]
 
     openai_required = [
         row
@@ -1130,6 +1135,18 @@ def test_route_readiness_summary_distinguishes_required_fallback_and_configured(
     assert openai_required
     assert openai_required[0]["requirement_level"] == "required_active_route"
     assert openai_required[0]["configured_not_required"] is False
+
+
+def test_route_readiness_summary_reflects_active_cost_profile() -> None:
+    runner = _load_runner_module()
+    # Plan B: under grok-fast, BULK_DOCS resolves to xAI → XAI becomes a required
+    # active route (not just a fallback). Strict cells stay on OpenAI.
+    summary = runner.derive_route_readiness_summary(
+        ["A", "H", "D"], "cost", cost_profile="grok-fast"
+    )
+    cats = summary["api_key_env_categories"]
+    assert "XAI_API_KEY" in cats["required_active_route"]
+    assert "OPENAI_API_KEY" in cats["required_active_route"]
 
 
 def test_route_readiness_summary_honors_explicit_step_routes(monkeypatch) -> None:
@@ -1180,10 +1197,14 @@ def test_print_config_includes_route_readiness_summary() -> None:
 
     assert summary["target_policy"] == "cost"
     assert summary["target_phases"] == ["A", "H", "D", "C"]
-    assert "OPENAI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
-    assert "XAI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
-    assert "GEMINI_API_KEY" in summary["api_key_env_categories"]["required_active_route"]
-    assert summary["api_key_env_categories"]["configured_not_required"] == ["OPENAI_API_KEY", "XAI_API_KEY"]
+    # Plan B: first-live uses the default value-default profile (all-OpenAI cells),
+    # so OpenAI is the only required active route; grok/gemini are fallback/configured.
+    assert summary["api_key_env_categories"]["required_active_route"] == ["OPENAI_API_KEY"]
+    assert summary["api_key_env_categories"]["configured_not_required"] == [
+        "GEMINI_API_KEY",
+        "OPENAI_API_KEY",
+        "XAI_API_KEY",
+    ]
     assert payload["effective_model_routing"]["A"]["scope"] == "representative_phase_default_not_step_authoritative"
 
 
@@ -1376,7 +1397,7 @@ def test_run_provider_preflight_emits_machine_readable_readiness_blockers(
     monkeypatch.setattr(
         runner,
         "collect_provider_routes",
-        lambda phases, routing_policy, selected_step_ids_by_phase=None: {
+        lambda phases, routing_policy, selected_step_ids_by_phase=None, cost_profile=None, **_kw: {
             "openrouter:openai/gpt-5.4:OPENROUTER_API_KEY": {
                 "provider": "openrouter",
                 "model_id": "openai/gpt-5.4",
@@ -1454,7 +1475,7 @@ def test_provider_preflight_output_omits_raw_api_key_values(
     monkeypatch.setattr(
         runner,
         "collect_provider_routes",
-        lambda phases, routing_policy, selected_step_ids_by_phase=None: {
+        lambda phases, routing_policy, selected_step_ids_by_phase=None, cost_profile=None, **_kw: {
             "openai:gpt-5.4:OPENAI_API_KEY": {
                 "provider": "openai",
                 "model_id": "gpt-5.4",
