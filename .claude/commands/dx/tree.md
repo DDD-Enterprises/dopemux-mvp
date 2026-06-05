@@ -2,7 +2,7 @@
 description: "Show task-orchestrator work-item tree — root overview or scoped subtree with child counts by role"
 arguments: "[<item-id-or-prefix>] [--limit N] [--offset N] [--include-children]"
 allowed-tools: [
-  "Bash", "Read",
+  "Bash(git rev-parse:*)", "Read",
   "mcp__task-orchestrator__query_items"
 ]
 model: "claude-sonnet-4-5"

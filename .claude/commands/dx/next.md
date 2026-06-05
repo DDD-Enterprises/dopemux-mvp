@@ -2,7 +2,7 @@
 description: "Pick the next task-orchestrator work item with ADHD-aware ranking"
 arguments: "[--tags <comma-list>] [--priority high|medium|low] [--scope <ancestor-uuid>] [--limit N]"
 allowed-tools: [
-  "Bash", "Read",
+  "Bash(git rev-parse:*)", "Read",
   "mcp__task-orchestrator__get_next_item",
   "mcp__task-orchestrator__get_context",
   "mcp__conport__get_active_context"

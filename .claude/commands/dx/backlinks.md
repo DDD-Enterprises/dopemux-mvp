@@ -2,7 +2,7 @@
 description: "Show what blocks a work-item (query_dependencies incoming) — read-only"
 arguments: "<id-or-prefix> [--type BLOCKS|IS_BLOCKED_BY|RELATES_TO]"
 allowed-tools: [
-  "Bash", "Read",
+  "Bash(git rev-parse:*)", "Read",
   "mcp__task-orchestrator__query_dependencies"
 ]
 model: "claude-sonnet-4-5"

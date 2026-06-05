@@ -61,15 +61,18 @@
   },
   "read_surface": ["backlinks", "blocked", "context", "next", "notes", "preview", "search", "tree"],
   "read_command_nonorch_allowlist": {
-    "_note": "Non-orchestrator tools a read-class command MAY declare. Fail-closed: any non-orchestrator tool in a read command that is NOT in this list is a violation — this catches a read command gaining a repo-write (Write/Edit) or a bridge/memory write (e.g. mcp__conport__log_decision), which the orchestrator-only check would otherwise miss. 'Bash' is permitted as a general read utility (read commands use it for git plumbing); the validator cannot introspect what Bash does, so this remains a trusted, documented concession (see inventory §4).",
+    "_note": "Non-orchestrator tools a read-class command MAY declare. Fail-closed: any non-orchestrator tool in a read command that is NOT permitted is a violation — this catches a read command gaining a repo-write (Write/Edit) or a bridge/memory write (e.g. mcp__conport__log_decision). Bare unscoped 'Bash' is NOT permitted in read commands (it can run mutating shell such as git commit / rm); read commands must use scoped Bash patterns 'Bash(<cmd>:*)' whose command is in bash_allowed_commands. See inventory §3/§4.",
     "tools": [
-      "Bash",
       "Read",
       "Grep",
       "Glob",
       "LS",
       "mcp__conport__get_active_context"
-    ]
+    ],
+    "bash_allowed_commands": [
+      "git rev-parse"
+    ],
+    "bash_note": "Read commands may declare scoped Bash patterns of the form 'Bash(<cmd>:*)' only for these read-only commands. 'git rev-parse' is the canonical read-only detection used by the /dx: surface: 'git rev-parse --show-toplevel' (workspace root) and 'git rev-parse --abbrev-ref HEAD' (current branch). rev-parse never mutates, so 'Bash(git rev-parse:*)' is safe under the ':*' glob. Bare 'Bash' and any other scoped command (e.g. 'Bash(git commit:*)') are rejected for read commands."
   },
   "boundary": {
     "in_scope_read_surface": "The 8 read commands above + the 7 safe_read_only tools. These may be used without mutating workflow or repo state.",
