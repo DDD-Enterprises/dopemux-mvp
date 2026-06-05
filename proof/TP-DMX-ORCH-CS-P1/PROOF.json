@@ -1,0 +1,97 @@
+{
+  "packet_id": "TP-DMX-ORCH-CS-P1",
+  "bundle_id": "TP-DMX-ORCH-CS-P1-PROOF",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "VERIFIED",
+  "created_at": "2026-06-05",
+  "series": {
+    "id": "1b633d83-82c4-4e28-abd3-d5ab73321390",
+    "name": "DMX-ORCH-CLAUDE-SURFACE",
+    "parent_tp_id": "DMX-ORCH-CLAUDE-SURFACE",
+    "orchestrator_item_id": "54d02bdb-ff90-457a-b632-e89a32cb90bd"
+  },
+  "repo_identity_check": {
+    "result": "PASS",
+    "marker_file": ".dopetaskroot",
+    "marker_present": true,
+    "remote_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "worktree_path": "/Users/hue/code/dopemux-mvp",
+    "branch": "claude/dmx-orch-cs-p1",
+    "base_branch": "main",
+    "base_sha": "59b309f27ab745a76dee2dfe7c1e6c0c2e0e36fd"
+  },
+  "commit_sha": "PENDING_POST_COMMIT",
+  "head_sha": "PENDING_POST_COMMIT",
+  "files_changed": [
+    "docs/03-reference/systems/task-orchestrator/callable-surface-inventory.md",
+    ".taskorchestrator/surface_manifest.json",
+    "scripts/validate_dx_surface.py",
+    "tests/orchestrator/test_dx_surface_manifest.py",
+    "task-packets/TP-DMX-ORCH-CS-P1.json",
+    "proof/TP-DMX-ORCH-CS-P1/PROOF.json",
+    "proof/TP-DMX-ORCH-CS-P1/pal/01_ANALYZE.md",
+    "proof/TP-DMX-ORCH-CS-P1/pal/02_PLANNER.md",
+    "proof/TP-DMX-ORCH-CS-P1/pal/03_CODEREVIEW.md",
+    "proof/TP-DMX-ORCH-CS-P1/pal/04_PRECOMMIT.md"
+  ],
+  "change_summary": "Catalogs the already-built task-orchestrator /dx: surface (no rebuild): a callable-surface inventory classifying all 14 v3 tools and 18 commands, an independent machine-readable surface manifest, and a read-only validator + pytest that enforce the read-surface boundary. Additive-only; no existing command/config/ADR edited; no live writes.",
+  "authoritative_artifacts": [
+    "docs/03-reference/systems/task-orchestrator/callable-surface-inventory.md",
+    ".taskorchestrator/surface_manifest.json",
+    "scripts/validate_dx_surface.py",
+    "tests/orchestrator/test_dx_surface_manifest.py"
+  ],
+  "safety_boundary_confirmation": {
+    "no_live_orchestrator_writes": true,
+    "no_dopetask_execution": true,
+    "no_bridge_writes": true,
+    "no_memory_context_writes": true,
+    "no_existing_command_or_config_or_adr_edited": true,
+    "validator_is_runtime_read_only": true,
+    "no_runtime_source_code_changed": true
+  },
+  "validations": [
+    { "name": "surface validator (happy path)", "command": "python3 scripts/validate_dx_surface.py", "exit_code": 0, "status": "PASS", "result": "18 commands conform (8 read / 9 write / 1 composite)" },
+    { "name": "surface validator (bite test)", "command": "inject advance_item into read command tree.md; re-run", "exit_code": 1, "status": "PASS", "result": "validator correctly FAILED (read command lists non-read tool + drift); reverted, re-run exit 0" },
+    { "name": "pytest", "command": "python3 -m pytest tests/orchestrator/test_dx_surface_manifest.py -q", "exit_code": 0, "status": "PASS", "result": "7 passed" },
+    { "name": "manifest JSON syntax", "command": "python3 -m json.tool .taskorchestrator/surface_manifest.json", "exit_code": 0, "status": "PASS" },
+    { "name": "packet JSON syntax", "command": "python3 -m json.tool task-packets/TP-DMX-ORCH-CS-P1.json", "exit_code": 0, "status": "PASS" },
+    { "name": "packet schema validation", "command": "python3 -m jsonschema -i task-packets/TP-DMX-ORCH-CS-P1.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json", "exit_code": 0, "status": "PASS" },
+    { "name": "compileall", "command": "python3 -m compileall -q scripts/validate_dx_surface.py tests/orchestrator/test_dx_surface_manifest.py", "exit_code": 0, "status": "PASS" },
+    { "name": "pre-commit", "command": "pre-commit run --files <changed>", "exit_code": 0, "status": "PASS", "result": "frontmatter auto-normalized on first run; clean on re-run" },
+    { "name": "git diff --check", "command": "git diff --check", "exit_code": 0, "status": "PASS" },
+    { "name": "full repo test suite", "command": "python3 -m pytest", "exit_code": null, "status": "NOT_RUN", "result": "out of scope for additive docs+validator packet; no runtime/source code changed" }
+  ],
+  "pal": {
+    "enabled": true,
+    "chain": ["analyze", "planner", "codereview", "precommit"],
+    "stage_artifacts": [
+      "proof/TP-DMX-ORCH-CS-P1/pal/01_ANALYZE.md",
+      "proof/TP-DMX-ORCH-CS-P1/pal/02_PLANNER.md",
+      "proof/TP-DMX-ORCH-CS-P1/pal/03_CODEREVIEW.md",
+      "proof/TP-DMX-ORCH-CS-P1/pal/04_PRECOMMIT.md"
+    ],
+    "codereview_status": "PASS",
+    "precommit_status": "VERIFIED"
+  },
+  "residual_risks": [
+    "Validator is advisory: it gates the committed /dx: command files, not live MCP calls. MetaMCP role-based filtering remains not operationalized in-repo (inverse-failure risk documented in the inventory §4).",
+    "claim_item classification (write_non_destructive) is inferred — it is in the live v3 surface but absent from the upstream v2.2.0 MCP_TOOL_MANIFEST.json.",
+    "Validator not yet wired into CI/pre-commit (deferred to a follow-up packet)."
+  ],
+  "unknowns": [
+    "Whether MetaMCP role enforcement is active in any deployed environment (env vars set but unconsumed in-repo)."
+  ],
+  "deferred_followups": [
+    "Fix dx-command-authoring.md line 72 stale claim_item note (separate doc-fix packet).",
+    "Wire validate_dx_surface.py into CI / pre-commit.",
+    "Narrow orchestrator item 54d02bdb description (post-approval manage_items update)."
+  ],
+  "schema_notes": [
+    "execution.agent enum is [gemini, codex, vibe, shell]; no 'claude' option. Used 'shell' (executed via shell tooling in an interactive session)."
+  ],
+  "pr_url": "PENDING_POST_PR",
+  "blockers": [],
+  "cleanup_status": "No temp files left in the commit; bite-test mutation reverted and confirmed clean via git status.",
+  "review_transition": "HELD pending human signoff (orchestrator item 54d02bdb is supervised-only). proof-bundle note to be filled; review advance not auto-applied."
+}
