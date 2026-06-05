@@ -1,0 +1,56 @@
+{
+  "packet_id": "TP-DCP-MCP-RO-0003",
+  "title": "Inspect Dopemux Init Registry Contract",
+  "branch": "dcp/chatgpt-mcp-ro-0003-inspect-dopemux-init-registry-co",
+  "base_sha": "59b309f27ab745a76dee2dfe7c1e6c0c2e0e36fd",
+  "head_sha": "ac2b4a99ec57ec87ca12274036c627e9a5a41946",
+  "task_class": "unknown subsystem/API-sensitive/documentation-sensitive",
+  "risk": "MEDIUM",
+  "depends_on": "TP-DCP-MCP-RO-0002 (merged via PR #826; 0003 branch reset onto merged main)",
+  "outputs": [
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/DOPEMUX_INIT_REGISTRY_DISCOVERY.md (created)",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/MULTI_PROJECT_REGISTRY_CONTRACT.md (updated \u00a72/\u00a74/\u00a75/\u00a78)"
+  ],
+  "observed_findings": {
+    "init_marker": ".dopemux/ directory \u2014 project_init.py:167, checked cli.py:770",
+    "init_entry": "cli.py:725 -> cli.py:780 init_project(); impl project_init.py:265",
+    "workspace_detection": "workspace_detection.py get_workspace_root():82, validate_workspace():222, export_workspace_env():184",
+    "identity_marker": ".repo_id (git-tracked; project/owner/intent); canonical per schemas/dcp/dcp_project_resource_map.schema.json",
+    "registries": "global ~/.dopemux/config.json (global_config.py:24/93) = opened-workspaces cache (eligibility); services/registry.yaml = services; NO list_projects CLI",
+    "markers_present": [
+      ".repo_id",
+      ".dopetaskroot",
+      ".dopemux/",
+      "dopemux.toml"
+    ],
+    "markers_absent": [
+      ".n (referenced by some task packets but not present)"
+    ]
+  },
+  "conflicts": [
+    "repo_marker fragmentation: .repo_id (task packets / DCP schema) vs .dopetaskroot (operator_workflows.py:141) vs absent .n (RTE/hygiene packets). Facade adopts .repo_id; repo-wide unification out of scope."
+  ],
+  "validation": {
+    "marker_findings_observed_with_file_line": "PASS",
+    "no_runtime_service_config_files_changed": "PASS",
+    "registry_contract_fail_closed": "PASS",
+    "unknowns_preserved": "PASS",
+    "diff_within_allowlist": "PASS",
+    "precommit_hooks_pass_local": "PASS (frontmatter, filename hygiene, markdownlint, placement)"
+  },
+  "deviations": [
+    "Discovery doc named DOPEMUX_INIT_REGISTRY_DISCOVERY.md (ALL_CAPS) vs packet's Dopemux_INIT_\u2026 spelling, for filename-hygiene-hook conformance + dir consistency.",
+    "0003 branch reset from stub commit 78b04fb33 onto merged main 59b309f27."
+  ],
+  "residual_risks": [
+    "CONFLICTING repo-marker fragmentation (.repo_id/.dopetaskroot/.n) \u2014 operator/0004 to resolve canonical marker.",
+    "UNKNOWN: whether facade asserts .repo_id intent/owner beyond project at resolve time \u2014 deferred to 0004.",
+    "Upstream drift: task packets reference non-existent .n marker \u2014 flagged, not fixed (out of scope)."
+  ],
+  "embedded_audit": "PASS_WITH_RISKS",
+  "command_log": "proof/TP-DCP-MCP-RO-0003/COMMAND_LOG.md",
+  "audit": "proof/TP-DCP-MCP-RO-0003/AUDIT.md",
+  "review_feedback_round": {
+    "P2_registry_owner_field": "FIXED \u2014 added identity{project(required),owner(optional)} to \u00a73 schema; \u00a74.5/\u00a75 owner check made conditional (only enforced when identity.owner declared) so it is always satisfiable."
+  }
+}
