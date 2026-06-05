@@ -79,7 +79,7 @@ def test_initialize_spend_tracker_writes_empty_ledger_when_routes_are_priced(
     monkeypatch.setattr(
         runner,
         "collect_provider_routes",
-        lambda phases, routing_policy, selected_step_ids_by_phase=None: {
+        lambda phases, routing_policy, selected_step_ids_by_phase=None, cost_profile=None, **_kw: {
             "openrouter:openai/gpt-5.4:OPENROUTER_API_KEY": {
                 "provider": "openrouter",
                 "model_id": "openai/gpt-5.4",
@@ -128,7 +128,7 @@ def test_initialize_spend_tracker_rejects_missing_route_pricing(
     monkeypatch.setattr(
         runner,
         "collect_provider_routes",
-        lambda phases, routing_policy, selected_step_ids_by_phase=None: {
+        lambda phases, routing_policy, selected_step_ids_by_phase=None, cost_profile=None, **_kw: {
             "openrouter:openai/gpt-5.3-codex:OPENROUTER_API_KEY": {
                 "provider": "openrouter",
                 "model_id": "openai/gpt-5.3-codex",
@@ -161,15 +161,14 @@ def test_initialize_spend_tracker_honors_selected_execution_step_for_route_cover
         "load_pricing_registry",
         lambda path=runner.PRICING_CONFIG_PATH: (
             {
+                # Plan B: A2 (BULK_DOCS_GENERAL) ladder = resolved lead (value-default
+                # BULK_DOCS_MODEL = openai/gpt-5.4-mini) + hardcoded fallback xai/grok-4.3.
+                # Coverage prices the whole ladder for the selected step only.
+                "openai/gpt-5.4-mini": {
+                    "input_cost_per_m": Decimal("0.75"),
+                    "output_cost_per_m": Decimal("4.50"),
+                },
                 "xai/grok-4.3": {
-                    "input_cost_per_m": Decimal("2.00"),
-                    "output_cost_per_m": Decimal("8.00"),
-                },
-                "xai/grok-4.20-beta-0309-reasoning": {
-                    "input_cost_per_m": Decimal("3.00"),
-                    "output_cost_per_m": Decimal("15.00"),
-                },
-                "xai/grok-4.20-beta-0309-non-reasoning": {
                     "input_cost_per_m": Decimal("2.00"),
                     "output_cost_per_m": Decimal("8.00"),
                 },

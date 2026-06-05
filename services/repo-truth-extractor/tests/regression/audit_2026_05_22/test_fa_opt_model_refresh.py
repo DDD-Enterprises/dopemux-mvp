@@ -75,14 +75,18 @@ def _model_map_routes() -> list[dict[str, Any]]:
 def test_retired_grok_code_fast_route_is_removed_from_model_map() -> None:
     model_ids = [row["model_id"] for row in _model_map_routes()]
     assert "grok-code-fast-1" not in model_ids
-    assert model_ids.count("grok-build-0.1") == 6
+    # Plan B: the 6 BULK_CODE_HEAVY primary leads that carried grok-build-0.1 are
+    # now the ${BULK_CODE_MODEL} placeholder (concrete model chosen per cost profile).
+    assert "grok-build-0.1" not in model_ids
+    assert model_ids.count("${BULK_CODE_MODEL}") == 6
 
 
-def test_grok_build_replacement_is_limited_to_code_heavy_primary_routes() -> None:
-    replacements = [
-        row for row in _model_map_routes() if row["model_id"] == "grok-build-0.1"
+def test_code_heavy_primary_leads_use_bulk_code_placeholder() -> None:
+    # Plan B: BULK_CODE_HEAVY primary leads are the profile-agnostic placeholder.
+    placeholders = [
+        row for row in _model_map_routes() if row["model_id"] == "${BULK_CODE_MODEL}"
     ]
-    assert {row["step_id"] for row in replacements} == {
+    assert {row["step_id"] for row in placeholders} == {
         "C1",
         "C5",
         "C6",
@@ -90,10 +94,9 @@ def test_grok_build_replacement_is_limited_to_code_heavy_primary_routes() -> Non
         "C10",
         "C11",
     }
-    assert {row["route_role"] for row in replacements} == {"primary"}
-    assert {row["route_index"] for row in replacements} == {0}
-    assert {row["provider"] for row in replacements} == {"xai"}
-    assert {row["lane_class"] for row in replacements} == {"BULK_CODE_HEAVY"}
+    assert {row["route_role"] for row in placeholders} == {"primary"}
+    assert {row["route_index"] for row in placeholders} == {0}
+    assert {row["lane_class"] for row in placeholders} == {"BULK_CODE_HEAVY"}
 
 
 def test_proposed_changes_are_structured_and_supported_for_implemented_routes() -> None:
@@ -133,7 +136,9 @@ def test_openai_routes_use_direct_latest_models_with_request_options() -> None:
         for row in routes
         if row["provider"] == "openai" and row["model_id"] == "gpt-5.5"
     ]
-    assert len(flex_routes) == 171
+    # Plan B: counts reflect fallback routes only (leads converted to ${CELL};
+    # 7 gpt-5.5 leads became placeholders: 171 -> 164).
+    assert len(flex_routes) == 164
     assert {row["api_key_env"] for row in flex_routes} == {"OPENAI_API_KEY"}
     assert {row["service_tier"] for row in flex_routes} == {"flex"}
     assert {row["reasoning_effort"] for row in flex_routes} == {None}
@@ -143,7 +148,8 @@ def test_openai_routes_use_direct_latest_models_with_request_options() -> None:
         for row in routes
         if row["provider"] == "openai" and row["model_id"] == "gpt-5.3-codex"
     ]
-    assert len(codex_routes) == 50
+    # Plan B: 32 CE gpt-5.3-codex leads became ${CE_MODEL} (50 -> 18).
+    assert len(codex_routes) == 18
     assert {row["api_key_env"] for row in codex_routes} == {"OPENAI_API_KEY"}
     assert {row["service_tier"] for row in codex_routes} == {None}
     assert {row["reasoning_effort"] for row in codex_routes} == {None}
@@ -178,11 +184,13 @@ def test_grok_420_aliases_use_grok_43_with_explicit_reasoning_effort() -> None:
         for row in routes
         if row["provider"] == "xai" and row["model_id"] == "grok-4.3"
     ]
-    assert len(grok_43) == 260
+    # Plan B: 30 BULK_DOCS grok-4.3 leads (reasoning_effort=low) became
+    # ${BULK_DOCS_MODEL} (260 -> 230; low 121 -> 91; none unchanged at 139).
+    assert len(grok_43) == 230
     assert {
         effort: len([row for row in grok_43 if row["reasoning_effort"] == effort])
         for effort in {"low", "none"}
-    } == {"low": 121, "none": 139}
+    } == {"low": 91, "none": 139}
 
 
 def test_grok_4_3_none_routes_preserve_reasoning_effort_none() -> None:

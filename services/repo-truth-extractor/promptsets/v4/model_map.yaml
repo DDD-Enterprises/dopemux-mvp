@@ -12,7 +12,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -44,7 +44,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -76,11 +76,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -109,11 +108,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -142,11 +140,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -175,11 +172,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -208,11 +204,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -241,11 +236,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -274,11 +268,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -307,11 +300,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -340,11 +332,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -373,7 +364,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -405,7 +396,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -437,7 +428,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -469,11 +460,10 @@ steps:
   repair_mode: envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.5
+    model_id: ${SYNTH_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
-    service_tier: flex
   repair_routes:
   - provider: openai
     model_id: gpt-5.5
@@ -496,7 +486,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -528,11 +518,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -561,11 +550,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -594,11 +582,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -627,11 +614,10 @@ steps:
   repair_mode: envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.5
+    model_id: ${SYNTH_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
-    service_tier: flex
   repair_routes:
   - provider: openai
     model_id: gpt-5.5
@@ -654,7 +640,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -686,7 +672,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-build-0.1
+    model_id: ${BULK_CODE_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -718,7 +704,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -750,7 +736,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -782,7 +768,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -814,7 +800,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-build-0.1
+    model_id: ${BULK_CODE_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -846,7 +832,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-build-0.1
+    model_id: ${BULK_CODE_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -878,7 +864,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-build-0.1
+    model_id: ${BULK_CODE_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -910,7 +896,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -942,11 +928,10 @@ steps:
   repair_mode: envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.5
+    model_id: ${SYNTH_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
-    service_tier: flex
   repair_routes:
   - provider: openai
     model_id: gpt-5.5
@@ -969,7 +954,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-build-0.1
+    model_id: ${BULK_CODE_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -1001,7 +986,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-build-0.1
+    model_id: ${BULK_CODE_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -1033,7 +1018,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -1065,7 +1050,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -1097,7 +1082,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -1129,7 +1114,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -1161,7 +1146,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: gemini
-    model_id: gemini-3.1-pro-preview
+    model_id: ${CE_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -1198,7 +1183,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: gemini
-    model_id: gemini-3.1-pro-preview
+    model_id: ${CE_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -1235,7 +1220,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -1267,7 +1252,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -1299,7 +1284,7 @@ steps:
   repair_mode: envelope
   primary_routes:
   - provider: gemini
-    model_id: gemini-3.1-pro-preview
+    model_id: ${SYNTH_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -1336,7 +1321,7 @@ steps:
   repair_mode: envelope
   primary_routes:
   - provider: gemini
-    model_id: gemini-3.1-pro-preview
+    model_id: ${SYNTH_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -1373,7 +1358,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -1405,11 +1390,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -1438,11 +1422,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -1471,11 +1454,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -1504,11 +1486,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -1537,11 +1518,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -1570,11 +1550,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -1603,11 +1582,10 @@ steps:
   repair_mode: envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.5
+    model_id: ${SYNTH_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
-    service_tier: flex
   repair_routes:
   - provider: openai
     model_id: gpt-5.5
@@ -1630,7 +1608,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -1662,7 +1640,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -1694,11 +1672,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -1727,11 +1704,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -1760,11 +1736,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -1793,7 +1768,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -1825,7 +1800,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -1857,7 +1832,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -1889,11 +1864,10 @@ steps:
   repair_mode: envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.5
+    model_id: ${SYNTH_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
-    service_tier: flex
   repair_routes:
   - provider: openai
     model_id: gpt-5.5
@@ -1916,7 +1890,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -1948,7 +1922,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -1980,11 +1954,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -2013,7 +1986,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -2045,11 +2018,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -2078,11 +2050,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -2111,11 +2082,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -2144,11 +2114,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -2177,11 +2146,10 @@ steps:
   repair_mode: envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.5
+    model_id: ${SYNTH_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
-    service_tier: flex
   repair_routes:
   - provider: openai
     model_id: gpt-5.5
@@ -2204,7 +2172,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2235,7 +2203,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2266,7 +2234,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2297,7 +2265,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2328,7 +2296,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2359,7 +2327,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2390,7 +2358,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2421,7 +2389,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: gemini
-    model_id: gemini-3.1-pro-preview
+    model_id: ${CE_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2458,7 +2426,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2490,7 +2458,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2522,7 +2490,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2554,7 +2522,7 @@ steps:
   repair_mode: envelope
   primary_routes:
   - provider: gemini
-    model_id: gemini-3.1-pro-preview
+    model_id: ${SYNTH_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2591,7 +2559,7 @@ steps:
   repair_mode: envelope
   primary_routes:
   - provider: gemini
-    model_id: gemini-3.1-pro-preview
+    model_id: ${SYNTH_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2628,7 +2596,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: gemini
-    model_id: gemini-3.1-pro-preview
+    model_id: ${CE_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2665,7 +2633,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: gemini
-    model_id: gemini-3.1-pro-preview
+    model_id: ${CE_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2702,7 +2670,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: gemini
-    model_id: gemini-3.1-pro-preview
+    model_id: ${CE_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2739,7 +2707,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2771,7 +2739,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: gemini
-    model_id: gemini-3.1-pro-preview
+    model_id: ${CE_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2808,7 +2776,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2840,7 +2808,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2872,7 +2840,7 @@ steps:
   repair_mode: envelope
   primary_routes:
   - provider: gemini
-    model_id: gemini-3.1-pro-preview
+    model_id: ${SYNTH_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -2909,7 +2877,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -2941,7 +2909,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -2973,11 +2941,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -3006,11 +2973,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -3039,11 +3005,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -3072,11 +3037,10 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: xai
-    model_id: grok-4.3
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
-    reasoning_effort: low
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -3105,11 +3069,10 @@ steps:
   repair_mode: envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.5
+    model_id: ${SYNTH_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
-    service_tier: flex
   repair_routes:
   - provider: openai
     model_id: gpt-5.5
@@ -3132,7 +3095,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: gemini
-    model_id: gemini-3.1-pro-preview
+    model_id: ${CE_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -3169,7 +3132,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: gemini
-    model_id: gemini-3.1-pro-preview
+    model_id: ${CE_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -3206,7 +3169,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -3238,7 +3201,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -3270,7 +3233,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -3302,7 +3265,7 @@ steps:
   repair_mode: envelope
   primary_routes:
   - provider: gemini
-    model_id: gemini-3.1-pro-preview
+    model_id: ${SYNTH_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -3339,7 +3302,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: gemini
-    model_id: gemini-3.1-pro-preview
+    model_id: ${CE_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -3376,7 +3339,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -3408,7 +3371,7 @@ steps:
   repair_mode: envelope
   primary_routes:
   - provider: gemini
-    model_id: gemini-3.1-pro-preview
+    model_id: ${SYNTH_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -3445,7 +3408,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -3477,7 +3440,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -3509,7 +3472,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -3541,7 +3504,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -3573,7 +3536,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -3605,7 +3568,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -3637,7 +3600,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -3669,7 +3632,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -3701,7 +3664,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -3733,7 +3696,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -3765,7 +3728,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -3797,7 +3760,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -3829,7 +3792,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -3861,7 +3824,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -3893,7 +3856,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -3925,7 +3888,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -3957,7 +3920,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -3989,7 +3952,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -4021,7 +3984,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -4053,7 +4016,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -4085,7 +4048,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -4117,7 +4080,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -4149,7 +4112,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -4181,7 +4144,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -4213,7 +4176,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -4245,7 +4208,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -4277,7 +4240,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -4309,7 +4272,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -4341,7 +4304,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -4373,7 +4336,7 @@ steps:
   repair_mode: targeted_then_envelope
   primary_routes:
   - provider: gemini
-    model_id: gemini-3.1-pro-preview
+    model_id: ${CE_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
@@ -4410,7 +4373,7 @@ steps:
   repair_mode: targeted_only
   primary_routes:
   - provider: gemini
-    model_id: gemini-3-flash-preview
+    model_id: ${BULK_DOCS_MODEL}
     api_key_env: GEMINI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
