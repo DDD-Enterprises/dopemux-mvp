@@ -169,6 +169,8 @@ class RedLaneScanner:
                             continue
                             
                         # Stale proof check
+                        # Post-merge reconciliation artifacts are governance records only unless scanner logic explicitly consumes them.
+                        # This scanner still treats mismatched proof head SHA as stale proof.
                         proof_head = data.get("head_sha")
                         if expected_head_sha and proof_head and proof_head != expected_head_sha:
                             findings.append(Finding(

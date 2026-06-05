@@ -1,0 +1,138 @@
+{
+  "id": "TP-DCP-MCP-RO-0003",
+  "project": "dopemux-mvp",
+  "target": "Inspect actual dopemux init/workspace identity behavior and formalize the project registry validation contract without implementing the facade.",
+  "invariants": [
+    "Marker contract must be OBSERVED or UNKNOWN.",
+    "Eligibility does not equal exposure.",
+    "Registry remains explicit operator approval.",
+    "No arbitrary path acceptance.",
+    "Symlink escape must remain blocked.",
+    "OUT OF SCOPE: No changes to dopemux init behavior.",
+    "OUT OF SCOPE: No facade implementation.",
+    "OUT OF SCOPE: No auto-registering projects.",
+    "OUT OF SCOPE: No writes to .dopemux metadata.",
+    "OUT OF SCOPE: No service startup.",
+    "STOP IF: No init/workspace identity code can be found.",
+    "STOP IF: Multiple conflicting marker contracts require supervisor decision.",
+    "STOP IF: Any validation would require mutating a workspace.",
+    "STOP IF: Generated docs would need to reveal local secrets or private paths.",
+    "FORBIDDEN FILE: src/** except read-only inspection",
+    "FORBIDDEN FILE: services/**",
+    "FORBIDDEN FILE: .dopemux/**",
+    "FORBIDDEN FILE: compose*.yml",
+    "FORBIDDEN FILE: docker/**"
+  ],
+  "depends_on": [
+    "TP-DCP-MCP-RO-0002"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "origin_hint": "github.com/DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DCP-MCP-RO",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DCP-MCP-RO-0002",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "dcp/chatgpt-mcp-ro-0003-inspect-dopemux-init-registry-co",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(dcp): formalize dopemux init registry contract",
+    "allowlist": [
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/Dopemux_INIT_REGISTRY_DISCOVERY.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/MULTI_PROJECT_REGISTRY_CONTRACT.md",
+      "proof/TP-DCP-MCP-RO-0003/**"
+    ],
+    "verify": [
+      "rg -n \"\\.dopemux|dopemux.toml|workspace|init\" README.md PROJECT.md ARCHITECTURE.md AGENTS.md docs/03-reference -S || true",
+      "git diff --stat",
+      "git diff -- docs/03-reference/dcp/chatgpt-mcp-readonly proof/TP-DCP-MCP-RO-0003",
+      "git status --short --branch"
+    ]
+  },
+  "pr": {
+    "title": "Dopemux init registry discovery for readonly MCP facade",
+    "body": "Inspect actual dopemux init/workspace identity behavior and formalize the project registry validation contract without implementing the facade.\n\nRequired PR sections: Objective, Scope, Evidence, Validation, Embedded audit, Risks and unknowns, Rollback, Proof bundle links",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Implement per objective: Inspect actual dopemux init/workspace identity behavior and formalize the project registry validation contract without implementing the facade. In-scope work: Static inspection of dopemux init, workspace validation, project/workspace config, and .dopemux marker usage. Document observed init markers and unknowns. Refine MULTI_PROJECT_REGISTRY_CONTRACT.md based on evidence. Add DOPMUX_INIT_REGISTRY_DISCOVERY.md.",
+      "requirements": [
+        "Static inspection of dopemux init, workspace validation, project/workspace config, and .dopemux marker usage.",
+        "Document observed init markers and unknowns.",
+        "Refine MULTI_PROJECT_REGISTRY_CONTRACT.md based on evidence.",
+        "Add DOPMUX_INIT_REGISTRY_DISCOVERY.md."
+      ],
+      "expected_files": [
+        "Dopemux_INIT_REGISTRY_DISCOVERY.md",
+        "Updated MULTI_PROJECT_REGISTRY_CONTRACT.md",
+        "Proof bundle for packet 0003"
+      ],
+      "context_files": [
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/READ_ONLY_SURFACE_INVENTORY.json",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/ARCHITECTURE.md",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md"
+      ],
+      "validation": [
+        "No files outside commit.allowlist are modified; change matches the stated scope."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Run the packet validation commands and inspect the diff.",
+      "commands": [
+        "pwd",
+        "git rev-parse --show-toplevel",
+        "git remote -v",
+        "git branch --show-current",
+        "git rev-parse HEAD",
+        "git status --short --branch",
+        "rg -n \"dopemux init|def init|@.*init|workspace_id|workspace_root|repo_root|\\.dopemux|project_id|repo_marker|validate.*workspace|resolve.*workspace|projects list|list_projects|registry\" src services docs tests pyproject.toml",
+        "rg -n \"\\.dopemux|dopemux.toml|workspace|init\" README.md PROJECT.md ARCHITECTURE.md AGENTS.md docs/03-reference -S || true",
+        "git diff --stat",
+        "git diff -- docs/03-reference/dcp/chatgpt-mcp-readonly proof/TP-DCP-MCP-RO-0003",
+        "git status --short --branch"
+      ],
+      "validation": [
+        "Observed init markers are documented with exact paths and code references, or marked UNKNOWN.",
+        "Registry contract no longer depends on invented marker assumptions.",
+        "No runtime files changed.",
+        "Multi-project resolver algorithm is explicit and fail-closed.",
+        "Diff stays within allowlist."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Produce the proof bundle under proof/TP-DCP-MCP-RO-0003/ (PROOF.json, COMMAND_LOG.md, AUDIT.md) and run the embedded audit.",
+      "requirements": [
+        "PROOF.json.",
+        "COMMAND_LOG.md.",
+        "AUDIT.md challenging init marker findings and project registry assumptions.",
+        "Command outputs for rg scans.",
+        "Diff and diff stat."
+      ],
+      "validation": [
+        "Proof bundle present with command outputs and exit codes.",
+        "Embedded audit verdict recorded (PASS or PASS_WITH_RISKS with non-blocking risks)."
+      ]
+    }
+  ]
+}

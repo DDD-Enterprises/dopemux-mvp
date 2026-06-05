@@ -110,6 +110,13 @@ A packet is superseded by another packet
 | TP-BETA-CLI-01-DECISIONS-REVIEW-001 | CLI Decisions | Repair PR #740 review blockers for decisions CLI subcommands | Active | N/A |
 | TP-DMX-ADHD-INTERACTIVE-PROMPTS-001 | ADHD UX | Wire interactive prompts into launch and profile flows | Active | N/A |
 | TP-DMX-ORCH-AUDIT-FIX-001 | Task Orchestrator | Close DMX-ORCH integration audit gaps | Active | N/A |
+| TP-DCP-MCP-RO-0002 | DCP / MCP | Architecture Doc And Multi Project Contract | Active | N/A |
+| TP-DCP-MCP-RO-0003 | DCP / MCP | Inspect Dopemux Init Registry Contract | Active | N/A |
+| TP-DCP-MCP-RO-0004 | DCP / MCP | Facade Scaffold Registry Resolver Repo Proof Tools | Active | N/A |
+| TP-DCP-MCP-RO-0005 | DCP / MCP | ConPort And Dope Memory Read Adapters | Active | N/A |
+| TP-DCP-MCP-RO-0006 | DCP / MCP | Dope Context And Task Orchestrator Read Adapters | Active | N/A |
+| TP-DCP-MCP-RO-0007 | DCP / MCP | Secure MCP Tunnel Integration Docs And Manual Validation | Active | N/A |
+| TP-DCP-MCP-RO-0008 | DCP / MCP | Hardening Cross Project Isolation And PR Readiness | Active | N/A |
 
 ────────────────────────────────────────────────────────────
 🟢 Completed Task Packets
