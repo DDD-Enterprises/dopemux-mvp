@@ -94,5 +94,22 @@
   "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/829",
   "blockers": [],
   "cleanup_status": "No temp files left in the commit; bite-test mutation reverted and confirmed clean via git status.",
-  "review_transition": "HELD pending human signoff (orchestrator item 54d02bdb is supervised-only). proof-bundle note to be filled; review advance not auto-applied."
+  "review_transition": "HELD pending human signoff (orchestrator item 54d02bdb is supervised-only). proof-bundle note to be filled; review advance not auto-applied.",
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "skip_reason": "Catalog-only packet (docs + manifest + validator/test); no runtime source code changed. Validator + pytest are the audit (exercise the catalog against the committed surface).",
+    "auditor_model": "unknown",
+    "auditor_tool": "none",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-ORCH-CS-P1/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Validator is advisory (gates committed /dx: files, not live MCP calls).",
+      "MetaMCP role-filtering not operationalized in-repo (inverse-failure risk).",
+      "Validator not yet wired into CI/pre-commit."
+    ]
+  }
 }
