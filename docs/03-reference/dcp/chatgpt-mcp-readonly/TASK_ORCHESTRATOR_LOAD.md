@@ -1,3 +1,15 @@
+---
+id: TASK_ORCHESTRATOR_LOAD
+title: Task Orchestrator Load
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-05'
+last_review: '2026-06-05'
+next_review: '2026-09-03'
+prelude: Task Orchestrator Load (reference) for dopemux documentation and developer
+  workflows.
+---
 # Task Orchestrator Load Sheet — DCP MCP Read-Only Facade
 
 ## Epic
