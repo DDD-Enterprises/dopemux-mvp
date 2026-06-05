@@ -4,7 +4,7 @@
   "branch": "dcp/chatgpt-mcp-ro-0005-conport-and-dope-memory-read-ada",
   "base_branch": "main",
   "base_sha": "876d0c624 (PR #830 / 0004 merge)",
-  "head_sha": "PENDING_POST_COMMIT_SYNC",
+  "head_sha": "064e5553972feb92cfac542468e197b2d3d8c7f0",
   "task_class": "implementation/security-sensitive/API-sensitive",
   "risk": "HIGH",
   "depends_on": "TP-DCP-MCP-RO-0004 (merged via PR #830)",

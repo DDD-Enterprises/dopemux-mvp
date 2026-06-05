@@ -65,3 +65,12 @@ services/dcp-readonly-facade/tests/test_route_denylist.py
  .../tests/test_live_optional.py                    |  40 +++++
  .../tests/test_route_denylist.py                   |  40 +++++
  17 files changed, 1113 insertions(+), 2 deletions(-)
+
+## Final post-commit snapshot — review round (clean)
+### $ git rev-parse HEAD
+064e5553972feb92cfac542468e197b2d3d8c7f0
+### $ git status --short --branch
+## dcp/chatgpt-mcp-ro-0005-conport-and-dope-memory-read-ada...origin/dcp/chatgpt-mcp-ro-0005-conport-and-dope-memory-read-ada [ahead 1]
+ M proof/TP-DCP-MCP-RO-0005/COMMAND_LOG.md
+### $ pytest
+83 passed, 1 skipped
