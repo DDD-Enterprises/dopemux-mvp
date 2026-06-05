@@ -102,13 +102,19 @@ out of the read-surface.
 
 The boundary covers **both** the orchestrator tools and the non-orchestrator permissions a read
 command declares. A read command's `allowed-tools` may only carry the non-orchestrator entries
-in the manifest's `read_command_nonorch_allowlist` (read helpers — `Read`/`Grep`/`Glob`/`LS`,
-plus `Bash` as a trusted utility, plus explicitly read-only MCP tools such as
-`mcp__conport__get_active_context`). The allowlist is **fail-closed**: any non-orchestrator tool
-not on it — a repo write (`Write`/`Edit`) or a bridge/memory write
-(`mcp__conport__log_decision`) — is a violation. `Bash` is the one capability concession: the
-validator cannot introspect what a `Bash` invocation does, so its read-only use in read commands
-is trusted (see §4).
+permitted by the manifest's `read_command_nonorch_allowlist` (read helpers — `Read`/`Grep`/
+`Glob`/`LS` — plus explicitly read-only MCP tools such as `mcp__conport__get_active_context`).
+The allowlist is **fail-closed**: any non-orchestrator tool not permitted — a repo write
+(`Write`/`Edit`) or a bridge/memory write (`mcp__conport__log_decision`) — is a violation.
+
+**Bash is scoped, not bare.** Bare unscoped `Bash` is **rejected** in read commands, because it
+can run mutating shell (`git commit`, `rm`, `touch`). Read commands must instead declare a
+**scoped** pattern `Bash(<cmd>:*)` whose command is in the manifest's `bash_allowed_commands`.
+Only `git rev-parse` is allowlisted today — the canonical read-only detection used by the surface
+(`git rev-parse --show-toplevel` for the workspace root, `git rev-parse --abbrev-ref HEAD` for the
+current branch); `rev-parse` never mutates, so `Bash(git rev-parse:*)` is safe even under the
+`:*` glob. A scoped-but-mutating command such as `Bash(git commit:*)` is rejected. (The 8 read
+commands now declare `Bash(git rev-parse:*)`.)
 
 ## 4. Provenance & skew notes
 

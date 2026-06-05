@@ -17,10 +17,12 @@ Failure conditions (each -> non-zero exit):
   (d) A command file exists with no manifest entry (uncatalogued surface).
   (e) The manifest references a command with no corresponding file (stale manifest).
   (f) Internal manifest inconsistency (read_surface != commands with surface_class=read).
-  (g) A `read`-class command lists a NON-orchestrator tool that is not in the manifest's
-      read_command_nonorch_allowlist (fail-closed: catches a read command gaining a repo
-      write such as Write/Edit or a bridge/memory write such as mcp__conport__log_decision,
-      which the orchestrator-only check in (a) would otherwise miss).
+  (g) A `read`-class command lists a NON-orchestrator tool that is not permitted by the
+      manifest's read_command_nonorch_allowlist (fail-closed: catches a read command gaining a
+      repo write such as Write/Edit or a bridge/memory write such as mcp__conport__log_decision,
+      which the orchestrator-only check in (a) would otherwise miss). Bash handling: bare
+      unscoped `Bash` is rejected (it can run mutating shell, e.g. `git commit`/`rm`); a scoped
+      `Bash(<cmd>:*)` is allowed only when `<cmd>` is in bash_allowed_commands (read-only ops).
 
 Usage:
   python scripts/validate_dx_surface.py            # validate; print PASS/FAIL summary
@@ -87,6 +89,29 @@ def nonorch_tools(tools: list[str]) -> set[str]:
     return {t for t in tools if not t.startswith(ORCH_PREFIX)}
 
 
+def read_command_nonorch_violation(
+    tool: str, allowlist: set[str], bash_allowed_commands: list[str]
+) -> str | None:
+    """Return a violation reason if `tool` is disallowed in a read command, else None.
+
+    - A plain allowlisted tool (Read/Grep/… or an explicitly read-only MCP tool) is fine.
+    - Bare unscoped `Bash` is rejected: it can run mutating shell (git commit / rm / touch).
+    - A scoped `Bash(<cmd>:*)` is allowed only when `<cmd>` is in bash_allowed_commands
+      (read-only operations). The command segment is the text before the first ':'.
+    """
+    if tool in allowlist:
+        return None
+    if tool == "Bash":
+        return "bare unscoped 'Bash' (can run mutating shell); use a scoped read-only Bash pattern"
+    if tool.startswith("Bash(") and tool.endswith(")"):
+        inner = tool[len("Bash("):-1]
+        cmd = inner.split(":", 1)[0].strip()
+        if cmd in bash_allowed_commands:
+            return None
+        return f"scoped Bash command not in read-only allowlist: {cmd!r}"
+    return "not in read-command non-orchestrator allowlist"
+
+
 def run_validation(root: Path) -> tuple[list[str], list[str]]:
     """Core check. Returns (failures, per-command report lines). Pure: no exit, no print.
 
@@ -98,9 +123,9 @@ def run_validation(root: Path) -> tuple[list[str], list[str]]:
     read_only_tools: set[str] = set(manifest.get("read_only_tools", []))
     commands: dict = manifest.get("commands", {})
     declared_read_surface: set[str] = set(manifest.get("read_surface", []))
-    nonorch_allowlist: set[str] = set(
-        manifest.get("read_command_nonorch_allowlist", {}).get("tools", [])
-    )
+    nonorch_cfg: dict = manifest.get("read_command_nonorch_allowlist", {})
+    nonorch_allowlist: set[str] = set(nonorch_cfg.get("tools", []))
+    bash_allowed_commands: list[str] = list(nonorch_cfg.get("bash_allowed_commands", []))
 
     cmd_dir = root / ".claude" / "commands" / "dx"
     if not cmd_dir.is_dir():
@@ -151,12 +176,15 @@ def run_validation(root: Path) -> tuple[list[str], list[str]]:
             if non_read:
                 problems.append(f"read command lists non-read orchestrator tool(s): {sorted(non_read)}")
 
-            # (g) read command's non-orchestrator tools must be in the fail-closed allowlist
-            disallowed = {t for t in nonorch_tools(all_tools) if t not in nonorch_allowlist}
-            if disallowed:
-                problems.append(
-                    f"read command lists non-orchestrator tool(s) outside the read allowlist: {sorted(disallowed)}"
-                )
+            # (g) read command's non-orchestrator tools must each be permitted (fail-closed)
+            bad = {
+                t: reason
+                for t in nonorch_tools(all_tools)
+                if (reason := read_command_nonorch_violation(t, nonorch_allowlist, bash_allowed_commands))
+            }
+            if bad:
+                detail = "; ".join(f"{t} ({r})" for t, r in sorted(bad.items()))
+                problems.append(f"read command lists disallowed non-orchestrator tool(s): {detail}")
 
         if problems:
             failures.extend(f"{name}: {p}" for p in problems)

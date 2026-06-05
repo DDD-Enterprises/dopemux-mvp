@@ -2,7 +2,7 @@
 description: "Preview a work-item's next legal transition (get_next_status) — read-only"
 arguments: "<id-or-prefix>"
 allowed-tools: [
-  "Bash", "Read",
+  "Bash(git rev-parse:*)", "Read",
   "mcp__task-orchestrator__get_next_status"
 ]
 model: "claude-sonnet-4-5"

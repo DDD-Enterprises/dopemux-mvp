@@ -2,7 +2,7 @@
 description: "Search work-items by text + filters; optionally list notes for matched items"
 arguments: "<query> [--tags csv] [--role queue|work|review|blocked|terminal] [--priority high|medium|low] [--limit N] [--offset N] [--with-notes]"
 allowed-tools: [
-  "Bash", "Read",
+  "Bash(git rev-parse:*)", "Read",
   "mcp__task-orchestrator__query_items",
   "mcp__task-orchestrator__query_notes"
 ]
