@@ -1,0 +1,72 @@
+{
+  "_meta": {
+    "id": "task-orchestrator-surface-manifest",
+    "packet": "TP-DMX-ORCH-CS-P1",
+    "title": "Task-Orchestrator Claude-facing surface manifest (read-boundary authority)",
+    "generated": "2026-06-05",
+    "orchestrator_version": "v3 (14 tools, live deployed surface)",
+    "source_of_truth": "live task-orchestrator MCP surface; tool read/write/destructive annotations cross-referenced to reports/task-orchestratorrepo-truth-pack/MCP_TOOL_MANIFEST.json (upstream v2.2.0 / 13 tools)",
+    "authority_note": "Hand-authored independent contract. scripts/validate_dx_surface.py checks that .claude/commands/dx/*.md conform to THIS file. The manifest is NOT generated from command frontmatter — that is deliberate, so drift in a command is detectable against an independent authority.",
+    "companion_doc": "docs/03-reference/systems/task-orchestrator/callable-surface-inventory.md"
+  },
+  "classifications": {
+    "safe_read_only": "Idempotent read; never mutates workflow/repo state. The P1 read-surface is exactly these.",
+    "write_non_destructive": "Mutates state but does not delete/cascade-terminate existing data.",
+    "write_destructive": "Can delete data or cascade-terminate items (destructiveHint=true)."
+  },
+  "tools": {
+    "query_items": { "classification": "safe_read_only", "operations": ["get", "search", "overview"] },
+    "query_notes": { "classification": "safe_read_only", "operations": ["get", "list", "search"] },
+    "query_dependencies": { "classification": "safe_read_only", "operations": ["query"] },
+    "get_context": { "classification": "safe_read_only", "operations": ["item", "session", "health"] },
+    "get_next_status": { "classification": "safe_read_only", "operations": ["check"] },
+    "get_next_item": { "classification": "safe_read_only", "operations": ["recommend"] },
+    "get_blocked_items": { "classification": "safe_read_only", "operations": ["list"] },
+    "advance_item": { "classification": "write_non_destructive", "operations": ["advance"] },
+    "create_work_tree": { "classification": "write_non_destructive", "operations": ["create"] },
+    "claim_item": { "classification": "write_non_destructive", "operations": ["claim"], "note": "Present in the live v3 surface; wrapped by no /dx: command. Absent from the upstream v2.2.0 manifest — classification inferred (sets a claim; non-destructive)." },
+    "manage_items": { "classification": "write_destructive", "operations": ["create", "update", "delete"], "note": "create/update non-destructive; delete destructive. destructiveHint=true." },
+    "manage_notes": { "classification": "write_destructive", "operations": ["upsert", "delete"], "note": "upsert non-destructive; delete destructive. destructiveHint=true." },
+    "manage_dependencies": { "classification": "write_destructive", "operations": ["create", "delete"], "note": "create non-destructive; delete destructive. destructiveHint=true." },
+    "complete_tree": { "classification": "write_destructive", "operations": ["complete", "cancel"], "note": "Cascade-terminates a subtree. destructiveHint=true." }
+  },
+  "read_only_tools": [
+    "query_items",
+    "query_notes",
+    "query_dependencies",
+    "get_context",
+    "get_next_status",
+    "get_next_item",
+    "get_blocked_items"
+  ],
+  "commands": {
+    "backlinks":     { "surface_class": "read",      "orchestrator_tools": ["query_dependencies"] },
+    "blocked":       { "surface_class": "read",      "orchestrator_tools": ["get_blocked_items"] },
+    "context":       { "surface_class": "read",      "orchestrator_tools": ["get_context", "query_notes"] },
+    "next":          { "surface_class": "read",      "orchestrator_tools": ["get_next_item", "get_context"] },
+    "notes":         { "surface_class": "read",      "orchestrator_tools": ["query_notes"] },
+    "preview":       { "surface_class": "read",      "orchestrator_tools": ["get_next_status"] },
+    "search":        { "surface_class": "read",      "orchestrator_tools": ["query_items", "query_notes"] },
+    "tree":          { "surface_class": "read",      "orchestrator_tools": ["query_items"] },
+    "block":         { "surface_class": "write",     "orchestrator_tools": ["get_context", "advance_item"] },
+    "cancel":        { "surface_class": "write",     "orchestrator_tools": ["get_context", "advance_item"] },
+    "complete":      { "surface_class": "write",     "orchestrator_tools": ["get_context", "advance_item"] },
+    "complete-tree": { "surface_class": "write",     "orchestrator_tools": ["query_items", "complete_tree", "advance_item"] },
+    "depends":       { "surface_class": "write",     "orchestrator_tools": ["query_dependencies", "manage_dependencies"] },
+    "note":          { "surface_class": "write",     "orchestrator_tools": ["get_context", "manage_notes", "query_notes"] },
+    "resume":        { "surface_class": "write",     "orchestrator_tools": ["get_context", "advance_item"] },
+    "start":         { "surface_class": "write",     "orchestrator_tools": ["get_context", "advance_item"] },
+    "reopen":        { "surface_class": "write",     "orchestrator_tools": ["get_context"], "note": "Write by intent (reopen a terminal item) but currently wired read-only: the reopen transition was not wrappable at authoring time, so the command only calls get_context today. Classified non-read to keep it out of the read-surface." },
+    "implement":     { "surface_class": "composite", "orchestrator_tools": [], "note": "Composite ADHD session command; calls ConPort/Serena/PAL tools, not the task-orchestrator surface. Uses legacy tool aliases (mcp__zen__*, mcp__serena__*) — an existing inconsistency, out of scope for this catalog packet." }
+  },
+  "read_surface": ["backlinks", "blocked", "context", "next", "notes", "preview", "search", "tree"],
+  "boundary": {
+    "in_scope_read_surface": "The 8 read commands above + the 7 safe_read_only tools. These may be used without mutating workflow or repo state.",
+    "out_of_scope": [
+      "no live task-orchestrator writes (manage_*, advance_item, claim_item, create_work_tree, complete_tree)",
+      "no Dopetask execution",
+      "no bridge writes (dopecon-bridge / ConPort writes)",
+      "no memory/context writes (dope-memory)"
+    ]
+  }
+}
