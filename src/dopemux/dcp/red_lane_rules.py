@@ -1,0 +1,120 @@
+import re
+from typing import List, Pattern
+from dataclasses import dataclass
+
+@dataclass
+class Rule:
+    rule_id: str
+    category: str
+    severity: str
+    description: str
+    patterns: List[Pattern]
+    path_scope: str = ".*"
+    recommended_action: str = ""
+
+FORBIDDEN_PATHS = [
+    re.compile(r"^src/dopemux" + r"_pr_merge_specialist/queue" + r"_drain\.py$"),
+    re.compile(r"^dopemux" + r"_pr_merge_specialist/queue" + r"_drain\.py$"),
+    re.compile(r"^scripts/batch" + r"_resolve_and_merge\.py$"),
+    re.compile(r"^\.github/workflows/.*$"),
+    re.compile(r"^scripts/" + r"dopetask$"),
+    re.compile(r"^scripts/" + r"taskx$"),
+    re.compile(r"^services/task-orchestrator/.*$"),
+    re.compile(r"^services/dopecon-bridge/.*$"),
+    re.compile(r"^services/dope-context/.*$"),
+    re.compile(r"^services/working-memory-assistant/.*$"),
+    re.compile(r"^docker/mcp-servers-source/conport/.*$"),
+    re.compile(r"^src/conport/.*$")
+]
+
+TEXT_RULES = [
+    Rule(
+        rule_id="MERGE_SEAM_001",
+        category="MERGE_SEAM_VIOLATION",
+        severity="BLOCKER",
+        description="Forbidden merge-seam import or call",
+        patterns=[
+            re.compile(r"queue" + r"_drain"),
+            re.compile(r"batch" + r"_resolve_and_merge"),
+            re.compile(r"dopemux" + r"_pr_merge_specialist"),
+            re.compile(r"gh pr " + r"merge"),
+            re.compile(r"gh " + r"api"),
+            re.compile(r"gh pr " + r"review"),
+            re.compile(r"gh pr " + r"comment"),
+            re.compile(r"gh pr " + r"edit")
+        ],
+        recommended_action="Remove merge-seam invocation. DCP Core must not orchestrate PR logic."
+    ),
+    Rule(
+        rule_id="DOPETASK_001",
+        category="DOPETASK_EXECUTION",
+        severity="BLOCKER",
+        description="Forbidden Dopetask execution path",
+        patterns=[
+            re.compile(r"dopetask " + r"tp"),
+            re.compile(r"scripts/" + r"dopetask"),
+            re.compile(r"scripts/" + r"taskx")
+        ],
+        recommended_action="Remove Dopetask invocation."
+    ),
+    Rule(
+        rule_id="NETWORK_001",
+        category="FORBIDDEN_CALL",
+        severity="BLOCKER",
+        description="Forbidden network library or sub" + "process call",
+        patterns=[
+            re.compile(r"sub" + r"process"),
+            re.compile(r"requests" + r"\."),
+            re.compile(r"httpx" + r"\."),
+            re.compile(r"urllib"),
+            re.compile(r"aiohttp")
+        ],
+        recommended_action="Remove network/sub" + "process calls from DCP Core."
+    ),
+    Rule(
+        rule_id="EXTERNAL_WRITE_001",
+        category="EXTERNAL_WRITE_STATUS",
+        severity="BLOCKER",
+        description="Forbidden external state mutation via Task-Orchestrator, memory, etc.",
+        patterns=[
+            re.compile(r"mem\.upsert"),
+            re.compile(r"memory" + r"_store"),
+            re.compile(r"/tools/memory" + r"_store"),
+            re.compile(r"/tools/memory" + r"_correct"),
+            re.compile(r"/api/" + r"decisions"),
+            re.compile(r"/api/" + r"progress"),
+            re.compile(r"/api/" + r"custom_data"),
+            re.compile(r"/api/" + r"workflow"),
+            re.compile(r"/api/" + r"pm"),
+            re.compile(r"/route/" + r"pm")
+        ],
+        recommended_action="Remove external state mutations."
+    ),
+    Rule(
+        rule_id="LIVE_WRITE_001",
+        category="LIVE_WRITE_CREEP",
+        severity="BLOCKER",
+        description="Forbidden enablement of LIVE_WRITE_READY",
+        patterns=[
+            re.compile(r"LIVE_WRITE_READY\s*=\s*True"),
+            re.compile(r"LIVE_WRITE_READY:\s*true"),
+            re.compile(r"\"live_write_ready\":\s*true"),
+            re.compile(r"\"live_write_status\":\s*\"ENABLED\""),
+            re.compile(r"\"live_write_status\":\s*\"ACTIVE\"")
+        ],
+        recommended_action="Do not enable LIVE_WRITE_READY."
+    )
+]
+
+def is_safe_false_positive(file_path: str) -> bool:
+    """Check if the file is a scanner declaration that should be ignored. Test fixtures are NOT exempted and will be blocked."""
+    if file_path.endswith("dcp/red_lane_rules.py") or file_path.endswith("dcp/red_lane_scanner.py"):
+        return True
+    return False
+
+def redact_secret_like(text: str) -> str:
+    """Redacts values that look like secrets (hex tokens, typical credentials)."""
+    # Just a placeholder basic redaction logic. Real logic would match keys/tokens.
+    # We redact tokens resembling hex/auth keys if found in match context.
+    redacted = re.sub(r"([a-zA-Z0-9_-]{20,})", "***REDACTED***", text)
+    return redacted
