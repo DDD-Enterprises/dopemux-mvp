@@ -1,0 +1,126 @@
+{
+  "id": "TP-DMX-COCKPIT-COMMAND-PALETTE-001",
+  "project": "dopemux-mvp",
+  "target": "Reconcile the Command Palette broker primitive onto current origin/main while preserving broker-only behavior, deterministic routing, fail-closed unknown handling, no execution, no final screens, and no Claude Design gate flip.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must not execute Cockpit actions.",
+    "This packet must not add live service adapters.",
+    "This packet must not add canonical writes.",
+    "This packet must not upload anything to Claude Design.",
+    "This packet must not generate or approve final UI screens.",
+    "This packet must preserve safe_for_claude_design: NO.",
+    "This packet must preserve READY_FOR_CLAUDE_DESIGN: not approved.",
+    "This packet must not authorize T4 remote mutation.",
+    "This packet must preserve TX and TU as non-executable in Cockpit.",
+    "This packet must route unresolved, blocked, unknown, external, and authority-conflicted palette rows fail-closed.",
+    "This packet must classify missing or unresolved evidence as UNKNOWN."
+  ],
+  "depends_on": [
+    "TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA",
+    "TP-DMX-COCKPIT-RUNTIME-RENDER-001",
+    "TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dopemux-cockpit-ia-remediation",
+    "base_branch": "origin/main",
+    "parent_tp_id": "TP-DMX-COCKPIT-PACK-REMEDIATE-006-IA",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/cockpit-command-palette-reconcile-001",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(cockpit): reconcile command palette broker primitive",
+    "allowlist": [
+      "src/dopemux/ui/cockpit/runtime_contract.py",
+      "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+      "task-packets/generated/TP-DMX-COCKPIT-COMMAND-PALETTE-001.json",
+      "task-packets/INDEX.md",
+      "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json",
+      "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/PROOF.json",
+      "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/sha256sums.txt",
+      "proof/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-COMMAND-PALETTE-001.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-COCKPIT-COMMAND-PALETTE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/unit/dopemux/ui/cockpit/test_runtime_contract.py -q",
+      "python -m pytest tests/unit/dopemux/ui/cockpit/ -q",
+      "python scripts/brand_lint.py",
+      "python scripts/sync_brand_tokens.py",
+      "cd out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001 && shasum -a 256 -c sha256sums.txt",
+      "git diff --check",
+      "pre-commit run --files src/dopemux/ui/cockpit/runtime_contract.py tests/unit/dopemux/ui/cockpit/test_runtime_contract.py task-packets/generated/TP-DMX-COCKPIT-COMMAND-PALETTE-001.json task-packets/INDEX.md out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/PROOF.json out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/sha256sums.txt proof/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PROOF.json"
+    ]
+  },
+  "pr": {
+    "title": "feat(cockpit): reconcile command palette broker primitive",
+    "body": "Re-ports the Command Palette broker primitive onto current origin/main after PR #731 targeted a stale integration branch and had failed CI summary checks. Adds deterministic row normalization, broker-only routing, Safe Action Gate and Settings/Admin handoff decisions, and fail-closed handling for unresolved, blocked, unknown, external, and authority-conflicted rows. Strictly no runtime action execution, no live service adapters, no canonical writes, no final screens, no Claude Design upload, no T4 authorization, and no safe_for_claude_design flip.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, base HEAD, clean status, and that execution is not in the primary checkout.",
+      "validation": [
+        "Worktree path, branch, origin, marker, and clean baseline are recorded in proof.",
+        "Primary checkout remains untouched except for unrelated pre-existing files."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "out/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PROOF.json"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add failing command-palette broker tests before production code.",
+      "validation": [
+        "Focused tests fail because the broker API is absent.",
+        "Tests assert broker_only true and executes false.",
+        "Tests assert blocked, unknown, external, unresolved-parameter, and unknown-authority rows cannot open the Safe Action Gate."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement the minimal deterministic Command Palette broker primitive in runtime_contract.py without execution side effects.",
+      "validation": [
+        "Rows normalize missing fields to literal UNKNOWN.",
+        "Routing resolves exactly one outcome from the allowed broker outcomes.",
+        "The primitive produces no shellout, network, service, PM, ConPort, dope-memory, or canonical-write behavior."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Materialize the generated packet, update traceability index and narrow inventory proof/checksums, create proof, validate, commit, push, open a PR, and move the orchestrator item to review.",
+      "validation": [
+        "Task packet JSON parses and validates against the canonical schema.",
+        "Focused Cockpit tests, cockpit test directory, brand_lint, sync_brand_tokens, inventory checksum, git diff check, and pre-commit pass or exact blockers are recorded.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}
