@@ -3840,7 +3840,14 @@ def _emit_validator_first_preset_block(
         str(parsed_payload.get("verdict") or "NO_GO").strip().upper() or "NO_GO"
     )
     reason_codes_list = _normalize_reason_codes(parsed_payload.get("reason_codes"))
-    output_dir_value = str(parsed_payload.get("output_dir") or "").strip() or None
+    output_dir_value = (
+        str(
+            parsed_payload.get("output_dir")
+            or validator_payload.get("output_dir")
+            or ""
+        ).strip()
+        or None
+    )
     raw_stderr = str(validator_payload.get("stderr") or "").strip()
     sanitized_stderr = sanitize_text_for_output(raw_stderr) if raw_stderr else ""
     artifact_path = str(run_root / "PRELIVE_VALIDATOR_RESULT.json")
@@ -3905,7 +3912,10 @@ def enforce_pre_live_validator_for_execution(
     verdict = explicit_verdict or "NO_GO"
     if proc.returncode != 0 or verdict != "GO" or parse_error or missing_verdict:
         reason_codes_list = _normalize_reason_codes(payload.get("reason_codes"))
-        output_dir_value = str(payload.get("output_dir") or "").strip() or None
+        output_dir_value = (
+            str(payload.get("output_dir") or "").strip()
+            or str(validator_output_dir)
+        )
         sanitized_stderr = sanitize_text_for_output(stderr) if stderr else ""
         block_verdict = (
             "NO_GO" if parse_error or missing_verdict or proc.returncode != 0 else verdict
@@ -21954,6 +21964,7 @@ def run_pre_live_validator(
     target_policy: Optional[str] = None,
     target_phases: Optional[Sequence[str]] = None,
     allow_online_preflight: bool = False,
+    output_dir: Optional[Path] = None,
 ) -> Tuple[bool, Dict[str, Any]]:
     return _run_pre_live_validator_impl(
         root,
@@ -21963,6 +21974,7 @@ def run_pre_live_validator(
         target_policy=target_policy,
         target_phases=target_phases,
         allow_online_preflight=allow_online_preflight,
+        output_dir=output_dir,
         subprocess_run=subprocess.run,
         now_iso=now_iso,
         write_json=write_json,
@@ -23458,6 +23470,7 @@ def main() -> None:
             target_policy=args.routing_policy,
             target_phases=phase_sequence,
             allow_online_preflight=True,
+            output_dir=create_pre_live_validator_output_dir(root),
         )
         write_confidence_ramp_artifacts(
             dirs["root"],
