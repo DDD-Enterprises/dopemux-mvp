@@ -50,19 +50,14 @@ The implementation follows the surgical, decoupled requirements of the DCP. The 
 ## 6. Verdict
 **PASS**
 
-## 7. Post-Merge Remediation & Reconciliation
-Due to a self-reference exception loop (updating `PROOF.json` inside a branch changes the branch's head SHA), PR #820 was merged with `head_sha` set to `57d4807b645fd456148ed69901e051a16fd83b2c` while the actual PR head commit was `55fc77835fd78ec9b764cb13b36b54753535ca7d`.
+## 7. Post-Merge Proof Discrepancy (Documented Only)
+Due to a proof self-reference issue (updating `PROOF.json` inside a branch changes the branch's head SHA), PR #820 was merged with `head_sha` set to `57d4807b645fd456148ed69901e051a16fd83b2c` while the actual PR head commit was `55fc77835fd78ec9b764cb13b36b54753535ca7d`.
 
-This discrepancy has been reconciled via `POST_MERGE_RECONCILIATION.json` under packet ID `TP-DCP-0005-POSTMERGE-REMEDIATION`.
-The final checks on the merge commit `62d16375119c8c7fac2fc3280152c4095c5898ac` passed successfully.
-The unfreeze of the DCP series is approved.
+This discrepancy has been documented via `POST_MERGE_RECONCILIATION.json` under packet ID `TP-DCP-0005-POSTMERGE-REMEDIATION`.
+The post-merge proof discrepancy is documented and reconciled at the governance-record level only. The DCP series remains FROZEN until a separate scanner-aware reconciliation packet teaches the red-lane scanner to consume POST_MERGE_RECONCILIATION.json or an equivalent supported proof self-reference mechanism.
 
-### PR #821 Remediation Scope Clarification
-PR #821 is not a proof-only change. It includes:
-1. **Governance Documentation**: Updated `docs/ops/pr-steward-readiness.md` to define the self-reference exception rule.
-2. **Code Documentation**: Added a non-functional comment to `src/dopemux/dcp/red_lane_scanner.py` explaining the exception.
-3. **Reconciliation Hardening**: Hardened `POST_MERGE_RECONCILIATION.json` with granular check results and mandatory governance fields.
-No changes to runtime scanner behavior or logic were made.
+### PR #821 Scope
+PR #821 is a documentation-only change. It documents the post-merge proof freshness discrepancy at the governance-record level. It does not unfreeze the DCP series and does not change scanner behavior. A follow-up packet is required if the scanner should consume POST_MERGE_RECONCILIATION.json.
 
 ## 8. Final Verdict (Post-Remediation)
 **PASS**
