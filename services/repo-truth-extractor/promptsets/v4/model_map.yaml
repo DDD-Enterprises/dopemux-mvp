@@ -108,12 +108,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -140,12 +150,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -172,12 +192,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -204,12 +234,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -236,12 +276,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -268,12 +318,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -300,12 +360,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -332,12 +402,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -364,12 +444,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -600,12 +690,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -632,12 +732,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -664,12 +774,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -774,12 +894,22 @@ steps:
     reasoning_effort: low
   repair_routes:
   - provider: xai
+    model_id: ${BULK_CODE_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: low
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_CODE_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -932,12 +1062,22 @@ steps:
     reasoning_effort: low
   repair_routes:
   - provider: xai
+    model_id: ${BULK_CODE_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: low
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_CODE_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -964,12 +1104,22 @@ steps:
     reasoning_effort: low
   repair_routes:
   - provider: xai
+    model_id: ${BULK_CODE_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: low
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_CODE_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -996,12 +1146,22 @@ steps:
     reasoning_effort: low
   repair_routes:
   - provider: xai
+    model_id: ${BULK_CODE_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: low
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_CODE_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -1106,12 +1266,22 @@ steps:
     reasoning_effort: low
   repair_routes:
   - provider: xai
+    model_id: ${BULK_CODE_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: low
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_CODE_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -1138,12 +1308,22 @@ steps:
     reasoning_effort: low
   repair_routes:
   - provider: xai
+    model_id: ${BULK_CODE_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: low
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_CODE_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -1432,12 +1612,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -1464,12 +1654,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -1632,12 +1832,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -1664,12 +1874,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -1696,12 +1916,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -1728,12 +1958,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -1760,12 +2000,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -1792,12 +2042,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -1944,12 +2204,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -1976,12 +2246,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -2008,12 +2288,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -2286,12 +2576,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -2360,12 +2660,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -2392,12 +2702,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -2424,12 +2744,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -2456,12 +2786,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -2530,6 +2870,11 @@ steps:
     strict_passthrough_verified: true
   sidefill_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
@@ -2560,6 +2905,11 @@ steps:
     strict_json_schema: true
     strict_passthrough_verified: true
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -2592,6 +2942,11 @@ steps:
     strict_passthrough_verified: true
   sidefill_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
@@ -2622,6 +2977,11 @@ steps:
     strict_json_schema: true
     strict_passthrough_verified: true
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -2654,6 +3014,11 @@ steps:
     strict_passthrough_verified: true
   sidefill_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
@@ -2685,6 +3050,11 @@ steps:
     strict_passthrough_verified: true
   sidefill_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
@@ -2715,6 +3085,11 @@ steps:
     strict_json_schema: true
     strict_passthrough_verified: true
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -2788,12 +3163,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -2820,12 +3205,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -2852,12 +3247,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -3119,12 +3524,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -3198,12 +3613,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -3230,12 +3655,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -3393,12 +3828,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -3425,12 +3870,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -3457,12 +3912,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -3489,12 +3954,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -3651,12 +4126,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -3683,12 +4168,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -3715,12 +4210,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -3841,12 +4346,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4172,12 +4687,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4204,12 +4729,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4236,12 +4771,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4268,12 +4813,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4300,12 +4855,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4332,12 +4897,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4364,12 +4939,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4396,12 +4981,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4428,12 +5023,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4460,12 +5065,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4492,12 +5107,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4524,12 +5149,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4556,12 +5191,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4588,12 +5233,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4620,12 +5275,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4652,12 +5317,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4684,12 +5359,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4716,12 +5401,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4748,12 +5443,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4780,12 +5485,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4812,12 +5527,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4844,12 +5569,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4876,12 +5611,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
@@ -4955,12 +5700,22 @@ steps:
     reasoning_effort: none
   repair_routes:
   - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
+  - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY
     strict_json_schema: false
     strict_passthrough_verified: false
     reasoning_effort: none
   sidefill_routes:
+  - provider: xai
+    model_id: ${BULK_DOCS_MODEL}
+    api_key_env: XAI_API_KEY
+    strict_json_schema: false
+    strict_passthrough_verified: false
   - provider: xai
     model_id: grok-4.3
     api_key_env: XAI_API_KEY

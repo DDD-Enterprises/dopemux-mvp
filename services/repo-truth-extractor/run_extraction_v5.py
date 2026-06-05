@@ -15432,7 +15432,10 @@ else sdk_auth_present_flags(p_provider, True)
                 cfg=cfg,
                 step_contract=step_contract,
                 stage=stage,
-                strict_required=True,
+                # Lane-aware: strict (CE/AGG) demand a strict-capable route;
+                # non-strict bulk lanes select their (non-strict) profile route
+                # so bulk repair/sidefill recovery actually dispatches.
+                strict_required=strict_contract_required,
             )
             if selected_route is None:
                 selected_route, strict_attempts = resolve_stage_route(
@@ -15441,7 +15444,7 @@ else sdk_auth_present_flags(p_provider, True)
                     transport_for_provider=lambda provider: transport_for_provider(
                         provider, cfg
                     ),
-                    strict_required=True,
+                    strict_required=strict_contract_required,
                 )
                 ownership_meta = None
             if selected_route is None:
@@ -17439,7 +17442,10 @@ else sdk_auth_present_flags(p_provider, True)
                 cfg=cfg,
                 step_contract=step_contract,
                 stage="repair",
-                strict_required=True,
+                # Lane-aware: this soft-gate fires only for BULK json-managed
+                # steps (non-strict), so a non-strict route can now be selected
+                # and bulk soft-gate repair recovery actually dispatches.
+                strict_required=strict_contract_required,
             )
             if soft_gate_route is None:
                 soft_gate_route, soft_gate_attempts = resolve_stage_route(
@@ -17448,7 +17454,7 @@ else sdk_auth_present_flags(p_provider, True)
                     transport_for_provider=lambda provider: transport_for_provider(
                         provider, cfg
                     ),
-                    strict_required=True,
+                    strict_required=strict_contract_required,
                 )
             if soft_gate_route is not None:
                 step_soft_gate_triggered = True

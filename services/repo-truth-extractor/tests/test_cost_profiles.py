@@ -517,6 +517,58 @@ def test_ce_repair_sidefill_lead_tracks_cost_profile() -> None:
             assert lead["model_id"] == model
 
 
+def test_bulk_repair_activates_and_tracks_cost_profile() -> None:
+    """Increment 3 commit 2: bulk repair/sidefill were dead under the old
+    unconditional strict_required=True (non-strict bulk routes filtered to None).
+    With lane-aware strictness, a non-strict bulk lane now selects its profile
+    route — so bulk recovery dispatches and tracks the cost profile."""
+    expected = {
+        "value-default": ("openai", "gpt-5.4-mini"),
+        "gemini-value": ("gemini", "gemini-3-flash-preview"),
+        "grok-fast": ("xai", "grok-4-fast"),
+    }
+    contract = runner._step_contract_for("A", "A2")  # BULK_DOCS_GENERAL
+    assert runner.is_strict_contract_step(contract) is False
+    for profile, (prov, model) in expected.items():
+        cfg = _make_cfg(cost_profile=profile)
+        resolved = runner.resolve_contract_routes(contract, cfg)
+
+        def _transport(provider: str) -> str:
+            return runner.transport_for_provider(provider, cfg)
+
+        # Old behavior: strict_required=True filters the non-strict bulk route to None.
+        none_route, _ = runner.resolve_stage_route(
+            step_contract=resolved,
+            stage="repair",
+            transport_for_provider=_transport,
+            strict_required=True,
+        )
+        assert none_route is None
+        # New behavior: lane-aware (non-strict) selects the profile's bulk route.
+        route, _ = runner.resolve_stage_route(
+            step_contract=resolved,
+            stage="repair",
+            transport_for_provider=_transport,
+            strict_required=False,
+        )
+        assert route is not None
+        assert (route["provider"], route["model_id"]) == (prov, model)
+
+
+def test_bulk_strict_openai_repair_stays_pinned() -> None:
+    """M-phase bulk steps deliberately repair with a strict OpenAI model; those
+    routes are left hardcoded (not templatized), so they do NOT track the
+    profile and never downgrade to a non-strict bulk model."""
+    contract = runner._step_contract_for("M", "M0")
+    for profile in ("value-default", "gemini-value", "grok-fast"):
+        cfg = _make_cfg(cost_profile=profile)
+        resolved = runner.resolve_contract_routes(contract, cfg)
+        lead = resolved["lane"]["repair_routes"][0]
+        assert lead["provider"] == "openai"
+        assert lead["model_id"] == "gpt-5.4-mini"
+        assert not str(lead["model_id"]).startswith("${")
+
+
 def test_strict_guard_rejects_disallowed_provider() -> None:
     import pytest
 

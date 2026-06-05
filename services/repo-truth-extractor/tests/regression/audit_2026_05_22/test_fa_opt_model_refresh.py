@@ -78,11 +78,14 @@ def test_retired_grok_code_fast_route_is_removed_from_model_map() -> None:
     # Plan B: the 6 BULK_CODE_HEAVY primary leads that carried grok-build-0.1 are
     # now the ${BULK_CODE_MODEL} placeholder (concrete model chosen per cost profile).
     assert "grok-build-0.1" not in model_ids
-    assert model_ids.count("${BULK_CODE_MODEL}") == 6
+    # Increment 3: ${BULK_CODE_MODEL} now also drives the repair/sidefill leads of
+    # the 6 BULK_CODE_HEAVY steps (6 primary + 6 repair + 6 sidefill = 18).
+    assert model_ids.count("${BULK_CODE_MODEL}") == 18
 
 
 def test_code_heavy_primary_leads_use_bulk_code_placeholder() -> None:
-    # Plan B: BULK_CODE_HEAVY primary leads are the profile-agnostic placeholder.
+    # Plan B + Increment 3: BULK_CODE_HEAVY primary AND repair/sidefill leads use
+    # the profile-agnostic placeholder.
     placeholders = [
         row for row in _model_map_routes() if row["model_id"] == "${BULK_CODE_MODEL}"
     ]
@@ -94,7 +97,7 @@ def test_code_heavy_primary_leads_use_bulk_code_placeholder() -> None:
         "C10",
         "C11",
     }
-    assert {row["route_role"] for row in placeholders} == {"primary"}
+    assert {row["route_role"] for row in placeholders} == {"primary", "repair", "sidefill"}
     assert {row["route_index"] for row in placeholders} == {0}
     assert {row["lane_class"] for row in placeholders} == {"BULK_CODE_HEAVY"}
 
