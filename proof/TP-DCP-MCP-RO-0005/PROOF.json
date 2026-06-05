@@ -4,7 +4,7 @@
   "branch": "dcp/chatgpt-mcp-ro-0005-conport-and-dope-memory-read-ada",
   "base_branch": "main",
   "base_sha": "876d0c624 (PR #830 / 0004 merge)",
-  "head_sha": "PENDING_POST_COMMIT_SYNC",
+  "head_sha": "60a77c99c9f9fa95270b1a1203a01500f2dac4aa",
   "task_class": "implementation/security-sensitive/API-sensitive",
   "risk": "HIGH",
   "depends_on": "TP-DCP-MCP-RO-0004 (merged via PR #830)",
@@ -16,8 +16,15 @@
     "replay_chronicle_session (dope-memory POST memory_replay_session; top_k<=3; replay_current default)"
   ],
   "route_allowlist": {
-    "conport": ["GET /api/decisions", "GET /api/progress", "GET /api/search/{workspace_id}"],
-    "dope_memory_post_read_only": ["/tools/memory_search", "/tools/memory_replay_session"]
+    "conport": [
+      "GET /api/decisions",
+      "GET /api/progress",
+      "GET /api/search/{workspace_id}"
+    ],
+    "dope_memory_post_read_only": [
+      "/tools/memory_search",
+      "/tools/memory_replay_session"
+    ]
   },
   "denied_and_unreachable": [
     "ConPort POST /api/decisions / progress / custom_data",
@@ -43,10 +50,24 @@
   "pal_codereview": {
     "tool": "pal/codereview (security, external)",
     "model": "gpt-5.2",
-    "critical_fixed": ["unbounded-response-size-DoS", "parsing-non-2xx-bodies"],
-    "high_fixed": ["string-loopback-check->ipaddress", "workspace_id-path-encoding", "_join-rejects-query-fragment"],
-    "medium_fixed": ["generic-block-reason-no-leak", "narrow-json-except", "query-strip-and-cap"],
-    "accepted_as_is": ["sync-http-in-async-wrapper (Phase-1)", "DNS-rebinding-not-addressable (registry-owned literal host)"]
+    "critical_fixed": [
+      "unbounded-response-size-DoS",
+      "parsing-non-2xx-bodies"
+    ],
+    "high_fixed": [
+      "string-loopback-check->ipaddress",
+      "workspace_id-path-encoding",
+      "_join-rejects-query-fragment"
+    ],
+    "medium_fixed": [
+      "generic-block-reason-no-leak",
+      "narrow-json-except",
+      "query-strip-and-cap"
+    ],
+    "accepted_as_is": [
+      "sync-http-in-async-wrapper (Phase-1)",
+      "DNS-rebinding-not-addressable (registry-owned literal host)"
+    ]
   },
   "deviations": [
     "services/registry.yaml NOT updated (packet forbidden_files; stdio MCP server).",
