@@ -1,0 +1,74 @@
+{
+  "packet_id": "TP-DCP-MCP-RO-0004",
+  "title": "Facade Scaffold Registry Resolver Repo Proof Tools",
+  "branch": "dcp/chatgpt-mcp-ro-0004-facade-scaffold-registry-resolve",
+  "base_branch": "main",
+  "head_sha": "0a25035a7ec8e7ec877bc78b412c7e206170ffb6",
+  "task_class": "implementation/security-sensitive",
+  "risk": "HIGH",
+  "depends_on": "TP-DCP-MCP-RO-0003 (merged via PR #828)",
+  "scaffold": "services/dcp-readonly-facade/ (net-new): src/dcp_facade/{envelope,redaction,registry,resolver,gitstate,proofs,tools}.py + src/mcp/{server,fastmcp_stub}.py + tests/ + registry.example.yaml + README.md",
+  "tools_implemented": [
+    "list_projects (no project_id; enabled-only)",
+    "get_project_capabilities (project_id)",
+    "get_repo_state_snapshot (project_id; fixed git allowlist)",
+    "list_proof_bundles (project_id; literal packet_id_filter; cap 20)",
+    "fetch_proof_bundle (project_id; containment + symlink safe; 256KB/file)"
+  ],
+  "validation": {
+    "pytest": "PASS (51 passed)",
+    "compileall": "PASS",
+    "no_writes_or_shell_in_implementation": "PASS (rg: src/ has no write_text/open(w)/mkdir/rmtree/shell=True/os.system)",
+    "subprocess_is_fixed_git_allowlist_only": "PASS (gitstate.py only; shell=False; fixed argv)",
+    "no_caller_supplied_regex": "PASS (packet_id_filter is a literal substring)",
+    "diff_within_allowlist": "PASS (services/dcp-readonly-facade, docs/03-reference/dcp/chatgpt-mcp-readonly, proof/TP-DCP-MCP-RO-0004)",
+    "no_forbidden_files_touched": "PASS (no src/, other services, docker, compose, .dopemux, .env, services/registry.yaml)",
+    "precommit_docs": "PASS (markdownlint, docs-frontmatter-guard on FACADE_LOCAL_RUN.md + TOOL_CONTRACT.md)"
+  },
+  "fail_closed_tests": [
+    "unknown project -> BLOCKED",
+    "disabled project -> BLOCKED",
+    "missing .dopemux -> BLOCKED",
+    "identity project/owner mismatch -> BLOCKED (owner conditional)",
+    "workspace escapes approved roots / symlink workspace escape -> BLOCKED",
+    "proof bundle .. / separators / leading-dot -> BLOCKED",
+    "symlink proof escape -> BLOCKED",
+    "cross-project bundle -> not found",
+    "stale proof head_sha mismatch -> warning; dirty worktree -> warning",
+    "overlong packet_id_filter -> BLOCKED",
+    "redaction strips abs paths (incl deep + dict keys) + secrets"
+  ],
+  "pal_codereview": {
+    "tool": "pal/codereview (security, external)",
+    "model": "gpt-5.2",
+    "critical_fixed": [
+      "unbounded-read-before-cap",
+      "ReDoS via packet_id_regex"
+    ],
+    "high_fixed": [
+      "TOCTOU read-via-unresolved-path",
+      "redaction misses non-home roots + dict keys"
+    ],
+    "medium_fixed": [
+      "iterdir DoS scan-bound",
+      "broad except narrowed"
+    ],
+    "accepted_as_is": [
+      "repo_id case-sensitive (fail-closed)",
+      "gitstate swallows errors -> None/PARTIAL"
+    ]
+  },
+  "deviations": [
+    "services/registry.yaml NOT updated (packet forbidden_files; stdio MCP server, not HTTP service) \u2014 flagged for operator.",
+    "packet_id_filter (literal substring) supersedes the inventory's 'packet_id regex' for ReDoS safety; TOOL_CONTRACT updated.",
+    "branch reset onto latest origin/main before commit (net-new facade; untracked files preserved)."
+  ],
+  "residual_risks": [
+    "Redaction is heuristic defence-in-depth, not a zero-leak proof; deep-path scrub may over-redact (acceptable).",
+    "fastmcp optional/not-installed -> server falls back to no-op stub; live endpoint needs fastmcp.",
+    "service_profiles reachability not probed (configured-only); live binding in 0005/0006."
+  ],
+  "embedded_audit": "PASS_WITH_RISKS",
+  "command_log": "proof/TP-DCP-MCP-RO-0004/COMMAND_LOG.md",
+  "audit": "proof/TP-DCP-MCP-RO-0004/AUDIT.md"
+}
