@@ -80,7 +80,7 @@ Grounded in §1–§4, the facade's project resolution is:
    - the registered `workspace_path` resolves (canonical, symlink-followed) to a path **inside an approved root**;
    - it is a real workspace per `validate_workspace()` / `get_workspace_root()` (git toplevel);
    - it contains a **`.dopemux/`** directory (init marker, §1);
-   - its **`.repo_id`** identity matches the registry entry (project/owner), per the DCP schema convention (§3).
+   - its **`.repo_id`** `project=` matches the registry entry's required `identity.project`, and its `owner=` matches `identity.owner` only when that field is declared (conditional, always satisfiable), per the DCP schema convention (§3).
 3. Any check failing → `BLOCKED`; a partially-bound project → `PARTIAL`; never fabricated data.
 
 This is reflected in [`MULTI_PROJECT_REGISTRY_CONTRACT.md`](MULTI_PROJECT_REGISTRY_CONTRACT.md) §4–§5.
