@@ -114,3 +114,22 @@ f7b27de2ea95b4f58fb8e1a518c1b1db8d67b595
 markdownlint.............................................................Passed
 Validate YAML frontmatter in docs........................................Passed
 (run locally against the staged set; CI 'checks' + 'Code Quality & Linting' green on this branch)
+
+## Final post-commit snapshot — review round 4 (clean tree)
+
+### $ git rev-parse HEAD
+fab87ae7d37ce1bc7cb936a420bd173dc40d58e6
+
+### $ git status --short --branch
+## dcp/chatgpt-mcp-ro-0002-architecture-doc-and-multi-proje...origin/dcp/chatgpt-mcp-ro-0002-architecture-doc-and-multi-proje [ahead 1]
+ M proof/TP-DCP-MCP-RO-0002/COMMAND_LOG.md
+
+### $ git diff --stat 62d16375119c8c7fac2fc3280152c4095c5898ac..HEAD
+ .../dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0005.md |  17 +
+ .../chatgpt-mcp-readonly/TP-DCP-MCP-RO-0006.json   | 145 +++++++
+ .../dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0006.md |  17 +
+ .../chatgpt-mcp-readonly/TP-DCP-MCP-RO-0007.json   | 143 +++++++
+ .../dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0007.md |  17 +
+ .../chatgpt-mcp-readonly/TP-DCP-MCP-RO-0008.json   | 161 ++++++++
+ .../dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0008.md |  17 +
+ 27 files changed, 2550 insertions(+)
