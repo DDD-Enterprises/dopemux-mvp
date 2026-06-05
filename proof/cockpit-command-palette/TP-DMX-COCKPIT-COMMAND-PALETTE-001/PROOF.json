@@ -1,0 +1,160 @@
+{
+  "schema_version": "dopemux.cockpit.command_palette_reconciliation.proof.v1",
+  "packet_id": "TP-DMX-COCKPIT-COMMAND-PALETTE-001",
+  "created_at_utc": "2026-06-05T05:48:35Z",
+  "proof_role": "closeout proof for Command Palette broker reconciliation on current origin/main",
+  "worktree": "/Users/hue/code/dopemux-mvp/.worktrees/cockpit-command-palette-001",
+  "branch": "codex/cockpit-command-palette-reconcile-001",
+  "base_branch": "origin/main",
+  "base_head": "8f27340b2",
+  "repo_identity": {
+    "repo_root": "/Users/hue/code/dopemux-mvp/.worktrees/cockpit-command-palette-001",
+    "repo_marker": ".dopetaskroot",
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git"
+  },
+  "task_orchestrator": {
+    "item_id": "7ef0de85-8ef5-4154-b4bc-9356370e02ab",
+    "title": "TP-DMX-COCKPIT-COMMAND-PALETTE-001: Command Palette broker",
+    "resume_applied": true,
+    "start_applied": true,
+    "terminal_applied": false,
+    "terminal_policy": "Do not move terminal until PR merge and verified checks."
+  },
+  "governance_state": {
+    "safe_for_claude_design": "NO",
+    "READY_FOR_CLAUDE_DESIGN": "not approved",
+    "claude_design_gate_flipped": false,
+    "runtime_execution_implemented": false,
+    "final_screens_approved": false,
+    "live_service_adapters_added": false,
+    "canonical_writes_added": false,
+    "t4_remote_mutation_authorized": false
+  },
+  "slices_completed": [
+    "Created a fresh dedicated worktree from origin/main.",
+    "Resumed the blocked Task Orchestrator item and advanced it to work.",
+    "Added failing command-palette broker tests before production code.",
+    "Added pure Command Palette row normalization and deterministic broker routing.",
+    "Added generated task packet and task-packet index entry.",
+    "Updated narrow inventory source hash/line-count metadata and checksums for runtime_contract.py."
+  ],
+  "files_changed": [
+    "src/dopemux/ui/cockpit/runtime_contract.py",
+    "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+    "task-packets/generated/TP-DMX-COCKPIT-COMMAND-PALETTE-001.json",
+    "task-packets/INDEX.md",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/PROOF.json",
+    "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/sha256sums.txt",
+    "proof/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PROOF.json"
+  ],
+  "tdd_red_check": {
+    "command": "python -m pytest tests/unit/dopemux/ui/cockpit/test_runtime_contract.py -q",
+    "exit_code": 2,
+    "result": "PASS_RED",
+    "summary": "Collection failed because COMMAND_PALETTE_SEARCH_AXES was absent from runtime_contract.py before production code was added."
+  },
+  "validation_commands": [
+    {
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit/test_runtime_contract.py -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "53 focused runtime-contract tests passed."
+    },
+    {
+      "command": "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-COMMAND-PALETTE-001.json >/dev/null",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "Generated command-palette task packet JSON parsed."
+    },
+    {
+      "command": "python -m jsonschema -i task-packets/generated/TP-DMX-COCKPIT-COMMAND-PALETTE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "Generated command-palette task packet validated against canonical schema. jsonschema CLI emitted a deprecation warning only."
+    },
+    {
+      "command": "python -m pytest tests/unit/dopemux/ui/cockpit/ -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "Full cockpit unit directory passed; collection count observed as 102 tests."
+    },
+    {
+      "command": "python scripts/brand_lint.py",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "0 errors, 0 warnings."
+    },
+    {
+      "command": "python scripts/sync_brand_tokens.py",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "All brand tokens in sync across theme.py, dopemux.tcss, theme.ts."
+    },
+    {
+      "command": "cd out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001 && shasum -a 256 -c sha256sums.txt",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "All listed inventory artifacts verified OK."
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "PASS",
+      "summary": "No whitespace errors."
+    }
+  ],
+  "codereview_status": {
+    "tool": "mcp__pal.codereview",
+    "model": "gpt-5-codex",
+    "status": "PASS",
+    "continuation_id": "b84e790c-265e-4338-ae3f-b278f7051fdd",
+    "issues_found": 0,
+    "files_checked": 4
+  },
+  "precommit_status": {
+    "command": "pre-commit run --files src/dopemux/ui/cockpit/runtime_contract.py tests/unit/dopemux/ui/cockpit/test_runtime_contract.py task-packets/generated/TP-DMX-COCKPIT-COMMAND-PALETTE-001.json task-packets/INDEX.md out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/PROOF.json out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/sha256sums.txt proof/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PROOF.json",
+    "exit_code": 0,
+    "result": "PASS",
+    "summary": "Configured hooks for touched files passed; YAML hook skipped because no YAML files changed.",
+    "pal_precommit": {
+      "tool": "mcp__pal.precommit",
+      "model": "gpt-5-codex",
+      "status": "PASS",
+      "continuation_id": "00858b73-a33d-42de-b890-2ca4655390c6",
+      "issues_found": 0,
+      "files_checked": 4,
+      "staging_note": "proof/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PROOF.json is ignored by .gitignore proof/* and must be force-added intentionally."
+    }
+  },
+  "proof_artifact_hashes": [
+    {
+      "path": "src/dopemux/ui/cockpit/runtime_contract.py",
+      "sha256": "1eadd5ce2ac215a468c8dbbdced0f5840981ea800aae7316c722a80c74d397a2"
+    },
+    {
+      "path": "tests/unit/dopemux/ui/cockpit/test_runtime_contract.py",
+      "sha256": "4bcf15e6574c62f835d20642e0beb31a8b891d816e60d669f40e06b54fab8cbe"
+    },
+    {
+      "path": "task-packets/generated/TP-DMX-COCKPIT-COMMAND-PALETTE-001.json",
+      "sha256": "7794136a0c8d7aa8cab37d2c0b31e25846ba4a2638c17afd213a1aa4bc4b4399"
+    },
+    {
+      "path": "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json",
+      "sha256": "827a5b8bf18471f07958ac4d0456481e16cf795d0f3d72e17ef876acca805301"
+    }
+  ],
+  "commit_sha": "RECORDED_IN_FINAL_RESPONSE_AFTER_COMMIT",
+  "pr_url": "RECORDED_IN_FINAL_RESPONSE_AFTER_PR_CREATE",
+  "residual_risks": [
+    "This packet wires a runtime-contract broker primitive only; no live Textual command-palette screen or final Cockpit screen is approved here.",
+    "PR #731 remains evidence only because it targeted claude/hungry-buck-67a0d3 and had failed Unit Tests/CI Pipeline Summary checks.",
+    "Full command inventory regeneration remains owned by TP-DMX-COCKPIT-INVENTORY-REGEN-001; this packet updates only the runtime_contract.py source record and artifact checksums affected by the reconciliation."
+  ],
+  "unknowns": [
+    "No live Cockpit TUI run was performed because the implementation is a pure runtime-contract primitive and final screens are out of scope.",
+    "The Claude Design gate remains blocked until all required Phase 1 blockers and the gate-flip packet are complete."
+  ],
+  "cleanup_status": "Dedicated worktree retained until PR creation and operator cleanup decision."
+}
