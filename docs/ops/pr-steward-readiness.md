@@ -74,6 +74,9 @@ Prior to schema 1.1.0 both stale and missing proof emitted a single `PROOF_STALE
 As of TP-DMX-PR-STEWARD-HARDEN-010:
 
 - **`PROOF_STALE`**: Proof exists but `proof_head_sha` does not match the current PR head SHA. The PR was likely updated after the last proof run. Re-run the proof cycle.
+
+  Note: Post-merge reconciliation artifacts (`POST_MERGE_RECONCILIATION.json`) are governance records only. The scanner still treats a mismatched `proof_head_sha` as `PROOF_STALE`. Scanner-level reconciliation support is deferred to a future packet.
+
 - **`PROOF_MISSING`**: No proof bundle found (`proof_head_sha` absent). No proof has been produced for this PR. Run the full TP cycle and produce a proof bundle.
 
 Both remain `NEEDS_SUPERVISOR` tier and map to the `proof-stale` / `proof-missing` action categories in the Action Bridge.
