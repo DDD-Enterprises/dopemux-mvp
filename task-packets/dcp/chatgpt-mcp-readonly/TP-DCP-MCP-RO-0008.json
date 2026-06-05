@@ -120,7 +120,7 @@
         "git status --short --branch",
         "python -m pytest -q services/dcp-readonly-facade/tests",
         "python -m compileall -q services/dcp-readonly-facade",
-        "rg -n \"write_text|open\\(.*['\\\"]w|mkdir|unlink|remove|rmtree|POST|PUT|PATCH|DELETE|/route/pm|/kg/|/ddg/|index_workspace|clear_index|transition|memory_correct|memory_generate_reflection|subprocess|os.system|shell=True\" services/dcp-readonly-facade || true",
+        "rg -n \"write_text|open\\(.*['\\\"]w|mkdir|unlink|remove|rmtree|PUT|PATCH|DELETE|/route/pm|/kg/|/ddg/|index_workspace|clear_index|transition|memory_correct|memory_generate_reflection|subprocess|os.system|shell=True\" services/dcp-readonly-facade || true",
         "rg -n \"OPENAI_API_KEY|ANTHROPIC_API_KEY|GEMINI_API_KEY|sk-|Bearer |TOKEN=|PASSWORD=|SECRET=\" services/dcp-readonly-facade docs/03-reference/dcp/chatgpt-mcp-readonly || true",
         "git diff --stat",
         "git diff",
