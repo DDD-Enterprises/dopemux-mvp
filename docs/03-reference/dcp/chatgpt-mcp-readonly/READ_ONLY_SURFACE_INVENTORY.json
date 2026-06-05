@@ -1,0 +1,54 @@
+{
+  "inventory_version": "1.0",
+  "surfaces": [
+    {
+      "name": "Task Orchestrator",
+      "type": "WORK_GRAPH_SURFACE",
+      "read_only": true,
+      "description": "Read-only access to work items and dependencies",
+      "tools": [
+        "query_items",
+        "query_notes",
+        "query_dependencies",
+        "get_next_status",
+        "get_context",
+        "get_next_item",
+        "get_blocked_items"
+      ]
+    },
+    {
+      "name": "ConPort",
+      "type": "CONTEXT_SURFACE",
+      "read_only": true,
+      "description": "Read-only access to structured context",
+      "tools": [
+        "read_context"
+      ]
+    },
+    {
+      "name": "dope-memory",
+      "type": "MEMORY_SURFACE",
+      "read_only": true,
+      "description": "Read-only access to chronicle",
+      "tools": [
+        "read_chronicle"
+      ]
+    },
+    {
+      "name": "dope-context",
+      "type": "RETRIEVAL_SURFACE",
+      "read_only": true,
+      "description": "Read-only access to doc/code context",
+      "tools": [
+        "search_docs",
+        "search_code"
+      ]
+    }
+  ],
+  "denied_surfaces": [
+    {
+      "name": "dopecon-bridge",
+      "reason": "Denied in Phase 1"
+    }
+  ]
+}

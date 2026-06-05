@@ -1,0 +1,22 @@
+{
+  "packet_id": "TP-DCP-MCP-RO-0002",
+  "branch": "dcp/chatgpt-mcp-ro-0002-architecture-doc-and-multi-proje",
+  "head_sha": "62d16375119c8c7fac2fc3280152c4095c5898ac",
+  "docs_created": [
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/ARCHITECTURE.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/MULTI_PROJECT_REGISTRY_CONTRACT.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/RESPONSE_ENVELOPE_SCHEMA.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/SECURITY_MODEL.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/DECISIONS.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/TASK_ORCHESTRATOR_LOAD.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/READ_ONLY_SURFACE_INVENTORY.json"
+  ],
+  "validation_commands": [
+    "bash run_checks.sh"
+  ],
+  "exit_codes": {
+    "bash run_checks.sh": 0
+  }
+}
