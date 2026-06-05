@@ -3,7 +3,7 @@
   "title": "Architecture Doc And Multi Project Contract",
   "branch": "dcp/chatgpt-mcp-ro-0002-architecture-doc-and-multi-proje",
   "base_sha": "62d16375119c8c7fac2fc3280152c4095c5898ac",
-  "head_sha": "f7b27de2ea95b4f58fb8e1a518c1b1db8d67b595",
+  "head_sha": "fab87ae7d37ce1bc7cb936a420bd173dc40d58e6",
   "task_class": "architecture/documentation-sensitive/security-sensitive",
   "risk": "MEDIUM",
   "deviation": {
