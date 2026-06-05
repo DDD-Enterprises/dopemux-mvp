@@ -128,6 +128,48 @@ def test_validator_bites_when_read_only_tools_gain_a_write_tool(validator, tmp_p
         f"validator failed to catch a write-class tool in read_only_tools; failures={failures}"
 
 
+def test_validator_bites_when_read_nonorch_allowlist_gains_write_tool(validator, tmp_path):
+    """A write-capable entry in read_command_nonorch_allowlist.tools must fail validation."""
+    (tmp_path / ".taskorchestrator").mkdir()
+    shutil.copy(MANIFEST, tmp_path / ".taskorchestrator" / "surface_manifest.json")
+    dx = tmp_path / ".claude" / "commands" / "dx"
+    dx.mkdir(parents=True)
+    for p in DX_DIR.glob("*.md"):
+        shutil.copy(p, dx / p.name)
+
+    assert validator.run_validation(tmp_path)[0] == []
+
+    manifest_path = tmp_path / ".taskorchestrator" / "surface_manifest.json"
+    manifest_data = json.loads(manifest_path.read_text())
+    manifest_data["read_command_nonorch_allowlist"]["tools"].append("Write")
+    manifest_path.write_text(json.dumps(manifest_data, indent=2))
+
+    failures, _ = validator.run_validation(tmp_path)
+    assert any("read_command_nonorch_allowlist.tools" in f and "Write" in f for f in failures), \
+        f"validator failed to catch a write-capable tool in the read non-orch allowlist; failures={failures}"
+
+
+def test_validator_bites_when_bash_allowlist_gains_mutating_command(validator, tmp_path):
+    """A mutating Bash command in the manifest allowlist must fail validation."""
+    (tmp_path / ".taskorchestrator").mkdir()
+    shutil.copy(MANIFEST, tmp_path / ".taskorchestrator" / "surface_manifest.json")
+    dx = tmp_path / ".claude" / "commands" / "dx"
+    dx.mkdir(parents=True)
+    for p in DX_DIR.glob("*.md"):
+        shutil.copy(p, dx / p.name)
+
+    assert validator.run_validation(tmp_path)[0] == []
+
+    manifest_path = tmp_path / ".taskorchestrator" / "surface_manifest.json"
+    manifest_data = json.loads(manifest_path.read_text())
+    manifest_data["read_command_nonorch_allowlist"]["bash_allowed_commands"].append("git commit")
+    manifest_path.write_text(json.dumps(manifest_data, indent=2))
+
+    failures, _ = validator.run_validation(tmp_path)
+    assert any("bash_allowed_commands" in f and "git commit" in f for f in failures), \
+        f"validator failed to catch a mutating Bash command in the allowlist; failures={failures}"
+
+
 def test_read_command_nonorch_allowlist_present_and_writefree(manifest):
     """The fail-closed allowlist must exist, exclude bare Bash, and scope Bash to read-only cmds."""
     cfg = manifest.get("read_command_nonorch_allowlist", {})
