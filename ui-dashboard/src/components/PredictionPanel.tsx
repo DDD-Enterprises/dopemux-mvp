@@ -14,6 +14,7 @@ export default function PredictionPanel({ prediction }: PredictionPanelProps) {
   return (
     <Tooltip title="15-minute forecast: AI-driven projection of your cognitive load" arrow>
       <Paper
+        role="region"
         tabIndex={0}
         aria-label={hasPrediction ? `Fifteen minute prediction ${value} percent` : 'No prediction available'}
         sx={{
