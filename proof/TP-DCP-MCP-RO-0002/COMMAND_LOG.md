@@ -68,3 +68,49 @@ docs/03-reference/dcp/chatgpt-mcp-readonly/ARCHITECTURE.md:28
  proof/TP-DCP-MCP-RO-0002/COMMAND_LOG.md            | 353 +++------------
  task-packets/INDEX.md                              |  12 +-
  11 files changed, 1038 insertions(+), 609 deletions(-)
+
+## Final post-commit snapshot (clean tree)
+
+Recorded at the substantive head of the branch (proof-sync commit follows).
+
+### $ git rev-parse HEAD
+f7b27de2ea95b4f58fb8e1a518c1b1db8d67b595
+
+### $ git status --short --branch  (clean)
+## dcp/chatgpt-mcp-ro-0002-architecture-doc-and-multi-proje...origin/dcp/chatgpt-mcp-ro-0002-architecture-doc-and-multi-proje [ahead 1]
+ M proof/TP-DCP-MCP-RO-0002/COMMAND_LOG.md
+
+### $ git diff --stat 62d16375119c8c7fac2fc3280152c4095c5898ac..HEAD  (full PR delta vs main base)
+ .../dcp/chatgpt-mcp-readonly/ARCHITECTURE.md       | 175 +++++++++
+ .../dcp/chatgpt-mcp-readonly/BUILD_SERIES.md       |  38 ++
+ .../dcp/chatgpt-mcp-readonly/DECISIONS.md          |  48 +++
+ .../MULTI_PROJECT_REGISTRY_CONTRACT.md             |  89 +++++
+ .../READ_ONLY_SURFACE_INVENTORY.json               | 431 +++++++++++++++++++++
+ .../RESPONSE_ENVELOPE_SCHEMA.md                    | 105 +++++
+ .../dcp/chatgpt-mcp-readonly/SECURITY_MODEL.md     |  61 +++
+ .../chatgpt-mcp-readonly/TASK_ORCHESTRATOR_LOAD.md |  89 +++++
+ .../dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md      |  79 ++++
+ proof/TP-DCP-MCP-RO-0002/AUDIT.md                  |  48 +++
+ proof/TP-DCP-MCP-RO-0002/COMMAND_LOG.md            |  70 ++++
+ proof/TP-DCP-MCP-RO-0002/PROOF.json                |  79 ++++
+ task-packets/INDEX.md                              |   7 +
+ .../chatgpt-mcp-readonly/TP-DCP-MCP-RO-0002.json   | 156 ++++++++
+ .../dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0002.md |  17 +
+ .../chatgpt-mcp-readonly/TP-DCP-MCP-RO-0003.json   | 138 +++++++
+ .../dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0003.md |  17 +
+ .../chatgpt-mcp-readonly/TP-DCP-MCP-RO-0004.json   | 158 ++++++++
+ .../dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0004.md |  17 +
+ .../chatgpt-mcp-readonly/TP-DCP-MCP-RO-0005.json   | 149 +++++++
+ .../dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0005.md |  17 +
+ .../chatgpt-mcp-readonly/TP-DCP-MCP-RO-0006.json   | 145 +++++++
+ .../dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0006.md |  17 +
+ .../chatgpt-mcp-readonly/TP-DCP-MCP-RO-0007.json   | 143 +++++++
+ .../dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0007.md |  17 +
+ .../chatgpt-mcp-readonly/TP-DCP-MCP-RO-0008.json   | 161 ++++++++
+ .../dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0008.md |  17 +
+ 27 files changed, 2488 insertions(+)
+
+### $ pre-commit (markdownlint + docs-frontmatter-guard) on changed docs/packets
+markdownlint.............................................................Passed
+Validate YAML frontmatter in docs........................................Passed
+(run locally against the staged set; CI 'checks' + 'Code Quality & Linting' green on this branch)
