@@ -1,0 +1,113 @@
+{
+  "id": "TP-DMX-DESIGN-DANGER-HUE-INVARIANT-001",
+  "project": "dopemux-mvp",
+  "target": "Route danger-semantic theme slots to red across all themes and enforce the danger=red-family invariant in brand_lint.",
+  "invariants": [
+    "In every theme returned by build_theme(), the error, chip.blocker, and severity.critical slots must resolve to a red-family hue (>=340 deg or <=15 deg, wrapping through 0), excluding magenta (300 deg) and pink (330 deg).",
+    "Non-semantic brand-accent slots (magenta, gremlin.pink, bar.pulse) and the _PALETTES accent map remain magenta and are not modified.",
+    "mint-mojo remains the default theme; its danger slots already resolve to #FF2255 (hue 346 deg) and are unchanged.",
+    "Module-level color constants and sync_brand_tokens.py mappings are unaffected (the changed values are per-theme dict literals, not module constants)."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DESIGN-CLI-PALETTE-CUTOVER",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "claude/distracted-kare-249400",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(brand): route danger slots to red in opt-in themes + enforce red-family invariant in brand_lint",
+    "allowlist": [
+      "src/dopemux/ui/theme.py",
+      "scripts/brand_lint.py",
+      "tests/unit/test_brand_lint.py",
+      "task-packets/generated/TP-DMX-DESIGN-DANGER-HUE-INVARIANT-001.json"
+    ],
+    "verify": [
+      "uv run --frozen python scripts/brand_lint.py",
+      "uv run --frozen python -m pytest tests/unit/test_brand_lint.py tests/test_ui_splash.py tests/unit/test_dashboard_operator_ui.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(brand): danger reads red across all themes + brand_lint hue invariant",
+    "body": "Follow-up to the merged CLI palette cutover (PR #803). Two opt-in themes still routed danger-semantic slots (error / chip.blocker / severity.critical) to magenta/pink, contradicting BRAND_SYSTEM.md §6 (\"Red means failed, blocked, or urgent operator action required\" and \"Hot magenta ... Never used as a status indicator\").\n\nGAP 1 (brand-approved: recolor to red-family): pastel-neon-dreamscape danger slots #FF00FF -> #FF0044 (hue 344 deg); pastel-neon-dreams danger slots #FF69B4 -> #FF4D6D (hue 349 deg). Non-semantic magenta/gremlin.pink/bar.pulse accents untouched.\n\nGAP 2: brand_lint.py now asserts, for every theme returned by build_theme(), that error/chip.blocker/severity.critical resolve to a red-family hue (>=340 deg or <=15 deg), so this class of regression is caught by the gate.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1-recolor-themes",
+      "task": "In src/dopemux/ui/theme.py build_theme(), change the three danger-semantic slots (error, chip.blocker, severity.critical) of pastel-neon-dreamscape from #FF00FF to #FF0044 and of pastel-neon-dreams from #FF69B4 to #FF4D6D. Do not touch magenta, gremlin.pink, bar.pulse, or the _PALETTES accent map.",
+      "requirements": [
+        "Exactly six string-literal edits, all inside build_theme().",
+        "mint-mojo theme is unchanged.",
+        "Accent slots magenta/gremlin.pink/bar.pulse and _PALETTES remain magenta."
+      ],
+      "expected_files": [
+        "src/dopemux/ui/theme.py"
+      ],
+      "validation": [
+        "uv run --frozen python -c \"import sys; sys.path.insert(0,'src'); from dopemux.ui.theme import build_theme, _PALETTES; import colorsys;\\nimport itertools;\\n\\nok=True\\nfor n in _PALETTES:\\n  t=build_theme(n)\\n  for slot in ('error','chip.blocker','severity.critical'):\\n    c=t.styles[slot].color.get_truecolor(); h=colorsys.rgb_to_hsv(c.red/255,c.green/255,c.blue/255)[0]*360\\n    red = h>=340 or h<=15\\n    print(n,slot,round(h,1),'RED' if red else 'NOT-RED')\\n    ok = ok and red\\nassert ok\""
+      ],
+      "context_files": [
+        "src/dopemux/ui/theme.py",
+        "BRAND_SYSTEM.md"
+      ]
+    },
+    {
+      "id": "S2-brand-lint-invariant",
+      "task": "Add _iter_theme_danger_hue_violations() to scripts/brand_lint.py: load build_theme + _PALETTES from src/dopemux/ui/theme.py, and for each theme assert error/chip.blocker/severity.critical resolve to a red-family hue (>=340 deg or <=15 deg). Wire it into main().",
+      "requirements": [
+        "Check covers every theme key in _PALETTES.",
+        "Fails closed with a clear message when rich/theme import is unavailable.",
+        "Magenta (300 deg) and pink (330 deg) are reported as violations."
+      ],
+      "expected_files": [
+        "scripts/brand_lint.py"
+      ],
+      "validation": [
+        "uv run --frozen python scripts/brand_lint.py"
+      ],
+      "context_files": [
+        "scripts/brand_lint.py"
+      ]
+    },
+    {
+      "id": "S3-tests",
+      "task": "Extend tests/unit/test_brand_lint.py: (a) assert the pure _is_red_family() predicate fails at the magenta/pink/out-of-band boundaries (300, 330, 339, 16) and passes at the in-band boundaries (340, 344, 346, 349, 0, 15); (b) assert _iter_theme_danger_hue_violations() returns [] on current repo state.",
+      "requirements": [
+        "Boundary coverage proves the helper catches non-red danger slots (no fragile monkeypatching of a file-loaded module).",
+        "Integration assertion passes on current (recolored) repo state."
+      ],
+      "expected_files": [
+        "tests/unit/test_brand_lint.py"
+      ],
+      "validation": [
+        "uv run --frozen python -m pytest tests/unit/test_brand_lint.py tests/test_ui_splash.py tests/unit/test_dashboard_operator_ui.py -q"
+      ],
+      "context_files": [
+        "tests/unit/test_brand_lint.py"
+      ]
+    }
+  ]
+}
