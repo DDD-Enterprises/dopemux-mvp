@@ -75,7 +75,7 @@ As of TP-DMX-PR-STEWARD-HARDEN-010:
 
 - **`PROOF_STALE`**: Proof exists but `proof_head_sha` does not match the current PR head SHA. The PR was likely updated after the last proof run. Re-run the proof cycle.
 
-  *Self-Reference Exception Rule*: Updating `PROOF.json` inside a branch changes the branch's head SHA, causing a potential infinite loop of stale proof detections. Under `docs/ops/pr-acceptance.md` §1 (Acceptance Gates), proof freshness may be satisfied by an explicit supervisor-accepted self-reference exception when the proof records proof-only changed-file evidence (e.g. only proof or documentation files have changed since the last validated SHA) and the embedded audit is nonblocking. In post-merge scenarios, reconciliation can be recorded in `POST_MERGE_RECONCILIATION.json` to formally close the gap.
+  Note: Post-merge reconciliation artifacts (`POST_MERGE_RECONCILIATION.json`) are governance records only. The scanner still treats a mismatched `proof_head_sha` as `PROOF_STALE`. Scanner-level reconciliation support is deferred to a future packet.
 
 - **`PROOF_MISSING`**: No proof bundle found (`proof_head_sha` absent). No proof has been produced for this PR. Run the full TP cycle and produce a proof bundle.
 

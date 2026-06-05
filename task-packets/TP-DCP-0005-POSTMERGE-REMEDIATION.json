@@ -1,7 +1,7 @@
 {
   "id": "TP-DCP-0005-POSTMERGE-REMEDIATION",
   "project": "dopemux-mvp",
-  "target": "Post-merge remediation for TP-DCP-0005 red-lane scanner to unfreeze DCP series",
+  "target": "Post-merge proof discrepancy documentation for TP-DCP-0005 red-lane scanner (governance record only; series remains FROZEN)",
   "invariants": [
     "DCP series is frozen until this post-merge remediation lands.",
     "Do not revert the merge of PR #820.",
@@ -25,7 +25,7 @@
     "agent": "gemini"
   },
   "commit": {
-    "message": "chore(dcp): landing TP-DCP-0005 post-merge remediation and unfreezing series",
+    "message": "chore(dcp): downgrade TP-DCP-0005 remediation to documented reconciliation",
     "allowlist": [
       "task-packets/TP-DCP-0005-POSTMERGE-REMEDIATION.json",
       "proof/TP-DCP-0005/POST_MERGE_RECONCILIATION.json",
@@ -41,8 +41,8 @@
     ]
   },
   "pr": {
-    "title": "chore(dcp): landing TP-DCP-0005 post-merge remediation and unfreezing series",
-    "body": "Remediation PR to address the stale proof chain and unfreeze the DCP series post-PR #820 merge. Generates POST_MERGE_RECONCILIATION.json and documents the self-reference exception rule.",
+    "title": "chore(dcp): document TP-DCP-0005 post-merge proof reconciliation",
+    "body": "This PR documents the TP-DCP-0005 post-merge proof freshness discrepancy after PR #820. It does not unfreeze the DCP series and does not change scanner behavior. A follow-up packet is required if the scanner should consume POST_MERGE_RECONCILIATION.json.",
     "base": "main"
   },
   "pal_chain": {
@@ -73,10 +73,10 @@
     },
     {
       "id": "S3",
-      "task": "Document the proof self-reference rule in docs/ops/pr-steward-readiness.md and red_lane_scanner.py code comments.",
+      "task": "Neutralize scanner comment and governance doc: remove self-reference exception prose; replace with governance-record-only note. DCP series stays FROZEN.",
       "validation": [
-        "grep -q \"Self-Reference Exception\" docs/ops/pr-steward-readiness.md",
-        "grep -q \"Self-Reference Exception\" src/dopemux/dcp/red_lane_scanner.py"
+        "grep -q \"governance records only\" docs/ops/pr-steward-readiness.md",
+        "grep -q \"governance records only\" src/dopemux/dcp/red_lane_scanner.py"
       ]
     }
   ]
