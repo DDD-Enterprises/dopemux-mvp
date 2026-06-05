@@ -68,3 +68,20 @@ intent=Primary dopemux workspace. Task packets must refuse if repo_id mismatches
 ## Validation — diff within allowlist
 docs/03-reference/dcp/chatgpt-mcp-readonly/DOPEMUX_INIT_REGISTRY_DISCOVERY.md
 docs/03-reference/dcp/chatgpt-mcp-readonly/MULTI_PROJECT_REGISTRY_CONTRACT.md
+
+## Final post-commit snapshot (clean tree)
+
+### $ git rev-parse HEAD
+7715e093c4100be00d1829b4bdf4e88575911342
+
+### $ git status --short --branch
+## dcp/chatgpt-mcp-ro-0003-inspect-dopemux-init-registry-co
+ M proof/TP-DCP-MCP-RO-0003/COMMAND_LOG.md
+
+### $ git diff --stat 59b309f27ab745a76dee2dfe7c1e6c0c2e0e36fd..HEAD
+ .../DOPEMUX_INIT_REGISTRY_DISCOVERY.md             | 92 ++++++++++++++++++++++
+ .../MULTI_PROJECT_REGISTRY_CONTRACT.md             | 26 +++---
+ proof/TP-DCP-MCP-RO-0003/AUDIT.md                  | 31 ++++++++
+ proof/TP-DCP-MCP-RO-0003/COMMAND_LOG.md            | 70 ++++++++++++++++
+ proof/TP-DCP-MCP-RO-0003/PROOF.json                | 46 +++++++++++
+ 5 files changed, 254 insertions(+), 11 deletions(-)
