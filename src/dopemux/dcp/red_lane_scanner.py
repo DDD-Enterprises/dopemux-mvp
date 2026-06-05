@@ -169,6 +169,12 @@ class RedLaneScanner:
                             continue
                             
                         # Stale proof check
+                        # Note: Self-Reference Exception: Updating PROOF.json in a branch changes
+                        # the branch's head SHA. Under docs/ops/pr-acceptance.md §1 (Acceptance Gates),
+                        # proof freshness may be satisfied by an explicit supervisor-accepted
+                        # self-reference exception when the proof records proof-only changed-file
+                        # evidence and the embedded audit is nonblocking. In post-merge scenarios,
+                        # reconciliation can be recorded in POST_MERGE_RECONCILIATION.json to close the gap.
                         proof_head = data.get("head_sha")
                         if expected_head_sha and proof_head and proof_head != expected_head_sha:
                             findings.append(Finding(

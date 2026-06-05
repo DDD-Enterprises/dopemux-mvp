@@ -49,3 +49,10 @@ The implementation follows the surgical, decoupled requirements of the DCP. The 
 
 ## 6. Verdict
 **PASS**
+
+## 7. Post-Merge Remediation & Reconciliation
+Due to a self-reference exception loop (updating `PROOF.json` inside a branch changes the branch's head SHA), PR #820 was merged with `head_sha` set to `57d4807b645fd456148ed69901e051a16fd83b2c` while the actual PR head commit was `55fc77835fd78ec9b764cb13b36b54753535ca7d`.
+
+This discrepancy has been reconciled via `POST_MERGE_RECONCILIATION.json` under packet ID `TP-DCP-0005-POSTMERGE-REMEDIATION`.
+The final checks on the merge commit `62d16375119c8c7fac2fc3280152c4095c5898ac` passed successfully.
+The unfreeze of the DCP series is approved.

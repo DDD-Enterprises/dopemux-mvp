@@ -1,0 +1,11 @@
+{
+  "packet_id": "TP-DCP-0005-POSTMERGE-REMEDIATION",
+  "merged_pr": 820,
+  "merge_commit_sha": "62d16375119c8c7fac2fc3280152c4095c5898ac",
+  "pr_head_sha": "55fc77835fd78ec9b764cb13b36b54753535ca7d",
+  "previous_proof_sha_claim": "57d4807b645fd456148ed69901e051a16fd83b2c",
+  "proof_status": "RECONCILED",
+  "review_threads_resolved": true,
+  "checks_final": "PASS",
+  "dcp_series_unfreeze": true
+}
