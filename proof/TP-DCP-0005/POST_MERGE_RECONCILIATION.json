@@ -1,11 +1,31 @@
 {
   "packet_id": "TP-DCP-0005-POSTMERGE-REMEDIATION",
+  "remediates_packet_id": "TP-DCP-0005",
   "merged_pr": 820,
   "merge_commit_sha": "62d16375119c8c7fac2fc3280152c4095c5898ac",
-  "pr_head_sha": "55fc77835fd78ec9b764cb13b36b54753535ca7d",
+  "actual_pr_head_sha": "55fc77835fd78ec9b764cb13b36b54753535ca7d",
   "previous_proof_sha_claim": "57d4807b645fd456148ed69901e051a16fd83b2c",
   "proof_status": "RECONCILED",
-  "review_threads_resolved": true,
-  "checks_final": "PASS",
-  "dcp_series_unfreeze": true
+  "proof_self_reference_policy": "OBSERVED",
+  "checks_final": {
+    "pr_820_head": "PASS",
+    "pr_820_merge_commit": "NO_RUNS_FOUND",
+    "pr_821_head": "PASS",
+    "evidence": [
+      "PR #820 head (55fc778) workflow runs SUCCESS (CodeQL, PR Steward, Complete CI)",
+      "PR #821 head (e6670db) workflow runs SUCCESS (Complete CI, Security Review, PR Steward)"
+    ]
+  },
+  "review_threads_final": "RESOLVED",
+  "dcp_series_status": "UNFROZEN",
+  "unfreeze_allowed": true,
+  "blocking_reasons": [],
+  "evidence": [
+    "PR #820 merged head: 55fc77835fd78ec9b764cb13b36b54753535ca7d",
+    "PR #820 merge commit: 62d16375119c8c7fac2fc3280152c4095c5898ac",
+    "PR #821 head SHA: e6670db6bb038ccd5175a83e669c2fbd4bec6ea8",
+    "PR #821 workflow success for remediation checks",
+    "self-reference exception documented in src/dopemux/dcp/red_lane_scanner.py and docs/ops/pr-steward-readiness.md"
+  ],
+  "recommended_next_action": "Merge PR #821 if review threads are resolved and no new checks fail."
 }
