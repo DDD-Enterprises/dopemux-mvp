@@ -44,6 +44,36 @@
       "command": "python3 -m pytest tests/dcp -q",
       "exit_code": 0,
       "result": "PASS"
+    },
+    {
+      "command": "python3 -m compileall -q src tests",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python3 -m json.tool proof/TP-DCP-0005/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "schema JSON validation",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "forbidden-file diff check",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "forbidden-pattern scan, with safe false positives documented",
+      "exit_code": 0,
+      "result": "PASS"
     }
   ],
   "pal": {
@@ -91,8 +121,8 @@
     "stale": false
   },
   "residual_risks": [],
-  "pr_url": null,
-  "pr_steward_readiness_result": "NOT_RUN",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/820",
+  "pr_steward_readiness_result": "READY",
   "rollback": [],
   "stop_conditions": [],
   "live_write_ready_status": "UNDEFINED_AND_BLOCKING",
