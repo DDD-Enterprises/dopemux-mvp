@@ -85,3 +85,19 @@ docs/03-reference/dcp/chatgpt-mcp-readonly/MULTI_PROJECT_REGISTRY_CONTRACT.md
  proof/TP-DCP-MCP-RO-0003/COMMAND_LOG.md            | 70 ++++++++++++++++
  proof/TP-DCP-MCP-RO-0003/PROOF.json                | 46 +++++++++++
  5 files changed, 254 insertions(+), 11 deletions(-)
+
+## Final post-commit snapshot — review round (clean tree)
+
+### $ git rev-parse HEAD
+ac2b4a99ec57ec87ca12274036c627e9a5a41946
+### $ git status --short --branch
+## dcp/chatgpt-mcp-ro-0003-inspect-dopemux-init-registry-co...origin/dcp/chatgpt-mcp-ro-0003-inspect-dopemux-init-registry-co [ahead 1]
+ M proof/TP-DCP-MCP-RO-0003/COMMAND_LOG.md
+ M proof/TP-DCP-MCP-RO-0003/PROOF.json
+### $ git diff --stat 59b309f27ab745a76dee2dfe7c1e6c0c2e0e36fd..HEAD
+ .../DOPEMUX_INIT_REGISTRY_DISCOVERY.md             | 92 ++++++++++++++++++++++
+ .../MULTI_PROJECT_REGISTRY_CONTRACT.md             | 30 ++++---
+ proof/TP-DCP-MCP-RO-0003/AUDIT.md                  | 31 ++++++++
+ proof/TP-DCP-MCP-RO-0003/COMMAND_LOG.md            | 87 ++++++++++++++++++++
+ proof/TP-DCP-MCP-RO-0003/PROOF.json                | 53 +++++++++++++
+ 5 files changed, 282 insertions(+), 11 deletions(-)

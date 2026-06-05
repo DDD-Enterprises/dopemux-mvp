@@ -3,7 +3,7 @@
   "title": "Inspect Dopemux Init Registry Contract",
   "branch": "dcp/chatgpt-mcp-ro-0003-inspect-dopemux-init-registry-co",
   "base_sha": "59b309f27ab745a76dee2dfe7c1e6c0c2e0e36fd",
-  "head_sha": "7715e093c4100be00d1829b4bdf4e88575911342",
+  "head_sha": "ac2b4a99ec57ec87ca12274036c627e9a5a41946",
   "task_class": "unknown subsystem/API-sensitive/documentation-sensitive",
   "risk": "MEDIUM",
   "depends_on": "TP-DCP-MCP-RO-0002 (merged via PR #826; 0003 branch reset onto merged main)",
@@ -49,5 +49,8 @@
   ],
   "embedded_audit": "PASS_WITH_RISKS",
   "command_log": "proof/TP-DCP-MCP-RO-0003/COMMAND_LOG.md",
-  "audit": "proof/TP-DCP-MCP-RO-0003/AUDIT.md"
+  "audit": "proof/TP-DCP-MCP-RO-0003/AUDIT.md",
+  "review_feedback_round": {
+    "P2_registry_owner_field": "FIXED \u2014 added identity{project(required),owner(optional)} to \u00a73 schema; \u00a74.5/\u00a75 owner check made conditional (only enforced when identity.owner declared) so it is always satisfiable."
+  }
 }
