@@ -33,6 +33,9 @@ projects:
   - project_id: "dopemux-mvp"          # opaque caller-facing id
     workspace_path: "/abs/path/..."     # resolved + validated at load
     enabled: true                       # exposure switch; default false
+    identity:                           # matched against the workspace's .repo_id (§4.5)
+      project: "dopemux-mvp"            # REQUIRED; must equal .repo_id `project=`
+      owner: "hu3mann"                  # OPTIONAL; if present, must equal .repo_id `owner=`
     service_profiles:                   # per-backend bindings
       conport:
         workspace_id: "<conport-workspace-id>"
@@ -51,6 +54,7 @@ Field notes:
 - `project_id` is the **only** project handle a caller may supply.
 - `workspace_path`, `workspace_id`, `base_url`, ports, and routes are **registry-owned**; callers cannot set or override them.
 - `enabled` defaults to `false`; omission means not exposed.
+- `identity.project` is **required** (the value compared against the workspace's `.repo_id` `project=`); `identity.owner` is **optional** and only enforced when present. The identity block is the registry-side value the §4.5 identity check matches against.
 - `service_profiles` may be partial — a project missing a profile reports that capability as unavailable (see [`TOOL_CONTRACT.md`](TOOL_CONTRACT.md) and `get_project_capabilities`), returning `PARTIAL`/`BLOCKED`, never guessed data.
 
 ## 4. Validation Rules (fail closed)
@@ -59,7 +63,7 @@ Field notes:
 2. A `project_id` not present in the registry → `BLOCKED` (unknown project).
 3. A `project_id` present but `enabled: false` → `BLOCKED` (disabled project).
 4. `workspace_path` must resolve (canonical, symlink-followed) to a path **contained within an approved root**. Escape → `BLOCKED`.
-5. **Eligibility validation (`OBSERVED`-backed):** the resolved workspace must (a) validate as a real workspace via `validate_workspace()` / `get_workspace_root()` (`src/dopemux/workspace_detection.py:222`/`:82`, git-toplevel based); (b) contain a **`.dopemux/`** directory (init marker); (c) carry a **`.repo_id`** identity whose `project`/`owner` match the registry entry (`.repo_id` is the canonical identity marker per `schemas/dcp/dcp_project_resource_map.schema.json`). Any miss → `BLOCKED`.
+5. **Eligibility validation (`OBSERVED`-backed):** the resolved workspace must (a) validate as a real workspace via `validate_workspace()` / `get_workspace_root()` (`src/dopemux/workspace_detection.py:222`/`:82`, git-toplevel based); (b) contain a **`.dopemux/`** directory (init marker); (c) carry a **`.repo_id`** whose `project=` equals the registry entry's **required** `identity.project`, and — **only if** the entry declares `identity.owner` — whose `owner=` equals it. (`.repo_id` is the canonical identity marker per `schemas/dcp/dcp_project_resource_map.schema.json`.) Any miss → `BLOCKED`. The owner check is conditional so it is always satisfiable: an entry without `identity.owner` is matched on `project` alone, never blocked for a field the registry didn't declare.
 6. No caller-supplied path, URL, port, backend route, `workspace_id`, SQL, or shell is ever accepted.
 7. Registry load itself fails closed: a malformed entry disables that project rather than exposing it loosely.
 
@@ -72,7 +76,7 @@ project_id
   → workspace_path → realpath  (resolve symlinks; get_workspace_root semantics)
   → containment check          (escapes approved root → BLOCKED)
   → eligibility check          (.dopemux/ present + validate_workspace() ok → else BLOCKED)
-  → identity check             (.repo_id project/owner matches registry → else BLOCKED)
+  → identity check             (.repo_id project == identity.project; owner == identity.owner if declared → else BLOCKED)
   → bind service_profiles      (missing profile → capability unavailable / PARTIAL)
   → canonical path + bindings  → adapter
 ```
