@@ -247,6 +247,84 @@ def _iter_palette_violations(path: Path) -> list[str]:
     ]
 
 
+# Danger must read RED in every theme so "failed/blocked" never downsamples to
+# ANSI magenta/pink (the cutover fix must hold across opt-in aesthetic themes
+# too, not just the default). The theme set is sourced from theme.py.THEME_NAMES
+# so a newly-added theme can't evade this gate.
+DANGER_SLOTS = ("error", "chip.blocker", "severity.critical")
+
+
+def _hue_degrees(hex_color: str) -> float:
+    if not re.fullmatch(r"#?[0-9A-Fa-f]{6}", hex_color):
+        raise ValueError(f"invalid hex color: {hex_color!r}")
+    h = hex_color.lstrip("#")
+    r, g, b = (int(h[i : i + 2], 16) / 255 for i in (0, 2, 4))
+    mx, mn = max(r, g, b), min(r, g, b)
+    delta = mx - mn
+    if delta == 0:
+        return 0.0
+    if mx == r:
+        hue = ((g - b) / delta) % 6
+    elif mx == g:
+        hue = (b - r) / delta + 2
+    else:
+        hue = (r - g) / delta + 4
+    return hue * 60
+
+
+def _is_red_family(hex_color: str) -> bool:
+    # Red-family band around 0°: accept [340°, 360) ∪ [0°, 20°]. This rejects the
+    # magenta/pink region (~300–330°); reds near pure red (e.g. 346/0/354) pass.
+    hue = _hue_degrees(hex_color)
+    return hue >= 340 or hue <= 20
+
+
+def _iter_theme_danger_hue_violations() -> list[str]:
+    """Danger slots must resolve to a red-family hue in EVERY theme.
+
+    Fails closed: a theme/slot that cannot be resolved to a truecolor hex is a
+    violation, not a silent skip.
+    """
+    errors: list[str] = []
+    if str(REPO_ROOT) not in sys.path:
+        sys.path.insert(0, str(REPO_ROOT))
+    try:
+        try:
+            from src.dopemux.ui.theme import THEME_NAMES, build_theme
+        except ModuleNotFoundError:
+            src_dir = str(REPO_ROOT / "src")
+            if src_dir not in sys.path:
+                sys.path.insert(0, src_dir)
+            from dopemux.ui.theme import THEME_NAMES, build_theme
+    except Exception as exc:  # fail closed on import failure
+        return [
+            f"theme.py: could not import build_theme for danger-hue check: {exc} "
+            f"(sys.path[:3]={sys.path[:3]})"
+        ]
+    for name in THEME_NAMES:
+        try:
+            theme = build_theme(name)
+        except Exception as exc:  # fail closed on build failure
+            errors.append(f"theme '{name}': could not build for danger-hue check: {exc}")
+            continue
+        for slot in DANGER_SLOTS:
+            style = theme.styles.get(slot)
+            triplet = style.color.triplet if style and style.color else None
+            if triplet is None:
+                errors.append(
+                    f"theme '{name}' slot '{slot}': missing or non-truecolor danger color"
+                )
+                continue
+            hex_color = triplet.hex.upper()
+            if not _is_red_family(hex_color):
+                errors.append(
+                    f"theme '{name}' slot '{slot}'={hex_color} "
+                    f"(hue {_hue_degrees(hex_color):.0f}°) is not red-family — "
+                    f"danger must read red, not magenta/pink"
+                )
+    return errors
+
+
 def main() -> int:
     errors: list[str] = []
 
@@ -281,6 +359,7 @@ def main() -> int:
         errors.extend(_iter_merge_marker_violations(path))
 
     errors.extend(_iter_theme_default_violations())
+    errors.extend(_iter_theme_danger_hue_violations())
 
     for rel_path in OPERATIONAL_UI_FILES:
         path = _existing_path(rel_path, errors)
