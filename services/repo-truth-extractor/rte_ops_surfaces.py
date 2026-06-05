@@ -717,6 +717,11 @@ def run_provider_preflight(
         phases=phases,
         routing_policy=cfg.routing_policy,
         selected_step_ids_by_phase=selected_step_ids_by_phase or None,
+        # Probe the routes the active cost profile will actually execute, not
+        # the default profile — otherwise a launch on grok-fast/gemini-value/etc
+        # passes by checking value-default/OpenAI keys instead of the XAI/Gemini
+        # routes that run, and a missing provider key slips through.
+        cost_profile=getattr(cfg, "cost_profile", None),
     )
     provider_probes = [
         run_provider_doctor_probe(
