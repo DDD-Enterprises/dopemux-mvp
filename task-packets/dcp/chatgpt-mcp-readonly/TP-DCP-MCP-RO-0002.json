@@ -1,146 +1,53 @@
 {
   "id": "TP-DCP-MCP-RO-0002",
-  "title": "Architecture Doc And Multi Project Contract",
-  "project": "DCP Secure MCP Read-Only Evidence Facade",
-  "target": "DDD-Enterprises/dopemux-mvp",
-  "status": "READY",
-  "task_class": "architecture/documentation-sensitive/security-sensitive",
-  "risk": "MEDIUM",
-  "objective": "Create repo-tracked architecture, registry, tool-contract, response-envelope, security-model, build-series, and decision docs for the multi-project read-only evidence facade.",
-  "why_this_packet_exists_now": "Implementation should not start until the multi-project trust boundary, registry contract, response envelope, denylist, and packet series are committed. Design docs are the guardrails; without them Codex will freestyle with a flamethrower.",
-  "depends_on": [
-    "TP-DCP-MCP-RO-0001"
-  ],
-  "execution": {
-    "primary_agent": "codex",
-    "supervisor": "GPT-5.5 Pro",
-    "embedded_auditor_default": "AGY/Sonnet; fallback Claude Code Sonnet; fallback Opus/Gemini for contradiction hunt",
-    "branch": "dcp/chatgpt-mcp-ro-0002-architecture-doc-and-multi-proje"
-  },
-  "scope": {
-    "in": [
-      "Author architecture docs under docs/03-reference/dcp/chatgpt-mcp-readonly/.",
-      "Convert the GPT-5.5 architecture decisions into repo-tracked docs.",
-      "Add TASK_ORCHESTRATOR_LOAD.md summarizing the TO load sequence.",
-      "Add DECISIONS.md with explicit DCP decisions and rejected alternatives.",
-      "Add task packet markdown files for TP-DCP-MCP-RO-0002 through TP-DCP-MCP-RO-0008.",
-      "Update README.md and task-packets/INDEX.md if those files exist and pathing is confirmed."
-    ],
-    "out": [
-      "No runtime code.",
-      "No facade implementation.",
-      "No service startup.",
-      "No connector/tunnel configuration.",
-      "No changes to ConPort, dope-memory, dope-context, task-orchestrator, dopecon-bridge, dopetask, or repo-truth-extractor runtime files."
-    ]
-  },
+  "project": "dopemux-mvp",
+  "target": "Create repo-tracked architecture, registry, tool-contract, response-envelope, security-model, build-series, and decision docs for the multi-project read-only evidence facade.",
   "invariants": [
     "Facade is documented as non-authoritative evidence projection only.",
     "Every tool contract requires project_id except list_projects.",
     "Project registry is explicit approval; dopemux init is eligibility, not exposure.",
     "dopecon-bridge is denied in Phase 1.",
     "search_all is denied in Phase 1.",
-    "All UNKNOWNs remain labeled UNKNOWN."
+    "All UNKNOWNs remain labeled UNKNOWN.",
+    "OUT OF SCOPE: No runtime code.",
+    "OUT OF SCOPE: No facade implementation.",
+    "OUT OF SCOPE: No service startup.",
+    "OUT OF SCOPE: No connector/tunnel configuration.",
+    "OUT OF SCOPE: No changes to ConPort, dope-memory, dope-context, task-orchestrator, dopecon-bridge, dopetask, or repo-truth-extractor runtime files.",
+    "STOP IF: Working tree has unrelated changes.",
+    "STOP IF: Exact docs location is ambiguous.",
+    "STOP IF: Updating INDEX would require resolving unrelated historical drift.",
+    "STOP IF: A design doc requires a runtime fact not present in TP-DCP-MCP-RO-0001.",
+    "STOP IF: Any secret pattern appears in generated docs.",
+    "STOP IF: Any runtime/service/config file would need editing.",
+    "FORBIDDEN FILE: services/**",
+    "FORBIDDEN FILE: src/**",
+    "FORBIDDEN FILE: docker/**",
+    "FORBIDDEN FILE: compose*.yml",
+    "FORBIDDEN FILE: services/registry.yaml",
+    "FORBIDDEN FILE: .env*",
+    "FORBIDDEN FILE: .dopemux/**"
   ],
-  "allowed_files": [
-    "docs/03-reference/dcp/chatgpt-mcp-readonly/**",
-    "task-packets/dcp/chatgpt-mcp-readonly/**",
-    "task-packets/INDEX.md",
-    "proof/TP-DCP-MCP-RO-0002/**"
+  "depends_on": [
+    "TP-DCP-MCP-RO-0001"
   ],
-  "forbidden_files": [
-    "services/**",
-    "src/**",
-    "docker/**",
-    "compose*.yml",
-    "services/registry.yaml",
-    ".env*",
-    ".dopemux/**"
-  ],
-  "plan": [
-    "Inspect existing discovery pack and confirm files are present.",
-    "Create ARCHITECTURE.md using the 20-section DCP architecture structure.",
-    "Create MULTI_PROJECT_REGISTRY_CONTRACT.md with registry schema, validation rules, project eligibility vs exposure decision, resolver flow, symlink rules, and capability model.",
-    "Create TOOL_CONTRACT.md with Phase-1 and deferred tools, schemas, allowed routes, denied routes, and authority labels.",
-    "Create RESPONSE_ENVELOPE_SCHEMA.md with canonical envelope and status semantics.",
-    "Create SECURITY_MODEL.md with tunnel, prompt-injection, redaction, stale-proof, and side-effect controls.",
-    "Create DECISIONS.md with accepted decisions and rejected alternatives.",
-    "Create BUILD_SERIES.md and TASK_ORCHESTRATOR_LOAD.md.",
-    "Create packet markdown files for TP-DCP-MCP-RO-0002 through 0008 in task-packets/dcp/chatgpt-mcp-readonly/.",
-    "Update README.md and task-packets/INDEX.md only if present and update location is unambiguous.",
-    "Run markdown/link/path validation and inspect diff."
-  ],
-  "exact_commands": [
-    "pwd",
-    "git rev-parse --show-toplevel",
-    "git remote -v",
-    "git branch --show-current",
-    "git rev-parse HEAD",
-    "git status --short --branch",
-    "test -d docs/03-reference/dcp/chatgpt-mcp-readonly",
-    "python -m json.tool docs/03-reference/dcp/chatgpt-mcp-readonly/READ_ONLY_SURFACE_INVENTORY.json >/tmp/readonly_inventory.valid.json",
-    "rg -n \"dopecon-bridge|search_all|project_id|readonly|read-only|registry|response envelope|Secure MCP Tunnel\" docs/03-reference/dcp/chatgpt-mcp-readonly task-packets/dcp/chatgpt-mcp-readonly || true",
-    "rg -n \"READY|safe|complete\" docs/03-reference/dcp/chatgpt-mcp-readonly task-packets/dcp/chatgpt-mcp-readonly || true",
-    "git diff --stat",
-    "git diff -- docs/03-reference/dcp/chatgpt-mcp-readonly task-packets/dcp/chatgpt-mcp-readonly task-packets/INDEX.md proof/TP-DCP-MCP-RO-0002",
-    "git status --short --branch"
-  ],
-  "validation_gates": [
-    "All required docs exist.",
-    "Docs preserve OBSERVED/PROPOSED/UNKNOWN/CONFLICTING labels.",
-    "Docs include explicit Phase-1 denylist.",
-    "Docs include multi-project registry and resolver contract.",
-    "No runtime/source/config files changed.",
-    "JSON inventory validates.",
-    "Diff stays within allowlist."
-  ],
-  "proof_requirements": [
-    "PROOF.json with branch, head_sha, docs created, validation commands, exit codes.",
-    "COMMAND_LOG.md with verbatim command outputs.",
-    "AUDIT.md challenging authority labels, bridge denial, search_all denial, project registry assumptions, and scope boundaries.",
-    "git diff --stat and git diff."
-  ],
-  "acceptance_criteria": [
-    "Architecture docs are committed or commit-ready.",
-    "TO load doc and task packets exist.",
-    "No runtime implementation snuck in.",
-    "All unresolved facts are labeled UNKNOWN rather than invented."
-  ],
-  "rollback_steps": [
-    "Delete docs created under docs/03-reference/dcp/chatgpt-mcp-readonly that were created by this packet.",
-    "Delete task-packets/dcp/chatgpt-mcp-readonly files created by this packet.",
-    "Revert task-packets/INDEX.md if touched."
-  ],
-  "stop_conditions": [
-    "Working tree has unrelated changes.",
-    "Exact docs location is ambiguous.",
-    "Updating INDEX would require resolving unrelated historical drift.",
-    "A design doc requires a runtime fact not present in TP-DCP-MCP-RO-0001.",
-    "Any secret pattern appears in generated docs.",
-    "Any runtime/service/config file would need editing."
-  ],
-  "embedded_audit": {
-    "required": true,
-    "auditor_focus": [
-      "Does the architecture accidentally make facade an authority?",
-      "Does any doc allow dopecon-bridge in Phase 1?",
-      "Does any doc allow generic search/fetch before source-label integrity is implemented?",
-      "Does registry design auto-expose initialized workspaces?",
-      "Are stop conditions strong enough?"
-    ]
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "origin_hint": "github.com/DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
   },
-  "expected_output": [
-    "ARCHITECTURE.md",
-    "MULTI_PROJECT_REGISTRY_CONTRACT.md",
-    "TOOL_CONTRACT.md",
-    "RESPONSE_ENVELOPE_SCHEMA.md",
-    "SECURITY_MODEL.md",
-    "BUILD_SERIES.md",
-    "DECISIONS.md",
-    "TASK_ORCHESTRATOR_LOAD.md",
-    "Task packet markdown files 0002-0008",
-    "Proof bundle for packet 0002"
-  ],
+  "series": {
+    "id": "DCP-MCP-RO",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DCP-MCP-RO-0001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "dcp/chatgpt-mcp-ro-0002-architecture-doc-and-multi-proje",
+    "base_branch": "main"
+  },
   "commit": {
     "message": "docs(dcp): define readonly mcp facade architecture",
     "allowlist": [
@@ -158,41 +65,92 @@
   },
   "pr": {
     "title": "DCP readonly MCP facade architecture and task series",
-    "body_required_sections": [
-      "Objective",
-      "Scope",
-      "Evidence",
-      "Validation",
-      "Embedded audit",
-      "Risks and unknowns",
-      "Rollback",
-      "Proof bundle links"
-    ],
+    "body": "Create repo-tracked architecture, registry, tool-contract, response-envelope, security-model, build-series, and decision docs for the multi-project read-only evidence facade.\n\nRequired PR sections: Objective, Scope, Evidence, Validation, Embedded audit, Risks and unknowns, Rollback, Proof bundle links",
     "base": "main"
   },
-  "to_load": {
-    "epic": "DCP Secure MCP Read-Only Evidence Facade",
-    "lane": "dcp-readonly-facade",
-    "priority": "HIGH",
-    "labels": [
-      "dcp",
-      "mcp",
-      "readonly",
-      "chatgpt",
-      "secure-tunnel",
-      "dopemux"
-    ],
-    "blocked_by": [
-      "TP-DCP-MCP-RO-0001"
-    ],
-    "ready_when": [
-      "All required docs exist.",
-      "Docs preserve OBSERVED/PROPOSED/UNKNOWN/CONFLICTING labels.",
-      "Docs include explicit Phase-1 denylist.",
-      "Docs include multi-project registry and resolver contract.",
-      "No runtime/source/config files changed.",
-      "JSON inventory validates.",
-      "Diff stays within allowlist."
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
     ]
-  }
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Implement per objective: Create repo-tracked architecture, registry, tool-contract, response-envelope, security-model, build-series, and decision docs for the multi-project read-only evidence facade. In-scope work: Author architecture docs under docs/03-reference/dcp/chatgpt-mcp-readonly/. Convert the GPT-5.5 architecture decisions into repo-tracked docs. Add TASK_ORCHESTRATOR_LOAD.md summarizing the TO load sequence. Add DECISIONS.md with explicit DCP decisions and rejected alternatives. Add task packet markdown files for TP-DCP-MCP-RO-0002 through TP-DCP-MCP-RO-0008. Update README.md and task-packets/INDEX.md if those files exist and pathing is confirmed.",
+      "requirements": [
+        "Author architecture docs under docs/03-reference/dcp/chatgpt-mcp-readonly/.",
+        "Convert the GPT-5.5 architecture decisions into repo-tracked docs.",
+        "Add TASK_ORCHESTRATOR_LOAD.md summarizing the TO load sequence.",
+        "Add DECISIONS.md with explicit DCP decisions and rejected alternatives.",
+        "Add task packet markdown files for TP-DCP-MCP-RO-0002 through TP-DCP-MCP-RO-0008.",
+        "Update README.md and task-packets/INDEX.md if those files exist and pathing is confirmed."
+      ],
+      "expected_files": [
+        "ARCHITECTURE.md",
+        "MULTI_PROJECT_REGISTRY_CONTRACT.md",
+        "TOOL_CONTRACT.md",
+        "RESPONSE_ENVELOPE_SCHEMA.md",
+        "SECURITY_MODEL.md",
+        "BUILD_SERIES.md",
+        "DECISIONS.md",
+        "TASK_ORCHESTRATOR_LOAD.md",
+        "Task packet markdown files 0002-0008",
+        "Proof bundle for packet 0002"
+      ],
+      "context_files": [
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/READ_ONLY_SURFACE_INVENTORY.json",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/ARCHITECTURE.md",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md"
+      ],
+      "validation": [
+        "No files outside commit.allowlist are modified; change matches the stated scope."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Run the packet validation commands and inspect the diff.",
+      "commands": [
+        "pwd",
+        "git rev-parse --show-toplevel",
+        "git remote -v",
+        "git branch --show-current",
+        "git rev-parse HEAD",
+        "git status --short --branch",
+        "test -d docs/03-reference/dcp/chatgpt-mcp-readonly",
+        "python -m json.tool docs/03-reference/dcp/chatgpt-mcp-readonly/READ_ONLY_SURFACE_INVENTORY.json >/tmp/readonly_inventory.valid.json",
+        "rg -n \"dopecon-bridge|search_all|project_id|readonly|read-only|registry|response envelope|Secure MCP Tunnel\" docs/03-reference/dcp/chatgpt-mcp-readonly task-packets/dcp/chatgpt-mcp-readonly || true",
+        "rg -n \"READY|safe|complete\" docs/03-reference/dcp/chatgpt-mcp-readonly task-packets/dcp/chatgpt-mcp-readonly || true",
+        "git diff --stat",
+        "git diff -- docs/03-reference/dcp/chatgpt-mcp-readonly task-packets/dcp/chatgpt-mcp-readonly task-packets/INDEX.md proof/TP-DCP-MCP-RO-0002",
+        "git status --short --branch"
+      ],
+      "validation": [
+        "All required docs exist.",
+        "Docs preserve OBSERVED/PROPOSED/UNKNOWN/CONFLICTING labels.",
+        "Docs include explicit Phase-1 denylist.",
+        "Docs include multi-project registry and resolver contract.",
+        "No runtime/source/config files changed.",
+        "JSON inventory validates.",
+        "Diff stays within allowlist."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Produce the proof bundle under proof/TP-DCP-MCP-RO-0002/ (PROOF.json, COMMAND_LOG.md, AUDIT.md) and run the embedded audit.",
+      "requirements": [
+        "PROOF.json with branch, head_sha, docs created, validation commands, exit codes.",
+        "COMMAND_LOG.md with verbatim command outputs.",
+        "AUDIT.md challenging authority labels, bridge denial, search_all denial, project registry assumptions, and scope boundaries.",
+        "git diff --stat and git diff."
+      ],
+      "validation": [
+        "Proof bundle present with command outputs and exit codes.",
+        "Embedded audit verdict recorded (PASS or PASS_WITH_RISKS with non-blocking risks)."
+      ]
+    }
+  ]
 }

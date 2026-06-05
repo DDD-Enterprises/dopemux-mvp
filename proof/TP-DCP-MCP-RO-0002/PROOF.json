@@ -3,7 +3,7 @@
   "title": "Architecture Doc And Multi Project Contract",
   "branch": "dcp/chatgpt-mcp-ro-0002-architecture-doc-and-multi-proje",
   "base_sha": "62d16375119c8c7fac2fc3280152c4095c5898ac",
-  "head_sha": "382a2aeca7da50dace0d15bf956c5d429da7ebff",
+  "head_sha": "PENDING_POST_COMMIT_SYNC",
   "task_class": "architecture/documentation-sensitive/security-sensitive",
   "risk": "MEDIUM",
   "deviation": {
@@ -39,7 +39,9 @@
     "denylist_reconciles_8_plus_7_eq_15": "PASS",
     "diff_within_allowlist": "PASS",
     "no_runtime_service_config_files_touched": "PASS",
-    "no_secrets_in_docs": "PASS"
+    "no_secrets_in_docs": "PASS",
+    "packets_conform_to_canonical_schema": "PASS",
+    "precommit_hooks_pass_local": "PASS"
   },
   "validation_commands": {
     "ls docs/03-reference/dcp/chatgpt-mcp-readonly/*.md | wc -l": {
@@ -61,8 +63,17 @@
   "residual_risks": [
     "8/7 phase-1 split reconciled to inventory summary; identity of 2 deferred reads inferred (no per-surface phase_1 flag) \u2014 flagged inline, resolved in 0004/0005.",
     "RESPONSE_ENVELOPE_SCHEMA introduces 'OK' success token not named in load pack \u2014 flagged inline, reconcile in 0004.",
-    "dopemux init marker contract UNKNOWN \u2014 deferred to 0003."
+    "dopemux init marker contract UNKNOWN \u2014 deferred to 0003.",
+    "get_index_status named in 0006 load-pack scope has no inventory surface \u2014 relabeled PROPOSED + must be inventoried-with-evidence or deferred before 0006 exposes it."
   ],
   "command_log": "proof/TP-DCP-MCP-RO-0002/COMMAND_LOG.md",
-  "audit": "proof/TP-DCP-MCP-RO-0002/AUDIT.md"
+  "audit": "proof/TP-DCP-MCP-RO-0002/AUDIT.md",
+  "review_feedback_round": {
+    "pr": "#826",
+    "P1_packet_schema": "FIXED \u2014 converted 7 DCP-MCP-RO packets to dopetask canonical schema; all pass jsonschema.validate.",
+    "P2_get_index_status": "FIXED \u2014 relabeled PROPOSED (not in inventory) in TOOL_CONTRACT.md \u00a71c with deferral note.",
+    "P2_proof_sha": "NOTED \u2014 reviewed SHA was GitHub ephemeral merge ref; head_sha tracks branch tip.",
+    "ci_frontmatter": "FIXED \u2014 frontmatter added to 7 packet .md stubs + TASK_ORCHESTRATOR_LOAD.md.",
+    "ci_markdownlint": "FIXED \u2014 INDEX.md MD055 (blank line before divider)."
+  }
 }
