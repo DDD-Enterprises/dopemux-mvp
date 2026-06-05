@@ -1,0 +1,63 @@
+{
+  "packet_id": "TP-DCP-MCP-RO-0005",
+  "title": "ConPort And Dope Memory Read Adapters",
+  "branch": "dcp/chatgpt-mcp-ro-0005-conport-and-dope-memory-read-ada",
+  "base_branch": "main",
+  "base_sha": "876d0c624 (PR #830 / 0004 merge)",
+  "head_sha": "PENDING_POST_COMMIT_SYNC",
+  "task_class": "implementation/security-sensitive/API-sensitive",
+  "risk": "HIGH",
+  "depends_on": "TP-DCP-MCP-RO-0004 (merged via PR #830)",
+  "added": "services/dcp-readonly-facade/src/dcp_facade/{http_client,route_manifest,conport,dope_memory}.py + 4 tools in tools.py + 4 server wrappers + tests + envelope constants + FACADE_LOCAL_RUN route manifest",
+  "tools_added": [
+    "search_decisions (ConPort GET decisions / search; limit<=20)",
+    "search_progress (ConPort GET progress; limit<=20)",
+    "search_chronicle (dope-memory POST memory_search; top_k<=3)",
+    "replay_chronicle_session (dope-memory POST memory_replay_session; top_k<=3; replay_current default)"
+  ],
+  "route_allowlist": {
+    "conport": ["GET /api/decisions", "GET /api/progress", "GET /api/search/{workspace_id}"],
+    "dope_memory_post_read_only": ["/tools/memory_search", "/tools/memory_replay_session"]
+  },
+  "denied_and_unreachable": [
+    "ConPort POST /api/decisions / progress / custom_data",
+    "dope-memory memory_correct / reflection / store / mark_issue / link_resolution",
+    "dopecon-bridge /ddg/, any /kg/ or /route/pm",
+    "any PUT/PATCH/DELETE or generic request() (no such method exists)"
+  ],
+  "validation": {
+    "pytest": "PASS (81 passed, 1 live skipped)",
+    "compileall": "PASS",
+    "denylist_tokens_only_in_manifest_and_tests": "PASS (adapter call paths clean)",
+    "post_allowlist_is_exactly_two_read_paths": "PASS",
+    "no_caller_supplied_base_url_or_workspace_id": "PASS (registry-bound)",
+    "loopback_ssrf_guard": "PASS (ipaddress.is_loopback; 0.0.0.0/::/routable rejected)",
+    "response_size_cap_and_2xx_only_parse": "PASS",
+    "fail_closed_backend_error_to_BLOCKED_non2xx_to_PARTIAL": "PASS",
+    "backend_payload_redacted": "PASS",
+    "diff_within_allowlist": "PASS",
+    "no_forbidden_files": "PASS",
+    "httpx_lazy_import": "PASS",
+    "docs_precommit": "PASS (markdownlint, frontmatter)"
+  },
+  "pal_codereview": {
+    "tool": "pal/codereview (security, external)",
+    "model": "gpt-5.2",
+    "critical_fixed": ["unbounded-response-size-DoS", "parsing-non-2xx-bodies"],
+    "high_fixed": ["string-loopback-check->ipaddress", "workspace_id-path-encoding", "_join-rejects-query-fragment"],
+    "medium_fixed": ["generic-block-reason-no-leak", "narrow-json-except", "query-strip-and-cap"],
+    "accepted_as_is": ["sync-http-in-async-wrapper (Phase-1)", "DNS-rebinding-not-addressable (registry-owned literal host)"]
+  },
+  "deviations": [
+    "services/registry.yaml NOT updated (packet forbidden_files; stdio MCP server).",
+    "branch cut fresh off origin/main 876d0c624 after #830 merged."
+  ],
+  "residual_risks": [
+    "Sync httpx call briefly blocks the async MCP wrapper; async/threadpool deferred to 0008.",
+    "Redaction is heuristic defence-in-depth; reachability exercised via mocked transport (live tests opt-in).",
+    "httpx optional/lazy; live endpoint needs httpx installed."
+  ],
+  "embedded_audit": "PASS_WITH_RISKS",
+  "command_log": "proof/TP-DCP-MCP-RO-0005/COMMAND_LOG.md",
+  "audit": "proof/TP-DCP-MCP-RO-0005/AUDIT.md"
+}
