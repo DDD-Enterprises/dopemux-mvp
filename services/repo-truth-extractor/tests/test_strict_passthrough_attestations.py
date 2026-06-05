@@ -341,7 +341,11 @@ def test_explicit_openrouter_route_outside_primary_contract_is_not_synthesized_v
         ),
     )
 
-    with pytest.raises(RuntimeError, match="openrouter_strict_passthrough_unverified"):
+    # The explicit-override strict guard (assert_strict_route_provider_allowed)
+    # now fails closed before the passthrough-verification path: an
+    # openrouter/anthropic route on a strict step is rejected for not being an
+    # OpenAI-namespace strict-capable model.
+    with pytest.raises(RuntimeError, match="not strict-JSON capable"):
         runner.resolve_effective_step_route("A", "A0", cfg, step_contract=contract)
 
     selected_route = ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY")

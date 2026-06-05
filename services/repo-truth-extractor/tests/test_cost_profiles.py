@@ -457,6 +457,66 @@ def test_resolve_contract_routes_resolves_all_stages() -> None:
     assert contract["lane"]["primary_routes"][0]["model_id"] == "${BULK_DOCS_MODEL}"
 
 
+def _model_map_steps_by_lane(*lane_classes):
+    import yaml as _yaml
+
+    mm = Path(__file__).resolve().parents[1] / "promptsets" / "v4" / "model_map.yaml"
+    data = _yaml.safe_load(mm.read_text(encoding="utf-8"))
+    out = []
+    for step in data.get("steps", []):
+        if step.get("lane_class") in lane_classes:
+            out.append((str(step["phase"]), str(step["step_id"]), step["lane_class"]))
+    return out
+
+
+def test_strict_repair_sidefill_leads_resolve_to_openai_across_profiles() -> None:
+    """Increment 3: every CE/AGG repair_routes/sidefill_routes lead must resolve,
+    under every cost profile, to an OpenAI strict-capable model with no ${} leak,
+    so the profile drives the repair/sidefill model and the strict guard passes."""
+    steps = _model_map_steps_by_lane("CE", "AGG")
+    assert steps, "expected CE/AGG steps in model_map"
+    for profile in runner.COST_PROFILES:
+        cfg = _make_cfg(cost_profile=profile)
+        for phase, step_id, _lane in steps:
+            resolved = runner.resolve_contract_routes(
+                runner._step_contract_for(phase, step_id), cfg
+            )
+            for stage in ("repair_routes", "sidefill_routes"):
+                rows = resolved["lane"].get(stage) or []
+                assert rows, f"{phase}:{step_id} {stage} empty"
+                lead = rows[0]
+                assert not str(lead["model_id"]).startswith("${"), (
+                    f"{profile} {phase}:{step_id} {stage} leaked {lead['model_id']}"
+                )
+                # Must pass the strict-provider guard (raises otherwise).
+                runner.assert_strict_route_provider_allowed(
+                    phase=phase,
+                    step_id=step_id,
+                    provider=str(lead["provider"]),
+                    model_id=str(lead["model_id"]),
+                )
+                assert lead.get("strict_json_schema") is True
+
+
+def test_ce_repair_sidefill_lead_tracks_cost_profile() -> None:
+    """The CE repair/sidefill lead model changes with the profile (value-default
+    -> codex, economy -> codex-mini, quality -> gpt-5.5)."""
+    expected = {
+        "value-default": "gpt-5.3-codex",
+        "economy": "gpt-5.1-codex-mini",
+        "quality": "gpt-5.5",
+    }
+    for profile, model in expected.items():
+        cfg = _make_cfg(cost_profile=profile)
+        resolved = runner.resolve_contract_routes(
+            runner._step_contract_for("D", "D0"), cfg
+        )
+        for stage in ("repair_routes", "sidefill_routes"):
+            lead = resolved["lane"][stage][0]
+            assert lead["provider"] == "openai"
+            assert lead["model_id"] == model
+
+
 def test_strict_guard_rejects_disallowed_provider() -> None:
     import pytest
 

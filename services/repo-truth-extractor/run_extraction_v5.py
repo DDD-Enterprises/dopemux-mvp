@@ -5647,6 +5647,17 @@ def _resolve_explicit_route_override(
     if selected is None:
         return None
     provider, model_id, api_key_env = _resolve_route_tuple_alias(selected, cfg)
+    if strict_required:
+        # Close the explicit-override bypass: strict_capability_reason accepts
+        # xAI over the OpenAI-compatible transport, so an operator-supplied
+        # DPMX_EXPLICIT_STEP_ROUTES=xai/... would otherwise slip past the
+        # OpenAI/OpenRouter-only strict invariant. Enforce it before return.
+        assert_strict_route_provider_allowed(
+            phase=phase,
+            step_id=step_id,
+            provider=str(provider),
+            model_id=str(model_id),
+        )
     contract_route_entry = _contract_route_entry_for_provider_model(
         step_contract,
         provider=str(provider),
@@ -15425,7 +15436,7 @@ else sdk_auth_present_flags(p_provider, True)
             )
             if selected_route is None:
                 selected_route, strict_attempts = resolve_stage_route(
-                    step_contract=step_contract,
+                    step_contract=resolve_contract_routes(step_contract, cfg),
                     stage=stage,
                     transport_for_provider=lambda provider: transport_for_provider(
                         provider, cfg
@@ -15456,6 +15467,16 @@ else sdk_auth_present_flags(p_provider, True)
             strict_provider = str(selected_route["provider"])
             strict_model_id = str(selected_route["model_id"])
             strict_api_key_env = str(selected_route["api_key_env"])
+            if strict_contract_required:
+                # Fail closed before spend if a strict repair/sidefill route
+                # resolved to a non-OpenAI provider (defense-in-depth: profiles
+                # never map strict cells off OpenAI, but --model-alias/env could).
+                assert_strict_route_provider_allowed(
+                    phase=phase,
+                    step_id=step_id,
+                    provider=strict_provider,
+                    model_id=strict_model_id,
+                )
             response_format, response_meta = build_provider_step_contract_output(
                 route=dict(selected_route),
                 transport=transport_for_provider(strict_provider, cfg),
@@ -17422,7 +17443,7 @@ else sdk_auth_present_flags(p_provider, True)
             )
             if soft_gate_route is None:
                 soft_gate_route, soft_gate_attempts = resolve_stage_route(
-                    step_contract=step_contract,
+                    step_contract=resolve_contract_routes(step_contract, cfg),
                     stage="repair",
                     transport_for_provider=lambda provider: transport_for_provider(
                         provider, cfg
@@ -17437,6 +17458,13 @@ else sdk_auth_present_flags(p_provider, True)
                     str(soft_gate_route["model_id"]),
                     str(soft_gate_route["api_key_env"]),
                 )
+                if strict_contract_required:
+                    assert_strict_route_provider_allowed(
+                        phase=phase,
+                        step_id=step_id,
+                        provider=fallback_tuple[0],
+                        model_id=fallback_tuple[1],
+                    )
                 logger.info(
                     "SOFT_GATE_TRIGGER phase=%s step=%s failed=%s route=%s",
                     phase,

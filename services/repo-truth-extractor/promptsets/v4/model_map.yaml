@@ -24,12 +24,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -56,12 +66,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -376,12 +396,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -408,12 +438,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -440,12 +480,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -466,12 +516,22 @@ steps:
     strict_passthrough_verified: true
   repair_routes:
   - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -498,12 +558,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -620,12 +690,22 @@ steps:
     strict_passthrough_verified: true
   repair_routes:
   - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -652,12 +732,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -716,12 +806,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -748,12 +848,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -780,12 +890,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -908,12 +1028,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -934,12 +1064,22 @@ steps:
     strict_passthrough_verified: true
   repair_routes:
   - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -1030,12 +1170,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -1062,12 +1212,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -1094,12 +1254,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -1126,12 +1296,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -1163,12 +1343,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -1200,12 +1390,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -1301,12 +1501,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -1338,12 +1548,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -1370,12 +1590,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -1588,12 +1818,22 @@ steps:
     strict_passthrough_verified: true
   repair_routes:
   - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -1620,12 +1860,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -1652,12 +1902,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -1780,12 +2040,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -1812,12 +2082,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -1844,12 +2124,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -1870,12 +2160,22 @@ steps:
     strict_passthrough_verified: true
   repair_routes:
   - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -1902,12 +2202,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -1934,12 +2244,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -1998,12 +2318,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -2152,12 +2482,22 @@ steps:
     strict_passthrough_verified: true
   repair_routes:
   - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -2406,12 +2746,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -2539,12 +2889,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -2576,12 +2936,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -2613,12 +2983,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -2650,12 +3030,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -2687,12 +3077,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -2756,12 +3156,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -2857,12 +3267,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -2889,12 +3309,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -2921,12 +3351,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -3075,12 +3515,22 @@ steps:
     strict_passthrough_verified: true
   repair_routes:
   - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -3112,12 +3562,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -3149,12 +3609,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -3282,12 +3752,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -3319,12 +3799,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -3388,12 +3878,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${SYNTH_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -3420,12 +3920,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -3452,12 +3962,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -3484,12 +4004,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -3516,12 +4046,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -3548,12 +4088,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -3580,12 +4130,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
@@ -4353,12 +4913,22 @@ steps:
     service_tier: flex
   repair_routes:
   - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
+  - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
     service_tier: flex
   sidefill_routes:
+  - provider: openai
+    model_id: ${CE_MODEL}
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.5
     api_key_env: OPENAI_API_KEY
