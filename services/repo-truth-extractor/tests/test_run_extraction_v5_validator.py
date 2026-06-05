@@ -267,9 +267,17 @@ def test_enforce_pre_live_validator_emits_block_on_structured_no_go(
 def test_enforce_pre_live_validator_fails_closed_on_malformed_stdout(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
 ) -> None:
     runner = _load_runner_module()
     monkeypatch.setenv("DPMX_LIVE_OK", "1")
+    expected_output_dir = tmp_path / "malformed-prelive-output"
+
+    monkeypatch.setattr(
+        runner,
+        "create_pre_live_validator_output_dir",
+        lambda root: expected_output_dir,
+    )
 
     def _fake_subprocess_run(*args, **kwargs):
         return _FakeCompletedProcess(
@@ -294,7 +302,7 @@ def test_enforce_pre_live_validator_fails_closed_on_malformed_stdout(
         "treating as block (fail-closed)."
     ) in captured.err
     assert "  reason_codes: none reported" in captured.err
-    assert "  output_dir: <unknown>" in captured.err
+    assert f"  output_dir: {expected_output_dir}" in captured.err
     assert "    oops" in captured.err
     assert "verdict=NO_GO" in str(excinfo.value)
 
@@ -302,9 +310,17 @@ def test_enforce_pre_live_validator_fails_closed_on_malformed_stdout(
 def test_enforce_pre_live_validator_fails_closed_on_empty_stdout(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
 ) -> None:
     runner = _load_runner_module()
     monkeypatch.setenv("DPMX_LIVE_OK", "1")
+    expected_output_dir = tmp_path / "prelive-validator-output"
+
+    monkeypatch.setattr(
+        runner,
+        "create_pre_live_validator_output_dir",
+        lambda root: expected_output_dir,
+    )
 
     def _fake_subprocess_run(*args, **kwargs):
         return _FakeCompletedProcess(returncode=0, stdout="", stderr="")
@@ -325,6 +341,7 @@ def test_enforce_pre_live_validator_fails_closed_on_empty_stdout(
         "treating as block (fail-closed)."
     ) in captured.err
     assert "  verdict: NO_GO" in captured.err
+    assert f"  output_dir: {expected_output_dir}" in captured.err
     assert "verdict=NO_GO" in str(excinfo.value)
 
 

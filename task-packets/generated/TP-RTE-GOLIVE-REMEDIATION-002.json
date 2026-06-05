@@ -37,20 +37,22 @@
       "task-packets/INDEX.md",
       "proof/rte-golive-remediation/TP-RTE-GOLIVE-REMEDIATION-002/implementation-notes.md",
       "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/rte_ops_surfaces.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
       "services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py"
     ],
     "verify": [
       "python -m json.tool task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-002.json >/dev/null",
       "python -m jsonschema -i task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-002.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
-      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 PYTHONPATH=services/repo-truth-extractor python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py services/repo-truth-extractor/tests/test_pre_live_gate_v25.py -q --tb=short --disable-warnings --no-cov",
+      "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 PYTHONPATH=services/repo-truth-extractor python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/test_pre_live_gate_v25.py -q --tb=short --disable-warnings --no-cov",
       "python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/validate_pre_live_gate_v25.py",
       "git diff --check",
-      "pre-commit run --files task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-002.json task-packets/INDEX.md proof/rte-golive-remediation/TP-RTE-GOLIVE-REMEDIATION-002/implementation-notes.md services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py"
+      "pre-commit run --files task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-002.json task-packets/INDEX.md proof/rte-golive-remediation/TP-RTE-GOLIVE-REMEDIATION-002/implementation-notes.md services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/rte_ops_surfaces.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py"
     ]
   },
   "pr": {
     "title": "fix(rte): contain pre-live validator execution",
-    "body": "## Summary\n- Requires the live-execution pre-live validator subprocess to return parsed JSON with `verdict=GO`; empty stdout, malformed stdout, missing verdicts, and non-zero exits all fail closed.\n- Passes an isolated validator `--output-dir` from the runner gate so validator report artifacts do not dirty the repo working tree by default.\n\n## Validation\n- python -m json.tool task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-002.json >/dev/null\n- python -m jsonschema -i task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-002.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- RTE_DISABLE_LIVE_LLM_IN_TESTS=1 PYTHONPATH=services/repo-truth-extractor python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py services/repo-truth-extractor/tests/test_pre_live_gate_v25.py -q --tb=short --disable-warnings --no-cov\n- python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/validate_pre_live_gate_v25.py\n- git diff --check\n- pre-commit run --files task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-002.json task-packets/INDEX.md proof/rte-golive-remediation/TP-RTE-GOLIVE-REMEDIATION-002/implementation-notes.md services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py\n\n## NOT_RUN\n- Live extraction.\n- Live provider calls or network preflight.\n- Full RTE suite.\n- Route availability changes.\n- Network/secrets containment.\n- Prescan closeout.\n\n@codex review\n@gemini\n@copilot",
+    "body": "## Summary\n- Requires the live-execution pre-live validator subprocess to return parsed JSON with `verdict=GO`; empty stdout, malformed stdout, missing verdicts, and non-zero exits all fail closed.\n- Passes an isolated validator `--output-dir` from the runner gate and preset validator-first path so validator report artifacts do not dirty the repo working tree by default.\n- Reports the known isolated validator output directory in fail-closed blocks when validator stdout omits `output_dir`.\n\n## Validation\n- python -m json.tool task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-002.json >/dev/null\n- python -m jsonschema -i task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-002.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- RTE_DISABLE_LIVE_LLM_IN_TESTS=1 PYTHONPATH=services/repo-truth-extractor python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/test_pre_live_gate_v25.py -q --tb=short --disable-warnings --no-cov\n- python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/validate_pre_live_gate_v25.py\n- git diff --check\n- pre-commit run --files task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-002.json task-packets/INDEX.md proof/rte-golive-remediation/TP-RTE-GOLIVE-REMEDIATION-002/implementation-notes.md services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/rte_ops_surfaces.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py\n\n## NOT_RUN\n- Live extraction.\n- Live provider calls or network preflight.\n- Full RTE suite.\n- Route availability changes.\n- Network/secrets containment.\n- Prescan closeout.\n\n@codex review\n@gemini\n@copilot",
     "base": "main"
   },
   "pal_chain": {
@@ -82,9 +84,10 @@
     },
     {
       "id": "S2",
-      "task": "Add focused RED tests proving that empty or missing validator stdout blocks live execution and that the runner passes an isolated validator output directory.",
+      "task": "Add focused RED tests proving that empty or missing validator stdout blocks live execution, the runner passes an isolated validator output directory, the preset validator-first path passes an isolated output directory, and fail-closed blocks report the known isolated path.",
       "expected_files": [
-        "services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py"
+        "services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py",
+        "services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py"
       ],
       "validation": [
         "Targeted tests fail before implementation for the new fail-closed and output-dir containment assertions."
@@ -94,10 +97,11 @@
       "id": "S3",
       "task": "Implement the minimal RTE runner changes required by S2 while preserving consent gates, structured operator block output, and existing GO behavior for parsed validator payloads.",
       "expected_files": [
-        "services/repo-truth-extractor/run_extraction_v5.py"
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/rte_ops_surfaces.py"
       ],
       "validation": [
-        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 PYTHONPATH=services/repo-truth-extractor python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py services/repo-truth-extractor/tests/test_pre_live_gate_v25.py -q --tb=short --disable-warnings --no-cov"
+        "RTE_DISABLE_LIVE_LLM_IN_TESTS=1 PYTHONPATH=services/repo-truth-extractor python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/test_pre_live_gate_v25.py -q --tb=short --disable-warnings --no-cov"
       ]
     },
     {

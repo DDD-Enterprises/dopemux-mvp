@@ -27,6 +27,8 @@ prelude: Implementation notes for the second RTE go-live remediation slice.
 - Updated the live-execution validator gate to require parsed JSON `verdict=GO` plus exit code 0 before allowing execution.
 - Updated the runner validator command construction to isolate validator output artifacts outside the repo working tree.
 - Updated validator block parsing helpers to ignore non-object JSON payloads and fail closed through the existing missing-verdict path.
+- Review follow-up: extended the validator-first preset helper path to pass an isolated `--output-dir` as well.
+- Review follow-up: fail-closed validator blocks now report the known isolated output directory when validator stdout omits `output_dir`.
 
 ## TDD Evidence
 
@@ -34,13 +36,16 @@ prelude: Implementation notes for the second RTE go-live remediation slice.
 - RED: `test_enforce_pre_live_validator_passes_isolated_output_dir` failed because the validator command lacked `--output-dir`.
 - RED: `test_enforce_pre_live_validator_fails_closed_on_non_object_stdout` failed with a list `.get` crash.
 - RED: `test_emit_validator_first_preset_block_non_object_stdout` failed with the same list `.get` crash.
+- RED: review follow-up `test_enforce_pre_live_validator_fails_closed_on_empty_stdout` failed because the block still reported `output_dir: <unknown>`.
+- RED: review follow-up `test_run_pre_live_validator_passes_isolated_output_dir` failed because `run_pre_live_validator` did not accept `output_dir`.
+- RED: review follow-up `test_first_live_preset_validator_uses_isolated_output_dir` failed because the preset validator-first path did not pass `output_dir`.
 
 ## Validation
 
 - `python -m json.tool task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-002.json >/dev/null` - PASS
 - `python -m jsonschema -i task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-002.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json` - PASS; emitted jsonschema CLI deprecation warning only.
-- `RTE_DISABLE_LIVE_LLM_IN_TESTS=1 PYTHONPATH=services/repo-truth-extractor python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py services/repo-truth-extractor/tests/test_pre_live_gate_v25.py -q --tb=short --disable-warnings --no-cov` - PASS, 28 passed
-- `python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/validate_pre_live_gate_v25.py` - PASS
+- `RTE_DISABLE_LIVE_LLM_IN_TESTS=1 PYTHONPATH=services/repo-truth-extractor python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/test_pre_live_gate_v25.py -q --tb=short --disable-warnings --no-cov` - PASS
+- `python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/rte_ops_surfaces.py services/repo-truth-extractor/validate_pre_live_gate_v25.py` - PASS
 - `git diff --check` - PASS
 - `pre-commit run --files ...` on the Task Packet allowlist - PASS
 
