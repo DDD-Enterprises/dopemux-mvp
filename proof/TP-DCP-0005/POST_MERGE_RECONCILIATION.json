@@ -1,0 +1,6 @@
+{
+  "proof_status": "RECONCILED_DOCUMENTED",
+  "dcp_series_status": "FROZEN",
+  "unfreeze_allowed": false,
+  "recommended_next_action": "Create a follow-up packet to teach the red-lane scanner how to consume POST_MERGE_RECONCILIATION.json before stale proof can be cleared automatically."
+}
