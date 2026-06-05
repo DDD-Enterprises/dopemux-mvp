@@ -3,6 +3,7 @@ id: dcp-mcp-readonly-architecture
 title: DCP Read-Only MCP Evidence Facade — Architecture
 type: reference
 owner: '@hu3mann'
+author: '@hu3mann'
 date: '2026-06-05'
 last_review: '2026-06-05'
 next_review: '2026-09-03'
