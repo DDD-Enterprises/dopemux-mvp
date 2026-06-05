@@ -92,6 +92,19 @@
     "execution.agent enum is [gemini, codex, vibe, shell]; no 'claude' option. Used 'shell' (executed via shell tooling in an interactive session)."
   ],
   "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/829",
+  "followup_fixes": [
+    {
+      "trigger": "Codex review on PR #829 (comment 3361825918, P2): validator reduced allowed-tools to mcp__task-orchestrator__* before the read-surface check, so a read command could gain a non-orchestrator write (Write/Edit or mcp__conport__log_*) and still PASS.",
+      "fix": "Added a fail-closed read_command_nonorch_allowlist to the manifest and validator failure condition (g): a read command's non-orchestrator tools must all be on the allowlist (read helpers + Bash + explicitly read-only MCP tools). Extended tests with two bite tests (Write, mcp__conport__log_decision). Updated inventory §3/§5.",
+      "files": [
+        ".taskorchestrator/surface_manifest.json",
+        "scripts/validate_dx_surface.py",
+        "tests/orchestrator/test_dx_surface_manifest.py",
+        "docs/03-reference/systems/task-orchestrator/callable-surface-inventory.md"
+      ],
+      "validation": "validator PASS; pytest 10 passed; bite tests confirm condition (g) catches Write and ConPort-write drift."
+    }
+  ],
   "blockers": [],
   "cleanup_status": "No temp files left in the commit; bite-test mutation reverted and confirmed clean via git status.",
   "review_transition": "HELD pending human signoff (orchestrator item 54d02bdb is supervised-only). proof-bundle note to be filled; review advance not auto-applied.",

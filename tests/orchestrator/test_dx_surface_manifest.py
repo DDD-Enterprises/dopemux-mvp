@@ -99,3 +99,55 @@ def test_validator_bites_when_read_command_gains_a_write_tool(validator, tmp_pat
     failures, _ = validator.run_validation(tmp_path)
     assert any("advance_item" in f and "tree" in f for f in failures), \
         f"validator failed to catch a read command gaining a write tool; failures={failures}"
+
+
+def test_read_command_nonorch_allowlist_present_and_writefree(manifest):
+    """The fail-closed allowlist must exist and contain no obvious mutating tool."""
+    allow = manifest.get("read_command_nonorch_allowlist", {}).get("tools")
+    assert isinstance(allow, list) and allow, "manifest missing read_command_nonorch_allowlist.tools"
+    forbidden = {"Write", "Edit", "MultiEdit", "NotebookEdit"}
+    assert not (set(allow) & forbidden), f"allowlist must not contain repo-write tools: {set(allow) & forbidden}"
+    # No ConPort/dope-context *write* tool should be allowlisted (only read helpers).
+    for t in allow:
+        assert not any(
+            t.startswith(p) for p in ("mcp__conport__log", "mcp__conport__update",
+                                      "mcp__conport__delete", "mcp__dope-context__index")
+        ), f"allowlist must not contain a bridge/memory write tool: {t}"
+
+
+def test_committed_read_commands_obey_nonorch_allowlist(validator, manifest):
+    """Every committed read command's non-orchestrator tools are within the allowlist."""
+    allow = set(manifest["read_command_nonorch_allowlist"]["tools"])
+    for name in manifest["read_surface"]:
+        path = DX_DIR / f"{name}.md"
+        nonorch = validator.nonorch_tools(validator.parse_frontmatter_allowed_tools(path))
+        assert nonorch.issubset(allow), \
+            f"{name} read command lists non-orchestrator tool(s) outside the allowlist: {nonorch - allow}"
+
+
+def test_validator_bites_when_read_command_gains_a_nonorch_write_tool(validator, tmp_path):
+    """A read command gaining a repo/bridge write (e.g. Write) must fail condition (g)."""
+    (tmp_path / ".taskorchestrator").mkdir()
+    shutil.copy(MANIFEST, tmp_path / ".taskorchestrator" / "surface_manifest.json")
+    dx = tmp_path / ".claude" / "commands" / "dx"
+    dx.mkdir(parents=True)
+    for p in DX_DIR.glob("*.md"):
+        shutil.copy(p, dx / p.name)
+
+    assert validator.run_validation(tmp_path)[0] == []  # untampered passes
+
+    # Inject a repo-write tool into a read command (tree).
+    tree = dx / "tree.md"
+    tree.write_text(tree.read_text().replace('"Bash", "Read",', '"Bash", "Read", "Write",', 1))
+    failures, _ = validator.run_validation(tmp_path)
+    assert any("Write" in f and "tree" in f for f in failures), \
+        f"validator failed to catch a read command gaining a non-orchestrator write tool; failures={failures}"
+
+    # And a bridge write (ConPort log) must also be caught.
+    shutil.copy(DX_DIR / "tree.md", tree)  # restore clean
+    tree.write_text(
+        tree.read_text().replace('"Bash", "Read",', '"Bash", "Read", "mcp__conport__log_decision",', 1)
+    )
+    failures, _ = validator.run_validation(tmp_path)
+    assert any("mcp__conport__log_decision" in f and "tree" in f for f in failures), \
+        f"validator failed to catch a read command gaining a ConPort write tool; failures={failures}"
