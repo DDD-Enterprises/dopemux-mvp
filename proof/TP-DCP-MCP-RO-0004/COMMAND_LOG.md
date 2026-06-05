@@ -52,3 +52,22 @@ services/dcp-readonly-facade/tests/test_tools.py
 
 ## outside-allowlist files (expect none)
 (none — diff within allowlist)
+
+## Final post-commit snapshot (clean tree)
+
+### $ git rev-parse HEAD
+0a25035a7ec8e7ec877bc78b412c7e206170ffb6
+### $ git status --short --branch
+## dcp/chatgpt-mcp-ro-0004-facade-scaffold-registry-resolve...origin/main [ahead 1]
+ M proof/TP-DCP-MCP-RO-0004/COMMAND_LOG.md
+### $ git diff --stat 9334c2005f16706a96e6433b9c4e6522a9ee5b45..HEAD
+ .../dcp-readonly-facade/src/mcp/fastmcp_stub.py    |  31 ++++
+ services/dcp-readonly-facade/src/mcp/server.py     |  82 ++++++++++
+ .../dcp-readonly-facade/tests/test_envelope.py     |  39 +++++
+ .../dcp-readonly-facade/tests/test_gitstate.py     |  34 +++++
+ services/dcp-readonly-facade/tests/test_proofs.py  | 102 +++++++++++++
+ .../dcp-readonly-facade/tests/test_redaction.py    |  71 +++++++++
+ .../dcp-readonly-facade/tests/test_registry.py     |  90 +++++++++++
+ .../dcp-readonly-facade/tests/test_resolver.py     | 113 ++++++++++++++
+ services/dcp-readonly-facade/tests/test_tools.py   | 107 +++++++++++++
+ 26 files changed, 1954 insertions(+), 2 deletions(-)

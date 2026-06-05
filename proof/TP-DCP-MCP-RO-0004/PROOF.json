@@ -3,7 +3,7 @@
   "title": "Facade Scaffold Registry Resolver Repo Proof Tools",
   "branch": "dcp/chatgpt-mcp-ro-0004-facade-scaffold-registry-resolve",
   "base_branch": "main",
-  "head_sha": "PENDING_POST_COMMIT_SYNC",
+  "head_sha": "0a25035a7ec8e7ec877bc78b412c7e206170ffb6",
   "task_class": "implementation/security-sensitive",
   "risk": "HIGH",
   "depends_on": "TP-DCP-MCP-RO-0003 (merged via PR #828)",
@@ -41,13 +41,25 @@
   "pal_codereview": {
     "tool": "pal/codereview (security, external)",
     "model": "gpt-5.2",
-    "critical_fixed": ["unbounded-read-before-cap", "ReDoS via packet_id_regex"],
-    "high_fixed": ["TOCTOU read-via-unresolved-path", "redaction misses non-home roots + dict keys"],
-    "medium_fixed": ["iterdir DoS scan-bound", "broad except narrowed"],
-    "accepted_as_is": ["repo_id case-sensitive (fail-closed)", "gitstate swallows errors -> None/PARTIAL"]
+    "critical_fixed": [
+      "unbounded-read-before-cap",
+      "ReDoS via packet_id_regex"
+    ],
+    "high_fixed": [
+      "TOCTOU read-via-unresolved-path",
+      "redaction misses non-home roots + dict keys"
+    ],
+    "medium_fixed": [
+      "iterdir DoS scan-bound",
+      "broad except narrowed"
+    ],
+    "accepted_as_is": [
+      "repo_id case-sensitive (fail-closed)",
+      "gitstate swallows errors -> None/PARTIAL"
+    ]
   },
   "deviations": [
-    "services/registry.yaml NOT updated (packet forbidden_files; stdio MCP server, not HTTP service) — flagged for operator.",
+    "services/registry.yaml NOT updated (packet forbidden_files; stdio MCP server, not HTTP service) \u2014 flagged for operator.",
     "packet_id_filter (literal substring) supersedes the inventory's 'packet_id regex' for ReDoS safety; TOOL_CONTRACT updated.",
     "branch reset onto latest origin/main before commit (net-new facade; untracked files preserved)."
   ],
