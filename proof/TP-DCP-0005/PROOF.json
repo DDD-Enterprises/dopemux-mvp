@@ -3,8 +3,8 @@
   "branch": "dcp/red-lane-scanner-tp-0005",
   "base_branch": "main",
   "base_sha": "c88638af1d5ae80898fe1c7d25b82a7fce3d0fca",
-  "head_sha": "c88638af1d5ae80898fe1c7d25b82a7fce3d0fca",
-  "commit_sha": null,
+  "head_sha": "57d4807b645fd456148ed69901e051a16fd83b2c",
+  "commit_sha": "57d4807b645fd456148ed69901e051a16fd83b2c",
   "changed_files": [
     "schemas/dcp/dcp_red_lane_report.schema.json",
     "src/dopemux/dcp/red_lane.py",
