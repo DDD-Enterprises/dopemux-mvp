@@ -64,7 +64,8 @@
     "8/7 phase-1 split reconciled to inventory summary; identity of 2 deferred reads inferred (no per-surface phase_1 flag) \u2014 flagged inline, resolved in 0004/0005.",
     "RESPONSE_ENVELOPE_SCHEMA introduces 'OK' success token not named in load pack \u2014 flagged inline, reconcile in 0004.",
     "dopemux init marker contract UNKNOWN \u2014 deferred to 0003.",
-    "get_index_status named in 0006 load-pack scope has no inventory surface \u2014 relabeled PROPOSED + must be inventoried-with-evidence or deferred before 0006 exposes it."
+    "get_index_status named in 0006 load-pack scope has no inventory surface \u2014 relabeled PROPOSED + must be inventoried-with-evidence or deferred before 0006 exposes it.",
+    "task-orchestrator GET /workflow/state is an OBSERVED read route missing from the 0001 inventory; get_workflow_status_snapshot is incomplete without it \u2014 deferred to 0006 for inventory+classification."
   ],
   "command_log": "proof/TP-DCP-MCP-RO-0002/COMMAND_LOG.md",
   "audit": "proof/TP-DCP-MCP-RO-0002/AUDIT.md",
@@ -76,6 +77,7 @@
     "ci_frontmatter": "FIXED \u2014 frontmatter added to 7 packet .md stubs + TASK_ORCHESTRATOR_LOAD.md.",
     "ci_markdownlint": "FIXED \u2014 INDEX.md MD055 (blank line before divider).",
     "P2_grep_post_routes": "FIXED \u2014 dropped bare POST from RO-0005/0008 write-hazard regex; named mutating routes still caught.",
-    "P2_command_log_final_snapshot": "FIXED \u2014 appended final clean post-commit status/head/diff to COMMAND_LOG.md."
+    "P2_command_log_final_snapshot": "FIXED \u2014 appended final clean post-commit status/head/diff to COMMAND_LOG.md.",
+    "P2_workflow_state_route": "FIXED \u2014 documented OBSERVED /workflow/state (project_workflow.py:385) as UNCLASSIFIED/deferred in TOOL_CONTRACT \u00a71c + ARCHITECTURE \u00a713/\u00a720; must be inventoried+classified in 0006 before exposure."
   }
 }

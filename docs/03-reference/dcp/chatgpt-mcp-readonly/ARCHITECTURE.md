@@ -128,7 +128,10 @@ ConPort authority label: `CANONICAL`. The adapter binds a project to a ConPort `
 | --- | --- | --- | --- |
 | `/api/projects/{project_id}/workflow/queue` | GET | CONFIRMED_READ_ONLY | allow (validate `project_id`, strip identities) |
 | `/api/projects/{project_id}/workflow/blockers` | GET | CONFIRMED_READ_ONLY | allow (direct) |
+| `/api/projects/{project_id}/workflow/state` | GET | UNCLASSIFIED (not in inventory) | **deferred** — inventory + classify in 0006 |
 | `/api/projects/{project_id}/workflow/transition` | POST | MUTATING | **deny** |
+
+`OBSERVED` (discovery gap): `/api/projects/{project_id}/workflow/state` is a first-class GET read route (`project_workflow.py:385`, `@router.get("/state", response_model=WorkflowStateResult)`; returns snapshot, phases/stages, `allowed_transitions`, linked IDs) that the existing PM adapter already calls (`src/dopemux/pm/adapters/orchestrator.py:48`), but it is **absent from the TP-DCP-MCP-RO-0001 inventory**. A complete `get_workflow_status_snapshot` should include it; 0006 must inventory+classify `/state` before exposing it (see [`TOOL_CONTRACT.md`](TOOL_CONTRACT.md) §1c). Until then it is `UNCLASSIFIED` and denied by omission.
 
 task-orchestrator status is **workflow-view only**, not PM-metadata truth. `OBSERVED` red-lane finding: unregistered PM routes in `app/api/pm_tools.py` (e.g. `/api/pm/work-items/{task_id}/update`) are defined but never included in `app/main.py` — code drift; mutating endpoints are not active in the running service. The facade must still deny these by route, not rely on them being unregistered.
 
@@ -173,3 +176,4 @@ Every envelope carries `source_system` and `authority_label`. `OBSERVED` labels 
 - `UNKNOWN` (`unresolved_questions` in the inventory): "Should dope-memory be queried directly, or should all chronicle reads be multiplexed through a facade wrapper to normalize output for ChatGPT?"
 - `CONFLICTING`/`PROPOSED`: the precise 8/7 surface split (see §15).
 - `UNKNOWN`: whether `/api/search/{workspace_id}` or `/api/decisions` backs `search_decisions` (deferred to scaffold packet 0004/0005).
+- `OBSERVED` discovery gap: task-orchestrator `GET .../workflow/state` (`project_workflow.py:385`) is a read route the 0001 inventory missed; `get_workflow_status_snapshot` is incomplete without it. Must be inventoried+classified in 0006 (§13, [`TOOL_CONTRACT.md`](TOOL_CONTRACT.md) §1c). Same for dope-context `get_index_status`.
