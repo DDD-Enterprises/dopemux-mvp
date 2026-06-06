@@ -157,3 +157,21 @@ When updating doctrine, keep these three files in sync:
 - `AGENTS.md` (this file) — Codex authority, Task Packet rules, PAL chains, proof bundle requirements
 - `.claude/claude.md` — Claude-Code-facing summary + non-negotiables checklist
 - `.claude/modules/shared/governance-principles.md` — full canonical doctrine, referenced by both
+
+## 11. Model Routing Authority
+
+**Source of truth**: `config/ai/model-routing.policy.yaml` (advisory governance; not a runtime dispatcher).
+**Human guide**: `docs/03-reference/governance/model-routing.md` · **How-to**: `docs/02-how-to/model-routing-usage.md`.
+
+Default tier intent for development-workflow agent stages:
+
+| Stage | Tier intent | Notes |
+| --- | --- | --- |
+| `cheap_read` / `investigation` | Haiku-equivalent (cheap_fast) | Read-only; may not decide architecture, authority, security, CI, or merge readiness |
+| `planner_strong` | Opus-equivalent (strong_reasoning) | Architecture, task packet design, validation/rollback strategy |
+| `implementer_standard` | Sonnet-equivalent (coding_balanced) | Bounded scoped implementation, commit-sized slices, tests |
+| `judge_strong` / `self_audit` | Opus-equivalent (audit_strong) | Independent audit, proof review, merge-risk assessment |
+
+Exact vendor model selector strings are **`VERIFY_WITH_VENDOR_DOCS`** — the policy records governance intent, not executable model IDs.
+
+PAL chain rules (Codex minimum chain, risky chain) remain owned by §5. This section points to the routing authority only; it does not duplicate or override §5.
