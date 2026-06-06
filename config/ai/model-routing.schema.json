@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "description": "Canonical machine-readable stage list for Dopemux model routing governance. This file is the validation source; config/ai/model-routing.policy.yaml stages must match exactly.",
+  "policy_source": "config/ai/model-routing.policy.yaml",
+  "stages": [
+    "cheap_read",
+    "investigation",
+    "planner_strong",
+    "implementer_standard",
+    "judge_strong",
+    "self_audit"
+  ]
+}
