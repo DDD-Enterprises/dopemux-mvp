@@ -1,0 +1,78 @@
+{
+  "tp_id": "TP-DMX-AI-ROUTING-001",
+  "status": "IMPLEMENTATION_COMPLETE",
+  "repo": "dopemux-mvp",
+  "branch": "claude/brave-spence-ff3a65",
+  "git_status_before": " M .github/agents/dopemux-implementer.agent.md\n M docs/03-reference/governance/proof-bundle-schema.md\n M docs/03-reference/governance/proof-contract.md\n M task-packets/TEMPLATE_TASK_PACKET.md\n?? .github/agents/dopemux-auditor.agent.md\n?? .github/agents/dopemux-reader.agent.md\n?? config/ai/\n?? docs/03-reference/governance/model-routing.md\n?? tests/test_model_routing_policy.py\n",
+  "git_status_after": " M .github/agents/dopemux-implementer.agent.md\n M .github/agents/dopemux-planner.agent.md\n M docs/03-reference/governance/proof-bundle-schema.md\n M docs/03-reference/governance/proof-contract.md\n M task-packets/TEMPLATE_TASK_PACKET.md\n?? .github/agents/dopemux-auditor.agent.md\n?? .github/agents/dopemux-reader.agent.md\n?? config/ai/\n?? docs/02-how-to/model-routing-usage.md\n?? docs/03-reference/governance/model-routing.md\n?? proof/TP-DMX-AI-ROUTING-001/\n?? tests/test_model_routing_policy.py\n",
+  "files_changed": [
+    "config/ai/model-routing.policy.yaml",
+    ".github/agents/dopemux-reader.agent.md",
+    ".github/agents/dopemux-planner.agent.md",
+    ".github/agents/dopemux-auditor.agent.md",
+    ".github/agents/dopemux-implementer.agent.md",
+    "docs/03-reference/governance/model-routing.md",
+    "docs/02-how-to/model-routing-usage.md",
+    "task-packets/TEMPLATE_TASK_PACKET.md",
+    "proof/TP-DMX-AI-ROUTING-001/PROOF.json"
+  ],
+  "commands": [
+    {
+      "command": "python3 required_files_check",
+      "exit_code": 0,
+      "stdout_summary": "required files present",
+      "stderr_summary": ""
+    },
+    {
+      "command": "python3 yaml_validation",
+      "exit_code": 0,
+      "stdout_summary": "model-routing.policy.yaml valid",
+      "stderr_summary": ""
+    },
+    {
+      "command": "python3 proof_json_validation",
+      "exit_code": 0,
+      "stdout_summary": "PROOF.json valid",
+      "stderr_summary": ""
+    }
+  ],
+  "validation": {
+    "required_files_present": true,
+    "yaml_valid": true,
+    "proof_json_valid": true,
+    "diff_reviewed": true
+  },
+  "embedded_audit": {
+    "auditor_tool": "claude_code",
+    "auditor_model": "claude-sonnet-4-6",
+    "invocation": "self-audit inside Claude Code after edits",
+    "exit_code": 0,
+    "auditor_verdict": "PASS_WITH_RISKS",
+    "auditor_findings": [
+      "F1: tests/test_model_routing_policy.py (untracked, not in TP commit allowlist) references old YAML structure (stage_slots, providers, tool_defaults keys) that no longer exist in the rewritten policy. Tests will fail if run against the new YAML. This file is orphaned prior-session residue.",
+      "F2: docs/03-reference/governance/proof-bundle-schema.md and proof-contract.md are modified (prior session) but are NOT in the TP allowlist — they will not be committed by this TP. Their modifications add reference pointers only; no structural change to those docs.",
+      "F3: All provider_routes model values are VERIFY_WITH_VENDOR_DOCS — no validated model ids are committed. This is intentional per TP invariants but means the policy requires operator substitution before it is executable configuration."
+    ],
+    "fixes_applied_from_audit": [
+      "F1: Noted in remaining_risks. Not fixable within TP allowlist (test file excluded from commit). Orphaned tests are a known residual risk.",
+      "F2: Confirmed out-of-allowlist files will not be staged. No fix needed.",
+      "F3: Intentional per TP. VERIFY_WITH_VENDOR_DOCS is the correct sentinel for unverified model ids."
+    ],
+    "remaining_risks": [
+      "R1: tests/test_model_routing_policy.py is orphaned — it tests the old YAML structure and will fail against the new config/ai/model-routing.policy.yaml. It is not committed by this TP (out of allowlist). It should be updated or removed in a follow-on TP.",
+      "R2: docs/03-reference/governance/proof-bundle-schema.md and docs/03-reference/governance/proof-contract.md have prior-session modifications that add reference pointers to this policy. These are not committed here (out of TP allowlist) and will remain as unstaged changes on this branch.",
+      "R3: All provider model selectors are VERIFY_WITH_VENDOR_DOCS. The policy documents governance intent only; operators must replace sentinels with verified model strings before treating the policy as executable."
+    ],
+    "skip_reason": null
+  },
+  "remaining_risks": [
+    "R1: tests/test_model_routing_policy.py orphaned with outdated structure references — needs follow-on TP to update or remove.",
+    "R2: proof-bundle-schema.md and proof-contract.md uncommitted prior-session edits remain on branch.",
+    "R3: All provider model selectors are VERIFY_WITH_VENDOR_DOCS — policy is advisory until operators substitute verified model ids."
+  ],
+  "commit": {
+    "created": false,
+    "sha": null,
+    "message": "Add stage-based AI model routing policy"
+  }
+}
