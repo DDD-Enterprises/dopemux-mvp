@@ -2,7 +2,8 @@
 
 **Packet:** Correct Development Factory Docs Against Evidence-Gate Findings
 **Branch:** `claude/hungry-lalande-e617d2`
-**Head SHA:** `7a611ca06c0c013d6bc92a5d61cbc66221056346`
+**Head SHA (before):** `7a611ca06c0c013d6bc92a5d61cbc66221056346`
+**Commit SHA:** `e25ee3505683896fc76c15c7c53ce826d8f42e82`
 **Authority input:** `TP-DMX-EVIDENCE-GATE-VERIFY-001` (read-only verification, HEAD `8042f9f9f`)
 **Validation:** PASSED · **Status:** READY_FOR_REVIEW
 
