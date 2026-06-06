@@ -123,6 +123,8 @@ A packet is superseded by another packet
 
 | Packet ID | Subsystem | Title | Completion Date | Outcome |
 | --- | --- | --- | --- | --- |
+| TP-DMX-AI-ROUTING-001 | Governance / AI Model Routing | Add stage-based AI model routing policy (policy YAML, agent files, docs) | 2026-06-06 | Accepted (PASS_WITH_RISKS) — PR #837 merged; see docs/03-reference/governance/model-routing.md |
+| TP-DMX-AI-ROUTING-002 | Governance / AI Model Routing | Resolve AI routing proof governance residue (proof-bundle-schema, proof-contract cross-references) | 2026-06-06 | Accepted (PASS) — PR #837 merged; residue committed on branch claude/brave-spence-ff3a65 |
 | TP-DMX-RTEAUDIT-110 | Repo Truth Extractor | Gemini deep PAL audit across UX, prompts, routing, and operator readiness | 2026-04-23 | Accepted (Conditional Go) |
 | TP-PM-ARCH-04A | PM Plane | Canonical PMTask Model + Store (Unit-only) | 2026-03-22 | Accepted |
 | TP- PM-ARCH-04B | PM Plane | Canonical pm.* Events + Adapters | 2026-03-22 | Accepted |
