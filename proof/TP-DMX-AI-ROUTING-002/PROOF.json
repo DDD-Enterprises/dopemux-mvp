@@ -70,5 +70,6 @@
     "created": true,
     "sha": "61ebef588978395399d75432fb2da2d95e56000c",
     "message": "Resolve AI routing proof governance residue"
-  }
+  },
+  "final_proof_commit": "a6cb4bfa881b62843842ce9d8e326e335a1ab42f"
 }
