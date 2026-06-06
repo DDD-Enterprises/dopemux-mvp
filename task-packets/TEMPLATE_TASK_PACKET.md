@@ -92,7 +92,7 @@ Record the model route actually used for this packet. Source of truth: `config/a
 For each substantive run, record:
 
 * actual tool and actual model (not just the intended route)
-* provider and stage slot (cheap_read / investigation / planner_strong / plan_challenge / implementer_standard / slice_review / judge_strong / self_audit)
+* provider and stage slot (cheap_read / investigation / planner_strong / implementer_standard / judge_strong / self_audit)
 * requested model and whether a fallback was used (with reason)
 * reasoning effort or thinking mode, when available
 * cost policy and data/ZDR policy applied (required for OpenRouter broker routing)
