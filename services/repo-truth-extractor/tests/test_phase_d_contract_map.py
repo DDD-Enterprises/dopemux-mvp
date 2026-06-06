@@ -36,9 +36,10 @@ def test_compile_phase_contract_map_includes_d0_d1_lane_and_artifacts() -> None:
     ]
     assert d0["lane"]["lane_class"] == "CE"
     assert d0["lane"]["strict_schema_required"] is True
-    assert d0["lane"]["primary_routes"][0]["provider"] == "gemini"
-    # Plan B: CE primary lead is the ${CE_MODEL} placeholder (model resolved per
-    # cost profile at dispatch).
+    # Codex 3361748519: CE primary lead is a strict OpenAI route (was non-strict
+    # gemini); model is the ${CE_MODEL} placeholder, resolved per cost profile at
+    # dispatch.
+    assert d0["lane"]["primary_routes"][0]["provider"] == "openai"
     assert d0["lane"]["primary_routes"][0]["model_id"] == "${CE_MODEL}"
     assert d0["lane"]["sidefill_enabled"] is True
 
@@ -57,8 +58,10 @@ def test_compile_phase_contract_map_includes_d0_d1_lane_and_artifacts() -> None:
     assert "line_range" in cap_meta["required_fields"]
     assert "evidence" in cap_meta["prompt_required_item_fields"]
     assert d1["lane"]["lane_class"] == "CE"
-    # First route is Gemini (non-strict primary), strict routes follow
-    assert d1["lane"]["primary_routes"][0]["provider"] == "gemini"
+    # Codex 3361748519: primary lead is now the strict ${CE_MODEL} OpenAI route;
+    # the gpt-5.5 fallback follows.
+    assert d1["lane"]["primary_routes"][0]["provider"] == "openai"
+    assert d1["lane"]["primary_routes"][0]["strict_json_schema"] is True
     assert d1["lane"]["primary_routes"][1]["strict_json_schema"] is True
     assert d1["lane"]["primary_routes"][1]["strict_passthrough_verified"] is True
     assert d1["scope"]["json_managed"] is True

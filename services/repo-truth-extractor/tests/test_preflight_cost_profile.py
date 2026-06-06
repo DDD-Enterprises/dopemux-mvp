@@ -15,21 +15,14 @@ from types import SimpleNamespace
 import rte_ops_surfaces
 
 
-def test_launch_preflight_forwards_active_cost_profile(tmp_path: Path) -> None:
+def _run_preflight_capturing(cfg, tmp_path: Path):
     recorded: dict = {}
 
     def fake_collect_provider_routes(**kwargs):
         recorded.update(kwargs)
         return {}  # no routes -> no probes -> PASS, keeps the test focused
 
-    cfg = SimpleNamespace(
-        routing_policy="balanced_openrouter",
-        cost_profile="grok-fast",
-        batch_mode=False,
-        batch_provider="auto",
-    )
-
-    ok, payload = rte_ops_surfaces.run_provider_preflight(
+    ok, _payload = rte_ops_surfaces.run_provider_preflight(
         root=tmp_path,
         run_id="r-test",
         cfg=cfg,
@@ -43,6 +36,33 @@ def test_launch_preflight_forwards_active_cost_profile(tmp_path: Path) -> None:
         write_json=lambda _path, _data: None,
         routing_policy_version="v-test",
     )
+    return ok, recorded
 
+
+def test_launch_preflight_forwards_active_cost_profile(tmp_path: Path) -> None:
+    cfg = SimpleNamespace(
+        routing_policy="balanced_openrouter",
+        cost_profile="grok-fast",
+        model_alias_overrides=(),
+        batch_mode=False,
+        batch_provider="auto",
+    )
+    ok, recorded = _run_preflight_capturing(cfg, tmp_path)
     assert recorded.get("cost_profile") == "grok-fast"
+    assert ok is True
+
+
+def test_launch_preflight_forwards_model_alias_overrides(tmp_path: Path) -> None:
+    # An operator --model-alias to a different provider must be probed, not the
+    # profile default — else the launch passes without checking the real key.
+    overrides = (("BULK_DOCS_MODEL", "xai/grok-4.3"),)
+    cfg = SimpleNamespace(
+        routing_policy="balanced_openrouter",
+        cost_profile="value-default",
+        model_alias_overrides=overrides,
+        batch_mode=False,
+        batch_provider="auto",
+    )
+    ok, recorded = _run_preflight_capturing(cfg, tmp_path)
+    assert recorded.get("model_alias_overrides") == overrides
     assert ok is True

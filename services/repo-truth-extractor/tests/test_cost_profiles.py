@@ -569,6 +569,32 @@ def test_bulk_strict_openai_repair_stays_pinned() -> None:
         assert not str(lead["model_id"]).startswith("${")
 
 
+def test_routing_fingerprint_resolves_placeholders(tmp_path) -> None:
+    """RUN_ROUTING_FINGERPRINT.json must record the route that actually runs
+    under the active profile, not the static ${CELL} placeholder — else the
+    proof/replay artifact misdescribes the run (Codex P2)."""
+    import json
+
+    cfg = _make_cfg(cost_profile="gemini-value")
+    runner.write_run_routing_fingerprint(tmp_path, "run-fp", cfg, ["A"])
+    payload = json.loads(
+        (tmp_path / "RUN_ROUTING_FINGERPRINT.json").read_text(encoding="utf-8")
+    )
+    blob = json.dumps(payload)
+    assert "${" not in blob, "routing fingerprint leaked a ${CELL} placeholder"
+    # A2 is BULK_DOCS_GENERAL → gemini-value resolves it to the Gemini bulk model.
+    a2 = [
+        entry
+        for phase_entries in payload.get("phases", {}).values()
+        if isinstance(phase_entries, list)
+        for entry in phase_entries
+        if entry.get("step_id") == "A2"
+    ]
+    assert a2, "A2 missing from fingerprint"
+    assert a2[0]["provider"] == "gemini"
+    assert a2[0]["model_id"] == "gemini-3-flash-preview"
+
+
 def test_strict_guard_rejects_disallowed_provider() -> None:
     import pytest
 
@@ -628,4 +654,74 @@ def test_strict_step_with_xai_profile_fails_closed_before_spend() -> None:
     with pytest.raises(RuntimeError):
         runner.resolve_effective_step_route(
             "A", "A0", cfg, step_contract=step_contract
+        )
+
+
+def test_strict_primary_leads_resolve_to_openai_across_profiles() -> None:
+    """Regression (Codex 3361748519): every CE/AGG *primary_routes* lead must
+    resolve, under every cost profile, to an OpenAI strict-capable model with no
+    ${} leak — mirroring the repair/sidefill guard above.
+
+    Before the fix, 18 templatized primary leads kept strict_json_schema:false
+    (they were originally gemini routes that Plan B incr2 rewrote by swapping only
+    model_id). resolve_stage_route(strict_required=True) therefore skipped the
+    profile-resolved lead and fell through to the hardcoded gpt-5.3-codex
+    fallback, so the selected profile model was silently ignored."""
+    steps = _model_map_steps_by_lane("CE", "AGG")
+    assert steps, "expected CE/AGG steps in model_map"
+    for profile in runner.COST_PROFILES:
+        cfg = _make_cfg(cost_profile=profile)
+        for phase, step_id, _lane in steps:
+            resolved = runner.resolve_contract_routes(
+                runner._step_contract_for(phase, step_id), cfg
+            )
+            rows = resolved["lane"].get("primary_routes") or []
+            assert rows, f"{phase}:{step_id} primary_routes empty"
+            lead = rows[0]
+            assert not str(lead["model_id"]).startswith("${"), (
+                f"{profile} {phase}:{step_id} primary leaked {lead['model_id']}"
+            )
+            # Must pass the strict-provider guard (raises otherwise).
+            runner.assert_strict_route_provider_allowed(
+                phase=phase,
+                step_id=step_id,
+                provider=str(lead["provider"]),
+                model_id=str(lead["model_id"]),
+            )
+            assert lead.get("strict_json_schema") is True, (
+                f"{profile} {phase}:{step_id} primary lead not strict-capable"
+            )
+
+
+def test_strict_contract_primary_lead_is_selected_per_cost_profile() -> None:
+    """Regression (Codex 3361748519): the contract-lane strict selector must pick
+    the profile's CE/SYNTH model from the *primary* lead, not fall through to the
+    hardcoded gpt-5.3-codex fallback.
+
+    value-default hid the bug because CE_MODEL == gpt-5.3-codex == the fallback;
+    economy/quality expose it. D1 exercises ${CE_MODEL}, D4 exercises
+    ${SYNTH_MODEL}."""
+    cases = [
+        # (phase, step_id, profile, expected_selected_model)
+        ("D", "D1", "economy", "gpt-5.1-codex-mini"),  # CE lead
+        ("D", "D1", "quality", "gpt-5.5"),  # CE lead
+        ("D", "D4", "economy", "gpt-5.4"),  # AGG (SYNTH) lead
+        ("D", "D4", "quality", "gpt-5.5"),  # AGG (SYNTH) lead
+    ]
+    for phase, step_id, profile, expected in cases:
+        cfg = _make_cfg(cost_profile=profile)
+        contract = runner._step_contract_for(phase, step_id)
+        route = runner.resolve_effective_step_route(
+            phase, step_id, cfg, step_contract=contract
+        )
+        assert route["provider"] == "openai", (
+            f"{profile} {phase}:{step_id} provider={route['provider']}"
+        )
+        assert route["model_id"] == expected, (
+            f"{profile} {phase}:{step_id} selected {route['model_id']} != {expected}"
+        )
+        assert route["reason"] == "contract_lane_primary_strict"
+        attempts = route.get("strict_route_attempts") or []
+        assert attempts and attempts[0]["strict_capable"] is True, (
+            f"{profile} {phase}:{step_id} primary lead was skipped as non-strict"
         )

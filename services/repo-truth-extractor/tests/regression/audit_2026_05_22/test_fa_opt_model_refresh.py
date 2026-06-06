@@ -140,8 +140,10 @@ def test_openai_routes_use_direct_latest_models_with_request_options() -> None:
         if row["provider"] == "openai" and row["model_id"] == "gpt-5.5"
     ]
     # Plan B: counts reflect fallback routes only (leads converted to ${CELL};
-    # 7 gpt-5.5 leads became placeholders: 171 -> 164).
-    assert len(flex_routes) == 164
+    # 7 gpt-5.5 leads became placeholders: 171 -> 164). Codex 3361748519: the 7 AGG
+    # primary tails moved from gpt-5.5 to a distinct gpt-5.3-codex fallback (so the
+    # value-default SYNTH ladder keeps two distinct hops): 164 -> 157.
+    assert len(flex_routes) == 157
     assert {row["api_key_env"] for row in flex_routes} == {"OPENAI_API_KEY"}
     assert {row["service_tier"] for row in flex_routes} == {"flex"}
     assert {row["reasoning_effort"] for row in flex_routes} == {None}
@@ -151,8 +153,12 @@ def test_openai_routes_use_direct_latest_models_with_request_options() -> None:
         for row in routes
         if row["provider"] == "openai" and row["model_id"] == "gpt-5.3-codex"
     ]
-    # Plan B: 32 CE gpt-5.3-codex leads became ${CE_MODEL} (50 -> 18).
-    assert len(codex_routes) == 18
+    # Plan B: 32 CE gpt-5.3-codex leads became ${CE_MODEL} (50 -> 18). Codex
+    # 3361748519: the 11 CE primary middle gpt-5.3-codex routes were dropped when
+    # the CE primary ladder was reshaped 3 -> 2 routes (lead = ${CE_MODEL}, fallback
+    # = gpt-5.5); the 7 AGG steps each keep one gpt-5.3-codex (now the fallback):
+    # 18 -> 7.
+    assert len(codex_routes) == 7
     assert {row["api_key_env"] for row in codex_routes} == {"OPENAI_API_KEY"}
     assert {row["service_tier"] for row in codex_routes} == {None}
     assert {row["reasoning_effort"] for row in codex_routes} == {None}
