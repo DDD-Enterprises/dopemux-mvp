@@ -1,0 +1,113 @@
+{
+  "packet_id": "TP-DMX-DCP-SEAM-ENFORCEMENT-001",
+  "title": "Wire RedLaneScanner as Invokable Gate — Preserve Hard Block",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED",
+  "outcome": "WIRED",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "claude/hungry-lalande-e617d2",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.claude/worktrees/hungry-lalande-e617d2",
+  "head_sha": "aa0c77f678f30d208ef73d7f941d0815da1ef753",
+  "commit_sha": "aa0c77f67",
+  "authority_input": "TP-RTE-S7-DRIFT-FIX-001 (prev packet) + advisor() gate-check + read-only investigation at HEAD",
+  "files_modified": [
+    "src/dopemux/dcp/red_lane_scanner.py",
+    "tests/dcp/test_dcp_0005_red_lane_scanner.py"
+  ],
+  "files_not_modified": [
+    "src/dopemux/dcp/red_lane_rules.py",
+    ".github/workflows/",
+    "scripts/batch_resolve_and_merge.py",
+    "src/dopemux_pr_merge_specialist/queue_drain.py"
+  ],
+  "files_created": [
+    "task-packets/development-factory/TP-DMX-DCP-SEAM-ENFORCEMENT-001.md",
+    "proof/TP-DMX-DCP-SEAM-ENFORCEMENT-001/PROOF.json",
+    "proof/TP-DMX-DCP-SEAM-ENFORCEMENT-001/SUMMARY.md"
+  ],
+  "commands_run": [
+    "PYTHONPATH=src python -m pytest -v tests/dcp/test_dcp_0005_red_lane_scanner.py",
+    "PYTHONPATH=src python -m dopemux.dcp.red_lane_scanner --repo-root . --files src/dopemux/dcp/red_lane_scanner.py",
+    "PYTHONPATH=src python -m dopemux.dcp.red_lane_scanner --repo-root . --files src/dopemux_pr_merge_specialist/queue_drain.py"
+  ],
+  "exit_codes": {
+    "pytest_full_suite": 0,
+    "entrypoint_clean_file": 1,
+    "entrypoint_blocked_file": 1
+  },
+  "pytest_result": {
+    "total": 18,
+    "passed": 18,
+    "failed": 0,
+    "duration_seconds": 0.05,
+    "new_tests_added": [
+      "test_batch_resolve_script_path_returns_blocked",
+      "test_queue_drain_bare_path_returns_blocked"
+    ]
+  },
+  "entrypoint_result": {
+    "entrypoint_added": true,
+    "form": "main() + if __name__ == '__main__': raise SystemExit(main())",
+    "mirrored_from": "validate_pre_live_gate_v25.py",
+    "exit_0_on": "Status.PASS only",
+    "exit_1_on": "BLOCKED, UNKNOWN, CONFLICTING (fail-closed)",
+    "emits": "RedLaneReport JSON to stdout (or --output FILE)",
+    "reads_only": true,
+    "imports_forbidden_modules": false,
+    "does_not_execute_queue_drain": true,
+    "does_not_execute_batch_resolve": true
+  },
+  "investigation_findings": {
+    "scanner_implementation": "FULL — src/dopemux/dcp/red_lane_scanner.py (288 lines before this packet, 341 after)",
+    "existing_tests": "16 passing before this packet",
+    "ci_enforcement": "ABSENT — tests/dcp/ not in any .github/workflows/*.yml",
+    "cli_entrypoint_before": "ABSENT — no __main__, no console_scripts, no scripts/ entry",
+    "cli_entrypoint_after": "PRESENT — python -m dopemux.dcp.red_lane_scanner",
+    "test_gap_1": "scripts/batch_resolve_and_merge.py file-path match — was tested only as text content, not as FORBIDDEN_PATH file match",
+    "test_gap_2": "dopemux_pr_merge_specialist/queue_drain.py (non-src/ prefix) — FORBIDDEN_PATHS[1] had no covering path test"
+  },
+  "seam_preservation": {
+    "DCP_RED_MERGE_SEAM_0001": "PRESERVED",
+    "hard_block_relaxed": false,
+    "hard_block_renamed": false,
+    "hard_block_bypassed": false,
+    "LIVE_WRITE_READY_defined": false,
+    "LIVE_WRITE_READY_enabled": false
+  },
+  "scope_boundary": {
+    "in_scope": "CLI entrypoint + two test gaps + proof/packet artifacts",
+    "deferred_to_follow_up": "Adding tests/dcp/ to .github/workflows/*.yml CI enforcement (non-trivial CI wiring)"
+  },
+  "validations": [
+    {"name": "pytest_18_pass", "status": "PASS", "evidence": "18 passed / 0 failed in 0.05s"},
+    {"name": "new_test_batch_resolve_path", "status": "PASS", "evidence": "scripts/batch_resolve_and_merge.py → BLOCKED, FORBIDDEN_PATH category"},
+    {"name": "new_test_queue_drain_bare_path", "status": "PASS", "evidence": "dopemux_pr_merge_specialist/queue_drain.py → BLOCKED, FORBIDDEN_PATH category"},
+    {"name": "entrypoint_clean_file_fails_closed", "status": "PASS", "evidence": "exit 1, status=UNKNOWN — no proof supplied → fail-closed"},
+    {"name": "entrypoint_blocked_file_exits_1", "status": "PASS", "evidence": "exit 1, status=BLOCKED, 39 blockers on queue_drain.py"},
+    {"name": "no_runtime_seam_code_modified", "status": "PASS", "evidence": "red_lane_rules.py, queue_drain.py, batch_resolve_and_merge.py not in git diff"},
+    {"name": "no_ci_workflow_modified", "status": "PASS", "evidence": ".github/workflows/ not in git diff"},
+    {"name": "no_forbidden_paths_touched", "status": "PASS", "evidence": "queue_drain, batch_resolve, task-orchestrator, dopecon-bridge, dope-context, conport not modified"},
+    {"name": "ci_test_enforcement", "status": "NOT_RUN", "evidence": "tests/dcp/ absent from all .github/workflows/*.yml — deferred to follow-up CI wiring packet"}
+  ],
+  "runtime_code_changed": false,
+  "tests_added_or_modified": [
+    "tests/dcp/test_dcp_0005_red_lane_scanner.py:test_batch_resolve_script_path_returns_blocked",
+    "tests/dcp/test_dcp_0005_red_lane_scanner.py:test_queue_drain_bare_path_returns_blocked"
+  ],
+  "docs_changed": [],
+  "pal_codereview_status": "NOT_RUN",
+  "precommit_status": "NOT_RUN",
+  "no_runtime_code_touched": false,
+  "no_schema_created": true,
+  "no_config_created": true,
+  "no_merge_automation_touched": true,
+  "red_lines_preserved": true,
+  "remaining_unknowns": [
+    "tests/dcp/ not in CI — gate behavior is locally verified but not CI-enforced; CI enforcement is deferred to follow-up packet",
+    "PAL codereview not run on this packet — queued for external audit pass",
+    "TP-DMX-PROOF-TRACKING-POLICY-001 is READY_FOR_REVIEW but unaudited — must not be considered PR-clean until audited separately"
+  ],
+  "stop_conditions_met": [],
+  "cleanup_status": "no_temp_files_created",
+  "next_recommended_packet": "PAL external audit on TP-DMX-DCP-SEAM-ENFORCEMENT-001, then CI enforcement wiring packet"
+}
