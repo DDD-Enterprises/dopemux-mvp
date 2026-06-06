@@ -8,7 +8,7 @@
 
 ## Overview
 
-SuperClaude provides 25 slash commands, 7 behavioral modes, and 16 specialized agents. Dopemux enhances these with superior MCPs (Zen multi-model reasoning, ConPort knowledge graph, Serena v2 code intelligence, Exa neural search, GPT-Researcher deep research).
+SuperClaude provides 25 slash commands, 7 behavioral modes, and 16 specialized agents. Dopemux enhances these with superior MCPs (PAL multi-model reasoning, ConPort knowledge graph, Serena v2 code intelligence, Exa neural search, GPT-Researcher deep research).
 
 **Integration Philosophy**: Use SuperClaude's command framework with Dopemux's advanced tooling for ADHD-optimized development workflows.
 
@@ -32,16 +32,16 @@ SuperClaude provides 25 slash commands, 7 behavioral modes, and 16 specialized a
    └─> Features: symbol search, complexity scoring, progressive disclosure
 
 4. Implementation
-   /sc:implement <feature>           # Coordinates: Context7 + Zen + Magic + Playwright
+   /sc:implement <feature>           # Coordinates: Context7 + PAL + Magic + Playwright
    └─> Context7: Framework patterns (ALWAYS FIRST)
-   └─> Zen planner: Break down complex features
+   └─> PAL planner: Break down complex features
    └─> Magic: UI component generation
    └─> Playwright: Test generation
 
 5. Quality Validation
    /sc:test                          # Run tests with Playwright
-   Zen codereview                    # Multi-model review
-   Zen precommit                     # Pre-commit validation
+   PAL codereview                    # Multi-model review
+   PAL precommit                     # Pre-commit validation
 
 6. Session End
    /sc:save                          # Persist session state
@@ -81,14 +81,14 @@ User Request
     ├─> /sc:load ───────────> ConPort: Restore context
     │
     ├─> /sc:implement ──────> Context7: Get framework patterns
-    │                    └──> Zen planner: Break down feature
+    │                    └──> PAL planner: Break down feature
     │                    └──> Serena: Navigate existing code
     │                    └──> Magic: Generate UI components
     │
     ├─> Implementation ─────> Code changes
     │
     ├─> /sc:test ───────────> Playwright: Run tests
-    │                    └──> Zen codereview: Validate quality
+    │                    └──> PAL codereview: Validate quality
     │
     └─> /sc:save ───────────> ConPort: Persist session
                          └──> ConPort: Log decisions
@@ -109,8 +109,8 @@ User Request
 **Available Commands** (25 total):
 
 **Analysis & Planning**:
-- `/sc:analyze` - Code analysis (uses Zen thinkdeep)
-- `/sc:brainstorm` - Requirements discovery (uses Zen consensus)
+- `/sc:analyze` - Code analysis (uses PAL thinkdeep)
+- `/sc:brainstorm` - Requirements discovery (uses PAL consensus)
 - `/sc:estimate` - Development estimation
 - `/sc:design` - Architecture design
 
@@ -121,7 +121,7 @@ User Request
 - `/sc:build` - Build and packaging
 
 **Research & Documentation**:
-- `/sc:research` - Deep research (Exa + GPT-Researcher + Zen)
+- `/sc:research` - Deep research (Exa + GPT-Researcher + PAL)
 - `/sc:document` - Documentation generation
 - `/sc:explain` - Educational explanations
 
@@ -131,7 +131,7 @@ User Request
 - `/sc:reflect` - Task validation (with Serena)
 
 **Workflow**:
-- `/sc:workflow` - PRD to implementation (uses Zen planner)
+- `/sc:workflow` - PRD to implementation (uses PAL planner)
 - `/sc:task` - Complex task management
 
 [Full command reference](.claude/commands/sc/)
@@ -146,10 +146,10 @@ User Request
 
 **Planned Commands**:
 
-- `/dx:prd-parse` - PRD decomposition with Zen planner + ConPort import
+- `/dx:prd-parse` - PRD decomposition with PAL planner + ConPort import
 - `/dx:implement` - ADHD-optimized 25-minute sessions with planned save checkpoints
-- `/dx:analyze` - Direct Zen thinkdeep integration
-- `/dx:review` - Direct Zen codereview with multi-model validation
+- `/dx:analyze` - Direct PAL thinkdeep integration
+- `/dx:review` - Direct PAL codereview with multi-model validation
 - `/dx:session` - Focus session management with timers
 - `/dx:switch-role` - MetaMCP role switching (QUICKFIX, ACT, PLAN, RESEARCH, ALL)
 
@@ -180,23 +180,23 @@ Tools: GPT-Researcher deep_research
 
 **Simple Breakdown** (linear steps):
 ```
-Use: Zen planner
+Use: PAL planner
 Example: "Break down authentication feature"
 Command: /sc:workflow
 ```
 
 **Complex Planning** (alternatives, branching):
 ```
-Use: Zen planner with revision/branching
+Use: PAL planner with revision/branching
 Example: "Migration strategy with multiple approaches"
-Direct: zen/planner with is_branch_point
+Direct: pal/planner with is_branch_point
 ```
 
 **Multi-Perspective Decision**:
 ```
-Use: Zen consensus
+Use: PAL consensus
 Example: "Should we use microservices or monolith?"
-Direct: zen/consensus with 3 models (for/against/neutral)
+Direct: pal/consensus with 3 models (for/against/neutral)
 ```
 
 ### Implementation Tasks
@@ -204,7 +204,7 @@ Direct: zen/consensus with 3 models (for/against/neutral)
 **Feature Development**:
 ```
 Use: /sc:implement
-Flow: Context7 (patterns) → Zen (planning) → Magic (UI) → Playwright (tests)
+Flow: Context7 (patterns) → PAL (planning) → Magic (UI) → Playwright (tests)
 Example: "/sc:implement user profile component --framework react"
 ```
 
@@ -217,8 +217,8 @@ Example: Navigate from API endpoint to database layer
 
 **Code Quality**:
 ```
-Use: /sc:improve + Zen codereview
-Flow: Identify issues → Zen multi-model validation → Apply fixes
+Use: /sc:improve + PAL codereview
+Flow: Identify issues → PAL multi-model validation → Apply fixes
 Example: "/sc:improve --focus performance"
 ```
 
@@ -226,7 +226,7 @@ Example: "/sc:improve --focus performance"
 
 **Systematic Investigation**:
 ```
-Use: Zen debug
+Use: PAL debug
 Flow: Hypothesis → Evidence gathering → Root cause → Fix validation
 Example: "Why does memory usage grow unbounded?"
 ```
@@ -559,13 +559,13 @@ serena/find_symbol returns: complexity_score: 0.7
 
 ---
 
-## Zen MCP Workflow Patterns
+## PAL MCP Workflow Patterns
 
 ### Multi-Model Reasoning
 
 **Deep Analysis**:
 ```
-Use: zen/thinkdeep
+Use: pal/thinkdeep
 When: Complex problem investigation
 Flow:
   1. State hypothesis
@@ -584,7 +584,7 @@ Step 5: Expert confirms root cause
 
 **Interactive Planning**:
 ```
-Use: zen/planner
+Use: pal/planner
 When: Breaking down complex features
 Flow:
   1. Describe task
@@ -603,7 +603,7 @@ Step 5: Choose JWT, document in ConPort
 
 **Consensus Building**:
 ```
-Use: zen/consensus
+Use: pal/consensus
 When: Important architectural decisions
 Flow:
   1. State question
@@ -670,7 +670,7 @@ Each agent provides:
 
 | Task Type | Primary MCP | Alternative | Reference |
 |-----------|-------------|-------------|-----------|
-| Multi-model reasoning | Zen | - | [MCP_Zen.md](~/.claude/MCP_Zen.md) |
+| Multi-model reasoning | PAL | - | [MCP_PAL.md](~/.claude/MCP_PAL.md) |
 | Knowledge graph | ConPort | - | [MCP_ConPort.md](~/.claude/MCP_ConPort.md) |
 | Code navigation | Serena | - | [MCP_Serena.md](~/.claude/MCP_Serena.md) |
 | Simple search | Exa | Context7 | [MCP_Exa.md](~/.claude/MCP_Exa.md) |
@@ -694,7 +694,7 @@ Each agent provides:
    └─> ALWAYS query Context7 before writing any code
 
 2. Plan Implementation
-   /sc:workflow → Zen planner breakdown
+   /sc:workflow → PAL planner breakdown
    └─> Creates phased approach
 
 3. Navigate Existing Code
@@ -711,7 +711,7 @@ Each agent provides:
    └─> Validates against requirements
 
 6. Review
-   Zen codereview → Multi-model validation
+   PAL codereview → Multi-model validation
    └─> Quality, security, performance check
 
 7. Document
@@ -727,7 +727,7 @@ Each agent provides:
    Capture error details, logs, context
 
 2. Systematic Investigation
-   Zen debug → Hypothesis-driven analysis
+   PAL debug → Hypothesis-driven analysis
    └─> Gather evidence from code/logs
    └─> Test hypotheses systematically
 
@@ -738,7 +738,7 @@ Each agent provides:
 
 4. Validate Fix
    Implement solution
-   Zen codereview → Verify correctness
+   PAL codereview → Verify correctness
    Add regression test
 
 5. Document
@@ -759,7 +759,7 @@ Each agent provides:
    └─> Comprehensive report with citations
 
 3. Multi-Perspective Analysis
-   Zen consensus → Compare approaches
+   PAL consensus → Compare approaches
    └─> Get for/against/neutral perspectives
    └─> Balanced recommendation
 
@@ -798,18 +798,18 @@ Each agent provides:
 - SuperClaude agents use context for implementation
 - Changes tracked for learning patterns
 
-### SuperClaude → Zen
+### SuperClaude → PAL
 
 **Reasoning Commands**:
-- `/sc:analyze` uses `zen/thinkdeep`
-- `/sc:workflow` uses `zen/planner`
-- `/sc:brainstorm` uses `zen/consensus`
-- `/sc:troubleshoot` uses `zen/debug`
+- `/sc:analyze` uses `pal/thinkdeep`
+- `/sc:workflow` uses `pal/planner`
+- `/sc:brainstorm` uses `pal/consensus`
+- `/sc:troubleshoot` uses `pal/debug`
 
 **Quality Commands**:
-- Implicit `zen/codereview` on major changes
-- `zen/precommit` before git commits
-- `zen/challenge` on user disagreements
+- Implicit `pal/codereview` on major changes
+- `pal/precommit` before git commits
+- `pal/challenge` on user disagreements
 
 ---
 
@@ -840,8 +840,8 @@ Each agent provides:
 
 **Before Committing Code**:
 1. Run tests (/sc:test)
-2. Code review (zen/codereview)
-3. Pre-commit validation (zen/precommit)
+2. Code review (pal/codereview)
+3. Pre-commit validation (pal/precommit)
 4. Update documentation
 5. Log architectural decisions
 
@@ -917,7 +917,7 @@ sqlite3 .dopemux/context.db "SELECT * FROM session_metadata ORDER BY last_active
 │ Log Decision:       conport/log_decision                │
 │ Track Progress:     conport/log_progress                │
 │ Navigate Code:      serena/find_symbol                  │
-│ Multi-Model:        zen/consensus or zen/thinkdeep      │
+│ Multi-Model:        pal/consensus or pal/thinkdeep      │
 │                                                          │
 │ Break Checkpoint:   At 25 minutes, planned              │
 │ Save Checkpoint:    Every 5 minutes, planned            │
