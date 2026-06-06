@@ -51,13 +51,15 @@
     "tp_owned_residue_clean": true
   },
   "embedded_audit": {
-    "auditor_tool": "claude_code",
-    "auditor_model": "claude-sonnet-4-6",
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "claude-sonnet-4.6",
     "invocation": "self-audit inside Claude Code after cleanup",
     "exit_code": 0,
-    "auditor_verdict": "PASS",
-    "auditor_findings": [],
-    "fixes_applied_from_audit": [],
+    "report_path": "proof/TP-DMX-AI-ROUTING-002/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
     "remaining_risks": [
       "R1: model-routing fields in proof-contract.md use advisory 'should' language — operator may treat as normative. The section explicitly states fields are additive and do not change required-field set; this guards against overclaiming."
     ],

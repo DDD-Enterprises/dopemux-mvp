@@ -43,25 +43,41 @@
     "diff_reviewed": true
   },
   "embedded_audit": {
-    "auditor_tool": "claude_code",
-    "auditor_model": "claude-sonnet-4-6",
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "claude-sonnet-4.6",
     "invocation": "self-audit inside Claude Code after edits",
     "exit_code": 0,
-    "auditor_verdict": "PASS_WITH_RISKS",
-    "auditor_findings": [
-      "F1: tests/test_model_routing_policy.py (untracked, not in TP commit allowlist) references old YAML structure (stage_slots, providers, tool_defaults keys) that no longer exist in the rewritten policy. Tests will fail if run against the new YAML. This file is orphaned prior-session residue.",
-      "F2: docs/03-reference/governance/proof-bundle-schema.md and proof-contract.md are modified (prior session) but are NOT in the TP allowlist — they will not be committed by this TP. Their modifications add reference pointers only; no structural change to those docs.",
-      "F3: All provider_routes model values are VERIFY_WITH_VENDOR_DOCS — no validated model ids are committed. This is intentional per TP invariants but means the policy requires operator substitution before it is executable configuration."
+    "report_path": "proof/TP-DMX-AI-ROUTING-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "MEDIUM",
+        "title": "tests/test_model_routing_policy.py orphaned — tests old YAML structure",
+        "status": "RESOLVED",
+        "body": "tests/test_model_routing_policy.py (untracked, not in TP commit allowlist) referenced old YAML structure (stage_slots, providers, tool_defaults keys) that no longer exist in the rewritten policy. Not fixable within TP allowlist. Resolved in follow-on commit eb0c29272 (test: align model-routing policy tests to stages/provider_routes structure). All 10 tests now pass."
+      },
+      {
+        "id": "F2",
+        "severity": "LOW",
+        "title": "proof-bundle-schema.md and proof-contract.md modified outside TP allowlist",
+        "status": "RESOLVED",
+        "body": "docs/03-reference/governance/proof-bundle-schema.md and proof-contract.md were modified in a prior session but not in the TP-001 allowlist. Modifications add advisory reference pointers only; no structural change. Resolved by TP-DMX-AI-ROUTING-002 (commit 61ebef588)."
+      },
+      {
+        "id": "F3",
+        "severity": "INFO",
+        "title": "All provider_routes model values are VERIFY_WITH_VENDOR_DOCS",
+        "status": "ACCEPTED_RISK",
+        "body": "All provider model selectors use the VERIFY_WITH_VENDOR_DOCS sentinel. No validated model IDs are committed. This is intentional per TP invariants — the policy documents governance intent only; operators must replace sentinels with verified model strings before treating the policy as executable configuration."
+      }
     ],
-    "fixes_applied_from_audit": [
-      "F1: Noted in remaining_risks. Not fixable within TP allowlist (test file excluded from commit). Orphaned tests are a known residual risk.",
-      "F2: Confirmed out-of-allowlist files will not be staged. No fix needed.",
-      "F3: Intentional per TP. VERIFY_WITH_VENDOR_DOCS is the correct sentinel for unverified model ids."
-    ],
+    "fixes_applied": [],
     "remaining_risks": [
-      "R1: tests/test_model_routing_policy.py is orphaned — it tests the old YAML structure and will fail against the new config/ai/model-routing.policy.yaml. It is not committed by this TP (out of allowlist). It should be updated or removed in a follow-on TP.",
-      "R2: docs/03-reference/governance/proof-bundle-schema.md and docs/03-reference/governance/proof-contract.md have prior-session modifications that add reference pointers to this policy. These are not committed here (out of TP allowlist) and will remain as unstaged changes on this branch.",
-      "R3: All provider model selectors are VERIFY_WITH_VENDOR_DOCS. The policy documents governance intent only; operators must replace sentinels with verified model strings before treating the policy as executable."
+      "R1: tests/test_model_routing_policy.py orphaned — resolved in follow-on eb0c29272.",
+      "R2: proof-bundle-schema.md and proof-contract.md prior-session edits — resolved by TP-002 commit 61ebef588.",
+      "R3: All provider model selectors are VERIFY_WITH_VENDOR_DOCS — policy is advisory until operators substitute verified model ids."
     ],
     "skip_reason": null
   },
