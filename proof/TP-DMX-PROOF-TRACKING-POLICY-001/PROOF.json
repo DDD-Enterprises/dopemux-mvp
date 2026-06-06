@@ -1,0 +1,94 @@
+{
+  "packet_id": "TP-DMX-PROOF-TRACKING-POLICY-001",
+  "title": "Proof Bundle Git-Tracking Policy",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "claude/hungry-lalande-e617d2",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.claude/worktrees/hungry-lalande-e617d2",
+  "head_sha_before": "4fe853a099b283b00e8eaed5c2abff2370b99ce9",
+  "head_sha_after": "a14779c9817a37dfab6e900e36548adc4c45e9f7",
+  "implementation_commit": "a14779c9817a37dfab6e900e36548adc4c45e9f7",
+  "proof_commit": "",
+  "final_proof_commit": "",
+  "authority_input": "TP-DMX-PROOF-TRACKING-POLICY-001.md (on-branch task packet) + user decision gate: Option A (factory skill tier, no exemption)",
+  "files_modified": [
+    "docs/03-reference/development-factory/evidence-and-proof-flow.md",
+    "docs/03-reference/governance/proof-directory-rules.md",
+    "docs/03-reference/governance/proof-path-normalization-rules.md",
+    "docs/03-reference/development-factory/red-lines-and-stop-conditions.md"
+  ],
+  "files_created": [
+    "proof/TP-DMX-PROOF-TRACKING-POLICY-001/PROOF.json",
+    "proof/TP-DMX-PROOF-TRACKING-POLICY-001/SUMMARY.md"
+  ],
+  "files_not_modified": [
+    ".gitignore",
+    "src/",
+    "tests/",
+    "scripts/batch_resolve_and_merge.py",
+    "src/dopemux_pr_merge_specialist/queue_drain.py",
+    "schemas/",
+    "config/"
+  ],
+  "commands_run": [
+    "git status --short",
+    "rg -n 'factory|final_proof_commit|implementation_commit|proof_commit|model_routing_receipt|done without proof|stale proof' docs/03-reference/development-factory/evidence-and-proof-flow.md docs/03-reference/governance/proof-directory-rules.md docs/03-reference/governance/proof-path-normalization-rules.md task-packets/development-factory/TP-DMX-PROOF-TRACKING-POLICY-001.md",
+    "rg -n 'queue_drain|batch_resolve_and_merge|LIVE_WRITE_READY|DCP-RED-MERGE-SEAM' docs/03-reference/development-factory/red-lines-and-stop-conditions.md",
+    "python -m json.tool proof/TP-DMX-PROOF-TRACKING-POLICY-001/PROOF.json",
+    "git diff --stat",
+    "grep -n 'proof' .gitignore"
+  ],
+  "exit_codes": {
+    "rg_policy_terms": 0,
+    "rg_red_lines_preserved": 0,
+    "json_validate": 0,
+    "gitignore_proof_rule_present": 0
+  },
+  "proof_policy": {
+    "factory_skill_tier_added": true,
+    "path_schema_resolved": true,
+    "stale_proof_prevention_documented": true,
+    "done_without_proof_forbidden": true,
+    "model_routing_receipt_policy_documented": true
+  },
+  "implementation_details": {
+    "evidence_and_proof_flow_md": "Added '## Proof Git Tracking' section with TRACK/DO_NOT_TRACK table, gitignore strategy, model_routing_receipt vs MODEL_ROUTING.json policy, and stale-proof prevention rules.",
+    "proof_directory_rules_md": "Added 'Skill Tiers' section naming factory as an explicit tier with path pattern proof/<packet_id>/. Added proof git-tracking tier summary table.",
+    "proof_path_normalization_rules_md": "Added factory tier to skill root values with canonical path note. Added 'Force-Add Convention' section documenting git add -f requirement.",
+    "red_lines_and_stop_conditions_md": "Added 'Proof bundle not committed for a completed packet' to Red Line Register.",
+    "path_schema_decision": "Option A applied: factory is a declared skill tier. proof/TP-DMX-<id>/ is its canonical path pattern. The TP-DMX- prefix makes the tier machine-identifiable without requiring an explicit factory/ directory prefix. This is not an exemption — it is a named convention within the proof/<skill>/... schema."
+  },
+  "validations": [
+    {"name": "rg_policy_terms_in_docs", "status": "PASS", "evidence": "rg exit 0; factory/model_routing_receipt/stale proof/done without proof terms found in modified docs"},
+    {"name": "rg_red_lines_preserved", "status": "PASS", "evidence": "rg exit 0; LIVE_WRITE_READY/DCP-RED-MERGE-SEAM/queue_drain/batch_resolve still present in red-lines-and-stop-conditions.md"},
+    {"name": "proof_json_valid", "status": "PASS", "evidence": "python -m json.tool exit 0"},
+    {"name": "gitignore_proof_star_unchanged", "status": "PASS", "evidence": "grep -n proof .gitignore: proof/ at lines 349/355; .gitignore not in diff"},
+    {"name": "no_runtime_code_touched", "status": "PASS", "evidence": "src/, tests/, scripts/, config/, .github/ not in diff"},
+    {"name": "no_schema_created", "status": "PASS", "evidence": "schemas/ not touched"},
+    {"name": "no_gitignore_modified", "status": "PASS", "evidence": ".gitignore not in allowed files, not touched"},
+    {"name": "red_lines_preserved", "status": "PASS", "evidence": "queue_drain, batch_resolve, LIVE_WRITE_READY, DCP-RED-MERGE-SEAM-0001 not weakened"}
+  ],
+  "runtime_code_touched": false,
+  "schemas_created": false,
+  "configs_created": false,
+  "red_lines_preserved": true,
+  "model_routing_receipt": {
+    "analysis": "claude-sonnet-4-6",
+    "planning": "claude-sonnet-4-6",
+    "implementation": "claude-sonnet-4-6",
+    "codereview": "NOT_RUN",
+    "precommit": "NOT_RUN"
+  },
+  "pal_codereview_status": "NOT_RUN",
+  "precommit_status": "NOT_RUN",
+  "stop_conditions_met": [],
+  "cleanup_status": "CLEAN",
+  "remaining_risks": [
+    "PAL external codereview not run — this is a docs-only packet with no runtime changes, but an independent model review would strengthen confidence",
+    "pre-commit hooks not run — docs-only packet, risk is low",
+    "factory tier path pattern documented as proof/<packet_id>/ without a parser/validator — normalization tooling will need updating in a follow-up to enforce the new tier",
+    "proof/TP-DMX-PROOF-TRACKING-POLICY-001/ uses the factory tier it defines — circular but intentional; the convention is applied here as proof of concept"
+  ],
+  "next_recommended_packet": "TP-RTE-S7-DRIFT-FIX-001 (re-scoped to verify-and-close: run S7 gate against injected drift, confirm FAIL)"
+}
