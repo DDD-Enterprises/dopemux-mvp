@@ -79,7 +79,8 @@
     "services/repo-truth-extractor/tests/test_pre_live_gate_v25.py:test_collect_truth_split_fails_for_stale_drift_step"
   ],
   "docs_changed": [],
-  "pal_codereview_status": "NOT_RUN",
+  "pal_codereview_status": "PASS_WITH_RISKS",
+  "pal_codereview_notes": "gemini-2.5-pro 429 on external validation step; internal two-step review completed. 1 MEDIUM (test structural coupling to real MODEL_MAP_PATH yaml), 3 LOW (SHA format inconsistency, field redundancy, NOT_RUN statuses). No blocking findings.",
   "precommit_status": "NOT_RUN",
   "no_runtime_code_touched": true,
   "no_schema_created": true,
