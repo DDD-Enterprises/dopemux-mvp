@@ -240,9 +240,24 @@ def search_decisions(
     c = client or _default_client()
     q = _norm_query(query)
     if q:
-        fetch = lambda: conport_adapter.search(c, base_url, ws_id, q, "decisions")
-    else:
-        fetch = lambda: conport_adapter.get_decisions(c, base_url, ws_id, limit)
+        # ConPort's GET /api/search/{ws} (text search) is deferred in Phase 1:
+        # the default enhanced server returns 500 because search_content builds
+        # the row dict without serializing the UUID `id` before json.dumps. We
+        # do NOT expose a broken read; list mode (GET /api/decisions, which does
+        # serialize ids) remains available. (conport.search is ready for when
+        # the backend serializes ids.)
+        return E.build_envelope(
+            project_id=res.project.project_id,
+            status=E.PARTIAL,
+            source_system=E.SOURCE_CONPORT,
+            authority_label=E.AUTHORITY_CANONICAL,
+            data=None,
+            limitations=[
+                "decision text search deferred: ConPort GET /api/search returns "
+                "500 (UUID id not serialized); use search_decisions without a query"
+            ],
+        )
+    fetch = lambda: conport_adapter.get_decisions(c, base_url, ws_id, limit)
     return _enveloped_backend_read(res.project.project_id, res.workspace, E.SOURCE_CONPORT, fetch)
 
 

@@ -4,7 +4,7 @@
   "branch": "dcp/chatgpt-mcp-ro-0005-conport-and-dope-memory-read-ada",
   "base_branch": "main",
   "base_sha": "876d0c624 (PR #830 / 0004 merge)",
-  "head_sha": "064e5553972feb92cfac542468e197b2d3d8c7f0",
+  "head_sha": "PENDING_POST_COMMIT_SYNC",
   "task_class": "implementation/security-sensitive/API-sensitive",
   "risk": "HIGH",
   "depends_on": "TP-DCP-MCP-RO-0004 (merged via PR #830)",
@@ -83,6 +83,7 @@
   "command_log": "proof/TP-DCP-MCP-RO-0005/COMMAND_LOG.md",
   "audit": "proof/TP-DCP-MCP-RO-0005/AUDIT.md",
   "review_feedback_round": {
-    "P1_progress_auto_fork": "FIXED \u2014 search_progress fail-closed: blocked unless conport.progress_readonly_safe=true (operator must disable DOPEMUX_AUTO_FORK_PROGRESS first); ConPort GET /api/progress auto-forks (writes) on empty workspace. Documented + tested (backend never hit when blocked)."
+    "P1_progress_auto_fork": "FIXED \u2014 search_progress fail-closed: blocked unless conport.progress_readonly_safe=true (operator must disable DOPEMUX_AUTO_FORK_PROGRESS first); ConPort GET /api/progress auto-forks (writes) on empty workspace. Documented + tested (backend never hit when blocked).",
+    "P2_search_decisions_query_broken_route": "FIXED \u2014 /api/search 500s on default backend (UUID id not serialized); search_decisions query mode now returns PARTIAL deferral and never hits the backend; list mode unaffected. Documented + tested."
   }
 }
