@@ -23,6 +23,7 @@ A red line is non-negotiable. It is not a warning. It is not a suggestion that c
 | No secrets | All capsules | Never read, print, or commit `.env`, API keys, tokens, passwords |
 | No scope escape | Capsule `allowed_files` | Edits outside allowed_files = immediate halt |
 | `monitoring-dashboard` at 0.0.0.0:8098 unauthenticated | `services/monitoring-dashboard/server.py:1563` | HIGH security risk if started — binds all interfaces, no auth on own endpoints. Latent: NOT running at last verification. (Prior "1561" was a line-number confusion; real port is **8098**.) Do not invoke, do not expose |
+| Proof bundle not committed for a completed packet | `docs/03-reference/governance/proof-directory-rules.md`, `evidence-and-proof-flow.md` | A governed capsule must not be marked complete, PR-clean, or DONE without a committed `PROOF.json` and `SUMMARY.md`. Use `git add -f` to force-track sanitized proof past the `proof/*` gitignore. Claiming "done" without a committed proof is a proof-integrity violation. |
 
 ---
 
