@@ -53,4 +53,4 @@ Runtime code (`validate_pre_live_gate_v25.py`), schemas, `config/`, `.github/wor
 
 ## Next Packet
 
-`TP-DMX-DCP-SEAM-LIFT-001` — wire existing `RedLaneScanner` executable into CI/steward.
+`TP-DMX-DCP-SEAM-ENFORCEMENT-001` — wire existing `RedLaneScanner` executable into an auditable gate path without lifting the seam or relaxing the hard block.
