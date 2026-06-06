@@ -4,7 +4,7 @@
   "repo": "dopemux-mvp",
   "branch": "claude/brave-spence-ff3a65",
   "git_status_before": " M .github/agents/dopemux-implementer.agent.md\n M docs/03-reference/governance/proof-bundle-schema.md\n M docs/03-reference/governance/proof-contract.md\n M task-packets/TEMPLATE_TASK_PACKET.md\n?? .github/agents/dopemux-auditor.agent.md\n?? .github/agents/dopemux-reader.agent.md\n?? config/ai/\n?? docs/03-reference/governance/model-routing.md\n?? tests/test_model_routing_policy.py\n",
-  "git_status_after": " M .github/agents/dopemux-implementer.agent.md\n M .github/agents/dopemux-planner.agent.md\n M docs/03-reference/governance/proof-bundle-schema.md\n M docs/03-reference/governance/proof-contract.md\n M task-packets/TEMPLATE_TASK_PACKET.md\n?? .github/agents/dopemux-auditor.agent.md\n?? .github/agents/dopemux-reader.agent.md\n?? config/ai/\n?? docs/02-how-to/model-routing-usage.md\n?? docs/03-reference/governance/model-routing.md\n?? proof/TP-DMX-AI-ROUTING-001/\n?? tests/test_model_routing_policy.py\n",
+  "git_status_after": " M docs/03-reference/governance/proof-bundle-schema.md\n M docs/03-reference/governance/proof-contract.md\n M proof/TP-DMX-AI-ROUTING-001/PROOF.json\n?? tests/test_model_routing_policy.py\n",
   "files_changed": [
     "config/ai/model-routing.policy.yaml",
     ".github/agents/dopemux-reader.agent.md",
@@ -71,8 +71,8 @@
     "R3: All provider model selectors are VERIFY_WITH_VENDOR_DOCS — policy is advisory until operators substitute verified model ids."
   ],
   "commit": {
-    "created": false,
-    "sha": null,
+    "created": true,
+    "sha": "7e25d2c813106285a11b151e11760739ffef4c56",
     "message": "Add stage-based AI model routing policy"
   }
 }
