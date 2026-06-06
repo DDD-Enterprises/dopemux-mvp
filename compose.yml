@@ -201,15 +201,15 @@ services:
       start_period: 60s
 
   # Redis UI (optional web interface)
-  redis-ui:
-    image: redislabs/redisinsight:latest
-    container_name: dopemux-redis-ui
-    restart: unless-stopped
-    networks:
-      - dopemux-network
-    ports:
-      - "${REDIS_UI_PORT:-8081}:5540"
-    # Note: RedisInsight healthcheck disabled - app takes time to start and doesn't respond reliably to health checks
+  # redis-ui:
+  #   image: redislabs/redisinsight:latest
+  #   container_name: dopemux-redis-ui
+  #   restart: unless-stopped
+  #   networks:
+  #     - dopemux-network
+  #   ports:
+  #     - "${REDIS_UI_PORT:-8081}:5540"
+  #   # Note: RedisInsight healthcheck disabled - app takes time to start and doesn't respond reliably to health checks
 
   # Qdrant (vector database for embeddings)
   mcp-qdrant:
