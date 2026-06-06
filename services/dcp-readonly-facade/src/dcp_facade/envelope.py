@@ -19,10 +19,13 @@ BLOCKED = "BLOCKED"
 # --- source systems / authority labels ------------------------------------
 SOURCE_FACADE = "facade"
 SOURCE_GIT = "git"
+SOURCE_CONPORT = "conport"
+SOURCE_DOPE_MEMORY = "dope-memory"
 
 AUTHORITY_FACADE = "facade"
 AUTHORITY_GIT = "OBSERVED/git"
 AUTHORITY_FS = "OBSERVED/fs"
+AUTHORITY_CANONICAL = "CANONICAL"
 
 # Canonical field order (also the full key set the envelope always carries).
 ENVELOPE_FIELDS = (

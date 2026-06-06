@@ -73,6 +73,32 @@ async def fetch_proof_bundle(project_id: str, bundle_id: str) -> dict:
     return tools.fetch_proof_bundle(_REGISTRY, project_id, bundle_id)
 
 
+@mcp.tool()
+async def search_decisions(project_id: str, query: Optional[str] = None, limit: int = 20) -> dict:
+    """Read ConPort decisions for a project (GET; workspace-bound; cap 20)."""
+    return tools.search_decisions(_REGISTRY, project_id, query, limit)
+
+
+@mcp.tool()
+async def search_progress(project_id: str, status: Optional[str] = None, limit: int = 20) -> dict:
+    """Read ConPort progress entries for a project (GET; workspace-bound; cap 20)."""
+    return tools.search_progress(_REGISTRY, project_id, status, limit)
+
+
+@mcp.tool()
+async def search_chronicle(project_id: str, query: str = "", top_k: int = 3) -> dict:
+    """Search the dope-memory chronicle for a project (read-only POST; top_k cap 3)."""
+    return tools.search_chronicle(_REGISTRY, project_id, query, top_k)
+
+
+@mcp.tool()
+async def replay_chronicle_session(
+    project_id: str, session_id: str, mode: str = "replay_current", top_k: int = 3
+) -> dict:
+    """Replay a dope-memory chronicle session (read-only POST; replay_current default)."""
+    return tools.replay_chronicle_session(_REGISTRY, project_id, session_id, mode, top_k)
+
+
 def main() -> None:
     transport = os.getenv("DCP_FACADE_TRANSPORT", "stdio")
     mcp.run(transport=transport)
