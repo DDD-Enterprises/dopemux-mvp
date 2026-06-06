@@ -5,6 +5,7 @@
   "validation_state": "PASSED",
   "repo": "DDD-Enterprises/dopemux-mvp",
   "head_sha": "7a611ca06c0c013d6bc92a5d61cbc66221056346",
+  "commit_sha": "e25ee3505683896fc76c15c7c53ce826d8f42e82",
   "branch": "claude/hungry-lalande-e617d2",
   "worktree_path": "/Users/hue/code/dopemux-mvp/.claude/worktrees/hungry-lalande-e617d2",
   "authority_input": "TP-DMX-EVIDENCE-GATE-VERIFY-001 (read-only verification at HEAD 8042f9f9f)",
