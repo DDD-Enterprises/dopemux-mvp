@@ -21,11 +21,14 @@ SOURCE_FACADE = "facade"
 SOURCE_GIT = "git"
 SOURCE_CONPORT = "conport"
 SOURCE_DOPE_MEMORY = "dope-memory"
+SOURCE_DOPE_CONTEXT = "dope-context"
+SOURCE_TASK_ORCHESTRATOR = "task-orchestrator"
 
 AUTHORITY_FACADE = "facade"
 AUTHORITY_GIT = "OBSERVED/git"
 AUTHORITY_FS = "OBSERVED/fs"
 AUTHORITY_CANONICAL = "CANONICAL"
+AUTHORITY_DERIVED = "DERIVED"
 
 # Canonical field order (also the full key set the envelope always carries).
 ENVELOPE_FIELDS = (
