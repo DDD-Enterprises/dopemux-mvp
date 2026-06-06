@@ -21,9 +21,9 @@
   ],
   "codereview_status": "PASSED",
   "precommit_status": "PASSED",
-  "commit_sha": "PENDING",
-  "pr_url": "PENDING",
+  "commit_sha": "1895934df32c0e10146647137ec36f6ad8620f77",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/838",
   "residual_risks": [],
   "unknowns": [],
-  "cleanup_status": "PENDING"
+  "cleanup_status": "DELETED"
 }
