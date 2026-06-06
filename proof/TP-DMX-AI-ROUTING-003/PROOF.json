@@ -5,7 +5,7 @@
   "repo": "DDD-Enterprises/dopemux-mvp",
   "branch": "claude/tp-dmx-ai-routing-003-governance-residue",
   "head_sha_before": "b987da994",
-  "head_sha_after": "52fcdbeb5",
+  "head_sha_after": "5b6f2b33a08b3dfbc4f849f12c0650fe6e68d130",
   "files_modified": [
     "task-packets/INDEX.md",
     "task-packets/TEMPLATE_TASK_PACKET.md",
@@ -78,7 +78,7 @@
     "auditor_model": "claude-sonnet-4-6",
     "invocation": "implementer_standard self-audit inside Claude Code after three slices",
     "exit_code": 0,
-    "report_path": "proof/TP-DMX-AI-ROUTING-003/SUMMARY.md",
+    "report_path": "proof/TP-DMX-AI-ROUTING-003/AUDITOR_REPORT.md",
     "findings": [
       {
         "id": "F1",
