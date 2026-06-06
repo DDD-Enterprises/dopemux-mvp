@@ -71,6 +71,7 @@ Rules:
 - If `execution.agent = "gemini"`, then `pal_chain.enabled = true`.
 - Codex minimum chain: `analyze -> planner -> codereview -> precommit`.
 - Risky or architecture-sensitive chain: `analyze -> thinkdeep -> challenge -> planner -> challenge -> implement -> codereview -> precommit -> challenge`.
+- Stage-based dev-workflow model routing is documented in config/ai/model-routing.policy.yaml — advisory governance, not runtime authority; it does not replace PAL chain rules above and does not override LiteLLM proxy routing or RTE extraction routing.
 
 ## 6. Architecture Boundaries
 

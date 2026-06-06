@@ -1,0 +1,73 @@
+{
+  "tp_id": "TP-DMX-AI-ROUTING-003",
+  "status": "IMPLEMENTATION_COMPLETE",
+  "repo": "dopemux-mvp",
+  "branch": "claude/model-routing-next",
+  "git_status_before": "## claude/model-routing-next...origin/main",
+  "git_status_after": "## claude/model-routing-next...origin/main\n M AGENTS.md\n M task-packets/INDEX.md\n M task-packets/TEMPLATE_TASK_PACKET.md",
+  "files_changed": [
+    "task-packets/INDEX.md",
+    "task-packets/TEMPLATE_TASK_PACKET.md",
+    "AGENTS.md",
+    "proof/TP-DMX-AI-ROUTING-003/PROOF.json"
+  ],
+  "commands": [
+    {
+      "cmd": "git status --short --branch",
+      "exit_code": 0,
+      "purpose": "capture pre-edit state"
+    },
+    {
+      "cmd": "rg -n 'plan_challenge|slice_review' task-packets/INDEX.md task-packets/TEMPLATE_TASK_PACKET.md AGENTS.md",
+      "exit_code": 1,
+      "purpose": "verify removed tokens no longer present (exit 1 = not found, expected)"
+    },
+    {
+      "cmd": "rg -n 'TP-DMX-AI-ROUTING-001|TP-DMX-AI-ROUTING-002' task-packets/INDEX.md",
+      "exit_code": 0,
+      "purpose": "verify INDEX entries added"
+    },
+    {
+      "cmd": "rg -n 'model-routing.policy.yaml' AGENTS.md",
+      "exit_code": 0,
+      "purpose": "verify AGENTS.md reference added"
+    },
+    {
+      "cmd": "git diff --check",
+      "exit_code": 0,
+      "purpose": "whitespace validation"
+    }
+  ],
+  "validation": {
+    "plan_challenge_slice_review_removed": "PASS - rg returned exit 1 (pattern not found)",
+    "index_entries_added": "PASS - both TP-DMX-AI-ROUTING-001 and TP-DMX-AI-ROUTING-002 found in INDEX.md",
+    "agents_md_reference_added": "PASS - model-routing.policy.yaml reference found in AGENTS.md §5",
+    "whitespace_check": "PASS - git diff --check passed",
+    "proof_json_schema": "PASS - validated via inline Python",
+    "runtime_tests": "NOT_RUN - no runtime code changed"
+  },
+  "embedded_audit": {
+    "status": "PASS",
+    "auditor_tool": "self_audit",
+    "auditor_model": "claude-opus-4-7",
+    "invocation": "self-review of diff against allowlist and policy stage list",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "AGENTS.md duplicate §10 numbering is pre-existing and intentionally out of scope per packet",
+      "INDEX.md markdown table rendering not validated by CI - visual inspection required",
+      "Stage list alignment assumes config/ai/model-routing.policy.yaml remains the authoritative stage definition source"
+    ]
+  },
+  "remaining_risks": [
+    "AGENTS.md duplicate §10 numbering (pre-existing, out of scope)",
+    "INDEX table rendering not CI-validated",
+    "No automatic detection if policy YAML adds new stages in future"
+  ],
+  "commit": {
+    "created": false,
+    "sha": null,
+    "message": "Register AI routing packets and align governance references"
+  }
+}
