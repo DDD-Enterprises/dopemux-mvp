@@ -120,4 +120,4 @@ Would have stopped if: runtime code / schema / config changes required, call pat
 
 ## Next Recommended Packet
 
-`TP-DMX-DCP-SEAM-LIFT-001` — wire existing `RedLaneScanner` executable into CI/steward (confirmed present, confirmed unwired per TP-DMX-EVIDENCE-GATE-VERIFY-001).
+`TP-DMX-DCP-SEAM-ENFORCEMENT-001` — wire existing `RedLaneScanner` executable into CI/steward (confirmed present, confirmed unwired per TP-DMX-EVIDENCE-GATE-VERIFY-001).
