@@ -67,8 +67,8 @@
     "R1: Advisory model-routing fields in proof-contract.md could be misread as normative by future operators; the explicit additive/advisory language mitigates this."
   ],
   "commit": {
-    "created": false,
-    "sha": null,
+    "created": true,
+    "sha": "61ebef588978395399d75432fb2da2d95e56000c",
     "message": "Resolve AI routing proof governance residue"
   }
 }
