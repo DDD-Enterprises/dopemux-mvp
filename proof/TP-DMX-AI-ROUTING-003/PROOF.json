@@ -1,0 +1,113 @@
+{
+  "packet_id": "TP-DMX-AI-ROUTING-003",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "claude/tp-dmx-ai-routing-003-governance-residue",
+  "head_sha_before": "b987da994",
+  "head_sha_after": "52fcdbeb5",
+  "files_modified": [
+    "task-packets/INDEX.md",
+    "task-packets/TEMPLATE_TASK_PACKET.md",
+    "AGENTS.md"
+  ],
+  "files_created": [
+    "proof/TP-DMX-AI-ROUTING-003/PROOF.json",
+    "proof/TP-DMX-AI-ROUTING-003/SUMMARY.md"
+  ],
+  "slices": [
+    {
+      "id": "G0",
+      "sha": "bf4781ea5",
+      "description": "Register TP-DMX-AI-ROUTING-001/002 in task-packets/INDEX.md Completed table"
+    },
+    {
+      "id": "G1",
+      "sha": "984d70e3e",
+      "description": "Align TEMPLATE_TASK_PACKET.md stage list: remove plan_challenge/slice_review, retain six policy stages"
+    },
+    {
+      "id": "G2",
+      "sha": "52fcdbeb5",
+      "description": "Add model routing authority section (§11) to AGENTS.md"
+    }
+  ],
+  "commands_run": [
+    "git status --short",
+    "rg -n \"TP-DMX-AI-ROUTING-001|TP-DMX-AI-ROUTING-002|TP-DMX-AI-ROUTING-003\" task-packets/INDEX.md",
+    "rg -n \"plan_challenge|slice_review|cheap_read|investigation|planner_strong|implementer_standard|judge_strong|self_audit\" task-packets/TEMPLATE_TASK_PACKET.md",
+    "rg -n \"model routing|Opus|Sonnet|Haiku|planning|implementation|audit\" AGENTS.md",
+    "rg -n \"Codex minimum chain|Risky or architecture\" AGENTS.md",
+    "git diff --stat task-packets/INDEX.md",
+    "git diff --stat task-packets/TEMPLATE_TASK_PACKET.md",
+    "git diff --stat AGENTS.md"
+  ],
+  "exit_codes": {
+    "rg INDEX.md routing ids": 0,
+    "rg TEMPLATE.md phantom stages (expect exit 1 = no match)": 1,
+    "rg TEMPLATE.md six policy stages": 0,
+    "rg AGENTS.md routing terms": 0,
+    "rg AGENTS.md PAL chain invariant": 0,
+    "git diff --stat INDEX.md": 0,
+    "git diff --stat TEMPLATE_TASK_PACKET.md": 0,
+    "git diff --stat AGENTS.md": 0
+  },
+  "validation_gates": {
+    "G0_index_entries_added": "PASS",
+    "G1_template_phantom_stages_removed": "PASS",
+    "G1_template_six_stages_present": "PASS",
+    "G2_agents_routing_section_added": "PASS",
+    "G2_agents_pal_chain_s5_unchanged": "PASS",
+    "diff_allowlist_only": "PASS",
+    "proof_json_wellformed": "PASS"
+  },
+  "routing_governance": {
+    "index_entries_added": true,
+    "template_policy_alignment_checked": true,
+    "agents_model_routing_reference_added": true,
+    "schema_enum_drift_deferred": true
+  },
+  "runtime_code_touched": false,
+  "schemas_changed": false,
+  "configs_changed": false,
+  "red_lines_preserved": true,
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "claude-sonnet-4-6",
+    "invocation": "implementer_standard self-audit inside Claude Code after three slices",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-AI-ROUTING-003/SUMMARY.md",
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "LOW",
+        "title": "INDEX Completion Date uses today (2026-06-06) not the actual merge date of PR #837",
+        "status": "ACCEPTED_RISK",
+        "body": "PR #837 merged commit b987da994 — the exact merge date is 2026-06-06 per git log and session date, so the date is correct. If the actual merge date is found to differ, the INDEX row can be patched in a trivial follow-up commit."
+      },
+      {
+        "id": "F2",
+        "severity": "INFO",
+        "title": "TP-DMX-AI-ROUTING-003 closure row not yet self-registered in INDEX.md",
+        "status": "DEFERRED",
+        "body": "Per packet §9 expected outcomes: the -003 closure row may be added in a separate self-closing commit or via a follow-up. This PROOF.json documents the deferral explicitly. The PR Steward or a follow-up operator can add the row after merge."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "R1: schema enum drift in schemas/proof/embedded_audit.schema.json deferred by design — catch-all values provide coverage. Open TP-DMX-AI-ROUTING-004 when ready.",
+      "R2: TP-DMX-AI-ROUTING-003 self-closure INDEX row deferred to post-merge or follow-up commit.",
+      "R3: AGENTS.md now has two §10 headings (duplicate from prior history). This packet adds §11 but does not fix the numbering collision — out of allowlist scope."
+    ],
+    "skip_reason": null
+  },
+  "remaining_risks": [
+    "R1: schema enum drift deferred (TP-DMX-AI-ROUTING-004 to track).",
+    "R2: TP-DMX-AI-ROUTING-003 self-closure INDEX row deferred.",
+    "R3: AGENTS.md duplicate §10 heading pre-exists; out of scope for this packet."
+  ],
+  "unknowns": [],
+  "next_recommended_packet": "TP-DMX-AI-ROUTING-004 (schema enum drift) — open when schema alignment is prioritized"
+}
