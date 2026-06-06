@@ -16,9 +16,9 @@
 
 The following conditions block L3 and all levels above it:
 
-- **`LIVE_WRITE_READY` undefined.** No component has been declared `LIVE_WRITE_READY`. The schema exists in `schemas/dcp/` but no component has satisfied its preconditions. Unblocking requires an authorized operator to declare readiness with evidence.
-- **`DCP-RED-MERGE-SEAM-0001` active.** The DCP Core (`schemas/dcp/`, `queue_drain.py`) carries an active red-line seam. `queue_drain.py` is HARD-BLOCKED. No batch execution may proceed while this seam is active.
-- **RTE S7 gate stub (always-PASS).** The S7 classification gate in the RTE pipeline is a stub that always returns PASS. Any batch execution relying on S7 for routing decisions cannot be trusted. This finding is documented as `F1-CRIT-1` in the RTE audit record.
+- **`LIVE_WRITE_READY` undefined.** No schema defines `LIVE_WRITE_READY` — verification (VG-006) confirmed it appears only as blocker statements, references, and test guards that *actively forbid* defining it as a schema property (`tests/dcp/test_dcp_0002_contract_derivation.py`). It is `UNDEFINED_AND_BLOCKING`. Unblocking requires defining the contract (`TP-DMX-LIVE-WRITE-READY-SCHEMA-001`) and an authorized operator declaring readiness with evidence.
+- **`DCP-RED-MERGE-SEAM-0001` active.** The DCP Core (`schemas/dcp/`, `queue_drain.py`) carries an active red-line seam. `queue_drain.py` is HARD-BLOCKED. No batch execution may proceed while this seam is active. (Executable `RedLaneScanner` enforcement exists but is not yet wired into CI/steward — see red-lines doc.)
+- **RTE S7 truth-split gate (verify-and-close).** The earlier `F1-CRIT-1` audit finding described S7 as an always-PASS stub. At HEAD `8042f9f9f` the implementation is present and wired (`collect_truth_split` emits blockers into `all_blockers`) — the stub claim is stale. The remaining blocker is *verification*: the gate must be run against injected drift and confirmed to FAIL before batch execution can rely on it (`TP-RTE-S7-DRIFT-FIX-001`, re-scoped). Until that verification runs, batch execution still cannot trust S7.
 - **Agent authority unresolved.** The `agents` component (`services/agents/`, `src/dopemux/agent_orchestrator.py`) has no declared operator-facing authority. Three competing agent families exist with no declared boundaries. Running a batch that might invoke agents creates unpredictable authority scope.
 
 ## Blockers for L6 Specifically

@@ -1,18 +1,20 @@
 # Open Questions — Verification Gates
 
-12 verification gates from the architecture synthesis. Each must be resolved before related packets can execute safely.
+12 verification gates from the architecture synthesis. **Status reflects `TP-DMX-EVIDENCE-GATE-VERIFY-001` (read-only, HEAD `8042f9f9f`).** All findings are static-analysis + live `docker ps` only; none involved running the systems under test. "VERIFIED" means the question is answered to that confidence; it does not certify runtime correctness.
 
-| Gate | Question | Blocks |
-|------|----------|--------|
-| VG-001 | `dopetask-canonical-spec.json` confirmed at `docs/03-reference/spec/dopetask/`? (recon found it; verify it is the authoritative source and not outdated) | `TP-DMX-DOPETASK-SPEC-RESTORE-001` |
-| VG-002 | Is the Python `services/task-orchestrator/` FastAPI (port 8000) a live process? Is it invoked by any active code path? | `TP-DMX-ORCH-NAMING-BOUNDARY-001` |
-| VG-003 | Which of the ~29 uninventoried `services/` directories are programmatically invoked by active code? | `TP-DMX-SERVICES-INVENTORY-001` |
-| VG-004 | Is `services/monitoring-dashboard/` actually running (0.0.0.0:1561)? `docker ps` or netstat check required. | Security remediation |
-| VG-005 | What is the call graph leading to `validate_pre_live_gate_v25.py:476-478`? Which tests exercise it? | `TP-RTE-S7-DRIFT-FIX-001` |
-| VG-006 | What is the full definition of `LIVE_WRITE_READY`? Who can declare it true? Which system reads it? | `TP-DMX-LIVE-WRITE-READY-SCHEMA-001` |
-| VG-007 | Is DCP-RED-MERGE-SEAM-0001 enforced in any executable code, or only in `schemas/dcp/README.md`? | `TP-DMX-DCP-SEAM-ENFORCEMENT-001` |
-| VG-008 | How are `services/agents/` agent types invoked in production? Via dopemux CLI, task-orchestrator, or direct import? | `TP-DMX-AGENT-AUTHORITY-001` |
-| VG-009 | Is task-orchestrator Kotlin MCP transport still stdio? Has the HTTP-singleton cutover been applied? | `TP-DMX-ORCH-NAMING-BOUNDARY-001` |
-| VG-010 | Is `services/working-memory-assistant/main.py` (orphaned) safe to delete? Is it imported anywhere? | `TP-DMX-SERVICES-INVENTORY-001` |
-| VG-011 | What is the relationship between `src/conport/memory_server.py` and `services/conport_kg/`? Same runtime or two builds? | `TP-DMX-SERVICES-INVENTORY-001` |
-| VG-012 | Which `.claude/hooks/` scripts are confirmed active at session start vs dormant? Do any target non-existent endpoints? | `TP-DMX-EVIDENCE-GATE-VERIFY-001` |
+| Gate | Question | Status | Finding @ HEAD `8042f9f9f` | Next |
+|------|----------|--------|----------------------------|------|
+| VG-001 | `dopetask-canonical-spec.json` authoritative & not outdated? | **VERIFIED** (existence); freshness open | Exists at `docs/03-reference/spec/dopetask/`, valid JSON, referenced as canonical by `AGENTS.md`. Census "MISSING" was stale. | `TP-DMX-DOPETASK-SPEC-RESTORE-001` → verify canonical/freshness, not restore |
+| VG-002 | Python TO FastAPI (port 8000) a live process? | **VERIFIED** | Source + compose-defined (port 8000); **not running** (`curl :8000` refused, no container). | `TP-DMX-ORCH-NAMING-BOUNDARY-001` |
+| VG-003 | Which `services/` dirs are invoked by active code? | **STILL_UNKNOWN / PARTIAL** | 41 dirs / 23 compose services; 35 not in compose — but not-in-compose ≠ orphaned. Invocation graph still needed. | `TP-DMX-SERVICES-INVENTORY-001` |
+| VG-004 | Is `monitoring-dashboard` running, and where? | **SECURITY_RISK** (latent) | Binds `0.0.0.0:8098` (NOT 1561 — line-number confusion), no auth on own endpoints, **not running**. | Security remediation when started |
+| VG-005 | S7 truth-split gate call graph / always-PASS? | **CONFLICTING** (census stale) | `collect_truth_split` builds rows, classifies, emits blockers into `all_blockers`. Stub claim stale. Body read, gate NOT run. | `TP-RTE-S7-DRIFT-FIX-001` → verify-and-close |
+| VG-006 | Full definition of `LIVE_WRITE_READY`? | **VERIFIED** (undefined) | No schema defines it; tests actively forbid defining it. `UNDEFINED_AND_BLOCKING`. **Unchanged true L4+ blocker.** | `TP-DMX-LIVE-WRITE-READY-SCHEMA-001` |
+| VG-007 | DCP-RED-MERGE-SEAM enforced in code or docs-only? | **CONFLICTING** (code exists, unwired) | `RedLaneScanner` + rules + tests exist in `src/dopemux/dcp/`; **not** referenced by CI/steward/auditor/scripts. | `TP-DMX-DCP-SEAM-ENFORCEMENT-001` → wire existing scanner |
+| VG-008 | How are `services/agents/` invoked in production? | **VERIFIED** | 2 co-located tests (not "zero"); **no active code imports `services.agents`**. Authority unwired. | `TP-DMX-AGENT-AUTHORITY-001` |
+| VG-009 | TO Kotlin MCP transport — stdio or HTTP cutover? | **VERIFIED** (stdio) | `.mcp.json` `type:stdio`; wrapper `MCP_TRANSPORT=stdio`, `--rm` per-client; running container port 3001/tcp internal. HTTP cutover **not applied**. | `TP-DMX-ORCH-NAMING-BOUNDARY-001` |
+| VG-010 | Is `working-memory-assistant/main.py` orphaned / safe to delete? | **CONFLICTING** (not orphan) | `main.py` (`WMAService`) imported by `trigger_manager.py`, `cache_manager.py`. **NOT safe to delete.** Census claim wrong. | `TP-DMX-SERVICES-INVENTORY-001` |
+| VG-011 | `src/conport/memory_server.py` vs `services/conport_kg/`? | **VERIFIED** (partial) | Canonical ConPort = compose `conport` (`docker/mcp-servers/conport/Dockerfile`, 3004/3005). `services/conport_kg/` not referenced by compose/.mcp.json/src — orphaned/experimental. | `TP-DMX-SERVICES-INVENTORY-001` |
+| VG-012 | Which `.claude/hooks/` are active vs dormant; wrong endpoints? | **VERIFIED** (non-functional) | `check_energy.sh`/`save_context.sh` target `localhost:8080` (= Leantime, not adhd-engine:3025); engine not running; `native_hooks.py` has no ADHD wiring. Hooks no-op. | ADHD remediation series |
+
+**Summary:** 7 VERIFIED · 3 CONFLICTING (census stale: VG-005, VG-007, VG-010) · 1 SECURITY_RISK (VG-004) · 1 STILL_UNKNOWN (VG-003). VG-006 remains the true L4+ blocker.

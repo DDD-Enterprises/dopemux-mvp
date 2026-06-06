@@ -64,3 +64,13 @@ This contradiction is documented for resolution in `TP-DMX-ORCH-NAMING-BOUNDARY-
 - The Kotlin MCP is the canonical authority for workflow transitions.
 - The Python FastAPI service must not write workflow state that the Kotlin MCP also manages.
 - Any factory component that routes to "task-orchestrator" must specify which one.
+
+## Verification Updates (`TP-DMX-EVIDENCE-GATE-VERIFY-001`, HEAD `8042f9f9f`)
+
+Static analysis + live `docker ps`; no system was run under test. Corrections to the component picture above:
+
+- **Python FastAPI TO** is defined in `compose.yml` (port 8000) but was **not running** at verification (`curl :8000/health` refused; no container). The Kotlin MCP (image `e47ed00`, stdio, internal port 3001/tcp) is the only task-orchestrator running.
+- **Kotlin MCP transport is still stdio** (`.mcp.json` `type:stdio`, per-client `--rm` container). The HTTP-singleton cutover is **not applied** (VG-009).
+- **dope-memory `main.py` is NOT an orphan.** `services/working-memory-assistant/main.py` (`WMAService`) is imported by `trigger_manager.py` and `cache_manager.py` — it is live code, not safe to delete (VG-010). `dope_memory_main.py` is the MCP-server entrypoint built by `Dockerfile.dope-memory`.
+- **`services/conport_kg/` is not the canonical ConPort.** Canonical = compose `conport` (`docker/mcp-servers/conport/Dockerfile`, ports 3004/3005); `conport_kg/` is not referenced by compose/`.mcp.json`/`src` — likely orphaned/experimental (VG-011).
+- **agents** authority remains unwired: no active code imports `services.agents` (VG-008).
