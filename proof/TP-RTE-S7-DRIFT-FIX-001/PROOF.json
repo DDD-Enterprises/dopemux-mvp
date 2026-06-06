@@ -5,6 +5,8 @@
   "validation_state": "PASSED",
   "outcome": "VERIFY_AND_CLOSE",
   "repo": "DDD-Enterprises/dopemux-mvp",
+  "head_sha_before": "c6ed2ea5181f349b34a2e35c4146bb0c565f1b36",
+  "head_sha_after": "a3c15187c",
   "head_sha": "c6ed2ea5181f349b34a2e35c4146bb0c565f1b36",
   "commit_sha": "43836516c",
   "branch": "claude/hungry-lalande-e617d2",
@@ -34,6 +36,16 @@
     "duration_seconds": 0.52,
     "new_tests_added": ["test_collect_truth_split_fails_for_stale_drift_step"]
   },
+  "s7_gate_result": {
+    "injected_drift_used": true,
+    "expected_failure_observed": true,
+    "verdict": "FAIL",
+    "blockers": ["TARGET_TRUTH_SPLIT_MISMATCH"],
+    "classification": "STALE_MODEL_MAP",
+    "injected_step_id": "FAKE_STALE_STEP",
+    "injected_phase": "A",
+    "step_in_model_map": false
+  },
   "verify_and_close_evidence": {
     "injected_step_id": "FAKE_STALE_STEP",
     "injected_phase": "A",
@@ -62,6 +74,11 @@
     {"name": "no_runtime_code_modified", "status": "PASS", "evidence": "validate_pre_live_gate_v25.py not in git diff"},
     {"name": "no_forbidden_paths_touched", "status": "PASS", "evidence": "queue_drain / batch_resolve / schemas / config / .github / src not in modified files"}
   ],
+  "runtime_code_changed": false,
+  "tests_added_or_modified": [
+    "services/repo-truth-extractor/tests/test_pre_live_gate_v25.py:test_collect_truth_split_fails_for_stale_drift_step"
+  ],
+  "docs_changed": [],
   "pal_codereview_status": "NOT_RUN",
   "precommit_status": "NOT_RUN",
   "no_runtime_code_touched": true,
