@@ -177,9 +177,10 @@ def test_contract_lane_routes_override_policy_for_json_managed_steps() -> None:
     # Plan B: the legacy v3 runner resolves the ${CELL} placeholder leads to the
     # default (value-default) profile's concrete OpenAI models (strict cells are
     # OpenAI-only); hardcoded fallbacks remain. The contract lane (not the policy
-    # ladder) still drives json-managed steps.
+    # ladder) still drives json-managed steps. Codex 3361748519: CE primary is the
+    # canonical strict 2-route shape (lead = ${CE_MODEL} -> gpt-5.3-codex under
+    # value-default, fallback = gpt-5.5); the redundant hardcoded middle was dropped.
     expected_d0 = [
-        ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
         ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
         ("openai", "gpt-5.5", "OPENAI_API_KEY"),
     ]
@@ -195,10 +196,11 @@ def test_contract_lane_routes_override_policy_for_json_managed_steps() -> None:
         ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
         ("xai", "grok-4.3", "XAI_API_KEY"),
     ]
+    # AGG primary keeps two distinct hops: lead ${SYNTH_MODEL} -> gpt-5.5 under
+    # value-default, fallback = a distinct gpt-5.3-codex (Codex 3361748519).
     assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D4") == [
         ("openai", "gpt-5.5", "OPENAI_API_KEY"),
         ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
-        ("openai", "gpt-5.5", "OPENAI_API_KEY"),
     ]
 
 
@@ -213,8 +215,10 @@ def test_resolve_effective_step_route_marks_strict_required_contract_lane() -> N
     assert route_info["model_id"] == "gpt-5.3-codex"
     attempts = route_info.get("strict_route_attempts")
     assert isinstance(attempts, list) and len(attempts) >= 2
-    # First attempt is Gemini (non-strict, skipped), second is GPT codex (strict)
-    assert attempts[0]["strict_capable"] is False
+    # Codex 3361748519: the CE primary lead is now the strict ${CE_MODEL} OpenAI
+    # route (value-default -> gpt-5.3-codex), so it is strict-capable and selected;
+    # the gpt-5.5 fallback follows and is also strict-capable.
+    assert attempts[0]["strict_capable"] is True
     assert attempts[1]["strict_capable"] is True
 
 

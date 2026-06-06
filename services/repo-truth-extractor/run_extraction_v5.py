@@ -7074,12 +7074,27 @@ def write_run_routing_fingerprint(
                 tier_override=prompt.tier_override,
             )
             step_tier_map[phase][prompt.step_id] = tier
-            ladder = _resolve_step_ladder_compat(
+            raw_ladder = _resolve_step_ladder_compat(
                 cfg.routing_policy,
                 phase,
                 prompt.step_id,
                 tier_override=prompt.tier_override,
             )
+            # Resolve ${CELL} placeholders so the routing fingerprint records the
+            # route that actually runs under the active cost profile / --model-alias,
+            # not the static model_map placeholder (proof/replay must match dispatch).
+            ladder = []
+            for _p, _m, _k in raw_ladder:
+                _resolved = _resolve_route_entry_alias_full(
+                    {"provider": _p, "model_id": _m, "api_key_env": _k}, cfg
+                )
+                ladder.append(
+                    (
+                        str(_resolved["provider"]),
+                        str(_resolved["model_id"]),
+                        str(_resolved["api_key_env"]),
+                    )
+                )
             provider, model_id, api_key_env = (
                 ladder[0] if ladder else ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")
             )
@@ -7411,9 +7426,10 @@ def collect_provider_routes(
     selected_step_ids_by_phase: Optional[Dict[str, Sequence[str]]] = None,
     *,
     cost_profile: Optional[str] = None,
+    model_alias_overrides: Tuple[Tuple[str, str], ...] = (),
 ) -> Dict[str, Dict[str, str]]:
-    # Bind cost_profile so the readiness summary resolves ${CELL} placeholders
-    # under the operator's active profile (not the default) — preflight must
+    # Bind cost_profile + --model-alias overrides so the readiness summary
+    # resolves ${CELL} placeholders the same way dispatch will — preflight must
     # probe the models that will actually run.
     def _derive(
         ph: Sequence[str],
@@ -7426,6 +7442,7 @@ def collect_provider_routes(
             rp,
             selected_step_ids_by_phase=selected_step_ids_by_phase,
             cost_profile=cost_profile,
+            model_alias_overrides=model_alias_overrides,
         )
 
     return _collect_provider_routes_impl(
@@ -7442,12 +7459,17 @@ def derive_route_readiness_summary(
     selected_step_ids_by_phase: Optional[Dict[str, Sequence[str]]] = None,
     *,
     cost_profile: Optional[str] = None,
+    model_alias_overrides: Tuple[Tuple[str, str], ...] = (),
 ) -> Dict[str, Any]:
     effective_cost_profile = cost_profile or DEFAULT_COST_PROFILE
 
     def _runner_config_factory(selected_policy: str) -> RunnerConfig:
         return RunnerConfig(
             cost_profile=effective_cost_profile,
+            # Carry --model-alias overrides so preflight resolves ${CELL} the same
+            # way dispatch will (else an override to a different provider probes
+            # the profile default and a missing provider key slips through).
+            model_alias_overrides=tuple(model_alias_overrides),
             dry_run=True,
             max_files_docs=35,
             max_files_code=20,

@@ -1505,13 +1505,8 @@ steps:
   sidefill_enabled: true
   repair_mode: targeted_then_envelope
   primary_routes:
-  - provider: gemini
-    model_id: ${CE_MODEL}
-    api_key_env: GEMINI_API_KEY
-    strict_json_schema: false
-    strict_passthrough_verified: false
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -1552,13 +1547,8 @@ steps:
   sidefill_enabled: true
   repair_mode: targeted_then_envelope
   primary_routes:
-  - provider: gemini
-    model_id: ${CE_MODEL}
-    api_key_env: GEMINI_API_KEY
-    strict_json_schema: false
-    strict_passthrough_verified: false
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -1683,22 +1673,16 @@ steps:
   sidefill_enabled: false
   repair_mode: envelope
   primary_routes:
-  - provider: gemini
+  - provider: openai
     model_id: ${SYNTH_MODEL}
-    api_key_env: GEMINI_API_KEY
-    strict_json_schema: false
-    strict_passthrough_verified: false
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.3-codex
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
-  - provider: openai
-    model_id: gpt-5.5
-    api_key_env: OPENAI_API_KEY
-    strict_json_schema: true
-    strict_passthrough_verified: true
-    service_tier: flex
   repair_routes:
   - provider: openai
     model_id: ${SYNTH_MODEL}
@@ -1730,22 +1714,16 @@ steps:
   sidefill_enabled: false
   repair_mode: envelope
   primary_routes:
-  - provider: gemini
+  - provider: openai
     model_id: ${SYNTH_MODEL}
-    api_key_env: GEMINI_API_KEY
-    strict_json_schema: false
-    strict_passthrough_verified: false
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.3-codex
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
-  - provider: openai
-    model_id: gpt-5.5
-    api_key_env: OPENAI_API_KEY
-    strict_json_schema: true
-    strict_passthrough_verified: true
-    service_tier: flex
   repair_routes:
   - provider: openai
     model_id: ${SYNTH_MODEL}
@@ -3103,13 +3081,8 @@ steps:
   sidefill_enabled: true
   repair_mode: targeted_then_envelope
   primary_routes:
-  - provider: gemini
-    model_id: ${CE_MODEL}
-    api_key_env: GEMINI_API_KEY
-    strict_json_schema: false
-    strict_passthrough_verified: false
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -3276,22 +3249,16 @@ steps:
   sidefill_enabled: false
   repair_mode: envelope
   primary_routes:
-  - provider: gemini
+  - provider: openai
     model_id: ${SYNTH_MODEL}
-    api_key_env: GEMINI_API_KEY
-    strict_json_schema: false
-    strict_passthrough_verified: false
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.3-codex
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
-  - provider: openai
-    model_id: gpt-5.5
-    api_key_env: OPENAI_API_KEY
-    strict_json_schema: true
-    strict_passthrough_verified: true
-    service_tier: flex
   repair_routes:
   - provider: openai
     model_id: ${SYNTH_MODEL}
@@ -3323,22 +3290,16 @@ steps:
   sidefill_enabled: false
   repair_mode: envelope
   primary_routes:
-  - provider: gemini
+  - provider: openai
     model_id: ${SYNTH_MODEL}
-    api_key_env: GEMINI_API_KEY
-    strict_json_schema: false
-    strict_passthrough_verified: false
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.3-codex
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
-  - provider: openai
-    model_id: gpt-5.5
-    api_key_env: OPENAI_API_KEY
-    strict_json_schema: true
-    strict_passthrough_verified: true
-    service_tier: flex
   repair_routes:
   - provider: openai
     model_id: ${SYNTH_MODEL}
@@ -3370,13 +3331,8 @@ steps:
   sidefill_enabled: true
   repair_mode: targeted_then_envelope
   primary_routes:
-  - provider: gemini
-    model_id: ${CE_MODEL}
-    api_key_env: GEMINI_API_KEY
-    strict_json_schema: false
-    strict_passthrough_verified: false
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -3417,13 +3373,8 @@ steps:
   sidefill_enabled: true
   repair_mode: targeted_then_envelope
   primary_routes:
-  - provider: gemini
-    model_id: ${CE_MODEL}
-    api_key_env: GEMINI_API_KEY
-    strict_json_schema: false
-    strict_passthrough_verified: false
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -3464,13 +3415,8 @@ steps:
   sidefill_enabled: true
   repair_mode: targeted_then_envelope
   primary_routes:
-  - provider: gemini
-    model_id: ${CE_MODEL}
-    api_key_env: GEMINI_API_KEY
-    strict_json_schema: false
-    strict_passthrough_verified: false
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -3553,13 +3499,8 @@ steps:
   sidefill_enabled: true
   repair_mode: targeted_then_envelope
   primary_routes:
-  - provider: gemini
-    model_id: ${CE_MODEL}
-    api_key_env: GEMINI_API_KEY
-    strict_json_schema: false
-    strict_passthrough_verified: false
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -3684,22 +3625,16 @@ steps:
   sidefill_enabled: false
   repair_mode: envelope
   primary_routes:
-  - provider: gemini
+  - provider: openai
     model_id: ${SYNTH_MODEL}
-    api_key_env: GEMINI_API_KEY
-    strict_json_schema: false
-    strict_passthrough_verified: false
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.3-codex
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
-  - provider: openai
-    model_id: gpt-5.5
-    api_key_env: OPENAI_API_KEY
-    strict_json_schema: true
-    strict_passthrough_verified: true
-    service_tier: flex
   repair_routes:
   - provider: openai
     model_id: ${SYNTH_MODEL}
@@ -4019,13 +3954,8 @@ steps:
   sidefill_enabled: true
   repair_mode: targeted_then_envelope
   primary_routes:
-  - provider: gemini
-    model_id: ${CE_MODEL}
-    api_key_env: GEMINI_API_KEY
-    strict_json_schema: false
-    strict_passthrough_verified: false
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -4066,13 +3996,8 @@ steps:
   sidefill_enabled: true
   repair_mode: targeted_then_envelope
   primary_routes:
-  - provider: gemini
-    model_id: ${CE_MODEL}
-    api_key_env: GEMINI_API_KEY
-    strict_json_schema: false
-    strict_passthrough_verified: false
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -4239,22 +4164,16 @@ steps:
   sidefill_enabled: false
   repair_mode: envelope
   primary_routes:
-  - provider: gemini
+  - provider: openai
     model_id: ${SYNTH_MODEL}
-    api_key_env: GEMINI_API_KEY
-    strict_json_schema: false
-    strict_passthrough_verified: false
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.3-codex
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
-  - provider: openai
-    model_id: gpt-5.5
-    api_key_env: OPENAI_API_KEY
-    strict_json_schema: true
-    strict_passthrough_verified: true
-    service_tier: flex
   repair_routes:
   - provider: openai
     model_id: ${SYNTH_MODEL}
@@ -4286,13 +4205,8 @@ steps:
   sidefill_enabled: true
   repair_mode: targeted_then_envelope
   primary_routes:
-  - provider: gemini
-    model_id: ${CE_MODEL}
-    api_key_env: GEMINI_API_KEY
-    strict_json_schema: false
-    strict_passthrough_verified: false
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
@@ -4375,22 +4289,16 @@ steps:
   sidefill_enabled: false
   repair_mode: envelope
   primary_routes:
-  - provider: gemini
+  - provider: openai
     model_id: ${SYNTH_MODEL}
-    api_key_env: GEMINI_API_KEY
-    strict_json_schema: false
-    strict_passthrough_verified: false
+    api_key_env: OPENAI_API_KEY
+    strict_json_schema: true
+    strict_passthrough_verified: true
   - provider: openai
     model_id: gpt-5.3-codex
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
-  - provider: openai
-    model_id: gpt-5.5
-    api_key_env: OPENAI_API_KEY
-    strict_json_schema: true
-    strict_passthrough_verified: true
-    service_tier: flex
   repair_routes:
   - provider: openai
     model_id: ${SYNTH_MODEL}
@@ -5640,13 +5548,8 @@ steps:
   sidefill_enabled: true
   repair_mode: targeted_then_envelope
   primary_routes:
-  - provider: gemini
-    model_id: ${CE_MODEL}
-    api_key_env: GEMINI_API_KEY
-    strict_json_schema: false
-    strict_passthrough_verified: false
   - provider: openai
-    model_id: gpt-5.3-codex
+    model_id: ${CE_MODEL}
     api_key_env: OPENAI_API_KEY
     strict_json_schema: true
     strict_passthrough_verified: true
