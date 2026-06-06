@@ -128,6 +128,8 @@ A packet is superseded by another packet
 | TP- PM-ARCH-04B | PM Plane | Canonical pm.* Events + Adapters | 2026-03-22 | Accepted |
 | PACKET_024 | Infra | MCP Health Surface Hardening | 2026-01-26 | Accepted |
 | PACKET_021 | Memory | Deterministic Chronicle Schema | 2026-01-18 | Accepted |
+| TP-DMX-AI-ROUTING-001 | Governance / AI Routing | Stage-based dev-workflow AI model routing policy, reference, how-to, and Copilot agent stage tagging | 2026-06-06 | Accepted (PR #837, commit b987da994) |
+| TP-DMX-AI-ROUTING-002 | Governance / AI Routing | Proof bundle schema and proof contract cross-references to the stage routing policy | 2026-06-06 | Accepted (PR #837, commit b987da994) |
 
 ────────────────────────────────────────────────────────────
 ⚪ Superseded Task Packets
