@@ -16,12 +16,12 @@ SuperClaude provides an **excellent command framework** with 25 commands and 15 
 
 | Feature | SuperClaude Default | Dopemux MCP Stack | Winner |
 |---------|-------------------|-------------------|--------|
-| **Multi-model Consensus** | ❌ None | ✅ Zen (GPT-5, O3, Claude) | Dopemux |
+| **Multi-model Consensus** | ❌ None | ✅ PAL (GPT-5, O3, Claude) | Dopemux |
 | **Knowledge Graph** | ❌ Basic memory | ✅ ConPort PostgreSQL AGE | Dopemux |
 | **Code Intelligence** | ❌ Basic LSP | ✅ Serena (LSP + semantic + ADHD) | Dopemux |
 | **Neural Search** | ✅ Tavily | ✅ Exa (better neural search) | Dopemux |
 | **Research** | ❌ None | ✅ GPT-Researcher (4 engines) | Dopemux |
-| **Sequential Thinking** | ✅ Sequential MCP | ✅ Zen (thinkdeep, planner, consensus) | Dopemux |
+| **Sequential Thinking** | ✅ Sequential MCP | ✅ PAL (thinkdeep, planner, consensus) | Dopemux |
 | **Documentation** | ✅ Context7 | ✅ Context7 | Tie |
 
 **Strategy**: Install SuperClaude for its command framework, configure it to use Dopemux's superior MCPs.
@@ -39,12 +39,12 @@ SuperClaude provides an **excellent command framework** with 25 commands and 15 
 
 2. ✅ **MCP Customization** (Decision #143)
    - Updated 12/25 command frontmatter files
-   - Mapping: sequential→zen, tavily→exa+gpt-researcher
+   - Mapping: sequential→pal, tavily→exa+gpt-researcher
    - Kept: magic, playwright, context7, serena, morphllm
    - Key commands updated: implement, research, brainstorm, workflow, task, etc.
 
 3. ✅ **MCP Documentation** (Decision #144)
-   - Created MCP_Zen.md (224 lines, 6 tools)
+   - Created MCP_PAL.md (224 lines, 6 tools)
    - Created MCP_ConPort.md (287 lines, 9 capabilities)
    - Created MCP_Serena.md (245 lines, LSP + v2 features)
    - Created MCP_Exa.md (157 lines, neural search)
@@ -74,7 +74,7 @@ SuperClaude provides an **excellent command framework** with 25 commands and 15 
 ┌───────────────────────────────────────────────────────────┐
 │              Dopemux MCP Stack (Superior)                  │
 │  ┌──────┐  ┌────────┐  ┌────────┐  ┌─────┐  ┌──────────┐│
-│  │ Zen  │  │ConPort │  │ Serena │  │ Exa │  │   GPT    ││
+│  │ PAL  │  │ConPort │  │ Serena │  │ Exa │  │   GPT    ││
 │  │Multi │  │  AGE   │  │  LSP   │  │Neura│  │Researcher││
 │  │Model │  │  KG    │  │ +ADHD  │  │  l  │  │ 4-engine ││
 │  └──────┘  └────────┘  └────────┘  └─────┘  └──────────┘│
@@ -100,29 +100,29 @@ No enhancement needed - straightforward automation:
 
 ### Category 2: ENHANCE with Dopemux MCPs (11 commands)
 
-6. **`/sc:brainstorm`** → **Enhanced with Zen consensus**
+6. **`/sc:brainstorm`** → **Enhanced with PAL consensus**
    - Original: Single-model brainstorming
-   - Enhanced: Multi-model consensus (GPT-5, O3, Claude) via Zen
-   - Config: Route to `mcp__zen__consensus` for idea validation
+   - Enhanced: Multi-model consensus (GPT-5, O3, Claude) via PAL
+   - Config: Route to `mcp__pal__consensus` for idea validation
 
-7. **`/sc:estimate`** → **Enhanced with Zen multi-model**
+7. **`/sc:estimate`** → **Enhanced with PAL multi-model**
    - Original: Single estimate
    - Enhanced: 3-model consensus on task sizing
-   - Config: Use Zen for collaborative estimation
+   - Config: Use PAL for collaborative estimation
 
 8. **`/sc:test`** → **Enhanced with Serena navigation**
    - Original: Basic test writing
    - Enhanced: Serena LSP for test file navigation and coverage analysis
    - Config: `mcp__serena__find_related_tests`
 
-9. **`/sc:fix`** → **Enhanced with Zen debug**
+9. **`/sc:fix`** → **Enhanced with PAL debug**
    - Original: Basic bug fixing
-   - Enhanced: `mcp__zen__debug` for systematic root cause analysis
+   - Enhanced: `mcp__pal__debug` for systematic root cause analysis
    - Config: Multi-step debugging with hypothesis testing
 
-10. **`/sc:troubleshoot`** → **Enhanced with Zen debug**
+10. **`/sc:troubleshoot`** → **Enhanced with PAL debug**
     - Original: Troubleshooting
-    - Enhanced: Same as `/sc:fix` - Zen debug workflow
+    - Enhanced: Same as `/sc:fix` - PAL debug workflow
     - Config: Deep analysis with multiple models
 
 11. **`/sc:improve`** → **Enhanced with Serena semantic**
@@ -160,9 +160,9 @@ Completely reimplemented for ADHD workflows:
 
 17. **`/sc:workflow`** → **`/dx:prd-parse`** (PRD decomposition)
 18. **`/sc:implement`** → **`/dx:implement`** (ADHD sessions)
-19. **`/sc:design`** → **`/dx:design`** (Zen consensus)
-20. **`/sc:analyze`** → **`/dx:analyze`** (Zen thinkdeep)
-21. **`/sc:review`** → **`/dx:review`** (Zen codereview)
+19. **`/sc:design`** → **`/dx:design`** (PAL consensus)
+20. **`/sc:analyze`** → **`/dx:analyze`** (PAL thinkdeep)
+21. **`/sc:review`** → **`/dx:review`** (PAL codereview)
 22. **`/sc:load`** → **`/dx:load`** (ConPort context)
 23. **`/sc:checkpoint`** → **`/dx:save`** (ConPort persistence)
 24. **`/sc:research`** → **`/dx:research`** (Exa + GPT-Researcher)
@@ -293,7 +293,7 @@ name: prd-parse
 description: Parse PRD into ConPort task hierarchy with human review
 workflow:
   - step: analyze_prd
-    tool: mcp__zen__planner
+    tool: mcp__pal__planner
     params:
       model: "o3-mini"
       step: "Analyze PRD and create task breakdown with ADHD metadata"
@@ -339,17 +339,17 @@ workflow:
           items: "{validated_tasks}"
 ```
 
-### 5. `/dx:analyze` - Deep Analysis with Zen Thinkdeep
+### 5. `/dx:analyze` - Deep Analysis with PAL Thinkdeep
 **Purpose**: Complex problem investigation
 **ADHD Value**: Structured thinking, multiple perspectives
 
 ```yaml
 # ~/.claude/commands/dx/analyze.yaml
 name: analyze
-description: Deep analysis using Zen thinkdeep multi-step investigation
+description: Deep analysis using PAL thinkdeep multi-step investigation
 workflow:
   - step: thinkdeep_analysis
-    tool: mcp__zen__thinkdeep
+    tool: mcp__pal__thinkdeep
     params:
       model: "o3"
       step: "{user_question}"
@@ -359,17 +359,17 @@ workflow:
       use_websearch: true
 ```
 
-### 6. `/dx:review` - Code Review with Zen Multi-Model
+### 6. `/dx:review` - Code Review with PAL Multi-Model
 **Purpose**: Comprehensive code review
 **ADHD Value**: Multiple perspectives, automated quality checks
 
 ```yaml
 # ~/.claude/commands/dx/review.yaml
 name: review
-description: Code review using Zen codereview with multi-model validation
+description: Code review using PAL codereview with multi-model validation
 workflow:
   - step: code_review
-    tool: mcp__zen__codereview
+    tool: mcp__pal__codereview
     params:
       model: "o3-mini"
       step: "Review {file_paths} for quality, security, performance"
@@ -387,10 +387,10 @@ workflow:
 ```yaml
 # ~/.claude/commands/dx/design.yaml
 name: design
-description: Architectural design using Zen consensus for validation
+description: Architectural design using PAL consensus for validation
 workflow:
   - step: consensus_design
-    tool: mcp__zen__consensus
+    tool: mcp__pal__consensus
     params:
       model: "o3-mini"
       step: "{design_question}"
@@ -436,19 +436,19 @@ workflow:
 
 | SuperClaude Agent | MetaMCP Role | Tools Mounted | Use Case |
 |------------------|--------------|---------------|----------|
-| **Deep Research Agent** | RESEARCH | Exa, GPT-Researcher, Zen, Context7 (10 tools) | Investigation, analysis |
-| **Analyzer Agent** | RESEARCH | Zen thinkdeep, ConPort, Serena (9 tools) | Problem analysis |
-| **Strategic Analyst** | RESEARCH + PLAN | Zen consensus, ConPort decisions (9 tools) | Architecture decisions |
+| **Deep Research Agent** | RESEARCH | Exa, GPT-Researcher, PAL, Context7 (10 tools) | Investigation, analysis |
+| **Analyzer Agent** | RESEARCH | PAL thinkdeep, ConPort, Serena (9 tools) | Problem analysis |
+| **Strategic Analyst** | RESEARCH + PLAN | PAL consensus, ConPort decisions (9 tools) | Architecture decisions |
 | **Frontend Architect** | ACT | Serena, Context7 (React/Next.js), morphllm (10 tools) | UI implementation |
 | **Backend Developer** | ACT | Serena, Context7 (FastAPI/Django), ConPort (10 tools) | API implementation |
 | **Developer (General)** | ACT | Full implementation stack (10 tools) | General development |
-| **Security Engineer** | ACT | Zen security audit, Context7 (OWASP), Serena (10 tools) | Security review |
+| **Security Engineer** | ACT | PAL security audit, Context7 (OWASP), Serena (10 tools) | Security review |
 | **QA Engineer** | ACT | Serena test nav, ConPort progress, Context7 (10 tools) | Testing |
-| **Performance Specialist** | ACT | Serena profiling, Zen analysis, Context7 (10 tools) | Optimization |
+| **Performance Specialist** | ACT | Serena profiling, PAL analysis, Context7 (10 tools) | Optimization |
 | **DevOps Engineer** | ACT | ConPort, Context7 (Docker/K8s) (8 tools) | Deployment |
-| **Refactorer** | ACT | Serena semantic, Zen codereview, Context7 (10 tools) | Code improvement |
-| **Architect** | PLAN | Zen consensus + planner, ConPort decisions (9 tools) | System design |
-| **Technical Writer** | PLAN | Context7, ConPort, Zen (8 tools) | Documentation |
+| **Refactorer** | ACT | Serena semantic, PAL codereview, Context7 (10 tools) | Code improvement |
+| **Architect** | PLAN | PAL consensus + planner, ConPort decisions (9 tools) | System design |
+| **Technical Writer** | PLAN | Context7, ConPort, PAL (8 tools) | Documentation |
 | **Developer (Simple)** | QUICKFIX | Serena basic, ConPort progress (8 tools) | Quick fixes |
 | **Mentor** | ALL | All tools (60+) | Teaching, guidance |
 
@@ -461,7 +461,7 @@ version: "1.0"
 
 # Use Dopemux MCP stack (superior to defaults)
 mcp_servers:
-  zen:
+  pal:
     enabled: true
     tools:
       - consensus
@@ -535,9 +535,9 @@ Priority order (implement in this sequence):
 
 ### Days 4-5: Enhance 11 Standard Commands (12-16 hours)
 Configure MCP routing for:
-- Planning commands (brainstorm, estimate, design) → Zen
-- Implementation commands (fix, troubleshoot) → Zen debug
-- Quality commands (improve, optimize, review) → Serena + Zen
+- Planning commands (brainstorm, estimate, design) → PAL
+- Implementation commands (fix, troubleshoot) → PAL debug
+- Quality commands (improve, optimize, review) → Serena + PAL
 - Documentation commands (document, explain) → Context7 + ADHD
 
 ### Day 6: Testing & Documentation (6-8 hours)
@@ -570,13 +570,13 @@ Configure MCP routing for:
 ```bash
 # Step 1: Parse PRD
 /dx:prd-parse "requirements/auth-feature.md"
-# → Zen planner generates task hierarchy
+# → PAL planner generates task hierarchy
 # → Human reviews and approves JSON
 # → ConPort batch imports tasks
 
 # Step 2: Review architecture
 /dx:design "Should we use JWT or session tokens for auth?"
-# → Zen consensus (3 models, different stances)
+# → PAL consensus (3 models, different stances)
 # → Decision logged to ConPort
 
 # Step 3: Implementation
@@ -586,7 +586,7 @@ Configure MCP routing for:
 
 # Step 4: Code review
 /dx:review "src/auth/*.py"
-# → Zen codereview (multi-model validation)
+# → PAL codereview (multi-model validation)
 # → Issues logged to ConPort
 ```
 
