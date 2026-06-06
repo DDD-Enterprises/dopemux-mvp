@@ -115,6 +115,57 @@ Any write outside `proof/TP-DMX-<id>/` during proof generation = immediate stop 
 
 ---
 
+## Proof Git Tracking
+
+Proof bundles **must be committed** by default. A governed capsule with no tracked proof is not replayable and cannot be reviewed.
+
+### Git-Tracking Tier Table
+
+| Status | File Pattern | Notes |
+|--------|-------------|-------|
+| **TRACK** | `PROOF.json` | Machine-readable proof object; always commit |
+| **TRACK** | `SUMMARY.md` | Human-readable summary; always commit |
+| **TRACK** | `AUDIT.md` | When produced by AI/PAL review |
+| **TRACK** | `MERGE_READINESS.json` | When produced by PR Steward |
+| **TRACK** | `VALIDATION.md` | Summarized gate results |
+| **TRACK** | `CMD_SUMMARY.md` | Sanitized command outputs (not raw stdout) |
+| **TRACK** | `MODEL_ROUTING.json` | Optional external routing receipt; only when explicitly referenced from PROOF.json |
+| **TRACK** | `MANIFEST.json` | Index of bundle contents |
+| **DO_NOT_TRACK** | Raw stdout/stderr dumps > 50 KB | Low signal density; bloats history |
+| **DO_NOT_TRACK** | Telemetry / metrics logs | Ephemeral runtime data |
+| **DO_NOT_TRACK** | `.env` contents or secret-containing output | Security |
+| **DO_NOT_TRACK** | API responses containing tokens or credentials | Security |
+| **DO_NOT_TRACK** | Generated artifacts > 1 MB (binaries, embeddings) | Repo size |
+| **DO_NOT_TRACK** | Cache files | Regenerable |
+| **DO_NOT_TRACK** | Raw LLM transcripts (full multi-turn JSON) | Use `SUMMARY.md` instead |
+
+### Gitignore Strategy
+
+The blanket `proof/*` rule in `.gitignore` is a **safety net** — it prevents raw or secret-containing artifacts from accidental staging. When adding sanitized proof files, use `git add -f <path>` explicitly. Do NOT remove or loosen `proof/*` from `.gitignore`. The force-add convention is preferable because:
+
+1. Dangerous defaults remain in place — secrets and large files stay out by default.
+2. Proof tracking is an explicit, auditable action per commit.
+3. No `.gitignore` maintenance is required per packet.
+
+### Model Routing Receipt vs External MODEL_ROUTING.json
+
+**Preferred**: embed `model_routing_receipt` inline inside `PROOF.json` (see required fields above).
+
+**Allowed**: a separate `MODEL_ROUTING.json` file in the same proof directory, but only when it is explicitly referenced from `PROOF.json` via a `model_routing_artifact` field. An unreferenced `MODEL_ROUTING.json` is not authoritative.
+
+**Rejection rule**: if `model_routing_receipt` is absent from `PROOF.json` and no `model_routing_artifact` pointer exists, the proof bundle is incomplete and must be rejected.
+
+### Stale-Proof Prevention
+
+A committed proof bundle is stale if the implementation commits it covers have since been superseded by additional changes. PR Steward compares `head_sha` from `PROOF.json` against the branch tip at merge time. If they differ, the bundle is flagged `STALE_PROOF` and merge is blocked until a re-run is produced.
+
+Agents must not claim a packet is "done" when:
+- `PROOF.json` does not exist in the branch
+- `PROOF.json` exists but has not been committed (`git add -f` not run)
+- `head_sha` in `PROOF.json` does not match the current branch tip
+
+---
+
 ## Evidence Caveat
 
 > **All component statuses in this build series reflect static analysis only.**
