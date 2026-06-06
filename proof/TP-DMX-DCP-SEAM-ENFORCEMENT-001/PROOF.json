@@ -12,7 +12,7 @@
   "head_sha": "a4279dcbb",
   "implementation_commit": "aa0c77f67",
   "proof_commit": "a4279dcbb",
-  "final_proof_commit": "849026ef8",
+  "final_proof_commit": "2ffad4a36",
   "commit_sha": "aa0c77f67",
   "authority_input": "TP-RTE-S7-DRIFT-FIX-001 (prev packet) + advisor() gate-check + read-only investigation at HEAD",
   "files_modified": [
@@ -100,7 +100,8 @@
     "tests/dcp/test_dcp_0005_red_lane_scanner.py:test_queue_drain_bare_path_returns_blocked"
   ],
   "docs_changed": [],
-  "pal_codereview_status": "NOT_RUN",
+  "pal_codereview_status": "PASS_WITH_RISKS",
+  "pal_codereview_notes": "gemini-2.5-pro 429 on external validation step; internal two-step review completed. 1 MEDIUM pre-existing (duplicate status evaluation in scan() — CONFLICTING branch dead code; fail-closed unaffected). 3 LOW (final_proof_commit SHA drift by 1 commit, SUMMARY.md stale Head SHA, pre-existing incomplete FORBIDDEN_PATH directory coverage). No blocking findings. No overclaims. CI correctly deferred.",
   "precommit_status": "NOT_RUN",
   "no_runtime_code_touched": false,
   "no_schema_created": true,
