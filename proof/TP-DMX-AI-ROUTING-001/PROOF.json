@@ -4,7 +4,7 @@
   "repo": "dopemux-mvp",
   "branch": "claude/brave-spence-ff3a65",
   "git_status_before": " M .github/agents/dopemux-implementer.agent.md\n M docs/03-reference/governance/proof-bundle-schema.md\n M docs/03-reference/governance/proof-contract.md\n M task-packets/TEMPLATE_TASK_PACKET.md\n?? .github/agents/dopemux-auditor.agent.md\n?? .github/agents/dopemux-reader.agent.md\n?? config/ai/\n?? docs/03-reference/governance/model-routing.md\n?? tests/test_model_routing_policy.py\n",
-  "git_status_after": " M docs/03-reference/governance/proof-bundle-schema.md\n M docs/03-reference/governance/proof-contract.md\n M proof/TP-DMX-AI-ROUTING-001/PROOF.json\n?? tests/test_model_routing_policy.py\n",
+  "git_status_after": " M docs/03-reference/governance/proof-bundle-schema.md\n M docs/03-reference/governance/proof-contract.md\n?? tests/test_model_routing_policy.py\n",
   "files_changed": [
     "config/ai/model-routing.policy.yaml",
     ".github/agents/dopemux-reader.agent.md",
@@ -74,5 +74,6 @@
     "created": true,
     "sha": "7e25d2c813106285a11b151e11760739ffef4c56",
     "message": "Add stage-based AI model routing policy"
-  }
+  },
+  "final_proof_commit": "377ac18829254715cae0c043b7ad4de25cb16d24"
 }
