@@ -3,7 +3,7 @@
 **Packet:** Verify S7 Drift Gate — Confirm FAIL on Injected Stale Step
 **Branch:** `claude/hungry-lalande-e617d2`
 **Head SHA (before):** `c6ed2ea5181f349b34a2e35c4146bb0c565f1b36`
-**Commit SHA:** TBD_AFTER_COMMIT
+**Commit SHA:** 43836516c
 **Authority input:** `TP-DMX-DDF-DOCS-CORRECT-001` + `TP-DMX-EVIDENCE-GATE-VERIFY-001` (read-only verification, HEAD `8042f9f9f`)
 **Outcome:** VERIFY_AND_CLOSE — drift → FAIL confirmed
 **Validation:** PASSED · **Status:** READY_FOR_REVIEW

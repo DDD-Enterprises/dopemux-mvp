@@ -6,7 +6,7 @@
   "outcome": "VERIFY_AND_CLOSE",
   "repo": "DDD-Enterprises/dopemux-mvp",
   "head_sha": "c6ed2ea5181f349b34a2e35c4146bb0c565f1b36",
-  "commit_sha": "TBD_AFTER_COMMIT",
+  "commit_sha": "43836516c",
   "branch": "claude/hungry-lalande-e617d2",
   "worktree_path": "/Users/hue/code/dopemux-mvp/.claude/worktrees/hungry-lalande-e617d2",
   "authority_input": "TP-DMX-DDF-DOCS-CORRECT-001 + TP-DMX-EVIDENCE-GATE-VERIFY-001 (read-only verification at HEAD 8042f9f9f)",
