@@ -103,6 +103,44 @@ except ModuleNotFoundError:
     is_strict_contract_step = structured_contracts_module.is_strict_contract_step
     resolve_stage_route = structured_contracts_module.resolve_stage_route
     route_entries_for_stage = structured_contracts_module.route_entries_for_stage
+
+
+# Plan B: model_map.yaml is shared with run_extraction_v5, which converts each
+# step's lead primary route model_id to a ${CELL} placeholder resolved per cost
+# profile. This legacy runner (used by run_repscan/run_probe) has no cost-profile
+# mechanism, so it pins those placeholders to the default (value-default) profile's
+# concrete models. Strict cells (CE/AGG) are OpenAI-only; bulk leads default to
+# OpenAI here. Non-placeholder routes pass through unchanged.
+_VALUE_DEFAULT_CELL_MODELS: Dict[str, Tuple[str, str, str]] = {
+    "${BULK_DOCS_MODEL}": ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
+    "${BULK_CODE_MODEL}": ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
+    "${CE_MODEL}": ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
+    "${SYNTH_MODEL}": ("openai", "gpt-5.5", "OPENAI_API_KEY"),
+}
+
+
+def _resolve_v3_cell_routes(routes: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Resolve ${CELL} placeholder routes to the default profile's concrete
+    provider/model/api_key_env so the legacy v3 runner can execute the shared
+    model_map. Non-placeholder routes are returned unchanged."""
+    resolved: List[Dict[str, Any]] = []
+    for route in routes:
+        if not isinstance(route, dict):
+            resolved.append(route)
+            continue
+        hit = _VALUE_DEFAULT_CELL_MODELS.get(str(route.get("model_id") or "").strip())
+        if hit:
+            provider, model_id, api_key_env = hit
+            row = dict(route)
+            row["provider"] = provider
+            row["model_id"] = model_id
+            row["api_key_env"] = api_key_env
+            resolved.append(row)
+        else:
+            resolved.append(route)
+    return resolved
+
+
 try:
     from rich.console import Console
     from rich.panel import Panel
@@ -2454,7 +2492,9 @@ def resolve_effective_step_route(
     )
     if is_json_managed_step(contract):
         strict_required = is_strict_contract_step(contract)
-        primary_routes = route_entries_for_stage(contract, "primary")
+        primary_routes = _resolve_v3_cell_routes(
+            route_entries_for_stage(contract, "primary")
+        )
         if not primary_routes:
             raise RuntimeError(
                 f"JSON-managed step {phase}:{step_id} missing primary_routes in model_map.yaml."
@@ -2966,7 +3006,9 @@ def resolve_step_ladder(
 ) -> List[Tuple[str, str, str]]:
     contract = _step_contract_for(phase, step_id)
     if is_json_managed_step(contract):
-        primary_routes = route_entries_for_stage(contract, "primary")
+        primary_routes = _resolve_v3_cell_routes(
+            route_entries_for_stage(contract, "primary")
+        )
         if not primary_routes:
             raise RuntimeError(
                 f"JSON-managed step {phase}:{step_id} missing primary_routes in model_map.yaml."
