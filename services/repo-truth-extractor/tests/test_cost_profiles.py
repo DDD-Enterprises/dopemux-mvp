@@ -725,3 +725,79 @@ def test_strict_contract_primary_lead_is_selected_per_cost_profile() -> None:
         assert attempts and attempts[0]["strict_capable"] is True, (
             f"{profile} {phase}:{step_id} primary lead was skipped as non-strict"
         )
+
+
+def test_provider_lock_detects_single_provider_profiles() -> None:
+    """Single-provider profiles lock to their provider; value-default opts out;
+    multi-provider profiles do not lock (Codex P2 #3364972852)."""
+    expected = {
+        "openrouter-resilient": "openrouter",
+        "economy": "openai",
+        "quality": "openai",
+        "openai-heavy": "openai",
+        "quality-mix": "openai",
+        "value-default": None,  # allow_cross_provider_fallback opt-out
+        "gemini-value": None,  # multi-provider
+        "grok-fast": None,
+        "balanced-mix": None,
+        "budget-mix": None,
+        "experimental": None,
+    }
+    for profile, lock in expected.items():
+        cfg = _make_cfg(cost_profile=profile)
+        assert runner._profile_provider_lock(cfg) == lock, f"{profile}"
+
+
+def _ladder(profile: str, phase: str, step_id: str):
+    cfg = _make_cfg(cost_profile=profile)
+    info = runner.resolve_effective_step_route(
+        phase, step_id, cfg, step_contract=runner._step_contract_for(phase, step_id)
+    )
+    return [(p, mdl) for (p, mdl, *_rest) in info["ladder"]]
+
+
+def test_provider_lock_drops_cross_provider_fallbacks() -> None:
+    # openrouter-resilient: bulk + CE ladders reference only openrouter (the
+    # single-key fix); the direct xai/openai fallbacks are dropped.
+    for prov, _m in _ladder("openrouter-resilient", "A", "A2"):
+        assert prov == "openrouter"
+    for prov, _m in _ladder("openrouter-resilient", "A", "A0"):
+        assert prov == "openrouter"
+    # economy (openai-locked): the bulk xai fallback is dropped.
+    assert {p for p, _ in _ladder("economy", "A", "A2")} == {"openai"}
+
+
+def test_value_default_keeps_cross_provider_fallback() -> None:
+    # The default profile opted out, so its bulk lane keeps the xai failover.
+    providers = {p for p, _ in _ladder("value-default", "A", "A2")}
+    assert "xai" in providers
+
+
+def test_provider_lock_preflight_probes_only_locked_provider() -> None:
+    """Launch preflight for a single-key profile references only its provider's
+    key — an OPENROUTER_API_KEY-only operator no longer fails on missing
+    XAI/OpenAI/Gemini keys."""
+    routes = runner.collect_provider_routes(
+        phases=["A"], routing_policy="balanced_openrouter", cost_profile="openrouter-resilient"
+    )
+    assert {r["api_key_env"] for r in routes.values()} == {"OPENROUTER_API_KEY"}
+    # economy probes only OpenAI.
+    routes_eco = runner.collect_provider_routes(
+        phases=["A"], routing_policy="balanced_openrouter", cost_profile="economy"
+    )
+    assert {r["api_key_env"] for r in routes_eco.values()} == {"OPENAI_API_KEY"}
+
+
+def test_provider_lock_filters_repair_sidefill_stages() -> None:
+    """The lock applies to every dispatch stage, so single-key repair/sidefill
+    recovery never falls to a cross-provider key (Codex P2 #3364972852)."""
+    cfg = _make_cfg(cost_profile="openrouter-resilient")
+    resolved = runner.resolve_contract_routes(runner._step_contract_for("A", "A2"), cfg)
+    for stage in ("primary_routes", "repair_routes", "sidefill_routes"):
+        provs = {r["provider"] for r in resolved["lane"][stage]}
+        assert provs == {"openrouter"}, f"{stage} not locked: {provs}"
+    # value-default opted out → repair/sidefill keep the xai failover.
+    rc_default = runner.resolve_contract_routes(
+        runner._step_contract_for("A", "A2"), _make_cfg(cost_profile="value-default")
+    )
+    assert "xai" in {r["provider"] for r in rc_default["lane"]["repair_routes"]}
