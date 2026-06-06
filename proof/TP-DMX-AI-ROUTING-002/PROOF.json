@@ -1,0 +1,74 @@
+{
+  "tp_id": "TP-DMX-AI-ROUTING-002",
+  "status": "IMPLEMENTATION_COMPLETE",
+  "repo": "dopemux-mvp",
+  "branch": "claude/brave-spence-ff3a65",
+  "git_status_before": "## claude/brave-spence-ff3a65...origin/main [ahead 4]\n M docs/03-reference/governance/proof-bundle-schema.md\n M docs/03-reference/governance/proof-contract.md\n",
+  "git_status_after": "## claude/brave-spence-ff3a65...origin/main [ahead 5]\n",
+  "residue_classification": {
+    "docs/03-reference/governance/proof-bundle-schema.md": {
+      "initial_status": "M",
+      "classification": "KEEP",
+      "decision_reason": "Adds ## Related Policy section (12 lines). All three referenced files exist at correct relative paths (config/ai/model-routing.policy.yaml, model-routing.md, schemas/proof/embedded_audit.schema.json). Explicitly states model-routing fields are advisory and additive and do not alter bundle validation rules. No new required fields created. No runtime authority claimed. Directly useful cross-reference after TP-DMX-AI-ROUTING-001 created the target files.",
+      "final_action": "committed as-is — no edits required"
+    },
+    "docs/03-reference/governance/proof-contract.md": {
+      "initial_status": "M",
+      "classification": "KEEP",
+      "decision_reason": "Adds ## Model Routing Evidence section (15 lines). Uses advisory 'should' language throughout. All referenced files exist. Explicit statement that model-routing fields 'are advisory and additive; they do not change the required-field set defined above'. References canonical embedded_audit.schema.json correctly. Does not duplicate proof-bundle-schema.md — complementary angle. No new mandatory requirements created.",
+      "final_action": "committed as-is — no edits required"
+    }
+  },
+  "files_changed": [
+    "docs/03-reference/governance/proof-bundle-schema.md",
+    "docs/03-reference/governance/proof-contract.md",
+    "proof/TP-DMX-AI-ROUTING-002/PROOF.json"
+  ],
+  "commands": [
+    {
+      "command": "git diff -- docs/03-reference/governance/proof-bundle-schema.md docs/03-reference/governance/proof-contract.md",
+      "exit_code": 0,
+      "stdout_summary": "proof-bundle-schema.md: +12 lines (## Related Policy section); proof-contract.md: +15 lines (## Model Routing Evidence section)",
+      "stderr_summary": ""
+    },
+    {
+      "command": "test -f config/ai/model-routing.policy.yaml && test -f docs/03-reference/governance/model-routing.md && test -f schemas/proof/embedded_audit.schema.json",
+      "exit_code": 0,
+      "stdout_summary": "all linked reference files exist",
+      "stderr_summary": ""
+    },
+    {
+      "command": "python3 proof_json_validation",
+      "exit_code": 0,
+      "stdout_summary": "PROOF.json valid",
+      "stderr_summary": ""
+    }
+  ],
+  "validation": {
+    "diff_reviewed": true,
+    "proof_json_valid": true,
+    "allowed_files_only": true,
+    "tp_owned_residue_clean": true
+  },
+  "embedded_audit": {
+    "auditor_tool": "claude_code",
+    "auditor_model": "claude-sonnet-4-6",
+    "invocation": "self-audit inside Claude Code after cleanup",
+    "exit_code": 0,
+    "auditor_verdict": "PASS",
+    "auditor_findings": [],
+    "fixes_applied_from_audit": [],
+    "remaining_risks": [
+      "R1: model-routing fields in proof-contract.md use advisory 'should' language — operator may treat as normative. The section explicitly states fields are additive and do not change required-field set; this guards against overclaiming."
+    ],
+    "skip_reason": null
+  },
+  "remaining_risks": [
+    "R1: Advisory model-routing fields in proof-contract.md could be misread as normative by future operators; the explicit additive/advisory language mitigates this."
+  ],
+  "commit": {
+    "created": false,
+    "sha": null,
+    "message": "Resolve AI routing proof governance residue"
+  }
+}
